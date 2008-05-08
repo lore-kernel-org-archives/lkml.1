@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758037AbYEHQT0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763843AbYEHQUp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758037AbYEHQT0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 12:19:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752125AbYEHQTN
+	id S1763843AbYEHQUp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 12:20:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbYEHQUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 12:19:13 -0400
-Received: from smtp-out-41.synserver.de ([217.119.50.41]:1141 "HELO
-	smtp-out-41.synserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751342AbYEHQTM (ORCPT
+	Thu, 8 May 2008 12:20:35 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:1058 "EHLO
+	outbound2-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750852AbYEHQUd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 12:19:12 -0400
-X-SynServer-TrustedSrc: 1
-X-SynServer-AuthUser: markus@trippelsdorf.de
-X-SynServer-PPID: 19922
-Date: Thu, 8 May 2008 18:18:05 +0200
-From: Markus Trippelsdorf <markus@trippelsdorf.de>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, htejun@gmail.com,
-       marc.c.dionne@gmail.com, dl9pf@gmx.de, bug-track@fisher-privat.net,
-       sitsofe@yahoo.com
-Subject: Re: [PATCH] Re: [git patches] libata updates - (improve post-reset
-	device ready test) regression
-Message-ID: <20080508161805.GA3941@gentoox2.trippelsdorf.de>
-References: <20080506154847.GA15299@havoc.gtf.org> <20080507145616.GA2210@gentoox2.trippelsdorf.de> <48231DAF.7070900@garzik.org> <s5hhcd83hor.wl%tiwai@suse.de>
-MIME-Version: 1.0
+	Thu, 8 May 2008 12:20:33 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.11;Service: EHS
+X-WSS-ID: 0K0K5DR-04-NER-01
+Date: Thu, 8 May 2008 18:19:25 +0200
+From: Hans Rosenfeld <hans.rosenfeld@amd.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Chua <jeff.chua.linux@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Nishanth Aravamudan <nacc@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] x86: fix PAE pmd_bad bootup warning
+Message-ID: <20080508161925.GH12654@escobedo.amd.com>
+References: <20080506124946.GA2146@elte.hu> <Pine.LNX.4.64.0805061435510.32567@blonde.site> <alpine.LFD.1.10.0805061138580.32269@woody.linux-foundation.org> <Pine.LNX.4.64.0805062043580.11647@blonde.site> <20080506202201.GB12654@escobedo.amd.com> <1210106579.4747.51.camel@nimitz.home.sr71.net> <20080508143453.GE12654@escobedo.amd.com> <1210258350.7905.45.camel@nimitz.home.sr71.net> <20080508151145.GG12654@escobedo.amd.com> <1210261882.7905.49.camel@nimitz.home.sr71.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <s5hhcd83hor.wl%tiwai@suse.de>
+In-Reply-To: <1210261882.7905.49.camel@nimitz.home.sr71.net>
+User-Agent: Mutt/1.4.2.3i
+X-OriginalArrivalTime: 08 May 2008 16:19:24.0141 (UTC) FILETIME=[477F11D0:01C8B127]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 06:05:08PM +0200, Takashi Iwai wrote:
-> At Thu, 08 May 2008 11:35:11 -0400,
-> Jeff Garzik wrote:
-> > 
-> > Markus Trippelsdorf wrote:
-> > >> Tejun Heo (12):
-> > >>       libata: improve post-reset device ready test
-> > > 
-> > > This commit (78ab88f04f44bed566d51dce0c7cbfeff6449a06) causes a long
-> > > boot delay with my onboard Promise controller. It seems like libata
-> > > probes for a nonexisting PATA drive...
-> > > 
-> > 
-> > Does the attached patch fix things?
-> > 
-> > It basically reverts the patch, while still maintaining the 
-> > consolidation.  It looks like that status evaluation is not as universal 
-> > as believed.
-> 
-> Yes, the patch fixes the problem on my machine.
-> 
+On Thu, May 08, 2008 at 08:51:22AM -0700, Dave Hansen wrote:
+> Is there anything in your dmesg?
 
-Your patch fixes the problem for me, too...
+mm/memory.c:127: bad pmd ffff810076801040(80000000720000e7).
+
+> There was a discussion on LKML in the last couple of days about
+> pmd_bad() triggering on huge pages.  Perhaps we're clearing the mapping
+> with the pmd_none_or_clear_bad(), and *THAT* is leaking the page.
+
+That makes sense. I remember that explicitly munmapping the huge page
+would still work, but it doesn't. I don't quite remember what I did back
+then to test this, but I probably made some mistake there that led me to
+some false conclusions.
+
 
 -- 
-Markus
+%SYSTEM-F-ANARCHISM, The operating system has been overthrown
+
