@@ -1,79 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758238AbYEHRm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760427AbYEHRnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758238AbYEHRm2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 13:42:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755209AbYEHRmD
+	id S1760427AbYEHRnS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 13:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751873AbYEHRmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 13:42:03 -0400
-Received: from cantor.suse.de ([195.135.220.2]:47473 "EHLO mx1.suse.de"
+	Thu, 8 May 2008 13:42:55 -0400
+Received: from nebensachen.de ([195.34.83.29]:43599 "EHLO mail.nebensachen.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754722AbYEHRmA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 13:42:00 -0400
-Date: Thu, 8 May 2008 10:41:22 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: [patch 00/16] Linux 2.6.25 -stable review
-Message-ID: <20080508174122.GA855@suse.de>
+	id S1751681AbYEHRmx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 13:42:53 -0400
+X-Hashcash: 1:20:080508:jens.axboe@oracle.com::USu3Mx1OhI18Mssa:0000000000000000000000000000000000000000BiZh
+X-Hashcash: 1:20:080508:james.bottomley@hansenpartnership.com::Wjjvfv9KCTuz6IXC:00000000000000000000000038mL
+X-Hashcash: 1:20:080508:linux-scsi@vger.kernel.org::7Jy31KYG1TrnJgcF:000000000000000000000000000000000005wRL
+X-Hashcash: 1:20:080508:linux-kernel@vger.kernel.org::ACVVNzT1IX1LYuUa:0000000000000000000000000000000006xAq
+From: Elias Oltmanns <eo@nebensachen.de>
+To: Jens Axboe <jens.axboe@oracle.com>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Linux specific scsi CDBs vs REQ_TYPE_LINUX_BLOCK requests
+Date: Thu, 08 May 2008 19:43:18 +0200
+Message-ID: <87r6ccadzd.fsf@denkblock.local>
+User-Agent: Gnus/5.110007 (No Gnus v0.7)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the start of the stable review cycle for the 2.6.25.2 release.
-There are 16 patches in this series, all will be posted as a response to
-this one.  If anyone has any issues with these being applied, please let
-us know.  If anyone is a maintainer of the proper subsystem, and wants
-to add a Signed-off-by: line to the patch, please respond with it.
+Hi Jens,
 
-These patches are sent out with a number of different people on the Cc:
-line.  If you wish to be a reviewer, please email stable@kernel.org to
-add your name to the list.  If you want to be off the reviewer list,
-also email us.
+way back you introduced REQ_TYPE_LINUX_BLOCK requests as some sort of
+generic block layer messages. As it turns out, it is not quite obvious
+how to add support for this type of requests in the scsi subsystem
+properly. On the other hand, Boaz Harrosh has recently added support for
+variable length and in particular vendor specific CDBs to the scsi mid
+layer. My question to you and James is this: Would it make sense, in
+your opinion, to (ab)use BLOCK_PC requests carrying linux specific CDBs
+for those purposes you had in mind when introducing LINUX_BLOCK
+requests? This would make things much easier as far as scsi is concerned
+and it would still be possible to add suport for this kind of requests
+to non scsi drivers. On the other hand, this might constitute too
+serious a violation of the layers and subsystems involved as I'm
+not quite sure, for instance, where to keep the list of those linux
+specific opcodes -- include/linux/blkdev.h and include/scsi/scsi.h both
+don't seem quite right.
 
-Responses should be made by May 10, 17:00:00 UTC.  Anything received
-after that time might be too late.
+The reason why I'm bothering you with all this is that I'm trying to get
+disk shock protection merged into mainline eventually; see the subthread
+starting at [1] for a preliminary patch series. Since I want to make
+this feature available to both, libata as well as ide, it is appealing
+to put the common bits (the timer and the user interface) into the block
+layer, thus avoiding code duplication. However, given the difficulties
+to realise this approach sanely, it might be better to leave the block
+layer out of it as far as possible. After all, it's the ATA specific
+feature (immediate disk head unloading) I really care for and by means
+of ioctls we could still provide an interface to userspace which doesn't
+depend on whether the device is managed by libata or ide.
 
-The whole patch series can be found in one patch at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.25.2-rc1.gz
-and the diffstat can be found below.
+In fact, unless you are definitely in favour of the block layer approach
+(as realised in [2]) and can give me a hint as to how I could solve the
+problems described above, I will probably prepare a patch series using
+ioctls and post it on linux-ide. The reason is that this approach might
+even solve another problem I see further down the road.
 
+Thank you for your advice,
 
-thanks,
+Elias
 
-the -stable release team
-
----------------
- Makefile                         |    2 -
- arch/arm/kernel/kprobes-decode.c |    2 -
- arch/arm/kernel/kprobes.c        |    2 -
- arch/x86/pci/common.c            |    7 ++--
- arch/x86/pci/init.c              |    2 +
- arch/x86/pci/pci.h               |    2 +
- crypto/authenc.c                 |    5 +-
- crypto/cryptd.c                  |    4 +-
- crypto/eseqiv.c                  |    3 +
- drivers/acpi/processor_idle.c    |    4 ++
- drivers/md/md.c                  |    2 -
- drivers/net/wireless/b43/b43.h   |    4 ++
- drivers/net/wireless/b43/main.c  |   40 ++++++++++++++++++-----
- drivers/serial/mpc52xx_uart.c    |    2 -
- fs/reiserfs/ioctl.c              |    4 --
- fs/reiserfs/super.c              |   17 +++++++---
- fs/utimes.c                      |   17 ++++++++--
- include/crypto/scatterwalk.h     |    4 ++
- include/linux/reiserfs_fs.h      |    1 
- kernel/sched.c                   |   66 ++++++++++++++++++++++++++++++++++++++-
- mm/page_alloc.c                  |   14 +++++++-
- 21 files changed, 171 insertions(+), 33 deletions(-)
-
+[1] <http://permalink.gmane.org/gmane.linux.ide/29519>
+[2] <http://permalink.gmane.org/gmane.linux.ide/29523>
