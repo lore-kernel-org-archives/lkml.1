@@ -1,121 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933189AbYEHS4j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765869AbYEHS7h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933189AbYEHS4j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 14:56:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757500AbYEHS42
+	id S1765869AbYEHS7h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 14:59:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839AbYEHS72
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 14:56:28 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:33384 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751221AbYEHS41 (ORCPT
+	Thu, 8 May 2008 14:59:28 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:57579 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751802AbYEHS70 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 14:56:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
-        b=I4B01iBgIBr5QQtITUQYJdmMobAUkRwMiKGMQqg2tDHXCRkkPSSnfaZ9kr97e8SPkZxKlkelUXzBrLuVHdy2phwerrnyvggN4jHgwEjfHpbz++Rovo6pDvxXEXmNBDl6ZO5Pg5tjgTbwwERkMRuJiL4ngL9d3UpLa8IQBGWTZrk=
-Date: Thu, 8 May 2008 20:56:21 +0200
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: [PATCH] kmemcheck: custom queue size and overflow detection
-Message-ID: <20080508185621.GB3102@damson.getinternet.no>
+	Thu, 8 May 2008 14:59:26 -0400
+Date: Thu, 8 May 2008 19:58:47 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+cc: Nishanth Aravamudan <nacc@us.ibm.com>,
+       Hans Rosenfeld <hans.rosenfeld@amd.com>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Chua <jeff.chua.linux@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       Arjan van de Ven <arjan@linux.intel.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] x86: fix PAE pmd_bad bootup warning
+In-Reply-To: <1210272164.7905.66.camel@nimitz.home.sr71.net>
+Message-ID: <Pine.LNX.4.64.0805081951570.21297@blonde.site>
+References: <Pine.LNX.4.64.0805062043580.11647@blonde.site> 
+ <20080506202201.GB12654@escobedo.amd.com>  <1210106579.4747.51.camel@nimitz.home.sr71.net>
+  <20080508143453.GE12654@escobedo.amd.com>  <1210258350.7905.45.camel@nimitz.home.sr71.net>
+  <20080508151145.GG12654@escobedo.amd.com>  <1210261882.7905.49.camel@nimitz.home.sr71.net>
+  <20080508161925.GH12654@escobedo.amd.com>  <20080508163352.GN23990@us.ibm.com>
+  <20080508165111.GI12654@escobedo.amd.com>  <20080508171657.GO23990@us.ibm.com>
+ <1210272164.7905.66.camel@nimitz.home.sr71.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: Vegard Nossum <vegard.nossum@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 8 May 2008, Dave Hansen wrote:
+> 
+> But, I do think it is absolutely insane to have pmd_clear_bad() going
+> after perfectly good hugetlb pmds.  The way it is set up now, people are
+> bound to miss the hugetlb pages because just about every single
+> pagetable walk has to be specially coded to handle or avoid them.  We
+> obviously missed it, here, and we had two good examples in the same
+> file! :)
 
-This is also missing from x86.git. Thanks.
+Like it or not, the pgd/pud/pmd/pte hierarchy cannot be assumed once
+you're amongst hugepages.  What happens varies from architecture to
+architecture.  Perhaps the hugepage specialists could look at what
+in fact the different architectures we know today are doing, and
+come up with a better abstraction to encompass them all.  But it's
+simply wrong for a "generic" pagewalker to be going blindly in there.
 
-Vegard
+Two good examples in the same file??
 
-
->From 7966e04efed4c52bc0d09e8aa5ae47e9aa225a6a Mon Sep 17 00:00:00 2001
-From: Vegard Nossum <vegard.nossum@gmail.com>
-Date: Thu, 1 May 2008 19:26:06 +0200
-Subject: [PATCH] kmemcheck: custom queue size and overflow detection
-
-Add an option to Kconfig to set the size of the queue/buffer which
-kmemcheck uses to report errors. Also keep count on how many times this
-buffer was overflowed (e.g. the number of "lost reports") so this can be
-printed as well.
-
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
----
- arch/x86/Kconfig.debug      |   11 +++++++++++
- arch/x86/kernel/kmemcheck.c |   14 ++++++++++++--
- 2 files changed, 23 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
-index 5d3e83a..255d054 100644
---- a/arch/x86/Kconfig.debug
-+++ b/arch/x86/Kconfig.debug
-@@ -287,6 +287,17 @@ config KMEMCHECK_ONESHOT_BY_DEFAULT
- 
- endchoice
- 
-+config KMEMCHECK_QUEUE_SIZE
-+	int "kmemcheck: error queue size"
-+	depends on KMEMCHECK
-+	default 64
-+	help
-+	  Select the maximum number of errors to store in the queue. This
-+	  queue will be emptied once every second, so this is effectively a
-+	  limit on how many reports to print in one go. Note however, that
-+	  if the number of errors occuring between two bursts is larger than
-+	  this number, the extra error reports will get lost.
-+
- config KMEMCHECK_PARTIAL_OK
- 	bool "kmemcheck: allow partially uninitialized memory"
- 	depends on KMEMCHECK
-diff --git a/arch/x86/kernel/kmemcheck.c b/arch/x86/kernel/kmemcheck.c
-index 408ba6d..ebdbe20 100644
---- a/arch/x86/kernel/kmemcheck.c
-+++ b/arch/x86/kernel/kmemcheck.c
-@@ -61,10 +61,11 @@ struct kmemcheck_error {
-  * from the kmemcheck traps, since this may call the console drivers and
-  * result in a recursive fault.
-  */
--static struct kmemcheck_error error_fifo[32];
-+static struct kmemcheck_error error_fifo[CONFIG_KMEMCHECK_QUEUE_SIZE];
- static unsigned int error_count;
- static unsigned int error_rd;
- static unsigned int error_wr;
-+static unsigned int error_missed_count;
- 
- static struct timer_list kmemcheck_timer;
- 
-@@ -73,8 +74,10 @@ error_next_wr(void)
- {
- 	struct kmemcheck_error *e;
- 
--	if (error_count == ARRAY_SIZE(error_fifo))
-+	if (error_count == ARRAY_SIZE(error_fifo)) {
-+		++error_missed_count;
- 		return NULL;
-+	}
- 
- 	e = &error_fifo[error_wr];
- 	if (++error_wr == ARRAY_SIZE(error_fifo))
-@@ -194,6 +197,13 @@ do_wakeup(unsigned long data)
- {
- 	while (error_count > 0)
- 		error_recall();
-+
-+	if (error_missed_count > 0) {
-+		printk(KERN_WARNING "kmemcheck: Lost %d error reports because "
-+			"the queue was too small\n", error_missed_count);
-+		error_missed_count = 0;
-+	}
-+
- 	mod_timer(&kmemcheck_timer, kmemcheck_timer.expires + HZ);
- }
- 
--- 
-1.5.4.1
-
+Hugh
