@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759893AbYEHCYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761093AbYEHCZf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759893AbYEHCYk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 22:24:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755712AbYEHCY2
+	id S1761093AbYEHCZf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 22:25:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756545AbYEHCZU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 22:24:28 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:48722
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753275AbYEHCY0 (ORCPT
+	Wed, 7 May 2008 22:25:20 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:32804 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753275AbYEHCZR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 22:24:26 -0400
-Date: Thu, 8 May 2008 04:24:24 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, steiner@sgi.com,
-       holt@sgi.com, npiggin@suse.de, a.p.zijlstra@chello.nl,
-       kvm-devel@lists.sourceforge.net, kanojsarcar@yahoo.com,
-       rdreier@cisco.com, swise@opengridcomputing.com,
-       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
-       general@lists.openfabrics.org, hugh@veritas.com, rusty@rustcorp.com.au,
-       aliguori@us.ibm.com, chrisw@redhat.com, marcelo@kvack.org,
-       dada1@cosmosbay.com, paulmck@us.ibm.com
-Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
-Message-ID: <20080508022424.GU8276@duo.random>
-References: <20080507153103.237ea5b6.akpm@linux-foundation.org> <20080507224406.GI8276@duo.random> <20080507155914.d7790069.akpm@linux-foundation.org> <alpine.LFD.1.10.0805071610490.3024@woody.linux-foundation.org> <Pine.LNX.4.64.0805071637360.14337@schroedinger.engr.sgi.com> <alpine.LFD.1.10.0805071655100.3024@woody.linux-foundation.org> <Pine.LNX.4.64.0805071752490.14829@schroedinger.engr.sgi.com> <alpine.LFD.1.10.0805071833450.3024@woody.linux-foundation.org> <20080508015249.GT8276@duo.random> <alpine.LFD.1.10.0805071853500.3024@woody.linux-foundation.org>
+	Wed, 7 May 2008 22:25:17 -0400
+Date: Wed, 7 May 2008 19:24:35 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Rene Herman <rene.herman@keyaccess.nl>,
+       Thomas Gleixner <tglx@linutronix.de>, Adrian Bunk <bunk@kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
+       Pavel Machek <pavel@suse.cz>
+Subject: Re: [PATCH] x86: introduce a new Linux defined feature flag for PAT
+ support
+In-Reply-To: <4822614B.6080706@zytor.com>
+Message-ID: <alpine.LFD.1.10.0805071923030.3024@woody.linux-foundation.org>
+References: <48210A71.1060409@keyaccess.nl> <86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com> <20080507124650.GD29935@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0805072122270.3318@apollo.tec.linutronix.de> <48221AE3.6020602@keyaccess.nl>
+ <482233F0.7040000@zytor.com> <48224318.8020209@keyaccess.nl> <48224361.5080102@zytor.com> <48224507.8010102@keyaccess.nl> <alpine.LFD.1.10.0805071716060.3024@woody.linux-foundation.org> <48224930.9030901@keyaccess.nl> <48225DEC.2030502@keyaccess.nl>
+ <alpine.LFD.1.10.0805071857430.3024@woody.linux-foundation.org> <4822614B.6080706@zytor.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805071853500.3024@woody.linux-foundation.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 07, 2008 at 06:57:05PM -0700, Linus Torvalds wrote:
-> Take five minutes. Take a deep breadth. And *think* about actually reading 
-> what I wrote.
-> 
-> The bitflag *can* prevent taking the same lock twice. It just needs to be 
-> in the right place.
 
-It's not that I didn't read it, but to do it I've to grow every
-anon_vma by 8 bytes. I thought it was implicit that the conclusion of
-your email is that it couldn't possibly make sense to grow the size of
-each anon_vma by 33%, when nobody loaded the kvm or gru or xpmem
-kernel modules. It surely isn't my preferred solution, while capping
-the number of vmas to 1024 means sort() will make around 10240 steps,
-Matt call tell the exact number. The big cost shouldn't be in
-sort. Even 512 vmas will be more than enough for us infact. Note that
-I've a cond_resched in the sort compare function and I can re-add the
-signal_pending check. I had the signal_pending check in the original
-version that didn't use sort() but was doing an inner loop, I thought
-signal_pending wasn't necessary after speeding it up with sort(). But
-I can add it again, so then we'll only fail to abort inside sort() and
-we'll be able to break the loop while taking all the spinlocks, but
-with such as small array that can't be an issue and the result will
-surely run faster than stop_machine with zero ram and cpu overhead for
-the VM (besides stop_machine can't work or we'd need to disable
-preemption between invalidate_range_start/end, even removing the xpmem
-schedule-inside-mmu-notifier requirement).
+
+On Wed, 7 May 2008, H. Peter Anvin wrote:
+> 
+> Indeed it wasn't, and at least I have no interest of maintaining what is in
+> effect an in-kernel version of x86info(1).
+
+Umm. We already do, since we effectively ignore what the actual hardware 
+says, and replace it with our own version.
+
+> *Certainly* I don't want anything like this crap:
+> 
+> > -    if (cpu_has_pat)
+> > +    if (cpu_has_pat && cpu_has_pat_good)
+
+This in fact is likely the best part of it.
+
+Because that at least guarantees that we never say we have a good PAT when 
+the hardware doesn't even report it.
+
+As it is, we seem to just blindly override hardware. It may be correct for 
+all the models we override, but still..
+
+		Linus
