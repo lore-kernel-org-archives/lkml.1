@@ -1,90 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764852AbYEHQmn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765020AbYEHQnK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764852AbYEHQmn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 12:42:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756408AbYEHQm3
+	id S1765020AbYEHQnK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 12:43:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764799AbYEHQmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 12:42:29 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:43140 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755351AbYEHQm2 (ORCPT
+	Thu, 8 May 2008 12:42:40 -0400
+Received: from rn-out-0910.google.com ([64.233.170.184]:4326 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764762AbYEHQmh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 12:42:28 -0400
-Subject: Re: [PATCH] x86: fix PAE pmd_bad bootup warning
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Hans Rosenfeld <hans.rosenfeld@amd.com>
-Cc: Hugh Dickins <hugh@veritas.com>, Ingo Molnar <mingo@elte.hu>,
-       Jeff Chua <jeff.chua.linux@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Nishanth Aravamudan <nacc@us.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-Reply-To: <20080508161925.GH12654@escobedo.amd.com>
-References: <20080506124946.GA2146@elte.hu>
-	 <Pine.LNX.4.64.0805061435510.32567@blonde.site>
-	 <alpine.LFD.1.10.0805061138580.32269@woody.linux-foundation.org>
-	 <Pine.LNX.4.64.0805062043580.11647@blonde.site>
-	 <20080506202201.GB12654@escobedo.amd.com>
-	 <1210106579.4747.51.camel@nimitz.home.sr71.net>
-	 <20080508143453.GE12654@escobedo.amd.com>
-	 <1210258350.7905.45.camel@nimitz.home.sr71.net>
-	 <20080508151145.GG12654@escobedo.amd.com>
-	 <1210261882.7905.49.camel@nimitz.home.sr71.net>
-	 <20080508161925.GH12654@escobedo.amd.com>
-Content-Type: text/plain
-Date: Thu, 08 May 2008 09:42:21 -0700
-Message-Id: <1210264941.7905.54.camel@nimitz.home.sr71.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Thu, 8 May 2008 12:42:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=cAWZBk6pLwSdODgY5RSobd8enKRz6V+nGQGiyhiqAsDbtiSykFQISW+wVG5XNlzxl9hVNDoDBi9xgkvYec6KRqK9t7NPk8g8BSABk2AxY6LNj0ST8FQrzkSxa/2fV6FNCWTjsKhWJYQZcV481mlV9dGIigNm16/UvO3WyI8zQHs=
+Message-ID: <7c86c4470805080942v4b3c17a7jacf5e14eb21b1345@mail.gmail.com>
+Date: Thu, 8 May 2008 08:42:35 -0800
+From: "stephane eranian" <eranian@googlemail.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: [PATCH] perfmon: add context switch hooks for x86
+Cc: linux-kernel@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>, tglx@linutronix.de
+In-Reply-To: <4821BD2A.3090000@firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <7c86c4470805070133q29515056s386c137f644b7f3b@mail.gmail.com>
+	 <4821BA06.9020704@firstfloor.org>
+	 <7c86c4470805070724v793fbdcamf18579308a183a9d@mail.gmail.com>
+	 <4821BD2A.3090000@firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-05-08 at 18:19 +0200, Hans Rosenfeld wrote:
-> On Thu, May 08, 2008 at 08:51:22AM -0700, Dave Hansen wrote:
-> > Is there anything in your dmesg?
-> 
-> mm/memory.c:127: bad pmd ffff810076801040(80000000720000e7).
-> 
-> > There was a discussion on LKML in the last couple of days about
-> > pmd_bad() triggering on huge pages.  Perhaps we're clearing the mapping
-> > with the pmd_none_or_clear_bad(), and *THAT* is leaking the page.
-> 
-> That makes sense. I remember that explicitly munmapping the huge page
-> would still work, but it doesn't. I don't quite remember what I did back
-> then to test this, but I probably made some mistake there that led me to
-> some false conclusions.
+Andi,
 
-I can't see how it would possibly work with the code that we have today,
-so I guess it was just a false assumption.
+It is not necessarily that easy. I will lok at this next week.
 
-static inline int pmd_none_or_clear_bad(pmd_t *pmd)
-{
-        if (pmd_none(*pmd))
-                return 1;
-        if (unlikely(pmd_bad(*pmd))) {
-                pmd_clear_bad(pmd);
-                return 1;
-        }
-        return 0;
-}
-
-void pmd_clear_bad(pmd_t *pmd)
-{
-        pmd_ERROR(*pmd);
-        pmd_clear(pmd);
-}
-
-That pmd_clear() will simply zero out the pmd and leak the page.
-
-Sounds like Linus had the right idea:
-
-> I'd much rather have pdm_bad() etc fixed up instead, so that they do a 
-> more proper test (not thinking that a PSE page is bad, since it clearly 
-> isn't). And then, make them dependent on DEBUG_VM, because doing the 
-> proper test will be more expensive.
-
--- Dave
-
+On 5/7/08, Andi Kleen <andi@firstfloor.org> wrote:
+> stephane eranian wrote:
+>  > Andi,
+>  >
+>  > It would be much bigger because it would pull in a bunch of generic
+>  > and model-specific
+>  > data structures and code.
+>  >
+>  > To context switch, you need to know what the registers are, thus you
+>  > need the PMU
+>  > mapping table, which is implemented by a kernel module, so it needs
+>  > its registration
+>  > framework....
+>
+>
+> Can you strip it down to be simpler?
+>
+>  Minimally generic x86 perfctr switching code just needs an array with
+>  MSR numbers, doesn't it? And there are only a few variants.
+>
+>
+>  -Andi
+>
