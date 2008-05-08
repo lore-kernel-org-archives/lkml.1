@@ -1,93 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933659AbYEHVza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933754AbYEHV5y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933659AbYEHVza (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 17:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760722AbYEHVzO
+	id S933754AbYEHV5y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 17:57:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757551AbYEHV5p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 17:55:14 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46048 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757842AbYEHVzM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 17:55:12 -0400
-Message-ID: <482376BC.2000404@sgi.com>
-Date: Thu, 08 May 2008 14:55:08 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Thu, 8 May 2008 17:57:45 -0400
+Received: from gw.goop.org ([64.81.55.164]:35554 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752588AbYEHV5n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 17:57:43 -0400
+Message-ID: <4823774E.2040207@goop.org>
+Date: Thu, 08 May 2008 22:57:34 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, lethal@linux-sh.org, linux-sh@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: sh migor_defconfig build breakage
-References: <20080508203949.GC22887@cs181133002.pp.htv.fi> <48236E59.8070400@sgi.com> <4823711D.70401@sgi.com>
-In-Reply-To: <4823711D.70401@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Segher Boessenkool <segher@kernel.crashing.org>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Christian Kujau <lists@nerdbynature.de>,
+       Robert Hancock <hancockr@shaw.ca>, john stultz <johnstul@us.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] common implementation of iterative div/mod
+References: <fa.QTbvQYXhEm5VNP5dvkl5JG7NHYQ@ifi.uio.no> <481DF3D8.3010108@shaw.ca> <a6dd201e0149f8dbdf10a7a194673833@kernel.crashing.org> <48217674.8080903@goop.org> <48231959.4050406@goop.org> <e2d8bb81dc41cc3965a6ccba143f7cfa@kernel.crashing.org>
+In-Reply-To: <e2d8bb81dc41cc3965a6ccba143f7cfa@kernel.crashing.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis wrote:
-> Mike Travis wrote:
->> Adrian Bunk wrote:
->>> Commit aa6b54461cc5c0019b9d792adf3176b444c10763
->>> (asm-generic: add node_to_cpumask_ptr macro)
->>> causes the following build error with migor_defconfig:
->>>
->>> <--  snip  -->
->>>
->>> ...
->>>   CC      arch/sh/kernel/asm-offsets.s
->>> In file included from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/mm.h:8,
->>>                  from /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/sh/kernel/asm-offsets.c:13:
->>> /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/gfp.h: In function 'alloc_pages_node':
->>> /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/gfp.h:190: 
->>> error: implicit declaration of function 'cpu_to_node'
->>> make[2]: *** [arch/sh/kernel/asm-offsets.s] Error 1
->>>
->>> <--  snip  -->
->>>
->>> cu
->>> Adrian
-...
-> Ouch.  I just discovered I don't have a cross-compiler for 'sh'.  Can you point me
-> towards one?
-...
+Segher Boessenkool wrote:
+>> The workaround is to put a dummy asm statement in the loop to prevent
+>> gcc from performing the transformation.
+>
+> It's not a "dummy" asm, it actually does something: it tells the
+> compiler that it has to iterate the loop exactly as written, and
+> not do something else.  I.e., exactly the behaviour we want here.
 
-It looks like the migor_config has NUMA=y so is there not a cpu_to_node function?
-(looking with cscope didn't find it.)
+No, it has no function of its own.  It's bullying gcc into not 
+performing an optimisation by giving the impression its doing something.
 
-I believe this may be the source of the error:
+>> +    ticks = iter_div_u64_rem(blocked, NS_PER_TICK, &blocked);
+>
+> What a terrible function name.
 
-include/linux/gfp.h:
+It's consistent with the other functions defined here.  I agree it isn't 
+pretty.  If you have a better suggestion, I'm all ears.
 
-static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
-                                                unsigned int order)
-{
-...
-        /* Unknown node is current node */
-        if (nid < 0)
-                nid = numa_node_id();
+>> static inline void timespec_add_ns(struct timespec *a, u64 ns)
+>> {
+>> -    ns += a->tv_nsec;
+>> -    while(unlikely(ns >= NSEC_PER_SEC)) {
+>> -        /* The following asm() prevents the compiler from
+>> -         * optimising this loop into a modulo operation.  */
+>> -        asm("" : "+r"(ns));
+>> -
+>> -        ns -= NSEC_PER_SEC;
+>> -        a->tv_sec++;
+>> -    }
+>> +    a->tv_sec += iter_div_u64_rem(a->tv_nsec + ns, NSEC_PER_SEC, &ns);
+>>     a->tv_nsec = ns;
+>> }
+>
+> ...and now the "meat" of this function isn't inline anymore.  If we
+> cared about not doing a divide here, you'll have to explain why
+> taking this trivial loop out of line is a good idea.
 
+On x86-32 it compiles to 26 instructions and 47 bytes of code.  
+Admittedly it might be smaller inline - or on a 64-bit machine - but I 
+seriously doubt its suffering a huge performance hit from being out of 
+line.  These days the inline threshold is very small - probably under 10 
+instructions.  A direct call/return is essentially free, since it can be 
+trivially prefetched.
 
-include/linux/mmzone.h:
+>> +unsigned iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder)
+>> +{
+>> +    unsigned ret = 0;
+>> +
+>> +    while(dividend >= divisor) {
+>
+> You removed the unlikely() here.  Why?
 
-#include <linux/topology.h>
-/* Returns the number of the current Node. */
-#ifndef numa_node_id
-#define numa_node_id()          (cpu_to_node(raw_smp_processor_id()))
-#endif
+Because it didn't seem all that unlikely.  Besides, it makes not one bit 
+of difference to the code generated by my compiler.
 
+>> +        /* The following asm() prevents the compiler from
+>> +           optimising this loop into a modulo operation.  */
+>> +        asm("" : "+rm"(dividend));
+>
+> You changed "+r" to "+rm" here.  Why?  Also, "rm" is an x86-ism,
+> and this is generic code (it does work here, but why is it better
+> than "r"?)
 
-I can't put into include/linux/topology.h the catchall default:
+"rm" isn't x86-specific.  I just wanted to give the compiler the freedom 
+to put the value in either register or memory if it wanted to.
 
-#ifndef cpu_to_node
-#define cpu_to_node(cpu)	(0)
-#endif
+>> +EXPORT_SYMBOL(iter_div_u64_rem);
+>
+> Does this need to be exported?
 
-Because some arch's have it defined as an inline function.  Perhaps the
-easiest would be to add to include/asm-sh/topology.h a simple define of
-cpu_to_node()?
+Everything else in the file is exported.
 
-Thanks,
-Mike
+> Can I suggest an alternative approach?  Define a macro (with a
+> good, descriptive name!) for just the asm("" : "+r"(x)), and use
+> that.  Much smaller patch, much clearer code, and doesn't result
+> in different (and worse) code generation, so it's a much safer
+> change.
+
+Uh, could you suggest a name?  Something along the lines of 
+prevent_gcc_from_strength_reducing_this_subtraction_loop_into_a_modulo_operation_thanks_oh_and_remember_to_use_it_in_all_the_right_places() 
+springs to mind.
+
+Rather than putting this unsightly (though with a smear of lipstick) 
+hack into every open-coded iterative div-mod loop, we may as well 
+implement it once and just look out for places which should be using it.
+
+I don't think the "worse" code generation is much of an issue, since it 
+isn't used anywhere performance critical, and moving the code out of 
+line means there should be an overall reduction in code size.
+
+    J
