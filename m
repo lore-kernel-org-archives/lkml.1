@@ -1,80 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765831AbYEHVwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933659AbYEHVza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765831AbYEHVwj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 17:52:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765723AbYEHVwG
+	id S933659AbYEHVza (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 17:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760722AbYEHVzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 17:52:06 -0400
-Received: from relais.videotron.ca ([24.201.245.36]:47800 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764873AbYEHVwE (ORCPT
+	Thu, 8 May 2008 17:55:14 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46048 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757842AbYEHVzM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 17:52:04 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Message-id: <482375F8.2090108@gmail.com>
-Date: Thu, 08 May 2008 17:51:52 -0400
-From: Marc Dionne <marc.c.dionne@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Markus Trippelsdorf <markus@trippelsdorf.de>, linux-ide@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, htejun@gmail.com,
-       Takashi Iwai <tiwai@suse.de>, dl9pf@gmx.de, bug-track@fisher-privat.net,
-       sitsofe@yahoo.com
-Subject: Re: [PATCH] Re: [git patches] libata updates - (improve post-reset
- device ready test) regression
-References: <20080506154847.GA15299@havoc.gtf.org>
- <20080507145616.GA2210@gentoox2.trippelsdorf.de> <48231DAF.7070900@garzik.org>
-In-reply-to: <48231DAF.7070900@garzik.org>
+	Thu, 8 May 2008 17:55:12 -0400
+Message-ID: <482376BC.2000404@sgi.com>
+Date: Thu, 08 May 2008 14:55:08 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, lethal@linux-sh.org, linux-sh@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: sh migor_defconfig build breakage
+References: <20080508203949.GC22887@cs181133002.pp.htv.fi> <48236E59.8070400@sgi.com> <4823711D.70401@sgi.com>
+In-Reply-To: <4823711D.70401@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-08/05/08 11:35 AM, Jeff Garzik:
-> Markus Trippelsdorf wrote:
->>> Tejun Heo (12):
->>>       libata: improve post-reset device ready test
->>
->> This commit (78ab88f04f44bed566d51dce0c7cbfeff6449a06) causes a long
->> boot delay with my onboard Promise controller. It seems like libata
->> probes for a nonexisting PATA drive...
->>
->> ACPI: PCI Interrupt 0000:00:08.0[A] -> GSI 18 (level, low) -> IRQ 18
->> scsi0 : sata_promise
->> scsi1 : sata_promise
->> scsi2 : sata_promise
->> ata1: SATA max UDMA/133 mmio m4096@0xfb600000 port 0xfb600200 irq 18
->> ata2: SATA max UDMA/133 mmio m4096@0xfb600000 port 0xfb600280 irq 18
->> ata3: PATA max UDMA/133 mmio m4096@0xfb600000 port 0xfb600300 irq 18
->> ata1: SATA link down (SStatus 0 SControl 300)
->> ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
->> ata2.00: ATA-7: SAMSUNG HD753LJ, 1AA01109, max UDMA7
->> ata2.00: 1465149168 sectors, multi 0: LBA48 NCQ (depth 0/32)
->> ata2.00: configured for 
->> UDMA/133                                                                                          
->> ata3: link is slow to respond, please be patient (ready=0)
->> ata3: device not ready (errno=-16), forcing hardreset
->> ata3: link is slow to respond, please be patient (ready=0)
->> ata3: SRST failed (errno=-16)
->> ata3: link is slow to respond, please be patient (ready=0)
->> ata3: SRST failed (errno=-16)
->> ata3: link is slow to respond, please be patient (ready=0)
->> ata3: SRST failed (errno=-16)
->>   - Last output repeated twice -
->> ata3: reset failed, giving up
-> 
-> Does the attached patch fix things?
-> 
-> It basically reverts the patch, while still maintaining the 
-> consolidation.  It looks like that status evaluation is not as universal 
-> as believed.
-> 
->     Jeff
+Mike Travis wrote:
+> Mike Travis wrote:
+>> Adrian Bunk wrote:
+>>> Commit aa6b54461cc5c0019b9d792adf3176b444c10763
+>>> (asm-generic: add node_to_cpumask_ptr macro)
+>>> causes the following build error with migor_defconfig:
+>>>
+>>> <--  snip  -->
+>>>
+>>> ...
+>>>   CC      arch/sh/kernel/asm-offsets.s
+>>> In file included from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/mm.h:8,
+>>>                  from /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/sh/kernel/asm-offsets.c:13:
+>>> /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/gfp.h: In function 'alloc_pages_node':
+>>> /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/gfp.h:190: 
+>>> error: implicit declaration of function 'cpu_to_node'
+>>> make[2]: *** [arch/sh/kernel/asm-offsets.s] Error 1
+>>>
+>>> <--  snip  -->
+>>>
+>>> cu
+>>> Adrian
+...
+> Ouch.  I just discovered I don't have a cross-compiler for 'sh'.  Can you point me
+> towards one?
+...
 
-Yes, with the patch I get normal booting behaviour.
+It looks like the migor_config has NUMA=y so is there not a cpu_to_node function?
+(looking with cscope didn't find it.)
+
+I believe this may be the source of the error:
+
+include/linux/gfp.h:
+
+static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
+                                                unsigned int order)
+{
+...
+        /* Unknown node is current node */
+        if (nid < 0)
+                nid = numa_node_id();
+
+
+include/linux/mmzone.h:
+
+#include <linux/topology.h>
+/* Returns the number of the current Node. */
+#ifndef numa_node_id
+#define numa_node_id()          (cpu_to_node(raw_smp_processor_id()))
+#endif
+
+
+I can't put into include/linux/topology.h the catchall default:
+
+#ifndef cpu_to_node
+#define cpu_to_node(cpu)	(0)
+#endif
+
+Because some arch's have it defined as an inline function.  Perhaps the
+easiest would be to add to include/asm-sh/topology.h a simple define of
+cpu_to_node()?
 
 Thanks,
-Marc
+Mike
