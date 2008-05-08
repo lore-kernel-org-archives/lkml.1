@@ -1,54 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764561AbYEHP1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759211AbYEHPf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764561AbYEHP1q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 11:27:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760161AbYEHP0x
+	id S1759211AbYEHPf0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 11:35:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751227AbYEHPfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 11:26:53 -0400
-Received: from mvp.visionpro.com ([63.91.95.2]:2041 "EHLO
-	mvpexchange126.machinevisionproducts.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759456AbYEHP0u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 11:26:50 -0400
-X-Ninja-PIM: Scanned by Ninja
-X-Ninja-AttachmentFiltering: (no action)
-User-Agent: Microsoft-Entourage/12.1.0.080305
-Date: Thu, 08 May 2008 08:15:43 -0700
-Subject: Two questions about scheduling and threading.
-From: Brian McGrew <brian@visionpro.com>
-To: <linux-kernel@vger.kernel.org>
-Message-ID: <C448672F.1E24B%brian@visionpro.com>
-Thread-Topic: Two questions about scheduling and threading.
-Thread-Index: AcixFtMmQt1ggaBWdkGKfkPkh4HsWgAB47E2
-In-Reply-To: <C4485A81.1E1EF%brian@visionpro.com>
-Mime-version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-transfer-encoding: 7bit
+	Thu, 8 May 2008 11:35:08 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:41341 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752466AbYEHPfG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 11:35:06 -0400
+Date: Thu, 8 May 2008 18:33:43 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: [git pull] scheduler fixes
+Message-ID: <20080508153343.GD7718@cs181133002.pp.htv.fi>
+References: <alpine.LFD.1.10.0805070728280.32269@woody.linux-foundation.org> <alpine.LFD.1.10.0805070817060.3024@woody.linux-foundation.org> <1210214696.3453.87.camel@ymzhang> <alpine.LFD.1.10.0805072014330.3024@woody.linux-foundation.org> <1210219729.3453.97.camel@ymzhang> <alpine.LFD.1.10.0805072115190.3024@woody.linux-foundation.org> <20080508120130.GA2860@elte.hu> <20080508122802.GA4880@elte.hu> <20080508144316.GA9869@elte.hu> <20080508151028.GA12109@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080508151028.GA12109@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We're using the 2.6.16.16 kernel in an almost real time, multi processor and
-multi threaded environment.
+On Thu, May 08, 2008 at 05:10:28PM +0200, Ingo Molnar wrote:
+>...
+> also includes a scheduler arithmetics fix from Mike. Find the shortlog 
+> and diff below.
+> 
+> 	Ingo
+> 
+> ------------------>
+>...
+> Mike Galbraith (1):
+>       sched: fix weight calculations
+>...
 
-When I start my system for the first time, I start one thread for each
-processor/core in the machine (is this the correct thing to do)?  These
-threads set a busy flag, go to work and then go to sleep.  I put everything
-to sleep as opposed to killing the threads because it saves me on average of
-about 400ms each time around.
+The commit description says:
 
-My problem is, and, it is very reproducable, that if CPU0 is at 100%, none
-of my threads see the wakeup!  It doesn't matter what the other CPU's are
-doing, if they're all at 0 or 100%, but if CPU0 is 100, I'm toast.  Is there
-anyway around this?
+<--  snip  -->
 
-Also, I know that we're supposed to sit back and let the scheduler do all
-the work for us; but, in the 2.6.16.16 kernel, is there a way to assign a
-specific thread and/or process to a designated processor???  I really need
-to be able to do this because even with the preemptive scheduling, I'm still
-real-time and it's not quite real-time enough!
+...
 
-Thanks!
+This bug could be related to the regression reported by Yanmin Zhang:
 
--brian
+| Comparing with kernel 2.6.25, sysbench+mysql(oltp, readonly) has lots
+| of regressions with 2.6.26-rc1:
+|
+| 1) 8-core stoakley: 28%;
+| 2) 16-core tigerton: 20%;
+| 3) Itanium Montvale: 50%.
+
+Reported-by: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+...
+
+<--  snip  -->
+
+Can we get that verified and the description updated before it hits 
+Linus' tree?
+
+Otherwise this "could be related" will become unchangable metadata that 
+will stay forever - no matter whether there's any relation at all.
+
+Thanks
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
