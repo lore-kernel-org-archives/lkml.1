@@ -1,83 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759211AbYEHPf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757417AbYEHPgH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759211AbYEHPf0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 11:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751227AbYEHPfI
+	id S1757417AbYEHPgH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 11:36:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763440AbYEHPfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 11:35:08 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:41341 "EHLO smtp5.pp.htv.fi"
+	Thu, 8 May 2008 11:35:41 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:43057 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752466AbYEHPfG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 11:35:06 -0400
-Date: Thu, 8 May 2008 18:33:43 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: [git pull] scheduler fixes
-Message-ID: <20080508153343.GD7718@cs181133002.pp.htv.fi>
-References: <alpine.LFD.1.10.0805070728280.32269@woody.linux-foundation.org> <alpine.LFD.1.10.0805070817060.3024@woody.linux-foundation.org> <1210214696.3453.87.camel@ymzhang> <alpine.LFD.1.10.0805072014330.3024@woody.linux-foundation.org> <1210219729.3453.97.camel@ymzhang> <alpine.LFD.1.10.0805072115190.3024@woody.linux-foundation.org> <20080508120130.GA2860@elte.hu> <20080508122802.GA4880@elte.hu> <20080508144316.GA9869@elte.hu> <20080508151028.GA12109@elte.hu>
+	id S1763325AbYEHPfi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 11:35:38 -0400
+Message-ID: <48231DC8.50600@garzik.org>
+Date: Thu, 08 May 2008 11:35:36 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080508151028.GA12109@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: linux-next does not find root partition on PATA ICH5
+References: <fvv4m2$mp1$1@ger.gmane.org>
+In-Reply-To: <fvv4m2$mp1$1@ger.gmane.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 05:10:28PM +0200, Ingo Molnar wrote:
->...
-> also includes a scheduler arithmetics fix from Mike. Find the shortlog 
-> and diff below.
+Sitsofe Wheeler wrote:
+> Trying to boot a linux-next kernel (git cloned today) never seems to find
+> the root partition. Putting the PATA drivers and ext3 components into the
+> kernel image rather than modules makes no difference. Near enough the same
+> config boots on 2.6.26rc1 (git pulled today).
 > 
-> 	Ingo
+> Apologies for posting this to the main kernel list - the linux-next list
+> doesn't yet appear to be fully on GMANE (
+> http://dir.gmane.org/gmane.linux.kernel.next ) or Google Groups...
 > 
-> ------------------>
->...
-> Mike Galbraith (1):
->       sched: fix weight calculations
->...
+> lspci for the IDE interface:
+> 00:1f.1 IDE interface: Intel Corporation 82801EB/ER (ICH5/ICH5R) IDE
+> Controller (rev 02)
+> 00:1f.2 IDE interface: Intel Corporation 82801EB (ICH5) SATA Controller (rev
+> 02)
+> 
+> The kernel config used is on
+> http://sucs.org/~sits/test/kernel-config-20080508 .
 
-The commit description says:
+Check out the patch CC'd to you in another thread ("Re: [git patches] 
+libata updates[...]")
 
-<--  snip  -->
+	Jeff
 
-...
 
-This bug could be related to the regression reported by Yanmin Zhang:
-
-| Comparing with kernel 2.6.25, sysbench+mysql(oltp, readonly) has lots
-| of regressions with 2.6.26-rc1:
-|
-| 1) 8-core stoakley: 28%;
-| 2) 16-core tigerton: 20%;
-| 3) Itanium Montvale: 50%.
-
-Reported-by: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-...
-
-<--  snip  -->
-
-Can we get that verified and the description updated before it hits 
-Linus' tree?
-
-Otherwise this "could be related" will become unchangable metadata that 
-will stay forever - no matter whether there's any relation at all.
-
-Thanks
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
