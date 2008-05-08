@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765427AbYEHSUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765611AbYEHSWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765427AbYEHSUr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 14:20:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754742AbYEHSUj
+	id S1765611AbYEHSWy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 14:22:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbYEHSWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 14:20:39 -0400
-Received: from mx2.suse.de ([195.135.220.15]:43535 "EHLO mx2.suse.de"
+	Thu, 8 May 2008 14:22:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48278 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752894AbYEHSUi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 14:20:38 -0400
-Date: Thu, 8 May 2008 11:20:15 -0700
-From: Greg KH <gregkh@suse.de>
-To: Willy Tarreau <w@1wt.eu>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 00/16] Linux 2.6.25 -stable review
-Message-ID: <20080508182015.GA2115@suse.de>
-References: <20080508174122.GA855@suse.de> <20080508175140.GU8474@1wt.eu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080508175140.GU8474@1wt.eu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	id S1752514AbYEHSWo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 14:22:44 -0400
+Date: Thu, 8 May 2008 14:11:26 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Nadia.Derbey@bull.net
+Cc: manfred@colorfullife.com, paulmck@linux.vnet.ibm.com,
+       lnxninja@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       efault@gmx.de, akpm@linux-foundation.org,
+       Nadia Derbey <Nadia.Derbey@bull.net>
+Subject: Re: [PATCH 8/9] Call idr_find() without locking in ipc_lock()
+Message-ID: <20080508141126.7546649d@bree.surriel.com>
+In-Reply-To: <20080507113737.964082000@bull.net>
+References: <20080507113553.395937000@bull.net>
+	<20080507113737.964082000@bull.net>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 07:51:41PM +0200, Willy Tarreau wrote:
-> On Thu, May 08, 2008 at 10:41:22AM -0700, Greg KH wrote:
-> > This is the start of the stable review cycle for the 2.6.25.2 release.
-> (...)                                                  ^^^^^^^^
-> > The whole patch series can be found in one patch at:
-> > 	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.25.2-rc1.gz
->                                                              ^^^^^^^^
+On Wed, 07 May 2008 13:36:01 +0200
+Nadia.Derbey@bull.net wrote:
+
+> [PATCH 08/09]
 > 
-> warning Greg, you wrote 2.6.25.2 everywhere it seems. It should be .3.
+> This patch makes idr_find() called locklessly in ipc_lock(), since the idr
+> tree is now RCU protected.
+> 
+> Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
 
-Ugh, sorry, you are right.  I'll go move the patch file on kernel.org as
-well.
+Acked-by: Rik van Riel <riel@redhat.com>
 
-Need more coffee...
-
-greg k-h
+-- 
+All rights reversed.
