@@ -1,107 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758667AbYEHGRN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758111AbYEHG2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758667AbYEHGRN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 02:17:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754936AbYEHGQ4
+	id S1758111AbYEHG2u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 02:28:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754527AbYEHG2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 02:16:56 -0400
-Received: from mga01.intel.com ([192.55.52.88]:42398 "EHLO mga01.intel.com"
+	Thu, 8 May 2008 02:28:38 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:52733 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752792AbYEHGQz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 02:16:55 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,453,1204531200"; 
-   d="scan'208";a="562126104"
-Subject: Re: ACPI: kmemcheck: Caught 16-bit read from freed memory
-	(f7c12ec6)
-From: Lin Ming <ming.m.lin@intel.com>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Bob Moore <robert.moore@intel.com>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <19f34abd0805072305i19dc37bn3e13fbca4b6981e3@mail.gmail.com>
-References: <19f34abd0805060909q635d2d43j9414e5f179c9e22f@mail.gmail.com>
-	 <84144f020805061338yd6e3declaf5ff9ca344c28ba@mail.gmail.com>
-	 <19f34abd0805061346q4af7e4f8kd65009f8d3021d0e@mail.gmail.com>
-	 <4820C56C.6070204@cs.helsinki.fi>
-	 <19f34abd0805071221o236c8629ib184a4720f178e7b@mail.gmail.com>
-	 <1210224923.22503.8.camel@minggr.sh.intel.com>
-	 <19f34abd0805072305i19dc37bn3e13fbca4b6981e3@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 08 May 2008 14:12:25 +0800
-Message-Id: <1210227145.23183.7.camel@minggr.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
-Content-Transfer-Encoding: 7bit
+	id S1754449AbYEHG2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 02:28:36 -0400
+Date: Thu, 8 May 2008 09:27:15 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Greg KH <greg@kroah.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: linux-next: the purge :-)
+Message-ID: <20080508062715.GE14951@cs181133002.pp.htv.fi>
+References: <20080508112130.fd574b50.sfr@canb.auug.org.au> <20080508042753.GA6876@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080508042753.GA6876@kroah.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, May 07, 2008 at 09:27:53PM -0700, Greg KH wrote:
+> On Thu, May 08, 2008 at 11:21:30AM +1000, Stephen Rothwell wrote:
+> > Greg, you might consider setting up a subset (currently probably
+> > empty) of the ldp tree for drivers that are readier for integration.
+> 
+> Ok, fair enough, I totally understand.
+> 
+> I've now moved my trees around a bit, and would like it if you could
+> include the following, in this order (the # NEXT_BASE variable is set in
+> them to make sure things get ordered properly.)
+> 	driver-core.next
+> 	usb.next
+> 	driver-core
+> 	usb
+> 	ldp.next
+> 
+> The ".next" trees are what is going to Linus before the next major
+> release happens (bugfixes and new device ids at this point in time for
+> example.)  The other trees are what is going to go to Linus after the
+> next major kernel is out.
+>...
 
-On Thu, 2008-05-08 at 08:05 +0200, Vegard Nossum wrote:
-> Hello,
-> 
-> On Thu, May 8, 2008 at 7:35 AM, Lin Ming <ming.m.lin@intel.com> wrote:
-> > Here comes a simple patch that fixes the warning in my machine.
-> >
-> >  Vegard, would you please help to test it in your machine?
-> >
-> 
-> Thanks for the try, but unfortunately this does not solve the problem.
+So the "next" in your .next has the opposite meaning of the one in 
+linux-next?
 
-It's strange.
-In my machine, without this patch the warning shows up
-With this patch applied the waring goes away
+Can you name it .fixes instead to make it clearer?
 
-Would you please upload the acpidump file?
+> thanks,
+> 
+> greg k-h
 
-> 
-> Please note that kmemcheck is an patch to the kernel; without it you
-> will never see the warning. You can pull it from
-> git://git.kernel.org/pub/scm/linux/kernel/git/vegard/kmemcheck.git current
+cu
+Adrian
 
-Yes, I pulled the kmemcheck tree.
+-- 
 
-BTW, I like the kmemcheck patch, it's very useful :) Great work :)
-
-Lin Ming
-
-> though it is unlikely that it will help you more than looking at the
-> code (or the report) will do.
-> 
-> >  Thanks,
-> >  Lin Ming
-> >
-> >  Signed-off-by: Lin Ming <ming.m.lin@intel.com>
-> >  ---
-> >  diff --git a/drivers/acpi/parser/psargs.c b/drivers/acpi/parser/psargs.c
-> >  index f1e8bf6..ef55d24 100644
-> >  --- a/drivers/acpi/parser/psargs.c
-> >  +++ b/drivers/acpi/parser/psargs.c
-> >  @@ -268,7 +268,7 @@ acpi_ps_get_next_namepath(struct acpi_walk_state
-> >  *walk_state,
-> 
-> >          */
-> >         if (ACPI_SUCCESS(status) &&
-> >             possible_method_call && (node->type == ACPI_TYPE_METHOD)) {
-> >  -               if (walk_state->op->common.aml_opcode == AML_UNLOAD_OP) {
-> >  +               if (walk_state->op && walk_state->op->common.aml_opcode ==
-> >  AML_UNLOAD_OP) {
-> >                         /*
-> >                          * acpi_ps_get_next_namestring has increased the AML pointer,
-> >                          * so we need to restore the saved AML pointer for method call.
-> 
-> Also, noticing your change, I can see why it makes no difference:
-> Pekka already found that it is walk_state->op that has the value of
-> 0xf7c12ec6 (e.g. the pointer being dereferenced), so the test will
-> still succeed.
-> 
-> On the other hand, I have discovered what seems to be a deficiency in
-> kmemcheck (i.e. it might be my fault entirely), so it is possible that
-> the warning is bogus. Will send an update shortly.
-> 
-> 
-> Vegard
-> 
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
