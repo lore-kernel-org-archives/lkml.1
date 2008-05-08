@@ -1,51 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762450AbYEHKOv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762513AbYEHKRI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762450AbYEHKOv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 06:14:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757996AbYEHKOn
+	id S1762513AbYEHKRI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 06:17:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757342AbYEHKQz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 06:14:43 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:55447 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757771AbYEHKOm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 06:14:42 -0400
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Rene Herman <rene.herman@keyaccess.nl>,
-       Thomas Gleixner <tglx@linutronix.de>, Adrian Bunk <bunk@kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       Pavel Machek <pavel@suse.cz>
-Subject: Re: 2.6.26, PAT and AMD family 6
-From: Andi Kleen <andi@firstfloor.org>
-References: <48210A71.1060409@keyaccess.nl>
-	<86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com>
-	<20080507124650.GD29935@cs181133002.pp.htv.fi>
-	<alpine.LFD.1.10.0805072122270.3318@apollo.tec.linutronix.de>
-	<48221AE3.6020602@keyaccess.nl> <482233F0.7040000@zytor.com>
-	<48224318.8020209@keyaccess.nl> <48224361.5080102@zytor.com>
-	<alpine.LFD.1.10.0805071707150.3024@woody.linux-foundation.org>
-	<482249E4.2040102@zytor.com>
-Date: Thu, 08 May 2008 12:14:39 +0200
-In-Reply-To: <482249E4.2040102@zytor.com> (H. Peter Anvin's message of "Wed, 07 May 2008 17:31:32 -0700")
-Message-ID: <87d4nxayr4.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Thu, 8 May 2008 06:16:55 -0400
+Received: from gw.goop.org ([64.81.55.164]:41151 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757020AbYEHKQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 06:16:54 -0400
+Message-ID: <4822D30E.5010506@goop.org>
+Date: Thu, 08 May 2008 11:16:46 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 08 May 2008 10:07:42.0262 (UTC) FILETIME=[5A8A6560:01C8B0F3]
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>, Andi Kleen <ak@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH] call_usermodehelper_setup() should use GFP_KERNEL
+References: <20080508153337.0EEE.KOSAKI.MOTOHIRO@jp.fujitsu.com>	<4822AA6F.5040703@cn.fujitsu.com>	<20080508163039.0EF4.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080508012957.c778c8e7.akpm@linux-foundation.org>
+In-Reply-To: <20080508012957.c778c8e7.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@zytor.com> writes:
+Andrew Morton wrote:
+> On Thu, 08 May 2008 16:31:29 +0900 KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 >
-> Well, there *is* support for that - all the raw information is there
-> in /dev/cpu/*/cpuid.  There are other reasons why /proc/cpuinfo is the
-> wrong interface to try to get the "real" CPUID information - we only
-> report CPU features that the kernel knows about; bits we don't, if we
-> can decode them at all, we just don't show.
+>   
+>>> KOSAKI Motohiro wrote:
+>>>       
+>>>> Now, call_usermodehelper_setup() use GFP_ATOMIC.
+>>>> but it is slighly odd.
+>>>> because call_usermodehelper() is always called process context.
+>>>>
+>>>>         
+>>> Are you sure? I found the following call chain:
+>>>
+>>>   static irqreturn_t power_handler(int irq, void *dev_id)
+>>>   ->orderly_poweroff(true);
+>>>     ->call_usermodehelper_setup()
+>>>       
+>> sorry, you are right.
+>> I'll make patch again.
+>>     
+>
+> How many times do we have to make this mistake :(
+>
+> Only the caller knows what allocation mode the callee can use. 
+> call_usermodehelper_setup() should be extended to take a gfp_t argument.
+>   
 
-They are reported as numbers (assuming they are in the existing leaves)
+Yeah, but making the caller need to know about the internal 
+implementation details of the callee (ie, whether it needs to allocate 
+memory or not) leads to pretty warty interfaces.  In this case, you 
+could push the gfp_t up to the call_usermodehelper_setup() level, but 
+pushing it any higher wouldn't make much sense.
 
--Andi
+Not that I have a better answer.
+
+    J
