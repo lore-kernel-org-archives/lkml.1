@@ -1,175 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751254AbYEHEAK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753886AbYEHEDN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751254AbYEHEAK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 00:00:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbYEHD7y
+	id S1753886AbYEHEDN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 00:03:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750825AbYEHECy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 23:59:54 -0400
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:45524 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751154AbYEHD7v (ORCPT
+	Thu, 8 May 2008 00:02:54 -0400
+Received: from tama50.ecl.ntt.co.jp ([129.60.39.147]:49148 "EHLO
+	tama50.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750714AbYEHECv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 23:59:51 -0400
-Message-ID: <48227AAB.9000309@linux.vnet.ibm.com>
-Date: Thu, 08 May 2008 09:29:39 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: kernel list <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-       Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Pierre Peiffer <pierre.peiffer@bull.net>,
-       Nadia Derbey <Nadia.Derbey@bull.net>
-Subject: Re: [BUG] 2.6.26-rc1-git4 - task blocked on powerpc for more than
- 120 seconds
-References: <4821AD2D.8020001@linux.vnet.ibm.com> <20080507134057.GA30637@cs181133002.pp.htv.fi>
-In-Reply-To: <20080507134057.GA30637@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 8 May 2008 00:02:51 -0400
+To: James.Bottomley@HansenPartnership.com, jens.axboe@oracle.com
+Cc: fujita.tomonori@lab.ntt.co.jp, jesper.juhl@gmail.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: scsi_scan: WARNING: at include/linux/blkdev.h:431
+	blk_queue_init_tags+0x107/0x120()
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1210200026.3067.25.camel@localhost.localdomain>
+References: <alpine.LNX.1.00.0805020043130.1489@dragon.funnycrock.com>
+	<20080502111652T.tomof@acm.org>
+	<1210200026.3067.25.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20080508125532W.fujita.tomonori@lab.ntt.co.jp>
+Date: Thu, 08 May 2008 12:55:32 +0900
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Wed, May 07, 2008 at 06:52:53PM +0530, Kamalesh Babulal wrote:
->> While running the ltp over the powerpc with the 2.6.26-rc1-git4 kernel,
->> task get blocked for more 120 seconds and does not proceeds future.
->>
->> The task msgctl08 is a ipc testcase, which test the msgget(2) msgctl(2)
->> syscalls.
-> 
-> Thanks for your report.
-> 
-> I assume this is reproducible?
-> 
-> If yes, what was the last kernel that worked for you?
+On Wed, 07 May 2008 17:40:26 -0500
+James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 
-This is reproducible on 2.6.26-rc1 and 2.6.26-rc1-git(s). 2.6.25 is the last know kernel
-to work.
+> On Fri, 2008-05-02 at 11:17 +0900, FUJITA Tomonori wrote:
+> > On Fri, 2 May 2008 00:43:30 +0200 (CEST)
+> > Jesper Juhl <jesper.juhl@gmail.com> wrote:
+> > 
+> > > Hi,
+> > > 
+> > > For your information;
+> > > 
+> > > I just build and booted the tip of Linus' git tree (HEAD at 
+> > > 886c35fbcf6fb2eee15687efc2d64d99b6ad9a4a) and got this in dmesg during 
+> > > bootup : 
+> > > 
+> > > ------------[ cut here ]------------
+> > > WARNING: at include/linux/blkdev.h:431 blk_queue_init_tags+0x107/0x120()
+> > > Modules linked in:
+> > > Pid: 432, comm: scsi_scan_0 Not tainted 2.6.25-07351-g886c35f #1
+> > >  [<c0129684>] warn_on_slowpath+0x54/0x70
+> > >  [<c017a7c3>] ? check_object+0xe3/0x1f0
+> > >  [<c0200ae9>] ? init_tag_map+0x59/0xb0
+> > >  [<c014b1e7>] ? mark_held_locks+0x47/0x80
+> > >  [<c017cbeb>] ? __kmalloc+0x6b/0x100
+> > >  [<c014b379>] ? trace_hardirqs_on+0xb9/0x150
+> > >  [<c0200ae9>] ? init_tag_map+0x59/0xb0
+> > >  [<c0200ae9>] ? init_tag_map+0x59/0xb0
+> > >  [<c0200ae9>] ? init_tag_map+0x59/0xb0
+> > >  [<c0200c34>] ? __blk_queue_init_tags+0x24/0x70
+> > >  [<c0200c45>] ? __blk_queue_init_tags+0x35/0x70
+> > >  [<c0200e57>] blk_queue_init_tags+0x107/0x120
+> > >  [<c02b5a91>] ahc_platform_set_tags+0x191/0x1d0
+> > >  [<c02b5bd3>] ahc_linux_slave_configure+0x103/0x170
+> > >  [<c02a1f65>] scsi_probe_and_add_lun+0x6e5/0x920
+> > >  [<c02a2468>] __scsi_scan_target+0xe8/0x5d0
+> > >  [<c0108e17>] ? native_sched_clock+0x87/0xd0
+> > >  [<c0148c89>] ? get_lock_stats+0x29/0x50
+> > >  [<c0148cbd>] ? put_lock_stats+0xd/0x30
+> > >  [<c014b1e7>] ? mark_held_locks+0x47/0x80
+> > >  [<c035e247>] ? mutex_lock_nested+0x1b7/0x2a0
+> > >  [<c014b379>] ? trace_hardirqs_on+0xb9/0x150
+> > >  [<c035e23a>] ? mutex_lock_nested+0x1aa/0x2a0
+> > >  [<c02a2a1a>] ? scsi_scan_host_selected+0x3a/0xf0
+> > >  [<c02a29c0>] scsi_scan_channel+0x70/0x90
+> > >  [<c02a2a9d>] scsi_scan_host_selected+0xbd/0xf0
+> > >  [<c02a2b50>] ? do_scan_async+0x0/0x140
+> > >  [<c02a2b48>] do_scsi_scan_host+0x78/0x80
+> > >  [<c02a2b64>] do_scan_async+0x14/0x140
+> > >  [<c011f6e8>] ? complete+0x48/0x60
+> > >  [<c02a2b50>] ? do_scan_async+0x0/0x140
+> > >  [<c013c8d2>] kthread+0x42/0x70
+> > >  [<c013c890>] ? kthread+0x0/0x70
+> > >  [<c0103ceb>] kernel_thread_helper+0x7/0x1c
+> > 
+> > The problem is that the commit 75ad23b expects that we hold the queue
+> > lock for __blk_queue_free_tags, blk_queue_free_tags and
+> > blk_queue_init_tags but we haven't.
+> > 
+> > The simple fix is using queue_flag_set/clear_unlocked for them, then
+> > it should work as before. However, it would be better to hold the
+> > queue lock for blk_queue_free_tags and blk_queue_init_tags (we can
+> > hold the queue lock in scsi_activate_tcq and scsi_deactivate_tcq).
+> 
+> So is this the fix that everyone agrees on?  And if so, whose tree is it
+> going through (I tend to think block, since the original breakage came
+> from the block tree).
 
-> 
-> I've also added Pierre Peiffer and Nadia Derbey to the Cc since their 
-> recent ipc commits are my first suspects.
-> 
->> Machine is stuck in the task, printing the following call trace
->> more than 5000 times. The oom-killer invoked once in-between.
->>
->> INFO: task msgctl08:16248 blocked for more than 120 seconds.
->> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
->> Call Trace:
->> [c0000000762435a0] [0000000000000001] 0x1 (unreliable)
->> [c000000076243770] [c000000000010acc] .__switch_to+0x128/0x16c
->> [c000000076243800] [c0000000004b07a4] .schedule+0x7ac/0x890
->> [c0000000762438f0] [c0000000004b2ba4] .rwsem_down_failed_common+0x260/0x2b0
->> [c0000000762439b0] [c0000000004b2c60] .rwsem_down_read_failed+0x2c/0x44
->> [c000000076243a60] [c0000000004b1b84] .down_read+0x44/0x5c
->> [c000000076243af0] [c000000000295e10] .ipc_lock+0x34/0xe0
->> [c000000076243b90] [c00000000029690c] .ipc_lock_check+0x24/0x78
->> [c000000076243c20] [c0000000002972c0] .do_msgsnd+0xb0/0x3f8
->> [c000000076243d10] [c000000000293ce8] .compat_sys_msgsnd+0x94/0xc0
->> [c000000076243db0] [c000000000014418] .compat_sys_ipc+0x130/0x1f4
->> [c000000076243e30] [c000000000008734] syscall_exit+0x0/0x40
->> msgctl08 invoked oom-killer: gfp_mask=0x1200d2, order=0, oomkilladj=0
->> Call Trace:
->> [c00000001e1c7640] [c0000000000101bc] .show_stack+0x70/0x1bc (unreliable)
->> [c00000001e1c76f0] [c0000000000c2c78] .oom_kill_process+0x78/0x230
->> [c00000001e1c77a0] [c0000000000c3390] .out_of_memory+0x28c/0x320
->> [c00000001e1c7870] [c0000000000c70ac] .__alloc_pages_internal+0x364/0x468
->> [c00000001e1c7980] [c0000000000e83cc] .alloc_page_vma+0x120/0x14c
->> [c00000001e1c7a20] [c0000000000e0224] .read_swap_cache_async+0x7c/0x160
->> [c00000001e1c7ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
->> [c00000001e1c7ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
->> [c00000001e1c7c80] [c0000000004b5054] .do_page_fault+0x440/0x624
->> [c00000001e1c7e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
->> Mem-info:
->> Node 0 DMA per-cpu:
->> CPU    0: hi:    6, btch:   1 usd:   1
->> CPU    1: hi:    6, btch:   1 usd:   1
->> Node 1 DMA per-cpu:
->> CPU    0: hi:    6, btch:   1 usd:   5
->> CPU    1: hi:    6, btch:   1 usd:   5
->> Active:31 inactive:2628 dirty:1 writeback:6 unstable:0
->>  free:156 slab:13071 mapped:548 pagetables:41109 bounce:0
->> Node 0 DMA free:5312kB min:5760kB low:7168kB high:8640kB active:1024kB inactive:768kB present:3928832kB pages_scanned:3912 all_unreclaimable? no
->> lowmem_reserve[]: 0 0 0
->> Node 1 DMA free:4672kB min:4992kB low:6208kB high:7488kB active:960kB inactive:169792kB present:3404992kB pages_scanned:140140 all_unreclaimable? no
->> lowmem_reserve[]: 0 0 0
->> Node 0 DMA: 5*64kB 15*128kB 2*256kB 1*512kB 0*1024kB 1*2048kB 0*4096kB 0*8192kB 0*16384kB = 5312kB
->> Node 1 DMA: 8*64kB 5*128kB 6*256kB 0*512kB 0*1024kB 1*2048kB 0*4096kB 0*8192kB 0*16384kB = 4736kB
->> 8185 total pagecache pages
->> Swap cache: add 29545, delete 21888, find 5602/10373
->> Free swap  = 803712kB
->> Total swap = 2048128kB
->> 114688 pages of RAM
->> 766 reserved pages
->> 231218 pages shared
->> 7657 pages swap cached
->> Out of memory: kill process 15371 (msgctl08) score 39223 or a child
->> Killed process 15373 (msgctl08)
->> INFO: task msgctl08:15385 blocked for more than 120 seconds.
->> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
->> Call Trace:
->> [c0000000e9a43290] [0000000000000001] 0x1 (unreliable)
->> [c0000000e9a43460] [c000000000010acc] .__switch_to+0x128/0x16c
->> [c0000000e9a434f0] [c0000000004b07a4] .schedule+0x7ac/0x890
->> [c0000000e9a435e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
->> [c0000000e9a43670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
->> [c0000000e9a43750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
->> [c0000000e9a43800] [c0000000002d6624] .generic_make_request+0x35c/0x3b0
->> [c0000000e9a438e0] [c0000000002d81b0] .submit_bio+0x118/0x140
->> [c0000000e9a439a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
->> [c0000000e9a43a20] [c0000000000e02b8] .read_swap_cache_async+0x110/0x160
->> [c0000000e9a43ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
->> [c0000000e9a43ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
->> [c0000000e9a43c80] [c0000000004b5054] .do_page_fault+0x440/0x624
->> [c0000000e9a43e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
->> INFO: task msgctl08:15405 blocked for more than 120 seconds.
->> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
->> Call Trace:
->> [c0000000b1757290] [0000000000000001] 0x1 (unreliable)
->> [c0000000b1757460] [c000000000010acc] .__switch_to+0x128/0x16c
->> [c0000000b17574f0] [c0000000004b07a4] .schedule+0x7ac/0x890
->> [c0000000b17575e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
->> [c0000000b1757670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
->> [c0000000b1757750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
->> [c0000000b1757800] [c0000000002d6624] .generic_make_request+0x35c/0x3b0
->> [c0000000b17578e0] [c0000000002d81b0] .submit_bio+0x118/0x140
->> [c0000000b17579a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
->> [c0000000b1757a20] [c0000000000e02b8] .read_swap_cache_async+0x110/0x160
->> [c0000000b1757ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
->> [c0000000b1757ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
->> [c0000000b1757c80] [c0000000004b5054] .do_page_fault+0x440/0x624
->> [c0000000b1757e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
->> INFO: task msgctl08:15406 blocked for more than 120 seconds.
->> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
->> Call Trace:
->> [c0000000eec53290] [0000000000000001] 0x1 (unreliable)
->> [c0000000eec53460] [c000000000010acc] .__switch_to+0x128/0x16c
->> [c0000000eec534f0] [c0000000004b07a4] .schedule+0x7ac/0x890
->> [c0000000eec535e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
->> [c0000000eec53670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
->> [c0000000eec53750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
->> [c0000000eec53800] [c0000000002d6624] .generic_make_request+0x35c/0x3b0
->> [c0000000eec538e0] [c0000000002d81b0] .submit_bio+0x118/0x140
->> [c0000000eec539a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
->> [c0000000eec53a20] [c0000000000e02b8] .read_swap_cache_async+0x110/0x160
->> [c0000000eec53ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
->> [c0000000eec53ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
->> [c0000000eec53c80] [c0000000004b5054] .do_page_fault+0x440/0x624
->> [c0000000eec53e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
->> -- 
->> Thanks & Regards,
->> Kamalesh Babulal,
->> Linux Technology Center,
->> IBM, ISTL.
-> 
-> cu
-> Adrian
+The patch is fine from the perspective of the SCSI mid-layer. But it
+would be not from the perspective of the block layer. For example,
+blk_queue_init_tags is expected to be called with holding the queue
+lock (since it could call blk_queue_resize_tags internally) though
+only the SCSI mid-layer uses those APIs for now.
+
+Jens, what do you think?
+
+For your convenience, here's the same patch with a proper description
+and my signed-off.
 
 
+==
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH] block: fix the queue locking test on tag APIs
+
+The commit 75ad23bc0fcb4f992a5d06982bf0857ab1738e9e expects that
+ __blk_queue_free_tags, blk_queue_free_tags and blk_queue_init_tags
+are called with holding the queue lock but the SCSI mid-layer has not
+(and only the SCSI mid-layer uses them).
+
+This changes them to use queue_flag_set/clear_unlocked. It should work
+as before.
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+---
+ block/blk-tag.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/block/blk-tag.c b/block/blk-tag.c
+index de64e04..d4e21cd 100644
+--- a/block/blk-tag.c
++++ b/block/blk-tag.c
+@@ -70,7 +70,7 @@ void __blk_queue_free_tags(struct request_queue *q)
+ 	__blk_free_tags(bqt);
+ 
+ 	q->queue_tags = NULL;
+-	queue_flag_clear(QUEUE_FLAG_QUEUED, q);
++	queue_flag_clear_unlocked(QUEUE_FLAG_QUEUED, q);
+ }
+ 
+ /**
+@@ -98,7 +98,7 @@ EXPORT_SYMBOL(blk_free_tags);
+  **/
+ void blk_queue_free_tags(struct request_queue *q)
+ {
+-	queue_flag_clear(QUEUE_FLAG_QUEUED, q);
++	queue_flag_clear_unlocked(QUEUE_FLAG_QUEUED, q);
+ }
+ EXPORT_SYMBOL(blk_queue_free_tags);
+ 
+@@ -197,7 +197,7 @@ int blk_queue_init_tags(struct request_queue *q, int depth,
+ 	 * assign it, all done
+ 	 */
+ 	q->queue_tags = tags;
+-	queue_flag_set(QUEUE_FLAG_QUEUED, q);
++	queue_flag_set_unlocked(QUEUE_FLAG_QUEUED, q);
+ 	INIT_LIST_HEAD(&q->tag_busy_list);
+ 	return 0;
+ fail:
 -- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+1.5.3.6
+
