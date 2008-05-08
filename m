@@ -1,42 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755193AbYEHEyM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754722AbYEHEzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755193AbYEHEyM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 00:54:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751731AbYEHEx6
+	id S1754722AbYEHEzY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 00:55:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbYEHEzH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 00:53:58 -0400
-Received: from vigor.karmaclothing.net ([217.169.26.28]:36702 "EHLO
-	dl5rb.ham-radio-op.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751268AbYEHEx5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 00:53:57 -0400
-Date: Thu, 8 May 2008 05:51:06 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Jean Delvare <khali@linux-fr.org>, Alessandro Zummo <a.zummo@towertech.it>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, rtc-linux@googlegroups.com,
-       i2c@lm-sensors.org, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 2/4] RTC: SWARM I2C board initialization
-Message-ID: <20080508045106.GB25531@linux-mips.org>
-References: <Pine.LNX.4.55.0805070031410.16173@cliff.in.clinika.pl> <20080507085953.2c08b854@hyperion.delvare> <Pine.LNX.4.55.0805072145040.25644@cliff.in.clinika.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.55.0805072145040.25644@cliff.in.clinika.pl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 8 May 2008 00:55:07 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44361 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751731AbYEHEzF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 00:55:05 -0400
+Date: Thu, 8 May 2008 00:54:15 -0400
+From: Rik van Riel <riel@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: lee.schermerhorn@hp.com, akpm@linux-foundation.org,
+       kosaki.motohiro@jp.fujitsu.com
+Subject: Re: [PATCH -mm 00/15] VM pageout scalability improvements (V6)
+Message-ID: <20080508005415.73e611b9@bree.surriel.com>
+In-Reply-To: <20080428181835.502876582@redhat.com>
+References: <20080428181835.502876582@redhat.com>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 07, 2008 at 10:13:23PM +0100, Maciej W. Rozycki wrote:
+On Mon, 28 Apr 2008 14:18:35 -0400
+Rik van Riel <riel@redhat.com> wrote:
 
->  Ralf -- what do you think about the Makefile changes?  I can send you a 
-> separate patch which will reduce the span of this one.
+> On large memory systems, the VM can spend way too much time scanning
+> through pages that it cannot (or should not) evict from memory. Not
+> only does it use up CPU time, but it also provokes lock contention
+> and can leave large systems under memory presure in a catatonic state.
 
-I like it; we maybe should consider getting rid of most of the libs-* stuff
-in arch/mips/Makefile.  Some of it might be causing subtle bugs such as
-routines exported to modules not getting linked into the kernel proper.
+> This patch series improves VM scalability by:
 
-  Ralf
+> An all-in-one patch can be found at:
+> 
+> 	http://people.redhat.com/riel/splitvm/
+
+I have prepared kernel RPMs with the split LRU patch series and
+made them available at the above URL.  The kernel packages are
+based on the 2.6.25 Fedora 9 kernel RPM.
+
+-- 
+All rights reversed.
