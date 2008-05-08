@@ -1,78 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761717AbYEHNWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760780AbYEHNZP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761717AbYEHNWQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 09:22:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbYEHNV6
+	id S1760780AbYEHNZP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 09:25:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753885AbYEHNZA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 09:21:58 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38003 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754057AbYEHNV5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 09:21:57 -0400
-Date: Thu, 8 May 2008 09:07:59 -0400
-From: Josef Bacik <jbacik@redhat.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: trond.myklebust@fys.uio.no, npiggin@suse.de, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: NFS infinite loop in filemap_fault()
-Message-ID: <20080508130759.GA30499@unused.rdu.redhat.com>
-References: <E1JtqLW-0005j5-KU@pomaz-ex.szeredi.hu> <E1JtzuH-0006nY-AM@pomaz-ex.szeredi.hu>
+	Thu, 8 May 2008 09:25:00 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:43311 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752939AbYEHNY7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 09:24:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=fIRzPUoze6+sIKglbWWjHEwLCxht1TIqyTyng+1IcSlDcoC+kurdYs0LEXfB8nnntx17EwVnDb6v2ST4mEFOEUvimYxCNQToQ3kVfwgFUJvm2aOL4qklR82t3d9IFePKG2ST0XQbjHawJ5/FnsIvarngvQiCWF9VucjpTUV0XlY=
+Message-ID: <84144f020805080624x4f8ed022k7ce95af153a83d47@mail.gmail.com>
+Date: Thu, 8 May 2008 16:24:58 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: JosephChan@via.com.tw
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/9] viafb: VIA Frame Buffer Device Driver - Resend
+Cc: akpm@linux-foundation.org, krzysztof.h1@poczta.fm, geert@linux-m68k.org,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67855@exchtp03.taipei.via.com.tw>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <E1JtzuH-0006nY-AM@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <20080507140357.9320dfcd.akpm@linux-foundation.org>
+	 <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67855@exchtp03.taipei.via.com.tw>
+X-Google-Sender-Auth: 6eb2b4fc2191417b
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 08:47:09AM +0200, Miklos Szeredi wrote:
-> > Page fault on NFS apparently goes into an infinite loop if the read on
-> > the server fails.
-> > 
-> > I don't understand the NFS readpage code, but the filemap_fault() code
-> > looks somewhat suspicious:
-> > 
-> > 	/*
-> > 	 * Umm, take care of errors if the page isn't up-to-date.
-> > 	 * Try to re-read it _once_. We do this synchronously,
-> > 	 * because there really aren't any performance issues here
-> > 	 * and we need to check for errors.
-> > 	 */
-> > 	ClearPageError(page);
-> > 	error = mapping->a_ops->readpage(file, page);
-> > 	page_cache_release(page);
-> > 
-> > 	if (!error || error == AOP_TRUNCATED_PAGE)
-> > 		goto retry_find;
-> > 
-> > The comment doesn't seem to match what the it actually does: if
-> > ->readpage() is asynchronous, then this will just repeat everything,
-> > without any guarantee that it will re-read once.
-> 
-> This patch fixes it.  It's probably wrong in some subtle way though...
-> 
-> Miklos
-> 
-> 
-> ---
->  mm/filemap.c |    6 ++++++
->  1 file changed, 6 insertions(+)
-> 
-> Index: linux.git/mm/filemap.c
-> ===================================================================
-> --- linux.git.orig/mm/filemap.c	2008-05-08 08:17:22.000000000 +0200
-> +++ linux.git/mm/filemap.c	2008-05-08 08:19:59.000000000 +0200
-> @@ -1461,6 +1461,12 @@ page_not_uptodate:
->  	 */
->  	ClearPageError(page);
->  	error = mapping->a_ops->readpage(file, page);
-> +	if (!error && !PageUptodate(page)) {
+On Thu, May 8, 2008 at 3:58 AM,  <JosephChan@via.com.tw> wrote:
+> I will check the the scripts/checkpatch.pl after the codes are modified.
+>
+> About the subject, that's my carelessness and I will correct them by your recommendation next time.
+>
+> In addition, should I resend the patches after they are modified? Thanks.
 
-Shouldn't you have (!error || error != AOP_TRUNCATED_PAGE), since the fs can
-return AOP_TRUNCATED_PAGE if it needs vfs to try the readpage again?  Things
-like OCFS2/GFS2 do this, they send of a lock request and return
-AOP_TRUNCATED_PAGE so that when we come back into readpage we are already
-holding our lock without blocking while holding the page lock.  Thanks,
-
-Josef
+Yes please.
