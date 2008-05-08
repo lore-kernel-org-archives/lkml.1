@@ -1,62 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932586AbYEHR5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932664AbYEHSAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932586AbYEHR5d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 13:57:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765525AbYEHR5L
+	id S932664AbYEHSAf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 14:00:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358AbYEHSAY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 13:57:11 -0400
-Received: from wolverine01.qualcomm.com ([199.106.114.254]:28957 "EHLO
-	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765307AbYEHR5G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 13:57:06 -0400
-X-IronPort-AV: E=McAfee;i="5200,2160,5291"; a="2989006"
-Message-ID: <48233EEB.1010807@qualcomm.com>
-Date: Thu, 08 May 2008 10:56:59 -0700
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Paul Jackson <pj@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       menage@google.com, seto.hidetoshi@jp.fujitsu.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, oleg@tv-sign.ru,
-       rostedt@goodmis.org, rientjes@google.com
-Subject: Re: Reverting per-cpuset "system" (IRQ affinity) patch
-References: <48210101.1070205@google.com>	 <20080506183138.546f42d9.akpm@linux-foundation.org>	 <20080506204054.564fff32.pj@sgi.com> <20080506223859.0b4fa876.pj@sgi.com>	 <20080506204444.f4c38d0a.akpm@linux-foundation.org>	 <20080506225228.d42630cf.pj@sgi.com> <1210142681.13978.166.camel@twins>
-In-Reply-To: <1210142681.13978.166.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 8 May 2008 14:00:24 -0400
+Received: from 1wt.eu ([62.212.114.60]:4223 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752996AbYEHSAX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 14:00:23 -0400
+Date: Thu, 8 May 2008 19:51:41 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 00/16] Linux 2.6.25 -stable review
+Message-ID: <20080508175140.GU8474@1wt.eu>
+References: <20080508174122.GA855@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080508174122.GA855@suse.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 08, 2008 at 10:41:22AM -0700, Greg KH wrote:
+> This is the start of the stable review cycle for the 2.6.25.2 release.
+(...)                                                  ^^^^^^^^
+> The whole patch series can be found in one patch at:
+> 	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.25.2-rc1.gz
+                                                             ^^^^^^^^
 
+warning Greg, you wrote 2.6.25.2 everywhere it seems. It should be .3.
 
-Peter Zijlstra wrote:
-> On Tue, 2008-05-06 at 22:52 -0500, Paul Jackson wrote:
->> Andrew wrote:
->>> Don't worry about it.  I sorted out things locally and I expect that
->>> Stephen will be able to as well.
->> Ok ...
->>
->> I hesitate more than I should some times to NAQ patches,
->> but the more I think about this one, the less willing I
->> am to have a per-cpuset file called "system".
->>
->> I'm not sure what "sorted out" means ... I'll wait and see.
->>
->> Thanks, Andrew.
->>
->> Sorry, Max, Peter and Ingo ... we really had not arrived at
->> agreement on this one.
-> 
-> No problem, I've been meaning to redo this whole series but somehow
-> stuff got in the way and I never got around to it :-/
+Willy
 
-I'm actually totally surprised that it got in. Ingo applied Peter's initial
-patch to his sched-devel tree but then ignored follow up patches with fixes
-and stuff from me (I'm assuming that was  because we started discussion
-alternative options).
-Anyway, my vote goes for reverting these series.
-
-Max
