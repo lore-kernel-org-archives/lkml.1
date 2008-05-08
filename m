@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933236AbYEHRtP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933349AbYEHRtg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933236AbYEHRtP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 13:49:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764710AbYEHRnv
+	id S933349AbYEHRtg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 13:49:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755431AbYEHRnz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 13:43:51 -0400
-Received: from mail.suse.de ([195.135.220.2]:47836 "EHLO mx1.suse.de"
+	Thu, 8 May 2008 13:43:55 -0400
+Received: from mx2.suse.de ([195.135.220.15]:33551 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764489AbYEHRnt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 13:43:49 -0400
-Date: Thu, 8 May 2008 10:42:24 -0700
+	id S1764815AbYEHRny (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 13:43:54 -0400
+Date: Thu, 8 May 2008 10:42:26 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,18 +20,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Michal Schmidt <mschmidt@redhat.com>,
-       Andy Gospodarek <andy@greyhouse.net>, john.cagle@hp.com,
-       Greg KH <greg@kroah.com>, Matt Domsch <Matt_Domsch@dell.com>
-Subject: [patch 12/16] x86 PCI: call dmi_check_pciprobe()
-Message-ID: <20080508174224.GM855@suse.de>
+       Herbert Xu <herbert@gondor.apana.org.au>
+Subject: [patch 13/16] CRYPTO: api: Fix scatterwalk_sg_chain
+Message-ID: <20080508174226.GN855@suse.de>
 References: <20080508173436.454278564@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-pci-call-dmi_check_pciprobe.patch"
+Content-Disposition: inline; filename="crypto-api-fix-scatterwalk_sg_chain.patch"
 In-Reply-To: <20080508174122.GA855@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,98 +37,49 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Yinghai Lu <yhlu.kernel@gmail.com>
+From: Herbert Xu <herbert@gondor.apana.org.au>
 
-This is a backport of the noted commit which is in 2.6.26-rc1
-now.  This is necessary to enable pci=bfsort automatically on a number
-of Dell and HP servers, as well as pci=assign-busses for a few other
-systems, which was broken between 2.6.22 and 2.6.23.
+[CRYPTO] api: Fix scatterwalk_sg_chain
 
-commit 0df18ff366853cdf31e5238764ec5c63e6b5a398 upstream
+[ Upstream commit: 8ec970d8561abb5645d4602433b772e268c96d05 ]
 
-x86 PCI: call dmi_check_pciprobe()
+When I backed out of using the generic sg chaining (as it isn't currently
+portable) and introduced scatterwalk_sg_chain/scatterwalk_sg_next I left
+out the sg_is_last check in the latter.  This causes it to potentially
+dereference beyond the end of the sg array.
 
-this change:
+As most uses of scatterwalk_sg_next are bound by an overall length, this
+only affected the chaining code in authenc and eseqiv. Thanks to Patrick
+McHardy for identifying this problem.
 
-| commit 08f1c192c3c32797068bfe97738babb3295bbf42
-| Author: Muli Ben-Yehuda <muli@il.ibm.com>
-| Date:   Sun Jul 22 00:23:39 2007 +0300
-|
-|    x86-64: introduce struct pci_sysdata to facilitate sharing of ->sysdata
-|
-|    This patch introduces struct pci_sysdata to x86 and x86-64, and
-|    converts the existing two users (NUMA, Calgary) to use it.
-|
-|    This lays the groundwork for having other users of sysdata, such as
-|    the PCI domains work.
-|
-|    The Calgary bits are tested, the NUMA bits just look ok.
+This patch also clears the "last" bit on the head of the chained list as
+it's no longer last.  This also went missing in scatterwalk_sg_chain and
+is present in sg_chain.
 
-replaces pcibios_scan_root with pci_scan_bus_parented...
-
-but in pcibios_scan_root we have a DMI check:
-
-dmi_check_system(pciprobe_dmi_table);
-
-when when have several peer root buses this could be called multiple
-times (which is bad), so move that call to pci_access_init().
-
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
-Signed-off-by: Matt Domsch <Matt_Domsch@dell.com>
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 
 ---
- arch/x86/pci/common.c |    7 +++++--
- arch/x86/pci/init.c   |    2 ++
- arch/x86/pci/pci.h    |    2 ++
- 3 files changed, 9 insertions(+), 2 deletions(-)
+ include/crypto/scatterwalk.h |    4 ++++
+ 1 file changed, 4 insertions(+)
 
---- a/arch/x86/pci/common.c
-+++ b/arch/x86/pci/common.c
-@@ -372,13 +372,16 @@ static struct dmi_system_id __devinitdat
- 	{}
- };
- 
-+void __init dmi_check_pciprobe(void)
-+{
-+	dmi_check_system(pciprobe_dmi_table);
-+}
-+
- struct pci_bus * __devinit pcibios_scan_root(int busnum)
+--- a/include/crypto/scatterwalk.h
++++ b/include/crypto/scatterwalk.h
+@@ -57,10 +57,14 @@ static inline void scatterwalk_sg_chain(
+ 					struct scatterlist *sg2)
  {
- 	struct pci_bus *bus = NULL;
- 	struct pci_sysdata *sd;
- 
--	dmi_check_system(pciprobe_dmi_table);
--
- 	while ((bus = pci_find_next_bus(bus)) != NULL) {
- 		if (bus->number == busnum) {
- 			/* Already scanned */
---- a/arch/x86/pci/init.c
-+++ b/arch/x86/pci/init.c
-@@ -32,6 +32,8 @@ static __init int pci_access_init(void)
- 		printk(KERN_ERR
- 		"PCI: Fatal: No config space access function found\n");
- 
-+ 	dmi_check_pciprobe();
-+
- 	return 0;
+ 	sg_set_page(&sg1[num - 1], (void *)sg2, 0, 0);
++	sg1[num - 1].page_link &= ~0x02;
  }
- arch_initcall(pci_access_init);
---- a/arch/x86/pci/pci.h
-+++ b/arch/x86/pci/pci.h
-@@ -39,6 +39,8 @@ enum pci_bf_sort_state {
- 	pci_dmi_bf,
- };
  
-+extern void __init dmi_check_pciprobe(void);
+ static inline struct scatterlist *scatterwalk_sg_next(struct scatterlist *sg)
+ {
++	if (sg_is_last(sg))
++		return NULL;
 +
- /* pci-i386.c */
+ 	return (++sg)->length ? sg : (void *)sg_page(sg);
+ }
  
- extern unsigned int pcibios_max_latency;
 
 -- 
