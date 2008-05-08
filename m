@@ -1,66 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764396AbYEHRNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765223AbYEHRN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764396AbYEHRNe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 13:13:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755823AbYEHRNZ
+	id S1765223AbYEHRN6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 13:13:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764708AbYEHRNp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 13:13:25 -0400
-Received: from rtsoft2.corbina.net ([85.21.88.2]:51739 "HELO
-	mail.dev.rtsoft.ru" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with SMTP id S1755351AbYEHRNY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 13:13:24 -0400
-Date: Thu, 8 May 2008 21:13:20 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Andres Salomon <dilinger@queued.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, cbou@mail.ru,
-       linux-kernel@vger.kernel.org, dwmw2@infradead.org, richard@laptop.org
-Subject: Re: [PATCH] power_supply: support CHARGE_NOW in OLPC battery
-Message-ID: <20080508171320.GA8226@polina.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20080508003454.722ba511@ephemeral> <20080508105145.GA32017@polina.dev.rtsoft.ru> <20080508130102.3218f1e9@ephemeral>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20080508130102.3218f1e9@ephemeral>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 8 May 2008 13:13:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50530 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764694AbYEHRNo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 13:13:44 -0400
+Date: Thu, 8 May 2008 13:12:54 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Nadia.Derbey@bull.net
+Cc: manfred@colorfullife.com, paulmck@linux.vnet.ibm.com,
+       lnxninja@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       efault@gmx.de, akpm@linux-foundation.org,
+       Nadia Derbey <Nadia.Derbey@bull.net>
+Subject: Re: [PATCH 1/9] Change the idr structure
+Message-ID: <20080508131254.311b3772@bree.surriel.com>
+In-Reply-To: <20080507113735.137310000@bull.net>
+References: <20080507113553.395937000@bull.net>
+	<20080507113735.137310000@bull.net>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 01:01:02PM -0400, Andres Salomon wrote:
-> Ok, CC'ing Richard as I should've done in the first place...
-[...]
-> > > +	case POWER_SUPPLY_PROP_CHARGE_NOW:
-> > > +		ret = olpc_ec_cmd(EC_BAT_ACR, NULL, 0, (void
-> > > *)&ec_word, 2);
-> > > +		if (ret)
-> > > +			return ret;
-> > > +
-> > > +		val->intval = be16_to_cpu(ec_word);
-> > 
-> > But you didn't convert it to the uAh, I think you should.
+On Wed, 07 May 2008 13:35:54 +0200
+Nadia.Derbey@bull.net wrote:
+
+> [PATCH 01/09]
 > 
+> This patch adds an rcu_head to the idr_layer structure in order to free it
+> after a grace period.
 > 
-> We have logic in userspace that converts ACR to a useful number; for
-> our purposes, we'd just like to read the raw ACR values.
+> Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
 
-No. The purpose of power supply class is to report values in common
-units. Not some random value that userspace then should guess how to
-compute.
-
-> Perhaps CHARGE_NOW is the wrong thing to be using, if we can't get
-> uAh and CHARGE_* requires that unit.
-
-I don't think that converting X * uAh or uAh / Y to uAh is impossible.
-I'd suggest you to convert the ACR value to uAh using fractions, see
-ds2760_battery.c. Even if the final value losing precision a bit, it is
-still useful to do CHARGE_NOW.
-
-Of course, additionally you can create your own private attribute
-which reports raw value, if this is anyhow useful.
+Acked-by: Rik van Riel <riel@redhat.com>
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+All rights reversed.
