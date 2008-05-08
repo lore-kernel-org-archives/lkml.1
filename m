@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758813AbYEHC5K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758816AbYEHDKw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758813AbYEHC5K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 22:57:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754883AbYEHC44
+	id S1758816AbYEHDKw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 23:10:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753660AbYEHDKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 22:56:56 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:47082
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753778AbYEHC4y (ORCPT
+	Wed, 7 May 2008 23:10:38 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45511 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753405AbYEHDKg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 22:56:54 -0400
-Date: Thu, 8 May 2008 04:56:52 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, steiner@sgi.com, holt@sgi.com,
+	Wed, 7 May 2008 23:10:36 -0400
+Date: Wed, 7 May 2008 20:10:33 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrea Arcangeli <andrea@qumranet.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, steiner@sgi.com, holt@sgi.com,
        npiggin@suse.de, a.p.zijlstra@chello.nl,
        kvm-devel@lists.sourceforge.net, kanojsarcar@yahoo.com,
        rdreier@cisco.com, swise@opengridcomputing.com,
@@ -22,34 +23,26 @@ Cc: Andrew Morton <akpm@linux-foundation.org>, steiner@sgi.com, holt@sgi.com,
        aliguori@us.ibm.com, chrisw@redhat.com, marcelo@kvack.org,
        dada1@cosmosbay.com, paulmck@us.ibm.com
 Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
-Message-ID: <20080508025652.GW8276@duo.random>
-References: <alpine.LFD.1.10.0805071349200.3024@woody.linux-foundation.org> <20080507212650.GA8276@duo.random> <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org> <20080507222205.GC8276@duo.random> <20080507153103.237ea5b6.akpm@linux-foundation.org> <20080507224406.GI8276@duo.random> <20080507155914.d7790069.akpm@linux-foundation.org> <20080507233953.GM8276@duo.random> <alpine.LFD.1.10.0805071757520.3024@woody.linux-foundation.org> <Pine.LNX.4.64.0805071809170.14935@schroedinger.engr.sgi.com>
+In-Reply-To: <20080508025652.GW8276@duo.random>
+Message-ID: <Pine.LNX.4.64.0805072009230.15543@schroedinger.engr.sgi.com>
+References: <alpine.LFD.1.10.0805071349200.3024@woody.linux-foundation.org>
+ <20080507212650.GA8276@duo.random> <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org>
+ <20080507222205.GC8276@duo.random> <20080507153103.237ea5b6.akpm@linux-foundation.org>
+ <20080507224406.GI8276@duo.random> <20080507155914.d7790069.akpm@linux-foundation.org>
+ <20080507233953.GM8276@duo.random> <alpine.LFD.1.10.0805071757520.3024@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0805071809170.14935@schroedinger.engr.sgi.com>
+ <20080508025652.GW8276@duo.random>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0805071809170.14935@schroedinger.engr.sgi.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 07, 2008 at 06:12:32PM -0700, Christoph Lameter wrote:
-> Andrea's mm_lock could have wider impact. It is the first effective 
-> way that I have seen of temporarily holding off reclaim from an address 
-> space. It sure is a brute force approach.
+On Thu, 8 May 2008, Andrea Arcangeli wrote:
 
-The only improvement I can imagine on mm_lock, is after changing the
-name to global_mm_lock() to reestablish the signal_pending check in
-the loop that takes the spinlock and to backoff and put the cap to 512
-vmas so the ram wasted on anon-vmas wouldn't save more than 10-100usec
-at most (plus the vfree that may be a bigger cost but we're ok to pay
-it and it surely isn't security related).
+> to the sort function to break the loop. After that we remove the 512
+> vma cap and mm_lock is free to run as long as it wants like
+> /dev/urandom, nobody can care less how long it will run before
+> returning as long as it reacts to signals.
 
-Then on the long term we need to talk to Matt on returning a parameter
-to the sort function to break the loop. After that we remove the 512
-vma cap and mm_lock is free to run as long as it wants like
-/dev/urandom, nobody can care less how long it will run before
-returning as long as it reacts to signals.
-
-This is the right way if we want to support XPMEM/GRU efficiently and
-without introducing unnecessary regressions in the VM fastpaths and VM
-footprint.
+Look Linus has told you what to do. Why not simply do it?
