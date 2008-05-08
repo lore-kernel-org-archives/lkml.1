@@ -1,25 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757584AbYEHI1h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758285AbYEHI3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757584AbYEHI1h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 04:27:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752905AbYEHI1V
+	id S1758285AbYEHI3S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 04:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbYEHI24
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 04:27:21 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:32943 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751091AbYEHI1R (ORCPT
+	Thu, 8 May 2008 04:28:56 -0400
+Received: from mtagate2.uk.ibm.com ([195.212.29.135]:6522 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752991AbYEHI2y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 04:27:17 -0400
-Date: Thu, 8 May 2008 01:27:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Bart Van Assche" <bart.vanassche@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Moore, Eric Dean" <Eric.Moore@lsi.com>, linux-scsi@vger.kernel.org
-Subject: Re: Strange mptbase / mptscsih kernel messages
-Message-Id: <20080508012712.2d714dcf.akpm@linux-foundation.org>
-In-Reply-To: <e2e108260805072336p6b29f11o287ac3c5cab9295a@mail.gmail.com>
-References: <e2e108260805072336p6b29f11o287ac3c5cab9295a@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 8 May 2008 04:28:54 -0400
+Date: Thu, 8 May 2008 10:28:44 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: Greg KH <gregkh@suse.de>, Benjamin Thery <benjamin.thery@bull.net>,
+       linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
+       Al Viro <viro@ftp.linux.org.uk>, Daniel Lezcano <dlezcano@fr.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org
+Subject: Re: [PATCH 10/11] avoid kobject name conflict with different
+ namespaces
+Message-ID: <20080508102844.25642ef7@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <m1hcd9esxo.fsf@frodo.ebiederm.org>
+References: <20080506173030.653828076@theryb.frec.bull.fr>
+	<20080506173335.922289888@theryb.frec.bull.fr>
+	<m13aoueyq8.fsf@frodo.ebiederm.org>
+	<20080507190838.GA4467@suse.de>
+	<m1hcd9esxo.fsf@frodo.ebiederm.org>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -27,36 +39,18 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 May 2008 08:36:03 +0200 "Bart Van Assche" <bart.vanassche@gmail.com> wrote:
+On Wed, 07 May 2008 13:54:27 -0700,
+ebiederm@xmission.com (Eric W. Biederman) wrote:
 
-> Hello,
+> > I thought that s390 also used it, but I don't see
+> > that usage in the tree anymore, perhaps they switched to something else.
 > 
-> I have made a setup with four servers, where each server is configured
-> as follows:
-> * Four Intel Xeon E5130 CPU cores.
-> * 8 GB RAM.
-> * SCSI storage controller: LSI Logic / Symbios Logic SAS1068E
-> PCI-Express Fusion-MPT SAS (rev 04),
-> * 16 disks in a RAID6 setup (md).
-> * Linux 2.6.24.6 kernel.
-> 
-> There is a lot of data being written to the RAID6 array: about 50 MB/s
-> on each server. There are two kinds of messages that appear:
-> 
-> (1)
-> [74887.117650] mptbase: ioc0: LogInfo(0x31120403): Originator={PL},
-> Code={Abort}, SubCode(0x0403)
-> 
-> (2)
-> [74917.081454] mptscsih: ioc0: attempting task abort! (sc=ffff8100a18a7180)
-> [74917.081461] sd 0:0:15:0: [sdp] CDB: Write(10): 2a 00 1c fe 61 93 00 00 20 00
-> [74918.409801] mptbase: ioc0: LogInfo(0x31140000): Originator={PL},
-> Code={IO Executed}, SubCode(0x0000)
-> [74918.639801] mptscsih: ioc0: task abort: SUCCESS (sc=ffff8100a18a7180)
-> 
-> These messages appear a few times per day. Anyone any idea what the
-> meaning is of these messages and what the cause of these messages is ?
-> 
+> That is the device_move -> kobject_move case. 
 
-(suitable cc's added)
+Yes. bluetooth also uses it, IIRC.
 
+> Very similar (and nice
+> if we can figure out how to combine them).
+
+Sounds like a good idea. I can test the _move() stuff (after I've
+managed to find some time to try this patchset...)
