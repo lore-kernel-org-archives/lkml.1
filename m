@@ -1,35 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758838AbYEHBOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759207AbYEHBQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758838AbYEHBOr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 21:14:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754887AbYEHBOh
+	id S1759207AbYEHBQZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 21:16:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754952AbYEHBQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 21:14:37 -0400
-Received: from eth7959.sa.adsl.internode.on.net ([150.101.82.22]:36109 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751285AbYEHBOg (ORCPT
+	Wed, 7 May 2008 21:16:15 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53805
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754573AbYEHBQN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 21:14:36 -0400
-Message-ID: <482253F7.7070501@davidnewall.com>
-Date: Thu, 08 May 2008 10:44:31 +0930
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: Soumyadip Das Mahapatra <dip_kernel@yahoo.co.in>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH]: improved strnicmp in lib/string.c
-References: <116786.40929.qm@web94104.mail.in2.yahoo.com>
-In-Reply-To: <116786.40929.qm@web94104.mail.in2.yahoo.com>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 7 May 2008 21:16:13 -0400
+Date: Wed, 07 May 2008 18:16:06 -0700 (PDT)
+Message-Id: <20080507.181606.189746306.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+Cc: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Sparc
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LFD.1.10.0805071705360.3024@woody.linux-foundation.org>
+References: <20080507.163917.104000894.davem@davemloft.net>
+	<alpine.LFD.1.10.0805071705360.3024@woody.linux-foundation.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Soumyadip Das Mahapatra wrote:
-> This is somewhat improved version of strnicmp() function in lib/string.c. I have implemented binary
-> comparison  rather than linear one(which was in the older version).
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 7 May 2008 17:06:29 -0700 (PDT)
 
-It doesn't correctly indicate the sort order.  For example, when
-comparing "accdd" against "abcde", it indicates that the first string
-sorts before the second (which is wrong.)
+> On Wed, 7 May 2008, David Miller wrote:
+> > 
+> > 1) If fork/clone/etc. errors, argument register %o2 is clobbered
+> >    breaking syscall restart.
+> 
+> Wow. Do we actually restart fork/clone/etc? That sounds suspicious. Maybe 
+> there is some other bug here?
+
+do_fork() checks for signals, and returns -ERESTARTNOINTR right
+before fully committing itself to the operation.
