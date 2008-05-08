@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765451AbYEHXUf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932431AbYEHXVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765451AbYEHXUf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 19:20:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbYEHXUP
+	id S932431AbYEHXVc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 19:21:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753983AbYEHXVD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 19:20:15 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:38235 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753895AbYEHXUN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 19:20:13 -0400
-Date: Thu, 8 May 2008 16:19:52 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Dave Young <hidave.darkstar@gmail.com>, joe@perches.com,
-       davem@davemloft.net, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm][v2] ratelimit rewrite
-Message-ID: <20080508231952.GC13851@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080506022558.GA2904@darkstar.te-china.tietoenator.com> <20080508122514.63482a06.akpm@linux-foundation.org>
+	Thu, 8 May 2008 19:21:03 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:49399 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752473AbYEHXVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 19:21:01 -0400
+Message-ID: <48238ADA.5060206@garzik.org>
+Date: Thu, 08 May 2008 19:20:58 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080508122514.63482a06.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: =?ISO-8859-1?Q?=22J=2EA=2E_Magall=F3n=22?= <jamagallon@ono.com>
+CC: Linus-IDE <linux-ide@vger.kernel.org>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: The never enfind DRDY saga
+References: <20080509005111.7cf55350@werewolf.home>
+In-Reply-To: <20080509005111.7cf55350@werewolf.home>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 12:25:14PM -0700, Andrew Morton wrote:
-> On Tue, 6 May 2008 10:25:58 +0800
-> Dave Young <hidave.darkstar@gmail.com> wrote:
+J.A. Magallón wrote:
+> Hi all...
 > 
-> >  static inline void rcu_enter_nohz(void)
-> >  {
-> > +	static DEFINE_RATELIMIT_STATE(rs, 10 * HZ, 1);
-> >  	smp_mb(); /* CPUs seeing ++ must see prior RCU read-side crit sects */
-> >  	__get_cpu_var(rcu_dyntick_sched).dynticks++;
-> > -	WARN_ON_SECS(__get_cpu_var(rcu_dyntick_sched).dynticks & 0x1, 10);
-> > +	WARN_ON_RATELIMIT(__get_cpu_var(rcu_dyntick_sched).dynticks & 0x1, &rs);
-> >  }
-> >  
-> >  static inline void rcu_exit_nohz(void)
-> >  {
-> > +	static DEFINE_RATELIMIT_STATE(rs, 10 * HZ, 1);
-> >  	__get_cpu_var(rcu_dyntick_sched).dynticks++;
-> >  	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
-> > -	WARN_ON_SECS(!(__get_cpu_var(rcu_dyntick_sched).dynticks & 0x1), 10);
-> > +	WARN_ON_RATELIMIT(!(__get_cpu_var(rcu_dyntick_sched).dynticks & 0x1),
-> > +			&rs);
-> 
-> Why are we altering the RCU code in this patch, btw?  It seems fairly
-> random that we happened to choose these particular WARN_ONs.  Do they have
-> a history of triggering?
+> I'm getting again my friendly DRDY errors, this time on the new disk I got
+> to replace the old one (that fortunately was still under warranty...).
+> This is a brand new disk, it came perfectly packaged...
+> Now it is not a Seagate, but a WD:
 
-Yep -- there was a bug in this code a few months ago that was the
-motivation for Dave's WARN_ON_RATELIMIT().  The bug has since been fixed,
-so I would not expect this to trigger anymore, though.
+Note that DRDY is not an error:
 
-							Thanx, Paul
+	http://ata.wiki.kernel.org/index.php/Libata_error_messages
+
+But moreover, for Serial ATA, timeouts are generally due to platform 
+problems, irq problems, or driver problems.  When we see timeouts, we 
+generally do not look at the hard drive as the primary cause.
+
+Have you gone through the debugging process for irq problems -- turning 
+off ACPI, noapic, etc.?
+
+	Jeff
+
+
