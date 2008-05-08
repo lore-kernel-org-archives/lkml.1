@@ -1,69 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762650AbYEHKjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762534AbYEHKlO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762650AbYEHKjf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 06:39:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759315AbYEHKj0
+	id S1762534AbYEHKlO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 06:41:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756477AbYEHKk6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 06:39:26 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:36811 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754418AbYEHKjY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 06:39:24 -0400
-Date: Thu, 08 May 2008 19:38:17 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH] call_usermodehelper_setup() should use GFP_KERNEL
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-In-Reply-To: <4822D30E.5010506@goop.org>
-References: <20080508012957.c778c8e7.akpm@linux-foundation.org> <4822D30E.5010506@goop.org>
-Message-Id: <20080508193224.0EFF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Thu, 8 May 2008 06:40:58 -0400
+Received: from mail.gmx.net ([213.165.64.20]:36229 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756163AbYEHKk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 06:40:57 -0400
+X-Authenticated: #34473864
+X-Provags-ID: V01U2FsdGVkX18oTIkWQsUokKMDFjMrKQsMESmn6e/WyjHXNroUTH
+	niUpyxwjP9hjDu
+Message-ID: <4822D8B6.4090008@gmx.de>
+Date: Thu, 08 May 2008 12:40:54 +0200
+From: Philipp Kohlbecher <xt28@gmx.de>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: linux-kernel@vger.kernel.org
+CC: Thomas Gleixner <tglx@linutronix.de>, John Stultz <johnstul@us.ibm.com>
+Subject: clocksources: order of preference
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Why is the TSC preferred to the HPET as a clocksource for the x86 
+architecture?
 
-Thanks good comment!
+"Understanding the Linux Kernel" states that the HPET is preferable to 
+the TSC due to its richer architecture. Up to version 2.6.17.14, 
+arch/i386/kernel/timers/timer.c also contained a comment to that effect 
+and accordingly ranked the HPET before the TSC.
 
-> > How many times do we have to make this mistake :(
-> >
-> > Only the caller knows what allocation mode the callee can use. 
-> > call_usermodehelper_setup() should be extended to take a gfp_t argument.
-> 
-> Yeah, but making the caller need to know about the internal 
-> implementation details of the callee (ie, whether it needs to allocate 
-> memory or not) leads to pretty warty interfaces.  In this case, you 
-> could push the gfp_t up to the call_usermodehelper_setup() level, but 
-> pushing it any higher wouldn't make much sense.
+This was changed when the new clocksource infrastructure was introduced 
+with version 2.6.18. (The HPET clocksource received a rating of 250; the 
+TSC, 300.)
 
-No problem :)
-almost caller doesn't call call_usermodehelper_setup() directly.
+Preferring the TSC leads to problems when it is unstable. While this can 
+be prevented by setting CONFIG_X86_TSC, certain distribution kernels 
+(striving for compatibility) don't, resulting in soft lockups.
 
-thus, call_usermodehelper_setup() chage is hided in call_usermodehelper().
+Are there better reasons to prefer the TSC or may I submit a patch that 
+swaps the respective ratings?
 
+Thanks for reading,
+- Philipp Kohlbecher
 
-----------------chunk of my current testing patch-----------------------------
-
-@@ -68,8 +69,9 @@ static inline int
- call_usermodehelper(char *path, char **argv, char **envp, enum umh_wait wait)
- {
- 	struct subprocess_info *info;
-+	gfp_t gfp_mask = (wait == UMH_NO_WAIT) ? GFP_ATOMIC : GFP_KERNEL;
- 
--	info = call_usermodehelper_setup(path, argv, envp);
-+	info = call_usermodehelper_setup(path, argv, envp, gfp_mask);
- 	if (info == NULL)
- 		return -ENOMEM;
- 	return call_usermodehelper_exec(info, wait);
-
-
-
+Please CC me, I am not on the list.
