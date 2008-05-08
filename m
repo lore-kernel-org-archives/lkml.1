@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757228AbYEHEeI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755964AbYEHEga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757228AbYEHEeI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 00:34:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbYEHEdy
+	id S1755964AbYEHEga (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 00:36:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbYEHEgV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 00:33:54 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:43695 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752219AbYEHEdw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 00:33:52 -0400
-Date: Thu, 8 May 2008 14:33:46 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: linux-next: the purge :-)
-Message-Id: <20080508143346.aaa3c388.sfr@canb.auug.org.au>
-In-Reply-To: <20080508015616.GB4132@tuxdriver.com>
-References: <20080508112130.fd574b50.sfr@canb.auug.org.au>
-	<20080508015616.GB4132@tuxdriver.com>
-X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__8_May_2008_14_33_46_+1000_IbhmFtdeP2o3KUSW"
+	Thu, 8 May 2008 00:36:21 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:55049 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751136AbYEHEgT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 00:36:19 -0400
+Date: Wed, 7 May 2008 21:36:13 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Nick Piggin <npiggin@suse.de>, Peter Zijlstra <peterz@infradead.org>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       jeremy@goop.org, mingo@elte.hu
+Subject: Re: [PATCH 1/10] Add generic helpers for arch IPI function calls
+Message-ID: <20080508043613.GB20338@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080502020241.GA26088@linux.vnet.ibm.com> <20080502021233.GC11844@wotan.suse.de> <20080502122955.GB15522@linux.vnet.ibm.com> <20080502124205.GA23680@linux.vnet.ibm.com> <1209733169.13978.157.camel@twins> <20080503054930.GA19664@wotan.suse.de> <20080503181148.GA16159@linux.vnet.ibm.com> <20080505041533.GA17640@wotan.suse.de> <20080505174312.GC7543@linux.vnet.ibm.com> <20080507204251.GO16217@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080507204251.GO16217@kernel.dk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__8_May_2008_14_33_46_+1000_IbhmFtdeP2o3KUSW
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, May 07, 2008 at 10:42:52PM +0200, Jens Axboe wrote:
+> On Mon, May 05 2008, Paul E. McKenney wrote:
+> > OK.  The below still permits parallel smp_call_function()
+> > and smp_call_function_mask() as well as permitting parallel
+> > smp_call_function_single().  It prohibits the irq-disabled case.
+> > 
+> > Thoughts?
+> 
+> Sorry for the delayed response here. The below looks pretty good to me,
+> though it'll require a few modifications to fixup smp_call_function()
+> from irq disabled context.
 
-Hi John,
+Yep, easy fix, even if wait==1 needed.
 
-On Wed, 7 May 2008 21:56:16 -0400 "John W. Linville" <linville@tuxdriver.co=
-m> wrote:
->
-> On Thu, May 08, 2008 at 11:21:30AM +1000, Stephen Rothwell wrote:
->=20
-> > As an aside, the kbuild tree is still dropped for today since Sam is not
-> > in a position to fix stuff until the weekend and the wireless tree is
-> > dropped today because it can not be fetched.
->=20
-> Sorry, just sent a note on another thread!  The wireless tree has
-> now adopted the "wireless-next-2.6" naming scheme.
+> But that's doable, though I have to do a grep over the kernel to check
+> everything (I remember CPU send_stop being one such path). Not a huge
+> fan of such an interface, but hey...
+> 
+> Is everyone OK with going this route, initially at least? It's the
+> lesser of all evils, I think.
+> 
+> > diff --git a/arch/Kconfig b/arch/Kconfig
+> > index a5a0184..5ae9360 100644
+> > --- a/arch/Kconfig
+> > +++ b/arch/Kconfig
+> > @@ -38,4 +38,4 @@ config HAVE_KRETPROBES
+> >  	def_bool n
+> >  
+> >  config USE_GENERIC_SMP_HELPERS
+> > -	def_bool n
+> > +	def_bool y
+> 
+> This part puzzled me, why? We default to 'n' and let converted archs
+> opt-in, so I don't get this part of your patch...
 
-That's ok, I will pick it up for tomorrow.
+<red face>  I made that change to get it to compile, and forgot to
+revert it when making the patch.  Please ignore that bit.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__8_May_2008_14_33_46_+1000_IbhmFtdeP2o3KUSW
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIIoKuTgG2atn1QN8RAoo/AKCL2XHnb0pV1xQRf85UJonjdPZN9ACfVfyT
-w5AiBSENNNuXTZwo8xZyM1U=
-=4i1p
------END PGP SIGNATURE-----
-
---Signature=_Thu__8_May_2008_14_33_46_+1000_IbhmFtdeP2o3KUSW--
+							Thanx, Paul
