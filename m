@@ -1,65 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbYEHLvP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755146AbYEHL6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754766AbYEHLvP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 07:51:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750929AbYEHLu7
+	id S1755146AbYEHL6R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 07:58:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751644AbYEHL57
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 07:50:59 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:44371 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750845AbYEHLu6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 07:50:58 -0400
-Date: Thu, 8 May 2008 13:50:57 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: David Miller <davem@davemloft.net>
-cc: linux-kernel@vger.kernel.org, adaplas@pol.net, hpa@zytor.com,
-       alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-Subject: Re: 2.6.26-rcX VC console scrolling regression
-In-Reply-To: <20080507.214637.193700986.davem@davemloft.net>
-Message-ID: <alpine.LNX.1.10.0805081236190.16904@fbirervta.pbzchgretzou.qr>
-References: <20080507.214637.193700986.davem@davemloft.net>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Thu, 8 May 2008 07:57:59 -0400
+Received: from laney.dpool.org ([78.47.134.123]:3829 "EHLO mail1.s.dpool.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751285AbYEHL56 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 07:57:58 -0400
+Message-ID: <4822EAC2.5010502@elsdoerfer.info>
+Date: Thu, 08 May 2008 13:57:54 +0200
+From: =?UTF-8?B?TWljaGFlbCBFbHNkw7ZyZmVy?= <michael@elsdoerfer.info>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andi Kleen <andi@firstfloor.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Cannot boot any HIGHMEM kernel (kernel panic - not syncing)
+References: <4822DDF1.5010500@elsdoerfer.info> <87od7h9g1s.fsf@basil.nowhere.org>
+In-Reply-To: <87od7h9g1s.fsf@basil.nowhere.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ >> Now, Machine Check Exception seems to point towards a hardware error,
+ >
+ > It not only seems to, it does.
+ > The non highmem kernel will simply not use most of your memory, so if
+ > the machine check happens accessing memory you will not see it.
 
-On Thursday 2008-05-08 06:46, David Miller wrote:
->
->Causes garbage characters to appear at the end of lines on my VCs when
->scrolling.
->
-(Gotten past the initramfs now..)
->They look like lowercase 'c' characters with a '.' above them, and they
->are colored light blue.  The rest of the console text is fine.
->I think it might be because my VC gets put into a UTF8 mode or something
->like that via the init scripts?  It seems to start happening right when
->the init scripts print "Setting up console font and keymap", which seems
->to come from /etc/init.d/console-setup which runs /bin/setupcon
->This is with a stock Ubuntu 7.10 installation.
+Thanks Andi.
 
-I "reproduced" it this way on Ubuntu on i386 with fbcon (which you
-are likely to be using on sparc64), when switching from a 256 to
-512-glyph font. So far, only Ubuntu seems to exhibit this problem,
-I am going to test Fedora for its fitness now.
+So the problem would be defective RAM in the machine?
 
-# Right after boot...
-	showconsolefont
-# Trigger
-	setfont Arabic-VGA16
-	showconsolefont
+I'm still wondering though while the previous kernel (a self-compiled 
+2.6.17.11) worked then. Laxer checks?
 
-# Resolve bug with 'reset'
-	reset
-	while $not_scrolled; do
-		showconsolefont
-	done;
-
-My guess is that you see the effects of incomplete font table/position
-switching, something along the lines a `cat /dev/urandom` would cause.
-Using the very same kernel and boot params (vga=791 or anything to
-switch it to fbcon), I cannot trigger the problem on opensuse.
+Michael
