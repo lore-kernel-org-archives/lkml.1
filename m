@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759767AbYEHAIe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762667AbYEHAKJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759767AbYEHAIe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 20:08:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754656AbYEHAIX
+	id S1762667AbYEHAKJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 20:10:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668AbYEHAJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 20:08:23 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:36595 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753914AbYEHAIW (ORCPT
+	Wed, 7 May 2008 20:09:55 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:47957 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754656AbYEHAJy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 20:08:22 -0400
-Date: Thu, 08 May 2008 09:08:00 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH] mm/page_alloc.c: fix a typo
-Cc: kosaki.motohiro@jp.fujitsu.com, Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-In-Reply-To: <Pine.LNX.4.64.0805061050110.23336@schroedinger.engr.sgi.com>
-References: <482029E7.6070308@cn.fujitsu.com> <Pine.LNX.4.64.0805061050110.23336@schroedinger.engr.sgi.com>
-Message-Id: <20080508090647.4A7B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Wed, 7 May 2008 20:09:54 -0400
+Message-ID: <48224507.8010102@keyaccess.nl>
+Date: Thu, 08 May 2008 02:10:47 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Thomas Gleixner <tglx@linutronix.de>, Adrian Bunk <bunk@kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       Pavel Machek <pavel@suse.cz>
+Subject: Re: 2.6.26, PAT and AMD family 6
+References: <48210A71.1060409@keyaccess.nl> <86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com> <20080507124650.GD29935@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0805072122270.3318@apollo.tec.linutronix.de> <48221AE3.6020602@keyaccess.nl> <482233F0.7040000@zytor.com> <48224318.8020209@keyaccess.nl> <48224361.5080102@zytor.com>
+In-Reply-To: <48224361.5080102@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Sorry for the noise, but the signed-off was eaten. :(
-> > Maybe I should leave a blank line before the signed-off.
+On 08-05-08 02:03, H. Peter Anvin wrote:
+> Rene Herman wrote:
+>>>
+>>> Okay, that is utter nonsense.  /proc/cpuinfo has always been, and 
+>>> will always be, the CPU *AS THE KERNEL SEES IT*.  If you want 
+>>> something else, use x86info(1).
+>>
+>> What a lovely way of syncing reality with your definitions. The kernel
+>> _does_ see that my CPU features PAT, it just refuses to use it because
+>> it doesn't trust it enough. Vital difference. Maybe not to the kernel,
+>> but definitely to me, the user. /proc/cpuinfo is a user interface.
+>>
 > 
-> I think the | there was some developers attempt to avoid gcc generating 
-> too many branches. I am fine either way.
+> No, /proc/cpuinfo is informing the user about the kernel's view of the 
+> CPU.
 
-Agreed.
-but it is not normal conding style.
-comment adding is better, IMHO.
+And again, the kernel DOES see that my CPU features PAT, it just refuses
+to use it.
 
-at first, I think typo too.
-
-
+Rene.
