@@ -1,114 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932748AbYEHSsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765937AbYEHSv1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932748AbYEHSsZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 14:48:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758114AbYEHSsN
+	id S1765937AbYEHSv1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 14:51:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755838AbYEHSvQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 14:48:13 -0400
-Received: from mga10.intel.com ([192.55.52.92]:48093 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750848AbYEHSsL (ORCPT
+	Thu, 8 May 2008 14:51:16 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:26185 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754849AbYEHSvO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 14:48:11 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,455,1204531200"; 
-   d="scan'208";a="562379299"
-Date: Thu, 8 May 2008 11:55:18 -0700
-From: mark gross <mgross@linux.intel.com>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       ashok.raj@intel.com, shaohua.li@intel.com,
-       anil.s.keshavamurthy@intel.com, jbarnes@virtuousgeek.org,
-       linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: intel-iommu: CONFIG_DMAR*=y kills my box
-Message-ID: <20080508185518.GA21001@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <48133A64.7020702@googlemail.com> <4813660E.8080609@googlemail.com> <20080429002901.GC31157@linux.intel.com> <481677D3.5070800@googlemail.com> <20080429225348.GA1672@linux.intel.com> <4817A98D.8080007@googlemail.com> <20080506131554.4adb3f9c.akpm@linux-foundation.org> <20080508144301.GA19589@linux.intel.com> <20080508164504.GA20080@linux.intel.com> <48233EBA.6060107@googlemail.com>
+	Thu, 8 May 2008 14:51:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
+        b=NhekcUwZeQinqGUzPwuAj++1eKxmuSGiwAxbW8aA82bm59Km8VKf6FUWmBJ40URnJHxpvMmC7+Da68/xFb0pCwEWzxq6zxL3cXeRte8YIIe/2/qk7DWvXNv3+sg4s5Hw7SGRXFKc8GecxQEqrhHfMBFc1uRNqn0S5pafLRbRJ4U=
+Date: Thu, 8 May 2008 20:51:07 +0200
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: fix debug handler for kmemcheck
+Message-ID: <20080508185107.GA3102@damson.getinternet.no>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48233EBA.6060107@googlemail.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: Vegard Nossum <vegard.nossum@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 07:56:10PM +0200, Gabriel C wrote:
-> mark gross wrote:
-> > On Thu, May 08, 2008 at 07:43:01AM -0700, mark gross wrote:
-> >> On Tue, May 06, 2008 at 01:15:54PM -0700, Andrew Morton wrote:
-> >>> On Wed, 30 Apr 2008 01:04:45 +0200
-> >>> Gabriel C <nix.or.die@googlemail.com> wrote:
-> >>>>> I think your bios is goofy / unprepared to support IOMMU / VT-d and
-> >>>>> doing strange things with enumerated a parallel port on a PCIE bus with
-> >>>>> VTD is turned on...
-> >>>> I will contact ASUS peoples about the BIOS but it has for sure VT-d support and it is enabled.
-> >>> So..  what happened here?  It seems like a pretty fatal problem, and
-> >>> personally I don't think that contacting vendors about BIOS upgrades is a
-> >>> suitable general solution.  It would be much better to find a kernel-based
-> >>> fix or workaround?
-> >>>
-> >> I just got some expert advice on this issue.  I will try again and look
-> >> for a problem with the iommu code getting executed before the USB / PCI
-> >> bus is fully initialized.
-> >>
-> >> also, I just realized that I was attempting to reproduce the failure on
-> >> the MM tree, and re-reading the report I see its on the linux-next tree.
-> >>
-> >> I'm retesting it this am.
-> >>
-> > 
-> > linux-next works fine on my system :(  with intel-iommu on.
-> > 
-> > root@mtgsdv1:~# lspci
-> > 00:00.0 Host bridge: Intel Corporation 82G33/G31/P35/P31 Express DRAM Controller (rev 02)
-> > 00:02.0 VGA compatible controller: Intel Corporation 82G33/G31 Express Integrated Graphics Controller (rev 02)
-> > 00:03.0 Communication controller: Intel Corporation 82G33/G31/P35/P31 Express MEI Controller (rev 02)
-> > 00:03.2 IDE interface: Intel Corporation 82G33/G31/P35/P31 Express PT IDER Controller (rev 02)
-> > 00:03.3 Serial controller: Intel Corporation 82G33/G31/P35/P31 Express Serial KT Controller (rev 02)
-> > 00:19.0 Ethernet controller: Intel Corporation 82566DM-2 Gigabit Network Connection (rev 02)
-> > 00:1a.0 USB Controller: Intel Corporation 82801I (ICH9 Family) USB UHCI Controller #4 (rev 02)
-> > 00:1a.1 USB Controller: Intel Corporation 82801I (ICH9 Family) USB UHCI Controller #5 (rev 02)
-> > 00:1a.2 USB Controller: Intel Corporation 82801I (ICH9 Family) USB UHCI Controller #6 (rev 02)
-> > 00:1a.7 USB Controller: Intel Corporation 82801I (ICH9 Family) USB2 EHCI Controller #2 (rev 02)
-> > 00:1b.0 Audio device: Intel Corporation 82801I (ICH9 Family) HD Audio Controller (rev 02)
-> > 00:1d.0 USB Controller: Intel Corporation 82801I (ICH9 Family) USB UHCI Controller #1 (rev 02)
-> > 00:1d.1 USB Controller: Intel Corporation 82801I (ICH9 Family) USB UHCI Controller #2 (rev 02)
-> > 00:1d.2 USB Controller: Intel Corporation 82801I (ICH9 Family) USB UHCI Controller #3 (rev 02)
-> > 00:1d.7 USB Controller: Intel Corporation 82801I (ICH9 Family) USB2 EHCI Controller #1 (rev 02)
-> > 00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev 92) 00:1f.0 ISA bridge: Intel Corporation Unknown device 2910 (rev 02)
-> > 00:1f.2 SATA controller: Intel Corporation 82801IR/IO/IH (ICH9R/DO/DH) 6 port SATA AHCI Controller (rev 02)
-> > 00:1f.3 SMBus: Intel Corporation 82801I (ICH9 Family) SMBus Controller (rev 02)
-> > 00:1f.5 IDE interface: Intel Corporation 82801I (ICH9 Family) 2 port SATA IDE Controller (rev 02)
-> > 
-> > Gabriel,
-> > 
-> > The idea that perhaps something changed in the boot order, resulting in
-> > the DMAR initialization code getting executed before all of the PCI
-> > stuff is set up makes sense, but I don't have a good way of testing it
-> > at the moment. 
-> 
-> Mark , does the box you test on have any extra PCI/e/X cards ( like a extra graphics card , extra network card ) ?
-> On my box all extra PCI/e/X slots are empty I just use the onboard stuff at the moment.
+Hi Ingo,
 
-its got a pcie e1000 down on the board and all slots empty 
-> 
-> Also when you boot do you have any USB stick , keyboard , etc device plugged in in that box ?
-> 
-USB mouse and keyboard plugged in.
+Patch description says everything :-)
 
-> >I'm going to try a few more config options (like building
-> > everything as modules instead of mostly built-ins)
-> > 
-> 
-> If it helps I can send you my config over. 
-> 
+This actually comes from my kmemcheck git repository at
+git://git.kernel.org/pub/scm/linux/kernel/git/vegard/kmemcheck.git
 
-At least I'll be able to say I tried, so yes it will help me.
+but it's not in x86.git. CCing LKML in case anybody cares :-)
 
-> In any way I'll try to build a kernel with all USB modular when I'm back home.
 
-This is what I'm running :(
+Vegard
 
---mgross
+
+>From 68400903a6348769152f9a2ed102bad0a4774912 Mon Sep 17 00:00:00 2001
+From: Vegard Nossum <vegard.nossum@gmail.com>
+Date: Thu, 1 May 2008 19:10:07 +0200
+Subject: [PATCH] x86: fix debug handler for kmemcheck
+
+This changes the 64-bit debug exception handler to match the 32-bit version
+(which is also correct).
+
+Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+---
+ arch/x86/kernel/traps_64.c |    7 +------
+ 1 files changed, 1 insertions(+), 6 deletions(-)
+
+diff --git a/arch/x86/kernel/traps_64.c b/arch/x86/kernel/traps_64.c
+index 8069073..72923ba 100644
+--- a/arch/x86/kernel/traps_64.c
++++ b/arch/x86/kernel/traps_64.c
+@@ -915,18 +915,13 @@ asmlinkage void __kprobes do_debug(struct pt_regs * regs,
+ 
+ 	get_debugreg(condition, 6);
+ 
+-#ifdef CONFIG_KMEMCHECK
+ 	/* Catch kmemcheck conditions first of all! */
+ 	if (condition & DR_STEP) {
+-		if (!(regs->flags & X86_VM_MASK) && !user_mode(regs) &&
+-			((void *)regs->ip != system_call) &&
+-			((void *)regs->ip != x86_debug) &&
+-			((void *)regs->ip != ia32_sysenter_target)) {
++		if (kmemcheck_active(regs)) {
+ 			kmemcheck_hide(regs);
+ 			return;
+ 		}
+ 	}
+-#endif
+ 
+ 	/*
+ 	 * The processor cleared BTF, so don't mark that we need it set.
+-- 
+1.5.4.1
 
