@@ -1,176 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759098AbYEHB4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759885AbYEHB51@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759098AbYEHB4Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 21:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755572AbYEHB4N
+	id S1759885AbYEHB51 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 21:57:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755298AbYEHB5R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 21:56:13 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:53922 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755720AbYEHB4L (ORCPT
+	Wed, 7 May 2008 21:57:17 -0400
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:44617 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754765AbYEHB5O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 21:56:11 -0400
-Message-ID: <48225DEC.2030502@keyaccess.nl>
-Date: Thu, 08 May 2008 03:57:00 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Wed, 7 May 2008 21:57:14 -0400
+Date: Thu, 8 May 2008 11:48:22 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: linux-mm@kvack.org, dean@arctic.org, apw@shadowen.org,
+       linux-kernel@vger.kernel.org, wli@holomorphy.com, andi@firstfloor.org,
+       kenchen@google.com, agl@us.ibm.com
+Subject: Re: [PATCH 0/3] Guarantee faults for processes that call
+	mmap(MAP_PRIVATE) on hugetlbfs v2
+Message-ID: <20080508014822.GE5156@yookeroo.seuss>
+Mail-Followup-To: David Gibson <dwg@au1.ibm.com>,
+	Mel Gorman <mel@csn.ul.ie>, linux-mm@kvack.org, dean@arctic.org,
+	apw@shadowen.org, linux-kernel@vger.kernel.org, wli@holomorphy.com,
+	andi@firstfloor.org, kenchen@google.com, agl@us.ibm.com
+References: <20080507193826.5765.49292.sendpatchset@skynet.skynet.ie>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Adrian Bunk <bunk@kernel.org>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       Pavel Machek <pavel@suse.cz>
-Subject: [PATCH] x86: introduce a new Linux defined feature flag for PAT support
-References: <48210A71.1060409@keyaccess.nl> <86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com> <20080507124650.GD29935@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0805072122270.3318@apollo.tec.linutronix.de> <48221AE3.6020602@keyaccess.nl> <482233F0.7040000@zytor.com> <48224318.8020209@keyaccess.nl> <48224361.5080102@zytor.com> <48224507.8010102@keyaccess.nl> <alpine.LFD.1.10.0805071716060.3024@woody.linux-foundation.org> <48224930.9030901@keyaccess.nl>
-In-Reply-To: <48224930.9030901@keyaccess.nl>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080507193826.5765.49292.sendpatchset@skynet.skynet.ie>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08-05-08 02:28, Rene Herman wrote:
+On Wed, May 07, 2008 at 08:38:26PM +0100, Mel Gorman wrote:
+> MAP_SHARED mappings on hugetlbfs reserve huge pages at mmap() time.
+> This guarantees all future faults against the mapping will succeed.
+> This allows local allocations at first use improving NUMA locality whilst
+> retaining reliability.
+> 
+> MAP_PRIVATE mappings do not reserve pages. This can result in an application
+> being SIGKILLed later if a huge page is not available at fault time. This
+> makes huge pages usage very ill-advised in some cases as the unexpected
+> application failure cannot be detected and handled as it is immediately fatal.
+> Although an application may force instantiation of the pages using mlock(),
+> this may lead to poor memory placement and the process may still be killed
+> when performing COW.
+> 
+> This patchset introduces a reliability guarantee for the process which creates
+> a private mapping, i.e. the process that calls mmap() on a hugetlbfs file
+> successfully.  The first patch of the set is purely mechanical code move to
+> make later diffs easier to read. The second patch will guarantee faults up
+> until the process calls fork(). After patch two, as long as the child keeps
+> the mappings, the parent is no longer guaranteed to be reliable. Patch
+> 3 guarantees that the parent will always successfully COW by unmapping
+> the pages from the child in the event there are insufficient pages in the
+> hugepage pool in allocate a new page, be it via a static or dynamic pool.
 
-> I completely and fully agree with your new flag suggestion. Was just
-> in a git bisect and am actually on the lowly thing in question so I'm
-> not fast but was looking already. X86_FEATURE_PAT_GOOD. Is it safe to
-> reuse bit 14 now?
+I don't think patch 3 is a good idea.  It's a fair bit of code to
+implement a pretty bizarre semantic that I really don't think is all
+that useful.  Patches 1-2 are already sufficient to cover the
+fork()/exec() case and a fair proportion of fork()/minor
+frobbing/exit() cases.  If the child also needs to write the hugepage
+area, chances are it's doing real work and we care about its
+reliability too.
 
-Okay, so how's this? Seem to work well for me and makes me happy. Only
-tested on UP.
-
-(hope the inline thing works)
-
- arch/x86/kernel/cpu/common.c        |   12 ++++--------
- arch/x86/kernel/cpu/feature_names.c |    2 +-
- arch/x86/kernel/setup_64.c          |    7 ++-----
- arch/x86/mm/pat.c                   |    2 +-
- include/asm-x86/cpufeature.h        |    3 ++-
- 5 files changed, 10 insertions(+), 16 deletions(-)
-
-x86: introduce a new Linux defined feature flag for PAT support
-
-Use a new Linux defined X86_FEATURE_PAT_GOOD feature flag to
-indicate we're on a CPU we want to support PAT on, so as to
-keep the CPU defined X86_FEATURE_PAT readily available for
-indicating if the CPU even has the PAT feature.
-
-Signed-off-by: Rene Herman <rene.herman@gmail.com>
-
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index 35b4f6a..7bec5e0 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -308,16 +308,14 @@ static void __cpuinit early_get_cap(struct cpuinfo_x86 *c)
- 
- 	}
- 
--	clear_cpu_cap(c, X86_FEATURE_PAT);
--
- 	switch (c->x86_vendor) {
- 	case X86_VENDOR_AMD:
- 		if (c->x86 >= 0xf && c->x86 <= 0x11)
--			set_cpu_cap(c, X86_FEATURE_PAT);
-+			set_cpu_cap(c, X86_FEATURE_PAT_GOOD);
- 		break;
- 	case X86_VENDOR_INTEL:
- 		if (c->x86 == 0xF || (c->x86 == 6 && c->x86_model >= 15))
--			set_cpu_cap(c, X86_FEATURE_PAT);
-+			set_cpu_cap(c, X86_FEATURE_PAT_GOOD);
- 		break;
- 	}
- 
-@@ -409,16 +407,14 @@ static void __cpuinit generic_identify(struct cpuinfo_x86 *c)
- 		init_scattered_cpuid_features(c);
- 	}
- 
--	clear_cpu_cap(c, X86_FEATURE_PAT);
--
- 	switch (c->x86_vendor) {
- 	case X86_VENDOR_AMD:
- 		if (c->x86 >= 0xf && c->x86 <= 0x11)
--			set_cpu_cap(c, X86_FEATURE_PAT);
-+			set_cpu_cap(c, X86_FEATURE_PAT_GOOD);
- 		break;
- 	case X86_VENDOR_INTEL:
- 		if (c->x86 == 0xF || (c->x86 == 6 && c->x86_model >= 15))
--			set_cpu_cap(c, X86_FEATURE_PAT);
-+			set_cpu_cap(c, X86_FEATURE_PAT_GOOD);
- 		break;
- 	}
- }
-diff --git a/arch/x86/kernel/cpu/feature_names.c b/arch/x86/kernel/cpu/feature_names.c
-index e43ad4a..04f996d 100644
---- a/arch/x86/kernel/cpu/feature_names.c
-+++ b/arch/x86/kernel/cpu/feature_names.c
-@@ -38,7 +38,7 @@ const char * const x86_cap_flags[NCAPINTS*32] = {
- 	"cxmmx", "k6_mtrr", "cyrix_arr", "centaur_mcr",
- 	NULL, NULL, NULL, NULL,
- 	"constant_tsc", "up", NULL, "arch_perfmon",
--	"pebs", "bts", NULL, NULL,
-+	"pebs", "bts", "pat_good", NULL,
- 	"rep_good", NULL, NULL, NULL, NULL, NULL, NULL, NULL,
- 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
- 
-diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
-index 22c14e2..460134e 100644
---- a/arch/x86/kernel/setup_64.c
-+++ b/arch/x86/kernel/setup_64.c
-@@ -1063,19 +1063,16 @@ static void __cpuinit early_identify_cpu(struct cpuinfo_x86 *c)
- 	if (c->extended_cpuid_level >= 0x80000007)
- 		c->x86_power = cpuid_edx(0x80000007);
- 
--
--	clear_cpu_cap(c, X86_FEATURE_PAT);
--
- 	switch (c->x86_vendor) {
- 	case X86_VENDOR_AMD:
- 		early_init_amd(c);
- 		if (c->x86 >= 0xf && c->x86 <= 0x11)
--			set_cpu_cap(c, X86_FEATURE_PAT);
-+			set_cpu_cap(c, X86_FEATURE_PAT_GOOD);
- 		break;
- 	case X86_VENDOR_INTEL:
- 		early_init_intel(c);
- 		if (c->x86 == 0xF || (c->x86 == 6 && c->x86_model >= 15))
--			set_cpu_cap(c, X86_FEATURE_PAT);
-+			set_cpu_cap(c, X86_FEATURE_PAT_GOOD);
- 		break;
- 	case X86_VENDOR_CENTAUR:
- 		early_init_centaur(c);
-diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
-index 277446c..6ee3efb 100644
---- a/arch/x86/mm/pat.c
-+++ b/arch/x86/mm/pat.c
-@@ -43,7 +43,7 @@ static int pat_known_cpu(void)
- 	if (!pat_wc_enabled)
- 		return 0;
- 
--	if (cpu_has_pat)
-+	if (cpu_has_pat && cpu_has_pat_good)
- 		return 1;
- 
- 	pat_wc_enabled = 0;
-diff --git a/include/asm-x86/cpufeature.h b/include/asm-x86/cpufeature.h
-index 0d609c8..63c14e4 100644
---- a/include/asm-x86/cpufeature.h
-+++ b/include/asm-x86/cpufeature.h
-@@ -74,7 +74,7 @@
- #define X86_FEATURE_ARCH_PERFMON (3*32+11) /* Intel Architectural PerfMon */
- #define X86_FEATURE_PEBS	(3*32+12)  /* Precise-Event Based Sampling */
- #define X86_FEATURE_BTS		(3*32+13)  /* Branch Trace Store */
--/* 14 free */
-+#define X86_FEATURE_PAT_GOOD	(3*32+14) /* PAT works correctly */
- /* 15 free */
- #define X86_FEATURE_REP_GOOD	(3*32+16) /* rep microcode works well on this CPU */
- #define X86_FEATURE_MFENCE_RDTSC (3*32+17) /* Mfence synchronizes RDTSC */
-@@ -187,6 +187,7 @@ extern const char * const x86_power_flags[32];
- #define cpu_has_gbpages		boot_cpu_has(X86_FEATURE_GBPAGES)
- #define cpu_has_arch_perfmon	boot_cpu_has(X86_FEATURE_ARCH_PERFMON)
- #define cpu_has_pat		boot_cpu_has(X86_FEATURE_PAT)
-+#define cpu_has_pat_good	boot_cpu_has(X86_FEATURE_PAT_GOOD)
- 
- #if defined(CONFIG_X86_INVLPG) || defined(CONFIG_X86_64)
- # define cpu_has_invlpg		1
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
