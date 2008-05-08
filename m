@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934138AbYEHWRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934146AbYEHWTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934138AbYEHWRT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 18:17:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762494AbYEHWRC
+	id S934146AbYEHWTR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 18:19:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762494AbYEHWTA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 18:17:02 -0400
-Received: from mga02.intel.com ([134.134.136.20]:34951 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760040AbYEHWRA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 18:17:00 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,456,1204531200"; 
-   d="scan'208";a="381601963"
-Date: Thu, 8 May 2008 15:16:59 -0700
-From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>, arjan@infradead.org,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] x86: Remove 6 bank limitation in 64 bit MCE reporting code
-Message-ID: <20080508221659.GA2759@linux-os.sc.intel.com>
-References: <20080508211836.GA26353@linux-os.sc.intel.com> <4823705E.1040401@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4823705E.1040401@zytor.com>
-User-Agent: Mutt/1.4.1i
+	Thu, 8 May 2008 18:19:00 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:56036 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762183AbYEHWS7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 18:18:59 -0400
+Message-ID: <48237CA0.4080001@keyaccess.nl>
+Date: Fri, 09 May 2008 00:20:16 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: GIT bisection range errors
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 02:27:58PM -0700, H. Peter Anvin wrote:
-> Venki Pallipadi wrote:
-> >Eliminate the 6 bank restriction in 64 bit mce reporting code. This 
-> >restriction
-> >is artificial (due to static creation of sysfs files) and 32 bit code
-> >does not have any such restriction.
-> >
-> >This change helps in reporting the details of machine checks on a machine 
-> >check
-> >exception with errors in bank 6 and above on CPUs that support those banks.
-> >Without the patch, machine check errors in those banks are not reported.
-> >
-> >We still have 128 (MCE_EXTENDED_BANK) bank restriction instead of max 256
-> >supported in hardware. That is not changed in the patch below as it will 
-> >have
-> >some user level mcelog utility dependency, with bank 128 being used for
-> >thermal reporting currently.
-> >
-> >The patch below does not create sysfs control (bankNctl) for banks higher
-> >than 6 as well. That needs some pre-cleanup in /sysfs mce layout, removal 
-> >of
-> >per cpu /sysfs entries for bankctl as they are really global system level
-> >control today. That change will follow. This basic change is critical to
-> >report the detailed errors on banks higher than 6.
-> >
-> >Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> 
-> Any chance you could add unifying the 32 and 64-bit code to your list, 
-> since you're already working on eliminating differences there?
-> 
+Good day.
 
-It was tried earlier
-http://www.ussg.iu.edu/hypermail/linux/kernel/0505.2/0982.html
-but never made it.
+I'm in a git bisect and am experiencing strangeness. I did a
 
-Yes. Will add that to the todo list.
+$ git checkout -b rc v2.6.26-rc1
+$ git bisect start
+$ git bisect bad
+$ git bisect good v2.6.25
 
-Thanks,
-Venki
+Yet, during this I'm finding myself at 2.6.25-rc6 and 2.6.25-rc8
+as the last two results (both good...).
+
+Here's the BISECT_LOG upto this point. Is there anyone available
+who understands this well enough to be able to say from this that
+my tree is fubar? It should be a straight Linus' clone, and it's
+always pulling without trouble.
+
+git-bisect start
+# bad: [2ddcca36c8bcfa251724fe342c8327451988be0d] Linux 2.6.26-rc1
+git-bisect bad 2ddcca36c8bcfa251724fe342c8327451988be0d
+# good: [4b119e21d0c66c22e8ca03df05d9de623d0eb50f] Linux 2.6.25
+git-bisect good 4b119e21d0c66c22e8ca03df05d9de623d0eb50f
+# bad: [7ae44cfa7ab29b277691327e8de790d7b880722f] [ALSA] snd-powermac: style awacs.s and awacs.h
+git-bisect bad 7ae44cfa7ab29b277691327e8de790d7b880722f
+# good: [7cea51be4e91edad05bd834f3235b45c57783f0d] security: fix up documentation for security_module_enable
+git-bisect good 7cea51be4e91edad05bd834f3235b45c57783f0d
+# bad: [8f19ca1341a6d89bd96e2e69e6e10f46d3258089] x86: unify gfp masks
+git-bisect bad 8f19ca1341a6d89bd96e2e69e6e10f46d3258089
+# good: [f49e1aa133c2c9b74b5dfddca8863609bbda9086] [NETFILTER]: nf_conntrack_sip: update copyright
+git-bisect good f49e1aa133c2c9b74b5dfddca8863609bbda9086
+# good: [0b18542b7f5379e052d2a3132be91185776e7ceb] [NET]: Sink IPv6 menuoptions into its own submenu
+git-bisect good 0b18542b7f5379e052d2a3132be91185776e7ceb
+
+
+Rene.
