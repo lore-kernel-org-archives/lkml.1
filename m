@@ -1,49 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763157AbYEHAEn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761213AbYEHAGp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763157AbYEHAEn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 20:04:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761205AbYEHAE3
+	id S1761213AbYEHAGp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 20:06:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755247AbYEHAGe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 20:04:29 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:48252 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761132AbYEHAE2 (ORCPT
+	Wed, 7 May 2008 20:06:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53676 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753706AbYEHAGd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 20:04:28 -0400
-Message-ID: <48224361.5080102@zytor.com>
-Date: Wed, 07 May 2008 17:03:45 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Wed, 7 May 2008 20:06:33 -0400
+Date: Wed, 7 May 2008 17:06:29 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+cc: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Sparc
+In-Reply-To: <20080507.163917.104000894.davem@davemloft.net>
+Message-ID: <alpine.LFD.1.10.0805071705360.3024@woody.linux-foundation.org>
+References: <20080507.163917.104000894.davem@davemloft.net>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Rene Herman <rene.herman@keyaccess.nl>
-CC: Thomas Gleixner <tglx@linutronix.de>, Adrian Bunk <bunk@kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Pavel Machek <pavel@suse.cz>
-Subject: Re: 2.6.26, PAT and AMD family 6
-References: <48210A71.1060409@keyaccess.nl> <86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com> <20080507124650.GD29935@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0805072122270.3318@apollo.tec.linutronix.de> <48221AE3.6020602@keyaccess.nl> <482233F0.7040000@zytor.com> <48224318.8020209@keyaccess.nl>
-In-Reply-To: <48224318.8020209@keyaccess.nl>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman wrote:
->>
->> Okay, that is utter nonsense.  /proc/cpuinfo has always been, and will 
->> always be, the CPU *AS THE KERNEL SEES IT*.  If you want something 
->> else, use x86info(1).
-> 
-> What a lovely way of syncing reality with your definitions. The kernel
-> _does_ see that my CPU features PAT, it just refuses to use it because
-> it doesn't trust it enough. Vital difference. Maybe not to the kernel,
-> but definitely to me, the user. /proc/cpuinfo is a user interface.
-> 
 
-No, /proc/cpuinfo is informing the user about the kernel's view of the 
-CPU.  It has always been the "cooked" view of CPUID, whether or not you 
-like it.
 
-	-hpa
+On Wed, 7 May 2008, David Miller wrote:
+> 
+> 1) If fork/clone/etc. errors, argument register %o2 is clobbered
+>    breaking syscall restart.
+
+Wow. Do we actually restart fork/clone/etc? That sounds suspicious. Maybe 
+there is some other bug here?
+
+		Linus
