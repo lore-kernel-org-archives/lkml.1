@@ -1,93 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760127AbYEHHIz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761408AbYEHHJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760127AbYEHHIz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 03:08:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbYEHHIo
+	id S1761408AbYEHHJg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 03:09:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbYEHHJT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 03:08:44 -0400
-Received: from smtp1.tech.numericable.fr ([82.216.111.37]:38084 "EHLO
-	smtp1.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751145AbYEHHIo (ORCPT
+	Thu, 8 May 2008 03:09:19 -0400
+Received: from hu-out-0506.google.com ([72.14.214.238]:40652 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760840AbYEHHJA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 03:08:44 -0400
-Message-ID: <4822A6F7.7010704@numericable.fr>
-Date: Thu, 08 May 2008 09:08:39 +0200
-From: Rufus & Azrael <rufus-azrael@numericable.fr>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
+	Thu, 8 May 2008 03:09:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=lW7VlL4/zpzSyxkQt0SyhemtlFc9MqcqXUpR/FGIsm45cEryDoxKy56F5QtgLWz0y1wRABgP6n3c+F7VV+MWFhmDdodIZ2lNIXfCOSdSG0oigkcIyusgXTqO0umjVRe71oq7oDAq6MWFd8OBpyhSqYuY18i810nM6HmRxM2Z6RY=
+Message-ID: <4822A706.1040700@gmail.com>
+Date: Thu, 08 May 2008 08:08:54 +0100
+From: Richard <tuxbox.guru@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080305)
 MIME-Version: 1.0
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Linux-kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [2.6.25-git18 => 2.6.26-rc1-git1] Xorg crash with	xf86MapVidMem
- error
-References: <481D72A7.10901@numericable.fr> <20080504085204.GE21859@elte.hu> <481D7BF8.4080405@numericable.fr> <20080505172619.GD28173@linux-os.sc.intel.com> <481F87F2.70005@numericable.fr> <20080505232536.GA28026@linux-os.sc.intel.com> <20080505234938.GB11433@elte.hu> <20080506020910.GA24041@linux-os.sc.intel.com> <20080506115524.GE32591@elte.hu> <4820962B.6050702@numericable.fr> <924EFEDD5F540B4284297C4DC59F3DEE01004FC1@orsmsx423.amr.corp.intel.com> <4820D415.5090900@numericable.fr> <924EFEDD5F540B4284297C4DC59F3DEE010050B6@orsmsx423.amr.corp.intel.com> <482217F3.2040900@numericable.fr> <924EFEDD5F540B4284297C4DC59F3DEE010057B4@orsmsx423.amr.corp.intel.com>
-In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEE010057B4@orsmsx423.amr.corp.intel.com>
-Content-Type: multipart/mixed;
- boundary="------------080601040701060609040000"
+To: Rene Herman <rene.herman@keyaccess.nl>
+CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Adam Belay <ambx1@neo.rr.com>, Adam M Belay <abelay@mit.edu>,
+       Li Shaohua <shaohua.li@intel.com>,
+       Matthieu Castet <castet.matthieu@free.fr>,
+       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.25 pci=noacpi
+References: <20080425183807.366134771@ldl.fc.hp.com> <20080425183934.516655076@ldl.fc.hp.com> <4813B5AB.4060308@keyaccess.nl> <200804281507.38309.bjorn.helgaas@hp.com> <4816C605.4000601@gmail.com> <481E0D2D.1030608@keyaccess.nl>
+In-Reply-To: <481E0D2D.1030608@keyaccess.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080601040701060609040000
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: quoted-printable
-
-Pallipadi, Venkatesh a =E9crit :
-> =20
+Rene Herman wrote:
+> On 29-04-08 08:53, Richard wrote:
 >
->  =20
->> -----Original Message-----
->> From: Rufus & Azrael [mailto:rufus-azrael@numericable.fr]=20
->> Sent: Wednesday, May 07, 2008 1:58 PM
->> To: Pallipadi, Venkatesh
->> Cc: Ingo Molnar; Siddha, Suresh B; Linux-kernel Mailing List
->> Subject: Re: [2.6.25-git18 =3D> 2.6.26-rc1-git1] Xorg crash with=20
->> xf86MapVidMem error
->>
->> Pallipadi, Venkatesh a =E9crit :
->>    =20
->>> =20
->>>
->>> Yes. This has some debug information in there. Did you see=20
->>>      =20
->> xf86MapVidMem error (I mean did you try to start X) before you=20
->> captured this dmesg?
->>    =20
->>> Thanks,
->>> Venki
->>>
->>>  =20
->>>      =20
->> Hi all,
->>
->> Yes, the error's message is in my Xorg.log file :-)
->>
->>    =20
+>> Using an AMD Sempron notebook (HP Compaq 6715b) single processor 
+>> machine,  It shuts down during bootup when ACPI is fully enabled.  I 
+>> added pci=noacpi to the cmdline and it finally boots, but its 
+>> extremely slow...  (kdm times out with error saying it took too long 
+>> to load and disables graphical)
 >
-> One more piece of data I need. Can you please send the output of `cat /=
-proc/mtrr` from this system (after the X failure has happened)
+> Does booting with io_delay=0xed on the kernel command line fix it? If 
+> so, we need the output of
 >
-> Thanks,
-> Venki
+> # dmidecode -s baseboard-manufacturer
 >
->  =20
-Hi Venki,
+> and
+>
+> # dmidecode -s baseboard-product-name
+>
+> Rene.
+>
 
+Tried the io_delay=0xed.... doesnt fix it. machine shuts down :-P
 
-See my /proc/mtrr file attached.
+Richard
 
-Regards.
-
---------------080601040701060609040000
-Content-Type: text/plain;
- name="mtrr"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="mtrr"
-
-reg00: base=0x00000000 (   0MB), size=2048MB: write-back, count=1
-reg01: base=0xf0000000 (3840MB), size=  16MB: write-combining, count=1
-
---------------080601040701060609040000--
