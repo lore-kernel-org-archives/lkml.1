@@ -1,56 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758940AbYEHPMv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763256AbYEHPRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758940AbYEHPMv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 11:12:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754685AbYEHPMm
+	id S1763256AbYEHPRA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 11:17:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370AbYEHPQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 11:12:42 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:22587 "EHLO
-	WA4EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753341AbYEHPMl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 11:12:41 -0400
-X-BigFish: VP
-X-WSS-ID: 0K0K28Q-04-JCH-01
-Date: Thu, 8 May 2008 17:11:45 +0200
-From: Hans Rosenfeld <hans.rosenfeld@amd.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-CC: Hugh Dickins <hugh@veritas.com>, Ingo Molnar <mingo@elte.hu>,
-       Jeff Chua <jeff.chua.linux@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Nishanth Aravamudan <nacc@us.ibm.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] x86: fix PAE pmd_bad bootup warning
-Message-ID: <20080508151145.GG12654@escobedo.amd.com>
-References: <b6a2187b0805051806v25fa1272xb08e0b70b9c3408@mail.gmail.com> <20080506124946.GA2146@elte.hu> <Pine.LNX.4.64.0805061435510.32567@blonde.site> <alpine.LFD.1.10.0805061138580.32269@woody.linux-foundation.org> <Pine.LNX.4.64.0805062043580.11647@blonde.site> <20080506202201.GB12654@escobedo.amd.com> <1210106579.4747.51.camel@nimitz.home.sr71.net> <20080508143453.GE12654@escobedo.amd.com> <1210258350.7905.45.camel@nimitz.home.sr71.net>
+	Thu, 8 May 2008 11:16:52 -0400
+Received: from gw.goop.org ([64.81.55.164]:58503 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753649AbYEHPQu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 11:16:50 -0400
+Message-ID: <48231959.4050406@goop.org>
+Date: Thu, 08 May 2008 16:16:41 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <1210258350.7905.45.camel@nimitz.home.sr71.net>
-User-Agent: Mutt/1.4.2.3i
-X-OriginalArrivalTime: 08 May 2008 15:11:42.0998 (UTC) FILETIME=[D2DDD360:01C8B11D]
+To: Segher Boessenkool <segher@kernel.crashing.org>
+CC: Robert Hancock <hancockr@shaw.ca>, Christian Kujau <lists@nerdbynature.de>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       john stultz <johnstul@us.ibm.com>
+Subject: [PATCH] common implementation of iterative div/mod
+References: <fa.QTbvQYXhEm5VNP5dvkl5JG7NHYQ@ifi.uio.no> <481DF3D8.3010108@shaw.ca> <a6dd201e0149f8dbdf10a7a194673833@kernel.crashing.org> <48217674.8080903@goop.org>
+In-Reply-To: <48217674.8080903@goop.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 07:52:30AM -0700, Dave Hansen wrote:
-> On Thu, 2008-05-08 at 16:34 +0200, Hans Rosenfeld wrote:
-> > The huge page is leaked only when the
-> > /proc/self/pagemap entry for the huge page is read.
-> 
-> Well, that's an interesting data point! :)
-> 
-> Are you running any of your /proc/<pid>/pagemap patches?
+We have a few instances of the open-coded iterative div/mod loop, used
+when we don't expcet the dividend to be much bigger than the divisor.
+Unfortunately modern gcc's have the tendency to strength "reduce" this
+into a full mod operation, which isn't necessarily any faster, and
+even if it were, doesn't exist if gcc implements it in libgcc.
 
-No additional patches. The problem already existed before we agreed on
-the change to the pagemap code to just include the page size in the
-values returned, and not doing any special huge page handling. I suspect
-the page walking code used by /proc/pid/pagemap is doing something nasty
-when it sees a huge page as it doesn't know how to handle it.
+The workaround is to put a dummy asm statement in the loop to prevent
+gcc from performing the transformation.
 
+This patch creates a single implementation of this loop, and uses it
+to replace the open-coded versions I know about.
 
--- 
-%SYSTEM-F-ANARCHISM, The operating system has been overthrown
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: john stultz <johnstul@us.ibm.com>
+Cc: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: Christian Kujau <lists@nerdbynature.de>
+Cc: Robert Hancock <hancockr@shaw.ca>
+---
+ arch/x86/xen/time.c    |   13 +++----------
+ include/linux/math64.h |    2 ++
+ include/linux/time.h   |   11 ++---------
+ lib/div64.c            |   23 +++++++++++++++++++++++
+ 4 files changed, 30 insertions(+), 19 deletions(-)
+
+===================================================================
+--- a/arch/x86/xen/time.c
++++ b/arch/x86/xen/time.c
+@@ -12,6 +12,7 @@
+ #include <linux/clocksource.h>
+ #include <linux/clockchips.h>
+ #include <linux/kernel_stat.h>
++#include <linux/math64.h>
+ 
+ #include <asm/xen/hypervisor.h>
+ #include <asm/xen/hypercall.h>
+@@ -150,11 +151,7 @@ static void do_stolen_accounting(void)
+ 	if (stolen < 0)
+ 		stolen = 0;
+ 
+-	ticks = 0;
+-	while (stolen >= NS_PER_TICK) {
+-		ticks++;
+-		stolen -= NS_PER_TICK;
+-	}
++	ticks = iter_div_u64_rem(stolen, NS_PER_TICK, &stolen);
+ 	__get_cpu_var(residual_stolen) = stolen;
+ 	account_steal_time(NULL, ticks);
+ 
+@@ -166,11 +163,7 @@ static void do_stolen_accounting(void)
+ 	if (blocked < 0)
+ 		blocked = 0;
+ 
+-	ticks = 0;
+-	while (blocked >= NS_PER_TICK) {
+-		ticks++;
+-		blocked -= NS_PER_TICK;
+-	}
++	ticks = iter_div_u64_rem(blocked, NS_PER_TICK, &blocked);
+ 	__get_cpu_var(residual_blocked) = blocked;
+ 	account_steal_time(idle_task(smp_processor_id()), ticks);
+ }
+===================================================================
+--- a/include/linux/math64.h
++++ b/include/linux/math64.h
+@@ -81,4 +81,6 @@ static inline s64 div_s64(s64 dividend, 
+ }
+ #endif
+ 
++unsigned iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder);
++
+ #endif /* _LINUX_MATH64_H */
+===================================================================
+--- a/include/linux/time.h
++++ b/include/linux/time.h
+@@ -2,6 +2,7 @@
+ #define _LINUX_TIME_H
+ 
+ #include <linux/types.h>
++#include <linux/math64.h>
+ 
+ #ifdef __KERNEL__
+ # include <linux/cache.h>
+@@ -172,15 +173,7 @@ extern struct timeval ns_to_timeval(cons
+  */
+ static inline void timespec_add_ns(struct timespec *a, u64 ns)
+ {
+-	ns += a->tv_nsec;
+-	while(unlikely(ns >= NSEC_PER_SEC)) {
+-		/* The following asm() prevents the compiler from
+-		 * optimising this loop into a modulo operation.  */
+-		asm("" : "+r"(ns));
+-
+-		ns -= NSEC_PER_SEC;
+-		a->tv_sec++;
+-	}
++	a->tv_sec += iter_div_u64_rem(a->tv_nsec + ns, NSEC_PER_SEC, &ns);
+ 	a->tv_nsec = ns;
+ }
+ #endif /* __KERNEL__ */
+===================================================================
+--- a/lib/div64.c
++++ b/lib/div64.c
+@@ -98,3 +98,26 @@ EXPORT_SYMBOL(div64_u64);
+ #endif
+ 
+ #endif /* BITS_PER_LONG == 32 */
++
++/*
++ * Iterative div/mod for use when dividend is not expected to be much
++ * bigger than divisor.
++ */
++unsigned iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder)
++{
++	unsigned ret = 0;
++
++	while(dividend >= divisor) {
++		/* The following asm() prevents the compiler from
++		   optimising this loop into a modulo operation.  */
++		asm("" : "+rm"(dividend));
++
++		dividend -= divisor;
++		ret++;
++	}
++
++	*remainder = dividend;
++
++	return ret;
++}
++EXPORT_SYMBOL(iter_div_u64_rem);
+
 
