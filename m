@@ -1,70 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755964AbYEHEga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757624AbYEHEhc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755964AbYEHEga (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 00:36:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbYEHEgV
+	id S1757624AbYEHEhc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 00:37:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbYEHEhY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 00:36:21 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:55049 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751136AbYEHEgT (ORCPT
+	Thu, 8 May 2008 00:37:24 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56199 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751371AbYEHEhW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 00:36:19 -0400
-Date: Wed, 7 May 2008 21:36:13 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Nick Piggin <npiggin@suse.de>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       jeremy@goop.org, mingo@elte.hu
-Subject: Re: [PATCH 1/10] Add generic helpers for arch IPI function calls
-Message-ID: <20080508043613.GB20338@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080502020241.GA26088@linux.vnet.ibm.com> <20080502021233.GC11844@wotan.suse.de> <20080502122955.GB15522@linux.vnet.ibm.com> <20080502124205.GA23680@linux.vnet.ibm.com> <1209733169.13978.157.camel@twins> <20080503054930.GA19664@wotan.suse.de> <20080503181148.GA16159@linux.vnet.ibm.com> <20080505041533.GA17640@wotan.suse.de> <20080505174312.GC7543@linux.vnet.ibm.com> <20080507204251.GO16217@kernel.dk>
+	Thu, 8 May 2008 00:37:22 -0400
+Date: Wed, 7 May 2008 21:27:53 -0700
+From: Greg KH <greg@kroah.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, "John W. Linville" <linville@tuxdriver.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: linux-next: the purge :-)
+Message-ID: <20080508042753.GA6876@kroah.com>
+References: <20080508112130.fd574b50.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080507204251.GO16217@kernel.dk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080508112130.fd574b50.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 07, 2008 at 10:42:52PM +0200, Jens Axboe wrote:
-> On Mon, May 05 2008, Paul E. McKenney wrote:
-> > OK.  The below still permits parallel smp_call_function()
-> > and smp_call_function_mask() as well as permitting parallel
-> > smp_call_function_single().  It prohibits the irq-disabled case.
-> > 
-> > Thoughts?
-> 
-> Sorry for the delayed response here. The below looks pretty good to me,
-> though it'll require a few modifications to fixup smp_call_function()
-> from irq disabled context.
+On Thu, May 08, 2008 at 11:21:30AM +1000, Stephen Rothwell wrote:
+> Greg, you might consider setting up a subset (currently probably
+> empty) of the ldp tree for drivers that are readier for integration.
 
-Yep, easy fix, even if wait==1 needed.
+Ok, fair enough, I totally understand.
 
-> But that's doable, though I have to do a grep over the kernel to check
-> everything (I remember CPU send_stop being one such path). Not a huge
-> fan of such an interface, but hey...
-> 
-> Is everyone OK with going this route, initially at least? It's the
-> lesser of all evils, I think.
-> 
-> > diff --git a/arch/Kconfig b/arch/Kconfig
-> > index a5a0184..5ae9360 100644
-> > --- a/arch/Kconfig
-> > +++ b/arch/Kconfig
-> > @@ -38,4 +38,4 @@ config HAVE_KRETPROBES
-> >  	def_bool n
-> >  
-> >  config USE_GENERIC_SMP_HELPERS
-> > -	def_bool n
-> > +	def_bool y
-> 
-> This part puzzled me, why? We default to 'n' and let converted archs
-> opt-in, so I don't get this part of your patch...
+I've now moved my trees around a bit, and would like it if you could
+include the following, in this order (the # NEXT_BASE variable is set in
+them to make sure things get ordered properly.)
+	driver-core.next
+	usb.next
+	driver-core
+	usb
+	ldp.next
 
-<red face>  I made that change to get it to compile, and forgot to
-revert it when making the patch.  Please ignore that bit.
+The ".next" trees are what is going to Linus before the next major
+release happens (bugfixes and new device ids at this point in time for
+example.)  The other trees are what is going to go to Linus after the
+next major kernel is out.
 
-							Thanx, Paul
+I also have a "ldp" tree as well, but I understand why you do not want
+to pull it at this time into linux-next.
+
+And, there is a real driver already in the ldp.next tree that should
+show up in 2.6.27, so it isn't empty at this time :)
+
+If you have any questions about these trees, please let me know.
+
+thanks,
+
+greg k-h
