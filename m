@@ -1,84 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758492AbYEHGNi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758667AbYEHGRN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758492AbYEHGNi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 02:13:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754591AbYEHGN1
+	id S1758667AbYEHGRN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 02:17:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754936AbYEHGQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 02:13:27 -0400
-Received: from cantor.suse.de ([195.135.220.2]:34746 "EHLO mx1.suse.de"
+	Thu, 8 May 2008 02:16:56 -0400
+Received: from mga01.intel.com ([192.55.52.88]:42398 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754540AbYEHGNZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 02:13:25 -0400
-From: Neil Brown <neilb@suse.de>
-To: "Mike Snitzer" <snitzer@gmail.com>
-Date: Thu, 8 May 2008 16:13:14 +1000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752792AbYEHGQz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 02:16:55 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,453,1204531200"; 
+   d="scan'208";a="562126104"
+Subject: Re: ACPI: kmemcheck: Caught 16-bit read from freed memory
+	(f7c12ec6)
+From: Lin Ming <ming.m.lin@intel.com>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Bob Moore <robert.moore@intel.com>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <19f34abd0805072305i19dc37bn3e13fbca4b6981e3@mail.gmail.com>
+References: <19f34abd0805060909q635d2d43j9414e5f179c9e22f@mail.gmail.com>
+	 <84144f020805061338yd6e3declaf5ff9ca344c28ba@mail.gmail.com>
+	 <19f34abd0805061346q4af7e4f8kd65009f8d3021d0e@mail.gmail.com>
+	 <4820C56C.6070204@cs.helsinki.fi>
+	 <19f34abd0805071221o236c8629ib184a4720f178e7b@mail.gmail.com>
+	 <1210224923.22503.8.camel@minggr.sh.intel.com>
+	 <19f34abd0805072305i19dc37bn3e13fbca4b6981e3@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 08 May 2008 14:12:25 +0800
+Message-Id: <1210227145.23183.7.camel@minggr.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 (2.12.1-3.fc8) 
 Content-Transfer-Encoding: 7bit
-Message-ID: <18466.39418.578722.92979@notabene.brown>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
-       paul.clements@steeleye.com
-Subject: Re: [RFC][PATCH] md: avoid fullsync if a faulty member missed a dirty transition
-In-Reply-To: message from Mike Snitzer on Tuesday May 6
-References: <1207174155-20090-1-git-send-email-snitzer@gmail.com>
-	<18464.134.236488.251879@notabene.brown>
-	<170fa0d20805060458i43c9a4a7r1e30147bdcd40f20@mail.gmail.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday May 6, snitzer@gmail.com wrote:
+
+On Thu, 2008-05-08 at 08:05 +0200, Vegard Nossum wrote:
+> Hello,
 > 
-> It looks like bitmap_update_sb()'s incrementing of events_cleared (on
-> behalf of the local member) could be racing with the fact that the NBD
-> member becomes faulty (whereby making the array degraded).  This
-> allows the events_cleared to reflect a clean->dirty transition last
-> occurred before the array became degraded.  My reasoning is: If it was
-> a clean->dirty transition the bitmap still has the associated dirty
-> bit set in the local member's bitmap, so using the bitmap to resync is
-> valid.
+> On Thu, May 8, 2008 at 7:35 AM, Lin Ming <ming.m.lin@intel.com> wrote:
+> > Here comes a simple patch that fixes the warning in my machine.
+> >
+> >  Vegard, would you please help to test it in your machine?
+> >
 > 
-> thanks,
-> Mike
+> Thanks for the try, but unfortunately this does not solve the problem.
 
-Thanks for persisting.  I think I understand what is going on now.
+It's strange.
+In my machine, without this patch the warning shows up
+With this patch applied the waring goes away
 
-How about this patch?  It is similar to your, but instead of depending
-on the odd/even state of the event counter, it directly checks the
-clean/dirty state of the array.
+Would you please upload the acpidump file?
 
-NeilBrown
+> 
+> Please note that kmemcheck is an patch to the kernel; without it you
+> will never see the warning. You can pull it from
+> git://git.kernel.org/pub/scm/linux/kernel/git/vegard/kmemcheck.git current
 
+Yes, I pulled the kmemcheck tree.
 
-Signed-off-by: Neil Brown <neilb@suse.de>
+BTW, I like the kmemcheck patch, it's very useful :) Great work :)
 
-### Diffstat output
- ./drivers/md/md.c |    5 +++++
- 1 file changed, 5 insertions(+)
+Lin Ming
 
-diff .prev/drivers/md/md.c ./drivers/md/md.c
---- .prev/drivers/md/md.c	2008-05-02 14:49:05.000000000 +1000
-+++ ./drivers/md/md.c	2008-05-08 16:10:48.000000000 +1000
-@@ -843,6 +843,8 @@ static int super_90_validate(mddev_t *md
- 		/* if adding to array with a bitmap, then we can accept an
- 		 * older device ... but not too old.
- 		 */
-+		if (sb->state & (1<<MD_SB_CLEAN))
-+			ev1++;
- 		if (ev1 < mddev->bitmap->events_cleared)
- 			return 0;
- 	} else {
-@@ -1218,6 +1220,9 @@ static int super_1_validate(mddev_t *mdd
- 		/* If adding to array with a bitmap, then we can accept an
- 		 * older device, but not too old.
- 		 */
-+		if (mddev->recovery_cp == MaxSector)
-+			/* array was clean, so can allow 'next' event */
-+			ev1++;
- 		if (ev1 < mddev->bitmap->events_cleared)
- 			return 0;
- 	} else {
+> though it is unlikely that it will help you more than looking at the
+> code (or the report) will do.
+> 
+> >  Thanks,
+> >  Lin Ming
+> >
+> >  Signed-off-by: Lin Ming <ming.m.lin@intel.com>
+> >  ---
+> >  diff --git a/drivers/acpi/parser/psargs.c b/drivers/acpi/parser/psargs.c
+> >  index f1e8bf6..ef55d24 100644
+> >  --- a/drivers/acpi/parser/psargs.c
+> >  +++ b/drivers/acpi/parser/psargs.c
+> >  @@ -268,7 +268,7 @@ acpi_ps_get_next_namepath(struct acpi_walk_state
+> >  *walk_state,
+> 
+> >          */
+> >         if (ACPI_SUCCESS(status) &&
+> >             possible_method_call && (node->type == ACPI_TYPE_METHOD)) {
+> >  -               if (walk_state->op->common.aml_opcode == AML_UNLOAD_OP) {
+> >  +               if (walk_state->op && walk_state->op->common.aml_opcode ==
+> >  AML_UNLOAD_OP) {
+> >                         /*
+> >                          * acpi_ps_get_next_namestring has increased the AML pointer,
+> >                          * so we need to restore the saved AML pointer for method call.
+> 
+> Also, noticing your change, I can see why it makes no difference:
+> Pekka already found that it is walk_state->op that has the value of
+> 0xf7c12ec6 (e.g. the pointer being dereferenced), so the test will
+> still succeed.
+> 
+> On the other hand, I have discovered what seems to be a deficiency in
+> kmemcheck (i.e. it might be my fault entirely), so it is possible that
+> the warning is bogus. Will send an update shortly.
+> 
+> 
+> Vegard
+> 
+
