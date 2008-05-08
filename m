@@ -1,108 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762324AbYEHLOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763245AbYEHLOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762324AbYEHLOU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 07:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754289AbYEHLOE
+	id S1763245AbYEHLOi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 07:14:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759395AbYEHLOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 07:14:04 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:60673 "EHLO
-	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754134AbYEHLOB (ORCPT
+	Thu, 8 May 2008 07:14:11 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:4478 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757172AbYEHLOH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 07:14:01 -0400
-Subject: Re: CONFIG_PRINTK_TIME broken on git HEAD ?
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <4822DD4E.3010000@googlemail.com>
-References: <48222C7C.2050807@googlemail.com>
-	 <20080507154155.2b472bb1.akpm@linux-foundation.org>
-	 <482233CD.70502@googlemail.com>  <4822DD4E.3010000@googlemail.com>
-Content-Type: text/plain
-Date: Thu, 08 May 2008 13:13:58 +0200
-Message-Id: <1210245238.13978.199.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
-Content-Transfer-Encoding: 7bit
+	Thu, 8 May 2008 07:14:07 -0400
+Date: Thu, 8 May 2008 12:14:08 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: David Gibson <dwg@au1.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
+       linux-mm@kvack.org, dean@arctic.org, linux-kernel@vger.kernel.org,
+       wli@holomorphy.com, andi@firstfloor.org, kenchen@google.com,
+       agl@us.ibm.com
+Subject: Re: [PATCH 0/3] Guarantee faults for processes that call mmap(MAP_PRIVATE) on hugetlbfs v2
+Message-ID: <20080508111408.GB30870@shadowen.org>
+References: <20080507193826.5765.49292.sendpatchset@skynet.skynet.ie> <20080508014822.GE5156@yookeroo.seuss>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080508014822.GE5156@yookeroo.seuss>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-05-08 at 13:00 +0200, Gabriel C wrote:
-
-> >>From my log 2.6.26-rc1-00065-g5717922 was fine.
+On Thu, May 08, 2008 at 11:48:22AM +1000, David Gibson wrote:
+> On Wed, May 07, 2008 at 08:38:26PM +0100, Mel Gorman wrote:
+> > MAP_SHARED mappings on hugetlbfs reserve huge pages at mmap() time.
+> > This guarantees all future faults against the mapping will succeed.
+> > This allows local allocations at first use improving NUMA locality whilst
+> > retaining reliability.
 > > 
->  
-> > May  6 00:13:14 thor kernel: [    0.000000] Allocating PCI resources starting at d0000000 (gap: cf600000:2f800000)
-> > May  6 00:13:14 thor kernel: [    0.000000] SMP: Allowing 4 CPUs, 0 hotplug CPUs
-> > May  6 00:13:14 thor kernel: [    0.000000] PERCPU: Allocating 41732 bytes of per cpu data
-> > May  6 00:13:14 thor kernel: [    0.000000] Kernel command line: root=/dev/sdb1 ro debug vga=0x317
-> > May  6 00:13:14 thor kernel: [    0.000000] Preemptible RCU implementation.
-> > May  6 00:13:14 thor kernel: [    0.000000] Extended CMOS year: 2000
-> > May  6 00:13:14 thor kernel: [    0.000000] TSC calibrated against PM_TIMER
-> > May  6 00:13:14 thor kernel: [    0.000014] time.c: Detected 2499.952 MHz processor.
-> > May  6 00:13:14 thor kernel: [    0.000032] console [tty0] enabled
-> > May  6 00:13:14 thor kernel: [    0.000999] Dentry cache hash table entries: 524288 (order: 10, 4194304 bytes)
-> > May  6 00:13:14 thor kernel: [    0.000999] Inode-cache hash table entries: 262144 (order: 9, 2097152 bytes)
-> > May  6 00:13:14 thor kernel: [    0.000999] Checking aperture...
+> > MAP_PRIVATE mappings do not reserve pages. This can result in an application
+> > being SIGKILLed later if a huge page is not available at fault time. This
+> > makes huge pages usage very ill-advised in some cases as the unexpected
+> > application failure cannot be detected and handled as it is immediately fatal.
+> > Although an application may force instantiation of the pages using mlock(),
+> > this may lead to poor memory placement and the process may still be killed
+> > when performing COW.
 > > 
-> > ...
-> > 
-> >>> dmesg shows here :
-> >>>
-> >>> ...
-> >>>
-> >>>
-> >>> [    0.000000] Allocating PCI resources starting at d0000000 (gap: cf600000:2f800000)
-> >>> [    0.000000] SMP: Allowing 4 CPUs, 0 hotplug CPUs
-> >>> [    0.000000] PERCPU: Allocating 42756 bytes of per cpu data
-> >>> [    0.000000] NR_CPUS: 8, nr_cpu_ids: 4
-> >>> [4294014.506571] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 1010753
-> >>> [4294014.506571] Kernel command line: root=/dev/sdb1 ro debug vga=0x317
-> >>> [4294014.506571] Initializing CPU#0
-> >>> [4294014.506571] Preemptible RCU implementation.
-> >>> [4294014.506571] PID hash table entries: 4096 (order: 12, 32768 bytes) 
-
-
-> I've bisected it.
-
-> cat ./.git/refs/bisect/bad
-> 3e51f33fcc7f55e6df25d15b55ed10c8b4da84cd
+> > This patchset introduces a reliability guarantee for the process which creates
+> > a private mapping, i.e. the process that calls mmap() on a hugetlbfs file
+> > successfully.  The first patch of the set is purely mechanical code move to
+> > make later diffs easier to read. The second patch will guarantee faults up
+> > until the process calls fork(). After patch two, as long as the child keeps
+> > the mappings, the parent is no longer guaranteed to be reliable. Patch
+> > 3 guarantees that the parent will always successfully COW by unmapping
+> > the pages from the child in the event there are insufficient pages in the
+> > hugepage pool in allocate a new page, be it via a static or dynamic pool.
 > 
->  git show 3e51f33fcc7f55e6df25d15b55ed10c8b4da84cd
->  commit 3e51f33fcc7f55e6df25d15b55ed10c8b4da84cd
->  Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
->  Date:   Sat May 3 18:29:28 2008 +0200
->  
->      sched: add optional support for CONFIG_HAVE_UNSTABLE_SCHED_CLOCK
->  
->      this replaces the rq->clock stuff (and possibly cpu_clock()).
->  
->       - architectures that have an 'imperfect' hardware clock can set
->         CONFIG_HAVE_UNSTABLE_SCHED_CLOCK
->  
->       - the 'jiffie' window might be superfulous when we update tick_gtod
->         before the __update_sched_clock() call in sched_clock_tick()
->  
->       - cpu_clock() might be implemented as:
->  
->           sched_clock_cpu(smp_processor_id())
->  
->         if the accuracy proves good enough - how far can TSC drift in a
->         single jiffie when considering the filtering and idle hooks?
->  
->      [ mingo@elte.hu: various fixes and cleanups ]
->  
->      Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
->      Signed-off-by: Ingo Molnar <mingo@elte.hu>
->                                                                                                                                                              
+> I don't think patch 3 is a good idea.  It's a fair bit of code to
+> implement a pretty bizarre semantic that I really don't think is all
+> that useful.  Patches 1-2 are already sufficient to cover the
+> fork()/exec() case and a fair proportion of fork()/minor
+> frobbing/exit() cases.  If the child also needs to write the hugepage
+> area, chances are it's doing real work and we care about its
+> reliability too.
 
-Ok, so the issue is that the clock doesn't start at 0, but at:
-4294014.506571 ?
+Without patch 3 the parent is still vunerable during the period the
+child exists.  Even if that child does nothing with the pages not even
+referencing them, and then execs immediatly.  As soon as we fork any
+reference from the parent will trigger a COW, at which point there may
+be no pages available and the parent will have to be killed.  That is
+regardless of the fact the child is not going to reference the page and
+leave the address space shortly.  With patch 3 on COW if we find no memory
+available the page may be stolen for the parent saving it, and the _risk_
+of reference death moves to the child; the child is killed only should it
+then re-reference the page.
 
-I guess that's a side-effect of using ktime to base the clock off.
-Thomas, do we have a clock that is uptime based?
+Without patch 3 a both the parent and child are immediatly vunerable on
+fork() until the child leaves the address space.  With patch 3 only the
+child is vunerable.  The main scenario where mapper protection is useful
+is for main payload applications which fork helpers.  The parent by
+definition is using the mapping heavily whereas we do not expect the
+children to even be aware of it.  As the child will not touch the
+mapping both parent and child should be safe even if we do have to steal
+to save the parent.
 
-
+-apw
