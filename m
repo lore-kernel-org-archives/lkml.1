@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764160AbYEHSZq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761848AbYEHS3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764160AbYEHSZq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 14:25:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754449AbYEHSZg
+	id S1761848AbYEHS3V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 14:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755045AbYEHS3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 14:25:36 -0400
-Received: from mx2.suse.de ([195.135.220.15]:45443 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753864AbYEHSZf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 14:25:35 -0400
-Date: Thu, 8 May 2008 11:25:05 -0700
-From: Greg KH <gregkh@suse.de>
-To: Willy Tarreau <w@1wt.eu>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 00/16] Linux 2.6.25 -stable review
-Message-ID: <20080508182505.GA22308@suse.de>
-References: <20080508174122.GA855@suse.de> <20080508175140.GU8474@1wt.eu>
+	Thu, 8 May 2008 14:29:09 -0400
+Received: from mail.gmx.net ([213.165.64.20]:46610 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754423AbYEHS3G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 14:29:06 -0400
+X-Authenticated: #704063
+X-Provags-ID: V01U2FsdGVkX19fTLYRDzVf9MEaqcar6EqgPG3zEavqIbRtRSYY5r
+	/Q5ZEoxRHjc+l7
+Date: Thu, 8 May 2008 20:29:03 +0200
+From: Eric Sesterhenn <snakebyte@gmx.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Frederik Deweerdt <deweerdt@free.fr>, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Oops with strace_test
+Message-ID: <20080508182903.GD2323@alice>
+References: <20080430121202.GD18314@alice> <20080505100008.GA2354@alice> <20080505180053.GB5576@slug> <20080506121005.GJ32591@elte.hu> <20080507103615.GC2340@alice> <alpine.LFD.1.10.0805071534580.3318@apollo.tec.linutronix.de> <20080507172032.GB3348@alice> <alpine.LFD.1.10.0805071924550.3318@apollo.tec.linutronix.de> <20080507190952.GA11931@linux-os.sc.intel.com> <alpine.LFD.1.10.0805081700570.3318@apollo.tec.linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080508175140.GU8474@1wt.eu>
+In-Reply-To: <alpine.LFD.1.10.0805081700570.3318@apollo.tec.linutronix.de>
+X-Editor: Vim http://www.vim.org/
+X-Info: http://www.snake-basket.de
+X-Operating-System: Linux/2.6.25 (x86_64)
+X-Uptime: 20:27:52 up 27 min,  1 user,  load average: 0.47, 0.54, 0.50
 User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 07:51:41PM +0200, Willy Tarreau wrote:
-> On Thu, May 08, 2008 at 10:41:22AM -0700, Greg KH wrote:
-> > This is the start of the stable review cycle for the 2.6.25.2 release.
-> (...)                                                  ^^^^^^^^
-> > The whole patch series can be found in one patch at:
-> > 	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.25.2-rc1.gz
->                                                              ^^^^^^^^
+* Thomas Gleixner (tglx@linutronix.de) wrote:
+> On Wed, 7 May 2008, Suresh Siddha wrote:
+> > On Wed, May 07, 2008 at 07:26:20PM +0200, Thomas Gleixner wrote:
+> > > 
+> > > Ok, we decoded the problem in meantime. Suresh will send a patch soon.
+> > 
+> > Appended patch should fix it. Eric, can you please check if it fixes the issue?
+> > I have to fix the math-emu aswell. But I will send a different patch for it.
 > 
-> warning Greg, you wrote 2.6.25.2 everywhere it seems. It should be .3.
+> Suresh,
+> 
+> looks good. Applied to x86.git. Waiting for Erics confirmation.
 
-Ok, the updated patch is at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.25.3-rc1.gz
+i have been running the test now for ~4 hours, did reboot inbetween
+twice and the oops didnt happen again, usually it occured in less
+than 5 minutes, would say the patch fixed it.
 
-Sorry for the confusion.
+Thanks, Eric
 
-greg k-h
