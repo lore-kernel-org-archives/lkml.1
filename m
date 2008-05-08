@@ -1,96 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763385AbYEHOri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761993AbYEHOwv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763385AbYEHOri (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 10:47:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753649AbYEHOr2
+	id S1761993AbYEHOwv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 10:52:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753983AbYEHOwl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 10:47:28 -0400
-Received: from mbox2.netikka.net ([213.250.81.203]:32775 "EHLO
-	mbox2.netikka.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752514AbYEHOr0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 10:47:26 -0400
-X-Greylist: delayed 1460 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 May 2008 10:47:26 EDT
-Message-ID: <48230C7B.90007@mandriva.org>
-Date: Thu, 08 May 2008 17:21:47 +0300
-From: Thomas Backlund <tmb@mandriva.org>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: Linus <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-dvb-maintainer@linuxtv.org,
-       video4linux-list@redhat.com, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch, -git] drivers/media build fix for modular builds
-References: <20080507134907.4417708b.sfr@canb.auug.org.au>
-In-Reply-To: <20080507134907.4417708b.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 8 May 2008 10:52:41 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:60096 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753811AbYEHOwk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 10:52:40 -0400
+Subject: Re: [PATCH] x86: fix PAE pmd_bad bootup warning
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Hans Rosenfeld <hans.rosenfeld@amd.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Chua <jeff.chua.linux@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Nishanth Aravamudan <nacc@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <20080508143453.GE12654@escobedo.amd.com>
+References: <b6a2187b0805051806v25fa1272xb08e0b70b9c3408@mail.gmail.com>
+	 <20080506124946.GA2146@elte.hu>
+	 <Pine.LNX.4.64.0805061435510.32567@blonde.site>
+	 <alpine.LFD.1.10.0805061138580.32269@woody.linux-foundation.org>
+	 <Pine.LNX.4.64.0805062043580.11647@blonde.site>
+	 <20080506202201.GB12654@escobedo.amd.com>
+	 <1210106579.4747.51.camel@nimitz.home.sr71.net>
+	 <20080508143453.GE12654@escobedo.amd.com>
+Content-Type: text/plain
+Date: Thu, 08 May 2008 07:52:30 -0700
+Message-Id: <1210258350.7905.45.camel@nimitz.home.sr71.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell skrev:
-> Date:	Wed, 30 Apr 2008 09:48:07 +0200
-> From:	Ingo Molnar <mingo@elte.hu>
-> To:	Mauro Carvalho Chehab <mchehab@infradead.org>
-> Cc:	Linus Torvalds <torvalds@linux-foundation.org>,
-> 	Andrew Morton <akpm@linux-foundation.org>,
-> 	linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-> 	linux-kernel@vger.kernel.org
-> 
-> fix allmodconfig build bug introduced in latest -git by commit 
-> 7c91f0624a9 ("V4L/DVB(7767): Move tuners to common/tuners"):
-> 
->   LD      kernel/built-in.o
->   LD      drivers/built-in.o
->   ld: drivers/media/built-in.o: No such file: No such file or directory
-> 
-> which happens if all media drivers are modular:
-> 
->   http://redhat.com/~mingo/misc/config-Wed_Apr_30_09_24_48_CEST_2008.bad
-> 
-> In that case there's no obj-y rule connecting all the built-in.o files and
-> the link tree breaks.
-> 
-> the fix is to add a guaranteed obj-y rule for the core vmlinux to build.
-> (which results in an empty object file if all media drivers are modular)
-> 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> Acked-by: Sam Ravnborg <sam@ravnborg.org>
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  drivers/media/Makefile |    2 ++
->  1 file changed, 2 insertions(+)
-> 
-> Linus,
-> 
-> I have been applying a similar patch to linux-next for some time.  It has
-> been reported a while ago and does break (at least) powerpc and x86_64
-> allmodconfig builds.
-> 
-> Please apply at you earliest convenience.
-> 
-> /me tries out his "random-build-fix-monkey" appointment.
-> 
-> Index: linux/drivers/media/Makefile
-> ===================================================================
-> --- linux.orig/drivers/media/Makefile
-> +++ linux/drivers/media/Makefile
-> @@ -2,6 +2,8 @@
->  # Makefile for the kernel multimedia device drivers.
->  #
->  
-> +obj-y := common/
-> +
->  obj-$(CONFIG_VIDEO_MEDIA) += common/
->  
->  # Since hybrid devices are here, should be compiled if DVB and/or V4L
-> 
+On Thu, 2008-05-08 at 16:34 +0200, Hans Rosenfeld wrote:
+> While trying to reproduce this, I noticed that the huge page wouldn't
+> leak when I just mmapped it and exited without explicitly unmapping, as
+> I described before. The huge page is leaked only when the
+> /proc/self/pagemap entry for the huge page is read.
 
+Well, that's an interesting data point! :)
 
-How about fixing this one already ?
+Are you running any of your /proc/<pid>/pagemap patches?
 
---
-Thomas
+-- Dave
+
