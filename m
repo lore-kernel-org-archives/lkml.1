@@ -1,91 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934005AbYEHWBj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933968AbYEHWDH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934005AbYEHWBj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 18:01:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933860AbYEHWBM
+	id S933968AbYEHWDH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 18:03:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758168AbYEHWCu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 18:01:12 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:45151
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933814AbYEHWBJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 18:01:09 -0400
-Date: Fri, 9 May 2008 00:01:06 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
+	Thu, 8 May 2008 18:02:50 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60522 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754330AbYEHWCs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 18:02:48 -0400
+Date: Fri, 9 May 2008 00:02:29 +0200
+From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, steiner@sgi.com,
-       holt@sgi.com, npiggin@suse.de, a.p.zijlstra@chello.nl,
-       kvm-devel@lists.sourceforge.net, kanojsarcar@yahoo.com,
-       rdreier@cisco.com, swise@opengridcomputing.com,
-       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
-       general@lists.openfabrics.org, hugh@veritas.com, rusty@rustcorp.com.au,
-       aliguori@us.ibm.com, chrisw@redhat.com, marcelo@kvack.org,
-       dada1@cosmosbay.com, paulmck@us.ibm.com
-Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
-Message-ID: <20080508220106.GF2964@duo.random>
-References: <20080507233953.GM8276@duo.random> <alpine.LFD.1.10.0805071757520.3024@woody.linux-foundation.org> <Pine.LNX.4.64.0805071809170.14935@schroedinger.engr.sgi.com> <20080508025652.GW8276@duo.random> <Pine.LNX.4.64.0805072009230.15543@schroedinger.engr.sgi.com> <20080508034133.GY8276@duo.random> <alpine.LFD.1.10.0805072109430.3024@woody.linux-foundation.org> <20080508052019.GA8276@duo.random> <alpine.LFD.1.10.0805080759430.3024@woody.linux-foundation.org> <alpine.LFD.1.10.0805080907420.3024@woody.linux-foundation.org>
+Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [patch] speed up / fix the new generic semaphore code (fix
+	AIM7 40% regression with 2.6.26-rc1)
+Message-ID: <20080508220229.GA15099@elte.hu>
+References: <alpine.LFD.1.10.0805072014330.3024@woody.linux-foundation.org> <1210219729.3453.97.camel@ymzhang> <alpine.LFD.1.10.0805072115190.3024@woody.linux-foundation.org> <20080508120130.GA2860@elte.hu> <20080508122802.GA4880@elte.hu> <alpine.LFD.1.10.0805080859140.3024@woody.linux-foundation.org> <alpine.LFD.1.10.0805081128550.3024@woody.linux-foundation.org> <20080508201956.GA2547@elte.hu> <alpine.LFD.1.10.0805081326130.2940@woody.linux-foundation.org> <20080508214557.GA13311@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805080907420.3024@woody.linux-foundation.org>
+In-Reply-To: <20080508214557.GA13311@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 09:11:33AM -0700, Linus Torvalds wrote:
-> Btw, this is an issue only on 32-bit x86, because on 64-bit one we already 
-> have the padding due to the alignment of the 64-bit pointers in the 
-> list_head (so there's already empty space there).
-> 
-> On 32-bit, the alignment of list-head is obviously just 32 bits, so right 
-> now the structure is "perfectly packed" and doesn't have any empty space. 
-> But that's just because the spinlock is unnecessarily big.
-> 
-> (Of course, if anybody really uses NR_CPUS >= 256 on 32-bit x86, then the 
-> structure really will grow. That's a very odd configuration, though, and 
-> not one I feel we really need to care about).
 
-I see two ways to implement it:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-1) use #ifdef and make it zero overhead for 64bit only without playing
-any non obvious trick.
+> yeah, i captured a trace of all the down()s that happen in the 
+> workload, using ftrace/sched_switch + stacktrace + a tracepoint in 
+> down(). Here's the semaphore activities in the trace:
 
-struct anon_vma {
-       spinlock_t lock;
-#ifdef CONFIG_MMU_NOTIFIER
-       int global_mm_lock:1;
-#endif
+i've updated the trace with a better one:
 
-struct address_space {
-       spinlock_t	private_lock;
-#ifdef CONFIG_MMU_NOTIFIER
-       int global_mm_lock:1;
-#endif
+>    http://redhat.com/~mingo/misc/aim7-ftrace.txt
 
-2) add a:
+the first one had some idle time in it as well plus the effects of a 
+2000-task Ctrl-Z - which skewed the histograms.
 
-#define AS_GLOBAL_MM_LOCK   (__GFP_BITS_SHIFT + 2)	/* global_mm_locked */
+the new stats are more straightforward. down() callsite histogram:
 
-and use address_space->flags with bitops
+     42  down <= lock_kernel <= de_put <= proc_delete_inode <
+     42  down <= lock_kernel <= proc_lookup_de <= proc_lookup <
+     78  down <= lock_kernel <= proc_lookup_de <= proc_lookup <
+    310  down <= lock_kernel <= sys_fcntl <= system_call_after_swapgs <
+    332  down <= lock_kernel <= vfs_ioctl <= do_vfs_ioctl <
+    380  down <= lock_kernel <= tty_release <= __fput <
+    422  down <= lock_kernel <= chrdev_open <= __dentry_open <
 
-And as Andrew pointed me out by PM, for the anon_vma we can use the
-LSB of the list.next/prev because the list can't be browsed when the
-lock is taken, so taking the lock and then setting the bit and
-clearing the bit before unlocking is safe. The LSB will always read 0
-even if it's under list_add modification when the global spinlock isn't
-taken. And after taking the anon_vma lock we can switch it the LSB
-from 0 to 1 without races and the 1 will be protected by the
-global spinlock.
+hm, why is chrdev_open() called all that often?
 
-The above solution is zero cost for 32bit too, so I prefer it.
+top-5 wakeups:
 
-So I now agree with you this is a great idea on how to remove sort()
-and vmalloc and especially vfree without increasing the VM footprint.
+      4  default_wake_function <= __wake_up_common <= complete <= migration_thread <= kthread <= child_rip <
+      4  wake_up_process <= sched_exec <= do_execve <= sys_execve <= stub_execve <=  <
+      8  wake_up_process <= __mutex_unlock_slowpath <= mutex_unlock <= do_filp_open <= do_sys_open <= sys_open <
+     40  default_wake_function <= autoremove_wake_function <= __wake_up_common <= __wake_up <= sock_def_wakeup <= tcp_rcv_state_process <
+     98  default_wake_function <= __wake_up_common <= __wake_up_sync <= do_notify_parent <= do_exit <= do_group_exit <
 
-I'll send an update with this for review very shortly and I hope this
-goes in so KVM will be able to swap and do many other things very well
-starting in 2.6.26.
+i.e. very little wakeup activities. Top 10 scheduling points:
 
-Thanks a lot,
-Andrea
+     10  schedule <= kjournald <= kthread <= child_rip <
+     12  schedule <= __down_write_nested <= __down_write <= down_write <
+     29  schedule <= worker_thread <= kthread <= child_rip <
+     40  schedule <= schedule_timeout <= inet_stream_connect <= sys_connect <
+     59  schedule <= __cond_resched <= _cond_resched <= generic_file_buffered_write <
+    111  schedule <= ksoftirqd <= kthread <= child_rip <
+    119  schedule <= do_wait <= sys_wait4 <= system_call_after_swapgs <
+    659  schedule <= do_exit <= do_group_exit <= sys_exit_group <
+    781  schedule <= sysret_careful <=  <= 0 <
+   1347  schedule <= retint_careful <=  <= 0 <
+
+> and here's a few seconds worth of NMI driven readprofile output:
+
+the NMI profiling results were accurate.
+
+	Ingo
