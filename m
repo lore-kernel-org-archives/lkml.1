@@ -1,225 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934270AbYEHWvs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934085AbYEHWzt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934270AbYEHWvs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 18:51:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764908AbYEHWvW
+	id S934085AbYEHWzt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 18:55:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762132AbYEHWzi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 18:51:22 -0400
-Received: from smtp.ono.com ([62.42.230.12]:5420 "EHLO resmaa05.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S934199AbYEHWvR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 18:51:17 -0400
-Date: Fri, 9 May 2008 00:51:11 +0200
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: Linus-IDE <linux-ide@vger.kernel.org>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: The never enfind DRDY saga
-Message-ID: <20080509005111.7cf55350@werewolf.home>
-X-Mailer: Claws Mail 3.4.0cvs16 (GTK+ 2.12.9; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 8 May 2008 18:55:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52300 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761588AbYEHWzh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 18:55:37 -0400
+Date: Thu, 8 May 2008 15:55:01 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [patch] speed up / fix the new generic semaphore code (fix AIM7
+ 40% regression with 2.6.26-rc1)
+In-Reply-To: <20080508214557.GA13311@elte.hu>
+Message-ID: <alpine.LFD.1.10.0805081535130.2940@woody.linux-foundation.org>
+References: <1210214696.3453.87.camel@ymzhang> <alpine.LFD.1.10.0805072014330.3024@woody.linux-foundation.org> <1210219729.3453.97.camel@ymzhang> <alpine.LFD.1.10.0805072115190.3024@woody.linux-foundation.org> <20080508120130.GA2860@elte.hu>
+ <20080508122802.GA4880@elte.hu> <alpine.LFD.1.10.0805080859140.3024@woody.linux-foundation.org> <alpine.LFD.1.10.0805081128550.3024@woody.linux-foundation.org> <20080508201956.GA2547@elte.hu> <alpine.LFD.1.10.0805081326130.2940@woody.linux-foundation.org>
+ <20080508214557.GA13311@elte.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all...
 
-I'm getting again my friendly DRDY errors, this time on the new disk I got
-to replace the old one (that fortunately was still under warranty...).
-This is a brand new disk, it came perfectly packaged...
-Now it is not a Seagate, but a WD:
 
-=== START OF INFORMATION SECTION ===
-Device Model:     WDC WD3200AVJS-63WDA0
-Serial Number:    WD-WCARW2347788
-Firmware Version: 12.01B02
-User Capacity:    320,072,933,376 bytes
-Device is:        Not in smartctl database [for details use: -P showall]
-ATA Version is:   8
-ATA Standard is:  Exact ATA specification draft version not indicated
-Local Time is:    Fri May  9 00:33:06 2008 CEST
-SMART support is: Available - device has SMART capability.
-SMART support is: Enabled
+On Thu, 8 May 2008, Ingo Molnar wrote:
+>
+>    2512  down <= lock_kernel <= opost <= write_chan <
+>    2574  down <= lock_kernel <= write_chan <= tty_write <
 
-I managed to find a reliable way to reproduce the errors.
-Copying about 7Gb of data from the SATA to a SCSI disk gave me 3 errors:
+Ok. tty write handling. Nasty. But not as nasty as the open/close code, 
+perhaps, and maybe we'll get it fixed some day.
 
-ata3.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
-ata3.00: cmd c8/00:00:b7:e9:0f/00:00:00:00:00/e2 tag 0 dma 131072 in
-         res 40/00:00:09:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
-ata3.00: status: { DRDY }
-ata3: soft resetting link
-ata3.00: configured for UDMA/133
-ata3: EH complete
-sd 4:0:0:0: [sdd] 625142448 512-byte hardware sectors (320073 MB)
-sd 4:0:0:0: [sdd] Write Protect is off
-sd 4:0:0:0: [sdd] Mode Sense: 00 3a 00 00
-sd 4:0:0:0: [sdd] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+In fact, I thought we had fixed most of this already, but hey, I was 
+clearly wrong. I assume Alan looks at it occasionally and groans. Alan?
 
-I got the SMART status (smartctl -a /dev/sdd > s?) before and after the errors,
-and it shows no problem:
+> 
+> some other interesting stats. Top wakeups sources:
+> 
+>   [...]
+>    1301  default_wake_function <= __wake_up_common <= __wake_up <= n_tty_receive_buf <= pty_write <= write_chan <
+>    2065  wake_up_state <= prepare_signal <= send_signal <= __group_send_sig_info <= group_send_sig_info <= __kill_pgrp_info <
 
-werewolf:~# diff -u s1 s2
---- s1  2008-05-09 00:33:06.000000000 +0200
-+++ s2  2008-05-09 00:36:02.000000000 +0200
-@@ -9,7 +9,7 @@
- Device is:        Not in smartctl database [for details use: -P showall]
- ATA Version is:   8
- ATA Standard is:  Exact ATA specification draft version not indicated
--Local Time is:    Fri May  9 00:33:06 2008 CEST
-+Local Time is:    Fri May  9 00:36:01 2008 CEST
- SMART support is: Available - device has SMART capability.
- SMART support is: Enabled
+Ok, signals being the top one, but that tty code is pretty high again.
 
-@@ -53,16 +53,16 @@
- Vendor Specific SMART Attributes with Thresholds:
- ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE
-   1 Raw_Read_Error_Rate     0x000f   200   200   051    Pre-fail  Always       -       78
--  3 Spin_Up_Time            0x0003   207   159   021    Pre-fail  Always       -       2633
--  4 Start_Stop_Count        0x0032   100   100   000    Old_age   Always       -       183
-+  3 Spin_Up_Time            0x0003   218   159   021    Pre-fail  Always       -       2091
-+  4 Start_Stop_Count        0x0032   100   100   000    Old_age   Always       -       184
-   5 Reallocated_Sector_Ct   0x0033   200   200   140    Pre-fail  Always       -       0
-   7 Seek_Error_Rate         0x000e   200   200   051    Old_age   Always       -       0
-   9 Power_On_Hours          0x0032   099   099   000    Old_age   Always       -       787
-  10 Spin_Retry_Count        0x0012   100   100   051    Old_age   Always       -       0
-  11 Calibration_Retry_Count 0x0012   100   100   051    Old_age   Always       -       0
-- 12 Power_Cycle_Count       0x0032   100   100   000    Old_age   Always       -       183
--192 Power-Off_Retract_Count 0x0032   200   200   000    Old_age   Always       -       172
--193 Load_Cycle_Count        0x0032   200   200   000    Old_age   Always       -       193
-+ 12 Power_Cycle_Count       0x0032   100   100   000    Old_age   Always       -       184
-+192 Power-Off_Retract_Count 0x0032   200   200   000    Old_age   Always       -       173
-+193 Load_Cycle_Count        0x0032   200   200   000    Old_age   Always       -       194
- 194 Temperature_Celsius     0x0022   102   098   000    Old_age   Always       -       45
- 196 Reallocated_Event_Count 0x0032   200   200   000    Old_age   Always       -       0
- 197 Current_Pending_Sector  0x0012   200   200   000    Old_age   Always       -       36
+> and here's a few seconds worth of NMI driven readprofile output:
+> 
+> 216021 sync_page                                3375.3281
+> 391888 page_check_address                       1414.7581
+> 962212 total                                      0.3039
+> 
+> system overhead is consistently 20% during this test.
+> 
+> the page_check_address() overhead is surprising - tons of rmap 
+> contention? about 10% wall-clock overhead in that function alone - and 
+> this is just on a dual-core box!
 
-werewolf:~# diff -u s2 s3
---- s2  2008-05-09 00:36:02.000000000 +0200
-+++ s3  2008-05-09 00:37:42.000000000 +0200
-@@ -9,7 +9,7 @@
- Device is:        Not in smartctl database [for details use: -P showall]
- ATA Version is:   8
- ATA Standard is:  Exact ATA specification draft version not indicated
--Local Time is:    Fri May  9 00:36:01 2008 CEST
-+Local Time is:    Fri May  9 00:37:42 2008 CEST
- SMART support is: Available - device has SMART capability.
- SMART support is: Enabled
+No, it's not rmap contention. Your profile hits are just on the actual 
+calculations, and it's all data-dependent arithmetic and loads. Some cache 
+misses on the page tables, clearly, but it looks like a lot of it is even 
+just the plain arithmetic (the imul followed by a data-dependent 'lea' 
+instruction).
 
-@@ -54,15 +54,15 @@
- ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE
-   1 Raw_Read_Error_Rate     0x000f   200   200   051    Pre-fail  Always       -       78
-   3 Spin_Up_Time            0x0003   218   159   021    Pre-fail  Always       -       2091
--  4 Start_Stop_Count        0x0032   100   100   000    Old_age   Always       -       184
-+  4 Start_Stop_Count        0x0032   100   100   000    Old_age   Always       -       185
-   5 Reallocated_Sector_Ct   0x0033   200   200   140    Pre-fail  Always       -       0
-   7 Seek_Error_Rate         0x000e   200   200   051    Old_age   Always       -       0
-   9 Power_On_Hours          0x0032   099   099   000    Old_age   Always       -       787
-  10 Spin_Retry_Count        0x0012   100   100   051    Old_age   Always       -       0
-  11 Calibration_Retry_Count 0x0012   100   100   051    Old_age   Always       -       0
-- 12 Power_Cycle_Count       0x0032   100   100   000    Old_age   Always       -       184
--192 Power-Off_Retract_Count 0x0032   200   200   000    Old_age   Always       -       173
--193 Load_Cycle_Count        0x0032   200   200   000    Old_age   Always       -       194
-+ 12 Power_Cycle_Count       0x0032   100   100   000    Old_age   Always       -       185
-+192 Power-Off_Retract_Count 0x0032   200   200   000    Old_age   Always       -       174
-+193 Load_Cycle_Count        0x0032   200   200   000    Old_age   Always       -       195
- 194 Temperature_Celsius     0x0022   102   098   000    Old_age   Always       -       45
- 196 Reallocated_Event_Count 0x0032   200   200   000    Old_age   Always       -       0
- 197 Current_Pending_Sector  0x0012   200   200   000    Old_age   Always       -       36
+Some of it is that "page_to_pfn(page)", which involves a nasty division 
+(divide by sizeof(struct page)). It gets turned into that shift and 
+multiply, but it's still quite expensive with big constants etc.
 
-werewolf:~# diff -u s3 s4
---- s3  2008-05-09 00:37:42.000000000 +0200
-+++ s4  2008-05-09 00:39:12.000000000 +0200
-@@ -9,7 +9,7 @@
- Device is:        Not in smartctl database [for details use: -P showall]
- ATA Version is:   8
- ATA Standard is:  Exact ATA specification draft version not indicated
--Local Time is:    Fri May  9 00:37:42 2008 CEST
-+Local Time is:    Fri May  9 00:39:12 2008 CEST
- SMART support is: Available - device has SMART capability.
- SMART support is: Enabled
-
-@@ -53,16 +53,16 @@
- Vendor Specific SMART Attributes with Thresholds:
- ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE
-   1 Raw_Read_Error_Rate     0x000f   200   200   051    Pre-fail  Always       -       78
--  3 Spin_Up_Time            0x0003   218   159   021    Pre-fail  Always       -       2091
--  4 Start_Stop_Count        0x0032   100   100   000    Old_age   Always       -       185
-+  3 Spin_Up_Time            0x0003   223   159   021    Pre-fail  Always       -       1833
-+  4 Start_Stop_Count        0x0032   100   100   000    Old_age   Always       -       186
-   5 Reallocated_Sector_Ct   0x0033   200   200   140    Pre-fail  Always       -       0
-   7 Seek_Error_Rate         0x000e   200   200   051    Old_age   Always       -       0
-   9 Power_On_Hours          0x0032   099   099   000    Old_age   Always       -       787
-  10 Spin_Retry_Count        0x0012   100   100   051    Old_age   Always       -       0
-  11 Calibration_Retry_Count 0x0012   100   100   051    Old_age   Always       -       0
-- 12 Power_Cycle_Count       0x0032   100   100   000    Old_age   Always       -       185
--192 Power-Off_Retract_Count 0x0032   200   200   000    Old_age   Always       -       174
--193 Load_Cycle_Count        0x0032   200   200   000    Old_age   Always       -       195
-+ 12 Power_Cycle_Count       0x0032   100   100   000    Old_age   Always       -       186
-+192 Power-Off_Retract_Count 0x0032   200   200   000    Old_age   Always       -       175
-+193 Load_Cycle_Count        0x0032   200   200   000    Old_age   Always       -       196
- 194 Temperature_Celsius     0x0022   102   098   000    Old_age   Always       -       45
- 196 Reallocated_Event_Count 0x0032   200   200   000    Old_age   Always       -       0
- 197 Current_Pending_Sector  0x0012   200   200   000    Old_age   Always       -       36
-
-The disk is just spinning up and down...
-(btw, why the spin count increases but the spin time decreases???).
-I really don't uderstand. Could it be the controller going nuts ?
-Any idea ?
-I really doubt that I had got 3 faulty drives in a pack and from different
-brands.
-
-Some data:
-- kernel: 2.6.26-rc1-git6 + blk-lockin-fix + latest-semaphore-fixes
-- hadrware:
-00:1f.1 IDE interface: Intel Corporation 82801EB/ER (ICH5/ICH5R) IDE Controller (rev 02)
-00:1f.2 IDE interface: Intel Corporation 82801EB (ICH5) SATA Controller (rev 02)
-03:0a.0 RAID bus controller: Adaptec ASC-29320 U320 w/HostRAID (rev 03)
-03:0a.1 RAID bus controller: Adaptec ASC-29320 U320 w/HostRAID (rev 03)
-
-werewolf:~/soft/linux/kernel/patches/2.6.25-jam06# lsscsi -H
-[0]    aic79xx
-[1]    aic79xx
-[2]    ata_piix
-[3]    ata_piix
-[4]    ata_piix
-[5]    ata_piix
-
-werewolf:~/soft/linux/kernel/patches/2.6.25-jam06# lsscsi
-sdev_scandir_sort: left parse failed
-sdev_scandir_sort: right parse failed
-sdev_scandir_sort: left parse failed
-sdev_scandir_sort: left parse failed
-sdev_scandir_sort: right parse failed
-sdev_scandir_sort: right parse failed
-sdev_scandir_sort: right parse failed
-sdev_scandir_sort: left parse failed
-sdev_scandir_sort: right parse failed
-sdev_scandir_sort: left parse failed
-sdev_scandir_sort: right parse failed
-sdev_scandir_sort: left parse failed
-sdev_scandir_sort: left parse failed
-sdev_scandir_sort: left parse failed
-sdev_scandir_sort: right parse failed
-sdev_scandir_sort: right parse failed
-[target1:0:0]type?   vendor?  model?           rev?  -
-[target1:0:1]type?   vendor?  model?           rev?  -
-[target2:0:0]type?   vendor?  model?           rev?  -
-[target2:0:1]type?   vendor?  model?           rev?  -
-[target4:0:0]type?   vendor?  model?           rev?  -
-[1:0:0:0]    disk    SEAGATE  ST336807LW       0C01  -
-[1:0:1:0]    disk    SEAGATE  ST336807LW       0C01  -
-[2:0:0:0]    disk    ATA      ST3120022A       3.06  -
-[2:0:1:0]    cd/dvd  HL-DT-ST DVDRAM GSA-H10N  JL12  -
-[4:0:0:0]    disk    ATA      WDC WD3200AVJS-6 12.0  -
-
-(garbled output due to some bug in latest gits), but you can guess the sd? )
-
-TIA
-
--- 
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2008.1 (Cooker) for i586
-Linux 2.6.23-jam05 (gcc 4.2.2 20071128 (4.2.2-2mdv2008.1)) SMP PREEMPT
+			Linus
