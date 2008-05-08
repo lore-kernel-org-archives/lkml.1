@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761352AbYEHJ4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761995AbYEHKAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761352AbYEHJ4W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 05:56:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756291AbYEHJ4O
+	id S1761995AbYEHKAa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 06:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756690AbYEHKAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 05:56:14 -0400
-Received: from www.tglx.de ([62.245.132.106]:52377 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753976AbYEHJ4N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 05:56:13 -0400
-Date: Thu, 8 May 2008 11:55:14 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-cc: linux-next@vger.kernel.org, "John W. Linville" <linville@tuxdriver.com>,
-       Ingo Molnar <mingo@elte.hu>, Greg KH <greg@kroah.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: linux-next: the purge :-)
-In-Reply-To: <20080508112130.fd574b50.sfr@canb.auug.org.au>
-Message-ID: <alpine.LFD.1.10.0805081152310.3318@apollo.tec.linutronix.de>
-References: <20080508112130.fd574b50.sfr@canb.auug.org.au>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 8 May 2008 06:00:20 -0400
+Received: from mail.gmx.net ([213.165.64.20]:59693 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756816AbYEHKAR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 06:00:17 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX183ljwRz+Q3YgZBN+bejv71HJ9wiNT1hgRj4MljVL
+	x6cFOk5Hga3B9i
+Subject: Re: sysbench+mysql(oltp, readonly) 30% regression with 2.6.26-rc1
+From: Mike Galbraith <efault@gmx.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080508092547.GA32574@elte.hu>
+References: <1210136148.3453.59.camel@ymzhang>
+	 <1210177575.6525.4.camel@lappy.programming.kicks-ass.net>
+	 <1210228531.3453.124.camel@ymzhang>
+	 <1210233617.4895.6.camel@marge.simson.net> <20080508084607.GA31515@elte.hu>
+	 <20080508092547.GA32574@elte.hu>
+Content-Type: text/plain
+Date: Thu, 08 May 2008 12:00:14 +0200
+Message-Id: <1210240814.6933.0.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 May 2008, Stephen Rothwell wrote:
-> Hi all,
-> 
-> Having published my expectations of what should be in linux-next, I am
-> no implementing what I think is what I said.  :-)
-> 
-> This is open to discussion (including suggestions about other trees).
-> 
-> The following trees are being excluded from today because I think that
-> they contain changes that:
-> 	- have not been published/reviewed/tested sufficiently
-> 	- are not currently intended for 2.6.26 or 2.6.27.
-> (not all reasons apply to all trees).  Please don't take offense, I am
-> just trying to obey my own guidelines.
-> 
-> ldp
-> x86_latest
-> sched_latest
-> 
-> Ingo, I assume that things will migrate from {x86,sched} latest to
-> for-akpm (for-next?) over time.
 
-We are working on refactoring our x86 work flow. We'll give you
-notice, when the dust of the demolition has settled.
+On Thu, 2008-05-08 at 11:25 +0200, Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > -	down(&kernel_sem);
+> > +	if (panic_timeout) {
+> > +		while (down_trylock(&kernel_sem))
+> > +			cpu_relax();
+> 
+> updated one below - this will work fine in the !panic_timeout case too 
+> ;-)
 
-Thanks,
-	tglx
+Same result.
+
+	-Mike
+
