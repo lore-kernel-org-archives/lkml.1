@@ -1,88 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760141AbYEHNUx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760002AbYEHNVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760141AbYEHNUx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 09:20:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbYEHNUp
+	id S1760002AbYEHNVP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 09:21:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758940AbYEHNUx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 09:20:45 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:27678 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753960AbYEHNUm (ORCPT
+	Thu, 8 May 2008 09:20:53 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:48527 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757577AbYEHNUv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 09:20:42 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Subject: [PATCH/RFC] stop_machine: make stop_machine_run more virtualization friendly
-Date: Thu, 8 May 2008 15:20:38 +0200
-User-Agent: KMail/1.9.9
-Cc: Ingo Molnar <mingo@elte.hu>, virtualization@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
+	Thu, 8 May 2008 09:20:51 -0400
+Date: Thu, 8 May 2008 07:20:49 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [patch] speed up / fix the new generic semaphore code (fix AIM7 40% regression with 2.6.26-rc1)
+Message-ID: <20080508132049.GG19219@parisc-linux.org>
+References: <87lk2mbcqp.fsf@basil.nowhere.org> <20080507114643.GR19219@parisc-linux.org> <87hcdab8zp.fsf@basil.nowhere.org> <alpine.LFD.1.10.0805070728280.32269@woody.linux-foundation.org> <alpine.LFD.1.10.0805070817060.3024@woody.linux-foundation.org> <1210214696.3453.87.camel@ymzhang> <alpine.LFD.1.10.0805072014330.3024@woody.linux-foundation.org> <1210219729.3453.97.camel@ymzhang> <alpine.LFD.1.10.0805072115190.3024@woody.linux-foundation.org> <20080508120130.GA2860@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200805081520.38310.borntraeger@de.ibm.com>
+In-Reply-To: <20080508120130.GA2860@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On kvm I have seen some rare hangs in stop_machine when I used more guest
-cpus than hosts cpus. e.g. 32 guest cpus on 1 host cpu triggered the
-hang quite often. I could also reproduce the problem on a 4 way z/VM host with 
-a 64 way guest.
+On Thu, May 08, 2008 at 02:01:30PM +0200, Ingo Molnar wrote:
+> Looking at the workload i found and fixed what i believe to be the real 
+> bug causing the AIM7 regression: it was inefficient wakeup / scheduling 
+> / locking behavior of the new generic semaphore code, causing suboptimal 
+> performance.
 
-It turned out that the guest was consuming all available cpus mostly for
-spinning on scheduler locks like rq->lock. This is expected as the threads are 
-calling yield all the time. 
-The problem is now, that the host scheduling decisings together with the guest 
-scheduling decisions and spinlocks not being fair managed to create an 
-interesting scenario similar to a live lock. (Sometimes the hang resolved 
-itself after some minutes)
+I did note that earlier downthread ... although to be fair, I thought of
+it in terms of three tasks with the third task coming in and stealing
+the second tasks's wakeup rather than the first task starving the second
+by repeatedly locking/unlocking the semaphore.
 
-Changing stop_machine to yield the cpu to the hypervisor when yielding inside 
-the guest fixed the problem for me. While I am not completely happy with this 
-patch, I think it causes no harm and it really improves the situation for me.
+> So if the old owner, even if just a few instructions later, does a 
+> down() [lock_kernel()] again, it will be blocked and will have to wait 
+> on the new owner to eventually be scheduled (possibly on another CPU)! 
+> Or if another other task gets to lock_kernel() sooner than the "new 
+> owner" scheduled, it will be blocked unnecessarily and for a very long 
+> time when there are 2000 tasks running.
+> 
+> I.e. the implementation of the new semaphores code does wake-one and 
+> lock ownership in a very restrictive way - it does not allow 
+> opportunistic re-locking of the lock at all and keeps the scheduler from 
+> picking task order intelligently.
 
-I used cpu_relax for yielding to the hypervisor, does that work on all 
-architectures?
+Fair is certainly the enemy of throughput (see also dbench arguments
+passim).  It may be that some semaphore users really do want fairness --
+it seems pretty clear that we don't want fairness for the BKL.
 
-p.s.: If you want to reproduce the problem, cpu hotplug and kprobes use 
-stop_machine_run and both triggered the problem after some retries. 
-
-
-Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
-CC: Ingo Molnar <mingo@elte.hu>
-CC: Rusty Russell <rusty@rustcorp.com.au>
-
----
- kernel/stop_machine.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
-
-Index: kvm/kernel/stop_machine.c
-===================================================================
---- kvm.orig/kernel/stop_machine.c
-+++ kvm/kernel/stop_machine.c
-@@ -62,8 +62,7 @@ static int stopmachine(void *cpu)
- 		 * help our sisters onto their CPUs. */
- 		if (!prepared && !irqs_disabled)
- 			yield();
--		else
--			cpu_relax();
-+		cpu_relax();
- 	}
- 
- 	/* Ack: we are exiting. */
-@@ -106,8 +105,10 @@ static int stop_machine(void)
- 	}
- 
- 	/* Wait for them all to come to life. */
--	while (atomic_read(&stopmachine_thread_ack) != stopmachine_num_threads)
-+	while (atomic_read(&stopmachine_thread_ack) != stopmachine_num_threads) {
- 		yield();
-+		cpu_relax();
-+	}
- 
- 	/* If some failed, kill them all. */
- 	if (ret < 0) {
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
