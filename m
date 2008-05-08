@@ -1,68 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933983AbYEHWmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932762AbYEHWqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933983AbYEHWmc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 18:42:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753859AbYEHWmU
+	id S932762AbYEHWqU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 18:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758563AbYEHWqG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 18:42:20 -0400
-Received: from mx2.suse.de ([195.135.220.15]:41834 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754557AbYEHWmU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 18:42:20 -0400
-Subject: patch usb-use-get_unaligned_-helpers-for-kl5kusb105-driver.patch added to gregkh-2.6 tree
-To: harvey.harrison@gmail.com, akpm@linux-foundation.org, gregkh@suse.de,
+	Thu, 8 May 2008 18:46:06 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:64006 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754254AbYEHWqF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 18:46:05 -0400
+Date: Thu, 8 May 2008 23:43:34 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Ralf Baechle <ralf@linux-mips.org>
+cc: Jean Delvare <khali@linux-fr.org>, Alessandro Zummo <a.zummo@towertech.it>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, rtc-linux@googlegroups.com,
+       i2c@lm-sensors.org, linux-mips@linux-mips.org,
        linux-kernel@vger.kernel.org
-From: <gregkh@suse.de>
-Date: Thu, 08 May 2008 15:39:18 -0700
-In-Reply-To: <1209700377.22362.20.camel@brick>
-Message-ID: <12102863583733@kroah.org>
+Subject: Re: [RFC][PATCH 2/4] RTC: SWARM I2C board initialization
+In-Reply-To: <20080508045106.GB25531@linux-mips.org>
+Message-ID: <Pine.LNX.4.55.0805082311410.5944@cliff.in.clinika.pl>
+References: <Pine.LNX.4.55.0805070031410.16173@cliff.in.clinika.pl>
+ <20080507085953.2c08b854@hyperion.delvare> <Pine.LNX.4.55.0805072145040.25644@cliff.in.clinika.pl>
+ <20080508045106.GB25531@linux-mips.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 8 May 2008, Ralf Baechle wrote:
 
-This is a note to let you know that I've just added the patch titled
+> I like it; we maybe should consider getting rid of most of the libs-* stuff
+> in arch/mips/Makefile.  Some of it might be causing subtle bugs such as
+> routines exported to modules not getting linked into the kernel proper.
 
-     Subject: USB: use get_unaligned_* helpers for kl5kusb105 driver
+ Well, I think it should be reasonable to convert everything but lib/, the
+latter being used for various implicit bits like strcpy() or whatever some
+version of GCC may come up with.  Plus possibly generic code overridable
+by boards for optimisation; I am not sure if we have got left any at the
+moment though.
 
-to my gregkh-2.6 tree.  Its filename is
+ With the much better configuration language of 2.6 and more and more 
+stuff being done by magic sections bits built as libraries cause more 
+hassle than convenience.
 
-     usb-use-get_unaligned_-helpers-for-kl5kusb105-driver.patch
-
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
-
-
->From harvey.harrison@gmail.com Thu May  1 20:52:48 2008
-From: Harvey Harrison <harvey.harrison@gmail.com>
-Date: Thu, 01 May 2008 20:52:57 -0700
-Subject: USB: use get_unaligned_* helpers for kl5kusb105 driver
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>
-Message-ID: <1209700377.22362.20.camel@brick>
-
-
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/usb/serial/kl5kusb105.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/drivers/usb/serial/kl5kusb105.c
-+++ b/drivers/usb/serial/kl5kusb105.c
-@@ -236,7 +236,7 @@ static int klsi_105_get_line_state(struc
- 	if (rc < 0)
- 		err("Reading line status failed (error = %d)", rc);
- 	else {
--		status = le16_to_cpu(get_unaligned((__le16 *)status_buf));
-+		status = get_unaligned_le16(status_buf);
- 
- 		info("%s - read status %x %x", __func__,
- 		     status_buf[0], status_buf[1]);
-
-
-Patches currently in gregkh-2.6 which might be from harvey.harrison@gmail.com are
-
-usb.next/usb-fix-integer-as-null-pointer-warnings-found-by-sparse.patch
-usb.next/usb-use-get_unaligned_-helpers-for-kl5kusb105-driver.patch
+  Maciej
