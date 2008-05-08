@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754464AbYEHHuO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757725AbYEHHup@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754464AbYEHHuO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 03:50:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751352AbYEHHt5
+	id S1757725AbYEHHup (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 03:50:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbYEHHua
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 03:49:57 -0400
-Received: from smtp1.kolej.mff.cuni.cz ([78.128.192.10]:64113 "EHLO
-	smtp1.kolej.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751255AbYEHHt4 (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 03:49:56 -0400
-X-Envelope-From: zajio1am@artax.karlin.mff.cuni.cz
-Date: Thu, 8 May 2008 09:18:09 +0200
-From: Ondrej Zajicek <santiago@crfreenet.org>
-To: JosephChan@via.com.tw
-Cc: akpm@linux-foundation.org, geert@linux-m68k.org,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [Linux-fbdev-devel] [PATCH 6/9] viafb: VIA Frame Buffer Device Driver
-Message-ID: <20080508071809.GA11121@localhost.localdomain>
-References: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67759@exchtp03.taipei.via.com.tw>
+	Thu, 8 May 2008 03:50:30 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:12144 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751352AbYEHHu2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 03:50:28 -0400
+Message-ID: <4822B0C1.5060604@linux.vnet.ibm.com>
+Date: Thu, 08 May 2008 09:50:25 +0200
+From: Jochen Roth <jroth@linux.vnet.ibm.com>
+Reply-To: jroth@linux.vnet.ibm.com
+User-Agent: Thunderbird 2.0.0.12 (X11/20080303)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67759@exchtp03.taipei.via.com.tw>
-X-Operating-System: Debian GNU/Linux 4.0 (Etch)
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Carl Love <cel@us.ibm.com>
+CC: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Arnd Bergmann <arnd@arndb.de>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>
+Subject: Re: [Cbe-oss-dev] [PATCH] Updated: Reworked Cell OProfile: SPU mutex
+ lock fix
+References: <1209587712.7531.42.camel@carll-linux-desktop> <4821DEB0.7050308@linux.vnet.ibm.com> <1210180166.7726.19.camel@carll-linux-desktop>
+In-Reply-To: <1210180166.7726.19.camel@carll-linux-desktop>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 07, 2008 at 07:09:42PM +0800, JosephChan@via.com.tw wrote:
-> diff -Nur a/drivers/video/via/viafb.modes b/drivers/video/via/viafb.modes
-> --- a/drivers/video/via/viafb.modes	1969-12-31 19:00:00.000000000 -0500
-> +++ b/drivers/video/via/viafb.modes	2008-04-29 02:51:27.000000000 -0400
-> @@ -0,0 +1,870 @@
-> +#
-> +#
-> +#   These data are based on the CRTC parameters in
-> +#
-> +#       VIA Integration Graphics Chip
-> +#       (C) 2004 VIA Technologies Inc.
+Carl Love wrote:
 
-Configuration file for fbset definitely shouldn't be here between C
-source files. If it is needed, then it should be somewhere in
-Documentation/fb .
+>>  > +void oprofile_add_value(unsigned long value, int cpu) {
+>>  > +	struct oprofile_cpu_buffer * cpu_buf = &cpu_buffer[cpu];
+>>
+>> Shouldn't it be
+>> 	struct oprofile_cpu_buffer *cpu_buf = &per_cpu(cpu_buffer, cpu);
+> 
+> No, I don't think so.  Take a look at the other functions in
+> drivers/oprofile/cpu_buffer.c.  For example oprofile_add_trace().  You
+> will see that the cpu_buffer is not accessed using the per_cpu
+> construct.  Not sure why the compiler would complain about the
+> oprofile_add_value() function but not one of the other functions like
+> oprofile_add_trace().
 
-BTW, Are these modes common VESA modes (DVT, GTF or CVT)  or some
-other modes. In first case there is probably no reason to include
-them.
+Well, actually the other functions like oprofile_add_trace are using the 
+&__get_cpu_var(cpu_buffer) construct.
 
--- 
-Elen sila lumenn' omentielvo
+> What was the compiler error that you saw?
 
-Ondrej 'SanTiago' Zajicek (email: santiago@crfreenet.org)
-OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
-"To err is human -- to blame it on a computer is even more so."
+Here they are:
+/home/jroth/kernel/spufs/arch/powerpc/oprofile/../../../drivers/oprofile/cpu_buffer.c: 
+In function ‘oprofile_add_value’:
+/home/jroth/kernel/spufs/arch/powerpc/oprofile/../../../drivers/oprofile/cpu_buffer.c:234: 
+error: ‘cpu_buffer’ undeclared (first use in this function)
+
+cpu_buffer is defined by the DEFINE_PER_CPU_SHARED_ALIGNED macro:
+DEFINE_PER_CPU_SHARED_ALIGNED(struct oprofile_cpu_buffer, cpu_buffer);
+
+> I will try getting Jeremy's kernel and applying the patch there to see
+> if it works.
+
+You'll find his tree at 
+git://git.kernel.org/pub/scm/linux/kernel/git/jk/spufs.git
+
