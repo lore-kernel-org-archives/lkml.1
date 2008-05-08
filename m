@@ -1,62 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934146AbYEHWTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934214AbYEHWUL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934146AbYEHWTR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 18:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762494AbYEHWTA
+	id S934214AbYEHWUL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 18:20:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932726AbYEHWTw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 18:19:00 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:56036 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762183AbYEHWS7 (ORCPT
+	Thu, 8 May 2008 18:19:52 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:41612 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762183AbYEHWTv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 18:18:59 -0400
-Message-ID: <48237CA0.4080001@keyaccess.nl>
-Date: Fri, 09 May 2008 00:20:16 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: GIT bisection range errors
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+	Thu, 8 May 2008 18:19:51 -0400
+Subject: Re: [PATCH] wireless: Add missing locking to cfg80211_dev_rename
+From: Johannes Berg <johannes@sipsolutions.net>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin Thery <benjamin.thery@bull.net>, linux-kernel@vger.kernel.org,
+       Tejun Heo <htejun@gmail.com>, Al Viro <viro@ftp.linux.org.uk>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org,
+       Greg KH <gregkh@suse.de>
+In-Reply-To: <m1ej8ccwlx.fsf_-_@frodo.ebiederm.org>
+References: <20080506173030.653828076@theryb.frec.bull.fr>
+	 <20080506173335.922289888@theryb.frec.bull.fr>
+	 <m13aoueyq8.fsf@frodo.ebiederm.org> <20080507190838.GA4467@suse.de>
+	 <m1ej8ccwlx.fsf_-_@frodo.ebiederm.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ud1hiflYVFADckWe6QeR"
+Date: Fri, 09 May 2008 00:18:20 +0200
+Message-Id: <1210285100.3547.79.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Good day.
 
-I'm in a git bisect and am experiencing strangeness. I did a
+--=-ud1hiflYVFADckWe6QeR
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-$ git checkout -b rc v2.6.26-rc1
-$ git bisect start
-$ git bisect bad
-$ git bisect good v2.6.25
+On Thu, 2008-05-08 at 14:30 -0700, Eric W. Biederman wrote:
+> device_rename only performs useful and race free validity
+> checking at the optional sysfs level so depending on it
+> for all of the validity checking in cfg80211_dev_rename
+> is racy.
+>=20
+> Instead implement all of the needed validity checking
+> and locking in cfg80211_dev_rename.
 
-Yet, during this I'm finding myself at 2.6.25-rc6 and 2.6.25-rc8
-as the last two results (both good...).
+Makes sense, thanks, I didn't really think about it not being compiled
+in.
 
-Here's the BISECT_LOG upto this point. Is there anyone available
-who understands this well enough to be able to say from this that
-my tree is fubar? It should be a straight Linus' clone, and it's
-always pulling without trouble.
+> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 
-git-bisect start
-# bad: [2ddcca36c8bcfa251724fe342c8327451988be0d] Linux 2.6.26-rc1
-git-bisect bad 2ddcca36c8bcfa251724fe342c8327451988be0d
-# good: [4b119e21d0c66c22e8ca03df05d9de623d0eb50f] Linux 2.6.25
-git-bisect good 4b119e21d0c66c22e8ca03df05d9de623d0eb50f
-# bad: [7ae44cfa7ab29b277691327e8de790d7b880722f] [ALSA] snd-powermac: style awacs.s and awacs.h
-git-bisect bad 7ae44cfa7ab29b277691327e8de790d7b880722f
-# good: [7cea51be4e91edad05bd834f3235b45c57783f0d] security: fix up documentation for security_module_enable
-git-bisect good 7cea51be4e91edad05bd834f3235b45c57783f0d
-# bad: [8f19ca1341a6d89bd96e2e69e6e10f46d3258089] x86: unify gfp masks
-git-bisect bad 8f19ca1341a6d89bd96e2e69e6e10f46d3258089
-# good: [f49e1aa133c2c9b74b5dfddca8863609bbda9086] [NETFILTER]: nf_conntrack_sip: update copyright
-git-bisect good f49e1aa133c2c9b74b5dfddca8863609bbda9086
-# good: [0b18542b7f5379e052d2a3132be91185776e7ceb] [NET]: Sink IPv6 menuoptions into its own submenu
-git-bisect good 0b18542b7f5379e052d2a3132be91185776e7ceb
+Acked-by: Johannes Berg <johannes@sipsolutions.net>
 
+> ---
+>  net/wireless/core.c |   33 ++++++++++++++++++++++++++++-----
+>  1 files changed, 28 insertions(+), 5 deletions(-)
+>=20
+> diff --git a/net/wireless/core.c b/net/wireless/core.c
+> index 80afacd..f1da0b9 100644
+> --- a/net/wireless/core.c
+> +++ b/net/wireless/core.c
+> @@ -143,8 +143,11 @@ void cfg80211_put_dev(struct cfg80211_registered_dev=
+ice *drv)
+>  int cfg80211_dev_rename(struct cfg80211_registered_device *rdev,
+>  			char *newname)
+>  {
+> +	struct cfg80211_registered_device *drv;
+>  	int idx, taken =3D -1, result, digits;
+> =20
+> +	mutex_lock(&cfg80211_drv_mutex);
+> +
+>  	/* prohibit calling the thing phy%d when %d is not its number */
+>  	sscanf(newname, PHY_NAME "%d%n", &idx, &taken);
+>  	if (taken =3D=3D strlen(newname) && idx !=3D rdev->idx) {
+> @@ -156,14 +159,30 @@ int cfg80211_dev_rename(struct cfg80211_registered_=
+device *rdev,
+>  		 * deny the name if it is phy<idx> where <idx> is printed
+>  		 * without leading zeroes. taken =3D=3D strlen(newname) here
+>  		 */
+> +		result =3D -EINVAL;
+>  		if (taken =3D=3D strlen(PHY_NAME) + digits)
+> -			return -EINVAL;
+> +			goto out_unlock;
+> +	}
+> +
+> +
+> +	/* Ignore nop renames */
+> +	result =3D 0;
+> +	if (strcmp(newname, dev_name(&rdev->wiphy.dev)) =3D=3D 0)
+> +		goto out_unlock;
+> +
+> +	/* Ensure another device does not already have this name. */
+> +	list_for_each_entry(drv, &cfg80211_drv_list, list) {
+> +		result =3D -EINVAL;
+> +		if (strcmp(newname, dev_name(&drv->wiphy.dev)) =3D=3D 0)
+> +			goto out_unlock;
+>  	}
+> =20
+> -	/* this will check for collisions */
+> +	/* this will only check for collisions in sysfs
+> +	 * which is not even always compiled in.
+> +	 */
+>  	result =3D device_rename(&rdev->wiphy.dev, newname);
+>  	if (result)
+> -		return result;
+> +		goto out_unlock;
+> =20
+>  	if (!debugfs_rename(rdev->wiphy.debugfsdir->d_parent,
+>  			    rdev->wiphy.debugfsdir,
+> @@ -172,9 +191,13 @@ int cfg80211_dev_rename(struct cfg80211_registered_d=
+evice *rdev,
+>  		printk(KERN_ERR "cfg80211: failed to rename debugfs dir to %s!\n",
+>  		       newname);
+> =20
+> -	nl80211_notify_dev_rename(rdev);
+> +	result =3D 0;
+> +out_unlock:
+> +	mutex_unlock(&cfg80211_drv_mutex);
+> +	if (result =3D=3D 0)
+> +		nl80211_notify_dev_rename(rdev);
+> =20
+> -	return 0;
+> +	return result;
+>  }
+> =20
+>  /* exported functions */
 
-Rene.
+--=-ud1hiflYVFADckWe6QeR
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUASCN8K6Vg1VMiehFYAQKfMQ/9EuN7ARC72ab/rxNd4+jGO3XN3UlYPZ+t
+ytHyqNrM1RUjN+2XO+Nxb/6y4astz8POlKKAVl1G+ZPuQAK40YoYNYeQ5jZjGZ3p
+8ACKYeN8Fx+wfoCXfZpSrj7c0lFZ8p+YGPtWoBX7y+PDCVgVHPAwC0M65itdzZNi
+8oG2eNacQBK3hnNgz2syZ7hg1AjyFOYql3HjcldLBF4DzjVbN0egPQNlUut2iGji
+gupM8zNMZLVaFzGsDxGLU8I3V5V5PYQy9179FeWFMpW6OzzfP+3CN12blEpsIamP
+iS48xjn05LBBZoFCHCweNg9x+dsnbeKPLgawTP/tH59RCP96TX3d+LWUacpZTg+b
+oa8hPFG+L+gnezouLmiVpUTkAqEpwxQ6opDzUPMaHDglrFWszyui4uVEVrdwCAPu
+Dj/jqiIXP4ESyeXrFPmvR9qgOoyvKmyovtIXxXtMSO7KqZKLUcXtiVdvEunqZXfC
+tR6iz9+WKgZ9tOhg44+ug2uYt37rl+yu7yVtqUWBA1hg3EUUT0afLjnpqXpjqCSJ
+QRZg2jMLSBpSOf3Cx7xgxjfWWLXYPmViT8DSWY0OeFd1O+FIPG/35JzEQ1xaGLy0
+oOA/LjoarFq//VRe35GU1OUduRjIJmQhzUX0Zm6s7TQJY+qEH0aHsl5h4ctkE4sa
+dwh4rt8hWGw=
+=o7fD
+-----END PGP SIGNATURE-----
+
+--=-ud1hiflYVFADckWe6QeR--
+
