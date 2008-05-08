@@ -1,30 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757635AbYEHAlg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758146AbYEHAmb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757635AbYEHAlg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 20:41:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754056AbYEHAl0
+	id S1758146AbYEHAmb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 20:42:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbYEHAmV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 20:41:26 -0400
-Received: from artax.karlin.mff.cuni.cz ([195.113.31.125]:52544 "EHLO
+	Wed, 7 May 2008 20:42:21 -0400
+Received: from artax.karlin.mff.cuni.cz ([195.113.31.125]:43752 "EHLO
 	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753893AbYEHAlZ (ORCPT
+	with ESMTP id S1751961AbYEHAmU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 20:41:25 -0400
-Date: Thu, 8 May 2008 02:41:24 +0200 (CEST)
+	Wed, 7 May 2008 20:42:20 -0400
+Date: Thu, 8 May 2008 02:42:09 +0200 (CEST)
 From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
 To: Miklos Szeredi <miklos@szeredi.hu>
 cc: akpm@linux-foundation.org, hch@infradead.org, viro@ZenIV.linux.org.uk,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 06/24] hpfs: dont call notify_change
-In-Reply-To: <20080506091413.165665963@szeredi.hu>
-Message-ID: <Pine.LNX.4.64.0805080240470.11247@artax.karlin.mff.cuni.cz>
-References: <20080506091327.259950960@szeredi.hu> <20080506091413.165665963@szeredi.hu>
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [patch 07/15] hpfs: dont call notify_change
+In-Reply-To: <20080505095517.214430823@szeredi.hu>
+Message-ID: <Pine.LNX.4.64.0805080241490.11247@artax.karlin.mff.cuni.cz>
+References: <20080505095440.820370974@szeredi.hu> <20080505095517.214430823@szeredi.hu>
 X-Personality-Disorder: Schizoid
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+
+
+On Mon, 5 May 2008, Miklos Szeredi wrote:
 
 > From: Miklos Szeredi <mszeredi@suse.cz>
 > 
@@ -40,11 +44,9 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 > 
 > Possibly even the ctime modification is wrong?
 
-OK, commit the patch.
+Ok, commit it.
 
 Signed-off-by: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
-
-Mikulas
 
 > Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 > CC: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
@@ -54,8 +56,8 @@ Mikulas
 > 
 > Index: linux-2.6/fs/hpfs/namei.c
 > ===================================================================
-> --- linux-2.6.orig/fs/hpfs/namei.c	2008-05-06 11:04:29.000000000 +0200
-> +++ linux-2.6/fs/hpfs/namei.c	2008-05-06 11:04:34.000000000 +0200
+> --- linux-2.6.orig/fs/hpfs/namei.c	2008-05-05 11:29:20.000000000 +0200
+> +++ linux-2.6/fs/hpfs/namei.c	2008-05-05 11:29:26.000000000 +0200
 > @@ -426,7 +426,8 @@ again:
 >  			/*printk("HPFS: truncating file before delete.\n");*/
 >  			newattrs.ia_size = 0;
