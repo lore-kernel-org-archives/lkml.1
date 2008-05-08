@@ -1,66 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762081AbYEHUQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932459AbYEHURB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762081AbYEHUQn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 16:16:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbYEHUQd
+	id S932459AbYEHURB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 16:17:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764427AbYEHUQs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 16:16:33 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:42899 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752603AbYEHUQc (ORCPT
+	Thu, 8 May 2008 16:16:48 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:2340 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764334AbYEHUQq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 16:16:32 -0400
-Subject: Re: [PATCH] x86: fix PAE pmd_bad bootup warning
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Hans Rosenfeld <hans.rosenfeld@amd.com>
-Cc: Hugh Dickins <hugh@veritas.com>, Nishanth Aravamudan <nacc@us.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Jeff Chua <jeff.chua.linux@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-Reply-To: <20080508200239.GJ12654@escobedo.amd.com>
-References: <1210106579.4747.51.camel@nimitz.home.sr71.net>
-	 <20080508143453.GE12654@escobedo.amd.com>
-	 <1210258350.7905.45.camel@nimitz.home.sr71.net>
-	 <20080508151145.GG12654@escobedo.amd.com>
-	 <1210261882.7905.49.camel@nimitz.home.sr71.net>
-	 <20080508161925  <20080508200239.GJ12654@escobedo.amd.com>
-Content-Type: text/plain
-Date: Thu, 08 May 2008 13:16:27 -0700
-Message-Id: <1210277787.7905.81.camel@nimitz.home.sr71.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 8 May 2008 16:16:46 -0400
+Date: Thu, 8 May 2008 21:16:43 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Harald Welte <laforge@gnumonks.org>
+Cc: Liam Girdwood <lg@opensource.wolfsonmicro.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       arm kernel <linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: [PATCH 0/13] Updated V4  - Regulator Framework
+Message-ID: <20080508201641.GA16945@sirena.org.uk>
+Mail-Followup-To: Harald Welte <laforge@gnumonks.org>,
+	Liam Girdwood <lg@opensource.wolfsonmicro.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	arm kernel <linux-arm-kernel@lists.arm.linux.org.uk>
+References: <1209742841.12502.40.camel@odin> <20080508063538.GC6105@prithivi.gnumonks.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080508063538.GC6105@prithivi.gnumonks.org>
+X-Cookie: 98% lean.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-05-08 at 22:02 +0200, Hans Rosenfeld wrote:
-> > A pmd_huge(*pmd) test is tempting, but it only ever says "yes" on x86:
-> > we've carefully left it undefined what happens to the pgd/pud/pmd/pte
-> > hierarchy in the general arch case, once you're amongst hugepages.
-> 
-> AFAIK the reason for this is that pmd_huge() and pud_huge() are
-> completely x86-specific. When I looked at the huge page support for
-> other archs in Linux the last time, all of them marked hugepages with
-> some page size bits in the PTE, using several PTEs for a single huge
-> page. So for anything but x86, the pgd/pud/pmd/pte hierarchy should work
-> for hugepages, too.
+On Thu, May 08, 2008 at 08:35:38AM +0200, Harald Welte wrote:
 
-powerpc kinda puts them in pmds, although Adam calls them ptes in his
-diagram.  See Adam's very nice pictures here:
+> The PCF506xx have a concept of global power management states,
+> particularly important are the ON and STANDBY states in this context.
+> Every regulator has a property whether it is enabled in none, one or
+> both of the global power management states.
 
-	http://linux-mm.org/PageTableStructure
+That's a problem we've encountered - at least the WM8350 and (to a
+lesser extent) the WM8400, both of which have had support implemented in
+terms of the regulator API, have similar states.
 
-In the arch code, they have a concept of "slices" for each mm that you
-can look up the page size for.  That's what they use when the mm/vmas
-aren't around.  Their pmd_ts really are just pointers.  I don't think
-they have any flags in them at all like _PAGE_PSE.
+> Do you think it would be worth to export something like this in the
+> generic API, too?  It's probably quite hard, since there are devices
+> that actually use the PCF506xx STANDBY state during suspend-to-ram, but
+> other devices leave the PCF506xx in the ON state and just disable the
+> individual regulators using I2C register writes.
 
-They just do a special pagetable walk instead of looking *at* the
-pagetables.
+Indeed - where a STANDBY-style state is used the likely implementation
+is going to be something like setting a GPIO at some point towards the
+very end of suspending to activate it (if it's done directly by software
+at all).
 
--- Dave
+> I think there's probably no clean way how to integrate this, since the
+> question remains: who makes the decision (and manages the contraints) of
+> when to transition into the STANDBY state.   Nevertheless a read-only
+> sysfs attribute might still be interesting.
 
+At present the regulator API pretty much works on the assumption that
+this will be very system specific and probably not amount to much in
+software terms since the CPU is likely to be suspended or off while
+these modes are active so the transitions can adequately be handled by
+machine specific code.
+
+What might be more readily generalisable would be configuration for what
+happens in the very low power states.  The WM8350 driver has a
+device-specific API which provides access for the soft configuration for
+this state since the chip allows the system to set the state of the
+regulator when it is suspended.  This gives a second set of settings
+that are activated when the system enters a low power state.  This
+caters for most cases (where this will be statically configured by the
+board setup code) but if it were generalised into the regulator core
+then it would allow use in conjunction with the device_*_wakeup() stuff,
+letting drivers say which of their supplies they need when suspended.  I
+don't know how much demand there would be for that, though, and it'd be
+an extension to the API.
+
+This gets rather more interesting when the system has a secondary PMIC -
+with multiple PMICs it's much more likely that one of them could be
+placed into a low power state while the system is running.  Off the top
+of my head that may be adequately handled by having a master regulator
+driver in the tree supplying the secondary PMIC which puts it into a low
+power state when it is not needed.  It's probably best tackled when we
+have some experience with such systems.
