@@ -1,119 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760012AbYEHOFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761109AbYEHOIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760012AbYEHOFZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 10:05:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbYEHOFJ
+	id S1761109AbYEHOIn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 10:08:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbYEHOIe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 10:05:09 -0400
-Received: from web32602.mail.mud.yahoo.com ([68.142.207.229]:40596 "HELO
-	web32602.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751099AbYEHOFI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 10:05:08 -0400
-X-YMail-OSG: KhAR.LAVM1m.lV2Z_o3dUQlPtBt53pOdyhy.Ib3hDdTm7r_VabpjPjG5gwJ13tp5yA--
-X-Mailer: YahooMailRC/975.23 YahooMailWebService/0.7.185
-Date: Thu, 8 May 2008 07:05:05 -0700 (PDT)
-From: Martin Knoblauch <spamtrap@knobisoft.de>
-Subject: Re: 2.6.25.2 - Jiffies/Time jumping back and forth (Regereesion from 2.6.24)
-To: Gabriel C <nix.or.die@googlemail.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: Bart Van Assche <bart.vanassche@gmail.com>, linux-kernel@vger.kernel.org,
-       hmh@hmh.eng.br
+	Thu, 8 May 2008 10:08:34 -0400
+Received: from mail.aknet.ru ([78.158.192.26]:50404 "EHLO mail.aknet.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752974AbYEHOIc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 10:08:32 -0400
+X-Greylist: delayed 1086 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 May 2008 10:08:32 EDT
+Message-ID: <48233D4B.9080505@aknet.ru>
+Date: Thu, 08 May 2008 21:50:03 +0400
+From: Stas Sergeev <stsp@aknet.ru>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <295530.5900.qm@web32602.mail.mud.yahoo.com>
+To: Takashi Iwai <tiwai@suse.de>
+CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Linux kernel <linux-kernel@vger.kernel.org>,
+       Vojtech Pavlik <vojtech@suse.cz>,
+       Michael Opdenacker <michael-lists@free-electrons.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [patch] pcspkr: fix dependancies
+References: <481D3A08.2040500@aknet.ru>	<20080505035733.GA11584@anvil.corenet.prv>	<481E8C64.7090507@aknet.ru>	<20080505043554.GC11584@anvil.corenet.prv>	<481E94EE.5080308@aknet.ru> <s5hy76pc8u1.wl%tiwai@suse.de>
+In-Reply-To: <s5hy76pc8u1.wl%tiwai@suse.de>
+X-Enigmail-Version: 0.95.2
+Content-Type: multipart/mixed;
+ boundary="------------000607090301070502070206"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message ----
+This is a multi-part message in MIME format.
+--------------000607090301070502070206
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-> From: Gabriel C <nix.or.die@googlemail.com>
-> To: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Martin Knoblauch <spamtrap@knobisoft.de>; Bart Van Assche <bart.vanassche@gmail.com>; linux-kernel@vger.kernel.org; hmh@hmh.eng.br
-> Sent: Thursday, May 8, 2008 2:21:57 PM
-> Subject: Re: 2.6.25.2 - Jiffies/Time jumping back and forth (Regereesion from 2.6.24)
-> 
-> Thomas Gleixner wrote:
-> > On Wed, 7 May 2008, Martin Knoblauch wrote:
-> >>> no this looks different. As soon as the timesource is detected, I see 
-> non-zero 
-> >>> timestamps
-> >>> in dmesg, but they look smaller and jump in both directions. And I have 
-> never 
-> >>> seen this before
-> >>> 2.6.25.
-> >>>
-> >>> It actually might be a good idea to get the dmesg output from 2.6.24.
-> >>>
-> >>> Cheers
-> >>> Martin
-> >>  interesting - maybe related to clocksources. The HPET seems to be detected 
-> later in 2.6.25:
-> >>
-> >> 2.6.24:
-> >>
-> >> [    0.000000] Initializing CPU#0
-> >> [    0.000000] PID hash table entries: 4096 (order: 12, 32768 bytes)
-> >> -->[    0.000000] hpet clockevent registered
-> >> -->[    0.000000] TSC calibrated against HPET
-> >  
-> >> 2.6.25.2:
-> >>
-> >> [    0.000000] Initializing CPU#0
-> >> [    0.000000] PID hash table entries: 4096 (order: 12, 32768 bytes)
-> >> -->[    0.000000] TSC calibrated against PM_TIMER
-> >  
-> > That's odd indeed. Is HPET not registered at all in 2.6.25 or does it just 
-> happen late ?
-> > 
-> > please provide the output of:
-> > /sys/devices/system/clocksource/clocksource0/available_clocksource
-> > /sys/devices/system/clocksource/clocksource0/current_clocksource
-> 
-> I was about to report / ask bout this issue too.
-> 
-> I see the same output for >=2.6.25 , TSC calibrated against PM_TIMER and not 
-> against HPET anymore.
-> 
-> 
-> [    0.000000] TSC calibrated against PM_TIMER
-> [    0.000016] time.c: Detected 2499.949 MHz processor.
-> ...
-> [    0.000999] hpet clockevent registered
-> 
-> So it seems to register to late in >=2.6.25 kernels ?
-> 
-> cat /sys/devices/system/clocksource/clocksource0/available_clocksource
-> tsc hpet acpi_pm jiffies
-> 
-> cat /sys/devices/system/clocksource/clocksource0/current_clocksource
-> tsc
-> 
-> 
-on two different systems running 2.6.25.2:
+Hello.
 
-ibm x3650(2xDualCore)
--------------------------------------
-[root@lpsdm60 ~]# cat /sys/devices/system/clocksource/clocksource0/available_clocksource
-tsc hpet acpi_pm jiffies
-[root@lpsdm60 ~]# cat /sys/devices/system/clocksource/clocksource0/current_clocksource
-tsc
+Takashi Iwai wrote:
+> This could be replaced now better with
+>   obj-$(CONFIG_PCSPKR_PLATFORM) += pcspeaker.o
+> These two chunks don't apply on 2.6.26-git tree.  Please recreate the
+> patch.
+Done.
+Could you please apply?
 
-HP Proliant DL-380G4 (2xSingleCore)
-------------------------------------------------------------
-[root@lpsdm52 ~]# cat /sys/devices/system/clocksource/clocksource0/available_clocksource
-tsc hpet acpi_pm jiffies
-[root@lpsdm52 ~]# cat /sys/devices/system/clocksource/clocksource0/current_clocksource
-tsc
+---
+fix pcspkr dependancies: make the pcspkr platform
+drivers to depend on a platform device, and
+not the other way around.
 
-and on the DL380G4 running 2.6.24:
----------------------------------------------------------
-[root@lpsdm52 ~]# cat /sys/devices/system/clocksource/clocksource0/available_clocksource
-hpet acpi_pm jiffies tsc
-[root@lpsdm52 ~]# cat /sys/devices/system/clocksource/clocksource0/current_clocksource
-hpet
+Signed-off-by: Stas Sergeev <stsp@aknet.ru>
+Acked-by: Thomas Gleixner <tglx@linutronix.de>
+Acked-by: Dmitry Torokhov <dtor@mail.ru>
+CC: Vojtech Pavlik <vojtech@suse.cz>
+CC: Michael Opdenacker <michael-lists@free-electrons.com>
 
+--------------000607090301070502070206
+Content-Type: text/x-patch;
+ name="pcsp_dep3.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="pcsp_dep3.diff"
 
-Cheers
-Martin
+--- a/init/Kconfig	2008-04-26 13:40:20.000000000 +0400
++++ b/init/Kconfig	2008-04-26 18:20:40.000000000 +0400
+@@ -634,6 +634,14 @@
+ 	help
+ 	  Enable support for generating core dumps. Disabling saves about 4k.
+ 
++config PCSPKR_PLATFORM
++	bool "Enable PC-Speaker support" if EMBEDDED
++	depends on ALPHA || X86 || MIPS || PPC_PREP || PPC_CHRP || PPC_PSERIES
++	default y
++	help
++          This option allows to disable the internal PC-Speaker
++          support, saving some memory.
++
+ config COMPAT_BRK
+ 	bool "Disable heap randomization"
+ 	default y
+--- a/arch/x86/kernel/Makefile	2008-04-26 13:40:06.000000000 +0400
++++ b/arch/x86/kernel/Makefile	2008-04-26 18:22:49.000000000 +0400
+@@ -83,9 +83,7 @@
+ obj-$(CONFIG_KVM_CLOCK)		+= kvmclock.o
+ obj-$(CONFIG_PARAVIRT)		+= paravirt.o paravirt_patch_$(BITS).o
+ 
+-ifdef CONFIG_INPUT_PCSPKR
+-obj-y				+= pcspeaker.o
+-endif
++obj-$(CONFIG_PCSPKR_PLATFORM)	+= pcspeaker.o
+ 
+ obj-$(CONFIG_SCx200)		+= scx200.o
+ scx200-y			+= scx200_32.o
+--- a/sound/drivers/Kconfig	2008-04-26 13:40:21.000000000 +0400
++++ b/sound/drivers/Kconfig	2008-04-26 18:24:59.000000000 +0400
+@@ -5,7 +5,8 @@
+ 
+ 
+ config SND_PCSP
+-	tristate "Internal PC speaker support"
++	tristate "PC-Speaker support"
++	depends on PCSPKR_PLATFORM
+ 	depends on X86_PC && HIGH_RES_TIMERS
+ 	depends on INPUT
+ 	depends on SND
+--- a/drivers/input/misc/Kconfig	2008-04-22 20:50:41.000000000 +0400
++++ b/drivers/input/misc/Kconfig	2008-04-26 18:23:32.000000000 +0400
+@@ -14,7 +14,7 @@
+ 
+ config INPUT_PCSPKR
+ 	tristate "PC Speaker support"
+-	depends on ALPHA || X86 || MIPS || PPC_PREP || PPC_CHRP || PPC_PSERIES
++	depends on PCSPKR_PLATFORM
+ 	depends on SND_PCSP=n
+ 	help
+ 	  Say Y here if you want the standard PC Speaker to be used for
+
+--------------000607090301070502070206--
