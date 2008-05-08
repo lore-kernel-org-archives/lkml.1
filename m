@@ -1,66 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759201AbYEHIgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759103AbYEHIik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759201AbYEHIgw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 04:36:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbYEHIgd
+	id S1759103AbYEHIik (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 04:38:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbYEHIi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 04:36:33 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:14435 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753061AbYEHIgb (ORCPT
+	Thu, 8 May 2008 04:38:28 -0400
+Received: from smtp131.iad.emailsrvr.com ([207.97.245.131]:42640 "EHLO
+	smtp131.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753690AbYEHIi1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 04:36:31 -0400
-Date: Thu, 8 May 2008 10:36:21 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: benh@kernel.crashing.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, tony@bakeyournoodle.com,
-       linux-kernel@vger.kernel.org, Greg K-H <greg@kroah.com>
-Subject: Re: [PATCH] Silence 'ignoring return value' warnings in
- drivers/video/aty/radeon_base.c
-Message-ID: <20080508103621.69bc47cf@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <1210232984.1421.47.camel@pasglop>
-References: <20080424043400.GS20457@bakeyournoodle.com>
-	<20080506143936.6357e578.akpm@linux-foundation.org>
-	<20080506.144301.233784820.davem@davemloft.net>
-	<1210121683.21644.194.camel@pasglop>
-	<20080506182006.4b4a3968.akpm@linux-foundation.org>
-	<1210134804.21644.202.camel@pasglop>
-	<20080507102310.57b4ccfb@gondolin.boeblingen.de.ibm.com>
-	<1210196621.1421.5.camel@pasglop>
-	<20080508093421.31cd735b@gondolin.boeblingen.de.ibm.com>
-	<1210232984.1421.47.camel@pasglop>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 8 May 2008 04:38:27 -0400
+Date: Thu, 8 May 2008 04:38:26 -0400 (EDT)
+Subject: Alchemy DB1200
+From: abhiruchi.g@vaultinfo.com
+To: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Reply-To: abhiruchi.g@vaultinfo.com
+MIME-Version: 1.0
+Content-Type: text/plain;charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Importance: Normal
+X-Priority: 3 (Normal)
+X-Type: 1
+Message-ID: <46742.192.168.1.35.1210235906.webmail@192.168.1.35>
+X-Mailer: webmail6.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 08 May 2008 17:49:44 +1000,
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> 
-> On Thu, 2008-05-08 at 09:34 +0200, Cornelia Huck wrote:
-> > 
-> > I was under the impression that failing the initialization was usually
-> > the right thing to do, since we end up with an un-configurable,
-> > un-usable device. But that may be coloured by my experience with s390
-> > devices, where we rely on sysfs attributes extensively. If indeed most
-> > sysfs files are non-vital, removing the __must_check and relying on a
-> > scary warning in the core may be fine. (OTOH, adding checks to the
-> > core
-> > has helped us to find some lurking bugs.)
-> 
-> The driver can still fail initialization if it wants... I'm just
-> objecting to the __must_check.
+what this meant:
 
-I hear you :) I found it useful, but it seems we should get rid of it
-for _create_file() now.
+sda:<7>usb-storage: queuecommand called
 
-<Adding Greg to cc: for his opinion on this>
