@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761719AbYEHIEC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761533AbYEHIEl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761719AbYEHIEC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 04:04:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbYEHIDo
+	id S1761533AbYEHIEl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 04:04:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756038AbYEHIEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 04:03:44 -0400
-Received: from fnoeppeil48.netpark.at ([217.175.205.176]:40227 "EHLO
+	Thu, 8 May 2008 04:04:20 -0400
+Received: from fnoeppeil48.netpark.at ([217.175.205.176]:34471 "EHLO
 	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752867AbYEHIDm (ORCPT
+	with ESMTP id S1754673AbYEHIES (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 04:03:42 -0400
-Date: Thu, 8 May 2008 10:03:39 +0200
+	Thu, 8 May 2008 04:04:18 -0400
+Date: Thu, 8 May 2008 10:04:16 +0200
 From: Manuel Lauss <mano@roarinelk.homelinux.net>
 To: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 4/7] Alchemy: register mmc platform device for
-	db1200/pb1200 boards
-Message-ID: <20080508080339.GE24383@roarinelk.homelinux.net>
+Subject: [PATCH 5/7] au1xmmc: 4 bit transfer mode
+Message-ID: <20080508080416.GF24383@roarinelk.homelinux.net>
 References: <20080508080040.GA24383@roarinelk.homelinux.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -26,227 +25,75 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From a2ecbdb747a53792dd90c83d48235ae2fddfb95e Mon Sep 17 00:00:00 2001
+>From f850f29297156c673fe3453c4c1c4642c46567e2 Mon Sep 17 00:00:00 2001
 From: Manuel Lauss <mlau@msc-ge.com>
-Date: Wed, 7 May 2008 14:59:45 +0200
-Subject: [PATCH] Alchemy: register mmc platform device for db1200/pb1200 boards
+Date: Wed, 7 May 2008 15:04:51 +0200
+Subject: [PATCH] au1xmmc: 4 bit transfer mode
 
-register the mmc platform device for db1200/pb1200 boards, with
-board-specific card detect/readonly facilities wrapped in platform data.
+Add 4 Bit transfer mode support.
 
 Signed-off-by: Manuel Lauss <mano@roarinelk.homelinux.net>
 ---
- arch/mips/au1000/common/platform.c |   32 ---------
- arch/mips/au1000/pb1200/platform.c |  128 +++++++++++++++++++++++++++++++++++-
- 2 files changed, 127 insertions(+), 33 deletions(-)
+ drivers/mmc/host/au1xmmc.c |   21 +++++++++++++++++----
+ 1 files changed, 17 insertions(+), 4 deletions(-)
 
-diff --git a/arch/mips/au1000/common/platform.c b/arch/mips/au1000/common/platform.c
-index 31d2a22..08a5900 100644
---- a/arch/mips/au1000/common/platform.c
-+++ b/arch/mips/au1000/common/platform.c
-@@ -162,24 +162,6 @@ static struct resource au1xxx_usb_gdt_resources[] = {
- 	},
- };
+diff --git a/drivers/mmc/host/au1xmmc.c b/drivers/mmc/host/au1xmmc.c
+index 8660f86..d9e334f 100644
+--- a/drivers/mmc/host/au1xmmc.c
++++ b/drivers/mmc/host/au1xmmc.c
+@@ -161,13 +161,13 @@ static inline void IRQ_OFF(struct au1xmmc_host *host, u32 mask)
+ static inline void SEND_STOP(struct au1xmmc_host *host)
+ {
  
--static struct resource au1xxx_mmc_resources[] = {
--	[0] = {
--		.start          = SD0_PHYS_ADDR,
--		.end            = SD0_PHYS_ADDR + 0x40,
--		.flags          = IORESOURCE_MEM,
--	},
--	[1] = {
--		.start		= SD1_PHYS_ADDR,
--		.end 		= SD1_PHYS_ADDR + 0x40,
--		.flags		= IORESOURCE_MEM,
--	},
--	[2] = {
--		.start          = AU1200_SD_INT,
--		.end            = AU1200_SD_INT,
--		.flags          = IORESOURCE_IRQ,
--	}
--};
--
- static u64 udc_dmamask = ~(u32)0;
+-	/* We know the value of CONFIG2, so avoid a read we don't need */
+-	u32 mask = SD_CONFIG2_EN;
++	u32 config2;
  
- static struct platform_device au1xxx_usb_gdt_device = {
-@@ -245,19 +227,6 @@ static struct platform_device au1200_lcd_device = {
- 	.num_resources  = ARRAY_SIZE(au1200_lcd_resources),
- 	.resource       = au1200_lcd_resources,
- };
--
--static u64 au1xxx_mmc_dmamask =  ~(u32)0;
--
--static struct platform_device au1xxx_mmc_device = {
--	.name = "au1xxx-mmc",
--	.id = 0,
--	.dev = {
--		.dma_mask               = &au1xxx_mmc_dmamask,
--		.coherent_dma_mask      = 0xffffffff,
--	},
--	.num_resources  = ARRAY_SIZE(au1xxx_mmc_resources),
--	.resource       = au1xxx_mmc_resources,
--};
- #endif /* #ifdef CONFIG_SOC_AU1200 */
+ 	WARN_ON(host->status != HOST_S_DATA);
+ 	host->status = HOST_S_STOP;
  
- static struct platform_device au1x00_pcmcia_device = {
-@@ -295,7 +264,6 @@ static struct platform_device *au1xxx_platform_devices[] __initdata = {
- 	&au1xxx_usb_gdt_device,
- 	&au1xxx_usb_otg_device,
- 	&au1200_lcd_device,
--	&au1xxx_mmc_device,
- #endif
- #ifdef SMBUS_PSC_BASE
- 	&pbdb_smbus_device,
-diff --git a/arch/mips/au1000/pb1200/platform.c b/arch/mips/au1000/pb1200/platform.c
-index 5930110..c87c173 100644
---- a/arch/mips/au1000/pb1200/platform.c
-+++ b/arch/mips/au1000/pb1200/platform.c
-@@ -20,8 +20,17 @@
+-	au_writel(mask | SD_CONFIG2_DF, HOST_CONFIG2(host));
++	config2 = au_readl(HOST_CONFIG2(host));
++	au_writel(config2 | SD_CONFIG2_DF, HOST_CONFIG2(host));
+ 	au_sync();
  
- #include <linux/init.h>
- #include <linux/platform_device.h>
-+#include <linux/mmc/host.h>
+ 	/* Send the stop commmand */
+@@ -762,6 +762,7 @@ static void au1xmmc_reset_controller(struct au1xmmc_host *host)
+ static void au1xmmc_set_ios(struct mmc_host* mmc, struct mmc_ios* ios)
+ {
+ 	struct au1xmmc_host *host = mmc_priv(mmc);
++	u32 config;
  
- #include <asm/mach-au1x00/au1xxx.h>
-+#include <asm/mach-au1x00/au1xxx_dbdma.h>
-+#include <asm/mach-au1x00/au1100_mmc.h>
+ 	if (ios->power_mode == MMC_POWER_OFF)
+ 		au1xmmc_set_power(host, 0);
+@@ -773,6 +774,18 @@ static void au1xmmc_set_ios(struct mmc_host* mmc, struct mmc_ios* ios)
+ 		au1xmmc_set_clock(host, ios->clock);
+ 		host->clock = ios->clock;
+ 	}
 +
-+#if defined(CONFIG_MIPS_PB1200)
-+#include <asm/mach-pb1x00/pb1200.h>
-+#elif defined(CONFIG_MIPS_DB1200)
-+#include <asm/mach-db1x00/db1200.h>
-+#endif
++	config = au_readl(HOST_CONFIG2(host));
++	switch (ios->bus_width) {
++	case MMC_BUS_WIDTH_4:
++		config |= (1 << 8);
++		break;
++	case MMC_BUS_WIDTH_1:
++		config &= ~(1 << 8);
++		break;
++	}
++	au_writel(config, HOST_CONFIG2(host));
++	au_sync();
+ }
  
- static struct resource ide_resources[] = {
- 	[0] = {
-@@ -70,9 +79,126 @@ static struct platform_device smc91c111_device = {
- 	.resource	= smc91c111_resources
- };
+ static void au1xmmc_dma_callback(int irq, void *dev_id)
+@@ -985,7 +998,7 @@ static int __devinit au1xmmc_probe(struct platform_device *pdev)
+ 	mmc->max_blk_count = 512;
  
-+
-+static const struct {
-+	u16 bcsrpwr;
-+	u16 bcsrstatus;
-+	u16 wpstatus;
-+} au1xmmc_card_table[] = {
-+	{ BCSR_BOARD_SD0PWR, BCSR_INT_SD0INSERT, BCSR_STATUS_SD0WP },
-+#ifndef CONFIG_MIPS_DB1200
-+	{ BCSR_BOARD_SD1PWR, BCSR_INT_SD1INSERT, BCSR_STATUS_SD1WP }
-+#endif
-+};
-+
-+static void pb1200mmc_set_power(void *mmc_host, int state)
-+{
-+	struct au1xmmc_host *host = mmc_priv((struct mmc_host *)mmc_host);
-+	u32 val = au1xmmc_card_table[host->id].bcsrpwr;
-+
-+	if (state)
-+		bcsr->board |= val;
-+	else
-+		bcsr->board &= ~val;
-+
-+	au_sync_delay(1);
-+}
-+
-+static int pb1200mmc_card_readonly(void *mmc_host)
-+{
-+	struct au1xmmc_host *host = mmc_priv((struct mmc_host *)mmc_host);
-+	return (bcsr->status & au1xmmc_card_table[host->id].wpstatus) ? 1 : 0;
-+}
-+
-+static int pb1200mmc_card_inserted(void *mmc_host)
-+{
-+	struct au1xmmc_host *host = mmc_priv((struct mmc_host *)mmc_host);
-+	return (bcsr->sig_status & au1xmmc_card_table[host->id].bcsrstatus)
-+		? 1 : 0;
-+}
-+
-+static struct au1xmmc_platdata db1xmmcpd = {
-+	.set_power	= pb1200mmc_set_power,
-+	.card_inserted	= pb1200mmc_card_inserted,
-+	.card_readonly	= pb1200mmc_card_readonly,
-+	.cd_setup	= NULL,		/* use poll-timer in driver */
-+};
-+
-+static u64 au1xxx_mmc_dmamask =  ~(u32)0;
-+
-+struct resource au1200_sd0_res[] = {
-+	[0] = {
-+		.start	= CPHYSADDR(SD0_BASE),
-+		.end	= CPHYSADDR(SD0_BASE) + 0x40,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	[2] = {
-+		.start	= AU1200_SD_INT,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+	[3] = {
-+		.start	= DSCR_CMD0_SDMS_TX0,
-+		.flags	= IORESOURCE_DMA,
-+	},
-+	[4] = {
-+		.start	= DSCR_CMD0_SDMS_RX0,
-+		.flags	= IORESOURCE_DMA,
-+	},
-+};
-+
-+static struct platform_device au1xxx_sd0_device = {
-+	.name = "au1xxx-mmc",
-+	.id = 0,	/* index into au1xmmc_card_table[] */
-+	.dev = {
-+		.dma_mask               = &au1xxx_mmc_dmamask,
-+		.coherent_dma_mask      = 0xffffffff,
-+		.platform_data		= &db1xmmcpd,
-+	},
-+	.num_resources  = ARRAY_SIZE(au1200_sd0_res),
-+	.resource       = au1200_sd0_res,
-+};
-+
-+#ifndef CONFIG_MIPS_DB1200
-+struct resource au1200_sd1_res[] = {
-+	[0] = {
-+		.start	= CPHYSADDR(SD1_BASE),
-+		.end	= CPHYSADDR(SD1_BASE) + 0x40,
-+		.flags	= IORESOURCE_MEM,
-+	},
-+	[2] = {
-+		.start	= AU1200_SD_INT,
-+		.flags	= IORESOURCE_IRQ,
-+	},
-+	[3] = {
-+		.start	= DSCR_CMD0_SDMS_TX1,
-+		.flags	= IORESOURCE_DMA,
-+	},
-+	[4] = {
-+		.start	= DSCR_CMD0_SDMS_RX1,
-+		.flags	= IORESOURCE_DMA,
-+	},
-+};
-+
-+static struct platform_device au1xxx_sd1_device = {
-+	.name = "au1xxx-mmc",
-+	.id = 1,	/* index into au1xmmc_card_table[] */
-+	.dev = {
-+		.dma_mask               = &au1xxx_mmc_dmamask,
-+		.coherent_dma_mask      = 0xffffffff,
-+		.platform_data		= &db1xmmcpd,
-+	},
-+	.num_resources  = ARRAY_SIZE(au1200_sd1_res),
-+	.resource       = au1200_sd1_res,
-+};
-+#endif
-+
- static struct platform_device *board_platform_devices[] __initdata = {
- 	&ide_device,
--	&smc91c111_device
-+	&smc91c111_device,
-+	&au1xxx_sd0_device,
-+#ifndef CONFIG_MIPS_DB1200
-+	&au1xxx_sd1_device,
-+#endif
- };
+ 	mmc->ocr_avail = AU1XMMC_OCR;
+-	mmc->caps = 0;
++	mmc->caps = MMC_CAP_4_BIT_DATA;
  
- static int __init board_register_devices(void)
+ 	host->id = pdev->id;
+ 	host->status = HOST_S_IDLE;
 -- 
 1.5.5.1
 
