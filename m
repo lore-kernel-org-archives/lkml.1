@@ -1,72 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756800AbYEHAcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757019AbYEHAhW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756800AbYEHAcV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 20:32:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753626AbYEHAcH
+	id S1757019AbYEHAhW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 20:37:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbYEHAhG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 20:32:07 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:54912 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753241AbYEHAcD (ORCPT
+	Wed, 7 May 2008 20:37:06 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51945 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753724AbYEHAhD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 20:32:03 -0400
-Message-ID: <482249E4.2040102@zytor.com>
-Date: Wed, 07 May 2008 17:31:32 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Rene Herman <rene.herman@keyaccess.nl>,
-       Thomas Gleixner <tglx@linutronix.de>, Adrian Bunk <bunk@kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       Pavel Machek <pavel@suse.cz>
-Subject: Re: 2.6.26, PAT and AMD family 6
-References: <48210A71.1060409@keyaccess.nl> <86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com> <20080507124650.GD29935@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0805072122270.3318@apollo.tec.linutronix.de> <48221AE3.6020602@keyaccess.nl> <482233F0.7040000@zytor.com> <48224318.8020209@keyaccess.nl> <48224361.5080102@zytor.com> <alpine.LFD.1.10.0805071707150.3024@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0805071707150.3024@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 7 May 2008 20:37:03 -0400
+Date: Thu, 8 May 2008 09:40:57 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, nickpiggin@yahoo.com.au,
+       tonyb@cybernetics.com, mika.penttila@kolumbus.fi
+Subject: Re: [PATCH] more ZERO_PAGE handling in follow_page()
+Message-Id: <20080508094057.48df4ce0.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080507142539.758d30f6.akpm@linux-foundation.org>
+References: <20080507163643.d4da0ed0.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080507142539.758d30f6.akpm@linux-foundation.org>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Wed, 7 May 2008, H. Peter Anvin wrote:
->>> What a lovely way of syncing reality with your definitions. The kernel
->>> _does_ see that my CPU features PAT, it just refuses to use it because
->>> it doesn't trust it enough. Vital difference. Maybe not to the kernel,
->>> but definitely to me, the user. /proc/cpuinfo is a user interface.
->>>
->> No, /proc/cpuinfo is informing the user about the kernel's view of the CPU.
->> It has always been the "cooked" view of CPUID, whether or not you like it.
-> 
-> Indeed. If people want to know what the CPU itself reports, they should 
-> just use the "cpuid" instruction directly. The /proc/cpuinfo file has 
-> been a window into the kernels notion of what is going on, and disabling 
-> kernel features have disabled the bits in that file as appropriate (eg 
-> "clearcpuid=xyzzy" and "mem=nopentium" etc).
-> 
-> Of course, the *common* case is that the two will match 100% in features. 
-> But the kernel view has some of its very own set of CPU features too.
-> 
-> And it is possible that the "PAT as the kernel sees it" should be a 
-> *separate* bit from "PAT as the cpu itself reports to support it". We do 
-> that for quite a lot of the "synthesized" features, eg there is the "TSC" 
-> feature as the CPU reports it, and then we have the "CONSTANT_TSC" feature 
-> that is the kernel version of it that says that we have a TSC _and_ it 
-> runs at a constant rate too (or the "UP" bit, or the "Mfence synchronizes 
-> RDTSC" bit etc etc).
-> 
-> So it's possible that we should do the same thing for PAT - and allow 
-> people to see the CPU view _and_ the kernel view as two separate issues. 
-> In many ways that would be the logical thing to do. Hmm?
-> 
+On Wed, 7 May 2008 14:25:39 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Well, there *is* support for that - all the raw information is there in 
-/dev/cpu/*/cpuid.  There are other reasons why /proc/cpuinfo is the 
-wrong interface to try to get the "real" CPUID information - we only 
-report CPU features that the kernel knows about; bits we don't, if we 
-can decode them at all, we just don't show.
+> On Wed, 7 May 2008 16:36:43 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> 
+> > Rewrote the description of patch. (no changes in the logic.)
+> > 
+> > Thank you for all help.
+> > -Kame
+> > ==
+> > follow_page() is called from get_user_pages(), which returns specified user page.
+> > follow_page() can return 1) a page or 2) NULL or 3)ZERO_PAGE.
+> > If NULL, handle_mm_fault() is called.
+> > 
+> > Now, follow_page() to unused pte returns NULL if page table exists. As a result
+> > get_user_pages() calls handle_mm_fault() and allocate new memory.
+> > This behavior increases memory consumption at coredump, which does
+> > read-once-but-never-written page fault.
+> > By returning ZERO_PAGE() against READ/ANON request, we can avoid it.
+> > 
+> > (Because exec's arguments copy needs to call handle_mm_fault at WRITE/ANON
+> >  request, we just handle READ/ANON case here.)
+> > 
+> > Change log:
+> >   - Rewrote patch description and Added comments.
+> >   - fixed to check pte_present()/pte_none() in proper way.
+> 
+> So... how serious is the problem which we're fixing here?
+> 
+> I can see that if one is core-dumping large sparse address spaces this
+> could improve things a lot, but please help us understand the implications
+> so we can decide whether we need this in 2.6.26, thanks.
+> 
+I don't think this is a fix for serious trouble just a improvement.
+But not sure on small systems....
 
-	-hpa
+a consideration.
+== at coredump before patch
+  killed by something
+     -> generate core dump
+           -> allocate "a" page before starting I/O even if a page is empty
+                 -> do I/O
+A page which is not mapped but there is page tables will be written out.
+Here, newly allocated page is mapped_and_used after I/O. So, when we
+reclaim this page, we need swap. This means terrible slow down or we cannot
+go ahead when we exhaust swap.
+
+A user can avoid this kind ot situation by setting rlimit. (and RLIMIT_CORE
+is 0 at default.) or set overcommit memory or set dirty_ratio to very small.
+But one terrible thing which I can think of is  that a process in coredump
+cannot be killed. So once this happens, a user have to be patient or reboot
+system.
+
+It seems this patch can help coredump in following system 
+  - swapless or An application which can generate core has some amount of
+    ANON memory and it is multi-threaded. (pthread's stack is typical case
+    for this memory usage.)
+  - RLIMIT_CORE is RLIMIT_INIFINITY
+  - core_pattern is file.
+  - Don't have enough memory to do buffer I/O at coredump.
+  - dirty_ratio is default.
+
+But an application on this kind of system tends to be well controlled.
+
+> 
+> > Index: linux-2.6.25/mm/memory.c
+> > ===================================================================
+> > --- linux-2.6.25.orig/mm/memory.c
+> > +++ linux-2.6.25/mm/memory.c
+> > @@ -926,15 +926,15 @@ struct page *follow_page(struct vm_area_
+> >  	page = NULL;
+> >  	pgd = pgd_offset(mm, address);
+> >  	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
+> > -		goto no_page_table;
+> > +		goto null_or_zeropage;
+> >  
+> >  	pud = pud_offset(pgd, address);
+> >  	if (pud_none(*pud) || unlikely(pud_bad(*pud)))
+> > -		goto no_page_table;
+> > +		goto null_or_zeropage;
+> >  	
+> >  	pmd = pmd_offset(pud, address);
+> >  	if (pmd_none(*pmd) || unlikely(pmd_bad(*pmd)))
+> 
+> The mainline kernel does not have " || unlikely(pmd_bad(*pmd))" here. 
+> That got changed yesterday by
+> 
+> commit aeed5fce37196e09b4dac3a1c00d8b7122e040ce
+> Author: Hugh Dickins <hugh@veritas.com>
+> Date:   Tue May 6 20:49:23 2008 +0100
+> 
+>     x86: fix PAE pmd_bad bootup warning
+> 
+> So please confirm that the patch which I merged is still OK (I'd be
+> surprised if it isn't...)
+> 
+Ok, I'll check and update this against the newest git tree.
+(But may took some hours.)
+
+Thanks,
+-Kame
+
