@@ -1,46 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932637AbYEHSEH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932805AbYEHSIz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932637AbYEHSEH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 14:04:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754398AbYEHSDy
+	id S932805AbYEHSIz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 14:08:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754887AbYEHSIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 14:03:54 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54833 "EHLO mx1.redhat.com"
+	Thu, 8 May 2008 14:08:41 -0400
+Received: from main.gmane.org ([80.91.229.2]:54804 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751001AbYEHSDw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 14:03:52 -0400
-Date: Thu, 8 May 2008 13:58:22 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Nadia.Derbey@bull.net
-Cc: manfred@colorfullife.com, paulmck@linux.vnet.ibm.com,
-       lnxninja@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       efault@gmx.de, akpm@linux-foundation.org,
-       Nadia Derbey <Nadia.Derbey@bull.net>
-Subject: Re: [PATCH 6/9] Make idr_find rcu-safe
-Message-ID: <20080508135822.4b704789@bree.surriel.com>
-In-Reply-To: <20080507113737.158241000@bull.net>
-References: <20080507113553.395937000@bull.net>
-	<20080507113737.158241000@bull.net>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+	id S1752768AbYEHSIj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 14:08:39 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+Subject: Re: 2.6.26-git: ata_piix link is slow to respond regression.
+Date: Thu, 8 May 2008 18:08:19 +0000 (UTC)
+Message-ID: <fvvfij$u94$1@ger.gmane.org>
+References: <1210267842.4175.10.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: cpc1-cwma5-0-0-cust137.swan.cable.ntl.com
+User-Agent: Pan/0.129 (Benson & Hedges Moscow Gold)
+Cc: linux-ide@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 07 May 2008 13:35:59 +0200
-Nadia.Derbey@bull.net wrote:
+On Thu, 08 May 2008 19:30:42 +0200, Soeren Sonnenburg wrote:
 
-> [PATCH 06/09]
-> 
-> This is a patch that makes idr_find rcu-safe: it can now be called inside an
-> rcu_read critical section.
-> 
-> Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
+> ata_piix 0000:00:1f.2 MAP [P0 P2 -- -- ] link is slow to respond, please
+> be patient ﻿(ready=0) SRST failed ﻿(errno=-1f)
 
-Acked-by: Rik van Riel <riel@redhat.com>
+The issue might be solved by the patch on 
+http://thread.gmane.org/gmane.linux.ide/31317/focus=31349 ...
 
 -- 
-All rights reversed.
+Sitsofe | http://sucs.org/~sits/
+
