@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758925AbYEHDf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759467AbYEHDlt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758925AbYEHDf1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 23:35:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755164AbYEHDfF
+	id S1759467AbYEHDlt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 23:41:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756308AbYEHDlh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 23:35:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37723 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754809AbYEHDfB (ORCPT
+	Wed, 7 May 2008 23:41:37 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:45759
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752222AbYEHDlf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 23:35:01 -0400
-Date: Wed, 7 May 2008 20:34:40 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-cc: Matthew Wilcox <matthew@wil.cx>, Ingo Molnar <mingo@elte.hu>,
-       "J. Bruce Fields" <bfields@citi.umich.edu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: AIM7 40% regression with 2.6.26-rc1
-In-Reply-To: <1210217099.3453.92.camel@ymzhang>
-Message-ID: <alpine.LFD.1.10.0805072030480.3024@woody.linux-foundation.org>
-References: <1210052904.3453.30.camel@ymzhang>  <20080506114449.GC32591@elte.hu> <20080506120934.GH19219@parisc-linux.org>  <20080506162332.GI19219@parisc-linux.org> <1210217099.3453.92.camel@ymzhang>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 7 May 2008 23:41:35 -0400
+Date: Thu, 8 May 2008 05:41:33 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, steiner@sgi.com, holt@sgi.com,
+       npiggin@suse.de, a.p.zijlstra@chello.nl,
+       kvm-devel@lists.sourceforge.net, kanojsarcar@yahoo.com,
+       rdreier@cisco.com, swise@opengridcomputing.com,
+       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
+       general@lists.openfabrics.org, hugh@veritas.com, rusty@rustcorp.com.au,
+       aliguori@us.ibm.com, chrisw@redhat.com, marcelo@kvack.org,
+       dada1@cosmosbay.com, paulmck@us.ibm.com
+Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
+Message-ID: <20080508034133.GY8276@duo.random>
+References: <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org> <20080507222205.GC8276@duo.random> <20080507153103.237ea5b6.akpm@linux-foundation.org> <20080507224406.GI8276@duo.random> <20080507155914.d7790069.akpm@linux-foundation.org> <20080507233953.GM8276@duo.random> <alpine.LFD.1.10.0805071757520.3024@woody.linux-foundation.org> <Pine.LNX.4.64.0805071809170.14935@schroedinger.engr.sgi.com> <20080508025652.GW8276@duo.random> <Pine.LNX.4.64.0805072009230.15543@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0805072009230.15543@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 8 May 2008, Zhang, Yanmin wrote:
+On Wed, May 07, 2008 at 08:10:33PM -0700, Christoph Lameter wrote:
+> On Thu, 8 May 2008, Andrea Arcangeli wrote:
 > 
-> On Tue, 2008-05-06 at 10:23 -0600, Matthew Wilcox wrote:
-> > On Tue, May 06, 2008 at 06:09:34AM -0600, Matthew Wilcox wrote:
-> > > So the only likely things I can see are:
-> > > 
-> > >  - file locks
-> > >  - fasync
-> > 
-> > I've wanted to fix file locks for a while.  Here's a first attempt.
-> > It was done quickly, so I concede that it may well have bugs in it.
-> > I found (and fixed) one with LTP.
-> > 
-> > It takes *no account* of nfsd, nor remote filesystems.  We need to have
-> > a serious discussion about their requirements.
->
-> I tested it on 8-core stoakley. aim7 result becomes 23% worse than the one of
-> pure 2.6.26-rc1.
+> > to the sort function to break the loop. After that we remove the 512
+> > vma cap and mm_lock is free to run as long as it wants like
+> > /dev/urandom, nobody can care less how long it will run before
+> > returning as long as it reacts to signals.
+> 
+> Look Linus has told you what to do. Why not simply do it?
 
-Ouch. That's really odd. The BKL->spinlock conversion looks really 
-obvious, so it shouldn't be that noticeably slower.
+When it looked like we could use vm_flags to remove sort, that looked
+an ok optimization, no problem with optimizations, I'm all for
+optimizations if they cost nothing to the VM fast paths and VM footprint.
 
-The *one* difference is that the BKL has the whole "you can take it 
-recursively and you can sleep without dropping it because the scheduler 
-will drop it for you" thing. The spinlock conversion changed all of that 
-into explicit "drop and retake" locks, and maybe that causes some issues. 
+But removing sort isn't worth it if it takes away ram from the VM even
+when global_mm_lock will never be called.
 
-But 23% worse? That sounds really odd/extreme.
+sort is like /dev/urandom so after sort is fixed to handle signals
+(and I expect Matt will help with this) we'll remove the 512 vmas cap.
+In the meantime we can live with the 512 vmas cap that guarantees sort
+won't take more than a few dozen usec. Removing sort() is the only
+thing that the anon vma bitflag can achieve and it's clearly not worth
+it and it would go in the wrong direction (fixing sort to handle
+signals is clearly the right direction, if sort is a concern at all).
 
-Can you do a oprofile run or something?
+Adding the global lock around global_mm_lock to avoid one
+global_mm_lock to collide against another global_mm_lock is sure ok
+with me, if that's still wanted now that it's clear removing sort
+isn't worth it, I'm neutral on this.
 
-			Linus
+Christoph please go ahead and add the bitflag to anon-vma yourself if
+you want. If something isn't technically right I don't do it no matter
+who asks it.
