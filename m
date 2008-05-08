@@ -1,113 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762071AbYEHLVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762652AbYEHLXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762071AbYEHLVz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 07:21:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753509AbYEHLVp
+	id S1762652AbYEHLXZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 07:23:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753509AbYEHLXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 07:21:45 -0400
-Received: from fonzie.hosting9000.com ([85.214.50.12]:54401 "EHLO
-	fonzie.hosting9000.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753375AbYEHLVo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 07:21:44 -0400
-Message-ID: <4822E23F.8040101@googlemail.com>
-Date: Thu, 08 May 2008 13:21:35 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
+	Thu, 8 May 2008 07:23:16 -0400
+Received: from laney.dpool.org ([78.47.134.123]:3864 "EHLO mail1.s.dpool.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752192AbYEHLXP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 07:23:15 -0400
+X-Greylist: delayed 1198 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 May 2008 07:23:15 EDT
+Message-ID: <4822DDF1.5010500@elsdoerfer.info>
+Date: Thu, 08 May 2008 13:03:13 +0200
+From: =?ISO-8859-1?Q?Michael_Elsd=F6rfer?= <michael@elsdoerfer.info>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: CONFIG_PRINTK_TIME broken on git HEAD ?
-References: <48222C7C.2050807@googlemail.com>	 <20080507154155.2b472bb1.akpm@linux-foundation.org>	 <482233CD.70502@googlemail.com>  <4822DD4E.3010000@googlemail.com> <1210245238.13978.199.camel@twins>
-In-Reply-To: <1210245238.13978.199.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-15
+To: linux-kernel@vger.kernel.org
+Subject: Cannot boot any HIGHMEM kernel (kernel panic - not syncing)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Thu, 2008-05-08 at 13:00 +0200, Gabriel C wrote:
-> 
->>> >From my log 2.6.26-rc1-00065-g5717922 was fine.
->>>
->>  
->>> May  6 00:13:14 thor kernel: [    0.000000] Allocating PCI resources starting at d0000000 (gap: cf600000:2f800000)
->>> May  6 00:13:14 thor kernel: [    0.000000] SMP: Allowing 4 CPUs, 0 hotplug CPUs
->>> May  6 00:13:14 thor kernel: [    0.000000] PERCPU: Allocating 41732 bytes of per cpu data
->>> May  6 00:13:14 thor kernel: [    0.000000] Kernel command line: root=/dev/sdb1 ro debug vga=0x317
->>> May  6 00:13:14 thor kernel: [    0.000000] Preemptible RCU implementation.
->>> May  6 00:13:14 thor kernel: [    0.000000] Extended CMOS year: 2000
->>> May  6 00:13:14 thor kernel: [    0.000000] TSC calibrated against PM_TIMER
->>> May  6 00:13:14 thor kernel: [    0.000014] time.c: Detected 2499.952 MHz processor.
->>> May  6 00:13:14 thor kernel: [    0.000032] console [tty0] enabled
->>> May  6 00:13:14 thor kernel: [    0.000999] Dentry cache hash table entries: 524288 (order: 10, 4194304 bytes)
->>> May  6 00:13:14 thor kernel: [    0.000999] Inode-cache hash table entries: 262144 (order: 9, 2097152 bytes)
->>> May  6 00:13:14 thor kernel: [    0.000999] Checking aperture...
->>>
->>> ...
->>>
->>>>> dmesg shows here :
->>>>>
->>>>> ...
->>>>>
->>>>>
->>>>> [    0.000000] Allocating PCI resources starting at d0000000 (gap: cf600000:2f800000)
->>>>> [    0.000000] SMP: Allowing 4 CPUs, 0 hotplug CPUs
->>>>> [    0.000000] PERCPU: Allocating 42756 bytes of per cpu data
->>>>> [    0.000000] NR_CPUS: 8, nr_cpu_ids: 4
->>>>> [4294014.506571] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 1010753
->>>>> [4294014.506571] Kernel command line: root=/dev/sdb1 ro debug vga=0x317
->>>>> [4294014.506571] Initializing CPU#0
->>>>> [4294014.506571] Preemptible RCU implementation.
->>>>> [4294014.506571] PID hash table entries: 4096 (order: 12, 32768 bytes) 
-> 
-> 
->> I've bisected it.
-> 
->> cat ./.git/refs/bisect/bad
->> 3e51f33fcc7f55e6df25d15b55ed10c8b4da84cd
->>
->>  git show 3e51f33fcc7f55e6df25d15b55ed10c8b4da84cd
->>  commit 3e51f33fcc7f55e6df25d15b55ed10c8b4da84cd
->>  Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
->>  Date:   Sat May 3 18:29:28 2008 +0200
->>  
->>      sched: add optional support for CONFIG_HAVE_UNSTABLE_SCHED_CLOCK
->>  
->>      this replaces the rq->clock stuff (and possibly cpu_clock()).
->>  
->>       - architectures that have an 'imperfect' hardware clock can set
->>         CONFIG_HAVE_UNSTABLE_SCHED_CLOCK
->>  
->>       - the 'jiffie' window might be superfulous when we update tick_gtod
->>         before the __update_sched_clock() call in sched_clock_tick()
->>  
->>       - cpu_clock() might be implemented as:
->>  
->>           sched_clock_cpu(smp_processor_id())
->>  
->>         if the accuracy proves good enough - how far can TSC drift in a
->>         single jiffie when considering the filtering and idle hooks?
->>  
->>      [ mingo@elte.hu: various fixes and cleanups ]
->>  
->>      Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
->>      Signed-off-by: Ingo Molnar <mingo@elte.hu>
->>                                                                                                                                                              
-> 
-> Ok, so the issue is that the clock doesn't start at 0, but at:
-> 4294014.506571 ?
+This is an etch server machine with 3GB of RAM, and I seem unable to
+boot into any kernel (precompiled images from the Debian and OpenVZ 
+repositories, I have so far avoided to compile one myself) that has 
+HIGHMEM enabled, i.e.:
 
-At least on my box , yes.
+zoidberg:/# dmesg | head
+Warning only 896MB will be used.
+Use a HIGHMEM enabled kernel.
+896MB LOWMEM available.
 
-There is a similar report http://lkml.org/lkml/2008/5/8/100 , there it jumps to 42949372.961619
+Specifically, the only kernel image that seems to work is
+linux-image-2.6.18-6-486 (or the OpenVZ version fzakernel-2.6.18-486)
 
+Everything else seems to fail with:
 
-> I guess that's a side-effect of using ktime to base the clock off.
-> Thomas, do we have a clock that is uptime based?
-> 
+Setting up standard PCI resources
+ACPI: Interpreter enabled
+ACPI: PCI Root Bridge [PCI0] (0000:00)
+CPU 0: Machine Check Exception: 0000000000000007
+Bank 3: b40000000000083b at 000000fdfc000cfc
+Kernel panic - not syncing: Unable to continue
 
-Gabriel
+Specifically, I tried at least the following images from the Debian and
+OpenVZ repositories:
+
+config-2.6.18-openvz-k7
+linux-image-2.6.18-6-686
+fzakernel-2.6.18-686
+fzakernel-2.6.18-686-bigmem
+
+Now, Machine Check Exception seems to point towards a hardware error,
+but not only does the 486 kernel appear to work flawlessly, the server
+was perfectly happy running a self-compiled sarge kernel (with HIGHMEM)
+just a couple of days ago.
+
+Here's the processor info:
+
+zoidberg:/boot# cat /proc/cpuinfo
+processor       : 0
+vendor_id       : AuthenticAMD
+cpu family      : 15
+model           : 5
+model name      : AMD Opteron(tm) Processor 244
+stepping        : 10
+cpu MHz         : 1794.546
+cache size      : 1024 KB
+fdiv_bug        : no
+hlt_bug         : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 1
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
+mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx mmxext lm
+3dnowext 3dnow ts fid vid ttp
+bogomips        : 3591.45
+
+Does anybody know what the issue might be, e.g. what exactly in the 
+non-486 kernels might cause the error?
+
+Thanks,
+
+Michael
