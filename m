@@ -1,53 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932404AbYEHSoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765263AbYEHSqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932404AbYEHSoA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 14:44:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757500AbYEHSns
+	id S1765263AbYEHSqf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 14:46:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757301AbYEHSqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 14:43:48 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41005 "EHLO mx1.redhat.com"
+	Thu, 8 May 2008 14:46:22 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:42957 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756818AbYEHSnr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 14:43:47 -0400
-Date: Thu, 8 May 2008 14:29:47 -0400
-From: Josef Bacik <jbacik@redhat.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: jbacik@redhat.com, trond.myklebust@fys.uio.no, npiggin@suse.de,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: NFS infinite loop in filemap_fault()
-Message-ID: <20080508182947.GB30499@unused.rdu.redhat.com>
-References: <E1JtqLW-0005j5-KU@pomaz-ex.szeredi.hu> <E1JtzuH-0006nY-AM@pomaz-ex.szeredi.hu> <20080508130759.GA30499@unused.rdu.redhat.com> <E1JuB47-0008C9-5n@pomaz-ex.szeredi.hu>
+	id S1756790AbYEHSqT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 14:46:19 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Takashi Iwai <tiwai@suse.de>
+Subject: Re: [Bisected Regression] snd-intel-hda no longer produces sound on Toshiba Satellite A100
+Date: Thu, 8 May 2008 20:46:30 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Vefa Bicakci <bicave@superonline.com>, linux-kernel@vger.kernel.org
+References: <481CD1B9.3020601@superonline.com> <s5h7ieaa7at.wl%tiwai@suse.de>
+In-Reply-To: <s5h7ieaa7at.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <E1JuB47-0008C9-5n@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Message-Id: <200805082046.30742.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 08:42:03PM +0200, Miklos Szeredi wrote:
-> > > Index: linux.git/mm/filemap.c
-> > > ===================================================================
-> > > --- linux.git.orig/mm/filemap.c	2008-05-08 08:17:22.000000000 +0200
-> > > +++ linux.git/mm/filemap.c	2008-05-08 08:19:59.000000000 +0200
-> > > @@ -1461,6 +1461,12 @@ page_not_uptodate:
-> > >  	 */
-> > >  	ClearPageError(page);
-> > >  	error = mapping->a_ops->readpage(file, page);
-> > > +	if (!error && !PageUptodate(page)) {
+On Sunday, 4 of May 2008, Takashi Iwai wrote:
+> At Sat, 03 May 2008 23:57:29 +0300,
+> Vefa Bicakci wrote:
 > > 
-> > Shouldn't you have (!error || error != AOP_TRUNCATED_PAGE),
+> > Hello,
+> > 
+> > I am using Debian Sid on a Toshiba Satellite A100 series laptop.
+> > This laptop has an Intel HDA sound card. It uses the Realtec codecs.
+> > After modprobe'ing snd-intel-hda, the following appears in dmesg:
+> > "hda_codec: Unknown model for ALC861, trying auto-probe from BIOS..."
+> > 
+> > The sound output used to work fine with 2.6.24.x and 2.6.25. In an
+> > unrelated move, I decided to give 2.6.25-gitX series a try; however,
+> > I was very sad to notice that sound output became disabled. Programs
+> > such as ogg123 or Amarok seem to play, but there is no sound output,
+> > only silence. I have checked multiple times that no new mixer settings
+> > appeared because of a possible snd-hda-intel update...
+> > 
+> > I bisected the differences between 2.6.25 and HEAD (as of 28th of
+> > April) to find the problematic git commit. The git commit with the
+> > following ID and description disables the sound output completely:
+> > 
+> > --- 8< ---
+> > commit f6c7e5461e9046445d50c5c7a9a4587824239623
+> > [ALSA] hda-codec - Fix auto-configuration of Realtek codecs
+> > --- >8 ---
+> > 
+> > I believe that this is an important regression, and I would like
+> > to debug this problem. Trying out patches is no problem for me.
 > 
-> That would be a rather useless condition (hint: '!error' means 'error == 0')
-> 
-> > since the fs can
-> > return AOP_TRUNCATED_PAGE if it needs vfs to try the readpage again?
-> 
-> Yep, I din't touch the 'error != 0' codepath.
->
+> This is a known issue and should have been already fixed on sound
+> tree.  Try to pull the following git tree (for-linus branch):
+>     git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6 for-linus
 
-Doh sorry, I hadn't had my coffee yet.
+Has the fix already reached the Linus' tree?
 
-Josef 
+Rafael
