@@ -1,87 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760846AbYEHGcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759607AbYEHGgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760846AbYEHGcq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 02:32:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758997AbYEHGcG
+	id S1759607AbYEHGgU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 02:36:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754449AbYEHGgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 02:32:06 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:11619 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760878AbYEHGcC (ORCPT
+	Thu, 8 May 2008 02:36:08 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:47530 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754286AbYEHGgF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 02:32:02 -0400
-From: Andrew Patterson <andrew.patterson@hp.com>
-Subject: [PATCH 5/5] Call flush_disk() after detecting an online resize.
-To: linux-scsi@vger.kernel.org
-Cc: andrew.patterson@hp.com, linux-kernel@vger.kernel.org,
-       viro@zeniv.linux.org.uk, axboe@kernel.dk, andmike@linux.vnet.ibm.com
-Date: Thu, 08 May 2008 00:32:01 -0600
-Message-ID: <20080508063201.3818.53226.stgit@bluto.andrew>
-In-Reply-To: <20080508062930.3818.31401.stgit@bluto.andrew>
-References: <20080508062930.3818.31401.stgit@bluto.andrew>
-User-Agent: StGIT/0.14.2
+	Thu, 8 May 2008 02:36:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=VzCCTRQw4iaadpkFu8MiNTbGXO7eOOLcTvI+2gGCLZNZboZMt2tcRnIoUqot0FfCX3MKslz03GVMEEssWgyHO40I65TP4A+hqLWPDhzNKU7XaPDKOHs1YpRmSS8exL2SYExs/RENkfqsF1uclVt8uShjtxroG2KkXscaVaeRdfs=
+Message-ID: <e2e108260805072336p6b29f11o287ac3c5cab9295a@mail.gmail.com>
+Date: Thu, 8 May 2008 08:36:03 +0200
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Strange mptbase / mptscsih kernel messages
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Call flush_disk() after detecting an online resize.
+Hello,
 
-We call flush_disk() to make sure the buffer cache for the disk is
-flushed after a disk resize. There are two resize cases, growing and
-shrinking. Given that users can shrink/then grow a disk before
-revalidate_disk() is called, we treat the grow case identically to
-shrinking. We need to flush the buffer cache after an online shrink
-because, as James Bottomley puts it,
+I have made a setup with four servers, where each server is configured
+as follows:
+* Four Intel Xeon E5130 CPU cores.
+* 8 GB RAM.
+* SCSI storage controller: LSI Logic / Symbios Logic SAS1068E
+PCI-Express Fusion-MPT SAS (rev 04),
+* 16 disks in a RAID6 setup (md).
+* Linux 2.6.24.6 kernel.
 
-     The two use cases for shrinking I can see are
+There is a lot of data being written to the RAID6 array: about 50 MB/s
+on each server. There are two kinds of messages that appear:
 
-     1. planned: the fs is already shrunk to within the new boundaries
-        and all data is relocated, so invalidate is fine (any dirty
-        buffers that might exist in the shrunk region are there only
-        because they were relocated but not yet written to their
-        original location).
-     2. unplanned:  In this case, the fs is probably toast, so whether
-        we invalidate or not isn't going to make a whole lot of
-        difference; it's still going to try to read or write from
-        sectors beyond the new size and get I/O errors.
+(1)
+[74887.117650] mptbase: ioc0: LogInfo(0x31120403): Originator={PL},
+Code={Abort}, SubCode(0x0403)
 
-Immediately invalidating shrunk disks will cause errors for outstanding
-I/Os for reads/write beyond the new end of the disk to be generated
-earlier then if we waited for the normal buffer cache operation. It also
-removes a potential security hole where we might keep old data around
-from beyond the end of the shrunk disk if the disk was not invalidated.
+(2)
+[74917.081454] mptscsih: ioc0: attempting task abort! (sc=ffff8100a18a7180)
+[74917.081461] sd 0:0:15:0: [sdp] CDB: Write(10): 2a 00 1c fe 61 93 00 00 20 00
+[74918.409801] mptbase: ioc0: LogInfo(0x31140000): Originator={PL},
+Code={IO Executed}, SubCode(0x0000)
+[74918.639801] mptscsih: ioc0: task abort: SUCCESS (sc=ffff8100a18a7180)
 
-Signed-off-by: Andrew Patterson <andrew.patterson@hp.com>
----
+These messages appear a few times per day. Anyone any idea what the
+meaning is of these messages and what the cause of these messages is ?
 
- fs/block_dev.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
-
-
-diff --git a/fs/block_dev.c b/fs/block_dev.c
-index eb2bc5c..41ef08d 100644
---- a/fs/block_dev.c
-+++ b/fs/block_dev.c
-@@ -884,8 +884,8 @@ static void flush_disk(struct block_device *bdev)
- 
- 		if (bdev->bd_disk)
- 			disk_name(bdev->bd_disk, 0, name);
--		printk(KERN_WARNING "VFS: busy inodes on changed media %s\n",
--		       name);
-+		printk(KERN_WARNING "VFS: busy inodes on changed media or "
-+		       "resized disk %s\n", name);
- 	}
- 
- 	if (!bdev->bd_disk)
-@@ -928,6 +928,7 @@ int revalidate_disk(struct gendisk *disk)
- 		       "%s: detected capacity change from %lld to %lld\n",
- 		       name, bdev_size, disk_size);
- 		i_size_write(bdev->bd_inode, disk_size);
-+		flush_disk(bdev);
- 	}
- 
- 	mutex_unlock(&bdev->bd_mutex);
-
+Bart.
