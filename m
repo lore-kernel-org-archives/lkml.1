@@ -1,179 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933400AbYEHVsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933241AbYEHVuX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933400AbYEHVsZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 17:48:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755331AbYEHVsO
+	id S933241AbYEHVuX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 17:50:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757551AbYEHVt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 17:48:14 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:50867 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757551AbYEHVsM (ORCPT
+	Thu, 8 May 2008 17:49:58 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:40106 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757376AbYEHVtz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 17:48:12 -0400
-Date: Fri, 9 May 2008 00:48:00 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Vegard Nossum <vegard.nossum@gmail.com>
-cc: mingo@elte.hu, clameter@sgi.com, akpm@linux-foundation.org,
+	Thu, 8 May 2008 17:49:55 -0400
+Date: Thu, 8 May 2008 22:48:57 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: "Theodore Ts'o" <tytso@mit.edu>
+cc: Glauber Costa <gcosta@redhat.com>, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] slab: add kmemcheck hooks
-In-Reply-To: <19f34abd0805081424v2a42d8c6t2ee795287eace3ae@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0805090045440.5126@sbz-30.cs.Helsinki.FI>
-References: <Pine.LNX.4.64.0805090003120.28488@sbz-30.cs.Helsinki.FI>
- <19f34abd0805081424v2a42d8c6t2ee795287eace3ae@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Subject: Re: Possible regression?  2.6.26-rc1: T61s failure after suspend/resume
+In-Reply-To: <E1JuCBA-0002NZ-4E@closure.thunk.org>
+Message-ID: <Pine.LNX.4.64.0805082148060.3994@blonde.site>
+References: <E1JuCBA-0002NZ-4E@closure.thunk.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 May 2008, Vegard Nossum wrote:
-> slab.c is probably unlikely to be changed anyway, but Andrew suggested
-> to insert these things not at the end, but somewhere in the middle, as
-> it is less likely to conflict.
-
-[snip]
-
-> (And put it in the middle to keep Andrew happy.)
+On Thu, 8 May 2008, Theodore Ts'o wrote:
 > 
-> Probably needless to say, but this is GREAT work... Such a small patch too...
+> I'm running a kernel based off of commit afa26be8 (just six commits
+> after 2.6.26-rc1), and very shortly after I suspend/resume my X61s (with
+> the Intel video chipset), the X server will lock up.  I can ssh into
+> the machine remotely, and restart the X server, but the newly restarted
+> X server will shortly lock up again, and the only way to solve the
+> problem is to reboot.  If I drop back to a 2.6.25 based kernel, the
+> problem goes away.
+> 
+> I've tried bisecting it, but the bisection points picked by git don't
+> boot at all, and given that I'm travelling I havent had much time to try
+> doing more bisecting; since I know a number of kernel developers have
+> Lenovo X61 laptops, I thought before I wasted more time trying to get
+> the git bisection to work, I'd check to see if anyone has seen this
+> problem and if the fix is known.  I'll also try the latest bleeding edge
+> kernel and hope it's fixed there....
 
-Well, Andrew is supposed to send patches that touch mm/slab.c to me so I 
-didn't change those #include directives ;-)
+I don't have a Lenovo X61, and I've no problem on my uniprocessor T43p.
+But I also have a Fujitsu Siemens Esprimo Mobile, Core2 Duo and Intel
+graphics like yours, and that's been behaving strangely after resume
+from RAM since somewhere between 2.6.25 and 2.6.26-rc1.
 
-I've fixed up other problems you pointed out in the following patch. 
-Thanks!
+Sounds like it might be the same problem, though I quickly moved away
+trying it with X, and have been trying to investigate just from the
+console for some days now.  Weird memory corruption after resume.
 
-			Pekka
+Like you, little success with bisection: probably-other bugs get in
+the way.  Some bisection points don't boot, some don't come back from
+resume at all, some hang before getting to test.  When, as a working
+hypothesis, I assumed that not coming back from resume might be the
+same problem manifesting in the return from resume itself, and shifted
+around bisection points a bit to avoid non-booting, then it arrived at
 
-[PATCH 3/3] slab: add kmemcheck hooks
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+commit 4fe29a85642544503cf81e9cf251ef0f4e65b162
+Author: Glauber de Oliveira Costa <gcosta@redhat.com>
+Date:   Wed Mar 19 14:25:23 2008 -0300
+    x86: use specialized routine for setup per-cpu area
 
-Add kmemcheck hooks to SLAB. Note: this only works if you force SLAB to use
-compound pages manually. I didn't change SLAB to use them though as Vegard has
-a fix on the way to make kmemcheck work with non-compound pages.
+as the suspect commit.  But I couldn't see anything obviously wrong
+with that; and it could well be no more guilty than shifting around
+the kernel address space somewhat.  I've rather given up on the
+bisection angle; and indeed, since found that how the problem
+manifests varies somewhat from one day's git to another,
+from one config to another.
 
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Lameter <clameter@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- arch/x86/Kconfig.debug |    3 ++-
- mm/Makefile            |    5 +----
- mm/slab.c              |   21 +++++++++++++++++++--
- 3 files changed, 22 insertions(+), 7 deletions(-)
+It does not happen with maxcpus=1.  Yesterday it occurred to me
+to try without CONFIG_PREEMPT=y; but reached no conclusion on that,
+it turns out preemption has been somehow essential to resume from
+RAM on this machine since before 2.6.25: clearly a separate issue.
+And resume from RAM running 64-bit on it is also long problematic.
 
-Index: kmemcheck/arch/x86/Kconfig.debug
-===================================================================
---- kmemcheck.orig/arch/x86/Kconfig.debug	2008-05-09 00:44:29.000000000 +0300
-+++ kmemcheck/arch/x86/Kconfig.debug	2008-05-09 00:44:40.000000000 +0300
-@@ -246,8 +246,9 @@
- 	bool "kmemcheck: trap use of uninitialized memory"
- 	depends on X86_32
- 	depends on !X86_USE_3DNOW
-+	depends on SLUB || SLAB
- 	depends on !CC_OPTIMIZE_FOR_SIZE
--	depends on !DEBUG_PAGEALLOC && SLUB
-+	depends on !DEBUG_PAGEALLOC
- 	select FRAME_POINTER
- 	select STACKTRACE
- 	default n
-Index: kmemcheck/mm/slab.c
-===================================================================
---- kmemcheck.orig/mm/slab.c	2008-05-09 00:44:37.000000000 +0300
-+++ kmemcheck/mm/slab.c	2008-05-09 00:44:40.000000000 +0300
-@@ -111,6 +111,8 @@
- #include	<linux/rtmutex.h>
- #include	<linux/reciprocal_div.h>
- #include	<linux/debugobjects.h>
-+#include	<linux/kmemcheck.h>
-+#include	<linux/slub_kmemcheck.h>
- 
- #include	<asm/cacheflush.h>
- #include	<asm/tlbflush.h>
-@@ -176,13 +178,13 @@
- 			 SLAB_STORE_USER | \
- 			 SLAB_RECLAIM_ACCOUNT | SLAB_PANIC | \
- 			 SLAB_DESTROY_BY_RCU | SLAB_MEM_SPREAD | \
--			 SLAB_DEBUG_OBJECTS)
-+			 SLAB_DEBUG_OBJECTS | SLAB_NOTRACK)
- #else
- # define CREATE_MASK	(SLAB_HWCACHE_ALIGN | \
- 			 SLAB_CACHE_DMA | \
- 			 SLAB_RECLAIM_ACCOUNT | SLAB_PANIC | \
- 			 SLAB_DESTROY_BY_RCU | SLAB_MEM_SPREAD | \
--			 SLAB_DEBUG_OBJECTS)
-+			 SLAB_DEBUG_OBJECTS | SLAB_NOTRACK)
- #endif
- 
- /*
-@@ -1611,6 +1613,10 @@
- 			NR_SLAB_UNRECLAIMABLE, nr_pages);
- 	for (i = 0; i < nr_pages; i++)
- 		__SetPageSlab(page + i);
-+
-+	if (kmemcheck_enabled && !(cachep->flags & SLAB_NOTRACK))
-+		kmemcheck_alloc_shadow(cachep, flags, nodeid, page, cachep->gfporder);
-+
- 	return page_address(page);
- }
- 
-@@ -1623,6 +1629,9 @@
- 	struct page *page = virt_to_page(addr);
- 	const unsigned long nr_freed = i;
- 
-+	if (kmemcheck_page_is_tracked(page) && !(cachep->flags & SLAB_NOTRACK))
-+		kmemcheck_free_shadow(cachep, page, cachep->gfporder);
-+
- 	if (cachep->flags & SLAB_RECLAIM_ACCOUNT)
- 		sub_zone_page_state(page_zone(page),
- 				NR_SLAB_RECLAIMABLE, nr_freed);
-@@ -3337,6 +3346,9 @@
- 	local_irq_restore(save_flags);
- 	ptr = cache_alloc_debugcheck_after(cachep, flags, ptr, caller);
- 
-+	if (likely(ptr))
-+		kmemcheck_slab_alloc(cachep, flags, ptr, obj_size(cachep));
-+
- 	if (unlikely((flags & __GFP_ZERO) && ptr))
- 		memset(ptr, 0, obj_size(cachep));
- 
-@@ -3391,6 +3403,9 @@
- 	objp = cache_alloc_debugcheck_after(cachep, flags, objp, caller);
- 	prefetchw(objp);
- 
-+	if (likely(objp))
-+		kmemcheck_slab_alloc(cachep, flags, objp, obj_size(cachep));
-+
- 	if (unlikely((flags & __GFP_ZERO) && objp))
- 		memset(objp, 0, obj_size(cachep));
- 
-@@ -3506,6 +3521,8 @@
- 	check_irq_off();
- 	objp = cache_free_debugcheck(cachep, objp, __builtin_return_address(0));
- 
-+	kmemcheck_slab_free(cachep, objp, obj_size(cachep));
-+
- 	/*
- 	 * Skip calling cache_free_alien() when the platform is not numa.
- 	 * This will avoid cache misses that happen while accessing slabp (which
-Index: kmemcheck/mm/Makefile
-===================================================================
---- kmemcheck.orig/mm/Makefile	2008-05-09 00:44:29.000000000 +0300
-+++ kmemcheck/mm/Makefile	2008-05-09 00:45:01.000000000 +0300
-@@ -27,13 +27,10 @@
- obj-$(CONFIG_SLOB) += slob.o
- obj-$(CONFIG_SLAB) += slab.o
- obj-$(CONFIG_SLUB) += slub.o
-+obj-$(CONFIG_KMEMCHECK) += slub_kmemcheck.o
- obj-$(CONFIG_MEMORY_HOTPLUG) += memory_hotplug.o
- obj-$(CONFIG_FS_XIP) += filemap_xip.o
- obj-$(CONFIG_MIGRATION) += migrate.o
- obj-$(CONFIG_SMP) += allocpercpu.o
- obj-$(CONFIG_QUICKLIST) += quicklist.o
- obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o
--
--ifeq ($(CONFIG_KMEMCHECK),y)
--obj-$(CONFIG_SLUB) += slub_kmemcheck.o
--endif
+To reproduce the problem, I start off by building a kernel with
+make -j3 (from habit, perhaps with priming the pagecache in mind),
+then interrupt that around the time it gets to filemap.o, bootmem.o.
+I pm-suspend, close the lid, wait a few seconds, open the lid;
+make mrproper and start a make -j3 build again.  (Though the very
+first time I noticed the problem, it was a segfault in a git pull
+after resume.)
+
+How quickly it goes bad varies a lot: often hangs right at the
+start while sedding stuff before getting down to the build itself.
+Often gets well into the build before gcc reports Real-time signal
+(most commonly 14 but others seen) killed cc1.  But my favourite,
+the most distinctive failure, is segfault (usually in sh or make)
+at 20295564 ip .....2f2 error 6 in ld-2.6.1.so (openSUSE 10.3).
+
+Always 20295564; and objdumping ld-2.6.1.so shows 0x14 of that is
+just the offset from %edi, so the crucial address is 0x20295550.
+Which is "PU) ", though I've not found that string anywhere in
+the running vmlinux (but of course it does appear in kernel source).
+
+Yesterday morning's git looked promising: because of the libata
+70sec delay, I got diverted after the resume from RAM, left that
+laptop idle, and found hald-something-or-other had come in every
+few minutes and got that segfault at 20295564 (but with increasing
+ip addresses: some address-space randomization effect, I suppose).
+Well, I suppose it probably got run more often, but I'd only notice
+the segfaulting ones.  So it can happen when close to idle; but
+I've not been able to reproduce that since.
+
+It's such a good signature, but I've failed to make progress with it.
+Ted, please try doing the same (and check your logs for existing
+segfault messages): let's see if you get the same number ;)
+though I've no idea what it'd tell us.
+
+Hugh
