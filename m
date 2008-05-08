@@ -1,47 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761790AbYEHTmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761664AbYEHTn4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761790AbYEHTmp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 15:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753888AbYEHTmb
+	id S1761664AbYEHTn4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 15:43:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751547AbYEHTnq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 15:42:31 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:49632 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752429AbYEHTma (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 15:42:30 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
-       viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, sds@tycho.nsa.gov, jmorris@namei.org,
-       casey@schaufler-ca.com
-Subject: Re: [patch 07/24] fat: dont call notify_change
-References: <20080506091327.259950960@szeredi.hu>
-	<20080506091414.440652004@szeredi.hu>
-	<20080508165724.GD13914@infradead.org>
-Date: Fri, 09 May 2008 04:42:12 +0900
-In-Reply-To: <20080508165724.GD13914@infradead.org> (Christoph Hellwig's
-	message of "Thu, 8 May 2008 12:57:24 -0400")
-Message-ID: <873aospoq3.fsf@duaron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Thu, 8 May 2008 15:43:46 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:47669 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751508AbYEHTno (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 15:43:44 -0400
+Date: Thu, 8 May 2008 22:42:20 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: [git pull] scheduler fixes
+Message-ID: <20080508194220.GB22887@cs181133002.pp.htv.fi>
+References: <1210214696.3453.87.camel@ymzhang> <alpine.LFD.1.10.0805072014330.3024@woody.linux-foundation.org> <1210219729.3453.97.camel@ymzhang> <alpine.LFD.1.10.0805072115190.3024@woody.linux-foundation.org> <20080508120130.GA2860@elte.hu> <20080508122802.GA4880@elte.hu> <20080508144316.GA9869@elte.hu> <20080508151028.GA12109@elte.hu> <20080508153343.GD7718@cs181133002.pp.htv.fi> <20080508154116.GA17338@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080508154116.GA17338@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig <hch@infradead.org> writes:
+On Thu, May 08, 2008 at 05:41:16PM +0200, Ingo Molnar wrote:
+> 
+> * Adrian Bunk <bunk@kernel.org> wrote:
+> 
+> > Can we get that verified and the description updated before it hits 
+> > Linus' tree?
+> 
+> that's not needed. Mike's fix is correct, regardless of whether it fixes 
+> the other regression or not.
 
-> Actually I think we want the security_inode_setattr.  This is an
-> implicit chmode when switching the ATTR_RO flag on and off and we should
-> have the full security check for it.  Then again I'm not sure the
-> security modules care about this level of detail because there's
-> probably even worse ioctl hidden somewhere.
->
-> Ccing the Selinux guys and Casey in case they care.
+Then scrap the part about it possibly fixing a regression and the
+Reported-by: line.
 
-Sounds good.
+> > Otherwise this "could be related" will become unchangable metadata 
+> > that will stay forever - no matter whether there's any relation at 
+> > all.
+> 
+> ... and the problem with that is exactly what?
+
+It is important that our metadata is as complete and correct as 
+reasonably possible. Our code is not as well documented as it should be, 
+and in my experience often the only way to understand what happens and 
+why it happens is to ask git for the metadata (and I'm actually doing 
+this even for most of my "trivial" patches).
+
+In 3 hours or 3 years someone might look at this commit trying to 
+understand what it does and why it does this.
+
+And there's a big difference between "we do it because it's correct from 
+a theoretical point of view" and "it is supposed to fix a huge 
+performance regression".
+
+> 	Ingo
+
+cu
+Adrian
+
 -- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
