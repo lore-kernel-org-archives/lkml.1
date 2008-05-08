@@ -1,51 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762274AbYEHKwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762330AbYEHK6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762274AbYEHKwn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 06:52:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754484AbYEHKwe
+	id S1762330AbYEHK6h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 06:58:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757141AbYEHK63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 06:52:34 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:58984 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752147AbYEHKwd (ORCPT
+	Thu, 8 May 2008 06:58:29 -0400
+Received: from rtsoft2.corbina.net ([85.21.88.2]:36335 "HELO
+	mail.dev.rtsoft.ru" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with SMTP id S1753238AbYEHK62 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 06:52:33 -0400
-Message-ID: <4822DB6E.9040504@firstfloor.org>
-Date: Thu, 08 May 2008 12:52:30 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Thu, 8 May 2008 06:58:28 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 08 May 2008 06:58:27 EDT
+Date: Thu, 8 May 2008 14:51:45 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Andres Salomon <dilinger@queued.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, cbou@mail.ru,
+       linux-kernel@vger.kernel.org, dwmw2@infradead.org
+Subject: Re: [PATCH] power_supply: support CHARGE_NOW in OLPC battery
+Message-ID: <20080508105145.GA32017@polina.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20080508003454.722ba511@ephemeral>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Mirco Tischler <mt-ml@gmx.de>, Ingo Molnar <mingo@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG]:WARNING: at arch/x86/kernel/rtc.c:122 in 2.6.26-rc1
-References: <1210183536.28099.10.camel@mtlp.tischlernetz>  <alpine.LFD.1.10.0805072102010.3318@apollo.tec.linutronix.de>  <1210188734.5456.14.camel@mtlp.tischlernetz>  <alpine.LFD.1.10.0805072253480.3318@apollo.tec.linutronix.de> <1210196777.26103.8.camel@mtlp.tischlernetz> <48222742.5040008@firstfloor.org> <alpine.LFD.1.10.0805081207050.3318@apollo.tec.linutronix.de>
-In-Reply-To: <alpine.LFD.1.10.0805081207050.3318@apollo.tec.linutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080508003454.722ba511@ephemeral>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> On Thu, 8 May 2008, Andi Kleen wrote:
->>> May  7 21:52:04 kernel: [4294896.091827] Extended CMOS year: 2000
->>> May  7 21:52:04 kernel: [4294896.091827] x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
->>> May  7 21:52:04 kernel: [4294896.091827] Back to C!
->>> May  7 21:52:04 kernel: [4294896.091827] Extended CMOS year: 2000
->> If the data is read correctly (and it looks like it) then just the bit
->> is wrong and we should ignore it I guess. So just remove the
->> WARN_ON_ONCE()?
+On Thu, May 08, 2008 at 12:34:54AM -0400, Andres Salomon wrote:
 > 
-> You put a printk there in the first place :) I changed it to
-> WARN_ON_ONCE as one line printks are more likely to be ignored.
+> This is originally based on a patch by
+> David Woodhouse <dwmw2@infradead.org>.  Add support for PROP_CHARGE_NOW
+> by querying the ACR (accumulated current register) from the EC.
+> 
+> Signed-off-by: Andres Salomon <dilinger@debian.org>
+> ---
 
-Ignoring would have been fine here, but point taken.
+Hi Andres,
 
-> I'm all for it to remove the while BCD check, which is hardcoded to
-> ALWAYS_BCD = 1 since linux 1.0.
+>  drivers/power/olpc_battery.c |   10 +++++++++-
+>  1 files changed, 9 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/power/olpc_battery.c b/drivers/power/olpc_battery.c
+> index e3f6ec8..517dacd 100644
+> --- a/drivers/power/olpc_battery.c
+> +++ b/drivers/power/olpc_battery.c
+> @@ -19,7 +19,7 @@
+>  
+>  #define EC_BAT_VOLTAGE	0x10	/* uint16_t,	*9.76/32,    mV   */
+>  #define EC_BAT_CURRENT	0x11	/* int16_t,	*15.625/120, mA   */
+> -#define EC_BAT_ACR	0x12
+> +#define EC_BAT_ACR	0x12	/* int16_t,	*416.667,    µAh  */
 
-Fine for me.
+The hardware reports uAh * 416.667..?
 
--Andi
+>  #define EC_BAT_TEMP	0x13	/* uint16_t,	*100/256,   °C  */
+>  #define EC_AMB_TEMP	0x14	/* uint16_t,	*100/256,   °C  */
+>  #define EC_BAT_STATUS	0x15	/* uint8_t,	bitmask */
+> @@ -289,6 +289,13 @@ static int olpc_bat_get_property(struct power_supply *psy,
+>  		ec_word = be16_to_cpu(ec_word);
+>  		val->intval = ec_word * 100 / 256;
+>  		break;
+> +	case POWER_SUPPLY_PROP_CHARGE_NOW:
+> +		ret = olpc_ec_cmd(EC_BAT_ACR, NULL, 0, (void *)&ec_word, 2);
+> +		if (ret)
+> +			return ret;
+> +
+> +		val->intval = be16_to_cpu(ec_word);
 
+But you didn't convert it to the uAh, I think you should.
+
+> +		break;
+>  	case POWER_SUPPLY_PROP_SERIAL_NUMBER:
+>  		ret = olpc_ec_cmd(EC_BAT_SERIAL, NULL, 0, (void *)&ser_buf, 8);
+>  		if (ret)
+> @@ -317,6 +324,7 @@ static enum power_supply_property olpc_bat_props[] = {
+>  	POWER_SUPPLY_PROP_TEMP_AMBIENT,
+>  	POWER_SUPPLY_PROP_MANUFACTURER,
+>  	POWER_SUPPLY_PROP_SERIAL_NUMBER,
+> +	POWER_SUPPLY_PROP_CHARGE_NOW,
+>  };
+>  
+>  /* EEPROM reading goes completely around the power_supply API, sadly */
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
