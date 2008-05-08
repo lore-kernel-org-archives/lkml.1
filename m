@@ -1,119 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765126AbYEHRoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756699AbYEHRob@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765126AbYEHRoA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 13:44:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760642AbYEHRnM
+	id S1756699AbYEHRob (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 13:44:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756661AbYEHRnO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 8 May 2008 13:43:14 -0400
+Received: from mjg.x.mythic-beasts.com ([93.93.128.6]:56631 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1760427AbYEHRnM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 8 May 2008 13:43:12 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:33416 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755963AbYEHRnJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 13:43:09 -0400
-Date: Thu, 8 May 2008 10:41:58 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, Hugh Dickins <hugh@veritas.com>,
-       Shi Weihua <shiwh@cn.fujitsu.com>, Balbir Singh <balbir@in.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: [patch 02/16] mm: fix usemap initialization
-Message-ID: <20080508174158.GC855@suse.de>
-References: <20080508173436.454278564@mini.kroah.org>
+Date: Thu, 8 May 2008 18:42:55 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Dag Bakke <dag@bakke.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jiri Kosina <jkosina@suse.cz>,
+       "Diego 'Flameeyes' Petteno" <flameeyes@gmail.com>
+Message-ID: <20080508174255.GA8136@srcf.ucam.org>
+References: <4814612F.5030606@bakke.com> <20080506125406.dc047710.akpm@linux-foundation.org> <20080506234307.GA27714@srcf.ucam.org> <4823386A.6000501@bakke.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="mm-fix-usemap-initialization.patch"
-In-Reply-To: <20080508174122.GA855@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Disposition: inline
+In-Reply-To: <4823386A.6000501@bakke.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [PATCH] fix apple alu keyboard with numpad
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 08, 2008 at 07:29:14PM +0200, Dag Bakke wrote:
+> Matthew Garrett wrote, On 05/07/2008 01:43 AM:
+> >On Tue, May 06, 2008 at 12:54:06PM -0700, Andrew Morton wrote:
+> >
+> >>>-static int hid_apple_fnmode = 1;
+> >>>+static int hid_apple_fnmode = 2;
+> >
+> >Regardless of anything else, we don't want this hunk.
+> >
+> 
+> Was my reasoning for this change off ("F-keys used more often that 
+> multimediakeys, ergo make that the default"), or is your resistance to 
+> this change due to some kind of policy?
 
-2.6.25-stable review patch.  If anyone has any objections, please let us
-know.
-
-------------------
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
-commit: 86051ca5eaf5e560113ec7673462804c54284456 upstream
-
-usemap must be initialized only when pfn is within zone.  If not, it corrupts
-memory.
-
-And this patch also reduces the number of calls to set_pageblock_migratetype()
-from
-	(pfn & (pageblock_nr_pages -1)
-to
-	!(pfn & (pageblock_nr_pages-1)
-it should be called once per pageblock.
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Acked-by: Mel Gorman <mel@csn.ul.ie>
-Cc: Hugh Dickins <hugh@veritas.com>
-Cc: Shi Weihua <shiwh@cn.fujitsu.com>
-Cc: Balbir Singh <balbir@in.ibm.com>
-Cc: Pavel Emelyanov <xemul@openvz.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- mm/page_alloc.c |   14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
-
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -2518,7 +2518,9 @@ void __meminit memmap_init_zone(unsigned
- 	struct page *page;
- 	unsigned long end_pfn = start_pfn + size;
- 	unsigned long pfn;
-+	struct zone *z;
- 
-+	z = &NODE_DATA(nid)->node_zones[zone];
- 	for (pfn = start_pfn; pfn < end_pfn; pfn++) {
- 		/*
- 		 * There can be holes in boot-time mem_map[]s
-@@ -2536,7 +2538,6 @@ void __meminit memmap_init_zone(unsigned
- 		init_page_count(page);
- 		reset_page_mapcount(page);
- 		SetPageReserved(page);
--
- 		/*
- 		 * Mark the block movable so that blocks are reserved for
- 		 * movable at startup. This will force kernel allocations
-@@ -2545,8 +2546,15 @@ void __meminit memmap_init_zone(unsigned
- 		 * kernel allocations are made. Later some blocks near
- 		 * the start are marked MIGRATE_RESERVE by
- 		 * setup_zone_migrate_reserve()
-+		 *
-+		 * bitmap is created for zone's valid pfn range. but memmap
-+		 * can be created for invalid pages (for alignment)
-+		 * check here not to call set_pageblock_migratetype() against
-+		 * pfn out of zone.
- 		 */
--		if ((pfn & (pageblock_nr_pages-1)))
-+		if ((z->zone_start_pfn <= pfn)
-+		    && (pfn < z->zone_start_pfn + z->spanned_pages)
-+		    && !(pfn & (pageblock_nr_pages - 1)))
- 			set_pageblock_migratetype(page, MIGRATE_MOVABLE);
- 
- 		INIT_LIST_HEAD(&page->lru);
-@@ -4460,6 +4468,8 @@ void set_pageblock_flags_group(struct pa
- 	pfn = page_to_pfn(page);
- 	bitmap = get_pageblock_bitmap(zone, pfn);
- 	bitidx = pfn_to_bitidx(zone, pfn);
-+	VM_BUG_ON(pfn < zone->zone_start_pfn);
-+	VM_BUG_ON(pfn >= zone->zone_start_pfn + zone->spanned_pages);
- 
- 	for (; start_bitidx <= end_bitidx; start_bitidx++, value <<= 1)
- 		if (flags & value)
+It's a change in behaviour of a wide range of keyboards, and it's in a 
+patch that is supposed to be fixing a single keyboard. Personally, I 
+suspect that the people who are going to want the F-keys by default are 
+the people who are easily able to change this behaviour and the ones who 
+aren't are the ones who are going to expect their keyboard to behave 
+like it did under MacOS. But that's a separate argument for a separate 
+patch :)
 
 -- 
+Matthew Garrett | mjg59@srcf.ucam.org
