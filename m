@@ -1,176 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755964AbYEHEZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755969AbYEHEbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755964AbYEHEZm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 00:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752481AbYEHEZb
+	id S1755969AbYEHEbS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 00:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbYEHEbE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 00:25:31 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:41216 "EHLO smtps.tip.net.au"
+	Thu, 8 May 2008 00:31:04 -0400
+Received: from mail.queued.net ([207.210.101.209]:1196 "EHLO mail.queued.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752395AbYEHEZ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 00:25:28 -0400
-Date: Thu, 8 May 2008 14:25:14 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for May 8
-Message-Id: <20080508142514.6990f80e.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
+	id S1750998AbYEHEbB convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 00:31:01 -0400
+Date: Thu, 8 May 2008 00:34:54 -0400
+From: Andres Salomon <dilinger@queued.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: cbou@mail.ru, linux-kernel@vger.kernel.org, dwmw2@infradead.org
+Subject: [PATCH] power_supply: support CHARGE_NOW in OLPC battery
+Message-ID: <20080508003454.722ba511@ephemeral>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__8_May_2008_14_25_14_+1000_Kby79NK_6syg8PTq"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__8_May_2008_14_25_14_+1000_Kby79NK_6syg8PTq
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi all,
+This is originally based on a patch by
+David Woodhouse <dwmw2@infradead.org>.  Add support for PROP_CHARGE_NOW
+by querying the ACR (accumulated current register) from the EC.
 
-[The Next/Trees file includes the trees that were removed/not included
-today - I will fix my scripts to not do that from now on.]
+Signed-off-by: Andres Salomon <dilinger@debian.org>
+---
+ drivers/power/olpc_battery.c |   10 +++++++++-
+ 1 files changed, 9 insertions(+), 1 deletions(-)
 
-Changes since next-20080507:
+diff --git a/drivers/power/olpc_battery.c b/drivers/power/olpc_battery.c
+index e3f6ec8..517dacd 100644
+--- a/drivers/power/olpc_battery.c
++++ b/drivers/power/olpc_battery.c
+@@ -19,7 +19,7 @@
+ 
+ #define EC_BAT_VOLTAGE	0x10	/* uint16_t,	*9.76/32,    mV   */
+ #define EC_BAT_CURRENT	0x11	/* int16_t,	*15.625/120, mA   */
+-#define EC_BAT_ACR	0x12
++#define EC_BAT_ACR	0x12	/* int16_t,	*416.667,    µAh  */
+ #define EC_BAT_TEMP	0x13	/* uint16_t,	*100/256,   °C  */
+ #define EC_AMB_TEMP	0x14	/* uint16_t,	*100/256,   °C  */
+ #define EC_BAT_STATUS	0x15	/* uint8_t,	bitmask */
+@@ -289,6 +289,13 @@ static int olpc_bat_get_property(struct power_supply *psy,
+ 		ec_word = be16_to_cpu(ec_word);
+ 		val->intval = ec_word * 100 / 256;
+ 		break;
++	case POWER_SUPPLY_PROP_CHARGE_NOW:
++		ret = olpc_ec_cmd(EC_BAT_ACR, NULL, 0, (void *)&ec_word, 2);
++		if (ret)
++			return ret;
++
++		val->intval = be16_to_cpu(ec_word);
++		break;
+ 	case POWER_SUPPLY_PROP_SERIAL_NUMBER:
+ 		ret = olpc_ec_cmd(EC_BAT_SERIAL, NULL, 0, (void *)&ser_buf, 8);
+ 		if (ret)
+@@ -317,6 +324,7 @@ static enum power_supply_property olpc_bat_props[] = {
+ 	POWER_SUPPLY_PROP_TEMP_AMBIENT,
+ 	POWER_SUPPLY_PROP_MANUFACTURER,
+ 	POWER_SUPPLY_PROP_SERIAL_NUMBER,
++	POWER_SUPPLY_PROP_CHARGE_NOW,
+ };
+ 
+ /* EEPROM reading goes completely around the power_supply API, sadly */
+-- 
+1.5.5.1
 
-Trees removed: x86-latest, sched-latest, ldp.
-
-Trees not included today: kbuild, wireless.
-
-The v4l/dvb breakage still required a small patch.  I have submitted this
-upstream.
-
-The driver-core tree is back (which brings back the usb tree as well).
-
-The ubi tree caused build failure on a powerpc allyesconfig build (and
-would do the same for any build where PAGE_CACHE_SIZE is not 4096) and
-was reverted for today.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(tar balls at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups, it is also built with powerpc allnoconfig,
-44x/ebony_defconfig and allyesconfig.
-
-Below is a summary of the state of the merge.
-
-We are up to 68 trees (counting Linus' and 9 trees of patches pending for
-Linus' tree (which are mostly empty)), more are welcome (even if they are
-currently empty).  Thanks to those who have contributed, and to those who
-haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git reset --hard stable
-Merging origin/master
-Applying drivers/media build fix for modular builds
-Merging x86-fixes/for-linus
-Merging sched-fixes/for-linus
-Merging powerpc-merge/merge
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sparc-current/master
-Merging sound-current/for-linus
-Merging arm-current/master
-Merging pci-current/for-linus
-Merging quilt/driver-core
-Merging quilt/usb
-Merging x86/for-akpm
-Merging sched/for-akpm
-Merging pci/linux-next
-Merging quilt/device-mapper
-Merging hid/mm
-Merging quilt/i2c
-Merging quilt/kernel-doc
-Merging avr32/avr32-arch
-Merging v4l-dvb/stable
-Merging s390/features
-Merging sh/master
-Merging jfs/next
-Merging quilt/ide
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-Merging infiniband/for-next
-Merging acpi/test
-Merging blackfin/for-linus
-Merging nfsd/nfsd-next
-Merging ieee1394/for-next
-Merging hwmon/testing
-Merging ubi/master
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Merging ia64/test
-Merging tests/master
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-Merging ocfs2/linux-next
-Merging selinux/for-akpm
-Merging quilt/m68k
-Merging powerpc/powerpc-next
-Merging hrt/mm
-Merging lblnet/master
-Merging ext4/next
-Merging 4xx/next
-Merging async_tx/next
-Merging udf/for_next
-Merging security-testing/next
-Merging net/master
-Merging sparc/master
-Merging galak/powerpc-next
-Merging mtd/master
-Merging crypto/master
-Merging vfs/vfs-2.6.25
-Merging sound/master
-Merging arm/devel
-Merging cpufreq/master
-Merging v9fs/for-next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in drivers/s390/kvm/kvm_virtio.c
-Merging semaphore/semaphore
-Merging semaphore-removal/semaphore-removal
-CONFLICT (content): Merge conflict in drivers/atm/ambassador.c
-Applying idr.h needs spinlock.h
-Created commit 2d2120b: Revert "Merge commit 'ubi/master'"
-
---Signature=_Thu__8_May_2008_14_25_14_+1000_Kby79NK_6syg8PTq
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIIoC1TgG2atn1QN8RAuEdAJ4y1gXbTsQz8nClb9uyvQSf30qdgQCeKCcz
-C38qX58Cb/rkKtNVL/4ybK4=
-=sT82
------END PGP SIGNATURE-----
-
---Signature=_Thu__8_May_2008_14_25_14_+1000_Kby79NK_6syg8PTq--
