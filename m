@@ -1,42 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763395AbYEHR31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764932AbYEHRaQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763395AbYEHR31 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 13:29:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753671AbYEHR3R
+	id S1764932AbYEHRaQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 13:30:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753437AbYEHR35
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 13:29:17 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:63139 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753437AbYEHR3O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 13:29:14 -0400
-Message-ID: <44f8add5bf8e87060e2db1f407105b5e.squirrel@housecafe.dyndns.org>
-In-Reply-To: <118833cc0805071249w36145eb6g7ed5c18d9fdf6fce@mail.gmail.com>
-References: <118833cc0805071249w36145eb6g7ed5c18d9fdf6fce@mail.gmail.com>
-Date: Thu, 8 May 2008 19:29:11 +0200 (CEST)
-Subject: Re: Deleting large files
-From: "Christian Kujau" <lists@nerdbynature.de>
-To: "Morten Welinder" <mwelinder@gmail.com>
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>
-User-Agent: SquirrelMail/1.5.2 [SVN]
+	Thu, 8 May 2008 13:29:57 -0400
+Received: from mail47.e.nsc.no ([193.213.115.47]:58341 "EHLO mail47.e.nsc.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754005AbYEHR34 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 13:29:56 -0400
+Message-ID: <4823386A.6000501@bakke.com>
+Date: Thu, 08 May 2008 19:29:14 +0200
+From: Dag Bakke <dag@bakke.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080504)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Provags-ID: V01U2FsdGVkX19IHeMvJ0CeHGisBrm4Xh1wJMrMgnYQDEGHp6+
- o9GAInixrfdnKa+Rx0vY3vhrjlorT6dMoFCd3rKYAEpme2UZwy
- HOhERbPaHhr1aeh4+mm5Q==
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jiri Kosina <jkosina@suse.cz>,
+       "Diego 'Flameeyes' Petteno" <flameeyes@gmail.com>
+Subject: Re: [PATCH] fix apple alu keyboard with numpad
+References: <4814612F.5030606@bakke.com> <20080506125406.dc047710.akpm@linux-foundation.org> <20080506234307.GA27714@srcf.ucam.org>
+In-Reply-To: <20080506234307.GA27714@srcf.ucam.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 7, 2008 21:49, Morten Welinder wrote:
-> deleting large files, say on the order of 4.6GB, takes approximately
-> forever.
+Matthew Garrett wrote, On 05/07/2008 01:43 AM:
+> On Tue, May 06, 2008 at 12:54:06PM -0700, Andrew Morton wrote:
+> 
+>>> -static int hid_apple_fnmode = 1;
+>>> +static int hid_apple_fnmode = 2;
+> 
+> Regardless of anything else, we don't want this hunk.
+> 
 
-What filesystem are you talking about? How long is "forever"? Also the
-kernel version would be interesting...
+Was my reasoning for this change off ("F-keys used more often that 
+multimediakeys, ergo make that the default"), or is your resistance to 
+this change due to some kind of policy?
 
-C.
--- 
-make bzImage, not war
+Sorry if the reason is obvious to you. It isn't to me, yet.
 
+
+Regards,
+
+Dag B
