@@ -1,39 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761213AbYEHAGp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759767AbYEHAIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761213AbYEHAGp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 20:06:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755247AbYEHAGe
+	id S1759767AbYEHAIe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 20:08:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754656AbYEHAIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 20:06:34 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53676 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753706AbYEHAGd (ORCPT
+	Wed, 7 May 2008 20:08:23 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:36595 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753914AbYEHAIW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 20:06:33 -0400
-Date: Wed, 7 May 2008 17:06:29 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-cc: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Sparc
-In-Reply-To: <20080507.163917.104000894.davem@davemloft.net>
-Message-ID: <alpine.LFD.1.10.0805071705360.3024@woody.linux-foundation.org>
-References: <20080507.163917.104000894.davem@davemloft.net>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 7 May 2008 20:08:22 -0400
+Date: Thu, 08 May 2008 09:08:00 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH] mm/page_alloc.c: fix a typo
+Cc: kosaki.motohiro@jp.fujitsu.com, Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+In-Reply-To: <Pine.LNX.4.64.0805061050110.23336@schroedinger.engr.sgi.com>
+References: <482029E7.6070308@cn.fujitsu.com> <Pine.LNX.4.64.0805061050110.23336@schroedinger.engr.sgi.com>
+Message-Id: <20080508090647.4A7B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 7 May 2008, David Miller wrote:
+> > Sorry for the noise, but the signed-off was eaten. :(
+> > Maybe I should leave a blank line before the signed-off.
 > 
-> 1) If fork/clone/etc. errors, argument register %o2 is clobbered
->    breaking syscall restart.
+> I think the | there was some developers attempt to avoid gcc generating 
+> too many branches. I am fine either way.
 
-Wow. Do we actually restart fork/clone/etc? That sounds suspicious. Maybe 
-there is some other bug here?
+Agreed.
+but it is not normal conding style.
+comment adding is better, IMHO.
 
-		Linus
+at first, I think typo too.
+
+
