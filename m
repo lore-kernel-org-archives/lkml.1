@@ -1,134 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757019AbYEHAhW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757561AbYEHAiw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757019AbYEHAhW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 20:37:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbYEHAhG
+	id S1757561AbYEHAiw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 20:38:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbYEHAin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 20:37:06 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51945 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753724AbYEHAhD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 20:37:03 -0400
-Date: Thu, 8 May 2008 09:40:57 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, nickpiggin@yahoo.com.au,
-       tonyb@cybernetics.com, mika.penttila@kolumbus.fi
-Subject: Re: [PATCH] more ZERO_PAGE handling in follow_page()
-Message-Id: <20080508094057.48df4ce0.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080507142539.758d30f6.akpm@linux-foundation.org>
-References: <20080507163643.d4da0ed0.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080507142539.758d30f6.akpm@linux-foundation.org>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 7 May 2008 20:38:43 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:43455 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753217AbYEHAil (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 20:38:41 -0400
+Date: Wed, 7 May 2008 19:38:38 -0500
+From: Robin Holt <holt@sgi.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrea Arcangeli <andrea@qumranet.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       Robin Holt <holt@sgi.com>, Nick Piggin <npiggin@suse.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
+       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>
+Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
+Message-ID: <20080508003838.GA9878@sgi.com>
+References: <6b384bb988786aa78ef0.1210170958@duo.random> <alpine.LFD.1.10.0805071349200.3024@woody.linux-foundation.org> <20080507212650.GA8276@duo.random> <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 May 2008 14:25:39 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Wed, 7 May 2008 16:36:43 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> 
-> > Rewrote the description of patch. (no changes in the logic.)
+On Wed, May 07, 2008 at 02:36:57PM -0700, Linus Torvalds wrote:
+> On Wed, 7 May 2008, Andrea Arcangeli wrote:
 > > 
-> > Thank you for all help.
-> > -Kame
-> > ==
-> > follow_page() is called from get_user_pages(), which returns specified user page.
-> > follow_page() can return 1) a page or 2) NULL or 3)ZERO_PAGE.
-> > If NULL, handle_mm_fault() is called.
-> > 
-> > Now, follow_page() to unused pte returns NULL if page table exists. As a result
-> > get_user_pages() calls handle_mm_fault() and allocate new memory.
-> > This behavior increases memory consumption at coredump, which does
-> > read-once-but-never-written page fault.
-> > By returning ZERO_PAGE() against READ/ANON request, we can avoid it.
-> > 
-> > (Because exec's arguments copy needs to call handle_mm_fault at WRITE/ANON
-> >  request, we just handle READ/ANON case here.)
-> > 
-> > Change log:
-> >   - Rewrote patch description and Added comments.
-> >   - fixed to check pte_present()/pte_none() in proper way.
+> > I think the spinlock->rwsem conversion is ok under config option, as
+> > you can see I complained myself to various of those patches and I'll
+> > take care they're in a mergeable state the moment I submit them. What
+> > XPMEM requires are different semantics for the methods, and we never
+> > had to do any blocking I/O during vmtruncate before, now we have to.
 > 
-> So... how serious is the problem which we're fixing here?
-> 
-> I can see that if one is core-dumping large sparse address spaces this
-> could improve things a lot, but please help us understand the implications
-> so we can decide whether we need this in 2.6.26, thanks.
-> 
-I don't think this is a fix for serious trouble just a improvement.
-But not sure on small systems....
+> I really suspect we don't really have to, and that it would be better to 
+> just fix the code that does that.
 
-a consideration.
-== at coredump before patch
-  killed by something
-     -> generate core dump
-           -> allocate "a" page before starting I/O even if a page is empty
-                 -> do I/O
-A page which is not mapped but there is page tables will be written out.
-Here, newly allocated page is mapped_and_used after I/O. So, when we
-reclaim this page, we need swap. This means terrible slow down or we cannot
-go ahead when we exhaust swap.
+That fix is going to be fairly difficult.  I will argue impossible.
 
-A user can avoid this kind ot situation by setting rlimit. (and RLIMIT_CORE
-is 0 at default.) or set overcommit memory or set dirty_ratio to very small.
-But one terrible thing which I can think of is  that a process in coredump
-cannot be killed. So once this happens, a user have to be patient or reboot
-system.
+First, a little background.  SGI allows one large numa-link connected
+machine to be broken into seperate single-system images which we call
+partitions.
 
-It seems this patch can help coredump in following system 
-  - swapless or An application which can generate core has some amount of
-    ANON memory and it is multi-threaded. (pthread's stack is typical case
-    for this memory usage.)
-  - RLIMIT_CORE is RLIMIT_INIFINITY
-  - core_pattern is file.
-  - Don't have enough memory to do buffer I/O at coredump.
-  - dirty_ratio is default.
+XPMEM allows, at its most extreme, one process on one partition to
+grant access to a portion of its virtual address range to processes on
+another partition.  Those processes can then fault pages and directly
+share the memory.
 
-But an application on this kind of system tends to be well controlled.
+In order to invalidate the remote page table entries, we need to message
+(uses XPC) to the remote side.  The remote side needs to acquire the
+importing process's mmap_sem and call zap_page_range().  Between the
+messaging and the acquiring a sleeping lock, I would argue this will
+require sleeping locks in the path prior to the mmu_notifier invalidate_*
+callouts().
 
-> 
-> > Index: linux-2.6.25/mm/memory.c
-> > ===================================================================
-> > --- linux-2.6.25.orig/mm/memory.c
-> > +++ linux-2.6.25/mm/memory.c
-> > @@ -926,15 +926,15 @@ struct page *follow_page(struct vm_area_
-> >  	page = NULL;
-> >  	pgd = pgd_offset(mm, address);
-> >  	if (pgd_none(*pgd) || unlikely(pgd_bad(*pgd)))
-> > -		goto no_page_table;
-> > +		goto null_or_zeropage;
-> >  
-> >  	pud = pud_offset(pgd, address);
-> >  	if (pud_none(*pud) || unlikely(pud_bad(*pud)))
-> > -		goto no_page_table;
-> > +		goto null_or_zeropage;
-> >  	
-> >  	pmd = pmd_offset(pud, address);
-> >  	if (pmd_none(*pmd) || unlikely(pmd_bad(*pmd)))
-> 
-> The mainline kernel does not have " || unlikely(pmd_bad(*pmd))" here. 
-> That got changed yesterday by
-> 
-> commit aeed5fce37196e09b4dac3a1c00d8b7122e040ce
-> Author: Hugh Dickins <hugh@veritas.com>
-> Date:   Tue May 6 20:49:23 2008 +0100
-> 
->     x86: fix PAE pmd_bad bootup warning
-> 
-> So please confirm that the patch which I merged is still OK (I'd be
-> surprised if it isn't...)
-> 
-Ok, I'll check and update this against the newest git tree.
-(But may took some hours.)
+On a side note, we currently have XPMEM working on x86_64 SSI, and
+ia64 cross-partition.  We are in the process of getting XPMEM working
+on x86_64 cross-partition in support of UV.
 
 Thanks,
--Kame
-
+Robin Holt
