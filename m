@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753649AbYEHN5B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763007AbYEHN5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753649AbYEHN5B (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 09:57:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755708AbYEHNzl
+	id S1763007AbYEHN5d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 09:57:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757657AbYEHNzx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 09:55:41 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:23167 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754638AbYEHNzj (ORCPT
+	Thu, 8 May 2008 09:55:53 -0400
+Received: from wr-out-0506.google.com ([64.233.184.231]:34732 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759473AbYEHNzw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 09:55:39 -0400
+	Thu, 8 May 2008 09:55:52 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=VCk7jfjYY7J5fN49E6qic+r9ED4to58GoFD+JmlzhgvMjjxHOhi8Ifg5roue+Nu+AOI1oRanE8kmiWPHt5vqkRh+vtTUJNcGufpJm3xr9Y8dmbexjFb3p8uh6Db9ulaSxiAmW4rQkB3S4SA/YdEjpQ1LHaGXO8OBmxkE7WAuESw=
+        b=V0CkjBQOyGzhMwp5IOAi8PxO85fbisf8zWm4JsIFkVmsoN2Z7KWRTFy/xafId+bkNTsYCi4IFItJu5CW2SmW0yllhrnBW24w4776dvYW21cGdGaRRR/qTe2jO2wE9qwmhfV50MF26NE7ArYTgCm04J5C61Y1ENPts/VBMs/ap+s=
 From: WANG Cong <xiyou.wangcong@gmail.com>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@osdl.org>, WANG Cong <xiyou.wangcong@gmail.com>,
        WANG Cong <wangcong@zeuux.org>
-Subject: [Patch 5/9] fs/binfmt_em86.c: fix resource leaks
-Date: Thu,  8 May 2008 21:52:30 +0800
-Message-Id: <12102548313018-git-send-email-xiyou.wangcong@gmail.com>
+Subject: [Patch 6/9] fs/binfmt_misc.c: fix resource leaks
+Date: Thu,  8 May 2008 21:52:31 +0800
+Message-Id: <12102548463329-git-send-email-xiyou.wangcong@gmail.com>
 X-Mailer: git-send-email 1.5.2.4
 In-Reply-To: <1210254754206-git-send-email-xiyou.wangcong@gmail.com>
 References: <1210254754206-git-send-email-xiyou.wangcong@gmail.com>
@@ -32,58 +32,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 when it succeeded, so ->load_binary() itself should free the resources on
 failure.
 
+
 Signed-off-by: WANG Cong <wangcong@zeuux.org>
 
 ---
-diff --git a/fs/binfmt_em86.c b/fs/binfmt_em86.c
-index f9c88d0..caa8466 100644
---- a/fs/binfmt_em86.c
-+++ b/fs/binfmt_em86.c
-@@ -69,11 +69,13 @@ static int load_em86(struct linux_binprm *bprm,struct pt_regs *regs)
- 	bprm->argc++;
- 	if (i_arg) {
- 		retval = copy_strings_kernel(1, &i_arg, bprm);
--		if (retval < 0) return retval; 
-+		if (retval < 0)
-+			goto out;
- 		bprm->argc++;
- 	}
- 	retval = copy_strings_kernel(1, &i_name, bprm);
--	if (retval < 0)	return retval;
-+	if (retval < 0)
-+		goto out;
- 	bprm->argc++;
+diff --git a/fs/binfmt_misc.c b/fs/binfmt_misc.c
+index 7191306..bcc628c 100644
+--- a/fs/binfmt_misc.c
++++ b/fs/binfmt_misc.c
+@@ -174,7 +174,7 @@ static int load_misc_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+ 	/* add the interp as argv[0] */
+ 	retval = copy_strings_kernel (1, &iname_addr, bprm);
+ 	if (retval < 0)
+-		goto _error;
++		goto _error_free;
+ 	bprm->argc ++;
  
- 	/*
-@@ -82,16 +84,27 @@ static int load_em86(struct linux_binprm *bprm,struct pt_regs *regs)
- 	 * space, and we don't need to copy it.
- 	 */
- 	file = open_exec(interp);
--	if (IS_ERR(file))
--		return PTR_ERR(file);
-+	if (IS_ERR(file)) {
-+		retval = PTR_ERR(file);
-+		goto out;
-+	}
+ 	bprm->interp = iname;	/* for binfmt_script */
+@@ -182,7 +182,7 @@ static int load_misc_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+ 	interp_file = open_exec (iname);
+ 	retval = PTR_ERR (interp_file);
+ 	if (IS_ERR (interp_file))
+-		goto _error;
++		goto _error_free;
  
- 	bprm->file = file;
+ 	bprm->file = interp_file;
+ 	if (fmt->flags & MISC_FMT_CREDENTIALS) {
+@@ -196,14 +196,22 @@ static int load_misc_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+ 		retval = prepare_binprm (bprm);
  
- 	retval = prepare_binprm(bprm);
--	if (retval < 0)
--		return retval;
-+	if (retval < 0) {
-+		if (bprm->file) {
-+			allow_write_access(bprm->file);
-+			fput(bprm->file);
-+		}
-+		goto out;
-+	}
+ 	if (retval < 0)
+-		goto _error;
++		goto _error_file;
  
- 	return search_binary_handler(bprm, regs);
+ 	retval = search_binary_handler (bprm, regs);
+ 	if (retval < 0)
+-		goto _error;
++		goto _error_file;
+ 
+ _ret:
+ 	return retval;
 +
-+out:
++_error_file:
++	allow_write_access(bprm->file);
++	fput(bprm->file);
++
++_error_free:
 +	free_arg_pages(bprm);
-+	return retval;
- }
- 
- static struct linux_binfmt em86_format = {
++
+ _error:
+ 	if (fd_binary > 0)
+ 		sys_close(fd_binary);
