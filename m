@@ -1,116 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933504AbYEHWjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933932AbYEHWlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933504AbYEHWjf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 18:39:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751048AbYEHWjY
+	id S933932AbYEHWlg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 18:41:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758981AbYEHWl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 18:39:24 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55455 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754869AbYEHWjW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 18:39:22 -0400
-Date: Thu, 8 May 2008 15:38:22 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       davidel@xmailserver.org, mtk.manpages@gmail.com,
-       torvalds@linux-foundation.org, Roland McGrath <roland@redhat.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [PATCH 02/18] flag parameters: paccept
-Message-Id: <20080508153822.0c4dd6e9.akpm@linux-foundation.org>
-In-Reply-To: <200805062118.m46LI7SS004041@devserv.devel.redhat.com>
-References: <200805062118.m46LI7SS004041@devserv.devel.redhat.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 8 May 2008 18:41:26 -0400
+Received: from mx1.suse.de ([195.135.220.2]:32827 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753325AbYEHWlZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 18:41:25 -0400
+Subject: patch usb-fix-integer-as-null-pointer-warnings-found-by-sparse.patch added to gregkh-2.6 tree
+To: harvey.harrison@gmail.com, akpm@linux-foundation.org, gregkh@suse.de,
+       linux-kernel@vger.kernel.org
+From: <gregkh@suse.de>
+Date: Thu, 08 May 2008 15:38:36 -0700
+In-Reply-To: <1209593021.24729.113.camel@brick>
+Message-ID: <12102863161565@kroah.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 May 2008 17:18:07 -0400
-Ulrich Drepper <drepper@redhat.com> wrote:
 
-> This patch is by far the most complex in the series.  It adds a new syscall
-> paccept.  This syscall differs from accept in that it adds (at the userlevel)
-> two additional parameters:
-> 
-> - a signal mask
-> - a flags value
-> 
-> The flags parameter can be used to set flag like SOCK_CLOEXEC.  This is
-> imlpemented here as well.  Some people argued that this is a property
-> which should be inherited from the file desriptor for the server but
-> this is against POSIX.  Additionally, we really want the signal mask
-> parameter as well (similar to pselect, ppoll, etc).  So an interface
-> change in inevitable.
-> 
-> The flag value is the same as for socket and socketpair.  I think
-> diverging here will only create confusion.  Similar to the filesystem
-> interfaces where the use of the O_* constants differs, it is acceptable
-> here.
-> 
-> The signal mask is handled as for pselect etc.  The mask is temporarily
-> installed for the thread and removed before the call returns.  I modeled
-> the code after pselect.  If there is a problem it's likely also in
-> pselect.
-> 
-> For architectures which use socketcall I maintained this interface
-> instead of adding a system call.  The symmetry shouldn't be broken.
-> 
-> The following test must be adjusted for architectures other than x86 and
-> x86-64 and in case the syscall numbers changed.
->
+This is a note to let you know that I've just added the patch titled
 
-I have a bit of a mystery going on here.
+     Subject: usb: fix integer as NULL pointer warnings found by sparse
+
+to my gregkh-2.6 tree.  Its filename is
+
+     usb-fix-integer-as-null-pointer-warnings-found-by-sparse.patch
+
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+
+
+>From harvey.harrison@gmail.com Wed Apr 30 15:03:34 2008
+From: Harvey Harrison <harvey.harrison@gmail.com>
+Date: Wed, 30 Apr 2008 15:03:41 -0700
+Subject: usb: fix integer as NULL pointer warnings found by sparse
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Greg KH <gregkh@suse.de>, LKML <linux-kernel@vger.kernel.org>
+Message-ID: <1209593021.24729.113.camel@brick>
+
+
+drivers/usb/host/ohci-sm501.c:93:24: warning: Using plain integer as NULL pointer
+drivers/usb/gadget/amd5536udc.c:3254:9: warning: Using plain integer as NULL pointer
+drivers/usb/gadget/amd5536udc.c:3267:9: warning: Using plain integer as NULL pointer
+drivers/usb/gadget/amd5536udc.c:3277:9: warning: Using plain integer as NULL pointer
+drivers/usb/gadget/amd5536udc.c:3285:9: warning: Using plain integer as NULL pointer
+drivers/usb/gadget/amd5536udc.c:3293:9: warning: Using plain integer as NULL pointer
+
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/usb/gadget/amd5536udc.c |   10 +++++-----
+ drivers/usb/host/ohci-sm501.c   |    2 +-
+ 2 files changed, 6 insertions(+), 6 deletions(-)
+
+--- a/drivers/usb/gadget/amd5536udc.c
++++ b/drivers/usb/gadget/amd5536udc.c
+@@ -3251,7 +3251,7 @@ static int udc_pci_probe(
+ 	/* pci setup */
+ 	if (pci_enable_device(pdev) < 0) {
+ 		kfree(dev);
+-		dev = 0;
++		dev = NULL;
+ 		retval = -ENODEV;
+ 		goto finished;
+ 	}
+@@ -3264,7 +3264,7 @@ static int udc_pci_probe(
+ 	if (!request_mem_region(resource, len, name)) {
+ 		dev_dbg(&pdev->dev, "pci device used already\n");
+ 		kfree(dev);
+-		dev = 0;
++		dev = NULL;
+ 		retval = -EBUSY;
+ 		goto finished;
+ 	}
+@@ -3274,7 +3274,7 @@ static int udc_pci_probe(
+ 	if (dev->virt_addr == NULL) {
+ 		dev_dbg(&pdev->dev, "start address cannot be mapped\n");
+ 		kfree(dev);
+-		dev = 0;
++		dev = NULL;
+ 		retval = -EFAULT;
+ 		goto finished;
+ 	}
+@@ -3282,7 +3282,7 @@ static int udc_pci_probe(
+ 	if (!pdev->irq) {
+ 		dev_err(&dev->pdev->dev, "irq not set\n");
+ 		kfree(dev);
+-		dev = 0;
++		dev = NULL;
+ 		retval = -ENODEV;
+ 		goto finished;
+ 	}
+@@ -3290,7 +3290,7 @@ static int udc_pci_probe(
+ 	if (request_irq(pdev->irq, udc_irq, IRQF_SHARED, name, dev) != 0) {
+ 		dev_dbg(&dev->pdev->dev, "request_irq(%d) fail\n", pdev->irq);
+ 		kfree(dev);
+-		dev = 0;
++		dev = NULL;
+ 		retval = -EBUSY;
+ 		goto finished;
+ 	}
+--- a/drivers/usb/host/ohci-sm501.c
++++ b/drivers/usb/host/ohci-sm501.c
+@@ -90,7 +90,7 @@ static int ohci_hcd_sm501_drv_probe(stru
+ 	struct device *dev = &pdev->dev;
+ 	struct resource	*res, *mem;
+ 	int retval, irq;
+-	struct usb_hcd *hcd = 0;
++	struct usb_hcd *hcd = NULL;
  
-> ...
->
-> +asmlinkage long sys_paccept(int fd, struct sockaddr __user *upeer_sockaddr,
-> +			    int __user *upeer_addrlen,
-> +			    const sigset_t __user *sigmask,
-> +			    size_t sigsetsize, int flags)
-> +{
-> +	sigset_t ksigmask, sigsaved;
-> +	int ret;
-> +
-> +	if (sigmask) {
-> +		/* XXX: Don't preclude handling different sized sigset_t's.  */
-> +		if (sigsetsize != sizeof(sigset_t))
-> +			return -EINVAL;
-> +		if (copy_from_user(&ksigmask, sigmask, sizeof(ksigmask)))
-> +			return -EFAULT;
-> +
-> +		sigdelsetmask(&ksigmask, sigmask(SIGKILL)|sigmask(SIGSTOP));
-> +		sigprocmask(SIG_SETMASK, &ksigmask, &sigsaved);
-> +        }
-> +
-> +	ret = do_accept(fd, upeer_sockaddr, upeer_addrlen, flags);
-> +
-> +	if (ret < 0 && signal_pending(current)) {
-> +		/*
-> +		 * Don't restore the signal mask yet. Let do_signal() deliver
-> +		 * the signal on the way back to userspace, before the signal
-> +		 * mask is restored.
-> +		 */
-> +		if (sigmask) {
-> +			memcpy(&current->saved_sigmask, &sigsaved,
-> +			       sizeof(sigsaved));
-> +			set_thread_flag(TIF_RESTORE_SIGMASK);
-> +		}
-> +	} else if (sigmask)
-> +		sigprocmask(SIG_SETMASK, &sigsaved, NULL);
-> +
-> +	return ret;
-> +}
+ 	irq = retval = platform_get_irq(pdev, 0);
+ 	if (retval < 0)
 
-Some architectures (including x86) do not implement TIF_RESTORE_SIGMASK.
 
-Ah, you must have prepared the patches against something prehistoric like
-2.6.25.  Please prefer to prepare 2.6.x patches against the 2.6.x tree, not
-the 2.6.x-1 tree?
+Patches currently in gregkh-2.6 which might be from harvey.harrison@gmail.com are
 
-Whatever you're trying to do here, we'll need to find a non-arch-specific
-way of doing it.
-
+usb.next/usb-fix-integer-as-null-pointer-warnings-found-by-sparse.patch
+usb.next/usb-use-get_unaligned_-helpers-for-kl5kusb105-driver.patch
