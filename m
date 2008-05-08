@@ -1,46 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765611AbYEHSWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932120AbYEHSXl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765611AbYEHSWy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 14:22:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbYEHSWp
+	id S932120AbYEHSXl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 14:23:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754714AbYEHSXc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 14:22:45 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48278 "EHLO mx1.redhat.com"
+	Thu, 8 May 2008 14:23:32 -0400
+Received: from ns1.suse.de ([195.135.220.2]:59897 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752514AbYEHSWo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 14:22:44 -0400
-Date: Thu, 8 May 2008 14:11:26 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Nadia.Derbey@bull.net
-Cc: manfred@colorfullife.com, paulmck@linux.vnet.ibm.com,
-       lnxninja@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       efault@gmx.de, akpm@linux-foundation.org,
-       Nadia Derbey <Nadia.Derbey@bull.net>
-Subject: Re: [PATCH 8/9] Call idr_find() without locking in ipc_lock()
-Message-ID: <20080508141126.7546649d@bree.surriel.com>
-In-Reply-To: <20080507113737.964082000@bull.net>
-References: <20080507113553.395937000@bull.net>
-	<20080507113737.964082000@bull.net>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752942AbYEHSXb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 14:23:31 -0400
+Date: Thu, 8 May 2008 11:22:33 -0700
+From: Greg KH <gregkh@suse.de>
+To: Willy Tarreau <w@1wt.eu>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 00/16] Linux 2.6.25 -stable review
+Message-ID: <20080508182233.GB2115@suse.de>
+References: <20080508174122.GA855@suse.de> <20080508181342.GA1594@1wt.eu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080508181342.GA1594@1wt.eu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 07 May 2008 13:36:01 +0200
-Nadia.Derbey@bull.net wrote:
-
-> [PATCH 08/09]
+On Thu, May 08, 2008 at 08:13:42PM +0200, Willy Tarreau wrote:
+> On Thu, May 08, 2008 at 10:41:22AM -0700, Greg KH wrote:
+> > This is the start of the stable review cycle for the 2.6.25.2 release.
+> > There are 16 patches in this series, all will be posted as a response to
+> > this one.  If anyone has any issues with these being applied, please let
+> > us know.  If anyone is a maintainer of the proper subsystem, and wants
+> > to add a Signed-off-by: line to the patch, please respond with it.
 > 
-> This patch makes idr_find() called locklessly in ipc_lock(), since the idr
-> tree is now RCU protected.
+> Greg, shouldn't we also queue this one (may be in a later version) ? It's
+> in mainline.
+
+What problem does it solve?
+
+Does Len want it in -stable?
+
+thanks,
+
+greg k-h
+
+> >From a815ab8b5891f3d2515316655729272f68269e3b Mon Sep 17 00:00:00 2001
+> From: Li Zefan <lizf@cn.fujitsu.com>
+> Date: Fri, 18 Apr 2008 13:27:29 -0700
+> Subject: ACPI: check a return value correctly in acpi_power_get_context()
 > 
-> Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
-
-Acked-by: Rik van Riel <riel@redhat.com>
-
--- 
-All rights reversed.
+> We should check *resource != NULL rather than resource != NULL, which will be
+> always true.
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> Acked-by: Zhao Yakui <yakui.zhao@intel.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> ---
+>  drivers/acpi/power.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/acpi/power.c b/drivers/acpi/power.c
+> index 76bf6d9..f2a76ac 100644
+> --- a/drivers/acpi/power.c
+> +++ b/drivers/acpi/power.c
+> @@ -121,7 +121,7 @@ acpi_power_get_context(acpi_handle handle,
+>  	}
+>  
+>  	*resource = acpi_driver_data(device);
+> -	if (!resource)
+> +	if (!*resource)
+>  		return -ENODEV;
+>  
+>  	return 0;
+> -- 
+> 1.5.3.8
