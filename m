@@ -1,76 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757561AbYEHAiw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757635AbYEHAlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757561AbYEHAiw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 20:38:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbYEHAin
+	id S1757635AbYEHAlg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 20:41:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754056AbYEHAl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 20:38:43 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:43455 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753217AbYEHAil (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 20:38:41 -0400
-Date: Wed, 7 May 2008 19:38:38 -0500
-From: Robin Holt <holt@sgi.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrea Arcangeli <andrea@qumranet.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       Robin Holt <holt@sgi.com>, Nick Piggin <npiggin@suse.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
-       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>
-Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
-Message-ID: <20080508003838.GA9878@sgi.com>
-References: <6b384bb988786aa78ef0.1210170958@duo.random> <alpine.LFD.1.10.0805071349200.3024@woody.linux-foundation.org> <20080507212650.GA8276@duo.random> <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org>
+	Wed, 7 May 2008 20:41:26 -0400
+Received: from artax.karlin.mff.cuni.cz ([195.113.31.125]:52544 "EHLO
+	artax.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753893AbYEHAlZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 7 May 2008 20:41:25 -0400
+Date: Thu, 8 May 2008 02:41:24 +0200 (CEST)
+From: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+To: Miklos Szeredi <miklos@szeredi.hu>
+cc: akpm@linux-foundation.org, hch@infradead.org, viro@ZenIV.linux.org.uk,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 06/24] hpfs: dont call notify_change
+In-Reply-To: <20080506091413.165665963@szeredi.hu>
+Message-ID: <Pine.LNX.4.64.0805080240470.11247@artax.karlin.mff.cuni.cz>
+References: <20080506091327.259950960@szeredi.hu> <20080506091413.165665963@szeredi.hu>
+X-Personality-Disorder: Schizoid
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 07, 2008 at 02:36:57PM -0700, Linus Torvalds wrote:
-> On Wed, 7 May 2008, Andrea Arcangeli wrote:
-> > 
-> > I think the spinlock->rwsem conversion is ok under config option, as
-> > you can see I complained myself to various of those patches and I'll
-> > take care they're in a mergeable state the moment I submit them. What
-> > XPMEM requires are different semantics for the methods, and we never
-> > had to do any blocking I/O during vmtruncate before, now we have to.
+> From: Miklos Szeredi <mszeredi@suse.cz>
 > 
-> I really suspect we don't really have to, and that it would be better to 
-> just fix the code that does that.
+> hpfs_unlink() calls notify_change() to truncate the file before
+> deleting.  Replace with explicit call to hpfs_notify_change().
+> 
+> This is equivalent, except that:
+>  - security_inode_setattr() is not called before hpfs_notify_change()
+>  - fsnotify_change() is not called after hpfs_notify_change()
+> 
+> The truncation is just an implementation detail, so both the security
+> check and the notification are unnecessary.
+> 
+> Possibly even the ctime modification is wrong?
 
-That fix is going to be fairly difficult.  I will argue impossible.
+OK, commit the patch.
 
-First, a little background.  SGI allows one large numa-link connected
-machine to be broken into seperate single-system images which we call
-partitions.
+Signed-off-by: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
 
-XPMEM allows, at its most extreme, one process on one partition to
-grant access to a portion of its virtual address range to processes on
-another partition.  Those processes can then fault pages and directly
-share the memory.
+Mikulas
 
-In order to invalidate the remote page table entries, we need to message
-(uses XPC) to the remote side.  The remote side needs to acquire the
-importing process's mmap_sem and call zap_page_range().  Between the
-messaging and the acquiring a sleeping lock, I would argue this will
-require sleeping locks in the path prior to the mmu_notifier invalidate_*
-callouts().
-
-On a side note, we currently have XPMEM working on x86_64 SSI, and
-ia64 cross-partition.  We are in the process of getting XPMEM working
-on x86_64 cross-partition in support of UV.
-
-Thanks,
-Robin Holt
+> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+> CC: Mikulas Patocka <mikulas@artax.karlin.mff.cuni.cz>
+> ---
+>  fs/hpfs/namei.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6/fs/hpfs/namei.c
+> ===================================================================
+> --- linux-2.6.orig/fs/hpfs/namei.c	2008-05-06 11:04:29.000000000 +0200
+> +++ linux-2.6/fs/hpfs/namei.c	2008-05-06 11:04:34.000000000 +0200
+> @@ -426,7 +426,8 @@ again:
+>  			/*printk("HPFS: truncating file before delete.\n");*/
+>  			newattrs.ia_size = 0;
+>  			newattrs.ia_valid = ATTR_SIZE | ATTR_CTIME;
+> -			err = notify_change(dentry, &newattrs);
+> +			newattrs.ia_ctime = current_fs_time(inode->i_sb);
+> +			err = hpfs_notify_change(dentry, &newattrs);
+>  			put_write_access(inode);
+>  			if (!err)
+>  				goto again;
+> 
+> --
+> 
