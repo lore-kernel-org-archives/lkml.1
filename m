@@ -1,59 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933832AbYEHWOM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934187AbYEHWOt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933832AbYEHWOM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 18:14:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933572AbYEHWMz
+	id S934187AbYEHWOt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 18:14:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934090AbYEHWNr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 18:12:55 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37503 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933420AbYEHWMw (ORCPT
+	Thu, 8 May 2008 18:13:47 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:38919 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934083AbYEHWNk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 18:12:52 -0400
-Date: Thu, 8 May 2008 15:03:48 -0700
-From: Greg KH <greg@kroah.com>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: benh@kernel.crashing.org, Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, tony@bakeyournoodle.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Silence 'ignoring return value' warnings in
-	drivers/video/aty/radeon_base.c
-Message-ID: <20080508220348.GD7705@kroah.com>
-References: <20080506143936.6357e578.akpm@linux-foundation.org> <20080506.144301.233784820.davem@davemloft.net> <1210121683.21644.194.camel@pasglop> <20080506182006.4b4a3968.akpm@linux-foundation.org> <1210134804.21644.202.camel@pasglop> <20080507102310.57b4ccfb@gondolin.boeblingen.de.ibm.com> <1210196621.1421.5.camel@pasglop> <20080508093421.31cd735b@gondolin.boeblingen.de.ibm.com> <1210232984.1421.47.camel@pasglop> <20080508103621.69bc47cf@gondolin.boeblingen.de.ibm.com>
+	Thu, 8 May 2008 18:13:40 -0400
+Date: Thu, 8 May 2008 17:12:17 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Benjamin Thery <benjamin.thery@bull.net>, linux-kernel@vger.kernel.org,
+       Tejun Heo <htejun@gmail.com>, Al Viro <viro@ftp.linux.org.uk>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org,
+       Greg KH <gregkh@suse.de>
+Subject: Re: [PATCH] wireless: Add missing locking to cfg80211_dev_rename
+Message-ID: <20080508221217.GA22808@sergelap.austin.ibm.com>
+References: <20080506173030.653828076@theryb.frec.bull.fr> <20080506173335.922289888@theryb.frec.bull.fr> <m13aoueyq8.fsf@frodo.ebiederm.org> <20080507190838.GA4467@suse.de> <m1ej8ccwlx.fsf_-_@frodo.ebiederm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080508103621.69bc47cf@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <m1ej8ccwlx.fsf_-_@frodo.ebiederm.org>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 10:36:21AM +0200, Cornelia Huck wrote:
-> On Thu, 08 May 2008 17:49:44 +1000,
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+Quoting Eric W. Biederman (ebiederm@xmission.com):
 > 
-> > 
-> > On Thu, 2008-05-08 at 09:34 +0200, Cornelia Huck wrote:
-> > > 
-> > > I was under the impression that failing the initialization was usually
-> > > the right thing to do, since we end up with an un-configurable,
-> > > un-usable device. But that may be coloured by my experience with s390
-> > > devices, where we rely on sysfs attributes extensively. If indeed most
-> > > sysfs files are non-vital, removing the __must_check and relying on a
-> > > scary warning in the core may be fine. (OTOH, adding checks to the
-> > > core
-> > > has helped us to find some lurking bugs.)
-> > 
-> > The driver can still fail initialization if it wants... I'm just
-> > objecting to the __must_check.
+> device_rename only performs useful and race free validity
+> checking at the optional sysfs level so depending on it
+> for all of the validity checking in cfg80211_dev_rename
+> is racy.
 > 
-> I hear you :) I found it useful, but it seems we should get rid of it
-> for _create_file() now.
+> Instead implement all of the needed validity checking
+> and locking in cfg80211_dev_rename.
+> 
+> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 
-Why?  You point out it found some real bugs, should we just assume that
-no new bugs of this same problem will happen again in the future?
+I'm about as far as you can get from either a sysfs/kobject or network
+expert, but both of these patches as well as your general concept that
+renames should be handled at sysfs seem to me to make perfect sense.
 
 thanks,
+-serge
 
-greg k-h
+> ---
+>  net/wireless/core.c |   33 ++++++++++++++++++++++++++++-----
+>  1 files changed, 28 insertions(+), 5 deletions(-)
+> 
+> diff --git a/net/wireless/core.c b/net/wireless/core.c
+> index 80afacd..f1da0b9 100644
+> --- a/net/wireless/core.c
+> +++ b/net/wireless/core.c
+> @@ -143,8 +143,11 @@ void cfg80211_put_dev(struct cfg80211_registered_device *drv)
+>  int cfg80211_dev_rename(struct cfg80211_registered_device *rdev,
+>  			char *newname)
+>  {
+> +	struct cfg80211_registered_device *drv;
+>  	int idx, taken = -1, result, digits;
+> 
+> +	mutex_lock(&cfg80211_drv_mutex);
+> +
+>  	/* prohibit calling the thing phy%d when %d is not its number */
+>  	sscanf(newname, PHY_NAME "%d%n", &idx, &taken);
+>  	if (taken == strlen(newname) && idx != rdev->idx) {
+> @@ -156,14 +159,30 @@ int cfg80211_dev_rename(struct cfg80211_registered_device *rdev,
+>  		 * deny the name if it is phy<idx> where <idx> is printed
+>  		 * without leading zeroes. taken == strlen(newname) here
+>  		 */
+> +		result = -EINVAL;
+>  		if (taken == strlen(PHY_NAME) + digits)
+> -			return -EINVAL;
+> +			goto out_unlock;
+> +	}
+> +
+> +
+> +	/* Ignore nop renames */
+> +	result = 0;
+> +	if (strcmp(newname, dev_name(&rdev->wiphy.dev)) == 0)
+> +		goto out_unlock;
+> +
+> +	/* Ensure another device does not already have this name. */
+> +	list_for_each_entry(drv, &cfg80211_drv_list, list) {
+> +		result = -EINVAL;
+> +		if (strcmp(newname, dev_name(&drv->wiphy.dev)) == 0)
+> +			goto out_unlock;
+>  	}
+> 
+> -	/* this will check for collisions */
+> +	/* this will only check for collisions in sysfs
+> +	 * which is not even always compiled in.
+> +	 */
+>  	result = device_rename(&rdev->wiphy.dev, newname);
+>  	if (result)
+> -		return result;
+> +		goto out_unlock;
+> 
+>  	if (!debugfs_rename(rdev->wiphy.debugfsdir->d_parent,
+>  			    rdev->wiphy.debugfsdir,
+> @@ -172,9 +191,13 @@ int cfg80211_dev_rename(struct cfg80211_registered_device *rdev,
+>  		printk(KERN_ERR "cfg80211: failed to rename debugfs dir to %s!\n",
+>  		       newname);
+> 
+> -	nl80211_notify_dev_rename(rdev);
+> +	result = 0;
+> +out_unlock:
+> +	mutex_unlock(&cfg80211_drv_mutex);
+> +	if (result == 0)
+> +		nl80211_notify_dev_rename(rdev);
+> 
+> -	return 0;
+> +	return result;
+>  }
+> 
+>  /* exported functions */
+> -- 
+> 1.5.3.rc6.17.g1911
