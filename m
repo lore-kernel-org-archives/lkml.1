@@ -1,68 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755906AbYEHFUB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757968AbYEHFUo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755906AbYEHFUB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 01:20:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753025AbYEHFTs
+	id S1757968AbYEHFUo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 01:20:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753025AbYEHFU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 01:19:48 -0400
-Received: from mga05.intel.com ([192.55.52.89]:3167 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752978AbYEHFTq (ORCPT
+	Thu, 8 May 2008 01:20:28 -0400
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:48464
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756874AbYEHFUW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 01:19:46 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,453,1204531200"; 
-   d="scan'208";a="562110140"
-Subject: Re: volanoMark regression with kernel 2.6.26-rc1
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <20080507173357.GA4424@linux.vnet.ibm.com>
-References: <1210039590.3453.18.camel@ymzhang>
-	 <20080506115207.GA24862@linux.vnet.ibm.com>
-	 <20080507173357.GA4424@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Thu, 08 May 2008 13:18:34 +0800
-Message-Id: <1210223914.3453.102.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 (2.21.5-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Thu, 8 May 2008 01:20:22 -0400
+Date: Thu, 8 May 2008 07:20:19 +0200
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, steiner@sgi.com,
+       holt@sgi.com, npiggin@suse.de, a.p.zijlstra@chello.nl,
+       kvm-devel@lists.sourceforge.net, kanojsarcar@yahoo.com,
+       rdreier@cisco.com, swise@opengridcomputing.com,
+       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
+       general@lists.openfabrics.org, hugh@veritas.com, rusty@rustcorp.com.au,
+       aliguori@us.ibm.com, chrisw@redhat.com, marcelo@kvack.org,
+       dada1@cosmosbay.com, paulmck@us.ibm.com
+Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
+Message-ID: <20080508052019.GA8276@duo.random>
+References: <20080507153103.237ea5b6.akpm@linux-foundation.org> <20080507224406.GI8276@duo.random> <20080507155914.d7790069.akpm@linux-foundation.org> <20080507233953.GM8276@duo.random> <alpine.LFD.1.10.0805071757520.3024@woody.linux-foundation.org> <Pine.LNX.4.64.0805071809170.14935@schroedinger.engr.sgi.com> <20080508025652.GW8276@duo.random> <Pine.LNX.4.64.0805072009230.15543@schroedinger.engr.sgi.com> <20080508034133.GY8276@duo.random> <alpine.LFD.1.10.0805072109430.3024@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0805072109430.3024@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, May 07, 2008 at 09:14:45PM -0700, Linus Torvalds wrote:
+> IOW, you didn't even look at it, did you?
 
-On Wed, 2008-05-07 at 23:03 +0530, Dhaval Giani wrote:
-> On Tue, May 06, 2008 at 05:22:07PM +0530, Dhaval Giani wrote:
-> > On Tue, May 06, 2008 at 10:06:30AM +0800, Zhang, Yanmin wrote:
-> > > Comparing with 2.6.25, volanoMark has big regression with kernel 2.6.26-rc1.
-> > > It's about 50% on my 8-core stoakley, 16-core tigerton, and Itanium Montecito.
-> > > 
-> > > With bisect, I located below patch.
-> > > 
-> > > 18d95a2832c1392a2d63227a7a6d433cb9f2037e is first bad commit
-> > > commit 18d95a2832c1392a2d63227a7a6d433cb9f2037e
-> > > Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > > Date:   Sat Apr 19 19:45:00 2008 +0200
-> > > 
-> > >     sched: fair-group: SMP-nice for group scheduling
-> > >     
-> > >     Implement SMP nice support for the full group hierarchy.
-> > > 
-> > > If I reverse the patch with resolving some conflictions, volanoMark result could
-> > > be restored completely.
-> > > 
-> > 
-> > ok, that's bad. Let's get vatsa and Ingo also involved.
-> > 
-> 
-> Just to confirm, do you still have a performance regression with
-> !group_sched?
-I just tried it with CONFIG_GROUP_SCHED=n a moment ago. The regression becomes less than 3%.
+Actually I looked both at the struct and at the slab alignment just in
+case it was changed recently. Now after reading your mail I also
+compiled it just in case.
 
+2.6.26-rc1
 
+# name            <active_objs> <num_objs> <objsize> <objperslab> <pagesperslab> : tunables <limit> <batchcount> <sharedfactor> : slabdata <active_slabs> <num_slabs> <sharedavail>
+anon_vma             260    576     24  144    1 : tunables  120   60    8 : slabdata      4      4      0
+                                    ^^  ^^^
 
+2.6.26-rc1 + below patch
+
+diff --git a/include/linux/rmap.h b/include/linux/rmap.h
+--- a/include/linux/rmap.h
++++ b/include/linux/rmap.h
+@@ -27,6 +27,7 @@ struct anon_vma {
+ struct anon_vma {
+ 	spinlock_t lock;	/* Serialize access to vma list */
+ 	struct list_head head;	/* List of private "related" vmas */
++	int flag:1;
+ };
+ 
+ #ifdef CONFIG_MMU
+
+# name            <active_objs> <num_objs> <objsize> <objperslab> <pagesperslab> : tunables <limit> <batchcount> <sharedfactor> : slabdata <active_slabs> <num_slabs> <sharedavail>
+anon_vma             250    560     32  112    1 : tunables  120   60    8 : slabdata      5      5      0
+                                    ^^  ^^^
+
+Not a big deal sure to grow it 33%, it's so small anyway, but I don't
+see the point in growing it. sort() can be interrupted by signals, and
+until it can we can cap it to 512 vmas making the worst case taking
+dozen usecs, I fail to see what you have against sort().
+
+Again: if a vma bitflag + global lock could have avoided sort and run
+O(N) instead of current O(N*log(N)) I would have done that
+immediately, infact I was in the process of doing it when you posted
+the followup. Nothing personal here, just staying technical. Hope you
+too.
