@@ -1,81 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934085AbYEHWzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934224AbYEHW47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934085AbYEHWzt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 18:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762132AbYEHWzi
+	id S934224AbYEHW47 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 18:56:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762132AbYEHW4u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 18:55:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52300 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761588AbYEHWzh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 18:55:37 -0400
-Date: Thu, 8 May 2008 15:55:01 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [patch] speed up / fix the new generic semaphore code (fix AIM7
- 40% regression with 2.6.26-rc1)
-In-Reply-To: <20080508214557.GA13311@elte.hu>
-Message-ID: <alpine.LFD.1.10.0805081535130.2940@woody.linux-foundation.org>
-References: <1210214696.3453.87.camel@ymzhang> <alpine.LFD.1.10.0805072014330.3024@woody.linux-foundation.org> <1210219729.3453.97.camel@ymzhang> <alpine.LFD.1.10.0805072115190.3024@woody.linux-foundation.org> <20080508120130.GA2860@elte.hu>
- <20080508122802.GA4880@elte.hu> <alpine.LFD.1.10.0805080859140.3024@woody.linux-foundation.org> <alpine.LFD.1.10.0805081128550.3024@woody.linux-foundation.org> <20080508201956.GA2547@elte.hu> <alpine.LFD.1.10.0805081326130.2940@woody.linux-foundation.org>
- <20080508214557.GA13311@elte.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 8 May 2008 18:56:50 -0400
+Received: from mtaout02-winn.ispmail.ntl.com ([81.103.221.48]:10807 "EHLO
+	mtaout02-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760396AbYEHW4t convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 18:56:49 -0400
+Date: Thu, 8 May 2008 23:56:45 +0100
+From: Ken Moffat <zarniwhoop@ntlworld.com>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Cc: Adrian Bunk <bunk@kernel.org>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: GIT bisection range errors
+Message-ID: <20080508225645.GA24725@deepthought>
+References: <48237CA0.4080001@keyaccess.nl> <20080508222545.GH22887@cs181133002.pp.htv.fi> <48238087.7000509@keyaccess.nl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <48238087.7000509@keyaccess.nl>
+User-Agent: Mutt/1.5.12-2006-07-14
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 8 May 2008, Ingo Molnar wrote:
->
->    2512  down <= lock_kernel <= opost <= write_chan <
->    2574  down <= lock_kernel <= write_chan <= tty_write <
-
-Ok. tty write handling. Nasty. But not as nasty as the open/close code, 
-perhaps, and maybe we'll get it fixed some day.
-
-In fact, I thought we had fixed most of this already, but hey, I was 
-clearly wrong. I assume Alan looks at it occasionally and groans. Alan?
-
+On Fri, May 09, 2008 at 12:36:55AM +0200, Rene Herman wrote:
+> On 09-05-08 00:25, Adrian Bunk wrote:
+> >On Fri, May 09, 2008 at 12:20:16AM +0200, Rene Herman wrote:
+> >>Good day.
+> >>
+> >>I'm in a git bisect and am experiencing strangeness. I did a
+> >>
+> >>$ git checkout -b rc v2.6.26-rc1
+> >>$ git bisect start
+> >>$ git bisect bad
+> >>$ git bisect good v2.6.25
+> >>
+> >>Yet, during this I'm finding myself at 2.6.25-rc6 and 2.6.25-rc8
+> >>as the last two results (both good...).
+> >>
+> >>Here's the BISECT_LOG upto this point. Is there anyone available
+> >>who understands this well enough to be able to say from this that
+> >>my tree is fubar? It should be a straight Linus' clone, and it's
+> >>always pulling without trouble.
+> >>
+> >>git-bisect start
+> >># bad: [2ddcca36c8bcfa251724fe342c8327451988be0d] Linux 2.6.26-rc1
+> >>git-bisect bad 2ddcca36c8bcfa251724fe342c8327451988be0d
+> >># good: [4b119e21d0c66c22e8ca03df05d9de623d0eb50f] Linux 2.6.25
+> >>git-bisect good 4b119e21d0c66c22e8ca03df05d9de623d0eb50f
+> >># bad: [7ae44cfa7ab29b277691327e8de790d7b880722f] [ALSA] snd-powermac: 
+> >>style awacs.s and awacs.h
+> >>git-bisect bad 7ae44cfa7ab29b277691327e8de790d7b880722f
+> >># good: [7cea51be4e91edad05bd834f3235b45c57783f0d] security: fix up 
+> >>documentation for security_module_enable
+> >>git-bisect good 7cea51be4e91edad05bd834f3235b45c57783f0d
+> >># bad: [8f19ca1341a6d89bd96e2e69e6e10f46d3258089] x86: unify gfp masks
+> >>git-bisect bad 8f19ca1341a6d89bd96e2e69e6e10f46d3258089
+> >># good: [f49e1aa133c2c9b74b5dfddca8863609bbda9086] [NETFILTER]: 
+> >>nf_conntrack_sip: update copyright
+> >>git-bisect good f49e1aa133c2c9b74b5dfddca8863609bbda9086
+> >># good: [0b18542b7f5379e052d2a3132be91185776e7ceb] [NET]: Sink IPv6 
+> >>menuoptions into its own submenu
+> >>git-bisect good 0b18542b7f5379e052d2a3132be91185776e7ceb
+> >
+> >Don't trust any dates you see in git.  ;-)
+> >
+> >The last commit in your list was added to David's tree at around the 
+> >time Linus released Linux 2.6.25-rc7.
+> >
+> >But David's tree was merged into Linus' tree after 2.6.25.
+> >
+> >So actually everything is fine.
 > 
-> some other interesting stats. Top wakeups sources:
+> Well, thanks for the reply and I'm going forward for now, but the Makefile
+> is actually calling this 2.6.25-rc8. My next "git bisect good" after the
+> above landed me now after 2.6.25 according to the Makefile. It could just
+> be a tags issue I guess, where my tree is confused about what tag belongs
+> to v2.6.25?
 > 
->   [...]
->    1301  default_wake_function <= __wake_up_common <= __wake_up <= n_tty_receive_buf <= pty_write <= write_chan <
->    2065  wake_up_state <= prepare_signal <= send_signal <= __group_send_sig_info <= group_send_sig_info <= __kill_pgrp_info <
-
-Ok, signals being the top one, but that tty code is pretty high again.
-
-> and here's a few seconds worth of NMI driven readprofile output:
+> (new two lines in the log)
 > 
-> 216021 sync_page                                3375.3281
-> 391888 page_check_address                       1414.7581
-> 962212 total                                      0.3039
+> # good: [ba380013b681e91e059f95b51002f8d43024b371] b43: Add fastpath to 
+> b43_mac_suspend()
+> git-bisect good ba380013b681e91e059f95b51002f8d43024b371
 > 
-> system overhead is consistently 20% during this test.
-> 
-> the page_check_address() overhead is surprising - tons of rmap 
-> contention? about 10% wall-clock overhead in that function alone - and 
-> this is just on a dual-core box!
+> Rene.
+ I reported a similar thing at the beginning of April
+http://lkml.org/lkml/2008/4/2/390 - 2.6.25-rc1 bad, 2.6.24 good, git
+dropped me back at 2.6.24-rc4 (again, according to the top level
+Makefile).
 
-No, it's not rmap contention. Your profile hits are just on the actual 
-calculations, and it's all data-dependent arithmetic and loads. Some cache 
-misses on the page tables, clearly, but it looks like a lot of it is even 
-just the plain arithmetic (the imul followed by a data-dependent 'lea' 
-instruction).
-
-Some of it is that "page_to_pfn(page)", which involves a nasty division 
-(divide by sizeof(struct page)). It gets turned into that shift and 
-multiply, but it's still quite expensive with big constants etc.
-
-			Linus
+Ken
+-- 
+das eine Mal als Tragödie, das andere Mal als Farce
