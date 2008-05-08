@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932384AbYEHXq0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757099AbYEHXrd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932384AbYEHXq0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 19:46:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753340AbYEHXqJ
+	id S1757099AbYEHXrd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 19:47:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751105AbYEHXrX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 19:46:09 -0400
-Received: from namei.org ([69.55.235.186]:48189 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753740AbYEHXqH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 19:46:07 -0400
-Date: Fri, 9 May 2008 09:45:02 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: Christoph Hellwig <hch@infradead.org>
-cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
-       viro@ZenIV.linux.org.uk, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, sds@tycho.nsa.gov,
-       casey@schaufler-ca.com
-Subject: Re: [patch 07/24] fat: dont call notify_change
-In-Reply-To: <20080508165724.GD13914@infradead.org>
-Message-ID: <Xine.LNX.4.64.0805090937550.24909@us.intercode.com.au>
-References: <20080506091327.259950960@szeredi.hu> <20080506091414.440652004@szeredi.hu>
- <20080508165724.GD13914@infradead.org>
+	Thu, 8 May 2008 19:47:23 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:45014 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750939AbYEHXrW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 19:47:22 -0400
+Date: Fri, 09 May 2008 08:46:54 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH] call_usermodehelper_setup() should use GFP_KERNEL
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+In-Reply-To: <4822F8E4.4040401@goop.org>
+References: <20080508193224.0EFF.KOSAKI.MOTOHIRO@jp.fujitsu.com> <4822F8E4.4040401@goop.org>
+Message-Id: <20080509084248.43B5.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 May 2008, Christoph Hellwig wrote:
-
-> On Tue, May 06, 2008 at 11:13:34AM +0200, Miklos Szeredi wrote:
-> > From: Miklos Szeredi <mszeredi@suse.cz>
-> > 
-> > The FAT_IOCTL_SET_ATTRIBUTES ioctl() calls notify_change() to change
-> > the file mode before changing the inode attributes.  Replace with
-> > explicit call to fat_setattr().
-> > 
-> > This is equivalent, except that security_inode_setattr() is not called
-> > before fat_setattr().  I think this is not needed, since the mode
-> > change is just a side effect of the attribute change.
+> >> Yeah, but making the caller need to know about the internal 
+> >> implementation details of the callee (ie, whether it needs to allocate 
+> >> memory or not) leads to pretty warty interfaces.  In this case, you 
+> >> could push the gfp_t up to the call_usermodehelper_setup() level, but 
+> >> pushing it any higher wouldn't make much sense.
+> >
+> > No problem :)
+> > almost caller doesn't call call_usermodehelper_setup() directly.
+> >
+> > thus, call_usermodehelper_setup() chage is hided in call_usermodehelper().
 > 
-> Actually I think we want the security_inode_setattr.  This is an
-> implicit chmode when switching the ATTR_RO flag on and off and we should
-> have the full security check for it.  Then again I'm not sure the
-> security modules care about this level of detail because there's
-> probably even worse ioctl hidden somewhere.
-> 
-> Ccing the Selinux guys and Casey in case they care.
-> 
+> Yep, seems reasonable.  Are there any UMH_NO_WAIT callers who could be 
+> using GFP_KERNEL?
 
-I don't know of any situation where we'd have policy differentating the 
-ioctl check from setattr for FAT (or any filesystem).
+UMH_WAIT_EXEC and UMH_WAIT_PROC mean wait on finish of exec or process exit.
+I can't imagine situation that exec is waitable *and* allocate isn't waitable.
 
 
-- James
--- 
-James Morris
-<jmorris@namei.org>
+
