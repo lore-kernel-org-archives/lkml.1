@@ -1,73 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933196AbYEHSxp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933402AbYEHSyI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933196AbYEHSxp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 14:53:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761288AbYEHSxa
+	id S933402AbYEHSyI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 14:54:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765527AbYEHSxd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 14:53:30 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:29859 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758008AbYEHSx2 (ORCPT
+	Thu, 8 May 2008 14:53:33 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:50681 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760550AbYEHSx2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 8 May 2008 14:53:28 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=fLVlS6UU3EEA2KnSPdGAWP1pauvak21ilLio2bJZSYBkyim29Z8jyMOAy1HFb7hhJIukvna3HQ7i1XHgqtjlXDKV2Js7+MGe4i5kmfVO6zuulun5i9okspXWUYpRMo8Pddw2VY2Cpe4IZ1y4CqZsRHRAjZbPoJzU5ngGDiQscbs=
-Message-ID: <48234B0B.8040602@gmail.com>
-Date: Thu, 08 May 2008 20:48:43 +0200
-From: Jacek Luczak <difrost.kernel@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+        h=message-id:date:from:reply-to:organization:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:sender;
+        b=mqpjjOAe6V/I+upaC552rsmlaQ1sF9ajGEtiL84EyabdtL+Alqerxo0RMIKmJEBDs2RLzw01yiDA69nk2tv/SN0eavIOhI0rEOwzGaCVOG75nEnzYrvlUacnGMOdBSgQdB0JNWpcbVeyOiv6vaAcF05B6FTpilS0UJVvDgCfDjQ=
+Message-ID: <48234C25.4040807@laptop.org>
+Date: Thu, 08 May 2008 14:53:25 -0400
+From: "Richard A. Smith" <richard@laptop.org>
+Reply-To: richard@laptop.org
+Organization: One Laptop per Child
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Takashi Iwai <tiwai@suse.de>, Vefa Bicakci <bicave@superonline.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Bisected Regression] snd-intel-hda no longer produces sound
- on Toshiba Satellite A100
-References: <481CD1B9.3020601@superonline.com> <s5h7ieaa7at.wl%tiwai@suse.de> <200805082046.30742.rjw@sisk.pl>
-In-Reply-To: <200805082046.30742.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1
+To: avorontsov@ru.mvista.com
+CC: Andres Salomon <dilinger@queued.net>,
+       Andrew Morton <akpm@linux-foundation.org>, cbou@mail.ru,
+       linux-kernel@vger.kernel.org, dwmw2@infradead.org
+Subject: Re: [PATCH] power_supply: support CHARGE_NOW in OLPC battery
+References: <20080508003454.722ba511@ephemeral> <20080508105145.GA32017@polina.dev.rtsoft.ru> <20080508130102.3218f1e9@ephemeral> <20080508171320.GA8226@polina.dev.rtsoft.ru>
+In-Reply-To: <20080508171320.GA8226@polina.dev.rtsoft.ru>
+Content-Type: text/plain; charset=utf8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki pisze:
-> On Sunday, 4 of May 2008, Takashi Iwai wrote:
->> At Sat, 03 May 2008 23:57:29 +0300,
->> Vefa Bicakci wrote:
->>> Hello,
->>>
->>> I am using Debian Sid on a Toshiba Satellite A100 series laptop.
->>> This laptop has an Intel HDA sound card. It uses the Realtec codecs.
->>> After modprobe'ing snd-intel-hda, the following appears in dmesg:
->>> "hda_codec: Unknown model for ALC861, trying auto-probe from BIOS..."
->>>
->>> The sound output used to work fine with 2.6.24.x and 2.6.25. In an
->>> unrelated move, I decided to give 2.6.25-gitX series a try; however,
->>> I was very sad to notice that sound output became disabled. Programs
->>> such as ogg123 or Amarok seem to play, but there is no sound output,
->>> only silence. I have checked multiple times that no new mixer settings
->>> appeared because of a possible snd-hda-intel update...
->>>
->>> I bisected the differences between 2.6.25 and HEAD (as of 28th of
->>> April) to find the problematic git commit. The git commit with the
->>> following ID and description disables the sound output completely:
->>>
->>> --- 8< ---
->>> commit f6c7e5461e9046445d50c5c7a9a4587824239623
->>> [ALSA] hda-codec - Fix auto-configuration of Realtek codecs
->>> --- >8 ---
->>>
->>> I believe that this is an important regression, and I would like
->>> to debug this problem. Trying out patches is no problem for me.
->> This is a known issue and should have been already fixed on sound
->> tree.  Try to pull the following git tree (for-linus branch):
->>     git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6 for-linus
+Anton Vorontsov wrote:
+> On Thu, May 08, 2008 at 01:01:02PM -0400, Andres Salomon wrote:
+>> Ok, CC'ing Richard as I should've done in the first place...
+> [...]
+>>>> +	case POWER_SUPPLY_PROP_CHARGE_NOW:
+>>>> +		ret = olpc_ec_cmd(EC_BAT_ACR, NULL, 0, (void
+>>>> *)&ec_word, 2);
+>>>> +		if (ret)
+>>>> +			return ret;
+>>>> +
+>>>> +		val->intval = be16_to_cpu(ec_word);
+>>> But you didn't convert it to the uAh, I think you should.
+>>
+>> We have logic in userspace that converts ACR to a useful number; for
+>> our purposes, we'd just like to read the raw ACR values.
 > 
-> Has the fix already reached the Linus' tree?
+> No. The purpose of power supply class is to report values in common
+> units. Not some random value that userspace then should guess how to
+> compute.
+
+I'm fine with that.  I'll have to make my scripts do some detection on 
+what kernel is running and convert or not convert but thats not too hard.
+
+I remember Dave asking me if I wanted it converted and I told him not to 
+bother and just to export the raw value.  I would deal with the units. 
+At the time I was just trying to get some simple debugging info.  Turns 
+out that ACR is really useful for debugging battery problems and it stuck.
+
+A single ACR reading itself does not tell you anything usefull.  Its a 
+signed 16 bit free running coulomb counter that counts up and down based 
+on how much juice goes into or out of the battery.  So to extract any 
+meaningful info you need 2 readings separated by some instance in time. 
+  The difference between the 2 tells you the relative energy you have 
+consumed or added.
+
+The units for the ACR register in the DS2765 are:
+
+6.25 uVh / Rsense
+OLPC Rsense = .015 Ohms
+
+The integer math conversion for ACR to mAh that I use in my scripts is:
+
+(ACR2 - ACR1) * 625 / 1500
+
+>> Perhaps CHARGE_NOW is the wrong thing to be using, if we can't get
+>> uAh and CHARGE_* requires that unit.
 > 
+> I don't think that converting X * uAh or uAh / Y to uAh is impossible.
+> I'd suggest you to convert the ACR value to uAh using fractions, see
+> ds2760_battery.c. Even if the final value losing precision a bit, it is
+> still useful to do CHARGE_NOW.
 
-Yes, it has.
+Is CHARGE_NOW supposed to be an absolute indication of the level of 
+charge in the battery?  If so then thats not ACR.  That would be SOC% * 
+battery capacity.  The EC uses the relative motion of the ACR to update 
+the SOC%.
 
--Jacek
+-- 
+Richard Smith  <richard@laptop.org>
+One Laptop Per Child
