@@ -1,61 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754865AbYEHEEa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755624AbYEHEGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754865AbYEHEEa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 00:04:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750825AbYEHEER
+	id S1755624AbYEHEGj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 00:06:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750825AbYEHEG2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 00:04:17 -0400
-Received: from tama50.ecl.ntt.co.jp ([129.60.39.147]:49165 "EHLO
-	tama50.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750800AbYEHEEP convert rfc822-to-8bit (ORCPT
+	Thu, 8 May 2008 00:06:28 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:45791 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750800AbYEHEG0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 00:04:15 -0400
-To: randy.dunlap@oracle.com, jamagallon@ono.com
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: A couple problems with -rc1-git5
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080507152614.f19fb485.randy.dunlap@oracle.com>
-References: <20080508001815.371ec9d3@werewolf.home>
-	<20080507152614.f19fb485.randy.dunlap@oracle.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-Id: <20080508130116Z.fujita.tomonori@lab.ntt.co.jp>
-Date: Thu, 08 May 2008 13:01:16 +0900
+	Thu, 8 May 2008 00:06:26 -0400
+Message-ID: <48227C2B.6060201@zytor.com>
+Date: Wed, 07 May 2008 21:06:03 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Rene Herman <rene.herman@keyaccess.nl>,
+       Daniel Hazelton <dhazelton@enter.net>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.26, PAT and AMD family 6
+References: <48210A71.1060409@keyaccess.nl>	 <86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com>	 <4821A7E2.6080101@keyaccess.nl>	 <200805071539.32594.dhazelton@enter.net>	 <48220BC1.2050701@keyaccess.nl>	 <86802c440805071316p39b7f370u46fa4f36c420bce7@mail.gmail.com> <86802c440805071318u6b9d7f67gaa7d92ae6c3df079@mail.gmail.com>
+In-Reply-To: <86802c440805071318u6b9d7f67gaa7d92ae6c3df079@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 7 May 2008 15:26:14 -0700
-Randy Dunlap <randy.dunlap@oracle.com> wrote:
-
-> [cc: linux-scsi]
+Yinghai Lu wrote:
 > 
-> On Thu, 8 May 2008 00:18:15 +0200 J.A. Magallón wrote:
+> may add enable_pat command line, so other guys could test if their
+> cpus are ok with PAT...
 > 
-> > Hi...
-> > 
-> > I built 2.6.26-rc1-git5 and foud a couple problems.
-> > 
-> > First, I get this warning on boot:
-> > 
-> > ------------[ cut here ]------------
-> > WARNING: at include/linux/blkdev.h:431 blk_queue_init_tags+0x100/0x112()
-> > Modules linked in:
-> > Pid: 1, comm: swapper Not tainted 2.6.25-jam05 #1
-> >  [<c011e4f8>] warn_on_slowpath+0x4d/0x66
-> >  [<c0132d78>] __atomic_notifier_call_chain+0x27/0x48
-> >  [<c0132db0>] atomic_notifier_call_chain+0x17/0x1b
-> >  [<c024b21c>] notify_update+0x1f/0x23
-> >  [<c024b465>] vt_console_print+0x1dd/0x2a6
-> >  [<c024b288>] vt_console_print+0x0/0x2a6
-> >  [<c0132932>] up+0x9/0x2b
 
-Thanks,
+That would definitely be good.
 
-We haven't agreed on how to fix this yet but it will be fixed:
+Also, we should *not* turn on the PAT bit if it was disabled to begin with.
 
-http://www.gossamer-threads.com/lists/linux/kernel/914288
+	-hpa
 
-
-Anyway, you can just ignore this warning.
