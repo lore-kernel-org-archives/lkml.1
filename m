@@ -1,74 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755969AbYEHEbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757228AbYEHEeI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755969AbYEHEbS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 00:31:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbYEHEbE
+	id S1757228AbYEHEeI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 00:34:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752558AbYEHEdy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 00:31:04 -0400
-Received: from mail.queued.net ([207.210.101.209]:1196 "EHLO mail.queued.net"
+	Thu, 8 May 2008 00:33:54 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:43695 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750998AbYEHEbB convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 00:31:01 -0400
-Date: Thu, 8 May 2008 00:34:54 -0400
-From: Andres Salomon <dilinger@queued.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: cbou@mail.ru, linux-kernel@vger.kernel.org, dwmw2@infradead.org
-Subject: [PATCH] power_supply: support CHARGE_NOW in OLPC battery
-Message-ID: <20080508003454.722ba511@ephemeral>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
+	id S1752219AbYEHEdw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 00:33:52 -0400
+Date: Thu, 8 May 2008 14:33:46 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: linux-next: the purge :-)
+Message-Id: <20080508143346.aaa3c388.sfr@canb.auug.org.au>
+In-Reply-To: <20080508015616.GB4132@tuxdriver.com>
+References: <20080508112130.fd574b50.sfr@canb.auug.org.au>
+	<20080508015616.GB4132@tuxdriver.com>
+X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__8_May_2008_14_33_46_+1000_IbhmFtdeP2o3KUSW"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Thu__8_May_2008_14_33_46_+1000_IbhmFtdeP2o3KUSW
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This is originally based on a patch by
-David Woodhouse <dwmw2@infradead.org>.  Add support for PROP_CHARGE_NOW
-by querying the ACR (accumulated current register) from the EC.
+Hi John,
 
-Signed-off-by: Andres Salomon <dilinger@debian.org>
----
- drivers/power/olpc_battery.c |   10 +++++++++-
- 1 files changed, 9 insertions(+), 1 deletions(-)
+On Wed, 7 May 2008 21:56:16 -0400 "John W. Linville" <linville@tuxdriver.co=
+m> wrote:
+>
+> On Thu, May 08, 2008 at 11:21:30AM +1000, Stephen Rothwell wrote:
+>=20
+> > As an aside, the kbuild tree is still dropped for today since Sam is not
+> > in a position to fix stuff until the weekend and the wireless tree is
+> > dropped today because it can not be fetched.
+>=20
+> Sorry, just sent a note on another thread!  The wireless tree has
+> now adopted the "wireless-next-2.6" naming scheme.
 
-diff --git a/drivers/power/olpc_battery.c b/drivers/power/olpc_battery.c
-index e3f6ec8..517dacd 100644
---- a/drivers/power/olpc_battery.c
-+++ b/drivers/power/olpc_battery.c
-@@ -19,7 +19,7 @@
- 
- #define EC_BAT_VOLTAGE	0x10	/* uint16_t,	*9.76/32,    mV   */
- #define EC_BAT_CURRENT	0x11	/* int16_t,	*15.625/120, mA   */
--#define EC_BAT_ACR	0x12
-+#define EC_BAT_ACR	0x12	/* int16_t,	*416.667,    µAh  */
- #define EC_BAT_TEMP	0x13	/* uint16_t,	*100/256,   °C  */
- #define EC_AMB_TEMP	0x14	/* uint16_t,	*100/256,   °C  */
- #define EC_BAT_STATUS	0x15	/* uint8_t,	bitmask */
-@@ -289,6 +289,13 @@ static int olpc_bat_get_property(struct power_supply *psy,
- 		ec_word = be16_to_cpu(ec_word);
- 		val->intval = ec_word * 100 / 256;
- 		break;
-+	case POWER_SUPPLY_PROP_CHARGE_NOW:
-+		ret = olpc_ec_cmd(EC_BAT_ACR, NULL, 0, (void *)&ec_word, 2);
-+		if (ret)
-+			return ret;
-+
-+		val->intval = be16_to_cpu(ec_word);
-+		break;
- 	case POWER_SUPPLY_PROP_SERIAL_NUMBER:
- 		ret = olpc_ec_cmd(EC_BAT_SERIAL, NULL, 0, (void *)&ser_buf, 8);
- 		if (ret)
-@@ -317,6 +324,7 @@ static enum power_supply_property olpc_bat_props[] = {
- 	POWER_SUPPLY_PROP_TEMP_AMBIENT,
- 	POWER_SUPPLY_PROP_MANUFACTURER,
- 	POWER_SUPPLY_PROP_SERIAL_NUMBER,
-+	POWER_SUPPLY_PROP_CHARGE_NOW,
- };
- 
- /* EEPROM reading goes completely around the power_supply API, sadly */
--- 
-1.5.5.1
+That's ok, I will pick it up for tomorrow.
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__8_May_2008_14_33_46_+1000_IbhmFtdeP2o3KUSW
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFIIoKuTgG2atn1QN8RAoo/AKCL2XHnb0pV1xQRf85UJonjdPZN9ACfVfyT
+w5AiBSENNNuXTZwo8xZyM1U=
+=4i1p
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__8_May_2008_14_33_46_+1000_IbhmFtdeP2o3KUSW--
