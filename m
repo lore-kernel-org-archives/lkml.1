@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762667AbYEHAKJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763973AbYEHAKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762667AbYEHAKJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 7 May 2008 20:10:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754668AbYEHAJz
+	id S1763973AbYEHAKs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 7 May 2008 20:10:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbYEHAKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 7 May 2008 20:09:55 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:47957 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754656AbYEHAJy (ORCPT
+	Wed, 7 May 2008 20:10:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40022 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751039AbYEHAKh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 7 May 2008 20:09:54 -0400
-Message-ID: <48224507.8010102@keyaccess.nl>
-Date: Thu, 08 May 2008 02:10:47 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Wed, 7 May 2008 20:10:37 -0400
+Date: Wed, 7 May 2008 17:03:30 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andrea Arcangeli <andrea@qumranet.com>, steiner@sgi.com, holt@sgi.com,
+       npiggin@suse.de, a.p.zijlstra@chello.nl,
+       kvm-devel@lists.sourceforge.net, kanojsarcar@yahoo.com,
+       rdreier@cisco.com, swise@opengridcomputing.com,
+       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
+       general@lists.openfabrics.org, hugh@veritas.com, rusty@rustcorp.com.au,
+       aliguori@us.ibm.com, chrisw@redhat.com, marcelo@kvack.org,
+       dada1@cosmosbay.com, paulmck@us.ibm.com
+Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
+In-Reply-To: <Pine.LNX.4.64.0805071637360.14337@schroedinger.engr.sgi.com>
+Message-ID: <alpine.LFD.1.10.0805071655100.3024@woody.linux-foundation.org>
+References: <6b384bb988786aa78ef0.1210170958@duo.random> <alpine.LFD.1.10.0805071349200.3024@woody.linux-foundation.org> <20080507212650.GA8276@duo.random> <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org> <20080507222205.GC8276@duo.random>
+ <20080507153103.237ea5b6.akpm@linux-foundation.org> <20080507224406.GI8276@duo.random> <20080507155914.d7790069.akpm@linux-foundation.org> <alpine.LFD.1.10.0805071610490.3024@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0805071637360.14337@schroedinger.engr.sgi.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Thomas Gleixner <tglx@linutronix.de>, Adrian Bunk <bunk@kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       Pavel Machek <pavel@suse.cz>
-Subject: Re: 2.6.26, PAT and AMD family 6
-References: <48210A71.1060409@keyaccess.nl> <86802c440805061939q39ff5500h3c9e229ecbc6b2e6@mail.gmail.com> <20080507124650.GD29935@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0805072122270.3318@apollo.tec.linutronix.de> <48221AE3.6020602@keyaccess.nl> <482233F0.7040000@zytor.com> <48224318.8020209@keyaccess.nl> <48224361.5080102@zytor.com>
-In-Reply-To: <48224361.5080102@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08-05-08 02:03, H. Peter Anvin wrote:
-> Rene Herman wrote:
->>>
->>> Okay, that is utter nonsense.  /proc/cpuinfo has always been, and 
->>> will always be, the CPU *AS THE KERNEL SEES IT*.  If you want 
->>> something else, use x86info(1).
->>
->> What a lovely way of syncing reality with your definitions. The kernel
->> _does_ see that my CPU features PAT, it just refuses to use it because
->> it doesn't trust it enough. Vital difference. Maybe not to the kernel,
->> but definitely to me, the user. /proc/cpuinfo is a user interface.
->>
+
+
+On Wed, 7 May 2008, Christoph Lameter wrote:
 > 
-> No, /proc/cpuinfo is informing the user about the kernel's view of the 
-> CPU.
+> Multiple vmas may share the same mapping or refer to the same anonymous 
+> vma. The above code will deadlock since we may take some locks multiple 
+> times.
 
-And again, the kernel DOES see that my CPU features PAT, it just refuses
-to use it.
+Ok, so that actually _is_ a problem. It would be easy enough to also add 
+just a flag to the vma (VM_MULTILOCKED), which is still cleaner than doing 
+a vmalloc and a whole sort thing, but if this is really rare, maybe Ben's 
+suggestion of just using stop-machine is actually the right one just 
+because it's _so_ simple.
 
-Rene.
+(That said, we're not running out of vm flags yet, and if we were, we 
+could just add another word. We're already wasting that space right now on 
+64-bit by calling it "unsigned long").
+
+		Linus
