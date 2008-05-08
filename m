@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760207AbYEHXLC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761778AbYEHXL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760207AbYEHXLC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 19:11:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbYEHXKw
+	id S1761778AbYEHXL0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 19:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754207AbYEHXK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 19:10:52 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:49787 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751227AbYEHXKv (ORCPT
+	Thu, 8 May 2008 19:10:57 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39244 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753140AbYEHXKz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 19:10:51 -0400
-Message-ID: <482388C9.2080909@keyaccess.nl>
-Date: Fri, 09 May 2008 01:12:09 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: GIT bisection range errors
-References: <48237CA0.4080001@keyaccess.nl> <alpine.LFD.1.10.0805081557580.2940@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0805081557580.2940@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Thu, 8 May 2008 19:10:55 -0400
+Date: Fri, 9 May 2008 00:01:24 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Morten Welinder" <mwelinder@gmail.com>
+Cc: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Deleting large files
+Message-ID: <20080509000124.791abac0@core>
+In-Reply-To: <118833cc0805071614j49b10da6hfcbeb08cb3356afb@mail.gmail.com>
+References: <118833cc0805071249w36145eb6g7ed5c18d9fdf6fce@mail.gmail.com>
+	<Pine.LNX.4.61.0805071820010.25395@chaos.analogic.com>
+	<118833cc0805071614j49b10da6hfcbeb08cb3356afb@mail.gmail.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09-05-08 01:00, Linus Torvalds wrote:
+> user experience.  Forking a process to do the deletion (a) is pathetic,
+> (b) is not currently done, and (c) does not work: you cannot get a result
+> right away, i.e., you lose error handling.
 
-> On Fri, 9 May 2008, Rene Herman wrote:
+I wouldn't call it pathetic. Quite a few big media file tools create a
+thread to do deletions of big objects.
 
->> I'm in a git bisect and am experiencing strangeness. I did a
->>
->> $ git checkout -b rc v2.6.26-rc1
->> $ git bisect start
->> $ git bisect bad
->> $ git bisect good v2.6.25
->>
->> Yet, during this I'm finding myself at 2.6.25-rc6 and 2.6.25-rc8
->> as the last two results (both good...).
-> 
-> This is very normal.
-> 
-> Why?
-> 
-> Because a lot (in fact, *most*) of the code that was merged after v2.6.25 
-> was released was actually *written* and committed long before v2.6.25.
-> 
-> It just got merged into my tree much later.
-> 
-> So what happens? The bisection run starts walking into all that history, 
-> and that history is *not* based on the released v2.6.25 at all, it's based 
-> on much earlier kernels (eg the -rc kernels).
-> 
-> So what you see is perfectly normal and expected. It's only unexpected if 
-> you think of history as a linear thing, but it isn't - it's full of 
-> merging of code that was branched off from (much) earlier code points.
+The error handling isn't usually a problem. You know any error you can do
+anything meaningful with actually occurs immediately or close to it. If
+you get errors because of I/O problems in a minutes time there isn't a
+sensible response and recovery anyway - nor would a kernel side
+asynchronous delete be able to recover any better.
 
-Ah. Yes, that needs a bit of thought re-warping, but I guess that makes sense.
-
-Thanks much, was afraid I needed to rebuild my local tree.
-
-Rene.
+In theory you can push some kind of asynchronous delete threads into the
+kernel or extent the AIO interfaces we have to do AIO_delete but at the
+end of the day the implementation would effectively be create thread,
+unlink, exit - and you can do that neatly and sanely in user space.
