@@ -1,168 +1,291 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758443AbYEHXRo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761755AbYEHXSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758443AbYEHXRo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 19:17:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753182AbYEHXRd
+	id S1761755AbYEHXSi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 19:18:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753723AbYEHXSV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 19:17:33 -0400
-Received: from mga03.intel.com ([143.182.124.21]:2216 "EHLO mga03.intel.com"
+	Thu, 8 May 2008 19:18:21 -0400
+Received: from mga14.intel.com ([143.182.124.37]:36903 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750872AbYEHXRb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 19:17:31 -0400
+	id S1753608AbYEHXST (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 19:18:19 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.27,456,1204531200"; 
-   d="scan'208";a="244130100"
-Date: Thu, 8 May 2008 16:10:08 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: jeff@garzik.org
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] ata: ahci: power off unused ports
-Message-ID: <20080508161008.59361de5@appleyard>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+   d="scan'208";a="244130429"
+Subject: Re: WARNING in 2.6.25-07422-gb66e1f1
+From: Dan Williams <dan.j.williams@intel.com>
+To: Neil Brown <neilb@suse.de>
+Cc: Jens Axboe <jens.axboe@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Jacek Luczak <difrost.kernel@gmail.com>,
+       Prakash Punnoor <prakash@punnoor.de>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-raid@vger.kernel.org
+In-Reply-To: <1210272379.9697.3.camel@dwillia2-linux.ch.intel.com>
+References: <200805031151.44287.prakash@punnoor.de>
+	 <18462.46639.578272.994939@notabene.brown> <20080505190159.GA329@kernel.dk>
+	 <200805082039.01316.rjw@sisk.pl>
+	 <1210272379.9697.3.camel@dwillia2-linux.ch.intel.com>
+Content-Type: text/plain
+Date: Thu, 08 May 2008 16:18:10 -0700
+Message-Id: <1210288690.9697.14.camel@dwillia2-linux.ch.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-power off unused ports
+On Thu, 2008-05-08 at 11:46 -0700, Dan Williams wrote:
+> On Thu, 2008-05-08 at 11:39 -0700, Rafael J. Wysocki wrote:
+> > I get a similar warning with RAID1 on one of my test boxes:
+> > 
+> > WARNING: at /home/rafael/src/linux-2.6/include/linux/blkdev.h:443 blk_remove_plug+0x85/0xa0()
+> > Modules linked in: raid456 async_xor async_memcpy async_tx xor raid0 ehci_hcd ohci_hcd sd_mod edd raid1 ext3 jbd fan sata_uli pata_ali thermal processor
+> > Pid: 2159, comm: md1_raid1 Not tainted 2.6.26-rc1 #158
+> > 
+> > Call Trace:
+> >  [<ffffffff80238bbf>] warn_on_slowpath+0x5f/0x80
+> >  [<ffffffff8025e8d8>] ? __lock_acquire+0x748/0x10d0
+> >  [<ffffffff80348f55>] blk_remove_plug+0x85/0xa0
+> >  [<ffffffffa004df64>] :raid1:flush_pending_writes+0x44/0xb0
+> >  [<ffffffffa004e649>] :raid1:raid1d+0x59/0xfe0
+> >  [<ffffffff8025e8d8>] ? __lock_acquire+0x748/0x10d0
+> >  [<ffffffff8025dc4f>] ? trace_hardirqs_on+0xbf/0x150
+> >  [<ffffffff8043ea8c>] md_thread+0x3c/0x110
+> >  [<ffffffff8024f6a0>] ? autoremove_wake_function+0x0/0x40
+> >  [<ffffffff8043ea50>] ? md_thread+0x0/0x110
+> >  [<ffffffff8024f23d>] kthread+0x4d/0x80
+> >  [<ffffffff8020c548>] child_rip+0xa/0x12
+> >  [<ffffffff8020bc5f>] ? restore_args+0x0/0x30
+> >  [<ffffffff8024f1f0>] ? kthread+0x0/0x80
+> >  [<ffffffff8020c53e>] ? child_rip+0x0/0x12
+> > 
+> > ---[ end trace 05d4e0844c61f45d ]---
+> > 
+> > This is the WARN_ON_ONCE(!queue_is_locked(q)) in queue_flag_clear(),
+> > apparently.
+> 
+> Yes, it triggers on all RAID levels.  The patch in this message:
+> 
+> http://marc.info/?l=linux-raid&m=121001065404056&w=2
+> > 
+> ...fixes the raid 0/1/10/5/6 cases, but I am still trying to isolate an
+> issue (potentially unrelated) with linear arrays.
+> 
 
-If the port isn't either a drive bay or an external SATA port, do not 
-keep the phy powered on if the port is unoccupied. This saves .75 watts
-on most laptops.  A module parameter can be used to override this 
-behavior and allow the phy's to be powered up regardless of whether it
-has externally accessible SATA ports. 
+Gah, 'device_lock' can not come after 'disks[0]' in 'struct
+linear_private_data'.  Updated patch below.  Simple testing passes:
+'mdadm --create /dev/md0; mkfs.ext3 /dev/md0' for each raid level
+linear, 0, 1, 10, 5, and 6.
 
-Signed-off-by:  Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+---snip--->
+Subject: md: tell blk-core about device_lock for protecting the queue flags
+From: Dan Williams <dan.j.williams@intel.com>
 
+Now that queue flags are no longer atomic (commit:
+75ad23bc0fcb4f992a5d06982bf0857ab1738e9e) blk-core checks the queue is locked
+via ->queue_lock.  As noticed by Neil conf->device_lock already satisfies this
+requirement.
+
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 ---
- drivers/ata/ahci.c        |   21 +++++++++++++++++++++
- drivers/ata/libata-core.c |   24 ++++++++++++++++++++++++
- include/linux/libata.h    |    1 +
- 3 files changed, 46 insertions(+)
 
-Index: linux-ahci-phy/drivers/ata/ahci.c
-===================================================================
---- linux-ahci-phy.orig/drivers/ata/ahci.c	2008-05-08 14:29:02.000000000 -0700
-+++ linux-ahci-phy/drivers/ata/ahci.c	2008-05-08 14:31:05.000000000 -0700
-@@ -53,9 +53,13 @@ static int ahci_skip_host_reset;
- module_param_named(skip_host_reset, ahci_skip_host_reset, int, 0444);
- MODULE_PARM_DESC(skip_host_reset, "skip global host reset (0=don't skip, 1=skip)");
+ drivers/md/linear.c         |    6 ++++++
+ drivers/md/multipath.c      |    6 ++++++
+ drivers/md/raid0.c          |    6 ++++++
+ drivers/md/raid1.c          |    7 ++++++-
+ drivers/md/raid10.c         |    7 ++++++-
+ drivers/md/raid5.c          |    2 ++
+ include/linux/raid/linear.h |    3 ++-
+ include/linux/raid/raid0.h  |    1 +
+ 8 files changed, 35 insertions(+), 3 deletions(-)
+
+
+diff --git a/drivers/md/linear.c b/drivers/md/linear.c
+index 0b85117..d026f08 100644
+--- a/drivers/md/linear.c
++++ b/drivers/md/linear.c
+@@ -122,6 +122,10 @@ static linear_conf_t *linear_conf(mddev_t *mddev, int raid_disks)
+ 	cnt = 0;
+ 	conf->array_size = 0;
  
-+static int ahci_power_save = 1;
-+module_param_named(power_save, ahci_power_save, int, 0444);
-+MODULE_PARM_DESC(power_save, "Power off unused ports (0=don't power off, 1=power off)");
- static int ahci_enable_alpm(struct ata_port *ap,
- 		enum link_pm policy);
- static void ahci_disable_alpm(struct ata_port *ap);
-+static int ahci_is_hotplug_capable(struct ata_port *ap);
- 
- enum {
- 	AHCI_PCI_BAR		= 5,
-@@ -166,6 +170,8 @@ enum {
- 	PORT_CMD_ASP		= (1 << 27), /* Aggressive Slumber/Partial */
- 	PORT_CMD_ALPE		= (1 << 26), /* Aggressive Link PM enable */
- 	PORT_CMD_ATAPI		= (1 << 24), /* Device is ATAPI */
-+	PORT_CMD_ESP		= (1 << 21), /* External SATA Port */
-+	PORT_CMD_HPCP		= (1 << 18), /* port is hot plug capable */
- 	PORT_CMD_PMP		= (1 << 17), /* PMP attached */
- 	PORT_CMD_LIST_ON	= (1 << 15), /* cmd list DMA engine running */
- 	PORT_CMD_FIS_ON		= (1 << 14), /* FIS DMA engine running */
-@@ -1900,6 +1906,18 @@ static int ahci_pci_device_resume(struct
- }
- #endif
- 
-+static int ahci_is_hotplug_capable(struct ata_port *ap)
-+{
-+	void __iomem *port_mmio = ahci_port_base(ap);
-+	u8 cmd;
++	spin_lock_init(&conf->device_lock);
++	/* blk-core uses queue_lock to verify protection of the queue flags */
++	mddev->queue->queue_lock = &conf->device_lock;
 +
-+	if (!ahci_power_save)
-+		return 1;
+ 	rdev_for_each(rdev, tmp, mddev) {
+ 		int j = rdev->raid_disk;
+ 		dev_info_t *disk = conf->disks + j;
+@@ -133,8 +137,10 @@ static linear_conf_t *linear_conf(mddev_t *mddev, int raid_disks)
+ 
+ 		disk->rdev = rdev;
+ 
++		spin_lock(&conf->device_lock);
+ 		blk_queue_stack_limits(mddev->queue,
+ 				       rdev->bdev->bd_disk->queue);
++		spin_unlock(&conf->device_lock);
+ 		/* as we don't honour merge_bvec_fn, we must never risk
+ 		 * violating it, so limit ->max_sector to one PAGE, as
+ 		 * a one page request is never in violation.
+diff --git a/drivers/md/multipath.c b/drivers/md/multipath.c
+index 42ee1a2..ee7df38 100644
+--- a/drivers/md/multipath.c
++++ b/drivers/md/multipath.c
+@@ -436,6 +436,10 @@ static int multipath_run (mddev_t *mddev)
+ 		goto out_free_conf;
+ 	}
+ 
++	spin_lock_init(&conf->device_lock);
++	/* blk-core uses queue_lock to verify protection of the queue flags */
++	mddev->queue->queue_lock = &conf->device_lock;
 +
-+	cmd = readl(port_mmio + PORT_CMD);
-+	return ((cmd & PORT_CMD_HPCP) || (cmd & PORT_CMD_ESP));
-+}
+ 	conf->working_disks = 0;
+ 	rdev_for_each(rdev, tmp, mddev) {
+ 		disk_idx = rdev->raid_disk;
+@@ -446,8 +450,10 @@ static int multipath_run (mddev_t *mddev)
+ 		disk = conf->multipaths + disk_idx;
+ 		disk->rdev = rdev;
+ 
++		spin_lock(&conf->device_lock);
+ 		blk_queue_stack_limits(mddev->queue,
+ 				       rdev->bdev->bd_disk->queue);
++		spin_unlock(&conf->device_lock);
+ 		/* as we don't honour merge_bvec_fn, we must never risk
+ 		 * violating it, not that we ever expect a device with
+ 		 * a merge_bvec_fn to be involved in multipath */
+diff --git a/drivers/md/raid0.c b/drivers/md/raid0.c
+index 818b482..deb5609 100644
+--- a/drivers/md/raid0.c
++++ b/drivers/md/raid0.c
+@@ -117,6 +117,10 @@ static int create_strip_zones (mddev_t *mddev)
+ 	if (!conf->devlist)
+ 		return 1;
+ 
++	spin_lock_init(&conf->device_lock);
++	/* blk-core uses queue_lock to verify protection of the queue flags */
++	mddev->queue->queue_lock = &conf->device_lock;
 +
- static int ahci_port_start(struct ata_port *ap)
- {
- 	struct device *dev = ap->host->dev;
-@@ -1951,6 +1969,9 @@ static int ahci_port_start(struct ata_po
+ 	/* The first zone must contain all devices, so here we check that
+ 	 * there is a proper alignment of slots to devices and find them all
+ 	 */
+@@ -138,8 +142,10 @@ static int create_strip_zones (mddev_t *mddev)
+ 		}
+ 		zone->dev[j] = rdev1;
  
- 	ap->private_data = pp;
++		spin_lock(&conf->device_lock);
+ 		blk_queue_stack_limits(mddev->queue,
+ 				       rdev1->bdev->bd_disk->queue);
++		spin_unlock(&conf->device_lock);
+ 		/* as we don't honour merge_bvec_fn, we must never risk
+ 		 * violating it, so limit ->max_sector to one PAGE, as
+ 		 * a one page request is never in violation.
+diff --git a/drivers/md/raid1.c b/drivers/md/raid1.c
+index 6778b7c..a01fc7e 100644
+--- a/drivers/md/raid1.c
++++ b/drivers/md/raid1.c
+@@ -1935,6 +1935,10 @@ static int run(mddev_t *mddev)
+ 	if (!conf->r1bio_pool)
+ 		goto out_no_mem;
  
-+	/* set some flags based on port capabilities */
-+	if (!ahci_is_hotplug_capable(ap))
-+		ap->flags |= ATA_FLAG_NO_HOTPLUG;
- 	/* engage engines, captain */
- 	return ahci_port_resume(ap);
- }
-Index: linux-ahci-phy/drivers/ata/libata-core.c
-===================================================================
---- linux-ahci-phy.orig/drivers/ata/libata-core.c	2008-05-08 14:28:57.000000000 -0700
-+++ linux-ahci-phy/drivers/ata/libata-core.c	2008-05-08 14:29:50.000000000 -0700
-@@ -162,6 +162,19 @@ MODULE_DESCRIPTION("Library module for A
- MODULE_LICENSE("GPL");
- MODULE_VERSION(DRV_VERSION);
- 
-+static void ata_phy_offline(struct ata_link *link)
-+{
-+	u32 scontrol;
-+	int rc;
++	spin_lock_init(&conf->device_lock);
++	/* blk-core uses queue_lock to verify protection of the queue flags */
++	mddev->queue->queue_lock = &conf->device_lock;
 +
-+	/* set DET to 4 */
-+	rc = sata_scr_read(link, SCR_CONTROL, &scontrol);
-+	if (rc)
-+		return;
-+	scontrol &= ~0xf;
-+	scontrol |= (1 << 2);
-+	sata_scr_write(link, SCR_CONTROL, scontrol);
-+}
+ 	rdev_for_each(rdev, tmp, mddev) {
+ 		disk_idx = rdev->raid_disk;
+ 		if (disk_idx >= mddev->raid_disks
+@@ -1944,8 +1948,10 @@ static int run(mddev_t *mddev)
  
- /**
-  *	ata_force_cbl - force cable type according to libata.force
-@@ -2671,6 +2684,7 @@ void ata_port_disable(struct ata_port *a
- 	ap->link.device[0].class = ATA_DEV_NONE;
- 	ap->link.device[1].class = ATA_DEV_NONE;
- 	ap->flags |= ATA_FLAG_DISABLED;
-+	ata_phy_offline(&ap->link);
- }
+ 		disk->rdev = rdev;
  
- /**
-@@ -5609,6 +5623,8 @@ int ata_host_register(struct ata_host *h
- 		if (ap->ops->error_handler) {
- 			struct ata_eh_info *ehi = &ap->link.eh_info;
- 			unsigned long flags;
-+			int device_attached = 0;
-+			struct ata_device *dev;
++		spin_lock(&conf->device_lock);
+ 		blk_queue_stack_limits(mddev->queue,
+ 				       rdev->bdev->bd_disk->queue);
++		spin_unlock(&conf->device_lock);
+ 		/* as we don't honour merge_bvec_fn, we must never risk
+ 		 * violating it, so limit ->max_sector to one PAGE, as
+ 		 * a one page request is never in violation.
+@@ -1958,7 +1964,6 @@ static int run(mddev_t *mddev)
+ 	}
+ 	conf->raid_disks = mddev->raid_disks;
+ 	conf->mddev = mddev;
+-	spin_lock_init(&conf->device_lock);
+ 	INIT_LIST_HEAD(&conf->retry_list);
  
- 			ata_port_probe(ap);
+ 	spin_lock_init(&conf->resync_lock);
+diff --git a/drivers/md/raid10.c b/drivers/md/raid10.c
+index 5938fa9..c28af78 100644
+--- a/drivers/md/raid10.c
++++ b/drivers/md/raid10.c
+@@ -2082,6 +2082,10 @@ static int run(mddev_t *mddev)
+ 		goto out_free_conf;
+ 	}
  
-@@ -5627,6 +5643,14 @@ int ata_host_register(struct ata_host *h
++	spin_lock_init(&conf->device_lock);
++	/* blk-core uses queue_lock to verify protection of the queue flags */
++	mddev->queue->queue_lock = &conf->device_lock;
++
+ 	rdev_for_each(rdev, tmp, mddev) {
+ 		disk_idx = rdev->raid_disk;
+ 		if (disk_idx >= mddev->raid_disks
+@@ -2091,8 +2095,10 @@ static int run(mddev_t *mddev)
  
- 			/* wait for EH to finish */
- 			ata_port_wait_eh(ap);
-+			ata_link_for_each_dev(dev, &ap->link)
-+				if (ata_dev_enabled(dev))
-+					device_attached++;
-+			if (!device_attached &&
-+			    (ap->flags & ATA_FLAG_NO_HOTPLUG)) {
-+				/* no device present, disable port */
-+				ata_port_disable(ap);
-+			}
- 		} else {
- 			DPRINTK("ata%u: bus probe begin\n", ap->print_id);
- 			rc = ata_bus_probe(ap);
-Index: linux-ahci-phy/include/linux/libata.h
-===================================================================
---- linux-ahci-phy.orig/include/linux/libata.h	2008-05-08 14:28:57.000000000 -0700
-+++ linux-ahci-phy/include/linux/libata.h	2008-05-08 14:29:50.000000000 -0700
-@@ -193,6 +193,7 @@ enum {
- 	ATA_FLAG_AN		= (1 << 18), /* controller supports AN */
- 	ATA_FLAG_PMP		= (1 << 19), /* controller supports PMP */
- 	ATA_FLAG_IPM		= (1 << 20), /* driver can handle IPM */
-+	ATA_FLAG_NO_HOTPLUG	= (1 << 21), /* port doesn't support HP */
+ 		disk->rdev = rdev;
  
- 	/* The following flag belongs to ap->pflags but is kept in
- 	 * ap->flags because it's referenced in many LLDs and will be
++		spin_lock(&conf->device_lock);
+ 		blk_queue_stack_limits(mddev->queue,
+ 				       rdev->bdev->bd_disk->queue);
++		spin_unlock(&conf->device_lock);
+ 		/* as we don't honour merge_bvec_fn, we must never risk
+ 		 * violating it, so limit ->max_sector to one PAGE, as
+ 		 * a one page request is never in violation.
+@@ -2103,7 +2109,6 @@ static int run(mddev_t *mddev)
+ 
+ 		disk->head_position = 0;
+ 	}
+-	spin_lock_init(&conf->device_lock);
+ 	INIT_LIST_HEAD(&conf->retry_list);
+ 
+ 	spin_lock_init(&conf->resync_lock);
+diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
+index ee0ea91..59964a7 100644
+--- a/drivers/md/raid5.c
++++ b/drivers/md/raid5.c
+@@ -4257,6 +4257,8 @@ static int run(mddev_t *mddev)
+ 			goto abort;
+ 	}
+ 	spin_lock_init(&conf->device_lock);
++	/* blk-core uses queue_lock to verify protection of the queue flags */
++	mddev->queue->queue_lock = &conf->device_lock;
+ 	init_waitqueue_head(&conf->wait_for_stripe);
+ 	init_waitqueue_head(&conf->wait_for_overlap);
+ 	INIT_LIST_HEAD(&conf->handle_list);
+diff --git a/include/linux/raid/linear.h b/include/linux/raid/linear.h
+index ba15469..3c35e1e 100644
+--- a/include/linux/raid/linear.h
++++ b/include/linux/raid/linear.h
+@@ -18,7 +18,8 @@ struct linear_private_data
+ 	sector_t		hash_spacing;
+ 	sector_t		array_size;
+ 	int			preshift; /* shift before dividing by hash_spacing */
+-	dev_info_t		disks[0];
++	spinlock_t		device_lock;
++	dev_info_t		disks[0]; /* grows depending on 'raid_disks' */
+ };
+ 
+ 
+diff --git a/include/linux/raid/raid0.h b/include/linux/raid/raid0.h
+index 1b2dda0..3d20d14 100644
+--- a/include/linux/raid/raid0.h
++++ b/include/linux/raid/raid0.h
+@@ -21,6 +21,7 @@ struct raid0_private_data
+ 
+ 	sector_t hash_spacing;
+ 	int preshift;			/* shift this before divide by hash_spacing */
++	spinlock_t device_lock;
+ };
+ 
+ typedef struct raid0_private_data raid0_conf_t;
+
+
+
