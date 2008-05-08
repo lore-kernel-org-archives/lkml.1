@@ -1,127 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934187AbYEHWOt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934138AbYEHWRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934187AbYEHWOt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 18:14:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934090AbYEHWNr
+	id S934138AbYEHWRT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 18:17:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762494AbYEHWRC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 18:13:47 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:38919 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934083AbYEHWNk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 18:13:40 -0400
-Date: Thu, 8 May 2008 17:12:17 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Benjamin Thery <benjamin.thery@bull.net>, linux-kernel@vger.kernel.org,
-       Tejun Heo <htejun@gmail.com>, Al Viro <viro@ftp.linux.org.uk>,
-       Daniel Lezcano <dlezcano@fr.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org,
-       Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH] wireless: Add missing locking to cfg80211_dev_rename
-Message-ID: <20080508221217.GA22808@sergelap.austin.ibm.com>
-References: <20080506173030.653828076@theryb.frec.bull.fr> <20080506173335.922289888@theryb.frec.bull.fr> <m13aoueyq8.fsf@frodo.ebiederm.org> <20080507190838.GA4467@suse.de> <m1ej8ccwlx.fsf_-_@frodo.ebiederm.org>
-MIME-Version: 1.0
+	Thu, 8 May 2008 18:17:02 -0400
+Received: from mga02.intel.com ([134.134.136.20]:34951 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760040AbYEHWRA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 18:17:00 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,456,1204531200"; 
+   d="scan'208";a="381601963"
+Date: Thu, 8 May 2008 15:16:59 -0700
+From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>, arjan@infradead.org,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] x86: Remove 6 bank limitation in 64 bit MCE reporting code
+Message-ID: <20080508221659.GA2759@linux-os.sc.intel.com>
+References: <20080508211836.GA26353@linux-os.sc.intel.com> <4823705E.1040401@zytor.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1ej8ccwlx.fsf_-_@frodo.ebiederm.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <4823705E.1040401@zytor.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric W. Biederman (ebiederm@xmission.com):
+On Thu, May 08, 2008 at 02:27:58PM -0700, H. Peter Anvin wrote:
+> Venki Pallipadi wrote:
+> >Eliminate the 6 bank restriction in 64 bit mce reporting code. This 
+> >restriction
+> >is artificial (due to static creation of sysfs files) and 32 bit code
+> >does not have any such restriction.
+> >
+> >This change helps in reporting the details of machine checks on a machine 
+> >check
+> >exception with errors in bank 6 and above on CPUs that support those banks.
+> >Without the patch, machine check errors in those banks are not reported.
+> >
+> >We still have 128 (MCE_EXTENDED_BANK) bank restriction instead of max 256
+> >supported in hardware. That is not changed in the patch below as it will 
+> >have
+> >some user level mcelog utility dependency, with bank 128 being used for
+> >thermal reporting currently.
+> >
+> >The patch below does not create sysfs control (bankNctl) for banks higher
+> >than 6 as well. That needs some pre-cleanup in /sysfs mce layout, removal 
+> >of
+> >per cpu /sysfs entries for bankctl as they are really global system level
+> >control today. That change will follow. This basic change is critical to
+> >report the detailed errors on banks higher than 6.
+> >
+> >Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 > 
-> device_rename only performs useful and race free validity
-> checking at the optional sysfs level so depending on it
-> for all of the validity checking in cfg80211_dev_rename
-> is racy.
+> Any chance you could add unifying the 32 and 64-bit code to your list, 
+> since you're already working on eliminating differences there?
 > 
-> Instead implement all of the needed validity checking
-> and locking in cfg80211_dev_rename.
-> 
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 
-I'm about as far as you can get from either a sysfs/kobject or network
-expert, but both of these patches as well as your general concept that
-renames should be handled at sysfs seem to me to make perfect sense.
+It was tried earlier
+http://www.ussg.iu.edu/hypermail/linux/kernel/0505.2/0982.html
+but never made it.
 
-thanks,
--serge
+Yes. Will add that to the todo list.
 
-> ---
->  net/wireless/core.c |   33 ++++++++++++++++++++++++++++-----
->  1 files changed, 28 insertions(+), 5 deletions(-)
-> 
-> diff --git a/net/wireless/core.c b/net/wireless/core.c
-> index 80afacd..f1da0b9 100644
-> --- a/net/wireless/core.c
-> +++ b/net/wireless/core.c
-> @@ -143,8 +143,11 @@ void cfg80211_put_dev(struct cfg80211_registered_device *drv)
->  int cfg80211_dev_rename(struct cfg80211_registered_device *rdev,
->  			char *newname)
->  {
-> +	struct cfg80211_registered_device *drv;
->  	int idx, taken = -1, result, digits;
-> 
-> +	mutex_lock(&cfg80211_drv_mutex);
-> +
->  	/* prohibit calling the thing phy%d when %d is not its number */
->  	sscanf(newname, PHY_NAME "%d%n", &idx, &taken);
->  	if (taken == strlen(newname) && idx != rdev->idx) {
-> @@ -156,14 +159,30 @@ int cfg80211_dev_rename(struct cfg80211_registered_device *rdev,
->  		 * deny the name if it is phy<idx> where <idx> is printed
->  		 * without leading zeroes. taken == strlen(newname) here
->  		 */
-> +		result = -EINVAL;
->  		if (taken == strlen(PHY_NAME) + digits)
-> -			return -EINVAL;
-> +			goto out_unlock;
-> +	}
-> +
-> +
-> +	/* Ignore nop renames */
-> +	result = 0;
-> +	if (strcmp(newname, dev_name(&rdev->wiphy.dev)) == 0)
-> +		goto out_unlock;
-> +
-> +	/* Ensure another device does not already have this name. */
-> +	list_for_each_entry(drv, &cfg80211_drv_list, list) {
-> +		result = -EINVAL;
-> +		if (strcmp(newname, dev_name(&drv->wiphy.dev)) == 0)
-> +			goto out_unlock;
->  	}
-> 
-> -	/* this will check for collisions */
-> +	/* this will only check for collisions in sysfs
-> +	 * which is not even always compiled in.
-> +	 */
->  	result = device_rename(&rdev->wiphy.dev, newname);
->  	if (result)
-> -		return result;
-> +		goto out_unlock;
-> 
->  	if (!debugfs_rename(rdev->wiphy.debugfsdir->d_parent,
->  			    rdev->wiphy.debugfsdir,
-> @@ -172,9 +191,13 @@ int cfg80211_dev_rename(struct cfg80211_registered_device *rdev,
->  		printk(KERN_ERR "cfg80211: failed to rename debugfs dir to %s!\n",
->  		       newname);
-> 
-> -	nl80211_notify_dev_rename(rdev);
-> +	result = 0;
-> +out_unlock:
-> +	mutex_unlock(&cfg80211_drv_mutex);
-> +	if (result == 0)
-> +		nl80211_notify_dev_rename(rdev);
-> 
-> -	return 0;
-> +	return result;
->  }
-> 
->  /* exported functions */
-> -- 
-> 1.5.3.rc6.17.g1911
+Thanks,
+Venki
