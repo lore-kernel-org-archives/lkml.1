@@ -1,92 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933044AbYEHVdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765167AbYEHVhe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933044AbYEHVdj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 17:33:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997AbYEHVd2
+	id S1765167AbYEHVhe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 17:37:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754464AbYEHVhZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 17:33:28 -0400
-Received: from www17.your-server.de ([213.133.104.17]:48138 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752726AbYEHVd0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 17:33:26 -0400
-Message-ID: <1210282367.48237180564a0@213.133.104.17>
-Date: Thu, 08 May 2008 23:32:48 +0200
-From: Thomas Meyer <thomas@m3y3r.de>
-To: Mike Travis <travis@sgi.com>
-Cc: linux-kernel@vger.kernel.org, arges@linux.vnet.ibm.com,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: BUG: unable to handle kernel paging request at xxx
-References: <1210097735.3644.6.camel@dhcppc1>  <4820A482.8000104@sgi.com> <1210102011.3644.12.camel@dhcppc1> <4823525A.8080805@sgi.com>
-In-Reply-To: <4823525A.8080805@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) 3.2.5
-X-Originating-IP: 84.59.40.57
+	Thu, 8 May 2008 17:37:25 -0400
+Received: from mga09.intel.com ([134.134.136.24]:12370 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752981AbYEHVhX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 17:37:23 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,456,1204531200"; 
+   d="scan'208";a="326076270"
+Date: Thu, 8 May 2008 14:37:22 -0700
+From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+To: Rufus & Azrael <rufus-azrael@numericable.fr>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [2.6.25-git18 => 2.6.26-rc1-git1] Xorg crash with	xf86MapVidMem error
+Message-ID: <20080508213722.GA28372@linux-os.sc.intel.com>
+References: <4820962B.6050702@numericable.fr> <924EFEDD5F540B4284297C4DC59F3DEE01004FC1@orsmsx423.amr.corp.intel.com> <4820D415.5090900@numericable.fr> <924EFEDD5F540B4284297C4DC59F3DEE010050B6@orsmsx423.amr.corp.intel.com> <482217F3.2040900@numericable.fr> <924EFEDD5F540B4284297C4DC59F3DEE010057B4@orsmsx423.amr.corp.intel.com> <4822A6F7.7010704@numericable.fr> <B5B0CFF685D7DF46A05CF1678CFB42ED20E04609@orsmsx423.amr.corp.intel.com> <20080508192555.GA8643@linux-os.sc.intel.com> <48235DA1.5060809@numericable.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48235DA1.5060809@numericable.fr>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zitat von Mike Travis <travis@sgi.com>:
-
-> Thomas Meyer wrote:
-> > Am Dienstag, den 06.05.2008, 11:33 -0700 schrieb Mike Travis:
-> > 
-> >> Would you also send your .config file as well
-> >> as a summary of the system configuration (cpu type, etc.)?
-> ...
-> > $ opcontrol --version
-> > opcontrol: oprofile 0.9.3 compiled on Oct  8 2007 10:36:39
-> > 
-> > $ yum list oprofile
-> > Installed Packages
-> > oprofile.i386                            0.9.3-6.fc8            installed  
+On Thu, May 08, 2008 at 01:08:01PM -0700, Rufus & Azrael wrote:
+>    Venki Pallipadi a ecrit :
+>    >
+>    > Use UC_MINUS in reserve_memtype call with -1, when MTRR lookup fails for
+>    any
+>    > reason.
+>    >
+>    > Change the logic in mtrr_type_lookup to just get the type from the start
+>    > address. Using start and end adddress is not right/complete as start and
+>    > end can be covered by different mtrr (where old code will fail) or
+>    > start and end can be in same mtrr, but still have some different
+>    > memory type region in between. Using only start is less restrictive and
+>    > deterministic.
+>    >
+>    > Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+>    >
+>    > ---
+>    >  arch/x86/kernel/cpu/mtrr/generic.c |    7 ++-----
+>    >  arch/x86/mm/pat.c                  |    8 +-------
+>    >  2 files changed, 3 insertions(+), 12 deletions(-)
+>    >
+>
+>    Hi Venki,
 > 
-> > 
+>    Patch applied on 2.6.26-rc1-git5 and all works fine in X server with 
+>    CONFIG_X86_PAT=y.
 > 
-> Hi Thomas,
-> 
-> I've not been able to reproduce this failure on my (very similar) AMD
-> box.  I've compiled and installed the oprofile package but that didn't
-> seem to do it. 
-> 
-> # opcontrol --version
-> opcontrol: oprofile 0.9.3 compiled on May  8 2008 12:02:00
-> 
-> One thing to note is that I'm using the very latest linux-next source,
-> would this be the same as what you are using?
-
-My git tree is currently on tag next-20080508.
-
-> 
-> Also I've noticed is that your system is loading SELinux while mine
-> is not, though I doubt that has any effect on the panic.
-> 
-> yours:
-> [    0.753301] Security Framework initialized
-> [    0.753301] SELinux:  Initializing.
-> [    0.753301] SELinux:  Starting in permissive mode
-> 
-> mine:
-> Mount failed for selinuxfs on /selinux:  No such device                      
->       
-> 
-> (Unfortunately I'm not familiar with that package or I'd pop it in
-> to try it out.)
-> 
-> If you can come up with some more info (or try Andrew's "back out"
-> patch to verify that the oprofile changes are the cause of the panic),
-> would you let me know?
-
-when i revert commit 608dfddd845da5ab6accef70154c8910529699f7 oprofile doesn't
-produce an oops, i.e. works as expected.
-
-> 
-> Thanks,
-> Mike
-> 
+>    See dmesg and mtrr files attached.
 > 
 
+Thanks for reporting the problem and testing the fix.
+ingo/thomas/hpa: Can you please pick up this patch. Fixes the PAT regression
+reported on this thread.
 
+Thanks,
+Venki
 
