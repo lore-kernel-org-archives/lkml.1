@@ -1,65 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934144AbYEIARg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933326AbYEIAS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934144AbYEIARg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 20:17:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752939AbYEIARZ
+	id S933326AbYEIAS1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 20:18:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755588AbYEIASH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 20:17:25 -0400
-Received: from vms173003pub.verizon.net ([206.46.173.3]:51358 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752080AbYEIARX (ORCPT
+	Thu, 8 May 2008 20:18:07 -0400
+Received: from outbound-mail-143.bluehost.com ([67.222.38.33]:38384 "HELO
+	outbound-mail-143.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753649AbYEIASF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 20:17:23 -0400
-Date: Thu, 08 May 2008 20:16:57 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [patch, -git] drivers/media build fix for modular builds
-In-reply-to: <48230C7B.90007@mandriva.org>
-To: Thomas Backlund <tmb@mandriva.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Linus <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-dvb-maintainer@linuxtv.org,
-       video4linux-list@redhat.com, LKML <linux-kernel@vger.kernel.org>
-Message-id: <200805082016.57622.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <20080507134907.4417708b.sfr@canb.auug.org.au>
- <48230C7B.90007@mandriva.org>
+	Thu, 8 May 2008 20:18:05 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Dave Airlie" <airlied@gmail.com>
+Subject: Re: regression fixed by using pci=rom
+Date: Thu, 8 May 2008 17:17:53 -0700
 User-Agent: KMail/1.9.9
+Cc: "kernel list" <linux-kernel@vger.kernel.org>,
+       "Gary Hade" <garyhade@us.ibm.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+References: <21d7e9970805081654h6de38d58q5ad3b6d3520b45f1@mail.gmail.com>
+In-Reply-To: <21d7e9970805081654h6de38d58q5ad3b6d3520b45f1@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805081717.54102.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 08 May 2008, Thomas Backlund wrote:
->Stephen Rothwell skrev:
->>
->> Index: linux/drivers/media/Makefile
->> ===================================================================
->> --- linux.orig/drivers/media/Makefile
->> +++ linux/drivers/media/Makefile
->> @@ -2,6 +2,8 @@
->>  # Makefile for the kernel multimedia device drivers.
->>  #
->>
->> +obj-y := common/
->> +
->>  obj-$(CONFIG_VIDEO_MEDIA) += common/
->>
->>  # Since hybrid devices are here, should be compiled if DVB and/or V4L
+On Thursday, May 08, 2008 4:54 pm Dave Airlie wrote:
+> A user just reported this bug
 >
->How about fixing this one already ?
+> http://bugs.freedesktop.org/show_bug.cgi?id=15523
 >
-Yes please, its biting me too.
+> He says using pci=rom fixes the regression, do we truly have to start
+> booting machines with this, sucks to be a distro..
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-There is more simplicity in the man who eats caviar on impulse than in the
-man who eats Grape-Nuts on principle.
-		-- G.K. Chesterton
+Hm, yeah in many cases we definitely *do* want to try to get the expansion ROM 
+space allocated.  But maybe it should be a lower priority than other BARs...  
+Gary?
+
+Thanks,
+Jesse
