@@ -1,86 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763679AbYEIFy7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934783AbYEIF6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763679AbYEIFy7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 01:54:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751347AbYEIFyv
+	id S934783AbYEIF6P (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 01:58:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763578AbYEIF56
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 01:54:51 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:32964 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751176AbYEIFyu (ORCPT
+	Fri, 9 May 2008 01:57:58 -0400
+Received: from mbox1.netikka.net ([213.250.81.202]:56269 "EHLO
+	mbox1.netikka.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763474AbYEIF55 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 01:54:50 -0400
-Date: Fri, 9 May 2008 14:59:41 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>
-Subject: [PATCH] memcg: avoid unnecessary initialization
-Message-Id: <20080509145941.f68e8f66.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 9 May 2008 01:57:57 -0400
+Message-ID: <4823E7DE.5010104@mandriva.org>
+Date: Fri, 09 May 2008 08:57:50 +0300
+From: Thomas Backlund <tmb@mandriva.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080305)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: "gene.heskett@gmail.com" <gene.heskett@gmail.com>,
+       "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "mchehab@infradead.org" <mchehab@infradead.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "linux-dvb-maintainer@linuxtv.org" <linux-dvb-maintainer@linuxtv.org>,
+       "video4linux-list@redhat.com" <video4linux-list@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [patch, -git] drivers/media build fix for modular builds
+References: <20080507134907.4417708b.sfr@canb.auug.org.au>	<48230C7B.90007@mandriva.org>	<200805082016.57622.gene.heskett@gmail.com> <20080508.171828.205600975.davem@davemloft.net>
+In-Reply-To: <20080508.171828.205600975.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-An easy cut out from memcg: performance improvement patch set.
-Tested on: x86-64/linux-2.6.26-rc1-git6
+David Miller skrev:
+> From: Gene Heskett <gene.heskett@gmail.com>
+> Date: Thu, 08 May 2008 20:16:57 -0400
+> 
+>> On Thursday 08 May 2008, Thomas Backlund wrote:
+>>> Stephen Rothwell skrev:
+>>>> Index: linux/drivers/media/Makefile
+>>>> ===================================================================
+>>>> --- linux.orig/drivers/media/Makefile
+>>>> +++ linux/drivers/media/Makefile
+>>>> @@ -2,6 +2,8 @@
+>>>>  # Makefile for the kernel multimedia device drivers.
+>>>>  #
+>>>>
+>>>> +obj-y := common/
+>>>> +
+>>>>  obj-$(CONFIG_VIDEO_MEDIA) += common/
+>>>>
+>>>>  # Since hybrid devices are here, should be compiled if DVB and/or V4L
+>>> How about fixing this one already ?
+>>>
+>> Yes please, its biting me too.
+> 
+> Linus merged a version of a fix for this from Ingo earlier today.
+> .
+> 
 
-Thanks,
--Kame
-==
-* remove over-killing initialization (in fast path)
-* makeing the condition for PAGE_CGROUP_FLAG_ACTIVE be more obvious.
+OK, big thanks ;-)
 
-Signed-off-by: KAMEAZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+--
+Thomas
 
----
- mm/memcontrol.c |   11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
-
-Index: linux-2.6.26-rc1/mm/memcontrol.c
-===================================================================
---- linux-2.6.26-rc1.orig/mm/memcontrol.c
-+++ linux-2.6.26-rc1/mm/memcontrol.c
-@@ -296,7 +296,7 @@ static void __mem_cgroup_remove_list(str
- 		MEM_CGROUP_ZSTAT(mz, MEM_CGROUP_ZSTAT_INACTIVE) -= 1;
- 
- 	mem_cgroup_charge_statistics(pc->mem_cgroup, pc->flags, false);
--	list_del_init(&pc->lru);
-+	list_del(&pc->lru);
- }
- 
- static void __mem_cgroup_add_list(struct mem_cgroup_per_zone *mz,
-@@ -559,7 +559,7 @@ retry:
- 	}
- 	unlock_page_cgroup(page);
- 
--	pc = kmem_cache_zalloc(page_cgroup_cache, gfp_mask);
-+	pc = kmem_cache_alloc(page_cgroup_cache, gfp_mask);
- 	if (pc == NULL)
- 		goto err;
- 
-@@ -606,9 +606,14 @@ retry:
- 	pc->ref_cnt = 1;
- 	pc->mem_cgroup = mem;
- 	pc->page = page;
--	pc->flags = PAGE_CGROUP_FLAG_ACTIVE;
-+	/*
-+	 * If a page is accounted as a page cache, insert to inactive list.
-+	 * If anon, insert to active list.
-+	 */
- 	if (ctype == MEM_CGROUP_CHARGE_TYPE_CACHE)
- 		pc->flags = PAGE_CGROUP_FLAG_CACHE;
-+	else
-+		pc->flags = PAGE_CGROUP_FLAG_ACTIVE;
- 
- 	lock_page_cgroup(page);
- 	if (page_get_page_cgroup(page)) {
 
