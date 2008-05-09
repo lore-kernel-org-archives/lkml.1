@@ -1,135 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934534AbYEIFgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934573AbYEIFi7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934534AbYEIFgz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 01:36:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934268AbYEIFgm
+	id S934573AbYEIFi7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 01:38:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751101AbYEIFiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 01:36:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36827 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933484AbYEIFgk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 01:36:40 -0400
-Date: Thu, 8 May 2008 22:36:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jesper Krogh <jesper@krogh.cc>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Many open/close on same files yeilds
- "No such file or directory".
-Message-Id: <20080508223635.523b8fa7.akpm@linux-foundation.org>
-In-Reply-To: <4823DFA6.9010504@krogh.cc>
-References: <4819E316.7000607@krogh.cc>
-	<4823DFA6.9010504@krogh.cc>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 9 May 2008 01:38:46 -0400
+Received: from cantor.suse.de ([195.135.220.2]:35467 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752522AbYEIFio (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 01:38:44 -0400
+From: Neil Brown <neilb@suse.de>
+To: Dan Williams <dan.j.williams@intel.com>,
+       Jens Axboe <jens.axboe@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Jacek Luczak <difrost.kernel@gmail.com>,
+       Prakash Punnoor <prakash@punnoor.de>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-raid@vger.kernel.org
+Date: Fri, 9 May 2008 15:38:30 +1000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18467.58198.777484.773976@notabene.brown>
+Subject: Re: WARNING in 2.6.25-07422-gb66e1f1
+In-Reply-To: message from Neil Brown on Friday May 9
+References: <200805031151.44287.prakash@punnoor.de>
+	<18462.46639.578272.994939@notabene.brown>
+	<20080505190159.GA329@kernel.dk>
+	<200805082039.01316.rjw@sisk.pl>
+	<1210272379.9697.3.camel@dwillia2-linux.ch.intel.com>
+	<1210288690.9697.14.camel@dwillia2-linux.ch.intel.com>
+	<18467.46015.146700.695469@notabene.brown>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 09 May 2008 07:22:46 +0200 Jesper Krogh <jesper@krogh.cc> wrote:
+On Friday May 9, neilb@suse.de wrote:
+> On Thursday May 8, dan.j.williams@intel.com wrote:
+> > @@ -133,8 +137,10 @@ static linear_conf_t *linear_conf(mddev_t *mddev, int raid_disks)
+> >  
+> >  		disk->rdev = rdev;
+> >  
+> > +		spin_lock(&conf->device_lock);
+> >  		blk_queue_stack_limits(mddev->queue,
+> >  				       rdev->bdev->bd_disk->queue);
+> > +		spin_unlock(&conf->device_lock);
+> >  		/* as we don't honour merge_bvec_fn, we must never risk
+> >  		 * violating it, so limit ->max_sector to one PAGE, as
+> >  		 * a one page request is never in violation.
+> 
+> This shouldn't be necessary.
+> There is no actual race here -- mddev->queue->queue_flags is not going to be
+> accessed by anyone else until do_md_run does
+> 	mddev->queue->make_request_fn = mddev->pers->make_request;
+> which is much later.
+> So we only need to be sure that "queue_is_locked" doesn't complain.
+> And as q->queue_lock is still NULL at this point, it won't complain.
 
-> Hi.
-> 
-> A week has passed the problem still persist and I have done a fair 
-> amount of testing.
-> 
-> I have now been able to reproduce it on 2 different servers, a 
-> dual-core,8 cpu Sun X4600 amd64 and a 2 cpu single-core Sun V20Z.
-> 
-> It has been reproduced against 4 different diskarrays one of them being
-> the IDE-SCSI(We have 2 of them) array mentioned before. The other one is
-> an iSCSI SAN. And lately when trying to move of the "trouble systems" we
-> hit the bug on a FC-SAN.
-> 
-> I belive that we can rule out hardware now.
-> 
-> I have both reproduced it on "old" ext3 volumes and freshly created
-> ones.
-> 
-> I havent been able to reproduce it on the internal system disks of
-> the servers, but thinking a bit more about the setup it seems that
-> the filesystem need to have a significant load on the
-> filesystem-structures (not data) to exploit the bug. The typical
-> environment where I found it was serving (the same) ~5GB of files of the
-> NFS-server to 48 dual-core machines, this bacically never hits the
-> actual disk (with 32GB of ram in the machine). In this setup
-> a single process could hit the bug on the server (the problem could
-> also be seen over NFS from the clients).
-> 
-> It is worth keeping in mind that the problem is "rare". Thus all
-> applications only opening and reading a single file every 10 minutes
-> or so probably never hits it.
-> 
-> Altering the test-script so it just tries again to pick up the file,
-> it succeeds on the second pass.
-> 
->  From my perspective this defininately has something to do with how the
-> OS caches/invalidates the filesystem structures it has in memory (or
-> somewhere near that).
-> 
-> I still haven't been able to produce a small pack-and-shit test that
-> knocks the problem out on every system. But please come with suggestions
-> about how to write a piece of code that tries to hit the problem from
-> my descriptions.
+Sorry, I got that backwards.  It will complain, won't it. :-)
 
-It's weird.
+I gotta say that I think it shouldn't.  Introducing a spinlock in
+linear.c, raid0.c, multipath.c just to silence a "WARN_ON" seems like
+the wrong thing to do.  Of course we could just use q->__queue_lock so
+we don't have to add a new lock, but we still have to take the lock
+unnecessarily.
 
-> My feeling is that the script below may reveal the bug on any "busy" 
-> volume, where busy is lots of activity in the OS-cache of the volume,
-> not on the actual drives.
+Unfortunately I cannot find a nice solution that both avoids clutter
+in md code and also protects against carelessly changing flags without
+a proper lock.....
 
-By this do you mean that there has to be a lot of other activity on the
-system to reproduce it?  Stuff which is turning over memory?
+Maybe....
+We could get blk_queue_stack_limits to lock the queue, and always
+spin_lock_init __queue_lock.  Then the only change needed in linear.c
+et al would be to set ->queue_lock to &->__queue_lock.
 
-Because one possiblity is that the cached dentry got reclaimed by memory
-pressure and we have some race bug which causes us to think that the file
-doesn't exist.
+Jens:  What do you think of this??
 
-(That still shouldn't happen because the dentry should be marked
-recently-accessed, but perhaps the underlying inode gets reclaimed or
-something.  Grasping at straws here)
+NeilBrown
 
-> All suggestions are welcome.
-> 
-> I have tried 4 different kernel versions:
-> 2.6.20, 2.6.22, 2.6.24, 2.6.25.2
-> 
-> Jesper
-> 
-> Jesper Krogh wrote:
-> > Hi list.
-> > 
-> > I have a "fairly" reproducible problem. When a program opens and closes
-> > the same file many times, it eventually ends up with a "no such file or
-> > directory". Test program that can reproduce the problem on my setup:
-> > 
-> > root@hest:~# cat test-file-c.c
-> > #include <stdlib.h>
-> > #include <stdio.h>
-> > #include <fcntl.h>
-> > #include <unistd.h>
-> > 
-> > int main(int argc, char *argv[]) {
-> >    unsigned long i=0;
-> >    int fh;
-> >    char *filename;
-> > 
-> >    filename=argv[1];
-> > 
-> >    while(1) {
-> >       fh=open(filename, O_RDONLY);
-> >       if (fh==-1) {
-> >          printf("Failed to open %s\n", filename);
-> >          printf("Open number: %ld\n",i);
-> >          exit(10);
-> >       }
-> >       close(fh);
-> >       i++;
-> >    }
-> > 
-> >    exit(0);
-> > }
 
-gee.
+
+diff --git a/block/blk-core.c b/block/blk-core.c
+index b754a4a..2d31dc2 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -479,6 +479,7 @@ struct request_queue *blk_alloc_queue_node(gfp_t gfp_mask, int node_id)
+ 	kobject_init(&q->kobj, &blk_queue_ktype);
+ 
+ 	mutex_init(&q->sysfs_lock);
++	spin_lock_init(&q->__queue_lock);
+ 
+ 	return q;
+ }
+@@ -541,10 +542,8 @@ blk_init_queue_node(request_fn_proc *rfn, spinlock_t *lock, int node_id)
+ 	 * if caller didn't supply a lock, they get per-queue locking with
+ 	 * our embedded lock
+ 	 */
+-	if (!lock) {
+-		spin_lock_init(&q->__queue_lock);
++	if (!lock)
+ 		lock = &q->__queue_lock;
+-	}
+ 
+ 	q->request_fn		= rfn;
+ 	q->prep_rq_fn		= NULL;
+diff --git a/block/blk-settings.c b/block/blk-settings.c
+index bb93d4c..488199a 100644
+--- a/block/blk-settings.c
++++ b/block/blk-settings.c
+@@ -286,8 +286,14 @@ void blk_queue_stack_limits(struct request_queue *t, struct request_queue *b)
+ 	t->max_hw_segments = min(t->max_hw_segments, b->max_hw_segments);
+ 	t->max_segment_size = min(t->max_segment_size, b->max_segment_size);
+ 	t->hardsect_size = max(t->hardsect_size, b->hardsect_size);
+-	if (!test_bit(QUEUE_FLAG_CLUSTER, &b->queue_flags))
++	if (!t->queue_lock)
++		WARN_ON_ONCE(1);
++	else if (!test_bit(QUEUE_FLAG_CLUSTER, &b->queue_flags)) {
++		unsigned long flags;
++		spin_lock_irqsave(&t->queue_lock, flags);
+ 		queue_flag_clear(QUEUE_FLAG_CLUSTER, t);
++		spin_unlock_irqrestore(&t->queue_lock, flags);
++	}
+ }
+ EXPORT_SYMBOL(blk_queue_stack_limits);
+ 
+diff --git a/drivers/md/linear.c b/drivers/md/linear.c
+index 0b85117..552f81b 100644
+--- a/drivers/md/linear.c
++++ b/drivers/md/linear.c
+@@ -250,6 +250,7 @@ static int linear_run (mddev_t *mddev)
+ {
+ 	linear_conf_t *conf;
+ 
++	mddev->queue_lock = &mddev->__queue_lock;
+ 	conf = linear_conf(mddev, mddev->raid_disks);
+ 
+ 	if (!conf)
+diff --git a/drivers/md/multipath.c b/drivers/md/multipath.c
+index 42ee1a2..90f85e4 100644
+--- a/drivers/md/multipath.c
++++ b/drivers/md/multipath.c
+@@ -417,6 +417,7 @@ static int multipath_run (mddev_t *mddev)
+ 	 * bookkeeping area. [whatever we allocate in multipath_run(),
+ 	 * should be freed in multipath_stop()]
+ 	 */
++	mddev->queue_lock = &mddev->__queue_lock;
+ 
+ 	conf = kzalloc(sizeof(multipath_conf_t), GFP_KERNEL);
+ 	mddev->private = conf;
+diff --git a/drivers/md/raid0.c b/drivers/md/raid0.c
+index 818b482..a179c8f 100644
+--- a/drivers/md/raid0.c
++++ b/drivers/md/raid0.c
+@@ -280,6 +280,7 @@ static int raid0_run (mddev_t *mddev)
+ 	       (mddev->chunk_size>>1)-1);
+ 	blk_queue_max_sectors(mddev->queue, mddev->chunk_size >> 9);
+ 	blk_queue_segment_boundary(mddev->queue, (mddev->chunk_size>>1) - 1);
++	mddev->queue_lock = &mddev->__queue_lock;
+ 
+ 	conf = kmalloc(sizeof (raid0_conf_t), GFP_KERNEL);
+ 	if (!conf)
+diff --git a/drivers/md/raid1.c b/drivers/md/raid1.c
+index 6778b7c..ac409b7 100644
+--- a/drivers/md/raid1.c
++++ b/drivers/md/raid1.c
+@@ -1935,6 +1935,9 @@ static int run(mddev_t *mddev)
+ 	if (!conf->r1bio_pool)
+ 		goto out_no_mem;
+ 
++	spin_lock_init(&conf->device_lock);
++	mddev->queue->queue_lock = &conf->device_lock;
++
+ 	rdev_for_each(rdev, tmp, mddev) {
+ 		disk_idx = rdev->raid_disk;
+ 		if (disk_idx >= mddev->raid_disks
+@@ -1958,7 +1961,6 @@ static int run(mddev_t *mddev)
+ 	}
+ 	conf->raid_disks = mddev->raid_disks;
+ 	conf->mddev = mddev;
+-	spin_lock_init(&conf->device_lock);
+ 	INIT_LIST_HEAD(&conf->retry_list);
+ 
+ 	spin_lock_init(&conf->resync_lock);
+diff --git a/drivers/md/raid10.c b/drivers/md/raid10.c
+index 5938fa9..740f670 100644
+--- a/drivers/md/raid10.c
++++ b/drivers/md/raid10.c
+@@ -2082,6 +2082,9 @@ static int run(mddev_t *mddev)
+ 		goto out_free_conf;
+ 	}
+ 
++	spin_lock_init(&conf->device_lock);
++	mddev->queue->queue_lock = &mddev->queue->__queue_lock;
++
+ 	rdev_for_each(rdev, tmp, mddev) {
+ 		disk_idx = rdev->raid_disk;
+ 		if (disk_idx >= mddev->raid_disks
+@@ -2103,7 +2106,6 @@ static int run(mddev_t *mddev)
+ 
+ 		disk->head_position = 0;
+ 	}
+-	spin_lock_init(&conf->device_lock);
+ 	INIT_LIST_HEAD(&conf->retry_list);
+ 
+ 	spin_lock_init(&conf->resync_lock);
+diff --git a/drivers/md/raid5.c b/drivers/md/raid5.c
+index 087eee0..4fafc79 100644
+--- a/drivers/md/raid5.c
++++ b/drivers/md/raid5.c
+@@ -4256,6 +4256,7 @@ static int run(mddev_t *mddev)
+ 			goto abort;
+ 	}
+ 	spin_lock_init(&conf->device_lock);
++	mddev->queue->queue_lock = &conf->device_lock;
+ 	init_waitqueue_head(&conf->wait_for_stripe);
+ 	init_waitqueue_head(&conf->wait_for_overlap);
+ 	INIT_LIST_HEAD(&conf->handle_list);
