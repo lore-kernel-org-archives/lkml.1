@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760635AbYEICZB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760876AbYEICpO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760635AbYEICZB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 22:25:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbYEICYu
+	id S1760876AbYEICpO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 22:45:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbYEICo7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 22:24:50 -0400
-Received: from pxy2nd.nifty.com ([202.248.175.14]:20968 "HELO pxy2nd.nifty.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752175AbYEICYt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 22:24:49 -0400
-X-Nifty-SrcIP: [210.131.101.9]
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=pxy2nd-default; d=mbf.nifty.com;
-  b=zIateBqkoaIvAULBUmLASSm3WewJENM+10I7bKOcUspHZbaav9bLJrkajmS37npiV3v9Mws5HyaugsxkW4ITzw==  ;
-Date: Fri, 09 May 2008 11:22:20 +0900 (JST)
-Message-Id: <20080509.112220.74748072.takada@mbf.nifty.com>
-To: bzolnier@gmail.com
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: kernel 2.6.25 with ide driver cs5520 does not boot.
-From: TAKADA Yoshihito <takada@mbf.nifty.com>
-In-Reply-To: <58cb370e0805080607n4f5de192o5a7371fd0fb1e9f8@mail.gmail.com>
-References: <20080508.165814.197343623.takada@mbf.nifty.com>
-	<58cb370e0805080607n4f5de192o5a7371fd0fb1e9f8@mail.gmail.com>
-X-Mailer: Mew version 6.0.50 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 8 May 2008 22:44:59 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:46457 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753457AbYEICo5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 22:44:57 -0400
+Date: Thu, 8 May 2008 22:44:26 -0400
+From: Theodore Tso <tytso@MIT.EDU>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: Possible regression?  2.6.26-rc1: X61s failure after
+	suspend/resume
+Message-ID: <20080509024426.GB8871@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+	Jesse Barnes <jbarnes@virtuousgeek.org>
+References: <E1JuCBA-0002NZ-4E@closure.thunk.org> <200805082352.04352.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200805082352.04352.rjw@sisk.pl>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for quick reply.
+On Thu, May 08, 2008 at 11:52:03PM +0200, Rafael J. Wysocki wrote:
+> On Thursday, 8 of May 2008, Theodore Ts'o wrote:
+> > 
+> > I'm running a kernel based off of commit afa26be8 (just six commits
+> > after 2.6.26-rc1), and very shortly after I suspend/resume my X61s (with
+> > the Intel video chipset), the X server will lock up.  I can ssh into
+> > the machine remotely, and restart the X server, but the newly restarted
+> > X server will shortly lock up again, and the only way to solve the
+> > problem is to reboot.  If I drop back to a 2.6.25 based kernel, the
+> > problem goes away.
+> > 
+> > I've tried bisecting it, but the bisection points picked by git don't
+> > boot at all, and given that I'm travelling I havent had much time to try
+> > doing more bisecting; since I know a number of kernel developers have
+> > Lenovo X61 laptops, I thought before I wasted more time trying to get
+> > the git bisection to work, I'd check to see if anyone has seen this
+> > problem and if the fix is known.  I'll also try the latest bleeding edge
+> > kernel and hope it's fixed there....
+> 
+> This looks like another manifestation of
+> http://bugzilla.kernel.org/show_bug.cgi?id=10620
 
-I tried 2.6.26rc1. It hangs same as 2.6.25.
-kernel 2.6.26rc1 with cs5520 cannot boot. cs5520 scans ide0 and ide1.
-It seems 2nd port DMA base issue was solved.
+Could be.  On my system, the X server runs for about 15 seconds to
+five minutes before it wedges up and locks up.  This is why it took me
+a while before I finally figured out that the way to reliably
+reproduce the problem was to do a suspend/resume.  So it's not
+*identical* to the report, but its really close....
 
-dmesg is follow:
+When I have more time I'll try to find some actual bisection points
+that actually will successfully boot on the X61s laptop, and not die
+within 6-8 seconds of the kernel loading.....
 
-Uniform Multi-Platform E-EDI driver
-ide: Assuming 33MHz system bus speed for PIO modes: override with idebus=xx
-Cyrix 5520: IDE controller (0x1078:0x0002 rev 0x00) at  PCI slot 0000:00:12.0
-    ide0: BM-DMA at 0x5000-0x5007
-    ide1: BM-DMA at 0x5008-0x500f
-hda: IC25N030ATCS04-0, ATA DISK drive
-ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
-ide1 at 0x170-0x177,0x376 on irq 14
-hda: max request size: 128KiB
-  (hang)
 
-From: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
-Subject: Re: kernel 2.6.25 with ide driver cs5520 does not boot.
-Date: Thu, 8 May 2008 15:07:31 +0200
-
- (snip)
-
-> 2.6.24 contained a bug in calculating DMA base for the second port (thus
-> the error message) but it shouldn't affect anything (ide1 is still probed
-> according to dmesg, please let me know if there are some devices on ide1
-> that are not getting detected).
-
-I seems that this issue was resolved. Thanks.
-
+							- Ted
