@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933368AbYEIR2n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932523AbYEIRbS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933368AbYEIR2n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 13:28:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761201AbYEIR2N
+	id S932523AbYEIRbS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 13:31:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758882AbYEIRbH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 13:28:13 -0400
-Received: from fk-out-0910.google.com ([209.85.128.190]:30977 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761072AbYEIR2K (ORCPT
+	Fri, 9 May 2008 13:31:07 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:45288 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758195AbYEIRbF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 13:28:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=MwZNjyB2YIE+ILTs3lyvt54XRoef8iT8HXIyoXXu9F9t4NnWf6bIOrue7P2On1LVcfX5cVMzJYKe69NTWyDfaWXqg2LzKQufI/C2789dq3dx0ExuZNVL31Ub0eOmtDuy9wbqbDr0G3KHplNVDWPLb0Bo2iMvqcexLqv8W6ypV+M=
-Subject: Re: [PATCH 5/9] frv: gdb-stub.c use the common ascii hex helpers
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: David Howells <dhowells@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <14697.1210334828@redhat.com>
-References: <1209694461.24729.223.camel@brick>
-	 <1209683136.24729.207.camel@brick> <11442.1209694140@redhat.com>
-	 <14697.1210334828@redhat.com>
-Content-Type: text/plain
-Date: Fri, 09 May 2008 10:28:03 -0700
-Message-Id: <1210354083.24092.5.camel@brick>
+	Fri, 9 May 2008 13:31:05 -0400
+Date: Fri, 9 May 2008 10:28:17 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: linux-next@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
+Cc: gregkh <greg@kroah.com>, samr <sam@ravnborg.org>
+Subject: next-20080509 build fails with CONFIG_SYSFS=n
+Message-Id: <20080509102817.3a885147.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-05-09 at 13:07 +0100, David Howells wrote:
-> Harvey Harrison <harvey.harrison@gmail.com> wrote:
-> 
-> > Everyone rolls their own version around the tree, centralize
-> > in lib/hexdump.c
-> 
-> Can you instruct that these are only to be used for GDB stubs?  Otherwise if
-> someone slaps a breakpoint in there accidentally, they might kill the GDB
-> stub.
-> 
+I can't get 20080509 to build with SYSFS=n.
+(on x86_64 or i386)
 
-This isn't a problem for hex_asc_{hi|lo} obviously, just the
-hexchar_to_int function, I've been looking at making this available in
-another way due to its similarity to simple_strtol etc (akpm noticed).
+Problem is building asm-offsets.c.
 
-So the hex_asc_hi/lo helpers are probably useful as-is.  I'll make
-sure to note the effects on gdb as you've pointed out when I send
-out the revised usage.
 
-Cheers,
+  GEN     /local/linsrc/next-20080509/X64/Makefile
+scripts/kconfig/conf -s arch/x86/Kconfig
+  Using /local/linsrc/next-20080509 as source for kernel
+  GEN     /local/linsrc/next-20080509/X64/Makefile
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  CC      kernel/bounds.s
+  GEN     include/linux/bounds.h
+  CC      arch/x86/kernel/asm-offsets.s
+In file included from /local/linsrc/next-20080509/include/linux/kobject.h:21,
+                 from /local/linsrc/next-20080509/include/linux/module.h:16,
+                 from /local/linsrc/next-20080509/include/linux/crypto.h:21,
+                 from /local/linsrc/next-20080509/arch/x86/kernel/asm-offsets_64.c:7,
+                 from /local/linsrc/next-20080509/arch/x86/kernel/asm-offsets.c:4:
+/local/linsrc/next-20080509/include/linux/sysfs.h: In function 'sysfs_rename_dir':
+/local/linsrc/next-20080509/include/linux/sysfs.h:142: error: implicit declaration of function 'kobject_set_name'
+In file included from /local/linsrc/next-20080509/include/linux/module.h:16,
+                 from /local/linsrc/next-20080509/include/linux/crypto.h:21,
+                 from /local/linsrc/next-20080509/arch/x86/kernel/asm-offsets_64.c:7,
+                 from /local/linsrc/next-20080509/arch/x86/kernel/asm-offsets.c:4:
+/local/linsrc/next-20080509/include/linux/kobject.h: At top level:
+/local/linsrc/next-20080509/include/linux/kobject.h:74: error: conflicting types for 'kobject_set_name'
+/local/linsrc/next-20080509/include/linux/kobject.h:74: note: a parameter list with an ellipsis can't match an empty parameter name list declaration
+/local/linsrc/next-20080509/include/linux/sysfs.h:142: error: previous implicit declaration of 'kobject_set_name' was here
+make[2]: *** [arch/x86/kernel/asm-offsets.s] Error 1
+make[1]: *** [prepare0] Error 2
+make: *** [sub-make] Error 2
 
-Harvey
-
+---
+~Randy
