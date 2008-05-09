@@ -1,69 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbYEIJCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757327AbYEIJEw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756793AbYEIJCr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 05:02:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752754AbYEIJCk
+	id S1757327AbYEIJEw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 05:04:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbYEIJEp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 05:02:40 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:35165 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752673AbYEIJCj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 05:02:39 -0400
-Date: Fri, 9 May 2008 12:01:07 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>
-Cc: linux-kernel@vger.kernel.org, shemminger@linux-foundation.org
-Subject: Re: build issue #349 for v2.6.26-rc1-279-g28a4acb :
-Message-ID: <20080509090107.GN22887@cs181133002.pp.htv.fi>
-References: <200805091033.55132.toralf.foerster@gmx.de>
+	Fri, 9 May 2008 05:04:45 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:5360 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752756AbYEIJEn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 05:04:43 -0400
+Date: Fri, 9 May 2008 18:03:06 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Hans Rosenfeld <hans.rosenfeld@amd.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Nishanth Aravamudan <nacc@us.ibm.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Jeff Chua <jeff.chua.linux@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] x86: fix PAE pmd_bad bootup warning
+Message-ID: <20080509090306.GA4221@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Hans Rosenfeld <hans.rosenfeld@amd.com>,
+	Hugh Dickins <hugh@veritas.com>,
+	Nishanth Aravamudan <nacc@us.ibm.com>,
+	Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+	Jeff Chua <jeff.chua.linux@gmail.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Gabriel C <nix.or.die@googlemail.com>,
+	Arjan van de Ven <arjan@linux.intel.com>,
+	Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org
+References: <1210106579.4747.51.camel@nimitz.home.sr71.net> <20080508143453.GE12654@escobedo.amd.com> <1210258350.7905.45.camel@nimitz.home.sr71.net> <20080508151145.GG12654@escobedo.amd.com> <1210261882.7905.49.camel@nimitz.home.sr71.net> <20080508200239.GJ12654@escobedo.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200805091033.55132.toralf.foerster@gmx.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080508200239.GJ12654@escobedo.amd.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 09, 2008 at 10:33:52AM +0200, Toralf Förster wrote:
-> Hello,
+On Thu, May 08, 2008 at 10:02:39PM +0200, Hans Rosenfeld wrote:
+> On Thu, May 08, 2008 at 07:48:51PM +0100, Hugh Dickins wrote:
+> > > Dunno, seems quite clear that the bug is in pagemap_read(), not any
+> > > hugepage code, and that the simplest fix is to make pagemap_read() do
+> > > what the other walker-callers do, and skip hugepage regions.
+> > 
+> > Yes, I'm afraid it needs an is_vm_hugetlb_page(vma) in there somehow:
+> > as you observe, that's what everything else uses to avoid huge issues.
+> > 
+> > A pmd_huge(*pmd) test is tempting, but it only ever says "yes" on x86:
+> > we've carefully left it undefined what happens to the pgd/pud/pmd/pte
+> > hierarchy in the general arch case, once you're amongst hugepages.
 > 
-> the build (.config attached) failed, make ends with :
-> ...
->   CC      arch/x86/lib/usercopy_32.o
->   AR      arch/x86/lib/lib.a
->   LD      vmlinux.o
->   MODPOST vmlinux.o
-> WARNING: modpost: Found 1 section mismatch(es).
-> To see full details build your kernel with:
-> 'make CONFIG_DEBUG_SECTION_MISMATCH=y'
->   GEN     .version
->   CHK     include/linux/compile.h
->   UPD     include/linux/compile.h
->   CC      init/version.o
->   LD      init/built-in.o
->   LD      .tmp_vmlinux1
-> drivers/built-in.o: In function `apanel_detach_client':
-> apanel.c:(.text+0x105506): undefined reference to `led_classdev_unregister'
-> drivers/built-in.o: In function `apanel_probe':
-> apanel.c:(.text+0x1057b9): undefined reference to `led_classdev_register'
-> make: *** [.tmp_vmlinux1] Error 1
->...
+> AFAIK the reason for this is that pmd_huge() and pud_huge() are
+> completely x86-specific. When I looked at the huge page support for
+> other archs in Linux the last time, all of them marked hugepages with
+> some page size bits in the PTE, using several PTEs for a single huge
+> page. So for anything but x86, the pgd/pud/pmd/pte hierarchy should work
+> for hugepages, too.
+> 
+s390 also does hugepages at the pmd level, so it's not only x86. And
+while it's not an issue today, it's worth noting that ARM also has the
+same characteristics for larger sizes. Should someone feel compelled to
+implement hugepages there, this will almost certainly come up again -- at
+least in so far as pmd_huge() is concerned.
 
-Thanks for the report.
-
-That's a known CONFIG_X86_RDC321X bug.
-
-I'll check where the best fix by Roman is stuck.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+At a quick glance, sparc64 also looks like it might need some special
+handling in the pagemap case, too..
