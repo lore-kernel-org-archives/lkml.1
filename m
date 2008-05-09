@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757344AbYEIGaK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761482AbYEIGbw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757344AbYEIGaK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 02:30:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051AbYEIG34
+	id S1761482AbYEIGbw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 02:31:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbYEIGbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 02:29:56 -0400
-Received: from outbound-mail-105.bluehost.com ([69.89.18.5]:57246 "HELO
-	outbound-mail-105.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753022AbYEIG3z (ORCPT
+	Fri, 9 May 2008 02:31:45 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:34648 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752480AbYEIGbo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 02:29:55 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: regression fixed by using pci=rom
-Date: Thu, 8 May 2008 23:29:39 -0700
-User-Agent: KMail/1.9.9
-Cc: Dave Airlie <airlied@gmail.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Gary Hade <garyhade@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <21d7e9970805081654h6de38d58q5ad3b6d3520b45f1@mail.gmail.com> <200805081717.54102.jbarnes@virtuousgeek.org> <alpine.LFD.1.10.0805081842030.2940@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0805081842030.2940@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 9 May 2008 02:31:44 -0400
+Date: Fri, 9 May 2008 15:25:19 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Dave Hansen <haveblue@us.ibm.com>,
+       Gerald Schaefer <gerald.schaefer@de.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] memory hotplug: memmap_init_zone called twice.
+Message-Id: <20080509152519.1b14e016.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080509060425.GA9840@osiris.boeblingen.de.ibm.com>
+References: <20080509060425.GA9840@osiris.boeblingen.de.ibm.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805082329.39987.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, May 08, 2008 6:46 pm Linus Torvalds wrote:
-> On Thu, 8 May 2008, Jesse Barnes wrote:
-> > Hm, yeah in many cases we definitely *do* want to try to get the
-> > expansion ROM space allocated.  But maybe it should be a lower priority
-> > than other BARs... Gary?
->
-> The thing is, a lot of these things have been done this way because not
-> doing them that way breaks.
->
-> We want to allocate expansion ROM space - even if we don't enable it -
-> because not doing so will screw up bus sizing etc, and can make it
-> impossible to allocate later.
->
-> In general, changing PCI allocation strategy is really _really_ dangerous,
-> even when it is "right", because it tends to expose a lot of issues where
-> something worked just because it was perhaps indirectly causing a layout
-> that worked.
+On Fri, 9 May 2008 08:04:25 +0200
+Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
 
-Yeah, that was my first impression too, but the patch went upstream awhile ago 
-and I didn't see any background except for the changelog.
+> Subject: [PATCH] memory hotplug: memmap_init_zone called twice.
+> 
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+> 
+> __add_zone calls memmap_init_zone twice if memory gets attached to
+> an empty zone. Once via init_currently_empty_zone and once explictly
+> right after that call.
+> Looks like this is currently not a bug, however the call is
+> superfluous and might lead to subtle bugs if memmap_init_zone gets
+> changed. So make sure it is called only once.
+> 
+seems reasonable. Thank you!
 
-If anything, we should have a pci=norom option instead, so that big systems 
-that don't need the ROMs can use their address space more efficiently.
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Jesse
