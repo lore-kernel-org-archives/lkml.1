@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935202AbYEIBtY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935259AbYEIBvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935202AbYEIBtY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 21:49:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934866AbYEIBtP
+	id S935259AbYEIBvz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 21:51:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763537AbYEIBvn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 21:49:15 -0400
-Received: from py-out-1112.google.com ([64.233.166.183]:62000 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935129AbYEIBtN (ORCPT
+	Thu, 8 May 2008 21:51:43 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51254 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762772AbYEIBvm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 21:49:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding:sender;
-        b=Ptjlkcm2KeP0p1bCkF+lpCJdX+TwKu4nUdjOMw9C8NRv9D5OzkoFnHA9PF5ujtBWduje1cnfjtJ22e2oey1wypEUWinKtxdau1ylG4XwI1o4NLIslc/iT9MDdn6UeIjhVBc/rKru3msU9sxWn6vKxtLR+P82j/sByemq+Bii9l0=
-Date: Thu, 8 May 2008 20:49:05 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for May 8
-Message-ID: <20080508204905.159a4d34@vader.jdub.homelinux.org>
-In-Reply-To: <20080508142514.6990f80e.sfr@canb.auug.org.au>
-References: <20080508142514.6990f80e.sfr@canb.auug.org.au>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 8 May 2008 21:51:42 -0400
+Date: Thu, 8 May 2008 18:51:08 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+cc: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Networking
+In-Reply-To: <20080508.171408.94456716.davem@davemloft.net>
+Message-ID: <alpine.LFD.1.10.0805081848170.2940@woody.linux-foundation.org>
+References: <20080508.171408.94456716.davem@davemloft.net>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 8 May 2008 14:25:14 +1000
-Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-> You can see which trees have been included by looking in the Next/Trees
-> file in the source.  There are also quilt-import.log and merge.log files
-> in the Next directory.  Between each merge, the tree was built with
-> a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-> final fixups, it is also built with powerpc allnoconfig,
-> 44x/ebony_defconfig and allyesconfig.
 
-If you're agreeable, we should switch it from 44x/ebony_defconfig to
-ppc44x_defconfig.  That will build more configurations as a result of
-being a multi-board config.
+On Thu, 8 May 2008, David Miller wrote:
+> 
+> Here are some networking fixes and enhancements:
 
-josh
+David, you need to stop sending patches like this after -rc1.
+
+This is too big. I'm taking it, but there's something wrong in this. Your 
+merges after -rc1 have generally been way too large, and I need to shut 
+you down if this gets to be a big pattern.
+
+It's one thing taking a totally new driver (that couldn't have worked 
+before and cannot be a regression) or adding new PCI ID's. It's a totally 
+different thing to take 800 lines of code to an old driver that people 
+depend on. These things need to happen during the merge window, and just 
+because they are drivers doesn't mean that they can just do anythign they 
+want.
+
+		Linus
