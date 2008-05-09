@@ -1,93 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758490AbYEIC5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762420AbYEIDAt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758490AbYEIC5k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 22:57:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbYEIC5a
+	id S1762420AbYEIDAt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 23:00:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756565AbYEIDAl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 22:57:30 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:46127 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750873AbYEIC52 (ORCPT
+	Thu, 8 May 2008 23:00:41 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:48385 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752771AbYEIDAj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 22:57:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=omU1ledXDyPMpaus7kZNyFDBazQz2DYwKOWml4DHvsRE1md/b4x+FXTzMaSKMaWTE/QWVJTFM6Oz3sDO2qapbxp1OrgVKPFlm95MlwAlaeVEA+kRY79EFzdgrYgG5ha7BjFoAiqZO5n/uVPEGYEFJtg//jXsrcY5Mks5+mfDfLk=
-Message-ID: <4823BD8E.40109@gmail.com>
-Date: Fri, 09 May 2008 11:57:18 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Thu, 8 May 2008 23:00:39 -0400
+Date: Thu, 8 May 2008 22:59:56 -0400
+From: Theodore Tso <tytso@MIT.EDU>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Glauber Costa <gcosta@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Possible regression?  2.6.26-rc1: T61s failure after
+	suspend/resume
+Message-ID: <20080509025956.GC8871@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Hugh Dickins <hugh@veritas.com>, Glauber Costa <gcosta@redhat.com>,
+	Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+References: <E1JuCBA-0002NZ-4E@closure.thunk.org> <Pine.LNX.4.64.0805082148060.3994@blonde.site>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Markus Trippelsdorf <markus@trippelsdorf.de>, linux-ide@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Takashi Iwai <tiwai@suse.de>,
-       marc.c.dionne@gmail.com, dl9pf@gmx.de, bug-track@fisher-privat.net,
-       sitsofe@yahoo.com
-Subject: Re: [PATCH] Re: [git patches] libata updates - (improve post-reset
- device ready test) regression
-References: <20080506154847.GA15299@havoc.gtf.org> <20080507145616.GA2210@gentoox2.trippelsdorf.de> <48231DAF.7070900@garzik.org>
-In-Reply-To: <48231DAF.7070900@garzik.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0805082148060.3994@blonde.site>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Markus Trippelsdorf wrote:
->>> Tejun Heo (12):
->>>       libata: improve post-reset device ready test
->>
->> This commit (78ab88f04f44bed566d51dce0c7cbfeff6449a06) causes a long
->> boot delay with my onboard Promise controller. It seems like libata
->> probes for a nonexisting PATA drive...
->>
->> ACPI: PCI Interrupt 0000:00:08.0[A] -> GSI 18 (level, low) -> IRQ 18
->> scsi0 : sata_promise
->> scsi1 : sata_promise
->> scsi2 : sata_promise
->> ata1: SATA max UDMA/133 mmio m4096@0xfb600000 port 0xfb600200 irq 18
->> ata2: SATA max UDMA/133 mmio m4096@0xfb600000 port 0xfb600280 irq 18
->> ata3: PATA max UDMA/133 mmio m4096@0xfb600000 port 0xfb600300 irq 18
->> ata1: SATA link down (SStatus 0 SControl 300)
->> ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
->> ata2.00: ATA-7: SAMSUNG HD753LJ, 1AA01109, max UDMA7
->> ata2.00: 1465149168 sectors, multi 0: LBA48 NCQ (depth 0/32)
->> ata2.00: configured for 
->> UDMA/133                                                                                          
->> ata3: link is slow to respond, please be patient (ready=0)
->> ata3: device not ready (errno=-16), forcing hardreset
->> ata3: link is slow to respond, please be patient (ready=0)
->> ata3: SRST failed (errno=-16)
->> ata3: link is slow to respond, please be patient (ready=0)
->> ata3: SRST failed (errno=-16)
->> ata3: link is slow to respond, please be patient (ready=0)
->> ata3: SRST failed (errno=-16)
->>   - Last output repeated twice -
->> ata3: reset failed, giving up
-> 
-> Does the attached patch fix things?
-> 
-> It basically reverts the patch, while still maintaining the 
-> consolidation.  It looks like that status evaluation is not as universal 
-> as believed.
+On Thu, May 08, 2008 at 10:48:57PM +0100, Hugh Dickins wrote:
+> It's such a good signature, but I've failed to make progress with it.
+> Ted, please try doing the same (and check your logs for existing
+> segfault messages): let's see if you get the same number ;)
+> though I've no idea what it'd tell us.
 
-This means that we need to make custom readiness tests for controllers 
-using 0x77 or 0x7f.  Eeeek... Both groups of controllers are behaving in 
-incorrect way.  Controllers shouldn't use 0x77 or 0x7f for either busy 
-or ready states - it's invalid for both, yet, some use the 77/7f for 
-busy while others use them for ready state.  Great.  :-(
+I cant say see any such segfaults.  The only ones in my logs are
+these, and they seem to be correlated to right after a system boot:
 
-Jeff, can you please revert 78ab88f04f44bed566d51dce0c7cbfeff6449a06 for 
-now?  I'll post updated patch.
+May  5 09:35:02 closure kernel: [ 2249.245926] hald-addon-keyb[8631]: segfault at fffffffd ip b7e827bc sp bffcf1a8 error 4 in libc-2.6.1.so[b7e15000+144000]
+May  5 09:35:02 closure kernel: [ 2249.252562] hald-addon-keyb[8630]: segfault at fffffffd ip b7dcf7bc sp bf81b9d8 error 4 in libc-2.6.1.so[b7d62000+144000]
 
-Markus, Alexey, Marc, which controllers are you using?
+I did find this, but it was from an attempt to do a bisect (see
+below).  In this case the system lasted half-way through the boot
+sequence (although not before the X server started) before it crashed.
+I'm beginning to think that "git bisecting" in the middle of the merge
+window just doesn't work well because some people aren't adequately
+checking to make sure the their patch series are "git bisectable" in
+terms of being bootable between arbitrary patches in their series.  So
+what I plan to do when I have a spare 10-15 hours is to fetch the git
+id's from patch-2.6.25-git*.id, which should hopefully represent
+somewhat more likely-to-bootable git bisection points, and try to do a
+git bisect using those points to see if the resulting kernels are a
+bit more likely to last long enough so I can test for this particular
+regression.
 
-Thanks.
+       	       	    	      	- Ted
 
--- 
-tejun
+P.S.  The "-numa" is due to a mistake that crept in via one of the
+patch trees (and which set -LOCALVERSION in the top-level Makefile; it
+got reverted later.)
+
+
+[    2.097917] 
+[    2.097919] =================================
+[    2.098059] [ INFO: inconsistent lock state ]
+[    2.098136] 2.6.25-numa-04462-g10c993a #23
+[    2.098209] ---------------------------------
+[    2.098284] inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
+[    2.098359] swapper/0 [HC0[0]:SC0[0]:HE1:SE1] takes:
+[    2.098434]  (&rq->rq_lock_key){++..}, at: [sched_clock_idle_wakeup_event+67/116] sched_clock_idle_wakeup_event+0x43/0x74
+[    2.098753] {in-hardirq-W} state was registered at:
+[    2.098833]   [__lock_acquire+1023/2834] __lock_acquire+0x3ff/0xb12
+[    2.099082]   [lock_acquire+106/144] lock_acquire+0x6a/0x90
+[    2.099329]   [_spin_lock+28/73] _spin_lock+0x1c/0x49
+[    2.099590]   [scheduler_tick+67/443] scheduler_tick+0x43/0x1bb
+[    2.099836]   [update_process_times+61/73] update_process_times+0x3d/0x49
+[    2.100083]   [tick_periodic+102/114] tick_periodic+0x66/0x72
+[    2.100327]   [tick_handle_periodic+25/106] tick_handle_periodic+0x19/0x6a
+[    2.100574]   [timer_interrupt+72/115] timer_interrupt+0x48/0x73
+[    2.100822]   [handle_IRQ_event+26/79] handle_IRQ_event+0x1a/0x4f
+[    2.101064]   [handle_level_irq+127/202] handle_level_irq+0x7f/0xca
+[    2.101316]   [do_IRQ+169/210] do_IRQ+0xa9/0xd2
+[    2.101563]   [<ffffffff>] 0xffffffff
+[    2.101806] irq event stamp: 1772935
+[    2.101883] hardirqs last  enabled at (1772935): [native_sched_clock+231/255] native_sched_clock+0xe7/0xff
+[    2.102091] hardirqs last disabled at (1772934): [native_sched_clock+109/255] native_sched_clock+0x6d/0xff
+[    2.102298] softirqs last  enabled at (1772496): [__do_softirq+249/255] __do_softirq+0xf9/0xff
+[    2.102501] softirqs last disabled at (1772491): [do_softirq+113/206] do_softirq+0x71/0xce
+[    2.102708] 
+[    2.102709] other info that might help us debug this:
+[    2.102850] no locks held by swapper/0.
+[    2.102923] 
+[    2.102924] stack backtrace:
+[    2.103067] Pid: 0, comm: swapper Not tainted 2.6.25-numa-04462-g10c993a #23
+[    2.103145]  [print_usage_bug+263/276] print_usage_bug+0x107/0x114
+[    2.103278]  [mark_lock+491/924] mark_lock+0x1eb/0x39c
+[    2.103417]  [__lock_acquire+1140/2834] __lock_acquire+0x474/0xb12
+[    2.103547]  [restore_nocheck+18/21] ? restore_nocheck+0x12/0x15
+[    2.103740]  [native_sched_clock+231/255] ? native_sched_clock+0xe7/0xff
+[    2.103929]  [lock_acquire+106/144] lock_acquire+0x6a/0x90
+[    2.104065]  [sched_clock_idle_wakeup_event+67/116] ? sched_clock_idle_wakeup_event+0x43/0x74
+[    2.104255]  [_spin_lock+28/73] _spin_lock+0x1c/0x49
+[    2.104392]  [sched_clock_idle_wakeup_event+67/116] ? sched_clock_idle_wakeup_event+0x43/0x74
+[    2.104582]  [sched_clock_idle_wakeup_event+67/116] sched_clock_idle_wakeup_event+0x43/0x74
+[    2.104715]  [<f886c3b3>] acpi_idle_enter_simple+0x19a/0x21b [processor]
+[    2.104858]  [<f886bfa5>] acpi_idle_enter_bm+0xbe/0x332 [processor]
+[    2.104999]  [cpuidle_idle_call+99/143] cpuidle_idle_call+0x63/0x8f
+[    2.105135]  [cpuidle_idle_call+0/143] ? cpuidle_idle_call+0x0/0x8f
+[    2.105330]  [cpu_idle+182/214] cpu_idle+0xb6/0xd6
+[    2.105463]  [rest_init+73/75] rest_init+0x49/0x4b
+[    2.105596]  =======================
