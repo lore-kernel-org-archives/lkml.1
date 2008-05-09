@@ -1,90 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932965AbYEITjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765927AbYEITkr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932965AbYEITjj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 15:39:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678AbYEITj0
+	id S1765927AbYEITkr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 15:40:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756339AbYEITkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 15:39:26 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:61445 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1764708AbYEITjY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 15:39:24 -0400
-Date: Fri, 9 May 2008 20:36:00 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Jean Delvare <khali@linux-fr.org>
-cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-       Alessandro Zummo <a.zummo@towertech.it>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, rtc-linux@googlegroups.com,
-       i2c@lm-sensors.org, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>
-Subject: Re: [RFC][PATCH 2/4] RTC: SWARM I2C board initialization
-In-Reply-To: <20080508095658.40eb74f4@hyperion.delvare>
-Message-ID: <Pine.LNX.4.55.0805092019100.10552@cliff.in.clinika.pl>
-References: <Pine.LNX.4.55.0805070031410.16173@cliff.in.clinika.pl>
- <20080507090514.3a86cf4b@hyperion.delvare> <Pine.LNX.4.64.0805070936060.6341@anakin>
- <20080507094343.25f279b9@hyperion.delvare> <Pine.LNX.4.55.0805072214090.25644@cliff.in.clinika.pl>
- <20080508095658.40eb74f4@hyperion.delvare>
+	Fri, 9 May 2008 15:40:37 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:37686 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753678AbYEITkf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 15:40:35 -0400
+Date: Fri, 9 May 2008 15:40:30 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 6/9] fuse: add export operations
+Message-ID: <20080509194030.GA29118@infradead.org>
+References: <20080509124107.645600519@szeredi.hu> <20080509124133.577558326@szeredi.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080509124133.577558326@szeredi.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jean,
+> +struct fuse_inode_handle
+> +{
+> +	u64 nodeid;
+> +	u32 generation;
+> +};
 
-> $ find linux-2.6.26-rc1 -name Kconfig | wc -l
-> 455
-> $ find linux-2.6.26-rc1 -name Makefile | wc -l
-> 1030
-> $
+This is the same filehandle type XFS uses for 64bit inode filesystems
+where the parent is not encoded.  I'll post a patch soon to move that
+64bit inode handling to common code.  I don't think it's a good idea
+to delay your patch until that happens, but can you chose the fid
+types to be the same as XFS does currently so that a conversion is
+easily possible.  The fh_type should be 0x81 (fh type 1 order by 0x80
+to imply it's 64bit inodes)
 
- Well, these are not pieces of code and serve a different purpose, don't
-they?
+In case you want to look at that patch I'v uploaded the current
+version at http://verein.lst.de/~hch/generic-64bit-inode-export
 
-> Not to mention the 102 setup.c, 87 irq.c, 62 time.c... It is very
-> common to have duplicated file names in the kernel tree because it
-> supports so many architectures and platforms. In general, when you work
+> +static struct dentry *fuse_get_dentry(struct super_block *sb,
+> +				      struct fuse_inode_handle *handle)
+> +{
+> +	struct inode *inode;
+> +	struct dentry *entry;
+> +	int err = -ESTALE;
+> +
+> +	if (handle->nodeid == 0)
+> +		goto out_err;
+> +
+> +	inode = ilookup5(sb, handle->nodeid, fuse_inode_eq, &handle->nodeid);
+> +	if (!inode)
+> +		goto out_err;
 
- Well, that is not a technical argument.  It is a fact of life, sure, but
-it does not necessarily mean it is right, but perhaps that nobody has
-really thought about it.
+Only finding in-memory inodes for nfs export is quite dangerous.  I
+think it would be a much better idea to support whatever upcalls are
+needed to find the object if it's not in memory.  Without that the nfs
+exporting support is hardly useable.
 
-> on a given architecture or platform, names become unique again. Taking
-> GDB as an example again, you definitely know what architecture you are
-> debugging, so there should be relatively little ambiguity on what files
-> are involved.
-
- Hmm, why to have little ambiguity, when you can have none?  We do not
-rely on crippled filesystems, so we do not have to save characters in file
-names -- we keep them reasonably short anyway.  I say there is no
-technical advantage in having duplicate file names throughout the tree
-(please name one if I am wrong) and there are advantages -- however small,
-but still -- in keeping file names unique.  Therefore the gain from
-converting the existing file names may not justify the effort required,
-but it does not mean new additions may not take the gain into account?
-
-> (On top of that, I'd argue that we _should_ be able to display relative
-> paths to file names when debugging.)
-
- Human's perception is limited -- GDB's `info frame' is probably already
-overloaded with information, so adding the path to the source file in
-question will not make it any better.
-
-> Your point about the "single program namespace" is certainly valid for
-> small to medium-size programs, but in the case of something as big as
-> the kernel, it probably no longer holds.
-
- I think it is actually the reverse -- the bigger a project is, the easier
-to get lost within. ;-)  With small programs it is easier to maintain,
-while with bigger ones it is really where it pays off.
-
-> I don't have a strong opinion on this either, it is very unlikely that
-> I'll ever have to deal with this file personally. I'm only telling you
-> what the common practice is in the kernel tree.
-
- I don't think this practice has been architected and see above for
-justification why it may not necessarily be the cleverest idea. :-)
-
-  Maciej
