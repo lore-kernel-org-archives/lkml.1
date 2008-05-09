@@ -1,117 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934684AbYEIBke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934910AbYEIBoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934684AbYEIBke (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 21:40:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763589AbYEIBkV
+	id S934910AbYEIBoU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 21:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933261AbYEIBoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 21:40:21 -0400
-Received: from ns.suse.de ([195.135.220.2]:58753 "EHLO mx1.suse.de"
+	Thu, 8 May 2008 21:44:00 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:50912 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755572AbYEIBkS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 21:40:18 -0400
-From: Neil Brown <neilb@suse.de>
-To: "Mike Snitzer" <snitzer@gmail.com>
-Date: Fri, 9 May 2008 11:40:07 +1000
+	id S1755782AbYEIBn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 21:43:58 -0400
+Date: Thu, 8 May 2008 21:43:19 -0400
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Matthew Wilcox <matthew@wil.cx>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>, linux-fsdevel@vger.kernel.org
+Subject: Re: Oi.  NFS people.  Read this.
+Message-ID: <20080509014319.GL12690@fieldses.org>
+References: <20080507174900.GB13591@elte.hu> <alpine.LFD.1.10.0805071057280.3024@woody.linux-foundation.org> <20080507181714.GA14980@elte.hu> <alpine.LFD.1.10.0805071125090.3024@woody.linux-foundation.org> <20080507184304.GA15554@elte.hu> <alpine.LFD.1.10.0805071150140.3024@woody.linux-foundation.org> <20080507192425.GC19219@parisc-linux.org> <alpine.LFD.1.10.0805071243330.3024@woody.linux-foundation.org> <20080507200050.GE19219@parisc-linux.org> <1210198227.7459.31.camel@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18467.43895.220708.254814@notabene.brown>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
-       paul.clements@steeleye.com
-Subject: Re: [RFC][PATCH] md: avoid fullsync if a faulty member missed a dirty transition
-In-Reply-To: message from Mike Snitzer on Thursday May 8
-References: <1207174155-20090-1-git-send-email-snitzer@gmail.com>
-	<18464.134.236488.251879@notabene.brown>
-	<170fa0d20805060458i43c9a4a7r1e30147bdcd40f20@mail.gmail.com>
-	<18466.39418.578722.92979@notabene.brown>
-	<170fa0d20805081311r6b726762ndc83c5f626f0956c@mail.gmail.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Disposition: inline
+In-Reply-To: <1210198227.7459.31.camel@localhost>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday May 8, snitzer@gmail.com wrote:
-> On Thu, May 8, 2008 at 2:13 AM, Neil Brown <neilb@suse.de> wrote:
-> > On Tuesday May 6, snitzer@gmail.com wrote:
-> >  >
-> >  > It looks like bitmap_update_sb()'s incrementing of events_cleared (on
-> >  > behalf of the local member) could be racing with the fact that the NBD
-> >  > member becomes faulty (whereby making the array degraded).  This
-> >  > allows the events_cleared to reflect a clean->dirty transition last
-> >  > occurred before the array became degraded.  My reasoning is: If it was
-> >  > a clean->dirty transition the bitmap still has the associated dirty
-> >  > bit set in the local member's bitmap, so using the bitmap to resync is
-> >  > valid.
-> >  >
-> >  > thanks,
-> >  > Mike
-> >
-> >  Thanks for persisting.  I think I understand what is going on now.
-> >
-> >  How about this patch?  It is similar to your, but instead of depending
-> >  on the odd/even state of the event counter, it directly checks the
-> >  clean/dirty state of the array.
+On Wed, May 07, 2008 at 03:10:27PM -0700, Trond Myklebust wrote:
+> On Wed, 2008-05-07 at 14:00 -0600, Matthew Wilcox wrote:
+> > On Wed, May 07, 2008 at 12:44:48PM -0700, Linus Torvalds wrote:
+> > > On Wed, 7 May 2008, Matthew Wilcox wrote:
+> > > > 
+> > > > One patch I'd still like Yanmin to test is my one from yesterday which
+> > > > removes the BKL from fs/locks.c.
+> > > 
+> > > And I'd personally rather have the network-fs people test and comment on 
+> > > that one ;)
+> > > 
+> > > I think that patch is worth looking at regardless, but the problems with 
+> > > that one aren't about performance, but about what the implications are for 
+> > > the filesystems (if any)...
+> > 
+> > Oh, well, they don't seem interested.
 > 
-> Hi Neil,
+> Poor timing: we're all preparing for and travelling to the annual
+> Connectathon interoperability testing conference which starts tomorrow.
 > 
-> Your revised patch works great and is obviously cleaner.
+> > I can comment on some of the problems though.
+> > 
+> > fs/lockd/svcsubs.c, fs/nfs/delegation.c, fs/nfs/nfs4state.c,
+> > fs/nfsd/nfs4state.c all walk the i_flock list under the BKL.  That won't
+> > protect them against locks.c any more.  That's probably OK for fs/nfs/*
+> > since they'll be protected by their own data structures (Someone please
+> > check me on that?), but it's a bad idea for lockd/nfsd which are walking
+> > the lists for filesystems.
+> 
+> Yes. fs/nfs is just reusing the code in fs/locks.c in order to track the
+> locks it holds on the server. We could alternatively have coded a
+> private lock implementation, but this seemed easier.
 
-But I'm still not happy with it :-(
-I suspect there might be other cases where it will still do the wrong
-thing.
-The real problem is that we are updating events_cleared to early.  We
-are setting to the new event counter before that is even written out.
+So, assuming nfs is taking care of its own locking (I don't know if
+that's right), that leaves nlm_traverse_locks() and nlm_file_inuse()
+(both in fs/lockd/svcsubs.c) as the problem spots.
 
-So I've come up with this patch, which I think more clearly
-encapsulated what events_cleared means.  It is now set to the current
-'events' counter immediately before we clear any bit.
+> > Are we going to have to export the file_lock_lock?  I'd rather not.  But
+> > we need to keep nfsd/lockd from tripping over locks.c.
+> > 
+> > Maybe we could come up with a decent API that lockd could use?  It all
+> > seems a bit complex at the moment ... maybe lockd should be keeping
+> > track of the locks it owns anyway (since surely the posix deadlock
+> > detection code can't work properly if it's just passing all the locks
+> > through).
+> 
+> I'm not sure what you mean when you talk about lockd keeping track of
+> the locks it owns. It has to keep those locks on inode->i_flock in order
+> to make them visible to the host filesystem...
+> 
+> All lockd really needs, is the ability to find a lock it owns, and then
+> obtain a copy.
 
-If you could test it, I'd really appreciate it.
+That sounds right.
 
-Thanks,
-NeilBrown
+--b.
 
-Signed-off-by: Neil Brown <neilb@suse.de>
+> As for the nfs client, I suspect we can make do with
+> something similar...
 
-### Diffstat output
- ./drivers/md/bitmap.c |   18 +++++++++++++-----
- 1 file changed, 13 insertions(+), 5 deletions(-)
 
-diff .prev/drivers/md/bitmap.c ./drivers/md/bitmap.c
---- .prev/drivers/md/bitmap.c	2008-05-09 11:02:13.000000000 +1000
-+++ ./drivers/md/bitmap.c	2008-05-09 11:38:35.000000000 +1000
-@@ -465,8 +465,6 @@ void bitmap_update_sb(struct bitmap *bit
- 	spin_unlock_irqrestore(&bitmap->lock, flags);
- 	sb = (bitmap_super_t *)kmap_atomic(bitmap->sb_page, KM_USER0);
- 	sb->events = cpu_to_le64(bitmap->mddev->events);
--	if (!bitmap->mddev->degraded)
--		sb->events_cleared = cpu_to_le64(bitmap->mddev->events);
- 	kunmap_atomic(sb, KM_USER0);
- 	write_page(bitmap, bitmap->sb_page, 1);
- }
-@@ -1094,9 +1092,19 @@ void bitmap_daemon_work(struct bitmap *b
- 			} else
- 				spin_unlock_irqrestore(&bitmap->lock, flags);
- 			lastpage = page;
--/*
--			printk("bitmap clean at page %lu\n", j);
--*/
-+
-+			/* We are possibly going to clear some bits, so make
-+			 * sure that events_cleared is up-to-date.
-+			 */
-+			if (bitmap->events_cleared < bitmap->mddev->events) {
-+				bitmap_super_t *sb;
-+				sb = kmap_atomic(bitmap->sb_page, KM_USER0);
-+				bitmap->events_cleared = bitmap->mddev->events;
-+				sb->events_cleared =
-+					cpu_to_le64(bitmap->events_cleared);
-+				kunmap_atomic(sb, KM_USER0);
-+				write_page(bitmap, bitmap->sb_page, 1);
-+			}
- 			spin_lock_irqsave(&bitmap->lock, flags);
- 			clear_page_attr(bitmap, page, BITMAP_PAGE_CLEAN);
- 		}
