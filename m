@@ -1,81 +1,244 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763372AbYEIMnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763582AbYEIMne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763372AbYEIMnT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 08:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760936AbYEIMli
+	id S1763582AbYEIMne (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 08:43:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762244AbYEIMlm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 08:41:38 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:59646 "EHLO
+	Fri, 9 May 2008 08:41:42 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:59654 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759010AbYEIMle (ORCPT
+	with ESMTP id S1761033AbYEIMli (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 08:41:34 -0400
-Message-Id: <20080509124130.847057904@szeredi.hu>
+	Fri, 9 May 2008 08:41:38 -0400
+Message-Id: <20080509124133.577558326@szeredi.hu>
 References: <20080509124107.645600519@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Fri, 09 May 2008 14:41:11 +0200
+Date: Fri, 09 May 2008 14:41:13 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       Matthew Wilcox <matthew@wil.cx>
-Subject: [patch 4/9] locks: allow ->lock() to return FILE_LOCK_DEFERRED
-Content-Disposition: inline; filename=locks_allow_async_lock_method.patch
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [patch 6/9] fuse: add export operations
+Content-Disposition: inline; filename=fuse_nfs_export.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Allow filesystem's ->lock() method to call posix_lock_file() instead
-of posix_lock_file_wait(), and return FILE_LOCK_DEFERRED.  This makes
-it possible to implement a such a ->lock() function, that works with
-the lock manager, which needs the call to be asynchronous.
+Implement export_operations, to allow fuse filesystems to be exported
+to NFS.  This feature has been in the out-of-tree fuse module, and is
+widely used and tested.
 
-Now the vfs_lock_file() helper can be used, so this is a cleanup as
-well.
+It has not been originally merged into mainline, because doing the NFS
+export in userspace was thought to be a cleaner and more efficient way
+of doing it, than through the kernel.
+
+While that is true, it would also have involved a lot of duplicated
+effort at reimplementing NFS exporting (all the different versions of
+the protocol).  This effort was unfortunately not undertaken by
+anyone, so we are left with doing it the easy but less efficient way.
+
+If this feature goes it, the out-of-tree fuse module can go away,
+which would have several advantages:
+
+  - not having to maintain two versions
+  - less confusion for users
+  - no bugs due to kernel API changes
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-CC: "J. Bruce Fields" <bfields@fieldses.org>
-CC: Matthew Wilcox <matthew@wil.cx>
 ---
- fs/locks.c |   23 +++++++++--------------
- 1 file changed, 9 insertions(+), 14 deletions(-)
+ fs/fuse/dir.c    |    4 -
+ fs/fuse/fuse_i.h |    4 +
+ fs/fuse/inode.c  |  119 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 125 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/fs/locks.c
+Index: linux-2.6/fs/fuse/dir.c
 ===================================================================
---- linux-2.6.orig/fs/locks.c	2008-05-09 14:04:47.000000000 +0200
-+++ linux-2.6/fs/locks.c	2008-05-09 14:04:48.000000000 +0200
-@@ -1753,21 +1753,16 @@ static int do_lock_file_wait(struct file
- 	if (error)
- 		return error;
+--- linux-2.6.orig/fs/fuse/dir.c	2008-05-09 14:04:49.000000000 +0200
++++ linux-2.6/fs/fuse/dir.c	2008-05-09 14:04:50.000000000 +0200
+@@ -97,7 +97,7 @@ void fuse_invalidate_attr(struct inode *
+  * timeout is unknown (unlink, rmdir, rename and in some cases
+  * lookup)
+  */
+-static void fuse_invalidate_entry_cache(struct dentry *entry)
++void fuse_invalidate_entry_cache(struct dentry *entry)
+ {
+ 	fuse_dentry_settime(entry, 0);
+ }
+@@ -225,7 +225,7 @@ static int invalid_nodeid(u64 nodeid)
+ 	return !nodeid || nodeid == FUSE_ROOT_ID;
+ }
  
--	if (filp->f_op && filp->f_op->lock != NULL)
--		error = filp->f_op->lock(filp, cmd, fl);
--	else {
--		for (;;) {
--			error = posix_lock_file(filp, fl, NULL);
--			if (error != FILE_LOCK_DEFERRED)
--				break;
--			error = wait_event_interruptible(fl->fl_wait,
--							 !fl->fl_next);
--			if (!error)
--				continue;
--
--			locks_delete_block(fl);
-+	for (;;) {
-+		error = vfs_lock_file(filp, cmd, fl, NULL);
-+		if (error != FILE_LOCK_DEFERRED)
- 			break;
--		}
-+		error = wait_event_interruptible(fl->fl_wait, !fl->fl_next);
-+		if (!error)
-+			continue;
+-static struct dentry_operations fuse_dentry_operations = {
++struct dentry_operations fuse_dentry_operations = {
+ 	.d_revalidate	= fuse_dentry_revalidate,
+ };
+ 
+Index: linux-2.6/fs/fuse/fuse_i.h
+===================================================================
+--- linux-2.6.orig/fs/fuse/fuse_i.h	2008-05-09 14:04:45.000000000 +0200
++++ linux-2.6/fs/fuse/fuse_i.h	2008-05-09 14:04:50.000000000 +0200
+@@ -464,6 +464,8 @@ static inline u64 get_node_id(struct ino
+ /** Device operations */
+ extern const struct file_operations fuse_dev_operations;
+ 
++extern struct dentry_operations fuse_dentry_operations;
 +
-+		locks_delete_block(fl);
-+		break;
- 	}
+ /**
+  * Get a filled in inode
+  */
+@@ -604,6 +606,8 @@ void fuse_abort_conn(struct fuse_conn *f
+  */
+ void fuse_invalidate_attr(struct inode *inode);
  
- 	return error;
++void fuse_invalidate_entry_cache(struct dentry *entry);
++
+ /**
+  * Acquire reference to fuse_conn
+  */
+Index: linux-2.6/fs/fuse/inode.c
+===================================================================
+--- linux-2.6.orig/fs/fuse/inode.c	2008-05-09 14:04:45.000000000 +0200
++++ linux-2.6/fs/fuse/inode.c	2008-05-09 14:04:50.000000000 +0200
+@@ -18,6 +18,7 @@
+ #include <linux/statfs.h>
+ #include <linux/random.h>
+ #include <linux/sched.h>
++#include <linux/exportfs.h>
+ 
+ MODULE_AUTHOR("Miklos Szeredi <miklos@szeredi.hu>");
+ MODULE_DESCRIPTION("Filesystem in Userspace");
+@@ -547,6 +548,123 @@ static struct inode *get_root_inode(stru
+ 	return fuse_iget(sb, 1, 0, &attr, 0, 0);
+ }
+ 
++struct fuse_inode_handle
++{
++	u64 nodeid;
++	u32 generation;
++};
++
++static struct dentry *fuse_get_dentry(struct super_block *sb,
++				      struct fuse_inode_handle *handle)
++{
++	struct inode *inode;
++	struct dentry *entry;
++	int err = -ESTALE;
++
++	if (handle->nodeid == 0)
++		goto out_err;
++
++	inode = ilookup5(sb, handle->nodeid, fuse_inode_eq, &handle->nodeid);
++	if (!inode)
++		goto out_err;
++	err = -ESTALE;
++	if (inode->i_generation != handle->generation)
++		goto out_iput;
++
++	entry = d_alloc_anon(inode);
++	err = -ENOMEM;
++	if (!entry)
++		goto out_iput;
++
++	if (get_node_id(inode) != FUSE_ROOT_ID) {
++		entry->d_op = &fuse_dentry_operations;
++		fuse_invalidate_entry_cache(entry);
++	}
++
++	return entry;
++
++ out_iput:
++	iput(inode);
++ out_err:
++	return ERR_PTR(err);
++}
++
++static int fuse_encode_fh(struct dentry *dentry, u32 *fh, int *max_len,
++			   int connectable)
++{
++	struct inode *inode = dentry->d_inode;
++	int len = *max_len;
++	int type = 1;
++	u64 nodeid;
++	u32 generation;
++
++	if (len < 3 || (connectable && len < 6))
++		return  255;
++
++	nodeid = get_fuse_inode(inode)->nodeid;
++	generation = inode->i_generation;
++
++	len = 3;
++	fh[0] = (u32)(nodeid >> 32);
++	fh[1] = (u32)(nodeid & 0xffffffff);
++	fh[2] = generation;
++
++	if (connectable && !S_ISDIR(inode->i_mode)) {
++		struct inode *parent;
++
++		spin_lock(&dentry->d_lock);
++		parent = dentry->d_parent->d_inode;
++		nodeid = get_fuse_inode(parent)->nodeid;
++		generation = parent->i_generation;
++
++		fh[3] = (u32)(nodeid >> 32);
++		fh[4] = (u32)(nodeid & 0xffffffff);
++		fh[5] = generation;
++		spin_unlock(&dentry->d_lock);
++
++		len = 6;
++		type = 2;
++	}
++
++	*max_len = len;
++	return type;
++}
++
++static struct dentry *fuse_fh_to_dentry(struct super_block *sb,
++		struct fid *fid, int fh_len, int fh_type)
++{
++	struct fuse_inode_handle handle;
++
++	if (fh_len < 3 || fh_type > 2)
++		return NULL;
++
++	handle.nodeid = (u64) fid->raw[0] << 32;
++	handle.nodeid |= (u64) fid->raw[1];
++	handle.generation = fid->raw[2];
++	return fuse_get_dentry(sb, &handle);
++}
++
++static struct dentry *fuse_fh_to_parent(struct super_block *sb,
++		struct fid *fid, int fh_len, int fh_type)
++{
++	struct fuse_inode_handle parent;
++
++	if (fh_type != 2 || fh_len < 6)
++		return NULL;
++
++	parent.nodeid = (u64) fid->raw[3] << 32;
++	parent.nodeid |= (u64) fid->raw[4];
++	parent.generation = fid->raw[5];
++	return fuse_get_dentry(sb, &parent);
++}
++
++
++static const struct export_operations fuse_export_operations = {
++	.fh_to_dentry	= fuse_fh_to_dentry,
++	.fh_to_parent	= fuse_fh_to_parent,
++	.encode_fh	= fuse_encode_fh,
++};
++
+ static const struct super_operations fuse_super_operations = {
+ 	.alloc_inode    = fuse_alloc_inode,
+ 	.destroy_inode  = fuse_destroy_inode,
+@@ -647,6 +765,7 @@ static int fuse_fill_super(struct super_
+ 	sb->s_magic = FUSE_SUPER_MAGIC;
+ 	sb->s_op = &fuse_super_operations;
+ 	sb->s_maxbytes = MAX_LFS_FILESIZE;
++	sb->s_export_op = &fuse_export_operations;
+ 
+ 	file = fget(d.fd);
+ 	if (!file)
 
 --
