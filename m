@@ -1,151 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764888AbYEIQgF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932421AbYEIQgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764888AbYEIQgF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 12:36:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754900AbYEIQfy
+	id S932421AbYEIQgt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 12:36:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757758AbYEIQgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 12:35:54 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41084 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751675AbYEIQfw (ORCPT
+	Fri, 9 May 2008 12:36:41 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:50061 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754900AbYEIQgj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 12:35:52 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: Spinlocks waiting with interrupts disabled / preempt disabled.
-References: <Pine.LNX.4.64.0805061220570.30604@schroedinger.engr.sgi.com>
-	<20080507073017.GJ32195@elte.hu>
-From: Olaf Weber <olaf@sgi.com>
-Date: Fri, 09 May 2008 18:35:40 +0200
-In-Reply-To: <20080507073017.GJ32195@elte.hu> (Ingo Molnar's message of "Wed, 7 May 2008 09:30:17 +0200")
-Message-ID: <bzymymzv3j7.fsf@fransum.emea.sgi.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.3 (irix)
+	Fri, 9 May 2008 12:36:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
+        b=iYkwqqW+PTNtxJ0Rgqrk9jRcJbur5uG7qdUT+1bNqgxZ+3/cFX1rcfa/GTqTErJQD6KP/MWX31OQZ+NzNHN5VGUCFQ6zxPdzyfjZQ3r5vY25RfeUxAPdwepVxgSzmteNT8Wdi1n/Ar+CvyNyn+B3pd6uhDi2jLkwKby8DVNxZVY=
+Date: Fri, 9 May 2008 18:36:29 +0200
+To: Ingo Molnar <mingo@elte.hu>, Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] kmemcheck: dump shadow memory on errors
+Message-ID: <20080509163629.GA9087@damson.getinternet.no>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: Vegard Nossum <vegard.nossum@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar writes:
-> * Christoph Lameter <clameter@sgi.com> wrote:
+Hi,
 
->> @@ -132,10 +132,14 @@ unsigned long __lockfunc _write_lock_irq
->> {
->> unsigned long flags;
->> 
->> +retry:
->> local_irq_save(flags);
->> -	preempt_disable();
->> -	_raw_write_lock(lock);
->> -	return flags;
->> +	if (_write_trylock(lock))
->> +		return flags;
->> +	local_irq_restore(flags);
->> +	while (!write_can_lock(lock))
->> +		cpu_relax();
->> +	goto retry;
->> }
->> EXPORT_SYMBOL(_write_lock_irqsave);
+Check this out. Cool or what? :-)
 
-> hm, this is done on a too high level and will turn off some debugging 
-> code. I.e. if we dont just loop long but truly deadlock here we wont 
-> call lib/spinlock_debug.c's _raw_write_lock() code that does some sanity 
-> checks in the debug case.
+(The only thing I'm slightly concerned about is the correctness of the
+copying -- we're rounding down to nearest SHADOW_COPY_SIZE and copying
+upwards to the nearest SHADOW_COPY_SIZE. So as long as SHADOW_COPY_SHIFT
+is less than PAGE_SHIFT, there should be no way we'll be able to cross a
+page boundary during the shadow copy. Does this sound right?)
 
-> so how about doing this on a deeper level and adding a new 
-> __raw_write_lock_flags() primitive that would look at the flags value 
-> and could enable interrupts in the lowlevel code?
-
-Thinking of an alternative approach, I'd like to revisit the original
-problem for a moment: on a (big) system running a kernel based on
-2.6.16 we found that in the following stack trace, pdflush has just
-enabled irqs again on its cpu after running with irqs disabled for
-about 2 minutes.
-
->> bt 0xe0000168f4378000
-================================================================
-STACK TRACE FOR TASK: 0xe0000168f4378000 (pdflush)
-
- 0 kdba_main_loop+0x14c [0xa0000001004190cc]
- 1 kdb+0x11fc [0xa0000001002a639c]
- 2 kdb_ipi+0x11c [0xa0000001002a12dc]
- 3 handle_IPI+0x27c [0xa00000010005671c]
- 4 handle_IRQ_event+0x8c [0xa0000001000fa40c]
- 5 __do_IRQ+0x12c [0xa0000001000fa5cc]
- 6 ia64_handle_irq+0x15c [0xa00000010001213c]
- 7 ia64_leave_kernel [0xa00000010000cb20]
- 8 _write_unlock_irqrestore+0x40 [0xa000000100558500]
- 9 test_set_page_writeback+0x18c [0xa000000100114b6c]
-10 xfs_start_page_writeback+0x2c [0xa0000002e4ab914c]
-11 xfs_page_state_convert+0xa0c [0xa0000002e4abcbac]
-12 xfs_vm_writepage+0x19c [0xa0000002e4abd13c]
-13 mpage_writepages+0x3fc [0xa0000001001bcb5c]
-14 xfs_vm_writepages+0xac [0xa0000002e4ab9eac]
-15 do_writepages+0xac [0xa0000001001136cc]
-16 __writeback_single_inode+0x47c [0xa0000001001b8f7c]
-17 sync_sb_inodes+0x4ac [0xa0000001001b9cec]
-18 writeback_inodes+0x19c [0xa0000001001baafc]
-19 wb_kupdate+0x26c [0xa000000100113bcc]
-20 pdflush+0x38c [0xa00000010011582c]
-21 kthread+0x22c [0xa0000001000c9dac]
-22 kernel_thread_helper+0xcc [0xa000000100012f6c]
-23 start_kernel_thread+0x1c [0xa0000001000094bc]
-================================================================
-
-There is, as far as I could tell, no code in the critical region of
-test_set_page_writeback that could take this much time, except for the
-call to _write_lock_irqsave itself.  There the root of the problem
-seems to have been that many threads went after the read lock, and an
-rwlock_t will allow readers in while readers hold the lock, even if a
-writer needs it, thus potentially starving the writer indefinitely (up
-to 2 minutes in the case under discussion).
-
-Re-enabling irqs when looping in _write_lock_irqsave (and *_irq and
-*_bh) works here because _write_lock_irqsave() wasn't called with irqs
-disabled.  But pdflush will still spend a long time getting the lock.
-
-The reason we're pursuing this nevertheless is that it is easy to do
-starting from the current code-base, and doesn't impose API or ABI
-changes.
+Vegard
 
 
-An alternative approach would to view this as a bug of the rwlock_t
-code in particular, and fix it by keeping new readers from a acquiring
-an rwlock_t if a writer is also trying to lock it.  For x86 at least,
-I can sketch an implementation that is based on the new ticket-based
-spinlocks:
- - use the ticket-based lock for writers
- - add a reader count for readers (16 bits out of 32 are free)
- - readers get in if the write lock is idle
- - if the write lock wasn't idle, readers loop until it is
- - on obtaining the ticket-based lock, the writer waits for active
-   readers to leave (eg reader count to go to zero)
-Contention by writers now keeps readers out, which may be a problem.
+>From f2cb6108e86d0c2dc73a1f89eb4f3ad843eeeb9b Mon Sep 17 00:00:00 2001
+From: Vegard Nossum <vegard.nossum@gmail.com>
+Date: Fri, 9 May 2008 18:09:56 +0200
+Subject: [PATCH] kmemcheck: dump shadow memory on errors
 
-Advantages of such an approach:
- - Writers are "fair" amongst themselves.
- - Readers cannot hold off writers.
+This patch will save a (small) snapshot of the shadow memory
+surrounding the target of an invalid access and displays it when the
+report is printed. This in order to aid the debugging of errors.
 
-Disadvantages:
- - Contention among writers can hold off readers indefinitely.
-   This scheme only works if the write lock is not "permanently"
-   contended, otherwise it goes from frying pan to fire.
- - Requires changes to the asm-coded locking primitives, which means
-   it is likely to be done for x86 and ia64 only, unless the platform
-   maintainers step in.
+A report now typically looks something like this:
 
-Given the above, is this worth pursuing for inclusion in mainline?
+  kmemcheck: Caught 32-bit read from uninitialized memory (c7809f14)
+  iiiiiiiiiiiiiiiiiiiiuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu
+                      ^
 
+  Pid: 1, comm: swapper Not tainted (2.6.26-rc1-00012-g0364f4e-dirty #42)
+  EIP: 0060:[<c04032b1>] EFLAGS: 00000282 CPU: 0
+  EIP is at pskb_expand_head+0x91/0x150
+  EAX: 00000044 EBX: c7852140 ECX: 00000036 EDX: c78be000
+  ESI: c7809f14 EDI: c78be094 EBP: c783bed0 ESP: c06c9dc8
+   DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+  CR0: 8005003b CR2: c74006e4 CR3: 006ba000 CR4: 00000680
+  DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
+  DR6: 00004000 DR7: 00000000
+   [<c01190f1>] kmemcheck_read+0xd1/0x160
+   [<c01192de>] kmemcheck_access+0x15e/0x1a0
+   [<c04bd2d6>] do_page_fault+0x5e6/0x690
+   [<c04bb32a>] error_code+0x72/0x78
+   [<c0417f46>] netlink_broadcast+0x66/0x370
+   [<c041abba>] genl_ctrl_event+0x2fa/0x310
+   [<c041b037>] genl_register_mc_group+0xe7/0x130
+   [<c0698cf3>] genl_init+0x93/0xd0
+   [<c06735c7>] kernel_init+0x127/0x290
+   [<c0104cc7>] kernel_thread_helper+0x7/0x10
+   [<ffffffff>] 0xffffffff
 
-A third solution would be to look at this problem on a case-by-case
-basis.  In the case under discussion, there may be other kernel bugs
-that aggravate the problem (it is an old kernel after all) and maybe
-this just means the address_space.tree_lock ought to be replaced with
-something else (though I wouldn't claim to know what).
+Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+---
+ arch/x86/Kconfig.debug      |   11 +++++++++++
+ arch/x86/kernel/kmemcheck.c |   43 +++++++++++++++++++++++++++++++++++++++----
+ 2 files changed, 50 insertions(+), 4 deletions(-)
 
+diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
+index 255d054..b758750 100644
+--- a/arch/x86/Kconfig.debug
++++ b/arch/x86/Kconfig.debug
+@@ -298,6 +298,17 @@ config KMEMCHECK_QUEUE_SIZE
+ 	  if the number of errors occuring between two bursts is larger than
+ 	  this number, the extra error reports will get lost.
+ 
++config KMEMCHECK_SHADOW_COPY_SHIFT
++	int "kmemcheck: shadow copy size (5 => 32 bytes, 6 => 64 bytes)"
++	depends on KMEMCHECK
++	range 2 8
++	default 6
++	help
++	  Select the number of shadow bytes to save along with each entry of
++	  the queue. These bytes indicate what parts of an allocation are
++	  initialized, uninitialized, etc. and will be displayed when an
++	  error is detected to help the debugging of a particular problem.
++
+ config KMEMCHECK_PARTIAL_OK
+ 	bool "kmemcheck: allow partially uninitialized memory"
+ 	depends on KMEMCHECK
+diff --git a/arch/x86/kernel/kmemcheck.c b/arch/x86/kernel/kmemcheck.c
+index f03024a..bdc66ae 100644
+--- a/arch/x86/kernel/kmemcheck.c
++++ b/arch/x86/kernel/kmemcheck.c
+@@ -37,6 +37,8 @@ enum kmemcheck_error_type {
+ 	ERROR_BUG,
+ };
+ 
++#define SHADOW_COPY_SIZE (1 << CONFIG_KMEMCHECK_SHADOW_COPY_SHIFT)
++
+ struct kmemcheck_error {
+ 	enum kmemcheck_error_type type;
+ 
+@@ -54,6 +56,8 @@ struct kmemcheck_error {
+ 	struct pt_regs		regs;
+ 	struct stack_trace	trace;
+ 	unsigned long		trace_entries[32];
++
++	enum shadow shadow_copy[SHADOW_COPY_SIZE];
+ };
+ 
+ /*
+@@ -101,6 +105,9 @@ error_next_rd(void)
+ 	return e;
+ }
+ 
++static void *
++address_get_shadow(unsigned long address);
++
+ /*
+  * Save the context of an error.
+  */
+@@ -111,6 +118,7 @@ error_save(enum shadow state, unsigned long address, unsigned int size,
+ 	static unsigned long prev_ip;
+ 
+ 	struct kmemcheck_error *e;
++	enum shadow *shadow_copy;
+ 
+ 	/* Don't report several adjacent errors from the same EIP. */
+ 	if (regs->ip == prev_ip)
+@@ -136,6 +144,12 @@ error_save(enum shadow state, unsigned long address, unsigned int size,
+ 	e->trace.max_entries = ARRAY_SIZE(e->trace_entries);
+ 	e->trace.skip = 1;
+ 	save_stack_trace(&e->trace);
++
++	/* Round address down to nearest 16 bytes */
++	shadow_copy = address_get_shadow(address & ~(SHADOW_COPY_SIZE - 1));
++	BUG_ON(!shadow_copy);
++
++	memcpy(e->shadow_copy, shadow_copy, SHADOW_COPY_SIZE);
+ }
+ 
+ /*
+@@ -171,7 +185,15 @@ error_recall(void)
+ 		[SHADOW_FREED]		= "freed",
+ 	};
+ 
++	static const char short_desc[] = {
++		[SHADOW_UNALLOCATED]	= 'a',
++		[SHADOW_UNINITIALIZED]	= 'u',
++		[SHADOW_INITIALIZED]	= 'i',
++		[SHADOW_FREED]		= 'f',
++	};
++
+ 	struct kmemcheck_error *e;
++	unsigned int i;
+ 
+ 	e = error_next_rd();
+ 	if (!e)
+@@ -181,7 +203,20 @@ error_recall(void)
+ 	case ERROR_INVALID_ACCESS:
+ 		printk(KERN_ERR  "kmemcheck: Caught %d-bit read "
+ 			"from %s memory (%p)\n",
+-			e->size, desc[e->state], (void *) e->address);
++			e->size, e->state < ARRAY_SIZE(desc) ?
++				desc[e->state] : "(invalid shadow state)",
++			(void *) e->address);
++
++		printk(KERN_INFO);
++		for (i = 0; i < SHADOW_COPY_SIZE; ++i) {
++			if (e->shadow_copy[i] < ARRAY_SIZE(short_desc))
++				printk("%c", short_desc[e->shadow_copy[i]]);
++			else
++				printk("?");
++		}
++		printk("\n");
++		printk(KERN_INFO "%*c\n",
++			1 + (int) (e->address & (SHADOW_COPY_SIZE - 1)), '^');
+ 		break;
+ 	case ERROR_BUG:
+ 		printk(KERN_EMERG "kmemcheck: Fatal error\n");
+@@ -714,14 +749,14 @@ kmemcheck_read(struct pt_regs *regs, unsigned long address, unsigned int size)
+ 	if (status == SHADOW_INITIALIZED)
+ 		return;
+ 
+-	/* Don't warn about it again. */
+-	set(shadow, size);
+-
+ 	if (kmemcheck_enabled)
+ 		error_save(status, address, size, regs);
+ 
+ 	if (kmemcheck_enabled == 2)
+ 		kmemcheck_enabled = 0;
++
++	/* Don't warn about it again. */
++	set(shadow, size);
+ }
+ 
+ static void
 -- 
-Olaf Weber                 SGI               Phone:  +31(0)30-6696752
-                           Veldzigt 2b       Fax:    +31(0)30-6696799
-Technical Lead             3454 PW de Meern  Vnet:   955-7151
-Storage Software           The Netherlands   Email:  olaf@sgi.com
+1.5.4.1
+
