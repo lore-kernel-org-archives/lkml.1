@@ -1,220 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932083AbYEIMoI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764170AbYEIMo3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932083AbYEIMoI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 08:44:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763070AbYEIMlt
+	id S1764170AbYEIMo3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 08:44:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763234AbYEIMlw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 08:41:49 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:59656 "EHLO
+	Fri, 9 May 2008 08:41:52 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:59658 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761715AbYEIMlj (ORCPT
+	with ESMTP id S1762116AbYEIMlm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 08:41:39 -0400
-Message-Id: <20080509124134.905781992@szeredi.hu>
+	Fri, 9 May 2008 08:41:42 -0400
+Message-Id: <20080509124137.400676014@szeredi.hu>
 References: <20080509124107.645600519@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Fri, 09 May 2008 14:41:14 +0200
+Date: Fri, 09 May 2008 14:41:15 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 7/9] fuse: add fuse_lookup_name() helper
-Content-Disposition: inline; filename=fuse_nfs_export_lookup_name.patch
+Subject: [patch 8/9] fuse: nfs export special lookups
+Content-Disposition: inline; filename=fuse_nfs_export_lookup.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Add a new helper function which sends a LOOKUP request with the
-supplied name.  This will be used by the next patch to send special
-LOOKUP requests with "." and ".." as the name.
+Implement the get_parent export operation by sending a LOOKUP request
+with ".." as the name.
+
+Implement looking up an inode by node ID after it has been evicted
+from the cache.  This is done by seding a LOOKUP request with "." as
+the name (for all file types, not just directories).
+
+The filesystem can set the FUSE_EXPORT_SUPPORT flag in the INIT reply,
+to indicate that it supports these special lookups.
+
+Thanks to John Muir for the original implementation of this feature.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
- fs/fuse/dir.c |  117 ++++++++++++++++++++++++++++++++++++++--------------------
- 1 file changed, 77 insertions(+), 40 deletions(-)
+ fs/fuse/fuse_i.h     |    6 ++++
+ fs/fuse/inode.c      |   66 ++++++++++++++++++++++++++++++++++++++++++++++++---
+ include/linux/fuse.h |    3 ++
+ 3 files changed, 72 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/fs/fuse/dir.c
+Index: linux-2.6/fs/fuse/fuse_i.h
 ===================================================================
---- linux-2.6.orig/fs/fuse/dir.c	2008-05-09 14:04:50.000000000 +0200
-+++ linux-2.6/fs/fuse/dir.c	2008-05-09 14:04:51.000000000 +0200
-@@ -112,18 +112,16 @@ static void fuse_invalidate_entry(struct
- 	fuse_invalidate_entry_cache(entry);
- }
+--- linux-2.6.orig/fs/fuse/fuse_i.h	2008-05-09 14:04:50.000000000 +0200
++++ linux-2.6/fs/fuse/fuse_i.h	2008-05-09 14:04:51.000000000 +0200
+@@ -363,6 +363,9 @@ struct fuse_conn {
+ 	/** Do not send separate SETATTR request before open(O_TRUNC)  */
+ 	unsigned atomic_o_trunc : 1;
  
--static void fuse_lookup_init(struct fuse_req *req, struct inode *dir,
--			     struct dentry *entry,
-+static void fuse_lookup_init(struct fuse_conn *fc, struct fuse_req *req,
-+			     u64 nodeid, struct qstr *name,
- 			     struct fuse_entry_out *outarg)
- {
--	struct fuse_conn *fc = get_fuse_conn(dir);
--
- 	memset(outarg, 0, sizeof(struct fuse_entry_out));
- 	req->in.h.opcode = FUSE_LOOKUP;
--	req->in.h.nodeid = get_node_id(dir);
-+	req->in.h.nodeid = nodeid;
- 	req->in.numargs = 1;
--	req->in.args[0].size = entry->d_name.len + 1;
--	req->in.args[0].value = entry->d_name.name;
-+	req->in.args[0].size = name->len + 1;
-+	req->in.args[0].value = name->name;
- 	req->out.numargs = 1;
- 	if (fc->minor < 9)
- 		req->out.args[0].size = FUSE_COMPAT_ENTRY_OUT_SIZE;
-@@ -189,7 +187,8 @@ static int fuse_dentry_revalidate(struct
- 		attr_version = fuse_get_attr_version(fc);
++	/** Filesystem supports NFS exporting.  Only set in INIT */
++	unsigned export_support : 1;
++
+ 	/*
+ 	 * The following bitfields are only for optimization purposes
+ 	 * and hence races in setting them will not cause malfunction
+@@ -473,6 +476,9 @@ struct inode *fuse_iget(struct super_blo
+ 			int generation, struct fuse_attr *attr,
+ 			u64 attr_valid, u64 attr_version);
  
- 		parent = dget_parent(entry);
--		fuse_lookup_init(req, parent->d_inode, entry, &outarg);
-+		fuse_lookup_init(fc, req, get_node_id(parent->d_inode),
-+				 &entry->d_name, &outarg);
- 		request_send(fc, req);
- 		dput(parent);
- 		err = req->out.h.error;
-@@ -255,73 +254,111 @@ static struct dentry *fuse_d_add_directo
- 	return d_splice_alias(inode, entry);
- }
- 
--static struct dentry *fuse_lookup(struct inode *dir, struct dentry *entry,
--				  struct nameidata *nd)
 +int fuse_lookup_name(struct super_block *sb, u64 nodeid, struct qstr *name,
-+		     struct fuse_entry_out *outarg, struct inode **inode)
++		     struct fuse_entry_out *outarg, struct inode **inode);
++
+ /**
+  * Send FORGET command
+  */
+Index: linux-2.6/fs/fuse/inode.c
+===================================================================
+--- linux-2.6.orig/fs/fuse/inode.c	2008-05-09 14:04:50.000000000 +0200
++++ linux-2.6/fs/fuse/inode.c	2008-05-09 14:04:51.000000000 +0200
+@@ -557,6 +557,7 @@ struct fuse_inode_handle
+ static struct dentry *fuse_get_dentry(struct super_block *sb,
+ 				      struct fuse_inode_handle *handle)
  {
--	int err;
--	struct fuse_entry_out outarg;
--	struct inode *inode = NULL;
--	struct dentry *newent;
--	struct fuse_conn *fc = get_fuse_conn(dir);
 +	struct fuse_conn *fc = get_fuse_conn_super(sb);
- 	struct fuse_req *req;
- 	struct fuse_req *forget_req;
- 	u64 attr_version;
-+	int err;
+ 	struct inode *inode;
+ 	struct dentry *entry;
+ 	int err = -ESTALE;
+@@ -565,8 +566,27 @@ static struct dentry *fuse_get_dentry(st
+ 		goto out_err;
  
--	if (entry->d_name.len > FUSE_NAME_MAX)
--		return ERR_PTR(-ENAMETOOLONG);
-+	*inode = NULL;
-+	err = -ENAMETOOLONG;
-+	if (name->len > FUSE_NAME_MAX)
-+		goto out;
- 
- 	req = fuse_get_req(fc);
-+	err = PTR_ERR(req);
- 	if (IS_ERR(req))
--		return ERR_CAST(req);
-+		goto out;
- 
- 	forget_req = fuse_get_req(fc);
-+	err = PTR_ERR(forget_req);
- 	if (IS_ERR(forget_req)) {
- 		fuse_put_request(fc, req);
--		return ERR_CAST(forget_req);
-+		goto out;
- 	}
- 
- 	attr_version = fuse_get_attr_version(fc);
- 
--	fuse_lookup_init(req, dir, entry, &outarg);
-+	fuse_lookup_init(fc, req, nodeid, name, outarg);
- 	request_send(fc, req);
- 	err = req->out.h.error;
- 	fuse_put_request(fc, req);
- 	/* Zero nodeid is same as -ENOENT, but with valid timeout */
--	if (!err && outarg.nodeid &&
--	    (invalid_nodeid(outarg.nodeid) ||
--	     !fuse_valid_type(outarg.attr.mode)))
--		err = -EIO;
--	if (!err && outarg.nodeid) {
--		inode = fuse_iget(dir->i_sb, outarg.nodeid, outarg.generation,
--				  &outarg.attr, entry_attr_timeout(&outarg),
--				  attr_version);
--		if (!inode) {
--			fuse_send_forget(fc, forget_req, outarg.nodeid, 1);
--			return ERR_PTR(-ENOMEM);
--		}
-+	if (err || !outarg->nodeid)
-+		goto out_put_forget;
+ 	inode = ilookup5(sb, handle->nodeid, fuse_inode_eq, &handle->nodeid);
+-	if (!inode)
+-		goto out_err;
++	if (!inode) {
++		struct fuse_entry_out outarg;
++		struct qstr name;
 +
-+	err = -EIO;
-+	if (!outarg->nodeid)
-+		goto out_put_forget;
-+	if (!fuse_valid_type(outarg->attr.mode))
-+		goto out_put_forget;
++		if (!fc->export_support)
++			goto out_err;
 +
-+	*inode = fuse_iget(sb, outarg->nodeid, outarg->generation,
-+			   &outarg->attr, entry_attr_timeout(outarg),
-+			   attr_version);
-+	err = -ENOMEM;
-+	if (!*inode) {
-+		fuse_send_forget(fc, forget_req, outarg->nodeid, 1);
-+		goto out;
- 	}
-+	err = 0;
-+
-+ out_put_forget:
- 	fuse_put_request(fc, forget_req);
--	if (err && err != -ENOENT)
--		return ERR_PTR(err);
-+ out:
-+	return err;
-+}
-+
-+static struct dentry *fuse_lookup(struct inode *dir, struct dentry *entry,
-+				  struct nameidata *nd)
-+{
-+	int err;
-+	struct fuse_entry_out outarg;
-+	struct inode *inode;
-+	struct dentry *newent;
-+	struct fuse_conn *fc = get_fuse_conn(dir);
-+	bool outarg_valid = true;
-+
-+	err = fuse_lookup_name(dir->i_sb, get_node_id(dir), &entry->d_name,
-+			       &outarg, &inode);
-+	if (err == -ENOENT) {
-+		outarg_valid = false;
-+		err = 0;
-+	}
-+	if (err)
-+		goto out_err;
-+
-+	err = -EIO;
-+	if (inode && get_node_id(inode) == FUSE_ROOT_ID)
-+		goto out_iput;
- 
- 	if (inode && S_ISDIR(inode->i_mode)) {
- 		mutex_lock(&fc->inst_mutex);
- 		newent = fuse_d_add_directory(entry, inode);
- 		mutex_unlock(&fc->inst_mutex);
--		if (IS_ERR(newent)) {
--			iput(inode);
--			return newent;
--		}
--	} else
-+		err = PTR_ERR(newent);
-+		if (IS_ERR(newent))
++		name.len = 1;
++		name.name = ".";
++		err = fuse_lookup_name(sb, handle->nodeid, &name, &outarg,
++				       &inode);
++		if (err && err != -ENOENT)
++			goto out_err;
++		if (err || !inode) {
++			err = -ESTALE;
++			goto out_err;
++		}
++		err = -EIO;
++		if (get_node_id(inode) != handle->nodeid)
 +			goto out_iput;
-+	} else {
- 		newent = d_splice_alias(inode, entry);
 +	}
- 
- 	entry = newent ? newent : entry;
- 	entry->d_op = &fuse_dentry_operations;
--	if (!err)
-+	if (outarg_valid)
- 		fuse_change_entry_timeout(entry, &outarg);
- 	else
- 		fuse_invalidate_entry_cache(entry);
-+
- 	return newent;
-+
-+ out_iput:
-+	iput(inode);
-+ out_err:
-+	return ERR_PTR(err);
+ 	err = -ESTALE;
+ 	if (inode->i_generation != handle->generation)
+ 		goto out_iput;
+@@ -658,11 +678,46 @@ static struct dentry *fuse_fh_to_parent(
+ 	return fuse_get_dentry(sb, &parent);
  }
  
- /*
++static struct dentry *fuse_get_parent(struct dentry *child)
++{
++	struct inode *child_inode = child->d_inode;
++	struct fuse_conn *fc = get_fuse_conn(child_inode);
++	struct inode *inode;
++	struct dentry *parent;
++	struct fuse_entry_out outarg;
++	struct qstr name;
++	int err;
++
++	if (!fc->export_support)
++		return ERR_PTR(-ESTALE);
++
++	name.len = 2;
++	name.name = "..";
++	err = fuse_lookup_name(child_inode->i_sb, get_node_id(child_inode),
++			       &name, &outarg, &inode);
++	if (err && err != -ENOENT)
++		return ERR_PTR(err);
++	if (err || !inode)
++		return ERR_PTR(-ESTALE);
++
++	parent = d_alloc_anon(inode);
++	if (!parent) {
++		iput(inode);
++		return ERR_PTR(-ENOMEM);
++	}
++	if (get_node_id(inode) != FUSE_ROOT_ID) {
++		parent->d_op = &fuse_dentry_operations;
++		fuse_invalidate_entry_cache(parent);
++	}
++
++	return parent;
++}
+ 
+ static const struct export_operations fuse_export_operations = {
+ 	.fh_to_dentry	= fuse_fh_to_dentry,
+ 	.fh_to_parent	= fuse_fh_to_parent,
+ 	.encode_fh	= fuse_encode_fh,
++	.get_parent	= fuse_get_parent,
+ };
+ 
+ static const struct super_operations fuse_super_operations = {
+@@ -694,6 +749,11 @@ static void process_init_reply(struct fu
+ 				fc->no_lock = 1;
+ 			if (arg->flags & FUSE_ATOMIC_O_TRUNC)
+ 				fc->atomic_o_trunc = 1;
++			if (arg->minor >= 9) {
++				/* LOOKUP has dependency on proto version */
++				if (arg->flags & FUSE_EXPORT_SUPPORT)
++					fc->export_support = 1;
++			}
+ 			if (arg->flags & FUSE_BIG_WRITES)
+ 				fc->big_writes = 1;
+ 		} else {
+@@ -720,7 +780,7 @@ static void fuse_send_init(struct fuse_c
+ 	arg->minor = FUSE_KERNEL_MINOR_VERSION;
+ 	arg->max_readahead = fc->bdi.ra_pages * PAGE_CACHE_SIZE;
+ 	arg->flags |= FUSE_ASYNC_READ | FUSE_POSIX_LOCKS | FUSE_ATOMIC_O_TRUNC |
+-		FUSE_BIG_WRITES;
++		FUSE_EXPORT_SUPPORT | FUSE_BIG_WRITES;
+ 	req->in.h.opcode = FUSE_INIT;
+ 	req->in.numargs = 1;
+ 	req->in.args[0].size = sizeof(*arg);
+Index: linux-2.6/include/linux/fuse.h
+===================================================================
+--- linux-2.6.orig/include/linux/fuse.h	2008-05-09 14:04:45.000000000 +0200
++++ linux-2.6/include/linux/fuse.h	2008-05-09 14:04:51.000000000 +0200
+@@ -104,11 +104,14 @@ struct fuse_file_lock {
+ 
+ /**
+  * INIT request/reply flags
++ *
++ * FUSE_EXPORT_SUPPORT: filesystem handles lookups of "." and ".."
+  */
+ #define FUSE_ASYNC_READ		(1 << 0)
+ #define FUSE_POSIX_LOCKS	(1 << 1)
+ #define FUSE_FILE_OPS		(1 << 2)
+ #define FUSE_ATOMIC_O_TRUNC	(1 << 3)
++#define FUSE_EXPORT_SUPPORT	(1 << 4)
+ #define FUSE_BIG_WRITES		(1 << 5)
+ 
+ /**
 
 --
