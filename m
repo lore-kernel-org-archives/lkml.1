@@ -1,103 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757542AbYEIWma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756530AbYEIWn1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757542AbYEIWma (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 18:42:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbYEIWmW
+	id S1756530AbYEIWn1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 18:43:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753565AbYEIWnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 18:42:22 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:4222 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751215AbYEIWmV (ORCPT
+	Fri, 9 May 2008 18:43:15 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:34530 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751590AbYEIWnO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 18:42:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=NEmBGoveGjT5duaaObnHCs1ZdghAz8m3KMF4D4PuL0PRyOeK0DJuDvAUq/qROz/cR6xhppvjNOnAVanthSIt381D96ANTcy32LQFIGKp4xtcjl1Kq0EYSryn+IXLd2VL6J5PD2kFPjbGBo/WNfcOvFHTrl+DVS+S1R6YdIVqQ9Q=
-Date: Sat, 10 May 2008 03:37:43 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Paulo Marques <pmarques@grupopie.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: /proc/kallsyms broken in 2.6.26-rc1-git6
-Message-ID: <20080509233742.GA22265@martell.zuzino.mipt.ru>
-References: <20080509174148.GA22246@basil.nowhere.org> <482491D6.9030205@grupopie.com> <4824A7B6.70306@firstfloor.org> <4824AD3C.3070506@grupopie.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4824AD3C.3070506@grupopie.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 9 May 2008 18:43:14 -0400
+Date: Fri, 09 May 2008 15:43:39 -0700
+From: Matheos Worku <Matheos.Worku@Sun.COM>
+Subject: Re: NIU - Sun Neptune 10g - Transmit timed out reset (2.6.24)
+In-reply-to: <4824D1E1.10007@sun.com>
+To: Matheos Worku <Matheos.Worku@Sun.COM>
+Cc: Jesper Krogh <jesper@krogh.cc>, David Miller <davem@davemloft.net>,
+       yhlu.kernel@gmail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Message-id: <4824D39B.6040006@sun.com>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=ISO-8859-1
+Content-transfer-encoding: 7BIT
+X-Accept-Language: en-us, en
+References: <86802c440805071130m62c1f4edydb3316dac4a2aba2@mail.gmail.com>
+ <20080507.141521.193714938.davem@davemloft.net> <482498D5.9060008@krogh.cc>
+ <20080509.143229.174354251.davem@davemloft.net> <4824C936.9000103@krogh.cc>
+ <4824CBA1.8040703@sun.com> <4824CCF0.5050302@krogh.cc> <4824D1E1.10007@sun.com>
+User-Agent: Mozilla Thunderbird 1.0.7-1.4.1 (X11/20050929)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 09, 2008 at 08:59:56PM +0100, Paulo Marques wrote:
-> Andi Kleen wrote:
->>>> ffffffff80337043 u idr_pre_get  [i2c_core]
->>>> ffffc2000007573e ? DW.sched.h.920090ff.56       [i2c_core]
->>> Are you compiling with CONFIG_KALLSYMS_ALL?
->> Yep.
->> CONFIG_KALLSYMS=y
->> CONFIG_KALLSYMS_ALL=y
->> # CONFIG_KALLSYMS_EXTRA_PASS is not set
->>> If you are, kallsyms will store all the output of "nm -n vmlinux" no
->>> matter what section the symbol belongs to...
->> Yes and? Surely that's not correct?
+Matheos Worku wrote:
+
+> Jesper Krogh wrote:
 >
-> That's not for me to judge, but I believe it has always been like that.
+>> Matheos Worku wrote:
+>>
+>>> Jesper Krogh wrote:
+>>>
+>>>> David Miller wrote:
+>>>>
+>>>>> From: Jesper Krogh <jesper@krogh.cc>
+>>>>> Date: Fri, 09 May 2008 20:32:53 +0200
+>>>>>
+>>>>>> When it works I doesnt seem to be able to get it pass 500MB/s.
+>>>>>
+>>>>>
+>>>>>
+>>>>> With this card you really need multiple cpus and multiple threads
+>>>>> sending data through the card in order to fill the 10Gb pipe.
+>>>>>
+>>>>> Single connections will not fill the pipe.
+>>>>
+>>>>
+>>>>
+>>>> The server is a Sun X4600 with 8 x dual-core CPU's, setup with 64
+>>>> NFS-threads. The other end of the fiber goes into a switch with 
+>>>> gigabit
+>>>> ports connected to 48 dual-core cpus. The test was done doing a dd 
+>>>> on a
+>>>> 4.5GB file from the server to /dev/null on the clients.
+>>>
+>>>
+>>>
+>>> Are you doing a TX or RX (with respect to the 10G if)?
+>>
+>>
+>>
+>> Thats a transmit.. from the NFS server to the clients.
+>
+Is MSI/MSI-X enabled on the kernel? I have noticed that it was not 
+enabled on Gutsy-SPARC?
 
-*cough*
+--Matheos
 
-Here is how typical /proc/kallsyms looks like:
+>
+> I have observed TX throughput degradation (and increased CPU 
+> utilization)  occurs with increased # of connections, when CPU count > 
+> 4 CPUs.  I don't think it is related to the driver (or HW). A while 
+> ago I prototyped a driver which drops all UDP TX packets and the 
+> throughput degradation (and CPU utilization increase) behavior 
+> occurred though the driver was not doing much work.   LSO/TSO seems to 
+> help with the situation though. With LSO disabled, I have observed the 
+> issue on several 10G nics.
+>
+> Regards
+> Matheos
+>
+>
+>>
+>> Jesper
+>
+>
+>
+> -- 
+> To unsubscribe from this list: send the line "unsubscribe 
+> linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-ffffffff80200000 A _text
-ffffffff80200000 T startup_64
-ffffffff802000b7 t ident_complete
-ffffffff80200100 T secondary_startup_64
-ffffffff802001a0 T init_rsp
-ffffffff802001a8 t bad_address
-ffffffff80201000 T init_level4_pgt
-ffffffff80202000 T level3_ident_pgt
-ffffffff80203000 T level3_kernel_pgt
-ffffffff80204000 T level2_fixmap_pgt
-ffffffff80205000 T level1_fixmap_pgt
-ffffffff80206000 T level2_ident_pgt
-ffffffff80207000 T level2_kernel_pgt
-ffffffff80208000 T level2_spare_pgt
-ffffffff80209000 T _stext
-ffffffff80209000 t run_init_process
-ffffffff80209020 t init_post
-ffffffff80209120 T name_to_dev_t
-ffffffff802092a0 t hard_disable_TSC
-ffffffff802092b0 t hard_enable_TSC
-ffffffff802092c0 T arch_randomize_brk
-ffffffff80209300 T arch_align_stack
-ffffffff80209350 T do_arch_prctl
-ffffffff80209760 T disable_TSC
-ffffffff802097c0 T set_tsc_mode
-ffffffff80209830 T sys_vfork
-ffffffff80209860 T sys_clone
-ffffffff80209890 T sys_fork
-ffffffff802098c0 T sys_execve
-ffffffff80209940 T release_thread
-ffffffff80209980 T __show_regs
-ffffffff80209bc0 T show_regs
-ffffffff80209c10 t __exit_idle
-ffffffff80209c40 T enter_idle
-ffffffff80209c70 T idle_notifier_register
-ffffffff80209c90 T exit_idle
-ffffffff80209cc0 T set_personality_64bit
-ffffffff80209cf0 T get_wchan
-ffffffff80209da0 T sys_arch_prctl
-ffffffff80209dc0 T __switch_to
-ffffffff8020a140 T cpu_idle
-ffffffff8020a1f0 T start_thread
-ffffffff8020a290 T get_tsc_mode
-ffffffff8020a2c0 T prepare_to_copy
-ffffffff8020a320 T default_idle
-ffffffff8020a370 T flush_thread
-ffffffff8020a460 T exit_thread
-ffffffff8020a520 T copy_thread
-ffffffff8020a6e0 t get_stack
-ffffffff8020a740 t current_syscall
-	...
 
