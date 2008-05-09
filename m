@@ -1,125 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761472AbYEIL1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759997AbYEILcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761472AbYEIL1T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 07:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbYEIL07
+	id S1759997AbYEILcf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 07:32:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbYEILc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 07:26:59 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:27094 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753651AbYEIL06 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 07:26:58 -0400
-Date: Fri, 9 May 2008 13:26:53 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Tom Zanussi <zanussi@comcast.net>
-Cc: Dan Williams <dan.j.williams@intel.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [regression?] distcc says: (dcc_pump_sendfile) ERROR: sendfile  returned 0? can't cope (bisected)
-Message-ID: <20080509112651.GR16217@kernel.dk>
-References: <1210194811.16427.6.camel@dwillia2-linux.ch.intel.com> <20080507211641.GR16217@kernel.dk> <1210231275.7301.17.camel@charm-linux> <1210306939.7205.9.camel@charm-linux>
+	Fri, 9 May 2008 07:32:27 -0400
+Received: from web32605.mail.mud.yahoo.com ([68.142.207.232]:46739 "HELO
+	web32605.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752931AbYEILc1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 07:32:27 -0400
+X-YMail-OSG: y0XWH24VM1mBeNN0Y_2o8t3lPanDyAjoCIx.3l1G23xDrrJDlPRAHEdMNgH7G_f4jzna6Yy7581Sr8AXVi3lWfQbMW4fV5TV6oe8j2S7sSrC1a4Y0Nweyo2uZ3zWmC.DLVJV8ieRpbUnTio-
+X-Mailer: YahooMailRC/975.23 YahooMailWebService/0.7.185
+Date: Fri, 9 May 2008 04:32:26 -0700 (PDT)
+From: Martin Knoblauch <spamtrap@knobisoft.de>
+Subject: Re: 2.6.25.2 - Jiffies/Time jumping back and forth (Regereesion from 2.6.24)
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Gabriel C <nix.or.die@googlemail.com>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       linux-kernel@vger.kernel.org, hmh@hmh.eng.br,
+       John Stultz <johnstul@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1210306939.7205.9.camel@charm-linux>
+Message-ID: <156547.88374.qm@web32605.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08 2008, Tom Zanussi wrote:
+
+
+ ------------------------------------------------------
+Martin Knoblauch
+email: k n o b i AT knobisoft DOT de
+www:   http://www.knobisoft.de
+
+
+----- Original Message ----
+> From: Thomas Gleixner <tglx@linutronix.de>
+> To: Martin Knoblauch <spamtrap@knobisoft.de>
+> Cc: Gabriel C <nix.or.die@googlemail.com>; Bart Van Assche <bart.vanassche@gmail.com>; linux-kernel@vger.kernel.org; hmh@hmh.eng.br
+> Sent: Thursday, May 8, 2008 4:13:55 PM
+> Subject: Re: 2.6.25.2 - Jiffies/Time jumping back and forth (Regereesion from 2.6.24)
 > 
-> On Thu, 2008-05-08 at 02:21 -0500, Tom Zanussi wrote:
-> > On Wed, 2008-05-07 at 23:16 +0200, Jens Axboe wrote:
-> > > On Wed, May 07 2008, Dan Williams wrote:
-> > > > Hi Tom, Jens,
-> > > > 
-> > > > My build system started reporting these error messages recently.
-> > > > Reverting commit c3270e577c18b3d0e984c3371493205a4807db9d on top of
-> > > > 2.6.26-rc1 gets things working for me again.
-> > > 
-> > > Irk, that patch did scare me a bit (hence I asked Tom to double check as
-> > > wel :-). I'll take a look in the morning, all test boxes are off at this
-> > > point in time.
-> > > 
+> On Thu, 8 May 2008, Martin Knoblauch wrote:
+> > on two different systems running 2.6.25.2:
 > > 
-> > I did, and it still looks ok to me, but obviously it's not, so I'll have
-> > to do some more digging.
+> > ibm x3650(2xDualCore)
+> > -------------------------------------
+> > [root@lpsdm60 ~]# cat 
+> /sys/devices/system/clocksource/clocksource0/available_clocksource
+> > tsc hpet acpi_pm jiffies
+> > [root@lpsdm60 ~]# cat 
+> /sys/devices/system/clocksource/clocksource0/current_clocksource
+> > tsc
 > > 
-> > The only thing I can think of right now that might be a possible cause
-> > would be in splice_direct_to_actor(), if we had an incomplete transfer,
-> > the sd->pos returned and assigned would have the value set by the failed
-> > actor().  Maybe something like the following would take care of that
-> > case, but I haven't had a chance to test it yet - will do that tomorrow
-> > night...
+> > HP Proliant DL-380G4 (2xSingleCore)
+> > ------------------------------------------------------------
+> > [root@lpsdm52 ~]# cat 
+> /sys/devices/system/clocksource/clocksource0/available_clocksource
+> > tsc hpet acpi_pm jiffies
+> > [root@lpsdm52 ~]# cat 
+> /sys/devices/system/clocksource/clocksource0/current_clocksource
+> > tsc
 > > 
+> > and on the DL380G4 running 2.6.24:
+> > ---------------------------------------------------------
+> > [root@lpsdm52 ~]# cat 
+> /sys/devices/system/clocksource/clocksource0/available_clocksource
+> > hpet acpi_pm jiffies tsc
+> > [root@lpsdm52 ~]# cat 
+> /sys/devices/system/clocksource/clocksource0/current_clocksource
+> > hpet
 > 
-> Looks like I was on the right track - can you try this patch out
-> instead?  It makes sure sd.pos is updated correctly if the transfer was
-> incomplete or failed.  I ran some kernel compiles using distcc while
-> running blktrace in sendfile mode and didn't see any problems with
-> either.
+> So on 2.6.24 the TSC is declared unstable at some point and 2.6.25
+> thinks it works fine. Is this the same kernel config (aside of the 24/25 fuzz) ?
+> 
+> Thanks,
+>     tglx
 
-Dan, can I talk you into re-trying current git with this patch applied?
-It's basically the (now) reverted broken bits plus the fix from Tom from
-this email.
+ Just for documentation, I have opened:
 
-diff --git a/fs/splice.c b/fs/splice.c
-index 7815003..a048ad2 100644
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -983,7 +983,7 @@ ssize_t splice_direct_to_actor(struct file *in, struct splice_desc *sd,
- 
- 	while (len) {
- 		size_t read_len;
--		loff_t pos = sd->pos;
-+		loff_t pos = sd->pos, prev_pos = pos;
- 
- 		ret = do_splice_to(in, &pos, pipe, len, flags);
- 		if (unlikely(ret <= 0))
-@@ -998,15 +998,19 @@ ssize_t splice_direct_to_actor(struct file *in, struct splice_desc *sd,
- 		 * could get stuck data in the internal pipe:
- 		 */
- 		ret = actor(pipe, sd);
--		if (unlikely(ret <= 0))
-+		if (unlikely(ret <= 0)) {
-+			sd->pos = prev_pos;
- 			goto out_release;
-+		}
- 
- 		bytes += ret;
- 		len -= ret;
- 		sd->pos = pos;
- 
--		if (ret < read_len)
-+		if (ret < read_len) {
-+			sd->pos = prev_pos + ret;
- 			goto out_release;
-+		}
- 	}
- 
- done:
-@@ -1072,7 +1076,7 @@ long do_splice_direct(struct file *in, loff_t *ppos, struct file *out,
- 
- 	ret = splice_direct_to_actor(in, &sd, direct_splice_actor);
- 	if (ret > 0)
--		*ppos += ret;
-+		*ppos = sd.pos;
- 
- 	return ret;
- }
-diff --git a/kernel/relay.c b/kernel/relay.c
-index bc24dcd..7de644c 100644
---- a/kernel/relay.c
-+++ b/kernel/relay.c
-@@ -1191,7 +1191,7 @@ static ssize_t relay_file_splice_read(struct file *in,
- 	ret = 0;
- 	spliced = 0;
- 
--	while (len) {
-+	while (len && !spliced) {
- 		ret = subbuf_splice_actor(in, ppos, pipe, len, flags, &nonpad_ret);
- 		if (ret < 0)
- 			break;
+http://bugzilla.kernel.org/show_bug.cgi?id=10656
 
--- 
-Jens Axboe
+Cheers
+Martin
 
