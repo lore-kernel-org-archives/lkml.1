@@ -1,102 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760210AbYEIJtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717AbYEIJuS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760210AbYEIJtv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 05:49:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758974AbYEIJte
+	id S1754717AbYEIJuS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 05:50:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760377AbYEIJt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 05:49:34 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:40044 "EHLO
-	outbound3-wa4-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758146AbYEIJtc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 05:49:32 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
-X-WSS-ID: 0K0LHYA-01-DPM-01
-Date: Fri, 9 May 2008 11:49:11 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: enable hpet=force for AMD SB400
-Message-ID: <20080509094911.GG5023@alberich.amd.com>
+	Fri, 9 May 2008 05:49:58 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57291 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758889AbYEIJt5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 05:49:57 -0400
+Date: Fri, 9 May 2008 11:49:41 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Theodore Tso <tytso@mit.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: Possible regression?  2.6.26-rc1: X61s failure after
+	suspend/resume
+Message-ID: <20080509094941.GA19617@elte.hu>
+References: <E1JuCBA-0002NZ-4E@closure.thunk.org> <200805082352.04352.rjw@sisk.pl> <20080509024426.GB8871@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 09 May 2008 09:49:07.0040 (UTC) FILETIME=[EC3AC600:01C8B1B9]
+In-Reply-To: <20080509024426.GB8871@mit.edu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-x86: enable hpet=force for ATI SB400
 
-Add quirk to allow forced usage of HPET on ATI SB400.
-I stumbled over machines where HPET is enabled but not reported
-by BIOS. This patch configures the HPET base address and makes
-it known to the OS.
+* Theodore Tso <tytso@MIT.EDU> wrote:
 
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
----
- arch/x86/kernel/quirks.c |   29 +++++++++++++++++++++++++++++
- 1 files changed, 29 insertions(+), 0 deletions(-)
+> > This looks like another manifestation of
+> > http://bugzilla.kernel.org/show_bug.cgi?id=10620
+> 
+> Could be.  On my system, the X server runs for about 15 seconds to 
+> five minutes before it wedges up and locks up.  This is why it took me 
+> a while before I finally figured out that the way to reliably 
+> reproduce the problem was to do a suspend/resume.  So it's not 
+> *identical* to the report, but its really close....
+> 
+> When I have more time I'll try to find some actual bisection points 
+> that actually will successfully boot on the X61s laptop, and not die 
+> within 6-8 seconds of the kernel loading.....
 
-diff --git a/arch/x86/kernel/quirks.c b/arch/x86/kernel/quirks.c
-index d89a648..5fe6bd5 100644
---- a/arch/x86/kernel/quirks.c
-+++ b/arch/x86/kernel/quirks.c
-@@ -65,6 +65,7 @@ static enum {
- 	ICH_FORCE_HPET_RESUME,
- 	VT8237_FORCE_HPET_RESUME,
- 	NVIDIA_FORCE_HPET_RESUME,
-+	ATI_FORCE_HPET_RESUME,
- } force_hpet_resume_type;
- 
- static void __iomem *rcba_base;
-@@ -330,6 +331,31 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_8235,
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_8237,
- 			 vt8237_force_enable_hpet);
- 
-+static void ati_force_hpet_resume(void)
-+{
-+	pci_write_config_dword(cached_dev, 0x14, 0xfed00000);
-+	printk(KERN_DEBUG "Force enabled HPET at resume\n");
-+}
-+
-+static void ati_force_enable_hpet(struct pci_dev *dev)
-+{
-+	u32 uninitialized_var(val);
-+
-+	if (!hpet_force_user || hpet_address || force_hpet_address)
-+		return;
-+
-+	pci_write_config_dword(dev, 0x14, 0xfed00000);
-+	pci_read_config_dword(dev, 0x14, &val);
-+	force_hpet_address = val;
-+	force_hpet_resume_type = ATI_FORCE_HPET_RESUME;
-+	dev_printk(KERN_DEBUG, &dev->dev, "Force enabled HPET at 0x%lx\n",
-+		   force_hpet_address);
-+	cached_dev = dev;
-+	return;
-+}
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_IXP400_SMBUS,
-+			 ati_force_enable_hpet);
-+
- /*
-  * Undocumented chipset feature taken from LinuxBIOS.
-  */
-@@ -397,6 +423,9 @@ void force_hpet_resume(void)
- 	case NVIDIA_FORCE_HPET_RESUME:
- 		nvidia_force_hpet_resume();
- 		return;
-+	case ATI_FORCE_HPET_RESUME:
-+		ati_force_hpet_resume();
-+		return;
- 	default:
- 		break;
- 	}
--- 
-1.5.4.5
+on the off chance that this might be related: could you try to boot with 
+nopat?
 
+and on the off chance that this is a problem that has already been 
+fixed, you might want to try x86.git/latest:
 
+   http://people.redhat.com/mingo/x86.git/README
 
+	Ingo
