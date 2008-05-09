@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760169AbYEIXON@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760227AbYEIXQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760169AbYEIXON (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 19:14:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756361AbYEIXNz
+	id S1760227AbYEIXQT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 19:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756361AbYEIXQL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 19:13:55 -0400
-Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:53782 "EHLO
-	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756344AbYEIXNy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 19:13:54 -0400
-Message-ID: <4824DAB0.8060604@krogh.cc>
-Date: Sat, 10 May 2008 01:13:52 +0200
-From: Jesper Krogh <jesper@krogh.cc>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
+	Fri, 9 May 2008 19:16:11 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:35658 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756179AbYEIXQK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 19:16:10 -0400
+Message-ID: <4824DB36.8000500@firstfloor.org>
+Date: Sat, 10 May 2008 01:16:06 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-To: Rick Jones <rick.jones2@hp.com>
-CC: David Miller <davem@davemloft.net>, yhlu.kernel@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: NIU - Sun Neptune 10g - Transmit timed out reset (2.6.24)
-References: <86802c440805071130m62c1f4edydb3316dac4a2aba2@mail.gmail.com>	<20080507.141521.193714938.davem@davemloft.net>	<482498D5.9060008@krogh.cc>	<20080509.143229.174354251.davem@davemloft.net>	<4824C936.9000103@krogh.cc> <4824CE43.8060203@hp.com> <4824D4C0.10201@krogh.cc> <4824D830.9090504@hp.com>
-In-Reply-To: <4824D830.9090504@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Paulo Marques <pmarques@grupopie.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: /proc/kallsyms broken in 2.6.26-rc1-git6
+References: <20080509174148.GA22246@basil.nowhere.org> <482491D6.9030205@grupopie.com> <4824A7B6.70306@firstfloor.org> <4824AD3C.3070506@grupopie.com>
+In-Reply-To: <4824AD3C.3070506@grupopie.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rick Jones wrote:
->>> To which cpu(s) were the neptune's interrupts assigned? (grep <ethN> 
->>> /proc/interrupts)
->>
->> Several
-> 
-> Which ones?-)  I suspect that since it is several that at least answers 
-> the MSI_X question right?  Or is it possible to have a single device 
-> have several MSI interrupts?
 
-The table is rather large.
-http://rafb.net/p/a9zfFA59.html
+> That's not for me to judge, but I believe it has always been like that.
+
+No, normally /proc/kallsyms looks similar to System.tap. Where are all
+these DW.* symbols coming from? They didn't use to be there and don't
+make any sense because they don't have any valid kernel addresses.
+
+> I just wanted to understand if you noticed a change in behavior (which
+> is probably a bug) or if it has always been like that but you just
+> noticed how ugly it is.
+
+I noticed a change in behavior.
+
+> Maybe you also have some debug or markers configuration or something
+> that is generating extra symbols to a special section that is just
+> making the problem look worse now.
+
+Nothing particular. I uploaded the config at
+http://halobates.de/basil-config
+
+> Anyway, I can change the way kallsyms works, but that has to be done
+> with some care because there are some userspace tools that read
+> /proc/kallsyms and we don't want to break those. A proper testing period
+> through -mm should take care of that, though.
+
+It's the other way round -- kallsyms changed and that change will likely
+break programs.
+
+-Andi
 
 
->>> Have you tried any tests without any filesystem involvement? 
->>
->> no not yet. I'll try that.
-> 
-> If you decide to go the netperf route, feel free to contact me directly 
-> with netperf questions, or via the netperf-talk mailling list on 
-> netperf.org.
-
-Ok.
-
--- 
-Jesper
 
