@@ -1,112 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757557AbYEIUMg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756067AbYEIUQA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757557AbYEIUMg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 16:12:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbYEIUMM
+	id S1756067AbYEIUQA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 16:16:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752994AbYEIUPu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 16:12:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55059 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756660AbYEIUMI (ORCPT
+	Fri, 9 May 2008 16:15:50 -0400
+Received: from eazy.amigager.de ([213.239.192.238]:45968 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751470AbYEIUPt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 16:12:08 -0400
-Date: Fri, 9 May 2008 13:11:34 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Russ Anderson <rja@sgi.com>
-Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       torvalds@linux-foundation.org, tony.luck@intel.com, clameter@sgi.com
-Subject: Re: [PATCH 2/3] mm: Avoid putting a bad page back on the LRU v3
-Message-Id: <20080509131134.dae2bd65.akpm@linux-foundation.org>
-In-Reply-To: <20080509151058.GC16523@sgi.com>
-References: <20080509151058.GC16523@sgi.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 9 May 2008 16:15:49 -0400
+Date: Fri, 9 May 2008 22:16:36 +0200
+From: Tino Keitel <tino.keitel@gmx.de>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: Clean patch to fix not working spindown over Firewire
+Message-ID: <20080509201635.GA20189@dose.home.local>
+Mail-Followup-To: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+References: <20080429232606.GA14261@dose.home.local> <481874BD.5010807@s5r6.in-berlin.de> <481875E4.6040606@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="+QahgC5+KEYLbs62"
+Content-Disposition: inline
+In-Reply-To: <481875E4.6040606@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 May 2008 10:10:58 -0500
-Russ Anderson <rja@sgi.com> wrote:
 
-> Prevent a page with a physical memory error from being placed back
-> on the LRU.  A new page flag (PG_memerror) is added on 64 bit
-> architectures.  
-> 
+--+QahgC5+KEYLbs62
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-A little thing:
+On Wed, Apr 30, 2008 at 15:36:36 +0200, Stefan Richter wrote:
 
-> 
-> Index: linus/mm/page_alloc.c
-> ===================================================================
-> --- linus.orig/mm/page_alloc.c	2008-05-09 09:20:04.389938802 -0500
-> +++ linus/mm/page_alloc.c	2008-05-09 09:20:11.302788361 -0500
-> @@ -71,6 +71,7 @@ unsigned long totalram_pages __read_most
->  unsigned long totalreserve_pages __read_mostly;
->  long nr_swap_pages;
->  int percpu_pagelist_fraction;
-> +unsigned int totalbad_pages;
->  
->  #ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
->  int pageblock_order __read_mostly;
-> @@ -602,10 +603,10 @@ static int prep_new_page(struct page *pa
->  		bad_page(page);
->  
->  	/*
-> -	 * For now, we report if PG_reserved was found set, but do not
-> -	 * clear it, and do not allocate the page: as a safety net.
-> +	 * For now, we report if PG_reserved or PG_memerror was found set, but
-> +	 * do not clear it, and do not allocate the page: as a safety net.
->  	 */
-> -	if (PageReserved(page))
-> +	if (PageReserved(page) || PageMemError(page))
->  		return 1;
->  
->  	page->flags &= ~(1 << PG_uptodate | 1 << PG_error | 1 << PG_reclaim |
-> @@ -2474,7 +2475,7 @@ static void setup_zone_migrate_reserve(s
->  		page = pfn_to_page(pfn);
->  
->  		/* Blocks with reserved pages will never free, skip them. */
-> -		if (PageReserved(page))
-> +		if (PageReserved(page) || PageMemError(page))
->  			continue;
->  
->  		block_migratetype = get_pageblock_migratetype(page);
-> Index: linus/mm/swap.c
-> ===================================================================
-> --- linus.orig/mm/swap.c	2008-05-09 09:19:40.466984064 -0500
-> +++ linus/mm/swap.c	2008-05-09 09:20:11.330791803 -0500
-> @@ -195,6 +195,8 @@ void lru_cache_add(struct page *page)
->  	struct pagevec *pvec = &get_cpu_var(lru_add_pvecs);
->  
->  	page_cache_get(page);
-> +	if (unlikely(PageMemError(page)))
-> +		return;		/* Don't add bad pages to the page list */
->  	if (!pagevec_add(pvec, page))
->  		__pagevec_lru_add(pvec);
->  	put_cpu_var(lru_add_pvecs);
-> @@ -205,6 +207,8 @@ void lru_cache_add_active(struct page *p
->  	struct pagevec *pvec = &get_cpu_var(lru_add_active_pvecs);
->  
->  	page_cache_get(page);
-> +	if (unlikely(PageMemError(page)))
-> +		return;		/* Don't add bad pages to the page list */
->  	if (!pagevec_add(pvec, page))
->  		__pagevec_lru_add_active(pvec);
->  	put_cpu_var(lru_add_active_pvecs);
+[...]
 
-These PageMemError() tests are happening in some pretty darn hot paths. 
-But we've gone and added this overhead to a lot of architectures and
-configs which don't need it.
+> PS:
+> If it works for all RBC devices (it should according to the spec...) &&
+> your ICY Box exposes itself as RBC device (it should do so), then we
+> don't need any changes to struct scsi_device and to sbp2/ firewire-sbp2.
 
-Should we tighten that up?  Arrange for PageMemError() to evaluate to
-constant zero for all builds which don't actually implement "Migrate data
-off physical pages with correctable errors"?
+Do you mean something like in the attached (untested) patch?
 
-Probably the way to implement that would be to add a new
-CONFIG_NEED_PAGE_MEM_ERROR and `select' that from the appropriate place in
-ia64 Kconfig.  Which is pretty nasty, but a) we're nasty that way rather
-often and b) this time it _is_ a hot-path, so some nastiness is
-justifiable.
+Regards,
+Tino
 
+--+QahgC5+KEYLbs62
+Content-Type: text/x-diff; charset=us-ascii
+Content-Disposition: attachment; filename="start_stop_unit_set_power_condition_v3.diff"
+
+diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
+index 01cefbb..6b927f6 100644
+--- a/drivers/scsi/sd.c
++++ b/drivers/scsi/sd.c
+@@ -1787,8 +1787,13 @@ static int sd_start_stop_device(struct scsi_disk *sdkp, int start)
+ 	struct scsi_device *sdp = sdkp->device;
+ 	int res;
+ 
+-	if (start)
++	if (start) {
+ 		cmd[4] |= 1;	/* START */
++		/* active power condition */
++		cmd[4] |= (sdp->type == TYPE_RBC) ? (1 << 4) : 0; 
++	} else
++		/* standby power condition */
++		cmd[4] |= (sdp->type == TYPE_RBC) ? (3 << 4) : 0 ; 
+ 
+ 	if (!scsi_device_online(sdp))
+ 		return -ENODEV;
+
+--+QahgC5+KEYLbs62--
