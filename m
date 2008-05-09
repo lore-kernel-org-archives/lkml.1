@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754601AbYEIH6v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754178AbYEIH74@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754601AbYEIH6v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 03:58:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbYEIH6j
+	id S1754178AbYEIH74 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 03:59:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbYEIH7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 03:58:39 -0400
-Received: from mail.gmx.net ([213.165.64.20]:44104 "HELO mail.gmx.net"
+	Fri, 9 May 2008 03:59:47 -0400
+Received: from mail.gmx.net ([213.165.64.20]:37930 "HELO mail.gmx.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751873AbYEIH6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 03:58:38 -0400
+	id S1751916AbYEIH7q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 03:59:46 -0400
 X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18H8TNq+2oHJY2q1SFuw7umlKSM98JP0Fth5mFBHH
-	O5E1KgbBhdMcHU
+X-Provags-ID: V01U2FsdGVkX19ttgB1D4ttRjbLcMXv32LgStpxJkLVcr0GtWwdNO
+	dWYX77E6Ynim0h
 Subject: Re: sysbench+mysql(oltp, readonly) 30% regression with 2.6.26-rc1
 From: Mike Galbraith <efault@gmx.de>
 To: Peter Zijlstra <a.p.zijlstra@chello.nl>
@@ -29,8 +29,8 @@ References: <1210136148.3453.59.camel@ymzhang>
 	 <1210318362.15296.4.camel@marge.simson.net>
 	 <1210319417.13978.207.camel@twins>
 Content-Type: text/plain
-Date: Fri, 09 May 2008 09:58:34 +0200
-Message-Id: <1210319914.5250.2.camel@marge.simson.net>
+Date: Fri, 09 May 2008 09:59:43 +0200
+Message-Id: <1210319983.5250.4.camel@marge.simson.net>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
@@ -66,9 +66,7 @@ On Fri, 2008-05-09 at 09:50 +0200, Peter Zijlstra wrote:
 > Hm, ok. Does the patch at hand improve or regress the group config for
 > you?
 
-I'm testing got.today.
-
-You mean 46151122e0a2e80e5a6b2889f595e371fe2b600d?
+Oh, you want me to revert it and retest group?
 
 	-Mike
 
