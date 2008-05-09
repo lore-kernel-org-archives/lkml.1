@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761682AbYEINH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759724AbYEINJO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761682AbYEINH7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 09:07:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755730AbYEINHt
+	id S1759724AbYEINJO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 09:09:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757613AbYEINI6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 09:07:49 -0400
-Received: from mail.lysator.liu.se ([130.236.254.3]:33933 "EHLO
-	mail.lysator.liu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755595AbYEINHs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 09:07:48 -0400
-X-Greylist: delayed 1163 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 May 2008 09:07:48 EDT
-To: Willy Tarreau <w@1wt.eu>
-Cc: "H. Peter Anvin" <hpa@kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       linux-kernel@vger.kernel.org, trivial@kernel.org
-Subject: Re: [2.6 patch] UTF-8 fixes in comments
-References: <20080428154023.GU2813@cs181133002.pp.htv.fi>
-	<20080428230524.GK8474@1wt.eu> <48167A07.4000305@kernel.org>
-	<20080429050605.GA27875@1wt.eu>
-From: =?utf-8?Q?David_K=C3=A5gedal?= <davidk@lysator.liu.se>
-Date: Fri, 09 May 2008 14:48:37 +0200
-In-Reply-To: <20080429050605.GA27875@1wt.eu> (Willy Tarreau's message of "Tue\, 29 Apr 2008 07\:06\:05 +0200")
-Message-ID: <8763tn3aoq.fsf@lysator.liu.se>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+	Fri, 9 May 2008 09:08:58 -0400
+Received: from pxy2nd.nifty.com ([202.248.175.14]:35160 "HELO pxy2nd.nifty.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755730AbYEINI5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 09:08:57 -0400
+X-Nifty-SrcIP: [210.170.193.31]
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=pxy2nd-default; d=mbf.nifty.com;
+  b=gifQPvJn/UlPn9uRRmJd4y439pTn3NJI0B1T5C3537DORS1/XNYZg/gWl6kz+zbNFisaU23XRQOjyTyH0Z1YFQ==  ;
+Date: Fri, 09 May 2008 21:56:01 +0900 (JST)
+Message-Id: <20080509.215601.208967867.takada@mbf.nifty.com>
+To: bzolnier@gmail.com
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: kernel 2.6.25 with ide driver cs5520 does not boot.
+From: TAKADA Yoshihito <takada@mbf.nifty.com>
+In-Reply-To: <200805091127.53737.bzolnier@gmail.com>
+References: <58cb370e0805080607n4f5de192o5a7371fd0fb1e9f8@mail.gmail.com>
+	<20080509.112220.74748072.takada@mbf.nifty.com>
+	<200805091127.53737.bzolnier@gmail.com>
+X-Mailer: Mew version 6.0.50 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Willy Tarreau <w@1wt.eu> writes:
+Hi.
 
-> And do we really consider that people's names in *comments* cannot
-> be converted to pure ASCII ? I'm western european and have always
-> been against accents in comments (another reason to write comments
-> in english BTW). Unix and internet have lived without accents for
-> almost 30 years without anyone really bothering. 
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: kernel 2.6.25 with ide driver cs5520 does not boot.
+Date: Fri, 9 May 2008 11:27:53 +0200
 
-That's a ridiculous statement.  Just because you didn't bother, you
-can't assume that the people who were actually affected didn't bother.
+> On Friday 09 May 2008, TAKADA Yoshihito wrote:
+> > Thanks for quick reply.
+> > 
+> > I tried 2.6.26rc1. It hangs same as 2.6.25.
+> > kernel 2.6.26rc1 with cs5520 cannot boot. cs5520 scans ide0 and ide1.
+> > It seems 2nd port DMA base issue was solved.
+> 
+> [...]
+> 
+> Thanks.
+> 
+> The following patch for 2.6.26-rc1 disables VDMA, please give it a try
+> (I haven't time to fully audit VDMA support yet but lets see if it is
+> the main source of the problems).
 
-I went through large parts of the 1990's under the name "David
-K}gedal". And I bothered.
+I applied the patch. But kernel was hung.
+And I attempt to kill IDE_HFLAG_CS5520. It cannot boot, oo.
 
-And no, the second character in my last name is not an accented a,
-they have been separate letters for hundreds of years in Sweden.  So I
-can live without using accented letters, as long as I can write
-Kågedal including the å. :-)
+  kill IDE_HFLAG_VDMA  : hang  
+  kill IDE_HFLAG_CS5520: hang
+  kill both flags      : boot
 
-Not that my name appears anywhere in the Linux source, but I still
-felt the urge to reply...
 
--- 
-David Kågedal
+
