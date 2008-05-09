@@ -1,120 +1,724 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763417AbYEINnl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761379AbYEINt1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763417AbYEINnl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 09:43:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752244AbYEINnc
+	id S1761379AbYEINt1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 09:49:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752765AbYEINtT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 09:43:32 -0400
-Received: from mga09.intel.com ([134.134.136.24]:58006 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751563AbYEINnb convert rfc822-to-8bit (ORCPT
+	Fri, 9 May 2008 09:49:19 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:33369 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751585AbYEINtP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 09:43:31 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,460,1204531200"; 
-   d="scan'208";a="326340759"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [2.6.25-git18 => 2.6.26-rc1-git1] Xorg crash with	xf86MapVidMem error
-Date: Fri, 9 May 2008 06:46:06 -0700
-Message-ID: <924EFEDD5F540B4284297C4DC59F3DEE01046D96@orsmsx423.amr.corp.intel.com>
-In-reply-to: <4823A059.1090400@zytor.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [2.6.25-git18 => 2.6.26-rc1-git1] Xorg crash with	xf86MapVidMem error
-Thread-Index: AcixbxEhwcw2PDEKQV6nLXsZrC1qrAAaQfLg
-References: <924EFEDD5F540B4284297C4DC59F3DEE010057B4@orsmsx423.amr.corp.intel.com> <4822A6F7.7010704@numericable.fr> <B5B0CFF685D7DF46A05CF1678CFB42ED20E04609@orsmsx423.amr.corp.intel.com> <20080508192555.GA8643@linux-os.sc.intel.com> <48235DA1.5060809@numericable.fr> <20080508213722.GA28372@linux-os.sc.intel.com> <482373C5.1060202@zytor.com> <20080508215931.GA5035@jamoon.sc.intel.com> <20080508234016.GA14169@linux-os.sc.intel.com> <482392C4.7080901@zytor.com> <20080509003424.GA19710@linux-os.sc.intel.com> <4823A059.1090400@zytor.com>
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Rufus & Azrael" <rufus-azrael@numericable.fr>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Linux-kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-X-OriginalArrivalTime: 09 May 2008 13:43:29.0669 (UTC) FILETIME=[AA35AB50:01C8B1DA]
+	Fri, 9 May 2008 09:49:15 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:to:subject:cc:message-id:date:from;
+	b=V3oVK1tuXBoJagcEh1TJg3kVcH1iCVsNAbydGA7cXw7FY5yxEvCE3Xh8lpMqQ92tr
+	c8eETFlkHpY/VAxOHEwOA==
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [RFC/Patch 1/2] MM: Make Page Tables Relocatable -- Conditional Flush
+Cc: rossb@google.com
+Message-Id: <20080509134904.E172BDCA63@localhost>
+Date: Fri,  9 May 2008 06:49:04 -0700 (PDT)
+From: rossb@google.com (Ross Biro)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+These Patches make page tables relocatable for numa, memory
+defragmentation, and memory hotblug.  The potential need to rewalk the
+page tables before making any changes causes a 1.6% peformance
+degredation in the lmbench page miss micro benchmark.
+
+Page table relocation is critical for several projects.
+
+1) Numa system process relcoation.  Currently, when a process is migrated
+from one node to another the page tables are left behind.  This means
+increased latency and inter-node traffic on all page faults.  Migrating the
+page tables with the process will be a performance win.
+
+2) Memory hotplug.  Currently memory hotplug cannot move page tables out of
+the memory that is about to be removed.  This code is a first step to
+being able to move page tables out of memory that is going to be unplugged.
+
+3) Memory defragmentation. Currently page tables are the largest chunk
+of non-moveable memory (needs verification).  By making page tables
+relocatable, we can decrease the number of memory fragments and allow for
+higher order allocations.  This is important for supporting huge pages
+that can greatly improve performance in some circumstances.
+
+There are two sets of entry points to the relocation code.  The first
+is migrate_page_tables_mm which is used to relocate page tables from
+one node to another.  It is the primary entry point for 1 and
+currently the easiest way to test the code.
+
+The second set of entry points are the migrate_pXX_entry routines.
+They can be used to relocate a single page table to a new page.  Before
+using these functions, enter_page_table_relocation_mode must be called.
+When the page tables have been relocated and the old ones have been
+freed, then leave_pagee_table_relocation_mode must be called.  These 
+routines can be used to support 2 and 3 above.  Because of the use of
+the page_table_lock, these rouintes cannot be called at interrupt time.
+
+See the comments in the code for the overall strategy to accomplish
+the relocation.  In particular, look in mm/migrate.c right after the
+#ifdef CONFIG_RELOCATE_PAGE_TABLES.
+
+Currently only x86_64 is fully supported, although x86_32 has a good
+chance to work.  The key routines that must be written are a
+tlb_reload, pXX_alloc_node routines, pXX cleanup routines, and finally
+a routine to copy bits (Dirty and Accessed in particular) the CPU
+might update from an old page table entry to a new one.
+
+Signed-off-by:rossb@google.com
+
+------
+
+These patches are still against 2.6.25-rc9.  Final patches will have to wait
+until the x86 unification is complete, or nearly so.
+
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/arch/avr32/mm/tlb.c 2.6.25-rc9/arch/avr32/mm/tlb.c
+--- /home/rossb/local/linux-2.6.25-rc9/arch/avr32/mm/tlb.c	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/arch/avr32/mm/tlb.c	2008-04-14 09:00:18.000000000 -0700
+@@ -249,6 +249,8 @@ void flush_tlb_kernel_range(unsigned lon
  
-
->-----Original Message-----
->From: H. Peter Anvin [mailto:hpa@zytor.com] 
->Sent: Thursday, May 08, 2008 5:53 PM
->To: Pallipadi, Venkatesh
->Cc: Rufus & Azrael; Ingo Molnar; Siddha, Suresh B; 
->Linux-kernel Mailing List; Yinghai Lu; Thomas Gleixner
->Subject: Re: [2.6.25-git18 => 2.6.26-rc1-git1] Xorg crash with 
->xf86MapVidMem error
->
->Venki Pallipadi wrote:
->> 
->> One of the reason for heristic was to get proper type for 
->/dev/mem maps for WB
->> region (ACPI and BIOS area). /dev/mem checks to see the mtrr 
->type of the start
->> address and starts with that type for the request. As long 
->as there are no
->> other conflict in PAT list, we can give WB to this /dev/mem 
->request. Not
->> having this heuristic we will have to most probably default to UC.
->> 
->> When there are overlapping PAT list entries, the mtrr_lookup 
->does not matter
->> as we have to inherit things from those PAT entries or 
->conflicting with them.
->> 
->
->Okay, now here is something...
->
->I don't believe it is kosher for mmap() to behave differently if we 
->called it once or called it twice.
-
-May be I am missing something. Only time mmap will behave differently is
-when some of the pre-existing conditions are different. If the MTRRs are
-different and/or there has been conflicting mapping in between first and
-second mmap. Otherwise, it will be same. We had to do this inheriting
-Business if there are other conflicting maps to have compatibility with
-All existing /dev/mem users.
-
->Therefore, the proper behaviour in the case of a range that covers 
->multiple types is to break it down into multiple requests each mapped 
->with the appropriate type, as if mmap had been called separate on each 
->subrange.  In the limiting case, yes, this does mean the subranges can 
->be individual pages, but such an outcome is vanishingly improbable in 
->practice.
-
-We thought about splitting the range. But, in general the interface
-requires
-us to give one single type of access back. Interfaces like pci accesses
-in /sysfs. If user maps the file with mmap, we give one particular type
-of mapping.
-returning multi type may be a possibility, but that will mean whole new
-level of complications in tracking, splitting the vmas, returning this
-subrange mapping info to user in some way etc.
-
-Sub-range of a page is probably improbable. But overlaps are common.
-That is exactly what is happening with the issue in this thread.
-Part of the region is mmaped first (it will get UC_MINUS) and MTRR setup
-for WC.
-Later a bigger region that includes the first smaller part is being
-mmaped. We can
-safely return UC_MINUS to this bigger request (without causing any
-aliases) and things
-will work fine as this bigger mmap does its own MTRR for WC as well.
-This is the case
-where I feel just maintaining the consistency across the PAT list (which
-is UC_MINUS)
-here is safe irrespective of any MTRR setting we may have underneath.
-Worrying about
-MTRR ranges here doesn't seem to add any additional safety-ness.
-
-Thanks,
-Venki
-
-
+ void flush_tlb_mm(struct mm_struct *mm)
+ {
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	/* Invalidate all TLB entries of this process by getting a new ASID */
+ 	if (mm->context != NO_CONTEXT) {
+ 		unsigned long flags;
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/arch/cris/arch-v10/mm/tlb.c 2.6.25-rc9/arch/cris/arch-v10/mm/tlb.c
+--- /home/rossb/local/linux-2.6.25-rc9/arch/cris/arch-v10/mm/tlb.c	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/arch/cris/arch-v10/mm/tlb.c	2008-04-14 09:00:18.000000000 -0700
+@@ -69,6 +69,8 @@ flush_tlb_mm(struct mm_struct *mm)
+ 
+ 	D(printk("tlb: flush mm context %d (%p)\n", page_id, mm));
+ 
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	if(page_id == NO_CONTEXT)
+ 		return;
+ 
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/arch/cris/arch-v32/kernel/smp.c 2.6.25-rc9/arch/cris/arch-v32/kernel/smp.c
+--- /home/rossb/local/linux-2.6.25-rc9/arch/cris/arch-v32/kernel/smp.c	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/arch/cris/arch-v32/kernel/smp.c	2008-04-14 09:00:18.000000000 -0700
+@@ -252,6 +252,7 @@ void flush_tlb_all(void)
+ 
+ void flush_tlb_mm(struct mm_struct *mm)
+ {
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
+ 	__flush_tlb_mm(mm);
+ 	flush_tlb_common(mm, FLUSH_ALL, 0);
+ 	/* No more mappings in other CPUs */
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/arch/ia64/kernel/smp.c 2.6.25-rc9/arch/ia64/kernel/smp.c
+--- /home/rossb/local/linux-2.6.25-rc9/arch/ia64/kernel/smp.c	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/arch/ia64/kernel/smp.c	2008-04-14 09:00:18.000000000 -0700
+@@ -325,6 +325,8 @@ smp_flush_tlb_all (void)
+ void
+ smp_flush_tlb_mm (struct mm_struct *mm)
+ {
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	preempt_disable();
+ 	/* this happens for the common case of a single-threaded fork():  */
+ 	if (likely(mm == current->active_mm && atomic_read(&mm->mm_users) == 1))
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/arch/m32r/kernel/smp.c 2.6.25-rc9/arch/m32r/kernel/smp.c
+--- /home/rossb/local/linux-2.6.25-rc9/arch/m32r/kernel/smp.c	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/arch/m32r/kernel/smp.c	2008-04-14 09:00:18.000000000 -0700
+@@ -280,6 +280,8 @@ void smp_flush_tlb_mm(struct mm_struct *
+ 	unsigned long *mmc;
+ 	unsigned long flags;
+ 
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	preempt_disable();
+ 	cpu_id = smp_processor_id();
+ 	mmc = &mm->context[cpu_id];
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/arch/mips/kernel/smp.c 2.6.25-rc9/arch/mips/kernel/smp.c
+--- /home/rossb/local/linux-2.6.25-rc9/arch/mips/kernel/smp.c	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/arch/mips/kernel/smp.c	2008-04-14 09:00:18.000000000 -0700
+@@ -408,6 +408,8 @@ static inline void smp_on_each_tlb(void 
+ 
+ void flush_tlb_mm(struct mm_struct *mm)
+ {
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	preempt_disable();
+ 
+ 	if ((atomic_read(&mm->mm_users) != 1) || (current->mm != mm)) {
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/arch/powerpc/mm/tlb_32.c 2.6.25-rc9/arch/powerpc/mm/tlb_32.c
+--- /home/rossb/local/linux-2.6.25-rc9/arch/powerpc/mm/tlb_32.c	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/arch/powerpc/mm/tlb_32.c	2008-04-14 09:00:18.000000000 -0700
+@@ -144,6 +144,8 @@ void flush_tlb_mm(struct mm_struct *mm)
+ {
+ 	struct vm_area_struct *mp;
+ 
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	if (Hash == 0) {
+ 		_tlbia();
+ 		return;
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/arch/ppc/mm/tlb.c 2.6.25-rc9/arch/ppc/mm/tlb.c
+--- /home/rossb/local/linux-2.6.25-rc9/arch/ppc/mm/tlb.c	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/arch/ppc/mm/tlb.c	2008-04-14 09:00:18.000000000 -0700
+@@ -144,6 +144,8 @@ void flush_tlb_mm(struct mm_struct *mm)
+ {
+ 	struct vm_area_struct *mp;
+ 
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	if (Hash == 0) {
+ 		_tlbia();
+ 		return;
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/arch/sparc/kernel/smp.c 2.6.25-rc9/arch/sparc/kernel/smp.c
+--- /home/rossb/local/linux-2.6.25-rc9/arch/sparc/kernel/smp.c	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/arch/sparc/kernel/smp.c	2008-04-14 09:00:18.000000000 -0700
+@@ -163,6 +163,8 @@ void smp_flush_cache_mm(struct mm_struct
+ 
+ void smp_flush_tlb_mm(struct mm_struct *mm)
+ {
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	if(mm->context != NO_CONTEXT) {
+ 		cpumask_t cpu_mask = mm->cpu_vm_mask;
+ 		cpu_clear(smp_processor_id(), cpu_mask);
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/arch/sparc64/kernel/smp.c 2.6.25-rc9/arch/sparc64/kernel/smp.c
+--- /home/rossb/local/linux-2.6.25-rc9/arch/sparc64/kernel/smp.c	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/arch/sparc64/kernel/smp.c	2008-04-14 09:00:18.000000000 -0700
+@@ -1119,6 +1119,8 @@ void smp_flush_tlb_mm(struct mm_struct *
+ 	u32 ctx = CTX_HWBITS(mm->context);
+ 	int cpu = get_cpu();
+ 
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	if (atomic_read(&mm->mm_users) == 1) {
+ 		mm->cpu_vm_mask = cpumask_of_cpu(cpu);
+ 		goto local_flush_and_out;
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/arch/um/kernel/tlb.c 2.6.25-rc9/arch/um/kernel/tlb.c
+--- /home/rossb/local/linux-2.6.25-rc9/arch/um/kernel/tlb.c	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/arch/um/kernel/tlb.c	2008-04-14 09:00:18.000000000 -0700
+@@ -517,6 +517,8 @@ void flush_tlb_mm(struct mm_struct *mm)
+ {
+ 	struct vm_area_struct *vma = mm->mmap;
+ 
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	while (vma != NULL) {
+ 		fix_range(mm, vma->vm_start, vma->vm_end, 0);
+ 		vma = vma->vm_next;
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/arch/x86/kernel/smp_32.c 2.6.25-rc9/arch/x86/kernel/smp_32.c
+--- /home/rossb/local/linux-2.6.25-rc9/arch/x86/kernel/smp_32.c	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/arch/x86/kernel/smp_32.c	2008-05-05 07:44:03.000000000 -0700
+@@ -332,6 +332,8 @@ void smp_invalidate_interrupt(struct pt_
+ 		if (per_cpu(cpu_tlbstate, cpu).state == TLBSTATE_OK) {
+ 			if (flush_va == TLB_FLUSH_ALL)
+ 				local_flush_tlb();
++			else if (flush_va == TLB_RELOAD_ALL)
++				local_reload_tlb_mm(flush_mm);
+ 			else
+ 				__flush_tlb_one(flush_va);
+ 		} else
+@@ -408,10 +410,35 @@ void flush_tlb_current_task(void)
+ 	preempt_enable();
+ }
+ 
++void reload_tlb_mm(struct mm_struct *mm)
++{
++	cpumask_t cpu_mask;
++
++	clear_bit(MMF_NEED_RELOAD, &mm->flags);
++	clear_bit(MMF_NEED_FLUSH, &mm->flags);
++
++	preempt_disable();
++	cpu_mask = mm->cpu_vm_mask;
++	cpu_clear(smp_processor_id(), cpu_mask);
++
++	if (current->active_mm == mm) {
++		if (current->mm)
++			local_reload_tlb_mm(mm);
++		else
++			leave_mm(smp_processor_id());
++	}
++	if (!cpus_empty(cpu_mask))
++		flush_tlb_others(cpu_mask, mm, TLB_RELOAD_ALL);
++
++	preempt_enable();
++
++}
++
+ void flush_tlb_mm (struct mm_struct * mm)
+ {
+ 	cpumask_t cpu_mask;
+ 
++	clear_bit(MMF_NEED_FLUSH, &mm->flags);
+ 	preempt_disable();
+ 	cpu_mask = mm->cpu_vm_mask;
+ 	cpu_clear(smp_processor_id(), cpu_mask);
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/arch/x86/kernel/smp_64.c 2.6.25-rc9/arch/x86/kernel/smp_64.c
+--- /home/rossb/local/linux-2.6.25-rc9/arch/x86/kernel/smp_64.c	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/arch/x86/kernel/smp_64.c	2008-04-14 09:00:18.000000000 -0700
+@@ -155,6 +155,8 @@ asmlinkage void smp_invalidate_interrupt
+ 		if (read_pda(mmu_state) == TLBSTATE_OK) {
+ 			if (f->flush_va == TLB_FLUSH_ALL)
+ 				local_flush_tlb();
++			else if (f->flush_va == TLB_RELOAD_ALL)
++				local_reload_tlb_mm(f->flush_mm);
+ 			else
+ 				__flush_tlb_one(f->flush_va);
+ 		} else
+@@ -228,10 +230,36 @@ void flush_tlb_current_task(void)
+ 	preempt_enable();
+ }
+ 
++void reload_tlb_mm(struct mm_struct *mm)
++{
++	cpumask_t cpu_mask;
++
++	clear_bit(MMF_NEED_RELOAD, &mm->flags);
++	clear_bit(MMF_NEED_FLUSH, &mm->flags);
++
++	preempt_disable();
++	cpu_mask = mm->cpu_vm_mask;
++	cpu_clear(smp_processor_id(), cpu_mask);
++
++	if (current->active_mm == mm) {
++		if (current->mm)
++			local_reload_tlb_mm(mm);
++		else
++			leave_mm(smp_processor_id());
++	}
++	if (!cpus_empty(cpu_mask))
++		flush_tlb_others(cpu_mask, mm, TLB_RELOAD_ALL);
++
++	preempt_enable();
++
++}
++
+ void flush_tlb_mm (struct mm_struct * mm)
+ {
+ 	cpumask_t cpu_mask;
+ 
++	clear_bit(MMF_NEED_FLUSH, &mm->flags);
++
+ 	preempt_disable();
+ 	cpu_mask = mm->cpu_vm_mask;
+ 	cpu_clear(smp_processor_id(), cpu_mask);
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/arch/x86/mach-voyager/voyager_smp.c 2.6.25-rc9/arch/x86/mach-voyager/voyager_smp.c
+--- /home/rossb/local/linux-2.6.25-rc9/arch/x86/mach-voyager/voyager_smp.c	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/arch/x86/mach-voyager/voyager_smp.c	2008-04-14 09:00:18.000000000 -0700
+@@ -909,6 +909,8 @@ void flush_tlb_mm(struct mm_struct *mm)
+ {
+ 	unsigned long cpu_mask;
+ 
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	preempt_disable();
+ 
+ 	cpu_mask = cpus_addr(mm->cpu_vm_mask)[0] & ~(1 << smp_processor_id());
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/arch/xtensa/mm/tlb.c 2.6.25-rc9/arch/xtensa/mm/tlb.c
+--- /home/rossb/local/linux-2.6.25-rc9/arch/xtensa/mm/tlb.c	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/arch/xtensa/mm/tlb.c	2008-04-14 09:00:18.000000000 -0700
+@@ -63,6 +63,8 @@ void flush_tlb_all (void)
+ 
+ void flush_tlb_mm(struct mm_struct *mm)
+ {
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	if (mm == current->active_mm) {
+ 		int flags;
+ 		local_save_flags(flags);
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/arch/alpha/kernel/smp.c 2.6.25-rc9/arch/alpha/kernel/smp.c
+--- /home/rossb/local/linux-2.6.25-rc9/arch/alpha/kernel/smp.c	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/arch/alpha/kernel/smp.c	2008-04-14 09:00:18.000000000 -0700
+@@ -845,6 +845,8 @@ flush_tlb_mm(struct mm_struct *mm)
+ {
+ 	preempt_disable();
+ 
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	if (mm == current->active_mm) {
+ 		flush_tlb_current(mm);
+ 		if (atomic_read(&mm->mm_users) <= 1) {
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/arch/arm/kernel/smp.c 2.6.25-rc9/arch/arm/kernel/smp.c
+--- /home/rossb/local/linux-2.6.25-rc9/arch/arm/kernel/smp.c	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/arch/arm/kernel/smp.c	2008-04-14 09:00:18.000000000 -0700
+@@ -738,6 +738,8 @@ void flush_tlb_mm(struct mm_struct *mm)
+ {
+ 	cpumask_t mask = mm->cpu_vm_mask;
+ 
++	clear_bit(MMF_NEED_FLUSH, mm->flags);
++
+ 	on_each_cpu_mask(ipi_flush_tlb_mm, mm, 1, 1, mask);
+ }
+ 
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-alpha/tlbflush.h 2.6.25-rc9/include/asm-alpha/tlbflush.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/asm-alpha/tlbflush.h	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/include/asm-alpha/tlbflush.h	2008-04-14 09:00:18.000000000 -0700
+@@ -148,4 +148,6 @@ static inline void flush_tlb_kernel_rang
+ 	flush_tlb_all();
+ }
+ 
++#include <asm-generic/tlbflush.h>
++
+ #endif /* _ALPHA_TLBFLUSH_H */
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-arm/tlbflush.h 2.6.25-rc9/include/asm-arm/tlbflush.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/asm-arm/tlbflush.h	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/include/asm-arm/tlbflush.h	2008-04-14 09:00:18.000000000 -0700
+@@ -466,5 +466,6 @@ extern void update_mmu_cache(struct vm_a
+ #endif
+ 
+ #endif /* CONFIG_MMU */
++#include <asm-generic/tlbflush.h>
+ 
+ #endif
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-avr32/tlbflush.h 2.6.25-rc9/include/asm-avr32/tlbflush.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/asm-avr32/tlbflush.h	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/include/asm-avr32/tlbflush.h	2008-04-14 09:00:18.000000000 -0700
+@@ -29,5 +29,6 @@ extern void flush_tlb_page(struct vm_are
+ extern void __flush_tlb_page(unsigned long asid, unsigned long page);
+ 
+ extern void flush_tlb_kernel_range(unsigned long start, unsigned long end);
++#include <asm-generic/tlbflush.h>
+ 
+ #endif /* __ASM_AVR32_TLBFLUSH_H */
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-blackfin/tlbflush.h 2.6.25-rc9/include/asm-blackfin/tlbflush.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/asm-blackfin/tlbflush.h	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/include/asm-blackfin/tlbflush.h	2008-04-14 09:00:18.000000000 -0700
+@@ -53,4 +53,5 @@ static inline void flush_tlb_kernel_page
+ 	BUG();
+ }
+ 
++#include <asm-generic/tlbflush.h>
+ #endif
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-cris/tlbflush.h 2.6.25-rc9/include/asm-cris/tlbflush.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/asm-cris/tlbflush.h	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/include/asm-cris/tlbflush.h	2008-04-14 09:00:18.000000000 -0700
+@@ -44,5 +44,6 @@ static inline void flush_tlb(void)
+ }
+ 
+ #define flush_tlb_kernel_range(start, end) flush_tlb_all()
++#include <asm-generic/tlbflush.h>
+ 
+ #endif /* _CRIS_TLBFLUSH_H */
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-frv/tlbflush.h 2.6.25-rc9/include/asm-frv/tlbflush.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/asm-frv/tlbflush.h	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/include/asm-frv/tlbflush.h	2008-04-14 09:00:18.000000000 -0700
+@@ -68,6 +68,7 @@ do {								\
+ #define flush_tlb_kernel_range(start, end)	BUG()
+ 
+ #endif
++#include <asm-generic/tlbflush.h>
+ 
+ 
+ #endif /* _ASM_TLBFLUSH_H */
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-generic/tlbflush.h 2.6.25-rc9/include/asm-generic/tlbflush.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/asm-generic/tlbflush.h	1969-12-31 16:00:00.000000000 -0800
++++ 2.6.25-rc9/include/asm-generic/tlbflush.h	2008-05-01 08:39:19.000000000 -0700
+@@ -0,0 +1,74 @@
++/* include/asm-generic/tlbflush.h
++ *
++ *	Generic TLB reload code and page table migration code that
++ *      depends on it.
++ *
++ * Copyright 2008 Google, Inc.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; version 2 of the
++ * License.
++ */
++
++#ifndef _ASM_GENERIC__TLBFLUSH_H
++#define _ASM_GENERIC__TLBFLUSH_H
++
++#include <asm/pgalloc.h>
++#include <asm/mmu_context.h>
++
++/* flush an mm that we messed with earlier, but delayed the flush
++   assuming that we would muck with it a whole lot more. */
++static inline void maybe_flush_tlb_mm(struct mm_struct *mm)
++{
++	if (test_and_clear_bit(MMF_NEED_FLUSH, &mm->flags))
++		flush_tlb_mm(mm);
++}
++
++/* possibly flag an mm as needing to be flushed. */
++static inline int maybe_need_flush_mm(struct mm_struct *mm)
++{
++	if (!cpus_empty(mm->cpu_vm_mask)) {
++		set_bit(MMF_NEED_FLUSH, &mm->flags);
++		return 1;
++	}
++	return 0;
++}
++
++
++
++#ifdef ARCH_HAS_RELOAD_TLB
++static inline void maybe_reload_tlb_mm(struct mm_struct *mm)
++{
++	if (test_and_clear_bit(MMF_NEED_RELOAD, &mm->flags))
++		reload_tlb_mm(mm);
++	else
++		maybe_flush_tlb_mm(mm);
++}
++
++static inline int maybe_need_tlb_reload_mm(struct mm_struct *mm)
++{
++	if (!cpus_empty(mm->cpu_vm_mask)) {
++		set_bit(MMF_NEED_RELOAD, &mm->flags);
++		return 1;
++	}
++	return 0;
++}
++
++#else /* ARCH_HAS_RELOAD_TLB */
++static inline int migrate_top_level_page_table(struct mm_struct *mm,
++					       struct page *dest,
++					       struct list_head *old_pages) {
++	return 1;
++}
++
++static inline void maybe_reload_tlb_mm(struct mm_struct *mm)
++{
++	maybe_flush_tlb_mm(mm);
++}
++
++
++#endif /* ARCH_HAS_RELOAD_TLB */
++
++
++#endif /* _ASM_GENERIC__TLBFLUSH_H */
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-h8300/tlbflush.h 2.6.25-rc9/include/asm-h8300/tlbflush.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/asm-h8300/tlbflush.h	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/include/asm-h8300/tlbflush.h	2008-04-14 09:00:18.000000000 -0700
+@@ -52,4 +52,6 @@ static inline void flush_tlb_kernel_page
+ 	BUG();
+ }
+ 
++#include <asm-generic/tlbflush.h>
++
+ #endif /* _H8300_TLBFLUSH_H */
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-ia64/tlbflush.h 2.6.25-rc9/include/asm-ia64/tlbflush.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/asm-ia64/tlbflush.h	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/include/asm-ia64/tlbflush.h	2008-04-14 09:00:18.000000000 -0700
+@@ -98,4 +98,6 @@ static inline void flush_tlb_kernel_rang
+ 	flush_tlb_all();	/* XXX fix me */
+ }
+ 
++#include <asm-generic/tlbflush.h>
++
+ #endif /* _ASM_IA64_TLBFLUSH_H */
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-m32r/tlbflush.h 2.6.25-rc9/include/asm-m32r/tlbflush.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/asm-m32r/tlbflush.h	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/include/asm-m32r/tlbflush.h	2008-04-14 09:00:18.000000000 -0700
+@@ -93,5 +93,6 @@ static __inline__ void __flush_tlb_all(v
+ }
+ 
+ extern void update_mmu_cache(struct vm_area_struct *, unsigned long, pte_t);
++#include <asm-generic/tlbflush.h>
+ 
+ #endif	/* _ASM_M32R_TLBFLUSH_H */
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-m68k/tlbflush.h 2.6.25-rc9/include/asm-m68k/tlbflush.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/asm-m68k/tlbflush.h	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/include/asm-m68k/tlbflush.h	2008-04-14 09:00:18.000000000 -0700
+@@ -215,5 +215,6 @@ static inline void flush_tlb_kernel_page
+ }
+ 
+ #endif
++#include <asm-generic/tlbflush.h>
+ 
+ #endif /* _M68K_TLBFLUSH_H */
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-m68knommu/tlbflush.h 2.6.25-rc9/include/asm-m68knommu/tlbflush.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/asm-m68knommu/tlbflush.h	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/include/asm-m68knommu/tlbflush.h	2008-04-14 09:00:18.000000000 -0700
+@@ -52,4 +52,6 @@ static inline void flush_tlb_kernel_page
+ 	BUG();
+ }
+ 
++#include <asm-generic/tlbflush.h>
++
+ #endif /* _M68KNOMMU_TLBFLUSH_H */
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-mips/tlbflush.h 2.6.25-rc9/include/asm-mips/tlbflush.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/asm-mips/tlbflush.h	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/include/asm-mips/tlbflush.h	2008-04-14 09:00:18.000000000 -0700
+@@ -44,4 +44,6 @@ extern void flush_tlb_one(unsigned long 
+ 
+ #endif /* CONFIG_SMP */
+ 
++#include <asm-generic/tlbflush.h>
++
+ #endif /* __ASM_TLBFLUSH_H */
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-parisc/tlbflush.h 2.6.25-rc9/include/asm-parisc/tlbflush.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/asm-parisc/tlbflush.h	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/include/asm-parisc/tlbflush.h	2008-04-14 09:00:18.000000000 -0700
+@@ -76,5 +76,6 @@ void __flush_tlb_range(unsigned long sid
+ #define flush_tlb_range(vma,start,end) __flush_tlb_range((vma)->vm_mm->context,start,end)
+ 
+ #define flush_tlb_kernel_range(start, end) __flush_tlb_range(0,start,end)
++#include <asm-generic/tlbflush.h>
+ 
+ #endif
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-powerpc/tlbflush.h 2.6.25-rc9/include/asm-powerpc/tlbflush.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/asm-powerpc/tlbflush.h	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/include/asm-powerpc/tlbflush.h	2008-04-14 09:00:18.000000000 -0700
+@@ -173,5 +173,7 @@ extern void __flush_hash_table_range(str
+  */
+ extern void update_mmu_cache(struct vm_area_struct *, unsigned long, pte_t);
+ 
++#include <asm-generic/tlbflush.h>
++
+ #endif /*__KERNEL__ */
+ #endif /* _ASM_POWERPC_TLBFLUSH_H */
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-s390/tlbflush.h 2.6.25-rc9/include/asm-s390/tlbflush.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/asm-s390/tlbflush.h	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/include/asm-s390/tlbflush.h	2008-04-14 09:00:18.000000000 -0700
+@@ -126,4 +126,6 @@ static inline void flush_tlb_kernel_rang
+ 	__tlb_flush_mm(&init_mm);
+ }
+ 
++#include <asm-generic/tlbflush.h>
++
+ #endif /* _S390_TLBFLUSH_H */
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-sh/tlbflush.h 2.6.25-rc9/include/asm-sh/tlbflush.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/asm-sh/tlbflush.h	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/include/asm-sh/tlbflush.h	2008-04-14 09:00:18.000000000 -0700
+@@ -46,4 +46,6 @@ extern void flush_tlb_one(unsigned long 
+ 
+ #endif /* CONFIG_SMP */
+ 
++#include <asm-generic/tlbflush.h>
++
+ #endif /* __ASM_SH_TLBFLUSH_H */
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-sparc/tlbflush.h 2.6.25-rc9/include/asm-sparc/tlbflush.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/asm-sparc/tlbflush.h	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/include/asm-sparc/tlbflush.h	2008-04-14 09:00:18.000000000 -0700
+@@ -57,4 +57,6 @@ static inline void flush_tlb_kernel_rang
+ 	flush_tlb_all();
+ }
+ 
++#include <asm-generic/tlbflush.h>
++
+ #endif /* _SPARC_TLBFLUSH_H */
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-sparc64/tlbflush.h 2.6.25-rc9/include/asm-sparc64/tlbflush.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/asm-sparc64/tlbflush.h	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/include/asm-sparc64/tlbflush.h	2008-04-14 09:00:18.000000000 -0700
+@@ -41,4 +41,6 @@ do {	flush_tsb_kernel_range(start,end); 
+ 
+ #endif /* ! CONFIG_SMP */
+ 
++#include <asm-generic/tlbflush.h>
++
+ #endif /* _SPARC64_TLBFLUSH_H */
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-um/tlbflush.h 2.6.25-rc9/include/asm-um/tlbflush.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/asm-um/tlbflush.h	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/include/asm-um/tlbflush.h	2008-04-14 09:00:18.000000000 -0700
+@@ -28,4 +28,6 @@ extern void flush_tlb_kernel_vm(void);
+ extern void flush_tlb_kernel_range(unsigned long start, unsigned long end);
+ extern void __flush_tlb_one(unsigned long addr);
+ 
++#include <asm-generic/tlbflush.h>
++
+ #endif
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-v850/tlbflush.h 2.6.25-rc9/include/asm-v850/tlbflush.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/asm-v850/tlbflush.h	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/include/asm-v850/tlbflush.h	2008-04-14 09:00:18.000000000 -0700
+@@ -61,4 +61,6 @@ static inline void flush_tlb_kernel_page
+ 	BUG ();
+ }
+ 
++#include <asm-generic/tlbflush.h>
++
+ #endif /* __V850_TLBFLUSH_H__ */
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-x86/tlbflush.h 2.6.25-rc9/include/asm-x86/tlbflush.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/asm-x86/tlbflush.h	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/include/asm-x86/tlbflush.h	2008-04-14 09:00:18.000000000 -0700
+@@ -35,6 +35,13 @@ static inline void __native_flush_tlb_si
+ 	__asm__ __volatile__("invlpg (%0)" ::"r" (addr) : "memory");
+ }
+ 
++#define ARCH_HAS_RELOAD_TLB
++static inline void load_cr3(pgd_t *pgd);
++static inline void __reload_tlb_mm(struct mm_struct *mm)
++{
++	load_cr3(mm->pgd);
++}
++
+ static inline void __flush_tlb_all(void)
+ {
+ 	if (cpu_has_pge)
+@@ -53,8 +60,10 @@ static inline void __flush_tlb_one(unsig
+ 
+ #ifdef CONFIG_X86_32
+ # define TLB_FLUSH_ALL	0xffffffff
++# define TLB_RELOAD_ALL 0xfffffffe
+ #else
+ # define TLB_FLUSH_ALL	-1ULL
++# define TLB_RELOAD_ALL -2ULL
+ #endif
+ 
+ /*
+@@ -82,6 +91,12 @@ static inline void __flush_tlb_one(unsig
+ #define flush_tlb_all() __flush_tlb_all()
+ #define local_flush_tlb() __flush_tlb()
+ 
++static inline void reload_tlb_mm(struct mm_struct *mm)
++{
++	if (mm == current->active_mm)
++		__reload_tlb_mm(mm);
++}
++
+ static inline void flush_tlb_mm(struct mm_struct *mm)
+ {
+ 	if (mm == current->active_mm)
+@@ -114,6 +129,10 @@ static inline void native_flush_tlb_othe
+ 
+ #define local_flush_tlb() __flush_tlb()
+ 
++#define local_reload_tlb_mm(mm) \
++	__reload_tlb_mm(mm)
++
++extern void reload_tlb_mm(struct mm_struct *mm);
+ extern void flush_tlb_all(void);
+ extern void flush_tlb_current_task(void);
+ extern void flush_tlb_mm(struct mm_struct *);
+@@ -155,4 +174,6 @@ static inline void flush_tlb_kernel_rang
+ 	flush_tlb_all();
+ }
+ 
++#include <asm-generic/tlbflush.h>
++
+ #endif /* _ASM_X86_TLBFLUSH_H */
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-xtensa/tlbflush.h 2.6.25-rc9/include/asm-xtensa/tlbflush.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/asm-xtensa/tlbflush.h	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/include/asm-xtensa/tlbflush.h	2008-04-14 09:00:18.000000000 -0700
+@@ -186,6 +186,8 @@ static inline unsigned long read_itlb_tr
+ 	return tmp;
+ }
+ 
++#include <asm-generic/tlbflush.h>
++
+ #endif	/* __ASSEMBLY__ */
+ #endif	/* __KERNEL__ */
+ #endif	/* _XTENSA_TLBFLUSH_H */
+diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/linux/sched.h 2.6.25-rc9/include/linux/sched.h
+--- /home/rossb/local/linux-2.6.25-rc9/include/linux/sched.h	2008-04-11 13:32:29.000000000 -0700
++++ 2.6.25-rc9/include/linux/sched.h	2008-04-14 09:00:18.000000000 -0700
+@@ -408,6 +408,16 @@ extern int get_dumpable(struct mm_struct
+ #define MMF_DUMP_FILTER_DEFAULT \
+ 	((1 << MMF_DUMP_ANON_PRIVATE) |	(1 << MMF_DUMP_ANON_SHARED))
+ 
++/* Misc MM flags. */
++#define MMF_NEED_FLUSH		7
++#define MMF_NEED_RELOAD		8	/* Only meaningful on some archs. */
++
++#ifdef CONFIG_RELOCATE_PAGE_TABLES
++#define MMF_NEED_REWALK		9	/* Must rewalk page tables with spin
++					 * lock held. */
++#endif /*  CONFIG_RELOCATE_PAGE_TABLES  */
++
++
+ struct sighand_struct {
+ 	atomic_t		count;
+ 	struct k_sigaction	action[_NSIG];
