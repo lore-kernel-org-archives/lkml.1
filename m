@@ -1,67 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755121AbYEIKlj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755571AbYEIKpi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755121AbYEIKlj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 06:41:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751091AbYEIKla
+	id S1755571AbYEIKpi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 06:45:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750980AbYEIKp3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 06:41:30 -0400
-Received: from verein.lst.de ([213.95.11.210]:36464 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750958AbYEIKl3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 06:41:29 -0400
-Date: Fri, 9 May 2008 12:41:17 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: starvik@axis.com, jesper.nilsson@axis.com, torvalds@osdl.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] cris: kill sys_pipe implementation
-Message-ID: <20080509104116.GA7883@lst.de>
+	Fri, 9 May 2008 06:45:29 -0400
+Received: from viefep31-int.chello.at ([62.179.121.49]:57130 "EHLO
+	viefep31-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751091AbYEIKp2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 06:45:28 -0400
+Subject: Re: boot cgroup questions
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Paul Jackson <pj@sgi.com>
+Cc: Max Krasnyanskiy <maxk@qualcomm.com>, menage@google.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080414133902.7878cfce.pj@sgi.com>
+References: <47D73086.2030008@qualcomm.com>
+	 <6599ad830803111827n1cb8e2c7i47c2ef3f3bb58995@mail.gmail.com>
+	 <47D7411E.1000009@qualcomm.com>
+	 <6599ad830803111936jd940deam8584bc971c3b6f41@mail.gmail.com>
+	 <47D74595.4080100@qualcomm.com>
+	 <6599ad830803112009y18d9e43ft8e3fc4a551d891da@mail.gmail.com>
+	 <20080311235939.1ebee8e3.pj@sgi.com> <47D81FE1.6030205@qualcomm.com>
+	 <20080312135746.89456f2a.pj@sgi.com> <47D82AD2.1070108@qualcomm.com>
+	 <20080312143253.3dd72c7f.pj@sgi.com> <47D83858.4030806@qualcomm.com>
+	 <20080312153712.bc5df7a1.pj@sgi.com> <47D8593A.6040503@qualcomm.com>
+	 <20080312183059.6716d630.pj@sgi.com> <47D87BE5.4010702@qualcomm.com>
+	 <20080313020300.92244956.pj@sgi.com> <47FE5655.10900@qualcomm.com>
+	 <20080414133902.7878cfce.pj@sgi.com>
+Content-Type: text/plain
+Date: Fri, 09 May 2008 12:45:26 +0200
+Message-Id: <1210329926.13978.224.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: -0.001 () BAYES_40
+X-Mailer: Evolution 2.22.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The cris implementation of sys_pipe only differs from the generic one
-by taking the BKL before calling do_pipe which isn't not nessecary.
+On Mon, 2008-04-14 at 13:39 -0500, Paul Jackson wrote:
+> Max wrote:
+> > I mean you guys were talking about how wonderful 
+> > and flexible cpusets are, but we cannot seem to use the flexibility because 
+> > the apps are designed for a flat layout
+> 
+> No.  Not flat.  Not at all flat.
+> 
+> We routinely and normally have an interesting hierarchy of cpusets
+> below /dev/cpuset.  However that hierarchy is determined by the
+> nesting of subsets of the nodes (CPUs and/or Memory) on the system.
+> 
+> These subsets of nodes in the /dev/cpuset hierarchy may well map
+> nicely into the subsets of CPUs that can receive a particular set
+> of IRQs, however that map is not bijective.  Of particular interest
+> here, it's not injective, meaning that multiple cpusets might and
+> will commonly receive the same set of IRQs.  You can force this map
+> to be injective by elaborating the cpuset hierarchy to reflect both
+> this new assignment of IRQs and the (CPU and/or Memory) node subset
+> hiearchy that it currently reflects, but that will break code that
+> was expecting the directory tree below /dev/cpuset to directly and
+> only reflect the node hierarchy.
+> 
+> In less mathematically obtuse wording, sure you can add more directory
+> layers below /dev/cpuset, to handle IRQ assignments, but that will
+> break code that was expecting the /dev/cpuset directory tree to only
+> reflect the nesting of (CPU and/or Memory) nodes.
 
-Just kill the cris implementation and use the generic one.
+Sorry for being rather late to the game - other stuff keeps me from
+doing anything much here :-(.
 
+Anyway, the current applications don't support IRQ assingment anyway.
+That's a new feature; and its quite common that new features require
+code changes.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+So I'm not seeing the problem - don't change code and stuff works as
+before - change code and you get new stuff.
 
-Index: linux-2.6/arch/cris/kernel/sys_cris.c
-===================================================================
---- linux-2.6.orig/arch/cris/kernel/sys_cris.c	2008-05-09 12:39:34.000000000 +0200
-+++ linux-2.6/arch/cris/kernel/sys_cris.c	2008-05-09 12:39:44.000000000 +0200
-@@ -27,28 +27,6 @@
- #include <asm/uaccess.h>
- #include <asm/segment.h>
- 
--/*
-- * sys_pipe() is the normal C calling standard for creating
-- * a pipe. It's not the way Unix traditionally does this, though.
-- */
--asmlinkage int sys_pipe(unsigned long __user * fildes)
--{
--        int fd[2];
--        int error;
--
--        lock_kernel();
--        error = do_pipe(fd);
--        unlock_kernel();
--        if (!error) {
--                if (copy_to_user(fildes, fd, 2*sizeof(int))) {
--			sys_close(fd[0]);
--			sys_close(fd[1]);
--                        error = -EFAULT;
--		}
--        }
--        return error;
--}
--
- /* common code for old and new mmaps */
- static inline long
- do_mmap2(unsigned long addr, unsigned long len, unsigned long prot,
+So I'm arguing in favour of the IRQs as tasks idea that might need extra
+hierarchy levels.
+
