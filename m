@@ -1,204 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753642AbYEIHWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755125AbYEIHXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753642AbYEIHWU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 03:22:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbYEIHWK
+	id S1755125AbYEIHXq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 03:23:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752582AbYEIHXg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 03:22:10 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:5621 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751089AbYEIHWI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 03:22:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=HjvvqN+zA8Vcmb957uYqgt8vme/dMoF/skGY3x8+OU9HAY9hoWWh+b7Gcr79CoJfcxJr7GdW8GAMHV0mATP5EMzNQ84d+qi+sGzmRviRcJMj3on3vMrXTJ+8YZ4fq1J66zDILnBWliYaOe9uuZa1uvhY2Gp2gaWcVoLEL2XbCLg=
-Date: Fri, 9 May 2008 15:22:31 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: gregkh@suse.de
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] struct class sem to mutex converting
-Message-ID: <20080509072231.GB2740@darkstar.te-china.tietoenator.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Fri, 9 May 2008 03:23:36 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:50897 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751249AbYEIHXe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 03:23:34 -0400
+Date: Fri, 9 May 2008 17:23:26 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for May 9
+Message-Id: <20080509172326.1c307ba0.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__9_May_2008_17_23_26_+1000_2RCP374FbEhzQKuj"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The class_device is already removed, so do the class->sem to mutex converting.
+--Signature=_Fri__9_May_2008_17_23_26_+1000_2RCP374FbEhzQKuj
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+Hi all,
 
----
-drivers/base/class.c   |   22 +++++++++++-----------
-drivers/base/core.c    |    9 ++++-----
-include/linux/device.h |    3 ++-
-3 files changed, 17 insertions(+), 17 deletions(-)
+Changes since next-20080508:
 
-diff -upr linux/drivers/base/class.c linux.new/drivers/base/class.c
---- linux/drivers/base/class.c	2008-05-09 12:53:35.000000000 +0800
-+++ linux.new/drivers/base/class.c	2008-05-09 13:03:48.000000000 +0800
-@@ -144,7 +144,7 @@ int class_register(struct class *cls)
- 	INIT_LIST_HEAD(&cls->devices);
- 	INIT_LIST_HEAD(&cls->interfaces);
- 	kset_init(&cls->class_dirs);
--	init_MUTEX(&cls->sem);
-+	mutex_init(&cls->mutex);
- 	error = kobject_set_name(&cls->subsys.kobj, "%s", cls->name);
- 	if (error)
- 		return error;
-@@ -262,7 +262,7 @@ char *make_class_name(const char *name, 
-  * We check the return of @fn each time. If it returns anything
-  * other than 0, we break out and return that value.
-  *
-- * Note, we hold class->sem in this function, so it can not be
-+ * Note, we hold class->mutex in this function, so it can not be
-  * re-acquired in @fn, otherwise it will self-deadlocking. For
-  * example, calls to add or remove class members would be verboten.
-  */
-@@ -274,7 +274,7 @@ int class_for_each_device(struct class *
- 
- 	if (!class)
- 		return -EINVAL;
--	down(&class->sem);
-+	mutex_lock(&class->mutex);
- 	list_for_each_entry(dev, &class->devices, node) {
- 		dev = get_device(dev);
- 		if (dev) {
-@@ -285,7 +285,7 @@ int class_for_each_device(struct class *
- 		if (error)
- 			break;
- 	}
--	up(&class->sem);
-+	mutex_unlock(&class->mutex);
- 
- 	return error;
- }
-@@ -307,7 +307,7 @@ EXPORT_SYMBOL_GPL(class_for_each_device)
-  *
-  * Note, you will need to drop the reference with put_device() after use.
-  *
-- * We hold class->sem in this function, so it can not be
-+ * We hold class->mutex in this function, so it can not be
-  * re-acquired in @match, otherwise it will self-deadlocking. For
-  * example, calls to add or remove class members would be verboten.
-  */
-@@ -320,7 +320,7 @@ struct device *class_find_device(struct 
- 	if (!class)
- 		return NULL;
- 
--	down(&class->sem);
-+	mutex_lock(&class->mutex);
- 	list_for_each_entry(dev, &class->devices, node) {
- 		dev = get_device(dev);
- 		if (dev) {
-@@ -332,7 +332,7 @@ struct device *class_find_device(struct 
- 		} else
- 			break;
- 	}
--	up(&class->sem);
-+	mutex_unlock(&class->mutex);
- 
- 	return found ? dev : NULL;
- }
-@@ -350,13 +350,13 @@ int class_interface_register(struct clas
- 	if (!parent)
- 		return -EINVAL;
- 
--	down(&parent->sem);
-+	mutex_lock(&parent->mutex);
- 	list_add_tail(&class_intf->node, &parent->interfaces);
- 	if (class_intf->add_dev) {
- 		list_for_each_entry(dev, &parent->devices, node)
- 			class_intf->add_dev(dev, class_intf);
- 	}
--	up(&parent->sem);
-+	mutex_unlock(&parent->mutex);
- 
- 	return 0;
- }
-@@ -369,13 +369,13 @@ void class_interface_unregister(struct c
- 	if (!parent)
- 		return;
- 
--	down(&parent->sem);
-+	mutex_lock(&parent->mutex);
- 	list_del_init(&class_intf->node);
- 	if (class_intf->remove_dev) {
- 		list_for_each_entry(dev, &parent->devices, node)
- 			class_intf->remove_dev(dev, class_intf);
- 	}
--	up(&parent->sem);
-+	mutex_unlock(&parent->mutex);
- 
- 	class_put(parent);
- }
-diff -upr linux/drivers/base/core.c linux.new/drivers/base/core.c
---- linux/drivers/base/core.c	2008-05-09 12:53:35.000000000 +0800
-+++ linux.new/drivers/base/core.c	2008-05-09 12:59:41.000000000 +0800
-@@ -20,7 +20,6 @@
- #include <linux/notifier.h>
- #include <linux/genhd.h>
- #include <linux/kallsyms.h>
--#include <linux/semaphore.h>
- 
- #include "base.h"
- #include "power/power.h"
-@@ -833,7 +832,7 @@ int device_add(struct device *dev)
- 		klist_add_tail(&dev->knode_parent, &parent->klist_children);
- 
- 	if (dev->class) {
--		down(&dev->class->sem);
-+		mutex_lock(&dev->class->mutex);
- 		/* tie the class to the device */
- 		list_add_tail(&dev->node, &dev->class->devices);
- 
-@@ -841,7 +840,7 @@ int device_add(struct device *dev)
- 		list_for_each_entry(class_intf, &dev->class->interfaces, node)
- 			if (class_intf->add_dev)
- 				class_intf->add_dev(dev, class_intf);
--		up(&dev->class->sem);
-+		mutex_unlock(&dev->class->mutex);
- 	}
-  Done:
- 	put_device(dev);
-@@ -937,14 +936,14 @@ void device_del(struct device *dev)
- 	if (dev->class) {
- 		device_remove_class_symlinks(dev);
- 
--		down(&dev->class->sem);
-+		mutex_lock(&dev->class->mutex);
- 		/* notify any interfaces that the device is now gone */
- 		list_for_each_entry(class_intf, &dev->class->interfaces, node)
- 			if (class_intf->remove_dev)
- 				class_intf->remove_dev(dev, class_intf);
- 		/* remove the device from the class list */
- 		list_del_init(&dev->node);
--		up(&dev->class->sem);
-+		mutex_unlock(&dev->class->mutex);
- 	}
- 	device_remove_file(dev, &uevent_attr);
- 	device_remove_attrs(dev);
-diff -upr linux/include/linux/device.h linux.new/include/linux/device.h
---- linux/include/linux/device.h	2008-05-09 12:53:17.000000000 +0800
-+++ linux.new/include/linux/device.h	2008-05-09 12:56:08.000000000 +0800
-@@ -20,6 +20,7 @@
- #include <linux/types.h>
- #include <linux/module.h>
- #include <linux/pm.h>
-+#include <linux/mutex.h>
- #include <linux/semaphore.h>
- #include <asm/atomic.h>
- #include <asm/device.h>
-@@ -187,7 +188,7 @@ struct class {
- 	struct list_head	devices;
- 	struct list_head	interfaces;
- 	struct kset		class_dirs;
--	struct semaphore	sem; /* locks children, devices, interfaces */
-+	struct mutex		mutex; /* locks devices, interfaces */
- 	struct class_attribute		*class_attrs;
- 	struct device_attribute		*dev_attrs;
- 
+New Trees: wireless-current, driver-core.next, usb.next, ldp.next
+
+Trees not included today: kbuild.
+
+The wireless tree is back.
+
+The v4l/dvb breakage has been fixed upstream (at last :-)).
+
+The ubi tree is back.
+
+The semaphore-removal tree had a couple of conflicts with fixes in the
+net-current tree.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(tar balls at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups, it is also built with powerpc allnoconfig,
+44x_defconfig and allyesconfig.
+
+Below is a summary of the state of the merge.
+
+We are up to 70 trees (counting Linus' and 12 trees of patches pending for
+Linus' tree (which are mostly empty) and one excluded tree), more are
+welcome (even if they are currently empty).  Thanks to those who have
+contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git reset --hard stable
+Merging origin/master
+Merging x86-fixes/for-linus
+Merging sched-fixes/for-linus
+Merging powerpc-merge/merge
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sparc-current/master
+Merging sound-current/for-linus
+Merging arm-current/master
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging quilt/driver-core.next
+Merging quilt/usb.next
+Merging quilt/driver-core
+Merging quilt/usb
+Merging x86/for-akpm
+Merging sched/for-akpm
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/mm
+Merging quilt/i2c
+Merging quilt/kernel-doc
+Merging avr32/avr32-arch
+Merging v4l-dvb/stable
+Merging s390/features
+Merging sh/master
+Merging jfs/next
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+Merging blackfin/for-linus
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging hwmon/testing
+Merging ubi/master
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging ia64/test
+Merging tests/master
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+Merging ocfs2/linux-next
+Merging selinux/for-akpm
+Merging quilt/m68k
+Merging powerpc/powerpc-next
+Merging hrt/mm
+Merging lblnet/master
+Merging ext4/next
+Merging 4xx/next
+Merging async_tx/next
+Merging udf/for_next
+Merging security-testing/next
+Merging net/master
+Merging sparc/master
+Merging galak/powerpc-next
+Merging mtd/master
+Merging wireless/master
+Merging crypto/master
+Merging vfs/vfs-2.6.25
+Merging sound/master
+Merging arm/devel
+Merging cpufreq/master
+Merging v9fs/for-next
+Merging quilt/rr
+Merging semaphore/semaphore
+Merging semaphore-removal/semaphore-removal
+CONFLICT (content): Merge conflict in drivers/atm/ambassador.c
+CONFLICT (content): Merge conflict in drivers/net/bonding/bond_main.c
+CONFLICT (content): Merge conflict in drivers/net/bonding/bond_sysfs.c
+Applying idr.h needs spinlock.h
+Merging quilt/ldp.next
+
+--Signature=_Fri__9_May_2008_17_23_26_+1000_2RCP374FbEhzQKuj
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFII/vyTgG2atn1QN8RApkpAKCNoEVIevDBroZ+tABC90iWisehDQCgjvCI
+f5DMiAZOqKLGEHP48LxwA6A=
+=Cd2z
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__9_May_2008_17_23_26_+1000_2RCP374FbEhzQKuj--
