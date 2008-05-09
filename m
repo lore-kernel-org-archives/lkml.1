@@ -1,155 +1,244 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759372AbYEIWVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759434AbYEIW2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759372AbYEIWVR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 18:21:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752765AbYEIWU6
+	id S1759434AbYEIW2V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 18:28:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752765AbYEIW2K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 18:20:58 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:22013 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751041AbYEIWU4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 18:20:56 -0400
-Message-ID: <4824CE43.8060203@hp.com>
-Date: Fri, 09 May 2008 15:20:51 -0700
-From: Rick Jones <rick.jones2@hp.com>
-User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Jesper Krogh <jesper@krogh.cc>
-CC: David Miller <davem@davemloft.net>, yhlu.kernel@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: NIU - Sun Neptune 10g - Transmit timed out reset (2.6.24)
-References: <86802c440805071130m62c1f4edydb3316dac4a2aba2@mail.gmail.com>	<20080507.141521.193714938.davem@davemloft.net>	<482498D5.9060008@krogh.cc>	<20080509.143229.174354251.davem@davemloft.net> <4824C936.9000103@krogh.cc>
-In-Reply-To: <4824C936.9000103@krogh.cc>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Fri, 9 May 2008 18:28:10 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:60798 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752164AbYEIW2G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 18:28:06 -0400
+Subject: Re: [PATCH] jbd_commit_transaction() races with
+	journal_try_to_drop_buffers() causing DIO failures
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: Jan Kara <jack@suse.cz>
+Cc: Badari Pulavarty <pbadari@us.ibm.com>, akpm@linux-foundation.org,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080505170636.GK25722@duck.suse.cz>
+References: <20080306174209.GA14193@duck.suse.cz>
+	 <1209166706.6040.20.camel@localhost.localdomain>
+	 <20080428122626.GC17054@duck.suse.cz>
+	 <1209402694.23575.5.camel@badari-desktop>
+	 <20080428180932.GI17054@duck.suse.cz>
+	 <1209409764.11872.6.camel@localhost.localdomain>
+	 <20080429124321.GD1987@duck.suse.cz>
+	 <1209654981.27240.19.camel@badari-desktop>
+	 <20080505170636.GK25722@duck.suse.cz>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Fri, 09 May 2008 15:27:52 -0700
+Message-Id: <1210372072.3639.52.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesper Krogh wrote:
-> David Miller wrote:
-> 
->> From: Jesper Krogh <jesper@krogh.cc>
->> Date: Fri, 09 May 2008 20:32:53 +0200
->>
->>> When it works I doesnt seem to be able to get it pass 500MB/s.
->>
->>
->> With this card you really need multiple cpus and multiple threads
->> sending data through the card in order to fill the 10Gb pipe.
->>
->> Single connections will not fill the pipe.
-> 
-> 
-> The server is a Sun X4600 with 8 x dual-core CPU's, setup with 64
-> NFS-threads. The other end of the fiber goes into a switch with gigabit
-> ports connected to 48 dual-core cpus. The test was done doing a dd on a
-> 4.5GB file from the server to /dev/null on the clients.
-> 
-> The number of contextswitches seems enourmous.. over 120.000 sometimes.
-> When transmitting around the same amount of data (4xgigabit bonded with
-> 802.3ad) 4x110MB/s the amount of contextswitches only reaches 3-4.000. I
-> have no idea if this has any relevance.
-> 
-> Should this setup not be able to fill the pipe?
+On Mon, 2008-05-05 at 19:06 +0200, Jan Kara wrote:
+> On Thu 01-05-08 08:16:21, Badari Pulavarty wrote:
+> > Hi Andrew & Jan,
+> > 
+> > I was able to reproduce the customer problem involving DIO
+> > (invalidate_inode_pages2) problem by writing simple testcase
+> > to keep writing to a file using buffered writes and DIO writes
+> > forever in a loop. I see DIO writes fail with -EIO.
+> > 
+> > After a long debug, found 2 cases how this could happen.
+> > These are race conditions with journal_try_to_free_buffers()
+> > and journal_commit_transaction().
+> > 
+> > 1) journal_submit_data_buffers() tries to get bh_state lock. If
+> > try lock fails, it drops the j_list_lock and sleeps for
+> > bh_state lock, while holding a reference on the buffer.
+> > In the meanwhile, journal_try_to_free_buffers() can clean up the
+> > journal head could call try_to_free_buffers(). try_to_free_buffers()
+> > would fail due to the reference held by journal_submit_data_buffers()
+> > - which in turn causes failues for DIO (invalidate_inode_pages2()).
+> > 
+> > 2) When the buffer is on t_locked_list waiting for IO to finish,
+> > we hold a reference and give up the cpu, if we can't get
+> > bh_state lock. This causes try_to_free_buffers() to fail.
+> > 
+> > Fix is to drop the reference on the buffer if we can't get
+> > bh_state lock, give up the cpu and re-try the whole operation -
+> > instead of waiting for the vh_state lock.
+> > 
+> > Does this look like a resonable fix ?
+>   As Mingming pointed out there are few other places where we could hold
+> the bh reference. Note also that we accumulate references to buffers in the
+> wbuf[] list and we need that for submit_bh() which consumes one bh
+> reference. Generally, it seems to me as a too fragile and impractical
+> rule "nobody can hold bh reference when not holding page lock" which is
+> basically what it comes down to if you really want to be sure that
+> journal_try_to_free_buffers() succeeds. And also note that in principle
+> there are other places which hold references to buffers without holding the
+> page lock - for example writepage() in ordered mode (although this one is
+> in practice hardly triggerable). So how we could fix at least the races
+> with commit code is to implement launder_page() callback for ext3/4 which
+> would wait for the previous transaction commit in case the page has buffers
+> that are part of that commit (I don't want this logic in
+> journal_try_to_free_buffers() as that is called also on memory-reclaim
+> path, but journal_launder_page() is fine with me). 
 
-Into which slot was the Neptune inserted?  (sure will be nice to have 
-Alex Chiang's pci slot id patch in mainline one of these days :)
+I am not sure how we are going to gurantee that by the time
+journal_try_to_free_buffers() get called, the page has buffers are not
+as part of the current transaction commit(which could be different than
+the one we waited in ext3_launder_page())?  
 
-Is that slot x4, x8, x16?
+It seems more realistic to fix the races one by one to me.
 
-To which cpu(s) were the neptune's interrupts assigned? (grep <ethN> 
-/proc/interrupts)
+There is still a window that journal_submit_data_buffers() already
+removed the jh from the bh (when found the buffers are already being
+synced), but still keep a reference to the buffer head.
+journal_try_to_free_buffers() could be called. In that case
+try_to_free_buffers() will be called since there is no jh related to
+this buffer, and failed due to journal_submit_data_buffers() hasn't
+finish the cleanup business yet. 
 
-Is the irqbalanced running?
+For this new race, we could just grab the j_list_lock when re-try
+try_to_free_buffers() to force waiting for journal_commit_transaction()
+to finish it flush work. But not sure if this is acceptable approach?
 
-Were any of the 16 CPUs in the system saturated during the test? (top 
-with all CPUs displayed)
+Patch like this? Comments?
 
-Do you have/know of any diagrams showing the way the I/O slots are wired 
-to the rest of the system?
+Mingming
 
-Have you tried any tests without any filesystem involvement? A script 
-like this (might need post-mailer fixup) might be interesting to run:
+---------------------------------------------------------------------
+There are a few cases direct IO could race with kjournal flushing
+data buffers which could result direct IO return EIO error.
 
-s2:~ # cat runemomniagg.sh
-length=30
-confidence="-i 30,30"
-# comment the following to get proper aggregates
-# rather than quick-and dirty
-confidence=""
-#edit these to match your clients
-control_host[1]=192.168.2.205
-control_host[2]=192.168.2.206
-control_host[3]=192.168.2.207
-control_host[4]=192.168.2.208
-control_host[5]=192.168.2.209
-control_host[6]=192.168.2.210
-control_host[7]=192.168.2.211
-control_host[8]=192.168.2.212
-control_host[9]=192.168.2.201
-control_host[10]=192.168.2.203
-control_host[11]=192.168.2.204
-control_host[12]=192.168.2.202
-concurrent_sessions="1 2 3 4 5 6 7 8 9 10 11 12"
-HDR="-P 1"
-# -O means "human" -o means "csv"
-CSV="-o"
-#CSV="-O"
+1) journal_submit_data_buffers() tries to get bh_state lock. If
+try lock fails, it drops the j_list_lock and sleeps for
+bh_state lock, while holding a reference on the buffer.
+In the meanwhile, journal_try_to_free_buffers() can clean up the
+journal head could call try_to_free_buffers(). try_to_free_buffers()
+would fail due to the reference held by journal_submit_data_buffers()
+- which in turn causes failues for DIO (invalidate_inode_pages2()).
 
-echo text you supply about interrupts
-echo text you supply about the systems
-uname -a
-   echo TCP_STREAM to multiple systems
-   for i in $concurrent_sessions; do j=1; echo $i concurrent streams; 
-while [ $j -le $i ]; do netperf $HDR -t omni -c -C -H 
-${control_host[$j]} -l $length $confidence -- $CSV -m 64K & HDR="-P 
-0";j=`expr $j + 1`; done; wait; done
+2) When the buffer is on t_locked_list waiting for IO to finish,
+we hold a reference and give up the cpu, if we can't get
+bh_state lock. This causes try_to_free_buffers() to fail.
 
-   echo TCP_MAERTS to multiple systems
-   HDR="-P 1"
-   for i in $concurrent_sessions; do j=1; echo $i concurrent streams; 
-while [ $j -le $i ]; do netperf $HDR -t omni -c -C -H 
-${control_host[$j]} -l $length $confidence -- $CSV -M ,64K & HDR="-P 
-0";j=`expr $j + 1`; done; wait; done
+3) when journal_submit_data_buffers() saw the buffer is dirty but failed
+to lock the buffer bh1, journal_submit_data_buffers() released the
+j_list_lock and submit other buffers collected from previous check, with
+the reference to bh1 still hold. During this time
+journal_try_to_free_buffers() could clean up the journal head of bh1 and
+remove it from the t_syncdata_list. Then try_to_free_buffers() would
+fail because the reference held by journal_submit_data_buffers()
 
-   echo bidir TCP_RR MEGABITS to multiple systems
-   HDR="-P 1"
-   for i in $concurrent_sessions; do j=1; echo $i concurrent streams; 
-while [ $j -le $i ]; do netperf $HDR  -t omni -f m -c -C -H 
-${control_host[$j]} -l $length $confidence -- $CSV -s 1M -S 1M -r 64K -b 
-12 & HDR="-P 0";j=`expr $j + 1`; done; wait; done
+4) journal_submit_data_buffers() already removed the jh from the bh
+(when found the buffers are already being synced), but still keep a
+reference to the buffer head. journal_try_to_free_buffers() could be
+called. In that case try_to_free_buffers() will be called since there is
+no jh related to this buffer, and failed due to
+journal_submit_data_buffers() hasn't finish the cleanup business yet. 
 
-for burst in 0 1 4 16
-  do
-   echo TCP_RR to multiple systems burst of $burst
-   HDR="-P 1"
-   for i in $concurrent_sessions; do j=1; echo $i concurrent streams; 
-while [ $j -le $i ]; do netperf $HDR -t omni -c -C -H 
-${control_host[$j]} -l $length $confidence -- $CSV -r 1 -b $burst -D & 
-HDR="-P 0";j=`expr $j + 1`; done; wait; done
-  done
+Fix for first three races is to drop the reference on the buffer head
+ when release the j_list_lock,
+give up the cpu and re-try the whole operation. 
 
-cat /proc/meminfo
-cat /proc/cpuinfo
+This patch also fixes the race that data buffers has been
+flushed to disk and journal head is cleard
+by journal_submit_data_buffers() but did not get a chance to release
+ buffer head reference before the journal_try_to_free_buffers() kicked in.
 
 
-Which will run netperf "omni" tests and emit a _LOT_ of information. 
-The concurrent tests run "properly" will be ~15 minutes a data point. 
-The output is probably best viewed in a spreadsheet program.  It is 
-possible to limit what netperf will emit by placing the names of the 
-output items of interest into a file you pass in the test specific -o or 
--O options. The netperf omni tests are in the top of trunk at:
+Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+Signed-off-by: Mingming Cao <mcao@us.ibm.com>
+---
+ fs/jbd/commit.c      |   21 ++++++++++++++++-----
+ fs/jbd/transaction.c |   13 +++++++++++++
+ 2 files changed, 29 insertions(+), 5 deletions(-)
 
-http://www.netperf.org/svn/netperf2/trunk/
+Index: linux-2.6.26-rc1/fs/jbd/commit.c
+===================================================================
+--- linux-2.6.26-rc1.orig/fs/jbd/commit.c	2008-05-03 11:59:44.000000000 -0700
++++ linux-2.6.26-rc1/fs/jbd/commit.c	2008-05-09 14:44:36.000000000 -0700
+@@ -79,12 +79,16 @@ nope:
+ 
+ /*
+  * Try to acquire jbd_lock_bh_state() against the buffer, when j_list_lock is
+- * held.  For ranking reasons we must trylock.  If we lose, schedule away and
++ * held.  For ranking reasons we must trylock.  If we lose,  unlock the buffer
++ * if needed, drop the reference on the buffer, schedule away and
+  * return 0.  j_list_lock is dropped in this case.
+  */
+-static int inverted_lock(journal_t *journal, struct buffer_head *bh)
++static int inverted_lock(journal_t *journal, struct buffer_head *bh, int locked)
+ {
+ 	if (!jbd_trylock_bh_state(bh)) {
++		if (locked)
++			unlock_buffer(bh);
++		put_bh(bh);
+ 		spin_unlock(&journal->j_list_lock);
+ 		schedule();
+ 		return 0;
+@@ -209,19 +213,24 @@ write_out_data:
+ 		if (buffer_dirty(bh)) {
+ 			if (test_set_buffer_locked(bh)) {
+ 				BUFFER_TRACE(bh, "needs blocking lock");
++				put_bh(bh);
+ 				spin_unlock(&journal->j_list_lock);
+ 				/* Write out all data to prevent deadlocks */
+ 				journal_do_submit_data(wbuf, bufs);
+ 				bufs = 0;
+-				lock_buffer(bh);
+ 				spin_lock(&journal->j_list_lock);
++				continue;
+ 			}
+ 			locked = 1;
+ 		}
+-		/* We have to get bh_state lock. Again out of order, sigh. */
+-		if (!inverted_lock(journal, bh)) {
+-			jbd_lock_bh_state(bh);
++		/*
++		 * We have to get bh_state lock. If the try lock fails,
++		 * release the ref on the buffer, give up cpu and retry the
++		 * whole operation.
++		 */
++		if (!inverted_lock(journal, bh, locked)) {
+ 			spin_lock(&journal->j_list_lock);
++			continue;
+ 		}
+ 		/* Someone already cleaned up the buffer? */
+ 		if (!buffer_jbd(bh)
+@@ -430,8 +439,7 @@ void journal_commit_transaction(journal_
+ 				err = -EIO;
+ 			spin_lock(&journal->j_list_lock);
+ 		}
+-		if (!inverted_lock(journal, bh)) {
+-			put_bh(bh);
++		if (!inverted_lock(journal, bh, 0)) {
+ 			spin_lock(&journal->j_list_lock);
+ 			continue;
+ 		}
+Index: linux-2.6.26-rc1/fs/jbd/transaction.c
+===================================================================
+--- linux-2.6.26-rc1.orig/fs/jbd/transaction.c	2008-05-03 11:59:44.000000000 -0700
++++ linux-2.6.26-rc1/fs/jbd/transaction.c	2008-05-09 09:53:57.000000000 -0700
+@@ -1714,6 +1714,19 @@ int journal_try_to_free_buffers(journal_
+ 			goto busy;
+ 	} while ((bh = bh->b_this_page) != head);
+ 	ret = try_to_free_buffers(page);
++	if (ret == 0) {
++		/*
++		 * it is possible that journal_submit_data_buffers()
++		 * still holds the bh ref even if clears the jh
++		 * after journal_remove_journal_head,
++		 * which leads to try_to_free_buffers() failed
++		 * let's wait for journal_submit_data_buffers()
++		 * to finishing remove the bh from the sync_data_list
++		 */
++		spin_lock(&journal->j_list_lock);
++		ret = try_to_free_buffers(page);
++		spin_unlock(&journal->j_list_lock);
++	}
+ busy:
+ 	return ret;
+ }
 
-via subversion.  The script presume your ./configure was a superset of:
 
-./configure --enable-omni --enable-burst
-
-You would want it installed on both your SUT and at least a subset of 
-your LG's.
-
-rick jones
