@@ -1,67 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765927AbYEITkr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765508AbYEIToT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765927AbYEITkr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 15:40:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756339AbYEITkh
+	id S1765508AbYEIToT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 15:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756724AbYEIToI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 15:40:37 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:37686 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753678AbYEITkf (ORCPT
+	Fri, 9 May 2008 15:44:08 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:37324 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754345AbYEIToH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 15:40:35 -0400
-Date: Fri, 9 May 2008 15:40:30 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 6/9] fuse: add export operations
-Message-ID: <20080509194030.GA29118@infradead.org>
-References: <20080509124107.645600519@szeredi.hu> <20080509124133.577558326@szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080509124133.577558326@szeredi.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 9 May 2008 15:44:07 -0400
+Subject: Re: [PATCH 0/13] Updated V4  - Regulator Framework
+From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
+To: Harald Welte <laforge@gnumonks.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       arm kernel <linux-arm-kernel@lists.arm.linux.org.uk>
+In-Reply-To: <20080509043708.GG4961@prithivi.gnumonks.org>
+References: <1209742841.12502.40.camel@odin>
+	 <20080508063538.GC6105@prithivi.gnumonks.org>
+	 <1210279887.20475.79.camel@odin>
+	 <20080509043708.GG4961@prithivi.gnumonks.org>
+Content-Type: text/plain; charset=utf-8
+Date: Fri, 09 May 2008 20:44:04 +0100
+Message-Id: <1210362244.20475.125.camel@odin>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +struct fuse_inode_handle
-> +{
-> +	u64 nodeid;
-> +	u32 generation;
-> +};
+On Fri, 2008-05-09 at 06:37 +0200, Harald Welte wrote:
+> On Thu, May 08, 2008 at 09:51:27PM +0100, Liam Girdwood wrote:
+> > > Do you think it would be worth to export something like this in the
+> > > generic API, too?  It's probably quite hard, since there are devices
+> > > that actually use the PCF506xx STANDBY state during suspend-to-ram, but
+> > > other devices leave the PCF506xx in the ON state and just disable the
+> > > individual regulators using I2C register writes.
+> > 
+> > Yes I think it would be worthwhile adding this sort of functionality. I
+> > had considered this earlier on in development but it was lower priority
+> > for me then.
+> 
+> ok. I also believe it is much lower priority. No disagreement here :)
+> 
+> > This would mean some additions to the regulator machine interface (to be
+> > used during machine regulator setup) and regulator driver interface (to
+> > set the values). I could add some 'standby_uV' and 'standby_mode' fields
+> > (one for each standby state) to struct regulation_constraints. This
+> > would define the desired voltage and regulator operating mode to be used
+> > during the regulators STANDBY/HIBERNATE states. Hence the correct
+> > regulator output state would be selected when the PMIC enters it's
+> > STANDBY/HIBERNATE state (via either a I2C write or hardware signal). 
+> > 
+> > Would this suffice for your PMIC (sorry I don't have the datasheet) ?
+> 
+> basically the pcf506xx cannot support a different voltage in standby
+> mode than in active mode.  They just simply have something like a
+> bitmaks where you define which regulator is still running in standby,
+> and which don't.
+> 
 
-This is the same filehandle type XFS uses for 64bit inode filesystems
-where the parent is not encoded.  I'll post a patch soon to move that
-64bit inode handling to common code.  I don't think it's a good idea
-to delay your patch until that happens, but can you chose the fid
-types to be the same as XFS does currently so that a conversion is
-easily possible.  The fh_type should be 0x81 (fh type 1 order by 0x80
-to imply it's 64bit inodes)
+﻿Ok, I've created a new struct ﻿regulator_state in machine.h to describe
+a regulators suspended state for a given system suspend state :-
 
-In case you want to look at that patch I'v uploaded the current
-version at http://verein.lst.de/~hch/generic-64bit-inode-export
+struct regulator_state {
+        int uV; /* suspend voltage */
+        unsigned int mode; /* suspend regulator operating mode */
+        int enabled; /* is regulator enabled in this suspend state */
+};
 
-> +static struct dentry *fuse_get_dentry(struct super_block *sb,
-> +				      struct fuse_inode_handle *handle)
-> +{
-> +	struct inode *inode;
-> +	struct dentry *entry;
-> +	int err = -ESTALE;
-> +
-> +	if (handle->nodeid == 0)
-> +		goto out_err;
-> +
-> +	inode = ilookup5(sb, handle->nodeid, fuse_inode_eq, &handle->nodeid);
-> +	if (!inode)
-> +		goto out_err;
+'uV' and 'mode' are optional 'enabled' is mandatory. This should also
+cover other PMICs where voltage and operating mode may be configurable.
 
-Only finding in-memory inodes for nfs export is quite dangerous.  I
-think it would be a much better idea to support whatever upcalls are
-needed to find the object if it's not in memory.  Without that the nfs
-exporting support is hardly useable.
+I've also added the following fields to struct regulation_constraints in
+machine.h :-
+
+/* regulator suspend states for global PMIC STANDBY/HIBERNATE */
+struct regulator_state state_disk;
+struct regulator_state state_mem;
+struct regulator_state state_standby;
+suspend_state_t initial_state; /* suspend state to set at init */
+
+This should define all the regulator's supported system suspend states
+and be registered with the other constraints.
+
+In order to switch PMIC suspend configurations, I've added :-
+
+int regulator_suspend_prepare(suspend_state_t state);
+
+This will configure each PMIC regulator (if required) with the correct
+suspend setup prior to entering the new suspend state (and could be
+called by machine suspend code to prepare the pc506xx).
+
+Liam
+
 
