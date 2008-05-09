@@ -1,67 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758981AbYEIWdw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759872AbYEIWeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758981AbYEIWdw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 18:33:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbYEIWdp
+	id S1759872AbYEIWeT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 18:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbYEIWd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 18:33:45 -0400
-Received: from de01egw02.freescale.net ([192.88.165.103]:45808 "EHLO
-	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752765AbYEIWdo (ORCPT
+	Fri, 9 May 2008 18:33:56 -0400
+Received: from bipbip.grupopie.com ([195.23.16.24]:60595 "EHLO
+	bipbip.grupopie.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758988AbYEIWdx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 18:33:44 -0400
-Message-ID: <4824D141.9060609@freescale.com>
-Date: Fri, 09 May 2008 17:33:37 -0500
-From: Timur Tabi <timur@freescale.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
+	Fri, 9 May 2008 18:33:53 -0400
+Message-ID: <4824AD3C.3070506@grupopie.com>
+Date: Fri, 09 May 2008 20:59:56 +0100
+From: Paulo Marques <pmarques@grupopie.com>
+Organization: Grupo PIE
+User-Agent: Thunderbird 1.5.0.14 (X11/20071210)
 MIME-Version: 1.0
 To: Andi Kleen <andi@firstfloor.org>
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Calling free_pages on part of the memory returned by get_free_pages?
-References: <480D032E.20204@freescale.com> <87r6cvxdd4.fsf@basil.nowhere.org>
-In-Reply-To: <87r6cvxdd4.fsf@basil.nowhere.org>
-Content-Type: text/plain; charset=ISO-8859-1
+CC: linux-kernel@vger.kernel.org
+Subject: Re: /proc/kallsyms broken in 2.6.26-rc1-git6
+References: <20080509174148.GA22246@basil.nowhere.org> <482491D6.9030205@grupopie.com> <4824A7B6.70306@firstfloor.org>
+In-Reply-To: <4824A7B6.70306@firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Andi Kleen wrote:
-> Timur Tabi <timur@freescale.com> writes:
+>>> ffffffff80337043 u idr_pre_get  [i2c_core]
+>>> ffffc2000007573e ? DW.sched.h.920090ff.56       [i2c_core]
+>> Are you compiling with CONFIG_KALLSYMS_ALL?
 > 
->> According to LDD3, if I call get_free_pages() to allocate X bytes, I have to
->> free all of those pages with free_pages().  The VM internals are a little bit
->> over my head, but I looked at the code and I didn't see why that is a requirement.
->>
->> For example, let's say I want to allocated 6MB of physically-contiguous memory.
->>  If I call x = get_free_pages(11) to get 8MB.  What happens if I then do
->> "free_pages(x + 6 * 1024 * 1024, 9)"?
->>
->> I remember doing this on the 2.4 kernel, and it never gave me any problems.
+> Yep.
 > 
-> It is ok, as long as you don't use compound pages (__GFP_COMP) and call
-> split_page() to fix up the reference counts.
+> CONFIG_KALLSYMS=y
+> CONFIG_KALLSYMS_ALL=y
+> # CONFIG_KALLSYMS_EXTRA_PASS is not set
 > 
-> Also you do this to save memory right? The large system hash code does it too
-> and I used to do it in some 2.4 change with an alloc_pages_exact()
-> which never made it into 2.6.
+>> If you are, kallsyms will store all the output of "nm -n vmlinux" no
+>> matter what section the symbol belongs to...
 > 
-> If it's reasonably common we should re-add alloc/get_pages_exact() helper to 
-> make this pattern clear and easier to use.
+> Yes and? Surely that's not correct?
 
-Follow-up question:
+That's not for me to judge, but I believe it has always been like that.
 
-Say I allocate 8MB with __get_free_pages() and then use multiple free_pages() /
-split_page() calls to free the last 3MB.  Will the de-allocated blocks be merged
-into larger-order chunks, if they're contiguous?  That is, if I repeat this process:
+I just wanted to understand if you noticed a change in behavior (which 
+is probably a bug) or if it has always been like that but you just 
+noticed how ugly it is.
 
-1. Allocate 8MB
-2. Free 3MB
-3. Free 5MB
+Maybe you also have some debug or markers configuration or something 
+that is generating extra symbols to a special section that is just 
+making the problem look worse now.
 
-over and over again, will I totally fragment memory to the point that 8MB
-allocates will never work again?
+Anyway, I can change the way kallsyms works, but that has to be done 
+with some care because there are some userspace tools that read 
+/proc/kallsyms and we don't want to break those. A proper testing period 
+through -mm should take care of that, though.
 
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+Paulo Marques - www.grupopie.com
+
+"All generalizations are false."
