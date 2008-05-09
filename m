@@ -1,114 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757140AbYEIEkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761504AbYEIEmo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757140AbYEIEkZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 00:40:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751703AbYEIEkK
+	id S1761504AbYEIEmo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 00:42:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755217AbYEIEmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 00:40:10 -0400
-Received: from ganesha.gnumonks.org ([213.95.27.120]:45360 "EHLO
-	ganesha.gnumonks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751655AbYEIEkI (ORCPT
+	Fri, 9 May 2008 00:42:32 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:18318 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755143AbYEIEma (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 00:40:08 -0400
-Date: Fri, 9 May 2008 06:37:08 +0200
-From: Harald Welte <laforge@gnumonks.org>
-To: Liam Girdwood <lg@opensource.wolfsonmicro.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       arm kernel <linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: [PATCH 0/13] Updated V4  - Regulator Framework
-Message-ID: <20080509043708.GG4961@prithivi.gnumonks.org>
-References: <1209742841.12502.40.camel@odin> <20080508063538.GC6105@prithivi.gnumonks.org> <1210279887.20475.79.camel@odin>
+	Fri, 9 May 2008 00:42:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pfEYvUXfeIqGKPvggz7ep9BT8NIfGfRHLBKNvYKbp/GxdeOxkcuKwn+BiIOznpIBcSlCuORWlNJD7ELikcLjqQk04fWgATu3OwTYb0+hJ3C9yxp34NJyzTMfOpavC8tzRmzT0srA9wq0bPfma8QQGma9CB1cp14PLNH8pZV+Q7A=
+Message-ID: <170fa0d20805082142o61462a7dnce7852a6b7c0d21d@mail.gmail.com>
+Date: Fri, 9 May 2008 00:42:29 -0400
+From: "Mike Snitzer" <snitzer@gmail.com>
+To: "Neil Brown" <neilb@suse.de>
+Subject: Re: [RFC][PATCH] md: avoid fullsync if a faulty member missed a dirty transition
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
+       paul.clements@steeleye.com
+In-Reply-To: <18467.43895.220708.254814@notabene.brown>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="F8dlzb82+Fcn6AgP"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1210279887.20475.79.camel@odin>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <1207174155-20090-1-git-send-email-snitzer@gmail.com>
+	 <18464.134.236488.251879@notabene.brown>
+	 <170fa0d20805060458i43c9a4a7r1e30147bdcd40f20@mail.gmail.com>
+	 <18466.39418.578722.92979@notabene.brown>
+	 <170fa0d20805081311r6b726762ndc83c5f626f0956c@mail.gmail.com>
+	 <18467.43895.220708.254814@notabene.brown>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 8, 2008 at 9:40 PM, Neil Brown <neilb@suse.de> wrote:
+>
+> On Thursday May 8, snitzer@gmail.com wrote:
+>  > On Thu, May 8, 2008 at 2:13 AM, Neil Brown <neilb@suse.de> wrote:
+>  > > On Tuesday May 6, snitzer@gmail.com wrote:
+>  > >  >
+>  > >  > It looks like bitmap_update_sb()'s incrementing of events_cleared (on
+>  > >  > behalf of the local member) could be racing with the fact that the NBD
+>  > >  > member becomes faulty (whereby making the array degraded).  This
+>  > >  > allows the events_cleared to reflect a clean->dirty transition last
+>  > >  > occurred before the array became degraded.  My reasoning is: If it was
+>  > >  > a clean->dirty transition the bitmap still has the associated dirty
+>  > >  > bit set in the local member's bitmap, so using the bitmap to resync is
+>  > >  > valid.
+>  > >  >
+>  > >  > thanks,
+>  > >  > Mike
+>  > >
+>  > >  Thanks for persisting.  I think I understand what is going on now.
+>  > >
+>  > >  How about this patch?  It is similar to your, but instead of depending
+>  > >  on the odd/even state of the event counter, it directly checks the
+>  > >  clean/dirty state of the array.
+>  >
+>  > Hi Neil,
+>  >
+>  > Your revised patch works great and is obviously cleaner.
+>
+>  But I'm still not happy with it :-(
+>  I suspect there might be other cases where it will still do the wrong
+>  thing.
+>  The real problem is that we are updating events_cleared to early.  We
+>  are setting to the new event counter before that is even written out.
+>
+>  So I've come up with this patch, which I think more clearly
+>  encapsulated what events_cleared means.  It is now set to the current
+>  'events' counter immediately before we clear any bit.
+>
+>  If you could test it, I'd really appreciate it.
 
---F8dlzb82+Fcn6AgP
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Unfortunately my testing with this patch results in a full resync.
 
-On Thu, May 08, 2008 at 09:51:27PM +0100, Liam Girdwood wrote:
-> > Do you think it would be worth to export something like this in the
-> > generic API, too?  It's probably quite hard, since there are devices
-> > that actually use the PCF506xx STANDBY state during suspend-to-ram, but
-> > other devices leave the PCF506xx in the ON state and just disable the
-> > individual regulators using I2C register writes.
->=20
-> Yes I think it would be worthwhile adding this sort of functionality. I
-> had considered this earlier on in development but it was lower priority
-> for me then.
+Here is the state of the array after shutdown:
+# mdadm -X /dev/nbd0 /dev/sdq
+        Filename : /dev/nbd0
+           Magic : 6d746962
+         Version : 4
+            UUID : 7140cc3c:8681416c:12c5668a:984ca55d
+          Events : 896
+  Events Cleared : 897
+           State : OK
+       Chunksize : 128 KB
+          Daemon : 5s flush period
+      Write Mode : Normal
+       Sync Size : 52428736 (50.00 GiB 53.69 GB)
+          Bitmap : 409600 bits (chunks), 1 dirty (0.0%)
 
-ok. I also believe it is much lower priority. No disagreement here :)
+        Filename : /dev/sdq
+           Magic : 6d746962
+         Version : 4
+            UUID : 7140cc3c:8681416c:12c5668a:984ca55d
+          Events : 898
+  Events Cleared : 897
+           State : OK
+       Chunksize : 128 KB
+          Daemon : 5s flush period
+      Write Mode : Normal
+       Sync Size : 52428736 (50.00 GiB 53.69 GB)
+          Bitmap : 409600 bits (chunks), 0 dirty (0.0%)
 
-> This would mean some additions to the regulator machine interface (to be
-> used during machine regulator setup) and regulator driver interface (to
-> set the values). I could add some 'standby_uV' and 'standby_mode' fields
-> (one for each standby state) to struct regulation_constraints. This
-> would define the desired voltage and regulator operating mode to be used
-> during the regulators STANDBY/HIBERNATE states. Hence the correct
-> regulator output state would be selected when the PMIC enters it's
-> STANDBY/HIBERNATE state (via either a I2C write or hardware signal).=20
->=20
-> Would this suffice for your PMIC (sorry I don't have the datasheet) ?
+# mdadm --examine /dev/nbd0 /dev/sdq
+/dev/nbd0:
+          Magic : a92b4efc
+        Version : 00.90.00
+           UUID : 7140cc3c:8681416c:12c5668a:984ca55d
+  Creation Time : Thu May  8 06:55:32 2008
+     Raid Level : raid1
+  Used Dev Size : 52428736 (50.00 GiB 53.69 GB)
+     Array Size : 52428736 (50.00 GiB 53.69 GB)
+   Raid Devices : 2
+  Total Devices : 2
+Preferred Minor : 0
 
-basically the pcf506xx cannot support a different voltage in standby
-mode than in active mode.  They just simply have something like a
-bitmaks where you define which regulator is still running in standby,
-and which don't.
+    Update Time : Thu May  8 18:07:47 2008
+          State : clean
+Internal Bitmap : present
+ Active Devices : 2
+Working Devices : 2
+ Failed Devices : 0
+  Spare Devices : 0
+       Checksum : df65cb35 - correct
+         Events : 0.896
 
-You can change the bits via I2C, and you can enter STANDBY via either
-GPIO or I2C command.
 
-As per the data sheet: If you really want to dig in to that, the
-PCF50633 is publicly available at
-http://people.openmoko.org/tony_tu/GTA02/datasheet/PMU/PCF50633UM_6.pdf
-and the PCF50606 is available at
-http://www.rockbox.org/twiki/pub/Main/DataSheets/pcf50606.pdf
+      Number   Major   Minor   RaidDevice State
+this     1      43        0        1      active sync write-mostly   /dev/nbd0
 
-> Entering the PMICs global STANDBY/HIBERNATE state usually either comes
-> from the hardware (e.g. button press, low battery, over temp) or a
-> software user request. The constraints would be set at machine init time
-> (along with the runtime constraints). This would work well for WM8350,
-> but I'm not sure for PCF506xx.=20
+   0     0      65        0        0      active sync   /dev/sdq
+   1     1      43        0        1      active sync write-mostly   /dev/nbd0
 
-it's pretty much the same.
 
-> However, entering individual regulator STANDBY/HIBERNATE states can be
-> more difficult and as it is quite tightly coupled to the machine (and
-> it's current use case or use case transition). Do you need per regulator
-> STANDBY/HIBERNATE control ?=20
+/dev/sdq:
+          Magic : a92b4efc
+        Version : 00.90.00
+           UUID : 7140cc3c:8681416c:12c5668a:984ca55d
+  Creation Time : Thu May  8 06:55:32 2008
+     Raid Level : raid1
+  Used Dev Size : 52428736 (50.00 GiB 53.69 GB)
+     Array Size : 52428736 (50.00 GiB 53.69 GB)
+   Raid Devices : 2
+  Total Devices : 2
+Preferred Minor : 0
 
-No!
+    Update Time : Thu May  8 18:07:49 2008
+          State : clean
+Internal Bitmap : present
+ Active Devices : 1
+Working Devices : 1
+ Failed Devices : 1
+  Spare Devices : 0
+       Checksum : df65c956 - correct
+         Events : 0.898
 
-Cheers,
---=20
-- Harald Welte <laforge@gnumonks.org>           http://laforge.gnumonks.org/
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D
-"Privacy in residential applications is a desirable marketing option."
-                                                  (ETSI EN 300 175-7 Ch. A6)
 
---F8dlzb82+Fcn6AgP
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+      Number   Major   Minor   RaidDevice State
+this     0      65        0        0      active sync   /dev/sdq
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+   0     0      65        0        0      active sync   /dev/sdq
+   1     1       0        0        1      faulty removed
 
-iD8DBQFII9T0XaXGVTD0i/8RAn4PAJ9jpIj7cK1LOqGgVVKjZNTX2gKSLgCgpl3X
-r2iCfp+FGdy5F4Fl+US5qEo=
-=mEfw
------END PGP SIGNATURE-----
+Was I supposed to use this latest patch in combination with your
+previous patch (to validate_super)?  Because you'll note that with
+your most recent patch nbd0's events (ev1) is still one less than
+sdq's events_cleared.  As such the validate_super's "ev1 <
+mddev->bitmap->events_cleared" check triggers a full rebuild.
 
---F8dlzb82+Fcn6AgP--
+The kernel log shows:
+md: md0 stopped.
+md: bind<nbd0>
+md: bind<sdq>
+md: kicking non-fresh nbd0 from array!
+md: unbind<nbd0>
+md: export_rdev(nbd0)
+raid1: raid set md0 active with 1 out of 2 mirrors
+md0: bitmap initialized from disk: read 13/13 pages, set 0 bits, status: 0
+created bitmap (200 pages) for device md0
+Nope!!! ev1 (896) < mddev->bitmap->events_cleared (897)
+md: bind<nbd0>
+RAID1 conf printout:
+ --- wd:1 rd:2
+ disk 0, wo:0, o:1, dev:sdq
+ disk 1, wo:1, o:1, dev:nbd0
+md: recovery of RAID array md0
