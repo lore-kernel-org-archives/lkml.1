@@ -1,45 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765027AbYEIQvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765568AbYEIQwc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765027AbYEIQvT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 12:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756149AbYEIQvE
+	id S1765568AbYEIQwc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 12:52:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757683AbYEIQwY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 12:51:04 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:38669 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755684AbYEIQvD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 12:51:03 -0400
-X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 May 2008 12:51:02 EDT
-Date: Fri, 9 May 2008 18:45:46 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: "Justin Mattock" <justinmattock@gmail.com>
-Cc: "Jiri Slaby" <jirislaby@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: post-2.6.25 locks up hard without any message
-Message-ID: <20080509184546.34de6cdb@mjolnir.drzeus.cx>
-In-Reply-To: <dd18b0c30804280956l1c5553c9qf8f9763d375f9a1c@mail.gmail.com>
-References: <20080425175423.4bfd1c7b@mjolnir.drzeus.cx>
-	<48125094.9070007@gmail.com>
-	<dd18b0c30804251650me69a06fi573418ed48a3261d@mail.gmail.com>
-	<20080428133523.34197aa3@mjolnir.drzeus.cx>
-	<dd18b0c30804280956l1c5553c9qf8f9763d375f9a1c@mail.gmail.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 9 May 2008 12:52:24 -0400
+Received: from fonzie.hosting9000.com ([85.214.50.12]:47785 "EHLO
+	fonzie.hosting9000.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756908AbYEIQwW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 12:52:22 -0400
+Message-ID: <4824813B.6090607@googlemail.com>
+Date: Fri, 09 May 2008 18:52:11 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
+MIME-Version: 1.0
+To: trenn@suse.de
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       Jean Delvare <khali@linux-fr.org>
+Subject: Re: linux-next: ACPI I/O resource conflicts warning
+References: <4823A6DA.8010502@googlemail.com> <1210343425.29724.39.camel@queen.suse.de>
+In-Reply-To: <1210343425.29724.39.camel@queen.suse.de>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry about the lack of updates, but I haven't had time to do any more
-testing.
+Thomas Renninger wrote:
+> On Fri, 2008-05-09 at 03:20 +0200, Gabriel C wrote:
+>> Hi all ,
+>>
+>> I've noticed on linux-next from today the following ACPI warning:
+>>
+>> ...
+>>
+>> [4294023.308622] ACPI: PCI Interrupt 0000:00:1f.3[C] -> GSI 18 (level, low) -> IRQ 18
+>> [4294023.308622] ACPI: I/O resource  [0x400-0x41f] conflicts with ACPI region SMRG [0x400-0x40f]
+>> [4294023.316478] ACPI: Device needs an ACPI driver
+> 
+> You use libsensors and the sensor you use is also declared and possibly
+> used via ACPI.
 
-Anyhoo, I did an update today and the machine is running fine so far.
-Looking at the git history, it seems the patch mentioned here was
-included, which would explain things.
+Not really , lsmsensors was not running and no modules loaded for my sensors but yeah when I start it another warning
+pops up ( this one I've reported to lm-sensors mailing list )
 
-Thanks
--- 
-     -- Pierre Ossman
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
+w83627ehf: Found W83627DHG chip at 0x290
+ACPI: I/O resource w83627ehf [0x295-0x296] conflicts with ACPI region HWRE [0x290-0x299]
+ACPI: Device needs an ACPI driver
+
+> 
+>> dsdt.dsl from my motherboard can be found there:
+>>
+>> http://frugalware.org/~crazy/ASUS_P5E-VM_DO/dsdt.dsl
+>>
+>> full dmesg:
+>>
+>> http://frugalware.org/~crazy/dmesg/DMAR/dmesg
+>>
+>> Please let me know if you need more infos.
+> 
+> Maybe you could open a bug report on bugzilla.kernel.org and post
+> acpidump and dmi output (not only dsdt) there. Then we could collect
+> affected BIOSes at one central place for further evaluation and
+> discussion.
+
+Sure I will open an task about soon.
+
+> 
+> Thanks,
+> 
+>    Thomas
+
+Gabriel 
