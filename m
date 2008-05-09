@@ -1,130 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759656AbYEIWRo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759372AbYEIWVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759656AbYEIWRo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 18:17:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757842AbYEIWRf
+	id S1759372AbYEIWVR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 18:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752765AbYEIWU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 18:17:35 -0400
-Received: from mga02.intel.com ([134.134.136.20]:45950 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756988AbYEIWRe convert rfc822-to-8bit (ORCPT
+	Fri, 9 May 2008 18:20:58 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:22013 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751041AbYEIWU4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 18:17:34 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,462,1204531200"; 
-   d="scan'208";a="279829663"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 9 May 2008 18:20:56 -0400
+Message-ID: <4824CE43.8060203@hp.com>
+Date: Fri, 09 May 2008 15:20:51 -0700
+From: Rick Jones <rick.jones2@hp.com>
+User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [git head] X86_PAT & mprotect
-Date: Fri, 9 May 2008 15:20:08 -0700
-Message-ID: <924EFEDD5F540B4284297C4DC59F3DEE010471B6@orsmsx423.amr.corp.intel.com>
-In-reply-to: <21d7e9970805091511n2c6b6cfeu433b184d3031196d@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [git head] X86_PAT & mprotect
-Thread-Index: AciyIZuy1emmFd97SQCiFS1QUWy9xgAAPEoQ
-References: <200805022122.03576.elendil@planet.nl> <200805040910.57088.elendil@planet.nl> <200805050857.57661.jesse.barnes@intel.com> <200805051932.41827.elendil@planet.nl> <20080506224240.GA18706@linux-os.sc.intel.com> <20080507070217.GD32195@elte.hu> <Pine.LNX.4.64.0805071941140.18916@blonde.site> <20080507232326.GB10757@linux-os.sc.intel.com> <20080509100818.GD19617@elte.hu> <20080509200519.GA10897@linux-os.sc.intel.com> <21d7e9970805091511n2c6b6cfeu433b184d3031196d@mail.gmail.com>
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Dave Airlie" <airlied@gmail.com>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Hugh Dickins" <hugh@veritas.com>,
-       "Frans Pop" <elendil@planet.nl>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>,
-       <linux-kernel@vger.kernel.org>,
-       "Packard, Keith" <keith.packard@intel.com>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>, "Nick Piggin" <npiggin@suse.de>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>
-X-OriginalArrivalTime: 09 May 2008 22:17:32.0291 (UTC) FILETIME=[79D84D30:01C8B222]
+To: Jesper Krogh <jesper@krogh.cc>
+CC: David Miller <davem@davemloft.net>, yhlu.kernel@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: NIU - Sun Neptune 10g - Transmit timed out reset (2.6.24)
+References: <86802c440805071130m62c1f4edydb3316dac4a2aba2@mail.gmail.com>	<20080507.141521.193714938.davem@davemloft.net>	<482498D5.9060008@krogh.cc>	<20080509.143229.174354251.davem@davemloft.net> <4824C936.9000103@krogh.cc>
+In-Reply-To: <4824C936.9000103@krogh.cc>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+Jesper Krogh wrote:
+> David Miller wrote:
+> 
+>> From: Jesper Krogh <jesper@krogh.cc>
+>> Date: Fri, 09 May 2008 20:32:53 +0200
+>>
+>>> When it works I doesnt seem to be able to get it pass 500MB/s.
+>>
+>>
+>> With this card you really need multiple cpus and multiple threads
+>> sending data through the card in order to fill the 10Gb pipe.
+>>
+>> Single connections will not fill the pipe.
+> 
+> 
+> The server is a Sun X4600 with 8 x dual-core CPU's, setup with 64
+> NFS-threads. The other end of the fiber goes into a switch with gigabit
+> ports connected to 48 dual-core cpus. The test was done doing a dd on a
+> 4.5GB file from the server to /dev/null on the clients.
+> 
+> The number of contextswitches seems enourmous.. over 120.000 sometimes.
+> When transmitting around the same amount of data (4xgigabit bonded with
+> 802.3ad) 4x110MB/s the amount of contextswitches only reaches 3-4.000. I
+> have no idea if this has any relevance.
+> 
+> Should this setup not be able to fill the pipe?
 
->-----Original Message-----
->From: Dave Airlie [mailto:airlied@gmail.com] 
->Sent: Friday, May 09, 2008 3:11 PM
->To: Pallipadi, Venkatesh
->Cc: Ingo Molnar; Hugh Dickins; Frans Pop; Barnes, Jesse; 
->linux-kernel@vger.kernel.org; Packard, Keith; Yinghai Lu; 
->Andrew Morton; Linus Torvalds; H. Peter Anvin; Thomas 
->Gleixner; Nick Piggin; Jesse Barnes
->Subject: Re: [git head] X86_PAT & mprotect
->
->On Sat, May 10, 2008 at 6:05 AM, Venki Pallipadi
-><venkatesh.pallipadi@intel.com> wrote:
->> On Fri, May 09, 2008 at 12:08:18PM +0200, Ingo Molnar wrote:
->>  >
->>  > * Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
->>  >
->>  > > > I've tried doing it slightly differently below, don't 
->know whether
->>  > > > you'll consider it an improvement or not.
->>  > >
->>  > > Hugh: Thanks for looking into this. Yes. I like your 
->modified patch.
->>  > > Simpler and smaller.
->>  >
->>  > i have stuck your original patch into testing and nothing 
->blew up so
->>  > far. Due to the mm/ bits this is not for the scope of x86.git, but
->>  > obviously it all looks good and is .26-worthy to me:
->>  >
->>  >  Acked-by: Ingo Molnar <mingo@elte.hu>
->>  >  Tested-by: Ingo Molnar <mingo@elte.hu>
->>  >
->>  > Venki, could you please send a full patch against -git that has
->>  > everything from Hugh included, with an updated changelog, for
->>  > Linus/Andrew to ack/apply?
->>  >
->>
->>  Ingo,
->>
->>  Split up the patch into two parts as the pci part was 
->unrelated to mprotect
->>  problem in a sense.
->>
->>  Here is the first patch.
->>
->>  Thanks,
->>  Venki
->>
->>
->>  Some versions of X used the mprotect workaround to change 
->caching type from
->>
->> UC to WB, so that it can then use mtrr to program WC for 
->that region [1].
->>  Change the mmap of pci space through /sys or /proc 
->interfaces from UC to
->>  UC_MINUS. With this change, X will not need to use mprotect
->>  workaround to get WC type.
->>  Also the bug with mprotect which lets caller to change PAT 
->bits is fixed in
->>  the follow on patch. So, this X workaround will stop 
->working as well.
->>
->
->Wow this kinda puts X in a nasty position, we have 2.6.25 and 
->previous kernels
->where we use the original /sys interfaces and nasty hack to
->workaround, but on 2.6.26 we magically need to
->switch to the /sys _uc interfaces or the users X will slow down.
->
+Into which slot was the Neptune inserted?  (sure will be nice to have 
+Alex Chiang's pci slot id patch in mainline one of these days :)
 
-No. With 2.6.26 you can still use same /sys resource file, without
-the mprotect workaround and set the MTRR as before.
+Is that slot x4, x8, x16?
 
-The change from UC to UC_MINUS in this patch ensures that the
-X drivers MTRR will take precedence and X does not need any mprotect
-hacks.
+To which cpu(s) were the neptune's interrupts assigned? (grep <ethN> 
+/proc/interrupts)
 
-Thanks,
-Venki
+Is the irqbalanced running?
+
+Were any of the 16 CPUs in the system saturated during the test? (top 
+with all CPUs displayed)
+
+Do you have/know of any diagrams showing the way the I/O slots are wired 
+to the rest of the system?
+
+Have you tried any tests without any filesystem involvement? A script 
+like this (might need post-mailer fixup) might be interesting to run:
+
+s2:~ # cat runemomniagg.sh
+length=30
+confidence="-i 30,30"
+# comment the following to get proper aggregates
+# rather than quick-and dirty
+confidence=""
+#edit these to match your clients
+control_host[1]=192.168.2.205
+control_host[2]=192.168.2.206
+control_host[3]=192.168.2.207
+control_host[4]=192.168.2.208
+control_host[5]=192.168.2.209
+control_host[6]=192.168.2.210
+control_host[7]=192.168.2.211
+control_host[8]=192.168.2.212
+control_host[9]=192.168.2.201
+control_host[10]=192.168.2.203
+control_host[11]=192.168.2.204
+control_host[12]=192.168.2.202
+concurrent_sessions="1 2 3 4 5 6 7 8 9 10 11 12"
+HDR="-P 1"
+# -O means "human" -o means "csv"
+CSV="-o"
+#CSV="-O"
+
+echo text you supply about interrupts
+echo text you supply about the systems
+uname -a
+   echo TCP_STREAM to multiple systems
+   for i in $concurrent_sessions; do j=1; echo $i concurrent streams; 
+while [ $j -le $i ]; do netperf $HDR -t omni -c -C -H 
+${control_host[$j]} -l $length $confidence -- $CSV -m 64K & HDR="-P 
+0";j=`expr $j + 1`; done; wait; done
+
+   echo TCP_MAERTS to multiple systems
+   HDR="-P 1"
+   for i in $concurrent_sessions; do j=1; echo $i concurrent streams; 
+while [ $j -le $i ]; do netperf $HDR -t omni -c -C -H 
+${control_host[$j]} -l $length $confidence -- $CSV -M ,64K & HDR="-P 
+0";j=`expr $j + 1`; done; wait; done
+
+   echo bidir TCP_RR MEGABITS to multiple systems
+   HDR="-P 1"
+   for i in $concurrent_sessions; do j=1; echo $i concurrent streams; 
+while [ $j -le $i ]; do netperf $HDR  -t omni -f m -c -C -H 
+${control_host[$j]} -l $length $confidence -- $CSV -s 1M -S 1M -r 64K -b 
+12 & HDR="-P 0";j=`expr $j + 1`; done; wait; done
+
+for burst in 0 1 4 16
+  do
+   echo TCP_RR to multiple systems burst of $burst
+   HDR="-P 1"
+   for i in $concurrent_sessions; do j=1; echo $i concurrent streams; 
+while [ $j -le $i ]; do netperf $HDR -t omni -c -C -H 
+${control_host[$j]} -l $length $confidence -- $CSV -r 1 -b $burst -D & 
+HDR="-P 0";j=`expr $j + 1`; done; wait; done
+  done
+
+cat /proc/meminfo
+cat /proc/cpuinfo
+
+
+Which will run netperf "omni" tests and emit a _LOT_ of information. 
+The concurrent tests run "properly" will be ~15 minutes a data point. 
+The output is probably best viewed in a spreadsheet program.  It is 
+possible to limit what netperf will emit by placing the names of the 
+output items of interest into a file you pass in the test specific -o or 
+-O options. The netperf omni tests are in the top of trunk at:
+
+http://www.netperf.org/svn/netperf2/trunk/
+
+via subversion.  The script presume your ./configure was a superset of:
+
+./configure --enable-omni --enable-burst
+
+You would want it installed on both your SUT and at least a subset of 
+your LG's.
+
+rick jones
