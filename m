@@ -1,76 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933470AbYEIRub@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765827AbYEIR5O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933470AbYEIRub (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 13:50:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760174AbYEIRuX
+	id S1765827AbYEIR5O (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 13:57:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755617AbYEIR46
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 13:50:23 -0400
-Received: from straum.hexapodia.org ([64.81.70.185]:18953 "EHLO
-	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759756AbYEIRuU (ORCPT
+	Fri, 9 May 2008 13:56:58 -0400
+Received: from viefep32-int.chello.at ([62.179.121.50]:47786 "EHLO
+	viefep32-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752632AbYEIR44 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 13:50:20 -0400
-X-Greylist: delayed 1822 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 May 2008 13:50:20 EDT
-Date: Fri, 9 May 2008 10:19:56 -0700
-From: Andy Isaacson <adi@hexapodia.org>
-To: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: 2.6.25-mm1: kmmcd NULL pointer dereference at klist_del+0xe/0x30
-Message-ID: <20080509171956.GJ30021@hexapodia.org>
+	Fri, 9 May 2008 13:56:56 -0400
+Subject: Re: Spinlocks waiting with interrupts disabled / preempt disabled.
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Olaf Weber <olaf@sgi.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Christoph Lameter <clameter@sgi.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <bzymymzv3j7.fsf@fransum.emea.sgi.com>
+References: <Pine.LNX.4.64.0805061220570.30604@schroedinger.engr.sgi.com>
+	 <20080507073017.GJ32195@elte.hu>  <bzymymzv3j7.fsf@fransum.emea.sgi.com>
+Content-Type: text/plain
+Date: Fri, 09 May 2008 19:56:54 +0200
+Message-Id: <1210355814.13978.255.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
-X-GPG-Fingerprint: 1914 0645 FD53 C18E EEEF C402 4A69 B1F3 68D2 A63F
-X-GPG-Key-URL: http://web.hexapodia.org/~adi/gpg.txt
-X-Domestic-Surveillance: money launder bomb tax evasion
+X-Mailer: Evolution 2.22.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Got this twice with 2.6.25-mm1 on my Thinkpad X40, AData 16GB SDHC card
-in mmc0 but no filesystem mounted.  I think the oops happened at
-suspend/resume time.  Previous kernel was 2.6.25-rc5-mm1 which didn't
-exhibit this problem across multiple suspend-resume cycles.
+On Fri, 2008-05-09 at 18:35 +0200, Olaf Weber wrote:
+> Ingo Molnar writes:
+> > * Christoph Lameter <clameter@sgi.com> wrote:
+> 
+> >> @@ -132,10 +132,14 @@ unsigned long __lockfunc _write_lock_irq
+> >> {
+> >> unsigned long flags;
+> >> 
+> >> +retry:
+> >> local_irq_save(flags);
+> >> -	preempt_disable();
+> >> -	_raw_write_lock(lock);
+> >> -	return flags;
+> >> +	if (_write_trylock(lock))
+> >> +		return flags;
+> >> +	local_irq_restore(flags);
+> >> +	while (!write_can_lock(lock))
+> >> +		cpu_relax();
+> >> +	goto retry;
+> >> }
+> >> EXPORT_SYMBOL(_write_lock_irqsave);
+> 
+> > hm, this is done on a too high level and will turn off some debugging 
+> > code. I.e. if we dont just loop long but truly deadlock here we wont 
+> > call lib/spinlock_debug.c's _raw_write_lock() code that does some sanity 
+> > checks in the debug case.
+> 
+> > so how about doing this on a deeper level and adding a new 
+> > __raw_write_lock_flags() primitive that would look at the flags value 
+> > and could enable interrupts in the lowlevel code?
+> 
+> Thinking of an alternative approach, I'd like to revisit the original
+> problem for a moment: on a (big) system running a kernel based on
+> 2.6.16 we found that in the following stack trace, pdflush has just
+> enabled irqs again on its cpu after running with irqs disabled for
+> about 2 minutes.
+> 
+> >> bt 0xe0000168f4378000
+> ================================================================
+> STACK TRACE FOR TASK: 0xe0000168f4378000 (pdflush)
+> 
+>  0 kdba_main_loop+0x14c [0xa0000001004190cc]
+>  1 kdb+0x11fc [0xa0000001002a639c]
+>  2 kdb_ipi+0x11c [0xa0000001002a12dc]
+>  3 handle_IPI+0x27c [0xa00000010005671c]
+>  4 handle_IRQ_event+0x8c [0xa0000001000fa40c]
+>  5 __do_IRQ+0x12c [0xa0000001000fa5cc]
+>  6 ia64_handle_irq+0x15c [0xa00000010001213c]
+>  7 ia64_leave_kernel [0xa00000010000cb20]
+>  8 _write_unlock_irqrestore+0x40 [0xa000000100558500]
+>  9 test_set_page_writeback+0x18c [0xa000000100114b6c]
+> 10 xfs_start_page_writeback+0x2c [0xa0000002e4ab914c]
+> 11 xfs_page_state_convert+0xa0c [0xa0000002e4abcbac]
+> 12 xfs_vm_writepage+0x19c [0xa0000002e4abd13c]
+> 13 mpage_writepages+0x3fc [0xa0000001001bcb5c]
+> 14 xfs_vm_writepages+0xac [0xa0000002e4ab9eac]
+> 15 do_writepages+0xac [0xa0000001001136cc]
+> 16 __writeback_single_inode+0x47c [0xa0000001001b8f7c]
+> 17 sync_sb_inodes+0x4ac [0xa0000001001b9cec]
+> 18 writeback_inodes+0x19c [0xa0000001001baafc]
+> 19 wb_kupdate+0x26c [0xa000000100113bcc]
+> 20 pdflush+0x38c [0xa00000010011582c]
+> 21 kthread+0x22c [0xa0000001000c9dac]
+> 22 kernel_thread_helper+0xcc [0xa000000100012f6c]
+> 23 start_kernel_thread+0x1c [0xa0000001000094bc]
+> ================================================================
+> 
+> There is, as far as I could tell, no code in the critical region of
+> test_set_page_writeback that could take this much time, except for the
+> call to _write_lock_irqsave itself.  There the root of the problem
+> seems to have been that many threads went after the read lock, and an
+> rwlock_t will allow readers in while readers hold the lock, even if a
+> writer needs it, thus potentially starving the writer indefinitely (up
+> to 2 minutes in the case under discussion).
+> 
+> Re-enabling irqs when looping in _write_lock_irqsave (and *_irq and
+> *_bh) works here because _write_lock_irqsave() wasn't called with irqs
+> disabled.  But pdflush will still spend a long time getting the lock.
+> 
+> The reason we're pursuing this nevertheless is that it is easy to do
+> starting from the current code-base, and doesn't impose API or ABI
+> changes.
 
-Complete logs and pretty much everything else you could want at
-http://web.hexapodia.org/~adi/bobble/bobble_2.6.25-mm1-dirty_20080509100634/
+This would be your best option for you kabi constrained .16 kernel.
 
-[104375.816331] BUG: unable to handle kernel NULL pointer dereference at 0000000c
-[104375.816338] IP: [<c02d86ce>] klist_del+0xe/0x30
-[104375.816350] *pde = 00000000 
-[104375.816356] Oops: 0000 [#1] 
-[104375.816361] last sysfs file: /sys/devices/pci0000:00/0000:00:1e.0/0000:02:02.0/rf_kill
-[104375.816367] Modules linked in: ipw2200 michael_mic arc4 ecb crypto_blkcipher ieee80211_crypt_tkip crc32 i915 drm rfcomm l2cap bluetooth ipv6 acpi_cpufreq cpufreq_powersave cpufreq_userspace cpufreq_conservative cpufreq_stats af_packet dm_snapshot dm_mirror dm_log dm_mod loop mmc_block battery ac video output sdhci ieee80211 ieee80211_crypt yenta_socket rsrc_nonstatic pcmcia_core mmc_core firmware_class dock button psmouse snd_intel8x0m snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm_oss snd_mixer_oss snd_pcm snd_timer snd soundcore snd_page_alloc thinkpad_acpi pcspkr intel_agp agpgart rtc hwmon backlight evdev nvram e1000 ehci_hcd uhci_hcd usbcore thermal processor fan unix [last unloaded: ipw2200]
-[104375.816442] 
-[104375.816448] Pid: 3130, comm: kmmcd Tainted: G        W (2.6.25-mm1-dirty #1)
-[104375.816455] EIP: 0060:[<c02d86ce>] EFLAGS: 00010292 CPU: 0
-[104375.816464] EIP is at klist_del+0xe/0x30
-[104375.816469] EAX: 00000000 EBX: f7b0a04c ECX: f7804f40 EDX: f896f474
-[104375.816476] ESI: f7b0a004 EDI: f7b0a090 EBP: f896f680 ESP: f2923ebc
-[104375.816482]  DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
-[104375.816490] Process kmmcd (pid: 3130, ti=f2922000 task=f291d9b0 task.ti=f2922000)
-[104375.816495] Stack: f7b0a06c f7b0a004 c024b048 fffffff0 f7b0a004 c0249cd0 f7b0a06c f28cf86c 
-[104375.816507]        c032e90c f7b0a090 f7b0a06c f28cf804 f28cf890 00000000 f896f680 f7b0a000 
-[104375.816518]        f28cf800 00000000 f896a83f f7b0a000 f28cf800 00000000 f896a83f f8965c62 
-[104375.816529] Call Trace:
-[104375.816535]  [<c024b048>] bus_remove_device+0x58/0x80
-[104375.816546]  [<c0249cd0>] device_add+0x4f0/0x5a0
-[104375.816574]  [<f8965c62>] mmc_add_card+0xb2/0x160 [mmc_core]
-[104375.816608]  [<f896788e>] mmc_attach_sd+0x21e/0x8d0 [mmc_core]
-[104375.816644]  [<f8965950>] mmc_rescan+0x0/0x150 [mmc_core]
-[104375.816668]  [<f8965a7e>] mmc_rescan+0x12e/0x150 [mmc_core]
-[104375.816693]  [<c0129f3b>] run_workqueue+0x8b/0x110
-[104375.816704]  [<c01177dc>] set_next_entity+0x1c/0x50
-[104375.816716]  [<c012a070>] worker_thread+0x0/0xd0
-[104375.816726]  [<c012a0ea>] worker_thread+0x7a/0xd0
-[104375.816737]  [<c012d150>] autoremove_wake_function+0x0/0x40
-[104375.816750]  [<c012a070>] worker_thread+0x0/0xd0
-[104375.816758]  [<c012cdd2>] kthread+0x42/0x70
-[104375.816766]  [<c012cd90>] kthread+0x0/0x70
-[104375.816775]  [<c0103a6b>] kernel_thread_helper+0x7/0x1c
-[104375.816790]  =======================
-[104375.816793] Code: 04 8b 14 24 8b 30 85 d2 0f 95 44 24 07 eb 9e 8d b4 26 00 00 00 00 8d bc 27 00 00 00 00 83 ec 08 89 1c 24 89 c3 89 74 24 04 8b 00 <8b> 70 0c 89 d8 e8 28 ff ff ff 85 c0 74 08 85 f6 74 04 89 d8 ff 
-[104375.816839] EIP: [<c02d86ce>] klist_del+0xe/0x30 SS:ESP 0068:f2923ebc
-[104375.816851] ---[ end trace 29b5951e01a37ec3 ]---
+> An alternative approach would to view this as a bug of the rwlock_t
+> code in particular, and fix it by keeping new readers from a acquiring
+> an rwlock_t if a writer is also trying to lock it.  For x86 at least,
+> I can sketch an implementation that is based on the new ticket-based
+> spinlocks:
+>  - use the ticket-based lock for writers
+>  - add a reader count for readers (16 bits out of 32 are free)
+>  - readers get in if the write lock is idle
+>  - if the write lock wasn't idle, readers loop until it is
+>  - on obtaining the ticket-based lock, the writer waits for active
+>    readers to leave (eg reader count to go to zero)
+> Contention by writers now keeps readers out, which may be a problem.
+> 
+> Advantages of such an approach:
+>  - Writers are "fair" amongst themselves.
+>  - Readers cannot hold off writers.
+> 
+> Disadvantages:
+>  - Contention among writers can hold off readers indefinitely.
+>    This scheme only works if the write lock is not "permanently"
+>    contended, otherwise it goes from frying pan to fire.
+>  - Requires changes to the asm-coded locking primitives, which means
+>    it is likely to be done for x86 and ia64 only, unless the platform
+>    maintainers step in.
+> 
+> Given the above, is this worth pursuing for inclusion in mainline?
 
--andy
+Keep in mind that rwlock_t must support recusive read locks. Much code
+depends on this.
+
+> A third solution would be to look at this problem on a case-by-case
+> basis.  In the case under discussion, there may be other kernel bugs
+> that aggravate the problem (it is an old kernel after all) and maybe
+> this just means the address_space.tree_lock ought to be replaced with
+> something else (though I wouldn't claim to know what).
+
+That has been done by Nick Piggin, the lockless pagecache work removes
+the read side of the tree_lock.
+
+
