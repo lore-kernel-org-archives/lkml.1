@@ -1,72 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765561AbYEIF1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932514AbYEIFeg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765561AbYEIF1T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 01:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752375AbYEIF07
+	id S932514AbYEIFeg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 01:34:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754842AbYEIFeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 01:26:59 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:18357 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751467AbYEIF06 (ORCPT
+	Fri, 9 May 2008 01:34:24 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:51649 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754323AbYEIFeW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 01:26:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SyvUxz+n6jsqNHi5EPsMHmfsDWO5x6e/vIn0HwBVPqi7wqvSugy9ZVSG1SHCjtllb8Y7qwVymko6l/SLsDI38a3xwg3RRDWNZfT7Zog3jyHVLvP5KHWNK4ZP99idMvSkKFptsqipWjqaq7+5JtWfgaVhBj2OQAe1adwK6oUITUA=
-Message-ID: <170fa0d20805082226pa75ae7r65a04d494b65cbf5@mail.gmail.com>
-Date: Fri, 9 May 2008 01:26:58 -0400
-From: "Mike Snitzer" <snitzer@gmail.com>
-To: "Neil Brown" <neilb@suse.de>
-Subject: Re: [RFC][PATCH] md: avoid fullsync if a faulty member missed a dirty transition
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
-       paul.clements@steeleye.com
-In-Reply-To: <170fa0d20805082208y5ad10fe6xbbbaddcbcb7a4736@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 9 May 2008 01:34:22 -0400
+Date: Fri, 9 May 2008 07:33:48 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Paul Mackerras <paulus@samba.org>, Greg KH <greg@kroah.com>,
+       benh@kernel.crashing.org, Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, tony@bakeyournoodle.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Silence 'ignoring return value' warnings in
+ drivers/video/aty/radeon_base.c
+Message-ID: <20080509073348.7045656f@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <1210291364.19279.62.camel@brick>
+References: <20080506143936.6357e578.akpm@linux-foundation.org>
+	<20080506.144301.233784820.davem@davemloft.net>
+	<1210121683.21644.194.camel@pasglop>
+	<20080506182006.4b4a3968.akpm@linux-foundation.org>
+	<1210134804.21644.202.camel@pasglop>
+	<20080507102310.57b4ccfb@gondolin.boeblingen.de.ibm.com>
+	<1210196621.1421.5.camel@pasglop>
+	<20080508093421.31cd735b@gondolin.boeblingen.de.ibm.com>
+	<1210232984.1421.47.camel@pasglop>
+	<20080508103621.69bc47cf@gondolin.boeblingen.de.ibm.com>
+	<20080508220348.GD7705@kroah.com>
+	<18467.37312.772564.163109@cargo.ozlabs.ibm.com>
+	<1210291364.19279.62.camel@brick>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1207174155-20090-1-git-send-email-snitzer@gmail.com>
-	 <18464.134.236488.251879@notabene.brown>
-	 <170fa0d20805060458i43c9a4a7r1e30147bdcd40f20@mail.gmail.com>
-	 <18466.39418.578722.92979@notabene.brown>
-	 <170fa0d20805081311r6b726762ndc83c5f626f0956c@mail.gmail.com>
-	 <18467.43895.220708.254814@notabene.brown>
-	 <170fa0d20805082142o61462a7dnce7852a6b7c0d21d@mail.gmail.com>
-	 <170fa0d20805082208y5ad10fe6xbbbaddcbcb7a4736@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 9, 2008 at 1:08 AM, Mike Snitzer <snitzer@gmail.com> wrote:
-> On Fri, May 9, 2008 at 12:42 AM, Mike Snitzer <snitzer@gmail.com> wrote:
->
->  >  Was I supposed to use this latest patch in combination with your
->  >  previous patch (to validate_super)?  Because you'll note that with
->  >  your most recent patch nbd0's events (ev1) is still one less than
->  >  sdq's events_cleared.  As such the validate_super's "ev1 <
->  >  mddev->bitmap->events_cleared" check triggers a full rebuild.
->  >
->  >  The kernel log shows:
->  >  md: md0 stopped.
->  >  md: bind<nbd0>
->  >  md: bind<sdq>
->  >  md: kicking non-fresh nbd0 from array!
->  >  md: unbind<nbd0>
->  >  md: export_rdev(nbd0)
->  >  raid1: raid set md0 active with 1 out of 2 mirrors
->  >  md0: bitmap initialized from disk: read 13/13 pages, set 0 bits, status: 0
->
->  Also, no bits were set in the bitmap.. bitmap_create() must've thrown
->  away the dirty bits.  Given your latest patch, does bitmap_create()'s
->  "bitmap->events_cleared == mddev->events" check need to be adjusted?
->
->  Before I would always see something like:
->  md0: bitmap initialized from disk: read 13/13 pages, set 1 bits, status: 0
+On Thu, 08 May 2008 17:02:44 -0700,
+Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
-Actually, the mdadm -X output I provided shows that sdq's bitmap
-doesn't have any bits set:
-Bitmap : 409600 bits (chunks), 0 dirty (0.0%)
+> On Fri, 2008-05-09 at 09:50 +1000, Paul Mackerras wrote:
+> > I think the best solution is to make a new sysfs_maybe_create_file()
+> > which isn't marked must_check, and then move suitable callers (such as
+> > radeonfb) over to that.  That will make it obvious in the callers that
+> > the file creation isn't guaranteed.
 
-This can't be right, considering nbd0 was marked faulty and the array
-became degraded, can it?
+Either that...
+
+> 
+> Or just a a flag parameter to the existing one that says whether failure
+> is allowed or not.  In a case that fails, a WARN_ON can be printed from
+> the common create_file rather than putting printks all over the kernel.
+
+...or that. But the core should still warn about duplicate files in all
+cases, since that indicates a bug. (And that will catch the problems we
+found before; IIRC a core warning didn't exist back then.)
+
+> 
+> This would also document which files are necessary vs. optional.
+
+Shouldn't that rather go into Documentation/ABI/, so that people can
+easily find out what they may rely on?
