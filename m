@@ -1,93 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761589AbYEINBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761682AbYEINH7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761589AbYEINBW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 09:01:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752632AbYEINBM
+	id S1761682AbYEINH7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 09:07:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755730AbYEINHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 09:01:12 -0400
-Received: from web32601.mail.mud.yahoo.com ([68.142.207.228]:24638 "HELO
-	web32616.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with SMTP id S1750951AbYEINBL (ORCPT
+	Fri, 9 May 2008 09:07:49 -0400
+Received: from mail.lysator.liu.se ([130.236.254.3]:33933 "EHLO
+	mail.lysator.liu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755595AbYEINHs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 09:01:11 -0400
-X-YMail-OSG: iME2rVwVM1n3Nv3ZqaAs6gk7kgc9EbFQhQc_fwfeMAIuRglMCQGn3VhBrMs7SWcHoyUS_OitgcivRn7tX5EobpaXIk3k4LMeJKqzjZygyChUPuXkc56N02tBHCBbviWCr4vj_vaFEJF..1bFJV2Ob7Ed2MXx5dbia91mMds-
-X-Mailer: YahooMailRC/975.23 YahooMailWebService/0.7.185
-Date: Fri, 9 May 2008 06:01:10 -0700 (PDT)
-From: Martin Knoblauch <spamtrap@knobisoft.de>
-Subject: Re: 2.6.25.2 - Jiffies/Time jumping back and forth (Regereesion from 2.6.24)
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Gabriel C <nix.or.die@googlemail.com>,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       linux-kernel@vger.kernel.org, hmh@hmh.eng.br
+	Fri, 9 May 2008 09:07:48 -0400
+X-Greylist: delayed 1163 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 May 2008 09:07:48 EDT
+To: Willy Tarreau <w@1wt.eu>
+Cc: "H. Peter Anvin" <hpa@kernel.org>, Adrian Bunk <bunk@kernel.org>,
+       linux-kernel@vger.kernel.org, trivial@kernel.org
+Subject: Re: [2.6 patch] UTF-8 fixes in comments
+References: <20080428154023.GU2813@cs181133002.pp.htv.fi>
+	<20080428230524.GK8474@1wt.eu> <48167A07.4000305@kernel.org>
+	<20080429050605.GA27875@1wt.eu>
+From: =?utf-8?Q?David_K=C3=A5gedal?= <davidk@lysator.liu.se>
+Date: Fri, 09 May 2008 14:48:37 +0200
+In-Reply-To: <20080429050605.GA27875@1wt.eu> (Willy Tarreau's message of "Tue\, 29 Apr 2008 07\:06\:05 +0200")
+Message-ID: <8763tn3aoq.fsf@lysator.liu.se>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <264564.71707.qm@web32601.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message ----
+Willy Tarreau <w@1wt.eu> writes:
 
-> From: Thomas Gleixner <tglx@linutronix.de>
-> To: Martin Knoblauch <spamtrap@knobisoft.de>
-> Cc: Gabriel C <nix.or.die@googlemail.com>; Bart Van Assche <bart.vanassche@gmail.com>; linux-kernel@vger.kernel.org; hmh@hmh.eng.br
-> Sent: Thursday, May 8, 2008 4:13:55 PM
-> Subject: Re: 2.6.25.2 - Jiffies/Time jumping back and forth (Regereesion from 2.6.24)
-> 
-> On Thu, 8 May 2008, Martin Knoblauch wrote:
-> > on two different systems running 2.6.25.2:
-> > 
-> > ibm x3650(2xDualCore)
-> > -------------------------------------
-> > [root@lpsdm60 ~]# cat 
-> /sys/devices/system/clocksource/clocksource0/available_clocksource
-> > tsc hpet acpi_pm jiffies
-> > [root@lpsdm60 ~]# cat 
-> /sys/devices/system/clocksource/clocksource0/current_clocksource
-> > tsc
-> > 
-> > HP Proliant DL-380G4 (2xSingleCore)
-> > ------------------------------------------------------------
-> > [root@lpsdm52 ~]# cat 
-> /sys/devices/system/clocksource/clocksource0/available_clocksource
-> > tsc hpet acpi_pm jiffies
-> > [root@lpsdm52 ~]# cat 
-> /sys/devices/system/clocksource/clocksource0/current_clocksource
-> > tsc
-> > 
-> > and on the DL380G4 running 2.6.24:
-> > ---------------------------------------------------------
-> > [root@lpsdm52 ~]# cat 
-> /sys/devices/system/clocksource/clocksource0/available_clocksource
-> > hpet acpi_pm jiffies tsc
-> > [root@lpsdm52 ~]# cat 
-> /sys/devices/system/clocksource/clocksource0/current_clocksource
-> > hpet
-> 
-> So on 2.6.24 the TSC is declared unstable at some point and 2.6.25
-> thinks it works fine. Is this the same kernel config (aside of the 24/25 fuzz) ?
-> 
-> Thanks,
->     tglx
+> And do we really consider that people's names in *comments* cannot
+> be converted to pure ASCII ? I'm western european and have always
+> been against accents in comments (another reason to write comments
+> in english BTW). Unix and internet have lived without accents for
+> almost 30 years without anyone really bothering. 
 
- hah. I love open source :-)
+That's a ridiculous statement.  Just because you didn't bother, you
+can't assume that the people who were actually affected didn't bother.
 
- Between 2.6.24 and 2.6.25 there was some patching in "kernel/printk.c". Especially this is interesting:
+I went through large parts of the 1990's under the name "David
+K}gedal". And I bothered.
 
+And no, the second character in my last name is not an accented a,
+they have been separate letters for hundreds of years in Sweden.  So I
+can live without using accented letters, as long as I can write
+Kågedal including the å. :-)
 
-@@ -680,7 +742,7 @@
-                                        loglev_char = default_message_loglevel
-                                                + '0';
-                                }
--                               t = printk_clock();
-+                               t = cpu_clock(printk_cpu);
-                                nanosec_rem = do_div(t, 1000000000);
-                                tlen = sprintf(tbuf,
-                                                "<%c>[%5lu.%06lu] ",
+Not that my name appears anywhere in the Linux source, but I still
+felt the urge to reply...
 
-
- Where "prink_clock()" basically translates into "sched_clock()" in 2.6.24. If I change the 2.6.25 version to directly call "sched_clock()", the timestamps are back to the expected values and are no longer jumping back and forth. So, something in "cpu_clock()" is fishy.
-
-Cheers
-Martin
-
+-- 
+David Kågedal
