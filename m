@@ -1,128 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763999AbYEITjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932965AbYEITjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763999AbYEITjU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 15:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678AbYEITjA
+	id S932965AbYEITjj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 15:39:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678AbYEITj0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 15:39:00 -0400
-Received: from fmailhost04.isp.att.net ([204.127.217.104]:49704 "EHLO
-	fmailhost01.isp.att.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752125AbYEITi6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 15:38:58 -0400
-X-Originating-IP: [74.251.48.254]
-Date: Fri, 9 May 2008 14:38:54 -0500
-From: Jay Cliburn <jacliburn@bellsouth.net>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Chris Snook <csnook@redhat.com>, Luca Tettamanti <kronos.it@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: atl1 64-bit => 32-bit DMA borkage (reproducible, bisected)
-Message-ID: <20080509143854.7bc39ab7@osprey.hogchain.net>
-In-Reply-To: <20080509200715.GA5040@martell.zuzino.mipt.ru>
-References: <20080420060607.2b1be48b@osprey.hogchain.net>
-	<20080420122631.GA4761@martell.zuzino.mipt.ru>
-	<20080420133704.63f5cc10@osprey.hogchain.net>
-	<20080420205500.GA4762@martell.zuzino.mipt.ru>
-	<20080421210821.28053a92@osprey.hogchain.net>
-	<20080425195743.2bfe66ee@osprey.hogchain.net>
-	<20080504211507.GC1040@martell.zuzino.mipt.ru>
-	<20080506110225.31fd61a4@osprey.hogchain.net>
-	<20080509195149.GA4985@martell.zuzino.mipt.ru>
-	<48249E55.1020300@redhat.com>
-	<20080509200715.GA5040@martell.zuzino.mipt.ru>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 9 May 2008 15:39:26 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:61445 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1764708AbYEITjY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 15:39:24 -0400
+Date: Fri, 9 May 2008 20:36:00 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Jean Delvare <khali@linux-fr.org>
+cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       Alessandro Zummo <a.zummo@towertech.it>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, rtc-linux@googlegroups.com,
+       i2c@lm-sensors.org, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>
+Subject: Re: [RFC][PATCH 2/4] RTC: SWARM I2C board initialization
+In-Reply-To: <20080508095658.40eb74f4@hyperion.delvare>
+Message-ID: <Pine.LNX.4.55.0805092019100.10552@cliff.in.clinika.pl>
+References: <Pine.LNX.4.55.0805070031410.16173@cliff.in.clinika.pl>
+ <20080507090514.3a86cf4b@hyperion.delvare> <Pine.LNX.4.64.0805070936060.6341@anakin>
+ <20080507094343.25f279b9@hyperion.delvare> <Pine.LNX.4.55.0805072214090.25644@cliff.in.clinika.pl>
+ <20080508095658.40eb74f4@hyperion.delvare>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[trimmed cc list slightly]
+Hi Jean,
 
-On Sat, 10 May 2008 00:07:15 +0400
-Alexey Dobriyan <adobriyan@gmail.com> wrote:
+> $ find linux-2.6.26-rc1 -name Kconfig | wc -l
+> 455
+> $ find linux-2.6.26-rc1 -name Makefile | wc -l
+> 1030
+> $
 
-> On Fri, May 09, 2008 at 02:56:21PM -0400, Chris Snook wrote:
-> > Alexey Dobriyan wrote:
-> >> Hmmm, there was a wonderful oops on interface stop here when the
-> >> other end of atl1 cable was physically unplugged (but there was
-> >> traffic before): atl1_down
-> >> 	atl1_clean_rx_ring
-> >> 	swiotlb_unmap_single
-> >> 	swiotlb_unmap_single_attrs
-> >> 	memcpy_c
-> >
-> > Intel chip, or AMD?
-> 
-> Intel(R) Core(TM)2 CPU          6400  @ 2.13GHz
-> Asus P5B-E motherboard.
-> 
+ Well, these are not pieces of code and serve a different purpose, don't
+they?
 
-I see the same thing with a Socked AM2-based board (Asus M2V) with 4GB
-RAM installed. The problem occurs only when SWIOTLB is active, which
-happens automatically at boot (in arch/x86/kernel/pci-swiotlb.c) when
-the page frame number exceeds 1048576 (corresponding to 2^32 bytes).
+> Not to mention the 102 setup.c, 87 irq.c, 62 time.c... It is very
+> common to have duplicated file names in the kernel tree because it
+> supports so many architectures and platforms. In general, when you work
 
-I thought for awhile that the problem went away with iommu=allowed, but
-I was wrong.
+ Well, that is not a technical argument.  It is a fact of life, sure, but
+it does not necessarily mean it is right, but perhaps that nobody has
+really thought about it.
 
-The bug appears to be a "simple" skb write-after-free that happens only
-when bounce buffers are in use, but I'll be damned if I can find the
-cause of it.
+> on a given architecture or platform, names become unique again. Taking
+> GDB as an example again, you definitely know what architecture you are
+> debugging, so there should be relatively little ambiguity on what files
+> are involved.
 
-<continues looking>
+ Hmm, why to have little ambiguity, when you can have none?  We do not
+rely on crippled filesystems, so we do not have to save characters in file
+names -- we keep them reasonably short anyway.  I say there is no
+technical advantage in having duplicate file names throughout the tree
+(please name one if I am wrong) and there are advantages -- however small,
+but still -- in keeping file names unique.  Therefore the gain from
+converting the existing file names may not justify the effort required,
+but it does not mean new additions may not take the gain into account?
 
-=============================================================================
-BUG kmalloc-2048: Poison overwritten
------------------------------------------------------------------------------
+> (On top of that, I'd argue that we _should_ be able to display relative
+> paths to file names when debugging.)
 
-INFO: 0xffff81010004297a-0xffff810100042f71. First byte 0x0 instead of 0x6b
-INFO: Allocated in dev_alloc_skb+0x16/0x2c age=5813 cpu=0 pid=3029
-INFO: Freed in skb_release_data+0xa8/0xad age=201 cpu=0 pid=0
-INFO: Slab 0xffffe20005801600 objects=15 used=0 fp=0xffff810100045b18 flags=0x8000000000002082
-INFO: Object 0xffff810100042968 @offset=10600 fp=0xffff8101000418d8
+ Human's perception is limited -- GDB's `info frame' is probably already
+overloaded with information, so adding the path to the source file in
+question will not make it any better.
 
-Bytes b4 0xffff810100042958:  aa 91 fd ff 00 00 00 00 5a 5a 5a 5a 5a 5a 5a 5a �.��....ZZZZZZZZ
-  Object 0xffff810100042968:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-  Object 0xffff810100042978:  6b 6b 00 17 31 4e 9d 41 00 0f db bc af 14 08 00 kk..1N.A..ۼ�...
-  Object 0xffff810100042988:  45 00 00 4e 87 5e 00 00 40 11 6e 82 c0 a8 01 fe E..N.^..@.n.�������.�
-  Object 0xffff810100042998:  c0 a8 01 70 00 89 00 89 00 3a 3b 67 00 09 00 00 ��.p.....:;g....
-  Object 0xffff8101000429a8:  00 01 00 00 00 00 00 00 20 43 4b 41 41 41 41 41 .........CKAAAAA
-  Object 0xffff8101000429b8:  41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 41 AAAAAAAAAAAAAAAA
-  Object 0xffff8101000429c8:  41 41 41 41 41 41 41 41 41 00 00 21 00 01 f0 53 AAAAAAAAA..!..
-  Object 0xffff8101000429d8:  56 17 df 3e 3b 9f b7 1f 2d 29 f0 68 cf 4d 61 97 V.�>;.�.-)�h�Ma.
- Redzone 0xffff810100043168:  bb bb bb bb bb bb bb bb                         �𰻻������        
- Padding 0xffff8101000431a8:  5a 5a 5a 5a 5a 5a 5a 5a                         ZZZZZZZZ        
-Pid: 3030, comm: ifconfig Not tainted 2.6.26-rc1 #3
+> Your point about the "single program namespace" is certainly valid for
+> small to medium-size programs, but in the case of something as big as
+> the kernel, it probably no longer holds.
 
-Call Trace:
- [<ffffffff8108cf62>] print_trailer+0x123/0x12c
- [<ffffffff8108d00f>] check_bytes_and_report+0xa4/0xcb
- [<ffffffff8108d33e>] check_object+0xca/0x212
- [<ffffffff8108d6cd>] __free_slab+0x85/0xfd
- [<ffffffff811e5dd3>] ? skb_release_data+0xa8/0xad
- [<ffffffff8108d77d>] discard_slab+0x38/0x3a
- [<ffffffff8108e172>] __slab_free+0xdb/0x2ac
- [<ffffffff8108e47a>] kfree+0xbc/0xcb
- [<ffffffff811e5dd3>] ? skb_release_data+0xa8/0xad
- [<ffffffff811e5dd3>] skb_release_data+0xa8/0xad
- [<ffffffff811e6494>] skb_release_all+0xc9/0xce
- [<ffffffff811e5c2e>] __kfree_skb+0x11/0x78
- [<ffffffff811e5cbc>] kfree_skb+0x27/0x29
- [<ffffffffa00cc3aa>] :atl1:atl1_clean_rx_ring+0x7e/0xe2
- [<ffffffffa00cc4d7>] :atl1:atl1_down+0xc9/0xce
- [<ffffffffa00cedcd>] :atl1:atl1_close+0x18/0x27
- [<ffffffff811ebe2d>] dev_close+0x57/0x72
- [<ffffffff811ebb31>] dev_change_flags+0xa8/0x164
- [<ffffffff8122f44c>] devinet_ioctl+0x26a/0x5f6
- [<ffffffff8122fc79>] inet_ioctl+0x92/0xaa
- [<ffffffff811df6d4>] sock_ioctl+0x1da/0x202
- [<ffffffff8109f252>] vfs_ioctl+0x2a/0x77
- [<ffffffff8109f501>] do_vfs_ioctl+0x262/0x27f
- [<ffffffff8109f575>] sys_ioctl+0x57/0x7a
- [<ffffffff8100bff7>] tracesys+0xd5/0xda
+ I think it is actually the reverse -- the bigger a project is, the easier
+to get lost within. ;-)  With small programs it is easier to maintain,
+while with bigger ones it is really where it pays off.
 
-FIX kmalloc-2048: Restoring 0xffff81010004297a-0xffff810100042f71=0x6b
+> I don't have a strong opinion on this either, it is very unlikely that
+> I'll ever have to deal with this file personally. I'm only telling you
+> what the common practice is in the kernel tree.
+
+ I don't think this practice has been architected and see above for
+justification why it may not necessarily be the cleverest idea. :-)
+
+  Maciej
