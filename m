@@ -1,54 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756282AbYEIVzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757857AbYEIV6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756282AbYEIVzi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 17:55:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750816AbYEIVzb
+	id S1757857AbYEIV6r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 17:58:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbYEIV6g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 17:55:31 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51450
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750735AbYEIVza (ORCPT
+	Fri, 9 May 2008 17:58:36 -0400
+Received: from fmailhost01.isp.att.net ([204.127.217.101]:44138 "EHLO
+	fmailhost01.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751855AbYEIV6g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 17:55:30 -0400
-Date: Fri, 09 May 2008 14:55:24 -0700 (PDT)
-Message-Id: <20080509.145524.193685795.davem@davemloft.net>
-To: jengelh@medozas.de
-Cc: linux-kernel@vger.kernel.org, adaplas@pol.net, hpa@zytor.com,
-       alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-Subject: Re: 2.6.26-rcX VC console scrolling regression
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LNX.1.10.0805092124010.28042@fbirervta.pbzchgretzou.qr>
-References: <alpine.LNX.1.10.0805081236190.16904@fbirervta.pbzchgretzou.qr>
-	<20080508.232602.193723628.davem@davemloft.net>
-	<alpine.LNX.1.10.0805092124010.28042@fbirervta.pbzchgretzou.qr>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 9 May 2008 17:58:36 -0400
+X-Originating-IP: [74.251.48.254]
+Date: Fri, 9 May 2008 16:58:32 -0500
+From: Jay Cliburn <jacliburn@bellsouth.net>
+To: David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, jeff@garzik.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, csnook@redhat.com
+Subject: Re: [GIT]: Networking
+Message-ID: <20080509165832.12488cb8@osprey.hogchain.net>
+In-Reply-To: <20080509.144359.194792251.davem@davemloft.net>
+References: <alpine.LFD.1.10.0805081848170.2940@woody.linux-foundation.org>
+	<4824606E.3040409@garzik.org>
+	<alpine.LFD.1.10.0805090805210.3142@woody.linux-foundation.org>
+	<20080509.144359.194792251.davem@davemloft.net>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Engelhardt <jengelh@medozas.de>
-Date: Fri, 9 May 2008 21:24:20 +0200 (CEST)
+On Fri, 09 May 2008 14:43:59 -0700 (PDT)
+David Miller <davem@davemloft.net> wrote:
 
-> 
-> On Friday 2008-05-09 08:26, David Miller wrote:
-> >> My guess is that you see the effects of incomplete font table/position
-> >> switching, something along the lines a `cat /dev/urandom` would cause.
-> >> Using the very same kernel and boot params (vga=791 or anything to
-> >> switch it to fbcon), I cannot trigger the problem on opensuse.
-> >
-> >Jan, there is code in drivers/video/console/fbcon.c:fbcon_do_set_font()
-> >which makes changes to vc->vc_video_erase_char, maybe that code needs
-> >to update the new vc->vc_scrl_erase_char you added?
-> >
-> >It would be nice if you could audit the tree to see if any other cases
-> >have been missed like this as well.
-> >
-> Try this patch please.
+> BTW, this reminds me, did we get that driver in for the device the
+> EEPC machines use?  I have this strange feeling like that slipped
+> through the cracks.
 
-That seems to fix the bug, thanks Jan.
+That'd be the Atheros/Attansic L2 NIC.  I don't think it's quite ready
+yet.
 
-Acked-by: David S. Miller <davem@davemloft.net>
+[Adding Chris Snook to the cc list.]
