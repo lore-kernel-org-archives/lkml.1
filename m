@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760802AbYEIEZS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762263AbYEIE1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760802AbYEIEZS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 00:25:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756730AbYEIEY7
+	id S1762263AbYEIE1d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 00:27:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760746AbYEIE1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 00:24:59 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33611
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756396AbYEIEY5 (ORCPT
+	Fri, 9 May 2008 00:27:23 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:43405 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758949AbYEIE1W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 00:24:57 -0400
-Date: Thu, 08 May 2008 21:24:52 -0700 (PDT)
-Message-Id: <20080508.212452.236396317.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.1.10.0805081848170.2940@woody.linux-foundation.org>
-References: <20080508.171408.94456716.davem@davemloft.net>
-	<alpine.LFD.1.10.0805081848170.2940@woody.linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 9 May 2008 00:27:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=M3miEaW1jR50J0ZxLPIYlxyBny+PgMJdo7crfFQu8wNOwtKLIFwze1TkMCnDsRRwgxoAq/7wYU7w1qKKZlbakpwyJatkK9IlR6xWALdwjUmpkL2PvX08MCXRjSF/UiN2RXnwNU6EtUeKsQKFXtNw7kMQcM6LK+S2GR+esfIyRTg=
+Message-ID: <dd18b0c30805082127h51fb9264w62fb22139d2d35e9@mail.gmail.com>
+Date: Fri, 9 May 2008 04:27:21 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Tejun Heo" <htejun@gmail.com>
+Subject: Re: [PATCH] Re: [git patches] libata updates - (improve post-reset device ready test) regression
+Cc: "Jeff Garzik" <jeff@garzik.org>,
+       "Markus Trippelsdorf" <markus@trippelsdorf.de>,
+       linux-ide@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Takashi Iwai" <tiwai@suse.de>,
+       marc.c.dionne@gmail.com, dl9pf@gmx.de, bug-track@fisher-privat.net,
+       sitsofe@yahoo.com
+In-Reply-To: <4823BE6F.1090307@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080506154847.GA15299@havoc.gtf.org>
+	 <20080507145616.GA2210@gentoox2.trippelsdorf.de>
+	 <48231DAF.7070900@garzik.org> <4823BD8E.40109@gmail.com>
+	 <4823BE6F.1090307@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Thu, 8 May 2008 18:51:08 -0700 (PDT)
+On Fri, May 9, 2008 at 3:01 AM, Tejun Heo <htejun@gmail.com> wrote:
+> Tejun Heo wrote:
+>>
+>> Markus, Alexey, Marc, which controllers are you using?
+>
+> Never mind, found the rest of the thread.
+>
+> Thanks.
+>
+> --
+> tejun
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-> David, you need to stop sending patches like this after -rc1.
-> 
-> This is too big. I'm taking it, but there's something wrong in this. Your 
-> merges after -rc1 have generally been way too large, and I need to shut 
-> you down if this gets to be a big pattern.
-> 
-> It's one thing taking a totally new driver (that couldn't have worked 
-> before and cannot be a regression) or adding new PCI ID's. It's a totally 
-> different thing to take 800 lines of code to an old driver that people 
-> depend on. These things need to happen during the merge window, and just 
-> because they are drivers doesn't mean that they can just do anythign they 
-> want.
-
-I saw that e1000e commit from Jeff's tree and was about to push
-back on him.  But I decided not to.
-
-I will next time if it's such a big deal, but frankly I thought this
-one was OK.  It's stupid to make people wait until 2.6.27 to be able
-to use the e1000e cards with the new PHY type.  It causes some hw bug
-workaround to need to be added to the e1000e driver, and that's where
-the bulk of that 800 line change is from.
-
-Distributions are going to add that e1000e PHY support patch anyways,
-regardless of what we do, and isn't that one of the reasons we were
-talking about more aggressively merging new drivers?
-
-Who the heck are we kidding if we don't put changes like that into the
-tree when pretty much every distribution will?  Yes, even after rc1.
-
+This patch here is what fixes this issue for the macbook pro.
+http://lkml.org/lkml/2008/5/8/245
+regards;
+-- 
+Justin P. Mattock
