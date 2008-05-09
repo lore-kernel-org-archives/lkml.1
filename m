@@ -1,68 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760876AbYEICpO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758490AbYEIC5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760876AbYEICpO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 22:45:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbYEICo7
+	id S1758490AbYEIC5k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 22:57:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbYEIC5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 22:44:59 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:46457 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753457AbYEICo5 (ORCPT
+	Thu, 8 May 2008 22:57:30 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:46127 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750873AbYEIC52 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 22:44:57 -0400
-Date: Thu, 8 May 2008 22:44:26 -0400
-From: Theodore Tso <tytso@MIT.EDU>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: Possible regression?  2.6.26-rc1: X61s failure after
-	suspend/resume
-Message-ID: <20080509024426.GB8871@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-	Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <E1JuCBA-0002NZ-4E@closure.thunk.org> <200805082352.04352.rjw@sisk.pl>
+	Thu, 8 May 2008 22:57:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=omU1ledXDyPMpaus7kZNyFDBazQz2DYwKOWml4DHvsRE1md/b4x+FXTzMaSKMaWTE/QWVJTFM6Oz3sDO2qapbxp1OrgVKPFlm95MlwAlaeVEA+kRY79EFzdgrYgG5ha7BjFoAiqZO5n/uVPEGYEFJtg//jXsrcY5Mks5+mfDfLk=
+Message-ID: <4823BD8E.40109@gmail.com>
+Date: Fri, 09 May 2008 11:57:18 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200805082352.04352.rjw@sisk.pl>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+To: Jeff Garzik <jeff@garzik.org>
+CC: Markus Trippelsdorf <markus@trippelsdorf.de>, linux-ide@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Takashi Iwai <tiwai@suse.de>,
+       marc.c.dionne@gmail.com, dl9pf@gmx.de, bug-track@fisher-privat.net,
+       sitsofe@yahoo.com
+Subject: Re: [PATCH] Re: [git patches] libata updates - (improve post-reset
+ device ready test) regression
+References: <20080506154847.GA15299@havoc.gtf.org> <20080507145616.GA2210@gentoox2.trippelsdorf.de> <48231DAF.7070900@garzik.org>
+In-Reply-To: <48231DAF.7070900@garzik.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 11:52:03PM +0200, Rafael J. Wysocki wrote:
-> On Thursday, 8 of May 2008, Theodore Ts'o wrote:
-> > 
-> > I'm running a kernel based off of commit afa26be8 (just six commits
-> > after 2.6.26-rc1), and very shortly after I suspend/resume my X61s (with
-> > the Intel video chipset), the X server will lock up.  I can ssh into
-> > the machine remotely, and restart the X server, but the newly restarted
-> > X server will shortly lock up again, and the only way to solve the
-> > problem is to reboot.  If I drop back to a 2.6.25 based kernel, the
-> > problem goes away.
-> > 
-> > I've tried bisecting it, but the bisection points picked by git don't
-> > boot at all, and given that I'm travelling I havent had much time to try
-> > doing more bisecting; since I know a number of kernel developers have
-> > Lenovo X61 laptops, I thought before I wasted more time trying to get
-> > the git bisection to work, I'd check to see if anyone has seen this
-> > problem and if the fix is known.  I'll also try the latest bleeding edge
-> > kernel and hope it's fixed there....
+Jeff Garzik wrote:
+> Markus Trippelsdorf wrote:
+>>> Tejun Heo (12):
+>>>       libata: improve post-reset device ready test
+>>
+>> This commit (78ab88f04f44bed566d51dce0c7cbfeff6449a06) causes a long
+>> boot delay with my onboard Promise controller. It seems like libata
+>> probes for a nonexisting PATA drive...
+>>
+>> ACPI: PCI Interrupt 0000:00:08.0[A] -> GSI 18 (level, low) -> IRQ 18
+>> scsi0 : sata_promise
+>> scsi1 : sata_promise
+>> scsi2 : sata_promise
+>> ata1: SATA max UDMA/133 mmio m4096@0xfb600000 port 0xfb600200 irq 18
+>> ata2: SATA max UDMA/133 mmio m4096@0xfb600000 port 0xfb600280 irq 18
+>> ata3: PATA max UDMA/133 mmio m4096@0xfb600000 port 0xfb600300 irq 18
+>> ata1: SATA link down (SStatus 0 SControl 300)
+>> ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+>> ata2.00: ATA-7: SAMSUNG HD753LJ, 1AA01109, max UDMA7
+>> ata2.00: 1465149168 sectors, multi 0: LBA48 NCQ (depth 0/32)
+>> ata2.00: configured for 
+>> UDMA/133                                                                                          
+>> ata3: link is slow to respond, please be patient (ready=0)
+>> ata3: device not ready (errno=-16), forcing hardreset
+>> ata3: link is slow to respond, please be patient (ready=0)
+>> ata3: SRST failed (errno=-16)
+>> ata3: link is slow to respond, please be patient (ready=0)
+>> ata3: SRST failed (errno=-16)
+>> ata3: link is slow to respond, please be patient (ready=0)
+>> ata3: SRST failed (errno=-16)
+>>   - Last output repeated twice -
+>> ata3: reset failed, giving up
 > 
-> This looks like another manifestation of
-> http://bugzilla.kernel.org/show_bug.cgi?id=10620
+> Does the attached patch fix things?
+> 
+> It basically reverts the patch, while still maintaining the 
+> consolidation.  It looks like that status evaluation is not as universal 
+> as believed.
 
-Could be.  On my system, the X server runs for about 15 seconds to
-five minutes before it wedges up and locks up.  This is why it took me
-a while before I finally figured out that the way to reliably
-reproduce the problem was to do a suspend/resume.  So it's not
-*identical* to the report, but its really close....
+This means that we need to make custom readiness tests for controllers 
+using 0x77 or 0x7f.  Eeeek... Both groups of controllers are behaving in 
+incorrect way.  Controllers shouldn't use 0x77 or 0x7f for either busy 
+or ready states - it's invalid for both, yet, some use the 77/7f for 
+busy while others use them for ready state.  Great.  :-(
 
-When I have more time I'll try to find some actual bisection points
-that actually will successfully boot on the X61s laptop, and not die
-within 6-8 seconds of the kernel loading.....
+Jeff, can you please revert 78ab88f04f44bed566d51dce0c7cbfeff6449a06 for 
+now?  I'll post updated patch.
 
+Markus, Alexey, Marc, which controllers are you using?
 
-							- Ted
+Thanks.
+
+-- 
+tejun
