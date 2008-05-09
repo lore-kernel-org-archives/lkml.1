@@ -1,108 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755840AbYEIUFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756309AbYEIUGa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755840AbYEIUFa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 16:05:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbYEIUFW
+	id S1756309AbYEIUGa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 16:06:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753439AbYEIUGT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 16:05:22 -0400
-Received: from mga03.intel.com ([143.182.124.21]:42223 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752472AbYEIUFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 16:05:21 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,462,1204531200"; 
-   d="scan'208";a="244608880"
-Date: Fri, 9 May 2008 13:05:19 -0700
-From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       Hugh Dickins <hugh@veritas.com>, Frans Pop <elendil@planet.nl>,
-       Jesse Barnes <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
-       "Packard, Keith" <keith.packard@intel.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Nick Piggin <npiggin@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [git head] X86_PAT & mprotect
-Message-ID: <20080509200519.GA10897@linux-os.sc.intel.com>
-References: <200805022122.03576.elendil@planet.nl> <200805040910.57088.elendil@planet.nl> <200805050857.57661.jesse.barnes@intel.com> <200805051932.41827.elendil@planet.nl> <20080506224240.GA18706@linux-os.sc.intel.com> <20080507070217.GD32195@elte.hu> <Pine.LNX.4.64.0805071941140.18916@blonde.site> <20080507232326.GB10757@linux-os.sc.intel.com> <20080509100818.GD19617@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080509100818.GD19617@elte.hu>
-User-Agent: Mutt/1.4.1i
+	Fri, 9 May 2008 16:06:19 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:37260 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753170AbYEIUGR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 16:06:17 -0400
+Date: Fri, 9 May 2008 16:02:27 -0400
+Message-Id: <200805092002.m49K2R5p014283@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 6/9] fuse: add export operations 
+In-reply-to: Your message of "Fri, 09 May 2008 15:40:30 EDT."
+             <20080509194030.GA29118@infradead.org> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 09, 2008 at 12:08:18PM +0200, Ingo Molnar wrote:
+In message <20080509194030.GA29118@infradead.org>, Christoph Hellwig writes:
+> > +struct fuse_inode_handle
+> > +{
+> > +	u64 nodeid;
+> > +	u32 generation;
+> > +};
 > 
-> * Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
+> This is the same filehandle type XFS uses for 64bit inode filesystems
+> where the parent is not encoded.  I'll post a patch soon to move that
+> 64bit inode handling to common code.  I don't think it's a good idea
+> to delay your patch until that happens, but can you chose the fid
+> types to be the same as XFS does currently so that a conversion is
+> easily possible.  The fh_type should be 0x81 (fh type 1 order by 0x80
+> to imply it's 64bit inodes)
 > 
-> > > I've tried doing it slightly differently below, don't know whether 
-> > > you'll consider it an improvement or not.
-> > 
-> > Hugh: Thanks for looking into this. Yes. I like your modified patch. 
-> > Simpler and smaller.
+> In case you want to look at that patch I'v uploaded the current
+> version at http://verein.lst.de/~hch/generic-64bit-inode-export
 > 
-> i have stuck your original patch into testing and nothing blew up so 
-> far. Due to the mm/ bits this is not for the scope of x86.git, but 
-> obviously it all looks good and is .26-worthy to me:
+> > +static struct dentry *fuse_get_dentry(struct super_block *sb,
+> > +				      struct fuse_inode_handle *handle)
+> > +{
+> > +	struct inode *inode;
+> > +	struct dentry *entry;
+> > +	int err = -ESTALE;
+> > +
+> > +	if (handle->nodeid == 0)
+> > +		goto out_err;
+> > +
+> > +	inode = ilookup5(sb, handle->nodeid, fuse_inode_eq, &handle->nodeid);
+> > +	if (!inode)
+> > +		goto out_err;
 > 
->  Acked-by: Ingo Molnar <mingo@elte.hu>
->  Tested-by: Ingo Molnar <mingo@elte.hu>
-> 
-> Venki, could you please send a full patch against -git that has 
-> everything from Hugh included, with an updated changelog, for 
-> Linus/Andrew to ack/apply?
-> 
+> Only finding in-memory inodes for nfs export is quite dangerous.  I
+> think it would be a much better idea to support whatever upcalls are
+> needed to find the object if it's not in memory.  Without that the nfs
+> exporting support is hardly useable.
 
-Ingo,
+In the ODF version of unionfs, we store the inode numbers persistently in a
+small /odf partition, exactly for that reason.  It'd be wonderful if there
+was kernel support for persistent inode numbers that could be used by
+various virtual filesystems.
 
-Split up the patch into two parts as the pci part was unrelated to mprotect
-problem in a sense.
-
-Here is the first patch.
-
-Thanks,
-Venki
-
-
-Some versions of X used the mprotect workaround to change caching type from
-UC to WB, so that it can then use mtrr to program WC for that region [1].
-Change the mmap of pci space through /sys or /proc interfaces from UC to
-UC_MINUS. With this change, X will not need to use mprotect
-workaround to get WC type.
-Also the bug with mprotect which lets caller to change PAT bits is fixed in
-the follow on patch. So, this X workaround will stop working as well.
-
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
----
- arch/x86/pci/i386.c |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
-
-Index: linux-2.6/arch/x86/pci/i386.c
-===================================================================
---- linux-2.6.orig/arch/x86/pci/i386.c	2008-05-06 15:45:47.000000000 -0700
-+++ linux-2.6/arch/x86/pci/i386.c	2008-05-09 10:05:45.000000000 -0700
-@@ -301,15 +301,13 @@ int pci_mmap_page_range(struct pci_dev *
- 	prot = pgprot_val(vma->vm_page_prot);
- 	if (pat_wc_enabled && write_combine)
- 		prot |= _PAGE_CACHE_WC;
--	else if (pat_wc_enabled)
-+	else if (pat_wc_enabled || boot_cpu_data.x86 > 3)
- 		/*
- 		 * ioremap() and ioremap_nocache() defaults to UC MINUS for now.
- 		 * To avoid attribute conflicts, request UC MINUS here
- 		 * aswell.
- 		 */
- 		prot |= _PAGE_CACHE_UC_MINUS;
--	else if (boot_cpu_data.x86 > 3)
--		prot |= _PAGE_CACHE_UC;
- 
- 	vma->vm_page_prot = __pgprot(prot);
- 
+Erez.
