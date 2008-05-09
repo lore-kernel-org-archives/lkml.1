@@ -1,28 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760452AbYEIJ7P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755538AbYEIKIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760452AbYEIJ7P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 05:59:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754227AbYEIJ65
+	id S1755538AbYEIKIs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 06:08:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750896AbYEIKIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 05:58:57 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37855 "EHLO mx2.mail.elte.hu"
+	Fri, 9 May 2008 06:08:39 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49798 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753376AbYEIJ64 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 05:58:56 -0400
-Date: Fri, 9 May 2008 11:58:37 +0200
+	id S1750774AbYEIKIi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 06:08:38 -0400
+Date: Fri, 9 May 2008 12:08:18 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: toralf.foerster@gmx.de, James.Bottomley@hansenpartnership.com,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Mike Travis <travis@sgi.com>
-Subject: Re: build issue #380 for v2.6.26-rc1-279-g28a4acb : mach-voyager:
-	multiple definition of `phys_cpu_present_map'
-Message-ID: <20080509095837.GB19617@elte.hu>
-References: <200805091114.00244.toralf.foerster@gmx.de> <20080509095244.GJ2543@hacking>
+To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Frans Pop <elendil@planet.nl>,
+       Jesse Barnes <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
+       "Packard, Keith" <keith.packard@intel.com>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [git head] X86_PAT & mprotect
+Message-ID: <20080509100818.GD19617@elte.hu>
+References: <200805022122.03576.elendil@planet.nl> <200805040910.57088.elendil@planet.nl> <200805050857.57661.jesse.barnes@intel.com> <200805051932.41827.elendil@planet.nl> <20080506224240.GA18706@linux-os.sc.intel.com> <20080507070217.GD32195@elte.hu> <Pine.LNX.4.64.0805071941140.18916@blonde.site> <20080507232326.GB10757@linux-os.sc.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080509095244.GJ2543@hacking>
+In-Reply-To: <20080507232326.GB10757@linux-os.sc.intel.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,49 +41,23 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* WANG Cong <xiyou.wangcong@gmail.com> wrote:
+* Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
 
-> Sorry. Ignore previous one. This one should be correct, I think.
+> > I've tried doing it slightly differently below, don't know whether 
+> > you'll consider it an improvement or not.
 > 
-> ---
-> 
-> diff --git a/arch/x86/mach-voyager/voyager_smp.c b/arch/x86/mach-voyager/voyager_smp.c
-> index 8acbf0c..2e8388b 100644
-> --- a/arch/x86/mach-voyager/voyager_smp.c
-> +++ b/arch/x86/mach-voyager/voyager_smp.c
-> @@ -74,7 +74,7 @@ EXPORT_SYMBOL(cpu_online_map);
->  
->  /* Bitmask of CPUs present in the system - exported by i386_syms.c, used
->   * by scheduler but indexed physically */
-> -cpumask_t phys_cpu_present_map = CPU_MASK_NONE;
-> +static cpumask_t phys_cpu_present_map = CPU_MASK_NONE;
+> Hugh: Thanks for looking into this. Yes. I like your modified patch. 
+> Simpler and smaller.
 
-i've got the one below queued up but it's stalled as it could easily be 
-wrong and there's no ack from James yet and there's been discussion back 
-and forth. James, what do you suggest?
+i have stuck your original patch into testing and nothing blew up so 
+far. Due to the mm/ bits this is not for the scope of x86.git, but 
+obviously it all looks good and is .26-worthy to me:
+
+ Acked-by: Ingo Molnar <mingo@elte.hu>
+ Tested-by: Ingo Molnar <mingo@elte.hu>
+
+Venki, could you please send a full patch against -git that has 
+everything from Hugh included, with an updated changelog, for 
+Linus/Andrew to ack/apply?
 
 	Ingo
-
--------------------->
-Subject: x86, voyager: build fix
-From: Ingo Molnar <mingo@elte.hu>
-Date: Sun May 04 23:56:30 CEST 2008
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/mach-voyager/voyager_smp.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-x86.q/arch/x86/mach-voyager/voyager_smp.c
-===================================================================
---- linux-x86.q.orig/arch/x86/mach-voyager/voyager_smp.c
-+++ linux-x86.q/arch/x86/mach-voyager/voyager_smp.c
-@@ -74,7 +74,7 @@ EXPORT_SYMBOL(cpu_online_map);
- 
- /* Bitmask of CPUs present in the system - exported by i386_syms.c, used
-  * by scheduler but indexed physically */
--cpumask_t phys_cpu_present_map = CPU_MASK_NONE;
-+extern cpumask_t phys_cpu_present_map;
- 
- /* The internal functions */
- static void send_CPI(__u32 cpuset, __u8 cpi);
