@@ -1,176 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934355AbYEIAOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934385AbYEIAPi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934355AbYEIAOf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 20:14:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755255AbYEIAOT
+	id S934385AbYEIAPi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 20:15:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755782AbYEIAPS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 20:14:19 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42900
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754794AbYEIAOP convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 20:14:15 -0400
-Date: Thu, 08 May 2008 17:14:08 -0700 (PDT)
-Message-Id: <20080508.171408.94456716.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 8 May 2008 20:15:18 -0400
+Received: from mjg.x.mythic-beasts.com ([93.93.128.6]:37129 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1755726AbYEIAPO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 20:15:14 -0400
+Date: Fri, 9 May 2008 01:14:58 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Cc: jeff@garzik.org, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-ID: <20080509001458.GA16082@srcf.ucam.org>
+References: <20080508161008.59361de5@appleyard> <20080508233713.GB15377@srcf.ucam.org> <20080508163555.51380949@appleyard>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080508163555.51380949@appleyard>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [PATCH] ata: ahci: power off unused ports
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 08, 2008 at 04:35:55PM -0700, Kristen Carlson Accardi wrote:
+> On Fri, 9 May 2008 00:37:13 +0100
+> Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> > Just out of interest, is this set on laptop bays? (Are any of those even 
+> > native SATA yet?)
+> 
+> I haven't seen any yet that are.  Most of them are PATA.  I expect
+> that will change in the future.
 
-Here are some networking fixes and enhancements:
+Yeah. My vague concern would be that on laptops, we can probably power 
+down the port even if it's declared as being hotplug capable - we'll 
+probably get an out of band signal from ACPI anyway. Not an issue at the 
+moment, but possibly something we'll hit in future.
 
-1) Bonding bug fixes from Pavel Emelyanov and Jay Vosburgh.
-
-2) Support for some newer PHY chips in E1000E, from Bruce Allan.
-
-3) TCP FRTO SACK fix when in newreno mode from Ilpo.
-
-4) Fix can_send() handling when dev_queue_xmit() fails, from
-   Oliver Hartkopp.
-
-5) macvlan leak/oops fix from Patrick McHardy.
-
-6) Two netfilter fixes from Patrick McHardy.
-
-7) fs_enet leak fix from Scott Wood.
-
-8) Namespace network device corruption fix from Pavel Emelyanov.
-
-9) Several other device driver fixes from Jeff Garzik's tree.
-
-Please pull, thanks a lot!
-
-The following changes since commit 9d1045ad68fcccfaf1393cc463ab6357693e8d1d:
-  Jamal Hadi Salim (1):
-        net_cls_act: act_simple dont ignore realloc code
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Alan Cox (1):
-      cxgb3: Use CAP_SYS_RAWIO for firmware
-
-Andy Fleming (3):
-      gianfar: Fix a locking bug in gianfar's sysfs code
-      phylib: Fix some sparse warnings
-      ucc_geth: Fix a bunch of sparse warnings
-
-Anton Vorontsov (2):
-      uli526x: initialize the hardware prior to requesting interrupts
-      uli526x: fix endianness issues in the setup frame
-
-Ben Hutchings (1):
-      net: Added ASSERT_RTNL() to dev_open() and dev_close().
-
-Bruce Allan (1):
-      e1000e: Add support for BM PHYs on ICH9
-
-Bruce Robson (1):
-      [netdrvr] eexpress: IPv6 fails - multicast problems
-
-David S. Miller (1):
-      Merge branch 'upstream-davem' of master.kernel.org:/.../jgarzik/netdev-2.6
-
-Don Fry (1):
-      pcnet32: delete non NAPI code from driver.
-
-Gunnar Larisch (1):
-      3c980-TX needs EXTRA_PREAMBLE
-
-Ilpo Järvinen (1):
-      tcp FRTO: SACK variant is errorneously used with NewReno
-
-J.H.M. Dassen (Ray) (1):
-      net/ipv4: correct RFC 1122 section reference in comment
-
-Jay Vosburgh (2):
-      bonding: fix error unwind in bonding_store_bonds
-      bonding: fix enslavement error unwinds
-
-Jeff Garzik (2):
-      fix warning in drivers/net/appletalk/cops.c
-      Merge branch 'for-2.6.26' of git://git.farnsworth.org/dale/linux-2.6-mv643xx_eth into upstream
-
-Joakim Tjernlund (1):
-      ucc_geth: Don't use RX clock as TX clock.
-
-Kok, Auke (1):
-      e1000e: don't return half-read eeprom on error
-
-Lennert Buytenhek (5):
-      mv643xx_eth: get rid of static variables, allow multiple instances
-      mv643xx_eth: mbus decode window support
-      mv643xx_eth: configurable t_clk
-      mv643xx_eth: shorten shared platform driver name
-      mv643xx_eth: inter-mv643xx SMI port sharing
-
-Oliver Hartkopp (1):
-      can: Fix can_send() handling on dev_queue_xmit() failures
-
-Patrick McHardy (3):
-      macvlan: Fix memleak on device removal/crash on module removal
-      netfilter: nf_conntrack_sip: restrict RTP expect flushing on error to last request
-      netfilter: Kconfig: default DCCP/SCTP conntrack support to the protocol config values
-
-Paulius Zaleckas (1):
-      3c59x: use netstats in net_device structure
-
-Pavel Emelyanov (3):
-      bonding: Do not call free_netdev for already registered device.
-      bonding: Deadlock between bonding_store_bonds and bond_destroy_sysfs.
-      netns: Fix arbitrary net_device-s corruptions on net_ns stop.
-
-Scott Wood (1):
-      fs_enet: Fix a memory leak in fs_enet_mdio_probe
-
- arch/arm/mach-orion5x/common.c             |    2 +
- arch/powerpc/platforms/chrp/pegasos_eth.c  |    4 +
- arch/powerpc/sysdev/mv64x60_dev.c          |    2 +
- arch/ppc/syslib/mv64x60.c                  |    3 +
- drivers/net/3c59x.c                        |   73 +++---
- drivers/net/Kconfig                        |   14 --
- drivers/net/appletalk/cops.c               |   16 +-
- drivers/net/bonding/bond_main.c            |   24 ++-
- drivers/net/bonding/bond_sysfs.c           |   16 +-
- drivers/net/cxgb3/cxgb3_main.c             |    4 +-
- drivers/net/e1000e/defines.h               |   10 +
- drivers/net/e1000e/e1000.h                 |    7 +-
- drivers/net/e1000e/ethtool.c               |   45 +++-
- drivers/net/e1000e/hw.h                    |   22 ++
- drivers/net/e1000e/ich8lan.c               |   83 +++++++-
- drivers/net/e1000e/netdev.c                |  330 +++++++++++++++++++++++++++-
- drivers/net/e1000e/phy.c                   |  278 +++++++++++++++++++++++
- drivers/net/eexpress.c                     |   11 +-
- drivers/net/fs_enet/mii-fec.c              |    3 +-
- drivers/net/gianfar.c                      |    5 +-
- drivers/net/gianfar.h                      |    3 +
- drivers/net/gianfar_sysfs.c                |   10 +-
- drivers/net/macvlan.c                      |    2 +-
- drivers/net/mv643xx_eth.c                  |  160 +++++++++++---
- drivers/net/pcnet32.c                      |   61 +-----
- drivers/net/phy/phy.c                      |    2 +-
- drivers/net/tulip/uli526x.c                |   38 ++--
- drivers/net/ucc_geth.c                     |  278 ++++++++++++-----------
- drivers/net/ucc_geth.h                     |   48 +++--
- drivers/net/ucc_geth_ethtool.c             |    6 -
- drivers/net/ucc_geth_mii.c                 |    4 +-
- include/linux/mv643xx_eth.h                |   16 ++-
- include/linux/netfilter/nf_conntrack_sip.h |    1 +
- include/linux/phy.h                        |    5 +
- net/can/af_can.c                           |   16 +-
- net/core/dev.c                             |   12 +-
- net/ipv4/ip_input.c                        |    2 +-
- net/ipv4/tcp_input.c                       |   13 +-
- net/netfilter/Kconfig                      |    4 +
- net/netfilter/nf_conntrack_sip.c           |   22 +-
- 40 files changed, 1242 insertions(+), 413 deletions(-)
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
