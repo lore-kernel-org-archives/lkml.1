@@ -1,109 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762103AbYEIMOO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756795AbYEIMOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762103AbYEIMOO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 08:14:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755258AbYEIMN6
+	id S1756795AbYEIMOp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 08:14:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755841AbYEIMOf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 08:13:58 -0400
-Received: from fonzie.hosting9000.com ([85.214.50.12]:60851 "EHLO
-	fonzie.hosting9000.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754434AbYEIMN5 (ORCPT
+	Fri, 9 May 2008 08:14:35 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:54990 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755258AbYEIMOe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 08:13:57 -0400
-Message-ID: <48243FF9.6040300@googlemail.com>
-Date: Fri, 09 May 2008 14:13:45 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
-MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, hinko.kocevar@cetrtapot.si
-Subject: Re: CONFIG_PRINTK_TIME broken on git HEAD ?
-References: <48222C7C.2050807@googlemail.com>	 <20080507154155.2b472bb1.akpm@linux-foundation.org>	 <482233CD.70502@googlemail.com>  <4822DD4E.3010000@googlemail.com>	 <1210245238.13978.199.camel@twins>  <4822E23F.8040101@googlemail.com> <1210325973.13978.216.camel@twins>
-In-Reply-To: <1210325973.13978.216.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-15
+	Fri, 9 May 2008 08:14:34 -0400
+Subject: Re: IRQ affinities (was: boot cgroup questions)
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Paul Jackson <pj@sgi.com>
+Cc: maxk@qualcomm.com, menage@google.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080509070314.f86aece4.pj@sgi.com>
+References: <47D73086.2030008@qualcomm.com>
+	 <6599ad830803111827n1cb8e2c7i47c2ef3f3bb58995@mail.gmail.com>
+	 <47D7411E.1000009@qualcomm.com>
+	 <6599ad830803111936jd940deam8584bc971c3b6f41@mail.gmail.com>
+	 <47D74595.4080100@qualcomm.com>
+	 <6599ad830803112009y18d9e43ft8e3fc4a551d891da@mail.gmail.com>
+	 <20080311235939.1ebee8e3.pj@sgi.com> <47D81FE1.6030205@qualcomm.com>
+	 <20080312135746.89456f2a.pj@sgi.com> <47D82AD2.1070108@qualcomm.com>
+	 <20080312143253.3dd72c7f.pj@sgi.com> <47D83858.4030806@qualcomm.com>
+	 <20080312153712.bc5df7a1.pj@sgi.com> <47D8593A.6040503@qualcomm.com>
+	 <20080312183059.6716d630.pj@sgi.com> <47D87BE5.4010702@qualcomm.com>
+	 <20080313020300.92244956.pj@sgi.com> <47FE5655.10900@qualcomm.com>
+	 <20080414133902.7878cfce.pj@sgi.com> <1210329926.13978.224.camel@twins>
+	 <20080509061727.5057de1f.pj@sgi.com> <1210333738.13978.246.camel@twins>
+	 <20080509070314.f86aece4.pj@sgi.com>
+Content-Type: text/plain
+Date: Fri, 09 May 2008 14:14:30 +0200
+Message-Id: <1210335270.13978.252.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Thu, 2008-05-08 at 13:21 +0200, Gabriel C wrote:
+On Fri, 2008-05-09 at 07:03 -0500, Paul Jackson wrote:
+> Peter wrote:
+> > I see two use-cases:
+> > 
+> >  - Isolation
+> >  - NUMA node devices
 > 
->>> Ok, so the issue is that the clock doesn't start at 0, but at:
->>> 4294014.506571 ?
->> At least on my box , yes.
->>
+> Ok ... so let me propose an entirely different solution.
 > 
-> Does this work for you?
+> No doubt it has some terrible flaw, but I'll just have to
+> await your replies to see what that is.
+> 
+> How about we have:
+> 
+>  1) Yet another text config file in /etc, this one containing
+>     lines having two fields:
+> 	* a list of IRQs, and
+> 	* a cpumask.
+>     This file would specify which CPUs should handle which IRQs.
+> 
+>  2) A utility that can be run, after changing the above file, 
+>     to poke the proper cpumask to each IRQ, as specified in
+>     the file.
+> 
+> (Obligatory "simple" marketing claim: the above requires no
+> kernel changes.)
+> 
+> What am I missing?
 
-No it does not , I still get :
+Two points:
 
-....
+ - we can't currently set irq affinities for non-existent (aka new) IRQs
+ - its a shame to duplicate the masks - most of this information would
+also be used in the cpuset structure used to place the tasks.
 
-[    0.000000] PERCPU: Allocating 42756 bytes of per cpu data
-[    0.000000] NR_CPUS: 8, nr_cpu_ids: 4
-[4294014.506571] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 1010723                                                               
 
-...
 
-> 
-> ---
-> 
-> Subject: sched: fixup sched-clock offset
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> 
-> It could happen that ktime doesn't start at 0.
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  kernel/sched_clock.c |   16 +++++++++-------
->  1 file changed, 9 insertions(+), 7 deletions(-)
-> 
-> Index: linux-2.6-2/kernel/sched_clock.c
-> ===================================================================
-> --- linux-2.6-2.orig/kernel/sched_clock.c
-> +++ linux-2.6-2/kernel/sched_clock.c
-> @@ -59,21 +59,23 @@ static inline struct sched_clock_data *c
->  	return &per_cpu(sched_clock_data, cpu);
->  }
->  
-> +static __read_mostly u64 ktime_offset;
-> +
->  void sched_clock_init(void)
->  {
-> -	u64 ktime_now = ktime_to_ns(ktime_get());
-> -	u64 now = 0;
->  	int cpu;
->  
-> +	ktime_offset = ktime_to_ns(ktime_get());
-> +
->  	for_each_possible_cpu(cpu) {
->  		struct sched_clock_data *scd = cpu_sdc(cpu);
->  
->  		scd->lock = (raw_spinlock_t)__RAW_SPIN_LOCK_UNLOCKED;
->  		scd->prev_jiffies = jiffies;
-> -		scd->prev_raw = now;
-> -		scd->tick_raw = now;
-> -		scd->tick_gtod = ktime_now;
-> -		scd->clock = ktime_now;
-> +		scd->prev_raw = 0;
-> +		scd->tick_raw = 0;
-> +		scd->tick_gtod = 0;
-> +		scd->clock = 0;
->  	}
->  }
->  
-> @@ -177,7 +179,7 @@ void sched_clock_tick(void)
->  	WARN_ON_ONCE(!irqs_disabled());
->  
->  	now = sched_clock();
-> -	now_gtod = ktime_to_ns(ktime_get());
-> +	now_gtod = ktime_to_ns(ktime_get()) - ktime_offset;
->  
->  	__raw_spin_lock(&scd->lock);
->  	__update_sched_clock(scd, now);
-> 
-> 
-> 
+
