@@ -1,42 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764290AbYEIQTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764638AbYEIQV7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764290AbYEIQTb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 12:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753283AbYEIQTW
+	id S1764638AbYEIQV7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 12:21:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755167AbYEIQVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 12:19:22 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:10324 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754213AbYEIQTV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 12:19:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=jdTS1pjfbPA0t6tAt0rvEeSKJbxDy7KxzZUNVzgd/E3R+7JfAiicEc1KU2DNcYN3QB/GoQ0SW09Z/4jXaiaHMRELhsWOfxWsaOtPGzkn5NUsP9Hn2jQeRDcKQ4YzqVnQQfJEh/7DSdxikI2fbt99lXYSX/cyAcq+RgtTIXYUzpo=
-Message-ID: <85e7c2fc0805090919v613fb823m8dd979b8cd959889@mail.gmail.com>
-Date: Sat, 10 May 2008 00:19:11 +0800
-From: "Bob Zhang" <zhanglinbao@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Does anyone run AXFS in 2.4 version of kernel ? I am trying my best to apply AXFS patches into 2.4.18
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Fri, 9 May 2008 12:21:51 -0400
+Received: from saeurebad.de ([85.214.36.134]:37341 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754986AbYEIQVu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 12:21:50 -0400
+X-Mailbox-Line: From hannes@saeurebad.de Fri May  9 17:22:45 2008
+Message-Id: <20080509151713.939253437@saeurebad.de>
+User-Agent: quilt/0.46-1
+Date: Fri, 09 May 2008 17:17:13 +0200
+From: Johannes Weiner <hannes@saeurebad.de>
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH 0/3] bootmem2 III
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-AXFS is a XIP file system , compared with linear XIP CRAMFS , it is
-better in efficiency and speed .
+Hi,
 
-Anyone is doing this work ? Can you share with me ?
+here is bootmem2, a memory block-oriented boot time allocator.
 
-Thanks ,
+Recent NUMA topologies broke the current bootmem's assumption that
+memory nodes provide non-overlapping and contiguous ranges of pages.
 
-Currently , I have compiled AXFS_inode.c successfully , and compiling
-the AXFS_super.c , I feel that maybe I can be successful .Good luck .
+To cope with these configurations, bootmem2 operates on contiguous
+memory blocks.
 
+The node model is implemented on top of this scheme, every node
+provides zero or more blocks of memory.
 
-Best Regards,
-Bob
+The usage of bootmem2 is almost the same as that of the current
+allocator. On architectures that allow non-contiguous nodes the arch
+code must register memory blocks instead of nodes, right now these
+architectures are x86 and ia64.  For all other archs it is enough to
+select bootmem2 and stop using pgdat->bdata.
+
+bootmem can be dropped completely when those two architectures have
+been migrated to bootmem2.
+
+The first patch in this series makes the maximum number of memory
+blocks (and the resulting number of blocks per node) available to
+generic code as bootmem2 needs to work with those.
+
+The second patch is bootmem2 itself.  Although the logical complexity
+increased, I think the code is quite compact.  Every public interface
+has been documented.
+
+The third patch is trivial, it enables bootmem2 for x86_32 machines.
+
+The allocator works on my X86_32 UMA computer, everything else is only
+theory, please give it a test.
+
+	Hannes
+
+ arch/x86/Kconfig           |    1
+ b/include/linux/bootmem2.h |  174 +++++++++++++
+ b/mm/bootmem2.c            |  575 +++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/bootmem.h    |    6
+ include/linux/numa.h       |   12
+ mm/Kconfig                 |    3
+ mm/Makefile                |    7
+ mm/page_alloc.c            |    4
+ 8 files changed, 776 insertions(+), 6 deletions(-)
+
