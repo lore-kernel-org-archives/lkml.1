@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934982AbYEIBVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935066AbYEIBWm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934982AbYEIBVc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 21:21:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763535AbYEIBVW
+	id S935066AbYEIBWm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 21:22:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754316AbYEIBWb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 21:21:22 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:55057 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1764280AbYEIBVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 21:21:20 -0400
-Message-ID: <4823A70D.10103@sgi.com>
-Date: Thu, 08 May 2008 18:21:17 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Paul Mundt <lethal@linux-sh.org>, Mike Travis <travis@sgi.com>,
-       Adrian Bunk <bunk@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: sh migor_defconfig build breakage
-References: <20080508203949.GC22887@cs181133002.pp.htv.fi> <48236E59.8070400@sgi.com> <4823711D.70401@sgi.com> <482376BC.2000404@sgi.com> <48237ADE.3090703@sgi.com> <20080509005006.GA29869@linux-sh.org>
-In-Reply-To: <20080509005006.GA29869@linux-sh.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 8 May 2008 21:22:31 -0400
+Received: from vms044pub.verizon.net ([206.46.252.44]:50662 "EHLO
+	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753671AbYEIBWa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 21:22:30 -0400
+Date: Thu, 08 May 2008 20:22:10 -0500
+From: Corey Minyard <minyard@acm.org>
+Subject: [PATCH] IPMI: Support I/O resources in OF driver
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Nate Case <ncase@xes-inc.com>,
+       OpenIPMI Developers <openipmi-developer@lists.sourceforge.net>
+Reply-to: minyard@acm.org
+Message-id: <20080509012210.GA7305@minyard.local>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mundt wrote:
-> On Thu, May 08, 2008 at 03:12:46PM -0700, Mike Travis wrote:
->> Mike Travis wrote:
->>> Because some arch's have it defined as an inline function.  Perhaps the
->>> easiest would be to add to include/asm-sh/topology.h a simple define of
->>> cpu_to_node()?
->> Ahh, this is what caused the error.  In include/asm-generic/topology.h
->> cpu_to_node is only defined now if NUMA is turned off.
->>
->> #ifndef CONFIG_NUMA
->>
->> /* Other architectures wishing to use this simple topology API should fill
->>    in the below functions as appropriate in their own <asm/topology.h> file. */
->> #ifndef cpu_to_node
->> #define cpu_to_node(cpu)        ((void)(cpu),0)
->> #endif
->> ...
->>
->> So before my change arch 'sh' used the default define whether NUMA was
->> set or not.
->>
-> The dependency here is a bit vague in the first place. For UP NUMA the
-> asm-generic definitions are perfectly fine, it's only the CONFIG_NUMA &&
-> CONFIG_SMP cases where there is any point in doing anything more
-> fine-grained. So while it would be trivial to add a CONFIG_SMP test here
-> too, that's likely to break all of the other NUMA platforms.
-> 
-> So while sh can use the asm-generic definitions in the UP case, it
-> obviously can't on SMP. The easiest option for now is to just stub the
-> asm-generic bits in to asm-sh/topology.h under a CONFIG_NUMA ifdef and
-> then add more reasonable definitions for the SMP cases.
+From: Nate Case <ncase@xes-inc.com>
 
-The "suggested" patch I submitted sort of covered all the cases of CONFIG_NUMA=y
-without regards to CONFIG_SMP.  It seems you're suggesting that I only change
-the asm-sh/topology.h file and leave the remaining arch's for "error discovery"
-later?
+The current OF probing assumes that the resource is IORESOURCE_MEM.
+This checks for the IORESOURCE_IO flag and behaves appropriately.
+An I/O resource can exist with an ipmi device node on a legacy ISA bus.
 
-Thanks,
-Mike
+Signed-off-by: Nate Case <ncase@xes-inc.com>
+Signed-off-by: Corey Minyard <cminyard@mvista.com>
+---
+ drivers/char/ipmi/ipmi_si_intf.c |   10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
+Seems reasonable to me, though I have no way to test this. -corey
+
+Index: linux-2.6.25/drivers/char/ipmi/ipmi_si_intf.c
+===================================================================
+--- linux-2.6.25.orig/drivers/char/ipmi/ipmi_si_intf.c
++++ linux-2.6.25/drivers/char/ipmi/ipmi_si_intf.c
+@@ -2353,10 +2353,16 @@ static int __devinit ipmi_of_probe(struc
+ 
+ 	info->si_type		= (enum si_type) match->data;
+ 	info->addr_source	= "device-tree";
+-	info->io_setup		= mem_setup;
+ 	info->irq_setup		= std_irq_setup;
+ 
+-	info->io.addr_type	= IPMI_MEM_ADDR_SPACE;
++	if (resource.flags & IORESOURCE_IO) {
++		info->io_setup		= port_setup;
++		info->io.addr_type	= IPMI_IO_ADDR_SPACE;
++	} else {
++		info->io_setup		= mem_setup;
++		info->io.addr_type	= IPMI_MEM_ADDR_SPACE;
++	}
++
+ 	info->io.addr_data	= resource.start;
+ 
+ 	info->io.regsize	= regsize ? *regsize : DEFAULT_REGSIZE;
