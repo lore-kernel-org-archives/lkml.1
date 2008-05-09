@@ -1,68 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753981AbYEIGqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754404AbYEIGvH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753981AbYEIGqQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 02:46:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751089AbYEIGp7
+	id S1754404AbYEIGvH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 02:51:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbYEIGuz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 02:45:59 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:48758 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751470AbYEIGp6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 02:45:58 -0400
-Date: Fri, 9 May 2008 08:45:12 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andy Whitcroft <apw@shadowen.org>, Dave Hansen <haveblue@us.ibm.com>,
-       Gerald Schaefer <gerald.schaefer@de.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH] memory_hotplug: always initialize pageblock bitmap.
-Message-ID: <20080509064512.GD9840@osiris.boeblingen.de.ibm.com>
-References: <20080509060609.GB9840@osiris.boeblingen.de.ibm.com> <20080509153910.6b074a30.kamezawa.hiroyu@jp.fujitsu.com>
+	Fri, 9 May 2008 02:50:55 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39156 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750861AbYEIGuy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 02:50:54 -0400
+Date: Fri, 9 May 2008 08:50:32 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [patch] speed up / fix the new generic semaphore code (fix
+	AIM7 40% regression with 2.6.26-rc1)
+Message-ID: <20080509065032.GB15754@elte.hu>
+References: <20080508120130.GA2860@elte.hu> <20080508122802.GA4880@elte.hu> <alpine.LFD.1.10.0805080859140.3024@woody.linux-foundation.org> <alpine.LFD.1.10.0805081128550.3024@woody.linux-foundation.org> <20080508201956.GA2547@elte.hu> <alpine.LFD.1.10.0805081326130.2940@woody.linux-foundation.org> <20080508214557.GA13311@elte.hu> <alpine.LFD.1.10.0805081535130.2940@woody.linux-foundation.org> <20080509001647.244393bc@core> <alpine.LFD.1.10.0805081631440.2940@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080509153910.6b074a30.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <alpine.LFD.1.10.0805081631440.2940@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 09, 2008 at 03:39:10PM +0900, KAMEZAWA Hiroyuki wrote:
-> On Fri, 9 May 2008 08:06:09 +0200
-> Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
-> 
-> > From: Heiko Carstens <heiko.carstens@de.ibm.com>
-> > 
-> > Trying to online a new memory section that was added via memory hotplug
-> > sometimes results in crashes when the new pages are added via
-> > __free_page. Reason for that is that the pageblock bitmap isn't
-> > initialized and hence contains random stuff.
-> 
-> Hmm, curious. In my understanding, memmap_init_zone() initializes it.
-> 
->  __add_pages()
-> 	-> __add_section()
-> 		-> sparse-add_one_section() // allocate usemap
-> 		-> __add_zone()
-> 			-> memmap_init_zone() // reset pageblock's bitmap 
-> 
-> Can't memmap_init_zone() does proper initialization ?
 
-Well, it just _sets_ some bits. But nobody has initialized the bitmap
-before to zero. It doesn't reset the pageblock's bitmap as your
-comment would indicate.
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> ........................
-> Ah, ok. I see. grow_zone_span() is not called at __add_zone(), then,
-> memmap_init_zone() doesn't initialize usemap because memmap is not in zone's
-> range.
+> > I don't think fixing n_tty is now a big job if someone wants to take 
+> > a swing at it. The driver write/throttle/etc routines below the 
+> > n_tty ldisc layer are now BKL clean so it should just be the 
+> > internal locking of the buffers, window and the like to tackle.
 > 
-> Recently, I added a check "zone's start_pfn < pfn < zone's end"
-> to memmap_init_zone()'s usemap initialization for !SPARSEMEM case bug FIX.
-> (and I think the fix itself is sane.)
+> Well, it turns out that Ingo's fixed statistics actually put the real 
+> cost in fcntl/ioctl/open/release:
 > 
-> How about calling grow_pgdat_span()/grow_zone_span() from __add_zone() ?
+>     310  down <= lock_kernel <= sys_fcntl <= system_call_after_swapgs <
+>     332  down <= lock_kernel <= vfs_ioctl <= do_vfs_ioctl <
+>     380  down <= lock_kernel <= tty_release <= __fput <
+>     422  down <= lock_kernel <= chrdev_open <= __dentry_open <
+> 
+> rather than the write routines. But it may be that Ingo was just 
+> profiling two different sections, and it's really all of them.
 
-Dunno.. just fixed a few bugs to get it working.. somehow.. ;)
+the first trace had general desktop load mixed into it as well - so 
+while it's not interesting to AIM7 the BKL does matter in those 
+situations and i'd not be surprised if it was responsible for certain 
+categories of desktop lag.
+
+The second trace was the correct 'pure' AIM7 workload which produces 
+very little tty output. It is a quite stable workload and the trace i 
+uploaded is representative of the totality of that workload. AIM7 runs 
+for several minutes so there's no significant rampup/rampdown 
+interaction either.
+
+	Ingo
