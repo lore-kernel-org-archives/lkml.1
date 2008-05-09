@@ -1,81 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758529AbYEIWgP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758419AbYEIWif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758529AbYEIWgP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 18:36:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753615AbYEIWfy
+	id S1758419AbYEIWif (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 18:38:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbYEIWi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 18:35:54 -0400
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:34170 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752569AbYEIWfx (ORCPT
+	Fri, 9 May 2008 18:38:26 -0400
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:51965 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751371AbYEIWiZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 18:35:53 -0400
-Date: Fri, 09 May 2008 15:36:17 -0700
-From: Matheos Worku <Matheos.Worku@Sun.COM>
-Subject: Re: NIU - Sun Neptune 10g - Transmit timed out reset (2.6.24)
-In-reply-to: <4824CCF0.5050302@krogh.cc>
-To: Jesper Krogh <jesper@krogh.cc>
-Cc: David Miller <davem@davemloft.net>, yhlu.kernel@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Message-id: <4824D1E1.10007@sun.com>
-MIME-version: 1.0
-Content-type: text/plain; format=flowed; charset=ISO-8859-1
-Content-transfer-encoding: 7BIT
-X-Accept-Language: en-us, en
-References: <86802c440805071130m62c1f4edydb3316dac4a2aba2@mail.gmail.com>
- <20080507.141521.193714938.davem@davemloft.net> <482498D5.9060008@krogh.cc>
- <20080509.143229.174354251.davem@davemloft.net> <4824C936.9000103@krogh.cc>
- <4824CBA1.8040703@sun.com> <4824CCF0.5050302@krogh.cc>
-User-Agent: Mozilla Thunderbird 1.0.7-1.4.1 (X11/20050929)
+	Fri, 9 May 2008 18:38:25 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsYEAK5vJEhMROPA/2dsb2JhbACBU6oJ
+Date: Fri, 9 May 2008 18:38:23 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, pmckenne@us.ibm.com,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Using markers w/ preemptible RCU in early code
+Message-ID: <20080509223823.GD12311@Krystal>
+References: <20080510011357.5466a631@linux360.ro>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080510011357.5466a631@linux360.ro>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 18:35:15 up 70 days, 18:46,  3 users,  load average: 0.09, 0.20,
+	0.23
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesper Krogh wrote:
+* Eduard - Gabriel Munteanu (eduard.munteanu@linux360.ro) wrote:
+> Hello,
+> 
+> I'm working on the kmemtrace GSoC project and I'm having a little
+> problem.
+> 
+> My code inserts probes during early code (just after kmem_cache_init()).
+> This works on the classic RCU. But on the preemptible RCU, this
+> triggers BUG()s (supposedly on each probe, there are two), although the
+> kernel runs fine:
+> 
+> > BUG: scheduling while atomic: swapper/0/0x00000002
+> > Pid: 0, comm: swapper Not tainted 2.6.25-00002-gf80e324-dirty #16
+> > 
+> > Call Trace:
+> >  [<ffffffff802365f5>] __schedule_bug+0x65/0x70
+> >  [<ffffffff804f8bb0>] thread_return+0x346/0x566
+> >  [<ffffffff802734ba>] ? get_marker+0x23a/0x260
+> >  [<ffffffff8025fbc6>] ? put_online_cpus+0x46/0x70
+> >  [<ffffffff80270c88>] __synchronize_sched+0x48/0x80
+> >  [<ffffffff802741a2>] marker_probe_register+0x152/0x660
+> >  [<ffffffff8029af10>] ? kmemtrace_probe_alloc+0x0/0x1b0
+> >  [<ffffffff8029ad6d>] kmemtrace_init+0x4d/0xd0
+> >  [<ffffffff80693c05>] start_kernel+0x205/0x300
+> >  [<ffffffff806931b2>] _sinittext+0x1b2/0x200
+> 
+> The is triggered by the following code in marker_probe_register():
+> #ifdef CONFIG_PREEMPT_RCU
+> 	synchronize_sched();    /* Until we have the call_rcu_sched() */
+> #endif
+> 
+> Since preemption and SMP are disabled during early code, we could do
+> something like:
+> diff --git a/kernel/marker.c b/kernel/marker.c
+> index 005b959..84964dc 100644
+> --- a/kernel/marker.c
+> +++ b/kernel/marker.c
+> @@ -23,6 +23,7 @@
+>  #include <linux/rcupdate.h>
+>  #include <linux/marker.h>
+>  #include <linux/err.h>
+> +#include <linux/hardirq.h>
+>  
+>  extern struct marker __start___markers[];
+>  extern struct marker __stop___markers[];
+> @@ -672,7 +673,9 @@ int marker_probe_register(const char *name, const char *format,
+>  	/* write rcu_pending before calling the RCU callback */
+>  	smp_wmb();
+>  #ifdef CONFIG_PREEMPT_RCU
+> -	synchronize_sched();	/* Until we have the call_rcu_sched() */
+> +	/* We are not preemptible when registering probes in early code */
+> +	if (likely(preemptible()))
+> +		synchronize_sched();	/* Until we have the call_rcu_sched() */
+>  #endif
+>  	call_rcu(&entry->rcu, free_old_closure);
 
-> Matheos Worku wrote:
->
->> Jesper Krogh wrote:
->>
->>> David Miller wrote:
->>>
->>>> From: Jesper Krogh <jesper@krogh.cc>
->>>> Date: Fri, 09 May 2008 20:32:53 +0200
->>>>
->>>>> When it works I doesnt seem to be able to get it pass 500MB/s.
->>>>
->>>>
->>>> With this card you really need multiple cpus and multiple threads
->>>> sending data through the card in order to fill the 10Gb pipe.
->>>>
->>>> Single connections will not fill the pipe.
->>>
->>>
->>> The server is a Sun X4600 with 8 x dual-core CPU's, setup with 64
->>> NFS-threads. The other end of the fiber goes into a switch with gigabit
->>> ports connected to 48 dual-core cpus. The test was done doing a dd on a
->>> 4.5GB file from the server to /dev/null on the clients.
->>
->>
->> Are you doing a TX or RX (with respect to the 10G if)?
->
->
-> Thats a transmit.. from the NFS server to the clients.
+I think call_rcu can become a problem too in that case. It is
+responsible for freeing the old closure and I don't think it will be
+executed if rcu or the scheduler is not active. Therefore, we should
+also do something like :
 
-I have observed TX throughput degradation (and increased CPU 
-utilization)  occurs with increased # of connections, when CPU count > 4 
-CPUs.  I don't think it is related to the driver (or HW). A while ago I 
-prototyped a driver which drops all UDP TX packets and the throughput 
-degradation (and CPU utilization increase) behavior occurred though the 
-driver was not doing much work.   LSO/TSO seems to help with the 
-situation though. With LSO disabled, I have observed the issue on 
-several 10G nics.
+if (likely(preemptible()))
+   call_rcu(&entry->rcu, free_old_closure);
+else
+   free_old_closure(&entry->rcu);   (modulo passing the right
+   parameters..)
 
-Regards
-Matheos
+All the synchronize_sched, cal_rcu and rcu_barriers should be changed. I
+think the rcu_barriers should also have this kind of test to check for
+early boot use.
 
+Mathieu
 
->
-> Jesper
+>  end:
+> 
+> Is this the best approach? marker_probe_register() isn't a hot path, so
+> that check won't mess up the performance. Anyway, this works for me.
+> 
+> 
+> 	Eduard
+> 
+> (forgot LKML, added now.)
+> 
 
-
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
