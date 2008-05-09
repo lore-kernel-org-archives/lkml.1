@@ -1,60 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760227AbYEIXQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758242AbYEIXdz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760227AbYEIXQT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 19:16:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756361AbYEIXQL
+	id S1758242AbYEIXdz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 19:33:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754563AbYEIXdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 19:16:11 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:35658 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756179AbYEIXQK (ORCPT
+	Fri, 9 May 2008 19:33:42 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:15889 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752177AbYEIXdl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 19:16:10 -0400
-Message-ID: <4824DB36.8000500@firstfloor.org>
-Date: Sat, 10 May 2008 01:16:06 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Fri, 9 May 2008 19:33:41 -0400
+Message-ID: <4824DF51.9090902@hp.com>
+Date: Fri, 09 May 2008 16:33:37 -0700
+From: Rick Jones <rick.jones2@hp.com>
+User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-To: Paulo Marques <pmarques@grupopie.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: /proc/kallsyms broken in 2.6.26-rc1-git6
-References: <20080509174148.GA22246@basil.nowhere.org> <482491D6.9030205@grupopie.com> <4824A7B6.70306@firstfloor.org> <4824AD3C.3070506@grupopie.com>
-In-Reply-To: <4824AD3C.3070506@grupopie.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jesper Krogh <jesper@krogh.cc>
+CC: David Miller <davem@davemloft.net>, yhlu.kernel@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: NIU - Sun Neptune 10g - Transmit timed out reset (2.6.24)
+References: <86802c440805071130m62c1f4edydb3316dac4a2aba2@mail.gmail.com>	<20080507.141521.193714938.davem@davemloft.net>	<482498D5.9060008@krogh.cc>	<20080509.143229.174354251.davem@davemloft.net>	<4824C936.9000103@krogh.cc>	<4824CE43.8060203@hp.com> <4824D4C0.10201@krogh.cc>	<4824D830.9090504@hp.com> <4824DAB0.8060604@krogh.cc>
+In-Reply-To: <4824DAB0.8060604@krogh.cc>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jesper Krogh wrote:
+> Rick Jones wrote:
+> 
+>>>> To which cpu(s) were the neptune's interrupts assigned? (grep <ethN> 
+>>>> /proc/interrupts)
+>>>
+>>>
+>>> Several
+>>
+>>
+>> Which ones?-)  I suspect that since it is several that at least 
+>> answers the MSI_X question right?  Or is it possible to have a single 
+>> device have several MSI interrupts?
 
-> That's not for me to judge, but I believe it has always been like that.
+Well, the output below anwered my question about multiple MSI's from a 
+single device :)
 
-No, normally /proc/kallsyms looks similar to System.tap. Where are all
-these DW.* symbols coming from? They didn't use to be there and don't
-make any sense because they don't have any valid kernel addresses.
+> 
+> 
+> The table is rather large.
+> http://rafb.net/p/a9zfFA59.html
 
-> I just wanted to understand if you noticed a change in behavior (which
-> is probably a bug) or if it has always been like that but you just
-> noticed how ugly it is.
+So, over time at least, the interrupts have been spread over half the 
+cores in the system.  This is where the block diagram showing the socket 
+and I/O slot connections would be useful.
 
-I noticed a change in behavior.
+For the interrupts over a given interval, one can take snapshots at 
+either end of the interval and then run them through beforeafter:
 
-> Maybe you also have some debug or markers configuration or something
-> that is generating extra symbols to a special section that is just
-> making the problem look worse now.
+ftp://ftp.cup.hp.com/dist/networking/tools/
 
-Nothing particular. I uploaded the config at
-http://halobates.de/basil-config
-
-> Anyway, I can change the way kallsyms works, but that has to be done
-> with some care because there are some userspace tools that read
-> /proc/kallsyms and we don't want to break those. A proper testing period
-> through -mm should take care of that, though.
-
-It's the other way round -- kallsyms changed and that change will likely
-break programs.
-
--Andi
+I think that collectl might have something there too.
 
 
+I guess the addresses in use weren't sufficient to get interrupts spread 
+across all 24 IRQ's.
 
+rick jones
