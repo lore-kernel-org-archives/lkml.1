@@ -1,80 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764267AbYEIRgo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765666AbYEIRny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764267AbYEIRgo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 13:36:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbYEIRgg
+	id S1765666AbYEIRny (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 13:43:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbYEIRno
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 13:36:36 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:48559 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752097AbYEIRgf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 13:36:35 -0400
-Date: Fri, 9 May 2008 10:36:47 -0700
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: "Mark M. Hoffman" <mhoffman@lightlink.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       lm-sensors <lm-sensors@lm-sensors.org>
-Subject: [PATCH] ibmaem: Overview of the driver
-Message-ID: <20080509173647.GK16404@tree.beaverton.ibm.com>
-Reply-To: djwong@us.ibm.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Fri, 9 May 2008 13:43:44 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:51003 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752195AbYEIRnm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 13:43:42 -0400
+Date: Fri, 9 May 2008 12:43:38 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Paul Jackson <pj@sgi.com>
+Cc: a.p.zijlstra@chello.nl, maxk@qualcomm.com, menage@google.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: IRQ affinities (was: boot cgroup questions)
+Message-Id: <20080509124338.5a3c4f81.pj@sgi.com>
+In-Reply-To: <20080509073650.045d037d.pj@sgi.com>
+References: <47D73086.2030008@qualcomm.com>
+	<6599ad830803111827n1cb8e2c7i47c2ef3f3bb58995@mail.gmail.com>
+	<47D7411E.1000009@qualcomm.com>
+	<6599ad830803111936jd940deam8584bc971c3b6f41@mail.gmail.com>
+	<47D74595.4080100@qualcomm.com>
+	<6599ad830803112009y18d9e43ft8e3fc4a551d891da@mail.gmail.com>
+	<20080311235939.1ebee8e3.pj@sgi.com>
+	<47D81FE1.6030205@qualcomm.com>
+	<20080312135746.89456f2a.pj@sgi.com>
+	<47D82AD2.1070108@qualcomm.com>
+	<20080312143253.3dd72c7f.pj@sgi.com>
+	<47D83858.4030806@qualcomm.com>
+	<20080312153712.bc5df7a1.pj@sgi.com>
+	<47D8593A.6040503@qualcomm.com>
+	<20080312183059.6716d630.pj@sgi.com>
+	<47D87BE5.4010702@qualcomm.com>
+	<20080313020300.92244956.pj@sgi.com>
+	<47FE5655.10900@qualcomm.com>
+	<20080414133902.7878cfce.pj@sgi.com>
+	<1210329926.13978.224.camel@twins>
+	<20080509061727.5057de1f.pj@sgi.com>
+	<1210333738.13978.246.camel@twins>
+	<20080509070314.f86aece4.pj@sgi.com>
+	<1210335270.13978.252.camel@twins>
+	<20080509073650.045d037d.pj@sgi.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A brief overview of what this driver does
+pj, talking to himself:
+> That is, for example, one might want all the CPUs in cpusets
+> foo, bar and baz, except the CPUs in cpuset blip, to handle
+> IRQs so and so.
 
-Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
----
+Ahh!  Perhaps that example has the keys to this kingdom.
 
- Documentation/hwmon/ibmaem |   37 +++++++++++++++++++++++++++++++++++++
- 1 files changed, 37 insertions(+), 0 deletions(-)
+How about this.  We add two files to each cpuset:
 
-diff --git a/Documentation/hwmon/ibmaem b/Documentation/hwmon/ibmaem
-new file mode 100644
-index 0000000..2fefaf5
---- /dev/null
-+++ b/Documentation/hwmon/ibmaem
-@@ -0,0 +1,37 @@
-+Kernel driver ibmaem
-+======================
-+
-+Supported systems:
-+  * Any recent IBM System X server with Active Energy Manager support.
-+    This includes the x3350, x3550, x3650, x3655, x3755, x3850 M2,
-+    x3950 M2, and certain HS2x/LS2x/QS2x blades.  The IPMI host interface
-+    driver ("ipmi-si") needs to be loaded for this driver to do anything.
-+    Prefix: 'ibmaem'
-+    Datasheet: Not available
-+
-+Author: Darrick J. Wong
-+
-+Description
-+-----------
-+
-+This driver implements sensor reading support for the energy and power
-+meters available on various IBM System X hardware through the BMC.  All
-+sensor banks will be exported as platform devices; this driver can talk
-+to both v1 and v2 interfaces.  This driver is completely separate from the
-+older ibmpex driver.
-+
-+The v1 AEM interface has a simple set of features to monitor energy use.
-+There is a register that displays an estimate of raw energy consumption
-+since the last BMC reset, and a power sensor that returns average power
-+use over a configurable interval.
-+
-+The v2 AEM interface is a bit more sophisticated, being able to present
-+a wider range of energy and power use registers, the power cap as
-+set by the AEM software, and temperature sensors.
-+
-+Special Features
-+----------------
-+
-+The "power_cap" value displays the current system power cap, as set by
-+the Active Energy Manager software.  Setting the power cap from the host
-+is not currently supported.
+    irq_affinity_include	# IRQs to direct to CPUs in this cpuset
+    irq_affinity_exclude	# IRQs -not- to direct to these CPUs
+
+where irq_affinity_exclude overrides irq_affinity_include.
+
+So, to determine to which CPUs a given interrupt (IRQ) can be directed:
+ 1) Combine (union) the 'cpus' of all the cpusets for which
+    that IRQ is in that cpusets irq_affinity_include, then
+ 2) Remove (set substraction) the 'cpus' of any cpuset for which
+    that IRQ is in that cpusets irq_affinity_exclude.
+
+In the simplest case of just wanting to isolate some CPUs with their
+own special list of interrupts, one would:
+ 1) include all interrupts in the top cpusets irq_affinity_include, and
+ 2) include the interrupts you don't want in the isolated cpusets
+    irq_affinity_exclude.
+
+Observe that there is no dependency on the cpuset hierarchy in the above.
+
+The contents of the files irq_affinity_include and irq_affinity_exclude
+would be inherited by child cpusets on creation from their parents.
+
+The one detail that puzzles me at the moment is what ownership and
+permissions these two irq_affinity_* files would have.  I am concerned
+that the usual permissions, which allow a job to write its own cpuset
+files would allow a job to affect the overall system to a greater
+degree than is desired.  Perhaps an additional inheritance rule would
+be useful and appropriate, such as a rule that a given cpusets
+irq_affinity_include must be a subset of its parents or a rule that
+a given cpusets irq_affinity_exclude must be a -superset- of its
+parents; I'm unsure here.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
