@@ -1,71 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934118AbYEIAGh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933661AbYEIAIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934118AbYEIAGh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 20:06:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933143AbYEIAGH
+	id S933661AbYEIAIb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 20:08:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751632AbYEIAIW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 20:06:07 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:41558 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932914AbYEIAGD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 20:06:03 -0400
-Subject: Re: [BUG 2.6.26-rc1] scsi (or sysfs or vm?) oops in sr_probe()
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
-In-Reply-To: <1209915560.16283.31.camel@localhost.localdomain>
-References: <481D9C69.8080902@garzik.org>
-	 <1209914732.16283.27.camel@localhost.localdomain>
-	 <1209915560.16283.31.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 08 May 2008 19:05:57 -0500
-Message-Id: <1210291557.3114.74.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+	Thu, 8 May 2008 20:08:22 -0400
+Received: from gw.goop.org ([64.81.55.164]:48047 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751386AbYEIAIV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 20:08:21 -0400
+Message-ID: <482395ED.8010108@goop.org>
+Date: Fri, 09 May 2008 01:08:13 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Paul Menage <menage@google.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH] call_usermodehelper_setup() should use GFP_KERNEL
+References: <20080509084248.43B5.KOSAKI.MOTOHIRO@jp.fujitsu.com> <4823928D.7080907@goop.org> <20080509085731.43BD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+In-Reply-To: <20080509085731.43BD.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-05-04 at 10:39 -0500, James Bottomley wrote:
-> On Sun, 2008-05-04 at 10:25 -0500, James Bottomley wrote:
-> > On Sun, 2008-05-04 at 07:22 -0400, Jeff Garzik wrote:
-> > > See attached files for additional config detail.
-> > > 
-> > > Platform summary:  AMD64 2x2 (== 4 cores), Fedora 8/x86-64
-> > > 
-> > > Driver 'sr' needs updating - please use bus_type methods
-> > > BUG: unable to handle kernel NULL pointer dereference at 00000000000005d8
-> > > IP: [<ffffffff8025e10c>] get_page_from_freelist+0x43/0x573
-> > > PGD 7e90f067 PUD 7edbc067 PMD 0
-> > > Oops: 0000 [1] SMP
-> > 
-> > Is this with CONFIG_SLAB or CONFIG_SLUB?
-> > 
-> > I don't see it in my test systems, but they're CONFIG_SLAB
-> 
-> OK, should have looked at the attachments:
-> 
-> ...
-> CONFIG_SLAB=y
-> # CONFIG_SLUB is not set
-> # CONFIG_SLOB is not set
-> ...
-> 
-> Since you also have this:
-> 
-> CONFIG_DEBUG_KERNEL=y
-> 
-> Can you tell me what source line corresponds to 
-> 
-> :sr_mod:sr_probe+0x17b/0x4a9
+KOSAKI Motohiro wrote:
+> Yeah, you are right.
+> but it is no regression.
+> I agree with my plan have improve chance, but it is better than current.
+>   
 
-Ping on this, please.  I suspect it will tell us the faulting call is
-kmalloc and that it's definitely a vm issue, but we need this data as a
-first step.
+Sure.  I was just curious and wondered if you'd already looked at it.
 
-James
-
+    J
 
