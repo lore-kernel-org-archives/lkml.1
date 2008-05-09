@@ -1,65 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757463AbYEIU7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758100AbYEIVAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757463AbYEIU7v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 16:59:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbYEIU7n
+	id S1758100AbYEIVAQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 17:00:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbYEIU7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 16:59:43 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:40300 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752304AbYEIU7m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 16:59:42 -0400
-Date: Fri, 9 May 2008 16:59:39 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [git patch] libata fix
-Message-ID: <20080509205939.GA29841@havoc.gtf.org>
+	Fri, 9 May 2008 16:59:55 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:62371 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757884AbYEIU7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 16:59:54 -0400
+Date: Fri, 9 May 2008 21:55:38 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Jean Delvare <khali@linux-fr.org>
+cc: David Brownell <david-b@pacbell.net>, linux-mips@linux-mips.org,
+       mgreer@mvista.com, rtc-linux@googlegroups.com,
+       Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-kernel@vger.kernel.org,
+       i2c@lm-sensors.org, ab@mycable.de,
+       Alessandro Zummo <alessandro.zummo@towertech.it>
+Subject: Re: [i2c] [RFC][PATCH 4/4] RTC: SMBus support for the M41T80,
+In-Reply-To: <20080509100841.151eabcd@hyperion.delvare>
+Message-ID: <Pine.LNX.4.55.0805092127410.10552@cliff.in.clinika.pl>
+References: <200805070120.03821.david-b@pacbell.net>
+ <Pine.LNX.4.55.0805072226180.25644@cliff.in.clinika.pl>
+ <200805071625.20430.david-b@pacbell.net> <Pine.LNX.4.55.0805080306080.32613@cliff.in.clinika.pl>
+ <20080509100841.151eabcd@hyperion.delvare>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Jean,
 
-Fix the breakage noticed by several.
+> Maybe you shouldn't have included 4 different mailing lists to start
+> with, especially for a patch which is rather hardware-specific and not
+> overly important.
 
-Please pull from 'upstream-linus' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
+ Well, there is more interest in these changes on the linux-mips mailing
+list than on any other one -- I seriously doubt there is any user of
+hardware based around the BCM1250A SOC on either of the i2c and rtc-linux
+lists.  And the LKML is to be cc-ed on all patch submissions.
 
-to receive the following updates:
+> > @@ -78,31 +83,104 @@ struct m41t80_data {
+> >  	struct rtc_device *rtc;
+> >  };
+> >  
+> > -static int m41t80_get_datetime(struct i2c_client *client,
+> > -			       struct rtc_time *tm)
+> > +
+> > +static int m41t80_i2c_write(struct i2c_client *client, u8 reg, u8 num, u8 *buf)
+> > +{
+> > +	u8 wbuf[num + 1];
+> > +	struct i2c_msg msgs[] = {
+> > +		{
+> > +			.addr	= client->addr,
+> > +			.flags	= 0,
+> > +			.len	= num + 1,
+> > +			.buf	= wbuf,
+> > +		},
+> > +	};
+> > +
+> > +	wbuf[0] = reg;
+> > +	memcpy(wbuf + 1, buf, num);
+> > +	return i2c_transfer(client->adapter, msgs, 1);
+> > +}
+> 
+> This is reimplementing i2c_smbus_write_i2c_block_data().
 
- include/linux/libata.h |    9 +++------
- 1 files changed, 3 insertions(+), 6 deletions(-)
+ Where does it come from?  I fail to see this type of transfer being 
+defined anywhere in the SMBus spec.  I checked the spec before I referred 
+to the implementation in our I2C core and I hope you agree I may not have 
+expected any extensions beyond what the SMBus spec defines.
 
-Jeff Garzik (1):
-      [libata] revert new check-ready Status register logic
+ That written, you are of course correct WRT the reimplementation and I am 
+eager to remove it -- thanks for the point.  I'll skip all your other 
+comments related as obviously implied by this change.
 
-diff --git a/include/linux/libata.h b/include/linux/libata.h
-index 7e206da..0f17643 100644
---- a/include/linux/libata.h
-+++ b/include/linux/libata.h
-@@ -1384,17 +1384,14 @@ static inline struct ata_port *ata_shost_to_port(struct Scsi_Host *host)
- 
- static inline int ata_check_ready(u8 status)
- {
--	/* Some controllers report 0x77 or 0x7f during intermediate
--	 * not-ready stages.
--	 */
--	if (status == 0x77 || status == 0x7f)
--		return 0;
-+	if (!(status & ATA_BUSY))
-+		return 1;
- 
- 	/* 0xff indicates either no device or device not ready */
- 	if (status == 0xff)
- 		return -ENODEV;
- 
--	return !(status & ATA_BUSY);
-+	return 0;
- }
- 
- 
+ Given the function and friends make use of apparently a non-standard
+SMBus transfer, I think they should be called differently, perhaps
+i2c_smbusext_write_i2c_block_data(), etc. or suchlike.
+
+> Mixing code cleanups with functional changes is a Bad Idea (TM).
+
+ I am happy to bother you with a separate patch including style fixes.  I
+can even create a handful of them, grouping functionally consistent
+changes.
+
+> >  	dev_info(&client->dev,
+> > -		 "chip found, driver version " DRV_VERSION "\n");
+> > +		 "%s chip found, driver version " DRV_VERSION "\n",
+> > +		 client->name);
+> 
+> Incorrect change, dev_info() already includes the chip name.
+
+ My system must be a notable exception then, as this change modifies 
+output:
+
+rtc-m41t80 1-0068: chip found, driver version 0.05
+
+to:
+
+rtc-m41t80 1-0068: m41t81 chip found, driver version 0.05
+
+here.
+
+> I'm not the one who will take your patch, I'll leave it to Alessandro
+> to tell you what he wants, but one thing for sure: it would be much
+> easier to review and validate your patches if you were not mixing
+> functional changes and code cleanups.
+
+ You seem to have your boundary set differently to me and a few other
+people.  This is perfectly fine, as the line is thin here and each of the
+subsystems follows slightly different rules.  You cannot always satisfy
+everybody and if something makes your life easier and does not make mine
+more difficult, I see no problem with adapting myself. :-)
+
+> > @@ -803,6 +786,7 @@ static int m41t80_probe(struct i2c_clien
+> >  
+> >  #ifdef CONFIG_RTC_DRV_M41T80_WDT
+> >  	if (clientdata->features & M41T80_FEATURE_HT) {
+> > +		save_client = client;
+> >  		rc = misc_register(&wdt_dev);
+> >  		if (rc)
+> >  			goto exit;
+> > @@ -811,7 +795,6 @@ static int m41t80_probe(struct i2c_clien
+> >  			misc_deregister(&wdt_dev);
+> >  			goto exit;
+> >  		}
+> > -		save_client = client;
+> >  	}
+> >  #endif
+> >  	return 0;
+> 
+> This one deserves a patch on its own IMHO.
+
+ No problem.
+
+  Maciej
