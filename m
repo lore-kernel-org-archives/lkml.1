@@ -1,90 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934173AbYEIANt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934355AbYEIAOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934173AbYEIANt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 20:13:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754778AbYEIANi
+	id S934355AbYEIAOf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 20:14:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755255AbYEIAOT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 20:13:38 -0400
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:41587 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754685AbYEIANf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 20:13:35 -0400
-Date: Fri, 9 May 2008 10:02:49 +1000
-From: David Gibson <dwg@au1.ibm.com>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: Mel Gorman <mel@csn.ul.ie>, linux-mm@kvack.org, dean@arctic.org,
-       linux-kernel@vger.kernel.org, wli@holomorphy.com, andi@firstfloor.org,
-       kenchen@google.com, agl@us.ibm.com
-Subject: Re: [PATCH 0/3] Guarantee faults for processes that call
-	mmap(MAP_PRIVATE) on hugetlbfs v2
-Message-ID: <20080509000249.GA8552@yookeroo.seuss>
-Mail-Followup-To: David Gibson <dwg@au1.ibm.com>,
-	Andy Whitcroft <apw@shadowen.org>, Mel Gorman <mel@csn.ul.ie>,
-	linux-mm@kvack.org, dean@arctic.org, linux-kernel@vger.kernel.org,
-	wli@holomorphy.com, andi@firstfloor.org, kenchen@google.com,
-	agl@us.ibm.com
-References: <20080507193826.5765.49292.sendpatchset@skynet.skynet.ie> <20080508014822.GE5156@yookeroo.seuss> <20080508111408.GB30870@shadowen.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080508111408.GB30870@shadowen.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 8 May 2008 20:14:19 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42900
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754794AbYEIAOP convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 20:14:15 -0400
+Date: Thu, 08 May 2008 17:14:08 -0700 (PDT)
+Message-Id: <20080508.171408.94456716.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 12:14:08PM +0100, Andy Whitcroft wrote:
-> On Thu, May 08, 2008 at 11:48:22AM +1000, David Gibson wrote:
-> > On Wed, May 07, 2008 at 08:38:26PM +0100, Mel Gorman wrote:
-> > > MAP_SHARED mappings on hugetlbfs reserve huge pages at mmap() time.
-> > > This guarantees all future faults against the mapping will succeed.
-> > > This allows local allocations at first use improving NUMA locality whilst
-> > > retaining reliability.
-> > > 
-> > > MAP_PRIVATE mappings do not reserve pages. This can result in an application
-> > > being SIGKILLed later if a huge page is not available at fault time. This
-> > > makes huge pages usage very ill-advised in some cases as the unexpected
-> > > application failure cannot be detected and handled as it is immediately fatal.
-> > > Although an application may force instantiation of the pages using mlock(),
-> > > this may lead to poor memory placement and the process may still be killed
-> > > when performing COW.
-> > > 
-> > > This patchset introduces a reliability guarantee for the process which creates
-> > > a private mapping, i.e. the process that calls mmap() on a hugetlbfs file
-> > > successfully.  The first patch of the set is purely mechanical code move to
-> > > make later diffs easier to read. The second patch will guarantee faults up
-> > > until the process calls fork(). After patch two, as long as the child keeps
-> > > the mappings, the parent is no longer guaranteed to be reliable. Patch
-> > > 3 guarantees that the parent will always successfully COW by unmapping
-> > > the pages from the child in the event there are insufficient pages in the
-> > > hugepage pool in allocate a new page, be it via a static or dynamic pool.
-> > 
-> > I don't think patch 3 is a good idea.  It's a fair bit of code to
-> > implement a pretty bizarre semantic that I really don't think is all
-> > that useful.  Patches 1-2 are already sufficient to cover the
-> > fork()/exec() case and a fair proportion of fork()/minor
-> > frobbing/exit() cases.  If the child also needs to write the hugepage
-> > area, chances are it's doing real work and we care about its
-> > reliability too.
-> 
-> Without patch 3 the parent is still vunerable during the period the
-> child exists.  Even if that child does nothing with the pages not even
-> referencing them, and then execs immediatly.  As soon as we fork any
-> reference from the parent will trigger a COW, at which point there may
-> be no pages available and the parent will have to be killed.  That is
-> regardless of the fact the child is not going to reference the page and
-> leave the address space shortly.  With patch 3 on COW if we find no memory
-> available the page may be stolen for the parent saving it, and the _risk_
-> of reference death moves to the child; the child is killed only should it
-> then re-reference the page.
 
-Yes, thinko, sorry.  Forgot that a COW would be triggered even if the
-child never wrote the pages.  I see the point of patch 3 now.  Damn,
-but it's still a weird semantic to be implementing though.
+Here are some networking fixes and enhancements:
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+1) Bonding bug fixes from Pavel Emelyanov and Jay Vosburgh.
+
+2) Support for some newer PHY chips in E1000E, from Bruce Allan.
+
+3) TCP FRTO SACK fix when in newreno mode from Ilpo.
+
+4) Fix can_send() handling when dev_queue_xmit() fails, from
+   Oliver Hartkopp.
+
+5) macvlan leak/oops fix from Patrick McHardy.
+
+6) Two netfilter fixes from Patrick McHardy.
+
+7) fs_enet leak fix from Scott Wood.
+
+8) Namespace network device corruption fix from Pavel Emelyanov.
+
+9) Several other device driver fixes from Jeff Garzik's tree.
+
+Please pull, thanks a lot!
+
+The following changes since commit 9d1045ad68fcccfaf1393cc463ab6357693e8d1d:
+  Jamal Hadi Salim (1):
+        net_cls_act: act_simple dont ignore realloc code
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+
+Alan Cox (1):
+      cxgb3: Use CAP_SYS_RAWIO for firmware
+
+Andy Fleming (3):
+      gianfar: Fix a locking bug in gianfar's sysfs code
+      phylib: Fix some sparse warnings
+      ucc_geth: Fix a bunch of sparse warnings
+
+Anton Vorontsov (2):
+      uli526x: initialize the hardware prior to requesting interrupts
+      uli526x: fix endianness issues in the setup frame
+
+Ben Hutchings (1):
+      net: Added ASSERT_RTNL() to dev_open() and dev_close().
+
+Bruce Allan (1):
+      e1000e: Add support for BM PHYs on ICH9
+
+Bruce Robson (1):
+      [netdrvr] eexpress: IPv6 fails - multicast problems
+
+David S. Miller (1):
+      Merge branch 'upstream-davem' of master.kernel.org:/.../jgarzik/netdev-2.6
+
+Don Fry (1):
+      pcnet32: delete non NAPI code from driver.
+
+Gunnar Larisch (1):
+      3c980-TX needs EXTRA_PREAMBLE
+
+Ilpo Järvinen (1):
+      tcp FRTO: SACK variant is errorneously used with NewReno
+
+J.H.M. Dassen (Ray) (1):
+      net/ipv4: correct RFC 1122 section reference in comment
+
+Jay Vosburgh (2):
+      bonding: fix error unwind in bonding_store_bonds
+      bonding: fix enslavement error unwinds
+
+Jeff Garzik (2):
+      fix warning in drivers/net/appletalk/cops.c
+      Merge branch 'for-2.6.26' of git://git.farnsworth.org/dale/linux-2.6-mv643xx_eth into upstream
+
+Joakim Tjernlund (1):
+      ucc_geth: Don't use RX clock as TX clock.
+
+Kok, Auke (1):
+      e1000e: don't return half-read eeprom on error
+
+Lennert Buytenhek (5):
+      mv643xx_eth: get rid of static variables, allow multiple instances
+      mv643xx_eth: mbus decode window support
+      mv643xx_eth: configurable t_clk
+      mv643xx_eth: shorten shared platform driver name
+      mv643xx_eth: inter-mv643xx SMI port sharing
+
+Oliver Hartkopp (1):
+      can: Fix can_send() handling on dev_queue_xmit() failures
+
+Patrick McHardy (3):
+      macvlan: Fix memleak on device removal/crash on module removal
+      netfilter: nf_conntrack_sip: restrict RTP expect flushing on error to last request
+      netfilter: Kconfig: default DCCP/SCTP conntrack support to the protocol config values
+
+Paulius Zaleckas (1):
+      3c59x: use netstats in net_device structure
+
+Pavel Emelyanov (3):
+      bonding: Do not call free_netdev for already registered device.
+      bonding: Deadlock between bonding_store_bonds and bond_destroy_sysfs.
+      netns: Fix arbitrary net_device-s corruptions on net_ns stop.
+
+Scott Wood (1):
+      fs_enet: Fix a memory leak in fs_enet_mdio_probe
+
+ arch/arm/mach-orion5x/common.c             |    2 +
+ arch/powerpc/platforms/chrp/pegasos_eth.c  |    4 +
+ arch/powerpc/sysdev/mv64x60_dev.c          |    2 +
+ arch/ppc/syslib/mv64x60.c                  |    3 +
+ drivers/net/3c59x.c                        |   73 +++---
+ drivers/net/Kconfig                        |   14 --
+ drivers/net/appletalk/cops.c               |   16 +-
+ drivers/net/bonding/bond_main.c            |   24 ++-
+ drivers/net/bonding/bond_sysfs.c           |   16 +-
+ drivers/net/cxgb3/cxgb3_main.c             |    4 +-
+ drivers/net/e1000e/defines.h               |   10 +
+ drivers/net/e1000e/e1000.h                 |    7 +-
+ drivers/net/e1000e/ethtool.c               |   45 +++-
+ drivers/net/e1000e/hw.h                    |   22 ++
+ drivers/net/e1000e/ich8lan.c               |   83 +++++++-
+ drivers/net/e1000e/netdev.c                |  330 +++++++++++++++++++++++++++-
+ drivers/net/e1000e/phy.c                   |  278 +++++++++++++++++++++++
+ drivers/net/eexpress.c                     |   11 +-
+ drivers/net/fs_enet/mii-fec.c              |    3 +-
+ drivers/net/gianfar.c                      |    5 +-
+ drivers/net/gianfar.h                      |    3 +
+ drivers/net/gianfar_sysfs.c                |   10 +-
+ drivers/net/macvlan.c                      |    2 +-
+ drivers/net/mv643xx_eth.c                  |  160 +++++++++++---
+ drivers/net/pcnet32.c                      |   61 +-----
+ drivers/net/phy/phy.c                      |    2 +-
+ drivers/net/tulip/uli526x.c                |   38 ++--
+ drivers/net/ucc_geth.c                     |  278 ++++++++++++-----------
+ drivers/net/ucc_geth.h                     |   48 +++--
+ drivers/net/ucc_geth_ethtool.c             |    6 -
+ drivers/net/ucc_geth_mii.c                 |    4 +-
+ include/linux/mv643xx_eth.h                |   16 ++-
+ include/linux/netfilter/nf_conntrack_sip.h |    1 +
+ include/linux/phy.h                        |    5 +
+ net/can/af_can.c                           |   16 +-
+ net/core/dev.c                             |   12 +-
+ net/ipv4/ip_input.c                        |    2 +-
+ net/ipv4/tcp_input.c                       |   13 +-
+ net/netfilter/Kconfig                      |    4 +
+ net/netfilter/nf_conntrack_sip.c           |   22 +-
+ 40 files changed, 1242 insertions(+), 413 deletions(-)
