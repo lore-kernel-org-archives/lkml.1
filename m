@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758655AbYEIJYz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757400AbYEIJ33@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758655AbYEIJYz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 05:24:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752780AbYEIJYs
+	id S1757400AbYEIJ33 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 05:29:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750730AbYEIJ3V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 05:24:48 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:32850 "EHLO mx3.mail.elte.hu"
+	Fri, 9 May 2008 05:29:21 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:36810 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751061AbYEIJYs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 05:24:48 -0400
-Date: Fri, 9 May 2008 11:24:35 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 0/2] x86 cleanup - use processor-flags.h
-Message-ID: <20080509092434.GA13650@elte.hu>
-References: <48231b9f.0405560a.12eb.fffff2f0@mx.google.com> <48232F3A.6030000@zytor.com>
+	id S1751252AbYEIJ3U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 05:29:20 -0400
+Date: Fri, 9 May 2008 11:28:20 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>, rjw@sisk.pl,
+       davem@davemloft.net, linux-kernel@vger.kernel.org, jirislaby@gmail.com
+Subject: Re: Slow DOWN, please!!!
+In-Reply-To: <20080430135405.ddc42075.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0805091126000.30585@twin.jikos.cz>
+References: <20080429.190352.137408408.davem@davemloft.net>
+ <200804302136.58005.rjw@sisk.pl> <20080430131537.1f7a0914.akpm@linux-foundation.org>
+ <alpine.LFD.1.10.0804301325260.2980@woody.linux-foundation.org>
+ <20080430135405.ddc42075.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48232F3A.6030000@zytor.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.1
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
-	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
-	[score: 0.0234]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 30 Apr 2008, Andrew Morton wrote:
 
-* H. Peter Anvin <hpa@zytor.com> wrote:
+> I get the impression that we're seeing very little non-Stephen testing 
+> of linux-next at this stage.  I hope we can ramp that up a bit, 
+> initially by having core developers doing at least some basic sanity 
+> testing.
 
-> Cyrill Gorcunov wrote:
->> Trivial changes to use predefined flags from processor-flags.h
->> Please review
->
-> Acked-by: H. Peter Anvin <hpa@zytor.com>
+Probably it would make sense also for distro vendors to make linux-next 
+snapshosts available in their development distro branches (redhat's 
+rawhide, opensuse's factory, etc), to make it easier to test by those 
+users who are willing to test if it works in their environment, but don't 
+want to compile kernels themselves.
 
-thanks, applied.
+-- 
+Jiri Kosina
 
-	Ingo
