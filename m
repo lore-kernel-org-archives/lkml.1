@@ -1,65 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759147AbYEIW7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759620AbYEIXDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759147AbYEIW7y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 18:59:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756268AbYEIW7o
+	id S1759620AbYEIXDa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 19:03:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755086AbYEIXDT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 18:59:44 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:44562 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756227AbYEIW7n (ORCPT
+	Fri, 9 May 2008 19:03:19 -0400
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:23519 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753565AbYEIXDS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 18:59:43 -0400
-Message-ID: <4824D79C.7060303@keyaccess.nl>
-Date: Sat, 10 May 2008 01:00:44 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Fri, 9 May 2008 19:03:18 -0400
+Message-ID: <4824D830.9090504@hp.com>
+Date: Fri, 09 May 2008 16:03:12 -0700
+From: Rick Jones <rick.jones2@hp.com>
+User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Takashi Iwai <tiwai@suse.de>, Glauber Costa <gcosta@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Pete Clements <clem@clem.clem-digital.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       ALSA devel <alsa-devel@alsa-project.org>
-Subject: Re: 2.6.26-rc1 regression: ISA DMA broken (bisected)
-References: <4823AAF2.7070102@keyaccess.nl> <s5hzlr0105c.wl%tiwai@suse.de> <48243D86.7020504@keyaccess.nl> <20080509122828.GB10855@elte.hu>
-In-Reply-To: <20080509122828.GB10855@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Jesper Krogh <jesper@krogh.cc>
+CC: David Miller <davem@davemloft.net>, yhlu.kernel@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: NIU - Sun Neptune 10g - Transmit timed out reset (2.6.24)
+References: <86802c440805071130m62c1f4edydb3316dac4a2aba2@mail.gmail.com>	<20080507.141521.193714938.davem@davemloft.net>	<482498D5.9060008@krogh.cc>	<20080509.143229.174354251.davem@davemloft.net>	<4824C936.9000103@krogh.cc> <4824CE43.8060203@hp.com> <4824D4C0.10201@krogh.cc>
+In-Reply-To: <4824D4C0.10201@krogh.cc>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09-05-08 14:28, Ingo Molnar wrote:
-> * Rene Herman <rene.herman@keyaccess.nl> wrote:
+>> To which cpu(s) were the neptune's interrupts assigned? (grep <ethN> 
+>> /proc/interrupts)
+>
+> Several
+
+Which ones?-)  I suspect that since it is several that at least answers 
+the MSI_X question right?  Or is it possible to have a single device 
+have several MSI interrupts?
+
+>> Is the irqbalanced running?
 > 
->> On 09-05-08 08:06, Takashi Iwai wrote:
->>
->>> Thanks for catching it.  Yeah, the patch looks buggy.  We had an
->>> implicit assumption that dev = NULL for ISA devices that require 24bit
->>> DMA.
->>>
->>> How about the patch below?  It's against the latest Linus git tree.
->> Yes, works well. Thank you.
 > 
-> great, thanks Rene for catching this! Added this line to the patch as 
-> well:
+> Yes. I started by not running it, but saw that cpu 0 was saturated by
+> ksoftirqd
 > 
->  Tested-by: Rene Herman <rene.herman@keyaccess.nl>
+>> Were any of the 16 CPUs in the system saturated during the test? (top 
+>> with all CPUs displayed)
+> 
+> 
+> Yes..
+> Cpu12 : 34.2%us,  5.9%sy,  0.0%ni,  0.0%id, 14.5%wa,  1.0%hi, 44.4%si, 
+> 0.0%st
 
-Oh... it was rather significantly in the AM when I posted so I forgot to
-mention in the haste to get this out of the way but it was Pete Clements
-who reported the regression:
+David mentioned TX serialization - perhaps that is where TX completions 
+are happening?
 
-http://www.nabble.com/Lost-Sound-from-2.6.24-to-2.6.25----CS4236-ISA-tc17062547.html
+> All others have idle time.
+> 
+>> Do you have/know of any diagrams showing the way the I/O slots are 
+>> wired to the rest of the system?
+> 
+> 
+> I havent dug into that. Probably naive, as I as, I expected som hardware
+> guys as Sun to have taken care of that, when I bought the recommended
+> 10g card for their own server.
 
-He also tested it, so as long as we're name-mention-flattering around...
+I am very clueless as to the design considerations under which Neptune 
+was designed, but given that Neptune is based (IIRC) on the same "in 
+core" 10G stuff as Sun talks about being in the UltraSPARC-T2 
+processors, there is the possibility the design center was somewhat 
+different then what one sees in an 8P Opteron system, whether it carries 
+a Sun logo or not.  From what I've learned thusfar 8P Opteron systems 
+are "interesting" beasts with what I suspect are rather different 
+constraints and behaviours than an UltraSPARC-T[12] system.
 
-And this a good excuse to ask how you edit changelog after the fact. Just
-reset/reapply and stuff or is there a "better" way? I fairly frequently
-find myself wanting to do just that but it's a bit of a mess when there's
-already commits on top.
+What I was asking about was more a block diagram showing via which 
+sockets the given I/O slots were connected.
 
-Rene.
+>> Have you tried any tests without any filesystem involvement? 
+> 
+> no not yet. I'll try that.
+
+If you decide to go the netperf route, feel free to contact me directly 
+with netperf questions, or via the netperf-talk mailling list on 
+netperf.org.
+
+rick jones
 
