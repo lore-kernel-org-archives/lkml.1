@@ -1,93 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760467AbYEILQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761132AbYEILRl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760467AbYEILQq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 07:16:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678AbYEILQj
+	id S1761132AbYEILRl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 07:17:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678AbYEILRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 07:16:39 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:38284 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753434AbYEILQi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 07:16:38 -0400
-Subject: Re: Possible regression?  2.6.26-rc1: T61s failure after
-	suspend/resume
-From: Peter Zijlstra <peterz@infradead.org>
-To: Theodore Tso <tytso@MIT.EDU>
-Cc: Hugh Dickins <hugh@veritas.com>, Glauber Costa <gcosta@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>
-In-Reply-To: <20080509025956.GC8871@mit.edu>
-References: <E1JuCBA-0002NZ-4E@closure.thunk.org>
-	 <Pine.LNX.4.64.0805082148060.3994@blonde.site>
-	 <20080509025956.GC8871@mit.edu>
-Content-Type: text/plain
-Date: Fri, 09 May 2008 13:16:14 +0200
-Message-Id: <1210331774.13978.230.camel@twins>
+	Fri, 9 May 2008 07:17:32 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:40125 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753998AbYEILRa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 07:17:30 -0400
+Date: Fri, 9 May 2008 06:17:27 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: maxk@qualcomm.com, menage@google.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: IRQ affinities (was: boot cgroup questions)
+Message-Id: <20080509061727.5057de1f.pj@sgi.com>
+In-Reply-To: <1210329926.13978.224.camel@twins>
+References: <47D73086.2030008@qualcomm.com>
+	<6599ad830803111827n1cb8e2c7i47c2ef3f3bb58995@mail.gmail.com>
+	<47D7411E.1000009@qualcomm.com>
+	<6599ad830803111936jd940deam8584bc971c3b6f41@mail.gmail.com>
+	<47D74595.4080100@qualcomm.com>
+	<6599ad830803112009y18d9e43ft8e3fc4a551d891da@mail.gmail.com>
+	<20080311235939.1ebee8e3.pj@sgi.com>
+	<47D81FE1.6030205@qualcomm.com>
+	<20080312135746.89456f2a.pj@sgi.com>
+	<47D82AD2.1070108@qualcomm.com>
+	<20080312143253.3dd72c7f.pj@sgi.com>
+	<47D83858.4030806@qualcomm.com>
+	<20080312153712.bc5df7a1.pj@sgi.com>
+	<47D8593A.6040503@qualcomm.com>
+	<20080312183059.6716d630.pj@sgi.com>
+	<47D87BE5.4010702@qualcomm.com>
+	<20080313020300.92244956.pj@sgi.com>
+	<47FE5655.10900@qualcomm.com>
+	<20080414133902.7878cfce.pj@sgi.com>
+	<1210329926.13978.224.camel@twins>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-05-08 at 22:59 -0400, Theodore Tso wrote:
+Peter wrote:
+> That's a new feature; and its quite common that new features require
+> code changes.
 
-> [    2.097919] =================================
-> [    2.098059] [ INFO: inconsistent lock state ]
-> [    2.098136] 2.6.25-numa-04462-g10c993a #23
-> [    2.098209] ---------------------------------
-> [    2.098284] inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
-> [    2.098359] swapper/0 [HC0[0]:SC0[0]:HE1:SE1] takes:
-> [    2.098434]  (&rq->rq_lock_key){++..}, at: [sched_clock_idle_wakeup_event+67/116] sched_clock_idle_wakeup_event+0x43/0x74
-> [    2.098753] {in-hardirq-W} state was registered at:
-> [    2.098833]   [__lock_acquire+1023/2834] __lock_acquire+0x3ff/0xb12
-> [    2.099082]   [lock_acquire+106/144] lock_acquire+0x6a/0x90
-> [    2.099329]   [_spin_lock+28/73] _spin_lock+0x1c/0x49
-> [    2.099590]   [scheduler_tick+67/443] scheduler_tick+0x43/0x1bb
-> [    2.099836]   [update_process_times+61/73] update_process_times+0x3d/0x49
-> [    2.100083]   [tick_periodic+102/114] tick_periodic+0x66/0x72
-> [    2.100327]   [tick_handle_periodic+25/106] tick_handle_periodic+0x19/0x6a
-> [    2.100574]   [timer_interrupt+72/115] timer_interrupt+0x48/0x73
-> [    2.100822]   [handle_IRQ_event+26/79] handle_IRQ_event+0x1a/0x4f
-> [    2.101064]   [handle_level_irq+127/202] handle_level_irq+0x7f/0xca
-> [    2.101316]   [do_IRQ+169/210] do_IRQ+0xa9/0xd2
-> [    2.101563]   [<ffffffff>] 0xffffffff
-> [    2.101806] irq event stamp: 1772935
-> [    2.101883] hardirqs last  enabled at (1772935): [native_sched_clock+231/255] native_sched_clock+0xe7/0xff
-> [    2.102091] hardirqs last disabled at (1772934): [native_sched_clock+109/255] native_sched_clock+0x6d/0xff
-> [    2.102298] softirqs last  enabled at (1772496): [__do_softirq+249/255] __do_softirq+0xf9/0xff
-> [    2.102501] softirqs last disabled at (1772491): [do_softirq+113/206] do_softirq+0x71/0xce
-> [    2.102708] 
-> [    2.102709] other info that might help us debug this:
-> [    2.102850] no locks held by swapper/0.
-> [    2.102923] 
-> [    2.102924] stack backtrace:
-> [    2.103067] Pid: 0, comm: swapper Not tainted 2.6.25-numa-04462-g10c993a #23
-> [    2.103145]  [print_usage_bug+263/276] print_usage_bug+0x107/0x114
-> [    2.103278]  [mark_lock+491/924] mark_lock+0x1eb/0x39c
-> [    2.103417]  [__lock_acquire+1140/2834] __lock_acquire+0x474/0xb12
-> [    2.103547]  [restore_nocheck+18/21] ? restore_nocheck+0x12/0x15
-> [    2.103740]  [native_sched_clock+231/255] ? native_sched_clock+0xe7/0xff
-> [    2.103929]  [lock_acquire+106/144] lock_acquire+0x6a/0x90
-> [    2.104065]  [sched_clock_idle_wakeup_event+67/116] ? sched_clock_idle_wakeup_event+0x43/0x74
-> [    2.104255]  [_spin_lock+28/73] _spin_lock+0x1c/0x49
-> [    2.104392]  [sched_clock_idle_wakeup_event+67/116] ? sched_clock_idle_wakeup_event+0x43/0x74
-> [    2.104582]  [sched_clock_idle_wakeup_event+67/116] sched_clock_idle_wakeup_event+0x43/0x74
-> [    2.104715]  [<f886c3b3>] acpi_idle_enter_simple+0x19a/0x21b [processor]
-> [    2.104858]  [<f886bfa5>] acpi_idle_enter_bm+0xbe/0x332 [processor]
-> [    2.104999]  [cpuidle_idle_call+99/143] cpuidle_idle_call+0x63/0x8f
-> [    2.105135]  [cpuidle_idle_call+0/143] ? cpuidle_idle_call+0x0/0x8f
-> [    2.105330]  [cpu_idle+182/214] cpu_idle+0xb6/0xd6
-> [    2.105463]  [rest_init+73/75] rest_init+0x49/0x4b
-> [    2.105596]  =======================
+It's common for new features to require code changes to take advantage
+of the new features.
 
-That's not good...
+It's less desirable that taking advantage of such new features breaks
+existing, basically unrelated, code.
 
-But I'm failing to see how IRQs get enabled between
-sched_clock_idle_sleep_event() and sched_clock_idle_wakeup_event() in
-acpi_idle_enter_simple().
+My gut sense is that, in a misguided effort to find a "simple" answer
+to irq distribution, we (well, y'all) are trying to attach this
+feature to cpusets or cgroups.
 
+Let me ask a different question:
 
+  What solutions would you (Max, Peter, Ingo, lurkers, ...) be
+  suggesting for this 'IRQ affinity' problem if cpusets and
+  cgroups didn't exist in any form whatsoever?
 
+The answer to that question might help me contribute to this discussion
+in another way ... it might help me understand better what we're really
+trying to do here.  You guys were proposing mechanisms that don't fit
+my architecture sense of cpusets, but I was having problems figuring out
+what are the essential underlying requirements, independent of choice
+of mechanism.
 
+Perhaps by describing one or two possible alternative, cpuset-free,
+mechanisms that come more or less close to meeting our needs, I will
+glean a better understanding of these elusive requirements, and can
+better contribute to the discussion of design trade offs facing us.
+
+So could you describe some possible cpuset-free solutions?  If they are
+flawed in some critical way, that's ok, just point out said flaw(s).
+Either way, this could help illuminate what's needed here.
+
+It might be, once I better understand the requirements, possible
+solutions and their tradeoffs, that I come to agree that cpusets or
+cgroups present the best mechanism, given the tradeoffs and what's
+needed.  Or it might be we find a better way to meet our needs.
+
+Actually, if for no other reason than to bring any lurkers up to speed,
+if you (Max or Peter, likely) wanted to describe, from the beginning,
+what this discussion is about, that would be good too.  I doubt anyone
+outside of three or four of us even recalls that long discussion of
+February and March, 2008.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
