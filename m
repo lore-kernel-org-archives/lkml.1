@@ -1,83 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757437AbYEIOyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755492AbYEIPA6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757437AbYEIOyY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 10:54:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbYEIOyM
+	id S1755492AbYEIPA6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 11:00:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbYEIPAo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 10:54:12 -0400
-Received: from rtr.ca ([76.10.145.34]:2389 "EHLO mail.rtr.ca"
+	Fri, 9 May 2008 11:00:44 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:39904 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751227AbYEIOyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 10:54:11 -0400
-Message-ID: <48246591.7040209@rtr.ca>
-Date: Fri, 09 May 2008 10:54:09 -0400
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	id S1750988AbYEIPAn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 11:00:43 -0400
+Message-ID: <4824670A.4000608@garzik.org>
+Date: Fri, 09 May 2008 11:00:26 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: =?UTF-8?B?IkouQS4gTWFnYWxsw7NuIg==?= <jamagallon@ono.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Linus-IDE <linux-ide@vger.kernel.org>
-Subject: Re: [PATCH] Re: [git patches] libata updates - (improve post-reset
- device ready test) regression
-References: <20080506154847.GA15299@havoc.gtf.org>	<20080507145616.GA2210@gentoox2.trippelsdorf.de>	<48231DAF.7070900@garzik.org> <20080508234300.3c2a38af@werewolf.home>
-In-Reply-To: <20080508234300.3c2a38af@werewolf.home>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+To: Jiri Kosina <jkosina@suse.cz>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, rjw@sisk.pl,
+       davem@davemloft.net, linux-kernel@vger.kernel.org, jirislaby@gmail.com
+Subject: Re: Slow DOWN, please!!!
+References: <20080429.190352.137408408.davem@davemloft.net> <200804302136.58005.rjw@sisk.pl> <20080430131537.1f7a0914.akpm@linux-foundation.org> <alpine.LFD.1.10.0804301325260.2980@woody.linux-foundation.org> <20080430135405.ddc42075.akpm@linux-foundation.org> <Pine.LNX.4.64.0805091126000.30585@twin.jikos.cz>
+In-Reply-To: <Pine.LNX.4.64.0805091126000.30585@twin.jikos.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-J.A. Magallón wrote:
-> On Thu, 08 May 2008 11:35:11 -0400, Jeff Garzik <jeff@garzik.org> wrote:
+Jiri Kosina wrote:
+> On Wed, 30 Apr 2008, Andrew Morton wrote:
 > 
->> Markus Trippelsdorf wrote:
->>>> Tejun Heo (12):
->>>>       libata: improve post-reset device ready test
->>> This commit (78ab88f04f44bed566d51dce0c7cbfeff6449a06) causes a long
->>> boot delay with my onboard Promise controller. It seems like libata
->>> probes for a nonexisting PATA drive...
->>>
-> 
-> I also had this patch collected from LKML, that still applies to -git6.
-> Is it really needed ?
-> ref: http://marc.info/?l=linux-ide&m=120913178617926&w=2
-..
-> --- upstream/drivers/ata/libata-eh.c	2008-04-30 17:35:36.000000000 -0400
-> +++ linux/drivers/ata/libata-eh.c	2008-04-30 17:35:45.000000000 -0400
-> @@ -1312,8 +1312,7 @@
->  		err_mask |= AC_ERR_ATA_BUS;
->  		action |= ATA_EH_RESET;
->  	}
-> -	if (serror &
-> -	    (SERR_DATA_RECOVERED | SERR_COMM_RECOVERED | SERR_DATA)) {
-> +	if (serror & (SERR_DATA_RECOVERED | SERR_DATA)) {
->  		err_mask |= AC_ERR_ATA_BUS;
->  		action |= ATA_EH_RESET;
->  	}
+>> I get the impression that we're seeing very little non-Stephen testing 
+>> of linux-next at this stage.  I hope we can ramp that up a bit, 
+>> initially by having core developers doing at least some basic sanity 
+>> testing.
 
-..
+I try to test linux-next on a few SATA test boxes, but it's definitely 
+not a daily thing.
 
-The original problem I had, which prompted this patch, eventually was
-resolved in other ways.  But I do think that a hw-recovered bit in SError
-is not a good reason to reset everything.
 
-Tejun suggested that we still want to know about such errors,
-and eventually do something if they repeat often enough.
-But doing a port/link reset every single time ? 
+> Probably it would make sense also for distro vendors to make linux-next 
+> snapshosts available in their development distro branches (redhat's 
+> rawhide, opensuse's factory, etc), to make it easier to test by those 
+> users who are willing to test if it works in their environment, but don't 
+> want to compile kernels themselves.
 
-> @@ -1924,7 +1923,7 @@
->  	}
->  
->  	if (ehc->i.serror)
-> -		ata_port_printk(ap, KERN_ERR,
-> +		ata_link_printk(link, KERN_ERR,
->  		  "SError: { %s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s}\n",
->  		  ehc->i.serror & SERR_DATA_RECOVERED ? "RecovData " : "",
->  		  ehc->i.serror & SERR_COMM_RECOVERED ? "RecovComm " : "",
-> 
-..
+Agreed...  any lead time on linux-next testing would be great.
 
-That portion of the patch is still a very good idea.
+	Jeff
 
-Cheers
+
+
