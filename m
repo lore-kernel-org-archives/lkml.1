@@ -1,111 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762701AbYEICPy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760635AbYEICZB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762701AbYEICPy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 22:15:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175AbYEICPk
+	id S1760635AbYEICZB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 22:25:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbYEICYu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 22:15:40 -0400
-Received: from mail.suse.de ([195.135.220.2]:35138 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752078AbYEICPi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 22:15:38 -0400
-From: Neil Brown <neilb@suse.de>
-To: Dan Williams <dan.j.williams@intel.com>
-Date: Fri, 9 May 2008 12:15:27 +1000
-Message-ID: <18467.46015.146700.695469@notabene.brown>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 8 May 2008 22:24:50 -0400
+Received: from pxy2nd.nifty.com ([202.248.175.14]:20968 "HELO pxy2nd.nifty.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752175AbYEICYt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 22:24:49 -0400
+X-Nifty-SrcIP: [210.131.101.9]
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=pxy2nd-default; d=mbf.nifty.com;
+  b=zIateBqkoaIvAULBUmLASSm3WewJENM+10I7bKOcUspHZbaav9bLJrkajmS37npiV3v9Mws5HyaugsxkW4ITzw==  ;
+Date: Fri, 09 May 2008 11:22:20 +0900 (JST)
+Message-Id: <20080509.112220.74748072.takada@mbf.nifty.com>
+To: bzolnier@gmail.com
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: kernel 2.6.25 with ide driver cs5520 does not boot.
+From: TAKADA Yoshihito <takada@mbf.nifty.com>
+In-Reply-To: <58cb370e0805080607n4f5de192o5a7371fd0fb1e9f8@mail.gmail.com>
+References: <20080508.165814.197343623.takada@mbf.nifty.com>
+	<58cb370e0805080607n4f5de192o5a7371fd0fb1e9f8@mail.gmail.com>
+X-Mailer: Mew version 6.0.50 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Cc: Jens Axboe <jens.axboe@oracle.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jacek Luczak <difrost.kernel@gmail.com>,
-       Prakash Punnoor <prakash@punnoor.de>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-raid@vger.kernel.org
-Subject: Re: WARNING in 2.6.25-07422-gb66e1f1
-In-Reply-To: message from Dan Williams on Thursday May 8
-References: <200805031151.44287.prakash@punnoor.de>
-	<18462.46639.578272.994939@notabene.brown>
-	<20080505190159.GA329@kernel.dk>
-	<200805082039.01316.rjw@sisk.pl>
-	<1210272379.9697.3.camel@dwillia2-linux.ch.intel.com>
-	<1210288690.9697.14.camel@dwillia2-linux.ch.intel.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday May 8, dan.j.williams@intel.com wrote:
-> On Thu, 2008-05-08 at 11:46 -0700, Dan Williams wrote:
-> Subject: md: tell blk-core about device_lock for protecting the queue flags
-> From: Dan Williams <dan.j.williams@intel.com>
-> 
-> Now that queue flags are no longer atomic (commit:
-> 75ad23bc0fcb4f992a5d06982bf0857ab1738e9e) blk-core checks the queue is locked
-> via ->queue_lock.  As noticed by Neil conf->device_lock already satisfies this
-> requirement.
-> 
-> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-> ---
-> 
->  drivers/md/linear.c         |    6 ++++++
->  drivers/md/multipath.c      |    6 ++++++
->  drivers/md/raid0.c          |    6 ++++++
->  drivers/md/raid1.c          |    7 ++++++-
->  drivers/md/raid10.c         |    7 ++++++-
->  drivers/md/raid5.c          |    2 ++
->  include/linux/raid/linear.h |    3 ++-
->  include/linux/raid/raid0.h  |    1 +
->  8 files changed, 35 insertions(+), 3 deletions(-)
-> 
-> 
-> diff --git a/drivers/md/linear.c b/drivers/md/linear.c
-> index 0b85117..d026f08 100644
-> --- a/drivers/md/linear.c
-> +++ b/drivers/md/linear.c
-> @@ -122,6 +122,10 @@ static linear_conf_t *linear_conf(mddev_t *mddev, int raid_disks)
->  	cnt = 0;
->  	conf->array_size = 0;
->  
-> +	spin_lock_init(&conf->device_lock);
-> +	/* blk-core uses queue_lock to verify protection of the queue flags */
-> +	mddev->queue->queue_lock = &conf->device_lock;
-> +
->  	rdev_for_each(rdev, tmp, mddev) {
->  		int j = rdev->raid_disk;
->  		dev_info_t *disk = conf->disks + j;
-> @@ -133,8 +137,10 @@ static linear_conf_t *linear_conf(mddev_t *mddev, int raid_disks)
->  
->  		disk->rdev = rdev;
->  
-> +		spin_lock(&conf->device_lock);
->  		blk_queue_stack_limits(mddev->queue,
->  				       rdev->bdev->bd_disk->queue);
-> +		spin_unlock(&conf->device_lock);
->  		/* as we don't honour merge_bvec_fn, we must never risk
->  		 * violating it, so limit ->max_sector to one PAGE, as
->  		 * a one page request is never in violation.
+Thanks for quick reply.
 
-This shouldn't be necessary.
-There is no actual race here -- mddev->queue->queue_flags is not going to be
-accessed by anyone else until do_md_run does
-	mddev->queue->make_request_fn = mddev->pers->make_request;
-which is much later.
-So we only need to be sure that "queue_is_locked" doesn't complain.
-And as q->queue_lock is still NULL at this point, it won't complain.
+I tried 2.6.26rc1. It hangs same as 2.6.25.
+kernel 2.6.26rc1 with cs5520 cannot boot. cs5520 scans ide0 and ide1.
+It seems 2nd port DMA base issue was solved.
 
-I think that the *only* change that is needs is to put
+dmesg is follow:
 
-> +	/* blk-core uses queue_lock to verify protection of the queue flags */
-> +	mddev->queue->queue_lock = &conf->device_lock;
+Uniform Multi-Platform E-EDI driver
+ide: Assuming 33MHz system bus speed for PIO modes: override with idebus=xx
+Cyrix 5520: IDE controller (0x1078:0x0002 rev 0x00) at  PCI slot 0000:00:12.0
+    ide0: BM-DMA at 0x5000-0x5007
+    ide1: BM-DMA at 0x5008-0x500f
+hda: IC25N030ATCS04-0, ATA DISK drive
+ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+ide1 at 0x170-0x177,0x376 on irq 14
+hda: max request size: 128KiB
+  (hang)
 
-after each
-> +	spin_lock_init(&conf->device_lock);
+From: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
+Subject: Re: kernel 2.6.25 with ide driver cs5520 does not boot.
+Date: Thu, 8 May 2008 15:07:31 +0200
 
-i.e. in raid1.c, raid10.c and raid5.c
+ (snip)
 
-??
+> 2.6.24 contained a bug in calculating DMA base for the second port (thus
+> the error message) but it shouldn't affect anything (ide1 is still probed
+> according to dmesg, please let me know if there are some devices on ide1
+> that are not getting detected).
 
-NeilBrown
+I seems that this issue was resolved. Thanks.
+
