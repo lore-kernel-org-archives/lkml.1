@@ -1,76 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932777AbYEISGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759227AbYEISID@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932777AbYEISGv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 14:06:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759946AbYEISGn
+	id S1759227AbYEISID (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 14:08:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750774AbYEISHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 14:06:43 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:8098 "EHLO
-	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758223AbYEISGl (ORCPT
+	Fri, 9 May 2008 14:07:52 -0400
+Received: from rv-out-0506.google.com ([209.85.198.226]:26807 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750768AbYEISHv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 14:06:41 -0400
-Subject: Re: Spinlocks waiting with interrupts disabled / preempt disabled.
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Olaf Weber <olaf@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, npiggin@suse.de,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0805091059050.19252@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0805061220570.30604@schroedinger.engr.sgi.com>
-	 <20080507073017.GJ32195@elte.hu>  <bzymymzv3j7.fsf@fransum.emea.sgi.com>
-	 <1210355814.13978.255.camel@twins>
-	 <Pine.LNX.4.64.0805091059050.19252@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Fri, 09 May 2008 20:06:40 +0200
-Message-Id: <1210356400.13978.262.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+	Fri, 9 May 2008 14:07:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=o7HdDJFdHs4Rvxpb0Y67ypLFDq+dfowQCVFyaJDtVlbrc4+weFY0ksMHcKIrMk0kXH9NhT/4gBQSnwH24BzDInslkHIXR2tj1Y2ijlEnZhDApGxcAZoIGZYsoFdDnUUHPICiwnvd4A1weEeOjG8U+Un8ON8ox8jwaa7+b1LbUgI=
+Message-ID: <19f34abd0805091107p1dc1646et2b255d7ba45af8f2@mail.gmail.com>
+Date: Fri, 9 May 2008 20:07:48 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Pekka J Enberg" <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH 1/3] kmemcheck: prepare for SLAB hooks
+Cc: mingo@elte.hu, clameter@sgi.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0805090000540.28488@sbz-30.cs.Helsinki.FI>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0805090000540.28488@sbz-30.cs.Helsinki.FI>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-05-09 at 11:00 -0700, Christoph Lameter wrote:
-> On Fri, 9 May 2008, Peter Zijlstra wrote:
-> 
-> > > A third solution would be to look at this problem on a case-by-case
-> > > basis.  In the case under discussion, there may be other kernel bugs
-> > > that aggravate the problem (it is an old kernel after all) and maybe
-> > > this just means the address_space.tree_lock ought to be replaced with
-> > > something else (though I wouldn't claim to know what).
-> > 
-> > That has been done by Nick Piggin, the lockless pagecache work removes
-> > the read side of the tree_lock.
-> 
-> When is that going to get merged? find_get_page is still:
-> 
-> struct page * find_get_page(struct address_space *mapping, pgoff_t offset)
-> {
->         struct page *page;
-> 
->         read_lock_irq(&mapping->tree_lock);
->         page = radix_tree_lookup(&mapping->page_tree, offset);
->         if (page)
->                 page_cache_get(page);
->         read_unlock_irq(&mapping->tree_lock);
->         return page;
-> }
-> EXPORT_SYMBOL(find_get_page);
+On Thu, May 8, 2008 at 11:02 PM, Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
+> From: Pekka Enberg <penberg@cs.helsinki.fi>
+>
+> Make mm/slub_kmemcheck.c more generic in preparation for adding kmemcheck hooks
+> to SLAB which does not use compound pages by default and has slightly different
+> way for keeping track of object size than SLUB.
+>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Christoph Lameter <clameter@sgi.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> Cc: Vegard Nossum <vegard.nossum@gmail.com>
+> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> ---
+>  include/linux/slub_kmemcheck.h |   19 +++++++++++--------
+>  mm/slub.c                      |    8 ++++----
+>  mm/slub_kmemcheck.c            |   23 ++++++++++-------------
+>  3 files changed, 25 insertions(+), 25 deletions(-)
 
-Yeah, no idea when - although it looks like Nick has got another
-speculative reference user lined up, which would greatly help its case.
+[sniip]
 
-Nick, can you post a series of patches against something recent that has
-the latest lockless pagecache and all the fast_gup work in it, including
-the power bits that use sepculative get?
+> @@ -1757,7 +1757,7 @@
+>        struct kmem_cache_cpu *c;
+>        unsigned long flags;
+>
+> -       kmemcheck_slab_free(s, object);
+> +       kmemcheck_slab_free(s, object, c->objsize);
 
-We can then go over all this stuff and perhaps manage to trick Andrew
-and Linus into taking it for .27.
+Hm, "'c' is used uninitialized in this function". I guess it should be
+moved a bit downwards. Can you fix it?
 
-Linus seemed interrested enough in the fast_gup bits.
+Vegard
 
-And just in case someone forgot, the lockless pagecache has been in -rt
-for a long long time - so far I've never seen issues with it.
-
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
