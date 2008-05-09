@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934740AbYEIAwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934834AbYEIAx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934740AbYEIAwp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 20:52:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763467AbYEIAwf
+	id S934834AbYEIAx0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 20:53:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934243AbYEIAxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 20:52:35 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:57141 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1757559AbYEIAwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 20:52:34 -0400
-Message-ID: <48239FFD.7020408@cn.fujitsu.com>
-Date: Fri, 09 May 2008 08:51:09 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 8 May 2008 20:53:09 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:46411 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763467AbYEIAxH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 20:53:07 -0400
+Message-ID: <4823A059.1090400@zytor.com>
+Date: Thu, 08 May 2008 17:52:41 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: Len Brown <lenb@kernel.org>, Willy Tarreau <w@1wt.eu>,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Len Brown <len.brown@intel.com>
-Subject: Re: [patch 00/16] Linux 2.6.25 -stable review
-References: <20080508174122.GA855@suse.de> <20080508182233.GB2115@suse.de> <20080508183324.GA1874@1wt.eu> <200805081516.29907.lenb@kernel.org> <20080508194314.GA31149@suse.de>
-In-Reply-To: <20080508194314.GA31149@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+CC: Rufus & Azrael <rufus-azrael@numericable.fr>, Ingo Molnar <mingo@elte.hu>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [2.6.25-git18 => 2.6.26-rc1-git1] Xorg crash with	xf86MapVidMem
+ error
+References: <924EFEDD5F540B4284297C4DC59F3DEE010057B4@orsmsx423.amr.corp.intel.com> <4822A6F7.7010704@numericable.fr> <B5B0CFF685D7DF46A05CF1678CFB42ED20E04609@orsmsx423.amr.corp.intel.com> <20080508192555.GA8643@linux-os.sc.intel.com> <48235DA1.5060809@numericable.fr> <20080508213722.GA28372@linux-os.sc.intel.com> <482373C5.1060202@zytor.com> <20080508215931.GA5035@jamoon.sc.intel.com> <20080508234016.GA14169@linux-os.sc.intel.com> <482392C4.7080901@zytor.com> <20080509003424.GA19710@linux-os.sc.intel.com>
+In-Reply-To: <20080509003424.GA19710@linux-os.sc.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Thu, May 08, 2008 at 03:16:28PM -0400, Len Brown wrote:
->> On Thursday 08 May 2008, Willy Tarreau wrote:
->>> On Thu, May 08, 2008 at 11:22:33AM -0700, Greg KH wrote:
->>>> On Thu, May 08, 2008 at 08:13:42PM +0200, Willy Tarreau wrote:
->>>>> On Thu, May 08, 2008 at 10:41:22AM -0700, Greg KH wrote:
->>>>>> This is the start of the stable review cycle for the 2.6.25.2 release.
->>>>>> There are 16 patches in this series, all will be posted as a response to
->>>>>> this one.  If anyone has any issues with these being applied, please let
->>>>>> us know.  If anyone is a maintainer of the proper subsystem, and wants
->>>>>> to add a Signed-off-by: line to the patch, please respond with it.
->>>>> Greg, shouldn't we also queue this one (may be in a later version) ? It's
->>>>> in mainline.
->>>> What problem does it solve?
->>> from what I see in the code, currently acpi_power_get_state() will return
->>> 0 when setting resource to NULL, and some callers (eg: acpi_power_on())
->>> will happily dereference resource if acpi_power_get_state() returns 0. So
->>> I guess there are circumstances where we can oops.
->>>
->>>> Does Len want it in -stable?
->>> I simply forgot to ask. I'm CCing him.
->> This patch is correct.
->>
->> Go ahead and apply it -- it won't hurt anything.
->> I don't think it will help anything in real-life either, though.
+Venki Pallipadi wrote:
 > 
-> Ok, because of that, I'll not apply it, we want patches that actually
-> fix reported problems.
+> One of the reason for heristic was to get proper type for /dev/mem maps for WB
+> region (ACPI and BIOS area). /dev/mem checks to see the mtrr type of the start
+> address and starts with that type for the request. As long as there are no
+> other conflict in PAT list, we can give WB to this /dev/mem request. Not
+> having this heuristic we will have to most probably default to UC.
+> 
+> When there are overlapping PAT list entries, the mtrr_lookup does not matter
+> as we have to inherit things from those PAT entries or conflicting with them.
 > 
 
-It's Ok for me. I found this when reading the code but not hitting a real-world
-problem.
+Okay, now here is something...
 
-> thanks,
-> 
-> greg k-h
+I don't believe it is kosher for mmap() to behave differently if we 
+called it once or called it twice.
+
+Therefore, the proper behaviour in the case of a range that covers 
+multiple types is to break it down into multiple requests each mapped 
+with the appropriate type, as if mmap had been called separate on each 
+subrange.  In the limiting case, yes, this does mean the subranges can 
+be individual pages, but such an outcome is vanishingly improbable in 
+practice.
+
+	-hpa
+
