@@ -1,82 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758175AbYEIJ6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760452AbYEIJ7P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758175AbYEIJ6e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 05:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbYEIJ6Z
+	id S1760452AbYEIJ7P (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 05:59:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754227AbYEIJ65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 05:58:25 -0400
-Received: from mail.gmx.net ([213.165.64.20]:37943 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751288AbYEIJ6Y convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 05:58:24 -0400
-X-Authenticated: #5108953
-X-Provags-ID: V01U2FsdGVkX18Ax/8OajgAbxwgEr3la69BedFY2I/EqT1SVFfLh2
-	GJU8WOmQ+pfSoz
-From: Toralf =?iso-8859-1?q?F=F6rster?= <toralf.foerster@gmx.de>
+	Fri, 9 May 2008 05:58:57 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37855 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753376AbYEIJ64 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 05:58:56 -0400
+Date: Fri, 9 May 2008 11:58:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
 To: WANG Cong <xiyou.wangcong@gmail.com>
-Subject: Re: build issue #380 for v2.6.26-rc1-279-g28a4acb : mach-voyager: multiple definition of `phys_cpu_present_map'
-Date: Fri, 9 May 2008 11:58:21 +0200
-User-Agent: KMail/1.9.7
-Cc: James.Bottomley@hansenpartnership.com, linux-kernel@vger.kernel.org
-References: <200805091114.00244.toralf.foerster@gmx.de> <20080509093017.GI2543@hacking>
-In-Reply-To: <20080509093017.GI2543@hacking>
+Cc: toralf.foerster@gmx.de, James.Bottomley@hansenpartnership.com,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Mike Travis <travis@sgi.com>
+Subject: Re: build issue #380 for v2.6.26-rc1-279-g28a4acb : mach-voyager:
+	multiple definition of `phys_cpu_present_map'
+Message-ID: <20080509095837.GB19617@elte.hu>
+References: <200805091114.00244.toralf.foerster@gmx.de> <20080509095244.GJ2543@hacking>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200805091158.21562.toralf.foerster@gmx.de>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-X-Y-GMX-Trusted: 0
+In-Reply-To: <20080509095244.GJ2543@hacking>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Friday 09 May 2008 11:30:17 WANG Cong wrote :
-> On Fri, May 09, 2008 at 11:13:57AM +0200, =?ISO-8859-1?Q?Toralf_F=F6rster_ wrote:
-> >Hello,
-> >
-> >the build (.config attached) failed, make ends with :
-> >...
-> >  AR      arch/x86/lib/lib.a
-> >  LD      vmlinux.o
-> >arch/x86/mach-voyager/built-in.o:(.bss+0x2c): multiple definition of `phys_cpu_present_map'
-> >arch/x86/kernel/built-in.o:(.bss+0x200): first defined here
-> >ld: Warning: size of symbol `phys_cpu_present_map' changed from 32 in arch/x86/kernel/built-in.o to 4 in arch/x86/mach-voyager/built-in.o
-> >make: *** [vmlinux.o] Error 1
-> 
-> Could you please try my quick patch below?
-> 
-yep, that issue is fixed :-)
 
-BTW now the config failed as at expected due to :
-...
-  MODPOST 156 modules
-ERROR: "i2c_master_send" [drivers/media/video/tuner.ko] undefined!
-ERROR: "i2c_detach_client" [drivers/media/video/tuner.ko] undefined!
-ERROR: "i2c_del_driver" [drivers/media/video/tuner.ko] undefined!
+* WANG Cong <xiyou.wangcong@gmail.com> wrote:
 
+> Sorry. Ignore previous one. This one should be correct, I think.
+> 
 > ---
-> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-> index cc6f5eb..98617df 100644
-> --- a/arch/x86/kernel/setup.c
-> +++ b/arch/x86/kernel/setup.c
-> @@ -21,9 +21,6 @@ EXPORT_SYMBOL(boot_cpu_physical_apicid);
->  DEFINE_PER_CPU(u16, x86_cpu_to_apicid) = BAD_APICID;
->  EXPORT_PER_CPU_SYMBOL(x86_cpu_to_apicid);
->  
-> -/* Bitmask of physically existing CPUs */
-> -physid_mask_t phys_cpu_present_map;
-> -
->  #if defined(CONFIG_HAVE_SETUP_PER_CPU_AREA) && defined(CONFIG_SMP)
->  /*
->   * Copy data used in early init routines from the initial arrays to the
 > 
+> diff --git a/arch/x86/mach-voyager/voyager_smp.c b/arch/x86/mach-voyager/voyager_smp.c
+> index 8acbf0c..2e8388b 100644
+> --- a/arch/x86/mach-voyager/voyager_smp.c
+> +++ b/arch/x86/mach-voyager/voyager_smp.c
+> @@ -74,7 +74,7 @@ EXPORT_SYMBOL(cpu_online_map);
+>  
+>  /* Bitmask of CPUs present in the system - exported by i386_syms.c, used
+>   * by scheduler but indexed physically */
+> -cpumask_t phys_cpu_present_map = CPU_MASK_NONE;
+> +static cpumask_t phys_cpu_present_map = CPU_MASK_NONE;
 
+i've got the one below queued up but it's stalled as it could easily be 
+wrong and there's no ack from James yet and there's been discussion back 
+and forth. James, what do you suggest?
 
+	Ingo
 
--- 
-MfG/Sincerely
+-------------------->
+Subject: x86, voyager: build fix
+From: Ingo Molnar <mingo@elte.hu>
+Date: Sun May 04 23:56:30 CEST 2008
 
-Toralf Förster
-pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/mach-voyager/voyager_smp.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-x86.q/arch/x86/mach-voyager/voyager_smp.c
+===================================================================
+--- linux-x86.q.orig/arch/x86/mach-voyager/voyager_smp.c
++++ linux-x86.q/arch/x86/mach-voyager/voyager_smp.c
+@@ -74,7 +74,7 @@ EXPORT_SYMBOL(cpu_online_map);
+ 
+ /* Bitmask of CPUs present in the system - exported by i386_syms.c, used
+  * by scheduler but indexed physically */
+-cpumask_t phys_cpu_present_map = CPU_MASK_NONE;
++extern cpumask_t phys_cpu_present_map;
+ 
+ /* The internal functions */
+ static void send_CPI(__u32 cpuset, __u8 cpi);
