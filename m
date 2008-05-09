@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934385AbYEIAPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934144AbYEIARg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934385AbYEIAPi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 20:15:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755782AbYEIAPS
+	id S934144AbYEIARg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 20:17:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752939AbYEIARZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 20:15:18 -0400
-Received: from mjg.x.mythic-beasts.com ([93.93.128.6]:37129 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1755726AbYEIAPO (ORCPT
+	Thu, 8 May 2008 20:17:25 -0400
+Received: from vms173003pub.verizon.net ([206.46.173.3]:51358 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752080AbYEIARX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 20:15:14 -0400
-Date: Fri, 9 May 2008 01:14:58 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Cc: jeff@garzik.org, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-ID: <20080509001458.GA16082@srcf.ucam.org>
-References: <20080508161008.59361de5@appleyard> <20080508233713.GB15377@srcf.ucam.org> <20080508163555.51380949@appleyard>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080508163555.51380949@appleyard>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [PATCH] ata: ahci: power off unused ports
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+	Thu, 8 May 2008 20:17:23 -0400
+Date: Thu, 08 May 2008 20:16:57 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: [patch, -git] drivers/media build fix for modular builds
+In-reply-to: <48230C7B.90007@mandriva.org>
+To: Thomas Backlund <tmb@mandriva.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Linus <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-dvb-maintainer@linuxtv.org,
+       video4linux-list@redhat.com, LKML <linux-kernel@vger.kernel.org>
+Message-id: <200805082016.57622.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <20080507134907.4417708b.sfr@canb.auug.org.au>
+ <48230C7B.90007@mandriva.org>
+User-Agent: KMail/1.9.9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 04:35:55PM -0700, Kristen Carlson Accardi wrote:
-> On Fri, 9 May 2008 00:37:13 +0100
-> Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> > Just out of interest, is this set on laptop bays? (Are any of those even 
-> > native SATA yet?)
-> 
-> I haven't seen any yet that are.  Most of them are PATA.  I expect
-> that will change in the future.
-
-Yeah. My vague concern would be that on laptops, we can probably power 
-down the port even if it's declared as being hotplug capable - we'll 
-probably get an out of band signal from ACPI anyway. Not an issue at the 
-moment, but possibly something we'll hit in future.
+On Thursday 08 May 2008, Thomas Backlund wrote:
+>Stephen Rothwell skrev:
+>>
+>> Index: linux/drivers/media/Makefile
+>> ===================================================================
+>> --- linux.orig/drivers/media/Makefile
+>> +++ linux/drivers/media/Makefile
+>> @@ -2,6 +2,8 @@
+>>  # Makefile for the kernel multimedia device drivers.
+>>  #
+>>
+>> +obj-y := common/
+>> +
+>>  obj-$(CONFIG_VIDEO_MEDIA) += common/
+>>
+>>  # Since hybrid devices are here, should be compiled if DVB and/or V4L
+>
+>How about fixing this one already ?
+>
+Yes please, its biting me too.
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+There is more simplicity in the man who eats caviar on impulse than in the
+man who eats Grape-Nuts on principle.
+		-- G.K. Chesterton
