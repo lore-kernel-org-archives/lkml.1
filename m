@@ -1,121 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762840AbYEIMdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762812AbYEIMhF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762840AbYEIMdc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 08:33:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755730AbYEIMdZ
+	id S1762812AbYEIMhF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 08:37:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755607AbYEIMgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 08:33:25 -0400
-Received: from mail.ift.unesp.br ([200.145.46.3]:53817 "EHLO mail.ift.unesp.br"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754985AbYEIMdY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 08:33:24 -0400
-Date: Fri, 9 May 2008 09:33:08 -0300
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: akpm@linux-foundation.org
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: rtc-cmos.c: Build fix
-Message-ID: <20080509123308.GA4180@beyonder.ift.unesp.br>
-Mail-Followup-To: akpm@linux-foundation.org, mingo@elte.hu,
-	linux-kernel@vger.kernel.org
-References: <20080505231016.GA29072@beyonder.ift.unesp.br> <20080506124348.GR32591@elte.hu> <20080506185125.GA12844@beyonder.ift.unesp.br> <20080507143115.ed738026.akpm@linux-foundation.org> <20080509083258.GB2592@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080509083258.GB2592@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Fri, 9 May 2008 08:36:54 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:35649 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755499AbYEIMgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 08:36:53 -0400
+Date: Fri, 9 May 2008 07:36:50 -0500
+From: Paul Jackson <pj@sgi.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: maxk@qualcomm.com, menage@google.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: IRQ affinities (was: boot cgroup questions)
+Message-Id: <20080509073650.045d037d.pj@sgi.com>
+In-Reply-To: <1210335270.13978.252.camel@twins>
+References: <47D73086.2030008@qualcomm.com>
+	<6599ad830803111827n1cb8e2c7i47c2ef3f3bb58995@mail.gmail.com>
+	<47D7411E.1000009@qualcomm.com>
+	<6599ad830803111936jd940deam8584bc971c3b6f41@mail.gmail.com>
+	<47D74595.4080100@qualcomm.com>
+	<6599ad830803112009y18d9e43ft8e3fc4a551d891da@mail.gmail.com>
+	<20080311235939.1ebee8e3.pj@sgi.com>
+	<47D81FE1.6030205@qualcomm.com>
+	<20080312135746.89456f2a.pj@sgi.com>
+	<47D82AD2.1070108@qualcomm.com>
+	<20080312143253.3dd72c7f.pj@sgi.com>
+	<47D83858.4030806@qualcomm.com>
+	<20080312153712.bc5df7a1.pj@sgi.com>
+	<47D8593A.6040503@qualcomm.com>
+	<20080312183059.6716d630.pj@sgi.com>
+	<47D87BE5.4010702@qualcomm.com>
+	<20080313020300.92244956.pj@sgi.com>
+	<47FE5655.10900@qualcomm.com>
+	<20080414133902.7878cfce.pj@sgi.com>
+	<1210329926.13978.224.camel@twins>
+	<20080509061727.5057de1f.pj@sgi.com>
+	<1210333738.13978.246.camel@twins>
+	<20080509070314.f86aece4.pj@sgi.com>
+	<1210335270.13978.252.camel@twins>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri  9.May'08 at 10:32:58 +0200, Ingo Molnar wrote:
+Peter, responding to pj:
+> > What am I missing?
 > 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> Two points:
 > 
-> > On Tue, 6 May 2008 15:51:25 -0300
-> > "Carlos R. Mafra" <crmafra2@gmail.com> wrote:
-> > 
-> > > Subject: [PATCH] rtc-cmos.c: Build fix
-> > > 
-> > > The function hpet_rtc_interrupt(..) is to be used only if CONFIG_HPET_EMULATE_RTC
-> > > is defined (see arch/x86/kernel/hpet.c), so we define it to return 0 when
-> > > !CONFIG_HPET_EMULATE_RTC to avoid build failures. 
-> > > 
-> > > This function will never be used anyways when !CONFIG_HPET_EMULATE_RTC because 
-> > > it is inside a if(is_hpet_enabled()) which is never true when
-> > > !CONFIG_HPET_EMULATE_RTC.
-> > 
-> > I've lost the plot on this one.  Could we please have a description of 
-> > the problem which is being fixed?  ie, the compiler (or linker?) 
-> > output, and a description of why it is occurring?
-> 
-> dont have the build failure log around anymore, but the config is:
-> 
->    http://redhat.com/~mingo/misc/config-Sun_May__4_09_41_21_CEST_2008.bad
+>  - we can't currently set irq affinities for non-existent (aka new) IRQs
+>  - its a shame to duplicate the masks - most of this information would
+>    also be used in the cpuset structure used to place the tasks.
 
-The build failure was this one
+Ok.  Let me twist this a turn tighter then.
 
-  CC      drivers/rtc/rtc-cmos.o
-drivers/rtc/rtc-cmos.c: In function cmos_do_probe:
-drivers/rtc/rtc-cmos.c:661: error: hpet_rtc_interrupt undeclared (first use in this function)
-drivers/rtc/rtc-cmos.c:661: error: (Each undeclared identifier is reported only once
-drivers/rtc/rtc-cmos.c:661: error: for each function it appears in.)
-make[2]: *** [drivers/rtc/rtc-cmos.o] Error 1
-make[1]: *** [drivers/rtc] Error 2
-make: *** [drivers] Error 2
+The first of your two points, a default affinitiy mask for new irqs,
+would seem to require a kernel change.  But that change could be a
+single cpumask, settable in /sys somewhere, specifying the default
+affinity.  If that's all we needed, it would be easy.
 
-And that happened with Ingo's config above and your patch (copy & pasted) below,
+The second of your two points, "duplicating masks", seems more delicate.
 
-------------->
-From: Andrew Morton <akpm@linux-foundation.org>
+The space of named cpusets (the directory pathnames below the usual
+mount point, /dev/cpuset) is not really much more compact than the
+set of interesting cpumasks.  But I suppose your point is that some
+of the -particular- cpumasks already named by the cpuset hierarchy
+are tantilizingly close to the set of interesting cpumasks needed for
+irq affinity ... close given some combination of union, intersection,
+set difference and compliment operations, given my usual bias toward
+looking at such things as this using set theory mechanisms.  That is,
+for example, one might want all the CPUs in cpusets foo, bar and baz,
+except the CPUs in cpuset blip, to handle IRQs so and so.
 
-Should already be available via the hpet.h inclusion.
+Let me think on that ... it's my nap time now.
 
-Could go further, by defining the do-nothing stub in hpet.h as well, perhaps.
-
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- drivers/char/rtc.c     |    2 --
- drivers/rtc/rtc-cmos.c |    1 -
- 2 files changed, 3 deletions(-)
-
-diff -puN drivers/char/rtc.c~rtc-remove-unneeded-declarations-of-hpet_rtc_interrupt \
-                drivers/char/rtc.c
---- a/drivers/char/rtc.c~rtc-remove-unneeded-declarations-of-hpet_rtc_interrupt
-+++ a/drivers/char/rtc.c
-@@ -119,8 +119,6 @@ static irqreturn_t hpet_rtc_interrupt(in
- 	return 0;
- }
- #endif
--#else
--extern irqreturn_t hpet_rtc_interrupt(int irq, void *dev_id);
- #endif
- 
- /*
-diff -puN drivers/rtc/rtc-cmos.c~rtc-remove-unneeded-declarations-of-hpet_rtc_interrup \
-                t drivers/rtc/rtc-cmos.c
---- a/drivers/rtc/rtc-cmos.c~rtc-remove-unneeded-declarations-of-hpet_rtc_interrupt
-+++ a/drivers/rtc/rtc-cmos.c
-@@ -52,7 +52,6 @@
- #define hpet_rtc_timer_init() 			do { } while (0)
- #define hpet_register_irq_handler(h) 		0
- #define hpet_unregister_irq_handler(h)		do { } while (0)
--extern irqreturn_t hpet_rtc_interrupt(int irq, void *dev_id);  <-----
- #endif                                                              |
-                                                                     |
- struct cmos_rtc {                                                   |
-                                                                     |
-                                                  This is where the 
-                                                  build failure comes
-                                                  from. My patch fixed it,
-						  but I folded it together
-						  with yours.
-
-It's up to you to decide what to do, if you want two patches or only
-one (which is the status quo now).
-It was an enlightining experience for me anyway :-)
-
-
-
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
