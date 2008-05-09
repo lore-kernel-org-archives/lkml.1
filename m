@@ -1,61 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765358AbYEIQ2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765360AbYEIQcv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765358AbYEIQ2a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 12:28:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756966AbYEIQ2R
+	id S1765360AbYEIQcv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 12:32:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756108AbYEIQcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 12:28:17 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40862 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756913AbYEIQ2P (ORCPT
+	Fri, 9 May 2008 12:32:43 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:59964 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753210AbYEIQcm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 12:28:15 -0400
-Date: Fri, 9 May 2008 09:28:14 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: Spinlocks: Factor our GENERIC_LOCKBREAK in order to avoid spin
- with irqs disable
-In-Reply-To: <20080509102607.GF19617@elte.hu>
-Message-ID: <Pine.LNX.4.64.0805090926260.18195@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0805061220570.30604@schroedinger.engr.sgi.com>
- <20080507073017.GJ32195@elte.hu> <Pine.LNX.4.64.0805071002330.3110@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0805071022230.3173@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0805071148240.8441@schroedinger.engr.sgi.com>
- <20080509102607.GF19617@elte.hu>
+	Fri, 9 May 2008 12:32:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=agh6ipWFRqXiFMJ5+vaIohyLfkrY0t90+6u0BlASb+ecQIqjcSxjjWET2a1tOT4+5txrT0lzpYNYdrCaivDF9EA94VV2tPL/+qICu49LA4BcYS32mw39xr/8YvRuxjARbVQIvIXMfqTFQb6d79Uo4ipTt0DTnW6q6inMc7VnyVQ=
+Message-ID: <48247CBF.3070000@googlemail.com>
+Date: Fri, 09 May 2008 18:33:03 +0200
+From: brot <schnitzelkuchen@googlemail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080504)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+CC: linux-kernel@vger.kernel.org
+Subject: Re: kernel-testers - finding regressions in the kernel
+References: <20080507195830.GC32750@cs181133002.pp.htv.fi> <804dabb00805080712h6d8c282dy5efff381298acfeb@mail.gmail.com> <55f47b0b0805081043y701b406awa2087b875a7e040e@mail.gmail.com> <4823769A.1040809@googlemail.com> <20080508230543.GL22887@cs181133002.pp.htv.fi> <48241184.2070107@googlemail.com> <482421D2.9060103@googlemail.com>
+In-Reply-To: <482421D2.9060103@googlemail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 May 2008, Ingo Molnar wrote:
+brot wrote:
+> 
+> I found the specific load. I am running prime torture test, in mode 2:
+> 
+> 2 = In-place large FFTs (maximum heat and power consumption, some RAM
+> tested)
+> 
+> 1 thread per cpu.
+> 
+> Prime can be downloaded from:
+> http://www.mersenneforum.org/showthread.php?t=9779
+> 
+> While that test is running, i compile gtkmm-2.12.7 with -j3. I
+> remembered that while i had to compile it i really had problems typing.
+> And it looks like i was right. in 2.6.25.1 i had some skips in amarok
+> while playing an mp3 (just normal short skips, but clearly noticable).
+> My typing in kvirc looked like that:
+> 
+> 
+> [11:07:41] <!brot> und nu laggds keyboard auch, aber nur
+> manchmaaaaaaaaaaaaaaal
+> (..)
+> [11:09:18] <!brot> ichh  ababer auch priiiiiiiiiiiiime laaufen
+> 
+> That happens during normal typing, then i see that kvirc has "stuck" and
+> can type normally. then the key during the lagg is repeated like you can
+> see above and the other keys i typed are normal again.
+> 
+> In 2.6.24.3 there is no such problem, so i am starting a bisect test now.
+> 
+> Have a nice day everyone.
+> brot
 
-> hm, there was some lockdep complication in this area. I guess we could 
-> use the 'nice' variants too if their irq-enabling/disabling was properly 
-> lockdep annotated and tracked by the irqflags machinery?
+Just in case you want to know how i distinguished good from bad kernels, and how to reproduce those laggs.
 
-I thought that we already fall back to the functions that spin while 
-having interrupts disabled if lockdep is on?
+Thanks,
+brot
 
-One issue: The BREAKLOCK value needs to be 1 in the fallback case 
-otherwise we needlessly run atomic ops.
 
----
- kernel/spinlock.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6/kernel/spinlock.c
-===================================================================
---- linux-2.6.orig/kernel/spinlock.c	2008-05-07 16:00:06.000000000 -0700
-+++ linux-2.6/kernel/spinlock.c	2008-05-07 16:00:29.000000000 -0700
-@@ -218,7 +218,7 @@ do {									\
- 
- #else
- 
--#define BREAKLOCK(lock)	0
-+#define BREAKLOCK(lock)	1
- #define BREAKLOCK_ENABLE(lock)	do { } while (0)
- #define BREAKLOCK_DISABLE(lock) do { } while (0)
- 
