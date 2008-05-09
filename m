@@ -1,53 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762643AbYEIPBx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761269AbYEIPBl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762643AbYEIPBx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 11:01:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760771AbYEIPBi
+	id S1761269AbYEIPBl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 11:01:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754593AbYEIPAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 11:01:38 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:57772 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760678AbYEIPBg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 11:01:36 -0400
-Message-ID: <48246749.9000101@sgi.com>
-Date: Fri, 09 May 2008 08:01:29 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 9 May 2008 11:00:54 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:36424 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754068AbYEIPAw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 11:00:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JfREmt4DRbZ6YwjnwArqym1w8yQvlauj6AIMk/kfkugb6sIDRajesr9F1IVT7p4o0Dsqz+dYQso47EqsrHiYJcGgF2R6Wmwzz5LKXCcei2wRE6oktdm8J3xYyVjTTQZ+mnr9JtGsqAkH3ltADLp3Bqvhrsm3mn2WOld78VhOMt8=
+Message-ID: <170fa0d20805090800p45654901p36eea51e1ea7e9c7@mail.gmail.com>
+Date: Fri, 9 May 2008 11:00:47 -0400
+From: "Mike Snitzer" <snitzer@gmail.com>
+To: "Neil Brown" <neilb@suse.de>
+Subject: Re: [RFC][PATCH] md: avoid fullsync if a faulty member missed a dirty transition
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
+       paul.clements@steeleye.com
+In-Reply-To: <18467.59565.676987.926988@notabene.brown>
 MIME-Version: 1.0
-To: Paul Mundt <lethal@linux-sh.org>, Mike Travis <travis@sgi.com>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       bunk@kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Richard Henderson <rth@twiddle.net>, Paul Mackerras <paulus@samba.org>,
-       Anton Blanchard <anton@samba.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       "William L. Irwin" <wli@holomorphy.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 1/1] mm: define default cpu_to_node
-References: <20080508230238.468043000@polaris-admin.engr.sgi.com> <20080508230238.649815000@polaris-admin.engr.sgi.com> <20080509052049.GA2161@linux-sh.org>
-In-Reply-To: <20080509052049.GA2161@linux-sh.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1207174155-20090-1-git-send-email-snitzer@gmail.com>
+	 <18464.134.236488.251879@notabene.brown>
+	 <170fa0d20805060458i43c9a4a7r1e30147bdcd40f20@mail.gmail.com>
+	 <18466.39418.578722.92979@notabene.brown>
+	 <170fa0d20805081311r6b726762ndc83c5f626f0956c@mail.gmail.com>
+	 <18467.43895.220708.254814@notabene.brown>
+	 <170fa0d20805082142o61462a7dnce7852a6b7c0d21d@mail.gmail.com>
+	 <18467.59565.676987.926988@notabene.brown>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mundt wrote:
-> On Thu, May 08, 2008 at 04:02:39PM -0700, Mike Travis wrote:
->>   * Some architectures have CONFIG_NUMA=y but do not define a
->>     default cpu_to_node macro.  This provides the default in
->>     asm-generic/topology.h but it relies on the fact that
->>     cpu_to_node is a defined macro (and not an inline function).
->>
-> NACK.. This isn't going to work anyways, cpu_to_node() is just where the
-> first build error occurs. If you do this, then parent_node() is the next
-> one to blow up, node_to_cpumask() after that, etc, etc. For now I've just
-> stubbed the asm-generic/topology.h definitions in to asm-sh/topology.h.
+On Fri, May 9, 2008 at 2:01 AM, Neil Brown <neilb@suse.de> wrote:
+>
+> On Friday May 9, snitzer@gmail.com wrote:
 
+>  > Unfortunately my testing with this patch results in a full resync.
+>  >
+>  > Here is the state of the array after shutdown:
+>  > # mdadm -X /dev/nbd0 /dev/sdq
+>  >         Filename : /dev/nbd0
+>  >            Magic : 6d746962
+>  >          Version : 4
+>  >             UUID : 7140cc3c:8681416c:12c5668a:984ca55d
+>  >           Events : 896
+>  >   Events Cleared : 897
+>
+>  Events Cleared is *larger* than Events!!! Is that repeatable?  I can
+>  only see it happening if a very small race were lost.  You don't have
+>  any other patches in there do you?
 
-Ok, Thanks!  I was looking at that but without being able to compile it,
-it was just a wild swing towards the fence... ;-)  And your rationale makes
-sense, if an arch really has numa topology then it should define what that is.
+Yes, it is repeatable with your previous patch.  But with your most
+recent patch I had the following after shutdown:
 
-Cheers,
+# mdadm -X /dev/nbd0 /dev/sdq
+        Filename : /dev/nbd0
+          Events : 1732
+  Events Cleared : 1732
+          Bitmap : 409600 bits (chunks), 1 dirty (0.0%)
+
+        Filename : /dev/sdq
+          Events : 1736
+  Events Cleared : 1736
+          Bitmap : 409600 bits (chunks), 1 dirty (0.0%)
+
+Unfortunately sdq's events_cleared appears to have been updated
+_after_ the array became degraded.
+As such a full resync occurred because 1732 < 1736.
+
+>  This patch should close the race, though I still find it hard to
+>  believe that you lost the race.
+
+Comments inlined below.
+
+>  Signed-off-by: Neil Brown <neilb@suse.de>
+>
+>  ### Diffstat output
+>   ./drivers/md/bitmap.c |   20 +++++++++++++++-----
+>   1 file changed, 15 insertions(+), 5 deletions(-)
+>
+>
+>  diff .prev/drivers/md/bitmap.c ./drivers/md/bitmap.c
+>  --- .prev/drivers/md/bitmap.c   2008-05-09 11:02:13.000000000 +1000
+>  +++ ./drivers/md/bitmap.c       2008-05-09 16:00:07.000000000 +1000
+>
+> @@ -465,8 +465,6 @@ void bitmap_update_sb(struct bitmap *bit
+>         spin_unlock_irqrestore(&bitmap->lock, flags);
+>         sb = (bitmap_super_t *)kmap_atomic(bitmap->sb_page, KM_USER0);
+>         sb->events = cpu_to_le64(bitmap->mddev->events);
+>  -       if (!bitmap->mddev->degraded)
+>  -               sb->events_cleared = cpu_to_le64(bitmap->mddev->events);
+
+Before, events_cleared was _not_ updated if the array was degraded.
+Your patch doesn't appear to maintain that design.
+
+I tried adding the following degraded check to your below conditional
+but that resulted in nbd0's events < mddev->bitmap->events_cleared
+again, so I'm back to square one:
+
+                        if (!bitmap->mddev->degraded &&
+                            bitmap->events_cleared < bitmap->mddev->events) {
+
+In addition no bits were set in sdq's bitmap:
+# mdadm -X /dev/nbd0 /dev/sdq
+        Filename : /dev/nbd0
+          Events : 2616
+  Events Cleared : 2617
+          Bitmap : 409600 bits (chunks), 0 dirty (0.0%)
+
+        Filename : /dev/sdq
+          Events : 2618
+  Events Cleared : 2617
+          Bitmap : 409600 bits (chunks), 0 dirty (0.0%)
+
+>  @@ -1094,9 +1092,21 @@ void bitmap_daemon_work(struct bitmap *b
+>
+>                         } else
+>                                 spin_unlock_irqrestore(&bitmap->lock, flags);
+>                         lastpage = page;
+>  -/*
+>  -                       printk("bitmap clean at page %lu\n", j);
+>  -*/
+>  +
+>  +                       /* We are possibly going to clear some bits, so make
+>  +                        * sure that events_cleared is up-to-date.
+>  +                        */
+>  +                       if (bitmap->events_cleared < bitmap->mddev->events) {
+>  +                               bitmap_super_t *sb;
+>  +                               bitmap->events_cleared = bitmap->mddev->events;
+>  +                               wait_event(mddev->sb_wait,
+>  +                                   !test_bit(MD_CHANGE_CLEAN, &mddev->flags));
+
+I needed "bitmap->mddev->sb_wait" and "bitmap->mddev->flags" to get
+the code to compile.
+
 Mike
-
