@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758926AbYEIPBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762643AbYEIPBx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758926AbYEIPBZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 11:01:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbYEIPAx
+	id S1762643AbYEIPBx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 11:01:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760771AbYEIPBi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 11:00:53 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:38206 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753991AbYEIPAu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 11:00:50 -0400
-Message-ID: <4824673B.1030503@suse.de>
-Date: Fri, 09 May 2008 19:01:15 +0400
-From: Alexey Starikovskiy <astarikovskiy@suse.de>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
+	Fri, 9 May 2008 11:01:38 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:57772 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760678AbYEIPBg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 11:01:36 -0400
+Message-ID: <48246749.9000101@sgi.com>
+Date: Fri, 09 May 2008 08:01:29 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       WANG Cong <xiyou.wangcong@gmail.com>, toralf.foerster@gmx.de,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Mike Travis <travis@sgi.com>
-Subject: Re: build issue #380 for v2.6.26-rc1-279-g28a4acb : mach-voyager:
- multiple definition of `phys_cpu_present_map'
-References: <200805091114.00244.toralf.foerster@gmx.de> <20080509095244.GJ2543@hacking> <20080509095837.GB19617@elte.hu> <1210342946.3069.4.camel@localhost.localdomain> <20080509144722.GA20566@elte.hu>
-In-Reply-To: <20080509144722.GA20566@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Paul Mundt <lethal@linux-sh.org>, Mike Travis <travis@sgi.com>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       bunk@kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Richard Henderson <rth@twiddle.net>, Paul Mackerras <paulus@samba.org>,
+       Anton Blanchard <anton@samba.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       "William L. Irwin" <wli@holomorphy.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 1/1] mm: define default cpu_to_node
+References: <20080508230238.468043000@polaris-admin.engr.sgi.com> <20080508230238.649815000@polaris-admin.engr.sgi.com> <20080509052049.GA2161@linux-sh.org>
+In-Reply-To: <20080509052049.GA2161@linux-sh.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> 
->>>>  /* Bitmask of CPUs present in the system - exported by i386_syms.c, used
->>>>   * by scheduler but indexed physically */
->>>> -cpumask_t phys_cpu_present_map = CPU_MASK_NONE;
->>>> +static cpumask_t phys_cpu_present_map = CPU_MASK_NONE;
->>> i've got the one below queued up but it's stalled as it could easily be 
->>> wrong and there's no ack from James yet and there's been discussion back 
->>> and forth. James, what do you suggest?
-> 
->> I already told you that this was incorrect.  This is what I sent as 
->> the replacement on 28 April and I didn't hear back from you.
+Paul Mundt wrote:
+> On Thu, May 08, 2008 at 04:02:39PM -0700, Mike Travis wrote:
+>>   * Some architectures have CONFIG_NUMA=y but do not define a
+>>     default cpu_to_node macro.  This provides the default in
+>>     asm-generic/topology.h but it relies on the fact that
+>>     cpu_to_node is a defined macro (and not an inline function).
 >>
->> http://marc.info/?l=linux-kernel&m=120941111400620
-> 
-> ok - picked it up for testing - could you please send a signoff line as 
-> well?
-> 
-> Alexey, you moved those SMP variables, do you agree with the patch from 
-> James? (it looks good to me)
-Yes, they look good to me as well.
-Alex.
+> NACK.. This isn't going to work anyways, cpu_to_node() is just where the
+> first build error occurs. If you do this, then parent_node() is the next
+> one to blow up, node_to_cpumask() after that, etc, etc. For now I've just
+> stubbed the asm-generic/topology.h definitions in to asm-sh/topology.h.
+
+
+Ok, Thanks!  I was looking at that but without being able to compile it,
+it was just a wild swing towards the fence... ;-)  And your rationale makes
+sense, if an arch really has numa topology then it should define what that is.
+
+Cheers,
+Mike
+
