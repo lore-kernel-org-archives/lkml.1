@@ -1,85 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932679AbYEIReZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764267AbYEIRgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932679AbYEIReZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 13:34:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759393AbYEIReQ
+	id S1764267AbYEIRgo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 13:36:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbYEIRgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 13:34:16 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:15528 "EHLO
-	pd4mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756988AbYEIReP (ORCPT
+	Fri, 9 May 2008 13:36:36 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:48559 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752097AbYEIRgf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 13:34:15 -0400
-Date: Fri, 09 May 2008 11:32:28 -0600
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH/RFC] spi: Change modalias from a pointer to a character array
-To: linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net,
-       dbrownell@users.sourceforge.net
-Message-id: <20080509173146.2932.16141.stgit@trillian.secretlab.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 7bit
-User-Agent: StGIT/0.13
+	Fri, 9 May 2008 13:36:35 -0400
+Date: Fri, 9 May 2008 10:36:47 -0700
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+To: "Mark M. Hoffman" <mhoffman@lightlink.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       lm-sensors <lm-sensors@lm-sensors.org>
+Subject: [PATCH] ibmaem: Overview of the driver
+Message-ID: <20080509173647.GK16404@tree.beaverton.ibm.com>
+Reply-To: djwong@us.ibm.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Grant Likely <grant.likely@secretlab.ca>
+A brief overview of what this driver does
 
-Currently, 'modalias' in the spi_device structure is a 'const char *'.
-The spi_new_device() function fills in the modalias value from a passed
-in spi_board_info data block.  Since it is a pointer copy, the new
-spi_device remains dependent on the spi_board_info structure after the
-new spi_device is registered (no other fields in spi_device directly
-depend on the spi_board_info structure; all of the other data is copied).
-
-This causes a problem when dynamically propulating the list of attached
-SPI devices.  For example, in arch/powerpc, the list of SPI devices can
-be populated from data in the device tree.  With the current code, the
-device tree adapter must kmalloc() a new spi_board_info structure for
-each new SPI device it finds in the device tree, and there is no simple
-mechanism in place for keeping track of these allocations.
-
-This patch changes modalias from a 'const char *' to a fixed char array.
-By copying the modalias string instead of referencing it, the dependency
-on the spi_board_info structure is eliminated and an outside caller does
-not need to maintain a separate spi_board_info allocation for each device.
-
-If searched through the code to the best of my ability for any references
-to modalias which may be affected by this change and haven't found anything.
-It has been tested with the lite5200b platform in arch/powerpc.
-
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
 ---
 
- drivers/spi/spi.c       |    2 +-
- include/linux/spi/spi.h |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ Documentation/hwmon/ibmaem |   37 +++++++++++++++++++++++++++++++++++++
+ 1 files changed, 37 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
-index 1ad12af..bdf1b70 100644
---- a/drivers/spi/spi.c
-+++ b/drivers/spi/spi.c
-@@ -229,7 +229,7 @@ struct spi_device *spi_new_device(struct spi_master *master,
- 	proxy->max_speed_hz = chip->max_speed_hz;
- 	proxy->mode = chip->mode;
- 	proxy->irq = chip->irq;
--	proxy->modalias = chip->modalias;
-+	strncpy(proxy->modalias, chip->modalias, KOBJ_NAME_LEN);
- 
- 	snprintf(proxy->dev.bus_id, sizeof proxy->dev.bus_id,
- 			"%s.%u", master->dev.bus_id,
-diff --git a/include/linux/spi/spi.h b/include/linux/spi/spi.h
-index 387e428..38a080b 100644
---- a/include/linux/spi/spi.h
-+++ b/include/linux/spi/spi.h
-@@ -82,7 +82,7 @@ struct spi_device {
- 	int			irq;
- 	void			*controller_state;
- 	void			*controller_data;
--	const char		*modalias;
-+	char			modalias[KOBJ_NAME_LEN];
- 
- 	/*
- 	 * likely need more hooks for more protocol options affecting how
-
+diff --git a/Documentation/hwmon/ibmaem b/Documentation/hwmon/ibmaem
+new file mode 100644
+index 0000000..2fefaf5
+--- /dev/null
++++ b/Documentation/hwmon/ibmaem
+@@ -0,0 +1,37 @@
++Kernel driver ibmaem
++======================
++
++Supported systems:
++  * Any recent IBM System X server with Active Energy Manager support.
++    This includes the x3350, x3550, x3650, x3655, x3755, x3850 M2,
++    x3950 M2, and certain HS2x/LS2x/QS2x blades.  The IPMI host interface
++    driver ("ipmi-si") needs to be loaded for this driver to do anything.
++    Prefix: 'ibmaem'
++    Datasheet: Not available
++
++Author: Darrick J. Wong
++
++Description
++-----------
++
++This driver implements sensor reading support for the energy and power
++meters available on various IBM System X hardware through the BMC.  All
++sensor banks will be exported as platform devices; this driver can talk
++to both v1 and v2 interfaces.  This driver is completely separate from the
++older ibmpex driver.
++
++The v1 AEM interface has a simple set of features to monitor energy use.
++There is a register that displays an estimate of raw energy consumption
++since the last BMC reset, and a power sensor that returns average power
++use over a configurable interval.
++
++The v2 AEM interface is a bit more sophisticated, being able to present
++a wider range of energy and power use registers, the power cap as
++set by the AEM software, and temperature sensors.
++
++Special Features
++----------------
++
++The "power_cap" value displays the current system power cap, as set by
++the Active Energy Manager software.  Setting the power cap from the host
++is not currently supported.
