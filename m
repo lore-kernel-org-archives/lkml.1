@@ -1,64 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759872AbYEIWeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758529AbYEIWgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759872AbYEIWeT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 18:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbYEIWd4
+	id S1758529AbYEIWgP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 18:36:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753615AbYEIWfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 18:33:56 -0400
-Received: from bipbip.grupopie.com ([195.23.16.24]:60595 "EHLO
-	bipbip.grupopie.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758988AbYEIWdx (ORCPT
+	Fri, 9 May 2008 18:35:54 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:34170 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752569AbYEIWfx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 18:33:53 -0400
-Message-ID: <4824AD3C.3070506@grupopie.com>
-Date: Fri, 09 May 2008 20:59:56 +0100
-From: Paulo Marques <pmarques@grupopie.com>
-Organization: Grupo PIE
-User-Agent: Thunderbird 1.5.0.14 (X11/20071210)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: /proc/kallsyms broken in 2.6.26-rc1-git6
-References: <20080509174148.GA22246@basil.nowhere.org> <482491D6.9030205@grupopie.com> <4824A7B6.70306@firstfloor.org>
-In-Reply-To: <4824A7B6.70306@firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 9 May 2008 18:35:53 -0400
+Date: Fri, 09 May 2008 15:36:17 -0700
+From: Matheos Worku <Matheos.Worku@Sun.COM>
+Subject: Re: NIU - Sun Neptune 10g - Transmit timed out reset (2.6.24)
+In-reply-to: <4824CCF0.5050302@krogh.cc>
+To: Jesper Krogh <jesper@krogh.cc>
+Cc: David Miller <davem@davemloft.net>, yhlu.kernel@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Message-id: <4824D1E1.10007@sun.com>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=ISO-8859-1
+Content-transfer-encoding: 7BIT
+X-Accept-Language: en-us, en
+References: <86802c440805071130m62c1f4edydb3316dac4a2aba2@mail.gmail.com>
+ <20080507.141521.193714938.davem@davemloft.net> <482498D5.9060008@krogh.cc>
+ <20080509.143229.174354251.davem@davemloft.net> <4824C936.9000103@krogh.cc>
+ <4824CBA1.8040703@sun.com> <4824CCF0.5050302@krogh.cc>
+User-Agent: Mozilla Thunderbird 1.0.7-1.4.1 (X11/20050929)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->>> ffffffff80337043 u idr_pre_get  [i2c_core]
->>> ffffc2000007573e ? DW.sched.h.920090ff.56       [i2c_core]
->> Are you compiling with CONFIG_KALLSYMS_ALL?
-> 
-> Yep.
-> 
-> CONFIG_KALLSYMS=y
-> CONFIG_KALLSYMS_ALL=y
-> # CONFIG_KALLSYMS_EXTRA_PASS is not set
-> 
->> If you are, kallsyms will store all the output of "nm -n vmlinux" no
->> matter what section the symbol belongs to...
-> 
-> Yes and? Surely that's not correct?
+Jesper Krogh wrote:
 
-That's not for me to judge, but I believe it has always been like that.
+> Matheos Worku wrote:
+>
+>> Jesper Krogh wrote:
+>>
+>>> David Miller wrote:
+>>>
+>>>> From: Jesper Krogh <jesper@krogh.cc>
+>>>> Date: Fri, 09 May 2008 20:32:53 +0200
+>>>>
+>>>>> When it works I doesnt seem to be able to get it pass 500MB/s.
+>>>>
+>>>>
+>>>> With this card you really need multiple cpus and multiple threads
+>>>> sending data through the card in order to fill the 10Gb pipe.
+>>>>
+>>>> Single connections will not fill the pipe.
+>>>
+>>>
+>>> The server is a Sun X4600 with 8 x dual-core CPU's, setup with 64
+>>> NFS-threads. The other end of the fiber goes into a switch with gigabit
+>>> ports connected to 48 dual-core cpus. The test was done doing a dd on a
+>>> 4.5GB file from the server to /dev/null on the clients.
+>>
+>>
+>> Are you doing a TX or RX (with respect to the 10G if)?
+>
+>
+> Thats a transmit.. from the NFS server to the clients.
 
-I just wanted to understand if you noticed a change in behavior (which 
-is probably a bug) or if it has always been like that but you just 
-noticed how ugly it is.
+I have observed TX throughput degradation (and increased CPU 
+utilization)  occurs with increased # of connections, when CPU count > 4 
+CPUs.  I don't think it is related to the driver (or HW). A while ago I 
+prototyped a driver which drops all UDP TX packets and the throughput 
+degradation (and CPU utilization increase) behavior occurred though the 
+driver was not doing much work.   LSO/TSO seems to help with the 
+situation though. With LSO disabled, I have observed the issue on 
+several 10G nics.
 
-Maybe you also have some debug or markers configuration or something 
-that is generating extra symbols to a special section that is just 
-making the problem look worse now.
+Regards
+Matheos
 
-Anyway, I can change the way kallsyms works, but that has to be done 
-with some care because there are some userspace tools that read 
-/proc/kallsyms and we don't want to break those. A proper testing period 
-through -mm should take care of that, though.
 
--- 
-Paulo Marques - www.grupopie.com
+>
+> Jesper
 
-"All generalizations are false."
+
