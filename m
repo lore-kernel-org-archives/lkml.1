@@ -1,76 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761240AbYEIABC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763878AbYEIAC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761240AbYEIABC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 20:01:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752317AbYEIAAw
+	id S1763878AbYEIAC5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 20:02:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750906AbYEIACs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 20:00:52 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:7740 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751645AbYEIAAu (ORCPT
+	Thu, 8 May 2008 20:02:48 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:56195 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751632AbYEIACq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 20:00:50 -0400
+	Thu, 8 May 2008 20:02:46 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=HJvUjvsVk90JwcvW2ONXqwlAMzvZYTwrJXahgR5gyv3jBCNpfoyNI0y9lF5qYGJXbUdcqqiPTZOS25M9NHF8jFIK7qPkd1ABj9CZi/Fmund7tuJNaT2XxGzV+dJPguSauLQ9yfaMKatBHyS3nRfr2Bw1j7+WI8co6u/H7OSpHWs=
-Message-ID: <dd18b0c30805081700s474f8055u7274ea5adb44cd24@mail.gmail.com>
-Date: Fri, 9 May 2008 00:00:49 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "James Cloos" <cloos@jhcloos.com>
-Subject: Re: Regression: starting X locks box with git master
-Cc: linux-kernel@vger.kernel.org, "Rafael J Wysocki" <rjw@sisk.pl>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>
-In-Reply-To: <m3tzh8bdz9.fsf@lugabout.jhcloos.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=hWhCGCJo1tTj8EhC/7TVDQ3CCmFAR8VW2PM/5Q3/lzwWT+ERGkXDYSO0+L6n7OvN6ggBrlrGyFCemqXGeiKFUhczhSwJKQdbFOg91IFL6HQXp+AfQHmmufrf4WSs+D7rtlq6fIjE1i3eagf8UlF3W9bo9y08KjBB4l+8O2zc+k8=
+Subject: Re: [PATCH] Silence 'ignoring return value' warnings in
+	drivers/video/aty/radeon_base.c
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Greg KH <greg@kroah.com>, Cornelia Huck <cornelia.huck@de.ibm.com>,
+       benh@kernel.crashing.org, Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, tony@bakeyournoodle.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <18467.37312.772564.163109@cargo.ozlabs.ibm.com>
+References: <20080506143936.6357e578.akpm@linux-foundation.org>
+	 <20080506.144301.233784820.davem@davemloft.net>
+	 <1210121683.21644.194.camel@pasglop>
+	 <20080506182006.4b4a3968.akpm@linux-foundation.org>
+	 <1210134804.21644.202.camel@pasglop>
+	 <20080507102310.57b4ccfb@gondolin.boeblingen.de.ibm.com>
+	 <1210196621.1421.5.camel@pasglop>
+	 <20080508093421.31cd735b@gondolin.boeblingen.de.ibm.com>
+	 <1210232984.1421.47.camel@pasglop>
+	 <20080508103621.69bc47cf@gondolin.boeblingen.de.ibm.com>
+	 <20080508220348.GD7705@kroah.com>
+	 <18467.37312.772564.163109@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Thu, 08 May 2008 17:02:44 -0700
+Message-Id: <1210291364.19279.62.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <m3hcdrqb03.fsf@lugabout.jhcloos.org>
-	 <86802c440804241352v2623222bt28129a2c501cff25@mail.gmail.com>
-	 <m37iemq3qa.fsf@lugabout.jhcloos.org> <200805072353.02085.rjw@sisk.pl>
-	 <m3tzh8bdz9.fsf@lugabout.jhcloos.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 8, 2008 at 10:57 PM, James Cloos <cloos@jhcloos.com> wrote:
-> Git master as of 3de2403e allows me to run X again.
->
-> After installing the new kernel I also re-compiled all of the X server
-> stack (libdrm, libpciaccess, mesa, the X server and the video driver).
-> I don't know how much of a difference that made.
->
-> I don't know whether the problem was sched, x86, agp or dri related,
-> but AFAICT it is now fixed.
->
-> Thanks,
->
-> -JimC
-> --
-> James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
->
+On Fri, 2008-05-09 at 09:50 +1000, Paul Mackerras wrote:
+> Greg KH writes:
+> 
+> > > I hear you :) I found it useful, but it seems we should get rid of it
+> > > for _create_file() now.
+> > 
+> > Why?  You point out it found some real bugs, should we just assume that
+> > no new bugs of this same problem will happen again in the future?
+> 
+> Because it causes warnings for the callers which don't really care
+> whether the file gets created or not, and getting rid of those
+> warnings adds unnecessary bloat.
+> 
+> I think the best solution is to make a new sysfs_maybe_create_file()
+> which isn't marked must_check, and then move suitable callers (such as
+> radeonfb) over to that.  That will make it obvious in the callers that
+> the file creation isn't guaranteed.
 
-Well; After reverting to 2.6.25-rc* then contemplating(beer) for a
-while I decided to pull the latest git today, the problem now was with
-atapiix, So with that in mind I decided to load 2.6.26-rc1 everything
-seems to be O.K., the problem I have is: I receive a blank screen when
-I load fglrx,
-then startx. I think it has to do with /proc/mtrr and pat almost as if
-I'm on the wrong screen. With that said I wouldn't be such a pain
-about wanting fglrx, hell I don't even play video games, well a long
-time ago at least(Myst, Riven, schism)or use 3D applications, but this
-module was the only module that was at least working with the suspend
-mechanism, This way  I can test X11 and see if appletouch can survive,
-scroll function on the mighty mouse can survive,and DVD playback can
-survive properly after a wake-up. With that in mind has anybody gotten
-suspend to work with radeonhd, or any other module for the macbook
-pro. That way I can at least have that function working,and out of the
-way, so I can move on to other things, besides having my eyes go
-crosseyed trying to find code that isn't there.
-Anyways I'll let you know if I come upon anything interesting;
-regards;
+Or just a a flag parameter to the existing one that says whether failure
+is allowed or not.  In a case that fails, a WARN_ON can be printed from
+the common create_file rather than putting printks all over the kernel.
 
+This would also document which files are necessary vs. optional.
 
--- 
-Justin P. Mattock
+Harvey
+
