@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932906AbYEIQig@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933017AbYEIQjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932906AbYEIQig (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 12:38:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754900AbYEIQi1
+	id S933017AbYEIQjx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 12:39:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757008AbYEIQjl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 12:38:27 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:59154 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754563AbYEIQi0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 12:38:26 -0400
-Date: Fri, 9 May 2008 09:38:25 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Russ Anderson <rja@sgi.com>, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Tony Luck <tony.luck@intel.com>
-Subject: Re: [PATCH 0/3] ia64: Migrate data off physical pages with correctable
- errors v3
-In-Reply-To: <alpine.LFD.1.10.0805090817280.3142@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0805090935520.18195@schroedinger.engr.sgi.com>
-References: <20080509150937.GA16523@sgi.com>
- <alpine.LFD.1.10.0805090817280.3142@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 9 May 2008 12:39:41 -0400
+Received: from mvp.visionpro.com ([63.91.95.2]:1667 "EHLO
+	mvpexchange126.machinevisionproducts.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1761206AbYEIQjk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 12:39:40 -0400
+X-Ninja-PIM: Scanned by Ninja
+X-Ninja-AttachmentFiltering: (no action)
+User-Agent: Microsoft-Entourage/12.1.0.080305
+Date: Fri, 09 May 2008 09:27:34 -0700
+Subject: Restricting Processor Usage
+From: Brian McGrew <brian@visionpro.com>
+To: <linux-kernel@vger.kernel.org>
+Message-ID: <C449C986.1E7ED%brian@visionpro.com>
+Thread-Topic: Restricting Processor Usage
+Thread-Index: Acix8ZXjBMpElKCw+Uiy9hWO2lvdrA==
+Mime-version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-transfer-encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 May 2008, Linus Torvalds wrote:
+Now that I've got sched_(set|get)affinity working (thank you all for all of
+the great help), I need to figure out how to unload the processors in the
+machine.
 
-> So I haven't looked at this a lot, but it strikes me that it look to be 
-> much simple if you were to just increment the page count instead of 
-> playing games in mm/page_alloc.c.
+When the system comes up, by default the general system load is spread
+across all the processors, even when it is idle.  I'm looking for a way to
+force everything on the system (kernel, X, gnome, etc.) to run on only one
+processor and leave the remaining processors idea for thread assignments.
+I'm doing very heavy image processing and need all the power I can get out
+of each CPU.
 
-We are taking a refcount when isolating the page from the LRU. The 
-problem is that the migration code attempts to free the page. That code 
-could be changed to do something else instead like putting the page on the 
-bad list.
- 
-> I'm also not really seeing why this triggers on lru_cache_add(), since 
-> that should only happen to new pages anyway. Who does lru_cache_add() on 
-> old pages?
+How can I do this?  Just make the system as a whole run on only one CPU but
+allow processes and threads that I create to set their affinity to the
+remaining unloaded CPU's???
 
-Migration code does the adding back to the LRU when migration is complete. 
-So he hooked into that I guess.
+-brian
 
