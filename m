@@ -1,191 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761504AbYEIEmo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762841AbYEIEza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761504AbYEIEmo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 00:42:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755217AbYEIEmc
+	id S1762841AbYEIEza (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 00:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbYEIEzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 00:42:32 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:18318 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755143AbYEIEma (ORCPT
+	Fri, 9 May 2008 00:55:20 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:46690 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751457AbYEIEzT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 00:42:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pfEYvUXfeIqGKPvggz7ep9BT8NIfGfRHLBKNvYKbp/GxdeOxkcuKwn+BiIOznpIBcSlCuORWlNJD7ELikcLjqQk04fWgATu3OwTYb0+hJ3C9yxp34NJyzTMfOpavC8tzRmzT0srA9wq0bPfma8QQGma9CB1cp14PLNH8pZV+Q7A=
-Message-ID: <170fa0d20805082142o61462a7dnce7852a6b7c0d21d@mail.gmail.com>
-Date: Fri, 9 May 2008 00:42:29 -0400
-From: "Mike Snitzer" <snitzer@gmail.com>
-To: "Neil Brown" <neilb@suse.de>
-Subject: Re: [RFC][PATCH] md: avoid fullsync if a faulty member missed a dirty transition
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
-       paul.clements@steeleye.com
-In-Reply-To: <18467.43895.220708.254814@notabene.brown>
+	Fri, 9 May 2008 00:55:19 -0400
+Date: Thu, 8 May 2008 21:55:27 -0700
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: mhoffman@lightlink.com, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org
+Subject: [PATCH] ibmaem: Fix 64-bit division on 32-bit platforms
+Message-ID: <20080509045527.GI16404@tree.beaverton.ibm.com>
+Reply-To: djwong@us.ibm.com
+References: <20080508180858.GM16078@tree.beaverton.ibm.com> <20080508163443.a1e9ffe7.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1207174155-20090-1-git-send-email-snitzer@gmail.com>
-	 <18464.134.236488.251879@notabene.brown>
-	 <170fa0d20805060458i43c9a4a7r1e30147bdcd40f20@mail.gmail.com>
-	 <18466.39418.578722.92979@notabene.brown>
-	 <170fa0d20805081311r6b726762ndc83c5f626f0956c@mail.gmail.com>
-	 <18467.43895.220708.254814@notabene.brown>
+In-Reply-To: <20080508163443.a1e9ffe7.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 8, 2008 at 9:40 PM, Neil Brown <neilb@suse.de> wrote:
->
-> On Thursday May 8, snitzer@gmail.com wrote:
->  > On Thu, May 8, 2008 at 2:13 AM, Neil Brown <neilb@suse.de> wrote:
->  > > On Tuesday May 6, snitzer@gmail.com wrote:
->  > >  >
->  > >  > It looks like bitmap_update_sb()'s incrementing of events_cleared (on
->  > >  > behalf of the local member) could be racing with the fact that the NBD
->  > >  > member becomes faulty (whereby making the array degraded).  This
->  > >  > allows the events_cleared to reflect a clean->dirty transition last
->  > >  > occurred before the array became degraded.  My reasoning is: If it was
->  > >  > a clean->dirty transition the bitmap still has the associated dirty
->  > >  > bit set in the local member's bitmap, so using the bitmap to resync is
->  > >  > valid.
->  > >  >
->  > >  > thanks,
->  > >  > Mike
->  > >
->  > >  Thanks for persisting.  I think I understand what is going on now.
->  > >
->  > >  How about this patch?  It is similar to your, but instead of depending
->  > >  on the odd/even state of the event counter, it directly checks the
->  > >  clean/dirty state of the array.
->  >
->  > Hi Neil,
->  >
->  > Your revised patch works great and is obviously cleaner.
->
->  But I'm still not happy with it :-(
->  I suspect there might be other cases where it will still do the wrong
->  thing.
->  The real problem is that we are updating events_cleared to early.  We
->  are setting to the new event counter before that is even written out.
->
->  So I've come up with this patch, which I think more clearly
->  encapsulated what events_cleared means.  It is now set to the current
->  'events' counter immediately before we clear any bit.
->
->  If you could test it, I'd really appreciate it.
+On Thu, May 08, 2008 at 04:34:43PM -0700, Andrew Morton wrote:
 
-Unfortunately my testing with this patch results in a full resync.
+> This driver is littered with 64-bit divides and doesn't link on i386.
+> I'll make it depend on CONFIG_64BIT for now.
 
-Here is the state of the array after shutdown:
-# mdadm -X /dev/nbd0 /dev/sdq
-        Filename : /dev/nbd0
-           Magic : 6d746962
-         Version : 4
-            UUID : 7140cc3c:8681416c:12c5668a:984ca55d
-          Events : 896
-  Events Cleared : 897
-           State : OK
-       Chunksize : 128 KB
-          Daemon : 5s flush period
-      Write Mode : Normal
-       Sync Size : 52428736 (50.00 GiB 53.69 GB)
-          Bitmap : 409600 bits (chunks), 1 dirty (0.0%)
+Oops, sorry, I didn't remember that one can't do 64-bit division on
+i386.  The patch below fixes that.
+---
+ibmaem: Fix 64-bit division on 32-bit platforms
 
-        Filename : /dev/sdq
-           Magic : 6d746962
-         Version : 4
-            UUID : 7140cc3c:8681416c:12c5668a:984ca55d
-          Events : 898
-  Events Cleared : 897
-           State : OK
-       Chunksize : 128 KB
-          Daemon : 5s flush period
-      Write Mode : Normal
-       Sync Size : 52428736 (50.00 GiB 53.69 GB)
-          Bitmap : 409600 bits (chunks), 0 dirty (0.0%)
+Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+---
 
-# mdadm --examine /dev/nbd0 /dev/sdq
-/dev/nbd0:
-          Magic : a92b4efc
-        Version : 00.90.00
-           UUID : 7140cc3c:8681416c:12c5668a:984ca55d
-  Creation Time : Thu May  8 06:55:32 2008
-     Raid Level : raid1
-  Used Dev Size : 52428736 (50.00 GiB 53.69 GB)
-     Array Size : 52428736 (50.00 GiB 53.69 GB)
-   Raid Devices : 2
-  Total Devices : 2
-Preferred Minor : 0
+ drivers/hwmon/ibmaem.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-    Update Time : Thu May  8 18:07:47 2008
-          State : clean
-Internal Bitmap : present
- Active Devices : 2
-Working Devices : 2
- Failed Devices : 0
-  Spare Devices : 0
-       Checksum : df65cb35 - correct
-         Events : 0.896
-
-
-      Number   Major   Minor   RaidDevice State
-this     1      43        0        1      active sync write-mostly   /dev/nbd0
-
-   0     0      65        0        0      active sync   /dev/sdq
-   1     1      43        0        1      active sync write-mostly   /dev/nbd0
-
-
-/dev/sdq:
-          Magic : a92b4efc
-        Version : 00.90.00
-           UUID : 7140cc3c:8681416c:12c5668a:984ca55d
-  Creation Time : Thu May  8 06:55:32 2008
-     Raid Level : raid1
-  Used Dev Size : 52428736 (50.00 GiB 53.69 GB)
-     Array Size : 52428736 (50.00 GiB 53.69 GB)
-   Raid Devices : 2
-  Total Devices : 2
-Preferred Minor : 0
-
-    Update Time : Thu May  8 18:07:49 2008
-          State : clean
-Internal Bitmap : present
- Active Devices : 1
-Working Devices : 1
- Failed Devices : 1
-  Spare Devices : 0
-       Checksum : df65c956 - correct
-         Events : 0.898
-
-
-      Number   Major   Minor   RaidDevice State
-this     0      65        0        0      active sync   /dev/sdq
-
-   0     0      65        0        0      active sync   /dev/sdq
-   1     1       0        0        1      faulty removed
-
-Was I supposed to use this latest patch in combination with your
-previous patch (to validate_super)?  Because you'll note that with
-your most recent patch nbd0's events (ev1) is still one less than
-sdq's events_cleared.  As such the validate_super's "ev1 <
-mddev->bitmap->events_cleared" check triggers a full rebuild.
-
-The kernel log shows:
-md: md0 stopped.
-md: bind<nbd0>
-md: bind<sdq>
-md: kicking non-fresh nbd0 from array!
-md: unbind<nbd0>
-md: export_rdev(nbd0)
-raid1: raid set md0 active with 1 out of 2 mirrors
-md0: bitmap initialized from disk: read 13/13 pages, set 0 bits, status: 0
-created bitmap (200 pages) for device md0
-Nope!!! ev1 (896) < mddev->bitmap->events_cleared (897)
-md: bind<nbd0>
-RAID1 conf printout:
- --- wd:1 rd:2
- disk 0, wo:0, o:1, dev:sdq
- disk 1, wo:1, o:1, dev:nbd0
-md: recovery of RAID array md0
+diff --git a/drivers/hwmon/ibmaem.c b/drivers/hwmon/ibmaem.c
+index 22fa7d6..f808ca3 100644
+--- a/drivers/hwmon/ibmaem.c
++++ b/drivers/hwmon/ibmaem.c
+@@ -31,6 +31,7 @@
+ #include <linux/idr.h>
+ #include <linux/sched.h>
+ #include <linux/platform_device.h>
++#include <linux/math64.h>
+ 
+ #define REFRESH_INTERVAL	(HZ)
+ #define IPMI_TIMEOUT		(30 * HZ)
+@@ -864,9 +865,10 @@ static ssize_t aem_show_power(struct device *dev,
+ 	mutex_unlock(&data->lock);
+ 
+ 	time = timespec_to_ns(&a) - timespec_to_ns(&b);
+-	time /= 1000;
++	time = div_u64(time, 1000);
+ 
+-	return sprintf(buf, "%llu\n", (after - before) * 1000000000 / time);
++	return sprintf(buf, "%llu\n",
++		       div64_u64((after - before) * 1000000000, time));
+ }
+ 
+ /* Display energy use */
