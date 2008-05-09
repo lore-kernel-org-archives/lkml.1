@@ -1,109 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755570AbYEIDnn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757924AbYEIDxW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755570AbYEIDnn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 23:43:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbYEIDnd
+	id S1757924AbYEIDxW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 23:53:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbYEIDxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 23:43:33 -0400
-Received: from an-out-0708.google.com ([209.85.132.245]:61861 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751247AbYEIDnc (ORCPT
+	Thu, 8 May 2008 23:53:12 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:42572 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751001AbYEIDxL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 23:43:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=dE3mQfJwKqpHp2msTIfit2UjKhg94uZL3II9xzgA7pRTP6j+kMCybTPwGjN5O0zzHpA90sNnO0rPEQrCz60afN8qxCtkXiQZ8siyr0THfsqNi1lQQGbgJbFjTj5e/ekTigNwl6QfzGuv2TxSKAfK8NLMQ1A5t8zPXqjNhbnDtG0=
-Message-ID: <dd18b0c30805082043x39a58680nb36960e464c80936@mail.gmail.com>
-Date: Fri, 9 May 2008 03:43:27 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: [PATCH] Re: [git patches] libata updates - (improve post-reset device ready test) regression
-Cc: "Jeff Garzik" <jeff@garzik.org>,
-       "Markus Trippelsdorf" <markus@trippelsdorf.de>,
-       linux-ide@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Takashi Iwai" <tiwai@suse.de>,
-       marc.c.dionne@gmail.com, dl9pf@gmx.de, bug-track@fisher-privat.net,
-       sitsofe@yahoo.com
-In-Reply-To: <4823BD8E.40109@gmail.com>
+	Thu, 8 May 2008 23:53:11 -0400
+X-Sasl-enc: PfzObK/7xZfzEhibrLPHLE5Gu4A+AOYTn2HB+0ezpRBB 1210305189
+Date: Fri, 9 May 2008 00:53:06 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Karol Lewandowski <lmctlx@gmail.com>
+Cc: ibm-acpi-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [ibm-acpi-devel] BUG: linux-2.6.26-rc1 oops at
+	thinkpad_acpi:led_set_status
+Message-ID: <20080509035306.GA10978@khazad-dum.debian.net>
+References: <20080508231227.GA9157@localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080506154847.GA15299@havoc.gtf.org>
-	 <20080507145616.GA2210@gentoox2.trippelsdorf.de>
-	 <48231DAF.7070900@garzik.org> <4823BD8E.40109@gmail.com>
+In-Reply-To: <20080508231227.GA9157@localdomain>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 9, 2008 at 2:57 AM, Tejun Heo <htejun@gmail.com> wrote:
-> Jeff Garzik wrote:
->>
->> Markus Trippelsdorf wrote:
->>>>
->>>> Tejun Heo (12):
->>>>      libata: improve post-reset device ready test
->>>
->>> This commit (78ab88f04f44bed566d51dce0c7cbfeff6449a06) causes a long
->>> boot delay with my onboard Promise controller. It seems like libata
->>> probes for a nonexisting PATA drive...
->>>
->>> ACPI: PCI Interrupt 0000:00:08.0[A] -> GSI 18 (level, low) -> IRQ 18
->>> scsi0 : sata_promise
->>> scsi1 : sata_promise
->>> scsi2 : sata_promise
->>> ata1: SATA max UDMA/133 mmio m4096@0xfb600000 port 0xfb600200 irq 18
->>> ata2: SATA max UDMA/133 mmio m4096@0xfb600000 port 0xfb600280 irq 18
->>> ata3: PATA max UDMA/133 mmio m4096@0xfb600000 port 0xfb600300 irq 18
->>> ata1: SATA link down (SStatus 0 SControl 300)
->>> ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
->>> ata2.00: ATA-7: SAMSUNG HD753LJ, 1AA01109, max UDMA7
->>> ata2.00: 1465149168 sectors, multi 0: LBA48 NCQ (depth 0/32)
->>> ata2.00: configured for UDMA/133
->>>                                                  ata3: link is slow to
->>> respond, please be patient (ready=0)
->>> ata3: device not ready (errno=-16), forcing hardreset
->>> ata3: link is slow to respond, please be patient (ready=0)
->>> ata3: SRST failed (errno=-16)
->>> ata3: link is slow to respond, please be patient (ready=0)
->>> ata3: SRST failed (errno=-16)
->>> ata3: link is slow to respond, please be patient (ready=0)
->>> ata3: SRST failed (errno=-16)
->>>  - Last output repeated twice -
->>> ata3: reset failed, giving up
->>
->> Does the attached patch fix things?
->>
->> It basically reverts the patch, while still maintaining the consolidation.
->>  It looks like that status evaluation is not as universal as believed.
->
-> This means that we need to make custom readiness tests for controllers using
-> 0x77 or 0x7f.  Eeeek... Both groups of controllers are behaving in incorrect
-> way.  Controllers shouldn't use 0x77 or 0x7f for either busy or ready states
-> - it's invalid for both, yet, some use the 77/7f for busy while others use
-> them for ready state.  Great.  :-(
->
-> Jeff, can you please revert 78ab88f04f44bed566d51dce0c7cbfeff6449a06 for
-> now?  I'll post updated patch.
->
-> Markus, Alexey, Marc, which controllers are you using?
->
-> Thanks.
->
-> --
-> tejun
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+On Fri, 09 May 2008, Karol Lewandowski wrote:
+> On my Thinkpad T21 executing:
 
-Hello; Im getting that same message here as well, If you have the
-patch I'll give it a try to see if it works.
-regards;
+Please send me by private email the acpidump and dmidecode information
+for your ThinkPad, I don't have any for the T21.  Feel free to
+XXXXXX-out the UUID and serial number of your T21 in the dmidecode
+output.
+
+The machine was clean after a boot, correct? (no sleeps or other
+known-to-be-busted-in-2.6.26 operations before the OOPS?)
+
+Assuming the comments on the LED code from the first ibm-acpi maintainer
+are correct, the T20-T22 use the same LED interface, the "LED_OLD"
+ibm-acpi codepath.  That codepath is indeed NOT tested often, as I don't
+have a way to do so.  Bugs there wouldn't surprise me too much.
+
+If you try it using the sysfs led class, do you get the same OOPS? (I
+expect you to. If you don't, I *need* to know this).
+
+Is it always a problem with the last led (number 7), or other leds also
+cause the OOPS?
+
+Also, please try the patch below, and send me the debug output it will
+generate.
 
 -- 
-Justin P. Mattock
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
+
+diff --git a/drivers/misc/thinkpad_acpi.c b/drivers/misc/thinkpad_acpi.c
+index 3f28f6e..392c800 100644
+--- a/drivers/misc/thinkpad_acpi.c
++++ b/drivers/misc/thinkpad_acpi.c
+@@ -3867,6 +3867,9 @@ static int led_set_status(unsigned int led, enum led_status_t ledstatus)
+ 
+ 	int rc = 0;
+ 
++	printk(TPACPI_ERR "debug: led %u, status %u, mode %u\n",
++		led, ledstatus, led_supported);
++
+ 	switch (led_supported) {
+ 	case TPACPI_LED_570:
+ 			/* 570 */
+@@ -3878,13 +3881,22 @@ static int led_set_status(unsigned int led, enum led_status_t ledstatus)
+ 	case TPACPI_LED_OLD:
+ 			/* 600e/x, 770e, 770x, A21e, A2xm/p, T20-22, X20 */
+ 			led = 1 << led;
++			printk(TPACPI_ERR "debug: led is now 0x%0X\n", led);
++			printk(TPACPI_ERR "debug: will write A=0x%0X, B=0x%0X\n",
++				led * led_exp_hlbl[ledstatus],
++				led * led_exp_hlcl[ledstatus]);
++
+ 			rc = ec_write(TPACPI_LED_EC_HLMS, led);
+ 			if (rc >= 0)
+ 				rc = ec_write(TPACPI_LED_EC_HLBL,
+ 					      led * led_exp_hlbl[ledstatus]);
++			else
++				printk(TPACPI_ERR "debug: kaboom1 %d\n", rc);
+ 			if (rc >= 0)
+ 				rc = ec_write(TPACPI_LED_EC_HLCL,
+ 					      led * led_exp_hlcl[ledstatus]);
++			if (rc)
++				printk(TPACPI_ERR "debug: kaboom2 %d\n", rc);
+ 			break;
+ 	case TPACPI_LED_NEW:
+ 			/* all others */
