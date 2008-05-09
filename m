@@ -1,82 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933114AbYEITYd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763930AbYEITbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933114AbYEITYd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 15:24:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754054AbYEITYX
+	id S1763930AbYEITbR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 15:31:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbYEITbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 15:24:23 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:58292 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752854AbYEITYW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 15:24:22 -0400
-Date: Fri, 9 May 2008 21:24:20 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: David Miller <davem@davemloft.net>
-cc: linux-kernel@vger.kernel.org, adaplas@pol.net, hpa@zytor.com,
-       alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-Subject: Re: 2.6.26-rcX VC console scrolling regression
-In-Reply-To: <20080508.232602.193723628.davem@davemloft.net>
-Message-ID: <alpine.LNX.1.10.0805092124010.28042@fbirervta.pbzchgretzou.qr>
-References: <20080507.214637.193700986.davem@davemloft.net> <alpine.LNX.1.10.0805081236190.16904@fbirervta.pbzchgretzou.qr> <20080508.232602.193723628.davem@davemloft.net>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Fri, 9 May 2008 15:31:06 -0400
+Received: from mail.ift.unesp.br ([200.145.46.3]:55997 "EHLO mail.ift.unesp.br"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751517AbYEITbD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 15:31:03 -0400
+Date: Fri, 9 May 2008 16:30:43 -0300
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: Mark Lord <lkml@rtr.ca>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@kernel.org>, Paul Mackerras <paulus@samba.org>,
+       Josh Boyer <jwboyer@gmail.com>, Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, jirislaby@gmail.com,
+       Steven Rostedt <rostedt@goodmis.org>, tglx@linutronix.de,
+       Len Brown <lenb@kernel.org>
+Subject: Re: RFC: starting a kernel-testers group for newbies
+Message-ID: <20080509193043.GA22445@beyonder.ift.unesp.br>
+Mail-Followup-To: Mark Lord <lkml@rtr.ca>,
+	"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Adrian Bunk <bunk@kernel.org>, Paul Mackerras <paulus@samba.org>,
+	Josh Boyer <jwboyer@gmail.com>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, davem@davemloft.net,
+	linux-kernel@vger.kernel.org, jirislaby@gmail.com,
+	Steven Rostedt <rostedt@goodmis.org>, tglx@linutronix.de,
+	Len Brown <lenb@kernel.org>
+References: <18458.30641.838156.434563@cargo.ozlabs.ibm.com> <1209697815.2946.156.camel@vader.jdub.homelinux.org> <18458.37891.268060.691285@cargo.ozlabs.ibm.com> <20080502082936.GB2003@cs181133002.pp.htv.fi> <alpine.LFD.1.10.0805020750220.5994@woody.linux-foundation.org> <20080502154406.GA6545@beyonder.ift.unesp.br> <alpine.LFD.1.10.0805020859080.5994@woody.linux-foundation.org> <20080502171536.GA7041@beyonder.ift.unesp.br> <924EFEDD5F540B4284297C4DC59F3DEEFB8BF5@orsmsx423.amr.corp.intel.com> <48247CB3.5090800@rtr.ca>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48247CB3.5090800@rtr.ca>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Friday 2008-05-09 08:26, David Miller wrote:
->> My guess is that you see the effects of incomplete font table/position
->> switching, something along the lines a `cat /dev/urandom` would cause.
->> Using the very same kernel and boot params (vga=791 or anything to
->> switch it to fbcon), I cannot trigger the problem on opensuse.
+On Fri  9.May'08 at 12:32:51 -0400, Mark Lord wrote:
+> Pallipadi, Venkatesh wrote:
+>>  
+>>> -----Original Message-----
+>>> From: linux-kernel-owner@vger.kernel.org 
+>>> [mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Carlos R. Mafra
+>>> Sent: Friday, May 02, 2008 10:16 AM
+>>> To: Linus Torvalds
+>>> Cc: Adrian Bunk; Paul Mackerras; Josh Boyer; Arjan van de Ven; Andrew 
+>>> Morton; Rafael J. Wysocki; davem@davemloft.net; 
+>>> linux-kernel@vger.kernel.org; jirislaby@gmail.com; Steven Rostedt; 
+>>> Pallipadi, Venkatesh
+>>> Subject: Re: RFC: starting a kernel-testers group for newbies
+>>>
+>>> On Fri  2.May'08 at  9:28:08 -0700, Linus Torvalds wrote:
+>>>
+>>>> Quite frankly, it does sound like the hang happens somewhere 
+>>> around the 
+>>>> 	hpet_init
+>>>> 	hpet_acpi_add
+>>>> 	hpet_resources
+>>>> 	hpet_resources: 0xfed00000 is busy
+>>>>
+>>>> printk's you added (correct?) and we've had tons of issues 
+>>> with NO_HZ, so 
+>>>> at a guess it is timer-related.
+>>> It happens a bit before that because when it hangs it doesn't print the 
+>>> above lines, and when it does not hang these lines are
+>>> the ones right after the point where it hangs. 
+>>>> (And I assume it's stable if/once it gets past that boot hang issue? 
+>>> Yes you are right. When I have luck and the boot succeeds my Sony laptop
+>>> is rock solid and the kernel is wonderful (even the card reader works!).
+>>>
+>>>> That
+>>>> tends to mean that it's not some hardware instability, it's 
+>>> literally our 
+>>>> init code).
+>>> A few days ago I found this message in lkml in reply to a hpet patch
+>>> http://lkml.org/lkml/2007/5/7/361 in which the reporter also had a 
+>>> similar hang, which was cured by hpet=disable. 
+>>> So it is in my TODO list to try to check out if that patch is in the 
+>>> current -git and whether it can be reverted somehow (I added Venki to the 
+>>> Cc: now)
+>>>
+>>> Thanks a lot for the answer!
+>>
+>> It depends on whether we are HPET is being force detected based on the
+>> chipset or whether it was exported by the BIOS in ACPI table.
+>>
+>> If it was force enabled and above patch is having any effect, then you
+>> should see a message like
+>>> Force enabled HPET at base address 0xfed00000
+>>
+>> In any case, off late there seems to be quite a few breakages that are
+>> related to HPET/timer interrupts. One of them was on a system which has
+>> HPET being exported by BIOS
+>> http://bugzilla.kernel.org/show_bug.cgi?id=10409
+>> And the other one where we are force enabling based on chipset
+>> http://bugzilla.kernel.org/show_bug.cgi?id=10561
+>>
+>> And then we have hangs once in a while reports by you, Roman and Mark
+>> here
+>> http://bugzilla.kernel.org/show_bug.cgi?id=10377
+>> http://bugzilla.kernel.org/show_bug.cgi?id=10117
+> ..
 >
->Jan, there is code in drivers/video/console/fbcon.c:fbcon_do_set_font()
->which makes changes to vc->vc_video_erase_char, maybe that code needs
->to update the new vc->vc_scrl_erase_char you added?
+> Yeah.  This particular bug first appeared when NOHZ & HPET were added.
+> Somebody once suggested it had something to do with an SMI interrupt
+> happening in the midst of HPET calibration or some such thing.
 >
->It would be nice if you could audit the tree to see if any other cases
->have been missed like this as well.
->
-Try this patch please.
 
----
- drivers/video/console/fbcon.c |   10 +++++++++-
- 1 files changed, 9 insertions(+), 1 deletions(-)
+I said I was waiting for -rc1 to be released to send another email
+about my HPET problem, but curiously with v2.6.26-rc1-6-gafa26be 
+my laptop did not hang after 30+ boots and counting. 
 
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index ca2a543..774f803 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -2508,6 +2508,9 @@ static int fbcon_do_set_font(struct vc_data *vc, int w, int h,
- 			c = vc->vc_video_erase_char;
- 			vc->vc_video_erase_char =
- 			    ((c & 0xfe00) >> 1) | (c & 0xff);
-+			c = vc->vc_def_color;
-+			vc->vc_scrl_erase_char =
-+			    ((c & 0xFE00) >> 1) | (c & 0xFF);
- 			vc->vc_attr >>= 1;
- 		}
- 	} else if (!vc->vc_hi_font_mask && cnt == 512) {
-@@ -2538,9 +2541,14 @@ static int fbcon_do_set_font(struct vc_data *vc, int w, int h,
- 			if (vc->vc_can_do_color) {
- 				vc->vc_video_erase_char =
- 				    ((c & 0xff00) << 1) | (c & 0xff);
-+				c = vc->vc_def_color;
-+				vc->vc_scrl_erase_char =
-+				    ((c & 0xFF00) << 1) | (c & 0xFF);
- 				vc->vc_attr <<= 1;
--			} else
-+			} else {
- 				vc->vc_video_erase_char = c & ~0x100;
-+				vc->vc_scrl_erase_char = c & ~0x100;
-+			}
- 		}
- 
- 	}
--- 
-1.5.5.1
+Somewhere between 2.6.25-07000-(something) and the above kernel
+something happened which changed significantly the probability
+of hanging during boot. 
 
+I could not boot more than 3 times in
+a row without hanging with kernels up to 2.6.25-07000 (approximately),
+and now I am still booting v2.6.26-rc1-6-gafa26be a few times a day
+and no hangs yet.
+
+Yesterday I started a "reverse" bisection, trying to find which
+commit "fixed" it, but I still didn't finish (but it is past
+-7200).
+
+Of course I am not sure if after the 100th boot the latest -git
+won't hang but it definitely improved.
+
+> But nobody who works on the HPET code has ever shown more than a casual
+> interest in helping to track down and fix whatever the problem is.
+
+Well, I would like to thank Venki for his effort because he even
+answered some private emails from me about this issue and is 
+tracking the bugzillas about it.
