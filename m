@@ -1,21 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754404AbYEIHu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754601AbYEIH6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754404AbYEIHu3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 03:50:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751852AbYEIHuU
+	id S1754601AbYEIH6v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 03:58:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbYEIH6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 03:50:20 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:3097 "EHLO
-	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751800AbYEIHuS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 03:50:18 -0400
+	Fri, 9 May 2008 03:58:39 -0400
+Received: from mail.gmx.net ([213.165.64.20]:44104 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751873AbYEIH6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 03:58:38 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18H8TNq+2oHJY2q1SFuw7umlKSM98JP0Fth5mFBHH
+	O5E1KgbBhdMcHU
 Subject: Re: sysbench+mysql(oltp, readonly) 30% regression with 2.6.26-rc1
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Mike Galbraith <efault@gmx.de>
+From: Mike Galbraith <efault@gmx.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
        LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1210318362.15296.4.camel@marge.simson.net>
+In-Reply-To: <1210319417.13978.207.camel@twins>
 References: <1210136148.3453.59.camel@ymzhang>
 	 <1210177575.6525.4.camel@lappy.programming.kicks-ass.net>
 	 <1210228531.3453.124.camel@ymzhang>
@@ -25,38 +27,48 @@ References: <1210136148.3453.59.camel@ymzhang>
 	 <1210238622.13978.193.camel@twins>  <1210295779.3453.155.camel@ymzhang>
 	 <1210315870.13978.204.camel@twins>
 	 <1210318362.15296.4.camel@marge.simson.net>
+	 <1210319417.13978.207.camel@twins>
 Content-Type: text/plain
-Date: Fri, 09 May 2008 09:50:17 +0200
-Message-Id: <1210319417.13978.207.camel@twins>
+Date: Fri, 09 May 2008 09:58:34 +0200
+Message-Id: <1210319914.5250.2.camel@marge.simson.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-05-09 at 09:32 +0200, Mike Galbraith wrote:
-> On Fri, 2008-05-09 at 08:51 +0200, Peter Zijlstra wrote:
-> > > > > -rc1.  Do you have the fix below applied?
-> > > > 
-> > > > Oooh - good catch, that seems to be a post -rc1 merge.
-> > > > 
-> > > > Yes this is required.
-> > 
-> > > With below patch+previous_fix_weight_calc, the result is improved, but is still
-> > > about 10% worse than the one of pure 2.6.26-rc1.
-> > > Number of threads: 16
-> > >     read/write requests:                 6104336 (50867.11 per sec.)
-> > > 
-> > 
-> > So puzzling - could you try -git + fix_weight_calc, as I think that is
-> > what Mike tested and proved good on his Quad.
-> 
-> If he still has group scheduling enabled, my box agrees that there's a
-> regression.  I got mysql running, and tested with group scheduling both
-> enabled and disabled, results attached.  (for some reason, I can only
-> test up to 64 threads with mysql though)
 
-Hm, ok. Does the patch at hand improve or regress the group config for
-you?
+On Fri, 2008-05-09 at 09:50 +0200, Peter Zijlstra wrote:
+> On Fri, 2008-05-09 at 09:32 +0200, Mike Galbraith wrote:
+> > On Fri, 2008-05-09 at 08:51 +0200, Peter Zijlstra wrote:
+> > > > > > -rc1.  Do you have the fix below applied?
+> > > > > 
+> > > > > Oooh - good catch, that seems to be a post -rc1 merge.
+> > > > > 
+> > > > > Yes this is required.
+> > > 
+> > > > With below patch+previous_fix_weight_calc, the result is improved, but is still
+> > > > about 10% worse than the one of pure 2.6.26-rc1.
+> > > > Number of threads: 16
+> > > >     read/write requests:                 6104336 (50867.11 per sec.)
+> > > > 
+> > > 
+> > > So puzzling - could you try -git + fix_weight_calc, as I think that is
+> > > what Mike tested and proved good on his Quad.
+> > 
+> > If he still has group scheduling enabled, my box agrees that there's a
+> > regression.  I got mysql running, and tested with group scheduling both
+> > enabled and disabled, results attached.  (for some reason, I can only
+> > test up to 64 threads with mysql though)
+> 
+> Hm, ok. Does the patch at hand improve or regress the group config for
+> you?
+
+I'm testing got.today.
+
+You mean 46151122e0a2e80e5a6b2889f595e371fe2b600d?
+
+	-Mike
 
