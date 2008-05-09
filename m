@@ -1,65 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758815AbYEIL7u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761146AbYEIMCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758815AbYEIL7u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 07:59:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753535AbYEIL7m
+	id S1761146AbYEIMCU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 08:02:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754579AbYEIMCM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 07:59:42 -0400
-Received: from emh01.mail.saunalahti.fi ([62.142.5.107]:37596 "EHLO
-	emh01.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753255AbYEIL7l (ORCPT
+	Fri, 9 May 2008 08:02:12 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:40041 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753535AbYEIMCL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 07:59:41 -0400
-X-Greylist: delayed 668 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 May 2008 07:59:41 EDT
-Date: Fri, 9 May 2008 14:48:28 +0300
-From: Niko Tyni <ntyni@debian.org>
-To: linux-kernel@vger.kernel.org
-Cc: 480130@bugs.debian.org
-Subject: Re: m68knommu: rework definition of HZ
-Message-ID: <20080509114828.GA10694@rebekka>
-References: <fa.+a5tyUbZKH57Lq6WLCKJuVfWGU4@ifi.uio.no>
+	Fri, 9 May 2008 08:02:11 -0400
+Message-ID: <48243D86.7020504@keyaccess.nl>
+Date: Fri, 09 May 2008 14:03:18 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <fa.+a5tyUbZKH57Lq6WLCKJuVfWGU4@ifi.uio.no>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Antivirus: VAMS
+To: Takashi Iwai <tiwai@suse.de>
+CC: Glauber Costa <gcosta@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Pete Clements <clem@clem.clem-digital.net>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       ALSA devel <alsa-devel@alsa-project.org>
+Subject: Re: 2.6.26-rc1 regression: ISA DMA broken (bisected)
+References: <4823AAF2.7070102@keyaccess.nl> <s5hzlr0105c.wl%tiwai@suse.de>
+In-Reply-To: <s5hzlr0105c.wl%tiwai@suse.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 01, 2008 at 02:21:45AM +0000, Greg Ungerer wrote:
-> Rework the HZ definition to be more consistent with other architectures.
-> Non-kernel includers will see a constant HZ setting of 100.
+On 09-05-08 08:06, Takashi Iwai wrote:
 
-Something like this is needed for <asm-alpha/param.h> as well. 
-Perl and possibly python too fail to build with the 2.6.25 header 
-on alpha due to "'CONFIG_HZ' undeclared".
+> Thanks for catching it.  Yeah, the patch looks buggy.  We had an
+> implicit assumption that dev = NULL for ISA devices that require 24bit
+> DMA.
+> 
+> How about the patch below?  It's against the latest Linus git tree.
 
-Some details can be found in http://bugs.debian.org/480130 .
+Yes, works well. Thank you.
 
-> diff -Naurp linux-2.6.25/include/asm-m68knommu/param.h linux-2.6.25-uc0/include/asm-m68knommu/param.h
-> --- linux-2.6.25/include/asm-m68knommu/param.h	2008-04-17 12:49:44.000000000 +1000
-> +++ linux-2.6.25-uc0/include/asm-m68knommu/param.h	2008-04-28 17:00:21.000000000 +1000
-> @@ -1,13 +1,16 @@
->  #ifndef _M68KNOMMU_PARAM_H
->  #define _M68KNOMMU_PARAM_H
->  
-> -#define HZ CONFIG_HZ
-> -
->  #ifdef __KERNEL__
-> +#define HZ CONFIG_HZ
->  #define	USER_HZ		HZ
->  #define	CLOCKS_PER_SEC	(USER_HZ)
->  #endif
->  
-> +#ifndef HZ
-> +#define HZ	100
-> +#endif
-> +
->  #define EXEC_PAGESIZE	4096
->  
->  #ifndef NOGROUP
-
--- 
-Niko Tyni   ntyni@debian.org
+Rene.
