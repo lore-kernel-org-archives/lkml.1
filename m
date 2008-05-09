@@ -1,66 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758850AbYEIJtd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760210AbYEIJtv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758850AbYEIJtd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 05:49:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbYEIJt0
+	id S1760210AbYEIJtv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 05:49:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758974AbYEIJte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 05:49:26 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:40991 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752424AbYEIJtY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 05:49:24 -0400
-Date: Fri, 9 May 2008 11:49:22 +0200
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: linux-kernel@vger.kernel.org
-Cc: jirislaby@gmail.com
-Subject: Swapping in 2.6.26-rc1 oddities (but it is omnipresent bug)
-Message-ID: <20080509094922.GJ31771@ics.muni.cz>
+	Fri, 9 May 2008 05:49:34 -0400
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:40044 "EHLO
+	outbound3-wa4-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758146AbYEIJtc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 05:49:32 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-WSS-ID: 0K0LHYA-01-DPM-01
+Date: Fri, 9 May 2008 11:49:11 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: enable hpet=force for AMD SB400
+Message-ID: <20080509094911.GG5023@alberich.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Muni-Spam-TestIP: 147.251.3.109
-X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Fri, 09 May 2008 11:49:22 +0200 (CEST)
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 09 May 2008 09:49:07.0040 (UTC) FILETIME=[EC3AC600:01C8B1B9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+x86: enable hpet=force for ATI SB400
 
-I noticed that doing backup with rsync on my laptop from a local disk to a usb
-disk swaps out many processes. To advice of Jiri Slaby (cc:), I did some
-vmstat dumps.
+Add quirk to allow forced usage of HPET on ATI SB400.
+I stumbled over machines where HPET is enabled but not reported
+by BIOS. This patch configures the HPET base address and makes
+it known to the OS.
 
-More precisely, I run:
-i=0; while true; do cat /proc/vmstat > vmstat.$i; sleep 3; i=$[$i+1]; done
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+---
+ arch/x86/kernel/quirks.c |   29 +++++++++++++++++++++++++++++
+ 1 files changed, 29 insertions(+), 0 deletions(-)
 
-and in parallel, I run the rsync to make the backup.
-
-The vmstats can be found here:
-http://www.fi.muni.cz/~xhejtman/vmstat/
-(tar ball included at the end).
-
-Jiri stated that the kernel begins to swap (somewhere around vmstat.50) even
-if there are 70000 free pages.
-
-Any ideas?
-
-It more likely starts to swap the applications if I do not touch the laptop
-(actively using Firefox or something like).
-
-Also, the memory is occupied by disk caches not by the applications, so
-I think it should not be swapped.
-
-Moreover:
-$ cat /proc/sys/vm/swappiness 
-0
-
-$ cat /proc/sys/vm/dirty_writeback_centisecs 
-499
-
+diff --git a/arch/x86/kernel/quirks.c b/arch/x86/kernel/quirks.c
+index d89a648..5fe6bd5 100644
+--- a/arch/x86/kernel/quirks.c
++++ b/arch/x86/kernel/quirks.c
+@@ -65,6 +65,7 @@ static enum {
+ 	ICH_FORCE_HPET_RESUME,
+ 	VT8237_FORCE_HPET_RESUME,
+ 	NVIDIA_FORCE_HPET_RESUME,
++	ATI_FORCE_HPET_RESUME,
+ } force_hpet_resume_type;
+ 
+ static void __iomem *rcba_base;
+@@ -330,6 +331,31 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_8235,
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_8237,
+ 			 vt8237_force_enable_hpet);
+ 
++static void ati_force_hpet_resume(void)
++{
++	pci_write_config_dword(cached_dev, 0x14, 0xfed00000);
++	printk(KERN_DEBUG "Force enabled HPET at resume\n");
++}
++
++static void ati_force_enable_hpet(struct pci_dev *dev)
++{
++	u32 uninitialized_var(val);
++
++	if (!hpet_force_user || hpet_address || force_hpet_address)
++		return;
++
++	pci_write_config_dword(dev, 0x14, 0xfed00000);
++	pci_read_config_dword(dev, 0x14, &val);
++	force_hpet_address = val;
++	force_hpet_resume_type = ATI_FORCE_HPET_RESUME;
++	dev_printk(KERN_DEBUG, &dev->dev, "Force enabled HPET at 0x%lx\n",
++		   force_hpet_address);
++	cached_dev = dev;
++	return;
++}
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_IXP400_SMBUS,
++			 ati_force_enable_hpet);
++
+ /*
+  * Undocumented chipset feature taken from LinuxBIOS.
+  */
+@@ -397,6 +423,9 @@ void force_hpet_resume(void)
+ 	case NVIDIA_FORCE_HPET_RESUME:
+ 		nvidia_force_hpet_resume();
+ 		return;
++	case ATI_FORCE_HPET_RESUME:
++		ati_force_hpet_resume();
++		return;
+ 	default:
+ 		break;
+ 	}
 -- 
-Luká¹ Hejtmánek
+1.5.4.5
+
+
+
