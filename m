@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762263AbYEIE1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758100AbYEIEh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762263AbYEIE1d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 00:27:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760746AbYEIE1X
+	id S1758100AbYEIEh0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 00:37:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755218AbYEIEhN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 00:27:23 -0400
-Received: from an-out-0708.google.com ([209.85.132.249]:43405 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758949AbYEIE1W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 00:27:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=M3miEaW1jR50J0ZxLPIYlxyBny+PgMJdo7crfFQu8wNOwtKLIFwze1TkMCnDsRRwgxoAq/7wYU7w1qKKZlbakpwyJatkK9IlR6xWALdwjUmpkL2PvX08MCXRjSF/UiN2RXnwNU6EtUeKsQKFXtNw7kMQcM6LK+S2GR+esfIyRTg=
-Message-ID: <dd18b0c30805082127h51fb9264w62fb22139d2d35e9@mail.gmail.com>
-Date: Fri, 9 May 2008 04:27:21 +0000
-From: "Justin Mattock" <justinmattock@gmail.com>
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: [PATCH] Re: [git patches] libata updates - (improve post-reset device ready test) regression
-Cc: "Jeff Garzik" <jeff@garzik.org>,
-       "Markus Trippelsdorf" <markus@trippelsdorf.de>,
-       linux-ide@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Takashi Iwai" <tiwai@suse.de>,
+	Fri, 9 May 2008 00:37:13 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:45969 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751323AbYEIEhL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 00:37:11 -0400
+Message-ID: <4823D4EC.7060407@garzik.org>
+Date: Fri, 09 May 2008 00:37:00 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Tejun Heo <htejun@gmail.com>
+CC: Markus Trippelsdorf <markus@trippelsdorf.de>, linux-ide@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Takashi Iwai <tiwai@suse.de>,
        marc.c.dionne@gmail.com, dl9pf@gmx.de, bug-track@fisher-privat.net,
        sitsofe@yahoo.com
-In-Reply-To: <4823BE6F.1090307@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [PATCH] Re: [git patches] libata updates - (improve post-reset
+ device ready test) regression
+References: <20080506154847.GA15299@havoc.gtf.org> <20080507145616.GA2210@gentoox2.trippelsdorf.de> <48231DAF.7070900@garzik.org> <4823BD8E.40109@gmail.com>
+In-Reply-To: <4823BD8E.40109@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080506154847.GA15299@havoc.gtf.org>
-	 <20080507145616.GA2210@gentoox2.trippelsdorf.de>
-	 <48231DAF.7070900@garzik.org> <4823BD8E.40109@gmail.com>
-	 <4823BE6F.1090307@gmail.com>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 9, 2008 at 3:01 AM, Tejun Heo <htejun@gmail.com> wrote:
-> Tejun Heo wrote:
->>
->> Markus, Alexey, Marc, which controllers are you using?
->
-> Never mind, found the rest of the thread.
->
-> Thanks.
->
-> --
-> tejun
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Tejun Heo wrote:
+> This means that we need to make custom readiness tests for controllers 
+> using 0x77 or 0x7f.  Eeeek... Both groups of controllers are behaving in 
+> incorrect way.  Controllers shouldn't use 0x77 or 0x7f for either busy 
+> or ready states - it's invalid for both, yet, some use the 77/7f for 
+> busy while others use them for ready state.  Great.  :-(
 
-This patch here is what fixes this issue for the macbook pro.
-http://lkml.org/lkml/2008/5/8/245
-regards;
--- 
-Justin P. Mattock
+
+I think that's assuming too much?  PATA and SATA are quite different 
+here... in PATA the status is mostly the value from the device directly 
+off the wires.  in SATA, it may be from the device or from the 
+controller.  And "smart" or firmware-based controllers may generate 
+their own status, too, apart from the device's status.
+
+So that results in varied status returns, and not all the time is a 
+definite "ready" or "not ready" obvious.
+
+	Jeff
+
+
