@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934664AbYEIAue@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934352AbYEIAvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934664AbYEIAue (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 20:50:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760327AbYEIAuU
+	id S934352AbYEIAvr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 20:51:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757559AbYEIAvf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 20:50:20 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:46387 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755071AbYEIAuR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 20:50:17 -0400
-Message-ID: <48239FAC.8070707@zytor.com>
-Date: Thu, 08 May 2008 17:49:48 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Thu, 8 May 2008 20:51:35 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:38482 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756984AbYEIAvd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 20:51:33 -0400
+Date: Fri, 9 May 2008 09:50:06 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Mike Travis <travis@sgi.com>
+Cc: Adrian Bunk <bunk@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: sh migor_defconfig build breakage
+Message-ID: <20080509005006.GA29869@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Mike Travis <travis@sgi.com>, Adrian Bunk <bunk@kernel.org>,
+	Ingo Molnar <mingo@elte.hu>, linux-sh@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>
+References: <20080508203949.GC22887@cs181133002.pp.htv.fi> <48236E59.8070400@sgi.com> <4823711D.70401@sgi.com> <482376BC.2000404@sgi.com> <48237ADE.3090703@sgi.com>
 MIME-Version: 1.0
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-CC: Rufus & Azrael <rufus-azrael@numericable.fr>, Ingo Molnar <mingo@elte.hu>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [2.6.25-git18 => 2.6.26-rc1-git1] Xorg crash with	xf86MapVidMem
- error
-References: <924EFEDD5F540B4284297C4DC59F3DEE010057B4@orsmsx423.amr.corp.intel.com> <4822A6F7.7010704@numericable.fr> <B5B0CFF685D7DF46A05CF1678CFB42ED20E04609@orsmsx423.amr.corp.intel.com> <20080508192555.GA8643@linux-os.sc.intel.com> <48235DA1.5060809@numericable.fr> <20080508213722.GA28372@linux-os.sc.intel.com> <482373C5.1060202@zytor.com> <20080508215931.GA5035@jamoon.sc.intel.com> <20080508234016.GA14169@linux-os.sc.intel.com> <482392C4.7080901@zytor.com> <20080509003424.GA19710@linux-os.sc.intel.com>
-In-Reply-To: <20080509003424.GA19710@linux-os.sc.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48237ADE.3090703@sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Venki Pallipadi wrote:
+On Thu, May 08, 2008 at 03:12:46PM -0700, Mike Travis wrote:
+> Mike Travis wrote:
+> > Because some arch's have it defined as an inline function.  Perhaps the
+> > easiest would be to add to include/asm-sh/topology.h a simple define of
+> > cpu_to_node()?
 > 
-> What I meant was:
-> MTRRs are not really base and size. They are defined as base and mask.
-> Any addr is affected by mtrr if addr & mask == base & mask.
-> So, MTRR entry like
-> base = 0xf00000, mask = 0xff00000 with 36 bit physical address covers
-> 0xf00000-0xffffff, 0x10f00000-0x10ffffff, 0x20f00000-0x20ffffff, ....
+> Ahh, this is what caused the error.  In include/asm-generic/topology.h
+> cpu_to_node is only defined now if NUMA is turned off.
 > 
-> In this case if user is trying to mmap 0x1a000000-0x2a000000, we cannot really
-> cover this case with single parsing of variable address ranges. We will have
-> to go through the sub-ranges withing single variable range, which can be page
-> by page in worst case.
->  
+> #ifndef CONFIG_NUMA
+> 
+> /* Other architectures wishing to use this simple topology API should fill
+>    in the below functions as appropriate in their own <asm/topology.h> file. */
+> #ifndef cpu_to_node
+> #define cpu_to_node(cpu)        ((void)(cpu),0)
+> #endif
+> ...
+> 
+> So before my change arch 'sh' used the default define whether NUMA was
+> set or not.
+> 
+The dependency here is a bit vague in the first place. For UP NUMA the
+asm-generic definitions are perfectly fine, it's only the CONFIG_NUMA &&
+CONFIG_SMP cases where there is any point in doing anything more
+fine-grained. So while it would be trivial to add a CONFIG_SMP test here
+too, that's likely to break all of the other NUMA platforms.
 
-In practice, though, such MTRRs are never seen.  Even in the presence of 
-such pathological MTRRs, I'm sure one can figure out a *much* smarter 
-overlap algorithm.  I'd have to sit down and think about it, but I'm 
-pretty sure one could; the basic observation, though, is that any set 
-mask bit that are in a position <= floor(log2(range_len))-1 don't matter 
-at all, since the range WILL end up covering both the 0 and the 1 case 
-in this bit position.  At this point, you can test only a limited number 
-of points (I *believe* you can reduce it down to only the beginning and 
-the end, but I haven't proven that, so don't count on it yet.)
-
-The key, of course, is to look for the case of multiple MTRRs matching 
-the range.
-
-	-hpa
+So while sh can use the asm-generic definitions in the UP case, it
+obviously can't on SMP. The easiest option for now is to just stub the
+asm-generic bits in to asm-sh/topology.h under a CONFIG_NUMA ifdef and
+then add more reasonable definitions for the SMP cases.
