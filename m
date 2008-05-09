@@ -1,108 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756466AbYEII6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbYEIJCr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756466AbYEII6u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 04:58:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbYEII6m
+	id S1756793AbYEIJCr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 05:02:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752754AbYEIJCk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 04:58:42 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46680 "EHLO mx3.mail.elte.hu"
+	Fri, 9 May 2008 05:02:40 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:35165 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752262AbYEII6k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 04:58:40 -0400
-Date: Fri, 9 May 2008 10:58:24 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Rene Herman <rene.herman@keyaccess.nl>, Glauber Costa <gcosta@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Pete Clements <clem@clem.clem-digital.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       ALSA devel <alsa-devel@alsa-project.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: 2.6.26-rc1 regression: ISA DMA broken (bisected)
-Message-ID: <20080509085824.GF2592@elte.hu>
-References: <4823AAF2.7070102@keyaccess.nl> <s5hzlr0105c.wl%tiwai@suse.de> <20080509085511.GE2592@elte.hu>
+	id S1752673AbYEIJCj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 05:02:39 -0400
+Date: Fri, 9 May 2008 12:01:07 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>
+Cc: linux-kernel@vger.kernel.org, shemminger@linux-foundation.org
+Subject: Re: build issue #349 for v2.6.26-rc1-279-g28a4acb :
+Message-ID: <20080509090107.GN22887@cs181133002.pp.htv.fi>
+References: <200805091033.55132.toralf.foerster@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080509085511.GE2592@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200805091033.55132.toralf.foerster@gmx.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, May 09, 2008 at 10:33:52AM +0200, Toralf Förster wrote:
+> Hello,
+> 
+> the build (.config attached) failed, make ends with :
+> ...
+>   CC      arch/x86/lib/usercopy_32.o
+>   AR      arch/x86/lib/lib.a
+>   LD      vmlinux.o
+>   MODPOST vmlinux.o
+> WARNING: modpost: Found 1 section mismatch(es).
+> To see full details build your kernel with:
+> 'make CONFIG_DEBUG_SECTION_MISMATCH=y'
+>   GEN     .version
+>   CHK     include/linux/compile.h
+>   UPD     include/linux/compile.h
+>   CC      init/version.o
+>   LD      init/built-in.o
+>   LD      .tmp_vmlinux1
+> drivers/built-in.o: In function `apanel_detach_client':
+> apanel.c:(.text+0x105506): undefined reference to `led_classdev_unregister'
+> drivers/built-in.o: In function `apanel_probe':
+> apanel.c:(.text+0x1057b9): undefined reference to `led_classdev_register'
+> make: *** [.tmp_vmlinux1] Error 1
+>...
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Thanks for the report.
 
-> good catch! Queued it up for testing. Jesse, do you concur?
+That's a known CONFIG_X86_RDC321X bug.
 
-here's the patch below, tidied up.
+I'll check where the best fix by Roman is stuck.
 
-	Ingo
+cu
+Adrian
 
-------------------------------->
-Subject: x86/pci: fix broken ISA DMA
-From: Takashi Iwai <tiwai@suse.de>
-Date: Fri, 09 May 2008 08:06:55 +0200
+-- 
 
-Rene Herman reported:
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-> commit 8779f2fc3b84ebb6c5181fb13d702e9944c16069
->
-> "x86: don't try to allocate from DMA zone at first"
->
-> breaks all of ISA DMA. Or all of ALSA ISA DMA at least. All
-> ISA soundcards are silent following that commit -- no error
-> messages, everything appears fine, just silence.
-
-That patch is buggy. We had an implicit assumption that
-dev = NULL for ISA devices that require 24bit DMA.
-
-The recent work on x86 dma_alloc_coherent() breaks the ISA DMA buffer
-allocation, which is represented by "dev = NULL" and requires 24bit
-DMA implicitly.
-
-Bisected-by: Rene Herman <rene.herman@keyaccess.nl>
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/pci-dma.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
-
-Index: linux-x86.q/arch/x86/kernel/pci-dma.c
-===================================================================
---- linux-x86.q.orig/arch/x86/kernel/pci-dma.c
-+++ linux-x86.q/arch/x86/kernel/pci-dma.c
-@@ -386,11 +386,13 @@ dma_alloc_coherent(struct device *dev, s
- 	if (dma_alloc_from_coherent_mem(dev, size, dma_handle, &memory))
- 		return memory;
- 
--	if (!dev)
-+	if (!dev) {
- 		dev = &fallback_dev;
-+		gfp |= GFP_DMA;
-+	}
- 	dma_mask = dev->coherent_dma_mask;
- 	if (dma_mask == 0)
--		dma_mask = DMA_32BIT_MASK;
-+		dma_mask = (gfp & GFP_DMA) ? DMA_24BIT_MASK : DMA_32BIT_MASK;
- 
- 	/* Device not DMA able */
- 	if (dev->dma_mask == NULL)
-@@ -404,7 +406,7 @@ dma_alloc_coherent(struct device *dev, s
- 	   larger than 16MB and in this case we have a chance of
- 	   finding fitting memory in the next higher zone first. If
- 	   not retry with true GFP_DMA. -AK */
--	if (dma_mask <= DMA_32BIT_MASK)
-+	if (dma_mask <= DMA_32BIT_MASK && !(gfp & GFP_DMA))
- 		gfp |= GFP_DMA32;
- #endif
- 
