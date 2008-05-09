@@ -1,105 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756530AbYEIWn1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759975AbYEIWn7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756530AbYEIWn1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 18:43:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753565AbYEIWnP
+	id S1759975AbYEIWn7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 18:43:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754949AbYEIWnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 18:43:15 -0400
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:34530 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751590AbYEIWnO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 18:43:14 -0400
-Date: Fri, 09 May 2008 15:43:39 -0700
-From: Matheos Worku <Matheos.Worku@Sun.COM>
-Subject: Re: NIU - Sun Neptune 10g - Transmit timed out reset (2.6.24)
-In-reply-to: <4824D1E1.10007@sun.com>
-To: Matheos Worku <Matheos.Worku@Sun.COM>
-Cc: Jesper Krogh <jesper@krogh.cc>, David Miller <davem@davemloft.net>,
-       yhlu.kernel@gmail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Message-id: <4824D39B.6040006@sun.com>
-MIME-version: 1.0
-Content-type: text/plain; format=flowed; charset=ISO-8859-1
-Content-transfer-encoding: 7BIT
-X-Accept-Language: en-us, en
-References: <86802c440805071130m62c1f4edydb3316dac4a2aba2@mail.gmail.com>
- <20080507.141521.193714938.davem@davemloft.net> <482498D5.9060008@krogh.cc>
- <20080509.143229.174354251.davem@davemloft.net> <4824C936.9000103@krogh.cc>
- <4824CBA1.8040703@sun.com> <4824CCF0.5050302@krogh.cc> <4824D1E1.10007@sun.com>
-User-Agent: Mozilla Thunderbird 1.0.7-1.4.1 (X11/20050929)
+	Fri, 9 May 2008 18:43:49 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51494 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753615AbYEIWns (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 18:43:48 -0400
+From: Roland McGrath <roland@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+X-Fcc: ~/Mail/linus
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: [PATCH] x86 user_regset_view table fix for ia32 on 64-bit
+X-Zippy-Says: My LESLIE GORE record is BROKEN..
+Message-Id: <20080509224344.152FD26FA85@magilla.localdomain>
+Date: Fri,  9 May 2008 15:43:44 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matheos Worku wrote:
+The user_regset_view table for the 32-bit regsets on the 64-bit build had
+the wrong sizes for the FP regsets.  This bug had no user-visible effect
+(just on kernel modules using the user_regset interfaces and the like).
+But the fix is trivial and risk-free.
 
-> Jesper Krogh wrote:
->
->> Matheos Worku wrote:
->>
->>> Jesper Krogh wrote:
->>>
->>>> David Miller wrote:
->>>>
->>>>> From: Jesper Krogh <jesper@krogh.cc>
->>>>> Date: Fri, 09 May 2008 20:32:53 +0200
->>>>>
->>>>>> When it works I doesnt seem to be able to get it pass 500MB/s.
->>>>>
->>>>>
->>>>>
->>>>> With this card you really need multiple cpus and multiple threads
->>>>> sending data through the card in order to fill the 10Gb pipe.
->>>>>
->>>>> Single connections will not fill the pipe.
->>>>
->>>>
->>>>
->>>> The server is a Sun X4600 with 8 x dual-core CPU's, setup with 64
->>>> NFS-threads. The other end of the fiber goes into a switch with 
->>>> gigabit
->>>> ports connected to 48 dual-core cpus. The test was done doing a dd 
->>>> on a
->>>> 4.5GB file from the server to /dev/null on the clients.
->>>
->>>
->>>
->>> Are you doing a TX or RX (with respect to the 10G if)?
->>
->>
->>
->> Thats a transmit.. from the NFS server to the clients.
->
-Is MSI/MSI-X enabled on the kernel? I have noticed that it was not 
-enabled on Gutsy-SPARC?
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ arch/x86/kernel/ptrace.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
---Matheos
-
->
-> I have observed TX throughput degradation (and increased CPU 
-> utilization)  occurs with increased # of connections, when CPU count > 
-> 4 CPUs.  I don't think it is related to the driver (or HW). A while 
-> ago I prototyped a driver which drops all UDP TX packets and the 
-> throughput degradation (and CPU utilization increase) behavior 
-> occurred though the driver was not doing much work.   LSO/TSO seems to 
-> help with the situation though. With LSO disabled, I have observed the 
-> issue on several 10G nics.
->
-> Regards
-> Matheos
->
->
->>
->> Jesper
->
->
->
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
-
+diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
+index fb03ef3..a7835f2 100644
+--- a/arch/x86/kernel/ptrace.c
++++ b/arch/x86/kernel/ptrace.c
+@@ -1303,6 +1303,9 @@ static const struct user_regset_view user_x86_64_view = {
+ #define genregs32_get		genregs_get
+ #define genregs32_set		genregs_set
+ 
++#define user_i387_ia32_struct	user_i387_struct
++#define user32_fxsr_struct	user_fxsr_struct
++
+ #endif	/* CONFIG_X86_64 */
+ 
+ #if defined CONFIG_X86_32 || defined CONFIG_IA32_EMULATION
+@@ -1315,13 +1318,13 @@ static const struct user_regset x86_32_regsets[] = {
+ 	},
+ 	[REGSET_FP] = {
+ 		.core_note_type = NT_PRFPREG,
+-		.n = sizeof(struct user_i387_struct) / sizeof(u32),
++		.n = sizeof(struct user_i387_ia32_struct) / sizeof(u32),
+ 		.size = sizeof(u32), .align = sizeof(u32),
+ 		.active = fpregs_active, .get = fpregs_get, .set = fpregs_set
+ 	},
+ 	[REGSET_XFP] = {
+ 		.core_note_type = NT_PRXFPREG,
+-		.n = sizeof(struct user_i387_struct) / sizeof(u32),
++		.n = sizeof(struct user32_fxsr_struct) / sizeof(u32),
+ 		.size = sizeof(u32), .align = sizeof(u32),
+ 		.active = xfpregs_active, .get = xfpregs_get, .set = xfpregs_set
+ 	},
