@@ -1,119 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760101AbYEIPI0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760739AbYEIPJw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760101AbYEIPI0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 11:08:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbYEIPIS
+	id S1760739AbYEIPJw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 11:09:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753187AbYEIPJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 11:08:18 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:6838 "EHLO
-	outbound2-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751675AbYEIPIR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 11:08:17 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
-X-WSS-ID: 0K0LWP7-01-OPH-01
-Date: Fri, 9 May 2008 17:07:59 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Carl Love <cel@us.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Arnd Bergmann <arnd@arndb.de>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>
-Subject: Re: [Cbe-oss-dev]  [PATCH] Updated: Reworked Cell OProfile: SPU
-	mutex lock fix
-Message-ID: <20080509150759.GL24041@erda.amd.com>
-References: <1209587712.7531.42.camel@carll-linux-desktop>
-MIME-Version: 1.0
+	Fri, 9 May 2008 11:09:43 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:60972 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752928AbYEIPJk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 11:09:40 -0400
+Date: Fri, 9 May 2008 10:09:39 -0500
+From: Russ Anderson <rja@sgi.com>
+To: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Tony Luck <tony.luck@intel.com>, Christoph Lameter <clameter@sgi.com>,
+       Russ Anderson <rja@sgi.com>
+Subject: [PATCH 0/3] ia64: Migrate data off physical pages with correctable errors v3
+Message-ID: <20080509150937.GA16523@sgi.com>
+Reply-To: Russ Anderson <rja@sgi.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1209587712.7531.42.camel@carll-linux-desktop>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 09 May 2008 15:07:59.0794 (UTC) FILETIME=[783D5920:01C8B1E6]
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please see my comments below.
+	Migrate data off physical pages with corrected memory errors (Version 3)
 
--Roberta
+Version 3 changes:
+	page.cleanup.v3: 
+	    - Put PAGE_FLAGS definitions back in page-flags.h 
+		(per Christoph Lameter's request).
 
-On 30.04.08 13:35:12, Carl Love wrote:
+	cpe.migrate.v3
+	    - Use putback_lru_pages() when returning an individual page
+		(per Christoph Lameter's request).
+	    - Code style cleanup 
+		(per Pekka Enberg's request).
+	    - Use strict_strtoul()
+		(per Pekka Enberg's request).
+	    - Added locking
+		(per Pekka Enberg's request).
+	    - Use /sys/kernel/ instead of /proc
+		(per Pekka Enberg's request).
 
-[...]
+Version 2 changes:
 
-> -int spu_sync_stop(void)
-> +void spu_sync_stop(void)
->  {
->  	unsigned long flags = 0;
-> -	int ret = spu_switch_event_unregister(&spu_active);
-> -	if (ret) {
-> -		printk(KERN_ERR "SPU_PROF: "
-> -			"%s, line %d: spu_switch_event_unregister returned %d\n",
-> -			__FUNCTION__, __LINE__, ret);
-> -		goto out;
-> -	}
-> +
-> +	/* Ignoring the return value from the unregister
-> +	 * call.  A failed return value simply says there
-> +	 * was no registered event.  Hence there will not
-> +	 * be any calls to process a switch event that
-> +	 * could cause a problem.
-> +	 */
-> +	spu_switch_event_unregister(&spu_active);
+	Broke the page.discard patch into two patches, per request by 
+	Christoph Lameter.  
 
-Better to use this here, to show the return value is ignored:
+	page.cleanup.v2: 
+	    - minor clean-up of page flags in page_alloc.c.  
 
-       (void)spu_switch_event_unregister(...)
+	page.discard.v2:
+	    - Updated for recent page flag clean-up.
+	    - Removed the change to the sysinfo struct.
 
->  
->  	spin_lock_irqsave(&cache_lock, flags);
-> -	ret = release_cached_info(RELEASE_ALL);
-> +	release_cached_info(RELEASE_ALL);
+	cpe.migrate.v2
+	    - Added /proc/badram interface to print page discard
+	      information and to free bad pages.
 
-Dito.
+Purpose:
 
->  	spin_unlock_irqrestore(&cache_lock, flags);
-> -out:
->  	pr_debug("spu_sync_stop -- done.\n");
-> -	return ret;
-> +	return;
->  }
->  
->  
-> Index: Cell_kernel_4_15_2008/arch/powerpc/oprofile/op_model_cell.c
-> ===================================================================
-> --- Cell_kernel_4_15_2008.orig/arch/powerpc/oprofile/op_model_cell.c
-> +++ Cell_kernel_4_15_2008/arch/powerpc/oprofile/op_model_cell.c
-> @@ -1191,15 +1191,15 @@ static int cell_sync_start(void)
->  	if (spu_cycle_reset)
->  		return spu_sync_start();
->  	else
-> -		return DO_GENERIC_SYNC;
-> +		return 0;
->  }
->  
-> -static int cell_sync_stop(void)
-> +static void cell_sync_stop(void)
->  {
->  	if (spu_cycle_reset)
-> -		return spu_sync_stop();
-> -	else
-> -		return 1;
-> +		spu_sync_stop();
+	Physical memory with corrected errors may decay over time into
+	uncorrectable errors.  The purpose of this patch is to move the
+	data off pages with correctable memory errors before the memory
+	goes bad.
 
-Same here.
+The patches:
 
-> +
-> +	return;
->  }
->  
->  struct op_powerpc_model op_model_cell = {
+  [1/3] page.cleanup.v2: Minor clean-up of page flags in mm/page_alloc.c
 
-[...]
+	Minor source code clean-up of page flags in mm/page_alloc.c.
+	No functional change.
+
+  [2/3] page.discard.v2: Avoid putting a bad page back on the LRU.
+
+	page.discard are the arch independent changes.  It adds a new
+	page flag (PG_memerror) to mark the page as bad and prevent it
+	from being put back on the LRU.  PG_memerror is only defined
+	on 64 bit architectures. 
+
+  [3/3] cpe.migrate.v2: Call migration code on correctable errors
+
+	cpe.migrate are the IA64 specific changes.  It connects the CPE
+	handler to the page migration code.  It is implemented as a kernel
+	loadable module, similar to the mca recovery code (mca_recovery.ko),
+	so that it can be removed to turn off the feature.  Add /proc/badram
+	to print page discard and to free bad pages.
+
+Comments:
+
+	There is always an issue of how agressive the code should be on
+	migrating pages.  Should it migrate on the first correctable error,
+	or wait for some threshold?  Reasonable people may disagree on the
+	threshold and the "right" answer may be hardware specific.  The 
+	decision making is confined to the cpe_migrate.c code.  It is
+	currently set to migrate on the first correctable error.
+
+	Only pages that can be isolated on the LRU are migrated.  Other
+	pages, such as compound pages, are not migrated.  That functionality
+	could be a future enhancement.
+
+	/proc/badram is a way of displaying information about the bad
+	memory and freeing the bad pages.  A userspace program (or sysadmin)
+	could determine if a discarded page needs to be freed.
+
+Sample output:
+
+	linux> insmod cpe_migrate.ko
+	linux> cat /proc/badram			// This shows no discarded memory
+	Bad RAM: 0 kB, 0 pages marked bad
+	List of bad physical pages
+
+	linux> ./errsingle -c 6 -s 1		// Inject correctable errors on
+						// six pages.
+	linux> cat /proc/badram
+	Bad RAM: 384 kB, 6 pages marked bad
+	List of bad physical pages
+	  0x06048e10000  0x06870c40000  0x06870c20000  0x06870c10000  0x06007f00000
+	  0x06042070000
+
+	linux> echo 0x06870c20000 > /proc/badram	// Free one of the pages
+
+	linux> cat /proc/badram			// Five pages remain on the list
+	Bad RAM: 320 kB, 5 pages marked bad
+	List of bad physical pages
+	  0x06048e10000  0x06870c40000  0x06870c10000  0x06007f00000  0x06042070000
+
+	linux> echo 0 > /proc/badram		// Free all the bad pages
+	linux> cat /proc/badram			// All the pages are freed
+	Bad RAM: 0 kB, 0 pages marked bad
+	List of bad physical pages
+
+
+
+Flow of the code description (while testing on IA64):
+
+	1) A user level application test program allocates memory and
+	   passes the virtual address of the memory to the error injection
+	   driver.
+
+	2) The error injection driver converts the virtual address to
+	   physical, functions the Altix hardware to modify the ECC for the
+	   physical page, creating a correctable error, and returns to the
+	   user application.
+
+	3) The user application reads the memory.
+
+	4) The Altix hardware detects the correctable error and interrupts
+	   prom.  SAL builds a CPU error record, then sends a CPE 
+	   interrupt to linux.
+
+	5) The linux CPE handler calls the cpe_migrate module (if installed).
+
+	6) cpe_migrate parses the physical address from the CPE record and
+	   adds the address to the migrate list (if not already on the list)
+	   and schedules the worker thread (cpe_enable_work).
+
+	7) cpe_enable_work calls ia64_mca_cpe_move_page.
+
+	8) ia64_mca_cpe_move_page validates the physical address, converts
+	   to page, sets PG_memerror flag and calls the migration code
+	   (migrate_prep(), isolate_lru_page(), and migrate_pages().  If the
+	   page migrates successfully, the bad page is added to badpagelist.
+
+	9) Because PG_memerror is set, the bad page is not added back on the LRU
+	   due to checks in lru_cache_add() and lru_cache_add_active().
 
 -- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
-
+Russ Anderson, OS RAS/Partitioning Project Lead  
+SGI - Silicon Graphics Inc          rja@sgi.com
