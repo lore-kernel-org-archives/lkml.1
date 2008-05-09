@@ -1,45 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763866AbYEIBgd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934463AbYEIBhS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763866AbYEIBgd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 21:36:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755634AbYEIBgU
+	id S934463AbYEIBhS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 21:37:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760545AbYEIBgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 21:36:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53095 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754316AbYEIBgT (ORCPT
+	Thu, 8 May 2008 21:36:54 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:51172 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760030AbYEIBgx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 21:36:19 -0400
-Date: Thu, 8 May 2008 18:36:11 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Dave Airlie <airlied@gmail.com>
-cc: kernel list <linux-kernel@vger.kernel.org>,
-       Gary Hade <garyhade@us.ibm.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: regression fixed by using pci=rom
-In-Reply-To: <21d7e9970805081654h6de38d58q5ad3b6d3520b45f1@mail.gmail.com>
-Message-ID: <alpine.LFD.1.10.0805081834490.2940@woody.linux-foundation.org>
-References: <21d7e9970805081654h6de38d58q5ad3b6d3520b45f1@mail.gmail.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 8 May 2008 21:36:53 -0400
+Message-ID: <4823AAF2.7070102@keyaccess.nl>
+Date: Fri, 09 May 2008 03:37:54 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Glauber Costa <gcosta@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Pete Clements <clem@clem.clem-digital.net>,
+       Takashi Iwai <tiwai@suse.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       ALSA devel <alsa-devel@alsa-project.org>
+Subject: 2.6.26-rc1 regression: ISA DMA broken (bisected)
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Good day.
+
+commit 8779f2fc3b84ebb6c5181fb13d702e9944c16069
+
+"x86: don't try to allocate from DMA zone at first"
+
+breaks all of ISA DMA. Or all of ALSA ISA DMA at least. All
+ISA soundcards are silent following that commit -- no error
+messages, everything appears fine, just silence.
+
+It won't just revert due to 32/64 merge.
+
+Rene.
 
 
-On Fri, 9 May 2008, Dave Airlie wrote:
->
-> A user just reported this bug
-> 
-> http://bugs.freedesktop.org/show_bug.cgi?id=15523
-> 
-> He says using pci=rom fixes the regression, do we truly have to start
-> booting machines with this, sucks to be a distro..
-
-Yeah, that commit he bisected to is bogus crap.
-
-I'll revert it.
-
-		Linus
