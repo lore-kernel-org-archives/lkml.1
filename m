@@ -1,63 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758686AbYEIOrz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757437AbYEIOyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758686AbYEIOrz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 10:47:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751909AbYEIOrp
+	id S1757437AbYEIOyY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 10:54:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbYEIOyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 10:47:45 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36569 "EHLO mx2.mail.elte.hu"
+	Fri, 9 May 2008 10:54:12 -0400
+Received: from rtr.ca ([76.10.145.34]:2389 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751457AbYEIOro (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 10:47:44 -0400
-Date: Fri, 9 May 2008 16:47:22 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: WANG Cong <xiyou.wangcong@gmail.com>, toralf.foerster@gmx.de,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Mike Travis <travis@sgi.com>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>
-Subject: Re: build issue #380 for v2.6.26-rc1-279-g28a4acb : mach-voyager:
-	multiple definition of `phys_cpu_present_map'
-Message-ID: <20080509144722.GA20566@elte.hu>
-References: <200805091114.00244.toralf.foerster@gmx.de> <20080509095244.GJ2543@hacking> <20080509095837.GB19617@elte.hu> <1210342946.3069.4.camel@localhost.localdomain>
+	id S1751227AbYEIOyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 10:54:11 -0400
+Message-ID: <48246591.7040209@rtr.ca>
+Date: Fri, 09 May 2008 10:54:09 -0400
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1210342946.3069.4.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: =?UTF-8?B?IkouQS4gTWFnYWxsw7NuIg==?= <jamagallon@ono.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Linus-IDE <linux-ide@vger.kernel.org>
+Subject: Re: [PATCH] Re: [git patches] libata updates - (improve post-reset
+ device ready test) regression
+References: <20080506154847.GA15299@havoc.gtf.org>	<20080507145616.GA2210@gentoox2.trippelsdorf.de>	<48231DAF.7070900@garzik.org> <20080508234300.3c2a38af@werewolf.home>
+In-Reply-To: <20080508234300.3c2a38af@werewolf.home>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-
-> > >  /* Bitmask of CPUs present in the system - exported by i386_syms.c, used
-> > >   * by scheduler but indexed physically */
-> > > -cpumask_t phys_cpu_present_map = CPU_MASK_NONE;
-> > > +static cpumask_t phys_cpu_present_map = CPU_MASK_NONE;
-> > 
-> > i've got the one below queued up but it's stalled as it could easily be 
-> > wrong and there's no ack from James yet and there's been discussion back 
-> > and forth. James, what do you suggest?
-
-> I already told you that this was incorrect.  This is what I sent as 
-> the replacement on 28 April and I didn't hear back from you.
+J.A. Magallón wrote:
+> On Thu, 08 May 2008 11:35:11 -0400, Jeff Garzik <jeff@garzik.org> wrote:
 > 
-> http://marc.info/?l=linux-kernel&m=120941111400620
+>> Markus Trippelsdorf wrote:
+>>>> Tejun Heo (12):
+>>>>       libata: improve post-reset device ready test
+>>> This commit (78ab88f04f44bed566d51dce0c7cbfeff6449a06) causes a long
+>>> boot delay with my onboard Promise controller. It seems like libata
+>>> probes for a nonexisting PATA drive...
+>>>
+> 
+> I also had this patch collected from LKML, that still applies to -git6.
+> Is it really needed ?
+> ref: http://marc.info/?l=linux-ide&m=120913178617926&w=2
+..
+> --- upstream/drivers/ata/libata-eh.c	2008-04-30 17:35:36.000000000 -0400
+> +++ linux/drivers/ata/libata-eh.c	2008-04-30 17:35:45.000000000 -0400
+> @@ -1312,8 +1312,7 @@
+>  		err_mask |= AC_ERR_ATA_BUS;
+>  		action |= ATA_EH_RESET;
+>  	}
+> -	if (serror &
+> -	    (SERR_DATA_RECOVERED | SERR_COMM_RECOVERED | SERR_DATA)) {
+> +	if (serror & (SERR_DATA_RECOVERED | SERR_DATA)) {
+>  		err_mask |= AC_ERR_ATA_BUS;
+>  		action |= ATA_EH_RESET;
+>  	}
 
-ok - picked it up for testing - could you please send a signoff line as 
-well?
+..
 
-Alexey, you moved those SMP variables, do you agree with the patch from 
-James? (it looks good to me)
+The original problem I had, which prompted this patch, eventually was
+resolved in other ways.  But I do think that a hw-recovered bit in SError
+is not a good reason to reset everything.
 
-	Ingo
+Tejun suggested that we still want to know about such errors,
+and eventually do something if they repeat often enough.
+But doing a port/link reset every single time ? 
+
+> @@ -1924,7 +1923,7 @@
+>  	}
+>  
+>  	if (ehc->i.serror)
+> -		ata_port_printk(ap, KERN_ERR,
+> +		ata_link_printk(link, KERN_ERR,
+>  		  "SError: { %s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s}\n",
+>  		  ehc->i.serror & SERR_DATA_RECOVERED ? "RecovData " : "",
+>  		  ehc->i.serror & SERR_COMM_RECOVERED ? "RecovComm " : "",
+> 
+..
+
+That portion of the patch is still a very good idea.
+
+Cheers
