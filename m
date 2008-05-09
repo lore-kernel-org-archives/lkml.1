@@ -1,65 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934352AbYEIAvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934740AbYEIAwp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934352AbYEIAvr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 20:51:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757559AbYEIAvf
+	id S934740AbYEIAwp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 20:52:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763467AbYEIAwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 20:51:35 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:38482 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756984AbYEIAvd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 20:51:33 -0400
-Date: Fri, 9 May 2008 09:50:06 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Mike Travis <travis@sgi.com>
-Cc: Adrian Bunk <bunk@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: sh migor_defconfig build breakage
-Message-ID: <20080509005006.GA29869@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Mike Travis <travis@sgi.com>, Adrian Bunk <bunk@kernel.org>,
-	Ingo Molnar <mingo@elte.hu>, linux-sh@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <20080508203949.GC22887@cs181133002.pp.htv.fi> <48236E59.8070400@sgi.com> <4823711D.70401@sgi.com> <482376BC.2000404@sgi.com> <48237ADE.3090703@sgi.com>
+	Thu, 8 May 2008 20:52:35 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:57141 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1757559AbYEIAwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 20:52:34 -0400
+Message-ID: <48239FFD.7020408@cn.fujitsu.com>
+Date: Fri, 09 May 2008 08:51:09 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48237ADE.3090703@sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Greg KH <gregkh@suse.de>
+CC: Len Brown <lenb@kernel.org>, Willy Tarreau <w@1wt.eu>,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Len Brown <len.brown@intel.com>
+Subject: Re: [patch 00/16] Linux 2.6.25 -stable review
+References: <20080508174122.GA855@suse.de> <20080508182233.GB2115@suse.de> <20080508183324.GA1874@1wt.eu> <200805081516.29907.lenb@kernel.org> <20080508194314.GA31149@suse.de>
+In-Reply-To: <20080508194314.GA31149@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 03:12:46PM -0700, Mike Travis wrote:
-> Mike Travis wrote:
-> > Because some arch's have it defined as an inline function.  Perhaps the
-> > easiest would be to add to include/asm-sh/topology.h a simple define of
-> > cpu_to_node()?
+Greg KH wrote:
+> On Thu, May 08, 2008 at 03:16:28PM -0400, Len Brown wrote:
+>> On Thursday 08 May 2008, Willy Tarreau wrote:
+>>> On Thu, May 08, 2008 at 11:22:33AM -0700, Greg KH wrote:
+>>>> On Thu, May 08, 2008 at 08:13:42PM +0200, Willy Tarreau wrote:
+>>>>> On Thu, May 08, 2008 at 10:41:22AM -0700, Greg KH wrote:
+>>>>>> This is the start of the stable review cycle for the 2.6.25.2 release.
+>>>>>> There are 16 patches in this series, all will be posted as a response to
+>>>>>> this one.  If anyone has any issues with these being applied, please let
+>>>>>> us know.  If anyone is a maintainer of the proper subsystem, and wants
+>>>>>> to add a Signed-off-by: line to the patch, please respond with it.
+>>>>> Greg, shouldn't we also queue this one (may be in a later version) ? It's
+>>>>> in mainline.
+>>>> What problem does it solve?
+>>> from what I see in the code, currently acpi_power_get_state() will return
+>>> 0 when setting resource to NULL, and some callers (eg: acpi_power_on())
+>>> will happily dereference resource if acpi_power_get_state() returns 0. So
+>>> I guess there are circumstances where we can oops.
+>>>
+>>>> Does Len want it in -stable?
+>>> I simply forgot to ask. I'm CCing him.
+>> This patch is correct.
+>>
+>> Go ahead and apply it -- it won't hurt anything.
+>> I don't think it will help anything in real-life either, though.
 > 
-> Ahh, this is what caused the error.  In include/asm-generic/topology.h
-> cpu_to_node is only defined now if NUMA is turned off.
+> Ok, because of that, I'll not apply it, we want patches that actually
+> fix reported problems.
 > 
-> #ifndef CONFIG_NUMA
-> 
-> /* Other architectures wishing to use this simple topology API should fill
->    in the below functions as appropriate in their own <asm/topology.h> file. */
-> #ifndef cpu_to_node
-> #define cpu_to_node(cpu)        ((void)(cpu),0)
-> #endif
-> ...
-> 
-> So before my change arch 'sh' used the default define whether NUMA was
-> set or not.
-> 
-The dependency here is a bit vague in the first place. For UP NUMA the
-asm-generic definitions are perfectly fine, it's only the CONFIG_NUMA &&
-CONFIG_SMP cases where there is any point in doing anything more
-fine-grained. So while it would be trivial to add a CONFIG_SMP test here
-too, that's likely to break all of the other NUMA platforms.
 
-So while sh can use the asm-generic definitions in the UP case, it
-obviously can't on SMP. The easiest option for now is to just stub the
-asm-generic bits in to asm-sh/topology.h under a CONFIG_NUMA ifdef and
-then add more reasonable definitions for the SMP cases.
+It's Ok for me. I found this when reading the code but not hitting a real-world
+problem.
+
+> thanks,
+> 
+> greg k-h
