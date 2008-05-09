@@ -1,53 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935612AbYEIGLx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765181AbYEIGW6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935612AbYEIGLx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 02:11:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764888AbYEIGLm
+	id S1765181AbYEIGW6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 02:22:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbYEIGWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 02:11:42 -0400
-Received: from ozlabs.org ([203.10.76.45]:58043 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759448AbYEIGLl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 02:11:41 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 9 May 2008 02:22:48 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40853 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752035AbYEIGWr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 02:22:47 -0400
+Date: Thu, 8 May 2008 23:22:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jesper Krogh <jesper@krogh.cc>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Many open/close on same files yeilds
+ "No such file or directory".
+Message-Id: <20080508232241.4b177abb.akpm@linux-foundation.org>
+In-Reply-To: <4823EA9E.6050703@krogh.cc>
+References: <4819E316.7000607@krogh.cc>
+	<4823DFA6.9010504@krogh.cc>
+	<20080508223635.523b8fa7.akpm@linux-foundation.org>
+	<4823EA9E.6050703@krogh.cc>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <18467.60177.91772.136339@cargo.ozlabs.ibm.com>
-Date: Fri, 9 May 2008 16:11:29 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: =?us-ascii?Q?Michal=20Simek?= <Monstr@seznam.cz>
-Cc: =?us-ascii?Q?Arnd=20Bergmann?= <arnd@arndb.de>,
-       =?us-ascii?Q?John=20Williams?= <john.williams@petalogix.com>,
-       =?us-ascii?Q?Matthew=20Wilcox?= <matthew@wil.cx>,
-       =?us-ascii?Q?Will=20Newton?= <will.newton@gmail.com>,
-       =?us-ascii?Q?Linux=20Kernel=20list?= <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, git@xilinx.com,
-       =?us-ascii?Q?Stephen=20Neuendorffer?= 
-	<stephen.neuendorffer@xilinx.com>,
-       =?us-ascii?Q?John=20Linn?= <John.Linn@xilinx.com>,
-       =?us-ascii?Q?Ulrich=20Drepper?= <drepper@redhat.com>
-Subject: Re: =?us-ascii?Q?OF=20files?=
-In-Reply-To: <5257.8247-18740-1017760922-1209828638@seznam.cz>
-References: <5257.8247-18740-1017760922-1209828638@seznam.cz>
-X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Simek writes:
+On Fri, 09 May 2008 08:09:34 +0200 Jesper Krogh <jesper@krogh.cc> wrote:
 
-> I tested OF files changes. I sent you some patches about.
+> Andrew Morton wrote:
+> >> My feeling is that the script below may reveal the bug on any "busy" 
+> >> volume, where busy is lots of activity in the OS-cache of the volume,
+> >> not on the actual drives.
+> > 
+> > By this do you mean that there has to be a lot of other activity on the
+> > system to reproduce it?  Stuff which is turning over memory?
 > 
-> I look at headers files too. Is it possible to move prom.h,
-> of_device.h and of_platform.h to asm-generic or linux folder? 
+> Yes, something like that. (sorry for not being able to be more
+> concrete). The applications has "high activity" on a few files, not
+> spread activity throughout the volume.
+> 
+> > Because one possiblity is that the cached dentry got reclaimed by memory
+> > pressure and we have some race bug which causes us to think that the file
+> > doesn't exist.
+> 
+> What can i do to explore this theory?
 
-We can move stuff to drivers/of and include/linux, but we should only
-move the parts that are truly architecture-independent.  We should not
-have anything like #ifdef CONFIG_PPC_PSERIES in the files in those
-directories.  If it needs an ifdef like that, then that part of the
-file should stay under arch/powerpc.
+Watch /proc/vmstat while the tests is running.  If the "*steal*" numbers
+are going up, the system is reclaiming memory.
 
-In other words, it's OK to split files and end up with more files than
-we have at present.  That's better than adding ifdefs.
+> Can I disable caching of dentries
+> and see it go away?
 
-Paul.
+Nope.
+
+> Does it fit the pattern that it is only the 
+> "open"-syscall that is hit (not read for example)?
+
+Yes.  open() will look up the filename in the dentry cache, read() wil not.
+ If name lookup has a race agaisnt dentry cache reclaim, something like
+this might happen.
+
+But it'd be damned odd.
+
+> > (That still shouldn't happen because the dentry should be marked
+> > recently-accessed, but perhaps the underlying inode gets reclaimed or
+> > something.  Grasping at straws here)
+> 
+> When I disabled the NFS-server and rand my "real-world" program on a
+> single processor (make -j 1). It ran through fine. It basically
+> gets around 20 million chunks out of differnet file and assemble the
+> chuncks in a few other files. This processes more or less 5 individual
+> sections, so make can run effectively with a concurrency of 5.
+> 
+> I dont know if there can be any technical reasons for not seeing it on
+> internal attached disks? (other than I just hadn't been able to
+> reproduce the same error conditions there.
+
+I can't think of any reason.
+
+I guess a suitable test would be to run your little test app and then read
+large files as fast as you can from as many disks as you can, to force
+memory reclaim.  If that triggers the bug, and the bug is more likely to
+trigger the faster you read those files, then we have a theory.
+
+Damned odd though.
