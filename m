@@ -1,47 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755747AbYEIAGL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934118AbYEIAGh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755747AbYEIAGL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 20:06:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754425AbYEIAFw
+	id S934118AbYEIAGh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 20:06:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933143AbYEIAGH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 20:05:52 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49774
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754322AbYEIAFv (ORCPT
+	Thu, 8 May 2008 20:06:07 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:41558 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932914AbYEIAGD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 20:05:51 -0400
-Date: Thu, 08 May 2008 17:05:45 -0700 (PDT)
-Message-Id: <20080508.170545.193703278.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Sparc
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Thu, 8 May 2008 20:06:03 -0400
+Subject: Re: [BUG 2.6.26-rc1] scsi (or sysfs or vm?) oops in sr_probe()
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
+In-Reply-To: <1209915560.16283.31.camel@localhost.localdomain>
+References: <481D9C69.8080902@garzik.org>
+	 <1209914732.16283.27.camel@localhost.localdomain>
+	 <1209915560.16283.31.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 08 May 2008 19:05:57 -0500
+Message-Id: <1210291557.3114.74.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 2008-05-04 at 10:39 -0500, James Bottomley wrote:
+> On Sun, 2008-05-04 at 10:25 -0500, James Bottomley wrote:
+> > On Sun, 2008-05-04 at 07:22 -0400, Jeff Garzik wrote:
+> > > See attached files for additional config detail.
+> > > 
+> > > Platform summary:  AMD64 2x2 (== 4 cores), Fedora 8/x86-64
+> > > 
+> > > Driver 'sr' needs updating - please use bus_type methods
+> > > BUG: unable to handle kernel NULL pointer dereference at 00000000000005d8
+> > > IP: [<ffffffff8025e10c>] get_page_from_freelist+0x43/0x573
+> > > PGD 7e90f067 PUD 7edbc067 PMD 0
+> > > Oops: 0000 [1] SMP
+> > 
+> > Is this with CONFIG_SLAB or CONFIG_SLUB?
+> > 
+> > I don't see it in my test systems, but they're CONFIG_SLAB
+> 
+> OK, should have looked at the attachments:
+> 
+> ...
+> CONFIG_SLAB=y
+> # CONFIG_SLUB is not set
+> # CONFIG_SLOB is not set
+> ...
+> 
+> Since you also have this:
+> 
+> CONFIG_DEBUG_KERNEL=y
+> 
+> Can you tell me what source line corresponds to 
+> 
+> :sr_mod:sr_probe+0x17b/0x4a9
 
-Please pull to get this sparc signal stack handling bug fix.
+Ping on this, please.  I suspect it will tell us the faulting call is
+kmalloc and that it's definitely a vm issue, but we need this data as a
+first step.
 
-Thanks!
+James
 
-The following changes since commit 1e38c126c9252b612697e34f43b1b3371c8ee31d:
-  David S. Miller (1):
-        sparc: Fix fork/clone/vfork system call restart.
 
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
-
-David S. Miller (1):
-      sparc: Fix SA_ONSTACK signal handling.
-
- arch/sparc/kernel/signal.c     |   20 +++++++++++++++++---
- arch/sparc64/kernel/signal.c   |   21 +++++++++++++++++----
- arch/sparc64/kernel/signal32.c |   18 +++++++++++++++++-
- 3 files changed, 51 insertions(+), 8 deletions(-)
