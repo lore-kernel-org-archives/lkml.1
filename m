@@ -1,1952 +1,373 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763571AbYEINvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763981AbYEINwx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763571AbYEINvo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 09:51:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752765AbYEINvf
+	id S1763981AbYEINwx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 09:52:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753647AbYEINwm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 09:51:35 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:33738 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751649AbYEINvb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 09:51:31 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:to:subject:cc:message-id:date:from;
-	b=WEvISTiHM+RTySkLNcwrOkmm5i8CIEyms9WrzvpmwGm8G2yutBnOYa2pQVSGtpf9N
-	4oNY7BXxPeBP6YZ7wfVeQ==
-To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [RFC/PATCH 2/2] MM: Make Page Tables Relocatable --relcoation code
-Cc: rossb@google.com
-Message-Id: <20080509135107.28D11DCA63@localhost>
-Date: Fri,  9 May 2008 06:51:07 -0700 (PDT)
-From: rossb@google.com (Ross Biro)
+	Fri, 9 May 2008 09:52:42 -0400
+Received: from gate.crashing.org ([63.228.1.57]:54655 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752765AbYEINwk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 09:52:40 -0400
+Cc: lkml List <linux-kernel@vger.kernel.org>,
+       "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>
+Message-Id: <9D9C21A5-8796-4FC1-B792-E00112000900@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+In-Reply-To: <20080508202200.GA12578@uranus.ravnborg.org>
+Content-Type: multipart/mixed; boundary=Apple-Mail-3-105706420
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: How to link a .o with all modules
+Date: Fri, 9 May 2008 08:52:20 -0500
+References: <6C8AB345-2DA0-460D-B7C8-262463247DDE@kernel.crashing.org> <20080504192434.GA23752@uranus.ravnborg.org> <D346E2E4-26C3-482E-ABBF-AF1EE97E91CD@kernel.crashing.org> <20080505204449.GA9446@uranus.ravnborg.org> <5DD68A6B-45FD-4163-BDF5-356C70A00676@kernel.crashing.org> <20080508202200.GA12578@uranus.ravnborg.org>
+X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
------
+--Apple-Mail-3-105706420
+Content-Type: text/plain;
+	charset=US-ASCII;
+	format=flowed
+Content-Transfer-Encoding: 7bit
 
-Forgot to mention in the last part, major changes from previous version are
-support for copying accessed/dirty bits and it at least compiles and should
-work with 2 and 3 level page tables as well as 4 level page tables.
 
-diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/arch/powerpc/mm/fault.c 2.6.25-rc9/arch/powerpc/mm/fault.c
---- /home/rossb/local/linux-2.6.25-rc9/arch/powerpc/mm/fault.c	2008-04-11 13:32:29.000000000 -0700
-+++ 2.6.25-rc9/arch/powerpc/mm/fault.c	2008-04-14 09:00:29.000000000 -0700
-@@ -299,6 +299,8 @@ good_area:
- 		if (get_pteptr(mm, address, &ptep, &pmdp)) {
- 			spinlock_t *ptl = pte_lockptr(mm, pmdp);
- 			spin_lock(ptl);
-+			delimbo_pte(&ptep, &ptl, &pmdp, mm, address);
-+
- 			if (pte_present(*ptep)) {
- 				struct page *page = pte_page(*ptep);
- 
-diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/arch/powerpc/mm/hugetlbpage.c 2.6.25-rc9/arch/powerpc/mm/hugetlbpage.c
---- /home/rossb/local/linux-2.6.25-rc9/arch/powerpc/mm/hugetlbpage.c	2008-04-11 13:32:29.000000000 -0700
-+++ 2.6.25-rc9/arch/powerpc/mm/hugetlbpage.c	2008-04-14 09:00:29.000000000 -0700
-@@ -73,6 +73,7 @@ static int __hugepte_alloc(struct mm_str
- 		return -ENOMEM;
- 
- 	spin_lock(&mm->page_table_lock);
-+	delimbo_hpd(&hpdp, mm, address);
- 	if (!hugepd_none(*hpdp))
- 		kmem_cache_free(huge_pgtable_cache, new);
- 	else
-diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/arch/ppc/mm/fault.c 2.6.25-rc9/arch/ppc/mm/fault.c
---- /home/rossb/local/linux-2.6.25-rc9/arch/ppc/mm/fault.c	2008-04-11 13:32:29.000000000 -0700
-+++ 2.6.25-rc9/arch/ppc/mm/fault.c	2008-04-14 09:00:29.000000000 -0700
-@@ -219,6 +219,7 @@ good_area:
- 		if (get_pteptr(mm, address, &ptep, &pmdp)) {
- 			spinlock_t *ptl = pte_lockptr(mm, pmdp);
- 			spin_lock(ptl);
-+			delimbo_pte(&ptep, &ptl, &pmdp, mm, address);
- 			if (pte_present(*ptep)) {
- 				struct page *page = pte_page(*ptep);
- 
-diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/arch/x86/mm/hugetlbpage.c 2.6.25-rc9/arch/x86/mm/hugetlbpage.c
---- /home/rossb/local/linux-2.6.25-rc9/arch/x86/mm/hugetlbpage.c	2008-04-11 13:32:29.000000000 -0700
-+++ 2.6.25-rc9/arch/x86/mm/hugetlbpage.c	2008-04-14 09:00:29.000000000 -0700
-@@ -88,6 +88,7 @@ static void huge_pmd_share(struct mm_str
- 		goto out;
- 
- 	spin_lock(&mm->page_table_lock);
-+	delimbo_pud(&pud, mm, addr);
- 	if (pud_none(*pud))
- 		pud_populate(mm, pud, (pmd_t *)((unsigned long)spte & PAGE_MASK));
- 	else
-diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/arch/x86/mm/pgtable_32.c 2.6.25-rc9/arch/x86/mm/pgtable_32.c
---- /home/rossb/local/linux-2.6.25-rc9/arch/x86/mm/pgtable_32.c	2008-04-11 13:32:29.000000000 -0700
-+++ 2.6.25-rc9/arch/x86/mm/pgtable_32.c	2008-05-08 07:53:51.000000000 -0700
-@@ -178,25 +178,6 @@ void reserve_top_address(unsigned long r
- 	__VMALLOC_RESERVE += reserve;
- }
- 
--pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
--{
--	return (pte_t *)__get_free_page(GFP_KERNEL|__GFP_REPEAT|__GFP_ZERO);
--}
--
--pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long address)
--{
--	struct page *pte;
--
--#ifdef CONFIG_HIGHPTE
--	pte = alloc_pages(GFP_KERNEL|__GFP_HIGHMEM|__GFP_REPEAT|__GFP_ZERO, 0);
--#else
--	pte = alloc_pages(GFP_KERNEL|__GFP_REPEAT|__GFP_ZERO, 0);
--#endif
--	if (pte)
--		pgtable_page_ctor(pte);
--	return pte;
--}
--
- /*
-  * List of all pgd's needed for non-PAE so it can invalidate entries
-  * in both cached and uncached pgd's; not needed for PAE since the
-@@ -218,7 +199,12 @@ static inline void pgd_list_del(pgd_t *p
- {
- 	struct page *page = virt_to_page(pgd);
- 
--	list_del(&page->lru);
-+	list_del_init(&page->lru);
-+}
-+
-+void arch_cleanup_pgd_page(pgd_t *pgd)
-+{
-+	pgd_list_del(pgd);
- }
- 
- #define UNSHARED_PTRS_PER_PGD				\
-@@ -340,9 +326,47 @@ static void pgd_mop_up_pmds(struct mm_st
- }
- #endif	/* CONFIG_X86_PAE */
- 
--pgd_t *pgd_alloc(struct mm_struct *mm)
-+#define PAGE_ALLOC(node) alloc_pages_node(node, GFP_KERNEL |__GFP_REPEAT, 0)
-+#define PAGE_ALLOC_ZEROED(node)  alloc_pages_node(node, \
-+			GFP_KERNEL | __GFP_REPEAT | __GFP_ZERO, 0)
-+#define PAGE_ALLOC_ZEROED_HIGH(node)  alloc_pages_node(node, \
-+		__GFP_HIGHMEM | GFP_KERNEL | __GFP_REPEAT | __GFP_ZERO, 0)
-+
-+pte_t *pte_alloc_one_kernel_node(struct mm_struct *mm,
-+				 unsigned long address, int node)
- {
--	pgd_t *pgd = (pgd_t *)__get_free_page(GFP_KERNEL | __GFP_ZERO);
-+	return (pte_t *)page_address(PAGE_ALLOC_ZEROED(node));
-+}
-+
-+pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
-+{
-+	return pte_alloc_one_kernel_node(mm, address, -1);
-+}
-+
-+pgtable_t pte_alloc_one_node(struct mm_struct *mm, unsigned long address,
-+			     int node)
-+{
-+	struct page *pte;
-+
-+#ifdef CONFIG_HIGHPTE
-+	pte = page_address(PAGE_ALLOC_ZEROED_HIGHMEM(node));
-+#else
-+	pte = page_address(PAGE_ALLOC_ZEROED(node));
-+#endif
-+	if (pte)
-+		pgtable_page_ctor(pte);
-+	return pte;
-+}
-+
-+pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long address)
-+
-+{
-+	return pte_alloc_one_node(mm, address, -1);
-+}
-+
-+pgd_t *pgd_alloc_node(struct mm_struct *mm, int node)
-+{
-+	pgd_t *pgd = (pgd_t *)page_address(PAGE_ALLOC(node));
- 
- 	/* so that alloc_pd can use it */
- 	mm->pgd = pgd;
-@@ -358,6 +382,11 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
- 	return pgd;
- }
- 
-+pgd_t *pgd_alloc(struct mm_struct *mm)
-+{
-+	return pgd_alloc_node(mm, -1);
-+}
-+
- void pgd_free(struct mm_struct *mm, pgd_t *pgd)
- {
- 	pgd_mop_up_pmds(mm, pgd);
-diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-generic/pgalloc.h 2.6.25-rc9/include/asm-generic/pgalloc.h
---- /home/rossb/local/linux-2.6.25-rc9/include/asm-generic/pgalloc.h	1969-12-31 16:00:00.000000000 -0800
-+++ 2.6.25-rc9/include/asm-generic/pgalloc.h	2008-05-08 09:19:38.000000000 -0700
-@@ -0,0 +1,98 @@
-+#ifndef _ASM_GENERIC_PGALLOC_H
-+#define _ASM_GENERIC_PGALLOC_H
-+
-+/* Page Table Levels used for alloc_page_table. */
-+enum {
-+	PAGE_TABLE_PGD,
-+	PAGE_TABLE_PUD,
-+	PAGE_TABLE_PMD,
-+	PAGE_TABLE_PTE,
-+};
-+
-+static inline struct page *alloc_page_table_node(struct mm_struct *mm,
-+						 unsigned long addr,
-+						 int node,
-+						 int page_table_level)
-+{
-+	switch (page_table_level) {
-+	case PAGE_TABLE_PGD:
-+		return virt_to_page(pgd_alloc_node(mm, node));
-+
-+	case PAGE_TABLE_PUD:
-+		return virt_to_page(pud_alloc_one_node(mm, addr, node));
-+
-+	case PAGE_TABLE_PMD:
-+		return virt_to_page(pmd_alloc_one_node(mm, addr, node));
-+
-+	case PAGE_TABLE_PTE:
-+		return pte_alloc_one_node(mm, addr, node);
-+
-+	default:
-+		BUG();
-+		return NULL;
-+	}
-+}
-+
-+static inline void free_page_table_page(struct mm_struct *mm,
-+					struct page *page,
-+					int page_table_level)
-+{
-+	page->migrated_page = NULL;
-+	reset_page_mapcount(page);
-+	switch (page_table_level) {
-+	case PAGE_TABLE_PGD:
-+		pgd_free(mm, page_address(page));
-+		return;
-+
-+	case PAGE_TABLE_PUD:
-+		pud_free(mm, page_address(page));
-+		return;
-+
-+	case PAGE_TABLE_PMD:
-+		pmd_free(mm, page_address(page));
-+		return;
-+
-+	case PAGE_TABLE_PTE:
-+		pte_free(mm, (pgtable_t)page);
-+		return;
-+
-+	default:
-+		BUG();
-+		return;
-+	}
-+}
-+
-+
-+/* The cleanup functions are called as soon as the page is
-+ * no longer being used as a page table, but it could be a while
-+ * before the page is freed.  These functions *MUST* clean up
-+ * any non-global links to the page table, such as the pgd_list on
-+ * x86 systems.
-+ */
-+#ifndef __HAVE_ARCH_CLEANUP_PGD_PAGE
-+static inline void arch_cleanup_pgd_page(pgd_t *pgd)
-+{
-+}
-+#endif
-+
-+
-+#ifndef __HAVE_ARCH_CLEANUP_PUD_PAGE
-+static inline void arch_cleanup_pud_page(pud_t *pud)
-+{
-+}
-+#endif
-+
-+#ifndef __HAVE_ARCH_CLEANUP_PMD_PAGE
-+static inline void arch_cleanup_pmd_page(pmd_t *pmd)
-+{
-+}
-+#endif
-+
-+#ifndef __HAVE_ARCH_CLEANUP_PTE_PAGE
-+static inline void arch_cleanup_pte_page(pte_t *pte)
-+{
-+}
-+#endif
-+
-+
-+#endif /* _ASM_GENERIC_PGALLOC_H */
-diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-generic/pgtable.h 2.6.25-rc9/include/asm-generic/pgtable.h
---- /home/rossb/local/linux-2.6.25-rc9/include/asm-generic/pgtable.h	2008-04-11 13:32:29.000000000 -0700
-+++ 2.6.25-rc9/include/asm-generic/pgtable.h	2008-05-05 07:36:27.000000000 -0700
-@@ -4,6 +4,8 @@
- #ifndef __ASSEMBLY__
- #ifdef CONFIG_MMU
- 
-+#include <linux/sched.h>
-+
- #ifndef __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS
- /*
-  * Largely same as above, but only sets the access flags (dirty,
-@@ -195,6 +197,22 @@ static inline int pmd_none_or_clear_bad(
- 	}
- 	return 0;
- }
-+
-+
-+/* Copy the bits that the cpu could have modified. */
-+#ifndef __HAVE_ARCH_COPY_CPU_BITS_PTE
-+static inline void arch_copy_cpu_bits_pte(pte_t *old, pte_t *new)
-+{
-+}
-+#endif
-+
-+/* Clear the bits that the cpu could have modified. */
-+#ifndef __HAVE_ARCH_CLEAR_CPU_BITS_PTE
-+static inline void arch_clear_cpu_bits_pte(pte_t *old)
-+{
-+}
-+#endif
-+
- #endif /* CONFIG_MMU */
- 
- /*
-diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-x86/pgalloc_32.h 2.6.25-rc9/include/asm-x86/pgalloc_32.h
---- /home/rossb/local/linux-2.6.25-rc9/include/asm-x86/pgalloc_32.h	2008-04-11 13:32:29.000000000 -0700
-+++ 2.6.25-rc9/include/asm-x86/pgalloc_32.h	2008-05-08 07:52:06.000000000 -0700
-@@ -37,11 +37,11 @@ static inline void pmd_populate(struct m
-  * Allocate and free page tables.
-  */
- extern pgd_t *pgd_alloc(struct mm_struct *);
--extern void pgd_free(struct mm_struct *mm, pgd_t *pgd);
--
- extern pte_t *pte_alloc_one_kernel(struct mm_struct *, unsigned long);
- extern pgtable_t pte_alloc_one(struct mm_struct *, unsigned long);
- 
-+extern void pgd_free(struct mm_struct *mm, pgd_t *pgd);
-+
- static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
- {
- 	free_page((unsigned long)pte);
-@@ -60,6 +60,16 @@ extern void __pte_free_tlb(struct mmu_ga
- /*
-  * In the PAE case we free the pmds as part of the pgd.
-  */
-+
-+#ifdef CONFIG_NUMA
-+static inline pmd_t *pmd_alloc_one_node(struct mm_struct *mm,
-+					unsigned long addr, int node)
-+{
-+	return (pmd_t *)page_address(alloc_pages_node(node,
-+			 GFP_KERNEL | __GFP_REPEAT | __GFP_ZERO, 0));
-+}
-+#endif
-+
- static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long addr)
- {
- 	return (pmd_t *)get_zeroed_page(GFP_KERNEL|__GFP_REPEAT);
-@@ -90,6 +100,33 @@ static inline void pud_populate(struct m
- 	if (mm == current->active_mm)
- 		write_cr3(read_cr3());
- }
-+#else 	/* CONFIG_X86_PAE */
-+static inline pmd_t *pmd_alloc_one_node(struct mm_struct *mm,
-+					unsigned long addr, int node)
-+{
-+	BUG();
-+	return NULL;
-+}
-+
- #endif	/* CONFIG_X86_PAE */
- 
-+
-+#define __HAVE_ARCH_CLEANUP_PGD_PAGE
-+extern void arch_cleanup_pgd_page(pgd_t *pgd);
-+
-+#ifdef CONFIG_NUMA
-+extern pgd_t *pgd_alloc_node(struct mm_struct *, int node);
-+extern pte_t *pte_alloc_one_kernel_node(struct mm_struct *, unsigned long,
-+					int node);
-+extern pgtable_t pte_alloc_one_node(struct mm_struct *, unsigned long,
-+				    int node);
-+static inline pud_t *pud_alloc_one_node(struct mm_struct *mm,
-+					unsigned long addr, int node)
-+{
-+	BUG();
-+	return NULL;
-+}
-+#endif
-+
-+#include <asm-generic/pgalloc.h>
- #endif /* _I386_PGALLOC_H */
-diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-x86/pgalloc_64.h 2.6.25-rc9/include/asm-x86/pgalloc_64.h
---- /home/rossb/local/linux-2.6.25-rc9/include/asm-x86/pgalloc_64.h	2008-04-11 13:32:29.000000000 -0700
-+++ 2.6.25-rc9/include/asm-x86/pgalloc_64.h	2008-05-08 08:39:54.000000000 -0700
-@@ -4,6 +4,7 @@
- #include <asm/pda.h>
- #include <linux/threads.h>
- #include <linux/mm.h>
-+#include <linux/gfp.h>
- 
- #define pmd_populate_kernel(mm, pmd, pte) \
- 		set_pmd(pmd, __pmd(_PAGE_TABLE | __pa(pte)))
-@@ -25,16 +26,6 @@ static inline void pmd_free(struct mm_st
- 	free_page((unsigned long)pmd);
- }
- 
--static inline pmd_t *pmd_alloc_one (struct mm_struct *mm, unsigned long addr)
--{
--	return (pmd_t *)get_zeroed_page(GFP_KERNEL|__GFP_REPEAT);
--}
--
--static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
--{
--	return (pud_t *)get_zeroed_page(GFP_KERNEL|__GFP_REPEAT);
--}
--
- static inline void pud_free(struct mm_struct *mm, pud_t *pud)
- {
- 	BUG_ON((unsigned long)pud & (PAGE_SIZE-1));
-@@ -61,10 +52,50 @@ static inline void pgd_list_del(pgd_t *p
- 	spin_unlock_irqrestore(&pgd_lock, flags);
- }
- 
--static inline pgd_t *pgd_alloc(struct mm_struct *mm)
-+static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
-+{
-+	BUG_ON((unsigned long)pgd & (PAGE_SIZE-1));
-+	pgd_list_del(pgd);
-+	free_page((unsigned long)pgd);
-+}
-+
-+
-+/* Should really implement gc for free page table pages. This could be
-+   done with a reference count in struct page. */
-+
-+static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
-+{
-+	BUG_ON((unsigned long)pte & (PAGE_SIZE-1));
-+	free_page((unsigned long)pte);
-+}
-+
-+static inline void pte_free(struct mm_struct *mm, pgtable_t pte)
-+{
-+	pgtable_page_dtor(pte);
-+	__free_page(pte);
-+}
-+
-+#define __pte_free_tlb(tlb,pte)				\
-+do {							\
-+	pgtable_page_dtor((pte));				\
-+	tlb_remove_page((tlb), (pte));			\
-+} while (0)
-+
-+#define __pmd_free_tlb(tlb, x)   tlb_remove_page((tlb), virt_to_page(x))
-+#define __pud_free_tlb(tlb, x)   tlb_remove_page((tlb), virt_to_page(x))
-+
-+#define PAGE_ALLOC(node) alloc_pages_node(node, GFP_KERNEL |__GFP_REPEAT, 0)
-+#define PAGE_ALLOC_ZEROED(node)  alloc_pages_node(node, \
-+			GFP_KERNEL | __GFP_REPEAT | __GFP_ZERO, 0)
-+
-+/* The _node versions should effectively go away when config_numa is not
-+ * defined.
-+ */
-+
-+static inline pgd_t *pgd_alloc_node(struct mm_struct *mm, int node)
- {
- 	unsigned boundary;
--	pgd_t *pgd = (pgd_t *)__get_free_page(GFP_KERNEL|__GFP_REPEAT);
-+	pgd_t *pgd = (pgd_t *)page_address(PAGE_ALLOC(node));
- 	if (!pgd)
- 		return NULL;
- 	pgd_list_add(pgd);
-@@ -81,53 +112,74 @@ static inline pgd_t *pgd_alloc(struct mm
- 	return pgd;
- }
- 
--static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
-+static inline pte_t *pte_alloc_one_kernel_node(struct mm_struct *mm,
-+					       unsigned long address, int node)
- {
--	BUG_ON((unsigned long)pgd & (PAGE_SIZE-1));
--	pgd_list_del(pgd);
--	free_page((unsigned long)pgd);
--}
--
--static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
--{
--	return (pte_t *)get_zeroed_page(GFP_KERNEL|__GFP_REPEAT);
-+	return (pte_t *)page_address(PAGE_ALLOC_ZEROED(node));
- }
- 
--static inline pgtable_t pte_alloc_one(struct mm_struct *mm, unsigned long address)
-+static inline pgtable_t pte_alloc_one_node(struct mm_struct *mm,
-+					   unsigned long address, int node)
- {
- 	struct page *page;
--	void *p;
- 
--	p = (void *)get_zeroed_page(GFP_KERNEL|__GFP_REPEAT);
--	if (!p)
-+	page = PAGE_ALLOC_ZEROED(node);
-+	if (!page)
- 		return NULL;
--	page = virt_to_page(p);
- 	pgtable_page_ctor(page);
- 	return page;
- }
- 
--/* Should really implement gc for free page table pages. This could be
--   done with a reference count in struct page. */
-+static inline pmd_t *pmd_alloc_one_node(struct mm_struct *mm,
-+					unsigned long addr, int node)
-+{
-+	return (pmd_t *)page_address(PAGE_ALLOC_ZEROED(node));
-+}
- 
--static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
-+static inline pud_t *pud_alloc_one_node(struct mm_struct *mm,
-+					unsigned long addr, int node)
- {
--	BUG_ON((unsigned long)pte & (PAGE_SIZE-1));
--	free_page((unsigned long)pte); 
-+	return (pud_t *)page_address(PAGE_ALLOC_ZEROED(node));
- }
- 
--static inline void pte_free(struct mm_struct *mm, pgtable_t pte)
-+static inline pmd_t *pmd_alloc_one (struct mm_struct *mm, unsigned long addr)
- {
--	pgtable_page_dtor(pte);
--	__free_page(pte);
-+	return pmd_alloc_one_node(mm, addr, -1);
- } 
- 
--#define __pte_free_tlb(tlb,pte)				\
--do {							\
--	pgtable_page_dtor((pte));				\
--	tlb_remove_page((tlb), (pte));			\
--} while (0)
-+static inline pud_t *pud_alloc_one(struct mm_struct *mm, unsigned long addr)
-+{
-+	return pud_alloc_one_node(mm, addr, -1);
-+}
-+
-+static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm,
-+					  unsigned long address)
-+{
-+	return pte_alloc_one_kernel_node(mm, address, -1);
-+}
-+
-+static inline pgtable_t pte_alloc_one(struct mm_struct *mm,
-+				      unsigned long address)
-+{
-+	return pte_alloc_one_node(mm, address, -1);
-+}
-+
-+static inline pgd_t *pgd_alloc(struct mm_struct *mm)
-+{
-+	return pgd_alloc_node(mm, -1);
-+}
-+
-+
-+#undef PAGE_ALLOC
-+#undef PAGE_ALLOC_ZEROED
-+
-+#define __HAVE_ARCH_CLEANUP_PGD_PAGE
-+static inline void arch_cleanup_pgd_page(pgd_t *pgd)
-+{
-+	pgd_list_del(pgd);
-+}
-+
-+#include <asm-generic/pgalloc.h>
- 
--#define __pmd_free_tlb(tlb,x)   tlb_remove_page((tlb),virt_to_page(x))
--#define __pud_free_tlb(tlb,x)   tlb_remove_page((tlb),virt_to_page(x))
- 
- #endif /* _X86_64_PGALLOC_H */
-diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/asm-x86/pgtable.h 2.6.25-rc9/include/asm-x86/pgtable.h
---- /home/rossb/local/linux-2.6.25-rc9/include/asm-x86/pgtable.h	2008-04-11 13:32:29.000000000 -0700
-+++ 2.6.25-rc9/include/asm-x86/pgtable.h	2008-05-05 07:00:10.000000000 -0700
-@@ -364,6 +364,19 @@ static inline void ptep_set_wrprotect(st
- 	pte_update(mm, addr, ptep);
- }
- 
-+#define __HAVE_ARCH_COPY_CPU_BITS_PTE
-+static inline void arch_copy_cpu_bits_pte(pte_t *old, pte_t *new)
-+{
-+	set_pte(new, __pte(pte_val(*new) |
-+			   (pte_val(*old) & (_PAGE_DIRTY | _PAGE_ACCESSED))));
-+}
-+
-+#define __HAVE_ARCH_CLEAR_CPU_BITS_PTE
-+static inline void arch_clear_cpu_bits_pte(pte_t *old)
-+{
-+	*old = __pte(pte_val(*old) & ~(_PAGE_DIRTY | _PAGE_ACCESSED));
-+}
-+
- #include <asm-generic/pgtable.h>
- #endif	/* __ASSEMBLY__ */
- 
-diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/linux/migrate.h 2.6.25-rc9/include/linux/migrate.h
---- /home/rossb/local/linux-2.6.25-rc9/include/linux/migrate.h	2008-04-11 13:32:29.000000000 -0700
-+++ 2.6.25-rc9/include/linux/migrate.h	2008-04-14 09:00:29.000000000 -0700
-@@ -6,6 +6,10 @@
- #include <linux/pagemap.h>
- 
- typedef struct page *new_page_t(struct page *, unsigned long private, int **);
-+typedef struct page *new_page_table_t(struct mm_struct *,
-+				      unsigned long addr,
-+				      unsigned long private,
-+				      int **, int page_table_level);
- 
- #ifdef CONFIG_MIGRATION
- /* Check if a vma is migratable */
-diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/linux/mm.h 2.6.25-rc9/include/linux/mm.h
---- /home/rossb/local/linux-2.6.25-rc9/include/linux/mm.h	2008-04-11 13:32:29.000000000 -0700
-+++ 2.6.25-rc9/include/linux/mm.h	2008-05-06 06:18:51.000000000 -0700
-@@ -921,6 +921,7 @@ static inline void pgtable_page_dtor(str
- 	pte_t *__pte = pte_offset_map(pmd, address);	\
- 	*(ptlp) = __ptl;				\
- 	spin_lock(__ptl);				\
-+	delimbo_pte(&__pte, ptlp, &pmd, mm, address);	\
- 	__pte;						\
- })
- 
-@@ -945,6 +946,158 @@ extern void free_area_init(unsigned long
- extern void free_area_init_node(int nid, pg_data_t *pgdat,
- 	unsigned long * zones_size, unsigned long zone_start_pfn, 
- 	unsigned long *zholes_size);
-+
-+#ifdef CONFIG_RELOCATE_PAGE_TABLES
-+
-+void _delimbo_pte(pte_t **pte, spinlock_t **ptl,  pmd_t **pmd,
-+		  struct mm_struct *mm,  unsigned long addr);
-+void _delimbo_pte_nested(pte_t **pte, spinlock_t **ptl,
-+			 pmd_t **pmd, struct mm_struct *mm,
-+			 unsigned long addr, int subclass, spinlock_t *optl);
-+void _delimbo_pud(pud_t **pud, struct mm_struct *mm, unsigned long addr);
-+void _delimbo_pmd(pmd_t **pmd, struct mm_struct *mm, unsigned long addr);
-+void _delimbo_pgd(pgd_t **pgd, struct mm_struct *mm, unsigned long addr);
-+void _delimbo_huge_pte(pte_t **pte, struct mm_struct *mm, unsigned long addr);
-+
-+
-+/* We say a page table is in limbo if it's been copied, but the old copy
-+ * could still be in use by a kernel thread or a cpu.  The delimbo
-+ * functions make sure the new page table is up to date and that
-+ * everyone is looking at it.
-+ */
-+
-+static inline void delimbo_pte(pte_t **pte, spinlock_t **ptl,  pmd_t **pmd,
-+			  struct mm_struct *mm,
-+			  unsigned long addr)
-+{
-+	/* We don't mess with kernel page tables, so if we are
-+	 * looking at init_mm, we don't have to do anything.
-+	 */
-+	if (__builtin_constant_p(mm) && mm == &init_mm)
-+		return;
-+
-+	/* If split page table locks are being used, we don't actually
-+	 * have the correct spinlock here, but it's ok since the
-+	 * relocation code won't go mucking with the relevant level of
-+	 * the page table while holding the relevant spinlock.  This
-+	 * means that while all the page tables leading up to this one
-+	 * could get mucked with, the one we care about cannot be
-+	 * mucked with without us seeing that
-+	 * page_table_relocation_count has be set.
-+	 * 
-+	 * The code path is something like
-+	 * grab page table lock
-+	 * increment relocation count
-+	 * release page_table lock
-+	 *
-+	 * At this point, we might have missed the increment
-+	 * because we have the wrong lock. 
-+	 *
-+	 * Grab page table lock.
-+	 * Grab split page table lock. <-- This lock saves us.
-+	 * muck with page table.
-+	 *
-+	 * But it's ok, because even if we get interrupted for a
-+	 * long time, the page table we care about won't be mucked
-+	 * with until after we drop the spinlock that we do have.
-+	 */
-+	if (unlikely(mm->page_table_relocation_count))
-+		_delimbo_pte(pte, ptl, pmd, mm, addr);
-+}
-+
-+static inline void delimbo_pte_nested(pte_t **pte, spinlock_t **ptl,
-+				      pmd_t **pmd, struct mm_struct *mm,
-+				      unsigned long addr, int subclass,
-+				      spinlock_t *optl)
-+{
-+	/* We don't mess with kernel page tables, so if we are
-+	 * looking at init_mm, we don't have to do anything.
-+	 */
-+	if (__builtin_constant_p(mm) && mm == &init_mm)
-+		return;
-+
-+	/* same as comment above about the locking issue with
-+	 * this test.
-+	 */
-+	if (unlikely(mm->page_table_relocation_count))
-+		_delimbo_pte_nested(pte, ptl, pmd, mm, addr, subclass, optl);
-+}
-+
-+
-+static inline void delimbo_pud(pud_t **pud,  struct mm_struct *mm,
-+			  unsigned long addr)
-+{
-+	/* We don't mess with kernel page tables, so if we are
-+	 * looking at init_mm, we don't have to do anything.
-+	 */
-+	if (__builtin_constant_p(mm) && mm == &init_mm)
-+		return;
-+
-+	/* At this point we have the page_table_lock. */
-+	if (unlikely(mm->page_table_relocation_count))
-+		_delimbo_pud(pud, mm, addr);
-+}
-+
-+static inline void delimbo_pmd(pmd_t **pmd,  struct mm_struct *mm,
-+			       unsigned long addr)
-+{
-+	/* We don't mess with kernel page tables, so if we are
-+	 * looking at init_mm, we don't have to do anything.
-+	 */
-+	if (__builtin_constant_p(mm) && mm == &init_mm)
-+		return;
-+
-+	/* we hold the page_table_lock, so this is safe to test. */
-+	if (unlikely(mm->page_table_relocation_count))
-+		_delimbo_pmd(pmd, mm, addr);
-+}
-+
-+static inline void delimbo_pgd(pgd_t **pgd,  struct mm_struct *mm,
-+			       unsigned long addr)
-+{
-+	/* We don't mess with kernel page tables, so if we are
-+	 * looking at init_mm, we don't have to do anything.
-+	 */
-+	if (__builtin_constant_p(mm) && mm == &init_mm)
-+		return;
-+
-+	/* we hold the page_table_lock. */
-+	if (unlikely(mm->page_table_relocation_count))
-+		_delimbo_pgd(pgd, mm, addr);
-+}
-+
-+
-+static inline void delimbo_huge_pte(pte_t **pte,  struct mm_struct *mm,
-+				    unsigned long addr)
-+{
-+	/* We don't mess with kernel page tables, so if we are
-+	 * looking at init_mm, we don't have to do anything.
-+	 */
-+	if (__builtin_constant_p(mm) && mm == &init_mm)
-+		return;
-+
-+	/* We hold the page_table_lock. */
-+	if (unlikely(mm->page_table_relocation_count))
-+		_delimbo_huge_pte(pte, mm, addr);
-+}
-+
-+#else /* CONFIG_RELOCATE_PAGE_TABLES */
-+static inline void delimbo_pte(pte_t **pte, spinlock_t **ptl,  pmd_t **pmd,
-+			       struct mm_struct *mm,  unsigned long addr) {}
-+static inline void delimbo_pte_nested(pte_t **pte, spinlock_t **ptl,
-+				      pmd_t **pmd, struct mm_struct *mm,
-+				      unsigned long addr, int subclass,
-+				      spinlock_t *optl) {}
-+static inline void delimbo_pud(pud_t **pud,  struct mm_struct *mm,
-+			       unsigned long addr) {}
-+static inline void delimbo_pmd(pmd_t **pmd, struct mm_struct *mm,
-+			       unsigned long addr) {}
-+static inline void delimbo_pgd(pgd_t **pgd, struct mm_struct *mm,
-+			       unsigned long addr) {}
-+static inline void delimbo_huge_pte(pte_t **pte, struct mm_struct *mm,
-+				    unsigned long addr) {}
-+#endif /* CONFIG_RELOCATE_PAGE_TABLES */
-+
- #ifdef CONFIG_ARCH_POPULATES_NODE_MAP
- /*
-  * With CONFIG_ARCH_POPULATES_NODE_MAP set, an architecture may initialise its
-diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/include/linux/mm_types.h 2.6.25-rc9/include/linux/mm_types.h
---- /home/rossb/local/linux-2.6.25-rc9/include/linux/mm_types.h	2008-04-11 13:32:29.000000000 -0700
-+++ 2.6.25-rc9/include/linux/mm_types.h	2008-05-07 07:01:01.000000000 -0700
-@@ -10,6 +10,8 @@
- #include <linux/rbtree.h>
- #include <linux/rwsem.h>
- #include <linux/completion.h>
-+#include <linux/rcupdate.h>
-+#include <linux/workqueue.h>
- #include <asm/page.h>
- #include <asm/mmu.h>
- 
-@@ -43,6 +45,9 @@ struct page {
- 					 * & limit reverse map searches.
- 					 */
- 		unsigned int inuse;	/* SLUB: Nr of objects */
-+		int page_table_type;	/* Used to keep track of the type of
-+					 * page table so we can clean it up.
-+					 */
- 	};
- 	union {
- 	    struct {
-@@ -70,7 +75,12 @@ struct page {
- 	union {
- 		pgoff_t index;		/* Our offset within mapping. */
- 		void *freelist;		/* SLUB: freelist req. slab lock */
-+		struct page *migrated_page; /* The page this page
-+					     * table has been migrated to
-+					     * or from.
-+					     */
- 	};
-+
- 	struct list_head lru;		/* Pageout list, eg. active_list
- 					 * protected by zone->lru_lock !
- 					 */
-@@ -173,7 +183,16 @@ struct mm_struct {
- 	atomic_t mm_count;			/* How many references to "struct mm_struct" (users count as 1) */
- 	int map_count;				/* number of VMAs */
- 	struct rw_semaphore mmap_sem;
-+	unsigned long flags; /* Must use atomic bitops to access the bits */
-+
- 	spinlock_t page_table_lock;		/* Protects page tables and some counters */
-+#ifdef CONFIG_RELOCATE_PAGE_TABLES
-+	/* The number of page table relocations currently happening on
-+	 * this mm.  Only updated/checked while holding the page_table_lock,
-+	 * so doesn't need to be an atomic_t.
-+	 */
-+	int page_table_relocation_count;
-+#endif /* CONFIG_RELOCATE_PAGE_TABLES */
- 
- 	struct list_head mmlist;		/* List of maybe swapped mm's.	These are globally strung
- 						 * together off init_mm.mmlist, and are protected
-@@ -213,8 +232,6 @@ struct mm_struct {
- 	unsigned int token_priority;
- 	unsigned int last_interval;
- 
--	unsigned long flags; /* Must use atomic bitops to access the bits */
--
- 	/* coredumping support */
- 	int core_waiters;
- 	struct completion *core_startup_done, core_done;
-@@ -225,6 +242,9 @@ struct mm_struct {
- #ifdef CONFIG_CGROUP_MEM_RES_CTLR
- 	struct mem_cgroup *mem_cgroup;
- #endif
-+#ifdef CONFIG_RELOCATE_PAGE_TABLES
-+	struct mutex page_table_relocation_lock;
-+#endif
- };
- 
- #endif /* _LINUX_MM_TYPES_H */
-diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/kernel/fork.c 2.6.25-rc9/kernel/fork.c
---- /home/rossb/local/linux-2.6.25-rc9/kernel/fork.c	2008-04-11 13:32:29.000000000 -0700
-+++ 2.6.25-rc9/kernel/fork.c	2008-05-07 07:01:45.000000000 -0700
-@@ -360,6 +360,11 @@ static struct mm_struct * mm_init(struct
- 	mm->cached_hole_size = ~0UL;
- 	mm_init_cgroup(mm, p);
- 
-+#ifdef CONFIG_RELOCATE_PAGE_TABLES
-+	mm->page_table_relocation_count = 0;
-+	mutex_init(&mm->page_table_relocation_lock);
-+#endif
-+
- 	if (likely(!mm_alloc_pgd(mm))) {
- 		mm->def_flags = 0;
- 		return mm;
-diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/mm/Kconfig 2.6.25-rc9/mm/Kconfig
---- /home/rossb/local/linux-2.6.25-rc9/mm/Kconfig	2008-04-11 13:32:29.000000000 -0700
-+++ 2.6.25-rc9/mm/Kconfig	2008-05-08 07:34:15.000000000 -0700
-@@ -143,6 +143,10 @@ config MEMORY_HOTREMOVE
- 	depends on MEMORY_HOTPLUG && ARCH_ENABLE_MEMORY_HOTREMOVE
- 	depends on MIGRATION
- 
-+config RELOCATE_PAGE_TABLES 
-+	def_bool y
-+	depends on X86 && MIGRATION
-+
- # Heavily threaded applications may benefit from splitting the mm-wide
- # page_table_lock, so that faults on different parts of the user address
- # space can be handled with less contention: split it at this NR_CPUS.
-diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/mm/hugetlb.c 2.6.25-rc9/mm/hugetlb.c
---- /home/rossb/local/linux-2.6.25-rc9/mm/hugetlb.c	2008-04-11 13:32:29.000000000 -0700
-+++ 2.6.25-rc9/mm/hugetlb.c	2008-04-14 09:01:16.000000000 -0700
-@@ -762,6 +762,8 @@ int copy_hugetlb_page_range(struct mm_st
- 
- 		spin_lock(&dst->page_table_lock);
- 		spin_lock(&src->page_table_lock);
-+		delimbo_huge_pte(&src_pte, src, addr);
-+		delimbo_huge_pte(&dst_pte, dst, addr);
- 		if (!pte_none(*src_pte)) {
- 			if (cow)
- 				ptep_set_wrprotect(src, addr, src_pte);
-@@ -937,6 +939,7 @@ retry:
- 	}
- 
- 	spin_lock(&mm->page_table_lock);
-+	delimbo_huge_pte(&ptep, mm, address);
- 	size = i_size_read(mapping->host) >> HPAGE_SHIFT;
- 	if (idx >= size)
- 		goto backout;
-@@ -994,6 +997,7 @@ int hugetlb_fault(struct mm_struct *mm, 
- 	ret = 0;
- 
- 	spin_lock(&mm->page_table_lock);
-+	delimbo_huge_pte(&ptep, mm, address);
- 	/* Check for a racing update before calling hugetlb_cow */
- 	if (likely(pte_same(entry, *ptep)))
- 		if (write_access && !pte_write(entry))
-diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/mm/memory.c 2.6.25-rc9/mm/memory.c
---- /home/rossb/local/linux-2.6.25-rc9/mm/memory.c	2008-04-11 13:32:29.000000000 -0700
-+++ 2.6.25-rc9/mm/memory.c	2008-04-15 08:02:48.000000000 -0700
-@@ -312,6 +312,7 @@ int __pte_alloc(struct mm_struct *mm, pm
- 		return -ENOMEM;
- 
- 	spin_lock(&mm->page_table_lock);
-+	delimbo_pmd(&pmd, mm, address);
- 	if (!pmd_present(*pmd)) {	/* Has another populated it ? */
- 		mm->nr_ptes++;
- 		pmd_populate(mm, pmd, new);
-@@ -330,6 +331,7 @@ int __pte_alloc_kernel(pmd_t *pmd, unsig
- 		return -ENOMEM;
- 
- 	spin_lock(&init_mm.page_table_lock);
-+	delimbo_pmd(&pmd, &init_mm, address);
- 	if (!pmd_present(*pmd)) {	/* Has another populated it ? */
- 		pmd_populate_kernel(&init_mm, pmd, new);
- 		new = NULL;
-@@ -513,6 +515,9 @@ again:
- 	src_pte = pte_offset_map_nested(src_pmd, addr);
- 	src_ptl = pte_lockptr(src_mm, src_pmd);
- 	spin_lock_nested(src_ptl, SINGLE_DEPTH_NESTING);
-+
-+	delimbo_pte_nested(&src_pte, &src_ptl, &src_pmd, src_mm, addr,
-+			   SINGLE_DEPTH_NESTING, dst_ptl);
- 	arch_enter_lazy_mmu_mode();
- 
- 	do {
-@@ -1488,13 +1493,15 @@ EXPORT_SYMBOL_GPL(apply_to_page_range);
-  * and do_anonymous_page and do_no_page can safely check later on).
-  */
- static inline int pte_unmap_same(struct mm_struct *mm, pmd_t *pmd,
--				pte_t *page_table, pte_t orig_pte)
-+				pte_t *page_table, pte_t orig_pte,
-+				unsigned long address)
- {
- 	int same = 1;
- #if defined(CONFIG_SMP) || defined(CONFIG_PREEMPT)
- 	if (sizeof(pte_t) > sizeof(unsigned long)) {
- 		spinlock_t *ptl = pte_lockptr(mm, pmd);
- 		spin_lock(ptl);
-+		delimbo_pte(&page_table, &ptl, &pmd, mm, address);
- 		same = pte_same(*page_table, orig_pte);
- 		spin_unlock(ptl);
- 	}
-@@ -2021,7 +2028,7 @@ static int do_swap_page(struct mm_struct
- 	pte_t pte;
- 	int ret = 0;
- 
--	if (!pte_unmap_same(mm, pmd, page_table, orig_pte))
-+	if (!pte_unmap_same(mm, pmd, page_table, orig_pte, address))
- 		goto out;
- 
- 	entry = pte_to_swp_entry(orig_pte);
-@@ -2100,6 +2107,10 @@ static int do_swap_page(struct mm_struct
- 	}
- 
- 	/* No need to invalidate - it was non-present before */
-+	/* Unless of course the cpu might be looking at an old
-+	   copy of the pte. */
-+	maybe_reload_tlb_mm(mm);
-+
- 	update_mmu_cache(vma, address, pte);
- unlock:
- 	pte_unmap_unlock(page_table, ptl);
-@@ -2151,6 +2162,10 @@ static int do_anonymous_page(struct mm_s
- 	set_pte_at(mm, address, page_table, entry);
- 
- 	/* No need to invalidate - it was non-present before */
-+	/* Unless of course the cpu might be looking at an old
-+	   copy of the pte. */
-+	maybe_reload_tlb_mm(mm);
-+
- 	update_mmu_cache(vma, address, entry);
- unlock:
- 	pte_unmap_unlock(page_table, ptl);
-@@ -2312,6 +2327,10 @@ static int __do_fault(struct mm_struct *
- 		}
- 
- 		/* no need to invalidate: a not-present page won't be cached */
-+		/* Unless of course the cpu could be looking at an old page
-+		   table entry. */
-+		maybe_reload_tlb_mm(mm);
-+
- 		update_mmu_cache(vma, address, entry);
- 	} else {
- 		mem_cgroup_uncharge_page(page);
-@@ -2418,7 +2437,7 @@ static int do_nonlinear_fault(struct mm_
- 				(write_access ? FAULT_FLAG_WRITE : 0);
- 	pgoff_t pgoff;
- 
--	if (!pte_unmap_same(mm, pmd, page_table, orig_pte))
-+	if (!pte_unmap_same(mm, pmd, page_table, orig_pte, address))
- 		return 0;
- 
- 	if (unlikely(!(vma->vm_flags & VM_NONLINEAR) ||
-@@ -2477,6 +2496,7 @@ static inline int handle_pte_fault(struc
- 
- 	ptl = pte_lockptr(mm, pmd);
- 	spin_lock(ptl);
-+	delimbo_pte(&pte, &ptl, &pmd, mm, address);
- 	if (unlikely(!pte_same(*pte, entry)))
- 		goto unlock;
- 	if (write_access) {
-@@ -2498,6 +2518,12 @@ static inline int handle_pte_fault(struc
- 		if (write_access)
- 			flush_tlb_page(vma, address);
- 	}
-+
-+	/* if the cpu could be looking at an old page table, we need to
-+	   flush out everything. */
-+	maybe_reload_tlb_mm(mm);
-+
-+
- unlock:
- 	pte_unmap_unlock(pte, ptl);
- 	return 0;
-@@ -2547,6 +2573,7 @@ int __pud_alloc(struct mm_struct *mm, pg
- 		return -ENOMEM;
- 
- 	spin_lock(&mm->page_table_lock);
-+	delimbo_pgd(&pgd, mm, address);
- 	if (pgd_present(*pgd))		/* Another has populated it */
- 		pud_free(mm, new);
- 	else
-@@ -2568,6 +2595,7 @@ int __pmd_alloc(struct mm_struct *mm, pu
- 		return -ENOMEM;
- 
- 	spin_lock(&mm->page_table_lock);
-+	delimbo_pud(&pud, mm, address);
- #ifndef __ARCH_HAS_4LEVEL_HACK
- 	if (pud_present(*pud))		/* Another has populated it */
- 		pmd_free(mm, new);
-diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/mm/mempolicy.c 2.6.25-rc9/mm/mempolicy.c
---- /home/rossb/local/linux-2.6.25-rc9/mm/mempolicy.c	2008-04-11 13:32:29.000000000 -0700
-+++ 2.6.25-rc9/mm/mempolicy.c	2008-04-14 09:00:29.000000000 -0700
-@@ -101,6 +101,12 @@
- static struct kmem_cache *policy_cache;
- static struct kmem_cache *sn_cache;
- 
-+#ifdef CONFIG_RELOCATE_PAGE_TABLES
-+int migrate_page_tables_mm(struct mm_struct *mm,  int source,
-+			   new_page_table_t get_new_page,
-+			   unsigned long private);
-+#endif
-+
- /* Highest zone. An specific allocation for a zone below that is not
-    policied. */
- enum zone_type policy_zone = 0;
-@@ -627,6 +633,20 @@ static struct page *new_node_page(struct
- 	return alloc_pages_node(node, GFP_HIGHUSER_MOVABLE, 0);
- }
- 
-+#ifdef CONFIG_RELOCATE_PAGE_TABLES
-+static struct page *new_node_page_page_tables(struct mm_struct *mm,
-+					      unsigned long addr,
-+					      unsigned long node,
-+					      int **x,
-+					      int level)
-+{
-+	struct page *p;
-+	p = alloc_page_table_node(mm, addr, node, level);
-+	return p;
-+}
-+
-+#endif /* CONFIG_RELOCATE_PAGE_TABLES  */
-+
- /*
-  * Migrate pages from one node to a target node.
-  * Returns error or the number of pages not migrated.
-@@ -647,6 +667,12 @@ static int migrate_to_node(struct mm_str
- 	if (!list_empty(&pagelist))
- 		err = migrate_pages(&pagelist, new_node_page, dest);
- 
-+#ifdef CONFIG_RELOCATE_PAGE_TABLES
-+	if (!err)
-+		err = migrate_page_tables_mm(mm, source,
-+					     new_node_page_page_tables, dest);
-+#endif /* CONFIG_RELOCATE_PAGE_TABLES */
-+
- 	return err;
- }
- 
-diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/mm/migrate.c 2.6.25-rc9/mm/migrate.c
---- /home/rossb/local/linux-2.6.25-rc9/mm/migrate.c	2008-04-11 13:32:29.000000000 -0700
-+++ 2.6.25-rc9/mm/migrate.c	2008-05-08 09:34:53.000000000 -0700
-@@ -30,9 +30,19 @@
- #include <linux/vmalloc.h>
- #include <linux/security.h>
- #include <linux/memcontrol.h>
-+#include <linux/mm.h>
-+#include <linux/highmem.h>
-+#include <asm/tlb.h>
-+#include <asm/tlbflush.h>
-+#include <asm/pgalloc.h>
- 
- #include "internal.h"
- 
-+int migrate_page_tables_mm(struct mm_struct *mm, int source,
-+			   new_page_table_t get_new_page,
-+			   unsigned long private);
-+
-+
- #define lru_to_page(_head) (list_entry((_head)->prev, struct page, lru))
- 
- /*
-@@ -155,6 +165,7 @@ static void remove_migration_pte(struct 
- 
-  	ptl = pte_lockptr(mm, pmd);
-  	spin_lock(ptl);
-+	delimbo_pte(&ptep, &ptl, &pmd, mm, addr);
- 	pte = *ptep;
- 	if (!is_swap_pte(pte))
- 		goto out;
-@@ -895,9 +906,10 @@ set_status:
- 		err = migrate_pages(&pagelist, new_page_node,
- 				(unsigned long)pm);
- 	else
--		err = -ENOENT;
-+		err = 0;
- 
- 	up_read(&mm->mmap_sem);
-+
- 	return err;
- }
- 
-@@ -1075,3 +1087,793 @@ int migrate_vmas(struct mm_struct *mm, c
-  	}
-  	return err;
- }
-+
-+#ifdef CONFIG_RELOCATE_PAGE_TABLES
-+
-+/*
-+ * Code to relocate live page tables.  The strategy is simple.  We
-+ * allow that either the kernel or the cpus could be looking at or
-+ * have cached a stale page table.  We just make sure that the kernel
-+ * only updates the latest version of the page tables and that we
-+ * flush the page table cache anytime a cpu could be looking at a
-+ * stale page table and it might matter.
-+ *
-+ * Since we have to worry about the kernel and cpu's separately,
-+ * it's important to distinguish between what the cpu is doing internally
-+ * and what the kernel is doing on a cpu.  We use cpu for the former and
-+ * thread for the latter.
-+ *
-+ * This is easier than it might seems since most of the code is
-+ * already there.  The kernel never updates a page table without first
-+ * grabbing an appropriate spinlock.  Then it has to double
-+ * check to make sure that another thread hasn't already changed things.
-+ * So all we have to do is rewalk all the page tables whenever we
-+ * grab the spinlock. Then the existing double check code takes care
-+ * of the rest (except for kernel page tables which are often updated
-+ * without locks.  So we just don't muck with kernel page tables.)
-+ *
-+ * For the cpus, it's just important to flush the TLB cache whenever it
-+ * might be relevant.  To avoid unnecessary TLB cache thrashing, we only
-+ * flush the TLB caches when we are done with all the changes, or it could
-+ * make a difference.  We already have to flush the TLB caches whenever it
-+ * could make a difference, except in the cases where we are updating
-+ * something the cpu wouldn't normally cache.  The only place this happens,
-+ * is when we have a page was non-present.  The cpu won't cache that
-+ * particular entry, but it might be caching stale page tables leading
-+ * up to the non-present entry.  So we might need to flush everything
-+ * where we didn't have to flush before.
-+ *
-+ * One last gotcha is that before the only way to change the top-level
-+ * page table is to switch tasks.  So we had to add a reload
-+ * tlb option.  This is per arch function and is not yet on all arches.
-+ * For arches where we cannot reload the tlb, we cannot migrate the
-+ * top level page table.
-+ */
-+
-+
-+/* Used to rewalk the page tables if after we grab the appropriate lock,
-+ * we make sure we are not looking at a page table that's just waiting
-+ * to go away.
-+ * These are only used in the _delimbo* functions in mm/migrate.c
-+ * so it's no big deal having them static inline.  Otherwise, they
-+ * would just be in there anyway.
-+ * XXXXX Why not just copy this into mm/migrate.c?
-+ */
-+static inline pgd_t *walk_page_table_pgd(struct mm_struct *mm,
-+					  unsigned long addr)
-+{
-+	return pgd_offset(mm, addr);
-+}
-+
-+static inline pud_t *walk_page_table_pud(struct mm_struct *mm,
-+					 unsigned long addr) {
-+	pgd_t *pgd;
-+	pgd = walk_page_table_pgd(mm, addr);
-+	BUG_ON(!pgd);
-+#ifdef __PAGETABLE_PUD_FOLDED
-+	return (pud_t *)pgd;
-+#else
-+	return pud_offset(pgd, addr);
-+#endif
-+}
-+
-+static inline pmd_t *walk_page_table_pmd(struct mm_struct *mm,
-+					 unsigned long addr)
-+{
-+	pud_t *pud;
-+	pud = walk_page_table_pud(mm, addr);
-+	BUG_ON(!pud);
-+#ifdef __PAGETABLE_PMD_FOLDED
-+	return (pmd_t *)pud;
-+#else
-+	return  pmd_offset(pud, addr);
-+#endif
-+}
-+
-+static inline pte_t *walk_page_table_pte(struct mm_struct *mm,
-+					 unsigned long addr)
-+{
-+	pmd_t *pmd;
-+	pmd = walk_page_table_pmd(mm, addr);
-+	BUG_ON(!pmd);
-+	return pte_offset_map(pmd, addr);
-+}
-+
-+static inline pte_t *walk_page_table_huge_pte(struct mm_struct *mm,
-+					      unsigned long addr)
-+{
-+	return (pte_t *)walk_page_table_pmd(mm, addr);
-+}
-+
-+/* A page table is in limbo if we can't be sure if we are looking
-+ * at a current page table, or an old one.  The delimbo functions
-+ * make sure we are looking at a current one and it's up to date.
-+ */
-+
-+/* This function rewalks the page tables to make sure that
-+ * a thread is not looking at a stale page table entry.
-+ */
-+void _delimbo_pte(pte_t **pte, spinlock_t **ptl,  pmd_t **pmd,
-+		  struct mm_struct *mm,  unsigned long addr)
-+{
-+	pte_t *old_pte, old_pte_val=__pte(0);
-+	struct page *old_page, *new_page;
-+
-+	if (*ptl != &mm->page_table_lock) {
-+		spin_unlock(*ptl);
-+		spin_lock(&mm->page_table_lock);
-+	}
-+
-+	/* We could check the page_table_relocation_count again
-+	 * to make sure that it hasn't changed, but it's not a big win
-+	 * and makes the code more complex since we have to make sure
-+	 * we get the correct spinlock.
-+	 */
-+
-+	pte_unmap(*pte);
-+	*pmd = walk_page_table_pmd(mm, addr);
-+
-+	/* if the pte was in limbo, we need to worry about
-+	 * any cpu updated bits and copy them over.
-+	 */
-+	new_page = pmd_page(**pmd);
-+	old_page = new_page->migrated_page;
-+	if (old_page && old_page != new_page) {
-+		/* Make sure the cpu won't be updating the
-+		 * pte entry that's in limbo. 
-+		 */
-+		maybe_reload_tlb_mm(mm);
-+		old_pte = pte_offset_map(*pmd, addr);
-+		old_pte_val = *old_pte;
-+		arch_clear_cpu_bits_pte(old_pte);
-+		pte_unmap(old_pte);
-+	}
-+
-+	*pte = pte_offset_map(*pmd, addr);
-+	*ptl = pte_lockptr(mm, *pmd);
-+
-+	/* Update the dirty and accessed bits in the new pte.
-+	 */
-+	if (old_page && old_page != new_page)
-+		arch_copy_cpu_bits_pte(&old_pte_val, *pte);
-+
-+	if (*ptl != &mm->page_table_lock) {
-+		spin_lock(*ptl);
-+		spin_unlock(&mm->page_table_lock);
-+	}
-+}
-+
-+void _delimbo_pte_nested(pte_t **pte, spinlock_t **ptl, pmd_t **pmd,
-+			 struct mm_struct *mm, unsigned long addr,
-+			 int subclass, spinlock_t *optl)
-+{
-+	pte_t *old_pte, old_pte_val=__pte(0);
-+	struct page *old_page, *new_page;
-+
-+	if (&mm->page_table_lock != *ptl) {
-+		if (optl != *ptl)
-+			spin_unlock(*ptl);
-+		spin_lock(&mm->page_table_lock);
-+	}
-+
-+	pte_unmap_nested(*pte);
-+	*pmd = walk_page_table_pmd(mm, addr);
-+
-+	/* if the pte was in limbo, we need to worry about
-+	 * any cpu updated bits and copy them over.
-+	 */
-+	new_page = pmd_page(**pmd);
-+	old_page = new_page->migrated_page;
-+	if (old_page && old_page != new_page) {
-+		/* Make sure the cpu won't be updating the
-+		 * pte entry that's in limbo. 
-+		 */
-+		maybe_reload_tlb_mm(mm);
-+		old_pte = pte_offset_map_nested(*pmd, addr);
-+		old_pte_val = *old_pte;
-+		/* Don't want to update these bits again
-+		 * later when we copy the entire page.
-+		 */
-+		arch_clear_cpu_bits_pte(old_pte);
-+		pte_unmap(old_pte);
-+	}
-+
-+
-+	*pte = pte_offset_map_nested(*pmd, addr);
-+	*ptl = pte_lockptr(mm, *pmd);
-+
-+	if (old_page && old_page != new_page) {
-+		/* Update the dirty and accessed bits in
-+		 * the new pte. 
-+		 */
-+		arch_copy_cpu_bits_pte(&old_pte_val, *pte);
-+	}
-+
-+	if (&mm->page_table_lock != *ptl) {
-+		if (optl != *ptl )
-+			spin_lock_nested(*ptl, subclass);
-+		spin_unlock(&mm->page_table_lock);
-+	}
-+}
-+
-+
-+void _delimbo_pud(pud_t **pud, struct mm_struct *mm, unsigned long addr)
-+{
-+	*pud = walk_page_table_pud(mm, addr);
-+}
-+
-+void _delimbo_pmd(pmd_t **pmd, struct mm_struct *mm, unsigned long addr)
-+{
-+	*pmd = walk_page_table_pmd(mm, addr);
-+}
-+
-+void _delimbo_pgd(pgd_t **pgd, struct mm_struct *mm, unsigned long addr)
-+{
-+	*pgd = walk_page_table_pgd(mm, addr);
-+}
-+
-+void _delimbo_huge_pte(pte_t **pte, struct mm_struct *mm, unsigned long addr)
-+{
-+	*pte = walk_page_table_huge_pte(mm, addr);
-+}
-+
-+/*
-+ * Clean up the pages, update any bits the cpu may have updated and
-+ * free the page.
-+ */
-+void update_new_page_and_free(struct mm_struct *mm, struct page *old_page)
-+{
-+
-+	int type;
-+
-+	/* Currently we only worry about cpu bits in ptes. */
-+	if (old_page->page_table_type == PAGE_TABLE_PTE) {
-+		struct page *new_page = old_page->migrated_page;
-+		spinlock_t *ptl;
-+		pte_t *old;
-+		pte_t *new;
-+		int i;
-+#ifdef __pte_lockptr
-+		ptl = __pte_lockptr(new_page);
-+#else
-+		ptl = &mm->page_table_lock;
-+#endif
-+		spin_lock(ptl);
-+		old = (pte_t *)kmap_atomic(old_page, KM_PTE0);
-+		new = (pte_t *)kmap_atomic(new_page, KM_PTE1);
-+		for (i = 0; i < PTRS_PER_PTE; i++)
-+			arch_copy_cpu_bits_pte(old, new);
-+
-+		kunmap_atomic(new_page, KM_PTE1);
-+		kunmap_atomic(old_page, KM_PTE0);
-+		new_page->migrated_page = NULL;
-+		spin_unlock(ptl);
-+	}
-+
-+	old_page->migrated_page = NULL;
-+	type = old_page->page_table_type;
-+	reset_page_mapcount(old_page);
-+
-+	free_page_table_page(mm, old_page, type);
-+}
-+
-+/*
-+ * Call this function to migrate a pgd to the page dest.
-+ * mm is the mm struct that this pgd is part of and
-+ * addr is the address for the pgd inside of the mm.
-+ * Technically this only moves one page worth of pgd's
-+ * starting with the pgd that represents addr.
-+ *
-+ * The page that contains the pgd will be added to the
-+ * end of old_pages.  It should be freed by an rcu callback
-+ * or after a synchronize_rcu.  maybe_reload_tlb_mm also needs
-+ * to be called before the pages are freed.
-+ *
-+ * Calling this at interrupt time is bad because of the
-+ * spinlocks.
-+ *
-+ * Returns the number of pages not migrated.
-+ */
-+static inline int migrate_top_level_page_table_entry(struct mm_struct *mm,
-+					     struct page *dest,
-+					     struct list_head *old_pages)
-+{
-+	pgd_t *dest_ptr;
-+	int i;
-+
-+	if (sizeof(pgd_t) * PTRS_PER_PGD != PAGE_SIZE)
-+		return 1;
-+
-+	BUG_ON ((unsigned long)(mm->pgd) & ~PAGE_MASK);
-+
-+	dest_ptr = (pgd_t *)page_address(dest);
-+
-+	spin_lock(&mm->page_table_lock);
-+	for (i = 0; i < PTRS_PER_PGD; i++)
-+		set_pgd(dest_ptr + i, mm->pgd[i]);
-+
-+	arch_cleanup_pgd_page(mm->pgd);
-+
-+	virt_to_page(mm->pgd)->page_table_type = PAGE_TABLE_PGD;
-+
-+	list_add_tail(&virt_to_page(mm->pgd)->lru, old_pages);
-+
-+	mm->pgd = (pgd_t *)dest_ptr;
-+
-+	maybe_need_tlb_reload_mm(mm);
-+
-+	spin_unlock(&mm->page_table_lock);
-+	return 0;
-+}
-+
-+/*
-+ * Call this function to migrate a pgd to the page dest.
-+ * mm is the mm struct that this pgd is part of and
-+ * addr is the address for the pgd inside of the mm.
-+ * Technically this only moves one page worth of pud's
-+ * starting with the pud that represents addr.
-+ *
-+ * The page that contains the pgd will be added to the
-+ * end of old_pages.  It should be freed by an rcu callback
-+ * or after a synchronize_rcu.  maybe_reload_tlb_mm also needs
-+ * to be called before the pages are freed.
-+ *
-+ * Calling this at interrupt time is bad because of the
-+ * spinlocks.
-+ *
-+ * Returns the number of pages not migrated.
-+ */
-+int migrate_pgd_entry(pgd_t *pgd, struct mm_struct *mm,
-+		      unsigned long addr, struct page *dest,
-+		      struct list_head *old_pages)
-+{
-+
-+	pud_t *dest_pud;
-+	pud_t *src_pud;
-+	int i;
-+
-+	/* We currently only deal with full page puds. */
-+	if (sizeof(pud_t) * PTRS_PER_PUD != PAGE_SIZE) {
-+		return 1;
-+	} 
-+
-+	spin_lock(&mm->page_table_lock);
-+
-+	_delimbo_pgd(&pgd, mm, addr);
-+
-+	src_pud = pud_offset(pgd, addr);
-+
-+	BUG_ON ((unsigned long)src_pud & ~PAGE_MASK);
-+
-+	dest_pud = (pud_t *)page_address(dest);
-+	for (i = 0; i < PTRS_PER_PUD; i++)
-+		set_pud(dest_pud + i, src_pud[i]);
-+
-+	pgd_page(*pgd)->page_table_type = PAGE_TABLE_PUD;
-+
-+	arch_cleanup_pud_page(src_pud);
-+
-+	list_add_tail(&(pgd_page(*pgd)->lru), old_pages);
-+	pgd_populate(mm, pgd, dest_pud);
-+
-+
-+	maybe_need_flush_mm(mm);
-+
-+	spin_unlock(&mm->page_table_lock);
-+
-+	return 0;
-+
-+}
-+
-+
-+/*
-+ * Call this function to migrate a pud to the page dest.
-+ * mm is the mm struct that this pud is part of and
-+ * addr is the address for the pud inside of the mm.
-+ * Technically this only moves one page worth of pmd's
-+ * starting with the pmd that represents addr.
-+ *
-+ * The page that contains the pud will be added to the
-+ * end of old_pages.  It should be freed by an rcu callback
-+ * or after a synchronize_rcu.  maybe_reload_tlb_mm also needs
-+ * to be called before the pages are freed.
-+ *
-+ * Calling this at interrupt time is bad because of the
-+ * spinlocks.
-+ *
-+ * Returns the number of pages not migrated.
-+ */
-+int migrate_pud_entry(pud_t *pud, struct mm_struct *mm, unsigned long addr,
-+		      struct page *dest, struct list_head *old_pages)
-+{
-+	pmd_t *dest_pmd;
-+	pmd_t *src_pmd;
-+	int i;
-+
-+	/* We currently only deal with full page puds. */
-+	if (sizeof(pmd_t) * PTRS_PER_PMD != PAGE_SIZE) {
-+		return 1;
-+	} 
-+
-+	spin_lock(&mm->page_table_lock);
-+
-+	_delimbo_pud(&pud, mm, addr);
-+	src_pmd = pmd_offset(pud, addr);
-+	
-+	BUG_ON((unsigned long)src_pmd & ~PAGE_MASK);
-+
-+	dest_pmd = (pmd_t *) page_address(dest);
-+
-+	for (i = 0; i < PTRS_PER_PMD; i++)
-+		set_pmd(dest_pmd + i, src_pmd[i]);
-+
-+	pud_page(*pud)->page_table_type = PAGE_TABLE_PMD;
-+
-+	arch_cleanup_pmd_page(src_pmd);
-+
-+	list_add_tail(&(pud_page(*pud)->lru), old_pages);
-+
-+	pud_populate(mm, pud, dest_pmd);
-+	maybe_need_flush_mm(mm);
-+
-+	spin_unlock(&mm->page_table_lock);
-+
-+	return 0;
-+}
-+
-+/*
-+ * Call this function to migrate a pmd to the page dest.
-+ * mm is the mm struct that this pmd is part of and
-+ * addr is the address for the pud inside of the mm.
-+ * Technically this only moves one page worth of pte's
-+ * starting with the pte that represents addr.
-+ *
-+ * The page that contains the pmd will be added to the
-+ * end of old_pages.  It should be freed by an rcu callback
-+ * or after a synchronize_rcu.  maybe_reload_tlb_mm also needs
-+ * to be called before the pages are freed.
-+ *
-+ * Returns the number of pages not migrated.
-+ *
-+ * This function uses KM_PTE1.  Since it holds the
-+ * page_table_lock, it should be safe.
-+ *
-+ * Calling this at interrupt time is bad because of the
-+ * spinlocks.
-+ */
-+
-+int migrate_pmd_entry(pmd_t *pmd, struct mm_struct *mm, unsigned long addr,
-+		      struct page *dest, struct list_head *old_pages)
-+{
-+	pte_t *dest_pte;
-+	spinlock_t *ptl;
-+	pte_t *src_pte;
-+	int i;
-+
-+	/* We currently only deal with full page ptes. */
-+	if (sizeof(pte_t) * PTRS_PER_PTE != PAGE_SIZE) {
-+		return 1;
-+	} 
-+
-+	spin_lock(&mm->page_table_lock);
-+
-+	_delimbo_pmd(&pmd, mm, addr);
-+
-+	/* this could happen if the page table has been swapped out and we
-+	   were looking at the old one. */
-+	if (unlikely(!pmd_present(*pmd))) {
-+		spin_unlock(&mm->page_table_lock);
-+		return 1;
-+	}
-+
-+	ptl = pte_lockptr(mm, pmd);
-+
-+	/* We need the page lock as well. */
-+	if (ptl != &mm->page_table_lock)
-+		spin_lock(ptl);
-+
-+	src_pte = pte_offset_map(pmd, addr);
-+
-+	BUG_ON ((unsigned long)src_pte & ~PAGE_MASK);
-+
-+	dest_pte = (pte_t *)kmap_atomic(dest, KM_PTE1);
-+
-+	for (i = 0; i < PTRS_PER_PTE; i++)
-+		set_pte(dest_pte + i, src_pte[i]);
-+
-+	dest->migrated_page = pmd_page(*pmd);
-+	dest->migrated_page->page_table_type = PAGE_TABLE_PTE;
-+	dest->migrated_page->migrated_page = dest;
-+
-+	arch_cleanup_pte_page(src_pte);
-+
-+	list_add_tail(&(pmd_page(*pmd)->lru), old_pages);
-+
-+	kunmap_atomic(dest, KM_PTE1);
-+	pte_unmap(pte);
-+	pte_lock_init(dest);
-+	pmd_populate(mm, pmd, dest);
-+
-+	maybe_need_flush_mm(mm);
-+
-+	if (ptl != &mm->page_table_lock)
-+		spin_unlock(ptl);
-+
-+	spin_unlock(&mm->page_table_lock);
-+
-+	return 0;
-+}
-+
-+/*
-+ * There is no migrate_pte since that would be moving the page
-+ * pointed to by a pte around.  That's a user page and is equivalent
-+ * to swapping and doesn't need to be handled here.
-+ */
-+
-+static int migrate_page_tables_pmd_entry(pmd_t *pmd, struct mm_struct *mm,
-+					 unsigned long *address, int source,
-+					 new_page_table_t get_new_page,
-+					 unsigned long private,
-+					 struct list_head *old_pages)
-+{
-+	int pages_not_migrated = 0;
-+	int *result = NULL;
-+	struct page *old_page = virt_to_page(pmd);
-+	struct page *new_page;
-+	int not_migrated;
-+
-+	if (!pmd_present(*pmd)) {
-+		*address +=  (unsigned long)PTRS_PER_PTE * PAGE_SIZE;
-+		return 0;
-+	}
-+
-+	if (page_to_nid(old_page) == source) {
-+		new_page = get_new_page(mm, *address, private, &result,
-+					PAGE_TABLE_PTE);
-+		if (!new_page)
-+			return -ENOMEM;
-+		not_migrated = migrate_pmd_entry(pmd, mm, *address, new_page,
-+					   old_pages);
-+		if (not_migrated)
-+			free_page_table_page(mm, new_page, PAGE_TABLE_PTE);
-+
-+		pages_not_migrated += not_migrated;
-+	}
-+
-+
-+	*address +=  (unsigned long)PTRS_PER_PTE * PAGE_SIZE;
-+
-+	return pages_not_migrated;
-+}
-+
-+static int migrate_page_tables_pud_entry(pud_t *pud, struct mm_struct *mm,
-+					 unsigned long *address, int source,
-+					 new_page_table_t get_new_page,
-+					 unsigned long private,
-+					 struct list_head *old_pages)
-+{
-+	int pages_not_migrated = 0;
-+	int i;
-+	int *result = NULL;
-+	struct page *old_page = virt_to_page(pud);
-+	struct page *new_page;
-+	int not_migrated;
-+
-+	if (!pud_present(*pud)) {
-+		*address += (unsigned long)PTRS_PER_PMD *
-+				(unsigned long)PTRS_PER_PTE * PAGE_SIZE;
-+		return 0;
-+	}
-+
-+	if (page_to_nid(old_page) == source) {
-+		new_page = get_new_page(mm, *address, private, &result,
-+					PAGE_TABLE_PMD);
-+		if (!new_page)
-+			return -ENOMEM;
-+
-+		not_migrated = migrate_pud_entry(pud, mm, *address, new_page,
-+						 old_pages);
-+
-+		if (not_migrated)
-+			free_page_table_page(mm, new_page, PAGE_TABLE_PMD);
-+
-+		pages_not_migrated += not_migrated;
-+	}
-+
-+	for (i = 0; i < PTRS_PER_PMD; i++) {
-+		int ret;
-+		ret = migrate_page_tables_pmd_entry(pmd_offset(pud, *address),
-+						    mm, address, source,
-+						    get_new_page, private,
-+						    old_pages);
-+		if (ret < 0)
-+			return ret;
-+		pages_not_migrated += ret;
-+	}
-+
-+	return pages_not_migrated;
-+}
-+
-+static int migrate_page_tables_pgd_entry(pgd_t *pgd, struct mm_struct *mm,
-+					 unsigned long *address, int source,
-+					 new_page_table_t get_new_page,
-+					 unsigned long private,
-+					 struct list_head *old_pages)
-+{
-+	int pages_not_migrated = 0;
-+	int i;
-+	int *result = NULL;
-+	struct page *old_page = virt_to_page(pgd);
-+	struct page *new_page;
-+	int not_migrated;
-+
-+	if (!pgd_present(*pgd)) {
-+		*address +=  (unsigned long)PTRS_PER_PUD *
-+				(unsigned long)PTRS_PER_PMD *
-+				(unsigned long)PTRS_PER_PTE * PAGE_SIZE;
-+		return 0;
-+	}
-+
-+	if (page_to_nid(old_page) == source) {
-+		new_page = get_new_page(mm, *address,  private, &result,
-+					PAGE_TABLE_PUD);
-+		if (!new_page)
-+			return -ENOMEM;
-+
-+		not_migrated = migrate_pgd_entry(pgd, mm,  *address, new_page,
-+						 old_pages);
-+		if (not_migrated)
-+			free_page_table_page(mm, new_page, PAGE_TABLE_PUD);
-+
-+		pages_not_migrated += not_migrated;
-+
-+	}
-+
-+	for (i = 0; i < PTRS_PER_PUD; i++) {
-+		int ret;
-+		ret = migrate_page_tables_pud_entry(pud_offset(pgd, *address),
-+						    mm, address, source,
-+						    get_new_page, private,
-+						    old_pages);
-+		if (ret < 0)
-+			return ret;
-+		pages_not_migrated += ret;
-+	}
-+
-+	return pages_not_migrated;
-+}
-+
-+/*
-+ * Call this before calling any of the page table relocation
-+ * functions.  It causes any other threads using this mm
-+ * to start checking to see if someone has changed the page
-+ * tables out from under it.
-+ */
-+void enter_page_table_relocation_mode(struct mm_struct *mm)
-+{
-+	/* Use an int and a spinlock rather than an atomic_t
-+	 * beacuse we only check this inside the spinlock,
-+	 * so we save a bunch of lock prefixes in a fast_path
-+	 * by suffering a little here with a full block spinlock.
-+	 * should be a win overall.
-+	 *
-+	 * One gotcha.  page_table_relocation_count is
-+	 * checked with the wrong spinlock held in the case
-+	 * of split page table locks.  Since we only muck with
-+	 * the lowest level page tables while holding both the
-+	 * page_table_lock and the split page table lock,
-+	 * we are still ok.
-+	 */
-+
-+	mutex_lock(&mm->page_table_relocation_lock);
-+	spin_lock(&mm->page_table_lock);
-+	BUG_ON(mm->page_table_relocation_count > INT_MAX/2);
-+	mm->page_table_relocation_count++;
-+	spin_unlock(&mm->page_table_lock);
-+}
-+
-+void leave_page_table_relocation_mode(struct mm_struct *mm)
-+{
-+	/* Make sure all the threads are no longer looking at a stale
-+	 * copy of a page table before clearing the flag that lets the
-+	 * threads know they may be looking at a stale copy of the
-+	 * page tables.  synchronize_rcu must be called before this
-+	 * function.
-+	 */
-+	spin_lock(&mm->page_table_lock);
-+	mm->page_table_relocation_count--;
-+	BUG_ON(mm->page_table_relocation_count < 0);
-+	spin_unlock(&mm->page_table_lock);
-+	mutex_unlock(&mm->page_table_relocation_lock);
-+}
-+
-+/* Similiar to migrate pages, but migrates the page tables.
-+ * This particular version moves all pages tables away from
-+ * the source node to whatever get's allocated by get_new_page.
-+ * It's easy to modify the code to reloate other page tables,
-+ * or call the migrate_pxx functions directly to move only
-+ * a few pages around.  This is meant as a start to test the
-+ * migration code and to allow migration between nodes.
-+ */
-+int migrate_page_tables_mm(struct mm_struct *mm, int source,
-+			   new_page_table_t get_new_page,
-+			   unsigned long private)
-+{
-+	int pages_not_migrated = 0;
-+	int i;
-+	int *result = NULL;
-+	struct page *old_page = virt_to_page(mm->pgd);
-+	struct page *new_page;
-+	unsigned long address = 0UL;
-+	int not_migrated;
-+	int ret = 0;
-+	int switched_mm = 0;
-+	LIST_HEAD(old_pages);
-+
-+	if (mm->pgd == NULL)
-+		return 0;
-+
-+	/* We don't need our mm and if it's the one we are
-+	 * mucking with, we will do a bunch of unneccessary
-+	 * flushes.  So we switch to the kernel one and
-+	 * switch back later.
-+	 */
-+	if (mm == current->active_mm) {
-+		switch_mm(mm, &init_mm, current);
-+		switched_mm = 1;
-+	}
-+
-+	enter_page_table_relocation_mode(mm);
-+
-+	for (i = 0; i < PTRS_PER_PGD && address < mm->task_size; i++) {
-+		ret = migrate_page_tables_pgd_entry(pgd_offset(mm, address),
-+						    mm, &address, source,
-+						    get_new_page, private,
-+						    &old_pages);
-+		if (ret < 0)
-+			goto out_exit;
-+
-+		pages_not_migrated += ret;
-+	}
-+
-+	if (page_to_nid(old_page) == source) {
-+		new_page = get_new_page(mm, address, private, &result,
-+					PAGE_TABLE_PGD);
-+		if (!new_page) {
-+			ret = -ENOMEM;
-+			goto out_exit;
-+		}
-+
-+		not_migrated = migrate_top_level_page_table_entry(mm, new_page,
-+								  &old_pages);
-+		if (not_migrated) {
-+			free_page_table_page(mm, new_page, PAGE_TABLE_PGD);
-+		}
-+
-+		pages_not_migrated += not_migrated;
-+	}
-+
-+	/* reload or flush the tlbs if necessary. */
-+	maybe_reload_tlb_mm(mm);
-+
-+	/* make sure all threads have stopped looking at stale pages. */
-+	synchronize_rcu();
-+
-+	while (!list_empty(&old_pages)) {
-+		old_page = list_first_entry(&old_pages, struct page, lru);
-+		list_del_init(&old_page->lru);
-+		update_new_page_and_free(mm, old_page);
-+	}
-+
-+ out_exit:
-+	if (switched_mm)
-+		switch_mm(&init_mm, mm, current);
-+
-+	leave_page_table_relocation_mode(mm);
-+
-+	if (ret < 0)
-+		return ret;
-+	return pages_not_migrated;
-+}
-+
-+#endif /* CONFIG_RELOCATE_PAGE_TABLES */
-diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/mm/mremap.c 2.6.25-rc9/mm/mremap.c
---- /home/rossb/local/linux-2.6.25-rc9/mm/mremap.c	2008-04-11 13:32:29.000000000 -0700
-+++ 2.6.25-rc9/mm/mremap.c	2008-04-15 08:03:20.000000000 -0700
-@@ -98,6 +98,8 @@ static void move_ptes(struct vm_area_str
- 	new_ptl = pte_lockptr(mm, new_pmd);
- 	if (new_ptl != old_ptl)
- 		spin_lock_nested(new_ptl, SINGLE_DEPTH_NESTING);
-+	delimbo_pte_nested(&new_pte, &new_ptl, &new_pmd, mm, new_addr,
-+			   SINGLE_DEPTH_NESTING, old_ptl);
- 	arch_enter_lazy_mmu_mode();
- 
- 	for (; old_addr < old_end; old_pte++, old_addr += PAGE_SIZE,
-diff -uprwNBb -X 2.6.25-rc9/Documentation/dontdiff /home/rossb/local/linux-2.6.25-rc9/mm/rmap.c 2.6.25-rc9/mm/rmap.c
---- /home/rossb/local/linux-2.6.25-rc9/mm/rmap.c	2008-04-11 13:32:29.000000000 -0700
-+++ 2.6.25-rc9/mm/rmap.c	2008-04-14 09:00:29.000000000 -0700
-@@ -255,6 +255,7 @@ pte_t *page_check_address(struct page *p
- 
- 	ptl = pte_lockptr(mm, pmd);
- 	spin_lock(ptl);
-+	delimbo_pte(&pte, &ptl, &pmd, mm, address);
- 	if (pte_present(*pte) && page_to_pfn(page) == pte_pfn(*pte)) {
- 		*ptlp = ptl;
- 		return pte;
+On May 8, 2008, at 3:22 PM, Sam Ravnborg wrote:
+
+> On Thu, May 08, 2008 at 09:16:10AM -0500, Kumar Gala wrote:
+>>
+>> On May 5, 2008, at 3:44 PM, Sam Ravnborg wrote:
+>>
+>>>>>
+>>>>>
+>>>>> Let me know if this does address your question.
+>>>>
+>>>> The problem is MODPOST complains about undefined symbols:
+>>>>
+>>>> MODPOST 24 modules
+>>>> ERROR: "_restgpr_20_x" [net/key/af_key.ko] undefined!
+>>>> ERROR: "_restgpr_25_x" [net/key/af_key.ko] undefined!
+>>>> ERROR: "_restgpr_30_x" [net/key/af_key.ko] undefined!
+>>>
+>>> I need a bit more context to try to analyse this.
+>>> Where did you expect _restgpr_20_x to be defined.
+>>> If in vmlinux then were they present in the
+>>> Module.symvers file?
+>>
+>> No they aren't there since we I'm not EXPORT_SYMBOL() them.  Should I
+>> also be doing EXPORT_SYMBOL?
+>
+> So modpost claim it cannot find the symbols.
+>
+>>
+>>> If in the linked in .o file - could you
+>>> see the symbols using objdump.
+>>
+>> Yes.
+>>
+>> readelf -a:
+>>
+>> ...
+>> Symbol table '.symtab' contains 113 entries:
+>>   Num:    Value  Size Type    Bind   Vis      Ndx Name
+>> ...
+>>     5: 00000000     0 FUNC    GLOBAL DEFAULT    1 _savegpr_14
+>>     6: 00000000     0 FUNC    GLOBAL DEFAULT    1 _save32gpr_14
+>> ...
+>
+> Strange.
+>
+> I did not look closer.
+> But it looks like the linker failed to resolve these symbols
+> in the final link somehow - despite the symbols are present in
+> the linked in .o file.
+>
+> Can you try to drop me the output of the relocation records for the
+> finally linked .o file (the one with your .o file linked in).
+>
+> objdump -r IIRC
+
+I'm assuming you mean objdump -r arch/powerpc/lib/built-in.o
+
+
+--Apple-Mail-3-105706420
+Content-Disposition: attachment;
+	filename=reloc.dump.gz
+Content-Type: application/x-gzip;
+	x-unix-mode=0644;
+	name="reloc.dump.gz"
+Content-Transfer-Encoding: base64
+
+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
+
+--Apple-Mail-3-105706420
+Content-Type: text/plain;
+	charset=US-ASCII;
+	format=flowed
+Content-Transfer-Encoding: 7bit
+
+
+
+--Apple-Mail-3-105706420--
