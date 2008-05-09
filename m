@@ -1,68 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758242AbYEIXdz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758847AbYEIXiM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758242AbYEIXdz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 19:33:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754563AbYEIXdm
+	id S1758847AbYEIXiM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 19:38:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756485AbYEIXh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 19:33:42 -0400
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:15889 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752177AbYEIXdl (ORCPT
+	Fri, 9 May 2008 19:37:57 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41104 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756427AbYEIXh5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 19:33:41 -0400
-Message-ID: <4824DF51.9090902@hp.com>
-Date: Fri, 09 May 2008 16:33:37 -0700
-From: Rick Jones <rick.jones2@hp.com>
-User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Jesper Krogh <jesper@krogh.cc>
-CC: David Miller <davem@davemloft.net>, yhlu.kernel@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: NIU - Sun Neptune 10g - Transmit timed out reset (2.6.24)
-References: <86802c440805071130m62c1f4edydb3316dac4a2aba2@mail.gmail.com>	<20080507.141521.193714938.davem@davemloft.net>	<482498D5.9060008@krogh.cc>	<20080509.143229.174354251.davem@davemloft.net>	<4824C936.9000103@krogh.cc>	<4824CE43.8060203@hp.com> <4824D4C0.10201@krogh.cc>	<4824D830.9090504@hp.com> <4824DAB0.8060604@krogh.cc>
-In-Reply-To: <4824DAB0.8060604@krogh.cc>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Fri, 9 May 2008 19:37:57 -0400
+Date: Fri, 9 May 2008 16:37:31 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: tglx@linutronix.de, mingo@elte.hu, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: enable hpet=force for AMD SB400
+Message-Id: <20080509163731.5f851bec.akpm@linux-foundation.org>
+In-Reply-To: <20080509094911.GG5023@alberich.amd.com>
+References: <20080509094911.GG5023@alberich.amd.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesper Krogh wrote:
-> Rick Jones wrote:
-> 
->>>> To which cpu(s) were the neptune's interrupts assigned? (grep <ethN> 
->>>> /proc/interrupts)
->>>
->>>
->>> Several
->>
->>
->> Which ones?-)  I suspect that since it is several that at least 
->> answers the MSI_X question right?  Or is it possible to have a single 
->> device have several MSI interrupts?
+On Fri, 9 May 2008 11:49:11 +0200
+Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
 
-Well, the output below anwered my question about multiple MSI's from a 
-single device :)
+> x86: enable hpet=force for ATI SB400
 
-> 
-> 
-> The table is rather large.
-> http://rafb.net/p/a9zfFA59.html
+Sigh.
 
-So, over time at least, the interrupts have been spread over half the 
-cores in the system.  This is where the block diagram showing the socket 
-and I/O slot connections would be useful.
+> Add quirk to allow forced usage of HPET on ATI SB400.
+> I stumbled over machines where HPET is enabled but not reported
+> by BIOS.
 
-For the interrupts over a given interval, one can take snapshots at 
-either end of the interval and then run them through beforeafter:
+Is there no way in which we can probe for or identify this condition,
+rather than hoping that the user will find out about this boot option?
 
-ftp://ftp.cup.hp.com/dist/networking/tools/
-
-I think that collectl might have something there too.
-
-
-I guess the addresses in use weren't sufficient to get interrupts spread 
-across all 24 IRQ's.
-
-rick jones
