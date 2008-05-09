@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758544AbYEIWCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758597AbYEIWIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758544AbYEIWCc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 18:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbYEIWCX
+	id S1758597AbYEIWIU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 18:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbYEIWIE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 18:02:23 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:53898 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752928AbYEIWCW (ORCPT
+	Fri, 9 May 2008 18:08:04 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47138
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751079AbYEIWIC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 18:02:22 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sat, 10 May 2008 00:02:19 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: Clean patch to fix not working spindown over Firewire
-To: Tino Keitel <tino.keitel@gmx.de>
-cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <tkrat.606fe302c67e64b4@s5r6.in-berlin.de>
-Message-ID: <tkrat.cd9196df20bc6982@s5r6.in-berlin.de>
-References: <20080429232606.GA14261@dose.home.local>
- <481874BD.5010807@s5r6.in-berlin.de> <481875E4.6040606@s5r6.in-berlin.de>
- <20080509201635.GA20189@dose.home.local>
- <tkrat.606fe302c67e64b4@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+	Fri, 9 May 2008 18:08:02 -0400
+Date: Fri, 09 May 2008 15:07:56 -0700 (PDT)
+Message-Id: <20080509.150756.157662019.davem@davemloft.net>
+To: jesper@krogh.cc
+Cc: yhlu.kernel@gmail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: NIU - Sun Neptune 10g - Transmit timed out reset (2.6.24)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4824C936.9000103@krogh.cc>
+References: <482498D5.9060008@krogh.cc>
+	<20080509.143229.174354251.davem@davemloft.net>
+	<4824C936.9000103@krogh.cc>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On  9 May, Tino Keitel wrote:
->> On Wed, Apr 30, 2008 at 15:36:36 +0200, Stefan Richter wrote:
->>> If it works for all RBC devices (it should according to the spec...) &&
->>> your ICY Box exposes itself as RBC device (it should do so), then we
->>> don't need any changes to struct scsi_device and to sbp2/ firewire-sbp2.
->> 
->> Do you mean something like in the attached (untested) patch?
->> 
->> Regards,
->> Tino
->> 
->> diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
->> index 01cefbb..6b927f6 100644
->> --- a/drivers/scsi/sd.c
->> +++ b/drivers/scsi/sd.c
->> @@ -1787,8 +1787,13 @@ static int sd_start_stop_device(struct scsi_disk *sdkp, int start)
->>  	struct scsi_device *sdp = sdkp->device;
->>  	int res;
->>  
->> -	if (start)
->> +	if (start) {
->>  		cmd[4] |= 1;	/* START */
->> +		/* active power condition */
->> +		cmd[4] |= (sdp->type == TYPE_RBC) ? (1 << 4) : 0; 
->> +	} else
->> +		/* standby power condition */
->> +		cmd[4] |= (sdp->type == TYPE_RBC) ? (3 << 4) : 0 ; 
->>  
+From: Jesper Krogh <jesper@krogh.cc>
+Date: Fri, 09 May 2008 23:59:18 +0200
 
-PS:
-The power conditions should be supported by many more devices besides
-RBC devices.  Only SAT (and hence libata) and Linux' "File-backed USB
-Storage Gadget" (drivers/usb/gadget/file_storage.c) have objections
-against power condition.
+> David Miller wrote:
+> > From: Jesper Krogh <jesper@krogh.cc>
+> > Date: Fri, 09 May 2008 20:32:53 +0200
+> > 
+> >> When it works I doesnt seem to be able to get it pass 500MB/s.
+> > 
+> > With this card you really need multiple cpus and multiple threads
+> > sending data through the card in order to fill the 10Gb pipe.
+> > 
+> > Single connections will not fill the pipe.
+> 
+> The server is a Sun X4600 with 8 x dual-core CPU's, setup with 64
+> NFS-threads. The other end of the fiber goes into a switch with gigabit
+> ports connected to 48 dual-core cpus. The test was done doing a dd on a
+> 4.5GB file from the server to /dev/null on the clients.
 
-But it's less intrusive if we enable it only for RBC for now because we
-now have a good idea about how well it is supported by them.
--- 
-Stefan Richter
--=====-==--- -=-= -=--=
-http://arcgraph.de/sr/
+A single file transfer will not fill the pipe using this card, no
+matter how many cpus you have :-)
 
+The card is designed such that multiple parallel data streams over
+different connections result in the greatest throughput.
+
+> Should this setup not be able to fill the pipe?
+
+Nope, not with this card.
