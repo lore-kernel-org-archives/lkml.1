@@ -1,63 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755538AbYEIKIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756871AbYEIKJq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755538AbYEIKIs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 06:08:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750896AbYEIKIj
+	id S1756871AbYEIKJq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 06:09:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750774AbYEIKJi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 06:08:39 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49798 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750774AbYEIKIi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 06:08:38 -0400
-Date: Fri, 9 May 2008 12:08:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Hugh Dickins <hugh@veritas.com>, Frans Pop <elendil@planet.nl>,
-       Jesse Barnes <jesse.barnes@intel.com>, linux-kernel@vger.kernel.org,
-       "Packard, Keith" <keith.packard@intel.com>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: [git head] X86_PAT & mprotect
-Message-ID: <20080509100818.GD19617@elte.hu>
-References: <200805022122.03576.elendil@planet.nl> <200805040910.57088.elendil@planet.nl> <200805050857.57661.jesse.barnes@intel.com> <200805051932.41827.elendil@planet.nl> <20080506224240.GA18706@linux-os.sc.intel.com> <20080507070217.GD32195@elte.hu> <Pine.LNX.4.64.0805071941140.18916@blonde.site> <20080507232326.GB10757@linux-os.sc.intel.com>
+	Fri, 9 May 2008 06:09:38 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:40944 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750768AbYEIKJh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 06:09:37 -0400
+Date: Fri, 9 May 2008 19:08:25 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Roel Kluin <12o3l@tiscali.nl>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] SH: catch negative denormal_subf1() retval in denormal_add()
+Message-ID: <20080509100825.GA6069@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Roel Kluin <12o3l@tiscali.nl>, lkml <linux-kernel@vger.kernel.org>
+References: <4806CB92.6010402@tiscali.nl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080507232326.GB10757@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <4806CB92.6010402@tiscali.nl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Venki Pallipadi <venkatesh.pallipadi@intel.com> wrote:
-
-> > I've tried doing it slightly differently below, don't know whether 
-> > you'll consider it an improvement or not.
+On Thu, Apr 17, 2008 at 06:01:22AM +0200, Roel Kluin wrote:
+> 'ix' is unsigned but denormal_subf1() may return a negative int.
 > 
-> Hugh: Thanks for looking into this. Yes. I like your modified patch. 
-> Simpler and smaller.
+> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
 
-i have stuck your original patch into testing and nothing blew up so 
-far. Due to the mm/ bits this is not for the scope of x86.git, but 
-obviously it all looks good and is .26-worthy to me:
+I'm at a loss as to why you couldn't be bothered CC'ing the appropriate
+list or anyone else on this, when you seem to have worked it out for
+other patches.
 
- Acked-by: Ingo Molnar <mingo@elte.hu>
- Tested-by: Ingo Molnar <mingo@elte.hu>
-
-Venki, could you please send a full patch against -git that has 
-everything from Hugh included, with an updated changelog, for 
-Linus/Andrew to ack/apply?
-
-	Ingo
+Anyways, applied.
