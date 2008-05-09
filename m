@@ -1,117 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756782AbYEIH3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757796AbYEIHdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756782AbYEIH3S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 03:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbYEIH3H
+	id S1757796AbYEIHdT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 03:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbYEIHdG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 03:29:07 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:42980 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751224AbYEIH3F (ORCPT
+	Fri, 9 May 2008 03:33:06 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:60296 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751673AbYEIHdD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 03:29:05 -0400
-Date: Fri, 9 May 2008 09:28:35 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Ralf Baechle <ralf@linux-mips.org>,
-       Alessandro Zummo <a.zummo@towertech.it>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, rtc-linux@googlegroups.com,
-       i2c@lm-sensors.org, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>
-Subject: Re: [RFC][PATCH 2/4] RTC: SWARM I2C board initialization
-Message-ID: <20080509092835.3bbf0f55@hyperion.delvare>
-In-Reply-To: <Pine.LNX.4.55.0805082344040.5944@cliff.in.clinika.pl>
-References: <Pine.LNX.4.55.0805070031410.16173@cliff.in.clinika.pl>
-	<20080507085953.2c08b854@hyperion.delvare>
-	<Pine.LNX.4.55.0805072145040.25644@cliff.in.clinika.pl>
-	<20080508105905.3209c659@hyperion.delvare>
-	<Pine.LNX.4.55.0805082344040.5944@cliff.in.clinika.pl>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 9 May 2008 03:33:03 -0400
+Date: Fri, 9 May 2008 08:31:24 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Theodore Tso <tytso@MIT.EDU>
+cc: Glauber Costa <gcosta@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Possible regression?  2.6.26-rc1: T61s failure after suspend/resume
+In-Reply-To: <20080509025956.GC8871@mit.edu>
+Message-ID: <Pine.LNX.4.64.0805090814200.11886@blonde.site>
+References: <E1JuCBA-0002NZ-4E@closure.thunk.org> <Pine.LNX.4.64.0805082148060.3994@blonde.site>
+ <20080509025956.GC8871@mit.edu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Maciej,
-
-On Fri, 9 May 2008 00:10:47 +0100 (BST), Maciej W. Rozycki wrote:
-> > I'm not going to tell how bad I think the GNU coding standards are, the
-> > point here is that we don't follow them at all, so whatever they say is
-> > totally irrelevant. Read Documentation/CodingStyle, it describes what
+On Thu, 8 May 2008, Theodore Tso wrote:
+> On Thu, May 08, 2008 at 10:48:57PM +0100, Hugh Dickins wrote:
+> > It's such a good signature, but I've failed to make progress with it.
+> > Ted, please try doing the same (and check your logs for existing
+> > segfault messages): let's see if you get the same number ;)
+> > though I've no idea what it'd tell us.
 > 
->  Oh come on -- that's just common sense.  If something is good, there is
-> no point in discarding it without thinking, just because it is a part of a
-> bigger entity that we consider bad.  I consider it good not because it is
-> a part of the GNU standard, but because I have concluded that it is and it
-> is pure coincidence ;-) I have taken it from the said standard.
-
-Let me just quote you:
-
-"This is mostly habitual -- this is what the GNU Coding Standard specifies
-for comments and which is enforced for GNU software which I have dealt a
-lot with."
-
-You didn't say it was common sense. You did say that it was what the
-GNU Coding Standard specified, and as a consequence, what you were used
-to. So please keep your "oh come on" for yourself, you pointed the
-discussion in this direction yourself.
-
->                                                                   But as I
-> said, this is a minor nit here and I can resist from adding extraneous
-> spaces in pieces of code you are interested in as long as I am able to
-> track which ones they actually are.
-
-What matters is not "the pieces of code I am interested in", but the
-pieces of code _you_ are the master of, or not. As explained somewhere
-else in this thread, you are free to use whatever style you like (as
-long as it complies with Documentation/CodingStyle, that is) in new
-code you write and in code you maintain. For all the rest, you should
-stick to the surrounding style. This is common sense, as you'd say.
-
-> (...)
->  Well, arch/mips/sibyte/swarm/ is included for all the three above as well 
-> as a couple of other I may not necessarily be sure what they are even.  So 
-> this should be of no concern.
+> I cant say see any such segfaults.  The only ones in my logs are
+> these, and they seem to be correlated to right after a system boot:
 > 
->  BTW, do you mean i2c_add_numbered_adapter() will fail if no devices have
-> been declared to exist on the given bus with i2c_register_board_info()?  
-> That sounds strange...
+> May  5 09:35:02 closure kernel: [ 2249.245926] hald-addon-keyb[8631]: segfault at fffffffd ip b7e827bc sp bffcf1a8 error 4 in libc-2.6.1.so[b7e15000+144000]
+> May  5 09:35:02 closure kernel: [ 2249.252562] hald-addon-keyb[8630]: segfault at fffffffd ip b7dcf7bc sp bf81b9d8 error 4 in libc-2.6.1.so[b7d62000+144000]
 
-i2c_add_numbered_adapter() _may_ fail if no I2C devices have been
-declared _and_ other i2c adapters are registered using
-i2c_add_adapter(). When you declare I2C devices, i2c-core reserves the
-bus numbers in question for i2c_add_numbered_adapter() and they cannot
-be used for i2c_add_adapter(). This is what guarantees that the calls
-to i2c_add_numbered_adapter() (in i2c-sibyte for example) will succeed.
-If no I2C devices are declared, bus numbers are not reserved, so if it
-happens that another I2C bus driver registers itself before i2c-sibyte
-does, when i2c-sibyte calls i2c_add_numbered_adapter(), the bus number
-is already in use and the call fails.
+I've grown accustomed to having a hal-whatever segfault just after startup
+on the T43p, and pay no attention to those: I agree yours above are in
+that category, and of no relevance to our -rc1 concerns.
 
-I admit that this is unlikely to happen, but depending on what exact
-hardware there is on the system and what drivers are built-in, it could
-happen. I think it is a weakness of i2c-core, it should allow platform
-code to reserve i2c bus numbers regardless of what devices are
-registered. I seem to remember I said that when the code was added to
-the kernel already. I guess we'll have to fix it the day it actually
-breaks.
+Yours may indeed have nothing to do with mine: the absence of (interesting)
+segfault in the logs doesn't let me draw any conclusion.  If you can
+get through a successful make -j3 kernel build after resume, without
+X in the way, then I shall conclude yours is not mine.  But for now
+I'll assume I'm on my own and plug away at it somehow.
 
-BTW, i2c-sibyte should be converted to a proper platform driver, so
-that only platforms with such a device instantiate it.
+> 
+> I did find this, but it was from an attempt to do a bisect (see
+> below).  In this case the system lasted half-way through the boot
+> sequence (although not before the X server started) before it crashed.
+> I'm beginning to think that "git bisecting" in the middle of the merge
+> window just doesn't work well because some people aren't adequately
+> checking to make sure the their patch series are "git bisectable" in
+> terms of being bootable between arbitrary patches in their series.
 
->                         Note in all cases there are EEPROMs (onboard ones
-> as well as optionally SPD ones) on both buses on Broadcom/SiByte boards
-> and they are handled by a legacy client driver.  The Broadcom SOC is
-> actually capable to bootstrap from one of these EEPROMs (rather than form
-> the usual system parallel Flash ROM).
+I'm actually impressed by how well people generally keep to that
+discipline; I see the problem as more that when there's such a
+quantity of changes flowing in, the chance of one bug interfering
+with the hunt for another bug goes up and up.
 
-Which legacy driver, "eeprom"? You should probably look into David
-Brownell's at24c driver:
-http://lists.lm-sensors.org/pipermail/i2c/2008-April/003307.html
-If it gets enough attention and testing, it could go upstream quickly.
+> So what I plan to do when I have a spare 10-15 hours is to fetch the git
+> id's from patch-2.6.25-git*.id, which should hopefully represent
+> somewhat more likely-to-bootable git bisection points, and try to do a
+> git bisect using those points to see if the resulting kernels are a
+> bit more likely to last long enough so I can test for this particular
+> regression.
 
--- 
-Jean Delvare
+Good luck: doesn't sound like so much fun that I'd want to do the same!
+
+Hugh
+
+> 
+>        	       	    	      	- Ted
+> 
+> P.S.  The "-numa" is due to a mistake that crept in via one of the
+> patch trees (and which set -LOCALVERSION in the top-level Makefile; it
+> got reverted later.)
+> 
+> 
+> [    2.097917] 
+> [    2.097919] =================================
+> [    2.098059] [ INFO: inconsistent lock state ]
+> [    2.098136] 2.6.25-numa-04462-g10c993a #23
+> [    2.098209] ---------------------------------
+> [    2.098284] inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
+> [    2.098359] swapper/0 [HC0[0]:SC0[0]:HE1:SE1] takes:
+> [    2.098434]  (&rq->rq_lock_key){++..}, at: [sched_clock_idle_wakeup_event+67/116] sched_clock_idle_wakeup_event+0x43/0x74
+> [    2.098753] {in-hardirq-W} state was registered at:
+> [    2.098833]   [__lock_acquire+1023/2834] __lock_acquire+0x3ff/0xb12
+> [    2.099082]   [lock_acquire+106/144] lock_acquire+0x6a/0x90
+> [    2.099329]   [_spin_lock+28/73] _spin_lock+0x1c/0x49
+> [    2.099590]   [scheduler_tick+67/443] scheduler_tick+0x43/0x1bb
+> [    2.099836]   [update_process_times+61/73] update_process_times+0x3d/0x49
+> [    2.100083]   [tick_periodic+102/114] tick_periodic+0x66/0x72
+> [    2.100327]   [tick_handle_periodic+25/106] tick_handle_periodic+0x19/0x6a
+> [    2.100574]   [timer_interrupt+72/115] timer_interrupt+0x48/0x73
+> [    2.100822]   [handle_IRQ_event+26/79] handle_IRQ_event+0x1a/0x4f
+> [    2.101064]   [handle_level_irq+127/202] handle_level_irq+0x7f/0xca
+> [    2.101316]   [do_IRQ+169/210] do_IRQ+0xa9/0xd2
+> [    2.101563]   [<ffffffff>] 0xffffffff
+> [    2.101806] irq event stamp: 1772935
+> [    2.101883] hardirqs last  enabled at (1772935): [native_sched_clock+231/255] native_sched_clock+0xe7/0xff
+> [    2.102091] hardirqs last disabled at (1772934): [native_sched_clock+109/255] native_sched_clock+0x6d/0xff
+> [    2.102298] softirqs last  enabled at (1772496): [__do_softirq+249/255] __do_softirq+0xf9/0xff
+> [    2.102501] softirqs last disabled at (1772491): [do_softirq+113/206] do_softirq+0x71/0xce
+> [    2.102708] 
+> [    2.102709] other info that might help us debug this:
+> [    2.102850] no locks held by swapper/0.
+> [    2.102923] 
+> [    2.102924] stack backtrace:
+> [    2.103067] Pid: 0, comm: swapper Not tainted 2.6.25-numa-04462-g10c993a #23
+> [    2.103145]  [print_usage_bug+263/276] print_usage_bug+0x107/0x114
+> [    2.103278]  [mark_lock+491/924] mark_lock+0x1eb/0x39c
+> [    2.103417]  [__lock_acquire+1140/2834] __lock_acquire+0x474/0xb12
+> [    2.103547]  [restore_nocheck+18/21] ? restore_nocheck+0x12/0x15
+> [    2.103740]  [native_sched_clock+231/255] ? native_sched_clock+0xe7/0xff
+> [    2.103929]  [lock_acquire+106/144] lock_acquire+0x6a/0x90
+> [    2.104065]  [sched_clock_idle_wakeup_event+67/116] ? sched_clock_idle_wakeup_event+0x43/0x74
+> [    2.104255]  [_spin_lock+28/73] _spin_lock+0x1c/0x49
+> [    2.104392]  [sched_clock_idle_wakeup_event+67/116] ? sched_clock_idle_wakeup_event+0x43/0x74
+> [    2.104582]  [sched_clock_idle_wakeup_event+67/116] sched_clock_idle_wakeup_event+0x43/0x74
+> [    2.104715]  [<f886c3b3>] acpi_idle_enter_simple+0x19a/0x21b [processor]
+> [    2.104858]  [<f886bfa5>] acpi_idle_enter_bm+0xbe/0x332 [processor]
+> [    2.104999]  [cpuidle_idle_call+99/143] cpuidle_idle_call+0x63/0x8f
+> [    2.105135]  [cpuidle_idle_call+0/143] ? cpuidle_idle_call+0x0/0x8f
+> [    2.105330]  [cpu_idle+182/214] cpu_idle+0xb6/0xd6
+> [    2.105463]  [rest_init+73/75] rest_init+0x49/0x4b
+> [    2.105596]  =======================
