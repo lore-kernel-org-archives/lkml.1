@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764304AbYEIDB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761245AbYEIDPm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764304AbYEIDB2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 8 May 2008 23:01:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758872AbYEIDBO
+	id S1761245AbYEIDPm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 8 May 2008 23:15:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754404AbYEIDPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 8 May 2008 23:01:14 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:3789 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758139AbYEIDBM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 8 May 2008 23:01:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=iXXLAYExIo981cRx3CmBkK3UD8oe2uPwATI2V63lZsIvsNSU1NylfyfZojHxGrWhB7lyWtw37sIcSCtF8ASWgkbyB6zDE4z3P7cWuSnWQLjDrATpOtfG3jm8ueTdrT/d+ht/0UTUrll1qrgTdzQpLNWpXbLWox3cO3pVUrii768=
-Message-ID: <4823BE6F.1090307@gmail.com>
-Date: Fri, 09 May 2008 12:01:03 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Thu, 8 May 2008 23:15:33 -0400
+Received: from ozlabs.org ([203.10.76.45]:39674 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752098AbYEIDPc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 8 May 2008 23:15:32 -0400
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Markus Trippelsdorf <markus@trippelsdorf.de>, linux-ide@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Takashi Iwai <tiwai@suse.de>,
-       marc.c.dionne@gmail.com, dl9pf@gmx.de, bug-track@fisher-privat.net,
-       sitsofe@yahoo.com
-Subject: Re: [PATCH] Re: [git patches] libata updates - (improve post-reset
- device ready test) regression
-References: <20080506154847.GA15299@havoc.gtf.org> <20080507145616.GA2210@gentoox2.trippelsdorf.de> <48231DAF.7070900@garzik.org> <4823BD8E.40109@gmail.com>
-In-Reply-To: <4823BD8E.40109@gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18467.49613.367933.672004@cargo.ozlabs.ibm.com>
+Date: Fri, 9 May 2008 13:15:25 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [BUG] 2.6.25-rc2-git4 - Regression Kernel oops  while running
+ kernbench and tbench on powerpc
+In-Reply-To: <4810231B.6020105@linux.vnet.ibm.com>
+References: <47BC40BC.3040405@linux.vnet.ibm.com>
+	<18427.11023.8067.795279@cargo.ozlabs.ibm.com>
+	<47FB5C5A.5020104@linux.vnet.ibm.com>
+	<18427.65299.403151.344959@cargo.ozlabs.ibm.com>
+	<47FC5227.3030501@linux.vnet.ibm.com>
+	<18435.11286.201115.396713@cargo.ozlabs.ibm.com>
+	<48035C03.10104@linux.vnet.ibm.com>
+	<18446.61538.620549.715043@cargo.ozlabs.ibm.com>
+	<4810231B.6020105@linux.vnet.ibm.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Markus, Alexey, Marc, which controllers are you using?
+Kamalesh Babulal writes:
 
-Never mind, found the rest of the thread.
+> Thanks, after applying the patch the oops is not reproducible on the machine. The console
+> log had no message starting with SLB: or FWNMI:. I have updated the bugzilla also.
+> 
+> Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 
-Thanks.
+Could you test Linus' current git tree and see if you can reproduce
+the same problem now?  The patch I sent upstream was a little
+different from the one you tested, though it should have the same
+effect, and I would like to be sure that it is just as effective at
+fixing the bug.
 
--- 
-tejun
+Thanks,
+Paul.
