@@ -1,157 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756644AbYEJPvL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756884AbYEJPx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756644AbYEJPvL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 May 2008 11:51:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752955AbYEJPuz
+	id S1756884AbYEJPx1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 May 2008 11:53:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752816AbYEJPxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 May 2008 11:50:55 -0400
-Received: from mail0.scram.de ([78.47.204.202]:58480 "EHLO mail.scram.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752886AbYEJPuy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 May 2008 11:50:54 -0400
-X-Spam-Score: -4.094
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
- * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
- *      [score: 0.0000]
- *  0.3 AWL AWL: From: address is in the auto white-list
-Message-ID: <4825C445.4020004@scram.de>
-Date: Sat, 10 May 2008 17:50:29 +0200
-From: Jochen Friedrich <jochen@scram.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080420)
+	Sat, 10 May 2008 11:53:16 -0400
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:14948 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752779AbYEJPxP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 May 2008 11:53:15 -0400
+X-IronPort-AV: E=Sophos;i="4.27,465,1204531200"; 
+   d="scan'208";a="26352875"
+From: Roland Dreier <rdreier@cisco.com>
+To: Jesper Krogh <jesper@krogh.cc>
+Cc: David Dillow <dillowda@ornl.gov>, Rick Jones <rick.jones2@hp.com>,
+       David Miller <davem@davemloft.net>, yhlu.kernel@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: NIU - Sun Neptune 10g - Transmit timed out reset (2.6.24)
+References: <86802c440805071130m62c1f4edydb3316dac4a2aba2@mail.gmail.com>
+	<20080507.141521.193714938.davem@davemloft.net>
+	<482498D5.9060008@krogh.cc>
+	<20080509.143229.174354251.davem@davemloft.net>
+	<4824C936.9000103@krogh.cc> <4824CE43.8060203@hp.com>
+	<4824D4C0.10201@krogh.cc> <1210374525.21330.6.camel@lap75545.ornl.gov>
+	<48253F33.3000109@krogh.cc>
+X-Message-Flag: Warning: May contain useful information
+Date: Sat, 10 May 2008 08:53:14 -0700
+In-Reply-To: <48253F33.3000109@krogh.cc> (Jesper Krogh's message of "Sat, 10
+	May 2008 08:22:43 +0200")
+Message-ID: <adave1mp34l.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-CC: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       "Kernel, Linux" <linux-kernel@vger.kernel.org>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Scott Wood <scottwood@freescale.com>, Linux I2C <i2c@lm-sensors.org>,
-       Jean Delvare <khali@linux-fr.org>
-Subject: [PATCH] [POWERPC] Add i2c pins to dts and board setup
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 10 May 2008 15:53:14.0500 (UTC) FILETIME=[F4BE5C40:01C8B2B5]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Initialize I2C pins on boards with CPM1/CPM2 controllers.
+ > Ok. It must be x8 then:
+ >                 Link: Supported Speed 2.5Gb/s, Width x8, ASPM L0s, Port 1
 
-Signed-off-by: Jochen Friedrich <jochen@scram.de>
----
- arch/powerpc/boot/dts/mpc8272ads.dts         |   10 ++++++++++
- arch/powerpc/boot/dts/mpc866ads.dts          |   10 ++++++++++
- arch/powerpc/boot/dts/mpc885ads.dts          |   10 ++++++++++
- arch/powerpc/platforms/82xx/mpc8272_ads.c    |    4 ++++
- arch/powerpc/platforms/8xx/mpc86xads_setup.c |    4 ++++
- arch/powerpc/platforms/8xx/mpc885ads_setup.c |    3 +++
- 6 files changed, 41 insertions(+), 0 deletions(-)
+Actually that line is showing the supported capabilities... you want the
+second line a few down that shows the actual status.
 
-diff --git a/arch/powerpc/boot/dts/mpc8272ads.dts b/arch/powerpc/boot/dts/mpc8272ads.dts
-index 46e2da3..57abcc1 100644
---- a/arch/powerpc/boot/dts/mpc8272ads.dts
-+++ b/arch/powerpc/boot/dts/mpc8272ads.dts
-@@ -217,6 +217,16 @@
- 				linux,network-index = <1>;
- 				fsl,cpm-command = <0x16200300>;
- 			};
-+
-+			i2c@11860 {
-+				compatible = "fsl,mpc8272-i2c",
-+					     "fsl,cpm2-i2c",
-+					     "fsl,cpm-i2c";
-+				reg = <11860 20 8afc 2>;
-+				interrupts = <1 8>;
-+				interrupt-parent = <&PIC>;
-+				fsl,cpm-command = <29600000>;
-+			};
- 		};
- 
- 		PIC: interrupt-controller@10c00 {
-diff --git a/arch/powerpc/boot/dts/mpc866ads.dts b/arch/powerpc/boot/dts/mpc866ads.dts
-index 765e43c..84c190e 100644
---- a/arch/powerpc/boot/dts/mpc866ads.dts
-+++ b/arch/powerpc/boot/dts/mpc866ads.dts
-@@ -171,6 +171,16 @@
- 				fsl,cpm-command = <0000>;
- 				linux,network-index = <1>;
- 			};
-+
-+			i2c@860 {
-+				compatible = "fsl,mpc866-i2c",
-+					     "fsl,cpm1-i2c",
-+					     "fsl,cpm-i2c";
-+				reg = <860 20 3c80 30>;
-+				interrupts = <10>;
-+				interrupt-parent = <&CPM_PIC>;
-+				fsl,cpm-command = <0010>;
-+			};
- 		};
- 	};
- 
-diff --git a/arch/powerpc/boot/dts/mpc885ads.dts b/arch/powerpc/boot/dts/mpc885ads.dts
-index 9895043..67d0e8d 100644
---- a/arch/powerpc/boot/dts/mpc885ads.dts
-+++ b/arch/powerpc/boot/dts/mpc885ads.dts
-@@ -215,6 +215,16 @@
- 				fsl,cpm-command = <0x80>;
- 				linux,network-index = <2>;
- 			};
-+
-+			i2c@860 {
-+				compatible = "fsl,mpc885-i2c",
-+					     "fsl,cpm1-i2c",
-+					     "fsl,cpm-i2c";
-+				reg = <860 20 3c80 30>;
-+				interrupts = <10>;
-+				interrupt-parent = <&CPM_PIC>;
-+				fsl,cpm-command = <0010>;
-+			};
- 		};
- 	};
- 
-diff --git a/arch/powerpc/platforms/82xx/mpc8272_ads.c b/arch/powerpc/platforms/82xx/mpc8272_ads.c
-index 7d30187..8054c68 100644
---- a/arch/powerpc/platforms/82xx/mpc8272_ads.c
-+++ b/arch/powerpc/platforms/82xx/mpc8272_ads.c
-@@ -96,6 +96,10 @@ static struct cpm_pin mpc8272_ads_pins[] = {
- 	{1, 31, CPM_PIN_OUTPUT | CPM_PIN_PRIMARY},
- 	{2, 16, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
- 	{2, 17, CPM_PIN_INPUT | CPM_PIN_PRIMARY},
-+
-+	/* I2C */
-+	{3, 14, CPM_PIN_INPUT | CPM_PIN_SECONDARY | CPM_PIN_OPENDRAIN},
-+	{3, 15, CPM_PIN_INPUT | CPM_PIN_SECONDARY | CPM_PIN_OPENDRAIN},
- };
- 
- static void __init init_ioports(void)
-diff --git a/arch/powerpc/platforms/8xx/mpc86xads_setup.c b/arch/powerpc/platforms/8xx/mpc86xads_setup.c
-index c028a5b..caaec29 100644
---- a/arch/powerpc/platforms/8xx/mpc86xads_setup.c
-+++ b/arch/powerpc/platforms/8xx/mpc86xads_setup.c
-@@ -65,6 +65,10 @@ static struct cpm_pin mpc866ads_pins[] = {
- 	{CPM_PORTD, 13, CPM_PIN_OUTPUT},
- 	{CPM_PORTD, 14, CPM_PIN_OUTPUT},
- 	{CPM_PORTD, 15, CPM_PIN_OUTPUT},
-+
-+	/* I2C */
-+	{CPM_PORTB, 26, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
-+	{CPM_PORTB, 27, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
- };
- 
- static void __init init_ioports(void)
-diff --git a/arch/powerpc/platforms/8xx/mpc885ads_setup.c b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-index 6e7ded0..45ed6cd 100644
---- a/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-+++ b/arch/powerpc/platforms/8xx/mpc885ads_setup.c
-@@ -158,6 +158,9 @@ static struct cpm_pin mpc885ads_pins[] = {
- 	{CPM_PORTE, 28, CPM_PIN_OUTPUT},
- 	{CPM_PORTE, 29, CPM_PIN_OUTPUT},
- #endif
-+	/* I2C */
-+	{CPM_PORTB, 26, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
-+	{CPM_PORTB, 27, CPM_PIN_INPUT | CPM_PIN_OPENDRAIN},
- };
- 
- static void __init init_ioports(void)
--- 
-1.5.5.1
-
+ - R.
