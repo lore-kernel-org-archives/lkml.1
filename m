@@ -1,63 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757892AbYEJVTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757954AbYEJVYc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757892AbYEJVTb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 May 2008 17:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755047AbYEJVTW
+	id S1757954AbYEJVYc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 May 2008 17:24:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755491AbYEJVYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 May 2008 17:19:22 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:42253 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753931AbYEJVTV (ORCPT
+	Sat, 10 May 2008 17:24:24 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:58339 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755416AbYEJVYY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 May 2008 17:19:21 -0400
-Date: Sat, 10 May 2008 15:19:04 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: dougg@torque.net, James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Greg KH <greg@kroah.com>, kernel list <linux-kernel@vger.kernel.org>,
-       Linux-Scsi <linux-scsi@vger.kernel.org>
-Subject: Re: lsscsi is broken
-Message-ID: <20080510211904.GN19219@parisc-linux.org>
-References: <86802c440805091638q59031edbifa439344acf0c971@mail.gmail.com> <4825EAA0.5030305@torque.net> <86802c440805101306w64b5c72dn4dbfea74a6557c2f@mail.gmail.com>
-MIME-Version: 1.0
+	Sat, 10 May 2008 17:24:24 -0400
+Date: Sat, 10 May 2008 23:31:35 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Vegard Nossum <vegard.nossum@gmail.com>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       John Reiser <jreiser@BitWagon.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Daniel Walker <dwalker@mvista.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Josh Aune <luken@omner.org>,
+       Pekka Paalanen <pq@iki.fi>
+Subject: Re: [ANNOUNCE] kmemcheck v7
+Message-ID: <20080510213135.GD31954@one.firstfloor.org>
+References: <47F630AE.7050801@gmail.com> <e2e108260805100207l13b67706h871f5f1c550e58b3@mail.gmail.com> <482565A5.8010503@cs.helsinki.fi> <e2e108260805100404h63f02194r62e53f79ae2a403f@mail.gmail.com> <19f34abd0805100502k150e3636x33831230d688dd92@mail.gmail.com> <20080510123744.GB19109@one.firstfloor.org> <4825D8B4.3060600@goop.org> <20080510174841.GC31954@one.firstfloor.org> <4826095F.3070501@goop.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <86802c440805101306w64b5c72dn4dbfea74a6557c2f@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <4826095F.3070501@goop.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 10, 2008 at 01:06:36PM -0700, Yinghai Lu wrote:
-> On Sat, May 10, 2008 at 11:34 AM, Douglas Gilbert <dougg@torque.net> wrote:
-> > Which version of lsscsi?
-> > [For example what is the output of 'lsscsi --version'.]
-> >
-> > If it is not version 0.20 beta could you try it.
-> > See: http://sg.torque.net/scsi/lsscsi.html
-> 
-> it is the one in Opensuse 10.3
+> Yeah, as soon as the stack pointer changes, everything below it is 
+> invalidated (except if the stack-pointer change was actually determined 
+> to be a stack switch).
 
-OK, can you do:
+It might in theory, but at least it doesn't for my test program.
 
-strace -e trace=file lsscsi
-
-on my system, it looks at:
-
-open("/sys/bus/scsi/devices", O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_DIRECTORY|0x80000) = 3
-open("/sys/bus/scsi/devices/0:0:0:0/type", O_RDONLY) = 3
-open("/sys/bus/scsi/devices/0:0:0:0/vendor", O_RDONLY) = 3
-open("/sys/bus/scsi/devices/0:0:0:0/model", O_RDONLY) = 3
-open("/sys/bus/scsi/devices/0:0:0:0/rev", O_RDONLY) = 3
-open("/sys/bus/scsi/devices/0:0:0:0", O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_DIRECTORY|0x80000) = 3
-[0:0:0:0]    disk    Sony     MSC-U03          1.00  -       
-
-Is it trying to access the same files on your system?  How do the
-contents of those files differ between a working and a non-working
-kernel?
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+-Andi
