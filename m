@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757311AbYEJVvZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757948AbYEJVw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757311AbYEJVvZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 May 2008 17:51:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbYEJVvS
+	id S1757948AbYEJVw7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 May 2008 17:52:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753737AbYEJVwu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 May 2008 17:51:18 -0400
-Received: from smtp2.sssup.it ([193.205.80.100]:50015 "EHLO smtp2.sssup.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753276AbYEJVvR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 May 2008 17:51:17 -0400
-Date: Sat, 10 May 2008 23:56:18 +0200
-From: Fabio Checconi <fchecconi@gmail.com>
-To: Matthew <jackdachef@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       jens.axboe@oracle.com
-Subject: Re: performance "regression" in cfq compared to anticipatory, deadline and noop
-Message-ID: <20080510215618.GB78758@gandalf.sssup.it>
-References: <e85b9d30805101218u4b8f0c2bw47af2384133a5c77@mail.gmail.com> <20080510200053.GA78555@gandalf.sssup.it> <e85b9d30805101339je48a55dnd2fbd5601c27a3be@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e85b9d30805101339je48a55dnd2fbd5601c27a3be@mail.gmail.com>
-User-Agent: Mutt/1.4.2.3i
+	Sat, 10 May 2008 17:52:50 -0400
+Received: from py-out-1112.google.com ([64.233.166.177]:16634 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753530AbYEJVwt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 May 2008 17:52:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
+        b=E7iwgnLaJRvecC6onOdwEtSYflaHKftG/PyGBPg2U1WnANeDlm0tlPD8Od0SaMoE8Fq5N67jsT2zwC+tQqyBG04Naxh7ChTgEvZ2qE4gFYAvaXHgyCn4D0+32lR2KvZmR3BdCv7bSxESKoIxeBMXVApPCzsw6TkTE3qR4Bnhnv0=
+Message-ID: <4826192E.1030409@gmail.com>
+Date: Sat, 10 May 2008 16:52:46 -0500
+From: "Dylan R. Semler" <dylan.semler@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: jkosina@suse.cz
+CC: torvalds@linux-foundation.org, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 1/1] USB HID/HIDBP DRIVERS: Add iMON LCDs to HID blacklist
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Matthew <jackdachef@gmail.com>
-> Date: Sat, May 10, 2008 10:39:50PM +0200
->
-> > 2) Does using a bigger value of slice_idle increase the throughput?
-> >
-> 
-> Hi,
-> 
-> 2) a bigger value even made it worse, setting it to "0" however
-> seemingly "fixed" it, I however don't know how the overall
-> effect/impact is, this will need some more real-world testing ;)
-> 
+From: Dylan R Semler <dylan.semler@gmail.com>
 
-Well, it's not a fix... the overall effect is that you should end
-up with more seeks (and so reduced throughput) on loads consisting
-of more than one process, and at least one of those processes is a
-synchronous sequential reader.
+The new iMON LCDs from SoundGraph need to be blacklisted from HID in 
+order to be used by lirc.
+This patch adds vendor and device IDs for iMON LCDs and adds them to the 
+blacklist.
 
+Signed-off-by: Dylan R Semler dylan.semler@gmail.com
+---
+--- vanilla-2.6.25/drivers/hid/usbhid/hid-quirks.c.orig 2008-05-10 
+14:22:19.000000000 -0500
++++ vanilla-2.6.25/drivers/hid/usbhid/hid-quirks.c 2008-05-10 
+14:20:37.000000000 -0500
+@@ -374,6 +374,9 @@
+#define USB_VENDOR_ID_SONY 0x054c
+#define USB_DEVICE_ID_SONY_PS3_CONTROLLER 0x0268
 
-> one side-node / question:
-> 
-> will this cause more wakeups on the cpu and/or decrease battery
-> runtime on, e.g. laptops ?
-> 
++#define USB_VENDOR_ID_SOUNDGRAPH                0x15c2
++#define USB_DEVICE_ID_SOUNDGRAPH_IMON_LCD       0x0038
++
+#define USB_VENDOR_ID_SUN 0x0430
+#define USB_DEVICE_ID_RARITAN_KVM_DONGLE 0xcdab
 
-I don't know the overall effect on battery life, btw with no idling
-you have one less timer active in the system (that however, depending
-on the load, does not fire frequently) and more continuous disk
-activity.
+@@ -570,6 +573,7 @@ static const struct hid_blacklist {
+{ USB_VENDOR_ID_PANJIT, 0x0002, HID_QUIRK_IGNORE },
+{ USB_VENDOR_ID_PANJIT, 0x0003, HID_QUIRK_IGNORE },
+{ USB_VENDOR_ID_PANJIT, 0x0004, HID_QUIRK_IGNORE },
++ { USB_VENDOR_ID_SOUNDGRAPH, USB_DEVICE_ID_SOUNDGRAPH_IMON_LCD, 
+HID_QUIRK_IGNORE },
+{ USB_VENDOR_ID_VERNIER, USB_DEVICE_ID_VERNIER_LABPRO, HID_QUIRK_IGNORE },
+{ USB_VENDOR_ID_VERNIER, USB_DEVICE_ID_VERNIER_GOTEMP, HID_QUIRK_IGNORE },
+{ USB_VENDOR_ID_VERNIER, USB_DEVICE_ID_VERNIER_SKIP, HID_QUIRK_IGNORE },
+
