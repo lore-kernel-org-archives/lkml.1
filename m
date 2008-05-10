@@ -1,145 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758094AbYEJDLQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759181AbYEJDLe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758094AbYEJDLQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 23:11:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbYEJDJZ
+	id S1759181AbYEJDLe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 23:11:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbYEJDJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 23:09:25 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55016 "EHLO
+	Fri, 9 May 2008 23:09:29 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55013 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751460AbYEJDJR (ORCPT
+	with ESMTP id S1751135AbYEJDJR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 9 May 2008 23:09:17 -0400
-Message-Id: <20080510030915.978978961@sgi.com>
-References: <20080510030831.796641881@sgi.com>
+Message-Id: <20080510030831.796641881@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 09 May 2008 20:08:37 -0700
+Date: Fri, 09 May 2008 20:08:31 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org
 CC: linux-fsdevel@vger.kernel.org
 Cc: Mel Gorman <mel@skynet.ie>
 Cc: andi@firstfloor.org
 Cc: Rik van Riel <riel@redhat.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: mpm@selenic.com
-Subject: [patch 06/21] slub: Add KICKABLE to avoid repeated kick() attempts
-Content-Disposition: inline; filename=0006-SLUB-Add-KICKABLE-to-avoid-repeated-kick-attempts.patch
+Subject: [patch 00/21] Slab Fragmentation Reduction V12
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a flag KICKABLE to be set on slabs with a defragmentation method
+V11->V12:
+- Pekka and me fixed various minor issues pointed out by Andrew.
+- Split ext2/3/4 defrag support patches.
+- Add more documentation
+- Revise the way that slab defrag is triggered from reclaim. No longer
+  use a timeout but track the amount of slab reclaim done by the shrinkers.
+  Add a field in /proc/sys/vm/slab_defrag_limit to control the threshold.
+- Display current slab_defrag_counters in /proc/zoneinfo (for a zone) and
+  /proc/sys/vm/slab_defrag_count (for global reclaim).
+- Add new config vaue slab_defrag_limit to /proc/sys/vm/slab_defrag_limit
+- Add a patch that obsoletes SLAB and explains why SLOB does not support
+  defrag (Either of those could be theoretically equipped to support
+  slab defrag in some way but it seems that Andrew/Linus want to reduce
+  the number of slab allocators).
 
-Clear the flag if a kick action is not successful in reducing the
-number of objects in a slab. This will avoid future attempts to
-kick objects out.
+Note that I am off till next Wednesday... my responsiveness will be limited
+till then.
 
-The KICKABLE flag is set again when all objects of the slab have been
-allocated (Occurs during removal of a slab from the partial lists).
+Slab fragmentation is mainly an issue if Linux is used as a fileserver
+and large amounts of dentries, inodes and buffer heads accumulate. In some
+load situations the slabs become very sparsely populated so that a lot of
+memory is wasted by slabs that only contain one or a few objects. In
+extreme cases the performance of a machine will become sluggish since
+we are continually running reclaim. Slab defragmentation adds the
+capability to recover the memory that is wasted.
 
-Reviewed-by: Rik van Riel <riel@redhat.com>
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- mm/slub.c |   35 ++++++++++++++++++++++++++++++++---
- 1 file changed, 32 insertions(+), 3 deletions(-)
+Memory reclaim for the following slab caches is possible:
 
-Index: linux-2.6/mm/slub.c
-===================================================================
---- linux-2.6.orig/mm/slub.c	2008-05-05 18:49:00.043910468 -0700
-+++ linux-2.6/mm/slub.c	2008-05-05 18:49:10.851410275 -0700
-@@ -103,6 +103,7 @@
-  */
- 
- #define FROZEN (1 << PG_active)
-+#define KICKABLE (1 << PG_dirty)
- 
- #ifdef CONFIG_SLUB_DEBUG
- #define SLABDEBUG (1 << PG_error)
-@@ -140,6 +141,21 @@ static inline void ClearSlabDebug(struct
- 	page->flags &= ~SLABDEBUG;
- }
- 
-+static inline int SlabKickable(struct page *page)
-+{
-+	return page->flags & KICKABLE;
-+}
-+
-+static inline void SetSlabKickable(struct page *page)
-+{
-+	page->flags |= KICKABLE;
-+}
-+
-+static inline void ClearSlabKickable(struct page *page)
-+{
-+	page->flags &= ~KICKABLE;
-+}
-+
- /*
-  * Issues still to be resolved:
-  *
-@@ -1163,6 +1179,9 @@ static struct page *new_slab(struct kmem
- 			SLAB_STORE_USER | SLAB_TRACE))
- 		SetSlabDebug(page);
- 
-+	if (s->kick)
-+		SetSlabKickable(page);
-+
- 	start = page_address(page);
- 
- 	if (unlikely(s->flags & SLAB_POISON))
-@@ -1203,6 +1222,7 @@ static void __free_slab(struct kmem_cach
- 		NR_SLAB_RECLAIMABLE : NR_SLAB_UNRECLAIMABLE,
- 		-pages);
- 
-+	ClearSlabKickable(page);
- 	__ClearPageSlab(page);
- 	reset_page_mapcount(page);
- 	__free_pages(page, order);
-@@ -1412,6 +1432,8 @@ static void unfreeze_slab(struct kmem_ca
- 			stat(c, DEACTIVATE_FULL);
- 			if (SlabDebug(page) && (s->flags & SLAB_STORE_USER))
- 				add_full(n, page);
-+			if (s->kick)
-+				SetSlabKickable(page);
- 		}
- 		slab_unlock(page);
- 	} else {
-@@ -2836,7 +2858,7 @@ static int kmem_cache_vacate(struct page
- 	s = page->slab;
- 	objects = page->objects;
- 	map = scratch + objects * sizeof(void **);
--	if (!page->inuse || !s->kick)
-+	if (!page->inuse || !s->kick || !SlabKickable(page))
- 		goto out;
- 
- 	/* Determine used objects */
-@@ -2874,6 +2896,9 @@ out:
- 	 * Check the result and unfreeze the slab
- 	 */
- 	leftover = page->inuse;
-+	if (leftover)
-+		/* Unsuccessful reclaim. Avoid future reclaim attempts. */
-+		ClearSlabKickable(page);
- 	unfreeze_slab(s, page, leftover > 0);
- 	local_irq_restore(flags);
- 	return leftover;
-@@ -2930,10 +2955,14 @@ static unsigned long __kmem_cache_shrink
- 			continue;
- 
- 		if (page->inuse) {
--			if (page->inuse * 100 >=
-+			if (!SlabKickable(page) || page->inuse * 100 >=
- 					s->defrag_ratio * page->objects) {
- 				slab_unlock(page);
--				/* Slab contains enough objects */
-+				/*
-+				 * Slab contains enough objects
-+				 * or we alrady tried reclaim before and
-+				 * it failed. Skip this one.
-+				 */
- 				continue;
- 			}
- 
+1. dentry cache
+2. inode cache (with a generic interface to allow easy setup of more
+   filesystems than the currently supported ext2/3/4 reiserfs, XFS
+   and proc)
+3. buffer_heads
+
+One typical mechanism that triggers slab defragmentation on my systems
+is the daily run of
+
+	updatedb
+
+Updatedb scans all files on the system which causes a high inode and dentry
+use. After updatedb is complete we need to go back to the regular use
+patterns (typical on my machine: kernel compiles). Those need the memory now
+for different purposes. The inodes and dentries used for updatedb will
+gradually be aged by the dentry/inode reclaim algorithm which will free
+up the dentries and inode entries randomly through the slabs that were
+allocated. As a result the slabs will become sparsely populated. If they
+become empty then they can be freed but a lot of them will remain sparsely
+populated. That is where slab defrag comes in: It removes the objects from
+the slabs with just a few entries reclaiming more memory for other uses.
+In the simplest case (as provided here) this is done by simply reclaiming
+the objects.
+
+However, if the logic in the kick() function is made more
+sophisticated then we will be able to move the objects out of the slabs.
+Allocations of objects is possible if a slab is fragmented without the use of
+the page allocator because a large number of free slots are available. Moving
+an object will reduce fragmentation in the slab the object is moved to.
+
+V10->V11
+- Simplify determination when to reclaim: Just scan over all partials
+  and check if they are sparsely populated.
+- Add support for performance counters
+- Rediff on top of current slab-mm.
+- Reduce frequency of scanning. A look at the stats showed that we
+  were calling into reclaim very frequently when the system was under
+  memory pressure which slowed things down. Various measures to
+  avoid scanning the partial list too frequently were added and the
+  earlier (expensive) method of determining the defrag ratio of the slab
+  cache as a whole was dropped. I think this addresses the issues that
+  Mel saw with V10.
+
+V9->V10
+- Rediff against upstream
+
+V8->V9
+- Rediff against 2.6.24-rc6-mm1
+
+V7->V8
+- Rediff against 2.6.24-rc3-mm2
+
+V6->V7
+- Rediff against 2.6.24-rc2-mm1
+- Remove lumpy reclaim support. No point anymore given that the antifrag
+  handling in 2.6.24-rc2 puts reclaimable slabs into different sections.
+  Targeted reclaim never triggers. This has to wait until we make
+  slabs movable or we need to perform a special version of lumpy reclaim
+  in SLUB while we scan the partial lists for slabs to kick out.
+  Removal simplifies handling significantly since we
+  get to slabs in a more controlled way via the partial lists.
+  The patchset now provides pure reduction of fragmentation levels.
+- SLAB/SLOB: Provide inlines that do nothing
+- Fix various smaller issues that were brought up during review of V6.
+
+V5->V6
+- Rediff against 2.6.24-rc2 + mm slub patches.
+- Add reviewed by lines.
+- Take out the experimental code to make slab pages movable. That
+  has to wait until this has been considered by Mel.
+
+V4->V5:
+- Support lumpy reclaim for slabs
+- Support reclaim via slab_shrink()
+- Add constructors to insure a consistent object state at all times.
+
+V3->V4:
+- Optimize scan for slabs that need defragmentation
+- Add /sys/slab/*/defrag_ratio to allow setting defrag limits
+  per slab.
+- Add support for buffer heads.
+- Describe how the cleanup after the daily updatedb can be
+  improved by slab defragmentation.
+
+V2->V3
+- Support directory reclaim
+- Add infrastructure to trigger defragmentation after slab shrinking if we
+  have slabs with a high degree of fragmentation.
+
+V1->V2
+- Clean up control flow using a state variable. Simplify API. Back to 2
+  functions that now take arrays of objects.
+- Inode defrag support for a set of filesystems
+- Fix up dentry defrag support to work on negative dentries by adding
+  a new dentry flag that indicates that a dentry is not in the process
+  of being freed or allocated.
 
 -- 
