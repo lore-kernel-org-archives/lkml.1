@@ -1,56 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757283AbYEJN3n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753856AbYEJOCG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757283AbYEJN3n (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 May 2008 09:29:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755985AbYEJN3g
+	id S1753856AbYEJOCG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 May 2008 10:02:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750791AbYEJOBz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 May 2008 09:29:36 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:12306 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756069AbYEJN3f (ORCPT
+	Sat, 10 May 2008 10:01:55 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:35754 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750764AbYEJOBx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 May 2008 09:29:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=cVvPpGATEZWUt0iwOyK+7UJPPJytjoTjVXQO5Rnt3QQNCC1VkxQScMCSxsD4E48rOXalr29FPK8PfZbKsQQF6nJxvIV1J0qLx3Ges9eOZryey6bWEikQx1iBl2ag+c0fXnxpSdlZQxntzP89ueh+r4+Cw7PfaqC6F3DWMt7htRg=
-Message-ID: <e2e108260805100629q2cd2aa12w3a7388a34815425c@mail.gmail.com>
-Date: Sat, 10 May 2008 15:29:33 +0200
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "Vegard Nossum" <vegard.nossum@gmail.com>
-Subject: Re: [ANNOUNCE] kmemcheck v7
-Cc: "John Reiser" <jreiser@bitwagon.com>,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       "Christoph Lameter" <clameter@sgi.com>,
-       "Daniel Walker" <dwalker@mvista.com>,
-       "Andi Kleen" <andi@firstfloor.org>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>, "Josh Aune" <luken@omner.org>,
-       "Pekka Paalanen" <pq@iki.fi>
-In-Reply-To: <19f34abd0805100502k150e3636x33831230d688dd92@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 10 May 2008 10:01:53 -0400
+Subject: Re: build issue #380 for v2.6.26-rc1-279-g28a4acb : mach-voyager:
+	multiple definition of `phys_cpu_present_map'
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: WANG Cong <xiyou.wangcong@gmail.com>, toralf.foerster@gmx.de,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Mike Travis <travis@sgi.com>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>
+In-Reply-To: <20080510131752.GA888@elte.hu>
+References: <200805091114.00244.toralf.foerster@gmx.de>
+	 <20080509095244.GJ2543@hacking> <20080509095837.GB19617@elte.hu>
+	 <1210342946.3069.4.camel@localhost.localdomain>
+	 <20080509144722.GA20566@elte.hu>  <20080510131752.GA888@elte.hu>
+Content-Type: text/plain
+Date: Sat, 10 May 2008 09:01:48 -0500
+Message-Id: <1210428108.4002.5.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47F630AE.7050801@gmail.com>
-	 <e2e108260805100207l13b67706h871f5f1c550e58b3@mail.gmail.com>
-	 <482565A5.8010503@cs.helsinki.fi>
-	 <e2e108260805100404h63f02194r62e53f79ae2a403f@mail.gmail.com>
-	 <19f34abd0805100502k150e3636x33831230d688dd92@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 10, 2008 at 2:02 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:
-> However, memory usage doesn't seem to be much of a problem. I actually
-> think it might be worth saving the CPU cycles that are needed for the
-> lookups/bit operations (memory is cheap, cycles aren't).
+On Sat, 2008-05-10 at 15:17 +0200, Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > > I already told you that this was incorrect.  This is what I sent as 
+> > > the replacement on 28 April and I didn't hear back from you.
+> > > 
+> > > http://marc.info/?l=linux-kernel&m=120941111400620
+> > 
+> > ok - picked it up for testing - could you please send a signoff line 
+> > as well?
+> 
+> Alexey, the patch from James failed in testing on visws:
+> 
+>  arch/x86/kernel/built-in.o: In function `init_apic_mappings':
+>  : undefined reference to `boot_cpu_physical_apicid'
+>  arch/x86/kernel/built-in.o: In function `init_apic_mappings':
+>  : undefined reference to `boot_cpu_physical_apicid'
+>  arch/x86/kernel/built-in.o: In function `APIC_init_uniprocessor':
+>  : undefined reference to `boot_cpu_physical_apicid'
+>  arch/x86/kernel/built-in.o: In function `APIC_init_uniprocessor':
+> 
+> config is at:
+> 
+>   http://redhat.com/~mingo/misc/config-Sat_May_10_15_05_47_CEST_2008.bad
 
-Keep in mind that a reduction in memory usage may reduce the number of
-cache misses, and that the improved caching behavior may outweigh the
-extra CPU cycles needed for the bit operations.
+OK, so these symbols are required on visws as well.  So that makes the
+gating config symbol X86_LOCAL_APIC.
 
-Bart.
+Could you run this through the same config to verify; thanks!
+
+James
+
+---
+
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: [VOYAGER] fix duplicate phys_cpu_present_map symbol
+
+The phys_cpu_present_map is an expected symbol in the SMP harness.
+Unfortunately, x86 recently moved this and a few others to
+kernel/setup.c where it doesn't quite work because voyager has to
+define its own.  Use CONFIG_X86_LOCAL_APIC to isolate these
+definitions and fix up another area in setup.c where CONFIG_X86_SMP
+should be used instead of CONFIG_SMP.
+
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+---
+ arch/x86/kernel/setup.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index cc6f5eb..3f1f642 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -12,6 +12,7 @@
+ #include <asm/mpspec.h>
+ #include <asm/apicdef.h>
+ 
++#ifdef CONFIG_X86_LOCAL_APIC
+ unsigned int num_processors;
+ unsigned disabled_cpus __cpuinitdata;
+ /* Processor that is doing the boot up */
+@@ -23,8 +24,9 @@ EXPORT_PER_CPU_SYMBOL(x86_cpu_to_apicid);
+ 
+ /* Bitmask of physically existing CPUs */
+ physid_mask_t phys_cpu_present_map;
++#endif
+ 
+-#if defined(CONFIG_HAVE_SETUP_PER_CPU_AREA) && defined(CONFIG_SMP)
++#if defined(CONFIG_HAVE_SETUP_PER_CPU_AREA) && defined(CONFIG_X86_SMP)
+ /*
+  * Copy data used in early init routines from the initial arrays to the
+  * per cpu data areas.  These arrays then become expendable and the
+-- 
+1.5.4.4
+
+
+
