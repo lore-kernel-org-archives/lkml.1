@@ -1,133 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758946AbYEJWg0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759065AbYEJWhX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758946AbYEJWg0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 May 2008 18:36:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755282AbYEJWgH
+	id S1759065AbYEJWhX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 May 2008 18:37:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756725AbYEJWhC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 May 2008 18:36:07 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:44152 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755984AbYEJWgE (ORCPT
+	Sat, 10 May 2008 18:37:02 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:35348 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756303AbYEJWhA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 May 2008 18:36:04 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sun, 11 May 2008 00:35:55 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH 3/5] ieee1394: sbp2: fix spindown for PL-3507 and TSB42AA9
- firmwares
-To: linux1394-devel@lists.sourceforge.net,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Tino Keitel <tino.keitel@gmx.de>
-In-Reply-To: <tkrat.9874e625d2b0a007@s5r6.in-berlin.de>
-Message-ID: <tkrat.fbd2e673d8db52fc@s5r6.in-berlin.de>
-References: <20080429232606.GA14261@dose.home.local>
- <481874BD.5010807@s5r6.in-berlin.de>
- <20080507180042.GA32629@dose.home.local>
- <tkrat.327b59f1366f8ea0@s5r6.in-berlin.de>
- <tkrat.635f52f7035be2bc@s5r6.in-berlin.de>
- <tkrat.5cf7605228f0006a@s5r6.in-berlin.de>
- <tkrat.939c665f57d83cd4@s5r6.in-berlin.de>
- <tkrat.9874e625d2b0a007@s5r6.in-berlin.de>
+	Sat, 10 May 2008 18:37:00 -0400
+Date: Sat, 10 May 2008 16:36:43 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: dougg@torque.net, James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Greg KH <greg@kroah.com>, kernel list <linux-kernel@vger.kernel.org>,
+       Linux-Scsi <linux-scsi@vger.kernel.org>
+Subject: Re: lsscsi is broken
+Message-ID: <20080510223643.GO19219@parisc-linux.org>
+References: <86802c440805091638q59031edbifa439344acf0c971@mail.gmail.com> <4825EAA0.5030305@torque.net> <86802c440805101306w64b5c72dn4dbfea74a6557c2f@mail.gmail.com> <20080510211904.GN19219@parisc-linux.org> <86802c440805101522l3cec5089he5d077fdee698cea@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440805101522l3cec5089he5d077fdee698cea@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reported by Tino Keitel:  PL-3507 with firmware from Prolific does not
-spin down the disk on START STOP UNIT with power condition = 0 and start
-= 0.  It does however work with power condition = 2 or 3.
+On Sat, May 10, 2008 at 03:22:31PM -0700, Yinghai Lu wrote:
+> will look at it monday or later.
+> 
+> don't want to keep on booting my laptop.
+> 
+> or my .config has some setting problem? it could be duplicated on all
+> my test servers
 
-Also found while investigating this:  DViCO Momobay CX-1 and FX-3A (TI
-TSB42AA9/A based) become unresponsive after START STOP UNIT with power
-condition = 0 and start = 0.  They stay responsive if power condition is
-set when stopping the motor.
-
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/ieee1394/sbp2.c |   20 ++++++++++++++++++--
- drivers/ieee1394/sbp2.h |    1 +
- 2 files changed, 19 insertions(+), 2 deletions(-)
-
-Index: linux/drivers/ieee1394/sbp2.c
-===================================================================
---- linux.orig/drivers/ieee1394/sbp2.c
-+++ linux/drivers/ieee1394/sbp2.c
-@@ -186,6 +186,11 @@ MODULE_PARM_DESC(exclusive_login, "Exclu
-  * - delay inquiry
-  *   Wait extra SBP2_INQUIRY_DELAY seconds after login before SCSI inquiry.
-  *
-+ * - power condition
-+ *   Set the power condition field in the START STOP UNIT commands sent by
-+ *   sd_mod on suspend, resume, and shutdown (if manage_start_stop is on).
-+ *   Some disks need this to spin down or to resume properly.
-+ *
-  * - override internal blacklist
-  *   Instead of adding to the built-in blacklist, use only the workarounds
-  *   specified in the module load parameter.
-@@ -199,6 +204,8 @@ MODULE_PARM_DESC(workarounds, "Work arou
- 	", skip mode page 8 = "   __stringify(SBP2_WORKAROUND_MODE_SENSE_8)
- 	", fix capacity = "       __stringify(SBP2_WORKAROUND_FIX_CAPACITY)
- 	", delay inquiry = "      __stringify(SBP2_WORKAROUND_DELAY_INQUIRY)
-+	", set power condition in start stop unit = "
-+				  __stringify(SBP2_WORKAROUND_POWER_CONDITION)
- 	", override internal blacklist = " __stringify(SBP2_WORKAROUND_OVERRIDE)
- 	", or a combination)");
- 
-@@ -359,18 +366,25 @@ static const struct {
- 		.firmware_revision	= 0x002800,
- 		.model_id		= 0x001010,
- 		.workarounds		= SBP2_WORKAROUND_INQUIRY_36 |
--					  SBP2_WORKAROUND_MODE_SENSE_8,
-+					  SBP2_WORKAROUND_MODE_SENSE_8 |
-+					  SBP2_WORKAROUND_POWER_CONDITION,
- 	},
- 	/* DViCO Momobay FX-3A with TSB42AA9A bridge */ {
- 		.firmware_revision	= 0x002800,
- 		.model_id		= 0x000000,
--		.workarounds		= SBP2_WORKAROUND_DELAY_INQUIRY,
-+		.workarounds		= SBP2_WORKAROUND_DELAY_INQUIRY |
-+					  SBP2_WORKAROUND_POWER_CONDITION,
- 	},
- 	/* Initio bridges, actually only needed for some older ones */ {
- 		.firmware_revision	= 0x000200,
- 		.model_id		= SBP2_ROM_VALUE_WILDCARD,
- 		.workarounds		= SBP2_WORKAROUND_INQUIRY_36,
- 	},
-+	/* PL-3507 bridge with Prolific firmware */ {
-+		.firmware_revision	= 0x012800,
-+		.model_id		= SBP2_ROM_VALUE_WILDCARD,
-+		.workarounds		= SBP2_WORKAROUND_POWER_CONDITION,
-+	},
- 	/* Symbios bridge */ {
- 		.firmware_revision	= 0xa0b800,
- 		.model_id		= SBP2_ROM_VALUE_WILDCARD,
-@@ -2002,6 +2016,8 @@ static int sbp2scsi_slave_configure(stru
- 		sdev->skip_ms_page_8 = 1;
- 	if (lu->workarounds & SBP2_WORKAROUND_FIX_CAPACITY)
- 		sdev->fix_capacity = 1;
-+	if (lu->workarounds & SBP2_WORKAROUND_POWER_CONDITION)
-+		sdev->start_stop_pwr_cond = 1;
- 	if (lu->workarounds & SBP2_WORKAROUND_128K_MAX_TRANS)
- 		blk_queue_max_sectors(sdev->request_queue, 128 * 1024 / 512);
- 	return 0;
-Index: linux/drivers/ieee1394/sbp2.h
-===================================================================
---- linux.orig/drivers/ieee1394/sbp2.h
-+++ linux/drivers/ieee1394/sbp2.h
-@@ -345,6 +345,7 @@ enum sbp2lu_state_types {
- #define SBP2_WORKAROUND_FIX_CAPACITY	0x8
- #define SBP2_WORKAROUND_DELAY_INQUIRY	0x10
- #define SBP2_INQUIRY_DELAY		12
-+#define SBP2_WORKAROUND_POWER_CONDITION	0x20
- #define SBP2_WORKAROUND_OVERRIDE	0x100
- 
- #endif /* SBP2_H */
+Could be "# CONFIG_SYSFS_DEPRECATED is not set".  I have no idea what
+that controls, but /sys/bus/scsi/devices could be one thing.
 
 -- 
-Stefan Richter
--=====-==--- -=-= -=-==
-http://arcgraph.de/sr/
-
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
