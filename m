@@ -1,21 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759086AbYHASgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759665AbYHASgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759086AbYHASgW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 1 Aug 2008 14:36:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758550AbYHASfJ
+	id S1759665AbYHASgg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 1 Aug 2008 14:36:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758759AbYHASfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 1 Aug 2008 14:35:09 -0400
-Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:7938 "EHLO
+	Fri, 1 Aug 2008 14:35:12 -0400
+Received: from nlpi053.sbcis.sbc.com ([207.115.36.82]:7971 "EHLO
 	nlpi053.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759407AbYHASfG (ORCPT
+	with ESMTP id S1758636AbYHASfH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 1 Aug 2008 14:35:06 -0400
-Message-Id: <20080801182324.572058187@lameter.com>
+	Fri, 1 Aug 2008 14:35:07 -0400
+Message-Id: <20080801182346.724029167@lameter.com>
+References: <20080801182324.572058187@lameter.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 09 May 2008 19:21:01 -0700
+Date: Fri, 09 May 2008 19:21:13 -0700
 From: Christoph Lameter <cl@linux-foundation.org>
 To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: akpm@linux-foundation.org
+CC: akpm@linux-foundation.org, Christoph Lameter <clameter@sgi.com>,
+       Christoph Lameter <cl@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org
 CC: linux-fsdevel@vger.kernel.org
 Cc: Mel Gorman <mel@skynet.ie>
@@ -23,136 +25,48 @@ Cc: andi@firstfloor.org
 Cc: Rik van Riel <riel@redhat.com>
 Cc: mpm@selenic.com
 Cc: Dave Chinner <david@fromorbit.com>
-Subject: [patch 00/19] Slab Fragmentation Reduction V13
+Subject: [patch 12/19] Filesystem: Ext2 filesystem defrag
+Content-Disposition: inline; filename=ext2-defrag
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-V12->v13:
-- Rebase onto Linux 2.6.27-rc1 (deal with page flags conversion, ctor parameters etc)
-- Fix unitialized variable issue
+Support defragmentation for ext2 filesystem inodes
 
-Slab fragmentation is mainly an issue if Linux is used as a fileserver
-and large amounts of dentries, inodes and buffer heads accumulate. In some
-load situations the slabs become very sparsely populated so that a lot of
-memory is wasted by slabs that only contain one or a few objects. In
-extreme cases the performance of a machine will become sluggish since
-we are continually running reclaim without much succes.
-Slab defragmentation adds the capability to recover the memory that
-is wasted.
+Reviewed-by: Rik van Riel <riel@redhat.com>
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
 
-Memory reclaim for the following slab caches is possible:
+---
+ fs/ext2/super.c |    9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-1. dentry cache
-2. inode cache (with a generic interface to allow easy setup of more
-   filesystems than the currently supported ext2/3/4 reiserfs, XFS
-   and proc)
-3. buffer_heads
-
-One typical mechanism that triggers slab defragmentation on my systems
-is the daily run of
-
-	updatedb
-
-Updatedb scans all files on the system which causes a high inode and dentry
-use. After updatedb is complete we need to go back to the regular use
-patterns (typical on my machine: kernel compiles). Those need the memory now
-for different purposes. The inodes and dentries used for updatedb will
-gradually be aged by the dentry/inode reclaim algorithm which will free
-up the dentries and inode entries randomly through the slabs that were
-allocated. As a result the slabs will become sparsely populated. If they
-become empty then they can be freed but a lot of them will remain sparsely
-populated. That is where slab defrag comes in: It removes the objects from
-the slabs with just a few entries reclaiming more memory for other uses.
-In the simplest case (as provided here) this is done by simply reclaiming
-the objects.
-
-However, if the logic in the kick() function is made more
-sophisticated then we will be able to move the objects out of the slabs.
-Allocations of objects is possible if a slab is fragmented without the use of
-the page allocator because a large number of free slots are available. Moving
-an object will reduce fragmentation in the slab the object is moved to.
-
-V11->V12:
-- Pekka and me fixed various minor issues pointed out by Andrew.
-- Split ext2/3/4 defrag support patches.
-- Add more documentation
-- Revise the way that slab defrag is triggered from reclaim. No longer
-  use a timeout but track the amount of slab reclaim done by the shrinkers.
-  Add a field in /proc/sys/vm/slab_defrag_limit to control the threshold.
-- Display current slab_defrag_counters in /proc/zoneinfo (for a zone) and
-  /proc/sys/vm/slab_defrag_count (for global reclaim).
-- Add new config vaue slab_defrag_limit to /proc/sys/vm/slab_defrag_limit
-- Add a patch that obsoletes SLAB and explains why SLOB does not support
-  defrag (Either of those could be theoretically equipped to support
-  slab defrag in some way but it seems that Andrew/Linus want to reduce
-  the number of slab allocators).
-
-V10->V11
-- Simplify determination when to reclaim: Just scan over all partials
-  and check if they are sparsely populated.
-- Add support for performance counters
-- Rediff on top of current slab-mm.
-- Reduce frequency of scanning. A look at the stats showed that we
-  were calling into reclaim very frequently when the system was under
-  memory pressure which slowed things down. Various measures to
-  avoid scanning the partial list too frequently were added and the
-  earlier (expensive) method of determining the defrag ratio of the slab
-  cache as a whole was dropped. I think this addresses the issues that
-  Mel saw with V10.
-
-V9->V10
-- Rediff against upstream
-
-V8->V9
-- Rediff against 2.6.24-rc6-mm1
-
-V7->V8
-- Rediff against 2.6.24-rc3-mm2
-
-V6->V7
-- Rediff against 2.6.24-rc2-mm1
-- Remove lumpy reclaim support. No point anymore given that the antifrag
-  handling in 2.6.24-rc2 puts reclaimable slabs into different sections.
-  Targeted reclaim never triggers. This has to wait until we make
-  slabs movable or we need to perform a special version of lumpy reclaim
-  in SLUB while we scan the partial lists for slabs to kick out.
-  Removal simplifies handling significantly since we
-  get to slabs in a more controlled way via the partial lists.
-  The patchset now provides pure reduction of fragmentation levels.
-- SLAB/SLOB: Provide inlines that do nothing
-- Fix various smaller issues that were brought up during review of V6.
-
-V5->V6
-- Rediff against 2.6.24-rc2 + mm slub patches.
-- Add reviewed by lines.
-- Take out the experimental code to make slab pages movable. That
-  has to wait until this has been considered by Mel.
-
-V4->V5:
-- Support lumpy reclaim for slabs
-- Support reclaim via slab_shrink()
-- Add constructors to insure a consistent object state at all times.
-
-V3->V4:
-- Optimize scan for slabs that need defragmentation
-- Add /sys/slab/*/defrag_ratio to allow setting defrag limits
-  per slab.
-- Add support for buffer heads.
-- Describe how the cleanup after the daily updatedb can be
-  improved by slab defragmentation.
-
-V2->V3
-- Support directory reclaim
-- Add infrastructure to trigger defragmentation after slab shrinking if we
-  have slabs with a high degree of fragmentation.
-
-V1->V2
-- Clean up control flow using a state variable. Simplify API. Back to 2
-  functions that now take arrays of objects.
-- Inode defrag support for a set of filesystems
-- Fix up dentry defrag support to work on negative dentries by adding
-  a new dentry flag that indicates that a dentry is not in the process
-  of being freed or allocated.
+Index: linux-2.6/fs/ext2/super.c
+===================================================================
+--- linux-2.6.orig/fs/ext2/super.c	2008-07-31 12:18:12.000000000 -0500
++++ linux-2.6/fs/ext2/super.c	2008-07-31 12:18:15.000000000 -0500
+@@ -171,6 +171,12 @@
+ 	inode_init_once(&ei->vfs_inode);
+ }
+ 
++static void *ext2_get_inodes(struct kmem_cache *s, int nr, void **v)
++{
++	return fs_get_inodes(s, nr, v,
++		offsetof(struct ext2_inode_info, vfs_inode));
++}
++
+ static int init_inodecache(void)
+ {
+ 	ext2_inode_cachep = kmem_cache_create("ext2_inode_cache",
+@@ -180,6 +186,9 @@
+ 					     init_once);
+ 	if (ext2_inode_cachep == NULL)
+ 		return -ENOMEM;
++
++	kmem_cache_setup_defrag(ext2_inode_cachep,
++			ext2_get_inodes, kick_inodes);
+ 	return 0;
+ }
+ 
 
 -- 
