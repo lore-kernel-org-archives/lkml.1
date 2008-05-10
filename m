@@ -1,178 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759060AbYEJDQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759135AbYEJDQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759060AbYEJDQS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 23:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756350AbYEJDJ5
+	id S1759135AbYEJDQe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 23:16:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756421AbYEJDKB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 23:09:57 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:52624 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752880AbYEJDJV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 23:09:21 -0400
-Message-Id: <20080510030919.365419052@sgi.com>
+	Fri, 9 May 2008 23:10:01 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55071 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753120AbYEJDJW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 23:09:22 -0400
+Message-Id: <20080510030919.604216074@sgi.com>
 References: <20080510030831.796641881@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 09 May 2008 20:08:51 -0700
+Date: Fri, 09 May 2008 20:08:52 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Alexander Viro <viro@ftp.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org
 CC: linux-fsdevel@vger.kernel.org
 Cc: Mel Gorman <mel@skynet.ie>
 Cc: andi@firstfloor.org
 Cc: Rik van Riel <riel@redhat.com>
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: mpm@selenic.com
-Subject: [patch 20/21] dentries: dentry defragmentation
-Content-Disposition: inline; filename=0032-dentries-dentry-defragmentation.patch
+Subject: [patch 21/21] slab defrag: Obsolete SLAB
+Content-Disposition: inline; filename=slab_experimental
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The dentry pruning for unused entries works in a straightforward way. It
-could be made more aggressive if one would actually move dentries instead
-of just reclaiming them.
+Slab defragmentation introduces new functionality not supported by SLAB and
+SLOB.
 
-Cc: Alexander Viro <viro@ftp.linux.org.uk>
-Cc: Christoph Hellwig <hch@infradead.org>
-Reviewed-by: Rik van Riel <riel@redhat.com>
+Make slab depend on EXPERIMENTAL and note its obsoleteness and that
+various functionality is not supported by SLAB.
+
+Also update SLOB's description a bit to indicate that certain OS
+support is limited by design.
+
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
----
- fs/dcache.c |  101 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 100 insertions(+), 1 deletion(-)
 
-Index: linux-2.6/fs/dcache.c
+---
+ init/Kconfig |   19 +++++++++++++------
+ 1 file changed, 13 insertions(+), 6 deletions(-)
+
+Index: linux-2.6/init/Kconfig
 ===================================================================
---- linux-2.6.orig/fs/dcache.c	2008-04-29 14:11:14.601208368 -0700
-+++ linux-2.6/fs/dcache.c	2008-04-29 14:11:14.621208582 -0700
-@@ -31,6 +31,7 @@
- #include <linux/seqlock.h>
- #include <linux/swap.h>
- #include <linux/bootmem.h>
-+#include <linux/backing-dev.h>
- #include "internal.h"
+--- linux-2.6.orig/init/Kconfig	2008-05-09 18:41:41.000000000 -0700
++++ linux-2.6/init/Kconfig	2008-05-09 18:46:13.000000000 -0700
+@@ -749,12 +749,16 @@ choice
+ 	   This option allows to select a slab allocator.
  
+ config SLAB
+-	bool "SLAB"
++	bool "SLAB (Obsolete)"
++	depends on EXPERIMENTAL
+ 	help
+-	  The regular slab allocator that is established and known to work
+-	  well in all environments. It organizes cache hot objects in
+-	  per cpu and per node queues. SLAB is the default choice for
+-	  a slab allocator.
++	  The old slab allocator that is being replaced by SLUB.
++	  SLAB does not support slab defragmentation and has limited
++	  debugging support. There is no sysfs support for /sys/kernel/slab.
++	  SLAB requires order 1 allocations for some caches which may under
++	  extreme circumstances fail. New general object debugging methods
++	  (such as kmemcheck) do not support SLAB. The code is complex,
++	  difficult to comprehend and has a history of subtle bugs.
  
-@@ -143,7 +144,10 @@ static struct dentry *d_kill(struct dent
+ config SLUB
+ 	bool "SLUB (Unqueued Allocator)"
+@@ -771,7 +775,10 @@ config SLOB
+ 	help
+ 	   SLOB replaces the stock allocator with a drastically simpler
+ 	   allocator. SLOB is generally more space efficient but
+-	   does not perform as well on large systems.
++	   does not perform as well on large systems. SLOBs functionality
++	   is limited by design (no sysfs support, no defrag, no debugging
++	   etc).
++
  
- 	list_del(&dentry->d_u.d_child);
- 	dentry_stat.nr_dentry--;	/* For d_free, below */
--	/*drops the locks, at that point nobody can reach this dentry */
-+	/*
-+	 * drops the locks, at that point nobody (aside from defrag)
-+	 * can reach this dentry
-+	 */
- 	dentry_iput(dentry);
- 	parent = dentry->d_parent;
- 	d_free(dentry);
-@@ -2150,6 +2154,100 @@ static void __init dcache_init_early(voi
- 		INIT_HLIST_HEAD(&dentry_hashtable[loop]);
- }
+ endchoice
  
-+/*
-+ * The slab allocator is holding off frees. We can safely examine
-+ * the object without the danger of it vanishing from under us.
-+ */
-+static void *get_dentries(struct kmem_cache *s, int nr, void **v)
-+{
-+	struct dentry *dentry;
-+	int i;
-+
-+	spin_lock(&dcache_lock);
-+	for (i = 0; i < nr; i++) {
-+		dentry = v[i];
-+
-+		/*
-+		 * Three sorts of dentries cannot be reclaimed:
-+		 *
-+		 * 1. dentries that are in the process of being allocated
-+		 *    or being freed. In that case the dentry is neither
-+		 *    on the LRU nor hashed.
-+		 *
-+		 * 2. Fake hashed entries as used for anonymous dentries
-+		 *    and pipe I/O. The fake hashed entries have d_flags
-+		 *    set to indicate a hashed entry. However, the
-+		 *    d_hash field indicates that the entry is not hashed.
-+		 *
-+		 * 3. dentries that have a backing store that is not
-+		 *    writable. This is true for tmpsfs and other in
-+		 *    memory filesystems. Removing dentries from them
-+		 *    would loose dentries for good.
-+		 */
-+		if ((d_unhashed(dentry) && list_empty(&dentry->d_lru)) ||
-+		   (!d_unhashed(dentry) && hlist_unhashed(&dentry->d_hash)) ||
-+		   (dentry->d_inode &&
-+		   !mapping_cap_writeback_dirty(dentry->d_inode->i_mapping)))
-+			/* Ignore this dentry */
-+			v[i] = NULL;
-+		else
-+			/* dget_locked will remove the dentry from the LRU */
-+			dget_locked(dentry);
-+	}
-+	spin_unlock(&dcache_lock);
-+	return NULL;
-+}
-+
-+/*
-+ * Slab has dropped all the locks. Get rid of the refcount obtained
-+ * earlier and also free the object.
-+ */
-+static void kick_dentries(struct kmem_cache *s,
-+				int nr, void **v, void *private)
-+{
-+	struct dentry *dentry;
-+	int i;
-+
-+	/*
-+	 * First invalidate the dentries without holding the dcache lock
-+	 */
-+	for (i = 0; i < nr; i++) {
-+		dentry = v[i];
-+
-+		if (dentry)
-+			d_invalidate(dentry);
-+	}
-+
-+	/*
-+	 * If we are the last one holding a reference then the dentries can
-+	 * be freed. We need the dcache_lock.
-+	 */
-+	spin_lock(&dcache_lock);
-+	for (i = 0; i < nr; i++) {
-+		dentry = v[i];
-+		if (!dentry)
-+			continue;
-+
-+		spin_lock(&dentry->d_lock);
-+		if (atomic_read(&dentry->d_count) > 1) {
-+			spin_unlock(&dentry->d_lock);
-+			spin_unlock(&dcache_lock);
-+			dput(dentry);
-+			spin_lock(&dcache_lock);
-+			continue;
-+		}
-+
-+		prune_one_dentry(dentry);
-+	}
-+	spin_unlock(&dcache_lock);
-+
-+	/*
-+	 * dentries are freed using RCU so we need to wait until RCU
-+	 * operations are complete.
-+	 */
-+	synchronize_rcu();
-+}
-+
- static void __init dcache_init(void)
- {
- 	int loop;
-@@ -2159,6 +2257,7 @@ static void __init dcache_init(void)
- 		dcache_ctor);
- 
- 	register_shrinker(&dcache_shrinker);
-+	kmem_cache_setup_defrag(dentry_cache, get_dentries, kick_dentries);
- 
- 	/* Hash may have been set up in dcache_init_early */
- 	if (!hashdist)
 
 -- 
