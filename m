@@ -1,36 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754755AbYEJJlc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752821AbYEJJmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754755AbYEJJlc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 May 2008 05:41:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752359AbYEJJlX
+	id S1752821AbYEJJmT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 May 2008 05:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbYEJJmB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 May 2008 05:41:23 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:56223 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752356AbYEJJlW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 May 2008 05:41:22 -0400
-Date: Sat, 10 May 2008 02:41:19 -0700
-From: Jeremy Higdon <jeremy@sgi.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/6] sgiioc4: use ->extra_base instead of ->dma_status for dma_handle
-Message-ID: <20080510094119.GD36873@sgi.com>
-References: <200805071939.41558.bzolnier@gmail.com>
-Mime-Version: 1.0
+	Sat, 10 May 2008 05:42:01 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:37712 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752502AbYEJJl7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 May 2008 05:41:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=qaH0nhKmr4WaaXiNKw6cMEChM7KMhdz6bw1pqp7ngYSgiF4ckiwlVLuIM56K3EiCczrwQd8x2xMT0Aua3QF4Xv5nhpVOcar7BdYseKQKUE1bHFk40BFMQASCy3OBKpbAvH+DaIPuyCnF1F0GRJJ5qMJoynSg3FrtyNaVWS+ISnA=
+Date: Sat, 10 May 2008 14:37:19 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: 2.6.25-$sha1: RIP __call_for_each_cic+0x20/0x50
+Message-ID: <20080510103719.GA4967@martell.zuzino.mipt.ru>
+References: <20080427225553.GA4848@martell.zuzino.mipt.ru> <20080428050145.af036c4f.akpm@linux-foundation.org> <20080428120412.GY12774@kernel.dk> <20080428195509.GA5247@martell.zuzino.mipt.ru> <20080429062116.GA5059@martell.zuzino.mipt.ru> <20080429090604.GK12774@kernel.dk> <20080430221250.GA10150@martell.zuzino.mipt.ru> <20080504190811.GP12774@kernel.dk> <20080504201542.GA1040@martell.zuzino.mipt.ru>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200805071939.41558.bzolnier@gmail.com>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <20080504201542.GA1040@martell.zuzino.mipt.ru>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 07, 2008 at 07:39:41PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> This is a preparation for removal of ->dma_status field from ide_hwif_t.
+> > > > @@ -41,8 +41,8 @@ int put_io_context(struct io_context *ioc)
+> > > >  		rcu_read_lock();
+> > > >  		if (ioc->aic && ioc->aic->dtor)
+> > > >  			ioc->aic->dtor(ioc->aic);
+> > > > -		rcu_read_unlock();
+> > > >  		cfq_dtor(ioc);
+> > > > +		rcu_read_unlock();
+> > > >  
+> > > >  		kmem_cache_free(iocontext_cachep, ioc);
+> > > >  		return 1;
+> > > 
+> > > This helps in sense that 3 times bulk cross-compiles finish to the end.
+> > > You'll hear me if another such oops will resurface.
+> > 
+> > Still looking good?
 > 
-> There should be no functional changes caused by this patch.
-> 
-> Cc: Jeremy Higdon <jeremy@sgi.com>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Yup!
 
-Acked-by: Jeremy Higdon <jeremy@sgi.com>
+And this with patch in mainline, again with PREEMPT_RCU.
+
+general protection fault: 0000 [1] PREEMPT SMP DEBUG_PAGEALLOC
+CPU 0 
+Modules linked in: ext2 nls_utf8 cifs nf_conntrack_irc ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 xt_state nf_conntrack iptable_filter ip_tables x_tables usblp ehci_hcd uhci_hcd usbcore sr_mod cdrom
+Pid: 26971, comm: fixdep Not tainted 2.6.26-rc1-28a4acb48586dc21d2d14a75a7aab7be78b7c83b #4
+RIP: 0010:[<ffffffff80304b30>]  [<ffffffff80304b30>] __call_for_each_cic+0x20/0x50
+RSP: 0018:ffff810104335e58  EFLAGS: 00010202
+RAX: 6b6b6b6b6b6b6b6b RBX: 6b6b6b6b6b6b6b6b RCX: 0000000000000000
+RDX: 0000000000002827 RSI: 0000000000000000 RDI: ffff810105a62280
+RBP: ffff810104335e78 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000001 R12: ffff8101715bde40
+R13: ffffffff80304ba0 R14: ffff81017fcc0000 R15: ffff810105a623e8
+FS:  00002b50c7e566f0(0000) GS:ffffffff805c6000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+CR2: 00002b4d7f8b9b80 CR3: 0000000000201000 CR4: 0000000000000660
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process fixdep (pid: 26971, threadinfo ffff810104334000, task ffff810105a62280)
+Stack:  ffff810104335e88 ffff8101715bde40 0000000000000010 ffff810105a62380
+ ffff810104335e88 ffffffff80304b70 ffff810104335ea8 ffffffff8030000b
+ ffff810105a62380 ffff8101715bde40 ffff810104335ec8 ffffffff803000df
+Call Trace:
+ [<ffffffff80304b70>] cfq_free_io_context+0x10/0x20
+ [<ffffffff8030000b>] put_io_context+0x7b/0x90
+ [<ffffffff803000df>] exit_io_context+0x8f/0xb0
+ [<ffffffff80236533>] do_exit+0x543/0x770
+ [<ffffffff802367a1>] do_group_exit+0x41/0xb0
+ [<ffffffff80236822>] sys_exit_group+0x12/0x20
+ [<ffffffff8020b60b>] system_call_after_swapgs+0x7b/0x80
+
+
+Code: 66 66 2e 0f 1f 84 00 00 00 00 00 55 48 89 e5 41 55 49 89 f5 41 54 49 89 fc 53 48 83 ec 08 48 8b 47 68 48 85 c0 74 1f 48 89 c3 90 <48> 8b 03 48 8d 73 88 4c 89 e7 0f 18 08 41 ff d5 48 8b 03 48 85 
+RIP  [<ffffffff80304b30>] __call_for_each_cic+0x20/0x50
+ RSP <ffff810104335e58>
+---[ end trace ff773ec56ab2930e ]---
+Fixing recursive fault but reboot is needed!
+
