@@ -1,55 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756442AbYEJVgx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756645AbYEJVqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756442AbYEJVgx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 May 2008 17:36:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751125AbYEJVgo
+	id S1756645AbYEJVqz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 May 2008 17:46:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751125AbYEJVqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 May 2008 17:36:44 -0400
-Received: from jade.aracnet.com ([216.99.193.136]:41554 "EHLO jade.aracnet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750799AbYEJVgn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 May 2008 17:36:43 -0400
-Message-ID: <482613B6.2080301@BitWagon.com>
-Date: Sat, 10 May 2008 14:29:26 -0700
-From: John Reiser <jreiser@BitWagon.com>
-Organization: -
-User-Agent: Mozilla Thunderbird 1.0.8-1.1.fc4 (X11/20060501)
-X-Accept-Language: en-us, en
+	Sat, 10 May 2008 17:46:45 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:44054 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750799AbYEJVqo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 May 2008 17:46:44 -0400
+Message-ID: <48261815.2010000@gmail.com>
+Date: Sat, 10 May 2008 23:48:05 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Andi Kleen <andi@firstfloor.org>, Vegard Nossum <vegard.nossum@gmail.com>,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Christoph Lameter <clameter@sgi.com>,
-       Daniel Walker <dwalker@mvista.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Josh Aune <luken@omner.org>,
-       Pekka Paalanen <pq@iki.fi>
-Subject: Re: [ANNOUNCE] kmemcheck v7
-References: <47F630AE.7050801@gmail.com> <e2e108260805100207l13b67706h871f5f1c550e58b3@mail.gmail.com> <482565A5.8010503@cs.helsinki.fi> <e2e108260805100404h63f02194r62e53f79ae2a403f@mail.gmail.com> <19f34abd0805100502k150e3636x33831230d688dd92@mail.gmail.com> <20080510123744.GB19109@one.firstfloor.org> <4825D8B4.3060600@goop.org> <20080510174841.GC31954@one.firstfloor.org> <4826095F.3070501@goop.org>
-In-Reply-To: <4826095F.3070501@goop.org>
-X-Enigmail-Version: 0.92.0.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Uwe Bugla <uwe.bugla@gmx.de>, Takashi Iwai <tiwai@suse.de>,
+       Len Brown <len.brown@intel.com>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/3] PNP: cleanup pnp_fixup_device()
+References: <481FAF79.2030407@keyaccess.nl> <200805061115.56737.bjorn.helgaas@hp.com>
+In-Reply-To: <200805061115.56737.bjorn.helgaas@hp.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: 1.5 (+)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
+On 06-05-08 19:15, Bjorn Helgaas wrote:
 
-> Determining stack
-> boundaries has always been a bit fraught.  Typically a stack switch has
-> been determined heuristically by looking for a "large" change in stack
-> pointer, but there's a callback to specifically mark a range of memory
-> as a stack, so that movements into and out of a stack can be determined
-> as a switch (added specifically to deal with small densely packed stacks
-> in uml).
+> It's easier to comment if the patch is inline rather than attached.
 
-The valgrind+uml patches added a callback, "I am switching stacks >NOW<."
-If possible then it is better to tell an interpreter what is happening,
-rather than requiring that the interpreter [try to] figure it out.
+I hope that works...
 
--- 
-John Reiser, jreiser@BitWagon.com
+> I'm sort of attached to keeping this similar to pci_do_fixups() and
+> keeping the symbol, even though the #ifdef is ugly. I do like getting
+> rid of the "0x%p" and adding the PNP ID.
+
+Okay. This better? Makes it a bit more similar even.
+
+===
+PNP: cleanup pnp_fixup_device()
+
+Make it look a bit more like pci_fixup_device/pci_do_fixups. Also
+print the PnP ID and delete the () from the "foo+0x0/0x1234()".
+
+Signed-off-by: Rene Herman <rene.herman@gmail.com>
+---
+drivers/pnp/quirks.c |   20 ++++++++------------
+1 files changed, 8 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/pnp/quirks.c b/drivers/pnp/quirks.c
+index d049a22..a1af2f9 100644
+--- a/drivers/pnp/quirks.c
++++ b/drivers/pnp/quirks.c
+@@ -212,20 +212,16 @@ static struct pnp_fixup pnp_fixups[] = {
+
+void pnp_fixup_device(struct pnp_dev *dev)
+{
+-	int i = 0;
+-	void (*quirk)(struct pnp_dev *);
+-
+-	while (*pnp_fixups[i].id) {
+-		if (compare_pnp_id(dev->id, pnp_fixups[i].id)) {
+-			quirk = pnp_fixups[i].quirk_function;
++	struct pnp_fixup *f;
+
++	for (f = pnp_fixups; *f->id; f++) {
++		if (!compare_pnp_id(dev->id, f->id))
++			continue;
+#ifdef DEBUG
+-			dev_dbg(&dev->dev, "calling ");
+-			print_fn_descriptor_symbol("%s()\n",
+-				(unsigned long) *quirk);
++		dev_dbg(&dev->dev, "%s: calling ", f->id);
++		print_fn_descriptor_symbol("%s\n",
++				(unsigned long) f->quirk_function);
+#endif
+-			(*quirk)(dev);
+-		}
+-		i++;
++		f->quirk_function(dev);
+	}
+}
+
+
