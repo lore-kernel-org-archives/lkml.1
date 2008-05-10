@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758567AbYEJWxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758313AbYEJW7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758567AbYEJWxY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 May 2008 18:53:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754928AbYEJWxN
+	id S1758313AbYEJW7q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 May 2008 18:59:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753454AbYEJW7g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 May 2008 18:53:13 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:44380 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752183AbYEJWxL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 May 2008 18:53:11 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sun, 11 May 2008 00:53:05 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: Hack to fix not working spindown over Firewire
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Tino Keitel <tino.keitel@gmx.de>
-In-Reply-To: <tkrat.327b59f1366f8ea0@s5r6.in-berlin.de>
-Message-ID: <tkrat.8f92142276ccb4e5@s5r6.in-berlin.de>
-References: <20080429232606.GA14261@dose.home.local>
- <481874BD.5010807@s5r6.in-berlin.de>
- <20080507180042.GA32629@dose.home.local>
- <tkrat.327b59f1366f8ea0@s5r6.in-berlin.de>
+	Sat, 10 May 2008 18:59:36 -0400
+Received: from gw.goop.org ([64.81.55.164]:42851 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753022AbYEJW7f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 May 2008 18:59:35 -0400
+Message-ID: <482628C7.2020700@goop.org>
+Date: Sat, 10 May 2008 23:59:19 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+To: Andi Kleen <andi@firstfloor.org>
+CC: Vegard Nossum <vegard.nossum@gmail.com>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       John Reiser <jreiser@BitWagon.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Daniel Walker <dwalker@mvista.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Josh Aune <luken@omner.org>,
+       Pekka Paalanen <pq@iki.fi>
+Subject: Re: [ANNOUNCE] kmemcheck v7
+References: <47F630AE.7050801@gmail.com> <e2e108260805100207l13b67706h871f5f1c550e58b3@mail.gmail.com> <482565A5.8010503@cs.helsinki.fi> <e2e108260805100404h63f02194r62e53f79ae2a403f@mail.gmail.com> <19f34abd0805100502k150e3636x33831230d688dd92@mail.gmail.com> <20080510123744.GB19109@one.firstfloor.org> <4825D8B4.3060600@goop.org> <20080510174841.GC31954@one.firstfloor.org> <4826095F.3070501@goop.org> <20080510213135.GD31954@one.firstfloor.org>
+In-Reply-To: <20080510213135.GD31954@one.firstfloor.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote:
-> 1) FireWire to IDE or to SATA chipset
-> 2) start bit is honored:
->    "sg_start --stop" stops the motor and "sg_start" restarts it
-> 3) power condition field is honored:
->    "sg_start --pc=3" stops the motor and "sg_start --pc=1 restarts it
-> 4) peripheral device type claimed by the firmware
-> 5) vendor and model of the enclosure
-> 
-> 
-> 1)           2)     3)     4)    5)
-> bridge       start  pc     PDT   enclosure
-> --------------------------------------------------------------
-...
-> TSB42AA9     no     yes    SBC   DViCO MomoBay CX-1
-> TSB42AA9A    yes    yes    RBC   DViCO MomoBay FX-3A
+Andi Kleen wrote:
+>> Yeah, as soon as the stack pointer changes, everything below it is 
+>> invalidated (except if the stack-pointer change was actually determined 
+>> to be a stack switch).
+>>     
+>
+> It might in theory, but at least it doesn't for my test program.
+>   
 
-Correction:  While the FX-3A stops the motor if START STOP UNIT with an
-equivalent to "sg_start --stop", it does not work correctly anymore
-after it.  Certain commands after that will hang the firmware up;
-notably those sent when sd_mod is probing the disk.  I.e. FX-3A fails
-not exactly as CX-1, but similarly.
--- 
-Stefan Richter
--=====-==--- -=-= -=-==
-http://arcgraph.de/sr/
+If you'd read a tiny bit further down my mail, you'd have seen my 
+explanation of why your test program isn't testing what you think it is, 
+and a variant which does.
 
+    J
