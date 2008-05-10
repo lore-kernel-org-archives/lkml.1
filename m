@@ -1,46 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755723AbYEJTIi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756631AbYEJTNE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755723AbYEJTIi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 May 2008 15:08:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbYEJTI2
+	id S1756631AbYEJTNE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 May 2008 15:13:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753443AbYEJTMz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 May 2008 15:08:28 -0400
-Received: from verein.lst.de ([213.95.11.210]:58813 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752804AbYEJTI1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 May 2008 15:08:27 -0400
-Date: Sat, 10 May 2008 21:07:59 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Robert Richter <robert.richter@amd.com>
-Cc: Carl Love <cel@us.ibm.com>, linuxppc-dev@ozlabs.org,
-       oprofile-list <oprofile-list@lists.sourceforge.net>,
-       cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [Cbe-oss-dev] [PATCH] Updated: Reworked Cell OProfile: SPU	mutex lock fix
-Message-ID: <20080510190759.GA16275@lst.de>
-References: <1209587712.7531.42.camel@carll-linux-desktop> <20080509150759.GL24041@erda.amd.com>
-Mime-Version: 1.0
+	Sat, 10 May 2008 15:12:55 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:33223 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752804AbYEJTMy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 May 2008 15:12:54 -0400
+Date: Sat, 10 May 2008 20:12:51 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       WANG Cong <wangcong@zeuux.org>
+Subject: Re: [Patch 1/9] fs/exec.c: export free_arg_pages
+Message-ID: <20080510191251.GA13907@ZenIV.linux.org.uk>
+References: <1210254754206-git-send-email-xiyou.wangcong@gmail.com> <12102547782640-git-send-email-xiyou.wangcong@gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080509150759.GL24041@erda.amd.com>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0 () 
+In-Reply-To: <12102547782640-git-send-email-xiyou.wangcong@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > +	/* Ignoring the return value from the unregister
-> > +	 * call.  A failed return value simply says there
-> > +	 * was no registered event.  Hence there will not
-> > +	 * be any calls to process a switch event that
-> > +	 * could cause a problem.
-> > +	 */
-> > +	spu_switch_event_unregister(&spu_active);
-> 
-> Better to use this here, to show the return value is ignored:
-> 
->        (void)spu_switch_event_unregister(...)
+On Thu, May 08, 2008 at 09:52:26PM +0800, WANG Cong wrote:
+> free_arg_pages() is used to clean the pages allocated by copy_strings_kenrel().
+> Since copy_strings_kernel() is exported, so should be free_arg_pages().
 
-Actually Linux style is to not add those casts.  But I don't think we
-all the notifier_chain_unregister funtion should return error at all,
-we should probably fix that up in the core code.
+Not really.  free_arg_pages() cleans them all at once; copy_strings_kernel()
+adds to pile.  free_arg_pages() is called once for _all_ of them.  And that
+happens in fs/exec.c, so it doesn't need to be exported.
