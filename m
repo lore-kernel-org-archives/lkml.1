@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761035AbYEJDRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760628AbYEJDSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761035AbYEJDRz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 23:17:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756638AbYEJDKW
+	id S1760628AbYEJDSU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 23:18:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756840AbYEJDKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 23:10:22 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55048 "EHLO
+	Fri, 9 May 2008 23:10:25 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55049 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752098AbYEJDJT (ORCPT
+	with ESMTP id S1752280AbYEJDJT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 9 May 2008 23:09:19 -0400
-Message-Id: <20080510030917.912938675@sgi.com>
+Message-Id: <20080510030918.641537636@sgi.com>
 References: <20080510030831.796641881@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 09 May 2008 20:08:45 -0700
+Date: Fri, 09 May 2008 20:08:48 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org
@@ -23,45 +23,47 @@ Cc: andi@firstfloor.org
 Cc: Rik van Riel <riel@redhat.com>
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: mpm@selenic.com
-Subject: [patch 14/21] Filesystem: Ext4 filesystem defrag
-Content-Disposition: inline; filename=ext4-defrag
+Subject: [patch 17/21] Filesystem: Slab defrag: Reiserfs support
+Content-Disposition: inline; filename=0029-FS-Slab-defrag-Reiserfs-support.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Support defragmentation for extX filesystem inodes
+Slab defragmentation: Support reiserfs inode defragmentation.
 
 Reviewed-by: Rik van Riel <riel@redhat.com>
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- fs/ext4/super.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ fs/reiserfs/super.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
-Index: linux-2.6/fs/ext4/super.c
-===================================================================
---- linux-2.6.orig/fs/ext4/super.c	2008-05-07 21:23:41.961409593 -0700
-+++ linux-2.6/fs/ext4/super.c	2008-05-07 21:27:18.215159859 -0700
-@@ -599,6 +599,12 @@ static void init_once(struct kmem_cache 
- 	inode_init_once(&ei->vfs_inode);
+diff --git a/fs/reiserfs/super.c b/fs/reiserfs/super.c
+index 393cc22..69b4a86 100644
+--- a/fs/reiserfs/super.c
++++ b/fs/reiserfs/super.c
+@@ -532,6 +532,12 @@ static void init_once(struct kmem_cache * cachep, void *foo)
+ #endif
  }
  
-+static void *ext4_get_inodes(struct kmem_cache *s, int nr, void **v)
++static void *reiserfs_get_inodes(struct kmem_cache *s, int nr, void **v)
 +{
 +	return fs_get_inodes(s, nr, v,
-+		offsetof(struct ext4_inode_info, vfs_inode));
++		offsetof(struct reiserfs_inode_info, vfs_inode));
 +}
 +
  static int init_inodecache(void)
  {
- 	ext4_inode_cachep = kmem_cache_create("ext4_inode_cache",
-@@ -608,6 +614,8 @@ static int init_inodecache(void)
- 					     init_once);
- 	if (ext4_inode_cachep == NULL)
+ 	reiserfs_inode_cachep = kmem_cache_create("reiser_inode_cache",
+@@ -542,6 +548,8 @@ static int init_inodecache(void)
+ 						  init_once);
+ 	if (reiserfs_inode_cachep == NULL)
  		return -ENOMEM;
-+	kmem_cache_setup_defrag(ext4_inode_cachep,
-+			ext4_get_inodes, kick_inodes);
++	kmem_cache_setup_defrag(reiserfs_inode_cachep,
++			reiserfs_get_inodes, kick_inodes);
  	return 0;
  }
  
+-- 
+1.5.4.4
 
 -- 
