@@ -1,98 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757539AbYEJCW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754691AbYEJC3s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757539AbYEJCW6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 22:22:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbYEJCWv
+	id S1754691AbYEJC3s (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 22:29:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbYEJC3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 22:22:51 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:42372 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750800AbYEJCWu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 22:22:50 -0400
-Date: Sat, 10 May 2008 04:23:25 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org, travis@sgi.com
-Subject: Re: [patch 6/6] x86: Add checks for virtual addresses in __phys_addr()
-Message-ID: <20080510022325.GA25712@uranus.ravnborg.org>
-References: <20080510020947.803480649@sgi.com> <20080510021021.472932504@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080510021021.472932504@sgi.com>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 9 May 2008 22:29:38 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:61513 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751288AbYEJC3h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 22:29:37 -0400
+Date: Sat, 10 May 2008 03:21:35 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Jean Delvare <khali@linux-fr.org>
+cc: David Brownell <david-b@pacbell.net>, linux-mips@linux-mips.org,
+       mgreer@mvista.com, rtc-linux@googlegroups.com,
+       Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-kernel@vger.kernel.org,
+       i2c@lm-sensors.org, ab@mycable.de,
+       Alessandro Zummo <alessandro.zummo@towertech.it>
+Subject: Re: [i2c] [RFC][PATCH 4/4] RTC: SMBus support for the M41T80,
+In-Reply-To: <20080509232146.18638986@hyperion.delvare>
+Message-ID: <Pine.LNX.4.55.0805100301100.10552@cliff.in.clinika.pl>
+References: <200805070120.03821.david-b@pacbell.net>
+ <Pine.LNX.4.55.0805072226180.25644@cliff.in.clinika.pl>
+ <200805071625.20430.david-b@pacbell.net> <Pine.LNX.4.55.0805080306080.32613@cliff.in.clinika.pl>
+ <20080509100841.151eabcd@hyperion.delvare> <Pine.LNX.4.55.0805092127410.10552@cliff.in.clinika.pl>
+ <20080509232146.18638986@hyperion.delvare>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 09, 2008 at 07:09:53PM -0700, Christoph Lameter wrote:
-> Add checks to insure that virtual addresses are not used in invalid contexts.
-> 
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> 
-> ---
->  arch/x86/mm/ioremap.c     |   15 +++++++--------
->  include/asm-x86/page_32.h |    7 ++++++-
->  2 files changed, 13 insertions(+), 9 deletions(-)
-> 
-> Index: linux-2.6/arch/x86/mm/ioremap.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/mm/ioremap.c	2008-05-07 16:27:09.792659191 -0700
-> +++ linux-2.6/arch/x86/mm/ioremap.c	2008-05-07 19:46:34.733509101 -0700
-> @@ -21,29 +21,28 @@
->  #include <asm/pgalloc.h>
->  #include <asm/pat.h>
->  
-> -#ifdef CONFIG_X86_64
->  
-> +#if defined(CONFIG_DEBUG_VM) || defined(CONFIG_X86_64)
->  unsigned long __phys_addr(unsigned long x)
->  {
-> +	VM_BUG_ON(is_vmalloc_addr((void *)x));
-> +#ifdef CONFIG_X86_64
->  	if (x >= __START_KERNEL_map)
->  		return x - __START_KERNEL_map + phys_base;
-> +#endif
->  	return x - PAGE_OFFSET;
->  }
->  EXPORT_SYMBOL(__phys_addr);
-> +#endif
->  
->  static inline int phys_addr_valid(unsigned long addr)
->  {
-> +#ifdef CONFIG_X86_64
->  	return addr < (1UL << boot_cpu_data.x86_phys_bits);
-> -}
-> -
->  #else
-> -
-> -static inline int phys_addr_valid(unsigned long addr)
-> -{
->  	return 1;
-> -}
-> -
->  #endif
-> +}
->  
->  int page_is_ram(unsigned long pagenr)
->  {
-> Index: linux-2.6/include/asm-x86/page_32.h
-> ===================================================================
-> --- linux-2.6.orig/include/asm-x86/page_32.h	2008-05-07 16:27:12.191419001 -0700
-> +++ linux-2.6/include/asm-x86/page_32.h	2008-05-07 19:30:46.444980299 -0700
-> @@ -64,7 +64,12 @@ typedef struct page *pgtable_t;
->  #endif
->  
->  #ifndef __ASSEMBLY__
-> -#define __phys_addr(x)		((x) - PAGE_OFFSET)
-> +#ifdef CONFIG_DEBUG_VM
-> +unsigned long __phys_addr(unsigned long x)
+Hi Jean,
 
-Should this have read:
-> +extern unsigned long __phys_addr(unsigned long x);
-?
+> This was an option when the functions where introduced 9 years ago.
+> But now that it was done, renaming them would cause even more
+> confusion, I think. I would be fine with adding comments in i2c-core.c
+> or improving Documentation/i2c/smbus-protocol to make it more obious,
+> though.
+> 
+> On a related note, you will notice that the other i2c_smbus_* functions
+> do not follow the naming of SMBus transactions. Again that's something
+> I regret but I feel that changing the names now would cause a lot of
+> confusion amongst developers, so I'm not doing it.
 
-Looks like a prototype with a missing ';'.
-And x86 uses extern for prototypes in .h files (most of the time).
+ It may not be worth the effort, but if done in bulk for all the users in
+the tree, there should be no problem with that.  I am fairly sure there
+were changes of this kind from time to time, with occasional screams heard
+in response from some dark corners, but no big pain.  We obviously
+explicitly disregard out-of-tree users and for occasional contributors
+asking: "Where the * has this function gone?" there is the Documentation/
+tree to provide a greppable reference, so generally not a big deal.
 
-	Sam
+> Just one patch should be enough, if I agree with all the changes. You
+> might make a separate patch with the things I may not agree with, so
+> that you don't have to cherry-revert them if I indeed don't agree, and
+> we just merge them if I do agree.
+
+ Hmm, technically you do not seem to be responsible to accept changes
+under drivers/rtc/, so I will split them anyway for others to decide.  In
+particular I do plan to submit a separate change for header ordering for
+the driver, just out of curiosity to see how long it will stay unspoilt.  
+Somehow most if not all changes of this kind that I ever made to files in
+our tree have survived to the present day. :-)
+
+> My bad, for some reason I thought that dev_printk() included the device
+> name but it in fact includes the driver name. I was wrong, just ignore
+> me.
+
+ It will go separately though as not directly related to this
+modification, now that I have started splitting it.
+
+  Maciej
