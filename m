@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756531AbYEJDKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758094AbYEJDLQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756531AbYEJDKh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 23:10:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752582AbYEJDJU
+	id S1758094AbYEJDLQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 23:11:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbYEJDJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 23:09:20 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55015 "EHLO
+	Fri, 9 May 2008 23:09:25 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55016 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751457AbYEJDJR (ORCPT
+	with ESMTP id S1751460AbYEJDJR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 9 May 2008 23:09:17 -0400
-Message-Id: <20080510030914.996139665@sgi.com>
+Message-Id: <20080510030915.978978961@sgi.com>
 References: <20080510030831.796641881@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 09 May 2008 20:08:33 -0700
+Date: Fri, 09 May 2008 20:08:37 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>
@@ -22,60 +22,124 @@ Cc: Mel Gorman <mel@skynet.ie>
 Cc: andi@firstfloor.org
 Cc: Rik van Riel <riel@redhat.com>
 Cc: mpm@selenic.com
-Subject: [patch 02/21] slub: Replace ctor field with ops field in /sys/slab/*
-Content-Disposition: inline; filename=0002-SLUB-Replace-ctor-field-with-ops-field-in-sys-slab.patch
+Subject: [patch 06/21] slub: Add KICKABLE to avoid repeated kick() attempts
+Content-Disposition: inline; filename=0006-SLUB-Add-KICKABLE-to-avoid-repeated-kick-attempts.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Create an ops field in /sys/slab/*/ops to contain all the operations defined
-on a slab. This will be used to display the additional operations that will
-be defined soon.
+Add a flag KICKABLE to be set on slabs with a defragmentation method
+
+Clear the flag if a kick action is not successful in reducing the
+number of objects in a slab. This will avoid future attempts to
+kick objects out.
+
+The KICKABLE flag is set again when all objects of the slab have been
+allocated (Occurs during removal of a slab from the partial lists).
 
 Reviewed-by: Rik van Riel <riel@redhat.com>
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- mm/slub.c |   16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+ mm/slub.c |   35 ++++++++++++++++++++++++++++++++---
+ 1 file changed, 32 insertions(+), 3 deletions(-)
 
 Index: linux-2.6/mm/slub.c
 ===================================================================
---- linux-2.6.orig/mm/slub.c	2008-05-05 18:48:42.745160406 -0700
-+++ linux-2.6/mm/slub.c	2008-05-05 18:48:49.821409748 -0700
-@@ -3832,16 +3832,18 @@ static ssize_t order_show(struct kmem_ca
+--- linux-2.6.orig/mm/slub.c	2008-05-05 18:49:00.043910468 -0700
++++ linux-2.6/mm/slub.c	2008-05-05 18:49:10.851410275 -0700
+@@ -103,6 +103,7 @@
+  */
+ 
+ #define FROZEN (1 << PG_active)
++#define KICKABLE (1 << PG_dirty)
+ 
+ #ifdef CONFIG_SLUB_DEBUG
+ #define SLABDEBUG (1 << PG_error)
+@@ -140,6 +141,21 @@ static inline void ClearSlabDebug(struct
+ 	page->flags &= ~SLABDEBUG;
  }
- SLAB_ATTR(order);
  
--static ssize_t ctor_show(struct kmem_cache *s, char *buf)
-+static ssize_t ops_show(struct kmem_cache *s, char *buf)
- {
--	if (s->ctor) {
--		int n = sprint_symbol(buf, (unsigned long)s->ctor);
-+	int x = 0;
++static inline int SlabKickable(struct page *page)
++{
++	return page->flags & KICKABLE;
++}
++
++static inline void SetSlabKickable(struct page *page)
++{
++	page->flags |= KICKABLE;
++}
++
++static inline void ClearSlabKickable(struct page *page)
++{
++	page->flags &= ~KICKABLE;
++}
++
+ /*
+  * Issues still to be resolved:
+  *
+@@ -1163,6 +1179,9 @@ static struct page *new_slab(struct kmem
+ 			SLAB_STORE_USER | SLAB_TRACE))
+ 		SetSlabDebug(page);
  
--		return n + sprintf(buf + n, "\n");
-+	if (s->ctor) {
-+		x += sprintf(buf + x, "ctor : ");
-+		x += sprint_symbol(buf + x, (unsigned long)s->ctor);
-+		x += sprintf(buf + x, "\n");
- 	}
--	return 0;
-+	return x;
- }
--SLAB_ATTR_RO(ctor);
-+SLAB_ATTR_RO(ops);
++	if (s->kick)
++		SetSlabKickable(page);
++
+ 	start = page_address(page);
  
- static ssize_t aliases_show(struct kmem_cache *s, char *buf)
- {
-@@ -4174,7 +4176,7 @@ static struct attribute *slab_attrs[] = 
- 	&slabs_attr.attr,
- 	&partial_attr.attr,
- 	&cpu_slabs_attr.attr,
--	&ctor_attr.attr,
-+	&ops_attr.attr,
- 	&aliases_attr.attr,
- 	&align_attr.attr,
- 	&sanity_checks_attr.attr,
+ 	if (unlikely(s->flags & SLAB_POISON))
+@@ -1203,6 +1222,7 @@ static void __free_slab(struct kmem_cach
+ 		NR_SLAB_RECLAIMABLE : NR_SLAB_UNRECLAIMABLE,
+ 		-pages);
+ 
++	ClearSlabKickable(page);
+ 	__ClearPageSlab(page);
+ 	reset_page_mapcount(page);
+ 	__free_pages(page, order);
+@@ -1412,6 +1432,8 @@ static void unfreeze_slab(struct kmem_ca
+ 			stat(c, DEACTIVATE_FULL);
+ 			if (SlabDebug(page) && (s->flags & SLAB_STORE_USER))
+ 				add_full(n, page);
++			if (s->kick)
++				SetSlabKickable(page);
+ 		}
+ 		slab_unlock(page);
+ 	} else {
+@@ -2836,7 +2858,7 @@ static int kmem_cache_vacate(struct page
+ 	s = page->slab;
+ 	objects = page->objects;
+ 	map = scratch + objects * sizeof(void **);
+-	if (!page->inuse || !s->kick)
++	if (!page->inuse || !s->kick || !SlabKickable(page))
+ 		goto out;
+ 
+ 	/* Determine used objects */
+@@ -2874,6 +2896,9 @@ out:
+ 	 * Check the result and unfreeze the slab
+ 	 */
+ 	leftover = page->inuse;
++	if (leftover)
++		/* Unsuccessful reclaim. Avoid future reclaim attempts. */
++		ClearSlabKickable(page);
+ 	unfreeze_slab(s, page, leftover > 0);
+ 	local_irq_restore(flags);
+ 	return leftover;
+@@ -2930,10 +2955,14 @@ static unsigned long __kmem_cache_shrink
+ 			continue;
+ 
+ 		if (page->inuse) {
+-			if (page->inuse * 100 >=
++			if (!SlabKickable(page) || page->inuse * 100 >=
+ 					s->defrag_ratio * page->objects) {
+ 				slab_unlock(page);
+-				/* Slab contains enough objects */
++				/*
++				 * Slab contains enough objects
++				 * or we alrady tried reclaim before and
++				 * it failed. Skip this one.
++				 */
+ 				continue;
+ 			}
+ 
 
 -- 
