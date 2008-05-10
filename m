@@ -1,112 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758084AbYEJUfz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757869AbYEJUkE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758084AbYEJUfz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 May 2008 16:35:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753387AbYEJUfr
+	id S1757869AbYEJUkE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 May 2008 16:40:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754715AbYEJUjy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 May 2008 16:35:47 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:52613 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752388AbYEJUfr (ORCPT
+	Sat, 10 May 2008 16:39:54 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:26105 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753387AbYEJUjx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 May 2008 16:35:47 -0400
-Date: Sat, 10 May 2008 21:35:43 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       WANG Cong <wangcong@zeuux.org>
-Subject: Re: [Patch 3/9] fs/compat.c: fix resource leaks and wrong goto's
-Message-ID: <20080510203543.GJ13907@ZenIV.linux.org.uk>
-References: <1210254754206-git-send-email-xiyou.wangcong@gmail.com> <12102548033990-git-send-email-xiyou.wangcong@gmail.com> <20080510192111.GC13907@ZenIV.linux.org.uk>
+	Sat, 10 May 2008 16:39:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=jpHtJlUhyD9l8pA0W4+/WhGQ7yLXKl2yV9//GSgxozSGSWCu12V51OhifHJAVshKppFPk6taZ02WPvMXEbIg7ALxbDOC+gyFlVjI2zrO5023we/4Nn54eXqEePURpKXoZV1IUiaq6X/2XKq905LMN7JHsOalOcguSFfljLo7FVc=
+Message-ID: <e85b9d30805101339je48a55dnd2fbd5601c27a3be@mail.gmail.com>
+Date: Sat, 10 May 2008 22:39:50 +0200
+From: Matthew <jackdachef@gmail.com>
+To: "Fabio Checconi" <fabio@gandalf.sssup.it>
+Subject: Re: performance "regression" in cfq compared to anticipatory, deadline and noop
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       jens.axboe@oracle.com
+In-Reply-To: <20080510200053.GA78555@gandalf.sssup.it>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080510192111.GC13907@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <e85b9d30805101218u4b8f0c2bw47af2384133a5c77@mail.gmail.com>
+	 <20080510200053.GA78555@gandalf.sssup.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 10, 2008 at 08:21:11PM +0100, Al Viro wrote:
-> On Thu, May 08, 2008 at 09:52:28PM +0800, WANG Cong wrote:
-> > Use free_arg_pages() to free the pages allocated by copy_strings_kernel()
-> > on failure. And fix some related wrong goto pathes.
-> 
-> Kinda; free_arg_pages() is needed here, but there's no need to mess with
-> goto - just put it under out:
-> 
-> Note that it's essentially just a part of freeing bprm; it's _not_ a "clean
-> collected strings, so that we could add new ones".
+> Hi, I'm experiencing some cfq/bfq performance issues too, but I'm
+> still not able to track down the reasons, so before posting on this
+> topic on the mailing list I'd ask you a couple of questions.
+>
+> 1) Are you running the hdparm performance test under some cpu load?
+>   (Even two hdparm instances ran in parallel could do.)
+>
+> 2) Does using a bigger value of slice_idle increase the throughput?
+>
 
-FWIW, I'd suggest this:
+Hi,
 
-diff --git a/fs/compat.c b/fs/compat.c
-index 332a869..ed43e17 100644
---- a/fs/compat.c
-+++ b/fs/compat.c
-@@ -1405,7 +1405,7 @@ int compat_do_execve(char * filename,
- 		/* execve success */
- 		security_bprm_free(bprm);
- 		acct_update_integrals(current);
--		kfree(bprm);
-+		free_bprm(bprm);
- 		return retval;
- 	}
- 
-@@ -1424,7 +1424,7 @@ out_file:
- 	}
- 
- out_kfree:
--	kfree(bprm);
-+	free_bprm(bprm);
- 
- out_ret:
- 	return retval;
-diff --git a/fs/exec.c b/fs/exec.c
-index aeaa979..ad545b0 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -1251,6 +1251,12 @@ int search_binary_handler(struct linux_binprm *bprm,struct pt_regs *regs)
- 
- EXPORT_SYMBOL(search_binary_handler);
- 
-+void free_bprm(struct linux_binprm *bprm)
-+{
-+	free_arg_pages(bprm);
-+	kfree(bprm);
-+}
-+
- /*
-  * sys_execve() executes a new program.
-  */
-@@ -1320,17 +1326,15 @@ int do_execve(char * filename,
- 	retval = search_binary_handler(bprm,regs);
- 	if (retval >= 0) {
- 		/* execve success */
--		free_arg_pages(bprm);
- 		security_bprm_free(bprm);
- 		acct_update_integrals(current);
--		kfree(bprm);
-+		free_bprm(bprm);
- 		if (displaced)
- 			put_files_struct(displaced);
- 		return retval;
- 	}
- 
- out:
--	free_arg_pages(bprm);
- 	if (bprm->security)
- 		security_bprm_free(bprm);
- 
-diff --git a/include/linux/binfmts.h b/include/linux/binfmts.h
-index b512e48..c2f7fba 100644
---- a/include/linux/binfmts.h
-+++ b/include/linux/binfmts.h
-@@ -99,6 +99,7 @@ extern int copy_strings_kernel(int argc,char ** argv,struct linux_binprm *bprm);
- extern void compute_creds(struct linux_binprm *binprm);
- extern int do_coredump(long signr, int exit_code, struct pt_regs * regs);
- extern int set_binfmt(struct linux_binfmt *new);
-+extern void free_bprm(struct linux_binfmt *);
- 
- #endif /* __KERNEL__ */
- #endif /* _LINUX_BINFMTS_H */
+1) no it was always in (almost) complete idle
+
+2) a bigger value even made it worse, setting it to "0" however
+seemingly "fixed" it, I however don't know how the overall
+effect/impact is, this will need some more real-world testing ;)
+
+cat /sys/block/sdd/queue/iosched/slice_idle
+0
+
+hdparm -t /dev/sdd
+
+/dev/sdd:
+ Timing buffered disk reads:  314 MB in  3.01 seconds = 104.32 MB/sec
+
+hdparm -t /dev/sdd
+
+/dev/sdd:
+ Timing buffered disk reads:  312 MB in  3.00 seconds = 103.86 MB/sec
+
+hdparm -t /dev/sdd
+
+/dev/sdd:
+ Timing buffered disk reads:  314 MB in  3.01 seconds = 104.24 MB/sec
+
+one side-node / question:
+
+will this cause more wakeups on the cpu and/or decrease battery
+runtime on, e.g. laptops ?
+
+> Thank you very much, I'll try hdparm on my test boxes and come back
+> to the list if I find something on that.
+>
+> As a sidenote, Ingo is not the author/maintainer of cfq, maybe the
+> next time CC: Jens Axboe for that.
+>
+
+oops, didn't know that, thanks - didn't want to give the wrong person
+the "credits"
+hi & kudos to Jens ;)
+
+here's a nice site which explains all of the settings:
+
+http://www.nextre.it/oracledocs/ioscheduler_03.html
+
+Regards
+
+Mat
