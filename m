@@ -1,40 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757539AbYEJTNd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757141AbYEJTRK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757539AbYEJTNd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 May 2008 15:13:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753700AbYEJTNZ
+	id S1757141AbYEJTRK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 May 2008 15:17:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbYEJTQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 May 2008 15:13:25 -0400
-Received: from py-out-1112.google.com ([64.233.166.183]:17449 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753443AbYEJTNY (ORCPT
+	Sat, 10 May 2008 15:16:58 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:47922 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752717AbYEJTQ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 May 2008 15:13:24 -0400
-Date: Sat, 10 May 2008 12:13:03 -0700 (PDT)
-From: Chris Peterson <cpeterso@cpeterso.com>
-To: paulkf@microgate.com
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] char/synclink_gt: fix uninitialized return value in put_char()
-Message-ID: <Pine.LNX.4.62.0805101209430.4183@ikari.dreamhost.com>
+	Sat, 10 May 2008 15:16:57 -0400
+Date: Sat, 10 May 2008 20:16:56 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       WANG Cong <wangcong@zeuux.org>
+Subject: Re: [Patch 2/9] fs/exec.c: fix resource leaks and wrong goto's
+Message-ID: <20080510191656.GB13907@ZenIV.linux.org.uk>
+References: <1210254754206-git-send-email-xiyou.wangcong@gmail.com> <1210254794469-git-send-email-xiyou.wangcong@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1210254794469-git-send-email-xiyou.wangcong@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 08, 2008 at 09:52:27PM +0800, WANG Cong wrote:
+> When ->load_binary() successed, free_arg_pages() should be called to
+> clean the pages allocated by copy_strings_kernel() within it.
 
-put_char() can return an uninitialized value of 'ret' in one code path.
-
-Signed-off-by: Chris Peterson <cpeterso@cpeterso.com>
----
---- linux-2.6.25-rc1-git7-before/drivers/char/synclink_gt.c	2008-05-10 11:43:19.000000000 -0700
-+++ linux-2.6.25-rc1-git7-after/drivers/char/synclink_gt.c	2008-05-10 11:51:22.000000000 -0700
-@@ -927,6 +927,8 @@ static int put_char(struct tty_struct *t
- 	if (!info->tx_active && (info->tx_count < info->max_frame_size)) {
- 		info->tx_buf[info->tx_count++] = ch;
- 		ret = 1;
-+	} else {
-+		ret = 0;
- 	}
- 	spin_unlock_irqrestore(&info->lock,flags);
- 	return ret;
+Eh?  Success or not, free_arg_pages() will eventually be called by do_execve();
+so what problem are you trying to solve?
