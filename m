@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760386AbYEJAA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760577AbYEJADV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760386AbYEJAA3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 20:00:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757196AbYEJAAO
+	id S1760577AbYEJADV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 20:03:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756485AbYEJADM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 20:00:14 -0400
-Received: from emroute3.ornl.gov ([160.91.4.110]:39830 "EHLO emroute3.ornl.gov"
+	Fri, 9 May 2008 20:03:12 -0400
+Received: from www.tglx.de ([62.245.132.106]:50325 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756723AbYEJAAN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 20:00:13 -0400
-X-Greylist: delayed 3085 seconds by postgrey-1.27 at vger.kernel.org; Fri, 09 May 2008 20:00:12 EDT
-Date: Fri, 09 May 2008 19:08:45 -0400
-From: David Dillow <dillowda@ornl.gov>
-Subject: Re: NIU - Sun Neptune 10g - Transmit timed out reset (2.6.24)
-In-reply-to: <4824D4C0.10201@krogh.cc>
-To: Jesper Krogh <jesper@krogh.cc>
-Cc: Rick Jones <rick.jones2@hp.com>, David Miller <davem@davemloft.net>,
-       yhlu.kernel@gmail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Message-id: <1210374525.21330.6.camel@lap75545.ornl.gov>
-Organization: Oak Ridge National Laboratory
-MIME-version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8)
-Content-type: text/plain
-Content-transfer-encoding: 7bit
-References: <86802c440805071130m62c1f4edydb3316dac4a2aba2@mail.gmail.com>
- <20080507.141521.193714938.davem@davemloft.net> <482498D5.9060008@krogh.cc>
- <20080509.143229.174354251.davem@davemloft.net> <4824C936.9000103@krogh.cc>
- <4824CE43.8060203@hp.com> <4824D4C0.10201@krogh.cc>
+	id S1755499AbYEJADL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 20:03:11 -0400
+Date: Sat, 10 May 2008 02:02:51 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: andreas.herrmann3@amd.com, mingo@elte.hu, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: enable hpet=force for AMD SB400
+In-Reply-To: <20080509165501.a0fdb29d.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0805100202140.3197@apollo.tec.linutronix.de>
+References: <20080509094911.GG5023@alberich.amd.com> <20080509163731.5f851bec.akpm@linux-foundation.org> <alpine.LFD.1.10.0805100140490.3197@apollo.tec.linutronix.de> <20080509165501.a0fdb29d.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sat, 2008-05-10 at 00:48 +0200, Jesper Krogh wrote:
-> Rick Jones wrote:
-> >> The number of contextswitches seems enourmous.. over 120.000 sometimes.
-> >> When transmitting around the same amount of data (4xgigabit bonded with
-> >> 802.3ad) 4x110MB/s the amount of contextswitches only reaches 3-4.000. I
-> >> have no idea if this has any relevance.
-> >>
-> >> Should this setup not be able to fill the pipe?
-> > 
-> > Into which slot was the Neptune inserted?  (sure will be nice to have 
-> > Alex Chiang's pci slot id patch in mainline one of these days :)
-> > 
-> > Is that slot x4, x8, x16?
+On Fri, 9 May 2008, Andrew Morton wrote:
+> On Sat, 10 May 2008 01:42:30 +0200 (CEST)
+> Thomas Gleixner <tglx@linutronix.de> wrote:
 > 
-> I can find out excactly .. on monday. But shouldn't x4 be enough anyway?
-> wikipedia says 250MB/s pr. lane. And no slots is less than x4, so I
-> thought that it didn't matter to me.
+> > On Fri, 9 May 2008, Andrew Morton wrote:
+> > > On Fri, 9 May 2008 11:49:11 +0200
+> > > Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
+> > > 
+> > > > x86: enable hpet=force for ATI SB400
+> > > 
+> > > Sigh.
+> > > 
+> > > > Add quirk to allow forced usage of HPET on ATI SB400.
+> > > > I stumbled over machines where HPET is enabled but not reported
+> > > > by BIOS.
+> > > 
+> > > Is there no way in which we can probe for or identify this condition,
+> > > rather than hoping that the user will find out about this boot option?
+> > 
+> > I'd love to have a sane solution for that, but looking at the rate of
+> > HPET wreckage since we increased the usage of HPET I'm happy to have
+> > this as an opt in thingy.
+> > 
+> 
+> Well we don't have to auto-enable the hpet.  Simply adding a loud "you
+> should try the hpet=force option" printk would help a lot of people.
 
-lspci -vvv on the slot can tell you what has been negotiated. Also, you
-can figure the effective PCIe bandwidth using ~200 MB/s as a rule of
-thumb, given the various overheads on the bus. So an x4 won't fully load
-up a 10Gbps link.
+Fair enough. I look into that.
 
-At least, that's what we're seeing in x8 slots using Infiniband cards,
-so your mileage may vary.
--- 
-Dave Dillow
-National Center for Computational Science
-Oak Ridge National Laboratory
-(865) 241-6602 office
-
-
+Thanks,
+	tglx
+ 
