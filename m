@@ -1,155 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759181AbYEJDLe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759981AbYEJDLy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759181AbYEJDLe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 23:11:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbYEJDJ3
+	id S1759981AbYEJDLy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 23:11:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbYEJDJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 23:09:29 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55013 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751135AbYEJDJR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 23:09:32 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:54131 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751563AbYEJDJR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 9 May 2008 23:09:17 -0400
-Message-Id: <20080510030831.796641881@sgi.com>
+Message-Id: <20080510030915.235817384@sgi.com>
+References: <20080510030831.796641881@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 09 May 2008 20:08:31 -0700
+Date: Fri, 09 May 2008 20:08:34 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>
 CC: linux-fsdevel@vger.kernel.org
 Cc: Mel Gorman <mel@skynet.ie>
 Cc: andi@firstfloor.org
 Cc: Rik van Riel <riel@redhat.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: mpm@selenic.com
-Subject: [patch 00/21] Slab Fragmentation Reduction V12
+Subject: [patch 03/21] slub: Add get() and kick() methods
+Content-Disposition: inline; filename=0003-SLUB-Add-get-and-kick-methods.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-V11->V12:
-- Pekka and me fixed various minor issues pointed out by Andrew.
-- Split ext2/3/4 defrag support patches.
-- Add more documentation
-- Revise the way that slab defrag is triggered from reclaim. No longer
-  use a timeout but track the amount of slab reclaim done by the shrinkers.
-  Add a field in /proc/sys/vm/slab_defrag_limit to control the threshold.
-- Display current slab_defrag_counters in /proc/zoneinfo (for a zone) and
-  /proc/sys/vm/slab_defrag_count (for global reclaim).
-- Add new config vaue slab_defrag_limit to /proc/sys/vm/slab_defrag_limit
-- Add a patch that obsoletes SLAB and explains why SLOB does not support
-  defrag (Either of those could be theoretically equipped to support
-  slab defrag in some way but it seems that Andrew/Linus want to reduce
-  the number of slab allocators).
+Add the two methods needed for defragmentation and add the display of the
+methods via the proc interface.
 
-Note that I am off till next Wednesday... my responsiveness will be limited
-till then.
+Add documentation explaining the use of these methods and the prototypes
+for slab.h. Add functions to setup the defrag methods for a slab cache.
 
-Slab fragmentation is mainly an issue if Linux is used as a fileserver
-and large amounts of dentries, inodes and buffer heads accumulate. In some
-load situations the slabs become very sparsely populated so that a lot of
-memory is wasted by slabs that only contain one or a few objects. In
-extreme cases the performance of a machine will become sluggish since
-we are continually running reclaim. Slab defragmentation adds the
-capability to recover the memory that is wasted.
+Add empty functions for SLAB/SLOB. The API is generic so it
+could be theoretically implemented for either allocator.
 
-Memory reclaim for the following slab caches is possible:
+Reviewed-by: Rik van Riel <riel@redhat.com>
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ include/linux/slab.h     |   50 +++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/slub_def.h |    3 ++
+ mm/slub.c                |   29 ++++++++++++++++++++++++++-
+ 3 files changed, 81 insertions(+), 1 deletion(-)
 
-1. dentry cache
-2. inode cache (with a generic interface to allow easy setup of more
-   filesystems than the currently supported ext2/3/4 reiserfs, XFS
-   and proc)
-3. buffer_heads
-
-One typical mechanism that triggers slab defragmentation on my systems
-is the daily run of
-
-	updatedb
-
-Updatedb scans all files on the system which causes a high inode and dentry
-use. After updatedb is complete we need to go back to the regular use
-patterns (typical on my machine: kernel compiles). Those need the memory now
-for different purposes. The inodes and dentries used for updatedb will
-gradually be aged by the dentry/inode reclaim algorithm which will free
-up the dentries and inode entries randomly through the slabs that were
-allocated. As a result the slabs will become sparsely populated. If they
-become empty then they can be freed but a lot of them will remain sparsely
-populated. That is where slab defrag comes in: It removes the objects from
-the slabs with just a few entries reclaiming more memory for other uses.
-In the simplest case (as provided here) this is done by simply reclaiming
-the objects.
-
-However, if the logic in the kick() function is made more
-sophisticated then we will be able to move the objects out of the slabs.
-Allocations of objects is possible if a slab is fragmented without the use of
-the page allocator because a large number of free slots are available. Moving
-an object will reduce fragmentation in the slab the object is moved to.
-
-V10->V11
-- Simplify determination when to reclaim: Just scan over all partials
-  and check if they are sparsely populated.
-- Add support for performance counters
-- Rediff on top of current slab-mm.
-- Reduce frequency of scanning. A look at the stats showed that we
-  were calling into reclaim very frequently when the system was under
-  memory pressure which slowed things down. Various measures to
-  avoid scanning the partial list too frequently were added and the
-  earlier (expensive) method of determining the defrag ratio of the slab
-  cache as a whole was dropped. I think this addresses the issues that
-  Mel saw with V10.
-
-V9->V10
-- Rediff against upstream
-
-V8->V9
-- Rediff against 2.6.24-rc6-mm1
-
-V7->V8
-- Rediff against 2.6.24-rc3-mm2
-
-V6->V7
-- Rediff against 2.6.24-rc2-mm1
-- Remove lumpy reclaim support. No point anymore given that the antifrag
-  handling in 2.6.24-rc2 puts reclaimable slabs into different sections.
-  Targeted reclaim never triggers. This has to wait until we make
-  slabs movable or we need to perform a special version of lumpy reclaim
-  in SLUB while we scan the partial lists for slabs to kick out.
-  Removal simplifies handling significantly since we
-  get to slabs in a more controlled way via the partial lists.
-  The patchset now provides pure reduction of fragmentation levels.
-- SLAB/SLOB: Provide inlines that do nothing
-- Fix various smaller issues that were brought up during review of V6.
-
-V5->V6
-- Rediff against 2.6.24-rc2 + mm slub patches.
-- Add reviewed by lines.
-- Take out the experimental code to make slab pages movable. That
-  has to wait until this has been considered by Mel.
-
-V4->V5:
-- Support lumpy reclaim for slabs
-- Support reclaim via slab_shrink()
-- Add constructors to insure a consistent object state at all times.
-
-V3->V4:
-- Optimize scan for slabs that need defragmentation
-- Add /sys/slab/*/defrag_ratio to allow setting defrag limits
-  per slab.
-- Add support for buffer heads.
-- Describe how the cleanup after the daily updatedb can be
-  improved by slab defragmentation.
-
-V2->V3
-- Support directory reclaim
-- Add infrastructure to trigger defragmentation after slab shrinking if we
-  have slabs with a high degree of fragmentation.
-
-V1->V2
-- Clean up control flow using a state variable. Simplify API. Back to 2
-  functions that now take arrays of objects.
-- Inode defrag support for a set of filesystems
-- Fix up dentry defrag support to work on negative dentries by adding
-  a new dentry flag that indicates that a dentry is not in the process
-  of being freed or allocated.
+Index: linux-2.6/include/linux/slub_def.h
+===================================================================
+--- linux-2.6.orig/include/linux/slub_def.h	2008-05-09 18:44:10.000000000 -0700
++++ linux-2.6/include/linux/slub_def.h	2008-05-09 18:44:13.000000000 -0700
+@@ -86,6 +86,9 @@ struct kmem_cache {
+ 	gfp_t allocflags;	/* gfp flags to use on each alloc */
+ 	int refcount;		/* Refcount for slab cache destroy */
+ 	void (*ctor)(struct kmem_cache *, void *);
++	kmem_defrag_get_func *get;
++	kmem_defrag_kick_func *kick;
++
+ 	int inuse;		/* Offset to metadata */
+ 	int align;		/* Alignment */
+ 	int defrag_ratio;	/*
+Index: linux-2.6/mm/slub.c
+===================================================================
+--- linux-2.6.orig/mm/slub.c	2008-05-09 18:44:11.000000000 -0700
++++ linux-2.6/mm/slub.c	2008-05-09 18:44:13.000000000 -0700
+@@ -2772,6 +2772,19 @@ void kfree(const void *x)
+ }
+ EXPORT_SYMBOL(kfree);
+ 
++void kmem_cache_setup_defrag(struct kmem_cache *s,
++	kmem_defrag_get_func get, kmem_defrag_kick_func kick)
++{
++	/*
++	 * Defragmentable slabs must have a ctor otherwise objects may be
++	 * in an undetermined state after they are allocated.
++	 */
++	BUG_ON(!s->ctor);
++	s->get = get;
++	s->kick = kick;
++}
++EXPORT_SYMBOL(kmem_cache_setup_defrag);
++
+ /*
+  * kmem_cache_shrink removes empty slabs from the partial lists and sorts
+  * the remaining slabs by the number of items in use. The slabs with the
+@@ -3057,7 +3070,7 @@ static int slab_unmergeable(struct kmem_
+ 	if (slub_nomerge || (s->flags & SLUB_NEVER_MERGE))
+ 		return 1;
+ 
+-	if (s->ctor)
++	if (s->ctor || s->kick || s->get)
+ 		return 1;
+ 
+ 	/*
+@@ -3841,6 +3854,20 @@ static ssize_t ops_show(struct kmem_cach
+ 		x += sprint_symbol(buf + x, (unsigned long)s->ctor);
+ 		x += sprintf(buf + x, "\n");
+ 	}
++
++	if (s->get) {
++		x += sprintf(buf + x, "get : ");
++		x += sprint_symbol(buf + x,
++				(unsigned long)s->get);
++		x += sprintf(buf + x, "\n");
++	}
++
++	if (s->kick) {
++		x += sprintf(buf + x, "kick : ");
++		x += sprint_symbol(buf + x,
++				(unsigned long)s->kick);
++		x += sprintf(buf + x, "\n");
++	}
+ 	return x;
+ }
+ SLAB_ATTR_RO(ops);
+Index: linux-2.6/include/linux/slab.h
+===================================================================
+--- linux-2.6.orig/include/linux/slab.h	2008-05-09 18:41:42.000000000 -0700
++++ linux-2.6/include/linux/slab.h	2008-05-09 18:44:30.000000000 -0700
+@@ -101,6 +101,56 @@ void kfree(const void *);
+ size_t ksize(const void *);
+ 
+ /*
++ * Function prototypes passed to kmem_cache_defrag() to enable defragmentation
++ * and targeted reclaim in slab caches.
++ */
++
++/*
++ * kmem_cache_defrag_get_func() is called with locks held so that the slab
++ * objects cannot be freed. We are in an atomic context and no slab
++ * operations may be performed. The purpose of kmem_cache_defrag_get_func()
++ * is to obtain a stable refcount on the objects, so that they cannot be
++ * removed until kmem_cache_kick_func() has handled them.
++ *
++ * Parameters passed are the number of objects to process and an array of
++ * pointers to objects for which we need references.
++ *
++ * Returns a pointer that is passed to the kick function. If any objects
++ * cannot be moved then the pointer may indicate a failure and
++ * then kick can simply remove the references that were already obtained.
++ *
++ * The object pointer array passed is also passed to kmem_cache_defrag_kick().
++ * The function may remove objects from the array by setting pointers to
++ * NULL. This is useful if we can determine that an object is already about
++ * to be removed. In that case it is often impossible to obtain the necessary
++ * refcount.
++ */
++typedef void *kmem_defrag_get_func(struct kmem_cache *, int, void **);
++
++/*
++ * kmem_cache_defrag_kick_func is called with no locks held and interrupts
++ * enabled. Sleeping is possible. Any operation may be performed in kick().
++ * kmem_cache_defrag should free all the objects in the pointer array.
++ *
++ * Parameters passed are the number of objects in the array, the array of
++ * pointers to the objects and the pointer returned by kmem_cache_defrag_get().
++ *
++ * Success is checked by examining the number of remaining objects in the slab.
++ */
++typedef void kmem_defrag_kick_func(struct kmem_cache *, int, void **, void *);
++
++/*
++ * kmem_cache_setup_defrag() is used to setup callbacks for a slab cache.
++ */
++#ifdef CONFIG_SLUB
++void kmem_cache_setup_defrag(struct kmem_cache *, kmem_defrag_get_func,
++						kmem_defrag_kick_func);
++#else
++static inline void kmem_cache_setup_defrag(struct kmem_cache *s,
++	kmem_defrag_get_func get, kmem_defrag_kick_func kiok) {}
++#endif
++
++/*
+  * Allocator specific definitions. These are mainly used to establish optimized
+  * ways to convert kmalloc() calls to kmem_cache_alloc() invocations by
+  * selecting the appropriate general cache at compile time.
 
 -- 
