@@ -1,43 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756981AbYEJNZB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757163AbYEJN0a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756981AbYEJNZB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 May 2008 09:25:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755851AbYEJNYw
+	id S1757163AbYEJN0a (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 May 2008 09:26:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755985AbYEJN0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 May 2008 09:24:52 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:60902 "EHLO e6.ny.us.ibm.com"
+	Sat, 10 May 2008 09:26:23 -0400
+Received: from gate.crashing.org ([63.228.1.57]:34464 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755798AbYEJNYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 May 2008 09:24:51 -0400
-Date: Sat, 10 May 2008 08:22:46 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Meelis Roos <mroos@linux.ee>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
-Subject: Re: ppc compile failure (__flush_icache_range etc undeclared)
-Message-ID: <20080510082246.0ce82981@zod.rchland.ibm.com>
+	id S1755504AbYEJN0W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 May 2008 09:26:22 -0400
 In-Reply-To: <Pine.SOC.4.64.0805101448580.8450@math.ut.ee>
 References: <Pine.SOC.4.64.0805101448580.8450@math.ut.ee>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <2b70b1438132c0ff12583c7bf9d96cc1@kernel.crashing.org>
 Content-Transfer-Encoding: 7bit
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: ppc compile failure (__flush_icache_range etc undeclared)
+Date: Sat, 10 May 2008 15:26:07 +0200
+To: Meelis Roos <mroos@linux.ee>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 10 May 2008 14:51:27 +0300 (EEST)
-Meelis Roos <mroos@linux.ee> wrote:
-
 > Tried 2.6.26-rc1+git on ppc (arch/ppc, PReP subarch) and got this:
+>
+> arch/ppc/kernel/ppc_ksyms.c: At top level:
+> arch/ppc/kernel/ppc_ksyms.c:152: error: '__flush_icache_range' 
+> undeclared here (not in a function)
 
-Segher sent patches to fix this earlier this week.  You can find them
-here:
+That's fixed by [2/3] in 
+http://ozlabs.org/pipermail/linuxppc-dev/2008-May/056010.html
 
-http://patchwork.ozlabs.org/linuxppc/patch?id=18348
-http://patchwork.ozlabs.org/linuxppc/patch?id=18346
-http://patchwork.ozlabs.org/linuxppc/patch?id=18347
 
-People keep breaking arch/ppc and it seems there's little motivation to
-fix it since it's going away in a month.
+Segher
 
-josh
