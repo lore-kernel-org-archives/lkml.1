@@ -1,321 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760890AbYEJDOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753542AbYEJDPS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760890AbYEJDOp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 23:14:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756127AbYEJDJw
+	id S1753542AbYEJDPS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 23:15:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756199AbYEJDJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 23:09:52 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:54134 "EHLO relay.sgi.com"
+	Fri, 9 May 2008 23:09:54 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:52629 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751649AbYEJDJR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 23:09:17 -0400
-Message-Id: <20080510030916.706550694@sgi.com>
+	id S1752857AbYEJDJV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 23:09:21 -0400
+Message-Id: <20080510030917.178534099@sgi.com>
 References: <20080510030831.796641881@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 09 May 2008 20:08:40 -0700
+Date: Fri, 09 May 2008 20:08:42 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org, Alexander Viro <viro@ftp.linux.org.uk>,
+       Christoph Hellwig <hch@infradead.org>
 CC: linux-fsdevel@vger.kernel.org
 Cc: Mel Gorman <mel@skynet.ie>
 Cc: andi@firstfloor.org
 Cc: Rik van Riel <riel@redhat.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: mpm@selenic.com
-Subject: [patch 09/21] slub: Trigger defragmentation from memory reclaim
-Content-Disposition: inline; filename=0009-SLUB-Trigger-defragmentation-from-memory-reclaim.patch
+Subject: [patch 11/21] inodes: Support generic defragmentation
+Content-Disposition: inline; filename=0025-inodes-Support-generic-defragmentation.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch triggers slab defragmentation from memory reclaim. The logical
-point for this is after slab shrinking was performed in vmscan.c. At that point
-the fragmentation ratio of a slab was increased because objects were freed via
-the LRU lists maitained for various slab caches.
-So we call kmem_cache_defrag() from there.
+This implements the ability to remove inodes in a particular slab
+from inode caches. In order to remove an inode we may have to write out
+the pages of an inode, the inode itself and remove the dentries referring
+to the node.
 
-shrink_slab() is called in some contexts to do global shrinking
-of slabs and in others to do shrinking for a particular zone. Pass the zone to
-shrink_slab(), so that slab_shrink() can call kmem_cache_defrag() and restrict
-the defragmentation to the node that is under memory pressure.
+Provide generic functionality that can be used by filesystems that have
+their own inode caches to also tie into the defragmentation functions
+that are made available here.
 
-The callback frequency into slab reclaim can be controlled by a new field
-/proc/sys/vm/slab_defrag_limit.
-
+Cc: Alexander Viro <viro@ftp.linux.org.uk>
+Cc: Christoph Hellwig <hch@infradead.org>
 Reviewed-by: Rik van Riel <riel@redhat.com>
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- Documentation/sysctl/vm.txt |   12 ++++++++
- fs/drop_caches.c            |    2 -
- include/linux/mm.h          |    3 --
- include/linux/mmzone.h      |    1 
- include/linux/swap.h        |    3 ++
- kernel/sysctl.c             |   20 +++++++++++++
- mm/vmscan.c                 |   65 +++++++++++++++++++++++++++++++++++++++-----
- mm/vmstat.c                 |    2 +
- 8 files changed, 98 insertions(+), 10 deletions(-)
+ fs/inode.c         |  123 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/fs.h |    6 ++
+ 2 files changed, 129 insertions(+)
 
-Index: linux-2.6/fs/drop_caches.c
+Index: linux-2.6/fs/inode.c
 ===================================================================
---- linux-2.6.orig/fs/drop_caches.c	2008-05-08 17:24:44.000000000 -0700
-+++ linux-2.6/fs/drop_caches.c	2008-05-09 15:13:31.000000000 -0700
-@@ -58,7 +58,7 @@ static void drop_slab(void)
- 	int nr_objects;
+--- linux-2.6.orig/fs/inode.c	2008-05-07 20:27:10.563908386 -0700
++++ linux-2.6/fs/inode.c	2008-05-07 20:48:14.473081107 -0700
+@@ -1363,6 +1363,128 @@ static int __init set_ihash_entries(char
+ __setup("ihash_entries=", set_ihash_entries);
  
- 	do {
--		nr_objects = shrink_slab(1000, GFP_KERNEL, 1000);
-+		nr_objects = shrink_slab(1000, GFP_KERNEL, 1000, NULL);
- 	} while (nr_objects > 10);
- }
- 
-Index: linux-2.6/include/linux/mm.h
-===================================================================
---- linux-2.6.orig/include/linux/mm.h	2008-05-08 17:27:30.000000000 -0700
-+++ linux-2.6/include/linux/mm.h	2008-05-09 15:13:31.000000000 -0700
-@@ -1242,8 +1242,7 @@ int in_gate_area_no_task(unsigned long a
- int drop_caches_sysctl_handler(struct ctl_table *, int, struct file *,
- 					void __user *, size_t *, loff_t *);
- unsigned long shrink_slab(unsigned long scanned, gfp_t gfp_mask,
--			unsigned long lru_pages);
--
-+				unsigned long lru_pages, struct zone *z);
- #ifndef CONFIG_MMU
- #define randomize_va_space 0
- #else
-Index: linux-2.6/mm/vmscan.c
-===================================================================
---- linux-2.6.orig/mm/vmscan.c	2008-05-08 17:24:45.000000000 -0700
-+++ linux-2.6/mm/vmscan.c	2008-05-09 15:13:32.000000000 -0700
-@@ -149,6 +149,14 @@ void unregister_shrinker(struct shrinker
- EXPORT_SYMBOL(unregister_shrinker);
- 
- #define SHRINK_BATCH 128
+ /*
++ * Obtain a refcount on a list of struct inodes pointed to by v. If the
++ * inode is in the process of being freed then zap the v[] entry so that
++ * we skip the freeing attempts later.
++ *
++ * This is a generic function for the ->get slab defrag callback.
++ */
++void *get_inodes(struct kmem_cache *s, int nr, void **v)
++{
++	int i;
++
++	spin_lock(&inode_lock);
++	for (i = 0; i < nr; i++) {
++		struct inode *inode = v[i];
++
++		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE))
++			v[i] = NULL;
++		else
++			__iget(inode);
++	}
++	spin_unlock(&inode_lock);
++	return NULL;
++}
++EXPORT_SYMBOL(get_inodes);
 +
 +/*
-+ * Trigger a call into slab defrag if the sum of the returns from
-+ * shrinkers cross this value.
-+ */
-+int slab_defrag_limit = 1000;
-+int slab_defrag_counter;
-+
- /*
-  * Call the shrink functions to age shrinkable caches
-  *
-@@ -166,10 +174,18 @@ EXPORT_SYMBOL(unregister_shrinker);
-  * are eligible for the caller's allocation attempt.  It is used for balancing
-  * slab reclaim versus page reclaim.
-  *
-+ * zone is the zone for which we are shrinking the slabs. If the intent
-+ * is to do a global shrink then zone may be NULL. Specification of a
-+ * zone is currently only used to limit slab defragmentation to a NUMA node.
-+ * The performace of shrink_slab would be better (in particular under NUMA)
-+ * if it could be targeted as a whole to the zone that is under memory
-+ * pressure but the VFS infrastructure does not allow that at the present
-+ * time.
++ * Function for filesystems that embedd struct inode into their own
++ * fs inode. The offset is the offset of the struct inode in the fs inode.
 + *
-  * Returns the number of slab objects which we shrunk.
-  */
- unsigned long shrink_slab(unsigned long scanned, gfp_t gfp_mask,
--			unsigned long lru_pages)
-+			unsigned long lru_pages, struct zone *zone)
- {
- 	struct shrinker *shrinker;
- 	unsigned long ret = 0;
-@@ -226,6 +242,39 @@ unsigned long shrink_slab(unsigned long 
- 		shrinker->nr += total_scan;
- 	}
- 	up_read(&shrinker_rwsem);
++ * The function adds to the pointers in v[] in order to make them point to
++ * struct inode. Then get_inodes() is used to get the refcount.
++ * The converted v[] pointers can then also be passed to the kick() callback
++ * without further processing.
++ */
++void *fs_get_inodes(struct kmem_cache *s, int nr, void **v,
++						unsigned long offset)
++{
++	int i;
 +
++	for (i = 0; i < nr; i++)
++		v[i] += offset;
 +
-+	/* Avoid dirtying cachelines */
-+	if (!ret)
-+		return 0;
++	return get_inodes(s, nr, v);
++}
++EXPORT_SYMBOL(fs_get_inodes);
 +
-+	/*
-+	 * "ret" doesnt really contain the freed object count. The shrinkers
-+	 * fake it. Gotta go with what we are getting though.
-+	 *
-+	 * Handling of the defrag_counter is also racy. If we get the
-+	 * wrong counts then we may unnecessarily do a defrag pass or defer
-+	 * one. "ret" is already faked. So this is just increasing
-+	 * the already existing fuzziness to get some notion as to when
-+	 * to initiate slab defrag which will hopefully be okay.
-+	 */
-+	if (zone) {
-+		/* balance_pgdat running on a zone so we only scan one node */
-+		zone->slab_defrag_counter += ret;
-+		if (zone->slab_defrag_counter > slab_defrag_limit &&
-+						(gfp_mask & __GFP_FS)) {
-+			zone->slab_defrag_counter = 0;
-+			kmem_cache_defrag(zone_to_nid(zone));
++/*
++ * Generic callback function slab defrag ->kick methods. Takes the
++ * array with inodes where we obtained refcounts using fs_get_inodes()
++ * or get_inodes() and tries to free them.
++ */
++void kick_inodes(struct kmem_cache *s, int nr, void **v, void *private)
++{
++	struct inode *inode;
++	int i;
++	int abort = 0;
++	LIST_HEAD(freeable);
++	int active;
++
++	for (i = 0; i < nr; i++) {
++		inode = v[i];
++		if (!inode)
++			continue;
++
++		if (inode_has_buffers(inode) || inode->i_data.nrpages) {
++			if (remove_inode_buffers(inode))
++				/*
++				 * Should be really be doing this? Or
++				 * limit this if there are only a few pages?
++				 *
++				 * Possibly an expensive operation but we
++				 * cannot reclaim the inode if the pages
++				 * are still present.
++				 */
++				invalidate_mapping_pages(&inode->i_data,
++								0, -1);
 +		}
-+	} else {
-+		/* Direct (and thus global) reclaim. Scan all nodes */
-+		slab_defrag_counter += ret;
-+		if (slab_defrag_counter > slab_defrag_limit &&
-+						(gfp_mask & __GFP_FS)) {
-+			slab_defrag_counter = 0;
-+			kmem_cache_defrag(-1);
++
++		/* Invalidate children and dentry */
++		if (S_ISDIR(inode->i_mode)) {
++			struct dentry *d = d_find_alias(inode);
++
++			if (d) {
++				d_invalidate(d);
++				dput(d);
++			}
 +		}
++
++		if (inode->i_state & I_DIRTY)
++			write_inode_now(inode, 1);
++
++		d_prune_aliases(inode);
 +	}
- 	return ret;
++
++	mutex_lock(&iprune_mutex);
++	for (i = 0; i < nr; i++) {
++		inode = v[i];
++
++		if (!inode)
++			/* inode is alrady being freed */
++			continue;
++
++		active = inode->i_sb->s_flags & MS_ACTIVE;
++		iput(inode);
++		if (abort || !active)
++			continue;
++
++		spin_lock(&inode_lock);
++		abort =  !can_unuse(inode);
++
++		if (!abort) {
++			list_move(&inode->i_list, &freeable);
++			inode->i_state |= I_FREEING;
++			inodes_stat.nr_unused--;
++		}
++		spin_unlock(&inode_lock);
++	}
++	dispose_list(&freeable);
++	mutex_unlock(&iprune_mutex);
++}
++EXPORT_SYMBOL(kick_inodes);
++
++/*
+  * Initialize the waitqueues and inode hash table.
+  */
+ void __init inode_init_early(void)
+@@ -1401,6 +1523,7 @@ void __init inode_init(void)
+ 					 SLAB_MEM_SPREAD),
+ 					 init_once);
+ 	register_shrinker(&icache_shrinker);
++	kmem_cache_setup_defrag(inode_cachep, get_inodes, kick_inodes);
+ 
+ 	/* Hash may have been set up in inode_init_early */
+ 	if (!hashdist)
+Index: linux-2.6/include/linux/fs.h
+===================================================================
+--- linux-2.6.orig/include/linux/fs.h	2008-05-07 20:27:10.573910205 -0700
++++ linux-2.6/include/linux/fs.h	2008-05-07 20:30:15.153909886 -0700
+@@ -1826,6 +1826,12 @@ static inline void insert_inode_hash(str
+ 	__insert_inode_hash(inode, inode->i_ino);
  }
  
-@@ -1342,7 +1391,7 @@ static unsigned long do_try_to_free_page
- 		 * over limit cgroups
- 		 */
- 		if (scan_global_lru(sc)) {
--			shrink_slab(sc->nr_scanned, sc->gfp_mask, lru_pages);
-+			shrink_slab(sc->nr_scanned, sc->gfp_mask, lru_pages, NULL);
- 			if (reclaim_state) {
- 				nr_reclaimed += reclaim_state->reclaimed_slab;
- 				reclaim_state->reclaimed_slab = 0;
-@@ -1567,7 +1616,7 @@ loop_again:
- 				nr_reclaimed += shrink_zone(priority, zone, &sc);
- 			reclaim_state->reclaimed_slab = 0;
- 			nr_slab = shrink_slab(sc.nr_scanned, GFP_KERNEL,
--						lru_pages);
-+						lru_pages, zone);
- 			nr_reclaimed += reclaim_state->reclaimed_slab;
- 			total_scanned += sc.nr_scanned;
- 			if (zone_is_all_unreclaimable(zone))
-@@ -1806,7 +1855,7 @@ unsigned long shrink_all_memory(unsigned
- 	/* If slab caches are huge, it's better to hit them first */
- 	while (nr_slab >= lru_pages) {
- 		reclaim_state.reclaimed_slab = 0;
--		shrink_slab(nr_pages, sc.gfp_mask, lru_pages);
-+		shrink_slab(nr_pages, sc.gfp_mask, lru_pages, NULL);
- 		if (!reclaim_state.reclaimed_slab)
- 			break;
- 
-@@ -1844,7 +1893,7 @@ unsigned long shrink_all_memory(unsigned
- 
- 			reclaim_state.reclaimed_slab = 0;
- 			shrink_slab(sc.nr_scanned, sc.gfp_mask,
--					count_lru_pages());
-+					count_lru_pages(), NULL);
- 			ret += reclaim_state.reclaimed_slab;
- 			if (ret >= nr_pages)
- 				goto out;
-@@ -1861,7 +1910,8 @@ unsigned long shrink_all_memory(unsigned
- 	if (!ret) {
- 		do {
- 			reclaim_state.reclaimed_slab = 0;
--			shrink_slab(nr_pages, sc.gfp_mask, count_lru_pages());
-+			shrink_slab(nr_pages, sc.gfp_mask,
-+					count_lru_pages(), NULL);
- 			ret += reclaim_state.reclaimed_slab;
- 		} while (ret < nr_pages && reclaim_state.reclaimed_slab > 0);
- 	}
-@@ -2023,7 +2073,8 @@ static int __zone_reclaim(struct zone *z
- 		 * Note that shrink_slab will free memory on all zones and may
- 		 * take a long time.
- 		 */
--		while (shrink_slab(sc.nr_scanned, gfp_mask, order) &&
-+		while (shrink_slab(sc.nr_scanned, gfp_mask, order,
-+						zone) &&
- 			zone_page_state(zone, NR_SLAB_RECLAIMABLE) >
- 				slab_reclaimable - nr_pages)
- 			;
-Index: linux-2.6/include/linux/mmzone.h
-===================================================================
---- linux-2.6.orig/include/linux/mmzone.h	2008-05-08 17:24:44.000000000 -0700
-+++ linux-2.6/include/linux/mmzone.h	2008-05-09 15:13:32.000000000 -0700
-@@ -256,6 +256,7 @@ struct zone {
- 	unsigned long		nr_scan_active;
- 	unsigned long		nr_scan_inactive;
- 	unsigned long		pages_scanned;	   /* since last reclaim */
-+	unsigned long		slab_defrag_counter; /* since last defrag */
- 	unsigned long		flags;		   /* zone flags, see below */
- 
- 	/* Zone statistics */
-Index: linux-2.6/include/linux/swap.h
-===================================================================
---- linux-2.6.orig/include/linux/swap.h	2008-05-08 17:24:44.000000000 -0700
-+++ linux-2.6/include/linux/swap.h	2008-05-09 15:13:32.000000000 -0700
-@@ -188,6 +188,9 @@ extern unsigned long try_to_free_mem_cgr
- extern int __isolate_lru_page(struct page *page, int mode);
- extern unsigned long shrink_all_memory(unsigned long nr_pages);
- extern int vm_swappiness;
-+extern int slab_defrag_limit;
-+extern int slab_defrag_counter;
++/* Helper functions for inode defragmentation support in filesystems */
++extern void kick_inodes(struct kmem_cache *, int, void **, void *);
++extern void *get_inodes(struct kmem_cache *, int nr, void **);
++extern void *fs_get_inodes(struct kmem_cache *, int nr, void **,
++						unsigned long offset);
 +
- extern int remove_mapping(struct address_space *mapping, struct page *page);
- extern long vm_total_pages;
- 
-Index: linux-2.6/kernel/sysctl.c
-===================================================================
---- linux-2.6.orig/kernel/sysctl.c	2008-05-08 17:24:45.000000000 -0700
-+++ linux-2.6/kernel/sysctl.c	2008-05-09 15:13:32.000000000 -0700
-@@ -1035,6 +1035,26 @@ static struct ctl_table vm_table[] = {
- 		.strategy	= &sysctl_intvec,
- 		.extra1		= &zero,
- 	},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "slab_defrag_limit",
-+		.data		= &slab_defrag_limit,
-+		.maxlen		= sizeof(slab_defrag_limit),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec,
-+		.strategy	= &sysctl_intvec,
-+		.extra1		= &one_hundred,
-+	},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "slab_defrag_count",
-+		.data		= &slab_defrag_counter,
-+		.maxlen		= sizeof(slab_defrag_counter),
-+		.mode		= 0444,
-+		.proc_handler	= &proc_dointvec,
-+		.strategy	= &sysctl_intvec,
-+		.extra1		= &zero,
-+	},
- #ifdef HAVE_ARCH_PICK_MMAP_LAYOUT
- 	{
- 		.ctl_name	= VM_LEGACY_VA_LAYOUT,
-Index: linux-2.6/Documentation/sysctl/vm.txt
-===================================================================
---- linux-2.6.orig/Documentation/sysctl/vm.txt	2008-05-08 17:24:44.000000000 -0700
-+++ linux-2.6/Documentation/sysctl/vm.txt	2008-05-09 15:13:32.000000000 -0700
-@@ -38,6 +38,7 @@ Currently, these files are in /proc/sys/
- - numa_zonelist_order
- - nr_hugepages
- - nr_overcommit_hugepages
-+- slab_defrag_limit
- 
- ==============================================================
- 
-@@ -347,3 +348,14 @@ Change the maximum size of the hugepage 
- nr_hugepages + nr_overcommit_hugepages.
- 
- See Documentation/vm/hugetlbpage.txt
-+
-+==============================================================
-+
-+slab_defrag_limit
-+
-+Determines the frequency of calls from reclaim into slab defragmentation.
-+Slab defrag reclaims objects from sparsely populates slab pages.
-+The default is 1000. Increase if slab defragmentation occurs
-+too frequently. Decrease if more slab defragmentation passes
-+are needed. The slabinfo tool can report on the frequency of the callbacks.
-+
-Index: linux-2.6/mm/vmstat.c
-===================================================================
---- linux-2.6.orig/mm/vmstat.c	2008-05-08 17:24:45.000000000 -0700
-+++ linux-2.6/mm/vmstat.c	2008-05-09 15:15:10.000000000 -0700
-@@ -711,9 +711,11 @@ static void zoneinfo_show_print(struct s
- #endif
- 	}
- 	seq_printf(m,
-+		   "\n  slab_defrag_count: %lu"
- 		   "\n  all_unreclaimable: %u"
- 		   "\n  prev_priority:     %i"
- 		   "\n  start_pfn:         %lu",
-+		   	   zone->slab_defrag_counter,
- 			   zone_is_all_unreclaimable(zone),
- 		   zone->prev_priority,
- 		   zone->zone_start_pfn);
+ extern struct file * get_empty_filp(void);
+ extern void file_move(struct file *f, struct list_head *list);
+ extern void file_kill(struct file *f);
 
 -- 
