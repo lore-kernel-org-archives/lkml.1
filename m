@@ -1,59 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753510AbYEJEkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbYEJFNQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753510AbYEJEkm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 May 2008 00:40:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbYEJEkd
+	id S1753960AbYEJFNQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 May 2008 01:13:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbYEJFNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 May 2008 00:40:33 -0400
-Received: from qmta05.emeryville.ca.mail.comcast.net ([76.96.30.48]:57410 "EHLO
-	QMTA05.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750778AbYEJEkc (ORCPT
+	Sat, 10 May 2008 01:13:05 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:59696 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751450AbYEJFND (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 May 2008 00:40:32 -0400
-X-Authority-Analysis: v=1.0 c=1 a=frr7tnlS5JwA:10 a=j7aJu_usDzAA:10
- a=ZH8D7TI2ClAGQ7-6gXUA:9 a=qY4aZw6bRTFnKNLj3V7a_0zDSkIA:4 a=7DSvI1NPTFQA:10
- a=dGJ0OcVc7YAA:10 a=si9q_4b84H0A:10 a=WuK_CZDBSqoA:10
-Subject: Re: [regression?] distcc says: (dcc_pump_sendfile) ERROR: sendfile
-	returned 0? can't cope (bisected)
-From: Tom Zanussi <zanussi@comcast.net>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Dan Williams <dan.j.williams@intel.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080509191734.GX16217@kernel.dk>
-References: <1210194811.16427.6.camel@dwillia2-linux.ch.intel.com>
-	 <20080507211641.GR16217@kernel.dk> <1210231275.7301.17.camel@charm-linux>
-	 <1210306939.7205.9.camel@charm-linux> <20080509112651.GR16217@kernel.dk>
-	 <e9c3a7c20805091101w6402c17ak5dbee048a1845753@mail.gmail.com>
-	 <20080509191734.GX16217@kernel.dk>
-Content-Type: text/plain
-Date: Fri, 09 May 2008 23:40:29 -0500
-Message-Id: <1210394429.7422.4.camel@charm-linux>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Sat, 10 May 2008 01:13:03 -0400
+Date: Fri, 9 May 2008 22:08:48 -0700
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Linux 2.6.25.3
+Message-ID: <20080510050848.GA31127@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+We (the -stable team) are announcing the release of the 2.6.25.3 kernel.
 
-On Fri, 2008-05-09 at 21:17 +0200, Jens Axboe wrote:
-> On Fri, May 09 2008, Dan Williams wrote:
-> > On Fri, May 9, 2008 at 4:26 AM, Jens Axboe <jens.axboe@oracle.com> wrote:
-> > >  Dan, can I talk you into re-trying current git with this patch applied?
-> > >  It's basically the (now) reverted broken bits plus the fix from Tom from
-> > >  this email.
-> > >
-> > 
-> > distcc appears to be  happy.
-> > 
-> > Tested-by: Dan Williams <dan.j.williams@intel.com>
-> 
-> Super, Tom I already committed this patch as coming from you. If you
-> want a SOB added, let me know.
-> 
+Yes, its a few hours earlier than originally expected, but there are two
+security bugs fixed in here that just recently were made public, so we
+figured we would err on the safe side.  All users of the 2.6.25 series
+are strongly encouraged to upgrade, and anyone running 2.6.24 should
+also move up to 2.6.25 at this time if possible.
 
-OK, great, thanks.
+I'll also be replying to this message with a copy of the patch between
+2.6.25.2 and 2.6.25.3
 
-Signed-off-by: Tom Zanussi <zanussi@comcast.net>
+The updated 2.6.25.y git tree can be found at:
+        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.25.y.git
+and can be browsed at the normal kernel.org git web browser:
+        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.25.y.git;a=summary
 
+thanks,
+
+greg k-h
+
+--------
+
+ Makefile                         |    2 -
+ arch/arm/kernel/kprobes-decode.c |    2 -
+ arch/arm/kernel/kprobes.c        |    2 -
+ arch/sparc/kernel/sys_sparc.c    |    3 -
+ arch/sparc64/kernel/sys_sparc.c  |    4 +-
+ arch/x86/pci/common.c            |    7 ++--
+ arch/x86/pci/init.c              |    2 +
+ arch/x86/pci/pci.h               |    2 +
+ crypto/authenc.c                 |    5 +-
+ crypto/cryptd.c                  |    4 +-
+ crypto/eseqiv.c                  |    3 +
+ drivers/acpi/processor_idle.c    |    4 ++
+ drivers/md/md.c                  |    2 -
+ drivers/net/wireless/b43/b43.h   |    4 ++
+ drivers/net/wireless/b43/main.c  |   40 ++++++++++++++++++-----
+ drivers/serial/mpc52xx_uart.c    |    2 -
+ fs/reiserfs/ioctl.c              |    4 --
+ fs/reiserfs/super.c              |   17 +++++++---
+ fs/utimes.c                      |   17 ++++++++--
+ include/crypto/scatterwalk.h     |    4 ++
+ include/linux/reiserfs_fs.h      |    1 
+ kernel/sched.c                   |   66 ++++++++++++++++++++++++++++++++++++++-
+ mm/page_alloc.c                  |   14 +++++++-
+ net/ipv6/sit.c                   |    2 -
+ 24 files changed, 175 insertions(+), 38 deletions(-)
+
+
+Dan Williams (1):
+      md: fix use after free when removing rdev via sysfs
+
+David S. Miller (2):
+      sparc: Fix mmap VA span checking.
+      sit: Add missing kfree_skb() on pskb_may_pull() failure.
+
+Grant Likely (1):
+      POWERPC: mpc5200: Fix unterminated of_device_id table
+
+Greg Kroah-Hartman (1):
+      Linux 2.6.25.3
+
+Herbert Xu (2):
+      CRYPTO: api: Fix scatterwalk_sg_chain
+      CRYPTO: eseqiv: Fix off-by-one encryption
+
+Jan Kara (1):
+      reiserfs: Unpack tails on quota files
+
+Julia Lawall (1):
+      CRYPTO: cryptd: Correct kzalloc error test
+
+KAMEZAWA Hiroyuki (1):
+      mm: fix usemap initialization
+
+Lennert Buytenhek (1):
+      kprobes/arm: fix decoding of arithmetic immediate instructions
+
+Michael Buesch (2):
+      b43: Fix dual-PHY devices
+      b43: Fix some TX/RX locking issues
+
+Miklos Szeredi (1):
+      vfs: fix permission checking in sys_utimensat
+
+Nicolas Pitre (1):
+      kprobes/arm: fix cache flush address for instruction stub
+
+Patrick McHardy (1):
+      CRYPTO: authenc: Fix async crypto crash in crypto_authenc_genicv()
+
+Peter Zijlstra (1):
+      sched: fix hrtick_start_fair and CPU-Hotplug
+
+Venkatesh Pallipadi (1):
+      2.6.25 regression: powertop says 120K wakeups/sec
+
+Yinghai Lu (1):
+      x86 PCI: call dmi_check_pciprobe()
 
