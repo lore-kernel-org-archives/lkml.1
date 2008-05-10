@@ -1,93 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757869AbYEJUkE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757238AbYEJUlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757869AbYEJUkE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 May 2008 16:40:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754715AbYEJUjy
+	id S1757238AbYEJUlS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 May 2008 16:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753791AbYEJUlH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 May 2008 16:39:54 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:26105 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753387AbYEJUjx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 May 2008 16:39:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jpHtJlUhyD9l8pA0W4+/WhGQ7yLXKl2yV9//GSgxozSGSWCu12V51OhifHJAVshKppFPk6taZ02WPvMXEbIg7ALxbDOC+gyFlVjI2zrO5023we/4Nn54eXqEePURpKXoZV1IUiaq6X/2XKq905LMN7JHsOalOcguSFfljLo7FVc=
-Message-ID: <e85b9d30805101339je48a55dnd2fbd5601c27a3be@mail.gmail.com>
-Date: Sat, 10 May 2008 22:39:50 +0200
-From: Matthew <jackdachef@gmail.com>
-To: "Fabio Checconi" <fabio@gandalf.sssup.it>
-Subject: Re: performance "regression" in cfq compared to anticipatory, deadline and noop
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       jens.axboe@oracle.com
-In-Reply-To: <20080510200053.GA78555@gandalf.sssup.it>
+	Sat, 10 May 2008 16:41:07 -0400
+Received: from www.tglx.de ([62.245.132.106]:59057 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752388AbYEJUlF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 May 2008 16:41:05 -0400
+Date: Sat, 10 May 2008 22:40:41 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: andreas.herrmann3@amd.com, mingo@elte.hu, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: enable hpet=force for AMD SB400
+In-Reply-To: <20080509165501.a0fdb29d.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0805102238440.3197@apollo.tec.linutronix.de>
+References: <20080509094911.GG5023@alberich.amd.com> <20080509163731.5f851bec.akpm@linux-foundation.org> <alpine.LFD.1.10.0805100140490.3197@apollo.tec.linutronix.de> <20080509165501.a0fdb29d.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <e85b9d30805101218u4b8f0c2bw47af2384133a5c77@mail.gmail.com>
-	 <20080510200053.GA78555@gandalf.sssup.it>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hi, I'm experiencing some cfq/bfq performance issues too, but I'm
-> still not able to track down the reasons, so before posting on this
-> topic on the mailing list I'd ask you a couple of questions.
->
-> 1) Are you running the hdparm performance test under some cpu load?
->   (Even two hdparm instances ran in parallel could do.)
->
-> 2) Does using a bigger value of slice_idle increase the throughput?
->
+On Fri, 9 May 2008, Andrew Morton wrote:
+> On Sat, 10 May 2008 01:42:30 +0200 (CEST)
+> Thomas Gleixner <tglx@linutronix.de> wrote:
+> 
+> > On Fri, 9 May 2008, Andrew Morton wrote:
+> > > On Fri, 9 May 2008 11:49:11 +0200
+> > > Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
+> > > 
+> > > > x86: enable hpet=force for ATI SB400
+> > > 
+> > > Sigh.
+> > > 
+> > > > Add quirk to allow forced usage of HPET on ATI SB400.
+> > > > I stumbled over machines where HPET is enabled but not reported
+> > > > by BIOS.
+> > > 
+> > > Is there no way in which we can probe for or identify this condition,
+> > > rather than hoping that the user will find out about this boot option?
+> > 
+> > I'd love to have a sane solution for that, but looking at the rate of
+> > HPET wreckage since we increased the usage of HPET I'm happy to have
+> > this as an opt in thingy.
+> > 
+> 
+> Well we don't have to auto-enable the hpet.  Simply adding a loud "you
+> should try the hpet=force option" printk would help a lot of people.
 
-Hi,
+Something like this ? That's on top of linus + Andreas SB400 patch
 
-1) no it was always in (almost) complete idle
+Thanks,
+	tglx
 
-2) a bigger value even made it worse, setting it to "0" however
-seemingly "fixed" it, I however don't know how the overall
-effect/impact is, this will need some more real-world testing ;)
+------------> 
+commit 3d5f406b110b1b1d314805a1a4c1744ff05d7f22
+Author: Thomas Gleixner <tglx@linutronix.de>
+Date:   Sat May 10 21:42:14 2008 +0200
 
-cat /sys/block/sdd/queue/iosched/slice_idle
-0
+    x86: print info about available HPET quirk
+    
+    We have a lot of HPET quirks available which might force enable HPET
+    even when the BIOS does not enable it. Some of those quirks depend on
+    the command line option "hpet=force".
+    
+    Andrew pointed out that hoping that the user will find out about this
+    boot option is not really helpful.
+    
+    Emit a kernel info which informs the user about the "hpet=force" boot
+    option when we enter a quirk which depends on this option and the user
+    did not provide it.
+    
+    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-hdparm -t /dev/sdd
-
-/dev/sdd:
- Timing buffered disk reads:  314 MB in  3.01 seconds = 104.32 MB/sec
-
-hdparm -t /dev/sdd
-
-/dev/sdd:
- Timing buffered disk reads:  312 MB in  3.00 seconds = 103.86 MB/sec
-
-hdparm -t /dev/sdd
-
-/dev/sdd:
- Timing buffered disk reads:  314 MB in  3.01 seconds = 104.24 MB/sec
-
-one side-node / question:
-
-will this cause more wakeups on the cpu and/or decrease battery
-runtime on, e.g. laptops ?
-
-> Thank you very much, I'll try hdparm on my test boxes and come back
-> to the list if I find something on that.
->
-> As a sidenote, Ingo is not the author/maintainer of cfq, maybe the
-> next time CC: Jens Axboe for that.
->
-
-oops, didn't know that, thanks - didn't want to give the wrong person
-the "credits"
-hi & kudos to Jens ;)
-
-here's a nice site which explains all of the settings:
-
-http://www.nextre.it/oracledocs/ioscheduler_03.html
-
-Regards
-
-Mat
+diff --git a/arch/x86/kernel/quirks.c b/arch/x86/kernel/quirks.c
+index 5fe6bd5..ddbf34d 100644
+--- a/arch/x86/kernel/quirks.c
++++ b/arch/x86/kernel/quirks.c
+@@ -175,6 +175,12 @@ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH9_7,
+ 
+ static struct pci_dev *cached_dev;
+ 
++static void hpet_print_force_info(void)
++{
++	printk(KERN_INFO "HPET not enabled in BIOS. "
++	       "You might try hpet=force boot option\n");
++}
++
+ static void old_ich_force_hpet_resume(void)
+ {
+ 	u32 val;
+@@ -254,6 +260,8 @@ static void old_ich_force_enable_hpet_user(struct pci_dev *dev)
+ {
+ 	if (hpet_force_user)
+ 		old_ich_force_enable_hpet(dev);
++	else
++		hpet_print_force_info();
+ }
+ 
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82801CA_0,
+@@ -291,8 +299,13 @@ static void vt8237_force_enable_hpet(struct pci_dev *dev)
+ {
+ 	u32 uninitialized_var(val);
+ 
+-	if (!hpet_force_user || hpet_address || force_hpet_address)
++	if (hpet_address || force_hpet_address)
++		return;
++
++	if (!hpet_force_user) {
++		hpet_print_force_info();
+ 		return;
++	}
+ 
+ 	pci_read_config_dword(dev, 0x68, &val);
+ 	/*
+@@ -341,8 +354,13 @@ static void ati_force_enable_hpet(struct pci_dev *dev)
+ {
+ 	u32 uninitialized_var(val);
+ 
+-	if (!hpet_force_user || hpet_address || force_hpet_address)
++	if (hpet_address || force_hpet_address)
++		return;
++
++	if (!hpet_force_user) {
++		hpet_print_force_info();
+ 		return;
++	}
+ 
+ 	pci_write_config_dword(dev, 0x14, 0xfed00000);
+ 	pci_read_config_dword(dev, 0x14, &val);
+@@ -369,8 +387,13 @@ static void nvidia_force_enable_hpet(struct pci_dev *dev)
+ {
+ 	u32 uninitialized_var(val);
+ 
+-	if (!hpet_force_user || hpet_address || force_hpet_address)
++	if (hpet_address || force_hpet_address)
++		return;
++
++	if (!hpet_force_user) {
++		hpet_print_force_info();
+ 		return;
++	}
+ 
+ 	pci_write_config_dword(dev, 0x44, 0xfed00001);
+ 	pci_read_config_dword(dev, 0x44, &val);
