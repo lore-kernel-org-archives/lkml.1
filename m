@@ -1,64 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755910AbYEJMRr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756166AbYEJMam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755910AbYEJMRr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 May 2008 08:17:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbYEJMRh
+	id S1756166AbYEJMam (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 May 2008 08:30:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbYEJMac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 May 2008 08:17:37 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:46315 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753335AbYEJMRg (ORCPT
+	Sat, 10 May 2008 08:30:32 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:48869 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753673AbYEJMac (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 May 2008 08:17:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references:mime-version:content-type:content-transfer-encoding;
-        b=P7uqC//5HATtygI3FcyiqggvDQrW9DIKFbzGB/OMxZNSLFWU5wsr1GYW5bOxUVsCuYrb2i+yekKBgjb/6jz+zkODxSBuS4mw7WfvhJhfbeipvLGvg7rCSQbP1SXhXw7UmMxqxue+SdBNKOjsXDvbbCVIu+B6MzVijnJYmrTk6do=
-From: Abdel Benamrouche <draconux@gmail.com>
-To: aeb@cwi.nl
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
-       Abdel Benamrouche <draconux@gmail.com>
-Subject: [PATCH] /fs/partition/check.c: fix return value warning
-Date: Sat, 10 May 2008 13:40:53 +0200
-Message-Id: <1210419653-19234-1-git-send-email-draconux@gmail.com>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <>
-References: <>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+	Sat, 10 May 2008 08:30:32 -0400
+Date: Sat, 10 May 2008 14:37:44 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Bart Van Assche <bart.vanassche@gmail.com>,
+       John Reiser <jreiser@BitWagon.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Daniel Walker <dwalker@mvista.com>, Andi Kleen <andi@firstfloor.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Josh Aune <luken@omner.org>,
+       Pekka Paalanen <pq@iki.fi>
+Subject: Re: [ANNOUNCE] kmemcheck v7
+Message-ID: <20080510123744.GB19109@one.firstfloor.org>
+References: <47F630AE.7050801@gmail.com> <e2e108260805100207l13b67706h871f5f1c550e58b3@mail.gmail.com> <482565A5.8010503@cs.helsinki.fi> <e2e108260805100404h63f02194r62e53f79ae2a403f@mail.gmail.com> <19f34abd0805100502k150e3636x33831230d688dd92@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <19f34abd0805100502k150e3636x33831230d688dd92@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fs/partitions/check.c:381: warning: ignoring return value of ‘device_add’,
- declared with attribute warn_unused_result
+>  - kmemcheck can only warn for dynamic memory, whereas kmemcheck I
+> believe will also work for local variables, static variables, etc.
 
-Signed-off-by: Abdel Benamrouche <draconux@gmail.com>
----
-:100644 100644 6149e4b... 7a87fad... M	fs/partitions/check.c
- fs/partitions/check.c |    8 +++++++-
- 1 files changed, 7 insertions(+), 1 deletions(-)
+I don't think that's true. valgrind can only detect uninitialized 
+local variables in one special case (first use of the stack region).
+But as soon as you reuse stack which is pretty common it won't 
+be able to detect the next uninitialized use in a stack frame. 
 
-diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-index 6149e4b..7a87fad 100644
---- a/fs/partitions/check.c
-+++ b/fs/partitions/check.c
-@@ -378,7 +378,13 @@ void add_partition(struct gendisk *disk, int part, sector_t start, sector_t len,
- 
- 	/* delay uevent until 'holders' subdir is created */
- 	p->dev.uevent_suppress = 1;
--	device_add(&p->dev);
-+	if (device_add(&p->dev)) {
-+		put_device(&p->dev);
-+		free_part_stats(p);
-+		kfree(p);
-+		return;
-+	}
-+
- 	partition_sysfs_add_subdir(p);
- 	p->dev.uevent_suppress = 0;
- 	if (flags & ADDPART_FLAG_WHOLEDISK)
--- 
-1.5.4.3
+Luckily the compilers do a reasonable job at detecting them at build time.
 
+And static/global variables are never uninitialized in C.
+
+-Andi
