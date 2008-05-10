@@ -1,99 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757585AbYEJTST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757665AbYEJTVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757585AbYEJTST (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 May 2008 15:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754032AbYEJTSJ
+	id S1757665AbYEJTVU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 May 2008 15:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbYEJTVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 May 2008 15:18:09 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:25908 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752804AbYEJTSG (ORCPT
+	Sat, 10 May 2008 15:21:13 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:47966 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752717AbYEJTVN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 May 2008 15:18:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=Bck9H1VUZtOUQRHtwEu0yf6cMrNkYKsxFHVjstFLbvWNZRE0Kj+uYb2hxry/LW1JuvraXg46S1HIbjpNNk2FdLDQ2JG7ORVe21C6WhwXKgcRjt1p3wbB42BIOUsveqZNbtu6ieM7tN4DBOYGMPlOOyz15mxtUTijN1N30lOnNEI=
-Message-ID: <e85b9d30805101218u4b8f0c2bw47af2384133a5c77@mail.gmail.com>
-Date: Sat, 10 May 2008 21:18:04 +0200
-From: Matthew <jackdachef@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: performance "regression" in cfq compared to anticipatory, deadline and noop
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+	Sat, 10 May 2008 15:21:13 -0400
+Date: Sat, 10 May 2008 20:21:11 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       WANG Cong <wangcong@zeuux.org>
+Subject: Re: [Patch 3/9] fs/compat.c: fix resource leaks and wrong goto's
+Message-ID: <20080510192111.GC13907@ZenIV.linux.org.uk>
+References: <1210254754206-git-send-email-xiyou.wangcong@gmail.com> <12102548033990-git-send-email-xiyou.wangcong@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <12102548033990-git-send-email-xiyou.wangcong@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo, hi everybody,
+On Thu, May 08, 2008 at 09:52:28PM +0800, WANG Cong wrote:
+> Use free_arg_pages() to free the pages allocated by copy_strings_kernel()
+> on failure. And fix some related wrong goto pathes.
 
-I've encountered sort of a performance "regression" in using cfq (and
-the cfq-based bfq) in comparison with the other io-schedulers:
+Kinda; free_arg_pages() is needed here, but there's no need to mess with
+goto - just put it under out:
 
-1) interactivity during load is much better compared to the others
-(thanks a lot for that, that made me appreciate this scheduler) BUT
-2) everything seems to take somewhat longer to load (big applications
-like firefox, etc. )
-3) hdparm shows the same behavior
+Note that it's essentially just a part of freeing bprm; it's _not_ a "clean
+collected strings, so that we could add new ones".
 
-since I've started using cfq only for a few days (approx. 1-2 weeks
-now) I didn't really notice it until I tested "performance" via
-hdparm:
-
-
-/dev/sdd:
- Timing buffered disk reads:  308 MB in  3.01 seconds = 102.22 MB/sec
-
-/dev/sdd:
- Timing buffered disk reads:  306 MB in  3.01 seconds = 101.66 MB/sec
-
-/dev/sdd:
- Timing buffered disk reads:  304 MB in  3.02 seconds = 100.77 MB/sec
-noop [anticipatory] deadline cfq
-
-deadline & noop are similar, the test of noop finishes pretty fast ...
-
-
-/dev/sdd:
- Timing buffered disk reads:  170 MB in  3.02 seconds =  56.27 MB/sec
-
-/dev/sdd:
- Timing buffered disk reads:  176 MB in  3.02 seconds =  58.21 MB/sec
-
-/dev/sdd:
- Timing buffered disk reads:  176 MB in  3.02 seconds =  58.22 MB/sec
-noop anticipatory deadline [cfq]
-
-this behavior occurs on an jmicron sata-controller (JMB363/361) and
-the probably the 4th port of the Intel ICH7R but only with cfq
-selected, the first (?) and second (?) port of the Intel ICH7R are
-fine performance-wise, don't know why it's that picky
-with the other schedulers it's fine
-
-I've tested: 2.6.24-gentoo-r7 (+ 2.6.24.7), 2.6.24-gentoo-r3, 2.6.25,
-2.6.25.2 (+ 2.6.25-zen1), 2.6.25-rc8, the kernel of the ubuntu
-desktop-livecd amd64 (ubuntu 8.04) (cfq enabled)
-all show this worse "performance" compared to the other schedulers
-all kernels are amd64 on gentoo ~amd64, glibc-2.7.1, gcc-4.2.3 hardened
-
-hardware:
-Asus P5W DH Deluxe
-
-I unfortuantely can't test earlier kernel-versions due to the fact
-that I'm using reiser4 for /(root) and the earlier kernels + reiser4
-aren't that stable in terms of data safety
-
-hopefully this is reproducable & you guys can explain if this is
-something to "worry" about (performance) and/or a real regression or
-just some kind of placebo effect
-
-Many thanks in advance & thanks a lot for this great scheduler (cfq;
-I'm looking forward to bfq in mainline which seems to work even better
-under load)
-
-Regards
-
-Mat
+> @@ -1403,6 +1403,7 @@ int compat_do_execve(char * filename,
+>  	retval = search_binary_handler(bprm, regs);
+>  	if (retval >= 0) {
+>  		/* execve success */
+> +		free_arg_pages(bprm);
+>  		security_bprm_free(bprm);
+>  		acct_update_integrals(current);
+>  		kfree(bprm);
+> @@ -1410,6 +1411,9 @@ int compat_do_execve(char * filename,
+>  	}
+>  
+>  out:
+> +	free_arg_pages(bprm);
+> +
+> +out_sec:
+>  	if (bprm->security)
+>  		security_bprm_free(bprm);
+>  
