@@ -1,82 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755223AbYEJGaH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755579AbYEJGeb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755223AbYEJGaH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 May 2008 02:30:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbYEJG3z
+	id S1755579AbYEJGeb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 May 2008 02:34:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752321AbYEJGeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 May 2008 02:29:55 -0400
-Received: from mga09.intel.com ([134.134.136.24]:57103 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751919AbYEJG3y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 May 2008 02:29:54 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,464,1204531200"; 
-   d="asc'?scan'208";a="279931612"
-Subject: Re: [git head] X86_PAT & mprotect
-From: Keith Packard <keith.packard@intel.com>
-Reply-To: keith.packard@intel.com
-To: Dave Airlie <airlied@gmail.com>
-Cc: keith.packard@intel.com,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Hugh Dickins <hugh@veritas.com>,
-       Frans Pop <elendil@planet.nl>, "Barnes, Jesse" <jesse.barnes@intel.com>,
-       linux-kernel@vger.kernel.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+	Sat, 10 May 2008 02:34:23 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:25944 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752228AbYEJGeV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 May 2008 02:34:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=WH40K8DLz8Wz+4Us+o/b5mquESxegsbLxIW/cOfIqHg5WGE9YYXQgbvzRe1vROoTTjfZpnzw7oGjHjv1flYaRb1nupcndUybj6S1yGVFbJ+Zk9XkhB+wd93tJHe1AtMRYp0rC68wm4qJCgMbBcCmQgdHGOb2/XcWngt0YXOVVIw=
+Message-ID: <482541E3.6020001@gmail.com>
+Date: Sat, 10 May 2008 15:34:11 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: Markus Trippelsdorf <markus@trippelsdorf.de>, linux-ide@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Nick Piggin <npiggin@suse.de>, Jesse Barnes <jbarnes@virtuousgeek.org>
-In-Reply-To: <21d7e9970805092319n1d31be36h2f2c7d46622f46c8@mail.gmail.com>
-References: <200805022122.03576.elendil@planet.nl>
-	 <200805051932.41827.elendil@planet.nl>
-	 <20080506224240.GA18706@linux-os.sc.intel.com>
-	 <20080507070217.GD32195@elte.hu>
-	 <Pine.LNX.4.64.0805071941140.18916@blonde.site>
-	 <20080507232326.GB10757@linux-os.sc.intel.com>
-	 <20080509100818.GD19617@elte.hu>
-	 <20080509200519.GA10897@linux-os.sc.intel.com>
-	 <21d7e9970805091511n2c6b6cfeu433b184d3031196d@mail.gmail.com>
-	 <924EFEDD5F540B4284297C4DC59F3DEE010471B6@orsmsx423.amr.corp.intel.com>
-	 <21d7e9970805092319n1d31be36h2f2c7d46622f46c8@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ydkwcGyZoYgQt5gzlLD6"
-Organization: Intel Corp
-Date: Fri, 09 May 2008 23:29:50 -0700
-Message-Id: <1210400990.29406.179.camel@koto.keithp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+       LKML <linux-kernel@vger.kernel.org>, Takashi Iwai <tiwai@suse.de>,
+       marc.c.dionne@gmail.com, dl9pf@gmx.de, bug-track@fisher-privat.net,
+       sitsofe@yahoo.com
+Subject: Re: [PATCH] Re: [git patches] libata updates - (improve post-reset
+ device ready test) regression
+References: <20080506154847.GA15299@havoc.gtf.org> <20080507145616.GA2210@gentoox2.trippelsdorf.de> <48231DAF.7070900@garzik.org> <4823BD8E.40109@gmail.com> <4823D4EC.7060407@garzik.org>
+In-Reply-To: <4823D4EC.7060407@garzik.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeff Garzik wrote:
+> Tejun Heo wrote:
+>> This means that we need to make custom readiness tests for controllers 
+>> using 0x77 or 0x7f.  Eeeek... Both groups of controllers are behaving 
+>> in incorrect way.  Controllers shouldn't use 0x77 or 0x7f for either 
+>> busy or ready states - it's invalid for both, yet, some use the 77/7f 
+>> for busy while others use them for ready state.  Great.  :-(
+> 
+> I think that's assuming too much?  PATA and SATA are quite different 
+> here... in PATA the status is mostly the value from the device directly 
+> off the wires.  in SATA, it may be from the device or from the 
+> controller.  And "smart" or firmware-based controllers may generate 
+> their own status, too, apart from the device's status.
+ >
+> So that results in varied status returns, and not all the time is a 
+> definite "ready" or "not ready" obvious.
 
---=-ydkwcGyZoYgQt5gzlLD6
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I think it's pretty safe to say that these weird ready values are from 
+TF emulation on controller side.  The ready/not ready distinction is 
+probably too simplistic but those values aren't supposed to appear 
+during post-reset readiness test.
 
-On Sat, 2008-05-10 at 16:19 +1000, Dave Airlie wrote:
+Sorry about the big regression.  Heh... It's amazing how all the 
+controllers I tested didn't show the problem and I did test a good 
+number of combinations.
 
-> Keithp, I hope we didn't error check the mremap return values :)
+I still think it would be better to have a unified readiness test 
+function.  The problem is subtle (device misdetection on hotplug of 
+certain drives) and went unnoticed quite some time for JMB ahcis && test 
+coverage over those things can't be good.  I'll try to think about 
+something better.
 
-        /* KLUDGE ALERT -- rewrite the PTEs to turn off the CD and WT bits =
-*/
-        mprotect (map->memory, map->size, PROT_NONE);
-        mprotect (map->memory, map->size, PROT_READ|PROT_WRITE);
+Thanks.
 
-No return value checks for us ;-)
-
---=20
-keith.packard@intel.com
-
---=-ydkwcGyZoYgQt5gzlLD6
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIJUDeQp8BWwlsTdMRAge6AJ4/o1HMrWVMEon1NCMr8c7p/c2BoACgp3Jp
-QD5ki3NgyzVd3/Osq3a1V0g=
-=RRbu
------END PGP SIGNATURE-----
-
---=-ydkwcGyZoYgQt5gzlLD6--
-
+-- 
+tejun
