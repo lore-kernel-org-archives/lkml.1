@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761629AbYEJDUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759673AbYEJDU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761629AbYEJDUl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 23:20:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760739AbYEJDRZ
+	id S1759673AbYEJDU7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 23:20:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753893AbYEJDRf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 23:17:25 -0400
+	Fri, 9 May 2008 23:17:35 -0400
 Received: from fmailhost03.isp.att.net ([204.127.217.103]:54392 "EHLO
 	fmailhost01.isp.att.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761269AbYEJDRU (ORCPT
+	with ESMTP id S1760877AbYEJDRY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 23:17:20 -0400
+	Fri, 9 May 2008 23:17:24 -0400
 X-Originating-IP: [74.251.48.254]
 From: Jay Cliburn <jacliburn@bellsouth.net>
 To: jeff@garzik.org
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, csnook@redhat.com,
        pelle@dsv.su.se, Jay Cliburn <jacliburn@bellsouth.net>
-Subject: [PATCH 1/4] atl1: add PHY power save mode
-Date: Fri,  9 May 2008 22:12:06 -0500
-Message-Id: <1210389129-3868-2-git-send-email-jacliburn@bellsouth.net>
+Subject: [PATCH 2/4] atl1: fix broken suspend and resume
+Date: Fri,  9 May 2008 22:12:07 -0500
+Message-Id: <1210389129-3868-3-git-send-email-jacliburn@bellsouth.net>
 X-Mailer: git-send-email 1.5.4.1
 In-Reply-To: <1210389129-3868-1-git-send-email-jacliburn@bellsouth.net>
 References: <1210389129-3868-1-git-send-email-jacliburn@bellsouth.net>
@@ -25,63 +25,184 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Using vendor-provided magic, add code to enter power save mode
-on the PHY.  We'll need this for suspend and wake-on-lan.
+Fix atl1_suspend() and atl1_resume() so they actually work.  We'll use
+the suspend function for wake-on-lan in addition to just suspending.
 
 Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
 ---
- drivers/net/atlx/atl1.c |   19 ++++++++-----------
- drivers/net/atlx/atlx.h |    3 +++
- 2 files changed, 11 insertions(+), 11 deletions(-)
+ drivers/net/atlx/atl1.c |  125 ++++++++++++++++++++++++++++++-----------------
+ 1 files changed, 80 insertions(+), 45 deletions(-)
 
 diff --git a/drivers/net/atlx/atl1.c b/drivers/net/atlx/atl1.c
-index 0afe522..3beb44e 100644
+index 3beb44e..12fb3e5 100644
 --- a/drivers/net/atlx/atl1.c
 +++ b/drivers/net/atlx/atl1.c
-@@ -638,21 +638,18 @@ static s32 atl1_phy_leave_power_saving(struct atl1_hw *hw)
- }
+@@ -2781,64 +2781,93 @@ static int atl1_suspend(struct pci_dev *pdev, pm_message_t state)
+ 	struct atl1_hw *hw = &adapter->hw;
+ 	u32 ctrl = 0;
+ 	u32 wufc = adapter->wol;
++	u32 val;
++	int retval;
++	u16 speed;
++	u16 duplex;
  
- /*
-- *TODO: do something or get rid of this
-+ * Force the PHY into power saving mode using vendor magic.
-  */
- #ifdef CONFIG_PM
--static s32 atl1_phy_enter_power_saving(struct atl1_hw *hw)
-+static void atl1_phy_enter_power_saving(struct atl1_hw *hw)
- {
--/*    s32 ret_val;
-- *    u16 phy_data;
-- */
-+	atl1_write_phy_reg(hw, MII_DBG_ADDR, 0);
-+	atl1_write_phy_reg(hw, MII_DBG_DATA, 0x124E);
-+	atl1_write_phy_reg(hw, MII_DBG_ADDR, 2);
-+	atl1_write_phy_reg(hw, MII_DBG_DATA, 0x3000);
-+	atl1_write_phy_reg(hw, MII_DBG_ADDR, 3);
-+	atl1_write_phy_reg(hw, MII_DBG_DATA, 0);
+ 	netif_device_detach(netdev);
+ 	if (netif_running(netdev))
+ 		atl1_down(adapter);
  
--/*
--    ret_val = atl1_write_phy_reg(hw, ...);
--    ret_val = atl1_write_phy_reg(hw, ...);
--    ....
--*/
--	return 0;
- }
- #endif
- 
-diff --git a/drivers/net/atlx/atlx.h b/drivers/net/atlx/atlx.h
-index 3be7c09..9672188 100644
---- a/drivers/net/atlx/atlx.h
-+++ b/drivers/net/atlx/atlx.h
-@@ -460,6 +460,9 @@ MODULE_VERSION(ATLX_DRIVER_VERSION);
- #define MII_ATLX_PSSR_100MBS		0x4000	/* 01=100Mbs */
- #define MII_ATLX_PSSR_1000MBS		0x8000	/* 10=1000Mbs */
- 
-+#define MII_DBG_ADDR			0x1D
-+#define MII_DBG_DATA			0x1E
++	retval = pci_save_state(pdev);
++	if (retval)
++		return retval;
 +
- /* PCI Command Register Bit Definitions */
- #define PCI_REG_COMMAND			0x04	/* PCI Command Register */
- #define CMD_IO_SPACE			0x0001
+ 	atl1_read_phy_reg(hw, MII_BMSR, (u16 *) & ctrl);
+ 	atl1_read_phy_reg(hw, MII_BMSR, (u16 *) & ctrl);
+-	if (ctrl & BMSR_LSTATUS)
++	val = ctrl & BMSR_LSTATUS;
++	if (val)
+ 		wufc &= ~ATLX_WUFC_LNKC;
+ 
+-	/* reduce speed to 10/100M */
+-	if (wufc) {
+-		atl1_phy_enter_power_saving(hw);
+-		/* if resume, let driver to re- setup link */
+-		hw->phy_configured = false;
+-		atl1_set_mac_addr(hw);
+-		atlx_set_multi(netdev);
++	if (val && wufc) {
++		val = atl1_get_speed_and_duplex(hw, &speed, &duplex);
++		if (val) {
++			if (netif_msg_ifdown(adapter))
++				dev_printk(KERN_DEBUG, &pdev->dev,
++					"error getting speed/duplex\n");
++			goto disable_wol;
++		}
+ 
+ 		ctrl = 0;
+-		/* turn on magic packet wol */
+-		if (wufc & ATLX_WUFC_MAG)
+-			ctrl = WOL_MAGIC_EN | WOL_MAGIC_PME_EN;
+ 
+-		/* turn on Link change WOL */
+-		if (wufc & ATLX_WUFC_LNKC)
+-			ctrl |= (WOL_LINK_CHG_EN | WOL_LINK_CHG_PME_EN);
++		/* enable magic packet WOL */
++		if (wufc & ATLX_WUFC_MAG)
++			ctrl |= (WOL_MAGIC_EN | WOL_MAGIC_PME_EN);
+ 		iowrite32(ctrl, hw->hw_addr + REG_WOL_CTRL);
+-
+-		/* turn on all-multi mode if wake on multicast is enabled */
+-		ctrl = ioread32(hw->hw_addr + REG_MAC_CTRL);
+-		ctrl &= ~MAC_CTRL_DBG;
+-		ctrl &= ~MAC_CTRL_PROMIS_EN;
+-		if (wufc & ATLX_WUFC_MC)
+-			ctrl |= MAC_CTRL_MC_ALL_EN;
+-		else
+-			ctrl &= ~MAC_CTRL_MC_ALL_EN;
+-
+-		/* turn on broadcast mode if wake on-BC is enabled */
+-		if (wufc & ATLX_WUFC_BC)
++		ioread32(hw->hw_addr + REG_WOL_CTRL);
++
++		/* configure the mac */
++		ctrl = MAC_CTRL_RX_EN;
++		ctrl |= ((u32)((speed == SPEED_1000) ? MAC_CTRL_SPEED_1000 :
++			MAC_CTRL_SPEED_10_100) << MAC_CTRL_SPEED_SHIFT);
++		if (duplex == FULL_DUPLEX)
++			ctrl |= MAC_CTRL_DUPLX;
++		ctrl |= (((u32)adapter->hw.preamble_len &
++			MAC_CTRL_PRMLEN_MASK) << MAC_CTRL_PRMLEN_SHIFT);
++		if (adapter->vlgrp)
++			ctrl |= MAC_CTRL_RMV_VLAN;
++		if (wufc & ATLX_WUFC_MAG)
+ 			ctrl |= MAC_CTRL_BC_EN;
+-		else
+-			ctrl &= ~MAC_CTRL_BC_EN;
+-
+-		/* enable RX */
+-		ctrl |= MAC_CTRL_RX_EN;
+ 		iowrite32(ctrl, hw->hw_addr + REG_MAC_CTRL);
+-		pci_enable_wake(pdev, PCI_D3hot, 1);
+-		pci_enable_wake(pdev, PCI_D3cold, 1);
+-	} else {
+-		iowrite32(0, hw->hw_addr + REG_WOL_CTRL);
+-		pci_enable_wake(pdev, PCI_D3hot, 0);
+-		pci_enable_wake(pdev, PCI_D3cold, 0);
++		ioread32(hw->hw_addr + REG_MAC_CTRL);
++
++		/* poke the PHY */
++		ctrl = ioread32(hw->hw_addr + REG_PCIE_PHYMISC);
++		ctrl |= PCIE_PHYMISC_FORCE_RCV_DET;
++		iowrite32(ctrl, hw->hw_addr + REG_PCIE_PHYMISC);
++		ioread32(hw->hw_addr + REG_PCIE_PHYMISC);
++
++		pci_enable_wake(pdev, pci_choose_state(pdev, state), 1);
++		goto exit;
+ 	}
+ 
+-	pci_save_state(pdev);
++	if (!val && wufc) {
++		ctrl |= (WOL_LINK_CHG_EN | WOL_LINK_CHG_PME_EN);
++		iowrite32(ctrl, hw->hw_addr + REG_WOL_CTRL);
++		ioread32(hw->hw_addr + REG_WOL_CTRL);
++		iowrite32(0, hw->hw_addr + REG_MAC_CTRL);
++		ioread32(hw->hw_addr + REG_MAC_CTRL);
++		hw->phy_configured = false;
++		pci_enable_wake(pdev, pci_choose_state(pdev, state), 1);
++		goto exit;
++	}
++
++disable_wol:
++	iowrite32(0, hw->hw_addr + REG_WOL_CTRL);
++	ioread32(hw->hw_addr + REG_WOL_CTRL);
++	ctrl = ioread32(hw->hw_addr + REG_PCIE_PHYMISC);
++	ctrl |= PCIE_PHYMISC_FORCE_RCV_DET;
++	iowrite32(ctrl, hw->hw_addr + REG_PCIE_PHYMISC);
++	ioread32(hw->hw_addr + REG_PCIE_PHYMISC);
++	atl1_phy_enter_power_saving(hw);
++	hw->phy_configured = false;
++	pci_enable_wake(pdev, pci_choose_state(pdev, state), 0);
++exit:
++	if (netif_running(netdev))
++		pci_disable_msi(adapter->pdev);
+ 	pci_disable_device(pdev);
+-
+-	pci_set_power_state(pdev, PCI_D3hot);
++	pci_set_power_state(pdev, pci_choose_state(pdev, state));
+ 
+ 	return 0;
+ }
+@@ -2852,20 +2881,26 @@ static int atl1_resume(struct pci_dev *pdev)
+ 	pci_set_power_state(pdev, PCI_D0);
+ 	pci_restore_state(pdev);
+ 
+-	/* FIXME: check and handle */
+ 	err = pci_enable_device(pdev);
++	if (err) {
++		if (netif_msg_ifup(adapter))
++			dev_printk(KERN_DEBUG, &pdev->dev,
++				"error enabling pci device\n");
++		return err;
++	}
++
++	pci_set_master(pdev);
++	iowrite32(0, adapter->hw.hw_addr + REG_WOL_CTRL);
+ 	pci_enable_wake(pdev, PCI_D3hot, 0);
+ 	pci_enable_wake(pdev, PCI_D3cold, 0);
+ 
+-	iowrite32(0, adapter->hw.hw_addr + REG_WOL_CTRL);
+-	atl1_reset(adapter);
++	atl1_reset_hw(&adapter->hw);
++	adapter->cmb.cmb->int_stats = 0;
+ 
+ 	if (netif_running(netdev))
+ 		atl1_up(adapter);
+ 	netif_device_attach(netdev);
+ 
+-	atl1_via_workaround(adapter);
+-
+ 	return 0;
+ }
+ #else
 -- 
 1.5.4.1
 
