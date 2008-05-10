@@ -1,35 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759611AbYEJWh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758567AbYEJWxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759611AbYEJWh5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 May 2008 18:37:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759110AbYEJWh0
+	id S1758567AbYEJWxY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 May 2008 18:53:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754928AbYEJWxN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 May 2008 18:37:26 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:44174 "EHLO
+	Sat, 10 May 2008 18:53:13 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:44380 "EHLO
 	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759070AbYEJWhY (ORCPT
+	with ESMTP id S1752183AbYEJWxL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 May 2008 18:37:24 -0400
+	Sat, 10 May 2008 18:53:11 -0400
 X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sun, 11 May 2008 00:37:14 +0200 (CEST)
+Date: Sun, 11 May 2008 00:53:05 +0200 (CEST)
 From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH 5/5] ieee1394: sbp2: spin disks down on suspend and shutdown
+Subject: Re: Hack to fix not working spindown over Firewire
 To: linux1394-devel@lists.sourceforge.net
-cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
        Tino Keitel <tino.keitel@gmx.de>
-In-Reply-To: <tkrat.68352f1ac714c0c1@s5r6.in-berlin.de>
-Message-ID: <tkrat.e552004d557b31e2@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.327b59f1366f8ea0@s5r6.in-berlin.de>
+Message-ID: <tkrat.8f92142276ccb4e5@s5r6.in-berlin.de>
 References: <20080429232606.GA14261@dose.home.local>
  <481874BD.5010807@s5r6.in-berlin.de>
  <20080507180042.GA32629@dose.home.local>
  <tkrat.327b59f1366f8ea0@s5r6.in-berlin.de>
- <tkrat.635f52f7035be2bc@s5r6.in-berlin.de>
- <tkrat.5cf7605228f0006a@s5r6.in-berlin.de>
- <tkrat.939c665f57d83cd4@s5r6.in-berlin.de>
- <tkrat.9874e625d2b0a007@s5r6.in-berlin.de>
- <tkrat.fbd2e673d8db52fc@s5r6.in-berlin.de>
- <tkrat.68352f1ac714c0c1@s5r6.in-berlin.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; CHARSET=us-ascii
 Content-Disposition: INLINE
@@ -37,31 +30,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This instructs sd_mod to send START STOP UNIT on suspend and resume,
-and on driver unbinding or unloading (including when the system is shut
-down).
+I wrote:
+> 1) FireWire to IDE or to SATA chipset
+> 2) start bit is honored:
+>    "sg_start --stop" stops the motor and "sg_start" restarts it
+> 3) power condition field is honored:
+>    "sg_start --pc=3" stops the motor and "sg_start --pc=1 restarts it
+> 4) peripheral device type claimed by the firmware
+> 5) vendor and model of the enclosure
+> 
+> 
+> 1)           2)     3)     4)    5)
+> bridge       start  pc     PDT   enclosure
+> --------------------------------------------------------------
+...
+> TSB42AA9     no     yes    SBC   DViCO MomoBay CX-1
+> TSB42AA9A    yes    yes    RBC   DViCO MomoBay FX-3A
 
-We don't do this though if multiple initiators may log in to the target.
-
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/ieee1394/sbp2.c |    2 ++
- 1 file changed, 2 insertions(+)
-
-Index: linux/drivers/ieee1394/sbp2.c
-===================================================================
---- linux.orig/drivers/ieee1394/sbp2.c
-+++ linux/drivers/ieee1394/sbp2.c
-@@ -2009,6 +2009,8 @@ static int sbp2scsi_slave_configure(stru
- 
- 	sdev->use_10_for_rw = 1;
- 
-+	if (sbp2_exclusive_login)
-+		sdev->manage_start_stop = 1;
- 	if (sdev->type == TYPE_ROM)
- 		sdev->use_10_for_ms = 1;
- 	if (sdev->type == TYPE_DISK &&
-
+Correction:  While the FX-3A stops the motor if START STOP UNIT with an
+equivalent to "sg_start --stop", it does not work correctly anymore
+after it.  Certain commands after that will hang the firmware up;
+notably those sent when sd_mod is probing the disk.  I.e. FX-3A fails
+not exactly as CX-1, but similarly.
 -- 
 Stefan Richter
 -=====-==--- -=-= -=-==
