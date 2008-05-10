@@ -1,66 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753680AbYEJHuj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753442AbYEJIRq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753680AbYEJHuj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 May 2008 03:50:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751086AbYEJHua
+	id S1753442AbYEJIRq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 May 2008 04:17:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751086AbYEJIRf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 May 2008 03:50:30 -0400
-Received: from an-out-0708.google.com ([209.85.132.243]:13476 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751077AbYEJHu3 (ORCPT
+	Sat, 10 May 2008 04:17:35 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:48510 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751077AbYEJIRd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 May 2008 03:50:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=rQLh99ISQn2WTlU/jtWpisLxcqQIyyjUPMqr65e71dS0L6XcVBZbrBTDB3pVKVfk/19Bamo+PObNopowFUrX8i5s4PQMZlxTPBsBZq51lP94XLoNtIermYjEfmGZR5IEUoLOGracWc/O8RkdnJgx4eo+xW1D/FZKY0FCU+5UUqU=
-Message-ID: <28c262360805100050m17a302e9xf82139b3d00d489e@mail.gmail.com>
-Date: Sat, 10 May 2008 16:50:26 +0900
-From: "MinChan Kim" <minchan.kim@gmail.com>
-To: "Rik van Riel" <riel@redhat.com>
-Subject: Re: [PATCH -mm 07/15] split LRU lists into anon & file sets
-Cc: linux-kernel@vger.kernel.org, lee.schermerhorn@hp.com,
-       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com
-In-Reply-To: <20080428181852.790327213@redhat.com>
+	Sat, 10 May 2008 04:17:33 -0400
+Date: Sat, 10 May 2008 10:17:32 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: vt/fbcon: fix background color on line feed
+Message-ID: <alpine.LNX.1.10.0805101015110.19952@fbirervta.pbzchgretzou.qr>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080428181835.502876582@redhat.com>
-	 <20080428181852.790327213@redhat.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Index: linux-2.6.25-mm1/mm/page_alloc.c
-> ===================================================================
-> --- linux-2.6.25-mm1.orig/mm/page_alloc.c       2008-04-24 12:00:01.000000000 -0400
-> +++ linux-2.6.25-mm1/mm/page_alloc.c    2008-04-24 12:01:36.000000000 -0400
-> @@ -1923,10 +1923,13 @@ void show_free_areas(void)
->                }
->        }
->
-> -       printk("Active:%lu inactive:%lu dirty:%lu writeback:%lu unstable:%lu\n"
-> +       printk("Active_anon:%lu active_file:%lu inactive_anon%lu\n"
-> +               " inactive_file:%lu dirty:%lu writeback:%lu unstable:%lu\n"
->                " free:%lu slab:%lu mapped:%lu pagetables:%lu bounce:%lu\n",
 
-I found typo error.
+commit 181afd9c4e2168f59761fd3d153b46a0c32810a3
+Author: Jan Engelhardt <jengelh@medozas.de>
+Date:   Sat May 10 10:16:56 2008 +0200
 
-index 2b2e205..ad84c99 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1932,7 +1932,7 @@ void show_free_areas(void)
-                }
-        }
+vt/fbcon: fix background color on line feed
 
--       printk("Active_anon:%lu active_file:%lu inactive_anon%lu\n"
-+       printk("Active_anon:%lu active_file:%lu inactive_anon:%lu\n"
-                " inactive_file:%lu"
- //TODO:  check/adjust line lengths
- #ifdef CONFIG_NORECLAIM_LRU
+Addendum to commit c9e587ab.
+fbcon still was not doing the right thing (read: continued to do old
+behavior). fbcon_clear() seems to clear the new line (e.g. where your
+new prompt appears after doing echo -en "\e[42mfoo\n"), while
+scr_memsetw clears the previous one only (where "foo" appears). So
+just temporarily set the video_erase_char to the scrl_erase_char so
+that fbcon_clear does the right thing.
 
+Signed-off-by: Jan Engelhardt <jengelh@medozas.de>
+---
+ drivers/video/console/fbcon.c |   21 ++++++++++++++++-----
+ 1 files changed, 16 insertions(+), 5 deletions(-)
 
--- 
-Kinds regards,
-MinChan Kim
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 774f803..c77c2fd 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -1854,6 +1854,8 @@ static int fbcon_scroll(struct vc_data *vc, int t, int b, int dir,
+ 	struct fb_info *info = registered_fb[con2fb_map[vc->vc_num]];
+ 	struct display *p = &fb_display[vc->vc_num];
+ 	int scroll_partial = info->flags & FBINFO_PARTIAL_PAN_OK;
++	unsigned short saved_ec;
++	int ret;
+ 
+ 	if (fbcon_is_inactive(vc, info))
+ 		return -EINVAL;
+@@ -1866,6 +1868,11 @@ static int fbcon_scroll(struct vc_data *vc, int t, int b, int dir,
+ 	 *           whole screen (prevents flicker).
+ 	 */
+ 
++	saved_ec = vc->vc_video_erase_char;
++	vc->vc_video_erase_char = vc->vc_scrl_erase_char;
++
++	ret = 0;
++
+ 	switch (dir) {
+ 	case SM_UP:
+ 		if (count > vc->vc_rows)	/* Maximum realistic size */
+@@ -1884,7 +1891,7 @@ static int fbcon_scroll(struct vc_data *vc, int t, int b, int dir,
+ 							(b - count)),
+ 				    vc->vc_scrl_erase_char,
+ 				    vc->vc_size_row * count);
+-			return 1;
++			ret = 1;
+ 			break;
+ 
+ 		case SCROLL_WRAP_MOVE:
+@@ -1956,7 +1963,8 @@ static int fbcon_scroll(struct vc_data *vc, int t, int b, int dir,
+ 							(b - count)),
+ 				    vc->vc_scrl_erase_char,
+ 				    vc->vc_size_row * count);
+-			return 1;
++			ret = 1;
++			break;
+ 		}
+ 		break;
+ 
+@@ -1975,7 +1983,7 @@ static int fbcon_scroll(struct vc_data *vc, int t, int b, int dir,
+ 							t),
+ 				    vc->vc_scrl_erase_char,
+ 				    vc->vc_size_row * count);
+-			return 1;
++			ret = 1;
+ 			break;
+ 
+ 		case SCROLL_WRAP_MOVE:
+@@ -2045,10 +2053,13 @@ static int fbcon_scroll(struct vc_data *vc, int t, int b, int dir,
+ 							t),
+ 				    vc->vc_scrl_erase_char,
+ 				    vc->vc_size_row * count);
+-			return 1;
++			ret = 1;
++			break;
+ 		}
++		break;
+ 	}
+-	return 0;
++	vc->vc_video_erase_char = saved_ec;
++	return ret;
+ }
+ 
+ 
