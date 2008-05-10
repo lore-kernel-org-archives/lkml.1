@@ -1,62 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbYEJLER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754611AbYEJLvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754838AbYEJLER (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 May 2008 07:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYEJLEH
+	id S1754611AbYEJLvg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 May 2008 07:51:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbYEJLva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 May 2008 07:04:07 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:52981 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752547AbYEJLEF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 May 2008 07:04:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=u8ib4pV76L3GsqGfxvv0RIAIX9Kel2mi6j8Fs6CmDPw1Wm8Rv7mQw0DG9y3afCCYSvBAH3roINXOqfhPRsDLzDvAfrX0Zyz5tRqw6DGrjdsitSeMFjDCL8C9Rp/Oxi9gA4mk0PQUk3KeQd6Oe1XrQ0AeuMhufzOrXfK1mbuH0i0=
-Message-ID: <e2e108260805100404h63f02194r62e53f79ae2a403f@mail.gmail.com>
-Date: Sat, 10 May 2008 13:04:03 +0200
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Subject: Re: [ANNOUNCE] kmemcheck v7
-Cc: "Vegard Nossum" <vegard.nossum@gmail.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       "Christoph Lameter" <clameter@sgi.com>,
-       "Daniel Walker" <dwalker@mvista.com>,
-       "Andi Kleen" <andi@firstfloor.org>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>, "Josh Aune" <luken@omner.org>,
-       "Pekka Paalanen" <pq@iki.fi>
-In-Reply-To: <482565A5.8010503@cs.helsinki.fi>
+	Sat, 10 May 2008 07:51:30 -0400
+Received: from smtp2.it.da.ut.ee ([193.40.5.67]:43112 "EHLO smtp2.it.da.ut.ee"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752365AbYEJLv3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 May 2008 07:51:29 -0400
+Date: Sat, 10 May 2008 14:51:27 +0300 (EEST)
+From: Meelis Roos <mroos@linux.ee>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
+Subject: ppc compile failure (__flush_icache_range etc undeclared)
+Message-ID: <Pine.SOC.4.64.0805101448580.8450@math.ut.ee>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47F630AE.7050801@gmail.com>
-	 <e2e108260805100207l13b67706h871f5f1c550e58b3@mail.gmail.com>
-	 <482565A5.8010503@cs.helsinki.fi>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 10, 2008 at 11:06 AM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> Bart Van Assche wrote:
->>
->> It's a bit late but I finally found out about your announcement of
->> kmemcheck version 7. Are you familiar with the patch that adds support
->> to Valgrind for User Mode Linux ? I'm not sure what the best approach
->> is -- letting the kernel do its own checking like kmemcheck or extend
->> Valgrind such that it supports UML. Anyway, the techniques applied in
->> Valgrind may be useful for kmemcheck too, such as the algorithms used
->> in Valgrind to compress the memory state information.
->
-> It's better to do it with the native kernel so you can "valgrind" all the
-> interesting driver code.
+Tried 2.6.26-rc1+git on ppc (arch/ppc, PReP subarch) and got this:
 
-That's right. This is the paper I was referring to that details how to
-minimize the memory consumption when tracking state information:
-http://www.valgrind.org/docs/shadow-memory2007.pdf
+arch/ppc/kernel/ppc_ksyms.c: At top level:
+arch/ppc/kernel/ppc_ksyms.c:152: error: '__flush_icache_range' undeclared here (not in a function)
+arch/ppc/kernel/ppc_ksyms.c:152: warning: type defaults to 'int' in declaration of '__flush_icache_range'
+arch/ppc/kernel/ppc_ksyms.c:153: error: 'flush_dcache_range' undeclared here (not in a function)
+arch/ppc/kernel/ppc_ksyms.c:153: warning: type defaults to 'int' in declaration of 'flush_dcache_range'
+arch/ppc/kernel/ppc_ksyms.c:154: error: 'flush_icache_user_range' undeclared here (not in a function)
+arch/ppc/kernel/ppc_ksyms.c:154: warning: type defaults to 'int' in declaration of 'flush_icache_user_range'
+arch/ppc/kernel/ppc_ksyms.c:155: error: 'flush_dcache_page' undeclared here (not in a function)
+arch/ppc/kernel/ppc_ksyms.c:155: warning: type defaults to 'int' in declaration of 'flush_dcache_page'
+make[1]: *** [arch/ppc/kernel/ppc_ksyms.o] Error 1
 
-Bart.
+
+-- 
+Meelis Roos (mroos@linux.ee)
