@@ -1,209 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753542AbYEJDPS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760866AbYEJDPt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753542AbYEJDPS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 9 May 2008 23:15:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756199AbYEJDJy
+	id S1760866AbYEJDPt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 9 May 2008 23:15:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753794AbYEJDJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 9 May 2008 23:09:54 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:52629 "EHLO relay.sgi.com"
+	Fri, 9 May 2008 23:09:55 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:54161 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752857AbYEJDJV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 9 May 2008 23:09:21 -0400
-Message-Id: <20080510030917.178534099@sgi.com>
+	id S1752411AbYEJDJT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 9 May 2008 23:09:19 -0400
+Message-Id: <20080510030918.882272887@sgi.com>
 References: <20080510030831.796641881@sgi.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 09 May 2008 20:08:42 -0700
+Date: Fri, 09 May 2008 20:08:49 -0700
 From: Christoph Lameter <clameter@sgi.com>
 To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, Alexander Viro <viro@ftp.linux.org.uk>,
-       Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 CC: linux-fsdevel@vger.kernel.org
 Cc: Mel Gorman <mel@skynet.ie>
 Cc: andi@firstfloor.org
 Cc: Rik van Riel <riel@redhat.com>
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: mpm@selenic.com
-Subject: [patch 11/21] inodes: Support generic defragmentation
-Content-Disposition: inline; filename=0025-inodes-Support-generic-defragmentation.patch
+Subject: [patch 18/21] Filesystem: Socket inode defragmentation
+Content-Disposition: inline; filename=0030-FS-Socket-inode-defragmentation.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This implements the ability to remove inodes in a particular slab
-from inode caches. In order to remove an inode we may have to write out
-the pages of an inode, the inode itself and remove the dentries referring
-to the node.
+Support inode defragmentation for sockets
 
-Provide generic functionality that can be used by filesystems that have
-their own inode caches to also tie into the defragmentation functions
-that are made available here.
-
-Cc: Alexander Viro <viro@ftp.linux.org.uk>
-Cc: Christoph Hellwig <hch@infradead.org>
+Cc: netdev@vger.kernel.org
 Reviewed-by: Rik van Riel <riel@redhat.com>
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- fs/inode.c         |  123 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/fs.h |    6 ++
- 2 files changed, 129 insertions(+)
+ net/socket.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
-Index: linux-2.6/fs/inode.c
-===================================================================
---- linux-2.6.orig/fs/inode.c	2008-05-07 20:27:10.563908386 -0700
-+++ linux-2.6/fs/inode.c	2008-05-07 20:48:14.473081107 -0700
-@@ -1363,6 +1363,128 @@ static int __init set_ihash_entries(char
- __setup("ihash_entries=", set_ihash_entries);
- 
- /*
-+ * Obtain a refcount on a list of struct inodes pointed to by v. If the
-+ * inode is in the process of being freed then zap the v[] entry so that
-+ * we skip the freeing attempts later.
-+ *
-+ * This is a generic function for the ->get slab defrag callback.
-+ */
-+void *get_inodes(struct kmem_cache *s, int nr, void **v)
-+{
-+	int i;
-+
-+	spin_lock(&inode_lock);
-+	for (i = 0; i < nr; i++) {
-+		struct inode *inode = v[i];
-+
-+		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE))
-+			v[i] = NULL;
-+		else
-+			__iget(inode);
-+	}
-+	spin_unlock(&inode_lock);
-+	return NULL;
-+}
-+EXPORT_SYMBOL(get_inodes);
-+
-+/*
-+ * Function for filesystems that embedd struct inode into their own
-+ * fs inode. The offset is the offset of the struct inode in the fs inode.
-+ *
-+ * The function adds to the pointers in v[] in order to make them point to
-+ * struct inode. Then get_inodes() is used to get the refcount.
-+ * The converted v[] pointers can then also be passed to the kick() callback
-+ * without further processing.
-+ */
-+void *fs_get_inodes(struct kmem_cache *s, int nr, void **v,
-+						unsigned long offset)
-+{
-+	int i;
-+
-+	for (i = 0; i < nr; i++)
-+		v[i] += offset;
-+
-+	return get_inodes(s, nr, v);
-+}
-+EXPORT_SYMBOL(fs_get_inodes);
-+
-+/*
-+ * Generic callback function slab defrag ->kick methods. Takes the
-+ * array with inodes where we obtained refcounts using fs_get_inodes()
-+ * or get_inodes() and tries to free them.
-+ */
-+void kick_inodes(struct kmem_cache *s, int nr, void **v, void *private)
-+{
-+	struct inode *inode;
-+	int i;
-+	int abort = 0;
-+	LIST_HEAD(freeable);
-+	int active;
-+
-+	for (i = 0; i < nr; i++) {
-+		inode = v[i];
-+		if (!inode)
-+			continue;
-+
-+		if (inode_has_buffers(inode) || inode->i_data.nrpages) {
-+			if (remove_inode_buffers(inode))
-+				/*
-+				 * Should be really be doing this? Or
-+				 * limit this if there are only a few pages?
-+				 *
-+				 * Possibly an expensive operation but we
-+				 * cannot reclaim the inode if the pages
-+				 * are still present.
-+				 */
-+				invalidate_mapping_pages(&inode->i_data,
-+								0, -1);
-+		}
-+
-+		/* Invalidate children and dentry */
-+		if (S_ISDIR(inode->i_mode)) {
-+			struct dentry *d = d_find_alias(inode);
-+
-+			if (d) {
-+				d_invalidate(d);
-+				dput(d);
-+			}
-+		}
-+
-+		if (inode->i_state & I_DIRTY)
-+			write_inode_now(inode, 1);
-+
-+		d_prune_aliases(inode);
-+	}
-+
-+	mutex_lock(&iprune_mutex);
-+	for (i = 0; i < nr; i++) {
-+		inode = v[i];
-+
-+		if (!inode)
-+			/* inode is alrady being freed */
-+			continue;
-+
-+		active = inode->i_sb->s_flags & MS_ACTIVE;
-+		iput(inode);
-+		if (abort || !active)
-+			continue;
-+
-+		spin_lock(&inode_lock);
-+		abort =  !can_unuse(inode);
-+
-+		if (!abort) {
-+			list_move(&inode->i_list, &freeable);
-+			inode->i_state |= I_FREEING;
-+			inodes_stat.nr_unused--;
-+		}
-+		spin_unlock(&inode_lock);
-+	}
-+	dispose_list(&freeable);
-+	mutex_unlock(&iprune_mutex);
-+}
-+EXPORT_SYMBOL(kick_inodes);
-+
-+/*
-  * Initialize the waitqueues and inode hash table.
-  */
- void __init inode_init_early(void)
-@@ -1401,6 +1523,7 @@ void __init inode_init(void)
- 					 SLAB_MEM_SPREAD),
- 					 init_once);
- 	register_shrinker(&icache_shrinker);
-+	kmem_cache_setup_defrag(inode_cachep, get_inodes, kick_inodes);
- 
- 	/* Hash may have been set up in inode_init_early */
- 	if (!hashdist)
-Index: linux-2.6/include/linux/fs.h
-===================================================================
---- linux-2.6.orig/include/linux/fs.h	2008-05-07 20:27:10.573910205 -0700
-+++ linux-2.6/include/linux/fs.h	2008-05-07 20:30:15.153909886 -0700
-@@ -1826,6 +1826,12 @@ static inline void insert_inode_hash(str
- 	__insert_inode_hash(inode, inode->i_ino);
+diff --git a/net/socket.c b/net/socket.c
+index 9d3fbfb..205f450 100644
+--- a/net/socket.c
++++ b/net/socket.c
+@@ -269,6 +269,12 @@ static void init_once(struct kmem_cache *cachep, void *foo)
+ 	inode_init_once(&ei->vfs_inode);
  }
  
-+/* Helper functions for inode defragmentation support in filesystems */
-+extern void kick_inodes(struct kmem_cache *, int, void **, void *);
-+extern void *get_inodes(struct kmem_cache *, int nr, void **);
-+extern void *fs_get_inodes(struct kmem_cache *, int nr, void **,
-+						unsigned long offset);
++static void *sock_get_inodes(struct kmem_cache *s, int nr, void **v)
++{
++	return fs_get_inodes(s, nr, v,
++		offsetof(struct socket_alloc, vfs_inode));
++}
 +
- extern struct file * get_empty_filp(void);
- extern void file_move(struct file *f, struct list_head *list);
- extern void file_kill(struct file *f);
+ static int init_inodecache(void)
+ {
+ 	sock_inode_cachep = kmem_cache_create("sock_inode_cache",
+@@ -280,6 +286,8 @@ static int init_inodecache(void)
+ 					      init_once);
+ 	if (sock_inode_cachep == NULL)
+ 		return -ENOMEM;
++	kmem_cache_setup_defrag(sock_inode_cachep,
++			sock_get_inodes, kick_inodes);
+ 	return 0;
+ }
+ 
+-- 
+1.5.4.4
 
 -- 
