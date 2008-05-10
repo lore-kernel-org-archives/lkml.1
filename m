@@ -1,107 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754026AbYEJLB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbYEJLER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754026AbYEJLB1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 May 2008 07:01:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752365AbYEJLBQ
+	id S1754838AbYEJLER (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 May 2008 07:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbYEJLEH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 May 2008 07:01:16 -0400
-Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:53432 "EHLO
-	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751914AbYEJLBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 May 2008 07:01:14 -0400
-Message-ID: <48258074.7060306@krogh.cc>
-Date: Sat, 10 May 2008 13:01:08 +0200
-From: Jesper Krogh <jesper@krogh.cc>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
+	Sat, 10 May 2008 07:04:07 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:52981 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752547AbYEJLEF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 May 2008 07:04:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=u8ib4pV76L3GsqGfxvv0RIAIX9Kel2mi6j8Fs6CmDPw1Wm8Rv7mQw0DG9y3afCCYSvBAH3roINXOqfhPRsDLzDvAfrX0Zyz5tRqw6DGrjdsitSeMFjDCL8C9Rp/Oxi9gA4mk0PQUk3KeQd6Oe1XrQ0AeuMhufzOrXfK1mbuH0i0=
+Message-ID: <e2e108260805100404h63f02194r62e53f79ae2a403f@mail.gmail.com>
+Date: Sat, 10 May 2008 13:04:03 +0200
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: "Pekka Enberg" <penberg@cs.helsinki.fi>
+Subject: Re: [ANNOUNCE] kmemcheck v7
+Cc: "Vegard Nossum" <vegard.nossum@gmail.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "Christoph Lameter" <clameter@sgi.com>,
+       "Daniel Walker" <dwalker@mvista.com>,
+       "Andi Kleen" <andi@firstfloor.org>,
+       "Randy Dunlap" <randy.dunlap@oracle.com>, "Josh Aune" <luken@omner.org>,
+       "Pekka Paalanen" <pq@iki.fi>
+In-Reply-To: <482565A5.8010503@cs.helsinki.fi>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: yhlu.kernel@gmail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: NIU - Sun Neptune 10g - Transmit timed out reset (2.6.24)
-References: <4821F3B7.2090702@krogh.cc>	<86802c440805071130m62c1f4edydb3316dac4a2aba2@mail.gmail.com> <20080507.141521.193714938.davem@davemloft.net> <482498D5.9060008@krogh.cc>
-In-Reply-To: <482498D5.9060008@krogh.cc>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <47F630AE.7050801@gmail.com>
+	 <e2e108260805100207l13b67706h871f5f1c550e58b3@mail.gmail.com>
+	 <482565A5.8010503@cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesper Krogh wrote:
-> David Miller wrote:
->> From: "Yinghai Lu" <yhlu.kernel@gmail.com>
->> Date: Wed, 7 May 2008 11:30:18 -0700
+On Sat, May 10, 2008 at 11:06 AM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> Bart Van Assche wrote:
 >>
->>> On Wed, May 7, 2008 at 11:23 AM, Jesper Krogh <jesper@krogh.cc> wrote:
->>>> Hi.
->>>>
->>>>  I get errors like this after a few minutes of traffic on a Sun 
->>>> Neptune 10g
->>>> ethernet card. (with nice 500MB/s throughput).
->>>>
->>>>  Then the server seems too busy with something, so it doesn't even 
->>>> respont
->>>> to a serial terminal login.
->>>>
->>>>  May  7 16:16:33 hest kernel: [  166.948958] niu: niu_get_parent:
->>>> platform_type[1] port[3]
->>>>  May  7 16:16:33 hest kernel: [  166.949366] niu: 
->>>> niu_get_and_validate_port:
->>>> port[3] num_ports[2]
->>>>  May  7 16:16:33 hest kernel: [  166.949886] niu: niu_put_parent: 
->>>> port[3]
->>>>  .. bootup ends here ..
->>>>  May  7 17:13:54 hest kernel: [ 3670.128178] niu 0000:84:00.0: niu: 
->>>> eth4:
->>>> Transmit timed out, resetting
->>>>  May  7 17:14:04 hest kernel: [ 3680.108614] niu 0000:84:00.0: niu: 
->>>> eth4:
->>>> Transmit timed out, resetting
->>>>  May  7 17:14:14 hest kernel: [ 3690.093089] niu 0000:84:00.0: niu: 
->>>> eth4:
->>>> Transmit timed out, resetting
->>>>  May  7 17:14:19 hest kernel: [ 3695.079254] niu 0000:84:00.0: niu: 
->>>> eth4:
->>>> Transmit timed out, resetting
->>>>  May  7 17:14:24 hest kernel: [ 3700.073525] niu 0000:84:00.0: niu: 
->>>> eth4:
->>>> Transmit timed out, resetting
->>>>  May  7 17:14:29 hest kernel: [ 3705.063744] niu 0000:84:00.0: niu: 
->>>> eth4:
->>>> Transmit timed out, resetting
->>>>  May  7 17:14:34 hest kernel: [ 3710.049918] niu 0000:84:00.0: niu: 
->>>> eth4:
->>>> Transmit timed out, resetting
->>>>
->>>>
->>>>  Any suggestions?
->>>>
->>>>  The system is an Ubuntu Hardy (2.6.24-17-server) amd64.
->>> can you try 2.6.25 or current git?
->>
->> Also, please always CC: netdev@vger.kernel.org on networking reports.
-> 
-> Yes. It is reproducable under 2.6.25.2, when the load get up.. (worked 
-> excellent in the <100MB/s range for several hours.
+>> It's a bit late but I finally found out about your announcement of
+>> kmemcheck version 7. Are you familiar with the patch that adds support
+>> to Valgrind for User Mode Linux ? I'm not sure what the best approach
+>> is -- letting the kernel do its own checking like kmemcheck or extend
+>> Valgrind such that it supports UML. Anyway, the techniques applied in
+>> Valgrind may be useful for kmemcheck too, such as the algorithms used
+>> in Valgrind to compress the memory state information.
+>
+> It's better to do it with the native kernel so you can "valgrind" all the
+> interesting driver code.
 
-Any good suggestions about the "Transmit timed out" messages. It
-currently leads to a system that "doesnt die" but doesnt respond within
-15 minutes of load of the network adapter.
+That's right. This is the paper I was referring to that details how to
+minimize the memory consumption when tracking state information:
+http://www.valgrind.org/docs/shadow-memory2007.pdf
 
-Does the high amount of Context-switches (120.000+ have any influence)?
-
-Should I be able to use TSO?
-# ethtool -k eth4
-Offload parameters for eth4:
-Cannot get device rx csum settings: Operation not supported
-rx-checksumming: off
-tx-checksumming: on
-scatter-gather: on
-tcp segmentation offload: off
-udp fragmentation offload: off
-generic segmentation offload: off
-
-ethtool v6
-
-Jesper
--- 
-Jesper
+Bart.
