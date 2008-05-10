@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756503AbYEJUR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757204AbYEJUTI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756503AbYEJUR0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 May 2008 16:17:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753216AbYEJURQ
+	id S1757204AbYEJUTI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 May 2008 16:19:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754032AbYEJUS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 May 2008 16:17:16 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:46646 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752388AbYEJURQ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 May 2008 16:17:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=gVoi90bSiYHii3yJlvA933JhDNLKQDrtxavjU33YK76e+crRCPR0ceaFeX4jgda0usbTwVHNG8urRegxE76hPMsL/mtfKTB/jC2cSylbJvUwNyfeJNjQXeonG0QEqc8gdgtGLqqcfZWIDIlqlT5cyvsTPrnspnrv1uTL55PH5Ss=
-Message-ID: <a35fc1810805101317v28579e9ak56b4fbd2924e8042@mail.gmail.com>
-Date: Sat, 10 May 2008 17:17:15 -0300
-From: "Marcelo Laia" <marcelolaia@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: HDIO_DRIVE_CMD failed on Dell Latitude D630
+	Sat, 10 May 2008 16:18:56 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:54681 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753216AbYEJUSz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 May 2008 16:18:55 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18470.787.498329.144701@harpo.it.uu.se>
+Date: Sat, 10 May 2008 22:18:27 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
+Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org
+Subject: 2.6.26-rc1 on x86: ld: warning: dot moved backwards before `.text'
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Kernel Developer,
+Building kernel 2.6.26-rc1 on FC6/i386 causes:
 
-Apologies for send this message to this list. I previous have sent
-this problem to debian.user.portuguese malling list, after to
-debian.user and, both, I don't receive a help that solve the problem.
+  ld -m elf_i386   -T arch/x86/kernel/acpi/realmode/wakeup.lds arch/x86/kernel/acpi/realmode/wakeup.o arch/x86/kernel/acpi/realmode/wakemain.o arch/x86/kernel/acpi/realmode/video-mode.o arch/x86/kernel/acpi/realmode/copy.o arch/x86/kernel/acpi/realmode/video-vga.o arch/x86/kernel/acpi/realmode/video-vesa.o arch/x86/kernel/acpi/realmode/video-bios.o -o arch/x86/kernel/acpi/realmode/wakeup.elf 
+ld: warning: dot moved backwards before `.text'
+ld: warning: dot moved backwards before `.text'
+ld: warning: dot moved backwards before `.text'
 
-Here is the threads:
+This is with gcc-4.2.3 and binutils-2.17.50.0.6-5.fc6 20061020.
 
-in portuguese: http://thread.gmane.org/gmane.linux.debian.user.portuguese/105597
+The resulting kernel hasn't broken on me yet, however.
 
-in English: http://thread.gmane.org/gmane.linux.debian.user/322839
+A search through the LKML archives showed that this was reported
+for 2.6.25-rc3-mm1, but I couldn't find any discussion about it
+after that:
 
-Here is a screenshot of the last showed screen before powerdown:
+<http://marc.info/?l=linux-kernel&m=120470303728010&w=2>
 
-http://www.divshare.com/download/4384152-861
+The .config causing this warning is available in
+<http://user.it.uu.se/~mikpe/linux/ale/config-2.6.26-rc1>
 
-Have you a tip for me?
-
-Thank you very much!
-
--- 
-Marcelo Luiz de Laia
-Jaboticabal - SP - Brazil
-sip:marcelolaia@ekiga.net
-
-"Você vê as coisas como elas são e pergunta: por quê? Mas eu sonho com
-coisas que nunca foram e pergunto: por que não? " - Bernard Shaw
+/Mikael
