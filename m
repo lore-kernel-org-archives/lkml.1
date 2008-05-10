@@ -1,34 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757599AbYEJThP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757164AbYEJUGz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757599AbYEJThP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 May 2008 15:37:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751440AbYEJThE
+	id S1757164AbYEJUGz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 May 2008 16:06:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754032AbYEJUGp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 May 2008 15:37:04 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:34318 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751125AbYEJThD (ORCPT
+	Sat, 10 May 2008 16:06:45 -0400
+Received: from po-out-1718.google.com ([72.14.252.156]:50445 "EHLO
+	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753387AbYEJUGo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 May 2008 15:37:03 -0400
-Date: Sat, 10 May 2008 20:37:01 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       WANG Cong <wangcong@zeuux.org>
-Subject: Re: [Patch 9/9] fs/exec.c: fix a wrong goto path
-Message-ID: <20080510193701.GH13907@ZenIV.linux.org.uk>
-References: <1210254754206-git-send-email-xiyou.wangcong@gmail.com> <12102548752866-git-send-email-xiyou.wangcong@gmail.com>
+	Sat, 10 May 2008 16:06:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=C8DcAR0X1WVkM+YGckbfVEL2Y4+4MfJm5J7xjCFZTKMNDw+VpUIBl4HQ2gx/7STxNDVbtHwhKqzjbZ8H/QuDHADgTrtZL50Tj/CvoHOCtZvuCvvLxFLVHS3XRurO6xP9kplJN98mw9aKnA3IavizC9CBuUVAjETVjzpH0pFdDHQ=
+Message-ID: <86802c440805101306w64b5c72dn4dbfea74a6557c2f@mail.gmail.com>
+Date: Sat, 10 May 2008 13:06:36 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: dougg@torque.net
+Subject: Re: lsscsi is broken
+Cc: "James Bottomley" <James.Bottomley@hansenpartnership.com>,
+       "Greg KH" <greg@kroah.com>,
+       "kernel list" <linux-kernel@vger.kernel.org>,
+       Linux-Scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <4825EAA0.5030305@torque.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <12102548752866-git-send-email-xiyou.wangcong@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <86802c440805091638q59031edbifa439344acf0c971@mail.gmail.com>
+	 <4825EAA0.5030305@torque.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 09:52:34PM +0800, WANG Cong wrote:
-> When nameidata_to_filp() fails, I see no reasons to fall into 'out' path
-> where doesn't free any resources at all.
+On Sat, May 10, 2008 at 11:34 AM, Douglas Gilbert <dougg@torque.net> wrote:
+> Which version of lsscsi?
+> [For example what is the output of 'lsscsi --version'.]
+>
+> If it is not version 0.20 beta could you try it.
+> See: http://sg.torque.net/scsi/lsscsi.html
 
-How about "nameidata_to_filp() frees on failure"?
+it is the one in Opensuse 10.3
+
+YH
