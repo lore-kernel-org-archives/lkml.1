@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757526AbYEJSpc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755723AbYEJTIi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757526AbYEJSpc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 May 2008 14:45:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753749AbYEJSpY
+	id S1755723AbYEJTIi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 May 2008 15:08:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbYEJTI2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 May 2008 14:45:24 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:37198 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753423AbYEJSpX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 May 2008 14:45:23 -0400
-Date: Sat, 10 May 2008 12:45:21 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Douglas Gilbert <dougg@torque.net>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Greg KH <greg@kroah.com>, kernel list <linux-kernel@vger.kernel.org>,
-       Linux-Scsi <linux-scsi@vger.kernel.org>
-Subject: Re: lsscsi is broken
-Message-ID: <20080510184520.GM19219@parisc-linux.org>
-References: <86802c440805091638q59031edbifa439344acf0c971@mail.gmail.com> <4825EAA0.5030305@torque.net>
-MIME-Version: 1.0
+	Sat, 10 May 2008 15:08:28 -0400
+Received: from verein.lst.de ([213.95.11.210]:58813 "EHLO verein.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752804AbYEJTI1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 May 2008 15:08:27 -0400
+Date: Sat, 10 May 2008 21:07:59 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Robert Richter <robert.richter@amd.com>
+Cc: Carl Love <cel@us.ibm.com>, linuxppc-dev@ozlabs.org,
+       oprofile-list <oprofile-list@lists.sourceforge.net>,
+       cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [Cbe-oss-dev] [PATCH] Updated: Reworked Cell OProfile: SPU	mutex lock fix
+Message-ID: <20080510190759.GA16275@lst.de>
+References: <1209587712.7531.42.camel@carll-linux-desktop> <20080509150759.GL24041@erda.amd.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4825EAA0.5030305@torque.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080509150759.GL24041@erda.amd.com>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 10, 2008 at 02:34:08PM -0400, Douglas Gilbert wrote:
-> Which version of lsscsi?
-> [For example what is the output of 'lsscsi --version'.]
+> > +	/* Ignoring the return value from the unregister
+> > +	 * call.  A failed return value simply says there
+> > +	 * was no registered event.  Hence there will not
+> > +	 * be any calls to process a switch event that
+> > +	 * could cause a problem.
+> > +	 */
+> > +	spu_switch_event_unregister(&spu_active);
 > 
-> If it is not version 0.20 beta could you try it.
-> See: http://sg.torque.net/scsi/lsscsi.html
+> Better to use this here, to show the return value is ignored:
+> 
+>        (void)spu_switch_event_unregister(...)
 
-Even if it isn't the latest version, we shouldn't've done anything to
-break an older version.
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Actually Linux style is to not add those casts.  But I don't think we
+all the notifier_chain_unregister funtion should return error at all,
+we should probably fix that up in the core code.
