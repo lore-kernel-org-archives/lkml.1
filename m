@@ -1,140 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755694AbYEKQIh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756551AbYEKQI4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755694AbYEKQIh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 12:08:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbYEKQI1
+	id S1756551AbYEKQI4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 12:08:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756050AbYEKQIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 12:08:27 -0400
-Received: from triton.rz.uni-saarland.de ([134.96.7.25]:17903 "EHLO
-	triton.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751099AbYEKQIZ (ORCPT
+	Sun, 11 May 2008 12:08:45 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:13917 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756038AbYEKQIn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 12:08:25 -0400
-Date: Sun, 11 May 2008 18:06:58 +0200
-From: Alexander van Heukelum <heukelum@mailshack.com>
-To: Paul Jackson <pj@sgi.com>, Mike Travis <travis@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       linux-arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, heukelum@fastmail.fm
-Subject: [RFC/PATCH] Make for_each_node_mask out-of-line
-Message-ID: <20080511160658.GA3398@mailshack.com>
-References: <20080511135039.GA3286@mailshack.com> <20080511091403.a75f5b78.pj@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 11 May 2008 12:08:43 -0400
+Date: Sun, 11 May 2008 17:08:32 +0100
+From: Ricardo Martins <ricardo@scarybox.net>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: julia@diku.dk, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, perex@perex.cz
+Subject: Re: [PATCH 1/4] sound/isa: use unsigned for loop index
+Message-ID: <20080511160832.GA4709@macbookpro>
+References: <Pine.LNX.4.64.0805111450000.29620@ask.diku.dk> <20080511164335.GA19745@martell.zuzino.mipt.ru>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="liOOAslEiF7prFVr"
 Content-Disposition: inline
-In-Reply-To: <20080511091403.a75f5b78.pj@sgi.com>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (triton.rz.uni-saarland.de [134.96.7.25]); Sun, 11 May 2008 18:08:02 +0200 (CEST)
-X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.8.0.17; VDF: 7.0.4.23; host: AntiVir3)
+In-Reply-To: <20080511164335.GA19745@martell.zuzino.mipt.ru>
+X-PGP-Key-URL: http://scarybox.net/zomg/ricardo.asc
+X-OS: Linux 2.6.24-ARCH x86_64
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The for_each_node_mask loop makes use of two inlined functions:
-first_node and next_node. This patch changes for_each_node_mask
-to use only one out-of-line function: find_next_node_mask. An
-x86_64 defconfig kernel is about 1500 bytes smaller with this
-patch applied:
 
-   text	   data	    bss	    dec	    hex	filename
-5395732	 976736	 734280	7106748	 6c70bc	vmlinux.orig
-5394174	 976736	 734280	7105190	 6c6aa6	vmlinux
+--liOOAslEiF7prFVr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+On Sun, 11 May 2008 20:43, Alexey Dobriyan wrote:
+> On Sun, May 11, 2008 at 02:50:33PM +0200, Julia Lawall wrote:
+> > A few more cases in the spirit of the patch "Trivial: Replacement of al=
+ways
+> > >0 ints with unsigned ints" submitted by Ricardo Martins <ricardo@scary=
+box.net>
+>=20
+> And rationale for those would be ...?
 
----
+Acccording to the kernel-janitors TODO [1], Jeff Garzik suggested the follo=
+wing:
 
-Hello,
-> Alexander wrote:
-> > This patch
-> > changes for_each_cpu_mask to use only one function: a newly
-> > introduced find_next_cpu.
-> 
-> I believe that it's for_each_cpu_mask which is newly introduced,
-> not find_next_cpu ... just a typo, granted.
+  2) "unsigned int" is preferred to "int", it generates better asm code
+  on all platforms except sh5. This replacement needs to be done manually,
+  because often 'int' is required due to negative values -Exxx commonly
+  passed as error values.
 
-I meant find_next_cpu_mask. That was a last-minute change of mind
-about the name :/.
+Since (most) loop counters such as "int i" are always either zero or a posi=
+tive
+number, they are perfect candidates for using unsigned int instead, imho.
+It goes without saying, that each case must be considered separately in
+case a negative value is indeed needed.
 
-> Any chance that you could make the same change to nodemask.h?
-> Where practical, I like to keep cpumask.h and nodemask.h the same.
+[1] http://kernelnewbies.org/KernelJanitors/Todo
 
-Sure. This patch introduces lib/nodemask.c, but I'm not quite sure
-if building it should depend on CONFIG_SMP or something else (NUMA?).
-When is MAX_NUMNODES 1?
+Regards,
+--=20
+ Ricardo Martins  *  scarybox.net  *  GPG key: 0x1308F1B4
 
-It seems to work on qemu x86_64-smp and i386-up.
+--liOOAslEiF7prFVr
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
-I'ld be happy to take a stab at aligning the cpumask and nodemask
-code even more by uninlining some more functions and using stubs
-for the MAX_NUMNODES=1 case.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Greetings,
-	Alexander
+iEYEARECAAYFAkgnGgAACgkQkH81LRMI8bQveQCeODXoXvWmBuC7O1eUT0U1KYSt
+Jy8An2UKw1kePvGuejlyesIHOQr/4eE5
+=BYjF
+-----END PGP SIGNATURE-----
 
- include/linux/nodemask.h |   11 +++++++----
- lib/Makefile             |    2 +-
- lib/nodemask.c           |   10 ++++++++++
- 3 files changed, 18 insertions(+), 5 deletions(-)
- create mode 100644 lib/nodemask.c
-
-diff --git a/include/linux/nodemask.h b/include/linux/nodemask.h
-index 848025c..dbc80f0 100644
---- a/include/linux/nodemask.h
-+++ b/include/linux/nodemask.h
-@@ -239,6 +239,8 @@ static inline int __next_node(int n, const nodemask_t *srcp)
- 	return min_t(int,MAX_NUMNODES,find_next_bit(srcp->bits, MAX_NUMNODES, n+1));
- }
- 
-+int find_next_node_mask(int n, const nodemask_t *srcp);
-+
- #define nodemask_of_node(node)						\
- ({									\
- 	typeof(_unused_nodemask_arg_) m;				\
-@@ -347,10 +349,11 @@ static inline void __nodes_fold(nodemask_t *dstp, const nodemask_t *origp,
- }
- 
- #if MAX_NUMNODES > 1
--#define for_each_node_mask(node, mask)			\
--	for ((node) = first_node(mask);			\
--		(node) < MAX_NUMNODES;			\
--		(node) = next_node((node), (mask)))
-+#define for_each_node_mask(node, mask)				\
-+	for ((node) = 0;					\
-+		(node) = find_next_node_mask((node), &(mask)),	\
-+		(node) < MAX_NUMNODES;				\
-+		(node)++)
- #else /* MAX_NUMNODES == 1 */
- #define for_each_node_mask(node, mask)			\
- 	if (!nodes_empty(mask))				\
-diff --git a/lib/Makefile b/lib/Makefile
-index 74b0cfb..48fc85c 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -9,7 +9,7 @@ lib-y := ctype.o string.o vsprintf.o cmdline.o \
- 	 proportions.o prio_heap.o ratelimit.o
- 
- lib-$(CONFIG_MMU) += ioremap.o
--lib-$(CONFIG_SMP) += cpumask.o
-+lib-$(CONFIG_SMP) += cpumask.o nodemask.o
- 
- lib-y	+= kobject.o kref.o klist.o
- 
-diff --git a/lib/nodemask.c b/lib/nodemask.c
-new file mode 100644
-index 0000000..08341d3
---- /dev/null
-+++ b/lib/nodemask.c
-@@ -0,0 +1,10 @@
-+#include <linux/kernel.h>
-+#include <linux/bitops.h>
-+#include <linux/nodemask.h>
-+#include <linux/module.h>
-+
-+int find_next_node_mask(int n, const nodemask_t *srcp)
-+{
-+	return find_next_bit(srcp->bits, NR_CPUS, n);
-+}
-+EXPORT_SYMBOL(find_next_node_mask);
-
+--liOOAslEiF7prFVr--
