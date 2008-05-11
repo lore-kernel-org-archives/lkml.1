@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755144AbYEKN63@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757237AbYEKOAm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755144AbYEKN63 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 09:58:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756743AbYEKN6P
+	id S1757237AbYEKOAm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 10:00:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753671AbYEKOAe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 09:58:15 -0400
-Received: from smtp1.wifiinternet.cz ([89.31.47.1]:56362 "EHLO
-	bor.wifiinternet.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756696AbYEKN6N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 09:58:13 -0400
-Message-ID: <4826FBB8.7060107@seznam.cz>
-Date: Sun, 11 May 2008 15:59:20 +0200
-From: Michal Simek <monstr@seznam.cz>
-Reply-To: monstr@seznam.cz
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Sun, 11 May 2008 10:00:34 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49152 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752906AbYEKOAd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 May 2008 10:00:33 -0400
+Date: Sun, 11 May 2008 16:00:17 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Sven Wegener <sven.wegener@stealer.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull] scheduler fixes
+Message-ID: <20080511140017.GA2457@elte.hu>
+References: <20080508120130.GA2860@elte.hu> <20080508122802.GA4880@elte.hu> <20080508144316.GA9869@elte.hu> <20080508151028.GA12109@elte.hu> <20080511110306.GP19219@parisc-linux.org> <20080511114803.GA8289@parisc-linux.org> <20080511125049.GA22513@elte.hu> <20080511125216.GA25040@elte.hu> <20080511130226.GR19219@parisc-linux.org> <20080511132636.GA22878@parisc-linux.org>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-CC: Arnd Bergmann <arnd@arndb.de>, John Williams <john.williams@petalogix.com>,
-       Matthew Wilcox <matthew@wil.cx>, Will Newton <will.newton@gmail.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, git@xilinx.com,
-       Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
-       John Linn <John.Linn@xilinx.com>, Ulrich Drepper <drepper@redhat.com>
-Subject: Re: OF files
-References: <5257.8247-18740-1017760922-1209828638@seznam.cz> <18467.60177.91772.136339@cargo.ozlabs.ibm.com>
-In-Reply-To: <18467.60177.91772.136339@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080511132636.GA22878@parisc-linux.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
 
-I move prom_parse.c to drivers/of.
-of_platform.c was completely moved to drivers/of/platform.c
-Functions from of_device.c was moved to drivers/of/device.c except
-of_device_make_bus_id.
-Prom.c file was cleaned - I remove all PPC specific code.
+* Matthew Wilcox <matthew@wil.cx> wrote:
 
-You can check it in my git tree (git.monstr.eu) or wait for next set of patches.
+> Current XFS CVS has a fix from myself and Christoph that gets rid of 
+> the l_flushsema and replaces it with a staggered wakeup of each task 
+> that's waiting as the previously woken task clears the critical 
+> section.
 
-Michal
+the solution is to reduce semaphore usage by converting them to mutexes. 
+Is anyone working on removing legacy semaphore use from XFS?
 
-> Michal Simek writes:
-> 
->> I tested OF files changes. I sent you some patches about.
->>
->> I look at headers files too. Is it possible to move prom.h,
->> of_device.h and of_platform.h to asm-generic or linux folder? 
-> 
-> We can move stuff to drivers/of and include/linux, but we should only
-> move the parts that are truly architecture-independent.  We should not
-> have anything like #ifdef CONFIG_PPC_PSERIES in the files in those
-> directories.  If it needs an ifdef like that, then that part of the
-> file should stay under arch/powerpc.
-> 
-> In other words, it's OK to split files and end up with more files than
-> we have at present.  That's better than adding ifdefs.
-> 
-> Paul.
-> 
+	Ingo
