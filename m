@@ -1,110 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760367AbYEKVoX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758828AbYEKVyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760367AbYEKVoX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 17:44:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757642AbYEKVoP
+	id S1758828AbYEKVyV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 17:54:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbYEKVyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 17:44:15 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:45543 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754519AbYEKVoN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 17:44:13 -0400
-Date: Sun, 11 May 2008 23:44:28 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [2.6 patch] kernel/sched*: optimize inlining
-Message-ID: <20080511214428.GA1782@uranus.ravnborg.org>
-References: <20080511092132.GE1645@cs181133002.pp.htv.fi> <20080511175222.GA31729@uranus.ravnborg.org> <20080511184952.GG1645@cs181133002.pp.htv.fi> <20080511194248.GA514@uranus.ravnborg.org> <20080511200016.GH1645@cs181133002.pp.htv.fi> <20080511203827.GA850@uranus.ravnborg.org> <20080511211902.GI1645@cs181133002.pp.htv.fi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080511211902.GI1645@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.4.2.1i
+	Sun, 11 May 2008 17:54:08 -0400
+Received: from service2.sh.cvut.cz ([147.32.127.218]:35146 "EHLO
+	service2.sh.cvut.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751343AbYEKVyG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 May 2008 17:54:06 -0400
+Message-ID: <48276B51.100@seznam.cz>
+Date: Sun, 11 May 2008 23:55:29 +0200
+From: Michal Simek <monstr@seznam.cz>
+Reply-To: monstr@seznam.cz
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, arnd@arndb.de, linux-arch@vger.kernel.org,
+       stephen.neuendorffer@xilinx.com, John.Linn@xilinx.com,
+       john.williams@petalogix.com, matthew@wil.cx, will.newton@gmail.com,
+       drepper@redhat.com, microblaze-uclinux@itee.uq.edu.au,
+       grant.likely@secretlab.ca, Michal Simek <monstr@monstr.eu>
+Subject: Re: [PATCH 08/56] microblaze_v2: Interrupt handling, timer support,
+ supported function
+References: <1209901305-6404-1-git-send-email-monstr@seznam.cz> <a4a778e34c66d126f5c4bf1ca423cf32950ea5ab.1209897266.git.monstr@monstr.eu> <c805caeb1dd7f6d1349c4a463cb88a5342a170d2.1209897266.git.monstr@monstr.eu> <f120ababf2bade9aab7199bffb3014aa606e5a1c.1209897266.git.monstr@monstr.eu> <684c36e5ad3f598e5079e88ec195545c4a7150c2.1209897266.git.monstr@monstr.eu> <ed3695121faf485d491cecdd96d5d4dcc498411d.1209897266.git.monstr@monstr.eu> <0674b1f7abb9a3d564b68c95bc28adc2c2fe9551.1209897266.git.monstr@monstr.eu> <9a7c6646e5dd9724c1cf34767adec181481fa3ef.1209897266.git.monstr@monstr.eu> <932956128c9c655a218a940eaf02017a5dd0bdf9.1209897266.git.monstr@monstr.eu> <alpine.LFD.1.10.0805070813160.3318@apollo.tec.linutronix.de> <4826FAC8.4010604@seznam.cz> <alpine.LFD.1.10.0805111630001.3197@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.10.0805111630001.3197@apollo.tec.linutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 12, 2008 at 12:19:02AM +0300, Adrian Bunk wrote:
-> On Sun, May 11, 2008 at 10:38:27PM +0200, Sam Ravnborg wrote:
-> > > > 
-> > > > You continue to fail to acknowledge that it is valueable information
-> > > > that we pass gcc a _hint_ that it is a good idea to inline certain
-> > > > functions.
-> > > > 
-> > > > The inline hint is there to tell gcc that it shall inline this function
-> > > > in cases where it usual think it should not do so. Which invietably
-> > > > will result in a larger codesize in some cases.
-> > > 
-> > > We also give gcc an explicit "Optimize for size.".
-> > 
-> > gcc was asked to optimize for size in general as per the commandline option.
-> > But on a much more fine grained level gcc is given a hint that
-> > this function would be a good idea to inline.
-> > 
-> > And I really expect gcc to pay most attention to the more specific
-> > information provided for a single function than a general commandline option.
+Hi Thomas,
+
+> Michal,
 > 
-> Can you try to get from expectations back to reality?
-
-What I wrote is based on common sense.
-Let me know if the gcc community does not agree.
-
-> gcc 4.3 even ignores the unlikely() hint in timespec_add_ns()
-> (we now have a workaround for this in the kernel).
-I do not follow the logic here.
-Gcc may fail in a few cases to do what we expect but that
-is far from that we shall assume that it always fails.
-
+> On Sun, 11 May 2008, Michal Simek wrote:
+>>> Please split this modification code out into a separate function. The
+>>> same code is used below.
+>> Add Macro.
 > 
-> >...
-> > > All the "optimized inlining" does is to allow gcc to no longer inline 
-> > > functions marked as "inline" if it prefers not to do so.
-> > The "optimized inlining" allows gcc (if gcc > 4.0) to make an educated
-> > guess if it is worhtwhile to inline a function or not. And when deciding
-> > to do so or not gcc may include many different factors inlcuding
-> > but not limited to -s.
-> > And this is certainly optimized compared to the situation where
-> > inline equals to always_inline.
-> > Keep in mind that we often perfer to have _less_ inlining than we have
-> > today for debugging ease. And this is what we get with optimized inlining
-> > compared to farced inlining.
-> > 
-> > > 
-> > > And what exactly is your problem with my patch if you consider the 
-> > > general "optimized inlining" approach correct?
-> > 
-> > I've already listed two things:
-> > -> It is no longer a simple kconfig change to try with or without.
-> > -> It is independent on gcc version
+> Please use a (inline) function whenever possible. Macros are harder to
+> read and not type safe.
+
+I'll try it.
+
+>>> Can you please move a new architecture to clockevents / clocksource
+>>> right from the beginning ? No need to invent another incompatible set
+>>> of time(r) related functions.
+>> I move whole code to GENERIC_TIME. Did you meant any others changes?
 > 
-> I already asked you previously in this thread:
+> GENERIC_TIME and GENERIC_CLOCKEVENTS. You get high resolution timers
+> and dynamic ticks for free when your timer hardware allows it.
 
-And you fail to comment why both points are not worth considering.
+About CLOCKEVENTS. I looked at arm/mach-versatile/
 
-> 
-> Do we have any hard data that gcc < 4.0 has a "broken inline algorithm" 
-> and all gcc versions >= 4.0 have a "working inline algorithm"?
+and I found I need implement:
+loading current timer value - clocksource.read
 
-Is it hard data for you that Linus says that gcc < 4.0 is "broken"
-so yes. Search the archives.
-If you expect me to show you a lot of disassembly then no.
+clock_event_device.set_mode - set one from fourth modes
+clock_event_device.set_next_event - the same mode with new init timer value
+(this is little bit mess for me because arm do this that only change actual
+counting value - I hope I do that too).
 
-> 
-> > And for fast path code like sched.c I would much assume a proper analysis
-> > when it is acceptable to remove the inline hint is almost mandatory.
-> >...
-> 
-> Why didn't you request a proper analysis before the "optimized inlining" 
-> stuff hit Linus' tree?
-Adrian - stop this bullshit.
-We are discussing _your_ patch. Not some other patch that you
-seems to have some hard feelings about. And yes I saw the reference
-in the initial patch which I saw no reason to comment on as this
-was purely bullshit then and still is so.
+Supported modes are:
+CLOCK_EVT_MODE_PERIODIC - reload and timer interrupt
+CLOCK_EVT_MODE_ONESHOT - one interrupt at zero value and end - no others interrupts.
+CLOCK_EVT_MODE_UNUSED: What is it?
+CLOCK_EVT_MODE_SHUTDOWN: What is it?
+CLOCK_EVT_MODE_RESUME: What is it?
 
-Was the purpose of this patch just a provocation then?
-If so - then I just lost 50% of my Linux time tonight on it!
 
-	Sam
+I hope I can use only one timer(adding extra timers is not problem).
+We have one timer with two timebase (that's one option in IP core).
+
+And there is necessary to fill some value in timer initializing
+timer0_clockevent.mult - nanosecond to cycles multiplier ?
+timer0_clockevent.shift - nanoseconds to cycles divisor (power of two)?
+timer0_clockevent.irq - irq from our intc.
+timer0_clockevent.min_delta_ns - minimal timer resolution (I think this value
+have to be sensible for system)
+timer0_clockevent.max_delta_ns - maximal timer resolution
+timer0_clockevent.cpumask = 0 for 1 cpu
+
+I hope others is set by general code.
+
+and change handler function to calling evt->enent_handler;
+
+I found that archs use sys for showing values.
+
+I hope I can see that this systems works via /proc/interrupts and from sysfs.
+
+Am I right?
+
+Thanks,
+Michal
+
