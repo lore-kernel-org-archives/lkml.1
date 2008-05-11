@@ -1,54 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758503AbYEKT7E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758763AbYEKT7f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758503AbYEKT7E (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 15:59:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755336AbYEKT6y
+	id S1758763AbYEKT7f (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 15:59:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755336AbYEKT70
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 15:58:54 -0400
-Received: from mga12.intel.com ([143.182.124.36]:28340 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755155AbYEKT6x (ORCPT
+	Sun, 11 May 2008 15:59:26 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:41336 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754790AbYEKT7Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 15:58:53 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,469,1204531200"; 
-   d="scan'208";a="245255498"
-Message-ID: <48274FF2.8040202@linux.intel.com>
-Date: Sun, 11 May 2008 12:58:42 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Sun, 11 May 2008 15:59:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=J5ROopizyORVddMOi6TwMwsiMlGL/T8ULc03BtE0vJWBEmPa5WAq9hvfBLrg2alQPSjW3/wVFDvWm7sygdoscR3aFziuQFO/h8Rmo+vRtWmo6UshOnCNBzBuUYAdqkE/L5mNuP55nZLvAWrcd9VP+d2K/GIg3lil/rbRfMfA+oQ=
+Date: Sun, 11 May 2008 21:58:59 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
+Subject: [PATCH] v4l: check_v4l2 should return -EINVAL on error
+Message-ID: <20080511195855.GG19058@joi>
 MIME-Version: 1.0
-To: Vegard Nossum <vegard.nossum@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Error in save_stack_trace() on x86_64?
-References: <19f34abd0805110609lf3180dm3b1078e373983ad7@mail.gmail.com>	 <48274C9E.3020608@linux.intel.com> <19f34abd0805111256q29055475leb329179034df20c@mail.gmail.com>
-In-Reply-To: <19f34abd0805111256q29055475leb329179034df20c@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vegard Nossum wrote: in userspace this trace looks correct.
-> 
-> No, it is happening from kernel code. As you can see from the original
-> backtrace, the regs->ip (RIP) (regs taken from the very same
-> do_page_fault()) points at add_uevent_var, which is a kernel function.
-> 
->>  if it happens in kernel space... I wonder if the separate exception stack
->> thing
->>  is hurting us with the stacks not being properly connected...
->>  (but oopses and the like seem to come out just fine so I kinda doubt you're
->> hitting that)
->>
-> 
-> Thanks for looking into this.
-> 
+check_v4l2 always returns 0, so this change is an noop for now,
+but a comment says it will return something else in the future
 
-do you happen to have something that I maybe can reproduce?
-(if you have that it would save me a ton of time in reproducing)
-> 
-> Vegard
-> 
+Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>
+---
+compile tested only
+---
+ drivers/media/video/tuner-core.c |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
 
+diff --git a/drivers/media/video/tuner-core.c b/drivers/media/video/tuner-core.c
+--- a/drivers/media/video/tuner-core.c
++++ b/drivers/media/video/tuner-core.c
+@@ -795,7 +795,7 @@ static int tuner_command(struct i2c_client *client, unsigned int cmd, void *arg)
+ 	case VIDIOCSAUDIO:
+ 		if (check_mode(t, "VIDIOCSAUDIO") == -EINVAL)
+ 			return 0;
+-		if (check_v4l2(t) == EINVAL)
++		if (check_v4l2(t) == -EINVAL)
+ 			return 0;
+ 
+ 		/* Should be implemented, since bttv calls it */
+@@ -813,7 +813,7 @@ static int tuner_command(struct i2c_client *client, unsigned int cmd, void *arg)
+ 			};
+ 			struct video_channel *vc = arg;
+ 
+-			if (check_v4l2(t) == EINVAL)
++			if (check_v4l2(t) == -EINVAL)
+ 				return 0;
+ 
+ 			if (set_mode(client,t,V4L2_TUNER_ANALOG_TV, "VIDIOCSCHAN")==-EINVAL)
+@@ -832,7 +832,7 @@ static int tuner_command(struct i2c_client *client, unsigned int cmd, void *arg)
+ 
+ 			if (check_mode(t, "VIDIOCSFREQ") == -EINVAL)
+ 				return 0;
+-			if (check_v4l2(t) == EINVAL)
++			if (check_v4l2(t) == -EINVAL)
+ 				return 0;
+ 
+ 			set_freq(client, *v);
+@@ -844,7 +844,7 @@ static int tuner_command(struct i2c_client *client, unsigned int cmd, void *arg)
+ 
+ 			if (check_mode(t, "VIDIOCGTUNER") == -EINVAL)
+ 				return 0;
+-			if (check_v4l2(t) == EINVAL)
++			if (check_v4l2(t) == -EINVAL)
+ 				return 0;
+ 
+ 			if (V4L2_TUNER_RADIO == t->mode) {
+@@ -888,7 +888,7 @@ static int tuner_command(struct i2c_client *client, unsigned int cmd, void *arg)
+ 
+ 			if (check_mode(t, "VIDIOCGAUDIO") == -EINVAL)
+ 				return 0;
+-			if (check_v4l2(t) == EINVAL)
++			if (check_v4l2(t) == -EINVAL)
+ 				return 0;
+ 
+ 			if (V4L2_TUNER_RADIO == t->mode) {
+-- 
