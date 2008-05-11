@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753842AbYEKJEY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754903AbYEKJFl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753842AbYEKJEY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 05:04:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751965AbYEKJEL
+	id S1754903AbYEKJFl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 05:05:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbYEKJFe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 05:04:11 -0400
-Received: from www.tglx.de ([62.245.132.106]:58348 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751431AbYEKJEK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 05:04:10 -0400
-Date: Sun, 11 May 2008 11:03:16 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Alistair John Strachan <alistair@devzero.co.uk>
-cc: Andrew Morton <akpm@linux-foundation.org>, andreas.herrmann3@amd.com,
-       mingo@elte.hu, hpa@zytor.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: enable hpet=force for AMD SB400
-In-Reply-To: <200805110402.20327.alistair@devzero.co.uk>
-Message-ID: <alpine.LFD.1.10.0805111059190.3197@apollo.tec.linutronix.de>
-References: <20080509094911.GG5023@alberich.amd.com> <alpine.LFD.1.10.0805100140490.3197@apollo.tec.linutronix.de> <20080509165501.a0fdb29d.akpm@linux-foundation.org> <200805110402.20327.alistair@devzero.co.uk>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 11 May 2008 05:05:34 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:20579 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751965AbYEKJFd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 May 2008 05:05:33 -0400
+Date: Sun, 11 May 2008 11:05:10 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, i2c@lm-sensors.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] I2C: SiByte: Correct a comment about frequency
+Message-ID: <20080511110510.4d0d1c8e@hyperion.delvare>
+In-Reply-To: <Pine.LNX.4.55.0805110302400.18978@cliff.in.clinika.pl>
+References: <Pine.LNX.4.55.0805110302400.18978@cliff.in.clinika.pl>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 11 May 2008, Alistair John Strachan wrote:
-> > Well we don't have to auto-enable the hpet.  Simply adding a loud "you
-> > should try the hpet=force option" printk would help a lot of people.
+On Sun, 11 May 2008 03:10:29 +0100 (BST), Maciej W. Rozycki wrote:
+>  The frequency may have been once hardcoded to 100kHz, but currently it is
+> passed as an argument to i2c_sibyte_add_bus(), so update the comment to
+> match code.  While at it, reformat a nearby comment for consistency.  No
+> functional changes.
 > 
-> I'm a bit confused about the policy here: if we look at the Intel chipset 
-> overrides for HPET, they conditionally enable the HPET _without_ the 
-> hpet=force option if you have a chipset on the whitelist.
+> Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+> ---
+>  It should be obvious.  Please apply.
 > 
-> If Intel can do this on their chipsets, why is this not being done for the ATI 
-> chipsets for which (presumably) AMD have specs?
+>   Maciej
+> 
+> patch-2.6.26-rc1-20080505-sibyte-i2c-add-bus-16
+> diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/drivers/i2c/busses/i2c-sibyte.c linux-2.6.26-rc1-20080505/drivers/i2c/busses/i2c-sibyte.c
+> --- linux-2.6.26-rc1-20080505.macro/drivers/i2c/busses/i2c-sibyte.c	2008-05-05 02:55:25.000000000 +0000
+> +++ linux-2.6.26-rc1-20080505/drivers/i2c/busses/i2c-sibyte.c	2008-05-11 01:14:30.000000000 +0000
+> @@ -136,10 +136,10 @@ int __init i2c_sibyte_add_bus(struct i2c
+>  {
+>  	struct i2c_algo_sibyte_data *adap = i2c_adap->algo_data;
+>  
+> -	/* register new adapter to i2c module... */
+> +	/* Register new adapter to i2c module... */
+>  	i2c_adap->algo = &i2c_sibyte_algo;
+>  
+> -	/* Set the frequency to 100 kHz */
+> +	/* Set the requested frequency. */
+>  	csr_out32(speed, SMB_CSR(adap,R_SMB_FREQ));
+>  	csr_out32(0, SMB_CSR(adap,R_SMB_CONTROL));
+>  
 
-Well, we have no confirmation for the correctness of the non Intel
-quirks so far. I'm happy to move them into unconditional mode once
-AMD/ATI/NVidia tell us that the HPET is indeed discoverable this way.
- 
-> One thing I'd considered was that HPET isn't actually used very often on Intel 
-> chipsets because on most recent Intel CPUs the TSC is stable, but I think 
+Applied, thanks.
 
-Well, stable except for the C-States. We still need a backup clock
-source as TSC is stopping in C3.
-
-> either the Intel quirk should be consistent with the hpet=force usage, 
-> or "known correct" HPET overrides should just always be applied.
-
-That's what we do. We have "known correct" for Intel and those which
-work on the patch submitters box w/o confirmation of the
-correctness. I guess the SB400 one can move into the "is correct"
-category, Andreas ???
-
-Thanks,
-
-	tglx
+-- 
+Jean Delvare
