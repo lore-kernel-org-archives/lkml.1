@@ -1,81 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759839AbYEKVVI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761198AbYEKVWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759839AbYEKVVI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 17:21:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760672AbYEKVUn
+	id S1761198AbYEKVWT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 17:22:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756709AbYEKVWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 17:20:43 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:32972 "EHLO pasmtpA.tele.dk"
+	Sun, 11 May 2008 17:22:05 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:40634 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760565AbYEKVUm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 17:20:42 -0400
-Date: Sun, 11 May 2008 23:21:17 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Marcin Slusarz <marcin.slusarz@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] isdn/capi: return proper errnos on module init
-Message-ID: <20080511212117.GB1641@uranus.ravnborg.org>
-References: <20080511210707.GA25600@pingi.kke.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1754709AbYEKVWE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 May 2008 17:22:04 -0400
+Date: Mon, 12 May 2008 00:20:40 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [Bug #10639] parisc DISCONTIGMEM compile breakage
+Message-ID: <20080511212040.GJ1645@cs181133002.pp.htv.fi>
+References: <hPXlJLjt4XG.A._lF.Jv1JIB@chimera> <88YBFoyd1CN.A.XeH.Hw1JIB@chimera>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080511210707.GA25600@pingi.kke.suse.de>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <88YBFoyd1CN.A.XeH.Hw1JIB@chimera>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 11, 2008 at 11:07:07PM +0200, Karsten Keil wrote:
-> cdebug_init is called from kcapi_init which is module initialization function,
-> so it must return negative values on errors
+On Sun, May 11, 2008 at 10:04:14PM +0200, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-> Acked-by: Karsten Keil <kkeil@suse.de>
+> The following bug entry is on the current list of known regressions
+> from 2.6.25.  Please verify if it still should be listed.
 
-Hi Karsten.
+yes
 
-Lately David Miller has started to include isdn patches
-in his netdev tree. So I think you should pass then on to David
-and not Andrew.
-David or Andrew will correct me if I'm wrong...
-
-	Sam
-
-> ---
-> compile tested only
-> ---
->  drivers/isdn/capi/capiutil.c |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10639
+> Subject		: parisc DISCONTIGMEM compile breakage
+> Submitter	: Adrian Bunk <bunk@kernel.org>
+> Date		: 2008-05-08 13:52 (4 days old)
+> Handled-By	: Mel Gorman <mel@csn.ul.ie>
 > 
-> diff --git a/drivers/isdn/capi/capiutil.c b/drivers/isdn/capi/capiutil.c
-> --- a/drivers/isdn/capi/capiutil.c
-> +++ b/drivers/isdn/capi/capiutil.c
-> @@ -948,17 +948,17 @@ int __init cdebug_init(void)
->  {
->  	g_cmsg= kmalloc(sizeof(_cmsg), GFP_KERNEL);
->  	if (!g_cmsg)
-> -		return ENOMEM;
-> +		return -ENOMEM;
->  	g_debbuf = kmalloc(sizeof(_cdebbuf), GFP_KERNEL);
->  	if (!g_debbuf) {
->  		kfree(g_cmsg);
-> -		return ENOMEM;
-> +		return -ENOMEM;
->  	}
->  	g_debbuf->buf = kmalloc(CDEBUG_GSIZE, GFP_KERNEL);
->  	if (!g_debbuf->buf) {
->  		kfree(g_cmsg);
->  		kfree(g_debbuf);
-> -		return ENOMEM;;
-> +		return -ENOMEM;;
->  	}
->  	g_debbuf->size = CDEBUG_GSIZE;
->  	g_debbuf->buf[0] = 0;
-> -- 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
