@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759247AbYEKVdo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759443AbYEKVfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759247AbYEKVdo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 17:33:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755143AbYEKVdg
+	id S1759443AbYEKVfT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 17:35:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755616AbYEKVfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 17:33:36 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:37583 "EHLO smtp6.pp.htv.fi"
+	Sun, 11 May 2008 17:35:08 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34543 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754377AbYEKVdg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 17:33:36 -0400
-Date: Mon, 12 May 2008 00:32:13 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [Bug #10643] s390 kvm_virtio.c build error
-Message-ID: <20080511213213.GL1645@cs181133002.pp.htv.fi>
-References: <hPXlJLjt4XG.A._lF.Jv1JIB@chimera> <88YBFoyd1CN.A.jIH.8v1JIB@chimera>
+	id S1755127AbYEKVfH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 May 2008 17:35:07 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: nigel@suspend2.net
+Subject: Re: [Bug #10606] 2.6.26-rc1 regression: ACPI fails to load SDT. - Dell M1530
+Date: Sun, 11 May 2008 23:35:22 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <hPXlJLjt4XG.A._lF.Jv1JIB@chimera> <88YBFoyd1CN.A.7LB.Ax1JIB@chimera> <1210541657.18009.3.camel@nigel-laptop>
+In-Reply-To: <1210541657.18009.3.camel@nigel-laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <88YBFoyd1CN.A.jIH.8v1JIB@chimera>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200805112335.23034.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 11, 2008 at 10:04:15PM +0200, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+On Sunday, 11 of May 2008, Nigel Cunningham wrote:
+> Hi.
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.25.  Please verify if it still should be listed.
-
-yes
-
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10643
-> Subject		: s390 kvm_virtio.c build error
-> Submitter	: Adrian Bunk <bunk@kernel.org>
-> Date		: 2008-05-08 14:05 (4 days old)
-> References	: http://lkml.org/lkml/2008/5/3/155
-> Handled-By	: Heiko Carstens <heiko.carstens@de.ibm.com>
-> Patch		:  several nearly identical patches, KVM tree should bring one
+> On Sun, 2008-05-11 at 22:04 +0200, Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.25.  Please verify if it still should be listed.
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10606
+> > Subject		: 2.6.26-rc1 regression: ACPI fails to load SDT. - Dell M1530
+> > Submitter	: NIgel Cunningham <nigel@suspend2.net>
+> > Date		: 2008-05-05 18:11 (7 days old)
 > 
+> Patch is available and verified, but not yet in Mainline as far as I
+> know.
 
-cu
-Adrian
+Do you have a pointer to it?
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Rafael
