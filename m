@@ -1,63 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755888AbYEKLsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756242AbYEKMeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755888AbYEKLsb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 07:48:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbYEKLsV
+	id S1756242AbYEKMeV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 08:34:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754809AbYEKMeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 07:48:21 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:59123 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752313AbYEKLsU (ORCPT
+	Sun, 11 May 2008 08:34:09 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:48288 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754712AbYEKMeI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 07:48:20 -0400
-Date: Sun, 11 May 2008 05:48:03 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Ingo Molnar <mingo@elte.hu>, Sven Wegener <sven.wegener@stealer.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] scheduler fixes
-Message-ID: <20080511114803.GA8289@parisc-linux.org>
-References: <alpine.LFD.1.10.0805070817060.3024@woody.linux-foundation.org> <1210214696.3453.87.camel@ymzhang> <alpine.LFD.1.10.0805072014330.3024@woody.linux-foundation.org> <1210219729.3453.97.camel@ymzhang> <alpine.LFD.1.10.0805072115190.3024@woody.linux-foundation.org> <20080508120130.GA2860@elte.hu> <20080508122802.GA4880@elte.hu> <20080508144316.GA9869@elte.hu> <20080508151028.GA12109@elte.hu> <20080511110306.GP19219@parisc-linux.org>
+	Sun, 11 May 2008 08:34:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=wc1b+GJ0E426RyYv47TVTTLPnuIo76T1gLzt5yU4Vkk67XUoNbFufqzOYIA772H3k8AxWqgizpIOoDGGWb3SRvPe/Gi3jRuw+6/5vQJ3hPkPesUyw3cR4he2EPdYxkSDLui1stlHRPKeTTod+lI+CFdUsjrW3K8YfkVINB8di6U=
+Message-ID: <37219a840805110534r4865623y6f9510554e2716ac@mail.gmail.com>
+Date: Sun, 11 May 2008 08:34:06 -0400
+From: "Michael Krufky" <mkrufky@linuxtv.org>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [patch] video: build fix for drivers/media/video/pvrusb2/
+Cc: linux-kernel@vger.kernel.org,
+       "Mauro Carvalho Chehab" <mchehab@infradead.org>,
+       "Guennadi Liakhovetski" <g.liakhovetski@pengutronix.de>,
+       "Mike Isely" <isely@pobox.com>
+In-Reply-To: <20080511072137.GA16772@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080511110306.GP19219@parisc-linux.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20080511072137.GA16772@elte.hu>
+X-Google-Sender-Auth: 1f0d411d95fd2295
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 11, 2008 at 05:03:06AM -0600, Matthew Wilcox wrote:
-> This might be the problem that causes the missing wakeups.  If you have a
-> semaphore with n=2, and four processes calling down(), tasks A and B
-> acquire the semaphore and tasks C and D go to sleep.  Task A calls up()
-[...]
-> Sven, can you try this with your workload?  I suspect this might be it
-> because XFS does use semaphores with n>1.
+On Sun, May 11, 2008 at 3:21 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> x86.git testing found the following build failure:
+>
+>  drivers/built-in.o: In function `pvr2_dvb_feed_thread':
+>  pvrusb2-dvb.c:(.text+0x127e78): undefined reference to `dvb_dmx_swfilter'
+>  drivers/built-in.o: In function `pvr2_dvb_adapter_exit':
+>  pvrusb2-dvb.c:(.text+0x128357): undefined reference to `dvb_net_release'
+>  pvrusb2-dvb.c:(.text+0x12836f): undefined reference to `dvb_dmxdev_release'
+>  [...]
+>
+> with this config:
+>
+>  http://redhat.com/~mingo/misc/config-Sun_May_11_07_06_35_CEST_2008.bad
+>
+> the reason for the missing symbols is this combination:
+>
+>  CONFIG_VIDEO_PVRUSB2=y
+>  CONFIG_DVB_CORE=m
+>
+> i.e. pvrusb2 is built-in, dvb-core is modular.
+>
+> This patch solves the problem by adding a dependency on DVB_CORE - this
+> is used by other drivers such as au0828 as well. This way the pvrusb2
+> driver can still be built, but if dvb-core is a module then it will
+> correctly be a module as well and cannot be built-in.
+>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  drivers/media/video/pvrusb2/Kconfig |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> Index: linux/drivers/media/video/pvrusb2/Kconfig
+> ===================================================================
+> --- linux.orig/drivers/media/video/pvrusb2/Kconfig
+> +++ linux/drivers/media/video/pvrusb2/Kconfig
+> @@ -1,6 +1,6 @@
+>  config VIDEO_PVRUSB2
+>        tristate "Hauppauge WinTV-PVR USB2 support"
+> -       depends on VIDEO_V4L2 && I2C
+> +       depends on VIDEO_V4L2 && I2C && DVB_CORE
+>        select FW_LOADER
+>        select MEDIA_TUNER
+>        select VIDEO_TVEEPROM
+>
 
-This is exactly it.  Or rather, it's even simpler.  Three tasks
-involved; A and B call xlog_state_get_iclog_space() and end up calling
-psema(&log->l_flushsema) [down() by any other name -- the semaphore is
-initialised to 0; it's really a completion].  Then task C calls
-xlog_state_do_callback() which does:
+Ingo,
 
-        while (flushcnt--)
-                vsema(&log->l_flushsema);
+VIDEO_PVRUSB2 should not depend on DVB_CORE unless VIDEO_PVRUSB2_DVB
+is selected, which already depends on DVB_CORE.
 
-[vsema is AKA up()]
+For example, if a user has VIDEO_PVRUSB2_DVB not selected, then your
+patch would generate a false dependency on DVB_CORE.
 
-It assumes this wakes up both A and B ... but it won't with Ingo's code;
-it'll wake up A twice.
+Regards,
 
-So I deem my fix "proven by thought experiment".  I haven't tried
-booting it or anything.
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Mike Krufky
