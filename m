@@ -1,76 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758187AbYEKT6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758503AbYEKT7E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758187AbYEKT6R (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 15:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755155AbYEKT6G
+	id S1758503AbYEKT7E (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 15:59:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755336AbYEKT6y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 15:58:06 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:39032 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755121AbYEKT6D (ORCPT
+	Sun, 11 May 2008 15:58:54 -0400
+Received: from mga12.intel.com ([143.182.124.36]:28340 "EHLO
+	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755155AbYEKT6x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 15:58:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=fsXR5pycEf7Fe5aD9GbHvyDXqdYaHR98t16YGmJPgvDWOpmObQ2lqQUYI1ohL+OEM5ZBW5RjGRTV0xTtk1yzrT4gDLCQCXNukw3S5+73TpIdF9C6rcExg3Sc9ucxyDWxfAIx0hfuVC9jn+lfKa1sTwnfNr2qwdZlXC/zhLrQ1zc=
-Date: Sun, 11 May 2008 21:57:40 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [RFC] [PATCH] s390/net/claw: don't ignore return value of find_link
-Message-ID: <20080511195736.GF19058@joi>
+	Sun, 11 May 2008 15:58:53 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,469,1204531200"; 
+   d="scan'208";a="245255498"
+Message-ID: <48274FF2.8040202@linux.intel.com>
+Date: Sun, 11 May 2008 12:58:42 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Vegard Nossum <vegard.nossum@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Error in save_stack_trace() on x86_64?
+References: <19f34abd0805110609lf3180dm3b1078e373983ad7@mail.gmail.com>	 <48274C9E.3020608@linux.intel.com> <19f34abd0805111256q29055475leb329179034df20c@mail.gmail.com>
+In-Reply-To: <19f34abd0805111256q29055475leb329179034df20c@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-find_link checked some conditions but then ignored it - fix it.
-return negative error for consistency with the rest of kernel
+Vegard Nossum wrote: in userspace this trace looks correct.
+> 
+> No, it is happening from kernel code. As you can see from the original
+> backtrace, the regs->ip (RIP) (regs taken from the very same
+> do_page_fault()) points at add_uevent_var, which is a kernel function.
+> 
+>>  if it happens in kernel space... I wonder if the separate exception stack
+>> thing
+>>  is hurting us with the stacks not being properly connected...
+>>  (but oopses and the like seem to come out just fine so I kinda doubt you're
+>> hitting that)
+>>
+> 
+> Thanks for looking into this.
+> 
 
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
-please check if it's correct patch
----
- drivers/s390/net/claw.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+do you happen to have something that I maybe can reproduce?
+(if you have that it would save me a ton of time in reproducing)
+> 
+> Vegard
+> 
 
-diff --git a/drivers/s390/net/claw.c b/drivers/s390/net/claw.c
---- a/drivers/s390/net/claw.c
-+++ b/drivers/s390/net/claw.c
-@@ -1722,18 +1722,18 @@ find_link(struct net_device *dev, char *host_name, char *ws_name )
- 		case  PACKING_ASK:
- 			if ((memcmp(WS_APPL_NAME_PACKED, host_name, 8)!=0) ||
- 			    (memcmp(WS_APPL_NAME_PACKED, ws_name, 8)!=0 ))
--        	             rc = EINVAL;
-+				rc = -EINVAL;
- 			break;
- 		case  DO_PACKED:
- 		case  PACK_SEND:
- 			if ((memcmp(WS_APPL_NAME_IP_NAME, host_name, 8)!=0) ||
- 			    (memcmp(WS_APPL_NAME_IP_NAME, ws_name, 8)!=0 ))
--        	        	rc = EINVAL;
-+				rc = -EINVAL;
- 			break;
- 		default:
- 	       		if ((memcmp(HOST_APPL_NAME, host_name, 8)!=0) ||
- 		    	    (memcmp(p_env->api_type , ws_name, 8)!=0))
--        	        	rc = EINVAL;
-+				rc = -EINVAL;
- 			break;
- 	}
- 
-@@ -1741,7 +1741,7 @@ find_link(struct net_device *dev, char *host_name, char *ws_name )
-         printk(KERN_INFO "%s:%s Exit on line %d\n",
- 		dev->name,__func__,__LINE__);
- #endif
--        return 0;
-+	return rc;
- }    /*    end of find_link    */
- 
- /*-------------------------------------------------------------------*
--- 
