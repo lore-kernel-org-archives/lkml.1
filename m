@@ -1,76 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758316AbYEKSr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757968AbYEKSvX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758316AbYEKSr1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 14:47:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757238AbYEKSq5
+	id S1757968AbYEKSvX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 14:51:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755013AbYEKSvP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 14:46:57 -0400
-Received: from testure.choralone.org ([194.9.77.134]:50778 "EHLO
-	testure.choralone.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756572AbYEKSqy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 14:46:54 -0400
-Date: Sun, 11 May 2008 14:46:59 -0400
-From: Dave Jones <davej@codemonkey.org.uk>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, yakui.zhao@intel.com
-Subject: Re: [2.6.26-rc1] WARNING: at drivers/base/sys.c:183
-Message-ID: <20080511184658.GA2087@codemonkey.org.uk>
-Mail-Followup-To: Dave Jones <davej@codemonkey.org.uk>,
-	Tilman Schmidt <tilman@imap.cc>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linux-acpi@vger.kernel.org, yakui.zhao@intel.com
-References: <48273860.1000103@imap.cc>
+	Sun, 11 May 2008 14:51:15 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:40124 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754643AbYEKSvO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 May 2008 14:51:14 -0400
+Date: Sun, 11 May 2008 21:49:52 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [2.6 patch] kernel/sched*: optimize inlining
+Message-ID: <20080511184952.GG1645@cs181133002.pp.htv.fi>
+References: <20080511092132.GE1645@cs181133002.pp.htv.fi> <20080511175222.GA31729@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <48273860.1000103@imap.cc>
+In-Reply-To: <20080511175222.GA31729@uranus.ravnborg.org>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 11, 2008 at 08:18:08PM +0200, Tilman Schmidt wrote:
- > This warning, first reported for 2.6.25-rc5-mm1
- > (see http://lkml.org/lkml/2008/3/12/444)
- > has now made it into mainline:
+On Sun, May 11, 2008 at 07:52:22PM +0200, Sam Ravnborg wrote:
+> On Sun, May 11, 2008 at 12:21:32PM +0300, Adrian Bunk wrote:
+> > kernel/sched* contained tons of inline's, and the result of removing 
+> > them all is impressing (with x86_64_defconfig)
+> >    text    data     bss     dec     hex filename
+> >   39557    8234     280   48071    bbc7 kernel/sched.o
+> >   41792    8234     280   50306    c482 kernel/sched.o.old
+> > 
+> > That's a 5.3% text size reduction (!), which is more than twice as much 
+> > as the 2.3% the "optimized inlining" achieves on average for the whole 
+> > kernel.
+> 
+> If we compare the size of sched.o in the three cases we see a clear effect:
+> 
+>                   text	   data	    bss	    dec	    hex	filename
+> forced inline:    31257	   2702	    200	  34159	   856f	kernel/sched.o
+> inline hint:      31105	   2702	    200	  34007	   84d7	kernel/sched.o
+> no inline (hint): 30704	   2702	    200	  33606	   8346	kernel/sched.o
 
-Probably the sysdev check got merged.
- 
- > May 11 19:32:44 xenon kernel: [   29.017148] powernow: This module only works with AMD K7 CPUs
+Is this with CONFIG_CC_OPTIMIZE_FOR_SIZE=y?
 
-So we call into powernow-k7 and get -ENODEV. From looking at the code,
-we're not leaking anything (because we don't even allocate anything at this point).
+Otherwise your data has not much value since that's the interesting case 
+for size comparisons and AFAIK also the common case in distribution 
+kernels.
 
- > May 11 19:32:44 xenon kernel: [   29.607563] sysdev: class cpu: driver (c0439804) has already been registered to a class, something is wrong, but will forge on!
- > May 11 19:32:44 xenon kernel: [   29.611835] ------------[ cut here ]------------
- > May 11 19:32:44 xenon kernel: [   29.616182] WARNING: at drivers/base/sys.c:183 sysdev_driver_register+0x59/0xf2()
- > May 11 19:32:44 xenon kernel: [   29.622037] Modules linked in: acpi_cpufreq(+) speedstep_lib microcode firmware_class loop osst st sr_mod cdrom pata_acpi bas_gigaset snd_hda_intel gigaset isdn snd_pcm rtc_cmos ata_generic aic7xxx snd_timer rtc_core usblp snd slhc ohci1394 pata_marvell thermal ieee1394 rtc_lib i2c_i801 parport_pc intel_agp processor soundcore crc_ccitt iTCO_wdt button scsi_transport_spi iTCO_vendor_support parport snd_page_alloc agpgart i2c_core sg ext3 jbd mbcache linear usbhid hid sd_mod ahci libata uhci_hcd ehci_hcd scsi_mod dock usbcore dm_snapshot dm_mod
- > May 11 19:32:44 xenon kernel: [   29.648305] Pid: 2860, comm: modprobe Not tainted 2.6.26-rc1-testing #1
- > May 11 19:32:44 xenon kernel: [   29.653156]  [<c0129d09>] warn_on_slowpath+0x41/0x6d
- > May 11 19:32:44 xenon kernel: [   29.658026]  [<c0120032>] ? push_rt_task+0xb1/0x1ab
- > May 11 19:32:44 xenon kernel: [   29.664013]  [<c012a75a>] ? vprintk+0x3a5/0x3c5
- > May 11 19:32:44 xenon kernel: [   29.670995]  [<c010b7a4>] ? native_sched_clock+0xe0/0xff
- > May 11 19:32:44 xenon kernel: [   29.675849]  [<c010b7a4>] ? native_sched_clock+0xe0/0xff
- > May 11 19:32:44 xenon kernel: [   29.680678]  [<c0143881>] ? put_lock_stats+0xd/0x21
- > May 11 19:32:44 xenon kernel: [   29.685465]  [<c012a78f>] ? printk+0x15/0x17
- > May 11 19:32:44 xenon kernel: [   29.690406]  [<c026a57a>] sysdev_driver_register+0x59/0xf2
- > May 11 19:32:44 xenon kernel: [   29.696845]  [<c02a8fe3>] cpufreq_register_driver+0x80/0xfc
- > May 11 19:32:44 xenon kernel: [   29.701892]  [<faafe034>] acpi_cpufreq_init+0x34/0x3a [acpi_cpufreq]
- > May 11 19:32:44 xenon kernel: [   29.708279]  [<c014d441>] sys_init_module+0x1883/0x1a34
- > May 11 19:32:44 xenon kernel: [   29.713176]  [<c0106b63>] sysenter_past_esp+0x78/0xd1
- > May 11 19:32:44 xenon kernel: [   29.718586]  =======================
- > May 11 19:32:44 xenon kernel: [   29.723414] ---[ end trace da2515dc0122d0b1 ]---
+> The last line "no inline(hint)" is with Adrians patch applied.
+> So what is obvious from the above is that with the arch/gcc combination
+> I use here the inline hint has a clear effect and gcc inlines more
+> when we have given it a hint to do so than without the hint.
+> I conclude this solely on the cide size change between the line
+> "inline hint" and "no inline(hint)".
+> 
+> With adrians patch there were no difference in size with or
+> without the OPTIMIZE_INLINING enabled.
+> 
+> Or in other words the config option "OPTIMIZE_INLINING" is NOT
+> equal to removing all the inline annotations.
 
-And then we freak out when we init the next cpufreq module, acpi-cpufreq, which gets further
-and tries to actually get registered.
+Both do the same with the same justification:
 
-I don't really understand what's happening that makes sysfs so unhappy.
-I guess if we had a clue what driver 'c0439804' was me might have some clues.
-What symbols are near that address in /proc/kallsyms ?
- 
-	Dave
- 
+Both give the decision whether or not to inline completely into the 
+hands of gcc, which can make different inlining decisions depending on 
+e.g. the gcc version and the CONFIG_CC_OPTIMIZE_FOR_SIZE setting, and
+the only thing benchmarked is the code size.
+
+And if gcc produces with CONFIG_CC_OPTIMIZE_FOR_SIZE=y bigger code due 
+to some hint I'd argue that's a bug in gcc that might get fixed in 
+future gcc releases.
+
+> > Note that any remarks regarding whether this patch might affect the 
+> > performance are invalid since noone cared about the performance when
+> > the "x86: add optimized inlining" commit that does the same for the 
+> > whole kernel entered the tree.
+> 
+> In one case it was an option it was easy to turn off/on so we could
+> compare and modulus bugs it was a noop on gcc < 4.0.
+> With the patch below we revet back to the broken gcc inline algorithm on
+> gcc < 4.0 and it cannot as easy be turned of (have to revert this patch).
+> Both issues are worth to consider before applying this.
+
+Do we have any hard data that gcc < 4.0 has a "broken inline algorithm" 
+and gcc >= 4.0 has a "working inline algorithm"?
+
+> 	Sam
+
+cu
+Adrian
+
 -- 
-http://www.codemonkey.org.uk
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
