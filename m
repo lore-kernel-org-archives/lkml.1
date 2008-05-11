@@ -1,92 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757803AbYEKT1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757764AbYEKTdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757803AbYEKT1P (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 15:27:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754360AbYEKT1D
+	id S1757764AbYEKTdk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 15:33:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755514AbYEKTd3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 15:27:03 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:13189 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753078AbYEKT1B (ORCPT
+	Sun, 11 May 2008 15:33:29 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:33638 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753078AbYEKTd2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 15:27:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fpMM1j/nz2wbDMxPcLmwl+3+C4wdRellMZV3/FouSLNr2QzgxtssFDnfvQlojla2MxZ1rkxrkfUzZSGpFvfiaoGqIgjELQm60ZmSVMNni4OOvG62bGzhAXoCR1HON0M8v2a9Yri6aQ13axAAPW47SYEov7FFQ9rhXQ3kPYCmKVY=
-Message-ID: <1ba2fa240805111226s6f900015n4144f5411957ef2a@mail.gmail.com>
-Date: Sun, 11 May 2008 22:26:59 +0300
-From: "Tomas Winkler" <tomasw@gmail.com>
-To: "Mirco Tischler" <mirco.tischler@physik.uni-wuppertal.de>
-Subject: Re: BUG: scheduling while atomic: events/1/10/0x00000002 on linux-next
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       "Reinette Chatre" <reinette.chatre@intel.com>,
-       "Zhu Yi" <yi.zhu@intel.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       "Johannes Berg" <johannes@sipsolutions.net>
-In-Reply-To: <1210524139.17521.5.camel@mtlp.tischlernetz>
+	Sun, 11 May 2008 15:33:28 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Alexander Beregalov" <a.beregalov@gmail.com>
+Subject: Re: kgdb test suite failure
+Date: Sun, 11 May 2008 21:32:56 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: jason.wessel@windriver.com, kgdb-bugreport@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <a4423d670805090714iaae7d4fj2883889ede15a4be@mail.gmail.com>
+In-Reply-To: <a4423d670805090714iaae7d4fj2883889ede15a4be@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <1210524139.17521.5.camel@mtlp.tischlernetz>
+Message-Id: <200805112132.57229.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 11, 2008 at 7:42 PM, Mirco Tischler
-<mirco.tischler@physik.uni-wuppertal.de> wrote:
-> Hi
->
-> I've got this in my dmesg while testing linux-next:
->
->> [4299633.075168] wlan0: deauthenticate(reason=3)
->> [4299633.097015] BUG: scheduling while atomic: events/1/10/0x00000002
->> [4299633.097030] Pid: 10, comm: events/1 Not tainted 2.6.26-rc1-next-20080509 #80
->> [4299633.097036]
->> [4299633.097038] Call Trace:
->> [4299633.097070]  [<ffffffff8023346c>] __schedule_bug+0x70/0x75
->> [4299633.097082]  [<ffffffff8052aa68>] schedule+0xd7/0x8aa
->> [4299633.097094]  [<ffffffff8052cac6>] ? _spin_lock_irqsave+0x1d/0x39
->> [4299633.097107]  [<ffffffff8052cce1>] ? _spin_unlock_irqrestore+0x17/0x30
->> [4299633.097116]  [<ffffffff80240f69>] ? __mod_timer+0xd5/0xe7
->> [4299633.097129]  [<ffffffff8052b544>] schedule_timeout+0x92/0xb9
->> [4299633.097138]  [<ffffffff80240894>] ? process_timeout+0x0/0x10
->> [4299633.097146]  [<ffffffff8052b53f>] ? schedule_timeout+0x8d/0xb9
->> [4299633.097171]  [<ffffffffa00b6a47>] :iwlcore:iwl_send_cmd_sync+0x154/0x24b
->> [4299633.097183]  [<ffffffff8024ae64>] ? autoremove_wake_function+0x0/0x3d
->> [4299633.097205]  [<ffffffffa00b6b99>] :iwlcore:iwl_send_cmd+0x1b/0x1e
->> [4299633.097229]  [<ffffffffa00c454f>] :iwl4965:iwl4965_send_add_station+0x51/0xb5
->> [4299633.097259]  [<ffffffffa00ce327>] :iwl4965:iwl_remove_dynamic_key+0xf3/0x111
->> [4299633.097285]  [<ffffffffa00c1ab2>] :iwl4965:iwl4965_mac_set_key+0x123/0x139
->> [4299633.097294]  [<ffffffff8052c8f3>] ? _spin_lock+0x1b/0x33
->> [4299633.097303]  [<ffffffff802a9d8f>] ? __slab_free+0x100/0x38e
->> [4299633.097318]  [<ffffffff80513d29>] ieee80211_key_disable_hw_accel+0xd6/0x146
->> [4299633.097332]  [<ffffffff80513f39>] __ieee80211_key_todo+0x1a0/0x212
->> [4299633.097341]  [<ffffffff8045a361>] ? netdev_run_todo+0x23b/0x24a
->> [4299633.097353]  [<ffffffff80514065>] ? key_todo+0x0/0x10
->> [4299633.097362]  [<ffffffff80514057>] ieee80211_key_todo+0x1a/0x28
->> [4299633.097370]  [<ffffffff80514073>] key_todo+0xe/0x10
->> [4299633.097379]  [<ffffffff80247354>] run_workqueue+0x99/0x12b
->> [4299633.097391]  [<ffffffff802474c8>] worker_thread+0xe2/0xf3
->> [4299633.097400]  [<ffffffff8024ae64>] ? autoremove_wake_function+0x0/0x3d
->> [4299633.097410]  [<ffffffff802473e6>] ? worker_thread+0x0/0xf3
->> [4299633.097418]  [<ffffffff8024aaff>] kthread+0x4e/0x7b
->> [4299633.097428]  [<ffffffff8020cff8>] child_rip+0xa/0x12
->> [4299633.097444]  [<ffffffff8024aab1>] ? kthread+0x0/0x7b
->> [4299633.097452]  [<ffffffff8020cfee>] ? child_rip+0x0/0x12
->> [4299633.097459]
->> [4299634.116094] wlan0: RX deauthentication from 00:0f:b5:cf:6e:68 (reason=7)
->> [4299634.116094] wlan0: deauthenticated
->
-> I didn't see this on 2.6.26-rc1.
-> This happens everytime I reconnect my wlan, i.e. when I click on the
-> essid in the gnome-applet. I attach my config and the hole dmesg output.
-> My hardware is a Intel Santa Rosa Notebook with 4965agn chip.
->
-What exact git tree is this?
-  iwlcore:iwl_send_cmd_sync+0x154/0x24b waits for event so something
-has changed in mac80211. Need to see the code.
+[Added some CCs.]
 
-Thanks
-Tomas
+On Friday, 9 of May 2008, Alexander Beregalov wrote:
+> Hi
+> I tried to run the latest git kernel and got the following error.
+> 
+> See an attachment for full dmesg.
+> 
+> kgdbts: ERROR PUT: end of test buffer on 'do_fork_test' line 5
+> expected OK got $E02#a7
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:721 run_simple_test+0x1de/0x20e()
+> Modules linked in:
+> Pid: 6, comm: khelper Not tainted 2.6.26-rc1-00279-g28a4acb #12
+> [<c011a00a>] warn_on_slowpath+0x41/0x6c
+> [<c011aa77>] ? vprintk+0x3e7/0x407
+> [<c0254cf4>] ? number+0x10d/0x1cf
+> [<c012d3da>] ? sched_clock_cpu+0x70/0x88
+> [<c011aaac>] ? printk+0x15/0x17
+> [<c02ae228>] run_simple_test+0x1de/0x20e
+> [<c02adc15>] kgdbts_put_char+0x14/0x16
+> [<c013d7ba>] put_packet+0x6b/0xbb
+> [<c013e8bc>] kgdb_handle_exception+0xa19/0xb21
+> [<c0119400>] ? do_fork+0x0/0x19e
+> [<c010e9e3>] kgdb_notify+0x103/0x140
+> [<c035ac89>] notifier_call_chain+0x2b/0x4a
+> [<c035accd>] __atomic_notifier_call_chain+0x25/0x36
+> [<c035acea>] atomic_notifier_call_chain+0xc/0xe
+> [<c012cd15>] notify_die+0x2d/0x2f
+> [<c03597fd>] do_int3+0x32/0x6c
+> [<c0359293>] int3+0x27/0x2c
+> [<c0119400>] ? do_fork+0x0/0x19e
+> [<c010176c>] ? kernel_thread+0x73/0x7b
+> [<c01263d1>] ? ____call_usermodehelper+0x0/0xe7
+> [<c01263d1>] ? ____call_usermodehelper+0x0/0xe7
+> [<c0103740>] ? kernel_thread_helper+0x0/0x10
+> [<c0126236>] __call_usermodehelper+0x33/0x4d
+> [<c0126686>] run_workqueue+0xba/0x187
+> [<c012664c>] ? run_workqueue+0x80/0x187
+> [<c0126203>] ? __call_usermodehelper+0x0/0x4d
+> [<c0126ea6>] worker_thread+0x80/0x8c
+> [<c01291bd>] ? autoremove_wake_function+0x0/0x30
+> [<c0126e26>] ? worker_thread+0x0/0x8c
+> [<c01290fc>] kthread+0x39/0x61
+> [<c01290c3>] ? kthread+0x0/0x61
+> [<c0103747>] kernel_thread_helper+0x7/0x10
+> =======================
+> ---[ end trace b9faa95810ce9135 ]---
+> e1000: eth0: e1000_clean_tx_irq: Detected Tx Unit Hang
+>  Tx Queue             <0>
+>  TDH                  <2a>
+>  TDT                  <2a>
+>  next_to_use          <2a>
+>  next_to_clean        <14>
+> buffer_info[next_to_clean]
+>  time_stamp           <fffeb89e>
+>  next_to_watch        <14>
+>  jiffies              <fffebb63>
+>  next_to_watch.status <1>
+> khelper used greatest stack depth: 2516 bytes left
+> BUG: unable to handle kernel NULL pointer dereference at 00000000
+> IP: [<00000000>]
+> *pde = 00000000
+> Oops: 0000 [#1] PREEMPT DEBUG_PAGEALLOC
+> kgdbts: BP mismatch 0 expected c0119400
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:302 check_and_rewind_pc+0x9a/0xb4()
+> Modules linked in:
+> Pid: 6, comm: khelper Tainted: G        W 2.6.26-rc1-00279-g28a4acb #12
+> [<c011a00a>] warn_on_slowpath+0x41/0x6c
+> [<c011aa77>] ? vprintk+0x3e7/0x407
+> [<c0119400>] ? do_fork+0x0/0x19e
+> [<c012d3da>] ? sched_clock_cpu+0x70/0x88
+> [<c0116d4e>] ? cpu_clock+0x115/0x12c
+> [<c0119400>] ? do_fork+0x0/0x19e
+> [<c011aaac>] ? printk+0x15/0x17
+> [<c0119400>] ? do_fork+0x0/0x19e
+> [<c02ae96d>] check_and_rewind_pc+0x9a/0xb4
+> [<c0119400>] ? do_fork+0x0/0x19e
+> [<c02adb7a>] validate_simple_test+0x22/0x69
+> [<c02ae1eb>] run_simple_test+0x1a1/0x20e
+> [<c02adc15>] kgdbts_put_char+0x14/0x16
+> [<c013d7ba>] put_packet+0x6b/0xbb
+> [<c013e8bc>] kgdb_handle_exception+0xa19/0xb21
+> [<c010e9e3>] kgdb_notify+0x103/0x140
+> [<c035ac89>] notifier_call_chain+0x2b/0x4a
+> [<c035accd>] __atomic_notifier_call_chain+0x25/0x36
+> [<c035acea>] atomic_notifier_call_chain+0xc/0xe
+> [<c012cd15>] notify_die+0x2d/0x2f
+> [<c0359303>] __die+0x61/0xc6
+> [<c0103dec>] die+0x87/0x106
+> [<c035aae1>] do_page_fault+0x4e3/0x59d
+> [<c035a5fe>] ? do_page_fault+0x0/0x59d
+> [<c010176c>] ? kernel_thread+0x73/0x7b
+> [<c0359102>] error_code+0x6a/0x70
+> [<c010176c>] ? kernel_thread+0x73/0x7b
+> [<c01263d1>] ? ____call_usermodehelper+0x0/0xe7
+> [<c01263d1>] ? ____call_usermodehelper+0x0/0xe7
+> [<c0103740>] ? kernel_thread_helper+0x0/0x10
+> [<c0126236>] ? __call_usermodehelper+0x33/0x4d
+> [<c0126686>] ? run_workqueue+0xba/0x187
+> [<c012664c>] ? run_workqueue+0x80/0x187
+> [<c0126203>] ? __call_usermodehelper+0x0/0x4d
+> [<c0126ea6>] ? worker_thread+0x80/0x8c
+> [<c01291bd>] ? autoremove_wake_function+0x0/0x30
+> [<c0126e26>] ? worker_thread+0x0/0x8c
+> [<c01290fc>] ? kthread+0x39/0x61
+> [<c01290c3>] ? kthread+0x0/0x61
+> [<c0103747>] ? kernel_thread_helper+0x7/0x10
+> =======================
+> ---[ end trace b9faa95810ce9135 ]---
+> kgdbts: ERROR PUT: end of test buffer on 'do_fork_test' line 3
+> expected do_fork got
+> $e201000000b0c6f70000000000000000000000006c1710c01141800054bfc6f7Б^A
+> ------------[ cut here ]------------
+> WARNING: at drivers/misc/kgdbts.c:721 run_simple_test+0x1de/0x20e()
+> Modules linked in:
+> Pid: 6, comm: khelper Tainted: G        W 2.6.26-rc1-00279-g28a4acb #12
+> [<c011a00a>] warn_on_slowpath+0x41/0x6c
+> [<c011aa77>] ? vprintk+0x3e7/0x407
+> [<c0119400>] ? do_fork+0x0/0x19e
+> [<c012d3da>] ? sched_clock_cpu+0x70/0x88
+> [<c0116d4e>] ? cpu_clock+0x115/0x12c
+> [<c0119400>] ? do_fork+0x0/0x19e
+> [<c011aaac>] ? printk+0x15/0x17
+> [<c011aaac>] ? printk+0x15/0x17
+> [<c02ae228>] run_simple_test+0x1de/0x20e
+> [<c02adc15>] kgdbts_put_char+0x14/0x16
+> [<c013d7ba>] put_packet+0x6b/0xbb
+> [<c013e8bc>] kgdb_handle_exception+0xa19/0xb21
+> [<c010e9e3>] kgdb_notify+0x103/0x140
+> [<c035ac89>] notifier_call_chain+0x2b/0x4a
+> [<c035accd>] __atomic_notifier_call_chain+0x25/0x36
+> [<c035acea>] atomic_notifier_call_chain+0xc/0xe
+> [<c012cd15>] notify_die+0x2d/0x2f
+> [<c0359303>] __die+0x61/0xc6
+> [<c0103dec>] die+0x87/0x106
+> [<c035aae1>] do_page_fault+0x4e3/0x59d
+> [<c035a5fe>] ? do_page_fault+0x0/0x59d
+> [<c010176c>] ? kernel_thread+0x73/0x7b
+> [<c0359102>] error_code+0x6a/0x70
+> [<c010176c>] ? kernel_thread+0x73/0x7b
+> [<c01263d1>] ? ____call_usermodehelper+0x0/0xe7
+> [<c01263d1>] ? ____call_usermodehelper+0x0/0xe7
+> [<c0103740>] ? kernel_thread_helper+0x0/0x10
+> [<c0126236>] ? __call_usermodehelper+0x33/0x4d
+> [<c0126686>] ? run_workqueue+0xba/0x187
+> [<c012664c>] ? run_workqueue+0x80/0x187
+> [<c0126203>] ? __call_usermodehelper+0x0/0x4d
+> [<c0126ea6>] ? worker_thread+0x80/0x8c
+> [<c01291bd>] ? autoremove_wake_function+0x0/0x30
+> [<c0126e26>] ? worker_thread+0x0/0x8c
+> [<c01290fc>] ? kthread+0x39/0x61
+> [<c01290c3>] ? kthread+0x0/0x61
+> [<c0103747>] ? kernel_thread_helper+0x7/0x10
+> =======================
+> ---[ end trace b9faa95810ce9135 ]---
+> 
+
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
