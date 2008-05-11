@@ -1,102 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759967AbYEKVUf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761295AbYEKVUt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759967AbYEKVUf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 17:20:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755848AbYEKVU0
+	id S1761295AbYEKVUt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 17:20:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759512AbYEKVUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 17:20:26 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:46218 "EHLO smtp5.pp.htv.fi"
+	Sun, 11 May 2008 17:20:34 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:33251 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755341AbYEKVUZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 17:20:25 -0400
-Date: Mon, 12 May 2008 00:19:02 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [2.6 patch] kernel/sched*: optimize inlining
-Message-ID: <20080511211902.GI1645@cs181133002.pp.htv.fi>
-References: <20080511092132.GE1645@cs181133002.pp.htv.fi> <20080511175222.GA31729@uranus.ravnborg.org> <20080511184952.GG1645@cs181133002.pp.htv.fi> <20080511194248.GA514@uranus.ravnborg.org> <20080511200016.GH1645@cs181133002.pp.htv.fi> <20080511203827.GA850@uranus.ravnborg.org>
+	id S1759361AbYEKVUc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 May 2008 17:20:32 -0400
+Message-ID: <4827631C.5030304@garzik.org>
+Date: Sun, 11 May 2008 17:20:28 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080511203827.GA850@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alexey Fisher <bug-track@fisher-privat.net>,
+       Jeff Garzik <jgarzik@redhat.com>, Tejun Heo <htejun@gmail.com>
+Subject: Re: [Bug #10619] [regression] ata2: device not ready (errno=-16),
+ forcing hardreset
+References: <hPXlJLjt4XG.A._lF.Jv1JIB@chimera> <88YBFoyd1CN.A.j0.yw1JIB@chimera>
+In-Reply-To: <88YBFoyd1CN.A.j0.yw1JIB@chimera>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 11, 2008 at 10:38:27PM +0200, Sam Ravnborg wrote:
-> > > 
-> > > You continue to fail to acknowledge that it is valueable information
-> > > that we pass gcc a _hint_ that it is a good idea to inline certain
-> > > functions.
-> > > 
-> > > The inline hint is there to tell gcc that it shall inline this function
-> > > in cases where it usual think it should not do so. Which invietably
-> > > will result in a larger codesize in some cases.
-> > 
-> > We also give gcc an explicit "Optimize for size.".
+Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> gcc was asked to optimize for size in general as per the commandline option.
-> But on a much more fine grained level gcc is given a hint that
-> this function would be a good idea to inline.
+> The following bug entry is on the current list of known regressions
+> from 2.6.25.  Please verify if it still should be listed.
 > 
-> And I really expect gcc to pay most attention to the more specific
-> information provided for a single function than a general commandline option.
-
-Can you try to get from expectations back to reality?
-
-gcc 4.3 even ignores the unlikely() hint in timespec_add_ns()
-(we now have a workaround for this in the kernel).
-
->...
-> > All the "optimized inlining" does is to allow gcc to no longer inline 
-> > functions marked as "inline" if it prefers not to do so.
-> The "optimized inlining" allows gcc (if gcc > 4.0) to make an educated
-> guess if it is worhtwhile to inline a function or not. And when deciding
-> to do so or not gcc may include many different factors inlcuding
-> but not limited to -s.
-> And this is certainly optimized compared to the situation where
-> inline equals to always_inline.
-> Keep in mind that we often perfer to have _less_ inlining than we have
-> today for debugging ease. And this is what we get with optimized inlining
-> compared to farced inlining.
 > 
-> > 
-> > And what exactly is your problem with my patch if you consider the 
-> > general "optimized inlining" approach correct?
-> 
-> I've already listed two things:
-> -> It is no longer a simple kconfig change to try with or without.
-> -> It is independent on gcc version
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10619
+> Subject		: [regression] ata2: device not ready (errno=-16), forcing hardreset
+> Submitter	: Alexey Fisher <bug-track@fisher-privat.net>
+> Date		: 2008-05-08 06:49 (4 days old)
 
-I already asked you previously in this thread:
 
-Do we have any hard data that gcc < 4.0 has a "broken inline algorithm" 
-and all gcc versions >= 4.0 have a "working inline algorithm"?
-
-> And for fast path code like sched.c I would much assume a proper analysis
-> when it is acceptable to remove the inline hint is almost mandatory.
->...
-
-Why didn't you request a proper analysis before the "optimized inlining" 
-stuff hit Linus' tree?
-
-After all, the "default y" option that went into the tree didn't have 
-any indication to the user that there might be problems caused by it.
-
-Currently it's marked as BROKEN, but it might resurface.
-
-> 	Sam
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Fixed by 005b1f7495e812b99b73de5adbc73afd7a1cbcaf
