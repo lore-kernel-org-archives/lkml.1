@@ -1,193 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760441AbYEKWBL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760699AbYEKWBf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760441AbYEKWBL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 18:01:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757758AbYEKWAm
+	id S1760699AbYEKWBf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 18:01:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760594AbYEKWBQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 18:00:42 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:34457 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755497AbYEKWAk (ORCPT
+	Sun, 11 May 2008 18:01:16 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:55757 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760494AbYEKWBO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 18:00:40 -0400
-References: <git-1210542959-a5b32acc9d50dd3c819c2dc5d43bd416f24aa8fd@dyn-67.arm.linux.org.uk>
-Message-ID: <git-1210542959-a11b6c9b49632402270784b9d516213aad96da7e@dyn-67.arm.linux.org.uk>
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: LKML <linux-kernel@vger.kernel.org>, <linux-arch@vger.kernel.org>,
-       LAK <linux-arm-kernel@lists.arm.linux.org.uk>
-Date: Sun, 11 May 2008 22:56:00 +0100
-Content-type: text/plain; charset="utf-8"
+	Sun, 11 May 2008 18:01:14 -0400
+Date: Sun, 11 May 2008 16:01:12 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Alexander van Heukelum <heukelum@fastmail.fm>
+Cc: Alexander van Heukelum <heukelum@mailshack.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Paul Jackson <pj@sgi.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Make for_each_cpu_mask a bit smaller
+Message-ID: <20080511220111.GC19219@parisc-linux.org>
+References: <20080511135039.GA3286@mailshack.com> <20080511152440.GX19219@parisc-linux.org> <1210522779.16917.1252546109@webmail.messagingengine.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-Mime-Version: 1.0
-Subject: Re: Remove last reminants of dyntick support
+In-Reply-To: <1210522779.16917.1252546109@webmail.messagingengine.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Russell King <rmk@dyn-67.arm.linux.org.uk>
+On Sun, May 11, 2008 at 06:19:39PM +0200, Alexander van Heukelum wrote:
+> 
+> On Sun, 11 May 2008 09:24:40 -0600, "Matthew Wilcox" <matthew@wil.cx>
+> said:
+> > On Sun, May 11, 2008 at 03:50:39PM +0200, Alexander van Heukelum wrote:
+> > >  #if NR_CPUS > 1
+> > > -#define for_each_cpu_mask(cpu, mask)		\
+> > > -	for ((cpu) = first_cpu(mask);		\
+> > > -		(cpu) < NR_CPUS;		\
+> > > -		(cpu) = next_cpu((cpu), (mask)))
+> > > +#define for_each_cpu_mask(cpu, mask)				\
+> > > +	for ((cpu) = 0;						\
+> > > +		(cpu) = find_next_cpu_mask((cpu), &(mask)),	\
+> > > +		(cpu) < NR_CPUS; (cpu)++)
+> > 
+> > For anyone else having similar cognitive dissonance while reading this
+> > thinking "But won't the first call to find_next_cpu_mask return a number
+> > > 0", the answer is "no, find_next_bit returns the next set bit that's
+> > >= the number passed in, which is why we need both the cpu++ and
+> > find_next_cpu_mask".  
+> 
+> That's how it works, indeed.
+> 
+> > > +int find_next_cpu_mask(int n, const cpumask_t *srcp)
+> > > +{
+> > > +	return find_next_bit(srcp->bits, NR_CPUS, n);
+> > > +}
+> > > +EXPORT_SYMBOL(find_next_cpu_mask);
+> > 
+> > Maybe a better name for this function would help.  I can't think of a
+> > good one right now though.
+> 
+> I can't think of a better name, and there is find_next_bit of which
+> find_next_cpu_mask is just a wrapper. I think the name is good enough.
 
-Neither S390 nor SH have the configuration option for NO_IDLE_HZ
-in their Kconfig files, yet their defconfig files lists them.
-Remove those references.
+How about doing it this way?
 
-Finally, remove the last reminants of dyntick support from the
-generic kernel.
+#define for_each_cpu_mask(cpu, mask)				\
+	for ((cpu) = -1;					\
+	     (cpu) < NR_CPUS;					\
+	     (cpu) = find_next_cpu_mask((cpu), &(mask)))
 
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
----
- arch/s390/defconfig               |    2 --
- arch/sh/configs/landisk_defconfig |    1 -
- arch/sh/configs/lboxre2_defconfig |    1 -
- arch/sh/configs/se7705_defconfig  |    1 -
- arch/sh/configs/se7712_defconfig  |    1 -
- arch/sh/configs/se7750_defconfig  |    1 -
- kernel/hrtimer.c                  |    2 +-
- kernel/sysctl.c                   |   12 ------------
- kernel/timer.c                    |   10 +---------
- 9 files changed, 2 insertions(+), 29 deletions(-)
+int find_next_cpu_mask(int n, const cpumask_t *srcp)
+{
+	return find_next_bit(srcp->bits, NR_CPUS, ++n);
+}
 
-diff --git a/arch/s390/defconfig b/arch/s390/defconfig
-index a72f208..f72aada 100644
---- a/arch/s390/defconfig
-+++ b/arch/s390/defconfig
-@@ -205,8 +205,6 @@ CONFIG_HZ_100=y
- # CONFIG_HZ_1000 is not set
- CONFIG_HZ=100
- # CONFIG_SCHED_HRTICK is not set
--CONFIG_NO_IDLE_HZ=y
--CONFIG_NO_IDLE_HZ_INIT=y
- CONFIG_S390_HYPFS_FS=y
- CONFIG_KEXEC=y
- # CONFIG_ZFCPDUMP is not set
-diff --git a/arch/sh/configs/landisk_defconfig b/arch/sh/configs/landisk_defconfig
-index f52db12..38f934a 100644
---- a/arch/sh/configs/landisk_defconfig
-+++ b/arch/sh/configs/landisk_defconfig
-@@ -226,7 +226,6 @@ CONFIG_CPU_HAS_PTEA=y
- #
- CONFIG_SH_TMU=y
- CONFIG_SH_TIMER_IRQ=16
--# CONFIG_NO_IDLE_HZ is not set
- CONFIG_SH_PCLK_FREQ=33333333
- 
- #
-diff --git a/arch/sh/configs/lboxre2_defconfig b/arch/sh/configs/lboxre2_defconfig
-index 9fa66d9..b68b6cd 100644
---- a/arch/sh/configs/lboxre2_defconfig
-+++ b/arch/sh/configs/lboxre2_defconfig
-@@ -231,7 +231,6 @@ CONFIG_CPU_HAS_PTEA=y
- #
- CONFIG_SH_TMU=y
- CONFIG_SH_TIMER_IRQ=16
--# CONFIG_NO_IDLE_HZ is not set
- CONFIG_SH_PCLK_FREQ=40000000
- 
- #
-diff --git a/arch/sh/configs/se7705_defconfig b/arch/sh/configs/se7705_defconfig
-index 84717d8..490dcbc 100644
---- a/arch/sh/configs/se7705_defconfig
-+++ b/arch/sh/configs/se7705_defconfig
-@@ -239,7 +239,6 @@ CONFIG_CPU_HAS_SR_RB=y
- #
- CONFIG_SH_TMU=y
- CONFIG_SH_TIMER_IRQ=16
--# CONFIG_NO_IDLE_HZ is not set
- CONFIG_SH_PCLK_FREQ=33333333
- 
- #
-diff --git a/arch/sh/configs/se7712_defconfig b/arch/sh/configs/se7712_defconfig
-index 240a1ce..2dd83af 100644
---- a/arch/sh/configs/se7712_defconfig
-+++ b/arch/sh/configs/se7712_defconfig
-@@ -236,7 +236,6 @@ CONFIG_CPU_HAS_SR_RB=y
- #
- CONFIG_SH_TMU=y
- CONFIG_SH_TIMER_IRQ=16
--# CONFIG_NO_IDLE_HZ is not set
- CONFIG_SH_PCLK_FREQ=66666666
- 
- #
-diff --git a/arch/sh/configs/se7750_defconfig b/arch/sh/configs/se7750_defconfig
-index c60b6fd..167786f 100644
---- a/arch/sh/configs/se7750_defconfig
-+++ b/arch/sh/configs/se7750_defconfig
-@@ -235,7 +235,6 @@ CONFIG_CPU_HAS_PTEA=y
- #
- CONFIG_SH_TMU=y
- CONFIG_SH_TIMER_IRQ=16
--# CONFIG_NO_IDLE_HZ is not set
- CONFIG_SH_PCLK_FREQ=33333333
- 
- #
-diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-index dea4c91..dd0b7e4 100644
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -971,7 +971,7 @@ ktime_t hrtimer_get_remaining(const struct hrtimer *timer)
- }
- EXPORT_SYMBOL_GPL(hrtimer_get_remaining);
- 
--#if defined(CONFIG_NO_IDLE_HZ) || defined(CONFIG_NO_HZ)
-+#ifdef CONFIG_NO_HZ
- /**
-  * hrtimer_get_next_event - get the time until next expiry event
-  *
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index d7ffdc5..76426d9 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -131,8 +131,6 @@ extern int sysctl_userprocess_debug;
- extern int spin_retry;
- #endif
- 
--extern int sysctl_hz_timer;
--
- #ifdef CONFIG_BSD_PROCESS_ACCT
- extern int acct_parm[];
- #endif
-@@ -562,16 +560,6 @@ static struct ctl_table kern_table[] = {
- 		.proc_handler	= &proc_dointvec,
- 	},
- #endif
--#ifdef CONFIG_NO_IDLE_HZ
--	{
--		.ctl_name       = KERN_HZ_TIMER,
--		.procname       = "hz_timer",
--		.data           = &sysctl_hz_timer,
--		.maxlen         = sizeof(int),
--		.mode           = 0644,
--		.proc_handler   = &proc_dointvec,
--	},
--#endif
- 	{
- 		.ctl_name	= KERN_S390_USER_DEBUG_LOGGING,
- 		.procname	= "userprocess_debug",
-diff --git a/kernel/timer.c b/kernel/timer.c
-index f3d35d4..e6a4f5e 100644
---- a/kernel/timer.c
-+++ b/kernel/timer.c
-@@ -678,7 +678,7 @@ static inline void __run_timers(struct tvec_base *base)
- 	spin_unlock_irq(&base->lock);
- }
- 
--#if defined(CONFIG_NO_IDLE_HZ) || defined(CONFIG_NO_HZ)
-+#ifdef CONFIG_NO_HZ
- /*
-  * Find out when the next timer event is due to happen. This
-  * is used on S/390 to stop all activity when a cpus is idle.
-@@ -813,14 +813,6 @@ unsigned long get_next_timer_interrupt(unsigned long now)
- 
- 	return cmp_next_hrtimer_event(now, expires);
- }
--
--#ifdef CONFIG_NO_IDLE_HZ
--unsigned long next_timer_interrupt(void)
--{
--	return get_next_timer_interrupt(jiffies);
--}
--#endif
--
- #endif
- 
- #ifndef CONFIG_VIRT_CPU_ACCOUNTING
+That actually behaves the way I'd expect a function called
+'find_next_cpu_mask' to work.  It also abuses the 'for' condtion
+less and might take a little less text space.
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
