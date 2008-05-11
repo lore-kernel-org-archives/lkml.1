@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756105AbYEKQnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756298AbYEKQo6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756105AbYEKQnY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 12:43:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751103AbYEKQnP
+	id S1756298AbYEKQo6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 12:44:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbYEKQov
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 12:43:15 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:59527 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751113AbYEKQnO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 12:43:14 -0400
-Date: Sun, 11 May 2008 12:43:12 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [git patch] libata no-works fix (RESEND)
-Message-ID: <20080511164312.GA1924@havoc.gtf.org>
+	Sun, 11 May 2008 12:44:51 -0400
+Received: from mail.mindmedia.com.sg ([210.193.7.34]:43943 "EHLO
+	mail.mindmedia.com.sg" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752608AbYEKQou (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 May 2008 12:44:50 -0400
+Message-ID: <4827227D.6040903@singnet.com.sg>
+Date: Mon, 12 May 2008 00:44:45 +0800
+From: "P.V.Anthony" <pvantony@singnet.com.sg>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
+To: "J. Bruce Fields" <bfields@fieldses.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: How to change the FSINFO for nfsd?
+References: <482332CD.4010706@singnet.com.sg> <20080509042238.GC21408@fieldses.org>
+In-Reply-To: <20080509042238.GC21408@fieldses.org>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+J. Bruce Fields wrote:
 
-Resent from yesterday. Please apply, a ton of people are broken because of this.
+> I think you're probably barking up the wrong tree, but the max file size
+> as returned by fsinfo is set in fs/nfsd/nfs3proc.c:nfsd3_proc_fsinfo().
 
+Thank you very much for information on which file to change.
 
-Please pull from 'upstream-linus' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
+Need to ask one question. Please bear with me as I am not a programmer.
 
-to receive the following updates:
+1. What program should be used to see the FSINFO of a NFS server?
+This program is needed to see if the changes done to the source is
+returning with the required FSINFO information.
 
- include/linux/libata.h |    9 +++------
- 1 files changed, 3 insertions(+), 6 deletions(-)
+Just for the record, the change done is as follows.
 
-Jeff Garzik (1):
-      [libata] revert new check-ready Status register logic
+/usr/src/linux/fs/nfsd # diff nfs3proc.c.org nfs3proc.c
+558c558
+<       resp->f_maxfilesize = ~(u32) 0;
+---
+>       resp->f_maxfilesize = 1111111111111111;
 
-diff --git a/include/linux/libata.h b/include/linux/libata.h
-index 7e206da..0f17643 100644
---- a/include/linux/libata.h
-+++ b/include/linux/libata.h
-@@ -1384,17 +1384,14 @@ static inline struct ata_port *ata_shost_to_port(struct Scsi_Host *host)
- 
- static inline int ata_check_ready(u8 status)
- {
--	/* Some controllers report 0x77 or 0x7f during intermediate
--	 * not-ready stages.
--	 */
--	if (status == 0x77 || status == 0x7f)
--		return 0;
-+	if (!(status & ATA_BUSY))
-+		return 1;
- 
- 	/* 0xff indicates either no device or device not ready */
- 	if (status == 0xff)
- 		return -ENODEV;
- 
--	return !(status & ATA_BUSY);
-+	return 0;
- }
- 
- 
+P.V.Anthony
+
