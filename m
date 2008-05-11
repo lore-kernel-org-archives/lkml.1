@@ -1,38 +1,76 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754198AbYEJHxP (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sat, 10 May 2008 03:53:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbYEJHw6
+	id S1753444AbYEKGUW (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sun, 11 May 2008 02:20:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbYEKGUI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 May 2008 03:52:58 -0400
-Received: from [220.178.254.34] ([220.178.254.34]:1241 "HELO 192.168.1.195"
-	rhost-flags-FAIL-FAIL-FAIL-FAIL) by vger.kernel.org with SMTP
-	id S1751086AbYEJHw6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 May 2008 03:52:58 -0400
-Reply-To: sl@cnjczz.com
-Message-ID: <00b901c8b272$956e812e$0000ab4c@cnjczz.com>
-From: "cnsl" <sl@cnjczz.com>
-To: "linux" <linux-kernel@vger.kernel.org>
-Subject: 
-Date: Sat, 10 May 2008 15:53:13 +0800
-X-Priority: 3
-X-Mailer: Microsoft Outlook IMO, Build 9.0.2416 (9.0.2910.0)
+	Sun, 11 May 2008 02:20:08 -0400
+Received: from smtp.kol.co.nz ([202.150.96.9]:56847 "EHLO mx2.kol.co.nz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751100AbYEKGUG convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 May 2008 02:20:06 -0400
+X-Greylist: delayed 2656 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 May 2008 02:20:06 EDT
+Message-ID: <20080511171117.6x1tvpwmpwks4w48@webmail.kol.co.nz>
+Date: Sun, 11 May 2008 17:11:17 +1200
+From: Carlous Zenn <Carlous@kol.co.nz>
+Reply-to: carlousloans@yahoo.com
+To: undisclosed-recipients:;
+Subject: Loan Offer
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=US-ASCII;
+	DelSp=Yes	format=flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: 7BIT
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.3)
+X-IP: 208.74.112.226
+X-DSPAM-Check: by mx2.kol.co.nz on Sun, 11 May 2008 17:11:26 +1200
+X-DSPAM-Result: Innocent
+X-DSPAM-Processed: Sun May 11 17:35:22 2008
+X-DSPAM-Confidence: 0.5045
+X-DSPAM-Improbability: 1 in 103 chance of being spam
+X-DSPAM-Probability: 0.0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1754198AbYEJHxP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753444AbYEKGUW@vger.kernel.org>
 
-sLK71cqhyP3Bprv6tLLWxtTs09DP3rmry76jrMr0sLK71cqhw/vFxqGiw+K87LL6xrfJ+rL6xvPS
-taOssLK71cqhuN/Qwry8yvXG89K1o6zC7bCwyb3K0KGw16ihor6roaLM2KGi0MKhscbz0rWjrMLt
-sLDJvcrQz8K42sqn0rXWsLmk1Nm+zdK1u/m12KOsvenT2sTPvqmhos7fuv7Wrrzko6zX+MLk1NrW
-+MP7tcS41rPHwu2wsMm9ytCjrLfhuLu1xLjWzPrXytS0zqq5q8u+tcS3otW5zOG5qcHLtcPM7LbA
-uvG1xNPFysaho7mry77VvLXYw+a7/TEwODAwMMa9t73D16Os1vfSqsn6svqhsLTzyqKhscXGz7XB
-0Lz0sOW7+qGi1dvN5Lv6oaK+7bDlu/qhor/sy9nRucGmu/qhorPltLKhor+qvu3Qo8a9u/qhotDN
-ssTN5Mf6u/q1tsSjvt+1yLL6xrejrNeo0rXOqrq9v9WhosfhuaShotKxvfChoruvuaShor2o1v7G
-+7O1oaK158GmoaLXsOTqtcjQ0NK1zOG5qcv50OjSqrXE16jTw7v60LW6zbPJzNfJ6LG4o6yy+sa3
-z/rN+cirufq497XYus3Ft8PLvLC2q8TP0ce12Mf4sqLUts/6xM+3x6GjIA0Ktee7sKO6MDU1NS02
-NzIxMjQ5ICAgIHd3dy5jbmpjenouY29t
+
+
+CARLOUS-ZENN LOAN AGENCY
+211 Woolwich New Road, London SE7 7AR
+Tel: +44(0)7024044470
+          +44(0)7024044473
+Fax: +44(0)8709743006
+20 mission Rd, Benin city, Edo state,311115,Nigeria
+Tel: +2348068374755
+
+Dear potential customer,
+I am Mr. Carlous Zenn and I am a registered and legitimate private lender and
+have been in the field of finance for over twenty years.
+Located in UK and branches in the heart Of Africa, Carlous Zenn Loan Agency is
+devoted to providing long and short term loans to individuals in need  
+of a loan.
+I  provide financial assistance a (Loans) at low-interest rate. I have  
+given out
+loans to various people from different parts of the world to help them solve
+their problems. I also give loans to help any organization or corporate bodies
+and also for people who want to start their own business or already have a
+business and you need an extension, I can help you get the loan.
+    I do not care about their financial situation, or if you have been turned
+down by your bank, all are concerned about their financial freedom.
+The process of loan application is also fast and once the loan is approved can
+get the loan amount in the shortest possible time.
+Even if you have no collateral to present, you can still apply for the  loan..
+The loan are of low interest rate of 3% PA
+My terms are mild and the procurement process is fast.
+Best wishes as you proceed in this application.
+For more details on how to apply for this loan, please contact the application
+section of oue website with the following details:
+email: carlousloans@yahoo.com
+UK Tel: +44(0)7024044470
+Fax: +44(0)8709743006
+Nig. Tel: +2348068374755
+Regards
+Mr. Carlous Zenn
+
 
