@@ -1,55 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756386AbYEKQsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755588AbYEKRIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756386AbYEKQsU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 12:48:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbYEKQsM
+	id S1755588AbYEKRIc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 13:08:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbYEKRIV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 12:48:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43736 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751113AbYEKQsL (ORCPT
+	Sun, 11 May 2008 13:08:21 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:35127 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752428AbYEKRIU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 12:48:11 -0400
-Date: Sun, 11 May 2008 09:47:33 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Matthew Wilcox <matthew@wil.cx>, Sven Wegener <sven.wegener@stealer.net>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] scheduler fixes
-In-Reply-To: <20080511143227.GA3220@elte.hu>
-Message-ID: <alpine.LFD.1.10.0805110945250.3330@woody.linux-foundation.org>
-References: <20080508122802.GA4880@elte.hu> <20080508144316.GA9869@elte.hu> <20080508151028.GA12109@elte.hu> <20080511110306.GP19219@parisc-linux.org> <20080511114803.GA8289@parisc-linux.org> <20080511125049.GA22513@elte.hu> <20080511125216.GA25040@elte.hu>
- <20080511130226.GR19219@parisc-linux.org> <20080511135414.GA2328@elte.hu> <20080511142222.GU19219@parisc-linux.org> <20080511143227.GA3220@elte.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sun, 11 May 2008 13:08:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:subject:date:user-agent:mime-version:content-disposition:to:cc:content-type:content-transfer-encoding:message-id:sender;
+        b=EYQSJSsklWEJmrVo+3xsJnnVvFSlYZbMN5fWeeJ1Kh7ej+OsBvTds98qL0w60SzujFbgP1gtPa469Ox/SF8P3h+a1iYs1iyuk+yXYF91VQFYFR2iB+R5iA+zVqRs8dLrcVaSFUs7sbBAE2VxQS9qBinHrCg3qXHHoNYlcrsbTP0=
+From: Leonardo Potenza <lpotenza@inwind.it>
+Subject: [PATCH 1/2] fs/ocfs2/cluster: compilation warning fix
+Date: Sun, 11 May 2008 19:08:05 +0200
+User-Agent: KMail/1.9.7
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Disposition: inline
+To: kernel-janitors@vger.kernel.org
+Cc: mfasheh@suse.com, joel.becker@oracle.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200805111908.06046.lpotenza@inwind.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Leonardo Potenza <lpotenza@inwind.it>
 
+Removed the warning messages:
+fs/ocfs2/cluster/tcp.h:132: warning: 'o2net_debugfs_init' defined but not used
+fs/ocfs2/cluster/tcp.h:136: warning: 'o2net_debugfs_exit' defined but not used
+fs/ocfs2/cluster/tcp.h:139: warning: 'o2net_debug_add_nst' defined but not used
+fs/ocfs2/cluster/tcp.h:142: warning: 'o2net_debug_del_nst' defined but not used
+fs/ocfs2/cluster/tcp.h:145: warning: 'o2net_debug_add_sc' defined but not used
+fs/ocfs2/cluster/tcp.h:148: warning: 'o2net_debug_del_sc' defined but not used
 
-On Sun, 11 May 2008, Ingo Molnar wrote:
-> 
-> but the problem is that by serializing the wakeup chains naively you 
-> introduced a more than 50% AIM7 performance regression.
+If not in debug build (CONFIG_DEBUG_FS), the definition of those functions
+has been moved from 'tcp.h' to 'netdebug.c'.
 
-No, the problem is that the BKL shouldn't be a semaphore at all. 
-Performance fixed.
+Signed-off-by: Leonardo Potenza <lpotenza@inwind.it>
+---
 
-After that, it's *purely* a correctness issue, and then we might as well 
-be fair and not allow the stealing of semaphores from under waiters at 
-ALL. Which is what Matthews original code did.
+ netdebug.c |   31 +++++++++++++++++++++++++++++--
+ tcp.h      |   22 ----------------------
+ 2 files changed, 29 insertions(+), 24 deletions(-)
 
-In other words, current -git is fine, and was already confirmed by Sven 
-to fix the bug (before *any* of your patches were), and was earlier 
-confirmed to fix the AIM7 performance regression (better than *any* of 
-your patches were).  
-
-So I fixed the problems last night already. Stop wasting everybody's time.
-
-		Linus
+Index: linux-2.6/fs/ocfs2/cluster/netdebug.c
+===================================================================
+--- linux-2.6.orig/fs/ocfs2/cluster/netdebug.c
++++ linux-2.6/fs/ocfs2/cluster/netdebug.c
+@@ -24,8 +24,6 @@
+  *
+  */
+ 
+-#ifdef CONFIG_DEBUG_FS
+-
+ #include <linux/module.h>
+ #include <linux/types.h>
+ #include <linux/slab.h>
+@@ -43,6 +41,8 @@
+ 
+ #include "tcp_internal.h"
+ 
++#ifdef CONFIG_DEBUG_FS
++
+ #define O2NET_DEBUG_DIR		"o2net"
+ #define SC_DEBUG_NAME		"sock_containers"
+ #define NST_DEBUG_NAME		"send_tracking"
+@@ -438,4 +438,31 @@ void o2net_debugfs_exit(void)
+ 		debugfs_remove(o2net_dentry);
+ }
+ 
++#else
++
++int o2net_debugfs_init(void)
++{
++	return 0;
++}
++
++void o2net_debugfs_exit(void)
++{
++}
++
++void o2net_debug_add_nst(struct o2net_send_tracking *nst)
++{
++}
++
++void o2net_debug_del_nst(struct o2net_send_tracking *nst)
++{
++}
++
++void o2net_debug_add_sc(struct o2net_sock_container *sc)
++{
++}
++
++void o2net_debug_del_sc(struct o2net_sock_container *sc)
++{
++}
++
+ #endif	/* CONFIG_DEBUG_FS */
+Index: linux-2.6/fs/ocfs2/cluster/tcp.h
+===================================================================
+--- linux-2.6.orig/fs/ocfs2/cluster/tcp.h
++++ linux-2.6/fs/ocfs2/cluster/tcp.h
+@@ -120,33 +120,11 @@ void o2net_exit(void);
+ struct o2net_send_tracking;
+ struct o2net_sock_container;
+ 
+-#ifdef CONFIG_DEBUG_FS
+ int o2net_debugfs_init(void);
+ void o2net_debugfs_exit(void);
+ void o2net_debug_add_nst(struct o2net_send_tracking *nst);
+ void o2net_debug_del_nst(struct o2net_send_tracking *nst);
+ void o2net_debug_add_sc(struct o2net_sock_container *sc);
+ void o2net_debug_del_sc(struct o2net_sock_container *sc);
+-#else
+-static int o2net_debugfs_init(void)
+-{
+-	return 0;
+-}
+-static void o2net_debugfs_exit(void)
+-{
+-}
+-static void o2net_debug_add_nst(struct o2net_send_tracking *nst)
+-{
+-}
+-static void o2net_debug_del_nst(struct o2net_send_tracking *nst)
+-{
+-}
+-static void o2net_debug_add_sc(struct o2net_sock_container *sc)
+-{
+-}
+-static void o2net_debug_del_sc(struct o2net_sock_container *sc)
+-{
+-}
+-#endif	/* CONFIG_DEBUG_FS */
+ 
+ #endif /* O2CLUSTER_TCP_H */
