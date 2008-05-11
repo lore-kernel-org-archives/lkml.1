@@ -1,116 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758489AbYEKS66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757421AbYEKTNK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758489AbYEKS66 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 14:58:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755341AbYEKS6u
+	id S1757421AbYEKTNK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 15:13:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754747AbYEKTM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 14:58:50 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:43325 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754643AbYEKS6t (ORCPT
+	Sun, 11 May 2008 15:12:58 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:3133 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754643AbYEKTM5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 14:58:49 -0400
-Date: Sun, 11 May 2008 20:54:45 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Mikael Pettersson <mikpe@it.uu.se>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.26-rc1 on x86: ld: warning: dot moved backwards before
-	`.text'
-Message-ID: <20080511185445.GB5599@elf.ucw.cz>
-References: <18470.787.498329.144701@harpo.it.uu.se> <482604D1.7020804@zytor.com> <20080510211602.GA32339@uranus.ravnborg.org> <20080511154411.GB6942@cvg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080511154411.GB6942@cvg>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sun, 11 May 2008 15:12:57 -0400
+Date: Sun, 11 May 2008 21:12:34 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux I2C <i2c@lm-sensors.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] More i2c updates for 2.6.26
+Message-ID: <20080511211234.11215916@hyperion.delvare>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2008-05-11 19:44:11, Cyrill Gorcunov wrote:
-> [Sam Ravnborg - Sat, May 10, 2008 at 11:16:02PM +0200]
-> | On Sat, May 10, 2008 at 01:25:53PM -0700, H. Peter Anvin wrote:
-> | > Mikael Pettersson wrote:
-> | > >
-> | > >The resulting kernel hasn't broken on me yet, however.
-> | > >
-> | > >A search through the LKML archives showed that this was reported
-> | > >for 2.6.25-rc3-mm1, but I couldn't find any discussion about it
-> | > >after that:
-> | > >
-> | > ><http://marc.info/?l=linux-kernel&m=120470303728010&w=2>
-> | > >
-> | > >The .config causing this warning is available in
-> | > ><http://user.it.uu.se/~mikpe/linux/ale/config-2.6.26-rc1>
-> | > >
-> | > 
-> | > This is because the organization of the file was changed, and the linker 
-> | > script wasn't changed to match:
-> | > 
-> | > SECTIONS
-> | > {
-> | >         . = HEADER_OFFSET;
-> | >         .header : {
-> | >                  *(.header)
-> | >         }
-> | > 
-> | >         . = 0;
-> | >         .text : {
-> | >                  *(.text*)
-> | >         }
-> | > 
-> | > This is crap; the sections should be listed *in order* so the linker can 
-> | > warn properly when something bad happens.
-> | > 
-> | > The code should be correct; reorganizing the linker script correctly 
-> | > should fix the problem.
-> | 
-> | I need Pavel to comment on this.
-> | Why we start with . equal 0x3f00 and then later as . equals 0x0000
-> | I dunno.
-> | I did not look into this part of the code back then - but I should anyway
-> | have seen this flaw in the linker script :-(
-> | 
-> | 	Sam
-> 
-> Should not it be something like
-> ---
-> 
-> diff --git a/arch/x86/kernel/acpi/realmode/wakeup.lds.S b/arch/x86/kernel/acpi/realmode/wakeup.lds.S
-> index 22fab6c..cccf62d 100644
-> --- a/arch/x86/kernel/acpi/realmode/wakeup.lds.S
-> +++ b/arch/x86/kernel/acpi/realmode/wakeup.lds.S
-> @@ -12,11 +12,6 @@ ENTRY(_start)
->  
->  SECTIONS
->  {
-> -	. = HEADER_OFFSET;
-> -	.header : {
-> -		 *(.header)
-> -	}
-> -
->  	. = 0;
->  	.text : {
->  		 *(.text*)
-> @@ -53,6 +48,11 @@ SECTIONS
->  	. = ALIGN(16);
->  	_end = .;
->  
-> +	. = HEADER_OFFSET;
-> +	.header : {
-> +		 *(.header)
-> +	}
-> +
->  	/DISCARD/ : {
->  		*(.note*)
->  	}
+Linus,
 
-If it passes s2ram/resume test, it is probably correct ;-).
-									Pavel
+Please pull the i2c subsystem updates for Linux 2.6.26 from:
 
+git://jdelvare.pck.nerim.net/jdelvare-2.6 i2c-for-linus
+
+You'll get more pieces of the conversion of the device/driver matching
+model of the i2c subsystem, blacklisting of 2 motherboards in the
+i2c-piix4 SMBus controller driver for safety reasons, documentation
+updates and a few random fixes.
+
+ Documentation/i2c/functionality     |   95 +++++++++++++++++++----------------
+ Documentation/i2c/smbus-protocol    |   81 +++++++++++++++++-------------
+ drivers/i2c/busses/i2c-mpc.c        |   16 +++---
+ drivers/i2c/busses/i2c-piix4.c      |   47 +++++++++++++++--
+ drivers/i2c/busses/i2c-sibyte.c     |    6 +-
+ drivers/i2c/i2c-core.c              |   14 +++--
+ drivers/media/video/tcm825x.c       |    7 +++
+ drivers/media/video/tlv320aic23b.c  |    6 ++
+ drivers/media/video/tvaudio.c       |   13 ++++-
+ drivers/rtc/rtc-s35390a.c           |    2 +-
+ include/linux/i2c.h                 |    2 +-
+ include/media/v4l2-i2c-drv-legacy.h |    2 +
+ include/media/v4l2-i2c-drv.h        |    2 +
+ 13 files changed, 189 insertions(+), 104 deletions(-)
+
+---------------
+
+David Brownell (1):
+      i2c: Improve smbus-protocol documentation
+
+David Milburn (1):
+      i2c-piix4: Increase the intitial delay for the ServerWorks CSB5
+
+Jean Delvare (4):
+      i2c-piix4: Blacklist two mainboards
+      i2c: Improve the functionality documentation
+      i2c: Match dummy devices by type
+      i2c: Convert some more new-style drivers to use module aliasing
+
+Jon Smirl (1):
+      i2c-mpc: Compare to NO_IRQ instead of zero
+
+Maciej W. Rozycki (2):
+      i2c-sibyte: Correct a comment about frequency
+      i2c-sibyte: Mark i2c_sibyte_add_bus() as static
+
+Thanks,
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Jean Delvare
