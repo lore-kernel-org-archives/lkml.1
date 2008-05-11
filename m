@@ -1,70 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756699AbYEKMxv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756252AbYEKNBz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756699AbYEKMxv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 08:53:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750899AbYEKMxm
+	id S1756252AbYEKNBz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 09:01:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbYEKNBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 08:53:42 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:41309 "EHLO smtp4.pp.htv.fi"
+	Sun, 11 May 2008 09:01:45 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56211 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751309AbYEKMxl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 08:53:41 -0400
-Date: Sun, 11 May 2008 15:52:21 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Andreas Mohr <andi@lisas.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] kernel/sched*: optimize inlining
-Message-ID: <20080511125221.GF1645@cs181133002.pp.htv.fi>
-References: <20080511092132.GE1645@cs181133002.pp.htv.fi> <20080511111820.GA3326@rhlx01.hs-esslingen.de>
+	id S1751986AbYEKNBo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 May 2008 09:01:44 -0400
+Date: Sun, 11 May 2008 15:01:27 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Sven Wegener <sven.wegener@stealer.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull] scheduler fixes
+Message-ID: <20080511130127.GA30685@elte.hu>
+References: <alpine.LFD.1.10.0805070817060.3024@woody.linux-foundation.org> <1210214696.3453.87.camel@ymzhang> <alpine.LFD.1.10.0805072014330.3024@woody.linux-foundation.org> <1210219729.3453.97.camel@ymzhang> <alpine.LFD.1.10.0805072115190.3024@woody.linux-foundation.org> <20080508120130.GA2860@elte.hu> <20080508122802.GA4880@elte.hu> <20080508144316.GA9869@elte.hu> <20080508151028.GA12109@elte.hu> <20080511110306.GP19219@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080511111820.GA3326@rhlx01.hs-esslingen.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080511110306.GP19219@parisc-linux.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 11, 2008 at 01:18:20PM +0200, Andreas Mohr wrote:
-> 
-> [manual reply, no access to original content]
-> 
-> Hi,
-> 
-> rather NACKish here (from my minor side, that is, since there are no
-> useful explanations, and in the case of a lack of explanations no
-> backing numbers either which would have been helpful to resolve this ;).
-> 
-> "x86: add optimized inlining"
-> (http://kerneltrap.org/mailarchive/git-commits-head/2008/4/26/1612644)
-> does not really say anything relevant to your patch, AFAICS.
-> 
-> That one simply says that previously every inline was force-inlined (ugh),
-> which now gcc is allowed to properly decide by itself now. This, however,
-> does _NOT_ imply that it's now somehow fully sufficient for a perfect outcome
-> to simply remove all open-coded "inline"s.
 
-They both do the same - gcc is no longer forced to inline these 
-functions.
+* Matthew Wilcox <matthew@wil.cx> wrote:
 
-With either my patch or the "optimized inlining" it's 100% gcc's 
-choice whether or not to inline functions marked as "inline" in 
-kernel/sched* .
+> +	/* It's possible we need to wake up the next task on the list too */
+> +	if (unlikely(sem->count > 1) && !list_empty(&sem->wait_list))
+> +		__up(sem);
 
-If you didn't complain when "x86: add optimized inlining" got into 
-Linus' tree you can't validly complain about my patch.
+this needs to check for ret != 0 as well, otherwise we can be woken but 
+a timeout can also trigger => we lose a wakeup. I.e. like the patch 
+below. Hm?
 
-> Just my thoughts (keep it or burn it),
-> 
-> Andreas Mohr
+	Ingo
 
-cu
-Adrian
+----------------------------->
+Subject: semaphore: fix #3
+From: Ingo Molnar <mingo@elte.hu>
+Date: Sun May 11 09:51:07 CEST 2008
 
--- 
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/semaphore.c |   24 ++++++++++++++++++------
+ 1 file changed, 18 insertions(+), 6 deletions(-)
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Index: linux/kernel/semaphore.c
+===================================================================
+--- linux.orig/kernel/semaphore.c
++++ linux/kernel/semaphore.c
+@@ -194,6 +194,13 @@ struct semaphore_waiter {
+ 	struct task_struct *task;
+ };
+ 
++static noinline void __sched __up(struct semaphore *sem)
++{
++	struct semaphore_waiter *waiter = list_first_entry(&sem->wait_list,
++						struct semaphore_waiter, list);
++	wake_up_process(waiter->task);
++}
++
+ /*
+  * Because this function is inlined, the 'state' parameter will be
+  * constant, and thus optimised away by the compiler.  Likewise the
+@@ -231,6 +238,10 @@ static inline int __sched __down_common(
+ 	}
+ 
+ 	list_del(&waiter.list);
++	if (unlikely(!list_empty(&sem->wait_list)) &&
++					((sem->count > 1) || ret))
++		__up(sem);
++
+ 	return ret;
+ }
+ 
+@@ -254,9 +265,10 @@ static noinline int __sched __down_timeo
+ 	return __down_common(sem, TASK_UNINTERRUPTIBLE, jiffies);
+ }
+ 
+-static noinline void __sched __up(struct semaphore *sem)
+-{
+-	struct semaphore_waiter *waiter = list_first_entry(&sem->wait_list,
+-						struct semaphore_waiter, list);
+-	wake_up_process(waiter->task);
+-}
++
++	/*
++	 * Rotate sleepers - to make sure all of them get woken in case
++	 * of parallel up()s:
++	 */
++	list_move_tail(&waiter->list, &sem->wait_list);
++
