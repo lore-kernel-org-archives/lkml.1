@@ -1,113 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755461AbYEKP5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755694AbYEKQIh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755461AbYEKP5e (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 11:57:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753587AbYEKP5Y
+	id S1755694AbYEKQIh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 12:08:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbYEKQI1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 11:57:24 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:29082 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753456AbYEKP5X (ORCPT
+	Sun, 11 May 2008 12:08:27 -0400
+Received: from triton.rz.uni-saarland.de ([134.96.7.25]:17903 "EHLO
+	triton.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751099AbYEKQIZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 11:57:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=fduvO7mw/iq2XEBZ4dig4H9kdh9yQ67kr87iuveb7srrCXp3C6uTraOkZNj64k9GqNDlLMAH5E/YTKpVcF+tjtGcGamf8gIQ696Q8WWphetbdrVl/fMu0+SXiLrLtN8/MwyNaE8xP4fAAXEcNyEG9CJ9xv9T7IvDayVvhzLI4Gg=
-Date: Sun, 11 May 2008 19:44:11 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Mikael Pettersson <mikpe@it.uu.se>,
-       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.26-rc1 on x86: ld: warning: dot moved backwards before
-	`.text'
-Message-ID: <20080511154411.GB6942@cvg>
-References: <18470.787.498329.144701@harpo.it.uu.se> <482604D1.7020804@zytor.com> <20080510211602.GA32339@uranus.ravnborg.org>
-MIME-Version: 1.0
+	Sun, 11 May 2008 12:08:25 -0400
+Date: Sun, 11 May 2008 18:06:58 +0200
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: Paul Jackson <pj@sgi.com>, Mike Travis <travis@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       linux-arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, heukelum@fastmail.fm
+Subject: [RFC/PATCH] Make for_each_node_mask out-of-line
+Message-ID: <20080511160658.GA3398@mailshack.com>
+References: <20080511135039.GA3286@mailshack.com> <20080511091403.a75f5b78.pj@sgi.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080510211602.GA32339@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080511091403.a75f5b78.pj@sgi.com>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (triton.rz.uni-saarland.de [134.96.7.25]); Sun, 11 May 2008 18:08:02 +0200 (CEST)
+X-AntiVirus: checked by AntiVir MailGate (version: 2.1.2-14; AVE: 7.8.0.17; VDF: 7.0.4.23; host: AntiVir3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Sam Ravnborg - Sat, May 10, 2008 at 11:16:02PM +0200]
-| On Sat, May 10, 2008 at 01:25:53PM -0700, H. Peter Anvin wrote:
-| > Mikael Pettersson wrote:
-| > >
-| > >The resulting kernel hasn't broken on me yet, however.
-| > >
-| > >A search through the LKML archives showed that this was reported
-| > >for 2.6.25-rc3-mm1, but I couldn't find any discussion about it
-| > >after that:
-| > >
-| > ><http://marc.info/?l=linux-kernel&m=120470303728010&w=2>
-| > >
-| > >The .config causing this warning is available in
-| > ><http://user.it.uu.se/~mikpe/linux/ale/config-2.6.26-rc1>
-| > >
-| > 
-| > This is because the organization of the file was changed, and the linker 
-| > script wasn't changed to match:
-| > 
-| > SECTIONS
-| > {
-| >         . = HEADER_OFFSET;
-| >         .header : {
-| >                  *(.header)
-| >         }
-| > 
-| >         . = 0;
-| >         .text : {
-| >                  *(.text*)
-| >         }
-| > 
-| > This is crap; the sections should be listed *in order* so the linker can 
-| > warn properly when something bad happens.
-| > 
-| > The code should be correct; reorganizing the linker script correctly 
-| > should fix the problem.
-| 
-| I need Pavel to comment on this.
-| Why we start with . equal 0x3f00 and then later as . equals 0x0000
-| I dunno.
-| I did not look into this part of the code back then - but I should anyway
-| have seen this flaw in the linker script :-(
-| 
-| 	Sam
+The for_each_node_mask loop makes use of two inlined functions:
+first_node and next_node. This patch changes for_each_node_mask
+to use only one out-of-line function: find_next_node_mask. An
+x86_64 defconfig kernel is about 1500 bytes smaller with this
+patch applied:
 
-Should not it be something like
+   text	   data	    bss	    dec	    hex	filename
+5395732	 976736	 734280	7106748	 6c70bc	vmlinux.orig
+5394174	 976736	 734280	7105190	 6c6aa6	vmlinux
+
+Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
+
 ---
 
-diff --git a/arch/x86/kernel/acpi/realmode/wakeup.lds.S b/arch/x86/kernel/acpi/realmode/wakeup.lds.S
-index 22fab6c..cccf62d 100644
---- a/arch/x86/kernel/acpi/realmode/wakeup.lds.S
-+++ b/arch/x86/kernel/acpi/realmode/wakeup.lds.S
-@@ -12,11 +12,6 @@ ENTRY(_start)
+Hello,
+> Alexander wrote:
+> > This patch
+> > changes for_each_cpu_mask to use only one function: a newly
+> > introduced find_next_cpu.
+> 
+> I believe that it's for_each_cpu_mask which is newly introduced,
+> not find_next_cpu ... just a typo, granted.
+
+I meant find_next_cpu_mask. That was a last-minute change of mind
+about the name :/.
+
+> Any chance that you could make the same change to nodemask.h?
+> Where practical, I like to keep cpumask.h and nodemask.h the same.
+
+Sure. This patch introduces lib/nodemask.c, but I'm not quite sure
+if building it should depend on CONFIG_SMP or something else (NUMA?).
+When is MAX_NUMNODES 1?
+
+It seems to work on qemu x86_64-smp and i386-up.
+
+I'ld be happy to take a stab at aligning the cpumask and nodemask
+code even more by uninlining some more functions and using stubs
+for the MAX_NUMNODES=1 case.
+
+Greetings,
+	Alexander
+
+ include/linux/nodemask.h |   11 +++++++----
+ lib/Makefile             |    2 +-
+ lib/nodemask.c           |   10 ++++++++++
+ 3 files changed, 18 insertions(+), 5 deletions(-)
+ create mode 100644 lib/nodemask.c
+
+diff --git a/include/linux/nodemask.h b/include/linux/nodemask.h
+index 848025c..dbc80f0 100644
+--- a/include/linux/nodemask.h
++++ b/include/linux/nodemask.h
+@@ -239,6 +239,8 @@ static inline int __next_node(int n, const nodemask_t *srcp)
+ 	return min_t(int,MAX_NUMNODES,find_next_bit(srcp->bits, MAX_NUMNODES, n+1));
+ }
  
- SECTIONS
- {
--	. = HEADER_OFFSET;
--	.header : {
--		 *(.header)
--	}
--
- 	. = 0;
- 	.text : {
- 		 *(.text*)
-@@ -53,6 +48,11 @@ SECTIONS
- 	. = ALIGN(16);
- 	_end = .;
- 
-+	. = HEADER_OFFSET;
-+	.header : {
-+		 *(.header)
-+	}
++int find_next_node_mask(int n, const nodemask_t *srcp);
 +
- 	/DISCARD/ : {
- 		*(.note*)
- 	}
----
-		- Cyrill -
+ #define nodemask_of_node(node)						\
+ ({									\
+ 	typeof(_unused_nodemask_arg_) m;				\
+@@ -347,10 +349,11 @@ static inline void __nodes_fold(nodemask_t *dstp, const nodemask_t *origp,
+ }
+ 
+ #if MAX_NUMNODES > 1
+-#define for_each_node_mask(node, mask)			\
+-	for ((node) = first_node(mask);			\
+-		(node) < MAX_NUMNODES;			\
+-		(node) = next_node((node), (mask)))
++#define for_each_node_mask(node, mask)				\
++	for ((node) = 0;					\
++		(node) = find_next_node_mask((node), &(mask)),	\
++		(node) < MAX_NUMNODES;				\
++		(node)++)
+ #else /* MAX_NUMNODES == 1 */
+ #define for_each_node_mask(node, mask)			\
+ 	if (!nodes_empty(mask))				\
+diff --git a/lib/Makefile b/lib/Makefile
+index 74b0cfb..48fc85c 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -9,7 +9,7 @@ lib-y := ctype.o string.o vsprintf.o cmdline.o \
+ 	 proportions.o prio_heap.o ratelimit.o
+ 
+ lib-$(CONFIG_MMU) += ioremap.o
+-lib-$(CONFIG_SMP) += cpumask.o
++lib-$(CONFIG_SMP) += cpumask.o nodemask.o
+ 
+ lib-y	+= kobject.o kref.o klist.o
+ 
+diff --git a/lib/nodemask.c b/lib/nodemask.c
+new file mode 100644
+index 0000000..08341d3
+--- /dev/null
++++ b/lib/nodemask.c
+@@ -0,0 +1,10 @@
++#include <linux/kernel.h>
++#include <linux/bitops.h>
++#include <linux/nodemask.h>
++#include <linux/module.h>
++
++int find_next_node_mask(int n, const nodemask_t *srcp)
++{
++	return find_next_bit(srcp->bits, NR_CPUS, n);
++}
++EXPORT_SYMBOL(find_next_node_mask);
+
