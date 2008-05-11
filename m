@@ -1,56 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881AbYEKKJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754664AbYEKKbM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754881AbYEKKJT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 06:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752692AbYEKKJK
+	id S1754664AbYEKKbM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 06:31:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbYEKKbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 06:09:10 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:53177 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751060AbYEKKJI (ORCPT
+	Sun, 11 May 2008 06:31:00 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:35548 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752265AbYEKKbA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 06:09:08 -0400
-Message-ID: <4826C5BC.6060203@firstfloor.org>
-Date: Sun, 11 May 2008 12:09:00 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Sun, 11 May 2008 06:31:00 -0400
+Date: Sun, 11 May 2008 12:30:58 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Morten Welinder <mwelinder@gmail.com>
+cc: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Deleting large files
+In-Reply-To: <118833cc0805071614j49b10da6hfcbeb08cb3356afb@mail.gmail.com>
+Message-ID: <alpine.LNX.1.10.0805111229520.19952@fbirervta.pbzchgretzou.qr>
+References: <118833cc0805071249w36145eb6g7ed5c18d9fdf6fce@mail.gmail.com>  <Pine.LNX.4.61.0805071820010.25395@chaos.analogic.com> <118833cc0805071614j49b10da6hfcbeb08cb3356afb@mail.gmail.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH] Disable modpost warnings for linkonce sections
-References: <20080508114111.GA20671@basil.nowhere.org> <20080511081156.GA25696@uranus.ravnborg.org>
-In-Reply-To: <20080511081156.GA25696@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> On Thu, May 08, 2008 at 01:41:11PM +0200, Andi Kleen wrote:
->> Disable modpost warnings for linkonce sections
->>
->> My build gives lots of warnings like
->>
->> WARNING: sound/core/snd.o (.gnu.linkonce.wi.mpspec_def.h.30779716): unexpected section name.
->> The (.[number]+) following section name are ld generated and not expected.
->> Did you forget to use "ax"/"aw" in a .S file?
->> Note that for example <linux/init.h> contains
->> section definitions for use in .S files.
->>
->> But for .linkonce. duplicated sections are actually ok and expected.
->> So just disable the warning for this case.
-> 
-> Agreed.
-> Applied and pushed out.
 
-There's still the "crap in /proc/kallsyms" problem like
+On Thursday 2008-05-08 01:14, Morten Welinder wrote:
 
-0000000000000b0c N DW.aio.h.903a6d92.0
-0000000000000b19 N DW.aio.h.903a6d92.1
-0000000000000b24 N DW.aio.h.903a6d92.2
-0000000000000bce N DW.task_io_accounting.h.8d8de327.0
+>>  Suppose you had an N GB file that just filled up the disk. You now
+>>  delete it, but get control back before it is really deleted. You
+>>  now start to write a new file that will eventually just fill up
+>>  the disk. [...]
+>
+>NFS does not do that -- in fact, I don't believe any file system does that
+>unless you can guarantee at least that no other process or the kernel has
+>that file open;
 
-Haven't not looked at that yet, but that needs to be fixed too.
-
--Andi
+Iff a process still has the file open, your unlink will succeed immediately
+anyway, and the real deallocation takes place when the last process runs
+close(). Which shows an interesting fact too: not only unlink can block.
