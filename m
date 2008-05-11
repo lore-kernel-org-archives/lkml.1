@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756298AbYEKQo6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756386AbYEKQsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756298AbYEKQo6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 12:44:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbYEKQov
+	id S1756386AbYEKQsU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 12:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751245AbYEKQsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 12:44:51 -0400
-Received: from mail.mindmedia.com.sg ([210.193.7.34]:43943 "EHLO
-	mail.mindmedia.com.sg" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752608AbYEKQou (ORCPT
+	Sun, 11 May 2008 12:48:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43736 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751113AbYEKQsL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 12:44:50 -0400
-Message-ID: <4827227D.6040903@singnet.com.sg>
-Date: Mon, 12 May 2008 00:44:45 +0800
-From: "P.V.Anthony" <pvantony@singnet.com.sg>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Sun, 11 May 2008 12:48:11 -0400
+Date: Sun, 11 May 2008 09:47:33 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Matthew Wilcox <matthew@wil.cx>, Sven Wegener <sven.wegener@stealer.net>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull] scheduler fixes
+In-Reply-To: <20080511143227.GA3220@elte.hu>
+Message-ID: <alpine.LFD.1.10.0805110945250.3330@woody.linux-foundation.org>
+References: <20080508122802.GA4880@elte.hu> <20080508144316.GA9869@elte.hu> <20080508151028.GA12109@elte.hu> <20080511110306.GP19219@parisc-linux.org> <20080511114803.GA8289@parisc-linux.org> <20080511125049.GA22513@elte.hu> <20080511125216.GA25040@elte.hu>
+ <20080511130226.GR19219@parisc-linux.org> <20080511135414.GA2328@elte.hu> <20080511142222.GU19219@parisc-linux.org> <20080511143227.GA3220@elte.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: "J. Bruce Fields" <bfields@fieldses.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: How to change the FSINFO for nfsd?
-References: <482332CD.4010706@singnet.com.sg> <20080509042238.GC21408@fieldses.org>
-In-Reply-To: <20080509042238.GC21408@fieldses.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-J. Bruce Fields wrote:
 
-> I think you're probably barking up the wrong tree, but the max file size
-> as returned by fsinfo is set in fs/nfsd/nfs3proc.c:nfsd3_proc_fsinfo().
 
-Thank you very much for information on which file to change.
+On Sun, 11 May 2008, Ingo Molnar wrote:
+> 
+> but the problem is that by serializing the wakeup chains naively you 
+> introduced a more than 50% AIM7 performance regression.
 
-Need to ask one question. Please bear with me as I am not a programmer.
+No, the problem is that the BKL shouldn't be a semaphore at all. 
+Performance fixed.
 
-1. What program should be used to see the FSINFO of a NFS server?
-This program is needed to see if the changes done to the source is
-returning with the required FSINFO information.
+After that, it's *purely* a correctness issue, and then we might as well 
+be fair and not allow the stealing of semaphores from under waiters at 
+ALL. Which is what Matthews original code did.
 
-Just for the record, the change done is as follows.
+In other words, current -git is fine, and was already confirmed by Sven 
+to fix the bug (before *any* of your patches were), and was earlier 
+confirmed to fix the AIM7 performance regression (better than *any* of 
+your patches were).  
 
-/usr/src/linux/fs/nfsd # diff nfs3proc.c.org nfs3proc.c
-558c558
-<       resp->f_maxfilesize = ~(u32) 0;
----
->       resp->f_maxfilesize = 1111111111111111;
+So I fixed the problems last night already. Stop wasting everybody's time.
 
-P.V.Anthony
-
+		Linus
