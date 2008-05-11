@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759038AbYEKWlq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759343AbYEKWns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759038AbYEKWlq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 18:41:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755071AbYEKWlg
+	id S1759343AbYEKWns (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 18:43:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769AbYEKWnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 18:41:36 -0400
-Received: from mail.tuxonice.net ([67.207.135.122]:35334 "EHLO
-	mail.tuxonice.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754519AbYEKWlg (ORCPT
+	Sun, 11 May 2008 18:43:41 -0400
+Received: from uki.us.mooball.net ([66.98.178.13]:36409 "EHLO
+	uki.us.mooball.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751343AbYEKWnk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 18:41:36 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [Bug #10606] 2.6.26-rc1 regression: ACPI fails to load SDT. -
-	Dell M1530
-From: Nigel Cunningham <nigel@suspend2.net>
-Reply-To: nigel@suspend2.net
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <200805112335.23034.rjw@sisk.pl>
-References: <hPXlJLjt4XG.A._lF.Jv1JIB@chimera>
-	 <88YBFoyd1CN.A.7LB.Ax1JIB@chimera> <1210541657.18009.3.camel@nigel-laptop>
-	 <200805112335.23034.rjw@sisk.pl>
+	Sun, 11 May 2008 18:43:40 -0400
+X-ClientAddr: 220.233.82.121
+Subject: Re: Microblaze toolchain - libc
+From: John Williams <john.williams@petalogix.com>
+To: monstr@seznam.cz
+Cc: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
+       John Linn <John.Linn@xilinx.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Arnd Bergmann <arnd@arndb.de>, microblaze-uclinux@itee.uq.edu.au,
+       Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <4826FD34.5030009@seznam.cz>
+References: <4826FD34.5030009@seznam.cz>
 Content-Type: text/plain
-Date: Mon, 12 May 2008 08:43:31 +1000
-Message-Id: <1210545811.18009.5.camel@nigel-laptop>
+Organization: PetaLogix
+Date: Mon, 12 May 2008 08:43:08 +1000
+Message-Id: <1210545788.5798.273.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
 Content-Transfer-Encoding: 7bit
+X-Mooball.com-MailScanner-Information: Please contact the ISP for more information
+X-Mooball.com-MailScanner: Not scanned: please contact your Internet E-Mail Service Provider for details
+X-MailScanner-From: john.williams@petalogix.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+Hi Michal,
 
-On Sun, 2008-05-11 at 23:35 +0200, Rafael J. Wysocki wrote:
-> On Sunday, 11 of May 2008, Nigel Cunningham wrote:
-> > Hi.
-> > 
-> > On Sun, 2008-05-11 at 22:04 +0200, Rafael J. Wysocki wrote:
-> > > This message has been generated automatically as a part of a report
-> > > of recent regressions.
-> > > 
-> > > The following bug entry is on the current list of known regressions
-> > > from 2.6.25.  Please verify if it still should be listed.
-> > > 
-> > > 
-> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10606
-> > > Subject		: 2.6.26-rc1 regression: ACPI fails to load SDT. - Dell M1530
-> > > Submitter	: NIgel Cunningham <nigel@suspend2.net>
-> > > Date		: 2008-05-05 18:11 (7 days old)
-> > 
-> > Patch is available and verified, but not yet in Mainline as far as I
-> > know.
-> 
-> Do you have a pointer to it?
+On Sun, 2008-05-11 at 16:05 +0200, Michal Simek wrote:
 
-http://bugzilla.kernel.org/attachment.cgi?id=16061&action=view
+
+> is it any movement in libc?
+> I would like clear code around syscalls.
+
+I can't see anything radical happening with glibc / uClibc in the short
+term.  My suggestion is you make sure the kernel builds with current
+toolchain.  
+
+I'm not personally concerned about minor bloat of adding syscalls like
+openat() that are not currently used - 1 or 2 K for extra entries in
+syscall table, and a few hundred bytes per sys_wrapper really is not on
+the radar if glibc is considered a sensible library for Microblaze +
+MMU!
 
 Regards,
 
-Nigel
+John
+
 
