@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757014AbYEKRYJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757219AbYEKR0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757014AbYEKRYJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 13:24:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753814AbYEKRX4
+	id S1757219AbYEKR0Y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 13:26:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754322AbYEKR0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 13:23:56 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:20263 "EHLO
-	pd4mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752079AbYEKRXz (ORCPT
+	Sun, 11 May 2008 13:26:17 -0400
+Received: from ti-out-0910.google.com ([209.85.142.189]:15729 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753842AbYEKR0Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 13:23:55 -0400
-Date: Sun, 11 May 2008 11:25:49 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [2.6 patch] kernel/sched*: optimize inlining
-In-reply-to: <fa.sBJgAJSNbPht40KbEGBXczzW3vQ@ifi.uio.no>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Andreas Mohr <andi@lisas.de>, linux-kernel@vger.kernel.org
-Message-id: <48272C1D.8020301@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.kBy7Kr77qTR+lDVDv4OKx7n5m1Y@ifi.uio.no>
- <fa.8/KGOoB8CQ+uVBJXmUNHaIfXQSg@ifi.uio.no>
- <fa.sBJgAJSNbPht40KbEGBXczzW3vQ@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Sun, 11 May 2008 13:26:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=s0Yv8nwSD2wMiXbZn03JOfd4JYtTspLW+sPBzh2aaDL/JD5t5j15onp3w9PjCp0shvnbzVnY5c3EYIhB17HfkA8NOZ2fdkti63a17MxGyHNl7oyHxg14wsSO9vwtNZRq8ETDHhY3JabABbi9JESgiQA5B5gKtqOaQk7GZhpc8F8=
+Message-ID: <ea11fea30805111026o448f5711nc6db445db0995b5c@mail.gmail.com>
+Date: Sun, 11 May 2008 22:56:13 +0530
+From: "Manish Katiyar" <mkatiyar@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Remove unused variable "cpu" from arch/x86/xen/setup.c
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Sun, May 11, 2008 at 01:18:20PM +0200, Andreas Mohr wrote:
->> [manual reply, no access to original content]
->>
->> Hi,
->>
->> rather NACKish here (from my minor side, that is, since there are no
->> useful explanations, and in the case of a lack of explanations no
->> backing numbers either which would have been helpful to resolve this ;).
->>
->> "x86: add optimized inlining"
->> (http://kerneltrap.org/mailarchive/git-commits-head/2008/4/26/1612644)
->> does not really say anything relevant to your patch, AFAICS.
->>
->> That one simply says that previously every inline was force-inlined (ugh),
->> which now gcc is allowed to properly decide by itself now. This, however,
->> does _NOT_ imply that it's now somehow fully sufficient for a perfect outcome
->> to simply remove all open-coded "inline"s.
-> 
-> They both do the same - gcc is no longer forced to inline these 
-> functions.
-> 
-> With either my patch or the "optimized inlining" it's 100% gcc's 
-> choice whether or not to inline functions marked as "inline" in 
-> kernel/sched* .
-> 
-> If you didn't complain when "x86: add optimized inlining" got into 
-> Linus' tree you can't validly complain about my patch.
+ Remove unused variable "cpu" from arch/x86/xen/setup.c
 
-It's not really the same thing. Not forcing gcc to do the inlining where 
-it's marked is one thing, but removing the hint to inline the function 
-entirely is something else. In this case without the hint it clearly 
-makes the wrong decision, since there is no reason to not inline a 
-function that just calls another function.
 
-GCC 4.3 is supposed to have some improvements in this area with 
-pre-inline optimization and early inlining, but older gcc versions may 
-still have this issue.
+Signed-off-by : Manish Katiyar (mkatiyar@gmail.com)
+
+diff -Nur a/x86/xen/setup.c b/arch/x86/xen/setup.c
+--- a/arch/x86/xen/setup.c       2008-04-26 20:36:15.000000000 +0530
++++ b/arch/x86/xen/setup.c    2008-05-11 22:50:35.000000000 +0530
+@@ -71,7 +71,6 @@
+
+ void xen_enable_sysenter(void)
+ {
+-       int cpu = smp_processor_id();
+        extern void xen_sysenter_target(void);
+        /* Mask events on entry, even though they get enabled immediately */
+        static struct callback_register sysenter = {
+
+
+-- 
+Thanks & Regards,
+********************************************
+Manish Katiyar ( http://mkatiyar.googlepages.com )
+3rd Floor, Fair Winds Block
+EGL Software Park
+Off Intermediate Ring Road
+Bangalore 560071, India
+***********************************************
