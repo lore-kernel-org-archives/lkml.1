@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753644AbYEKILk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754837AbYEKINj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753644AbYEKILk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 04:11:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751647AbYEKILW
+	id S1754837AbYEKINj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 04:13:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751757AbYEKINY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 04:11:22 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:47283 "EHLO pasmtpB.tele.dk"
+	Sun, 11 May 2008 04:13:24 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:60508 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751611AbYEKILV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 04:11:21 -0400
-Date: Sun, 11 May 2008 10:11:56 +0200
+	id S1751647AbYEKINW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 May 2008 04:13:22 -0400
+Date: Sun, 11 May 2008 10:13:58 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
-Subject: Re: [PATCH] Disable modpost warnings for linkonce sections
-Message-ID: <20080511081156.GA25696@uranus.ravnborg.org>
-References: <20080508114111.GA20671@basil.nowhere.org>
+To: Masatake YAMATO <yamato@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kbuild: escape meta characters in regular expression in make TAGS
+Message-ID: <20080511081358.GB25696@uranus.ravnborg.org>
+References: <20080507.160431.251452611.yamato@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080508114111.GA20671@basil.nowhere.org>
+In-Reply-To: <20080507.160431.251452611.yamato@redhat.com>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 01:41:11PM +0200, Andi Kleen wrote:
-> Disable modpost warnings for linkonce sections
+On Wed, May 07, 2008 at 04:04:31PM +0900, Masatake YAMATO wrote:
+> Hi,
 > 
-> My build gives lots of warnings like
 > 
-> WARNING: sound/core/snd.o (.gnu.linkonce.wi.mpspec_def.h.30779716): unexpected section name.
-> The (.[number]+) following section name are ld generated and not expected.
-> Did you forget to use "ax"/"aw" in a .S file?
-> Note that for example <linux/init.h> contains
-> section definitions for use in .S files.
+> Alexey Dobriyan <adobriyan@gmail.com> introduced a code adds
+> menuconfig SOMETHING in Kconfig to tags output when you did "make tags".
 > 
-> But for .linkonce. duplicated sections are actually ok and expected.
-> So just disable the warning for this case.
+> See http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=80ff26241623875636674a31c0540a78c0fb5433
+> 
+> "make tags" may work fine with his code. However make TAGS doesn't work well
+> because etags command requires backslashes to escape meta characters like 
+> `(', `)' and `|'.
+> 
+> Here is a patch.
+> 
+> Signed-off-by: Masatake YAMATO <yamato@redhat.com>
 
-Agreed.
-Applied and pushed out.
+Thanks Masatake.
+
+Applied and pushed out to kbuild-fixes.
 
 	Sam
