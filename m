@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755798AbYEKN1H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbYEKNnu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755798AbYEKN1H (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 09:27:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbYEKN0x
+	id S1756061AbYEKNnu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 09:43:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753080AbYEKNnl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 09:26:53 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:46150 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751421AbYEKN0x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 09:26:53 -0400
-Date: Sun, 11 May 2008 07:26:36 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Sven Wegener <sven.wegener@stealer.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] scheduler fixes
-Message-ID: <20080511132636.GA22878@parisc-linux.org>
-References: <alpine.LFD.1.10.0805072115190.3024@woody.linux-foundation.org> <20080508120130.GA2860@elte.hu> <20080508122802.GA4880@elte.hu> <20080508144316.GA9869@elte.hu> <20080508151028.GA12109@elte.hu> <20080511110306.GP19219@parisc-linux.org> <20080511114803.GA8289@parisc-linux.org> <20080511125049.GA22513@elte.hu> <20080511125216.GA25040@elte.hu> <20080511130226.GR19219@parisc-linux.org>
+	Sun, 11 May 2008 09:43:41 -0400
+Received: from www.tglx.de ([62.245.132.106]:47507 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752826AbYEKNnk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 May 2008 09:43:40 -0400
+Date: Sun, 11 May 2008 15:43:29 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andi Kleen <andi@firstfloor.org>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: better msleep for drivers
+In-Reply-To: <20080511110124.GA24187@basil.nowhere.org>
+Message-ID: <alpine.LFD.1.10.0805111408440.3197@apollo.tec.linutronix.de>
+References: <20080511110124.GA24187@basil.nowhere.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080511130226.GR19219@parisc-linux.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 11, 2008 at 07:02:26AM -0600, Matthew Wilcox wrote:
-> > +	list_move_tail(&waiter->list, &sem->wait_list);
+Andi,
+
+On Sun, 11 May 2008, Andi Kleen wrote:
+> Someone asked if there is a msleep using hrtimers that is more accurate
+> than jiffies/msecs for external drivers. There is hrtimer nanosleep,
+> but it is currently not exported. It can be reimplemented using hrtimer_start
+> etc. which are exported, but that seems rather clumpsy.
 > 
-> Seems like extra cache line dirtying for no real gain over my solution.
+> Is there any reason such an obvious function is not exported? 
 
-Actually, let me just go into this a little further.
+Well, there was not yet a request / requirement for it.
 
-In principle, you'd think that we'd want to wake up all the tasks
-possible as soon as possible.  In practice, Dave Chinner has said that
-the l_flushsema introduces a thundering herd (a few hundred tasks can
-build up behind it on systems such as Columbia apparently) that then
-run into a bottleneck as soon as they're unleashed.
+> Ok I guess right now nobody in tree is using it. But that seems wrong.  
+> Perhaps we should have a (exported) usleep_blocking() wrapper or somesuch for 
+> that case?  
+> 
+> I suspect that a lot of drivers could make use of it. Just from grepping we 
+> have a lot of msleep(1)s in drivers and I suspect a lot of those would 
+> actually like to delay shorter than one jiffie.
 
-Current XFS CVS has a fix from myself and Christoph that gets rid of the
-l_flushsema and replaces it with a staggered wakeup of each task that's
-waiting as the previously woken task clears the critical section.
+Depends, lots of them are just the kind of "lets delay it a bit" with
+no real requirement to be accurate. I agree that there are use cases
+which could benefit from a more precise sleep facility than msleep
+actually is, but we need to have a careful eye on the possible abuse
+of such an interface.
 
-Obviously, generic up() can't possibly do as well, but by staggering
-the release of tasks from __down_common(), we mitigate the herd somewhat.
+> One argument against it would be that it makes them more difficult to test 
+> because behavior will differ between hrtimer enabled and disabled systems. 
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+That's what other in tree hrtimer users already face today. scheduler,
+networking and the user space interfaces. So that should be not a too
+big problem as the hrtimer infrastructure guarantees that the timer
+does not expire early whether highres is enabled or not. It's just
+less finegrained with highres=off and that's just the same as we have
+right now with msleep().
+
+> Still longer term I suppose there's really no way around having accurate
+> sleep functions and it's probably better to start testing earlier than later.
+
+No objections, but we should not do that with a stupid msleep
+replacement interface; instead we should expose a flexible in kernel
+variant of hrtimer_nanosleep() which lets the user utilize
+ABS/REL_TIME and the different clocks. A msleep helper can be built on
+top of this very easily.
+
+Thanks,
+	tglx
