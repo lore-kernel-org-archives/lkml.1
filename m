@@ -1,150 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758574AbYEKRq0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757831AbYEKRvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758574AbYEKRq0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 13:46:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757889AbYEKRpp
+	id S1757831AbYEKRvz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 13:51:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbYEKRvr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 13:45:45 -0400
-Received: from mx1.riseup.net ([204.13.164.18]:41509 "EHLO mx1.riseup.net"
+	Sun, 11 May 2008 13:51:47 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:57329 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757622AbYEKRpo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 13:45:44 -0400
-Message-Id: <20080511174334.034854531@kaehlcke.net>
-References: <20080511174331.584439618@kaehlcke.net>
-User-Agent: quilt/0.46-1
-Date: Sun, 11 May 2008 19:43:33 +0200
-From: matthias@kaehlcke.net
-To: zippel@linux-m68k.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Matthias Kaehlcke <matthias@kaehlcke.net>
-Subject: [patch 2/2] HFS: Convert extents_lock in a mutex
-Content-Disposition: inline; filename=fs-hfs-extents_lock-to-mutex.diff
+	id S1754948AbYEKRvq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 May 2008 13:51:46 -0400
+Date: Sun, 11 May 2008 19:52:22 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [2.6 patch] kernel/sched*: optimize inlining
+Message-ID: <20080511175222.GA31729@uranus.ravnborg.org>
+References: <20080511092132.GE1645@cs181133002.pp.htv.fi>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080511092132.GE1645@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Apple Macintosh file system: The semaphore extens_lock is used as a mutex.
-Convert it to the mutex API
+On Sun, May 11, 2008 at 12:21:32PM +0300, Adrian Bunk wrote:
+> kernel/sched* contained tons of inline's, and the result of removing 
+> them all is impressing (with x86_64_defconfig)
+>    text    data     bss     dec     hex filename
+>   39557    8234     280   48071    bbc7 kernel/sched.o
+>   41792    8234     280   50306    c482 kernel/sched.o.old
+> 
+> That's a 5.3% text size reduction (!), which is more than twice as much 
+> as the 2.3% the "optimized inlining" achieves on average for the whole 
+> kernel.
 
-Signed-off-by: Matthias Kaehlcke <matthias@kaehlcke.net>
+If we compare the size of sched.o in the three cases we see a clear effect:
 
-Index: hfs/btree.c
-===================================================================
---- hfs.orig/btree.c	2008-05-11 19:28:16.000000000 +0200
-+++ hfs/btree.c	2008-05-11 19:28:46.000000000 +0200
-@@ -40,7 +40,7 @@
- 	{
- 	struct hfs_mdb *mdb = HFS_SB(sb)->mdb;
- 	HFS_I(tree->inode)->flags = 0;
--	init_MUTEX(&HFS_I(tree->inode)->extents_lock);
-+	mutex_init(&HFS_I(tree->inode)->extents_lock);
- 	switch (id) {
- 	case HFS_EXT_CNID:
- 		hfs_inode_read_fork(tree->inode, mdb->drXTExtRec, mdb->drXTFlSize,
-Index: hfs/extent.c
-===================================================================
---- hfs.orig/extent.c	2008-05-11 19:28:16.000000000 +0200
-+++ hfs/extent.c	2008-05-11 19:29:43.000000000 +0200
-@@ -343,16 +343,16 @@
- 		goto done;
- 	}
- 
--	down(&HFS_I(inode)->extents_lock);
-+	mutex_lock(&HFS_I(inode)->extents_lock);
- 	res = hfs_ext_read_extent(inode, ablock);
- 	if (!res)
- 		dblock = hfs_ext_find_block(HFS_I(inode)->cached_extents,
- 					    ablock - HFS_I(inode)->cached_start);
- 	else {
--		up(&HFS_I(inode)->extents_lock);
-+		mutex_unlock(&HFS_I(inode)->extents_lock);
- 		return -EIO;
- 	}
--	up(&HFS_I(inode)->extents_lock);
-+	mutex_unlock(&HFS_I(inode)->extents_lock);
- 
- done:
- 	map_bh(bh_result, sb, HFS_SB(sb)->fs_start +
-@@ -375,7 +375,7 @@
- 	u32 start, len, goal;
- 	int res;
- 
--	down(&HFS_I(inode)->extents_lock);
-+	mutex_lock(&HFS_I(inode)->extents_lock);
- 	if (HFS_I(inode)->alloc_blocks == HFS_I(inode)->first_blocks)
- 		goal = hfs_ext_lastblock(HFS_I(inode)->first_extents);
- 	else {
-@@ -425,7 +425,7 @@
- 			goto insert_extent;
- 	}
- out:
--	up(&HFS_I(inode)->extents_lock);
-+	mutex_unlock(&HFS_I(inode)->extents_lock);
- 	if (!res) {
- 		HFS_I(inode)->alloc_blocks += len;
- 		mark_inode_dirty(inode);
-@@ -487,7 +487,7 @@
- 	if (blk_cnt == alloc_cnt)
- 		goto out;
- 
--	down(&HFS_I(inode)->extents_lock);
-+	mutex_lock(&HFS_I(inode)->extents_lock);
- 	hfs_find_init(HFS_SB(sb)->ext_tree, &fd);
- 	while (1) {
- 		if (alloc_cnt == HFS_I(inode)->first_blocks) {
-@@ -514,7 +514,7 @@
- 		hfs_brec_remove(&fd);
- 	}
- 	hfs_find_exit(&fd);
--	up(&HFS_I(inode)->extents_lock);
-+	mutex_unlock(&HFS_I(inode)->extents_lock);
- 
- 	HFS_I(inode)->alloc_blocks = blk_cnt;
- out:
-Index: hfs/hfs_fs.h
-===================================================================
---- hfs.orig/hfs_fs.h	2008-05-11 19:28:17.000000000 +0200
-+++ hfs/hfs_fs.h	2008-05-11 19:30:11.000000000 +0200
-@@ -54,7 +54,7 @@
- 	struct list_head open_dir_list;
- 	struct inode *rsrc_inode;
- 
--	struct semaphore extents_lock;
-+	struct mutex extents_lock;
- 
- 	u16 alloc_blocks, clump_blocks;
- 	sector_t fs_blocks;
-Index: hfs/inode.c
-===================================================================
---- hfs.orig/inode.c	2008-05-11 19:28:17.000000000 +0200
-+++ hfs/inode.c	2008-05-11 19:30:44.000000000 +0200
-@@ -150,7 +150,7 @@
- 	if (!inode)
- 		return NULL;
- 
--	init_MUTEX(&HFS_I(inode)->extents_lock);
-+	mutex_init(&HFS_I(inode)->extents_lock);
- 	INIT_LIST_HEAD(&HFS_I(inode)->open_dir_list);
- 	hfs_cat_build_key(sb, (btree_key *)&HFS_I(inode)->cat_key, dir->i_ino, name);
- 	inode->i_ino = HFS_SB(sb)->next_id++;
-@@ -281,7 +281,7 @@
- 
- 	HFS_I(inode)->flags = 0;
- 	HFS_I(inode)->rsrc_inode = NULL;
--	init_MUTEX(&HFS_I(inode)->extents_lock);
-+	mutex_init(&HFS_I(inode)->extents_lock);
- 	INIT_LIST_HEAD(&HFS_I(inode)->open_dir_list);
- 
- 	/* Initialize the inode */
+                  text	   data	    bss	    dec	    hex	filename
+forced inline:    31257	   2702	    200	  34159	   856f	kernel/sched.o
+inline hint:      31105	   2702	    200	  34007	   84d7	kernel/sched.o
+no inline (hint): 30704	   2702	    200	  33606	   8346	kernel/sched.o
 
--- 
-Matthias Kaehlcke
-Embedded Linux Engineer
-Barcelona
+The last line "no inline(hint)" is with Adrians patch applied.
+So what is obvious from the above is that with the arch/gcc combination
+I use here the inline hint has a clear effect and gcc inlines more
+when we have given it a hint to do so than without the hint.
+I conclude this solely on the cide size change between the line
+"inline hint" and "no inline(hint)".
 
-              We build too many walls and not enough bridges
-                             (Isaac Newton)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+With adrians patch there were no difference in size with or
+without the OPTIMIZE_INLINING enabled.
+
+Or in other words the config option "OPTIMIZE_INLINING" is NOT
+equal to removing all the inline annotations.
+
+> 
+> Note that any remarks regarding whether this patch might affect the 
+> performance are invalid since noone cared about the performance when
+> the "x86: add optimized inlining" commit that does the same for the 
+> whole kernel entered the tree.
+
+In one case it was an option it was easy to turn off/on so we could
+compare and modulus bugs it was a noop on gcc < 4.0.
+With the patch below we revet back to the broken gcc inline algorithm on
+gcc < 4.0 and it cannot as easy be turned of (have to revert this patch).
+Both issues are worth to consider before applying this.
+
+	Sam
