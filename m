@@ -1,42 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762218AbYEKVQA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762278AbYEKVQn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762218AbYEKVQA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 17:16:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759233AbYEKVB7
+	id S1762278AbYEKVQn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 17:16:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759241AbYEKVHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 17:01:59 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34199 "EHLO ogre.sisk.pl"
+	Sun, 11 May 2008 17:07:13 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:34272 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759090AbYEKVBx convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 17:01:53 -0400
-Cc: "Pavel Machek" <pavel@suse.cz>
-References: <hPXlJLjt4XG.A._lF.Jv1JIB@chimera>
-In-Reply-To: <hPXlJLjt4XG.A._lF.Jv1JIB@chimera>
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-MIME-Version: 1.0
+	id S1759257AbYEKVHK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 May 2008 17:07:10 -0400
+Date: Sun, 11 May 2008 23:07:07 +0200
+From: Karsten Keil <kkeil@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] isdn/capi: return proper errnos on module init
+Message-ID: <20080511210707.GA25600@pingi.kke.suse.de>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	Marcin Slusarz <marcin.slusarz@gmail.com>,
+	LKML <linux-kernel@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <88YBFoyd1CN.A.vwF.Qv1JIB@chimera>
-Subject: [Bug #10678] 2.6.26-rc1: warnings from sysfs, bluetooth related
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun, 11 May 2008 22:04:15 +0200 (CEST)
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message has been generated automatically as a part of a report
-of recent regressions.
+cdebug_init is called from kcapi_init which is module initialization function,
+so it must return negative values on errors
 
-The following bug entry is on the current list of known regressions
-from 2.6.25.  Please verify if it still should be listed.
+Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+Acked-by: Karsten Keil <kkeil@suse.de>
+---
+compile tested only
+---
+ drivers/isdn/capi/capiutil.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10678
-Subject		: 2.6.26-rc1: warnings from sysfs, bluetooth related
-Submitter	: Pavel Machek <pavel@suse.cz>
-Date		: 2008-05-11 16:19 (1 days old)
-References	: http://marc.info/?l=linux-kernel&amp;m=121052279002112&amp;w=4
-
+diff --git a/drivers/isdn/capi/capiutil.c b/drivers/isdn/capi/capiutil.c
+--- a/drivers/isdn/capi/capiutil.c
++++ b/drivers/isdn/capi/capiutil.c
+@@ -948,17 +948,17 @@ int __init cdebug_init(void)
+ {
+ 	g_cmsg= kmalloc(sizeof(_cmsg), GFP_KERNEL);
+ 	if (!g_cmsg)
+-		return ENOMEM;
++		return -ENOMEM;
+ 	g_debbuf = kmalloc(sizeof(_cdebbuf), GFP_KERNEL);
+ 	if (!g_debbuf) {
+ 		kfree(g_cmsg);
+-		return ENOMEM;
++		return -ENOMEM;
+ 	}
+ 	g_debbuf->buf = kmalloc(CDEBUG_GSIZE, GFP_KERNEL);
+ 	if (!g_debbuf->buf) {
+ 		kfree(g_cmsg);
+ 		kfree(g_debbuf);
+-		return ENOMEM;;
++		return -ENOMEM;;
+ 	}
+ 	g_debbuf->size = CDEBUG_GSIZE;
+ 	g_debbuf->buf[0] = 0;
+-- 
 
