@@ -1,17 +1,16 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753444AbYEKGUW (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sun, 11 May 2008 02:20:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbYEKGUI
+	id S1755975AbYEKGVI (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sun, 11 May 2008 02:21:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754135AbYEKGU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 02:20:08 -0400
-Received: from smtp.kol.co.nz ([202.150.96.9]:56847 "EHLO mx2.kol.co.nz"
+	Sun, 11 May 2008 02:20:26 -0400
+Received: from smtp.kol.co.nz ([202.150.96.9]:35527 "EHLO mx2.kol.co.nz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751100AbYEKGUG convert rfc822-to-8bit (ORCPT
+	id S1751090AbYEKGUI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 02:20:06 -0400
-X-Greylist: delayed 2656 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 May 2008 02:20:06 EDT
-Message-ID: <20080511171117.6x1tvpwmpwks4w48@webmail.kol.co.nz>
-Date: Sun, 11 May 2008 17:11:17 +1200
+	Sun, 11 May 2008 02:20:08 -0400
+Message-ID: <20080511171126.pj6q6zqds0wc4sk0@webmail.kol.co.nz>
+Date: Sun, 11 May 2008 17:11:26 +1200
 From: Carlous Zenn <Carlous@kol.co.nz>
 Reply-to: carlousloans@yahoo.com
 To: undisclosed-recipients:;
@@ -23,16 +22,16 @@ Content-Disposition: inline
 Content-Transfer-Encoding: 7BIT
 User-Agent: Internet Messaging Program (IMP) H3 (4.1.3)
 X-IP: 208.74.112.226
-X-DSPAM-Check: by mx2.kol.co.nz on Sun, 11 May 2008 17:11:26 +1200
+X-DSPAM-Check: by mx2.kol.co.nz on Sun, 11 May 2008 17:11:39 +1200
 X-DSPAM-Result: Innocent
-X-DSPAM-Processed: Sun May 11 17:35:22 2008
+X-DSPAM-Processed: Sun May 11 17:35:48 2008
 X-DSPAM-Confidence: 0.5045
 X-DSPAM-Improbability: 1 in 103 chance of being spam
 X-DSPAM-Probability: 0.0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753444AbYEKGUW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755975AbYEKGVI@vger.kernel.org>
 
 
 
