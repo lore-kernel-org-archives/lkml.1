@@ -1,51 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755425AbYEKPs3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755461AbYEKP5e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755425AbYEKPs3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 11:48:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753581AbYEKPsT
+	id S1755461AbYEKP5e (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 11:57:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753587AbYEKP5Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 11:48:19 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:65458 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753241AbYEKPsS (ORCPT
+	Sun, 11 May 2008 11:57:24 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:29082 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753456AbYEKP5X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 11:48:18 -0400
+	Sun, 11 May 2008 11:57:23 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=E53OeeA9C4Z8FXhqaFClgnfeBV3j+Ajzyfm0sbg8datcf/XkClMqqGqdblpgzyijuPLu7rq3ZH1l+8gJQC2VBrnyruVKcpuYwLehvQWm5iB+qv17awwjaDPLdRU6GRTJ/p8lYuUt87SiFXGezzIOpyhchl2jQccsKjPmMVC7CKs=
-Date: Sun, 11 May 2008 20:43:35 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Julia Lawall <julia@diku.dk>
-Cc: perex@perex.cz, ricardo@scarybox.net, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 1/4] sound/isa: use unsigned for loop index
-Message-ID: <20080511164335.GA19745@martell.zuzino.mipt.ru>
-References: <Pine.LNX.4.64.0805111450000.29620@ask.diku.dk>
+        b=fduvO7mw/iq2XEBZ4dig4H9kdh9yQ67kr87iuveb7srrCXp3C6uTraOkZNj64k9GqNDlLMAH5E/YTKpVcF+tjtGcGamf8gIQ696Q8WWphetbdrVl/fMu0+SXiLrLtN8/MwyNaE8xP4fAAXEcNyEG9CJ9xv9T7IvDayVvhzLI4Gg=
+Date: Sun, 11 May 2008 19:44:11 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Mikael Pettersson <mikpe@it.uu.se>,
+       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.26-rc1 on x86: ld: warning: dot moved backwards before
+	`.text'
+Message-ID: <20080511154411.GB6942@cvg>
+References: <18470.787.498329.144701@harpo.it.uu.se> <482604D1.7020804@zytor.com> <20080510211602.GA32339@uranus.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0805111450000.29620@ask.diku.dk>
+In-Reply-To: <20080510211602.GA32339@uranus.ravnborg.org>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 11, 2008 at 02:50:33PM +0200, Julia Lawall wrote:
-> A few more cases in the spirit of the patch "Trivial: Replacement of always
-> >0 ints with unsigned ints" submitted by Ricardo Martins <ricardo@scarybox.net>
+[Sam Ravnborg - Sat, May 10, 2008 at 11:16:02PM +0200]
+| On Sat, May 10, 2008 at 01:25:53PM -0700, H. Peter Anvin wrote:
+| > Mikael Pettersson wrote:
+| > >
+| > >The resulting kernel hasn't broken on me yet, however.
+| > >
+| > >A search through the LKML archives showed that this was reported
+| > >for 2.6.25-rc3-mm1, but I couldn't find any discussion about it
+| > >after that:
+| > >
+| > ><http://marc.info/?l=linux-kernel&m=120470303728010&w=2>
+| > >
+| > >The .config causing this warning is available in
+| > ><http://user.it.uu.se/~mikpe/linux/ale/config-2.6.26-rc1>
+| > >
+| > 
+| > This is because the organization of the file was changed, and the linker 
+| > script wasn't changed to match:
+| > 
+| > SECTIONS
+| > {
+| >         . = HEADER_OFFSET;
+| >         .header : {
+| >                  *(.header)
+| >         }
+| > 
+| >         . = 0;
+| >         .text : {
+| >                  *(.text*)
+| >         }
+| > 
+| > This is crap; the sections should be listed *in order* so the linker can 
+| > warn properly when something bad happens.
+| > 
+| > The code should be correct; reorganizing the linker script correctly 
+| > should fix the problem.
+| 
+| I need Pavel to comment on this.
+| Why we start with . equal 0x3f00 and then later as . equals 0x0000
+| I dunno.
+| I did not look into this part of the code back then - but I should anyway
+| have seen this flaw in the linker script :-(
+| 
+| 	Sam
 
-And rationale for those would be ...?
+Should not it be something like
+---
 
-> --- a/sound/isa/es1688/es1688_lib.c
-> +++ b/sound/isa/es1688/es1688_lib.c
-> @@ -101,7 +101,7 @@ static unsigned char snd_es1688_mixer_re
->  
->  static int snd_es1688_reset(struct snd_es1688 *chip)
->  {
-> -	int i;
-> +	unsigned int i;
->  
->  	outb(3, ES1688P(chip, RESET));		/* valid only for ESS chips, SB -> 1 */
->  	udelay(10);
-
+diff --git a/arch/x86/kernel/acpi/realmode/wakeup.lds.S b/arch/x86/kernel/acpi/realmode/wakeup.lds.S
+index 22fab6c..cccf62d 100644
+--- a/arch/x86/kernel/acpi/realmode/wakeup.lds.S
++++ b/arch/x86/kernel/acpi/realmode/wakeup.lds.S
+@@ -12,11 +12,6 @@ ENTRY(_start)
+ 
+ SECTIONS
+ {
+-	. = HEADER_OFFSET;
+-	.header : {
+-		 *(.header)
+-	}
+-
+ 	. = 0;
+ 	.text : {
+ 		 *(.text*)
+@@ -53,6 +48,11 @@ SECTIONS
+ 	. = ALIGN(16);
+ 	_end = .;
+ 
++	. = HEADER_OFFSET;
++	.header : {
++		 *(.header)
++	}
++
+ 	/DISCARD/ : {
+ 		*(.note*)
+ 	}
+---
+		- Cyrill -
