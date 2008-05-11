@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756660AbYEKCPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757418AbYEKCQM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756660AbYEKCPt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 May 2008 22:15:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753687AbYEKCPm
+	id S1757418AbYEKCQM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 May 2008 22:16:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755759AbYEKCPw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 May 2008 22:15:42 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:61104 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753041AbYEKCPm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 May 2008 22:15:42 -0400
-Date: Sun, 11 May 2008 03:14:05 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Jean Delvare <khali@linux-fr.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: i2c@lm-sensors.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] I2C: SiByte: Mark i2c_sibyte_add_bus() as static
-Message-ID: <Pine.LNX.4.55.0805110311170.18978@cliff.in.clinika.pl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 10 May 2008 22:15:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39835 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756648AbYEKCPu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 May 2008 22:15:50 -0400
+Date: Sat, 10 May 2008 22:15:15 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       mpm@selenic.com
+Subject: Re: [patch 21/21] slab defrag: Obsolete SLAB
+Message-ID: <20080510221515.3540a6cc@bree.surriel.com>
+In-Reply-To: <4825709A.2020407@firstfloor.org>
+References: <20080510030831.796641881@sgi.com>
+	<20080510030919.604216074@sgi.com>
+	<4825709A.2020407@firstfloor.org>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- The i2c_sibyte_add_bus() function is not called, nor meant to, from 
-outside, so mark it as static; fixing a sparse warning too.
+On Sat, 10 May 2008 11:53:30 +0200
+Andi Kleen <andi@firstfloor.org> wrote:
 
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
----
- It should be obvious.  Please apply.
+> Christoph Lameter wrote:
+> > Slab defragmentation introduces new functionality not supported by SLAB and
+> > SLOB.
+> > 
+> > Make slab depend on EXPERIMENTAL and note its obsoleteness and that
+> > various functionality is not supported by SLAB.
+> > 
+> > Also update SLOB's description a bit to indicate that certain OS
+> > support is limited by design.
+> 
+> What about the TPC performance regressions? My understanding was that
+> slub still performed worse in the "object allocated on one CPU, freed on
+> the other CPU" type workloads due to less batching.
 
-  Maciej
+Which can be the majority of object allocations and frees in some
+workloads.  It definately wants fixing.
 
-patch-2.6.26-rc1-20080505-sibyte-i2c-sparse-16
-diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/drivers/i2c/busses/i2c-sibyte.c linux-2.6.26-rc1-20080505/drivers/i2c/busses/i2c-sibyte.c
---- linux-2.6.26-rc1-20080505.macro/drivers/i2c/busses/i2c-sibyte.c	2008-05-05 02:55:25.000000000 +0000
-+++ linux-2.6.26-rc1-20080505/drivers/i2c/busses/i2c-sibyte.c	2008-05-11 01:11:00.000000000 +0000
-@@ -132,7 +132,7 @@ static const struct i2c_algorithm i2c_si
- /*
-  * registering functions to load algorithms at runtime
-  */
--int __init i2c_sibyte_add_bus(struct i2c_adapter *i2c_adap, int speed)
-+static int __init i2c_sibyte_add_bus(struct i2c_adapter *i2c_adap, int speed)
- {
- 	struct i2c_algo_sibyte_data *adap = i2c_adap->algo_data;
- 
+-- 
+All rights reversed.
