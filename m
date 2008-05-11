@@ -1,116 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758056AbYEKSat@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757889AbYEKSfk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758056AbYEKSat (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 14:30:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756765AbYEKSak
+	id S1757889AbYEKSfk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 14:35:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755341AbYEKSfd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 14:30:40 -0400
-Received: from mailgw.infracomspa.it ([217.12.183.244]:1673 "EHLO
-	svkmg019i.infracomspa.it" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756750AbYEKSaj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 14:30:39 -0400
-X-Greylist: delayed 908 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 May 2008 14:30:39 EDT
-Message-ID: <482737BE.20502@infracom.it>
-Date: Sun, 11 May 2008 20:15:26 +0200
-From: Roberto Oppedisano <roberto.oppedisano@infracom.it>
-User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080420)
-MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-CC: stsp@aknet.ru
-Subject: 2.6.26-rc1 regression: e5e1d3cb20034a3cbcfff1f0bae12201aa2ce17e breaks
- artsd
-X-Enigmail-Version: 0.95.0
-X-MIMETrack: Itemize by SMTP Server on Venere/InfracomSpA/IT(Release 6.5.6|March 06, 2007) at
- 05/11/2008 08:15:26 PM,
-	Serialize by Router on Bacco/InfracomSpA/IT(Release 6.5.6|March 06, 2007) at
- 11/05/2008 20.30.39,
-	Serialize complete at 11/05/2008 20.30.39
-X-TM-AS-Product-Ver: <SMD>-<3.0.1.3628>-<5.5.1026>-<15894>
-X-TM-AS-Result: <No>-<-10002.053>-<5.0>-<99000>
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 11 May 2008 14:35:33 -0400
+Received: from mx1.riseup.net ([204.13.164.18]:50840 "EHLO mx1.riseup.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755072AbYEKSfc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 May 2008 14:35:32 -0400
+From: Matthias Kaehlcke <matthias@kaehlcke.net>
+Date: Sun, 11 May 2008 19:56:13 +0200
+Subject: [PATCH] HFS Plus: Convert the extents_lock in a mutex
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Message-Id: <S1755341AbYEKSfd/20080511183533Z+207@vger.kernel.org>
 
-artsd (kde sound daemon) is broken on current git for my system.
+Apple Extended HFS file system: The semaphore extents lock is used as a mutex.
+Convert it to the mutex API.
 
-git-bisect reveals the following patch as the culprit:
+Signed-off-by: Matthias Kaehlcke <matthias@kaehlcke.net>
+---
+ fs/hfsplus/extents.c    |   14 +++++++-------
+ fs/hfsplus/hfsplus_fs.h |    3 ++-
+ fs/hfsplus/inode.c      |    4 ++--
+ fs/hfsplus/super.c      |    2 +-
+ 4 files changed, 12 insertions(+), 11 deletions(-)
 
-commit e5e1d3cb20034a3cbcfff1f0bae12201aa2ce17e
-Author: Stas Sergeev <stsp@aknet.ru>
-Date:   Wed May 7 12:39:56 2008 +0200
-
-    pcspkr: fix dependancies
-
-    fix pcspkr dependancies: make the pcspkr platform
-    drivers to depend on a platform device, and
-    not the other way around.
-
-    Signed-off-by: Stas Sergeev <stsp@aknet.ru>
-    Acked-by: Thomas Gleixner <tglx@linutronix.de>
-    Acked-by: Dmitry Torokhov <dtor@mail.ru>
-    CC: Vojtech Pavlik <vojtech@suse.cz>
-    CC: Michael Opdenacker <michael-lists@free-electrons.com>
-    [fixed for 2.6.26-rc1 by tiwai]
-    Signed-off-by: Takashi Iwai <tiwai@suse.de>
-
-:040000 040000 b4de6e2cc3456298333f772d1d42f02175436635
-b059bb087fcc91e716932de0a88d8fcbd4b10bf0 M      arch
-:040000 040000 7ad4e3dd5b5849b03b6de634c296a4e7105d1e88
-3c3a6b94a6ba09de08354652d637a63261882354 M      drivers
-:040000 040000 1f42e63fb073f1d90c1478a90a7f7006e131a246
-c359431c3fc57cae9d6ac1ae995614d3e48772df M      init
-:040000 040000 131e667cb1f3d3ea7fbb87052a65a0b35dc41850
-40454985821df34702be8a65ede4440859b4ab85 M      sound
-
-I've verified that reverting the above patch on current git fixes the
-problem.
-Here's the output of lscpi on my laptop (hp nx7010)
-
-00:00.0 Host bridge: Intel Corporation 82855PM Processor to I/O
-Controller (rev 03)
-00:01.0 PCI bridge: Intel Corporation 82855PM Processor to AGP
-Controller (rev 03)
-00:1d.0 USB Controller: Intel Corporation 82801DB/DBL/DBM
-(ICH4/ICH4-L/ICH4-M) USB UHCI Controller #1 (rev 01)
-00:1d.1 USB Controller: Intel Corporation 82801DB/DBL/DBM
-(ICH4/ICH4-L/ICH4-M) USB UHCI Controller #2 (rev 01)
-00:1d.2 USB Controller: Intel Corporation 82801DB/DBL/DBM
-(ICH4/ICH4-L/ICH4-M) USB UHCI Controller #3 (rev 01)
-00:1d.7 USB Controller: Intel Corporation 82801DB/DBM (ICH4/ICH4-M) USB2
-EHCI Controller (rev 01)
-00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev 81)
-00:1f.0 ISA bridge: Intel Corporation 82801DBM (ICH4-M) LPC Interface
-Bridge (rev 01)
-00:1f.1 IDE interface: Intel Corporation 82801DBM (ICH4-M) IDE
-Controller (rev 01)
-00:1f.3 SMBus: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M)
-SMBus Controller (rev 01)
-00:1f.5 Multimedia audio controller: Intel Corporation 82801DB/DBL/DBM
-(ICH4/ICH4-L/ICH4-M) AC'97 Audio Controller (rev 01)
-00:1f.6 Modem: Intel Corporation 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M)
-AC'97 Modem Controller (rev 01)
-01:00.0 VGA compatible controller: ATI Technologies Inc Radeon RV250
-[Mobility FireGL 9000] (rev 01)
-02:00.0 FireWire (IEEE 1394): VIA Technologies, Inc. IEEE 1394 Host
-Controller (rev 80)
-02:01.0 Ethernet controller: Realtek Semiconductor Co., Ltd.
-RTL-8139/8139C/8139C+ (rev 20)
-02:02.0 Network controller: Intel Corporation PRO/Wireless 2200BG
-Network Connection (rev 05)
-02:04.0 CardBus bridge: ENE Technology Inc CB1410 Cardbus Controller
-(rev 01)
-
-More info on request.
-
-Kind regards
-R
-
-
+diff --git a/fs/hfsplus/extents.c b/fs/hfsplus/extents.c
+index 12e899c..fec8f61 100644
+--- a/fs/hfsplus/extents.c
++++ b/fs/hfsplus/extents.c
+@@ -199,16 +199,16 @@ int hfsplus_get_block(struct inode *inode, sector_t iblock,
+ 		goto done;
+ 	}
+ 
+-	down(&HFSPLUS_I(inode).extents_lock);
++	mutex_lock(&HFSPLUS_I(inode).extents_lock);
+ 	res = hfsplus_ext_read_extent(inode, ablock);
+ 	if (!res) {
+ 		dblock = hfsplus_ext_find_block(HFSPLUS_I(inode).cached_extents, ablock -
+ 					     HFSPLUS_I(inode).cached_start);
+ 	} else {
+-		up(&HFSPLUS_I(inode).extents_lock);
++		mutex_unlock(&HFSPLUS_I(inode).extents_lock);
+ 		return -EIO;
+ 	}
+-	up(&HFSPLUS_I(inode).extents_lock);
++	mutex_unlock(&HFSPLUS_I(inode).extents_lock);
+ 
+ done:
+ 	dprint(DBG_EXTENT, "get_block(%lu): %llu - %u\n", inode->i_ino, (long long)iblock, dblock);
+@@ -355,7 +355,7 @@ int hfsplus_file_extend(struct inode *inode)
+ 		return -ENOSPC;
+ 	}
+ 
+-	down(&HFSPLUS_I(inode).extents_lock);
++	mutex_lock(&HFSPLUS_I(inode).extents_lock);
+ 	if (HFSPLUS_I(inode).alloc_blocks == HFSPLUS_I(inode).first_blocks)
+ 		goal = hfsplus_ext_lastblock(HFSPLUS_I(inode).first_extents);
+ 	else {
+@@ -408,7 +408,7 @@ int hfsplus_file_extend(struct inode *inode)
+ 			goto insert_extent;
+ 	}
+ out:
+-	up(&HFSPLUS_I(inode).extents_lock);
++	mutex_unlock(&HFSPLUS_I(inode).extents_lock);
+ 	if (!res) {
+ 		HFSPLUS_I(inode).alloc_blocks += len;
+ 		mark_inode_dirty(inode);
+@@ -465,7 +465,7 @@ void hfsplus_file_truncate(struct inode *inode)
+ 	if (blk_cnt == alloc_cnt)
+ 		goto out;
+ 
+-	down(&HFSPLUS_I(inode).extents_lock);
++	mutex_lock(&HFSPLUS_I(inode).extents_lock);
+ 	hfs_find_init(HFSPLUS_SB(sb).ext_tree, &fd);
+ 	while (1) {
+ 		if (alloc_cnt == HFSPLUS_I(inode).first_blocks) {
+@@ -492,7 +492,7 @@ void hfsplus_file_truncate(struct inode *inode)
+ 		hfs_brec_remove(&fd);
+ 	}
+ 	hfs_find_exit(&fd);
+-	up(&HFSPLUS_I(inode).extents_lock);
++	mutex_unlock(&HFSPLUS_I(inode).extents_lock);
+ 
+ 	HFSPLUS_I(inode).alloc_blocks = blk_cnt;
+ out:
+diff --git a/fs/hfsplus/hfsplus_fs.h b/fs/hfsplus/hfsplus_fs.h
+index 9e59537..f027a90 100644
+--- a/fs/hfsplus/hfsplus_fs.h
++++ b/fs/hfsplus/hfsplus_fs.h
+@@ -11,6 +11,7 @@
+ #define _LINUX_HFSPLUS_FS_H
+ 
+ #include <linux/fs.h>
++#include <linux/mutex.h>
+ #include <linux/buffer_head.h>
+ #include "hfsplus_raw.h"
+ 
+@@ -154,7 +155,7 @@ struct hfsplus_sb_info {
+ 
+ 
+ struct hfsplus_inode_info {
+-	struct semaphore extents_lock;
++	struct mutex extents_lock;
+ 	u32 clump_blocks, alloc_blocks;
+ 	sector_t fs_blocks;
+ 	/* Allocation extents from catalog record or volume header */
+diff --git a/fs/hfsplus/inode.c b/fs/hfsplus/inode.c
+index d53b2af..26ccfa3 100644
+--- a/fs/hfsplus/inode.c
++++ b/fs/hfsplus/inode.c
+@@ -161,7 +161,7 @@ static struct dentry *hfsplus_file_lookup(struct inode *dir, struct dentry *dent
+ 
+ 	inode->i_ino = dir->i_ino;
+ 	INIT_LIST_HEAD(&HFSPLUS_I(inode).open_dir_list);
+-	init_MUTEX(&HFSPLUS_I(inode).extents_lock);
++	mutex_init(&HFSPLUS_I(inode).extents_lock);
+ 	HFSPLUS_I(inode).flags = HFSPLUS_FLG_RSRC;
+ 
+ 	hfs_find_init(HFSPLUS_SB(sb).cat_tree, &fd);
+@@ -314,7 +314,7 @@ struct inode *hfsplus_new_inode(struct super_block *sb, int mode)
+ 	inode->i_nlink = 1;
+ 	inode->i_mtime = inode->i_atime = inode->i_ctime = CURRENT_TIME_SEC;
+ 	INIT_LIST_HEAD(&HFSPLUS_I(inode).open_dir_list);
+-	init_MUTEX(&HFSPLUS_I(inode).extents_lock);
++	mutex_init(&HFSPLUS_I(inode).extents_lock);
+ 	atomic_set(&HFSPLUS_I(inode).opencnt, 0);
+ 	HFSPLUS_I(inode).flags = 0;
+ 	memset(HFSPLUS_I(inode).first_extents, 0, sizeof(hfsplus_extent_rec));
+diff --git a/fs/hfsplus/super.c b/fs/hfsplus/super.c
+index ce97a54..3859118 100644
+--- a/fs/hfsplus/super.c
++++ b/fs/hfsplus/super.c
+@@ -34,7 +34,7 @@ struct inode *hfsplus_iget(struct super_block *sb, unsigned long ino)
+ 		return inode;
+ 
+ 	INIT_LIST_HEAD(&HFSPLUS_I(inode).open_dir_list);
+-	init_MUTEX(&HFSPLUS_I(inode).extents_lock);
++	mutex_init(&HFSPLUS_I(inode).extents_lock);
+ 	HFSPLUS_I(inode).flags = 0;
+ 	HFSPLUS_I(inode).rsrc_inode = NULL;
+ 	atomic_set(&HFSPLUS_I(inode).opencnt, 0);
 -- 
-Roberto Oppedisano [RO2480-RIPE]
-Infracom Network Application                   OSS and LIR Services
-Tel. +39 045 8271518   Fax  +39 045 8271499   Cell. +39 348 7419534
-
+1.5.5
