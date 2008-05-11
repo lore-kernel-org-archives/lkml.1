@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759566AbYEKVnD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760233AbYEKVna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759566AbYEKVnD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 17:43:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbYEKVmy
+	id S1760233AbYEKVna (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 17:43:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbYEKVnU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 17:42:54 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:40144 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751343AbYEKVmx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 17:42:53 -0400
-Date: Mon, 12 May 2008 00:41:31 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Parag Warudkar <parag.warudkar@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>, Frans Pop <elendil@planet.nl>
-Subject: Re: [Bug #10616] Horrendous Audio Stutter - current git
-Message-ID: <20080511214131.GM1645@cs181133002.pp.htv.fi>
-References: <hPXlJLjt4XG.A._lF.Jv1JIB@chimera> <88YBFoyd1CN.A.K6.1w1JIB@chimera> <82e4877d0805111428j3f73f436w1c6094c779f6110d@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <82e4877d0805111428j3f73f436w1c6094c779f6110d@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Sun, 11 May 2008 17:43:20 -0400
+Received: from mail.tuxonice.net ([67.207.135.122]:41325 "EHLO
+	mail.tuxonice.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754519AbYEKVnU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 May 2008 17:43:20 -0400
+X-Greylist: delayed 656 seconds by postgrey-1.27 at vger.kernel.org; Sun, 11 May 2008 17:43:20 EDT
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: [Bug #10606] 2.6.26-rc1 regression: ACPI fails to load SDT. -
+	Dell M1530
+From: Nigel Cunningham <nigel@suspend2.net>
+Reply-To: nigel@suspend2.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <88YBFoyd1CN.A.7LB.Ax1JIB@chimera>
+References: <hPXlJLjt4XG.A._lF.Jv1JIB@chimera>
+	 <88YBFoyd1CN.A.7LB.Ax1JIB@chimera>
+Content-Type: text/plain
+Date: Mon, 12 May 2008 07:34:17 +1000
+Message-Id: <1210541657.18009.3.camel@nigel-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 11, 2008 at 05:28:47PM -0400, Parag Warudkar wrote:
-> On Sun, May 11, 2008 at 4:04 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> >
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.25.  Please verify if it still should be listed.
-> >
-> >
-> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10616
-> > Subject         : Horrendous Audio Stutter - current git
+Hi.
+
+On Sun, 2008-05-11 at 22:04 +0200, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> Still present both in Linus tree and sched-devel - root cause is not
-> yet well understood per Ingo.
+> The following bug entry is on the current list of known regressions
+> from 2.6.25.  Please verify if it still should be listed.
 > 
-> Worked around by disabling GROUP_SCHED stuff by default (commit
-> aac6abca858386438d9a7233c3471d2ecfa2f704 ).
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10606
+> Subject		: 2.6.26-rc1 regression: ACPI fails to load SDT. - Dell M1530
+> Submitter	: NIgel Cunningham <nigel@suspend2.net>
+> Date		: 2008-05-05 18:11 (7 days old)
 
-What causes this regression?
+Patch is available and verified, but not yet in Mainline as far as I
+know.
 
-Is this commit 018d6db4cb5bbdcd65424a16f2dcca692ed32ae4
-(sched: re-do "sched: fix fair sleepers") that had already been reverted 
-in 2.6.25 for causing such regressions or is this caused by a different 
-commit?
+Regards,
 
-> Parag
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Nigel
 
