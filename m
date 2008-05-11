@@ -1,160 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757525AbYEKUqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758266AbYEKUrl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757525AbYEKUqb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 16:46:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753450AbYEKUqW
+	id S1758266AbYEKUrl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 16:47:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753450AbYEKUrd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 16:46:22 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:63807 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751343AbYEKUqV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 16:46:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:reply-to:mime-version:content-type:content-disposition:user-agent:from;
-        b=HUiljKjPWGzCsRLPDjWk+wM2BfbAqgUFCdLo3EupOlVW62N84hiBi2tRzM4zgEsBeNhV6t03rLgKG8pnKudm1ury7+G8wFB/thMxqhm3/kGhEOsQvSJMaYfQqCcyW9FPSOlXAUeaPAjNeI/DLCi3RE6dk6kBTUBeQ8WQenmhJV4=
-Date: Sun, 11 May 2008 22:46:14 +0200
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Error in save_stack_trace() on x86_64?
-Message-ID: <20080511204614.GA26910@damson.getinternet.no>
-Reply-To: 48274FF2.8040202@linux.intel.com
-MIME-Version: 1.0
+	Sun, 11 May 2008 16:47:33 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:50370 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750862AbYEKUrb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 May 2008 16:47:31 -0400
+Date: Sun, 11 May 2008 22:48:07 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Jiri Kosina <jkosina@suse.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-input@vger.kernel.org, marcel@holtmann.org,
+       linux-kernel@vger.kernel.org, anssi.hannula@gmail.com,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 9/9] HID: add compat support
+Message-ID: <20080511204807.GB850@uranus.ravnborg.org>
+References: <1210536043-19812-1-git-send-email-jirislaby@gmail.com> <1210536043-19812-2-git-send-email-jirislaby@gmail.com> <1210536043-19812-3-git-send-email-jirislaby@gmail.com> <1210536043-19812-4-git-send-email-jirislaby@gmail.com> <1210536043-19812-5-git-send-email-jirislaby@gmail.com> <1210536043-19812-6-git-send-email-jirislaby@gmail.com> <1210536043-19812-7-git-send-email-jirislaby@gmail.com> <1210536043-19812-8-git-send-email-jirislaby@gmail.com> <1210536043-19812-9-git-send-email-jirislaby@gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: Vegard Nossum <vegard.nossum@gmail.com>
+In-Reply-To: <1210536043-19812-9-git-send-email-jirislaby@gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 11, 2008 at 9:58 PM, Arjan van de Ven <arjan@linux.intel.com> wrote:
-> Vegard Nossum wrote: in userspace this trace looks correct.
+On Sun, May 11, 2008 at 10:00:43PM +0200, Jiri Slaby wrote:
+> Add compat option to hid code to allow loading of all modules on
+> systems which don't allow autoloading because of old userspace.
 > 
-> > No, it is happening from kernel code. As you can see from the original
-> > backtrace, the regs->ip (RIP) (regs taken from the very same
-> > do_page_fault()) points at add_uevent_var, which is a kernel function.
-> > 
-> > 
-> > >  if it happens in kernel space... I wonder if the separate exception
-> stack
-> > > thing
-> > >  is hurting us with the stacks not being properly connected...
-> > >  (but oopses and the like seem to come out just fine so I kinda doubt
-> you're
-> > > hitting that)
-> > > 
-> > > 
-> > 
-> > Thanks for looking into this.
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> ---
+>  drivers/hid/Kconfig        |   11 +++++++++++
+>  drivers/hid/Makefile       |   22 ++++++++++++++++++++++
+>  drivers/hid/hid-apple.c    |    2 ++
+>  drivers/hid/hid-core.c     |   12 ++++++++++++
+>  drivers/hid/hid-dummy.c    |   11 +++++++++++
+>  drivers/hid/hid-logitech.c |    2 ++
+>  include/linux/hid.h        |   13 +++++++++++--
+>  7 files changed, 71 insertions(+), 2 deletions(-)
+>  create mode 100644 drivers/hid/hid-dummy.c
+> 
+> diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
+> index 9a9fd7d..ba9ca39 100644
+> --- a/drivers/hid/Kconfig
+> +++ b/drivers/hid/Kconfig
+> @@ -70,6 +70,17 @@ source "drivers/hid/usbhid/Kconfig"
+>  menu "Special HID drivers"
+>  	depends on HID
 >  
->  do you happen to have something that I maybe can reproduce?
->  (if you have that it would save me a ton of time in reproducing)
+> +config HID_COMPAT
+> +	bool "Load all HID drivers on hid core load"
+> +	---help---
+> +	Compatible option for older userspace. If you have system without udev
+> +	support of module loading through aliases and also old
+> +	module-init-tools which can't handle hid bus, choose Y here. Otherwise
+> +	say N. If you say N and your userspace is old enough, the only
+> +	functionality you loose is modules autoloading.
+> +
+> +	If unsure, say N.
+> +
+>  config HID_LOGITECH
+>  	tristate "Logitech"
+>  	default m
+> diff --git a/drivers/hid/Makefile b/drivers/hid/Makefile
+> index 8a5cbbe..c5bca8f 100644
+> --- a/drivers/hid/Makefile
+> +++ b/drivers/hid/Makefile
+> @@ -15,3 +15,25 @@ obj-$(CONFIG_USB_HID)		+= usbhid/
+>  obj-$(CONFIG_USB_MOUSE)		+= usbhid/
+>  obj-$(CONFIG_USB_KBD)		+= usbhid/
 >  
+> +targets := hid-dummy.h
+> +
+> +ifdef CONFIG_HID_COMPAT
+> +
+> +obj-m		+= hid-dummy.o
+> +
+> +$(srctree)/$(src)/hid-dummy.c: $(obj)/hid-dummy.h
+> +
+> +$(obj)/hid-dummy.h: $(filter-out $(srctree)/drivers/hid/hid-dummy.c,$(wildcard $(srctree)/drivers/hid/*.c))
+> +	@echo -e 'static void __always_inline hid_dummy_load(void)\n{' > $@
+> +	@FUNS=`grep -h 'HID_COMPAT_LOAD_DRIVER(' $(srctree)/drivers/hid/*.c | \
+> +	sed -e 's/HID_COMPAT_LOAD_DRIVER( *\([^ ]*\) *) *;/\1/'`; \
+> +	for FUN in $$FUNS; do \
+> +		echo -e "\textern void hid_compat_$$FUN(void);"; \
+> +	done >> $@; \
+> +	echo >> $@; \
+> +	for FUN in $$FUNS; do \
+> +		echo -e "\thid_compat_$$FUN();"; \
+> +	done >> $@
+> +	@echo "}" >> $@
 
-Here's a very dirty hack that reproduces it for me. I'm sorry I don't have
-the logs to show it, but it works correctly on 32-bit, but not on 64-bit.
-
-I guess you should also make sure that:
-
-CONFIG_DEBUG_INFO=y
-CONFIG_FRAME_POINTER=y
-CONFIG_STACKTRACE=y
-
-Thanks.
+I would prefer to see this done explicit in favour of some magic
+makefile fragment as the above.
+It is much simpler to understand if done explicit.
+And it is not like we are talking 10 or 50 files here.
 
 
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while the programmer was not looking is intellectually dishonest as it disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
-
-
- arch/x86/mm/fault.c |   17 +++++++++++++++++
- init/main.c         |   12 ++++++++++++
- lib/Kconfig.debug   |    1 +
- 3 files changed, 30 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index fd7e179..559a5f3 100644
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -25,6 +25,7 @@
- #include <linux/kprobes.h>
- #include <linux/uaccess.h>
- #include <linux/kdebug.h>
-+#include <linux/stacktrace.h>
- 
- #include <asm/system.h>
- #include <asm/desc.h>
-@@ -602,6 +603,22 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
- 	if (notify_page_fault(regs))
- 		return;
- 
-+	dump_stack();
-+
-+	struct stack_trace trace;
-+	unsigned long entries[16];
-+	trace.nr_entries = 0;
-+	trace.entries = entries;
-+	trace.max_entries = 16;
-+	trace.skip = 0;
-+	printk(KERN_EMERG "saved stack trace:\n");
-+	save_stack_trace(&trace);
-+	print_stack_trace(&trace, 0);
-+	printk(KERN_EMERG "end saved stack trace\n");
-+
-+	while(1)
-+		halt();
-+
- 	/*
- 	 * We fault-in kernel-space virtual memory on-demand. The
- 	 * 'reference' page table is init_mm.pgd.
-diff --git a/init/main.c b/init/main.c
-index ddada7a..d9fb240 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -531,6 +531,16 @@ void __init __weak thread_info_cache_init(void)
- {
- }
- 
-+void noinline trigger_page_fault(void) {
-+	struct page *p = alloc_pages(GFP_KERNEL, 0);
-+	unsigned long addr = page_address(p);
-+	set_memory_4k(addr, 0);
-+	int level;
-+	pte_t *pte = lookup_address(addr, &level);
-+	set_pte(pte, __pte(pte_val(*pte) & ~_PAGE_PRESENT));
-+	*(char*) addr = 0;
-+}
-+
- asmlinkage void __init start_kernel(void)
- {
- 	char * command_line;
-@@ -680,6 +690,8 @@ asmlinkage void __init start_kernel(void)
- 
- 	acpi_early_init(); /* before LAPIC and SMP init */
- 
-+	trigger_page_fault();
-+
- 	/* Do the rest non-__init'ed, we're now alive */
- 	rest_init();
- }
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index d2099f4..3fc1247 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -419,6 +419,7 @@ config DEBUG_LOCKING_API_SELFTESTS
- 
- config STACKTRACE
- 	bool
-+	default y
- 	depends on DEBUG_KERNEL
- 	depends on STACKTRACE_SUPPORT
- 
--- 
-1.5.4.1
-
+	Sam
