@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753497AbYEKFok@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753212AbYEKF4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753497AbYEKFok (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 01:44:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbYEKFoa
+	id S1753212AbYEKF4i (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 01:56:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbYEKF42
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 01:44:30 -0400
-Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:35611 "EHLO
-	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751184AbYEKFo3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 01:44:29 -0400
-Message-ID: <482687B6.5070101@krogh.cc>
-Date: Sun, 11 May 2008 07:44:22 +0200
-From: Jesper Krogh <jesper@krogh.cc>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: yhlu.kernel@gmail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: NIU - Sun Neptune 10g - Transmit timed out reset (2.6.24)
-References: <20080507.141521.193714938.davem@davemloft.net>	<482498D5.9060008@krogh.cc>	<48258074.7060306@krogh.cc> <20080510.213431.193696750.davem@davemloft.net>
-In-Reply-To: <20080510.213431.193696750.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 11 May 2008 01:56:28 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:45014 "EHLO
+	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751098AbYEKF42 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 May 2008 01:56:28 -0400
+Date: Sat, 10 May 2008 23:57:16 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: HDIO_DRIVE_CMD failed on Dell Latitude D630
+In-reply-to: <fa.JGa9Aoo1QI9XNBPx1yZ0T7IP4qY@ifi.uio.no>
+To: Marcelo Laia <marcelolaia@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <48268ABC.9000700@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.JGa9Aoo1QI9XNBPx1yZ0T7IP4qY@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Jesper Krogh <jesper@krogh.cc>
-> Date: Sat, 10 May 2008 13:01:08 +0200
+Marcelo Laia wrote:
+> Dear Kernel Developer,
 > 
->> Any good suggestions about the "Transmit timed out" messages. It
->> currently leads to a system that "doesnt die" but doesnt respond within
->> 15 minutes of load of the network adapter.
+> Apologies for send this message to this list. I previous have sent
+> this problem to debian.user.portuguese malling list, after to
+> debian.user and, both, I don't receive a help that solve the problem.
 > 
-> It's likely some bug in the driver that hangs the card for whatever
-> reason, which we'll need to work out.
+> Here is the threads:
+> 
+> in portuguese: http://thread.gmane.org/gmane.linux.debian.user.portuguese/105597
+> 
+> in English: http://thread.gmane.org/gmane.linux.debian.user/322839
+> 
+> Here is a screenshot of the last showed screen before powerdown:
+> 
+> http://www.divshare.com/download/4384152-861
+> 
+> Have you a tip for me?
+> 
+> Thank you very much!
 
-What can I do to help out? I'd really like to get the 10g interface
-operational quite soon.
+Sounds like a Debian problem, trying to set acoustic management settings 
+on a DVD drive is not something the init scripts or whatever they are 
+should be doing. The aborted command error is expected because the drive 
+doesn't support that command.
 
-Jesper
--- 
-Jesper
+What was the actual problem you were seeing?
