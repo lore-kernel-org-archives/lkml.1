@@ -1,78 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758601AbYEKU2s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757169AbYEKUiG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758601AbYEKU2s (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 16:28:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753441AbYEKU2l
+	id S1757169AbYEKUiG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 16:38:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbYEKUhz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 16:28:41 -0400
-Received: from mailgw.infracomspa.it ([217.12.183.244]:4219 "EHLO
-	svkmg019i.infracomspa.it" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751601AbYEKU2k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 16:28:40 -0400
-Message-ID: <482756F0.8020609@infracom.it>
-Date: Sun, 11 May 2008 22:28:32 +0200
-From: Roberto Oppedisano <roberto.oppedisano@infracom.it>
-User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080420)
-MIME-Version: 1.0
-To: Stas Sergeev <stsp@aknet.ru>
-CC: LKML <linux-kernel@vger.kernel.org>, Takashi Iwai <tiwai@suse.de>
-Subject: Re: 2.6.26-rc1 regression: e5e1d3cb20034a3cbcfff1f0bae12201aa2ce17e
- breaks artsd
-References: <482737BE.20502@infracom.it> <4827415A.7060101@aknet.ru>
-In-Reply-To: <4827415A.7060101@aknet.ru>
-X-Enigmail-Version: 0.95.0
-X-MIMETrack: Itemize by SMTP Server on Venere/InfracomSpA/IT(Release 6.5.6|March 06, 2007) at
- 05/11/2008 10:28:33 PM,
-	Serialize by Router on Bacco/InfracomSpA/IT(Release 6.5.6|March 06, 2007) at
- 11/05/2008 22.28.39,
-	Serialize complete at 11/05/2008 22.28.39
-X-TM-AS-Product-Ver: <SMD>-<3.0.1.3628>-<5.5.1026>-<15894>
-X-TM-AS-Result: <No>-<-10009.581>-<5.0>-<99000>
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 11 May 2008 16:37:55 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:36931 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750862AbYEKUhy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 May 2008 16:37:54 -0400
+Date: Sun, 11 May 2008 22:38:27 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [2.6 patch] kernel/sched*: optimize inlining
+Message-ID: <20080511203827.GA850@uranus.ravnborg.org>
+References: <20080511092132.GE1645@cs181133002.pp.htv.fi> <20080511175222.GA31729@uranus.ravnborg.org> <20080511184952.GG1645@cs181133002.pp.htv.fi> <20080511194248.GA514@uranus.ravnborg.org> <20080511200016.GH1645@cs181133002.pp.htv.fi>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080511200016.GH1645@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+> > 
+> > You continue to fail to acknowledge that it is valueable information
+> > that we pass gcc a _hint_ that it is a good idea to inline certain
+> > functions.
+> > 
+> > The inline hint is there to tell gcc that it shall inline this function
+> > in cases where it usual think it should not do so. Which invietably
+> > will result in a larger codesize in some cases.
+> 
+> We also give gcc an explicit "Optimize for size.".
 
-Stas Sergeev wrote:
-> Hello.
->
-> Roberto Oppedisano wrote:
->   
->> artsd (kde sound daemon) is broken on current git for my system.
->>
->> git-bisect reveals the following patch as the culprit:
->>
->> commit e5e1d3cb20034a3cbcfff1f0bae12201aa2ce17e
->> Author: Stas Sergeev <stsp@aknet.ru>
->> Date:   Wed May 7 12:39:56 2008 +0200
->>
->>     pcspkr: fix dependancies
->>     
-> []
->   
->> More info on request.
->>     
-> cat /proc/asound/cards
->   
- 0 [pcsp           ]: PC-Speaker - pcsp
-                      Internal PC-Speaker at port 0x61
- 1 [I82801DBICH4   ]: ICH4 - Intel 82801DB-ICH4
-                      Intel 82801DB-ICH4 with AD1981B at irq 10
- 2 [Modem          ]: ICH-MODEM - Intel 82801DB-ICH4 Modem
-                      Intel 82801DB-ICH4 Modem at irq 10
-> I guess you simply got the pc-speaker driver
-> loaded first and became your primary sound
-> driver, which is not what you want.
->   
-yes, that's true. Anyway in this case the sound server crashes with a
-signal 6.
-Passing -D dsp1 to artsd avoids the crash, but I can't hear sound coming out
-from the speakers (this could be my fault, have to investigate a little
-bit more).
+gcc was asked to optimize for size in general as per the commandline option.
+But on a much more fine grained level gcc is given a hint that
+this function would be a good idea to inline.
 
-Kind regards
-R
+And I really expect gcc to pay most attention to the more specific
+information provided for a single function than a general commandline option.
+
+> 
+> If gcc would decide to ignore all hints that increase code size with -Os 
+> that would be perfectly fine behaviour.
+No - see above.
+
+> 
+> All the "optimized inlining" does is to allow gcc to no longer inline 
+> functions marked as "inline" if it prefers not to do so.
+The "optimized inlining" allows gcc (if gcc > 4.0) to make an educated
+guess if it is worhtwhile to inline a function or not. And when deciding
+to do so or not gcc may include many different factors inlcuding
+but not limited to -s.
+And this is certainly optimized compared to the situation where
+inline equals to always_inline.
+Keep in mind that we often perfer to have _less_ inlining than we have
+today for debugging ease. And this is what we get with optimized inlining
+compared to farced inlining.
+
+> 
+> And what exactly is your problem with my patch if you consider the 
+> general "optimized inlining" approach correct?
+
+I've already listed two things:
+-> It is no longer a simple kconfig change to try with or without.
+-> It is independent on gcc version
+
+And for fast path code like sched.c I would much assume a proper analysis
+when it is acceptable to remove the inline hint is almost mandatory.
+Your patch looks much more like a simple s/ inline//g.
+Especially since removing the inline hint is not configurable and
+thus it is not an easy task to ask some to try with or without this
+patch in two weeks from now where a clean revert is not possible.
+
+	Sam
