@@ -1,43 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755637AbYEKLaQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756255AbYEKLd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755637AbYEKLaQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 07:30:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbYEKLaE
+	id S1756255AbYEKLd1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 07:33:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753693AbYEKLdS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 07:30:04 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:56818 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752060AbYEKLaC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 07:30:02 -0400
-Date: Sun, 11 May 2008 07:30:01 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: David Miller <davem@davemloft.net>
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Sparc
-Message-ID: <20080511113001.GA29364@infradead.org>
-References: <20080511.022819.13047794.davem@davemloft.net>
+	Sun, 11 May 2008 07:33:18 -0400
+Received: from jade.aracnet.com ([216.99.193.136]:35479 "EHLO jade.aracnet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753681AbYEKLdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 May 2008 07:33:17 -0400
+Message-ID: <4826D74F.7060505@BitWagon.com>
+Date: Sun, 11 May 2008 04:23:59 -0700
+From: John Reiser <jreiser@BitWagon.com>
+Organization: -
+User-Agent: Mozilla Thunderbird 1.0.8-1.1.fc4 (X11/20060501)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
+To: Jeff Dike <jdike@addtoit.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Daniel Walker <dwalker@mvista.com>, Andi Kleen <andi@firstfloor.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Josh Aune <luken@omner.org>,
+       Pekka Paalanen <pq@iki.fi>
+Subject: Re: [ANNOUNCE] kmemcheck v7
+References: <47F630AE.7050801@gmail.com> <e2e108260805100207l13b67706h871f5f1c550e58b3@mail.gmail.com> <482565A5.8010503@cs.helsinki.fi> <e2e108260805100404h63f02194r62e53f79ae2a403f@mail.gmail.com> <19f34abd0805100502k150e3636x33831230d688dd92@mail.gmail.com> <4825D8A1.30008@goop.org> <20080510203548.GA7804@c2.user-mode-linux.org>
+In-Reply-To: <20080510203548.GA7804@c2.user-mode-linux.org>
+X-Enigmail-Version: 0.92.0.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080511.022819.13047794.davem@davemloft.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 11, 2008 at 02:28:19AM -0700, David Miller wrote:
-> 3) Provide a state akin to ->orig_eax on x86 that allows the debugger
->    to control syscall restart properly.
-> 
->    This, along with the matching gdb patch, kills about 40 or so gdb
->    testsuite failures on 32-bit and 64-bit sparc.
-> 
->    As a result M68K is now the only user of ptrace_signal_deliver(),
->    it's broken the same exact way sparc was, and thus needs similar
->    fixes.
+Jeff Dike wrote:
 
-Might be worth telling the m68k folks about it, so that it gets fixed
-aswell.
+> ... not grinding processes means you don't need to figure out
+> how to get the valgrind engine into your processes.
+
+One easy way to force valgrind into a process is for load_elf_binary()
+in fs/binfmt_elf.c to force a PT_INTERP which loads memcheck via
+true user-mode calls, then chains to the original PT_INTERP.
+
+-- 
+John Reiser, jreiser@BitWagon.com
