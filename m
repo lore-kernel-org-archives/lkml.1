@@ -1,67 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758645AbYEKUYw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758601AbYEKU2s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758645AbYEKUYw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 16:24:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbYEKUYo
+	id S1758601AbYEKU2s (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 16:28:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753441AbYEKU2l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 16:24:44 -0400
-Received: from mail.ift.unesp.br ([200.145.46.3]:43637 "EHLO mail.ift.unesp.br"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751852AbYEKUYn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 16:24:43 -0400
-Date: Sun, 11 May 2008 17:24:17 -0300
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: Tilman Schmidt <tilman@imap.cc>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, yakui.zhao@intel.com,
-       davej@codemonkey.org.uk
-Subject: Re: [2.6.26-rc1] WARNING: at drivers/base/sys.c:183
-Message-ID: <20080511202416.GA5771@beyonder.ift.unesp.br>
-Mail-Followup-To: Tilman Schmidt <tilman@imap.cc>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linux-acpi@vger.kernel.org, yakui.zhao@intel.com,
-	davej@codemonkey.org.uk
-References: <48273860.1000103@imap.cc>
+	Sun, 11 May 2008 16:28:41 -0400
+Received: from mailgw.infracomspa.it ([217.12.183.244]:4219 "EHLO
+	svkmg019i.infracomspa.it" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751601AbYEKU2k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 May 2008 16:28:40 -0400
+Message-ID: <482756F0.8020609@infracom.it>
+Date: Sun, 11 May 2008 22:28:32 +0200
+From: Roberto Oppedisano <roberto.oppedisano@infracom.it>
+User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080420)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48273860.1000103@imap.cc>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Stas Sergeev <stsp@aknet.ru>
+CC: LKML <linux-kernel@vger.kernel.org>, Takashi Iwai <tiwai@suse.de>
+Subject: Re: 2.6.26-rc1 regression: e5e1d3cb20034a3cbcfff1f0bae12201aa2ce17e
+ breaks artsd
+References: <482737BE.20502@infracom.it> <4827415A.7060101@aknet.ru>
+In-Reply-To: <4827415A.7060101@aknet.ru>
+X-Enigmail-Version: 0.95.0
+X-MIMETrack: Itemize by SMTP Server on Venere/InfracomSpA/IT(Release 6.5.6|March 06, 2007) at
+ 05/11/2008 10:28:33 PM,
+	Serialize by Router on Bacco/InfracomSpA/IT(Release 6.5.6|March 06, 2007) at
+ 11/05/2008 22.28.39,
+	Serialize complete at 11/05/2008 22.28.39
+X-TM-AS-Product-Ver: <SMD>-<3.0.1.3628>-<5.5.1026>-<15894>
+X-TM-AS-Result: <No>-<-10009.581>-<5.0>-<99000>
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 11.May'08 at 20:18:08 +0200, Tilman Schmidt wrote:
-> This warning, first reported for 2.6.25-rc5-mm1
-> (see http://lkml.org/lkml/2008/3/12/444)
-> has now made it into mainline:
-> 
-> May 11 19:32:44 xenon kernel: [   29.017148] powernow: This module only works with AMD K7 CPUs
-> May 11 19:32:44 xenon kernel: [   29.607563] sysdev: class cpu: driver (c0439804) has already been registered to a class, something is wrong, but will forge on!
-> May 11 19:32:44 xenon kernel: [   29.611835] ------------[ cut here ]------------
-> May 11 19:32:44 xenon kernel: [   29.616182] WARNING: at drivers/base/sys.c:183 sysdev_driver_register+0x59/0xf2()
-> May 11 19:32:44 xenon kernel: [   29.622037] Modules linked in: acpi_cpufreq(+) speedstep_lib microcode firmware_class loop osst st sr_mod cdrom pata_acpi bas_gigaset snd_hda_intel gigaset isdn snd_pcm rtc_cmos ata_generic aic7xxx snd_timer rtc_core usblp snd slhc ohci1394 pata_marvell thermal ieee1394 rtc_lib i2c_i801 parport_pc intel_agp processor soundcore crc_ccitt iTCO_wdt button scsi_transport_spi iTCO_vendor_support parport snd_page_alloc agpgart i2c_core sg ext3 jbd mbcache linear usbhid hid sd_mod ahci libata uhci_hcd ehci_hcd scsi_mod dock usbcore dm_snapshot dm_mod
-> May 11 19:32:44 xenon kernel: [   29.648305] Pid: 2860, comm: modprobe Not tainted 2.6.26-rc1-testing #1
-> May 11 19:32:44 xenon kernel: [   29.653156]  [<c0129d09>] warn_on_slowpath+0x41/0x6d
-> May 11 19:32:44 xenon kernel: [   29.658026]  [<c0120032>] ? push_rt_task+0xb1/0x1ab
-> May 11 19:32:44 xenon kernel: [   29.664013]  [<c012a75a>] ? vprintk+0x3a5/0x3c5
-> May 11 19:32:44 xenon kernel: [   29.670995]  [<c010b7a4>] ? native_sched_clock+0xe0/0xff
-> May 11 19:32:44 xenon kernel: [   29.675849]  [<c010b7a4>] ? native_sched_clock+0xe0/0xff
-> May 11 19:32:44 xenon kernel: [   29.680678]  [<c0143881>] ? put_lock_stats+0xd/0x21
-> May 11 19:32:44 xenon kernel: [   29.685465]  [<c012a78f>] ? printk+0x15/0x17
-> May 11 19:32:44 xenon kernel: [   29.690406]  [<c026a57a>] sysdev_driver_register+0x59/0xf2
-> May 11 19:32:44 xenon kernel: [   29.696845]  [<c02a8fe3>] cpufreq_register_driver+0x80/0xfc
-> May 11 19:32:44 xenon kernel: [   29.701892]  [<faafe034>] acpi_cpufreq_init+0x34/0x3a [acpi_cpufreq]
-> May 11 19:32:44 xenon kernel: [   29.708279]  [<c014d441>] sys_init_module+0x1883/0x1a34
-> May 11 19:32:44 xenon kernel: [   29.713176]  [<c0106b63>] sysenter_past_esp+0x78/0xd1
-> May 11 19:32:44 xenon kernel: [   29.718586]  =======================
-> May 11 19:32:44 xenon kernel: [   29.723414] ---[ end trace da2515dc0122d0b1 ]---
-> 
-> ts@xenon:~> uname -a
-> Linux xenon 2.6.26-rc1-testing #1 SMP PREEMPT Tue May 6 19:52:43 CEST 2008 i686 i686 i386 GNU/Linux
+Hello.
 
-Isn't it fixed by db176c6ed8974fae94328ad5ac9e70b094ff22fd 
-("Fix bogus warning in sysdev_driver_register()") ?
+Stas Sergeev wrote:
+> Hello.
+>
+> Roberto Oppedisano wrote:
+>   
+>> artsd (kde sound daemon) is broken on current git for my system.
+>>
+>> git-bisect reveals the following patch as the culprit:
+>>
+>> commit e5e1d3cb20034a3cbcfff1f0bae12201aa2ce17e
+>> Author: Stas Sergeev <stsp@aknet.ru>
+>> Date:   Wed May 7 12:39:56 2008 +0200
+>>
+>>     pcspkr: fix dependancies
+>>     
+> []
+>   
+>> More info on request.
+>>     
+> cat /proc/asound/cards
+>   
+ 0 [pcsp           ]: PC-Speaker - pcsp
+                      Internal PC-Speaker at port 0x61
+ 1 [I82801DBICH4   ]: ICH4 - Intel 82801DB-ICH4
+                      Intel 82801DB-ICH4 with AD1981B at irq 10
+ 2 [Modem          ]: ICH-MODEM - Intel 82801DB-ICH4 Modem
+                      Intel 82801DB-ICH4 Modem at irq 10
+> I guess you simply got the pc-speaker driver
+> loaded first and became your primary sound
+> driver, which is not what you want.
+>   
+yes, that's true. Anyway in this case the sound server crashes with a
+signal 6.
+Passing -D dsp1 to artsd avoids the crash, but I can't hear sound coming out
+from the speakers (this could be my fault, have to investigate a little
+bit more).
 
-This commit is post-rc1: v2.6.26-rc1-165-gdb176c6
-
+Kind regards
+R
