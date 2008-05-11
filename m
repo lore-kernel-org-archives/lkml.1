@@ -1,55 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755756AbYEKByo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755834AbYEKB7J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755756AbYEKByo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 May 2008 21:54:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753501AbYEKByh
+	id S1755834AbYEKB7J (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 May 2008 21:59:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753501AbYEKB6y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 May 2008 21:54:37 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:64923 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753493AbYEKByg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 May 2008 21:54:36 -0400
-Date: Sun, 11 May 2008 02:54:11 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Alessandro Zummo <a.zummo@towertech.it>, Alexander Bigga <ab@mycable.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] RTC: M41T80: Use pr_info() as appropriate
-Message-ID: <Pine.LNX.4.55.0805110250570.18978@cliff.in.clinika.pl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 10 May 2008 21:58:54 -0400
+Received: from fmailhost04.isp.att.net ([204.127.217.104]:41924 "EHLO
+	fmailhost01.isp.att.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752129AbYEKB6w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 May 2008 21:58:52 -0400
+X-Originating-IP: [74.251.48.254]
+Date: Sat, 10 May 2008 20:58:47 -0500
+From: Jay Cliburn <jacliburn@bellsouth.net>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Chris Snook <csnook@redhat.com>, Luca Tettamanti <kronos.it@gmail.com>,
+       Jeff Garzik <jeff@garzik.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] Re: atl1 64-bit => 32-bit DMA borkage (reproducible,
+ bisected)
+Message-ID: <20080510205847.425801c0@osprey.hogchain.net>
+In-Reply-To: <20080510193107.GA4930@martell.zuzino.mipt.ru>
+References: <20080420133704.63f5cc10@osprey.hogchain.net>
+	<20080420205500.GA4762@martell.zuzino.mipt.ru>
+	<20080421210821.28053a92@osprey.hogchain.net>
+	<20080425195743.2bfe66ee@osprey.hogchain.net>
+	<20080504211507.GC1040@martell.zuzino.mipt.ru>
+	<20080506110225.31fd61a4@osprey.hogchain.net>
+	<20080509195149.GA4985@martell.zuzino.mipt.ru>
+	<48249E55.1020300@redhat.com>
+	<20080509200715.GA5040@martell.zuzino.mipt.ru>
+	<20080509143854.7bc39ab7@osprey.hogchain.net>
+	<20080510193107.GA4930@martell.zuzino.mipt.ru>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Replace printk(KERN_INFO ...) calls with appropriate pr_info(...) 
-equivalents.
+On Sat, 10 May 2008 23:31:07 +0400
+Alexey Dobriyan <adobriyan@gmail.com> wrote:
 
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
----
- By request of I2C maintainers I have made it a separate patch.  It should 
-be obvious.  Please apply.
+> On Fri, May 09, 2008 at 02:38:54PM -0500, Jay Cliburn wrote:
 
-  Maciej
+> > The bug appears to be a "simple" skb write-after-free that happens
+> > only when bounce buffers are in use, but I'll be damned if I can
+> > find the cause of it.
+> > 
+> > <continues looking>
+> 
+> Try this patch! If scared, remove swiotlb poisoning, I'm not entirely
+> sure it's correct, but it makes aforementioned second oops
+> deterministic.
 
-patch-2.6.26-rc1-20080505-m41t80-pr_info-15
-diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/drivers/rtc/rtc-m41t80.c linux-2.6.26-rc1-20080505/drivers/rtc/rtc-m41t80.c
---- linux-2.6.26-rc1-20080505.macro/drivers/rtc/rtc-m41t80.c	2008-05-05 02:55:40.000000000 +0000
-+++ linux-2.6.26-rc1-20080505/drivers/rtc/rtc-m41t80.c	2008-05-10 03:35:55.000000000 +0000
-@@ -629,14 +629,12 @@ static int wdt_ioctl(struct inode *inode
- 			return -EFAULT;
- 
- 		if (rv & WDIOS_DISABLECARD) {
--			printk(KERN_INFO
--			       "rtc-m41t80: disable watchdog\n");
-+			pr_info("rtc-m41t80: disable watchdog\n");
- 			wdt_disable();
- 		}
- 
- 		if (rv & WDIOS_ENABLECARD) {
--			printk(KERN_INFO
--			       "rtc-m41t80: enable watchdog\n");
-+			pr_info("rtc-m41t80: enable watchdog\n");
- 			wdt_ping();
- 		}
- 
+Seems to fix it for me.  Nicely done, Alexey!  Thanks!
+
+I looked at that blasted unmap a thousand times, but never noticed the
+missing buffer_info->dma clear.
+
+I'll get input from one more tester, and if it's positive, I'll submit
+this to Jeff.
+
+Thanks again.
+
+> 
+> --- a/drivers/net/atlx/atl1.c
+> +++ b/drivers/net/atlx/atl1.c
+> @@ -2027,6 +2029,7 @@ rrd_ok:
+>  		/* Good Receive */
+>  		pci_unmap_page(adapter->pdev, buffer_info->dma,
+>  			       buffer_info->length,
+> PCI_DMA_FROMDEVICE);
+> +		buffer_info->dma = 0;
+>  		skb = buffer_info->skb;
+>  		length = le16_to_cpu(rrd->xsz.xsum_sz.pkt_size);
+>  
+> diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+> index d568894..f6165ed 100644
+> --- a/lib/swiotlb.c
+> +++ b/lib/swiotlb.c
+> @@ -399,12 +399,14 @@ unmap_single(struct device *hwdev, char
+> *dma_addr, size_t size, int dir) /*
+>  	 * First, sync the memory before unmapping the entry
+>  	 */
+> -	if (buffer && ((dir == DMA_FROM_DEVICE) || (dir ==
+> DMA_BIDIRECTIONAL)))
+> +	if (buffer && ((dir == DMA_FROM_DEVICE) || (dir ==
+> DMA_BIDIRECTIONAL))) { /*
+>  		 * bounce... copy the data back into the original
+> buffer * and
+>  		 * delete the bounce buffer.
+>  		 */
+>  		memcpy(buffer, dma_addr, size);
+> +		io_tlb_orig_addr[index] = (void
+> *)0x9a9a9a9a9a9a9a9aUL;
+> +	}
+>  
+>  	/*
+>  	 * Return the buffer to the free list by setting the
+> corresponding
+> 
