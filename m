@@ -1,146 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755260AbYEKMus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756565AbYEKMvc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755260AbYEKMus (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 08:50:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbYEKMuj
+	id S1756565AbYEKMvc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 08:51:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755564AbYEKMvT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 08:50:39 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:46494 "EHLO mgw1.diku.dk"
+	Sun, 11 May 2008 08:51:19 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53724 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750857AbYEKMuh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 08:50:37 -0400
-Date: Sun, 11 May 2008 14:50:33 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: perex@perex.cz, ricardo@scarybox.net, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/4] sound/isa: use unsigned for loop index
-Message-ID: <Pine.LNX.4.64.0805111450000.29620@ask.diku.dk>
+	id S1755517AbYEKMvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 May 2008 08:51:08 -0400
+Date: Sun, 11 May 2008 14:50:49 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Sven Wegener <sven.wegener@stealer.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull] scheduler fixes
+Message-ID: <20080511125049.GA22513@elte.hu>
+References: <1210214696.3453.87.camel@ymzhang> <alpine.LFD.1.10.0805072014330.3024@woody.linux-foundation.org> <1210219729.3453.97.camel@ymzhang> <alpine.LFD.1.10.0805072115190.3024@woody.linux-foundation.org> <20080508120130.GA2860@elte.hu> <20080508122802.GA4880@elte.hu> <20080508144316.GA9869@elte.hu> <20080508151028.GA12109@elte.hu> <20080511110306.GP19219@parisc-linux.org> <20080511114803.GA8289@parisc-linux.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080511114803.GA8289@parisc-linux.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
 
-A few more cases in the spirit of the patch "Trivial: Replacement of always
->0 ints with unsigned ints" submitted by Ricardo Martins <ricardo@scarybox.net>
+* Matthew Wilcox <matthew@wil.cx> wrote:
 
-The transformation was made using the following semantic patch
-(http://www.emn.fr/x-info/coccinelle/)
+> So I deem my fix "proven by thought experiment".  I haven't tried 
+> booting it or anything.
 
-// <smpl>
-@r exists@ // find anything that might decrement the variable
-identifier i;
-expression E;
-position p;
-@@
+i actually have two fixes, made earlier today. The 'fix3' one has been 
+confirmed by Sven to fix the regression - but i think we need the 'fix 
+#2' one below as well to make it complete.
 
-  int i@p;
-  ...
-(
-  &i
-|
-  i--
-|
-  --i
-|
-  i-=E
-|
-  i+=E
-)
+	Ingo
 
-@x disable decl_init@
-identifier r.i;
-expression E;
-position p1 != r.p;
-@@
+-------------------->
+Subject: semaphore: fix3
+From: Ingo Molnar <mingo@elte.hu>
+Date: Sun May 11 09:51:07 CEST 2008
 
-(
-  volatile int i = 0;
-|
-  volatile int i;
-|
-+ unsigned
-  int i@p1 = 0;
-|
-+ unsigned
-  int i@p1;
-)
-  <... when != i = E      
-(
-  i = 0
-|
-  i = 1
-)
-  ...>
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
+ kernel/semaphore.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
- sound/isa/es1688/es1688_lib.c      |    2 +-
- sound/isa/es18xx.c                 |    4 ++--
- sound/isa/opti9xx/opti92x-ad1848.c |    2 +-
- sound/isa/sgalaxy.c                |    2 +-
- 4 files changed, 5 insertions(+), 5 deletions(-)
+Index: linux/kernel/semaphore.c
+===================================================================
+--- linux.orig/kernel/semaphore.c
++++ linux/kernel/semaphore.c
+@@ -258,5 +258,12 @@ static noinline void __sched __up(struct
+ {
+ 	struct semaphore_waiter *waiter = list_first_entry(&sem->wait_list,
+ 						struct semaphore_waiter, list);
++
++	/*
++	 * Rotate sleepers - to make sure all of them get woken in case
++	 * of parallel up()s:
++	 */
++	list_move_tail(&waiter->list, &sem->wait_list);
++
+ 	wake_up_process(waiter->task);
+ }
 
+---------------->
+Subject: semaphore: fix #2
+From: Ingo Molnar <mingo@elte.hu>
+Date: Thu May 08 11:53:48 CEST 2008
 
-diff -u -p a/sound/isa/es1688/es1688_lib.c b/sound/isa/es1688/es1688_lib.c
---- a/sound/isa/es1688/es1688_lib.c 2008-04-16 13:28:05.000000000 +0200
-+++ b/sound/isa/es1688/es1688_lib.c 2008-05-11 12:20:19.000000000 +0200
-@@ -101,7 +101,7 @@ static unsigned char snd_es1688_mixer_re
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/semaphore.c |   16 ++++++++++------
+ 1 file changed, 10 insertions(+), 6 deletions(-)
+
+Index: linux/kernel/semaphore.c
+===================================================================
+--- linux.orig/kernel/semaphore.c
++++ linux/kernel/semaphore.c
+@@ -194,6 +194,13 @@ struct semaphore_waiter {
+ 	struct task_struct *task;
+ };
  
- static int snd_es1688_reset(struct snd_es1688 *chip)
- {
--	int i;
-+	unsigned int i;
++static noinline void __sched __up(struct semaphore *sem)
++{
++	struct semaphore_waiter *waiter = list_first_entry(&sem->wait_list,
++						struct semaphore_waiter, list);
++	wake_up_process(waiter->task);
++}
++
+ /*
+  * Because this function is inlined, the 'state' parameter will be
+  * constant, and thus optimised away by the compiler.  Likewise the
+@@ -231,6 +238,9 @@ static inline int __sched __down_common(
+ 	}
  
- 	outb(3, ES1688P(chip, RESET));		/* valid only for ESS chips, SB -> 1 */
- 	udelay(10);
-diff -u -p a/sound/isa/es18xx.c b/sound/isa/es18xx.c
---- a/sound/isa/es18xx.c 2008-04-16 13:28:05.000000000 +0200
-+++ b/sound/isa/es18xx.c 2008-05-11 12:20:16.000000000 +0200
-@@ -361,7 +361,7 @@ static inline int snd_es18xx_mixer_writa
+ 	list_del(&waiter.list);
++	if (unlikely(!list_empty(&sem->wait_list)) && sem->count)
++		__up(sem);
++
+ 	return ret;
+ }
  
- static int snd_es18xx_reset(struct snd_es18xx *chip)
- {
--	int i;
-+	unsigned int i;
-         outb(0x03, chip->port + 0x06);
-         inb(chip->port + 0x06);
-         outb(0x00, chip->port + 0x06);
-@@ -2238,7 +2238,7 @@ static int __devinit snd_es18xx_isa_prob
- 		return snd_es18xx_isa_probe1(dev, pdev);
- 	} else {
- 		static unsigned long possible_ports[] = {0x220, 0x240, 0x260, 0x280};
--		int i;
-+		unsigned int i;
- 		for (i = 0; i < ARRAY_SIZE(possible_ports); i++) {
- 			port[dev] = possible_ports[i];
- 			err = snd_es18xx_isa_probe1(dev, pdev);
-diff -u -p a/sound/isa/opti9xx/opti92x-ad1848.c b/sound/isa/opti9xx/opti92x-ad1848.c
---- a/sound/isa/opti9xx/opti92x-ad1848.c 2008-04-16 13:28:05.000000000 +0200
-+++ b/sound/isa/opti9xx/opti92x-ad1848.c 2008-05-11 12:20:18.000000000 +0200
-@@ -1204,7 +1204,7 @@ static int snd_opti93x_capture_close(str
- static void snd_opti93x_init(struct snd_opti93x *chip)
- {
- 	unsigned long flags;
--	int i;
-+	unsigned int i;
+@@ -254,9 +264,3 @@ static noinline int __sched __down_timeo
+ 	return __down_common(sem, TASK_UNINTERRUPTIBLE, jiffies);
+ }
  
- 	spin_lock_irqsave(&chip->lock, flags);
- 	snd_opti93x_mce_up(chip);
-diff -u -p a/sound/isa/sgalaxy.c b/sound/isa/sgalaxy.c
---- a/sound/isa/sgalaxy.c 2008-04-16 13:28:05.000000000 +0200
-+++ b/sound/isa/sgalaxy.c 2008-05-11 12:20:18.000000000 +0200
-@@ -79,7 +79,7 @@ MODULE_PARM_DESC(dma1, "DMA1 # for Sound
- 
- static int snd_sgalaxy_sbdsp_reset(unsigned long port)
- {
--	int i;
-+	unsigned int i;
- 
- 	outb(1, SBP1(port, RESET));
- 	udelay(10);
+-static noinline void __sched __up(struct semaphore *sem)
+-{
+-	struct semaphore_waiter *waiter = list_first_entry(&sem->wait_list,
+-						struct semaphore_waiter, list);
+-	wake_up_process(waiter->task);
+-}
