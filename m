@@ -1,69 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757267AbYEKA5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754191AbYEKA6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757267AbYEKA5b (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 10 May 2008 20:57:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751874AbYEKA5X
+	id S1754191AbYEKA6V (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 10 May 2008 20:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751874AbYEKA6D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 10 May 2008 20:57:23 -0400
-Received: from [194.117.236.238] ([194.117.236.238]:52028 "EHLO
-	heracles.linux360.ro" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1750735AbYEKA5X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 10 May 2008 20:57:23 -0400
-Date: Sun, 11 May 2008 03:56:44 +0300
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: Paul McKenney <Paul.McKenney@us.ibm.com>
-Cc: Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: Using markers w/ preemptible RCU in early code
-Message-ID: <20080511035644.3613a9a2@linux360.ro>
-In-Reply-To: <OFFCD1EB75.A69A5A3C-ON88257445.007BA01C-88257446.0002C7EF@us.ibm.com>
-References: <20080509223823.GD12311@Krystal>
-	<OFFCD1EB75.A69A5A3C-ON88257445.007BA01C-88257446.0002C7EF@us.ibm.com>
-X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 10 May 2008 20:58:03 -0400
+Received: from ozlabs.org ([203.10.76.45]:38673 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757457AbYEKA5t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 10 May 2008 20:57:49 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 3/3] module: don't ignore vermagic string if module doesn't have modversions
+Date: Sun, 11 May 2008 10:57:34 +1000
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>
+References: <200805091623.18127.rusty@rustcorp.com.au> <200805091625.28705.rusty@rustcorp.com.au> <alpine.LFD.1.10.0805090739240.3142@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0805090739240.3142@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805111057.34790.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 10 May 2008 17:30:23 -0700
-Paul McKenney <Paul.McKenney@us.ibm.com> wrote:
+On Saturday 10 May 2008 00:44:34 Linus Torvalds wrote:
+> On Fri, 9 May 2008, Rusty Russell wrote:
+> > We should only ignore the start of the vermagic string if the module
+> > actually *has* crcs to check.  Rather than (say) having an
+> > entertaining hissy fit and creating a config option to work around the
+> > buggy code.
+>
+> Btw, this makes the two vesions of "same_magic()" be basically the same
+> (since without MODVERSIONS, has_crcs *should* always be zero). Maybe we
+> should make it just one version, to simplify logic?
 
-> There might be an easy and harmless fix for early-boot use of 
-> synchronize_sched() -- I will look into this.
-> 
-> As noted above, call_rcu() is not a problem.
-> 
-> The rcu_barrier*() primitives must never be invoked at early boot
-> time. These primitives absolutely must block until all of the
-> corresponding flavor of callback has been invoked (and completed),
-> but it is not possible to block during early boot.  Perhaps they
-> should do a WARN_ON() or BUG_ON() in this case?
-> 
-> But why are you calling rcu_barrier() during early boot in the first 
-> place?
+I know, but it's a little subtle.
 
-Hi,
+If the module has an __versions section, yet the kernel was built without 
+CONFIG_MODVERSIONS, we should not ignore the first part of the version.  We 
+could just #ifdef CONFIG_MODVERSIONS around the verindex initialization tho, 
+to guarantee that it's 0 for !MODVERSIONS.  But that puts YA #ifdef in that 
+function, and I already itch to clean up the ones there...
 
-Mathieu's code does not call rcu_barrier() explicitely during early
-boot. It just happens that I need to use his code (i.e. markers) at that
-moment.
-
-My understanding is that we could skip any synchronization primitives
-during early code, since there is no SMP and no preemption (and no IRQs
-popping around, maybe?). RCU stuff still needs to get registered for
-later on, though.
-
-I guess we should write a marker_probe_register() variant for early
-code, with no rcu_barrier() and no synchronize_sched() around.
-
-Mathieu, does this sound okay?
-
-(Paul, I removed your alias from the Cc list, so you don't get duplicates.)
-
-
-Thanks for your input,
-		Eduard
+Cheers,
+Rusty.
