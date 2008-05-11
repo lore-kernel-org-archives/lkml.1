@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759199AbYEKUMp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758065AbYEKUSr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759199AbYEKUMp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 16:12:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753246AbYEKUMh
+	id S1758065AbYEKUSr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 16:18:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751601AbYEKUSi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 16:12:37 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:44269 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751424AbYEKUMg (ORCPT
+	Sun, 11 May 2008 16:18:38 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:36862 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751343AbYEKUSh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 16:12:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=gstFtbdxhExomglmm9mjcEXWN0s2NBPTvoQJR11L80Y/WoTV4cqpjHg/6Ca2E43rssTFg2LHPa+ss+AYrfWd3NoJCZ7H8T6iSGO66XQNdqRsPfz5PUwa0ri4f1JGiDfwP0gKtgzb/ZXbfkLRtXWBcKzLeIDC+PTcv/qpwGiensc=
-Date: Sun, 11 May 2008 22:12:14 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] let ERR_PTR BUILD_BUG_ON when we know its argument is not
-	a valid errno
-Message-ID: <20080511201209.GO19058@joi>
+	Sun, 11 May 2008 16:18:37 -0400
+Message-ID: <48275493.40601@firstfloor.org>
+Date: Sun, 11 May 2008 22:18:27 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Johannes Weiner <hannes@saeurebad.de>
+CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 0/3] bootmem2 III
+References: <20080509151713.939253437@saeurebad.de>	<20080509184044.GA19109@one.firstfloor.org> <87lk2gtzta.fsf@saeurebad.de>
+In-Reply-To: <87lk2gtzta.fsf@saeurebad.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>
----
-allmodconfig compile tested (on x86_64)
+Johannes Weiner wrote:
 
-should be applied after:
-net/sunrpc/xprtrdma: fix svc_rdma_create out of memory error path
-jfs: 0 is not valid errno value
----
- include/linux/err.h |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+>> On Fri, May 09, 2008 at 05:17:13PM +0200, Johannes Weiner wrote:
+>>> here is bootmem2, a memory block-oriented boot time allocator.
+>>>
+>>> Recent NUMA topologies broke the current bootmem's assumption that
+>>> memory nodes provide non-overlapping and contiguous ranges of pages.
+>> I'm still not sure that's a really good rationale for bootmem2.
+>> e.g. the non continuous nodes are really special cases and there tends
+>> to be enough memory at the beginning which is enough for boot time
+>> use, so for those systems it would be quite reasonably to only 
+>> put the continuous starts of the nodes into bootmem.
+> 
+> Hm, that would put the logic into arch-code.  I have no strong opinion
+> about it.
 
-diff --git a/include/linux/err.h b/include/linux/err.h
---- a/include/linux/err.h
-+++ b/include/linux/err.h
-@@ -19,11 +19,13 @@
- 
- #define IS_ERR_VALUE(x) unlikely((x) >= (unsigned long)-MAX_ERRNO)
- 
--static inline void *ERR_PTR(long error)
-+static inline void *__ERR_PTR(long error)
- {
- 	return (void *) error;
- }
- 
-+#define ERR_PTR(error) (BUILD_BUG_ON(!IS_ERR_VALUE(error)), __ERR_PTR(error))
-+
- static inline long PTR_ERR(const void *ptr)
- {
- 	return (long) ptr;
--- 
+In fact I suspect the current code will already work like that
+implicitely. The aliasing is only a problem for the new "arbitary node
+free_bootmem" right?
+
+>> That said the bootmem code has gotten a little crufty and a clean
+>> rewrite might be a good idea.
+> 
+> I agree completely.
+
+The trouble is just that bootmem is used in early boot and early boot is
+very subtle and getting it working over all architectures could be a
+challenge. Not wanting to discourage you, but it's not exactly the
+easiest part of the kernel to hack on.
+
+-Andi
