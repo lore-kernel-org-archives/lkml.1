@@ -1,26 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758084AbYEKRps@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756298AbYEKRqH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758084AbYEKRps (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 13:45:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbYEKRpj
+	id S1756298AbYEKRqH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 13:46:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756399AbYEKRpl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 13:45:39 -0400
-Received: from mx1.riseup.net ([204.13.164.18]:41494 "EHLO mx1.riseup.net"
+	Sun, 11 May 2008 13:45:41 -0400
+Received: from mx1.riseup.net ([204.13.164.18]:41496 "EHLO mx1.riseup.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754112AbYEKRpi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 13:45:38 -0400
-Message-Id: <20080511174331.584439618@kaehlcke.net>
+	id S1755620AbYEKRpk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 May 2008 13:45:40 -0400
+Message-Id: <20080511174332.994796915@kaehlcke.net>
+References: <20080511174331.584439618@kaehlcke.net>
 User-Agent: quilt/0.46-1
-Date: Sun, 11 May 2008 19:43:31 +0200
+Date: Sun, 11 May 2008 19:43:32 +0200
 From: matthias@kaehlcke.net
 To: zippel@linux-m68k.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [patch 0/2] HFS: Convert bitmap_lock and extents_lock in mutexes
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Matthias Kaehlcke <matthias@kaehlcke.net>
+Subject: [patch 1/2] HFS: Convert bitmap_lock in a mutex
+Content-Disposition: inline; filename=fs-hfs-bitmap_lock-to-mutex.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Apple Macintosh file system: The semaphores bitmap_lock and extents_lock are used as mutexes. Convert them to the mutex API
+Apple Macintosh file system: The semaphore bitmap_lock is used as a mutex. 
+Convert it to the mutex API
+
+Signed-off-by: Matthias Kaehlcke <matthias@kaehlcke.net>
+
+
+Index: hfs/bitmap.c
+===================================================================
+--- hfs.orig/bitmap.c	2008-05-11 19:10:19.000000000 +0200
++++ hfs/bitmap.c	2008-05-11 19:11:17.000000000 +0200
+@@ -145,7 +145,7 @@
+ 	if (!*num_bits)
+ 		return 0;
+ 
+-	down(&HFS_SB(sb)->bitmap_lock);
++	mutex_lock(&HFS_SB(sb)->bitmap_lock);
+ 	bitmap = HFS_SB(sb)->bitmap;
+ 
+ 	pos = hfs_find_set_zero_bits(bitmap, HFS_SB(sb)->fs_ablocks, goal, num_bits);
+@@ -162,7 +162,7 @@
+ 	HFS_SB(sb)->free_ablocks -= *num_bits;
+ 	hfs_bitmap_dirty(sb);
+ out:
+-	up(&HFS_SB(sb)->bitmap_lock);
++	mutex_unlock(&HFS_SB(sb)->bitmap_lock);
+ 	return pos;
+ }
+ 
+@@ -205,7 +205,7 @@
+ 	if ((start + count) > HFS_SB(sb)->fs_ablocks)
+ 		return -2;
+ 
+-	down(&HFS_SB(sb)->bitmap_lock);
++	mutex_lock(&HFS_SB(sb)->bitmap_lock);
+ 	/* bitmap is always on a 32-bit boundary */
+ 	curr = HFS_SB(sb)->bitmap + (start / 32);
+ 	len = count;
+@@ -236,7 +236,7 @@
+ 	}
+ out:
+ 	HFS_SB(sb)->free_ablocks += len;
+-	up(&HFS_SB(sb)->bitmap_lock);
++	mutex_unlock(&HFS_SB(sb)->bitmap_lock);
+ 	hfs_bitmap_dirty(sb);
+ 
+ 	return 0;
+Index: hfs/hfs_fs.h
+===================================================================
+--- hfs.orig/hfs_fs.h	2008-05-11 19:10:40.000000000 +0200
++++ hfs/hfs_fs.h	2008-05-11 19:11:58.000000000 +0200
+@@ -11,6 +11,7 @@
+ 
+ #include <linux/slab.h>
+ #include <linux/types.h>
++#include <linux/mutex.h>
+ #include <linux/buffer_head.h>
+ #include <linux/fs.h>
+ 
+@@ -139,7 +140,7 @@
+ 
+ 	struct nls_table *nls_io, *nls_disk;
+ 
+-	struct semaphore bitmap_lock;
++	struct mutex bitmap_lock;
+ 
+ 	unsigned long flags;
+ 
+Index: hfs/super.c
+===================================================================
+--- hfs.orig/super.c	2008-05-11 19:10:34.000000000 +0200
++++ hfs/super.c	2008-05-11 19:12:13.000000000 +0200
+@@ -372,7 +372,7 @@
+ 
+ 	sb->s_op = &hfs_super_operations;
+ 	sb->s_flags |= MS_NODIRATIME;
+-	init_MUTEX(&sbi->bitmap_lock);
++	mutex_init(&sbi->bitmap_lock);
+ 
+ 	res = hfs_mdb_get(sb);
+ 	if (res) {
 
 -- 
 Matthias Kaehlcke
