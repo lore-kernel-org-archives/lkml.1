@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755671AbYEKLOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755920AbYEKLRI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755671AbYEKLOw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 07:14:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753235AbYEKLOo
+	id S1755920AbYEKLRI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 07:17:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752313AbYEKLQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 07:14:44 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:37423 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753213AbYEKLOn (ORCPT
+	Sun, 11 May 2008 07:16:56 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:35430 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751290AbYEKLQ4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 07:14:43 -0400
-Date: Sun, 11 May 2008 05:14:42 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Ingo Molnar <mingo@elte.hu>, Sven Wegener <sven.wegener@stealer.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] scheduler fixes
-Message-ID: <20080511111442.GA31157@parisc-linux.org>
-References: <alpine.LFD.1.10.0805070817060.3024@woody.linux-foundation.org> <1210214696.3453.87.camel@ymzhang> <alpine.LFD.1.10.0805072014330.3024@woody.linux-foundation.org> <1210219729.3453.97.camel@ymzhang> <alpine.LFD.1.10.0805072115190.3024@woody.linux-foundation.org> <20080508120130.GA2860@elte.hu> <20080508122802.GA4880@elte.hu> <20080508144316.GA9869@elte.hu> <20080508151028.GA12109@elte.hu> <20080511110306.GP19219@parisc-linux.org>
+	Sun, 11 May 2008 07:16:56 -0400
+Date: Sun, 11 May 2008 07:16:53 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Matti Aarnio <matti.aarnio@zmailer.org>
+Cc: Morten Welinder <mwelinder@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Deleting large files
+Message-ID: <20080511111652.GA2323@infradead.org>
+References: <118833cc0805071249w36145eb6g7ed5c18d9fdf6fce@mail.gmail.com> <20080508081906.GY3700@mea-ext.zmailer.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080511110306.GP19219@parisc-linux.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080508081906.GY3700@mea-ext.zmailer.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 11, 2008 at 05:03:06AM -0600, Matthew Wilcox wrote:
-> This might be the problem that causes the missing wakeups.  If you have a
-> semaphore with n=2, and four processes calling down(), tasks A and B
-> acquire the semaphore and tasks C and D go to sleep.  Task A calls up()
-> and wakes up C.  Then task B calls up() and doesn't wake up anyone
-> because C hasn't run yet.  I think we need another wakeup when task C
+On Thu, May 08, 2008 at 11:19:06AM +0300, Matti Aarnio wrote:
+> This very question has troubled SQUID developers.  Whatever the system, unlink()
+> that really does free diskspace does so with unbound timelimit and in services
+> where one millisecond is long wait time, the solution has been to run separate
+> subprocess that actually does the unlinks.
+> 
+> Squid is not threaded software, and it was created long ago when threads were
+> rare and implementations were different in subtle details --> no threads at all.
 
-Er, I mis-wrote there.
-
-Task A calls up() and wakes up C.  Then task B calls up() and wakes up C
-again because C hasn't removed itself from the list yet.  D never
-receives a wakeup.  The solution is for C to pass a wakeup along to the
-next in line.  (The solution remains the same).
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+I'd call long times for the final unlink a bug in the filesystem.
+There's not all that much to do when deleting a file.   What you need to
+do is basically return the allocated space to the free space allocator
+and mark the inode as unused and return it to the inode allocator.  The
+first one may take quite a while with a indirect block scheme, but with
+an extent based filesystem it shouldn't be a problem.  The latter
+shouldn't take too long either, and with a journaling filesystem it's
+even easier because you can intent-log the inode deletion first and then
+perform it later e.g. as part of a batched write-back of the inode
+cluster.
