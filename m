@@ -1,122 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758058AbYEKUXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758645AbYEKUYw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758058AbYEKUXT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 16:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbYEKUXF
+	id S1758645AbYEKUYw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 16:24:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbYEKUYo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 16:23:05 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:49315 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751601AbYEKUXC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 16:23:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=lt8RC+LKm6GzFAzPNyR4BuvjVUKnjQT7YXB3E/e8m2mfISjqneAzJwyaqUedzNdMUenImQrjml0LX2NngQvJPHsayAWDn1b4rEikDvxPemtAfD9HDXcCBj2h5db6e/gx1VL9tdQ6MnJFShnIqCYvdd1bRRDrWfzHnSqeQxGnzng=
-Date: Sun, 11 May 2008 22:22:26 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org
-Subject: drivers/usb/misc/usbtest.c weirdness
-Message-ID: <20080511202222.GP19058@joi>
+	Sun, 11 May 2008 16:24:44 -0400
+Received: from mail.ift.unesp.br ([200.145.46.3]:43637 "EHLO mail.ift.unesp.br"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751852AbYEKUYn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 May 2008 16:24:43 -0400
+Date: Sun, 11 May 2008 17:24:17 -0300
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org, yakui.zhao@intel.com,
+       davej@codemonkey.org.uk
+Subject: Re: [2.6.26-rc1] WARNING: at drivers/base/sys.c:183
+Message-ID: <20080511202416.GA5771@beyonder.ift.unesp.br>
+Mail-Followup-To: Tilman Schmidt <tilman@imap.cc>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linux-acpi@vger.kernel.org, yakui.zhao@intel.com,
+	davej@codemonkey.org.uk
+References: <48273860.1000103@imap.cc>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <48273860.1000103@imap.cc>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-test_ctrl_queue expects (?) positive and negative errnos.
-what is going on here?
+On Sun 11.May'08 at 20:18:08 +0200, Tilman Schmidt wrote:
+> This warning, first reported for 2.6.25-rc5-mm1
+> (see http://lkml.org/lkml/2008/3/12/444)
+> has now made it into mainline:
+> 
+> May 11 19:32:44 xenon kernel: [   29.017148] powernow: This module only works with AMD K7 CPUs
+> May 11 19:32:44 xenon kernel: [   29.607563] sysdev: class cpu: driver (c0439804) has already been registered to a class, something is wrong, but will forge on!
+> May 11 19:32:44 xenon kernel: [   29.611835] ------------[ cut here ]------------
+> May 11 19:32:44 xenon kernel: [   29.616182] WARNING: at drivers/base/sys.c:183 sysdev_driver_register+0x59/0xf2()
+> May 11 19:32:44 xenon kernel: [   29.622037] Modules linked in: acpi_cpufreq(+) speedstep_lib microcode firmware_class loop osst st sr_mod cdrom pata_acpi bas_gigaset snd_hda_intel gigaset isdn snd_pcm rtc_cmos ata_generic aic7xxx snd_timer rtc_core usblp snd slhc ohci1394 pata_marvell thermal ieee1394 rtc_lib i2c_i801 parport_pc intel_agp processor soundcore crc_ccitt iTCO_wdt button scsi_transport_spi iTCO_vendor_support parport snd_page_alloc agpgart i2c_core sg ext3 jbd mbcache linear usbhid hid sd_mod ahci libata uhci_hcd ehci_hcd scsi_mod dock usbcore dm_snapshot dm_mod
+> May 11 19:32:44 xenon kernel: [   29.648305] Pid: 2860, comm: modprobe Not tainted 2.6.26-rc1-testing #1
+> May 11 19:32:44 xenon kernel: [   29.653156]  [<c0129d09>] warn_on_slowpath+0x41/0x6d
+> May 11 19:32:44 xenon kernel: [   29.658026]  [<c0120032>] ? push_rt_task+0xb1/0x1ab
+> May 11 19:32:44 xenon kernel: [   29.664013]  [<c012a75a>] ? vprintk+0x3a5/0x3c5
+> May 11 19:32:44 xenon kernel: [   29.670995]  [<c010b7a4>] ? native_sched_clock+0xe0/0xff
+> May 11 19:32:44 xenon kernel: [   29.675849]  [<c010b7a4>] ? native_sched_clock+0xe0/0xff
+> May 11 19:32:44 xenon kernel: [   29.680678]  [<c0143881>] ? put_lock_stats+0xd/0x21
+> May 11 19:32:44 xenon kernel: [   29.685465]  [<c012a78f>] ? printk+0x15/0x17
+> May 11 19:32:44 xenon kernel: [   29.690406]  [<c026a57a>] sysdev_driver_register+0x59/0xf2
+> May 11 19:32:44 xenon kernel: [   29.696845]  [<c02a8fe3>] cpufreq_register_driver+0x80/0xfc
+> May 11 19:32:44 xenon kernel: [   29.701892]  [<faafe034>] acpi_cpufreq_init+0x34/0x3a [acpi_cpufreq]
+> May 11 19:32:44 xenon kernel: [   29.708279]  [<c014d441>] sys_init_module+0x1883/0x1a34
+> May 11 19:32:44 xenon kernel: [   29.713176]  [<c0106b63>] sysenter_past_esp+0x78/0xd1
+> May 11 19:32:44 xenon kernel: [   29.718586]  =======================
+> May 11 19:32:44 xenon kernel: [   29.723414] ---[ end trace da2515dc0122d0b1 ]---
+> 
+> ts@xenon:~> uname -a
+> Linux xenon 2.6.26-rc1-testing #1 SMP PREEMPT Tue May 6 19:52:43 CEST 2008 i686 i686 i386 GNU/Linux
 
-diff --git a/drivers/usb/misc/usbtest.c b/drivers/usb/misc/usbtest.c
-index 742be3c..5a65991 100644
---- a/drivers/usb/misc/usbtest.c
-+++ b/drivers/usb/misc/usbtest.c
-@@ -880,7 +880,7 @@ test_ctrl_queue (struct usbtest_dev *dev, struct usbtest_param *param)
- 			req.bRequestType = USB_DIR_IN|USB_RECIP_INTERFACE;
- 			// index = 0 means first interface
- 			len = 1;
--			expected = EPIPE;
-+			expected = EPIPE; //??
- 			break;
- 		case 3:		// get interface status
- 			req.bRequest = USB_REQ_GET_STATUS;
-@@ -897,7 +897,7 @@ test_ctrl_queue (struct usbtest_dev *dev, struct usbtest_param *param)
- 			req.wValue = cpu_to_le16 (USB_DT_DEVICE_QUALIFIER << 8);
- 			len = sizeof (struct usb_qualifier_descriptor);
- 			if (udev->speed != USB_SPEED_HIGH)
--				expected = EPIPE;
-+				expected = EPIPE; // ??
- 			break;
- 		case 6:		// get first config descriptor, plus interface
- 			req.wValue = cpu_to_le16 ((USB_DT_CONFIG << 8) | 0);
-@@ -908,7 +908,7 @@ test_ctrl_queue (struct usbtest_dev *dev, struct usbtest_param *param)
- 			req.wValue = cpu_to_le16 (USB_DT_INTERFACE << 8);
- 			// interface == 0
- 			len = sizeof (struct usb_interface_descriptor);
--			expected = -EPIPE;
-+			expected = -EPIPE; // ok
- 			break;
- 		// NOTE: two consecutive stalls in the queue here.
- 		// that tests fault recovery a bit more aggressively.
-@@ -919,7 +919,7 @@ test_ctrl_queue (struct usbtest_dev *dev, struct usbtest_param *param)
- 			// wIndex 0 == ep0 (shouldn't halt!)
- 			len = 0;
- 			pipe = usb_sndctrlpipe (udev, 0);
--			expected = EPIPE;
-+			expected = EPIPE; // ??
- 			break;
- 		case 9:		// get endpoint status
- 			req.bRequest = USB_REQ_GET_STATUS;
-@@ -930,14 +930,14 @@ test_ctrl_queue (struct usbtest_dev *dev, struct usbtest_param *param)
- 		case 10:	// trigger short read (EREMOTEIO)
- 			req.wValue = cpu_to_le16 ((USB_DT_CONFIG << 8) | 0);
- 			len = 1024;
--			expected = -EREMOTEIO;
-+			expected = -EREMOTEIO; // ok
- 			break;
- 		// NOTE: two consecutive _different_ faults in the queue.
- 		case 11:	// get endpoint descriptor (ALWAYS STALLS)
- 			req.wValue = cpu_to_le16 (USB_DT_ENDPOINT << 8);
- 			// endpoint == 0
- 			len = sizeof (struct usb_interface_descriptor);
--			expected = EPIPE;
-+			expected = EPIPE; // ??
- 			break;
- 		// NOTE: sometimes even a third fault in the queue!
- 		case 12:	// get string 0 descriptor (MAY STALL)
-@@ -945,13 +945,13 @@ test_ctrl_queue (struct usbtest_dev *dev, struct usbtest_param *param)
- 			// string == 0, for language IDs
- 			len = sizeof (struct usb_interface_descriptor);
- 			// may succeed when > 4 languages
--			expected = EREMOTEIO;	// or EPIPE, if no strings
-+			expected = EREMOTEIO;	// or EPIPE, if no strings // ??
- 			break;
- 		case 13:	// short read, resembling case 10
- 			req.wValue = cpu_to_le16 ((USB_DT_CONFIG << 8) | 0);
- 			// last data packet "should" be DATA1, not DATA0
- 			len = 1024 - udev->descriptor.bMaxPacketSize0;
--			expected = -EREMOTEIO;
-+			expected = -EREMOTEIO; // ok
- 			break;
- 		case 14:	// short read; try to fill the last packet
- 			req.wValue = cpu_to_le16 ((USB_DT_DEVICE << 8) | 0);
-@@ -961,11 +961,11 @@ test_ctrl_queue (struct usbtest_dev *dev, struct usbtest_param *param)
- 			case 8:		len = 24; break;
- 			case 16:	len = 32; break;
- 			}
--			expected = -EREMOTEIO;
-+			expected = -EREMOTEIO; // ok
- 			break;
- 		default:
- 			ERROR(dev, "bogus number of ctrl queue testcases!\n");
--			context.status = -EINVAL;
-+			context.status = -EINVAL; // ok
- 			goto cleanup;
- 		}
- 		req.wLength = cpu_to_le16 (len);
--- 
+Isn't it fixed by db176c6ed8974fae94328ad5ac9e70b094ff22fd 
+("Fix bogus warning in sysdev_driver_register()") ?
+
+This commit is post-rc1: v2.6.26-rc1-165-gdb176c6
 
