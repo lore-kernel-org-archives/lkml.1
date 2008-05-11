@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756747AbYEKMvt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756929AbYEKMwK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756747AbYEKMvt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 08:51:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755705AbYEKMvU
+	id S1756929AbYEKMwK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 08:52:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbYEKMvm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 08:51:20 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:42954 "EHLO mgw2.diku.dk"
+	Sun, 11 May 2008 08:51:42 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:42966 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755474AbYEKMvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 08:51:08 -0400
-Date: Sun, 11 May 2008 14:51:04 +0200 (CEST)
+	id S1751309AbYEKMvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 May 2008 08:51:40 -0400
+Date: Sun, 11 May 2008 14:51:37 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
 To: perex@perex.cz, ricardo@scarybox.net, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/4] sound/oss: use unsigned for loop index
-Message-ID: <Pine.LNX.4.64.0805111450350.29620@ask.diku.dk>
+Subject: [PATCH 3/4] sound/pci: use unsigned for loop index
+Message-ID: <Pine.LNX.4.64.0805111451050.29620@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -80,93 +80,151 @@ Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
 
- sound/oss/dmasound/dmasound_core.c |    2 +-
- sound/oss/msnd.c                   |    4 ++--
- sound/oss/sb_common.c              |    6 +++---
- sound/oss/waveartist.c             |    4 ++--
- 4 files changed, 8 insertions(+), 8 deletions(-)
+ sound/pci/emu10k1/emu10k1x.c   |    4 ++--
+ sound/pci/es1938.c             |    4 ++--
+ sound/pci/fm801.c              |   10 +++++-----
+ sound/pci/via82xx_modem.c      |    4 ++--
+ sound/pci/ymfpci/ymfpci_main.c |    6 +++---
+ 5 files changed, 14 insertions(+), 14 deletions(-)
 
-diff -u -p a/sound/oss/dmasound/dmasound_core.c b/sound/oss/dmasound/dmasound_core.c
---- a/sound/oss/dmasound/dmasound_core.c 2008-04-07 13:50:28.000000000 +0200
-+++ b/sound/oss/dmasound/dmasound_core.c 2008-05-11 12:19:29.000000000 +0200
-@@ -423,7 +423,7 @@ static int sq_allocate_buffers(struct so
+diff -u -p a/sound/pci/emu10k1/emu10k1x.c b/sound/pci/emu10k1/emu10k1x.c
+--- a/sound/pci/emu10k1/emu10k1x.c 2008-04-27 11:41:12.000000000 +0200
++++ b/sound/pci/emu10k1/emu10k1x.c 2008-05-11 12:19:47.000000000 +0200
+@@ -457,7 +457,7 @@ static int snd_emu10k1x_pcm_prepare(stru
+ 	int voice = epcm->voice->number;
+ 	u32 *table_base = (u32 *)(emu->dma_buffer.area+1024*voice);
+ 	u32 period_size_bytes = frames_to_bytes(runtime, runtime->period_size);
+-	int i;
++	unsigned int i;
+ 	
+ 	for(i = 0; i < runtime->periods; i++) {
+ 		*table_base++=runtime->dma_addr+(i*period_size_bytes);
+@@ -785,7 +785,7 @@ static irqreturn_t snd_emu10k1x_interrup
  
- static void sq_release_buffers(struct sound_queue *sq)
+ 	struct emu10k1x *chip = dev_id;
+ 	struct emu10k1x_voice *pvoice = chip->voices;
+-	int i;
++	unsigned int i;
+ 	int mask;
+ 
+ 	status = inl(chip->port + IPR);
+diff -u -p a/sound/pci/es1938.c b/sound/pci/es1938.c
+--- a/sound/pci/es1938.c 2008-04-27 11:41:12.000000000 +0200
++++ b/sound/pci/es1938.c 2008-05-11 12:19:59.000000000 +0200
+@@ -316,7 +316,7 @@ static int snd_es1938_mixer_bits(struct 
+  * -----------------------------------------------------------------*/
+ static void snd_es1938_write_cmd(struct es1938 *chip, unsigned char cmd)
+ {
+-	int i;
++	unsigned int i;
+ 	unsigned char v;
+ 	for (i = 0; i < WRITE_LOOP_TIMEOUT; i++) {
+ 		if (!(v = inb(SLSB_REG(chip, READSTATUS)) & 0x80)) {
+@@ -405,7 +405,7 @@ static int snd_es1938_bits(struct es1938
+  * --------------------------------------------------------------------*/
+ static void snd_es1938_reset(struct es1938 *chip)
  {
 -	int i;
 +	unsigned int i;
  
- 	if (sq->buffers) {
- 		for (i = 0; i < sq->numBufs; i++)
-diff -u -p a/sound/oss/msnd.c b/sound/oss/msnd.c
---- a/sound/oss/msnd.c 2008-04-07 13:50:28.000000000 +0200
-+++ b/sound/oss/msnd.c 2008-05-11 12:19:27.000000000 +0200
-@@ -49,7 +49,7 @@ static int			num_devs;
- 
- int msnd_register(multisound_dev_t *dev)
+ 	outb(3, SLSB_REG(chip, RESET));
+ 	inb(SLSB_REG(chip, RESET));
+diff -u -p a/sound/pci/fm801.c b/sound/pci/fm801.c
+--- a/sound/pci/fm801.c 2008-04-27 11:41:12.000000000 +0200
++++ b/sound/pci/fm801.c 2008-05-11 12:19:46.000000000 +0200
+@@ -768,7 +768,7 @@ static unsigned int snd_fm801_tea575x_25
+ 	struct fm801 *chip = tea->private_data;
+ 	unsigned short reg;
+ 	unsigned int val = 0;
+-	int i;
++	unsigned int i;
+ 	
+ 	spin_lock_irq(&chip->reg_lock);
+ 	reg = inw(FM801_REG(chip, GPIO_CTRL));
+@@ -856,7 +856,7 @@ static unsigned int snd_fm801_tea575x_25
+ 	struct fm801 *chip = tea->private_data;
+ 	unsigned short reg;
+ 	unsigned int val = 0;
+-	int i;
++	unsigned int i;
+ 	
+ 	spin_lock_irq(&chip->reg_lock);
+ 	reg = inw(FM801_REG(chip, GPIO_CTRL));
+@@ -944,7 +944,7 @@ static unsigned int snd_fm801_tea575x_64
+ 	struct fm801 *chip = tea->private_data;
+ 	unsigned short reg;
+ 	unsigned int val = 0;
+-	int i;
++	unsigned int i;
+ 	
+ 	spin_lock_irq(&chip->reg_lock);
+ 	reg = inw(FM801_REG(chip, GPIO_CTRL));
+@@ -1540,7 +1540,7 @@ static int snd_fm801_suspend(struct pci_
  {
+ 	struct snd_card *card = pci_get_drvdata(pci);
+ 	struct fm801 *chip = card->private_data;
 -	int i;
 +	unsigned int i;
  
- 	for (i = 0; i < MSND_MAX_DEVS; ++i)
- 		if (devs[i] == NULL)
-@@ -65,7 +65,7 @@ int msnd_register(multisound_dev_t *dev)
- 
- void msnd_unregister(multisound_dev_t *dev)
+ 	snd_power_change_state(card, SNDRV_CTL_POWER_D3hot);
+ 	snd_pcm_suspend_all(chip->pcm);
+@@ -1560,7 +1560,7 @@ static int snd_fm801_resume(struct pci_d
  {
+ 	struct snd_card *card = pci_get_drvdata(pci);
+ 	struct fm801 *chip = card->private_data;
 -	int i;
 +	unsigned int i;
  
- 	for (i = 0; i < MSND_MAX_DEVS; ++i)
- 		if (devs[i] == dev)
-diff -u -p a/sound/oss/sb_common.c b/sound/oss/sb_common.c
---- a/sound/oss/sb_common.c 2008-04-16 13:28:05.000000000 +0200
-+++ b/sound/oss/sb_common.c 2008-05-11 12:19:36.000000000 +0200
-@@ -84,7 +84,7 @@ static sb_devc *last_sb;		/* Last sb loa
- 
- int sb_dsp_command(sb_devc * devc, unsigned char val)
+ 	pci_set_power_state(pci, PCI_D0);
+ 	pci_restore_state(pci);
+diff -u -p a/sound/pci/via82xx_modem.c b/sound/pci/via82xx_modem.c
+--- a/sound/pci/via82xx_modem.c 2008-04-27 11:41:12.000000000 +0200
++++ b/sound/pci/via82xx_modem.c 2008-05-11 12:19:42.000000000 +0200
+@@ -1022,7 +1022,7 @@ static int snd_via82xx_suspend(struct pc
  {
--	int i;
-+	unsigned int i;
- 	unsigned long limit;
- 
- 	limit = jiffies + HZ / 10;	/* Timeout */
-@@ -600,7 +600,7 @@ int sb_dsp_detect(struct address_info *h
- 			if (sb_dsp_command(devc, 0x09))
- 				if (sb_dsp_command(devc, 0x00))	/* Enter WSS mode */
- 				{
--					int i;
-+					unsigned int i;
- 
- 					/* Have some delay */
- 					for (i = 0; i < 10000; i++)
-@@ -1009,7 +1009,7 @@ static int smw_midi_init(sb_devc * devc,
- {
- 	int mpu_base = hw_config->io_base;
- 	int mp_base = mpu_base + 4;		/* Microcontroller base */
--	int i;
-+	unsigned int i;
- 	unsigned char control;
- 
- 
-diff -u -p a/sound/oss/waveartist.c b/sound/oss/waveartist.c
---- a/sound/oss/waveartist.c 2008-04-16 13:28:05.000000000 +0200
-+++ b/sound/oss/waveartist.c 2008-05-11 12:19:27.000000000 +0200
-@@ -1212,7 +1212,7 @@ static struct mixer_operations waveartis
- static void
- waveartist_mixer_reset(wavnc_info *devc)
- {
+ 	struct snd_card *card = pci_get_drvdata(pci);
+ 	struct via82xx_modem *chip = card->private_data;
 -	int i;
 +	unsigned int i;
  
- 	if (debug_flg & DEBUG_MIXER)
- 		printk("%s: mixer_reset\n", devc->hw.name);
-@@ -1417,7 +1417,7 @@ attach_waveartist(struct address_info *h
- static void __exit unload_waveartist(struct address_info *hw)
+ 	snd_power_change_state(card, SNDRV_CTL_POWER_D3hot);
+ 	for (i = 0; i < 2; i++)
+@@ -1042,7 +1042,7 @@ static int snd_via82xx_resume(struct pci
  {
- 	wavnc_info *devc = NULL;
+ 	struct snd_card *card = pci_get_drvdata(pci);
+ 	struct via82xx_modem *chip = card->private_data;
 -	int i;
 +	unsigned int i;
  
- 	for (i = 0; i < nr_waveartist_devs; i++)
- 		if (hw->io_base == adev_info[i].hw.io_base) {
+ 	pci_set_power_state(pci, PCI_D0);
+ 	pci_restore_state(pci);
+diff -u -p a/sound/pci/ymfpci/ymfpci_main.c b/sound/pci/ymfpci/ymfpci_main.c
+--- a/sound/pci/ymfpci/ymfpci_main.c 2008-04-27 11:41:12.000000000 +0200
++++ b/sound/pci/ymfpci/ymfpci_main.c 2008-05-11 12:20:01.000000000 +0200
+@@ -109,7 +109,7 @@ static u16 snd_ymfpci_codec_read(struct 
+ 	if (snd_ymfpci_codec_ready(chip, 0))
+ 		return ~0;
+ 	if (chip->device_id == PCI_DEVICE_ID_YAMAHA_744 && chip->rev < 2) {
+-		int i;
++		unsigned int i;
+ 		for (i = 0; i < 600; i++)
+ 			snd_ymfpci_readw(chip, YDSXGR_PRISTATUSDATA);
+ 	}
+@@ -2034,7 +2034,7 @@ static inline void snd_ymfpci_convert_fr
+ #else
+ static void snd_ymfpci_convert_from_le(const struct firmware *fw)
+ {
+-	int i;
++	unsigned int i;
+ 	u32 *data = (u32 *)fw->data;
+ 
+ 	for (i = 0; i < fw->size / 4; ++i)
+@@ -2088,7 +2088,7 @@ MODULE_FIRMWARE("yamaha/ds1e_ctrl.fw");
+ 
+ static void snd_ymfpci_download_image(struct snd_ymfpci *chip)
+ {
+-	int i;
++	unsigned int i;
+ 	u16 ctrl;
+ 	u32 *inst;
+ 
