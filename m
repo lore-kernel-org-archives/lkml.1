@@ -1,63 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbYELRLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757238AbYELRMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756620AbYELRLU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 13:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750941AbYELRLN
+	id S1757238AbYELRMS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 13:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753124AbYELRMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 13:11:13 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:35142 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751797AbYELRLM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 13:11:12 -0400
-Date: Mon, 12 May 2008 19:10:41 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andy Isaacson <adi@hexapodia.org>, linux-kernel@vger.kernel.org,
-       rjw@sisk.pl
-Subject: Re: 2.6.25-mm1: kmmcd NULL pointer dereference at
- klist_del+0xe/0x30
-Message-ID: <20080512191041.397f9ccf@mjolnir.drzeus.cx>
-In-Reply-To: <20080509164738.2e0af511.akpm@linux-foundation.org>
-References: <20080509171956.GJ30021@hexapodia.org>
-	<20080509164738.2e0af511.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 12 May 2008 13:12:07 -0400
+Received: from ns2.suse.de ([195.135.220.15]:40092 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750941AbYELRMG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 13:12:06 -0400
+Date: Mon, 12 May 2008 10:11:34 -0700
+From: Greg KH <gregkh@suse.de>
+To: Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       samuel.thibault@ens-lyon.org, rjw@sisk.pl
+Subject: Re: [PATCH] Fix c67x00-ll-hpi compilation failure (bug #10627)
+Message-ID: <20080512171134.GA4168@suse.de>
+References: <1210588531.3058.31.camel@sebastian.kern.oss.ntt.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1210588531.3058.31.camel@sebastian.kern.oss.ntt.co.jp>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 9 May 2008 16:47:38 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Fri, 9 May 2008 10:19:56 -0700
-> Andy Isaacson <adi@hexapodia.org> wrote:
+On Mon, May 12, 2008 at 07:35:31PM +0900, Fernando Luis Vázquez Cao wrote:
+> This patch fixes bug #10627 which caused the compilation error below.
 > 
-> > Got this twice with 2.6.25-mm1 on my Thinkpad X40, AData 16GB SDHC card
-> > in mmc0 but no filesystem mounted.  I think the oops happened at
-> > suspend/resume time.  Previous kernel was 2.6.25-rc5-mm1 which didn't
-> > exhibit this problem across multiple suspend-resume cycles.
-> > 
-> > Complete logs and pretty much everything else you could want at
-> > http://web.hexapodia.org/~adi/bobble/bobble_2.6.25-mm1-dirty_20080509100634/
-> > 
-> > [104375.816331] BUG: unable to handle kernel NULL pointer dereference at 0000000c
-> > [104375.816338] IP: [<c02d86ce>] klist_del+0xe/0x30
+> CC [M]  drivers/usb/c67x00/c67x00-ll-hpi.o
+> drivers/usb/c67x00/c67x00-ll-hpi.c: In function `ll_recv_msg':
+> drivers/usb/c67x00/c67x00-ll-hpi.c:243: erreur: `HZ' undeclared (first use in this function)
+> drivers/usb/c67x00/c67x00-ll-hpi.c:243: erreur: (Each undeclared identifier is reported only once
+> drivers/usb/c67x00/c67x00-ll-hpi.c:243: erreur: for each function it appears in.)
 > 
-> This could be one of those nasty situations where one driver leaves a mess
-> behind it and then another driver later comes along and trips over that
-> mess.
-> 
+> Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
 
-There were some problems with removing devices during suspend (which
-the MMC layer does), but AFAIK those patches were backed out and were
-only supposed to come back in a form that allowed such usage. Rafael
-should have the most correct information on that subject.
+Already in my tree and linux-next and queued up to be sent in a bit to
+Linus.
 
-Rgds
--- 
-     -- Pierre Ossman
+thanks,
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
+greg k-h
