@@ -1,68 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756724AbYELW3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756708AbYELWaX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756724AbYELW3R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 18:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756202AbYELW25
+	id S1756708AbYELWaX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 18:30:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754492AbYELWaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 18:28:57 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56772 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756175AbYELW2y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 18:28:54 -0400
-Date: Mon, 12 May 2008 15:27:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Abdel Benamrouche <draconux@gmail.com>
-Cc: aeb@cwi.nl, linux-kernel@vger.kernel.org, trivial@kernel.org,
-       draconux@gmail.com
-Subject: Re: [PATCH] /fs/partition/check.c: fix return value warning
-Message-Id: <20080512152743.3c6b8adc.akpm@linux-foundation.org>
-In-Reply-To: <1210419653-19234-1-git-send-email-draconux@gmail.com>
-References: <1210419653-19234-1-git-send-email-draconux@gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 12 May 2008 18:30:09 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:33234 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751882AbYELWaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 18:30:07 -0400
+Date: Mon, 12 May 2008 15:30:05 -0700
+From: Gary Hade <garyhade@us.ibm.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Gary Hade <garyhade@us.ibm.com>, jbarnes@virtuousgeek.org,
+       linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org
+Subject: Re: [PATCH] PCI: boot parameter to avoid expansion ROM memory allocation
+Message-ID: <20080512223005.GC7401@us.ibm.com>
+References: <20080512205746.GB7401@us.ibm.com> <86802c440805121443r43cc7ceay4c05625f2878172e@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440805121443r43cc7ceay4c05625f2878172e@mail.gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 10 May 2008 13:40:53 +0200
-Abdel Benamrouche <draconux@gmail.com> wrote:
-
-> fs/partitions/check.c:381: warning: ignoring return value of ___device_add___,
->  declared with attribute warn_unused_result
+On Mon, May 12, 2008 at 02:43:44PM -0700, Yinghai Lu wrote:
+> On Mon, May 12, 2008 at 1:57 PM, Gary Hade <garyhade@us.ibm.com> wrote:
+	<snip>
+> >  --- linux-2.6.26-rc2/arch/x86/pci/common.c.orig 2008-05-12 10:59:58.000000000 -0700
+> >  +++ linux-2.6.26-rc2/arch/x86/pci/common.c      2008-05-12 11:22:05.000000000 -0700
+> >  @@ -121,6 +121,21 @@ void __init dmi_check_skip_isa_align(voi
+> >         dmi_check_system(can_skip_pciprobe_dmi_table);
+> >   }
+> >
+> >  +static void __devinit pcibios_fixup_device_resources(struct pci_dev *dev)
+> >  +{
+> >  +       struct resource *rom_r = &dev->resource[PCI_ROM_RESOURCE];
+> >  +
+> >  +       if (pci_probe & PCI_NOASSIGN_ROMS) {
+> >  +               if (rom_r->parent)
+> >  +                       return;
+> >  +               if (rom_r->start) {
+> >  +                       /* we deal with BIOS assigned ROM later */
+> >  +                       return;
+> >  +               }
+> >  +               rom_r->start = rom_r->end = rom_r->flags = 0;
+> >  +       }
+> >  +}
+> >  +
+> >   /*
+> >   *  Called after each bus is probed, but before its children
+> >   *  are examined.
+> >  @@ -128,7 +143,11 @@ void __init dmi_check_skip_isa_align(voi
+> >
+> >   void __devinit  pcibios_fixup_bus(struct pci_bus *b)
+> >   {
+> >  +       struct pci_dev *dev;
+> >  +
+> >         pci_read_bridge_bases(b);
+> >  +       list_for_each_entry(dev, &b->devices, bus_list)
+> >  +               pcibios_fixup_device_resources(dev);
+> >   }
 > 
-> Signed-off-by: Abdel Benamrouche <draconux@gmail.com>
-> ---
-> :100644 100644 6149e4b... 7a87fad... M	fs/partitions/check.c
->  fs/partitions/check.c |    8 +++++++-
->  1 files changed, 7 insertions(+), 1 deletions(-)
+> or put check
+> +       if (pci_probe & PCI_NOASSIGN_ROMS) {
 > 
-> diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-> index 6149e4b..7a87fad 100644
-> --- a/fs/partitions/check.c
-> +++ b/fs/partitions/check.c
-> @@ -378,7 +378,13 @@ void add_partition(struct gendisk *disk, int part, sector_t start, sector_t len,
->  
->  	/* delay uevent until 'holders' subdir is created */
->  	p->dev.uevent_suppress = 1;
-> -	device_add(&p->dev);
-> +	if (device_add(&p->dev)) {
-> +		put_device(&p->dev);
-> +		free_part_stats(p);
-> +		kfree(p);
-> +		return;
-> +	}
-> +
->  	partition_sysfs_add_subdir(p);
->  	p->dev.uevent_suppress = 0;
->  	if (flags & ADDPART_FLAG_WHOLEDISK)
+> out of loop?
 
-We should go further than this.  add_partition() just drops the error
-on the floor.  It should be propagated back to callers, and callers
-should be modified to handle it appropriately.
+I could certainly do that but I had intended that the new
+pcibios_fixup_device_resources function act as a container where
+other kinds of fixups could be added later.  Do you (or others)
+think the additional cycles consumed by this approach are an
+issue here?
 
-Presumably we should also handle a device_create_file() failure as well
-- that is presently being silently ignored.
+Thanks,
+Gary
+
+-- 
+Gary Hade
+System x Enablement
+IBM Linux Technology Center
+503-578-4503  IBM T/L: 775-4503
+garyhade@us.ibm.com
+http://www.ibm.com/linux/ltc
 
