@@ -1,84 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757552AbYELGZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757945AbYELGeI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757552AbYELGZt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 02:25:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbYELGZj
+	id S1757945AbYELGeI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 02:34:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754603AbYELGdy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 02:25:39 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54352 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751581AbYELGZi (ORCPT
+	Mon, 12 May 2008 02:33:54 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:8227 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754528AbYELGdx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 02:25:38 -0400
-Date: Sun, 11 May 2008 23:23:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, viro <viro@zeniv.linux.org.uk>,
-       Jan Kara <jack@ucw.cz>, linux-mm@kvack.org
-Subject: Re: BUG: 2.6.26-rc1-git8: NULL reference in drop_buffers
-Message-Id: <20080511232344.b173ca9f.akpm@linux-foundation.org>
-In-Reply-To: <20080511105429.a5e40721.randy.dunlap@oracle.com>
-References: <20080511105429.a5e40721.randy.dunlap@oracle.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 12 May 2008 02:33:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=nLh75fU6OYTsG8Ci4VVFDGeAV0cmlxwEqN57mX8Oe5ToYcGkaXYYdfnSYTA8Utkhxy2RTKSnpZxQ8VK18a0S1LNSLQ4MupeRz5kcscwy09rWL+r/BEqst9ON6mAJSe9Jldaz54x73xknnpnn5hXooZulUF+RA5WovCkksINocyw=
+Message-ID: <386072610805112333w7bc935eo4ad0aae47b1c3975@mail.gmail.com>
+Date: Mon, 12 May 2008 14:33:50 +0800
+From: "Bryan Wu" <cooloney@kernel.org>
+To: "Hennerich, Michael" <Michael.Hennerich@analog.com>
+Subject: Re: [PATCH 1/1] Input/Touchscreen Driver: add support AD7877touchscreen driver
+Cc: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
+       "Bryan Wu" <bryan.wu@analog.com>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <8A42379416420646B9BFAC9682273B6D56269C@limkexm3.ad.analog.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1202980649-13309-1-git-send-email-bryan.wu@analog.com>
+	 <20080407161007.ZZRA012@mailhub.coreip.homeip.net>
+	 <8A42379416420646B9BFAC9682273B6D56269C@limkexm3.ad.analog.com>
+X-Google-Sender-Auth: decf8a4380d9d2ec
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 11 May 2008 10:54:29 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+On Wed, Apr 9, 2008 at 1:13 AM, Hennerich, Michael
+<Michael.Hennerich@analog.com> wrote:
+>
+>
+>>-----Original Message-----
+>>From: Dmitry Torokhov [mailto:dmitry.torokhov@gmail.com]
+>>Sent: Montag, 7. April 2008 22:16
+>>To: Bryan Wu
+>>Cc: linux-input@vger.kernel.org; linux-kernel@vger.kernel.org; Michael
+>>Hennerich
+>>Subject: Re: [PATCH 1/1] Input/Touchscreen Driver: add support
+>>AD7877touchscreen driver
+>>
+>>Hi Bryan, Michael,
+>>
+>>On Thu, Feb 14, 2008 at 05:17:28PM +0800, Bryan Wu wrote:
+>>> From: Michael Hennerich <michael.hennerich@analog.com>
+>>>
+>>> [try #3] Changlog (Add feedback from Dmitry Torokhov):
+>>>  - Change handling of spi_sync / spi_async return value handling
+>>>  - Remove depreciated dev->power.power_state
+>>>  - Fix error return path in ad7877_probe
+>>>  - delete pending kernel timer
+>>>  - Some minor cleanup (indention, use dev_err etc.)
+>>
+>>Sorry for the long silence... I have a couple of comments at the moment
+>>but I am sure i will have more ;)
+>>
+>>> +
+>>> +    status = spi_sync(spi, &req->msg);
+>>> +
+>>> +    if (status == 0)
+>>> +            status = req->msg.status;
+>>> +
+>>> +    kfree(req);
+>>> +    return status ? status : req->sample;
+>>
+>>Use after free here.
+>
+> Yeah this is definitely broken.
+>
+>>
+>>> +
+>>> +    ts->irq_disabled = 1;
+>>> +    disable_irq(spi->irq);
+>>
+>>I am a bit uneasy here... do we need to wait for an async spi
+> completion
+>>here before proceeding? Overall I have some concerns about the
+>>irq/spi/removal/sysfs iteractions, I will need some more time to look
+>>through the driver.
+>
+>
+> I think you are right - let me come up with a patch.
+>
+> Thanks and best regards,
+> Michael
+>
+>>
 
-> On x86_64, during testing using "stress" package:
-> 
-> BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
+Hi Dmitry,
 
+Sorry for no updates, I forget to send out that patch, although
+Michael fixed the driver as your review.
 
-> IP: [<ffffffff802ad273>] drop_buffers+0x2f/0xfb
-> PGD 1ee8ad067 PUD 26f19a067 PMD 0
-> Oops: 0000 [1] SMP
-> CPU 3
-> Modules linked in: parport_pc lp parport tg3 cciss ehci_hcd ohci_hcd uhci_hcd
-> Pid: 16860, comm: stress Not tainted 2.6.26-rc1-git8 #1
-> RIP: 0010:[<ffffffff802ad273>]  [<ffffffff802ad273>] drop_buffers+0x2f/0xfb
-> RSP: 0000:ffff81026bc03a08  EFLAGS: 00010203
-> RAX: 0000000000000000 RBX: ffffe20008bae680 RCX: ffff81027f490f00
-> RDX: 0000000000000000 RSI: ffff81026bc03a58 RDI: ffffe20008bae680
-> RBP: ffff81026bc03a38 R08: ffff81026bc03b78 R09: ffff810001103780
-> R10: ffff81026bc03a08 R11: ffff81026bc03c88 R12: ffffe20008bae680
-> R13: ffff81027c412850 R14: ffff81026bc03d58 R15: ffff81026bc03a58
-> FS:  00007fa9e7e416f0(0000) GS:ffff81027f806980(0000) knlGS:00000000f7f856c0
-> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> CR2: 0000000000000000 CR3: 000000027f973000 CR4: 00000000000006e0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process stress (pid: 16860, threadinfo ffff81026bc02000, task ffff81027e424c50)
-> Stack:  ffffe20008bafa68 ffffe20008bae680 ffff81027f490f00 ffff81026bc03a58
->  ffff81026bc03d58 ffff81026bc03c88 ffff81026bc03a78 ffffffff802ad39f
->  ffff81027f490f00 ffffe20008b14060 0000000000000000 ffff81027f490f00
-> Call Trace:
->  [<ffffffff802ad39f>] try_to_free_buffers+0x60/0xa2
->  [<ffffffff80267f98>] try_to_release_page+0x3b/0x41
->  [<ffffffff802719bc>] shrink_page_list+0x457/0x562
->  [<ffffffff80271bed>] shrink_inactive_list+0x126/0x361
->  [<ffffffff80271f0d>] shrink_zone+0xe5/0x10a
->  [<ffffffff8027227d>] try_to_free_pages+0x1ef/0x326
->  [<ffffffff80270f4b>] ? isolate_pages_global+0x0/0x34
->  [<ffffffff8026d843>] __alloc_pages_internal+0x25a/0x3ad
->  [<ffffffff8026d9ac>] __alloc_pages+0xb/0xd
->  [<ffffffff80277759>] handle_mm_fault+0x238/0x6d0
->  [<ffffffff8053d9c4>] do_page_fault+0x438/0x7de
->  [<ffffffff8053b999>] error_exit+0x0/0x51
-> 
-> 
-> Code: 41 57 49 89 f7 41 56 41 55 41 54 49 89 fc 53 48 83 ec 08 48 8b 07 25 00 08 00 00 48 85 c0 75 04 0f 0b eb fe 4c 8b 6f 10 4c 89 ea <48> 8b 02 25 00 08 00 00 48 85 c0 74 10 49 8b 44 24 18 48 85 c0
-> RIP  [<ffffffff802ad273>] drop_buffers+0x2f/0xfb
->  RSP <ffff81026bc03a08>
-> CR2: 0000000000000000
-> Kernel panic - not syncing: Fatal exception
+So need I send out one updated patch including Michael's fixing or
+just send out his incremental patch？
 
-Seems that local variable `bh' is NULL.
-
-I wonder what the heck we did to cause that.  Which filesystems were in
-use?
-
+Thanks
+-Bryan
