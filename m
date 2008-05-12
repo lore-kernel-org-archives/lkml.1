@@ -1,69 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759030AbYELTLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756756AbYELTUo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759030AbYELTLk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 15:11:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756844AbYELTLc
+	id S1756756AbYELTUo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 15:20:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751339AbYELTUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 15:11:32 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40784 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753384AbYELTLb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 15:11:31 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jonathan Corbet <corbet@lwn.net>
-Subject: Re: Tracking and crediting bug reporters
-Date: Mon, 12 May 2008 21:11:36 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org
-References: <4388.1210613272@vena.lwn.net>
-In-Reply-To: <4388.1210613272@vena.lwn.net>
+	Mon, 12 May 2008 15:20:35 -0400
+Received: from 66-189-124-104.dhcp.oxfr.ma.charter.com ([66.189.124.104]:58180
+	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751141AbYELTUe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 15:20:34 -0400
+X-Greylist: delayed 2019 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 May 2008 15:20:34 EDT
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [RFC PATCH 2/3] sched: pass specific sched_balancer to functions
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>
+Cc: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org
+Date: Mon, 12 May 2008 14:14:10 -0400
+Message-ID: <20080512181410.5257.70010.stgit@novell1.haskins.net>
+In-Reply-To: <20080512181248.5257.74801.stgit@novell1.haskins.net>
+References: <20080512181248.5257.74801.stgit@novell1.haskins.net>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805122111.36494.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 12 of May 2008, Jonathan Corbet wrote:
-> Several members of the Linux Foundation's Technical Advisory Board recently
-> got together with Andrew Morton to talk about kernel quality issues.  One
-> of the things which came out of that meeting was a desire to improve
-> incentives for people who report bugs.  Clearly, actually fixing those bugs
-> would qualify; nobody has lost sight of that.  But it was suggested that
-> the creation and publication of statistics on bug reporting would also
-> help.
-> 
-> One way to do this might be for Andrew (being the only one who actually
-> reads every message posted on the list) to keep a spreadsheet along with
-> everything else he does.  That idea did not go over very well.
-> 
-> So here's what we would like to try instead.  Whenever somebody sends up a
-> patch fixing a reported bug, the name of the person who reported the bug
-> would be immortalized with this tag:
-> 
-> 	Reported-by: A. Bug Reporter <email@goes.here>
-> 
-> In particular, reporters who work with the developers toward the resolution
-> of the bug should be thanked in this way.  If we wanted to take things
-> further, perhaps we could add a Bisected-by: tag for really hard-core
-> helpers. 
-> 
-> If these tags go into the commit messages in any sort of consistent way, it
-> should be possible generate the usual sort of statistics from them.  I'll
-> then happily publicize them next to the traditional lists of people who are
-> adding new bugs.  The result will certainly be fame, fortune, and job
-> offers for the people at the top of the list.  Or something like that.
-> 
-> If the rest of the community is agreeable, it would be nice to make an
-> immediate start on this; it's not yet too late to get reasonable data for
-> the 2.6.26 kernel, and to have the habits well ingrained for 2.6.27.
-> 
-> Thoughts?
+Instead of assuming sd->group_balancer.groups is the intended group. We
+will use this later in the series to introduce alternate balancers.
 
-I like the idea.
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+---
 
-Thanks,
-Rafael
+ kernel/sched.c |   21 ++++++++++++---------
+ 1 files changed, 12 insertions(+), 9 deletions(-)
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index a8e0bd3..0bdbfe6 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -3288,11 +3288,12 @@ static int move_one_task(struct rq *this_rq, int this_cpu, struct rq *busiest,
+  * should be moved to restore balance via the imbalance parameter.
+  */
+ static struct sched_group *
+-find_busiest_group(struct sched_domain *sd, int this_cpu,
++find_busiest_group(struct sched_domain *sd, struct sched_balancer *balancer,
++		   int this_cpu,
+ 		   unsigned long *imbalance, enum cpu_idle_type idle,
+ 		   int *sd_idle, const cpumask_t *cpus, int *balance)
+ {
+-	struct sched_group *first_group = sd->group_balancer.groups;
++	struct sched_group *first_group = balancer->groups;
+ 	struct sched_group *busiest = NULL, *this = NULL, *group = first_group;
+ 	unsigned long max_load, avg_load, total_load, this_load, total_pwr;
+ 	unsigned long max_pull;
+@@ -3630,10 +3631,11 @@ find_busiest_queue(struct sched_group *group, enum cpu_idle_type idle,
+  * tasks if there is an imbalance.
+  */
+ static int load_balance(int this_cpu, struct rq *this_rq,
+-			struct sched_domain *sd, enum cpu_idle_type idle,
++			struct sched_domain *sd,
++			struct sched_balancer *balancer,
++			enum cpu_idle_type idle,
+ 			int *balance, cpumask_t *cpus)
+ {
+-	struct sched_balancer *balancer = &sd->group_balancer;
+ 	int ld_moved, all_pinned = 0, active_balance = 0, sd_idle = 0;
+ 	struct sched_group *group;
+ 	unsigned long imbalance;
+@@ -3658,8 +3660,8 @@ static int load_balance(int this_cpu, struct rq *this_rq,
+ 	schedstat_inc(sd, lb_count[idle]);
+ 
+ redo:
+-	group = find_busiest_group(sd, this_cpu, &imbalance, idle, &sd_idle,
+-				   cpus, balance);
++	group = find_busiest_group(sd, balancer, this_cpu, &imbalance, idle,
++				   &sd_idle, cpus, balance);
+ 
+ 	if (*balance == 0)
+ 		goto out_balanced;
+@@ -3819,8 +3821,8 @@ load_balance_newidle(int this_cpu, struct rq *this_rq, struct sched_domain *sd,
+ 
+ 	schedstat_inc(sd, lb_count[CPU_NEWLY_IDLE]);
+ redo:
+-	group = find_busiest_group(sd, this_cpu, &imbalance, CPU_NEWLY_IDLE,
+-				   &sd_idle, cpus, NULL);
++	group = find_busiest_group(sd, balancer, this_cpu, &imbalance,
++				   CPU_NEWLY_IDLE, &sd_idle, cpus, NULL);
+ 	if (!group) {
+ 		schedstat_inc(sd, lb_nobusyg[CPU_NEWLY_IDLE]);
+ 		goto out_balanced;
+@@ -4082,7 +4084,8 @@ static void rebalance_domains(int cpu, enum cpu_idle_type idle)
+ 		}
+ 
+ 		if (time_after_eq(jiffies, balancer->last_exec + interval)) {
+-			if (load_balance(cpu, rq, sd, idle, &balance, &tmp)) {
++			if (load_balance(cpu, rq, sd, balancer,
++					 idle, &balance, &tmp)) {
+ 				/*
+ 				 * We've pulled tasks over so either we're no
+ 				 * longer idle, or one of our SMT siblings is
+
