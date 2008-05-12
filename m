@@ -1,134 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbYELVn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754929AbYELVpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754760AbYELVn4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 17:43:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751995AbYELVnr
+	id S1754929AbYELVpz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 17:45:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751819AbYELVpp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 17:43:47 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:8129 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751626AbYELVnq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 17:43:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=g66bxUH6mis7fr1Mh5FNy1AyZhQobA67vDTXdLCOFIlGcYubCVZxewh8k7ujiYaAxfwdmDcNnqjA3rSnR4W2ZmdbJXyZYkzaYGAAsCpIm7flZ32YCF2nI2dqsZwDkRddUWbA2fYD5Yqot4iqs2nl9Vfzhxan6MfPeIRgyfCz6vk=
-Message-ID: <86802c440805121443r43cc7ceay4c05625f2878172e@mail.gmail.com>
-Date: Mon, 12 May 2008 14:43:44 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Gary Hade" <garyhade@us.ibm.com>
-Subject: Re: [PATCH] PCI: boot parameter to avoid expansion ROM memory allocation
-Cc: jbarnes@virtuousgeek.org, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-In-Reply-To: <20080512205746.GB7401@us.ibm.com>
+	Mon, 12 May 2008 17:45:45 -0400
+Received: from cantor.suse.de ([195.135.220.2]:44378 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750889AbYELVpo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 17:45:44 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: Alexander van Heukelum <heukelum@mailshack.com>
+Cc: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, Paul Jackson <pj@sgi.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Matthew Wilcox <matthew@wil.cx>,
+       ARCH <linux-arch@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Alexander van Heukelum <heukelum@fastmail.fm>
+Subject: Re: [PATCHv2] Make for_each_cpu_mask a bit smaller
+References: <20080511135039.GA3286@mailshack.com>
+	<20080511091403.a75f5b78.pj@sgi.com>
+	<20080511160658.GA3398@mailshack.com>
+	<20080511160104.c3fef6bf.pj@sgi.com>
+	<1210593896.23716.1252664185@webmail.messagingengine.com>
+	<4828741B.2080802@sgi.com> <20080512190039.GA13324@mailshack.com>
+X-Yow: My face is new, my license is expired, and I'm under a doctor's care!!!!
+Date: Mon, 12 May 2008 23:45:42 +0200
+In-Reply-To: <20080512190039.GA13324@mailshack.com> (Alexander van Heukelum's
+	message of "Mon, 12 May 2008 21:00:39 +0200")
+Message-ID: <jeej8742nt.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080512205746.GB7401@us.ibm.com>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 12, 2008 at 1:57 PM, Gary Hade <garyhade@us.ibm.com> wrote:
-> From: Gary Hade <garyhade@us.ibm.com>
->
->  Contention for scarce PCI memory resources has been growing
->  due to an increasing number of PCI slots in large multi-node
->  systems.  The kernel currently attempts by default to
->  allocate memory for all PCI expansion ROMs so there has
->  also been an increasing number of PCI memory allocation
->  failures seen on these systems.  This occurs because the
->  BIOS either (1) provides insufficient PCI memory resource
->  for all the expansion ROMs or (2) provides adequate PCI
->  memory resource for expansion ROMs but provides the
->  space in kernel unexpected BIOS assigned P2P non-prefetch
->  windows.
->
->  The resulting PCI memory allocation failures may be benign
->  when related to memory requests for expansion ROMs themselves
->  but in some cases they can occur when attempting to allocate
->  space for more critical BARs.  This can happen when a successful
->  expansion ROM allocation request consumes memory resource
->  that was intended for a non-ROM BAR.  We have seen this
->  happen during PCI hotplug of an adapter that contains a
->  P2P bridge where successful memory allocation for an
->  expansion ROM BAR on device behind the bridge consumed
->  memory that was intended for a non-ROM BAR on the P2P bridge.
->  In all cases the allocation failure messages can be very
->  confusing for users.
->
->  This patch provides a new 'pci=norom' kernel boot parameter
->  that can be used to disable the default PCI expansion ROM memory
->  resource allocation.  This provides a way to avoid the above
->  described issues on systems that do not contain PCI devices
->  for which drivers or user-level applications depend on the
->  default PCI expansion ROM memory resource allocation behavior.
->
->  Signed-off-by: Gary Hade <garyhade@us.ibm.com>
->  ---
->
->  --- linux-2.6.26-rc2/arch/x86/pci/pci.h.orig    2008-05-12 10:53:04.000000000 -0700
->  +++ linux-2.6.26-rc2/arch/x86/pci/pci.h 2008-05-12 10:54:39.000000000 -0700
->  @@ -27,6 +27,7 @@
->   #define PCI_CAN_SKIP_ISA_ALIGN 0x8000
->   #define PCI_USE__CRS           0x10000
->   #define PCI_CHECK_ENABLE_AMD_MMCONF    0x20000
->  +#define PCI_NOASSIGN_ROMS      0x40000
->
->   extern unsigned int pci_probe;
->   extern unsigned long pirq_table_addr;
->  --- linux-2.6.26-rc2/Documentation/kernel-parameters.txt.orig   2008-05-12 10:55:30.000000000 -0700
->  +++ linux-2.6.26-rc2/Documentation/kernel-parameters.txt        2008-05-12 10:57:49.000000000 -0700
->  @@ -1493,6 +1493,9 @@ and is between 256 and 4096 characters.
->                                 Use with caution as certain devices share
->                                 address decoders between ROMs and other
->                                 resources.
->  +               norom           [X86-32,X86_64] Do not assign address space to
->  +                               expansion ROMs that do not already have
->  +                               BIOS assigned address ranges.
->                 irqmask=0xMMMM  [X86-32] Set a bit mask of IRQs allowed to be
->                                 assigned automatically to PCI devices. You can
->                                 make the kernel exclude IRQs of your ISA cards
->  --- linux-2.6.26-rc2/arch/x86/pci/common.c.orig 2008-05-12 10:59:58.000000000 -0700
->  +++ linux-2.6.26-rc2/arch/x86/pci/common.c      2008-05-12 11:22:05.000000000 -0700
->  @@ -121,6 +121,21 @@ void __init dmi_check_skip_isa_align(voi
->         dmi_check_system(can_skip_pciprobe_dmi_table);
->   }
->
->  +static void __devinit pcibios_fixup_device_resources(struct pci_dev *dev)
->  +{
->  +       struct resource *rom_r = &dev->resource[PCI_ROM_RESOURCE];
->  +
->  +       if (pci_probe & PCI_NOASSIGN_ROMS) {
->  +               if (rom_r->parent)
->  +                       return;
->  +               if (rom_r->start) {
->  +                       /* we deal with BIOS assigned ROM later */
->  +                       return;
->  +               }
->  +               rom_r->start = rom_r->end = rom_r->flags = 0;
->  +       }
->  +}
->  +
->   /*
->   *  Called after each bus is probed, but before its children
->   *  are examined.
->  @@ -128,7 +143,11 @@ void __init dmi_check_skip_isa_align(voi
->
->   void __devinit  pcibios_fixup_bus(struct pci_bus *b)
->   {
->  +       struct pci_dev *dev;
->  +
->         pci_read_bridge_bases(b);
->  +       list_for_each_entry(dev, &b->devices, bus_list)
->  +               pcibios_fixup_device_resources(dev);
->   }
+Alexander van Heukelum <heukelum@mailshack.com> writes:
 
-or put check
-+       if (pci_probe & PCI_NOASSIGN_ROMS) {
+> +#define for_each_cpu_mask(cpu, mask)			\
+> +	for ((cpu) = ~((typeof(cpu))0);			\
 
-out of loop?
+There is no need for such a complicated expression, -1 will work for
+every (arithmetic) type.
 
-YH
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
