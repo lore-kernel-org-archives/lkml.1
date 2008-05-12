@@ -1,52 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755857AbYELWAR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbYELWEY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755857AbYELWAR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 18:00:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753472AbYELWAE
+	id S1755865AbYELWEY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 18:04:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753959AbYELWEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 18:00:04 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41585 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751464AbYELWAB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 18:00:01 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Tracking and crediting bug reporters
-Date: Mon, 12 May 2008 23:59:53 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Jiri Slaby <jirislaby@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
-       linux-kernel@vger.kernel.org
-References: <4388.1210613272@vena.lwn.net> <4828AE8D.4000209@gmail.com> <20080512221109.4fa51a71@core>
-In-Reply-To: <20080512221109.4fa51a71@core>
+	Mon, 12 May 2008 18:04:12 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:44529 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753898AbYELWEK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 18:04:10 -0400
+Date: Mon, 12 May 2008 15:02:32 -0700
+From: Greg KH <greg@kroah.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Thery <benjamin.thery@bull.net>, linux-kernel@vger.kernel.org,
+       Tejun Heo <htejun@gmail.com>, Al Viro <viro@ftp.linux.org.uk>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org
+Subject: Re: kobject: Fix kobject_rename and !CONFIG_SYSFS
+Message-ID: <20080512220232.GA16914@kroah.com>
+References: <m163tocw43.fsf_-_@frodo.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200805122359.53883.rjw@sisk.pl>
+In-Reply-To: <m163tocw43.fsf_-_@frodo.ebiederm.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 12 of May 2008, Alan Cox wrote:
-> > > I cannot add a tag with a third party personal information upon it
-> > > without their permission nor can anyone else in a part of the world with
-> > > any vaguely resembling privacy laws.
-> > 
-> > IANAL. Unless it's a public information, no? (As reports are.)
+On Thu, May 08, 2008 at 02:41:00PM -0700, Eric W. Biederman wrote:
 > 
-> If they made it public fine - although building a database of that
-> requires care. That was my point. You need specific permission of the bug
-> reporter. Given bug reporters may have personal reasons (including 'works
-> at Microsoft') and business ones (from 'company policy' to 'three letter
-> agency') for not wanting the information public.
+> From: Eric W. Biederman <ebiederm@xmission.com>
+> 
+> When looking at kobject_rename I found two bugs with
+> that exist when sysfs support is disabled in the kernel.
+> 
+> kobject_rename does not change the name on the kobject when
+> sysfs support is not compiled in.
+> 
+> kobject_rename without locking attempts to check the
+> validity of a rename operation, which the kobject layer
+> simply does not have the infrastructure to do so.
+> 
+> This patch documents the previously unstated requirement of
+> kobject_rename that is the responsibility of the caller to
+> provide mutual exclusion and to be certain that the new_name
+> for the kobject is valid.
+> 
+> This patch modifies sysfs_rename_dir in !CONFIG_SYSFS case
+> to call kobject_set_name to actually change the kobject_name.
+> 
+> This patch removes the bogus and misleading check in kobject_rename
+> that attempts to see if a rename is valid.  The check is bogus
+> because we do not have the proper locking.  The check is misleading
+> because it looks like we can and do perform useful checking at the
+> kobject level that we don't.
+> 
+> The users in net/core/dev.c already have all of the necessary checks
+> in place and don't care.  The other use in net/core/wireless.c
+> as originally implemented is incorrect because it performs no locking
+> and a simple patch has been sent that adds the necessary locking
+> and sanity checks there.  Ensuring this patch will not have an
+> effect on users of kobject_rename or device_rename.
 
-Well, don't the mailing list archives build such data bases already?
+Eric, Randy Dunlap has found that this patch breaks the build when
+CONFIG_SYSFS is not enabled.  Can you please fix it up before I send it
+to Linus?
 
-By posting a report to a mailing list the archives of which are publicly
-available, and the LKML is one of those, you make your name and email address
-information publicly available and recorded forever anyway, in the context of
-the report.
+The exact error is:
+In file included from /local/linsrc/next-20080509/include/linux/kobject.h:21,
+                 from /local/linsrc/next-20080509/include/linux/module.h:16,
+                 from /local/linsrc/next-20080509/include/linux/crypto.h:21,
+                 from /local/linsrc/next-20080509/arch/x86/kernel/asm-offsets_64.c:7,
+                 from /local/linsrc/next-20080509/arch/x86/kernel/asm-offsets.c:4:
+/local/linsrc/next-20080509/include/linux/sysfs.h: In function 'sysfs_rename_dir':
+/local/linsrc/next-20080509/include/linux/sysfs.h:142: error: implicit declaration of function 'kobject_set_name'
 
-Thanks,
-Rafael
+
+thanks,
+
+greg k-h
