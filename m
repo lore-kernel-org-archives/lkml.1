@@ -1,85 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757414AbYELW4o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757627AbYELW5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757414AbYELW4o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 18:56:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755941AbYELW4e
+	id S1757627AbYELW5A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 18:57:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757423AbYELW4q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 18:56:34 -0400
-Received: from moutng.kundenserver.de ([212.227.126.179]:60295 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755538AbYELW4d convert rfc822-to-8bit (ORCPT
+	Mon, 12 May 2008 18:56:46 -0400
+Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:32073 "HELO
+	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757431AbYELW4p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 18:56:33 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: John Williams <john.williams@petalogix.com>
-Subject: Re: Microblaze toolchain - libc
-Date: Tue, 13 May 2008 00:56:12 +0200
-User-Agent: KMail/1.9.9
-Cc: monstr@seznam.cz, Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>,
-       John Linn <John.Linn@xilinx.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       microblaze-uclinux@itee.uq.edu.au,
-       Grant Likely <grant.likely@secretlab.ca>
-References: <4826FD34.5030009@seznam.cz> <1210545788.5798.273.camel@localhost>
-In-Reply-To: <1210545788.5798.273.camel@localhost>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Mon, 12 May 2008 18:56:45 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=soDJTuaOAGMhg5z+x2nk4H3w3MoRmukoFJam0uGZiAICDBIVK2Kt4Li2JZ4LqNVDKnuGdMdU9Dlo1OwLtYYiLaz+dUsjiyTXFbxtkOqOit8uT7PHQo9k1XP0EffmH+FbyA6cUcEZRSYxq0t6NvpClfk9CafUlzCAWuzra0jbWfY=  ;
+X-YMail-OSG: hmqZE5MVM1nmlyyaYvjZ2LJmVaX3KN0bQdFEJV70UC.vpyjd4TjkTlhfEy0Scj3FBrfoma_1qRBfIbOGFJgMjt7LQyK2PlK.TZuS7LPheqHVszqKEatFVUWI3nckbIcBOco-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [PATCH/RFC] spi: Change modalias from a pointer to a character array
+Date: Mon, 12 May 2008 15:56:39 -0700
+User-Agent: KMail/1.9.6
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       spi-devel-general@lists.sourceforge.net
+References: <20080509173146.2932.16141.stgit@trillian.secretlab.ca> <20080512151805.4c2763b9.akpm@linux-foundation.org> <fa686aa40805121520y979ee37ga83221b74b35afe1@mail.gmail.com>
+In-Reply-To: <fa686aa40805121520y979ee37ga83221b74b35afe1@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-Message-Id: <200805130056.13950.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX192Zza7nSnkm2/LZHg25vpWmi57UXuoMsA6NZe
- 97zJZdFrtILiGKf9uZlctWq5WEO6pet39UeUTpEZekI6g2aUYP
- Wh4KrOFOHdR3xN+V6l3hw==
+Message-Id: <200805121556.40042.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 May 2008, John Williams wrote:
-> > is it any movement in libc?
-> > I would like clear code around syscalls.
+On Monday 12 May 2008, Grant Likely wrote:
+> >
+> >  I'm not really able to work out if this is a needed-in-2.6.26 thing.  I
+> >  assumed "not".
 > 
-> I can't see anything radical happening with glibc / uClibc in the short
-> term.  My suggestion is you make sure the kernel builds with current
-> toolchain.  
+> That's correct.  I'm also not even 100% sure that this is the best
+> approach.  I'm waiting/hoping for feedback from David.
 
-What happened to the idea of making it an add-on patch for the short
-term then?
+You'll get some.  Unlike your other patch, this one wasn't
+obvious and required me to burn a few grey cells ... ones
+which have been otherwise occupied.  ;)
 
-I think you should use the short generic syscall list in the mainline
-series, and add source level support for uClibc back in as an out-of-tree
-patch, under an #ifdef.
+- dave
 
-I guess that you can mostly do this by adding back the currently
-required syscalls for uClibc at the end of sys_call_table, and
-introducing a new file with the old implementation of the removed
-arch specific calls (ipc, vfork, mmap, ...).
-
-BTW: after a private discussion I had with some other kernel hackers,
-I believe now that it will be easier for you to leave off_t as
-32 bit but instead make sure that you only list the syscalls using
-loff_t, e.g. stat64 instead of new_stat, contrary to what I claimed
-earlier. You should probably try that yourself and do whatever
-is easier to implement in uClibc.
-
-> I'm not personally concerned about minor bloat of adding syscalls like
-> openat() that are not currently used - 1 or 2 K for extra entries in
-> syscall table, and a few hundred bytes per sys_wrapper really is not on
-> the radar if glibc is considered a sensible library for Microblaze +
-> MMU!
-
-You still have it backwards -- you need to have openat() anyway because
-applications can legally call that function, and if uClibc doesn't have
-it, that's just a bug. The discussion was about leaving out the open()
-syscall in favour of a libc based implementation based on openat().
-Besides, these syscalls don't matter much, as you said those only save
-a few bytes.
-The real killers are uid16, 32 bit off_t, old style signals and some
-minor annoyances things like sys_ipc(). If you change those, you might
-just as well get it right because you're breaking compatibility already.
-
-	Arnd <><
