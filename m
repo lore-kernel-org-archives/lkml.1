@@ -1,51 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757627AbYELW5A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757366AbYELW6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757627AbYELW5A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 18:57:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757423AbYELW4q
+	id S1757366AbYELW6T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 18:58:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756098AbYELW6H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 18:56:46 -0400
-Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:32073 "HELO
-	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757431AbYELW4p (ORCPT
+	Mon, 12 May 2008 18:58:07 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:40970 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755691AbYELW6G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 18:56:45 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=soDJTuaOAGMhg5z+x2nk4H3w3MoRmukoFJam0uGZiAICDBIVK2Kt4Li2JZ4LqNVDKnuGdMdU9Dlo1OwLtYYiLaz+dUsjiyTXFbxtkOqOit8uT7PHQo9k1XP0EffmH+FbyA6cUcEZRSYxq0t6NvpClfk9CafUlzCAWuzra0jbWfY=  ;
-X-YMail-OSG: hmqZE5MVM1nmlyyaYvjZ2LJmVaX3KN0bQdFEJV70UC.vpyjd4TjkTlhfEy0Scj3FBrfoma_1qRBfIbOGFJgMjt7LQyK2PlK.TZuS7LPheqHVszqKEatFVUWI3nckbIcBOco-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [PATCH/RFC] spi: Change modalias from a pointer to a character array
-Date: Mon, 12 May 2008 15:56:39 -0700
-User-Agent: KMail/1.9.6
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       spi-devel-general@lists.sourceforge.net
-References: <20080509173146.2932.16141.stgit@trillian.secretlab.ca> <20080512151805.4c2763b9.akpm@linux-foundation.org> <fa686aa40805121520y979ee37ga83221b74b35afe1@mail.gmail.com>
-In-Reply-To: <fa686aa40805121520y979ee37ga83221b74b35afe1@mail.gmail.com>
+	Mon, 12 May 2008 18:58:06 -0400
+X-Sasl-enc: 8TRmn5fjEEWVOgUeciP4cHAM2NIxozF86x0Mz3p1j4Gf 1210633084
+Message-ID: <4828CB6F.5060808@imap.cc>
+Date: Tue, 13 May 2008 00:57:51 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200805121556.40042.david-b@pacbell.net>
+To: "Carlos R. Mafra" <crmafra2@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org, yakui.zhao@intel.com,
+       davej@codemonkey.org.uk
+Subject: Re: [2.6.26-rc1] WARNING: at drivers/base/sys.c:183
+References: <48273860.1000103@imap.cc> <20080511202416.GA5771@beyonder.ift.unesp.br>
+In-Reply-To: <20080511202416.GA5771@beyonder.ift.unesp.br>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig533BCCE4AC90BF2D5638D5B7"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 May 2008, Grant Likely wrote:
-> >
-> >  I'm not really able to work out if this is a needed-in-2.6.26 thing.  I
-> >  assumed "not".
-> 
-> That's correct.  I'm also not even 100% sure that this is the best
-> approach.  I'm waiting/hoping for feedback from David.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig533BCCE4AC90BF2D5638D5B7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-You'll get some.  Unlike your other patch, this one wasn't
-obvious and required me to burn a few grey cells ... ones
-which have been otherwise occupied.  ;)
+Am 11.05.2008 22:24 schrieb Carlos R. Mafra:
+> On Sun 11.May'08 at 20:18:08 +0200, Tilman Schmidt wrote:
+>> This warning, first reported for 2.6.25-rc5-mm1
+>> (see http://lkml.org/lkml/2008/3/12/444)
+>> has now made it into mainline:
+[...]
+> Isn't it fixed by db176c6ed8974fae94328ad5ac9e70b094ff22fd=20
+> ("Fix bogus warning in sysdev_driver_register()") ?
 
-- dave
 
+It is indeed. After applying that patch to 2.6.26-rc1, the warning does n=
+ot appear anymore.
+
+Thanks,
+Tilman
+
+
+--------------enig533BCCE4AC90BF2D5638D5B7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iD8DBQFIKMt6Q3+did9BuFsRAncEAJ9qcupYbrvUUIp+u0gwWlEw9Rrb/ACgjMn4
+U3nl8Z5ZpXzcPS17WiFzNxM=
+=FfIm
+-----END PGP SIGNATURE-----
+
+--------------enig533BCCE4AC90BF2D5638D5B7--
