@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756923AbYELRHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbYELRLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756923AbYELRHg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 13:07:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756072AbYELRHK
+	id S1756620AbYELRLU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 13:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750941AbYELRLN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 13:07:10 -0400
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:60380 "EHLO
-	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752974AbYELRHI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 13:07:08 -0400
-Date: Mon, 12 May 2008 18:44:21 +0200
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: Julia Lawall <julia@diku.dk>
-Cc: jgarzik@pobox.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH] au1000_eth: remove useless check
-Message-ID: <20080512164421.GB22190@electric-eye.fr.zoreil.com>
-References: <Pine.LNX.4.64.0805121537320.3694@ask.diku.dk> <20080512161734.GA22190@electric-eye.fr.zoreil.com> <Pine.LNX.4.64.0805121852510.16384@ask.diku.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0805121852510.16384@ask.diku.dk>
-X-Organisation: Land of Sunshine Inc.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Mon, 12 May 2008 13:11:13 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:35142 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751797AbYELRLM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 13:11:12 -0400
+Date: Mon, 12 May 2008 19:10:41 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andy Isaacson <adi@hexapodia.org>, linux-kernel@vger.kernel.org,
+       rjw@sisk.pl
+Subject: Re: 2.6.25-mm1: kmmcd NULL pointer dereference at
+ klist_del+0xe/0x30
+Message-ID: <20080512191041.397f9ccf@mjolnir.drzeus.cx>
+In-Reply-To: <20080509164738.2e0af511.akpm@linux-foundation.org>
+References: <20080509171956.GJ30021@hexapodia.org>
+	<20080509164738.2e0af511.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The lifespan of the device covers the request_irq .. free_irq interval.
+On Fri, 9 May 2008 16:47:38 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-The cast of a void * pointer is not needed either.
+> On Fri, 9 May 2008 10:19:56 -0700
+> Andy Isaacson <adi@hexapodia.org> wrote:
+> 
+> > Got this twice with 2.6.25-mm1 on my Thinkpad X40, AData 16GB SDHC card
+> > in mmc0 but no filesystem mounted.  I think the oops happened at
+> > suspend/resume time.  Previous kernel was 2.6.25-rc5-mm1 which didn't
+> > exhibit this problem across multiple suspend-resume cycles.
+> > 
+> > Complete logs and pretty much everything else you could want at
+> > http://web.hexapodia.org/~adi/bobble/bobble_2.6.25-mm1-dirty_20080509100634/
+> > 
+> > [104375.816331] BUG: unable to handle kernel NULL pointer dereference at 0000000c
+> > [104375.816338] IP: [<c02d86ce>] klist_del+0xe/0x30
+> 
+> This could be one of those nasty situations where one driver leaves a mess
+> behind it and then another driver later comes along and trips over that
+> mess.
+> 
 
-Signed-off-by: Francois Romieu <romieu@fr.zoreil.com>
+There were some problems with removing devices during suspend (which
+the MMC layer does), but AFAIK those patches were backed out and were
+only supposed to come back in a form that allowed such usage. Rafael
+should have the most correct information on that subject.
 
-diff --git a/drivers/net/au1000_eth.c b/drivers/net/au1000_eth.c
-index 3634b5f..7023d77 100644
---- a/drivers/net/au1000_eth.c
-+++ b/drivers/net/au1000_eth.c
-@@ -1239,12 +1239,7 @@ static int au1000_rx(struct net_device *dev)
-  */
- static irqreturn_t au1000_interrupt(int irq, void *dev_id)
- {
--	struct net_device *dev = (struct net_device *) dev_id;
--
--	if (dev == NULL) {
--		printk(KERN_ERR "%s: isr: null dev ptr\n", dev->name);
--		return IRQ_RETVAL(1);
--	}
-+	struct net_device *dev = dev_id;
- 
- 	/* Handle RX interrupts first to minimize chance of overrun */
- 
+Rgds
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
