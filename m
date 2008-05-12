@@ -1,81 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756675AbYELOi3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755596AbYELOkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756675AbYELOi3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 10:38:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755601AbYELOiA
+	id S1755596AbYELOkA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 10:40:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751860AbYELOjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 10:38:00 -0400
-Received: from hu-out-0506.google.com ([72.14.214.231]:24171 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755534AbYELOh6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 10:37:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=ndf2xKsr2vGHzikHpGUO/Y5XqesBKDbNdR07yOi5uLt/RgGA1hxaAan1fbxSFJcAJ78Ie/nvStN4tLTe/Sxu7gM8zahqyZ29jNf0KyuXFgu8jBgDcmLbCRPLGU7fcwu0rEAQ7GHpFMYvILkWZwRmT0gIO8XRR5jj8VE6mg0+/yw=
-Message-ID: <386072610805120737y7a243d99o5a855564575d2fb8@mail.gmail.com>
-Date: Mon, 12 May 2008 22:37:53 +0800
-From: "Bryan Wu" <cooloney@kernel.org>
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Subject: Re: [PATCH try#2] [MTD/MAPS] Blackfin BF5xx Maps: Handle the case where flash memory and ethernet mac/phy are mapped onto the same async bank
-Cc: "=?ISO-8859-1?Q?J=F6rn_Engel?=" <joern@logfs.org>,
-       "Bryan Wu" <bryan.wu@analog.com>, dwmw2@infradead.org,
-       will.newton@gmail.com, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <8bd0f97a0805120548k356aff52pdf66acf88fadfebb@mail.gmail.com>
+	Mon, 12 May 2008 10:39:52 -0400
+Received: from h155.mvista.com ([63.81.120.155]:20800 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751852AbYELOjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 10:39:51 -0400
+Message-ID: <48285699.5060700@ru.mvista.com>
+Date: Mon, 12 May 2008 18:39:21 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <1202020355.6671.23.camel@roc-laptop>
-	 <20080512122650.GA10014@logfs.org>
-	 <8bd0f97a0805120548k356aff52pdf66acf88fadfebb@mail.gmail.com>
-X-Google-Sender-Auth: 874ef58e81c9f6c3
+To: abhiruchi.g@vaultinfo.com
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+       kernel-testers@vger.kernel.org
+Subject: Re: WARNING: arch/mips/au1000/common/built-in.o(.text+0x15c0): Section
+ mismatch: reference to .init.data: (between 'au1xxx_platform_init' and '__fixup_bigphys_addr')
+References: <54350.192.168.1.71.1210568848.webmail@192.168.1.71>
+In-Reply-To: <54350.192.168.1.71.1210568848.webmail@192.168.1.71>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 12, 2008 at 8:48 PM, Mike Frysinger <vapier.adi@gmail.com> wrote:
-> On Mon, May 12, 2008 at 8:26 AM, Jörn Engel <joern@logfs.org> wrote:
->  > On Sun, 3 February 2008 14:32:35 +0800, Bryan Wu wrote:
->  >> +static void bf5xx_copy_from(struct map_info *map, void *to,
->  unsigned long from, ssize_t len)
->  >> +{
->  >> +     unsigned long i;
->  >> +     map_word test;
->  >> +
->  >> +     if ((unsigned long)to & 0x1) {
->  >> +             for (i = 0; i < len / 2 * 2; i += 2) {
->  >> +                     test = bf5xx_read(map, from + i);
->  >> +                     put_unaligned(test.x[0], (__le16 *)(to + i));
->  >> +             }
->  >> +     } else {
->  >> +             for (i = 0; i < len / 2 * 2; i += 2) {
->  >> +                     test = bf5xx_read(map, from + i);
->  >> +                     *((u16*)(to + i)) = test.x[0];
->  >                        ^^^^^^^^^^^^^^^^^
->  >
->  > I'm not particularly fond of such constructs, maybe because I have such
->  > a hard time understanding what the code actually does.
->  >
->  > How about:
->  >        u16 *foo = to;
->  >
->  >        for (i = 0; i < (len & ~1); i++) {
->  >                test = bf5xx_read(map, from + 2 * i);
->  >                foo[i] = test.x[0];
->  >        }
->  >
->  > With perhaps a better name than "foo" and the same conversion in the
->  > rest of the function as well?
->
->  indeed.  Bryan: i can take care of this as there's a few other pieces
->  i want to fiddle first (like getting rid of "bf5xx")
->  -mike
->
+Hello.
 
-My pleasure. Thanks.
-This patch has been in my queue for a long time
+abhiruchi.g@vaultinfo.com wrote:
 
--Bryan
+> Hi all,
+>   I am trying to configure the kernel for mips(DB1200 bosrd).I am getting this warning.
+> how to remove this warning?
+
+> WARNING: arch/mips/au1000/common/built-in.o(.text+0x15c0): Section mismatch: reference to .init.data: (between 'au1xxx_platform_init' and '__fixup_bigphys_addr')
+> WARNING: arch/mips/au1000/common/built-in.o(.text+0x15c4): Section mismatch: reference to .init.data: (between 'au1xxx_platform_init' and '__fixup_bigphys_addr
+
+    Which kernel version are you building? I'mnot seeing anything alike.
+
+WBR, Sergei
