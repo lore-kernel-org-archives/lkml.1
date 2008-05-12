@@ -1,40 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756183AbYELWOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756005AbYELWSZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756183AbYELWOT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 18:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbYELWOL
+	id S1756005AbYELWSZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 18:18:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751938AbYELWSR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 18:14:11 -0400
-Received: from vena.lwn.net ([206.168.112.25]:37977 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751546AbYELWOK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 18:14:10 -0400
-To: linux-kernel@vger.kernel.org
-Subject: V4L2-based build error
-cc: mchehab@infradead.org
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Mon, 12 May 2008 16:14:09 -0600
-Message-ID: <18844.1210630449@vena.lwn.net>
+	Mon, 12 May 2008 18:18:17 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47415 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751546AbYELWSQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 18:18:16 -0400
+Date: Mon, 12 May 2008 15:18:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net,
+       dbrownell@users.sourceforge.net
+Subject: Re: [PATCH/RFC] spi: Change modalias from a pointer to a character
+ array
+Message-Id: <20080512151805.4c2763b9.akpm@linux-foundation.org>
+In-Reply-To: <20080509173146.2932.16141.stgit@trillian.secretlab.ca>
+References: <20080509173146.2932.16141.stgit@trillian.secretlab.ca>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If you configure V4L2 as a module, the config system will still let you
-configure DVB_CORE built-in.  This yields:
+On Fri, 09 May 2008 11:32:28 -0600
+Grant Likely <grant.likely@secretlab.ca> wrote:
 
-  drivers/built-in.o: In function `v4l2_i2c_drv_attach_legacy':
-  tuner-core.c:(.text+0x901d5): undefined reference to `v4l2_i2c_attach'
-  drivers/built-in.o: In function `tuner_command':
-  tuner-core.c:(.text+0x91aed): undefined reference to `v4l_printk_ioctl'
+> From: Grant Likely <grant.likely@secretlab.ca>
+> 
+> Currently, 'modalias' in the spi_device structure is a 'const char *'.
+> The spi_new_device() function fills in the modalias value from a passed
+> in spi_board_info data block.  Since it is a pointer copy, the new
+> spi_device remains dependent on the spi_board_info structure after the
+> new spi_device is registered (no other fields in spi_device directly
+> depend on the spi_board_info structure; all of the other data is copied).
+> 
+> This causes a problem when dynamically propulating the list of attached
+> SPI devices.  For example, in arch/powerpc, the list of SPI devices can
+> be populated from data in the device tree.  With the current code, the
+> device tree adapter must kmalloc() a new spi_board_info structure for
+> each new SPI device it finds in the device tree, and there is no simple
+> mechanism in place for keeping track of these allocations.
+> 
+> This patch changes modalias from a 'const char *' to a fixed char array.
+> By copying the modalias string instead of referencing it, the dependency
+> on the spi_board_info structure is eliminated and an outside caller does
+> not need to maintain a separate spi_board_info allocation for each device.
+> 
+> If searched through the code to the best of my ability for any references
+> to modalias which may be affected by this change and haven't found anything.
+> It has been tested with the lite5200b platform in arch/powerpc.
+> 
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+> 
+>  drivers/spi/spi.c       |    2 +-
+>  include/linux/spi/spi.h |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
+> index 1ad12af..bdf1b70 100644
+> --- a/drivers/spi/spi.c
+> +++ b/drivers/spi/spi.c
+> @@ -229,7 +229,7 @@ struct spi_device *spi_new_device(struct spi_master *master,
+>  	proxy->max_speed_hz = chip->max_speed_hz;
+>  	proxy->mode = chip->mode;
+>  	proxy->irq = chip->irq;
+> -	proxy->modalias = chip->modalias;
+> +	strncpy(proxy->modalias, chip->modalias, KOBJ_NAME_LEN);
+>  
+>  	snprintf(proxy->dev.bus_id, sizeof proxy->dev.bus_id,
+>  			"%s.%u", master->dev.bus_id,
+> diff --git a/include/linux/spi/spi.h b/include/linux/spi/spi.h
+> index 387e428..38a080b 100644
+> --- a/include/linux/spi/spi.h
+> +++ b/include/linux/spi/spi.h
+> @@ -82,7 +82,7 @@ struct spi_device {
+>  	int			irq;
+>  	void			*controller_state;
+>  	void			*controller_data;
+> -	const char		*modalias;
+> +	char			modalias[KOBJ_NAME_LEN];
+>  
+>  	/*
+>  	 * likely need more hooks for more protocol options affecting how
 
-I never had trouble with this before 2.6.26-rc2.  I'm happy making
-DVB_CORE modular, but it would be nice if the config system didn't allow
-inconsistent setups.
-
-jon
-
-P.S. As I was digging into this, I ran into <media/v4l2-i2c-drv-legacy.h>, 
-     which takes an interesting approach - function definitions and 
-     module_init() within a header file?  This thing is included in a 
-     number of places; it seems like there should be a better way...
+I'm not really able to work out if this is a needed-in-2.6.26 thing.  I
+assumed "not".
 
