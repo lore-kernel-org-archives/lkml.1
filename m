@@ -1,49 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756025AbYELPWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755140AbYELPYQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756025AbYELPWl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 11:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbYELPWb
+	id S1755140AbYELPYQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 11:24:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbYELPYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 11:22:31 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:36830 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752444AbYELPWa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 11:22:30 -0400
-Date: Mon, 12 May 2008 08:22:05 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for May 12
-Message-Id: <20080512082205.8678bbaf.randy.dunlap@oracle.com>
-In-Reply-To: <20080512150418.603e29cf.sfr@canb.auug.org.au>
-References: <20080512150418.603e29cf.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Mon, 12 May 2008 11:24:00 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56965 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750897AbYELPYA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 11:24:00 -0400
+Date: Mon, 12 May 2008 10:23:21 -0500
+From: David Teigland <teigland@redhat.com>
+To: Matthias Kaehlcke <matthias@kaehlcke.net>,
+       Patrick Caulfield <pcaulfie@redhat.com>,
+       Steven Whitehouse <swhiteho@redhat.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] DLM: Convert connections_lock in a mutex
+Message-ID: <20080512152321.GC31873@redhat.com>
+References: <20080506203354.GB27656@traven>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080506203354.GB27656@traven>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 May 2008 15:04:18 +1000 Stephen Rothwell wrote:
-
-> Hi all,
+On Tue, May 06, 2008 at 10:33:54PM +0200, Matthias Kaehlcke wrote:
+> Distributed Lock Manager: The semaphore connections_lock is used as a
+> mutex. Convert it to the mutex API.
 > 
-> News:  I am now providing patches relative to the latest tag in Linus'
-> tree.  I propose to stop providing complete tar balls as they are so
-> large and people will have recent versions of Linus's tree anyway (I
-> assume).  The patches will be named "patch-<upstream tag>-<next tag>".
+> Signed-off-by: Matthias Kaehlcke <matthias@kaehlcke.net>
 
-Oh well.  For the record, I don't mind using patches instead of
-complete tarballs, but I would prefer that the patches be relative
-to something like a daily -git snapshot so that using git is not
-required at all.
+Thanks, I've added this to dlm.git, along with the followup #include
+from Andrew.
 
----
-~Randy
+Dave
+
