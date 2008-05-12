@@ -1,109 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759332AbYELEPk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758283AbYELERt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759332AbYELEPk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 00:15:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbYELEPc
+	id S1758283AbYELERt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 00:17:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYELERl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 00:15:32 -0400
-Received: from wr-out-0506.google.com ([64.233.184.239]:5478 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750927AbYELEPb (ORCPT
+	Mon, 12 May 2008 00:17:41 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:45621 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750897AbYELERk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 00:15:31 -0400
+	Mon, 12 May 2008 00:17:40 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=d4nVb6nJI5QWjljoBxcX8C+MKNrUOWXWXnzzi0UMzaRNbeRAYuHYZlsUunkljuc3Qb40R4qId96aUPBhonT6tCZxCzaCh3TRxPCp7OMWnkXGMaCYmnAI8kf5CYGsvKNwZOjqkeJuRis4pZ/fy7Or/JQqd0OGY1RNAizL0e8QAp8=
-Message-ID: <aa79d98a0805112115s7879d4e8q2fc97512e35fc1c8@mail.gmail.com>
-Date: Mon, 12 May 2008 08:15:28 +0400
-From: "Cyrill Gorcunov" <gorcunov@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.26-rc1 on x86: ld: warning: dot moved backwards before `.text'
-Cc: "H. Peter Anvin" <hpa@zytor.com>, "Sam Ravnborg" <sam@ravnborg.org>,
-       "Mikael Pettersson" <mikpe@it.uu.se>, "Pavel Machek" <pavel@ucw.cz>,
-       tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org
-In-Reply-To: <200805112322.53473.rjw@sisk.pl>
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=Svwf3fnCUmbPi+EXj4ObSjimn+MT5J3WIXMm7RFtGeeEFhcrKtoOLQObsSNDs1D84bmgtvT0Q9LWdw+d+LdL6B7lSy7rj6QLW0b23V8bQ9Cn/aZQWuEQdRC0Vzmk+/g87OojNmCvvqnY4M10sqe0XX4X01eA+WwtlB0LmKzYASU=
+Date: Mon, 12 May 2008 12:15:34 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: WANG Cong <xiyou.wangcong@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, WANG Cong <wangcong@zeuux.org>
+Subject: Re: [Patch 7/9] fs/exec.c: fix wrong return value of
+	prepare_binprm()
+Message-ID: <20080512041534.GG2572@hacking>
+References: <1210254754206-git-send-email-xiyou.wangcong@gmail.com> <12102548553947-git-send-email-xiyou.wangcong@gmail.com> <20080510193105.GG13907@ZenIV.linux.org.uk> <20080512035643.GE2572@hacking> <20080512040122.GN13907@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <18470.787.498329.144701@harpo.it.uu.se>
-	 <48273A32.5020104@zytor.com> <20080511182905.GD6942@cvg>
-	 <200805112322.53473.rjw@sisk.pl>
+In-Reply-To: <20080512040122.GN13907@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 12, 2008 at 1:22 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Sunday, 11 of May 2008, Cyrill Gorcunov wrote:
->> [H. Peter Anvin - Sun, May 11, 2008 at 11:25:54AM -0700]
->> > Cyrill Gorcunov wrote:
->> >> Hi Peter,
->> >> actually I only doubt about exactly position of this headers - I mean
->> >> meguess it better should be _before_ "_end" not after. Since the others
->> >> script uses (acpi/wakeup_rm.S):
->> >>    wakeup_code_start:
->> >>    .incbin "arch/x86/kernel/acpi/realmode/wakeup.bin"
->> >>    wakeup_code_end:
->> >> and kernel uses these wakeup_code_* marks to save/restore memory I think
->> >> it should be like
->> >>    . = HEADER_OFFSET;
->> >>    .header : {
->> >>            ...
->> >>    }
->> >>    . = ALIGN(16);
->> >>    _end = .;
->> >>    /DISCARD/ ...
+On Mon, May 12, 2008 at 05:01:22AM +0100, Al Viro wrote:
+>On Mon, May 12, 2008 at 11:56:43AM +0800, WANG Cong wrote:
+>> On Sat, May 10, 2008 at 08:31:05PM +0100, Al Viro wrote:
+>> >On Thu, May 08, 2008 at 09:52:32PM +0800, WANG Cong wrote:
+>> >> All prepare_binprm()'s callers assume that prepare_binprm() fails
+>> >> when it returns negative. However, prepare_binprm() most probably returns
+>> >> the return value of kernel_read(), which may return positive on failure!
+>> >> 
+>> >> Thus this should be fixed.
 >> >
->> > Yes, I believe that's correct.
->> >
->> >     -hpa
->> >
->>
->> Thanks for review, Peter, I'll cook a patch and wait for
->> Pavel's opinion ;-)
+>> >Since when does read return positive on failure?
+>> 
+>> When an EIO occurs, I think. For example,
 >
-> I've tested the appended one.  If that's what you mean, we'll ask Ingo to take
-> it.
->
-> Thanks,
-> Rafael
->
->
-> ---
->  arch/x86/kernel/acpi/realmode/wakeup.lds.S |   10 +++++-----
->  1 file changed, 5 insertions(+), 5 deletions(-)
->
-> Index: linux-2.6/arch/x86/kernel/acpi/realmode/wakeup.lds.S
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/kernel/acpi/realmode/wakeup.lds.S
-> +++ linux-2.6/arch/x86/kernel/acpi/realmode/wakeup.lds.S
-> @@ -12,11 +12,6 @@ ENTRY(_start)
->
->  SECTIONS
->  {
-> -       . = HEADER_OFFSET;
-> -       .header : {
-> -                *(.header)
-> -       }
-> -
->        . = 0;
->        .text : {
->                 *(.text*)
-> @@ -50,6 +45,11 @@ SECTIONS
->                __bss_end = .;
->        }
->
-> +       . = HEADER_OFFSET;
-> +       .header : {
-> +                *(.header)
-> +       }
-> +
->        . = ALIGN(16);
->        _end = .;
->
+>No.  On EIO it returns -EIO, TYVM...
 >
 
-Thanks Rafael,
+Hmm, it should. Thanks for your correction.
 
-it's exactly what I meant - http://lkml.org/lkml/2008/5/11/120 ;)
+
+>>         retval = kernel_read(interpreter, interp_elf_ex->e_phoff,
+>>                              (char *)elf_phdata,size);
+>>         error = -EIO;
+>>         if (retval != size) {
+>>                 if (retval < 0)
+>>                         error = retval;
+>>                 goto out_close;
+>>         }
+>
+>Which is what we do on short read here.  FWIW, -EINVAL might be saner
+>choice - it's "binary is corrupted", not "read had failed".
+
+IMO, -EIO is fine, because -EINVAL means "Invalid argument", but
+there's nothing wrong with arguments here, just some bad things occurred
+on reading the binary.
+
+And even if it is really "binary is corrupted", then -ENOEXEC is
+better than -EINVAL, isn't it?
+
+Anyway, kernel_read() may return postive when not success.
+
+Thanks.
+
+-- 
+Hi, I'm a .signature virus, please copy/paste me to help me spread
+all over the world.
