@@ -1,70 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757366AbYELW6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbYELXAi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757366AbYELW6T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 18:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756098AbYELW6H
+	id S1757298AbYELXAi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 19:00:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756175AbYELXAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 18:58:07 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:40970 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755691AbYELW6G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 18:58:06 -0400
-X-Sasl-enc: 8TRmn5fjEEWVOgUeciP4cHAM2NIxozF86x0Mz3p1j4Gf 1210633084
-Message-ID: <4828CB6F.5060808@imap.cc>
-Date: Tue, 13 May 2008 00:57:51 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Mon, 12 May 2008 19:00:30 -0400
+Received: from ns.unixsol.org ([193.110.159.2]:48486 "EHLO ns.unixsol.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755384AbYELXA3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 19:00:29 -0400
+X-Greylist: delayed 333 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 May 2008 19:00:29 EDT
+Message-ID: <4828CAC6.3090402@unixsol.org>
+Date: Tue, 13 May 2008 01:55:02 +0300
+From: Georgi Chorbadzhiyski <gf@unixsol.org>
+Organization: Unix Solutions (http://unixsol.org)
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-To: "Carlos R. Mafra" <crmafra2@gmail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org, yakui.zhao@intel.com,
-       davej@codemonkey.org.uk
-Subject: Re: [2.6.26-rc1] WARNING: at drivers/base/sys.c:183
-References: <48273860.1000103@imap.cc> <20080511202416.GA5771@beyonder.ift.unesp.br>
-In-Reply-To: <20080511202416.GA5771@beyonder.ift.unesp.br>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig533BCCE4AC90BF2D5638D5B7"
+To: xfs@oss.sgi.com, jfs-discussion@lists.sourceforge.net,
+       cluster-devel@redhat.com
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Unneeded kernel threads (xfs, jfs, gfs2)
+Content-Type: text/plain; charset=windows-1251
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig533BCCE4AC90BF2D5638D5B7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi guys, I know that not all kernel thread users are converted to
+start only when needed but the following is little annoying specially
+when I'm not even using jfs, xfs and gfs2.
 
-Am 11.05.2008 22:24 schrieb Carlos R. Mafra:
-> On Sun 11.May'08 at 20:18:08 +0200, Tilman Schmidt wrote:
->> This warning, first reported for 2.6.25-rc5-mm1
->> (see http://lkml.org/lkml/2008/3/12/444)
->> has now made it into mainline:
-[...]
-> Isn't it fixed by db176c6ed8974fae94328ad5ac9e70b094ff22fd=20
-> ("Fix bogus warning in sysdev_driver_register()") ?
+Look at the ps output from a standard distro 2.6.24.5 kernel after a
+fresh boot:
 
+>   PID TTY      STAT   TIME COMMAND
+>     2 ?        S<     0:00 [kthreadd]
+>     3 ?        S<     0:00  \_ [migration/0]
+>     4 ?        S<     0:00  \_ [ksoftirqd/0]
+>     5 ?        S<     0:00  \_ [migration/1]
+>     6 ?        S<     0:00  \_ [ksoftirqd/1]
+>     7 ?        S<     0:00  \_ [events/0]
+>     8 ?        S<     0:00  \_ [events/1]
+>     9 ?        S<     0:00  \_ [khelper]
+>   102 ?        S<     0:00  \_ [kblockd/0]
+>   103 ?        S<     0:00  \_ [kblockd/1]
+>   106 ?        S<     0:00  \_ [kacpid]
+>   107 ?        S<     0:00  \_ [kacpi_notify]
+>   230 ?        S<     0:00  \_ [ata/0]
+>   231 ?        S<     0:00  \_ [ata/1]
+>   232 ?        S<     0:00  \_ [ata_aux]
+>   233 ?        S<     0:00  \_ [ksuspend_usbd]
+>   239 ?        S<     0:00  \_ [khubd]
+>   242 ?        S<     0:00  \_ [kseriod]
+>   284 ?        S      0:00  \_ [pdflush]
+>   285 ?        S      0:00  \_ [pdflush]
+>   286 ?        S<     0:00  \_ [kswapd0]
+>   326 ?        S<     0:00  \_ [aio/0]
+>   327 ?        S<     0:00  \_ [aio/1]
+>   349 ?        S<     0:00  \_ [jfsIO]
+>   350 ?        S<     0:00  \_ [jfsCommit]
+>   351 ?        S<     0:00  \_ [jfsCommit]
+>   352 ?        S<     0:00  \_ [jfsSync]
 
-It is indeed. After applying that patch to 2.6.26-rc1, the warning does n=
-ot appear anymore.
+Not needed here, because no jfs partition is in use.
 
-Thanks,
-Tilman
+>   354 ?        S<     0:00  \_ [xfslogd/0]
+>   355 ?        S<     0:00  \_ [xfslogd/1]
+>   356 ?        S<     0:00  \_ [xfsdatad/0]
+>   357 ?        S<     0:00  \_ [xfsdatad/1]
+>   361 ?        S<     0:00  \_ [xfs_mru_cache]
 
+Not needed here, because no xfs partition is in use.
 
---------------enig533BCCE4AC90BF2D5638D5B7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+>   366 ?        S<     0:00  \_ [gfs2_scand]
+>   367 ?        S<     0:00  \_ [glock_workqueue]
+>   368 ?        S<     0:00  \_ [glock_workqueue]
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+I dont use gfs2
 
-iD8DBQFIKMt6Q3+did9BuFsRAncEAJ9qcupYbrvUUIp+u0gwWlEw9Rrb/ACgjMn4
-U3nl8Z5ZpXzcPS17WiFzNxM=
-=FfIm
------END PGP SIGNATURE-----
+>  1047 ?        S<     0:00  \_ [scsi_tgtd/0]
+>  1048 ?        S<     0:00  \_ [scsi_tgtd/1]
+>  1118 ?        S<     0:00  \_ [scsi_eh_2]
+>  1120 ?        S<     0:00  \_ [scsi_eh_3]
+>  1122 ?        S<     0:00  \_ [scsi_eh_4]
+>  1124 ?        S<     0:00  \_ [scsi_eh_5]
+>  1133 ?        S<     0:00  \_ [exec-osm/0]
+>  1134 ?        S<     0:00  \_ [exec-osm/1]
+>  1140 ?        S<     0:00  \_ [block-osm/0]
+>  1141 ?        S<     0:00  \_ [block-osm/1]
 
---------------enig533BCCE4AC90BF2D5638D5B7--
+What is osm? Can't find anything in kernel config?
+
+>  1148 ?        S<     0:00  \_ [khpsbpkt]
+
+What is this?
+
+>  1193 ?        S<     0:00  \_ [ksnapd]
+>  1201 ?        S<     0:00  \_ [rpciod/0]
+>  1202 ?        S<     0:00  \_ [rpciod/1]
+>  1204 ?        S<     0:00  \_ [kjournald]
+>  2448 ?        S<     0:00  \_ [kjournald]
+>  2649 ?        S      0:00  \_ [lockd]
+
+Kernel config can be found here:
+  http://mirrors.unixsol.org/slackware/slackware-12.1/kernels/hugesmp.s/config
+
+-- 
+Georgi Chorbadzhiyski
+http://georgi.unixsol.org/
