@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760592AbYELHSV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760797AbYELHSe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760592AbYELHSV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 03:18:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756670AbYELHSG
+	id S1760797AbYELHSe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 03:18:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760367AbYELHSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 03:18:06 -0400
-Received: from sacred.ru ([62.205.161.221]:37375 "EHLO sacred.ru"
+	Mon, 12 May 2008 03:18:16 -0400
+Received: from www.tglx.de ([62.245.132.106]:49334 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756119AbYELHSF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 03:18:05 -0400
-Message-ID: <4827ED00.9040201@openvz.org>
-Date: Mon, 12 May 2008 11:08:48 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	id S1760248AbYELHSN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 03:18:13 -0400
+Date: Mon, 12 May 2008 09:17:20 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Jan Beulich <jbeulich@novell.com>,
+       =?ISO-8859-15?Q?Simon_Holm_Th=F8gersen?= <odie@cs.aau.dk>
+Subject: Re: [Bug #10631] Please revert 709f744 (x86: bitops asm constraint
+ fixes)
+In-Reply-To: <88YBFoyd1CN.A.8_H.Xw1JIB@chimera>
+Message-ID: <alpine.LFD.1.10.0805120916510.3514@apollo.tec.linutronix.de>
+References: <hPXlJLjt4XG.A._lF.Jv1JIB@chimera> <88YBFoyd1CN.A.8_H.Xw1JIB@chimera>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Paul Menage <menage@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Mark res_counter_charge(_locked) with __must_check
-References: <4822C268.7060501@openvz.org>	<20080508184038.f3f2af47.kamezawa.hiroyu@jp.fujitsu.com>	<4822CAA5.9020401@openvz.org> <20080509091509.439fda80.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080509091509.439fda80.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 12 May 2008 11:11:21 +0400 (MSD)
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-874294452-1210576643=:3514"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Thu, 08 May 2008 13:40:53 +0400
-> Pavel Emelyanov <xemul@openvz.org> wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+--8323328-874294452-1210576643=:3514
+Content-Type: TEXT/PLAIN; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+
+On Sun, 11 May 2008, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
->>> BTW, res_counter_charge_locked() should be extern function ?
->> What do you mean? It is extern as well as the res_counter_charge
->> and uncharge ones are, but functions may have forward declarations
->> w/o extern keyword AFAIK ;)
->>
-> Ah, 
-> Is  res_counter_charge_locked() is called from files other than res_counter.c ?
-
-I checked - everything was OK.
-
-> Does we need declaration in header file ?
-
-But this patch _is_ for declaration in header :)
-
-> Thanks,
-> -Kame
+> The following bug entry is on the current list of known regressions
+> from 2.6.25.  Please verify if it still should be listed.
 > 
 > 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10631
+> Subject		: Please revert 709f744 (x86: bitops asm constraint fixes)
+> Submitter	: Simon Holm Thøgersen <odie@cs.aau.dk>
+> Date		: 2005-05-05 09:35 (1103 days old)
+> References	: http://www.ussg.iu.edu/hypermail/linux/kernel/0805.0/1963.html
+> Handled-By	: Ingo Molnar <mingo@elte.hu>
+> 		  Jan Beulich <jbeulich@novell.com>
+> 		  Thomas Gleixner <tglx@linutronix.de>
+> Patch		: http://www.ussg.iu.edu/hypermail/linux/kernel/0805.0/2661.html
 
+fixed by: eb2b4e682a6d5b4779a7f1a6a8419982919795f6
+
+Thanks,
+	tglx
+--8323328-874294452-1210576643=:3514--
