@@ -1,55 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761046AbYELKXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760953AbYELKXb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761046AbYELKXQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 06:23:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759091AbYELKXA
+	id S1760953AbYELKXb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 06:23:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759878AbYELKXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 06:23:00 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:38701 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757440AbYELKW7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 06:22:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:sender;
-        b=tdiBy4RIVFQm3MyD7yLmXBX3zwXac4yedLrwTOxzExQW4afLvKj82jM+5g/KsSBhDDODNx7tkUYMzqka8PpMhqOi2GMbC+q8fHwVO5R4836tPMbJkr1r6krTTYAvMVvfVR3CdDib9mNQtZwsND4fcKbjgSqFx/p8col5HSceEAg=
-From: Bryan Wu <cooloney@kernel.org>
-To: marcel@holtmann.org, linux-bluetooth@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 1/1] [bluetooth]: fix bug - kernel warning detected if built in Bluetooth CF driver
-Date: Mon, 12 May 2008 18:22:59 +0800
-Message-Id: <1210587779-10257-1-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.5
+	Mon, 12 May 2008 06:23:05 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:35232 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759560AbYELKXD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 06:23:03 -0400
+Date: Mon, 12 May 2008 12:22:57 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Mikhail Kshevetskiy <kl@laska.dorms.spbu.ru>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: linux-2.6.25: early exception 0e
+In-Reply-To: <20080510105712.74f17c01@laska>
+Message-ID: <Pine.LNX.4.64.0805121221480.30585@twin.jikos.cz>
+References: <20080510105712.74f17c01@laska>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Hennerich <michael.hennerich@analog.com>
+On Sat, 10 May 2008, Mikhail Kshevetskiy wrote:
 
-https://blackfin.uclinux.org/gf/project/uclinux-dist/tracker/?action=TrackerItemEdit&tracker_item_id=2650
+> I have the following boot problem:
+[ ... ]
+> PANIC: early exception 0e rip 10:ffffffff80224b4e error 0 cr2 ffffffffff5fb030
 
-Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- drivers/bluetooth/bluecard_cs.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+There should be a stack trace following this message, please post it (we 
+need to know what function does 0xffffffff80224b4e correspond to, at 
+least).
 
-diff --git a/drivers/bluetooth/bluecard_cs.c b/drivers/bluetooth/bluecard_cs.c
-index bcf5792..3b330a0 100644
---- a/drivers/bluetooth/bluecard_cs.c
-+++ b/drivers/bluetooth/bluecard_cs.c
-@@ -867,7 +867,7 @@ static int bluecard_probe(struct pcmcia_device *link)
- 
- 	link->io.Attributes1 = IO_DATA_PATH_WIDTH_8;
- 	link->io.NumPorts1 = 8;
--	link->irq.Attributes = IRQ_TYPE_EXCLUSIVE | IRQ_HANDLE_PRESENT;
-+	link->irq.Attributes = IRQ_TYPE_DYNAMIC_SHARING | IRQ_HANDLE_PRESENT;
- 	link->irq.IRQInfo1 = IRQ_LEVEL_ID;
- 
- 	link->irq.Handler = bluecard_interrupt;
 -- 
-1.5.5
+Jiri Kosina
+SUSE Labs
 
