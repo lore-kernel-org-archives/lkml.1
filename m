@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756971AbYELRAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756229AbYELRGu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756971AbYELRAA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 13:00:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755423AbYELQ7n
+	id S1756229AbYELRGu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 13:06:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754013AbYELRGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 12:59:43 -0400
-Received: from el-out-1112.google.com ([209.85.162.177]:33225 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755554AbYELQ7m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 12:59:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qECrpPJhjDFnGfTfNXdRW471/LtBZjOuFQC7722LCtcoHYlQF2/8XKDUiDQlOjyS+h24wC861O3RA3/GJ8kDQEXaB6eOgrcY5CL3cVLDfVY36vlpIAvt5h2KN5RZXZ10frIBunAX7HcqdrckDIwAukdS67CUhtIZn90ZVIokjtU=
-Message-ID: <8bd0f97a0805120959gee0f56bv746545c9b86ef7bd@mail.gmail.com>
-Date: Mon, 12 May 2008 12:59:41 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "David Brownell" <david-b@pacbell.net>
-Subject: Re: [PATCH 1/1] [INPUT/KEYPAD] gpio keypad: Replace current blackfin specific pfbutton driver with kernel generic gpio key driver
-Cc: "Bryan Wu" <cooloney@kernel.org>,
-       "pHilipp Zabel" <philipp.zabel@gmail.com>,
-       dbrownell@users.sourceforge.net, dmitry.torokhov@gmail.com,
-       linux-kernel@vger.kernel.org,
-       "Michael Hennerich" <michael.hennerich@analog.com>
-In-Reply-To: <200805120954.06986.david-b@pacbell.net>
+	Mon, 12 May 2008 13:06:37 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:47616 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752407AbYELRGg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 13:06:36 -0400
+Message-ID: <48287916.2090203@pobox.com>
+Date: Mon, 12 May 2008 13:06:30 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Julia Lawall <julia@diku.dk>
+CC: Francois Romieu <romieu@fr.zoreil.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 3/6] drivers/net: remove null pointer dereference
+References: <Pine.LNX.4.64.0805121537320.3694@ask.diku.dk> <20080512161734.GA22190@electric-eye.fr.zoreil.com> <Pine.LNX.4.64.0805121852510.16384@ask.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0805121852510.16384@ask.diku.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1210587437-9751-1-git-send-email-cooloney@kernel.org>
-	 <8bd0f97a0805120547g5c46973fl538ad18d81a4aebc@mail.gmail.com>
-	 <386072610805120742k47e2433cxf7a1f8605fca47fb@mail.gmail.com>
-	 <200805120954.06986.david-b@pacbell.net>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 12, 2008 at 12:54 PM, David Brownell wrote:
-> On Monday 12 May 2008, Bryan Wu wrote:
->  > Right. I mean the generic GPIO layer in Blackfin port, not the common code.
->  >
->  > And on the other hand, maybe there are also other hardware which has similar
->  > issue as Blackfin. So the common GPIO layer can take care of this, how
->  > do you think, David?
->
->  No; it's a Blackfin-specific design flaw, one that I've not seen
->  in any other chip's GPIO support.  So it should stay in the Blackfin
->  support code.  (Possibly even specialized for the specific chips
->  which have that flaw/erratum.)
+Julia Lawall wrote:
+> On Mon, 12 May 2008, Francois Romieu wrote:
+> 
+>> Julia Lawall <julia@diku.dk> :
+>> [...]
+>>> diff -u -p a/drivers/net/au1000_eth.c b/drivers/net/au1000_eth.c
+>>> --- a/drivers/net/au1000_eth.c	2008-04-27 11:41:11.000000000 +0200
+>>> +++ b/drivers/net/au1000_eth.c	2008-05-12 09:32:54.000000000 +0200
+>>> @@ -1242,7 +1242,7 @@ static irqreturn_t au1000_interrupt(int 
+>>>  	struct net_device *dev = (struct net_device *) dev_id;
+>>>  
+>>>  	if (dev == NULL) {
+>>> -		printk(KERN_ERR "%s: isr: null dev ptr\n", dev->name);
+>>> +		printk(KERN_ERR "isr: null dev ptr\n");
+>>>  		return IRQ_RETVAL(1);
+>>>  	}
+>> The lifespan of 'dev' covers the request_irq..free_irq interval in this
+>> driver. The whole 'dev == NULL' block can be removed.
+> 
+> Will you do that?
 
-afaik, it was a design flaw, not an erratum ... newer parts have the
-situation rectified.  but Michael would be able to comment more
-authoritatively on the topic.  we already have the logic to only make
-the swap for parts that need it.
--mike
+It's normal within the Linux community to give feedback on patches, and 
+sometimes the authors need to revise their patches if helpful feedback 
+arises.
+
+	Jeff
+
+
+
