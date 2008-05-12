@@ -1,54 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760248AbYELGxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759057AbYELG6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760248AbYELGxA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 02:53:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756646AbYELGwk
+	id S1759057AbYELG6S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 02:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbYELG6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 02:52:40 -0400
-Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:49526 "EHLO
-	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756238AbYELGwj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 02:52:39 -0400
-Message-ID: <4827E930.3000008@krogh.cc>
-Date: Mon, 12 May 2008 08:52:32 +0200
-From: Jesper Krogh <jesper@krogh.cc>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: yhlu.kernel@gmail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: NIU - Sun Neptune 10g - Transmit timed out reset (2.6.24)
-References: <20080507.141521.193714938.davem@davemloft.net>	<482498D5.9060008@krogh.cc>	<48258074.7060306@krogh.cc> <20080510.213431.193696750.davem@davemloft.net>
-In-Reply-To: <20080510.213431.193696750.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 12 May 2008 02:58:04 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:34903 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754738AbYELG6B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 02:58:01 -0400
+Date: Mon, 12 May 2008 08:57:59 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [2.6 patch] kernel/sched*: optimize inlining
+Message-ID: <20080512065759.GA7145@uranus.ravnborg.org>
+References: <20080511092132.GE1645@cs181133002.pp.htv.fi> <20080511175222.GA31729@uranus.ravnborg.org> <20080511184952.GG1645@cs181133002.pp.htv.fi> <20080511194248.GA514@uranus.ravnborg.org> <20080511200016.GH1645@cs181133002.pp.htv.fi> <20080511203827.GA850@uranus.ravnborg.org> <20080511211902.GI1645@cs181133002.pp.htv.fi> <20080511214428.GA1782@uranus.ravnborg.org> <20080511221158.GN1645@cs181133002.pp.htv.fi>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080511221158.GN1645@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Jesper Krogh <jesper@krogh.cc>
-> Date: Sat, 10 May 2008 13:01:08 +0200
 > 
->> Any good suggestions about the "Transmit timed out" messages. It
->> currently leads to a system that "doesnt die" but doesnt respond within
->> 15 minutes of load of the network adapter.
+> But we are in an area where "common sense" doesn't help if we rely on 
+> some specific behaviour.
 > 
-> It's likely some bug in the driver that hangs the card for whatever
-> reason, which we'll need to work out.
+> > > gcc 4.3 even ignores the unlikely() hint in timespec_add_ns()
+> > > (we now have a workaround for this in the kernel).
+> > I do not follow the logic here.
+> > Gcc may fail in a few cases to do what we expect but that
+> > is far from that we shall assume that it always fails.
+> 
+> My logic is simple:
+> 
+> If you rely on a hint that assumption can break.
 
-Ok. I have been testing a bit more. It generally works fine, It seems
-the "transmit timed out" thing was provoked by dd in the tests, because
-it was creating a lot of small requests. (default bs=512).(over NFS).
-When the  blocksize went up, the problem dissapered. (and the numer of
-context-switches went down).
+And the fix is to remove all hints?
+No - the fix is to replace hints with forced rules so we do
+_not_ rely on hint when we need to know what shall happen.
 
-When the blocksize went up, the performance likewise raised to 615MB/s.
-I haven't been able to get pass that number.
+By your definition we should replace all instances
+of __always_inline with inline and define both to
+__attribute__((always_inline)). Because inline
+should be an order not a hint.
 
-This is where one of the cpu's are settling at 100% load.
+And all I try to understand is why you see no value in the
+distinction on the possibility to annotate a function:
 
-Jesper
+a)
+   static void inline foo() { ... }
 
--- 
-Jesper
+and
+
+b)
+   static void __attribute__((always_inline)) foo() { ... }
+
+But you continue to pretend that a hint is useless because we
+are not sure what happens so we are equally well suited with
+no hint at all.
+Even so your patch showed that gcc (at least my ancient 4.1.1)
+took notice of the inline hint and in some cases did what
+it was hinted to do.
+
+On the gcc < 4.0 an its ability to inline properly...
+It has been accepted on this list for a long time that
+gcc < 4.0 is bad at inlining.
+This may be wrong or it may be rigth - I dunno.
+But when sending in a patch that suddenly breaks with this
+assumption then it should at least be followed with some
+kind of information why it does not fail with gcc < 4.0.
+And please stop pushing it back to others because this
+is stuff that should be in the initial patch submission.
+
+...
+
+> Provocation is the only way of communication that works on this list.
+
+So this was pure time waste. Thanks!
+Please do not waste my time answering this.
+
+	Sam
