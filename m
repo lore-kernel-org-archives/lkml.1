@@ -1,275 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756729AbYELXZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757127AbYELXZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756729AbYELXZU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 19:25:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753887AbYELXZE
+	id S1757127AbYELXZn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 19:25:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756443AbYELXZQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 19:25:04 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45518
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753384AbYELXZA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 19:25:00 -0400
-Date: Mon, 12 May 2008 16:24:55 -0700 (PDT)
-Message-Id: <20080512.162455.156545302.davem@davemloft.net>
-To: errandir_news@mph.eclipse.co.uk
-Cc: jlieskov@redhat.com, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: sparc: Fix mremap VA span checking.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080512231231.GA8373@palantir8>
-References: <1210590913.10883.9.camel@dhcp-lab-164.englab.brq.redhat.com>
-	<20080512.042453.238263459.davem@davemloft.net>
-	<20080512231231.GA8373@palantir8>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 12 May 2008 19:25:16 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:34090 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756139AbYELXZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 19:25:15 -0400
+Subject: Re: Linux 2.6.26-rc2
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Bart Van Assche <bart.vanassche@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.1.10.0805121247080.3019@woody.linux-foundation.org>
+References: <alpine.LFD.1.10.0805120731480.3188@woody.linux-foundation.org>
+	 <e2e108260805121232t4cbd8eb0k219fd6a7d06c7650@mail.gmail.com>
+	 <alpine.LFD.1.10.0805121247080.3019@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 13 May 2008 01:22:27 +0200
+Message-Id: <1210634547.1093.1.camel@localhost>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.4.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Martin Habets <errandir_news@mph.eclipse.co.uk>
-Date: Tue, 13 May 2008 00:12:32 +0100
-
-> On Mon, May 12, 2008 at 04:24:53AM -0700, David Miller wrote:
-> > From: Jan Lieskovsky <jlieskov@redhat.com>
-> > Date: Mon, 12 May 2008 13:15:12 +0200
-> > 
-> > >  I have investigated the code for MREMAP_FIXED in
-> > > sparc_mremap in arch/sparc/kernel/sys_sparc.c, for sys64_mremap
-> > > in arch/sparc64/kernel/sys_sparc.c and 
-> > > for sys32_mremap in arch/sparc64/kernel/sys_sparc32.c
-> > > and there are similar conditional range checks ->
-> > > attaching the patches against 2.6.25.3.
-> > 
-> > Thanks for the report, I'll take a look at this after getting
-> > some sleep as it's late hear.
-> > 
-> > My first impression is that it might make sense to put an
-> > arch_mmap_check() call at the appropriate spots instead of duplicating
-> > this check so many times.
+On Mon, 2008-05-12 at 12:55 -0700, Linus Torvalds wrote:
 > 
-> sparc32 already has an sparc_mmap_check() in sys_sparc that does this,
-> and sparc64 has sparc64_mmap_check().
-> Calling that should do the trick.
+> On Mon, 12 May 2008, Bart Van Assche wrote:
+> > 
+> > Sorry if it's my fault that I do not understand the above message
+> > completely. But from the above it's not completely clear to me which
+> > kernel versions (2.6.2?.? releases) are affected and which are not
+> > affected by the performance and correctness issues due to the
+> > interaction between the semaphore implementation and the preemptable
+> > BKL.
+> 
+> No released kernels are affected. It's purely a matter that has happened 
+> after 2.6.25. The semaphore simplifcation in -rc1 caused a huge 
+> performance regression on some benchmarks, and the fix to that in turn 
+> caused a semaphore correctness issue, so I just rolled back to the 
+> original BKL code that doesn't have any of those interactions.
+> 
+> In a historical context, the issues involved would only have happened with 
+> CONFIG_PREEMPT_BKL. That config option was made the only one in January, 
+> and as a result of these issues, we effectively switched it off.
+> 
+> So you can *think* of the effect of the changes as having gone from 
+> CONFIG_PREEMPT_BKL=y to CONFIG_PREEMPT_BKL=n, even though technically we 
+> had removed the actual config option to let people choose (so the config 
+> option has basically become a static code change).
 
-Right, I was just about to test the following patch:
+uhm.. but .25 doesent have PREEMPT_BKL either.. does that mean its on or
+off?
 
-diff --git a/arch/sparc/kernel/sys_sparc.c b/arch/sparc/kernel/sys_sparc.c
-index e995491..3c6b49a 100644
---- a/arch/sparc/kernel/sys_sparc.c
-+++ b/arch/sparc/kernel/sys_sparc.c
-@@ -219,7 +219,7 @@ out:
- 	return err;
- }
- 
--int sparc_mmap_check(unsigned long addr, unsigned long len, unsigned long flags)
-+int sparc_mmap_check(unsigned long addr, unsigned long len)
- {
- 	if (ARCH_SUN4C_SUN4 &&
- 	    (len > 0x20000000 ||
-@@ -295,52 +295,14 @@ asmlinkage unsigned long sparc_mremap(unsigned long addr,
- 	unsigned long old_len, unsigned long new_len,
- 	unsigned long flags, unsigned long new_addr)
- {
--	struct vm_area_struct *vma;
- 	unsigned long ret = -EINVAL;
--	if (ARCH_SUN4C_SUN4) {
--		if (old_len > 0x20000000 || new_len > 0x20000000)
--			goto out;
--		if (addr < 0xe0000000 && addr + old_len > 0x20000000)
--			goto out;
--	}
--	if (old_len > TASK_SIZE - PAGE_SIZE ||
--	    new_len > TASK_SIZE - PAGE_SIZE)
-+
-+	if (unlikely(sparc_mmap_check(addr, old_len)))
-+		goto out;
-+	if (unlikely(sparc_mmap_check(new_addr, new_len)))
- 		goto out;
- 	down_write(&current->mm->mmap_sem);
--	if (flags & MREMAP_FIXED) {
--		if (ARCH_SUN4C_SUN4 &&
--		    new_addr < 0xe0000000 &&
--		    new_addr + new_len > 0x20000000)
--			goto out_sem;
--		if (new_addr + new_len > TASK_SIZE - PAGE_SIZE)
--			goto out_sem;
--	} else if ((ARCH_SUN4C_SUN4 && addr < 0xe0000000 &&
--		    addr + new_len > 0x20000000) ||
--		   addr + new_len > TASK_SIZE - PAGE_SIZE) {
--		unsigned long map_flags = 0;
--		struct file *file = NULL;
--
--		ret = -ENOMEM;
--		if (!(flags & MREMAP_MAYMOVE))
--			goto out_sem;
--
--		vma = find_vma(current->mm, addr);
--		if (vma) {
--			if (vma->vm_flags & VM_SHARED)
--				map_flags |= MAP_SHARED;
--			file = vma->vm_file;
--		}
--
--		new_addr = get_unmapped_area(file, addr, new_len,
--				     vma ? vma->vm_pgoff : 0,
--				     map_flags);
--		ret = new_addr;
--		if (new_addr & ~PAGE_MASK)
--			goto out_sem;
--		flags |= MREMAP_FIXED;
--	}
- 	ret = do_mremap(addr, old_len, new_len, flags, new_addr);
--out_sem:
- 	up_write(&current->mm->mmap_sem);
- out:
- 	return ret;       
-diff --git a/arch/sparc64/kernel/sys_sparc.c b/arch/sparc64/kernel/sys_sparc.c
-index 0dbc941..ac1bff5 100644
---- a/arch/sparc64/kernel/sys_sparc.c
-+++ b/arch/sparc64/kernel/sys_sparc.c
-@@ -542,8 +542,7 @@ asmlinkage long sparc64_personality(unsigned long personality)
- 	return ret;
- }
- 
--int sparc64_mmap_check(unsigned long addr, unsigned long len,
--		unsigned long flags)
-+int sparc64_mmap_check(unsigned long addr, unsigned long len)
- {
- 	if (test_thread_flag(TIF_32BIT)) {
- 		if (len >= STACK_TOP32)
-@@ -609,46 +608,19 @@ asmlinkage unsigned long sys64_mremap(unsigned long addr,
- 	unsigned long old_len, unsigned long new_len,
- 	unsigned long flags, unsigned long new_addr)
- {
--	struct vm_area_struct *vma;
- 	unsigned long ret = -EINVAL;
- 
- 	if (test_thread_flag(TIF_32BIT))
- 		goto out;
- 	if (unlikely(new_len >= VA_EXCLUDE_START))
- 		goto out;
--	if (unlikely(invalid_64bit_range(addr, old_len)))
-+	if (unlikely(sparc64_mmap_check(addr, old_len)))
-+		goto out;
-+	if (unlikely(sparc64_mmap_check(new_addr, new_len)))
- 		goto out;
- 
- 	down_write(&current->mm->mmap_sem);
--	if (flags & MREMAP_FIXED) {
--		if (invalid_64bit_range(new_addr, new_len))
--			goto out_sem;
--	} else if (invalid_64bit_range(addr, new_len)) {
--		unsigned long map_flags = 0;
--		struct file *file = NULL;
--
--		ret = -ENOMEM;
--		if (!(flags & MREMAP_MAYMOVE))
--			goto out_sem;
--
--		vma = find_vma(current->mm, addr);
--		if (vma) {
--			if (vma->vm_flags & VM_SHARED)
--				map_flags |= MAP_SHARED;
--			file = vma->vm_file;
--		}
--
--		/* MREMAP_FIXED checked above. */
--		new_addr = get_unmapped_area(file, addr, new_len,
--				    vma ? vma->vm_pgoff : 0,
--				    map_flags);
--		ret = new_addr;
--		if (new_addr & ~PAGE_MASK)
--			goto out_sem;
--		flags |= MREMAP_FIXED;
--	}
- 	ret = do_mremap(addr, old_len, new_len, flags, new_addr);
--out_sem:
- 	up_write(&current->mm->mmap_sem);
- out:
- 	return ret;       
-diff --git a/arch/sparc64/kernel/sys_sparc32.c b/arch/sparc64/kernel/sys_sparc32.c
-index 1aa4288..ba5bd62 100644
---- a/arch/sparc64/kernel/sys_sparc32.c
-+++ b/arch/sparc64/kernel/sys_sparc32.c
-@@ -867,44 +867,15 @@ asmlinkage unsigned long sys32_mremap(unsigned long addr,
- 	unsigned long old_len, unsigned long new_len,
- 	unsigned long flags, u32 __new_addr)
- {
--	struct vm_area_struct *vma;
- 	unsigned long ret = -EINVAL;
- 	unsigned long new_addr = __new_addr;
- 
--	if (old_len > STACK_TOP32 || new_len > STACK_TOP32)
-+	if (unlikely(sparc64_mmap_check(addr, old_len)))
- 		goto out;
--	if (addr > STACK_TOP32 - old_len)
-+	if (unlikely(sparc64_mmap_check(new_addr, new_len)))
- 		goto out;
- 	down_write(&current->mm->mmap_sem);
--	if (flags & MREMAP_FIXED) {
--		if (new_addr > STACK_TOP32 - new_len)
--			goto out_sem;
--	} else if (addr > STACK_TOP32 - new_len) {
--		unsigned long map_flags = 0;
--		struct file *file = NULL;
--
--		ret = -ENOMEM;
--		if (!(flags & MREMAP_MAYMOVE))
--			goto out_sem;
--
--		vma = find_vma(current->mm, addr);
--		if (vma) {
--			if (vma->vm_flags & VM_SHARED)
--				map_flags |= MAP_SHARED;
--			file = vma->vm_file;
--		}
--
--		/* MREMAP_FIXED checked above. */
--		new_addr = get_unmapped_area(file, addr, new_len,
--				    vma ? vma->vm_pgoff : 0,
--				    map_flags);
--		ret = new_addr;
--		if (new_addr & ~PAGE_MASK)
--			goto out_sem;
--		flags |= MREMAP_FIXED;
--	}
- 	ret = do_mremap(addr, old_len, new_len, flags, new_addr);
--out_sem:
- 	up_write(&current->mm->mmap_sem);
- out:
- 	return ret;       
-diff --git a/include/asm-sparc/mman.h b/include/asm-sparc/mman.h
-index e18be98..3d16b40 100644
---- a/include/asm-sparc/mman.h
-+++ b/include/asm-sparc/mman.h
-@@ -24,9 +24,8 @@
- 
- #ifdef __KERNEL__
- #ifndef __ASSEMBLY__
--#define arch_mmap_check	sparc_mmap_check
--int sparc_mmap_check(unsigned long addr, unsigned long len,
--		unsigned long flags);
-+#define arch_mmap_check(addr,len,flags)	sparc_mmap_check(addr,len)
-+int sparc_mmap_check(unsigned long addr, unsigned long len);
- #endif
- #endif
- 
-diff --git a/include/asm-sparc64/mman.h b/include/asm-sparc64/mman.h
-index e584563..625be4d 100644
---- a/include/asm-sparc64/mman.h
-+++ b/include/asm-sparc64/mman.h
-@@ -24,9 +24,8 @@
- 
- #ifdef __KERNEL__
- #ifndef __ASSEMBLY__
--#define arch_mmap_check	sparc64_mmap_check
--int sparc64_mmap_check(unsigned long addr, unsigned long len,
--		unsigned long flags);
-+#define arch_mmap_check(addr,len,flags)	sparc64_mmap_check(addr,len)
-+int sparc64_mmap_check(unsigned long addr, unsigned long len);
- #endif
- #endif
- 
+> 
+> We may end up having to re-instate the config option due to this. 
+> Personally, I hope not. It would be nicer if we could just avoid 
+> PREEMPT_BKL entirely. 
+
+you mean avoid preempting the bkl, or avoid having the option to choose
+to preempt it, and just always do it?
+
+> 
+> (To make things somewhat more confusing, some non-PREEMPT_BKL code has 
+> then bitrotted since, so if can actually see latency issues, you might 
+> want to try the patch here at the end of this email to see if it fixes 
+> the worst of them. "cond_resched()" has regressed since the PREEMPT_BKL 
+> config option went away).
+> 
+> 			Linus
+> ---
+>  include/linux/sched.h |    7 -------
+>  1 files changed, 0 insertions(+), 7 deletions(-)
+> 
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 5a63f2d..75c284f 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -2038,17 +2038,10 @@ static inline int need_resched(void)
+>   * cond_resched_softirq() will enable bhs before scheduling.
+>   */
+>  extern int _cond_resched(void);
+> -#ifdef CONFIG_PREEMPT
+> -static inline int cond_resched(void)
+> -{
+> -	return 0;
+> -}
+> -#else
+>  static inline int cond_resched(void)
+>  {
+>  	return _cond_resched();
+>  }
+> -#endif
+>  extern int cond_resched_lock(spinlock_t * lock);
+>  extern int cond_resched_softirq(void);
+>  static inline int cond_resched_bkl(void)
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
