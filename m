@@ -1,149 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759379AbYELBxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759911AbYELByU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759379AbYELBxR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 21:53:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753925AbYELBxF
+	id S1759911AbYELByU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 21:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757199AbYELByH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 21:53:05 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48637 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753245AbYELBxD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 21:53:03 -0400
-Date: Mon, 12 May 2008 10:55:00 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andy Whitcroft <apw@shadowen.org>, Dave Hansen <haveblue@us.ibm.com>,
-       Gerald Schaefer <gerald.schaefer@de.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH] memory_hotplug: always initialize pageblock bitmap.
-Message-Id: <20080512105500.ff89c0d3.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080510124501.GA4796@osiris.boeblingen.de.ibm.com>
-References: <20080509060609.GB9840@osiris.boeblingen.de.ibm.com>
-	<20080509153910.6b074a30.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080510124501.GA4796@osiris.boeblingen.de.ibm.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 11 May 2008 21:54:07 -0400
+Received: from ns1.suse.de ([195.135.220.2]:37783 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753746AbYELByF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 May 2008 21:54:05 -0400
+From: Neil Brown <neilb@suse.de>
+To: Jesper Krogh <jesper@krogh.cc>
+Date: Mon, 12 May 2008 11:53:57 +1000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18471.41781.164396.385159@notabene.brown>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org
+Subject: Re: Many open/close on same files yeilds "No such file or directory".
+In-Reply-To: message from Jesper Krogh on Friday May 9
+References: <4819E316.7000607@krogh.cc>
+	<4823DFA6.9010504@krogh.cc>
+	<20080508223635.523b8fa7.akpm@linux-foundation.org>
+	<4823EA9E.6050703@krogh.cc>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 10 May 2008 14:45:01 +0200
-Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
-> > Recently, I added a check "zone's start_pfn < pfn < zone's end"
-> > to memmap_init_zone()'s usemap initialization for !SPARSEMEM case bug FIX.
-> > (and I think the fix itself is sane.)
+On Friday May 9, jesper@krogh.cc wrote:
 > 
-> Oh, you broke memory hot-add on -stable ;)
->
-Ah yes, my mistake. Very sorry, (but stable was also broken if !SPARSEMEM)
- 
-> > How about calling grow_pgdat_span()/grow_zone_span() from __add_zone() ?
-> 
-> Like this?
-> 
-> Note that this patch is on top of the other patch I already sent, but
-> reverts it...
-> 
-> This works for me. A final version (if this is acceptable) should move
-> the grow* functions also.
-> 
-> ---
->  mm/memory_hotplug.c |   28 +++++++++++++++++++---------
->  mm/page_alloc.c     |    3 +--
->  2 files changed, 20 insertions(+), 11 deletions(-)
-> 
-> Index: linux-2.6/mm/memory_hotplug.c
-> ===================================================================
-> --- linux-2.6.orig/mm/memory_hotplug.c
-> +++ linux-2.6/mm/memory_hotplug.c
-> @@ -159,17 +159,33 @@ void register_page_bootmem_info_node(str
->  }
->  #endif /* !CONFIG_SPARSEMEM_VMEMMAP */
->  
-> +static void grow_zone_span(struct zone *zone, unsigned long start_pfn,
-> +			   unsigned long end_pfn);
-> +static void grow_pgdat_span(struct pglist_data *pgdat,
-> +			    unsigned long start_pfn, unsigned long end_pfn);
-> +
->  static int __add_zone(struct zone *zone, unsigned long phys_start_pfn)
->  {
->  	struct pglist_data *pgdat = zone->zone_pgdat;
->  	int nr_pages = PAGES_PER_SECTION;
->  	int nid = pgdat->node_id;
->  	int zone_type;
-> +	unsigned long flags;
->  
->  	zone_type = zone - pgdat->node_zones;
-> -	if (!zone->wait_table)
-> -		return init_currently_empty_zone(zone, phys_start_pfn,
-> -						 nr_pages, MEMMAP_HOTPLUG);
-> +	if (!zone->wait_table) {
-> +		int ret;
-> +
-> +		ret = init_currently_empty_zone(zone, phys_start_pfn,
-> +						nr_pages, MEMMAP_HOTPLUG);
-> +		if (ret)
-> +			return ret;
-> +	}
-> +	pgdat_resize_lock(zone->zone_pgdat, &flags);
-> +	grow_zone_span(zone, phys_start_pfn, phys_start_pfn + nr_pages);
-> +	grow_pgdat_span(zone->zone_pgdat, phys_start_pfn,
-> +			phys_start_pfn + nr_pages);
-> +	pgdat_resize_unlock(zone->zone_pgdat, &flags);
->  	memmap_init_zone(nr_pages, nid, zone_type,
->  			 phys_start_pfn, MEMMAP_HOTPLUG);
->  	return 0;
-seems good. I'll try this logic on my ia64 box, which allows
-NUMA-node hotplug.
+> When I disabled the NFS-server and rand my "real-world" program on a
+> single processor (make -j 1). It ran through fine. It basically
+> gets around 20 million chunks out of differnet file and assemble the
+> chuncks in a few other files. This processes more or less 5 individual
+> sections, so make can run effectively with a concurrency of 5.
 
-Thank you!
--Kame
+(For linux-nfs readers: the problem is that repeatedly opening a given
+ file sometimes returns a ENOENT - http://lkml.org/lkml/2008/5/9/15).
 
-> @@ -363,7 +379,6 @@ static int online_pages_range(unsigned l
->  
->  int online_pages(unsigned long pfn, unsigned long nr_pages)
->  {
-> -	unsigned long flags;
->  	unsigned long onlined_pages = 0;
->  	struct zone *zone;
->  	int need_zonelists_rebuild = 0;
-> @@ -391,11 +406,6 @@ int online_pages(unsigned long pfn, unsi
->  	 * memory_block->state_mutex.
->  	 */
->  	zone = page_zone(pfn_to_page(pfn));
-> -	pgdat_resize_lock(zone->zone_pgdat, &flags);
-> -	grow_zone_span(zone, pfn, pfn + nr_pages);
-> -	grow_pgdat_span(zone->zone_pgdat, pfn, pfn + nr_pages);
-> -	pgdat_resize_unlock(zone->zone_pgdat, &flags);
-> -
->  	/*
->  	 * If this zone is not populated, then it is not in zonelist.
->  	 * This means the page allocator ignores this zone.
-> Index: linux-2.6/mm/page_alloc.c
-> ===================================================================
-> --- linux-2.6.orig/mm/page_alloc.c
-> +++ linux-2.6/mm/page_alloc.c
-> @@ -2862,8 +2862,6 @@ __meminit int init_currently_empty_zone(
->  
->  	zone->zone_start_pfn = zone_start_pfn;
->  
-> -	memmap_init(size, pgdat->node_id, zone_idx(zone), zone_start_pfn);
-> -
->  	zone_init_free_lists(zone);
->  
->  	return 0;
-> @@ -3433,6 +3431,7 @@ static void __paginginit free_area_init_
->  		ret = init_currently_empty_zone(zone, zone_start_pfn,
->  						size, MEMMAP_EARLY);
->  		BUG_ON(ret);
-> +		memmap_init(size, nid, j, zone_start_pfn);
->  		zone_start_pfn += size;
->  	}
->  }
-> 
+The mention of an NFS-server made my ears prick up...
 
+Do I understand correctly that the problem only occurs when you have
+48 clients hammering away at the filesystem in question?
+
+Could the clients be accessing the same file that you are experiencing
+problems with?  Or one of the directories in the path (if so, how
+deep).
+
+How many different files to these 20 million chunks come from?  And
+how does that number compare with the first number from
+   grep dentry /proc/slabinfo
+??
+
+The NFS server does some slighty strange things with the dcache if the
+object being access is not in the cache.
+
+Also, can get a few instances of 
+   grep '^fh' /proc/nfs/rpc/nfsd
+
+while things are going strange.  The numbers are:
+ *	fh <stale> <total-lookups> <anonlookups> <dir-not-in-dcache> <nondir-not-in-dcache>
+
+That will show us if it is looking for things that aren't in the
+dcache.
+
+Finally, if the filesystem export with "subtree_check" or
+"nosubtree_check"?
+Does it make a difference if you switch the setting of this flag and
+re-export?
+
+NeilBrown
