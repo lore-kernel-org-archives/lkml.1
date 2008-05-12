@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759940AbYELC1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759650AbYELCfE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759940AbYELC1x (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 22:27:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756565AbYELC1m
+	id S1759650AbYELCfE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 22:35:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755178AbYELCey
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 22:27:42 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:49880 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753746AbYELC1l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 22:27:41 -0400
-Date: Mon, 12 May 2008 08:07:58 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: volanoMark regression with kernel 2.6.26-rc1
-Message-ID: <20080512023758.GN3612@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <1210039590.3453.18.camel@ymzhang> <20080506115207.GA24862@linux.vnet.ibm.com> <20080507173357.GA4424@linux.vnet.ibm.com> <1210223914.3453.102.camel@ymzhang> <20080508054047.GD32729@linux.vnet.ibm.com> <1210226013.3453.113.camel@ymzhang> <20080508061125.GC3644@linux.vnet.ibm.com> <20080509155240.GH3612@linux.vnet.ibm.com> <1210556351.3151.2.camel@ymzhang>
+	Sun, 11 May 2008 22:34:54 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:6648 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753746AbYELCex (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 May 2008 22:34:53 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=EtraZfNosEOW2Qv/qEONgSo2yXeDMWaB87Ujlkpb8FNN7BqBKg7wbUMybpvJQP5XB
+	e+yA9DLRk8jX9lQEq9biA==
+Message-ID: <6599ad830805111934r122f0f5cy302362a21311e4c5@mail.gmail.com>
+Date: Sun, 11 May 2008 19:34:48 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Mirco Tischler" <mt-ml@gmx.de>
+Subject: Re: [Patch]: Cgroups: Fix compile warning: incompatible types in kernel/sched.c on 2.6.26-rc1
+Cc: "Ingo Molnar" <mingo@redhat.com>, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1210558353.29885.12.camel@mtlp.tischlernetz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1210556351.3151.2.camel@ymzhang>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <1210558353.29885.12.camel@mtlp.tischlernetz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 12, 2008 at 09:39:10AM +0800, Zhang, Yanmin wrote:
-> I'm confused by these conceptions.
+On Sun, May 11, 2008 at 7:12 PM, Mirco Tischler <mt-ml@gmx.de> wrote:
+> Hi
+> I've got this warning on 2.6.26-rc1 on compile:
+>> CC      kernel/sched.o
+>> kernel/sched.c:9026: warning: initialization from incompatible pointer type
+>>
+> This patch fixes it.
+>
+> Thanks
+> Mirco
+>
+> Cgroups: Fix compile warning: incompatible types in kernel/sched.c
+>
+> Return type of cpu_rt_runtime_write() should be int instead of ssize_t.
+>
+> Signed-off-by: Mirco Tischler <mt-ml@gmx.de>
 
-Sorry if the recommended options was not clear.
+Acked-by: Paul Menage <menage@google.com>
 
-> Would you like to tell me the exact config options
-> you want to turn on?
-> 
-> Options in my config file(both 2.6.25 and 2.6.26-rc1):
-> 
-> # CONFIG_CGROUPS is not set
-> CONFIG_GROUP_SCHED=y
-> CONFIG_FAIR_GROUP_SCHED=y
-> # CONFIG_RT_GROUP_SCHED is not set
-> CONFIG_USER_SCHED=y
-> # CONFIG_CGROUP_SCHED is not set
+Thanks.
 
-Retain this config for 2.6.25.
-
-For 2.6.26-rc1, turn OFF CONFIG_USER_SCHED and turn ON CONFIG_CGROUP_SCHED i.e
-
-# CONFIG_USER_SCHED is not set
-CONFIG_CGROUP_SCHED=y
-
-[Note that above options are mutually exclusive i.e you cannot set both
-of them to y]
-
->From my experiments, results of 2.6.25 (with CONFIG_USER_SCHED=y) are
-same as 2.6.26-rc1 (with CONFIG_CGROUP_SCHED=y).
-
-It'd be great if you could confirm the same in your environment.
-
--- 
-Regards,
-vatsa
+Paul
