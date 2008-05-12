@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757642AbYELVgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755478AbYELVlp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757642AbYELVgS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 17:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753916AbYELVgH
+	id S1755478AbYELVlp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 17:41:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752510AbYELVlh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 17:36:07 -0400
-Received: from smtp21.orange.fr ([80.12.242.46]:31040 "EHLO smtp21.orange.fr"
+	Mon, 12 May 2008 17:41:37 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:58042 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752774AbYELVgG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 17:36:06 -0400
-X-ME-UUID: 20080512213601403.626C91C0008F@mwinf2103.orange.fr
-Subject: [PATCH 1/1] infiniband/hw/nes/: avoid unnecessary memset
-From: "Christophe Jaillet" <christophe.jaillet@wanadoo.fr>
-To: "cj" <christophe.jaillet@wanadoo.fr>,
-       "linux" <linux-kernel@vger.kernel.org>, <flatif@neteffect.com>,
-       <ngupta@neteffect.com>, <gstreiff@neteffect.com>,
-       <general@lists.openfabrics.org>
-Date: Mon, 12 May 2008 23:35:59 +0200
-Content-Type: text/plain
-X-Mailer: email v2.5.1 (CYGWIN_NT-5.0 1.5.25(0.156/4/2) i686 [http://email.cleancode.org])
-X-Antivirus: avast! (VPS 080512-0, 12/05/2008), Outbound message
-X-Antivirus-Status: Clean
-Message-Id: <20080512213601.626C91C0008F@mwinf2103.orange.fr>
+	id S1752232AbYELVlg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 17:41:36 -0400
+To: linux-kernel@vger.kernel.org
+Subject: Kernel hangs in SMP + VMware environment.
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Message-Id: <200805130641.CDG56299.QStFOLVOOJFHMF@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Tue, 13 May 2008 06:41:34 +0900
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christophe Jaillet <christophe.jaillet@wanadoo.fr>
+I'm experiencing hang up problem with recent kernels in VMware environment.
 
-Hi, here is a patch against linux/drivers/infiniband/hw/nes/nes_cm.c which :
-	
-1) Remove an explicit memset(.., 0, ...) to a variable allocated with
-kzalloc (i.e. 'listener').
+Here are two examples.
 
+http://I-love.SAKURA.ne.jp/tmp/messages.1 (203kB)
+http://I-love.SAKURA.ne.jp/tmp/messages.2 (1.7MB)
 
-Note: this patch is based on 'linux-2.6.25.tar.bz2'
+The messages.1 is a log when "tar" stopped processing
+while extracting a .tar.bz2 file by
+"rpmbuild -bb --target i586 --with baseonly kernel.spec".
+I got this log in runlevel 3 of Fedora 8.
 
-Signed-off-by: Christophe Jaillet <christophe.jaillet@wanadoo.fr>
+The messages.2 is a log when the compiler processes (e.g. "cc1")
+seem to be hanged up (no compiler messages appear for minutes,
+which unlikely happen).
+I got this log in runlevel 1 of Fedora 8
+by "rpmbuild -bb --target i586 --with baseonly kernel.spec"
+after starting rsyslog and stopping anacron.
 
----
+I experience this problem in many distro (e.g. Fedora, Ubuntu, SuSE),
+which use kenel (I think) around 2.6.21 and later.
 
---- linux/drivers/infiniband/hw/nes/nes_cm.c	2008-04-17 04:49:44.000000000 +0200
-+++ linux/drivers/infiniband/hw/nes/nes_cm.c.cj	2008-05-12 23:31:24.000000000 +0200
-@@ -1587,7 +1587,6 @@ static struct nes_cm_listener *mini_cm_l
- 			return NULL;
- 		}
- 
--		memset(listener, 0, sizeof(struct nes_cm_listener));
- 		listener->loc_addr = htonl(cm_info->loc_addr);
- 		listener->loc_port = htons(cm_info->loc_port);
- 		listener->reused_node = 0;
+I experience this problem only in VMware.
+I have never experienced this problem in native environment.
 
+I experience this problem only when I assign 2 CPUs to VMware.
+I have never experienced this problem with 1 CPU.
 
+May be something scheduler related in SMP + VMware environment.
+
+The a.out process in the log files are http://lkml.org/lkml/2008/5/12/130
+What other information should I dump for identifying the location of hang up?
+
+Regards.
