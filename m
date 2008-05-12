@@ -1,46 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758049AbYELUN6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758513AbYELUSz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758049AbYELUN6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 16:13:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbYELUNp
+	id S1758513AbYELUSz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 16:18:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbYELUSr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 16:13:45 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:41706 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753720AbYELUNm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 16:13:42 -0400
-Message-ID: <4828A4CF.9010103@zytor.com>
-Date: Mon, 12 May 2008 13:13:03 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Mon, 12 May 2008 16:18:47 -0400
+Received: from mail.gmx.net ([213.165.64.20]:49601 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753703AbYELUSq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 16:18:46 -0400
+X-Authenticated: #476490
+X-Provags-ID: V01U2FsdGVkX19YBV18Uw9YpUQsKzVj0SroOlwo8T712Y1UaYTEca
+	pnyB6K8DmIrOi3
+From: Oliver Endriss <o.endriss@gmx.de>
+Organization: ESCAPE GmbH EDV-Loesungen
+To: Johannes Stezenbach <js@linuxtv.org>
+Subject: Re: [patch, 2.6.26-rc2] dvb: drivers/media/dvb/ttpci/fdump firmware build error fix
+Date: Mon, 12 May 2008 22:18:15 +0200
+User-Agent: KMail/1.9.6
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Andrew de Quincey <adq_dvb@lidskialf.net>
+References: <20080512101231.GA11755@elte.hu> <200805121930.10909@orion.escape-edv.de> <20080512194630.GA10174@linuxtv.org>
+In-Reply-To: <20080512194630.GA10174@linuxtv.org>
 MIME-Version: 1.0
-To: Oliver Hartkopp <oliver@hartkopp.net>
-CC: Romano Giannetti <romanol@upcomillas.es>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       akpm@linux-foundation.org, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Kernel naming convention in the merge phase
-References: <4818F093.3070105@hartkopp.net> <4819050C.9060800@zytor.com>	 <48198873.7030503@hartkopp.net>  <481A06C0.6070500@zytor.com> <1210163964.14371.1.camel@localhost> <48282C69.2070006@hartkopp.net> <48286364.7010107@zytor.com> <48288E4E.3080107@hartkopp.net> <48289C59.5040401@zytor.com> <48289F00.9010406@hartkopp.net>
-In-Reply-To: <48289F00.9010406@hartkopp.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805122218.15887@orion.escape-edv.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oliver Hartkopp wrote:
+Johannes Stezenbach wrote:
+> On Mon, May 12, 2008 at 07:30:10PM +0200, Oliver Endriss wrote:
+> > Ingo Molnar wrote:
+> >> -     depends on DVB_AV7110 && !STANDALONE
+> >> +     depends on DVB_AV7110 && !STANDALONE && !PREVENT_FIRMWARE_BUILD
 > 
-> This is no real detail. How can -rc0 break a naming scheme for a robot,
-> when -rc1 doesn't?
+> > If you set DVB_AV7110_FIRMWARE=y, the firmware file under
+> > DVB_AV7110_FIRMWARE_FILE must exist...
 > 
+> The point of PREVENT_FIRMWARE_BUILD is to make build testing
+> with "make randconfig" possible. I think you should ACK
+> this patch, it doesn't have any downsides for users of
+> this driver.
 
-Because of things like:
+No. If randconfig deselects both STANDALONE and PREVENT_FIRMWARE_BUILD,
+the same problem will happen again...
 
-- regexp patterns like -(rc|pre)([1-9][0-9]*)
-- using zero to mean "no rc/pre"
-- assuming 1 is the immediate decendent of the previous one
+The problem is that randconfig does not know what to do (i.e. provide a
+firmware file) when it selects DVB_AV7110_FIRMWARE=y.
 
-So on, etc, yadda yadda...
+The driver depends on STANDALONE, and that should be sufficient:
+| CONFIG_STANDALONE:
+|   Select this option if you don't have magic firmware for drivers that
+|   need it.
 
-	-hpa
+while CONFIG_PREVENT_FIRMWARE_BUILD means:
+| CONFIG_PREVENT_FIRMWARE_BUILD:
+|   Say yes to avoid building firmware. Firmware is usually shipped
+|   with the driver, and only when updating the firmware a rebuild
+|   should be made.
+
+Imho randconfig should always set STANDALONE=y.
+
+CU
+Oliver
+
+-- 
+----------------------------------------------------------------
+VDR Remote Plugin 0.4.0: http://www.escape-edv.de/endriss/vdr/
+----------------------------------------------------------------
