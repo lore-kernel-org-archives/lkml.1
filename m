@@ -1,44 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753128AbYELORQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753841AbYELOYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753128AbYELORQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 10:17:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbYELORA
+	id S1753841AbYELOYs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 10:24:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751143AbYELOYj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 10:17:00 -0400
-Received: from smtp19.orange.fr ([80.12.242.17]:50411 "EHLO smtp19.orange.fr"
+	Mon, 12 May 2008 10:24:39 -0400
+Received: from smtp.cs.aau.dk ([130.225.194.6]:41161 "EHLO smtp.cs.aau.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751321AbYELOQ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 10:16:59 -0400
-X-ME-UUID: 20080512132105818.C7CDA1C002F6@mwinf1901.orange.fr
-Date: Mon, 12 May 2008 15:20:25 +0200
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: Michael Kerrisk <mtk.manpages@googlemail.com>
-Cc: David Miller <davem@davemloft.net>, andi@firstfloor.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH,TRIVIAL] AF_UNIX, accept() and addrlen
-Message-ID: <20080512132025.GF6714@implementation.home>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	Michael Kerrisk <mtk.manpages@googlemail.com>,
-	David Miller <davem@davemloft.net>, andi@firstfloor.org,
-	linux-kernel@vger.kernel.org
-References: <20080424001656.GM4825@implementation> <517f3f820804240131v3466713bi70d0eb0fb1f5cd8d@mail.gmail.com> <20080426014445.GD4792@implementation> <20080426.225432.128575953.davem@davemloft.net> <482841AC.4020609@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+	id S1750906AbYELOYi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 10:24:38 -0400
+Subject: Re: [PATCH 1/6] arch/ia64/kernel: remove null pointer dereference
+From: Simon Holm =?ISO-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
+To: Julia Lawall <julia@diku.dk>
+Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0805121536370.3694@ask.diku.dk>
+References: <Pine.LNX.4.64.0805121536370.3694@ask.diku.dk>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 12 May 2008 16:37:29 +0200
+Message-Id: <1210603050.25310.9.camel@odie.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.0 
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <482841AC.4020609@gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+man, 12 05 2008 kl. 15:37 +0200, skrev Julia Lawall:
+> From: Julia Lawall <julia@diku.dk>
+> 
+> If data is NULL, it is not possible to access data->ret.
+> 
+> The problem was detected using the following semantic match
+> (http://www.emn.fr/x-info/coccinelle/)
+> 
+> // <smpl>
+> @@
+> expression E, E1;
+> identifier f;
+> statement S1,S2,S3;
+> @@
+> 
+> * if (E == NULL)
+> {
+>   ... when != if (E == NULL) S1 else S2
+>       when != E = E1
+> * E->f
+>   ... when any
+>   return ...;
+> }
+> else S3
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+> 
+> ---
+> 
+> diff -u -p a/arch/ia64/kernel/palinfo.c b/arch/ia64/kernel/palinfo.c
+> --- a/arch/ia64/kernel/palinfo.c	2008-05-09 16:46:57.000000000 +0200
+> +++ b/arch/ia64/kernel/palinfo.c	2008-05-12 08:43:35.000000000 +0200
+> @@ -902,7 +902,6 @@ palinfo_smp_call(void *info)
+>  	palinfo_smp_data_t *data = (palinfo_smp_data_t *)info;
+>  	if (data == NULL) {
+>  		printk(KERN_ERR "palinfo: data pointer is NULL\n");
+> -		data->ret = 0; /* no output */
+>  		return;
+>  	}
+>  	/* does this actual call */
+> --
 
-Michael Kerrisk, le Mon 12 May 2008 15:10:04 +0200, a Ècrit :
-> I have drafted a revision to section of the unix.7 page describing the address
-> format to try and cover all of the above.
+The whole if block should just be deleted, as info is never NULL. There
+is only palinfo_handle_smp as (indirect) user of palinfo_smp_call (by
+way of smp_call_function_single) and surely palinfo_smp_call never pass
+NULL.
 
-Looks much more clear.
 
-Samuel
+Simon Holm Th√∏gersen
 
