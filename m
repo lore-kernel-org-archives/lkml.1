@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759388AbYELL3P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756821AbYELLf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759388AbYELL3P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 07:29:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754075AbYELL27
+	id S1756821AbYELLf3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 07:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753169AbYELLfT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 07:28:59 -0400
-Received: from rv-out-0506.google.com ([209.85.198.225]:8031 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754094AbYELL26 (ORCPT
+	Mon, 12 May 2008 07:35:19 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:45201 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753015AbYELLfR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 07:28:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PyWGLMNlG9muUdu4fJ7mHOP66kEJ0CzuHijaWaGjkSyigy0eY+q59vIcK4qtAtzwdcIM36WbuRxh96DUQOgP9nBytba0wch58pMzX4S/hyk3YSLrmxOrCw7tMJMYn8jLRTv7cZCjFwsIiCLVTRDxJY1ViQ0cR2ldJUgcJF/fyN0=
-Message-ID: <c4e36d110805120428j4bf2bd79j790461a144e641ef@mail.gmail.com>
-Date: Mon, 12 May 2008 13:28:58 +0200
-From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: Compilation problem in drivers/media subdirectory
-In-Reply-To: <c4e36d110805120420v28f78a29sf42f1a780c40d527@mail.gmail.com>
+	Mon, 12 May 2008 07:35:17 -0400
+Date: Mon, 12 May 2008 07:35:02 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: Possible regression?  2.6.26-rc1: X61s failure after
+	suspend/resume
+Message-ID: <20080512113501.GA7687@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+	Jesse Barnes <jbarnes@virtuousgeek.org>
+References: <E1JuCBA-0002NZ-4E@closure.thunk.org> <200805082352.04352.rjw@sisk.pl> <20080509024426.GB8871@mit.edu> <20080509094941.GA19617@elte.hu> <20080512020301.GA8390@mit.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <c4e36d110805120420v28f78a29sf42f1a780c40d527@mail.gmail.com>
+In-Reply-To: <20080512020301.GA8390@mit.edu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok I think my problem is fixed with fresh git-pull update  so my
-report could be ignored,
+On Sun, May 11, 2008 at 10:03:01PM -0400, Theodore Tso wrote:
+> On Fri, May 09, 2008 at 11:49:41AM +0200, Ingo Molnar wrote:
+> > 
+> > on the off chance that this might be related: could you try to boot with 
+> > nopat?
+> 
+> I did some more testing, and on my X61s laptop, using a somewhat more
+> recent snapshot (v2.6.26-rc1-434-g9662369 from Linus's tree Sunday
+> morning), I was able to reproduce the failure after a suspend/resume
+> without nopat, but after adding nopat, the problem seems to have gone
+> away.
 
-Sorry for the noise
+Actually, it looks like I spoke too quickly.  I'll do some more
+testing, but it looks like either (a) I got lucky, or (b) it's a lot
+harder to trigger with nopat.  In any case, after getting home and
+docking my workstation, I started a kernel build, and approximately 15
+minutes later, the X server hung with the same symptoms as before.
 
-Zdenek
-
-
-2008/5/12 Zdenek Kabelac <zdenek.kabelac@gmail.com>:
-> Hello
->
->  For some time I've problem to compile my linux git tree  (even after
->  make mrproper)
->
->    ld -m elf_x86_64   -r -o drivers/built-in.o drivers/pci/built-in.o
->  drivers/video/built-in.o drivers/acpi/built-in.o
->  drivers/pnp/built-in.o drivers/char/built-in.o
->  drivers/serial/built-in.o drivers/base/built-in.o
->  drivers/block/built-in.o drivers/misc/built-in.o
+	       	     	    	      	  - Ted
