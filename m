@@ -1,95 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758646AbYELVUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758861AbYELVVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758646AbYELVUj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 17:20:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756348AbYELVUa
+	id S1758861AbYELVVj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 17:21:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbYELVVb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 17:20:30 -0400
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:45885 "EHLO
-	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752510AbYELVU2 (ORCPT
+	Mon, 12 May 2008 17:21:31 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54359 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752510AbYELVVb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 17:20:28 -0400
-Date: Mon, 12 May 2008 23:20:23 +0200
-From: Sebastian Siewior <lkml@ml.breakpoint.cc>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Greg Ungerer <gerg@uclinux.org>, uclinux-dev@uclinux.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH resend] m68knommu: Add info about removing mcfserial
-Message-ID: <20080512212023.GB27705@Chamillionaire.breakpoint.cc>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-X-Key-Id: FE3F4706
-X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 12 May 2008 17:21:31 -0400
+Date: Mon, 12 May 2008 22:11:09 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org
+Subject: Re: Tracking and crediting bug reporters
+Message-ID: <20080512221109.4fa51a71@core>
+In-Reply-To: <4828AE8D.4000209@gmail.com>
+References: <4388.1210613272@vena.lwn.net>
+	<20080512192019.6684f719@core>
+	<4828AE8D.4000209@gmail.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sebastian Siewior <bigeasy@linutronix.de>
+> > I cannot add a tag with a third party personal information upon it
+> > without their permission nor can anyone else in a part of the world with
+> > any vaguely resembling privacy laws.
+> 
+> IANAL. Unless it's a public information, no? (As reports are.)
 
-Schedule a removal for this driver. Alternative driver is available for
-a while now.
+If they made it public fine - although building a database of that
+requires care. That was my point. You need specific permission of the bug
+reporter. Given bug reporters may have personal reasons (including 'works
+at Microsoft') and business ones (from 'company policy' to 'three letter
+agency') for not wanting the information public.
 
-Signed-off-by: Sebastian Siewior <bigeasy@linutronix.de>
----
-Greg is fine with this http://lkml.org/lkml/2008/4/30/561
+> Otherwise we would be in a big trouble, since we do this as far as can git 
+> history tell at least.
 
- Documentation/feature-removal-schedule.txt |    8 ++++++++
- drivers/serial/Kconfig                     |    6 +++++-
- drivers/serial/mcfserial.c                 |    1 +
- 3 files changed, 14 insertions(+), 1 deletions(-)
-
-diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-index 3c35d45..5b3f31f 100644
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -289,6 +289,14 @@ Who:	Glauber Costa <gcosta@redhat.com>
- 
- ---------------------------
- 
-+What:	old style serial driver for ColdFire (CONFIG_SERIAL_COLDFIRE)
-+When:	2.6.28
-+Why:	This driver still uses the old interface and has been replaced
-+	by CONFIG_SERIAL_MCF.
-+Who:	Sebastian Siewior <sebastian@breakpoint.cc>
-+
-+---------------------------
-+
- What:	/sys/o2cb symlink
- When:	January 2010
- Why:	/sys/fs/o2cb is the proper location for this information - /sys/o2cb
-diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
-index 36acbcc..62e6eb1 100644
---- a/drivers/serial/Kconfig
-+++ b/drivers/serial/Kconfig
-@@ -976,11 +976,15 @@ config SERIAL_68328_RTS_CTS
- 	depends on SERIAL_68328
- 
- config SERIAL_COLDFIRE
--	bool "ColdFire serial support"
-+	bool "ColdFire serial support (DEPRECATED)"
- 	depends on COLDFIRE
- 	help
- 	  This driver supports the built-in serial ports of the Motorola ColdFire
- 	  family of CPUs.
-+	  This driver is deprecated because it supports only the old interface
-+	  for serial drivers and features like magic keys are not working.
-+	  Please switch to the new style driver because this driver will be
-+	  removed soon.
- 
- config SERIAL_MCF
- 	bool "Coldfire serial support (new style driver)"
-diff --git a/drivers/serial/mcfserial.c b/drivers/serial/mcfserial.c
-index 43af40d..56007cc 100644
---- a/drivers/serial/mcfserial.c
-+++ b/drivers/serial/mcfserial.c
-@@ -1,3 +1,4 @@
-+#warning This driver is deprecated. Check Kconfig for details.
- /*
-  * mcfserial.c -- serial driver for ColdFire internal UARTS.
-  *
--- 
-1.5.5.1
+No: The Signed-off-by in GIT references the 1.1 contributor agreement
+which specifically deals with that case.
 
