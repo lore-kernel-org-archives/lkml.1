@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760797AbYELHSe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760337AbYELHUE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760797AbYELHSe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 03:18:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760367AbYELHSQ
+	id S1760337AbYELHUE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 03:20:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756182AbYELHTx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 03:18:16 -0400
-Received: from www.tglx.de ([62.245.132.106]:49334 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760248AbYELHSN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 03:18:13 -0400
-Date: Mon, 12 May 2008 09:17:20 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Jan Beulich <jbeulich@novell.com>,
-       =?ISO-8859-15?Q?Simon_Holm_Th=F8gersen?= <odie@cs.aau.dk>
-Subject: Re: [Bug #10631] Please revert 709f744 (x86: bitops asm constraint
- fixes)
-In-Reply-To: <88YBFoyd1CN.A.8_H.Xw1JIB@chimera>
-Message-ID: <alpine.LFD.1.10.0805120916510.3514@apollo.tec.linutronix.de>
-References: <hPXlJLjt4XG.A._lF.Jv1JIB@chimera> <88YBFoyd1CN.A.8_H.Xw1JIB@chimera>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Mon, 12 May 2008 03:19:53 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:58395 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755705AbYELHTw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 03:19:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=L3UBuKdj0GWFpbbIf6kfuKHn0Qs+HJy0P5m6FejvZQYE53ih7BJz6XWY3pDz74t9YbeLtMZHgk21GQMcyNl7TizPP0vc4nqYtBP8UIm2gVMHkhxGBeZ3KSI9/WGLLr3Jc1GtJVXmvocVGgCoeWG7RN27Kir+chzbraamkAPdl9c=
+Message-ID: <4827EF80.7070404@gmail.com>
+Date: Mon, 12 May 2008 09:19:28 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-874294452-1210576643=:3514"
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Jiri Kosina <jkosina@suse.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-input@vger.kernel.org, marcel@holtmann.org,
+       linux-kernel@vger.kernel.org, anssi.hannula@gmail.com,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 9/9] HID: add compat support
+References: <1210536043-19812-2-git-send-email-jirislaby@gmail.com> <1210536043-19812-3-git-send-email-jirislaby@gmail.com> <1210536043-19812-4-git-send-email-jirislaby@gmail.com> <1210536043-19812-5-git-send-email-jirislaby@gmail.com> <1210536043-19812-6-git-send-email-jirislaby@gmail.com> <1210536043-19812-7-git-send-email-jirislaby@gmail.com> <1210536043-19812-8-git-send-email-jirislaby@gmail.com> <1210536043-19812-9-git-send-email-jirislaby@gmail.com> <20080511204807.GB850@uranus.ravnborg.org> <48275FFC.9060305@gmail.com> <20080511211839.GA1641@uranus.ravnborg.org>
+In-Reply-To: <20080511211839.GA1641@uranus.ravnborg.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On 05/11/2008 11:18 PM, Sam Ravnborg wrote:
+> So what I try to say is that we should replace the above with
+> a hid-dummy.h file that is handedited.
 
---8323328-874294452-1210576643=:3514
-Content-Type: TEXT/PLAIN; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Ah, yes, I got it now. I mulled over that, we're talking about 15 or so drivers 
+and it's pretty ugly. I'll drop hid-dummy.h file generation, since it will be no 
+longer needed.
 
-On Sun, 11 May 2008, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.25.  Please verify if it still should be listed.
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10631
-> Subject		: Please revert 709f744 (x86: bitops asm constraint fixes)
-> Submitter	: Simon Holm Thøgersen <odie@cs.aau.dk>
-> Date		: 2005-05-05 09:35 (1103 days old)
-> References	: http://www.ussg.iu.edu/hypermail/linux/kernel/0805.0/1963.html
-> Handled-By	: Ingo Molnar <mingo@elte.hu>
-> 		  Jan Beulich <jbeulich@novell.com>
-> 		  Thomas Gleixner <tglx@linutronix.de>
-> Patch		: http://www.ussg.iu.edu/hypermail/linux/kernel/0805.0/2661.html
+> We could stick a few comments in the .h file explaining the usage too.
 
-fixed by: eb2b4e682a6d5b4779a7f1a6a8419982919795f6
+I think it's not worth it. It's just for 2, 3 kernel releases and then we will
+say it goodbye.
 
-Thanks,
-	tglx
---8323328-874294452-1210576643=:3514--
+Thanks.
+
