@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757899AbYELSmz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757712AbYELSsa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757899AbYELSmz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 14:42:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756220AbYELSms
+	id S1757712AbYELSsa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 14:48:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756535AbYELSsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 14:42:48 -0400
-Received: from queueout03-winn.ispmail.ntl.com ([81.103.221.33]:24718 "EHLO
-	queueout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756148AbYELSmo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 14:42:44 -0400
-Subject: [PATCH] riscom8: remove redundant null pointer test
-From: Chris Malley <mail@chrismalley.co.uk>
-To: Alan Cox <alan@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Mon, 12 May 2008 19:27:10 +0100
-Message-Id: <1210616830.7454.0.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 12 May 2008 14:48:20 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:37344 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756489AbYELSsS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 14:48:18 -0400
+Date: Mon, 12 May 2008 20:48:15 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: Francois Romieu <romieu@fr.zoreil.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 3/6] drivers/net: remove null pointer dereference
+In-Reply-To: <48287916.2090203@pobox.com>
+Message-ID: <Pine.LNX.4.64.0805122046260.20369@ask.diku.dk>
+References: <Pine.LNX.4.64.0805121537320.3694@ask.diku.dk>
+ <20080512161734.GA22190@electric-eye.fr.zoreil.com>
+ <Pine.LNX.4.64.0805121852510.16384@ask.diku.dk> <48287916.2090203@pobox.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-tty has already been dereferenced at least twice in these functions,
-so checking for null here seems a bit unnecessary.
+On Mon, 12 May 2008, Jeff Garzik wrote:
 
-Signed-off-by: Chris Malley <mail@chrismalley.co.uk>
----
- drivers/char/riscom8.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+> Julia Lawall wrote:
+> > On Mon, 12 May 2008, Francois Romieu wrote:
+> > 
+> > > Julia Lawall <julia@diku.dk> :
+> > > [...]
+> > > > diff -u -p a/drivers/net/au1000_eth.c b/drivers/net/au1000_eth.c
+> > > > --- a/drivers/net/au1000_eth.c	2008-04-27 11:41:11.000000000 +0200
+> > > > +++ b/drivers/net/au1000_eth.c	2008-05-12 09:32:54.000000000 +0200
+> >>> @@ -1242,7 +1242,7 @@ static irqreturn_t au1000_interrupt(int 
+> > > >   struct net_device *dev = (struct net_device *) dev_id;
+> > > >  
+> > > > 	if (dev == NULL) {
+> > > > -		printk(KERN_ERR "%s: isr: null dev ptr\n", dev->name);
+> > > > +		printk(KERN_ERR "isr: null dev ptr\n");
+> > > >   	return IRQ_RETVAL(1);
+> > > >   }
+> > > The lifespan of 'dev' covers the request_irq..free_irq interval in this
+> > > driver. The whole 'dev == NULL' block can be removed.
+> > 
+> > Will you do that?
+> 
+> It's normal within the Linux community to give feedback on patches, and
+> sometimes the authors need to revise their patches if helpful feedback arises.
 
-diff --git a/drivers/char/riscom8.c b/drivers/char/riscom8.c
-index f073c71..9643a49 100644
---- a/drivers/char/riscom8.c
-+++ b/drivers/char/riscom8.c
-@@ -1108,7 +1108,7 @@ static int rc_write(struct tty_struct *tty,
- 
- 	bp = port_Board(port);
- 
--	if (!tty || !port->xmit_buf)
-+	if (!port->xmit_buf)
- 		return 0;
- 
- 	while (1) {
-@@ -1151,7 +1151,7 @@ static int rc_put_char(struct tty_struct *tty, unsigned char ch)
- 	if (rc_paranoia_check(port, tty->name, "rc_put_char"))
- 		return 0;
- 
--	if (!tty || !port->xmit_buf)
-+	if (!port->xmit_buf)
- 		return 0;
- 
- 	spin_lock_irqsave(&riscom_lock, flags);
--- 
+Sorry.  In principle, I would be happy to do it, but I felt slightly 
+uneasy about doing something I didn't completely understand.
 
-
-
+julia
