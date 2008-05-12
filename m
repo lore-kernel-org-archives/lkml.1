@@ -1,42 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756845AbYELULq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758049AbYELUN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756845AbYELULq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 16:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753224AbYELULh
+	id S1758049AbYELUN6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 16:13:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751197AbYELUNp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 16:11:37 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35767 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752804AbYELULg (ORCPT
+	Mon, 12 May 2008 16:13:45 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:41706 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753720AbYELUNm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 16:11:36 -0400
-Date: Mon, 12 May 2008 20:58:23 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Chris Malley <mail@chrismalley.co.uk>
-Cc: Alan Cox <alan@redhat.com>, linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: Re: [PATCH] riscom8: remove redundant null pointer test
-Message-ID: <20080512205823.23adc6f1@core>
-In-Reply-To: <1210616830.7454.0.camel@localhost>
-References: <1210616830.7454.0.camel@localhost>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 12 May 2008 16:13:42 -0400
+Message-ID: <4828A4CF.9010103@zytor.com>
+Date: Mon, 12 May 2008 13:13:03 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Oliver Hartkopp <oliver@hartkopp.net>
+CC: Romano Giannetti <romanol@upcomillas.es>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       akpm@linux-foundation.org, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Kernel naming convention in the merge phase
+References: <4818F093.3070105@hartkopp.net> <4819050C.9060800@zytor.com>	 <48198873.7030503@hartkopp.net>  <481A06C0.6070500@zytor.com> <1210163964.14371.1.camel@localhost> <48282C69.2070006@hartkopp.net> <48286364.7010107@zytor.com> <48288E4E.3080107@hartkopp.net> <48289C59.5040401@zytor.com> <48289F00.9010406@hartkopp.net>
+In-Reply-To: <48289F00.9010406@hartkopp.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 May 2008 19:27:10 +0100
-Chris Malley <mail@chrismalley.co.uk> wrote:
+Oliver Hartkopp wrote:
+> 
+> This is no real detail. How can -rc0 break a naming scheme for a robot,
+> when -rc1 doesn't?
+> 
 
-> tty has already been dereferenced at least twice in these functions,
-> so checking for null here seems a bit unnecessary.
+Because of things like:
 
-Oh it is - and lots of the other tty checks are bogus too.
+- regexp patterns like -(rc|pre)([1-9][0-9]*)
+- using zero to mean "no rc/pre"
+- assuming 1 is the immediate decendent of the previous one
 
-Acked-by: Alan Cox <alan@redhat.com>
+So on, etc, yadda yadda...
 
-Alan
+	-hpa
