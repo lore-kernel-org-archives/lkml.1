@@ -1,88 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756933AbYELFXF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756119AbYELFl4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756933AbYELFXF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 01:23:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbYELFWx
+	id S1756119AbYELFl4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 01:41:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbYELFlq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 01:22:53 -0400
-Received: from rex.securecomputing.com ([203.24.151.4]:39649 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751520AbYELFWx (ORCPT
+	Mon, 12 May 2008 01:41:46 -0400
+Received: from rv-out-0506.google.com ([209.85.198.233]:27503 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751101AbYELFlp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 01:22:53 -0400
-Message-ID: <4827D429.6060708@snapgear.com>
-Date: Mon, 12 May 2008 15:22:49 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
+	Mon, 12 May 2008 01:41:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=Z5l0IH4a5BRyNK858P1oTM678wDAEWCXNlg39QPYY0sUKfdFpWQDmE+bxPnrp7MaXAQxh2nwga0eOsVy1oryFIoAuDjXv49AV2V6bKkHHkwV5hLd5IOARfELXspmfvP7GTn+l9kL3JXZ0Q5I2T6aODUccen5whsU4/FADq7TsO8=
+From: Balaji Rao <balajirrao@gmail.com>
+Organization: National Institute of Technology Karnataka
+To: Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [RFC][-mm] Simple stats for cpu resource controller v4
+Date: Mon, 12 May 2008 11:11:24 +0530
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>, dhaval@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
+       menage@google.com, balbir@in.ibm.com, vatsa@linux.vnet.ibm.com,
+       a.p.zijlstra@chello.nl, Eric Dumazet <dada1@cosmosbay.com>
+References: <200804052339.46632.balajirrao@gmail.com> <200805120148.37856.balajirrao@gmail.com> <4827B175.1030802@cn.fujitsu.com>
+In-Reply-To: <4827B175.1030802@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] m68knommu: missing sections for linker script
-References: <200805070052.m470qdod017612@goober> <20080511004107.GA2675@uranus.ravnborg.org>
-In-Reply-To: <20080511004107.GA2675@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805121111.25211.balajirrao@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sam,
+On Monday 12 May 2008 08:24:45 am Li Zefan wrote:
+> Balaji Rao wrote:
+> >  /*
+> > @@ -3892,8 +3923,17 @@ void account_system_time(struct task_struct *p,
+> > int hardirq_offset, cpustat->irq = cputime64_add(cpustat->irq, tmp);
+> >  	else if (softirq_count())
+> >  		cpustat->softirq = cputime64_add(cpustat->softirq, tmp);
+> > -	else if (p != rq->idle)
+> > +	else if (p != rq->idle) {
+> >  		cpustat->system = cputime64_add(cpustat->system, tmp);
+> > +#ifdef CONFIG_CGROUP_SCHED
+> > +		{
+> > +			struct task_group *tg;
+> > +			tg = task_group(p);
+> > +			__cpu_cgroup_stat_add(tg->stat, CPU_CGROUP_STAT_STIME,
+> > +					cputime_to_msecs(cputime));
+> > +		}
+> > +	}
+>
+> You should put this '}' after '#endif'
+>
+Yes, my mistake. Will fix it.
+> > +#endif
+> >  	else if (atomic_read(&rq->nr_iowait) > 0)
+> >  		cpustat->iowait = cputime64_add(cpustat->iowait, tmp);
+> >  	else
+> > @@ -8179,10 +8219,26 @@ static inline struct task_group *cgroup_tg(struct
+> > cgroup *cgrp) struct task_group, css);
+> >  }
+> >
+> > +static void cpu_cgroup_initialize(int early)
+> > +{
+> > +	int i;
+> > +	struct cpu_cgroup_stat *stat;
+> > +
+> > +	if (!early) {
+> > +		stat = kmalloc(sizeof(struct cpu_cgroup_stat)
+> > +				, GFP_KERNEL);
+> > +		for (i = 0; i < CPU_CGROUP_STAT_NSTATS; i++)
+> > +			percpu_counter_init(
+> > +					&stat->cpustat[i], 0);
+> > +		init_task_group.stat = stat;
+> > +	}
+> > +}
+> > +
+> >  static struct cgroup_subsys_state *
+> >  cpu_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cgrp)
+> >  {
+> >  	struct task_group *tg;
+> > +	int i;
+> >
+> >  	if (!cgrp->parent) {
+> >  		/* This is early initialization for the top cgroup */
+> > @@ -8198,6 +8254,10 @@ cpu_cgroup_create(struct cgroup_subsys *ss, struct
+> > cgroup *cgrp) if (IS_ERR(tg))
+> >  		return ERR_PTR(-ENOMEM);
+> >
+> > +	tg->stat = kmalloc(sizeof(struct cpu_cgroup_stat), GFP_KERNEL);
+> > +	for (i = 0; i < CPU_CGROUP_STAT_NSTATS; i++)
+> > +		percpu_counter_init(&tg->stat->cpustat[i], 0);
+> > +
+>
+> I guess you forgot to free those things in cpu_cgroup_destroy().
+Oh. Sorry, I totally missed it.
+>
+> >  	/* Bind the cgroup to task_group object we just created */
 
-Sam Ravnborg wrote:
-> On Wed, May 07, 2008 at 10:52:39AM +1000, Greg Ungerer wrote:
->> Inlucde the missing kcrctab and kcrctab_unused sections into the
->> m68knommu linker script.
->>
->> Signed-off-by: Greg Ungerer <gerg@uclinux.org>
->> ---
->>
->> diff -Naurp linux-2.6.25-rc1/arch/m68knommu/kernel/vmlinux.lds.S linux-2.6.25-rc1-uc0/arch/m68knommu/kernel/vmlinux.lds.S
->> --- linux-2.6.25-rc1/arch/m68knommu/kernel/vmlinux.lds.S	2008-05-06 14:52:00.000000000 +1000
->> +++ linux-2.6.25-rc1-uc0/arch/m68knommu/kernel/vmlinux.lds.S	2008-05-06 16:56:47.000000000 +1000
->> @@ -114,6 +114,16 @@ SECTIONS {
->>  		*(__kcrctab_gpl)
->>  		__stop___kcrctab_gpl = .;
->>  
->> +		/* Kernel symbol table: Normal unused symbols */
->> +		__start___kcrctab_unused = .;
->> +		*(__kcrctab_unused)
->> +		__stop___kcrctab_unused = .;
->> +
->> +		/* Kernel symbol table: GPL-only unused symbols */
->> +		__start___kcrctab_unused_gpl = .;
->> +		*(__kcrctab_unused_gpl)
->> +		__stop___kcrctab_unused_gpl = .;
->> +
->>  		/* Kernel symbol table: GPL-future symbols */
->>  		__start___kcrctab_gpl_future = .;
->>  		*(__kcrctab_gpl_future)
-> 
-> Hi Greg.
-> 
-> Any specific reasons why m68knommu does
-> not use include/asm-generic/vmlinux-lds.h?
-> 
-> There are defined there as well as many other common things.
+-- 
+Warm Regards,
 
-I would very much like to use the common defines in vmlinux-lds.h.
-
-And historically it goes back to wanting to be able to directly
-build ROM based kernels. There has been a couple of threads on
-this over th years, this one http://lkml.org/lkml/2003/1/21/213
-touches on it. I think there is more before this too, but I couldn't
-find a link to it just now.
-
-Sebastians patch in this thread goes to resolving this. I haven't
-had a good look over it yet though.
-
-Regards
-Greg
-
-
-
-------------------------------------------------------------------------
-Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
-Secure Computing Corporation                PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+Balaji Rao
+Dept. of Mechanical Engineering
+NITK
