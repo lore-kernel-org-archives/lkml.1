@@ -1,64 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756923AbYELTs3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756739AbYELT4j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756923AbYELTs3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 15:48:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbYELTsV
+	id S1756739AbYELT4j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 15:56:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbYELT43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 15:48:21 -0400
-Received: from mo-p00-ob.rzone.de ([81.169.146.162]:9460 "EHLO
-	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751162AbYELTsU (ORCPT
+	Mon, 12 May 2008 15:56:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50576 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751791AbYELT42 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 15:48:20 -0400
-X-RZG-CLASS-ID: mo00
-X-RZG-AUTH: jclyXLBJ10ZHTmMMskdeEV9K+qamm4K24+0GzTHYHnheuzKtvddXf0g5IDpOVsJr
-Message-ID: <48289F00.9010406@hartkopp.net>
-Date: Mon, 12 May 2008 21:48:16 +0200
-From: Oliver Hartkopp <oliver@hartkopp.net>
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
+	Mon, 12 May 2008 15:56:28 -0400
+Date: Mon, 12 May 2008 12:55:56 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Bart Van Assche <bart.vanassche@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.26-rc2
+In-Reply-To: <e2e108260805121232t4cbd8eb0k219fd6a7d06c7650@mail.gmail.com>
+Message-ID: <alpine.LFD.1.10.0805121247080.3019@woody.linux-foundation.org>
+References: <alpine.LFD.1.10.0805120731480.3188@woody.linux-foundation.org> <e2e108260805121232t4cbd8eb0k219fd6a7d06c7650@mail.gmail.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Romano Giannetti <romanol@upcomillas.es>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       akpm@linux-foundation.org, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Kernel naming convention in the merge phase
-References: <4818F093.3070105@hartkopp.net> <4819050C.9060800@zytor.com>	 <48198873.7030503@hartkopp.net>  <481A06C0.6070500@zytor.com> <1210163964.14371.1.camel@localhost> <48282C69.2070006@hartkopp.net> <48286364.7010107@zytor.com> <48288E4E.3080107@hartkopp.net> <48289C59.5040401@zytor.com>
-In-Reply-To: <48289C59.5040401@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Oliver Hartkopp wrote:
->> H. Peter Anvin wrote:
->>> Oliver Hartkopp wrote:
->>>>
->>>> Yes - this was also my intention. I don't have any preferences if
->>>> the first commit after a release is named -merge or -rc0. But it
->>>> should point out that we're leaving the former stable release.
->>>>
->>>
->>> Either way it'll take a bunch of work.
->>
->> Can you give any details?
->>
->> Why does tagging a -rc0 create any effort for anyone - except half a
->> minute for Linus?
->>
->
-> Because it breaks all the robots which rely on the kernel naming scheme.
->
 
-This is no real detail. How can -rc0 break a naming scheme for a robot,
-when -rc1 doesn't?
 
-Btw. you don't seem to have any interest in my suggestion and obviously
-Linus, Greg and Andrew also do not have any interest in something like a
--rc0. So i won't create any new noise about that topic from my side.
+On Mon, 12 May 2008, Bart Van Assche wrote:
+> 
+> Sorry if it's my fault that I do not understand the above message
+> completely. But from the above it's not completely clear to me which
+> kernel versions (2.6.2?.? releases) are affected and which are not
+> affected by the performance and correctness issues due to the
+> interaction between the semaphore implementation and the preemptable
+> BKL.
 
-Thanks anyway,
-Oliver
+No released kernels are affected. It's purely a matter that has happened 
+after 2.6.25. The semaphore simplifcation in -rc1 caused a huge 
+performance regression on some benchmarks, and the fix to that in turn 
+caused a semaphore correctness issue, so I just rolled back to the 
+original BKL code that doesn't have any of those interactions.
 
+In a historical context, the issues involved would only have happened with 
+CONFIG_PREEMPT_BKL. That config option was made the only one in January, 
+and as a result of these issues, we effectively switched it off.
+
+So you can *think* of the effect of the changes as having gone from 
+CONFIG_PREEMPT_BKL=y to CONFIG_PREEMPT_BKL=n, even though technically we 
+had removed the actual config option to let people choose (so the config 
+option has basically become a static code change).
+
+We may end up having to re-instate the config option due to this. 
+Personally, I hope not. It would be nicer if we could just avoid 
+PREEMPT_BKL entirely. 
+
+(To make things somewhat more confusing, some non-PREEMPT_BKL code has 
+then bitrotted since, so if can actually see latency issues, you might 
+want to try the patch here at the end of this email to see if it fixes 
+the worst of them. "cond_resched()" has regressed since the PREEMPT_BKL 
+config option went away).
+
+			Linus
+---
+ include/linux/sched.h |    7 -------
+ 1 files changed, 0 insertions(+), 7 deletions(-)
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 5a63f2d..75c284f 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -2038,17 +2038,10 @@ static inline int need_resched(void)
+  * cond_resched_softirq() will enable bhs before scheduling.
+  */
+ extern int _cond_resched(void);
+-#ifdef CONFIG_PREEMPT
+-static inline int cond_resched(void)
+-{
+-	return 0;
+-}
+-#else
+ static inline int cond_resched(void)
+ {
+ 	return _cond_resched();
+ }
+-#endif
+ extern int cond_resched_lock(spinlock_t * lock);
+ extern int cond_resched_softirq(void);
+ static inline int cond_resched_bkl(void)
