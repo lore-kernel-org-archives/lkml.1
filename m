@@ -1,57 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760806AbYELKAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759109AbYELKBB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760806AbYELKAo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 06:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757915AbYELKAf
+	id S1759109AbYELKBB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 06:01:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760799AbYELKAu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 06:00:35 -0400
-Received: from bipbip.grupopie.com ([195.23.16.24]:34620 "EHLO
-	bipbip.grupopie.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757932AbYELKAf (ORCPT
+	Mon, 12 May 2008 06:00:50 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:50801 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757915AbYELKAt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 06:00:35 -0400
-Message-ID: <48281540.9020207@grupopie.com>
-Date: Mon, 12 May 2008 11:00:32 +0100
-From: Paulo Marques <pmarques@grupopie.com>
-Organization: Grupo PIE
-User-Agent: Thunderbird 1.5.0.14 (X11/20071210)
-MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+	Mon, 12 May 2008 06:00:49 -0400
+Date: Mon, 12 May 2008 12:08:09 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Paulo Marques <pmarques@grupopie.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
 Subject: Re: /proc/kallsyms broken in 2.6.26-rc1-git6
-References: <20080509174148.GA22246@basil.nowhere.org> <482491D6.9030205@grupopie.com> <4824A7B6.70306@firstfloor.org> <4824AD3C.3070506@grupopie.com> <20080509233742.GA22265@martell.zuzino.mipt.ru>
-In-Reply-To: <20080509233742.GA22265@martell.zuzino.mipt.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Message-ID: <20080512100809.GH31954@one.firstfloor.org>
+References: <20080509174148.GA22246@basil.nowhere.org> <482491D6.9030205@grupopie.com> <4824A7B6.70306@firstfloor.org> <4824AD3C.3070506@grupopie.com> <4824DB36.8000500@firstfloor.org> <4828140F.9030609@grupopie.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4828140F.9030609@grupopie.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan wrote:
-> On Fri, May 09, 2008 at 08:59:56PM +0100, Paulo Marques wrote:
->> Andi Kleen wrote:
->>>[...]
->>> Yes and? Surely that's not correct?
->> That's not for me to judge, but I believe it has always been like that.
+> So, the only difference is the filter made by that "grep -v" to exclude 
+> a few classes of symbols.
 > 
-> *cough*
+> Maybe I lost myself in that expression, but it doesn't seem like it 
+> would be able to filter out the symbols you're seeing. Are you sure the 
+> same symbols don't appear in System.map?
+
+They do, but that's also new.
+
 > 
-> Here is how typical /proc/kallsyms looks like:
+> >They didn't use to be there and don't
+> >make any sense because they don't have any valid kernel addresses.
 > 
-> ffffffff80200000 A _text
-> ffffffff80200000 T startup_64
-> ffffffff802000b7 t ident_complete
-> ffffffff80200100 T secondary_startup_64
+> I don't know enough about the markers infrastructure but I guess these 
+> "addresses" are more like an "offset" into a markers structure that is 
+> automatically produced by putting these symbols into a special section 
+> that starts at offset 0.
 
-This isn't helpful... the question is whether it is kallsyms misbehaving 
-and placing new symbols in the kernel image or if it is some other 
-change in the kernel that is generating new symbols that end up in the 
-symbol table.
+I don't know too much about the markers implementation either and
+if it's caused by then.
 
-My guess it is that it is the later, and in that case, from a kallsyms 
-standpoint "it has always been like that".
+> Well, my first suspects would be these:
+> 
+> CONFIG_KPROBES=y
+> CONFIG_KRETPROBES=y
+> CONFIG_HAVE_KPROBES=y
+> CONFIG_HAVE_KRETPROBES=y
 
--- 
-Paulo Marques - www.grupopie.com
+I've always had those enabled and afaik they don't generate any 
+magic symbols.
 
-"God is love. Love is blind. Ray Charles is blind. Ray Charles is God."
+> 
+> >
+> >It's the other way round -- kallsyms changed and that change will likely
+> >break programs.
+> 
+> I don't have the time right now to try your configuration and pinpoint 
+> the problem, but if you can come up with a plan, like: "we need to 
+> filter out symbols from the output of "nm" whose type is 'N'", I'll be 
+> more than happy to provide a patch to fix it...
+
+man nm says
+
+ "N" The symbol is a debugging symbol.
+
+while I'm not 100% sure what a debugging symbol is I suppose we don't
+need those so yes please filter those out (both
+out of System.map and out of kallsyms) 
+
+-Andi
