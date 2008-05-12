@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757968AbYELVPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758329AbYELVTO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757968AbYELVPj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 17:15:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbYELVPb
+	id S1758329AbYELVTO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 17:19:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755530AbYELVS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 17:15:31 -0400
-Received: from smtp28.orange.fr ([80.12.242.99]:26318 "EHLO smtp28.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752510AbYELVPb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 17:15:31 -0400
-X-ME-UUID: 20080512211529112.1B7D97000089@mwinf2801.orange.fr
-Subject: [PATCH 1/1] avr32/pata: avoid unnecessary memset
-From: "Christophe Jaillet" <christophe.jaillet@wanadoo.fr>
-To: "cj" <christophe.jaillet@wanadoo.fr>,
-       "linux" <linux-kernel@vger.kernel.org>, <hskinnemoen@atmel.com>
-Date: Mon, 12 May 2008 23:15:27 +0200
-Content-Type: text/plain
-X-Mailer: email v2.5.1 (CYGWIN_NT-5.0 1.5.25(0.156/4/2) i686 [http://email.cleancode.org])
-X-Antivirus: avast! (VPS 080512-0, 12/05/2008), Outbound message
-X-Antivirus-Status: Clean
-Message-Id: <20080512211529.1B7D97000089@mwinf2801.orange.fr>
+	Mon, 12 May 2008 17:18:58 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:60112 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755461AbYELVS6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 17:18:58 -0400
+Date: Mon, 12 May 2008 22:08:34 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Miller <davem@davemloft.net>
+Cc: corbet@lwn.net, linux-kernel@vger.kernel.org
+Subject: Re: Tracking and crediting bug reporters
+Message-ID: <20080512220834.4449c2d4@core>
+In-Reply-To: <20080512.135222.266402730.davem@davemloft.net>
+References: <4388.1210613272@vena.lwn.net>
+	<20080512192019.6684f719@core>
+	<20080512.135222.266402730.davem@davemloft.net>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christophe Jaillet <christophe.jaillet@wanadoo.fr>
+> This is why I personally do not accept private bug reports or kernel
+> questions, I always direct them to post to the appropriate public
+> mailing list and CC: me if appropriate.
+> 
+> That solves the whole "privacy" issue quite neatly.
 
-Hi, here is a patch against linux/drivers/dma/iop-adma.c which :
-	
-1) Remove an explicit memset(.., 0, ...) to a variable allocated with
-kzalloc (i.e. 'info').
+Not really. About half the bugs I deal with and fix are from customers of
+Red Hat who have differing expectations.
 
-
-Note: this patch is based on 'linux-2.6.25.tar.bz2'
-
-Signed-off-by: Christophe Jaillet <christophe.jaillet@wanadoo.fr>
-
----
-
---- linux/drivers/ata/pata_at32.c	2008-04-17 04:49:44.000000000 +0200
-+++ linux/drivers/ata/pata_at32.c.cj	2008-05-12 23:07:10.000000000 +0200
-@@ -329,8 +329,6 @@ static int __init pata_at32_probe(struct
- 	if (!info)
- 		return -ENOMEM;
- 
--	memset(info, 0, sizeof(struct at32_ide_info));
--
- 	info->irq = irq;
- 	info->cs  = board->cs;
- 
-
+Alan
 
