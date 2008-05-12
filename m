@@ -1,57 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758502AbYELGlW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758481AbYELGuH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758502AbYELGlW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 02:41:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754738AbYELGlL
+	id S1758481AbYELGuH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 02:50:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYELGty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 02:41:11 -0400
-Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:47117 "EHLO
+	Mon, 12 May 2008 02:49:54 -0400
+Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:49314 "EHLO
 	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754581AbYELGlK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 02:41:10 -0400
-Message-ID: <4827E67E.3050008@krogh.cc>
-Date: Mon, 12 May 2008 08:41:02 +0200
+	id S1750752AbYELGty (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 02:49:54 -0400
+Message-ID: <4827E88F.6040701@krogh.cc>
+Date: Mon, 12 May 2008 08:49:51 +0200
 From: Jesper Krogh <jesper@krogh.cc>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
 MIME-Version: 1.0
-To: Neil Brown <neilb@suse.de>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org
-Subject: Re: Many open/close on same files yeilds "No such file or directory".
-References: <4819E316.7000607@krogh.cc>	<4823DFA6.9010504@krogh.cc>	<20080508223635.523b8fa7.akpm@linux-foundation.org>	<4823EA9E.6050703@krogh.cc> <18471.41781.164396.385159@notabene.brown>
-In-Reply-To: <18471.41781.164396.385159@notabene.brown>
+To: Roland Dreier <rdreier@cisco.com>
+CC: David Dillow <dillowda@ornl.gov>, Rick Jones <rick.jones2@hp.com>,
+       David Miller <davem@davemloft.net>, yhlu.kernel@gmail.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: NIU - Sun Neptune 10g - Transmit timed out reset (2.6.24)
+References: <86802c440805071130m62c1f4edydb3316dac4a2aba2@mail.gmail.com>	<20080507.141521.193714938.davem@davemloft.net>	<482498D5.9060008@krogh.cc>	<20080509.143229.174354251.davem@davemloft.net>	<4824C936.9000103@krogh.cc> <4824CE43.8060203@hp.com>	<4824D4C0.10201@krogh.cc> <1210374525.21330.6.camel@lap75545.ornl.gov>	<48253F33.3000109@krogh.cc> <adave1mp34l.fsf@cisco.com>
+In-Reply-To: <adave1mp34l.fsf@cisco.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil Brown wrote:
-> On Friday May 9, jesper@krogh.cc wrote:
->> When I disabled the NFS-server and rand my "real-world" program on a
->> single processor (make -j 1). It ran through fine. It basically
->> gets around 20 million chunks out of differnet file and assemble the
->> chuncks in a few other files. This processes more or less 5 individual
->> sections, so make can run effectively with a concurrency of 5.
+Roland Dreier wrote:
+>  > Ok. It must be x8 then:
+>  >                 Link: Supported Speed 2.5Gb/s, Width x8, ASPM L0s, Port 1
 > 
-> (For linux-nfs readers: the problem is that repeatedly opening a given
->  file sometimes returns a ENOENT - http://lkml.org/lkml/2008/5/9/15).
+> Actually that line is showing the supported capabilities... you want the
+> second line a few down that shows the actual status.
 
-This thing really, really irritated me, but I must admit that Andrew 
-Morton was very correct about this "not being very likely"- a kernel
-bug.
+Ok it is still x8 then.
 
-It seem that our central configuration handling system (slack) was being
-way to aggressive about updating symlinks in paths of the filesystems
-that I was testing upon, that explains why I couldn't reproduce it
-on the internal volumes, and not on any of the volumes I created only
-for testing purposes. Sometimes you just get too blind..
-(I haven't been able to reproduce for 12 hours now)
+                 Link: Speed 2.5Gb/s, Width x8
 
-Just to answer your questions, yes, the 48 clients do hammer on NFS and
-now it seems to work excellent.
-
-Sorry for all the noise.
-
+Jesper
 -- 
 Jesper
