@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbYELNdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754047AbYELNhU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754112AbYELNdj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 09:33:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbYELNdb
+	id S1754047AbYELNhU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 09:37:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750990AbYELNhG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 09:33:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53397 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751446AbYELNda (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 09:33:30 -0400
-Date: Mon, 12 May 2008 09:33:07 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: lee.schermerhorn@hp.com, akpm@linux-foundation.org,
-       kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm 05/15] free swap space on swap-in/activation
-Message-ID: <20080512093307.2ace3096@bree.surriel.com>
-In-Reply-To: <4828283C.4000803@mxp.nes.nec.co.jp>
-References: <20080428181835.502876582@redhat.com>
-	<20080428181852.620969450@redhat.com>
-	<4828283C.4000803@mxp.nes.nec.co.jp>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 12 May 2008 09:37:06 -0400
+Received: from mail2.picochip.com ([82.111.145.34]:45611 "EHLO
+	arun.picochip.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750906AbYELNhF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 09:37:05 -0400
+X-Greylist: delayed 3350 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 May 2008 09:37:04 EDT
+Message-ID: <48283AE5.7010704@jamieiles.com>
+Date: Mon, 12 May 2008 13:41:09 +0100
+From: Jamie Iles <lkml@jamieiles.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Jamie Iles <jamie.iles@picochip.com>
+Subject: Soft IRQs
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (arun.picochip.com [172.17.0.30]); Mon, 12 May 2008 13:41:10 +0100 (BST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 May 2008 20:21:32 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+Hi,
 
-> So, the intention of this patch is
-> not to free a swap space of swap cache that has already swapped in
-> and only used one process as do_swap_page() does,
-> but to free a swap space that is only used as a swap cache
-> (not used by any processes), right?
+I am trying to understand whether it is correct behaviour for soft IRQs 
+to be executed when interrupts with disabled. In particular, if I have 
+some code that does:
 
-No.  The code should also free the swap space of pages that are
-mapped by processes, in order to free up swap space for other
-uses.  This only happens if vm_swap_full() is true.
+    spin_lock_t mylock = SPIN_LOCK_UNLOCKED;
+    unsigned long flags;
+    spin_lock_irqsave( &mylock, flags );
+   
+    ...
+   
+    spin_lock_irqrestore( &mylock, flags );
 
--- 
-All rights reversed.
+Can soft IRQs run in the critical section above? I have a problem where 
+'local_bh_enable_ip()' is being called as a result of 'dev_kfree_skb()' 
+and a NET_RX_SOFTIRQ is being raised when I expect interrupts to be 
+disabled.
+
+'local_bh_enable()' only uses the 'in_irq()' macro to check whether we 
+should do 'do_softirq()' and it also only checks we do not have the 
+softirq field of 'preempt_count' non-zero before enabling soft IRQs.
+
+I can see that if I was to replace 'spin_lock_irqsave()' with 
+'spin_lock_bh()' then the softirq field of 'preempt_count' would be 
+incremented and prevent soft IRQs until the lock was released. Should 
+'spin_lock_irqsave()' also disable soft interrupts?
+
+Thanks,
+
+Jamie
