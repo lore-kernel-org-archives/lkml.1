@@ -1,45 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754703AbYELPd2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755165AbYELPfp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754703AbYELPd2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 11:33:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbYELPdU
+	id S1755165AbYELPfp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 11:35:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751588AbYELPfh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 11:33:20 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:36564 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751197AbYELPdT (ORCPT
+	Mon, 12 May 2008 11:35:37 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:50241 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751345AbYELPfg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 11:33:19 -0400
-Date: Tue, 13 May 2008 00:33:16 +0900 (JST)
-Message-Id: <20080513.003316.226782406.ryov@valinux.co.jp>
-To: s-uchida@ap.jp.nec.com
-Cc: axboe@kernel.dk, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, vtaras@openvz.org,
-       tom-sugawara@ap.jp.nec.com
-Subject: Re: [RFC][v2][patch 0/12][CFQ-cgroup]Yet another I/O bandwidth
- controlling subsystem for CGroups based on CFQ
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20080512.121019.183038803.ryov@valinux.co.jp>
-References: <20080425.185444.115924172.ryov@valinux.co.jp>
-	<004901c8b1bd$ec22fb70$c468f250$@jp.nec.com>
-	<20080512.121019.183038803.ryov@valinux.co.jp>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 12 May 2008 11:35:36 -0400
+Message-ID: <48286364.7010107@zytor.com>
+Date: Mon, 12 May 2008 08:33:56 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Oliver Hartkopp <oliver@hartkopp.net>
+CC: Romano Giannetti <romanol@upcomillas.es>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       akpm@linux-foundation.org, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Kernel naming convention in the merge phase
+References: <4818F093.3070105@hartkopp.net> <4819050C.9060800@zytor.com>	 <48198873.7030503@hartkopp.net>  <481A06C0.6070500@zytor.com> <1210163964.14371.1.camel@localhost> <48282C69.2070006@hartkopp.net>
+In-Reply-To: <48282C69.2070006@hartkopp.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Uchida-san,
-
-> > In the test #2 and #3, did you use direct write?
-> > I guess you have used the non-direct write I/O (using cache).
+Oliver Hartkopp wrote:
 > 
-> Yes, I did. I used direct write in all tests.
-> I would appreciate it if you would try a test like I did.
+> Yes - this was also my intention. I don't have any preferences if the 
+> first commit after a release is named -merge or -rc0. But it should 
+> point out that we're leaving the former stable release.
+> 
 
-And I'll retest and report you back.
+Either way it'll take a bunch of work.
 
---
-Ryo Tsuruta <ryov@valinux.co.jp>
+	-hpa
