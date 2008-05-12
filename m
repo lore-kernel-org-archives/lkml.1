@@ -1,87 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761654AbYELKfc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761412AbYELKjH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761654AbYELKfc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 06:35:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759057AbYELKfX
+	id S1761412AbYELKjH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 06:39:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757628AbYELKi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 06:35:23 -0400
-Received: from rv-out-0506.google.com ([209.85.198.233]:33852 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756953AbYELKfV (ORCPT
+	Mon, 12 May 2008 06:38:56 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:60049 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751803AbYELKiz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 06:35:21 -0400
+	Mon, 12 May 2008 06:38:55 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:sender;
-        b=HIWCO2sWaEOHar/0QJJwLbSaUHNAh1PEye6pMsTNR7A+lb4GMumqGkcyA3a+TqO5Ai4s1R4dLl8mHWn9/tgdn1KcZV34c31iKxIsRAEcxbNe/5HDmab6iDXoqbSFEBsCm13/SrRDjpBnQkvew+HgQ6a4/yYpuKgnqpGiKdXo06Y=
-From: Bryan Wu <cooloney@kernel.org>
-To: samuel@sortiz.org
-Cc: irda-users@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Graf Yang <graf.yang@analog.com>, Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 1/1] [net/irda]: Fix a misalign access issue.
-Date: Mon, 12 May 2008 18:35:21 +0800
-Message-Id: <1210588521-11508-1-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.5
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=RvDqiY0gpA+CSdtCHHjWKx4pFZdLMz1lUVL0omHnFXgnAXMapAPTKsLMto7GFWBcvly23hqqbW9AnHMZdJMvVdT1F6haq+/jdsIxtFLigDqhD55PCHyKf6lvJVzHDtd/qxnmh9sOOiygccAxM3wLI7uYR523rb9JVJ+lGaOHbbU=
+Message-ID: <8bd0f97a0805120338l1d7e0e7eiffebae3bf33c172c@mail.gmail.com>
+Date: Mon, 12 May 2008 06:38:55 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Bryan Wu" <cooloney@kernel.org>
+Subject: Re: [PATCH 4/4] [MM/NOMMU]: Export two symbols in nommu.c for mmap test
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, dwmw2@infradead.org,
+       "Vivi Li" <vivi.li@analog.com>
+In-Reply-To: <1210588325-11027-5-git-send-email-cooloney@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1210588325-11027-1-git-send-email-cooloney@kernel.org>
+	 <1210588325-11027-5-git-send-email-cooloney@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Graf Yang <graf.yang@analog.com>
+On Mon, May 12, 2008 at 6:32 AM, Bryan Wu <cooloney@kernel.org> wrote:
+> From: Vivi Li <vivi.li@analog.com>
+>
+> http://blackfin.uclinux.org/gf/project/uclinux-dist/tracker/?action=TrackerItemEdit&tracker_item_id=2312
 
-Signed-off-by: Graf Yang <graf.yang@analog.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- net/irda/discovery.c |    8 +++++---
- net/irda/irlmp.c     |    2 +-
- 2 files changed, 6 insertions(+), 4 deletions(-)
-
-diff --git a/net/irda/discovery.c b/net/irda/discovery.c
-index bfacef8..a6f99b5 100644
---- a/net/irda/discovery.c
-+++ b/net/irda/discovery.c
-@@ -40,6 +40,8 @@
- 
- #include <net/irda/discovery.h>
- 
-+#include <asm/unaligned.h>
-+
- /*
-  * Function irlmp_add_discovery (cachelog, discovery)
-  *
-@@ -87,7 +89,7 @@ void irlmp_add_discovery(hashbin_t *cachelog, discovery_t *new)
- 			 */
- 			hashbin_remove_this(cachelog, (irda_queue_t *) node);
- 			/* Check if hints bits are unchanged */
--			if(u16ho(node->data.hints) == u16ho(new->data.hints))
-+			if (get_unaligned((__u16 *)node->data.hints) == get_unaligned((__u16 *)new->data.hints))
- 				/* Set time of first discovery for this node */
- 				new->firststamp = node->firststamp;
- 			kfree(node);
-@@ -281,9 +283,9 @@ struct irda_device_info *irlmp_copy_discoveries(hashbin_t *log, int *pn,
- 		/* Mask out the ones we don't want :
- 		 * We want to match the discovery mask, and to get only
- 		 * the most recent one (unless we want old ones) */
--		if ((u16ho(discovery->data.hints) & mask) &&
-+		if ((get_unaligned((__u16 *)discovery->data.hints) & mask) &&
- 		    ((old_entries) ||
--		     ((jiffies - discovery->firststamp) < j_timeout)) ) {
-+		     ((jiffies - discovery->firststamp) < j_timeout))) {
- 			/* Create buffer as needed.
- 			 * As this function get called a lot and most time
- 			 * we don't have anything to put in the log (we are
-diff --git a/net/irda/irlmp.c b/net/irda/irlmp.c
-index 1f81f8e..7b95cd6 100644
---- a/net/irda/irlmp.c
-+++ b/net/irda/irlmp.c
-@@ -1086,7 +1086,7 @@ discovery_t *irlmp_get_discovery_response(void)
- 
- 	IRDA_ASSERT(irlmp != NULL, return NULL;);
- 
--	u16ho(irlmp->discovery_rsp.data.hints) = irlmp->hints.word;
-+	put_unaligned(irlmp->hints.word, (__u16 *)irlmp->discovery_rsp.data.hints);
- 
- 	/*
- 	 *  Set character set for device name (we use ASCII), and
--- 
-1.5.5
-
+i dont think URLs to our tracker is a good substitute for log
+messages.  our tracker URLs have known to break in the past (due to
+gforge changes), and it's a pain for people reading changelogs to open
+up a browser just to see what the issue is about.
+-mike
