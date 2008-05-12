@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757105AbYELWkH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756862AbYELWoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757105AbYELWkH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 18:40:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754988AbYELWjy
+	id S1756862AbYELWoW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 18:44:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755384AbYELWoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 18:39:54 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59391
+	Mon, 12 May 2008 18:44:11 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35841
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754492AbYELWjy (ORCPT
+	by vger.kernel.org with ESMTP id S1755030AbYELWoJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 18:39:54 -0400
-Date: Mon, 12 May 2008 15:39:48 -0700 (PDT)
-Message-Id: <20080512.153948.193688062.davem@davemloft.net>
-To: mikpe@it.uu.se
-Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] 2.6.26-rc1 lost half the RAM on UltraSPARC 5
+	Mon, 12 May 2008 18:44:09 -0400
+Date: Mon, 12 May 2008 15:44:04 -0700 (PDT)
+Message-Id: <20080512.154404.127453165.davem@davemloft.net>
+To: julia@diku.dk
+Cc: netdev@vger.kernel.org, jchapman@katalix.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 6/6, revised] drivers/net/pppol2tp.c: remove null
+ pointer dereference
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080512.153628.193699676.davem@davemloft.net>
-References: <18472.38209.615770.265421@alkaid.it.uu.se>
-	<20080512.153143.48741227.davem@davemloft.net>
-	<20080512.153628.193699676.davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0805122220350.27663@ask.diku.dk>
+References: <Pine.LNX.4.64.0805122220350.27663@ask.diku.dk>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -28,55 +28,22 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Mon, 12 May 2008 15:36:28 -0700 (PDT)
+From: Julia Lawall <julia@diku.dk>
+Date: Mon, 12 May 2008 22:21:25 +0200 (CEST)
 
-> Nevermind I see why the messages don't show up.  Hold on for a second
-> and I'll send an updated debugging patch.
+> If session is NULL, it is not possible to access its name field.  So I have
+> split apart the printing of the error message to drop the printing of the
+> name field in this case.
+> 
+> The macro PRINTK actually only evaluates its arguments starting with the
+> third one if the bitwise conjunction of the first two is non-zero.
+> Normally, this conjunction would only be non-zero if debugging mode were
+> turned on, but when session is NULL, the first argument in both the old and
+> new code is -1, and thus the bitwise conjunction is true.  Perhaps a
+> different strategy is desired, such as using tunnel->debug, which
+> session->debug is initialized to, but tunnel can also be NULL, so this does
+> not completely solve the problem.
+ ...
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-Try this patch instead, thanks!
-
-diff --git a/arch/sparc64/mm/init.c b/arch/sparc64/mm/init.c
-index a9828d7..a628a99 100644
---- a/arch/sparc64/mm/init.c
-+++ b/arch/sparc64/mm/init.c
-@@ -1353,6 +1353,8 @@ static void __init bootmem_init_one_node(int nid)
- 
- 	numadbg("bootmem_init_one_node(%d)\n", nid);
- 
-+	lmb_dump_all();
-+
- 	p = NODE_DATA(nid);
- 
- 	if (p->node_spanned_pages) {
-diff --git a/lib/lmb.c b/lib/lmb.c
-index 83287d3..f294bbc 100644
---- a/lib/lmb.c
-+++ b/lib/lmb.c
-@@ -10,6 +10,8 @@
-  *      2 of the License, or (at your option) any later version.
-  */
- 
-+#define DEBUG
-+
- #include <linux/kernel.h>
- #include <linux/init.h>
- #include <linux/bitops.h>
-@@ -29,7 +31,7 @@ void lmb_dump_all(void)
- 	pr_debug("    memory.size		  = 0x%llx\n",
- 	    (unsigned long long)lmb.memory.size);
- 	for (i=0; i < lmb.memory.cnt ;i++) {
--		pr_debug("    memory.region[0x%x].base       = 0x%llx\n",
-+		pr_debug("    memory.region[0x%lx].base       = 0x%llx\n",
- 		    i, (unsigned long long)lmb.memory.region[i].base);
- 		pr_debug("		      .size     = 0x%llx\n",
- 		    (unsigned long long)lmb.memory.region[i].size);
-@@ -38,7 +40,7 @@ void lmb_dump_all(void)
- 	pr_debug("    reserved.cnt	  = 0x%lx\n", lmb.reserved.cnt);
- 	pr_debug("    reserved.size	  = 0x%lx\n", lmb.reserved.size);
- 	for (i=0; i < lmb.reserved.cnt ;i++) {
--		pr_debug("    reserved.region[0x%x].base       = 0x%llx\n",
-+		pr_debug("    reserved.region[0x%lx].base       = 0x%llx\n",
- 		    i, (unsigned long long)lmb.reserved.region[i].base);
- 		pr_debug("		      .size     = 0x%llx\n",
- 		    (unsigned long long)lmb.reserved.region[i].size);
+Applied, thanks.
