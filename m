@@ -1,59 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757430AbYELNCt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758861AbYELNDE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757430AbYELNCt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 09:02:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754902AbYELNCl
+	id S1758861AbYELNDE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 09:03:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756192AbYELNCp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 09:02:41 -0400
-Received: from ozlabs.org ([203.10.76.45]:42568 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754341AbYELNCk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 09:02:40 -0400
+	Mon, 12 May 2008 09:02:45 -0400
+Received: from wr-out-0506.google.com ([64.233.184.234]:51895 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756089AbYELNCo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 09:02:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tawKu5dVQvc+INqep2NGG7DautfwxoQRiWQGY3i3ikG6pFvYZkDSJ33/YbPFOESTx1EaslyO/wNqnCS3Rwc9iP1tmnoqfjQ0YTDhs5DmCvFsVbRkMz7sayHLjf6VyZWBLCMScvtPXV3vaFN0fUp4F+gN+2WpWWF0OHrh6gHcJuw=
+Message-ID: <8bd0f97a0805120602n367099a9j3b1b0a8f801877e6@mail.gmail.com>
+Date: Mon, 12 May 2008 09:02:42 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Christoph Hellwig" <hch@infradead.org>
+Subject: Re: [PATCH 4/4] [MM/NOMMU]: Export two symbols in nommu.c for mmap test
+Cc: "Bryan Wu" <cooloney@kernel.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, dwmw2@infradead.org, "Vivi Li" <vivi.li@analog.com>
+In-Reply-To: <20080512130058.GA8981@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-ID: <18472.16324.442125.351127@cargo.ozlabs.ibm.com>
-Date: Mon, 12 May 2008 23:01:56 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: [git pull] Please pull powerpc.git merge branch
-X-Mailer: VM 7.19 under Emacs 22.1.1
+Content-Disposition: inline
+References: <1210588325-11027-1-git-send-email-cooloney@kernel.org>
+	 <1210588325-11027-5-git-send-email-cooloney@kernel.org>
+	 <8bd0f97a0805120338l1d7e0e7eiffebae3bf33c172c@mail.gmail.com>
+	 <20080512130058.GA8981@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Mon, May 12, 2008 at 9:00 AM, Christoph Hellwig <hch@infradead.org> wrote:
+> Yeah, even the url pointer to there is totally unreadable.  I still
+> don't understand why you want to export this symbols.  Also please make
+> sure to always submit the code actually using the exports in the same
+> patchkit, that makes it a lot easier to figure.
 
-Please pull from the 'merge' branch of
-
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
-
-to get 5 commits; one that fixes a compile problem for ARCH=powerpc,
-and 4 that fix compile problems for ARCH=ppc.  Since 2.6.26 will be
-the last release that includes arch/ppc, we probably should make sure
-it works in case anyone wants to refer to it subsequently.
-
-Thanks,
-Paul.
-
- arch/powerpc/kernel/Makefile   |    6 ++++++
- arch/powerpc/kernel/cputable.c |    2 ++
- arch/powerpc/lib/Makefile      |    2 +-
- arch/ppc/Makefile              |    2 +-
- arch/ppc/kernel/ppc_ksyms.c    |    1 +
- arch/ppc/kernel/setup.c        |    1 +
- arch/ppc/platforms/residual.c  |    1 +
- include/asm-ppc/system.h       |    2 +-
- 8 files changed, 14 insertions(+), 3 deletions(-)
-
-Paul Mackerras (2):
-      [POWERPC] Fix default cputable entries for e200 and e500 families
-      [POWERPC] ppc: More compile fixes
-
-Segher Boessenkool (3):
-      [POWERPC] ppc: Use ebony_defconfig for defconfig
-      [POWERPC] ppc: Include <asm/cacheflush.h> in kernel/ppc_ksyms.c
-      [POWERPC] ppc: Don't run prom_init_check for arch/ppc builds
-
+the symbols are exported for MMU already.  this brings the no-MMU code in line.
+-mike
