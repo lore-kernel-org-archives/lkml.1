@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbYELM3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758460AbYELMky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758246AbYELM3V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 08:29:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754368AbYELM3L
+	id S1758460AbYELMky (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 08:40:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754282AbYELMko
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 08:29:11 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:52550 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755294AbYELM3I (ORCPT
+	Mon, 12 May 2008 08:40:44 -0400
+Received: from py-out-1112.google.com ([64.233.166.176]:27762 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754559AbYELMkn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 08:29:08 -0400
-Date: Mon, 12 May 2008 08:28:57 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: Possible regression?  2.6.26-rc1: X61s failure after
-	suspend/resume
-Message-ID: <20080512122857.GD7687@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-	Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <E1JuCBA-0002NZ-4E@closure.thunk.org> <200805082352.04352.rjw@sisk.pl> <20080509024426.GB8871@mit.edu> <20080509094941.GA19617@elte.hu> <20080512020301.GA8390@mit.edu>
+	Mon, 12 May 2008 08:40:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=XnN3SLG+GZoUXZqtBYrXNmNxPD5PtHF3VA8rHcmJ4hEiWHLpC7LsMPVvebxL1ujCBA8RJCbo//UW7aKbo1O0VGXMfVewQ5w8l3nMtweLdByKCJ8nfzLRRwdi/eU2fsIimIu2xM89t0svw15fOzqPEfWsI0ut1YAR8c+LNqjBG/c=
+Date: Mon, 12 May 2008 08:40:38 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Bryan Wu <cooloney@kernel.org>
+Cc: "Hennerich, Michael" <Michael.Hennerich@analog.com>,
+       Bryan Wu <bryan.wu@analog.com>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] Input/Touchscreen Driver: add support
+	AD7877touchscreen driver
+Message-ID: <20080512083954.ZZRA012@mailhub.coreip.homeip.net>
+References: <1202980649-13309-1-git-send-email-bryan.wu@analog.com> <20080407161007.ZZRA012@mailhub.coreip.homeip.net> <8A42379416420646B9BFAC9682273B6D56269C@limkexm3.ad.analog.com> <386072610805112333w7bc935eo4ad0aae47b1c3975@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080512020301.GA8390@mit.edu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <386072610805112333w7bc935eo4ad0aae47b1c3975@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 11, 2008 at 10:03:01PM -0400, Theodore Tso wrote:
-> On Fri, May 09, 2008 at 11:49:41AM +0200, Ingo Molnar wrote:
-> > 
-> > on the off chance that this might be related: could you try to boot with 
-> > nopat?
+Hi Bryan,
 
-Hey Ingo, which bug/regression did you think my issue might be related
-to?  I just looked up Kernel Bug #10620, which is what I had assumed
-(from context) you were referring to, but looking at the bug, it
-doesn't mention anything about nopat at all.
+On Mon, May 12, 2008 at 02:33:50PM +0800, Bryan Wu wrote:
+> 
+> Hi Dmitry,
+> 
+> Sorry for no updates, I forget to send out that patch, although
+> Michael fixed the driver as your review.
+> 
+> So need I send out one updated patch including Michael's fixing or
+> just send out his incremental patch?$B!)
+> 
 
-In any case, I'm doing some more testing to see if nopat really makes
-the problem harder to recur...
+Please send me the whole thing. Thanks!
 
-						- Ted
+-- 
+Dmitry
