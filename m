@@ -1,79 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753841AbYELOYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754049AbYELO3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753841AbYELOYs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 10:24:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751143AbYELOYj
+	id S1754049AbYELO3S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 10:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbYELO3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 10:24:39 -0400
-Received: from smtp.cs.aau.dk ([130.225.194.6]:41161 "EHLO smtp.cs.aau.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750906AbYELOYi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 10:24:38 -0400
-Subject: Re: [PATCH 1/6] arch/ia64/kernel: remove null pointer dereference
-From: Simon Holm =?ISO-8859-1?Q?Th=F8gersen?= <odie@cs.aau.dk>
-To: Julia Lawall <julia@diku.dk>
-Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0805121536370.3694@ask.diku.dk>
-References: <Pine.LNX.4.64.0805121536370.3694@ask.diku.dk>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 12 May 2008 16:37:29 +0200
-Message-Id: <1210603050.25310.9.camel@odie.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.0 
-Content-Transfer-Encoding: 8bit
+	Mon, 12 May 2008 10:29:10 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:64882 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751032AbYELO3J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 10:29:09 -0400
+Date: Mon, 12 May 2008 15:28:09 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] NTP: Make the RTC sync mode 11-minute again
+Message-ID: <Pine.LNX.4.55.0805121510160.535@cliff.in.clinika.pl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-man, 12 05 2008 kl. 15:37 +0200, skrev Julia Lawall:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> If data is NULL, it is not possible to access data->ret.
-> 
-> The problem was detected using the following semantic match
-> (http://www.emn.fr/x-info/coccinelle/)
-> 
-> // <smpl>
-> @@
-> expression E, E1;
-> identifier f;
-> statement S1,S2,S3;
-> @@
-> 
-> * if (E == NULL)
-> {
->   ... when != if (E == NULL) S1 else S2
->       when != E = E1
-> * E->f
->   ... when any
->   return ...;
-> }
-> else S3
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-> 
-> ---
-> 
-> diff -u -p a/arch/ia64/kernel/palinfo.c b/arch/ia64/kernel/palinfo.c
-> --- a/arch/ia64/kernel/palinfo.c	2008-05-09 16:46:57.000000000 +0200
-> +++ b/arch/ia64/kernel/palinfo.c	2008-05-12 08:43:35.000000000 +0200
-> @@ -902,7 +902,6 @@ palinfo_smp_call(void *info)
->  	palinfo_smp_data_t *data = (palinfo_smp_data_t *)info;
->  	if (data == NULL) {
->  		printk(KERN_ERR "palinfo: data pointer is NULL\n");
-> -		data->ret = 0; /* no output */
->  		return;
->  	}
->  	/* does this actual call */
-> --
+ As a result of the rewrite to drive the RTC sync from NTP code to use a
+timer, the piece of code responsible for doing this is triggered each time
+do_adjtimex() is called.  Which may be as often as once per 64 seconds as
+this is the minimum interval between NTP packets used by the daemon.  
+Make the interval 11 minutes again, by not reactivating the timer if
+pending already.
 
-The whole if block should just be deleted, as info is never NULL. There
-is only palinfo_handle_smp as (indirect) user of palinfo_smp_call (by
-way of smp_call_function_single) and surely palinfo_smp_call never pass
-NULL.
+ Note with this approach, there is a small window where the timer has
+expired, but has not been rearmed yet, for example when the handler is
+still early in sync_cmos_clock() by the time this function is called.  
+The likelihood of this event is epsilon and it should not be enough of a
+problem to justify designing a mutex solution to avoid it -- if the
+scenario happens either the RTC will be updated twice or mod_timer() will
+be called from sync_cmos_clock() even before the newly-armed timer
+expires, cancelling the additional update.
 
+Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+---
+ Tested successfully at the run time with a MIPS64 system (Broadcom 
+SWARM).  Please apply.
 
-Simon Holm Thøgersen
+  Maciej
 
+patch-2.6.26-rc1-20080505-ntp-11min-0
+diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/kernel/time/ntp.c linux-2.6.26-rc1-20080505/kernel/time/ntp.c
+--- linux-2.6.26-rc1-20080505.macro/kernel/time/ntp.c	2008-05-05 02:56:03.000000000 +0000
++++ linux-2.6.26-rc1-20080505/kernel/time/ntp.c	2008-05-12 01:51:21.000000000 +0000
+@@ -263,7 +263,7 @@ static void sync_cmos_clock(unsigned lon
+ 
+ static void notify_cmos_timer(void)
+ {
+-	if (!no_sync_cmos_clock)
++	if (!no_sync_cmos_clock && !timer_pending(&sync_cmos_timer))
+ 		mod_timer(&sync_cmos_timer, jiffies + 1);
+ }
+ 
