@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbYELNhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757454AbYELNhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754551AbYELNhl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 09:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbYELNhP
+	id S1757454AbYELNhz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 09:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751860AbYELNhg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 09:37:15 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:58479 "EHLO mgw2.diku.dk"
+	Mon, 12 May 2008 09:37:36 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:44109 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752804AbYELNhN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 09:37:13 -0400
-Date: Mon, 12 May 2008 15:37:09 +0200 (CEST)
+	id S1751827AbYELNhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 09:37:35 -0400
+Date: Mon, 12 May 2008 15:37:31 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: tony.luck@intel.com, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/6] arch/ia64/kernel: remove null pointer dereference
-Message-ID: <Pine.LNX.4.64.0805121536370.3694@ask.diku.dk>
+To: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 2/6] drivers/md: remove null pointer dereference
+Message-ID: <Pine.LNX.4.64.0805121537100.3694@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,9 +23,12 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-If data is NULL, it is not possible to access data->ret.
+If pgpath->pg->ps.type is NULL, it is not possible to access its name
+field.  So I have simply modified the error message to drop the printing of
+the name field.
 
-The problem was detected using the following semantic match
+
+This problem was found using the following semantic match
 (http://www.emn.fr/x-info/coccinelle/)
 
 // <smpl>
@@ -50,14 +53,16 @@ Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
 
-diff -u -p a/arch/ia64/kernel/palinfo.c b/arch/ia64/kernel/palinfo.c
---- a/arch/ia64/kernel/palinfo.c	2008-05-09 16:46:57.000000000 +0200
-+++ b/arch/ia64/kernel/palinfo.c	2008-05-12 08:43:35.000000000 +0200
-@@ -902,7 +902,6 @@ palinfo_smp_call(void *info)
- 	palinfo_smp_data_t *data = (palinfo_smp_data_t *)info;
- 	if (data == NULL) {
- 		printk(KERN_ERR "palinfo: data pointer is NULL\n");
--		data->ret = 0; /* no output */
- 		return;
+diff -u -p a/drivers/md/dm-mpath.c b/drivers/md/dm-mpath.c
+--- a/drivers/md/dm-mpath.c	2008-04-16 13:27:57.000000000 +0200
++++ b/drivers/md/dm-mpath.c	2008-05-12 09:19:35.000000000 +0200
+@@ -884,8 +884,7 @@ static int reinstate_path(struct pgpath 
+ 		goto out;
+ 
+ 	if (!pgpath->pg->ps.type) {
+-		DMWARN("Reinstate path not supported by path selector %s",
+-		       pgpath->pg->ps.type->name);
++		DMWARN("Reinstate path not supported by path selector");
+ 		r = -EINVAL;
+ 		goto out;
  	}
- 	/* does this actual call */
