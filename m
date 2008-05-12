@@ -1,136 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760041AbYELLZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759610AbYELL1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760041AbYELLZk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 07:25:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759552AbYELLZR
+	id S1759610AbYELL1f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 07:27:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754298AbYELL11
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 07:25:17 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:56829 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759291AbYELLZO (ORCPT
+	Mon, 12 May 2008 07:27:27 -0400
+Received: from fk-out-0910.google.com ([209.85.128.189]:34123 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754252AbYELL10 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 07:25:14 -0400
-Date: Mon, 12 May 2008 12:18:39 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Bryan Wu <cooloney@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Oleksiy Kebkal <kebkal@gmail.com>,
-       Oleksiy Kebkal <lesha@evologics.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/1] [serial/core]: This patch leaves RTS alone when CRTSCTS is not set.
-Message-ID: <20080512111839.GA15305@flint.arm.linux.org.uk>
-References: <1210587614-10016-1-git-send-email-cooloney@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 12 May 2008 07:27:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=o6+pLCgwhq5WJ9XJY0w8tP7UGZrGwBt2gc/X/Z0esf2lqdhOVr6X5uMF3B9HRDAJwyun0LOAXmgktbjETbVAP2lzlD5V7/sX+WKHheT/8nDBiVqX+5BIg0xE66jCt0bsY7drKt3YpAZLy+L6QcLOsJUxsdykLL3mwO6xNKDwsJs=
+Message-ID: <74d0deb30805120427x71b4588es9200f80252bab319@mail.gmail.com>
+Date: Mon, 12 May 2008 13:27:24 +0200
+From: "pHilipp Zabel" <philipp.zabel@gmail.com>
+To: "Bryan Wu" <cooloney@kernel.org>
+Subject: Re: [PATCH 1/1] [INPUT/KEYPAD] gpio keypad: Replace current blackfin specific pfbutton driver with kernel generic gpio key driver
+Cc: dbrownell@users.sourceforge.net, dmitry.torokhov@gmail.com,
+       linux-kernel@vger.kernel.org,
+       "Michael Hennerich" <michael.hennerich@analog.com>
+In-Reply-To: <1210587437-9751-1-git-send-email-cooloney@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1210587614-10016-1-git-send-email-cooloney@kernel.org>
-User-Agent: Mutt/1.4.2.1i
+References: <1210587437-9751-1-git-send-email-cooloney@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 12, 2008 at 06:20:14PM +0800, Bryan Wu wrote:
-> diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-> index eab0327..903360b 100644
-> --- a/drivers/serial/serial_core.c
-> +++ b/drivers/serial/serial_core.c
-> @@ -179,11 +179,15 @@ static int uart_startup(struct uart_state *state, int init_hw)
->  			uart_change_speed(state, NULL);
->  
->  			/*
-> -			 * Setup the RTS and DTR signals once the
-> -			 * port is open and ready to respond.
-> +			 * Setup the RTS (in the case of hardware flow control)
-> +			 * and DTR signals once the port is open and ready to
-> +			 * respond.
->  			 */
-> -			if (info->tty->termios->c_cflag & CBAUD)
-> -				uart_set_mctrl(port, TIOCM_RTS | TIOCM_DTR);
-> +			if (info->tty->termios->c_cflag & CBAUD) {
-> +				uart_set_mctrl(port, TIOCM_DTR);
-> +				if (info->flags & UIF_CTS_FLOW)
+Hi,
 
-We have access to termios->c_cflag here, please use that in preference
-to testing info->flags.
+On Mon, May 12, 2008 at 12:17 PM, Bryan Wu <cooloney@kernel.org> wrote:
+> From: Michael Hennerich <michael.hennerich@analog.com>
+>
+>  It's an actual deficiency in the hardware that we can't address,
+>  so it needs to be worked around in software.
+>
+>  Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+>  Signed-off-by: Bryan Wu <cooloney@kernel.org>
+>  ---
+>   drivers/input/keyboard/gpio_keys.c |   15 ++++++++++++++-
+>   1 files changed, 14 insertions(+), 1 deletions(-)
+>
+>  diff --git a/drivers/input/keyboard/gpio_keys.c b/drivers/input/keyboard/gpio_keys.c
+>  index bbd00c3..d856eb9 100644
+>  --- a/drivers/input/keyboard/gpio_keys.c
+>  +++ b/drivers/input/keyboard/gpio_keys.c
+>  @@ -26,6 +26,18 @@
+>
+>   #include <asm/gpio.h>
+>
+>  +#if defined(CONFIG_BLACKFIN) && !defined(BF548_FAMILY)
+>  +
+>  +/*
+>  + * On some Blackfin CPUs reading edge triggered
+>  + * GPIOs doesn't return the current value
+>  + */
 
-> +					uart_set_mctrl(port, TIOCM_RTS);
-> +			}
->  		}
->  
->  		if (info->flags & UIF_CTS_FLOW) {
-> @@ -224,10 +228,14 @@ static void uart_shutdown(struct uart_state *state)
->  		info->flags &= ~UIF_INITIALIZED;
->  
->  		/*
-> -		 * Turn off DTR and RTS early.
-> +		 * Turn off DTR and RTS (in the case of hardware flow control)
-> +		 * early.
->  		 */
-> -		if (!info->tty || (info->tty->termios->c_cflag & HUPCL))
-> -			uart_clear_mctrl(port, TIOCM_DTR | TIOCM_RTS);
-> +		if (!info->tty || (info->tty->termios->c_cflag & HUPCL)) {
-> +			uart_clear_mctrl(port, TIOCM_DTR);
-> +			if (info->flags & UIF_CTS_FLOW)
+If this is a generic problem, shouldn't this be addressed inside gpio_get_value?
 
-Ditto.
+>  +
+>  +#define GPIOKEYS_EDGE_SENSE(x) set_gpio_edge(gpio, x)
+>  +#else
+>  +#define GPIOKEYS_EDGE_SENSE(x) do {} while (0)
+>  +#endif
+>  +
+>   static irqreturn_t gpio_keys_isr(int irq, void *dev_id)
+>   {
+>         int i;
+>  @@ -39,8 +51,9 @@ static irqreturn_t gpio_keys_isr(int irq, void *dev_id)
+>
+>                 if (irq == gpio_to_irq(gpio)) {
+>                         unsigned int type = button->type ?: EV_KEY;
+>  +                       GPIOKEYS_EDGE_SENSE(0);
+>                         int state = (gpio_get_value(gpio) ? 1 : 0) ^ button->active_low;
+>  -
+>  +                       GPIOKEYS_EDGE_SENSE(1);
+>                         input_event(input, type, button->code, !!state);
+>                         input_sync(input);
+>                         return IRQ_HANDLED;
+>  --
+>  1.5.5
+>
+>
 
-> +				uart_clear_mctrl(port, TIOCM_RTS);
-> +               }
->  
->  		/*
->  		 * clear delta_msr_wait queue to avoid mem leaks: we may free
-> @@ -1190,14 +1198,16 @@ static void uart_set_termios(struct tty_struct *tty,
->  	uart_change_speed(state, old_termios);
->  
->  	/* Handle transition to B0 status */
-> -	if ((old_termios->c_cflag & CBAUD) && !(cflag & CBAUD))
-> -		uart_clear_mctrl(state->port, TIOCM_RTS | TIOCM_DTR);
-> +	if ((old_termios->c_cflag & CBAUD) && !(cflag & CBAUD)) {
-> +		uart_clear_mctrl(state->port, TIOCM_DTR);
-> +		if (state->info->flags & UIF_CTS_FLOW)
-
-Ditto.
-
-> +			uart_clear_mctrl(state->port, TIOCM_RTS);
-> +       }
->  
->  	/* Handle transition away from B0 status */
->  	if (!(old_termios->c_cflag & CBAUD) && (cflag & CBAUD)) {
->  		unsigned int mask = TIOCM_DTR;
-> -		if (!(cflag & CRTSCTS) ||
-> -		    !test_bit(TTY_THROTTLED, &tty->flags))
-> +		if (!test_bit(TTY_THROTTLED, &tty->flags))
->  			mask |= TIOCM_RTS;
-
-This is inconsistent with your other changes - with your change, it will
-always set RTS when switching away from B0 status.
-
->  		uart_set_mctrl(state->port, mask);
->  	}
-> @@ -1441,10 +1451,14 @@ static void uart_update_termios(struct uart_state *state)
->  		uart_change_speed(state, NULL);
->  
->  		/*
-> -		 * And finally enable the RTS and DTR signals.
-> +		 * And finally enable the RTS (in the of case hardware flow
-> +		 * control) and DTR signals.
->  		 */
-> -		if (tty->termios->c_cflag & CBAUD)
-> -			uart_set_mctrl(port, TIOCM_DTR | TIOCM_RTS);
-> +		if (tty->termios->c_cflag & CBAUD) {
-> +			uart_set_mctrl(port, TIOCM_DTR);
-> +			if (state->info->flags & UIF_CTS_FLOW)
-
-We have access to termios->c_cflag here, please use that in preference
-to testing info->flags.
-
-> +				uart_set_mctrl(port, TIOCM_RTS);
-> +		}
->  	}
->  }
->  
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+regards
+Philipp
