@@ -1,48 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759268AbYELLm7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758491AbYELLn4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759268AbYELLm7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 07:42:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752973AbYELLms
+	id S1758491AbYELLn4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 07:43:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751685AbYELLno
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 07:42:48 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:60768 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754097AbYELLmr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 07:42:47 -0400
-Date: Mon, 12 May 2008 12:37:26 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Bryan Wu <cooloney@kernel.org>
-Cc: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>
-Subject: Re: [PATCH 1/1] [PCMCIA]: add support the CF PCMCIA driver for Blackfin
-Message-ID: <20080512113726.GB15305@flint.arm.linux.org.uk>
-Mail-Followup-To: Bryan Wu <cooloney@kernel.org>,
-	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-	Michael Hennerich <michael.hennerich@analog.com>
-References: <1210589200-12431-1-git-send-email-cooloney@kernel.org>
+	Mon, 12 May 2008 07:43:44 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:59176 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751460AbYELLnn (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 07:43:43 -0400
+Date: Mon, 12 May 2008 21:43:25 +1000
+From: David Chinner <dgc@sgi.com>
+To: Jeremy Higdon <jeremy@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, David Chinner <dgc@sgi.com>,
+       lkml <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>, jes@sgi.com
+Subject: Re: [PATCH] drivers/scsi/qla1280.c; was Re: Buffered I/O to block device very slow and other SCSI issues...
+Message-ID: <20080512114325.GI155679365@sgi.com>
+References: <20080319231654.GA103321673@sgi.com> <20080320010807.GA27620@sgi.com> <20080320032010.e640c52a.akpm@linux-foundation.org> <20080512061703.GC41683@sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1210589200-12431-1-git-send-email-cooloney@kernel.org>
+In-Reply-To: <20080512061703.GC41683@sgi.com>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 12, 2008 at 06:46:40PM +0800, Bryan Wu wrote:
-> +static struct device_driver bfin_cf_driver = {
-> +	.name		= (char *) driver_name,
-> +	.bus		= &platform_bus_type,
-> +	.probe		= bfin_cf_probe,
-> +	.remove		= __devexit_p(bfin_cf_remove),
-> +	.suspend 	= pcmcia_socket_dev_suspend,
-> +	.resume 	= pcmcia_socket_dev_resume,
-> +};
+On Sun, May 11, 2008 at 11:17:03PM -0700, Jeremy Higdon wrote:
+> On Thu, Mar 20, 2008 at 03:20:10AM -0700, Andrew Morton wrote:
+> > > > I also suspect that CTQ has not been set up correctly on this
+> > > > kernel, because:
+> > > > 
+> > > > $ cat /sys/block/sdb/device/queue_depth
+> > > > 3
+> > > > $ ls -l /sys/block/sdb/device/queue_depth
+> > > > -r--r--r-- 1 root root 0 Mar 20 09:59 /sys/block/sdb/device/queue_depth
+> > > > $
+> > > > 
+> > > > It appears to be hard coded to 3 and can't be changed....
+> > > 
+> > > That's a bug in the qla1280 driver.  I thought that had gotten fixed.
+> > > It's looking at the wrong mailbox register after setting device parameters.
+> > 
+> > Was there a patch anywhere?
+> 
+> Promised patch...
+....
+> After the fix, I found that my disks were getting a queue depth of
+> 255, which is far too many.  Most SCSI disks are limited to 32 or
+> 64.  In any case, there's no point, queueing up a bunch of commands
+> to the adapter that will just result in queue full or starve other
+> targets from being issued commands due to running out of internal
+> memory.  So I dropped default queue depth to 32 (from which 1 is
+> subtracted elsewhere, giving net of 31).
+> 
+> I tested with a Seagate ST336753LC, and results look good, so
+> I'm satisfied with this patch.
+> 
+> Signed-off-by: Jeremy Higdon <jeremy@sgi.com>
 
-NAK.  All platform device drivers must be of type 'struct platform_driver'.
+Works fine here.
 
+Tested-by: Dave Chinner <dgc@sgi.com>
+
+Cheers,
+
+Dave.
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
