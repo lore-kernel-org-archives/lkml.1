@@ -1,109 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225AbYELGR2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757552AbYELGZt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753225AbYELGR2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 02:17:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757151AbYELGRI
+	id S1757552AbYELGZt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 02:25:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbYELGZj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 02:17:08 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57183 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755901AbYELGRG (ORCPT
+	Mon, 12 May 2008 02:25:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54352 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751581AbYELGZi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 02:17:06 -0400
-Date: Sun, 11 May 2008 23:17:03 -0700
-From: Jeremy Higdon <jeremy@sgi.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Chinner <dgc@sgi.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       jes@sgi.com
-Subject: [PATCH] drivers/scsi/qla1280.c; was Re: Buffered I/O to block device very slow and other SCSI issues...
-Message-ID: <20080512061703.GC41683@sgi.com>
-References: <20080319231654.GA103321673@sgi.com> <20080320010807.GA27620@sgi.com> <20080320032010.e640c52a.akpm@linux-foundation.org>
+	Mon, 12 May 2008 02:25:38 -0400
+Date: Sun, 11 May 2008 23:23:44 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, viro <viro@zeniv.linux.org.uk>,
+       Jan Kara <jack@ucw.cz>, linux-mm@kvack.org
+Subject: Re: BUG: 2.6.26-rc1-git8: NULL reference in drop_buffers
+Message-Id: <20080511232344.b173ca9f.akpm@linux-foundation.org>
+In-Reply-To: <20080511105429.a5e40721.randy.dunlap@oracle.com>
+References: <20080511105429.a5e40721.randy.dunlap@oracle.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080320032010.e640c52a.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 20, 2008 at 03:20:10AM -0700, Andrew Morton wrote:
-> > > I also suspect that CTQ has not been set up correctly on this
-> > > kernel, because:
-> > > 
-> > > $ cat /sys/block/sdb/device/queue_depth
-> > > 3
-> > > $ ls -l /sys/block/sdb/device/queue_depth
-> > > -r--r--r-- 1 root root 0 Mar 20 09:59 /sys/block/sdb/device/queue_depth
-> > > $
-> > > 
-> > > It appears to be hard coded to 3 and can't be changed....
-> > 
-> > That's a bug in the qla1280 driver.  I thought that had gotten fixed.
-> > It's looking at the wrong mailbox register after setting device parameters.
+On Sun, 11 May 2008 10:54:29 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+
+> On x86_64, during testing using "stress" package:
 > 
-> Was there a patch anywhere?
-
-Promised patch...
-
-The qla1280 driver was ANDing the output value of mailbox register
-0 with (1 << target-number) to determine whether to enable queueing
-on the target in question.
-
-But mailbox register 0 has the status code for the mailbox command
-(in this case, Set Target Parameters).  Potential values are:
-/*      
- * ISP mailbox command complete status codes
- */
-#define MBS_CMD_CMP             0x4000  /* Command Complete. */
-#define MBS_INV_CMD             0x4001  /* Invalid Command. */
-#define MBS_HOST_INF_ERR        0x4002  /* Host Interface Error. */
-#define MBS_TEST_FAILED         0x4003  /* Test Failed. */
-#define MBS_CMD_ERR             0x4005  /* Command Error. */
-#define MBS_CMD_PARAM_ERR       0x4006  /* Command Parameter Error. */
-
-So clearly that is in error.  I can't think what the author of that
-line was looking for in a mailbox register, so I just eliminated the
-AND.  flag is used later in the function, and I think that the later
-usage was also wrong, though it was used to set values that aren't
-used.  Oh well, an overhaul of this driver is not what I want to do
-now -- just a bugfix. 
-
-After the fix, I found that my disks were getting a queue depth of
-255, which is far too many.  Most SCSI disks are limited to 32 or
-64.  In any case, there's no point, queueing up a bunch of commands
-to the adapter that will just result in queue full or starve other
-targets from being issued commands due to running out of internal
-memory.  So I dropped default queue depth to 32 (from which 1 is
-subtracted elsewhere, giving net of 31).
-
-I tested with a Seagate ST336753LC, and results look good, so
-I'm satisfied with this patch.
-
-Signed-off-by: Jeremy Higdon <jeremy@sgi.com>
+> BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
 
 
----
+> IP: [<ffffffff802ad273>] drop_buffers+0x2f/0xfb
+> PGD 1ee8ad067 PUD 26f19a067 PMD 0
+> Oops: 0000 [1] SMP
+> CPU 3
+> Modules linked in: parport_pc lp parport tg3 cciss ehci_hcd ohci_hcd uhci_hcd
+> Pid: 16860, comm: stress Not tainted 2.6.26-rc1-git8 #1
+> RIP: 0010:[<ffffffff802ad273>]  [<ffffffff802ad273>] drop_buffers+0x2f/0xfb
+> RSP: 0000:ffff81026bc03a08  EFLAGS: 00010203
+> RAX: 0000000000000000 RBX: ffffe20008bae680 RCX: ffff81027f490f00
+> RDX: 0000000000000000 RSI: ffff81026bc03a58 RDI: ffffe20008bae680
+> RBP: ffff81026bc03a38 R08: ffff81026bc03b78 R09: ffff810001103780
+> R10: ffff81026bc03a08 R11: ffff81026bc03c88 R12: ffffe20008bae680
+> R13: ffff81027c412850 R14: ffff81026bc03d58 R15: ffff81026bc03a58
+> FS:  00007fa9e7e416f0(0000) GS:ffff81027f806980(0000) knlGS:00000000f7f856c0
+> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> CR2: 0000000000000000 CR3: 000000027f973000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process stress (pid: 16860, threadinfo ffff81026bc02000, task ffff81027e424c50)
+> Stack:  ffffe20008bafa68 ffffe20008bae680 ffff81027f490f00 ffff81026bc03a58
+>  ffff81026bc03d58 ffff81026bc03c88 ffff81026bc03a78 ffffffff802ad39f
+>  ffff81027f490f00 ffffe20008b14060 0000000000000000 ffff81027f490f00
+> Call Trace:
+>  [<ffffffff802ad39f>] try_to_free_buffers+0x60/0xa2
+>  [<ffffffff80267f98>] try_to_release_page+0x3b/0x41
+>  [<ffffffff802719bc>] shrink_page_list+0x457/0x562
+>  [<ffffffff80271bed>] shrink_inactive_list+0x126/0x361
+>  [<ffffffff80271f0d>] shrink_zone+0xe5/0x10a
+>  [<ffffffff8027227d>] try_to_free_pages+0x1ef/0x326
+>  [<ffffffff80270f4b>] ? isolate_pages_global+0x0/0x34
+>  [<ffffffff8026d843>] __alloc_pages_internal+0x25a/0x3ad
+>  [<ffffffff8026d9ac>] __alloc_pages+0xb/0xd
+>  [<ffffffff80277759>] handle_mm_fault+0x238/0x6d0
+>  [<ffffffff8053d9c4>] do_page_fault+0x438/0x7de
+>  [<ffffffff8053b999>] error_exit+0x0/0x51
+> 
+> 
+> Code: 41 57 49 89 f7 41 56 41 55 41 54 49 89 fc 53 48 83 ec 08 48 8b 07 25 00 08 00 00 48 85 c0 75 04 0f 0b eb fe 4c 8b 6f 10 4c 89 ea <48> 8b 02 25 00 08 00 00 48 85 c0 74 10 49 8b 44 24 18 48 85 c0
+> RIP  [<ffffffff802ad273>] drop_buffers+0x2f/0xfb
+>  RSP <ffff81026bc03a08>
+> CR2: 0000000000000000
+> Kernel panic - not syncing: Fatal exception
 
+Seems that local variable `bh' is NULL.
 
---- a/drivers/scsi/qla1280.c	2008-05-03 11:59:44.000000000 -0700
-+++ b/drivers/scsi/qla1280.c	2008-05-10 21:32:23.451341969 -0700
-@@ -2007,7 +2007,7 @@ qla1280_set_defaults(struct scsi_qla_hos
- 		nv->bus[bus].config_2.req_ack_active_negation = 1;
- 		nv->bus[bus].config_2.data_line_active_negation = 1;
- 		nv->bus[bus].selection_timeout = 250;
--		nv->bus[bus].max_queue_depth = 256;
-+		nv->bus[bus].max_queue_depth = 32;
- 
- 		if (IS_ISP1040(ha)) {
- 			nv->bus[bus].bus_reset_delay = 3;
-@@ -2051,7 +2051,7 @@ qla1280_config_target(struct scsi_qla_ho
- 	status = qla1280_mailbox_command(ha, 0x0f, mb);
- 
- 	/* Save Tag queuing enable flag. */
--	flag = (BIT_0 << target) & mb[0];
-+	flag = (BIT_0 << target);
- 	if (nv->bus[bus].target[target].parameter.tag_queuing)
- 		ha->bus_settings[bus].qtag_enables |= flag;
- 
+I wonder what the heck we did to cause that.  Which filesystems were in
+use?
+
