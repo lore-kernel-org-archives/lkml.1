@@ -1,70 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759655AbYELGws@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760248AbYELGxA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759655AbYELGws (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 02:52:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755332AbYELGwg
+	id S1760248AbYELGxA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 02:53:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756646AbYELGwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 02:52:36 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:59800 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755553AbYELGwf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 02:52:35 -0400
-Date: Mon, 12 May 2008 08:52:33 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Mikael Pettersson <mikpe@it.uu.se>,
-       tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.26-rc1 on x86: ld: warning: dot moved backwards before
-	`.text'
-Message-ID: <20080512065233.GA24012@elf.ucw.cz>
-References: <18470.787.498329.144701@harpo.it.uu.se> <48273A32.5020104@zytor.com> <20080511182905.GD6942@cvg> <200805112322.53473.rjw@sisk.pl>
+	Mon, 12 May 2008 02:52:40 -0400
+Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:49526 "EHLO
+	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756238AbYELGwj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 02:52:39 -0400
+Message-ID: <4827E930.3000008@krogh.cc>
+Date: Mon, 12 May 2008 08:52:32 +0200
+From: Jesper Krogh <jesper@krogh.cc>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200805112322.53473.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: David Miller <davem@davemloft.net>
+CC: yhlu.kernel@gmail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: NIU - Sun Neptune 10g - Transmit timed out reset (2.6.24)
+References: <20080507.141521.193714938.davem@davemloft.net>	<482498D5.9060008@krogh.cc>	<48258074.7060306@krogh.cc> <20080510.213431.193696750.davem@davemloft.net>
+In-Reply-To: <20080510.213431.193696750.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2008-05-11 23:22:52, Rafael J. Wysocki wrote:
-> On Sunday, 11 of May 2008, Cyrill Gorcunov wrote:
-> > [H. Peter Anvin - Sun, May 11, 2008 at 11:25:54AM -0700]
-> > > Cyrill Gorcunov wrote:
-> > >> Hi Peter,
-> > >> actually I only doubt about exactly position of this headers - I mean
-> > >> meguess it better should be _before_ "_end" not after. Since the others
-> > >> script uses (acpi/wakeup_rm.S):
-> > >> 	wakeup_code_start:
-> > >> 	.incbin	"arch/x86/kernel/acpi/realmode/wakeup.bin"
-> > >> 	wakeup_code_end:
-> > >> and kernel uses these wakeup_code_* marks to save/restore memory I think
-> > >> it should be like
-> > >> 	. = HEADER_OFFSET;
-> > >> 	.header : {
-> > >> 		...
-> > >> 	}
-> > >> 	. = ALIGN(16);
-> > >> 	_end = .;
-> > >> 	/DISCARD/ ...
-> > >
-> > > Yes, I believe that's correct.
-> > >
-> > > 	-hpa
-> > >
-> > 
-> > Thanks for review, Peter, I'll cook a patch and wait for
-> > Pavel's opinion ;-)
+David Miller wrote:
+> From: Jesper Krogh <jesper@krogh.cc>
+> Date: Sat, 10 May 2008 13:01:08 +0200
 > 
-> I've tested the appended one.  If that's what you mean, we'll ask Ingo to take
-> it.
+>> Any good suggestions about the "Transmit timed out" messages. It
+>> currently leads to a system that "doesnt die" but doesnt respond within
+>> 15 minutes of load of the network adapter.
+> 
+> It's likely some bug in the driver that hangs the card for whatever
+> reason, which we'll need to work out.
 
-ACK... and thanks!
-								Pavel
+Ok. I have been testing a bit more. It generally works fine, It seems
+the "transmit timed out" thing was provoked by dd in the tests, because
+it was creating a lot of small requests. (default bs=512).(over NFS).
+When the  blocksize went up, the problem dissapered. (and the numer of
+context-switches went down).
+
+When the blocksize went up, the performance likewise raised to 615MB/s.
+I haven't been able to get pass that number.
+
+This is where one of the cpu's are settling at 100% load.
+
+Jesper
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Jesper
