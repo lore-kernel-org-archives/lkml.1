@@ -1,51 +1,348 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754434AbYELOHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752627AbYELOGo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754434AbYELOHc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 10:07:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbYELOHP
+	id S1752627AbYELOGo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 10:06:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbYELOGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 10:07:15 -0400
-Received: from fk-out-0910.google.com ([209.85.128.190]:35962 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751309AbYELOHN (ORCPT
+	Mon, 12 May 2008 10:06:37 -0400
+Received: from web36601.mail.mud.yahoo.com ([209.191.85.18]:25320 "HELO
+	web36601.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751286AbYELOGf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 10:07:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=uEKCPVXhUKafaAsjTKoDsClGUsfto1boRYTJIoRhss53BQiwXFAMlNJh4qUZDUnh1JkGGWirHjRRzlPry8Hb5vPe3Mke5asMPB56lxMWMxMFOnPfxnTgAy9LhbWlGC/l5TxyCnXh9Q050bsdpCU5qNniY0KHw77Ywk8jLcydWGQ=
-Message-ID: <31e679430805120707w41dddb5h53b1ff00d2cc9819@mail.gmail.com>
-Date: Mon, 12 May 2008 17:07:12 +0300
-From: "Felipe Balbi" <felipebalbi@users.sourceforge.net>
-To: "Kernel development list" <linux-kernel@vger.kernel.org>
-Subject: ReiserFS or USB ??
+	Mon, 12 May 2008 10:06:35 -0400
+X-YMail-OSG: HdUAYSYVM1n23FyE5b8PuejU5xwUSreHub3D15alsyW7WJcOeagv8dSuWKAY6Ik1mEdkBtyFkRK1ZKK9z0QIAF5QN43BUtv_dYfaGQ--
+X-RocketYMMF: rancidfat
+Date: Mon, 12 May 2008 07:06:34 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [RFC][PATCH] security:  split ptrace checking in proc
+To: Stephen Smalley <sds@tycho.nsa.gov>,
+       lsm <linux-security-module@vger.kernel.org>,
+       Chris Wright <chrisw@sous-sol.org>, James Morris <jmorris@namei.org>,
+       Eric Paris <eparis@parisplace.org>,
+       Casey Schaufler <casey@schaufler-ca.com>
+Cc: lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1210595999.6206.30.camel@moss-spartans.epoch.ncsc.mil>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Google-Sender-Auth: 1e671f7518cfe7b1
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <648615.23893.qm@web36601.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
 
-I'm having some troubles with my external harddrive formated with reiserfs...
+--- Stephen Smalley <sds@tycho.nsa.gov> wrote:
 
-After using for some time, it just disconnects and dmesg shows me this:
+> Enable security modules to distinguish reading of process state
+> information from full ptrace access by introducing a distinct helper
+> function for such checks and passing a boolean flag down to the
+> security_ptrace hook.  This allows security modules to permit access
+> to reading process state without granting full ptrace access.
 
-[276439.361676] printk: 1917173 messages suppressed.
-[276439.361684] Buffer I/O error on device sdd1, logical block 74823373
-[276444.306477] printk: 1923272 messages suppressed.
-[276444.306485] Buffer I/O error on device sdd1, logical block 74823373
+This will obviously suffice, but why pass a boolean instead
+of the access actually desired? What I mean is that instead
+of passing a read-only flag, you could pass in READ or READWRITE
+to indicate which access you require. Although I don't have
+a case in mind, it seems that your interface is unnecessarily
+contrained if you have a read-only boolean.
 
-Several times.
-Would this be usb trouble on reiserfs trouble ? (It looks to me usb issues).
+> The patch only changes the environ and open file checking in proc.
+> Other cases such as mem and maps checking still use a full ptrace
+> check at present.
+> 
+> In the SELinux case, we model such reading of process state as a
+> reading of the proc file labeled with the process' label.  This enables
+> SELinux policy to permit such reading of process state without permitting
+> control
+> or manipulation of the target process, as there are a number of cases
+> where programs probe for such information via proc but do not need to
+> be able to control the target.  This restores SELinux behavior prior to
+> 2.6.18.
 
-I'm using 2.6.25
+All quite reasonable. Although I wouldn't do it myself, I could
+imagine an LSM that would want a finer granularity on ptrace.
 
--- 
-Best Regards,
+> Signed-off-by:  Stephen Smalley <sds@tycho.nsa.gov>
+> 
+> ---
+> 
+>  fs/proc/base.c             |    4 ++--
+>  include/linux/ptrace.h     |    1 +
+>  include/linux/security.h   |   15 ++++++++++-----
+>  kernel/ptrace.c            |   20 +++++++++++++++++---
+>  security/commoncap.c       |    3 ++-
+>  security/dummy.c           |    3 ++-
+>  security/security.c        |    5 +++--
+>  security/selinux/hooks.c   |   13 +++++++++++--
+>  security/smack/smack_lsm.c |    5 +++--
+>  9 files changed, 51 insertions(+), 18 deletions(-)
+> 
+> diff --git a/fs/proc/base.c b/fs/proc/base.c
+> index 808cbdc..bbc74a0 100644
+> --- a/fs/proc/base.c
+> +++ b/fs/proc/base.c
+> @@ -499,7 +499,7 @@ static int proc_fd_access_allowed(struct inode *inode)
+>  	 */
+>  	task = get_proc_task(inode);
+>  	if (task) {
+> -		allowed = ptrace_may_attach(task);
+> +		allowed = ptrace_may_readstate(task);
+>  		put_task_struct(task);
+>  	}
+>  	return allowed;
+> @@ -885,7 +885,7 @@ static ssize_t environ_read(struct file *file, char
+> __user *buf,
+>  	if (!task)
+>  		goto out_no_task;
+>  
+> -	if (!ptrace_may_attach(task))
+> +	if (!ptrace_may_readstate(task))
+>  		goto out;
+>  
+>  	ret = -ENOMEM;
+> diff --git a/include/linux/ptrace.h b/include/linux/ptrace.h
+> index f98501b..f8a5e75 100644
+> --- a/include/linux/ptrace.h
+> +++ b/include/linux/ptrace.h
+> @@ -97,6 +97,7 @@ extern void __ptrace_unlink(struct task_struct *child);
+>  extern void ptrace_untrace(struct task_struct *child);
+>  extern int ptrace_may_attach(struct task_struct *task);
+>  extern int __ptrace_may_attach(struct task_struct *task);
+> +extern int ptrace_may_readstate(struct task_struct *task);
 
-Felipe Balbi
-felipebalbi@users.sourceforge.net
+I would prefer a mode parameter to ptrace_may_attach to the
+specific function for read access. Again, what you have will
+work for your case, but may lead to yet another interface later
+if someone wants a slightly different check.
+
+>  static inline int ptrace_reparented(struct task_struct *child)
+>  {
+> diff --git a/include/linux/security.h b/include/linux/security.h
+> index 50737c7..8841322 100644
+> --- a/include/linux/security.h
+> +++ b/include/linux/security.h
+> @@ -46,7 +46,8 @@ struct audit_krule;
+>   */
+>  extern int cap_capable(struct task_struct *tsk, int cap);
+>  extern int cap_settime(struct timespec *ts, struct timezone *tz);
+> -extern int cap_ptrace(struct task_struct *parent, struct task_struct
+> *child);
+> +extern int cap_ptrace(struct task_struct *parent, struct task_struct *child,
+> +		      bool readstate);
+>  extern int cap_capget(struct task_struct *target, kernel_cap_t *effective,
+> kernel_cap_t *inheritable, kernel_cap_t *permitted);
+>  extern int cap_capset_check(struct task_struct *target, kernel_cap_t
+> *effective, kernel_cap_t *inheritable, kernel_cap_t *permitted);
+>  extern void cap_capset_set(struct task_struct *target, kernel_cap_t
+> *effective, kernel_cap_t *inheritable, kernel_cap_t *permitted);
+> @@ -1170,6 +1171,7 @@ static inline void security_free_mnt_opts(struct
+> security_mnt_opts *opts)
+>   *	attributes would be changed by the execve.
+>   *	@parent contains the task_struct structure for parent process.
+>   *	@child contains the task_struct structure for child process.
+> + *	@readstate is true if this is only a check for reading state from proc.
+>   *	Return 0 if permission is granted.
+>   * @capget:
+>   *	Get the @effective, @inheritable, and @permitted capability sets for
+> @@ -1295,7 +1297,8 @@ static inline void security_free_mnt_opts(struct
+> security_mnt_opts *opts)
+>  struct security_operations {
+>  	char name[SECURITY_NAME_MAX + 1];
+>  
+> -	int (*ptrace) (struct task_struct *parent, struct task_struct *child);
+> +	int (*ptrace) (struct task_struct *parent, struct task_struct *child,
+> +		       bool readstate);
+>  	int (*capget) (struct task_struct *target,
+>  		       kernel_cap_t *effective,
+>  		       kernel_cap_t *inheritable, kernel_cap_t *permitted);
+> @@ -1573,7 +1576,8 @@ extern struct dentry *securityfs_create_dir(const char
+> *name, struct dentry *par
+>  extern void securityfs_remove(struct dentry *dentry);
+>  
+>  /* Security operations */
+> -int security_ptrace(struct task_struct *parent, struct task_struct *child);
+> +int security_ptrace(struct task_struct *parent, struct task_struct *child,
+> +		    bool readstate);
+>  int security_capget(struct task_struct *target,
+>  		    kernel_cap_t *effective,
+>  		    kernel_cap_t *inheritable,
+> @@ -1755,9 +1759,10 @@ static inline int security_init(void)
+>  	return 0;
+>  }
+>  
+> -static inline int security_ptrace(struct task_struct *parent, struct
+> task_struct *child)
+> +static inline int security_ptrace(struct task_struct *parent,
+> +				  struct task_struct *child, bool readstate)
+>  {
+> -	return cap_ptrace(parent, child);
+> +	return cap_ptrace(parent, child, readstate);
+>  }
+>  
+>  static inline int security_capget(struct task_struct *target,
+> diff --git a/kernel/ptrace.c b/kernel/ptrace.c
+> index 6c19e94..4b8b3d4 100644
+> --- a/kernel/ptrace.c
+> +++ b/kernel/ptrace.c
+> @@ -121,7 +121,7 @@ int ptrace_check_attach(struct task_struct *child, int
+> kill)
+>  	return ret;
+>  }
+>  
+> -int __ptrace_may_attach(struct task_struct *task)
+> +static int ptrace_may_inspect(struct task_struct *task, bool readstate)
+>  {
+>  	/* May we inspect the given task?
+>  	 * This check is used both for attaching with ptrace
+> @@ -148,7 +148,12 @@ int __ptrace_may_attach(struct task_struct *task)
+>  	if (!dumpable && !capable(CAP_SYS_PTRACE))
+>  		return -EPERM;
+>  
+> -	return security_ptrace(current, task);
+> +	return security_ptrace(current, task, readstate);
+> +}
+> +
+> +int __ptrace_may_attach(struct task_struct *task)
+> +{
+> +	return ptrace_may_inspect(task, false);
+>  }
+>  
+>  int ptrace_may_attach(struct task_struct *task)
+> @@ -160,6 +165,15 @@ int ptrace_may_attach(struct task_struct *task)
+>  	return !err;
+>  }
+>  
+> +int ptrace_may_readstate(struct task_struct *task)
+> +{
+> +	int err;
+> +	task_lock(task);
+> +	err = ptrace_may_inspect(task, true);
+> +	task_unlock(task);
+> +	return !err;
+> +}
+> +
+>  int ptrace_attach(struct task_struct *task)
+>  {
+>  	int retval;
+> @@ -494,7 +508,7 @@ int ptrace_traceme(void)
+>  	 */
+>  	task_lock(current);
+>  	if (!(current->ptrace & PT_PTRACED)) {
+> -		ret = security_ptrace(current->parent, current);
+> +		ret = security_ptrace(current->parent, current, false);
+>  		/*
+>  		 * Set the ptrace bit in the process ptrace flags.
+>  		 */
+> diff --git a/security/commoncap.c b/security/commoncap.c
+> index 5edabc7..5cdb370 100644
+> --- a/security/commoncap.c
+> +++ b/security/commoncap.c
+> @@ -63,7 +63,8 @@ int cap_settime(struct timespec *ts, struct timezone *tz)
+>  	return 0;
+>  }
+>  
+> -int cap_ptrace (struct task_struct *parent, struct task_struct *child)
+> +int cap_ptrace (struct task_struct *parent, struct task_struct *child,
+> +		bool readstate)
+>  {
+>  	/* Derived from arch/i386/kernel/ptrace.c:sys_ptrace. */
+>  	if (!cap_issubset(child->cap_permitted, parent->cap_permitted) &&
+> diff --git a/security/dummy.c b/security/dummy.c
+> index f50c6c3..94b5836 100644
+> --- a/security/dummy.c
+> +++ b/security/dummy.c
+> @@ -28,7 +28,8 @@
+>  #include <linux/ptrace.h>
+>  #include <linux/file.h>
+>  
+> -static int dummy_ptrace (struct task_struct *parent, struct task_struct
+> *child)
+> +static int dummy_ptrace (struct task_struct *parent, struct task_struct
+> *child,
+> +			 bool readstate)
+>  {
+>  	return 0;
+>  }
+> diff --git a/security/security.c b/security/security.c
+> index 59838a9..7867665 100644
+> --- a/security/security.c
+> +++ b/security/security.c
+> @@ -161,9 +161,10 @@ int mod_reg_security(const char *name, struct
+> security_operations *ops)
+>  
+>  /* Security operations */
+>  
+> -int security_ptrace(struct task_struct *parent, struct task_struct *child)
+> +int security_ptrace(struct task_struct *parent, struct task_struct *child,
+> +		    bool readstate)
+>  {
+> -	return security_ops->ptrace(parent, child);
+> +	return security_ops->ptrace(parent, child, readstate);
+>  }
+>  
+>  int security_capget(struct task_struct *target,
+> diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+> index 59c6e98..d30bb92 100644
+> --- a/security/selinux/hooks.c
+> +++ b/security/selinux/hooks.c
+> @@ -1682,14 +1682,23 @@ static inline u32 file_to_av(struct file *file)
+>  
+>  /* Hook functions begin here. */
+>  
+> -static int selinux_ptrace(struct task_struct *parent, struct task_struct
+> *child)
+> +static int selinux_ptrace(struct task_struct *parent,
+> +			  struct task_struct *child,
+> +			  bool readstate)
+>  {
+>  	int rc;
+>  
+> -	rc = secondary_ops->ptrace(parent, child);
+> +	rc = secondary_ops->ptrace(parent, child, readstate);
+>  	if (rc)
+>  		return rc;
+>  
+> +	if (readstate) {
+> +		struct task_security_struct *tsec = parent->security;
+> +		struct task_security_struct *csec = child->security;
+> +		return avc_has_perm(tsec->sid, csec->sid,
+> +				    SECCLASS_FILE, FILE__READ, NULL);
+> +	}
+> +
+>  	return task_has_perm(parent, child, PROCESS__PTRACE);
+>  }
+>  
+> diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
+> index b5c8f92..88f158e 100644
+> --- a/security/smack/smack_lsm.c
+> +++ b/security/smack/smack_lsm.c
+> @@ -95,11 +95,12 @@ struct inode_smack *new_inode_smack(char *smack)
+>   *
+>   * Do the capability checks, and require read and write.
+>   */
+> -static int smack_ptrace(struct task_struct *ptp, struct task_struct *ctp)
+> +static int smack_ptrace(struct task_struct *ptp, struct task_struct *ctp,
+> +			bool readstate)
+>  {
+>  	int rc;
+>  
+> -	rc = cap_ptrace(ptp, ctp);
+> +	rc = cap_ptrace(ptp, ctp, readstate);
+>  	if (rc != 0)
+>  		return rc;
+
+Delta my previous comments, this looks fine.
+
+>  
+> 
+> -- 
+> Stephen Smalley
+> National Security Agency
+> 
+> 
+> 
+
+
+Casey Schaufler
+casey@schaufler-ca.com
