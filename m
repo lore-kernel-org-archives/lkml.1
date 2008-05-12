@@ -1,219 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760265AbYELLoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756903AbYELLto@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760265AbYELLoU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 07:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758821AbYELLoF
+	id S1756903AbYELLto (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 07:49:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753691AbYELLtg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 07:44:05 -0400
-Received: from smtp04.mtu.ru ([62.5.255.51]:61042 "EHLO smtp04.mtu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751685AbYELLoC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 07:44:02 -0400
-X-Greylist: delayed 444 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 May 2008 07:44:01 EDT
-Message-ID: <48282BBE.4090409@ru.mvista.com>
-Date: Mon, 12 May 2008 15:36:30 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
+	Mon, 12 May 2008 07:49:36 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:57545 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752223AbYELLte (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 07:49:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
+        b=H7AXvxXqYi0fLpkJEaCVeGgfo2pmFmTJFpMtCaWGw/LPTQmglUqU//DmjmE9Qn0WyYRXBqBWycin0e/r37hCzZTBc+bagnWbQvAMgI55YqdzXX2aMajsZyXwT6Y+pZHwrZgi+2us1xs3lSL0tLBNxvCBQM35lj6lIPkUoadPsSM=
+Date: Mon, 12 May 2008 13:49:25 +0200
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, Rob Landley <rob@landley.net>
+Subject: [RFC/PATCH] printk: detect incomplete lines
+Message-ID: <20080512114925.GA29407@damson.getinternet.no>
 MIME-Version: 1.0
-To: Manuel Lauss <mano@roarinelk.homelinux.net>
-CC: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/7] au1xmmc: remove db1x00 board-specific functions from
- driver
-References: <20080508080040.GA24383@roarinelk.homelinux.net> <20080508080301.GD24383@roarinelk.homelinux.net>
-In-Reply-To: <20080508080301.GD24383@roarinelk.homelinux.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-DCC-STREAM-Metrics: smtp04.mtu.ru 10001; Body=0 Fuz1=0 Fuz2=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: Vegard Nossum <vegard.nossum@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Hi,
 
-Manuel Lauss wrote:
-> From 47ecf116465ed850d2202880f7795fcee4826184 Mon Sep 17 00:00:00 2001
-> From: Manuel Lauss <mlau@msc-ge.com>
-> Date: Wed, 7 May 2008 14:57:01 +0200
-> Subject: [PATCH] au1xmmc: remove db1x00 board-specific functions from driver
->
-> Remove the DB1200 board-specific functions (card present, read-only
-> methods) and instead add platform data which is passed to the driver.
-> This allows for platforms to implement other carddetect schemes
-> (e.g. dedicated irq) without having to pollute the driver code.
-> The poll timer (used for pb1200) is kept for compatibility.
->
-> With the board-specific stuff gone, the driver no longer needs to know
-> how many physical controllers the silicon actually has; every device
-> can be registered as needed, update the code to reflect that.
->
-> Signed-off-by: Manuel Lauss <mano@roarinelk.homelinux.net>
->   
-[...]
-> diff --git a/drivers/mmc/host/au1xmmc.c b/drivers/mmc/host/au1xmmc.c
-> index cc5f7bc..8660f86 100644
-> --- a/drivers/mmc/host/au1xmmc.c
-> +++ b/drivers/mmc/host/au1xmmc.c
-> @@ -49,7 +49,6 @@
->  #include <asm/mach-au1x00/au1100_mmc.h>
->  
->  #include <au1xxx.h>
-> -#include "au1xmmc.h"
->   
-   I think you should merge the header to the driver in a separate patch.
-> @@ -174,8 +221,6 @@ static void au1xmmc_finish_request(struct au1xmmc_host *host)
->  
->  	host->status = HOST_S_IDLE;
->  
-> -	bcsr->disk_leds |= (1 << 8);
-> -
->   
-   So, the LED support is gone with your patch? You should at least 
-document this...
->  	mmc_request_done(host->mmc, mrq);
->  }
->  
-> @@ -663,7 +708,9 @@ static void au1xmmc_request(struct mmc_host* mmc, struct mmc_request* mrq)
->  	host->mrq = mrq;
->  	host->status = HOST_S_CMD;
->  
-> -	bcsr->disk_leds &= ~(1 << 8);
-> +	au_writel(0, HOST_STATUS(host));
-> +	au_sync();
-> +	FLUSH_FIFO(host);
->   
-   Hm, not an obvious change...
->  
->  	if (mrq->data) {
->  		FLUSH_FIFO(host);
-> @@ -749,118 +796,87 @@ static void au1xmmc_dma_callback(int irq, void *dev_id)
->  
->  static irqreturn_t au1xmmc_irq(int irq, void *dev_id)
->  {
-> -
-> +	struct au1xmmc_host *host = dev_id;
->  	u32 status;
-> -	int i, ret = 0;
->  
-> -	disable_irq(AU1100_SD_IRQ);
-> +	status = au_readl(HOST_STATUS(host));
->  
-> -	for(i = 0; i < AU1XMMC_CONTROLLER_COUNT; i++) {
-> -		struct au1xmmc_host * host = au1xmmc_hosts[i];
-> -		u32 handled = 1;
-> +	if (!(status & (1 << 15)))
->   
-   Why not SD_STATUS_I?
-> +		//IRQ_OFF(host, SD_CONFIG_TH|SD_CONFIG_RA|SD_CONFIG_RF);
->   
-   No C99 // comments please -- checkpatch.pl would have given you error 
-about them...
-> +	} else if (status & 0x203FBC70) {
->   
-   I think the mask should be changed to 0x203F3C70 since you're 
-handling SD_STATUS_I but maybe I'm wrong...
-> -static void au1xmmc_init_dma(struct au1xmmc_host *host)
-> +static int au1xmmc_init_dma(struct au1xmmc_host *host)
->   
-   I'd have called it au1xmmc_init_dbdma() instead since in Au1100 the 
-controller works with its "old-style" DMA... though maybe the difference 
-could be handled within this function via #ifdef...
-> @@ -878,116 +896,201 @@ static const struct mmc_host_ops au1xmmc_ops = {
->  	.get_ro		= au1xmmc_card_readonly,
->  };
->  
-> -static int __devinit au1xmmc_probe(struct platform_device *pdev)
-> +static void au1xmmc_poll_event(unsigned long arg)
->  {
-> +	struct au1xmmc_host *host = (struct au1xmmc_host *)arg;
->   
-   Don't need new line here...
->  
-> -	int i, ret = 0;
-> +	int card = au1xmmc_card_inserted(host);
-> +        int controller = (host->flags & HOST_F_ACTIVE) ? 1 : 0;
->   
-   Remove extra space please. And what does this variable actually mean?
-> +	host->iobase = (unsigned long)ioremap(r->start, 0xff);
->   
-   You have the r->end specifying the resource end, why 0xff (well, 
-actually 0x3c is enough)
-> @@ -1004,21 +1107,32 @@ static struct platform_driver au1xmmc_driver = {
->  
->  static int __init au1xmmc_init(void)
->  {
-> +	if (dma) {
-> +		/* DSCR_CMD0_ALWAYS has a stride of 32 bits, we need a stride
-> +		 * of 8 bits.  And since devices are shared, we need to create
-> +		 * our own to avoid freaking out other devices
->   
-   Missing period at end of statement.
-> +		 */
-> +		if (!memid)
->   
-   Hm, is there a chance that it won't be NULL?
-> +			memid = au1xxx_ddma_add_device(&au1xmmc_mem_dbdev);
-> +		if (!memid) {
-> +			printk(KERN_ERR "au1xmmc: cannot add memory dma dev\n");
-> +			return -ENODEV;
-> +		}
-> +	}
->  	return platform_driver_register(&au1xmmc_driver);
->  }
-[...]
-> diff --git a/include/asm-mips/mach-au1x00/au1100_mmc.h b/include/asm-mips/mach-au1x00/au1100_mmc.h
-> index 9e0028f..6474fac 100644
-> --- a/include/asm-mips/mach-au1x00/au1100_mmc.h
-> +++ b/include/asm-mips/mach-au1x00/au1100_mmc.h
-> @@ -38,15 +38,46 @@
->  #ifndef __ASM_AU1100_MMC_H
->  #define __ASM_AU1100_MMC_H
->  
->   
-[...]
-> +struct au1xmmc_platdata {
->   
-   I'd suggest au1xmmc_platform_data.
-> +	int(*cd_setup)(void *mmc_host, int on);
-> +	int(*card_inserted)(void *mmc_host);
-> +	int(*card_readonly)(void *mmc_host);
-> +	void(*set_power)(void *mmc_host, int state);
-> +};
-> +
-> +struct au1xmmc_host {
-> +	struct mmc_host *mmc;
-> +	struct mmc_request *mrq;
-> +
-> +	u32 id;
-> +
-> +	u32 flags;
-> +	u32 iobase;
-> +	u32 clock;
-> +
-> +	int status;
-> +
-> +	struct {
-> +		int len;
-> +		int dir;
-> +		u32 tx_chan;
-> +		u32 rx_chan;
-> +	} dma;
-> +
-> +	struct {
-> +		int index;
-> +		int offset;
-> +		int len;
-> +	} pio;
-> +
-> +	struct timer_list timer;
-> +	struct tasklet_struct finish_task;
-> +	struct tasklet_struct data_task;
-> +
-> +	struct platform_device *pdev;
-> +	struct au1xmmc_platdata *platdata;
-> +	int irq;
-> +};
-   Hm, do you need the above structure to be visible from the platform code?
+This printk() problem has been bugging me for a long time. Consider the
+following code:
 
-WBR, Sergei
+diff --git a/init/main.c b/init/main.c
+index ddada7a..777e02d 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -452,17 +452,38 @@ static void __init setup_command_line(char *command_line)
+  * gcc-3.4 accidentally inlines this function, so use noinline.
+  */
+ 
++static void printk_thread(const char *msg, unsigned long wait)
++{
++	int i = 0;
++
++	while(true) {
++		if (i == 0)
++			printk(KERN_INFO "Here we go: ");
++
++		printk("%s%s", msg, i < 7 ? ", " : "\n");
++		if (++i == 8)
++			i = 0;
++		msleep(wait);
++	}
++}
++
++static void printk_thread_1(void) { printk_thread("thread 1", 30); }
++static void printk_thread_2(void) { printk_thread("thread 2", 20); }
++
+ static void noinline __init_refok rest_init(void)
+ 	__releases(kernel_lock)
+ {
+ 	int pid;
+ 
+-	kernel_thread(kernel_init, NULL, CLONE_FS | CLONE_SIGHAND);
++	//kernel_thread(kernel_init, NULL, CLONE_FS | CLONE_SIGHAND);
+ 	numa_default_policy();
+ 	pid = kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);
+ 	kthreadd_task = find_task_by_pid_ns(pid, &init_pid_ns);
+ 	unlock_kernel();
+ 
++	kernel_thread(printk_thread_1, NULL, CLONE_FS | CLONE_SIGHAND);
++	kernel_thread(printk_thread_2, NULL, CLONE_FS | CLONE_SIGHAND);
++
+ 	/*
+ 	 * The boot idle thread must execute schedule()
+ 	 * at least once to get things moving:
 
+This will normally create an output that looks something like this:
+
+Here we go: thread 2, <6>Here we go: thread 1, thread 2, thread 1, thread 2, thread 1, thread 2, thread 2, thread 1, thread 2, thread 1, thread 2, thread 2
+thread 1, <6>Here we go: thread 2, thread 1, thread 2, thread 2, thread 1
+thread 2, <6>Here we go: thread 1, thread 2, thread 2, thread 1, thread 2, thread 1, thread 2
+
+(Notice the log-level tokens appearing in the middle of some lines.)
+
+With my patch to printk(), the same code now produces this output:
+
+Here we go: thread 1, ...
+Here we go: thread 2, thread 2, ...
+thread 1, ...
+thread 2, ...
+thread 1, ...
+thread 2, thread 2, ...
+thread 1, ...
+
+I first thought of using "current" as the way to distinguish two callers,
+but there are two issues with this: 1) I don't think "current" is legal to
+access in all contexts, but maybe I am wrong. 2) Executing some kernel
+code, say a system call, and an IRQ happening while we are executing inside
+that system call will not make "current" change.
+
+Then I thought of using __builtin_return_address(), but in a function, two
+different printks will have a different return address.
+
+So we are now using __builtin_frame_address(). This should work everywhere
+and should not cause any harmful side effects.
+
+(Yes, this means that "continuation calls across functions" won't work. But
+that's broken by design, at least in my opinion.)
+
+The GCC manual says "This function should only be used with a nonzero
+argument for debugging purposes", but it is nothing to worry about, as we
+are in fact calling it with a zero argument.
+
+The only thing I worry about is whether it will work on all architectures.
+Does anybody see anything that can go wrong with this patch?
+
+(The remaining issue is to figure out what the loglevel of the next message
+should be, the one that is being continued. It may lead to "leaking" of
+certain loglevel messages, but that's a much more fundamental problem and
+this patch is at least a step in the right direction.)
+
+Vegard
+
+
+>From 909874dbedd06271af5185f3eb5f710bb1267433 Mon Sep 17 00:00:00 2001
+From: Vegard Nossum <vegard.nossum@gmail.com>
+Date: Mon, 12 May 2008 13:17:19 +0200
+Subject: [PATCH] printk: detect incomplete lines
+
+This patch makes printk() remember the previous caller, and if changed,
+output a newline to make the next message start in the right place.
+
+Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+---
+ kernel/printk.c |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/printk.c b/kernel/printk.c
+index 8fb01c3..6080e66 100644
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -672,6 +672,7 @@ static int printk_recursion_bug;
+ 
+ asmlinkage int vprintk(const char *fmt, va_list args)
+ {
++	static void *prev_caller;
+ 	static int log_level_unknown = 1;
+ 	static char printk_buf[1024];
+ 
+@@ -718,6 +719,16 @@ asmlinkage int vprintk(const char *fmt, va_list args)
+ 	printed_len += vscnprintf(printk_buf + printed_len,
+ 				  sizeof(printk_buf) - printed_len, fmt, args);
+ 
++	if (prev_caller != __builtin_frame_address(0) && !log_level_unknown) {
++		emit_log_char('.');
++		emit_log_char('.');
++		emit_log_char('.');
++		emit_log_char('\n');
++		log_level_unknown = 1;
++	}
++
++	prev_caller = __builtin_frame_address(0);
++
+ 	/*
+ 	 * Copy the output into log_buf.  If the caller didn't provide
+ 	 * appropriate log level tags, we insert them here
+-- 
+1.5.4.1
 
