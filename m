@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756565AbYELWgo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756858AbYELWjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756565AbYELWgo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 18:36:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754725AbYELWgf
+	id S1756858AbYELWjT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 18:39:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754929AbYELWjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 18:36:35 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34466
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754667AbYELWge (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 18:36:34 -0400
-Date: Mon, 12 May 2008 15:36:28 -0700 (PDT)
-Message-Id: <20080512.153628.193699676.davem@davemloft.net>
-To: mikpe@it.uu.se
-Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] 2.6.26-rc1 lost half the RAM on UltraSPARC 5
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080512.153143.48741227.davem@davemloft.net>
-References: <20080512.005036.19633770.davem@davemloft.net>
-	<18472.38209.615770.265421@alkaid.it.uu.se>
-	<20080512.153143.48741227.davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 12 May 2008 18:39:12 -0400
+Received: from smtp25.orange.fr ([193.252.22.24]:27948 "EHLO smtp25.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754725AbYELWjL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 18:39:11 -0400
+X-Greylist: delayed 4511 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 May 2008 18:39:11 EDT
+X-ME-UUID: 20080512212358722.B05781C00136@mwinf2547.orange.fr
+Subject: [PATCH 1/1] AccessRunner: avoid unnecessary memset
+From: "Christophe Jaillet" <christophe.jaillet@wanadoo.fr>
+To: "cj" <christophe.jaillet@wanadoo.fr>,
+       "linux" <linux-kernel@vger.kernel.org>,
+       <accessrunner-general@lists.sourceforge.net>
+Date: Mon, 12 May 2008 23:23:56 +0200
+Content-Type: text/plain
+X-Mailer: email v2.5.1 (CYGWIN_NT-5.0 1.5.25(0.156/4/2) i686 [http://email.cleancode.org])
+X-Antivirus: avast! (VPS 080512-0, 12/05/2008), Outbound message
+X-Antivirus-Status: Clean
+Message-Id: <20080512212358.B05781C00136@mwinf2547.orange.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Mon, 12 May 2008 15:31:43 -0700 (PDT)
+From: Christophe Jaillet <christophe.jaillet@wanadoo.fr>
 
-> From: Mikael Pettersson <mikpe@it.uu.se>
-> Date: Mon, 12 May 2008 21:06:41 +0200
-> 
-> > David Miller writes:
-> >  > Please also add the debugging patch below.
-> > 
-> > Right, 2.6.26-rc2 plus your debugging patch and booted with numa=debug
-> > prints the following:
-> 
-> Hmmm... my debugging patch had this:
-> 
-> diff --git a/lib/lmb.c b/lib/lmb.c
-> index 83287d3..3f55973 100644
-> --- a/lib/lmb.c
-> +++ b/lib/lmb.c
->  ...
-> +#define DEBUG
-> +
+Hi, here is a patch against linux/drivers/dma/iop-adma.c which :
+	
+1) Remove an explicit memset(.., 0, ...) to a variable allocated with
+kzalloc (i.e. 'card_info' array of the structure 'instance').
 
-Nevermind I see why the messages don't show up.  Hold on for a second
-and I'll send an updated debugging patch.
 
-Thanks.
+Note: this patch is based on 'linux-2.6.25.tar.bz2'
+
+Signed-off-by: Christophe Jaillet <christophe.jaillet@wanadoo.fr>
+
+---
+
+--- linux/drivers/usb/atm/cxacru.c	2008-04-17 04:49:44.000000000 +0200
++++ linux/drivers/usb/atm/cxacru.c.cj	2008-05-12 23:19:18.000000000 +0200
+@@ -1050,7 +1050,6 @@ static int cxacru_bind(struct usbatm_dat
+ 
+ 	instance->usbatm = usbatm_instance;
+ 	instance->modem_type = (struct cxacru_modem_type *) id->driver_info;
+-	memset(instance->card_info, 0, sizeof(instance->card_info));
+ 
+ 	mutex_init(&instance->poll_state_serialize);
+ 	instance->poll_state = CXPOLL_STOPPED;
+
+
