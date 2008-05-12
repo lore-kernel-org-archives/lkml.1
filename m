@@ -1,47 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbYELPs4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755743AbYELPvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754766AbYELPs4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 11:48:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbYELPsq
+	id S1755743AbYELPvS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 11:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752510AbYELPvI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 11:48:46 -0400
-Received: from avexch1.qlogic.com ([198.70.193.115]:53187 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751240AbYELPsp (ORCPT
+	Mon, 12 May 2008 11:51:08 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:36255 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751643AbYELPvG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 11:48:45 -0400
-Date: Mon, 12 May 2008 08:48:44 -0700 (PDT)
-From: Dave Olson <dave.olson@qlogic.com>
-To: Roland Dreier <rdreier@cisco.com>
-cc: Pavel Emelyanov <xemul@openvz.org>, infinipath@qlogic.com,
-       ralph.campbell@qlogic.com, Roland Dreier <rolandd@cisco.com>,
-       Sean Hefty <sean.hefty@intel.com>,
-       Hal Rosenstock <hal.rosenstock@gmail.com>,
-       John Gregor <john.gregor@qlogic.com>, general@lists.openfabrics.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][INFINIBAND]: Make ipath_portdata work with struct pid
- * not pid_t.
-In-Reply-To: <adave1jo7hd.fsf@cisco.com>
-Message-ID: <alpine.LFD.1.00.0805120847410.1536@topaz.pathscale.com>
-References: <482857AE.2030904@openvz.org> <adave1jo7hd.fsf@cisco.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Mon, 12 May 2008 11:51:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=h9KI6MmC0bQEmEBva1hLGTt5Miwr9XQXVZWU9xFFXL/aN/b8eN98HDe5tjoiY3uEjPKDTf4czW7DkBbJVqAagPBi2506BOS2Nvb1Ivx1PfcAMY+IgcSIeh8D4qPPRVZbLJQ60irXXQNkoNYzg/CSObZbtnvxYDxN60Xtx0lBzdM=
+Date: Mon, 12 May 2008 19:50:52 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Paulo Marques <pmarques@grupopie.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: /proc/kallsyms broken in 2.6.26-rc1-git6
+Message-ID: <20080512155052.GB6913@cvg>
+References: <20080509174148.GA22246@basil.nowhere.org> <482491D6.9030205@grupopie.com> <4824A7B6.70306@firstfloor.org> <4824AD3C.3070506@grupopie.com> <20080509233742.GA22265@martell.zuzino.mipt.ru> <48281540.9020207@grupopie.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 12 May 2008 15:48:41.0956 (UTC) FILETIME=[A71EF240:01C8B447]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48281540.9020207@grupopie.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 May 2008, Roland Dreier wrote:
+[Paulo Marques - Mon, May 12, 2008 at 11:00:32AM +0100]
+> Alexey Dobriyan wrote:
+>> On Fri, May 09, 2008 at 08:59:56PM +0100, Paulo Marques wrote:
+>>> Andi Kleen wrote:
+>>>> [...]
+>>>> Yes and? Surely that's not correct?
+>>> That's not for me to judge, but I believe it has always been like that.
+>> *cough*
+>> Here is how typical /proc/kallsyms looks like:
+>> ffffffff80200000 A _text
+>> ffffffff80200000 T startup_64
+>> ffffffff802000b7 t ident_complete
+>> ffffffff80200100 T secondary_startup_64
+>
+> This isn't helpful... the question is whether it is kallsyms misbehaving 
+> and placing new symbols in the kernel image or if it is some other change 
+> in the kernel that is generating new symbols that end up in the symbol 
+> table.
+>
+> My guess it is that it is the later, and in that case, from a kallsyms 
+> standpoint "it has always been like that".
+>
+> -- 
+> Paulo Marques - www.grupopie.com
+>
+>
 
-| Seems fine to me... ipath guys, any comment?  I think it would be
-| reasonale to include this with the other ipath fixes when I ask Linus to
-| pull in a day or two.
+If it help - I've taken Andi's config, compiled the kernel and
+didn't find any screwed symbols (nor is System.map nor in /proc/kallsyms).
+The kernel - today Linus's git tree:
 
-I looked at the original patch, and it looks fine to me.
+---
+commit 492c2e476eac010962850006c49df326919b284c
+Author: Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Sun May 11 17:09:41 2008 -0700
 
-Should be fairly easy to cover in ofed 1.4 backport patches for the
-older kernels.
+    Linux 2.6.26-rc2
+---
 
-Dave Olson
-dave.olson@qlogic.com
+The diff btw Andi's config and new one is:
+
++CONFIG_PCSPKR_PLATFORM=y
+-CONFIG_PCNET32_NAPI=y
+
+		- Cyrill -
