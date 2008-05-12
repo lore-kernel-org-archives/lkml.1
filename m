@@ -1,64 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760913AbYELKEm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760718AbYELKNL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760913AbYELKEm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 06:04:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756398AbYELKEe
+	id S1760718AbYELKNL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 06:13:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756900AbYELKM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 06:04:34 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56715 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756348AbYELKEe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 06:04:34 -0400
-Date: Mon, 12 May 2008 10:54:15 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Bryan Wu <cooloney@kernel.org>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Javier Herrero <jherrero@hvsistemas.es>, Bryan Wu <bryan.wu@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: Re: [PATCH 1/2] [8250 Serial Driver]: Added support for 8250-class
- UARTs in HV Sistemas H8606 board
-Message-ID: <20080512105415.6a8fb88c@core>
-In-Reply-To: <1210566565-6205-2-git-send-email-cooloney@kernel.org>
-References: <1210566565-6205-1-git-send-email-cooloney@kernel.org>
-	<1210566565-6205-2-git-send-email-cooloney@kernel.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 12 May 2008 06:12:58 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35544 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756348AbYELKM5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 06:12:57 -0400
+Date: Mon, 12 May 2008 12:12:31 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-kernel@vger.kernel.org
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Oliver Endriss <o.endriss@gmx.de>,
+       Andrew de Quincey <adq_dvb@lidskialf.net>,
+       Johannes Stezenbach <js@linuxtv.org>
+Subject: [patch, 2.6.26-rc2] dvb: drivers/media/dvb/ttpci/fdump firmware
+	build error fix
+Message-ID: <20080512101231.GA11755@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  
-> +#ifdef SERIAL_EXTRA_IRQ_FLAGS
-> +		irq_flags |= SERIAL_EXTRA_IRQ_FLAGS;
-> +#endif
-> +
 
+x86.git testing found the following build failure in 2.6.26-rc2:
 
-We try and keep ifdefs out of code. It is also not clear what you would
-do if you had a box where the extra flags depended on the port.
+  drivers/media/dvb/ttpci/fdump "/usr/lib/hotplug/firmware/dvb-ttpci-01.fw" dvb_ttpci_fw drivers/media/dvb/ttpci/av7110_firm.h
+  firmware file '/usr/lib/hotplug/firmware/dvb-ttpci-01.fw' not found
+  make[4]: *** [drivers/media/dvb/ttpci/av7110_firm.h] Error 255
+  make[3]: *** [drivers/media/dvb/ttpci] Error 2
 
-So two suggestions
+in this config:
 
-Either
+  http://redhat.com/~mingo/misc/config-Mon_May_12_11_29_29_CEST_2008.bad
 
-Add just the line
+the reason for the build bug is that the driver's Kconfig ignores the 
+PREVENT_FIRMWARE_BUILD=y config setting and tries to build the firmware 
+which (like other firmware build methods) relies on a non-upstream 
+firmware blob. The fix is to make the firmware build depend on 
+!PREVENT_FIRMWARE_BUILD.
 
-+		irq_flags |= SERIAL_EXTRA_IRQ_FLAGS;
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ drivers/media/dvb/ttpci/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-and at the end of 8250.h do
-
-#ifndef SERIAL_EXTRA_IRQ_FLAGS
-#define SERIAL_EXTRA_IRQ_FLAGS			0
-#endif
-
-or the same but with an argument (unused for now)
-
-SERIAL_EXTRA_IRQ_FLAGS(up)
-
-Alan
+Index: linux/drivers/media/dvb/ttpci/Kconfig
+===================================================================
+--- linux.orig/drivers/media/dvb/ttpci/Kconfig
++++ linux/drivers/media/dvb/ttpci/Kconfig
+@@ -33,7 +33,7 @@ config DVB_AV7110
+ 
+ config DVB_AV7110_FIRMWARE
+ 	bool "Compile AV7110 firmware into the driver"
+-	depends on DVB_AV7110 && !STANDALONE
++	depends on DVB_AV7110 && !STANDALONE && !PREVENT_FIRMWARE_BUILD
+ 	default y if DVB_AV7110=y
+ 	help
+ 	  The AV7110 firmware is normally loaded by the firmware hotplug manager.
