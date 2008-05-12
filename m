@@ -1,108 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757544AbYELUcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756812AbYELUcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757544AbYELUcS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 16:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635AbYELUcG
+	id S1756812AbYELUcz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 16:32:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755100AbYELUco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 16:32:06 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:30798 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750892AbYELUcD (ORCPT
+	Mon, 12 May 2008 16:32:44 -0400
+Received: from ti-out-0910.google.com ([209.85.142.189]:65457 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753765AbYELUcn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 16:32:03 -0400
+	Mon, 12 May 2008 16:32:43 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding:sender;
-        b=RO4LETo23mvmDrxWgxGoItw7/+pqNfncDk7aMZ4aL2RalfE+xn2JhqiAuMDFksj5rQ2zHknjbL9dUuBsuiB0J+5Q1lu/eB1Y1pGFDn4IpJJwrcFwC/yuPmlYIteIFmqeQnBwLq4/aTdYhjOjWHdaP8NL3CTcpgqvZ/3XudJyZ4M=
-Message-ID: <4828A940.2090604@panasas.com>
-Date: Mon, 12 May 2008 13:32:00 -0700
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=kxUnLfg4Gnk9BNuot9v2zL2iThO70oRHhJvNac6pfkR5xMDpf3QKjTmDS2o7KtLErK5Z/zSi/3lmpFasILDx5BR/6/hGrCJbaC8tv4z1anB8uC9wt9AlICf4ur82YYxMjib40IQMQgAPD4ehZQ6bWBlX4hF2Ar9uyIxuoY10tJ4=
+Message-ID: <9a8748490805121332j58090a75x470e97b07010dcee@mail.gmail.com>
+Date: Mon, 12 May 2008 22:32:39 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "James Bottomley" <James.Bottomley@hansenpartnership.com>
+Subject: Re: [PATCH][Resend] fewer pointer derefs in scsi_error
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Eric Youngdale" <eric@andante.org>,
+       "David Miller" <davem@davemloft.net>,
+       "Mike Anderson" <andmike@us.ibm.com>,
+       "Russell King" <rmk@arm.linux.org.uk>,
+       "Jesper Juhl" <jesper.juhl@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <alpine.LNX.1.00.0804272211080.2352@dragon.funnycrock.com>
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] SLUB: clear c->freelist in __slab_alloc()/load_freelist:/SlabDebug
- path
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.LNX.1.00.0804272211080.2352@dragon.funnycrock.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In the __slab_alloc()/load_freelist:/SlabDebug(c->page) path we only
-use the object at the head of c->page->freelist
-and the tail goes back to c->page->freelist.
-We then set c->node = -1 to force __slab_alloc in next allocation.
-c->freelist therefore needs to be cleared as it is invalid at this point.
+2008/4/27 Jesper Juhl <jesper.juhl@gmail.com>:
+> From: Jesper Juhl <jesper.juhl@gmail.com>
+>
+>  [This patch previously submitted on  24 April 2008 00:18]
+>
 
-Signed-off-by: Benny Halevy <bhalevy@panasas.com>
----
- mm/slub.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Hmmm, no feedback at all on this one. Could someone please ACK or NACK it?
+I've more stuff like this in the pipeline, but I'm holding it back
+until I see if this one takes root or not ;)
 
-Hit while running cthon04 test from an IBM AIX client
-against my nfs41 tree.
+/Jesper
 
-Stack trace excerpt:
+>
+>  This patch reduces the number of sequential pointer derefs in scsi_error
+>  ( drivers/scsi/scsi_error.c ).
+>
+>  The bennefits are:
+>         - makes the code easier to read. Lots of sequential derefs of the
+>           same pointers are not easy on the eye.
+>         - makes the size of the source file 55 bytes smaller.
+>         - makes the size of the object file 48 bytes smaller.
+>         - theoretically at least, just dereferencing the pointers once can
+>           allow the compiler to generally slightly faster code, so in
+>           theory this could also be a micro speed optimization.
+>
+>  Please consider applying.
+>
+>
+>  Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+>  ---
+>
+>   scsi_error.c |   58 ++++++++++++++++++++++++++++++++--------------------------
+>   1 file changed, 32 insertions(+), 26 deletions(-)
+>
+>  diff --git a/drivers/scsi/scsi_error.c b/drivers/scsi/scsi_error.c
+>  index 221f31e..94395a7 100644
+>  --- a/drivers/scsi/scsi_error.c
+>  +++ b/drivers/scsi/scsi_error.c
+>  @@ -185,13 +185,14 @@ int scsi_delete_timer(struct scsi_cmnd *scmd)
+>   void scsi_times_out(struct scsi_cmnd *scmd)
+>   {
+>         enum scsi_eh_timer_return (* eh_timed_out)(struct scsi_cmnd *);
+>  +       struct Scsi_Host *host = scmd->device->host;
+>
+>         scsi_log_completion(scmd, TIMEOUT_ERROR);
+>
+>  -       if (scmd->device->host->transportt->eh_timed_out)
+>  -               eh_timed_out = scmd->device->host->transportt->eh_timed_out;
+>  -       else if (scmd->device->host->hostt->eh_timed_out)
+>  -               eh_timed_out = scmd->device->host->hostt->eh_timed_out;
+>  +       if (host->transportt->eh_timed_out)
+>  +               eh_timed_out = host->transportt->eh_timed_out;
+>  +       else if (host->hostt->eh_timed_out)
+>  +               eh_timed_out = host->hostt->eh_timed_out;
+>         else
+>                 eh_timed_out = NULL;
+>
+>  @@ -474,22 +475,22 @@ static int scsi_try_host_reset(struct scsi_cmnd *scmd)
+>   {
+>         unsigned long flags;
+>         int rtn;
+>  +       struct Scsi_Host *host = scmd->device->host;
+>
+>         SCSI_LOG_ERROR_RECOVERY(3, printk("%s: Snd Host RST\n",
+>                                           __FUNCTION__));
+>
+>  -       if (!scmd->device->host->hostt->eh_host_reset_handler)
+>  +       if (!host->hostt->eh_host_reset_handler)
+>                 return FAILED;
+>
+>  -       rtn = scmd->device->host->hostt->eh_host_reset_handler(scmd);
+>  +       rtn = host->hostt->eh_host_reset_handler(scmd);
+>
+>         if (rtn == SUCCESS) {
+>  -               if (!scmd->device->host->hostt->skip_settle_delay)
+>  +               if (!host->hostt->skip_settle_delay)
+>                         ssleep(HOST_RESET_SETTLE_TIME);
+>  -               spin_lock_irqsave(scmd->device->host->host_lock, flags);
+>  -               scsi_report_bus_reset(scmd->device->host,
+>  -                                     scmd_channel(scmd));
+>  -               spin_unlock_irqrestore(scmd->device->host->host_lock, flags);
+>  +               spin_lock_irqsave(host->host_lock, flags);
+>  +               scsi_report_bus_reset(host, scmd_channel(scmd));
+>  +               spin_unlock_irqrestore(host->host_lock, flags);
+>         }
+>
+>         return rtn;
+>  @@ -503,22 +504,22 @@ static int scsi_try_bus_reset(struct scsi_cmnd *scmd)
+>   {
+>         unsigned long flags;
+>         int rtn;
+>  +       struct Scsi_Host *host = scmd->device->host;
+>
+>         SCSI_LOG_ERROR_RECOVERY(3, printk("%s: Snd Bus RST\n",
+>                                           __FUNCTION__));
+>
+>  -       if (!scmd->device->host->hostt->eh_bus_reset_handler)
+>  +       if (!host->hostt->eh_bus_reset_handler)
+>                 return FAILED;
+>
+>  -       rtn = scmd->device->host->hostt->eh_bus_reset_handler(scmd);
+>  +       rtn = host->hostt->eh_bus_reset_handler(scmd);
+>
+>         if (rtn == SUCCESS) {
+>  -               if (!scmd->device->host->hostt->skip_settle_delay)
+>  +               if (!host->hostt->skip_settle_delay)
+>                         ssleep(BUS_RESET_SETTLE_TIME);
+>  -               spin_lock_irqsave(scmd->device->host->host_lock, flags);
+>  -               scsi_report_bus_reset(scmd->device->host,
+>  -                                     scmd_channel(scmd));
+>  -               spin_unlock_irqrestore(scmd->device->host->host_lock, flags);
+>  +               spin_lock_irqsave(host->host_lock, flags);
+>  +               scsi_report_bus_reset(host, scmd_channel(scmd));
+>  +               spin_unlock_irqrestore(host->host_lock, flags);
+>         }
+>
+>         return rtn;
+>  @@ -544,16 +545,17 @@ static int scsi_try_target_reset(struct scsi_cmnd *scmd)
+>   {
+>         unsigned long flags;
+>         int rtn;
+>  +       struct Scsi_Host *host = scmd->device->host;
+>
+>  -       if (!scmd->device->host->hostt->eh_target_reset_handler)
+>  +       if (!host->hostt->eh_target_reset_handler)
+>                 return FAILED;
+>
+>  -       rtn = scmd->device->host->hostt->eh_target_reset_handler(scmd);
+>  +       rtn = host->hostt->eh_target_reset_handler(scmd);
+>         if (rtn == SUCCESS) {
+>  -               spin_lock_irqsave(scmd->device->host->host_lock, flags);
+>  +               spin_lock_irqsave(host->host_lock, flags);
+>                 __starget_for_each_device(scsi_target(scmd->device), NULL,
+>                                           __scsi_report_device_reset);
+>  -               spin_unlock_irqrestore(scmd->device->host->host_lock, flags);
+>  +               spin_unlock_irqrestore(host->host_lock, flags);
+>         }
+>
+>         return rtn;
+>  @@ -572,11 +574,12 @@ static int scsi_try_target_reset(struct scsi_cmnd *scmd)
+>   static int scsi_try_bus_device_reset(struct scsi_cmnd *scmd)
+>   {
+>         int rtn;
+>  +       struct Scsi_Host *host = scmd->device->host;
+>
+>  -       if (!scmd->device->host->hostt->eh_device_reset_handler)
+>  +       if (!host->hostt->eh_device_reset_handler)
+>                 return FAILED;
+>
+>  -       rtn = scmd->device->host->hostt->eh_device_reset_handler(scmd);
+>  +       rtn = host->hostt->eh_device_reset_handler(scmd);
+>         if (rtn == SUCCESS)
+>                 __scsi_report_device_reset(scmd->device, NULL);
+>         return rtn;
+>  @@ -584,10 +587,13 @@ static int scsi_try_bus_device_reset(struct scsi_cmnd *scmd)
+>
+>   static int __scsi_try_to_abort_cmd(struct scsi_cmnd *scmd)
+>   {
+>  -       if (!scmd->device->host->hostt->eh_abort_handler)
+>  +       int (* eh_abort_handler)(struct scsi_cmnd *)
+>  +               = scmd->device->host->hostt->eh_abort_handler;
+>  +
+>  +       if (!eh_abort_handler)
+>                 return FAILED;
+>
+>  -       return scmd->device->host->hostt->eh_abort_handler(scmd);
+>  +       return eh_abort_handler(scmd);
+>   }
+>
+>   /**
+>
+>
 
-May 12 11:18:19 client kernel: general protection fault: 0000 [2] SMP
-May 12 11:18:19 client kernel: CPU 3
-May 12 11:18:19 client kernel: Modules linked in: panfs(P) nfsd auth_rpcgss exportfs autofs4 hidp nfs lockd nfs_acl fuse rfcomm l2cap bluetooth sunrpc nf_conntrack_netbios_ns nf_conntrack_ipv4 ipt_REJECT iptable_filter ip_tables nf_conntrack_ipv6 xt_state nf_conntrack xt_tcpudp ip6t_ipv6header ip6t_REJECT ip6table_filter ip6_tables x_tables ipv6 dm_multipath video output sbs sbshc battery ac e1000e i5000_edac iTCO_wdt iTCO_vendor_support i2c_i801 edac_core button sr_mod pcspkr i2c_core sg cdrom floppy dm_snapshot dm_zero dm_mirror dm_mod ata_piix libata shpchp pci_hotplug mptsas mptscsih mptbase scsi_transport_sas sd_mod scsi_mod ext3 jbd mbcache ehci_hcd ohci_hcd uhci_hcd [last unloaded: microcode]
-May 12 11:18:19 client kernel: Pid: 2815, comm: nfsd Tainted: P      D  2.6.25-nfs41 #2
-May 12 11:18:19 client kernel: RIP: 0010:[<ffffffff8108c0c8>]  [<ffffffff8108c0c8>] kmem_cache_alloc+0x3d/0x65
-May 12 11:18:19 client kernel: RSP: 0018:ffff8104212c3de0  EFLAGS: 00010006
-May 12 11:18:19 client kernel: RAX: 0000000000000000 RBX: 0000000000000246 RCX: ffffffff883546df
-May 12 11:18:19 client kernel: RDX: 3200100010100000 RSI: 00000000000080d0 RDI: ffffffff813eadb8
-May 12 11:18:19 client kernel: RBP: ffff810001029e60 R08: 0000000000000000 R09: ffff8103f118d130
-May 12 11:18:19 client kernel: R10: ffff81041b076018 R11: ffffffff8826c313 R12: 00000000000080d0
-May 12 11:18:19 client kernel: R13: ffff8104211aa000 R14: ffff81041b076000 R15: ffff8104239c8000
-May 12 11:18:19 client kernel: FS:  00007f08fb8626f0(0000) GS:ffff81042fc02e80(0000) knlGS:0000000000000000
-May 12 11:18:19 client kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-May 12 11:18:19 client kernel: CR2: 00007fdaf41cf030 CR3: 0000000420827000 CR4: 00000000000006e0
-May 12 11:18:19 client kernel: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-May 12 11:18:19 client kernel: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-May 12 11:18:19 client kernel: Process nfsd (pid: 2815, threadinfo ffff8104212c2000, task ffff81042381c940)
-May 12 11:18:19 client kernel: Stack:  ffff8104211ab000 ffff8103f118d000 0000000022270000 ffffffff883546df
-May 12 11:18:19 client kernel:  ffffffff88373cb8 0000000000000000 ffff8103f118d130 ffff8104239c8000
-May 12 11:18:19 client kernel:  ffffffff88373cb8 000000000000001c ffff81041b076018 ffff81041b076000
-May 12 11:18:19 client kernel: Call Trace:
-May 12 11:18:19 client kernel:  [<ffffffff883546df>] ? :nfsd:nfsd4_proc_compound+0xa9/0x3f6
-May 12 11:18:19 client kernel:  [<ffffffff88346245>] ? :nfsd:nfsd_dispatch+0xde/0x1b6
-May 12 11:18:19 client kernel:  [<ffffffff88268bb7>] ? :sunrpc:svc_process_common+0x2e8/0x5a9
-May 12 11:18:19 client kernel:  [<ffffffff8834667c>] ? :nfsd:nfsd+0x0/0x2b4
-May 12 11:18:19 client kernel:  [<ffffffff88269d16>] ? :sunrpc:svc_process+0x127/0x13d
-May 12 11:18:19 client kernel:  [<ffffffff88346819>] ? :nfsd:nfsd+0x19d/0x2b4May 12 11:18:19 client kernel:  [<ffffffff8100cac8>] ? child_rip+0xa/0x12
-May 12 11:18:19 client kernel:  [<ffffffff8834667c>] ? :nfsd:nfsd+0x0/0x2b4
-May 12 11:18:19 client last message repeated 2 times
-May 12 11:18:19 client kernel:  [<ffffffff8100cabe>] ? child_rip+0x0/0x12
-May 12 11:18:19 client kernel:
-May 12 11:18:19 client kernel:
-May 12 11:18:19 client kernel: Code: 25 24 00 00 00 48 98 48 8b ac c7 d8 02 00 00 48 8b 55 00 48 85 d2 75 10 83 ca ff 49 89 e8 e8 7e f8 ff ff 48 89 c2 eb 0b 8b 45 14 <48> 8b 04 c2 48 89 45 00 53 9d 66 45 85 e4 79 10 48 85 d2 74 0b
-May 12 11:18:19 client kernel: RIP  [<ffffffff8108c0c8>] kmem_cache_alloc+0x3d/0x65
-May 12 11:18:19 client kernel:  RSP <ffff8104212c3de0>
-May 12 11:18:19 client kernel: ---[ end trace 9b6f5806f68a2b8c ]---
 
-$ grep SL.B .config
-CONFIG_SLUB_DEBUG=y
-# CONFIG_SLAB is not set
-CONFIG_SLUB=y
-# CONFIG_SLOB is not set
-CONFIG_SLABINFO=y
-# CONFIG_SLUB_DEBUG_ON is not set
-# CONFIG_SLUB_STATS is not set
-
-diff --git a/mm/slub.c b/mm/slub.c
-index a505a82..0d1d820 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -1606,6 +1606,7 @@ debug:
- 	if (!alloc_debug_processing(s, c->page, object, addr))
- 		goto another_slab;
- 
-+	c->freelist = NULL;
- 	c->page->inuse++;
- 	c->page->freelist = object[c->offset];
- 	c->node = -1;
 -- 
-1.5.3.3
-
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please http://www.expita.com/nomime.html
