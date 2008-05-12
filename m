@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758828AbYELEM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756441AbYELEOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758828AbYELEM3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 00:12:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751225AbYELEMP
+	id S1756441AbYELEOV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 00:14:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbYELEOK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 00:12:15 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:34552 "EHLO
+	Mon, 12 May 2008 00:14:10 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:38926 "EHLO
 	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750897AbYELEMO (ORCPT
+	with ESMTP id S1751225AbYELEOJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 00:12:14 -0400
+	Mon, 12 May 2008 00:14:09 -0400
 X-IronPort-AV: E=Sophos;i="4.27,470,1204520400"; 
-   d="scan'208";a="68119725"
+   d="scan'208";a="68119773"
 From: Bryan Wu <cooloney@kernel.org>
-To: jgarzik@pobox.com
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Sonic Zhang <sonic.zhang@analog.com>, Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 1/1] [libata] pata-bf54x: Set ATAPI host state machine to control IDE device terminate sequence.
-Date: Mon, 12 May 2008 12:12:16 +0800
-Message-Id: <1210565536-4026-1-git-send-email-cooloney@kernel.org>
+To: jeff@garzik.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Huang Weiyi <weiyi.huang@gmail.com>, Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH 1/1] Blackfin EMAC Driver: Removed duplicated include <linux/ethtool.h> in drivers/net/bfin_mac.c.
+Date: Mon, 12 May 2008 12:14:04 +0800
+Message-Id: <1210565644-4272-1-git-send-email-cooloney@kernel.org>
 X-Mailer: git-send-email 1.5.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sonic Zhang <sonic.zhang@analog.com>
+From: Huang Weiyi <weiyi.huang@gmail.com>
 
-Set ATAPI host state machine to control IDE device terminate sequence.
-Some IDE harddisk may assert terminate sequence in the middle of a
-formal DMA transaction and resume later. Bit DETECT_TERM in ATAPI_CTRL
-register determines whether the ATAPI host state machine or the kernel
-driver should take care of this case.
-
-Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
+Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
 Signed-off-by: Bryan Wu <cooloney@kernel.org>
 ---
- drivers/ata/pata_bf54x.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+ drivers/net/bfin_mac.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/ata/pata_bf54x.c b/drivers/ata/pata_bf54x.c
-index 9ab8973..5551610 100644
---- a/drivers/ata/pata_bf54x.c
-+++ b/drivers/ata/pata_bf54x.c
-@@ -911,7 +911,10 @@ static void bfin_bmdma_start(struct ata_queued_cmd *qc)
- 	/* Reset all transfer count */
- 	ATAPI_SET_CONTROL(base, ATAPI_GET_CONTROL(base) | TFRCNT_RST);
- 
--		/* Set transfer length to buffer len */
-+	/* Set ATAPI state machine contorl in terminate sequence */
-+	ATAPI_SET_CONTROL(base, ATAPI_GET_CONTROL(base) | END_ON_TERM);
-+
-+	/* Set transfer length to buffer len */
- 	for_each_sg(qc->sg, sg, qc->n_elem, si) {
- 		ATAPI_SET_XFER_LEN(base, (sg_dma_len(sg) >> 1));
- 	}
+diff --git a/drivers/net/bfin_mac.c b/drivers/net/bfin_mac.c
+index 89c0018..4144343 100644
+--- a/drivers/net/bfin_mac.c
++++ b/drivers/net/bfin_mac.c
+@@ -22,7 +22,6 @@
+ #include <linux/crc32.h>
+ #include <linux/device.h>
+ #include <linux/spinlock.h>
+-#include <linux/ethtool.h>
+ #include <linux/mii.h>
+ #include <linux/phy.h>
+ #include <linux/netdevice.h>
 -- 
 1.5.5
