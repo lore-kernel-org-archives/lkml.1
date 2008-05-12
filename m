@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754047AbYELNhU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbYELNhl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754047AbYELNhU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 09:37:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750990AbYELNhG
+	id S1754551AbYELNhl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 09:37:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753226AbYELNhP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 09:37:06 -0400
-Received: from mail2.picochip.com ([82.111.145.34]:45611 "EHLO
-	arun.picochip.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750906AbYELNhF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 09:37:05 -0400
-X-Greylist: delayed 3350 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 May 2008 09:37:04 EDT
-Message-ID: <48283AE5.7010704@jamieiles.com>
-Date: Mon, 12 May 2008 13:41:09 +0100
-From: Jamie Iles <lkml@jamieiles.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Mon, 12 May 2008 09:37:15 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:58479 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752804AbYELNhN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 09:37:13 -0400
+Date: Mon, 12 May 2008 15:37:09 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/6] arch/ia64/kernel: remove null pointer dereference
+Message-ID: <Pine.LNX.4.64.0805121536370.3694@ask.diku.dk>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Jamie Iles <jamie.iles@picochip.com>
-Subject: Soft IRQs
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (arun.picochip.com [172.17.0.30]); Mon, 12 May 2008 13:41:10 +0100 (BST)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Julia Lawall <julia@diku.dk>
 
-I am trying to understand whether it is correct behaviour for soft IRQs 
-to be executed when interrupts with disabled. In particular, if I have 
-some code that does:
+If data is NULL, it is not possible to access data->ret.
 
-    spin_lock_t mylock = SPIN_LOCK_UNLOCKED;
-    unsigned long flags;
-    spin_lock_irqsave( &mylock, flags );
-   
-    ...
-   
-    spin_lock_irqrestore( &mylock, flags );
+The problem was detected using the following semantic match
+(http://www.emn.fr/x-info/coccinelle/)
 
-Can soft IRQs run in the critical section above? I have a problem where 
-'local_bh_enable_ip()' is being called as a result of 'dev_kfree_skb()' 
-and a NET_RX_SOFTIRQ is being raised when I expect interrupts to be 
-disabled.
+// <smpl>
+@@
+expression E, E1;
+identifier f;
+statement S1,S2,S3;
+@@
 
-'local_bh_enable()' only uses the 'in_irq()' macro to check whether we 
-should do 'do_softirq()' and it also only checks we do not have the 
-softirq field of 'preempt_count' non-zero before enabling soft IRQs.
+* if (E == NULL)
+{
+  ... when != if (E == NULL) S1 else S2
+      when != E = E1
+* E->f
+  ... when any
+  return ...;
+}
+else S3
+// </smpl>
 
-I can see that if I was to replace 'spin_lock_irqsave()' with 
-'spin_lock_bh()' then the softirq field of 'preempt_count' would be 
-incremented and prevent soft IRQs until the lock was released. Should 
-'spin_lock_irqsave()' also disable soft interrupts?
+Signed-off-by: Julia Lawall <julia@diku.dk>
 
-Thanks,
+---
 
-Jamie
+diff -u -p a/arch/ia64/kernel/palinfo.c b/arch/ia64/kernel/palinfo.c
+--- a/arch/ia64/kernel/palinfo.c	2008-05-09 16:46:57.000000000 +0200
++++ b/arch/ia64/kernel/palinfo.c	2008-05-12 08:43:35.000000000 +0200
+@@ -902,7 +902,6 @@ palinfo_smp_call(void *info)
+ 	palinfo_smp_data_t *data = (palinfo_smp_data_t *)info;
+ 	if (data == NULL) {
+ 		printk(KERN_ERR "palinfo: data pointer is NULL\n");
+-		data->ret = 0; /* no output */
+ 		return;
+ 	}
+ 	/* does this actual call */
