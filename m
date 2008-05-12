@@ -1,38 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757850AbYELFyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757995AbYELGAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757850AbYELFyS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 01:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbYELFyG
+	id S1757995AbYELGAb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 02:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753720AbYELGAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 01:54:06 -0400
-Received: from smtp161.iad.emailsrvr.com ([207.97.245.161]:36007 "EHLO
-	smtp161.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753225AbYELFyF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 01:54:05 -0400
-Date: Mon, 12 May 2008 01:54:02 -0400 (EDT)
-Subject: =?UTF-8?Q?mips:(Alchemy=20au1200)=20how=20to=20use=20kdb=20to=20debug=20?=
- =?UTF-8?Q?the=20kernel=3Fis=20kdb=20inbuilt=20or=20kdb=20patch=20is=20req?=
- =?UTF-8?Q?uired=3F?=
-From: abhiruchi.g@vaultinfo.com
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
-       kernel-testers@vger.kernel.org
-Reply-To: abhiruchi.g@vaultinfo.com
+	Mon, 12 May 2008 02:00:22 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:56362 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752144AbYELGAU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 02:00:20 -0400
+Date: Mon, 12 May 2008 02:00:15 -0400
+To: Neil Brown <neilb@suse.de>
+Cc: Jesper Krogh <jesper@krogh.cc>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+Subject: Re: Many open/close on same files yeilds "No such file or
+	directory".
+Message-ID: <20080512060015.GB31262@fieldses.org>
+References: <4819E316.7000607@krogh.cc> <4823DFA6.9010504@krogh.cc> <20080508223635.523b8fa7.akpm@linux-foundation.org> <4823EA9E.6050703@krogh.cc> <18471.41781.164396.385159@notabene.brown>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Importance: Normal
-X-Priority: 3 (Normal)
-X-Type: 1
-Message-ID: <54114.192.168.1.71.1210571642.webmail@192.168.1.71>
-X-Mailer: webmail6.6.1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18471.41781.164396.385159@notabene.brown>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-how to use kdb to debug the kernel.
-I am using linux-2.6.22.
+On Mon, May 12, 2008 at 11:53:57AM +1000, Neil Brown wrote:
+> On Friday May 9, jesper@krogh.cc wrote:
+> > 
+> > When I disabled the NFS-server and rand my "real-world" program on a
+> > single processor (make -j 1). It ran through fine. It basically
+> > gets around 20 million chunks out of differnet file and assemble the
+> > chuncks in a few other files. This processes more or less 5 individual
+> > sections, so make can run effectively with a concurrency of 5.
+> 
+> (For linux-nfs readers: the problem is that repeatedly opening a given
+>  file sometimes returns a ENOENT - http://lkml.org/lkml/2008/5/9/15).
+> 
+> The mention of an NFS-server made my ears prick up...
+> 
+> Do I understand correctly that the problem only occurs when you have
+> 48 clients hammering away at the filesystem in question?
+> 
+> Could the clients be accessing the same file that you are experiencing
+> problems with?  Or one of the directories in the path (if so, how
+> deep).
+> 
+> How many different files to these 20 million chunks come from?  And
+> how does that number compare with the first number from
+>    grep dentry /proc/slabinfo
+> ??
+> 
+> The NFS server does some slighty strange things with the dcache if the
+> object being access is not in the cache.
+> 
+> Also, can get a few instances of 
+>    grep '^fh' /proc/nfs/rpc/nfsd
 
-Is kdb inbuilt or kdb patch is required? 
+I think you meant /proc/net/rpc/nfsd.
 
+--b.
+
+> 
+> while things are going strange.  The numbers are:
+>  *	fh <stale> <total-lookups> <anonlookups> <dir-not-in-dcache> <nondir-not-in-dcache>
+> 
+> That will show us if it is looking for things that aren't in the
+> dcache.
+> 
+> Finally, if the filesystem export with "subtree_check" or
+> "nosubtree_check"?
+> Does it make a difference if you switch the setting of this flag and
+> re-export?
+> 
+> NeilBrown
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
