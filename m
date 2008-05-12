@@ -1,126 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760601AbYELLFJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761433AbYELLFy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760601AbYELLFJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 07:05:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751224AbYELLE5
+	id S1761433AbYELLFy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 07:05:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760779AbYELLFo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 07:04:57 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:57553 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751166AbYELLEz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 07:04:55 -0400
-Message-Id: <1210590294.13136.1252653345@webmail.messagingengine.com>
-X-Sasl-Enc: UPOM/c8rYQ1ZcVSb1qMOHO+Lz2xtzlEgxKWPNfAjDDs1 1210590294
-From: "Alexander van Heukelum" <heukelum@fastmail.fm>
-To: "Matthew Wilcox" <matthew@wil.cx>
-Cc: "Alexander van Heukelum" <heukelum@mailshack.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Paul Jackson" <pj@sgi.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "linux-arch" <linux-arch@vger.kernel.org>,
-       "LKML" <linux-kernel@vger.kernel.org>
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="ISO-8859-1"
+	Mon, 12 May 2008 07:05:44 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:38705 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760723AbYELLFT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 07:05:19 -0400
+Date: Mon, 12 May 2008 13:04:50 +0200
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: 2.6.26-rc1 regression since 2.6.25
+Message-ID: <20080512110450.GA6399@ics.muni.cz>
+References: <20080509151924.GA30644@kroah.com> <Pine.LNX.4.44L0.0805091447070.2648-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <20080511135039.GA3286@mailshack.com>
-   <20080511152440.GX19219@parisc-linux.org>
-   <1210522779.16917.1252546109@webmail.messagingengine.com>
-   <20080511220111.GC19219@parisc-linux.org>
-Subject: Re: [PATCH] Make for_each_cpu_mask a bit smaller
-In-Reply-To: <20080511220111.GC19219@parisc-linux.org>
-Date: Mon, 12 May 2008 13:04:54 +0200
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.44L0.0805091447070.2648-100000@iolanthe.rowland.org>
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Muni-Spam-TestIP: 147.251.3.109
+X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Mon, 12 May 2008 13:04:53 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 11 May 2008 16:01:12 -0600, "Matthew Wilcox" <matthew@wil.cx>
-said:
-> On Sun, May 11, 2008 at 06:19:39PM +0200, Alexander van Heukelum wrote:
-> > 
-> > On Sun, 11 May 2008 09:24:40 -0600, "Matthew Wilcox" <matthew@wil.cx>
-> > said:
-> > > On Sun, May 11, 2008 at 03:50:39PM +0200, Alexander van Heukelum wrote:
-> > > >  #if NR_CPUS > 1
-> > > > -#define for_each_cpu_mask(cpu, mask)		\
-> > > > -	for ((cpu) = first_cpu(mask);		\
-> > > > -		(cpu) < NR_CPUS;		\
-> > > > -		(cpu) = next_cpu((cpu), (mask)))
-> > > > +#define for_each_cpu_mask(cpu, mask)				\
-> > > > +	for ((cpu) = 0;						\
-> > > > +		(cpu) = find_next_cpu_mask((cpu), &(mask)),	\
-> > > > +		(cpu) < NR_CPUS; (cpu)++)
-> > > 
-> > > For anyone else having similar cognitive dissonance while reading this
-> > > thinking "But won't the first call to find_next_cpu_mask return a number
-> > > > 0", the answer is "no, find_next_bit returns the next set bit that's
-> > > >= the number passed in, which is why we need both the cpu++ and
-> > > find_next_cpu_mask".  
-> > 
-> > That's how it works, indeed.
-> > 
-> > > > +int find_next_cpu_mask(int n, const cpumask_t *srcp)
-> > > > +{
-> > > > +	return find_next_bit(srcp->bits, NR_CPUS, n);
-> > > > +}
-> > > > +EXPORT_SYMBOL(find_next_cpu_mask);
-> > > 
-> > > Maybe a better name for this function would help.  I can't think of a
-> > > good one right now though.
-> > 
-> > I can't think of a better name, and there is find_next_bit of which
-> > find_next_cpu_mask is just a wrapper. I think the name is good enough.
+On Fri, May 09, 2008 at 02:47:45PM -0400, Alan Stern wrote:
+> On Fri, 9 May 2008, Greg KH wrote:
 > 
-> How about doing it this way?
+> > Can you just boot the box and then plug it into the dock and show the
+> > log file for that?
 > 
-> #define for_each_cpu_mask(cpu, mask)				\
-> 	for ((cpu) = -1;					\
-> 	     (cpu) < NR_CPUS;					\
-> 	     (cpu) = find_next_cpu_mask((cpu), &(mask)))
-> 
-> int find_next_cpu_mask(int n, const cpumask_t *srcp)
-> {
-> 	return find_next_bit(srcp->bits, NR_CPUS, ++n);
-> }
-> 
-> That actually behaves the way I'd expect a function called
-> 'find_next_cpu_mask' to work.  It also abuses the 'for' condtion
-> less and might take a little less text space.
+> If you can, use a kernel that has CONFIG_USB_DEBUG turned on.
 
-But it does not work.
-
-It introduces a stray cpu=-1 iteration if cpu happens to be
-(replaced by) a signed variable.
-
-It skips the entire loop if cpu happens to be unsigned.
-
-I don't think that using 'for' in a less conventional way
-is bad if it is hidden in a macro, as long as the name of
-the macro makes the intention sufficiently clear.
-
-I think of find_next_cpu_mask(cpu, mask) as: "find next
-cpu-index in mask, starting at index cpu". And similar
-with find_next_bit.
-
-As for the text-space argument, I think you might be right.
-Just not on i386/x86_64 where initialising a register to -1
-can be done in three bytes, initialising to 0 in two bytes
-and an increment in one byte :-).
-
-Greetings,
-    Alexander
-
-> -- 
-> Intel are signing my paycheques ... these opinions are still mine
-> "Bill, look, we understand that you're interested in selling us this
-> operating system, but compare it to ours.  We can't possibly take such
-> a retrograde step."
--- 
-  Alexander van Heukelum
-  heukelum@fastmail.fm
+I did. The dmesg is attached to the bug:
+http://bugzilla.kernel.org/show_bug.cgi?id=10630
 
 -- 
-http://www.fastmail.fm - mmm... Fastmail...
-
+Luká¹ Hejtmánek
