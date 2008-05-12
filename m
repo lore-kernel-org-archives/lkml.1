@@ -1,142 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbYELWpr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757105AbYELWrs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755927AbYELWpr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 18:45:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755996AbYELWpg
+	id S1757105AbYELWrs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 18:47:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755031AbYELWrk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 18:45:36 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:23301 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755463AbYELWpf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 18:45:35 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Randy Dunlap <RANDY.DUNLAP@oracle.com>
-Subject: Re: BUG: 2.6.26-rc1-git8: NULL reference in drop_buffers
-Date: Mon, 12 May 2008 18:44:52 -0400
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-mm@kvack.org, Jan Kara <jack@ucw.cz>, viro <viro@zeniv.linux.org.uk>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20080511105429.a5e40721.randy.dunlap@oracle.com> <200805121315.19097.chris.mason@oracle.com> <29550011.1210626730286.JavaMail.oracle@acsmt302.oracle.com>
-In-Reply-To: <29550011.1210626730286.JavaMail.oracle@acsmt302.oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 12 May 2008 18:47:40 -0400
+Received: from mail.queued.net ([207.210.101.209]:4947 "EHLO mail.queued.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754492AbYELWrj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 18:47:39 -0400
+Date: Mon, 12 May 2008 18:51:48 -0400
+From: Andres Salomon <dilinger@queued.net>
+To: Jens Rottmann <JRottmann@LiPPERT-AT.de>
+Cc: jordan.crouse@amd.com, linux-kernel@vger.kernel.org,
+       linux-geode@bombadil.infradead.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fbdev-devel@lists.sourceforge.net, torvalds@linux-foundation.org
+Subject: Re: lxfb driver regression
+Message-ID: <20080512185148.104fc4c3@ephemeral>
+In-Reply-To: <48230694.5010505@LiPPERT-AT.de>
+References: <20080507210836.1eb61b8f@ephemeral>
+	<48230694.5010505@LiPPERT-AT.de>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805121844.52592.chris.mason@oracle.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 May 2008, Randy Dunlap wrote:
-> --- Original Message ---
->
-> > On Monday 12 May 2008, Randy Dunlap wrote:
-> > > Andrew Morton wrote:
-> > > > On Sun, 11 May 2008 10:54:29 -0700 Randy Dunlap
-> > > > <randy.dunlap@oracle.com>
-> >
-> > wrote:
-> > > >> On x86_64, during testing using "stress" package:
-> > > >>
-> > > >> BUG: unable to handle kernel NULL pointer dereference at
-> > > >> 0000000000000000
-> > > >>
-> > > >>
-> > > >> IP: [<ffffffff802ad273>] drop_buffers+0x2f/0xfb
-> > > >> PGD 1ee8ad067 PUD 26f19a067 PMD 0
-> > > >> Oops: 0000 [1] SMP
-> > > >> CPU 3
-> > > >> Modules linked in: parport_pc lp parport tg3 cciss ehci_hcd ohci_hcd
-> > > >> uhci_hcd Pid: 16860, comm: stress Not tainted 2.6.26-rc1-git8 #1
-> > > >> RIP: 0010:[<ffffffff802ad273>]  [<ffffffff802ad273>]
-> > > >> drop_buffers+0x2f/0xfb RSP: 0000:ffff81026bc03a08  EFLAGS: 00010203
-> > > >> RAX: 0000000000000000 RBX: ffffe20008bae680 RCX: ffff81027f490f00
-> > > >> RDX: 0000000000000000 RSI: ffff81026bc03a58 RDI: ffffe20008bae680
-> > > >> RBP: ffff81026bc03a38 R08: ffff81026bc03b78 R09: ffff810001103780
-> > > >> R10: ffff81026bc03a08 R11: ffff81026bc03c88 R12: ffffe20008bae680
-> > > >> R13: ffff81027c412850 R14: ffff81026bc03d58 R15: ffff81026bc03a58
-> > > >> FS:  00007fa9e7e416f0(0000) GS:ffff81027f806980(0000)
-> > > >> knlGS:00000000f7f856c0 CS:  0010 DS: 0000 ES: 0000 CR0:
-> > > >> 000000008005003b CR2: 0000000000000000 CR3: 000000027f973000 CR4:
-> > > >> 00000000000006e0 DR0: 0000000000000000 DR1: 0000000000000000 DR2:
-> > > >> 0000000000000000 DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7:
-> > > >> 0000000000000400 Process stress (pid: 16860, threadinfo
-> > > >> ffff81026bc02000, task ffff81027e424c50) Stack:  ffffe20008bafa68
-> > > >> ffffe20008bae680 ffff81027f490f00 ffff81026bc03a58 ffff81026bc03d58
-> > > >> ffff81026bc03c88 ffff81026bc03a78 ffffffff802ad39f ffff81027f490f00
-> > > >> ffffe20008b14060 0000000000000000 ffff81027f490f00 Call Trace:
-> > > >>  [<ffffffff802ad39f>] try_to_free_buffers+0x60/0xa2
-> > > >>  [<ffffffff80267f98>] try_to_release_page+0x3b/0x41
-> > > >>  [<ffffffff802719bc>] shrink_page_list+0x457/0x562
-> > > >>  [<ffffffff80271bed>] shrink_inactive_list+0x126/0x361
-> > > >>  [<ffffffff80271f0d>] shrink_zone+0xe5/0x10a
-> > > >>  [<ffffffff8027227d>] try_to_free_pages+0x1ef/0x326
-> > > >>  [<ffffffff80270f4b>] ? isolate_pages_global+0x0/0x34
-> > > >>  [<ffffffff8026d843>] __alloc_pages_internal+0x25a/0x3ad
-> > > >>  [<ffffffff8026d9ac>] __alloc_pages+0xb/0xd
-> > > >>  [<ffffffff80277759>] handle_mm_fault+0x238/0x6d0
-> > > >>  [<ffffffff8053d9c4>] do_page_fault+0x438/0x7de
-> > > >>  [<ffffffff8053b999>] error_exit+0x0/0x51
-> > > >>
-> > > >>
-> > > >> Code: 41 57 49 89 f7 41 56 41 55 41 54 49 89 fc 53 48 83 ec 08 48 8b
-> > > >> 07 25 00 08 00 00 48 85 c0 75 04 0f 0b eb fe 4c 8b 6f 10 4c 89 ea
-> > > >> <48> 8b 02 25 00 08 00 00 48 85 c0 74 10 49 8b 44 24 18 48 85 c0 RIP
-> > > >> [<ffffffff802ad273>] drop_buffers+0x2f/0xfb
-> > > >>  RSP <ffff81026bc03a08>
-> > > >> CR2: 0000000000000000
-> > > >> Kernel panic - not syncing: Fatal exception
-> > > >
-> > > > Seems that local variable `bh' is NULL.
-> > > >
-> > > > I wonder what the heck we did to cause that.  Which filesystems were
-> > > > in use?
-> > >
-> > > ext3, nfs, and the usual procfs, sysfs, and tmpfs.
-> > >
-> > > Also in the kernel:  debugfs, usbfs, inotifyfs, configfs, ramfs,
-> > > hugetlbfs, msdos, vfat, iso9660, and rootfs.
-> >
-> > If you stand on your head, and race really really hard,
-> > nfs_inode_remove_request() does this without locking the page:
-> >
-> >        set_page_private(req->wb_page, 0);
-> >        ClearPagePrivate(req->wb_page);
-> >
-> > That code has been around for a long time though.
-> >
-> > Probably not the droids we're looking for, but it was the only
-> > one that jumped
-> > out at me during a quick search of set_page_private(foo, 0)
-> > callers.
-> >
-> > It seems more likely that we got there by an invalidatepage
-> > call that left
-> > PagePrivate set but didn't allow the page to be freed.
-> >
-> > The page would turn into the funky anonymous zombie thing meant
-> > for buffers
-> > that had to be written before the page could be freed (PagePrivate
-> > set but
-> > page->mapping == NULL), and eventually find its way to
-> > try_to_free_buffers().
-> >
-> > The problem with that theory is that I would expect page->private
-> > to be
-> > non-null in such a case.  Randy, any chance this can be
-> > reproduced?
->
-> It didn't fail when I re-ran the test.
+On Thu, 08 May 2008 15:56:36 +0200
+Jens Rottmann <JRottmann@LiPPERT-AT.de> wrote:
 
-So, either the teeny tiny NFS race I saw or a really unfortunate single bit 
-flip.  We can put a busy loop into the NFS code to make it easier to trigger, 
-but I don't think that'll prove its the bug you hit.
+> Hi Andres,
+> 
+[...]
+> 
+> I have also attached a cut down version of my patch. It still adds
+> all the PLL settings for < 25 MHz dotclocks, but it no longer
+> supplements the > 25 MHz clocks with intermediate steps. I'm only
+> guessing here, I don't see what big difference this would make, but
+> still ... could you please give it a try if you have time?
+> 
 
--chris
+Sorry for the delay, I got around to testing this today.  It works
+much better on an XO, so I've ack'd it.
+
+Since updating to -rc2, I'm unable to reproduce the strange mode
+setting differences; the original patch, reverting the original
+patch, and also applying the new patch now all show:
+
+[    1.005011] Console: switching to colour frame buffer device 150x56
+
+
+> Thanks a lot for your help.
+> 
+> Regards,
+> Jens Rottmann
+> 
+> =============X8=================X8==============================
+> lxfb: extend PLL table to support dotclocks below 25 MHz
+> 
+> Extends the PLL frequency table of the AMD Geode-LX frame buffer
+> driver to make use of the DIV4 bit, thus adding support for
+> dotclocks between 6 and 24 MHz.  These are needed for small LCDs
+> (e.g. 320x240).
+> 
+> Signed-off-by: Jens Rottmann <JRottmann@LiPPERT-AT.de>
+
+
+Acked-by: Andres Salomon <dilinger@debian.org>
+
+
+> ---
+> 
+> --- linux-2.6.25/drivers/video/geode/lxfb_ops.c
+> +++ lxfb_clocks_added/drivers/video/geode/lxfb_ops.c
+> @@ -34,35 +34,63 @@ static const struct {
+>    unsigned int pllval;
+>    unsigned int freq;
+>  } pll_table[] = {
+> -  { 0x000031AC, 24923 },
+> -  { 0x0000215D, 25175 },
+> -  { 0x00001087, 27000 },
+> -  { 0x0000216C, 28322 },
+> -  { 0x0000218D, 28560 },
+> -  { 0x000010C9, 31200 },
+> -  { 0x00003147, 31500 },
+> -  { 0x000010A7, 33032 },
+> -  { 0x00002159, 35112 },
+> -  { 0x00004249, 35500 },
+> -  { 0x00000057, 36000 },
+> -  { 0x0000219A, 37889 },
+> -  { 0x00002158, 39168 },
+> -  { 0x00000045, 40000 },
+> -  { 0x00000089, 43163 },
+> -  { 0x000010E7, 44900 },
+> -  { 0x00002136, 45720 },
+> -  { 0x00003207, 49500 },
+> -  { 0x00002187, 50000 },
+> -  { 0x00004286, 56250 },
+> -  { 0x000010E5, 60065 },
+> -  { 0x00004214, 65000 },
+> -  { 0x00001105, 68179 },
+> -  { 0x000031E4, 74250 },
+> -  { 0x00003183, 75000 },
+> -  { 0x00004284, 78750 },
+> -  { 0x00001104, 81600 },
+> -  { 0x00006363, 94500 },
+> -  { 0x00005303, 97520 },
+> +  { 0x000131AC,   6231 },
+> +  { 0x0001215D,   6294 },
+> +  { 0x00011087,   6750 },
+> +  { 0x0001216C,   7081 },
+> +  { 0x0001218D,   7140 },
+> +  { 0x000110C9,   7800 },
+> +  { 0x00013147,   7875 },
+> +  { 0x000110A7,   8258 },
+> +  { 0x00012159,   8778 },
+> +  { 0x00014249,   8875 },
+> +  { 0x00010057,   9000 },
+> +  { 0x0001219A,   9472 },
+> +  { 0x00012158,   9792 },
+> +  { 0x00010045,  10000 },
+> +  { 0x00010089,  10791 },
+> +  { 0x000110E7,  11225 },
+> +  { 0x00012136,  11430 },
+> +  { 0x00013207,  12375 },
+> +  { 0x00012187,  12500 },
+> +  { 0x00014286,  14063 },
+> +  { 0x000110E5,  15016 },
+> +  { 0x00014214,  16250 },
+> +  { 0x00011105,  17045 },
+> +  { 0x000131E4,  18563 },
+> +  { 0x00013183,  18750 },
+> +  { 0x00014284,  19688 },
+> +  { 0x00011104,  20400 },
+> +  { 0x00016363,  23625 },
+> +  { 0x000031AC,  24923 },
+> +  { 0x0000215D,  25175 },
+> +  { 0x00001087,  27000 },
+> +  { 0x0000216C,  28322 },
+> +  { 0x0000218D,  28560 },
+> +  { 0x000010C9,  31200 },
+> +  { 0x00003147,  31500 },
+> +  { 0x000010A7,  33032 },
+> +  { 0x00002159,  35112 },
+> +  { 0x00004249,  35500 },
+> +  { 0x00000057,  36000 },
+> +  { 0x0000219A,  37889 },
+> +  { 0x00002158,  39168 },
+> +  { 0x00000045,  40000 },
+> +  { 0x00000089,  43163 },
+> +  { 0x000010E7,  44900 },
+> +  { 0x00002136,  45720 },
+> +  { 0x00003207,  49500 },
+> +  { 0x00002187,  50000 },
+> +  { 0x00004286,  56250 },
+> +  { 0x000010E5,  60065 },
+> +  { 0x00004214,  65000 },
+> +  { 0x00001105,  68179 },
+> +  { 0x000031E4,  74250 },
+> +  { 0x00003183,  75000 },
+> +  { 0x00004284,  78750 },
+> +  { 0x00001104,  81600 },
+> +  { 0x00006363,  94500 },
+> +  { 0x00005303,  97520 },
+>    { 0x00002183, 100187 },
+>    { 0x00002122, 101420 },
+>    { 0x00001081, 108000 },
+> @@ -137,7 +165,7 @@ static void lx_set_clock(struct fb_info
+>  	unsigned int diff, min, best = 0;
+>  	unsigned int freq, i;
+> 
+> -	freq = (unsigned int) (0x3b9aca00 / info->var.pixclock);
+> +	freq = (unsigned int) (1000000000 / info->var.pixclock);
+> 
+>  	min = abs(pll_table[0].freq - freq);
+> 
+> @@ -149,7 +177,7 @@ static void lx_set_clock(struct fb_info
+>  		}
+>  	}
+> 
+> -	lx_set_dotpll(pll_table[best].pllval & 0x7FFF);
+> +	lx_set_dotpll(pll_table[best].pllval & 0x00017FFF);
+>  }
+> 
+>  static void lx_graphics_disable(struct fb_info *info)
+> 
