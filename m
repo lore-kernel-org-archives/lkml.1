@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756821AbYELLf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757112AbYELLjd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756821AbYELLf3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 07:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753169AbYELLfT
+	id S1757112AbYELLjd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 07:39:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753691AbYELLjZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 07:35:19 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:45201 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753015AbYELLfR (ORCPT
+	Mon, 12 May 2008 07:39:25 -0400
+Received: from mo-p00-ob.rzone.de ([81.169.146.160]:39314 "EHLO
+	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752269AbYELLjY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 07:35:17 -0400
-Date: Mon, 12 May 2008 07:35:02 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: Possible regression?  2.6.26-rc1: X61s failure after
-	suspend/resume
-Message-ID: <20080512113501.GA7687@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-	Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <E1JuCBA-0002NZ-4E@closure.thunk.org> <200805082352.04352.rjw@sisk.pl> <20080509024426.GB8871@mit.edu> <20080509094941.GA19617@elte.hu> <20080512020301.GA8390@mit.edu>
+	Mon, 12 May 2008 07:39:24 -0400
+X-RZG-CLASS-ID: mo00
+X-RZG-AUTH: jclyXLBJ10ZHTmMMskdeEV9K+qamm4K24+0GzTHYHnheuzKtvddXf0sc+CAlfN0=
+Message-ID: <48282C69.2070006@hartkopp.net>
+Date: Mon, 12 May 2008 13:39:21 +0200
+From: Oliver Hartkopp <oliver@hartkopp.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080512020301.GA8390@mit.edu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Romano Giannetti <romanol@upcomillas.es>
+CC: "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       akpm@linux-foundation.org, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Kernel naming convention in the merge phase
+References: <4818F093.3070105@hartkopp.net> <4819050C.9060800@zytor.com>	 <48198873.7030503@hartkopp.net>  <481A06C0.6070500@zytor.com> <1210163964.14371.1.camel@localhost>
+In-Reply-To: <1210163964.14371.1.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 11, 2008 at 10:03:01PM -0400, Theodore Tso wrote:
-> On Fri, May 09, 2008 at 11:49:41AM +0200, Ingo Molnar wrote:
-> > 
-> > on the off chance that this might be related: could you try to boot with 
-> > nopat?
-> 
-> I did some more testing, and on my X61s laptop, using a somewhat more
-> recent snapshot (v2.6.26-rc1-434-g9662369 from Linus's tree Sunday
-> morning), I was able to reproduce the failure after a suspend/resume
-> without nopat, but after adding nopat, the problem seems to have gone
-> away.
+Romano Giannetti wrote:
+> On Thu, 2008-05-01 at 11:06 -0700, H. Peter Anvin wrote:
+>
+>   
+>> Most of the robots don't have access to git.
+>>
+>>     
+>>> For me a 2.6.25-gitX looks like a snapshot that leads to a 2.6.25.1 and 
+>>> _not_ to a 2.6.26-rc1.
+>>>       
+>> Tough.  It's a naming convention quite old (we had -bk before -git, too.)
+>>     
+>
+> What about a -rc0 as the first commit after a release? Will help a lot
+> automatic installing scripts...
+>
+>   
 
-Actually, it looks like I spoke too quickly.  I'll do some more
-testing, but it looks like either (a) I got lucky, or (b) it's a lot
-harder to trigger with nopat.  In any case, after getting home and
-docking my workstation, I started a kernel build, and approximately 15
-minutes later, the X server hung with the same symptoms as before.
+Yes - this was also my intention. I don't have any preferences if the 
+first commit after a release is named -merge or -rc0. But it should 
+point out that we're leaving the former stable release.
 
-	       	     	    	      	  - Ted
+Regards,
+Oliver
+
