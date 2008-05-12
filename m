@@ -1,416 +1,904 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761410AbYELKqx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761063AbYELKtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761410AbYELKqx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 06:46:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758102AbYELKqq
+	id S1761063AbYELKtU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 06:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757112AbYELKtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 06:46:46 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:41972 "EHLO
+	Mon, 12 May 2008 06:49:12 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:43494 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758870AbYELKqo (ORCPT
+	with ESMTP id S1756095AbYELKtJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 06:46:44 -0400
+	Mon, 12 May 2008 06:49:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:sender;
-        b=mFm0q0xoMUyOmiehWX4lBjYnmt0tFkp+TZSgmOeQZ1uojE9WhbEG9Gpsg+8yidEYQtQQFsWjt4Xq0PjxxoB4jHjeUQFcQ5e85UhsRS38V/fQzIuYInxhW1q8lrLF03vEZcyNVmZ8Xo4xXIxMQ+FlPEtqu8GLJ81QzhQNpbdUKhQ=
+        b=vRljYq59KsPoaoxDhWdyYH4HjRAvXUlgIxgYkbDtwZNgCJ089/va8Zy65SGitIDJnNUCb5HDAzX/l7Qn8saEB4jhqFeJakx5ODP+mV9nDbogZ1/3GoFoB1/DBuTL1lY/anP9eNgus5UhGZY3DSeNUxGwg4cH1ds6Os1Ql9gWTXE=
 From: Bryan Wu <cooloney@kernel.org>
-To: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
-Cc: Michael Hennerich <michael.hennerich@analog.com>,
+To: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org,
+       Harald Krapfenbauer <harald.krapfenbauer@bluetechnix.at>,
+       Michael Hennerich <michael.hennerich@analog.com>,
        Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 1/1] [PCMCIA]: add support the CF PCMCIA driver for Blackfin
-Date: Mon, 12 May 2008 18:46:40 +0800
-Message-Id: <1210589200-12431-1-git-send-email-cooloney@kernel.org>
+Subject: [PATCH 1/1] [Video/Framebuffer]: Hitachi TX09D70VM1CDA TFT LCD framebuffer driver
+Date: Mon, 12 May 2008 18:49:07 +0800
+Message-Id: <1210589347-12840-1-git-send-email-cooloney@kernel.org>
 X-Mailer: git-send-email 1.5.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Hennerich <michael.hennerich@analog.com>
+From: Harald Krapfenbauer <harald.krapfenbauer@bluetechnix.at>
 
+Signed-off-by: Harald Krapfenbauer <harald.krapfenbauer@bluetechnix.at>
 Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
 Signed-off-by: Bryan Wu <cooloney@kernel.org>
 ---
- drivers/pcmcia/Kconfig          |    7 +
- drivers/pcmcia/Makefile         |    1 +
- drivers/pcmcia/bfin_cf_pcmcia.c |  324 +++++++++++++++++++++++++++++++++++++++
- include/pcmcia/cs_types.h       |    2 +-
- 4 files changed, 333 insertions(+), 1 deletions(-)
- create mode 100644 drivers/pcmcia/bfin_cf_pcmcia.c
+ drivers/video/Kconfig        |   36 ++
+ drivers/video/Makefile       |    1 +
+ drivers/video/hitachi-tx09.c |  794 ++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 831 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/video/hitachi-tx09.c
 
-diff --git a/drivers/pcmcia/Kconfig b/drivers/pcmcia/Kconfig
-index 1b0eb5a..e45402a 100644
---- a/drivers/pcmcia/Kconfig
-+++ b/drivers/pcmcia/Kconfig
-@@ -263,6 +263,13 @@ config OMAP_CF
- 	  Say Y here to support the CompactFlash controller on OMAP.
- 	  Note that this doesn't support "True IDE" mode.
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index bb1dada..4a56985 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -600,6 +600,42 @@ config FB_BFIN_T350MCQB
+ 	 It uses PPI[0..7] PPI_FS1, PPI_FS2 and PPI_CLK.
  
-+config BFIN_CFPCMCIA
-+	tristate "Blackfin CompactFlash PCMCIA Driver"
-+	depends on PCMCIA && BLACKFIN
+ 
++config FB_HITACHI_TX09
++	tristate "Hitachi TX09D70VM1CDA TFT LCD"
++	depends on FB && (BF537 || BF561)
++	select FB_CFB_FILLRECT
++	select FB_CFB_COPYAREA
++	select FB_CFB_IMAGEBLIT
 +	help
-+	  Say Y here to support the CompactFlash PCMCIA driver for Blackfin.
++	  This is the framebuffer device for a HITACHI TX09D70VM1CDA
++	  TFT LCD attached to a CM-BF537E or CM-BF561 from Bluetechnix.
 +
++	  To compile this driver as a module, choose M here: the
++	  module will be called hitachi-tx09.
 +
- config AT91_CF
- 	tristate "AT91 CompactFlash Controller"
- 	depends on PCMCIA && ARCH_AT91RM9200
-diff --git a/drivers/pcmcia/Makefile b/drivers/pcmcia/Makefile
-index 6f6478b..85c6cc9 100644
---- a/drivers/pcmcia/Makefile
-+++ b/drivers/pcmcia/Makefile
-@@ -36,6 +36,7 @@ obj-$(CONFIG_PCMCIA_AU1X00)			+= au1x00_ss.o
- obj-$(CONFIG_PCMCIA_VRC4171)			+= vrc4171_card.o
- obj-$(CONFIG_PCMCIA_VRC4173)			+= vrc4173_cardu.o
- obj-$(CONFIG_OMAP_CF)				+= omap_cf.o
-+obj-$(CONFIG_BFIN_CFPCMCIA)			+= bfin_cf_pcmcia.o
- obj-$(CONFIG_AT91_CF)				+= at91_cf.o
- obj-$(CONFIG_ELECTRA_CF)			+= electra_cf.o
++config FB_HITACHI_TX09_LANDSCAPE
++	bool "Use Landscape 320x240 instead of Portrait 240x320"
++	depends on FB_HITACHI_TX09
++	default n
++	help
++	  Use 320x240 instead of native 240x320 Resolution
++
++config FB_HITACHI_TX09_REFRESHRATE
++	int "Refresh rate"
++	depends on FB_HITACHI_TX09
++	range 25 70
++	default 52
++	help
++	  Refresh rate of the LCD in Hz. According to data sheet, must
++	  be in the interval [52...68].
++
++config CONFIG_FB_HITACHI_TX09_CURSOR
++	bool "Enable/Disable cursor"
++	depends on FB_HITACHI_TX09
++	default n
++	help
++	  Enable the cursor
++
+ config FB_STI
+ 	tristate "HP STI frame buffer device support"
+ 	depends on FB && PARISC
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index 04bca35..51fe9ab 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -117,6 +117,7 @@ obj-$(CONFIG_FB_SM501)            += sm501fb.o
+ obj-$(CONFIG_FB_XILINX)           += xilinxfb.o
+ obj-$(CONFIG_FB_OMAP)             += omap/
+ obj-$(CONFIG_XEN_FBDEV_FRONTEND)  += xen-fbfront.o
++obj-$(CONFIG_FB_HITACHI_TX09)     += hitachi-tx09.o
  
-diff --git a/drivers/pcmcia/bfin_cf_pcmcia.c b/drivers/pcmcia/bfin_cf_pcmcia.c
+ # Platform or fallback drivers go here
+ obj-$(CONFIG_FB_UVESA)            += uvesafb.o
+diff --git a/drivers/video/hitachi-tx09.c b/drivers/video/hitachi-tx09.c
 new file mode 100644
-index 0000000..7964675
+index 0000000..e53de0a
 --- /dev/null
-+++ b/drivers/pcmcia/bfin_cf_pcmcia.c
-@@ -0,0 +1,324 @@
++++ b/drivers/video/hitachi-tx09.c
+@@ -0,0 +1,794 @@
 +/*
-+ * file: drivers/pcmcia/bfin_cf.c
-+ * author: Michael Hennerich (hennerich@blackfin.uclinux.org)
++ * drivers/video/hitachi-tx09.c
++ * Date: 2007-11-22
 + *
-+ * based on: drivers/pcmcia/omap_cf.c
-+ * omap_cf.c -- OMAP 16xx CompactFlash controller driver
++ * Framebuffer driver for the Hitachi TX09D70VM1CDA TFT LCD written
++ * by Harald Krapfenbauer <harald.krapfenbauer@bluetechnix.at>
 + *
-+ * Copyright (c) 2005 David Brownell
-+ * Copyright (c) 2006 Michael Hennerich Analog Devices Inc.
++ * Thanks to Michael Hennerich from Analog Devices Inc. for his support
++ * and the bf537-lq035.c TFT driver!
 + *
-+ * bugs:         enter bugs at http://blackfin.uclinux.org/
++ * For more information, please read the data sheet:
++ * http://www.hitachi-displays-eu.com/doc/TX09D70VM1CDA.PDF
 + *
-+ * this program is free software; you can redistribute it and/or modify
-+ * it under the terms of the gnu general public license as published by
-+ * the free software foundation; either version 2, or (at your option)
-+ * any later version.
++ * This program is free software; you can distribute it and/or modify it
++ * under the terms of the GNU General Public License (Version 2) as
++ * published by the Free Software Foundation.
 + *
-+ * this program is distributed in the hope that it will be useful,
-+ * but without any warranty; without even the implied warranty of
-+ * merchantability or fitness for a particular purpose.  see the
-+ * gnu general public license for more details.
++ * This program is distributed in the hope it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
++ * for more details.
 + *
-+ * you should have received a copy of the gnu general public license
-+ * along with this program; see the file copying.
-+ * if not, write to the free software foundation,
-+ * 59 temple place - suite 330, boston, ma 02111-1307, usa.
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.
++ *
 + */
 +
 +#include <linux/module.h>
 +#include <linux/kernel.h>
-+#include <linux/sched.h>
-+#include <linux/platform_device.h>
-+#include <linux/errno.h>
-+#include <linux/init.h>
++#include <linux/mm.h>
 +#include <linux/delay.h>
-+#include <linux/interrupt.h>
-+#include <linux/irq.h>
++#include <linux/fb.h>
++#include <linux/ioport.h>
++#include <linux/init.h>
++#include <linux/timer.h>
++#include <linux/backlight.h>
++#include <linux/dma-mapping.h>
++#include <linux/platform_device.h>
++#include <asm/dma.h>
++#include <asm/portmux.h>
 +
-+#include <pcmcia/ss.h>
-+#include <pcmcia/cisreg.h>
-+#include <asm/io.h>
-+#include <asm/gpio.h>
++#define DRIVER_NAME "hitachi-tx09"
 +
-+#define SZ_1K			0x00000400
-+#define SZ_8K			0x00002000
-+#define	SZ_2K			(2 * SZ_1K)
++#define MAX_BRIGHTNESS 100
++#define BFIN_LCD_NBR_PALETTE_ENTRIES	256
 +
-+#define	POLL_INTERVAL	(2 * HZ)
++#undef BITREVERSED		/* colors bitreversed? (only needed for older EXT-CAM boards) */
 +
-+#define CF_ATASEL_ENA 	0x20311802 /* Inverts RESET */
-+#define CF_ATASEL_DIS 	0x20311800
++#define PPI0_16 {P_PPI0_CLK, P_PPI0_D0, P_PPI0_D1, P_PPI0_D2, P_PPI0_D3, \
++		P_PPI0_D4, P_PPI0_D5, P_PPI0_D6, P_PPI0_D7, P_PPI0_D8, P_PPI0_D9, P_PPI0_D10, \
++		P_PPI0_D11, P_PPI0_D12, P_PPI0_D13, P_PPI0_D14, P_PPI0_D15, 0}
 +
-+#define bfin_cf_present(pfx) (gpio_get_value(pfx))
++#ifdef CONFIG_BFIN537_BLUETECHNIX_CM
 +
-+/*--------------------------------------------------------------------------*/
++#define TIMER_DCLK 3
++#define TIMER_HSYNC 0
++#define TIMER_DTMG 1
++#define TIMER_VSYNC 6
++#define TIMER_BACKLIGHT 4
++#define PCI_PIN GPIO_PF14
++#define TIMERS {P_TMR0, P_TMR1, P_TMR3, P_TMR4, P_TMR6, 0}
++#define WRITE_PPI_CONTROL(x) bfin_write_PPI_CONTROL(x)
++#define READ_PPI_CONTROL bfin_read_PPI_CONTROL
++#define WRITE_PPI_DELAY(x) bfin_write_PPI_DELAY(x)
++#define WRITE_PPI_COUNT(x) bfin_write_PPI_COUNT(x)
 +
-+static const char driver_name[] = "bfin_cf_pcmcia";
++#else
 +
-+struct bfin_cf_socket {
-+	struct pcmcia_socket	socket;
++#ifdef CONFIG_BFIN561_BLUETECHNIX_CM
 +
-+	struct timer_list	timer;
-+	unsigned		present:1;
-+	unsigned		active:1;
++#define TIMER_DCLK 6
++#define TIMER_HSYNC 8
++#define TIMER_DTMG 9
++#define TIMER_VSYNC 1
++#define TIMER_BACKLIGHT 5
++#define PCI_PIN GPIO_PF0
++#define TIMERS {P_TMR1, P_TMR5, P_TMR6, P_TMR8, P_TMR9, 0}
++#define WRITE_PPI_CONTROL(x) bfin_write_PPI0_CONTROL(x)
++#define READ_PPI_CONTROL bfin_read_PPI0_CONTROL
++#define WRITE_PPI_DELAY(x) bfin_write_PPI0_DELAY(x)
++#define WRITE_PPI_COUNT(x) bfin_write_PPI0_COUNT(x)
 +
-+	struct platform_device	*pdev;
-+	unsigned long		phys_cf_io;
-+	unsigned long		phys_cf_attr;
-+	u_int			irq;
-+	u_short			cd_pfx;
++#else
++#error The Hitachi TX-09 frame buffer driver only supports Bluetechnix CM-BF537E and CM-BF561
++#endif
++
++#endif
++
++#define BFIN_WRITE(a, b) CONCAT(bfin_write_TIMER, a, _, b)
++#define BFIN_READ(a, b)  CONCAT(bfin_read_TIMER, a, _, b)
++#define CONCAT(a, b, c, d) a ## b ## c ## d
++
++static unsigned char *fb_buffer;	/* RGB Buffer */
++static dma_addr_t dma_handle;
++static unsigned long *dma_desc_table;
++static unsigned long current_brightness;	/* backlight */
++static int tx09_open_cnt;
++static int tx09_mmap;
++static struct backlight_device *bl_dev;
++static int t_conf_done;
++static DEFINE_SPINLOCK(tx09_lock);
++
++static void set_backlight(int val)
++{
++	unsigned long timer_period;
++
++	pr_debug("%s to %d\n", __FUNCTION__, val);
++
++	if (val < 0)
++		val = 0;
++	if (val > MAX_BRIGHTNESS)
++		val = MAX_BRIGHTNESS;
++
++	current_brightness = val;
++
++#ifdef CONFIG_BFIN561_BLUETECHNIX_CM
++	bfin_write_TMRS8_DISABLE(1 << TIMER_BACKLIGHT);
++#else
++	bfin_write_TIMER_DISABLE(1 << TIMER_BACKLIGHT);
++#endif
++	SSYNC();
++
++	timer_period = get_sclk() / 100000;
++	BFIN_WRITE(TIMER_BACKLIGHT, WIDTH) ((timer_period * val) / 100);
++
++#ifdef CONFIG_BFIN561_BLUETECHNIX_CM
++	bfin_write_TMRS8_ENABLE(1 << TIMER_BACKLIGHT);
++#else
++	bfin_write_TIMER_ENABLE(1 << TIMER_BACKLIGHT);
++#endif
++
++	SSYNC();
++}
++
++static void start_timers(void)
++{
++	unsigned long flags;
++
++	local_irq_save(flags);
++
++#ifdef CONFIG_BFIN561_BLUETECHNIX_CM
++	bfin_write_TMRS4_ENABLE((1 << (TIMER_HSYNC - 8)) |
++				(1 << (TIMER_DTMG - 8)));
++	bfin_write_TMRS8_ENABLE(1 << TIMER_VSYNC);
++	SSYNC();
++	bfin_write_TMRS8_ENABLE(1 << TIMER_DCLK);
++#else
++	bfin_write_TIMER_ENABLE((1 << TIMER_HSYNC) | (1 << TIMER_DTMG) |
++				(1 << TIMER_VSYNC));
++	SSYNC();
++	bfin_write_TIMER_ENABLE(1 << TIMER_DCLK);
++#endif
++	SSYNC();
++	mdelay(50);
++	gpio_set_value(PCI_PIN, 1);
++	SSYNC();
++#ifdef CONFIG_BFIN561_BLUETECHNIX_CM
++	bfin_write_TMRS8_ENABLE(1 << TIMER_BACKLIGHT);
++#else
++	bfin_write_TIMER_ENABLE(1 << TIMER_BACKLIGHT);
++#endif
++	SSYNC();
++
++	local_irq_restore(flags);
++}
++
++static void stop_timers(void)
++{
++	unsigned long flags;
++	long old_value = 0, new_value = 0;
++
++	local_irq_save(flags);
++
++#ifdef CONFIG_BFIN561_BLUETECHNIX_CM
++	bfin_write_TMRS8_DISABLE(1 << TIMER_BACKLIGHT);
++#else
++	bfin_write_TIMER_DISABLE(1 << TIMER_BACKLIGHT);
++#endif
++	gpio_set_value(PCI_PIN, 0);
++
++	while (1) {
++		old_value = new_value;
++		new_value = BFIN_READ(TIMER_VSYNC, COUNTER) ();
++		if ((old_value - new_value) > 45000) {
++#ifdef CONFIG_BFIN561_BLUETECHNIX_CM
++			bfin_write_TMRS8_DISABLE((1 << TIMER_DCLK) |
++						 (1 << TIMER_VSYNC));
++			bfin_write_TMRS4_DISABLE((1 << (TIMER_HSYNC - 8)) |
++						 (1 << (TIMER_DTMG - 8)));
++#else
++			bfin_write_TIMER_DISABLE((1 << TIMER_VSYNC) |
++						 (1 << TIMER_HSYNC) |
++						 (1 <<	TIMER_DTMG) |
++						 (1 << TIMER_DCLK));
++#endif
++			break;
++		}
++	}
++
++	local_irq_restore(flags);
++}
++
++static void config_timers(void)
++{
++	unsigned long timer_period = 0;
++
++	pr_debug("%s\n", __FUNCTION__);
++
++	/* stop timers */
++#ifdef CONFIG_BFIN561_BLUETECHNIX_CM
++	bfin_write_TMRS8_DISABLE((1 << TIMER_DCLK) | (1 << TIMER_VSYNC) |
++				 (1 << TIMER_BACKLIGHT));
++	bfin_write_TMRS4_DISABLE((1 << (TIMER_HSYNC - 8)) |
++				 (1 << (TIMER_DTMG - 8)));
++#else
++	bfin_write_TIMER_DISABLE((1 << TIMER_VSYNC) | (1 << TIMER_HSYNC) |
++				 (1 << TIMER_DTMG) | (1 << TIMER_DCLK) |
++				 (1 << TIMER_BACKLIGHT));
++#endif
++	SSYNC();
++
++	/* dclk clock output */
++	BFIN_WRITE(TIMER_DCLK, CONFIG) (PERIOD_CNT | PULSE_HI | PWM_OUT);
++	timer_period =
++	    get_sclk() / (CONFIG_FB_HITACHI_TX09_REFRESHRATE * 89271);
++	BFIN_WRITE(TIMER_DCLK, PERIOD) (timer_period);
++	BFIN_WRITE(TIMER_DCLK, WIDTH) (timer_period / 2);
++	SSYNC();
++
++	/* brightness timer */
++	BFIN_WRITE(TIMER_BACKLIGHT, CONFIG) (PERIOD_CNT | PULSE_HI | PWM_OUT);
++	timer_period = get_sclk() / 100000;
++	BFIN_WRITE(TIMER_BACKLIGHT, PERIOD) (timer_period);
++	BFIN_WRITE(TIMER_BACKLIGHT, WIDTH) (timer_period - 1);	/* 100% duty cycle */
++	SSYNC();
++
++	/* hsync timer */
++	BFIN_WRITE(TIMER_HSYNC, CONFIG) (CLK_SEL | TIN_SEL | PERIOD_CNT | PWM_OUT);	/* clocked by PPI_clk */
++	BFIN_WRITE(TIMER_HSYNC, PERIOD) (273);	/* 240 + 33 blanking */
++	BFIN_WRITE(TIMER_HSYNC, WIDTH) (5);
++	SSYNC();
++
++	/* dtmg timer */
++	BFIN_WRITE(TIMER_DTMG, CONFIG) (CLK_SEL | TIN_SEL | PERIOD_CNT | PWM_OUT);	/* clocked by PPI_clk */
++	BFIN_WRITE(TIMER_DTMG, PERIOD) (273);
++	BFIN_WRITE(TIMER_DTMG, WIDTH) (33);
++	SSYNC();
++
++	/* vsync timer */
++	BFIN_WRITE(TIMER_VSYNC, CONFIG) (CLK_SEL | TIN_SEL | PERIOD_CNT | PWM_OUT);	/* clocked by PPI_clk */
++	BFIN_WRITE(TIMER_VSYNC, PERIOD) (89271);
++	BFIN_WRITE(TIMER_VSYNC, WIDTH) (1911);
++	SSYNC();
++
++	t_conf_done = 1;
++}
++
++static void config_ppi(void)
++{
++	/* configure PPI registers */
++	WRITE_PPI_DELAY(27);
++	WRITE_PPI_COUNT(240 - 1);
++	WRITE_PPI_CONTROL(0x380e);
++}
++
++static int config_dma(void)
++{
++	u32 i = 0;
++
++	pr_debug("%s\n", __FUNCTION__);
++
++	/* fill descriptor table */
++	for (i = 0; i < 326; i++) {
++		/* point to next desc table */
++		dma_desc_table[2 * i] =
++		    (unsigned long)&dma_desc_table[2 * i + 2];
++	}
++	/* last descriptor points to first */
++	dma_desc_table[2 * 326] = (unsigned long)&dma_desc_table[0];
++
++#ifdef CONFIG_FB_HITACHI_TX09_LANDSCAPE
++
++	dma_desc_table[0 + 1] = (unsigned long)fb_buffer;
++	for (i = 0; i < 7; i++) {
++		/* blanking lines point to first line of fb_buffer */
++		dma_desc_table[2 * i + 1] = (unsigned long)fb_buffer + 319 * 2;
++	}
++	for (i = 7; i < 327; i++) {
++		/* visible lines */
++		dma_desc_table[2 * i + 1] =
++		    (unsigned long)fb_buffer + (319 - (i - 7)) * 2;
++	}
++
++#else				/* portrait mode */
++
++	for (i = 0; i < 7; i++) {
++		/* blanking lines point to first line of fb_buffer */
++		dma_desc_table[2 * i + 1] = (unsigned long)fb_buffer;
++	}
++	for (i = 7; i < 327; i++) {
++		/* visible lines */
++		dma_desc_table[2 * i + 1] =
++		    (unsigned long)fb_buffer + 2 * 240 * (i - 7);
++	}
++
++#endif
++
++#ifdef CONFIG_FB_HITACHI_TX09_LANDSCAPE
++	set_dma_x_count(CH_PPI, 240);
++	set_dma_x_modify(CH_PPI, 2 * 320);
++	set_dma_y_count(CH_PPI, 0);
++	set_dma_y_modify(CH_PPI, 0);
++	set_dma_next_desc_addr(CH_PPI, (unsigned long)dma_desc_table[2 * 326]);
++#else
++	set_dma_x_count(CH_PPI, 240);
++	set_dma_x_modify(CH_PPI, 2);
++	set_dma_y_count(CH_PPI, 0);
++	set_dma_y_modify(CH_PPI, 0);
++	set_dma_next_desc_addr(CH_PPI, (unsigned long)dma_desc_table[2 * 326]);
++#endif
++
++	set_dma_config(CH_PPI, 0x7404);
++
++	return 0;
++}
++
++static int request_ports(int action)
++{
++	u16 ppi_req[] = PPI0_16;
++	u16 tmr_req[] = TIMERS;
++
++	if (action) {
++		if (peripheral_request_list(ppi_req, DRIVER_NAME)) {
++			printk(KERN_ERR DRIVER_NAME
++			       ": Requesting Peripherals PPI faild\n");
++			return -EFAULT;
++		}
++
++		if (peripheral_request_list(tmr_req, DRIVER_NAME)) {
++			peripheral_free_list(ppi_req);
++			printk(KERN_ERR DRIVER_NAME
++			       ": Requesting Peripherals TMR faild\n");
++			return -EFAULT;
++		}
++
++		if (gpio_request(PCI_PIN, DRIVER_NAME)) {
++			peripheral_free_list(ppi_req);
++			peripheral_free_list(tmr_req);
++			printk(KERN_ERR ": Requesting GPIO %d faild\n", PCI_PIN);
++			return -EFAULT;
++		}
++
++		gpio_direction_output(PCI_PIN, 0);
++		SSYNC();
++	} else {
++		peripheral_free_list(ppi_req);
++		peripheral_free_list(tmr_req);
++
++		gpio_free(PCI_PIN);
++	}
++	return 0;
++}
++
++static struct fb_info tx09_fb;
++
++static struct fb_var_screeninfo tx09_fb_defined = {
++#ifdef CONFIG_FB_HITACHI_TX09_LANDSCAPE
++	.xres = 320,
++	.yres = 240,
++	.xres_virtual = 320,
++	.yres_virtual = 240,
++#else
++	.xres = 240,
++	.yres = 320,
++	.xres_virtual = 240,
++	.yres_virtual = 320,
++#endif
++	.bits_per_pixel = 16,
++	.activate = FB_ACTIVATE_TEST,
++	.height = -1,
++	.width = -1,
++#ifdef BITREVERSED
++	.red = {0, 5, 1},	/* offset, length, msb right */
++	.green = {5, 6, 1},
++	.blue = {11, 5, 1},
++#else
++	.red = {0, 5, 0},
++	.green = {5, 6, 0},
++	.blue = {11, 5, 0},
++#endif
++	.transp = {0, 0, 0},
++	.left_margin = 0,
++	.right_margin = 0,
++	.upper_margin = 0,
++	.lower_margin = 0,
 +};
 +
-+/*--------------------------------------------------------------------------*/
-+static int bfin_cf_reset(void)
-+{
-+	  outw(0, CF_ATASEL_ENA);
-+	  mdelay(200);
-+	  outw(0, CF_ATASEL_DIS);
-+
-+	  return 0;
-+
-+}
-+
-+static int bfin_cf_ss_init(struct pcmcia_socket *s)
-+{
-+	return 0;
-+}
-+
-+/* the timer is primarily to kick this socket's pccardd */
-+static void bfin_cf_timer(unsigned long _cf)
-+{
-+	struct bfin_cf_socket	*cf = (void *) _cf;
-+	unsigned short present = bfin_cf_present(cf->cd_pfx);
-+
-+	if (present != cf->present) {
-+		cf->present = present;
-+		pr_debug("%s: card %s\n", driver_name,
-+			present ? "present" : "gone");
-+		pcmcia_parse_events(&cf->socket, SS_DETECT);
-+	}
-+
-+	if (cf->active)
-+		mod_timer(&cf->timer, jiffies + POLL_INTERVAL);
-+}
-+
-+static int bfin_cf_get_status(struct pcmcia_socket *s, u_int *sp)
-+{
-+	struct bfin_cf_socket	*cf;
-+
-+	if (!sp)
-+		return -EINVAL;
-+
-+	cf = container_of(s, struct bfin_cf_socket, socket);
-+
-+	if (bfin_cf_present(cf->cd_pfx)) {
-+		*sp = SS_READY | SS_DETECT | SS_POWERON | SS_3VCARD;
-+		s->irq.AssignedIRQ = 0;
-+		s->pci_irq = cf->irq;
-+
-+	} else
-+		*sp = 0;
-+	return 0;
-+}
-+
-+static int
-+bfin_cf_set_socket(struct pcmcia_socket *sock, struct socket_state_t *s)
-+{
-+
-+	struct bfin_cf_socket	*cf;
-+	cf = container_of(sock, struct bfin_cf_socket, socket);
-+
-+	switch (s->Vcc) {
-+	case 0:
-+	case 33:
-+		break;
-+	case 50:
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	if (s->flags & SS_RESET){
-+		disable_irq(cf->irq);
-+		bfin_cf_reset();
-+		enable_irq(cf->irq);
-+	}
-+
-+	pr_debug("%s: Vcc %d, io_irq %d, flags %04x csc %04x\n",
-+		driver_name, s->Vcc, s->io_irq, s->flags, s->csc_mask);
-+
-+	return 0;
-+}
-+
-+static int bfin_cf_ss_suspend(struct pcmcia_socket *s)
-+{
-+	pr_debug("%s: %s\n", driver_name, __FUNCTION__);
-+	return bfin_cf_set_socket(s, &dead_socket);
-+}
-+
-+/* regions are 2K each:  mem, attrib, io (and reserved-for-ide) */
-+
-+static int bfin_cf_set_io_map(struct pcmcia_socket *s, struct pccard_io_map *io)
-+{ struct bfin_cf_socket	*cf;
-+
-+	cf = container_of(s, struct bfin_cf_socket, socket);
-+	io->flags &= MAP_ACTIVE|MAP_ATTRIB|MAP_16BIT;
-+	io->start = cf->phys_cf_io;
-+	io->stop = io->start + SZ_2K - 1;
-+	return 0;
-+}
-+
-+static int
-+bfin_cf_set_mem_map(struct pcmcia_socket *s, struct pccard_mem_map *map)
-+{
-+	struct bfin_cf_socket	*cf;
-+
-+	if (map->card_start)
-+		return -EINVAL;
-+	cf = container_of(s, struct bfin_cf_socket, socket);
-+	map->static_start = cf->phys_cf_io;
-+	map->flags &= MAP_ACTIVE|MAP_ATTRIB|MAP_16BIT;
-+	if (map->flags & MAP_ATTRIB)
-+		map->static_start = cf->phys_cf_attr;
-+
-+	return 0;
-+}
-+
-+static struct pccard_operations bfin_cf_ops = {
-+	.init			= bfin_cf_ss_init,
-+	.suspend		= bfin_cf_ss_suspend,
-+	.get_status		= bfin_cf_get_status,
-+	.set_socket		= bfin_cf_set_socket,
-+	.set_io_map		= bfin_cf_set_io_map,
-+	.set_mem_map	= bfin_cf_set_mem_map,
++static struct fb_fix_screeninfo tx09_fb_fix = {
++	.id = DRIVER_NAME,
++	.smem_len = 320 * 240 * 2,
++	.type = FB_TYPE_PACKED_PIXELS,
++	.visual = FB_VISUAL_TRUECOLOR,
++	.xpanstep = 0,
++	.ypanstep = 0,
++#ifdef CONFIG_FB_HITACHI_TX09_LANDSCAPE
++	.line_length = 320 * 2,
++#else
++	.line_length = 240 * 2,
++#endif
++	.accel = FB_ACCEL_NONE,
 +};
 +
-+/*--------------------------------------------------------------------------*/
-+
-+static int __init bfin_cf_probe(struct device *dev)
++static int tx09_fb_open(struct fb_info *info, int user)
 +{
-+	struct bfin_cf_socket	*cf;
-+	struct platform_device	*pdev = to_platform_device(dev);
-+	struct resource		*io_mem,*attr_mem;
-+	int			irq;
-+	unsigned short		cd_pfx;
-+	int			status = 0;
++	unsigned long flags;
 +
-+	printk(KERN_INFO "Blackfin CompactFlash/PCMCIA Socket Driver\n");
++	pr_debug("%s\n", __FUNCTION__);
 +
-+	irq = platform_get_irq(pdev, 0);
-+	if (!irq)
-+		return -EINVAL;
++	spin_lock_irqsave(&tx09_lock, flags);
++	tx09_open_cnt++;	/* increase counter */
++	spin_unlock_irqrestore(&tx09_lock, flags);
 +
-+	cd_pfx = platform_get_irq(pdev, 1); /*Card Detect GPIO PIN*/
-+	if (cd_pfx > MAX_BLACKFIN_GPIOS)
-+		return -EINVAL;
++	if (tx09_open_cnt <= 1) {	/* opened the first time */
 +
-+	if (gpio_request(cd_pfx, "pcmcia: CD")) {
-+		printk(KERN_ERR "BF5xx flash: Failed ro request Card Detect GPIO_%d\n", cd_pfx);
-+		return -EBUSY;
++		/* stop PPI */
++		WRITE_PPI_CONTROL(0);
++		SSYNC();
++
++		/* configure dma stuff */
++		config_dma();
++
++		config_ppi();
++
++		/* start dma */
++		enable_dma(CH_PPI);
++		SSYNC();
++
++		/* start PPI */
++		WRITE_PPI_CONTROL(READ_PPI_CONTROL() | PORT_EN);
++		SSYNC();
++
++		if (!t_conf_done)
++			config_timers();
++
++		start_timers();
 +	}
-+	gpio_direction_input(cd_pfx);
 +
-+	cf = kcalloc(1, sizeof *cf, GFP_KERNEL);
-+	if (!cf)
++	return 0;
++}
++
++static int tx09_fb_release(struct fb_info *info, int user)
++{
++	unsigned long flags;
++
++	pr_debug("%s\n", __FUNCTION__);
++
++	spin_lock_irqsave(&tx09_lock, flags);
++	tx09_open_cnt--;
++	tx09_mmap = 0;
++	spin_unlock_irqrestore(&tx09_lock, flags);
++
++	if (tx09_open_cnt <= 0) {
++		stop_timers();
++
++		WRITE_PPI_CONTROL(0);
++		SSYNC();
++
++		disable_dma(CH_PPI);
++	}
++
++	return 0;
++}
++
++static int tx09_fb_check_var(struct fb_var_screeninfo *var,
++			     struct fb_info *info)
++{
++	pr_debug("%s\n", __FUNCTION__);
++
++	if (var->bits_per_pixel != 16) {
++		pr_debug("%s: depth not supported: %u BPP\n", __FUNCTION__,
++			 var->bits_per_pixel);
++		return -EINVAL;
++	}
++
++	if (info->var.xres != var->xres || info->var.yres != var->yres ||
++	    info->var.xres_virtual != var->xres_virtual
++	    || info->var.yres_virtual != var->yres_virtual) {
++		pr_debug("%s: Resolution not supported: X%u x Y%u\n",
++			 __FUNCTION__, var->xres, var->yres);
++		return -EINVAL;
++	}
++
++	if ((info->fix.line_length * var->yres_virtual) > info->fix.smem_len) {
++		pr_debug("%s: Memory limit requested yres_virtual = %u\n",
++			 __FUNCTION__, var->yres_virtual);
 +		return -ENOMEM;
++	}
 +
-+	cf->cd_pfx = cd_pfx;
-+
-+	init_timer(&cf->timer);
-+	cf->timer.function = bfin_cf_timer;
-+	cf->timer.data = (unsigned long) cf;
-+
-+	cf->pdev = pdev;
-+	dev_set_drvdata(dev, cf);
-+
-+	cf->irq = irq;
-+	cf->socket.pci_irq = irq;
-+
-+	set_irq_type(irq, IRQF_TRIGGER_LOW);
-+
-+	io_mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	attr_mem = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-+
-+	if (!io_mem || !attr_mem)
-+		goto fail0;
-+
-+	cf->phys_cf_io = io_mem->start;
-+	cf->phys_cf_attr = attr_mem->start;
-+
-+	/* pcmcia layer only remaps "real" memory */
-+	cf->socket.io_offset = (unsigned long)
-+			ioremap(cf->phys_cf_io, SZ_2K);
-+
-+	if (!cf->socket.io_offset)
-+		goto fail0;
-+
-+	pr_info("%s: on irq %d\n", driver_name, irq);
-+
-+	pr_debug("%s: %s\n", driver_name, bfin_cf_present(cf->cd_pfx) ? "present" : "(not present)");
-+
-+	cf->socket.owner = THIS_MODULE;
-+	cf->socket.dev.parent = dev;
-+	cf->socket.ops = &bfin_cf_ops;
-+	cf->socket.resource_ops = &pccard_static_ops;
-+	cf->socket.features = SS_CAP_PCCARD | SS_CAP_STATIC_MAP
-+				| SS_CAP_MEM_ALIGN;
-+	cf->socket.map_size = SZ_2K;
-+
-+	status = pcmcia_register_socket(&cf->socket);
-+	if (status < 0)
-+		goto fail2;
-+
-+	cf->active = 1;
-+	mod_timer(&cf->timer, jiffies + POLL_INTERVAL);
 +	return 0;
-+
-+fail2:
-+	iounmap((void __iomem *) cf->socket.io_offset);
-+	release_mem_region(cf->phys_cf_io, SZ_8K);
-+
-+fail0:
-+	kfree(cf);
-+	return status;
 +}
 +
-+static int __devexit bfin_cf_remove(struct device *dev)
++static int tx09_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
 +{
-+	struct bfin_cf_socket *cf = dev_get_drvdata(dev);
++	unsigned long flags;
 +
-+	gpio_free(cf->cd_pfx);
-+	cf->active = 0;
-+	pcmcia_unregister_socket(&cf->socket);
-+	del_timer_sync(&cf->timer);
-+	iounmap((void __iomem *) cf->socket.io_offset);
-+	release_mem_region(cf->phys_cf_io, SZ_8K);
-+	kfree(cf);
++	pr_debug("%s\n", __FUNCTION__);
++
++	if (tx09_mmap)
++		return -1;	/* already mmap'ed */
++
++	spin_lock_irqsave(&tx09_lock, flags);
++	tx09_mmap = 1;
++	spin_unlock_irqrestore(&tx09_lock, flags);
++
++	vma->vm_start = (unsigned long)fb_buffer;
++	vma->vm_end = vma->vm_start + 320 * 240 * 2;
++	vma->vm_flags |= VM_MAYSHARE | VM_SHARED;
++
 +	return 0;
 +}
 +
-+static struct device_driver bfin_cf_driver = {
-+	.name		= (char *) driver_name,
-+	.bus		= &platform_bus_type,
-+	.probe		= bfin_cf_probe,
-+	.remove		= __devexit_p(bfin_cf_remove),
-+	.suspend 	= pcmcia_socket_dev_suspend,
-+	.resume 	= pcmcia_socket_dev_resume,
++int tx09_fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
++{
++
++#ifdef CONFIG_FB_HITACHI_TX09_CURSOR
++	return -EINVAL;		/* just to force soft_cursor() call */
++#else
++	return 0;
++#endif
++
++}
++
++static int tx09_fb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
++			     u_int transp, struct fb_info *info)
++{
++	if (regno >= BFIN_LCD_NBR_PALETTE_ENTRIES)
++		return -EINVAL;
++
++	if (info->var.grayscale) {
++		/* grayscale = 0.30*R + 0.59*G + 0.11*B */
++		red = green = blue = (red * 77 + green * 151 + blue * 28) >> 8;
++	}
++
++	if (info->fix.visual == FB_VISUAL_TRUECOLOR) {
++		u32 value;
++		/* Place color in the pseudopalette */
++		if (regno > 16)
++			return -EINVAL;
++		red >>= (16 - info->var.red.length);
++		green >>= (16 - info->var.green.length);
++		blue >>= (16 - info->var.blue.length);
++		value =
++		    (red << info->var.red.offset) | (green << info->var.green.
++						     offset) | (blue << info->
++								var.blue.
++								offset);
++		value &= 0xFFFF;
++		((u32 *) (info->pseudo_palette))[regno] = value;
++	}
++	return 0;
++}
++
++static struct fb_ops tx09_fb_ops = {
++	.owner = THIS_MODULE,
++	.fb_open = tx09_fb_open,
++	.fb_release = tx09_fb_release,
++	.fb_check_var = tx09_fb_check_var,
++	.fb_fillrect = cfb_fillrect,
++	.fb_copyarea = cfb_copyarea,
++	.fb_imageblit = cfb_imageblit,
++	.fb_mmap = tx09_fb_mmap,
++	.fb_cursor = tx09_fb_cursor,
++	.fb_setcolreg = tx09_fb_setcolreg,
 +};
 +
-+static int __init bfin_cf_init(void)
++static int bl_update_properties(struct backlight_device *bd)
 +{
-+	return driver_register(&bfin_cf_driver);
++	pr_debug("%s\n", __FUNCTION__);
++	set_backlight(bd->props.brightness);
++	return 0;
 +}
 +
-+static void __exit bfin_cf_exit(void)
++static int bl_get_brightness(struct backlight_device *bd)
 +{
-+	driver_unregister(&bfin_cf_driver);
++	pr_debug("%s\n", __FUNCTION__);
++	return current_brightness;
 +}
 +
-+module_init(bfin_cf_init);
-+module_exit(bfin_cf_exit);
++static struct backlight_ops tx09fb_bl_ops = {
++	.get_brightness = bl_get_brightness,
++	.update_status = bl_update_properties,
++};
 +
-+MODULE_DESCRIPTION("BFIN CF/PCMCIA Driver");
++static int __init tx09_probe(struct platform_device *pdev)
++{
++	pr_debug("%s\n", __FUNCTION__);
++
++	printk(KERN_INFO DRIVER_NAME ": FrameBuffer initializing...\n");
++
++	/* dma channel */
++	if (request_dma(CH_PPI, "BF533_PPI_DMA") < 0) {
++		printk(KERN_ERR DRIVER_NAME ": couldn't request PPI dma.\n");
++		return -EFAULT;
++	}
++
++	/* gpio ports */
++	if (request_ports(1)) {
++		printk(KERN_ERR DRIVER_NAME ": couldn't request gpio port.\n");
++		free_dma(CH_PPI);
++		return -EFAULT;
++	}
++
++	/* frame buffer */
++	fb_buffer = dma_alloc_coherent(NULL, 240 * 320 * 2, &dma_handle, GFP_KERNEL);	/* 7 blanking lines, 2 bytes/pixel */
++	if (fb_buffer == NULL) {
++		printk(KERN_ERR DRIVER_NAME
++		       ": couldn't allocate dma buffer.\n");
++		free_dma(CH_PPI);
++		request_ports(0);
++		return -ENOMEM;
++	}
++
++	/* dma descriptor list */
++#if L1_DATA_A_LENGTH != 0
++	dma_desc_table =
++	    (unsigned long *)l1_data_sram_alloc(sizeof(unsigned long) * 2 *
++						(320 + 7));
++#else
++	dma_desc_table =
++	    dma_alloc_coherent(NULL, sizeof(unsigned long) * 2 * (320 + 7),
++			       &dma_handle, 0);
++#endif
++
++	if (dma_desc_table == NULL) {
++		printk(KERN_ERR DRIVER_NAME
++		       ": couldn't allocate dma descriptor.\n");
++		free_dma(CH_PPI);
++		request_ports(0);
++		dma_free_coherent(NULL, 240 * 320 * 2, fb_buffer, dma_handle);
++		return -ENOMEM;
++	}
++
++	memset(fb_buffer, 0, 240 * 320 * 2);
++
++	tx09_fb.screen_base = (void *)fb_buffer;
++	tx09_fb_fix.smem_start = (int)fb_buffer;
++
++	tx09_fb.fbops = &tx09_fb_ops;
++	tx09_fb.var = tx09_fb_defined;
++
++	tx09_fb.fix = tx09_fb_fix;
++	tx09_fb.flags = FBINFO_DEFAULT;
++
++	/* pseudo palette */
++
++	tx09_fb.pseudo_palette = kmalloc(sizeof(u32) * 16, GFP_KERNEL);
++
++	if (!tx09_fb.pseudo_palette) {
++		printk(KERN_ERR DRIVER_NAME
++		       "Failed to allocate pseudo palette\n");
++		free_dma(CH_PPI);
++		request_ports(0);
++		dma_free_coherent(NULL, 240 * 320 * 2, fb_buffer, dma_handle);
++		return -ENOMEM;
++	}
++	memset(tx09_fb.pseudo_palette, 0, sizeof(u32) * 16);
++
++	/* color map */
++	if (fb_alloc_cmap(&tx09_fb.cmap, BFIN_LCD_NBR_PALETTE_ENTRIES, 0) < 0) {
++		printk(KERN_ERR DRIVER_NAME
++		       "Failed to allocate colormap (%d entries)\n",
++		       BFIN_LCD_NBR_PALETTE_ENTRIES);
++		free_dma(CH_PPI);
++		request_ports(0);
++		dma_free_coherent(NULL, 240 * 320 * 2, fb_buffer, dma_handle);
++		kfree(tx09_fb.pseudo_palette);
++		return -EFAULT;
++	}
++
++	/* register framebuffer */
++	if (register_framebuffer(&tx09_fb) < 0) {
++		printk(KERN_ERR DRIVER_NAME
++		       ": unable to register framebuffer.\n");
++		free_dma(CH_PPI);
++		request_ports(0);
++		dma_free_coherent(NULL, 240 * 320 * 2, fb_buffer, dma_handle);
++		fb_buffer = NULL;
++		return -EINVAL;
++	}
++
++	/* backlight device */
++	bl_dev =
++	    backlight_device_register("hitachi-bl", NULL, NULL, &tx09fb_bl_ops);
++	bl_dev->props.max_brightness = MAX_BRIGHTNESS;
++
++	printk(KERN_INFO "Done.\n");
++
++	return 0;
++}
++
++static int tx09_remove(struct platform_device *pdev)
++{
++	pr_debug("%s\n", __FUNCTION__);
++
++	if (fb_buffer != NULL)
++		dma_free_coherent(NULL, 240 * 320 * 2, fb_buffer, dma_handle);
++
++#if L1_DATA_A_LENGTH != 0
++	if (dma_desc_table)
++		l1_data_sram_free(dma_desc_table);
++#else
++	if (dma_desc_table)
++		dma_free_coherent(NULL, sizeof(unsigned long) * 2 * (320 + 7),
++				  &dma_handle, 0);
++#endif
++
++	stop_timers();
++
++	free_dma(CH_PPI);
++
++	kfree(tx09_fb.pseudo_palette);
++	fb_dealloc_cmap(&tx09_fb.cmap);
++
++	backlight_device_unregister(bl_dev);
++
++	unregister_framebuffer(&tx09_fb);
++
++	request_ports(0);
++
++	printk(KERN_INFO DRIVER_NAME ": Unregistered LCD driver.\n");
++
++	return 0;
++}
++
++#ifdef CONFIG_PM
++static int tx09_suspend(struct platform_device *pdev, pm_message_t state)
++{
++	if (tx09_open_cnt > 0) {
++		WRITE_PPI_CONTROL(0);
++		SSYNC();
++		disable_dma(CH_PPI);
++	}
++	return 0;
++}
++
++static int tx09_resume(struct platform_device *pdev)
++{
++	if (tx09_open_cnt > 0) {
++		WRITE_PPI_CONTROL(0);
++		SSYNC();
++
++		config_dma();
++		config_ppi();
++
++		enable_dma(CH_PPI);
++		SSYNC();
++		WRITE_PPI_CONTROL(READ_PPI_CONTROL() | PORT_EN);
++		SSYNC();
++	}
++	return 0;
++}
++#else
++#define tx09_suspend NULL
++#define tx09_resume  NULL
++#endif
++
++static struct platform_driver tx09_driver = {
++	.probe = tx09_probe,
++	.remove = tx09_remove,
++	.suspend = tx09_suspend,
++	.resume = tx09_resume,
++	.driver = {
++		   .name = DRIVER_NAME,
++		   .owner = THIS_MODULE,
++		   },
++};
++
++static int __devinit tx09_driver_init(void)
++{
++	return platform_driver_register(&tx09_driver);
++}
++
++static void __exit tx09_driver_cleanup(void)
++{
++	platform_driver_unregister(&tx09_driver);
++}
++
++MODULE_DESCRIPTION("Hitachi TX09D70VM1CDA TFT LCD Driver");
++MODULE_AUTHOR("Harald Krapfenbauer");
 +MODULE_LICENSE("GPL");
-diff --git a/include/pcmcia/cs_types.h b/include/pcmcia/cs_types.h
-index 9a6bcc4..c3257c1 100644
---- a/include/pcmcia/cs_types.h
-+++ b/include/pcmcia/cs_types.h
-@@ -21,7 +21,7 @@
- #include <sys/types.h>
- #endif
- 
--#if defined(__arm__) || defined(__mips__) || defined(__avr32__)
-+#if defined(__arm__) || defined(__mips__) || defined(__avr32__) || defined(bfin)
- /* This (ioaddr_t) is exposed to userspace & hence cannot be changed. */
- typedef u_int   ioaddr_t;
- #else
++
++module_init(tx09_driver_init);
++module_exit(tx09_driver_cleanup);
 -- 
 1.5.5
 
