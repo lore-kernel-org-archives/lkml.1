@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757454AbYELNhz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757990AbYELNiZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757454AbYELNhz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 09:37:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751860AbYELNhg
+	id S1757990AbYELNiZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 09:38:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbYELNiF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 09:37:36 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:44109 "EHLO mgw1.diku.dk"
+	Mon, 12 May 2008 09:38:05 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:58516 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751827AbYELNhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 09:37:35 -0400
-Date: Mon, 12 May 2008 15:37:31 +0200 (CEST)
+	id S1751807AbYELNiD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 09:38:03 -0400
+Date: Mon, 12 May 2008 15:37:58 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+To: jgarzik@pobox.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/6] drivers/md: remove null pointer dereference
-Message-ID: <Pine.LNX.4.64.0805121537100.3694@ask.diku.dk>
+Subject: [PATCH 3/6] drivers/net: remove null pointer dereference
+Message-ID: <Pine.LNX.4.64.0805121537320.3694@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,9 +23,8 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-If pgpath->pg->ps.type is NULL, it is not possible to access its name
-field.  So I have simply modified the error message to drop the printing of
-the name field.
+If dev is NULL, it is not possible to access its name field.  So I have
+simply modified the error message to drop the printing of the name field.
 
 
 This problem was found using the following semantic match
@@ -53,16 +52,15 @@ Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
 
-diff -u -p a/drivers/md/dm-mpath.c b/drivers/md/dm-mpath.c
---- a/drivers/md/dm-mpath.c	2008-04-16 13:27:57.000000000 +0200
-+++ b/drivers/md/dm-mpath.c	2008-05-12 09:19:35.000000000 +0200
-@@ -884,8 +884,7 @@ static int reinstate_path(struct pgpath 
- 		goto out;
+diff -u -p a/drivers/net/au1000_eth.c b/drivers/net/au1000_eth.c
+--- a/drivers/net/au1000_eth.c	2008-04-27 11:41:11.000000000 +0200
++++ b/drivers/net/au1000_eth.c	2008-05-12 09:32:54.000000000 +0200
+@@ -1242,7 +1242,7 @@ static irqreturn_t au1000_interrupt(int 
+ 	struct net_device *dev = (struct net_device *) dev_id;
  
- 	if (!pgpath->pg->ps.type) {
--		DMWARN("Reinstate path not supported by path selector %s",
--		       pgpath->pg->ps.type->name);
-+		DMWARN("Reinstate path not supported by path selector");
- 		r = -EINVAL;
- 		goto out;
+ 	if (dev == NULL) {
+-		printk(KERN_ERR "%s: isr: null dev ptr\n", dev->name);
++		printk(KERN_ERR "isr: null dev ptr\n");
+ 		return IRQ_RETVAL(1);
  	}
+ 
