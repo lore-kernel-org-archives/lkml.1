@@ -1,41 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758664AbYELUm7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759319AbYELUnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758664AbYELUm7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 16:42:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754161AbYELUmq
+	id S1759319AbYELUnX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 16:43:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756226AbYELUmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 16:42:46 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:48383 "EHLO mx.gate01.com"
+	Mon, 12 May 2008 16:42:49 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:28783 "EHLO mx.gate01.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753646AbYELUmp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 16:42:45 -0400
-Date: Tue, 13 May 2008 05:41:28 +0900
+	id S1755379AbYELUmr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 16:42:47 -0400
+Date: Tue, 13 May 2008 05:41:01 +0900
 From: Paul Mundt <lethal@linux-sh.org>
 To: Harvey Harrison <harvey.harrison@gmail.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 11/12] sh: use the common ascii hex helpers
-Message-ID: <20080512204128.GB17005@linux-sh.org>
+       LKML <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-ide <linux-ide@vger.kernel.org>,
+       linux-netdev <netdev@vger.kernel.org>,
+       David Miller <davem@davemloft.net>, Jeff Garzik <jeff@garzik.org>,
+       Ingo Molnar <mingo@elte.hu>, Jason Wessel <jason.wessel@windriver.com>,
+       David Howells <dhowells@redhat.com>,
+       "ralf@linux-mips.org" <ralf@linux-mips.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 01/12] lib: create common ascii hex array
+Message-ID: <20080512204101.GA17005@linux-sh.org>
 Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
 	Harvey Harrison <harvey.harrison@gmail.com>,
 	Andrew Morton <akpm@linux-foundation.org>,
-	LKML <linux-kernel@vger.kernel.org>
-References: <1210619144.24092.62.camel@brick>
+	LKML <linux-kernel@vger.kernel.org>,
+	James Bottomley <James.Bottomley@HansenPartnership.com>,
+	linux-scsi <linux-scsi@vger.kernel.org>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	linux-ide <linux-ide@vger.kernel.org>,
+	linux-netdev <netdev@vger.kernel.org>,
+	David Miller <davem@davemloft.net>, Jeff Garzik <jeff@garzik.org>,
+	Ingo Molnar <mingo@elte.hu>,
+	Jason Wessel <jason.wessel@windriver.com>,
+	David Howells <dhowells@redhat.com>,
+	"ralf@linux-mips.org" <ralf@linux-mips.org>,
+	Paul Mackerras <paulus@samba.org>
+References: <1210619134.24092.51.camel@brick>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1210619144.24092.62.camel@brick>
+In-Reply-To: <1210619134.24092.51.camel@brick>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 12, 2008 at 12:05:43PM -0700, Harvey Harrison wrote:
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> ---
->  arch/sh/kernel/kgdb_stub.c |   11 +++++------
->  drivers/serial/sh-sci.c    |    8 ++++----
->  include/asm-sh/kgdb.h      |   14 --------------
->  3 files changed, 9 insertions(+), 24 deletions(-)
+On Mon, May 12, 2008 at 12:05:34PM -0700, Harvey Harrison wrote:
+> Add a common hex array in hexdump.c so everyone can use it.
 > 
+> Add a common hi/lo helper to avoid the shifting masking that is
+> done to get the upper and lower nibbles of a byte value.
+> 
+> Pull the pack_hex_byte helper from kgdb as it is opencoded many
+> places in the tree that will be consolidated.
+> 
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+
 Acked-by: Paul Mundt <lethal@linux-sh.org>
