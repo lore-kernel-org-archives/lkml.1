@@ -1,66 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759971AbYELFHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756933AbYELFXF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759971AbYELFHi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 01:07:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752AbYELFHa
+	id S1756933AbYELFXF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 01:23:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbYELFWx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 01:07:30 -0400
-Received: from smtp201.iad.emailsrvr.com ([207.97.245.201]:46092 "EHLO
-	smtp201.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751741AbYELFH3 convert rfc822-to-8bit (ORCPT
+	Mon, 12 May 2008 01:22:53 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:39649 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751520AbYELFWx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 01:07:29 -0400
-Date: Mon, 12 May 2008 01:07:28 -0400 (EDT)
-Subject: =?UTF-8?Q?WARNING:=20arch/mips/au1000/common/built-in.o(.text+0x15c0):?=
- =?UTF-8?Q?=20Section=20mismatch:=20reference=20to=20.init.data:=20(betwee?=
- =?UTF-8?Q?n=20'au1xxx=5Fplatform=5Finit'=20and=20'=5F=5Ffixup=5Fbigphys?=
- =?UTF-8?Q?=5Faddr')?=
-From: abhiruchi.g@vaultinfo.com
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
-       kernel-testers@vger.kernel.org
-Reply-To: abhiruchi.g@vaultinfo.com
+	Mon, 12 May 2008 01:22:53 -0400
+Message-ID: <4827D429.6060708@snapgear.com>
+Date: Mon, 12 May 2008 15:22:49 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
 MIME-Version: 1.0
-Content-Type: text/plain;charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Importance: Normal
-X-Priority: 3 (Normal)
-X-Type: 1
-Message-ID: <54350.192.168.1.71.1210568848.webmail@192.168.1.71>
-X-Mailer: webmail6.6.1
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] m68knommu: missing sections for linker script
+References: <200805070052.m470qdod017612@goober> <20080511004107.GA2675@uranus.ravnborg.org>
+In-Reply-To: <20080511004107.GA2675@uranus.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
-  I am trying to configure the kernel for mips(DB1200 bosrd).I am getting this warning.
-how to remove this warning?
+Hi Sam,
 
-WARNING: arch/mips/au1000/common/built-in.o(.text+0x15c0): Section mismatch: reference to .init.data: (between 'au1xxx_platform_init' and '__fixup_bigphys_addr')
-WARNING: arch/mips/au1000/common/built-in.o(.text+0x15c4): Section mismatch: reference to .init.data: (between 'au1xxx_platform_init' and '__fixup_bigphys_addr
+Sam Ravnborg wrote:
+> On Wed, May 07, 2008 at 10:52:39AM +1000, Greg Ungerer wrote:
+>> Inlucde the missing kcrctab and kcrctab_unused sections into the
+>> m68knommu linker script.
+>>
+>> Signed-off-by: Greg Ungerer <gerg@uclinux.org>
+>> ---
+>>
+>> diff -Naurp linux-2.6.25-rc1/arch/m68knommu/kernel/vmlinux.lds.S linux-2.6.25-rc1-uc0/arch/m68knommu/kernel/vmlinux.lds.S
+>> --- linux-2.6.25-rc1/arch/m68knommu/kernel/vmlinux.lds.S	2008-05-06 14:52:00.000000000 +1000
+>> +++ linux-2.6.25-rc1-uc0/arch/m68knommu/kernel/vmlinux.lds.S	2008-05-06 16:56:47.000000000 +1000
+>> @@ -114,6 +114,16 @@ SECTIONS {
+>>  		*(__kcrctab_gpl)
+>>  		__stop___kcrctab_gpl = .;
+>>  
+>> +		/* Kernel symbol table: Normal unused symbols */
+>> +		__start___kcrctab_unused = .;
+>> +		*(__kcrctab_unused)
+>> +		__stop___kcrctab_unused = .;
+>> +
+>> +		/* Kernel symbol table: GPL-only unused symbols */
+>> +		__start___kcrctab_unused_gpl = .;
+>> +		*(__kcrctab_unused_gpl)
+>> +		__stop___kcrctab_unused_gpl = .;
+>> +
+>>  		/* Kernel symbol table: GPL-future symbols */
+>>  		__start___kcrctab_gpl_future = .;
+>>  		*(__kcrctab_gpl_future)
+> 
+> Hi Greg.
+> 
+> Any specific reasons why m68knommu does
+> not use include/asm-generic/vmlinux-lds.h?
+> 
+> There are defined there as well as many other common things.
+
+I would very much like to use the common defines in vmlinux-lds.h.
+
+And historically it goes back to wanting to be able to directly
+build ROM based kernels. There has been a couple of threads on
+this over th years, this one http://lkml.org/lkml/2003/1/21/213
+touches on it. I think there is more before this too, but I couldn't
+find a link to it just now.
+
+Sebastians patch in this thread goes to resolving this. I haven't
+had a good look over it yet though.
+
+Regards
+Greg
 
 
-My kernel hangs after this:
-===========================
-Waiting 10sec before mounting root device...
-scsi 0:0:0:0: Direct-Access     Ut163    USB2FlashStorage 0.00 PQ: 0 ANSI: 2
-sd 0:0:0:0: [sda] 983808 512-byte hardware sectors (504 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Assuming drive cache: write through
-sd 0:0:0:0: [sda] 983808 512-byte hardware sectors (504 MB)
-sd 0:0:0:0: [sda] Write Protect is off
-sd 0:0:0:0: [sda] Assuming drive cache: write through
- sda:<7>usb-storage: queuecommand called
- sda1
-sd 0:0:0:0: [sda] Attached SCSI removable disk
-sd 0:0:0:0: Attached scsi generic sg0 type 0
-VFS: Mounted root (ext2 filesystem) readonly.
-mount_block_root: name=/dev/root fs=ext2 flags=32769
-Freeing unused kernel memory: 164k freed
-Warning: unable to open an initial console.
-Algorithmics/MIPS FPU Emulator v1.5
 
-
-Thanks,
-Abhi
-
+------------------------------------------------------------------------
+Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
+Secure Computing Corporation                PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
