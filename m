@@ -1,93 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758517AbYELRf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758647AbYELRia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758517AbYELRf3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 13:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755987AbYELRfV
+	id S1758647AbYELRia (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 13:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755063AbYELRiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 13:35:21 -0400
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:60014 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755497AbYELRfT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 13:35:19 -0400
-Subject: Re: scsi_scan: WARNING: at include/linux/blkdev.h:431
-	blk_queue_init_tags+0x107/0x120()
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: jens.axboe@oracle.com, jesper.juhl@gmail.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <20080508125532W.fujita.tomonori@lab.ntt.co.jp>
-References: <alpine.LNX.1.00.0805020043130.1489@dragon.funnycrock.com>
-	 <20080502111652T.tomof@acm.org>
-	 <1210200026.3067.25.camel@localhost.localdomain>
-	 <20080508125532W.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain
-Date: Mon, 12 May 2008 10:59:28 -0500
-Message-Id: <1210607968.3078.15.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
-Content-Transfer-Encoding: 7bit
+	Mon, 12 May 2008 13:38:22 -0400
+Received: from zm1.veloxia.com ([213.149.227.2]:53830 "HELO zm1.veloxia.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753758AbYELRiV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 13:38:21 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 May 2008 13:38:21 EDT
+Message-ID: <48287EFB.3070303@hvsistemas.es>
+Date: Mon, 12 May 2008 19:31:39 +0200
+From: Javier Herrero <jherrero@hvsistemas.es>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Bryan Wu <cooloney@kernel.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Bryan Wu <bryan.wu@analog.com>
+Subject: Re: [PATCH 1/2] [8250 Serial Driver]: Added support for 8250-class
+ UARTs in HV Sistemas H8606 board
+References: <1210566565-6205-1-git-send-email-cooloney@kernel.org>	<1210566565-6205-2-git-send-email-cooloney@kernel.org> <20080512105415.6a8fb88c@core>
+In-Reply-To: <20080512105415.6a8fb88c@core>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-05-08 at 12:55 +0900, FUJITA Tomonori wrote: 
-> On Wed, 07 May 2008 17:40:26 -0500
-> James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> > > The problem is that the commit 75ad23b expects that we hold the queue
-> > > lock for __blk_queue_free_tags, blk_queue_free_tags and
-> > > blk_queue_init_tags but we haven't.
-> > > 
-> > > The simple fix is using queue_flag_set/clear_unlocked for them, then
-> > > it should work as before. However, it would be better to hold the
-> > > queue lock for blk_queue_free_tags and blk_queue_init_tags (we can
-> > > hold the queue lock in scsi_activate_tcq and scsi_deactivate_tcq).
-> > 
-> > So is this the fix that everyone agrees on?  And if so, whose tree is it
-> > going through (I tend to think block, since the original breakage came
-> > from the block tree).
-> 
-> The patch is fine from the perspective of the SCSI mid-layer. But it
-> would be not from the perspective of the block layer. For example,
-> blk_queue_init_tags is expected to be called with holding the queue
-> lock (since it could call blk_queue_resize_tags internally) though
-> only the SCSI mid-layer uses those APIs for now.
+Hello, Alan,
 
-There are two cases for blk_queue_init_tags; one is for a shared tag map
-and the other is for individual tag maps.  If you look at the code and
-its use, blk_queue_resize_tags is *only* called for the individual tag
-map case (or for the first caller in a shared tag map case).
+Thans, I will redo the patch in the way you suggest, test it and resend.
 
-The blk_queue_resize_tags() also returns -EBUSY on shared tag maps,
-except the first one; which really exposes a bug in SCSI: we want to set
-the shared tag map to some host specific depth and then carve off pieces
-of it in the devices, so we don't want to adjust the queue down to
-whatever the first seen device wants, and we don't want all other
-devices to fail to adjust the scsi_queue depth the mid-layer uses.
+Regards,
 
-This should fix up scsi.
+Javier
 
-James
+Alan Cox escribió:
+>>  
+>> +#ifdef SERIAL_EXTRA_IRQ_FLAGS
+>> +		irq_flags |= SERIAL_EXTRA_IRQ_FLAGS;
+>> +#endif
+>> +
+>
+>
+> We try and keep ifdefs out of code. It is also not clear what you would
+> do if you had a box where the extra flags depended on the port.
+>
+> So two suggestions
+>
+> Either
+>
+> Add just the line
+>
+> +		irq_flags |= SERIAL_EXTRA_IRQ_FLAGS;
+>
+> and at the end of 8250.h do
+>
+> #ifndef SERIAL_EXTRA_IRQ_FLAGS
+> #define SERIAL_EXTRA_IRQ_FLAGS			0
+> #endif
+>
+> or the same but with an argument (unused for now)
+>
+> SERIAL_EXTRA_IRQ_FLAGS(up)
+>
+> Alan
+>
+>
 
----
-diff --git a/drivers/scsi/scsi.c b/drivers/scsi/scsi.c
-index 110e776..cc0af0f 100644
---- a/drivers/scsi/scsi.c
-+++ b/drivers/scsi/scsi.c
-@@ -893,9 +893,11 @@ void scsi_adjust_queue_depth(struct scsi_device *sdev, int tagged, int tags)
- 
- 	spin_lock_irqsave(sdev->request_queue->queue_lock, flags);
- 
--	/* Check to see if the queue is managed by the block layer.
--	 * If it is, and we fail to adjust the depth, exit. */
-+	/* Check to see if the queue is managed by the block layer,
-+	 * and that we don't have a shared tag map.  If so, and we
-+	 * fail to adjust the depth, exit. */
- 	if (blk_queue_tagged(sdev->request_queue) &&
-+	    !sdev->host->bqt &&
- 	    blk_queue_resize_tags(sdev->request_queue, tags) != 0)
- 		goto out;
- 
-
-
+-- 
+------------------------------------------------------------------------
+Javier Herrero                            EMAIL: jherrero@hvsistemas.com
+HV Sistemas S.L.                          PHONE:         +34 949 336 806
+Los Charcones, 17A                        FAX:           +34 949 336 792
+19170 El Casar - Guadalajara - Spain      WEB: http://www.hvsistemas.com 
 
