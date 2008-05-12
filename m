@@ -1,57 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759301AbYELIRQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760089AbYELITi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759301AbYELIRQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 04:17:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756182AbYELIQ7
+	id S1760089AbYELITi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 04:19:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756182AbYELITb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 04:16:59 -0400
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:44333 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754906AbYELIQ6 (ORCPT
+	Mon, 12 May 2008 04:19:31 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:37947 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755916AbYELITa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 04:16:58 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=ZgIDIfyefKJb5bWAj/DWBAx0mvT/GAZMBDe+aED76Vz/DY6RjyviTn18ofO1vkenU3JWRhwpL+GJ7yfTdoI7uNCHTimNRt9S9f7VTUpIPl6HMtAMiyPnLpHsdA++gul93h6hb/OGac/TqQjvZpswDv915yMcs00liXpCdZwK+3o=  ;
-X-YMail-OSG: MpOPLOYVM1mzPskfWfceP.SGX6NXE2C6hp8473V5uf2qziq.bUqOBIHtso5Oz3n8rc4kuF6ALr1DiuSUKecYTnZGdakGt4Y9BjjMkzTjYU4Tq_gqLpsHXmoRYn5K8pSZWcY-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: Re: drivers/usb/misc/usbtest.c weirdness
-Date: Mon, 12 May 2008 01:02:22 -0700
-User-Agent: KMail/1.9.6
-Cc: LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-usb@vger.kernel.org
-References: <20080511202222.GP19058@joi>
-In-Reply-To: <20080511202222.GP19058@joi>
+	Mon, 12 May 2008 04:19:30 -0400
+Date: Mon, 12 May 2008 04:19:20 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] KCONFIG: With a simple menuconfig, kernel debugging is
+ prettier.
+In-Reply-To: <20080506135844.b0b12d05.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0805120417200.25000@localhost.localdomain>
+References: <alpine.LFD.1.10.0804241928340.20003@localhost.localdomain> <20080506135844.b0b12d05.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805120102.23320.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 11 May 2008, Marcin Slusarz wrote:
-> 
-> test_ctrl_queue expects (?) positive and negative errnos.
-> what is going on here?
+On Tue, 6 May 2008, Andrew Morton wrote:
 
-The sign is just a way to flag something:
+> On Thu, 24 Apr 2008 19:31:26 -0400 (EDT)
+> "Robert P. J. Day" <rpjday@crashcourse.ca> wrote:
+>
+> > Implementing kernel debugging with a menuconfig allows for the removal
+> > of a pile of unnecessary dependencies.
+>
+>  Kconfig.debug |  112 +++++++++++++++++++++++++---------------------------------
+>  1 file changed, 49 insertions(+), 63 deletions(-)
+>
+> I'm afraid,
+>
+> akpm:/usr/src/25> grep -l lib/Kconfig.debug pc/*.pc
+> pc/documentation-build-source-files-in-documentation-sub-dir-disable.pc
+> pc/documentation-build-source-files-in-documentation-sub-dir.pc
+> pc/git-sched.pc
+> pc/git-x86-latest.pc
+> pc/linux-next.pc
+> pc/make-frame_pointer-default=y.pc
+> pc/mm-add-a-basic-debugging-framework-for-memory-initialisation.pc
+> pc/mutex-subsystem-synchro-test-module.pc
+> pc/page-owner-tracking-leak-detector.pc
+> pc/profile-likely-unlikely-macros.pc
+> pc/slab-leaks3-default-y.pc
+>
+> that our chances of finding a window in which to merge this patch
+> are pretty darn small.
 
-                /* some faults are allowed, not required */
+fair enough, but is there any sort of reorg that can be done with the
+kernel debugging menu?  it really is getting a bit out of hand.  at
+the very least, could it be collected into related categories?
 
-The negative ones are required.  Positive codes are optional,
-in the sense that, depending on how the peripheral happens
-to be implemented, they won't necessarily be triggered.
+rday
+--
 
-For example, the test to fetch a device qualifier desriptor
-must succeed if the device is running at high speed.  So that
-test is marked as negative.  But when it's full speed, it
-could legitimately fail; marked as positive.  And so on for
-other tests.
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
 
-Look at how the codes are *interpreted* to see it work.
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
