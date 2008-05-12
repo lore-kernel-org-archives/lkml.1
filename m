@@ -1,433 +1,416 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761200AbYELKp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761410AbYELKqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761200AbYELKp3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 06:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757112AbYELKpS
+	id S1761410AbYELKqx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 06:46:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758102AbYELKqq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 06:45:18 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:5104 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751803AbYELKpP (ORCPT
+	Mon, 12 May 2008 06:46:46 -0400
+Received: from rv-out-0506.google.com ([209.85.198.232]:41972 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758870AbYELKqo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 06:45:15 -0400
+	Mon, 12 May 2008 06:46:44 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:sender;
-        b=pzxJXzckebaO3rj3OmIl+os5OyWA6K4kHVp3TgAXJk6DjFKHl+TpzqXYiBmlLvQ2J2Qc8yvKLRi/5izKuol3nMpJ/KkkkBWGHQGh0qkEUpCwrzeeL89J13xcos6Qe5HqaAjP5OLwidampCan3aQpb2qq2ckP3gCClyULKdDlJqw=
+        b=mFm0q0xoMUyOmiehWX4lBjYnmt0tFkp+TZSgmOeQZ1uojE9WhbEG9Gpsg+8yidEYQtQQFsWjt4Xq0PjxxoB4jHjeUQFcQ5e85UhsRS38V/fQzIuYInxhW1q8lrLF03vEZcyNVmZ8Xo4xXIxMQ+FlPEtqu8GLJ81QzhQNpbdUKhQ=
 From: Bryan Wu <cooloney@kernel.org>
-To: liam.girdwood@wolfsonmicro.com, linux-kernel@vger.kernel.org
-Cc: Cliff Cai <cliff.cai@analog.com>, Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 1/1] [ASOC]: AD1980 audio codec ASOC driver
-Date: Mon, 12 May 2008 18:45:12 +0800
-Message-Id: <1210589112-12208-1-git-send-email-cooloney@kernel.org>
+To: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: Michael Hennerich <michael.hennerich@analog.com>,
+       Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH 1/1] [PCMCIA]: add support the CF PCMCIA driver for Blackfin
+Date: Mon, 12 May 2008 18:46:40 +0800
+Message-Id: <1210589200-12431-1-git-send-email-cooloney@kernel.org>
 X-Mailer: git-send-email 1.5.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cliff Cai <cliff.cai@analog.com>
+From: Michael Hennerich <michael.hennerich@analog.com>
 
-Signed-off-by: Cliff Cai <cliff.cai@analog.com>
+Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
 Signed-off-by: Bryan Wu <cooloney@kernel.org>
 ---
- sound/soc/codecs/Kconfig  |    4 +
- sound/soc/codecs/Makefile |    2 +
- sound/soc/codecs/ad1980.c |  322 +++++++++++++++++++++++++++++++++++++++++++++
- sound/soc/codecs/ad1980.h |   23 ++++
- 4 files changed, 351 insertions(+), 0 deletions(-)
- create mode 100644 sound/soc/codecs/ad1980.c
- create mode 100644 sound/soc/codecs/ad1980.h
+ drivers/pcmcia/Kconfig          |    7 +
+ drivers/pcmcia/Makefile         |    1 +
+ drivers/pcmcia/bfin_cf_pcmcia.c |  324 +++++++++++++++++++++++++++++++++++++++
+ include/pcmcia/cs_types.h       |    2 +-
+ 4 files changed, 333 insertions(+), 1 deletions(-)
+ create mode 100644 drivers/pcmcia/bfin_cf_pcmcia.c
 
-diff --git a/sound/soc/codecs/Kconfig b/sound/soc/codecs/Kconfig
-index 3903ab7..62ef183 100644
---- a/sound/soc/codecs/Kconfig
-+++ b/sound/soc/codecs/Kconfig
-@@ -2,6 +2,10 @@ config SND_SOC_AC97_CODEC
- 	tristate
- 	depends on SND_SOC
+diff --git a/drivers/pcmcia/Kconfig b/drivers/pcmcia/Kconfig
+index 1b0eb5a..e45402a 100644
+--- a/drivers/pcmcia/Kconfig
++++ b/drivers/pcmcia/Kconfig
+@@ -263,6 +263,13 @@ config OMAP_CF
+ 	  Say Y here to support the CompactFlash controller on OMAP.
+ 	  Note that this doesn't support "True IDE" mode.
  
-+config SND_SOC_AD1980
-+	tristate
-+	depends on SND_SOC
++config BFIN_CFPCMCIA
++	tristate "Blackfin CompactFlash PCMCIA Driver"
++	depends on PCMCIA && BLACKFIN
++	help
++	  Say Y here to support the CompactFlash PCMCIA driver for Blackfin.
 +
- config SND_SOC_WM8731
- 	tristate
- 	depends on SND_SOC
-diff --git a/sound/soc/codecs/Makefile b/sound/soc/codecs/Makefile
-index 4e1314c..0568d32 100644
---- a/sound/soc/codecs/Makefile
-+++ b/sound/soc/codecs/Makefile
-@@ -1,4 +1,5 @@
- snd-soc-ac97-objs := ac97.o
-+snd-soc-ad1980-objs := ad1980.o
- snd-soc-wm8731-objs := wm8731.o
- snd-soc-wm8750-objs := wm8750.o
- snd-soc-wm8753-objs := wm8753.o
-@@ -8,6 +9,7 @@ snd-soc-cs4270-objs := cs4270.o
- snd-soc-tlv320aic3x-objs := tlv320aic3x.o
++
+ config AT91_CF
+ 	tristate "AT91 CompactFlash Controller"
+ 	depends on PCMCIA && ARCH_AT91RM9200
+diff --git a/drivers/pcmcia/Makefile b/drivers/pcmcia/Makefile
+index 6f6478b..85c6cc9 100644
+--- a/drivers/pcmcia/Makefile
++++ b/drivers/pcmcia/Makefile
+@@ -36,6 +36,7 @@ obj-$(CONFIG_PCMCIA_AU1X00)			+= au1x00_ss.o
+ obj-$(CONFIG_PCMCIA_VRC4171)			+= vrc4171_card.o
+ obj-$(CONFIG_PCMCIA_VRC4173)			+= vrc4173_cardu.o
+ obj-$(CONFIG_OMAP_CF)				+= omap_cf.o
++obj-$(CONFIG_BFIN_CFPCMCIA)			+= bfin_cf_pcmcia.o
+ obj-$(CONFIG_AT91_CF)				+= at91_cf.o
+ obj-$(CONFIG_ELECTRA_CF)			+= electra_cf.o
  
- obj-$(CONFIG_SND_SOC_AC97_CODEC)	+= snd-soc-ac97.o
-+obj-$(CONFIG_SND_SOC_AD1980)	+= snd-soc-ad1980.o
- obj-$(CONFIG_SND_SOC_WM8731)	+= snd-soc-wm8731.o
- obj-$(CONFIG_SND_SOC_WM8750)	+= snd-soc-wm8750.o
- obj-$(CONFIG_SND_SOC_WM8753)	+= snd-soc-wm8753.o
-diff --git a/sound/soc/codecs/ad1980.c b/sound/soc/codecs/ad1980.c
+diff --git a/drivers/pcmcia/bfin_cf_pcmcia.c b/drivers/pcmcia/bfin_cf_pcmcia.c
 new file mode 100644
-index 0000000..dab1904
+index 0000000..7964675
 --- /dev/null
-+++ b/sound/soc/codecs/ad1980.c
-@@ -0,0 +1,322 @@
++++ b/drivers/pcmcia/bfin_cf_pcmcia.c
+@@ -0,0 +1,324 @@
 +/*
-+ * ad1980.c  --  ALSA Soc AD1980 codec support
++ * file: drivers/pcmcia/bfin_cf.c
++ * author: Michael Hennerich (hennerich@blackfin.uclinux.org)
 + *
-+ * Copyright:	Analog Device Inc.
-+ * Author:	Roy Huang <roy.huang@analog.com>
-+ * 		Cliff Cai <cliff.cai@analog.com>
++ * based on: drivers/pcmcia/omap_cf.c
++ * omap_cf.c -- OMAP 16xx CompactFlash controller driver
 + *
-+ *  This program is free software; you can redistribute  it and/or modify it
-+ *  under  the terms of  the GNU General  Public License as published by the
-+ *  Free Software Foundation;  either version 2 of the  License, or (at your
-+ *  option) any later version.
++ * Copyright (c) 2005 David Brownell
++ * Copyright (c) 2006 Michael Hennerich Analog Devices Inc.
 + *
-+ *  Revision history
-+ *    1st July 2007   Initial version.
++ * bugs:         enter bugs at http://blackfin.uclinux.org/
++ *
++ * this program is free software; you can redistribute it and/or modify
++ * it under the terms of the gnu general public license as published by
++ * the free software foundation; either version 2, or (at your option)
++ * any later version.
++ *
++ * this program is distributed in the hope that it will be useful,
++ * but without any warranty; without even the implied warranty of
++ * merchantability or fitness for a particular purpose.  see the
++ * gnu general public license for more details.
++ *
++ * you should have received a copy of the gnu general public license
++ * along with this program; see the file copying.
++ * if not, write to the free software foundation,
++ * 59 temple place - suite 330, boston, ma 02111-1307, usa.
 + */
 +
-+#include <linux/init.h>
 +#include <linux/module.h>
-+#include <linux/version.h>
 +#include <linux/kernel.h>
-+#include <linux/device.h>
-+#include <sound/driver.h>
-+#include <sound/core.h>
-+#include <sound/pcm.h>
-+#include <sound/ac97_codec.h>
-+#include <sound/initval.h>
-+#include <sound/soc.h>
-+#include <sound/soc-dapm.h>
++#include <linux/sched.h>
++#include <linux/platform_device.h>
++#include <linux/errno.h>
++#include <linux/init.h>
++#include <linux/delay.h>
++#include <linux/interrupt.h>
++#include <linux/irq.h>
 +
-+#include "ad1980.h"
++#include <pcmcia/ss.h>
++#include <pcmcia/cisreg.h>
++#include <asm/io.h>
++#include <asm/gpio.h>
 +
-+static unsigned int ac97_read(struct snd_soc_codec *codec,
-+	unsigned int reg);
-+static int ac97_write(struct snd_soc_codec *codec,
-+	unsigned int reg, unsigned int val);
++#define SZ_1K			0x00000400
++#define SZ_8K			0x00002000
++#define	SZ_2K			(2 * SZ_1K)
 +
-+/*
-+ * AD1980 register cache
-+ */
-+static const u16 ad1980_reg[] = {
-+	0x0090, 0x8000, 0x8000, 0x8000, /* 0 - 6  */
-+	0x0000, 0x0000, 0x8008, 0x8008, /* 8 - e  */
-+	0x8808, 0x8808, 0x0000, 0x8808, /* 10 - 16 */
-+	0x8808, 0x0000, 0x8000, 0x0000, /* 18 - 1e */
-+	0x0000, 0x0000, 0x0000, 0x0000, /* 20 - 26 */
-+	0x03c7, 0x0000, 0xbb80, 0xbb80, /* 28 - 2e */
-+	0xbb80, 0xbb80, 0x0000, 0x8080, /* 30 - 36 */
-+	0x8080, 0x2000, 0x0000, 0x0000, /* 38 - 3e */
-+	0x0000, 0x0000, 0x0000, 0x0000, /* reserved */
-+	0x0000, 0x0000, 0x0000, 0x0000, /* reserved */
-+	0x0000, 0x0000, 0x0000, 0x0000, /* reserved */
-+	0x0000, 0x0000, 0x0000, 0x0000, /* reserved */
-+	0x8080, 0x0000, 0x0000, 0x0000, /* 60 - 66 */
-+	0x0000, 0x0000, 0x0000, 0x0000, /* reserved */
-+	0x0000, 0x0000, 0x1001, 0x0000, /* 70 - 76 */
-+	0x0000, 0x0000, 0x4144, 0x5370  /* 78 - 7e */
++#define	POLL_INTERVAL	(2 * HZ)
++
++#define CF_ATASEL_ENA 	0x20311802 /* Inverts RESET */
++#define CF_ATASEL_DIS 	0x20311800
++
++#define bfin_cf_present(pfx) (gpio_get_value(pfx))
++
++/*--------------------------------------------------------------------------*/
++
++static const char driver_name[] = "bfin_cf_pcmcia";
++
++struct bfin_cf_socket {
++	struct pcmcia_socket	socket;
++
++	struct timer_list	timer;
++	unsigned		present:1;
++	unsigned		active:1;
++
++	struct platform_device	*pdev;
++	unsigned long		phys_cf_io;
++	unsigned long		phys_cf_attr;
++	u_int			irq;
++	u_short			cd_pfx;
 +};
 +
-+static const char *ad1980_rec_sel[] = {"Mic", "CD", "NC", "AUX", "Line",
-+		"Stereo Mix", "Mono Mix", "Phone"};
++/*--------------------------------------------------------------------------*/
++static int bfin_cf_reset(void)
++{
++	  outw(0, CF_ATASEL_ENA);
++	  mdelay(200);
++	  outw(0, CF_ATASEL_DIS);
 +
-+static const struct soc_enum ad1980_cap_src =
-+	SOC_ENUM_DOUBLE(AC97_REC_SEL, 8, 0, 7, ad1980_rec_sel);
++	  return 0;
 +
-+static const struct snd_kcontrol_new ad1980_snd_ac97_controls[] = {
-+SOC_DOUBLE("Master Playback Volume", AC97_MASTER, 8, 0, 31, 1),
-+SOC_SINGLE("Master Playback Switch", AC97_MASTER, 15, 1, 1),
++}
 +
-+SOC_DOUBLE("Headphone Playback Volume", AC97_HEADPHONE, 8, 0, 31, 1),
-+SOC_SINGLE("Headphone Playback Switch", AC97_HEADPHONE, 15, 1, 1),
++static int bfin_cf_ss_init(struct pcmcia_socket *s)
++{
++	return 0;
++}
 +
-+SOC_DOUBLE("PCM Playback Volume", AC97_PCM, 8, 0, 31, 1),
-+SOC_SINGLE("PCM Playback Switch", AC97_PCM, 15, 1, 1),
++/* the timer is primarily to kick this socket's pccardd */
++static void bfin_cf_timer(unsigned long _cf)
++{
++	struct bfin_cf_socket	*cf = (void *) _cf;
++	unsigned short present = bfin_cf_present(cf->cd_pfx);
 +
-+SOC_DOUBLE("PCM Capture Volume", AC97_REC_GAIN, 8, 0, 31, 0),
-+SOC_SINGLE("PCM Capture Switch", AC97_REC_GAIN, 15, 1, 1),
++	if (present != cf->present) {
++		cf->present = present;
++		pr_debug("%s: card %s\n", driver_name,
++			present ? "present" : "gone");
++		pcmcia_parse_events(&cf->socket, SS_DETECT);
++	}
 +
-+SOC_SINGLE("Mono Playback Volume", AC97_MASTER_MONO, 0, 31, 1),
-+SOC_SINGLE("Mono Playback Switch", AC97_MASTER_MONO, 15, 1, 1),
++	if (cf->active)
++		mod_timer(&cf->timer, jiffies + POLL_INTERVAL);
++}
 +
-+SOC_SINGLE("Phone Capture Volume", AC97_PHONE, 0, 31, 1),
-+SOC_SINGLE("Phone Capture Switch", AC97_PHONE, 15, 1, 1),
++static int bfin_cf_get_status(struct pcmcia_socket *s, u_int *sp)
++{
++	struct bfin_cf_socket	*cf;
 +
-+SOC_SINGLE("Mic Volume", AC97_MIC, 0, 31, 1),
-+SOC_SINGLE("Mic Switch", AC97_MIC, 15, 1, 1),
++	if (!sp)
++		return -EINVAL;
 +
-+SOC_SINGLE("Stereo Mic Switch", AC97_AD_MISC, 6, 1, 0),
-+SOC_DOUBLE("Line HP Swap Switch", AC97_AD_MISC, 10, 5, 1, 0),
++	cf = container_of(s, struct bfin_cf_socket, socket);
 +
-+SOC_DOUBLE("Surround Playback Volume", AC97_SURROUND_MASTER, 8, 0, 31, 1),
-+SOC_DOUBLE("Surround Playback Switch", AC97_SURROUND_MASTER, 15, 7, 1, 1),
++	if (bfin_cf_present(cf->cd_pfx)) {
++		*sp = SS_READY | SS_DETECT | SS_POWERON | SS_3VCARD;
++		s->irq.AssignedIRQ = 0;
++		s->pci_irq = cf->irq;
 +
-+SOC_ENUM("Capture Source", ad1980_cap_src),
++	} else
++		*sp = 0;
++	return 0;
++}
 +
-+SOC_SINGLE("Mic Boost Switch", AC97_MIC, 6, 1, 0),
++static int
++bfin_cf_set_socket(struct pcmcia_socket *sock, struct socket_state_t *s)
++{
++
++	struct bfin_cf_socket	*cf;
++	cf = container_of(sock, struct bfin_cf_socket, socket);
++
++	switch (s->Vcc) {
++	case 0:
++	case 33:
++		break;
++	case 50:
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	if (s->flags & SS_RESET){
++		disable_irq(cf->irq);
++		bfin_cf_reset();
++		enable_irq(cf->irq);
++	}
++
++	pr_debug("%s: Vcc %d, io_irq %d, flags %04x csc %04x\n",
++		driver_name, s->Vcc, s->io_irq, s->flags, s->csc_mask);
++
++	return 0;
++}
++
++static int bfin_cf_ss_suspend(struct pcmcia_socket *s)
++{
++	pr_debug("%s: %s\n", driver_name, __FUNCTION__);
++	return bfin_cf_set_socket(s, &dead_socket);
++}
++
++/* regions are 2K each:  mem, attrib, io (and reserved-for-ide) */
++
++static int bfin_cf_set_io_map(struct pcmcia_socket *s, struct pccard_io_map *io)
++{ struct bfin_cf_socket	*cf;
++
++	cf = container_of(s, struct bfin_cf_socket, socket);
++	io->flags &= MAP_ACTIVE|MAP_ATTRIB|MAP_16BIT;
++	io->start = cf->phys_cf_io;
++	io->stop = io->start + SZ_2K - 1;
++	return 0;
++}
++
++static int
++bfin_cf_set_mem_map(struct pcmcia_socket *s, struct pccard_mem_map *map)
++{
++	struct bfin_cf_socket	*cf;
++
++	if (map->card_start)
++		return -EINVAL;
++	cf = container_of(s, struct bfin_cf_socket, socket);
++	map->static_start = cf->phys_cf_io;
++	map->flags &= MAP_ACTIVE|MAP_ATTRIB|MAP_16BIT;
++	if (map->flags & MAP_ATTRIB)
++		map->static_start = cf->phys_cf_attr;
++
++	return 0;
++}
++
++static struct pccard_operations bfin_cf_ops = {
++	.init			= bfin_cf_ss_init,
++	.suspend		= bfin_cf_ss_suspend,
++	.get_status		= bfin_cf_get_status,
++	.set_socket		= bfin_cf_set_socket,
++	.set_io_map		= bfin_cf_set_io_map,
++	.set_mem_map	= bfin_cf_set_mem_map,
 +};
 +
-+/* add non dapm controls */
-+static int ad1980_add_controls(struct snd_soc_codec *codec)
-+{
-+	int err, i;
++/*--------------------------------------------------------------------------*/
 +
-+	for (i = 0; i < ARRAY_SIZE(ad1980_snd_ac97_controls); i++) {
-+		err = snd_ctl_add(codec->card, snd_soc_cnew( \
-+				&ad1980_snd_ac97_controls[i], codec, NULL));
-+		if (err < 0)
-+			return err;
++static int __init bfin_cf_probe(struct device *dev)
++{
++	struct bfin_cf_socket	*cf;
++	struct platform_device	*pdev = to_platform_device(dev);
++	struct resource		*io_mem,*attr_mem;
++	int			irq;
++	unsigned short		cd_pfx;
++	int			status = 0;
++
++	printk(KERN_INFO "Blackfin CompactFlash/PCMCIA Socket Driver\n");
++
++	irq = platform_get_irq(pdev, 0);
++	if (!irq)
++		return -EINVAL;
++
++	cd_pfx = platform_get_irq(pdev, 1); /*Card Detect GPIO PIN*/
++	if (cd_pfx > MAX_BLACKFIN_GPIOS)
++		return -EINVAL;
++
++	if (gpio_request(cd_pfx, "pcmcia: CD")) {
++		printk(KERN_ERR "BF5xx flash: Failed ro request Card Detect GPIO_%d\n", cd_pfx);
++		return -EBUSY;
 +	}
-+	return 0;
-+}
++	gpio_direction_input(cd_pfx);
 +
-+static unsigned int ac97_read(struct snd_soc_codec *codec,
-+	unsigned int reg)
-+{
-+	u16 *cache = codec->reg_cache;
-+
-+	if (reg == AC97_RESET || reg == AC97_INT_PAGING || \
-+			reg == AC97_POWERDOWN || reg == AC97_EXTENDED_STATUS  \
-+			|| reg == AC97_VENDOR_ID1 || reg == AC97_VENDOR_ID2)
-+		return soc_ac97_ops.read(codec->ac97, reg);
-+	else {
-+		reg = reg >> 1;
-+
-+		if (reg > (ARRAY_SIZE(ad1980_reg)))
-+			return -EINVAL;
-+
-+		return cache[reg];
-+	}
-+}
-+
-+static int ac97_write(struct snd_soc_codec *codec, unsigned int reg,
-+	unsigned int val)
-+{
-+	u16 *cache = codec->reg_cache;
-+
-+	soc_ac97_ops.write(codec->ac97, reg, val);
-+	reg = reg >> 1;
-+	if (reg <= (ARRAY_SIZE(ad1980_reg)))
-+		cache[reg] = val;
-+
-+	return 0;
-+}
-+
-+struct snd_soc_codec_dai ad1980_dai = {
-+	.name = "AC97",
-+	.playback = {
-+		.stream_name = "Playback",
-+		.channels_min = 2,
-+		.channels_max = 2,
-+		.rates = SNDRV_PCM_RATE_48000,
-+		.formats = SNDRV_PCM_FMTBIT_S16_LE, },
-+	.capture = {
-+		.stream_name = "Capture",
-+		.channels_min = 2,
-+		.channels_max = 2,
-+		.rates = SNDRV_PCM_RATE_48000,
-+		.formats = SNDRV_PCM_FMTBIT_S16_LE, },
-+};
-+EXPORT_SYMBOL_GPL(ad1980_dai);
-+
-+static int ad1980_reset(struct snd_soc_codec *codec, int try_warm)
-+{
-+	u16 retry_cnt = 0;
-+
-+retry:
-+	if (try_warm && soc_ac97_ops.warm_reset) {
-+		soc_ac97_ops.warm_reset(codec->ac97);
-+		if (ac97_read(codec, AC97_RESET) == 0x0090)
-+			return 1;
-+	}
-+
-+	soc_ac97_ops.reset(codec->ac97);
-+	/* Set bit 16slot in register 74h, then every slot will has only 16
-+	 * bits. This command is sent out in 20bit mode, in which case the
-+	 * first nibble of data is eaten by the addr. (Tag is always 16 bit)*/
-+	ac97_write(codec, AC97_AD_SERIAL_CFG, 0x9900);
-+
-+	if (ac97_read(codec, AC97_RESET)  != 0x0090)
-+		goto err;
-+	return 0;
-+
-+err:
-+	while (retry_cnt++ < 10)
-+		goto retry;
-+
-+	printk(KERN_ERR "AD1980 AC97 reset failed\n");
-+	return -EIO;
-+}
-+
-+static int ad1980_soc_suspend(struct platform_device *pdev,
-+	pm_message_t state)
-+{
-+	return 0;
-+}
-+
-+static int ad1980_soc_resume(struct platform_device *pdev)
-+{
-+	return 0;
-+}
-+
-+static int ad1980_soc_probe(struct platform_device *pdev)
-+{
-+	struct snd_soc_device *socdev = platform_get_drvdata(pdev);
-+	struct snd_soc_codec *codec;
-+	int ret = 0;
-+	u16 vendor_id2;
-+
-+	printk(KERN_INFO "AD1980 SoC Audio Codec\n");
-+
-+	socdev->codec = kzalloc(sizeof(struct snd_soc_codec), GFP_KERNEL);
-+	if (socdev->codec == NULL)
++	cf = kcalloc(1, sizeof *cf, GFP_KERNEL);
++	if (!cf)
 +		return -ENOMEM;
-+	codec = socdev->codec;
-+	mutex_init(&codec->mutex);
 +
-+	codec->reg_cache =
-+		kzalloc(sizeof(u16) * ARRAY_SIZE(ad1980_reg), GFP_KERNEL);
-+	if (codec->reg_cache == NULL) {
-+		ret = -ENOMEM;
-+		goto cache_err;
-+	}
-+	memcpy(codec->reg_cache, ad1980_reg, sizeof(u16) * \
-+			ARRAY_SIZE(ad1980_reg));
-+	codec->reg_cache_size = sizeof(u16) * ARRAY_SIZE(ad1980_reg);
-+	codec->reg_cache_step = 2;
-+	codec->name = "AD1980";
-+	codec->owner = THIS_MODULE;
-+	codec->dai = &ad1980_dai;
-+	codec->num_dai = 1;
-+	codec->write = ac97_write;
-+	codec->read = ac97_read;
-+	INIT_LIST_HEAD(&codec->dapm_widgets);
-+	INIT_LIST_HEAD(&codec->dapm_paths);
++	cf->cd_pfx = cd_pfx;
 +
-+	ret = snd_soc_new_ac97_codec(codec, &soc_ac97_ops, 0);
-+	if (ret < 0) {
-+		printk(KERN_ERR "ad1980: failed to register AC97 codec\n");
-+		goto codec_err;
-+	}
++	init_timer(&cf->timer);
++	cf->timer.function = bfin_cf_timer;
++	cf->timer.data = (unsigned long) cf;
 +
-+	/* register pcms */
-+	ret = snd_soc_new_pcms(socdev, SNDRV_DEFAULT_IDX1, SNDRV_DEFAULT_STR1);
-+	if (ret < 0)
-+		goto pcm_err;
++	cf->pdev = pdev;
++	dev_set_drvdata(dev, cf);
 +
++	cf->irq = irq;
++	cf->socket.pci_irq = irq;
 +
-+	ret = ad1980_reset(codec, 0);
-+	if (ret < 0) {
-+		printk(KERN_ERR "AC97 link error\n");
-+		goto reset_err;
-+	}
++	set_irq_type(irq, IRQF_TRIGGER_LOW);
 +
-+	/* Read out vendor ID to make sure it is ad1980 */
-+	if (ac97_read(codec, AC97_VENDOR_ID1) != 0x4144)
-+		goto reset_err;
++	io_mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	attr_mem = platform_get_resource(pdev, IORESOURCE_MEM, 1);
 +
-+	vendor_id2 = ac97_read(codec, AC97_VENDOR_ID2);
++	if (!io_mem || !attr_mem)
++		goto fail0;
 +
-+	if (vendor_id2 != 0x5370) {
-+		if (vendor_id2 != 0x5374)
-+			goto reset_err;
-+		else
-+			printk(KERN_WARNING "ad1980: "
-+				"Found AD1981 - only 2/2 IN/OUT Channels "
-+				"supported\n");
-+	}
++	cf->phys_cf_io = io_mem->start;
++	cf->phys_cf_attr = attr_mem->start;
 +
-+	ac97_write(codec, AC97_MASTER, 0x0000); /* unmute line out volume */
-+	ac97_write(codec, AC97_PCM, 0x0000);	/* unmute PCM out volume */
-+	ac97_write(codec, AC97_REC_GAIN, 0x0000);/* unmute record volume */
++	/* pcmcia layer only remaps "real" memory */
++	cf->socket.io_offset = (unsigned long)
++			ioremap(cf->phys_cf_io, SZ_2K);
 +
-+	ad1980_add_controls(codec);
-+	ret = snd_soc_register_card(socdev);
-+	if (ret < 0) {
-+		printk(KERN_ERR "ad1980: failed to register card\n");
-+		goto reset_err;
-+	}
++	if (!cf->socket.io_offset)
++		goto fail0;
 +
++	pr_info("%s: on irq %d\n", driver_name, irq);
++
++	pr_debug("%s: %s\n", driver_name, bfin_cf_present(cf->cd_pfx) ? "present" : "(not present)");
++
++	cf->socket.owner = THIS_MODULE;
++	cf->socket.dev.parent = dev;
++	cf->socket.ops = &bfin_cf_ops;
++	cf->socket.resource_ops = &pccard_static_ops;
++	cf->socket.features = SS_CAP_PCCARD | SS_CAP_STATIC_MAP
++				| SS_CAP_MEM_ALIGN;
++	cf->socket.map_size = SZ_2K;
++
++	status = pcmcia_register_socket(&cf->socket);
++	if (status < 0)
++		goto fail2;
++
++	cf->active = 1;
++	mod_timer(&cf->timer, jiffies + POLL_INTERVAL);
 +	return 0;
 +
-+reset_err:
-+	snd_soc_free_pcms(socdev);
++fail2:
++	iounmap((void __iomem *) cf->socket.io_offset);
++	release_mem_region(cf->phys_cf_io, SZ_8K);
 +
-+pcm_err:
-+	snd_soc_free_ac97_codec(codec);
-+
-+codec_err:
-+	kfree(codec->reg_cache);
-+
-+cache_err:
-+	kfree(socdev->codec);
-+	socdev->codec = NULL;
-+	return ret;
++fail0:
++	kfree(cf);
++	return status;
 +}
 +
-+static int ad1980_soc_remove(struct platform_device *pdev)
++static int __devexit bfin_cf_remove(struct device *dev)
 +{
-+	struct snd_soc_device *socdev = platform_get_drvdata(pdev);
-+	struct snd_soc_codec *codec = socdev->codec;
++	struct bfin_cf_socket *cf = dev_get_drvdata(dev);
 +
-+	if (codec == NULL)
-+		return 0;
-+
-+	snd_soc_dapm_free(socdev);
-+	snd_soc_free_pcms(socdev);
-+	snd_soc_free_ac97_codec(codec);
-+	kfree(codec->reg_cache);
-+	kfree(codec);
++	gpio_free(cf->cd_pfx);
++	cf->active = 0;
++	pcmcia_unregister_socket(&cf->socket);
++	del_timer_sync(&cf->timer);
++	iounmap((void __iomem *) cf->socket.io_offset);
++	release_mem_region(cf->phys_cf_io, SZ_8K);
++	kfree(cf);
 +	return 0;
 +}
 +
-+struct snd_soc_codec_device soc_codec_dev_ad1980 = {
-+	.probe = 	ad1980_soc_probe,
-+	.remove = 	ad1980_soc_remove,
-+	.suspend =	ad1980_soc_suspend,
-+	.resume =	ad1980_soc_resume,
++static struct device_driver bfin_cf_driver = {
++	.name		= (char *) driver_name,
++	.bus		= &platform_bus_type,
++	.probe		= bfin_cf_probe,
++	.remove		= __devexit_p(bfin_cf_remove),
++	.suspend 	= pcmcia_socket_dev_suspend,
++	.resume 	= pcmcia_socket_dev_resume,
 +};
-+EXPORT_SYMBOL_GPL(soc_codec_dev_ad1980);
 +
-+MODULE_DESCRIPTION("ASoC ad1980 driver");
-+MODULE_AUTHOR("Roy Huang, Cliff Cai");
++static int __init bfin_cf_init(void)
++{
++	return driver_register(&bfin_cf_driver);
++}
++
++static void __exit bfin_cf_exit(void)
++{
++	driver_unregister(&bfin_cf_driver);
++}
++
++module_init(bfin_cf_init);
++module_exit(bfin_cf_exit);
++
++MODULE_DESCRIPTION("BFIN CF/PCMCIA Driver");
 +MODULE_LICENSE("GPL");
-diff --git a/sound/soc/codecs/ad1980.h b/sound/soc/codecs/ad1980.h
-new file mode 100644
-index 0000000..5d4710d
---- /dev/null
-+++ b/sound/soc/codecs/ad1980.h
-@@ -0,0 +1,23 @@
-+/*
-+ * ad1980.h  --  ad1980 Soc Audio driver
-+ */
-+
-+#ifndef _AD1980_H
-+#define _AD1980_H
-+/* Bit definition of Power-Down Control/Status Register */
-+#define ADC		0x0001
-+#define DAC		0x0002
-+#define ANL		0x0004
-+#define REF		0x0008
-+#define PR0		0x0100
-+#define PR1		0x0200
-+#define PR2		0x0400
-+#define PR3		0x0800
-+#define PR4		0x1000
-+#define PR5		0x2000
-+#define PR6		0x4000
-+
-+extern struct snd_soc_codec_dai ad1980_dai;
-+extern struct snd_soc_codec_device soc_codec_dev_ad1980;
-+
-+#endif
+diff --git a/include/pcmcia/cs_types.h b/include/pcmcia/cs_types.h
+index 9a6bcc4..c3257c1 100644
+--- a/include/pcmcia/cs_types.h
++++ b/include/pcmcia/cs_types.h
+@@ -21,7 +21,7 @@
+ #include <sys/types.h>
+ #endif
+ 
+-#if defined(__arm__) || defined(__mips__) || defined(__avr32__)
++#if defined(__arm__) || defined(__mips__) || defined(__avr32__) || defined(bfin)
+ /* This (ioaddr_t) is exposed to userspace & hence cannot be changed. */
+ typedef u_int   ioaddr_t;
+ #else
 -- 
 1.5.5
 
