@@ -1,88 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758518AbYELRbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758517AbYELRf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758518AbYELRbT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 13:31:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755378AbYELRbK
+	id S1758517AbYELRf3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 13:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755987AbYELRfV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 13:31:10 -0400
-Received: from mail.gmx.net ([213.165.64.20]:46503 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755451AbYELRbJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 13:31:09 -0400
-X-Authenticated: #476490
-X-Provags-ID: V01U2FsdGVkX1+9dWUEtqy92Wyx9LngOBkA9uha7z15AUr0N+Wv6a
-	R277pgIEqb+0aM
-From: Oliver Endriss <o.endriss@gmx.de>
-Organization: ESCAPE GmbH EDV-Loesungen
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch, 2.6.26-rc2] dvb: drivers/media/dvb/ttpci/fdump firmware build error fix
-Date: Mon, 12 May 2008 19:30:10 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Andrew de Quincey <adq_dvb@lidskialf.net>,
-       Johannes Stezenbach <js@linuxtv.org>
-References: <20080512101231.GA11755@elte.hu>
-In-Reply-To: <20080512101231.GA11755@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Mon, 12 May 2008 13:35:21 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:60014 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755497AbYELRfT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 13:35:19 -0400
+Subject: Re: scsi_scan: WARNING: at include/linux/blkdev.h:431
+	blk_queue_init_tags+0x107/0x120()
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: jens.axboe@oracle.com, jesper.juhl@gmail.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <20080508125532W.fujita.tomonori@lab.ntt.co.jp>
+References: <alpine.LNX.1.00.0805020043130.1489@dragon.funnycrock.com>
+	 <20080502111652T.tomof@acm.org>
+	 <1210200026.3067.25.camel@localhost.localdomain>
+	 <20080508125532W.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain
+Date: Mon, 12 May 2008 10:59:28 -0500
+Message-Id: <1210607968.3078.15.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805121930.10909@orion.escape-edv.de>
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
+On Thu, 2008-05-08 at 12:55 +0900, FUJITA Tomonori wrote: 
+> On Wed, 07 May 2008 17:40:26 -0500
+> James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> > > The problem is that the commit 75ad23b expects that we hold the queue
+> > > lock for __blk_queue_free_tags, blk_queue_free_tags and
+> > > blk_queue_init_tags but we haven't.
+> > > 
+> > > The simple fix is using queue_flag_set/clear_unlocked for them, then
+> > > it should work as before. However, it would be better to hold the
+> > > queue lock for blk_queue_free_tags and blk_queue_init_tags (we can
+> > > hold the queue lock in scsi_activate_tcq and scsi_deactivate_tcq).
+> > 
+> > So is this the fix that everyone agrees on?  And if so, whose tree is it
+> > going through (I tend to think block, since the original breakage came
+> > from the block tree).
 > 
-> x86.git testing found the following build failure in 2.6.26-rc2:
-> 
->   drivers/media/dvb/ttpci/fdump "/usr/lib/hotplug/firmware/dvb-ttpci-01.fw" dvb_ttpci_fw drivers/media/dvb/ttpci/av7110_firm.h
->   firmware file '/usr/lib/hotplug/firmware/dvb-ttpci-01.fw' not found
->   make[4]: *** [drivers/media/dvb/ttpci/av7110_firm.h] Error 255
->   make[3]: *** [drivers/media/dvb/ttpci] Error 2
-> 
-> in this config:
-> 
->   http://redhat.com/~mingo/misc/config-Mon_May_12_11_29_29_CEST_2008.bad
-> 
-> the reason for the build bug is that the driver's Kconfig ignores the 
-> PREVENT_FIRMWARE_BUILD=y config setting and tries to build the firmware 
-> which (like other firmware build methods) relies on a non-upstream 
-> firmware blob. The fix is to make the firmware build depend on 
-> !PREVENT_FIRMWARE_BUILD.
-> 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  drivers/media/dvb/ttpci/Kconfig |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux/drivers/media/dvb/ttpci/Kconfig
-> ===================================================================
-> --- linux.orig/drivers/media/dvb/ttpci/Kconfig
-> +++ linux/drivers/media/dvb/ttpci/Kconfig
-> @@ -33,7 +33,7 @@ config DVB_AV7110
->  
->  config DVB_AV7110_FIRMWARE
->  	bool "Compile AV7110 firmware into the driver"
-> -	depends on DVB_AV7110 && !STANDALONE
-> +	depends on DVB_AV7110 && !STANDALONE && !PREVENT_FIRMWARE_BUILD
->  	default y if DVB_AV7110=y
->  	help
->  	  The AV7110 firmware is normally loaded by the firmware hotplug manager.
-> 
+> The patch is fine from the perspective of the SCSI mid-layer. But it
+> would be not from the perspective of the block layer. For example,
+> blk_queue_init_tags is expected to be called with holding the queue
+> lock (since it could call blk_queue_resize_tags internally) though
+> only the SCSI mid-layer uses those APIs for now.
 
-Nak. because DVB_AV7110_FIRMWARE=y does not build any firmware.
+There are two cases for blk_queue_init_tags; one is for a shared tag map
+and the other is for individual tag maps.  If you look at the code and
+its use, blk_queue_resize_tags is *only* called for the individual tag
+map case (or for the first caller in a shared tag map case).
 
-If you set DVB_AV7110_FIRMWARE=y, the firmware file under
-DVB_AV7110_FIRMWARE_FILE must exist...
+The blk_queue_resize_tags() also returns -EBUSY on shared tag maps,
+except the first one; which really exposes a bug in SCSI: we want to set
+the shared tag map to some host specific depth and then carve off pieces
+of it in the devices, so we don't want to adjust the queue down to
+whatever the first seen device wants, and we don't want all other
+devices to fail to adjust the scsi_queue depth the mid-layer uses.
 
-CU
-Oliver
+This should fix up scsi.
 
--- 
-----------------------------------------------------------------
-VDR Remote Plugin 0.4.0: http://www.escape-edv.de/endriss/vdr/
-----------------------------------------------------------------
+James
+
+---
+diff --git a/drivers/scsi/scsi.c b/drivers/scsi/scsi.c
+index 110e776..cc0af0f 100644
+--- a/drivers/scsi/scsi.c
++++ b/drivers/scsi/scsi.c
+@@ -893,9 +893,11 @@ void scsi_adjust_queue_depth(struct scsi_device *sdev, int tagged, int tags)
+ 
+ 	spin_lock_irqsave(sdev->request_queue->queue_lock, flags);
+ 
+-	/* Check to see if the queue is managed by the block layer.
+-	 * If it is, and we fail to adjust the depth, exit. */
++	/* Check to see if the queue is managed by the block layer,
++	 * and that we don't have a shared tag map.  If so, and we
++	 * fail to adjust the depth, exit. */
+ 	if (blk_queue_tagged(sdev->request_queue) &&
++	    !sdev->host->bqt &&
+ 	    blk_queue_resize_tags(sdev->request_queue, tags) != 0)
+ 		goto out;
+ 
+
+
+
