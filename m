@@ -1,80 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760089AbYELITi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757965AbYELI1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760089AbYELITi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 04:19:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756182AbYELITb
+	id S1757965AbYELI1R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 04:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbYELI05
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 04:19:31 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:37947 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755916AbYELITa (ORCPT
+	Mon, 12 May 2008 04:26:57 -0400
+Received: from bay0-omc3-s26.bay0.hotmail.com ([65.54.246.226]:16931 "EHLO
+	bay0-omc3-s26.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751715AbYELI04 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 04:19:30 -0400
-Date: Mon, 12 May 2008 04:19:20 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] KCONFIG: With a simple menuconfig, kernel debugging is
- prettier.
-In-Reply-To: <20080506135844.b0b12d05.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0805120417200.25000@localhost.localdomain>
-References: <alpine.LFD.1.10.0804241928340.20003@localhost.localdomain> <20080506135844.b0b12d05.akpm@linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Mon, 12 May 2008 04:26:56 -0400
+Message-ID: <BAY103-DAV521435E26209347B7646FB2CC0@phx.gbl>
+X-Originating-IP: [85.32.103.134]
+X-Originating-Email: [pupilla@hotmail.com]
+From: "Marco Berizzi" <pupilla@hotmail.com>
+To: "Herbert Xu" <herbert@gondor.apana.org.au>
+Cc: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
+References: <E1Jrtxr-0004in-00@gondolin.me.apana.org.au> <BAY103-DAV594320AC93E33D7335927B2DA0@phx.gbl> <BAY103-DAV122A113843FE9574256A0AB2D60@phx.gbl> <BAY103-DAV6446AEC1CBB678E5D0E52B2D30@phx.gbl> <20080509102509.GA11710@gondor.apana.org.au> <BAY103-DAV5B5CD83FC6A95A5DD48C9B2CC0@phx.gbl> <20080512074642.GA1416@gondor.apana.org.au>
+Subject: Re: 2.6.25 crash: EIP: [<c02e2f14>] xfrm_output_resume+0x64/0x100 ss:esp 0068:c03a1e5c
+Date: Mon, 12 May 2008 10:24:22 +0200
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2800.1123
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1123
+X-OriginalArrivalTime: 12 May 2008 08:26:55.0550 (UTC) FILETIME=[F0125DE0:01C8B409]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 6 May 2008, Andrew Morton wrote:
+Herbert Xu wrote:
 
-> On Thu, 24 Apr 2008 19:31:26 -0400 (EDT)
-> "Robert P. J. Day" <rpjday@crashcourse.ca> wrote:
+> On Mon, May 12, 2008 at 09:14:54AM +0200, Marco Berizzi wrote:
+> >
+> > PS: linux version shown by dmesg is 2.6.24 but it
+> > is the results of 'git bisect good v2.6.24' and
+> > 'git bisect bad v2.6.25'
 >
-> > Implementing kernel debugging with a menuconfig allows for the removal
-> > of a pile of unnecessary dependencies.
->
->  Kconfig.debug |  112 +++++++++++++++++++++++++---------------------------------
->  1 file changed, 49 insertions(+), 63 deletions(-)
->
-> I'm afraid,
->
-> akpm:/usr/src/25> grep -l lib/Kconfig.debug pc/*.pc
-> pc/documentation-build-source-files-in-documentation-sub-dir-disable.pc
-> pc/documentation-build-source-files-in-documentation-sub-dir.pc
-> pc/git-sched.pc
-> pc/git-x86-latest.pc
-> pc/linux-next.pc
-> pc/make-frame_pointer-default=y.pc
-> pc/mm-add-a-basic-debugging-framework-for-memory-initialisation.pc
-> pc/mutex-subsystem-synchro-test-module.pc
-> pc/page-owner-tracking-leak-detector.pc
-> pc/profile-likely-unlikely-macros.pc
-> pc/slab-leaks3-default-y.pc
->
-> that our chances of finding a window in which to merge this patch
-> are pretty darn small.
+> So what's the changeset hash for the source that produced this
+> kernel?
 
-fair enough, but is there any sort of reorg that can be done with the
-kernel debugging menu?  it really is getting a bit out of hand.  at
-the very least, could it be collected into related categories?
+root@Calimero:/tmp/GIT/herbert# git bisect good v2.6.24
+You need to start by "git bisect start"
+Do you want me to do it for you [Y/n]? Y
+root@Calimero:/tmp/GIT/herbert# git bisect bad v2.6.25
+Bisecting: 6353 revisions left to test after this
+[dd5f5fed6c9458a7aa81eeef3732cc3a9891cfdf] Merge branch 'audit.b46' of
+git://git.kernel.org/pub/scm/linux/kernel/git/viro/audit-current
 
-rday
---
+Then I have copied from 2.6.25 two files:
 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
+net/ipv4/xfrm4_tunnel.c and ipcomp.c because
+of these bugs:
 
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
+http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.24.y.git;a=commit;h=11b47c8828d4cd1df21636719603784ec5e26067
+http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.24.y.git;a=commit;h=363c11d7e1c2b2cc30e33416a518cea5ef9e0cc8
+http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.24.y.git;a=commit;h=cefe34bea77e194fd6b6a7a062e1620af2eef69f
+
+and finally I have run 'make menuconfig' and
+'make bzImage modules modules_install'
+
+
