@@ -1,51 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760718AbYELJYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760184AbYELJ2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760718AbYELJYS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 05:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756350AbYELJYF
+	id S1760184AbYELJ2S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 05:28:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755303AbYELJ2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 05:24:05 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:42178 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756777AbYELJYE (ORCPT
+	Mon, 12 May 2008 05:28:07 -0400
+Received: from 87-194-8-8.bethere.co.uk ([87.194.8.8]:50177 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755297AbYELJ2F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 05:24:04 -0400
-Date: Mon, 12 May 2008 18:19:28 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andy Whitcroft <apw@shadowen.org>, Dave Hansen <haveblue@us.ibm.com>,
-       Gerald Schaefer <gerald.schaefer@de.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH] memory_hotplug: always initialize pageblock bitmap.
-Message-Id: <20080512181928.cd41c055.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080512105500.ff89c0d3.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080509060609.GB9840@osiris.boeblingen.de.ibm.com>
-	<20080509153910.6b074a30.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080510124501.GA4796@osiris.boeblingen.de.ibm.com>
-	<20080512105500.ff89c0d3.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 12 May 2008 05:28:05 -0400
+Date: Mon, 12 May 2008 10:27:19 +0100
+From: Ben Dooks <ben@fluff.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>, dpn@isomerica.net,
+       torvalds@linux-foundation.org, rjw@sisk.pl, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, jirislaby@gmail.com
+Subject: Re: Slow DOWN, please!!!
+Message-ID: <20080512092718.GG16284@fluff.org.uk>
+References: <20080429.190352.137408408.davem@davemloft.net> <4818DAC4.0@isomerica.net> <20080430135938.82e46e67.akpm@linux-foundation.org> <200805010053.31894.m.kozlowski@tuxland.pl> <20080430161130.4328b830.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080430161130.4328b830.akpm@linux-foundation.org>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 May 2008 10:55:00 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> seems good. I'll try this logic on my ia64 box, which allows
-> NUMA-node hotplug.
+On Wed, Apr 30, 2008 at 04:11:30PM -0700, Andrew Morton wrote:
+> On Thu, 1 May 2008 00:53:31 +0200
+> Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
 > 
-I'm sorry but I found memory-hotplug on my box doesn't work now
-maybe because of recent? changes in linux's ACPI. It seems no notifies
-reach to acpi container/memory driver. (maybe another regression...)
-I'll dig...but it may take some amount of time.
+> > Hello,
+> > 
+> > > > Perhaps we should be clear and simple about what potential testers 
+> > > > should be running at any given point in time.  With -mm, linux-next, 
+> > > > linux-2.6, etc, as a newcomer I find it difficult to know where my 
+> > > > testing time and energy is best directed.
+> > 
+> > Speaking of energy and time of a tester. I'd like to know where these resources
+> > should be directed from the arch point of view. Once I had a plan to buy as
+> > many arches as I could get and run a farm of test boxes 8-) But that's hard
+> > because of various reasons (money, time, room, energy). What arches need more
+> > attention? Which are forgotten? Which are going away? For example does buying
+> > an alphaserver DS 20 (hey - it's cheap) and running tests on it makes sense
+> > these days?
+> > 
+> 
+> gee.
+> 
+> I think to a large extent this problem solves itself - the "more important"
+> architectures have more people using them, so they get more testing and
+> more immediate testing.
+> 
+> However there are gaps.  I'd say that arm is one of the more important
+> architectures, but many people who are interested in arm tend to shy away
+> from bleeding-edge kernels for various reasons.  Mainly because they have
+> real products to get out the door, rather than dinking around with mainline
+> kernel developement.  So testing bleeding-edge on some arm systems would be
+> good, I expect.
 
-I have no objection to your patch as a result of review.
+As both personally, and the policy of my employer we try and ensure we
+can offer our customers at-least the previous 'stable' kernel release
+and ensure that our development process tracks the kernel -rcX
+candidates. We also run an autobuilder[1] which runs all -git releases
+through an automated build (no auto-test yet) to ensure that we can
+detect any build or configuration errors in the releases. 
 
-Thanks,
--Kame
+ARM is a fast moving area due to the amount of sillicon vendors out
+there who seem intent on doing their own thing, and often forking
+hardware blocks they use during differing development branches. I
+am currently looking at merging support for the S3C6400 (new) and
+finishing S3C2443 (similar to 6400) and the S3C24A0... this means
+that I have a lot of code to look through before each release and
+having a stall will just keep the backlog building, making my job
+a lot more difficult.
 
+
+[1] http://armlinux.simtec.co.uk/kautobuild/
+
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
+
+  'a smiley only costs 4 bytes'
