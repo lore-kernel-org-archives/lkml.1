@@ -1,55 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760145AbYELCod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760491AbYELCpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760145AbYELCod (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 22:44:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756853AbYELCoX
+	id S1760491AbYELCpt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 22:45:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757308AbYELCpl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 22:44:23 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:28313 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756812AbYELCoR (ORCPT
+	Sun, 11 May 2008 22:45:41 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:20160 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756853AbYELCpk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 22:44:17 -0400
+	Sun, 11 May 2008 22:45:40 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=Ze5EywBEPgV9cr8ojnMETVTQY7VXksbH+pGR14BDnkkmb46u37cnyDsnZglqJZQMdnqv6Oj1mKbmYilTjU/18vQUEiRsHDlc5mzEqFnEDBaw6yvDsoGf0s2P6MPEfN5azgZLl9Na18TsdbFTcvgxRDFnv3XJJthJhhy4yPTFgaE=
-Date: Mon, 12 May 2008 10:42:13 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <adrian.bunk@movial.fi>
-Subject: Re: [Bug #10495] Voyager phys_cpu_present_map compile error
-Message-ID: <20080512024213.GA2572@hacking>
-References: <hPXlJLjt4XG.A._lF.Jv1JIB@chimera> <88YBFoyd1CN.A.5dB.Lx1JIB@chimera>
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=AnG31E9mpH3hi/POZTHIJ79fmGUI3a7xPrC6J/HBJsv4IQvZWZerAkb3GxhlAw+MMAh9eKpwTVWYs+hWmufsM3wkcJvsZCD+uCAJOwodr9/a+WuA9M9lRA7oFs+crN1K1qRhuvWUTHbPJlcCgtXd5SGb1MfM/hjdrd+ZTuTqRVI=
+Date: Mon, 12 May 2008 08:15:22 +0530
+From: Rabin Vincent <rabin@rab.in>
+To: Manish Katiyar <mkatiyar@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Remove unused variable "cpu" from arch/x86/xen/setup.c
+Message-ID: <20080512024521.GA20281@debian>
+References: <ea11fea30805111027x63aa4e44m81407296d16766d8@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <88YBFoyd1CN.A.5dB.Lx1JIB@chimera>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <ea11fea30805111027x63aa4e44m81407296d16766d8@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 11, 2008 at 10:04:12PM +0200, Rafael J. Wysocki wrote:
->This message has been generated automatically as a part of a report
->of recent regressions.
->
->The following bug entry is on the current list of known regressions
->from 2.6.25.  Please verify if it still should be listed.
->
->
->Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10495
->Subject		: Voyager phys_cpu_present_map compile error
->Submitter	: Adrian Bunk <adrian.bunk@movial.fi>
->Date		: 2008-04-20 17:12 (22 days old)
->References	: http://lkml.org/lkml/2008/4/20/259
->
+On Sun, May 11, 2008 at 10:57:12PM +0530, Manish Katiyar wrote:
+>  void xen_enable_sysenter(void)
+>  {
+> -       int cpu = smp_processor_id();
+ 
+This variable is used when building for SMP:
 
-I think this should be fixed by James's patch [1].
+>	if (!boot_cpu_has(X86_FEATURE_SEP) ||
+>	    HYPERVISOR_callback_op(CALLBACKOP_register, &sysenter) != 0) {
+>		clear_cpu_cap(&cpu_data(cpu), X86_FEATURE_SEP);  <-----
+>		clear_cpu_cap(&boot_cpu_data, X86_FEATURE_SEP);
 
-1. http://lkml.org/lkml/2008/5/9/188
-
--- 
-Hi, I'm a .signature virus, please copy/paste me to help me spread
-all over the world.
+Rabin
