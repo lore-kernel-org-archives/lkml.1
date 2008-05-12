@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757990AbYELNiZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757610AbYELNjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757990AbYELNiZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 09:38:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752627AbYELNiF
+	id S1757610AbYELNjS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 09:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755054AbYELNi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 09:38:05 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:58516 "EHLO mgw2.diku.dk"
+	Mon, 12 May 2008 09:38:56 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:44201 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751807AbYELNiD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 09:38:03 -0400
-Date: Mon, 12 May 2008 15:37:58 +0200 (CEST)
+	id S1754921AbYELNiz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 09:38:55 -0400
+Date: Mon, 12 May 2008 15:38:49 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: jgarzik@pobox.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+To: jpr@f6fbb.org, linux-hams@vger.kernel.org, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 3/6] drivers/net: remove null pointer dereference
-Message-ID: <Pine.LNX.4.64.0805121537320.3694@ask.diku.dk>
+Subject: [PATCH 5/6] drivers/net/hamradio: remove null pointer dereference
+Message-ID: <Pine.LNX.4.64.0805121538270.3694@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -52,15 +52,16 @@ Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
 
-diff -u -p a/drivers/net/au1000_eth.c b/drivers/net/au1000_eth.c
---- a/drivers/net/au1000_eth.c	2008-04-27 11:41:11.000000000 +0200
-+++ b/drivers/net/au1000_eth.c	2008-05-12 09:32:54.000000000 +0200
-@@ -1242,7 +1242,7 @@ static irqreturn_t au1000_interrupt(int 
- 	struct net_device *dev = (struct net_device *) dev_id;
- 
- 	if (dev == NULL) {
--		printk(KERN_ERR "%s: isr: null dev ptr\n", dev->name);
-+		printk(KERN_ERR "isr: null dev ptr\n");
- 		return IRQ_RETVAL(1);
- 	}
- 
+diff -u -p a/drivers/net/hamradio/yam.c b/drivers/net/hamradio/yam.c
+--- a/drivers/net/hamradio/yam.c	2008-04-07 13:50:26.000000000 +0200
++++ b/drivers/net/hamradio/yam.c	2008-05-12 09:52:58.000000000 +0200
+@@ -1123,8 +1123,7 @@ static int __init yam_init_driver(void)
+ 		dev = alloc_netdev(sizeof(struct yam_port), name,
+ 				   yam_setup);
+ 		if (!dev) {
+-			printk(KERN_ERR "yam: cannot allocate net device %s\n",
+-			       dev->name);
++			printk(KERN_ERR "yam: cannot allocate net device\n");
+ 			err = -ENOMEM;
+ 			goto error;
+ 		}
