@@ -1,66 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760247AbYELJWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760326AbYELJXo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760247AbYELJWh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 05:22:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756937AbYELJW2
+	id S1760326AbYELJXo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 05:23:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757058AbYELJXg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 05:22:28 -0400
-Received: from an-out-0708.google.com ([209.85.132.250]:46715 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756853AbYELJW1 (ORCPT
+	Mon, 12 May 2008 05:23:36 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:48374 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756350AbYELJXe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 05:22:27 -0400
+	Mon, 12 May 2008 05:23:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=HFtjgAPoYioFN8omWYbe67l8snBWH7MwR1rdxmqGocBkDd04Abu3nsA9Y8Ug8AsGnw6Pce1kAJG6WSRR9x6H/eaQdXIyjzKFQ9OPDtwjWF065fBzKmPZ8/jRZUkztZbxuxNbSbo5ND1Mww7hVLRc/39q54tmk6ktdCGoIs+pmDQ=
-Message-ID: <430c80e90805120222u45dac846j96c4a1810114b94d@mail.gmail.com>
-Date: Mon, 12 May 2008 14:52:26 +0530
-From: "Pranith Kumar" <bobby.prani@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: [Patch 1/1] Trivial - 2.6.26-rc2, arch/x86/mm/pat.c - fix warning
-Cc: trivial@kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       "Kernel List" <kernelnewbies@nl.linux.org>,
-       kernel-janitors@vger.kernel.org
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=oqWqEPz8jbRsVTOnOR406WX89FU6pAY4vdQnsjK8eJ92bRjvNdtqurlgWwavocW3VzwkyQk8KqydwrOTkgeVHkp4cvggOEdDD055Cma4idlF4XwzuFmHqw1ew4Z9Rar1uRukaFNuhM3rZHAxEyjK3wplxRldtJMy8Ivh74dtyfg=
+Message-ID: <1ba2fa240805120223m2ff24028j5f5f29a0e40153e2@mail.gmail.com>
+Date: Mon, 12 May 2008 12:23:34 +0300
+From: "Tomas Winkler" <tomasw@gmail.com>
+To: "Mirco Tischler" <mt-ml@gmx.de>
+Subject: Re: BUG: scheduling while atomic: events/1/10/0x00000002 on linux-next
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       "Reinette Chatre" <reinette.chatre@intel.com>,
+       "Zhu Yi" <yi.zhu@intel.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       "Johannes Berg" <johannes@sipsolutions.net>,
+       "Emmanuel Grumbach" <egrumbach@gmail.com>
+In-Reply-To: <1210534778.5052.3.camel@mtlp.tischlernetz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <1210524139.17521.5.camel@mtlp.tischlernetz>
+	 <1ba2fa240805111226s6f900015n4144f5411957ef2a@mail.gmail.com>
+	 <1210534778.5052.3.camel@mtlp.tischlernetz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Sun, May 11, 2008 at 10:39 PM, Mirco Tischler <mt-ml@gmx.de> wrote:
+>> What exact git tree is this?
+>>   iwlcore:iwl_send_cmd_sync+0x154/0x24b waits for event so something
+>> has changed in mac80211. Need to see the code.
+>>
+>> Thanks
+>> Tomas
+>>
+> This is Stephen's linux-next tree from 2008-05-09. Checkout tag
+> next-20080509.
 
-I get this warning when i compile the latest rc2
-arch/x86/mm/pat.c: In function `phys_mem_access_prot_allowed':
-arch/x86/mm/pat.c:558: warning: long long unsigned int format, long
-unsigned int arg (arg 6)
-arch/x86/mm/pat.c: In function `map_devmem':
-arch/x86/mm/pat.c:580: warning: long long unsigned int format, long
-unsigned int arg (arg 6)
+Reproduced, we will release patch into wireless-testing.git
 
-The following patch fixes this warning
-
-Signed-Off-by: D Pranith Kumar <bobby.prani@gmail.com>
-
---- linux-2.6.26-rc2/arch/x86/mm/pat.c.orig	2008-05-12 14:25:16.000000000 +0530
-+++ linux-2.6.26-rc2/arch/x86/mm/pat.c	2008-05-12 14:24:05.000000000 +0530
-@@ -555,7 +555,7 @@ int phys_mem_access_prot_allowed(struct
- 		"%s:%d /dev/mem ioremap_change_attr failed %s for %Lx-%Lx\n",
- 			current->comm, current->pid,
- 			cattr_name(flags),
--			offset, offset + size);
-+			offset, (unsigned long long)(offset + size));
- 		return 0;
- 	}
-
-@@ -576,7 +576,7 @@ void map_devmem(unsigned long pfn, unsig
- 		"%s:%d /dev/mem expected mapping type %s for %Lx-%Lx, got %s\n",
- 			current->comm, current->pid,
- 			cattr_name(want_flags),
--			addr, addr + size,
-+			addr, (unsigned long long)(addr + size),
- 			cattr_name(flags));
- 	}
- }
+Thanks for reporting
+Tomas
