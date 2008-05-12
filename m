@@ -1,71 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753318AbYELOLc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753918AbYELOOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753318AbYELOLc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 10:11:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750906AbYELOLY
+	id S1753918AbYELOOp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 10:14:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbYELOOf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 10:11:24 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:55888 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750764AbYELOLX (ORCPT
+	Mon, 12 May 2008 10:14:35 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:50736 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751032AbYELOOe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 10:11:23 -0400
-Message-ID: <48285002.9080702@us.ibm.com>
-Date: Mon, 12 May 2008 09:11:14 -0500
-From: Maynard Johnson <maynardj@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Mon, 12 May 2008 10:14:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=Xo9QCSJExqmCVldh1ZprpOXCfaQ4NEKiDTw+A8oYhAcQuRm+Su+bex66AHBXPZGbRWR3moXT2KtRqDC4fMhXkW+nzcNC3/zzK3vO/Qb5lcE/pPJy4EMVay0UbIzWvYxBhdE+tSDcGaL1i2m8Pgk6I+8kD9YbyNWL7iKe4ynHh70=
+Date: Mon, 12 May 2008 18:14:20 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Pavel Machek <pavel@suse.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "H. Peter Anvin" <hpa@zytor.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: wakeup.lds.S - section ordering fix
+Message-ID: <20080512141420.GA6913@cvg>
+References: <20080511184638.GE6942@cvg> <20080512135343.GA1725@elf.ucw.cz>
 MIME-Version: 1.0
-To: Gianni Tedesco <gxt@cs.nott.ac.uk>
-CC: Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org,
-       oprofile-list@lists.sourceforge.net, Mike Travis <travis@sgi.com>
-Subject: Re: oprofile BUG() in current kernel.
-References: <1210593756.3708.7.camel@dao.KWGR614> <19f34abd0805120519t12fceef9u7870006a904c85b2@mail.gmail.com> <1210599105.3479.1.camel@dao.KWGR614>
-In-Reply-To: <1210599105.3479.1.camel@dao.KWGR614>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080512135343.GA1725@elf.ucw.cz>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gianni Tedesco wrote:
-> On Mon, 2008-05-12 at 14:19 +0200, Vegard Nossum wrote:
->   
->> Hi,
->>
->> On Mon, May 12, 2008 at 2:02 PM, Gianni Tedesco <gxt@cs.nott.ac.uk> wrote:
->>     
->>> This is from Linus' git tree, pulled this morning. To reproduce simply
->>>  opcontrol --start
->>>
->>>  oprofile: using NMI interrupt.
->>>  BUG: unable to handle kernel paging request at eff86d58
->>>  IP: [<eeb9d508>] :oprofile:alloc_cpu_buffers+0x42/0xd6
->>>
->>>       
->> This looks similar to:
->>
->> http://www.uwsg.iu.edu/hypermail/linux/kernel/0805.0/2845.html
->>     
->
-> Yes, remarkably similar ;)
->
->   
->> Does reverting 608dfddd845da5ab6accef70154c8910529699f7 fix it for you too?
->>     
-Has this fix been officially reverted?
->
-> It does indeed. Thanks for the pointer.
->
->
-> -------------------------------------------------------------------------
-> This SF.net email is sponsored by the 2008 JavaOne(SM) Conference 
-> Don't miss this year's exciting event. There's still time to save $100. 
-> Use priority code J8TL2D2. 
-> http://ad.doubleclick.net/clk;198757673;13503038;p?http://java.sun.com/javaone
-> _______________________________________________
-> oprofile-list mailing list
-> oprofile-list@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/oprofile-list
->   
+[Pavel Machek - Mon, May 12, 2008 at 03:53:43PM +0200]
+| On Sun 2008-05-11 22:46:38, Cyrill Gorcunov wrote:
+| > To allow linker to catch sections overlapping we have to declare
+| > them in appropriate order.
+| > 
+| > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+| > ---
+| > 
+| > Please test and review
+| 
+| Looks okay to me, but I can't easily test it right now.
+| 
+| But I think Rafael tested identical patch, you can add my ACK in such
+| case.
+| 
+| 								Pavel
+| 
 
+Yes, Rafael tested the same (in contents) patch. Actually there was
+a bit time-screwed situation - I've proposed a solution, Peter was
+agreed with, I said him that I'll cook a patch, meanwhile I've got an internet
+connection problem, and at moment Rafael tested the same patch he made by own.
+A bit funny situation ;) So I think in this patch should be then:
 
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+Acked-by: Pavel Machek <pavel@suse.cz>
+
+Anyway, thanks to all being involved ;)
+
+		- Cyrill -
