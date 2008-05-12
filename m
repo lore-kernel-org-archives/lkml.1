@@ -1,105 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758859AbYELBl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759379AbYELBxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758859AbYELBl2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 21:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbYELBlS
+	id S1759379AbYELBxR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 21:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753925AbYELBxF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 21:41:18 -0400
-Received: from mga05.intel.com ([192.55.52.89]:22882 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752805AbYELBlR (ORCPT
+	Sun, 11 May 2008 21:53:05 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48637 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753245AbYELBxD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 21:41:17 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,470,1204531200"; 
-   d="scan'208";a="563447732"
-Subject: Re: volanoMark regression with kernel 2.6.26-rc1
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: vatsa@linux.vnet.ibm.com
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <20080509155240.GH3612@linux.vnet.ibm.com>
-References: <1210039590.3453.18.camel@ymzhang>
-	 <20080506115207.GA24862@linux.vnet.ibm.com>
-	 <20080507173357.GA4424@linux.vnet.ibm.com>
-	 <1210223914.3453.102.camel@ymzhang>
-	 <20080508054047.GD32729@linux.vnet.ibm.com>
-	 <1210226013.3453.113.camel@ymzhang>
-	 <20080508061125.GC3644@linux.vnet.ibm.com>
-	 <20080509155240.GH3612@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Mon, 12 May 2008 09:39:10 +0800
-Message-Id: <1210556351.3151.2.camel@ymzhang>
+	Sun, 11 May 2008 21:53:03 -0400
+Date: Mon, 12 May 2008 10:55:00 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andy Whitcroft <apw@shadowen.org>, Dave Hansen <haveblue@us.ibm.com>,
+       Gerald Schaefer <gerald.schaefer@de.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] memory_hotplug: always initialize pageblock bitmap.
+Message-Id: <20080512105500.ff89c0d3.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080510124501.GA4796@osiris.boeblingen.de.ibm.com>
+References: <20080509060609.GB9840@osiris.boeblingen.de.ibm.com>
+	<20080509153910.6b074a30.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080510124501.GA4796@osiris.boeblingen.de.ibm.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 (2.21.5-2.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 10 May 2008 14:45:01 +0200
+Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+> > Recently, I added a check "zone's start_pfn < pfn < zone's end"
+> > to memmap_init_zone()'s usemap initialization for !SPARSEMEM case bug FIX.
+> > (and I think the fix itself is sane.)
+> 
+> Oh, you broke memory hot-add on -stable ;)
+>
+Ah yes, my mistake. Very sorry, (but stable was also broken if !SPARSEMEM)
+ 
+> > How about calling grow_pgdat_span()/grow_zone_span() from __add_zone() ?
+> 
+> Like this?
+> 
+> Note that this patch is on top of the other patch I already sent, but
+> reverts it...
+> 
+> This works for me. A final version (if this is acceptable) should move
+> the grow* functions also.
+> 
+> ---
+>  mm/memory_hotplug.c |   28 +++++++++++++++++++---------
+>  mm/page_alloc.c     |    3 +--
+>  2 files changed, 20 insertions(+), 11 deletions(-)
+> 
+> Index: linux-2.6/mm/memory_hotplug.c
+> ===================================================================
+> --- linux-2.6.orig/mm/memory_hotplug.c
+> +++ linux-2.6/mm/memory_hotplug.c
+> @@ -159,17 +159,33 @@ void register_page_bootmem_info_node(str
+>  }
+>  #endif /* !CONFIG_SPARSEMEM_VMEMMAP */
+>  
+> +static void grow_zone_span(struct zone *zone, unsigned long start_pfn,
+> +			   unsigned long end_pfn);
+> +static void grow_pgdat_span(struct pglist_data *pgdat,
+> +			    unsigned long start_pfn, unsigned long end_pfn);
+> +
+>  static int __add_zone(struct zone *zone, unsigned long phys_start_pfn)
+>  {
+>  	struct pglist_data *pgdat = zone->zone_pgdat;
+>  	int nr_pages = PAGES_PER_SECTION;
+>  	int nid = pgdat->node_id;
+>  	int zone_type;
+> +	unsigned long flags;
+>  
+>  	zone_type = zone - pgdat->node_zones;
+> -	if (!zone->wait_table)
+> -		return init_currently_empty_zone(zone, phys_start_pfn,
+> -						 nr_pages, MEMMAP_HOTPLUG);
+> +	if (!zone->wait_table) {
+> +		int ret;
+> +
+> +		ret = init_currently_empty_zone(zone, phys_start_pfn,
+> +						nr_pages, MEMMAP_HOTPLUG);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +	pgdat_resize_lock(zone->zone_pgdat, &flags);
+> +	grow_zone_span(zone, phys_start_pfn, phys_start_pfn + nr_pages);
+> +	grow_pgdat_span(zone->zone_pgdat, phys_start_pfn,
+> +			phys_start_pfn + nr_pages);
+> +	pgdat_resize_unlock(zone->zone_pgdat, &flags);
+>  	memmap_init_zone(nr_pages, nid, zone_type,
+>  			 phys_start_pfn, MEMMAP_HOTPLUG);
+>  	return 0;
+seems good. I'll try this logic on my ia64 box, which allows
+NUMA-node hotplug.
 
-On Fri, 2008-05-09 at 21:22 +0530, Srivatsa Vaddagiri wrote:
-> On Thu, May 08, 2008 at 11:41:25AM +0530, Srivatsa Vaddagiri wrote:
-> > The other combination that I am interested to know is when:
-> > 
-> > CONFIG_FAIR_GROUP_SCHED=y and CONFIG_CGROUP_SCHED=y
-> > 
-> > [i.e cgroup based scheduling rather than uid based scheduling. Former
-> > should result in only one group at bootup]
-> > 
-> > I will also try to get some numbers with this combination.
-> 
-> I ran with that combination and here are some results:
-> 
-> 2.6.25 (with CONFIG_USER_SCHED) 
-> 
-> 	Volanomark perf = 20436.6 (Avg of 10 runs)
-> 
-> 2.6.26-rc1 + patches in Ingo's tree [1] as of Fri morning IST (abt 8 hrs
-> before) (with CONFIG_CGROUP_SCHED)
-> 	
-> 	Volanomark perf = 21529.6
-> 
-> i.e CGROUP based grouping in 2.6.26-rc1 gives same (if not somewhat
-> better) results as UID-based scheduling in 2.6.25.
-> 
-> Yamin,
-> 	Could you validate this as well? i.e just turn on cgroup-based
-> grouping (CONFIG_CGROUP_SCHED) and check the resulting performance with 2625
-> you already have (using CONFIG_USER_SCHED).
-> 
-> 
-> A) In 2.6.25, with UID based scheduling,
-> 	CPU load = summation of task load
-> 
-> B) In 2.6.26-rc1, with UID based scheduling,
-> 	CPU load = summation of group weights
-> 
-> C) In 2.6.26-rc1, with CGROUP based scheduling,
-> 	CPU load = summation of task weights
-I'm confused by these conceptions. Would you like to tell me the exact config options
-you want to turn on?
+Thank you!
+-Kame
 
-Options in my config file(both 2.6.25 and 2.6.26-rc1):
-
-# CONFIG_CGROUPS is not set
-CONFIG_GROUP_SCHED=y
-CONFIG_FAIR_GROUP_SCHED=y
-# CONFIG_RT_GROUP_SCHED is not set
-CONFIG_USER_SCHED=y
-# CONFIG_CGROUP_SCHED is not set
-
-> 
-> 
-> This change in definition of cpu load is affecting load balance routines
-> (find_busiest_group et al). As a result, threads of volanomark benchmark
-> aren't quickly spread across the cpus, resulting in slower performance.
-> 
-> In case of B), cpu load can be low numbers (100 or 200), while in A or
-> C, cpu load are large numbers. I think find_busiest_group() and related 
-> routines need to be "educated" to deal with such low numbers ..
-> 
+> @@ -363,7 +379,6 @@ static int online_pages_range(unsigned l
+>  
+>  int online_pages(unsigned long pfn, unsigned long nr_pages)
+>  {
+> -	unsigned long flags;
+>  	unsigned long onlined_pages = 0;
+>  	struct zone *zone;
+>  	int need_zonelists_rebuild = 0;
+> @@ -391,11 +406,6 @@ int online_pages(unsigned long pfn, unsi
+>  	 * memory_block->state_mutex.
+>  	 */
+>  	zone = page_zone(pfn_to_page(pfn));
+> -	pgdat_resize_lock(zone->zone_pgdat, &flags);
+> -	grow_zone_span(zone, pfn, pfn + nr_pages);
+> -	grow_pgdat_span(zone->zone_pgdat, pfn, pfn + nr_pages);
+> -	pgdat_resize_unlock(zone->zone_pgdat, &flags);
+> -
+>  	/*
+>  	 * If this zone is not populated, then it is not in zonelist.
+>  	 * This means the page allocator ignores this zone.
+> Index: linux-2.6/mm/page_alloc.c
+> ===================================================================
+> --- linux-2.6.orig/mm/page_alloc.c
+> +++ linux-2.6/mm/page_alloc.c
+> @@ -2862,8 +2862,6 @@ __meminit int init_currently_empty_zone(
+>  
+>  	zone->zone_start_pfn = zone_start_pfn;
+>  
+> -	memmap_init(size, pgdat->node_id, zone_idx(zone), zone_start_pfn);
+> -
+>  	zone_init_free_lists(zone);
+>  
+>  	return 0;
+> @@ -3433,6 +3431,7 @@ static void __paginginit free_area_init_
+>  		ret = init_currently_empty_zone(zone, zone_start_pfn,
+>  						size, MEMMAP_EARLY);
+>  		BUG_ON(ret);
+> +		memmap_init(size, nid, j, zone_start_pfn);
+>  		zone_start_pfn += size;
+>  	}
+>  }
 > 
 
