@@ -1,83 +1,248 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754228AbYELPJj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755368AbYELPK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754228AbYELPJj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 11:09:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbYELPJ3
+	id S1755368AbYELPK2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 11:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752610AbYELPKR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 11:09:29 -0400
-Received: from bay0-omc1-s32.bay0.hotmail.com ([65.54.246.104]:32065 "EHLO
-	bay0-omc1-s32.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751419AbYELPJ2 (ORCPT
+	Mon, 12 May 2008 11:10:17 -0400
+Received: from gv-out-0910.google.com ([216.239.58.186]:10427 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752043AbYELPKO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 11:09:28 -0400
-Message-ID: <BAY103-DAV2A04E519F35401C98403FB2CC0@phx.gbl>
-X-Originating-IP: [85.32.103.134]
-X-Originating-Email: [pupilla@hotmail.com]
-From: "Marco Berizzi" <pupilla@hotmail.com>
-To: "Herbert Xu" <herbert@gondor.apana.org.au>
-Cc: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
-References: <E1Jrtxr-0004in-00@gondolin.me.apana.org.au> <BAY103-DAV594320AC93E33D7335927B2DA0@phx.gbl> <BAY103-DAV122A113843FE9574256A0AB2D60@phx.gbl> <BAY103-DAV6446AEC1CBB678E5D0E52B2D30@phx.gbl> <20080509102509.GA11710@gondor.apana.org.au> <BAY103-DAV5B5CD83FC6A95A5DD48C9B2CC0@phx.gbl> <20080512074642.GA1416@gondor.apana.org.au> <BAY103-DAV521435E26209347B7646FB2CC0@phx.gbl>
-Subject: Re: 2.6.25 crash: EIP: [<c02e2f14>] xfrm_output_resume+0x64/0x100 ss:esp 0068:c03a1e5c
-Date: Mon, 12 May 2008 17:06:54 +0200
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2800.1123
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1123
-X-OriginalArrivalTime: 12 May 2008 15:09:27.0360 (UTC) FILETIME=[2BAC1C00:01C8B442]
+	Mon, 12 May 2008 11:10:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=lw6qPpMR2wht/HjLe8A2RCbonF0KGDTGrKQq2StjUTnQRVEDsSMssZ2qYCqAXRhpqZMr+u9Kd0EHX+MmEnm3lsLzi1ZG9eHB6kjy1DurHOrC5gZCjHtooa5oisluY44d7fX6Cugzu1lBjTb0EOr2Xnq9TmtyblSUkrtfEUJTLtU=
+Message-ID: <2a6e8c0d0805120810n55cbe046x7b4c07c36b5d4e92@mail.gmail.com>
+Date: Mon, 12 May 2008 11:10:11 -0400
+From: "Ian E. Morgan" <penguin.wrangler@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: sysfs: duplicate filename (usb unusual dev?)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marco Berizzi wrote:
+My wife got a silly little keychain digital photo frame for a gift.
+I'm trying to make it work, but no such luck:
 
-> Herbert Xu wrote:
->
-> > On Mon, May 12, 2008 at 09:14:54AM +0200, Marco Berizzi wrote:
-> > >
-> > > PS: linux version shown by dmesg is 2.6.24 but it
-> > > is the results of 'git bisect good v2.6.24' and
-> > > 'git bisect bad v2.6.25'
-> >
-> > So what's the changeset hash for the source that produced this
-> > kernel?
->
-> root@Calimero:/tmp/GIT/herbert# git bisect good v2.6.24
-> You need to start by "git bisect start"
-> Do you want me to do it for you [Y/n]? Y
-> root@Calimero:/tmp/GIT/herbert# git bisect bad v2.6.25
-> Bisecting: 6353 revisions left to test after this
-> [dd5f5fed6c9458a7aa81eeef3732cc3a9891cfdf] Merge branch 'audit.b46' of
-> git://git.kernel.org/pub/scm/linux/kernel/git/viro/audit-current
->
-> Then I have copied from 2.6.25 two files:
->
-> net/ipv4/xfrm4_tunnel.c and ipcomp.c because
-> of these bugs:
->
->
-http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.24.y.git;a=commit;h=11b47c8828d4cd1df21636719603784ec5e26067
->
-http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.24.y.git;a=commit;h=363c11d7e1c2b2cc30e33416a518cea5ef9e0cc8
->
-http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.24.y.git;a=commit;h=cefe34bea77e194fd6b6a7a062e1620af2eef69f
->
-> and finally I have run 'make menuconfig' and
-> 'make bzImage modules modules_install'
+(This is on vanilla 2.6.25)
 
-ok, I have git bisected again:
+May 12 10:19:21 raptor kernel: usb 3-1: new full speed USB device
+using uhci_hcd and address 3
+May 12 10:19:21 raptor kernel: usb 3-1: config 1 has an invalid
+interface number: 1 but max is 0
+May 12 10:19:21 raptor kernel: usb 3-1: config 1 has 2 interfaces,
+different from the descriptor's value: 1
+May 12 10:19:21 raptor kernel: usb 3-1: configuration #1 chosen from 1 choice
+May 12 10:19:21 raptor kernel: scsi7 : SCSI emulation for USB Mass
+Storage devices
+May 12 10:19:21 raptor kernel: hiddev96hidraw1: USB HID v2.01 Device
+[BUILDWIN Photo Frame] on usb-0000:00:1d.2-1
+May 12 10:19:21 raptor kernel: sysfs: duplicate filename
+'usbdev3.3_ep81' can not be created
+May 12 10:19:21 raptor kernel: ------------[ cut here ]------------
+May 12 10:19:21 raptor kernel: WARNING: at fs/sysfs/dir.c:424
+sysfs_add_one+0x80/0xa0()
+May 12 10:19:21 raptor kernel: Modules linked in: usb_storage ctr
+twofish twofish_common camellia serp
+ent blowfish xcbc sha256_generic autofs4 hidp rfcomm l2cap sunrpc
+ipt_REJECT nf_conntrack_ipv4 xt_stat
+e xt_tcpudp iptable_filter ip_tables x_tables acpi_cpufreq vfat fat
+dm_mirror dm_mod nvram usbhid hci_
+usb bluetooth sg mousedev evdev nvidia(P) ohci1394 iwl3945
+firmware_class mac80211 ieee1394 pcmcia_cor
+e snd_hda_intel snd_pcm snd_timer snd tg3 soundcore 8250_pnp 8250
+i2c_core intel_agp snd_page_alloc se
+rial_core pcspkr iTCO_wdt agpgart ehci_hcd uhci_hcd usbcore [last
+unloaded: parport]
+May 12 10:19:21 raptor kernel: Pid: 505, comm: khubd Tainted: P
+ 2.6.25 #3
+May 12 10:19:21 raptor kernel:  [<c013b684>] warn_on_slowpath+0x54/0x70
+May 12 10:19:21 raptor kernel:  [<c013be8b>] ? wake_up_klogd+0x3b/0x40
+May 12 10:19:21 raptor kernel:  [<c013c058>] ? release_console_sem+0x1c8/0x1e0
+May 12 10:19:21 raptor kernel:  [<c022dc3c>] ? ida_get_new_above+0x7c/0x170
+May 12 10:19:21 raptor kernel:  [<c01aa7be>] ? find_inode+0x3e/0x70
+May 12 10:19:21 raptor kernel:  [<c01da970>] ? sysfs_ilookup_test+0x0/0x20
+May 12 10:19:21 raptor kernel:  [<c01da970>] ? sysfs_ilookup_test+0x0/0x20
+May 12 10:19:21 raptor kernel:  [<c01aa8f5>] ? ifind+0x45/0x90
+May 12 10:19:21 raptor kernel:  [<c013c64b>] ? printk+0x1b/0x20
+May 12 10:19:21 raptor kernel:  [<c01dad00>] sysfs_add_one+0x80/0xa0
+May 12 10:19:21 raptor kernel:  [<c01dbaeb>] sysfs_create_link+0x8b/0x110
+May 12 10:19:21 raptor kernel:  [<c02960c0>] device_add+0x240/0x430
+May 12 10:19:21 raptor kernel:  [<c02962c2>] device_register+0x12/0x20
+May 12 10:19:21 raptor kernel:  [<f89248b6>]
+usb_create_ep_files+0x166/0x2e0 [usbcore]
+May 12 10:19:21 raptor kernel:  [<f8923cd5>]
+usb_create_sysfs_intf_files+0xa5/0xe0 [usbcore]
+May 12 10:19:21 raptor kernel:  [<f891f86c>]
+usb_set_configuration+0x33c/0x590 [usbcore]
+May 12 10:19:21 raptor kernel:  [<f8927e9b>] generic_probe+0x6b/0xa0 [usbcore]
+May 12 10:19:21 raptor kernel:  [<f8921483>]
+usb_probe_device+0x33/0x40 [usbcore]
+May 12 10:19:21 raptor kernel:  [<c0298057>] driver_probe_device+0x87/0x160
+May 12 10:19:21 raptor kernel:  [<c0366723>] ? klist_next+0x63/0xb0
+May 12 10:19:21 raptor kernel:  [<c0298138>] __device_attach+0x8/0x10
+May 12 10:19:21 raptor kernel:  [<c0297307>] bus_for_each_drv+0x47/0x70
+May 12 10:19:21 raptor kernel:  [<c02981ea>] device_attach+0x7a/0x80
+May 12 10:19:21 raptor kernel:  [<c0298130>] ? __device_attach+0x0/0x10
+May 12 10:19:21 raptor kernel:  [<c029728f>] bus_attach_device+0x4f/0x80
+May 12 10:19:21 raptor kernel:  [<c02961ab>] device_add+0x32b/0x430
+May 12 10:19:21 raptor kernel:  [<f891a276>] usb_new_device+0x56/0xb0 [usbcore]
+May 12 10:19:21 raptor kernel:  [<f891b7ff>] hub_thread+0x44f/0xc50 [usbcore]
+May 12 10:19:21 raptor kernel:  [<c01347a7>] ? hrtick_set+0xa7/0x110
+May 12 10:19:21 raptor kernel:  [<c014ed60>] ? autoremove_wake_function+0x0/0x40
+May 12 10:19:21 raptor kernel:  [<f891b3b0>] ? hub_thread+0x0/0xc50 [usbcore]
+May 12 10:19:21 raptor kernel:  [<c014ea62>] kthread+0x42/0x70
+May 12 10:19:21 raptor kernel:  [<c014ea20>] ? kthread+0x0/0x70
+May 12 10:19:21 raptor kernel:  [<c011895b>] kernel_thread_helper+0x7/0x1c
+May 12 10:19:21 raptor kernel:  =======================
+May 12 10:19:21 raptor kernel: ---[ end trace ab65a9098e25b754 ]---
+May 12 10:19:21 raptor kernel: sysfs: duplicate filename
+'usbdev3.3_ep01' can not be created
+May 12 10:19:21 raptor kernel: ------------[ cut here ]------------
+May 12 10:19:21 raptor kernel: WARNING: at fs/sysfs/dir.c:424
+sysfs_add_one+0x80/0xa0()
+May 12 10:19:21 raptor kernel: Modules linked in: usb_storage ctr
+twofish twofish_common camellia serp
+ent blowfish xcbc sha256_generic autofs4 hidp rfcomm l2cap sunrpc
+ipt_REJECT nf_conntrack_ipv4 xt_stat
+e xt_tcpudp iptable_filter ip_tables x_tables acpi_cpufreq vfat fat
+dm_mirror dm_mod nvram usbhid hci_
+usb bluetooth sg mousedev evdev nvidia(P) ohci1394 iwl3945
+firmware_class mac80211 ieee1394 pcmcia_cor
+e snd_hda_intel snd_pcm snd_timer snd tg3 soundcore 8250_pnp 8250
+i2c_core intel_agp snd_page_alloc se
+rial_core pcspkr iTCO_wdt agpgart ehci_hcd uhci_hcd usbcore [last
+unloaded: parport]
+May 12 10:19:21 raptor kernel: Pid: 505, comm: khubd Tainted: P
+ 2.6.25 #3
+May 12 10:19:21 raptor kernel:  [<c013b684>] warn_on_slowpath+0x54/0x70
+May 12 10:19:21 raptor kernel:  [<c013ba00>] ? early_printk+0x0/0x10
+May 12 10:19:21 raptor kernel:  [<c013badc>] ? _call_console_drivers+0x4c/0x90
+May 12 10:19:21 raptor kernel:  [<c013c058>] ? release_console_sem+0x1c8/0x1e0
+May 12 10:19:21 raptor kernel:  [<c022dc3c>] ? ida_get_new_above+0x7c/0x170
+May 12 10:19:21 raptor kernel:  [<c01aa7be>] ? find_inode+0x3e/0x70
+May 12 10:19:21 raptor kernel:  [<c01da970>] ? sysfs_ilookup_test+0x0/0x20
+May 12 10:19:21 raptor kernel:  [<c01da970>] ? sysfs_ilookup_test+0x0/0x20
+May 12 10:19:21 raptor kernel:  [<c01aa8f5>] ? ifind+0x45/0x90
+May 12 10:19:21 raptor kernel:  [<c013c64b>] ? printk+0x1b/0x20
+May 12 10:19:21 raptor kernel:  [<c01dad00>] sysfs_add_one+0x80/0xa0
+May 12 10:19:21 raptor kernel:  [<c01dbaeb>] sysfs_create_link+0x8b/0x110
+May 12 10:19:21 raptor kernel:  [<c02960c0>] device_add+0x240/0x430
+May 12 10:19:21 raptor kernel:  [<c022d8b3>] ? free_layer+0x33/0x40
+May 12 10:19:21 raptor kernel:  [<c02962c2>] device_register+0x12/0x20
+May 12 10:19:21 raptor kernel:  [<f89248b6>]
+usb_create_ep_files+0x166/0x2e0 [usbcore]
+May 12 10:19:21 raptor kernel:  [<f8923cd5>]
+usb_create_sysfs_intf_files+0xa5/0xe0 [usbcore]
+May 12 10:19:21 raptor kernel:  [<f891f86c>]
+usb_set_configuration+0x33c/0x590 [usbcore]
+May 12 10:19:21 raptor kernel:  [<f8927e9b>] generic_probe+0x6b/0xa0 [usbcore]
+May 12 10:19:21 raptor kernel:  [<f8921483>]
+usb_probe_device+0x33/0x40 [usbcore]
+May 12 10:19:21 raptor kernel:  [<c0298057>] driver_probe_device+0x87/0x160
+May 12 10:19:21 raptor kernel:  [<c0366723>] ? klist_next+0x63/0xb0
+May 12 10:19:21 raptor kernel:  [<c0298138>] __device_attach+0x8/0x10
+May 12 10:19:21 raptor kernel:  [<c0297307>] bus_for_each_drv+0x47/0x70
+May 12 10:19:21 raptor kernel:  [<c02981ea>] device_attach+0x7a/0x80
+May 12 10:19:21 raptor kernel:  [<c0298130>] ? __device_attach+0x0/0x10
+May 12 10:19:21 raptor kernel:  [<c029728f>] bus_attach_device+0x4f/0x80
+May 12 10:19:21 raptor kernel:  [<c02961ab>] device_add+0x32b/0x430
+May 12 10:19:21 raptor kernel:  [<f891a276>] usb_new_device+0x56/0xb0 [usbcore]
+May 12 10:19:21 raptor kernel:  [<f891b7ff>] hub_thread+0x44f/0xc50 [usbcore]
+May 12 10:19:21 raptor kernel:  [<c01347a7>] ? hrtick_set+0xa7/0x110
+May 12 10:19:21 raptor kernel:  [<c014ed60>] ? autoremove_wake_function+0x0/0x40
+May 12 10:19:21 raptor kernel:  [<f891b3b0>] ? hub_thread+0x0/0xc50 [usbcore]
+May 12 10:19:21 raptor kernel:  [<c014ea62>] kthread+0x42/0x70
+May 12 10:19:21 raptor kernel:  [<c014ea20>] ? kthread+0x0/0x70
+May 12 10:19:21 raptor kernel:  [<c011895b>] kernel_thread_helper+0x7/0x1c
+May 12 10:19:21 raptor kernel:  =======================
+May 12 10:19:21 raptor kernel: ---[ end trace ab65a9098e25b754 ]---
+May 12 10:19:26 raptor kernel: usb 3-1: reset full speed USB device
+using uhci_hcd and address 3
+May 12 10:19:27 raptor last message repeated 3 times
 
-root@Calimero:/tmp/GIT/herbert# git bisect bad
-Bisecting: 3176 revisions left to test after this
-[fde3571fd8613483f1203d11394ae316c6b79a03] iwlwifi: avoid firmware
-command sending if rfkill is enabled
+The devise does show up in usb_storage:
 
-and then copied always the two files from 2.6.25
-xfrm4_tunnel.c and ipcomp.c
+# cat /proc/scsi/usb-storage/6
+   Host scsi6: usb-storage
+       Vendor: BUILDWIN
+      Product: Photo Frame
+Serial Number: None
+     Protocol: Transparent SCSI
+    Transport: Bulk
+       Quirks:
 
-now this kernel is up for 4 hours (at least it
-doesn't crash at startup)
-I will keep you updated.
-Thanks for the feedback Herbert.
+And lsusb -v reveals:
 
+Bus 004 Device 002: ID 1908:1315
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               1.10
+  bDeviceClass            0 (Defined at Interface level)
+  bDeviceSubClass         0
+  bDeviceProtocol         0
+  bMaxPacketSize0         8
+  idVendor           0x1908
+  idProduct          0x1315
+  bcdDevice            0.00
+  iManufacturer           1 BUILDWIN
+  iProduct                2 Photo Frame
+  iSerial                 0
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength           64
+    bNumInterfaces          1
+    bConfigurationValue     1
+    iConfiguration          0
+    bmAttributes         0x80
+    MaxPower              500mA
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       0
+      bNumEndpoints           2
+      bInterfaceClass         8 Mass Storage
+      bInterfaceSubClass      6 SCSI
+      bInterfaceProtocol     80 Bulk (Zip)
+      iInterface              3 DPF Mate
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0040  1x 64 bytes
+        bInterval               0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x01  EP 1 OUT
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0040  1x 64 bytes
+        bInterval               0
 
+So I don't get the reason for duplicate sysfs nodes, and the scsi
+device for mass storage never shows up (no /dev/sdb is registered,
+etc)
 
+Does this look like something that would be resolved with a new
+unusual-devs.h entry? Can I find out from this info what type of
+unusual-devs macro I might need to get this device working?
+
+-- 
+Ian Morgan
