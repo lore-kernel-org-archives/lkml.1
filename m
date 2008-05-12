@@ -1,77 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757654AbYELM1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbYELM3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757654AbYELM1T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 08:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753917AbYELM1J
+	id S1758246AbYELM3V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 08:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754368AbYELM3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 08:27:09 -0400
-Received: from lazybastard.de ([212.112.238.170]:54903 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751958AbYELM1I (ORCPT
+	Mon, 12 May 2008 08:29:11 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:52550 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755294AbYELM3I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 08:27:08 -0400
-Date: Mon, 12 May 2008 14:26:51 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Bryan Wu <bryan.wu@analog.com>
-Cc: dwmw2@infradead.org, will.newton@gmail.com, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org, Mike Frysinger <vapier.adi@gmail.com>
-Subject: Re: [PATCH try#2] [MTD/MAPS] Blackfin BF5xx Maps: Handle the case where flash memory and ethernet mac/phy are mapped onto the same async bank
-Message-ID: <20080512122650.GA10014@logfs.org>
-References: <1202020355.6671.23.camel@roc-laptop>
+	Mon, 12 May 2008 08:29:08 -0400
+Date: Mon, 12 May 2008 08:28:57 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: Possible regression?  2.6.26-rc1: X61s failure after
+	suspend/resume
+Message-ID: <20080512122857.GD7687@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+	Jesse Barnes <jbarnes@virtuousgeek.org>
+References: <E1JuCBA-0002NZ-4E@closure.thunk.org> <200805082352.04352.rjw@sisk.pl> <20080509024426.GB8871@mit.edu> <20080509094941.GA19617@elte.hu> <20080512020301.GA8390@mit.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1202020355.6671.23.camel@roc-laptop>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080512020301.GA8390@mit.edu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 3 February 2008 14:32:35 +0800, Bryan Wu wrote:
-> +
-> +static void bf5xx_copy_from(struct map_info *map, void *to, unsigned long from, ssize_t len)
-> +{
-> +	unsigned long i;
-> +	map_word test;
-> +
-> +	if ((unsigned long)to & 0x1) {
-> +		for (i = 0; i < len / 2 * 2; i += 2) {
-> +			test = bf5xx_read(map, from + i);
-> +			put_unaligned(test.x[0], (__le16 *)(to + i));
-> +		}
-> +	} else {
-> +		for (i = 0; i < len / 2 * 2; i += 2) {
-> +			test = bf5xx_read(map, from + i);
-> +			*((u16*)(to + i)) = test.x[0];
-                        ^^^^^^^^^^^^^^^^^
+On Sun, May 11, 2008 at 10:03:01PM -0400, Theodore Tso wrote:
+> On Fri, May 09, 2008 at 11:49:41AM +0200, Ingo Molnar wrote:
+> > 
+> > on the off chance that this might be related: could you try to boot with 
+> > nopat?
 
-I'm not particularly fond of such constructs, maybe because I have such
-a hard time understanding what the code actually does.
+Hey Ingo, which bug/regression did you think my issue might be related
+to?  I just looked up Kernel Bug #10620, which is what I had assumed
+(from context) you were referring to, but looking at the bug, it
+doesn't mention anything about nopat at all.
 
-How about:
-	u16 *foo = to;
+In any case, I'm doing some more testing to see if nopat really makes
+the problem harder to recur...
 
-	for (i = 0; i < (len & ~1); i++) {
-		test = bf5xx_read(map, from + 2 * i);
-		foo[i] = test.x[0];
-	}
-
-With perhaps a better name than "foo" and the same conversion in the
-rest of the function as well?
-
-> +		}
-> +	}
-> +
-> +	if (len & 0x1) {
-> +		test = bf5xx_read(map, from + i);
-> +		*((u8*)(to + i)) = (u8)test.x[0];
-> +	}
-> +}
-
-Jörn
-
--- 
-There's nothing better for promoting creativity in a medium than
-making an audience feel "Hmm ­ I could do better than that!"
--- Douglas Adams in a slashdot interview
+						- Ted
