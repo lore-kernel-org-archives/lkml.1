@@ -1,44 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758861AbYELNDE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757219AbYELNKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758861AbYELNDE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 09:03:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756192AbYELNCp
+	id S1757219AbYELNKa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 09:10:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbYELNKV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 09:02:45 -0400
-Received: from wr-out-0506.google.com ([64.233.184.234]:51895 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756089AbYELNCo (ORCPT
+	Mon, 12 May 2008 09:10:21 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:44706 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754282AbYELNKU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 09:02:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=tawKu5dVQvc+INqep2NGG7DautfwxoQRiWQGY3i3ikG6pFvYZkDSJ33/YbPFOESTx1EaslyO/wNqnCS3Rwc9iP1tmnoqfjQ0YTDhs5DmCvFsVbRkMz7sayHLjf6VyZWBLCMScvtPXV3vaFN0fUp4F+gN+2WpWWF0OHrh6gHcJuw=
-Message-ID: <8bd0f97a0805120602n367099a9j3b1b0a8f801877e6@mail.gmail.com>
-Date: Mon, 12 May 2008 09:02:42 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Christoph Hellwig" <hch@infradead.org>
-Subject: Re: [PATCH 4/4] [MM/NOMMU]: Export two symbols in nommu.c for mmap test
-Cc: "Bryan Wu" <cooloney@kernel.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, dwmw2@infradead.org, "Vivi Li" <vivi.li@analog.com>
-In-Reply-To: <20080512130058.GA8981@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 12 May 2008 09:10:20 -0400
+Subject: Re: [PATCH 1/1] [bluetooth]: fix bug - kernel warning detected if
+	built in Bluetooth CF driver
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Bryan Wu <cooloney@kernel.org>
+Cc: linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Michael Hennerich <michael.hennerich@analog.com>
+In-Reply-To: <1210587779-10257-1-git-send-email-cooloney@kernel.org>
+References: <1210587779-10257-1-git-send-email-cooloney@kernel.org>
+Content-Type: text/plain
+Date: Mon, 12 May 2008 15:10:28 +0200
+Message-Id: <1210597828.16390.44.camel@violet.holtmann.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1210588325-11027-1-git-send-email-cooloney@kernel.org>
-	 <1210588325-11027-5-git-send-email-cooloney@kernel.org>
-	 <8bd0f97a0805120338l1d7e0e7eiffebae3bf33c172c@mail.gmail.com>
-	 <20080512130058.GA8981@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 12, 2008 at 9:00 AM, Christoph Hellwig <hch@infradead.org> wrote:
-> Yeah, even the url pointer to there is totally unreadable.  I still
-> don't understand why you want to export this symbols.  Also please make
-> sure to always submit the code actually using the exports in the same
-> patchkit, that makes it a lot easier to figure.
+Hi Brian,
 
-the symbols are exported for MMU already.  this brings the no-MMU code in line.
--mike
+> https://blackfin.uclinux.org/gf/project/uclinux-dist/tracker/?action=TrackerItemEdit&tracker_item_id=2650
+> 
+> Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+> Signed-off-by: Bryan Wu <cooloney@kernel.org>
+> ---
+>  drivers/bluetooth/bluecard_cs.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/bluetooth/bluecard_cs.c b/drivers/bluetooth/bluecard_cs.c
+> index bcf5792..3b330a0 100644
+> --- a/drivers/bluetooth/bluecard_cs.c
+> +++ b/drivers/bluetooth/bluecard_cs.c
+> @@ -867,7 +867,7 @@ static int bluecard_probe(struct pcmcia_device *link)
+>  
+>  	link->io.Attributes1 = IO_DATA_PATH_WIDTH_8;
+>  	link->io.NumPorts1 = 8;
+> -	link->irq.Attributes = IRQ_TYPE_EXCLUSIVE | IRQ_HANDLE_PRESENT;
+> +	link->irq.Attributes = IRQ_TYPE_DYNAMIC_SHARING | IRQ_HANDLE_PRESENT;
+>  	link->irq.IRQInfo1 = IRQ_LEVEL_ID;
+>  
+>  	link->irq.Handler = bluecard_interrupt;
+
+all Bluetooth PCMCIA drivers use an exclusive IRQ:
+
+bluecard_cs.c:	link->irq.Attributes = IRQ_TYPE_EXCLUSIVE | IRQ_HANDLE_PRESENT;
+bt3c_cs.c:	link->irq.Attributes = IRQ_TYPE_EXCLUSIVE | IRQ_HANDLE_PRESENT;
+btuart_cs.c:	link->irq.Attributes = IRQ_TYPE_EXCLUSIVE | IRQ_HANDLE_PRESENT;
+dtl1_cs.c:	link->irq.Attributes = IRQ_TYPE_EXCLUSIVE | IRQ_HANDLE_PRESENT;
+
+There was a reason for that when these drivers where written. I am not
+sure if it is still valid or not. Does anybody at least have tested that
+the cards still work if you use a shared IRQ.
+
+Regards
+
+Marcel
+
+
