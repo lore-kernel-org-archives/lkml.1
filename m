@@ -1,107 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757127AbYELXZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756661AbYELXim@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757127AbYELXZn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 19:25:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756443AbYELXZQ
+	id S1756661AbYELXim (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 19:38:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754488AbYELXid
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 19:25:16 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:34090 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756139AbYELXZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 19:25:15 -0400
-Subject: Re: Linux 2.6.26-rc2
-From: Kasper Sandberg <lkml@metanurb.dk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Bart Van Assche <bart.vanassche@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.1.10.0805121247080.3019@woody.linux-foundation.org>
-References: <alpine.LFD.1.10.0805120731480.3188@woody.linux-foundation.org>
-	 <e2e108260805121232t4cbd8eb0k219fd6a7d06c7650@mail.gmail.com>
-	 <alpine.LFD.1.10.0805121247080.3019@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 13 May 2008 01:22:27 +0200
-Message-Id: <1210634547.1093.1.camel@localhost>
+	Mon, 12 May 2008 19:38:33 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55862 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754344AbYELXic (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 19:38:32 -0400
+Date: Mon, 12 May 2008 16:38:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] let ERR_PTR BUILD_BUG_ON when we know its argument is
+ not a valid errno
+Message-Id: <20080512163830.04ef13fd.akpm@linux-foundation.org>
+In-Reply-To: <20080511201209.GO19058@joi>
+References: <20080511201209.GO19058@joi>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-05-12 at 12:55 -0700, Linus Torvalds wrote:
-> 
-> On Mon, 12 May 2008, Bart Van Assche wrote:
-> > 
-> > Sorry if it's my fault that I do not understand the above message
-> > completely. But from the above it's not completely clear to me which
-> > kernel versions (2.6.2?.? releases) are affected and which are not
-> > affected by the performance and correctness issues due to the
-> > interaction between the semaphore implementation and the preemptable
-> > BKL.
-> 
-> No released kernels are affected. It's purely a matter that has happened 
-> after 2.6.25. The semaphore simplifcation in -rc1 caused a huge 
-> performance regression on some benchmarks, and the fix to that in turn 
-> caused a semaphore correctness issue, so I just rolled back to the 
-> original BKL code that doesn't have any of those interactions.
-> 
-> In a historical context, the issues involved would only have happened with 
-> CONFIG_PREEMPT_BKL. That config option was made the only one in January, 
-> and as a result of these issues, we effectively switched it off.
-> 
-> So you can *think* of the effect of the changes as having gone from 
-> CONFIG_PREEMPT_BKL=y to CONFIG_PREEMPT_BKL=n, even though technically we 
-> had removed the actual config option to let people choose (so the config 
-> option has basically become a static code change).
+On Sun, 11 May 2008 22:12:14 +0200
+Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
 
-uhm.. but .25 doesent have PREEMPT_BKL either.. does that mean its on or
-off?
-
-> 
-> We may end up having to re-instate the config option due to this. 
-> Personally, I hope not. It would be nicer if we could just avoid 
-> PREEMPT_BKL entirely. 
-
-you mean avoid preempting the bkl, or avoid having the option to choose
-to preempt it, and just always do it?
-
-> 
-> (To make things somewhat more confusing, some non-PREEMPT_BKL code has 
-> then bitrotted since, so if can actually see latency issues, you might 
-> want to try the patch here at the end of this email to see if it fixes 
-> the worst of them. "cond_resched()" has regressed since the PREEMPT_BKL 
-> config option went away).
-> 
-> 			Linus
+> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> Cc: Andrew Morton <akpm@osdl.org>
 > ---
->  include/linux/sched.h |    7 -------
->  1 files changed, 0 insertions(+), 7 deletions(-)
+> allmodconfig compile tested (on x86_64)
 > 
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index 5a63f2d..75c284f 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -2038,17 +2038,10 @@ static inline int need_resched(void)
->   * cond_resched_softirq() will enable bhs before scheduling.
->   */
->  extern int _cond_resched(void);
-> -#ifdef CONFIG_PREEMPT
-> -static inline int cond_resched(void)
-> -{
-> -	return 0;
-> -}
-> -#else
->  static inline int cond_resched(void)
+> should be applied after:
+> net/sunrpc/xprtrdma: fix svc_rdma_create out of memory error path
+> jfs: 0 is not valid errno value
+> ---
+>  include/linux/err.h |    4 +++-
+>  1 files changed, 3 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/linux/err.h b/include/linux/err.h
+> --- a/include/linux/err.h
+> +++ b/include/linux/err.h
+> @@ -19,11 +19,13 @@
+>  
+>  #define IS_ERR_VALUE(x) unlikely((x) >= (unsigned long)-MAX_ERRNO)
+>  
+> -static inline void *ERR_PTR(long error)
+> +static inline void *__ERR_PTR(long error)
 >  {
->  	return _cond_resched();
+>  	return (void *) error;
 >  }
-> -#endif
->  extern int cond_resched_lock(spinlock_t * lock);
->  extern int cond_resched_softirq(void);
->  static inline int cond_resched_bkl(void)
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+>  
+> +#define ERR_PTR(error) (BUILD_BUG_ON(!IS_ERR_VALUE(error)), __ERR_PTR(error))
+> +
+>  static inline long PTR_ERR(const void *ptr)
+>  {
+>  	return (long) ptr;
 
+Not sure about this one.  BUILD_BUG_ON only makes sense if the value is
+a compile-time constant.  I think the code as you have it will take this:
+
+	int e = foo();
+
+	p = ERR_PTR(e);
+
+and will attempt to evaluate sizeof() on a negative-sized array at
+runtime.  The conmpile will laugh and throw that all away, but it's a
+bit weird.
+
+Plus I'd have thought that the amount of code which does ERR_PTR(-EFOO)
+is fairly small, but perhaps that's wrong.
+
+If I _am_ wrong then I do think it'd be saner to only do the
+BUILD_BUG_ON() if __builtin_constant_p(error) evaluates true.  And even
+then I do think we'd like to see a more lengthy justification of why
+the kernel needs this check.  More lengthy than zero, anyway...
+
+(If a compile-time check is needed then why not a runtime one also?)
+
+Thanks.
