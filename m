@@ -1,65 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759319AbYELUnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759512AbYELUno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759319AbYELUnX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 16:43:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756226AbYELUmt
+	id S1759512AbYELUno (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 16:43:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759363AbYELUn0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 16:42:49 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:28783 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755379AbYELUmr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 16:42:47 -0400
-Date: Tue, 13 May 2008 05:41:01 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-ide <linux-ide@vger.kernel.org>,
-       linux-netdev <netdev@vger.kernel.org>,
-       David Miller <davem@davemloft.net>, Jeff Garzik <jeff@garzik.org>,
-       Ingo Molnar <mingo@elte.hu>, Jason Wessel <jason.wessel@windriver.com>,
-       David Howells <dhowells@redhat.com>,
-       "ralf@linux-mips.org" <ralf@linux-mips.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 01/12] lib: create common ascii hex array
-Message-ID: <20080512204101.GA17005@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Harvey Harrison <harvey.harrison@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	James Bottomley <James.Bottomley@HansenPartnership.com>,
-	linux-scsi <linux-scsi@vger.kernel.org>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	linux-ide <linux-ide@vger.kernel.org>,
-	linux-netdev <netdev@vger.kernel.org>,
-	David Miller <davem@davemloft.net>, Jeff Garzik <jeff@garzik.org>,
-	Ingo Molnar <mingo@elte.hu>,
-	Jason Wessel <jason.wessel@windriver.com>,
-	David Howells <dhowells@redhat.com>,
-	"ralf@linux-mips.org" <ralf@linux-mips.org>,
-	Paul Mackerras <paulus@samba.org>
-References: <1210619134.24092.51.camel@brick>
+	Mon, 12 May 2008 16:43:26 -0400
+Received: from outbound-mail-108.bluehost.com ([69.89.22.8]:36610 "HELO
+	outbound-mail-108.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759333AbYELUnY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 16:43:24 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: mgross@linux.intel.com
+Subject: Re: [PATCH]Make the intel-iommu_wait_op macro work when jiffies are not running
+Date: Mon, 12 May 2008 13:43:22 -0700
+User-Agent: KMail/1.9.9
+Cc: lkml <linux-kernel@vger.kernel.org>
+References: <20080512204157.GA32017@linux.intel.com>
+In-Reply-To: <20080512204157.GA32017@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1210619134.24092.51.camel@brick>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200805121343.22735.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 12, 2008 at 12:05:34PM -0700, Harvey Harrison wrote:
-> Add a common hex array in hexdump.c so everyone can use it.
-> 
-> Add a common hi/lo helper to avoid the shifting masking that is
-> done to get the upper and lower nibbles of a byte value.
-> 
-> Pull the pack_hex_byte helper from kgdb as it is opencoded many
-> places in the tree that will be consolidated.
-> 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+On Monday, May 12, 2008 1:41 pm mark gross wrote:
+> The following patch changes the intel-iommu.c code to use the TSC
+> instead of jiffies for detecting bad DMAR functionality.  Some systems
+> with bad bios's have been seen to hang in early boot spinning in the
+> IOMMU_WAIT_IO macro.  This patch will replace the forever spin with a
+> call to panic.
+>
+>
+> diffstat:
+> $ diffstat patches/wait_op_tsc.patch
+>  intel-iommu.c |    8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+>
+> --mgross
+>
+> Signed-off-by:mark gross <mgross@linux.intel.com>
 
-Acked-by: Paul Mundt <lethal@linux-sh.org>
+Applied to the 'for-linus' tree.
+
+Thanks,
+Jesse
