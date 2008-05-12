@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758735AbYELNio@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756634AbYELNjd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758735AbYELNio (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 09:38:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755276AbYELNid
+	id S1756634AbYELNjd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 09:39:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759064AbYELNjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 09:38:33 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:44154 "EHLO mgw1.diku.dk"
+	Mon, 12 May 2008 09:39:15 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:44211 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751768AbYELNib (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 09:38:31 -0400
-Date: Mon, 12 May 2008 15:38:26 +0200 (CEST)
+	id S1759030AbYELNjN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 09:39:13 -0400
+Date: Mon, 12 May 2008 15:39:11 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: pantelis.antoniou@gmail.com, vbordug@ru.mvista.com,
-       linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 4/6] drivers/net/fs_enet: remove null pointer dereference
-Message-ID: <Pine.LNX.4.64.0805121537590.3694@ask.diku.dk>
+To: jchapman@katalix.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 6/6] drivers/net/pppol2tp.c: remove null pointer dereference
+Message-ID: <Pine.LNX.4.64.0805121538510.3694@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -24,18 +23,9 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-The following code appears in the function fs_init_instance in the file drivers/net/fs_enet/fs_enet-main.c.
-
-	if (fep->ops == NULL) {
-		printk(KERN_ERR DRV_MODULE_NAME
-		       ": %s No matching ops found (%d).\n",
-		       ndev->name, fpi->fs_no);
-		err = -EINVAL;
-		goto err;
-	}
-
-This code implies that at the point of err, fep->ops can be NULL, so an
-extra test is needed before dereferencing this value.
+If session is NULL, it is not possible to access its name field.  So I have
+split apart the printing of the error message to drop the printing of the
+name field in this case.
 
 
 This problem was found using the following semantic match
@@ -63,15 +53,26 @@ Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
 
-diff -u -p a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
---- a/drivers/net/fs_enet/fs_enet-main.c	2008-04-27 11:41:11.000000000 +0200
-+++ b/drivers/net/fs_enet/fs_enet-main.c	2008-05-12 09:41:52.000000000 +0200
-@@ -1093,7 +1093,7 @@ err:
- 		if (registered)
- 			unregister_netdev(ndev);
+diff -u -p a/drivers/net/pppol2tp.c b/drivers/net/pppol2tp.c
+--- linux-2.6/drivers/net/pppol2tp.c	2008-05-09 16:46:57.000000000 +0200
++++ linuxcopy/drivers/net/pppol2tp.c	2008-05-12 15:30:52.000000000 +0200
+@@ -1621,9 +1621,16 @@ out_no_ppp:
+ end:
+ 	release_sock(sk);
  
--		if (fep != NULL) {
-+		if (fep && fep->ops) {
- 			(*fep->ops->free_bd)(ndev);
- 			(*fep->ops->cleanup_data)(ndev);
- 		}
+-	if (error != 0)
+-		PRINTK(session ? session->debug : -1, PPPOL2TP_MSG_CONTROL, KERN_WARNING,
+-		       "%s: connect failed: %d\n", session->name, error);
++	if (error != 0) {
++		if (session)
++			PRINTK(session->debug,
++				PPPOL2TP_MSG_CONTROL, KERN_WARNING,
++				"%s: connect failed: %d\n",
++				session->name, error);
++		else
++			PRINTK(-1, PPPOL2TP_MSG_CONTROL, KERN_WARNING,
++				"connect failed: %d\n", error);
++	}
+ 
+ 	return error;
+ }
