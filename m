@@ -1,85 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758263AbYELUel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759220AbYELUey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758263AbYELUel (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 16:34:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754165AbYELUed
+	id S1759220AbYELUey (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 16:34:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756587AbYELUeg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 16:34:33 -0400
-Received: from mx.stud.uni-hannover.de ([130.75.176.3]:61678 "EHLO
-	studserv.stud.uni-hannover.de" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752778AbYELUec (ORCPT
+	Mon, 12 May 2008 16:34:36 -0400
+Received: from mga06.intel.com ([134.134.136.21]:17618 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755963AbYELUee (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 16:34:32 -0400
-Date: Mon, 12 May 2008 22:34:22 +0200
-From: Ingo Saitz <Ingo.Saitz@stud.uni-hannover.de>
-To: linux-kernel@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org
-Subject: Re: PROBLEM: 2.6.25: sr0 cdrom does not change medium size on
-	medium change
-Message-ID: <20080512203422.GA2641@schwan.zoo>
-References: <20080508112108.GA2744@schwan.zoo>
+	Mon, 12 May 2008 16:34:34 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,475,1204531200"; 
+   d="scan'208";a="382930043"
+Date: Mon, 12 May 2008 13:41:57 -0700
+From: mark gross <mgross@linux.intel.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH]Make the intel-iommu_wait_op macro work when jiffies are
+	not running
+Message-ID: <20080512204157.GA32017@linux.intel.com>
+Reply-To: mgross@linux.intel.com
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="HcAYCG3uE/tztfnV"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080508112108.GA2744@schwan.zoo>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Spam-Report: ALL_TRUSTED,BAYES_50,LONGWORDS_15,USER_IN_WHITELIST_TO,V_9_RND_SMALL_WORDS
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The following patch changes the intel-iommu.c code to use the TSC
+instead of jiffies for detecting bad DMAR functionality.  Some systems
+with bad bios's have been seen to hang in early boot spinning in the
+IOMMU_WAIT_IO macro.  This patch will replace the forever spin with a
+call to panic.
 
---HcAYCG3uE/tztfnV
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 
-I did some git bisecting during which I found it does matte wether you
-let the drive settle before mounting or not during the 2.6.25 devcycle.
-So after being struck at some random position I redid the bisection.
+diffstat:
+$ diffstat patches/wait_op_tsc.patch 
+ intel-iommu.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-This commit applies to: changing the medium (cd/dvd), waiting until the
-drive settles and mounting it. The kernel no longer changes the size of
-the medium in /sys/block/sr0/size, giving read errors for bigger mediae.
+--mgross
 
------8<-----8<-----
-210ba1d1724f5c4ed87a2ab1a21ca861a915f734 is first bad commit
-commit 210ba1d1724f5c4ed87a2ab1a21ca861a915f734
-Author: James Bottomley <James.Bottomley@HansenPartnership.com>
-Date:   Sat Jan 5 10:39:51 2008 -0600
+Signed-off-by:mark gross <mgross@linux.intel.com>
 
-    [SCSI] sr: update to follow tray status correctly
 
-    Based on an original patch from: David Martin <tasio@tasio.net>
-
-    When trying to get the drive status via ioctl CDROM_DRIVE_STATUS, with
-    no disk it gives CDS_TRAY_OPEN even if the tray is closed.
-
-    ioctl works as expected with ide-cd driver.
-
-    Gentoo bug report: http://bugs.gentoo.org/show_bug.cgi?id=196879
-
-    Cc: Maarten Bressers <mbres@gentoo.org>
-    Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-
-:040000 040000 704d23cdc9b3e5d596d879b4705586966b76e74d 9f1f71802ee45e734758d2c89d0b90102b549bdb M      drivers
------>8----->8-----
-
-I'm forwarding this to the linux-scsi list, too.
-
-    Ingo
-
---HcAYCG3uE/tztfnV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIKKnO4XrXtQkN2NURAuE8AJ9VFuMjXXq37zk8RHnhiYfavNXq1QCgpYe+
-jiJz5S3sBk+D0KJ4F4WsLFs=
-=Nkum
------END PGP SIGNATURE-----
-
---HcAYCG3uE/tztfnV--
+Index: linux-next/drivers/pci/intel-iommu.c
+===================================================================
+--- linux-next.orig/drivers/pci/intel-iommu.c	2008-05-08 11:02:21.000000000 -0700
++++ linux-next/drivers/pci/intel-iommu.c	2008-05-08 11:13:02.000000000 -0700
+@@ -49,7 +49,7 @@
+ 
+ #define DEFAULT_DOMAIN_ADDRESS_WIDTH 48
+ 
+-#define DMAR_OPERATION_TIMEOUT (HZ*60) /* 1m */
++#define DMAR_OPERATION_TIMEOUT ((cycles_t) tsc_khz*10*1000) /* 10sec */
+ 
+ #define DOMAIN_MAX_ADDR(gaw) ((((u64)1) << gaw) - 1)
+ 
+@@ -490,13 +490,13 @@
+ 
+ #define IOMMU_WAIT_OP(iommu, offset, op, cond, sts) \
+ {\
+-	unsigned long start_time = jiffies;\
++	cycles_t start_time = get_cycles();\
+ 	while (1) {\
+ 		sts = op (iommu->reg + offset);\
+ 		if (cond)\
+ 			break;\
+-		if (time_after(jiffies, start_time + DMAR_OPERATION_TIMEOUT))\
+-			panic("DMAR hardware is malfunctioning\n");\
++		if (DMAR_OPERATION_TIMEOUT < (get_cycles() - start_time))\
++			panic("DMAR hardware is malfunctioning\n");\
+ 		cpu_relax();\
+ 	}\
+ }
