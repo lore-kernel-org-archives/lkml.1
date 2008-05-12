@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761433AbYELLFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758684AbYELLGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761433AbYELLFy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 07:05:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760779AbYELLFo
+	id S1758684AbYELLGR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 07:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760747AbYELLFp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 07:05:44 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:38705 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760723AbYELLFT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 07:05:19 -0400
-Date: Mon, 12 May 2008 13:04:50 +0200
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: 2.6.26-rc1 regression since 2.6.25
-Message-ID: <20080512110450.GA6399@ics.muni.cz>
-References: <20080509151924.GA30644@kroah.com> <Pine.LNX.4.44L0.0805091447070.2648-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.44L0.0805091447070.2648-100000@iolanthe.rowland.org>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Muni-Spam-TestIP: 147.251.3.109
-X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Mon, 12 May 2008 13:04:53 +0200 (CEST)
+	Mon, 12 May 2008 07:05:45 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:40813 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758814AbYELLFn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 07:05:43 -0400
+X-Greylist: delayed 1810 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 May 2008 07:05:43 EDT
+Subject: [PATCH] Fix c67x00-ll-hpi compilation failure (bug #10627)
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, samuel.thibault@ens-lyon.org, rjw@sisk.pl,
+       gregkh@suse.de
+Content-Type: text/plain
+Organization: NTT Open Source Software Center
+Date: Mon, 12 May 2008 19:35:31 +0900
+Message-Id: <1210588531.3058.31.camel@sebastian.kern.oss.ntt.co.jp>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 09, 2008 at 02:47:45PM -0400, Alan Stern wrote:
-> On Fri, 9 May 2008, Greg KH wrote:
-> 
-> > Can you just boot the box and then plug it into the dock and show the
-> > log file for that?
-> 
-> If you can, use a kernel that has CONFIG_USB_DEBUG turned on.
+This patch fixes bug #10627 which caused the compilation error below.
 
-I did. The dmesg is attached to the bug:
-http://bugzilla.kernel.org/show_bug.cgi?id=10630
+CC [M]  drivers/usb/c67x00/c67x00-ll-hpi.o
+drivers/usb/c67x00/c67x00-ll-hpi.c: In function `ll_recv_msg':
+drivers/usb/c67x00/c67x00-ll-hpi.c:243: erreur: `HZ' undeclared (first use in this function)
+drivers/usb/c67x00/c67x00-ll-hpi.c:243: erreur: (Each undeclared identifier is reported only once
+drivers/usb/c67x00/c67x00-ll-hpi.c:243: erreur: for each function it appears in.)
 
--- 
-Luká¹ Hejtmánek
+Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+---
+
+--- linux-2.6.26-rc2-orig/drivers/usb/c67x00/c67x00-ll-hpi.c	2008-05-12 19:18:32.000000000 +0900
++++ linux-2.6.26-rc2/drivers/usb/c67x00/c67x00-ll-hpi.c	2008-05-12 19:03:02.000000000 +0900
+@@ -23,6 +23,7 @@
+ 
+ #include <asm/byteorder.h>
+ #include <linux/io.h>
++#include <linux/jiffies.h>
+ #include <linux/usb/c67x00.h>
+ #include "c67x00.h"
+ 
+
+
