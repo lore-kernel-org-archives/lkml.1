@@ -1,52 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758819AbYELAYo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758699AbYELAtk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758819AbYELAYo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 11 May 2008 20:24:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbYELAYe
+	id S1758699AbYELAtk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 11 May 2008 20:49:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751996AbYELAt2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 11 May 2008 20:24:34 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53101 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751560AbYELAYd (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Sun, 11 May 2008 20:24:33 -0400
-Date: Mon, 12 May 2008 10:24:03 +1000
-From: David Chinner <dgc@sgi.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       andi@firstfloor.org, Rik van Riel <riel@redhat.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, mpm@selenic.com
-Subject: Re: [patch 10/21] buffer heads: Support slab defrag
-Message-ID: <20080512002403.GP103491721@sgi.com>
-References: <20080510030831.796641881@sgi.com> <20080510030916.935905242@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080510030916.935905242@sgi.com>
-User-Agent: Mutt/1.4.2.1i
+	Sun, 11 May 2008 20:49:28 -0400
+Received: from vsmtp03.dti.ne.jp ([202.216.231.138]:41712 "EHLO
+	vsmtp03.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751757AbYELAt1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 11 May 2008 20:49:27 -0400
+From: hooanon05@yahoo.co.jp
+Subject: Re: [2.6.26 PATCH, RESEND]: fs_stack/eCryptfs: fsstack_copy_* updates 
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       hch@infradead.org, mhalcrow@us.ibm.com, hugh@veritas.com
+In-Reply-To: <200805020558.m425w5xN001504@agora.fsl.cs.sunysb.edu>
+References: Your message of "Thu, 01 May 2008 17:08:19 PDT." <20080501170819.bdcb9035.akpm@linux-foundation.org> <200805020558.m425w5xN001504@agora.fsl.cs.sunysb.edu>
+Date: Mon, 12 May 2008 09:44:28 +0900
+Message-ID: <7830.1210553068@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 09, 2008 at 08:08:41PM -0700, Christoph Lameter wrote:
-> Defragmentation support for buffer heads. We convert the references to
-> buffers to struct page references and try to remove the buffers from
-> those pages. If the pages are dirty then trigger writeout so that the
-> buffer heads can be removed later.
 
-Oh, no, please don't trigger more random single page writeback from
-memory reclaim.  We shoul dbe killing the VM's use of ->writepage,
-not encouraging it.
+Erez Zadok:
+> The nice thing about these two helpers is fsstack_copy_inode_size becomes a
+> lot cleaner and more elegant:
+> 
+> void fsstack_copy_inode_size(struct inode *dst, struct inode *src)
+> {
+> 	i_blocks_write(dst, i_blocks_read(src));
+> 	i_size_write(dst, i_size_read(src));
+> }
 
-If you are going to clean bufferheads (or pages), please clean entire
-mappings via ->writepages as it leads to far superior I/O patterns
-and a far higher aggregate rate of page cleaning.....
+While this function looks simple, I think it is more generic and better
+that the caller of fsstack_copy_inode_size() holds i_lock instead of
+lock it in the callee.
 
-Cheers,
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Junjiro Okajima
