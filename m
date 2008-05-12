@@ -1,47 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756821AbYELRWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756808AbYELRW4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756821AbYELRWQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 13:22:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753916AbYELRWD
+	id S1756808AbYELRW4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 13:22:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753918AbYELRWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 13:22:03 -0400
-Received: from laska.dorms.spbu.ru ([195.19.252.72]:38302 "EHLO
-	laska.dorms.spbu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753765AbYELRWB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 13:22:01 -0400
-Date: Mon, 12 May 2008 21:21:54 +0400
-From: Mikhail Kshevetskiy <kl@laska.dorms.spbu.ru>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: linux-2.6.25: early exception 0e
-Message-ID: <20080512212154.788ba5a1@laska>
-In-Reply-To: <Pine.LNX.4.64.0805121221480.30585@twin.jikos.cz>
-References: <20080510105712.74f17c01@laska>
-	<Pine.LNX.4.64.0805121221480.30585@twin.jikos.cz>
-X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.9; i686-pc-linux-gnu)
+	Mon, 12 May 2008 13:22:48 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:33512 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752974AbYELRWr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 13:22:47 -0400
+Date: Mon, 12 May 2008 19:23:23 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Paulo Marques <pmarques@grupopie.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: /proc/kallsyms broken in 2.6.26-rc1-git6
+Message-ID: <20080512172323.GA9236@uranus.ravnborg.org>
+References: <20080509174148.GA22246@basil.nowhere.org> <482491D6.9030205@grupopie.com> <4824A7B6.70306@firstfloor.org> <4824AD3C.3070506@grupopie.com> <20080509233742.GA22265@martell.zuzino.mipt.ru> <48281540.9020207@grupopie.com> <20080512155052.GB6913@cvg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080512155052.GB6913@cvg>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 May 2008 12:22:57 +0200 (CEST)
-Jiri Kosina <jkosina@suse.cz> wrote:
-
-> On Sat, 10 May 2008, Mikhail Kshevetskiy wrote:
+On Mon, May 12, 2008 at 07:50:52PM +0400, Cyrill Gorcunov wrote:
+> [Paulo Marques - Mon, May 12, 2008 at 11:00:32AM +0100]
+> > Alexey Dobriyan wrote:
+> >> On Fri, May 09, 2008 at 08:59:56PM +0100, Paulo Marques wrote:
+> >>> Andi Kleen wrote:
+> >>>> [...]
+> >>>> Yes and? Surely that's not correct?
+> >>> That's not for me to judge, but I believe it has always been like that.
+> >> *cough*
+> >> Here is how typical /proc/kallsyms looks like:
+> >> ffffffff80200000 A _text
+> >> ffffffff80200000 T startup_64
+> >> ffffffff802000b7 t ident_complete
+> >> ffffffff80200100 T secondary_startup_64
+> >
+> > This isn't helpful... the question is whether it is kallsyms misbehaving 
+> > and placing new symbols in the kernel image or if it is some other change 
+> > in the kernel that is generating new symbols that end up in the symbol 
+> > table.
+> >
+> > My guess it is that it is the later, and in that case, from a kallsyms 
+> > standpoint "it has always been like that".
+> >
+> > -- 
+> > Paulo Marques - www.grupopie.com
+> >
+> >
 > 
-> > I have the following boot problem:
-> [ ... ]
-> > PANIC: early exception 0e rip 10:ffffffff80224b4e error 0 cr2
-> > ffffffffff5fb030
-> 
-> There should be a stack trace following this message, please post it (we 
-> need to know what function does 0xffffffff80224b4e correspond to, at 
-> least).
+> If it help - I've taken Andi's config, compiled the kernel and
+> didn't find any screwed symbols (nor is System.map nor in /proc/kallsyms).
 
-There is nothing more on the screen, just this single line.
-I try to enable more kernel debug options, maybe this helps.
+I expect it to be a toolchain issue. Andi is often running with gcc versions
+that are very new (fresh from svn maybe). I dunno about binutils.
+To reproduce I would expect that a very recent gcc/binutils is needed.
+Andi?
 
-Mikhail Kshevetskiy
+	Sam
