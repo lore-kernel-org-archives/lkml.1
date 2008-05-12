@@ -1,76 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758513AbYELUSz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758667AbYELUVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758513AbYELUSz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 16:18:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbYELUSr
+	id S1758667AbYELUVm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 16:21:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754134AbYELUVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 16:18:47 -0400
-Received: from mail.gmx.net ([213.165.64.20]:49601 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753703AbYELUSq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 16:18:46 -0400
-X-Authenticated: #476490
-X-Provags-ID: V01U2FsdGVkX19YBV18Uw9YpUQsKzVj0SroOlwo8T712Y1UaYTEca
-	pnyB6K8DmIrOi3
-From: Oliver Endriss <o.endriss@gmx.de>
-Organization: ESCAPE GmbH EDV-Loesungen
-To: Johannes Stezenbach <js@linuxtv.org>
-Subject: Re: [patch, 2.6.26-rc2] dvb: drivers/media/dvb/ttpci/fdump firmware build error fix
-Date: Mon, 12 May 2008 22:18:15 +0200
-User-Agent: KMail/1.9.6
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Andrew de Quincey <adq_dvb@lidskialf.net>
-References: <20080512101231.GA11755@elte.hu> <200805121930.10909@orion.escape-edv.de> <20080512194630.GA10174@linuxtv.org>
-In-Reply-To: <20080512194630.GA10174@linuxtv.org>
+	Mon, 12 May 2008 16:21:32 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:32952 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753960AbYELUVa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 16:21:30 -0400
+Date: Mon, 12 May 2008 22:21:25 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: netdev@vger.kernel.org, jchapman@katalix.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 6/6, revised] drivers/net/pppol2tp.c: remove null pointer
+ dereference
+Message-ID: <Pine.LNX.4.64.0805122220350.27663@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805122218.15887@orion.escape-edv.de>
-X-Y-GMX-Trusted: 0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Johannes Stezenbach wrote:
-> On Mon, May 12, 2008 at 07:30:10PM +0200, Oliver Endriss wrote:
-> > Ingo Molnar wrote:
-> >> -     depends on DVB_AV7110 && !STANDALONE
-> >> +     depends on DVB_AV7110 && !STANDALONE && !PREVENT_FIRMWARE_BUILD
-> 
-> > If you set DVB_AV7110_FIRMWARE=y, the firmware file under
-> > DVB_AV7110_FIRMWARE_FILE must exist...
-> 
-> The point of PREVENT_FIRMWARE_BUILD is to make build testing
-> with "make randconfig" possible. I think you should ACK
-> this patch, it doesn't have any downsides for users of
-> this driver.
+From: Julia Lawall <julia@diku.dk>
 
-No. If randconfig deselects both STANDALONE and PREVENT_FIRMWARE_BUILD,
-the same problem will happen again...
+If session is NULL, it is not possible to access its name field.  So I have
+split apart the printing of the error message to drop the printing of the
+name field in this case.
 
-The problem is that randconfig does not know what to do (i.e. provide a
-firmware file) when it selects DVB_AV7110_FIRMWARE=y.
+The macro PRINTK actually only evaluates its arguments starting with the
+third one if the bitwise conjunction of the first two is non-zero.
+Normally, this conjunction would only be non-zero if debugging mode were
+turned on, but when session is NULL, the first argument in both the old and
+new code is -1, and thus the bitwise conjunction is true.  Perhaps a
+different strategy is desired, such as using tunnel->debug, which
+session->debug is initialized to, but tunnel can also be NULL, so this does
+not completely solve the problem.
 
-The driver depends on STANDALONE, and that should be sufficient:
-| CONFIG_STANDALONE:
-|   Select this option if you don't have magic firmware for drivers that
-|   need it.
 
-while CONFIG_PREVENT_FIRMWARE_BUILD means:
-| CONFIG_PREVENT_FIRMWARE_BUILD:
-|   Say yes to avoid building firmware. Firmware is usually shipped
-|   with the driver, and only when updating the firmware a rebuild
-|   should be made.
+This problem was found using the following semantic match
+(http://www.emn.fr/x-info/coccinelle/)
 
-Imho randconfig should always set STANDALONE=y.
+// <smpl>
+@@
+expression E, E1;
+identifier f;
+statement S1,S2,S3;
+@@
 
-CU
-Oliver
+* if (E == NULL)
+{
+  ... when != if (E == NULL) S1 else S2
+      when != E = E1
+* E->f
+  ... when any
+  return ...;
+}
+else S3
+// </smpl>
 
--- 
-----------------------------------------------------------------
-VDR Remote Plugin 0.4.0: http://www.escape-edv.de/endriss/vdr/
-----------------------------------------------------------------
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+
+diff -u -p a/drivers/net/pppol2tp.c b/drivers/net/pppol2tp.c
+--- a/drivers/net/pppol2tp.c	2008-05-09 16:46:57.000000000 +0200
++++ b/drivers/net/pppol2tp.c	2008-05-12 15:30:52.000000000 +0200
+@@ -1621,9 +1621,16 @@ out_no_ppp:
+ end:
+ 	release_sock(sk);
+ 
+-	if (error != 0)
+-		PRINTK(session ? session->debug : -1, PPPOL2TP_MSG_CONTROL, KERN_WARNING,
+-		       "%s: connect failed: %d\n", session->name, error);
++	if (error != 0) {
++		if (session)
++			PRINTK(session->debug,
++				PPPOL2TP_MSG_CONTROL, KERN_WARNING,
++				"%s: connect failed: %d\n",
++				session->name, error);
++		else
++			PRINTK(-1, PPPOL2TP_MSG_CONTROL, KERN_WARNING,
++				"connect failed: %d\n", error);
++	}
+ 
+ 	return error;
+ }
