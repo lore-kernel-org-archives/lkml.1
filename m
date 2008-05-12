@@ -1,77 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755748AbYELQp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755971AbYELQxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755748AbYELQp0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 12:45:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbYELQpN
+	id S1755971AbYELQxU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 12:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753617AbYELQxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 12:45:13 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:51921 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752974AbYELQpM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 12:45:12 -0400
-Message-ID: <4828741B.2080802@sgi.com>
-Date: Mon, 12 May 2008 09:45:15 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 12 May 2008 12:53:06 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:51778 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753548AbYELQxF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 12:53:05 -0400
+Date: Mon, 12 May 2008 18:53:01 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: Francois Romieu <romieu@fr.zoreil.com>
+Cc: jgarzik@pobox.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 3/6] drivers/net: remove null pointer dereference
+In-Reply-To: <20080512161734.GA22190@electric-eye.fr.zoreil.com>
+Message-ID: <Pine.LNX.4.64.0805121852510.16384@ask.diku.dk>
+References: <Pine.LNX.4.64.0805121537320.3694@ask.diku.dk>
+ <20080512161734.GA22190@electric-eye.fr.zoreil.com>
 MIME-Version: 1.0
-To: Alexander van Heukelum <heukelum@fastmail.fm>
-CC: Paul Jackson <pj@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alexander van Heukelum <heukelum@mailshack.com>
-Subject: Re: [RFC/PATCH] Make for_each_node_mask out-of-line
-References: <20080511135039.GA3286@mailshack.com>   <20080511091403.a75f5b78.pj@sgi.com>   <20080511160658.GA3398@mailshack.com>   <20080511160104.c3fef6bf.pj@sgi.com> <1210593896.23716.1252664185@webmail.messagingengine.com>
-In-Reply-To: <1210593896.23716.1252664185@webmail.messagingengine.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexander van Heukelum wrote:
-> On Sun, 11 May 2008 16:01:04 -0500, "Paul Jackson" <pj@sgi.com> said:
->> Alexander wrote:
->>> Sure. This patch introduces lib/nodemask.c, but I'm not quite sure
->>> if building it should depend on CONFIG_SMP or something else (NUMA?).
->>> When is MAX_NUMNODES 1?
->> Well ... I'm pretty sure it made sense to depend on SMP, back when
->> it was first added.  However that might have changed.  I recall
->> vaguely that there has been discussion of this CONFIG_SMP dependency
->> every year or so, but I don't have the time right now to dig through
->> the archives and code to figure it out.
->>
->> So ... offhand ... good questions, but I don't have answers.
->>
->>> I'ld be happy to take a stab at aligning the cpumask and nodemask
->>> code even more by uninlining some more functions and using stubs
->>> for the MAX_NUMNODES=1 case.
->> That could be good ... though could you co-ordinate with Mike Travis
->> first, to minimize the risks of merge conflicts with what he's doing?
-> 
-> I believe the x86#testing tree includes Mike's work? The two patches
-> in this thread apply fine to current x86#testing.
+On Mon, 12 May 2008, Francois Romieu wrote:
 
-Yes, my only change right now is to use nr_cpu_ids instead of NR_CPUS
-which short cuts a huge chunk out of the back end of the loop.  And my
-changes are in sched/latest (which includes x86/latest).
+> Julia Lawall <julia@diku.dk> :
+> [...]
+> > diff -u -p a/drivers/net/au1000_eth.c b/drivers/net/au1000_eth.c
+> > --- a/drivers/net/au1000_eth.c	2008-04-27 11:41:11.000000000 +0200
+> > +++ b/drivers/net/au1000_eth.c	2008-05-12 09:32:54.000000000 +0200
+> > @@ -1242,7 +1242,7 @@ static irqreturn_t au1000_interrupt(int 
+> >  	struct net_device *dev = (struct net_device *) dev_id;
+> >  
+> >  	if (dev == NULL) {
+> > -		printk(KERN_ERR "%s: isr: null dev ptr\n", dev->name);
+> > +		printk(KERN_ERR "isr: null dev ptr\n");
+> >  		return IRQ_RETVAL(1);
+> >  	}
+> 
+> The lifespan of 'dev' covers the request_irq..free_irq interval in this
+> driver. The whole 'dev == NULL' block can be removed.
 
-Thanks,
-Mike
+Will you do that?
 
-> 
->> You kernel text space saving in the first patch seemed worth going
->> ahead with even if it did conflict a little, and I liked the matching
->> nodemask patch, just to keep things in sync.  Other nodemask cleanup
->> is a little lower priority in my book, so should make a modest effort
->> to co-ordinate with more critical patches, to minimize conflict.
-> 
-> Thanks for your guidance.
-> 
-> Greetings,
->     Alexander
-> 
->> -- 
->>                   I won't rest till it's the best ...
->>                   Programmer, Linux Scalability
->>                   Paul Jackson <pj@sgi.com> 1.940.382.4214
-
+julia
