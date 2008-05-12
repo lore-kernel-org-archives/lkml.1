@@ -1,131 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758179AbYELLNr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758467AbYELLTr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758179AbYELLNr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 07:13:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbYELLNf
+	id S1758467AbYELLTr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 07:19:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbYELLTh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 07:13:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44556 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752187AbYELLNe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 07:13:34 -0400
-Subject: sparc: Fix mremap VA span checking.
-From: Jan Lieskovsky <jlieskov@redhat.com>
-To: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: David Miller <davem@davemloft.net>
-Content-Type: multipart/mixed; boundary="=-gj8IV+9h0opo72YHMYDo"
-Organization: Red Hat Inc.
-Date: Mon, 12 May 2008 13:15:12 +0200
-Message-Id: <1210590913.10883.9.camel@dhcp-lab-164.englab.brq.redhat.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+	Mon, 12 May 2008 07:19:37 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:47123 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751517AbYELLTg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 07:19:36 -0400
+Date: Mon, 12 May 2008 20:18:05 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Bryan Wu <cooloney@kernel.org>
+Cc: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org,
+       Harald Krapfenbauer <harald.krapfenbauer@bluetechnix.at>,
+       Michael Hennerich <michael.hennerich@analog.com>
+Subject: Re: [PATCH 1/1] [Video/Framebuffer]: Hitachi TX09D70VM1CDA TFT LCD framebuffer driver
+Message-ID: <20080512111805.GA11299@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Bryan Wu <cooloney@kernel.org>, adaplas@gmail.com,
+	linux-fbdev-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org,
+	Harald Krapfenbauer <harald.krapfenbauer@bluetechnix.at>,
+	Michael Hennerich <michael.hennerich@analog.com>
+References: <1210589347-12840-1-git-send-email-cooloney@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1210589347-12840-1-git-send-email-cooloney@kernel.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, May 12, 2008 at 06:49:07PM +0800, Bryan Wu wrote:
+> +config FB_HITACHI_TX09_REFRESHRATE
+> +	int "Refresh rate"
+> +	depends on FB_HITACHI_TX09
+> +	range 25 70
+> +	default 52
+> +	help
+> +	  Refresh rate of the LCD in Hz. According to data sheet, must
+> +	  be in the interval [52...68].
+> +
+25..70 != 52..68, pick one and stick with it. If there's a reason for the
+discrepency, then document that, too. ie, "data sheet has no relation to
+hardware".
 
---=-gj8IV+9h0opo72YHMYDo
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+> +static void stop_timers(void)
+> +{
+> +	unsigned long flags;
+> +	long old_value = 0, new_value = 0;
+> +
+> +	local_irq_save(flags);
+> +
+[snip]
 
-Hello guys,
+> +	while (1) {
+> +		old_value = new_value;
+> +		new_value = BFIN_READ(TIMER_VSYNC, COUNTER) ();
+> +		if ((old_value - new_value) > 45000) {
 
-  sorry for bothering you if wrong, but based on DaveM's 
-patch: <cite>
+The only way to break out of here is dependent on the timer. You have no
+timeout in the case of the timer getting stuck.
 
-sparc: Fix mmap VA span checking.
-David S. Miller [Wed, 7 May 2008 09:24:28 +0000 (02:24 -0700)]
-[ Upstream commit: 5816339310b2d9623cf413d33e538b45e815da5d ]
-We should not conditionalize VA range checks on MAP_FIXED.
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> +static int tx09_fb_open(struct fb_info *info, int user)
+> +{
+> +	unsigned long flags;
+> +
+> +	pr_debug("%s\n", __FUNCTION__);
+> +
+> +	spin_lock_irqsave(&tx09_lock, flags);
+> +	tx09_open_cnt++;	/* increase counter */
+> +	spin_unlock_irqrestore(&tx09_lock, flags);
+> +
+> +	if (tx09_open_cnt <= 1) {	/* opened the first time */
+> +
+> +		/* stop PPI */
+> +		WRITE_PPI_CONTROL(0);
+> +		SSYNC();
+> +
+> +		/* configure dma stuff */
+> +		config_dma();
+> +
+> +		config_ppi();
+> +
+> +		/* start dma */
+> +		enable_dma(CH_PPI);
+> +		SSYNC();
+> +
+> +		/* start PPI */
+> +		WRITE_PPI_CONTROL(READ_PPI_CONTROL() | PORT_EN);
+> +		SSYNC();
+> +
+> +		if (!t_conf_done)
+> +			config_timers();
+> +
+> +		start_timers();
+> +	}
+> +
 
-</cite>
+Presumably this should be done in the probe path, rather than lazily.
+Though you don't bother doing any error checking, so I suppose it doesn't
+really matter.
 
- I have investigated the code for MREMAP_FIXED in
-sparc_mremap in arch/sparc/kernel/sys_sparc.c, for sys64_mremap
-in arch/sparc64/kernel/sys_sparc.c and 
-for sys32_mremap in arch/sparc64/kernel/sys_sparc32.c
-and there are similar conditional range checks ->
-attaching the patches against 2.6.25.3.
+> +static int tx09_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+> +{
+> +	unsigned long flags;
+> +
+> +	pr_debug("%s\n", __FUNCTION__);
+> +
+> +	if (tx09_mmap)
+> +		return -1;	/* already mmap'ed */
+> +
+> +	spin_lock_irqsave(&tx09_lock, flags);
+> +	tx09_mmap = 1;
+> +	spin_unlock_irqrestore(&tx09_lock, flags);
+> +
+> +	vma->vm_start = (unsigned long)fb_buffer;
+> +	vma->vm_end = vma->vm_start + 320 * 240 * 2;
+> +	vma->vm_flags |= VM_MAYSHARE | VM_SHARED;
+> +
+> +	return 0;
+> +}
+> +
+This is equally bizarre. If you can never support more than one opener of
+this device, then have your open() reflect that, rather than trying to do
+these lame hacks in every file op.
 
-Kind regards
-Jan iankko Lieskovsky
-
-
---=-gj8IV+9h0opo72YHMYDo
-Content-Disposition: attachment; filename=sparc_sys_sparc.diff
-Content-Type: text/x-patch; name=sparc_sys_sparc.diff; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-
---- linux-2.6.25.3.old/arch/sparc/kernel/sys_sparc.c	2008-05-12 11:43:17.000000000 +0200
-+++ linux-2.6.25.3/arch/sparc/kernel/sys_sparc.c	2008-05-12 12:20:32.000000000 +0200
-@@ -308,14 +308,13 @@
- 	    new_len > TASK_SIZE - PAGE_SIZE)
- 		goto out;
- 	down_write(&current->mm->mmap_sem);
--	if (flags & MREMAP_FIXED) {
--		if (ARCH_SUN4C_SUN4 &&
--		    new_addr < 0xe0000000 &&
--		    new_addr + new_len > 0x20000000)
--			goto out_sem;
--		if (new_addr + new_len > TASK_SIZE - PAGE_SIZE)
--			goto out_sem;
--	} else if ((ARCH_SUN4C_SUN4 && addr < 0xe0000000 &&
-+	if (ARCH_SUN4C_SUN4 &&
-+	    new_addr < 0xe0000000 &&
-+	    new_addr + new_len > 0x20000000)
-+	    goto out_sem;
-+	if (new_addr + new_len > TASK_SIZE - PAGE_SIZE)
-+	    goto out_sem;
-+	else if ((ARCH_SUN4C_SUN4 && addr < 0xe0000000 &&
- 		    addr + new_len > 0x20000000) ||
- 		   addr + new_len > TASK_SIZE - PAGE_SIZE) {
- 		unsigned long map_flags = 0;
-
---=-gj8IV+9h0opo72YHMYDo
-Content-Disposition: attachment; filename=sparc64_sys_sparc.diff
-Content-Type: text/x-patch; name=sparc64_sys_sparc.diff; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-
---- linux-2.6.25.3.old/arch/sparc64/kernel/sys_sparc.c	2008-05-12 11:43:17.000000000 +0200
-+++ linux-2.6.25.3/arch/sparc64/kernel/sys_sparc.c	2008-05-12 12:18:58.000000000 +0200
-@@ -620,10 +620,9 @@
- 		goto out;
- 
- 	down_write(&current->mm->mmap_sem);
--	if (flags & MREMAP_FIXED) {
--		if (invalid_64bit_range(new_addr, new_len))
--			goto out_sem;
--	} else if (invalid_64bit_range(addr, new_len)) {
-+        if (invalid_64bit_range(new_addr, new_len))
-+		goto out_sem;
-+        else if (invalid_64bit_range(addr, new_len)) {
- 		unsigned long map_flags = 0;
- 		struct file *file = NULL;
- 
-
---=-gj8IV+9h0opo72YHMYDo
-Content-Disposition: attachment; filename=sparc64_sys_sparc32.diff
-Content-Type: text/x-patch; name=sparc64_sys_sparc32.diff; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-
---- linux-2.6.25.3.old/arch/sparc64/kernel/sys_sparc32.c	2008-05-12 11:43:17.000000000 +0200
-+++ linux-2.6.25.3/arch/sparc64/kernel/sys_sparc32.c	2008-05-12 12:19:43.000000000 +0200
-@@ -915,10 +915,9 @@
- 	if (addr > STACK_TOP32 - old_len)
- 		goto out;
- 	down_write(&current->mm->mmap_sem);
--	if (flags & MREMAP_FIXED) {
--		if (new_addr > STACK_TOP32 - new_len)
--			goto out_sem;
--	} else if (addr > STACK_TOP32 - new_len) {
-+	if (new_addr > STACK_TOP32 - new_len)
-+		goto out_sem;
-+	else if (addr > STACK_TOP32 - new_len) {
- 		unsigned long map_flags = 0;
- 		struct file *file = NULL;
- 
-
---=-gj8IV+9h0opo72YHMYDo--
-
+Beyond that, the size of the VMA is reflected in info->fix.mmio_len,
+which the generic fb_mmap() takes care of for you. Other than the
+questionable VMA flags, it's not obvious why you rolled your own mmap.
