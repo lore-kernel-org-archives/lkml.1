@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758237AbYEMPYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759538AbYEMPYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758237AbYEMPYT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 11:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753586AbYEMPYL
+	id S1759538AbYEMPYh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 11:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752555AbYEMPY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 11:24:11 -0400
-Received: from bar.sig21.net ([88.198.146.85]:49995 "EHLO bar.sig21.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753192AbYEMPYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 11:24:10 -0400
-Date: Tue, 13 May 2008 17:23:59 +0200
-From: Johannes Stezenbach <js@linuxtv.org>
-To: Oliver Endriss <o.endriss@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Andrew de Quincey <adq_dvb@lidskialf.net>
-Subject: Re: [patch, 2.6.26-rc2] dvb: drivers/media/dvb/ttpci/fdump
-	firmware build error fix
-Message-ID: <20080513152359.GA26952@linuxtv.org>
-References: <20080512101231.GA11755@elte.hu> <200805122218.15887@orion.escape-edv.de> <20080512204634.GA10620@linuxtv.org> <200805131633.55469@orion.escape-edv.de>
+	Tue, 13 May 2008 11:24:28 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:4878 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756659AbYEMPY1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 11:24:27 -0400
+Date: Tue, 13 May 2008 16:24:23 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Bryan Wu <cooloney@kernel.org>
+Cc: "Cai, Cliff" <Cliff.Cai@analog.com>, liam.girdwood@wolfsonmicro.com,
+       linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org
+Subject: Re: [PATCH 1/1] [ASOC]: AD1980 audio codec ASOC driver
+Message-ID: <20080513152423.GA649@sirena.org.uk>
+Mail-Followup-To: Bryan Wu <cooloney@kernel.org>,
+	"Cai, Cliff" <Cliff.Cai@analog.com>, liam.girdwood@wolfsonmicro.com,
+	linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org
+References: <1210589112-12208-1-git-send-email-cooloney@kernel.org> <20080512115416.GB23216@sirena.org.uk> <0F1B54C89D5F954D8535DB252AF412FA01F2EF2C@chinexm1.ad.analog.com> <20080513140132.GG21292@sirena.org.uk> <386072610805130807l3e3943e1w24c38b640ab331a6@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200805131633.55469@orion.escape-edv.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Spam-21-Score: -4.4 (----)
-X-Spam-21-Report: No, score=-4.4 required=5.0 tests=ALL_TRUSTED=-1.8,BAYES_00=-2.599 autolearn=no
+In-Reply-To: <386072610805130807l3e3943e1w24c38b640ab331a6@mail.gmail.com>
+X-Cookie: Postage will be paid by addressee.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 13, 2008 at 04:33:54PM +0200, Oliver Endriss wrote:
-> Johannes Stezenbach wrote:
-> > You can put PREVENT_FIRMWARE_BUILD=y in your allrandom.config.
-> 
-> Sure. And without the patch you can simply add
-> - STANDALONE=y or
-> - DVB_AV7110_FIRMWARE=n
-> to your allrandom.config. ;-)
+On Tue, May 13, 2008 at 11:07:16PM +0800, Bryan Wu wrote:
+> On Tue, May 13, 2008 at 10:01 PM, Mark Brown
 
-It is desirable to have one generic "don't break the build
-because of missing firmware binaries" option, isn't it?
+> > We've had patches in the ASoC git tree for some time (along with the AD1980
+> >  driver) - it'd be good to get everything merged into ALSA.
 
-Johannes
+> Do you mean there is another version AD1980 in ASoC git tree?
+
+We're carrying both AD1980 and Blackfin platform code.  The AD1980
+driver is currently identical to the one you just sent.
+
+Everything is in the dev branch of:
+
+	git://opensource.wolfsonmicro.com/linux-2.6-asoc
