@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762158AbYEMUOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761297AbYEMUP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762158AbYEMUOp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 16:14:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761777AbYEMUNl
+	id S1761297AbYEMUP6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 16:15:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761974AbYEMUOI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 16:13:41 -0400
-Received: from ns.suse.de ([195.135.220.2]:37741 "EHLO mx1.suse.de"
+	Tue, 13 May 2008 16:14:08 -0400
+Received: from mx1.suse.de ([195.135.220.2]:37851 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761754AbYEMUNj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 16:13:39 -0400
-Date: Tue, 13 May 2008 13:11:45 -0700
+	id S1760691AbYEMUOF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 16:14:05 -0400
+Date: Tue, 13 May 2008 13:11:52 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,14 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Robert Reif <reif@earthlink.net>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 06/37] sparc: sunzilog uart order
-Message-ID: <20080513201145.GG31167@suse.de>
+Subject: [patch 09/37] sparc64: Stop creating dummy root PCI host
+	controller devices.
+Message-ID: <20080513201152.GJ31167@suse.de>
 References: <20080513200453.064446337@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sparc-sunzilog-uart-order.patch"
+Content-Disposition: inline; filename="sparc64-stop-creating-dummy-root-pci-host-controller-devices.patch"
 In-Reply-To: <20080513201053.GA31167@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,128 +38,255 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Robert Reif <reif@earthlink.net>
+From: David S. Miller <davem@davemloft.net>
 
-[ Upstream commit: 227739bf4c110bbd02d0c0f13b272c32de406e4c ]
+[ Upstream commit: 86d8337618e69573b5ccd3553f800944e843cae7 ]
 
-I have a sparcstation 20 clone with a lot of on board serial ports.
-The serial core code assumes that uarts are assigned contiguously
-and that may not be the case when there are multiple zs devices
-present.  This patch insures that uart chips are placed in front of
-keyboard/mouse chips in the port table.
+It just creates confusion, errors, and bugs.
 
-ffd37420: ttyS0 at MMIO 0xf1100000 (irq = 44) is a zs (ESCC)
-Console: ttyS0 (SunZilog zs0)
-console [ttyS0] enabled
-ffd37420: ttyS1 at MMIO 0xf1100004 (irq = 44) is a zs (ESCC)
-ffd37500: Keyboard at MMIO 0xf1000000 (irq = 44) is a zs
-ffd37500: Mouse at MMIO 0xf1000004 (irq = 44) is a zs
-ffd3c5c0: ttyS2 at MMIO 0xf1100008 (irq = 44) is a zs (ESCC)
-ffd3c5c0: ttyS3 at MMIO 0xf110000c (irq = 44) is a zs (ESCC)
-ffd3c6a0: ttyS4 at MMIO 0xf1100010 (irq = 44) is a zs (ESCC)
-ffd3c6a0: ttyS5 at MMIO 0xf1100014 (irq = 44) is a zs (ESCC)
-ffd3c780: ttyS6 at MMIO 0xf1100018 (irq = 44) is a zs (ESCC)
-ffd3c780: ttyS7 at MMIO 0xf110001c (irq = 44) is a zs (ESCC)
+For one thing, this can cause dup sysfs or procfs nodes to get
+created:
 
-Signed-off-by: Robert Reif <reif@earthlink.net>
+[    1.198015] proc_dir_entry '00.0' already registered
+[    1.198036] Call Trace:
+[    1.198052]  [00000000004f2534] create_proc_entry+0x7c/0x98
+[    1.198092]  [00000000005719e4] pci_proc_attach_device+0xa4/0xd4
+[    1.198126]  [00000000007d991c] pci_proc_init+0x64/0x88
+[    1.198158]  [00000000007c62a4] kernel_init+0x190/0x330
+[    1.198183]  [0000000000426cf8] kernel_thread+0x38/0x48
+[    1.198210]  [00000000006a0d90] rest_init+0x18/0x5c
+
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/serial/sunzilog.c |   30 +++++++++++++++++-------------
- 1 file changed, 17 insertions(+), 13 deletions(-)
+ arch/sparc64/kernel/pci.c        |  130 +++++++++------------------------------
+ arch/sparc64/kernel/pci_common.c |    6 -
+ arch/sparc64/kernel/pci_impl.h   |    9 --
+ 3 files changed, 33 insertions(+), 112 deletions(-)
 
---- a/drivers/serial/sunzilog.c
-+++ b/drivers/serial/sunzilog.c
-@@ -1015,6 +1015,7 @@ static struct uart_ops sunzilog_pops = {
- 	.verify_port	=	sunzilog_verify_port,
- };
+--- a/arch/sparc64/kernel/pci.c
++++ b/arch/sparc64/kernel/pci.c
+@@ -351,8 +351,7 @@ static void pci_parse_of_addrs(struct of
  
-+static int uart_chip_count;
- static struct uart_sunzilog_port *sunzilog_port_table;
- static struct zilog_layout __iomem **sunzilog_chip_regs;
- 
-@@ -1350,16 +1351,22 @@ static int zilog_irq = -1;
- 
- static int __devinit zs_probe(struct of_device *op, const struct of_device_id *match)
+ struct pci_dev *of_create_pci_dev(struct pci_pbm_info *pbm,
+ 				  struct device_node *node,
+-				  struct pci_bus *bus, int devfn,
+-				  int host_controller)
++				  struct pci_bus *bus, int devfn)
  {
--	static int inst;
-+	static int kbm_inst, uart_inst;
-+	int inst;
- 	struct uart_sunzilog_port *up;
- 	struct zilog_layout __iomem *rp;
--	int keyboard_mouse;
-+	int keyboard_mouse = 0;
- 	int err;
+ 	struct dev_archdata *sd;
+ 	struct pci_dev *dev;
+@@ -389,43 +388,28 @@ struct pci_dev *of_create_pci_dev(struct
+ 	dev->devfn = devfn;
+ 	dev->multifunction = 0;		/* maybe a lie? */
  
--	keyboard_mouse = 0;
- 	if (of_find_property(op->node, "keyboard", NULL))
- 		keyboard_mouse = 1;
- 
-+	/* uarts must come before keyboards/mice */
-+	if (keyboard_mouse)
-+		inst = uart_chip_count + kbm_inst;
-+	else
-+		inst = uart_inst;
-+
- 	sunzilog_chip_regs[inst] = of_ioremap(&op->resource[0], 0,
- 					      sizeof(struct zilog_layout),
- 					      "zs");
-@@ -1427,6 +1434,7 @@ static int __devinit zs_probe(struct of_
- 				   rp, sizeof(struct zilog_layout));
- 			return err;
- 		}
-+		uart_inst++;
- 	} else {
- 		printk(KERN_INFO "%s: Keyboard at MMIO 0x%llx (irq = %d) "
- 		       "is a %s\n",
-@@ -1438,12 +1446,11 @@ static int __devinit zs_probe(struct of_
- 		       op->dev.bus_id,
- 		       (unsigned long long) up[1].port.mapbase,
- 		       op->irqs[0], sunzilog_type(&up[1].port));
-+		kbm_inst++;
- 	}
- 
- 	dev_set_drvdata(&op->dev, &up[0]);
- 
--	inst++;
+-	if (host_controller) {
+-		if (tlb_type != hypervisor) {
+-			pci_read_config_word(dev, PCI_VENDOR_ID,
+-					     &dev->vendor);
+-			pci_read_config_word(dev, PCI_DEVICE_ID,
+-					     &dev->device);
+-		} else {
+-			dev->vendor = PCI_VENDOR_ID_SUN;
+-			dev->device = 0x80f0;
+-		}
+-		dev->cfg_size = 256;
+-		dev->class = PCI_CLASS_BRIDGE_HOST << 8;
+-		sprintf(pci_name(dev), "%04x:%02x:%02x.%d", pci_domain_nr(bus),
+-			0x00, PCI_SLOT(devfn), PCI_FUNC(devfn));
+-	} else {
+-		dev->vendor = of_getintprop_default(node, "vendor-id", 0xffff);
+-		dev->device = of_getintprop_default(node, "device-id", 0xffff);
+-		dev->subsystem_vendor =
+-			of_getintprop_default(node, "subsystem-vendor-id", 0);
+-		dev->subsystem_device =
+-			of_getintprop_default(node, "subsystem-id", 0);
 -
- 	return 0;
+-		dev->cfg_size = pci_cfg_space_size(dev);
+-
+-		/* We can't actually use the firmware value, we have
+-		 * to read what is in the register right now.  One
+-		 * reason is that in the case of IDE interfaces the
+-		 * firmware can sample the value before the the IDE
+-		 * interface is programmed into native mode.
+-		 */
+-		pci_read_config_dword(dev, PCI_CLASS_REVISION, &class);
+-		dev->class = class >> 8;
+-		dev->revision = class & 0xff;
++	dev->vendor = of_getintprop_default(node, "vendor-id", 0xffff);
++	dev->device = of_getintprop_default(node, "device-id", 0xffff);
++	dev->subsystem_vendor =
++		of_getintprop_default(node, "subsystem-vendor-id", 0);
++	dev->subsystem_device =
++		of_getintprop_default(node, "subsystem-id", 0);
++
++	dev->cfg_size = pci_cfg_space_size(dev);
++
++	/* We can't actually use the firmware value, we have
++	 * to read what is in the register right now.  One
++	 * reason is that in the case of IDE interfaces the
++	 * firmware can sample the value before the the IDE
++	 * interface is programmed into native mode.
++	 */
++	pci_read_config_dword(dev, PCI_CLASS_REVISION, &class);
++	dev->class = class >> 8;
++	dev->revision = class & 0xff;
++
++	sprintf(pci_name(dev), "%04x:%02x:%02x.%d", pci_domain_nr(bus),
++		dev->bus->number, PCI_SLOT(devfn), PCI_FUNC(devfn));
+ 
+-		sprintf(pci_name(dev), "%04x:%02x:%02x.%d", pci_domain_nr(bus),
+-			dev->bus->number, PCI_SLOT(devfn), PCI_FUNC(devfn));
+-	}
+ 	if (ofpci_verbose)
+ 		printk("    class: 0x%x device name: %s\n",
+ 		       dev->class, pci_name(dev));
+@@ -440,26 +424,21 @@ struct pci_dev *of_create_pci_dev(struct
+ 	dev->current_state = 4;		/* unknown power state */
+ 	dev->error_state = pci_channel_io_normal;
+ 
+-	if (host_controller) {
++	if (!strcmp(type, "pci") || !strcmp(type, "pciex")) {
++		/* a PCI-PCI bridge */
+ 		dev->hdr_type = PCI_HEADER_TYPE_BRIDGE;
+ 		dev->rom_base_reg = PCI_ROM_ADDRESS1;
+-		dev->irq = PCI_IRQ_NONE;
++	} else if (!strcmp(type, "cardbus")) {
++		dev->hdr_type = PCI_HEADER_TYPE_CARDBUS;
+ 	} else {
+-		if (!strcmp(type, "pci") || !strcmp(type, "pciex")) {
+-			/* a PCI-PCI bridge */
+-			dev->hdr_type = PCI_HEADER_TYPE_BRIDGE;
+-			dev->rom_base_reg = PCI_ROM_ADDRESS1;
+-		} else if (!strcmp(type, "cardbus")) {
+-			dev->hdr_type = PCI_HEADER_TYPE_CARDBUS;
+-		} else {
+-			dev->hdr_type = PCI_HEADER_TYPE_NORMAL;
+-			dev->rom_base_reg = PCI_ROM_ADDRESS;
++		dev->hdr_type = PCI_HEADER_TYPE_NORMAL;
++		dev->rom_base_reg = PCI_ROM_ADDRESS;
+ 
+-			dev->irq = sd->op->irqs[0];
+-			if (dev->irq == 0xffffffff)
+-				dev->irq = PCI_IRQ_NONE;
+-		}
++		dev->irq = sd->op->irqs[0];
++		if (dev->irq == 0xffffffff)
++			dev->irq = PCI_IRQ_NONE;
+ 	}
++
+ 	pci_parse_of_addrs(sd->op, node, dev);
+ 
+ 	if (ofpci_verbose)
+@@ -748,7 +727,7 @@ static void __devinit pci_of_scan_bus(st
+ 		prev_devfn = devfn;
+ 
+ 		/* create a new pci_dev for this device */
+-		dev = of_create_pci_dev(pbm, child, bus, devfn, 0);
++		dev = of_create_pci_dev(pbm, child, bus, devfn);
+ 		if (!dev)
+ 			continue;
+ 		if (ofpci_verbose)
+@@ -795,48 +774,9 @@ static void __devinit pci_bus_register_o
+ 		pci_bus_register_of_sysfs(child_bus);
  }
  
-@@ -1491,28 +1498,25 @@ static struct of_platform_driver zs_driv
- static int __init sunzilog_init(void)
- {
- 	struct device_node *dp;
--	int err, uart_count;
--	int num_keybms;
-+	int err;
-+	int num_keybms = 0;
- 	int num_sunzilog = 0;
- 
--	num_keybms = 0;
- 	for_each_node_by_name(dp, "zs") {
- 		num_sunzilog++;
- 		if (of_find_property(dp, "keyboard", NULL))
- 			num_keybms++;
- 	}
- 
--	uart_count = 0;
- 	if (num_sunzilog) {
--		int uart_count;
+-int pci_host_bridge_read_pci_cfg(struct pci_bus *bus_dev,
+-				 unsigned int devfn,
+-				 int where, int size,
+-				 u32 *value)
+-{
+-	static u8 fake_pci_config[] = {
+-		0x8e, 0x10, /* Vendor: 0x108e (Sun) */
+-		0xf0, 0x80, /* Device: 0x80f0 (Fire) */
+-		0x46, 0x01, /* Command: 0x0146 (SERR, PARITY, MASTER, MEM) */
+-		0xa0, 0x22, /* Status: 0x02a0 (DEVSEL_MED, FB2B, 66MHZ) */
+-		0x00, 0x00, 0x00, 0x06, /* Class: 0x06000000 host bridge */
+-		0x00, /* Cacheline: 0x00 */
+-		0x40, /* Latency: 0x40 */
+-		0x00, /* Header-Type: 0x00 normal */
+-	};
 -
- 		err = sunzilog_alloc_tables(num_sunzilog);
- 		if (err)
- 			goto out;
+-	*value = 0;
+-	if (where >= 0 && where < sizeof(fake_pci_config) &&
+-	    (where + size) >= 0 &&
+-	    (where + size) < sizeof(fake_pci_config) &&
+-	    size <= sizeof(u32)) {
+-		while (size--) {
+-			*value <<= 8;
+-			*value |= fake_pci_config[where + size];
+-		}
+-	}
+-
+-	return PCIBIOS_SUCCESSFUL;
+-}
+-
+-int pci_host_bridge_write_pci_cfg(struct pci_bus *bus_dev,
+-				  unsigned int devfn,
+-				  int where, int size,
+-				  u32 value)
+-{
+-	return PCIBIOS_SUCCESSFUL;
+-}
+-
+ struct pci_bus * __devinit pci_scan_one_pbm(struct pci_pbm_info *pbm)
+ {
+ 	struct device_node *node = pbm->prom_node;
+-	struct pci_dev *host_pdev;
+ 	struct pci_bus *bus;
  
--		uart_count = (num_sunzilog * 2) - (2 * num_keybms);
-+		uart_chip_count = num_sunzilog - num_keybms;
+ 	printk("PCI: Scanning PBM %s\n", node->full_name);
+@@ -854,10 +794,6 @@ struct pci_bus * __devinit pci_scan_one_
+ 	bus->resource[0] = &pbm->io_space;
+ 	bus->resource[1] = &pbm->mem_space;
  
--		err = sunserial_register_minors(&sunzilog_reg, uart_count);
-+		err = sunserial_register_minors(&sunzilog_reg,
-+						uart_chip_count * 2);
- 		if (err)
- 			goto out_free_tables;
- 	}
+-	/* Create the dummy host bridge and link it in.  */
+-	host_pdev = of_create_pci_dev(pbm, node, bus, 0x00, 1);
+-	bus->self = host_pdev;
+-
+ 	pci_of_scan_bus(pbm, node, bus);
+ 	pci_bus_add_devices(bus);
+ 	pci_bus_register_of_sysfs(bus);
+--- a/arch/sparc64/kernel/pci_common.c
++++ b/arch/sparc64/kernel/pci_common.c
+@@ -264,9 +264,6 @@ static int sun4v_read_pci_cfg(struct pci
+ 	unsigned int func = PCI_FUNC(devfn);
+ 	unsigned long ret;
+ 
+-	if (!bus && devfn == 0x00)
+-		return pci_host_bridge_read_pci_cfg(bus_dev, devfn, where,
+-						    size, value);
+ 	if (config_out_of_range(pbm, bus, devfn, where)) {
+ 		ret = ~0UL;
+ 	} else {
+@@ -300,9 +297,6 @@ static int sun4v_write_pci_cfg(struct pc
+ 	unsigned int func = PCI_FUNC(devfn);
+ 	unsigned long ret;
+ 
+-	if (!bus && devfn == 0x00)
+-		return pci_host_bridge_write_pci_cfg(bus_dev, devfn, where,
+-						     size, value);
+ 	if (config_out_of_range(pbm, bus, devfn, where)) {
+ 		/* Do nothing. */
+ 	} else {
+--- a/arch/sparc64/kernel/pci_impl.h
++++ b/arch/sparc64/kernel/pci_impl.h
+@@ -167,15 +167,6 @@ extern void pci_get_pbm_props(struct pci
+ extern struct pci_bus *pci_scan_one_pbm(struct pci_pbm_info *pbm);
+ extern void pci_determine_mem_io_space(struct pci_pbm_info *pbm);
+ 
+-extern int pci_host_bridge_read_pci_cfg(struct pci_bus *bus_dev,
+-					unsigned int devfn,
+-					int where, int size,
+-					u32 *value);
+-extern int pci_host_bridge_write_pci_cfg(struct pci_bus *bus_dev,
+-					 unsigned int devfn,
+-					 int where, int size,
+-					 u32 value);
+-
+ /* Error reporting support. */
+ extern void pci_scan_for_target_abort(struct pci_pbm_info *, struct pci_bus *);
+ extern void pci_scan_for_master_abort(struct pci_pbm_info *, struct pci_bus *);
 
 -- 
