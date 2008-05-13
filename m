@@ -1,89 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759953AbYEMNXy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760326AbYEMNYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759953AbYEMNXy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 09:23:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754844AbYEMNXq
+	id S1760326AbYEMNYX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 09:24:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756108AbYEMNYP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 09:23:46 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41162 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754637AbYEMNXq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 09:23:46 -0400
-Date: Tue, 13 May 2008 15:23:28 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Kevin Winchester <kjwinchester@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: Latest Linus git: =?utf-8?Q?kernel=2Fs?=
-	=?utf-8?B?Y2hlZC5jOjEyMTY6IHdhcm5pbmc6IOKAmGluaXRfaHJ0aWNr?=
-	=?utf-8?B?4oCZ?= defined but not used
-Message-ID: <20080513132328.GB5809@elte.hu>
-References: <48278762.1080508@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 13 May 2008 09:24:15 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:58231 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755897AbYEMNYO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 09:24:14 -0400
+Message-Id: <1210685053.13437.1252892061@webmail.messagingengine.com>
+X-Sasl-Enc: j/OZ41inK+ICsf6EcRiB6PLJKQq5qbBKmCjIhCWV1kqs 1210685053
+From: "Alexander van Heukelum" <heukelum@fastmail.fm>
+To: "Nickolay Vinogradov" <nickolay@protei.ru>
+Cc: linux-kernel@vger.kernel.org, "Russell King" <rmk@arm.linux.org.uk>,
+       "Andrew Morton" <akpm@linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <48278762.1080508@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="ISO-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <481E076A.8060302@protei.ru>
+   <1210677433.22341.1252875863@webmail.messagingengine.com>
+   <48298990.7040705@protei.ru>
+Subject: Re: [PATCH] asm-generic/bitops/fls64.h
+In-Reply-To: <48298990.7040705@protei.ru>
+Date: Tue, 13 May 2008 15:24:13 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 13 May 2008 16:29:04 +0400, "Nickolay Vinogradov"
+<nickolay@protei.ru> said:
+> Alexander van Heukelum &#1087;&#1080;&#1096;&#1077;&#1090;:
+> 
+> > Hi Nickolay,
+> > 
+> > The change is ok, I guess, but the cast should be a no-op (fls
+> > takes an int, which is always 32 bit in linux). What is the problem
+> > you are seeing? Does fls64() return a wrong value in some cases? If
+> > so, what cpu? Which values?
+> > 
+> > Why would this be a bug on big endian systems only? There is no
+> > pointer magic involved, so the compiler should take care of the
+> > casts in a correct way.
+> > 
+> > Maybe you see a compiler warning? Which compiler version?
+> > 
+> > (also note that current (development) kernels now have separate
+> > versions for 32-bit and 64-bit environments.)
+> 
+> Because fls() is a macro for asm-arm:
+> 
+> #define fls(x) \
+>          ( __builtin_constant_p(x) ? constant_fls(x) : \
+>          ({ int __r; asm("clz\t%0, %1" : "=r"(__r) : "r"(x) : "cc"); 
+> 32-__r; }) )
+> 
+> We can fix it right here:
+> 
+> diff --git a/include/asm-arm/bitops.h b/include/asm-arm/bitops.h
+> index 5c60bfc..ce3fb6f 100644
+> --- a/include/asm-arm/bitops.h
+> +++ b/include/asm-arm/bitops.h
+> @@ -279,7 +279,7 @@ static inline int constant_fls(int x)
+> 
+>   #define fls(x) \
+>          ( __builtin_constant_p(x) ? constant_fls(x) : \
+> -         ({ int __r; asm("clz\t%0, %1" : "=r"(__r) : "r"(x) : "cc"); 
+> 32-__r; }) )
+> +         ({ int __r; asm("clz\t%0, %1" : "=r"(__r) : "r"((__u32)x) : 
+> "cc"); 32-__r; }) )
+>   #define ffs(x) ({ unsigned long __t = (x); fls(__t & -__t); })
+>   #define __ffs(x) (ffs(x) - 1)
+>   #define ffz(x) __ffs( ~(x) )
 
-* Kevin Winchester <kjwinchester@gmail.com> wrote:
+Hmm, indeed.
 
-> Hi Ingo,
->
-> I got the above warning in my latest build.  I assume it is because 
-> init_hrtick() is only called from CONFIG_SMP sched_init_smp(), and I 
-> have a HRT-enabled UP box.
->
-> I could write up the simple patch to put #ifdef CONFIG_SMP around 
-> init_hrtick(), but with all of the #ifdefs in that file, I figure it 
-> is probably a little more complicated than that.
+Maybe: ({ int __r, __x = (x); asm("clz\t%0, %1" : "=r"(__r) : "r"(__x) :
+"cc"); 32-__r; }) ?
 
-the fix seems simple - see below. The #ifdef jungle ... less so.
+This is a 32-bit machine, right? Doesn't the compiler complain about
+feeding a long long into a 32-bit register?
 
-	Ingo
+Greetings,
+    Alexander
+-- 
+  Alexander van Heukelum
+  heukelum@fastmail.fm
 
---------------->
-Subject: sched: fix defined-but-unused warning
-From: Rabin Vincent <rabin@rab.in>
-Date: Sun, 11 May 2008 05:55:33 +0530
+-- 
+http://www.fastmail.fm - I mean, what is it about a decent email service?
 
-Fix this warning, which appears with !CONFIG_SMP:
-kernel/sched.c:1216: warning: `init_hrtick' defined but not used
-
-Signed-off-by: Rabin Vincent <rabin@rab.in>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/sched.c |    2 ++
- 1 file changed, 2 insertions(+)
-
-Index: linux/kernel/sched.c
-===================================================================
---- linux.orig/kernel/sched.c
-+++ linux/kernel/sched.c
-@@ -1130,6 +1130,7 @@ static enum hrtimer_restart hrtick(struc
- 	return HRTIMER_NORESTART;
- }
- 
-+#ifdef CONFIG_SMP
- static void hotplug_hrtick_disable(int cpu)
- {
- 	struct rq *rq = cpu_rq(cpu);
-@@ -1185,6 +1186,7 @@ static void init_hrtick(void)
- {
- 	hotcpu_notifier(hotplug_hrtick, 0);
- }
-+#endif /* CONFIG_SMP */
- 
- static void init_rq_hrtick(struct rq *rq)
- {
