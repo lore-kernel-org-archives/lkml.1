@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760918AbYEMUMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761342AbYEMUMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760918AbYEMUMT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 16:12:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758273AbYEMUMJ
+	id S1761342AbYEMUMg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 16:12:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758273AbYEMUMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 16:12:09 -0400
-Received: from cantor.suse.de ([195.135.220.2]:37098 "EHLO mx1.suse.de"
+	Tue, 13 May 2008 16:12:22 -0400
+Received: from ns2.suse.de ([195.135.220.15]:37365 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758584AbYEMUMI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 16:12:08 -0400
-Date: Tue, 13 May 2008 13:10:53 -0700
+	id S1760908AbYEMUMT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 16:12:19 -0400
+Date: Tue, 13 May 2008 13:11:20 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -19,113 +19,429 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: [patch 00/37] 2.6.25.4 -stable review
-Message-ID: <20080513201053.GA31167@suse.de>
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Hans-Frieder Vogt <hfvogt@gmx.net>,
+       Felix Apitzsch <F.Apitzsch@soz.uni-frankfurt.de>,
+       Antti Palosaari <crope@iki.fi>,
+       Albert Comerma <albert.comerma@gmail.com>,
+       Patrick Boettcher <pb@linuxtv.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Michel Morisot <mmorisot.abonnement@belcenter.com>
+Subject: [patch 01/37] V4L/DVB (7473): PATCH for various Dibcom based
+	devices
+Message-ID: <20080513201120.GB31167@suse.de>
+References: <20080513200453.064446337@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Disposition: inline; filename="v4l-dvb-patch-for-various-dibcom-based-devices.patch"
+In-Reply-To: <20080513201053.GA31167@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the start of the stable review cycle for the 2.6.25.4 release.
-There are 37 patches in this series, all will be posted as a response to
-this one.  If anyone has any issues with these being applied, please let
-us know.  If anyone is a maintainer of the proper subsystem, and wants
-to add a Signed-off-by: line to the patch, please respond with it.
+2.6.25-stable review patch.  If anyone has any objections, please let us know.
 
-These patches are sent out with a number of different people on the Cc:
-line.  If you wish to be a reviewer, please email stable@kernel.org to
-add your name to the list.  If you want to be off the reviewer list,
-also email us.
+------------------
 
-Responses should be made by May 15, 20:00:00 UTC.  Anything received
-after that time might be too late.
+From: Albert Comerma <albert.comerma@gmail.com>
 
-The whole patch series can be found in one patch at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.25.4-rc1.gz
-and the diffstat can be found below.
+patch 6ca8f0b97473dcef3a754bab5239dcfcdd00b244 upstream
 
+This patch introduces support for dvb-t for the following DiBcom based cards:
 
-thanks,
+- Terratec Cinergy HT USB XE (USB-ID: 0ccd:0058)
+- Terratec Cinergy HT Express (USB-ID: 0ccd:0060)
+- Pinnacle 320CX (USB-ID: 2304:022e)
+- Pinnacle PCTV72e (USB-ID: 2304:0236)
+- Pinnacle PCTV73e (USB-ID: 2304:0237)
+- Yuan EC372S (USB-ID: 1164:1edc)
 
-the -stable release team
+Signed-off-by: Hans-Frieder Vogt <hfvogt@gmx.net>
+Signed-off-by: Felix Apitzsch <F.Apitzsch@soz.uni-frankfurt.de>
+Signed-off-by: Antti Palosaari <crope@iki.fi>
+Signed-off-by: Albert Comerma <albert.comerma@gmail.com>
+Signed-off-by: Patrick Boettcher <pb@linuxtv.org>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: Michel Morisot <mmorisot.abonnement@belcenter.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
+---
+ drivers/media/dvb/dvb-usb/dib0700_devices.c |  259 ++++++++++++++++++++++++----
+ drivers/media/dvb/dvb-usb/dvb-usb-ids.h     |    9 
+ 2 files changed, 238 insertions(+), 30 deletions(-)
 
- Makefile                                       |    2 
- arch/sparc/kernel/entry.S                      |    2 
- arch/sparc/kernel/process.c                    |   25 +-
- arch/sparc/kernel/ptrace.c                     |    6 
- arch/sparc/kernel/rtrap.S                      |   11 -
- arch/sparc/kernel/signal.c                     |   84 ++++----
- arch/sparc/kernel/sys_sparc.c                  |   48 ----
- arch/sparc64/kernel/etrap.S                    |    7 
- arch/sparc64/kernel/irq.c                      |    3 
- arch/sparc64/kernel/pci.c                      |  130 +++---------
- arch/sparc64/kernel/pci_common.c               |    6 
- arch/sparc64/kernel/pci_impl.h                 |    9 
- arch/sparc64/kernel/process.c                  |   18 +
- arch/sparc64/kernel/ptrace.c                   |   16 +
- arch/sparc64/kernel/rtrap.S                    |    1 
- arch/sparc64/kernel/signal.c                   |   88 ++++----
- arch/sparc64/kernel/signal32.c                 |   48 +++-
- arch/sparc64/kernel/sys_sparc.c                |   40 ---
- arch/sparc64/kernel/sys_sparc32.c              |   33 ---
- arch/x86/Kconfig                               |   12 +
- drivers/ata/ata_piix.c                         |   25 ++
- drivers/char/vt.c                              |    6 
- drivers/i2c/busses/i2c-piix4.c                 |   32 ++-
- drivers/md/raid5.c                             |   25 +-
- drivers/media/dvb/dvb-usb/dib0700_devices.c    |  259 ++++++++++++++++++++++---
- drivers/media/dvb/dvb-usb/dvb-usb-ids.h        |    9 
- drivers/net/macvlan.c                          |    2 
- drivers/net/r8169.c                            |    8 
- drivers/rtc/rtc-lib.c                          |    2 
- drivers/scsi/aha152x.c                         |    8 
- drivers/scsi/libiscsi.c                        |   29 +-
- drivers/scsi/qla1280.c                         |    4 
- drivers/serial/serial_core.c                   |    3 
- drivers/serial/sunhv.c                         |    2 
- drivers/serial/sunsab.c                        |    2 
- drivers/serial/sunsu.c                         |    2 
- drivers/serial/sunzilog.c                      |   32 +--
- drivers/usb/host/ohci-at91.c                   |    1 
- drivers/usb/host/ohci-ep93xx.c                 |    2 
- drivers/usb/host/ohci-hub.c                    |   43 ++++
- drivers/usb/host/ohci-omap.c                   |    2 
- drivers/usb/host/ohci-pci.c                    |   43 ----
- drivers/usb/host/ohci-pxa27x.c                 |    3 
- drivers/usb/host/ohci-sm501.c                  |    2 
- drivers/usb/host/ohci-ssb.c                    |    1 
- drivers/usb/serial/airprime.c                  |    2 
- include/asm-sparc/mman.h                       |    5 
- include/asm-sparc/psr.h                        |    1 
- include/asm-sparc/ptrace.h                     |   13 +
- include/asm-sparc/signal.h                     |    8 
- include/asm-sparc64/mman.h                     |    5 
- include/asm-sparc64/psrcompat.h                |    2 
- include/asm-sparc64/pstate.h                   |    1 
- include/asm-sparc64/ptrace.h                   |   13 +
- include/asm-sparc64/signal.h                   |    8 
- include/asm-sparc64/ttable.h                   |    7 
- include/asm-x86/topology.h                     |   18 -
- include/net/ip_vs.h                            |    3 
- include/net/netfilter/nf_conntrack_tuple.h     |   10 
- net/can/af_can.c                               |   16 +
- net/dccp/feat.c                                |    2 
- net/ipv4/ipvs/ip_vs_proto.c                    |    2 
- net/ipv4/ipvs/ip_vs_proto_ah.c                 |    1 
- net/ipv4/ipvs/ip_vs_proto_esp.c                |    1 
- net/ipv4/ipvs/ip_vs_proto_tcp.c                |    1 
- net/ipv4/ipvs/ip_vs_proto_udp.c                |    1 
- net/ipv4/ipvs/ip_vs_sync.c                     |   80 +++++--
- net/ipv4/netfilter/ip_queue.c                  |    5 
- net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c |    2 
- net/ipv6/netfilter/ip6_queue.c                 |    5 
- net/netfilter/nf_conntrack_core.c              |    4 
- net/netfilter/nfnetlink_queue.c                |    5 
- net/sched/sch_htb.c                            |    8 
- net/xfrm/xfrm_state.c                          |    2 
- 74 files changed, 808 insertions(+), 559 deletions(-)
+--- a/drivers/media/dvb/dvb-usb/dib0700_devices.c
++++ b/drivers/media/dvb/dvb-usb/dib0700_devices.c
+@@ -13,6 +13,7 @@
+ #include "dib7000p.h"
+ #include "mt2060.h"
+ #include "mt2266.h"
++#include "tuner-xc2028.h"
+ #include "dib0070.h"
+ 
+ static int force_lna_activation;
+@@ -297,6 +298,149 @@ static int stk7700d_tuner_attach(struct 
+ 		&stk7700d_mt2266_config[adap->id]) == NULL ? -ENODEV : 0;;
+ }
+ 
++/* STK7700-PH: Digital/Analog Hybrid Tuner, e.h. Cinergy HT USB HE */
++struct dibx000_agc_config xc3028_agc_config = {
++	BAND_VHF | BAND_UHF,       /* band_caps */
++
++	/* P_agc_use_sd_mod1=0, P_agc_use_sd_mod2=0, P_agc_freq_pwm_div=0,
++	 * P_agc_inv_pwm1=0, P_agc_inv_pwm2=0, P_agc_inh_dc_rv_est=0,
++	 * P_agc_time_est=3, P_agc_freeze=0, P_agc_nb_est=2, P_agc_write=0 */
++	(0 << 15) | (0 << 14) | (0 << 11) | (0 << 10) | (0 << 9) | (0 << 8) |
++	(3 << 5) | (0 << 4) | (2 << 1) | (0 << 0), /* setup */
++
++	712,	/* inv_gain */
++	21,	/* time_stabiliz */
++
++	0,	/* alpha_level */
++	118,	/* thlock */
++
++	0,	/* wbd_inv */
++	2867,	/* wbd_ref */
++	0,	/* wbd_sel */
++	2,	/* wbd_alpha */
++
++	0,	/* agc1_max */
++	0,	/* agc1_min */
++	39718,	/* agc2_max */
++	9930,	/* agc2_min */
++	0,	/* agc1_pt1 */
++	0,	/* agc1_pt2 */
++	0,	/* agc1_pt3 */
++	0,	/* agc1_slope1 */
++	0,	/* agc1_slope2 */
++	0,	/* agc2_pt1 */
++	128,	/* agc2_pt2 */
++	29,	/* agc2_slope1 */
++	29,	/* agc2_slope2 */
++
++	17,	/* alpha_mant */
++	27,	/* alpha_exp */
++	23,	/* beta_mant */
++	51,	/* beta_exp */
++
++	1,	/* perform_agc_softsplit */
++};
++
++/* PLL Configuration for COFDM BW_MHz = 8.00 with external clock = 30.00 */
++struct dibx000_bandwidth_config xc3028_bw_config = {
++	60000, 30000, /* internal, sampling */
++	1, 8, 3, 1, 0, /* pll_cfg: prediv, ratio, range, reset, bypass */
++	0, 0, 1, 1, 0, /* misc: refdiv, bypclk_div, IO_CLK_en_core, ADClkSrc,
++			  modulo */
++	(3 << 14) | (1 << 12) | (524 << 0), /* sad_cfg: refsel, sel, freq_15k */
++	(1 << 25) | 5816102, /* ifreq = 5.200000 MHz */
++	20452225, /* timf */
++	30000000, /* xtal_hz */
++};
++
++static struct dib7000p_config stk7700ph_dib7700_xc3028_config = {
++	.output_mpeg2_in_188_bytes = 1,
++	.tuner_is_baseband = 1,
++
++	.agc_config_count = 1,
++	.agc = &xc3028_agc_config,
++	.bw  = &xc3028_bw_config,
++
++	.gpio_dir = DIB7000P_GPIO_DEFAULT_DIRECTIONS,
++	.gpio_val = DIB7000P_GPIO_DEFAULT_VALUES,
++	.gpio_pwm_pos = DIB7000P_GPIO_DEFAULT_PWM_POS,
++};
++
++static int stk7700ph_xc3028_callback(void *ptr, int command, int arg)
++{
++	struct dvb_usb_adapter *adap = ptr;
++
++	switch (command) {
++	case XC2028_TUNER_RESET:
++		/* Send the tuner in then out of reset */
++		dib7000p_set_gpio(adap->fe, 8, 0, 0); msleep(10);
++		dib7000p_set_gpio(adap->fe, 8, 0, 1);
++		break;
++	case XC2028_RESET_CLK:
++		break;
++	default:
++		err("%s: unknown command %d, arg %d\n", __func__,
++			command, arg);
++		return -EINVAL;
++	}
++	return 0;
++}
++
++static struct xc2028_ctrl stk7700ph_xc3028_ctrl = {
++	.fname = XC2028_DEFAULT_FIRMWARE,
++	.max_len = 64,
++	.demod = XC3028_FE_DIBCOM52,
++};
++
++static struct xc2028_config stk7700ph_xc3028_config = {
++	.i2c_addr = 0x61,
++	.callback = stk7700ph_xc3028_callback,
++	.ctrl = &stk7700ph_xc3028_ctrl,
++};
++
++static int stk7700ph_frontend_attach(struct dvb_usb_adapter *adap)
++{
++	struct usb_device_descriptor *desc = &adap->dev->udev->descriptor;
++
++	if (desc->idVendor  == USB_VID_PINNACLE &&
++	    desc->idProduct == USB_PID_PINNACLE_EXPRESSCARD_320CX)
++	dib0700_set_gpio(adap->dev, GPIO6, GPIO_OUT, 0);
++	else
++	dib0700_set_gpio(adap->dev, GPIO6, GPIO_OUT, 1);
++	msleep(20);
++	dib0700_set_gpio(adap->dev, GPIO9, GPIO_OUT, 1);
++	dib0700_set_gpio(adap->dev, GPIO4, GPIO_OUT, 1);
++	dib0700_set_gpio(adap->dev, GPIO7, GPIO_OUT, 1);
++	dib0700_set_gpio(adap->dev, GPIO10, GPIO_OUT, 0);
++	msleep(10);
++	dib0700_set_gpio(adap->dev, GPIO10, GPIO_OUT, 1);
++	msleep(20);
++	dib0700_set_gpio(adap->dev, GPIO0, GPIO_OUT, 1);
++	msleep(10);
++
++	dib7000p_i2c_enumeration(&adap->dev->i2c_adap, 1, 18,
++		&stk7700ph_dib7700_xc3028_config);
++
++	adap->fe = dvb_attach(dib7000p_attach, &adap->dev->i2c_adap, 0x80,
++		&stk7700ph_dib7700_xc3028_config);
++
++	return adap->fe == NULL ? -ENODEV : 0;
++}
++
++static int stk7700ph_tuner_attach(struct dvb_usb_adapter *adap)
++{
++	struct i2c_adapter *tun_i2c;
++
++	tun_i2c = dib7000p_get_i2c_master(adap->fe,
++		DIBX000_I2C_INTERFACE_TUNER, 1);
++
++	stk7700ph_xc3028_config.i2c_adap = tun_i2c;
++	stk7700ph_xc3028_config.video_dev = adap;
++
++	return dvb_attach(xc2028_attach, adap->fe, &stk7700ph_xc3028_config)
++		== NULL ? -ENODEV : 0;
++}
++
+ #define DEFAULT_RC_INTERVAL 150
+ 
+ static u8 rc_request[] = { REQUEST_POLL_RC, 0 };
+@@ -794,6 +938,10 @@ static struct dib7000p_config dib7070p_d
+ /* STK7070P */
+ static int stk7070p_frontend_attach(struct dvb_usb_adapter *adap)
+ {
++	if (adap->dev->udev->descriptor.idVendor  == USB_VID_PINNACLE &&
++	adap->dev->udev->descriptor.idProduct == USB_PID_PINNACLE_PCTV72E)
++	dib0700_set_gpio(adap->dev, GPIO6, GPIO_OUT, 0);
++	else
+ 	dib0700_set_gpio(adap->dev, GPIO6, GPIO_OUT, 1);
+ 	msleep(10);
+ 	dib0700_set_gpio(adap->dev, GPIO9, GPIO_OUT, 1);
+@@ -808,9 +956,11 @@ static int stk7070p_frontend_attach(stru
+ 	msleep(10);
+ 	dib0700_set_gpio(adap->dev, GPIO0, GPIO_OUT, 1);
+ 
+-	dib7000p_i2c_enumeration(&adap->dev->i2c_adap, 1, 18, &dib7070p_dib7000p_config);
++	dib7000p_i2c_enumeration(&adap->dev->i2c_adap, 1, 18,
++		&dib7070p_dib7000p_config);
+ 
+-	adap->fe = dvb_attach(dib7000p_attach, &adap->dev->i2c_adap, 0x80, &dib7070p_dib7000p_config);
++	adap->fe = dvb_attach(dib7000p_attach, &adap->dev->i2c_adap, 0x80,
++		&dib7070p_dib7000p_config);
+ 	return adap->fe == NULL ? -ENODEV : 0;
+ }
+ 
+@@ -878,34 +1028,41 @@ static int stk7070pd_frontend_attach1(st
+ /* DVB-USB and USB stuff follows */
+ struct usb_device_id dib0700_usb_id_table[] = {
+ /* 0 */	{ USB_DEVICE(USB_VID_DIBCOM,    USB_PID_DIBCOM_STK7700P) },
+-		{ USB_DEVICE(USB_VID_DIBCOM,    USB_PID_DIBCOM_STK7700P_PC) },
+-
+-		{ USB_DEVICE(USB_VID_HAUPPAUGE, USB_PID_HAUPPAUGE_NOVA_T_500) },
+-		{ USB_DEVICE(USB_VID_HAUPPAUGE, USB_PID_HAUPPAUGE_NOVA_T_500_2) },
+-		{ USB_DEVICE(USB_VID_HAUPPAUGE, USB_PID_HAUPPAUGE_NOVA_T_STICK) },
++	{ USB_DEVICE(USB_VID_DIBCOM,    USB_PID_DIBCOM_STK7700P_PC) },
++	{ USB_DEVICE(USB_VID_HAUPPAUGE, USB_PID_HAUPPAUGE_NOVA_T_500) },
++	{ USB_DEVICE(USB_VID_HAUPPAUGE, USB_PID_HAUPPAUGE_NOVA_T_500_2) },
++	{ USB_DEVICE(USB_VID_HAUPPAUGE, USB_PID_HAUPPAUGE_NOVA_T_STICK) },
+ /* 5 */	{ USB_DEVICE(USB_VID_AVERMEDIA, USB_PID_AVERMEDIA_VOLAR) },
+-		{ USB_DEVICE(USB_VID_COMPRO,    USB_PID_COMPRO_VIDEOMATE_U500) },
+-		{ USB_DEVICE(USB_VID_UNIWILL,   USB_PID_UNIWILL_STK7700P) },
+-		{ USB_DEVICE(USB_VID_LEADTEK,   USB_PID_WINFAST_DTV_DONGLE_STK7700P) },
+-		{ USB_DEVICE(USB_VID_HAUPPAUGE, USB_PID_HAUPPAUGE_NOVA_T_STICK_2) },
++	{ USB_DEVICE(USB_VID_COMPRO,    USB_PID_COMPRO_VIDEOMATE_U500) },
++	{ USB_DEVICE(USB_VID_UNIWILL,   USB_PID_UNIWILL_STK7700P) },
++	{ USB_DEVICE(USB_VID_LEADTEK,   USB_PID_WINFAST_DTV_DONGLE_STK7700P) },
++	{ USB_DEVICE(USB_VID_HAUPPAUGE, USB_PID_HAUPPAUGE_NOVA_T_STICK_2) },
+ /* 10 */{ USB_DEVICE(USB_VID_AVERMEDIA, USB_PID_AVERMEDIA_VOLAR_2) },
+-		{ USB_DEVICE(USB_VID_PINNACLE,  USB_PID_PINNACLE_PCTV2000E) },
+-		{ USB_DEVICE(USB_VID_TERRATEC,  USB_PID_TERRATEC_CINERGY_DT_XS_DIVERSITY) },
+-		{ USB_DEVICE(USB_VID_HAUPPAUGE, USB_PID_HAUPPAUGE_NOVA_TD_STICK) },
+-		{ USB_DEVICE(USB_VID_DIBCOM,    USB_PID_DIBCOM_STK7700D) },
++	{ USB_DEVICE(USB_VID_PINNACLE,  USB_PID_PINNACLE_PCTV2000E) },
++	{ USB_DEVICE(USB_VID_TERRATEC,
++			USB_PID_TERRATEC_CINERGY_DT_XS_DIVERSITY) },
++	{ USB_DEVICE(USB_VID_HAUPPAUGE, USB_PID_HAUPPAUGE_NOVA_TD_STICK) },
++	{ USB_DEVICE(USB_VID_DIBCOM,    USB_PID_DIBCOM_STK7700D) },
+ /* 15 */{ USB_DEVICE(USB_VID_DIBCOM,    USB_PID_DIBCOM_STK7070P) },
+-		{ USB_DEVICE(USB_VID_PINNACLE,  USB_PID_PINNACLE_PCTV_DVB_T_FLASH) },
+-		{ USB_DEVICE(USB_VID_DIBCOM,    USB_PID_DIBCOM_STK7070PD) },
+-		{ USB_DEVICE(USB_VID_PINNACLE,  USB_PID_PINNACLE_PCTV_DUAL_DIVERSITY_DVB_T) },
+-		{ USB_DEVICE(USB_VID_COMPRO,    USB_PID_COMPRO_VIDEOMATE_U500_PC) },
++	{ USB_DEVICE(USB_VID_PINNACLE,  USB_PID_PINNACLE_PCTV_DVB_T_FLASH) },
++	{ USB_DEVICE(USB_VID_DIBCOM,    USB_PID_DIBCOM_STK7070PD) },
++	{ USB_DEVICE(USB_VID_PINNACLE,
++			USB_PID_PINNACLE_PCTV_DUAL_DIVERSITY_DVB_T) },
++	{ USB_DEVICE(USB_VID_COMPRO,    USB_PID_COMPRO_VIDEOMATE_U500_PC) },
+ /* 20 */{ USB_DEVICE(USB_VID_AVERMEDIA, USB_PID_AVERMEDIA_EXPRESS) },
+-		{ USB_DEVICE(USB_VID_GIGABYTE,  USB_PID_GIGABYTE_U7000) },
+-		{ USB_DEVICE(USB_VID_ULTIMA_ELECTRONIC, USB_PID_ARTEC_T14BR) },
+-		{ USB_DEVICE(USB_VID_ASUS,      USB_PID_ASUS_U3000) },
+-		{ USB_DEVICE(USB_VID_ASUS,      USB_PID_ASUS_U3100) },
+-/* 25 */	{ USB_DEVICE(USB_VID_HAUPPAUGE, USB_PID_HAUPPAUGE_NOVA_T_STICK_3) },
+-		{ USB_DEVICE(USB_VID_HAUPPAUGE, USB_PID_HAUPPAUGE_MYTV_T) },
+-		{ 0 }		/* Terminating entry */
++	{ USB_DEVICE(USB_VID_GIGABYTE,  USB_PID_GIGABYTE_U7000) },
++	{ USB_DEVICE(USB_VID_ULTIMA_ELECTRONIC, USB_PID_ARTEC_T14BR) },
++	{ USB_DEVICE(USB_VID_ASUS,      USB_PID_ASUS_U3000) },
++	{ USB_DEVICE(USB_VID_ASUS,      USB_PID_ASUS_U3100) },
++/* 25 */{ USB_DEVICE(USB_VID_HAUPPAUGE, USB_PID_HAUPPAUGE_NOVA_T_STICK_3) },
++	{ USB_DEVICE(USB_VID_HAUPPAUGE, USB_PID_HAUPPAUGE_MYTV_T) },
++	{ USB_DEVICE(USB_VID_TERRATEC,  USB_PID_TERRATEC_CINERGY_HT_USB_XE) },
++	{ USB_DEVICE(USB_VID_PINNACLE,	USB_PID_PINNACLE_EXPRESSCARD_320CX) },
++	{ USB_DEVICE(USB_VID_PINNACLE,	USB_PID_PINNACLE_PCTV72E) },
++/* 30 */{ USB_DEVICE(USB_VID_PINNACLE,	USB_PID_PINNACLE_PCTV73E) },
++	{ USB_DEVICE(USB_VID_YUAN,	USB_PID_YUAN_EC372S) },
++	{ USB_DEVICE(USB_VID_TERRATEC,	USB_PID_TERRATEC_CINERGY_HT_EXPRESS) },
++	{ 0 }		/* Terminating entry */
+ };
+ MODULE_DEVICE_TABLE(usb, dib0700_usb_id_table);
+ 
+@@ -1069,12 +1226,16 @@ struct dvb_usb_device_properties dib0700
+ 			},
+ 		},
+ 
+-		.num_device_descs = 1,
++		.num_device_descs = 2,
+ 		.devices = {
+ 			{   "ASUS My Cinema U3000 Mini DVBT Tuner",
+ 				{ &dib0700_usb_id_table[23], NULL },
+ 				{ NULL },
+ 			},
++			{   "Yuan EC372S",
++				{ &dib0700_usb_id_table[31], NULL },
++				{ NULL },
++			}
+ 		}
+ 	}, { DIB0700_DEFAULT_DEVICE_PROPERTIES,
+ 
+@@ -1090,7 +1251,7 @@ struct dvb_usb_device_properties dib0700
+ 			},
+ 		},
+ 
+-		.num_device_descs = 6,
++		.num_device_descs = 8,
+ 		.devices = {
+ 			{   "DiBcom STK7070P reference design",
+ 				{ &dib0700_usb_id_table[15], NULL },
+@@ -1116,6 +1277,14 @@ struct dvb_usb_device_properties dib0700
+ 				{ &dib0700_usb_id_table[26], NULL },
+ 				{ NULL },
+ 			},
++			{   "Pinnacle PCTV 72e",
++				{ &dib0700_usb_id_table[29], NULL },
++				{ NULL },
++			},
++			{   "Pinnacle PCTV 73e",
++				{ &dib0700_usb_id_table[30], NULL },
++				{ NULL },
++			},
+ 		},
+ 
+ 		.rc_interval      = DEFAULT_RC_INTERVAL,
+@@ -1155,6 +1324,40 @@ struct dvb_usb_device_properties dib0700
+ 				{ NULL },
+ 			}
+ 		}
++	}, { DIB0700_DEFAULT_DEVICE_PROPERTIES,
++
++		.num_adapters = 1,
++		.adapter = {
++			{
++				.frontend_attach  = stk7700ph_frontend_attach,
++				.tuner_attach     = stk7700ph_tuner_attach,
++
++				DIB0700_DEFAULT_STREAMING_CONFIG(0x02),
++
++				.size_of_priv = sizeof(struct
++						dib0700_adapter_state),
++			},
++		},
++
++		.num_device_descs = 3,
++		.devices = {
++			{   "Terratec Cinergy HT USB XE",
++				{ &dib0700_usb_id_table[27], NULL },
++				{ NULL },
++			},
++			{   "Pinnacle Expresscard 320cx",
++				{ &dib0700_usb_id_table[28], NULL },
++				{ NULL },
++			},
++			{   "Terratec Cinergy HT Express",
++				{ &dib0700_usb_id_table[32], NULL },
++				{ NULL },
++			},
++		},
++		.rc_interval      = DEFAULT_RC_INTERVAL,
++		.rc_key_map       = dib0700_rc_keys,
++		.rc_key_map_size  = ARRAY_SIZE(dib0700_rc_keys),
++		.rc_query         = dib0700_rc_query
+ 	},
+ };
+ 
+--- a/drivers/media/dvb/dvb-usb/dvb-usb-ids.h
++++ b/drivers/media/dvb/dvb-usb/dvb-usb-ids.h
+@@ -46,8 +46,8 @@
+ #define USB_VID_ULTIMA_ELECTRONIC		0x05d8
+ #define USB_VID_UNIWILL				0x1584
+ #define USB_VID_WIDEVIEW			0x14aa
+-/* dom : pour gigabyte u7000 */
+ #define USB_VID_GIGABYTE			0x1044
++#define USB_VID_YUAN				0x1164
+ 
+ 
+ /* Product IDs */
+@@ -135,9 +135,14 @@
+ #define USB_PID_AVERMEDIA_VOLAR				0xa807
+ #define USB_PID_AVERMEDIA_VOLAR_2			0xb808
+ #define USB_PID_TERRATEC_CINERGY_DT_XS_DIVERSITY	0x005a
++#define USB_PID_TERRATEC_CINERGY_HT_USB_XE		0x0058
++#define USB_PID_TERRATEC_CINERGY_HT_EXPRESS		0x0060
++#define USB_PID_PINNACLE_EXPRESSCARD_320CX		0x022e
+ #define USB_PID_PINNACLE_PCTV2000E			0x022c
+ #define USB_PID_PINNACLE_PCTV_DVB_T_FLASH		0x0228
+ #define USB_PID_PINNACLE_PCTV_DUAL_DIVERSITY_DVB_T	0x0229
++#define USB_PID_PINNACLE_PCTV72E			0x0236
++#define USB_PID_PINNACLE_PCTV73E			0x0237
+ #define USB_PID_PCTV_200E				0x020e
+ #define USB_PID_PCTV_400E				0x020f
+ #define USB_PID_PCTV_450E				0x0222
+@@ -183,9 +188,9 @@
+ #define USB_PID_OPERA1_WARM				0x3829
+ #define USB_PID_LIFEVIEW_TV_WALKER_TWIN_COLD		0x0514
+ #define USB_PID_LIFEVIEW_TV_WALKER_TWIN_WARM		0x0513
+-/* dom pour gigabyte u7000 */
+ #define USB_PID_GIGABYTE_U7000				0x7001
+ #define USB_PID_ASUS_U3000				0x171f
+ #define USB_PID_ASUS_U3100				0x173f
++#define  USB_PID_YUAN_EC372S				0x1edc
+ 
+ #endif
+
+-- 
