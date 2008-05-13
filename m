@@ -1,91 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760986AbYEMVcz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760753AbYEMVdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760986AbYEMVcz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 17:32:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758158AbYEMVck
+	id S1760753AbYEMVdb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 17:33:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759074AbYEMVcm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 17:32:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55576 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751431AbYEMVcj (ORCPT
+	Tue, 13 May 2008 17:32:42 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54334 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757750AbYEMVck (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 17:32:39 -0400
-Date: Tue, 13 May 2008 14:32:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Paul Menage" <menage@google.com>
-Cc: pj@sgi.com, xemul@openvz.org, balbir@in.ibm.com, serue@us.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
-Subject: Re: [RFC/PATCH 1/8]: CGroup Files: Add locking mode to cgroups
- control files
-Message-Id: <20080513143206.ef259829.akpm@linux-foundation.org>
-In-Reply-To: <6599ad830805131417m4f8cc2e6iac42c0fb089a8cb1@mail.gmail.com>
-References: <20080513063707.049448000@menage.corp.google.com>
-	<20080513071522.133586000@menage.corp.google.com>
-	<20080513130127.fcd46a41.akpm@linux-foundation.org>
-	<6599ad830805131417m4f8cc2e6iac42c0fb089a8cb1@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 13 May 2008 17:32:40 -0400
+Date: Tue, 13 May 2008 16:32:39 -0500
+From: Russ Anderson <rja@sgi.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Tony Luck <tony.luck@intel.com>, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH 0/3] ia64: Migrate data off physical pages with correctable errors v3
+Message-ID: <20080513213238.GA13951@sgi.com>
+Reply-To: Russ Anderson <rja@sgi.com>
+References: <20080509150937.GA16523@sgi.com> <alpine.LFD.1.10.0805090817280.3142@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0805090817280.3142@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 May 2008 14:17:29 -0700
-"Paul Menage" <menage@google.com> wrote:
-
-> On Tue, May 13, 2008 at 1:01 PM, Andrew Morton
-> <akpm@linux-foundation.org> wrote:
-> >
-> >  This, umm, doesn't seem to do much to make the kernel a simpler place.
-> >
-> >  Do we expect to gain much from this?  Hope so...  What?
-> >
+On Fri, May 09, 2008 at 08:21:32AM -0700, Linus Torvalds wrote:
+> On Fri, 9 May 2008, Russ Anderson wrote:
+> > 
+> >   [2/3] page.discard.v2: Avoid putting a bad page back on the LRU.
+> > 
+> > 	page.discard are the arch independent changes.  It adds a new
+> > 	page flag (PG_memerror) to mark the page as bad and prevent it
+> > 	from being put back on the LRU.  PG_memerror is only defined
+> > 	on 64 bit architectures. 
 > 
-> The goal is to prevent cgroup_mutex becoming a BKL for cgroups, to
-> make it easier for subsystems to lock just the bits that they need to
-> remain stable rather than everything.
+> So I haven't looked at this a lot, but it strikes me that it look to be 
+> much simple if you were to just increment the page count instead of 
+> playing games in mm/page_alloc.c.
 
-OK.
+Looking closer at the code, it is possible to increment the page count
+and avoid playing games in mm/page_alloc.c.  The page count cannot
+be directly incremented, due to the way the migration code works, but,
+as Christoph pointed out, the migration code increments the page count.
+Preventing the bad pages from being returned to the LRU prevents
+the reference counts from going to zero.  The net effect is as you
+suggest.
+ 
+> That will make sure that it never goes back on any free lists, and 
+> requires no changes to the allocator. Hmm?
 
-But do we ever expect that cgroup_mutex will be taken with much
-frequency, or held for much time?  If it's only taken during, say,
-configuration of a group or during a query of that configuration then
-perhaps we'll be OK.
+All the pages on the bad page list have a reference count of 1.
 
-otoh a per-cgroup lock would seem more appropriate than a global.
+> I'm also not really seeing why this triggers on lru_cache_add(), since 
+> that should only happen to new pages anyway. Who does lru_cache_add() on 
+> old pages?
 
-> >
-> >  Vague handwaving: lockdep doesn't know anything about any of this.
-> >  Whereas if we were more conventional in using separate locks and
-> >  suitable lock types for each application, we would retain full lockdep
-> >  coverage.
-> 
-> That's a good point - I'd not thought about lockdep. That's a good
-> argument in favour of not having the locking done in the framework.
-> 
-> Stepping back a bit, the idea is definitely that where appropriate
-> subsystems will use their own fine-grained locking. E.g. the
-> res_counter abstraction does this already with a spinlock in each
-> res_counter, and cpusets has the global callback_mutex that just
-> synchronizes cpuset operations. But there are some cases where they
-> need a bit of help from cgroups, such as when doing operations that
-> require stable hierarchies, task membership of cgroups, etc.
-> 
-> Right now the default behaviour is to call cgroup_lock(), which I'd
-> like to get away from. Having the framework do the locking results in
-> less need for cleanup code in the subsystem handlers themselves, but
-> that's not an unassailable argument for doing it that way.
+The change to lru_cache_add() is being removed.  I'll post the
+updated patches shortly.
 
-Yes, caller-provided locking is the usual pattern in-kernel.  Based on
-painful experience :(
+> 			Linus
 
-> >  I'm trying to work out what protects static_buffer?
-> >
-> >  Why does it need to be static anyway?  64 bytes on-stack is OK.
-> >
-> 
-> As Matt observed, this is just a poorly-named variable. How about
-> "small_buffer"?
-
-local_buffer ;)
+-- 
+Russ Anderson, OS RAS/Partitioning Project Lead  
+SGI - Silicon Graphics Inc          rja@sgi.com
