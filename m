@@ -1,95 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760850AbYEMRO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759739AbYEMRQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760850AbYEMRO4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 13:14:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759855AbYEMROg
+	id S1759739AbYEMRQy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 13:16:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756334AbYEMRQq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 13:14:36 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33073 "EHLO mx3.mail.elte.hu"
+	Tue, 13 May 2008 13:16:46 -0400
+Received: from mx28.mail.ru ([194.67.23.67]:3731 "EHLO mx28.mail.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758502AbYEMROf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 13:14:35 -0400
-Date: Tue, 13 May 2008 19:13:52 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Sven Wegener <sven.wegener@stealer.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [git pull] scheduler fixes
-Message-ID: <20080513171352.GE22348@elte.hu>
-References: <20080511140017.GA2457@elte.hu> <20080511141818.GT19219@parisc-linux.org> <20080511144203.GB3220@elte.hu> <20080511144821.GW19219@parisc-linux.org> <20080511151909.GA3887@elte.hu> <20080511152942.GY19219@parisc-linux.org> <20080513141129.GC18798@elte.hu> <20080513142135.GF9324@parisc-linux.org> <20080513144207.GA4697@elte.hu> <20080513152846.GI9324@parisc-linux.org>
+	id S1753729AbYEMRQq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 13:16:46 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: linux-kernel@vger.kernel.org
+Subject: block device statistics question
+Date: Tue, 13 May 2008 19:50:10 +0400
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080513152846.GI9324@parisc-linux.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: multipart/signed;
+  boundary="nextPart4223084.q4abFq9Mr5";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200805131950.16269.arvidjaar@mail.ru>
+X-Spam: Not detected
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--nextPart4223084.q4abFq9Mr5
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-* Matthew Wilcox <matthew@wil.cx> wrote:
+May I ask for clarification of block device stats meaning.
 
-> > yes, but even for parallel wakeups for completions it's good in 
-> > general to keep more tasks in flight than to keep less tasks in 
-> > flight.
-> 
-> That might be the case for some users, but it isn't the case for XFS. 
-> The first thing that each task does is grab a spinlock, so if you put 
-> as much in flight as early as possible, you end up with horrible 
-> contention on that spinlock. [...]
+I am interested in basically two times - how long IO request has been
+processed (i.e. from the very beginning it has been submitted till it was
+finished) as well as how long *device* needed to process request passed to
+it.
 
-hm, this sounds like damage that is inflicted on itself by the XFS code. 
+/sys/block/XXX/stat provides three set of timings:
 
-Why does it signal to its waiters that "resource is available", when in 
-reality that resource is not available but immediately serialized via a 
-lock? (even if the lock might technically be some _other_ object)
+read ticks, write ticks
+io_ticks
+time_in_queue
 
-I have not looked closely at this but the more natural wakeup flow here 
-would be that if you know there's going to be immediate contention, to 
-signal a _single_ resource to a _single_ waiter, and then once that 
-contention point is over a (hopefully) much more parallel processing 
-phase occurs, to use a multi-value completion there.
+=46rom the description in Documentation/block/stat.txt it is not exactly cl=
+ear
+what is counted.
 
-in other words: dont tell the scheduler that there is parallelism in the 
-system when in reality there is not. And for the same reason, do not 
-throttle wakeups in a completion mechanism artificially because one 
-given user utilizes it suboptimally. Once throttled it's not possible to 
-regain that lost parallelism.
+read ticks, write ticks
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
 
-> [...] I have no idea whether this is the common case for multi-valued 
-> semaphores or not, it's just the only one I have data for.
+These values count the number of milliseconds that I/O requests have
+waited on this block device.=20
 
-yeah. I'd guess XFS would be the primary user in this area who cares 
-about performance.
+Q. Waited since which point? From the point request entered block subsystem
+or from the point request has been submitted to physical device (well,
+not necessarily really physical of course)
 
-> It seems like most users use completions where it'd be just as easy to 
-> use a task pointer and call wake_up_task(). [...]
+io_ticks
+=3D=3D=3D=3D=3D=3D=3D=3D
 
-yeah - although i guess in general it's a bit safer to use an explicit 
-completion. With a task pointer you have to be sure the task is still 
-present, etc. (with a completion you are forced to put that completion 
-object _somewhere_, which immediately forces one to think about lifetime 
-issues. A wakeup to a single task pointer is way too easy to get wrong.)
+This value counts the number of milliseconds during which the device has
+had I/O requests queued.
 
-So in general i'd recommend the use of completions.
+Q. "queued" - means "waited for submission"? I.e. this time does not include
+actual IO processing by device? Or "queued" - submitted to device?
 
-> [...] In any case, I think there's no evidence one way or the other 
-> about how people are using multi-sleeper completions.
+time_in_queue
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
 
-yeah, that's definitely so.
+This value counts the number of milliseconds that I/O requests have waited
+on this block device.
 
-	Ingo
+Q. What is the difference between this one and read/write ticks? It really
+sounds like time_in_queue =3D=3D read ticks + write ticks? In this case wha=
+t is
+the point in making it separate?
+
+TIA
+
+=2Dandrey
+
+--nextPart4223084.q4abFq9Mr5
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkgpuLQACgkQR6LMutpd94wg6QCgrrkh7b+lo4cAkdCwXkYb7kll
+4yEAnjfsElLXUhb/BlLVIrp+Fdqw4fII
+=CJwl
+-----END PGP SIGNATURE-----
+
+--nextPart4223084.q4abFq9Mr5--
