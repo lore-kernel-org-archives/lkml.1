@@ -1,159 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764851AbYEMU2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760816AbYEMUcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764851AbYEMU2g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 16:28:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764170AbYEMUZ6
+	id S1760816AbYEMUcf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 16:32:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758671AbYEMUc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 16:25:58 -0400
-Received: from mail137.messagelabs.com ([216.82.249.19]:15443 "EHLO
-	mail137.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764158AbYEMUZz convert rfc822-to-8bit (ORCPT
+	Tue, 13 May 2008 16:32:27 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52219 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758337AbYEMUc0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 16:25:55 -0400
-X-VirusChecked: Checked
-X-Env-Sender: James.Cammarata@savvis.net
-X-Msg-Ref: server-13.tower-137.messagelabs.com!1210710322!41449354!4
-X-StarScan-Version: 5.5.12.14.2; banners=savvis.net,-,-
-X-Originating-IP: [216.91.182.151]
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
+	Tue, 13 May 2008 16:32:26 -0400
+Date: Tue, 13 May 2008 13:28:32 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Greg KH <gregkh@suse.de>
+cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
+Subject: Re: [patch 25/37] sparc: Fix mremap address range validation.
+In-Reply-To: <20080513201229.GZ31167@suse.de>
+Message-ID: <alpine.LFD.1.10.0805131327130.3019@woody.linux-foundation.org>
+References: <20080513200453.064446337@mini.kroah.org> <20080513201229.GZ31167@suse.de>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: [PATCH] net: add ability to clear per-interface network statistics via procfs
-Date: Tue, 13 May 2008 15:25:27 -0500
-Message-ID: <08C08CA018ADA046A6350BB9CC749CB5027201B7@sl6exchbe2.savvis.ad.savvis.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] net: add ability to clear per-interface network statistics via procfs
-Thread-Index: Aci1N3s4i42R6BoBS/+NMb9HlrUM+g==
-From: "Cammarata, James" <James.Cammarata@savvis.net>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 13 May 2008 20:25:28.0792 (UTC) FILETIME=[7BFAC580:01C8B537]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: James Cammarata <jimi@sngx.net>
 
-Added the ability to write to /proc/net/dev in order to clear the
-interface counters for a given interface.  The ability to zero out
-counters (especially the error counters) is extremely useful when
-troubleshooting interface issues.
 
-Syntax:
-  echo 'net clear-stats ifdev' > /proc/net/dev
-Where "ifdev" is the device name you wish to clear.
+On Tue, 13 May 2008, Greg KH wrote:
+>
+> From: David S. Miller <davem@davemloft.net>
+> 
+> Just like mmap, we need to validate address ranges regardless
+> of MAP_FIXED.
 
-This code is based mainly on the code found in drivers/scsi/scsi_proc.c
+Hmm. I don't have this one in my tree. Is it obsoleted by the other 
+patches I do have, or what? If so, some comment about that would be nice.
 
-Signed-off-by: James Cammarata <jimi@sngx.net>
----
-
---- net/core/dev.original       2008-05-13 12:48:46.000000000 -0400
-+++ net/core/dev.c      2008-05-13 13:17:15.000000000 -0400
-@@ -2453,6 +2453,87 @@ static struct netif_rx_stats *softnet_ge
-        return rc;
- }
-
-+/**
-+ * proc_net_dev_write - handle writes to /proc/net/dev
-+ * @file: not used
-+ * @buf: buffer to write
-+ * @length: length of buf, at most PAGE_SIZE
-+ * @ppos: not used
-+ *
-+ * Description: this provides a mechanism to clear statistics on a
-+ * per-interface basis
-+ * "echo 'net clear-stats ifdev' >/proc/net/dev"
-+ * with  "ifdev" replaced by the device name you wish to clear.
-+ *
-+ */
-+static ssize_t proc_net_dev_write(struct file *file, const char __user
-*buf,
-+                                  size_t length, loff_t *ppos)
-+{
-+        char *buffer, *p;
-+        char devname[IFNAMSIZ];
-+        struct net *net;
-+        struct net_device *dev;
-+        int err;
-+
-+        if (!buf || length > PAGE_SIZE)
-+                return -EINVAL;
-+
-+        buffer = (char *)__get_free_page(GFP_KERNEL);
-+        if (!buffer)
-+                return -ENOMEM;
-+
-+        err = -EFAULT;
-+        if (copy_from_user(buffer, buf, length))
-+                goto out;
-+
-+        err = -EINVAL;
-+        if (length < PAGE_SIZE)
-+                buffer[length] = '\0';
-+        else if (buffer[PAGE_SIZE-1])
-+                goto out;
-+
-+        err = -ENXIO;
-+        net = get_proc_net(file->f_dentry->d_inode);
-+        if (!net)
-+                goto out;
-+
-+        /*
-+         * Usage: echo "net clear-stats ifdev" >/proc/net/dev
-+         * with  "ifdev" replaced by the device name you wish to clear.
-+         */
-+        if (!strncmp("net clear-stats",buffer,15)) {
-+                p = buffer + 16;
-+                sscanf(p,"%s",devname);
-+                printk(KERN_INFO "net clearing stats - device is:
-%s\n", devname);
-+                dev = dev_get_by_name(net,devname);
-+                if (!dev) {
-+                   printk(KERN_INFO "no interface named '%s'\n",
-devname);
-+                } else {
-+                        if (dev->get_stats) {
-+                                struct net_device_stats *stats =
-dev->get_stats(dev);
-+                                memset(stats,0,sizeof(struct
-net_device_stats));
-+                                printk(KERN_INFO "stats cleared for
-interface %s\n", devname);
-+                        } else {
-+                                printk(KERN_INFO "%s has no stats to
-clear\n", devname);
-+                        }
-+                        dev_put(dev);
-+                }
-+        }
-+
-+        /*
-+         * convert success returns so that we return the
-+         * number of bytes consumed.
-+         */
-+        if (!err)
-+                err = length;
-+
-+ out:
-+        free_page((unsigned long)buffer);
-+        return err;
-+}
-+
- static void *softnet_seq_start(struct seq_file *seq, loff_t *pos)
- {
-        return softnet_get_online(pos);
-@@ -2496,6 +2577,7 @@ static const struct file_operations dev_
-        .owner   = THIS_MODULE,
-        .open    = dev_seq_open,
-        .read    = seq_read,
-+        .write   = proc_net_dev_write,
-        .llseek  = seq_lseek,
-        .release = seq_release_net,
- };
-
-______________________________________________________________________
-This message contains information which may be confidential and/or privileged. Unless you are the intended recipient (or authorized to receive for the intended recipient), you may not read, use, copy or disclose to anyone the message or any information contained in the message. If you have received the message in error, please advise the sender by reply e-mail and delete the message and any attachment(s) thereto without retaining any copies.
-______________________________________________________________________
+		Linus
