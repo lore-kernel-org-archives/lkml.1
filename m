@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764314AbYEMU0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764449AbYEMU1M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764314AbYEMU0t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 16:26:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761418AbYEMURG
+	id S1764449AbYEMU1M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 16:27:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932376AbYEMURK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 16:17:06 -0400
-Received: from cantor.suse.de ([195.135.220.2]:38705 "EHLO mx1.suse.de"
+	Tue, 13 May 2008 16:17:10 -0400
+Received: from ns2.suse.de ([195.135.220.15]:39001 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761411AbYEMURB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 16:17:01 -0400
-Date: Tue, 13 May 2008 13:12:53 -0700
+	id S932375AbYEMURH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 16:17:07 -0400
+Date: Tue, 13 May 2008 13:12:57 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,16 +20,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Alessandro Zummo <a.zummo@towertech.it>,
-       David Brownell <david-b@pacbell.net>,
-       Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
-Subject: [patch 36/37] rtc: rtc_time_to_tm: use unsigned arithmetic
-Message-ID: <20080513201253.GK31167@suse.de>
+       NeilBrown <neilb@suse.de>, Dan Williams <dan.j.williams@intel.com>
+Subject: [patch 37/37] md: fix raid5 repair operations
+Message-ID: <20080513201257.GL31167@suse.de>
 References: <20080513200453.064446337@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="rtc-rtc_time_to_tm-use-unsigned-arithmetic.patch"
+Content-Disposition: inline; filename="md-fix-raid5-repair-operations.patch"
 In-Reply-To: <20080513201053.GA31167@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,51 +37,88 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Maciej W. Rozycki <macro@linux-mips.org>
+From: Dan Williams <dan.j.williams@intel.com>
 
-commit 945185a69daa457c4c5e46e47f4afad7dcea734f upstream
-Date: Mon, 12 May 2008 14:02:24 -0700
-Subject: [patch 36/37] rtc: rtc_time_to_tm: use unsigned arithmetic
+commit c8894419acf5e56851de9741c5047bebd78acd1f upstream
+Date: Mon, 12 May 2008 14:02:12 -0700
+Subject: [patch 37/37] md: fix raid5 'repair' operations
 
-The input argument to rtc_time_to_tm() is unsigned as well as are members of
-the output structure.  However signed arithmetic is used within for
-calculations leading to incorrect results for input values outside the signed
-positive range.  If this happens the time of day returned is out of range.
+commit bd2ab67030e9116f1e4aae1289220255412b37fd "md: close a livelock window
+in handle_parity_checks5" introduced a bug in handling 'repair' operations.
+After a repair operation completes we clear the state bits tracking this
+operation.  However, they are cleared too early and this results in the code
+deciding to re-run the parity check operation.  Since we have done the repair
+in memory the second check does not find a mismatch and thus does not do a
+writeback.
 
-Found the problem when fiddling with the RTC and the driver where year was set
-to an unexpectedly large value like 2070, e.g.:
+Test results:
+$ echo repair > /sys/block/md0/md/sync_action
+$ cat /sys/block/md0/md/mismatch_cnt
+51072
+$ echo repair > /sys/block/md0/md/sync_action
+$ cat /sys/block/md0/md/mismatch_cnt
+0
 
-rtc0: setting system clock to 2070-01-01 1193046:71582832:26 UTC (3155760954)
+(also fix incorrect indentation)
 
-while it should be:
-
-rtc0: setting system clock to 2070-01-01 00:15:54 UTC (3155760954)
-
-Changing types to unsigned fixes the problem.
-
-[akpm@linux-foundation.org: remove old-fashioned `register' keyword]
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
-Cc: Alessandro Zummo <a.zummo@towertech.it>
-Cc: David Brownell <david-b@pacbell.net>
-Cc: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+Tested-by: George Spelvin <linux@horizon.com>
+Acked-by: NeilBrown <neilb@suse.de>
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/rtc/rtc-lib.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/md/raid5.c |   25 +++++++++++++------------
+ 1 file changed, 13 insertions(+), 12 deletions(-)
 
---- a/drivers/rtc/rtc-lib.c
-+++ b/drivers/rtc/rtc-lib.c
-@@ -51,7 +51,7 @@ EXPORT_SYMBOL(rtc_year_days);
-  */
- void rtc_time_to_tm(unsigned long time, struct rtc_time *tm)
- {
--	register int days, month, year;
-+	unsigned int days, month, year;
+--- a/drivers/md/raid5.c
++++ b/drivers/md/raid5.c
+@@ -2354,8 +2354,8 @@ static void handle_parity_checks5(raid5_
  
- 	days = time / 86400;
- 	time -= days * 86400;
+ 	/* complete a check operation */
+ 	if (test_and_clear_bit(STRIPE_OP_CHECK, &sh->ops.complete)) {
+-	    clear_bit(STRIPE_OP_CHECK, &sh->ops.ack);
+-	    clear_bit(STRIPE_OP_CHECK, &sh->ops.pending);
++		clear_bit(STRIPE_OP_CHECK, &sh->ops.ack);
++		clear_bit(STRIPE_OP_CHECK, &sh->ops.pending);
+ 		if (s->failed == 0) {
+ 			if (sh->ops.zero_sum_result == 0)
+ 				/* parity is correct (on disc,
+@@ -2385,16 +2385,6 @@ static void handle_parity_checks5(raid5_
+ 			canceled_check = 1; /* STRIPE_INSYNC is not set */
+ 	}
+ 
+-	/* check if we can clear a parity disk reconstruct */
+-	if (test_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.complete) &&
+-		test_bit(STRIPE_OP_MOD_REPAIR_PD, &sh->ops.pending)) {
+-
+-		clear_bit(STRIPE_OP_MOD_REPAIR_PD, &sh->ops.pending);
+-		clear_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.complete);
+-		clear_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.ack);
+-		clear_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.pending);
+-	}
+-
+ 	/* start a new check operation if there are no failures, the stripe is
+ 	 * not insync, and a repair is not in flight
+ 	 */
+@@ -2409,6 +2399,17 @@ static void handle_parity_checks5(raid5_
+ 		}
+ 	}
+ 
++	/* check if we can clear a parity disk reconstruct */
++	if (test_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.complete) &&
++	    test_bit(STRIPE_OP_MOD_REPAIR_PD, &sh->ops.pending)) {
++
++		clear_bit(STRIPE_OP_MOD_REPAIR_PD, &sh->ops.pending);
++		clear_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.complete);
++		clear_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.ack);
++		clear_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.pending);
++	}
++
++
+ 	/* Wait for check parity and compute block operations to complete
+ 	 * before write-back.  If a failure occurred while the check operation
+ 	 * was in flight we need to cycle this stripe through handle_stripe
 
 -- 
