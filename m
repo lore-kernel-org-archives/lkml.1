@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760240AbYEMURY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761582AbYEMUSA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760240AbYEMURY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 16:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762031AbYEMUOY
+	id S1761582AbYEMUSA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 16:18:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762090AbYEMUOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 16:14:24 -0400
-Received: from ns2.suse.de ([195.135.220.15]:38150 "EHLO mx2.suse.de"
+	Tue, 13 May 2008 16:14:34 -0400
+Received: from mx2.suse.de ([195.135.220.15]:38241 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762024AbYEMUOW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 16:14:22 -0400
-Date: Tue, 13 May 2008 13:11:58 -0700
+	id S1762081AbYEMUOd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 16:14:33 -0400
+Date: Tue, 13 May 2008 13:12:03 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,12 +21,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 12/37] serial: Fix sparc driver name strings.
-Message-ID: <20080513201158.GM31167@suse.de>
+Subject: [patch 14/37] macvlan: Fix memleak on device removal/crash on
+	module removal
+Message-ID: <20080513201203.GO31167@suse.de>
 References: <20080513200453.064446337@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="serial-fix-sparc-driver-name-strings.patch"
+Content-Disposition: inline; filename="macvlan-fix-memleak-on-device-removal-crash-on-module-removal.patch"
 In-Reply-To: <20080513201053.GA31167@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,78 +38,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: David S. Miller <davem@davemloft.net>
+From: Patrick McHardy <kaber@trash.net>
 
-[ Upstream commit: b53e5216e5f73330bffae93b42dceb94e361f4c0 ]
+[ Upstream commit: 7312096454b6cd71267eaa3d0efb408e449e9ff3 ]
 
-They were all "serial" so if multiple of these drivers registered,
-we'd trigger sysfs directory creation errors:
+As noticed by Ben Greear, macvlan crashes the kernel when unloading the
+module. The reason is that it tries to clean up the macvlan_port pointer
+on the macvlan device itself instead of the underlying device. A non-NULL
+pointer is taken as indication that the macvlan_handle_frame_hook is
+valid, when receiving the next packet on the underlying device it tries
+to call the NULL hook and crashes.
 
-[    1.695793] proc_dir_entry 'serial' already registered
-[    1.695839] Call Trace:
-[    1.831891]  [00000000004f2534] create_proc_entry+0x7c/0x98
-[    1.833608]  [00000000004f3a58] proc_tty_register_driver+0x40/0x70
-[    1.833663]  [0000000000594700] tty_register_driver+0x1fc/0x208
-[    1.835371]  [00000000005aade4] uart_register_driver+0x134/0x16c
-[    1.841762]  [00000000005ac274] sunserial_register_minors+0x34/0x68
-[    1.841818]  [00000000007db2a4] sunsu_init+0xf8/0x150
-[    1.867697]  [00000000007c62a4] kernel_init+0x190/0x330
-[    1.939147]  [0000000000426cf8] kernel_thread+0x38/0x48
-[    1.939198]  [00000000006a0d90] rest_init+0x18/0x5c
+Clean up the macvlan_port on the correct device to fix this.
 
+Signed-off-by; Patrick McHardy <kaber@trash.net>
+Tested-by: Ben Greear <greearb@candelatech.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/serial/sunhv.c    |    2 +-
- drivers/serial/sunsab.c   |    2 +-
- drivers/serial/sunsu.c    |    2 +-
- drivers/serial/sunzilog.c |    2 +-
- 4 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/net/macvlan.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/serial/sunhv.c
-+++ b/drivers/serial/sunhv.c
-@@ -392,7 +392,7 @@ static struct uart_ops sunhv_pops = {
+--- a/drivers/net/macvlan.c
++++ b/drivers/net/macvlan.c
+@@ -450,7 +450,7 @@ static void macvlan_dellink(struct net_d
+ 	unregister_netdevice(dev);
  
- static struct uart_driver sunhv_reg = {
- 	.owner			= THIS_MODULE,
--	.driver_name		= "serial",
-+	.driver_name		= "sunhv",
- 	.dev_name		= "ttyS",
- 	.major			= TTY_MAJOR,
- };
---- a/drivers/serial/sunsab.c
-+++ b/drivers/serial/sunsab.c
-@@ -826,7 +826,7 @@ static struct uart_ops sunsab_pops = {
+ 	if (list_empty(&port->vlans))
+-		macvlan_port_destroy(dev);
++		macvlan_port_destroy(port->dev);
+ }
  
- static struct uart_driver sunsab_reg = {
- 	.owner			= THIS_MODULE,
--	.driver_name		= "serial",
-+	.driver_name		= "sunsab",
- 	.dev_name		= "ttyS",
- 	.major			= TTY_MAJOR,
- };
---- a/drivers/serial/sunsu.c
-+++ b/drivers/serial/sunsu.c
-@@ -1173,7 +1173,7 @@ out:
- 
- static struct uart_driver sunsu_reg = {
- 	.owner			= THIS_MODULE,
--	.driver_name		= "serial",
-+	.driver_name		= "sunsu",
- 	.dev_name		= "ttyS",
- 	.major			= TTY_MAJOR,
- };
---- a/drivers/serial/sunzilog.c
-+++ b/drivers/serial/sunzilog.c
-@@ -1023,7 +1023,7 @@ static struct uart_sunzilog_port *sunzil
- 
- static struct uart_driver sunzilog_reg = {
- 	.owner		=	THIS_MODULE,
--	.driver_name	=	"ttyS",
-+	.driver_name	=	"sunzilog",
- 	.dev_name	=	"ttyS",
- 	.major		=	TTY_MAJOR,
- };
+ static struct rtnl_link_ops macvlan_link_ops __read_mostly = {
 
 -- 
