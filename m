@@ -1,81 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759448AbYEMMlM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759835AbYEMMmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759448AbYEMMlM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 08:41:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751606AbYEMMk6
+	id S1759835AbYEMMmS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 08:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755010AbYEMMmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 08:40:58 -0400
-Received: from saeurebad.de ([85.214.36.134]:53700 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752299AbYEMMk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 08:40:57 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 0/3] bootmem2 III
-References: <20080509151713.939253437@saeurebad.de>
-	<20080509184044.GA19109@one.firstfloor.org>
-	<87lk2gtzta.fsf@saeurebad.de> <48275493.40601@firstfloor.org>
-Date: Tue, 13 May 2008 14:40:44 +0200
-In-Reply-To: <48275493.40601@firstfloor.org> (Andi Kleen's message of "Sun, 11
-	May 2008 22:18:27 +0200")
-Message-ID: <874p92qsvn.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Tue, 13 May 2008 08:42:05 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:42526 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751524AbYEMMmE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 08:42:04 -0400
+Date: Tue, 13 May 2008 08:42:03 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: David Chinner <dgc@sgi.com>
+Cc: Christoph Hellwig <hch@infradead.org>, lkml <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       util-linux-ng@vger.kernel.org
+Subject: Re: [BUG] remount ro on loopback mount leaves unmountable
+	filesystem behind
+Message-ID: <20080513124203.GA4806@infradead.org>
+References: <20080513085047.GY155679365@sgi.com> <20080513102340.GA15112@infradead.org> <20080513120710.GA155679365@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+Content-Disposition: inline
+In-Reply-To: <20080513120710.GA155679365@sgi.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, May 13, 2008 at 10:07:10PM +1000, David Chinner wrote:
+> Anyway, I'll hard code loop device numbers into the script so
+> I can just forget about this problem. Thanks, Christoph.
 
-Andi Kleen <andi@firstfloor.org> writes:
-
-> Johannes Weiner wrote:
->
->>> On Fri, May 09, 2008 at 05:17:13PM +0200, Johannes Weiner wrote:
->>>> here is bootmem2, a memory block-oriented boot time allocator.
->>>>
->>>> Recent NUMA topologies broke the current bootmem's assumption that
->>>> memory nodes provide non-overlapping and contiguous ranges of pages.
->>> I'm still not sure that's a really good rationale for bootmem2.
->>> e.g. the non continuous nodes are really special cases and there tends
->>> to be enough memory at the beginning which is enough for boot time
->>> use, so for those systems it would be quite reasonably to only 
->>> put the continuous starts of the nodes into bootmem.
->> 
->> Hm, that would put the logic into arch-code.  I have no strong opinion
->> about it.
->
-> In fact I suspect the current code will already work like that
-> implicitely. The aliasing is only a problem for the new "arbitary node
-> free_bootmem" right?
-
-And that alloc_bootmem_node() can not garuantee node-locality which is
-the much worse part, I think.
-
->>> That said the bootmem code has gotten a little crufty and a clean
->>> rewrite might be a good idea.
->> 
->> I agree completely.
->
-> The trouble is just that bootmem is used in early boot and early boot is
-> very subtle and getting it working over all architectures could be a
-> challenge. Not wanting to discourage you, but it's not exactly the
-> easiest part of the kernel to hack on.
-
-Bootmem seemed pretty self-contained to me, at least in the beginning.
-The bad thing is that I can test only the most simple configuration with
-it.
-
-I was wondering yesterday if it would be feasible to enforce
-contiguousness for nodes.  So that arch-code does not create one pgdat
-for each node but one for each contiguous block.  I have not yet looked
-deeper into it, but I suspect that other mm code has similar problems
-with nodes spanning other nodes.
-
-	Hannes
+hardcoding them is a little dangerous because a system might aswell
+have them in use already, e.g. for CD images.  Just use losetup -f to
+find the first free one and keep it in a shell variable.
