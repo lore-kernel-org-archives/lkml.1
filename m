@@ -1,60 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759061AbYEMPO1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760022AbYEMPOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759061AbYEMPO1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 11:14:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755635AbYEMPOU
+	id S1760022AbYEMPOp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 11:14:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757281AbYEMPOg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 11:14:20 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:39495 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754264AbYEMPOT (ORCPT
+	Tue, 13 May 2008 11:14:36 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:38241 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755635AbYEMPOf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 11:14:19 -0400
-Date: Tue, 13 May 2008 16:12:10 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Glauber Costa <glommer@gmail.com>
-cc: Glauber Costa <gcosta@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, "Theodore Ts'o" <tytso@mit.edu>,
-       "Carlos R. Mafra" <crmafra2@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: fix app crashes after SMP resume
-In-Reply-To: <5d6222a80805130703n68018048se32e7feadea26dc4@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0805131556340.28566@blonde.site>
-References: <Pine.LNX.4.64.0805131420030.5781@blonde.site>
- <5d6222a80805130703n68018048se32e7feadea26dc4@mail.gmail.com>
+	Tue, 13 May 2008 11:14:35 -0400
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: Move es7000_plat out of mpparse.c
+Date: Tue, 13 May 2008 19:15:04 +0400
+Message-ID: <20080513151504.25206.60437.stgit@thinkpad>
+In-Reply-To: <20080513142115.GA30314@elte.hu>
+References: <20080513142115.GA30314@elte.hu>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 May 2008, Glauber Costa wrote:
-> On Tue, May 13, 2008 at 10:26 AM, Hugh Dickins <hugh@veritas.com> wrote:
-> >
-> >  +#ifdef CONFIG_X86_32
-> >  +       while (low_mappings)
-> >  +               cpu_relax();
-> >  +       __flush_tlb_all();
-> >  +#endif
-> >  +
-> 
-> If possible, we don't want to introduce any more ifdefs. Should be
-> better to do it openly, define low_mappings as always 0 for x86_64.
+Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+---
 
-You're right, something like that (but avoiding the __flush_tlb_all
-on x86_64) would have been nicer; never mind, now it's going forward,
-I'll leave it as is.
+ arch/x86/kernel/mpparse.c         |   11 ++++++-----
+ arch/x86/mach-es7000/es7000plat.c |    2 ++
+ include/asm-x86/system.h          |    1 -
+ 3 files changed, 8 insertions(+), 6 deletions(-)
 
-A bigger improvement would be to cut out all that swapper_pg_dir
-to and fro, needing a global TLB flush on all cpus for each cpu.
-Just have an alternate pg_dir (often already there as swsusp_pg_dir)
-to point cr3 at for the bootup (or maybe it needs to be vice versa).
 
-But that's harder to get right, and involves wider changes and much
-more testing than I could afford for the bugfix.  Plus I expect it's
-on your radar if not already done.
+diff --git a/arch/x86/kernel/mpparse.c b/arch/x86/kernel/mpparse.c
+index 5a18b2b..ff13423 100644
+--- a/arch/x86/kernel/mpparse.c
++++ b/arch/x86/kernel/mpparse.c
+@@ -793,15 +793,14 @@ void __init find_smp_config(void)
+                             ACPI-based MP Configuration
+    -------------------------------------------------------------------------- */
+ 
+-/*
+- * Keep this outside and initialized to 0, for !CONFIG_ACPI builds:
+- */
+-int es7000_plat;
+-
+ #ifdef CONFIG_ACPI
+ 
+ #ifdef	CONFIG_X86_IO_APIC
+ 
++#if defined(CONFIG_X86_ES7000) || defined(CONFIG_X86_GENERICARCH)
++extern int es7000_plat;
++#endif
++
+ #define MP_ISA_BUS		0
+ 
+ static struct mp_ioapic_routing mp_ioapic_routing[MAX_IO_APICS];
+@@ -928,11 +927,13 @@ void __init mp_config_acpi_legacy_irqs(void)
+ 	set_bit(MP_ISA_BUS, mp_bus_not_pci);
+ 	Dprintk("Bus #%d is ISA\n", MP_ISA_BUS);
+ 
++#if defined(CONFIG_X86_ES7000) || defined(CONFIG_X86_GENERICARCH)
+ 	/*
+ 	 * Older generations of ES7000 have no legacy identity mappings
+ 	 */
+ 	if (es7000_plat == 1)
+ 		return;
++#endif
+ 
+ 	/*
+ 	 * Locate the IOAPIC that manages the ISA IRQs (0-15).
+diff --git a/arch/x86/mach-es7000/es7000plat.c b/arch/x86/mach-es7000/es7000plat.c
+index f5d6f7d..a41c77a 100644
+--- a/arch/x86/mach-es7000/es7000plat.c
++++ b/arch/x86/mach-es7000/es7000plat.c
+@@ -52,6 +52,8 @@ static struct mip_reg		*host_reg;
+ static int 			mip_port;
+ static unsigned long		mip_addr, host_addr;
+ 
++int es7000_plat;
++
+ /*
+  * GSI override for ES7000 platforms.
+  */
+diff --git a/include/asm-x86/system.h b/include/asm-x86/system.h
+index df7133c..0cc278d 100644
+--- a/include/asm-x86/system.h
++++ b/include/asm-x86/system.h
+@@ -318,7 +318,6 @@ static inline void clflush(volatile void *__p)
+ void disable_hlt(void);
+ void enable_hlt(void);
+ 
+-extern int es7000_plat;
+ void cpu_idle_wait(void);
+ 
+ extern unsigned long arch_align_stack(unsigned long sp);
 
-Hugh
