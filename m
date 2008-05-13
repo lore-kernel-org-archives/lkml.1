@@ -1,98 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758131AbYEMMOo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757174AbYEMMUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758131AbYEMMOo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 08:14:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbYEMMOf
+	id S1757174AbYEMMUg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 08:20:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754663AbYEMMU1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 08:14:35 -0400
-Received: from smtp114.mail.mud.yahoo.com ([209.191.84.67]:24851 "HELO
-	smtp114.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754310AbYEMMOe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 08:14:34 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=k9QQ9b1mU+ztucp8bhJVe4FeRFoEy8SezX1tNLgs5WHPPnzU65h0djByycp4YjBGuRlWGdHvVuOmYBUQpnzICVdTS5yb/o8WDVvCDEj1LeYvJOc4K73hyo8mxtEiJyvSV0jjkj9tC6ZTOU8j41Xb8LF1wuOx8VeL5VFdJt5f144=  ;
-X-YMail-OSG: Flc5lsoVM1nJgIsHUQxXx6Om5xQudEIhs.1FWZyLKAWV0msczQiygiH8ROQL77XfbAoDQLGZZ5RyALoOEQryhElJIpDMjdD7jy7BGj8l0teju9msxx.DzZvbqmzkNWxjF.q2Db7BH0vG7bsvIKrbBRft
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andrea Arcangeli <andrea@qumranet.com>
-Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
-Date: Tue, 13 May 2008 22:14:24 +1000
-User-Agent: KMail/1.9.5
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Andrew Morton <akpm@linux-foundation.org>, clameter@sgi.com,
-       steiner@sgi.com, holt@sgi.com, npiggin@suse.de, a.p.zijlstra@chello.nl,
-       kvm-devel@lists.sourceforge.net, kanojsarcar@yahoo.com,
-       rdreier@cisco.com, swise@opengridcomputing.com,
-       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
-       general@lists.openfabrics.org, hugh@veritas.com, rusty@rustcorp.com.au,
-       aliguori@us.ibm.com, chrisw@redhat.com, marcelo@kvack.org,
-       dada1@cosmosbay.com, paulmck@us.ibm.com
-References: <6b384bb988786aa78ef0.1210170958@duo.random> <20080507234521.GN8276@duo.random> <20080508013459.GS8276@duo.random>
-In-Reply-To: <20080508013459.GS8276@duo.random>
+	Tue, 13 May 2008 08:20:27 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:15606 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752299AbYEMMU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 08:20:26 -0400
+Date: Tue, 13 May 2008 14:20:21 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Kasper Sandberg <lkml@metanurb.dk>
+Cc: Daniel J Blueman <daniel.blueman@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Matthew <jackdachef@gmail.com>
+Subject: Re: performance "regression" in cfq compared to anticipatory,  deadline and noop
+Message-ID: <20080513122021.GP16217@kernel.dk>
+References: <6278d2220805110614i7160a8a5o36d55acb732c1b59@mail.gmail.com> <1210514567.7827.62.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200805132214.27510.nickpiggin@yahoo.com.au>
+In-Reply-To: <1210514567.7827.62.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 08 May 2008 11:34, Andrea Arcangeli wrote:
-> Sorry for not having completely answered to this. I initially thought
-> stop_machine could work when you mentioned it, but I don't think it
-> can even removing xpmem block-inside-mmu-notifier-method requirements.
->
-> For stop_machine to solve this (besides being slower and potentially
-> not more safe as running stop_machine in a loop isn't nice), we'd need
-> to prevent preemption in between invalidate_range_start/end.
->
-> I think there are two ways:
->
-> 1) add global lock around mm_lock to remove the sorting
->
-> 2) remove invalidate_range_start/end, nuke mm_lock as consequence of
->    it, and replace all three with invalidate_pages issued inside the
->    PT lock, one invalidation for each 512 pte_t modified, so
->    serialization against get_user_pages becomes trivial but this will
->    be not ok at all for SGI as it increases a lot their invalidation
->    frequency
+On Sun, May 11 2008, Kasper Sandberg wrote:
+> On Sun, 2008-05-11 at 14:14 +0100, Daniel J Blueman wrote:
+> > I've been experiencing this for a while also; an almost 50% regression
+> > is seen for single-process reads (ie sync) if slice_idle is 1ms or
+> > more (eg default of 8) [1], which seems phenomenal.
+> > 
+> > Jens, is this the expected price to pay for optimal busy-spindle
+> > scheduling, a design issue, bug or am I missing something totally?
+> > 
+> > Thanks,
+> >   Daniel
+> > 
+> > --- [1]
+> > 
+> > # cat /sys/block/sda/queue/iosched/slice_idle
+> > 8
+> > # echo 1 >/proc/sys/vm/drop_caches
+> > # dd if=/dev/sda of=/dev/null bs=64k count=5000
+> > 5000+0 records in
+> > 5000+0 records out
+> > 327680000 bytes (328 MB) copied, 4.92922 s, 66.5 MB/s
+> > 
+> > # echo 0 >/sys/block/sda/queue/iosched/slice_idle
+> > # echo 1 >/proc/sys/vm/drop_caches
+> > # dd if=/dev/sda of=/dev/null bs=64k count=5000
+> > 5000+0 records in
+> > 5000+0 records out
+> > 327680000 bytes (328 MB) copied, 2.74098 s, 120 MB/s
+> > 
+> > # hdparm -Tt /dev/sda
+> > 
+> > /dev/sda:
+> >  Timing cached reads:   15464 MB in  2.00 seconds = 7741.05 MB/sec
+> >  Timing buffered disk reads:  342 MB in  3.01 seconds = 113.70 MB/sec
+> > 
+> > [120MB/s is known platter-rate for this disc, so expected]
+> 
+> This appears to be what i get aswell..
+> 
+> root@quadstation # dd if=/dev/sda of=/dev/null bs=64k count=5000
+> 5000+0 records in
+> 5000+0 records out
+> 327680000 bytes (328 MB) copied, 5.48209 s, 59.8 MB/s
+> root@quadstation # echo 0 >/sys/block/sda/queue/iosched/slice_idle
+> root@quadstation # echo 1 >/proc/sys/vm/drop_caches
+> root@quadstation # dd if=/dev/sda of=/dev/null bs=64k count=5000
+> 5000+0 records in
+> 5000+0 records out
+> 327680000 bytes (328 MB) copied, 2.93932 s, 111 MB/s
+> root@quadstation # hdparm -Tt /dev/sda
+>  Timing cached reads:   7264 MB in  2.00 seconds = 3633.82 MB/sec
+>  Timing buffered disk reads:  322 MB in  3.01 seconds = 107.00 MB/se
+> root@quadstation # echo 0 >/sys/block/sda/queue/iosched/slice_idle
+> root@quadstation # echo 1 >/proc/sys/vm/drop_caches
+> root@quadstation # hdparm -Tt /dev/sda
+>  Timing cached reads:   15268 MB in  2.00 seconds = 7643.54 MB/sec
+>  Timing buffered disk reads:  328 MB in  3.01 seconds = 108.85 MB/sec
+> 
+> 
+> To be sure, i did it all again:
+> noop:
+> root@quadstation # echo 1 >/proc/sys/vm/drop_caches
+> root@quadstation # dd if=/dev/sda of=/dev/null bs=64k count=5000
+> 5000+0 records in
+> 5000+0 records out
+> 327680000 bytes (328 MB) copied, 2.85503 s, 115 MB/s
+> root@quadstation # echo 1 >/proc/sys/vm/drop_caches
+> root@quadstation # hdparm -tT /dev/sda
+>  Timing cached reads:   14076 MB in  2.00 seconds = 7045.78 MB/sec
+>  Timing buffered disk reads:  328 MB in  3.01 seconds = 109.12 MB/sec
+> 
+> anticipatory:
+> root@quadstation # echo 1 >/proc/sys/vm/drop_caches
+> root@quadstation # dd if=/dev/sda of=/dev/null bs=64k count=5000
+> 5000+0 records in
+> 5000+0 records out
+> 327680000 bytes (328 MB) copied, 2.96948 s, 110 MB/s
+> root@quadstation # echo 1 >/proc/sys/vm/drop_caches
+> root@quadstation # hdparm -tT /dev/sda
+>  Timing cached reads:   13424 MB in  2.00 seconds = 6719.29 MB/sec
+>  Timing buffered disk reads:  328 MB in  3.01 seconds = 109.13 MB/sec
+> 
+> cfq:
+> root@quadstation # echo 1 >/proc/sys/vm/drop_caches
+> root@quadstation # dd if=/dev/sda of=/dev/null bs=64k count=5000
+> 5000+0 records in
+> 5000+0 records out
+> 327680000 bytes (328 MB) copied, 5.25252 s, 62.4 MB/s
+> root@quadstation # echo 1 >/proc/sys/vm/drop_caches
+> root@quadstation # hdparm -tT /dev/sda
+>  Timing cached reads:   13434 MB in  2.00 seconds = 6723.59 MB/sec
+>  Timing buffered disk reads:  188 MB in  3.00 seconds =  62.57 MB/sec
+> 
+> Thisd would appear to be quite a considerable performance difference.
 
-This is what I suggested to begin with before this crazy locking was
-developed to handle these corner cases... because I wanted the locking
-to match with the tried and tested Linux core mm/ locking rather than
-introducing this new idea.
+Indeed, that is of course a bug. The initial mail here mentions this as
+a regression - which kernel was the last that worked ok?
 
-I don't see why you're bending over so far backwards to accommodate
-this GRU thing that we don't even have numbers for and could actually
-potentially be batched up in other ways (eg. using mmu_gather or
-mmu_gather-like idea).
+If someone would send me a blktrace of such a slow run, that would be
+nice. Basically just do a blktrace /dev/sda (or whatever device) while
+doing the hdparm, preferably storing output files on a difference
+device. Then send the raw sda.blktrace.* files to me. Thanks!
 
-The bare essential, matches-with-Linux-mm mmu notifiers that I first
-saw of yours was pretty elegant and nice. The idea that "only one
-solution must go in and handle everything perfectly" is stupid because
-it is quite obvious that the sleeping invalidate idea is just an order
-of magnitude or two more complex than the simple atomic invalidates
-needed by you. We should and could easily have had that code upstream
-long ago :(
+-- 
+Jens Axboe
 
-I'm not saying we ignore the sleeping or batching cases, but we should
-introduce the ideas slowly and carefully and assess the pros and cons
-of each step along the way.
-
-
-
->
-> For KVM both ways are almost the same.
->
-> I'll implement 1 now then we'll see...
->
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
