@@ -1,134 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757174AbYEMMUg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758441AbYEMMVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757174AbYEMMUg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 08:20:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754663AbYEMMU1
+	id S1758441AbYEMMVX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 08:21:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754619AbYEMMVO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 08:20:27 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:15606 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752299AbYEMMU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 08:20:26 -0400
-Date: Tue, 13 May 2008 14:20:21 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Kasper Sandberg <lkml@metanurb.dk>
-Cc: Daniel J Blueman <daniel.blueman@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Matthew <jackdachef@gmail.com>
-Subject: Re: performance "regression" in cfq compared to anticipatory,  deadline and noop
-Message-ID: <20080513122021.GP16217@kernel.dk>
-References: <6278d2220805110614i7160a8a5o36d55acb732c1b59@mail.gmail.com> <1210514567.7827.62.camel@localhost>
+	Tue, 13 May 2008 08:21:14 -0400
+Received: from ns.miraclelinux.com ([219.118.163.66]:50273 "EHLO
+	mail.miraclelinux.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752631AbYEMMVO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 08:21:14 -0400
+X-Greylist: delayed 1724 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 May 2008 08:21:13 EDT
+Message-ID: <48297FD0.2090905@miraclelinux.com>
+Date: Tue, 13 May 2008 20:47:28 +0900
+From: Hirofumi Nakagawa <hnakagawa@miraclelinux.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1210514567.7827.62.camel@localhost>
+To: linux-kernel@vger.kernel.org
+CC: akpm@linux-foundation.org
+Subject: [RFC][PATCH 0/1] MAZE: Mazed processes monitor
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
+X-PMX-Version: 5.3.1.294258, Antispam-Engine: 2.5.1.298604, Antispam-Data: 2008.5.13.43212
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 11 2008, Kasper Sandberg wrote:
-> On Sun, 2008-05-11 at 14:14 +0100, Daniel J Blueman wrote:
-> > I've been experiencing this for a while also; an almost 50% regression
-> > is seen for single-process reads (ie sync) if slice_idle is 1ms or
-> > more (eg default of 8) [1], which seems phenomenal.
-> > 
-> > Jens, is this the expected price to pay for optimal busy-spindle
-> > scheduling, a design issue, bug or am I missing something totally?
-> > 
-> > Thanks,
-> >   Daniel
-> > 
-> > --- [1]
-> > 
-> > # cat /sys/block/sda/queue/iosched/slice_idle
-> > 8
-> > # echo 1 >/proc/sys/vm/drop_caches
-> > # dd if=/dev/sda of=/dev/null bs=64k count=5000
-> > 5000+0 records in
-> > 5000+0 records out
-> > 327680000 bytes (328 MB) copied, 4.92922 s, 66.5 MB/s
-> > 
-> > # echo 0 >/sys/block/sda/queue/iosched/slice_idle
-> > # echo 1 >/proc/sys/vm/drop_caches
-> > # dd if=/dev/sda of=/dev/null bs=64k count=5000
-> > 5000+0 records in
-> > 5000+0 records out
-> > 327680000 bytes (328 MB) copied, 2.74098 s, 120 MB/s
-> > 
-> > # hdparm -Tt /dev/sda
-> > 
-> > /dev/sda:
-> >  Timing cached reads:   15464 MB in  2.00 seconds = 7741.05 MB/sec
-> >  Timing buffered disk reads:  342 MB in  3.01 seconds = 113.70 MB/sec
-> > 
-> > [120MB/s is known platter-rate for this disc, so expected]
-> 
-> This appears to be what i get aswell..
-> 
-> root@quadstation # dd if=/dev/sda of=/dev/null bs=64k count=5000
-> 5000+0 records in
-> 5000+0 records out
-> 327680000 bytes (328 MB) copied, 5.48209 s, 59.8 MB/s
-> root@quadstation # echo 0 >/sys/block/sda/queue/iosched/slice_idle
-> root@quadstation # echo 1 >/proc/sys/vm/drop_caches
-> root@quadstation # dd if=/dev/sda of=/dev/null bs=64k count=5000
-> 5000+0 records in
-> 5000+0 records out
-> 327680000 bytes (328 MB) copied, 2.93932 s, 111 MB/s
-> root@quadstation # hdparm -Tt /dev/sda
->  Timing cached reads:   7264 MB in  2.00 seconds = 3633.82 MB/sec
->  Timing buffered disk reads:  322 MB in  3.01 seconds = 107.00 MB/se
-> root@quadstation # echo 0 >/sys/block/sda/queue/iosched/slice_idle
-> root@quadstation # echo 1 >/proc/sys/vm/drop_caches
-> root@quadstation # hdparm -Tt /dev/sda
->  Timing cached reads:   15268 MB in  2.00 seconds = 7643.54 MB/sec
->  Timing buffered disk reads:  328 MB in  3.01 seconds = 108.85 MB/sec
-> 
-> 
-> To be sure, i did it all again:
-> noop:
-> root@quadstation # echo 1 >/proc/sys/vm/drop_caches
-> root@quadstation # dd if=/dev/sda of=/dev/null bs=64k count=5000
-> 5000+0 records in
-> 5000+0 records out
-> 327680000 bytes (328 MB) copied, 2.85503 s, 115 MB/s
-> root@quadstation # echo 1 >/proc/sys/vm/drop_caches
-> root@quadstation # hdparm -tT /dev/sda
->  Timing cached reads:   14076 MB in  2.00 seconds = 7045.78 MB/sec
->  Timing buffered disk reads:  328 MB in  3.01 seconds = 109.12 MB/sec
-> 
-> anticipatory:
-> root@quadstation # echo 1 >/proc/sys/vm/drop_caches
-> root@quadstation # dd if=/dev/sda of=/dev/null bs=64k count=5000
-> 5000+0 records in
-> 5000+0 records out
-> 327680000 bytes (328 MB) copied, 2.96948 s, 110 MB/s
-> root@quadstation # echo 1 >/proc/sys/vm/drop_caches
-> root@quadstation # hdparm -tT /dev/sda
->  Timing cached reads:   13424 MB in  2.00 seconds = 6719.29 MB/sec
->  Timing buffered disk reads:  328 MB in  3.01 seconds = 109.13 MB/sec
-> 
-> cfq:
-> root@quadstation # echo 1 >/proc/sys/vm/drop_caches
-> root@quadstation # dd if=/dev/sda of=/dev/null bs=64k count=5000
-> 5000+0 records in
-> 5000+0 records out
-> 327680000 bytes (328 MB) copied, 5.25252 s, 62.4 MB/s
-> root@quadstation # echo 1 >/proc/sys/vm/drop_caches
-> root@quadstation # hdparm -tT /dev/sda
->  Timing cached reads:   13434 MB in  2.00 seconds = 6723.59 MB/sec
->  Timing buffered disk reads:  188 MB in  3.00 seconds =  62.57 MB/sec
-> 
-> Thisd would appear to be quite a considerable performance difference.
+Hi all.
 
-Indeed, that is of course a bug. The initial mail here mentions this as
-a regression - which kernel was the last that worked ok?
+This patch provides the mazed process monitor,named MAZE.
+MAZE's purpose is to notify or terminate registered processes when they are mazed.
+The definition of mazed process is a process using excessive CPU cycles,
+that is long time keeping TASK_RUNNING state.
+MAZE detects mazed processes and sends specified signals to them.
+This implements a CGL (Carrier Grade Linux) requirement (AVL.14.0).
 
-If someone would send me a blktrace of such a slow run, that would be
-nice. Basically just do a blktrace /dev/sda (or whatever device) while
-doing the hdparm, preferably storing output files on a difference
-device. Then send the raw sda.blktrace.* files to me. Thanks!
+Possible uses:
+* High-Availability system
+* system using many Real-Time processes such as embedded
 
--- 
-Jens Axboe
+Please any comments!
+
+Hirofumi Nakagawa
+
+--- Usage
+Add monitoring process.
+
+% echo "1234 10000 20000 24 9" > /proc/maze/entries
+
+The numeric values are "pid","soft limit [msec]","hard limit [msec]",
+"soft signal" and "hard signal".
+
+
+Get monitoring process list.
+
+% cat /proc/maze/entries
+
+--- Example
+As follows example express the feature of MAZE function.
+
+--
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(int argc, char *argv[])
+{
+    int state,i;
+    char cmd[128];
+
+    sprintf(cmd, "echo \"%d 10000 20000 24 9\" > /proc/maze/entries", getpid());
+    system(cmd);
+
+    if (!fork()) {
+        printf("Mazed process start.\n");
+        for(;;);
+    }
+
+    if (!fork()) {
+        printf("Not mazed process start.\n");
+        for(i = 0;i < 20; i++)
+            sleep(1);
+        printf("Not mazed process finish.\n");
+        exit(0);
+    }
+
+    for (i = 0;i < 2; i++)
+         wait(&state);
+
+    return 0;
+}
+--
+---
+
+
+
+
 
