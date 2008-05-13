@@ -1,58 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759776AbYEMRXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761601AbYEMRYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759776AbYEMRXj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 13:23:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761239AbYEMRX3
+	id S1761601AbYEMRYT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 13:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbYEMRYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 13:23:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44728 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761449AbYEMRX0 (ORCPT
+	Tue, 13 May 2008 13:24:09 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:47736 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758313AbYEMRYI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 13:23:26 -0400
-Date: Tue, 13 May 2008 10:22:17 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Matthew Wilcox <matthew@wil.cx>, Sven Wegener <sven.wegener@stealer.net>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [git pull] scheduler fixes
-In-Reply-To: <20080513171352.GE22348@elte.hu>
-Message-ID: <alpine.LFD.1.10.0805131019360.3019@woody.linux-foundation.org>
-References: <20080511140017.GA2457@elte.hu> <20080511141818.GT19219@parisc-linux.org> <20080511144203.GB3220@elte.hu> <20080511144821.GW19219@parisc-linux.org> <20080511151909.GA3887@elte.hu> <20080511152942.GY19219@parisc-linux.org> <20080513141129.GC18798@elte.hu>
- <20080513142135.GF9324@parisc-linux.org> <20080513144207.GA4697@elte.hu> <20080513152846.GI9324@parisc-linux.org> <20080513171352.GE22348@elte.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Tue, 13 May 2008 13:24:08 -0400
+Message-ID: <4829CEAF.9020806@us.ibm.com>
+Date: Tue, 13 May 2008 12:23:59 -0500
+From: Jon Tollefson <kniht@us.ibm.com>
+Reply-To: kniht@linux.vnet.ibm.com
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       linuxppc-dev <linuxppc-dev@ozlabs.org>
+CC: Paul Mackerras <paulus@samba.org>, Nick Piggin <npiggin@suse.de>,
+       Nishanth Aravamudan <nacc@us.ibm.com>, Andi Kleen <andi@firstfloor.org>,
+       Adam Litke <agl@us.ibm.com>
+Subject: [PATCH 5/6 v2] check for overflow
+References: <4829CAC3.30900@us.ibm.com>
+In-Reply-To: <4829CAC3.30900@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Adds a check for an overflow in the filesystem size so if someone is
+checking with statfs() on a 16G hugetlbfs  in a 32bit binary that it
+will report back EOVERFLOW instead of a size of 0.
+
+Are other places that need a similar check?  I had tried a similar
+check in put_compat_statfs64 too but it didn't seem to generate an
+EOVERFLOW in my test case.
 
 
-On Tue, 13 May 2008, Ingo Molnar wrote:
-> 
-> hm, this sounds like damage that is inflicted on itself by the XFS code. 
+Signed-off-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
+---
 
-No. You're confusing what a counting semaphore is.
+ fs/compat.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-> Why does it signal to its waiters that "resource is available", when in 
-> reality that resource is not available but immediately serialized via a 
-> lock? (even if the lock might technically be some _other_ object)
 
-So you have 'n' resources available, and you use a counting semaphore for 
-that resource counting.
+diff --git a/fs/compat.c b/fs/compat.c
+index 2ce4456..6eb6aad 100644
+--- a/fs/compat.c
++++ b/fs/compat.c
+@@ -196,8 +196,8 @@ static int put_compat_statfs(struct compat_statfs __user *ubuf, struct kstatfs *
+ {
+ 	
+ 	if (sizeof ubuf->f_blocks == 4) {
+-		if ((kbuf->f_blocks | kbuf->f_bfree | kbuf->f_bavail) &
+-		    0xffffffff00000000ULL)
++		if ((kbuf->f_blocks | kbuf->f_bfree | kbuf->f_bavail |
++		     kbuf->f_bsize | kbuf->f_frsize) & 0xffffffff00000000ULL)
+ 			return -EOVERFLOW;
+ 		/* f_files and f_ffree may be -1; it's okay
+ 		 * to stuff that into 32 bits */
 
-But you'd still need a spinlock to actually protect the list of resources 
-themselves. The spinlock protects a different thing than the semaphore. 
-The semaphore isn't about mutual exclusion - it's about counting resources 
-and waiting when there are too many things in flight.
 
-And you seem to think that a counting semaphore is about mutual exclusion. 
-It has nothing what-so-ever to do with that. 
-
-			Linus
