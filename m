@@ -1,124 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764449AbYEMU1M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764606AbYEMU1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764449AbYEMU1M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 16:27:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932376AbYEMURK
+	id S1764606AbYEMU1d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 16:27:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762624AbYEMUTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 16:17:10 -0400
-Received: from ns2.suse.de ([195.135.220.15]:39001 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932375AbYEMURH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 16:17:07 -0400
-Date: Tue, 13 May 2008 13:12:57 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       NeilBrown <neilb@suse.de>, Dan Williams <dan.j.williams@intel.com>
-Subject: [patch 37/37] md: fix raid5 repair operations
-Message-ID: <20080513201257.GL31167@suse.de>
-References: <20080513200453.064446337@mini.kroah.org>
+	Tue, 13 May 2008 16:19:10 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:55298 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762050AbYEMUTI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 16:19:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=E5HAU/psFnjKwXNqvYs91v6IjhCynHNQ0sbevUeKfHO8R5vjsN69ib4YL6ytOmjVhHyc8hGTItOeKu8z2CNN7cx/Tb9u8DSG1Tx8aMOkoXMmuZwDrKFohuDBxOiPf8qfgjVhtN085/0WCnxXenccsF2ioulUhYO1QMq+dcBcC5k=
+Date: Tue, 13 May 2008 22:18:30 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] let ERR_PTR BUILD_BUG_ON when we know its argument is
+	not a valid errno
+Message-ID: <20080513201813.GA5869@joi>
+References: <20080511201209.GO19058@joi> <20080512163830.04ef13fd.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="md-fix-raid5-repair-operations.patch"
-In-Reply-To: <20080513201053.GA31167@suse.de>
+Content-Disposition: inline
+In-Reply-To: <20080512163830.04ef13fd.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.25-stable review patch.  If anyone has any objections, please let us
-know.
+On Mon, May 12, 2008 at 04:38:30PM -0700, Andrew Morton wrote:
+> On Sun, 11 May 2008 22:12:14 +0200
+> Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
+> 
+> > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> > Cc: Andrew Morton <akpm@osdl.org>
+> > ---
+> > allmodconfig compile tested (on x86_64)
+> > 
+> > should be applied after:
+> > net/sunrpc/xprtrdma: fix svc_rdma_create out of memory error path
+> > jfs: 0 is not valid errno value
+> > ---
+> >  include/linux/err.h |    4 +++-
+> >  1 files changed, 3 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/include/linux/err.h b/include/linux/err.h
+> > --- a/include/linux/err.h
+> > +++ b/include/linux/err.h
+> > @@ -19,11 +19,13 @@
+> >  
+> >  #define IS_ERR_VALUE(x) unlikely((x) >= (unsigned long)-MAX_ERRNO)
+> >  
+> > -static inline void *ERR_PTR(long error)
+> > +static inline void *__ERR_PTR(long error)
+> >  {
+> >  	return (void *) error;
+> >  }
+> >  
+> > +#define ERR_PTR(error) (BUILD_BUG_ON(!IS_ERR_VALUE(error)), __ERR_PTR(error))
+> > +
+> >  static inline long PTR_ERR(const void *ptr)
+> >  {
+> >  	return (long) ptr;
+> 
+> Not sure about this one.  BUILD_BUG_ON only makes sense if the value is
+> a compile-time constant.  I think the code as you have it will take this:
+> 
+> 	int e = foo();
+> 
+> 	p = ERR_PTR(e);
+> 
+> and will attempt to evaluate sizeof() on a negative-sized array at
+> runtime.  The conmpile will laugh and throw that all away, but it's a
+> bit weird.
+> 
+> Plus I'd have thought that the amount of code which does ERR_PTR(-EFOO)
+> is fairly small, but perhaps that's wrong.
 
-------------------
-From: Dan Williams <dan.j.williams@intel.com>
+$ git grep 'ERR_PTR(-E[A-Z]*)' | wc -l
+1431
 
-commit c8894419acf5e56851de9741c5047bebd78acd1f upstream
-Date: Mon, 12 May 2008 14:02:12 -0700
-Subject: [patch 37/37] md: fix raid5 'repair' operations
+> If I _am_ wrong then I do think it'd be saner to only do the
+> BUILD_BUG_ON() if __builtin_constant_p(error) evaluates true.  And even
 
-commit bd2ab67030e9116f1e4aae1289220255412b37fd "md: close a livelock window
-in handle_parity_checks5" introduced a bug in handling 'repair' operations.
-After a repair operation completes we clear the state bits tracking this
-operation.  However, they are cleared too early and this results in the code
-deciding to re-run the parity check operation.  Since we have done the repair
-in memory the second check does not find a mismatch and thus does not do a
-writeback.
+I thought BUILD_BUG_ON uses __builtin_constant_p internally and it was
+a big mistake (see below).
 
-Test results:
-$ echo repair > /sys/block/md0/md/sync_action
-$ cat /sys/block/md0/md/mismatch_cnt
-51072
-$ echo repair > /sys/block/md0/md/sync_action
-$ cat /sys/block/md0/md/mismatch_cnt
-0
+> then I do think we'd like to see a more lengthy justification of why
+> the kernel needs this check.
 
-(also fix incorrect indentation)
+Well, I think it's better to find more errors at compile time,
+than on rare runtime situation (error handling).
+This patch found 2 errors on current sources (but one of them was harmless).
 
-Tested-by: George Spelvin <linux@horizon.com>
-Acked-by: NeilBrown <neilb@suse.de>
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+>  More lengthy than zero, anyway...
+> 
+> (If a compile-time check is needed then why not a runtime one also?)
+I'm not sure - it would make kernel slightly bigger. I'll check that.
 
----
- drivers/md/raid5.c |   25 +++++++++++++------------
- 1 file changed, 13 insertions(+), 12 deletions(-)
+Today I discovered, that this patch causes funny runtime errors (/proc is mounted,
+but many applications think it's not), so ignore this patch for now.
+I'll prepare second version.
 
---- a/drivers/md/raid5.c
-+++ b/drivers/md/raid5.c
-@@ -2354,8 +2354,8 @@ static void handle_parity_checks5(raid5_
- 
- 	/* complete a check operation */
- 	if (test_and_clear_bit(STRIPE_OP_CHECK, &sh->ops.complete)) {
--	    clear_bit(STRIPE_OP_CHECK, &sh->ops.ack);
--	    clear_bit(STRIPE_OP_CHECK, &sh->ops.pending);
-+		clear_bit(STRIPE_OP_CHECK, &sh->ops.ack);
-+		clear_bit(STRIPE_OP_CHECK, &sh->ops.pending);
- 		if (s->failed == 0) {
- 			if (sh->ops.zero_sum_result == 0)
- 				/* parity is correct (on disc,
-@@ -2385,16 +2385,6 @@ static void handle_parity_checks5(raid5_
- 			canceled_check = 1; /* STRIPE_INSYNC is not set */
- 	}
- 
--	/* check if we can clear a parity disk reconstruct */
--	if (test_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.complete) &&
--		test_bit(STRIPE_OP_MOD_REPAIR_PD, &sh->ops.pending)) {
--
--		clear_bit(STRIPE_OP_MOD_REPAIR_PD, &sh->ops.pending);
--		clear_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.complete);
--		clear_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.ack);
--		clear_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.pending);
--	}
--
- 	/* start a new check operation if there are no failures, the stripe is
- 	 * not insync, and a repair is not in flight
- 	 */
-@@ -2409,6 +2399,17 @@ static void handle_parity_checks5(raid5_
- 		}
- 	}
- 
-+	/* check if we can clear a parity disk reconstruct */
-+	if (test_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.complete) &&
-+	    test_bit(STRIPE_OP_MOD_REPAIR_PD, &sh->ops.pending)) {
-+
-+		clear_bit(STRIPE_OP_MOD_REPAIR_PD, &sh->ops.pending);
-+		clear_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.complete);
-+		clear_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.ack);
-+		clear_bit(STRIPE_OP_COMPUTE_BLK, &sh->ops.pending);
-+	}
-+
-+
- 	/* Wait for check parity and compute block operations to complete
- 	 * before write-back.  If a failure occurred while the check operation
- 	 * was in flight we need to cycle this stripe through handle_stripe
-
--- 
+Marcin
