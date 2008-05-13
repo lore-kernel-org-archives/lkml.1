@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763210AbYEMUV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763305AbYEMUVs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763210AbYEMUV2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 16:21:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932091AbYEMUPg
+	id S1763305AbYEMUVs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 16:21:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761002AbYEMUPs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 16:15:36 -0400
-Received: from ns1.suse.de ([195.135.220.2]:38286 "EHLO mx1.suse.de"
+	Tue, 13 May 2008 16:15:48 -0400
+Received: from ns2.suse.de ([195.135.220.15]:38552 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932086AbYEMUPe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 16:15:34 -0400
-Date: Tue, 13 May 2008 13:12:25 -0700
+	id S932120AbYEMUPo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 16:15:44 -0400
+Date: Tue, 13 May 2008 13:12:27 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,13 +20,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jean Delvare <khali@linux-fr.org>
-Subject: [patch 23/37] i2c-piix4: Blacklist two mainboards
-Message-ID: <20080513201225.GX31167@suse.de>
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 24/37] sparc: Fix ptrace() detach.
+Message-ID: <20080513201227.GY31167@suse.de>
 References: <20080513200453.064446337@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="i2c-piix4-blacklist-two-mainboards.patch"
+Content-Disposition: inline; filename="sparc-fix-ptrace-detach.patch"
 In-Reply-To: <20080513201053.GA31167@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,71 +37,79 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Jean Delvare <khali@linux-fr.org>
+From: David S. Miller <davem@davemloft.net>
 
-commit c2fc54fcd340cbee47510aa84c346aab3440ba09 upstream
+[ Upstream commit: 986bef854fab44012df678a5b51817d5274d3ca1 ]
 
-We had a report that running sensors-detect on a Sapphire AM2RD790
-motherbord killed the CPU. While the exact cause is still unknown,
-I'd rather play it safe and prevent any access to the SMBus on that
-machine by not letting the i2c-piix4 driver attach to the SMBus host
-device on that machine. Also blacklist a similar board made by DFI.
+Forever we had a PTRACE_SUNOS_DETACH which was unconditionally
+recognized, regardless of the personality of the process.
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Unfortunately, this value is what ended up in the GLIBC sys/ptrace.h
+header file on sparc as PTRACE_DETACH and PT_DETACH.
+
+So continue to recognize this old value.  Luckily, it doesn't conflict
+with anything we actually care about.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/i2c/busses/i2c-piix4.c |   32 ++++++++++++++++++++++++++++++--
- 1 file changed, 30 insertions(+), 2 deletions(-)
+ arch/sparc/kernel/ptrace.c   |    2 ++
+ arch/sparc64/kernel/ptrace.c |    4 ++++
+ include/asm-sparc/ptrace.h   |    1 +
+ include/asm-sparc64/ptrace.h |    1 +
+ 4 files changed, 8 insertions(+)
 
---- a/drivers/i2c/busses/i2c-piix4.c
-+++ b/drivers/i2c/busses/i2c-piix4.c
-@@ -108,7 +108,27 @@ static unsigned short piix4_smba;
- static struct pci_driver piix4_driver;
- static struct i2c_adapter piix4_adapter;
+--- a/arch/sparc64/kernel/ptrace.c
++++ b/arch/sparc64/kernel/ptrace.c
+@@ -944,6 +944,8 @@ long compat_arch_ptrace(struct task_stru
+ 		break;
  
--static struct dmi_system_id __devinitdata piix4_dmi_table[] = {
-+static struct dmi_system_id __devinitdata piix4_dmi_blacklist[] = {
-+	{
-+		.ident = "Sapphire AM2RD790",
-+		.matches = {
-+			DMI_MATCH(DMI_BOARD_VENDOR, "SAPPHIRE Inc."),
-+			DMI_MATCH(DMI_BOARD_NAME, "PC-AM2RD790"),
-+		},
-+	},
-+	{
-+		.ident = "DFI Lanparty UT 790FX",
-+		.matches = {
-+			DMI_MATCH(DMI_BOARD_VENDOR, "DFI Inc."),
-+			DMI_MATCH(DMI_BOARD_NAME, "LP UT 790FX"),
-+		},
-+	},
-+	{ }
-+};
-+
-+/* The IBM entry is in a separate table because we only check it
-+   on Intel-based systems */
-+static struct dmi_system_id __devinitdata piix4_dmi_ibm[] = {
- 	{
- 		.ident = "IBM",
- 		.matches = { DMI_MATCH(DMI_SYS_VENDOR, "IBM"), },
-@@ -123,8 +143,16 @@ static int __devinit piix4_setup(struct 
+ 	default:
++		if (request == PTRACE_SPARC_DETACH)
++			request = PTRACE_DETACH;
+ 		ret = compat_ptrace_request(child, request, addr, data);
+ 		break;
+ 	}
+@@ -1036,6 +1038,8 @@ long arch_ptrace(struct task_struct *chi
+ 		break;
  
- 	dev_info(&PIIX4_dev->dev, "Found %s device\n", pci_name(PIIX4_dev));
+ 	default:
++		if (request == PTRACE_SPARC_DETACH)
++			request = PTRACE_DETACH;
+ 		ret = ptrace_request(child, request, addr, data);
+ 		break;
+ 	}
+--- a/arch/sparc/kernel/ptrace.c
++++ b/arch/sparc/kernel/ptrace.c
+@@ -441,6 +441,8 @@ long arch_ptrace(struct task_struct *chi
+ 		break;
  
-+	/* On some motherboards, it was reported that accessing the SMBus
-+	   caused severe hardware problems */
-+	if (dmi_check_system(piix4_dmi_blacklist)) {
-+		dev_err(&PIIX4_dev->dev,
-+			"Accessing the SMBus on this system is unsafe!\n");
-+		return -EPERM;
-+	}
-+
- 	/* Don't access SMBus on IBM systems which get corrupted eeproms */
--	if (dmi_check_system(piix4_dmi_table) &&
-+	if (dmi_check_system(piix4_dmi_ibm) &&
- 			PIIX4_dev->vendor == PCI_VENDOR_ID_INTEL) {
- 		dev_err(&PIIX4_dev->dev, "IBM system detected; this module "
- 			"may corrupt your serial eeprom! Refusing to load "
+ 	default:
++		if (request == PTRACE_SPARC_DETACH)
++			request = PTRACE_DETACH;
+ 		ret = ptrace_request(child, request, addr, data);
+ 		break;
+ 	}
+--- a/include/asm-sparc64/ptrace.h
++++ b/include/asm-sparc64/ptrace.h
+@@ -263,6 +263,7 @@ extern void __show_regs(struct pt_regs *
+ #define SF_XXARG  0x5c
+ 
+ /* Stuff for the ptrace system call */
++#define PTRACE_SPARC_DETACH       11
+ #define PTRACE_GETREGS            12
+ #define PTRACE_SETREGS            13
+ #define PTRACE_GETFPREGS          14
+--- a/include/asm-sparc/ptrace.h
++++ b/include/asm-sparc/ptrace.h
+@@ -149,6 +149,7 @@ extern void show_regs(struct pt_regs *);
+ #define SF_XXARG  0x5c
+ 
+ /* Stuff for the ptrace system call */
++#define PTRACE_SPARC_DETACH       11
+ #define PTRACE_GETREGS            12
+ #define PTRACE_SETREGS            13
+ #define PTRACE_GETFPREGS          14
 
 -- 
