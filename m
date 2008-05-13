@@ -1,99 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757032AbYEMARU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756538AbYEMAS7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757032AbYEMARU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 20:17:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756207AbYEMARJ
+	id S1756538AbYEMAS7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 20:18:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbYEMASw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 20:17:09 -0400
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:57194 "EHLO
-	outbound4-wa4-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756215AbYEMARI (ORCPT
+	Mon, 12 May 2008 20:18:52 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:59237 "EHLO
+	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751938AbYEMASv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 20:17:08 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.66.75;Service: EHS
-Message-ID: <4828DDFE.6050805@am.sony.com>
-Date: Mon, 12 May 2008 17:17:02 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Badari Pulavarty <pbadari@us.ibm.com>
-CC: lkml <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-       paulus@samba.org, Yasunori Goto <y-goto@jp.fujitsu.com>
-Subject: Re: [PATCH 5/5] [PPC] provide walk_memory_resource() for ppc
-References: <1206664406.19368.2.camel@dyn9047017100.beaverton.ibm.com> <1206664795.19368.13.camel@dyn9047017100.beaverton.ibm.com>
-In-Reply-To: <1206664795.19368.13.camel@dyn9047017100.beaverton.ibm.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 13 May 2008 00:17:03.0038 (UTC) FILETIME=[AB2EB5E0:01C8B48E]
+	Mon, 12 May 2008 20:18:51 -0400
+Date: Mon, 12 May 2008 18:20:49 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: libata - DMA problems ICH7 rev 02
+In-reply-to: <8dacd7b30805120855q406f566ma187142719bf5bd4@mail.gmail.com>
+To: Jan Niklas Hasse <jhasse@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Message-id: <4828DEE1.1070905@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.6VoLd5Q2gfHHZZfYneNkQcGjXKk@ifi.uio.no>
+ <fa.kzdMLVO0bqLAbXEBqWrKyBntgxc@ifi.uio.no>
+ <fa.h4D6h2c4Yz08K7snVTVtewbsziM@ifi.uio.no> <481BD00E.7050302@shaw.ca>
+ <8dacd7b30805120855q406f566ma187142719bf5bd4@mail.gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Jan Niklas Hasse wrote:
+> On Sat, May 3, 2008 at 4:38 AM, Robert Hancock <hancockr@shaw.ca> wrote:
+>>  This is expected. IOWait just means the system is blocked waiting for IO
+>> and has nothing else to do. It does not mean that DMA is not working.
+>>
+>>  [...]
+>>
+>>  Looks like you are using DMA:
+>>
+>>  ata1.00: configured for UDMA/100
+>>  ata1.01: configured for UDMA/33
+>>
+> 
+> Hm.. strange. But the problem is that my system slows down
+> nevertheless (sometimes the mouse cursor stops moving for a short time
+> or all my programs don't react). How can i find out what is causing
+> the problem?
+> 
+> Here I was creating a DVD with dvdauthor which was copying some big
+> video files. It was nearly impossible to use a web browser, although
+> CPU load seems only to be 12.7%.
+> 
+> top - 20:33:08 up  4:58,  2 users,  load average: 2.94, 2.81, 2.49
+> Tasks: 134 total,   2 running, 132 sleeping,   0 stopped,   0 zombie
+> Cpu(s):  5.0%us,  7.7%sy,  0.0%ni, 16.2%id, 70.1%wa,  0.3%hi,  0.8%si,  0.0%st
+> Mem:   1019568k total,   996316k used,    23252k free,     1148k buffers
+> Swap:  2916344k total,    83892k used,  2832452k free,   325284k cached
+> 
+>   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+>  2609 root      15  -5     0    0    0 S    6  0.0   6:41.67 kcryptd
+>  6344 root      20   0  543m 129m  10m S    3 13.0   6:33.63 Xorg
+> 27062 jhasse    20   0 23164 6424 1176 D    3  0.6   0:11.98 dvdauthor
+>  6891 jhasse    20   0  208m  18m 8956 S    2  1.9   3:13.41 transmission
+> 27173 jhasse    20   0  263m  24m  12m S    2  2.4   0:00.66 gnome-terminal
+>   195 root      20   0     0    0    0 S    1  0.0   0:00.14 pdflush
+> 
+> Another example: When I'm burning a disc and at the end, when my drive
+> finishes the disc (and makes those noises) the computer freezes untill
+> the CD is finished and ejected (about 3 seconds).
+> 
+> I hope it's the right place to ask here at the mailing list and thanks
+> for your help so far.
 
-I've had some trouble with this change.
-
-Badari Pulavarty wrote:
-> Provide walk_memory_resource() for ppc64. PPC maintains 
-> logic memory region mapping in lmb.memory structures. Walk
-> through these structures and do the callbacks for the
-> contiguous chunks.
-
-...
-
-> --- linux-2.6.25-rc3.orig/arch/powerpc/mm/mem.c	2008-03-05 10:14:28.000000000 -0800
-> +++ linux-2.6.25-rc3/arch/powerpc/mm/mem.c	2008-03-05 10:32:16.000000000 -0800
-> @@ -148,19 +148,35 @@ out:
->  
->  /*
->   * walk_memory_resource() needs to make sure there is no holes in a given
-> - * memory range. On PPC64, since this range comes from /sysfs, the range
-> - * is guaranteed to be valid, non-overlapping and can not contain any
-> - * holes. By the time we get here (memory add or remove), /proc/device-tree
-> - * is updated and correct. Only reason we need to check against device-tree
-> - * would be if we allow user-land to specify a memory range through a
-> - * system call/ioctl etc. instead of doing offline/online through /sysfs.
-> + * memory range. PPC64 does not maintain the memory layout in /proc/iomem.
-> + * Instead it maintains it in lmb.memory structures. Walk through the
-> + * memory regions, find holes and callback for contiguous regions.
->   */
->  int
->  walk_memory_resource(unsigned long start_pfn, unsigned long nr_pages, void *arg,
->  			int (*func)(unsigned long, unsigned long, void *))
->  {
-> -	return  (*func)(start_pfn, nr_pages, arg);
-> +	struct lmb_property res;
-> +	unsigned long pfn, len;
-> +	u64 end;
-> +	int ret = -1;
-> +
-> +	res.base = (u64) start_pfn << PAGE_SHIFT;
-> +	res.size = (u64) nr_pages << PAGE_SHIFT;
-> +
-> +	end = res.base + res.size - 1;
-> +	while ((res.base < end) && (lmb_find(&res) >= 0)) {
-                                    ^^^^^^^^^^^^^^
-
-In the PS3 platform code (arch/pwerpc/platfroms/ps3/mm.c) the hotplug
-memory is added like this:
-
-	...
-	result = add_memory(0, start_addr, map.r1.size);
-	...
-	result = online_pages(start_pfn, nr_pages);
-	...
-
-In its work, online_pages() eventually calls walk_memory_resource(),
-which has been changed as above to do a test on lmb_find(). I found
-that this lmb_find() test always fails for PS3 since add_memory()
-does not call lmb_add().
-
-Is it the responsibility of the platform code to call lmb_add(), or
-should that be done by add_memory()?
-
--Geoff
-
-
-
+It looks like you have the hard drive and the burner on the same IDE 
+channel? Such problems are unavoidable in this setup since commands to 
+one device on the channel can't execute while the other device is busy 
+(especially for long commands like finalizing the disc). It would be 
+better to move the drives onto separate channels.
