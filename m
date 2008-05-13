@@ -1,45 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758729AbYEMI2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759179AbYEMIao@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758729AbYEMI2Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 04:28:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755861AbYEMI2O
+	id S1759179AbYEMIao (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 04:30:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756977AbYEMIaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 04:28:14 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:45875 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755618AbYEMI2N (ORCPT
+	Tue, 13 May 2008 04:30:35 -0400
+Received: from co203.xi-lite.net ([149.6.83.203]:52297 "EHLO
+	toronto.xi-lite.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756767AbYEMIae (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 04:28:13 -0400
-To: ezk@cs.sunysb.edu
-CC: hch@infradead.org, miklos@szeredi.hu, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-reply-to: <200805092002.m49K2R5p014283@agora.fsl.cs.sunysb.edu> (message
-	from Erez Zadok on Fri, 9 May 2008 16:02:27 -0400)
-Subject: Re: [patch 6/9] fuse: add export operations
-References: <200805092002.m49K2R5p014283@agora.fsl.cs.sunysb.edu>
-Message-Id: <E1JvprY-0000S0-5v@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 13 May 2008 10:27:56 +0200
+	Tue, 13 May 2008 04:30:34 -0400
+X-Greylist: delayed 2010 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 May 2008 04:30:34 EDT
+Message-ID: <482949CB.7000208@parrot.com>
+Date: Tue, 13 May 2008 09:56:59 +0200
+From: Matthieu CASTET <matthieu.castet@parrot.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080420)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: ata_piix 2.6.25 sata failure
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 13 May 2008 07:57:41.0127 (UTC) FILETIME=[04C46970:01C8B4CF]
+X-AV-Checked: No Virus Found
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Only finding in-memory inodes for nfs export is quite dangerous.  I
-> > think it would be a much better idea to support whatever upcalls are
-> > needed to find the object if it's not in memory.  Without that the nfs
-> > exporting support is hardly useable.
-> 
-> In the ODF version of unionfs, we store the inode numbers persistently in a
-> small /odf partition, exactly for that reason.
+Hi,
 
-What do inode numbers index on that partition?  A path?  How do you
-garbage collect unused inode numbers?
+the 2.6.25 from debian fail to make work the second port. I got a "SATA 
+link down (SStatus 61 Scontrol 30)" for ata2. ata1 got "SATA link up 3.0 
+Gbps (SStatus 13 SControl 30)"
+The 2.6.24 works [1]. But some previous kernel (IRRC 2.6.18) had the 
+same problem, ie ata2 doesn't work.
 
->  It'd be wonderful if there
-> was kernel support for persistent inode numbers that could be used by
-> various virtual filesystems.
+My hardware is a intel ICH8[2]
 
-Well, fuse for one doesn't need it because it's typically a function
-that is best pushed to userspace.
+Matthieu
 
-Miklos
+
+
+[1]
+scsi0 : ata_piix
+scsi1 : ata_piix
+ata1: SATA max UDMA/133 cmd 0x1f0 ctl 0x3f6 bmdma 0x11f0 irq 14
+ata2: SATA max UDMA/133 cmd 0x170 ctl 0x376 bmdma 0x11f8 irq 15
+ata1.00: ATA-7: SAMSUNG HD080HJ/P, ZH100-43, max UDMA/100
+ata1.00: 156301488 sectors, multi 16: LBA48
+ata1.00: configured for UDMA/100
+ata2.00: ATA-7: SAMSUNG HD160JJ/P, ZM100-46, max UDMA7
+ata2.00: 312581808 sectors, multi 16: LBA48 NCQ (depth 0/32)
+ata2.01: ATAPI: HL-DT-STDVD+-RW GSA-H31L, 1.05, max UDMA/100
+ata2.00: configured for UDMA/133
+ata2.01: configured for UDMA/100
+
+
+[2]
+00:1f.2 IDE interface: Intel Corporation 82801H (ICH8 Family) 4 port 
+SATA IDE Controller (rev 02)
+00:1f.2 0101: 8086:2820 (rev 02)
