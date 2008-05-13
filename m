@@ -1,49 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759352AbYEMTEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758906AbYEMTHG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759352AbYEMTEV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 15:04:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754828AbYEMTEK
+	id S1758906AbYEMTHG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 15:07:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755501AbYEMTGz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 15:04:10 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:27528 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753887AbYEMTEI (ORCPT
+	Tue, 13 May 2008 15:06:55 -0400
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:13521 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754828AbYEMTGy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 15:04:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=YUJyJP7WfgVeXKac0YLlqFDBj3cEDjtJzA3ryXQpbeQC0Xgw1AqhcK7Z/SimDAGN0CPMpK56CYux3VgjO8OF7QhOMKjGJ7CTMe57I4Lp6vtGkovO9hvYNzctbTSQDUTbLTbNI/cGOfWOs2ShXuIZQHd6V+UhzzZMCj8LoxnN0yA=
-Message-ID: <19f34abd0805131204y5a3f32c0ya137c0f6e4bfa386@mail.gmail.com>
-Date: Tue, 13 May 2008 21:04:05 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: Rescheduling interrupts
-Cc: "=?UTF-8?Q?S.=C3=87a=C4=9Flar_Onur?=" <caglar@pardus.org.tr>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Arjan van de Ven" <arjan@linux.intel.com>
-In-Reply-To: <19f34abd0805131103q136e28ddg359de5822b401e0c@mail.gmail.com>
-MIME-Version: 1.0
+	Tue, 13 May 2008 15:06:54 -0400
+Subject: Re: [PATCH] take pageout refcount into account for
+	remove_exclusive_swap_page
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>, akpm@linux-foundation.org,
+       kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20080513140902.1030afaa@cuia.bos.redhat.com>
+References: <20080428181835.502876582@redhat.com>
+	 <20080428181852.620969450@redhat.com> <4828283C.4000803@mxp.nes.nec.co.jp>
+	 <20080512093307.2ace3096@bree.surriel.com>
+	 <482990FC.3020303@mxp.nes.nec.co.jp>
+	 <20080513120417.0833cec1@cuia.bos.redhat.com>
+	 <1210700635.6208.40.camel@lts-notebook>
+	 <20080513140902.1030afaa@cuia.bos.redhat.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-References: <200801220119.42312.caglar@pardus.org.tr>
-	 <200801221455.16814.caglar@pardus.org.tr>
-	 <20080122152333.GB19590@elte.hu>
-	 <200801221755.56470.caglar@pardus.org.tr>
-	 <20080122160557.GA31831@elte.hu>
-	 <19f34abd0805131103q136e28ddg359de5822b401e0c@mail.gmail.com>
+Organization: HP/OSLO
+Date: Tue, 13 May 2008 15:02:50 -0400
+Message-Id: <1210705370.6208.47.camel@lts-notebook>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m4DJ4bEB023641
 
-On Tue, May 13, 2008 at 8:03 PM, Vegard Nossum <vegard.nossum@gmail.com> wrote:> Hi,>>>  On Tue, Jan 22, 2008 at 6:05 PM, Ingo Molnar <mingo@elte.hu> wrote:>  >>  >  * S.Ã‡aÄŸlar Onur <caglar@pardus.org.tr> wrote:>  >>  >>  > > > My theory is that for whatever reason we get "repeat" IPIs: multiple>  >  > > reschedule IPIs although the other CPU only initiated one.>  >  >>  >  > Ok, please see http://cekirdek.pardus.org.tr/~caglar/dmesg.3rd :)>  >>  >  hm, the IPI sending and receiving is nicely paired up:>  >>  >  [  625.795008] IPI (@smp_reschedule_interrupt) from task swapper:0 on CPU#1:>  >  [  625.795223] IPI (@native_smp_send_reschedule) from task amarokapp:2882 on CPU#1:>  >>  >  amarokapp does wake up threads every 20 microseconds - that could>  >  explain it. It's probably Xorg running on one core, amarokapp on the>  >  other core. That's already 100 reschedules/sec.>>  Was this IPI thing ever resolved/fixed? I'm seeing the exact same>  thing on my newest Fedora 8 kernel (2.6.24.5-85.fc8) now:>>   33.3% (334.0)      <kernel IPI> : Rescheduling interrupts>>  And I know for sure that this did not show up a couple of months back.>>  If the cause of this is known, please let me know about it. If it>  isn't, I will start a bisect run now :-)
-Ok -- just a confirmation. I have this on v2.6.26-rc1:
-Running only init=/bin/sh (from busybox) and powertop shows:kernel IPI : Rescheduling interrupts
-completely idle box (except powertop): 1 wakeups/secone busy-loop[1]: 2 wakeups/sectwo busy-loops: 500 wakeups/sec
-So it seems like a real bug to me.
+On Tue, 2008-05-13 at 14:09 -0400, Rik van Riel wrote:
+> On Tue, 13 May 2008 13:43:55 -0400
+> Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
+> 
+> > Or, more generally, 2 + N, for an anon page that is mapped [must be
+> > read-only, right?] by N processes.  This can happen after, e.g., fork().
+> > Looks like this patch handles the condition just fine, but you might
+> > want to reflect this in the comment.
+> 
+> No, this patch only removes a page from the swap cache that is mapped
+> by one process.  The function page_mapped() returns either 1 or 0, not
+> the same as page_mapcount().
 
-Vegard
-[1]: while true; do echo hi; done
--- "The animistic metaphor of the bug that maliciously sneaked in whilethe programmer was not looking is intellectually dishonest as itdisguises that the error is the programmer's own creation."	-- E. W. Dijkstra, EWD1036ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Duh!  I was reading "page_mapcount()", 'cause that's what I've been
+considering using for this purpose.
+
+>  
+> I am not sure if trying to handle swap cache pages that are mapped by
+> multiple processes could get us into other corner cases and think that
+> we should probably try to stick to the safe thing for now.
+
+OK.  I can test the more general case down the road.
+
+> 
+> Besides, shouldn't anonymous shared pages be COW and relatively rare?
+
+Well, all anon pages are shared right after fork(), right?  They only
+become private once they've been written to.  I don't have a feel for
+the relative numbers of shared anon vs COWed anon--either in general or
+in the swap cache.
+
+> 
+> > Now, I think I can use this to try to remove anon pages from the swap
+> > cache when they're mlocked.
+
+ï»¿I suppose I can just go ahead and use this version with my stress load
+and count the times when I could have freed the swap cache entry, but
+didn't because it's mapped in multiple address spaces.  Later ... :)
+
+> > 
+> > > + */
+> > > +int remove_exclusive_swap_page_ref(struct page *page)
+> > > +{
+> > > +	return remove_exclusive_swap_page_count(page, 2 + page_mapped(page));
+> > > +}
+> > > +
+> > > +/*
+> > >   * Free the swap entry like above, but also try to
+> > >   * free the page cache entry if it is the last user.
+> > >   */
+> > > 
+> > > All Rights Reversed
+> 
+> 
+
