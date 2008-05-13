@@ -1,70 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758756AbYEMW4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758570AbYEMXBx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758756AbYEMW4U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 18:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755271AbYEMW4I
+	id S1758570AbYEMXBx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 19:01:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755948AbYEMXBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 18:56:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:32974 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753296AbYEMW4H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 18:56:07 -0400
-Date: Wed, 14 May 2008 00:55:58 +0200
-From: Karel Zak <kzak@redhat.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: David Chinner <dgc@sgi.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       util-linux-ng@vger.kernel.org
-Subject: Re: [BUG] remount ro on loopback mount leaves unmountable
-	filesystem behind
-Message-ID: <20080513225558.GU23843@nb.net.home>
-References: <20080513085047.GY155679365@sgi.com> <20080513102340.GA15112@infradead.org>
-MIME-Version: 1.0
+	Tue, 13 May 2008 19:01:43 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:46631 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752769AbYEMXBm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 19:01:42 -0400
+Date: Tue, 13 May 2008 18:01:39 -0500
+From: Russ Anderson <rja@sgi.com>
+To: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Tony Luck <tony.luck@intel.com>, Christoph Lameter <clameter@sgi.com>,
+       Russ Anderson <rja@sgi.com>
+Subject: [PATCH 0/3] ia64: Migrate data off physical pages with correctable errors v4
+Message-ID: <20080513230139.GA26722@sgi.com>
+Reply-To: Russ Anderson <rja@sgi.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080513102340.GA15112@infradead.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 13, 2008 at 06:23:40AM -0400, Christoph Hellwig wrote:
-> On Tue, May 13, 2008 at 06:50:47PM +1000, David Chinner wrote:
-> > Same thing, but remounting the loop filesystem readonly
-> > before unmounting:
-> > 
-> > $ mount -t xfs /dev/sdb6 /mnt/scratch
-> > $ mkdir /mnt/scratch/mnt
-> > $ touch /mnt/scratch/img
-> > $ mkfs.xfs -f -d file,name=/mnt/scratch/img,size=1g
-> > $ mount -t xfs -o loop /mnt/scratch/img /mnt/scratch/mnt
-> > $ mount -t xfs -o remount,ro /mnt/scratch/img /mnt/scratch/mnt
-> > $ umount /mnt/scratch/mnt
-> > $ umount /mnt/scratch
-> > umount: /mnt/scratch: device is busy
-> > umount: /mnt/scratch: device is busy
-> 
-> This is a problem in mount, no the kernel.  Before the remount the
-> /etc mtab looks something like this:
-> 
-> /qemu/test.img /mnt xfs rw,loop=/dev/loop0 0 0
-> 
-> and after it looks something like this:
-> 
-> /qemu/test.img /mnt xfs ro 0 0
+	Migrate data off physical pages with corrected memory errors (Version 4)
 
- Yes, that's mount(8) bug. It doesn't read old options from /etc/mtab
- when you remount by "mount -o remount <src> <dest>".
+Version 4 changes:
+	page.discard.v4:
+	    - Remove the hot path checks in lru_cache_add() and
+		lru_cache_add_active().   Avoid moving the bad page to
+		the LRU in unmap_and_move() and putback_lru_pages().
+		(per Linus Torvalds's request).
 
-> As a workaround do a losetup -d /dev/loop0 after unmounting the
-> filesystem.
+	cpe.migrate.v4
+	    - More code style cleanup (per Andrew Morton's request).
+	    - Removed locking when calling the migration code
+		(per Christoph Lameter's request).
+	    - If the page fails to migrate, clear the PG_memerror flag.
+	      This avoids a page with PG_memerror on the free list.
 
- ... or use "mount -o remount <dest>", for example:
+Version 3 changes:
+	page.cleanup.v3: 
+	    - Put PAGE_FLAGS definitions back in page-flags.h 
+		(per Christoph Lameter's request).
 
-   mount -t xfs -o remount,ro /mnt/scratch/mnt
+	cpe.migrate.v3
+	    - Use putback_lru_pages() when returning an individual page
+		(per Christoph Lameter's request).
+	    - Code style cleanup 
+		(per Pekka Enberg's request).
+	    - Use strict_strtoul()
+		(per Pekka Enberg's request).
+	    - Added locking
+		(per Pekka Enberg's request).
+	    - Use /sys/kernel/ instead of /proc
+		(per Pekka Enberg's request).
+
+Version 2 changes:
+
+	Broke the page.discard patch into two patches, per request by 
+	Christoph Lameter.  
+
+	page.cleanup.v2: 
+	    - minor clean-up of page flags in page_alloc.c.  
+
+	page.discard.v2:
+	    - Updated for recent page flag clean-up.
+	    - Removed the change to the sysinfo struct.
+
+	cpe.migrate.v2
+	    - Added /proc/badram interface to print page discard
+	      information and to free bad pages.
+
+Purpose:
+
+	Physical memory with corrected errors may decay over time into
+	uncorrectable errors.  The purpose of this patch is to move the
+	data off pages with correctable memory errors before the memory
+	goes bad.
+
+The patches:
+
+  [1/3] page.cleanup.v4: Minor clean-up of page flags in mm/page_alloc.c
+
+	Minor source code clean-up of page flags in mm/page_alloc.c.
+	No functional change.
+
+  [2/3] page.discard.v4: Avoid putting a bad page back on the LRU.
+
+	page.discard.v4 are the arch independent changes.  It adds a new
+	page flag (PG_memerror) to mark the page as bad and avoids calling
+	routines that would put the page back on the LRU.  The reference
+	count on the bad page is not decremented to zero.  PG_memerror is
+	only defined on 64 bit architectures. 
+
+  [3/3] cpe.migrate.v4: Call migration code on correctable errors
+
+	cpe.migrate.v4 are the IA64 specific changes.  It connects the CPE
+	handler to the page migration code.  It is implemented as a kernel
+	loadable module, similar to the mca recovery code (mca_recovery.ko),
+	so that it can be removed to turn off the feature.  Create
+	/sys/kernel/badram to print page discard information and to free
+	bad pages.
+
+Comments:
+
+	There is always an issue of how agressive the code should be on
+	migrating pages.  Should it migrate on the first correctable error,
+	or wait for some threshold?  Reasonable people may disagree on the
+	threshold and the "right" answer may be hardware specific.  The 
+	decision making is confined to the cpe_migrate.c code.  It is
+	currently set to migrate on the first correctable error.
+
+	Only pages that can be isolated on the LRU are migrated.  Other
+	pages, such as compound pages, are not migrated.  That functionality
+	could be a future enhancement.
+
+	/sys/kernel/badram is a way of displaying information about the bad
+	memory and freeing the bad pages.  A userspace program (or sysadmin)
+	could determine if a discarded page needs to be freed.
+
+Sample output:
+
+	linux> insmod cpe_migrate.ko
+	linux> cat /sys/kernel/badram			// This shows no discarded memory
+	Bad RAM: 0 kB, 0 pages marked bad
+	List of bad physical pages
+
+	linux> ./errsingle -c 6 -s 1		// Inject correctable errors on
+						// six pages.
+	linux> cat /sys/kernel/badram
+	Bad RAM: 384 kB, 6 pages marked bad
+	List of bad physical pages
+	  0x06048e10000  0x06870c40000  0x06870c20000  0x06870c10000  0x06007f00000
+	  0x06042070000
+
+	linux> echo 0x06870c20000 > /sys/kernel/badram	// Free one of the pages
+
+	linux> cat /sys/kernel/badram			// Five pages remain on the list
+	Bad RAM: 320 kB, 5 pages marked bad
+	List of bad physical pages
+	  0x06048e10000  0x06870c40000  0x06870c10000  0x06007f00000  0x06042070000
+
+	linux> echo 0 > /sys/kernel/badram		// Free all the bad pages
+	linux> cat /sys/kernel/badram			// All the pages are freed
+	Bad RAM: 0 kB, 0 pages marked bad
+	List of bad physical pages
 
 
-    Karel
+
+Flow of the code description (while testing on IA64):
+
+	1) A user level application test program allocates memory and
+	   passes the virtual address of the memory to the error injection
+	   driver.
+
+	2) The error injection driver converts the virtual address to
+	   physical, functions the Altix hardware to modify the ECC for the
+	   physical page, creating a correctable error, and returns to the
+	   user application.
+
+	3) The user application reads the memory.
+
+	4) The Altix hardware detects the correctable error and interrupts
+	   prom.  SAL builds a CPU error record, then sends a CPE 
+	   interrupt to linux.
+
+	5) The linux CPE handler calls the cpe_migrate module (if installed).
+
+	6) cpe_migrate parses the physical address from the CPE record and
+	   adds the address to the migrate list (if not already on the list)
+	   and schedules the worker thread (cpe_enable_work).
+
+	7) cpe_enable_work calls ia64_mca_cpe_move_page.
+
+	8) ia64_mca_cpe_move_page validates the physical address, converts
+	   to page, sets PG_memerror flag and calls the migration code
+	   (migrate_prep(), isolate_lru_page(), and migrate_pages().  If the
+	   page migrates successfully, the bad page is added to badpagelist.
+
+	9) Because PG_memerror is set, the bad page is not added back on the LRU
+	   by avoiding calls to move_to_lru().  Avoiding move_to_lru() prevents
+	   the page count from being decremented to zero.
 
 -- 
- Karel Zak  <kzak@redhat.com>
+Russ Anderson, OS RAS/Partitioning Project Lead  
+SGI - Silicon Graphics Inc          rja@sgi.com
