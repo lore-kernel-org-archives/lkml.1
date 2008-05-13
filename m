@@ -1,405 +1,436 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757273AbYEMDat@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758355AbYEMDbL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757273AbYEMDat (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 23:30:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758447AbYEMD3c
+	id S1758355AbYEMDbL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 23:31:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758248AbYEMDaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 23:29:32 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:62379 "EHLO serum.com.pl"
+	Mon, 12 May 2008 23:30:07 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:62382 "EHLO serum.com.pl"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758419AbYEMD3a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 23:29:30 -0400
-Date: Tue, 13 May 2008 04:27:30 +0100 (BST)
+	id S1758690AbYEMDaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 23:30:04 -0400
+Date: Tue, 13 May 2008 04:28:25 +0100 (BST)
 From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Alessandro Zummo <a.zummo@towertech.it>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Jean Delvare <khali@linux-fr.org>, Ralf Baechle <ralf@linux-mips.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-cc: rtc-linux@googlegroups.com, i2c@lm-sensors.org, linux-mips@linux-mips.org,
+To: Jean Delvare <khali@linux-fr.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: i2c@lm-sensors.org, linux-mips@linux-mips.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 5/6] RTC: SMBus support for the M41T80, etc. driver (#2)
-Message-ID: <Pine.LNX.4.55.0805130254420.535@cliff.in.clinika.pl>
+Subject: [PATCH] I2C: SiByte: Convert the driver to make use of interrupts
+Message-ID: <Pine.LNX.4.55.0805130353250.535@cliff.in.clinika.pl>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- The BCM1250A SOC which is used on the SWARM board utilising an M41T81
-chip only supports pure I2C in the raw bit-banged mode.  Nobody sane
-really wants to use it unless absolutely necessary and the M41T80, etc.  
-chips work just fine with an SMBus adapter which is what the standard mode
-of operation of the BCM1250A.  The only drawback of byte accesses with the
-M41T80 is the chip only latches clock data registers for the duration of
-an I2C transaction which works fine with a block transfers, but not
-byte-wise accesses.
-
- The driver currently requires an I2C adapter providing both SMBus and raw
-I2C access.  This is a set of changes to make it work with any SMBus
-adapter providing at least read byte and write byte protocols.  
-Additionally, if a given SMBus adapter supports I2C block read and/or
-write protocols (a common extension beyond the SMBus spec), they are used
-as well.  The problem of unlatched clock data if SMBus byte transactions
-are used is resolved in the standard way.  For raw I2C controllers this
-functionality is provided by the I2C core as SMBus emulation in a
-transparent way.
+ This is a rewrite of large parts of the driver mainly so that it uses 
+SMBus interrupts to offload the CPU from busy-waiting on status inputs.  
+As a part of the overhaul of the init and exit calls, all accesses to the 
+hardware got converted to use accessory functions via an ioremap() cookie.
 
 Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
 ---
-patch-2.6.26-rc1-20080505-m41t80-smbus-17
-diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/drivers/rtc/rtc-m41t80.c linux-2.6.26-rc1-20080505/drivers/rtc/rtc-m41t80.c
---- linux-2.6.26-rc1-20080505.macro/drivers/rtc/rtc-m41t80.c	2008-05-05 02:55:40.000000000 +0000
-+++ linux-2.6.26-rc1-20080505/drivers/rtc/rtc-m41t80.c	2008-05-05 02:55:40.000000000 +0000
-@@ -6,6 +6,7 @@
-  * Based on m41t00.c by Mark A. Greer <mgreer@mvista.com>
+ This patch depends on patch-2.6.26-rc1-20080505-swarm-i2c-16 -- submitted 
+as a part of the recent set of M41T80 RTC changes.
+
+ Jean, please let me know if you prefer the ioremap() changes separately.  
+Similarly, how about the -EINVAL/-EIO error codes?  Also please note how I
+hesitated from adding second space after final full stops within comments.
+
+  Maciej
+
+patch-2.6.26-rc1-20080505-sibyte-i2c-irq-5
+diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/drivers/i2c/busses/i2c-sibyte.c linux-2.6.26-rc1-20080505/drivers/i2c/busses/i2c-sibyte.c
+--- linux-2.6.26-rc1-20080505.macro/drivers/i2c/busses/i2c-sibyte.c	2008-05-11 02:25:56.000000000 +0000
++++ linux-2.6.26-rc1-20080505/drivers/i2c/busses/i2c-sibyte.c	2008-05-12 06:00:16.000000000 +0000
+@@ -2,6 +2,7 @@
+  * Copyright (C) 2004 Steven J. Hill
+  * Copyright (C) 2001,2002,2003 Broadcom Corporation
+  * Copyright (C) 1995-2000 Simon G. Vogl
++ * Copyright (C) 2008 Maciej W. Rozycki
   *
-  * 2006 (c) mycable GmbH
-+ * Copyright (c) 2008  Maciej W. Rozycki
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License version 2 as
-@@ -36,6 +37,8 @@
- #define M41T80_REG_DAY	5
- #define M41T80_REG_MON	6
- #define M41T80_REG_YEAR	7
-+#define M41T80_REG_CONTROL	8
-+#define M41T80_REG_WATCHDOG	9
- #define M41T80_REG_ALARM_MON	0xa
- #define M41T80_REG_ALARM_DAY	0xb
- #define M41T80_REG_ALARM_HOUR	0xc
-@@ -58,7 +61,7 @@
- #define M41T80_FEATURE_HT	(1 << 0)
- #define M41T80_FEATURE_BL	(1 << 1)
+  * This program is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU General Public License
+@@ -18,104 +19,159 @@
+  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+  */
  
--#define DRV_VERSION "0.05"
-+#define DRV_VERSION "0.06"
++#include <linux/errno.h>
++#include <linux/interrupt.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
+ #include <linux/i2c.h>
++#include <linux/param.h>
++#include <linux/spinlock.h>
++#include <linux/types.h>
++#include <linux/wait.h>
+ #include <asm/io.h>
++#include <asm/sibyte/sb1250_int.h>
+ #include <asm/sibyte/sb1250_regs.h>
+ #include <asm/sibyte/sb1250_smbus.h>
  
- static const struct i2c_device_id m41t80_id[] = {
- 	{ "m41t80", 0 },
-@@ -78,31 +81,83 @@ struct m41t80_data {
- 	struct rtc_device *rtc;
+ 
+ struct i2c_algo_sibyte_data {
+-	void *data;		/* private data */
+-	int   bus;		/* which bus */
+-	void *reg_base;		/* CSR base */
++	wait_queue_head_t	wait;		/* IRQ queue */
++	void __iomem		*csr;		/* mapped CSR handle */
++	phys_t			base;		/* physical CSR base */
++	char			*name;		/* IRQ handler name */
++	spinlock_t		lock;		/* atomiser */
++	int			irq;		/* IRQ line */
++	int			status;		/* IRQ status */
  };
  
--static int m41t80_get_datetime(struct i2c_client *client,
--			       struct rtc_time *tm)
-+
-+static int m41t80_write_block_data(struct i2c_client *client,
-+				   u8 reg, u8 num, u8 *buf)
- {
--	u8 buf[M41T80_DATETIME_REG_SIZE], dt_addr[1] = { M41T80_REG_SEC };
--	struct i2c_msg msgs[] = {
--		{
--			.addr	= client->addr,
--			.flags	= 0,
--			.len	= 1,
--			.buf	= dt_addr,
--		},
--		{
--			.addr	= client->addr,
--			.flags	= I2C_M_RD,
--			.len	= M41T80_DATETIME_REG_SIZE - M41T80_REG_SEC,
--			.buf	= buf + M41T80_REG_SEC,
--		},
--	};
-+	int i, rc;
+-/* ----- global defines ----------------------------------------------- */
+-#define SMB_CSR(a,r) ((long)(a->reg_base + r))
  
--	if (i2c_transfer(client->adapter, msgs, 2) < 0) {
--		dev_err(&client->dev, "read error\n");
--		return -EIO;
-+	if (i2c_check_functionality(client->adapter,
-+				    I2C_FUNC_SMBUS_WRITE_I2C_BLOCK)) {
-+		i = i2c_smbus_write_i2c_block_data(client, reg, num, buf);
-+	} else {
-+		for (i = 0; i < num; i++) {
-+			rc = i2c_smbus_write_byte_data(client, reg + i,
-+						       buf[i]);
-+			if (rc < 0) {
-+				i = rc;
-+				goto out;
-+			}
-+		}
-+	}
-+out:
-+	return i;
-+}
-+
-+static int m41t80_read_block_data(struct i2c_client *client,
-+				  u8 reg, u8 num, u8 *buf)
++static irqreturn_t i2c_sibyte_interrupt(int irq, void *dev_id)
 +{
-+	int i, rc;
-+
-+	if (i2c_check_functionality(client->adapter,
-+				    I2C_FUNC_SMBUS_READ_I2C_BLOCK)) {
-+		i = i2c_smbus_read_i2c_block_data(client, reg, num, buf);
-+	} else {
-+		for (i = 0; i < num; i++) {
-+			rc = i2c_smbus_read_byte_data(client, reg + i);
-+			if (rc < 0) {
-+				i = rc;
-+				goto out;
-+			}
-+			buf[i] = rc;
-+		}
- 	}
-+out:
-+	return i;
-+}
-+
-+static int m41t80_get_datetime(struct i2c_client *client, struct rtc_time *tm)
-+{
-+	u8 buf[M41T80_DATETIME_REG_SIZE];
-+	int loops = 2;
-+	int sec0, sec1;
++	struct i2c_adapter *i2c_adap = dev_id;
++	struct i2c_algo_sibyte_data *adap = i2c_adap->algo_data;
++	void __iomem *csr = adap->csr;
++	u8 status;
 +
 +	/*
-+	 * Time registers are latched by this chip if an I2C block
-+	 * transfer is used, but with SMBus-style byte accesses
-+	 * this is not the case, so check seconds for a wraparound.
++	 * Ugh, no way to detect the finish interrupt,
++	 * but if busy it is obviously not one.
 +	 */
-+	do {
-+		if (m41t80_read_block_data(client, M41T80_REG_SEC,
-+					   M41T80_DATETIME_REG_SIZE -
-+					   M41T80_REG_SEC,
-+					   buf + M41T80_REG_SEC) < 0) {
-+			dev_err(&client->dev, "read error\n");
-+			return -EIO;
-+		}
-+		sec0 = buf[M41T80_REG_SEC];
- 
--	tm->tm_sec = BCD2BIN(buf[M41T80_REG_SEC] & 0x7f);
-+		sec1 = i2c_smbus_read_byte_data(client, M41T80_REG_SEC);
-+		if (sec1 < 0) {
-+			dev_err(&client->dev, "read error\n");
-+			return -EIO;
-+		}
++	status = __raw_readq(csr + R_SMB_STATUS);
++	if ((status & (M_SMB_ERROR | M_SMB_BUSY)) == M_SMB_BUSY)
++		return IRQ_NONE;
 +
-+		sec0 = BCD2BIN(sec0 & 0x7f);
-+		sec1 = BCD2BIN(sec1 & 0x7f);
-+	} while (sec1 < sec0 && --loops);
++	/*
++	 * Clear the error interrupt (write 1 to clear);
++	 * the finish interrupt was cleared by the read above.
++	 */
++	__raw_writeq(status, csr + R_SMB_STATUS);
 +
-+	tm->tm_sec = sec1;
- 	tm->tm_min = BCD2BIN(buf[M41T80_REG_MIN] & 0x7f);
- 	tm->tm_hour = BCD2BIN(buf[M41T80_REG_HOUR] & 0x3f);
- 	tm->tm_mday = BCD2BIN(buf[M41T80_REG_DAY] & 0x3f);
-@@ -117,39 +172,16 @@ static int m41t80_get_datetime(struct i2
- /* Sets the given date and time to the real time clock. */
- static int m41t80_set_datetime(struct i2c_client *client, struct rtc_time *tm)
++	/* Post the status. */
++	spin_lock_irq(&adap->lock);
++	adap->status = status & (M_SMB_ERROR_TYPE | M_SMB_ERROR | M_SMB_BUSY);
++	wake_up(&adap->wait);
++	spin_unlock_irq(&adap->lock);
++
++	return IRQ_HANDLED;
++}
+ 
+-static int smbus_xfer(struct i2c_adapter *i2c_adap, u16 addr,
+-		      unsigned short flags, char read_write,
+-		      u8 command, int size, union i2c_smbus_data * data)
++static s32 i2c_sibyte_smbus_xfer(struct i2c_adapter *i2c_adap, u16 addr,
++				 unsigned short cflags,
++				 char read_write, u8 command, int size,
++				 union i2c_smbus_data *data)
  {
--	u8 wbuf[1 + M41T80_DATETIME_REG_SIZE];
--	u8 *buf = &wbuf[1];
--	u8 dt_addr[1] = { M41T80_REG_SEC };
--	struct i2c_msg msgs_in[] = {
--		{
--			.addr	= client->addr,
--			.flags	= 0,
--			.len	= 1,
--			.buf	= dt_addr,
--		},
--		{
--			.addr	= client->addr,
--			.flags	= I2C_M_RD,
--			.len	= M41T80_DATETIME_REG_SIZE - M41T80_REG_SEC,
--			.buf	= buf + M41T80_REG_SEC,
--		},
--	};
--	struct i2c_msg msgs[] = {
--		{
--			.addr	= client->addr,
--			.flags	= 0,
--			.len	= 1 + M41T80_DATETIME_REG_SIZE,
--			.buf	= wbuf,
--		 },
--	};
-+	u8 buf[M41T80_DATETIME_REG_SIZE];
+ 	struct i2c_algo_sibyte_data *adap = i2c_adap->algo_data;
++	void __iomem *csr = adap->csr;
++	unsigned long flags;
+ 	int data_bytes = 0;
+ 	int error;
  
- 	/* Read current reg values into buf[1..7] */
--	if (i2c_transfer(client->adapter, msgs_in, 2) < 0) {
-+	if (m41t80_read_block_data(client, M41T80_REG_SEC,
-+				   M41T80_DATETIME_REG_SIZE - M41T80_REG_SEC,
-+				   buf + M41T80_REG_SEC) < 0) {
- 		dev_err(&client->dev, "read error\n");
- 		return -EIO;
+-	while (csr_in32(SMB_CSR(adap, R_SMB_STATUS)) & M_SMB_BUSY)
+-		;
++	spin_lock_irqsave(&adap->lock, flags);
++
++	if (adap->status < 0) {
++		error = -EIO;
++		goto out_unlock;
++	}
+ 
+ 	switch (size) {
+ 	case I2C_SMBUS_QUICK:
+-		csr_out32((V_SMB_ADDR(addr) |
+-			   (read_write == I2C_SMBUS_READ ? M_SMB_QDATA : 0) |
+-			   V_SMB_TT_QUICKCMD), SMB_CSR(adap, R_SMB_START));
++		__raw_writeq(V_SMB_ADDR(addr) |
++			     (read_write == I2C_SMBUS_READ ? M_SMB_QDATA : 0) |
++			     V_SMB_TT_QUICKCMD,
++			     csr + R_SMB_START);
+ 		break;
+ 	case I2C_SMBUS_BYTE:
+ 		if (read_write == I2C_SMBUS_READ) {
+-			csr_out32((V_SMB_ADDR(addr) | V_SMB_TT_RD1BYTE),
+-				  SMB_CSR(adap, R_SMB_START));
++			__raw_writeq(V_SMB_ADDR(addr) | V_SMB_TT_RD1BYTE,
++				     csr + R_SMB_START);
+ 			data_bytes = 1;
+ 		} else {
+-			csr_out32(V_SMB_CMD(command), SMB_CSR(adap, R_SMB_CMD));
+-			csr_out32((V_SMB_ADDR(addr) | V_SMB_TT_WR1BYTE),
+-				  SMB_CSR(adap, R_SMB_START));
++			__raw_writeq(V_SMB_CMD(command), csr + R_SMB_CMD);
++			__raw_writeq(V_SMB_ADDR(addr) | V_SMB_TT_WR1BYTE,
++				     csr + R_SMB_START);
+ 		}
+ 		break;
+ 	case I2C_SMBUS_BYTE_DATA:
+-		csr_out32(V_SMB_CMD(command), SMB_CSR(adap, R_SMB_CMD));
++		__raw_writeq(V_SMB_CMD(command), csr + R_SMB_CMD);
+ 		if (read_write == I2C_SMBUS_READ) {
+-			csr_out32((V_SMB_ADDR(addr) | V_SMB_TT_CMD_RD1BYTE),
+-				  SMB_CSR(adap, R_SMB_START));
++			__raw_writeq(V_SMB_ADDR(addr) | V_SMB_TT_CMD_RD1BYTE,
++				     csr + R_SMB_START);
+ 			data_bytes = 1;
+ 		} else {
+-			csr_out32(V_SMB_LB(data->byte),
+-				  SMB_CSR(adap, R_SMB_DATA));
+-			csr_out32((V_SMB_ADDR(addr) | V_SMB_TT_WR2BYTE),
+-				  SMB_CSR(adap, R_SMB_START));
++			__raw_writeq(V_SMB_LB(data->byte), csr + R_SMB_DATA);
++			__raw_writeq(V_SMB_ADDR(addr) | V_SMB_TT_WR2BYTE,
++				     csr + R_SMB_START);
+ 		}
+ 		break;
+ 	case I2C_SMBUS_WORD_DATA:
+-		csr_out32(V_SMB_CMD(command), SMB_CSR(adap, R_SMB_CMD));
++		__raw_writeq(V_SMB_CMD(command), csr + R_SMB_CMD);
+ 		if (read_write == I2C_SMBUS_READ) {
+-			csr_out32((V_SMB_ADDR(addr) | V_SMB_TT_CMD_RD2BYTE),
+-				  SMB_CSR(adap, R_SMB_START));
++			__raw_writeq(V_SMB_ADDR(addr) | V_SMB_TT_CMD_RD2BYTE,
++				     csr + R_SMB_START);
+ 			data_bytes = 2;
+ 		} else {
+-			csr_out32(V_SMB_LB(data->word & 0xff),
+-				  SMB_CSR(adap, R_SMB_DATA));
+-			csr_out32(V_SMB_MB(data->word >> 8),
+-				  SMB_CSR(adap, R_SMB_DATA));
+-			csr_out32((V_SMB_ADDR(addr) | V_SMB_TT_WR2BYTE),
+-				  SMB_CSR(adap, R_SMB_START));
++			__raw_writeq(V_SMB_LB(data->word & 0xff),
++				     csr + R_SMB_DATA);
++			__raw_writeq(V_SMB_MB(data->word >> 8),
++				     csr + R_SMB_DATA);
++			__raw_writeq(V_SMB_ADDR(addr) | V_SMB_TT_WR2BYTE,
++				     csr + R_SMB_START);
+ 		}
+ 		break;
+ 	default:
+-		return -1;      /* XXXKW better error code? */
++		error = -EINVAL;
++		goto out_unlock;
+ 	}
++	mmiowb();
++	__raw_readq(csr + R_SMB_START);
++	adap->status = -1;
++
++	spin_unlock_irqrestore(&adap->lock, flags);
+ 
+-	while (csr_in32(SMB_CSR(adap, R_SMB_STATUS)) & M_SMB_BUSY)
+-		;
++	wait_event_timeout(adap->wait, (adap->status >= 0), HZ);
+ 
+-	error = csr_in32(SMB_CSR(adap, R_SMB_STATUS));
+-	if (error & M_SMB_ERROR) {
+-		/* Clear error bit by writing a 1 */
+-		csr_out32(M_SMB_ERROR, SMB_CSR(adap, R_SMB_STATUS));
+-		return -1;      /* XXXKW better error code? */
++	spin_lock_irqsave(&adap->lock, flags);
++
++	if (adap->status < 0 || (adap->status & (M_SMB_ERROR | M_SMB_BUSY))) {
++		error = -EIO;
++		goto out_unlock;
  	}
  
--	wbuf[0] = 0; /* offset into rtc's regs */
- 	/* Merge time-data and register flags into buf[0..7] */
- 	buf[M41T80_REG_SSEC] = 0;
- 	buf[M41T80_REG_SEC] =
-@@ -167,7 +199,8 @@ static int m41t80_set_datetime(struct i2
- 	/* assume 20YY not 19YY */
- 	buf[M41T80_REG_YEAR] = BIN2BCD(tm->tm_year % 100);
+ 	if (data_bytes == 1)
+-		data->byte = csr_in32(SMB_CSR(adap, R_SMB_DATA)) & 0xff;
++		data->byte = __raw_readq(csr + R_SMB_DATA) & 0xff;
+ 	if (data_bytes == 2)
+-		data->word = csr_in32(SMB_CSR(adap, R_SMB_DATA)) & 0xffff;
++		data->word = __raw_readq(csr + R_SMB_DATA) & 0xffff;
  
--	if (i2c_transfer(client->adapter, msgs, 1) != 1) {
-+	if (m41t80_write_block_data(client, M41T80_REG_SSEC,
-+				    M41T80_DATETIME_REG_SIZE, buf) < 0) {
- 		dev_err(&client->dev, "write error\n");
- 		return -EIO;
- 	}
-@@ -241,34 +274,11 @@ err:
- static int m41t80_rtc_set_alarm(struct device *dev, struct rtc_wkalrm *t)
- {
- 	struct i2c_client *client = to_i2c_client(dev);
--	u8 wbuf[1 + M41T80_ALARM_REG_SIZE];
--	u8 *buf = &wbuf[1];
-+	u8 buf[M41T80_ALARM_REG_SIZE];
- 	u8 *reg = buf - M41T80_REG_ALARM_MON;
--	u8 dt_addr[1] = { M41T80_REG_ALARM_MON };
--	struct i2c_msg msgs_in[] = {
--		{
--			.addr	= client->addr,
--			.flags	= 0,
--			.len	= 1,
--			.buf	= dt_addr,
--		},
--		{
--			.addr	= client->addr,
--			.flags	= I2C_M_RD,
--			.len	= M41T80_ALARM_REG_SIZE,
--			.buf	= buf,
--		},
--	};
--	struct i2c_msg msgs[] = {
--		{
--			.addr	= client->addr,
--			.flags	= 0,
--			.len	= 1 + M41T80_ALARM_REG_SIZE,
--			.buf	= wbuf,
--		 },
--	};
- 
--	if (i2c_transfer(client->adapter, msgs_in, 2) < 0) {
-+	if (m41t80_read_block_data(client, M41T80_REG_ALARM_MON,
-+				   M41T80_ALARM_REG_SIZE, buf) < 0) {
- 		dev_err(&client->dev, "read error\n");
- 		return -EIO;
- 	}
-@@ -278,7 +288,6 @@ static int m41t80_rtc_set_alarm(struct d
- 	reg[M41T80_REG_ALARM_MIN] = 0;
- 	reg[M41T80_REG_ALARM_SEC] = 0;
- 
--	wbuf[0] = M41T80_REG_ALARM_MON; /* offset into rtc's regs */
- 	reg[M41T80_REG_ALARM_SEC] |= t->time.tm_sec >= 0 ?
- 		BIN2BCD(t->time.tm_sec) : 0x80;
- 	reg[M41T80_REG_ALARM_MIN] |= t->time.tm_min >= 0 ?
-@@ -292,7 +301,8 @@ static int m41t80_rtc_set_alarm(struct d
- 	else
- 		reg[M41T80_REG_ALARM_DAY] |= 0x40;
- 
--	if (i2c_transfer(client->adapter, msgs, 1) != 1) {
-+	if (m41t80_write_block_data(client, M41T80_REG_ALARM_MON,
-+				    M41T80_ALARM_REG_SIZE, buf) < 0) {
- 		dev_err(&client->dev, "write error\n");
- 		return -EIO;
- 	}
-@@ -312,24 +322,10 @@ static int m41t80_rtc_read_alarm(struct 
- {
- 	struct i2c_client *client = to_i2c_client(dev);
- 	u8 buf[M41T80_ALARM_REG_SIZE + 1]; /* all alarm regs and flags */
--	u8 dt_addr[1] = { M41T80_REG_ALARM_MON };
- 	u8 *reg = buf - M41T80_REG_ALARM_MON;
--	struct i2c_msg msgs[] = {
--		{
--			.addr	= client->addr,
--			.flags	= 0,
--			.len	= 1,
--			.buf	= dt_addr,
--		},
--		{
--			.addr	= client->addr,
--			.flags	= I2C_M_RD,
--			.len	= M41T80_ALARM_REG_SIZE + 1,
--			.buf	= buf,
--		},
--	};
- 
--	if (i2c_transfer(client->adapter, msgs, 2) < 0) {
-+	if (m41t80_read_block_data(client, M41T80_REG_ALARM_MON,
-+				   M41T80_ALARM_REG_SIZE + 1, buf) < 0) {
- 		dev_err(&client->dev, "read error\n");
- 		return -EIO;
- 	}
-@@ -488,26 +484,16 @@ static int boot_flag;
-  */
- static void wdt_ping(void)
- {
--	unsigned char i2c_data[2];
--	struct i2c_msg msgs1[1] = {
--		{
--			.addr	= save_client->addr,
--			.flags	= 0,
--			.len	= 2,
--			.buf	= i2c_data,
--		},
--	};
--	i2c_data[0] = 0x09;		/* watchdog register */
-+	u8 wdt = 0x80;				/* WDS = 1 (0x80)  */
- 
- 	if (wdt_margin > 31)
--		i2c_data[1] = (wdt_margin & 0xFC) | 0x83; /* resolution = 4s */
-+		/* mulitplier = WD_TIMO / 4, resolution = 4s (0x3)  */
-+		wdt |= (wdt_margin & 0xfc) | 0x3;
- 	else
--		/*
--		 * WDS = 1 (0x80), mulitplier = WD_TIMO, resolution = 1s (0x02)
--		 */
--		i2c_data[1] = wdt_margin<<2 | 0x82;
-+		/* mulitplier = WD_TIMO, resolution = 1s (0x2)  */
-+		wdt |= wdt_margin << 2 | 0x2;
- 
--	i2c_transfer(save_client->adapter, msgs1, 1);
-+	i2c_smbus_write_byte_data(save_client, M41T80_REG_WATCHDOG, wdt);
+-	return 0;
++	error = 0;
++
++out_unlock:
++	spin_unlock_irqrestore(&adap->lock, flags);
++
++	return error;
  }
  
- /**
-@@ -517,36 +503,8 @@ static void wdt_ping(void)
-  */
- static void wdt_disable(void)
+-static u32 bit_func(struct i2c_adapter *adap)
++static u32 i2c_sibyte_bit_func(struct i2c_adapter *adap)
  {
--	unsigned char i2c_data[2], i2c_buf[0x10];
--	struct i2c_msg msgs0[2] = {
--		{
--			.addr	= save_client->addr,
--			.flags	= 0,
--			.len	= 1,
--			.buf	= i2c_data,
--		},
--		{
--			.addr	= save_client->addr,
--			.flags	= I2C_M_RD,
--			.len	= 1,
--			.buf	= i2c_buf,
--		},
--	};
--	struct i2c_msg msgs1[1] = {
--		{
--			.addr	= save_client->addr,
--			.flags	= 0,
--			.len	= 2,
--			.buf	= i2c_data,
--		},
--	};
--
--	i2c_data[0] = 0x09;
--	i2c_transfer(save_client->adapter, msgs0, 2);
--
--	i2c_data[0] = 0x09;
--	i2c_data[1] = 0x00;
--	i2c_transfer(save_client->adapter, msgs1, 1);
-+	i2c_smbus_read_byte_data(save_client, M41T80_REG_WATCHDOG);
-+	i2c_smbus_write_byte_data(save_client, M41T80_REG_WATCHDOG, 0);
+ 	return (I2C_FUNC_SMBUS_QUICK | I2C_FUNC_SMBUS_BYTE |
+ 		I2C_FUNC_SMBUS_BYTE_DATA | I2C_FUNC_SMBUS_WORD_DATA);
+@@ -125,8 +181,8 @@ static u32 bit_func(struct i2c_adapter *
+ /* -----exported algorithm data: -------------------------------------	*/
+ 
+ static const struct i2c_algorithm i2c_sibyte_algo = {
+-	.smbus_xfer	= smbus_xfer,
+-	.functionality	= bit_func,
++	.smbus_xfer	= i2c_sibyte_smbus_xfer,
++	.functionality	= i2c_sibyte_bit_func,
+ };
+ 
+ /*
+@@ -135,30 +191,101 @@ static const struct i2c_algorithm i2c_si
+ static int __init i2c_sibyte_add_bus(struct i2c_adapter *i2c_adap, int speed)
+ {
+ 	struct i2c_algo_sibyte_data *adap = i2c_adap->algo_data;
++	void __iomem *csr;
++	int err;
+ 
+-	/* Register new adapter to i2c module... */
+-	i2c_adap->algo = &i2c_sibyte_algo;
++	adap->status = 0;
++	init_waitqueue_head(&adap->wait);
++	spin_lock_init(&adap->lock);
++
++	csr = ioremap(adap->base, R_SMB_PEC + SMB_REGISTER_SPACING);
++	if (!csr) {
++		err = -ENOMEM;
++		goto out;
++	}
++	adap->csr = csr;
+ 
+ 	/* Set the requested frequency. */
+-	csr_out32(speed, SMB_CSR(adap,R_SMB_FREQ));
+-	csr_out32(0, SMB_CSR(adap,R_SMB_CONTROL));
++	__raw_writeq(speed, csr + R_SMB_FREQ);
++
++	/* Clear any pending error interrupt. */
++	__raw_writeq(__raw_readq(csr + R_SMB_STATUS), csr + R_SMB_STATUS);
++	/* Disable interrupts. */
++	__raw_writeq(0, csr + R_SMB_CONTROL);
++	mmiowb();
++	__raw_readq(csr + R_SMB_CONTROL);
++
++	err = request_irq(adap->irq, i2c_sibyte_interrupt, IRQF_SHARED,
++			  adap->name, i2c_adap);
++	if (err < 0)
++		goto out_unmap;
+ 
+-	return i2c_add_numbered_adapter(i2c_adap);
++	/* Enable finish and error interrupts. */
++	__raw_writeq(M_SMB_FINISH_INTR | M_SMB_ERR_INTR, csr + R_SMB_CONTROL);
++
++	/* Register new adapter to i2c module... */
++	err = i2c_add_numbered_adapter(i2c_adap);
++	if (err < 0)
++		goto out_unirq;
++
++	return 0;
++
++out_unirq:
++	/* Disable interrupts. */
++	__raw_writeq(0, csr + R_SMB_CONTROL);
++	mmiowb();
++	__raw_readq(csr + R_SMB_CONTROL);
++
++	free_irq(adap->irq, i2c_adap);
++
++	/* Clear any pending error interrupt. */
++	__raw_writeq(__raw_readq(csr + R_SMB_STATUS), csr + R_SMB_STATUS);
++out_unmap:
++	iounmap(csr);
++out:
++	return err;
  }
  
- /**
-@@ -737,8 +695,8 @@ static int m41t80_probe(struct i2c_clien
- 	struct rtc_time tm;
- 	struct m41t80_data *clientdata = NULL;
++static void i2c_sibyte_remove_bus(struct i2c_adapter *i2c_adap)
++{
++	struct i2c_algo_sibyte_data *adap = i2c_adap->algo_data;
++	void __iomem *csr = adap->csr;
++
++	i2c_del_adapter(i2c_adap);
++
++	/* Disable interrupts. */
++	__raw_writeq(0, csr + R_SMB_CONTROL);
++	mmiowb();
++	__raw_readq(csr + R_SMB_CONTROL);
++
++	free_irq(adap->irq, i2c_adap);
++
++	/* Clear any pending error interrupt. */
++	__raw_writeq(__raw_readq(csr + R_SMB_STATUS), csr + R_SMB_STATUS);
++
++	iounmap(csr);
++}
  
--	if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C
--				     | I2C_FUNC_SMBUS_BYTE_DATA)) {
-+	if (!i2c_check_functionality(client->adapter,
-+				     I2C_FUNC_SMBUS_BYTE_DATA)) {
- 		rc = -ENODEV;
- 		goto exit;
- 	}
+-static struct i2c_algo_sibyte_data sibyte_board_data[2] = {
+-	{ NULL, 0, (void *) (CKSEG1+A_SMB_BASE(0)) },
+-	{ NULL, 1, (void *) (CKSEG1+A_SMB_BASE(1)) }
++static struct i2c_algo_sibyte_data i2c_sibyte_board_data[2] = {
++	{
++		.name	= "sb1250-smbus-0",
++		.base	= A_SMB_0,
++		.irq	= K_INT_SMB_0,
++	},
++	{
++		.name	= "sb1250-smbus-1",
++		.base	= A_SMB_1,
++		.irq	= K_INT_SMB_1,
++	}
+ };
+ 
+-static struct i2c_adapter sibyte_board_adapter[2] = {
++static struct i2c_adapter i2c_sibyte_board_adapter[2] = {
+ 	{
+ 		.owner		= THIS_MODULE,
+ 		.id		= I2C_HW_SIBYTE,
+ 		.class		= I2C_CLASS_HWMON,
+-		.algo		= NULL,
+-		.algo_data	= &sibyte_board_data[0],
++		.algo		= &i2c_sibyte_algo,
++		.algo_data	= &i2c_sibyte_board_data[0],
+ 		.nr		= 0,
+ 		.name		= "SiByte SMBus 0",
+ 	},
+@@ -166,8 +293,8 @@ static struct i2c_adapter sibyte_board_a
+ 		.owner		= THIS_MODULE,
+ 		.id		= I2C_HW_SIBYTE,
+ 		.class		= I2C_CLASS_HWMON,
+-		.algo		= NULL,
+-		.algo_data	= &sibyte_board_data[1],
++		.algo		= &i2c_sibyte_algo,
++		.algo_data	= &i2c_sibyte_board_data[1],
+ 		.nr		= 1,
+ 		.name		= "SiByte SMBus 1",
+ 	},
+@@ -175,21 +302,32 @@ static struct i2c_adapter sibyte_board_a
+ 
+ static int __init i2c_sibyte_init(void)
+ {
++	int err;
++
+ 	pr_info("i2c-sibyte: i2c SMBus adapter module for SiByte board\n");
+-	if (i2c_sibyte_add_bus(&sibyte_board_adapter[0], K_SMB_FREQ_100KHZ) < 0)
+-		return -ENODEV;
+-	if (i2c_sibyte_add_bus(&sibyte_board_adapter[1],
+-			       K_SMB_FREQ_400KHZ) < 0) {
+-		i2c_del_adapter(&sibyte_board_adapter[0]);
+-		return -ENODEV;
+-	}
++
++	err = i2c_sibyte_add_bus(&i2c_sibyte_board_adapter[0],
++				 K_SMB_FREQ_100KHZ);
++	if (err < 0)
++		goto out;
++
++	err = i2c_sibyte_add_bus(&i2c_sibyte_board_adapter[1],
++				 K_SMB_FREQ_400KHZ);
++	if (err < 0)
++		goto out_remove;
++
+ 	return 0;
++
++out_remove:
++	i2c_sibyte_remove_bus(&i2c_sibyte_board_adapter[0]);
++out:
++	return err;
+ }
+ 
+ static void __exit i2c_sibyte_exit(void)
+ {
+-	i2c_del_adapter(&sibyte_board_adapter[0]);
+-	i2c_del_adapter(&sibyte_board_adapter[1]);
++	i2c_sibyte_remove_bus(&i2c_sibyte_board_adapter[1]);
++	i2c_sibyte_remove_bus(&i2c_sibyte_board_adapter[0]);
+ }
+ 
+ module_init(i2c_sibyte_init);
