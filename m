@@ -1,77 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760470AbYEMNyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757479AbYEMNzl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760470AbYEMNyR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 09:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756924AbYEMNyD
+	id S1757479AbYEMNzl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 09:55:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756871AbYEMNzc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 09:54:03 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:52555 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756922AbYEMNyA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 09:54:00 -0400
-Subject: Re: performance "regression" in cfq compared to anticipatory, 
-	deadline and noop
-From: Kasper Sandberg <lkml@metanurb.dk>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Daniel J Blueman <daniel.blueman@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Matthew <jackdachef@gmail.com>
-In-Reply-To: <20080513122021.GP16217@kernel.dk>
-References: <6278d2220805110614i7160a8a5o36d55acb732c1b59@mail.gmail.com>
-	 <1210514567.7827.62.camel@localhost>  <20080513122021.GP16217@kernel.dk>
-Content-Type: text/plain
-Date: Tue, 13 May 2008 15:51:04 +0200
-Message-Id: <1210686664.1093.33.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
+	Tue, 13 May 2008 09:55:32 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:39153 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753801AbYEMNzc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 09:55:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=UumypDVMnlyVU36rA5sG4KpOclE1vzFJEl2+Qq34oB3qqjSZRIVwBaliA/GsS+2qIPKCgAj7XvhH0okdvDFCjXluAm+26gbrCc6FJpQzSG5wEJwmvQbF0iRvlJDRn430aIDOUDuPwjZD6M82BlQ9dZWKp6cJf+WC3do7z8C1nyU=
+Message-ID: <7e0dd21a0805130655xd8b1c8ap9a329943e25fe6fb@mail.gmail.com>
+Date: Tue, 13 May 2008 15:55:29 +0200
+From: "Johann Baudy" <johaahn@gmail.com>
+To: hjk@linutronix.de, gregkh@suse.de
+Subject: UIO: phys_mem_access_prot() miss?
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-05-13 at 14:20 +0200, Jens Axboe wrote:
-> On Sun, May 11 2008, Kasper Sandberg wrote:
-> > On Sun, 2008-05-11 at 14:14 +0100, Daniel J Blueman wrote:
-> > > I've been experiencing this for a while also; an almost 50% regression
-> > > is seen for single-process reads (ie sync) if slice_idle is 1ms or
-> > > more (eg default of 8) [1], which seems phenomenal.
-<snip>
-> > 
-> > Thisd would appear to be quite a considerable performance difference.
-> 
-> Indeed, that is of course a bug. The initial mail here mentions this as
-> a regression - which kernel was the last that worked ok?
+Hi Hans, Greg,
 
-I am afraid i cannot exactly tell you..
+I need some help on UIO driver.
+I have to add this below workaround (in uio.c) to be able to access
+phys memory from user space.
+I'm currently using PPC arch.
+Am I wrong? or Is it a miss?
 
-But i do have some additional information for you.
+static int uio_mmap(struct file *filep, struct vm_area_struct *vma)
+{
 
-I have a server running with identical disk to mine, however, with an
-older intel ahci controller..
+...
+	switch (idev->info->mem[mi].memtype) {
+		case UIO_MEM_PHYS:
++       	vma->vm_page_prot = phys_mem_access_prot(filep,
++            idev->info->mem[mi].addr >> PAGE_SHIFT,
++						 vma->vm_end - vma->vm_start,
++						 vma->vm_page_prot);
+			return uio_mmap_physical(vma);
+		case UIO_MEM_LOGICAL:
+...
 
-This one gets 80mb/s with cfq, and 100mb/s with
-anticipatory/deadline/noop with hdparm..
+}
 
-This server is running debian stable with a .18 kernel. I am sad to say
-however, that i will be unable to do any testing on this box, since it
-is a production server, and i can not shut it down.
+FYI: I've copied those lines from mem char driver in mmap_mem().
 
-haltek:~/blktrace# ./blktrace  /dev/sda
-BLKTRACESETUP: Inappropriate ioctl for device
-Failed to start trace on /dev/sda
-
-However, on the box where you saw the previous numbers, i sure will be
-able to provide you with the data you need.
-
-i expect to get around to doing this this afternoon, or tonight at
-~02:00
-(im GMT+1).
-
-
-> 
-> If someone would send me a blktrace of such a slow run, that would be
-> nice. Basically just do a blktrace /dev/sda (or whatever device) while
-> doing the hdparm, preferably storing output files on a difference
-> device. Then send the raw sda.blktrace.* files to me. Thanks!
-> 
-
+Thanks in advance,
+Johann
