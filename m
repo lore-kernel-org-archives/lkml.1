@@ -1,54 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758837AbYEMGgp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757299AbYEMGrk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758837AbYEMGgp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 02:36:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756624AbYEMGgh
+	id S1757299AbYEMGrk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 02:47:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752152AbYEMGrb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 02:36:37 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:48707 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756223AbYEMGgg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 02:36:36 -0400
-Date: Tue, 13 May 2008 08:36:15 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-next@vger.kernel.org, Steven French <sfrench@us.ibm.com>,
-       Steven Whitehouse <swhiteho@redhat.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jeff Garzik <jeff@garzik.org>, Ralf Baechle <ralf@linux-mips.org>,
-       Jan Kara <jack@ucw.cz>, Anton Vorontsov <cbou@mail.ru>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Eric Van Hensbergen <ericvh@gmail.com>,
-       Wim Van Sebroeck <wim@iguana.be>, Christian Zankel <chris@zankel.net>,
-       Nicolas Pitre <nico@cam.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <clameter@sgi.com>, Erez Zadok <ezk@cs.sunysb.edu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: git trees which are not yet in linux-next
-Message-ID: <20080513083615.4e463f87@mjolnir.drzeus.cx>
-In-Reply-To: <20080502151206.b40f77ea.akpm@linux-foundation.org>
-References: <20080502151206.b40f77ea.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 13 May 2008 02:47:31 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:15623 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751957AbYEMGra (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 02:47:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ig6931v3pXJxJk8QRzH9tpHS2Nr0vZwQkPuCzlW6tCkkawdMKe5cPBrgrWgDQASqKV3l3GaMDiA/i8rD9CSMnCGXF1Qbyyh068YnYwh6uSx4UfJDmojS8c3btyRdOSKBu8HM8R+TYtGMaLJKp0yHalXTG6IKbktuEdDukykUDwQ=
+Message-ID: <19f34abd0805122347x4d9c5d03m16679d724189790e@mail.gmail.com>
+Date: Tue, 13 May 2008 08:47:29 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Harald Dunkel" <harald.dunkel@t-online.de>
+Subject: Re: 2.6.25.3: su gets stuck for root
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <4829326A.6060808@t-online.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4829326A.6060808@t-online.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2 May 2008 15:12:06 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Hi,
 
-> 
-> git-mmc: git+ssh://master.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git#for-andrew
-> 
+On Tue, May 13, 2008 at 8:17 AM, Harald Dunkel
+<harald.dunkel@t-online.de> wrote:
+> Hi folks,
+>
+>  I haven't seen it mentioned here (hopefully I wasn't too blind to see):
+>
+>  If I run "su someuser" as root, then it gets stuck. No prompt. I cannot
+>  interrupt it with ^C or ^Z either. /var/log/auth.log says:
 
-The stuff I've pushed to Andrew has always been what I've been hoping
-to merge in the next window, so it should just be a matter of renaming
-the branch. There is a #next at the above URI now.
+...
 
-Rgds
+>  So obviously 'stty' is to blame here (called from root's .bashrc, as
+>  it seems). But for 2.6.24.4 there is no such problem.
+>
+>
+>  Maybe you could spread some light here?
+
+Can you try to run "strace su someuser" instead?
+
+This should produce some screenfulls of information, but will also
+pinpoint the location of the hang in userspace if it's an error
+somewhere in the path of a system call. Strace will output to stderr,
+so use 2>strace.txt to capture it to a file. If you do this as root,
+you should not have to enter any passwords, so they won't be logged
+either.
+
+
+Vegard
+
 -- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
