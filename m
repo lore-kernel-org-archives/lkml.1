@@ -1,64 +1,270 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758716AbYEMWWr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760344AbYEMWXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758716AbYEMWWr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 18:22:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbYEMWWh
+	id S1760344AbYEMWXc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 18:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757814AbYEMWXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 18:22:37 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55357
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751524AbYEMWWg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 18:22:36 -0400
-Date: Tue, 13 May 2008 15:22:31 -0700 (PDT)
-Message-Id: <20080513.152231.109481008.davem@davemloft.net>
-To: mikpe@it.uu.se
-Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] 2.6.26-rc1 lost half the RAM on UltraSPARC 5
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <18473.60551.911448.98269@alkaid.it.uu.se>
-References: <20080512.153628.193699676.davem@davemloft.net>
-	<20080512.153948.193688062.davem@davemloft.net>
-	<18473.60551.911448.98269@alkaid.it.uu.se>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 13 May 2008 18:23:21 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:58205 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757770AbYEMWXS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 18:23:18 -0400
+Subject: Re: [PATCH] jbd_commit_transaction() races with
+	journal_try_to_drop_buffers() causing DIO failures
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: Jan Kara <jack@suse.cz>
+Cc: Badari Pulavarty <pbadari@us.ibm.com>, akpm@linux-foundation.org,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080513145449.GC20806@duck.suse.cz>
+References: <20080428122626.GC17054@duck.suse.cz>
+	 <1209402694.23575.5.camel@badari-desktop>
+	 <20080428180932.GI17054@duck.suse.cz>
+	 <1209409764.11872.6.camel@localhost.localdomain>
+	 <20080429124321.GD1987@duck.suse.cz>
+	 <1209654981.27240.19.camel@badari-desktop>
+	 <20080505170636.GK25722@duck.suse.cz>
+	 <1210372072.3639.52.camel@localhost.localdomain>
+	 <20080512155419.GD15856@duck.suse.cz>
+	 <1210639184.3661.43.camel@localhost.localdomain>
+	 <20080513145449.GC20806@duck.suse.cz>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Tue, 13 May 2008 15:23:09 -0700
+Message-Id: <1210717389.3638.24.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mikael Pettersson <mikpe@it.uu.se>
-Date: Tue, 13 May 2008 21:31:19 +0200
-
-> David Miller writes:
->  > Try this patch instead, thanks!
+On Tue, 2008-05-13 at 16:54 +0200, Jan Kara wrote:
+> On Mon 12-05-08 17:39:43, Mingming Cao wrote:
+> > On Mon, 2008-05-12 at 17:54 +0200, Jan Kara wrote:
+> > Does this match what you are thinking? It certainly slow down the DIO
+> > path, but the positive side is it doesn't disturb the other code path...
+> > thanks for your feedback!
+> > 
+> > --------------------------------------------
+> > 
+> > An unexpected EIO error gets returned when writing to a file
+> > using buffered writes and DIO writes at the same time.
+> > 
+> > We found there are a number of places where journal_try_to_free_buffers()
+> > could race with journal_commit_transaction(), the later still
+> > helds the reference to the buffers on the t_syncdata_list or t_locked_list
+> > , while journal_try_to_free_buffers() tries to free them, which resulting an EIO
+> > error returns back to the dio caller. 
+> > 
+> > The logic fix is to retry freeing if journal_try_to_free_buffers() to failed
+> > to free those data buffers while journal_commit_transaction() is still
+> > reference those buffers.
+> > This is done via implement ext3 launder_page() callback, instead of inside
+> > journal_try_to_free_buffers() itself, so that it doesn't affecting other code
+> > path calling journal_try_to_free_buffers and only dio path get affected.
+> > 
+> > Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+> > Index: linux-2.6.26-rc1/fs/ext3/inode.c
+> > ===================================================================
+> > --- linux-2.6.26-rc1.orig/fs/ext3/inode.c	2008-05-03 11:59:44.000000000 -0700
+> > +++ linux-2.6.26-rc1/fs/ext3/inode.c	2008-05-12 12:41:27.000000000 -0700
+> > @@ -1766,6 +1766,23 @@ static int ext3_journalled_set_page_dirt
+> >  	return __set_page_dirty_nobuffers(page);
+> >  }
+> >  
+> > +static int ext3_launder_page(struct page *page)
+> > +{
+> > +        int ret;
+> > +	int retry = 5;
+> > +
+> > +	while (retry --) {
+> > +		ret = ext3_releasepage(page, GFP_KERNEL);
+> > +		if (ret == 1)
+> > +			break;
+> > +		else
+> > +			schedule();
+> > +	}
+> > +
+> > +        return ret;
+> > +}
+> > +
+> > +
+>   Yes, I meant something like this. We could be more clever and do:
 > 
-> Ok, reverting previous patch and applying this done results in:
- ...
-> lmb_dump_all:
->     memory.cnt		  = 0x4
->     memory.size		  = 0xff40000
->     memory.region[0x0].base       = 0x0
-> 		      .size     = 0x8000000
->     memory.region[0x1].base       = 0x10000000
-> 		      .size     = 0x7efe000
->     memory.region[0x2].base       = 0x17f00000
-> 		      .size     = 0x3a000
->     memory.region[0x3].base       = 0x17f3e000
-> 		      .size     = 0x8000
->     reserved.cnt	  = 0x4
->     reserved.size	  = 0x0
->     reserved.region[0x0].base       = 0x7ffc000
-> 		      .size     = 0x2000
->     reserved.region[0x1].base       = 0x7fff040
-> 		      .size     = 0xfc0
->     reserved.region[0x2].base       = 0x10000000
-> 		      .size     = 0x35bf60
->     reserved.region[0x3].base       = 0x107e8e00
-> 		      .size     = 0x10b9a751
+> 	head = bh = page_buffers(page);
+> 	do {
+> 		wait_on_buffer(bh);
+> 		bh = bh->b_this_page;
+> 	} while (bh != head);
+> 	/*
+> 	 * Now commit code should have been able to proceed and release
+>          * those buffers
+> 	 */
+>         schedule();
+> 
 
-Yeah, those last two reserved regions are where your 128MB went to,
-as I suspected.
+Bummer, we can't free buffers in ext3_launder_page() before calling
+try_to_free_page, as later
+invalidate_complete_page2()->try_to_free_page() expecting the page
+buffers are still here, and will return EIO if it launder_page() has
+already freed those buffers.:(
 
-Thanks I'll try to figure out where to go from here.
+Doing wait_on_buffer() alone in launder_page() is not enough as it
+doesn't wait for buffer reference drop to 0.
+
+> or we could do simple:
+> 	log_wait_commit(...);
+> 
+> That would impose larger perf. penalty but on the other hand you shouldn't
+> hit this path too often. 
+
+Guess this is the last it worth give a try to see how bad it is, here is
+a draft patch. Do you see any obvious problems?
+
+Mingming
+
+
+Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+ fs/ext3/inode.c |   68 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 68 insertions(+)
+
+Index: linux-2.6.26-rc1/fs/ext3/inode.c
+===================================================================
+--- linux-2.6.26-rc1.orig/fs/ext3/inode.c	2008-05-13 13:35:27.000000000 -0700
++++ linux-2.6.26-rc1/fs/ext3/inode.c	2008-05-13 14:33:55.000000000 -0700
+@@ -1766,6 +1766,53 @@ static int ext3_journalled_set_page_dirt
+ 	return __set_page_dirty_nobuffers(page);
+ }
+ 
++/*
++ * There are a number of places where journal_try_to_free_buffers()
++ * could race with journal_commit_transaction(), the later still
++ * helds the reference to the buffers on the t_syncdata_list or t_locked_list
++ * while journal_try_to_free_buffers() tries to free them,
++ * which resulting an EIO error returns back to the generic_file_direct_IO()
++ *
++ * It is also possible that mapped IO could re-dirty the page and buffers
++ * after direct IO has waited dirty pages have been flush to disk.
++ * When the journal_try_to_free_buffers() is called from the direct IO
++ * path, it may failed to free the buffers as the buffer may be locked again
++ *
++ * To fix this problem, we add a ext3_launder_page() callback which
++ * is only called on direct IO path, to wait for the buffer unlocked
++ * and waiting for the jbd finish commit those data buffers.
++ *
++ * This will impact the direct IO perf, but this alows direct IO and
++ * buffered IO could be performed concurrently.
++ *
++ * returns 0 in sucess case, and non zero in failure case.
++ */
++static int ext3_launder_page(struct page *page)
++{
++	int ret = 0;
++	struct buffer_head *head;
++	struct buffer_head *bh;
++	journal_t *journal = EXT3_JOURNAL(page->mapping->host);
++
++	head = bh = page_buffers(page);
++	do {
++		/*
++		 * it's possible mapped IO re-dirty and locked the
++		 * buffer again when we came here
++		 */
++		if (buffer_locked(bh)) {
++			get_bh(bh);
++			wait_on_buffer(bh);
++			put_bh(bh);
++		}
++
++		journal_wait_commit_buffer(journal, bh);
++		bh = bh->b_this_page;
++	} while (bh != head);
++
++        return ret;
++}
++
+ static const struct address_space_operations ext3_ordered_aops = {
+ 	.readpage	= ext3_readpage,
+ 	.readpages	= ext3_readpages,
+@@ -1778,6 +1825,7 @@ static const struct address_space_operat
+ 	.releasepage	= ext3_releasepage,
+ 	.direct_IO	= ext3_direct_IO,
+ 	.migratepage	= buffer_migrate_page,
++	.launder_page	= ext3_launder_page,
+ };
+ 
+ static const struct address_space_operations ext3_writeback_aops = {
+Index: linux-2.6.26-rc1/fs/jbd/journal.c
+===================================================================
+--- linux-2.6.26-rc1.orig/fs/jbd/journal.c	2008-05-03 11:59:44.000000000 -0700
++++ linux-2.6.26-rc1/fs/jbd/journal.c	2008-05-13 14:43:47.000000000 -0700
+@@ -74,6 +74,7 @@ EXPORT_SYMBOL(journal_errno);
+ EXPORT_SYMBOL(journal_ack_err);
+ EXPORT_SYMBOL(journal_clear_err);
+ EXPORT_SYMBOL(log_wait_commit);
++EXPORT_SYMBOL(journal_wait_commit_buffer);
+ EXPORT_SYMBOL(journal_start_commit);
+ EXPORT_SYMBOL(journal_force_commit_nested);
+ EXPORT_SYMBOL(journal_wipe);
+@@ -558,6 +559,46 @@ int log_wait_commit(journal_t *journal, 
+ }
+ 
+ /*
++ * Wait for a specific buffer has committed to the log
++ */
++int journal_wait_commit_buffer(journal_t *journal, struct buffer_head *bh)
++{
++	int ret = 0;
++	struct journal_head * jh;
++	transaction_t *t;
++	tid_t tid;
++
++	jbd_lock_bh_state(bh);
++	spin_lock(&journal->j_list_lock);
++	jh = journal_grab_journal_head(bh);
++
++	if (!jh)
++		goto unlock;
++
++	t = jh->b_transaction;
++
++	if (!t)
++		goto release;
++
++	tid = t->t_tid;
++
++	journal_put_journal_head(jh);
++	spin_unlock(&journal->j_list_lock);
++	jbd_unlock_bh_state(bh);
++
++	log_start_commit(journal, tid);
++	ret = log_wait_commit(journal, tid);
++	return ret;
++
++release:
++	journal_put_journal_head(jh);
++unlock:
++	spin_unlock(&journal->j_list_lock);
++	jbd_unlock_bh_state(bh);
++	return ret;
++}
++
++/*
+  * Log buffer allocation routines:
+  */
+ 
+Index: linux-2.6.26-rc1/include/linux/jbd.h
+===================================================================
+--- linux-2.6.26-rc1.orig/include/linux/jbd.h	2008-05-03 11:59:44.000000000 -0700
++++ linux-2.6.26-rc1/include/linux/jbd.h	2008-05-13 14:42:45.000000000 -0700
+@@ -974,6 +974,7 @@ int __log_start_commit(journal_t *journa
+ int journal_start_commit(journal_t *journal, tid_t *tid);
+ int journal_force_commit_nested(journal_t *journal);
+ int log_wait_commit(journal_t *journal, tid_t tid);
++int journal_wait_commit_buffer(journal_t *journal, struct buffer_head *bh);
+ int log_do_checkpoint(journal_t *journal);
+ 
+ void __log_wait_for_space(journal_t *journal);
+
+
