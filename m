@@ -1,64 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759631AbYEMTH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759258AbYEMTJZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759631AbYEMTH1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 15:07:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757436AbYEMTHB
+	id S1759258AbYEMTJZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 15:09:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756071AbYEMTJN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 15:07:01 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:58498 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757003AbYEMTG7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 15:06:59 -0400
-To: casey@schaufler-ca.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 2.6.25: access permission filesystem 0.21
-References: <126313.89542.qm@web36605.mail.mud.yahoo.com>
-From: Olaf Dietsche <olaf+list.linux-kernel@olafdietsche.de>
-Date: Tue, 13 May 2008 21:06:55 +0200
-Message-ID: <87k5hy2fcg.fsf@rat.lan>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 13 May 2008 15:09:13 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:38204 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756018AbYEMTJM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 15:09:12 -0400
+Message-ID: <4829E752.8030104@garzik.org>
+Date: Tue, 13 May 2008 15:09:06 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Provags-ID: V01U2FsdGVkX184IFZih9tAo40oyJEjaQafe0csUAa48URmPyH
- gZDCZhAsd6nxU1YKPK3d6Yn2770ckWo+4e6LrCbLxn30OGWC5W
- 36oM4Zeb+fVkPFatMRWfw==
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: POHMELFS high performance network filesystem. Transactions, failover,
+ performance.
+References: <20080513174523.GA1677@2ka.mipt.ru>
+In-Reply-To: <20080513174523.GA1677@2ka.mipt.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Casey Schaufler <casey@schaufler-ca.com> writes:
+Evgeniy Polyakov wrote:
+> Hi.
+> 
+> I'm please to announce POHMEL high performance network filesystem.
+> POHMELFS stands for Parallel Optimized Host Message Exchange Layered File System.
+> 
+> Development status can be tracked in filesystem section [1].
+> 
+> This is a high performance network filesystem with local coherent cache of data
+> and metadata. Its main goal is distributed parallel processing of data. Network 
+> filesystem is a client transport. POHMELFS protocol was proven to be superior to
+> NFS in lots (if not all, then it is in a roadmap) operations.
+> 
+> This release brings following features:
+>  * Fast transactions. System will wrap all writings into transactions, which
+>  	will be resent to different (or the same) server in case of failure.
+> 	Details in notes [1].
+>  * Failover. It is now possible to provide number of servers to be used in
+>  	round-robin fasion when one of them dies. System will automatically
+> 	reconnect to others and send transactions to them.
+>  * Performance. Super fast (close to wire limit) metadata operations over
+>  	the network. By courtesy of writeback cache and transactions the whole
+> 	kernel archive can be untarred by 2-3 seconds (including sync) over
+> 	GigE link (wire limit! Not comparable to NFS).
+> 
+> Basic POHMELFS features:
+>     * Local coherent (notes [5]) cache for data and metadata.
+>     * Completely async processing of all events (hard and symlinks are the only 
+>     	exceptions) including object creation and data reading.
+>     * Flexible object architecture optimized for network processing. Ability to
+>     	create long pathes to object and remove arbitrary huge directoris in 
+> 	single network command.
+>     * High performance is one of the main design goals.
+>     * Very fast and scalable multithreaded userspace server. Being in userspace
+>     	it works with any underlying filesystem and still is much faster than
+> 	async ni-kernel NFS one.
+> 
+> Roadmap includes:
+>     * Server extension to allow storing data on multiple devices (like creating mirroring),
+>     	first by saving data in several local directories (think about server, which mounted
+> 	remote dirs over POHMELFS or NFS, and local dirs).
+>     * Client/server extension to report lookup and readdir requests not only for local
+>     	destination, but also to different addresses, so that reading/writing could be
+> 	done from different nodes in parallel.
+>     * Strong authentification and possible data encryption in network channel.
+>     * Async writing of the data from receiving kernel thread into
+>     	userspace pages via copy_to_user() (check development tracking
+> 	blog for results).
+> 
+> One can grab sources from archive or git [2] or check homepage [3].
+> Benchmark section can be found in the blog [4].
+> 
+> The nearest roadmap (scheduled or the end of the month) includes:
+>  * Full transaction support for all operations (only writeback is
+>  	guarded by transactions currently, default network state
+> 	just reconnects to the same server).
+>  * Data and metadata coherency extensions (in addition to existing
+> 	commented object creation/removal messages). (next week)
+>  * Server redundancy.
 
-> --- Olaf Dietsche <olaf+list.linux-kernel@olafdietsche.de> wrote:
->
->> This patch adds a new permission managing file system.
->> Furthermore, it adds two modules, which make use of this file system.
->> 
->> One module allows granting capabilities based on user-/groupid.
->
-> Hmm. The primary purpose of the capability mechanism, according
-> to the POSIX P1003.1e/2c working group*, is to separate the
-> privilege mechanism from the userid mechanism. You are now
-> reintegrating them two mechanims, albiet differently than
-> they were integrated before. You can already achieve this end
-> using filesystem based capabilties and mode bits and/or ACLs,
-> so why the change?
+This continues to be a neat and interesting project :)
 
-This idea is from 2002, when there were neither filesystem based
-capabilties nor ACLs. But since even I never used it, see it as an
-interesting excercise.
+Where is the best place to look at client<->server protocol?
 
->> The
->> second module allows to grant access to lower numbered ports based on
->> user-/groupid, too.
->
-> Woof. As reasonable as mode bits on ports seems, there's an
-> awful lot of tradition associated with the privileged port
-> model. I can see the value in it, I've actually implemented
-> it in the past in the Unix world, but I have never seen anyone
-> willing to take advantage of the scheme. 
+Are you planning to support the case where the server filesystem dataset 
+does not fit entirely on one server?
 
-Well, I'm not in the tradition business :-) but it's fun to do these
-things and even useful in this case.
+What is your opinion of the Paxos algorithm?
 
-Regards, Olaf
+	Jeff
+
+
+
