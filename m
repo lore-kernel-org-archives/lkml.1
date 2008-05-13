@@ -1,139 +1,312 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761320AbYEMRTr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761361AbYEMRUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761320AbYEMRTr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 13:19:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758464AbYEMRTg
+	id S1761361AbYEMRUe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 13:20:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757261AbYEMRUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 13:19:36 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:46539 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757261AbYEMRTf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 13:19:35 -0400
-Message-ID: <4829CDA8.9070106@us.ibm.com>
-Date: Tue, 13 May 2008 12:19:36 -0500
-From: Jon Tollefson <kniht@us.ibm.com>
-Reply-To: kniht@linux.vnet.ibm.com
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linuxppc-dev <linuxppc-dev@ozlabs.org>
-CC: Paul Mackerras <paulus@samba.org>, Nick Piggin <npiggin@suse.de>,
-       Nishanth Aravamudan <nacc@us.ibm.com>, Andi Kleen <andi@firstfloor.org>,
-       Adam Litke <agl@us.ibm.com>
-Subject: [PATCH 1/6 v2] allow arch specific function for allocating gigantic
- pages
-References: <4829CAC3.30900@us.ibm.com>
-In-Reply-To: <4829CAC3.30900@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 13 May 2008 13:20:17 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:33684 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751747AbYEMRUN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 13:20:13 -0400
+Subject: [GIT PATCH] SCSI bug fixes for 2.6.26-rc2
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 13 May 2008 12:20:09 -0500
+Message-Id: <1210699209.3077.38.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow alloc_bm_huge_page() to be overridden by architectures that can't
-always use bootmem. This requires huge_boot_pages to be available for
-use by this function. The 16G pages on ppc64 have to be reserved prior
-to boot-time. The location of these pages are indicated in the device
-tree.
+Just a small set of clear bug fixes (OK all but two of them are 2.6.25
+regressions as well).
+
+The patch is available here:
+
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
+
+The short change log is:
+
+James Bottomley (4):
+      aha152x: Fix oops on module removal
+      aha152x: fix init suspiciously returned 1, it should follow 0/-E conventio
+      gdth: fix Error: Driver 'gdth' is already registered, aborting...
+      gdth: fix timer handling
+
+Jeremy Higdon (1):
+      qla1280: Fix queue depth problem
+
+Mike Christie (2):
+      libiscsi regression in 2.6.25: fix setting of recv timer
+      libiscsi regression in 2.6.25: fix nop timer handling
 
 
-A BUG_ON in huge_add_hstate is commented out in order to allow 64K huge
-pages to continue to work on power.
+The diffstat is:
 
+ aha152x.c  |    8 ++++----
+ gdth.c     |   51 ++++++++++++++++++++++++++++++++++-----------------
+ libiscsi.c |   29 +++++++++++++++--------------
+ qla1280.c  |    4 ++--
+ 4 files changed, 55 insertions(+), 37 deletions(-)
 
+And the actual diff below.
 
-Signed-off-by: Jon Tollefson <kniht@linux.vnet.ibm.com>
+James
+
 ---
 
- include/linux/hugetlb.h |   10 ++++++++++
- mm/hugetlb.c            |   15 ++++++---------
- 2 files changed, 16 insertions(+), 9 deletions(-)
-
-
-diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
-index 8c47ca7..b550ec7 100644
---- a/include/linux/hugetlb.h
-+++ b/include/linux/hugetlb.h
-@@ -35,6 +35,7 @@ void hugetlb_unreserve_pages(struct inode *inode, long offset, long freed);
- extern unsigned long hugepages_treat_as_movable;
- extern const unsigned long hugetlb_zero, hugetlb_infinity;
- extern int sysctl_hugetlb_shm_group;
-+extern struct list_head huge_boot_pages;
+diff --git a/drivers/scsi/aha152x.c b/drivers/scsi/aha152x.c
+index f5215fd..1dca177 100644
+--- a/drivers/scsi/aha152x.c
++++ b/drivers/scsi/aha152x.c
+@@ -3830,7 +3830,7 @@ static int __init aha152x_init(void)
+ 			iounmap(p);
+ 		}
+ 		if (!ok && setup_count == 0)
+-			return 0;
++			return -ENODEV;
  
- /* arch callbacks */
- 
-@@ -205,6 +206,14 @@ struct hstate {
- 	unsigned int surplus_huge_pages_node[MAX_NUMNODES];
- };
- 
-+struct huge_bm_page {
-+	struct list_head list;
-+	struct hstate *hstate;
-+};
-+
-+/* arch callback */
-+int alloc_bm_huge_page(struct hstate *h);
-+
- void __init huge_add_hstate(unsigned order);
- struct hstate *size_to_hstate(unsigned long size);
- 
-@@ -256,6 +265,7 @@ extern unsigned long sysctl_overcommit_huge_pages[HUGE_MAX_HSTATE];
- 
+ 		printk(KERN_INFO "aha152x: BIOS test: passed, ");
  #else
- struct hstate {};
-+#define alloc_bm_huge_page(h) NULL
- #define hstate_file(f) NULL
- #define hstate_vma(v) NULL
- #define hstate_inode(i) NULL
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 5273f6c..efb5805 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -27,6 +27,7 @@ unsigned long max_huge_pages[HUGE_MAX_HSTATE];
- unsigned long sysctl_overcommit_huge_pages[HUGE_MAX_HSTATE];
- static gfp_t htlb_alloc_mask = GFP_HIGHUSER;
- unsigned long hugepages_treat_as_movable;
-+struct list_head huge_boot_pages;
+@@ -3909,14 +3909,14 @@ static int __init aha152x_init(void)
+ #endif
+ 	}
  
- static int max_hstate = 0;
- 
-@@ -533,14 +534,8 @@ static struct page *alloc_huge_page(struct vm_area_struct *vma,
- 	return page;
+-	return 1;
++	return 0;
  }
  
--static __initdata LIST_HEAD(huge_boot_pages);
--
--struct huge_bm_page {
--	struct list_head list;
--	struct hstate *hstate;
--};
--
--static int __init alloc_bm_huge_page(struct hstate *h)
-+/* Can be overriden by architectures */
-+__attribute__((weak)) int alloc_bm_huge_page(struct hstate *h)
+ static void __exit aha152x_exit(void)
  {
- 	struct huge_bm_page *m;
- 	int nr_nodes = nodes_weight(node_online_map);
-@@ -583,6 +578,8 @@ static void __init hugetlb_init_hstate(struct hstate *h)
- 	unsigned long i;
+-	struct aha152x_hostdata *hd;
++	struct aha152x_hostdata *hd, *tmp;
  
- 	/* Don't reinitialize lists if they have been already init'ed */
-+	if (!huge_boot_pages.next)
-+		INIT_LIST_HEAD(&huge_boot_pages);
- 	if (!h->hugepage_freelists[0].next) {
- 		for (i = 0; i < MAX_NUMNODES; ++i)
- 			INIT_LIST_HEAD(&h->hugepage_freelists[i]);
-@@ -664,7 +661,7 @@ void __init huge_add_hstate(unsigned order)
+-	list_for_each_entry(hd, &aha152x_host_list, host_list) {
++	list_for_each_entry_safe(hd, tmp, &aha152x_host_list, host_list) {
+ 		struct Scsi_Host *shost = container_of((void *)hd, struct Scsi_Host, hostdata);
+ 
+ 		aha152x_release(shost);
+diff --git a/drivers/scsi/gdth.c b/drivers/scsi/gdth.c
+index 8e2e964..46771d4 100644
+--- a/drivers/scsi/gdth.c
++++ b/drivers/scsi/gdth.c
+@@ -550,7 +550,6 @@ static int __init gdth_search_isa(ulong32 bios_adr)
+ #endif /* CONFIG_ISA */
+ 
+ #ifdef CONFIG_PCI
+-static bool gdth_pci_registered;
+ 
+ static bool gdth_search_vortex(ushort device)
+ {
+@@ -3724,6 +3723,8 @@ static void gdth_log_event(gdth_evt_data *dvr, char *buffer)
+ }
+ 
+ #ifdef GDTH_STATISTICS
++static unchar	gdth_timer_running;
++
+ static void gdth_timeout(ulong data)
+ {
+     ulong32 i;
+@@ -3731,7 +3732,10 @@ static void gdth_timeout(ulong data)
+     gdth_ha_str *ha;
+     ulong flags;
+ 
+-    BUG_ON(list_empty(&gdth_instances));
++    if(unlikely(list_empty(&gdth_instances))) {
++	    gdth_timer_running = 0;
++	    return;
++    }
+ 
+     ha = list_first_entry(&gdth_instances, gdth_ha_str, list);
+     spin_lock_irqsave(&ha->smp_lock, flags);
+@@ -3751,6 +3755,22 @@ static void gdth_timeout(ulong data)
+     add_timer(&gdth_timer);
+     spin_unlock_irqrestore(&ha->smp_lock, flags);
+ }
++
++static void gdth_timer_init(void)
++{
++	if (gdth_timer_running)
++		return;
++	gdth_timer_running = 1;
++	TRACE2(("gdth_detect(): Initializing timer !\n"));
++	gdth_timer.expires = jiffies + HZ;
++	gdth_timer.data = 0L;
++	gdth_timer.function = gdth_timeout;
++	add_timer(&gdth_timer);
++}
++#else
++static inline void gdth_timer_init(void)
++{
++}
+ #endif
+ 
+ static void __init internal_setup(char *str,int *ints)
+@@ -4735,6 +4755,7 @@ static int __init gdth_isa_probe_one(ulong32 isa_bios)
+ 	if (error)
+ 		goto out_free_coal_stat;
+ 	list_add_tail(&ha->list, &gdth_instances);
++	gdth_timer_init();
+ 
+ 	scsi_scan_host(shp);
+ 
+@@ -4865,6 +4886,7 @@ static int __init gdth_eisa_probe_one(ushort eisa_slot)
+ 	if (error)
+ 		goto out_free_coal_stat;
+ 	list_add_tail(&ha->list, &gdth_instances);
++	gdth_timer_init();
+ 
+ 	scsi_scan_host(shp);
+ 
+@@ -5011,6 +5033,7 @@ static int gdth_pci_probe_one(gdth_pci_str *pcistr,
+ 	list_add_tail(&ha->list, &gdth_instances);
+ 
+ 	pci_set_drvdata(ha->pdev, ha);
++	gdth_timer_init();
+ 
+ 	scsi_scan_host(shp);
+ 
+@@ -5110,6 +5133,7 @@ static int __init gdth_init(void)
+ 	/* initializations */
+ 	gdth_polling = TRUE;
+ 	gdth_clear_events();
++	init_timer(&gdth_timer);
+ 
+ 	/* As default we do not probe for EISA or ISA controllers */
+ 	if (probe_eisa_isa) {
+@@ -5132,23 +5156,17 @@ static int __init gdth_init(void)
+ 
+ #ifdef CONFIG_PCI
+ 	/* scanning for PCI controllers */
+-	if (pci_register_driver(&gdth_pci_driver) == 0)
+-		gdth_pci_registered = true;
++	if (pci_register_driver(&gdth_pci_driver)) {
++		gdth_ha_str *ha;
++
++		list_for_each_entry(ha, &gdth_instances, list)
++			gdth_remove_one(ha);
++		return -ENODEV;
++	}
+ #endif /* CONFIG_PCI */
+ 
+ 	TRACE2(("gdth_detect() %d controller detected\n", gdth_ctr_count));
+ 
+-	if (list_empty(&gdth_instances))
+-		return -ENODEV;
+-
+-#ifdef GDTH_STATISTICS
+-	TRACE2(("gdth_detect(): Initializing timer !\n"));
+-	init_timer(&gdth_timer);
+-	gdth_timer.expires = jiffies + HZ;
+-	gdth_timer.data = 0L;
+-	gdth_timer.function = gdth_timeout;
+-	add_timer(&gdth_timer);
+-#endif
+ 	major = register_chrdev(0,"gdth", &gdth_fops);
+ 	register_reboot_notifier(&gdth_notifier);
+ 	gdth_polling = FALSE;
+@@ -5167,8 +5185,7 @@ static void __exit gdth_exit(void)
+ #endif
+ 
+ #ifdef CONFIG_PCI
+-	if (gdth_pci_registered)
+-		pci_unregister_driver(&gdth_pci_driver);
++	pci_unregister_driver(&gdth_pci_driver);
+ #endif
+ 
+ 	list_for_each_entry(ha, &gdth_instances, list)
+diff --git a/drivers/scsi/libiscsi.c b/drivers/scsi/libiscsi.c
+index 010c1b9..b43bf1d 100644
+--- a/drivers/scsi/libiscsi.c
++++ b/drivers/scsi/libiscsi.c
+@@ -730,7 +730,9 @@ static int __iscsi_complete_pdu(struct iscsi_conn *conn, struct iscsi_hdr *hdr,
+ 				if (iscsi_recv_pdu(conn->cls_conn, hdr, data,
+ 						   datalen))
+ 					rc = ISCSI_ERR_CONN_FAILED;
+-			}
++			} else
++				mod_timer(&conn->transport_timer,
++					  jiffies + conn->recv_timeout);
+ 			iscsi_free_mgmt_task(conn, mtask);
+ 			break;
+ 		default:
+@@ -1453,19 +1455,20 @@ static void iscsi_check_transport_timeouts(unsigned long data)
+ {
+ 	struct iscsi_conn *conn = (struct iscsi_conn *)data;
+ 	struct iscsi_session *session = conn->session;
+-	unsigned long timeout, next_timeout = 0, last_recv;
++	unsigned long recv_timeout, next_timeout = 0, last_recv;
+ 
+ 	spin_lock(&session->lock);
+ 	if (session->state != ISCSI_STATE_LOGGED_IN)
+ 		goto done;
+ 
+-	timeout = conn->recv_timeout;
+-	if (!timeout)
++	recv_timeout = conn->recv_timeout;
++	if (!recv_timeout)
+ 		goto done;
+ 
+-	timeout *= HZ;
++	recv_timeout *= HZ;
+ 	last_recv = conn->last_recv;
+-	if (time_before_eq(last_recv + timeout + (conn->ping_timeout * HZ),
++	if (conn->ping_mtask &&
++	    time_before_eq(conn->last_ping + (conn->ping_timeout * HZ),
+ 			   jiffies)) {
+ 		iscsi_conn_printk(KERN_ERR, conn, "ping timeout of %d secs "
+ 				  "expired, last rx %lu, last ping %lu, "
+@@ -1476,15 +1479,13 @@ static void iscsi_check_transport_timeouts(unsigned long data)
  		return;
  	}
- 	BUG_ON(max_hstate >= HUGE_MAX_HSTATE);
--	BUG_ON(order < HPAGE_SHIFT - PAGE_SHIFT);
-+/*	BUG_ON(order < HPAGE_SHIFT - PAGE_SHIFT);*/
- 	h = &hstates[max_hstate++];
- 	h->order = order;
- 	h->mask = ~((1ULL << (order + PAGE_SHIFT)) - 1);
-
-
+ 
+-	if (time_before_eq(last_recv + timeout, jiffies)) {
+-		if (time_before_eq(conn->last_ping, last_recv)) {
+-			/* send a ping to try to provoke some traffic */
+-			debug_scsi("Sending nopout as ping on conn %p\n", conn);
+-			iscsi_send_nopout(conn, NULL);
+-		}
+-		next_timeout = last_recv + timeout + (conn->ping_timeout * HZ);
++	if (time_before_eq(last_recv + recv_timeout, jiffies)) {
++		/* send a ping to try to provoke some traffic */
++		debug_scsi("Sending nopout as ping on conn %p\n", conn);
++		iscsi_send_nopout(conn, NULL);
++		next_timeout = conn->last_ping + (conn->ping_timeout * HZ);
+ 	} else
+-		next_timeout = last_recv + timeout;
++		next_timeout = last_recv + recv_timeout;
+ 
+ 	debug_scsi("Setting next tmo %lu\n", next_timeout);
+ 	mod_timer(&conn->transport_timer, next_timeout);
+diff --git a/drivers/scsi/qla1280.c b/drivers/scsi/qla1280.c
+index fa06093..51e2f29 100644
+--- a/drivers/scsi/qla1280.c
++++ b/drivers/scsi/qla1280.c
+@@ -2007,7 +2007,7 @@ qla1280_set_defaults(struct scsi_qla_host *ha)
+ 		nv->bus[bus].config_2.req_ack_active_negation = 1;
+ 		nv->bus[bus].config_2.data_line_active_negation = 1;
+ 		nv->bus[bus].selection_timeout = 250;
+-		nv->bus[bus].max_queue_depth = 256;
++		nv->bus[bus].max_queue_depth = 32;
+ 
+ 		if (IS_ISP1040(ha)) {
+ 			nv->bus[bus].bus_reset_delay = 3;
+@@ -2051,7 +2051,7 @@ qla1280_config_target(struct scsi_qla_host *ha, int bus, int target)
+ 	status = qla1280_mailbox_command(ha, 0x0f, mb);
+ 
+ 	/* Save Tag queuing enable flag. */
+-	flag = (BIT_0 << target) & mb[0];
++	flag = (BIT_0 << target);
+ 	if (nv->bus[bus].target[target].parameter.tag_queuing)
+ 		ha->bus_settings[bus].qtag_enables |= flag;
+ 
 
 
