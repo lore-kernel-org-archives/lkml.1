@@ -1,85 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758284AbYEMFGL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756704AbYEMFLY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758284AbYEMFGL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 01:06:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754535AbYEMFF4
+	id S1756704AbYEMFLY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 01:11:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754514AbYEMFLL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 01:05:56 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34444 "EHLO mx1.redhat.com"
+	Tue, 13 May 2008 01:11:11 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51209 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753487AbYEMFFz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 01:05:55 -0400
-Date: Tue, 13 May 2008 01:05:50 -0400
+	id S1754244AbYEMFLK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 01:11:10 -0400
+Message-ID: <482922E2.3040902@redhat.com>
+Date: Mon, 12 May 2008 22:10:58 -0700
 From: Ulrich Drepper <drepper@redhat.com>
-Message-Id: <200805130505.m4D55oq0018179@devserv.devel.redhat.com>
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH] flag parameters: paccept w/out set_restore_sigmask
-Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, davidel@xmailserver.org, mtk.manpages@gmail.com,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH 18/18] flag parameters: check magic constants
+References: <200805062118.m46LI74j004096@devserv.devel.redhat.com>	<20080512201341.9ead6a9a.akpm@linux-foundation.org>	<482910FA.1080703@redhat.com>	<20080512.210225.167924945.davem@davemloft.net> <20080512220416.ef9a9645.akpm@linux-foundation.org>
+In-Reply-To: <20080512220416.ef9a9645.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some platforms do not have support to restore the signal mask in the
-return path from a syscall.  For those platforms syscalls like pselect
-are not defined at all.  This is, I think, not a good choice for
-paccept() since paccept() adds more value on top of accept() than just
-the signal mask handling.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Therefore this patch defines a scaled down version of the sys_paccept
-function for those platforms.  It returns -EINVAL in case the signal
-mask is non-NULL but behaves the same otherwise.
+Andrew Morton wrote:
+> m68k too..
 
-Note that I explicitly included <linux/thread_info.h>.  I saw that it
-is currently included but indirectly two levels down.  There is too
-much risk in relying on this.  The header might change and then
-suddenly the function definition would change without anyone
-immediately noticing.
+I cannot build it here but looking at the headers:
 
- socket.c |   17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+- - include/asm-m68k/fcntl.h does not define O_NONBLOCK; and therefore
+
+- - the definition from include/asm-generic/fcntl.h is used which is 04000
 
 
-Signed-off-by: Ulrich Drepper <drepper@redhat.com>
+Is there any magic I miss?
 
-diff --git a/net/socket.c b/net/socket.c
-index 5111af1..e25049f 100644
---- a/net/socket.c
-+++ b/net/socket.c
-@@ -68,6 +68,7 @@
- #include <linux/proc_fs.h>
- #include <linux/seq_file.h>
- #include <linux/mutex.h>
-+#include <linux/thread_info.h>
- #include <linux/wanrouter.h>
- #include <linux/if_bridge.h>
- #include <linux/if_frad.h>
-@@ -1509,6 +1510,7 @@ out_fd:
- 	goto out_put;
- }
- 
-+#ifdef HAVE_SET_RESTORE_SIGMASK
- asmlinkage long sys_paccept(int fd, struct sockaddr __user *upeer_sockaddr,
- 			    int __user *upeer_addrlen,
- 			    const sigset_t __user *sigmask,
-@@ -1546,6 +1548,21 @@ asmlinkage long sys_paccept(int fd, struct sockaddr __user *upeer_sockaddr,
- 
- 	return ret;
- }
-+#else
-+asmlinkage long sys_paccept(int fd, struct sockaddr __user *upeer_sockaddr,
-+			    int __user *upeer_addrlen,
-+			    const sigset_t __user *sigmask,
-+			    size_t sigsetsize, int flags)
-+{
-+	/* The platform does not support restoring the signal mask in the
-+	 * return path.  So we do not allow using paccept() with a signal
-+	 * mask.  */
-+	if (sigmask)
-+		return -EINVAL;
-+
-+	return do_accept(fd, upeer_sockaddr, upeer_addrlen, flags);
-+}
-+#endif
- 
- asmlinkage long sys_accept(int fd, struct sockaddr __user *upeer_sockaddr,
- 			   int __user *upeer_addrlen)
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFIKSLi2ijCOnn/RHQRAvItAJ45n2h20UasryYucg18pd9ERWUpbACglsvR
+ftad99qXQ20UwezP0DjbssA=
+=orzm
+-----END PGP SIGNATURE-----
