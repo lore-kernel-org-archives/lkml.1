@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760765AbYEMRBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761215AbYEMRBu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760765AbYEMRBV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 13:01:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755382AbYEMRAX
+	id S1761215AbYEMRBu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 13:01:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760911AbYEMRBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 13:00:23 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:47886 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751882AbYEMRAT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 13:00:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=references:user-agent:date:from:to:cc:subject:content-disposition:message-id;
-        b=a9Lm8edr8+rFPJziTo1TvDNoKan3GUjprilXvXhsv+seskNTPvV6UTrnDBLxy2wGYakKaCnNiaD1ZSvIsTjaZy70sgOJmGeKmt9rhTQ8DT2gW+f3MfGX2lTkbVUssDXAuX/PjMHyHjqbeQ/Pesyo00MzvsgLdaVS2wTSDer37LY=
-References: <20080513165538.952646389@gmail.com>>
-User-Agent: quilt/0.46-1
-Date: Tue, 13 May 2008 20:55:39 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, jirislaby@gmail.com
-Subject: [patch 1/2] x86: head_64.S cleanup - use straight move to CR4 register
-Content-Disposition: inline; filename=x86-head-64-S-flags
-Message-ID: <4829c921.0305560a.489b.07db@mx.google.com>
+	Tue, 13 May 2008 13:01:31 -0400
+Received: from bar.sig21.net ([88.198.146.85]:43928 "EHLO bar.sig21.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760897AbYEMRBa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 13:01:30 -0400
+Date: Tue, 13 May 2008 19:01:16 +0200
+From: Johannes Stezenbach <js@linuxtv.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Oliver Endriss <o.endriss@gmx.de>, linux-kernel@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Andrew de Quincey <adq_dvb@lidskialf.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [patch, 2.6.26-rc2] dvb: drivers/media/dvb/ttpci/fdump
+	firmware build error fix
+Message-ID: <20080513170116.GA27978@linuxtv.org>
+References: <20080512101231.GA11755@elte.hu> <200805122218.15887@orion.escape-edv.de> <20080512204634.GA10620@linuxtv.org> <200805131633.55469@orion.escape-edv.de> <20080513163647.GA21678@elte.hu> <20080513164140.GA21877@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080513164140.GA21877@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Spam-21-Score: -4.6 (----)
+X-Spam-21-Report: No, score=-4.6 required=5.0 tests=ALL_TRUSTED=-1.8,AWL=-0.220,BAYES_00=-2.599 autolearn=no
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is no need for testing the values because we already know
-what they should be. Just set them in straight way.
+On Tue, May 13, 2008 at 06:41:40PM +0200, Ingo Molnar wrote:
+> 
+> * Oliver Endriss <o.endriss@gmx.de> wrote:
+> 
+> > Sure. And without the patch you can simply add
+> > - STANDALONE=y or
+> > - DVB_AV7110_FIRMWARE=n
+> > to your allrandom.config. ;-)
+>  
+> hm, you are right - i've added STANDALONE=y previously but it went 
+> missing in action. So forget my patch, it was user error - the driver is 
+> right in that it already depends on STANDALONE :-) I guess STANDALONE 
+> should enable PREVENT_FIRMWARE_BUILD as well to avoid such errors ...
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
+If you do _build_ testing you don't care if the driver
+won't work because of missing firmware. With STANDALONE=y
+you exclude drivers from build testing.
 
-Index: linux-2.6.git/arch/x86/kernel/head_64.S
-===================================================================
---- linux-2.6.git.orig/arch/x86/kernel/head_64.S	2008-05-13 19:17:31.000000000 +0400
-+++ linux-2.6.git/arch/x86/kernel/head_64.S	2008-05-13 19:35:11.000000000 +0400
-@@ -155,9 +155,7 @@ ENTRY(secondary_startup_64)
- 	 */
- 
- 	/* Enable PAE mode and PGE */
--	xorq	%rax, %rax
--	btsq	$5, %rax
--	btsq	$7, %rax
-+	movq	$(X86_CR4_PAE | X86_CR4_PGE), %rax
- 	movq	%rax, %cr4
- 
- 	/* Setup early boot stage 4 level pagetables. */
-
--- 
+Johannes
