@@ -1,59 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761060AbYEMOje@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758221AbYEMOmw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761060AbYEMOje (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 10:39:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760836AbYEMOjH
+	id S1758221AbYEMOmw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 10:42:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751431AbYEMOmo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 10:39:07 -0400
-Received: from boogie.lpds.sztaki.hu ([193.224.70.237]:47649 "EHLO
-	boogie.lpds.sztaki.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760830AbYEMOjG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 10:39:06 -0400
-Date: Tue, 13 May 2008 16:39:29 +0200
-From: Gabor Gombas <gombasg@sztaki.hu>
-To: Bernhard Walle <bwalle@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Solid freezes with 2.6.25
-Message-ID: <20080513143917.GC17309@boogie.lpds.sztaki.hu>
-References: <20080428142935.GQ14074@boogie.lpds.sztaki.hu> <20080428092513.495378af.akpm@linux-foundation.org> <20080429175419.6c8a0ebf@strauss.suse.de> <20080430133824.GC18711@boogie.lpds.sztaki.hu> <20080430165131.7426d5d3@strauss.suse.de> <20080507114343.GB5583@boogie.lpds.sztaki.hu> <20080507144520.17e9902a@strauss.suse.de> <20080507134223.GB4278@boogie.lpds.sztaki.hu> <20080512142146.2a32793c@kopernikus.site>
+	Tue, 13 May 2008 10:42:44 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38865 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750883AbYEMOmn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 10:42:43 -0400
+Date: Tue, 13 May 2008 16:42:07 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Sven Wegener <sven.wegener@stealer.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [git pull] scheduler fixes
+Message-ID: <20080513144207.GA4697@elte.hu>
+References: <20080511130226.GR19219@parisc-linux.org> <20080511132636.GA22878@parisc-linux.org> <20080511140017.GA2457@elte.hu> <20080511141818.GT19219@parisc-linux.org> <20080511144203.GB3220@elte.hu> <20080511144821.GW19219@parisc-linux.org> <20080511151909.GA3887@elte.hu> <20080511152942.GY19219@parisc-linux.org> <20080513141129.GC18798@elte.hu> <20080513142135.GF9324@parisc-linux.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080512142146.2a32793c@kopernikus.site>
-X-Copyright: Forwarding or publishing without permission is prohibited.
+In-Reply-To: <20080513142135.GF9324@parisc-linux.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 12, 2008 at 02:21:46PM +0200, Bernhard Walle wrote:
 
-> Well, can you try if that really not happens without
-> CONFIG_HPET_EMULATE_RTC? The question is if that 64 interrupts per second really
-> cause a machine hang ...
+* Matthew Wilcox <matthew@wil.cx> wrote:
 
-I'll try when I have a little time...
+> > a 50% AIM7 slowdown maybe? With the BKL being a spinlock again it 
+> > doesnt matter much in practice though.
+> 
+> You're not understanding me.  This is completely inapplicable to the 
+> BKL because only one task can be in wakeup at a time (due to it having 
+> a maximum value of 1).  There's no way to hit this race with the BKL. 
+> The only kind of semaphore that can hit this race is the kind that can 
+> have more than one wakeup in progress at a time -- ie one which can 
+> have a value >1.  Like completions and real counting semaphores.
 
-> However, the other question is why you get that RTC interrupts at all.
-> I compared the old RTC implementation (drivers/char/rtc.c) with the new
-> RTC interface (rtc-cmos.c) and the old implementation disables
-> interrupts automatically when the device is closed in userspace while
-> the new doesn't. I think the old one makes more sense, and so I think
-> the following patch should be applied. Gabor, can you also test that
-> patch ... it should fix your problem.
+yes, but even for parallel wakeups for completions it's good in general 
+to keep more tasks in flight than to keep less tasks in flight.
 
-I'm running chrony which keeps the device open all the time:
+Perhaps the code could throttle them to nr_cpus, but otherwise, as the 
+BKL example has shown it (in another context), we do much better if we 
+overload the scheduler (in which case it can and does batch 
+intelligently) than if we try to second-guess it and under-load it and 
+create lots of scheduling events.
 
-chronyd 3433 root    6u   CHR              254,0      0t0   1971 /dev/rtc0
+i'd agree with you that are no numbers available pro or contra, so you 
+are right that my 50% point does not apply to your argument.
 
-So I don't think the patch would make any difference, but I can
-certainly try it.
+> So the only thing worth talking about (and indeed, it's now entirely 
+> moot) is what's the best way to solve this problem /for this kind of 
+> semaphore/.
 
-Gabor
+it's not really moot in terms of improving the completions code i 
+suspect? For XFS i guess performance matters.
 
--- 
-     ---------------------------------------------------------
-     MTA SZTAKI Computer and Automation Research Institute
-                Hungarian Academy of Sciences
-     ---------------------------------------------------------
+	Ingo
