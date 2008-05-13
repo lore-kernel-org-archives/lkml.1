@@ -1,72 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761618AbYEMVXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760872AbYEMV1M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761618AbYEMVXQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 17:23:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757513AbYEMVW5
+	id S1760872AbYEMV1M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 17:27:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756333AbYEMV06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 17:22:57 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:44876 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752429AbYEMVW4 (ORCPT
+	Tue, 13 May 2008 17:26:58 -0400
+Received: from de01egw01.freescale.net ([192.88.165.102]:62199 "EHLO
+	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755650AbYEMV05 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 17:22:56 -0400
-Message-ID: <24291087.1210713535895.JavaMail.oracle@acsmt301.oracle.com>
-Date: Tue, 13 May 2008 16:18:55 -0500 (CDT)
-From: Randy Dunlap <RANDY.DUNLAP@ORACLE.COM>
-To: "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] Fix kobject_rename and !CONFIG_SYSFS v3
-Cc: Al Viro <viro@ftp.linux.org.uk>, Benjamin Thery <benjamin.thery@bull.net>,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, Tejun Heo <htejun@gmail.com>
-In-Reply-To: <m1od7a9bmr.fsf_-_@frodo.ebiederm.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-References: <m163tocw43.fsf_-_@frodo.ebiederm.org>
-	<20080512220232.GA16914@kroah.com> <m1prrqbseh.fsf@frodo.ebiederm.org>
-	<4829A4BD.3020007@bull.net> <20080513164438.GA31563@kroah.com>
-	<m18wyeay1q.fsf_-_@frodo.ebiederm.org>
-	<20080513201602.GA31578@kroah.com> <m1od7a9bmr.fsf_-_@frodo.ebiederm.org>
-X-Priority: 3
-X-Mailer: Oracle Webmail Client(UIX)
-Content-Language: en-US
-Accept-Language: en-US
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 13 May 2008 17:26:57 -0400
+From: Timur Tabi <timur@freescale.com>
+To: andi@firstfloor.org, linux-kernel@vger.kernel.org
+Subject: [PATCH][RFC] Add alloc_pages_exact() and free_pages_exact()
+Date: Tue, 13 May 2008 16:26:46 -0500
+Message-Id: <1210714006-8976-1-git-send-email-timur@freescale.com>
+X-Mailer: git-send-email 1.5.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Changelog:
-> v3:	Documentation typo fixes
+alloc_pages_exact() is similar to alloc_pages(), except that it allocates
+the minimum number of pages to fulfill the request.  This is useful if you
+want to allocate a very large buffer that is slightly larger than an
+even power-of-two number of pages.  In that case, alloc_pages() will waste
+a lot of memory.
 
-Inserted/attached wrong patch file?
-I don't see any text changes.
+I have a video driver that wants to allocate a 5MB buffer.  alloc_pages()
+will waste 3MB of physically-contiguous memory.  Therefore, I would
+like to see alloc_pages_exact() added to 2.6.27.
 
+Please note that I am not a Linux VM expert.  I wrote these functions based
+on guidance from Andi Kleen.  I have no familiarity with NUMA, so I don't know
+how to handle that.  Any and all suggestions are welcome.
 
-> diff --git a/Documentation/kobject.txt b/Documentation/kobject.txt
-> index bf3256e..79184b4 100644
-> --- a/Documentation/kobject.txt
-> +++ b/Documentation/kobject.txt
-> @@ -118,6 +118,10 @@ the name of the kobject, call kobject_rename():
->  
->      int kobject_rename(struct kobject *kobj, const char
-> *new_name);
->  
-> +Note kobject_rename does perform any locking or have a solid
-> notion of
-> +what names are valid so the provide must provide their own
-> sanity checking
-> +and serialization.
-> +
->  There is a function called kobject_set_name() but that is
-> legacy cruft and
->  is being removed.  If your code needs to call this function,
-> it is
->  incorrect and needs to be fixed.
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ include/linux/gfp.h |    3 ++
+ mm/page_alloc.c     |   53 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 56 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/gfp.h b/include/linux/gfp.h
+index b414be3..1054801 100644
+--- a/include/linux/gfp.h
++++ b/include/linux/gfp.h
+@@ -215,6 +215,9 @@ extern struct page *alloc_page_vma(gfp_t gfp_mask,
+ extern unsigned long __get_free_pages(gfp_t gfp_mask, unsigned int order);
+ extern unsigned long get_zeroed_page(gfp_t gfp_mask);
+ 
++void *alloc_pages_exact(size_t size, gfp_t gfp_mask);
++void free_pages_exact(void *virt, size_t size);
++
+ #define __get_free_page(gfp_mask) \
+ 		__get_free_pages((gfp_mask),0)
+ 
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index bdd5c43..2b685eb 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1736,6 +1736,59 @@ void free_pages(unsigned long addr, unsigned int order)
+ 
+ EXPORT_SYMBOL(free_pages);
+ 
++/**
++ * Allocate an exact number of pages of physically-contiguous memory.
++ *
++ * This function is similar to alloc_pages(), except that it allocates the
++ * minimum number of pages to satisfy the request.  alloc_pages() can only
++ * allocate memory in power-of-two pages.
++ *
++ * This function is also limited by MAX_ORDER.
++ *
++ * Memory allocated by this function must be released by free_pages_exact().
++ */
++void *alloc_pages_exact(size_t size, gfp_t gfp_mask)
++{
++	unsigned int order = get_order(size);
++	unsigned long addr;
++
++	addr = __get_free_pages(gfp_mask, order);
++	if (addr) {
++		unsigned long alloc_end = addr + (PAGE_SIZE << order);
++		unsigned long used = addr + PAGE_ALIGN(size);
++
++		split_page(virt_to_page(addr), order);
++		while (used < alloc_end) {
++			free_page(used);
++			used += PAGE_SIZE;
++		}
++	}
++
++	return (void *)addr;
++}
++EXPORT_SYMBOL(alloc_pages_exact);
++
++/**
++ * Releases memory allocated via alloc_pages_exact()
++ *
++ * Release the memory allocated by a previous call to alloc_pages_exact.
++ *
++ * The first parameter must be the value returned by alloc_pages_exact(),
++ * and the 'size' parameter must be the same as was passed to
++ * alloc_pages_exact().
++ */
++void free_pages_exact(void *virt, size_t size)
++{
++	unsigned long addr = (unsigned long)virt;
++	unsigned long end = addr + PAGE_ALIGN(size);
++
++	while (addr < end) {
++		free_page(addr);
++		addr += PAGE_SIZE;
++	}
++}
++EXPORT_SYMBOL(free_pages_exact);
++
+ static unsigned int nr_free_zone_pages(int offset)
+ {
+ 	struct zoneref *z;
+-- 
+1.5.5
 
