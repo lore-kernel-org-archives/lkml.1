@@ -1,95 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760521AbYEMOej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760679AbYEMOfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760521AbYEMOej (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 10:34:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbYEMOeb
+	id S1760679AbYEMOfh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 10:35:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757565AbYEMOf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 10:34:31 -0400
-Received: from mail.gmx.net ([213.165.64.20]:47368 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1757305AbYEMOea (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 10:34:30 -0400
-X-Authenticated: #476490
-X-Provags-ID: V01U2FsdGVkX182ICd1Y2I2yJMI86rgp+/U9Ghvinh4oNWF3qaA/u
-	MZ5LsCicU785VJ
-From: Oliver Endriss <o.endriss@gmx.de>
-Organization: ESCAPE GmbH EDV-Loesungen
-To: Johannes Stezenbach <js@linuxtv.org>
-Subject: Re: [patch, 2.6.26-rc2] dvb: drivers/media/dvb/ttpci/fdump firmware build error fix
-Date: Tue, 13 May 2008 16:33:54 +0200
-User-Agent: KMail/1.9.6
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Andrew de Quincey <adq_dvb@lidskialf.net>
-References: <20080512101231.GA11755@elte.hu> <200805122218.15887@orion.escape-edv.de> <20080512204634.GA10620@linuxtv.org>
-In-Reply-To: <20080512204634.GA10620@linuxtv.org>
+	Tue, 13 May 2008 10:35:29 -0400
+Received: from mx1.suse.de ([195.135.220.2]:34783 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757356AbYEMOf2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 10:35:28 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Alexander van Heukelum <heukelum@fastmail.fm>,
+       Nickolay Vinogradov <nickolay@protei.ru>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] asm-generic/bitops/fls64.h
+References: <481E076A.8060302@protei.ru>
+	<1210677433.22341.1252875863@webmail.messagingengine.com>
+	<48298990.7040705@protei.ru>
+	<1210685053.13437.1252892061@webmail.messagingengine.com>
+	<20080513135839.GA19291@flint.arm.linux.org.uk>
+X-Yow: WHOA!!  I'm having a RELIGIOUS EXPERIENCE right NOW!!
+Date: Tue, 13 May 2008 16:35:25 +0200
+In-Reply-To: <20080513135839.GA19291@flint.arm.linux.org.uk> (Russell King's
+	message of "Tue, 13 May 2008 14:58:39 +0100")
+Message-ID: <je7idyw9ua.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200805131633.55469@orion.escape-edv.de>
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Johannes Stezenbach wrote:
-> On Mon, May 12, 2008 at 10:18:15PM +0200, Oliver Endriss wrote:
-> > Johannes Stezenbach wrote:
-> > > On Mon, May 12, 2008 at 07:30:10PM +0200, Oliver Endriss wrote:
-> > > > Ingo Molnar wrote:
-> > > >> -     depends on DVB_AV7110 && !STANDALONE
-> > > >> +     depends on DVB_AV7110 && !STANDALONE && !PREVENT_FIRMWARE_BUILD
-> > > 
-> > > > If you set DVB_AV7110_FIRMWARE=y, the firmware file under
-> > > > DVB_AV7110_FIRMWARE_FILE must exist...
-> > > 
-> > > The point of PREVENT_FIRMWARE_BUILD is to make build testing
-> > > with "make randconfig" possible. I think you should ACK
-> > > this patch, it doesn't have any downsides for users of
-> > > this driver.
-> > 
-> > No. If randconfig deselects both STANDALONE and PREVENT_FIRMWARE_BUILD,
-> > the same problem will happen again...
-> 
-> You can put PREVENT_FIRMWARE_BUILD=y in your allrandom.config.
+Russell King <rmk+lkml@arm.linux.org.uk> writes:
 
-Sure. And without the patch you can simply add
-- STANDALONE=y or
-- DVB_AV7110_FIRMWARE=n
-to your allrandom.config. ;-)
-
-> > The driver depends on STANDALONE, and that should be sufficient:
-> > | CONFIG_STANDALONE:
-> > |   Select this option if you don't have magic firmware for drivers that
-> > |   need it.
-> 
-> this is for excluding drivers which don't _work_ without firmware
+> On Tue, May 13, 2008 at 03:24:13PM +0200, Alexander van Heukelum wrote:
+>> On Tue, 13 May 2008 16:29:04 +0400, "Nickolay Vinogradov"
+>> <nickolay@protei.ru> said:
+>> > Alexander van Heukelum &#1087;&#1080;&#1096;&#1077;&#1090;:
+>> > 
+>> > > Hi Nickolay,
+>> > > 
+>> > > The change is ok, I guess, but the cast should be a no-op (fls
+>> > > takes an int, which is always 32 bit in linux). What is the problem
+>> > > you are seeing? Does fls64() return a wrong value in some cases? If
+>> > > so, what cpu? Which values?
+>> > > 
+>> > > Why would this be a bug on big endian systems only? There is no
+>> > > pointer magic involved, so the compiler should take care of the
+>> > > casts in a correct way.
+>> > > 
+>> > > Maybe you see a compiler warning? Which compiler version?
+>> > > 
+>> > > (also note that current (development) kernels now have separate
+>> > > versions for 32-bit and 64-bit environments.)
+>> > 
+>> > Because fls() is a macro for asm-arm:
+>> > 
+>> > #define fls(x) \
+>> >          ( __builtin_constant_p(x) ? constant_fls(x) : \
+>> >          ({ int __r; asm("clz\t%0, %1" : "=r"(__r) : "r"(x) : "cc"); 
+>> > 32-__r; }) )
+>> > 
+>> > We can fix it right here:
 >
-> > while CONFIG_PREVENT_FIRMWARE_BUILD means:
-> > | CONFIG_PREVENT_FIRMWARE_BUILD:
-> > |   Say yes to avoid building firmware. Firmware is usually shipped
-> > |   with the driver, and only when updating the firmware a rebuild
-> > |   should be made.
-> 
-> and this is for excluding drivers which don't _build_ without firmware
-> (badly worded, it certainly doesn't mean to build the firmware,
-> but build a C source file from the firmware)
+> No.  "fls" is for finding the last set bit in an _int_.  It is not
+> supposed to have random crap passed to it, such as types longer than
+> sizeof(int).
 
-Could someone please confirm this?
-If Johannes is right, the help texts are misleeding and need
-clarification.
+If you write fls as an (inline) function then the argument is implicitly
+converted.
 
-What worries me, is that 'magic' options like CONFIG_STANDALONE and/or
-CONFIG_PREVENT_FIRMWARE_BUILD hide options like DVB_AV7110_FIRMWARE from
-the user. How should the average user know that he has to disable them?
-This is not user-friendly!
-
-CU
-Oliver
+Andreas.
 
 -- 
-----------------------------------------------------------------
-VDR Remote Plugin 0.4.0: http://www.escape-edv.de/endriss/vdr/
-----------------------------------------------------------------
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
