@@ -1,65 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759754AbYEMI6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759631AbYEMJAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759754AbYEMI6U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 04:58:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758747AbYEMI6H
+	id S1759631AbYEMJAZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 05:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758161AbYEMJAL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 04:58:07 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:32983 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756369AbYEMI6G (ORCPT
+	Tue, 13 May 2008 05:00:11 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:37776 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757415AbYEMJAK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 04:58:06 -0400
-Date: Tue, 13 May 2008 01:58:04 -0700
-From: Jeremy Higdon <jeremy@sgi.com>
-To: Jes Sorensen <jes@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, dgc@sgi.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       jens.axboe@oracle.com, stable@kernel.org
-Subject: Re: [PATCH] drivers/scsi/qla1280.c; was Re: Buffered I/O to block device very slow and other SCSI issues...
-Message-ID: <20080513085804.GL41683@sgi.com>
-References: <20080319231654.GA103321673@sgi.com> <20080320010807.GA27620@sgi.com> <20080320032010.e640c52a.akpm@linux-foundation.org> <20080512061703.GC41683@sgi.com> <20080512171849.21d3508f.akpm@linux-foundation.org> <48294022.2070002@sgi.com>
-Mime-Version: 1.0
+	Tue, 13 May 2008 05:00:10 -0400
+Date: Tue, 13 May 2008 04:59:59 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Artem Bityutskiy <dedekind@yandex.ru>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>,
+       Edward Shishkin <edward.shishkin@gmail.com>
+Subject: Re: [PATCH take 2 01/28] VFS: introduce writeback_inodes_sb()
+Message-ID: <20080513085959.GA23849@infradead.org>
+References: <1210070159-22794-1-git-send-email-Artem.Bityutskiy@nokia.com> <1210070159-22794-2-git-send-email-Artem.Bityutskiy@nokia.com> <20080507002345.831bc379.akpm@linux-foundation.org> <20080507080027.GA23621@infradead.org> <482951D0.3070004@yandex.ru>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <48294022.2070002@sgi.com>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <482951D0.3070004@yandex.ru>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 13, 2008 at 09:15:46AM +0200, Jes Sorensen wrote:
-> Andrew Morton wrote:
-> >>--- a/drivers/scsi/qla1280.c	2008-05-03 11:59:44.000000000 -0700
-> >>+++ b/drivers/scsi/qla1280.c	2008-05-10 21:32:23.451341969 -0700
-> >>@@ -2007,7 +2007,7 @@ qla1280_set_defaults(struct scsi_qla_hos
-> >> 		nv->bus[bus].config_2.req_ack_active_negation = 1;
-> >> 		nv->bus[bus].config_2.data_line_active_negation = 1;
-> >> 		nv->bus[bus].selection_timeout = 250;
-> >>-		nv->bus[bus].max_queue_depth = 256;
-> >>+		nv->bus[bus].max_queue_depth = 32;
-> >> 
-> >> 		if (IS_ISP1040(ha)) {
-> >> 			nv->bus[bus].bus_reset_delay = 3;
-> >>@@ -2051,7 +2051,7 @@ qla1280_config_target(struct scsi_qla_ho
-> >> 	status = qla1280_mailbox_command(ha, 0x0f, mb);
-> >> 
-> >> 	/* Save Tag queuing enable flag. */
-> >>-	flag = (BIT_0 << target) & mb[0];
-> >>+	flag = (BIT_0 << target);
-> >> 	if (nv->bus[bus].target[target].parameter.tag_queuing)
-> >> 		ha->bus_settings[bus].qtag_enables |= flag;
-> >
-> >Thanks.  I tagged this for a -stable backport (assuming that is
-> >appropriate?)
-> >
-> 
-> Sounds good, given the nature of this it should go into stable as well
-> as current.
+On Tue, May 13, 2008 at 11:31:12AM +0300, Artem Bityutskiy wrote:
+> Here is an updated UBIFS tarball for you:
+> 	http://www.infradead.org/~dedekind/ubifs/ubifs-08-05-13.tar.bz2
+>
+> Did you have chance to do the reviw? We would like to ask for merge at
+> 2.6.27.
 
-I agree.
+Sorry, www.infradead.org was down during the weeked when I had some time
+to review it.  I've grabbed a copy of the new tarball now and will look
+at it soon.  Also I don't think it's too late for .26 as ubifs only adds
+new code except the writeback_inodes_sb bit which should be trivial
+enough for .26.
 
-> Acked-by: Jes Sorensen <jes@sgi.com>
-
-
-jeremy
