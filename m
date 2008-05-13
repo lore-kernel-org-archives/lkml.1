@@ -1,68 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758151AbYEMKaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759275AbYEMKgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758151AbYEMKaa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 06:30:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbYEMKaV
+	id S1759275AbYEMKgg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 06:36:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753411AbYEMKg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 06:30:21 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:34880 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751935AbYEMKaU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 06:30:20 -0400
-Date: Tue, 13 May 2008 13:28:49 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Tracking and crediting bug reporters
-Message-ID: <20080513102849.GB25196@cs181133002.pp.htv.fi>
-References: <4388.1210613272@vena.lwn.net>
+	Tue, 13 May 2008 06:36:28 -0400
+Received: from mx03.syneticon.net ([87.79.32.166]:3437 "EHLO
+	postfix1.syneticon.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752834AbYEMKg1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 06:36:27 -0400
+X-Greylist: delayed 611 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 May 2008 06:36:27 EDT
+Message-ID: <48296CBD.9030904@wpkg.org>
+Date: Tue, 13 May 2008 12:26:05 +0200
+From: Tomasz Chmielewski <mangoo@wpkg.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080504)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4388.1210613272@vena.lwn.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: LKML <linux-kernel@vger.kernel.org>, sancelot@free.fr
+Subject: Re: detecting kernel mem leak
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 12, 2008 at 11:27:52AM -0600, Jonathan Corbet wrote:
->...
-> So here's what we would like to try instead.  Whenever somebody sends up a
-> patch fixing a reported bug, the name of the person who reported the bug
-> would be immortalized with this tag:
+> I kept my kernel running with few applications for 5 days , doing
+> nothing more than backing up few kb of data on disk and refresh few X apps.
 > 
-> 	Reported-by: A. Bug Reporter <email@goes.here>
+> Ater five days the global memory available go down from 24Mb to 8Mb ...
 > 
-> In particular, reporters who work with the developers toward the resolution
-> of the bug should be thanked in this way.  If we wanted to take things
-> further, perhaps we could add a Bisected-by: tag for really hard-core
-> helpers. 
+> The are some signifiant changes in slabinfo but now, I do not know where
+> to search ?
 
-I assume it will be valid for one person to have two or all three tags 
-in one commit (not uncommon for some of the stuff I'm doing)?
+Look at these values more closely - this is where your memory is "gone":
 
-> If these tags go into the commit messages in any sort of consistent way, it
-> should be possible generate the usual sort of statistics from them.  I'll
-> then happily publicize them next to the traditional lists of people who are
-> adding new bugs.  The result will certainly be fame, fortune, and job
-> offers for the people at the top of the list.  Or something like that.
-> 
-> If the rest of the community is agreeable, it would be nice to make an
-> immediate start on this; it's not yet too late to get reasonable data for
-> the 2.6.26 kernel, and to have the habits well ingrained for 2.6.27.
->...
 
-In which format do you want data for commits already in 2.6.26?
+> MemFree:          24324 kB.................8692Kb
+> Buffers:              3956   kB...............18740Kb
 
-> jon
-
-cu
-Adrian
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Tomasz Chmielewski
+http://wpkg.org
 
