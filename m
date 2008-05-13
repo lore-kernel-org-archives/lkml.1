@@ -1,84 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758602AbYEMQLw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759937AbYEMQMM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758602AbYEMQLw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 12:11:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756707AbYEMQLo
+	id S1759937AbYEMQMM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 12:12:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756707AbYEMQL6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 12:11:44 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55024 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756653AbYEMQLn (ORCPT
+	Tue, 13 May 2008 12:11:58 -0400
+Received: from yugo.dsd.sztaki.hu ([195.111.2.114]:39938 "EHLO
+	yugo.frugalware.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758797AbYEMQL4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 12:11:43 -0400
-Date: Tue, 13 May 2008 09:11:11 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andreas Schwab <schwab@suse.de>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
-       Alexander van Heukelum <heukelum@fastmail.fm>,
-       Nickolay Vinogradov <nickolay@protei.ru>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] asm-generic/bitops/fls64.h
-Message-Id: <20080513091111.bd9437c1.akpm@linux-foundation.org>
-In-Reply-To: <je7idyw9ua.fsf@sykes.suse.de>
-References: <481E076A.8060302@protei.ru>
-	<1210677433.22341.1252875863@webmail.messagingengine.com>
-	<48298990.7040705@protei.ru>
-	<1210685053.13437.1252892061@webmail.messagingengine.com>
-	<20080513135839.GA19291@flint.arm.linux.org.uk>
-	<je7idyw9ua.fsf@sykes.suse.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 13 May 2008 12:11:56 -0400
+From: Miklos Vajna <vmiklos@frugalware.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] x86: janitor work in bugs.c
+Date: Tue, 13 May 2008 18:11:49 +0200
+Message-Id: <1210695109-31727-1-git-send-email-vmiklos@frugalware.org>
+X-Mailer: git-send-email 1.5.5.1.211.g65ea3.dirty
+In-Reply-To: <20080513124454.GF14973@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 May 2008 16:35:25 +0200 Andreas Schwab <schwab@suse.de> wrote:
+Just moved trailing statements to the next line, removed space before
+open/close parenthesis, wrapped long lines.
 
-> Russell King <rmk+lkml@arm.linux.org.uk> writes:
-> 
-> > On Tue, May 13, 2008 at 03:24:13PM +0200, Alexander van Heukelum wrote:
-> >> On Tue, 13 May 2008 16:29:04 +0400, "Nickolay Vinogradov"
-> >> <nickolay@protei.ru> said:
-> >> > Alexander van Heukelum &#1087;&#1080;&#1096;&#1077;&#1090;:
-> >> > 
-> >> > > Hi Nickolay,
-> >> > > 
-> >> > > The change is ok, I guess, but the cast should be a no-op (fls
-> >> > > takes an int, which is always 32 bit in linux). What is the problem
-> >> > > you are seeing? Does fls64() return a wrong value in some cases? If
-> >> > > so, what cpu? Which values?
-> >> > > 
-> >> > > Why would this be a bug on big endian systems only? There is no
-> >> > > pointer magic involved, so the compiler should take care of the
-> >> > > casts in a correct way.
-> >> > > 
-> >> > > Maybe you see a compiler warning? Which compiler version?
-> >> > > 
-> >> > > (also note that current (development) kernels now have separate
-> >> > > versions for 32-bit and 64-bit environments.)
-> >> > 
-> >> > Because fls() is a macro for asm-arm:
-> >> > 
-> >> > #define fls(x) \
-> >> >          ( __builtin_constant_p(x) ? constant_fls(x) : \
-> >> >          ({ int __r; asm("clz\t%0, %1" : "=r"(__r) : "r"(x) : "cc"); 
-> >> > 32-__r; }) )
-> >> > 
-> >> > We can fix it right here:
-> >
-> > No.  "fls" is for finding the last set bit in an _int_.  It is not
-> > supposed to have random crap passed to it, such as types longer than
-> > sizeof(int).
-> 
-> If you write fls as an (inline) function then the argument is implicitly
-> converted.
-> 
+Signed-off-by: Miklos Vajna <vmiklos@frugalware.org>
+---
 
-Yes, and that's what other architectures do.
+On Tue, May 13, 2008 at 02:44:54PM +0200, Ingo Molnar <mingo@elte.hu> wrote:
+> generally we do not break up strings mid-stream - that makes grepping
+> harder. _At most_ we do something like:
+>
+>               printk(KERN_EMERG
+>                      "No coprocessor found and no math emulation present.\n");
 
-It's not pretty, but I do think the arm implementation should zap the
-upper 32 bits as other architectures do, and as one would expect from
-the usual C type conversion rules.
+Given that it's still longer than 80 chars this way I just left it untouched.
 
-Converting it to a C implementation would be a suitable means...
+> > -/* trap_init() enabled FXSR and company _before_ testing for FP problems here. */
+> > +/* trap_init() enabled FXSR and company _before_ testing for FP problems
+> > + * here. */
+>
+> that's not the proper multi-line comment style, this would be:
+>
+>   /*
+>    * trap_init() enabled FXSR and company _before_ testing for
+>    * FP problems here.
+>    */
+>
+> same for other places in this patch and for your next patch.
+
+Ok, corrected.
+
+ arch/x86/kernel/cpu/bugs.c |   24 +++++++++++++++++-------
+ 1 files changed, 17 insertions(+), 7 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/bugs.c b/arch/x86/kernel/cpu/bugs.c
+index 170d2f5..3278c6e 100644
+--- a/arch/x86/kernel/cpu/bugs.c
++++ b/arch/x86/kernel/cpu/bugs.c
+@@ -59,7 +59,10 @@ static void __init check_fpu(void)
+ 		return;
+ 	}
+ 
+-/* trap_init() enabled FXSR and company _before_ testing for FP problems here. */
++/* 
++ * trap_init() enabled FXSR and company _before_ testing for FP problems
++ * here.
++ */
+ 	/* Test for the divl bug.. */
+ 	__asm__("fninit\n\t"
+ 		"fldl %1\n\t"
+@@ -108,10 +111,15 @@ static void __init check_popad(void)
+ 	  "movl $12345678,%%eax; movl $0,%%edi; pusha; popa; movl (%%edx,%%edi),%%ecx "
+ 	  : "=&a" (res)
+ 	  : "d" (inp)
+-	  : "ecx", "edi" );
+-	/* If this fails, it means that any user program may lock the CPU hard. Too bad. */
+-	if (res != 12345678) printk( "Buggy.\n" );
+-		        else printk( "OK.\n" );
++	  : "ecx", "edi");
++	/* 
++	 * If this fails, it means that any user program may lock the
++	 * CPU hard. Too bad.
++	 */
++	if (res != 12345678)
++		printk("Buggy.\n");
++	else
++		printk("OK.\n");
+ #endif
+ }
+ 
+@@ -137,7 +145,8 @@ static void __init check_config(void)
+  * i486+ only features! (WP works in supervisor mode and the
+  * new "invlpg" and "bswap" instructions)
+  */
+-#if defined(CONFIG_X86_WP_WORKS_OK) || defined(CONFIG_X86_INVLPG) || defined(CONFIG_X86_BSWAP)
++#if defined(CONFIG_X86_WP_WORKS_OK) || defined(CONFIG_X86_INVLPG) || \
++	defined(CONFIG_X86_BSWAP)
+ 	if (boot_cpu_data.x86 == 3)
+ 		panic("Kernel requires i486+ for 'invlpg' and other features");
+ #endif
+@@ -170,6 +179,7 @@ void __init check_bugs(void)
+ 	check_fpu();
+ 	check_hlt();
+ 	check_popad();
+-	init_utsname()->machine[1] = '0' + (boot_cpu_data.x86 > 6 ? 6 : boot_cpu_data.x86);
++	init_utsname()->machine[1] = '0' + (boot_cpu_data.x86 > 6 ? 6 :
++	    boot_cpu_data.x86);
+ 	alternative_instructions();
+ }
+-- 
+1.5.4.3
+
