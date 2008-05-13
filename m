@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762020AbYEMVqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761679AbYEMVrv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762020AbYEMVqY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 17:46:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757901AbYEMVqQ
+	id S1761679AbYEMVrv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 17:47:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757946AbYEMVrm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 17:46:16 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:5878 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756681AbYEMVqP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 17:46:15 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=joAIdl0zZi4X4dWn7SzUCOTH53jqG5/oVqQ6D5IY4UqYhcF2GIa1Z6qw//AeqUqG3
-	cmvfXRSWjX5jNu80myrmQ==
-Message-ID: <6599ad830805131446w11dadd4ag69db715e81513b3d@mail.gmail.com>
-Date: Tue, 13 May 2008 14:46:05 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [RFC/PATCH 1/8]: CGroup Files: Add locking mode to cgroups control files
-Cc: pj@sgi.com, xemul@openvz.org, balbir@in.ibm.com, serue@us.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
-In-Reply-To: <20080513143206.ef259829.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 13 May 2008 17:47:42 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37663 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757647AbYEMVrl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 17:47:41 -0400
+Subject: Re: [PATCH] wireless, airo: waitbusy() won't delay
+From: Dan Williams <dcbw@redhat.com>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: breed@users.sourceforge.net, linux-wireless@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <4829F62B.8030003@gmail.com>
+References: <4829F62B.8030003@gmail.com>
+Content-Type: text/plain
+Date: Tue, 13 May 2008 17:43:13 -0400
+Message-Id: <1210714993.987.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080513063707.049448000@menage.corp.google.com>
-	 <20080513071522.133586000@menage.corp.google.com>
-	 <20080513130127.fcd46a41.akpm@linux-foundation.org>
-	 <6599ad830805131417m4f8cc2e6iac42c0fb089a8cb1@mail.gmail.com>
-	 <20080513143206.ef259829.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 13, 2008 at 2:32 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
->
->  But do we ever expect that cgroup_mutex will be taken with much
->  frequency, or held for much time?  If it's only taken during, say,
->  configuration of a group or during a query of that configuration then
->  perhaps we'll be OK.
+On Tue, 2008-05-13 at 22:12 +0200, Roel Kluin wrote:
+> There will be no delay even when COMMAND_BUSY (defined 0x8000) is set:
+> 0x8000 & (delay < 10000) will evaluate to 0 - when delay is 0.
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 
-I'm not so worried about contention on the userspace configuration
-side - more the case of configuration operations stalling
-subsystem-initiated operations. An example of that would be the case
-of hierarchical reclaim in the memory controller, where it needs to be
-able to traverse up and down the hierarchy without the hierarchy
-changing under its feet.
+Good catch.
 
-I'll dump the implicit lock_mode support and make it more explicit in
-the subsystem handlers.
+Acked-by: Dan Williams <dcbw@redhat.com>
 
-Paul
+> ---
+> diff --git a/drivers/net/wireless/airo.c b/drivers/net/wireless/airo.c
+> index 45f47c1..efb7444 100644
+> --- a/drivers/net/wireless/airo.c
+> +++ b/drivers/net/wireless/airo.c
+> @@ -2904,7 +2904,7 @@ EXPORT_SYMBOL(init_airo_card);
+>  
+>  static int waitbusy (struct airo_info *ai) {
+>  	int delay = 0;
+> -	while ((IN4500 (ai, COMMAND) & COMMAND_BUSY) & (delay < 10000)) {
+> +	while ((IN4500 (ai, COMMAND) & COMMAND_BUSY) && (delay < 10000)) {
+>  		udelay (10);
+>  		if ((++delay % 20) == 0)
+>  			OUT4500(ai, EVACK, EV_CLEARCOMMANDBUSY);
+> 
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-wireless" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
