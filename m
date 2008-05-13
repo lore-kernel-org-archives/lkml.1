@@ -1,83 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760724AbYEMUET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760115AbYEMUGc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760724AbYEMUET (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 16:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759359AbYEMUEA
+	id S1760115AbYEMUGc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 16:06:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757433AbYEMUGW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 16:04:00 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:60344 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759602AbYEMUD7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 16:03:59 -0400
-Date: Tue, 13 May 2008 23:02:26 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [git pull] x86 fixes
-Message-ID: <20080513200226.GB14569@cs181133002.pp.htv.fi>
-References: <20080513192706.GA13677@elte.hu> <20080513194018.GA14569@cs181133002.pp.htv.fi>
+	Tue, 13 May 2008 16:06:22 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:53670 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757327AbYEMUGV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 16:06:21 -0400
+Date: Tue, 13 May 2008 16:06:20 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+cc: Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: 2.6.26-rc1 regression since 2.6.25
+In-Reply-To: <20080512110450.GA6399@ics.muni.cz>
+Message-ID: <Pine.LNX.4.44L0.0805131554370.2563-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080513194018.GA14569@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 13, 2008 at 10:40:18PM +0300, Adrian Bunk wrote:
-> On Tue, May 13, 2008 at 09:27:06PM +0200, Ingo Molnar wrote:
->...
-> > --- a/arch/x86/kernel/x8664_ksyms_64.c
-> > +++ b/arch/x86/kernel/x8664_ksyms_64.c
-> > @@ -2,6 +2,7 @@
-> >     All C exports should go in the respective C files. */
-> >  
-> >  #include <linux/module.h>
-> > +#include <net/checksum.h>
-> >  #include <linux/smp.h>
-> >  
-> >  #include <asm/processor.h>
-> > @@ -29,6 +30,8 @@ EXPORT_SYMBOL(__copy_from_user_inatomic);
-> >  EXPORT_SYMBOL(copy_page);
-> >  EXPORT_SYMBOL(clear_page);
-> >  
-> > +EXPORT_SYMBOL(csum_partial);
-> > +
-> >  /*
-> >   * Export string functions. We normally rely on gcc builtin for most of these,
-> >   * but gcc sometimes decides not to inline them.
-> > diff --git a/arch/x86/lib/csum-partial_64.c b/arch/x86/lib/csum-partial_64.c
-> > index bc503f5..bf51144 100644
-> > --- a/arch/x86/lib/csum-partial_64.c
-> > +++ b/arch/x86/lib/csum-partial_64.c
-> > @@ -136,8 +136,6 @@ __wsum csum_partial(const void *buff, int len, __wsum sum)
-> >  						(__force u32)sum);
-> >  }
-> >  
-> > -EXPORT_SYMBOL(csum_partial);
-> > -
-> >  /*
-> >   * this routine is used for miscellaneous IP-like checksums, mainly
-> >   * in icmp.c
-> >...
+On Mon, 12 May 2008, Lukas Hejtmanek wrote:
+
+> On Fri, May 09, 2008 at 02:47:45PM -0400, Alan Stern wrote:
+> > On Fri, 9 May 2008, Greg KH wrote:
+> > 
+> > > Can you just boot the box and then plug it into the dock and show the
+> > > log file for that?
+> > 
+> > If you can, use a kernel that has CONFIG_USB_DEBUG turned on.
 > 
-> Wouldn't the better solution be to move csum-partial_64.c from lib-y to 
-> obj-y instead?
+> I did. The dmesg is attached to the bug:
+> http://bugzilla.kernel.org/show_bug.cgi?id=10630
 
-BTW: The usage of csum_partial() in reiserfs you try to work around here 
-     is actually broken, so the best fix would be to fix reiserfs.
+It looks as though the dock's USB hub may not be working right.
 
-cu
-Adrian
+Just as a test, can you try applying gregkh-04-usb-2.6.26-rc2.patch 
+(it applies to 2.6.26-rc2, obviously) from
 
--- 
+	http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+and attaching the dmesg log from that?  It contains extra debugging not 
+present in the vanilla kernel -- make sure that you keep 
+CONFIG_USB_DEBUG enabled.
+
+Alan Stern
 
