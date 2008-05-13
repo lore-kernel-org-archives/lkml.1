@@ -1,73 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759495AbYEMIzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759568AbYEMI5U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759495AbYEMIzb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 04:55:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757465AbYEMIzX
+	id S1759568AbYEMI5U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 04:57:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757465AbYEMI5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 04:55:23 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:59813 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757239AbYEMIzV (ORCPT
+	Tue, 13 May 2008 04:57:10 -0400
+Received: from sineb-mail-2.sun.com ([192.18.19.7]:46393 "EHLO
+	sineb-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755144AbYEMI5I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 04:55:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=mHfntwMzTPZnRNOnAj0SDii54iQJ2C1xjSpRYBB/EzTKjEFfS7X9QFkYrRO/MYMuI0aAoUywSrwR/ozymv1Vk5ANLKzzSmAGI8Pw4wTu+M+WF5kOZM9a38+wYT7rNI52BSX1EOEiMPDSbx4sN3F+w6SLz0MzGMA2OeyLDm3/Psc=
-Message-ID: <48295773.9030301@gmail.com>
-Date: Tue, 13 May 2008 17:55:15 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Harald Arnesen <skogtun.linux@gmail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jgarzik@redhat.com>
-Subject: Re: [Bisected] Latest git will not boot on MacBook
-References: <8120cfd40805100705keff68a2kb117aab7d64f76ff@mail.gmail.com>
-In-Reply-To: <8120cfd40805100705keff68a2kb117aab7d64f76ff@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 13 May 2008 04:57:08 -0400
+X-Greylist: delayed 529 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 May 2008 04:57:07 EDT
+Date: Tue, 13 May 2008 14:18:12 +0530
+From: Kalpak Shah <Kalpak.Shah@Sun.COM>
+Subject: Re: [PATCH] ext3/4: fix uninitialized bs in	ext3/4_xattr_set_handle()
+In-reply-to: <4828DE73.2070001@redhat.com>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: Tiger Yang <tiger.yang@oracle.com>, linux-ext4@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-id: <1210668492.4016.6.camel@localhost>
+MIME-version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6)
+Content-type: multipart/mixed; boundary="Boundary_(ID_YnBUVn67hUeuQDlRERYT1A)"
+References: <4827B878.50903@oracle.com> <4828DE73.2070001@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Harald Arnesen wrote:
-> See attached photo of screen.
-> git bisect gives this:
-> 
-> 
-> 78ab88f04f44bed566d51dce0c7cbfeff6449a06 is first bad commit
-> commit 78ab88f04f44bed566d51dce0c7cbfeff6449a06
-> Author: Tejun Heo <htejun@gmail.com>
-> Date:   Thu May 1 23:41:41 2008 +0900
-> 
->     libata: improve post-reset device ready test
-> 
->     Some controllers (jmb and inic162x) use 0x77 and 0x7f to indicate that
->     the device isn't ready yet.  It looks like they use 0xff if device
->     presence is detected but connection isn't established.  0x77 or 0x7f
->     after connection is established and use the value from signature FIS
->     after receiving it.
-> 
->     This patch implements ata_check_ready(), which takes TF status value
->     and determines whether the port is ready or not considering the above
->     and other conditions, and use it in @check_ready() functions.  This is
->     safe as both 0x77 and 0x7f aren't valid ready status value even though
->     they have BSY bit cleared.
-> 
->     This fixes hot plug detection failures which can be triggered with
->     certain drives if they aren't already spun up when the data connector
->     is hot plugged.
-> 
->     Tested on sil, sil24, ahci (jmb/ich), piix and inic162x combined with
->     eight drives from all major vendors.
-> 
->     Signed-off-by: Tejun Heo <htejun@gmail.com>
->     Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 
-The change was reverted and I'm trying to come up with a better version. 
-  Thanks.
+--Boundary_(ID_YnBUVn67hUeuQDlRERYT1A)
+Content-type: text/plain
+Content-transfer-encoding: 7BIT
 
--- 
-tejun
+Hi Eric,
+
+On Mon, 2008-05-12 at 19:18 -0500, Eric Sandeen wrote:
+> Tiger Yang wrote:
+> > Hi,
+> > I met a bug when I try to replace a xattr entry in ibody with a big size 
+> > value. But in ibody there has no space for the new value. So it should 
+> > set new xattr entry in block and remove the old xattr entry in ibody.
+> > 
+> > Best regards,
+> > tiger
+> > 
+> 
+> Tiger, do you have a testcase handy to demonstrate this?
+
+Attached is a simple script to reproduce the problem.
+
+> 
+> Is the new, large out-of-inode xattr unique so that it does not match
+> any existing attribute block, I assume?
+
+I don't quite understand what you mean but the problem is that in
+ext3_xattr_set_handle(), the EA being replaced is found in the
+inode-body (by function ext3_xattr_ibody_find) and hence
+ext3_xattr_block_find() is not called initially. So in this test-case
+when we have to delete an EA from the inode and add it into the external
+block, bs turns out to be uninitialized and therefore a new EA block
+gets allocated instead of the existing one being used.
+
+Thanks,
+Kalpak
+
+> 
+> Thanks,
+> 
+> -Eric
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+--Boundary_(ID_YnBUVn67hUeuQDlRERYT1A)
+Content-type: application/x-shellscript; name=reproducer.sh
+Content-transfer-encoding: 7BIT
+Content-disposition: attachment; filename=reproducer.sh
+
+MNTPT=/mnt/temp
+
+#format test fs
+touch img
+mkfs.ext3 -F -b 4096 -I 512 img 50000 > /dev/null
+mount -t ext3 -o loop,user_xattr img  $MNTPT
+touch $MNTPT/foo
+
+# create EAs so that extra space in inode is filled and external block is needed
+for (( i = 0; i < 20; i++ )); do 
+	setfattr -n user.foobar$i -v foobar $MNTPT/foo
+done
+
+umount $MNTPT
+# note EA block no
+old_blk=`debugfs -R "stat foo" img 2>&1 | grep "ACL" | cut -d' ' -f3`
+echo "Old xattr block no: $old_blk"
+
+mount -t ext3 -o loop,user_xattr img  $MNTPT
+# replace in-inode EA such that it should "overflow" into external EA blok
+setfattr -n user.foobar1 -v foobarfoobarfoobarfoobarfoobarfoobarfoobar $MNTPT/foo
+
+getfattr -d $MNTPT/foo # shows that EAs from external block are lost
+umount $MNTPT
+# EA block no should not change with these operations - but it does
+new_blk=`debugfs -R "stat foo" img 2>&1 | grep "ACL" | cut -d' ' -f3`
+
+if [ $old_blk -ne $new_blk ]; then
+	echo "new xattr block no: $new_blk - old xattr's except the one being replaced are lost"
+fi
+
+--Boundary_(ID_YnBUVn67hUeuQDlRERYT1A)--
