@@ -1,37 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757493AbYEMDLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757950AbYEMDOn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757493AbYEMDLq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 23:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754261AbYEMDLi
+	id S1757950AbYEMDOn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 23:14:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755085AbYEMDOb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 23:11:38 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40481 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753085AbYEMDLh (ORCPT
+	Mon, 12 May 2008 23:14:31 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49134 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752989AbYEMDOa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 23:11:37 -0400
-Message-ID: <482906A9.50909@jp.fujitsu.com>
-Date: Tue, 13 May 2008 12:10:33 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, Paul Jackson <pj@sgi.com>,
-       Paul Menage <menage@google.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cpuset: limit the input of cpuset.sched_relax_domain_level
-References: <4828FC85.7020400@cn.fujitsu.com>
-In-Reply-To: <4828FC85.7020400@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 12 May 2008 23:14:30 -0400
+Date: Mon, 12 May 2008 20:13:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       davidel@xmailserver.org, mtk.manpages@gmail.com,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH 18/18] flag parameters: check magic constants
+Message-Id: <20080512201341.9ead6a9a.akpm@linux-foundation.org>
+In-Reply-To: <200805062118.m46LI74j004096@devserv.devel.redhat.com>
+References: <200805062118.m46LI74j004096@devserv.devel.redhat.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
-> We allow the inputs to be [-1 ... SD_LV_MAX), and return -EINVAL
-> for inputs outside this range.
+On Tue, 6 May 2008 17:18:07 -0400 Ulrich Drepper <drepper@redhat.com> wrote:
 
-Looks good to me. Thanks!
+> --- a/net/socket.c
+> +++ b/net/socket.c
+> @@ -1219,6 +1219,13 @@ asmlinkage long sys_socket(int family, int type, int protocol)
+>  	struct socket *sock;
+>  	int flags;
+>  
+> +	/* Check the SOCK_* constants for consistency.  */
+> +	BUILD_BUG_ON(SOCK_CLOEXEC != O_CLOEXEC);
+> +	BUILD_BUG_ON(SOCK_NONBLOCK != O_NONBLOCK);
+> +	BUILD_BUG_ON((SOCK_MAX | SOCK_TYPE_MASK) != SOCK_TYPE_MASK);
+> +	BUILD_BUG_ON(SOCK_CLOEXEC & SOCK_TYPE_MASK);
+> +	BUILD_BUG_ON(SOCK_NONBLOCK & SOCK_TYPE_MASK);
 
-H.Seto
+The fifth assertion triggers with alpha allmodconfig.
