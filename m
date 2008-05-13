@@ -1,67 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759516AbYEMJYr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759919AbYEMJZM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759516AbYEMJYr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 05:24:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754291AbYEMJYi
+	id S1759919AbYEMJZM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 05:25:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759226AbYEMJY4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 05:24:38 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:56279 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753374AbYEMJYh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 05:24:37 -0400
-Subject: Re: System call audit
-From: David Woodhouse <dwmw2@infradead.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org, mingo@redhat.com
-In-Reply-To: <20080513000617.GA26009@Krystal>
-References: <20080513000617.GA26009@Krystal>
-Content-Type: text/plain
-Date: Tue, 13 May 2008 10:24:29 +0100
-Message-Id: <1210670669.3582.219.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	Tue, 13 May 2008 05:24:56 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:51361 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754291AbYEMJYz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 05:24:55 -0400
+Message-ID: <48295E11.2000003@cn.fujitsu.com>
+Date: Tue, 13 May 2008 17:23:29 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: menage@google.com
+CC: pj@sgi.com, xemul@openvz.org, balbir@in.ibm.com, serue@us.ibm.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org
+Subject: Re: [RFC/PATCH 1/8]: CGroup Files: Add locking mode to cgroups control
+ files
+References: <20080513063707.049448000@menage.corp.google.com> <20080513071522.133586000@menage.corp.google.com>
+In-Reply-To: <20080513071522.133586000@menage.corp.google.com>
+Content-Type: text/plain; charset=GB2312
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-05-12 at 20:06 -0400, Mathieu Desnoyers wrote:
-> Hi David,
+menage@google.com wrote:
+> Different cgroup files have different stability requirements of the
+> cgroups framework while the handler is running; currently most
+> subsystems that don't have their own internal synchronization just
+> call cgroup_lock()/cgroup_unlock(), which takes the global cgroup_mutex.
 > 
-> As I am looking into the system-wide system call tracing problem, I
-> start to wonder how auditsc deals with the fact that user-space could
-> concurrently change the content referred to by the __user pointers.
+> This patch introduces a range of locking modes that can be requested
+> by a control file; currently these are all implemented internally by
+> taking cgroup_mutex, but expressing the intention will make it simpler
+> to move to a finer-grained locking scheme in the future.
+> 
+> Signed-off-by: Paul Menage<menage@google.com>
+> 
 
-In general we have to copy the content into kernel space, audit it, and
-then act on it from there. See the explanation on the IPC audit patch at
-http://lwn.net/Articles/125350/ for example.
+This patch series looks good to me. I've reviewed those patches and didn't
+see anything wrong, except a little comments below.
 
-Auditing one thing and then acting on another would be simply broken.
+[..snap..]
 
-> This would be the case for execve. If we create a program with two
-> thread; one is executing execve syscalls and the other thread would be
-> modifying the userspace string containing the name of the program to
-> execute.
+> -static ssize_t cgroup_write_X64(struct cgroup *cgrp, struct cftype *cft,
+> -				struct file *file,
+> -				const char __user *userbuf,
+> -				size_t nbytes, loff_t *unused_ppos)
+> +
+> +
+> +/**
+> + * cgroup_file_lock(). Helper for cgroup read/write methods.
+> + * @cgrp:  the cgroup being acted on
+> + * @cft:   the control file being written to or read from
+> + * *write: true if the access is a write access.
 
-I was going to suggest that that attack vector won't work, because
-execve() kills all threads. But all you have to do to avoid that is put
-the data in question into a shared writable mmap and modify it from
-another _process_. And in fact I suspect there's a combination of CLONE_
-flags which would avoid the thread-killing behaviour anyway.
+s/*write/@write
 
->  Since we have two copy_from_user, one in auditsc and one in the
-> real execve() function, the string passed to the OS could differ from
-> the string seen by auditsc.
+[..snip..]
 
-Right. Don't Do That Then. The audit code should see what's _actually_
-given to the child process. The audit/execve code has changed since I
-last looked, but I think it's probably OK because it's reading the
-contents of the new program's mm on the way back from the execve()
-system call -- before ever giving the CPU back to that process.
+>  
+>  static ssize_t cgroup_common_file_read(struct cgroup *cgrp,
+> @@ -1518,16 +1580,21 @@ static ssize_t cgroup_file_read(struct f
+>  	struct cftype *cft = __d_cft(file->f_dentry);
+>  	struct cgroup *cgrp = __d_cgrp(file->f_dentry->d_parent);
+>  
+> -	if (!cft || cgroup_is_removed(cgrp))
+> +	if (cgroup_is_removed(cgrp))
+>  		return -ENODEV;
+>  
 
--- 
-dwmw2
+This check seems redundant now.
+
+> -	if (cft->read)
+> -		return cft->read(cgrp, cft, file, buf, nbytes, ppos);
+> -	if (cft->read_u64)
+> -		return cgroup_read_u64(cgrp, cft, file, buf, nbytes, ppos);
+> -	if (cft->read_s64)
+> -		return cgroup_read_s64(cgrp, cft, file, buf, nbytes, ppos);
+> -	return -EINVAL;
+> +	if (cft->read) {
+> +		/* Raw read function - no extra processing by cgroups */
+> +		ssize_t retval = cgroup_file_lock(cgrp, cft, 0);
+> +		if (!retval)
+> +			retval = cft->read(cgrp, cft, file, buf, nbytes, ppos);
+> +		cgroup_file_unlock(cgrp, cft, 0);
+> +		return retval;
+> +	}
+> +	if (cft->read_u64 || cft->read_s64)
+> +		return cgroup_read_X64(cgrp, cft, file, buf, nbytes, ppos);
+> +	else
+> +		return -EINVAL;
+>  }
 
