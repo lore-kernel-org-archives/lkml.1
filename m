@@ -1,86 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760406AbYEMRBg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760765AbYEMRBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760406AbYEMRBg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 13:01:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760621AbYEMRBH
+	id S1760765AbYEMRBV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 13:01:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755382AbYEMRAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 13:01:07 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:16000 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756013AbYEMRBE (ORCPT
+	Tue, 13 May 2008 13:00:23 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:47886 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751882AbYEMRAT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 13:01:04 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: Re: 2.6.26-rc1 regression: ISA DMA broken (bisected)
-Date: Tue, 13 May 2008 10:59:32 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Rene Herman <rene.herman@keyaccess.nl>, Glauber Costa <gcosta@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Pete Clements <clem@clem.clem-digital.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       ALSA devel <alsa-devel@alsa-project.org>
-References: <4823AAF2.7070102@keyaccess.nl> <s5hzlr0105c.wl%tiwai@suse.de>
-In-Reply-To: <s5hzlr0105c.wl%tiwai@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805131059.32911.bjorn.helgaas@hp.com>
+	Tue, 13 May 2008 13:00:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=references:user-agent:date:from:to:cc:subject:content-disposition:message-id;
+        b=a9Lm8edr8+rFPJziTo1TvDNoKan3GUjprilXvXhsv+seskNTPvV6UTrnDBLxy2wGYakKaCnNiaD1ZSvIsTjaZy70sgOJmGeKmt9rhTQ8DT2gW+f3MfGX2lTkbVUssDXAuX/PjMHyHjqbeQ/Pesyo00MzvsgLdaVS2wTSDer37LY=
+References: <20080513165538.952646389@gmail.com>>
+User-Agent: quilt/0.46-1
+Date: Tue, 13 May 2008 20:55:39 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>, jirislaby@gmail.com
+Subject: [patch 1/2] x86: head_64.S cleanup - use straight move to CR4 register
+Content-Disposition: inline; filename=x86-head-64-S-flags
+Message-ID: <4829c921.0305560a.489b.07db@mx.google.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 09 May 2008 12:06:55 am Takashi Iwai wrote:
-> Thanks for catching it.  Yeah, the patch looks buggy.  We had an
-> implicit assumption that dev = NULL for ISA devices that require 24bit
-> DMA.
+There is no need for testing the values because we already know
+what they should be. Just set them in straight way.
 
-Naive question #1:  Why don't we have a struct device for these
-ISA devices?  PNP builds a struct device with DMA_24BIT_MASK
-for ISAPNP devices.
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+---
 
-Naive question #2:  Do other architectures need similar fixes in
-dma_alloc_coherent()?
+Index: linux-2.6.git/arch/x86/kernel/head_64.S
+===================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/head_64.S	2008-05-13 19:17:31.000000000 +0400
++++ linux-2.6.git/arch/x86/kernel/head_64.S	2008-05-13 19:35:11.000000000 +0400
+@@ -155,9 +155,7 @@ ENTRY(secondary_startup_64)
+ 	 */
+ 
+ 	/* Enable PAE mode and PGE */
+-	xorq	%rax, %rax
+-	btsq	$5, %rax
+-	btsq	$7, %rax
++	movq	$(X86_CR4_PAE | X86_CR4_PGE), %rax
+ 	movq	%rax, %cr4
+ 
+ 	/* Setup early boot stage 4 level pagetables. */
 
-> [PATCH] x86: Fix dma_alloc_coherent() for ISA devices
-> 
-> The recent work on x86 dma_alloc_coherent() breaks the ISA DMA buffer
-> allocation, which is represented by "dev = NULL" and requires 24bit
-> DMA implicitly.
-> 
-> Signed-off-by: Takashi Iwai <tiwai@suse.de>
-> 
-> ---
-> 
-> diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-> index 0c37f16..c5ef1af 100644
-> --- a/arch/x86/kernel/pci-dma.c
-> +++ b/arch/x86/kernel/pci-dma.c
-> @@ -385,11 +385,13 @@ dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_handle,
->  	if (dma_alloc_from_coherent_mem(dev, size, dma_handle, &memory))
->  		return memory;
->  
-> -	if (!dev)
-> +	if (!dev) {
->  		dev = &fallback_dev;
-> +		gfp |= GFP_DMA;
-> +	}
->  	dma_mask = dev->coherent_dma_mask;
->  	if (dma_mask == 0)
-> -		dma_mask = DMA_32BIT_MASK;
-> +		dma_mask = (gfp & GFP_DMA) ? DMA_24BIT_MASK : DMA_32BIT_MASK;
->  
->  	/* Device not DMA able */
->  	if (dev->dma_mask == NULL)
-> @@ -403,7 +405,7 @@ dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_handle,
->  	   larger than 16MB and in this case we have a chance of
->  	   finding fitting memory in the next higher zone first. If
->  	   not retry with true GFP_DMA. -AK */
-> -	if (dma_mask <= DMA_32BIT_MASK)
-> +	if (dma_mask <= DMA_32BIT_MASK && !(gfp & GFP_DMA))
->  		gfp |= GFP_DMA32;
->  #endif
->  
-
+-- 
