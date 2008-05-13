@@ -1,48 +1,325 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757359AbYEMEhZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758238AbYEMEiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757359AbYEMEhZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 00:37:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbYEMEhN
+	id S1758238AbYEMEiy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 00:38:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753254AbYEMEiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 00:37:13 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:59273 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751454AbYEMEhM (ORCPT
+	Tue, 13 May 2008 00:38:46 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:9302 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752194AbYEMEip (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 00:37:12 -0400
-Message-ID: <48291AE7.9050108@jp.fujitsu.com>
-Date: Tue, 13 May 2008 13:36:55 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] doc: Test-by?
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+	Tue, 13 May 2008 00:38:45 -0400
+X-IronPort-AV: E=Sophos;i="4.27,477,1204520400"; 
+   d="scan'208";a="53440656"
+From: Bryan Wu <cooloney@kernel.org>
+To: joern@logfs.org, dwmw2@infradead.org, will.newton@gmail.com
+Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Mike Frysinger <vapier.adi@gmail.com>, Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH 1/1] [MTD/MAPS] Blackfin Async Flash Maps: Handle the case where flash memory and ethernet mac/phy are mapped onto the same async bank
+Date: Tue, 13 May 2008 12:38:45 +0800
+Message-Id: <1210653525-19437-1-git-send-email-cooloney@kernel.org>
+X-Mailer: git-send-email 1.5.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commonly used is "Tested-by."
+From: Mike Frysinger <vapier.adi@gmail.com>
 
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+[try #3] rename bf5xx-flash to bfin-async-flash
+ - move all kconfig board settings into board resources
+ - fixup casting style according to lkml feedback
+ - rewrite driver so that it can handle arbitrary of
+   instances according to the declared platform resources
+
+[try #2]
+Remove useless SSYNC() as Will said
+
+[try #1]
+The BF533-STAMP does this for example.
+All board-specific configuration goes in your board resources file.
+
+Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Joern Engel <joern@logfs.org>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
 ---
- Documentation/SubmittingPatches |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/mtd/maps/Kconfig            |   11 ++
+ drivers/mtd/maps/Makefile           |    1 +
+ drivers/mtd/maps/bfin-async-flash.c |  235 +++++++++++++++++++++++++++++++++++
+ 3 files changed, 247 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/mtd/maps/bfin-async-flash.c
 
-diff --git a/Documentation/SubmittingPatches b/Documentation/SubmittingPatches
-index 9c93a03..037e8b8 100644
---- a/Documentation/SubmittingPatches
-+++ b/Documentation/SubmittingPatches
-@@ -359,7 +359,7 @@ person it names.  This tag documents that potentially interested parties
- have been included in the discussion
+diff --git a/drivers/mtd/maps/Kconfig b/drivers/mtd/maps/Kconfig
+index 17bc87a..d4878eb 100644
+--- a/drivers/mtd/maps/Kconfig
++++ b/drivers/mtd/maps/Kconfig
+@@ -517,6 +517,17 @@ config MTD_PCMCIA_ANONYMOUS
  
+ 	  If unsure, say N.
  
--14) Using Test-by: and Reviewed-by:
-+14) Using Tested-by: and Reviewed-by:
- 
- A Tested-by: tag indicates that the patch has been successfully tested (in
- some environment) by the person named.  This tag informs maintainers that
++config MTD_BFIN_ASYNC
++	tristate "Blackfin BF533-STAMP Flash Chip Support"
++	depends on BFIN533_STAMP && MTD_CFI
++	select MTD_PARTITIONS
++	default y
++	help
++	  Map driver which allows for simultaneous utilization of
++	  ethernet and CFI parallel flash.
++
++	  If compiled as a module, it will be called bfin-async-flash.
++
+ config MTD_UCLINUX
+ 	tristate "Generic uClinux RAM/ROM filesystem support"
+ 	depends on MTD_PARTITIONS && !MMU
+diff --git a/drivers/mtd/maps/Makefile b/drivers/mtd/maps/Makefile
+index 957fb5f..4ed1672 100644
+--- a/drivers/mtd/maps/Makefile
++++ b/drivers/mtd/maps/Makefile
+@@ -67,3 +67,4 @@ obj-$(CONFIG_MTD_PLATRAM)	+= plat-ram.o
+ obj-$(CONFIG_MTD_OMAP_NOR)	+= omap_nor.o
+ obj-$(CONFIG_MTD_MTX1)		+= mtx-1_flash.o
+ obj-$(CONFIG_MTD_INTEL_VR_NOR)	+= intel_vr_nor.o
++obj-$(CONFIG_MTD_BFIN_ASYNC)	+= bfin-async-flash.o
+diff --git a/drivers/mtd/maps/bfin-async-flash.c b/drivers/mtd/maps/bfin-async-flash.c
+new file mode 100644
+index 0000000..1ec5ae6
+--- /dev/null
++++ b/drivers/mtd/maps/bfin-async-flash.c
+@@ -0,0 +1,235 @@
++/*
++ * drivers/mtd/maps/bfin-async-flash.c
++ *
++ * Handle the case where flash memory and ethernet mac/phy are
++ * mapped onto the same async bank.  The BF533-STAMP does this
++ * for example.  All board-specific configuration goes in your
++ * board resources file.
++ *
++ * Copyright 2000 Nicolas Pitre <nico@cam.org>
++ * Copyright 2005-2008 Analog Devices Inc.
++ *
++ * Enter bugs at http://blackfin.uclinux.org/
++ *
++ * Licensed under the GPL-2 or later.
++ */
++
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/mtd/mtd.h>
++#include <linux/mtd/map.h>
++#include <linux/mtd/partitions.h>
++#include <linux/mtd/physmap.h>
++#include <linux/platform_device.h>
++#include <linux/types.h>
++
++#include <asm/blackfin.h>
++#include <asm/gpio.h>
++#include <asm/io.h>
++#include <asm/unaligned.h>
++
++#define pr_devinit(fmt, args...) ({ static const __devinitdata char __fmt[] = fmt; printk(__fmt, ## args); })
++
++#define DRIVER_NAME "bfin-async-flash"
++
++struct async_state {
++	struct mtd_info *mtd;
++	struct map_info map;
++	int enet_flash_pin;
++	u32 flash_ambctl0, flash_ambctl1;
++	u32 save_ambctl0, save_ambctl1;
++	unsigned long irq_flags;
++};
++
++static void switch_to_flash(struct async_state *state)
++{
++	local_irq_save(state->irq_flags);
++
++	gpio_set_value(state->enet_flash_pin, 0);
++
++	state->save_ambctl0 = bfin_read_EBIU_AMBCTL0();
++	state->save_ambctl1 = bfin_read_EBIU_AMBCTL1();
++	bfin_write_EBIU_AMBCTL0(state->flash_ambctl0);
++	bfin_write_EBIU_AMBCTL1(state->flash_ambctl1);
++	SSYNC();
++}
++
++static void switch_back(struct async_state *state)
++{
++	bfin_write_EBIU_AMBCTL0(state->save_ambctl0);
++	bfin_write_EBIU_AMBCTL1(state->save_ambctl1);
++	SSYNC();
++
++	gpio_set_value(state->enet_flash_pin, 1);
++
++	local_irq_restore(state->irq_flags);
++}
++
++static map_word bfin_read(struct map_info *map, unsigned long ofs)
++{
++	struct async_state *state = (struct async_state *)map->map_priv_1;
++	u16 word;
++	map_word test;
++
++	switch_to_flash(state);
++
++	word = readw(map->virt + ofs);
++	SSYNC();
++
++	switch_back(state);
++
++	test.x[0] = word;
++	return test;
++}
++
++static void bfin_copy_from(struct map_info *map, void *to, unsigned long from, ssize_t len)
++{
++	size_t i;
++	map_word test;
++
++	if ((unsigned long)to & 0x1) {
++		for (i = 0; i < len; i += 2) {
++			u16 *dst = (u16 *)(to + i);
++			test = bfin_read(map, from + i);
++			put_unaligned(test.x[0], dst);
++		}
++	} else {
++		for (i = 0; i < len; i += 2) {
++			u16 *dst = (u16 *)(to + i);
++			test = bfin_read(map, from + i);
++			*dst = test.x[0];
++		}
++	}
++
++	if (len & 0x1) {
++		u8 *last_to_byte = (u8 *)(to + i);
++		test = bfin_read(map, from + i);
++		*last_to_byte = (u8)test.x[0];
++	}
++}
++
++static void bfin_write(struct map_info *map, map_word d1, unsigned long ofs)
++{
++	struct async_state *state = (struct async_state *)map->map_priv_1;
++	u16 d;
++
++	d = (u16)d1.x[0];
++
++	switch_to_flash(state);
++
++	writew(d, map->virt + ofs);
++	SSYNC();
++
++	switch_back(state);
++}
++
++static void bfin_copy_to(struct map_info *map, unsigned long to, const void *from, ssize_t len)
++{
++	struct async_state *state = (struct async_state *)map->map_priv_1;
++
++	switch_to_flash(state);
++
++	memcpy(map->virt + to, from, len);
++	SSYNC();
++
++	switch_back(state);
++}
++
++#ifdef CONFIG_MTD_PARTITIONS
++static const char *part_probe_types[] = { "cmdlinepart", "RedBoot", NULL };
++#endif
++
++static int __devinit bfin_flash_probe(struct platform_device *pdev)
++{
++	int ret;
++	struct physmap_flash_data *pdata = pdev->dev.platform_data;
++	struct resource *memory = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	struct resource *flash_ambctl = platform_get_resource(pdev, IORESOURCE_MEM, 1);
++	struct async_state *state;
++
++	state = kzalloc(sizeof(*state), GFP_KERNEL);
++	if (!state)
++		return -ENOMEM;
++
++	state->map.name       = DRIVER_NAME;
++	state->map.read       = bfin_read;
++	state->map.copy_from  = bfin_copy_from;
++	state->map.write      = bfin_write;
++	state->map.copy_to    = bfin_copy_to;
++	state->map.bankwidth  = pdata->width;
++	state->map.size       = memory->end - memory->start + 1;
++	state->map.virt       = (void __iomem *)memory->start;
++	state->map.phys       = memory->start;
++	state->map.map_priv_1 = (unsigned long)state;
++	state->enet_flash_pin = platform_get_irq(pdev, 0);
++	state->flash_ambctl0  = flash_ambctl->start;
++	state->flash_ambctl1  = flash_ambctl->end;
++
++	if (gpio_request(state->enet_flash_pin, DRIVER_NAME)) {
++		pr_devinit(KERN_ERR DRIVER_NAME ": Failed to request gpio %d\n", state->enet_flash_pin);
++		return -EBUSY;
++	}
++	gpio_direction_output(state->enet_flash_pin, 1);
++
++	pr_devinit(KERN_NOTICE DRIVER_NAME ": probing %d-bit flash bus\n", state->map.bankwidth * 8);
++	state->mtd = do_map_probe(memory->name, &state->map);
++	if (!state->mtd)
++		return -ENXIO;
++
++#ifdef CONFIG_MTD_PARTITIONS
++	ret = parse_mtd_partitions(state->mtd, part_probe_types, &pdata->parts, 0);
++	if (ret > 0) {
++		pr_devinit(KERN_NOTICE DRIVER_NAME ": Using commandline partition definition\n");
++		add_mtd_partitions(state->mtd, pdata->parts, ret);
++
++	} else if (pdata->nr_parts) {
++		pr_devinit(KERN_NOTICE DRIVER_NAME ": Using board partition definition\n");
++		add_mtd_partitions(state->mtd, pdata->parts, pdata->nr_parts);
++
++	} else
++#endif
++	{
++		pr_devinit(KERN_NOTICE DRIVER_NAME ": no partition info available, registering whole flash at once\n");
++		add_mtd_device(state->mtd);
++	}
++
++	platform_set_drvdata(pdev, state);
++
++	return 0;
++}
++
++static int __devexit bfin_flash_remove(struct platform_device *pdev)
++{
++	struct async_state *state = platform_get_drvdata(pdev);
++	gpio_free(state->enet_flash_pin);
++#ifdef CONFIG_MTD_PARTITIONS
++	del_mtd_partitions(state->mtd);
++#endif
++	map_destroy(state->mtd);
++	kfree(state);
++	return 0;
++}
++
++static struct platform_driver bfin_flash_driver = {
++	.probe		= bfin_flash_probe,
++	.remove		= __devexit_p(bfin_flash_remove),
++	.driver		= {
++		.name	= DRIVER_NAME,
++	},
++};
++
++static int __init bfin_flash_init(void)
++{
++	return platform_driver_register(&bfin_flash_driver);
++}
++module_init(bfin_flash_init);
++
++static void __exit bfin_flash_exit(void)
++{
++	platform_driver_unregister(&bfin_flash_driver);
++}
++module_exit(bfin_flash_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION("MTD map driver for Blackfins with flash/ethernet on same async bank");
 -- 
-1.5.4.3
-
+1.5.5
