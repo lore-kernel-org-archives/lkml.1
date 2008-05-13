@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761271AbYEMPer@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760147AbYEMPfQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761271AbYEMPer (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 11:34:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756228AbYEMPej
+	id S1760147AbYEMPfQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 11:35:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756228AbYEMPe7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 11:34:39 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:59183 "EHLO
-	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751228AbYEMPei (ORCPT
+	Tue, 13 May 2008 11:34:59 -0400
+Received: from lazybastard.de ([212.112.238.170]:36864 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755723AbYEMPe6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 11:34:38 -0400
-Date: Tue, 13 May 2008 21:04:03 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Kevin Winchester <kjwinchester@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: Latest Linus git: =?utf-8?Q?kernel=2Fs?=
-	=?utf-8?B?Y2hlZC5jOjEyMTY6IHdhcm5pbmc6IOKAmGluaXRfaHJ0aWNr?=
-	=?utf-8?B?4oCZ?= defined but not used
-Message-ID: <20080513153403.GA4474@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <48278762.1080508@gmail.com> <20080513132328.GB5809@elte.hu>
+	Tue, 13 May 2008 11:34:58 -0400
+Date: Tue, 13 May 2008 17:34:42 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: linux-mtd@lists.infradead.org, Bryan Wu <cooloney@kernel.org>,
+       dwmw2@infradead.org, will.newton@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] [MTD/MAPS] Blackfin Async Flash Maps: Handle the case where flash memory and ethernet mac/phy are mapped onto the same async bank
+Message-ID: <20080513153441.GB18026@logfs.org>
+References: <1210653525-19437-1-git-send-email-cooloney@kernel.org> <20080513080727.GA15795@logfs.org> <8bd0f97a0805130542x46f5e7fejf1347f1c71f567fb@mail.gmail.com> <20080513150143.GA18026@logfs.org> <8bd0f97a0805130815q2ffa1d34ue87f5eb1422b6f42@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080513132328.GB5809@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <8bd0f97a0805130815q2ffa1d34ue87f5eb1422b6f42@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 13, 2008 at 03:23:28PM +0200, Ingo Molnar wrote:
-> 
-> * Kevin Winchester <kjwinchester@gmail.com> wrote:
-> 
-> > Hi Ingo,
+On Tue, 13 May 2008 11:15:57 -0400, Mike Frysinger wrote:
+> On Tue, May 13, 2008 at 11:01 AM, Jörn Engel wrote:
+> > On Tue, 13 May 2008 08:42:08 -0400, Mike Frysinger wrote:
+> >  > On Tue, May 13, 2008 at 4:07 AM, Jörn Engel wrote:
+> >  > > On Tue, 13 May 2008 12:38:45 +0800, Bryan Wu wrote:
+> >  > >  >
+> >  > >  > +#define pr_devinit(fmt, args...) ({ static const __devinitdata char __fmt[] = fmt; printk(__fmt, ## args); })
+> >  > >
+> >  > >  Is this still needed?
+> >  >
+> >  > yes
 > >
-> > I got the above warning in my latest build.  I assume it is because 
-> > init_hrtick() is only called from CONFIG_SMP sched_init_smp(), and I 
-> > have a HRT-enabled UP box.
-> >
-> > I could write up the simple patch to put #ifdef CONFIG_SMP around 
-> > init_hrtick(), but with all of the #ifdefs in that file, I figure it 
-> > is probably a little more complicated than that.
+> >  Can you elaborate a bit?
 > 
-> the fix seems simple - see below. The #ifdef jungle ... less so.
+> it's still used, therefore the definition cannot be dropped.  just
+> look at the probe function.
 
-I attempted to make it a bit easier to figure out that jungle at 
-http://lkml.org/lkml/2008/5/12/64 , if it helps.
+That bit is obvious.  But why do you use pr_devinit() instead of
+printk()?  What does it gain you?
+
+Jörn
 
 -- 
-regards,
-Dhaval
+Das Aufregende am Schreiben ist es, eine Ordnung zu schaffen, wo
+vorher keine existiert hat.
+-- Doris Lessing
