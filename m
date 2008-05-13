@@ -1,63 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757627AbYEMSvy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758630AbYEMSwy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757627AbYEMSvy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 14:51:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754844AbYEMSvq
+	id S1758630AbYEMSwy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 14:52:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754439AbYEMSwq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 14:51:46 -0400
-Received: from www.tglx.de ([62.245.132.106]:44489 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754828AbYEMSvp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 14:51:45 -0400
-Date: Tue, 13 May 2008 20:51:38 +0200
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Johann Baudy <johaahn@gmail.com>
-Cc: hjk@linutronix.de, gregkh@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: UIO: phys_mem_access_prot() miss?
-Message-ID: <20080513185137.GA3342@local>
-References: <7e0dd21a0805130655xd8b1c8ap9a329943e25fe6fb@mail.gmail.com>
+	Tue, 13 May 2008 14:52:46 -0400
+Received: from mtagate2.uk.ibm.com ([195.212.29.135]:27114 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753090AbYEMSwp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 14:52:45 -0400
+Date: Tue, 13 May 2008 20:52:42 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andy Whitcroft <apw@shadowen.org>, Dave Hansen <haveblue@us.ibm.com>,
+       Gerald Schaefer <gerald.schaefer@de.ibm.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: memory_hotplug: always initialize pageblock bitmap.
+Message-ID: <20080513185242.GA6465@osiris.boeblingen.de.ibm.com>
+References: <20080509060609.GB9840@osiris.boeblingen.de.ibm.com> <20080509153910.6b074a30.kamezawa.hiroyu@jp.fujitsu.com> <20080510124501.GA4796@osiris.boeblingen.de.ibm.com> <20080512105500.ff89c0d3.kamezawa.hiroyu@jp.fujitsu.com> <20080512181928.cd41c055.kamezawa.hiroyu@jp.fujitsu.com> <20080513115825.GB12339@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <7e0dd21a0805130655xd8b1c8ap9a329943e25fe6fb@mail.gmail.com>
+In-Reply-To: <20080513115825.GB12339@osiris.boeblingen.de.ibm.com>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 13, 2008 at 03:55:29PM +0200, Johann Baudy wrote:
-> Hi Hans, Greg,
+On Tue, May 13, 2008 at 01:58:25PM +0200, Heiko Carstens wrote:
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
 > 
-> I need some help on UIO driver.
-> I have to add this below workaround (in uio.c) to be able to access
-> phys memory from user space.
-> I'm currently using PPC arch.
-> Am I wrong? or Is it a miss?
+> Trying to online a new memory section that was added via memory hotplug
+> sometimes results in crashes when the new pages are added via __free_page.
+> Reason for that is that the pageblock bitmap isn't initialized and hence
+> contains random stuff.  That means that get_pageblock_migratetype() returns
+> also random stuff and therefore
 > 
-> static int uio_mmap(struct file *filep, struct vm_area_struct *vma)
-> {
+> 	list_add(&page->lru,
+> 		&zone->free_area[order].free_list[migratetype]);
 > 
-> ...
-> 	switch (idev->info->mem[mi].memtype) {
-> 		case UIO_MEM_PHYS:
-> +       	vma->vm_page_prot = phys_mem_access_prot(filep,
-> +            idev->info->mem[mi].addr >> PAGE_SHIFT,
-> +						 vma->vm_end - vma->vm_start,
-> +						 vma->vm_page_prot);
-> 			return uio_mmap_physical(vma);
-> 		case UIO_MEM_LOGICAL:
-> ...
+> in __free_one_page() tries to do a list_add to something that isn't even
+> necessarily a list.
 > 
-> }
+> This happens since 86051ca5eaf5e560113ec7673462804c54284456
+> ("mm: fix usemap initialization") which makes sure that the pageblock
+> bitmap gets only initialized for pages present in a zone.
+> Unfortunately for hot-added memory the zones "grow" after the memmap
+> and the pageblock memmap have been initialized. Which means that the
+> new pages have an unitialized bitmap.
+> To solve this the calls to grow_zone_span() and grow_pgdat_span() are
+> moved to __add_zone() just before the initialization happens.
 > 
-> FYI: I've copied those lines from mem char driver in mmap_mem().
+> The patch also moves the two functions since __add_zone() is the only
+> caller and I didn't want to add a forward declaration.
+> 
+> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+> Cc: Andy Whitcroft <apw@shadowen.org>
+> Cc: Dave Hansen <haveblue@us.ibm.com>
+> Cc: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Cc: Yasunori Goto <y-goto@jp.fujitsu.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
 
-Hi Johann,
-what kernel are you using? Similar problems were reported before, and
-we've already applied a patch that should fix it. I think it hit
-mainline shortly before the 2.6.25 release. uio_mmap() should work with
-kernels >= 2.6.25 for PPC.
+Oops... the patch is tested and works for me. However it was not Signed-off
+by Andrew. And in addition I forgot to add [PATCH] to the subject.
+Sorry about that!
 
-Thanks,
-Hans
-
+If all agree that this patch is ok it should probably also go into
+-stable, since it fixes the above mentioned regression.
