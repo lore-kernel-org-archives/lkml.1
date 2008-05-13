@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762772AbYEMUTw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762623AbYEMUTK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762772AbYEMUTw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 16:19:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762257AbYEMUPI
+	id S1762623AbYEMUTK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 16:19:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762196AbYEMUOx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 16:15:08 -0400
-Received: from cantor.suse.de ([195.135.220.2]:38128 "EHLO mx1.suse.de"
+	Tue, 13 May 2008 16:14:53 -0400
+Received: from ns.suse.de ([195.135.220.2]:38049 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762245AbYEMUPF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 16:15:05 -0400
-Date: Tue, 13 May 2008 13:12:16 -0700
+	id S1762187AbYEMUOv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 16:14:51 -0400
+Date: Tue, 13 May 2008 13:12:11 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,16 +20,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Netfilter Development Mailinglist 
-	<netfilter-devel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Philip Craig <philipc@snapgear.com>, Patrick McHardy <kaber@trash.net>
-Subject: [patch 19/37] nf_conntrack: padding breaks conntrack hash on ARM
-Message-ID: <20080513201216.GT31167@suse.de>
+       Oliver Hartkopp <oliver@hartkopp.net>,
+       Urs Thuermann <urs@isnogud.escape.de>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 17/37] can: Fix can_send() handling on dev_queue_xmit()
+	failures
+Message-ID: <20080513201211.GR31167@suse.de>
 References: <20080513200453.064446337@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="nf_conntrack-padding-breaks-conntrack-hash-on-arm.patch"
+Content-Disposition: inline; filename="can-fix-can_send-handling-on-dev_queue_xmit-failures.patch"
 In-Reply-To: <20080513201053.GA31167@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,79 +40,74 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Philip Craig <philipc@snapgear.com>
+From: Oliver Hartkopp <oliver@hartkopp.net>
 
-[NETFILTER]: nf_conntrack: padding breaks conntrack hash on ARM
+[ Upstream commit: c2ab7ac225e29006b7117d6a9fe8f3be8d98b0c2 ]
 
-Upstream commit 443a70d50:
+The tx packet counting and the local loopback of CAN frames should
+only happen in the case that the CAN frame has been enqueued to the
+netdevice tx queue successfully.
 
-commit 0794935e "[NETFILTER]: nf_conntrack: optimize hash_conntrack()"
-results in ARM platforms hashing uninitialised padding.  This padding
-doesn't exist on other architectures.
+Thanks to Andre Naujoks <nautsch@gmail.com> for reporting this issue.
 
-Fix this by replacing NF_CT_TUPLE_U_BLANK() with memset() to ensure
-everything is initialised.  There were only 4 bytes that
-NF_CT_TUPLE_U_BLANK() wasn't clearing anyway (or 12 bytes on ARM).
-
-Signed-off-by: Philip Craig <philipc@snapgear.com>
-Signed-off-by: Patrick McHardy <kaber@trash.net>
+Signed-off-by: Oliver Hartkopp <oliver@hartkopp.net>
+Signed-off-by: Urs Thuermann <urs@isnogud.escape.de>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/net/netfilter/nf_conntrack_tuple.h     |   10 ----------
- net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c |    2 +-
- net/netfilter/nf_conntrack_core.c              |    4 ++--
- 3 files changed, 3 insertions(+), 13 deletions(-)
+ net/can/af_can.c |   16 ++++++++++++----
+ 1 file changed, 12 insertions(+), 4 deletions(-)
 
---- a/include/net/netfilter/nf_conntrack_tuple.h
-+++ b/include/net/netfilter/nf_conntrack_tuple.h
-@@ -101,16 +101,6 @@ struct nf_conntrack_tuple_mask
- 	} src;
- };
+--- a/net/can/af_can.c
++++ b/net/can/af_can.c
+@@ -208,6 +208,7 @@ static int can_create(struct net *net, s
+  */
+ int can_send(struct sk_buff *skb, int loop)
+ {
++	struct sk_buff *newskb = NULL;
+ 	int err;
  
--/* This is optimized opposed to a memset of the whole structure.  Everything we
-- * really care about is the  source/destination unions */
--#define NF_CT_TUPLE_U_BLANK(tuple)                              	\
--        do {                                                    	\
--                (tuple)->src.u.all = 0;                         	\
--                (tuple)->dst.u.all = 0;                         	\
--		memset(&(tuple)->src.u3, 0, sizeof((tuple)->src.u3));	\
--		memset(&(tuple)->dst.u3, 0, sizeof((tuple)->dst.u3));	\
--        } while (0)
+ 	if (skb->dev->type != ARPHRD_CAN) {
+@@ -244,8 +245,7 @@ int can_send(struct sk_buff *skb, int lo
+ 			 * If the interface is not capable to do loopback
+ 			 * itself, we do it here.
+ 			 */
+-			struct sk_buff *newskb = skb_clone(skb, GFP_ATOMIC);
 -
- #ifdef __KERNEL__
++			newskb = skb_clone(skb, GFP_ATOMIC);
+ 			if (!newskb) {
+ 				kfree_skb(skb);
+ 				return -ENOMEM;
+@@ -254,7 +254,6 @@ int can_send(struct sk_buff *skb, int lo
+ 			newskb->sk = skb->sk;
+ 			newskb->ip_summed = CHECKSUM_UNNECESSARY;
+ 			newskb->pkt_type = PACKET_BROADCAST;
+-			netif_rx(newskb);
+ 		}
+ 	} else {
+ 		/* indication for the CAN driver: no loopback required */
+@@ -266,11 +265,20 @@ int can_send(struct sk_buff *skb, int lo
+ 	if (err > 0)
+ 		err = net_xmit_errno(err);
  
- #define NF_CT_DUMP_TUPLE(tp)						     \
---- a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
-+++ b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c
-@@ -305,7 +305,7 @@ getorigdst(struct sock *sk, int optval, 
- 	const struct nf_conntrack_tuple_hash *h;
- 	struct nf_conntrack_tuple tuple;
++	if (err) {
++		if (newskb)
++			kfree_skb(newskb);
++		return err;
++	}
++
++	if (newskb)
++		netif_rx(newskb);
++
+ 	/* update statistics */
+ 	can_stats.tx_frames++;
+ 	can_stats.tx_frames_delta++;
  
--	NF_CT_TUPLE_U_BLANK(&tuple);
-+	memset(&tuple, 0, sizeof(tuple));
- 	tuple.src.u3.ip = inet->rcv_saddr;
- 	tuple.src.u.tcp.port = inet->sport;
- 	tuple.dst.u3.ip = inet->daddr;
---- a/net/netfilter/nf_conntrack_core.c
-+++ b/net/netfilter/nf_conntrack_core.c
-@@ -104,7 +104,7 @@ nf_ct_get_tuple(const struct sk_buff *sk
- 		const struct nf_conntrack_l3proto *l3proto,
- 		const struct nf_conntrack_l4proto *l4proto)
- {
--	NF_CT_TUPLE_U_BLANK(tuple);
-+	memset(tuple, 0, sizeof(*tuple));
+-	return err;
++	return 0;
+ }
+ EXPORT_SYMBOL(can_send);
  
- 	tuple->src.l3num = l3num;
- 	if (l3proto->pkt_to_tuple(skb, nhoff, tuple) == 0)
-@@ -153,7 +153,7 @@ nf_ct_invert_tuple(struct nf_conntrack_t
- 		   const struct nf_conntrack_l3proto *l3proto,
- 		   const struct nf_conntrack_l4proto *l4proto)
- {
--	NF_CT_TUPLE_U_BLANK(inverse);
-+	memset(inverse, 0, sizeof(*inverse));
- 
- 	inverse->src.l3num = orig->src.l3num;
- 	if (l3proto->invert_tuple(inverse, orig) == 0)
 
 -- 
