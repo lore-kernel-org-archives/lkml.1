@@ -1,60 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760841AbYEMWaM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753729AbYEMWi4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760841AbYEMWaM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 18:30:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757181AbYEMW34
+	id S1753729AbYEMWi4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 18:38:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753738AbYEMWil
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 18:29:56 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43166
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1757132AbYEMW3y (ORCPT
+	Tue, 13 May 2008 18:38:41 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57978 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751848AbYEMWij (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 18:29:54 -0400
-Date: Tue, 13 May 2008 15:29:49 -0700 (PDT)
-Message-Id: <20080513.152949.155579984.davem@davemloft.net>
-To: mathieu.desnoyers@polymtl.ca
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: [PATCH]: Sparc64 immediate values
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080513123615.GA29334@Krystal>
-References: <20080513.044011.204136790.davem@davemloft.net>
-	<20080513123615.GA29334@Krystal>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 13 May 2008 18:38:39 -0400
+Date: Tue, 13 May 2008 23:27:27 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Greg KH <greg@kroah.com>
+Cc: jgarzik@pobox.com, netdev@vger.kernel.org,
+       Andrew Bird <ajb@spheresystems.co.uk>,
+       Javier Marcet <javier@krausbeck.org>, Filip Aben <f.aben@option.com>,
+       Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
+       Oliver Neukum <oliver@neukum.org>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] HSO: add option hso driver
+Message-ID: <20080513232727.21c74bb2@core>
+In-Reply-To: <20080513215134.GC6139@kroah.com>
+References: <20080513215134.GC6139@kroah.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Date: Tue, 13 May 2008 08:36:15 -0400
+> Jeff, please queue this up for 2.6.27 if there are no problems that you
+> can see.  It has been in the linux-next tree for a while, and many users
+> are reporting that it is working for them.
+> 
+> Or if you feel it's ok for 2.6.26, I will not object to that either :)
 
-> However, it does not protect from having a thread preempted in the
-> middle of this instruction sequence and therefore to see incoherent
-> values.
+Can we get it into 2.6.26 - its a driver for new hardware and the driver
+is going to get a clean up for 2.6.27 anyway.
 
-Yes, that makes such schemes unworkable, how hum...
+Comments below are minor and I don't think blockers
 
-> Are there non-maskable interrupts on sparc64 ?
+So for the serial side
 
-Yes, and no.  When the PSTATE_IE bit is cleared in the
-processor state register, no interrupts whatsoever are
-recognized by the processor.  This is off only during
-trap entry/exit sequences, and some other special bits
-of code.
+Acked-by: Alan Cox <alan@redhat.com>
 
-> The one thing we could do to allow such updates without using
-> stop_machine is to create something similar to the read seqlock using
-> immediate values.
 
-Yes I saw such suggestions in the comments of the immediate code,
-you don't have to describe such things all over again.
+> +	termios = serial->tty->termios;
 
-Doing something so heavy like this in the "fast path" is completely
-pointless in my opinion.
+tty is passed why keep using serial->tty (hint: think about parallel
+hangup versus close/open)
 
-Better to keep brainstorming on a scheme that works without adding any
-instructions to the immediate load sequence.  If you add instructions,
-fetching the instructions themselves become just as expensive, if not
-moreso, than the load we are eliminating.
+> +/* close the requested serial port */
+> +static void hso_serial_close(struct tty_struct *tty, struct file *filp)
+> +{
+> +	struct hso_serial *serial = tty->driver_data;
+> +	u8 usb_gone;
+> +
+> +	D1("Closing serial port");
+> +
+> +	/* sanity check */
+> +	if (tty == NULL || serial == NULL) {
+> +		D1("(tty == NULL || tty->driver_data == NULL)");
+> +		return;
+> +	}
+
+tty cannot be NULL here
+
+
+> +static int hso_serial_write(struct tty_struct *tty, const unsigned char *buf,
+> +			    int count)
+> +{
+> +	struct hso_serial *serial = get_serial_by_tty(tty);
+> +	int space, tx_bytes;
+> +	unsigned long flags;
+> +
+> +	/* sanity check */
+> +	if (serial == NULL) {
+> +		printk(KERN_ERR "%s: tty or tty->driver_data is NULL\n",
+
+Checks one thing printks another 8)
+
+> +	/* the actual setup */
+> +	spin_lock_irqsave(&serial->serial_lock, flags);
+> +	if (serial->open_count)
+> +		_hso_serial_set_termios(tty, old);
+
+(else *tty->termios = *old_termios)
+
+
