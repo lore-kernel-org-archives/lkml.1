@@ -1,70 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758729AbYEMHrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758922AbYEMHsq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758729AbYEMHrT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 03:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756589AbYEMHrG
+	id S1758922AbYEMHsq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 03:48:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756589AbYEMHsg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 03:47:06 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:38882
-	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755618AbYEMHrF (ORCPT
+	Tue, 13 May 2008 03:48:36 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:24325 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755331AbYEMHsf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 03:47:05 -0400
-Message-ID: <48294776.3010504@qumranet.com>
-Date: Tue, 13 May 2008 10:47:02 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 13 May 2008 03:48:35 -0400
+Message-ID: <482947C3.9040601@oracle.com>
+Date: Tue, 13 May 2008 15:48:19 +0800
+From: Tiger Yang <tiger.yang@oracle.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Mark McLoughlin <markmc@redhat.com>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       Anthony Liguori <aliguori@us.ibm.com>, linux-kernel@vger.kernel.org,
-       virtualization@lists.linux-foundation.org
-Subject: Re: [PATCH] virtio_net: free transmit skbs in a timer
-References: <1209565906-9019-1-git-send-email-markmc@redhat.com>	<200805022055.25870.rusty@rustcorp.com.au> <1210624663.14409.20.camel@muff>
-In-Reply-To: <1210624663.14409.20.camel@muff>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Eric Sandeen <sandeen@redhat.com>
+CC: linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ext3/4: fix uninitialized bs in ext3/4_xattr_set_handle()
+References: <4827B878.50903@oracle.com> <4828DE73.2070001@redhat.com>
+In-Reply-To: <4828DE73.2070001@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark McLoughlin wrote:
-> virtio_net currently only frees old transmit skbs just
-> before queueing new ones. If the queue is full, it then
-> enables interrupts and waits for notification that more
-> work has been performed.
->
-> However, a side-effect of this scheme is that there are
-> always xmit skbs left dangling when no new packets are
-> sent, against the Documentation/networking/driver.txt
-> guideline:
->
->   "... it is not allowed for your TX mitigation scheme
->    to let TX packets "hang out" in the TX ring unreclaimed
->    forever if no new TX packets are sent."
->
-> Add a timer to ensure that any time we queue new TX
-> skbs, we will shortly free them again.
->
-> This fixes an easily reproduced hang at shutdown where
-> iptables attempts to unload nf_conntrack and nf_conntrack
-> waits for an skb it is tracking to be freed, but virtio_net
-> never frees it.
+Hi, Eric,
+
+I don't have tesecase about this bug. I did the test manually. I use 
+khexedit to confirm the attributes whether in inody or block.
+The problem about this bug is we want to replace an existing attribute 
+in ibody with big size value which larger than free space in ibody.
+Because we didn't do block_find(), so the struct bs have not been 
+initialized. Then when we try to set attribute in block by block_set(), 
+we find bs->base is empty, we need alloc a new block for attributes. The 
+old block pointed by i_file_acl will lost with attributes in it.
+
+Best regards,
+tiger
+
+Eric Sandeen wrote:
+> Tiger Yang wrote:
 >   
-
-Sorry to barge in late, but IMO the timer should be on the host, which 
-is cheaper than on the guest (well, a 100ms timer is likely zero cost, 
-but  I still don't like it).
-
-the host should fire a tx completion interrupt whenever the completion 
-queue has "enough" entries, where we can define "enough" now as the 
-halfway mark or a timer expiry, whichever comes earlier.
-
-We can later improve "enough" to be "just enough so the timer never 
-triggers" and adjust it dynamically.  It probably doesn't matter for 
-Linux, but I don't want to punish guests that can do true async 
-networking and depend on timely completion notification.
-
--- 
-error compiling committee.c: too many arguments to function
-
+>> Hi,
+>> I met a bug when I try to replace a xattr entry in ibody with a big size 
+>> value. But in ibody there has no space for the new value. So it should 
+>> set new xattr entry in block and remove the old xattr entry in ibody.
+>>
+>> Best regards,
+>> tiger
+>>
+>>     
+>
+> Tiger, do you have a testcase handy to demonstrate this?
+>
+> Is the new, large out-of-inode xattr unique so that it does not match
+> any existing attribute block, I assume?
+>
+> Thanks,
+>
+> -Eric
+>   
