@@ -1,66 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760955AbYEMPbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761034AbYEMPcv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760955AbYEMPbn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 11:31:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760737AbYEMPbY
+	id S1761034AbYEMPcv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 11:32:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756104AbYEMPcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 11:31:24 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:62433 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760720AbYEMPbW (ORCPT
+	Tue, 13 May 2008 11:32:43 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42375 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755679AbYEMPcm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 11:31:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=JaWXvK5SUviFe0B2GfYhLiRlimAXtMey/q/0gNyGf3ziAxtSvp1sTkXE41w3yyvzYTYn48FVJUX1TToYDyeBJRpO+0WtyyCu0OADong3SvzJd9amnS0Xq60/Xo3PffF5rPoE4KPgDXEvxlE3pMLJnu9eIHR2gOvZGilNGUkDmUo=
-Message-ID: <19f34abd0805130831w6887e797jdc5e636eee3a0137@mail.gmail.com>
-Date: Tue, 13 May 2008 17:31:20 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [RFC/PATCH] printk: detect incomplete lines
-Cc: "Pekka Enberg" <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Rob Landley" <rob@landley.net>
-In-Reply-To: <87ej86scdc.fsf@basil.nowhere.org>
+	Tue, 13 May 2008 11:32:42 -0400
+Date: Tue, 13 May 2008 10:32:38 -0500
+From: Robin Holt <holt@sgi.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Robin Holt <holt@sgi.com>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrea Arcangeli <andrea@qumranet.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
+       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>
+Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
+Message-ID: <20080513153238.GL19717@sgi.com>
+References: <6b384bb988786aa78ef0.1210170958@duo.random> <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org> <20080508003838.GA9878@sgi.com> <200805132206.47655.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080512114925.GA29407@damson.getinternet.no>
-	 <84144f020805120456r14436eend416e079ea88be9c@mail.gmail.com>
-	 <19f34abd0805120500k7613dbd9le1bf79f7bb96778a@mail.gmail.com>
-	 <87ej86scdc.fsf@basil.nowhere.org>
+In-Reply-To: <200805132206.47655.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 13, 2008 at 12:54 PM, Andi Kleen <andi@firstfloor.org> wrote:
-> "Vegard Nossum" <vegard.nossum@gmail.com> writes:
->  >
->  > Iirc, KERN_CONT is mostly an annotation for the checkpatch script to
->  > suppress the warning about missing loglevel token.
->
->  Perhaps it should be fixed to contain some magic token that is
->  then detected by printk and handled appropiately? And then perhaps
->  employee some kernel janitors to add it everywhere?
->
->  I think that would be preferable over any heuristics as implemented
->  in your original patch because there might be a legitimate need to
->  get out non full line printks ASAP for debugging.
+On Tue, May 13, 2008 at 10:06:44PM +1000, Nick Piggin wrote:
+> On Thursday 08 May 2008 10:38, Robin Holt wrote:
+> > In order to invalidate the remote page table entries, we need to message
+> > (uses XPC) to the remote side.  The remote side needs to acquire the
+> > importing process's mmap_sem and call zap_page_range().  Between the
+> > messaging and the acquiring a sleeping lock, I would argue this will
+> > require sleeping locks in the path prior to the mmu_notifier invalidate_*
+> > callouts().
+> 
+> Why do you need to take mmap_sem in order to shoot down pagetables of
+> the process? It would be nice if this can just be done without
+> sleeping.
 
-I'm sorry, I don't understand what you mean. My original patch does
-not delay anything. My original patch simply inserts a newline before
-the next printk() if the caller is different and the current line is
-unterminated.
+We are trying to shoot down page tables of a different process running
+on a different instance of Linux running on Numa-link connected portions
+of the same machine.
 
-What would be the purpose of the magic token? Please explain.
+The messaging is clearly going to require sleeping.  Are you suggesting
+we need to rework XPC communications to not require sleeping?  I think
+that is going to be impossible since the transfer engine requires a
+sleeping context.
 
+Additionally, the call to zap_page_range expects to have the mmap_sem
+held.  I suppose we could use something other than zap_page_range and
+atomically clear the process page tables.  Doing that will not alleviate
+the need to sleep for the messaging to the other partitions.
 
-Vegard
-
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Thanks,
+Robin
