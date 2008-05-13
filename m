@@ -1,58 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759254AbYEMKLw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758799AbYEMKXN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759254AbYEMKLw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 06:11:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753945AbYEMKLn
+	id S1758799AbYEMKXN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 06:23:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754148AbYEMKW6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 06:11:43 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46335 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753941AbYEMKLn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 06:11:43 -0400
-Date: Tue, 13 May 2008 12:11:25 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: [PATCH 0 of 8] x86: use PTE_MASK consistently
-Message-ID: <20080513101125.GA32299@elte.hu>
-References: <patchbomb.1210330958@localhost>
+	Tue, 13 May 2008 06:22:58 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:56036 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752339AbYEMKW5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 06:22:57 -0400
+Message-ID: <48296C1B.2070808@suse.de>
+Date: Tue, 13 May 2008 14:23:23 +0400
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <patchbomb.1210330958@localhost>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 1/2] x86: Move es7000_plat out of mpparse.c
+References: <20080512152434.27570.7396.stgit@thinkpad> <20080513095528.GB24037@elte.hu> <20080513100214.GA1034@elte.hu>
+In-Reply-To: <20080513100214.GA1034@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo, please drop second patch, I'll rework it.
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-
-> Here's a series to rationalize the use of PTE_MASK and remove some 
-> amount of ad-hocery.
+Ingo Molnar wrote:
+> x86.git testing found that this broke the build:
 > 
-> This gist of the series is:
->  1. Fix the definition of PTE_MASK so that its equally applicable in
->     all pagetable modes
->  2. Use it consistently
+> arch/x86/kernel/acpi/boot.c: In function 'mp_register_ioapic':
+> arch/x86/kernel/acpi/boot.c:896: error: implicit declaration of function 'bad_ioapic'
+> arch/x86/kernel/acpi/boot.c: In function 'mp_override_legacy_irq':
+> arch/x86/kernel/acpi/boot.c:959: error: implicit declaration of function 'MP_intsrc_info'
 > 
-> I haven't tried to address the *_bad() stuff, other than to convert 
-> pmd_bad_* to use PTE_MASK.
+> with this config:
 > 
-> I've compile tested it a bit and run it on 32-bit PAE (native and 
-> Xen), but I haven't tested it with >4G memory, non-PAE or 64-bit.  In 
-> other words, it needs some time in Ingo's torture machine.
+>   http://redhat.com/~mingo/misc/config-Tue_May_13_11_52_24_CEST_2008.bad
+> 
+> 	Ingo
 
-applied, thanks. This patchset has held up fine so far in overnight 
-testing, nice work.
-
-	Ingo
