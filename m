@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758655AbYEMGev@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758837AbYEMGgp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758655AbYEMGev (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 02:34:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756751AbYEMGeo
+	id S1758837AbYEMGgp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 02:36:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756624AbYEMGgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 02:34:44 -0400
-Received: from mailout03.t-online.de ([194.25.134.81]:39618 "EHLO
-	mailout03.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755783AbYEMGen (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 02:34:43 -0400
-X-Greylist: delayed 1033 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 May 2008 02:34:43 EDT
-Message-ID: <4829326A.6060808@t-online.de>
-Date: Tue, 13 May 2008 08:17:14 +0200
-From: Harald Dunkel <harald.dunkel@t-online.de>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080503)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.25.3: su gets stuck for root
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 13 May 2008 02:36:37 -0400
+Received: from server.drzeus.cx ([85.8.24.28]:48707 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756223AbYEMGgg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 02:36:36 -0400
+Date: Tue, 13 May 2008 08:36:15 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-next@vger.kernel.org, Steven French <sfrench@us.ibm.com>,
+       Steven Whitehouse <swhiteho@redhat.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Jeff Garzik <jeff@garzik.org>, Ralf Baechle <ralf@linux-mips.org>,
+       Jan Kara <jack@ucw.cz>, Anton Vorontsov <cbou@mail.ru>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Eric Van Hensbergen <ericvh@gmail.com>,
+       Wim Van Sebroeck <wim@iguana.be>, Christian Zankel <chris@zankel.net>,
+       Nicolas Pitre <nico@cam.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <clameter@sgi.com>, Erez Zadok <ezk@cs.sunysb.edu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: git trees which are not yet in linux-next
+Message-ID: <20080513083615.4e463f87@mjolnir.drzeus.cx>
+In-Reply-To: <20080502151206.b40f77ea.akpm@linux-foundation.org>
+References: <20080502151206.b40f77ea.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-ID: E9bhgyZeQhTgtl0VO6BBkwpfwPYd-PtPAK+j9dSd9vttP5RYZckmLqPM-oM16pHZOS
-X-TOI-MSGID: d0f14bce-82e5-46c4-89e0-d9aa50e199fc
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi folks,
+On Fri, 2 May 2008 15:12:06 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-I haven't seen it mentioned here (hopefully I wasn't too blind to see):
+> 
+> git-mmc: git+ssh://master.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git#for-andrew
+> 
 
-If I run "su someuser" as root, then it gets stuck. No prompt. I cannot
-interrupt it with ^C or ^Z either. /var/log/auth.log says:
+The stuff I've pushed to Andrew has always been what I've been hoping
+to merge in the next window, so it should just be a matter of renaming
+the branch. There is a #next at the above URI now.
 
-May 13 08:06:41 pluto su[4193]: Successful su for root by harri
-May 13 08:06:41 pluto su[4193]: + pts/3 harri:root
-May 13 08:06:41 pluto su[4193]: pam_unix(su:session): session opened for user root by harri(uid=1000)
+Rgds
+-- 
+     -- Pierre Ossman
 
-ps shows:
-
-% ps -ef | grep pts/3
-harri     4007  4006  0 07:58 pts/3    00:00:00 bash
-root      4193  4007  0 08:06 pts/3    00:00:00 su
-root      4194  4193  0 08:06 pts/3    00:00:00 bash
-root      4209  4194  0 08:08 pts/3    00:00:00 su
-root      4210  4209  0 08:08 pts/3    00:00:00 bash
-root      4217  4210  0 08:08 pts/3    00:00:00 stty intr ^C
-
-So obviously 'stty' is to blame here (called from root's .bashrc, as
-it seems). But for 2.6.24.4 there is no such problem.
-
-
-Maybe you could spread some light here?
-
-
-Regards
-
-Harri
-
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
