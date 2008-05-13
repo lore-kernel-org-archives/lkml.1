@@ -1,89 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758306AbYEMEPT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758127AbYEMEV4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758306AbYEMEPT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 00:15:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753425AbYEMEOd
+	id S1758127AbYEMEV4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 00:21:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbYEMEVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 00:14:33 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:54654 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757177AbYEMEOc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 00:14:32 -0400
-X-IronPort-AV: E=Sophos;i="4.27,477,1204520400"; 
-   d="scan'208";a="68185750"
-From: Bryan Wu <cooloney@kernel.org>
-To: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Cc: Javier Herrero <jherrero@hvsistemas.es>, Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 1/2] [8250 Serial Driver]: Added support for 8250-class UARTs in HV Sistemas H8606 board
-Date: Tue, 13 May 2008 12:14:28 +0800
-Message-Id: <1210652069-16788-2-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.5
-In-Reply-To: <1210652069-16788-1-git-send-email-cooloney@kernel.org>
-References: <1210652069-16788-1-git-send-email-cooloney@kernel.org>
+	Tue, 13 May 2008 00:21:44 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51932 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753332AbYEMEVn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 00:21:43 -0400
+Message-ID: <48291749.1060400@redhat.com>
+Date: Mon, 12 May 2008 21:21:29 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, davidel@xmailserver.org, mtk.manpages@gmail.com,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH 18/18] flag parameters: check magic constants
+References: <200805062118.m46LI74j004096@devserv.devel.redhat.com>	<20080512201341.9ead6a9a.akpm@linux-foundation.org>	<482910FA.1080703@redhat.com> <20080512.210225.167924945.davem@davemloft.net>
+In-Reply-To: <20080512.210225.167924945.davem@davemloft.net>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Javier Herrero <jherrero@hvsistemas.es>
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Added support for 8250-class UARTs in HV Sistemas H8606 board,
-modification in 8250.c driver for correct compilation with Blackfin
+David Miller wrote:
+> You'll need to handle MIPS and PARISC as well, as they have
+> similar conflicts.
 
-Besides, I think that there is more people using 8250-class UARTs
-with a different hardware than the H8606 board. This code can be shared
-by them.
+Is MIPS really a problem?  The value is 0x80.  128 protocol types should
+be enough.  Even if not, there is no reason why the numbers should be
+consecutive.  It's easy enough to skip over a bit.  I.e., after procotol
+0x7f the next one would be 0x100.
 
-Signed-off-by: Javier Herrero <jherrero@hvsistemas.es>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- drivers/serial/8250.c |    5 +++--
- drivers/serial/8250.h |    5 +++++
- 2 files changed, 8 insertions(+), 2 deletions(-)
+And PA seems to have gotten O_NONBLOCK wrong.  SPARC does it right AFAICS.
 
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index a1ca9b7..1400ea6 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -43,6 +43,7 @@
- 
- #include <asm/io.h>
- #include <asm/irq.h>
-+#include <asm/serial.h>
- 
- #include "8250.h"
- 
-@@ -92,8 +93,6 @@ static unsigned int nr_uarts = CONFIG_SERIAL_8250_RUNTIME_UARTS;
-  */
- #define CONFIG_HUB6 1
- 
--#include <asm/serial.h>
--
- /*
-  * SERIAL_PORT_DFNS tells us about built-in ports that have no
-  * standard enumeration mechanism.   Platforms that can find all
-@@ -1548,6 +1547,8 @@ static int serial_link_irq_chain(struct uart_8250_port *up)
- 		i->head = &up->list;
- 		spin_unlock_irq(&i->lock);
- 
-+		irq_flags |= SERIAL_EXTRA_IRQ_FLAGS;
-+
- 		ret = request_irq(up->port.irq, serial8250_interrupt,
- 				  irq_flags, "serial", i);
- 		if (ret < 0)
-diff --git a/drivers/serial/8250.h b/drivers/serial/8250.h
-index 91bd28f..a10a40c 100644
---- a/drivers/serial/8250.h
-+++ b/drivers/serial/8250.h
-@@ -78,3 +78,8 @@ struct serial8250_config {
- #else
- #define ALPHA_KLUDGE_MCR 0
- #endif
-+
-+#ifndef SERIAL_EXTRA_IRQ_FLAGS
-+#define SERIAL_EXTRA_IRQ_FLAGS 0
-+#endif
-+
--- 
-1.5.5
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFIKRdJ2ijCOnn/RHQRAovKAKDFz2ZJ0E2XYVu5Qn8fME+ieZZopwCgmH4D
+ldfvNrhK8LdvjZzNPViILV0=
+=Z9Dj
+-----END PGP SIGNATURE-----
