@@ -1,89 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758976AbYEMHTk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759307AbYEMHTy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758976AbYEMHTk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 03:19:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755331AbYEMHTb
+	id S1759307AbYEMHTy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 03:19:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758828AbYEMHTh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 03:19:31 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:10336 "EHLO
+	Tue, 13 May 2008 03:19:37 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:10343 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754114AbYEMHTa (ORCPT
+	with ESMTP id S1758573AbYEMHTg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 03:19:30 -0400
+	Tue, 13 May 2008 03:19:36 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=received:message-id:references:user-agent:date:from:to:cc:
 	subject:content-disposition;
-	b=Yv/tPcu9C6QwBZ9dExT48pR5vGsDhCH7m0BHsTiKVUVmVlRVsH4MSuwnBA1QieBgR
-	kLPeJU9dkgq3SG/uvIrvA==
-Message-Id: <20080513071522.635138000@menage.corp.google.com>
+	b=IIRS2Qi09nZ5H2TkHqWQ2h00a3/nGXAhdF+cLPMgVzR5kGcJoQimI++eCmUaFB0IF
+	UEP/yBe5ta9UvA0kE+Xnw==
+Message-Id: <20080513071523.324419000@menage.corp.google.com>
 References: <20080513063707.049448000@menage.corp.google.com>
 User-Agent: quilt/0.45-1
-Date: Mon, 12 May 2008 23:37:11 -0700
+Date: Mon, 12 May 2008 23:37:15 -0700
 From: menage@google.com
 To: pj@sgi.com, xemul@openvz.org, balbir@in.ibm.com, serue@us.ibm.com,
        akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
-Subject: [RFC/PATCH 4/8]: CGroup Files: Move notify_on_release file to separate write handler
-Content-Disposition: inline; filename=cgroup_notify_on_release_file.patch
+Subject: [RFC/PATCH 8/8]: CGroup Files: Convert res_counter_write() to be a cgroups write_string() handler
+Content-Disposition: inline; filename=res_counter_write.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch moves the write handler for the cgroups notify_on_release
-file into a separate handler. This handler requires no cgroups locking
-since it relies on atomic bitops for synchronization.
+Currently read_counter_write() is a raw file handler even though it's
+ultimately taking a number, since in some cases it wants to
+pre-process the string when converting it to a number.
+
+This patch converts res_counter_write() from a raw file handler to a
+write_string() handler; this allows some of the boilerplate
+copying/locking/checking to be removed, and simplies the cleanup path,
+since these functions are now performed by the cgroups framework.
 
 Signed-off-by: Paul Menage <menage@google.com>
 
 ---
- kernel/cgroup.c |   27 +++++++++++++++------------
- 1 file changed, 15 insertions(+), 12 deletions(-)
+ include/linux/res_counter.h |    4 ++--
+ kernel/res_counter.c        |   36 +++++++++---------------------------
+ mm/memcontrol.c             |   11 +++++------
+ 3 files changed, 16 insertions(+), 35 deletions(-)
 
-Index: cgroup-2.6.25-mm1/kernel/cgroup.c
+Index: cgroup-2.6.25-mm1/include/linux/res_counter.h
 ===================================================================
---- cgroup-2.6.25-mm1.orig/kernel/cgroup.c
-+++ cgroup-2.6.25-mm1/kernel/cgroup.c
-@@ -1440,13 +1440,6 @@ static ssize_t cgroup_common_file_write(
- 	case FILE_TASKLIST:
- 		retval = attach_task_by_pid(cgrp, buffer);
- 		break;
--	case FILE_NOTIFY_ON_RELEASE:
--		clear_bit(CGRP_RELEASABLE, &cgrp->flags);
--		if (simple_strtoul(buffer, NULL, 10) != 0)
--			set_bit(CGRP_NOTIFY_ON_RELEASE, &cgrp->flags);
--		else
--			clear_bit(CGRP_NOTIFY_ON_RELEASE, &cgrp->flags);
--		break;
- 	default:
- 		retval = -EINVAL;
- 		goto out2;
-@@ -2275,6 +2268,18 @@ static u64 cgroup_read_notify_on_release
- 	return notify_on_release(cgrp);
+--- cgroup-2.6.25-mm1.orig/include/linux/res_counter.h
++++ cgroup-2.6.25-mm1/include/linux/res_counter.h
+@@ -63,8 +63,8 @@ u64 res_counter_read_u64(struct res_coun
+ ssize_t res_counter_read(struct res_counter *counter, int member,
+ 		const char __user *buf, size_t nbytes, loff_t *pos,
+ 		int (*read_strategy)(unsigned long long val, char *s));
+-ssize_t res_counter_write(struct res_counter *counter, int member,
+-		const char __user *buf, size_t nbytes, loff_t *pos,
++int res_counter_write(struct res_counter *counter, int member,
++		char *buffer,
+ 		int (*write_strategy)(char *buf, unsigned long long *val));
+ 
+ /*
+Index: cgroup-2.6.25-mm1/kernel/res_counter.c
+===================================================================
+--- cgroup-2.6.25-mm1.orig/kernel/res_counter.c
++++ cgroup-2.6.25-mm1/kernel/res_counter.c
+@@ -102,44 +102,26 @@ u64 res_counter_read_u64(struct res_coun
+ 	return *res_counter_member(counter, member);
  }
  
-+static int cgroup_write_notify_on_release(struct cgroup *cgrp,
-+					  struct cftype *cft,
-+					  u64 val)
-+{
-+	clear_bit(CGRP_RELEASABLE, &cgrp->flags);
-+	if (val)
-+		set_bit(CGRP_NOTIFY_ON_RELEASE, &cgrp->flags);
-+	else
-+		clear_bit(CGRP_NOTIFY_ON_RELEASE, &cgrp->flags);
+-ssize_t res_counter_write(struct res_counter *counter, int member,
+-		const char __user *userbuf, size_t nbytes, loff_t *pos,
+-		int (*write_strategy)(char *st_buf, unsigned long long *val))
++int res_counter_write(
++	struct res_counter *counter, int member,
++	char *buf,
++	int (*write_strategy)(char *st_buf, unsigned long long *val))
+ {
+-	int ret;
+-	char *buf, *end;
++	char *end;
+ 	unsigned long flags;
+ 	unsigned long long tmp, *val;
+ 
+-	buf = kmalloc(nbytes + 1, GFP_KERNEL);
+-	ret = -ENOMEM;
+-	if (buf == NULL)
+-		goto out;
+-
+-	buf[nbytes] = '\0';
+-	ret = -EFAULT;
+-	if (copy_from_user(buf, userbuf, nbytes))
+-		goto out_free;
+-
+-	ret = -EINVAL;
+-
+-	strstrip(buf);
+ 	if (write_strategy) {
+-		if (write_strategy(buf, &tmp)) {
+-			goto out_free;
+-		}
++		if (write_strategy(buf, &tmp))
++			return -EINVAL;
+ 	} else {
+ 		tmp = simple_strtoull(buf, &end, 10);
+ 		if (*end != '\0')
+-			goto out_free;
++			return -EINVAL;
+ 	}
+ 	spin_lock_irqsave(&counter->lock, flags);
+ 	val = res_counter_member(counter, member);
+ 	*val = tmp;
+ 	spin_unlock_irqrestore(&counter->lock, flags);
+-	ret = nbytes;
+-out_free:
+-	kfree(buf);
+-out:
+-	return ret;
 +	return 0;
-+}
-+
- /*
-  * for the common functions, 'private' gives the type of file
-  */
-@@ -2291,7 +2296,7 @@ static struct cftype files[] = {
+ }
+Index: cgroup-2.6.25-mm1/mm/memcontrol.c
+===================================================================
+--- cgroup-2.6.25-mm1.orig/mm/memcontrol.c
++++ cgroup-2.6.25-mm1/mm/memcontrol.c
+@@ -848,13 +848,12 @@ static u64 mem_cgroup_read(struct cgroup
+ 				    cft->private);
+ }
+ 
+-static ssize_t mem_cgroup_write(struct cgroup *cont, struct cftype *cft,
+-				struct file *file, const char __user *userbuf,
+-				size_t nbytes, loff_t *ppos)
++static int mem_cgroup_write(struct cgroup *cont, struct cftype *cft,
++			    char *buffer)
+ {
+ 	return res_counter_write(&mem_cgroup_from_cont(cont)->res,
+-				cft->private, userbuf, nbytes, ppos,
+-				mem_cgroup_write_strategy);
++				 cft->private, buffer,
++				 mem_cgroup_write_strategy);
+ }
+ 
+ static int mem_cgroup_reset(struct cgroup *cont, unsigned int event)
+@@ -929,7 +928,7 @@ static struct cftype mem_cgroup_files[] 
  	{
- 		.name = "notify_on_release",
- 		.read_u64 = cgroup_read_notify_on_release,
--		.write = cgroup_common_file_write,
-+		.write_u64 = cgroup_write_notify_on_release,
- 		.private = FILE_NOTIFY_ON_RELEASE,
+ 		.name = "limit_in_bytes",
+ 		.private = RES_LIMIT,
+-		.write = mem_cgroup_write,
++		.write_string = mem_cgroup_write,
+ 		.read_u64 = mem_cgroup_read,
  	},
- };
+ 	{
 
 --
