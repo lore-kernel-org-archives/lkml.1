@@ -1,100 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758016AbYEMCaT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757998AbYEMCj3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758016AbYEMCaT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 22:30:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757051AbYEMCaD
+	id S1757998AbYEMCj3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 22:39:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755665AbYEMCjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 22:30:03 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:48336 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755972AbYEMCaA (ORCPT
+	Mon, 12 May 2008 22:39:18 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:51898 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753583AbYEMCjR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 22:30:00 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=Rdelfh/F1Dqo0oWmRA/DicCNoJ4qcGrbR8EdHUKnmRF5WD2MmmMaIdm/MuvkdwRn0
-	/qBnzfCFmZfsotZpedcVQ==
-Message-ID: <6599ad830805121929q6746d6b3ye96196e567bc0150@mail.gmail.com>
-Date: Mon, 12 May 2008 19:29:49 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Li Zefan" <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH] cpuset: limit the input of cpuset.sched_relax_domain_level
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Paul Jackson" <pj@sgi.com>,
-       "Hidetoshi Seto" <seto.hidetoshi@jp.fujitsu.com>,
-       "Ingo Molnar" <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4828FC85.7020400@cn.fujitsu.com>
+	Mon, 12 May 2008 22:39:17 -0400
+Message-ID: <4828FD68.40608@oracle.com>
+Date: Tue, 13 May 2008 10:31:04 +0800
+From: Tiger Yang <tiger.yang@oracle.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andreas Gruenbacher <agruen@suse.de>,
+       stable@kernel.org
+Subject: Re: [PATCH] ext3/4: fix uninitialized bs in ext3/4_xattr_set_handle()
+References: <4827B878.50903@oracle.com> <20080512170254.f79fe869.akpm@linux-foundation.org>
+In-Reply-To: <20080512170254.f79fe869.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4828FC85.7020400@cn.fujitsu.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 12, 2008 at 7:27 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
-> We allow the inputs to be [-1 ... SD_LV_MAX), and return -EINVAL
->  for inputs outside this range.
->
->  Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Hi, Andrew
 
-Acked-by: Paul Menage <menage@google.com>
+This situation only happens we format ext3/4 with inode size more than 
+128 and we have put xattr entries both in ibody and block.
+The consequences about this bug is we will lost the xattr block which 
+pointed by i_file_acl with all xattr entires in it. We will alloc a new 
+xattr block and put that large value entry in it. The old xattr block 
+will become orphan block.
 
+Best regards,
+tiger
 
->  ---
->   Documentation/cpusets.txt |    2 +-
->   kernel/cpuset.c           |    4 ++--
->   kernel/sched.c            |    7 ++++++-
->   3 files changed, 9 insertions(+), 4 deletions(-)
+Andrew Morton wrote:
+> On Mon, 12 May 2008 11:24:40 +0800
+> Tiger Yang <tiger.yang@oracle.com> wrote:
 >
->  diff --git a/Documentation/cpusets.txt b/Documentation/cpusets.txt
->  index fb7b361..9066ce7 100644
->  --- a/Documentation/cpusets.txt
->  +++ b/Documentation/cpusets.txt
->  @@ -542,7 +542,7 @@ otherwise initial value -1 that indicates the cpuset has no request.
->     2  : search cores in a package.
->     3  : search cpus in a node [= system wide on non-NUMA system]
->   ( 4  : search nodes in a chunk of node [on NUMA system] )
->  - ( 5~ : search system wide [on NUMA system])
->  + ( 5  : search system wide [on NUMA system] )
+>   
+>> I met a bug when I try to replace a xattr entry in ibody with a big size 
+>> value. But in ibody there has no space for the new value. So it should 
+>> set new xattr entry in block and remove the old xattr entry in ibody.
+>>
+>> Best regards,
+>> tiger
+>>
+>>
+>> [xattr.patch  text/x-patch (1.3KB)]
+>> This fix the uninitialized bs when we try to replace a xattr entry in ibody with the new value which require more than free space.
+>>
+>> Signed-off-by: Tiger Yang <tiger.yang@oracle.com>
+>>
+>> diff --git a/fs/ext3/xattr.c b/fs/ext3/xattr.c
+>> index a6ea4d6..e1af9bd 100644
+>> --- a/fs/ext3/xattr.c
+>> +++ b/fs/ext3/xattr.c
+>> @@ -1000,6 +1000,11 @@ ext3_xattr_set_handle(handle_t *handle, struct inode *inode, int name_index,
+>>  			i.value = NULL;
+>>  			error = ext3_xattr_block_set(handle, inode, &i, &bs);
+>>  		} else if (error == -ENOSPC) {
+>> +			if (EXT3_I(inode)->i_file_acl && !bs.s.base) {
+>> +				error = ext3_xattr_block_find(inode, &i, &bs);
+>> +				if (error)
+>> +					goto cleanup;
+>> +			}
+>>  			error = ext3_xattr_block_set(handle, inode, &i, &bs);
+>>  			if (error)
+>>  				goto cleanup;
+>>     
 >
->   This file is per-cpuset and affect the sched domain where the cpuset
->   belongs to.  Therefore if the flag 'sched_load_balance' of a cpuset
->  diff --git a/kernel/cpuset.c b/kernel/cpuset.c
->  index 86ea9e3..c192213 100644
->  --- a/kernel/cpuset.c
->  +++ b/kernel/cpuset.c
->  @@ -1033,8 +1033,8 @@ int current_cpuset_is_being_rebound(void)
+> That sounds fairly bad.
 >
->   static int update_relax_domain_level(struct cpuset *cs, s64 val)
->   {
->  -       if ((int)val < 0)
->  -               val = -1;
->  +       if (val < -1 || val >= SD_LV_MAX)
->  +               return -EINVAL;
+> What are the consequences of this bug, when someone hits it?
 >
->         if (val != cs->relax_domain_level) {
->                 cs->relax_domain_level = val;
->  diff --git a/kernel/sched.c b/kernel/sched.c
->  index 8841a91..24d499e 100644
->  --- a/kernel/sched.c
->  +++ b/kernel/sched.c
->  @@ -7219,7 +7219,12 @@ static int default_relax_domain_level = -1;
+> It appears that we should backport this fix into 2.6.25.x (and perhaps
+> earlier).  What do you think?
 >
->   static int __init setup_relax_domain_level(char *str)
->   {
->  -       default_relax_domain_level = simple_strtoul(str, NULL, 0);
->  +       unsigned long val;
->  +
->  +       val = simple_strtoul(str, NULL, 0);
->  +       if (val < SD_LV_MAX)
->  +               default_relax_domain_level = val;
->  +
->         return 1;
->   }
->   __setup("relax_domain_level=", setup_relax_domain_level);
->  --
->  1.5.4.rc3
->
+>   
