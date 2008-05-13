@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757950AbYEMD5m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750779AbYEMECV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757950AbYEMD5m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 23:57:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756000AbYEMD5a
+	id S1750779AbYEMECV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 00:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750986AbYEMECD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 23:57:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36542 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755995AbYEMD53 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 23:57:29 -0400
-Message-ID: <482910FA.1080703@redhat.com>
-Date: Mon, 12 May 2008 20:54:34 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+	Tue, 13 May 2008 00:02:03 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59664 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750878AbYEMECB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 00:02:01 -0400
+Date: Mon, 12 May 2008 21:01:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
        davidel@xmailserver.org, mtk.manpages@gmail.com,
        torvalds@linux-foundation.org
 Subject: Re: [PATCH 18/18] flag parameters: check magic constants
-References: <200805062118.m46LI74j004096@devserv.devel.redhat.com> <20080512201341.9ead6a9a.akpm@linux-foundation.org>
-In-Reply-To: <20080512201341.9ead6a9a.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Message-Id: <20080512210141.bf00ada4.akpm@linux-foundation.org>
+In-Reply-To: <482910FA.1080703@redhat.com>
+References: <200805062118.m46LI74j004096@devserv.devel.redhat.com>
+	<20080512201341.9ead6a9a.akpm@linux-foundation.org>
+	<482910FA.1080703@redhat.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Mon, 12 May 2008 20:54:34 -0700 Ulrich Drepper <drepper@redhat.com> wrote:
 
-Andrew Morton wrote:
->> +	BUILD_BUG_ON(SOCK_NONBLOCK & SOCK_TYPE_MASK);
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
 > 
-> The fifth assertion triggers with alpha allmodconfig.
+> Andrew Morton wrote:
+> >> +	BUILD_BUG_ON(SOCK_NONBLOCK & SOCK_TYPE_MASK);
+> > 
+> > The fifth assertion triggers with alpha allmodconfig.
+> 
+> This means the simple approach won't work for alpha.
+> 
+> The question is how to solve it?  I suggest the following:
+> 
+> - - define SOCK_NONBLOCK to some value > 16 in include/asm-alpha/socket.h
+> 
+> - - add #ifndef SOCK_NONBLOCK around the definition in include/linux/net.h
 
-This means the simple approach won't work for alpha.
+With a comment, please.
 
-The question is how to solve it?  I suggest the following:
+> - - in sys_socket, sys_socketpair, sys_paccept
+> 
+>    int fflags = flags;
+>    if (SOCK_NONBLOCK != O_NONBLOCK && (flags & SOCK_NONBLOCK)) {
+>      fflags &= ~SOCK_NONBLOCK;
+>      fflags |= O_NONBLOCK;
+>    }
+> 
+>   and use fflags instead of flags in the places where we pass it on.
+> 
+> This has no costs on platforms other than alpha.
+> 
+> Shall I sent a patch?
 
-- - define SOCK_NONBLOCK to some value > 16 in include/asm-alpha/socket.h
-
-- - add #ifndef SOCK_NONBLOCK around the definition in include/linux/net.h
-
-- - in sys_socket, sys_socketpair, sys_paccept
-
-   int fflags = flags;
-   if (SOCK_NONBLOCK != O_NONBLOCK && (flags & SOCK_NONBLOCK)) {
-     fflags &= ~SOCK_NONBLOCK;
-     fflags |= O_NONBLOCK;
-   }
-
-  and use fflags instead of flags in the places where we pass it on.
-
-This has no costs on platforms other than alpha.
-
-Shall I sent a patch?
-
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkgpEPoACgkQ2ijCOnn/RHQ38gCgyVOI/urGeoIr7CFIfs8C7OyR
-I80AniPGGWyxZYUQg0pQlySQHqX/UYlx
-=5fA2
------END PGP SIGNATURE-----
+Sounds reasonable.
