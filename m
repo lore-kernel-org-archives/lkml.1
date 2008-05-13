@@ -1,44 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760008AbYEMLAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756831AbYEMLHc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760008AbYEMLAv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 07:00:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbYEMLAn
+	id S1756831AbYEMLHc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 07:07:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbYEMLHW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 07:00:43 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33414 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751028AbYEMLAm (ORCPT
+	Tue, 13 May 2008 07:07:22 -0400
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:1602 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751630AbYEMLHW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 07:00:42 -0400
-Date: Tue, 13 May 2008 11:50:09 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: David Miller <davem@davemloft.net>, corbet@lwn.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: Tracking and crediting bug reporters
-Message-ID: <20080513115009.61d8ad39@core>
-In-Reply-To: <87iqxisciu.fsf@basil.nowhere.org>
-References: <4388.1210613272@vena.lwn.net>
-	<20080512192019.6684f719@core>
-	<20080512.135222.266402730.davem@davemloft.net>
-	<20080512220834.4449c2d4@core>
-	<87iqxisciu.fsf@basil.nowhere.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 13 May 2008 07:07:22 -0400
+To: "Yakov Lerner" <iler.ml@gmail.com>
+Cc: "Kernel Linux" <linux-kernel@vger.kernel.org>
+Subject: Re: calculate actual state of caches wrt set of files/dirs, without modifying caches ?
+From: Andi Kleen <andi@firstfloor.org>
+References: <f36b08ee0805122330p6b479bc9s1db48c8c466d0ae9@mail.gmail.com>
+Date: Tue, 13 May 2008 13:07:08 +0200
+In-Reply-To: <f36b08ee0805122330p6b479bc9s1db48c8c466d0ae9@mail.gmail.com> (Yakov Lerner's message of "Tue, 13 May 2008 08:30:48 +0200")
+Message-ID: <877idysbs3.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 13 May 2008 11:00:19.0892 (UTC) FILETIME=[88B33F40:01C8B4E8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Those would just default to not being credited. Where is the problem?
+"Yakov Lerner" <iler.ml@gmail.com> writes:
 
-We need to be sure that people understand that when submitting patches
-they must not put Discovered-by: lines in without asking. This is
-essentially a documentation matter which is why I directed the original
-reply to Jonathan.
+> Is it possible to calculate the following thing from userspace:
+> Some benchmarking program has list of filenames and dirnames.
+> Can it calculate how many of inodes and data blocks of those items are *cached*
+> vs how many are not, without modifying existing
+> status of inode caches & buffer caches ?
 
-Alan
+For inodes/dentries it is not possible AFAIK (short of taking a kernel
+crash dump and walking the data structures), but for file data you can mmap 
+the file without accessing it and then check with mincore() for each page.
+
+-Andi
