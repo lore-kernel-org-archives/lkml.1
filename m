@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757275AbYEMS6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753928AbYEMTAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757275AbYEMS6u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 14:58:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754577AbYEMS6k
+	id S1753928AbYEMTAg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 15:00:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754514AbYEMTA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 14:58:40 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:56939 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753656AbYEMS6j (ORCPT
+	Tue, 13 May 2008 15:00:27 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:4510 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753090AbYEMTA1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 14:58:39 -0400
-Date: Tue, 13 May 2008 19:58:31 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Linux Kernel List <linux-kernel@vger.kernel.org>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>, video4linux-list@redhat.com
-Subject: Build error: ARM badge4_defconfig
-Message-ID: <20080513185831.GA18959@flint.arm.linux.org.uk>
-Mime-Version: 1.0
+	Tue, 13 May 2008 15:00:27 -0400
+Date: Tue, 13 May 2008 21:00:24 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Avi Kivity <avi@qumranet.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [BUG] cpu hotplug vs scheduler
+Message-ID: <20080513190024.GB6465@osiris.boeblingen.de.ibm.com>
+References: <4829A6A0.5040208@qumranet.com> <4829B4AC.6090909@qumranet.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <4829B4AC.6090909@qumranet.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For full details, see:
+On Tue, May 13, 2008 at 06:33:00PM +0300, Avi Kivity wrote:
+> Avi Kivity wrote:
+>> I'm testing host cpu hotplug with kvm.  Basically running 7 guests on  
+>> a 4 core machine, offlining and onlining host cpus at random.   
+>> Eventually I hit this:
+>>
+>
+> [snip oops]
+>
+>> This seems to be the assignment to cfs_rq after pick_next_entity().
+>>
+>> I'm running kvm.git, which is currently 2.6.26-rc2 plus a few kvm  
+>> patches.  It could be kvm's fault, but it doesn't appear so from the  
+>> traces.
+>>
+>
+> I get the same oops running with the kvm modules unloaded.  None of  
+> kvm.git's changes are in core code, so this is definitely a mainline  
+> problem.
+>
+> It took about 40 minutes to reproduce; 1200 cpus onlined and 1200 cpus  
+> offlined.
 
-http://armlinux.simtec.co.uk/kautobuild/2.6.26-rc2-git2/badge4_defconfig.html
+FWIW, this happens on s390 as well (without kvm support). But until now
+I didn't have time to look into it. Didn't report it here yet, since we
+had plenty of cpu hotplug changes in arch code, so I suspected a bug there.
+This doesn't seem to be the case.
 
-which is a regression at 2.6.25-git15 time. (2.6.25-git14 built fine,
-seemingly because there wasn't a tuner-core.c in that kernel.)
-
-  LD      .tmp_vmlinux1
-drivers/built-in.o: In function `tuner_i2c_xfer_send_recv':
-drivers/media/common/tuners/tuner-i2c.h:61: undefined reference to `i2c_transfer'
-drivers/built-in.o: In function `tuner_i2c_xfer_send':
-drivers/media/common/tuners/tuner-i2c.h:39: undefined reference to `i2c_transfer'
-...
-
-Divining options from the configuration log:
-
-  I2C support (I2C) [M/n/y/?] m
-
-So, i2c is modular here.
-
-  Video For Linux (VIDEO_DEV) [Y/n/m/?] y
-
-Video is built in, and since tuner-core.c is being built in as well, we
-can assume MEDIA_TUNER=y.
-
-drivers/media/common/tuners/Kconfig contains:
-
-config MEDIA_TUNER
-        tristate
-        default DVB_CORE || VIDEO_DEV
-        depends on DVB_CORE || VIDEO_DEV
-
-which means it ends up being 'y' if either DVB_CORE or VIDEO_DEV is y
-(which one is as shown above.)  There's a missing dependency here -
-it clearly depends on i2c, so that should also be in the "depends" line.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+It takes only a few minutes to trigger the bug here.
