@@ -1,162 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758139AbYEMQbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758219AbYEMQgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758139AbYEMQbk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 12:31:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755925AbYEMQba
+	id S1758219AbYEMQgg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 12:36:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755873AbYEMQg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 12:31:30 -0400
-Received: from mail.hauppauge.com ([167.206.143.4]:4430 "EHLO
-	mail.hauppauge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756823AbYEMQba (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 12:31:30 -0400
-Message-ID: <4829C221.2010109@linuxtv.org>
-From: mkrufky@linuxtv.org
-To: mchehab@infradead.org
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, g.liakhovetski@pengutronix.de,
-       isely@pobox.com
-Subject: Re: [patch] video: build fix for drivers/media/video/pvrusb2/
-Date: Tue, 13 May 2008 12:30:25 -0400
+	Tue, 13 May 2008 12:36:28 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:52715 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755752AbYEMQg2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 12:36:28 -0400
+Message-ID: <4829C383.2090906@garzik.org>
+Date: Tue, 13 May 2008 12:36:19 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-X-Mailer: Internet Mail Service (5.5.2657.72)
-in-reply-to: <4829B999.2090108@linuxtv.org>
-x-originalarrivaltime: 13 May 2008 16:26:23.0903 (UTC) FILETIME=[15C26AF0:01C8B516]
-user-agent: Thunderbird 2.0.0.14 (Windows/20080421)
-Content-Type: text/plain;
-	charset="iso-8859-1"
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
+       corbet@lwn.net, linux-kernel@vger.kernel.org
+Subject: Re: Tracking and crediting bug reporters
+References: <4388.1210613272@vena.lwn.net>	<20080512192019.6684f719@core>	<20080512.135222.266402730.davem@davemloft.net>	<20080512220834.4449c2d4@core>	<87iqxisciu.fsf@basil.nowhere.org> <20080513115009.61d8ad39@core>
+In-Reply-To: <20080513115009.61d8ad39@core>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Krufky wrote:
-> Mauro Carvalho Chehab wrote:
->> On Tue, 13 May 2008 00:03:02 -0400
->> "Michael Krufky" <mkrufky@linuxtv.org> wrote:
->>
->>  
->>> On Mon, May 12, 2008 at 10:54 PM, Mauro Carvalho Chehab
->>> <mchehab@infradead.org> wrote:
->>>    
->>>> On Sun, 11 May 2008 08:34:06 -0400
->>>>  "Michael Krufky" <mkrufky@linuxtv.org> wrote:
->>>>
->>>>  > On Sun, May 11, 2008 at 3:21 AM, Ingo Molnar <mingo@elte.hu> wrote:
->>>>  > >
->>>>  > > x86.git testing found the following build failure:
->>>>  > >
->>>>  > >  drivers/built-in.o: In function `pvr2_dvb_feed_thread':
->>>>  > >  pvrusb2-dvb.c:(.text+0x127e78): undefined reference to 
->>>> `dvb_dmx_swfilter'
->>>>  > >  drivers/built-in.o: In function `pvr2_dvb_adapter_exit':
->>>>  > >  pvrusb2-dvb.c:(.text+0x128357): undefined reference to 
->>>> `dvb_net_release'
->>>>  > >  pvrusb2-dvb.c:(.text+0x12836f): undefined reference to 
->>>> `dvb_dmxdev_release'
->>>>  > >  [...]
->>>>  > >
->>>>  > > with this config:
->>>>  > >
->>>>  > >  
->>>> http://redhat.com/~mingo/misc/config-Sun_May_11_07_06_35_CEST_2008.bad
->>>>  > >
->>>>  > > the reason for the missing symbols is this combination:
->>>>  > >
->>>>  > >  CONFIG_VIDEO_PVRUSB2=y
->>>>  > >  CONFIG_DVB_CORE=m
->>>>  > >
->>>>  > > i.e. pvrusb2 is built-in, dvb-core is modular.
->>>>  > >
->>>>  > > This patch solves the problem by adding a dependency on 
->>>> DVB_CORE - this
->>>>  > > is used by other drivers such as au0828 as well. This way the 
->>>> pvrusb2
->>>>  > > driver can still be built, but if dvb-core is a module then it 
->>>> will
->>>>  > > correctly be a module as well and cannot be built-in.
->>>>  > >
->>>>  > > Signed-off-by: Ingo Molnar <mingo@elte.hu>
->>>>  > > ---
->>>>  > >  drivers/media/video/pvrusb2/Kconfig |    2 +-
->>>>  > >  1 file changed, 1 insertion(+), 1 deletion(-)
->>>>  > >
->>>>  > > Index: linux/drivers/media/video/pvrusb2/Kconfig
->>>>  > > 
->>>> ===================================================================
->>>>  > > --- linux.orig/drivers/media/video/pvrusb2/Kconfig
->>>>  > > +++ linux/drivers/media/video/pvrusb2/Kconfig
->>>>  > > @@ -1,6 +1,6 @@
->>>>  > >  config VIDEO_PVRUSB2
->>>>  > >        tristate "Hauppauge WinTV-PVR USB2 support"
->>>>  > > -       depends on VIDEO_V4L2 && I2C
->>>>  > > +       depends on VIDEO_V4L2 && I2C && DVB_CORE
->>>>  > >        select FW_LOADER
->>>>  > >        select MEDIA_TUNER
->>>>  > >        select VIDEO_TVEEPROM
->>>>  > >
->>>>  >
->>>>  > Ingo,
->>>>  >
->>>>  > VIDEO_PVRUSB2 should not depend on DVB_CORE unless 
->>>> VIDEO_PVRUSB2_DVB
->>>>  > is selected, which already depends on DVB_CORE.
->>>>  >
->>>>  > For example, if a user has VIDEO_PVRUSB2_DVB not selected, then 
->>>> your
->>>>  > patch would generate a false dependency on DVB_CORE.
->>>>
->>>>  Maybe we can make pvrusb2 dependent of VIDEO_MEDIA. This is a 
->>>> DVB_CORE ||
->>>>  VIDEO_DEV. So, pvrusb should be 'm' in this case.
->>>>       
->>> That sounds like it would be OK, although something like this would
->>> probably be better:
->>>
->>>  config VIDEO_PVRUSB2
->>>        tristate "Hauppauge WinTV-PVR USB2 support"
->>> -       depends on VIDEO_V4L2 && I2C
->>> +       depends on VIDEO_V4L2 && I2C && (DVB_CORE if VIDEO_PVRUSB2_DVB)
->>>        select FW_LOADER
->>>        select MEDIA_TUNER
->>>        select VIDEO_TVEEPROM
->>>     
->>
->> This doesn't look to be a good idea, since VIDEO_PVRUSB2_DVB depends on
->> VIDEO_PVRUSB2. So, you'll create a circular dependency. The syntax I've
->> proposed seems cleaner. Of course, it needs to be tested. IMO, all 
->> hybrid
->> devices should be dependent of VIDEO_MEDIA. This will help to avoid 
->> this kind
->> of issue.
->>
->>  
->>> I don't know if that syntax works for "depends on" , but it does work
->>> for select.
->>>
->>> if "depends on FOO if BAR" doesnt work, would adding "select DVB_CORE
->>> if VIDEO_PVRUSB2_DVB" solve the problem?
->>>     
->>
->> Also, this leads into a circular reference.
-> Mauro,
->
-> You're right -- I didn't consider the circular dependency.
->
-> Your suggestion (depends on VIDEO_MEDIA) seems like the right way to go. 
-Mauro,
+Alan Cox wrote:
+>> Those would just default to not being credited. Where is the problem?
+> 
+> We need to be sure that people understand that when submitting patches
+> they must not put Discovered-by: lines in without asking. This is
+> essentially a documentation matter which is why I directed the original
+> reply to Jonathan.
 
-It has just occurred to me -- there is yet another issue that is created 
-by the dependency on VIDEO_MEDIA .....
+I tend to put the credit in the patch description text, /without/ an 
+email address by default, since I don't feel as comfortable stamping 
+users' email addresses into the kernel changelog without their 
+permission, and (I'm lazy) asking permission is another email 
+round-trip.  So my format is
 
-The pvrusb2 driver *always* has a V4L2 interface exposed, and optionally 
-can have a DVB interface.
+	blah blah blah patch description blah blah blah
+	blah blah blah patch description blah blah blah
+	blah blah blah patch description blah blah blah
 
-So, VIDEO_PVRUSB2 will *always* depend on VIDEO_DEV, but conditionally 
-depend on DVB_CORE.
+	Bug found by Lucifer Smith.
 
-...Sounds like the correct clause should be:
+	Signed-off-by: Tejun <tejun@something.com>
+	Signed-off-by: Jeff Garzik <me@somethingelse.com>
 
-depends on VIDEO_V4L2 && I2C && VIDEO_DEV && VIDEO_MEDIA
+Regards,
 
-...what do you think?
+	Jeff
 
--Mike Krufky
+
