@@ -1,67 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760766AbYEMOWG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760235AbYEMOYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760766AbYEMOWG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 10:22:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755608AbYEMOVy
+	id S1760235AbYEMOYT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 10:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756945AbYEMOYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 10:21:54 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:39581 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756922AbYEMOVx (ORCPT
+	Tue, 13 May 2008 10:24:09 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:60399 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756922AbYEMOYH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 10:21:53 -0400
-Date: Tue, 13 May 2008 08:21:35 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Sven Wegener <sven.wegener@stealer.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
-       Alexander Viro <viro@ftp.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [git pull] scheduler fixes
-Message-ID: <20080513142135.GF9324@parisc-linux.org>
-References: <20080511125216.GA25040@elte.hu> <20080511130226.GR19219@parisc-linux.org> <20080511132636.GA22878@parisc-linux.org> <20080511140017.GA2457@elte.hu> <20080511141818.GT19219@parisc-linux.org> <20080511144203.GB3220@elte.hu> <20080511144821.GW19219@parisc-linux.org> <20080511151909.GA3887@elte.hu> <20080511152942.GY19219@parisc-linux.org> <20080513141129.GC18798@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 13 May 2008 10:24:07 -0400
+Message-Id: <1210688644.25548.1252907593@webmail.messagingengine.com>
+X-Sasl-Enc: qQQCH2STc/+7eYM4PEkhT2FybBJMfath3LQbxr7bbYrh 1210688644
+From: "Alexander van Heukelum" <heukelum@fastmail.fm>
+To: "Russell King" <rmk+lkml@arm.linux.org.uk>
+Cc: "Nickolay Vinogradov" <nickolay@protei.ru>, linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>
 Content-Disposition: inline
-In-Reply-To: <20080513141129.GC18798@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="ISO-8859-1"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <481E076A.8060302@protei.ru>
+   <1210677433.22341.1252875863@webmail.messagingengine.com>
+   <48298990.7040705@protei.ru>
+   <1210685053.13437.1252892061@webmail.messagingengine.com>
+   <20080513135839.GA19291@flint.arm.linux.org.uk>
+Subject: Re: [PATCH] asm-generic/bitops/fls64.h
+In-Reply-To: <20080513135839.GA19291@flint.arm.linux.org.uk>
+Date: Tue, 13 May 2008 16:24:04 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 13, 2008 at 04:11:29PM +0200, Ingo Molnar wrote:
+On Tue, 13 May 2008 14:58:39 +0100, "Russell King"
+<rmk+lkml@arm.linux.org.uk> said:
+> On Tue, May 13, 2008 at 03:24:13PM +0200, Alexander van Heukelum wrote:
+> > On Tue, 13 May 2008 16:29:04 +0400, "Nickolay Vinogradov"
+> > <nickolay@protei.ru> said:
+> > > Alexander van Heukelum &#1087;&#1080;&#1096;&#1077;&#1090;:
+> > > 
+> > > > Hi Nickolay,
+> > > > 
+> > > > The change is ok, I guess, but the cast should be a no-op (fls
+> > > > takes an int, which is always 32 bit in linux). What is the problem
+> > > > you are seeing? Does fls64() return a wrong value in some cases? If
+> > > > so, what cpu? Which values?
+> > > > 
+> > > > Why would this be a bug on big endian systems only? There is no
+> > > > pointer magic involved, so the compiler should take care of the
+> > > > casts in a correct way.
+> > > > 
+> > > > Maybe you see a compiler warning? Which compiler version?
+> > > > 
+> > > > (also note that current (development) kernels now have separate
+> > > > versions for 32-bit and 64-bit environments.)
+> > > 
+> > > Because fls() is a macro for asm-arm:
+> > > 
+> > > #define fls(x) \
+> > >          ( __builtin_constant_p(x) ? constant_fls(x) : \
+> > >          ({ int __r; asm("clz\t%0, %1" : "=r"(__r) : "r"(x) : "cc"); 
+> > > 32-__r; }) )
+> > > 
+> > > We can fix it right here:
 > 
-> * Matthew Wilcox <matthew@wil.cx> wrote:
+> No.  "fls" is for finding the last set bit in an _int_.  It is not
+> supposed to have random crap passed to it, such as types longer than
+> sizeof(int).
 > 
-> > > So why not transform it to real completions instead? And if our 
-> > > current 'struct completion' abstraction is insufficient for whatever 
-> > > reason, why not extend that instead?
-> > 
-> > My point is that for the only user of counting semaphores and/or 
-> > semaphores-abused-as-completions that has so far hit this race, the 
-> > serialised wake-up performs better.  You have not pointed at a 
-> > scenario that _shows_ a parallel wake-up to perform better. [...]
+> If you're going to pass long long (64-bit) arguments to fls, and then
+> cast them to a u32, you're truncating the value, and you'll get the
+> wrong answer if bit 33 or greater is set.  If you don't actually care
+> about the upper bits, don't pass a 64-bit quantity to fls().
 > 
-> a 50% AIM7 slowdown maybe? With the BKL being a spinlock again it doesnt 
-> matter much in practice though.
+> If you want to use fls with a long long, use fls64 instead.  Or for top
+> marks, use a u64 and fls64.
 
-You're not understanding me.  This is completely inapplicable to the BKL
-because only one task can be in wakeup at a time (due to it having a
-maximum value of 1).  There's no way to hit this race with the BKL.
-The only kind of semaphore that can hit this race is the kind that can
-have more than one wakeup in progress at a time -- ie one which can have
-a value >1.  Like completions and real counting semaphores.
+But that was the problem we began with: the generic fls64 passes an u64
+to fls. Nickolay's original patch solves that by putting a cast to u32
+in fls64. I did not, however, understand why the cast was needed. It
+should not be needed for correctness, imho, because fls is expected to
+behave as if it was a function "int fls(int)", like ffs. Values passed
+to fls should thus be truncated if necessary.
 
-So the only thing worth talking about (and indeed, it's now entirely
-moot) is what's the best way to solve this problem /for this kind of
-semaphore/.
+Making the truncation explicit in fls64 is still a good idea, though.
+
+Greetings,
+    Alexander
+
+> -- 
+> Russell King
+>  Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+>  maintainer of:
+-- 
+  Alexander van Heukelum
+  heukelum@fastmail.fm
 
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+http://www.fastmail.fm - The way an email service should be
+
