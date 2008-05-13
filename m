@@ -1,102 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757271AbYEMJmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755373AbYEMJpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757271AbYEMJmq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 05:42:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbYEMJmg
+	id S1755373AbYEMJpa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 05:45:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751655AbYEMJpS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 05:42:36 -0400
-Received: from trantor.org.uk ([213.146.130.142]:42367 "EHLO
-	trantor.trantor.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751432AbYEMJmg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 05:42:36 -0400
-Subject: Re: oprofile BUG() in current kernel.
-From: Gianni Tedesco <gxt@cs.nott.ac.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: arges@linux.vnet.ibm.com, Maynard Johnson <maynardj@us.ibm.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org,
-       oprofile-list@lists.sourceforge.net, Mike Travis <travis@sgi.com>
-In-Reply-To: <20080513014010.e0723e01.akpm@linux-foundation.org>
-References: <1210593756.3708.7.camel@dao.KWGR614>
-	 <19f34abd0805120519t12fceef9u7870006a904c85b2@mail.gmail.com>
-	 <1210599105.3479.1.camel@dao.KWGR614> <48285002.9080702@us.ibm.com>
-	 <1210610283.7218.4.camel@snuffleupagus>
-	 <20080513014010.e0723e01.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 13 May 2008 10:41:28 +0100
-Message-Id: <1210671688.3472.10.camel@dao.KWGR614>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 13 May 2008 05:45:18 -0400
+Received: from nef2.ens.fr ([129.199.96.40]:3137 "EHLO nef2.ens.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751613AbYEMJpR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 05:45:17 -0400
+X-Greylist: delayed 949 seconds by postgrey-1.27 at vger.kernel.org; Tue, 13 May 2008 05:45:17 EDT
+Date: Tue, 13 May 2008 11:27:35 +0200
+From: Eric.Brunet@lps.ens.fr
+To: Linux Kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Bug with keyboard input
+Message-ID: <20080513092735.GA32087@platane.lps.ens.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.1.4 (nef2.ens.fr [129.199.96.32]); Tue, 13 May 2008 11:29:26 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-05-13 at 01:40 -0700, Andrew Morton wrote:
-> In trying to reprocude this on a uniprocessor machine, it seems that
-> someone broke oprofile:
-> 
-> /usr/bin/opcontrol: line 911: /dev/oprofile/0/enabled: No such file or directory
-> /usr/bin/opcontrol: line 911: /dev/oprofile/0/event: No such file or directory
-> /usr/bin/opcontrol: line 911: /dev/oprofile/0/count: No such file or directory
-> /usr/bin/opcontrol: line 911: /dev/oprofile/0/kernel: No such file or directory
-> /usr/bin/opcontrol: line 911: /dev/oprofile/0/user: No such file or directory
-> /usr/bin/opcontrol: line 911: /dev/oprofile/0/unit_mask: No such file or directo
-> 
-> sony:/home/akpm> l /dev/oprofile
-> total 0
-> drwxr-xr-x 1 root root 0 May 13 01:25 1
-> -rw-r--r-- 1 root root 0 May 13 01:25 backtrace_depth
-> -rw-r--r-- 1 root root 0 May 13 01:25 buffer
-> -rw-r--r-- 1 root root 0 May 13 01:25 buffer_size
-> -rw-r--r-- 1 root root 0 May 13 01:25 buffer_watershed
-> -rw-r--r-- 1 root root 0 May 13 01:25 cpu_buffer_size
-> -rw-r--r-- 1 root root 0 May 13 01:25 cpu_type
-> -rw-rw-rw- 1 root root 0 May 13 01:25 dump
-> -rw-r--r-- 1 root root 0 May 13 01:25 enable
-> -rw-r--r-- 1 root root 0 May 13 01:25 pointer_size
-> drwxr-xr-x 1 root root 0 May 13 01:25 stats
-> 
-> Looks like the "0" got renamed to "1".  Who did that?
-> 
-> 
-> 
-> So then I try it on the old 2-way:
-> 
-> No event named GLOBAL_POWER_EVENTS is available.
-> No event named GLOBAL_POWER_EVENTS is available.
-> No event named GLOBAL_POWER_EVENTS is available.
-> No event named GLOBAL_POWER_EVENTS is available.
-> No event named GLOBAL_POWER_EVENTS is available.
-> 
-> so that got broken too.
+Hi list,
 
-I didn't try sampling those events, but CPU_CLK_UNHALTED (or whatever
-default is now) seems to work fine on my 2-way... (when percpu patch is
-reverted)
+With uptodate Fedora 7 (kernel kernel-2.6.23.15-80.fc7) on a Dell D430
+laptop.
 
-> I queued the revert of 608dfddd845da5ab6accef70154c8910529699f7,
-> although that doesn't fix these regressions.
-> 
-> I see no oops.  And I don't see what's wrong with the fairly simple
-> per-cpu conversion, so I'd rather not revert what appears to be a good
-> patch when we don't understand what's going wrong.
-> 
-> 
-> Grasping at straws, we have had problems with per-cpu variable
-> initialisation in the past.  Does this
-> 
-> --- a/drivers/oprofile/cpu_buffer.c~a
-> +++ a/drivers/oprofile/cpu_buffer.c
-> @@ -27,7 +27,7 @@
->  #include "buffer_sync.h"
->  #include "oprof.h"
->  
-> -DEFINE_PER_CPU_SHARED_ALIGNED(struct oprofile_cpu_buffer, cpu_buffer);
-> +DEFINE_PER_CPU_SHARED_ALIGNED(struct oprofile_cpu_buffer, cpu_buffer) = { };
->  
->  static void wq_sync_buffer(struct work_struct *work);
+In short, if I do
+	echo -n "i8042" > /sys/bus/platform/drivers/i8042/unbind
+followed by
+	echo -n "i8042" > /sys/bus/platform/drivers/i8042/bind
+everything works fine, EXCEPT if I hit a key on the keyboard between the
+unbind and the bind (tested with leftcontrol and spacebar). If I hit a
+key, it looks like the keyboard isn't taking release events anymore and
+the next key I hit is forever repeated. When my keyboard is in its working
+state, I read
+	N: Name="AT Translated Set 2 keyboard"
+in /proc/bus/input/devices. When it is in its non-working state (I hit a
+key between unbind and bind), I read
+	N: Name="AT Raw Set 2 keyboard"
+in the same file, and each time I hit a key, I have messages such as
+    atkbd.c: Unknown key pressed (raw set 2, code 0x11f on isa0060/serio0).
+    atkbd.c: Use 'setkeycodes 1f <keycode>' to make it known.
+    atkbd.c: Unknown key pressed (raw set 2, code 0x11e on isa0060/serio0).
+    atkbd.c: Use 'setkeycodes 1e <keycode>' to make it known.
+in my logs.
 
-Nope, exact same bad paging request in kernel mode... probably the bug
-is something deep in oprofile then?
+Note that the key doesn't have to be pressed while the bind happens, it
+is sufficient that the key have been pressed and released before the
+bind.
 
+So, is there a way to make it work and have the input layer automatically
+recognize the correct keyboard type or keyboard mode ? If not, is there a
+way to keep it from guessing and to force it to treat the keyboard as an
+"AT Translated Set 2 keyboard" ?
+
+As a final note, I get hit by this bug quite often during suspend/resume
+cycles. I had found that the keyboard wasn't all the time properly waking up,
+(it was getting stuck) so I've added a file in /etc/pm/sleep.d to do the
+unbind at suspend time and the bind at resume time. This fixed my
+problem, except that at times I stupidly press a key in the hope that the
+resume is done and that the screen is black only because of the
+screensaver, and that hitting a key will make appear the unlocking
+window...
+
+Thanks,
+
+	Éric Brunet
