@@ -1,51 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758720AbYEMGOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758741AbYEMGRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758720AbYEMGOS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 02:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756472AbYEMGOK
+	id S1758741AbYEMGRV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 02:17:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756624AbYEMGRN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 02:14:10 -0400
-Received: from qb-out-0506.google.com ([72.14.204.234]:6804 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756175AbYEMGOJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 02:14:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=RBOeEdkwUlRMgu9ueBfwGUPFE8RRReBoWf8gT5LYrgLnqyizzAWKrbZCgvDdUBoVgwcgHTlZB8l/x8xtLYN9+rJOv8VmRg3ocI634gGWAp+G8RAdX8gE7tZ5MTeL/1xS26tCHMNw5bNphBcUdfG+ca9m11Hlx2rexf+bv8ARgR0=
-Message-ID: <84144f020805122314m54039e0bg38a16e91da996a1d@mail.gmail.com>
-Date: Tue, 13 May 2008 09:14:05 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Benny Halevy" <bhalevy@panasas.com>
-Subject: Re: [PATCH] SLUB: clear c->freelist in __slab_alloc()/load_freelist:/SlabDebug path
-Cc: "Christoph Lameter" <clameter@sgi.com>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4828A940.2090604@panasas.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4828A940.2090604@panasas.com>
-X-Google-Sender-Auth: 2d8100786f017295
+	Tue, 13 May 2008 02:17:13 -0400
+Received: from mo11.iij4u.or.jp ([210.138.174.79]:48080 "EHLO mo11.iij4u.or.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755783AbYEMGRN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 02:17:13 -0400
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, muli@il.ibm.com, alexisb@us.ibm.com,
+       fujita.tomonori@lab.ntt.co.jp
+Subject: [PATCH 0/2] x86: per-device dma_mapping_ops
+Date: Tue, 13 May 2008 15:04:50 +0900
+Message-Id: <1210658692-960-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: git-send-email 1.5.4.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 12, 2008 at 11:32 PM, Benny Halevy <bhalevy@panasas.com> wrote:
-> In the __slab_alloc()/load_freelist:/SlabDebug(c->page) path we only
->  use the object at the head of c->page->freelist
->  and the tail goes back to c->page->freelist.
->  We then set c->node = -1 to force __slab_alloc in next allocation.
->  c->freelist therefore needs to be cleared as it is invalid at this point.
->
->  @@ -1606,6 +1606,7 @@ debug:
->         if (!alloc_debug_processing(s, c->page, object, addr))
->                 goto another_slab;
->
->  +       c->freelist = NULL;
->         c->page->inuse++;
->         c->page->freelist = object[c->offset];
->         c->node = -1;
+This patchset adds per-device dma_mapping_ops support for
+CONFIG_X86_64 like POWER architecture does. This change enables us to
+cleanly fix the Calgary IOMMU issue that some devices are not behind
+the IOMMU [1]. It also would be helpful to handle KVM PCI passthrough.
 
-Makes sense. Christoph?
+A pointer to dma_mapping_ops to struct dev_archdata is added. If the
+pointer is non NULL, DMA operations in asm/dma-mapping.h use it. If
+it's NULL, the system-wide dma_ops pointer is used as before.
+
+The major obstacle is that dma_mapping_error doesn't take a pointer to
+the device unlike other DMA operations. So x86 can't have
+dma_mapping_ops per device. Note all the POWER IOMMUs use the same
+dma_mapping_error function so this is not a problem for POWER but x86
+IOMMUs use different dma_mapping_error functions.
+
+The first patch adds the device argument to dma_mapping_error. The
+patch is trivial but large since it touches lots of drivers and
+dma-mapping.h in all the architecture.
+
+[1] http://lkml.org/lkml/2008/5/8/423
+
+
