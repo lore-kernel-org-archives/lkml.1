@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761974AbYEMURk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932431AbYEMUSY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761974AbYEMURk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 16:17:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762060AbYEMUO3
+	id S932431AbYEMUSY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 16:18:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762139AbYEMUOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 16:14:29 -0400
-Received: from mx2.suse.de ([195.135.220.15]:38197 "EHLO mx2.suse.de"
+	Tue, 13 May 2008 16:14:42 -0400
+Received: from cantor.suse.de ([195.135.220.2]:37999 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762054AbYEMUO2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 16:14:28 -0400
-Date: Tue, 13 May 2008 13:12:01 -0700
+	id S1762124AbYEMUOk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 16:14:40 -0400
+Date: Tue, 13 May 2008 13:12:05 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,15 +20,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jarek Poplawski <jarkao2@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 13/37] sch_htb: remove from event queue in
-	htb_parent_to_leaf()
-Message-ID: <20080513201201.GN31167@suse.de>
+       Julian Anastasov <ja@ssi.bg>, "David S. Miller" <davem@davemloft.net>
+Subject: [patch 15/37] ipvs: fix oops in backup for fwmark conn templates
+Message-ID: <20080513201205.GP31167@suse.de>
 References: <20080513200453.064446337@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sch_htb-remove-from-event-queue-in-htb_parent_to_leaf.patch"
+Content-Disposition: inline; filename="ipvs-fix-oops-in-backup-for-fwmark-conn-templates.patch"
 In-Reply-To: <20080513201053.GA31167@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,58 +37,219 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Jarek Poplawski <jarkao2@gmail.com>
+From: Julian Anastasov <ja@ssi.bg>
 
-[ Upstream commit: 3ba08b00e0d8413d79be9cab8ec085ceb6ae6fd6 ]
+[ Upstream commit: 2ad17defd596ca7e8ba782d5fc6950ee0e99513c ]
 
-There is lack of removing a class from the event queue while changing
-from parent to leaf which can cause corruption of this rb tree. This
-patch fixes a bug introduced by my patch: "sch_htb: turn intermediate
-classes into leaves" commit: 160d5e10f87b1dc88fd9b84b31b1718e0fd76398.
+	Fixes bug http://bugzilla.kernel.org/show_bug.cgi?id=10556
+where conn templates with protocol=IPPROTO_IP can oops backup box.
 
-Many thanks to Jan 'yanek' Bortl for finding a way to reproduce this
-rare bug and narrowing the test case, which made possible proper
-diagnosing.
+        Result from ip_vs_proto_get() should be checked because
+protocol value can be invalid or unsupported in backup. But
+for valid message we should not fail for templates which use
+IPPROTO_IP. Also, add checks to validate message limits and
+connection state. Show state NONE for templates using IPPROTO_IP.
 
-This patch is recommended for all kernels starting from 2.6.20.
+Fix tested and confirmed by L0op8ack <l0op8ack@hotmail.com>
 
-Reported-and-tested-by: Jan 'yanek' Bortl <yanek@ya.bofh.cz>
-Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
+Signed-off-by: Julian Anastasov <ja@ssi.bg>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/sched/sch_htb.c |    8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ include/net/ip_vs.h             |    3 +
+ net/ipv4/ipvs/ip_vs_proto.c     |    2 -
+ net/ipv4/ipvs/ip_vs_proto_ah.c  |    1 
+ net/ipv4/ipvs/ip_vs_proto_esp.c |    1 
+ net/ipv4/ipvs/ip_vs_proto_tcp.c |    1 
+ net/ipv4/ipvs/ip_vs_proto_udp.c |    1 
+ net/ipv4/ipvs/ip_vs_sync.c      |   80 +++++++++++++++++++++++++++++-----------
+ 7 files changed, 66 insertions(+), 23 deletions(-)
 
---- a/net/sched/sch_htb.c
-+++ b/net/sched/sch_htb.c
-@@ -1197,12 +1197,16 @@ static inline int htb_parent_last_child(
- 	return 1;
+--- a/include/net/ip_vs.h
++++ b/include/net/ip_vs.h
+@@ -405,7 +405,8 @@ struct sk_buff;
+ struct ip_vs_protocol {
+ 	struct ip_vs_protocol	*next;
+ 	char			*name;
+-	__u16			protocol;
++	u16			protocol;
++	u16			num_states;
+ 	int			dont_defrag;
+ 	atomic_t		appcnt;		/* counter of proto app incs */
+ 	int			*timeout_table;	/* protocol timeout table */
+--- a/net/ipv4/ipvs/ip_vs_proto_ah.c
++++ b/net/ipv4/ipvs/ip_vs_proto_ah.c
+@@ -160,6 +160,7 @@ static void ah_exit(struct ip_vs_protoco
+ struct ip_vs_protocol ip_vs_protocol_ah = {
+ 	.name =			"AH",
+ 	.protocol =		IPPROTO_AH,
++	.num_states =		1,
+ 	.dont_defrag =		1,
+ 	.init =			ah_init,
+ 	.exit =			ah_exit,
+--- a/net/ipv4/ipvs/ip_vs_proto.c
++++ b/net/ipv4/ipvs/ip_vs_proto.c
+@@ -148,7 +148,7 @@ const char * ip_vs_state_name(__u16 prot
+ 	struct ip_vs_protocol *pp = ip_vs_proto_get(proto);
+ 
+ 	if (pp == NULL || pp->state_name == NULL)
+-		return "ERR!";
++		return (IPPROTO_IP == proto) ? "NONE" : "ERR!";
+ 	return pp->state_name(state);
  }
  
--static void htb_parent_to_leaf(struct htb_class *cl, struct Qdisc *new_q)
-+static void htb_parent_to_leaf(struct htb_sched *q, struct htb_class *cl,
-+			       struct Qdisc *new_q)
- {
- 	struct htb_class *parent = cl->parent;
+--- a/net/ipv4/ipvs/ip_vs_proto_esp.c
++++ b/net/ipv4/ipvs/ip_vs_proto_esp.c
+@@ -159,6 +159,7 @@ static void esp_exit(struct ip_vs_protoc
+ struct ip_vs_protocol ip_vs_protocol_esp = {
+ 	.name =			"ESP",
+ 	.protocol =		IPPROTO_ESP,
++	.num_states =		1,
+ 	.dont_defrag =		1,
+ 	.init =			esp_init,
+ 	.exit =			esp_exit,
+--- a/net/ipv4/ipvs/ip_vs_proto_tcp.c
++++ b/net/ipv4/ipvs/ip_vs_proto_tcp.c
+@@ -594,6 +594,7 @@ static void ip_vs_tcp_exit(struct ip_vs_
+ struct ip_vs_protocol ip_vs_protocol_tcp = {
+ 	.name =			"TCP",
+ 	.protocol =		IPPROTO_TCP,
++	.num_states =		IP_VS_TCP_S_LAST,
+ 	.dont_defrag =		0,
+ 	.appcnt =		ATOMIC_INIT(0),
+ 	.init =			ip_vs_tcp_init,
+--- a/net/ipv4/ipvs/ip_vs_proto_udp.c
++++ b/net/ipv4/ipvs/ip_vs_proto_udp.c
+@@ -409,6 +409,7 @@ static void udp_exit(struct ip_vs_protoc
+ struct ip_vs_protocol ip_vs_protocol_udp = {
+ 	.name =			"UDP",
+ 	.protocol =		IPPROTO_UDP,
++	.num_states =		IP_VS_UDP_S_LAST,
+ 	.dont_defrag =		0,
+ 	.init =			udp_init,
+ 	.exit =			udp_exit,
+--- a/net/ipv4/ipvs/ip_vs_sync.c
++++ b/net/ipv4/ipvs/ip_vs_sync.c
+@@ -288,11 +288,16 @@ static void ip_vs_process_message(const 
+ 	char *p;
+ 	int i;
  
- 	BUG_TRAP(!cl->level && cl->un.leaf.q && !cl->prio_activity);
- 
-+	if (parent->cmode != HTB_CAN_SEND)
-+		htb_safe_rb_erase(&parent->pq_node, q->wait_pq + parent->level);
++	if (buflen < sizeof(struct ip_vs_sync_mesg)) {
++		IP_VS_ERR_RL("sync message header too short\n");
++		return;
++	}
 +
- 	parent->level = 0;
- 	memset(&parent->un.inner, 0, sizeof(parent->un.inner));
- 	INIT_LIST_HEAD(&parent->un.leaf.drop_list);
-@@ -1300,7 +1304,7 @@ static int htb_delete(struct Qdisc *sch,
- 		htb_deactivate(q, cl);
+ 	/* Convert size back to host byte order */
+ 	m->size = ntohs(m->size);
  
- 	if (last_child)
--		htb_parent_to_leaf(cl, new_q);
-+		htb_parent_to_leaf(q, cl, new_q);
+ 	if (buflen != m->size) {
+-		IP_VS_ERR("bogus message\n");
++		IP_VS_ERR_RL("bogus sync message size\n");
+ 		return;
+ 	}
  
- 	if (--cl->refcnt == 0)
- 		htb_destroy_class(sch, cl);
+@@ -307,9 +312,48 @@ static void ip_vs_process_message(const 
+ 	for (i=0; i<m->nr_conns; i++) {
+ 		unsigned flags, state;
+ 
+-		s = (struct ip_vs_sync_conn *)p;
++		if (p + SIMPLE_CONN_SIZE > buffer+buflen) {
++			IP_VS_ERR_RL("bogus conn in sync message\n");
++			return;
++		}
++		s = (struct ip_vs_sync_conn *) p;
+ 		flags = ntohs(s->flags) | IP_VS_CONN_F_SYNC;
++		flags &= ~IP_VS_CONN_F_HASHED;
++		if (flags & IP_VS_CONN_F_SEQ_MASK) {
++			opt = (struct ip_vs_sync_conn_options *)&s[1];
++			p += FULL_CONN_SIZE;
++			if (p > buffer+buflen) {
++				IP_VS_ERR_RL("bogus conn options in sync message\n");
++				return;
++			}
++		} else {
++			opt = NULL;
++			p += SIMPLE_CONN_SIZE;
++		}
++
+ 		state = ntohs(s->state);
++		if (!(flags & IP_VS_CONN_F_TEMPLATE)) {
++			pp = ip_vs_proto_get(s->protocol);
++			if (!pp) {
++				IP_VS_ERR_RL("Unsupported protocol %u in sync msg\n",
++					s->protocol);
++				continue;
++			}
++			if (state >= pp->num_states) {
++				IP_VS_DBG(2, "Invalid %s state %u in sync msg\n",
++					pp->name, state);
++				continue;
++			}
++		} else {
++			/* protocol in templates is not used for state/timeout */
++			pp = NULL;
++			if (state > 0) {
++				IP_VS_DBG(2, "Invalid template state %u in sync msg\n",
++					state);
++				state = 0;
++			}
++		}
++
+ 		if (!(flags & IP_VS_CONN_F_TEMPLATE))
+ 			cp = ip_vs_conn_in_get(s->protocol,
+ 					       s->caddr, s->cport,
+@@ -345,14 +389,9 @@ static void ip_vs_process_message(const 
+ 				IP_VS_ERR("ip_vs_conn_new failed\n");
+ 				return;
+ 			}
+-			cp->state = state;
+ 		} else if (!cp->dest) {
+ 			dest = ip_vs_try_bind_dest(cp);
+-			if (!dest) {
+-				/* it is an unbound entry created by
+-				 * synchronization */
+-				cp->flags = flags | IP_VS_CONN_F_HASHED;
+-			} else
++			if (dest)
+ 				atomic_dec(&dest->refcnt);
+ 		} else if ((cp->dest) && (cp->protocol == IPPROTO_TCP) &&
+ 			   (cp->state != state)) {
+@@ -371,23 +410,22 @@ static void ip_vs_process_message(const 
+ 			}
+ 		}
+ 
+-		if (flags & IP_VS_CONN_F_SEQ_MASK) {
+-			opt = (struct ip_vs_sync_conn_options *)&s[1];
++		if (opt)
+ 			memcpy(&cp->in_seq, opt, sizeof(*opt));
+-			p += FULL_CONN_SIZE;
+-		} else
+-			p += SIMPLE_CONN_SIZE;
+-
+ 		atomic_set(&cp->in_pkts, sysctl_ip_vs_sync_threshold[0]);
+ 		cp->state = state;
+-		pp = ip_vs_proto_get(s->protocol);
+-		cp->timeout = pp->timeout_table[cp->state];
++		cp->old_state = cp->state;
++		/*
++		 * We can not recover the right timeout for templates
++		 * in all cases, we can not find the right fwmark
++		 * virtual service. If needed, we can do it for
++		 * non-fwmark persistent services.
++		 */
++		if (!(flags & IP_VS_CONN_F_TEMPLATE) && pp->timeout_table)
++			cp->timeout = pp->timeout_table[state];
++		else
++			cp->timeout = (3*60*HZ);
+ 		ip_vs_conn_put(cp);
+-
+-		if (p > buffer+buflen) {
+-			IP_VS_ERR("bogus message\n");
+-			return;
+-		}
+ 	}
+ }
+ 
 
 -- 
