@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932093AbYEMUPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762158AbYEMUOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932093AbYEMUPj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 16:15:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761905AbYEMUNx
+	id S1762158AbYEMUOp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 16:14:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761777AbYEMUNl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 16:13:53 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:37959 "EHLO mx2.suse.de"
+	Tue, 13 May 2008 16:13:41 -0400
+Received: from ns.suse.de ([195.135.220.2]:37741 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761895AbYEMUNw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 16:13:52 -0400
-Date: Tue, 13 May 2008 13:11:49 -0700
+	id S1761754AbYEMUNj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 16:13:39 -0400
+Date: Tue, 13 May 2008 13:11:45 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,13 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Robert Reif <reif@earthlink.net>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 08/37] sparc: Fix fork/clone/vfork system call restart.
-Message-ID: <20080513201149.GI31167@suse.de>
+Subject: [patch 06/37] sparc: sunzilog uart order
+Message-ID: <20080513201145.GG31167@suse.de>
 References: <20080513200453.064446337@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sparc-fix-fork-clone-vfork-system-call-restart.patch"
+Content-Disposition: inline; filename="sparc-sunzilog-uart-order.patch"
 In-Reply-To: <20080513201053.GA31167@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,93 +38,128 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: David S. Miller <davem@davemloft.net>
+From: Robert Reif <reif@earthlink.net>
 
-[ Upstream commit: 1e38c126c9252b612697e34f43b1b3371c8ee31d ]
+[ Upstream commit: 227739bf4c110bbd02d0c0f13b272c32de406e4c ]
 
-We clobber %i1 as well as %i0 for these system calls,
-because they give two return values.
+I have a sparcstation 20 clone with a lot of on board serial ports.
+The serial core code assumes that uarts are assigned contiguously
+and that may not be the case when there are multiple zs devices
+present.  This patch insures that uart chips are placed in front of
+keyboard/mouse chips in the port table.
 
-Therefore, on error, we have to restore %i1 properly
-or else the restart explodes since it uses the wrong
-arguments.
+ffd37420: ttyS0 at MMIO 0xf1100000 (irq = 44) is a zs (ESCC)
+Console: ttyS0 (SunZilog zs0)
+console [ttyS0] enabled
+ffd37420: ttyS1 at MMIO 0xf1100004 (irq = 44) is a zs (ESCC)
+ffd37500: Keyboard at MMIO 0xf1000000 (irq = 44) is a zs
+ffd37500: Mouse at MMIO 0xf1000004 (irq = 44) is a zs
+ffd3c5c0: ttyS2 at MMIO 0xf1100008 (irq = 44) is a zs (ESCC)
+ffd3c5c0: ttyS3 at MMIO 0xf110000c (irq = 44) is a zs (ESCC)
+ffd3c6a0: ttyS4 at MMIO 0xf1100010 (irq = 44) is a zs (ESCC)
+ffd3c6a0: ttyS5 at MMIO 0xf1100014 (irq = 44) is a zs (ESCC)
+ffd3c780: ttyS6 at MMIO 0xf1100018 (irq = 44) is a zs (ESCC)
+ffd3c780: ttyS7 at MMIO 0xf110001c (irq = 44) is a zs (ESCC)
 
-This fixes glibc's nptl/tst-eintr1.c testcase.
-
+Signed-off-by: Robert Reif <reif@earthlink.net>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/sparc/kernel/process.c   |   20 ++++++++++++++++----
- arch/sparc64/kernel/process.c |   18 +++++++++++++++---
- 2 files changed, 31 insertions(+), 7 deletions(-)
+ drivers/serial/sunzilog.c |   30 +++++++++++++++++-------------
+ 1 file changed, 17 insertions(+), 13 deletions(-)
 
---- a/arch/sparc64/kernel/process.c
-+++ b/arch/sparc64/kernel/process.c
-@@ -507,6 +507,8 @@ asmlinkage long sparc_do_fork(unsigned l
- 			      unsigned long stack_size)
- {
- 	int __user *parent_tid_ptr, *child_tid_ptr;
-+	unsigned long orig_i1 = regs->u_regs[UREG_I1];
-+	long ret;
+--- a/drivers/serial/sunzilog.c
++++ b/drivers/serial/sunzilog.c
+@@ -1015,6 +1015,7 @@ static struct uart_ops sunzilog_pops = {
+ 	.verify_port	=	sunzilog_verify_port,
+ };
  
- #ifdef CONFIG_COMPAT
- 	if (test_thread_flag(TIF_32BIT)) {
-@@ -519,9 +521,19 @@ asmlinkage long sparc_do_fork(unsigned l
- 		child_tid_ptr = (int __user *) regs->u_regs[UREG_I4];
++static int uart_chip_count;
+ static struct uart_sunzilog_port *sunzilog_port_table;
+ static struct zilog_layout __iomem **sunzilog_chip_regs;
+ 
+@@ -1350,16 +1351,22 @@ static int zilog_irq = -1;
+ 
+ static int __devinit zs_probe(struct of_device *op, const struct of_device_id *match)
+ {
+-	static int inst;
++	static int kbm_inst, uart_inst;
++	int inst;
+ 	struct uart_sunzilog_port *up;
+ 	struct zilog_layout __iomem *rp;
+-	int keyboard_mouse;
++	int keyboard_mouse = 0;
+ 	int err;
+ 
+-	keyboard_mouse = 0;
+ 	if (of_find_property(op->node, "keyboard", NULL))
+ 		keyboard_mouse = 1;
+ 
++	/* uarts must come before keyboards/mice */
++	if (keyboard_mouse)
++		inst = uart_chip_count + kbm_inst;
++	else
++		inst = uart_inst;
++
+ 	sunzilog_chip_regs[inst] = of_ioremap(&op->resource[0], 0,
+ 					      sizeof(struct zilog_layout),
+ 					      "zs");
+@@ -1427,6 +1434,7 @@ static int __devinit zs_probe(struct of_
+ 				   rp, sizeof(struct zilog_layout));
+ 			return err;
+ 		}
++		uart_inst++;
+ 	} else {
+ 		printk(KERN_INFO "%s: Keyboard at MMIO 0x%llx (irq = %d) "
+ 		       "is a %s\n",
+@@ -1438,12 +1446,11 @@ static int __devinit zs_probe(struct of_
+ 		       op->dev.bus_id,
+ 		       (unsigned long long) up[1].port.mapbase,
+ 		       op->irqs[0], sunzilog_type(&up[1].port));
++		kbm_inst++;
  	}
  
--	return do_fork(clone_flags, stack_start,
--		       regs, stack_size,
--		       parent_tid_ptr, child_tid_ptr);
-+	ret = do_fork(clone_flags, stack_start,
-+		      regs, stack_size,
-+		      parent_tid_ptr, child_tid_ptr);
-+
-+	/* If we get an error and potentially restart the system
-+	 * call, we're screwed because copy_thread() clobbered
-+	 * the parent's %o1.  So detect that case and restore it
-+	 * here.
-+	 */
-+	if ((unsigned long)ret >= -ERESTART_RESTARTBLOCK)
-+		regs->u_regs[UREG_I1] = orig_i1;
-+
-+	return ret;
+ 	dev_set_drvdata(&op->dev, &up[0]);
+ 
+-	inst++;
+-
+ 	return 0;
  }
  
- /* Copy a Sparc thread.  The fork() return value conventions
---- a/arch/sparc/kernel/process.c
-+++ b/arch/sparc/kernel/process.c
-@@ -421,14 +421,26 @@ asmlinkage int sparc_do_fork(unsigned lo
-                              unsigned long stack_size)
+@@ -1491,28 +1498,25 @@ static struct of_platform_driver zs_driv
+ static int __init sunzilog_init(void)
  {
- 	unsigned long parent_tid_ptr, child_tid_ptr;
-+	unsigned long orig_i1 = regs->u_regs[UREG_I1];
-+	long ret;
+ 	struct device_node *dp;
+-	int err, uart_count;
+-	int num_keybms;
++	int err;
++	int num_keybms = 0;
+ 	int num_sunzilog = 0;
  
- 	parent_tid_ptr = regs->u_regs[UREG_I2];
- 	child_tid_ptr = regs->u_regs[UREG_I4];
+-	num_keybms = 0;
+ 	for_each_node_by_name(dp, "zs") {
+ 		num_sunzilog++;
+ 		if (of_find_property(dp, "keyboard", NULL))
+ 			num_keybms++;
+ 	}
  
--	return do_fork(clone_flags, stack_start,
--		       regs, stack_size,
--		       (int __user *) parent_tid_ptr,
--		       (int __user *) child_tid_ptr);
-+	ret = do_fork(clone_flags, stack_start,
-+		      regs, stack_size,
-+		      (int __user *) parent_tid_ptr,
-+		      (int __user *) child_tid_ptr);
-+
-+	/* If we get an error and potentially restart the system
-+	 * call, we're screwed because copy_thread() clobbered
-+	 * the parent's %o1.  So detect that case and restore it
-+	 * here.
-+	 */
-+	if ((unsigned long)ret >= -ERESTART_RESTARTBLOCK)
-+		regs->u_regs[UREG_I1] = orig_i1;
-+
-+	return ret;
- }
+-	uart_count = 0;
+ 	if (num_sunzilog) {
+-		int uart_count;
+-
+ 		err = sunzilog_alloc_tables(num_sunzilog);
+ 		if (err)
+ 			goto out;
  
- /* Copy a Sparc thread.  The fork() return value conventions
+-		uart_count = (num_sunzilog * 2) - (2 * num_keybms);
++		uart_chip_count = num_sunzilog - num_keybms;
+ 
+-		err = sunserial_register_minors(&sunzilog_reg, uart_count);
++		err = sunserial_register_minors(&sunzilog_reg,
++						uart_chip_count * 2);
+ 		if (err)
+ 			goto out_free_tables;
+ 	}
 
 -- 
