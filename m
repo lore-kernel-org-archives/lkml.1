@@ -1,33 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762067AbYEMVVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761618AbYEMVXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762067AbYEMVVt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 17:21:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757513AbYEMVVk
+	id S1761618AbYEMVXQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 17:23:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757513AbYEMVW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 17:21:40 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:49652 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755873AbYEMVVk (ORCPT
+	Tue, 13 May 2008 17:22:57 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:44876 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752429AbYEMVW4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 17:21:40 -0400
-To: bfields@fieldses.org
-CC: miklos@szeredi.hu, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-reply-to: <20080513211756.GA25349@fieldses.org> (bfields@fieldses.org)
-Subject: Re: [patch 0/9] file locking fixes + fuse nfs export support
-References: <20080509124107.645600519@szeredi.hu> <20080509155040.GB798@fieldses.org> <E1JuUyz-0002GT-Hn@pomaz-ex.szeredi.hu> <20080509164044.GA1907@fieldses.org> <E1Jw1ge-0002eZ-Hk@pomaz-ex.szeredi.hu> <20080513211756.GA25349@fieldses.org>
-Message-Id: <E1Jw1w8-0002hW-Sj@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 13 May 2008 23:21:28 +0200
+	Tue, 13 May 2008 17:22:56 -0400
+Message-ID: <24291087.1210713535895.JavaMail.oracle@acsmt301.oracle.com>
+Date: Tue, 13 May 2008 16:18:55 -0500 (CDT)
+From: Randy Dunlap <RANDY.DUNLAP@ORACLE.COM>
+To: "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] Fix kobject_rename and !CONFIG_SYSFS v3
+Cc: Al Viro <viro@ftp.linux.org.uk>, Benjamin Thery <benjamin.thery@bull.net>,
+       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>, Tejun Heo <htejun@gmail.com>
+In-Reply-To: <m1od7a9bmr.fsf_-_@frodo.ebiederm.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+References: <m163tocw43.fsf_-_@frodo.ebiederm.org>
+	<20080512220232.GA16914@kroah.com> <m1prrqbseh.fsf@frodo.ebiederm.org>
+	<4829A4BD.3020007@bull.net> <20080513164438.GA31563@kroah.com>
+	<m18wyeay1q.fsf_-_@frodo.ebiederm.org>
+	<20080513201602.GA31578@kroah.com> <m1od7a9bmr.fsf_-_@frodo.ebiederm.org>
+X-Priority: 3
+X-Mailer: Oracle Webmail Client(UIX)
+Content-Language: en-US
+Accept-Language: en-US
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Well, it was in the nfs-2.6 tree after all (commit 4d7c402).  I just
-> 
-> I think you must mean c4d7c402b788b73dc24f1e54a57f89d3dc5eb7bc, "NFS:
-> Remove the buggy lock-if-signalled case from do_setlk()"?
+> Changelog:
+> v3:	Documentation typo fixes
 
-Yeah.
+Inserted/attached wrong patch file?
+I don't see any text changes.
 
-Miklos
+
+> diff --git a/Documentation/kobject.txt b/Documentation/kobject.txt
+> index bf3256e..79184b4 100644
+> --- a/Documentation/kobject.txt
+> +++ b/Documentation/kobject.txt
+> @@ -118,6 +118,10 @@ the name of the kobject, call kobject_rename():
+>  
+>      int kobject_rename(struct kobject *kobj, const char
+> *new_name);
+>  
+> +Note kobject_rename does perform any locking or have a solid
+> notion of
+> +what names are valid so the provide must provide their own
+> sanity checking
+> +and serialization.
+> +
+>  There is a function called kobject_set_name() but that is
+> legacy cruft and
+>  is being removed.  If your code needs to call this function,
+> it is
+>  incorrect and needs to be fixed.
+
