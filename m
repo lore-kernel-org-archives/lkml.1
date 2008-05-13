@@ -1,71 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759306AbYEMIdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759449AbYEMIeC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759306AbYEMIdS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 04:33:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756952AbYEMIdJ
+	id S1759449AbYEMIeC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 04:34:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757500AbYEMIdu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 04:33:09 -0400
-Received: from ns.unixsol.org ([193.110.159.2]:39243 "EHLO ns.unixsol.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755618AbYEMIdI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 04:33:08 -0400
-Message-ID: <48295240.4030301@unixsol.org>
-Date: Tue, 13 May 2008 11:33:04 +0300
-From: Georgi Chorbadzhiyski <gf@unixsol.org>
-Organization: Unix Solutions Ltd.
-User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
+	Tue, 13 May 2008 04:33:50 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:57980 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756954AbYEMIds (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 04:33:48 -0400
+Message-ID: <482951D0.3070004@yandex.ru>
+Date: Tue, 13 May 2008 11:31:12 +0300
+From: Artem Bityutskiy <dedekind@yandex.ru>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: FD Cami <francois.cami@free.fr>
-CC: Donald Douwsma <donaldd@sgi.com>, xfs@oss.sgi.com,
-       jfs-discussion@lists.sourceforge.net, cluster-devel@redhat.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       volkerdi@slackware.com
-Subject: Re: Unneeded kernel threads (xfs, jfs, gfs2)
-References: <4828CAC6.3090402@unixsol.org>	<48292742.8090409@sgi.com> <20080513075107.2edc44d3@olorin>
-In-Reply-To: <20080513075107.2edc44d3@olorin>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Christoph Hellwig <hch@infradead.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>,
+       Edward Shishkin <edward.shishkin@gmail.com>
+Subject: Re: [PATCH take 2 01/28] VFS: introduce writeback_inodes_sb()
+References: <1210070159-22794-1-git-send-email-Artem.Bityutskiy@nokia.com> <1210070159-22794-2-git-send-email-Artem.Bityutskiy@nokia.com> <20080507002345.831bc379.akpm@linux-foundation.org> <20080507080027.GA23621@infradead.org>
+In-Reply-To: <20080507080027.GA23621@infradead.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 13 May 2008 08:32:49.0203 (UTC) FILETIME=[ED474830:01C8B4D3]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FD Cami mumbled something about, On 5/13/08 8:51 AM:
-> On Tue, 13 May 2008 15:29:38 +1000
-> Donald Douwsma <donaldd@sgi.com> wrote:
-> 
->> Georgi Chorbadzhiyski wrote:
->>> Hi guys, I know that not all kernel thread users are converted to
->>> start only when needed but the following is little annoying specially
->>> when I'm not even using jfs, xfs and gfs2.
->>>
->>> Look at the ps output from a standard distro 2.6.24.5 kernel after a
->>> fresh boot:
->> ...
->>
->>> Kernel config can be found here:
->>>   http://mirrors.unixsol.org/slackware/slackware-12.1/kernels/hugesmp.s/config
->>>
->> Your distro is building all of these modules into the kernel.
->> 	CONFIG_XFS_FS=y
->> 	CONFIG_JFS_FS=y
->> 	CONFIG_GFS2_FS=y
->>
->> This isnt exactly standard practice, normally they'd be set to =m and only
->> used if required to mount a filesystem. You may want to ask the slackware
->> people why they chose to do this for their hugexxx.s kernels.
-> 
-> To be able to use those filesystems on root partitions without requiring
-> an initrd. 
-> 
-> Georgi might be interested to use the generic kernel instead of the huge
-> one, it is available there :
-> http://mirrors.unixsol.org/slackware/slackware-12.1/slackware/a/kernel-generic-smp-2.6.24.5_smp-i686-2.tgz
+Hi Christoph,
 
-I'm well aware of this kernels but I prefer to not use
-initrd when possible and still have most of the functionality
-available.
+Christoph Hellwig wrote:
+> I think sync_sb_inodes should just lock/unlock the inode_lock itself as
+> per the patch from the reiser4 queue.  But before we export it I'd like
+> to review what ubifs actually does with it.
+
+Here is an updated UBIFS tarball for you:
+	http://www.infradead.org/~dedekind/ubifs/ubifs-08-05-13.tar.bz2
+
+Did you have chance to do the reviw? We would like to ask for merge at
+2.6.27.
+
+> Anyone care to submit a patch to just move the locking that we could
+> put in ASAP?
+
+Done, the patch is sitting in our UBIFS.
 
 -- 
-Georgi Chorbadzhiyski
-http://georgi.unixsol.org/
-
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
