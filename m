@@ -1,92 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758906AbYEMTHG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759631AbYEMTH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758906AbYEMTHG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 15:07:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755501AbYEMTGz
+	id S1759631AbYEMTH1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 15:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757436AbYEMTHB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 15:06:55 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:13521 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754828AbYEMTGy (ORCPT
+	Tue, 13 May 2008 15:07:01 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:58498 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757003AbYEMTG7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 15:06:54 -0400
-Subject: Re: [PATCH] take pageout refcount into account for
-	remove_exclusive_swap_page
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>, akpm@linux-foundation.org,
-       kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20080513140902.1030afaa@cuia.bos.redhat.com>
-References: <20080428181835.502876582@redhat.com>
-	 <20080428181852.620969450@redhat.com> <4828283C.4000803@mxp.nes.nec.co.jp>
-	 <20080512093307.2ace3096@bree.surriel.com>
-	 <482990FC.3020303@mxp.nes.nec.co.jp>
-	 <20080513120417.0833cec1@cuia.bos.redhat.com>
-	 <1210700635.6208.40.camel@lts-notebook>
-	 <20080513140902.1030afaa@cuia.bos.redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Organization: HP/OSLO
-Date: Tue, 13 May 2008 15:02:50 -0400
-Message-Id: <1210705370.6208.47.camel@lts-notebook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 8bit
+	Tue, 13 May 2008 15:06:59 -0400
+To: casey@schaufler-ca.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 2.6.25: access permission filesystem 0.21
+References: <126313.89542.qm@web36605.mail.mud.yahoo.com>
+From: Olaf Dietsche <olaf+list.linux-kernel@olafdietsche.de>
+Date: Tue, 13 May 2008 21:06:55 +0200
+Message-ID: <87k5hy2fcg.fsf@rat.lan>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Provags-ID: V01U2FsdGVkX184IFZih9tAo40oyJEjaQafe0csUAa48URmPyH
+ gZDCZhAsd6nxU1YKPK3d6Yn2770ckWo+4e6LrCbLxn30OGWC5W
+ 36oM4Zeb+fVkPFatMRWfw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-05-13 at 14:09 -0400, Rik van Riel wrote:
-> On Tue, 13 May 2008 13:43:55 -0400
-> Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
-> 
-> > Or, more generally, 2 + N, for an anon page that is mapped [must be
-> > read-only, right?] by N processes.  This can happen after, e.g., fork().
-> > Looks like this patch handles the condition just fine, but you might
-> > want to reflect this in the comment.
-> 
-> No, this patch only removes a page from the swap cache that is mapped
-> by one process.  The function page_mapped() returns either 1 or 0, not
-> the same as page_mapcount().
+Casey Schaufler <casey@schaufler-ca.com> writes:
 
-Duh!  I was reading "page_mapcount()", 'cause that's what I've been
-considering using for this purpose.
+> --- Olaf Dietsche <olaf+list.linux-kernel@olafdietsche.de> wrote:
+>
+>> This patch adds a new permission managing file system.
+>> Furthermore, it adds two modules, which make use of this file system.
+>> 
+>> One module allows granting capabilities based on user-/groupid.
+>
+> Hmm. The primary purpose of the capability mechanism, according
+> to the POSIX P1003.1e/2c working group*, is to separate the
+> privilege mechanism from the userid mechanism. You are now
+> reintegrating them two mechanims, albiet differently than
+> they were integrated before. You can already achieve this end
+> using filesystem based capabilties and mode bits and/or ACLs,
+> so why the change?
 
->  
-> I am not sure if trying to handle swap cache pages that are mapped by
-> multiple processes could get us into other corner cases and think that
-> we should probably try to stick to the safe thing for now.
+This idea is from 2002, when there were neither filesystem based
+capabilties nor ACLs. But since even I never used it, see it as an
+interesting excercise.
 
-OK.  I can test the more general case down the road.
+>> The
+>> second module allows to grant access to lower numbered ports based on
+>> user-/groupid, too.
+>
+> Woof. As reasonable as mode bits on ports seems, there's an
+> awful lot of tradition associated with the privileged port
+> model. I can see the value in it, I've actually implemented
+> it in the past in the Unix world, but I have never seen anyone
+> willing to take advantage of the scheme. 
 
-> 
-> Besides, shouldn't anonymous shared pages be COW and relatively rare?
+Well, I'm not in the tradition business :-) but it's fun to do these
+things and even useful in this case.
 
-Well, all anon pages are shared right after fork(), right?  They only
-become private once they've been written to.  I don't have a feel for
-the relative numbers of shared anon vs COWed anon--either in general or
-in the swap cache.
-
-> 
-> > Now, I think I can use this to try to remove anon pages from the swap
-> > cache when they're mlocked.
-
-﻿I suppose I can just go ahead and use this version with my stress load
-and count the times when I could have freed the swap cache entry, but
-didn't because it's mapped in multiple address spaces.  Later ... :)
-
-> > 
-> > > + */
-> > > +int remove_exclusive_swap_page_ref(struct page *page)
-> > > +{
-> > > +	return remove_exclusive_swap_page_count(page, 2 + page_mapped(page));
-> > > +}
-> > > +
-> > > +/*
-> > >   * Free the swap entry like above, but also try to
-> > >   * free the page cache entry if it is the last user.
-> > >   */
-> > > 
-> > > All Rights Reversed
-> 
-> 
-
+Regards, Olaf
