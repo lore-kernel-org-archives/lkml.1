@@ -1,95 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753729AbYEMWi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757648AbYEMWzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753729AbYEMWi4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 18:38:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753738AbYEMWil
+	id S1757648AbYEMWzU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 18:55:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753296AbYEMWzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 18:38:41 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57978 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751848AbYEMWij (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 18:38:39 -0400
-Date: Tue, 13 May 2008 23:27:27 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Greg KH <greg@kroah.com>
-Cc: jgarzik@pobox.com, netdev@vger.kernel.org,
-       Andrew Bird <ajb@spheresystems.co.uk>,
-       Javier Marcet <javier@krausbeck.org>, Filip Aben <f.aben@option.com>,
-       Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
-       Oliver Neukum <oliver@neukum.org>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] HSO: add option hso driver
-Message-ID: <20080513232727.21c74bb2@core>
-In-Reply-To: <20080513215134.GC6139@kroah.com>
-References: <20080513215134.GC6139@kroah.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 13 May 2008 18:55:09 -0400
+Received: from mga14.intel.com ([143.182.124.37]:5047 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752769AbYEMWzH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 18:55:07 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,481,1204531200"; 
+   d="scan'208";a="246383669"
+Subject: Re: [PATCH 1/1] dma:
+From: Dan Williams <dan.j.williams@intel.com>
+To: Christophe Jaillet <christophe.jaillet@wanadoo.fr>
+Cc: linux <linux-kernel@vger.kernel.org>,
+       "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+In-Reply-To: <20080512205052.C1DFB7000085@mwinf2b01.orange.fr>
+References: <20080512205052.C1DFB7000085@mwinf2b01.orange.fr>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 13 May 2008 15:55:06 -0700
+Message-Id: <1210719306.26026.89.camel@dwillia2-linux.ch.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Jeff, please queue this up for 2.6.27 if there are no problems that you
-> can see.  It has been in the linux-next tree for a while, and many users
-> are reporting that it is working for them.
+
+On Mon, 2008-05-12 at 13:50 -0700, Christophe Jaillet wrote:
+> ï»¿From: Christophe Jaillet <christophe.jaillet@wanadoo.fr>
 > 
-> Or if you feel it's ok for 2.6.26, I will not object to that either :)
+> Hi, here is a patch against linux/drivers/dma/iop-adma.c which :
+>        
+> 1) Remove an explicit memset(.., 0, ...) to a variable allocated with
+> kzalloc (i.e. 'dest').
+> 
+> 2) Allocate 'src' with kmalloc instead of kzalloc as all elements of
+> the
+> 'src' buffer are initialized in a 'for(...)' loop just after.
+> 
+> 3) remove useless 'sizeof(u8)', which always returns 1, when computing
+> the
+> size of the memory to be allocated.
+> 
+> 
+> Note: this patch is based on 'linux-2.6.25.tar.bz2'
+> 
+> Signed-off-by: Christophe Jaillet <christophe.jaillet@wanadoo.fr>
 
-Can we get it into 2.6.26 - its a driver for new hardware and the driver
-is going to get a clean up for 2.6.27 anyway.
+Thanks, applied.
 
-Comments below are minor and I don't think blockers
-
-So for the serial side
-
-Acked-by: Alan Cox <alan@redhat.com>
-
-
-> +	termios = serial->tty->termios;
-
-tty is passed why keep using serial->tty (hint: think about parallel
-hangup versus close/open)
-
-> +/* close the requested serial port */
-> +static void hso_serial_close(struct tty_struct *tty, struct file *filp)
-> +{
-> +	struct hso_serial *serial = tty->driver_data;
-> +	u8 usb_gone;
-> +
-> +	D1("Closing serial port");
-> +
-> +	/* sanity check */
-> +	if (tty == NULL || serial == NULL) {
-> +		D1("(tty == NULL || tty->driver_data == NULL)");
-> +		return;
-> +	}
-
-tty cannot be NULL here
-
-
-> +static int hso_serial_write(struct tty_struct *tty, const unsigned char *buf,
-> +			    int count)
-> +{
-> +	struct hso_serial *serial = get_serial_by_tty(tty);
-> +	int space, tx_bytes;
-> +	unsigned long flags;
-> +
-> +	/* sanity check */
-> +	if (serial == NULL) {
-> +		printk(KERN_ERR "%s: tty or tty->driver_data is NULL\n",
-
-Checks one thing printks another 8)
-
-> +	/* the actual setup */
-> +	spin_lock_irqsave(&serial->serial_lock, flags);
-> +	if (serial->open_count)
-> +		_hso_serial_set_termios(tty, old);
-
-(else *tty->termios = *old_termios)
-
+--
+Dan
 
