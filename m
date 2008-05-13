@@ -1,45 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759552AbYEMW3q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760841AbYEMWaM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759552AbYEMW3q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 18:29:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754846AbYEMW3i
+	id S1760841AbYEMWaM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 18:30:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757181AbYEMW34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 18:29:38 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:48035 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751774AbYEMW3h (ORCPT
+	Tue, 13 May 2008 18:29:56 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43166
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1757132AbYEMW3y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 18:29:37 -0400
-Date: Wed, 14 May 2008 00:29:35 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Arnd Hannemann <arnd@arndnet.de>
-cc: Roland <devzero@web.de>, tvrtko@ursulin.net, pernegger@gmail.com,
-       snitzer@gmail.com, zorglub_olsen@hotmail.com,
-       renatoyamane@mandic.com.br, linux-kernel@vger.kernel.org
-Subject: Re: WD doesn`t use disks with Linux - was Re: Re:Western Digital
- GreenPower drives and Linux
-In-Reply-To: <482A062B.3010308@arndnet.de>
-Message-ID: <alpine.LNX.1.10.0805132343470.448@fbirervta.pbzchgretzou.qr>
-References: <003201c8b53c$67ff02d0$6400a8c0@bui.materna.com> <482A062B.3010308@arndnet.de>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 13 May 2008 18:29:54 -0400
+Date: Tue, 13 May 2008 15:29:49 -0700 (PDT)
+Message-Id: <20080513.152949.155579984.davem@davemloft.net>
+To: mathieu.desnoyers@polymtl.ca
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH]: Sparc64 immediate values
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080513123615.GA29334@Krystal>
+References: <20080513.044011.204136790.davem@davemloft.net>
+	<20080513123615.GA29334@Krystal>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Date: Tue, 13 May 2008 08:36:15 -0400
 
-On Tuesday 2008-05-13 23:20, Arnd Hannemann wrote:
->
->Well the answer was probably just from a first level support person so
->nothing one should get excited about.
->Anyway to the high Load_Cycle_Count; if I understood the technology
->correctly the WD GreenPower drives are exactly "Green" because they
+> However, it does not protect from having a thread preempted in the
+> middle of this instruction sequence and therefore to see incoherent
+> values.
 
-I don't find it Green when I have to buy new disks because of
-their detrimental parking technique.
+Yes, that makes such schemes unworkable, how hum...
 
->unload the heads on a plastic ramp (no landing zone!) quite often during
+> Are there non-maskable interrupts on sparc64 ?
 
-ramp or LZ, it's quite a force with which the head is parked.
+Yes, and no.  When the PSTATE_IE bit is cleared in the
+processor state register, no interrupts whatsoever are
+recognized by the processor.  This is off only during
+trap entry/exit sequences, and some other special bits
+of code.
 
+> The one thing we could do to allow such updates without using
+> stop_machine is to create something similar to the read seqlock using
+> immediate values.
+
+Yes I saw such suggestions in the comments of the immediate code,
+you don't have to describe such things all over again.
+
+Doing something so heavy like this in the "fast path" is completely
+pointless in my opinion.
+
+Better to keep brainstorming on a scheme that works without adding any
+instructions to the immediate load sequence.  If you add instructions,
+fetching the instructions themselves become just as expensive, if not
+moreso, than the load we are eliminating.
