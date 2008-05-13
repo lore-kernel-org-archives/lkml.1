@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761491AbYEMUdG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761494AbYEMUiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761491AbYEMUdG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 16:33:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758892AbYEMUcw
+	id S1761494AbYEMUiT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 16:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758578AbYEMUiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 16:32:52 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:5599 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758671AbYEMUcv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 16:32:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
-        b=KflSHIjjbrqV+t5NZ7JGh6cQPp5oAJre67p6eZw91DN8SkMsjP4cfJN8vlZG+TG6XZlqHZ5EiCfNniNGltL1KNBs1VfJhkjZza50h9YQvIWSVuVmZpWT9VP13Gxxkhy0F4Obrzs8jj6EbOs0ehVkLT29Q+COZ40dQtP1+qfIttU=
-Message-ID: <4829FAF0.2040403@gmail.com>
-Date: Tue, 13 May 2008 22:32:48 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+	Tue, 13 May 2008 16:38:06 -0400
+Received: from ns2.suse.de ([195.135.220.15]:44232 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758296AbYEMUiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 16:38:05 -0400
+Date: Tue, 13 May 2008 13:37:05 -0700
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
+Subject: Re: [patch 25/37] sparc: Fix mremap address range validation.
+Message-ID: <20080513203705.GA488@suse.de>
+References: <20080513200453.064446337@mini.kroah.org> <20080513201229.GZ31167@suse.de> <alpine.LFD.1.10.0805131327130.3019@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: sorbica@icplus.com.tw, jesse@icplus.com.tw
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] net: ipg: fix receivemode IPG_RM_RECEIVEMULTICAST{,HASH}
- in ipg_nic_set_multicast_list()
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0805131327130.3019@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The branches are dead code. even when dev->flag IFF_MULTICAST (defined 0x1000)
-is set, dev->flags & IFF_MULTICAST & [boolean] always evaluates to 0.
+On Tue, May 13, 2008 at 01:28:32PM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Tue, 13 May 2008, Greg KH wrote:
+> >
+> > From: David S. Miller <davem@davemloft.net>
+> > 
+> > Just like mmap, we need to validate address ranges regardless
+> > of MAP_FIXED.
+> 
+> Hmm. I don't have this one in my tree. Is it obsoleted by the other 
+> patches I do have, or what? If so, some comment about that would be nice.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-diff --git a/drivers/net/ipg.c b/drivers/net/ipg.c
-index 9b358f6..679a082 100644
---- a/drivers/net/ipg.c
-+++ b/drivers/net/ipg.c
-@@ -577,12 +577,12 @@ static void ipg_nic_set_multicast_list(struct net_device *dev)
- 		/* NIC to be configured in promiscuous mode. */
- 		receivemode = IPG_RM_RECEIVEALLFRAMES;
- 	} else if ((dev->flags & IFF_ALLMULTI) ||
--		   (dev->flags & IFF_MULTICAST &
-+		   ((dev->flags & IFF_MULTICAST) &&
- 		    (dev->mc_count > IPG_MULTICAST_HASHTABLE_SIZE))) {
- 		/* NIC to be configured to receive all multicast
- 		 * frames. */
- 		receivemode |= IPG_RM_RECEIVEMULTICAST;
--	} else if (dev->flags & IFF_MULTICAST & (dev->mc_count > 0)) {
-+	} else if ((dev->flags & IFF_MULTICAST) && (dev->mc_count > 0)) {
- 		/* NIC to be configured to receive selected
- 		 * multicast addresses. */
- 		receivemode |= IPG_RM_RECEIVEMULTICASTHASH;
+Odd, I missed that.  David, did you just forget to send this one?
+
+thanks,
+
+greg k-h
