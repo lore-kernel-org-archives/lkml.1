@@ -1,31 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759916AbYEMNf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760454AbYEMNgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759916AbYEMNf0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 09:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754729AbYEMNfR
+	id S1760454AbYEMNgV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 09:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754741AbYEMNgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 09:35:17 -0400
-Received: from vena.lwn.net ([206.168.112.25]:34393 "EHLO vena.lwn.net"
+	Tue, 13 May 2008 09:36:05 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:38402 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751167AbYEMNfR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 09:35:17 -0400
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] doc: Test-by? 
-From: corbet@lwn.net (Jonathan Corbet)
-In-reply-to: Your message of "Tue, 13 May 2008 13:36:55 +0900."
-             <48291AE7.9050108@jp.fujitsu.com> 
-Date: Tue, 13 May 2008 07:35:15 -0600
-Message-ID: <6814.1210685715@vena.lwn.net>
+	id S1754729AbYEMNgE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 09:36:04 -0400
+Date: Tue, 13 May 2008 17:28:12 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, andi@firstfloor.org,
+       Rik van Riel <riel@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       mpm@selenic.com
+Subject: Re: [patch 18/21] Filesystem: Socket inode defragmentation
+Message-ID: <20080513132810.GA7152@2ka.mipt.ru>
+References: <20080510030831.796641881@sgi.com> <20080510030918.882272887@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080510030918.882272887@sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Commonly used is "Tested-by."
+Hi Christoph.
 
-Funny how many people commented on that text, but nobody caught that.
-I've grabbed the patch and stuck it with a couple of other doc things.
+On Fri, May 09, 2008 at 08:08:49PM -0700, Christoph Lameter (clameter@sgi.com) wrote:
+> Support inode defragmentation for sockets
 
-Thanks,
+Out of curiosity, how can you drop socket inode, since it is always
+attached to socket which is removed automatically when connection is
+closed. Any force of dropping socket inode can only result in connection
+drop, i.e. there are no inodes, which are placed in cache and are not
+yet freed, if there are no attached sockets.
 
-jon
+So question is how does it work for sockets?
+
+-- 
+	Evgeniy Polyakov
