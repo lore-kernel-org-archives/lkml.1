@@ -1,66 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758800AbYEMXSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759315AbYEMXYK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758800AbYEMXSv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 19:18:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754790AbYEMXSk
+	id S1759315AbYEMXYK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 19:24:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756410AbYEMXX5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 19:18:40 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:15821 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752769AbYEMXSj (ORCPT
+	Tue, 13 May 2008 19:23:57 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:27425 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756206AbYEMXX4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 19:18:39 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: 2.6.26-rc1 regression: ISA DMA broken (bisected)
-Date: Tue, 13 May 2008 17:18:39 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Takashi Iwai <tiwai@suse.de>,
-       Glauber Costa <gcosta@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Pete Clements <clem@clem.clem-digital.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       ALSA devel <alsa-devel@alsa-project.org>
-References: <4823AAF2.7070102@keyaccess.nl> <20080513180107.1a3893f1@core> <4829D0E5.8050905@keyaccess.nl>
-In-Reply-To: <4829D0E5.8050905@keyaccess.nl>
+	Tue, 13 May 2008 19:23:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=GgR6PjM24ucC+Stw0LqQsRgXzzfT9tuVClIwmDLD6cDqOx9mOXrs4nkubvTXK4j91PBqWAKnYEl/Q0Vx8YCe99n+J/bebJHCl+4OZT8Cs/WHlZbiyBZ8jH+95bOaV3ngjVkB2oPcAqvdbSfMPJKkvrRAHD2ZTz66BClSM3fM7NA=
+Message-ID: <86802c440805131623v4ecd038djeab9bd9937717de6@mail.gmail.com>
+Date: Tue, 13 May 2008 16:23:55 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jesse Barnes" <jbarnes@virtuousgeek.org>
+Subject: Re: [PATCH] PCI: boot parameter to avoid expansion ROM memory allocation
+Cc: "Gary Hade" <garyhade@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+In-Reply-To: <200805131528.18252.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200805131718.40138.bjorn.helgaas@hp.com>
+References: <20080512205746.GB7401@us.ibm.com>
+	 <20080513210054.GB28815@us.ibm.com>
+	 <86802c440805131411w1e0c661j93ba1a1854f314d6@mail.gmail.com>
+	 <200805131528.18252.jbarnes@virtuousgeek.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 May 2008 11:33:25 am Rene Herman wrote:
-> On 13-05-08 19:01, Alan Cox wrote:
-> > On Tue, 13 May 2008 10:59:32 -0600, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-> >> On Friday 09 May 2008 12:06:55 am Takashi Iwai wrote:
-> >>> Thanks for catching it.  Yeah, the patch looks buggy.  We had an
-> >>> implicit assumption that dev = NULL for ISA devices that require 24bit
-> >>> DMA.
-> >> Naive question #1:  Why don't we have a struct device for these
-> >> ISA devices?  PNP builds a struct device with DMA_24BIT_MASK
-> >> for ISAPNP devices.
-> > 
-> > Because nobody has done the needed work to get all the old ISA drivers
-> > converted. I guess isa_device would actually be a platform_device
-> > wrapper ?
-> 
-> No, isa_device is its own thing, on its own isa_bus (*). It has a struct 
-> device * readily available though...
-> 
-> (*) drivers/base/isa.c, and explanatory changelog at:
-> 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=a5117ba7da37deb09df5eb802dace229b3fb1e9f
+On Tue, May 13, 2008 at 3:28 PM, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> > >  There were some lkml/linux-pci visible discussions back in
+>  > >  November-December of last year where I floated the idea
+>  > >  of making PCI expansion ROM memory non-assignment the default:
+>  > >   http://marc.info/?l=linux-kernel&m=119742188215024&w=2
+>  > >   http://marc.info/?l=linux-kernel&m=119689499508369&w=2
+>  > >  I did not hear any objections so I went ahead and submitted
+>  > >  the change which entered mainline at 2.6.25-rc1 but it was
+>  > >  sternly evicted last week because of a reported regression
+>  > >  that it had caused:
+>  > >   http://marc.info/?l=linux-kernel&m=121029093331908&w=2
+>  > >  Attachments to http://bugs.freedesktop.org/show_bug.cgi?id=15523
+>  > >  indicate that a 2.6.25-rc2 x86_64 kernel was being used.
+>  > >
+>  > >  > can we use pci rom in 64 bit kernel?
+>  > >
+>  > >  Sorry, not sure if I understand this question.  I hope the
+>  > >  above answers it.
+>  >
+>  > ok, i think the driver could reload fw in the option rom to reset the
+>  > controlller in pci card.
+>  > i don't think there is other usage for the option rom after OS loaded,
+>  > except option rom contain other run-time code...
+>
+>  On graphics devices it's used for more than just POSTing (in fact POSTing is
+>  the least of its uses these days).  The ROM often contains tables describing
+>  the specific hardware configuration of a given board, including output
+>  information, extra supported modes, etc.
+>
+>  On other devices, it can be used to store default settings (this is common for
+>  SCSI cards iirc, though I'm not sure how much Linux drivers use this info).
+>
+>
+>  > so could disable them all, and use pci-quirks to enable that for the
+>  > device/driver need it.
+>
+>  Since it's probably only big systems that really need the extra address space,
+>  I'd rather to the opposite:  allocate ROM space by default and let a boot
+>  option avoid it.
 
-Thanks for the nice changelog.
+that boot option will get rid of that ROM BAR for all devices...
+big system could use several graphical cards that need ROM BAR and
+several cards that don't need ROM BAR.
 
-isa_register_driver() currently doesn't set a DMA mask.  Should it?
-
-I only see about 35 dma_alloc_coherent() calls that pass NULL.  I
-guess even those would be a fair amount of work to change, and I
-suppose there would be more that I missed.
-
-Bjorn
+YH
