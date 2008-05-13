@@ -1,24 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758440AbYEMQFO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759532AbYEMQFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758440AbYEMQFO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 12:05:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755802AbYEMQFA
+	id S1759532AbYEMQFi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 12:05:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758167AbYEMQFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 12:05:00 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56033 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755085AbYEMQE6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 12:04:58 -0400
-Date: Tue, 13 May 2008 09:04:27 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hirofumi Nakagawa <hnakagawa@miraclelinux.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 1/1] MAZE: Mazed processes monitor
-Message-Id: <20080513090427.7de762dc.akpm@linux-foundation.org>
-In-Reply-To: <48297FD4.1060508@miraclelinux.com>
-References: <48297FD4.1060508@miraclelinux.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Tue, 13 May 2008 12:05:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56970 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757605AbYEMQFJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 12:05:09 -0400
+Date: Tue, 13 May 2008 12:04:17 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: lee.schermerhorn@hp.com, akpm@linux-foundation.org,
+       kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] take pageout refcount into account for
+ remove_exclusive_swap_page
+Message-ID: <20080513120417.0833cec1@cuia.bos.redhat.com>
+In-Reply-To: <482990FC.3020303@mxp.nes.nec.co.jp>
+References: <20080428181835.502876582@redhat.com>
+	<20080428181852.620969450@redhat.com>
+	<4828283C.4000803@mxp.nes.nec.co.jp>
+	<20080512093307.2ace3096@bree.surriel.com>
+	<482990FC.3020303@mxp.nes.nec.co.jp>
+Organization: Red Hat, Inc
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -26,475 +32,118 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 May 2008 20:47:32 +0900 Hirofumi Nakagawa <hnakagawa@miraclelinux.com> wrote:
+The pageout code takes a reference count to the page, which means
+that remove_exclusive_swap_page (when called from the pageout code)
+needs to take that extra refcount into account for mapped pages.
 
-> This patch for linux-2.6.25-mm1 that is tested on x86_64 hardware.
-> 
-> ...
->
-> +static struct proc_dir_entry *maze_proc_dir;
-> +
-> +static int maze_initialized;
-> +
-> +static struct list_head maze_list;
-> +static spinlock_t maze_list_lock;
-> +
-> +static int maze_timer_interval = 10;
-> +
-> +DEFINE_PER_CPU(struct list_head, maze_queue);
-> +DEFINE_PER_CPU(spinlock_t, maze_queue_lock);
-> +
-> +DEFINE_PER_CPU(struct timer_list, maze_timer);
+Introduces a remove_exclusive_swap_page_ref function to avoid
+exposing too much magic to the rest of the VM.
 
-These three can be static?
+Signed-off-by: Rik van Riel <riel@redhat.com>
+Debugged-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 
-Please document the data structures here at their definition sites with
-code comments: what they are used for, what their locking rules are. 
-Also, a per-cpu spinlock is somewhat unusual and a few words describing
-why it is needed would be useful.
+---
+Daisuke: thank you for pointing out the problem.  Does this patch look like
+a reasonable fix to you?
 
-> +static inline void reset_maze_count(struct maze_context *context)
-> +{
-> +	context->reset_utime = context->task->utime;
-> +	context->reset_stime = context->task->stime;
-> +	context->flags = 0;
-> +}
-> +
-> +static inline cputime_t get_maze_count(struct maze_context *context)
-> +{
-> +	return (context->task->utime - context->reset_utime) +
-> +		(context->task->stime - context->reset_stime);
-> +}
-> +
-> +/*
-> + * This function is called start_kernel()
-> + */
-> +void maze_init_early(void)
-> +{
-> +	init_task.maze_context = NULL;
-> +}
-> +
-> +/*
-> + * This function is called do_exit()
-> + */
-> +void maze_exit(struct task_struct *task)
-> +{
-> +	unsigned long flags;
-> +
-> +	task_lock(task);
-> +	if (task->maze_context) {
-> +		spin_lock_irqsave(&per_cpu(maze_queue_lock,
-> +								   task->maze_context->enqueue_cpu), flags);
+Andrew: this patch is incremental to my patch
+	"[PATCH -mm 05/15] free swap space on swap-in/activation"
 
-There's a moderate amount of whitespace brokenness in here. 
-scripts/checkpatch.pl detects some of it.
 
-> +		if (task->maze_context->enqueue)
-> +			list_del(&task->maze_context->queue);
-> +		spin_unlock_irqrestore(&per_cpu(maze_queue_lock,
-> +										task->maze_context->enqueue_cpu), flags);
-> +
-> +		spin_lock(&maze_list_lock);
-> +		list_del(&task->maze_context->list);
-> +		spin_unlock(&maze_list_lock);
-> +
-> +		kfree(task->maze_context);
-> +		task->maze_context = NULL;
-> +	}
-> +	task_unlock(task);
-> +}
->
-> ...
->
-> +/*
-> + * Must be called under task_lock().
-> + */
-> +static inline void enqueue(struct maze_context *context)
-> +{
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&__get_cpu_var(maze_queue_lock), flags);
-> +	if (!context->enqueue) {
-> +		list_add(&context->queue, &__get_cpu_var(maze_queue));
-> +		context->enqueue_cpu = smp_processor_id();
-> +		context->enqueue = 1;
-> +	}
-> +	spin_unlock_irqrestore(&__get_cpu_var(maze_queue_lock), flags);
-> +}
+Index: linux-2.6.25-mm1/mm/vmscan.c
+===================================================================
+--- linux-2.6.25-mm1.orig/mm/vmscan.c	2008-05-13 11:59:34.000000000 -0400
++++ linux-2.6.25-mm1/mm/vmscan.c	2008-05-13 11:54:03.000000000 -0400
+@@ -621,7 +621,7 @@ free_it:
+ activate_locked:
+ 		/* Not a candidate for swapping, so reclaim swap space. */
+ 		if (PageSwapCache(page) && vm_swap_full())
+-			remove_exclusive_swap_page(page);
++			remove_exclusive_swap_page_ref(page);
+ 		SetPageActive(page);
+ 		pgactivate++;
+ keep_locked:
+Index: linux-2.6.25-mm1/mm/swap.c
+===================================================================
+--- linux-2.6.25-mm1.orig/mm/swap.c	2008-05-13 11:59:34.000000000 -0400
++++ linux-2.6.25-mm1/mm/swap.c	2008-05-13 11:53:47.000000000 -0400
+@@ -455,7 +455,7 @@ void pagevec_swap_free(struct pagevec *p
+ 
+ 		if (PageSwapCache(page) && !TestSetPageLocked(page)) {
+ 			if (PageSwapCache(page))
+-				remove_exclusive_swap_page(page);
++				remove_exclusive_swap_page_ref(page);
+ 			unlock_page(page);
+ 		}
+ 	}
+Index: linux-2.6.25-mm1/include/linux/swap.h
+===================================================================
+--- linux-2.6.25-mm1.orig/include/linux/swap.h	2008-05-13 11:20:46.000000000 -0400
++++ linux-2.6.25-mm1/include/linux/swap.h	2008-05-13 11:47:31.000000000 -0400
+@@ -266,6 +266,7 @@ extern sector_t swapdev_block(int, pgoff
+ extern struct swap_info_struct *get_swap_info_struct(unsigned);
+ extern int can_share_swap_page(struct page *);
+ extern int remove_exclusive_swap_page(struct page *);
++extern int remove_exclusive_swap_page_ref(struct page *);
+ struct backing_dev_info;
+ 
+ extern spinlock_t swap_lock;
+Index: linux-2.6.25-mm1/mm/swapfile.c
+===================================================================
+--- linux-2.6.25-mm1.orig/mm/swapfile.c	2008-04-22 10:33:45.000000000 -0400
++++ linux-2.6.25-mm1/mm/swapfile.c	2008-05-13 11:53:32.000000000 -0400
+@@ -343,7 +343,7 @@ int can_share_swap_page(struct page *pag
+  * Work out if there are any other processes sharing this
+  * swap cache page. Free it if you can. Return success.
+  */
+-int remove_exclusive_swap_page(struct page *page)
++static int remove_exclusive_swap_page_count(struct page *page, int count)
+ {
+ 	int retval;
+ 	struct swap_info_struct * p;
+@@ -356,7 +356,7 @@ int remove_exclusive_swap_page(struct pa
+ 		return 0;
+ 	if (PageWriteback(page))
+ 		return 0;
+-	if (page_count(page) != 2) /* 2: us + cache */
++	if (page_count(page) != count) /* 2: us + cache */
+ 		return 0;
+ 
+ 	entry.val = page_private(page);
+@@ -369,7 +369,7 @@ int remove_exclusive_swap_page(struct pa
+ 	if (p->swap_map[swp_offset(entry)] == 1) {
+ 		/* Recheck the page count with the swapcache lock held.. */
+ 		write_lock_irq(&swapper_space.tree_lock);
+-		if ((page_count(page) == 2) && !PageWriteback(page)) {
++		if ((page_count(page) == count) && !PageWriteback(page)) {
+ 			__delete_from_swap_cache(page);
+ 			SetPageDirty(page);
+ 			retval = 1;
+@@ -387,6 +387,25 @@ int remove_exclusive_swap_page(struct pa
+ }
+ 
+ /*
++ * Most of the time the page should have two references: one for the
++ * process and one for the swap cache.
++ */
++int remove_exclusive_swap_page(struct page *page)
++{
++	return remove_exclusive_swap_page_count(page, 2);
++}
++
++/*
++ * The pageout code holds an extra reference to the page.  That raises
++ * the reference count to test for to 2 for a page that is only in the
++ * swap cache and 3 for a page that is mapped by a process.
++ */
++int remove_exclusive_swap_page_ref(struct page *page)
++{
++	return remove_exclusive_swap_page_count(page, 2 + page_mapped(page));
++}
++
++/*
+  * Free the swap entry like above, but also try to
+  * free the page cache entry if it is the last user.
+  */
 
-The code uses `inline' too much, and is probably slower as a result. 
-Most of all of them should be removed, please.
-
-> +static void sched_in_event(struct preempt_notifier *notifier, int cpu)
-> +{
-> +	task_lock(current);
-> +	if (current->maze_context) {
-> +		if (current->state != TASK_RUNNING)
-> +			reset_maze_count(current->maze_context);
-> +		enqueue(current->maze_context);
-> +	}
-> +	task_unlock(current);
-> +}
-
-Please update the description of task_lock() in sched.h when adding new
-rules to it.  I assume that it protects task_struct.maze_context.
-
-I'm a little surprised to see a global lock being taken under
-task_lock(): generally I think of task_lock() as a low-level thing
-which protects only task internals.  I assume this code was runtime
-tested with lockdep enabled?
-
-But that doesn't mean that the chosen lock ranking is desirable.  From
-a quick look the locking does seem logical.
-
-> +static void sched_out_event(struct preempt_notifier *notifier,
-> +							struct task_struct *next)
-> +{
-> +	task_lock(next);
-> +	if (next->maze_context)
-> +		enqueue(next->maze_context);
-> +	task_unlock(next);
-> +}
-> +
-> +static struct preempt_ops preempt_ops = {
-> +	.sched_in = sched_in_event,
-> +	.sched_out = sched_out_event,
-> +};
-> +
-> +/*
-> + * This function is called copy_process()
-> + */
-
-Some additional description here would be useful.  What does the function do?
-
-> +void maze_fork(struct task_struct *task)
-> +{
-> +	task->maze_context = NULL;
-> +
-> +	if (!current->maze_context)
-> +		return;
-> +
-> +	task_lock(task);
-> +
-> +	task->maze_context = kzalloc(sizeof(struct maze_context), GFP_ATOMIC);
-
-GFP_ATOMIC is weak, and can fail.  With some reorganisation this could
-be moved outside the lock and switched to GFP_KERNEL.
-
-> +	if (unlikely(!task->maze_context)) {
-> +		ERRPRINT("fail to alloc maze_context.\n");
-> +		goto task_unlock;
-> +	}
-> +	task->maze_context->task = task;
-> +	task->maze_context->pid = task->pid;
-> +
-> +	copy_limit_and_signal(task->maze_context, current->maze_context);
-> +	preempt_notifier_init(&task->maze_context->notifier, &preempt_ops);
-> +
-> +	spin_lock(&maze_list_lock);
-> +	list_add(&task->maze_context->list, &maze_list);
-> +	spin_unlock(&maze_list_lock);
-> +
-> +task_unlock:
-> +	task_unlock(task);
-> +}
->
-> ...
->
-> +static inline void set_preempt_notifir(struct maze_context *context)
-
-"notifier"
-
-> +{
-> +	if (!atomic_xchg(&context->registered_notifier, 1))
-> +		preempt_notifier_register(&context->notifier);
-> +}
-> +
-> +static int add_maze_context(struct maze_context *context)
-> +{
-> +	struct task_struct *task;
-> +	int ret = 0;
-> +
-> +	rcu_read_lock();
-> +
-> +	task = find_task_by_pid(context->pid);
-> +	if (unlikely(!task))
-> +		goto read_unlock;
-> +
-> +	task_lock(task);
-> +
-> +	if (!task->maze_context) {
-> +		task->maze_context = context;
-> +		context->task = task;
-> +
-> +		spin_lock(&maze_list_lock);
-> +		list_add(&context->list, &maze_list);
-> +		spin_unlock(&maze_list_lock);
-> +
-> +		reset_maze_count(context);
-> +
-> +		preempt_notifier_init(&context->notifier, &preempt_ops);
-> +		if (current == task)
-> +		   set_preempt_notifir(context);
-
-Please use only hard tabs for code indenting.
-
-> +	} else {
-> +		copy_limit_and_signal(task->maze_context, context);
-> +		ret = 1;
-> +	}
-> +
-> +	task_unlock(task);
-> +read_unlock:
-> +	rcu_read_unlock();
-> +	return ret;
-> +}
-> +
-> +static int build_maze_context(const char *read_line, struct maze_context *context)
-> +{
-> +	unsigned long soft_limit, hard_limit;
-> +	int soft_signal, hard_signal;
-> +	int pid, res;
-> +
-> +	res = sscanf(read_line, "%d %ld %ld %d %d", &pid, &soft_limit,
-> +				 &hard_limit, &soft_signal, &hard_signal);
-> +
-> +	if (res != 5 || pid < 0 ||
-> +		soft_limit < 0 || hard_limit < 0 ||
-> +		soft_signal < 0 || hard_signal < 0)
-> +		return -EINVAL;
-> +
-> +	context->pid = pid;
-> +	context->soft_limit = soft_limit;
-> +	context->hard_limit = hard_limit;
-> +	context->soft_signal = soft_signal;
-> +	context->hard_signal = hard_signal;
-> +
-> +	return 0;
-> +}
-
-pids are not unique in a containerised system.  What are the
-implications of this?
-
-> +static void timer_handler(unsigned long data);
-> +
-> +/*
-> + * Setup softirq timer
-> + */
-> +static void continue_timer(int cpu)
-> +{
-> +	struct timer_list *t;
-> +
-> +	t = &per_cpu(maze_timer, cpu);
-> +	t->function = timer_handler;
-> +	t->expires = jiffies + maze_timer_interval;
-> +	init_timer(t);
-
-setup_timer()
-
-> +	add_timer_on(t, cpu);
-> +}
->
-> ...
->
-> +static void timer_handler(unsigned long data)
-> +{
-> +	struct maze_context *context, *next;
-> +
-> +	spin_lock(&__get_cpu_var(maze_queue_lock));
-> +
-> +	if (current->maze_context) {
-> +		set_preempt_notifir(current->maze_context);
-> +		if (!current->maze_context->enqueue)
-> +			check_limit(current->maze_context);
-> +	}
-> +
-> +	if (!list_empty(&__get_cpu_var(maze_queue))) {
-> +		list_for_each_entry_safe (context, next,
-> +								  &__get_cpu_var(maze_queue), queue) {
-> +			check_limit(context);
-> +			list_del(&context->queue);
-> +			context->enqueue = 0;
-> +		}
-> +	}
-> +
-> +	spin_unlock(&__get_cpu_var(maze_queue_lock));
-> +
-> +	continue_timer(smp_processor_id());
-> +}
-
-It is odd that the timer runs every ten jiffies.  Because jiffies can
-alter by a factor of ten, depending upon Kconfig settings and
-architecture, etc.
-
-Having numerous timers expire once per ten jiffies will be a power
-consumption problem for some people.  Can this be fixed?
-
-There's not really enough information in either code comments or the
-changelog to permit me to understand what this timer is here for.
-
-> +
-> +static int maze_entries_file_show(struct seq_file *seq, void *nouse)
-> +{
-> +	struct maze_context *context;
-> +
-> +	spin_lock(&maze_list_lock);
-> +
-> +	list_for_each_entry(context, &maze_list, list) {
-> +		seq_printf(seq, "pid:%5d   ", context->pid);
-> +		seq_printf(seq, "count:%6ld  ", get_maze_count(context));
-> +		seq_printf(seq, "soft limit:%6ld  ", context->soft_limit);
-> +		seq_printf(seq, "hard limit:%6ld  ", context->hard_limit);
-> +		seq_printf(seq, "soft signal:%2d  ", context->soft_signal);
-> +		seq_printf(seq, "hard signal:%2d  ", context->hard_signal);
-> +		seq_printf(seq, "\n");
-> +	}
-> +
-> +	spin_unlock(&maze_list_lock);
-> +
-> +	return 0;
-> +}
->
-> ...
->
-> +/*
-> + * Write operation of /proc/maze/entries
-> + */
-> +static ssize_t maze_entries_file_write(struct file *file,
-> +					const char __user *buffer,
-> +					size_t count, loff_t *ppos)
-> +{
-> +	struct maze_context *context;
-> +	char read_line[32];
-> +	int ret;
-> +
-> +	if (!capable(CAP_SYS_ADMIN))
-> +		return -EPERM;
-> +
-> +	if (count > sizeof(read_line) - 1)
-> +		return -EINVAL;
-> +
-> +	if (copy_from_user(read_line, buffer, count))
-> +		return -EFAULT;
-> +
-> +	read_line[count] = '\0';
-> +
-> +	context = kzalloc(sizeof(struct maze_context), GFP_ATOMIC);
-
-Use GFP_KERNEL.
-
-> +	if (unlikely(!context)) {
-> +		ERRPRINT("fail to alloc maze_context.\n");
-> +		return -ENOMEM;
-> +	}
-> +
-> +	ret = build_maze_context(read_line, context);
-> +	if (ret) {
-> +		kfree(context);
-> +		return ret;
-> +	}
-> +
-> +	if (add_maze_context(context))
-> +		kfree(context);
-> +
-> +	return count;
-> +}
-
-It looks like this can leak the memory at *context?
-
-> +static struct file_operations maze_entries_file_ops = {
-> +	.owner	 = THIS_MODULE,
-> +	.open	 = maze_entries_file_open,
-> +	.read	 = seq_read,
-> +	.write   = maze_entries_file_write,
-> +	.llseek	 = seq_lseek,
-> +	.release = maze_entries_file_release,
-> +};
-
-Please document newly-added /proc files in Documentation/filesystems/proc.txt
-
-> +/*
-> + * Creating /proc/maze/
-> + */
-> +static inline int init_dir(void)
-> +{
-> +	maze_proc_dir =
-> +		create_proc_entry("maze",
-> +						  S_IFDIR | S_IRUGO | S_IXUGO,
-> +						  NULL);
-> +
-> +	if (!maze_proc_dir)
-> +		panic("fail to create /proc/maze\n");
-> +
-> +	return 0;
-> +}
-
-uninline, fix whitespace...
-
-> +
-> +/*
-> + * Creating /proc/maze/entries
-> + */
-> +static inline int init_entries(void)
-> +{
-> +	struct proc_dir_entry *p;
-> +
-> +	p = create_proc_entry("entries", S_IRUGO, maze_proc_dir);
-> +	if (p == NULL)
-> +		panic("fail to create /proc/maze/entries\n");
-> +
-> +	p->proc_fops = &maze_entries_file_ops;
-> +
-> +	return 0;
-> +}
->
-> ...
->
-> +static int __init maze_init(void)
-> +{
-> +	int cpu;
-> +
-> +	printk(KERN_INFO "Maze: Initializing\n");
-> +	maze_initialized = 1;
-> +	init_proc();
-> +
-> +	spin_lock_init(&maze_list_lock);
-
-Remove this, use DEFINE_SPINLOCK().
-
-> +	INIT_LIST_HEAD(&maze_list);
-
-Remove this, use LIST_HEAD().
-
-> +	for_each_online_cpu(cpu)
-> +		init_cpu(cpu);
-> +
-> +	return 0;
-> +}
-> +late_initcall(maze_init);
-
-I am unable to tell from the implementation why late_initcall() was
-chosen instead of plain old __initcall() (or module_innit()).  Please
-add a comment.
-
-> --- linux-2.6.25-mm1-maze.orig/kernel/sched.c	2008-05-13 17:40:43.000000000 +0900
-> +++ linux-2.6.25-mm1-maze/kernel/sched.c	2008-05-13 17:52:23.000000000 +0900
-> @@ -68,6 +68,7 @@
->  #include <linux/hrtimer.h>
->  #include <linux/tick.h>
->  #include <linux/ftrace.h>
-> +#include <linux/maze.h>
-> 
->  #include <asm/tlb.h>
->  #include <asm/irq_regs.h>
-> @@ -5157,6 +5158,8 @@ asmlinkage long sys_sched_yield(void)
->  	_raw_spin_unlock(&rq->lock);
->  	preempt_enable_no_resched();
-> 
-> +	maze_sched_yield(current);
-> +
->  	schedule();
-> 
->  	return 0;
-> 
-> 
+All Rights Reversed
