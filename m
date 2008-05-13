@@ -1,85 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760579AbYEMUDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760724AbYEMUET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760579AbYEMUDw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 16:03:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759602AbYEMUCz
+	id S1760724AbYEMUET (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 16:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759359AbYEMUEA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 16:02:55 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:61925 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758222AbYEMUCx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 16:02:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=fxfIXZUcJ5cIfym/BEWCXon9OqtSO5lYAeHoCoenP6est4ej7QPrzAXuKNcl8a/LpZB1hddHjSfGLvpwRMLfhbpXFoM5rts0G5FmWcj1PN4L9M9Bm5LjyDQP/2chdOGF6EuOiOeBptnEn8icnMsrgHaQ7WYfoN5x8Z4thgV+pc4=
-From: Abdel Benamrouche <draconux@gmail.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
-       Abdel Benamrouche <draconux@gmail.com>
-Subject: [PATCH 2/2] /block/ioctl.c and /fs/partition/check.c
-Date: Tue, 13 May 2008 22:02:45 +0200
-Message-Id: <1210708965-12220-3-git-send-email-draconux@gmail.com>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <>
-References: <>
+	Tue, 13 May 2008 16:04:00 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:60344 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759602AbYEMUD7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 16:03:59 -0400
+Date: Tue, 13 May 2008 23:02:26 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [git pull] x86 fixes
+Message-ID: <20080513200226.GB14569@cs181133002.pp.htv.fi>
+References: <20080513192706.GA13677@elte.hu> <20080513194018.GA14569@cs181133002.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080513194018.GA14569@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-check value returned by add_partion()
+On Tue, May 13, 2008 at 10:40:18PM +0300, Adrian Bunk wrote:
+> On Tue, May 13, 2008 at 09:27:06PM +0200, Ingo Molnar wrote:
+>...
+> > --- a/arch/x86/kernel/x8664_ksyms_64.c
+> > +++ b/arch/x86/kernel/x8664_ksyms_64.c
+> > @@ -2,6 +2,7 @@
+> >     All C exports should go in the respective C files. */
+> >  
+> >  #include <linux/module.h>
+> > +#include <net/checksum.h>
+> >  #include <linux/smp.h>
+> >  
+> >  #include <asm/processor.h>
+> > @@ -29,6 +30,8 @@ EXPORT_SYMBOL(__copy_from_user_inatomic);
+> >  EXPORT_SYMBOL(copy_page);
+> >  EXPORT_SYMBOL(clear_page);
+> >  
+> > +EXPORT_SYMBOL(csum_partial);
+> > +
+> >  /*
+> >   * Export string functions. We normally rely on gcc builtin for most of these,
+> >   * but gcc sometimes decides not to inline them.
+> > diff --git a/arch/x86/lib/csum-partial_64.c b/arch/x86/lib/csum-partial_64.c
+> > index bc503f5..bf51144 100644
+> > --- a/arch/x86/lib/csum-partial_64.c
+> > +++ b/arch/x86/lib/csum-partial_64.c
+> > @@ -136,8 +136,6 @@ __wsum csum_partial(const void *buff, int len, __wsum sum)
+> >  						(__force u32)sum);
+> >  }
+> >  
+> > -EXPORT_SYMBOL(csum_partial);
+> > -
+> >  /*
+> >   * this routine is used for miscellaneous IP-like checksums, mainly
+> >   * in icmp.c
+> >...
+> 
+> Wouldn't the better solution be to move csum-partial_64.c from lib-y to 
+> obj-y instead?
 
-Signed-off-by: Abdel Benamrouche <draconux@gmail.com>
----
- block/ioctl.c         |    5 +++--
- fs/partitions/check.c |    8 +++++++-
- 2 files changed, 10 insertions(+), 3 deletions(-)
+BTW: The usage of csum_partial() in reiserfs you try to work around here 
+     is actually broken, so the best fix would be to fix reiserfs.
 
-diff --git a/block/ioctl.c b/block/ioctl.c
-index 52d6385..77185e5 100644
---- a/block/ioctl.c
-+++ b/block/ioctl.c
-@@ -17,6 +17,7 @@ static int blkpg_ioctl(struct block_device *bdev, struct blkpg_ioctl_arg __user
- 	long long start, length;
- 	int part;
- 	int i;
-+	int err;
- 
- 	if (!capable(CAP_SYS_ADMIN))
- 		return -EACCES;
-@@ -61,9 +62,9 @@ static int blkpg_ioctl(struct block_device *bdev, struct blkpg_ioctl_arg __user
- 				}
- 			}
- 			/* all seems OK */
--			add_partition(disk, part, start, length, ADDPART_FLAG_NONE);
-+			err = add_partition(disk, part, start, length, ADDPART_FLAG_NONE);
- 			mutex_unlock(&bdev->bd_mutex);
--			return 0;
-+			return err;
- 		case BLKPG_DEL_PARTITION:
- 			if (!disk->part[part-1])
- 				return -ENXIO;
-diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-index a1396a9..94f4e3c 100644
---- a/fs/partitions/check.c
-+++ b/fs/partitions/check.c
-@@ -500,8 +500,14 @@ int rescan_partitions(struct gendisk *disk, struct block_device *bdev)
- 		if (from + size > get_capacity(disk)) {
- 			printk(" %s: p%d exceeds device capacity\n",
- 				disk->disk_name, p);
-+			continue;
-+		}
-+		res = add_partition(disk, p, from, size, state->parts[p].flags);
-+		if (res) {
-+			printk(" %s: p%d could not be added. got error %d\n",
-+				disk->disk_name, p, -res);
-+			continue;
- 		}
--		add_partition(disk, p, from, size, state->parts[p].flags);
- #ifdef CONFIG_BLK_DEV_MD
- 		if (state->parts[p].flags & ADDPART_FLAG_RAID)
- 			md_autodetect_dev(bdev->bd_dev+p);
+cu
+Adrian
+
 -- 
-1.5.4.3
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
