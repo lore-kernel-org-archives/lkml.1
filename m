@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757330AbYELXt5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756948AbYEMAEP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757330AbYELXt5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 19:49:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755625AbYELXtm
+	id S1756948AbYEMAEP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 20:04:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756031AbYEMADy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 19:49:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45894 "EHLO
+	Mon, 12 May 2008 20:03:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41492 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756908AbYELXti (ORCPT
+	by vger.kernel.org with ESMTP id S1756009AbYEMADx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 19:49:38 -0400
-Date: Mon, 12 May 2008 16:48:33 -0700
+	Mon, 12 May 2008 20:03:53 -0400
+Date: Mon, 12 May 2008 17:02:54 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Balaji Rao <balajirrao@gmail.com>
-Cc: dhaval@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, menage@google.com, balbir@in.ibm.com,
-       vatsa@linux.vnet.ibm.com, a.p.zijlstra@chello.nl, dada1@cosmosbay.com
-Subject: Re: [RFC][-mm] Simple stats for cpu resource controller v4
-Message-Id: <20080512164833.8354abeb.akpm@linux-foundation.org>
-In-Reply-To: <200805120148.37856.balajirrao@gmail.com>
-References: <200804052339.46632.balajirrao@gmail.com>
-	<200805030526.46750.balajirrao@gmail.com>
-	<20080502171938.bcb27121.akpm@linux-foundation.org>
-	<200805120148.37856.balajirrao@gmail.com>
+To: Tiger Yang <tiger.yang@oracle.com>
+Cc: linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andreas Gruenbacher <agruen@suse.de>,
+       stable@kernel.org
+Subject: Re: [PATCH] ext3/4: fix uninitialized bs in
+ ext3/4_xattr_set_handle()
+Message-Id: <20080512170254.f79fe869.akpm@linux-foundation.org>
+In-Reply-To: <4827B878.50903@oracle.com>
+References: <4827B878.50903@oracle.com>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -31,55 +29,43 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 May 2008 01:48:37 +0530
-Balaji Rao <balajirrao@gmail.com> wrote:
+On Mon, 12 May 2008 11:24:40 +0800
+Tiger Yang <tiger.yang@oracle.com> wrote:
 
-> Hi Andrew,
+> I met a bug when I try to replace a xattr entry in ibody with a big size 
+> value. But in ibody there has no space for the new value. So it should 
+> set new xattr entry in block and remove the old xattr entry in ibody.
 > 
-> Here's a version that uses percpu_counters and which actually works. The 
-> only evil it contains is the check, 
+> Best regards,
+> tiger
 > 
-> 	if (percpu_counter_ready) {
-> 		..
-> 	}
+> 
+> [xattr.patch  text/x-patch (1.3KB)]
+> This fix the uninitialized bs when we try to replace a xattr entry in ibody with the new value which require more than free space.
+> 
+> Signed-off-by: Tiger Yang <tiger.yang@oracle.com>
+> 
+> diff --git a/fs/ext3/xattr.c b/fs/ext3/xattr.c
+> index a6ea4d6..e1af9bd 100644
+> --- a/fs/ext3/xattr.c
+> +++ b/fs/ext3/xattr.c
+> @@ -1000,6 +1000,11 @@ ext3_xattr_set_handle(handle_t *handle, struct inode *inode, int name_index,
+>  			i.value = NULL;
+>  			error = ext3_xattr_block_set(handle, inode, &i, &bs);
+>  		} else if (error == -ENOSPC) {
+> +			if (EXT3_I(inode)->i_file_acl && !bs.s.base) {
+> +				error = ext3_xattr_block_find(inode, &i, &bs);
+> +				if (error)
+> +					goto cleanup;
+> +			}
+>  			error = ext3_xattr_block_set(handle, inode, &i, &bs);
+>  			if (error)
+>  				goto cleanup;
 
-There's no instance of "percpu_counter_ready" in the patch so I'm a bit
-stumped.
+That sounds fairly bad.
 
-> @@ -3837,6 +3858,16 @@ void account_user_time(struct task_struct *p, cputime_t cputime)
->  		cpustat->nice = cputime64_add(cpustat->nice, tmp);
->  	else
->  		cpustat->user = cputime64_add(cpustat->user, tmp);
-> +
-> +       /* Charge the task's group */
-> +#ifdef CONFIG_CGROUP_SCHED
-> +	{
-> +		struct task_group *tg;
-> +		tg = task_group(p);
-> +		__cpu_cgroup_stat_add(tg->stat, CPU_CGROUP_STAT_UTIME,
-> +				cputime_to_msecs(cputime));
-> +	}
-> +#endif
->  }
->  
->  /*
-> @@ -3892,8 +3923,17 @@ void account_system_time(struct task_struct *p, int hardirq_offset,
->  		cpustat->irq = cputime64_add(cpustat->irq, tmp);
->  	else if (softirq_count())
->  		cpustat->softirq = cputime64_add(cpustat->softirq, tmp);
-> -	else if (p != rq->idle)
-> +	else if (p != rq->idle) {
->  		cpustat->system = cputime64_add(cpustat->system, tmp);
-> +#ifdef CONFIG_CGROUP_SCHED
-> +		{
-> +			struct task_group *tg;
-> +			tg = task_group(p);
-> +			__cpu_cgroup_stat_add(tg->stat, CPU_CGROUP_STAT_STIME,
-> +					cputime_to_msecs(cputime));
-> +		}
-> +	}
-> +#endif
+What are the consequences of this bug, when someone hits it?
 
-I'd suggest that the above be turned into calls to a helper function
-which is a no-op if !CONFIG_CGROUP_SCHED.
+It appears that we should backport this fix into 2.6.25.x (and perhaps
+earlier).  What do you think?
 
