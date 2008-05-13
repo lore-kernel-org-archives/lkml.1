@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758562AbYEMPCR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757555AbYEMPHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758562AbYEMPCR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 11:02:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754158AbYEMPCA
+	id S1757555AbYEMPHi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 11:07:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753342AbYEMPHb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 11:02:00 -0400
-Received: from lazybastard.de ([212.112.238.170]:42388 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751747AbYEMPB7 (ORCPT
+	Tue, 13 May 2008 11:07:31 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:50267 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752277AbYEMPHa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 11:01:59 -0400
-Date: Tue, 13 May 2008 17:01:43 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: linux-mtd@lists.infradead.org, Bryan Wu <cooloney@kernel.org>,
-       dwmw2@infradead.org, will.newton@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] [MTD/MAPS] Blackfin Async Flash Maps: Handle the case where flash memory and ethernet mac/phy are mapped onto the same async bank
-Message-ID: <20080513150143.GA18026@logfs.org>
-References: <1210653525-19437-1-git-send-email-cooloney@kernel.org> <20080513080727.GA15795@logfs.org> <8bd0f97a0805130542x46f5e7fejf1347f1c71f567fb@mail.gmail.com>
+	Tue, 13 May 2008 11:07:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=SVzrJPd/TlNeG5I1m3x6+aDaGj8U/eRUdeFjhjyHv9FNt4JO0bIBPMogTv/uJI4wW+GhiQeBtBh6EEG0mMnfjUH+kAfj5alFrWi9nmI3CQfU7sk1Qjkw85yflLa3sdeugGCsL4prUINCoJRlQ6OONJMcWo6ih8IMuge8EQ35FpM=
+Message-ID: <386072610805130807l3e3943e1w24c38b640ab331a6@mail.gmail.com>
+Date: Tue, 13 May 2008 23:07:16 +0800
+From: "Bryan Wu" <cooloney@kernel.org>
+To: "Cai, Cliff" <Cliff.Cai@analog.com>, "Bryan Wu" <cooloney@kernel.org>,
+       liam.girdwood@wolfsonmicro.com, linux-kernel@vger.kernel.org,
+       alsa-devel@alsa-project.org
+Subject: Re: [PATCH 1/1] [ASOC]: AD1980 audio codec ASOC driver
+In-Reply-To: <20080513140132.GG21292@sirena.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <8bd0f97a0805130542x46f5e7fejf1347f1c71f567fb@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <1210589112-12208-1-git-send-email-cooloney@kernel.org>
+	 <20080512115416.GB23216@sirena.org.uk>
+	 <0F1B54C89D5F954D8535DB252AF412FA01F2EF2C@chinexm1.ad.analog.com>
+	 <20080513140132.GG21292@sirena.org.uk>
+X-Google-Sender-Auth: 100287a4112763c9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 May 2008 08:42:08 -0400, Mike Frysinger wrote:
-> On Tue, May 13, 2008 at 4:07 AM, Jörn Engel wrote:
-> > On Tue, 13 May 2008 12:38:45 +0800, Bryan Wu wrote:
-> >  >
-> >  > +#define pr_devinit(fmt, args...) ({ static const __devinitdata char __fmt[] = fmt; printk(__fmt, ## args); })
-> >
-> >  Is this still needed?
-> 
-> yes
+On Tue, May 13, 2008 at 10:01 PM, Mark Brown
+<broonie@opensource.wolfsonmicro.com> wrote:
+> On Tue, May 13, 2008 at 11:00:58AM +0800, Cai, Cliff wrote:
+>
+>  >  ok,we will implement these two functions later.
+>
+>  So they can be removed for now?
+>
+>  What's the current status of merging the Blackfin ASoC support?
 
-Can you elaborate a bit?
+We plan to cleanup the Blackfin ASoC code, after that we will send out
+the code for merging.
 
-Jörn
+> We've had patches in the ASoC git tree for some time (along with the AD1980
+>  driver) - it'd be good to get everything merged into ALSA.
+>
 
--- 
-It is better to die of hunger having lived without grief and fear,
-than to live with a troubled spirit amid abundance.
--- Epictetus
+Do you mean there is another version AD1980 in ASoC git tree?
+
+Thanks
+-Bryan
