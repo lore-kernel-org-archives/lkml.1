@@ -1,85 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757813AbYEMBLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757610AbYEMBOR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757813AbYEMBLV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 21:11:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756634AbYEMBLI
+	id S1757610AbYEMBOR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 21:14:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756478AbYEMBOE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 21:11:08 -0400
-Received: from mx.neterion.com ([72.1.205.142]:55663 "EHLO owa.neterion.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756325AbYEMBLI convert rfc822-to-8bit (ORCPT
+	Mon, 12 May 2008 21:14:04 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:35987 "EHLO
+	outbound6-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756370AbYEMBOD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 21:11:08 -0400
-X-Greylist: delayed 847 seconds by postgrey-1.27 at vger.kernel.org; Mon, 12 May 2008 21:11:08 EDT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 12 May 2008 21:14:03 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 160.33.98.75;Service: EHS
+Message-ID: <4828EB53.7030407@am.sony.com>
+Date: Mon, 12 May 2008 18:13:55 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] net/s2io: set_rxd_buffer_pointer returns -ENOMEM, notENOMEM
-Date: Mon, 12 May 2008 20:56:57 -0400
-Message-ID: <78C9135A3D2ECE4B8162EBDCE82CAD770389468A@nekter>
-In-Reply-To: <20080511200421.GK19058@joi>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] net/s2io: set_rxd_buffer_pointer returns -ENOMEM, notENOMEM
-Thread-Index: Acizolz/YzTxvLjnQ3KR2bjEIqcmrwA8aycw
-References: <20080511200421.GK19058@joi>
-From: "Ramkrishna Vepa" <Ramkrishna.Vepa@neterion.com>
-To: "Marcin Slusarz" <marcin.slusarz@gmail.com>,
-       "LKML" <linux-kernel@vger.kernel.org>, "Jeff Garzik" <jeff@garzik.org>
-Cc: "Rastapur Santosh" <santosh.rastapur@neterion.com>,
-       "Sivakumar Subramani" <Sivakumar.Subramani@neterion.com>,
-       "Sreenivasa Honnur" <Sreenivasa.Honnur@neterion.com>,
-       <netdev@vger.kernel.org>
+To: akpm@linux-foundation.org
+CC: Yasunori Goto <y-goto@jp.fujitsu.com>, linuxppc-dev@ozlabs.org,
+       mikpe@it.uu.se, Badari Pulavarty <pbadari@us.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: [rfc patch] memory_hotplug: Check for walk_memory_resource() failure
+ in online_pages()
+References: <20080512.174151.193690130.davem@davemloft.net>
+In-Reply-To: <20080512.174151.193690130.davem@davemloft.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 13 May 2008 01:13:56.0445 (UTC) FILETIME=[9DBB48D0:01C8B496]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Good catch! 
+Add a check to online_pages() to test for failure of
+walk_memory_resource().  This fixes a condition where a failure
+of walk_memory_resource() can lead to online_pages() returning
+success without the requested pages being onlined.
 
-Jeff,
-Please accept patch.
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+---
 
-Thanks,
-Ram
+I'm not entirely sure this is the proper way to handle this
+condition.  Comments welcome.
 
-> -----Original Message-----
-> From: Marcin Slusarz [mailto:marcin.slusarz@gmail.com]
-> Sent: Sunday, May 11, 2008 1:04 PM
-> To: LKML
-> Cc: Ramkrishna Vepa; Rastapur Santosh; Sivakumar Subramani; Sreenivasa
-> Honnur; netdev@vger.kernel.org
-> Subject: [PATCH] net/s2io: set_rxd_buffer_pointer returns -ENOMEM,
-> notENOMEM
-> 
-> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-> Cc: Ramkrishna Vepa <ram.vepa@neterion.com>
-> Cc: Rastapur Santosh <santosh.rastapur@neterion.com>
-> Cc: Sivakumar Subramani <sivakumar.subramani@neterion.com>
-> Cc: Sreenivasa Honnur <sreenivasa.honnur@neterion.com>
-> Cc: netdev@vger.kernel.org
-> ---
-> compile tested only
-> ---
->  drivers/net/s2io.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/net/s2io.c b/drivers/net/s2io.c
-> --- a/drivers/net/s2io.c
-> +++ b/drivers/net/s2io.c
-> @@ -6951,7 +6951,7 @@ static  int rxd_owner_bit_reset(struct s2io_nic
-*sp)
->  						       &skb,(u64
-*)&temp0_64,
->  						       (u64 *)&temp1_64,
->  						       (u64 *)&temp2_64,
-> -							size) == ENOMEM)
-{
-> +							size) ==
--ENOMEM) {
->  					return 0;
->  				}
-> 
-> --
+ mm/memory_hotplug.c |    9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+--- a/mm/memory_hotplug.c
++++ b/mm/memory_hotplug.c
+@@ -408,8 +408,15 @@ int online_pages(unsigned long pfn, unsi
+ 	if (!populated_zone(zone))
+ 		need_zonelists_rebuild = 1;
+ 
+-	walk_memory_resource(pfn, nr_pages, &onlined_pages,
++	ret = walk_memory_resource(pfn, nr_pages, &onlined_pages,
+ 		online_pages_range);
++	if (ret) {
++		printk(KERN_DEBUG "online_pages %lx at %lx failed\n",
++			nr_pages, pfn);
++		memory_notify(MEM_CANCEL_ONLINE, &arg);
++		return ret;
++	}
++
+ 	zone->present_pages += onlined_pages;
+ 	zone->zone_pgdat->node_present_pages += onlined_pages;
+ 
+
