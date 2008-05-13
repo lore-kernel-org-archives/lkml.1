@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757221AbYEMRcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757602AbYEMRdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757221AbYEMRcT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 13:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513AbYEMRcL
+	id S1757602AbYEMRdp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 13:33:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbYEMRdg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 13:32:11 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:56447 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751228AbYEMRcK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 13:32:10 -0400
-Message-ID: <4829D0E5.8050905@keyaccess.nl>
-Date: Tue, 13 May 2008 19:33:25 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Tue, 13 May 2008 13:33:36 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:49496 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751226AbYEMRdf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 13:33:35 -0400
+Message-ID: <4829D0ED.5010701@garzik.org>
+Date: Tue, 13 May 2008 13:33:33 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Bjorn Helgaas <bjorn.helgaas@hp.com>, Takashi Iwai <tiwai@suse.de>,
-       Glauber Costa <gcosta@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Pete Clements <clem@clem.clem-digital.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       ALSA devel <alsa-devel@alsa-project.org>
-Subject: Re: 2.6.26-rc1 regression: ISA DMA broken (bisected)
-References: <4823AAF2.7070102@keyaccess.nl>	<s5hzlr0105c.wl%tiwai@suse.de>	<200805131059.32911.bjorn.helgaas@hp.com> <20080513180107.1a3893f1@core>
-In-Reply-To: <20080513180107.1a3893f1@core>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Chris Peterson <cpeterso@cpeterso.com>
+CC: linux-kernel@vger.kernel.org, NetDev <netdev@vger.kernel.org>
+Subject: Re: network devices: to IRQF_SAMPLE_RANDOM or not to IRQF_SAMPLE_RANDOM?
+References: <a24804730805130949o32687f74id4fce833c3589641@mail.gmail.com>
+In-Reply-To: <a24804730805130949o32687f74id4fce833c3589641@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 13-05-08 19:01, Alan Cox wrote:
-
-> On Tue, 13 May 2008 10:59:32 -0600
-> Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+Chris Peterson wrote:
+> Should network devices be allowed to contribute entropy to /dev/random?
 > 
->> On Friday 09 May 2008 12:06:55 am Takashi Iwai wrote:
->>> Thanks for catching it.  Yeah, the patch looks buggy.  We had an
->>> implicit assumption that dev = NULL for ISA devices that require 24bit
->>> DMA.
->> Naive question #1:  Why don't we have a struct device for these
->> ISA devices?  PNP builds a struct device with DMA_24BIT_MASK
->> for ISAPNP devices.
-> 
-> Because nobody has done the needed work to get all the old ISA drivers
-> converted. I guess isa_device would actually be a platform_device
-> wrapper ?
+> This issue has been discussed before, but does not seem to have been
+> settled: some net drivers [1] use IRQF_SAMPLE_RANDOM when calling
+> request_irq(), but the vast majority do not. It seems like all net
+> drivers should follow the same entropy paranoia policy (whether that
+> is all net drivers should use IRQF_SAMPLE_RANDOM, no net drivers, or a
+> compile-time option).
 
-No, isa_device is its own thing, on its own isa_bus (*). It has a struct 
-device * readily available though...
 
-Rene
+Quoting David Miller's excellent summary:
 
-(*) drivers/base/isa.c, and explanatory changelog at:
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=a5117ba7da37deb09df5eb802dace229b3fb1e9f
+The argument is that if you have a diskless system not taking any 
+keyboard or other input from the user, the network would be your only 
+source of random number entropy.
+
+But on the flip side, if the network provides the entropy, this is 
+externally influencable random number entropy and thus in theory 
+exploitable.  And furthermore, on-board random number generators are the 
+real answer to this problem.
+
+Thus, the impasse.
+
+There are roughly equal arguments on both sides.  Providing some entropy 
+could be argued as better than nothing, but it could also be said that 
+providing potentially exploitable entropy is in fact worse than none at all.
+
+</quote>
+
+
+I tend to push people to /not/ add IRQF_SAMPLE_RANDOM to new drivers, 
+but I'm not interested in going on a pogrom with existing code.  We all 
+have better things to do with our time :)
+
+	Jeff
+
+
