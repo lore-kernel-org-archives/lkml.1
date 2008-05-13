@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758192AbYEMFUW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757779AbYEMF35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758192AbYEMFUW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 01:20:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754787AbYEMFUI
+	id S1757779AbYEMF35 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 01:29:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754833AbYEMF3s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 01:20:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41176 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755445AbYEMFUH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 01:20:07 -0400
-Date: Mon, 12 May 2008 22:19:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, davidel@xmailserver.org, mtk.manpages@gmail.com,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH 18/18] flag parameters: check magic constants
-Message-Id: <20080512221917.07cf7b06.akpm@linux-foundation.org>
-In-Reply-To: <482922E2.3040902@redhat.com>
-References: <200805062118.m46LI74j004096@devserv.devel.redhat.com>
-	<20080512201341.9ead6a9a.akpm@linux-foundation.org>
-	<482910FA.1080703@redhat.com>
-	<20080512.210225.167924945.davem@davemloft.net>
-	<20080512220416.ef9a9645.akpm@linux-foundation.org>
-	<482922E2.3040902@redhat.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 13 May 2008 01:29:48 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57878 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754718AbYEMF3r (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 01:29:47 -0400
+Message-ID: <48292742.8090409@sgi.com>
+Date: Tue, 13 May 2008 15:29:38 +1000
+From: Donald Douwsma <donaldd@sgi.com>
+User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
+MIME-Version: 1.0
+To: Georgi Chorbadzhiyski <gf@unixsol.org>
+CC: xfs@oss.sgi.com, jfs-discussion@lists.sourceforge.net,
+       cluster-devel@redhat.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Unneeded kernel threads (xfs, jfs, gfs2)
+References: <4828CAC6.3090402@unixsol.org>
+In-Reply-To: <4828CAC6.3090402@unixsol.org>
+Content-Type: text/plain; charset=windows-1251; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 12 May 2008 22:10:58 -0700 Ulrich Drepper <drepper@redhat.com> wrote:
+Georgi Chorbadzhiyski wrote:
+> Hi guys, I know that not all kernel thread users are converted to
+> start only when needed but the following is little annoying specially
+> when I'm not even using jfs, xfs and gfs2.
+> 
+> Look at the ps output from a standard distro 2.6.24.5 kernel after a
+> fresh boot:
+...
 
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
 > 
-> Andrew Morton wrote:
-> > m68k too..
-> 
-> I cannot build it here but looking at the headers:
-> 
-> - - include/asm-m68k/fcntl.h does not define O_NONBLOCK; and therefore
-> 
-> - - the definition from include/asm-generic/fcntl.h is used which is 04000
-> 
-> 
-> Is there any magic I miss?
+> Kernel config can be found here:
+>   http://mirrors.unixsol.org/slackware/slackware-12.1/kernels/hugesmp.s/config
 > 
 
-Different bug, I think.
+Your distro is building all of these modules into the kernel.
+	CONFIG_XFS_FS=y
+	CONFIG_JFS_FS=y
+	CONFIG_GFS2_FS=y
 
-net/socket.c: In function 'sys_paccept':
-net/socket.c:1543: error: implicit declaration of function 'set_restore_sigmask'
+This isnt exactly standard practice, normally they'd be set to =m and only
+used if required to mount a filesystem. You may want to ask the slackware
+people why they chose to do this for their hugexxx.s kernels.
+
+Don
+
+
 
