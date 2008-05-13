@@ -1,157 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755119AbYEMLfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755316AbYEMLk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755119AbYEMLfa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 07:35:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbYEMLfO
+	id S1755316AbYEMLk1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 07:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbYEMLkS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 07:35:14 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:26498 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751226AbYEMLfM (ORCPT
+	Tue, 13 May 2008 07:40:18 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37021
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751524AbYEMLkQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 07:35:12 -0400
-Date: Tue, 13 May 2008 13:34:16 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Alessandro Zummo <a.zummo@towertech.it>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Thomas Gleixner <tglx@linutronix.de>, rtc-linux@googlegroups.com,
-       i2c@lm-sensors.org, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/6] RTC: SWARM I2C board initialization (#2)
-Message-ID: <20080513133416.59a8d943@hyperion.delvare>
-In-Reply-To: <Pine.LNX.4.55.0805130249230.535@cliff.in.clinika.pl>
-References: <Pine.LNX.4.55.0805130249230.535@cliff.in.clinika.pl>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Tue, 13 May 2008 07:40:16 -0400
+Date: Tue, 13 May 2008 04:40:11 -0700 (PDT)
+Message-Id: <20080513.044011.204136790.davem@davemloft.net>
+To: linux-kernel@vger.kernel.org
+CC: mingo@elte.hu, mathieu.desnoyers@polymtl.ca
+Subject: [PATCH]: Sparc64 immediate values
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Maciej,
 
-On Tue, 13 May 2008 04:27:10 +0100 (BST), Maciej W. Rozycki wrote:
->  The standard rtc-m41t80.c driver cannot be used with the SWARM as it is,
-> because the board does not provide setup information for the I2C core.  
-> As a result the bus and the address to probe for the M41T80 chip is not
-> known.
-> 
->  Here is a set of changes that fix the problem:
-> 
-> 1. swarm-i2c.c -- SWARM I2C board setup, currently for the M41T80 chip on 
->    the bus #1 only (there is a MAX6654 temperature sensor on the bus #0 
->    which may be added in the future if we have a driver for that chip).
+As described in the commit log I think that two instruction sequences
+can be done properly, and we'd need that to support 16-bit and 32-bit
+values on sparc64 since the available instructions are "load high
+22-bits" and "or in signed low 13 bits".
 
-We don't have a driver yet, however the datasheet for that chip is
-publicly available and writing a driver would be easy. Or maybe just
-reuse an existing driver - from a quick look at the datasheet I suspect
-that this device is essentially compatible with the LM90 and ADM1032
-chips supported by the lm90 driver.
+One idea is to capture all cpus other than the immediate value
+updating cpu.
 
-> 
-> 2. The i2c-sibyte.c BCM1250A SMBus controller driver now registers its 
->    buses as numbered so that board setup is correctly applied.
-> 
-> Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
-> ---
->  I have renamed i2c-swarm.c to swarm-i2c.c for consistency with names 
-> of other files under arch/mips/.
+These other cpus look to see if their program counter falls
+on an immediate value instruction sequence.  Much like how we
+lookup exceptions we can sort the table and use binary search
+so that it isn't too slow.
 
-But you forgot to update the log message accordingly...
+If they find themselves in such a sequence, they examine the
+destination register in the last instruction, load that register with
+the proper immediate value, and advance the program counter.  Then
+they wait to be released.
 
->  Please note this patch trivially depends on
-> patch-2.6.26-rc1-20080505-swarm-core-16 -- 2/6 of this set.
+The updater does the instruction update unimpeded, flushes the
+instruction cache or whatever needs to be done, and then releases the
+other cpus.
 
-OK, so I should just wait for patch 2/6 to get upstream before I add
-this one to my i2c tree?
+PowerPC could use this scheme too, if it does in fact work.
 
-> 
->   Maciej
-> 
-> patch-2.6.26-rc1-20080505-swarm-i2c-17
-> diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/arch/mips/sibyte/swarm/Makefile linux-2.6.26-rc1-20080505/arch/mips/sibyte/swarm/Makefile
-> --- linux-2.6.26-rc1-20080505.macro/arch/mips/sibyte/swarm/Makefile	2008-05-06 01:18:21.000000000 +0000
-> +++ linux-2.6.26-rc1-20080505/arch/mips/sibyte/swarm/Makefile	2008-05-13 03:11:43.000000000 +0000
-> @@ -1,3 +1,4 @@
->  obj-y				:= setup.o rtc_xicor1241.o rtc_m41t81.o
->  
-> +obj-$(CONFIG_I2C_BOARDINFO)	+= swarm-i2c.o
->  obj-$(CONFIG_KGDB)		+= dbg_io.o
-> diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/arch/mips/sibyte/swarm/swarm-i2c.c linux-2.6.26-rc1-20080505/arch/mips/sibyte/swarm/swarm-i2c.c
-> --- linux-2.6.26-rc1-20080505.macro/arch/mips/sibyte/swarm/swarm-i2c.c	1970-01-01 00:00:00.000000000 +0000
-> +++ linux-2.6.26-rc1-20080505/arch/mips/sibyte/swarm/swarm-i2c.c	2008-05-13 03:11:26.000000000 +0000
-> @@ -0,0 +1,37 @@
-> +/*
-> + *	arch/mips/sibyte/swarm/swarm-i2c.c
-> + *
-> + *	Broadcom BCM91250A (SWARM), etc. I2C platform setup.
-> + *
-> + *	Copyright (c) 2008  Maciej W. Rozycki
-> + *
-> + *	This program is free software; you can redistribute it and/or
-> + *	modify it under the terms of the GNU General Public License
-> + *	as published by the Free Software Foundation; either version
-> + *	2 of the License, or (at your option) any later version.
-> + */
-> +
-> +#include <linux/i2c.h>
-> +#include <linux/init.h>
-> +#include <linux/kernel.h>
-> +
-> +
-> +static struct i2c_board_info swarm_i2c_info1[] __initdata = {
-> +	{
-> +		I2C_BOARD_INFO("m41t81", 0x68),
-> +	},
-> +};
-> +
-> +static int __init swarm_i2c_init(void)
-> +{
-> +	int err;
-> +
-> +	err = i2c_register_board_info(1, swarm_i2c_info1,
-> +				      ARRAY_SIZE(swarm_i2c_info1));
-> +	if (err < 0)
-> +		printk(KERN_ERR
-> +		       "i2c-swarm: cannot register board I2C devices\n");
-> +	return err;
-> +}
-> +
-> +arch_initcall(swarm_i2c_init);
-> diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/drivers/i2c/busses/i2c-sibyte.c linux-2.6.26-rc1-20080505/drivers/i2c/busses/i2c-sibyte.c
-> --- linux-2.6.26-rc1-20080505.macro/drivers/i2c/busses/i2c-sibyte.c	2008-05-05 02:55:25.000000000 +0000
-> +++ linux-2.6.26-rc1-20080505/drivers/i2c/busses/i2c-sibyte.c	2008-05-11 01:21:45.000000000 +0000
-> @@ -143,7 +143,7 @@ int __init i2c_sibyte_add_bus(struct i2c
->  	csr_out32(speed, SMB_CSR(adap,R_SMB_FREQ));
->  	csr_out32(0, SMB_CSR(adap,R_SMB_CONTROL));
->  
-> -	return i2c_add_adapter(i2c_adap);
-> +	return i2c_add_numbered_adapter(i2c_adap);
->  }
->  
->  
-> @@ -159,6 +159,7 @@ static struct i2c_adapter sibyte_board_a
->  		.class		= I2C_CLASS_HWMON,
->  		.algo		= NULL,
->  		.algo_data	= &sibyte_board_data[0],
-> +		.nr		= 0,
->  		.name		= "SiByte SMBus 0",
->  	},
->  	{
-> @@ -167,6 +168,7 @@ static struct i2c_adapter sibyte_board_a
->  		.class		= I2C_CLASS_HWMON,
->  		.algo		= NULL,
->  		.algo_data	= &sibyte_board_data[1],
-> +		.nr		= 1,
->  		.name		= "SiByte SMBus 1",
->  	},
->  };
+Please add to the ftrace tree, thanks.
 
+commit f2b14974b823a9cd9b6f5c0d423945caa15de8a2
+Author: David S. Miller <davem@davemloft.net>
+Date:   Tue May 13 04:29:30 2008 -0700
 
--- 
-Jean Delvare
+    sparc64: Optimized immediate value implementation.
+    
+    We can only do byte sized values currently.
+    
+    In order to support even 16-bit immediates we would need a 2
+    instruction sequence.
+    
+    I believe that can be made to work with a suitable breakpoint or some
+    other kind of special patching sequence, but that isn't attempted
+    here.
+    
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/arch/sparc64/Kconfig b/arch/sparc64/Kconfig
+index eb36f3b..4c40862 100644
+--- a/arch/sparc64/Kconfig
++++ b/arch/sparc64/Kconfig
+@@ -14,6 +14,7 @@ config SPARC64
+ 	select HAVE_IDE
+ 	select HAVE_LMB
+ 	select HAVE_ARCH_KGDB
++	select HAVE_IMMEDIATE
+ 
+ config GENERIC_TIME
+ 	bool
+diff --git a/arch/sparc64/kernel/Makefile b/arch/sparc64/kernel/Makefile
+index ec4f5eb..311c797 100644
+--- a/arch/sparc64/kernel/Makefile
++++ b/arch/sparc64/kernel/Makefile
+@@ -25,6 +25,7 @@ obj-$(CONFIG_MODULES) += module.o
+ obj-$(CONFIG_US3_FREQ) += us3_cpufreq.o
+ obj-$(CONFIG_US2E_FREQ) += us2e_cpufreq.o
+ obj-$(CONFIG_KPROBES) += kprobes.o
++obj-$(CONFIG_IMMEDIATE) += immediate.o
+ obj-$(CONFIG_SUN_LDOMS) += ldc.o vio.o viohs.o ds.o
+ obj-$(CONFIG_AUDIT) += audit.o
+ obj-$(CONFIG_AUDIT)$(CONFIG_COMPAT) += compat_audit.o
+diff --git a/arch/sparc64/kernel/immediate.c b/arch/sparc64/kernel/immediate.c
+new file mode 100644
+index 0000000..be76f28
+--- /dev/null
++++ b/arch/sparc64/kernel/immediate.c
+@@ -0,0 +1,48 @@
++#include <linux/module.h>
++#include <linux/immediate.h>
++#include <linux/string.h>
++#include <linux/kprobes.h>
++
++#include <asm/system.h>
++
++int arch_imv_update(const struct __imv *imv, int early)
++{
++	unsigned long imv_vaddr = imv->imv;
++	unsigned long var_vaddr = imv->var;
++	u32 insn, *ip = (u32 *) imv_vaddr;
++
++	insn = *ip;
++
++#ifdef CONFIG_KPROBES
++	switch (imv->size) {
++	case 1:
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	if (unlikely(!early &&
++		     (insn == BREAKPOINT_INSTRUCTION ||
++		      insn == BREAKPOINT_INSTRUCTION_2))) {
++		printk(KERN_WARNING "Immediate value in conflict with kprobe. "
++				    "Variable at %p, "
++				    "instruction at %p, size %u\n",
++				    ip, (void *)var_vaddr, imv->size);
++		return -EBUSY;
++	}
++#endif
++
++	switch (imv->size) {
++	case 1:
++		if ((insn & 0x1fff) == *(uint8_t *)var_vaddr)
++			return 0;
++		insn &= ~0x00001fff;
++		insn |= (u32) (*(uint8_t *)var_vaddr);
++		break;
++	default:
++		return -EINVAL;
++	}
++	*ip = insn;
++	flushi(ip);
++	return 0;
++}
+diff --git a/include/asm-sparc64/immediate.h b/include/asm-sparc64/immediate.h
+new file mode 100644
+index 0000000..3673afd
+--- /dev/null
++++ b/include/asm-sparc64/immediate.h
+@@ -0,0 +1,37 @@
++#ifndef _ASM_SPARC64_IMMEDIATE_H
++#define _ASM_SPARC64_IMMEDIATE_H
++
++struct __imv {
++	unsigned int var;
++	unsigned int imv;
++	unsigned char size;
++} __attribute__ ((packed));
++
++#define imv_read(name)							\
++	({								\
++		__typeof__(name##__imv) value;				\
++		BUILD_BUG_ON(sizeof(value) > 8);			\
++		switch (sizeof(value)) {				\
++		case 1:							\
++			asm(".section __imv,\"aw\",@progbits\n\t"	\
++					".uaword %c1, 1f\n\t"		\
++					".byte 1\n\t"			\
++					".previous\n\t"			\
++					"1: mov 0, %0\n\t"		\
++				: "=r" (value)				\
++				: "i" (&name##__imv));			\
++			break;						\
++		case 2:							\
++		case 4:							\
++		case 8:	value = name##__imv;				\
++			break;						\
++		};							\
++		value;							\
++	})
++
++#define imv_cond(name)	imv_read(name)
++#define imv_cond_end()
++
++extern int arch_imv_update(const struct __imv *imv, int early);
++
++#endif /* _ASM_SPARC64_IMMEDIATE_H */
+diff --git a/kernel/immediate.c b/kernel/immediate.c
+index 3668a7f..1b4c5cf 100644
+--- a/kernel/immediate.c
++++ b/kernel/immediate.c
+@@ -62,8 +62,8 @@ void imv_update_range(struct __imv *begin,
+ 				"Invalid immediate value. "
+ 				"Variable at %p, "
+ 				"instruction at %p, size %hu\n",
+-				(void *)iter->imv,
+-				(void *)iter->var, iter->size);
++			        (void *)(long)iter->imv,
++			        (void *)(long)iter->var, iter->size);
+ skip:
+ 		mutex_unlock(&imv_mutex);
+ 	}
