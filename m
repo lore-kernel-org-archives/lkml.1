@@ -1,79 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756538AbYEMAS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757299AbYEMAT0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756538AbYEMAS7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 20:18:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbYEMASw
+	id S1757299AbYEMAT0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 20:19:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756641AbYEMATM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 20:18:52 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:59237 "EHLO
-	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751938AbYEMASv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 20:18:51 -0400
-Date: Mon, 12 May 2008 18:20:49 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: libata - DMA problems ICH7 rev 02
-In-reply-to: <8dacd7b30805120855q406f566ma187142719bf5bd4@mail.gmail.com>
-To: Jan Niklas Hasse <jhasse@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Message-id: <4828DEE1.1070905@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.6VoLd5Q2gfHHZZfYneNkQcGjXKk@ifi.uio.no>
- <fa.kzdMLVO0bqLAbXEBqWrKyBntgxc@ifi.uio.no>
- <fa.h4D6h2c4Yz08K7snVTVtewbsziM@ifi.uio.no> <481BD00E.7050302@shaw.ca>
- <8dacd7b30805120855q406f566ma187142719bf5bd4@mail.gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Mon, 12 May 2008 20:19:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39426 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751938AbYEMATK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 20:19:10 -0400
+Message-ID: <4828DE73.2070001@redhat.com>
+Date: Mon, 12 May 2008 19:18:59 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
+MIME-Version: 1.0
+To: Tiger Yang <tiger.yang@oracle.com>
+CC: linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ext3/4: fix uninitialized bs in ext3/4_xattr_set_handle()
+References: <4827B878.50903@oracle.com>
+In-Reply-To: <4827B878.50903@oracle.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Niklas Hasse wrote:
-> On Sat, May 3, 2008 at 4:38 AM, Robert Hancock <hancockr@shaw.ca> wrote:
->>  This is expected. IOWait just means the system is blocked waiting for IO
->> and has nothing else to do. It does not mean that DMA is not working.
->>
->>  [...]
->>
->>  Looks like you are using DMA:
->>
->>  ata1.00: configured for UDMA/100
->>  ata1.01: configured for UDMA/33
->>
+Tiger Yang wrote:
+> Hi,
+> I met a bug when I try to replace a xattr entry in ibody with a big size 
+> value. But in ibody there has no space for the new value. So it should 
+> set new xattr entry in block and remove the old xattr entry in ibody.
 > 
-> Hm.. strange. But the problem is that my system slows down
-> nevertheless (sometimes the mouse cursor stops moving for a short time
-> or all my programs don't react). How can i find out what is causing
-> the problem?
+> Best regards,
+> tiger
 > 
-> Here I was creating a DVD with dvdauthor which was copying some big
-> video files. It was nearly impossible to use a web browser, although
-> CPU load seems only to be 12.7%.
-> 
-> top - 20:33:08 up  4:58,  2 users,  load average: 2.94, 2.81, 2.49
-> Tasks: 134 total,   2 running, 132 sleeping,   0 stopped,   0 zombie
-> Cpu(s):  5.0%us,  7.7%sy,  0.0%ni, 16.2%id, 70.1%wa,  0.3%hi,  0.8%si,  0.0%st
-> Mem:   1019568k total,   996316k used,    23252k free,     1148k buffers
-> Swap:  2916344k total,    83892k used,  2832452k free,   325284k cached
-> 
->   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
->  2609 root      15  -5     0    0    0 S    6  0.0   6:41.67 kcryptd
->  6344 root      20   0  543m 129m  10m S    3 13.0   6:33.63 Xorg
-> 27062 jhasse    20   0 23164 6424 1176 D    3  0.6   0:11.98 dvdauthor
->  6891 jhasse    20   0  208m  18m 8956 S    2  1.9   3:13.41 transmission
-> 27173 jhasse    20   0  263m  24m  12m S    2  2.4   0:00.66 gnome-terminal
->   195 root      20   0     0    0    0 S    1  0.0   0:00.14 pdflush
-> 
-> Another example: When I'm burning a disc and at the end, when my drive
-> finishes the disc (and makes those noises) the computer freezes untill
-> the CD is finished and ejected (about 3 seconds).
-> 
-> I hope it's the right place to ask here at the mailing list and thanks
-> for your help so far.
 
-It looks like you have the hard drive and the burner on the same IDE 
-channel? Such problems are unavoidable in this setup since commands to 
-one device on the channel can't execute while the other device is busy 
-(especially for long commands like finalizing the disc). It would be 
-better to move the drives onto separate channels.
+Tiger, do you have a testcase handy to demonstrate this?
+
+Is the new, large out-of-inode xattr unique so that it does not match
+any existing attribute block, I assume?
+
+Thanks,
+
+-Eric
