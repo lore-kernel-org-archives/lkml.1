@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757900AbYEMRmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758607AbYEMRmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757900AbYEMRmU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 13:42:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755042AbYEMRmJ
+	id S1758607AbYEMRmr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 13:42:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756414AbYEMRmg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 13:42:09 -0400
-Received: from wr-out-0506.google.com ([64.233.184.232]:18754 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754574AbYEMRmI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 13:42:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=vVnNc9t2ML5p9XgRGeZw2tpy+LSPzUB7ucHfGNe2x9yIBmiXaTrz4t3BoP932IO15tqXUBho1LnmVsSMijxEfPfAo1Z9VirpLhjxNSEzbtlbC5IW5u8C0UxpOG8waz6v2KiLGwFMUALIDUUUFPuqjMbA1CC9lUX/RMezQb63h2o=
-Message-ID: <8bd0f97a0805131042x2a74115dqc3831a604583bbd5@mail.gmail.com>
-Date: Tue, 13 May 2008 13:42:04 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "=?ISO-8859-1?Q?J=F6rn_Engel?=" <joern@logfs.org>
-Subject: Re: [PATCH 1/1] [MTD/MAPS] Blackfin Async Flash Maps: Handle the case where flash memory and ethernet mac/phy are mapped onto the same async bank
-Cc: linux-mtd@lists.infradead.org, "Bryan Wu" <cooloney@kernel.org>,
-       dwmw2@infradead.org, will.newton@gmail.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080513153441.GB18026@logfs.org>
+	Tue, 13 May 2008 13:42:36 -0400
+Received: from outbound-mail-37.bluehost.com ([69.89.20.191]:41455 "HELO
+	outbound-mail-37.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755427AbYEMRmf convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 13:42:35 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>, linux-pci@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [git pull] PCI fixes
+Date: Tue, 13 May 2008 10:42:32 -0700
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <1210653525-19437-1-git-send-email-cooloney@kernel.org>
-	 <20080513080727.GA15795@logfs.org>
-	 <8bd0f97a0805130542x46f5e7fejf1347f1c71f567fb@mail.gmail.com>
-	 <20080513150143.GA18026@logfs.org>
-	 <8bd0f97a0805130815q2ffa1d34ue87f5eb1422b6f42@mail.gmail.com>
-	 <20080513153441.GB18026@logfs.org>
+Message-Id: <200805131042.32278.jbarnes@virtuousgeek.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 13, 2008 at 11:34 AM, Jörn Engel <joern@logfs.org> wrote:
-> On Tue, 13 May 2008 12:38:45 +0800, Bryan Wu wrote:
-> > +#define pr_devinit(fmt, args...) ({ static const __devinitdata char __fmt[] = fmt; printk(__fmt, ## args); })
->
->  That bit is obvious.  But why do you use pr_devinit() instead of
->  printk()?  What does it gain you?
+Please pull the PCI fixes:
+git pull git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6.git for-linus
 
-why do we have __init and __devinit in the first place ?
--mike
+This includes a few important but perhaps slightly more dangerous fixes than
+the previous set.  Highlights are:  a fix for the X MTRR mapping
+incompatibility bug, a critical fix for ISA DMA, and support for more complex
+_OSC topologies.  In order to fixup the changelog, I ended up rebasing this
+time, hopefully I got everything right.
+
+Thanks,
+Jesse
+
+Björn Krombholz (1):
+      PCI: enable nv_msi_ht_cap_quirk for ALi bridges
+
+Kenji Kaneshige (3):
+      PCI ACPI: fix uninitialized variable in __pci_osc_support_set
+      ACPI/PCI: handle multiple _OSC
+      ACPI/PCI: another multiple _OSC memory leak fix
+
+Shaohua Li (1):
+      ACPI/PCI: handle multiple _OSC
+
+Takashi Iwai (1):
+      x86/PCI: fix broken ISA DMA
+
+Venki Pallipadi (1):
+      x86/PCI: X86_PAT & mprotect
+
+mark gross (1):
+      PCI: Make the intel-iommu_wait_op macro work when jiffies are not running
+
+ arch/x86/kernel/pci-dma.c |    8 ++-
+ arch/x86/pci/i386.c       |    4 -
+ drivers/pci/intel-iommu.c |    6 +-
+ drivers/pci/pci-acpi.c    |  109 +++++++++++++++++++++++++++++++++-------------
+ drivers/pci/quirks.c      |    1 
+ 5 files changed, 89 insertions(+), 39 deletions(-)
