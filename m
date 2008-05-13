@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757141AbYEMNGQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759300AbYEMNLd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757141AbYEMNGQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 09:06:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754637AbYEMNGC
+	id S1759300AbYEMNLd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 09:11:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755010AbYEMNLY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 09:06:02 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44803 "EHLO mx3.mail.elte.hu"
+	Tue, 13 May 2008 09:11:24 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58255 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755358AbYEMNGA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 09:06:00 -0400
-Date: Tue, 13 May 2008 15:05:39 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: make e820.c to have common functions
-Message-ID: <20080513130539.GL14973@elte.hu>
-References: <200805110030.15510.yhlu.kernel@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200805110030.15510.yhlu.kernel@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.3
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.0522]
+	id S1752080AbYEMNLX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 09:11:23 -0400
+Date: Tue, 13 May 2008 09:11:01 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: lee.schermerhorn@hp.com, akpm@linux-foundation.org,
+       kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm 05/15] free swap space on swap-in/activation
+Message-ID: <20080513091101.0448bbba@bree.surriel.com>
+In-Reply-To: <482990FC.3020303@mxp.nes.nec.co.jp>
+References: <20080428181835.502876582@redhat.com>
+	<20080428181852.620969450@redhat.com>
+	<4828283C.4000803@mxp.nes.nec.co.jp>
+	<20080512093307.2ace3096@bree.surriel.com>
+	<482990FC.3020303@mxp.nes.nec.co.jp>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 13 May 2008 22:00:44 +0900
+Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> On 2008/05/12 22:33 +0900, Rik van Riel wrote:
+> > On Mon, 12 May 2008 20:21:32 +0900
+> > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> > 
+> >> So, the intention of this patch is
+> >> not to free a swap space of swap cache that has already swapped in
+> >> and only used one process as do_swap_page() does,
+> >> but to free a swap space that is only used as a swap cache
+> >> (not used by any processes), right?
+> > 
+> > No.  The code should also free the swap space of pages that are
+> > mapped by processes, in order to free up swap space for other
+> > uses.  This only happens if vm_swap_full() is true.
+> > 
+> 
+> OK.
+> 
+> I thought that current code cannot free the swap space
+> of pages that are mapped by processes(and I think it cannot),
+> so I asked the intention of this patch for clarification.
 
-> remove the duplicated copy of these functions.
+You may be right, due to the refcounting magic that is going
+on.  I will verify the code and send in a fix if it turns out
+to be needed.
 
-applied, thanks. What a low-key commit message for the first step such a 
-much-needed unification! :-)
-
-any thoughts (or patches) about how to attack the rest of e820_32/64.c?
-
-	Ingo
+-- 
+All rights reversed.
