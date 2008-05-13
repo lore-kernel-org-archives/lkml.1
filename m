@@ -1,131 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758997AbYEMR7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759606AbYEMSAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758997AbYEMR7T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 13:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756573AbYEMR7L
+	id S1759606AbYEMSAe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 14:00:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755331AbYEMSAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 13:59:11 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:61764 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756568AbYEMR7K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 13:59:10 -0400
-Date: Tue, 13 May 2008 18:57:17 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Alessandro Zummo <a.zummo@towertech.it>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Jean Delvare <khali@linux-fr.org>, Ralf Baechle <ralf@linux-mips.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-cc: rtc-linux@googlegroups.com, i2c@lm-sensors.org, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 3/6] RTC: SWARM I2C board initialization (#3)
-Message-ID: <Pine.LNX.4.55.0805131853530.7267@cliff.in.clinika.pl>
+	Tue, 13 May 2008 14:00:23 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:59357 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755016AbYEMSAV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 14:00:21 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Greg KH <greg@kroah.com>
+Cc: Benjamin Thery <benjamin.thery@bull.net>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Tejun Heo <htejun@gmail.com>, Al Viro <viro@ftp.linux.org.uk>,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org
+References: <m163tocw43.fsf_-_@frodo.ebiederm.org>
+	<20080512220232.GA16914@kroah.com> <m1prrqbseh.fsf@frodo.ebiederm.org>
+	<4829A4BD.3020007@bull.net> <20080513164438.GA31563@kroah.com>
+Date: Tue, 13 May 2008 10:55:45 -0700
+In-Reply-To: <20080513164438.GA31563@kroah.com> (Greg KH's message of "Tue, 13
+	May 2008 09:44:38 -0700")
+Message-ID: <m18wyeay1q.fsf_-_@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
+	*      [score: 0.0229]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.5 XM_Body_Dirty_Words Contains a dirty word
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: [PATCH] Fix kobject_rename and !CONFIG_SYSFS v2
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- The standard rtc-m41t80.c driver cannot be used with the SWARM as it is,
-because the board does not provide setup information for the I2C core.  
-As a result the bus and the address to probe for the M41T80 chip is not
-known.
 
- Here is a set of changes that fix the problem:
+When looking at kobject_rename I found two bugs with
+that exist when sysfs support is disabled in the kernel.
 
-1. swarm-i2c.c -- SWARM I2C board setup, currently for the M41T80 chip on 
-   the bus #1 only (there is a MAX6654 temperature sensor on the bus #0 
-   which may be added in the future if we have a driver for that chip).
+kobject_rename does not change the name on the kobject when
+sysfs support is not compiled in.
 
-2. The i2c-sibyte.c BCM1250A SMBus controller driver now registers its 
-   buses as numbered so that board setup is correctly applied.
+kobject_rename without locking attempts to check the
+validity of a rename operation, which the kobject layer
+simply does not have the infrastructure to do.
 
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+This patch documents the previously unstated requirement of
+kobject_rename that is the responsibility of the caller to
+provide mutual exclusion and to be certain that the new_name
+for the kobject is valid.
+
+This patch modifies sysfs_rename_dir in !CONFIG_SYSFS case
+to call kobject_set_name to actually change the kobject_name.
+
+This patch removes the bogus and misleading check in kobject_rename
+that attempts to see if a rename is valid.  The check is bogus
+because we do not have the proper locking.  The check is misleading
+because it looks like we can and do perform checking at the kobject
+level that we don't.
+
+Changelog:
+v2:	Added a declaration of kboject_set_name to sysfs.h
+	so the code actually compiles with !CONFIG_SYSFS.
+
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- This iteration fixes the name of the driver from before renaming
-mistakenly left in an error message.
+ Documentation/kobject.txt |    4 ++++
+ drivers/base/core.c       |    5 +++++
+ include/linux/sysfs.h     |    4 +++-
+ lib/kobject.c             |   18 +++++-------------
+ 4 files changed, 17 insertions(+), 14 deletions(-)
 
- Please note this patch trivially depends on
-patch-2.6.26-rc1-20080505-swarm-core-16 -- 2/6 of this set.
-
-  Maciej
-
-patch-2.6.26-rc1-20080505-swarm-i2c-18
-diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/arch/mips/sibyte/swarm/Makefile linux-2.6.26-rc1-20080505/arch/mips/sibyte/swarm/Makefile
---- linux-2.6.26-rc1-20080505.macro/arch/mips/sibyte/swarm/Makefile	2008-05-06 01:18:21.000000000 +0000
-+++ linux-2.6.26-rc1-20080505/arch/mips/sibyte/swarm/Makefile	2008-05-13 03:11:43.000000000 +0000
-@@ -1,3 +1,4 @@
- obj-y				:= setup.o rtc_xicor1241.o rtc_m41t81.o
+diff --git a/Documentation/kobject.txt b/Documentation/kobject.txt
+index bf3256e..79184b4 100644
+--- a/Documentation/kobject.txt
++++ b/Documentation/kobject.txt
+@@ -118,6 +118,10 @@ the name of the kobject, call kobject_rename():
  
-+obj-$(CONFIG_I2C_BOARDINFO)	+= swarm-i2c.o
- obj-$(CONFIG_KGDB)		+= dbg_io.o
-diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/arch/mips/sibyte/swarm/swarm-i2c.c linux-2.6.26-rc1-20080505/arch/mips/sibyte/swarm/swarm-i2c.c
---- linux-2.6.26-rc1-20080505.macro/arch/mips/sibyte/swarm/swarm-i2c.c	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.26-rc1-20080505/arch/mips/sibyte/swarm/swarm-i2c.c	2008-05-13 17:38:52.000000000 +0000
-@@ -0,0 +1,37 @@
-+/*
-+ *	arch/mips/sibyte/swarm/swarm-i2c.c
-+ *
-+ *	Broadcom BCM91250A (SWARM), etc. I2C platform setup.
-+ *
-+ *	Copyright (c) 2008  Maciej W. Rozycki
-+ *
-+ *	This program is free software; you can redistribute it and/or
-+ *	modify it under the terms of the GNU General Public License
-+ *	as published by the Free Software Foundation; either version
-+ *	2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/i2c.h>
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+
-+
-+static struct i2c_board_info swarm_i2c_info1[] __initdata = {
-+	{
-+		I2C_BOARD_INFO("m41t81", 0x68),
-+	},
-+};
-+
-+static int __init swarm_i2c_init(void)
-+{
-+	int err;
-+
-+	err = i2c_register_board_info(1, swarm_i2c_info1,
-+				      ARRAY_SIZE(swarm_i2c_info1));
-+	if (err < 0)
-+		printk(KERN_ERR
-+		       "swarm-i2c: cannot register board I2C devices\n");
-+	return err;
-+}
-+
-+arch_initcall(swarm_i2c_init);
-diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/drivers/i2c/busses/i2c-sibyte.c linux-2.6.26-rc1-20080505/drivers/i2c/busses/i2c-sibyte.c
---- linux-2.6.26-rc1-20080505.macro/drivers/i2c/busses/i2c-sibyte.c	2008-05-05 02:55:25.000000000 +0000
-+++ linux-2.6.26-rc1-20080505/drivers/i2c/busses/i2c-sibyte.c	2008-05-11 01:21:45.000000000 +0000
-@@ -143,7 +143,7 @@ int __init i2c_sibyte_add_bus(struct i2c
- 	csr_out32(speed, SMB_CSR(adap,R_SMB_FREQ));
- 	csr_out32(0, SMB_CSR(adap,R_SMB_CONTROL));
+     int kobject_rename(struct kobject *kobj, const char *new_name);
  
--	return i2c_add_adapter(i2c_adap);
-+	return i2c_add_numbered_adapter(i2c_adap);
++Note kobject_rename does perform any locking or have a solid notion of
++what names are valid so the provide must provide their own sanity checking
++and serialization.
++
+ There is a function called kobject_set_name() but that is legacy cruft and
+ is being removed.  If your code needs to call this function, it is
+ incorrect and needs to be fixed.
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index be288b5..ad68f4c 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -1171,6 +1171,11 @@ EXPORT_SYMBOL_GPL(device_destroy);
+  * device_rename - renames a device
+  * @dev: the pointer to the struct device to be renamed
+  * @new_name: the new name of the device
++ *
++ * It is the responsibility of the caller to provide mutual
++ * exclusion between two different calls of device_rename
++ * on the same device to ensure that new_name is valid and
++ * won't conflict with other devices.
+  */
+ int device_rename(struct device *dev, char *new_name)
+ {
+diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+index 7858eac..6e61033 100644
+--- a/include/linux/sysfs.h
++++ b/include/linux/sysfs.h
+@@ -20,6 +20,8 @@
+ struct kobject;
+ struct module;
+ 
++extern int kobject_set_name(struct kobject *kobj, const char *name, ...)
++			    __attribute__((format(printf, 2, 3)));
+ /* FIXME
+  * The *owner field is no longer used, but leave around
+  * until the tree gets cleaned up fully.
+@@ -137,7 +139,7 @@ static inline void sysfs_remove_dir(struct kobject *kobj)
+ 
+ static inline int sysfs_rename_dir(struct kobject *kobj, const char *new_name)
+ {
+-	return 0;
++	return kobject_set_name(kobj, "%s", new_name);
  }
  
+ static inline int sysfs_move_dir(struct kobject *kobj,
+diff --git a/lib/kobject.c b/lib/kobject.c
+index 718e510..c7fb092 100644
+--- a/lib/kobject.c
++++ b/lib/kobject.c
+@@ -383,6 +383,11 @@ EXPORT_SYMBOL_GPL(kobject_init_and_add);
+  * kobject_rename - change the name of an object
+  * @kobj: object in question.
+  * @new_name: object's new name
++ *
++ * It is the responsibility of the caller to provide mutual
++ * exclusion between two different calls of kobject_rename
++ * on the same kobject and to ensure that new_name is valid and
++ * won't conflict with other kobjects.
+  */
+ int kobject_rename(struct kobject *kobj, const char *new_name)
+ {
+@@ -397,19 +402,6 @@ int kobject_rename(struct kobject *kobj, const char *new_name)
+ 	if (!kobj->parent)
+ 		return -EINVAL;
  
-@@ -159,6 +159,7 @@ static struct i2c_adapter sibyte_board_a
- 		.class		= I2C_CLASS_HWMON,
- 		.algo		= NULL,
- 		.algo_data	= &sibyte_board_data[0],
-+		.nr		= 0,
- 		.name		= "SiByte SMBus 0",
- 	},
- 	{
-@@ -167,6 +168,7 @@ static struct i2c_adapter sibyte_board_a
- 		.class		= I2C_CLASS_HWMON,
- 		.algo		= NULL,
- 		.algo_data	= &sibyte_board_data[1],
-+		.nr		= 1,
- 		.name		= "SiByte SMBus 1",
- 	},
- };
+-	/* see if this name is already in use */
+-	if (kobj->kset) {
+-		struct kobject *temp_kobj;
+-		temp_kobj = kset_find_obj(kobj->kset, new_name);
+-		if (temp_kobj) {
+-			printk(KERN_WARNING "kobject '%s' cannot be renamed "
+-			       "to '%s' as '%s' is already in existence.\n",
+-			       kobject_name(kobj), new_name, new_name);
+-			kobject_put(temp_kobj);
+-			return -EINVAL;
+-		}
+-	}
+-
+ 	devpath = kobject_get_path(kobj, GFP_KERNEL);
+ 	if (!devpath) {
+ 		error = -ENOMEM;
+-- 
+1.5.3.rc6.17.g1911
+
