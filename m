@@ -1,64 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758527AbYEMDc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757892AbYEMDqG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758527AbYEMDc4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 23:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755596AbYEMDcr
+	id S1757892AbYEMDqG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 23:46:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbYEMDpy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 23:32:47 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:48584 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754482AbYEMDcq (ORCPT
+	Mon, 12 May 2008 23:45:54 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36544
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753010AbYEMDpx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 23:32:46 -0400
-Date: Tue, 13 May 2008 00:32:30 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: linux-kernel@vger.kernel.org, Hans Verkuil <hverkuil@xs4all.nl>
-Subject: Re: V4L2-based build error
-Message-ID: <20080513003230.52b36b78@gaivota>
-In-Reply-To: <18844.1210630449@vena.lwn.net>
-References: <18844.1210630449@vena.lwn.net>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
+	Mon, 12 May 2008 23:45:53 -0400
+Date: Mon, 12 May 2008 20:45:47 -0700 (PDT)
+Message-Id: <20080512.204547.138851614.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: drepper@redhat.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       davidel@xmailserver.org, mtk.manpages@gmail.com,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH 18/18] flag parameters: check magic constants
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080512201341.9ead6a9a.akpm@linux-foundation.org>
+References: <200805062118.m46LI74j004096@devserv.devel.redhat.com>
+	<20080512201341.9ead6a9a.akpm@linux-foundation.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jon,
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Mon, 12 May 2008 20:13:41 -0700
 
-On Mon, 12 May 2008 16:14:09 -0600
-Jonathan Corbet <corbet@lwn.net> wrote:
-
-> If you configure V4L2 as a module, the config system will still let you
-> configure DVB_CORE built-in.  This yields:
+> On Tue, 6 May 2008 17:18:07 -0400 Ulrich Drepper <drepper@redhat.com> wrote:
 > 
->   drivers/built-in.o: In function `v4l2_i2c_drv_attach_legacy':
->   tuner-core.c:(.text+0x901d5): undefined reference to `v4l2_i2c_attach'
->   drivers/built-in.o: In function `tuner_command':
->   tuner-core.c:(.text+0x91aed): undefined reference to `v4l_printk_ioctl'
+> > --- a/net/socket.c
+> > +++ b/net/socket.c
+> > @@ -1219,6 +1219,13 @@ asmlinkage long sys_socket(int family, int type, int protocol)
+> >  	struct socket *sock;
+> >  	int flags;
+> >  
+> > +	/* Check the SOCK_* constants for consistency.  */
+> > +	BUILD_BUG_ON(SOCK_CLOEXEC != O_CLOEXEC);
+> > +	BUILD_BUG_ON(SOCK_NONBLOCK != O_NONBLOCK);
+> > +	BUILD_BUG_ON((SOCK_MAX | SOCK_TYPE_MASK) != SOCK_TYPE_MASK);
+> > +	BUILD_BUG_ON(SOCK_CLOEXEC & SOCK_TYPE_MASK);
+> > +	BUILD_BUG_ON(SOCK_NONBLOCK & SOCK_TYPE_MASK);
 > 
-> I never had trouble with this before 2.6.26-rc2.  I'm happy making
-> DVB_CORE modular, but it would be nice if the config system didn't allow
-> inconsistent setups.
+> The fifth assertion triggers with alpha allmodconfig.
 
-I have a number of patches meant to fix several troubles at v4l/dvb
-compilation. I intend to send they soon for merging, but I want first to test
-some random builds.
-
-
-> P.S. As I was digging into this, I ran into <media/v4l2-i2c-drv-legacy.h>, 
->      which takes an interesting approach - function definitions and 
->      module_init() within a header file?  This thing is included in a 
->      number of places; it seems like there should be a better way...
-
-This file is meant to be an interim approach to allow a smoothly change from
-the old i2c probing way to the newer format. It should be there for some time,
-until we can convert all v4l2 drivers to the new approach.
-
-
-Cheers,
-Mauro
+Unfortunately, MIPS and PARISC look like they will as well :-/
