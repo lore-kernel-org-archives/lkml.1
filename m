@@ -1,98 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762006AbYEMWLC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758716AbYEMWWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762006AbYEMWLC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 18:11:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757931AbYEMWKv
+	id S1758716AbYEMWWr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 18:22:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbYEMWWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 18:10:51 -0400
-Received: from ns.suse.de ([195.135.220.2]:35679 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757377AbYEMWKu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 18:10:50 -0400
-Subject: patch usbtest-comment-on-why-this-code-expects-negative-and-positive-errnos.patch added to gregkh-2.6 tree
-To: marcin.slusarz@gmail.com, david-b@pacbell.net, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-From: <gregkh@suse.de>
-Date: Tue, 13 May 2008 15:07:33 -0700
-In-Reply-To: <20080512181721.GA6031@joi>
-Message-ID: <12107164531292@kroah.org>
+	Tue, 13 May 2008 18:22:37 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55357
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751524AbYEMWWg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 18:22:36 -0400
+Date: Tue, 13 May 2008 15:22:31 -0700 (PDT)
+Message-Id: <20080513.152231.109481008.davem@davemloft.net>
+To: mikpe@it.uu.se
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] 2.6.26-rc1 lost half the RAM on UltraSPARC 5
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <18473.60551.911448.98269@alkaid.it.uu.se>
+References: <20080512.153628.193699676.davem@davemloft.net>
+	<20080512.153948.193688062.davem@davemloft.net>
+	<18473.60551.911448.98269@alkaid.it.uu.se>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Mikael Pettersson <mikpe@it.uu.se>
+Date: Tue, 13 May 2008 21:31:19 +0200
 
-This is a note to let you know that I've just added the patch titled
-
-     Subject: usbtest: comment on why this code "expects" negative and positive errnos
-
-to my gregkh-2.6 tree.  Its filename is
-
-     usbtest-comment-on-why-this-code-expects-negative-and-positive-errnos.patch
-
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
-
-
->From marcin.slusarz@gmail.com  Tue May 13 14:58:09 2008
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-Date: Mon, 12 May 2008 20:17:25 +0200
-Subject: usbtest: comment on why this code "expects" negative and positive errnos
-To: David Brownell <david-b@pacbell.net>, LKML <linux-kernel@vger.kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-usb@vger.kernel.org
-Message-ID: <20080512181721.GA6031@joi>
-Content-Disposition: inline
-
-
-On Mon, May 12, 2008 at 01:02:22AM -0700, David Brownell wrote:
-> On Sunday 11 May 2008, Marcin Slusarz wrote:
-> > 
-> > test_ctrl_queue expects (?) positive and negative errnos.
-> > what is going on here?
+> David Miller writes:
+>  > Try this patch instead, thanks!
 > 
-> The sign is just a way to flag something:
-> 
->                 /* some faults are allowed, not required */
-> 
-> The negative ones are required.  Positive codes are optional,
-> in the sense that, depending on how the peripheral happens
-> to be implemented, they won't necessarily be triggered.
-> 
-> For example, the test to fetch a device qualifier desriptor
-> must succeed if the device is running at high speed.  So that
-> test is marked as negative.  But when it's full speed, it
-> could legitimately fail; marked as positive.  And so on for
-> other tests.
-> 
-> Look at how the codes are *interpreted* to see it work.
+> Ok, reverting previous patch and applying this done results in:
+ ...
+> lmb_dump_all:
+>     memory.cnt		  = 0x4
+>     memory.size		  = 0xff40000
+>     memory.region[0x0].base       = 0x0
+> 		      .size     = 0x8000000
+>     memory.region[0x1].base       = 0x10000000
+> 		      .size     = 0x7efe000
+>     memory.region[0x2].base       = 0x17f00000
+> 		      .size     = 0x3a000
+>     memory.region[0x3].base       = 0x17f3e000
+> 		      .size     = 0x8000
+>     reserved.cnt	  = 0x4
+>     reserved.size	  = 0x0
+>     reserved.region[0x0].base       = 0x7ffc000
+> 		      .size     = 0x2000
+>     reserved.region[0x1].base       = 0x7fff040
+> 		      .size     = 0xfc0
+>     reserved.region[0x2].base       = 0x10000000
+> 		      .size     = 0x35bf60
+>     reserved.region[0x3].base       = 0x107e8e00
+> 		      .size     = 0x10b9a751
 
-Lets document it.
+Yeah, those last two reserved regions are where your 128MB went to,
+as I suspected.
 
-Based on comment from David Brownell <david-b@pacbell.net>.
-
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: David Brownell <david-b@pacbell.net>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/usb/misc/usbtest.c |    5 +++++
- 1 file changed, 5 insertions(+)
-
---- a/drivers/usb/misc/usbtest.c
-+++ b/drivers/usb/misc/usbtest.c
-@@ -856,6 +856,11 @@ test_ctrl_queue (struct usbtest_dev *dev
- 		struct urb		*u;
- 		struct usb_ctrlrequest	req;
- 		struct subcase		*reqp;
-+
-+		/* sign of this variable means:
-+		 *  -: tested code must return this (negative) error code
-+		 *  +: tested code may return this (negative too) error code
-+		 */
- 		int			expected = 0;
- 
- 		/* requests here are mostly expected to succeed on any
-
-
-Patches currently in gregkh-2.6 which might be from marcin.slusarz@gmail.com are
-
-usb.current/usbtest-comment-on-why-this-code-expects-negative-and-positive-errnos.patch
+Thanks I'll try to figure out where to go from here.
