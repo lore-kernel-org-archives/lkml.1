@@ -1,63 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759677AbYENAMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760494AbYENAPG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759677AbYENAMT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 20:12:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756727AbYENAMG
+	id S1760494AbYENAPG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 20:15:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756762AbYENAO4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 20:12:06 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41135 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756718AbYENAME (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 20:12:04 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Alistair John Strachan <alistair@devzero.co.uk>
-Subject: Re: [PATCH] ACPI 2.6.26-rc2: Add missing newline to DSDT/SSDT warning message
-Date: Tue, 13 May 2008 20:11:43 -0400
-User-Agent: KMail/1.9.9
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200805121913.09502.alistair@devzero.co.uk>
-In-Reply-To: <200805121913.09502.alistair@devzero.co.uk>
+	Tue, 13 May 2008 20:14:56 -0400
+Received: from mail.gmx.net ([213.165.64.20]:50719 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756727AbYENAOz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 20:14:55 -0400
+X-Authenticated: #476490
+X-Provags-ID: V01U2FsdGVkX1/iHF4PwCziGCu2BodZskkkkEm9kOGabTgqEO9ywT
+	cjS722CDsrd5Rs
+From: Oliver Endriss <o.endriss@gmx.de>
+Organization: ESCAPE GmbH EDV-Loesungen
+To: Johannes Stezenbach <js@linuxtv.org>
+Subject: Re: [patch, 2.6.26-rc2] dvb: drivers/media/dvb/ttpci/fdump firmware build error fix
+Date: Wed, 14 May 2008 01:49:47 +0200
+User-Agent: KMail/1.9.6
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Andrew de Quincey <adq_dvb@lidskialf.net>
+References: <20080512101231.GA11755@elte.hu> <20080513164238.GB21877@elte.hu> <20080513181834.GA29133@linuxtv.org>
+In-Reply-To: <20080513181834.GA29133@linuxtv.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200805132011.43442.lenb@kernel.org>
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0rc1 (hera.kernel.org [140.211.167.34]); Wed, 14 May 2008 00:11:58 +0000 (UTC)
+Message-Id: <200805140149.48569@orion.escape-edv.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-applied.
-
-thanks,
--len
-
-On Monday 12 May 2008, Alistair John Strachan wrote:
-> As of recently (probably 2.6.26-rc1) I've been getting the following mangling
-> in the kernel log:
+Johannes Stezenbach wrote:
+> On Tue, May 13, 2008 at 06:42:38PM +0200, Ingo Molnar wrote:
+> > 
+> > * Johannes Stezenbach <js@linuxtv.org> wrote:
+> > 
+> > > On Tue, May 13, 2008 at 04:33:54PM +0200, Oliver Endriss wrote:
+> > > > Johannes Stezenbach wrote:
+> > > > > You can put PREVENT_FIRMWARE_BUILD=y in your allrandom.config.
+> > > > 
+> > > > Sure. And without the patch you can simply add
+> > > > - STANDALONE=y or
+> > > > - DVB_AV7110_FIRMWARE=n
+> > > > to your allrandom.config. ;-)
+> > > 
+> > > It is desirable to have one generic "don't break the build because of 
+> > > missing firmware binaries" option, isn't it?
+> > 
+> > it's a bit confusing. PREVENT_FIRMWARE_BUILD=y is the 'weaker' option - 
+> > a driver might still be operational (with its default firmware), even if 
+> > no firmware is built. STANDALONE=y is the stronger option - if a driver 
+> > depends on that it means that the driver cannot be built (and used) at 
+> > all without a firmware file. To be on the safe side users who have no 
+> > firmware needs should set both options. (and that's the default as well)
 > 
-> [4294014.568167] ACPI: DSDT override uses original SSDTs unless "acpi_no_auto_ssdt"<6>CPU0: Intel(R) Pentium(R) Dual  CPU  E2160  @ 1.80GHz stepping 0d
+> Seems like I'm confused now...
 > 
-> This is due to a missing newline character in the first message. The following
-> patch against 2.6.26-rc2 fixes it. Please apply.
+>   CONFIG_STANDALONE
+>     Prompt: Select only drivers that don't need compile-time external firmware
 > 
-> Signed-off-by: Alistair John Strachan <alistair@devzero.co.uk>
-> ---
-> 
-> diff --git a/drivers/acpi/tables/tbxface.c b/drivers/acpi/tables/tbxface.c
-> index fb57b93..0e31960 100644
-> --- a/drivers/acpi/tables/tbxface.c
-> +++ b/drivers/acpi/tables/tbxface.c
-> @@ -540,7 +540,7 @@ static acpi_status acpi_tb_load_namespace(void)
->  		acpi_tb_print_table_header(0, table);
->  
->  		if (no_auto_ssdt == 0) {
-> -			printk(KERN_WARNING "ACPI: DSDT override uses original SSDTs unless \"acpi_no_auto_ssdt\"");
-> +			printk(KERN_WARNING "ACPI: DSDT override uses original SSDTs unless \"acpi_no_auto_ssdt\"\n");
->  		}
->  	}
->  
+>   PREVENT_FIRMWARE_BUILD
+>     Prompt: Prevent firmware from being built
 
+After reading the text again I still think that my understanding is
+correct [1].
 
+CONFIG_STANDALONE disables drivers which require a firmware file at
+compile-time. av7110 with DVB_AV7110_FIRMWARE=y is this kind of driver.
+
+PREVENT_FIRMWARE_BUILD controls building (= compiling) the firmware from
+source. As we do not ship the source of the av7110 firmware, this option
+does not apply.
+
+So everything should be fine 'as is'.
+
+CU
+Oliver
+
+Notes:
+[1] Of course, I am open to corrections from the kbuild gurus. ;-)
+
+-- 
+----------------------------------------------------------------
+VDR Remote Plugin 0.4.0: http://www.escape-edv.de/endriss/vdr/
+----------------------------------------------------------------
