@@ -1,55 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759449AbYEMIeC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759552AbYEMIeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759449AbYEMIeC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 04:34:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757500AbYEMIdu
+	id S1759552AbYEMIeX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 04:34:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758088AbYEMIdw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 04:33:50 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:57980 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756954AbYEMIds (ORCPT
+	Tue, 13 May 2008 04:33:52 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49149
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1757703AbYEMIdv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 04:33:48 -0400
-Message-ID: <482951D0.3070004@yandex.ru>
-Date: Tue, 13 May 2008 11:31:12 +0300
-From: Artem Bityutskiy <dedekind@yandex.ru>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>,
-       Edward Shishkin <edward.shishkin@gmail.com>
-Subject: Re: [PATCH take 2 01/28] VFS: introduce writeback_inodes_sb()
-References: <1210070159-22794-1-git-send-email-Artem.Bityutskiy@nokia.com> <1210070159-22794-2-git-send-email-Artem.Bityutskiy@nokia.com> <20080507002345.831bc379.akpm@linux-foundation.org> <20080507080027.GA23621@infradead.org>
-In-Reply-To: <20080507080027.GA23621@infradead.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 13 May 2008 08:32:49.0203 (UTC) FILETIME=[ED474830:01C8B4D3]
-X-Nokia-AV: Clean
+	Tue, 13 May 2008 04:33:51 -0400
+Date: Tue, 13 May 2008 01:33:45 -0700 (PDT)
+Message-Id: <20080513.013345.140434764.davem@davemloft.net>
+To: jeff@garzik.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [git patches] net-next updates for .27
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080513055701.GA17000@havoc.gtf.org>
+References: <20080513055701.GA17000@havoc.gtf.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Christoph,
+From: Jeff Garzik <jeff@garzik.org>
+Date: Tue, 13 May 2008 01:57:01 -0400
 
-Christoph Hellwig wrote:
-> I think sync_sb_inodes should just lock/unlock the inode_lock itself as
-> per the patch from the reiser4 queue.  But before we export it I'd like
-> to review what ubifs actually does with it.
+> 
+> Please pull from 'upstream-next' branch of
+> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git upstream-next
 
-Here is an updated UBIFS tarball for you:
-	http://www.infradead.org/~dedekind/ubifs/ubifs-08-05-13.tar.bz2
-
-Did you have chance to do the reviw? We would like to ask for merge at
-2.6.27.
-
-> Anyone care to submit a patch to just move the locking that we could
-> put in ASAP?
-
-Done, the patch is sitting in our UBIFS.
-
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+Pulled and pushed back out to net-next-2.6, thanks Jeff!
