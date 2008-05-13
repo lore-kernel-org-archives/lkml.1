@@ -1,322 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759476AbYEMUCj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759996AbYEMUDJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759476AbYEMUCj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 16:02:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757445AbYEMUCa
+	id S1759996AbYEMUDJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 16:03:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759573AbYEMUCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 16:02:30 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33895 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757425AbYEMUC3 (ORCPT
+	Tue, 13 May 2008 16:02:53 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:60679 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758049AbYEMUCw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 16:02:29 -0400
-Date: Tue, 13 May 2008 13:01:27 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: menage@google.com
-Cc: pj@sgi.com, xemul@openvz.org, balbir@in.ibm.com, serue@us.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
-Subject: Re: [RFC/PATCH 1/8]: CGroup Files: Add locking mode to cgroups
- control files
-Message-Id: <20080513130127.fcd46a41.akpm@linux-foundation.org>
-In-Reply-To: <20080513071522.133586000@menage.corp.google.com>
-References: <20080513063707.049448000@menage.corp.google.com>
-	<20080513071522.133586000@menage.corp.google.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 13 May 2008 16:02:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=NQE9uCLTIRY4fKGoyHGSM/0StZHFP/J7DhlLA0JsH+duhD/XFdw8TsHC6mxFkt5DptBjIUERpam6MIM6i+LuDMeoD/4R/sWKQBJB9Tan9ptm0EjaNVKk1rl8kpiGXjvzbN+zA6SzEZQD55PqRyS4jZUs/S4hY4fI2AAizvD0pqs=
+From: Abdel Benamrouche <draconux@gmail.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
+Subject: [PATCH 0/2] /fs/partition/check.c : fix return value warning (V2)
+Date: Tue, 13 May 2008 22:02:43 +0200
+Message-Id: <1210708965-12220-1-git-send-email-draconux@gmail.com>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <>
+References: <>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Fear, doubt and resistance!
-
-On Mon, 12 May 2008 23:37:08 -0700
-menage@google.com wrote:
-
-> Different cgroup files have different stability requirements of the
-> cgroups framework while the handler is running; currently most
-> subsystems that don't have their own internal synchronization just
-> call cgroup_lock()/cgroup_unlock(), which takes the global cgroup_mutex.
-> 
-> This patch introduces a range of locking modes that can be requested
-> by a control file; currently these are all implemented internally by
-> taking cgroup_mutex, but expressing the intention will make it simpler
-> to move to a finer-grained locking scheme in the future.
-> 
-
-This, umm, doesn't seem to do much to make the kernel a simpler place.
-
-Do we expect to gain much from this?  Hope so...  What?
-
-> Index: cgroup-2.6.25-mm1/include/linux/cgroup.h
-> ===================================================================
-> --- cgroup-2.6.25-mm1.orig/include/linux/cgroup.h
-> +++ cgroup-2.6.25-mm1/include/linux/cgroup.h
-> @@ -200,11 +200,87 @@ struct cgroup_map_cb {
->   */
+On Tue, May 13, 2008 at 12:27 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Sat, 10 May 2008 13:40:53 +0200
+>  Abdel Benamrouche <draconux@gmail.com> wrote:
 >  
->  #define MAX_CFTYPE_NAME 64
-> +
-> +/* locking modes for control files.
-> + *
-> + * These determine what level of guarantee the file handler wishes
-> + * cgroups to provide about the stability of control group entities
-> + * for the duration of the handler callback.
-> + *
-> + * The minimum guarantee is that the subsystem state for this
-> + * subsystem will not be freed (via a call to the subsystem's
-> + * destroy() callback) until after the control file handler
-> + * returns. This guarantee is provided by the fact that the open
-> + * dentry for the control file keeps its parent (cgroup) dentry alive,
-> + * which in turn keeps the cgroup object from being actually freed
-> + * (although it can be moved into the removed state in the
-> + * meantime). This is suitable for subsystems that completely control
-> + * their own synchronization.
-> + *
-> + * Other possible guarantees are given below.
-> + *
-> + * XXX_READ bits are used for a read operation on the control file,
-> + * XXX_WRITE bits are used for a write operation on the control file
-> + */
-
-Vague handwaving: lockdep doesn't know anything about any of this. 
-Whereas if we were more conventional in using separate locks and
-suitable lock types for each application, we would retain full lockdep
-coverage.
-
-> +/*
-> + * CFT_LOCK_ATTACH_(READ|WRITE): This operation will not run
-> + * concurrently with a task movement into or out of this cgroup.
-> + */
-> +#define CFT_LOCK_ATTACH_READ 1
-> +#define CFT_LOCK_ATTACH_WRITE 2
-> +#define CFT_LOCK_ATTACH (CFT_LOCK_ATTACH_READ | CFT_LOCK_ATTACH_WRITE)
-> +
-> +/*
-> + * CFT_LOCK_RMDIR_(READ|WRITE): This operation will not run
-> + * concurrently with the removal of the affected cgroup.
-> + */
-> +#define CFT_LOCK_RMDIR_READ 4
-> +#define CFT_LOCK_RMDIR_WRITE 8
-> +#define CFT_LOCK_RMDIR (CFT_LOCK_RMDIR_READ | CFT_LOCK_RMDIR_WRITE)
-> +
-> +/*
-> + * CFT_LOCK_HIERARCHY_(READ|WRITE): This operation will not run
-> + * concurrently with a cgroup creation or removal in this hierarchy,
-> + * or a bind/move/unbind for this subsystem.
-> + */
-> +#define CFT_LOCK_HIERARCHY_READ 16
-> +#define CFT_LOCK_HIERARCHY_WRITE 32
-> +#define CFT_LOCK_HIERARCHY (CFT_LOCK_HIERARCHY_READ | CFT_LOCK_HIERARCHY_WRITE)
-> +
-> +/*
-> + * CFT_LOCK_CGL_(READ|WRITE): This operation is called with
-> + * cgroup_lock() held; it will not run concurrently with any of the
-> + * above operations in any cgroup/hierarchy. This should be considered
-> + * to be the BKL of cgroups - it should be avoided if you can use
-> + * finer-grained locking
-> + */
-> +#define CFT_LOCK_CGL_READ 64
-> +#define CFT_LOCK_CGL_WRITE 128
-> +#define CFT_LOCK_CGL (CFT_LOCK_CGL_READ | CFT_LOCK_CGL_WRITE)
-> +
-> +#define CFT_LOCK_FOR_READ (CFT_LOCK_ATTACH_READ |		\
-> +			   CFT_LOCK_RMDIR_READ |		\
-> +			   CFT_LOCK_HIERARCHY_READ |		\
-> +			   CFT_LOCK_CGL_READ)
-> +
-> +#define CFT_LOCK_FOR_WRITE (CFT_LOCK_ATTACH_WRITE |	\
-> +			    CFT_LOCK_RMDIR_WRITE |	\
-> +			    CFT_LOCK_HIERARCHY_WRITE |	\
-> +			    CFT_LOCK_CGL_WRITE)
-> +
->  struct cftype {
->  	/* By convention, the name should begin with the name of the
->  	 * subsystem, followed by a period */
->  	char name[MAX_CFTYPE_NAME];
->  	int private;
-> +
-> +	/*
-> +	 * Determine what locks (if any) are held across calls to
-> +	 * read_X/write_X callback. See lockmode definitions above
-> +	 */
-> +	int lockmode;
-> +
->  	int (*open) (struct inode *inode, struct file *file);
->  	ssize_t (*read) (struct cgroup *cgrp, struct cftype *cft,
->  			 struct file *file,
-> Index: cgroup-2.6.25-mm1/kernel/cgroup.c
-> ===================================================================
-> --- cgroup-2.6.25-mm1.orig/kernel/cgroup.c
-> +++ cgroup-2.6.25-mm1/kernel/cgroup.c
-> @@ -1327,38 +1327,65 @@ enum cgroup_filetype {
->  	FILE_RELEASE_AGENT,
->  };
+>  > fs/partitions/check.c:381: warning: ignoring return value of ___device_add___,
+>  >  declared with attribute warn_unused_result
+>  >
+>  > Signed-off-by: Abdel Benamrouche <draconux@gmail.com>
+>  > ---
+>  > :100644 100644 6149e4b... 7a87fad... M        fs/partitions/check.c
+>  >  fs/partitions/check.c |    8 +++++++-
+>  >  1 files changed, 7 insertions(+), 1 deletions(-)
+>  >
+>  > diff --git a/fs/partitions/check.c b/fs/partitions/check.c
+>  > index 6149e4b..7a87fad 100644
+>  > --- a/fs/partitions/check.c
+>  > +++ b/fs/partitions/check.c
+>  > @@ -378,7 +378,13 @@ void add_partition(struct gendisk *disk, int part, sector_t start, sector_t len,
+>  >
+>  >       /* delay uevent until 'holders' subdir is created */
+>  >       p->dev.uevent_suppress = 1;
+>  > -     device_add(&p->dev);
+>  > +     if (device_add(&p->dev)) {
+>  > +             put_device(&p->dev);
+>  > +             free_part_stats(p);
+>  > +             kfree(p);
+>  > +             return;
+>  > +     }
+>  > +
+>  >       partition_sysfs_add_subdir(p);
+>  >       p->dev.uevent_suppress = 0;
+>  >       if (flags & ADDPART_FLAG_WHOLEDISK)
 >  
-> -static ssize_t cgroup_write_X64(struct cgroup *cgrp, struct cftype *cft,
-> -				struct file *file,
-> -				const char __user *userbuf,
-> -				size_t nbytes, loff_t *unused_ppos)
-> +
-> +
-> +/**
-> + * cgroup_file_lock(). Helper for cgroup read/write methods.
-> + * @cgrp:  the cgroup being acted on
-> + * @cft:   the control file being written to or read from
-> + * *write: true if the access is a write access.
-> + *
-> + * Takes any necessary locks as requested by the control file's
-> + * 'lockmode' field; checks (after locking if necessary) that the
-> + * control group is not in the process of being destroyed.
-> + *
-> + * Currently all the locking options are implemented in the same way,
-> + * by taking cgroup_mutex. Future patches will add finer-grained
-> + * locking.
-> + *
-> + * Calls to cgroup_file_lock() should always be paired with calls to
-> + * cgroup_file_unlock(), even if cgroup_file_lock() returns an error.
-> + */
-> +
-> +static int cgroup_file_lock(struct cgroup *cgrp, struct cftype *cft, int write)
->  {
-> -	char buffer[64];
-> -	int retval = 0;
-> -	char *end;
-> +	int mask = write ? CFT_LOCK_FOR_WRITE : CFT_LOCK_FOR_READ;
-> +	BUILD_BUG_ON(CFT_LOCK_FOR_READ != (CFT_LOCK_FOR_WRITE >> 1));
+>  We should go further than this.  add_partition() just drops the error
+>  on the floor.  It should be propagated back to callers, and callers
+>  should be modified to handle it appropriately.
 >  
-> -	if (!nbytes)
-> -		return -EINVAL;
-> -	if (nbytes >= sizeof(buffer))
-> -		return -E2BIG;
-> -	if (copy_from_user(buffer, userbuf, nbytes))
-> -		return -EFAULT;
-> +	if (cft->lockmode & mask)
-> +		mutex_lock(&cgroup_mutex);
-> +	if (cgroup_is_removed(cgrp))
-> +		return -ENODEV;
-> +	return 0;
-> +}
-> +
-> +/**
-> + * cgroup_file_unlock(): undoes the effect of cgroup_file_lock()
-> + */
-> +
-> +static void cgroup_file_unlock(struct cgroup *cgrp, struct cftype *cft,
-> +			      int write)
-> +{
-> +	int mask = write ? CFT_LOCK_FOR_WRITE : CFT_LOCK_FOR_READ;
-> +	if (cft->lockmode & mask)
-> +		mutex_unlock(&cgroup_mutex);
-> +}
+>  Presumably we should also handle a device_create_file() failure as well
+>  - that is presently being silently ignored.
 >  
-> -	buffer[nbytes] = 0;     /* nul-terminate */
-> -	strstrip(buffer);
-> +static ssize_t cgroup_write_X64(struct cgroup *cgrp, struct cftype *cft,
-> +				const char *buffer)
-> +{
-> +	char *end;
->  	if (cft->write_u64) {
->  		u64 val = simple_strtoull(buffer, &end, 0);
->  		if (*end)
->  			return -EINVAL;
-> -		retval = cft->write_u64(cgrp, cft, val);
-> +		return cft->write_u64(cgrp, cft, val);
->  	} else {
->  		s64 val = simple_strtoll(buffer, &end, 0);
->  		if (*end)
->  			return -EINVAL;
-> -		retval = cft->write_s64(cgrp, cft, val);
-> +		return cft->write_s64(cgrp, cft, val);
->  	}
-> -	if (!retval)
-> -		retval = nbytes;
-> -	return retval;
->  }
 >  
->  static ssize_t cgroup_common_file_write(struct cgroup *cgrp,
-> @@ -1426,47 +1453,82 @@ out1:
->  	return retval;
->  }
->  
-> -static ssize_t cgroup_file_write(struct file *file, const char __user *buf,
-> +static ssize_t cgroup_file_write(struct file *file, const char __user *userbuf,
->  						size_t nbytes, loff_t *ppos)
->  {
->  	struct cftype *cft = __d_cft(file->f_dentry);
->  	struct cgroup *cgrp = __d_cgrp(file->f_dentry->d_parent);
-> -
-> -	if (!cft || cgroup_is_removed(cgrp))
-> -		return -ENODEV;
-> -	if (cft->write)
-> -		return cft->write(cgrp, cft, file, buf, nbytes, ppos);
-> -	if (cft->write_u64 || cft->write_s64)
-> -		return cgroup_write_X64(cgrp, cft, file, buf, nbytes, ppos);
-> -	if (cft->trigger) {
-> -		int ret = cft->trigger(cgrp, (unsigned int)cft->private);
-> -		return ret ? ret : nbytes;
-> +	ssize_t retval;
-> +	char static_buffer[64];
-> +	char *buffer = static_buffer;
-> +	ssize_t max_bytes = sizeof(static_buffer) - 1;
-> +	if (!cft->write && !cft->trigger) {
-> +		if (!nbytes)
-> +			return -EINVAL;
-> +		if (nbytes >= max_bytes)
-> +			return -E2BIG;
-> +		if (nbytes >= sizeof(static_buffer)) {
 
-afaict this can't happen - we would have already returned -E2BIG?
+done.
+I make 2 patch so that it will be easier to read.
 
-> +			/* +1 for nul-terminator */
-> +			buffer = kmalloc(nbytes + 1, GFP_KERNEL);
-> +			if (buffer == NULL)
-> +				return -ENOMEM;
-> +		}
-> +		if (copy_from_user(buffer, userbuf, nbytes)) {
-> +			retval = -EFAULT;
-> +			goto out_free;
-> +		}
-> +		buffer[nbytes] = 0;	/* nul-terminate */
-> +		strstrip(buffer);	/* strip -just- trailing whitespace */
->  	}
-> -	return -EINVAL;
-> -}
 
-I'm trying to work out what protects static_buffer?
-
-Why does it need to be static anyway?  64 bytes on-stack is OK.
-
-> -static ssize_t cgroup_read_u64(struct cgroup *cgrp, struct cftype *cft,
-> -			       struct file *file,
-> -			       char __user *buf, size_t nbytes,
-> -			       loff_t *ppos)
-> -{
-> -	char tmp[64];
-> -	u64 val = cft->read_u64(cgrp, cft);
-> -	int len = sprintf(tmp, "%llu\n", (unsigned long long) val);
-> +	retval = cgroup_file_lock(cgrp, cft, 1);
-> +	if (retval)
-> +		goto out_unlock;
->  
-> -	return simple_read_from_buffer(buf, nbytes, ppos, tmp, len);
-> +	if (cft->write)
-> +		retval = cft->write(cgrp, cft, file, userbuf, nbytes, ppos);
-> +	else if (cft->write_u64 || cft->write_s64)
-> +		retval = cgroup_write_X64(cgrp, cft, buffer);
-> +	else if (cft->trigger)
-> +		retval = cft->trigger(cgrp, (unsigned int)cft->private);
-> +	else
-> +		retval = -EINVAL;
-> +	if (retval == 0)
-> +		retval = nbytes;
-> + out_unlock:
-> +	cgroup_file_unlock(cgrp, cft, 1);
-> + out_free:
-> +	if (buffer != static_buffer)
-> +		kfree(buffer);
-> +	return retval;
->  }
 
