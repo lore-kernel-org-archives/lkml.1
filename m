@@ -1,154 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759307AbYEMHTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759206AbYEMHUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759307AbYEMHTy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 03:19:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758828AbYEMHTh
+	id S1759206AbYEMHUe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 03:20:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753740AbYEMHUN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 03:19:37 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:10343 "EHLO
+	Tue, 13 May 2008 03:20:13 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:10392 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758573AbYEMHTg (ORCPT
+	with ESMTP id S1752507AbYEMHUL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 03:19:36 -0400
+	Tue, 13 May 2008 03:20:11 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=received:message-id:references:user-agent:date:from:to:cc:
 	subject:content-disposition;
-	b=IIRS2Qi09nZ5H2TkHqWQ2h00a3/nGXAhdF+cLPMgVzR5kGcJoQimI++eCmUaFB0IF
-	UEP/yBe5ta9UvA0kE+Xnw==
-Message-Id: <20080513071523.324419000@menage.corp.google.com>
+	b=ZNaF91mxtZ2bU0PqZkHoiA4cCDtgylJpaxy9LXjmEcblAf99MD4p5iJDZGIk+px+J
+	8aCgLcxcfxOSlbYkk9xDg==
+Message-Id: <20080513071522.984545000@menage.corp.google.com>
 References: <20080513063707.049448000@menage.corp.google.com>
 User-Agent: quilt/0.45-1
-Date: Mon, 12 May 2008 23:37:15 -0700
+Date: Mon, 12 May 2008 23:37:13 -0700
 From: menage@google.com
 To: pj@sgi.com, xemul@openvz.org, balbir@in.ibm.com, serue@us.ibm.com,
        akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
-Subject: [RFC/PATCH 8/8]: CGroup Files: Convert res_counter_write() to be a cgroups write_string() handler
-Content-Disposition: inline; filename=res_counter_write.patch
+Subject: [RFC/PATCH 6/8]: CGroup Files: Remove cpuset_common_file_write()
+Content-Disposition: inline; filename=cpuset_files.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently read_counter_write() is a raw file handler even though it's
-ultimately taking a number, since in some cases it wants to
-pre-process the string when converting it to a number.
+This patch tweaks the signatures of the update_cpumask() and
+update_nodemask() functions so that they can be called directly as
+handlers for the new cgroups write_string() method.
 
-This patch converts res_counter_write() from a raw file handler to a
-write_string() handler; this allows some of the boilerplate
-copying/locking/checking to be removed, and simplies the cleanup path,
-since these functions are now performed by the cgroups framework.
+This allows cpuset_common_file_write() to be removed.
 
 Signed-off-by: Paul Menage <menage@google.com>
 
 ---
- include/linux/res_counter.h |    4 ++--
- kernel/res_counter.c        |   36 +++++++++---------------------------
- mm/memcontrol.c             |   11 +++++------
- 3 files changed, 16 insertions(+), 35 deletions(-)
+ kernel/cpuset.c |   73 +++++++-------------------------------------------------
+ 1 file changed, 10 insertions(+), 63 deletions(-)
 
-Index: cgroup-2.6.25-mm1/include/linux/res_counter.h
+Index: cgroup-2.6.25-mm1/kernel/cpuset.c
 ===================================================================
---- cgroup-2.6.25-mm1.orig/include/linux/res_counter.h
-+++ cgroup-2.6.25-mm1/include/linux/res_counter.h
-@@ -63,8 +63,8 @@ u64 res_counter_read_u64(struct res_coun
- ssize_t res_counter_read(struct res_counter *counter, int member,
- 		const char __user *buf, size_t nbytes, loff_t *pos,
- 		int (*read_strategy)(unsigned long long val, char *s));
--ssize_t res_counter_write(struct res_counter *counter, int member,
--		const char __user *buf, size_t nbytes, loff_t *pos,
-+int res_counter_write(struct res_counter *counter, int member,
-+		char *buffer,
- 		int (*write_strategy)(char *buf, unsigned long long *val));
- 
- /*
-Index: cgroup-2.6.25-mm1/kernel/res_counter.c
-===================================================================
---- cgroup-2.6.25-mm1.orig/kernel/res_counter.c
-+++ cgroup-2.6.25-mm1/kernel/res_counter.c
-@@ -102,44 +102,26 @@ u64 res_counter_read_u64(struct res_coun
- 	return *res_counter_member(counter, member);
- }
- 
--ssize_t res_counter_write(struct res_counter *counter, int member,
--		const char __user *userbuf, size_t nbytes, loff_t *pos,
--		int (*write_strategy)(char *st_buf, unsigned long long *val))
-+int res_counter_write(
-+	struct res_counter *counter, int member,
-+	char *buf,
-+	int (*write_strategy)(char *st_buf, unsigned long long *val))
+--- cgroup-2.6.25-mm1.orig/kernel/cpuset.c
++++ cgroup-2.6.25-mm1/kernel/cpuset.c
+@@ -224,10 +224,6 @@ static struct cpuset top_cpuset = {
+  * The task_struct fields mems_allowed and mems_generation may only
+  * be accessed in the context of that task, so require no locks.
+  *
+- * The cpuset_common_file_write handler for operations that modify
+- * the cpuset hierarchy holds cgroup_mutex across the entire operation,
+- * single threading all such cpuset modifications across the system.
+- *
+  * The cpuset_common_file_read() handlers only hold callback_mutex across
+  * small pieces of code, such as when reading out possibly multi-word
+  * cpumasks and nodemasks.
+@@ -747,8 +743,9 @@ static void cpuset_change_cpumask(struct
+  * @cs: the cpuset to consider
+  * @buf: buffer of cpu numbers written to this cpuset
+  */
+-static int update_cpumask(struct cpuset *cs, char *buf)
++static int update_cpumask(struct cgroup *cgrp, struct cftype *cft, char *buf)
  {
--	int ret;
--	char *buf, *end;
-+	char *end;
- 	unsigned long flags;
- 	unsigned long long tmp, *val;
- 
--	buf = kmalloc(nbytes + 1, GFP_KERNEL);
--	ret = -ENOMEM;
--	if (buf == NULL)
--		goto out;
--
--	buf[nbytes] = '\0';
--	ret = -EFAULT;
--	if (copy_from_user(buf, userbuf, nbytes))
--		goto out_free;
--
--	ret = -EINVAL;
--
--	strstrip(buf);
- 	if (write_strategy) {
--		if (write_strategy(buf, &tmp)) {
--			goto out_free;
--		}
-+		if (write_strategy(buf, &tmp))
-+			return -EINVAL;
++	struct cpuset *cs = cgroup_cs(cgrp);
+ 	struct cpuset trialcs;
+ 	struct cgroup_scanner scan;
+ 	struct ptr_heap heap;
+@@ -767,7 +764,6 @@ static int update_cpumask(struct cpuset 
+ 	 * that parsing.  The validate_change() call ensures that cpusets
+ 	 * with tasks have cpus.
+ 	 */
+-	buf = strstrip(buf);
+ 	if (!*buf) {
+ 		cpus_clear(trialcs.cpus_allowed);
  	} else {
- 		tmp = simple_strtoull(buf, &end, 10);
- 		if (*end != '\0')
--			goto out_free;
-+			return -EINVAL;
- 	}
- 	spin_lock_irqsave(&counter->lock, flags);
- 	val = res_counter_member(counter, member);
- 	*val = tmp;
- 	spin_unlock_irqrestore(&counter->lock, flags);
--	ret = nbytes;
--out_free:
--	kfree(buf);
--out:
--	return ret;
-+	return 0;
- }
-Index: cgroup-2.6.25-mm1/mm/memcontrol.c
-===================================================================
---- cgroup-2.6.25-mm1.orig/mm/memcontrol.c
-+++ cgroup-2.6.25-mm1/mm/memcontrol.c
-@@ -848,13 +848,12 @@ static u64 mem_cgroup_read(struct cgroup
- 				    cft->private);
- }
+@@ -875,8 +871,9 @@ static void cpuset_migrate_mm(struct mm_
  
--static ssize_t mem_cgroup_write(struct cgroup *cont, struct cftype *cft,
--				struct file *file, const char __user *userbuf,
--				size_t nbytes, loff_t *ppos)
-+static int mem_cgroup_write(struct cgroup *cont, struct cftype *cft,
-+			    char *buffer)
+ static void *cpuset_being_rebound;
+ 
+-static int update_nodemask(struct cpuset *cs, char *buf)
++static int update_nodemask(struct cgroup *cgrp, struct cftype *cft, char *buf)
  {
- 	return res_counter_write(&mem_cgroup_from_cont(cont)->res,
--				cft->private, userbuf, nbytes, ppos,
--				mem_cgroup_write_strategy);
-+				 cft->private, buffer,
-+				 mem_cgroup_write_strategy);
- }
++	struct cpuset *cs = cgroup_cs(cgrp);
+ 	struct cpuset trialcs;
+ 	nodemask_t oldmem;
+ 	struct task_struct *p;
+@@ -902,7 +899,6 @@ static int update_nodemask(struct cpuset
+ 	 * that parsing.  The validate_change() call ensures that cpusets
+ 	 * with tasks have memory.
+ 	 */
+-	buf = strstrip(buf);
+ 	if (!*buf) {
+ 		nodes_clear(trialcs.mems_allowed);
+ 	} else {
+@@ -1201,59 +1197,6 @@ typedef enum {
+ 	FILE_SPREAD_SLAB,
+ } cpuset_filetype_t;
  
- static int mem_cgroup_reset(struct cgroup *cont, unsigned int event)
-@@ -929,7 +928,7 @@ static struct cftype mem_cgroup_files[] 
+-static ssize_t cpuset_common_file_write(struct cgroup *cont,
+-					struct cftype *cft,
+-					struct file *file,
+-					const char __user *userbuf,
+-					size_t nbytes, loff_t *unused_ppos)
+-{
+-	struct cpuset *cs = cgroup_cs(cont);
+-	cpuset_filetype_t type = cft->private;
+-	char *buffer;
+-	int retval = 0;
+-
+-	/* Crude upper limit on largest legitimate cpulist user might write. */
+-	if (nbytes > 100U + 6 * max(NR_CPUS, MAX_NUMNODES))
+-		return -E2BIG;
+-
+-	/* +1 for nul-terminator */
+-	if ((buffer = kmalloc(nbytes + 1, GFP_KERNEL)) == 0)
+-		return -ENOMEM;
+-
+-	if (copy_from_user(buffer, userbuf, nbytes)) {
+-		retval = -EFAULT;
+-		goto out1;
+-	}
+-	buffer[nbytes] = 0;	/* nul-terminate */
+-
+-	cgroup_lock();
+-
+-	if (cgroup_is_removed(cont)) {
+-		retval = -ENODEV;
+-		goto out2;
+-	}
+-
+-	switch (type) {
+-	case FILE_CPULIST:
+-		retval = update_cpumask(cs, buffer);
+-		break;
+-	case FILE_MEMLIST:
+-		retval = update_nodemask(cs, buffer);
+-		break;
+-	default:
+-		retval = -EINVAL;
+-		goto out2;
+-	}
+-
+-	if (retval == 0)
+-		retval = nbytes;
+-out2:
+-	cgroup_unlock();
+-out1:
+-	kfree(buffer);
+-	return retval;
+-}
+-
+ static int cpuset_write_u64(struct cgroup *cgrp, struct cftype *cft, u64 val)
+ {
+ 	int retval = 0;
+@@ -1412,14 +1355,18 @@ static struct cftype files[] = {
  	{
- 		.name = "limit_in_bytes",
- 		.private = RES_LIMIT,
--		.write = mem_cgroup_write,
-+		.write_string = mem_cgroup_write,
- 		.read_u64 = mem_cgroup_read,
+ 		.name = "cpus",
+ 		.read = cpuset_common_file_read,
+-		.write = cpuset_common_file_write,
++		.write_string = update_cpumask,
++		.max_write_len = (100U + 6 * NR_CPUS),
++		.lockmode = CFT_LOCK_CGL_WRITE,
+ 		.private = FILE_CPULIST,
  	},
+ 
  	{
+ 		.name = "mems",
+ 		.read = cpuset_common_file_read,
+-		.write = cpuset_common_file_write,
++		.write_string = update_nodemask,
++		.max_write_len = (100U + 6 * MAX_NUMNODES),
++		.lockmode = CFT_LOCK_CGL_WRITE,
+ 		.private = FILE_MEMLIST,
+ 	},
+ 
 
 --
