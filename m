@@ -1,102 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757316AbYEMCzU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757187AbYEMC67@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757316AbYEMCzU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 22:55:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbYEMCzG
+	id S1757187AbYEMC67 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 22:58:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbYEMC6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 22:55:06 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:44814 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753444AbYEMCzF (ORCPT
+	Mon, 12 May 2008 22:58:51 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:35052 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753444AbYEMC6u convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 22:55:05 -0400
-Date: Mon, 12 May 2008 23:54:45 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: "Michael Krufky" <mkrufky@linuxtv.org>
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "Guennadi Liakhovetski" <g.liakhovetski@pengutronix.de>,
-       "Mike Isely" <isely@pobox.com>
-Subject: Re: [patch] video: build fix for drivers/media/video/pvrusb2/
-Message-ID: <20080512235445.3a56cea0@gaivota>
-In-Reply-To: <37219a840805110534r4865623y6f9510554e2716ac@mail.gmail.com>
-References: <20080511072137.GA16772@elte.hu>
-	<37219a840805110534r4865623y6f9510554e2716ac@mail.gmail.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 12 May 2008 22:58:50 -0400
+X-IronPort-AV: E=Sophos;i="4.27,476,1204520400"; 
+   d="scan'208";a="53437923"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 1/1] [ASOC]: AD1980 audio codec ASOC driver
+Date: Tue, 13 May 2008 11:00:58 +0800
+Message-ID: <0F1B54C89D5F954D8535DB252AF412FA01F2EF2C@chinexm1.ad.analog.com>
+In-Reply-To: <20080512115416.GB23216@sirena.org.uk>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/1] [ASOC]: AD1980 audio codec ASOC driver
+Thread-Index: Aci0Ju1N3iQJsIoPRuymd96jkhq2bwAfiWYg
+References: <1210589112-12208-1-git-send-email-cooloney@kernel.org> <20080512115416.GB23216@sirena.org.uk>
+From: "Cai, Cliff" <Cliff.Cai@analog.com>
+To: "Mark Brown" <broonie@opensource.wolfsonmicro.com>,
+       "Bryan Wu" <cooloney@kernel.org>
+Cc: <liam.girdwood@wolfsonmicro.com>, <linux-kernel@vger.kernel.org>,
+       <alsa-devel@alsa-project.org>
+X-OriginalArrivalTime: 13 May 2008 02:58:47.0639 (UTC) FILETIME=[43934E70:01C8B4A5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 11 May 2008 08:34:06 -0400
-"Michael Krufky" <mkrufky@linuxtv.org> wrote:
 
-> On Sun, May 11, 2008 at 3:21 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > x86.git testing found the following build failure:
-> >
-> >  drivers/built-in.o: In function `pvr2_dvb_feed_thread':
-> >  pvrusb2-dvb.c:(.text+0x127e78): undefined reference to `dvb_dmx_swfilter'
-> >  drivers/built-in.o: In function `pvr2_dvb_adapter_exit':
-> >  pvrusb2-dvb.c:(.text+0x128357): undefined reference to `dvb_net_release'
-> >  pvrusb2-dvb.c:(.text+0x12836f): undefined reference to `dvb_dmxdev_release'
-> >  [...]
-> >
-> > with this config:
-> >
-> >  http://redhat.com/~mingo/misc/config-Sun_May_11_07_06_35_CEST_2008.bad
-> >
-> > the reason for the missing symbols is this combination:
-> >
-> >  CONFIG_VIDEO_PVRUSB2=y
-> >  CONFIG_DVB_CORE=m
-> >
-> > i.e. pvrusb2 is built-in, dvb-core is modular.
-> >
-> > This patch solves the problem by adding a dependency on DVB_CORE - this
-> > is used by other drivers such as au0828 as well. This way the pvrusb2
-> > driver can still be built, but if dvb-core is a module then it will
-> > correctly be a module as well and cannot be built-in.
-> >
-> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > ---
-> >  drivers/media/video/pvrusb2/Kconfig |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > Index: linux/drivers/media/video/pvrusb2/Kconfig
-> > ===================================================================
-> > --- linux.orig/drivers/media/video/pvrusb2/Kconfig
-> > +++ linux/drivers/media/video/pvrusb2/Kconfig
-> > @@ -1,6 +1,6 @@
-> >  config VIDEO_PVRUSB2
-> >        tristate "Hauppauge WinTV-PVR USB2 support"
-> > -       depends on VIDEO_V4L2 && I2C
-> > +       depends on VIDEO_V4L2 && I2C && DVB_CORE
-> >        select FW_LOADER
-> >        select MEDIA_TUNER
-> >        select VIDEO_TVEEPROM
-> >
+ ok,we will implement these two functions later.
+
+Best Regards
+Cliff Cai
+
+-----Original Message-----
+From: Mark Brown [mailto:broonie@opensource.wolfsonmicro.com] 
+Sent: Monday, May 12, 2008 7:54 PM
+To: Bryan Wu
+Cc: liam.girdwood@wolfsonmicro.com; linux-kernel@vger.kernel.org; Cliff
+Cai; alsa-devel@alsa-project.org
+Subject: Re: [PATCH 1/1] [ASOC]: AD1980 audio codec ASOC driver
+
+On Mon, May 12, 2008 at 06:45:12PM +0800, Bryan Wu wrote:
+> From: Cliff Cai <cliff.cai@analog.com>
 > 
-> Ingo,
-> 
-> VIDEO_PVRUSB2 should not depend on DVB_CORE unless VIDEO_PVRUSB2_DVB
-> is selected, which already depends on DVB_CORE.
-> 
-> For example, if a user has VIDEO_PVRUSB2_DVB not selected, then your
-> patch would generate a false dependency on DVB_CORE.
+> Signed-off-by: Cliff Cai <cliff.cai@analog.com>
+> Signed-off-by: Bryan Wu <cooloney@kernel.org>
 
-Maybe we can make pvrusb2 dependent of VIDEO_MEDIA. This is a DVB_CORE ||
-VIDEO_DEV. So, pvrusb should be 'm' in this case. 
-> 
-> Regards,
-> 
-> Mike Krufky
+Thanks, I've applied this to the ASoC git tree.  CCing in
+alsa-devel@alsa-project.org - ALSA patches should go via there.
 
+> +static int ad1980_soc_suspend(struct platform_device *pdev,
+> +	pm_message_t state)
+> +{
+> +	return 0;
+> +}
+> +
+> +static int ad1980_soc_resume(struct platform_device *pdev) {
+> +	return 0;
+> +}
 
-
-
-Cheers,
-Mauro
+Are you sure about these?  I would expect the suspend and resume
+functions to either do some register writes or be omitted if they don't
+do anything.  Standard AC97 codecs would have some power management via
+register 0x26 if they were doing anything.
