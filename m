@@ -1,101 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760022AbYEMPOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759288AbYEMPQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760022AbYEMPOp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 11:14:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757281AbYEMPOg
+	id S1759288AbYEMPQP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 11:16:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754636AbYEMPQA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 11:14:36 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:38241 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755635AbYEMPOf (ORCPT
+	Tue, 13 May 2008 11:16:00 -0400
+Received: from rn-out-0910.google.com ([64.233.170.187]:34472 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754775AbYEMPP7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 11:14:35 -0400
-From: Alexey Starikovskiy <astarikovskiy@suse.de>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: Move es7000_plat out of mpparse.c
-Date: Tue, 13 May 2008 19:15:04 +0400
-Message-ID: <20080513151504.25206.60437.stgit@thinkpad>
-In-Reply-To: <20080513142115.GA30314@elte.hu>
-References: <20080513142115.GA30314@elte.hu>
-User-Agent: StGIT/0.14.2
+	Tue, 13 May 2008 11:15:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Ng3YxSf1wBIIDPZViKJjnYQwC2msWapy4YmMOPFf9mtByCcnYa4E3TCbhsTrJ2rpZ8Fmqu5azzyzypdH5FOwaR+dBsav5CCuv3sg/9hW793doZenaywrynnmMxT9F7MuKZTcsWC5Z5cJUkxw6wUOko6MLi7LGcaRcJDuecSRBh8=
+Message-ID: <8bd0f97a0805130815q2ffa1d34ue87f5eb1422b6f42@mail.gmail.com>
+Date: Tue, 13 May 2008 11:15:57 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "=?ISO-8859-1?Q?J=F6rn_Engel?=" <joern@logfs.org>
+Subject: Re: [PATCH 1/1] [MTD/MAPS] Blackfin Async Flash Maps: Handle the case where flash memory and ethernet mac/phy are mapped onto the same async bank
+Cc: linux-mtd@lists.infradead.org, "Bryan Wu" <cooloney@kernel.org>,
+       dwmw2@infradead.org, will.newton@gmail.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080513150143.GA18026@logfs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <1210653525-19437-1-git-send-email-cooloney@kernel.org>
+	 <20080513080727.GA15795@logfs.org>
+	 <8bd0f97a0805130542x46f5e7fejf1347f1c71f567fb@mail.gmail.com>
+	 <20080513150143.GA18026@logfs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
----
+On Tue, May 13, 2008 at 11:01 AM, Jörn Engel wrote:
+> On Tue, 13 May 2008 08:42:08 -0400, Mike Frysinger wrote:
+>  > On Tue, May 13, 2008 at 4:07 AM, Jörn Engel wrote:
+>  > > On Tue, 13 May 2008 12:38:45 +0800, Bryan Wu wrote:
+>  > >  >
+>  > >  > +#define pr_devinit(fmt, args...) ({ static const __devinitdata char __fmt[] = fmt; printk(__fmt, ## args); })
+>  > >
+>  > >  Is this still needed?
+>  >
+>  > yes
+>
+>  Can you elaborate a bit?
 
- arch/x86/kernel/mpparse.c         |   11 ++++++-----
- arch/x86/mach-es7000/es7000plat.c |    2 ++
- include/asm-x86/system.h          |    1 -
- 3 files changed, 8 insertions(+), 6 deletions(-)
-
-
-diff --git a/arch/x86/kernel/mpparse.c b/arch/x86/kernel/mpparse.c
-index 5a18b2b..ff13423 100644
---- a/arch/x86/kernel/mpparse.c
-+++ b/arch/x86/kernel/mpparse.c
-@@ -793,15 +793,14 @@ void __init find_smp_config(void)
-                             ACPI-based MP Configuration
-    -------------------------------------------------------------------------- */
- 
--/*
-- * Keep this outside and initialized to 0, for !CONFIG_ACPI builds:
-- */
--int es7000_plat;
--
- #ifdef CONFIG_ACPI
- 
- #ifdef	CONFIG_X86_IO_APIC
- 
-+#if defined(CONFIG_X86_ES7000) || defined(CONFIG_X86_GENERICARCH)
-+extern int es7000_plat;
-+#endif
-+
- #define MP_ISA_BUS		0
- 
- static struct mp_ioapic_routing mp_ioapic_routing[MAX_IO_APICS];
-@@ -928,11 +927,13 @@ void __init mp_config_acpi_legacy_irqs(void)
- 	set_bit(MP_ISA_BUS, mp_bus_not_pci);
- 	Dprintk("Bus #%d is ISA\n", MP_ISA_BUS);
- 
-+#if defined(CONFIG_X86_ES7000) || defined(CONFIG_X86_GENERICARCH)
- 	/*
- 	 * Older generations of ES7000 have no legacy identity mappings
- 	 */
- 	if (es7000_plat == 1)
- 		return;
-+#endif
- 
- 	/*
- 	 * Locate the IOAPIC that manages the ISA IRQs (0-15).
-diff --git a/arch/x86/mach-es7000/es7000plat.c b/arch/x86/mach-es7000/es7000plat.c
-index f5d6f7d..a41c77a 100644
---- a/arch/x86/mach-es7000/es7000plat.c
-+++ b/arch/x86/mach-es7000/es7000plat.c
-@@ -52,6 +52,8 @@ static struct mip_reg		*host_reg;
- static int 			mip_port;
- static unsigned long		mip_addr, host_addr;
- 
-+int es7000_plat;
-+
- /*
-  * GSI override for ES7000 platforms.
-  */
-diff --git a/include/asm-x86/system.h b/include/asm-x86/system.h
-index df7133c..0cc278d 100644
---- a/include/asm-x86/system.h
-+++ b/include/asm-x86/system.h
-@@ -318,7 +318,6 @@ static inline void clflush(volatile void *__p)
- void disable_hlt(void);
- void enable_hlt(void);
- 
--extern int es7000_plat;
- void cpu_idle_wait(void);
- 
- extern unsigned long arch_align_stack(unsigned long sp);
-
+it's still used, therefore the definition cannot be dropped.  just
+look at the probe function.
+-mike
