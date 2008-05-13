@@ -1,81 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752393AbYEMQyP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755579AbYEMQyg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752393AbYEMQyP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 12:54:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760400AbYEMQxe
+	id S1755579AbYEMQyg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 12:54:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758015AbYEMQx5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 12:53:34 -0400
-Received: from rn-out-0910.google.com ([64.233.170.184]:46988 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760356AbYEMQxb (ORCPT
+	Tue, 13 May 2008 12:53:57 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:60008 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760750AbYEMQx4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 12:53:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=OT7+OuHUbpscN8VBBrT+dv1G67zyvvjwEODYaY+vB5seBqgRoY1aoCGy24xDS63/HAl4xMkJurl5JUpd8YdhbXLwNfluSJBQUiG/vKvp1hoOZGbDwYG65hAOFcSGndvmCdZEs3PJKv1llRYtOpdvJ1SvukaUWGI8Lvh8J//c5eU=
-Subject: Re: [PATCH 01/12] lib: create common ascii hex array
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ilpo =?ISO-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-ide <linux-ide@vger.kernel.org>,
-       linux-netdev <netdev@vger.kernel.org>,
-       David Miller <davem@davemloft.net>, Jeff Garzik <jeff@garzik.org>,
-       Ingo Molnar <mingo@elte.hu>, Jason Wessel <jason.wessel@windriver.com>,
-       David Howells <dhowells@redhat.com>,
-       "ralf@linux-mips.org" <ralf@linux-mips.org>,
-       Paul Mundt <lethal@linux-sh.org>, Paul Mackerras <paulus@samba.org>
-In-Reply-To: <Pine.LNX.4.64.0805122218240.14152@wrl-59.cs.helsinki.fi>
-References: <1210619134.24092.51.camel@brick>
-	 <Pine.LNX.4.64.0805122218240.14152@wrl-59.cs.helsinki.fi>
-Content-Type: text/plain; charset=utf-8
-Date: Tue, 13 May 2008 09:53:27 -0700
-Message-Id: <1210697607.5938.1.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 8bit
+	Tue, 13 May 2008 12:53:56 -0400
+Message-ID: <4829C5F6.8010206@freescale.com>
+Date: Tue, 13 May 2008 11:46:46 -0500
+From: Scott Wood <scottwood@freescale.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+MIME-Version: 1.0
+To: Jochen Friedrich <jochen@scram.de>
+CC: Anton Vorontsov <avorontsov@ru.mvista.com>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       "Kernel, Linux" <linux-kernel@vger.kernel.org>,
+       Kumar Gala <galak@kernel.crashing.org>, Linux I2C <i2c@lm-sensors.org>,
+       Jean Delvare <khali@linux-fr.org>
+Subject: Re: [PATCH] [POWERPC] Add i2c pins to dts and board setup
+References: <4825C445.4020004@scram.de>
+In-Reply-To: <4825C445.4020004@scram.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-05-13 at 12:55 +0300, Ilpo Järvinen wrote:
-> On Mon, 12 May 2008, Harvey Harrison wrote:
+Jochen Friedrich wrote:
+> Initialize I2C pins on boards with CPM1/CPM2 controllers.
 > 
-> > Add a common hex array in hexdump.c so everyone can use it.
-> > 
-> > Add a common hi/lo helper to avoid the shifting masking that is
-> > done to get the upper and lower nibbles of a byte value.
-> > 
-> > Pull the pack_hex_byte helper from kgdb as it is opencoded many
-> > places in the tree that will be consolidated.
-> > 
-> > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> > ---
-> >  
-> > -#define hex_asc(x)	"0123456789abcdef"[x]
-> > +
-> > +extern const char hex_asc[];
-> > +#define hex_asc_lo(x)	hex_asc[((x) & 0x0f)]
-> > +#define hex_asc_hi(x)	hex_asc[((x) & 0xf0) >> 4]
-> > +
-> > +static inline char *pack_hex_byte(char *buf, u8 byte)
-> > +{
-> > +	*buf++ = hex_asc_hi(byte);
-> > +	*buf++ = hex_asc_lo(byte);
-> > +	return buf;
-> > +}
+> Signed-off-by: Jochen Friedrich <jochen@scram.de>
+> ---
+>  arch/powerpc/boot/dts/mpc8272ads.dts         |   10 ++++++++++
+>  arch/powerpc/boot/dts/mpc866ads.dts          |   10 ++++++++++
+>  arch/powerpc/boot/dts/mpc885ads.dts          |   10 ++++++++++
+>  arch/powerpc/platforms/82xx/mpc8272_ads.c    |    4 ++++
+>  arch/powerpc/platforms/8xx/mpc86xads_setup.c |    4 ++++
+>  arch/powerpc/platforms/8xx/mpc885ads_setup.c |    3 +++
+>  6 files changed, 41 insertions(+), 0 deletions(-)
 > 
-> Any idea how much this will bloat kernel once it has, lets say 100 
-> users? 5k, 10k?
-> 
+> diff --git a/arch/powerpc/boot/dts/mpc8272ads.dts b/arch/powerpc/boot/dts/mpc8272ads.dts
+> index 46e2da3..57abcc1 100644
+> --- a/arch/powerpc/boot/dts/mpc8272ads.dts
+> +++ b/arch/powerpc/boot/dts/mpc8272ads.dts
+> @@ -217,6 +217,16 @@
+>  				linux,network-index = <1>;
+>  				fsl,cpm-command = <0x16200300>;
+>  			};
+> +
+> +			i2c@11860 {
+> +				compatible = "fsl,mpc8272-i2c",
+> +					     "fsl,cpm2-i2c",
+> +					     "fsl,cpm-i2c";
+> +				reg = <11860 20 8afc 2>;
+> +				interrupts = <1 8>;
+> +				interrupt-parent = <&PIC>;
+> +				fsl,cpm-command = <29600000>;
+> +			};
+>  		};
+>  
+>  		PIC: interrupt-controller@10c00 {
+> diff --git a/arch/powerpc/boot/dts/mpc866ads.dts b/arch/powerpc/boot/dts/mpc866ads.dts
+> index 765e43c..84c190e 100644
+> --- a/arch/powerpc/boot/dts/mpc866ads.dts
+> +++ b/arch/powerpc/boot/dts/mpc866ads.dts
+> @@ -171,6 +171,16 @@
+>  				fsl,cpm-command = <0000>;
+>  				linux,network-index = <1>;
+>  			};
+> +
+> +			i2c@860 {
+> +				compatible = "fsl,mpc866-i2c",
+> +					     "fsl,cpm1-i2c",
+> +					     "fsl,cpm-i2c";
+> +				reg = <860 20 3c80 30>;
+> +				interrupts = <10>;
+> +				interrupt-parent = <&CPM_PIC>;
+> +				fsl,cpm-command = <0010>;
+> +			};
+>  		};
+>  	};
+>  
+> diff --git a/arch/powerpc/boot/dts/mpc885ads.dts b/arch/powerpc/boot/dts/mpc885ads.dts
+> index 9895043..67d0e8d 100644
+> --- a/arch/powerpc/boot/dts/mpc885ads.dts
+> +++ b/arch/powerpc/boot/dts/mpc885ads.dts
+> @@ -215,6 +215,16 @@
+>  				fsl,cpm-command = <0x80>;
+>  				linux,network-index = <2>;
+>  			};
+> +
+> +			i2c@860 {
+> +				compatible = "fsl,mpc885-i2c",
+> +					     "fsl,cpm1-i2c",
+> +					     "fsl,cpm-i2c";
+> +				reg = <860 20 3c80 30>;
+> +				interrupts = <10>;
+> +				interrupt-parent = <&CPM_PIC>;
+> +				fsl,cpm-command = <0010>;
+> +			};
+>  		};
+>  	};
+>  
 
-No more than the existing users do open-coding the same thing all over
-the place.  If it becomes a problem, this can be out-of-lined, but
-the savings are not much.
+These are v1 dts files -- you need an 0x  prefix on the hex numbers.
 
-Harvey
-
+-Scott
