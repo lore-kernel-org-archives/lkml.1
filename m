@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760004AbYEMJZe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759820AbYEMJ0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760004AbYEMJZe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 05:25:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759862AbYEMJZI
+	id S1759820AbYEMJ0W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 05:26:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755399AbYEMJ0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 05:25:08 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:54087 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757987AbYEMJZG (ORCPT
+	Tue, 13 May 2008 05:26:09 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:18124 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753385AbYEMJ0I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 05:25:06 -0400
-Message-ID: <48295DC2.50009@yandex.ru>
-Date: Tue, 13 May 2008 12:22:10 +0300
-From: Artem Bityutskiy <dedekind@yandex.ru>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Tue, 13 May 2008 05:26:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:cc:subject:references:date:in-reply-to:message-id:user-agent:mime-version:content-type:from;
+        b=xKrFdCF+gWDWyAcMnMfWphbz2clAFcXvoqcr4QMBU9SbDlwwjb+Ze/0aeLdpV5e20wZFzro+J3ihlr4JXhaj8wPjZLwqR9v8IsM2SFsIkTC7zYE/MyGRzKzjnUYcgBNICR6O0WRHadphUnRFNJ1Eix24zLDbTtiIWs2rORKpNYQ=
+To: Tejun Heo <htejun@gmail.com>
+Cc: Harald Arnesen <skogtun.linux@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jgarzik@redhat.com>
+Subject: Re: [Bisected] Latest git will not boot on MacBook
+References: <8120cfd40805100705keff68a2kb117aab7d64f76ff@mail.gmail.com>
+	<48295773.9030301@gmail.com>
+Date: Tue, 13 May 2008 11:26:03 +0200
+In-Reply-To: <48295773.9030301@gmail.com> (Tejun Heo's message of "Tue, 13 May
+	2008 17:55:15 +0900")
+Message-ID: <87fxsmimhg.fsf@basilikum.skogtun.org>
+User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>,
-       Edward Shishkin <edward.shishkin@gmail.com>
-Subject: Re: [PATCH take 2 01/28] VFS: introduce writeback_inodes_sb()
-References: <1210070159-22794-1-git-send-email-Artem.Bityutskiy@nokia.com> <1210070159-22794-2-git-send-email-Artem.Bityutskiy@nokia.com> <20080507002345.831bc379.akpm@linux-foundation.org> <20080507080027.GA23621@infradead.org> <482951D0.3070004@yandex.ru> <20080513085959.GA23849@infradead.org>
-In-Reply-To: <20080513085959.GA23849@infradead.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 13 May 2008 09:23:49.0044 (UTC) FILETIME=[0D15F740:01C8B4DB]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=us-ascii
+From: Harald Arnesen <skogtun.harald@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> Sorry, www.infradead.org was down during the weeked when I had some time
-> to review it.  I've grabbed a copy of the new tarball now and will look
-> at it soon.
-Thanks.
+Tejun Heo <htejun@gmail.com> writes:
 
-> Also I don't think it's too late for .26 as ubifs only adds
-> new code except the writeback_inodes_sb bit which should be trivial
-> enough for .26.
+> Harald Arnesen wrote:
+>> See attached photo of screen.
+>> git bisect gives this:
+>>
+>>
+>> 78ab88f04f44bed566d51dce0c7cbfeff6449a06 is first bad commit
+>> commit 78ab88f04f44bed566d51dce0c7cbfeff6449a06
+>> Author: Tejun Heo <htejun@gmail.com>
+>> Date:   Thu May 1 23:41:41 2008 +0900
+>
+> The change was reverted and I'm trying to come up with a better
+> version. Thanks.
 
-Thanks. Though it depends on the results of your review and Linus. Let's
-see how it all goes.
-
+If you want me to test a new version on my MacBook, let me know.
 -- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+Hilsen Harald.
