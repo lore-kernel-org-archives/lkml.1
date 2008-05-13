@@ -1,84 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760172AbYEMPrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760867AbYEMPrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760172AbYEMPrR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 11:47:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbYEMPrG
+	id S1760867AbYEMPrf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 11:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758152AbYEMPrO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 11:47:06 -0400
-Received: from ns2.protei.ru ([195.239.28.26]:43730 "EHLO mail.protei.ru"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751695AbYEMPrF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 11:47:05 -0400
-Message-ID: <4829B7B3.2010300@protei.ru>
-Date: Tue, 13 May 2008 19:45:55 +0400
-From: Nickolay Vinogradov <nickolay@protei.ru>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] asm-generic/bitops/fls64.h
-References: <481E076A.8060302@protei.ru>	<20080512144507.8d770723.akpm@linux-foundation.org>	<482970DF.8020206@protei.ru> <20080513083101.96c92bd6.akpm@linux-foundation.org>
-In-Reply-To: <20080513083101.96c92bd6.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Tue, 13 May 2008 11:47:14 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:54658 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758008AbYEMPrN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 11:47:13 -0400
+Date: Tue, 13 May 2008 12:46:30 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: "Michael Krufky" <mkrufky@linuxtv.org>
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "Guennadi Liakhovetski" <g.liakhovetski@pengutronix.de>,
+       "Mike Isely" <isely@pobox.com>
+Subject: Re: [patch] video: build fix for drivers/media/video/pvrusb2/
+Message-ID: <20080513124630.111c465b@gaivota>
+In-Reply-To: <37219a840805122103u2a74b050h95c006f99ff8690f@mail.gmail.com>
+References: <20080511072137.GA16772@elte.hu>
+	<37219a840805110534r4865623y6f9510554e2716ac@mail.gmail.com>
+	<20080512235445.3a56cea0@gaivota>
+	<37219a840805122103u2a74b050h95c006f99ff8690f@mail.gmail.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton пишет:
-> On Tue, 13 May 2008 14:43:43 +0400 Nickolay Vinogradov <nickolay@protei.ru> wrote:
-> 
->> Andrew Morton __________:
->>> On Sun, 04 May 2008 22:58:50 +0400
->>> ____________________ ______________ ____________________ <nickolay@protei.ru> wrote:
->>>
->>>> bugfix in fls64 on a big endian systems(against 2.6.25).
->>>>
->>>> Signed-off-by: Nickolay Vinogradov <nickolay@protei.ru>
->>>>
->>>> --
->>>>
->>>> diff --git a/include/asm-generic/bitops/fls64.h 
->>>> b/include/asm-generic/bitops/fls64.h
->>>> index 1b6b17c..2eedb6f 100644
->>>> --- a/include/asm-generic/bitops/fls64.h
->>>> +++ b/include/asm-generic/bitops/fls64.h
->>>> @@ -8,7 +8,7 @@ static inline int fls64(__u64 x)
->>>>          __u32 h = x >> 32;
->>>>          if (h)
->>>>                  return fls(h) + 32;
->>>> -       return fls(x);
->>>> +       return fls((__u32)x);
->>>>   }
->>>>
->>>>   #endif /* _ASM_GENERIC_BITOPS_FLS64_H_ */
->>> Please describe the bug which you are fixing?
->>>
->>> Perhaps a more robust fix to <whatever the bug is> would be to
->>> repair fls() so that it works correctly when passed a u64.  Perhaps.
->> Repair fls64() so that it works correctly when passed a u64.
->>
-> 
-> Yes, but what's wrong with it now?
-> 
-> The fls() in include/asm-generic/bitops/fls.h takes an int.
-> 
-> The fls() in include/asm-x86/bitops.h takes an int.
-> 
-> So both of these will already trucate the incoming argument to 32-bits.
-> 
-> It seems that you are using a version of fls() which doesn't do this. 
-> Why?  Which architecture are you using?  Would it not be more robust to
-> fix fls()?
+On Tue, 13 May 2008 00:03:02 -0400
+"Michael Krufky" <mkrufky@linuxtv.org> wrote:
 
-include/asm-arm/bitops.h
-fls() defined here as a macro, not as a function with 32-bit argument.
-Therefore, there are two choices:
-1. explicit cast to u32 before calling.
-2. rewrite fls macro as an inline function.
+> On Mon, May 12, 2008 at 10:54 PM, Mauro Carvalho Chehab
+> <mchehab@infradead.org> wrote:
+> >
+> > On Sun, 11 May 2008 08:34:06 -0400
+> >  "Michael Krufky" <mkrufky@linuxtv.org> wrote:
+> >
+> >  > On Sun, May 11, 2008 at 3:21 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> >  > >
+> >  > > x86.git testing found the following build failure:
+> >  > >
+> >  > >  drivers/built-in.o: In function `pvr2_dvb_feed_thread':
+> >  > >  pvrusb2-dvb.c:(.text+0x127e78): undefined reference to `dvb_dmx_swfilter'
+> >  > >  drivers/built-in.o: In function `pvr2_dvb_adapter_exit':
+> >  > >  pvrusb2-dvb.c:(.text+0x128357): undefined reference to `dvb_net_release'
+> >  > >  pvrusb2-dvb.c:(.text+0x12836f): undefined reference to `dvb_dmxdev_release'
+> >  > >  [...]
+> >  > >
+> >  > > with this config:
+> >  > >
+> >  > >  http://redhat.com/~mingo/misc/config-Sun_May_11_07_06_35_CEST_2008.bad
+> >  > >
+> >  > > the reason for the missing symbols is this combination:
+> >  > >
+> >  > >  CONFIG_VIDEO_PVRUSB2=y
+> >  > >  CONFIG_DVB_CORE=m
+> >  > >
+> >  > > i.e. pvrusb2 is built-in, dvb-core is modular.
+> >  > >
+> >  > > This patch solves the problem by adding a dependency on DVB_CORE - this
+> >  > > is used by other drivers such as au0828 as well. This way the pvrusb2
+> >  > > driver can still be built, but if dvb-core is a module then it will
+> >  > > correctly be a module as well and cannot be built-in.
+> >  > >
+> >  > > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> >  > > ---
+> >  > >  drivers/media/video/pvrusb2/Kconfig |    2 +-
+> >  > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >  > >
+> >  > > Index: linux/drivers/media/video/pvrusb2/Kconfig
+> >  > > ===================================================================
+> >  > > --- linux.orig/drivers/media/video/pvrusb2/Kconfig
+> >  > > +++ linux/drivers/media/video/pvrusb2/Kconfig
+> >  > > @@ -1,6 +1,6 @@
+> >  > >  config VIDEO_PVRUSB2
+> >  > >        tristate "Hauppauge WinTV-PVR USB2 support"
+> >  > > -       depends on VIDEO_V4L2 && I2C
+> >  > > +       depends on VIDEO_V4L2 && I2C && DVB_CORE
+> >  > >        select FW_LOADER
+> >  > >        select MEDIA_TUNER
+> >  > >        select VIDEO_TVEEPROM
+> >  > >
+> >  >
+> >  > Ingo,
+> >  >
+> >  > VIDEO_PVRUSB2 should not depend on DVB_CORE unless VIDEO_PVRUSB2_DVB
+> >  > is selected, which already depends on DVB_CORE.
+> >  >
+> >  > For example, if a user has VIDEO_PVRUSB2_DVB not selected, then your
+> >  > patch would generate a false dependency on DVB_CORE.
+> >
+> >  Maybe we can make pvrusb2 dependent of VIDEO_MEDIA. This is a DVB_CORE ||
+> >  VIDEO_DEV. So, pvrusb should be 'm' in this case.
+> 
+> That sounds like it would be OK, although something like this would
+> probably be better:
+> 
+>  config VIDEO_PVRUSB2
+>        tristate "Hauppauge WinTV-PVR USB2 support"
+> -       depends on VIDEO_V4L2 && I2C
+> +       depends on VIDEO_V4L2 && I2C && (DVB_CORE if VIDEO_PVRUSB2_DVB)
+>        select FW_LOADER
+>        select MEDIA_TUNER
+>        select VIDEO_TVEEPROM
 
--- 
-Nickolay Vinogradov
-Protei Research and Development Center
-St.Petersburg, 194044, Russia
-Tel.: +7 812 449 47 27
+This doesn't look to be a good idea, since VIDEO_PVRUSB2_DVB depends on
+VIDEO_PVRUSB2. So, you'll create a circular dependency. The syntax I've
+proposed seems cleaner. Of course, it needs to be tested. IMO, all hybrid
+devices should be dependent of VIDEO_MEDIA. This will help to avoid this kind
+of issue.
+
+> I don't know if that syntax works for "depends on" , but it does work
+> for select.
+> 
+> if "depends on FOO if BAR" doesnt work, would adding "select DVB_CORE
+> if VIDEO_PVRUSB2_DVB" solve the problem?
+
+Also, this leads into a circular reference.
+
+Cheers,
+Mauro
