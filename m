@@ -1,59 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758219AbYEMQgg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758959AbYEMQhM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758219AbYEMQgg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 12:36:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755873AbYEMQg2
+	id S1758959AbYEMQhM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 12:37:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755752AbYEMQg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 12:36:28 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:52715 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755752AbYEMQg2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 12:36:28 -0400
-Message-ID: <4829C383.2090906@garzik.org>
-Date: Tue, 13 May 2008 12:36:19 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Andi Kleen <andi@firstfloor.org>, David Miller <davem@davemloft.net>,
-       corbet@lwn.net, linux-kernel@vger.kernel.org
-Subject: Re: Tracking and crediting bug reporters
-References: <4388.1210613272@vena.lwn.net>	<20080512192019.6684f719@core>	<20080512.135222.266402730.davem@davemloft.net>	<20080512220834.4449c2d4@core>	<87iqxisciu.fsf@basil.nowhere.org> <20080513115009.61d8ad39@core>
-In-Reply-To: <20080513115009.61d8ad39@core>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 13 May 2008 12:36:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54234 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755873AbYEMQg5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 12:36:57 -0400
+Date: Tue, 13 May 2008 09:35:54 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andres Salomon <dilinger@queued.net>,
+       Jens Rottmann <JRottmann@LiPPERT-AT.de>, jordan.crouse@amd.com,
+       linux-kernel@vger.kernel.org, linux-geode@bombadil.infradead.org,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: lxfb driver regression
+Message-Id: <20080513093554.64466981.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0805130847150.3019@woody.linux-foundation.org>
+References: <20080507210836.1eb61b8f@ephemeral>
+	<48230694.5010505@LiPPERT-AT.de>
+	<20080512185148.104fc4c3@ephemeral>
+	<alpine.LFD.1.10.0805130847150.3019@woody.linux-foundation.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> Those would just default to not being credited. Where is the problem?
+On Tue, 13 May 2008 08:48:02 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
 > 
-> We need to be sure that people understand that when submitting patches
-> they must not put Discovered-by: lines in without asking. This is
-> essentially a documentation matter which is why I directed the original
-> reply to Jonathan.
+> 
+> On Mon, 12 May 2008, Andres Salomon wrote:
+> > 
+> > Sorry for the delay, I got around to testing this today.  It works
+> > much better on an XO, so I've ack'd it.
+> 
+> If people expect me to apply that patch, I hope they'll re-send (with acks 
+> etc). Otherwise I just expect I'll get it through the normal fbdev queues 
+> (which is often Andrew, but shouldn't be).
+> 
 
-I tend to put the credit in the patch description text, /without/ an 
-email address by default, since I don't feel as comfortable stamping 
-users' email addresses into the kernel changelog without their 
-permission, and (I'm lazy) asking permission is another email 
-round-trip.  So my format is
+It got confusing.  Turns out that I had a speculative revert patch,
+followed by a new patch with an identical changelog to the first one.
 
-	blah blah blah patch description blah blah blah
-	blah blah blah patch description blah blah blah
-	blah blah blah patch description blah blah blah
+I folded them together and below is what I presently have against
+mainline, but I have no changelog describing what it fixes.
 
-	Bug found by Lucifer Smith.
+Can someone send some text please?
 
-	Signed-off-by: Tejun <tejun@something.com>
-	Signed-off-by: Jeff Garzik <me@somethingelse.com>
-
-Regards,
-
-	Jeff
-
+--- a/drivers/video/geode/lxfb_ops.c~fix-lxfb-extend-pll-table-to-support-dotclocks-below-25-mhz
++++ a/drivers/video/geode/lxfb_ops.c
+@@ -63,54 +63,32 @@ static const struct {
+   { 0x00014284,  19688 },
+   { 0x00011104,  20400 },
+   { 0x00016363,  23625 },
+-  { 0x00015303,  24380 },
+   { 0x000031AC,  24923 },
+   { 0x0000215D,  25175 },
+   { 0x00001087,  27000 },
+   { 0x0000216C,  28322 },
+   { 0x0000218D,  28560 },
+-  { 0x00010041,  29913 },
+   { 0x000010C9,  31200 },
+   { 0x00003147,  31500 },
+-  { 0x000141A1,  32400 },
+   { 0x000010A7,  33032 },
+-  { 0x00012182,  33375 },
+-  { 0x000141B1,  33750 },
+   { 0x00002159,  35112 },
+   { 0x00004249,  35500 },
+   { 0x00000057,  36000 },
+-  { 0x000141E1,  37125 },
+   { 0x0000219A,  37889 },
+   { 0x00002158,  39168 },
+   { 0x00000045,  40000 },
+-  { 0x000131A1,  40500 },
+-  { 0x00010061,  42301 },
+   { 0x00000089,  43163 },
+-  { 0x00012151,  43875 },
+   { 0x000010E7,  44900 },
+   { 0x00002136,  45720 },
+-  { 0x000152E1,  47250 },
+-  { 0x00010071,  48000 },
+   { 0x00003207,  49500 },
+   { 0x00002187,  50000 },
+-  { 0x00014291,  50625 },
+-  { 0x00011101,  51188 },
+-  { 0x00017481,  54563 },
+   { 0x00004286,  56250 },
+-  { 0x00014170,  57375 },
+-  { 0x00016210,  58500 },
+   { 0x000010E5,  60065 },
+-  { 0x00013140,  62796 },
+   { 0x00004214,  65000 },
+-  { 0x00016250,  65250 },
+   { 0x00001105,  68179 },
+-  { 0x000141C0,  69600 },
+-  { 0x00015220,  70160 },
+-  { 0x00010050,  72000 },
+   { 0x000031E4,  74250 },
+   { 0x00003183,  75000 },
+   { 0x00004284,  78750 },
+-  { 0x00012130,  80052 },
+   { 0x00001104,  81600 },
+   { 0x00006363,  94500 },
+   { 0x00005303,  97520 },
+_
 
