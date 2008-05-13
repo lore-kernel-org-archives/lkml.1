@@ -1,110 +1,334 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758553AbYEMGLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758753AbYEMGMQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758553AbYEMGLR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 02:11:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756378AbYEMGLD
+	id S1758753AbYEMGMQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 02:12:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756395AbYEMGME
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 02:11:03 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:4350 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755783AbYEMGLB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 02:11:01 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=dWQs4SkFg4R6JAngy5vU2fskxhGbaBpL2NQ/6ho3n/bqCRwhwsTevCbXoZO84zQ9D
-	jp340S7CQQpTMcmHNcryA==
-Message-ID: <6599ad830805122310q2f403745kd114ec11a8e51b1d@mail.gmail.com>
-Date: Mon, 12 May 2008 23:10:48 -0700
-From: "Paul Menage" <menage@google.com>
-To: balbir@linux.vnet.ibm.com
-Subject: Re: [Libcg-devel] cgroupstats, plans?
-Cc: "Dhaval Giani" <dhaval@linux.vnet.ibm.com>, vivk@us.ibm.com,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Balbir Singh" <balbir@in.ibm.com>,
-       "Srivatsa Vaddagiri" <vatsa@linux.vnet.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       libcg-devel <libcg-devel@lists.sourceforge.net>,
-       "Balaji Rao" <balajirrao@gmail.com>
-In-Reply-To: <481ADB66.1010007@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080429122019.GE9585@linux.vnet.ibm.com>
-	 <6599ad830805011852t7dc6de32qd4c105a51c2fee06@mail.gmail.com>
-	 <481ADB66.1010007@linux.vnet.ibm.com>
+	Tue, 13 May 2008 02:12:04 -0400
+Received: from mo10.iij4u.or.jp ([210.138.174.78]:54052 "EHLO mo10.iij4u.or.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756378AbYEMGMD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 02:12:03 -0400
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, muli@il.ibm.com, alexisb@us.ibm.com,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH 2/2] x86: per-device dma_mapping_ops support
+Date: Tue, 13 May 2008 15:04:52 +0900
+Message-Id: <1210658692-960-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: git-send-email 1.5.4.2
+In-Reply-To: <1210658692-960-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+References: <1210658692-960-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+ <1210658692-960-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 2, 2008 at 2:14 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->
->  I would prefer to select the controller from user stats and then dump the stats
->  from the kernel for that controller using cgroupstats.
->
+This adds per-device dma_mapping_ops support for CONFIG_X86_64.
 
-Yes, that's fine if you're not worried about the cost of some stats
-being excessive. I'm not sure whether that's going to be the case or
-not. What about those control files that are of type string? Do we
-want to return them as stats?
+A pointer to dma_mapping_ops to struct dev_archdata is added. If the
+pointer is non NULL, DMA operations in asm/dma-mapping.h use it. If
+it's NULL, the system-wide dma_ops pointer is used as before.
 
-If we're going to use the cgroupstats API, I think we should avoid
-having to have each controller have to publish a binary API - we have
-the name->type information already in the control file structures.
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ arch/x86/kernel/pci-calgary_64.c |    2 +-
+ arch/x86/kernel/pci-dma.c        |    2 +-
+ arch/x86/kernel/pci-gart_64.c    |    2 +-
+ arch/x86/kernel/pci-nommu.c      |   14 +-----
+ arch/x86/kernel/pci-swiotlb_64.c |    2 +-
+ include/asm-x86/device.h         |    3 +
+ include/asm-x86/dma-mapping.h    |   95 ++++++++++++++++++++++++++------------
+ 7 files changed, 74 insertions(+), 46 deletions(-)
 
-So how about something like this as the hard-coded part of the API?
-(probably needs to be tidied up to fit into the taskstats format)
+diff --git a/arch/x86/kernel/pci-calgary_64.c b/arch/x86/kernel/pci-calgary_64.c
+index e28ec49..dca9a82 100644
+--- a/arch/x86/kernel/pci-calgary_64.c
++++ b/arch/x86/kernel/pci-calgary_64.c
+@@ -541,7 +541,7 @@ error:
+ 	return ret;
+ }
+ 
+-static const struct dma_mapping_ops calgary_dma_ops = {
++static struct dma_mapping_ops calgary_dma_ops = {
+ 	.alloc_coherent = calgary_alloc_coherent,
+ 	.map_single = calgary_map_single,
+ 	.unmap_single = calgary_unmap_single,
+diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
+index 0c37f16..33ded93 100644
+--- a/arch/x86/kernel/pci-dma.c
++++ b/arch/x86/kernel/pci-dma.c
+@@ -11,7 +11,7 @@
+ int forbid_dac __read_mostly;
+ EXPORT_SYMBOL(forbid_dac);
+ 
+-const struct dma_mapping_ops *dma_ops;
++struct dma_mapping_ops *dma_ops;
+ EXPORT_SYMBOL(dma_ops);
+ 
+ static int iommu_sac_force __read_mostly;
+diff --git a/arch/x86/kernel/pci-gart_64.c b/arch/x86/kernel/pci-gart_64.c
+index e1a6954..8469f76 100644
+--- a/arch/x86/kernel/pci-gart_64.c
++++ b/arch/x86/kernel/pci-gart_64.c
+@@ -621,7 +621,7 @@ static __init int init_k8_gatt(struct agp_kern_info *info)
+ 
+ extern int agp_amd64_init(void);
+ 
+-static const struct dma_mapping_ops gart_dma_ops = {
++static struct dma_mapping_ops gart_dma_ops = {
+ 	.map_single			= gart_map_single,
+ 	.map_simple			= gart_map_simple,
+ 	.unmap_single			= gart_unmap_single,
+diff --git a/arch/x86/kernel/pci-nommu.c b/arch/x86/kernel/pci-nommu.c
+index 05d70b8..67cc5ee 100644
+--- a/arch/x86/kernel/pci-nommu.c
++++ b/arch/x86/kernel/pci-nommu.c
+@@ -72,21 +72,9 @@ static int nommu_map_sg(struct device *hwdev, struct scatterlist *sg,
+ 	return nents;
+ }
+ 
+-/* Make sure we keep the same behaviour */
+-static int nommu_mapping_error(struct device *hwdev, dma_addr_t dma_addr)
+-{
+-#ifdef CONFIG_X86_32
+-	return 0;
+-#else
+-	return (dma_addr == bad_dma_address);
+-#endif
+-}
+-
+-
+-const struct dma_mapping_ops nommu_dma_ops = {
++struct dma_mapping_ops nommu_dma_ops = {
+ 	.map_single = nommu_map_single,
+ 	.map_sg = nommu_map_sg,
+-	.mapping_error = nommu_mapping_error,
+ 	.is_phys = 1,
+ };
+ 
+diff --git a/arch/x86/kernel/pci-swiotlb_64.c b/arch/x86/kernel/pci-swiotlb_64.c
+index 490da7f..a464016 100644
+--- a/arch/x86/kernel/pci-swiotlb_64.c
++++ b/arch/x86/kernel/pci-swiotlb_64.c
+@@ -18,7 +18,7 @@ swiotlb_map_single_phys(struct device *hwdev, phys_addr_t paddr, size_t size,
+ 	return swiotlb_map_single(hwdev, phys_to_virt(paddr), size, direction);
+ }
+ 
+-const struct dma_mapping_ops swiotlb_dma_ops = {
++struct dma_mapping_ops swiotlb_dma_ops = {
+ 	.mapping_error = swiotlb_dma_mapping_error,
+ 	.alloc_coherent = swiotlb_alloc_coherent,
+ 	.free_coherent = swiotlb_free_coherent,
+diff --git a/include/asm-x86/device.h b/include/asm-x86/device.h
+index 87a7153..3c034f4 100644
+--- a/include/asm-x86/device.h
++++ b/include/asm-x86/device.h
+@@ -5,6 +5,9 @@ struct dev_archdata {
+ #ifdef CONFIG_ACPI
+ 	void	*acpi_handle;
+ #endif
++#ifdef CONFIG_X86_64
++struct dma_mapping_ops *dma_ops;
++#endif
+ #ifdef CONFIG_DMAR
+ 	void *iommu; /* hook for IOMMU specific extension */
+ #endif
+diff --git a/include/asm-x86/dma-mapping.h b/include/asm-x86/dma-mapping.h
+index 69626b6..feb9a53 100644
+--- a/include/asm-x86/dma-mapping.h
++++ b/include/asm-x86/dma-mapping.h
+@@ -58,14 +58,33 @@ struct dma_mapping_ops {
+ 	int		is_phys;
+ };
+ 
+-extern const struct dma_mapping_ops *dma_ops;
++extern struct dma_mapping_ops *dma_ops;
+ 
++static inline struct dma_mapping_ops *get_dma_ops(struct device *dev)
++{
++#ifdef CONFIG_X86_32
++	return dma_ops;
++#else
++	if (unlikely(!dev) || !dev->archdata.dma_ops)
++		return dma_ops;
++	else
++		return dev->archdata.dma_ops;
++#endif
++}
++
++/* Make sure we keep the same behaviour */
+ static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
+ {
+-	if (dma_ops->mapping_error)
+-		return dma_ops->mapping_error(dev, dma_addr);
++	struct dma_mapping_ops *ops = get_dma_ops(dev);
++
++#ifdef CONFIG_X86_32
++	return 0;
++#else
++	if (ops->mapping_error)
++		return ops->mapping_error(dev, dma_addr);
+ 
+ 	return (dma_addr == bad_dma_address);
++#endif
+ }
+ 
+ #define dma_alloc_noncoherent(d, s, h, f) dma_alloc_coherent(d, s, h, f)
+@@ -85,44 +104,53 @@ static inline dma_addr_t
+ dma_map_single(struct device *hwdev, void *ptr, size_t size,
+ 	       int direction)
+ {
++	struct dma_mapping_ops *ops = get_dma_ops(hwdev);
++
+ 	BUG_ON(!valid_dma_direction(direction));
+-	return dma_ops->map_single(hwdev, virt_to_phys(ptr), size, direction);
++	return ops->map_single(hwdev, virt_to_phys(ptr), size, direction);
+ }
+ 
+ static inline void
+ dma_unmap_single(struct device *dev, dma_addr_t addr, size_t size,
+ 		 int direction)
+ {
++	struct dma_mapping_ops *ops = get_dma_ops(dev);
++
+ 	BUG_ON(!valid_dma_direction(direction));
+-	if (dma_ops->unmap_single)
+-		dma_ops->unmap_single(dev, addr, size, direction);
++	if (ops->unmap_single)
++		ops->unmap_single(dev, addr, size, direction);
+ }
+ 
+ static inline int
+ dma_map_sg(struct device *hwdev, struct scatterlist *sg,
+ 	   int nents, int direction)
+ {
++	struct dma_mapping_ops *ops = get_dma_ops(hwdev);
++
+ 	BUG_ON(!valid_dma_direction(direction));
+-	return dma_ops->map_sg(hwdev, sg, nents, direction);
++	return ops->map_sg(hwdev, sg, nents, direction);
+ }
+ 
+ static inline void
+ dma_unmap_sg(struct device *hwdev, struct scatterlist *sg, int nents,
+ 	     int direction)
+ {
++	struct dma_mapping_ops *ops = get_dma_ops(hwdev);
++
+ 	BUG_ON(!valid_dma_direction(direction));
+-	if (dma_ops->unmap_sg)
+-		dma_ops->unmap_sg(hwdev, sg, nents, direction);
++	if (ops->unmap_sg)
++		ops->unmap_sg(hwdev, sg, nents, direction);
+ }
+ 
+ static inline void
+ dma_sync_single_for_cpu(struct device *hwdev, dma_addr_t dma_handle,
+ 			size_t size, int direction)
+ {
++	struct dma_mapping_ops *ops = get_dma_ops(hwdev);
++
+ 	BUG_ON(!valid_dma_direction(direction));
+-	if (dma_ops->sync_single_for_cpu)
+-		dma_ops->sync_single_for_cpu(hwdev, dma_handle, size,
+-					     direction);
++	if (ops->sync_single_for_cpu)
++		ops->sync_single_for_cpu(hwdev, dma_handle, size, direction);
+ 	flush_write_buffers();
+ }
+ 
+@@ -130,10 +158,11 @@ static inline void
+ dma_sync_single_for_device(struct device *hwdev, dma_addr_t dma_handle,
+ 			   size_t size, int direction)
+ {
++	struct dma_mapping_ops *ops = get_dma_ops(hwdev);
++
+ 	BUG_ON(!valid_dma_direction(direction));
+-	if (dma_ops->sync_single_for_device)
+-		dma_ops->sync_single_for_device(hwdev, dma_handle, size,
+-						direction);
++	if (ops->sync_single_for_device)
++		ops->sync_single_for_device(hwdev, dma_handle, size, direction);
+ 	flush_write_buffers();
+ }
+ 
+@@ -141,11 +170,12 @@ static inline void
+ dma_sync_single_range_for_cpu(struct device *hwdev, dma_addr_t dma_handle,
+ 			      unsigned long offset, size_t size, int direction)
+ {
+-	BUG_ON(!valid_dma_direction(direction));
+-	if (dma_ops->sync_single_range_for_cpu)
+-		dma_ops->sync_single_range_for_cpu(hwdev, dma_handle, offset,
+-						   size, direction);
++	struct dma_mapping_ops *ops = get_dma_ops(hwdev);
+ 
++	BUG_ON(!valid_dma_direction(direction));
++	if (ops->sync_single_range_for_cpu)
++		ops->sync_single_range_for_cpu(hwdev, dma_handle, offset,
++					       size, direction);
+ 	flush_write_buffers();
+ }
+ 
+@@ -154,11 +184,12 @@ dma_sync_single_range_for_device(struct device *hwdev, dma_addr_t dma_handle,
+ 				 unsigned long offset, size_t size,
+ 				 int direction)
+ {
+-	BUG_ON(!valid_dma_direction(direction));
+-	if (dma_ops->sync_single_range_for_device)
+-		dma_ops->sync_single_range_for_device(hwdev, dma_handle,
+-						      offset, size, direction);
++	struct dma_mapping_ops *ops = get_dma_ops(hwdev);
+ 
++	BUG_ON(!valid_dma_direction(direction));
++	if (ops->sync_single_range_for_device)
++		ops->sync_single_range_for_device(hwdev, dma_handle,
++						  offset, size, direction);
+ 	flush_write_buffers();
+ }
+ 
+@@ -166,9 +197,11 @@ static inline void
+ dma_sync_sg_for_cpu(struct device *hwdev, struct scatterlist *sg,
+ 		    int nelems, int direction)
+ {
++	struct dma_mapping_ops *ops = get_dma_ops(hwdev);
++
+ 	BUG_ON(!valid_dma_direction(direction));
+-	if (dma_ops->sync_sg_for_cpu)
+-		dma_ops->sync_sg_for_cpu(hwdev, sg, nelems, direction);
++	if (ops->sync_sg_for_cpu)
++		ops->sync_sg_for_cpu(hwdev, sg, nelems, direction);
+ 	flush_write_buffers();
+ }
+ 
+@@ -176,9 +209,11 @@ static inline void
+ dma_sync_sg_for_device(struct device *hwdev, struct scatterlist *sg,
+ 		       int nelems, int direction)
+ {
++	struct dma_mapping_ops *ops = get_dma_ops(hwdev);
++
+ 	BUG_ON(!valid_dma_direction(direction));
+-	if (dma_ops->sync_sg_for_device)
+-		dma_ops->sync_sg_for_device(hwdev, sg, nelems, direction);
++	if (ops->sync_sg_for_device)
++		ops->sync_sg_for_device(hwdev, sg, nelems, direction);
+ 
+ 	flush_write_buffers();
+ }
+@@ -187,9 +222,11 @@ static inline dma_addr_t dma_map_page(struct device *dev, struct page *page,
+ 				      size_t offset, size_t size,
+ 				      int direction)
+ {
++	struct dma_mapping_ops *ops = get_dma_ops(dev);
++
+ 	BUG_ON(!valid_dma_direction(direction));
+-	return dma_ops->map_single(dev, page_to_phys(page)+offset,
+-				   size, direction);
++	return ops->map_single(dev, page_to_phys(page) + offset,
++			       size, direction);
+ }
+ 
+ static inline void dma_unmap_page(struct device *dev, dma_addr_t addr,
+-- 
+1.5.4.2
 
-a new command CGROUP_STATS_GET_API which returns a sequence of
-structures of the form:
-
-struct cgroup_stat_subsys {
-  u32 reclen;
-  u32 id;
-  u32 numstats;
-  char name[];
-};
-
-enum {
-  CGROUP_STAT_TYPE_U64,
-  CGROUP_STAT_TYPE_S64,
-  CGROUP_STAT_TYPE_STRING, /* maybe */
-  CGROUP_STAT_TYPE_U64MAP,
-};
-
-struct cgroup_stat_type {
-  u32 reclen;
-  u32 id;
-  u32 type;
-  char name[];
-};
-
-When the user sends a CGROUP_STATS_GET_API request they get a sequence
-of cgroup_stat_subsys records (one for each subsystem on that
-hierarchy), each followed by the stats available for that subsystem.
-E.g.
-
-{ 0, 3, "memory" }
-{ 0, CGROUP_STAT_TYPE_U64, "usage_in_bytes" }
-{ 1, CGROUP_STAT_TYPE_U64, "limit_in_bytes" }
-{ 2, CGROUP_STAT_TYPE_U64MAP, "stat" }
-{ 1, 1, "cpuacct" }
-{ 0, CGROUP_STAT_TYPE_U64, "usage" }
-
-a new command CGROUP_SET_STATS_REQUEST that lets you tie a particular
-set of stats to a given socket. E.g. the parameter structure could be
-something like a sequence of records of the form:
-
-struct cgroup_stats_request {
-  u32 subsys_id;
-  u32 stat_id;
-}
-
-Following a successful CGROUP_SET_STATS_REQUEST command, the user
-could send a CGROUP_DUMP_STATS command on the same socket to get a
-dump of the requested stats in the specified order.
-
-Paul
