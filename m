@@ -1,61 +1,199 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760502AbYEMX1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759146AbYEMX55@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760502AbYEMX1R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 19:27:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756812AbYEMX05
+	id S1759146AbYEMX55 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 19:57:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756212AbYEMX5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 19:26:57 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:49223 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756654AbYEMX0z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 19:26:55 -0400
-Message-ID: <482A23B8.7050705@pobox.com>
-Date: Tue, 13 May 2008 19:26:48 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Greg KH <greg@kroah.com>, netdev@vger.kernel.org,
-       Andrew Bird <ajb@spheresystems.co.uk>,
-       Javier Marcet <javier@krausbeck.org>, Filip Aben <f.aben@option.com>,
-       Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
-       Oliver Neukum <oliver@neukum.org>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] HSO: add option hso driver
-References: <20080513215134.GC6139@kroah.com> <20080513232727.21c74bb2@core>
-In-Reply-To: <20080513232727.21c74bb2@core>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 13 May 2008 19:57:46 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:32990 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755549AbYEMX5q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 19:57:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=sdXIIyIT1Tc/CAfwzyUKZ5bECbdXXJ11o6m7dieDSNVvb/AWX1q5vEd+tnzHD/IyLn+s88/5xZA9Vlw8ugTOKCL0gPzO8ahQH9hz/RwLpWLCQscGDMgxXXNwiV/DdH6pq42f4lvCA/8kKetvZ5wAS5gMJnLcGk7ixC3behTIo4o=
+Subject: [PATCH 1/3] lib: vsprintf.c pull out two small helpers
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Alexey Dobriyan <adobriyan@gmail.com>
+Content-Type: text/plain
+Date: Tue, 13 May 2008 16:57:43 -0700
+Message-Id: <1210723063.6191.10.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> Jeff, please queue this up for 2.6.27 if there are no problems that you
->> can see.  It has been in the linux-next tree for a while, and many users
->> are reporting that it is working for them.
->>
->> Or if you feel it's ok for 2.6.26, I will not object to that either :)
-> 
-> Can we get it into 2.6.26 - its a driver for new hardware and the driver
-> is going to get a clean up for 2.6.27 anyway.
-> 
-> Comments below are minor and I don't think blockers
-> 
-> So for the serial side
-> 
-> Acked-by: Alan Cox <alan@redhat.com>
+The logic for guessing what number base when none is specified is
+pulled out into a common helper.  Small codingstyle changes while
+in the area.
 
-AFAIK new drivers are OK post-rc1, since no possibility of regression 
-and it enables new users.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ lib/vsprintf.c |  101 ++++++++++++++++++++++++++++---------------------------
+ 1 files changed, 51 insertions(+), 50 deletions(-)
 
-However, an exception to that might be a super-huge driver slipped in at 
-the last minute with no review (clearly not the case here)
-
-	Jeff
-
+diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+index 6021757..dc5c3ae 100644
+--- a/lib/vsprintf.c
++++ b/lib/vsprintf.c
+@@ -29,40 +29,51 @@
+ /* Works only for digits and letters, but small and fast */
+ #define TOLOWER(x) ((x) | 0x20)
+ 
++static unsigned int simple_guess_base(const char *cp)
++{
++	if (cp[0] == '0') {
++		if (TOLOWER(cp[1]) == 'x')
++			return 16;
++		return 8;
++	} else {
++		return 10;
++	}
++}
++
++static u8 chartou8(char ch)
++{
++	if (isdigit(ch))
++		return ch - '0';
++	else
++		return TOLOWER(ch) - 'a' + 10;
++}
++
+ /**
+  * simple_strtoul - convert a string to an unsigned long
+  * @cp: The start of the string
+  * @endp: A pointer to the end of the parsed string will be placed here
+  * @base: The number base to use
+  */
+-unsigned long simple_strtoul(const char *cp,char **endp,unsigned int base)
++unsigned long simple_strtoul(const char *cp, char **endp, unsigned int base)
+ {
+-	unsigned long result = 0,value;
++	unsigned long result = 0;
++	u8 value;
+ 
+-	if (!base) {
+-		base = 10;
+-		if (*cp == '0') {
+-			base = 8;
+-			cp++;
+-			if ((TOLOWER(*cp) == 'x') && isxdigit(cp[1])) {
+-				cp++;
+-				base = 16;
+-			}
+-		}
+-	} else if (base == 16) {
+-		if (cp[0] == '0' && TOLOWER(cp[1]) == 'x')
++	if (!base)
++		base = simple_guess_base(cp);
++
++	if (base == 16 && cp[0] == '0' && TOLOWER(cp[1]) == 'x')
+ 			cp += 2;
+-	}
+-	while (isxdigit(*cp) &&
+-	       (value = isdigit(*cp) ? *cp-'0' : TOLOWER(*cp)-'a'+10) < base) {
+-		result = result*base + value;
++
++	while (isxdigit(*cp) && (value = chartou8(*cp) < base)) {
++		result = result * base + value;
+ 		cp++;
+ 	}
++
+ 	if (endp)
+ 		*endp = (char *)cp;
+ 	return result;
+ }
+-
+ EXPORT_SYMBOL(simple_strtoul);
+ 
+ /**
+@@ -71,13 +82,12 @@ EXPORT_SYMBOL(simple_strtoul);
+  * @endp: A pointer to the end of the parsed string will be placed here
+  * @base: The number base to use
+  */
+-long simple_strtol(const char *cp,char **endp,unsigned int base)
++long simple_strtol(const char *cp, char **endp, unsigned int base)
+ {
+-	if(*cp=='-')
+-		return -simple_strtoul(cp+1,endp,base);
+-	return simple_strtoul(cp,endp,base);
++	if(*cp == '-')
++		return -simple_strtoul(cp + 1, endp, base);
++	return simple_strtoul(cp, endp, base);
+ }
+-
+ EXPORT_SYMBOL(simple_strtol);
+ 
+ /**
+@@ -86,34 +96,26 @@ EXPORT_SYMBOL(simple_strtol);
+  * @endp: A pointer to the end of the parsed string will be placed here
+  * @base: The number base to use
+  */
+-unsigned long long simple_strtoull(const char *cp,char **endp,unsigned int base)
++unsigned long long simple_strtoull(const char *cp, char **endp, unsigned int base)
+ {
+-	unsigned long long result = 0,value;
++	unsigned long long result = 0;
++	u8 value;
+ 
+-	if (!base) {
+-		base = 10;
+-		if (*cp == '0') {
+-			base = 8;
+-			cp++;
+-			if ((TOLOWER(*cp) == 'x') && isxdigit(cp[1])) {
+-				cp++;
+-				base = 16;
+-			}
+-		}
+-	} else if (base == 16) {
+-		if (cp[0] == '0' && TOLOWER(cp[1]) == 'x')
+-			cp += 2;
+-	}
+-	while (isxdigit(*cp)
+-	 && (value = isdigit(*cp) ? *cp-'0' : TOLOWER(*cp)-'a'+10) < base) {
+-		result = result*base + value;
++	if (!base)
++		base = simple_guess_base(cp);
++
++	if (base == 16 && cp[0] == '0' && TOLOWER(cp[1]) == 'x')
++		cp += 2;
++
++	while (isxdigit(*cp) && (value = chartou8(*cp) < base)) {
++		result = result * base + value;
+ 		cp++;
+ 	}
++
+ 	if (endp)
+ 		*endp = (char *)cp;
+ 	return result;
+ }
+-
+ EXPORT_SYMBOL(simple_strtoull);
+ 
+ /**
+@@ -124,12 +126,11 @@ EXPORT_SYMBOL(simple_strtoull);
+  */
+ long long simple_strtoll(const char *cp,char **endp,unsigned int base)
+ {
+-	if(*cp=='-')
+-		return -simple_strtoull(cp+1,endp,base);
+-	return simple_strtoull(cp,endp,base);
++	if (*cp == '-')
++		return -simple_strtoull(cp + 1, endp, base);
++	return simple_strtoull(cp, endp, base);
+ }
+ 
+-
+ /**
+  * strict_strtoul - convert a string to an unsigned long strictly
+  * @cp: The string to be converted
+-- 
+1.5.5.1.482.g0f174
 
 
