@@ -1,38 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757458AbYEMSqZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757627AbYEMSvy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757458AbYEMSqZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 14:46:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753928AbYEMSqR
+	id S1757627AbYEMSvy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 14:51:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754844AbYEMSvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 14:46:17 -0400
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:6021 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753090AbYEMSqQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 14:46:16 -0400
-X-IronPort-AV: E=Sophos;i="4.27,480,1204531200"; 
-   d="scan'208";a="46469615"
-From: Roland Dreier <rdreier@cisco.com>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Roland Dreier <rolandd@cisco.com>, Sean Hefty <sean.hefty@intel.com>,
-       Hal Rosenstock <hal.rosenstock@gmail.com>,
-       John Gregor <john.gregor@qlogic.com>, general@lists.openfabrics.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][INFINIBAND]: Make ipath_portdata work with struct pid * not pid_t.
-References: <482857AE.2030904@openvz.org>
-X-Message-Flag: Warning: May contain useful information
-Date: Tue, 13 May 2008 11:46:13 -0700
-In-Reply-To: <482857AE.2030904@openvz.org> (Pavel Emelyanov's message of "Mon,
-	12 May 2008 18:43:58 +0400")
-Message-ID: <ada4p92kpoq.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Tue, 13 May 2008 14:51:46 -0400
+Received: from www.tglx.de ([62.245.132.106]:44489 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754828AbYEMSvp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 14:51:45 -0400
+Date: Tue, 13 May 2008 20:51:38 +0200
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Johann Baudy <johaahn@gmail.com>
+Cc: hjk@linutronix.de, gregkh@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: UIO: phys_mem_access_prot() miss?
+Message-ID: <20080513185137.GA3342@local>
+References: <7e0dd21a0805130655xd8b1c8ap9a329943e25fe6fb@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 13 May 2008 18:46:13.0770 (UTC) FILETIME=[9E8286A0:01C8B529]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <7e0dd21a0805130655xd8b1c8ap9a329943e25fe6fb@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-thanks, applied
+On Tue, May 13, 2008 at 03:55:29PM +0200, Johann Baudy wrote:
+> Hi Hans, Greg,
+> 
+> I need some help on UIO driver.
+> I have to add this below workaround (in uio.c) to be able to access
+> phys memory from user space.
+> I'm currently using PPC arch.
+> Am I wrong? or Is it a miss?
+> 
+> static int uio_mmap(struct file *filep, struct vm_area_struct *vma)
+> {
+> 
+> ...
+> 	switch (idev->info->mem[mi].memtype) {
+> 		case UIO_MEM_PHYS:
+> +       	vma->vm_page_prot = phys_mem_access_prot(filep,
+> +            idev->info->mem[mi].addr >> PAGE_SHIFT,
+> +						 vma->vm_end - vma->vm_start,
+> +						 vma->vm_page_prot);
+> 			return uio_mmap_physical(vma);
+> 		case UIO_MEM_LOGICAL:
+> ...
+> 
+> }
+> 
+> FYI: I've copied those lines from mem char driver in mmap_mem().
+
+Hi Johann,
+what kernel are you using? Similar problems were reported before, and
+we've already applied a patch that should fix it. I think it hit
+mainline shortly before the 2.6.25 release. uio_mmap() should work with
+kernels >= 2.6.25 for PPC.
+
+Thanks,
+Hans
+
