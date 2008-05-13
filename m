@@ -1,105 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759258AbYEMTJZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758128AbYEMTQm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759258AbYEMTJZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 15:09:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756071AbYEMTJN
+	id S1758128AbYEMTQm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 15:16:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753887AbYEMTQe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 15:09:13 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:38204 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756018AbYEMTJM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 15:09:12 -0400
-Message-ID: <4829E752.8030104@garzik.org>
-Date: Tue, 13 May 2008 15:09:06 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 13 May 2008 15:16:34 -0400
+Received: from lazybastard.de ([212.112.238.170]:57504 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752001AbYEMTQd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 15:16:33 -0400
+Date: Tue, 13 May 2008 21:16:16 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: linux-mtd@lists.infradead.org, Bryan Wu <cooloney@kernel.org>,
+       dwmw2@infradead.org, will.newton@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] [MTD/MAPS] Blackfin Async Flash Maps: Handle the case where flash memory and ethernet mac/phy are mapped onto the same async bank
+Message-ID: <20080513191616.GC18026@logfs.org>
+References: <1210653525-19437-1-git-send-email-cooloney@kernel.org> <20080513080727.GA15795@logfs.org> <8bd0f97a0805130542x46f5e7fejf1347f1c71f567fb@mail.gmail.com> <20080513150143.GA18026@logfs.org> <8bd0f97a0805130815q2ffa1d34ue87f5eb1422b6f42@mail.gmail.com> <20080513153441.GB18026@logfs.org> <8bd0f97a0805131042x2a74115dqc3831a604583bbd5@mail.gmail.com>
 MIME-Version: 1.0
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: POHMELFS high performance network filesystem. Transactions, failover,
- performance.
-References: <20080513174523.GA1677@2ka.mipt.ru>
-In-Reply-To: <20080513174523.GA1677@2ka.mipt.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <8bd0f97a0805131042x2a74115dqc3831a604583bbd5@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Evgeniy Polyakov wrote:
-> Hi.
+On Tue, 13 May 2008 13:42:04 -0400, Mike Frysinger wrote:
+> On Tue, May 13, 2008 at 11:34 AM, Jörn Engel <joern@logfs.org> wrote:
+> > On Tue, 13 May 2008 12:38:45 +0800, Bryan Wu wrote:
+> > > +#define pr_devinit(fmt, args...) ({ static const __devinitdata char __fmt[] = fmt; printk(__fmt, ## args); })
+> >
+> >  That bit is obvious.  But why do you use pr_devinit() instead of
+> >  printk()?  What does it gain you?
 > 
-> I'm please to announce POHMEL high performance network filesystem.
-> POHMELFS stands for Parallel Optimized Host Message Exchange Layered File System.
-> 
-> Development status can be tracked in filesystem section [1].
-> 
-> This is a high performance network filesystem with local coherent cache of data
-> and metadata. Its main goal is distributed parallel processing of data. Network 
-> filesystem is a client transport. POHMELFS protocol was proven to be superior to
-> NFS in lots (if not all, then it is in a roadmap) operations.
-> 
-> This release brings following features:
->  * Fast transactions. System will wrap all writings into transactions, which
->  	will be resent to different (or the same) server in case of failure.
-> 	Details in notes [1].
->  * Failover. It is now possible to provide number of servers to be used in
->  	round-robin fasion when one of them dies. System will automatically
-> 	reconnect to others and send transactions to them.
->  * Performance. Super fast (close to wire limit) metadata operations over
->  	the network. By courtesy of writeback cache and transactions the whole
-> 	kernel archive can be untarred by 2-3 seconds (including sync) over
-> 	GigE link (wire limit! Not comparable to NFS).
-> 
-> Basic POHMELFS features:
->     * Local coherent (notes [5]) cache for data and metadata.
->     * Completely async processing of all events (hard and symlinks are the only 
->     	exceptions) including object creation and data reading.
->     * Flexible object architecture optimized for network processing. Ability to
->     	create long pathes to object and remove arbitrary huge directoris in 
-> 	single network command.
->     * High performance is one of the main design goals.
->     * Very fast and scalable multithreaded userspace server. Being in userspace
->     	it works with any underlying filesystem and still is much faster than
-> 	async ni-kernel NFS one.
-> 
-> Roadmap includes:
->     * Server extension to allow storing data on multiple devices (like creating mirroring),
->     	first by saving data in several local directories (think about server, which mounted
-> 	remote dirs over POHMELFS or NFS, and local dirs).
->     * Client/server extension to report lookup and readdir requests not only for local
->     	destination, but also to different addresses, so that reading/writing could be
-> 	done from different nodes in parallel.
->     * Strong authentification and possible data encryption in network channel.
->     * Async writing of the data from receiving kernel thread into
->     	userspace pages via copy_to_user() (check development tracking
-> 	blog for results).
-> 
-> One can grab sources from archive or git [2] or check homepage [3].
-> Benchmark section can be found in the blog [4].
-> 
-> The nearest roadmap (scheduled or the end of the month) includes:
->  * Full transaction support for all operations (only writeback is
->  	guarded by transactions currently, default network state
-> 	just reconnects to the same server).
->  * Data and metadata coherency extensions (in addition to existing
-> 	commented object creation/removal messages). (next week)
->  * Server redundancy.
+> why do we have __init and __devinit in the first place ?
 
-This continues to be a neat and interesting project :)
+Ah.  Now I finally understand what this code does.
 
-Where is the best place to look at client<->server protocol?
+Might be worth moving it to include/linux/kernel.h, along with
+pr_init().  And watch an avalanche of janitor patches use these new
+toys. :)
 
-Are you planning to support the case where the server filesystem dataset 
-does not fit entirely on one server?
+Jörn
 
-What is your opinion of the Paxos algorithm?
-
-	Jeff
-
-
-
+-- 
+Joern's library part 3:
+http://inst.eecs.berkeley.edu/~cs152/fa05/handouts/clark-test.pdf
