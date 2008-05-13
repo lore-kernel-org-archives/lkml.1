@@ -1,98 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759739AbYEMRQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760447AbYEMRSM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759739AbYEMRQy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 13:16:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756334AbYEMRQq
+	id S1760447AbYEMRSM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 13:18:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753714AbYEMRR5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 13:16:46 -0400
-Received: from mx28.mail.ru ([194.67.23.67]:3731 "EHLO mx28.mail.ru"
+	Tue, 13 May 2008 13:17:57 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55692 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753729AbYEMRQq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 13:16:46 -0400
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: linux-kernel@vger.kernel.org
-Subject: block device statistics question
-Date: Tue, 13 May 2008 19:50:10 +0400
-User-Agent: KMail/1.9.9
+	id S1751228AbYEMRR5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 13:17:57 -0400
+Date: Tue, 13 May 2008 19:17:34 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: Kevin Winchester <kjwinchester@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: Latest Linus git: =?utf-8?Q?kernel=2Fs?=
+	=?utf-8?B?Y2hlZC5jOjEyMTY6IHdhcm5pbmc6IOKAmGluaXRfaHJ0aWNr?=
+	=?utf-8?B?4oCZ?= defined but not used
+Message-ID: <20080513171734.GA6792@elte.hu>
+References: <48278762.1080508@gmail.com> <20080513132328.GB5809@elte.hu> <20080513153403.GA4474@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart4223084.q4abFq9Mr5";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200805131950.16269.arvidjaar@mail.ru>
-X-Spam: Not detected
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080513153403.GA4474@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0035]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart4223084.q4abFq9Mr5
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-May I ask for clarification of block device stats meaning.
+* Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
 
-I am interested in basically two times - how long IO request has been
-processed (i.e. from the very beginning it has been submitted till it was
-finished) as well as how long *device* needed to process request passed to
-it.
+> > > I could write up the simple patch to put #ifdef CONFIG_SMP around 
+> > > init_hrtick(), but with all of the #ifdefs in that file, I figure 
+> > > it is probably a little more complicated than that.
+> > 
+> > the fix seems simple - see below. The #ifdef jungle ... less so.
+> 
+> I attempted to make it a bit easier to figure out that jungle at 
+> http://lkml.org/lkml/2008/5/12/64 , if it helps.
 
-/sys/block/XXX/stat provides three set of timings:
+yeah, applied it - it definitely helps. Would be better to hide most of 
+these complications in include files though.
 
-read ticks, write ticks
-io_ticks
-time_in_queue
-
-=46rom the description in Documentation/block/stat.txt it is not exactly cl=
-ear
-what is counted.
-
-read ticks, write ticks
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-
-These values count the number of milliseconds that I/O requests have
-waited on this block device.=20
-
-Q. Waited since which point? From the point request entered block subsystem
-or from the point request has been submitted to physical device (well,
-not necessarily really physical of course)
-
-io_ticks
-=3D=3D=3D=3D=3D=3D=3D=3D
-
-This value counts the number of milliseconds during which the device has
-had I/O requests queued.
-
-Q. "queued" - means "waited for submission"? I.e. this time does not include
-actual IO processing by device? Or "queued" - submitted to device?
-
-time_in_queue
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-
-This value counts the number of milliseconds that I/O requests have waited
-on this block device.
-
-Q. What is the difference between this one and read/write ticks? It really
-sounds like time_in_queue =3D=3D read ticks + write ticks? In this case wha=
-t is
-the point in making it separate?
-
-TIA
-
-=2Dandrey
-
---nextPart4223084.q4abFq9Mr5
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkgpuLQACgkQR6LMutpd94wg6QCgrrkh7b+lo4cAkdCwXkYb7kll
-4yEAnjfsElLXUhb/BlLVIrp+Fdqw4fII
-=CJwl
------END PGP SIGNATURE-----
-
---nextPart4223084.q4abFq9Mr5--
+	Ingo
