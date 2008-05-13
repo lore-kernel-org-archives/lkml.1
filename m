@@ -1,49 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759675AbYEMQTw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758139AbYEMQbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759675AbYEMQTw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 12:19:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757670AbYEMQTe
+	id S1758139AbYEMQbk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 12:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755925AbYEMQba
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 12:19:34 -0400
-Received: from outbound-mail-140.bluehost.com ([67.222.39.30]:54103 "HELO
-	outbound-mail-140.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757413AbYEMQTd (ORCPT
+	Tue, 13 May 2008 12:31:30 -0400
+Received: from mail.hauppauge.com ([167.206.143.4]:4430 "EHLO
+	mail.hauppauge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756823AbYEMQba (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 12:19:33 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: Re: [PATCH] drm/radeon: radeon_enable_vblank should return negative error
-Date: Tue, 13 May 2008 09:19:28 -0700
-User-Agent: KMail/1.9.9
-Cc: LKML <linux-kernel@vger.kernel.org>, Dave Airlie <airlied@redhat.com>,
-       Andrew Morton <akpm@osdl.org>
-References: <20080511194906.GA19058@joi>
-In-Reply-To: <20080511194906.GA19058@joi>
+	Tue, 13 May 2008 12:31:30 -0400
+Message-ID: <4829C221.2010109@linuxtv.org>
+From: mkrufky@linuxtv.org
+To: mchehab@infradead.org
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, g.liakhovetski@pengutronix.de,
+       isely@pobox.com
+Subject: Re: [patch] video: build fix for drivers/media/video/pvrusb2/
+Date: Tue, 13 May 2008 12:30:25 -0400
 MIME-Version: 1.0
+X-Mailer: Internet Mail Service (5.5.2657.72)
+in-reply-to: <4829B999.2090108@linuxtv.org>
+x-originalarrivaltime: 13 May 2008 16:26:23.0903 (UTC) FILETIME=[15C26AF0:01C8B516]
+user-agent: Thunderbird 2.0.0.14 (Windows/20080421)
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805130919.28539.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
+	charset="iso-8859-1"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, May 11, 2008 12:49 pm Marcin Slusarz wrote:
-> radeon_enable_vblank <- drm_vblank_get <- drm_wait_vblank
-> and drm_wait_vblank returns negative values on error
+Michael Krufky wrote:
+> Mauro Carvalho Chehab wrote:
+>> On Tue, 13 May 2008 00:03:02 -0400
+>> "Michael Krufky" <mkrufky@linuxtv.org> wrote:
+>>
+>>  
+>>> On Mon, May 12, 2008 at 10:54 PM, Mauro Carvalho Chehab
+>>> <mchehab@infradead.org> wrote:
+>>>    
+>>>> On Sun, 11 May 2008 08:34:06 -0400
+>>>>  "Michael Krufky" <mkrufky@linuxtv.org> wrote:
+>>>>
+>>>>  > On Sun, May 11, 2008 at 3:21 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>>>>  > >
+>>>>  > > x86.git testing found the following build failure:
+>>>>  > >
+>>>>  > >  drivers/built-in.o: In function `pvr2_dvb_feed_thread':
+>>>>  > >  pvrusb2-dvb.c:(.text+0x127e78): undefined reference to 
+>>>> `dvb_dmx_swfilter'
+>>>>  > >  drivers/built-in.o: In function `pvr2_dvb_adapter_exit':
+>>>>  > >  pvrusb2-dvb.c:(.text+0x128357): undefined reference to 
+>>>> `dvb_net_release'
+>>>>  > >  pvrusb2-dvb.c:(.text+0x12836f): undefined reference to 
+>>>> `dvb_dmxdev_release'
+>>>>  > >  [...]
+>>>>  > >
+>>>>  > > with this config:
+>>>>  > >
+>>>>  > >  
+>>>> http://redhat.com/~mingo/misc/config-Sun_May_11_07_06_35_CEST_2008.bad
+>>>>  > >
+>>>>  > > the reason for the missing symbols is this combination:
+>>>>  > >
+>>>>  > >  CONFIG_VIDEO_PVRUSB2=y
+>>>>  > >  CONFIG_DVB_CORE=m
+>>>>  > >
+>>>>  > > i.e. pvrusb2 is built-in, dvb-core is modular.
+>>>>  > >
+>>>>  > > This patch solves the problem by adding a dependency on 
+>>>> DVB_CORE - this
+>>>>  > > is used by other drivers such as au0828 as well. This way the 
+>>>> pvrusb2
+>>>>  > > driver can still be built, but if dvb-core is a module then it 
+>>>> will
+>>>>  > > correctly be a module as well and cannot be built-in.
+>>>>  > >
+>>>>  > > Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>>>>  > > ---
+>>>>  > >  drivers/media/video/pvrusb2/Kconfig |    2 +-
+>>>>  > >  1 file changed, 1 insertion(+), 1 deletion(-)
+>>>>  > >
+>>>>  > > Index: linux/drivers/media/video/pvrusb2/Kconfig
+>>>>  > > 
+>>>> ===================================================================
+>>>>  > > --- linux.orig/drivers/media/video/pvrusb2/Kconfig
+>>>>  > > +++ linux/drivers/media/video/pvrusb2/Kconfig
+>>>>  > > @@ -1,6 +1,6 @@
+>>>>  > >  config VIDEO_PVRUSB2
+>>>>  > >        tristate "Hauppauge WinTV-PVR USB2 support"
+>>>>  > > -       depends on VIDEO_V4L2 && I2C
+>>>>  > > +       depends on VIDEO_V4L2 && I2C && DVB_CORE
+>>>>  > >        select FW_LOADER
+>>>>  > >        select MEDIA_TUNER
+>>>>  > >        select VIDEO_TVEEPROM
+>>>>  > >
+>>>>  >
+>>>>  > Ingo,
+>>>>  >
+>>>>  > VIDEO_PVRUSB2 should not depend on DVB_CORE unless 
+>>>> VIDEO_PVRUSB2_DVB
+>>>>  > is selected, which already depends on DVB_CORE.
+>>>>  >
+>>>>  > For example, if a user has VIDEO_PVRUSB2_DVB not selected, then 
+>>>> your
+>>>>  > patch would generate a false dependency on DVB_CORE.
+>>>>
+>>>>  Maybe we can make pvrusb2 dependent of VIDEO_MEDIA. This is a 
+>>>> DVB_CORE ||
+>>>>  VIDEO_DEV. So, pvrusb should be 'm' in this case.
+>>>>       
+>>> That sounds like it would be OK, although something like this would
+>>> probably be better:
+>>>
+>>>  config VIDEO_PVRUSB2
+>>>        tristate "Hauppauge WinTV-PVR USB2 support"
+>>> -       depends on VIDEO_V4L2 && I2C
+>>> +       depends on VIDEO_V4L2 && I2C && (DVB_CORE if VIDEO_PVRUSB2_DVB)
+>>>        select FW_LOADER
+>>>        select MEDIA_TUNER
+>>>        select VIDEO_TVEEPROM
+>>>     
+>>
+>> This doesn't look to be a good idea, since VIDEO_PVRUSB2_DVB depends on
+>> VIDEO_PVRUSB2. So, you'll create a circular dependency. The syntax I've
+>> proposed seems cleaner. Of course, it needs to be tested. IMO, all 
+>> hybrid
+>> devices should be dependent of VIDEO_MEDIA. This will help to avoid 
+>> this kind
+>> of issue.
+>>
+>>  
+>>> I don't know if that syntax works for "depends on" , but it does work
+>>> for select.
+>>>
+>>> if "depends on FOO if BAR" doesnt work, would adding "select DVB_CORE
+>>> if VIDEO_PVRUSB2_DVB" solve the problem?
+>>>     
+>>
+>> Also, this leads into a circular reference.
+> Mauro,
 >
-> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-> Cc: Dave Airlie <airlied@redhat.com>
-> Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-> ---
-> compile tested only
+> You're right -- I didn't consider the circular dependency.
+>
+> Your suggestion (depends on VIDEO_MEDIA) seems like the right way to go. 
+Mauro,
 
-Looks good, Marcin.  Andrew should probably just push it upstream.
+It has just occurred to me -- there is yet another issue that is created 
+by the dependency on VIDEO_MEDIA .....
 
-Acked-by:  Jesse Barnes <jbarnes@virtuousgeek.org>
+The pvrusb2 driver *always* has a V4L2 interface exposed, and optionally 
+can have a DVB interface.
 
-Thanks,
-Jesse
+So, VIDEO_PVRUSB2 will *always* depend on VIDEO_DEV, but conditionally 
+depend on DVB_CORE.
+
+...Sounds like the correct clause should be:
+
+depends on VIDEO_V4L2 && I2C && VIDEO_DEV && VIDEO_MEDIA
+
+...what do you think?
+
+-Mike Krufky
