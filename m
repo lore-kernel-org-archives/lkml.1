@@ -1,79 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756876AbYEMAbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757051AbYEMAkM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756876AbYEMAbW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 20:31:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754729AbYEMAbL
+	id S1757051AbYEMAkM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 20:40:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbYEMAj5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 20:31:11 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:32954 "EHLO smtps.tip.net.au"
+	Mon, 12 May 2008 20:39:57 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:37860 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754619AbYEMAbK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 20:31:10 -0400
-Date: Tue, 13 May 2008 10:30:55 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for May 12
-Message-Id: <20080513103055.d133f60a.sfr@canb.auug.org.au>
-In-Reply-To: <20080512082205.8678bbaf.randy.dunlap@oracle.com>
-References: <20080512150418.603e29cf.sfr@canb.auug.org.au>
-	<20080512082205.8678bbaf.randy.dunlap@oracle.com>
-X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
+	id S1755368AbYEMAj4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 20:39:56 -0400
+Subject: Re: [PATCH] jbd_commit_transaction() races with
+	journal_try_to_drop_buffers() causing DIO failures
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: Jan Kara <jack@suse.cz>
+Cc: Badari Pulavarty <pbadari@us.ibm.com>, akpm@linux-foundation.org,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080512155419.GD15856@duck.suse.cz>
+References: <20080306174209.GA14193@duck.suse.cz>
+	 <1209166706.6040.20.camel@localhost.localdomain>
+	 <20080428122626.GC17054@duck.suse.cz>
+	 <1209402694.23575.5.camel@badari-desktop>
+	 <20080428180932.GI17054@duck.suse.cz>
+	 <1209409764.11872.6.camel@localhost.localdomain>
+	 <20080429124321.GD1987@duck.suse.cz>
+	 <1209654981.27240.19.camel@badari-desktop>
+	 <20080505170636.GK25722@duck.suse.cz>
+	 <1210372072.3639.52.camel@localhost.localdomain>
+	 <20080512155419.GD15856@duck.suse.cz>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Mon, 12 May 2008 17:39:43 -0700
+Message-Id: <1210639184.3661.43.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__13_May_2008_10_30_55_+1000_k8SrXN6rvsW9oYjr"
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__13_May_2008_10_30_55_+1000_k8SrXN6rvsW9oYjr
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, 2008-05-12 at 17:54 +0200, Jan Kara wrote:
+>   Hello,
+> 
+> On Fri 09-05-08 15:27:52, Mingming Cao wrote:
+> > > > I was able to reproduce the customer problem involving DIO
+> > > > (invalidate_inode_pages2) problem by writing simple testcase
+> > > > to keep writing to a file using buffered writes and DIO writes
+> > > > forever in a loop. I see DIO writes fail with -EIO.
+> > > > 
+> > > > After a long debug, found 2 cases how this could happen.
+> > > > These are race conditions with journal_try_to_free_buffers()
+> > > > and journal_commit_transaction().
+> > > > 
+> > > > 1) journal_submit_data_buffers() tries to get bh_state lock. If
+> > > > try lock fails, it drops the j_list_lock and sleeps for
+> > > > bh_state lock, while holding a reference on the buffer.
+> > > > In the meanwhile, journal_try_to_free_buffers() can clean up the
+> > > > journal head could call try_to_free_buffers(). try_to_free_buffers()
+> > > > would fail due to the reference held by journal_submit_data_buffers()
+> > > > - which in turn causes failues for DIO (invalidate_inode_pages2()).
+> > > > 
+> > > > 2) When the buffer is on t_locked_list waiting for IO to finish,
+> > > > we hold a reference and give up the cpu, if we can't get
+> > > > bh_state lock. This causes try_to_free_buffers() to fail.
+> > > > 
+> > > > Fix is to drop the reference on the buffer if we can't get
+> > > > bh_state lock, give up the cpu and re-try the whole operation -
+> > > > instead of waiting for the vh_state lock.
+> > > > 
+> > > > Does this look like a resonable fix ?
+> > >   As Mingming pointed out there are few other places where we could hold
+> > > the bh reference. Note also that we accumulate references to buffers in the
+> > > wbuf[] list and we need that for submit_bh() which consumes one bh
+> > > reference. Generally, it seems to me as a too fragile and impractical
+> > > rule "nobody can hold bh reference when not holding page lock" which is
+> > > basically what it comes down to if you really want to be sure that
+> > > journal_try_to_free_buffers() succeeds. And also note that in principle
+> > > there are other places which hold references to buffers without holding the
+> > > page lock - for example writepage() in ordered mode (although this one is
+> > > in practice hardly triggerable). So how we could fix at least the races
+> > > with commit code is to implement launder_page() callback for ext3/4 which
+> > > would wait for the previous transaction commit in case the page has buffers
+> > > that are part of that commit (I don't want this logic in
+> > > journal_try_to_free_buffers() as that is called also on memory-reclaim
+> > > path, but journal_launder_page() is fine with me). 
+> > 
+> > I am not sure how we are going to gurantee that by the time
+> > journal_try_to_free_buffers() get called, the page has buffers are not
+> > as part of the current transaction commit(which could be different than
+> > the one we waited in ext3_launder_page())?  
+>   Hmm, you are right. It is not enough to just wait in ext3_launder_page()
+> because we don't have a transaction for direct_IO started yet. But if we
+> actually released buffers from the page there, it should be fine.
 
-Hi Randy,
+Does this match what you are thinking? It certainly slow down the DIO
+path, but the positive side is it doesn't disturb the other code path...
+thanks for your feedback!
 
-On Mon, 12 May 2008 08:22:05 -0700 Randy Dunlap <randy.dunlap@oracle.com> w=
-rote:
->
-> On Mon, 12 May 2008 15:04:18 +1000 Stephen Rothwell wrote:
->=20
-> > News:  I am now providing patches relative to the latest tag in Linus'
-> > tree.  I propose to stop providing complete tar balls as they are so
-> > large and people will have recent versions of Linus's tree anyway (I
-> > assume).  The patches will be named "patch-<upstream tag>-<next tag>".
->=20
-> Oh well.  For the record, I don't mind using patches instead of
-> complete tarballs, but I would prefer that the patches be relative
-> to something like a daily -git snapshot so that using git is not
-> required at all.
+--------------------------------------------
 
-They will be relative to a tag that Linus adds to his tree and those
-tagged trees are always available as tar balls.  i.e. yesterdays patches
-were relative to 2.6.26-rc1, today's (and until rc3 comes out) will be
-relative to 2.6.26-rc2. Or I could do them against the daily -git
-snapshots (or both).  Either way it would cut down on the amount of stuff
-I am distributing. Currently there is already about 6G of linux-next
-tarballs.
+An unexpected EIO error gets returned when writing to a file
+using buffered writes and DIO writes at the same time.
 
-I certainly don't want to make it harder for those who are doing such
-good job of testing. Does that make it clearer?
+We found there are a number of places where journal_try_to_free_buffers()
+could race with journal_commit_transaction(), the later still
+helds the reference to the buffers on the t_syncdata_list or t_locked_list
+, while journal_try_to_free_buffers() tries to free them, which resulting an EIO
+error returns back to the dio caller. 
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+The logic fix is to retry freeing if journal_try_to_free_buffers() to failed
+to free those data buffers while journal_commit_transaction() is still
+reference those buffers.
+This is done via implement ext3 launder_page() callback, instead of inside
+journal_try_to_free_buffers() itself, so that it doesn't affecting other code
+path calling journal_try_to_free_buffers and only dio path get affected.
 
---Signature=_Tue__13_May_2008_10_30_55_+1000_k8SrXN6rvsW9oYjr
-Content-Type: application/pgp-signature
+Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+Index: linux-2.6.26-rc1/fs/ext3/inode.c
+===================================================================
+--- linux-2.6.26-rc1.orig/fs/ext3/inode.c	2008-05-03 11:59:44.000000000 -0700
++++ linux-2.6.26-rc1/fs/ext3/inode.c	2008-05-12 12:41:27.000000000 -0700
+@@ -1766,6 +1766,23 @@ static int ext3_journalled_set_page_dirt
+ 	return __set_page_dirty_nobuffers(page);
+ }
+ 
++static int ext3_launder_page(struct page *page)
++{
++        int ret;
++	int retry = 5;
++
++	while (retry --) {
++		ret = ext3_releasepage(page, GFP_KERNEL);
++		if (ret == 1)
++			break;
++		else
++			schedule();
++	}
++
++        return ret;
++}
++
++
+ static const struct address_space_operations ext3_ordered_aops = {
+ 	.readpage	= ext3_readpage,
+ 	.readpages	= ext3_readpages,
+@@ -1778,6 +1795,7 @@ static const struct address_space_operat
+ 	.releasepage	= ext3_releasepage,
+ 	.direct_IO	= ext3_direct_IO,
+ 	.migratepage	= buffer_migrate_page,
++	.launder_page	= ext3_launder_page,
+ };
+ 
+ static const struct address_space_operations ext3_writeback_aops = {
+@@ -1792,6 +1810,7 @@ static const struct address_space_operat
+ 	.releasepage	= ext3_releasepage,
+ 	.direct_IO	= ext3_direct_IO,
+ 	.migratepage	= buffer_migrate_page,
++	.launder_page	= ext3_launder_page,
+ };
+ 
+ static const struct address_space_operations ext3_journalled_aops = {
+@@ -1805,6 +1824,7 @@ static const struct address_space_operat
+ 	.bmap		= ext3_bmap,
+ 	.invalidatepage	= ext3_invalidatepage,
+ 	.releasepage	= ext3_releasepage,
++	.launder_page	= ext3_launder_page,
+ };
+ 
+ void ext3_set_aops(struct inode *inode)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFIKOFHTgG2atn1QN8RAhPjAJ4ynCsYX8+9h2YBhT5GN+kP7uaNEACfVEvE
-8nVd40l5xRMJCytngL4QrUA=
-=WE21
------END PGP SIGNATURE-----
 
---Signature=_Tue__13_May_2008_10_30_55_+1000_k8SrXN6rvsW9oYjr--
+
