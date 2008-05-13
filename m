@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762246AbYEMUPE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932093AbYEMUPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762246AbYEMUPE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 16:15:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761841AbYEMUNq
+	id S932093AbYEMUPj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 16:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761905AbYEMUNx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 16:13:46 -0400
-Received: from mail.suse.de ([195.135.220.2]:37770 "EHLO mx1.suse.de"
+	Tue, 13 May 2008 16:13:53 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:37959 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761819AbYEMUNp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 16:13:45 -0400
-Date: Tue, 13 May 2008 13:11:47 -0700
+	id S1761895AbYEMUNw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 16:13:52 -0400
+Date: Tue, 13 May 2008 13:11:49 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,12 +21,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 07/37] sparc: Fix SA_ONSTACK signal handling.
-Message-ID: <20080513201147.GH31167@suse.de>
+Subject: [patch 08/37] sparc: Fix fork/clone/vfork system call restart.
+Message-ID: <20080513201149.GI31167@suse.de>
 References: <20080513200453.064446337@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sparc-fix-sa_onstack-signal-handling.patch"
+Content-Disposition: inline; filename="sparc-fix-fork-clone-vfork-system-call-restart.patch"
 In-Reply-To: <20080513201053.GA31167@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,134 +39,91 @@ know.
 ------------------
 From: David S. Miller <davem@davemloft.net>
 
-[ Upstream commit: dc5dc7e6d71ca9fd1ea01a1418150af3b2937489 ]
+[ Upstream commit: 1e38c126c9252b612697e34f43b1b3371c8ee31d ]
 
-We need to be more liberal about the alignment of the buffer given to
-us by sigaltstack().  The user should not need to be mindful of all of
-the alignment constraints we have for the stack frame.
+We clobber %i1 as well as %i0 for these system calls,
+because they give two return values.
 
-This mirrors how we handle this situation in clone() as well.
+Therefore, on error, we have to restore %i1 properly
+or else the restart explodes since it uses the wrong
+arguments.
 
-Also, we align the stack even in non-SA_ONSTACK cases so that signals
-due to bad stack alignment can be delivered properly.  This makes such
-errors easier to debug and recover from.
-
-Finally, add the sanity check x86 has to make sure we won't overflow
-the signal stack.
-
-This fixes glibc testcases nptl/tst-cancel20.c and
-nptl/tst-cancelx20.c
+This fixes glibc's nptl/tst-eintr1.c testcase.
 
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/sparc/kernel/signal.c     |   20 +++++++++++++++++---
- arch/sparc64/kernel/signal.c   |   21 +++++++++++++++++----
- arch/sparc64/kernel/signal32.c |   18 +++++++++++++++++-
- 3 files changed, 51 insertions(+), 8 deletions(-)
+ arch/sparc/kernel/process.c   |   20 ++++++++++++++++----
+ arch/sparc64/kernel/process.c |   18 +++++++++++++++---
+ 2 files changed, 31 insertions(+), 7 deletions(-)
 
---- a/arch/sparc64/kernel/signal32.c
-+++ b/arch/sparc64/kernel/signal32.c
-@@ -497,11 +497,27 @@ static void __user *get_sigframe(struct 
- 	regs->u_regs[UREG_FP] &= 0x00000000ffffffffUL;
- 	sp = regs->u_regs[UREG_FP];
- 	
-+	/*
-+	 * If we are on the alternate signal stack and would overflow it, don't.
-+	 * Return an always-bogus address instead so we will die with SIGSEGV.
-+	 */
-+	if (on_sig_stack(sp) && !likely(on_sig_stack(sp - framesize)))
-+		return (void __user *) -1L;
-+
- 	/* This is the X/Open sanctioned signal stack switching.  */
- 	if (sa->sa_flags & SA_ONSTACK) {
--		if (!on_sig_stack(sp) && !((current->sas_ss_sp + current->sas_ss_size) & 7))
-+		if (sas_ss_flags(sp) == 0)
- 			sp = current->sas_ss_sp + current->sas_ss_size;
- 	}
-+
-+	/* Always align the stack frame.  This handles two cases.  First,
-+	 * sigaltstack need not be mindful of platform specific stack
-+	 * alignment.  Second, if we took this signal because the stack
-+	 * is not aligned properly, we'd like to take the signal cleanly
-+	 * and report that.
-+	 */
-+	sp &= ~7UL;
-+
- 	return (void __user *)(sp - framesize);
- }
- 
---- a/arch/sparc64/kernel/signal.c
-+++ b/arch/sparc64/kernel/signal.c
-@@ -377,16 +377,29 @@ save_fpu_state(struct pt_regs *regs, __s
- 
- static inline void __user *get_sigframe(struct k_sigaction *ka, struct pt_regs *regs, unsigned long framesize)
+--- a/arch/sparc64/kernel/process.c
++++ b/arch/sparc64/kernel/process.c
+@@ -507,6 +507,8 @@ asmlinkage long sparc_do_fork(unsigned l
+ 			      unsigned long stack_size)
  {
--	unsigned long sp;
-+	unsigned long sp = regs->u_regs[UREG_FP] + STACK_BIAS;
+ 	int __user *parent_tid_ptr, *child_tid_ptr;
++	unsigned long orig_i1 = regs->u_regs[UREG_I1];
++	long ret;
  
--	sp = regs->u_regs[UREG_FP] + STACK_BIAS;
-+	/*
-+	 * If we are on the alternate signal stack and would overflow it, don't.
-+	 * Return an always-bogus address instead so we will die with SIGSEGV.
-+	 */
-+	if (on_sig_stack(sp) && !likely(on_sig_stack(sp - framesize)))
-+		return (void __user *) -1L;
- 
- 	/* This is the X/Open sanctioned signal stack switching.  */
- 	if (ka->sa.sa_flags & SA_ONSTACK) {
--		if (!on_sig_stack(sp) &&
--		    !((current->sas_ss_sp + current->sas_ss_size) & 7))
-+		if (sas_ss_flags(sp) == 0)
- 			sp = current->sas_ss_sp + current->sas_ss_size;
+ #ifdef CONFIG_COMPAT
+ 	if (test_thread_flag(TIF_32BIT)) {
+@@ -519,9 +521,19 @@ asmlinkage long sparc_do_fork(unsigned l
+ 		child_tid_ptr = (int __user *) regs->u_regs[UREG_I4];
  	}
+ 
+-	return do_fork(clone_flags, stack_start,
+-		       regs, stack_size,
+-		       parent_tid_ptr, child_tid_ptr);
++	ret = do_fork(clone_flags, stack_start,
++		      regs, stack_size,
++		      parent_tid_ptr, child_tid_ptr);
 +
-+	/* Always align the stack frame.  This handles two cases.  First,
-+	 * sigaltstack need not be mindful of platform specific stack
-+	 * alignment.  Second, if we took this signal because the stack
-+	 * is not aligned properly, we'd like to take the signal cleanly
-+	 * and report that.
++	/* If we get an error and potentially restart the system
++	 * call, we're screwed because copy_thread() clobbered
++	 * the parent's %o1.  So detect that case and restore it
++	 * here.
 +	 */
-+	sp &= ~7UL;
++	if ((unsigned long)ret >= -ERESTART_RESTARTBLOCK)
++		regs->u_regs[UREG_I1] = orig_i1;
 +
- 	return (void __user *)(sp - framesize);
++	return ret;
  }
  
---- a/arch/sparc/kernel/signal.c
-+++ b/arch/sparc/kernel/signal.c
-@@ -345,15 +345,29 @@ static inline int invalid_frame_pointer(
- 
- static inline void __user *get_sigframe(struct sigaction *sa, struct pt_regs *regs, unsigned long framesize)
+ /* Copy a Sparc thread.  The fork() return value conventions
+--- a/arch/sparc/kernel/process.c
++++ b/arch/sparc/kernel/process.c
+@@ -421,14 +421,26 @@ asmlinkage int sparc_do_fork(unsigned lo
+                              unsigned long stack_size)
  {
--	unsigned long sp;
-+	unsigned long sp = regs->u_regs[UREG_FP];
+ 	unsigned long parent_tid_ptr, child_tid_ptr;
++	unsigned long orig_i1 = regs->u_regs[UREG_I1];
++	long ret;
  
--	sp = regs->u_regs[UREG_FP];
-+	/*
-+	 * If we are on the alternate signal stack and would overflow it, don't.
-+	 * Return an always-bogus address instead so we will die with SIGSEGV.
-+	 */
-+	if (on_sig_stack(sp) && !likely(on_sig_stack(sp - framesize)))
-+		return (void __user *) -1L;
+ 	parent_tid_ptr = regs->u_regs[UREG_I2];
+ 	child_tid_ptr = regs->u_regs[UREG_I4];
  
- 	/* This is the X/Open sanctioned signal stack switching.  */
- 	if (sa->sa_flags & SA_ONSTACK) {
--		if (!on_sig_stack(sp) && !((current->sas_ss_sp + current->sas_ss_size) & 7))
-+		if (sas_ss_flags(sp) == 0)
- 			sp = current->sas_ss_sp + current->sas_ss_size;
- 	}
+-	return do_fork(clone_flags, stack_start,
+-		       regs, stack_size,
+-		       (int __user *) parent_tid_ptr,
+-		       (int __user *) child_tid_ptr);
++	ret = do_fork(clone_flags, stack_start,
++		      regs, stack_size,
++		      (int __user *) parent_tid_ptr,
++		      (int __user *) child_tid_ptr);
 +
-+	/* Always align the stack frame.  This handles two cases.  First,
-+	 * sigaltstack need not be mindful of platform specific stack
-+	 * alignment.  Second, if we took this signal because the stack
-+	 * is not aligned properly, we'd like to take the signal cleanly
-+	 * and report that.
++	/* If we get an error and potentially restart the system
++	 * call, we're screwed because copy_thread() clobbered
++	 * the parent's %o1.  So detect that case and restore it
++	 * here.
 +	 */
-+	sp &= ~7UL;
++	if ((unsigned long)ret >= -ERESTART_RESTARTBLOCK)
++		regs->u_regs[UREG_I1] = orig_i1;
 +
- 	return (void __user *)(sp - framesize);
++	return ret;
  }
  
+ /* Copy a Sparc thread.  The fork() return value conventions
 
 -- 
