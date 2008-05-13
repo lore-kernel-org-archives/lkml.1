@@ -1,132 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755496AbYEMMmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759971AbYEMMpZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755496AbYEMMmd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 08:42:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756121AbYEMMmL
+	id S1759971AbYEMMpZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 08:45:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754742AbYEMMpN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 08:42:11 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:64143 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755795AbYEMMmI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 08:42:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=LleUCVoTIywenVgerRD6/lAMjsjF467+YVfkywHUP4tQuWJxCAUQ9y72VUSPvosi90F+f4slgxfi9nRK8+S/AnqLz9Xz5Mqc3Zv+/meF9WDxTtv1ZbOb0sXAW4eeamQbBP7iYuv+cknrwUACsDlEVayV4XPjjHqS/NUbh909nkQ=
-Message-ID: <8bd0f97a0805130542x46f5e7fejf1347f1c71f567fb@mail.gmail.com>
-Date: Tue, 13 May 2008 08:42:08 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "=?ISO-8859-1?Q?J=F6rn_Engel?=" <joern@logfs.org>
-Subject: Re: [PATCH 1/1] [MTD/MAPS] Blackfin Async Flash Maps: Handle the case where flash memory and ethernet mac/phy are mapped onto the same async bank
-Cc: "Bryan Wu" <cooloney@kernel.org>, dwmw2@infradead.org,
-       will.newton@gmail.com, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080513080727.GA15795@logfs.org>
+	Tue, 13 May 2008 08:45:13 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33611 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752299AbYEMMpL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 08:45:11 -0400
+Date: Tue, 13 May 2008 14:44:54 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Miklos Vajna <vmiklos@frugalware.org>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 2/3] x86: janitor work in bugs.c
+Message-ID: <20080513124454.GF14973@elte.hu>
+References: <8779a478ff43d6ed589279078d2abbab789a2dc9.1210678238.git.vmiklos@frugalware.org> <fe3003f39869f8773950d23bb73efe42b5cf07a5.1210678238.git.vmiklos@frugalware.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1210653525-19437-1-git-send-email-cooloney@kernel.org>
-	 <20080513080727.GA15795@logfs.org>
+In-Reply-To: <fe3003f39869f8773950d23bb73efe42b5cf07a5.1210678238.git.vmiklos@frugalware.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0104]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 13, 2008 at 4:07 AM, Jörn Engel wrote:
-> On Tue, 13 May 2008 12:38:45 +0800, Bryan Wu wrote:
->  >
->  > +#define pr_devinit(fmt, args...) ({ static const __devinitdata char __fmt[] = fmt; printk(__fmt, ## args); })
->
->  Is this still needed?
 
-yes
+* Miklos Vajna <vmiklos@frugalware.org> wrote:
 
->  > +static void bfin_copy_from(struct map_info *map, void *to, unsigned long from, ssize_t len)
->  > +{
->  > +     size_t i;
->  > +     map_word test;
->  > +
->  > +     if ((unsigned long)to & 0x1) {
->  > +             for (i = 0; i < len; i += 2) {
->  > +                     u16 *dst = (u16 *)(to + i);
->  > +                     test = bfin_read(map, from + i);
->  > +                     put_unaligned(test.x[0], dst);
->  > +             }
->  > +     } else {
->  > +             for (i = 0; i < len; i += 2) {
->  > +                     u16 *dst = (u16 *)(to + i);
->  > +                     test = bfin_read(map, from + i);
->  > +                     *dst = test.x[0];
->  > +             }
->  > +     }
->  > +
->  > +     if (len & 0x1) {
->  > +             u8 *last_to_byte = (u8 *)(to + i);
->  > +             test = bfin_read(map, from + i);
->  > +             *last_to_byte = (u8)test.x[0];
->  > +     }
->  > +}
->
->  The pointer casts are superfluous.
+> -		printk(KERN_EMERG "No coprocessor found and no math emulation present.\n");
+> +		printk(KERN_EMERG "No coprocessor found and no math "
+> +			"emulation present.\n");
 
-left over due to "from" being unsigned long ... forgot that "to" is a
-void *.  dropped
+generally we do not break up strings mid-stream - that makes grepping 
+harder. _At most_ we do something like:
 
->  The "+ i" in the last conditional
->  is a bit dangerous as any changes to the loop can break it.  Linux code
->  has lots of churn and not everyone is careful enough to spot such
->  subtleties.
->  And I believe you can improve performance by killing the put_unaligned
->  in the loop.  So if we put it all together the end result should be
->  something like this:
->
->  static void bfin_copy_from(struct map_info *map, void *to, unsigned long from, ssize_t len)
->  {
->         size_t i;
->         map_word test;
->         u8 *byte;
->         u16 *dst;
->
->
->         if ((unsigned long)to & 0x1) {
->                 byte = to;
->                 test = bfin_read(map, from);
->                 *byte = test.x[0] >> 8;
->                 to++;
->                 from++;
->                 len--;
->
->         }
->
->         for (i = 0; i < len; i += 2) {
->                 dst = to + i;
->
->                 test = bfin_read(map, from + i);
->                 *dst = test.x[0];
->         }
->
->         if ((len & 0x1) {
->                 byte = to + len - 1;
->                 test = bfin_read(map, from + len - 1);
->                 *byte = test.x[0] & 0xff;
->         }
->  }
->
->  What do you think?
+		printk(KERN_EMERG
+		       "No coprocessor found and no math emulation present.\n");
 
-seems reasonable ... i'll have to grab the board again and test it out.
+> -/* trap_init() enabled FXSR and company _before_ testing for FP problems here. */
+> +/* trap_init() enabled FXSR and company _before_ testing for FP problems
+> + * here. */
 
->  > +static void bfin_write(struct map_info *map, map_word d1, unsigned long ofs)
->  > +{
->  > +     struct async_state *state = (struct async_state *)map->map_priv_1;
->  > +     u16 d;
->  > +
->  > +     d = (u16)d1.x[0];
->
->  You didn't need the cast above.  Why here?
+that's not the proper multi-line comment style, this would be:
 
-*shrug* it's always been there.  i'll drop it.
+  /*
+   * trap_init() enabled FXSR and company _before_ testing for
+   * FP problems here.
+   */
 
-thanks!
--mike
+same for other places in this patch and for your next patch.
+
+	Ingo
