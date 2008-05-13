@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763601AbYEMUXd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763676AbYEMUXw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763601AbYEMUXd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 16:23:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932205AbYEMUQL
+	id S1763676AbYEMUXw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 16:23:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761296AbYEMUQR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 16:16:11 -0400
-Received: from ns2.suse.de ([195.135.220.15]:38698 "EHLO mx2.suse.de"
+	Tue, 13 May 2008 16:16:17 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:38750 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932200AbYEMUQJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 16:16:09 -0400
-Date: Tue, 13 May 2008 13:12:36 -0700
+	id S1760904AbYEMUQP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 16:16:15 -0400
+Date: Tue, 13 May 2008 13:12:38 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,14 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Leonardo Chiquitto <lchiquitto@novell.com>
-Subject: [patch 28/37] USB: airprime: unlock mutex instead of trying to
-	lock it again
-Message-ID: <20080513201236.GC31167@suse.de>
+       Roel Kluin <12o3l@tiscali.nl>, Francois Romieu <romieu@fr.zoreil.com>
+Subject: [patch 29/37] r8169: fix past rtl_chip_info array size for unknown
+	chipsets
+Message-ID: <20080513201238.GD31167@suse.de>
 References: <20080513200453.064446337@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-airprime-unlock-mutex-instead-of-trying-to-lock-it-again.patch"
+Content-Disposition: inline; filename="r8169-fix-past-rtl_chip_info-array-size-for-unknown-chipsets.patch"
 In-Reply-To: <20080513201053.GA31167@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,31 +38,43 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Leonardo Chiquitto <leonardo@iken.com.br>
+From: Roel Kluin <12o3l@tiscali.nl>
 
-commit 21ae1dd1d4948968ad2d923c5e104d38fb35b4e4 upstream
+commit cee60c377de6d9d10f0a2876794149bd79a15020 upstream.
 
-The following patch fixes a [probable] copy & paste mistake in
-airprime.c. Instead of unlocking an acquired mutex, the actual
-code tries to lock it again.
+'i' is unsigned.
 
-Signed-off-by: Leonardo Chiquitto <lchiquitto@novell.com>
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+Acked-by: Francois Romieu <romieu@fr.zoreil.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/airprime.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/r8169.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- a/drivers/usb/serial/airprime.c
-+++ b/drivers/usb/serial/airprime.c
-@@ -220,7 +220,7 @@ static void airprime_close(struct usb_se
- 	mutex_lock(&port->serial->disc_mutex);
- 	if (!port->serial->disconnected)
- 		airprime_send_setup(port);
--	mutex_lock(&port->serial->disc_mutex);
-+	mutex_unlock(&port->serial->disc_mutex);
+--- a/drivers/net/r8169.c
++++ b/drivers/net/r8169.c
+@@ -1705,18 +1705,18 @@ rtl8169_init_one(struct pci_dev *pdev, c
  
- 	for (i = 0; i < NUM_READ_URBS; ++i) {
- 		usb_kill_urb (priv->read_urbp[i]);
+ 	rtl8169_print_mac_version(tp);
+ 
+-	for (i = ARRAY_SIZE(rtl_chip_info) - 1; i >= 0; i--) {
++	for (i = 0; i < ARRAY_SIZE(rtl_chip_info); i++) {
+ 		if (tp->mac_version == rtl_chip_info[i].mac_version)
+ 			break;
+ 	}
+-	if (i < 0) {
++	if (i == ARRAY_SIZE(rtl_chip_info)) {
+ 		/* Unknown chip: assume array element #0, original RTL-8169 */
+ 		if (netif_msg_probe(tp)) {
+ 			dev_printk(KERN_DEBUG, &pdev->dev,
+ 				"unknown chip version, assuming %s\n",
+ 				rtl_chip_info[0].name);
+ 		}
+-		i++;
++		i = 0;
+ 	}
+ 	tp->chipset = i;
+ 
 
 -- 
