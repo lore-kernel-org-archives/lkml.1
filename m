@@ -1,174 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757051AbYEMAkM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757473AbYEMAkn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757051AbYEMAkM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 12 May 2008 20:40:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbYEMAj5
+	id S1757473AbYEMAkn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 12 May 2008 20:40:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbYEMAke
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 12 May 2008 20:39:57 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:37860 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755368AbYEMAj4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 12 May 2008 20:39:56 -0400
-Subject: Re: [PATCH] jbd_commit_transaction() races with
-	journal_try_to_drop_buffers() causing DIO failures
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: Jan Kara <jack@suse.cz>
-Cc: Badari Pulavarty <pbadari@us.ibm.com>, akpm@linux-foundation.org,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080512155419.GD15856@duck.suse.cz>
-References: <20080306174209.GA14193@duck.suse.cz>
-	 <1209166706.6040.20.camel@localhost.localdomain>
-	 <20080428122626.GC17054@duck.suse.cz>
-	 <1209402694.23575.5.camel@badari-desktop>
-	 <20080428180932.GI17054@duck.suse.cz>
-	 <1209409764.11872.6.camel@localhost.localdomain>
-	 <20080429124321.GD1987@duck.suse.cz>
-	 <1209654981.27240.19.camel@badari-desktop>
-	 <20080505170636.GK25722@duck.suse.cz>
-	 <1210372072.3639.52.camel@localhost.localdomain>
-	 <20080512155419.GD15856@duck.suse.cz>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Mon, 12 May 2008 17:39:43 -0700
-Message-Id: <1210639184.3661.43.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+	Mon, 12 May 2008 20:40:34 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:19548 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755509AbYEMAkd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 12 May 2008 20:40:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:reply-to:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=f5XfdZFvQrSYSekASXJ1Mfa7kpLAKHGBnRrXKQQsceqN7cRSnnUoG7HEHpQFGCTcbnp5EUvriMeRQTT3uat9kPMtmdczQYF4u1IP9j9uoymeEBatJ1sx3Skq2A+8fduyHi91v5mzHXiFcdiNxQU/ZIIXoOv/UDBpbCo6pKdu0E4=
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+Reply-To: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] x86: amd opteron TOM2 mask val fix
+Date: Mon, 12 May 2008 17:40:39 -0700
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805121740.40070.yhlu.kernel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-05-12 at 17:54 +0200, Jan Kara wrote:
->   Hello,
-> 
-> On Fri 09-05-08 15:27:52, Mingming Cao wrote:
-> > > > I was able to reproduce the customer problem involving DIO
-> > > > (invalidate_inode_pages2) problem by writing simple testcase
-> > > > to keep writing to a file using buffered writes and DIO writes
-> > > > forever in a loop. I see DIO writes fail with -EIO.
-> > > > 
-> > > > After a long debug, found 2 cases how this could happen.
-> > > > These are race conditions with journal_try_to_free_buffers()
-> > > > and journal_commit_transaction().
-> > > > 
-> > > > 1) journal_submit_data_buffers() tries to get bh_state lock. If
-> > > > try lock fails, it drops the j_list_lock and sleeps for
-> > > > bh_state lock, while holding a reference on the buffer.
-> > > > In the meanwhile, journal_try_to_free_buffers() can clean up the
-> > > > journal head could call try_to_free_buffers(). try_to_free_buffers()
-> > > > would fail due to the reference held by journal_submit_data_buffers()
-> > > > - which in turn causes failues for DIO (invalidate_inode_pages2()).
-> > > > 
-> > > > 2) When the buffer is on t_locked_list waiting for IO to finish,
-> > > > we hold a reference and give up the cpu, if we can't get
-> > > > bh_state lock. This causes try_to_free_buffers() to fail.
-> > > > 
-> > > > Fix is to drop the reference on the buffer if we can't get
-> > > > bh_state lock, give up the cpu and re-try the whole operation -
-> > > > instead of waiting for the vh_state lock.
-> > > > 
-> > > > Does this look like a resonable fix ?
-> > >   As Mingming pointed out there are few other places where we could hold
-> > > the bh reference. Note also that we accumulate references to buffers in the
-> > > wbuf[] list and we need that for submit_bh() which consumes one bh
-> > > reference. Generally, it seems to me as a too fragile and impractical
-> > > rule "nobody can hold bh reference when not holding page lock" which is
-> > > basically what it comes down to if you really want to be sure that
-> > > journal_try_to_free_buffers() succeeds. And also note that in principle
-> > > there are other places which hold references to buffers without holding the
-> > > page lock - for example writepage() in ordered mode (although this one is
-> > > in practice hardly triggerable). So how we could fix at least the races
-> > > with commit code is to implement launder_page() callback for ext3/4 which
-> > > would wait for the previous transaction commit in case the page has buffers
-> > > that are part of that commit (I don't want this logic in
-> > > journal_try_to_free_buffers() as that is called also on memory-reclaim
-> > > path, but journal_launder_page() is fine with me). 
-> > 
-> > I am not sure how we are going to gurantee that by the time
-> > journal_try_to_free_buffers() get called, the page has buffers are not
-> > as part of the current transaction commit(which could be different than
-> > the one we waited in ext3_launder_page())?  
->   Hmm, you are right. It is not enough to just wait in ext3_launder_page()
-> because we don't have a transaction for direct_IO started yet. But if we
-> actually released buffers from the page there, it should be fine.
 
-Does this match what you are thinking? It certainly slow down the DIO
-path, but the positive side is it doesn't disturb the other code path...
-thanks for your feedback!
+there is typo with the mask. need to remove that extra 0. to avoid 4bits was cleared.
 
---------------------------------------------
+Signed-off-by: Yinghal Lu <yhlu.kernel@gmail.com>
 
-An unexpected EIO error gets returned when writing to a file
-using buffered writes and DIO writes at the same time.
-
-We found there are a number of places where journal_try_to_free_buffers()
-could race with journal_commit_transaction(), the later still
-helds the reference to the buffers on the t_syncdata_list or t_locked_list
-, while journal_try_to_free_buffers() tries to free them, which resulting an EIO
-error returns back to the dio caller. 
-
-The logic fix is to retry freeing if journal_try_to_free_buffers() to failed
-to free those data buffers while journal_commit_transaction() is still
-reference those buffers.
-This is done via implement ext3 launder_page() callback, instead of inside
-journal_try_to_free_buffers() itself, so that it doesn't affecting other code
-path calling journal_try_to_free_buffers and only dio path get affected.
-
-Signed-off-by: Mingming Cao <cmm@us.ibm.com>
-Index: linux-2.6.26-rc1/fs/ext3/inode.c
+Index: linux-2.6/arch/x86/kernel/cpu/mtrr/generic.c
 ===================================================================
---- linux-2.6.26-rc1.orig/fs/ext3/inode.c	2008-05-03 11:59:44.000000000 -0700
-+++ linux-2.6.26-rc1/fs/ext3/inode.c	2008-05-12 12:41:27.000000000 -0700
-@@ -1766,6 +1766,23 @@ static int ext3_journalled_set_page_dirt
- 	return __set_page_dirty_nobuffers(page);
- }
- 
-+static int ext3_launder_page(struct page *page)
-+{
-+        int ret;
-+	int retry = 5;
-+
-+	while (retry --) {
-+		ret = ext3_releasepage(page, GFP_KERNEL);
-+		if (ret == 1)
-+			break;
-+		else
-+			schedule();
-+	}
-+
-+        return ret;
-+}
-+
-+
- static const struct address_space_operations ext3_ordered_aops = {
- 	.readpage	= ext3_readpage,
- 	.readpages	= ext3_readpages,
-@@ -1778,6 +1795,7 @@ static const struct address_space_operat
- 	.releasepage	= ext3_releasepage,
- 	.direct_IO	= ext3_direct_IO,
- 	.migratepage	= buffer_migrate_page,
-+	.launder_page	= ext3_launder_page,
- };
- 
- static const struct address_space_operations ext3_writeback_aops = {
-@@ -1792,6 +1810,7 @@ static const struct address_space_operat
- 	.releasepage	= ext3_releasepage,
- 	.direct_IO	= ext3_direct_IO,
- 	.migratepage	= buffer_migrate_page,
-+	.launder_page	= ext3_launder_page,
- };
- 
- static const struct address_space_operations ext3_journalled_aops = {
-@@ -1805,6 +1824,7 @@ static const struct address_space_operat
- 	.bmap		= ext3_bmap,
- 	.invalidatepage	= ext3_invalidatepage,
- 	.releasepage	= ext3_releasepage,
-+	.launder_page	= ext3_launder_page,
- };
- 
- void ext3_set_aops(struct inode *inode)
-
-
-
-
+--- linux-2.6.orig/arch/x86/kernel/cpu/mtrr/generic.c
++++ linux-2.6/arch/x86/kernel/cpu/mtrr/generic.c
+@@ -233,7 +233,7 @@ void __init get_mtrr_state(void)
+ 		mtrr_tom2 = high;
+ 		mtrr_tom2 <<= 32;
+ 		mtrr_tom2 |= low;
+-		mtrr_tom2 &= 0xffffff8000000ULL;
++		mtrr_tom2 &= 0xffffff800000ULL;
+ 	}
+ 	if (mtrr_show) {
+ 		int high_width;
+Index: linux-2.6/arch/x86/pci/k8-bus_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/pci/k8-bus_64.c
++++ linux-2.6/arch/x86/pci/k8-bus_64.c
+@@ -384,7 +384,7 @@ static int __init early_fill_mp_bus_info
+ 	/* need to take out [0, TOM) for RAM*/
+ 	address = MSR_K8_TOP_MEM1;
+ 	rdmsrl(address, val);
+-	end = (val & 0xffffff8000000ULL);
++	end = (val & 0xffffff800000ULL);
+ 	printk(KERN_INFO "TOM: %016lx aka %ldM\n", end, end>>20);
+ 	if (end < (1ULL<<32))
+ 		update_range(range, 0, end - 1);
+@@ -478,7 +478,7 @@ static int __init early_fill_mp_bus_info
+ 		/* TOP_MEM2 */
+ 		address = MSR_K8_TOP_MEM2;
+ 		rdmsrl(address, val);
+-		end = (val & 0xffffff8000000ULL);
++		end = (val & 0xffffff800000ULL);
+ 		printk(KERN_INFO "TOM2: %016lx aka %ldM\n", end, end>>20);
+ 		update_range(range, 1ULL<<32, end - 1);
+ 	}
