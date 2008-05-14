@@ -1,40 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756014AbYENQgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757445AbYENQim@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756014AbYENQgl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 12:36:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751731AbYENQge
+	id S1757445AbYENQim (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 12:38:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbYENQif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 12:36:34 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:32757 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750887AbYENQgd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 12:36:33 -0400
-X-IronPort-AV: E=Sophos;i="4.27,487,1204531200"; 
-   d="scan'208";a="98664023"
-From: Roland Dreier <rdreier@cisco.com>
-To: "Faisal Latif" <flatif@NetEffect.com>
-Cc: "Christophe Jaillet" <christophe.jaillet@wanadoo.fr>,
-       "linux" <linux-kernel@vger.kernel.org>,
-       "Nishi Gupta" <ngupta@NetEffect.com>,
-       "Glenn Streiff" <gstreiff@NetEffect.com>,
-       <general@lists.openfabrics.org>
-Subject: Re: [ofa-general] RE: [PATCH 1/1] infiniband/hw/nes/: avoid unnecessary memset
-References: <20080512213601.626C91C0008F@mwinf2103.orange.fr>
-	<5E701717F2B2ED4EA60F87C8AA57B7CC080BD82B@venom2>
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 14 May 2008 09:36:30 -0700
-In-Reply-To: <5E701717F2B2ED4EA60F87C8AA57B7CC080BD82B@venom2> (Faisal Latif's
-	message of "Tue, 13 May 2008 16:46:47 -0500")
-Message-ID: <adatzh0j10x.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Wed, 14 May 2008 12:38:35 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:63130 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751731AbYENQie (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 12:38:34 -0400
+Date: Wed, 14 May 2008 17:37:45 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: "Kim B. Heino" <Kim.Heino@bluegiga.com>
+cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org
+Subject: Re: [rtc-linux] Re: [PATCH] add support for ST M41T94 SPI RTC
+In-Reply-To: <482AF5E7.9070801@bluegiga.com>
+Message-ID: <Pine.LNX.4.55.0805141736230.15223@cliff.in.clinika.pl>
+References: <482AD8D9.4090805@bluegiga.com> <20080514150820.7eb523c6@i1501.lan.towertech.it>
+ <482AF5E7.9070801@bluegiga.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 14 May 2008 16:36:30.0647 (UTC) FILETIME=[A9D1F470:01C8B5E0]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-thanks guys, applied for 2.6.27
+On Wed, 14 May 2008, Kim B. Heino wrote:
+
+> Ok, I'll add support for century bit. Again there are some other 
+> rtc-drivers (like rtc-m41t80.c and rtc-ds1307.c) not using it.
+
+ Oh, thanks for mentioning rtc-m41t80.c -- since I am currently fiddling 
+with it, it sounds like a good idea for an improvement.  Thanks!
+
+  Maciej
