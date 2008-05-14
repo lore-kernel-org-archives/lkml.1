@@ -1,31 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753785AbYENGrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755461AbYENGsr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753785AbYENGrT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 02:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbYENGrF
+	id S1755461AbYENGsr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 02:48:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbYENGsf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 02:47:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42704 "EHLO
+	Wed, 14 May 2008 02:48:35 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33784 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751252AbYENGrE (ORCPT
+	by vger.kernel.org with ESMTP id S1751673AbYENGse (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 02:47:04 -0400
-Date: Tue, 13 May 2008 23:46:27 -0700
+	Wed, 14 May 2008 02:48:34 -0400
+Date: Tue, 13 May 2008 23:33:41 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Segher Boessenkool <segher@kernel.crashing.org>,
-       Robert Hancock <hancockr@shaw.ca>,
-       Christian Kujau <lists@nerdbynature.de>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>
-Subject: Re: [PATCH] common implementation of iterative div/mod
-Message-Id: <20080513234627.30476c20.akpm@linux-foundation.org>
-In-Reply-To: <48231959.4050406@goop.org>
-References: <fa.QTbvQYXhEm5VNP5dvkl5JG7NHYQ@ifi.uio.no>
-	<481DF3D8.3010108@shaw.ca>
-	<a6dd201e0149f8dbdf10a7a194673833@kernel.crashing.org>
-	<48217674.8080903@goop.org>
-	<48231959.4050406@goop.org>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: POHMELFS high performance network filesystem. Transactions,
+ failover, performance.
+Message-Id: <20080513233341.47edea7f.akpm@linux-foundation.org>
+In-Reply-To: <20080513174523.GA1677@2ka.mipt.ru>
+References: <20080513174523.GA1677@2ka.mipt.ru>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -34,23 +28,14 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 08 May 2008 16:16:41 +0100 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+On Tue, 13 May 2008 21:45:24 +0400 Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
 
-> We have a few instances of the open-coded iterative div/mod loop, used
-> when we don't expcet the dividend to be much bigger than the divisor.
-> Unfortunately modern gcc's have the tendency to strength "reduce" this
-> into a full mod operation, which isn't necessarily any faster, and
-> even if it were, doesn't exist if gcc implements it in libgcc.
-> 
-> The workaround is to put a dummy asm statement in the loop to prevent
-> gcc from performing the transformation.
-> 
-> This patch creates a single implementation of this loop, and uses it
-> to replace the open-coded versions I know about.
+> I'm please to announce POHMEL high performance network filesystem.
 
-Believe it or not, this patch causes one of my test machines to fail to
-find its disk.
+If any thread takes more than one kmap() at a time, it is deadlockable.
+Because there is a finite pool of kmaps.  Everyone can end up holding
+one or more kmaps, then waiting for someone else to release one.
 
-good dmesg: http://userweb.kernel.org/~akpm/dmesg-t61p.txt
-bad dmesg: http://userweb.kernel.org/~akpm/dmesg-t61p-dead.txt
-config: http://userweb.kernel.org/~akpm/config-t61p.txt
+Duplicating page_waitqueue() is bad.  Exporting it is probably bad too.
+Better would be to help us work out why the core kernel infrastructure is
+unsuitable, then make it suitable.
