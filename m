@@ -1,42 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758262AbYENJza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761454AbYENJ5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758262AbYENJza (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 05:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755511AbYENJzW
+	id S1761454AbYENJ5j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 05:57:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754936AbYENJ52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 05:55:22 -0400
-Received: from gw.goop.org ([64.81.55.164]:33396 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754777AbYENJzV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 05:55:21 -0400
-Message-ID: <482AB6FC.7020202@goop.org>
-Date: Wed, 14 May 2008 10:55:08 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 14 May 2008 05:57:28 -0400
+Received: from wa-out-1112.google.com ([209.85.146.183]:51341 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754018AbYENJ51 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 05:57:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=amhCCWVXGkjsqwnNowPHBQSmA3V+aBb2Uftsc+Uj7k5VQJz0icwmEeDFa4kR5+3ExAo/BIeVqyijptFT1PSB0UJc/CD1c4mvarPGCYuKDKagSj/jM+HdUpqiRG0g4wB2Tm8gtGmtUZG9djjyh+DaSerN9cvX84fwMtlemweKWzA=
+Message-ID: <aa79d98a0805140257o1bf00647od1eecdf73695c76c@mail.gmail.com>
+Date: Wed, 14 May 2008 13:57:24 +0400
+From: "Cyrill Gorcunov" <gorcunov@gmail.com>
+To: "Andreas Schwab" <schwab@suse.de>
+Subject: Re: m68k: main.c:(.init.text+0x730): undefined reference to `strlen'
+Cc: "Geert Uytterhoeven" <geert@linux-m68k.org>,
+       "Linux/m68k" <linux-m68k@vger.kernel.org>,
+       "Linux Kernel Development" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <jeprrpth5m.fsf@sykes.suse.de>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       Robert Hancock <hancockr@shaw.ca>,
-       Christian Kujau <lists@nerdbynature.de>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>
-Subject: Re: [PATCH] common implementation of iterative div/mod
-References: <fa.QTbvQYXhEm5VNP5dvkl5JG7NHYQ@ifi.uio.no>	<481DF3D8.3010108@shaw.ca>	<a6dd201e0149f8dbdf10a7a194673833@kernel.crashing.org>	<48217674.8080903@goop.org>	<48231959.4050406@goop.org> <20080513234627.30476c20.akpm@linux-foundation.org> <482A95BB.1000001@goop.org> <482AA3BD.1030600@firstfloor.org>
-In-Reply-To: <482AA3BD.1030600@firstfloor.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0805140958400.5778@anakin>
+	 <jeprrpth5m.fsf@sykes.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> You would need to annotate it and have a separate object file for the
-> different sections. Also it would need to be compiled PIC.
+On Wed, May 14, 2008 at 12:37 PM, Andreas Schwab <schwab@suse.de> wrote:
+> Geert Uytterhoeven <geert@linux-m68k.org> writes:
 >
-> Inlining is better.
+>  > My first guess is gcc is turning sizeof() into strlen() again.
+>
+>  Definitely not.  sizeof is a compile-time constant, strlen is not.  More
+>  likely the strlen call is embedded in the expansion of strncat.
+>
+>  Andreas.
+>
+>  --
+>  Andreas Schwab, SuSE Labs, schwab@suse.de
+>  SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+>  PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+>  "And now for something completely different."
+>
 
-BTW, I'm seeing the memcpy() in __vdso_gettimeofday() not being inlined.
+I've missed to add
 
-    J
+#include <linux/string.h>
+
+sorry, will make the patch today evening (or maybe someone could
+make it). Thanks for report!
