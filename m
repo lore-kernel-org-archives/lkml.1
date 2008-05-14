@@ -1,76 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762978AbYENSW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760204AbYENSYc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762978AbYENSW2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 14:22:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754434AbYENSWK
+	id S1760204AbYENSYc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 14:24:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753452AbYENSYV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 14:22:10 -0400
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:52568 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762072AbYENSWF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 14:22:05 -0400
-Message-ID: <482B2DC9.3050503@linux.vnet.ibm.com>
-Date: Wed, 14 May 2008 23:52:01 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080505)
+	Wed, 14 May 2008 14:24:21 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:41129 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752860AbYENSYU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 14:24:20 -0400
+Message-ID: <482B2E50.2030601@garzik.org>
+Date: Wed, 14 May 2008 14:24:16 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Jeff Mahoney <jeffm@suse.com>
-CC: linux-kernel@vger.kernel.org, reiserfs-devel@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [patch 2/3] [PATCH] reiserfs: convert j_flush_sem to mutex
-References: <20080508063557.757413878@suse.com> <20080508063651.715221085@suse.com> <482AFA28.8020403@suse.com>
-In-Reply-To: <482AFA28.8020403@suse.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Sage Weil <sage@newdream.net>
+CC: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: POHMELFS high performance network filesystem. Transactions, failover,
+ performance.
+References: <20080513174523.GA1677@2ka.mipt.ru> <4829E752.8030104@garzik.org> <20080513205114.GA16489@2ka.mipt.ru> <Pine.LNX.4.64.0805140623001.14334@cobra.newdream.net>
+In-Reply-To: <Pine.LNX.4.64.0805140623001.14334@cobra.newdream.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Mahoney wrote:
-> Jeff Mahoney wrote:
->>  j_flush_sem is a semaphore but uses it as if it were a mutex. This
->>  patch converts it to a mutex.
->> --- a/fs/reiserfs/journal.c
->> +++ b/fs/reiserfs/journal.c
->> @@ -1411,8 +1411,8 @@ static int flush_journal_list(struct sup
->>  
->>  	/* if flushall == 0, the lock is already held */
->>  	if (flushall) {
->> -		down(&journal->j_flush_sem);
->> -	} else if (!down_trylock(&journal->j_flush_sem)) {
->> +		mutex_lock(&journal->j_flush_mutex);
->> +	} else if (!mutex_trylock(&journal->j_flush_mutex)) {
->>  		BUG();
->>  	}
+Sage Weil wrote:
+>>> What is your opinion of the Paxos algorithm?
+>> It is slow. But it does solve failure cases.
 > 
-> Oops. This chunk didn't get refreshed, here's the right one.
+> For writes, Paxos is actually more or less optimal (in the non-failure 
+> cases, at least).  Reads are trickier, but there are ways to keep that 
+> fast as well.  FWIW, Ceph extends basic Paxos with a leasing mechanism to 
+> keep reads fast, consistent, and distributed.  It's only used for cluster 
+> state, though, not file data.
 > 
-> -Jeff
+> I think the larger issue with Paxos is that I've yet to meet anyone who 
+> wants their data replicated 3 ways (this despite newfangled 1TB+ disks not 
+> having enough bandwidth to actualy _use_ the data they store).  
 
-Thanks, the patch resolves the kernel bug.
-
-Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> 
-> Signed-off-by: Jeff Mahoney <jeffm@suse.com>
-> ---
->  fs/reiserfs/journal.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- a/fs/reiserfs/journal.c
-> +++ b/fs/reiserfs/journal.c
-> @@ -1410,7 +1410,7 @@ static int flush_journal_list(struct sup
->  	/* if flushall == 0, the lock is already held */
->  	if (flushall) {
->  		mutex_lock(&journal->j_flush_mutex);
-> -	} else if (!mutex_trylock(&journal->j_flush_mutex)) {
-> +	} else if (mutex_trylock(&journal->j_flush_mutex)) {
->  		BUG();
->  	}
-> 
+I've seen clusters in the field that planned for this -- they don't want 
+to lose their data.
 
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+> Similarly, if only 1 out of 3 replicas is surviving, most people want to 
+> be able to read their data, while Paxos demands a majority to ensure it is 
+> correct.
+
+This isn't necessarily true -- it's quite easy for most applications to 
+come up with an alternate method for ensuring correctness of retrieved 
+data, if one assumes Paxos consensus was achieved during the write-data 
+phase earlier in time.  Checksumming is a common solution, but not the 
+only one.  Domain- or app-specific solution, as noted, of course.
+
+Overall, reads can be optimized outside of Paxos in many ways.
+
+
+> (This is why Paxos is typically used only for critical cluster 
+> configuration/state, not regular data.)
+
+Yep, I'm working on a config daemon a la Chubby or zookeeper, based on 
+Paxos, that does just this.  :)
+
+	Jeff
+
+
