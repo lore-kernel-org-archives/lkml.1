@@ -1,53 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761560AbYENJfH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760095AbYENJvI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761560AbYENJfH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 05:35:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756096AbYENJez
+	id S1760095AbYENJvI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 05:51:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbYENJu4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 05:34:55 -0400
-Received: from fk-out-0910.google.com ([209.85.128.187]:6146 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754512AbYENJey (ORCPT
+	Wed, 14 May 2008 05:50:56 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:38066 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752363AbYENJuz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 05:34:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=CXoDaECAnQM1/BtgseSQhV5gzyBfAOqjw+3EqB+cQDAglPp7W0gVZiqiO/Z4U0JzaOlFCrZoYuLCdYOeHbu6aOb363WSdgd4E6aZ4BZITP7gWrrfnp2JdCv7VSfSv72ZOZ734qQ0morQshDVtKu2o107TiMGdXLt6f4GFiqywGM=
-Message-ID: <482AB23C.2090809@gmail.com>
-Date: Wed, 14 May 2008 11:34:52 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
+	Wed, 14 May 2008 05:50:55 -0400
+Message-ID: <482AB615.5030000@bull.net>
+Date: Wed, 14 May 2008 11:51:17 +0200
+From: Benjamin Thery <benjamin.thery@bull.net>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Marcel Holtmann <marcel@holtmann.org>
-CC: Jiri Kosina <jkosina@suse.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       anssi.hannula@gmail.com, akpm@linux-foundation.org,
-       Jiri Slaby <jslaby@suse.cz>
-Subject: Re: [PATCH 3/9] HID: hid, make parsing event driven
-References: <1210536043-19812-1-git-send-email-jirislaby@gmail.com>	 <1210536043-19812-2-git-send-email-jirislaby@gmail.com>	 <1210536043-19812-3-git-send-email-jirislaby@gmail.com> <1210548050.16390.39.camel@violet.holtmann.net>
-In-Reply-To: <1210548050.16390.39.camel@violet.holtmann.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Randy Dunlap <RANDY.DUNLAP@ORACLE.COM>, Greg KH <greg@kroah.com>,
+       Al Viro <viro@ftp.linux.org.uk>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>, Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH] Fix kobject_rename and !CONFIG_SYSFS v4
+References: <m163tocw43.fsf_-_@frodo.ebiederm.org>	<20080512220232.GA16914@kroah.com>	<m1prrqbseh.fsf@frodo.ebiederm.org>	<4829A4BD.3020007@bull.net>	<20080513164438.GA31563@kroah.com>	<m18wyeay1q.fsf_-_@frodo.ebiederm.org>	<20080513201602.GA31578@kroah.com>	<m1od7a9bmr.fsf_-_@frodo.ebiederm.org>	<24291087.1210713535895.JavaMail.oracle@acsmt301.oracle.com>	<m1hcd1a48e.fsf_-_@frodo.ebiederm.org>	<20080513220304.b2f5a588.akpm@linux-foundation.org>	<m163th6yz2.fsf@frodo.ebiederm.org> <20080514022059.2fc883b1.akpm@linux-foundation.org>
+In-Reply-To: <20080514022059.2fc883b1.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marcel Holtmann napsal(a):
-> Hi Jiri,
+Andrew Morton wrote:
+> On Wed, 14 May 2008 02:01:37 -0700 ebiederm@xmission.com (Eric W. Biederman) wrote:
 > 
->> Next step for complete hid bus, this patch includes:
->> - call parser either from probe or from hid-core if there is no probe.
->> - add ll_driver structure and centralize some stuff there (open, close...)
->> - split and merge usb_hid_configure and hid_probe into several functions
->>   to allow hooks/fixes between them
+>> Andrew Morton <akpm@linux-foundation.org> writes:
+>>
+>>>> diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+>>>> index 7858eac..6e61033 100644
+>>>> --- a/include/linux/sysfs.h
+>>>> +++ b/include/linux/sysfs.h
+>>>> @@ -20,6 +20,8 @@
+>>>>  struct kobject;
+>>>>  struct module;
+>>>>  
+>>>> +extern int kobject_set_name(struct kobject *kobj, const char *name, ...)
+>>>> +			    __attribute__((format(printf, 2, 3)));
+>>> Duplicating the kobject_set_name() declaration in sysfs.h is rather a hack.
+>> A bit.  It really isn't worse then a struct declaration like struct kobject;
+>>
+>>> It'd be better to move it into a new header file, included by both
+>>> sysfs.h and kobject.h.  Perhaps there are other declarations which can
+>>> be moved with it.
+>> My gut feel says that sysfs.h should include kobject.h instead of the
+>> other way around.
+
+This is also my feeling.
+To do this, we need to move "struct attributes" related definitions to 
+kboject.h, and fix some .c files that don't include sysfs.h as they 
+should (sysfs.h was included indirectly via kojbect.h in these files: eg 
+kernel/sched.c, fs/partitions/check.c).
+
+>>
+>> However it gets reorganized, it is an entirely separate problem
+>> from the one this patch sets out to solve and so should go in
+>> a different patch.
+>>
 > 
-> has the Bluetooth HIDP changes been tested. You move a lot of code
-> around and this might have side effects.
+> umm, well, actually, it's a problem which your patch introduces, by adding a
+> new dependency.
+> 
+> uninlining sysfs_rename_dir() would be a sensible solution.
 
-Not really. I was only to test non-hid path (i.e. input) of hidp changes. 
-This is why I want it in -mm/-next for some time. If you have some (real) 
-bluetooth HID devices, I would be glad if you could test it.
+It is inlined only when CONFIG_SYSFS=n. When sysfs is enabled 
+sysfs_rename_dir() is compiled from fs/sysfs/dir.c
 
-Thanks.
+Uninlining it will require us to find an appropriate .c file to put it
+in: we can't put it in fs/sysfs/dir.c. It is not built if CONFIG_SYSFS 
+is disabled.
+
+-Benjamin
+
+-- 
+B e n j a m i n   T h e r y  - BULL/DT/Open Software R&D
+
+    http://www.bull.com
