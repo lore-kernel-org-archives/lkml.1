@@ -1,80 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763405AbYENNMk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762480AbYENNOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763405AbYENNMk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 09:12:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763051AbYENNLt
+	id S1762480AbYENNOS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 09:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755366AbYENNOD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 09:11:49 -0400
-Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:24372 "HELO
-	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1763031AbYENNLs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 09:11:48 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=EfNccyl9iJzZxFiqwNeBk5st5Cd6XwWNLP5IhoK+VxtaHjBo0t3dmyU3bHeF0thO8zP3l0wkp1O5+BqEcAUL+Zc/J6IS/yILkXNrkTUpHGdU3Q3yHHh7SwihEkAj8tc7LqNbq4IT9mi1U5ixv0WwRjoPG1R2L59tLkmy1dqwbIk=  ;
-X-YMail-OSG: dvmT3HwVM1mQr7UtuRHb4yYDdaRQl8tvzWtALrwsYb7pu0cuW3PFanELyzpptSmFCKlhpTvds2qEei2.vXZuZLDHma0mjonkXCZnXs7NFfr11y4zZbapAkh2v2psTnYKPH4-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Lennert Buytenhek <buytenh@wantstofly.org>
-Subject: Re: ehci splatter in 2.6.26-rc2
-Date: Wed, 14 May 2008 06:11:45 -0700
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, Nicolas Pitre <nico@cam.org>,
-       Sylver Bruneau <sylver.bruneau@googlemail.com>,
-       Byron Bradley <byron.bbradley@gmail.com>,
-       Martin Michlmayr <tbm@cyrius.com>
-References: <20080514112429.GA25926@xi.wantstofly.org>
-In-Reply-To: <20080514112429.GA25926@xi.wantstofly.org>
+	Wed, 14 May 2008 09:14:03 -0400
+Received: from www.tglx.de ([62.245.132.106]:54099 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754574AbYENNOB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 09:14:01 -0400
+Date: Wed, 14 May 2008 15:07:26 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Alok Kataria <akataria@vmware.com>
+cc: johnstul@us.ibm.com, mingo@redhat.com, andi@firstfloor.org,
+       linux-kernel@vger.kernel.org, Dan Hecht <dhecht@vmware.com>,
+       Tim Mann <mann@vmware.com>, Zachary Amsden <zach@vmware.com>
+Subject: Re: Possible error in tsc frequency calibration
+In-Reply-To: <1210719921.11510.157.camel@promb-2n-dhcp368.eng.vmware.com>
+Message-ID: <alpine.LFD.1.10.0805141506010.3174@apollo.tec.linutronix.de>
+References: <1210719921.11510.157.camel@promb-2n-dhcp368.eng.vmware.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805140611.45897.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 May 2008, Lennert Buytenhek wrote:
-> On 2.6.26-rc2, plugging in a certain USB device (haven't tested yet
-> with other devices) gives me (on two different ARM boards) the oops
-> below.
+On Tue, 13 May 2008, Alok Kataria wrote:
+> I was looking at the tsc calibration code (tsc_calibrate) in the recent
+> kernels (2.6.26-rc1). With the newer code of calibrating against the
+> pm_timer and with the added checks for SMI's the tsc_calibration code
+> looks pretty robust, at least for x86_64 systems.
 > 
-> Anyone else seeing the same?
+> However, from the code, (tsc_calibrate) SMI_THRESHOLD is 50000, so in
+> the worst case, values returned by tsc_read_refs, i.e. tsc1 & tsc2,
+> could be off by 50000 ticks. On a 2Ghz processor this would mean an
+> error of 25us. The tsc frequency is calibrated over a period of 50ms;
+> hence the worst case error can be around 500ppm. 
+> 
+> In addition to that, the pmtimer hardware itself has some drift,
+> typically in the range of 20 to 100ppm.  If this drift happens to be in
+> the same direction as the error in measuring the tsc against the
+> pmtimer, we could have a total error of more than 500ppm in the tsc
+> frequency calibration code.  The maximum drift that NTP is willing to
+> correct is 500ppm.  So we can have cases when we may end up
+> mis-calibrating tsc frequency beyond the NTP threshold.
+> 
+> One thing that we can do to reduce this possible error is to
+> double the calibration period from the current 50msec to 100msec.
+> This halves the maximum error to 250ppm. 
 
-I have no ARM running EHCI, but I can report it's OK
-for me on x86 (limited testing) ... I'd expect to have
-heard *very* load screams by now if this was common.
+Will have a look at the threshold when working on #2
+ 
+> Comments?
+> 
+> Now looking at the 32bit code, the frequency calibration code looks
+> really broken in the sense that we are not checking for SMI's at all.  
+> The maximum error that can go undetected on these systems is very high.
+> The best way to solve this would be to unify the calibration code for 32
+> bit and 64bit. Is anybody already working on this?
 
+#2 Yup, I'm merging tsc-32/64 and keep the 64 bit calibration for both.
 
-> usb 1-1: new low speed USB device using orion-ehci and address 2
-> Unable to handle kernel NULL pointer dereference at virtual address 00000000
-> pgd = c0004000
-> [00000000] *pgd=00000000
-> Internal error: Oops: 17 [#1] PREEMPT
-> Modules linked in:
-> CPU: 0    Not tainted  (2.6.26-rc2 #340)
-> PC is at qh_append_tds+0x24c/0x44c
-> LR is at ehci_qtd_alloc+0x30/0x5c
-> ...
-> [<c0223668>] (qh_append_tds+0x0/0x44c) from [<c0225470>]
->		(ehci_urb_enqueue+0x100 /0xfb8) 
-> [<c0225370>] (ehci_urb_enqueue+0x0/0xfb8) from [<c02163e8>]
->		(usb_hcd_submit_urb+ 0x824/0x91c) 
-
-Nothing in that vicinity should have changed in ages,
-which makes me wonder if it's really EHCI which is
-triggering this.
-
-The only thing coming vaguely to mind is that this may
-have to do with dma-coherent memory allocations.  If
-the platform support for that has any goofage, you might
-be able to elicit different behaviors with dmapool debug
-(enable CONFIG_DEBUG_SLAB or CONFIG_SLUB_DEBUG_ON).
-
-- Dave
-
-
-
+Thanks,
+	tglx
