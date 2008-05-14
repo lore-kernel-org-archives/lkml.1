@@ -1,119 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758042AbYENXcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758122AbYENXg0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758042AbYENXcZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 19:32:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752837AbYENXcR
+	id S1758122AbYENXg0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 19:36:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbYENXgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 19:32:17 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:36201 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752265AbYENXcQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 19:32:16 -0400
-Date: Thu, 15 May 2008 02:30:37 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Karol Lewandowski <lmctlx@gmail.com>
-Subject: Re: [Bug #10670] BUG: linux-2.6.26-rc1 oops at
-	thinkpad_acpi:led_set_status
-Message-ID: <20080514233037.GB11439@cs181133002.pp.htv.fi>
-References: <hPXlJLjt4XG.A._lF.Jv1JIB@chimera> <88YBFoyd1CN.A.qfG.mv1JIB@chimera> <20080512041753.GA4543@khazad-dum.debian.net>
+	Wed, 14 May 2008 19:36:18 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:3982 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751302AbYENXgR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 19:36:17 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: <pavel@ucw.cz>
+Cc: "pradeep singh rautela" <rautelap@gmail.com>, <hjk@linutronix.de>,
+       "Greg KH" <greg@kroah.com>, <linux-kernel@vger.kernel.org>
+Subject: RE: [Q]Can a file be dual licensed in upstream kernel?
+Date: Wed, 14 May 2008 16:36:14 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKEEEJMKAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080512041753.GA4543@khazad-dum.debian.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+Importance: Normal
+In-Reply-To: <20080514152834.GA6888@ucw.cz>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Wed, 14 May 2008 16:37:37 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Wed, 14 May 2008 16:37:38 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 12, 2008 at 01:17:53AM -0300, Henrique de Moraes Holschuh wrote:
-> On Sun, 11 May 2008, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.25.  Please verify if it still should be listed.
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10670
-> > Subject		: BUG: linux-2.6.26-rc1 oops at thinkpad_acpi:led_set_status
-> > Submitter	: Karol Lewandowski <lmctlx@gmail.com>
-> > Date		: 2008-05-08 23:12 (4 days old)
-> > References	: http://marc.info/?l=linux-kernel&amp;m=121028841527994&amp;w=4
-> > Handled-By	: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-> 
-> It is related to:
-> 
-> 1. Debian gcc in stable being used to compile the kernel
-> 2. unmodified led_set_status() function on thinkpad-acpi.c
-> 3. kernel compiled in "optimize for size" mode
-> 4. stack frames NOT being enabled.
-> 
-> Change one, and the bug is gone.
-> 
-> AFAIK, it means Debian stable's gcc is generating bad code.
->...
 
+> On Thu 2008-05-01 07:59:54, David Schwartz wrote:
 
-No, your code is buggy:
+> > In my _personal_opinion_, dual licensing gives you the right to choose
+> > between two licenses.
 
+> > Dual licensing gives every recipient both licenses from the
+> > original author.
+> > You can choose which license you will obtain rights from.
+> >
+> > > If a file is dual licensed BSD/GPLv2, anybody
+> > > (including yourself) is free to get rid of the BSD part and make it
+> > > GPLv2 only.
 
-#define TPACPI_LED_NUMLEDS 8
-static enum led_status_t tpacpi_led_state_cache[TPACPI_LED_NUMLEDS];
+> > Really? Which license or law gives you the right to change the licensing
+> > terms on code you didn't write? At least in the United States,
+> > you cannot
 
+> You don't change licensing. You got choice of two licenses, and you
+> selected one. GPL gives you right to remove the BSD licensing terms
+> you did not choose.
 
-static int led_write(char *buf)
-{
-...
-                if (sscanf(cmd, "%d", &led) != 1 || led < 0 || led > 7)
-                        return -EINVAL;
-...
-                rc = led_set_status(led, s);
-...
-}
+GPL gives you the right to remove the BSD licensing *TERMS*, but this has no
+effect on the actual license. The works do not become GPLv2 only just
+because you removed the licensing terms.
 
-static int led_set_status(unsigned int led, enum led_status_t ledstatus)
-{
-...
-        switch (led_supported) {
-...
-        case TPACPI_LED_OLD:
-                        /* 600e/x, 770e, 770x, A21e, A2xm/p, T20-22, X20 */
------>                  led = 1 << led;
-                        rc = ec_write(TPACPI_LED_EC_HLMS, led);
-                        if (rc >= 0)
-                                rc = ec_write(TPACPI_LED_EC_HLBL,
-                                              led * led_exp_hlbl[ledstatus]);
-                        if (rc >= 0)
-                                rc = ec_write(TPACPI_LED_EC_HLCL,
-                                              led * led_exp_hlcl[ledstatus]);
-                        break;
-...
-        if (!rc)
-                tpacpi_led_state_cache[led] = ledstatus;
-...                                    ^^^
-}
+> (People still can use the code under BSD license _if_ they know it was
+> originally BSD/GPL.. as long as you don't modify it).
 
+Exactly. So you *cannot* change the license, you can only remove the
+licensing terms. And even if you do modify it, that still has no effect on
+the available licenses for any creative elements you did not author.
 
-According to the assembler code "led" is in register EBX, and in the 
-trace the value of EBX is 0x80.
+"6. Each time you redistribute the Program (or any work based on the
+Program), the recipient automatically receives a license from the
+original licensor to copy, distribute or modify the Program subject to
+these terms and conditions."
 
-0x80 = 1 << 7
+For both the GPL and the BSD license, anyone who receives covered works or
+elements receives the offered licenses directly from the original author.
+There is nothing you can do to change this.
 
-What happens when you write to tpacpi_led_state_cache[0x80] is 
-undefined, and it's not a surprise that random changes let the
-bug seem to disappear.
+Neither the BSD license nor the GPL license allow you to in any way modify
+the license or licenses offered by anyone else to creative elements they
+authored. In the United States, at least, this is not even possible without
+a written re-licensing agreement. The licenses always flow from each
+creative element's original author to the final end user. Distributors
+simply provide copies of the works, they do *NOT* relicense them. People who
+modify the works simply add and license other creative elements, they do not
+relicense the existing ones.
 
+DS
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
