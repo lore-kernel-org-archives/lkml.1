@@ -1,39 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762301AbYENNjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759171AbYENNl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762301AbYENNjj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 09:39:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756061AbYENNjc
+	id S1759171AbYENNl2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 09:41:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbYENNlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 09:39:32 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:42658 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755040AbYENNjb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 09:39:31 -0400
-Date: Wed, 14 May 2008 15:39:30 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-cc: Arnd Hannemann <arnd@arndnet.de>, Roland <devzero@web.de>,
-       tvrtko@ursulin.net, pernegger@gmail.com, snitzer@gmail.com,
-       zorglub_olsen@hotmail.com, renatoyamane@mandic.com.br,
-       linux-kernel@vger.kernel.org
-Subject: Re: WD doesn`t use disks with Linux - was Re: Re:Western Digital
- GreenPower drives and Linux
-In-Reply-To: <Pine.LNX.4.61.0805140912170.9528@chaos.analogic.com>
-Message-ID: <alpine.LNX.1.10.0805141538420.5292@fbirervta.pbzchgretzou.qr>
-References: <003201c8b53c$67ff02d0$6400a8c0@bui.materna.com> <482A062B.3010308@arndnet.de> <Pine.LNX.4.61.0805140912170.9528@chaos.analogic.com>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Wed, 14 May 2008 09:41:19 -0400
+Received: from sacred.ru ([62.205.161.221]:37712 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750906AbYENNlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 09:41:18 -0400
+Message-ID: <482AE9FA.4080004@openvz.org>
+Date: Wed, 14 May 2008 17:32:42 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+CC: linux-mm@kvack.org, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [-mm][PATCH 4/4] Add memrlimit controller accounting and control
+ (v4)
+References: <20080514130904.24440.23486.sendpatchset@localhost.localdomain> <20080514130951.24440.73671.sendpatchset@localhost.localdomain>
+In-Reply-To: <20080514130951.24440.73671.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 14 May 2008 17:35:03 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Balbir Singh wrote:
+> This patch adds support for accounting and control of virtual address space
+> limits. The accounting is done via the rlimit_cgroup_(un)charge_as functions.
+> The core of the accounting takes place during fork time in copy_process(),
+> may_expand_vm(), remove_vma_list() and exit_mmap(). There are some special
+> cases that are handled here as well (arch/ia64/kernel/perform.c,
+> arch/x86/kernel/ptrace.c, insert_special_mapping())
+> 
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> ---
+> 
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> ---
+> 
+>  arch/ia64/kernel/perfmon.c      |    6 ++
+>  arch/x86/kernel/ptrace.c        |   17 +++++--
+>  fs/exec.c                       |    5 ++
+>  include/linux/memrlimitcgroup.h |   21 ++++++++
+>  kernel/fork.c                   |    8 +++
+>  mm/memrlimitcgroup.c            |   94 ++++++++++++++++++++++++++++++++++++++++
+>  mm/mmap.c                       |   11 ++++
+>  7 files changed, 157 insertions(+), 5 deletions(-)
+> 
+> diff -puN arch/ia64/kernel/perfmon.c~memrlimit-controller-address-space-accounting-and-control arch/ia64/kernel/perfmon.c
+> --- linux-2.6.26-rc2/arch/ia64/kernel/perfmon.c~memrlimit-controller-address-space-accounting-and-control	2008-05-14 18:09:32.000000000 +0530
+> +++ linux-2.6.26-rc2-balbir/arch/ia64/kernel/perfmon.c	2008-05-14 18:09:32.000000000 +0530
+> @@ -40,6 +40,7 @@
+>  #include <linux/capability.h>
+>  #include <linux/rcupdate.h>
+>  #include <linux/completion.h>
+> +#include <linux/memrlimitcgroup.h>
+>  
+>  #include <asm/errno.h>
+>  #include <asm/intrinsics.h>
+> @@ -2294,6 +2295,9 @@ pfm_smpl_buffer_alloc(struct task_struct
+>  
+>  	DPRINT(("sampling buffer rsize=%lu size=%lu bytes\n", rsize, size));
+>  
+> +	if (memrlimit_cgroup_charge_as(mm, size >> PAGE_SHIFT))
+> +		return -ENOMEM;
+> +
 
-On Wednesday 2008-05-14 15:20, linux-os (Dick Johnson) wrote:
->
->It's not just the positioning logic that gets powered off. The
->discs are spun down, which saves a lot of power.
+AFAIS you didn't cover all the cases when VM expands. At least all
+the arch/ia64/ia32/binfmt_elf32.c is missed.
 
-And drives latencies into the skies.
-Not to mention that the permanent spinups and downs also affect life.
+I'd insert this charge into insert_vm_struct. This would a) cover
+all of the missed cases and b) reduce the amount of places to patch.
+
+[snip the rest of the patch]
