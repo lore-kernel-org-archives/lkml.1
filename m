@@ -1,49 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759296AbYENEpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759646AbYENErs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759296AbYENEpb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 00:45:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbYENEpX
+	id S1759646AbYENErs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 00:47:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752067AbYENErj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 00:45:23 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:36805 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751664AbYENEpX (ORCPT
+	Wed, 14 May 2008 00:47:39 -0400
+Received: from mail9.hitachi.co.jp ([133.145.228.44]:37531 "EHLO
+	mail9.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751981AbYENEri (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 00:45:23 -0400
-Message-ID: <482A6E2B.4030806@zytor.com>
-Date: Tue, 13 May 2008 21:44:27 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Wed, 14 May 2008 00:47:38 -0400
+X-AuditID: 0ac90647-a9f1fba000004aeb-9c-482a6ee83fe4
+Message-ID: <482A6EE3.90901@hitachi.com>
+Date: Wed, 14 May 2008 13:47:31 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
 MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: Andi Kleen <andi@firstfloor.org>, Miklos Vajna <vmiklos@frugalware.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 2/3] x86: janitor work in bugs.c
-References: <8779a478ff43d6ed589279078d2abbab789a2dc9.1210678238.git.vmiklos@frugalware.org>	 <fe3003f39869f8773950d23bb73efe42b5cf07a5.1210678238.git.vmiklos@frugalware.org>	 <87tzh17vy3.fsf@basil.nowhere.org> <1210724499.14967.78.camel@localhost>
-In-Reply-To: <1210724499.14967.78.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>, sct@redhat.com,
+       adilger@clusterfs.com
+Cc: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       Jan Kara <jack@suse.cz>, Josef Bacik <jbacik@redhat.com>,
+       Mingming Cao <cmm@us.ibm.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
+       sugita <yumiko.sugita.yf@hitachi.com>
+Subject: [PATCH 1/4] jbd: strictly check for write errors on data buffers
+    (rebased)
+References: <482A6E00.6080303@hitachi.com>
+In-Reply-To: <482A6E00.6080303@hitachi.com>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Perches wrote:
-> On Tue, 2008-05-13 at 23:09 +0200, Andi Kleen wrote:
->> We had a discussion recently that wrapping printk format strings
->> is a bad idea. Don't do it please.
-> 
-> I don't know that there was a resolution either.
-> http://lkml.org/lkml/2008/2/22/143
-> 
-> If there was one, there's a lot of possible changes.
-> 
-> $ grep -rP --include=*.[ch] "printk.*\"\s*$\s*\"" * | wc -l
-> 13276
-> 
-> divide by 2, there are more than 6K split source line printks
-> 
+Subject: [PATCH 1/4] jbd: strictly check for write errors on data buffers
 
-Perhaps a better idea would be to write a script to grep for strings.
+In ordered mode, we should abort journaling when an I/O error has
+occurred on a file data buffer in the committing transaction.  But
+there can be data buffers which are not checked for error:
 
-	-hpa
+  (a) the buffer which has already been written out by pdflush
+  (b) the buffer which has been unlocked before scanned in the
+      t_locked_list loop
+
+This patch adds missing error checks and aborts journaling
+appropriately.
+
+Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitacih.com>
+---
+ fs/jbd/commit.c |   14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
+
+Index: linux-2.6.26-rc2/fs/jbd/commit.c
+===================================================================
+--- linux-2.6.26-rc2.orig/fs/jbd/commit.c
++++ linux-2.6.26-rc2/fs/jbd/commit.c
+@@ -172,7 +172,7 @@ static void journal_do_submit_data(struc
+ /*
+  *  Submit all the data buffers to disk
+  */
+-static void journal_submit_data_buffers(journal_t *journal,
++static int journal_submit_data_buffers(journal_t *journal,
+ 				transaction_t *commit_transaction)
+ {
+ 	struct journal_head *jh;
+@@ -180,6 +180,7 @@ static void journal_submit_data_buffers(
+ 	int locked;
+ 	int bufs = 0;
+ 	struct buffer_head **wbuf = journal->j_wbuf;
++	int err = 0;
+ 
+ 	/*
+ 	 * Whenever we unlock the journal and sleep, things can get added
+@@ -253,6 +254,8 @@ write_out_data:
+ 			put_bh(bh);
+ 		} else {
+ 			BUFFER_TRACE(bh, "writeout complete: unfile");
++			if (unlikely(!buffer_uptodate(bh)))
++				err = -EIO;
+ 			__journal_unfile_buffer(jh);
+ 			jbd_unlock_bh_state(bh);
+ 			if (locked)
+@@ -271,6 +274,8 @@ write_out_data:
+ 	}
+ 	spin_unlock(&journal->j_list_lock);
+ 	journal_do_submit_data(wbuf, bufs);
++
++	return err;
+ }
+ 
+ /*
+@@ -410,8 +415,7 @@ void journal_commit_transaction(journal_
+ 	 * Now start flushing things to disk, in the order they appear
+ 	 * on the transaction lists.  Data blocks go first.
+ 	 */
+-	err = 0;
+-	journal_submit_data_buffers(journal, commit_transaction);
++	err = journal_submit_data_buffers(journal, commit_transaction);
+ 
+ 	/*
+ 	 * Wait for all previously submitted IO to complete.
+@@ -426,10 +430,10 @@ void journal_commit_transaction(journal_
+ 		if (buffer_locked(bh)) {
+ 			spin_unlock(&journal->j_list_lock);
+ 			wait_on_buffer(bh);
+-			if (unlikely(!buffer_uptodate(bh)))
+-				err = -EIO;
+ 			spin_lock(&journal->j_list_lock);
+ 		}
++		if (unlikely(!buffer_uptodate(bh)))
++			err = -EIO;
+ 		if (!inverted_lock(journal, bh)) {
+ 			put_bh(bh);
+ 			spin_lock(&journal->j_list_lock);
+
+
