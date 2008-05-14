@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758051AbYENHlX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758805AbYENHnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758051AbYENHlX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 03:41:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbYENHlG
+	id S1758805AbYENHnS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 03:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753535AbYENHnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 03:41:06 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:55130 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752902AbYENHlF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 03:41:05 -0400
-Date: Wed, 14 May 2008 11:40:30 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: POHMELFS high performance network filesystem. Transactions, failover, performance.
-Message-ID: <20080514074028.GA28330@2ka.mipt.ru>
-References: <20080513174523.GA1677@2ka.mipt.ru> <20080513233341.47edea7f.akpm@linux-foundation.org>
-Mime-Version: 1.0
+	Wed, 14 May 2008 03:43:09 -0400
+Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:60465 "EHLO
+	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753528AbYENHnI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 03:43:08 -0400
+Date: Wed, 14 May 2008 09:43:06 +0200
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.26-rc2 hosed X?
+Message-ID: <20080514074306.GA6986@gamma.logic.tuwien.ac.at>
+References: <20080513103828.GA8288@gamma.logic.tuwien.ac.at> <21d7e9970805140000o2191160eida777023909bf033@mail.gmail.com> <20080514070631.GB10549@elte.hu> <20080514072858.GA9979@gamma.logic.tuwien.ac.at>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080513233341.47edea7f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20080514072858.GA9979@gamma.logic.tuwien.ac.at>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew.
+On Mi, 14 Mai 2008, preining wrote:
+> I confirm that this patch fixed the problems I had. s2ram, switching to
+> console worked again.
 
-On Tue, May 13, 2008 at 11:33:41PM -0700, Andrew Morton (akpm@linux-foundation.org) wrote:
-> If any thread takes more than one kmap() at a time, it is deadlockable.
-> Because there is a finite pool of kmaps.  Everyone can end up holding
-> one or more kmaps, then waiting for someone else to release one.
+Hmm, sudden freeze after working 20min, no sysrq, nothing in the logs.
+Ok, at least we are bit better off. I will try to catch some error.
 
-It never takes the whole LAST_PKMAP maps. So the same can be applied to
-any user who kmaps at least one page - while user waits for free slot,
-it can be reused by someone else and so on.
+Best wishes
 
-But it can be speed issue, on 32 bit machine with 8gb of ram essentially
-all pages were highmem and required mapping, so this does slows things
-down (probably a lot), so I will extend writeback path of the POHMELFS
-not to kmap pages, but instead use ->sendpage(), which if needed will
-map page one-by-one. Current approach when page is mapped and then
-copied looks really beter since the only one sending function is used
-which takes lock only single time.
+Norbert
 
-> Duplicating page_waitqueue() is bad.  Exporting it is probably bad too.
-> Better would be to help us work out why the core kernel infrastructure is
-> unsuitable, then make it suitable.
-
-When ->writepage() is used, it has to wait until page is written (remote
-side sent acknowledge), so if multiple pages are being written
-simultaneously we either have to allocate shared structure or use
-per-page wait. Right now there are transactions (and they will be used
-for all operations eventually), so this waiting can go away.
-It is exactly the same logic which lock_page() uses.
-
-Will lock_page_killable()/__lock_page_killable() be exported to modules?
-
--- 
-	Evgeniy Polyakov
+-------------------------------------------------------------------------------
+Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
+Debian Developer <preining@debian.org>                         Debian TeX Group
+gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+-------------------------------------------------------------------------------
+TOLOB (n.)
+A crease or fold in an underblanket, the removal of which involves
+getting out of bed an largely remaking it.
+			--- Douglas Adams, The Meaning of Liff
