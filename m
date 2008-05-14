@@ -1,67 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761953AbYENI12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761314AbYENIa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761953AbYENI12 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 04:27:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753257AbYENI1P
+	id S1761314AbYENIa3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 04:30:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907AbYENIaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 04:27:15 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56070 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751037AbYENI1N (ORCPT
+	Wed, 14 May 2008 04:30:14 -0400
+Received: from mailrelay010.isp.belgacom.be ([195.238.6.177]:17509 "EHLO
+	mailrelay010.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751909AbYENIaM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 04:27:13 -0400
-Date: Wed, 14 May 2008 17:32:09 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
-       "hugh@veritas.com" <hugh@veritas.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC/PATCH 4/6] memcg: shmem reclaim helper
-Message-Id: <20080514173209.860d1c1d.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <482AA16D.7060200@cn.fujitsu.com>
-References: <20080514170236.23c9ddd7.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080514171025.2f0fb1ca.kamezawa.hiroyu@jp.fujitsu.com>
-	<482A9FB5.4020202@cn.fujitsu.com>
-	<20080514172531.672e0447.kamezawa.hiroyu@jp.fujitsu.com>
-	<482AA16D.7060200@cn.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 14 May 2008 04:30:12 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AjkBAGFAKkhR9P0I/2dsb2JhbAAIkxCaYg
+Message-ID: <482AA313.7060409@246tnt.com>
+Date: Wed, 14 May 2008 10:30:11 +0200
+From: Sylvain Munaut <tnt@246tnt.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071124)
+MIME-Version: 1.0
+To: Roel Kluin <roel.kluin@gmail.com>
+CC: lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+Subject: Re: [PATCH] fec_mpc52xx: MPC52xx_MESSAGES_DEFAULT: 2nd NETIF_MSG_IFDOWN
+ => IFUP
+References: <482A05E7.90204@gmail.com> <482A8DFD.3080805@246tnt.com> <482A9E83.6060703@gmail.com>
+In-Reply-To: <482A9E83.6060703@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 May 2008 16:23:09 +0800
-Li Zefan <lizf@cn.fujitsu.com> wrote:
+Roel Kluin wrote:
+>> Yes but I remember seeing a patch for this already ... What kernel
+>> version / revision do you have ?
+>>
+>> Sylvain
+>>     
+>
+> Indeed I already sent the patch, see http://lkml.org/lkml/2008/1/30/252 (my
+> emailaddress changed), but there was no response and the patch isn't included in
+> current Linus' git. maybe if you could add your ack?
+>   
 
-> KAMEZAWA Hiroyuki wrote:
-> > On Wed, 14 May 2008 16:15:49 +0800
-> > Li Zefan <lizf@cn.fujitsu.com> wrote:
-> > 
-> >>> +	while(!progress && --retry) {
-> >>> +		progress = try_to_free_mem_cgroup_pages(mem, gfp_mask);
-> >>> +	}
-> >> This is wrong. How about:
-> >> 	do {
-> >> 		...
-> >> 	} while (!progress && --retry);
-> >>
-> > Ouch, or retry--....
-> > 
-> 
-> retry-- is still wrong, because then after while, retry will be -1, and then:
-> 
-> +	if (!retry)
-> +		return -ENOMEM;
-> 
-ok, i'm now rewriting.
+Sure thing.
 
-Thanks,
--Kame
+Acked-by: Sylvain Munaut <tnt@246tNt.com>
+
+> ---
+> duplicate NETIF_MSG_IFDOWN, 2nd should be NETIF_MSG_IFUP
+>
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> diff --git a/drivers/net/fec_mpc52xx.c b/drivers/net/fec_mpc52xx.c
+> index 5f9c42e..329edd9 100644
+> --- a/drivers/net/fec_mpc52xx.c
+> +++ b/drivers/net/fec_mpc52xx.c
+> @@ -78,7 +78,7 @@ module_param_array_named(mac, mpc52xx_fec_mac_addr, byte, NULL, 0);
+>  MODULE_PARM_DESC(mac, "six hex digits, ie. 0x1,0x2,0xc0,0x01,0xba,0xbe");
+>  
+>  #define MPC52xx_MESSAGES_DEFAULT ( NETIF_MSG_DRV | NETIF_MSG_PROBE | \
+> -		NETIF_MSG_LINK | NETIF_MSG_IFDOWN | NETIF_MSG_IFDOWN )
+> +		NETIF_MSG_LINK | NETIF_MSG_IFDOWN | NETIF_MSG_IFUP)
+>  static int debug = -1;	/* the above default */
+>  module_param(debug, int, 0);
+>  MODULE_PARM_DESC(debug, "debugging messages level");
+>
+>   
 
