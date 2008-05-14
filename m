@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762853AbYENRwF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762337AbYENRzS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762853AbYENRwF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 13:52:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759548AbYENRvL
+	id S1762337AbYENRzS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 13:55:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669AbYENRzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 13:51:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45375 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762352AbYENRvI (ORCPT
+	Wed, 14 May 2008 13:55:04 -0400
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:6670 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753452AbYENRzD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 13:51:08 -0400
-Date: Wed, 14 May 2008 10:50:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       ron.rindjunsky@intel.com, sfr@canb.auug.org.au, tomas.winkler@intel.com,
-       git@vger.kernel.org
-Subject: Re: + wireless-fix-iwlwifi-unify-init-driver-flow.patch added to
- -mm tree
-Message-Id: <20080514105042.12a112e4.akpm@linux-foundation.org>
-In-Reply-To: <20080514123432.GB3349@tuxdriver.com>
-References: <200805140405.m4E45oBc015343@imap1.linux-foundation.org>
-	<20080513.213927.191790810.davem@davemloft.net>
-	<20080513215737.fe1bdebd.akpm@linux-foundation.org>
-	<20080513.221529.20855966.davem@davemloft.net>
-	<20080514123432.GB3349@tuxdriver.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 14 May 2008 13:55:03 -0400
+Message-ID: <482B2752.2090600@panasas.com>
+Date: Wed, 14 May 2008 10:54:26 -0700
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Christoph Lameter <clameter@sgi.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] SLUB: clear c->freelist in __slab_alloc()/load_freelist:/SlabDebug
+ path
+References: <4828A940.2090604@panasas.com> <84144f020805131140s233090e5v4f77c4853a91f2ec@mail.gmail.com> <4829ED5C.6080503@panasas.com> <Pine.LNX.4.64.0805141043200.15374@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0805141043200.15374@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 14 May 2008 17:54:41.0865 (UTC) FILETIME=[96010390:01C8B5EB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 May 2008 08:34:32 -0400 "John W. Linville" <linville@tuxdriver.com> wrote:
-
-> On Tue, May 13, 2008 at 10:15:29PM -0700, David Miller wrote:
+On May. 14, 2008, 10:44 -0700, Christoph Lameter <clameter@sgi.com> wrote:
+> On Tue, 13 May 2008, Benny Halevy wrote:
 > 
-> > I used to play this game, it's a lot of work and it sucks.  One
-> > "drib" can require fixing up 200 patches down the chain.  And
-> > I've had this happen to me all the time in the past when I was
-> > rebasing all the time.
+>>> But for debug pages, we never load c->page->freelist to c->freelist so
+>>> it should always be NULL.
+>> Hmm, I see.  Then it might have got corrupted...
+>> I'll keep looking for the root cause.
 > 
-> I have to agree with Dave.
+> Correct.
+
+Yeah, I've moved to SLAB and the mem corruption now pops up at a different
+place.
+
 > 
-> Moreover, I used to get regular complaints about the old "regular
-> rebase" process.  We switched to a "pull and merge" process for 2.6.25,
-> and in that period nearly all of the process-related complaints
-> disappeared for me.
+>>> How did you make SLUB hit the debug path since you have
+>>> CONFIG_SLUB_DEBUG_ON disabled?
+> 
+> I guess he passed slub_debug on the kernel command line.
 > 
 
-Well.  Have you ever been an hour and a half into a bisection at 3AM
-then hit a massive oops deep in the TCP code which was spread across a
-large number of commits?  I have and it wasn't fun.  iirc I gave up and
-went to bed.
+I did not.
 
-> To some degree this is a "pick your poison" issue, and for most people
-> rebasing seems like the deadlier poison.
+I probably have misunderstood how the slub debugging infrastructure works
+and did not execute the debug path at all.
 
-Well yes.  We'd like the best of both worlds, only we cannot have it. 
-And the sole _reason_ we cannot have it is due to restrictions in git
-<stimulate, stimulate>.
+Thanks for your help!
+
+Benny
