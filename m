@@ -1,88 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761592AbYENQWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762303AbYENQXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761592AbYENQWi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 12:22:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbYENQWa
+	id S1762303AbYENQXV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 12:23:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758871AbYENQXH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 12:22:30 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:48845 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751152AbYENQW3 (ORCPT
+	Wed, 14 May 2008 12:23:07 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:34847 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758328AbYENQXG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 12:22:29 -0400
-Date: Wed, 14 May 2008 11:22:24 -0500
-From: Robin Holt <holt@sgi.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Robin Holt <holt@sgi.com>, Nick Piggin <npiggin@suse.de>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrea Arcangeli <andrea@qumranet.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
-       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>
-Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
-Message-ID: <20080514162223.GZ9878@sgi.com>
-References: <6b384bb988786aa78ef0.1210170958@duo.random> <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org> <20080508003838.GA9878@sgi.com> <200805132206.47655.nickpiggin@yahoo.com.au> <20080513153238.GL19717@sgi.com> <20080514041122.GE24516@wotan.suse.de> <20080514112625.GY9878@sgi.com> <alpine.LFD.1.10.0805140807400.3019@woody.linux-foundation.org>
+	Wed, 14 May 2008 12:23:06 -0400
+Date: Wed, 14 May 2008 09:00:36 -0700
+From: Greg KH <greg@kroah.com>
+To: Andreas Gruenbacher <agruen@suse.de>
+Cc: Tiger Yang <tiger.yang@oracle.com>, linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [stable] [PATCH] ext3/4: fix uninitialized bs in
+	ext3/4_xattr_set_handle()
+Message-ID: <20080514160035.GD28594@kroah.com>
+References: <4827B878.50903@oracle.com> <20080512170254.f79fe869.akpm@linux-foundation.org> <4828FD68.40608@oracle.com> <200805141256.43272.agruen@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805140807400.3019@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <200805141256.43272.agruen@suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 14, 2008 at 08:18:21AM -0700, Linus Torvalds wrote:
->
->
-> On Wed, 14 May 2008, Robin Holt wrote:
+On Wed, May 14, 2008 at 12:56:42PM +0200, Andreas Gruenbacher wrote:
+> On Tuesday 13 May 2008 04:31:04 Tiger Yang wrote:
+> > Hi, Andrew
 > >
-> > Are you suggesting the sending side would not need to sleep or the
-> > receiving side?
->
-> One thing to realize is that most of the time (read: pretty much *always*)
-> when we have the problem of wanting to sleep inside a spinlock, the
-> solution is actually to just move the sleeping to outside the lock, and
-> then have something else that serializes things.
->
-> That way, the core code (protected by the spinlock, and in all the hot
-> paths) doesn't sleep, but the special case code (that wants to sleep) can
-> have some other model of serialization that allows sleeping, and that
-> includes as a small part the spinlocked region.
->
-> I do not know how XPMEM actually works, or how you use it, but it
-> seriously sounds like that is how things *should* work. And yes, that
-> probably means that the mmu-notifiers as they are now are simply not
-> workable: they'd need to be moved up so that they are inside the mmap
-> semaphore but not the spinlocks.
+> > This situation only happens we format ext3/4 with inode size more than
+> > 128 and we have put xattr entries both in ibody and block.
+> > The consequences about this bug is we will lost the xattr block which
+> > pointed by i_file_acl with all xattr entires in it. We will alloc a new
+> > xattr block and put that large value entry in it. The old xattr block
+> > will become orphan block.
+> 
+> The patch looks good, and it obviously fixes the described problem. Thanks!
+> 
+> Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+> 
+> 
+> Could it please be added to -stable?
 
-We are in the process of attempting this now.  Unfortunately for SGI,
-Christoph is on vacation right now so we have been trying to work it
-internally.
+Can someone actually _send_ the patch to stable@kernel.org?  I haven't
+seen it yet :)
 
-We are looking through two possible methods, one we add a callout to the
-tlb flush paths for both the mmu_gather and flush_tlb_page locations.
-The other we place a specific callout seperate from the gather callouts
-in the paths we are concerned with.  We will look at both more carefully
-before posting.
+And is it in Linus's tree?  We need to wait until it is there before we
+can add it to -stable.
 
+thanks,
 
-In either implementation, not all call paths would require the stall
-to ensure data integrity.  Would it be acceptable to always put a
-sleepable stall in even if the code path did not require the pages be
-unwritable prior to continuing?  If we did that, I would be freed from
-having a pool of invalidate threads ready for XPMEM to use for that work.
-Maybe there is a better way, but the sleeping requirement we would have
-on the threads make most options seem unworkable.
-
-
-Thanks,
-Robin
+greg k-h
