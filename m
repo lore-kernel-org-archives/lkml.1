@@ -1,31 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758196AbYENH3j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756258AbYENHdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758196AbYENH3j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 03:29:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198AbYENH33
+	id S1756258AbYENHdi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 03:33:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198AbYENHda
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 03:29:29 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:52637 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753097AbYENH31 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 03:29:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=VRi2n7A1P3la+tr4ahDQ/fqmsAEYF4E1RDLjckHDDmofACKTZtfcpVInJSqAmeGgy70xBeMW7p9iwsQc5foprLyLjuDDaPXd6FjKR7lQJsApXsVz/OtoBfWACHaq8qFyvnWu5CUYDjIS10gsfPydbiw2fMWrScX6U+ktFdnW7zk=
-Message-ID: <482A94CE.5060705@gmail.com>
-Date: Wed, 14 May 2008 16:29:18 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Wed, 14 May 2008 03:33:30 -0400
+Received: from gw.goop.org ([64.81.55.164]:60703 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751924AbYENHd3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 03:33:29 -0400
+Message-ID: <482A95BB.1000001@goop.org>
+Date: Wed, 14 May 2008 08:33:15 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
-CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Bruce Allen <ballen@gravity.phys.uwm.edu>
-Subject: Re: libata errors with smartctl on 2.6.24, WD3200AAKS and nVidia
- AHCI
-References: <200804092130.07149.tvrtko@ursulin.net> <200804150721.17337.tvrtko@ursulin.net> <482A7C2C.6040302@gmail.com> <200805140758.53407.tvrtko@ursulin.net>
-In-Reply-To: <200805140758.53407.tvrtko@ursulin.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Segher Boessenkool <segher@kernel.crashing.org>,
+       Robert Hancock <hancockr@shaw.ca>,
+       Christian Kujau <lists@nerdbynature.de>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [PATCH] common implementation of iterative div/mod
+References: <fa.QTbvQYXhEm5VNP5dvkl5JG7NHYQ@ifi.uio.no>	<481DF3D8.3010108@shaw.ca>	<a6dd201e0149f8dbdf10a7a194673833@kernel.crashing.org>	<48217674.8080903@goop.org>	<48231959.4050406@goop.org> <20080513234627.30476c20.akpm@linux-foundation.org>
+In-Reply-To: <20080513234627.30476c20.akpm@linux-foundation.org>
 X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
@@ -33,43 +31,61 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tvrtko A. Ursulin wrote:
-> On Wednesday 14 May 2008 06:44:12 Tejun Heo wrote:
->> Tvrtko A. Ursulin wrote:
->>> On Tuesday 15 April 2008 04:10:57 Tejun Heo wrote:
->>>> Tvrtko A. Ursulin wrote:
->>>>> On Sunday 13 April 2008 04:11:15 Tejun Heo wrote:
->>>>>> Is auto spindown configured for the drive?
->>>>> I don't think so - it's a 3.5" drive with no special PM features - but
->>>>> how to tell?
->>>> Hmm... Can you please post the result of "smartctl --version" and
->>>> "smartctl -a > out 2>&1" and dmesg after the smartctl command?
->>> Yep, pasted and attached below. dmesg is 67k, hope list is happy with
->>> that.
->> Thanks for the data.  Nothing really stands out tho.  It looks like the
->> drive just doesn't like SMART commands 0xda and 0xd1.  0xda being a
->> mandatory non-data command, it failing due to driver problem is unlikely.
+Andrew Morton wrote:
+> On Thu, 08 May 2008 16:16:41 +0100 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>
+>   
+>> We have a few instances of the open-coded iterative div/mod loop, used
+>> when we don't expcet the dividend to be much bigger than the divisor.
+>> Unfortunately modern gcc's have the tendency to strength "reduce" this
+>> into a full mod operation, which isn't necessarily any faster, and
+>> even if it were, doesn't exist if gcc implements it in libgcc.
 >>
->> Can you please post the result of "hdparm -I /dev/sda" and "lspci -nn"?
-> 
-> Of course:
-> 
-> root@sol:~# hdparm -I /dev/sda
-> 
-> /dev/sda:
-> 
-> ATA device, with non-removable media
->         Model Number:       WDC WD3200AAKS-00VYA0
->         Serial Number:      WD-WCARW0059893
->         Firmware Revision:  12.01B02
+>> The workaround is to put a dummy asm statement in the loop to prevent
+>> gcc from performing the transformation.
+>>
+>> This patch creates a single implementation of this loop, and uses it
+>> to replace the open-coded versions I know about.
+>>     
+>
+> Believe it or not, this patch causes one of my test machines to fail to
+> find its disk.
+>
+> good dmesg: http://userweb.kernel.org/~akpm/dmesg-t61p.txt
+> bad dmesg: http://userweb.kernel.org/~akpm/dmesg-t61p-dead.txt
+> config: http://userweb.kernel.org/~akpm/config-t61p.txt
 
-> 00:0e.0 SATA controller [0106]: nVidia Corporation GeForce 7100/nForce 630i [10de:07f4] (rev a2)
+Uh, OK.  Do your other test machines work with it?  Are there any 
+relevant config differences (x86-64 vs 32?).
 
-Hmmm.. WD3200 w/ nv ahci.  WD3200 having trouble with smart commands is 
-unlikely.  Is it possible for you try different drive on the controller 
-and see whether smartctl works on it?
+Hm, it's not that it can't find its disk, I think it's this:
 
-Thanks.
+init[1]: segfault at ffffffffff7008d2 ip ffffffffff7008d2 sp 7fff86e67488 error 14
+init[1]: segfault at ffffffffff7008d2 ip 311ac07628 sp 7fff86e66cb0 error 4 in libgcc_s-4.1.2-20070925.so.1[311ac00000+d000]
 
--- 
-tejun
+
+Is it that the vsyscall page is trying to call into the kernel?
+
+    notrace static noinline int do_realtime(struct timespec *ts)
+    {
+    	unsigned long seq, ns;
+    	do {
+    		seq = read_seqbegin(&gtod->lock);
+    		ts->tv_sec = gtod->wall_time_sec;
+    		ts->tv_nsec = gtod->wall_time_nsec;
+    		ns = vgetns();
+    	} while (unlikely(read_seqretry(&gtod->lock, seq)));
+    	timespec_add_ns(ts, ns);
+    	return 0;
+    }
+      
+
+timespec_add_ns() used to be entirely inlined, but now it contains the 
+call to iter_div_u64_rem().
+
+arch/x86/vdso/vclock_gettime.c has its own copies of other kernel 
+functions which it can't directly call.  We could add 
+timespec_add_ns()/iter_div_u64_rem() to that list, though its pretty 
+hacky.  Could we link lib/div64.o into the vdso?
+
+    J
