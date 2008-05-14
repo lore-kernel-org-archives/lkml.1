@@ -1,62 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761725AbYENPBd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762266AbYENPCW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761725AbYENPBd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 11:01:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757236AbYENPBV
+	id S1762266AbYENPCW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 11:02:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757218AbYENPCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 11:01:21 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:51991 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752745AbYENPBU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 11:01:20 -0400
-Date: Wed, 14 May 2008 19:00:53 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Sage Weil <sage@newdream.net>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: POHMELFS high performance network filesystem. Transactions, failover, performance.
-Message-ID: <20080514150052.GA15826@2ka.mipt.ru>
-References: <20080513174523.GA1677@2ka.mipt.ru> <4829E752.8030104@garzik.org> <20080513205114.GA16489@2ka.mipt.ru> <Pine.LNX.4.64.0805140623001.14334@cobra.newdream.net> <20080514135156.GA23131@2ka.mipt.ru> <20080514143105.GB14987@shareable.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080514143105.GB14987@shareable.org>
-User-Agent: Mutt/1.5.9i
+	Wed, 14 May 2008 11:02:13 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:51176 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756616AbYENPCM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 11:02:12 -0400
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/5] x86: Move es7000_plat out of mpparse.c
+Date: Wed, 14 May 2008 19:02:51 +0400
+Message-ID: <20080514150251.24443.5516.stgit@thinkpad>
+User-Agent: StGIT/0.14.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 14, 2008 at 03:31:05PM +0100, Jamie Lokier (jamie@shareable.org) wrote:
-> > If we are talking about agregate parallel perfromance, then its basic
-> > protocol with 2 messages is (probably) optimal, but still I'm not
-> > convinced, that 2 messages case is a good choise, I want one :)
-> 
-> Look up "one-phase commit" or even "zero-phase commit".  (The
-> terminology is cheating a bit.)  As I've understood it, all commit
-> protocols have a step where each node guarantees it can commit if
-> asked and node failure at that point does not invalidate the guarantee
-> if the node recovers (if it can't maintain the guarantee, the node
-> doesn't recover in a technical sense and a higher level protocol may
-> reintegrate the node).  One/zero-phase commit extends that to
-> guaranteeing a certain amounts and types of data can be written before
-> it knows what the data is, so write messages within that window are
-> sufficient for global commits.  Guarantees can be acquired
-> asynchronously in advance of need, and can have time and other limits.
-> These guarantees are no different in principle from the 1-bit
-> guarantee offered by the "can you commit" phase of other commit
-> protocols, so they aren't as weak as they seem.
+Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+---
 
-If I understood that, client has to connect to all servers and send data
-there, so that after single reply things got committed. That is
-definitely not the issue, when there are lots of servers.
+ arch/x86/kernel/mpparse.c         |   11 ++++++-----
+ arch/x86/mach-es7000/es7000plat.c |    2 ++
+ include/asm-x86/system.h          |    1 -
+ 3 files changed, 8 insertions(+), 6 deletions(-)
 
-That can be the case if client connects to some gate server, which in
-turn broadcasts data further, that is how I plan to implement things at
-first.
 
-Another approach, which seems also intersting is leader election (per
-client), so that leader would broadcast all the data.
+diff --git a/arch/x86/kernel/mpparse.c b/arch/x86/kernel/mpparse.c
+index 5a18b2b..ff13423 100644
+--- a/arch/x86/kernel/mpparse.c
++++ b/arch/x86/kernel/mpparse.c
+@@ -793,15 +793,14 @@ void __init find_smp_config(void)
+                             ACPI-based MP Configuration
+    -------------------------------------------------------------------------- */
+ 
+-/*
+- * Keep this outside and initialized to 0, for !CONFIG_ACPI builds:
+- */
+-int es7000_plat;
+-
+ #ifdef CONFIG_ACPI
+ 
+ #ifdef	CONFIG_X86_IO_APIC
+ 
++#if defined(CONFIG_X86_ES7000) || defined(CONFIG_X86_GENERICARCH)
++extern int es7000_plat;
++#endif
++
+ #define MP_ISA_BUS		0
+ 
+ static struct mp_ioapic_routing mp_ioapic_routing[MAX_IO_APICS];
+@@ -928,11 +927,13 @@ void __init mp_config_acpi_legacy_irqs(void)
+ 	set_bit(MP_ISA_BUS, mp_bus_not_pci);
+ 	Dprintk("Bus #%d is ISA\n", MP_ISA_BUS);
+ 
++#if defined(CONFIG_X86_ES7000) || defined(CONFIG_X86_GENERICARCH)
+ 	/*
+ 	 * Older generations of ES7000 have no legacy identity mappings
+ 	 */
+ 	if (es7000_plat == 1)
+ 		return;
++#endif
+ 
+ 	/*
+ 	 * Locate the IOAPIC that manages the ISA IRQs (0-15).
+diff --git a/arch/x86/mach-es7000/es7000plat.c b/arch/x86/mach-es7000/es7000plat.c
+index f5d6f7d..a41c77a 100644
+--- a/arch/x86/mach-es7000/es7000plat.c
++++ b/arch/x86/mach-es7000/es7000plat.c
+@@ -52,6 +52,8 @@ static struct mip_reg		*host_reg;
+ static int 			mip_port;
+ static unsigned long		mip_addr, host_addr;
+ 
++int es7000_plat;
++
+ /*
+  * GSI override for ES7000 platforms.
+  */
+diff --git a/include/asm-x86/system.h b/include/asm-x86/system.h
+index df7133c..0cc278d 100644
+--- a/include/asm-x86/system.h
++++ b/include/asm-x86/system.h
+@@ -318,7 +318,6 @@ static inline void clflush(volatile void *__p)
+ void disable_hlt(void);
+ void enable_hlt(void);
+ 
+-extern int es7000_plat;
+ void cpu_idle_wait(void);
+ 
+ extern unsigned long arch_align_stack(unsigned long sp);
 
--- 
-	Evgeniy Polyakov
