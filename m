@@ -1,72 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763445AbYENQKS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756722AbYENQR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763445AbYENQKS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 12:10:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753480AbYENQKB
+	id S1756722AbYENQR6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 12:17:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbYENQRq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 12:10:01 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:59349 "EHLO
-	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751001AbYENQJ7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 12:09:59 -0400
-Date: Wed, 14 May 2008 09:09:58 -0700 (PDT)
-From: Sage Weil <sage@newdream.net>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: POHMELFS high performance network filesystem. Transactions,
- failover, performance.
-In-Reply-To: <20080514140908.GA14987@shareable.org>
-Message-ID: <Pine.LNX.4.64.0805140900460.23143@cobra.newdream.net>
-References: <20080513174523.GA1677@2ka.mipt.ru> <4829E752.8030104@garzik.org>
- <20080513205114.GA16489@2ka.mipt.ru> <Pine.LNX.4.64.0805140623001.14334@cobra.newdream.net>
- <20080514140908.GA14987@shareable.org>
+	Wed, 14 May 2008 12:17:46 -0400
+Received: from OSB1387.piap.pl ([195.187.100.11]:52324 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751352AbYENQRp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 12:17:45 -0400
+To: David Miller <davem@davemloft.net>
+Cc: alan@lxorguk.ukuu.org.uk, jeff@garzik.org, paulkf@microgate.com,
+       jchapman@katalix.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH v2] Re: WAN: new PPP code for generic HDLC
+References: <20080424.065555.30390704.davem@davemloft.net>
+	<m3ve27nfpx.fsf@maximus.localdomain>
+	<20080424214457.1d5a1655@the-village.bc.nu>
+	<20080512.033244.153113922.davem@davemloft.net>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Wed, 14 May 2008 18:17:41 +0200
+In-Reply-To: <20080512.033244.153113922.davem@davemloft.net> (David Miller's message of "Mon\, 12 May 2008 03\:32\:44 -0700 \(PDT\)")
+Message-ID: <m3hcd0kggq.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 May 2008, Jamie Lokier wrote:
-> > Similarly, if only 1 out of 3 replicas is surviving, most people want to 
-> > be able to read their data, while Paxos demands a majority to ensure it is 
-> > correct.
-> 
-> (Generalising to any "quorum" (majority vote) protocol).
-> 
-> That's true if you require that all results are guaranteed consistent
-> or blocked, in the event of any kind of network failure.
-> 
-> But if you prefer incoherent results in the event of a network split
-> (and those are often mergable later), and only want to protect against
-> media/node failures to the best extent possible at any given time,
-> then quorum protocols can gracefully degrade so you still have access
-> without a majority of working nodes.
+BTW: The dev->ml_priv addition is obviously a good step but I guess
+you don't need the dev->priv hackery duplicated with dev->ml_priv.
 
-Right.  In my case, I require guaranteed consistent results for critical 
-cluster state, and use (slightly modified) Paxos for that.  For file data, 
-I leverage that cluster state to still maintain perfect consistency in 
-most failure scenarios, while also degrading gracefully to a read/write 
-access to a single replica.
+Can't test it at the moment but I'd leave dev->priv alone and only get
+rid of the syncppp_ptr here. Then I'd simply use dev->ml_priv as
+syncppp_ptr and dev->priv would be a private driver pointer, as
+usual. Generic HDLC uses dev->priv for itself but the relevant hw
+drivers use hdlc->priv instead so it's not a problem.
 
-When problem situations arise (e.g., replicating to A+B, A fails, 
-read/write to just B for a while, B fails, A recovers), an administrator 
-can step in and explicitly indicate we want to relax consistency to 
-continue (e.g., if B is found to be unsalvageable and a stale A is the 
-best we can do).
+When syncppp.c is removed we can use dev->ml_priv for HDLC layer,
+dev->priv for hw driver, and hdlc->priv would be no longer needed.
 
-> In that model, neighbour sensing is used to find the largest coherency
-> domains fitting a set of parameters (such as "replicate datum X to N
-> nodes with maximum comms latency T").  If the parameters are able to
-> be met, quorum gives you the desired robustness in the event of
-> node/network failures.  During any time while the coherency parameters
-> cannot be met, the robustness reduces to the best it can do
-> temporarily, and recovers when possible later.  As a bonus, you have
-> some timing guarantees if they are more important.
+I mean the following:
 
-Anything that silently relaxes consistency like that scares me.  Does 
-anybody really do that in practice?
+David Miller <davem@davemloft.net> writes:
 
-sage
+> --- a/include/net/syncppp.h
+> +++ b/include/net/syncppp.h
+> @@ -59,7 +59,7 @@ struct ppp_device
+>  
+>  static inline struct sppp *sppp_of(struct net_device *dev) 
+>  {
+> -	struct ppp_device **ppp = dev->priv;
+> +	struct ppp_device **ppp = dev->ml_priv;
+>  	BUG_ON((*ppp)->dev != dev);
+>  	return &(*ppp)->sppp;
+>  }
+
+would become:
+
+static inline struct sppp *sppp_of(struct net_device *dev) 
+{
+	return dev->ml_priv;
+}
+
+The changes are not automatic, I'll look at it when able.
+-- 
+Krzysztof Halasa
