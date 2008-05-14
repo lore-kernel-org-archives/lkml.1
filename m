@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759406AbYENHfP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758051AbYENHlX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759406AbYENHfP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 03:35:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbYENHfA
+	id S1758051AbYENHlX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 03:41:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753018AbYENHlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 03:35:00 -0400
-Received: from qb-out-0506.google.com ([72.14.204.239]:22807 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753362AbYENHe7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 03:34:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=B2QTw8/7ELlRSnpVNaiDlD3Te8gyUNXhktD6XqMyb466gwG/D1LYbsJy5EWqDQ8eTiQymtKKzq+s7Yn2xTnDyaQsbMUWUUU9yq7Y8plfvZvJPmX22rUk6fFeJyr8lQD7RWshYlq2DEWDNEeVLVvLVD2gX4uTV5Y9wb9kbUs3z3s=
-Message-ID: <19f34abd0805140034j75d97ecbw5a03c200645768cb@mail.gmail.com>
-Date: Wed, 14 May 2008 09:34:57 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Harald Dunkel" <harald.dunkel@t-online.de>
-Subject: Re: 2.6.25.3: su gets stuck for root
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <4829D345.7020909@t-online.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 14 May 2008 03:41:06 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:55130 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752902AbYENHlF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 03:41:05 -0400
+Date: Wed, 14 May 2008 11:40:30 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: POHMELFS high performance network filesystem. Transactions, failover, performance.
+Message-ID: <20080514074028.GA28330@2ka.mipt.ru>
+References: <20080513174523.GA1677@2ka.mipt.ru> <20080513233341.47edea7f.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <4829326A.6060808@t-online.de>
-	 <19f34abd0805122347x4d9c5d03m16679d724189790e@mail.gmail.com>
-	 <4829D345.7020909@t-online.de>
+In-Reply-To: <20080513233341.47edea7f.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 13, 2008 at 7:43 PM, Harald Dunkel
-<harald.dunkel@t-online.de> wrote:
-> Vegard Nossum wrote:
->
-> > Can you try to run "strace su someuser" instead?
->
->  I tried, but its a Heisenbug: If I run it with strace (with or without
->  -f), then it doesn't get stuck.
+Hi Andrew.
 
-Ah, tough luck. What if you attach an strace to the already stuck
-process? Like strace -p pid. It's a long shot, but worth a try, I
-suppose.
+On Tue, May 13, 2008 at 11:33:41PM -0700, Andrew Morton (akpm@linux-foundation.org) wrote:
+> If any thread takes more than one kmap() at a time, it is deadlockable.
+> Because there is a finite pool of kmaps.  Everyone can end up holding
+> one or more kmaps, then waiting for someone else to release one.
 
-You could also try to use sysrq to output some useful information
-about the stuck process. See Documentation/sysrq.txt for more
-information. Gotta run, good luck!
+It never takes the whole LAST_PKMAP maps. So the same can be applied to
+any user who kmaps at least one page - while user waits for free slot,
+it can be reused by someone else and so on.
 
-Vegard
+But it can be speed issue, on 32 bit machine with 8gb of ram essentially
+all pages were highmem and required mapping, so this does slows things
+down (probably a lot), so I will extend writeback path of the POHMELFS
+not to kmap pages, but instead use ->sendpage(), which if needed will
+map page one-by-one. Current approach when page is mapped and then
+copied looks really beter since the only one sending function is used
+which takes lock only single time.
+
+> Duplicating page_waitqueue() is bad.  Exporting it is probably bad too.
+> Better would be to help us work out why the core kernel infrastructure is
+> unsuitable, then make it suitable.
+
+When ->writepage() is used, it has to wait until page is written (remote
+side sent acknowledge), so if multiple pages are being written
+simultaneously we either have to allocate shared structure or use
+per-page wait. Right now there are transactions (and they will be used
+for all operations eventually), so this waiting can go away.
+It is exactly the same logic which lock_page() uses.
+
+Will lock_page_killable()/__lock_page_killable() be exported to modules?
 
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+	Evgeniy Polyakov
