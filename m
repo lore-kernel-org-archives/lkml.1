@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760202AbYENCAG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760669AbYENCBK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760202AbYENCAG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 22:00:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757474AbYENB7y
+	id S1760669AbYENCBK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 22:01:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757910AbYENCAz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 21:59:54 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:57797 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757088AbYENB7x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 21:59:53 -0400
-Date: Tue, 13 May 2008 20:59:52 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: menage@google.com, xemul@openvz.org, balbir@in.ibm.com, serue@us.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
-Subject: Re: [RFC/PATCH 1/8]: CGroup Files: Add locking mode to cgroups
- control files
-Message-Id: <20080513205952.8ad44617.pj@sgi.com>
-In-Reply-To: <20080513143206.ef259829.akpm@linux-foundation.org>
-References: <20080513063707.049448000@menage.corp.google.com>
-	<20080513071522.133586000@menage.corp.google.com>
-	<20080513130127.fcd46a41.akpm@linux-foundation.org>
-	<6599ad830805131417m4f8cc2e6iac42c0fb089a8cb1@mail.gmail.com>
-	<20080513143206.ef259829.akpm@linux-foundation.org>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 13 May 2008 22:00:55 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:11854 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757474AbYENCAy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 22:00:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=Ma6476nmmtKvQ/BjtA/j93QcUBKuaZv+n5uftF/3U4LLpYPPev8z4FN62EfRlfIBHznfTypo55ctT14s/dI4gikxG0x0IP2MwimNQYqW8lsp3fwZP3JGfEv1LQ1HaGEWJtxUDRI72/hSYYh5y/1uOZb47348BCGvkJ/7J0hikqc=
+Message-ID: <86802c440805131900r2c3cca56sb45f80f26dc65780@mail.gmail.com>
+Date: Tue, 13 May 2008 19:00:53 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>,
+       "James Bottomley" <James.Bottomley@hansenpartnership.com>
+Subject: blk_queue_init_tags warning
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Linux-Scsi <linux-scsi@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew wrote:
-> As Matt observed, this is just a poorly-named variable.
+------------[ cut here ]------------
+WARNING: at include/linux/blkdev.h:431 blk_queue_init_tags+0xfe/0x154()
+Modules linked in:
+Pid: 1509, comm: scsi_wq_0 Not tainted
+2.6.26-rc1-sched-devel.git-x86-latest.git-00589-g5bb43f9-dirty #382
 
-How about the following code for cgroup_file_write():
+Call Trace:
+ [<ffffffff802634d5>] warn_on_slowpath+0x6c/0xa7
+ [<ffffffff802a8b42>] ? ftrace_record_ip+0x223/0x286
+ [<ffffffff8050607f>] ? __blk_queue_init_tags+0x38/0x8e
+ [<ffffffff80505f33>] ? init_tag_map+0x96/0xdb
+ [<ffffffff80506095>] ? __blk_queue_init_tags+0x4e/0x8e
+ [<ffffffff80506326>] blk_queue_init_tags+0xfe/0x154
+ [<ffffffff806fa7d8>] qla2xxx_slave_configure+0x8b/0xf7
+ [<ffffffff8068da34>] scsi_probe_and_add_lun+0x99f/0xb1f
+ [<ffffffff8068cbc8>] ? scsi_alloc_target+0x25b/0x2d7
+ [<ffffffff8068dec8>] __scsi_scan_target+0xdd/0x657
+ [<ffffffff802a8b42>] ? ftrace_record_ip+0x223/0x286
+ [<ffffffff8022a4f0>] ? mcount_call+0x5/0x35
+ [<ffffffff8068ea76>] scsi_scan_target+0xab/0xd6
+ [<ffffffff8022a4f0>] ? mcount_call+0x5/0x35
+ [<ffffffff80697dc1>] fc_scsi_scan_rport+0x92/0xc8
+ [<ffffffff80697d2f>] ? fc_scsi_scan_rport+0x0/0xc8
+ [<ffffffff80276d45>] run_workqueue+0x97/0x13c
+ [<ffffffff80277b1d>] worker_thread+0xf4/0x119
+ [<ffffffff8027b8e0>] ? autoremove_wake_function+0x0/0x63
+ [<ffffffff80277a29>] ? worker_thread+0x0/0x119
+ [<ffffffff8027b6dd>] kthread+0x61/0xa8
+ [<ffffffff8025ce01>] ? schedule_tail+0x3c/0x87
+ [<ffffffff8022b528>] child_rip+0xa/0x12
+ [<ffffffff8027b67c>] ? kthread+0x0/0xa8
+ [<ffffffff8022b51e>] ? child_rip+0x0/0x12
 
-
-	char buf[64];		/* avoid kmalloc() in small cases */
-	char *p;		/* buf[] or kmalloc'd buffer */
-
-	...
-
-	if (nbytes < sizeof(buf)) {
-		p = buf;
-	} else {
-		p = kmalloc(nbytes + 1, GFP_KERNEL);
-		if (p == NULL)
-			return -ENOMEM;
-	}
-
-
-Possible advantages of above code:
-
-  * Uses short names for local variables of limited scope.
-
-  * Doesn't set p until needed, so as:
-	1) to highlight the symmetry of its setting, to either buf[]
-	   (small cases) or to a kmalloc'd buffer (large cases), and
-	2) to avoid implying that p needs to be set in the intervening
-	   "..." code above.
-
-  * Comments variable declarations.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+---[ end trace b774192c17464dd8 ]---
