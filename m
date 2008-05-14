@@ -1,64 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761995AbYENLDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762083AbYENLFs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761995AbYENLDi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 07:03:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755404AbYENLD3
+	id S1762083AbYENLFs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 07:05:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756697AbYENLFk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 07:03:29 -0400
-Received: from mummy.ncsc.mil ([144.51.88.129]:47791 "EHLO mummy.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754178AbYENLD2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 07:03:28 -0400
-Subject: Re: [RFC][PATCH] security:  split ptrace checking in proc
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: casey@schaufler-ca.com, lsm <linux-security-module@vger.kernel.org>,
-       James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080514091526.GB17453@sequoia.sous-sol.org>
-References: <648615.23893.qm@web36601.mail.mud.yahoo.com>
-	 <1210687270.6206.129.camel@moss-spartans.epoch.ncsc.mil>
-	 <20080514091526.GB17453@sequoia.sous-sol.org>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Wed, 14 May 2008 07:03:04 -0400
-Message-Id: <1210762984.6206.293.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
-Content-Transfer-Encoding: 7bit
+	Wed, 14 May 2008 07:05:40 -0400
+Received: from baikonur.stro.at ([213.239.196.228]:42234 "EHLO
+	baikonur.stro.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755061AbYENLFj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 07:05:39 -0400
+Date: Wed, 14 May 2008 13:05:31 +0200
+From: maximilian attems <max@stro.at>
+To: linux-kernel@vger.kernel.org
+Cc: "H. Peter Anvin" <hpa@zytor.com>, akpm@linux-foundation.org,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Richard Henderson <rth@twiddle.net>, Mike Frysinger <vapier@gentoo.org>,
+       debian-kernel@lists.debian.org
+Subject: Re: asm-{alpha,h8300,um,v850,xtensa}/param.h: unbreak HZ for
+	userspace
+Message-ID: <20080514110531.GA11775@stro.at>
+Mail-Followup-To: linux-kernel@vger.kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>, akpm@linux-foundation.org,
+	Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+	Richard Henderson <rth@twiddle.net>,
+	Mike Frysinger <vapier@gentoo.org>, debian-kernel@lists.debian.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200805100836.48046.vapier@gentoo.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2008-05-14 at 02:15 -0700, Chris Wright wrote:
-> * Stephen Smalley (sds@tycho.nsa.gov) wrote:
-> > As above, it isn't quite a read vs. readwrite mode distinction (which is
-> > why I called it ptrace_may_readstate rather than just ptrace_may_read),
-> > and the advantage of implementing it via a new interface is that we only
-> > need to update the callers where we want to apply this different
-> > checking, leaving all other callers unmodified and unaffected.  So while
-> > I could do it the way you describe, I'm not sure it would yield a better
-> > result.  Maybe others can chime in with their opinions.
-> 
-> It is slightly ad-hoc.  Is it just the audit messages that you described
-> that made you pick environ and fd, or was there more specific (threat
-> based) reasoning?  Would /proc/pid/fd/ + genfs + e.g. anonfd be a little
-> wider than just readstate?
-
-Well, it is being driven by experience with what applications try to
-access w/o requiring full ptrace access, but also by a threat-based
-reasoning that it is less dangerous to grant limited read access to
-parts of the process state than to grant complete read access to its
-entire memory image or full control of the target process.
-
-Not entirely sure what you mean by the latter question.
-
-> Perhaps you could update the comments in ptrace_may_inspect() to clarify.
-
-Ok, will do.
+could we please get an ack or nack on that patch.
+checked linux-next and it doesn't appear there.
+without it currently perl 5.10 doesn't build on alpha:
+perl.c: In function 'perl_construct':
+perl.c:388: error: 'CONFIG_HZ' undeclared (first use in this function)
+-> http://buildd.debian.org/fetch.cgi?pkg=perl;ver=5.10.0-10;arch=alpha;stamp=1210252894
 
 -- 
-Stephen Smalley
-National Security Agency
+maks
 
+I noticed this because alpha was broken due to the recent bdc807871d58285737. 
+Most arches do something like this in their asm/param.h:
+#ifdef __KERNEL__
+# define HZ CONFIG_HZ
+#else
+# define HZ 100
+#endif
+A few arches though (namely alpha/h8300/um/v850/xtensa) either do no set HZ at
+all for !__KERNEL__, or they set it wrongly.  This should bring all arches in
+line by setting up HZ for userspace.
+
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+diff --git a/include/asm-alpha/param.h b/include/asm-alpha/param.h
+index 0982f1d..d300950 100644
+--- a/include/asm-alpha/param.h
++++ b/include/asm-alpha/param.h
+@@ -5,8 +5,12 @@
+    hardware ignores reprogramming.  We also need userland buy-in to the 
+    change in HZ, since this is visible in the wait4 resources etc.  */
+ 
++#ifdef __KERNEL__
+ #define HZ		CONFIG_HZ
+ #define USER_HZ		HZ
++#else
++#define HZ		100
++#endif
+ 
+ #define EXEC_PAGESIZE	8192
+ 
+diff --git a/include/asm-h8300/param.h b/include/asm-h8300/param.h
+index 04f64f1..1c72fb8 100644
+--- a/include/asm-h8300/param.h
++++ b/include/asm-h8300/param.h
+@@ -1,14 +1,12 @@
+ #ifndef _H8300_PARAM_H
+ #define _H8300_PARAM_H
+ 
+-
+-#ifndef HZ
+-#define HZ CONFIG_HZ
+-#endif
+-
+ #ifdef __KERNEL__
++#define HZ		CONFIG_HZ
+ #define	USER_HZ		HZ
+ #define	CLOCKS_PER_SEC	(USER_HZ)
++#else
++#define HZ		100
+ #endif
+ 
+ #define EXEC_PAGESIZE	4096
+diff --git a/include/asm-um/param.h b/include/asm-um/param.h
+index 4cd4a22..e44f4e6 100644
+--- a/include/asm-um/param.h
++++ b/include/asm-um/param.h
+@@ -13,6 +13,8 @@
+ #define HZ CONFIG_HZ
+ #define USER_HZ	100	   /* .. some user interfaces are in "ticks" */
+ #define CLOCKS_PER_SEC (USER_HZ)  /* frequency at which times() counts */
++#else
++#define HZ 100
+ #endif
+ 
+ #endif
+diff --git a/include/asm-v850/param.h b/include/asm-v850/param.h
+index 2818326..4391f5f 100644
+--- a/include/asm-v850/param.h
++++ b/include/asm-v850/param.h
+@@ -26,6 +26,8 @@
+ # define HZ		CONFIG_HZ
+ # define USER_HZ	100
+ # define CLOCKS_PER_SEC	USER_HZ
++#else
++# define HZ		100
+ #endif
+ 
+ #endif /* __V850_PARAM_H__ */
+diff --git a/include/asm-xtensa/param.h b/include/asm-xtensa/param.h
+index 82ad34d..ba03d5a 100644
+--- a/include/asm-xtensa/param.h
++++ b/include/asm-xtensa/param.h
+@@ -15,6 +15,8 @@
+ # define HZ		CONFIG_HZ	/* internal timer frequency */
+ # define USER_HZ	100		/* for user interfaces in "ticks" */
+ # define CLOCKS_PER_SEC (USER_HZ)	/* frequnzy at which times() counts */
++#else
++# define HZ		100
+ #endif
+ 
+ #define EXEC_PAGESIZE	4096
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
