@@ -1,148 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761770AbYENMpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762295AbYENMqL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761770AbYENMpg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 08:45:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757345AbYENMpX
+	id S1762295AbYENMqL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 08:46:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758277AbYENMp4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 08:45:23 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:41729 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752756AbYENMpX (ORCPT
+	Wed, 14 May 2008 08:45:56 -0400
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:33256 "EHLO
+	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758546AbYENMpz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 08:45:23 -0400
-Message-ID: <482ADF34.2010004@keyaccess.nl>
-Date: Wed, 14 May 2008 14:46:44 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Wed, 14 May 2008 08:45:55 -0400
+Message-ID: <482ADEE0.7090301@linux.vnet.ibm.com>
+Date: Wed, 14 May 2008 18:15:20 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
 MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Takashi Iwai <tiwai@suse.de>,
-       Glauber Costa <gcosta@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Pete Clements <clem@clem.clem-digital.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       ALSA devel <alsa-devel@alsa-project.org>
-Subject: Re: 2.6.26-rc1 regression: ISA DMA broken (bisected)
-References: <4823AAF2.7070102@keyaccess.nl> <20080513180107.1a3893f1@core> <4829D0E5.8050905@keyaccess.nl> <200805131718.40138.bjorn.helgaas@hp.com>
-In-Reply-To: <200805131718.40138.bjorn.helgaas@hp.com>
-Content-Type: multipart/mixed;
- boundary="------------030300000008080707000900"
-X-Spam-Score: -1.0 (-)
+To: linuxppc-dev@ozlabs.org
+CC: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <pmac@au1.ibm.com>
+Subject: Badness seen on 2.6.26-rc2 with lockdep enabled
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030300000008080707000900
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+I see the following error on my power box at boot up.
 
-On 14-05-08 01:18, Bjorn Helgaas wrote:
+RTAS: event: 14, Type: Platform Error, Severity: 2
+------------[ cut here ]------------
+Badness at kernel/lockdep.c:2680
+NIP: c0000000000ae538 LR: c0000000000ae51c CTR: 0000000000000000
+REGS: c0000000e7b139a0 TRAP: 0700   Not tainted  (2.6.26-rc2-mm1)
+MSR: 8000000000029032 <EE,ME,IR,DR>  CR: 24000042  XER: 20000000
+TASK = c0000000e7644620[411] 'rtasd' THREAD: c0000000e7b10000 CPU: 1
+GPR00: 0000000000000000 c0000000e7b13c20 c000000000a55ef0 0000000000000001
+GPR04: 0000000000000001 c00000000004bfb8 2d37313000000000 2d37313031303438
+GPR08: 3644442000000000 c000000000ea3018 0000000000000020 0000000000000001
+GPR12: 3644442000000000 c000000000a94600 0000000000000000 0000000000000000
+GPR16: 0000000000000000 0000000000000000 4000000001c00000 c00000000086f400
+GPR20: 0000000000000000 0000000000000001 00000000000000e4 000000000246f400
+GPR24: c000000000a9c498 0000000000000008 c00000000004bfb8 c00000000087a5d8
+GPR28: c00000000092cd48 0000000000000001 c0000000009bb738 c0000000e7b13c20
+NIP [c0000000000ae538] .check_flags+0x9c/0x174
+LR [c0000000000ae51c] .check_flags+0x80/0x174
+Call Trace:
+[c0000000e7b13c20] [c00000000004bc70] .pSeries_log_error+0x5c/0x400 (unreliable)
+[c0000000e7b13ca0] [c0000000000b35c0] .lock_release+0x80/0x204
+[c0000000e7b13d50] [c0000000005cfcf8] ._spin_unlock_irqrestore+0x34/0x94
+[c0000000e7b13de0] [c00000000004bfb8] .pSeries_log_error+0x3a4/0x400
+[c0000000e7b13ef0] [c00000000004c218] .rtasd+0x98/0x100
+[c0000000e7b13f90] [c00000000002848c] .kernel_thread+0x4c/0x68
+Instruction dump:
+e92d01b0 8009085c 2f800000 40be002c 481f1b9d 60000000 2fa30000 419e00c4
+e93e80f8 80090000 2f800000 409e00b4 <0fe00000> 480000ac 78290464 80090014
+possible reason: unannotated irqs-on.
+irq event stamp: 30
+hardirqs last  enabled at (29): [<c0000000000b1d98>] .trace_hardirqs_on+0x1c/0x3
+0
+hardirqs last disabled at (30): [<c0000000000aebac>] .trace_hardirqs_off+0x1c/0x
+30
+softirqs last  enabled at (28): [<c00000000008bd08>] .__do_softirq+0x180/0x1a8
+softirqs last disabled at (21): [<c000000000028124>] .call_do_softirq+0x14/0x24
 
-> On Tuesday 13 May 2008 11:33:25 am Rene Herman wrote:
 
->> No, isa_device is its own thing, on its own isa_bus (*). It has a struct 
->> device * readily available though...
->>
->> (*) drivers/base/isa.c, and explanatory changelog at:
->>
->> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=a5117ba7da37deb09df5eb802dace229b3fb1e9f
-> 
-> Thanks for the nice changelog.
-> 
-> isa_register_driver() currently doesn't set a DMA mask.  Should it?
-
-If it's going to be useful, definitely. The attached does not just set
-
-   dev->dma_mask = &dev->coherent_dma_mask
-
-as in the fallback_dev when dma_alloc_coherent() is passed a NULL device 
-only due to the mask juggling in snd_dma_hack_alloc_coherent() (which 
-wouldn't break, but...) but introduces its own copy in struct isa_dev 
-same as struct pnp_dev. As far as I'm aware, there's no actual reason 
-for keeping it other than that and if the hack could go I'd rather lose 
-the private mask copy again also.
-
-(the device model still uses a plain u64 by the way but I guess the 
-clean type would be a dma64_addr_t)
-
-Inlining is whitespace-failing here. Patch itself is trivial...
-
-> I only see about 35 dma_alloc_coherent() calls that pass NULL.  I 
-> guess even those would be a fair amount of work to change, and I 
-> suppose there would be more that I missed.
-
-At least the ALSA one isn't passing a literal NULL it seems. But yes, 
-current NULL-hack reinstatement (it's been merged by Linus already) is 
-definitely the correct fix for now.
-
-Would like a comment on the snd_dma_hack_alloc_coherent thing first (no 
-signoff...) but other than that I'll submit this in preparation for it 
-being useful, I guess?
-
-Rene.
-
---------------030300000008080707000900
-Content-Type: text/plain;
- name="isa_dev_dma_mask.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="isa_dev_dma_mask.diff"
-
-From: Rene Herman <rene.herman@gmail.com>
-
-ISA: set 24-bit dma_mask for ISA devices
-
-Set the ISA device dma_mask in preparation for using the actual device
-with the DMA API.
----
- drivers/base/isa.c |    9 ++++++++-
- 1 files changed, 8 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/base/isa.c b/drivers/base/isa.c
-index d222239..842ca08 100644
---- a/drivers/base/isa.c
-+++ b/drivers/base/isa.c
-@@ -7,6 +7,8 @@
- #include <linux/slab.h>
- #include <linux/module.h>
- #include <linux/init.h>
-+#include <linux/types.h>
-+#include <linux/dma-mapping.h>
- #include <linux/isa.h>
- 
- static struct device isa_bus = {
-@@ -17,6 +19,7 @@ struct isa_dev {
- 	struct device dev;
- 	struct device *next;
- 	unsigned int id;
-+	u64 dma_mask;
- };
- 
- #define to_isa_dev(x) container_of((x), struct isa_dev, dev)
-@@ -131,6 +134,9 @@ int isa_register_driver(struct isa_driver *isa_driver, unsigned int ndev)
- 			break;
- 		}
- 
-+		isa_dev->id		= id;
-+		isa_dev->dma_mask	= DMA_24BIT_MASK;
-+
- 		isa_dev->dev.parent	= &isa_bus;
- 		isa_dev->dev.bus	= &isa_bus_type;
- 
-@@ -138,8 +144,9 @@ int isa_register_driver(struct isa_driver *isa_driver, unsigned int ndev)
- 				isa_driver->driver.name, id);
- 
- 		isa_dev->dev.platform_data	= isa_driver;
-+		isa_dev->dev.dma_mask		= &isa_dev->dma_mask;
-+		isa_dev->dev.coherent_dma_mask  = isa_dev->dma_mask;
- 		isa_dev->dev.release		= isa_dev_release;
--		isa_dev->id			= id;
- 
- 		error = device_register(&isa_dev->dev);
- 		if (error) {
 -- 
-1.5.2.2
-
-
---------------030300000008080707000900--
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
