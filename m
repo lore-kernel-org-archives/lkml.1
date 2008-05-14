@@ -1,122 +1,309 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761572AbYENIHq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932132AbYENIIM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761572AbYENIHq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 04:07:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761152AbYENIG2
+	id S932132AbYENIIM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 04:08:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760956AbYENIGw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 04:06:28 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54443 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761273AbYENIGW (ORCPT
+	Wed, 14 May 2008 04:06:52 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:58249 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760969AbYENIGq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 04:06:22 -0400
-Date: Wed, 14 May 2008 01:06:18 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: AndrewL733 <AndrewL733@aol.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: Macbook Pro SATA Drives not seen in 2.6.25
-Message-Id: <20080514010618.2e1e510a.akpm@linux-foundation.org>
-In-Reply-To: <482A5C19.6090503@aol.com>
-References: <482A5C19.6090503@aol.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Wed, 14 May 2008 04:06:46 -0400
+To: "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
+       "dm-devel@redhat.com" <dm-devel@redhat.com>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [RFC PATCH 1/3] Implement generic freeze feature
+Message-Id: <20080514170625t-sato@mail.jp.nec.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: WeMail32[2.51] ID:1K0086
+From: Takashi Sato <t-sato@yk.jp.nec.com>
+Date: Wed, 14 May 2008 17:06:25 +0900
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 May 2008 23:27:21 -0400 AndrewL733 <AndrewL733@aol.com> wrote:
+I have modified the following two points from the previous version.
+These are suggested by Christoph Hellwig.
+o Two helper functions for ioctls (ioctl_freeze and ioctl_thaw) are
+  added for the readability.
+o The semaphore for the freeze operation is replaced with new bit
+  flag (bd_state) for the efficiency of the locking. 
 
-> I have a couple of Macbook Pros. The newest one -- based on the Penryn 
-> Core 2 Duo with ICH8 -- will not boot with any 2.6.25 kernel (I have 
-> tried 2.6.25 and 2.6.25.3).
+The ioctls for the generic freeze feature are below.
+o Freeze the filesystem
+  int ioctl(int fd, int FIFREEZE, arg)
+    fd: The file descriptor of the mountpoint
+    FIFREEZE: request code for the freeze
+    arg: Ignored
+    Return value: 0 if the operation succeeds. Otherwise, -1
 
-Let's cc linux-ide.
+o Unfreeze the filesystem
+  int ioctl(int fd, int FITHAW, arg)
+    fd: The file descriptor of the mountpoint
+    FITHAW: request code for unfreeze
+    arg: Ignored
+    Return value: 0 if the operation succeeds. Otherwise, -1
 
-> It boots fine with 2.6.24.7 as well as with 
-> 2.6.26-rc2. It also boots fine with 2.6.22. I have specific reasons why 
-> I need to run 2.6.25 so I would appreciate any help here. It seems the 
-> SATA drives are detected, but then for each partition during bootup I see:
-> 
-> ata3: SATA link down (SStatus 0 SControl 0)
-> 
-> The same 2.6.25 kernels boot fine on my older Macbook Pro with ICH7 and 
-> I do not see this error.
-> 
-> I would be happy to run a git bisect to help identify the issue, but if 
-> this problem is already well understood (hey, it's fixed in 2.6.26), I 
-> can think of better ways to spend my time.
-
-The below went into 2.6.25.1 (or will do so).  It looks hopful.  Can
-you test it please?
-
-> Please copy me personally on any replies. I often subscribe to the list 
-> but it's too much mail right now. Thanks in advance.
-
-We do that as a matter of course.  Or we should...
-
-
-From: Tejun Heo <htejun@gmail.com>
-
-commit cb6716c879ecf49e2af344926c6a476821812061 upstream
-
-On certain configurations (certain macbooks), even though all the
-conditions for SIDPR access described in the datasheet are met,
-actually reading those registers just returns 0 and have no effect on
-write.  Verify SIDPR is actually working before enabling it.
-
-This is reported by Ryan Roth in bz#10512.
-
-Signed-off-by: Tejun Heo <htejun@gmail.com>
-Cc: Ryan Roth <ryan.roth@ch2m.com>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
+Signed-off-by: Takashi Sato <t-sato@yk.jp.nec.com>
+Signed-off-by: Masayuki Hamaguchi <m-hamaguchi@ys.jp.nec.com>
 ---
- drivers/ata/ata_piix.c |   25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+ fs/block_dev.c     |    3 +++
+ fs/buffer.c        |   25 +++++++++++++++++++++++++
+ fs/ioctl.c         |   35 +++++++++++++++++++++++++++++++++++
+ fs/super.c         |   32 +++++++++++++++++++++++++++++++-
+ include/linux/fs.h |    7 +++++++
+ 5 files changed, 101 insertions(+), 1 deletion(-)
 
---- a/drivers/ata/ata_piix.c
-+++ b/drivers/ata/ata_piix.c
-@@ -1531,6 +1531,8 @@ static void __devinit piix_init_sidpr(st
+diff -uprN -X /home/sho/pub/MC/freeze-set/dontdiff linux-2.6.26-rc2.org/fs/buffer.c linux-2.6.26-rc2-bit/fs/buffer.c
+--- linux-2.6.26-rc2.org/fs/buffer.c	2008-05-12 09:09:41.000000000 +0900
++++ linux-2.6.26-rc2-bit/fs/buffer.c	2008-05-12 11:20:19.000000000 +0900
+@@ -201,6 +201,21 @@ struct super_block *freeze_bdev(struct b
  {
- 	struct pci_dev *pdev = to_pci_dev(host->dev);
- 	struct piix_host_priv *hpriv = host->private_data;
-+	struct ata_device *dev0 = &host->ports[0]->link.device[0];
-+	u32 scontrol;
- 	int i;
+ 	struct super_block *sb;
  
- 	/* check for availability */
-@@ -1549,6 +1551,29 @@ static void __devinit piix_init_sidpr(st
- 		return;
- 
- 	hpriv->sidpr = pcim_iomap_table(pdev)[PIIX_SIDPR_BAR];
++	if (test_and_set_bit(BD_FREEZE_OP, &bdev->bd_state))
++		return ERR_PTR(-EBUSY);
 +
-+	/* SCR access via SIDPR doesn't work on some configurations.
-+	 * Give it a test drive by inhibiting power save modes which
-+	 * we'll do anyway.
-+	 */
-+	scontrol = piix_sidpr_read(dev0, SCR_CONTROL);
++	sb = get_super_without_lock(bdev);
 +
-+	/* if IPM is already 3, SCR access is probably working.  Don't
-+	 * un-inhibit power save modes as BIOS might have inhibited
-+	 * them for a reason.
-+	 */
-+	if ((scontrol & 0xf00) != 0x300) {
-+		scontrol |= 0x300;
-+		piix_sidpr_write(dev0, SCR_CONTROL, scontrol);
-+		scontrol = piix_sidpr_read(dev0, SCR_CONTROL);
-+
-+		if ((scontrol & 0xf00) != 0x300) {
-+			dev_printk(KERN_INFO, host->dev, "SCR access via "
-+				   "SIDPR is available but doesn't work\n");
-+			return;
-+		}
++	/* If super_block has been already frozen, return. */
++	if (sb && sb->s_frozen != SB_UNFROZEN) {
++		put_super(sb);
++		clear_bit(BD_FREEZE_OP, &bdev->bd_state);
++		return sb;
 +	}
 +
- 	host->ports[0]->ops = &piix_sidpr_sata_ops;
- 	host->ports[1]->ops = &piix_sidpr_sata_ops;
++	if (sb)
++		put_super(sb);
++
+ 	down(&bdev->bd_mount_sem);
+ 	sb = get_super(bdev);
+ 	if (sb && !(sb->s_flags & MS_RDONLY)) {
+@@ -219,6 +234,8 @@ struct super_block *freeze_bdev(struct b
+ 	}
+ 
+ 	sync_blockdev(bdev);
++	clear_bit(BD_FREEZE_OP, &bdev->bd_state);
++
+ 	return sb;	/* thaw_bdev releases s->s_umount and bd_mount_sem */
  }
-
--- 
+ EXPORT_SYMBOL(freeze_bdev);
+@@ -230,8 +247,17 @@ EXPORT_SYMBOL(freeze_bdev);
+  *
+  * Unlocks the filesystem and marks it writeable again after freeze_bdev().
+  */
+-void thaw_bdev(struct block_device *bdev, struct super_block *sb)
++int thaw_bdev(struct block_device *bdev, struct super_block *sb)
+ {
++
++	if (test_and_set_bit(BD_FREEZE_OP, &bdev->bd_state))
++		return -EBUSY;
++
++	if (sb && sb->s_frozen == SB_UNFROZEN) {
++		clear_bit(BD_FREEZE_OP, &bdev->bd_state);
++		return 0;
++	}
++
+ 	if (sb) {
+ 		BUG_ON(sb->s_bdev != bdev);
+ 
+@@ -244,6 +270,8 @@ void thaw_bdev(struct block_device *bdev
+ 	}
+ 
+ 	up(&bdev->bd_mount_sem);
++	clear_bit(BD_FREEZE_OP, &bdev->bd_state);
++	return 0;
+ }
+ EXPORT_SYMBOL(thaw_bdev);
+ 
+diff -uprN -X /home/sho/pub/MC/freeze-set/dontdiff linux-2.6.26-rc2.org/fs/ioctl.c linux-2.6.26-rc2-bit/fs/ioctl.c
+--- linux-2.6.26-rc2.org/fs/ioctl.c	2008-05-12 09:09:41.000000000 +0900
++++ linux-2.6.26-rc2-bit/fs/ioctl.c	2008-05-13 14:33:33.000000000 +0900
+@@ -13,6 +13,7 @@
+ #include <linux/security.h>
+ #include <linux/module.h>
+ #include <linux/uaccess.h>
++#include <linux/buffer_head.h>
+ 
+ #include <asm/ioctls.h>
+ 
+@@ -141,6 +142,49 @@ static int ioctl_fioasync(unsigned int f
+ }
+ 
+ /*
++ * ioctl_freeze - Freeze the filesystem.
++ *
++ * @filp:	target file
++ *
++ * Call freeze_bdev() to freeze the filesystem.
++ */
++static int ioctl_freeze(struct file *filp)
++{
++	struct super_block *sb = filp->f_path.dentry->d_inode->i_sb;
++
++	if (!capable(CAP_SYS_ADMIN))
++		return -EPERM;
++
++	/* If filesystem doesn't support freeze feature, return. */
++	if (sb->s_op->write_super_lockfs == NULL)
++		return -EINVAL;
++
++	/* Freeze */
++	sb = freeze_bdev(sb->s_bdev);
++	if (IS_ERR(sb))
++		return PTR_ERR(sb);
++	return 0;
++}
++
++/*
++ * ioctl_thaw - Thaw the filesystem.
++ *
++ * @filp:	target file
++ *
++ * Call thaw_bdev() to thaw the filesystem.
++ */
++static int ioctl_thaw(struct file *filp)
++{
++	struct super_block *sb = filp->f_path.dentry->d_inode->i_sb;
++
++	if (!capable(CAP_SYS_ADMIN))
++		return -EPERM;
++
++	/* Thaw */
++	return thaw_bdev(sb->s_bdev, sb);
++}
++
++/*
+  * When you add any new common ioctls to the switches above and below
+  * please update compat_sys_ioctl() too.
+  *
+@@ -181,6 +225,15 @@ int do_vfs_ioctl(struct file *filp, unsi
+ 		} else
+ 			error = -ENOTTY;
+ 		break;
++
++	case FIFREEZE:
++		error = ioctl_freeze(filp);
++		break;
++
++	case FITHAW:
++		error = ioctl_thaw(filp);
++		break;
++
+ 	default:
+ 		if (S_ISREG(filp->f_path.dentry->d_inode->i_mode))
+ 			error = file_ioctl(filp, cmd, arg);
+diff -uprN -X /home/sho/pub/MC/freeze-set/dontdiff linux-2.6.26-rc2.org/fs/super.c linux-2.6.26-rc2-bit/fs/super.c
+--- linux-2.6.26-rc2.org/fs/super.c	2008-05-12 09:09:41.000000000 +0900
++++ linux-2.6.26-rc2-bit/fs/super.c	2008-05-12 11:20:19.000000000 +0900
+@@ -156,7 +156,7 @@ int __put_super_and_need_restart(struct 
+  *	Drops a temporary reference, frees superblock if there's no
+  *	references left.
+  */
+-static void put_super(struct super_block *sb)
++void put_super(struct super_block *sb)
+ {
+ 	spin_lock(&sb_lock);
+ 	__put_super(sb);
+@@ -509,6 +509,36 @@ rescan:
+ 
+ EXPORT_SYMBOL(get_super);
+  
++/*
++ * get_super_without_lock - Get super_block from block_device without lock.
++ * @bdev:	block device struct
++ *
++ * Scan the superblock list and finds the superblock of the file system
++ * mounted on the block device given. This doesn't lock anyone.
++ * %NULL is returned if no match is found.
++ */
++struct super_block *get_super_without_lock(struct block_device *bdev)
++{
++	struct super_block *sb;
++
++	if (!bdev)
++		return NULL;
++
++	spin_lock(&sb_lock);
++	list_for_each_entry(sb, &super_blocks, s_list) {
++		if (sb->s_bdev == bdev) {
++			if (sb->s_root) {
++				sb->s_count++;
++				spin_unlock(&sb_lock);
++				return sb;
++			}
++		}
++	}
++	spin_unlock(&sb_lock);
++	return NULL;
++}
++EXPORT_SYMBOL(get_super_without_lock);
++
+ struct super_block * user_get_super(dev_t dev)
+ {
+ 	struct super_block *sb;
+diff -uprN -X /home/sho/pub/MC/freeze-set/dontdiff linux-2.6.26-rc2.org/include/linux/buffer_head.h linux-2.6.26-rc2-bit
+/include/linux/buffer_head.h
+--- linux-2.6.26-rc2.org/include/linux/buffer_head.h	2008-05-12 09:09:41.000000000 +0900
++++ linux-2.6.26-rc2-bit/include/linux/buffer_head.h	2008-05-12 11:20:19.000000000 +0900
+@@ -171,7 +171,7 @@ void __wait_on_buffer(struct buffer_head
+ wait_queue_head_t *bh_waitq_head(struct buffer_head *bh);
+ int fsync_bdev(struct block_device *);
+ struct super_block *freeze_bdev(struct block_device *);
+-void thaw_bdev(struct block_device *, struct super_block *);
++int thaw_bdev(struct block_device *, struct super_block *);
+ int fsync_super(struct super_block *);
+ int fsync_no_super(struct block_device *);
+ struct buffer_head *__find_get_block(struct block_device *bdev, sector_t block,
+diff -uprN -X /home/sho/pub/MC/freeze-set/dontdiff linux-2.6.26-rc2.org/include/linux/fs.h linux-2.6.26-rc2-bit/include/
+linux/fs.h
+--- linux-2.6.26-rc2.org/include/linux/fs.h	2008-05-12 09:09:41.000000000 +0900
++++ linux-2.6.26-rc2-bit/include/linux/fs.h	2008-05-12 11:20:19.000000000 +0900
+@@ -223,6 +223,8 @@ extern int dir_notify_enable;
+ #define BMAP_IOCTL 1		/* obsolete - kept for compatibility */
+ #define FIBMAP	   _IO(0x00,1)	/* bmap access */
+ #define FIGETBSZ   _IO(0x00,2)	/* get the block size used for bmap */
++#define FIFREEZE	_IOWR('X', 119, int)	/* Freeze */
++#define FITHAW		_IOWR('X', 120, int)	/* Thaw */
+ 
+ #define	FS_IOC_GETFLAGS			_IOR('f', 1, long)
+ #define	FS_IOC_SETFLAGS			_IOW('f', 2, long)
+@@ -494,6 +496,13 @@ int pagecache_write_end(struct file *, s
+ 				loff_t pos, unsigned len, unsigned copied,
+ 				struct page *page, void *fsdata);
+ 
++/*
++ * Bits in block_device.bd_state.
++ */
++enum bd_state {
++	BD_FREEZE_OP	/* In freeze operation */
++};
++
+ struct backing_dev_info;
+ struct address_space {
+ 	struct inode		*host;		/* owner: inode, block_device */
+@@ -547,6 +556,9 @@ struct block_device {
+ 	 * care to not mess up bd_private for that case.
+ 	 */
+ 	unsigned long		bd_private;
++
++	/* State of the block device. (Used by freeze feature) */
++	unsigned long		bd_state;
+ };
+ 
+ /*
+@@ -1964,7 +1976,9 @@ extern int do_vfs_ioctl(struct file *fil
+ extern void get_filesystem(struct file_system_type *fs);
+ extern void put_filesystem(struct file_system_type *fs);
+ extern struct file_system_type *get_fs_type(const char *name);
++extern void put_super(struct super_block *sb);
+ extern struct super_block *get_super(struct block_device *);
++extern struct super_block *get_super_without_lock(struct block_device *);
+ extern struct super_block *user_get_super(dev_t);
+ extern void drop_super(struct super_block *sb);
+ 
