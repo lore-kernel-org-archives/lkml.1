@@ -1,188 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759616AbYENRIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760832AbYENRJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759616AbYENRIS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 13:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbYENRIF
+	id S1760832AbYENRJS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 13:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbYENRJA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 13:08:05 -0400
-Received: from stinky.trash.net ([213.144.137.162]:47059 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753343AbYENRIC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 13:08:02 -0400
-Message-ID: <482B1C70.5070005@trash.net>
-Date: Wed, 14 May 2008 19:08:00 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080405)
+	Wed, 14 May 2008 13:09:00 -0400
+Received: from styx.suse.cz ([82.119.242.94]:42426 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752226AbYENRI7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 13:08:59 -0400
+Date: Wed, 14 May 2008 19:08:56 +0200
+From: Jan Kara <jack@suse.cz>
+To: Mingming Cao <cmm@us.ibm.com>
+Cc: Jan Kara <jack@suse.cz>, Badari Pulavarty <pbadari@us.ibm.com>,
+       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] jbd_commit_transaction() races with
+	journal_try_to_drop_buffers() causing DIO failures
+Message-ID: <20080514170856.GH24363@duck.suse.cz>
+References: <20080428180932.GI17054@duck.suse.cz> <1209409764.11872.6.camel@localhost.localdomain> <20080429124321.GD1987@duck.suse.cz> <1209654981.27240.19.camel@badari-desktop> <20080505170636.GK25722@duck.suse.cz> <1210372072.3639.52.camel@localhost.localdomain> <20080512155419.GD15856@duck.suse.cz> <1210639184.3661.43.camel@localhost.localdomain> <20080513145449.GC20806@duck.suse.cz> <1210717389.3638.24.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Gustavo Guillermo Perez <gustavo@compunauta.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [patch 20/37] {nfnetlink, ip, ip6}_queue: fix skb_over_panic
- when enlarging packets
-References: <20080513200453.064446337@mini.kroah.org> <877idxdb04.fsf@natisbad.org> <20080513220627.GA18320@suse.de> <200805141145.09563.gustavo@compunauta.com>
-In-Reply-To: <200805141145.09563.gustavo@compunauta.com>
-Content-Type: multipart/mixed;
- boundary="------------080904050307060301040203"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1210717389.3638.24.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080904050307060301040203
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 8bit
+On Tue 13-05-08 15:23:09, Mingming Cao wrote:
+> On Tue, 2008-05-13 at 16:54 +0200, Jan Kara wrote:
+> > On Mon 12-05-08 17:39:43, Mingming Cao wrote:
+> > > On Mon, 2008-05-12 at 17:54 +0200, Jan Kara wrote:
+> > > Does this match what you are thinking? It certainly slow down the DIO
+> > > path, but the positive side is it doesn't disturb the other code path...
+> > > thanks for your feedback!
+> > > 
+> > > --------------------------------------------
+> > > 
+> > > An unexpected EIO error gets returned when writing to a file
+> > > using buffered writes and DIO writes at the same time.
+> > > 
+> > > We found there are a number of places where journal_try_to_free_buffers()
+> > > could race with journal_commit_transaction(), the later still
+> > > helds the reference to the buffers on the t_syncdata_list or t_locked_list
+> > > , while journal_try_to_free_buffers() tries to free them, which resulting an EIO
+> > > error returns back to the dio caller. 
+> > > 
+> > > The logic fix is to retry freeing if journal_try_to_free_buffers() to failed
+> > > to free those data buffers while journal_commit_transaction() is still
+> > > reference those buffers.
+> > > This is done via implement ext3 launder_page() callback, instead of inside
+> > > journal_try_to_free_buffers() itself, so that it doesn't affecting other code
+> > > path calling journal_try_to_free_buffers and only dio path get affected.
+> > > 
+> > > Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+> > > Index: linux-2.6.26-rc1/fs/ext3/inode.c
+> > > ===================================================================
+> > > --- linux-2.6.26-rc1.orig/fs/ext3/inode.c	2008-05-03 11:59:44.000000000 -0700
+> > > +++ linux-2.6.26-rc1/fs/ext3/inode.c	2008-05-12 12:41:27.000000000 -0700
+> > > @@ -1766,6 +1766,23 @@ static int ext3_journalled_set_page_dirt
+> > >  	return __set_page_dirty_nobuffers(page);
+> > >  }
+> > >  
+> > > +static int ext3_launder_page(struct page *page)
+> > > +{
+> > > +        int ret;
+> > > +	int retry = 5;
+> > > +
+> > > +	while (retry --) {
+> > > +		ret = ext3_releasepage(page, GFP_KERNEL);
+> > > +		if (ret == 1)
+> > > +			break;
+> > > +		else
+> > > +			schedule();
+> > > +	}
+> > > +
+> > > +        return ret;
+> > > +}
+> > > +
+> > > +
+> >   Yes, I meant something like this. We could be more clever and do:
+> > 
+> > 	head = bh = page_buffers(page);
+> > 	do {
+> > 		wait_on_buffer(bh);
+> > 		bh = bh->b_this_page;
+> > 	} while (bh != head);
+> > 	/*
+> > 	 * Now commit code should have been able to proceed and release
+> >          * those buffers
+> > 	 */
+> >         schedule();
+> > 
+> 
+> Bummer, we can't free buffers in ext3_launder_page() before calling
+> try_to_free_page, as later
+> invalidate_complete_page2()->try_to_free_page() expecting the page
+> buffers are still here, and will return EIO if it launder_page() has
+> already freed those buffers.:(
+  Are you sure? Because if bufferes are released in ext3_launder_page(),
+PagePrivate() has been set to 0 and we should directly fall through to
+releasing the page without ever calling try_to_release_page()... So I'd
+want to find out why PagePrivate is still set in
+invalidate_complete_page2().
 
-Gustavo Guillermo Perez wrote:
-> El Martes, 13 de Mayo de 2008, Greg KH escribió:
->> On Wed, May 14, 2008 at 01:45:15AM +0200, Arnaud Ebalard wrote:
->>> Hi,
->>>
->>> Greg KH <gregkh@suse.de> writes:
->>>> 2.6.25-stable review patch.  If anyone has any objections, please let
->>>> us know.
->>> Sorry for the noise, but for those who missed one of the latest post on
->>> the topic on netdev, I should add that the bug is also in 2.6.24.4 (even
->>> if it's probably too late for that poor guy :-( ).
->> Sorry, yes, we are no longer doing 2.6.24-stable releases.
- >
-> the fix will be available in 2.6.25.4 ?
+> Doing wait_on_buffer() alone in launder_page() is not enough as it
+> doesn't wait for buffer reference drop to 0.
+  Yes, this would not be enough.
 
-Yes. This is the patch against the latest 2.6.24.x release in case
-someone needs it. Not sure anymore if it differs from the 2.6.25
-version.
-
-
-
---------------080904050307060301040203
-Content-Type: text/plain;
- name="x"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="x"
-
-commit 431e3757dbafdad741ef7d9bdaa2fca7fce3d5cc
-Author: Arnaud Ebalard <arno@natisbad.org>
-Date:   Tue May 6 13:03:59 2008 +0200
-
-    [NETFILTER]: {nfnetlink,ip,ip6}_queue: fix skb_over_panic when enlarging packets
-    
-    Upstream commit 9a732ed6d:
-    
-    While reinjecting *bigger* modified versions of IPv6 packets using
-    libnetfilter_queue, things work fine on a 2.6.24 kernel (2.6.22 too)
-    but I get the following on recents kernels (2.6.25, trace below is
-    against today's net-2.6 git tree):
-    
-    skb_over_panic: text:c04fddb0 len:696 put:632 head:f7592c00 data:f7592c00 tail:0xf7592eb8 end:0xf7592e80 dev:eth0
-    ------------[ cut here ]------------
-    invalid opcode: 0000 [#1] PREEMPT
-    Process sendd (pid: 3657, ti=f6014000 task=f77c31d0 task.ti=f6014000)
-    Stack: c071e638 c04fddb0 000002b8 00000278 f7592c00 f7592c00 f7592eb8 f7592e80
-           f763c000 f6bc5200 f7592c40 f6015c34 c04cdbfc f6bc5200 00000278 f6015c60
-           c04fddb0 00000020 f72a10c0 f751b420 00000001 0000000a 000002b8 c065582c
-    Call Trace:
-     [<c04fddb0>] ? nfqnl_recv_verdict+0x1c0/0x2e0
-     [<c04cdbfc>] ? skb_put+0x3c/0x40
-     [<c04fddb0>] ? nfqnl_recv_verdict+0x1c0/0x2e0
-     [<c04fd115>] ? nfnetlink_rcv_msg+0xf5/0x160
-     [<c04fd03e>] ? nfnetlink_rcv_msg+0x1e/0x160
-     [<c04fd020>] ? nfnetlink_rcv_msg+0x0/0x160
-     [<c04f8ed7>] ? netlink_rcv_skb+0x77/0xa0
-     [<c04fcefc>] ? nfnetlink_rcv+0x1c/0x30
-     [<c04f8c73>] ? netlink_unicast+0x243/0x2b0
-     [<c04cfaba>] ? memcpy_fromiovec+0x4a/0x70
-     [<c04f9406>] ? netlink_sendmsg+0x1c6/0x270
-     [<c04c8244>] ? sock_sendmsg+0xc4/0xf0
-     [<c011970d>] ? set_next_entity+0x1d/0x50
-     [<c0133a80>] ? autoremove_wake_function+0x0/0x40
-     [<c0118f9e>] ? __wake_up_common+0x3e/0x70
-     [<c0342fbf>] ? n_tty_receive_buf+0x34f/0x1280
-     [<c011d308>] ? __wake_up+0x68/0x70
-     [<c02cea47>] ? copy_from_user+0x37/0x70
-     [<c04cfd7c>] ? verify_iovec+0x2c/0x90
-     [<c04c837a>] ? sys_sendmsg+0x10a/0x230
-     [<c011967a>] ? __dequeue_entity+0x2a/0xa0
-     [<c011970d>] ? set_next_entity+0x1d/0x50
-     [<c0345397>] ? pty_write+0x47/0x60
-     [<c033d59b>] ? tty_default_put_char+0x1b/0x20
-     [<c011d2e9>] ? __wake_up+0x49/0x70
-     [<c033df99>] ? tty_ldisc_deref+0x39/0x90
-     [<c033ff20>] ? tty_write+0x1a0/0x1b0
-     [<c04c93af>] ? sys_socketcall+0x7f/0x260
-     [<c0102ff9>] ? sysenter_past_esp+0x6a/0x91
-     [<c05f0000>] ? snd_intel8x0m_probe+0x270/0x6e0
-     =======================
-    Code: 00 00 89 5c 24 14 8b 98 9c 00 00 00 89 54 24 0c 89 5c 24 10 8b 40 50 89 4c 24 04 c7 04 24 38 e6 71 c0 89 44 24 08 e8 c4 46 c5 ff <0f> 0b eb fe 55 89 e5 56 89 d6 53 89 c3 83 ec 0c 8b 40 50 39 d0
-    EIP: [<c04ccdfc>] skb_over_panic+0x5c/0x60 SS:ESP 0068:f6015bf8
-    
-    
-    Looking at the code, I ended up in nfq_mangle() function (called by
-    nfqnl_recv_verdict()) which performs a call to skb_copy_expand() due to
-    the increased size of data passed to the function. AFAICT, it should ask
-    for 'diff' instead of 'diff - skb_tailroom(e->skb)'. Because the
-    resulting sk_buff has not enough space to support the skb_put(skb, diff)
-    call a few lines later, this results in the call to skb_over_panic().
-    
-    The patch below asks for allocation of a copy with enough space for
-    mangled packet and the same amount of headroom as old sk_buff. While
-    looking at how the regression appeared (e2b58a67), I noticed the same
-    pattern in ipq_mangle_ipv6() and ipq_mangle_ipv4(). The patch corrects
-    those locations too.
-    
-    Tested with bigger reinjected IPv6 packets (nfqnl_mangle() path), things
-    are ok (2.6.25 and today's net-2.6 git tree).
-    
-    Signed-off-by: Arnaud Ebalard <arno@natisbad.org>
-    Signed-off-by: Patrick McHardy <kaber@trash.net>
-    Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/net/ipv4/netfilter/ip_queue.c b/net/ipv4/netfilter/ip_queue.c
-index 16d0fb3..f821a9b 100644
---- a/net/ipv4/netfilter/ip_queue.c
-+++ b/net/ipv4/netfilter/ip_queue.c
-@@ -349,9 +349,8 @@ ipq_mangle_ipv4(ipq_verdict_msg_t *v, struct ipq_queue_entry *e)
- 		if (v->data_len > 0xFFFF)
- 			return -EINVAL;
- 		if (diff > skb_tailroom(e->skb)) {
--			nskb = skb_copy_expand(e->skb, 0,
--					       diff - skb_tailroom(e->skb),
--					       GFP_ATOMIC);
-+			nskb = skb_copy_expand(e->skb, skb_headroom(e->skb),
-+					       diff, GFP_ATOMIC);
- 			if (!nskb) {
- 				printk(KERN_WARNING "ip_queue: error "
- 				      "in mangle, dropping packet\n");
-diff --git a/net/ipv6/netfilter/ip6_queue.c b/net/ipv6/netfilter/ip6_queue.c
-index 710a04f..b9db6d9 100644
---- a/net/ipv6/netfilter/ip6_queue.c
-+++ b/net/ipv6/netfilter/ip6_queue.c
-@@ -346,9 +346,8 @@ ipq_mangle_ipv6(ipq_verdict_msg_t *v, struct ipq_queue_entry *e)
- 		if (v->data_len > 0xFFFF)
- 			return -EINVAL;
- 		if (diff > skb_tailroom(e->skb)) {
--			nskb = skb_copy_expand(e->skb, 0,
--					       diff - skb_tailroom(e->skb),
--					       GFP_ATOMIC);
-+			nskb = skb_copy_expand(e->skb, skb_headroom(e->skb),
-+					       diff, GFP_ATOMIC);
- 			if (!nskb) {
- 				printk(KERN_WARNING "ip6_queue: OOM "
- 				      "in mangle, dropping packet\n");
-diff --git a/net/netfilter/nfnetlink_queue.c b/net/netfilter/nfnetlink_queue.c
-index 7c3646c..d5fab38 100644
---- a/net/netfilter/nfnetlink_queue.c
-+++ b/net/netfilter/nfnetlink_queue.c
-@@ -627,9 +627,8 @@ nfqnl_mangle(void *data, int data_len, struct nfqnl_queue_entry *e)
- 		if (data_len > 0xFFFF)
- 			return -EINVAL;
- 		if (diff > skb_tailroom(e->skb)) {
--			nskb = skb_copy_expand(e->skb, 0,
--					       diff - skb_tailroom(e->skb),
--					       GFP_ATOMIC);
-+			nskb = skb_copy_expand(e->skb, skb_headroom(e->skb),
-+					       diff, GFP_ATOMIC);
- 			if (!nskb) {
- 				printk(KERN_WARNING "nf_queue: OOM "
- 				      "in mangle, dropping packet\n");
-
---------------080904050307060301040203--
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
