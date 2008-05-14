@@ -1,35 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757445AbYENQim@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755153AbYENQ4X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757445AbYENQim (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 12:38:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbYENQif
+	id S1755153AbYENQ4X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 12:56:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbYENQ4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 12:38:35 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:63130 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751731AbYENQie (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 12:38:34 -0400
-Date: Wed, 14 May 2008 17:37:45 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: "Kim B. Heino" <Kim.Heino@bluegiga.com>
-cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org
-Subject: Re: [rtc-linux] Re: [PATCH] add support for ST M41T94 SPI RTC
-In-Reply-To: <482AF5E7.9070801@bluegiga.com>
-Message-ID: <Pine.LNX.4.55.0805141736230.15223@cliff.in.clinika.pl>
-References: <482AD8D9.4090805@bluegiga.com> <20080514150820.7eb523c6@i1501.lan.towertech.it>
- <482AF5E7.9070801@bluegiga.com>
+	Wed, 14 May 2008 12:56:13 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:53188 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751649AbYENQ4M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 12:56:12 -0400
+Date: Wed, 14 May 2008 19:54:34 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [GIT PATCHES] V4L/DVB fixes for 2.6.26
+Message-ID: <20080514165434.GC22115@cs181133002.pp.htv.fi>
+References: <20080514114910.4bcfd220@gaivota>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080514114910.4bcfd220@gaivota>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 May 2008, Kim B. Heino wrote:
+On Wed, May 14, 2008 at 11:49:10AM -0300, Mauro Carvalho Chehab wrote:
+>...
+> PS.: There are yet a number of other Kconfig potential breakages at V4L/DVB. I'm 
+> currently working on fixing those issues. Basically, what users do is to select 
+> I2C, DVB and V4L as module. This works fine, but more complex scenarios where
+> you mix 'M' and 'Y' inside the subsystem generally cause compilation breakage.
+> Those scenarios are more theorical, since there's not much practical sense on
+> having a DVB driver foo as module, and V4L driver bar as in-kernel. However,
+> the better is to not allow compilation of the scenarios that don't work.
+> 
+> The main trouble at drivers/media Kbuild is that several rules there assumed that
+> "select" would check the "depends on" dependencies of the selected drivers.
+> However, this feature doesn't exist at the current Kbuild implementation. Even
+> if implemented, I suspect that this will generate circular dependency errors on
+> some cases.
+>...
 
-> Ok, I'll add support for century bit. Again there are some other 
-> rtc-drivers (like rtc-m41t80.c and rtc-ds1307.c) not using it.
+The basic problem is that drivers/media/ does the most fancy kconfig 
+stuff in the kernel since it tries to both have very fine grained 
+dependencies and offer a usable kconfig UI to the user, which results
+in very complicated dependencies.
 
- Oh, thanks for mentioning rtc-m41t80.c -- since I am currently fiddling 
-with it, it sounds like a good idea for an improvement.  Thanks!
+We are not getting this solved by any changes in the kconfig 
+implementation.
 
-  Maciej
+Thinking about reasonable ways to reduce the problem space:
+
+Where could we reduce the complexity without big disadvantages?
+
+Could we e.g. let VIDEO_DEV select I2C which would remove all the 
+fiddling with I2C dependencies (which is a bigger part of recent
+problems)?
+
+I can make a patch for it after this pull went into Linus' tree if it is 
+considered an acceptable option.
+
+> Cheers,
+> Mauro.
+>...
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
