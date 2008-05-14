@@ -1,185 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761246AbYENSbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763488AbYENSci@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761246AbYENSbR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 14:31:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759884AbYENSam
+	id S1763488AbYENSci (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 14:32:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757416AbYENSc3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 14:30:42 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:43862 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758589AbYENSaj (ORCPT
+	Wed, 14 May 2008 14:32:29 -0400
+Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:31636 "EHLO
+	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757134AbYENSc2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 14:30:39 -0400
-Subject: Re: Kernel hangs in SMP + VMware environment.
-From: Alok Kataria <akataria@vmware.com>
-To: penguin-kernel@i-love.sakura.ne.jp
-Cc: devzero@web.de, linux-kernel@vger.kernel.org,
-       Dan Hecht <dhecht@vmware.com>
-Content-Type: multipart/mixed; boundary="=-RX/w6BMaYJDnfyv9fh2L"
-Organization: VMware, Inc.
-Date: Wed, 14 May 2008 11:30:34 -0700
-Message-Id: <1210789834.8798.20.camel@promb-2n-dhcp368.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5) 
+	Wed, 14 May 2008 14:32:28 -0400
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Alexander Viro <viro@ftp.linux.org.uk>
+Subject: Re: [announce] "kill the Big Kernel Lock (BKL)" tree
+From: Andi Kleen <andi@firstfloor.org>
+References: <20080514174955.GA515@elte.hu>
+Date: Wed, 14 May 2008 20:30:29 +0200
+In-Reply-To: <20080514174955.GA515@elte.hu> (Ingo Molnar's message of "Wed, 14 May 2008 19:49:55 +0200")
+Message-ID: <87fxsk7n7e.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 14 May 2008 18:23:28.0970 (UTC) FILETIME=[9B7052A0:01C8B5EF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar <mingo@elte.hu> writes:
 
---=-RX/w6BMaYJDnfyv9fh2L
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+> As some of the latency junkies on lkml already know it, commit 8e3e076 
+> ("BKL: revert back to the old spinlock implementation") in v2.6.26-rc2 
+> removed the preemptible BKL feature and made the Big Kernel Lock a 
+> spinlock and thus turned it into non-preemptible code again. This commit 
+> returned the BKL code to the 2.6.7 state of affairs in essence.
 
-On Wed, May 14, 2008 at 4:00 AM, Tetsuo Handa
-<penguin-kernel@i-love.sakura.ne.jp> wrote:
-> Hello.
->
-> Roland wrote:
->> maybe related to http://bugzilla.kernel.org/show_bug.cgi?id=9834  ?
-> Thank you for URL.
-> My bug seems to be timer related.
->
->> you say "recent" , so this does happen from 2.6.21 to 2.6.26rc2 ?
-> I don't know exact version, but I don't experience this problem
-> in earlier kernels (e.g. Fedora Core 5 which uses kernel 2.6.20).
->
->> does that happen only on a dedicated vmware box, or on different
-ones?
->> vmware-tools active? ->stop -> different ?
-> vmware-tools is not installed for my Fedora 8.
->
->> could you provide some more information about your hardware/vmware
->> environment ?
->> does that happen on esx or on hosted products (workstation, server,
->> player..) ?
->
-> Hardware: ThinkPad X60 (Intel Core 2 Duo, 2048MB RAM, No swap
-partition)
-> VMware host environment: CentOS 5.1 (x86_64)
-> VMware version: VMware Workstation 6.0.2 (x86_64)
-> VMware guest environment: many distro using recent kernels (all i386)
+It's a reasonable start, but have you considered doing this work
+in tree instead? As in just add all the warnings, but don't actually
+change the semantics yet.  I suspect you would get far more users
+this way and the work would go faster. 
 
-Hi Tetsuo,
+It would be reasonable to enable this in -mm if it the warnings are
+not too intrusive (self disable itself etc.)
 
-Can you try the patch attached with this mail, I made this on top of
-2.6.24.7 but should fit on any other 2.6.24 based distro kernel.
+Also for fixing the ioctls I'm not sure that dynamic instrumentation
+will really work because it would be tough to execute them all.
 
-If the attached patch still gives you the same problem, please send me
-your config file and the boot time dmesg's.
+I suspect some variant of static code analysis would make sense
+for the ioctls. 
 
-Thanks,
-Alok
+I used to do some auditing with cflow. That won't
+catch indirect function calls unfortunately, but if there's 
+some way to find those and bail out one could do an automated
+tool that flags all the ioctls that don't sleep for example
+(don't have any sleeping functions in the call chain -- this
+might need some manual annotation, but hopefully not much)
 
---=-RX/w6BMaYJDnfyv9fh2L
-Content-Disposition: attachment; filename=prevent-tsc-from-going-back.patch
-Content-Type: text/x-patch; name=prevent-tsc-from-going-back.patch; charset=UTF-8
-Content-Transfer-Encoding: base64
+Then it would be possible to safely switch those over to a blocking
+mutex variant of BKL. 
 
-VGhpcyBpcyBhIGJhY2twb3J0IG9mIHRoZSBwYXRjaCBzdWJtaXR0ZWQgYnkgVGhvbWFzIEdsZWl4
-bmVyIHRvIHRoZQ0KeDg2IGdpdCB0cmVlLCBjb21taXQgZDhiYjZmNGMxNjcwYzgzMjRlNDEzNWM2
-MWVmMDc0ODZmN2YxNzM3OSANCg0KQ29tbWVudHMgZnJvbSB0aGUgb3JpZ2luYWwgcG9zdCA6DQoN
-CldlIGFscmVhZHkgY2F0Y2ggbW9zdCBvZiB0aGUgVFNDIHByb2JsZW1zIGJ5IHNhbml0eSBjaGVj
-a3MsIGJ1dCB0aGVyZQ0KaXMgYSBzdWJ0bGUgYnVnIHdoaWNoIGhhcyBiZWVuIGluIHRoZSBjb2Rl
-IGZvciBldmVyLiBUaGlzIGNhbiBjYXVzZQ0KdGltZSBqdW1wcyBpbiB0aGUgcmFuZ2Ugb2YgaG91
-cnMuDQoNClRoaXMgd2FzIHJlcG9ydGVkIGluOg0KICAgICBodHRwOi8vbGttbC5vcmcvbGttbC8y
-MDA3LzgvMjMvOTYNCmFuZA0KICAgICBodHRwOi8vbGttbC5vcmcvbGttbC8yMDA4LzMvMzEvMjMN
-Cg0KSSB3YXMgYWJsZSB0byByZXByb2R1Y2UgdGhlIHByb2JsZW0gd2l0aCBhIGdldHRpbWVvZmRh
-eSBsb29wIHRlc3Qgb24gYQ0KZHVhbCBjb3JlIGFuZCBhIHF1YWQgY29yZSBtYWNoaW5lIHdoaWNo
-IGJvdGggaGF2ZSBzeWNocm9uaXplZA0KVFNDcy4gVGhlIFRTQ3Mgc2VlbXMgbm90IHRvIGJlIHBl
-cmZlY3RseSBpbiBzeW5jIHRob3VnaCwgYnV0IHRoZQ0Ka2VybmVsIGlzIG5vdCBhYmxlIHRvIGRl
-dGVjdCB0aGUgc2xpZ2h0IGRlbHRhIGluIHRoZSBzeW5jIGNoZWNrLiBTdGlsbA0KdGhlcmUgZXhp
-c3RzIGFuIGV4dHJlbWx5IHNtYWxsIHdpbmRvdyB3aGVyZSB0aGlzIGRlbHRhIGNhbiBiZSBvYnNl
-cnZlZA0Kd2l0aCBhIHJlYWwgYmlnIHRpbWUganVtcC4gU28gZmFyIEkgd2FzIG9ubHkgYWJsZSB0
-byByZXByb2R1Y2UgdGhpcw0Kd2l0aCB0aGUgdnN5c2NhbGwgZ2V0dGltZW9mZGF5IGltcGxlbWVu
-dGF0aW9uLCBidXQgaW4gdGhlb3J5IHRoaXMNCm1pZ2h0IGJlIG9ic2VydmFibGUgd2l0aCB0aGUg
-c3lzY2FsbCBiYXNlZCB2ZXJzaW9uIGFzIHdlbGwuDQoNCkNQVSAwIHVwZGF0ZXMgdGhlIGNsb2Nr
-IHNvdXJjZSB2YXJpYWJsZXMgdW5kZXIgeHRpbWUvdnlzY2FsbCBsb2NrIGFuZA0KQ1BVMSwgd2hl
-cmUgdGhlIFRTQyBpcyBzbGlnaHR5IGJlaGluZCBDUFUwLCBpcyByZWFkaW5nIHRoZSB0aW1lIHJp
-Z2h0DQphZnRlciB0aGUgc2VxbG9jayB3YXMgdW5sb2NrZWQuDQoNClRoZSBjbG9ja3NvdXJjZSBy
-ZWZlcmVuY2UgZGF0YSB3YXMgdXBkYXRlZCB3aXRoIHRoZSBUU0MgZnJvbSBDUFUwIGFuZA0KdGhl
-IHZhbHVlIHdoaWNoIGlzIHJlYWQgZnJvbSBUU0Mgb24gQ1BVMSBpcyBsZXNzIHRoYW4gdGhlIHJl
-ZmVyZW5jZQ0KZGF0YS4gVGhpcyByZXN1bHRzIGluIGEgaHVnZSBkZWx0YSB2YWx1ZSBkdWUgdG8g
-dGhlIHVuc2lnbmVkDQpzdWJ0cmFjdGlvbiBvZiB0aGUgVFNDIHZhbHVlIGFuZCB0aGUgcmVmZXJl
-bmNlIHZhbHVlLiBUaGlzIGFsZ29yaXRobQ0KY2FuIG5vdCBiZSBjaGFuZ2VkIGR1ZSB0byB0aGUg
-c3VwcG9ydCBvZiB3cmFwcGluZyBjbG9jayBzb3VyY2VzIGxpa2UNCnBtIHRpbWVyLg0KDQpUaGUg
-aHVnZSBkZWx0YSBpcyBjb252ZXJ0ZWQgdG8gbmFub3NlY29uZHMgYW5kIGFkZGVkIHRvIHh0aW1l
-LCB3aGljaA0KaXMgdGhlbiBvYnNlcnZhYmxlIGJ5IHRoZSBjYWxsZXIuIFRoZSBuZXh0IGdldHRp
-bWVvZmRheSBjYWxsIG9uIENQVTENCndpbGwgc2hvdyB0aGUgY29ycmVjdCB0aW1lIGFnYWluIGFz
-IG5vdyB0aGUgVFNDIGhhcyBhZHZhbmNlZCBhYm92ZSB0aGUNCnJlZmVyZW5jZSB2YWx1ZS4NCg0K
-VG8gcHJldmVudCB0aGlzIFRTQyBzcGVjaWZpYyB3cmVja2FnZSB3ZSBuZWVkIHRvIGNvbXBhcmUg
-dGhlIFRTQyB2YWx1ZQ0KYWdhaW5zdCB0aGUgcmVmZXJlbmNlIHZhbHVlIGFuZCByZXR1cm4gdGhl
-IGxhdHRlciB3aGVuIGl0IGlzIGxhcmdlcg0KdGhhbiB0aGUgYWN0dWFsIFRTQyB2YWx1ZS4NCg0K
-SSBwb25kZXJlZCB0byBtYXJrIHRoZSBUU0MgdW5zdGFibGUgd2hlbiB0aGUgcmVhZG91dCBpcyBz
-bWFsbGVyIHRoYW4NCnRoZSByZWZlcmVuY2UgdmFsdWUsIGJ1dCB0aGlzIHdvdWxkIHJlbmRlciBh
-biBvdGhlcndpc2UgZ29vZCBhbmQgZmFzdA0KY2xvY2tzb3VyY2UgdW51c2FibGUgd2l0aG91dCBh
-IHJlYWwgZ29vZCByZWFzb24uDQoNClNpZ25lZC1vZmYtYnk6IEFsb2sgS2F0YXJpYSA8YWthdGFy
-aWFAdm13YXJlLmNvbT4NCkNDOiBUaG9tYXMgR2xlaXhuZXIgPHRnbHhAbGludXRyb25peC5kZT4N
-Cg0KSW5kZXg6IGxpbnV4LTIuNi4yNC43L2FyY2gveDg2L2tlcm5lbC90c2NfMzIuYw0KPT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PQ0KLS0tIGxpbnV4LTIuNi4yNC43Lm9yaWcvYXJjaC94ODYva2VybmVsL3RzY18zMi5jCTIw
-MDgtMDUtMTQgMTE6MjU6MjAuMDAwMDAwMDAwIC0wNzAwDQorKysgbGludXgtMi42LjI0LjcvYXJj
-aC94ODYva2VybmVsL3RzY18zMi5jCTIwMDgtMDUtMTQgMTE6MjY6MjEuMDAwMDAwMDAwIC0wNzAw
-DQpAQCAtMjY4LDE0ICsyNjgsMjcgQEANCiAvKiBjbG9jayBzb3VyY2UgY29kZSAqLw0KIA0KIHN0
-YXRpYyB1bnNpZ25lZCBsb25nIGN1cnJlbnRfdHNjX2toeiA9IDA7DQorc3RhdGljIHN0cnVjdCBj
-bG9ja3NvdXJjZSBjbG9ja3NvdXJjZV90c2M7DQogDQorLyoNCisgKiBXZSBjb21wYXJlIHRoZSBU
-U0MgdG8gdGhlIGN5Y2xlX2xhc3QgdmFsdWUgaW4gdGhlIGNsb2Nrc291cmNlDQorICogc3RydWN0
-dXJlIHRvIGF2b2lkIGEgbmFzdHkgdGltZS13YXJwIGlzc3VlLiBUaGlzIGNhbiBiZSBvYnNlcnZl
-ZCBpbg0KKyAqIGEgdmVyeSBzbWFsbCB3aW5kb3cgcmlnaHQgYWZ0ZXIgb25lIENQVSB1cGRhdGVk
-IGN5Y2xlX2xhc3QgdW5kZXINCisgKiB4dGltZSBsb2NrIGFuZCB0aGUgb3RoZXIgQ1BVIHJlYWRz
-IGEgVFNDIHZhbHVlIHdoaWNoIGlzIHNtYWxsZXINCisgKiB0aGFuIHRoZSBjeWNsZV9sYXN0IHJl
-ZmVyZW5jZSB2YWx1ZSBkdWUgdG8gYSBUU0Mgd2hpY2ggaXMgc2xpZ2h0eQ0KKyAqIGJlaGluZC4g
-VGhpcyBkZWx0YSBpcyBub3doZXJlIGVsc2Ugb2JzZXJ2YWJsZSwgYnV0IGluIHRoYXQgY2FzZSBp
-dA0KKyAqIHJlc3VsdHMgaW4gYSBmb3J3YXJkIHRpbWUganVtcCBpbiB0aGUgcmFuZ2Ugb2YgaG91
-cnMgZHVlIHRvIHRoZQ0KKyAqIHVuc2lnbmVkIGRlbHRhIGNhbGN1bGF0aW9uIG9mIHRoZSB0aW1l
-IGtlZXBpbmcgY29yZSBjb2RlLCB3aGljaCBpcw0KKyAqIG5lY2Vzc2FyeSB0byBzdXBwb3J0IHdy
-YXBwaW5nIGNsb2Nrc291cmNlcyBsaWtlIHBtIHRpbWVyLg0KKyAqLw0KIHN0YXRpYyBjeWNsZV90
-IHJlYWRfdHNjKHZvaWQpDQogew0KIAljeWNsZV90IHJldDsNCiANCiAJcmR0c2NsbChyZXQpOw0K
-IA0KLQlyZXR1cm4gcmV0Ow0KKwlyZXR1cm4gcmV0ID49IGNsb2Nrc291cmNlX3RzYy5jeWNsZV9s
-YXN0ID8NCisJCXJldCA6IGNsb2Nrc291cmNlX3RzYy5jeWNsZV9sYXN0Ow0KIH0NCiANCiBzdGF0
-aWMgc3RydWN0IGNsb2Nrc291cmNlIGNsb2Nrc291cmNlX3RzYyA9IHsNCkluZGV4OiBsaW51eC0y
-LjYuMjQuNy9hcmNoL3g4Ni9rZXJuZWwvdHNjXzY0LmMNCj09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0NCi0tLSBsaW51eC0y
-LjYuMjQuNy5vcmlnL2FyY2gveDg2L2tlcm5lbC90c2NfNjQuYwkyMDA4LTA1LTE0IDExOjI1OjIw
-LjAwMDAwMDAwMCAtMDcwMA0KKysrIGxpbnV4LTIuNi4yNC43L2FyY2gveDg2L2tlcm5lbC90c2Nf
-NjQuYwkyMDA4LTA1LTE0IDExOjI2OjIxLjAwMDAwMDAwMCAtMDcwMA0KQEAgLTEwLDYgKzEwLDcg
-QEANCiANCiAjaW5jbHVkZSA8YXNtL2hwZXQuaD4NCiAjaW5jbHVkZSA8YXNtL3RpbWV4Lmg+DQor
-I2luY2x1ZGUgPGFzbS92Z3RvZC5oPg0KIA0KIHN0YXRpYyBpbnQgbm90c2MgX19pbml0ZGF0YSA9
-IDA7DQogDQpAQCAtMjQ2LDE4ICsyNDcsMzQgQEANCiANCiBfX3NldHVwKCJub3RzYyIsIG5vdHNj
-X3NldHVwKTsNCiANCitzdGF0aWMgc3RydWN0IGNsb2Nrc291cmNlIGNsb2Nrc291cmNlX3RzYzsN
-CiANCi0vKiBjbG9jayBzb3VyY2UgY29kZTogKi8NCisvKg0KKyAqIFdlIGNvbXBhcmUgdGhlIFRT
-QyB0byB0aGUgY3ljbGVfbGFzdCB2YWx1ZSBpbiB0aGUgY2xvY2tzb3VyY2UNCisgKiBzdHJ1Y3R1
-cmUgdG8gYXZvaWQgYSBuYXN0eSB0aW1lLXdhcnAuIFRoaXMgY2FuIGJlIG9ic2VydmVkIGluIGEN
-CisgKiB2ZXJ5IHNtYWxsIHdpbmRvdyByaWdodCBhZnRlciBvbmUgQ1BVIHVwZGF0ZWQgY3ljbGVf
-bGFzdCB1bmRlcg0KKyAqIHh0aW1lL3ZzeXNjYWxsX2d0b2QgbG9jayBhbmQgdGhlIG90aGVyIENQ
-VSByZWFkcyBhIFRTQyB2YWx1ZSB3aGljaA0KKyAqIGlzIHNtYWxsZXIgdGhhbiB0aGUgY3ljbGVf
-bGFzdCByZWZlcmVuY2UgdmFsdWUgZHVlIHRvIGEgVFNDIHdoaWNoDQorICogaXMgc2xpZ2h0eSBi
-ZWhpbmQuIFRoaXMgZGVsdGEgaXMgbm93aGVyZSBlbHNlIG9ic2VydmFibGUsIGJ1dCBpbg0KKyAq
-IHRoYXQgY2FzZSBpdCByZXN1bHRzIGluIGEgZm9yd2FyZCB0aW1lIGp1bXAgaW4gdGhlIHJhbmdl
-IG9mIGhvdXJzDQorICogZHVlIHRvIHRoZSB1bnNpZ25lZCBkZWx0YSBjYWxjdWxhdGlvbiBvZiB0
-aGUgdGltZSBrZWVwaW5nIGNvcmUNCisgKiBjb2RlLCB3aGljaCBpcyBuZWNlc3NhcnkgdG8gc3Vw
-cG9ydCB3cmFwcGluZyBjbG9ja3NvdXJjZXMgbGlrZSBwbQ0KKyAqIHRpbWVyLg0KKyAqLw0KIHN0
-YXRpYyBjeWNsZV90IHJlYWRfdHNjKHZvaWQpDQogew0KIAljeWNsZV90IHJldCA9IChjeWNsZV90
-KWdldF9jeWNsZXNfc3luYygpOw0KLQlyZXR1cm4gcmV0Ow0KKw0KKwlyZXR1cm4gcmV0ID49IGNs
-b2Nrc291cmNlX3RzYy5jeWNsZV9sYXN0ID8NCisJCXJldCA6IGNsb2Nrc291cmNlX3RzYy5jeWNs
-ZV9sYXN0Ow0KIH0NCiANCiBzdGF0aWMgY3ljbGVfdCBfX3ZzeXNjYWxsX2ZuIHZyZWFkX3RzYyh2
-b2lkKQ0KIHsNCiAJY3ljbGVfdCByZXQgPSAoY3ljbGVfdClnZXRfY3ljbGVzX3N5bmMoKTsNCi0J
-cmV0dXJuIHJldDsNCisNCisJcmV0dXJuIHJldCA+PSBfX3ZzeXNjYWxsX2d0b2RfZGF0YS5jbG9j
-ay5jeWNsZV9sYXN0ID8NCisJCXJldCA6IF9fdnN5c2NhbGxfZ3RvZF9kYXRhLmNsb2NrLmN5Y2xl
-X2xhc3Q7DQogfQ0KIA0KIHN0YXRpYyBzdHJ1Y3QgY2xvY2tzb3VyY2UgY2xvY2tzb3VyY2VfdHNj
-ID0gew0KSW5kZXg6IGxpbnV4LTIuNi4yNC43L2tlcm5lbC90aW1lL3RpbWVrZWVwaW5nLmMNCj09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT0NCi0tLSBsaW51eC0yLjYuMjQuNy5vcmlnL2tlcm5lbC90aW1lL3RpbWVrZWVwaW5n
-LmMJMjAwOC0wNS0xNCAxMToyNToyMC4wMDAwMDAwMDAgLTA3MDANCisrKyBsaW51eC0yLjYuMjQu
-Ny9rZXJuZWwvdGltZS90aW1la2VlcGluZy5jCTIwMDgtMDUtMTQgMTE6MjY6MjEuMDAwMDAwMDAw
-IC0wNzAwDQpAQCAtMTg5LDYgKzE4OSw3IEBADQogCWlmIChjbG9jayA9PSBuZXcpDQogCQlyZXR1
-cm47DQogDQorCW5ldy0+Y3ljbGVfbGFzdCA9IDA7DQogCW5vdyA9IGNsb2Nrc291cmNlX3JlYWQo
-bmV3KTsNCiAJbnNlYyA9ICBfX2dldF9uc2VjX29mZnNldCgpOw0KIAl0aW1lc3BlY19hZGRfbnMo
-Jnh0aW1lLCBuc2VjKTsNCkBAIC0zMDEsNiArMzAyLDcgQEANCiAJLyogTWFrZSBzdXJlIHRoYXQg
-d2UgaGF2ZSB0aGUgY29ycmVjdCB4dGltZSByZWZlcmVuY2UgKi8NCiAJdGltZXNwZWNfYWRkX25z
-KCZ4dGltZSwgdGltZWtlZXBpbmdfc3VzcGVuZF9uc2Vjcyk7DQogCS8qIHJlLWJhc2UgdGhlIGxh
-c3QgY3ljbGUgdmFsdWUgKi8NCisJY2xvY2stPmN5Y2xlX2xhc3QgPSAwOw0KIAljbG9jay0+Y3lj
-bGVfbGFzdCA9IGNsb2Nrc291cmNlX3JlYWQoY2xvY2spOw0KIAljbG9jay0+ZXJyb3IgPSAwOw0K
-IAl0aW1la2VlcGluZ19zdXNwZW5kZWQgPSAwOw0K
+Now there could be some more automated analysis here: for example the 
+main other user of BKL is character open. I suspect to really
+make progress here you would also need a open_unlocked() and
+do the same for all the open functions etc.
 
+> According to my quick & dirty git-log analysis, at the current pace of 
+> BKL removal we'd have to wait more than 10 years to remove most BKL 
+> critical sections from the kernel and to get acceptable latencies again.
 
---=-RX/w6BMaYJDnfyv9fh2L--
+Hmm, is BKL really that common still that it's a latency problem?
+The few VFS cases like locks can be fixed without extreme measures.
+
+Most of the legacy users are unlikely to be latency problems,
+simply because only very few people (or nobody) still has that hardware
+and the code will never run.
+
+Also I wouldn't lose sleep over e.g. let ISDN continue using BKL forever.
+
+-Andi
