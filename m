@@ -1,61 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763697AbYENTuH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763950AbYENTyj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763697AbYENTuH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 15:50:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763231AbYENTtk
+	id S1763950AbYENTyj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 15:54:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763767AbYENTyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 15:49:40 -0400
-Received: from waste.org ([66.93.16.53]:60692 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763022AbYENTth (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 15:49:37 -0400
-Subject: Re: [patch 21/21] slab defrag: Obsolete SLAB
-From: Matt Mackall <mpm@selenic.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, Matthew Wilcox <matthew@wil.cx>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-In-Reply-To: <Pine.LNX.4.64.0805141220440.16223@schroedinger.engr.sgi.com>
-References: <20080510030831.796641881@sgi.com>
-	 <20080510030919.604216074@sgi.com> <4825709A.2020407@firstfloor.org>
-	 <20080510221515.3540a6cc@bree.surriel.com>
-	 <2f11576a0805120038s334dc56cuaf16b8b7c6f87098@mail.gmail.com>
-	 <84144f020805120054t1370236ei5ff52279457e026e@mail.gmail.com>
-	 <Pine.LNX.4.64.0805141009210.15194@schroedinger.engr.sgi.com>
-	 <482B2617.5010605@firstfloor.org>
-	 <Pine.LNX.4.64.0805141100110.15633@schroedinger.engr.sgi.com>
-	 <1210789112.4093.14.camel@calx>
-	 <Pine.LNX.4.64.0805141220440.16223@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Wed, 14 May 2008 14:49:23 -0500
-Message-Id: <1210794563.4093.57.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+	Wed, 14 May 2008 15:54:09 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:38379 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763143AbYENTyF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 15:54:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=HDziHv7a6ccPIA1dTvjekMuqX6FzPmNqj8X80tXoUH/N9exWiIWukEOwM5AfCQFzx0b/Z1/ELJ13QmK8lHEaxe8+c2065hK9zg7GaPlJLhebeZWr5tp5Vg7wdP4TBTsz62hib1kTHXewuujbjqZUqfKv7o4iiti3Hk1wyt2kxWw=
+Message-ID: <38b2ab8a0805141254i2437a0ccq130b914748f53db0@mail.gmail.com>
+Date: Wed, 14 May 2008 21:54:03 +0200
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: How to avoid data copies in a driver ?
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-On Wed, 2008-05-14 at 12:21 -0700, Christoph Lameter wrote:
-> On Wed, 14 May 2008, Matt Mackall wrote:
-> 
-> > > Interrupt exit in general would have to inspect the per cpu structures of 
-> > > all slab caches on the system?
-> > 
-> > Why's that? When we're not under pressure (fast path), we can delay (and
-> > batch) remote frees. When we are under pressure (slow path), we can do
-> > everything immediately.
-> 
-> Fastpath is what? I guess slow path means we called into the page 
-> allocator?
+I'd like to optimize my driver, which receives data through a fifo and gives
+them to a user space application. In turns this application moves this data
+into a file.
 
-No, slow path here means we're already under memory pressure, so we
-don't care if something takes longer if it saves memory.
+To avoid several useless copies, I'd like the application to pass to the driver
+a  file descriptor (?) to  the driver and then the driver can directly move the
+received data to that file.
 
+Could anybody give me some example of such scheme ?
+
+Thanks,
 -- 
-Mathematics is the supreme nostalgia of our time.
-
+Francis
