@@ -1,62 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762220AbYENTdB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762640AbYENTeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762220AbYENTdB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 15:33:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbYENTcv
+	id S1762640AbYENTeo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 15:34:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752993AbYENTeg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 15:32:51 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:51879 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751751AbYENTcu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 15:32:50 -0400
-Date: Wed, 14 May 2008 23:32:35 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Jamie Lokier <jamie@shareable.org>, Sage Weil <sage@newdream.net>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: POHMELFS high performance network filesystem. Transactions, failover, performance.
-Message-ID: <20080514193234.GA10165@2ka.mipt.ru>
-References: <20080513174523.GA1677@2ka.mipt.ru> <4829E752.8030104@garzik.org> <20080513205114.GA16489@2ka.mipt.ru> <Pine.LNX.4.64.0805140623001.14334@cobra.newdream.net> <20080514135156.GA23131@2ka.mipt.ru> <20080514143105.GB14987@shareable.org> <20080514150052.GA15826@2ka.mipt.ru> <482B3899.9070008@garzik.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <482B3899.9070008@garzik.org>
-User-Agent: Mutt/1.5.9i
+	Wed, 14 May 2008 15:34:36 -0400
+Received: from frodo.howardsilvan.com ([66.119.206.113]:46903 "EHLO
+	mail.howardsilvan.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751751AbYENTef (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 15:34:35 -0400
+X-Greylist: delayed 424 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 May 2008 15:34:35 EDT
+Message-ID: <482B3D21.5020903@howardsilvan.com>
+Date: Wed, 14 May 2008 12:27:29 -0700
+From: Lee Howard <faxguy@howardsilvan.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: troubleshooting/debugging hard locks
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 14, 2008 at 03:08:09PM -0400, Jeff Garzik (jeff@garzik.org) wrote:
-> Evgeniy Polyakov wrote:
-> >That can be the case if client connects to some gate server, which in
-> >turn broadcasts data further, that is how I plan to implement things at
-> >first.
-> 
-> That means you are less optimal than the direct-to-storage-server path 
-> in NFSv4.1, then........
+(Please reply also directly to my e-mail address since I am not 
+subscribed to the list.)
 
-No, server to connect is the server, which stores data. By addition it
-will also store it to some other places according to distributed
-algorithm (like weaver, raid, mirror, whatever).
+Hello,
 
-> <waves red flag in front of the bull>
-> 
-> If access controls permit, the ideal would be for the client to avoid an 
-> intermediary when storing data.  The client only _needs_ a consensus 
-> reply that their transaction was committed.  They don't necessarily need 
-> an intermediary to do the boring data transfer work.
+I am using Fedora 9 (and have been for the last few weeks of the 
+"preview" period... constantly updating if possible) and testing for a 
+fax server using Mainpine IQ Express (PCIe) multi-modem fax cards (they 
+use the 8250 serial driver).
 
-Sure the less number of machines between client and storage we have, the
-faster and more robust we are.
+My testing involves queuing up and sending 2000 fax jobs using HylaFAX+ 
+5.2.4 to send out on two ports (1000 jobs on each port) of a 4-port card 
+- receiving those calls on the other two ports.
 
-Either client has to write data to all servers, or it has to write it to
-one and wait utill that server will broadcast it further (to quorum or any
-number of machines it wants). Having pure client to think to what
-servers it has to put its data is a bit wrong (if not saying more),
-since it has to join not only data network, but also control one, to
-check that some servers are alive or not, to be able not to race, when
-server is recovering and so on...
+This exact hardware works perfectly fine with similar testing in Windows 
+XP Pro SP2.  However, usually on Fedora 9 (and even occasionally on 
+Fedora 8) the system will lock up hard (i.e. the Numlock key does not 
+light up the LED on the keyboard and SysReq keys do nothing) somewhere 
+during the process.  This happens infrequently when the OS is Fedora 8 
+and usually (but not always) when using Fedora 9.
 
--- 
-	Evgeniy Polyakov
+There are no kernel messages on the monitor.  I've set up a remote 
+serial console on ttyS0, and there are usually no messages there, 
+either, when this happens.  Twice I did get messages that looked like a 
+lot of this:
+
+CPU1: Temperature above threshold, cpu clock throttled (total events = 1)
+CPU0: Temperature/speed normal
+CPU1: Temperature above threshold, cpu clock throttled (total events = 275)
+CPU0: Temperature/speed normal
+CPU1: Temperature above threshold, cpu clock throttled (total events = 577)
+CPU0: Temperature/speed normal
+CPU1: Temperature above threshold, cpu clock throttled (total events = 696)
+CPU0: Temperature/speed normal
+
+... but there was nothing more.  The side of the system chassis is 
+removed, the fans are moving, and the hard lock still occurs even if I 
+point a large fan at the open system and prevent the temperature 
+warnings from occurring.  I've used sensors to monitor the temperature 
+during the test with the external fan pointed at the open system, and 
+the temperatures stay roughly as this:
+
+[root@localhost ~]# sensors
+it8718-isa-0290
+Adapter: ISA adapter
+in0:         +1.23 V  (min =  +0.00 V, max =  +4.08 V)  
+in1:         +1.82 V  (min =  +0.00 V, max =  +4.08 V)  
+in2:         +3.26 V  (min =  +0.00 V, max =  +4.08 V)  
+in3:         +2.94 V  (min =  +0.00 V, max =  +4.08 V)  
+in4:         +0.00 V  (min =  +0.00 V, max =  +4.08 V)   ALARM
+in5:         +0.00 V  (min =  +0.00 V, max =  +4.08 V)   ALARM
+in6:         +1.28 V  (min =  +0.00 V, max =  +4.08 V)  
+in7:         +3.07 V  (min =  +0.00 V, max =  +4.08 V)  
+in8:         +3.28 V
+fan1:        688 RPM  (min =    0 RPM)
+fan2:          0 RPM  (min =    0 RPM)
+fan3:          0 RPM  (min =    0 RPM)
+temp1:       +37.0°C  (low  = +127.0°C, high = +127.0°C)  sensor = 
+transistor
+temp2:       +30.0°C  (low  = +127.0°C, high = +127.0°C)  sensor = 
+thermal diode
+temp3:        -2.0°C  (low  = +127.0°C, high = +127.0°C)  sensor = 
+transistor
+cpu0_vid:   +1.063 V
+
+So I tend to think that the temperature warnings are a result of a 
+looming hard-lock or they're simply a red herring.
+
+But, without kernel messages indicating where to look to debug... what 
+is the best approach to start troubleshooting and debugging this 
+condition?  Is there some general debug feature that can be enabled in 
+the kernel that would help hone in on the culprit?
+
+[root@localhost ~]# uname -a
+Linux localhost.localdomain 2.6.25-14.fc9.i686 #1 SMP Thu May 1 06:28:41 
+EDT 2008 i686 i686 i386 GNU/Linux
+[root@localhost ~]# lspci
+00:00.0 Host bridge: Intel Corporation 82P965/G965 Memory Controller Hub 
+(rev 02)
+00:02.0 VGA compatible controller: Intel Corporation 82G965 Integrated 
+Graphics Controller (rev 02)
+00:1a.0 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI 
+Controller #4 (rev 02)
+00:1a.1 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI 
+Controller #5 (rev 02)
+00:1a.7 USB Controller: Intel Corporation 82801H (ICH8 Family) USB2 EHCI 
+Controller #2 (rev 02)
+00:1b.0 Audio device: Intel Corporation 82801H (ICH8 Family) HD Audio 
+Controller (rev 02)
+00:1c.0 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express 
+Port 1 (rev 02)
+00:1c.3 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express 
+Port 4 (rev 02)
+00:1c.4 PCI bridge: Intel Corporation 82801H (ICH8 Family) PCI Express 
+Port 5 (rev 02)
+00:1d.0 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI 
+Controller #1 (rev 02)
+00:1d.1 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI 
+Controller #2 (rev 02)
+00:1d.2 USB Controller: Intel Corporation 82801H (ICH8 Family) USB UHCI 
+Controller #3 (rev 02)
+00:1d.7 USB Controller: Intel Corporation 82801H (ICH8 Family) USB2 EHCI 
+Controller #1 (rev 02)
+00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev f2)
+00:1f.0 ISA bridge: Intel Corporation 82801HB/HR (ICH8/R) LPC Interface 
+Controller (rev 02)
+00:1f.2 IDE interface: Intel Corporation 82801H (ICH8 Family) 4 port 
+SATA IDE Controller (rev 02)
+00:1f.3 SMBus: Intel Corporation 82801H (ICH8 Family) SMBus Controller 
+(rev 02)
+00:1f.5 IDE interface: Intel Corporation 82801H (ICH8 Family) 2 port 
+SATA IDE Controller (rev 02)
+01:00.0 PCI bridge: PLX Technology, Inc. PEX8112 x1 Lane PCI 
+Express-to-PCI Bridge (rev aa)
+02:00.0 Communication controller: MainPine Ltd PCI <-> IOBus Bridge (rev 81)
+03:00.0 SATA controller: JMicron Technologies, Inc. JMicron 20360/20363 
+AHCI Controller (rev 02)
+03:00.1 IDE interface: JMicron Technologies, Inc. JMicron 20360/20363 
+AHCI Controller (rev 02)
+04:00.0 Ethernet controller: Marvell Technology Group Ltd. 88E8053 PCI-E 
+Gigabit Ethernet Controller (rev 22)
+
+Thanks,
+
+Lee.
+
