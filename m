@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759427AbYENQ6k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758554AbYENRAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759427AbYENQ6k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 12:58:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758204AbYENQ61
+	id S1758554AbYENRAU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 13:00:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbYENRAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 12:58:27 -0400
-Received: from outbound-mail-132.bluehost.com ([67.222.39.22]:58673 "HELO
-	outbound-mail-132.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757503AbYENQ6Y (ORCPT
+	Wed, 14 May 2008 13:00:06 -0400
+Received: from compunauta.com ([69.36.170.169]:34267 "EHLO compunauta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751649AbYENRAF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 12:58:24 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Gary Hade <garyhade@us.ibm.com>
-Subject: Re: [RFC] which drivers need to map ROM BARs?
-Date: Wed, 14 May 2008 09:58:14 -0700
-User-Agent: KMail/1.9.9
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-References: <20080512205746.GB7401@us.ibm.com> <20080514000702.GA12546@us.ibm.com> <20080514162015.GA6713@us.ibm.com>
-In-Reply-To: <20080514162015.GA6713@us.ibm.com>
+	Wed, 14 May 2008 13:00:05 -0400
+X-Greylist: delayed 887 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 May 2008 13:00:05 EDT
+From: Gustavo Guillermo Perez <gustavo@compunauta.com>
+Organization: www.compunauta.com
+To: linux-kernel@vger.kernel.org
+Subject: Re: [patch 20/37] {nfnetlink, ip, ip6}_queue: fix skb_over_panic when enlarging packets
+Date: Wed, 14 May 2008 11:45:09 -0500
+User-Agent: KMail/1.9.7
+References: <20080513200453.064446337@mini.kroah.org> <877idxdb04.fsf@natisbad.org> <20080513220627.GA18320@suse.de>
+In-Reply-To: <20080513220627.GA18320@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200805140958.14646.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
+Message-Id: <200805141145.09563.gustavo@compunauta.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, May 14, 2008 9:20 am Gary Hade wrote:
-> > > that boot option will get rid of that ROM BAR for all devices...
-> > > big system could use several graphical cards that need ROM BAR and
-> > > several cards that don't need ROM BAR.
+El Martes, 13 de Mayo de 2008, Greg KH escribió:
+> On Wed, May 14, 2008 at 01:45:15AM +0200, Arnaud Ebalard wrote:
+> > Hi,
 > >
-> > Correct, not a perfect solution but better than we have right now.
+> > Greg KH <gregkh@suse.de> writes:
+> > > 2.6.25-stable review patch.  If anyone has any objections, please let
+> > > us know.
+> >
+> > Sorry for the noise, but for those who missed one of the latest post on
+> > the topic on netdev, I should add that the bug is also in 2.6.24.4 (even
+> > if it's probably too late for that poor guy :-( ).
 >
-> ...but don't let this comment make you think that I am not in
-> favor of something like you are suggesting.  I am interested
-> in getting the 'pci=norom' change into mainline quickly but it
-> is obviously less than ideal for the long term.
->
-> Jesse, any idea how many different devices absolutely need
-> memory allocated for their expansion ROMs?
+> Sorry, yes, we are no longer doing 2.6.24-stable releases.
+the fix will be available in 2.6.25.4 ?
 
-Well video devices are one obvious type.  Beyond that you'd have to audit the 
-drivers in the tree looking for ones that map the ROM BAR (iirc qla1280 did 
-this?).
 
-Jesse
+-- 
+Gustavo Guillermo Pérez
+Compunauta uLinux
+www.compunauta.com
