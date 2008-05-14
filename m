@@ -1,90 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760494AbYENAPG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759145AbYENAWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760494AbYENAPG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 20:15:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756762AbYENAO4
+	id S1759145AbYENAWg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 20:22:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754736AbYENAW0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 20:14:56 -0400
-Received: from mail.gmx.net ([213.165.64.20]:50719 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756727AbYENAOz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 20:14:55 -0400
-X-Authenticated: #476490
-X-Provags-ID: V01U2FsdGVkX1/iHF4PwCziGCu2BodZskkkkEm9kOGabTgqEO9ywT
-	cjS722CDsrd5Rs
-From: Oliver Endriss <o.endriss@gmx.de>
-Organization: ESCAPE GmbH EDV-Loesungen
-To: Johannes Stezenbach <js@linuxtv.org>
-Subject: Re: [patch, 2.6.26-rc2] dvb: drivers/media/dvb/ttpci/fdump firmware build error fix
-Date: Wed, 14 May 2008 01:49:47 +0200
-User-Agent: KMail/1.9.6
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Andrew de Quincey <adq_dvb@lidskialf.net>
-References: <20080512101231.GA11755@elte.hu> <20080513164238.GB21877@elte.hu> <20080513181834.GA29133@linuxtv.org>
-In-Reply-To: <20080513181834.GA29133@linuxtv.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Tue, 13 May 2008 20:22:26 -0400
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:3708 "EHLO
+	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1754547AbYENAW0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 20:22:26 -0400
+Subject: Re: [PATCH 2/3] x86: janitor work in bugs.c
+From: Joe Perches <joe@perches.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Miklos Vajna <vmiklos@frugalware.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <87tzh17vy3.fsf@basil.nowhere.org>
+References: <8779a478ff43d6ed589279078d2abbab789a2dc9.1210678238.git.vmiklos@frugalware.org>
+	 <fe3003f39869f8773950d23bb73efe42b5cf07a5.1210678238.git.vmiklos@frugalware.org>
+	 <87tzh17vy3.fsf@basil.nowhere.org>
+Content-Type: text/plain
+Date: Tue, 13 May 2008 17:21:39 -0700
+Message-Id: <1210724499.14967.78.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3-1.2mdv2008.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805140149.48569@orion.escape-edv.de>
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Johannes Stezenbach wrote:
-> On Tue, May 13, 2008 at 06:42:38PM +0200, Ingo Molnar wrote:
-> > 
-> > * Johannes Stezenbach <js@linuxtv.org> wrote:
-> > 
-> > > On Tue, May 13, 2008 at 04:33:54PM +0200, Oliver Endriss wrote:
-> > > > Johannes Stezenbach wrote:
-> > > > > You can put PREVENT_FIRMWARE_BUILD=y in your allrandom.config.
-> > > > 
-> > > > Sure. And without the patch you can simply add
-> > > > - STANDALONE=y or
-> > > > - DVB_AV7110_FIRMWARE=n
-> > > > to your allrandom.config. ;-)
-> > > 
-> > > It is desirable to have one generic "don't break the build because of 
-> > > missing firmware binaries" option, isn't it?
-> > 
-> > it's a bit confusing. PREVENT_FIRMWARE_BUILD=y is the 'weaker' option - 
-> > a driver might still be operational (with its default firmware), even if 
-> > no firmware is built. STANDALONE=y is the stronger option - if a driver 
-> > depends on that it means that the driver cannot be built (and used) at 
-> > all without a firmware file. To be on the safe side users who have no 
-> > firmware needs should set both options. (and that's the default as well)
-> 
-> Seems like I'm confused now...
-> 
->   CONFIG_STANDALONE
->     Prompt: Select only drivers that don't need compile-time external firmware
-> 
->   PREVENT_FIRMWARE_BUILD
->     Prompt: Prevent firmware from being built
+On Tue, 2008-05-13 at 23:09 +0200, Andi Kleen wrote:
+> We had a discussion recently that wrapping printk format strings
+> is a bad idea. Don't do it please.
 
-After reading the text again I still think that my understanding is
-correct [1].
+I don't know that there was a resolution either.
+http://lkml.org/lkml/2008/2/22/143
 
-CONFIG_STANDALONE disables drivers which require a firmware file at
-compile-time. av7110 with DVB_AV7110_FIRMWARE=y is this kind of driver.
+If there was one, there's a lot of possible changes.
 
-PREVENT_FIRMWARE_BUILD controls building (= compiling) the firmware from
-source. As we do not ship the source of the av7110 firmware, this option
-does not apply.
+$ grep -rP --include=*.[ch] "printk.*\"\s*$\s*\"" * | wc -l
+13276
 
-So everything should be fine 'as is'.
+divide by 2, there are more than 6K split source line printks
 
-CU
-Oliver
 
-Notes:
-[1] Of course, I am open to corrections from the kbuild gurus. ;-)
-
--- 
-----------------------------------------------------------------
-VDR Remote Plugin 0.4.0: http://www.escape-edv.de/endriss/vdr/
-----------------------------------------------------------------
