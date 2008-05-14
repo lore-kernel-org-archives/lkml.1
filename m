@@ -1,77 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753599AbYENEWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756956AbYENEXu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753599AbYENEWt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 00:22:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751276AbYENEWj
+	id S1756956AbYENEXu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 00:23:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbYENEXm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 00:22:39 -0400
-Received: from ti-out-0910.google.com ([209.85.142.185]:21442 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751076AbYENEWi (ORCPT
+	Wed, 14 May 2008 00:23:42 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:60099 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751276AbYENEXl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 00:22:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=c01dC3j0sxlCZTsCureFyplLC9gWLv2smUjR3q/tuPuKhKqrEK6C9GkwDW6YtgdLYfUEzm/NxkkUsslD6KW13EMX5Ut9Auc4GdkxqOTY6VXqFd44onEbkSY1PCpweohPmNDEgoaxAiZ5Qwb8ARlQMSMRTaQcBia1LJTH6DsuC3Y=
-Message-ID: <386072610805132122l5d017fe1u404c38ea3f05664a@mail.gmail.com>
-Date: Wed, 14 May 2008 12:22:35 +0800
-From: "Bryan Wu" <cooloney@kernel.org>
-To: "Hennerich, Michael" <Michael.Hennerich@analog.com>
-Subject: Re: [PATCH 1/4] [mm] buddy page allocator: add tunable big order allocation
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, dwmw2@infradead.org
-In-Reply-To: <8A42379416420646B9BFAC9682273B6D015F52E4@limkexm3.ad.analog.com>
+	Wed, 14 May 2008 00:23:41 -0400
+Date: Wed, 14 May 2008 13:22:52 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Nadia Derbey <Nadia.Derbey@bull.net>
+Subject: Re: [PATCH 0/9] Scalability requirements for sysv ipc - v3
+Cc: kosaki.motohiro@jp.fujitsu.com, KOSAKI Motohiro <m-kosaki@ceres.dti.ne.jp>,
+       manfred@colorfullife.com, paulmck@linux.vnet.ibm.com,
+       lnxninja@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       efault@gmx.de, akpm@linux-foundation.org
+In-Reply-To: <4829A15A.1070203@bull.net>
+References: <2f11576a0805070619x11c462fdpbee1b652a83d7071@mail.gmail.com> <4829A15A.1070203@bull.net>
+Message-Id: <20080514132134.1A98.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1210588325-11027-1-git-send-email-cooloney@kernel.org>
-	 <1210588325-11027-2-git-send-email-cooloney@kernel.org>
-	 <20080513110902.80a87ac9.kamezawa.hiroyu@jp.fujitsu.com>
-	 <8A42379416420646B9BFAC9682273B6D015F52E4@limkexm3.ad.analog.com>
-X-Google-Sender-Auth: e85f3f8cb57c4cd2
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 13, 2008 at 7:42 PM, Hennerich, Michael
-<Michael.Hennerich@analog.com> wrote:
->
->
->  >-----Original Message-----
->  >From: KAMEZAWA Hiroyuki [mailto:kamezawa.hiroyu@jp.fujitsu.com]
->  >Sent: Dienstag, 13. Mai 2008 04:09
->  >To: Bryan Wu
->  >Cc: linux-kernel@vger.kernel.org; linux-mm@kvack.org;
->  dwmw2@infradead.org;
->  >Michael Hennerich
->  >Subject: Re: [PATCH 1/4] [mm] buddy page allocator: add tunable big
->  order
->  >allocation
->  >
->  >On Mon, 12 May 2008 18:32:02 +0800
->  >Bryan Wu <cooloney@kernel.org> wrote:
->  >
->  >> From: Michael Hennerich <michael.hennerich@analog.com>
->  >>
->  >> Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
->  >> Signed-off-by: Bryan Wu <cooloney@kernel.org>
->  >
->  >Does this really solve your problem ? possible hang-up is better than
->  >page allocation failure ?
->
->  On nommu this helped quite a bit, when we run out of memory, eaten up by
->  the page cache. But yes - with this option it's likely that we sit there
->  and wait form memory that might never get available.
->
->  We now use a better workaround for freeing up "available" memory
->  currently used as page cache.
->
->  I think we should drop this patch.
->
+> Well, looks like the description was not clear, sorry for that!
+> 1st column: 2.6.25-rc3-mm1 with original ipc implementation
+>                             (i.e. ipcs stored in an array)
+> 2nd column: 2.6.25-rc3-mm1, with ipcs stored in an idr tree
+>              actually, that's when the performance regression
+>              had been introduced.
+> 3rd column: 2.6.25-mm1, still with the same implementation
+>              i.e. still with degraded performances.
+> 4th column: 2.6.25-mm1 + rcu-based implementation of the idr,
+>              which is the current patch series.
+> 
+> Hope this makes things more clear.
 
-OK, I dropped it. And do you think the limited page_cache patch is the
-replacement of this patch?
+Oh, I see that your patchset has very nice performance result :)
+Thanks!
 
--Bryan
+
