@@ -1,71 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762341AbYENOyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758031AbYENOyd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762341AbYENOyT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 10:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757756AbYENOyG
+	id S1758031AbYENOyd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 10:54:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757339AbYENOyP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 10:54:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33922 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757015AbYENOyD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 10:54:03 -0400
-Date: Wed, 14 May 2008 10:37:47 -0400
-From: Josef Bacik <jbacik@redhat.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Josef Bacik <jbacik@redhat.com>,
-       Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, sct@redhat.com,
-       adilger@clusterfs.com, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, Mingming Cao <cmm@us.ibm.com>,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
-       sugita <yumiko.sugita.yf@hitachi.com>
-Subject: Re: [PATCH 4/4] jbd: fix error handling for checkpoint io (rebased)
-Message-ID: <20080514143747.GC20256@unused.rdu.redhat.com>
-References: <482A6E00.6080303@hitachi.com> <482A6FA3.9000104@hitachi.com> <20080514131621.GB20256@unused.rdu.redhat.com> <20080514144410.GG24363@duck.suse.cz>
-MIME-Version: 1.0
+	Wed, 14 May 2008 10:54:15 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:52752 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760274AbYENOyO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 10:54:14 -0400
+Date: Wed, 14 May 2008 16:53:57 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/2] Immediate Values - jump patching update
+Message-ID: <20080514145356.GA6569@ucw.cz>
+References: <481607AF.80803@zytor.com> <20080428202552.GG15840@elte.hu> <48163B84.90605@zytor.com> <20080428221122.GC16153@elte.hu> <48164EE6.8010506@zytor.com> <20080428224438.GA6974@elte.hu> <48165866.5060403@zytor.com> <20080429004739.GA23281@redhat.com> <481674FA.4030306@zytor.com> <20080429120827.GB31271@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080514144410.GG24363@duck.suse.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080429120827.GB31271@elte.hu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 14, 2008 at 04:44:10PM +0200, Jan Kara wrote:
-> > >  
-> > > Index: linux-2.6.26-rc2/fs/ext3/super.c
-> > > ===================================================================
-> > > --- linux-2.6.26-rc2.orig/fs/ext3/super.c
-> > > +++ linux-2.6.26-rc2/fs/ext3/super.c
-> > > @@ -395,7 +395,10 @@ static void ext3_put_super (struct super
-> > >  	ext3_xattr_put_super(sb);
-> > >  	journal_destroy(sbi->s_journal);
-> > >  	if (!(sb->s_flags & MS_RDONLY)) {
-> > > -		EXT3_CLEAR_INCOMPAT_FEATURE(sb, EXT3_FEATURE_INCOMPAT_RECOVER);
-> > > +		if (!is_checkpoint_aborted(sbi->s_journal)) {
-> > > +			EXT3_CLEAR_INCOMPAT_FEATURE(sb,
-> > > +				EXT3_FEATURE_INCOMPAT_RECOVER);
-> > > +		}
-> > >  		es->s_state = cpu_to_le16(sbi->s_mount_state);
-> > >  		BUFFER_TRACE(sbi->s_sbh, "marking dirty");
-> > >  		mark_buffer_dirty(sbi->s_sbh);
-> > 
-> > Is this bit here really needed?  If we abort the journal the fs will be mounted
-> > read only and we should never get in here.  Is there a case where we could abort
-> > the journal and not be flipped to being read-only?  If there is such a case I
-> > would think that we should fix that by making the fs read-only, and not have
-> > this check.
->   Actually, journal_abort() (which could be called from journal_destroy())
-> does nothing to the filesystem as such. So at this moment, ext3 can still
-> happily think everything is OK. We only detect aborted journal in
-> ext3_journal_start_sb() and call ext3_abort() in that case, which does all
-> that is needed...
->
+Hi!
 
-Hmm you're right, I was thinking we did some other stuff before put_super which
-would have caught a journal abort but it looks like thats not the case.  Still
-shouldn't do is_checkpoint_aborted(sbi->s_journal) since journal_destroy()
-kfree's the journal.  Should probably move the is_journal_aborted() check above
-that or something.  Thanks,
+> >> At least one complication though is that in the case of markers, 
+> >> tracing parameter evaluation is itself conditional (and placed out of 
+> >> the hot path due to -freorder-blocks).  With your suggested kind of 
+> >> assembly ("g" constraints for all the expressions), those expressions 
+> >> would be evaluated unconditionally, just to make them live somewhere. 
+> >> That unconditional evaluation can easily entail memory reads and 
+> >> dependent arithmetic, which could swamp the savings of eliminating 
+> >> the marker-style conditional branch.
+> >
+> > Well, it depends a bit on what kind of expressions you put in there. 
+> > You don't really want to put *expressions* in there as much as you 
+> > want to put *data* references in there, although, of course, if your 
+> > have something like "foo->bar[baz]->quux" then it's easy to trip upon.
+> 
+> and that's exactly what was tripped upon in sched.o and analyzed.
+> 
+> Furthermore, the suggestion of doing this exclusively within the DWARF2 
+> space - besides the not particularly minor complication of it not being 
+> implemented yet - is:
+> 
+>  - quite substantially complex on its own
+> 
+>  - would make Linux instrumentation dependent on all sorts of DWARF2
+>    details which we had our 'fun' with before. (I proffer that that's
+>    more fragile than any code patching can ever be.)
 
-Josef 
+>  - if done self-sufficiently (i.e. if a kernel image can be used to
+>    trace things, which i believe any usable kernel tracer must offer),
+>    it would, with the current debug info format, enlargen the kernel RAM
+>    image with quite a substantial amount of unswappable kernel memory. 
+
+I am not sure self-sufficiency is  good goal here.
+
+If tracing becomes part of kernel-user ABI, we are in big trouble...
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
