@@ -1,158 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755225AbYENUwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755384AbYENUxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755225AbYENUwT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 16:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbYENUwK
+	id S1755384AbYENUxv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 16:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbYENUxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 16:52:10 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:44205 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751362AbYENUwJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 16:52:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ksOn+WzKuK3UK2v+LJzC/crKRoWLXx4xWtViadKfu8qsxKHNUk8QKJ8q41mIF9VlgaiywOajPDiMt6Lh9Gjjs8KvYvoTkmZga3EeZCWTCjy8Exotn3Jx45g3Y214oEnKSKCevzpqeSqC7MbetXzIUU/jO93/PVWFyNU+tBczrKg=
-Message-ID: <6278d2220805141352s3624d7b7qc90567f6b7a410dc@mail.gmail.com>
-Date: Wed, 14 May 2008 21:52:05 +0100
-From: "Daniel J Blueman" <daniel.blueman@gmail.com>
-To: "Jens Axboe" <jens.axboe@oracle.com>
-Subject: Re: performance "regression" in cfq compared to anticipatory, deadline and noop
-Cc: Matthew <jackdachef@gmail.com>, "Kasper Sandberg" <lkml@metanurb.dk>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080514082622.GA16217@kernel.dk>
+	Wed, 14 May 2008 16:53:43 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34096 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751456AbYENUxm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 16:53:42 -0400
+Date: Wed, 14 May 2008 16:52:04 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: [PATCH -mm] kexec jump -v9
+Message-ID: <20080514205204.GJ30469@redhat.com>
+References: <1204773188.4707.109.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <6278d2220805110614i7160a8a5o36d55acb732c1b59@mail.gmail.com>
-	 <1210514567.7827.62.camel@localhost>
-	 <20080513122021.GP16217@kernel.dk>
-	 <e85b9d30805130558l502addbcq21996b92fdbfdc5b@mail.gmail.com>
-	 <20080513130508.GQ16217@kernel.dk>
-	 <e85b9d30805130842p3a34305l4ab1e7926e4b0dba@mail.gmail.com>
-	 <20080513180334.GS16217@kernel.dk> <20080513184057.GU16217@kernel.dk>
-	 <6278d2220805140105x27292033u6a97dcf13ab54263@mail.gmail.com>
-	 <20080514082622.GA16217@kernel.dk>
+In-Reply-To: <1204773188.4707.109.camel@caritas-dev.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 14, 2008 at 9:26 AM, Jens Axboe <jens.axboe@oracle.com> wrote:
-> On Wed, May 14 2008, Daniel J Blueman wrote:
->> >  > > >  > >  > On Sun, 2008-05-11 at 14:14 +0100, Daniel J Blueman wrote:
->> >  > > >  > >  > > I've been experiencing this for a while also; an almost 50% regression
->> >  > > >  > >  > > is seen for single-process reads (ie sync) if slice_idle is 1ms or
->> >  > > >  > >  > > more (eg default of 8) [1], which seems phenomenal.
->> >  > > >  > >  > >
->> >  > > >  > >  > > Jens, is this the expected price to pay for optimal busy-spindle
->> >  > > >  > >  > > scheduling, a design issue, bug or am I missing something totally?
->> [snip]
->> >  > They seem to start out the same, but then CFQ gets interrupted by a
->> >  > timer unplug (which is also odd) and after that the request size drops.
->> >  > On most devices you don't notice, but some are fairly picky about
->> >  > request sizes. The end result is that CFQ has an average dispatch
->> >  > request size of 142kb, where AS is more than double that at 306kb. I'll
->> >  > need to analyze the data and look at the code a bit more to see WHY this
->> >  > happens.
->> >
->> >  Here's a test patch, I think we get into this situation due to CFQ being
->> >  a bit too eager to start queuing again. Not tested, I'll need to spend
->> >  some testing time on this. But I'd appreciate some feedback on whether
->> >  this changes the situation! The final patch will be a little more
->> >  involved.
->> >
->> >  diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
->> >  index b399c62..ebd8ce2 100644
->> >  --- a/block/cfq-iosched.c
->> >  +++ b/block/cfq-iosched.c
->> >  @@ -1775,18 +1775,8 @@ cfq_rq_enqueued(struct cfq_data *cfqd, struct cfq_queue *cfqq,
->> >
->> >         cic->last_request_pos = rq->sector + rq->nr_sectors;
->> >
->> >  -       if (cfqq == cfqd->active_queue) {
->> >  -               /*
->> >  -                * if we are waiting for a request for this queue, let it rip
->> >  -                * immediately and flag that we must not expire this queue
->> >  -                * just now
->> >  -                */
->> >  -               if (cfq_cfqq_wait_request(cfqq)) {
->> >  -                       cfq_mark_cfqq_must_dispatch(cfqq);
->> >  -                       del_timer(&cfqd->idle_slice_timer);
->> >  -                       blk_start_queueing(cfqd->queue);
->> >  -               }
->> >  -       } else if (cfq_should_preempt(cfqd, cfqq, rq)) {
->> >  +       if ((cfqq != cfqd->active_queue) &&
->> >  +                  cfq_should_preempt(cfqd, cfqq, rq)) {
->> >                 /*
->> >                  * not the active queue - expire current slice if it is
->> >                  * idle and has expired it's mean thinktime or this new queue
->>
->> I find this does address the issue (both with 64KB stride dd and
->> hdparm -t; presumably the requests getting merged). Tested on
->> 2.6.26-rc2 on Ubuntu HH 804 x86-64, with slice_idle defaulting to 8
->> and AHCI on ICH9; disk is ST3320613AS.
->>
->> Blktrace profiles from 'dd if=/dev/sda of=/dev/null bs=64k count=1000' are at:
->>
->> http://quora.org/blktrace-profiles.tar.bz2
->
-> Goodie! I think the below patch is better - we do want to schedule the
-> queue immediately, but we do not want to interrupt the queuer. So just
-> kick the workqueue handling of the queue instead of entering the
-> dispatcher directly. Can you test this one as well? Thanks!
->
-> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> index f4e1006..e8c1941 100644
-> --- a/block/cfq-iosched.c
-> +++ b/block/cfq-iosched.c
-> @@ -1107,7 +1107,6 @@ static int cfq_dispatch_requests(struct request_queue *q, int force)
->
->                cfq_clear_cfqq_must_dispatch(cfqq);
->                cfq_clear_cfqq_wait_request(cfqq);
-> -               del_timer(&cfqd->idle_slice_timer);
->
->                dispatched += __cfq_dispatch_requests(cfqd, cfqq, max_dispatch);
->        }
-> @@ -1769,15 +1768,9 @@ cfq_rq_enqueued(struct cfq_data *cfqd, struct cfq_queue *cfqq,
->        cic->last_request_pos = rq->sector + rq->nr_sectors;
->
->        if (cfqq == cfqd->active_queue) {
-> -               /*
-> -                * if we are waiting for a request for this queue, let it rip
-> -                * immediately and flag that we must not expire this queue
-> -                * just now
-> -                */
->                if (cfq_cfqq_wait_request(cfqq)) {
-> -                       cfq_mark_cfqq_must_dispatch(cfqq);
->                        del_timer(&cfqd->idle_slice_timer);
-> -                       blk_start_queueing(cfqd->queue);
-> +                       kblockd_schedule_work(&cfqd->unplug_work);
->                }
->        } else if (cfq_should_preempt(cfqd, cfqq, rq)) {
->                /*
-> @@ -1787,7 +1780,7 @@ cfq_rq_enqueued(struct cfq_data *cfqd, struct cfq_queue *cfqq,
->                 */
->                cfq_preempt_queue(cfqd, cfqq);
->                cfq_mark_cfqq_must_dispatch(cfqq);
-> -               blk_start_queueing(cfqd->queue);
-> +               kblockd_schedule_work(&cfqd->unplug_work);
->        }
->  }
+On Thu, Mar 06, 2008 at 11:13:08AM +0800, Huang, Ying wrote:
+> This is a minimal patch with only the essential features. All
+> additional features are split out and can be discussed later. I think
+> it may be easier to get consensus on this minimal patch.
+> 
+> Best Regards,
+> Huang Ying
+> 
+> ------------------------------------>
+> 
+> This patch provides an enhancement to kexec/kdump. It implements
+> the following features:
+> 
+> - Jumping between the original kernel and the kexeced kernel.
+> 
+> - Backup/restore memory used by both the original kernel and the
+>   kexeced kernel.
+> 
+> - Save/restore CPU and devices state before after kexec.
+> 
 
-Applied on top of 2.6.26-rc2, I get platter-speed (118MB/s) with 'dd
-if=/dev/sda of=/dev/null bs=64k' and 'hdparm -t', so looks good.
-Identical testing without the patch (ie pure mainline) consistently
-yields 65MB/s.
+Hi Huang,
 
-Blktrace profile at:
+Ok, I have done some testing on this patch. Currently I have just
+tested switching back and forth between two kernels and it is working for
+me.
 
-http://quora.org/blktrace-profiles-2.tar.bz2
+Just that I had to put LAPIC and IOAPIC in legacy mode for it to work. Few
+comments/questions are inline.
 
-I'll check for performance regressions with postmark on XFS; anything
-else worth running while I've got this in hand?
+[..]
+>  	.text
+>  	.align PAGE_ALIGNED
+> +	.global kexec_relocate_page
+> +kexec_relocate_page:
+> +
+> +/*
+> + * Entry point for jumping back from kexeced kernel, the paging is
+> + * turned off.
+> + */
+> +kexec_jump_back_entry:
+> +	call	1f
+> +1:
+> +	popl	%ebx
+> +	subl	$(1b - kexec_relocate_page), %ebx
+> +	movl	%edi, KJUMP_ENTRY_OFF(%ebx)
+> +	movl	CP_VA_CONTROL_PAGE(%ebx), %edi
+> +	lea	STACK_TOP(%ebx), %esp
+> +	movl	CP_PA_SWAP_PAGE(%ebx), %eax
+> +	movl	CP_PA_BACKUP_PAGES_MAP(%ebx), %edx
+> +	pushl	%eax
+> +	pushl	%edx
+> +	call	swap_pages
+> +	addl	$8, %esp
+> +	movl	CP_PA_PGD(%ebx), %eax
+> +	movl	%eax, %cr3
+> +	movl	%cr0, %eax
+> +	orl	$(1<<31), %eax
+> +	movl	%eax, %cr0
+> +	lea	STACK_TOP(%edi), %esp
+> +	movl	%edi, %eax
+> +	addl	$(virtual_mapped - kexec_relocate_page), %eax
+> +	pushl	%eax
+> +	ret
 
-Daniel
--- 
-Daniel J Blueman
+Upon re-entering the kernel, what happens to GDT table? So gdtr will be
+pointing to GDT of other kernel (which is not there as pages have been
+swapped)? Do we need to reload the gdtr upon re-entering the kernel.
+
+[..]
+> @@ -197,8 +282,54 @@ identity_mapped:
+>  	xorl	%eax, %eax
+>  	movl	%eax, %cr3
+>  
+> +	movl	CP_PA_SWAP_PAGE(%edi), %eax
+> +	pushl	%eax
+> +	pushl	%ebx
+> +	call	swap_pages
+> +	addl	$8, %esp
+> +
+> +	/* To be certain of avoiding problems with self-modifying code
+> +	 * I need to execute a serializing instruction here.
+> +	 * So I flush the TLB, it's handy, and not processor dependent.
+> +	 */
+> +	xorl	%eax, %eax
+> +	movl	%eax, %cr3
+> +
+> +	/* set all of the registers to known values */
+> +	/* leave %esp alone */
+> +
+> +	movl	KJUMP_MAGIC_OFF(%edi), %eax
+> +	cmpl	$KJUMP_MAGIC_NUMBER, %eax
+> +	jz 1f
+> +	xorl	%edi, %edi
+> +	xorl	%eax, %eax
+> +	xorl	%ebx, %ebx
+> +	xorl    %ecx, %ecx
+> +	xorl    %edx, %edx
+> +	xorl    %esi, %esi
+> +	xorl    %ebp, %ebp
+> +	ret
+> +1:
+> +	popl	%edx
+> +	movl	CP_PA_SWAP_PAGE(%edi), %esp
+> +	addl	$PAGE_SIZE_asm, %esp
+> +	pushl	%edx
+> +2:
+> +	call	*%edx
+
+> +	movl	%edi, %edx
+> +	popl	%edi
+> +	pushl	%edx
+> +	jmp	2b
+> +
+
+What does above piece of code do? Looks like redundant for switching
+between the kernels? After call *%edx, we never return here. Instead
+we come back to "kexec_jump_back_entry"?
+
+
+[..]
+> --- /dev/null
+> +++ b/Documentation/i386/jump_back_protocol.txt
+> @@ -0,0 +1,66 @@
+> +		THE LINUX/I386 JUMP BACK PROTOCOL
+> +		---------------------------------
+> +
+> +		Huang Ying <ying.huang@intel.com>
+> +		    Last update 2007-12-19
+> +
+> +Currently, the following versions of the jump back protocol exist.
+> +
+> +Protocol 1.00:	Jumping between original kernel and kexeced kernel
+> +		support. Calling ordinary C function support.
+> +
+> +
+> +*** JUMP BACK ENTRY
+> +
+> +At jump back entry of callee, the CPU must be in 32-bit protected mode
+> +with paging disabled; the CS, DS, ES and SS must be 4G flat segments;
+> +CS must have execute/read permission, and DS, ES and SS must have
+> +read/write permission; interrupt must be disabled; the contents of
+> +registers and corresponding memory must be as follow:
+> +
+> +Offset/Size	Meaning
+> +
+> +%edi		Real jump back entry of caller if supported,
+> +		otherwise 0.
+> +%esp		Stack top pointer, the size of stack is about 4k bytes.
+> +(%esp)/4	Helper jump back entry of caller if %edi != 0,
+> +		otherwise undefined.
+> +
+
+I am not sure what is helper jump back entry? I understand that you 
+are using %edi to pass around entry point between two kernels. Can
+you please shed some more light on this?
+
+Thanks
+Vivek
