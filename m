@@ -1,35 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761349AbYENN5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756926AbYENOBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761349AbYENN5f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 09:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761526AbYENN5N
+	id S1756926AbYENOBn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 10:01:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbYENOBg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 09:57:13 -0400
-Received: from ns.miraclelinux.com ([219.118.163.66]:60780 "EHLO
-	mail.miraclelinux.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754465AbYENN5L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 09:57:11 -0400
-Message-ID: <482AEE85.2070807@miraclelinux.com>
-Date: Wed, 14 May 2008 22:52:05 +0900
-From: Hirofumi Nakagawa <hnakagawa@miraclelinux.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org
-Subject: Re: [RFC][PATCH 0/1] MAZE: Mazed processes monitor
-References: <48297FD0.2090905@miraclelinux.com> <87y76d7w0n.fsf@basil.nowhere.org>
-In-Reply-To: <87y76d7w0n.fsf@basil.nowhere.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-PMX-Version: 5.3.1.294258, Antispam-Engine: 2.5.1.298604, Antispam-Data: 2008.5.14.64028
+	Wed, 14 May 2008 10:01:36 -0400
+Received: from vena.lwn.net ([206.168.112.25]:55549 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751363AbYENOBf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 10:01:35 -0400
+To: =?UTF-8?B?SGlua28gS2/EjWV2YXI=?= <hinko.kocevar@cetrtapot.si>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: register_chrdev vs. cdev_add 
+From: corbet@lwn.net (Jonathan Corbet)
+In-reply-to: Your message of "Wed, 14 May 2008 14:31:49 +0200."
+             <482ADBB5.8050608@cetrtapot.si> 
+Date: Wed, 14 May 2008 08:01:35 -0600
+Message-ID: <16204.1210773695@vena.lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you for your comments and feedbacks.
-I got valuable comments.
-I'll study your comments closely and post take2.
+> dev = MKDEV(htrc110_major, htrc110_minor);
+> ret = register_chrdev_region(dev, 1, mod_name);
+> ret = register_chrdev(dev, mod_name, &htrc110_fops);
 
-Thanks.
-Hirofumi Nakagawa
+If you want to use register_chrdev(), do not make a separate call to
+register_chrdev_region().  Those two are not meant to work together.
+register_chrdev() implicitly allocates a region of 256 minors for you.
+
+jon
