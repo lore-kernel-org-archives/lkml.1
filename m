@@ -1,81 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756463AbYENV5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758001AbYENV5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756463AbYENV5Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 17:57:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbYENV5O
+	id S1758001AbYENV5u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 17:57:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751072AbYENV5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 17:57:14 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:50070 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751429AbYENV5N (ORCPT
+	Wed, 14 May 2008 17:57:41 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46936 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751874AbYENV5k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 17:57:13 -0400
-Date: Wed, 14 May 2008 22:57:06 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: Jeff Garzik <jeff@garzik.org>, Sage Weil <sage@newdream.net>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: POHMELFS high performance network filesystem. Transactions, failover, performance.
-Message-ID: <20080514215704.GE23758@shareable.org>
-Mail-Followup-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-	Jeff Garzik <jeff@garzik.org>, Sage Weil <sage@newdream.net>,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org
-References: <20080513174523.GA1677@2ka.mipt.ru> <4829E752.8030104@garzik.org> <20080513205114.GA16489@2ka.mipt.ru> <Pine.LNX.4.64.0805140623001.14334@cobra.newdream.net> <20080514135156.GA23131@2ka.mipt.ru> <482B378C.5070807@garzik.org> <20080514193843.GB10165@2ka.mipt.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080514193843.GB10165@2ka.mipt.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 14 May 2008 17:57:40 -0400
+Date: Wed, 14 May 2008 22:46:00 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alexander Viro <viro@ftp.linux.org.uk>
+Subject: Re: [announce] "kill the Big Kernel Lock (BKL)" tree
+Message-ID: <20080514224600.5bb5db5c@core>
+In-Reply-To: <20080514174955.GA515@elte.hu>
+References: <20080514174955.GA515@elte.hu>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Evgeniy Polyakov wrote:
-> > Quite true, but IMO single-node performance is largely an academic 
-> > exercise today.  What production system is run without backups or 
-> > replication?
-> 
-> If cluster is made out of 2-3-4-10 machines, it does want to get maximum
-> single node performance. But I agree that in some cases we have to
-> sacrifice of something in order to find something new. And the larger
-> cluster becomes, for more things we can close eyes on.
+Out of amusement I took the watchdog drivers and started looking for
+large cans of worms in the BKL drop arena.
 
-With the right topology and hardware, you can get _faster_ than single
-node performance with as many nodes as you like, except when there is
-a node/link failure and the network pauses briefly to reorganise - and
-even that is solvable.
+Here is a fun one for general discussion - right now driver probe
+functions request resources. We have no ordering on the requests so we
+have deadlocks if two drivers do resource requests for conflicting
+resources in reverse order.
 
-Consider:
+"Discuss"
 
-    Client <-> A <-> B <-> C <-> D
-
-A to D are servers.  <-> are independent network links.  Each server
-has hardware which can forward a packet at the same time it's being
-received like the best switches (wormhole routing), while performing
-minor transformations on it (I did say the right hardware ;-)
-
-Client sends a request message.  It is forwarded along the whole
-chain, and reaches D with just a few microseconds of delay compared
-with A.
-
-All servers process the message, and produce a response in about the
-same time.  However, (think of RAID) they don't all process all data
-in the message, just part they are responsible for, so they might do
-it faster than a single node would processing the whole message.
-
-The aggregate response is a function of all of them.  D sends its
-response.  C forwards that packet while modifying the answer to
-include its own response.  B, A do the same.  The answer at Client
-arrives just a few microseconds later than it would have with just a
-single server.
-
-If desired, arrange it in a tree to reduce even the microseconds.
-
-Such network hardware is quite feasible, indeed quite easy with an
-FPGA based NIC.
-
-Enjoy the speed :-)
-
--- Jamie
+Alan
