@@ -1,91 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762151AbYENPsq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760690AbYENPuk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762151AbYENPsq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 11:48:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759312AbYENPsS
+	id S1760690AbYENPuk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 11:50:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbYENPuc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 11:48:18 -0400
-Received: from gw.goop.org ([64.81.55.164]:49791 "EHLO mail.goop.org"
+	Wed, 14 May 2008 11:50:32 -0400
+Received: from zombie.ncsc.mil ([144.51.88.131]:34596 "EHLO zombie.ncsc.mil"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758354AbYENPsR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 11:48:17 -0400
-Message-ID: <482B09B5.8090408@goop.org>
-Date: Wed, 14 May 2008 16:48:05 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: [PATCH 2/3] add an inlined version of iter_div_u64_rem
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S1751800AbYENPub (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 11:50:31 -0400
+Subject: Re: [RFC][PATCH] security:  split ptrace checking in proc
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: casey@schaufler-ca.com, lsm <linux-security-module@vger.kernel.org>,
+       James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080514152817.GC17453@sequoia.sous-sol.org>
+References: <648615.23893.qm@web36601.mail.mud.yahoo.com>
+	 <1210687270.6206.129.camel@moss-spartans.epoch.ncsc.mil>
+	 <20080514091526.GB17453@sequoia.sous-sol.org>
+	 <1210762984.6206.293.camel@moss-spartans.epoch.ncsc.mil>
+	 <20080514152817.GC17453@sequoia.sous-sol.org>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Wed, 14 May 2008 11:50:16 -0400
+Message-Id: <1210780216.28282.4.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-iter_div_u64_rem is used in the x86-64 vdso, which cannot call other
-kernel code.  For this case, provide the always_inlined version,
-__iter_div_u64_rem.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
----
- include/linux/math64.h |   19 +++++++++++++++++++
- lib/div64.c            |   15 +--------------
- 2 files changed, 20 insertions(+), 14 deletions(-)
+On Wed, 2008-05-14 at 08:28 -0700, Chris Wright wrote:
+> * Stephen Smalley (sds@tycho.nsa.gov) wrote:
+> > On Wed, 2008-05-14 at 02:15 -0700, Chris Wright wrote:
+> > > It is slightly ad-hoc.  Is it just the audit messages that you described
+> > > that made you pick environ and fd, or was there more specific (threat
+> > > based) reasoning?  Would /proc/pid/fd/ + genfs + e.g. anonfd be a little
+> > > wider than just readstate?
+> > 
+> > Well, it is being driven by experience with what applications try to
+> > access w/o requiring full ptrace access, but also by a threat-based
+> > reasoning that it is less dangerous to grant limited read access to
+> > parts of the process state than to grant complete read access to its
+> > entire memory image or full control of the target process.
+> > 
+> > Not entirely sure what you mean by the latter question.
+> 
+> fd/ access gives a view in the ->files, which could include rather
+> internal bits like pipes, sockets, or anonfd descriptors -- things w/out
+> external handles.  That view includes ability to open the fd (similar
+> to dup()) and use it (granted subject to further security checks, but
+> they may be quite generic at that point).
 
-===================================================================
---- a/include/linux/math64.h
-+++ b/include/linux/math64.h
-@@ -83,4 +83,23 @@
- 
- u32 iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder);
- 
-+static __always_inline u32
-+__iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder)
-+{
-+	u32 ret = 0;
-+
-+	while (dividend >= divisor) {
-+		/* The following asm() prevents the compiler from
-+		   optimising this loop into a modulo operation.  */
-+		asm("" : "+rm"(dividend));
-+
-+		dividend -= divisor;
-+		ret++;
-+	}
-+
-+	*remainder = dividend;
-+
-+	return ret;
-+}
-+
- #endif /* _LINUX_MATH64_H */
-===================================================================
---- a/lib/div64.c
-+++ b/lib/div64.c
-@@ -105,19 +105,6 @@
-  */
- u32 iter_div_u64_rem(u64 dividend, u32 divisor, u64 *remainder)
- {
--	u32 ret = 0;
--
--	while (dividend >= divisor) {
--		/* The following asm() prevents the compiler from
--		   optimising this loop into a modulo operation.  */
--		asm("" : "+rm"(dividend));
--
--		dividend -= divisor;
--		ret++;
--	}
--
--	*remainder = dividend;
--
--	return ret;
-+	return __iter_div_u64_rem(dividend, divisor, remainder);
- }
- EXPORT_SYMBOL(iter_div_u64_rem);
+What do you mean by "generic" in the above?  Just the fact that there
+wouldn't be any distinction between such access and access to a
+descriptor received explicitly via local IPC from the target task?
 
+Ok, so perhaps the only distinction that makes sense is read vs.
+write/control, with all checks within proc except mem_write using the
+former and ptrace_attach and mem_write using the latter?
+
+-- 
+Stephen Smalley
+National Security Agency
 
