@@ -1,95 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760741AbYENQUe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761592AbYENQWi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760741AbYENQUe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 12:20:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754472AbYENQUZ
+	id S1761592AbYENQWi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 12:22:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbYENQWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 12:20:25 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:45887 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751450AbYENQUY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 12:20:24 -0400
-Date: Wed, 14 May 2008 09:20:15 -0700
-From: Gary Hade <garyhade@us.ibm.com>
-To: Gary Hade <garyhade@us.ibm.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH] PCI: boot parameter to avoid expansion ROM memory allocation
-Message-ID: <20080514162015.GA6713@us.ibm.com>
-References: <20080512205746.GB7401@us.ibm.com> <20080513210054.GB28815@us.ibm.com> <86802c440805131411w1e0c661j93ba1a1854f314d6@mail.gmail.com> <200805131528.18252.jbarnes@virtuousgeek.org> <86802c440805131623v4ecd038djeab9bd9937717de6@mail.gmail.com> <20080514000702.GA12546@us.ibm.com>
-Mime-Version: 1.0
+	Wed, 14 May 2008 12:22:30 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:48845 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751152AbYENQW3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 12:22:29 -0400
+Date: Wed, 14 May 2008 11:22:24 -0500
+From: Robin Holt <holt@sgi.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Robin Holt <holt@sgi.com>, Nick Piggin <npiggin@suse.de>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrea Arcangeli <andrea@qumranet.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
+       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>
+Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
+Message-ID: <20080514162223.GZ9878@sgi.com>
+References: <6b384bb988786aa78ef0.1210170958@duo.random> <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org> <20080508003838.GA9878@sgi.com> <200805132206.47655.nickpiggin@yahoo.com.au> <20080513153238.GL19717@sgi.com> <20080514041122.GE24516@wotan.suse.de> <20080514112625.GY9878@sgi.com> <alpine.LFD.1.10.0805140807400.3019@woody.linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080514000702.GA12546@us.ibm.com>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <alpine.LFD.1.10.0805140807400.3019@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 13, 2008 at 05:07:02PM -0700, Gary Hade wrote:
-> On Tue, May 13, 2008 at 04:23:55PM -0700, Yinghai Lu wrote:
-> > On Tue, May 13, 2008 at 3:28 PM, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-> > > > >  There were some lkml/linux-pci visible discussions back in
-> > >  > >  November-December of last year where I floated the idea
-> > >  > >  of making PCI expansion ROM memory non-assignment the default:
-> > >  > >   http://marc.info/?l=linux-kernel&m=119742188215024&w=2
-> > >  > >   http://marc.info/?l=linux-kernel&m=119689499508369&w=2
-> > >  > >  I did not hear any objections so I went ahead and submitted
-> > >  > >  the change which entered mainline at 2.6.25-rc1 but it was
-> > >  > >  sternly evicted last week because of a reported regression
-> > >  > >  that it had caused:
-> > >  > >   http://marc.info/?l=linux-kernel&m=121029093331908&w=2
-> > >  > >  Attachments to http://bugs.freedesktop.org/show_bug.cgi?id=15523
-> > >  > >  indicate that a 2.6.25-rc2 x86_64 kernel was being used.
-> > >  > >
-> > >  > >  > can we use pci rom in 64 bit kernel?
-> > >  > >
-> > >  > >  Sorry, not sure if I understand this question.  I hope the
-> > >  > >  above answers it.
-> > >  >
-> > >  > ok, i think the driver could reload fw in the option rom to reset the
-> > >  > controlller in pci card.
-> > >  > i don't think there is other usage for the option rom after OS loaded,
-> > >  > except option rom contain other run-time code...
-> > >
-> > >  On graphics devices it's used for more than just POSTing (in fact POSTing is
-> > >  the least of its uses these days).  The ROM often contains tables describing
-> > >  the specific hardware configuration of a given board, including output
-> > >  information, extra supported modes, etc.
-> > >
-> > >  On other devices, it can be used to store default settings (this is common for
-> > >  SCSI cards iirc, though I'm not sure how much Linux drivers use this info).
-> > >
-> > >
-> > >  > so could disable them all, and use pci-quirks to enable that for the
-> > >  > device/driver need it.
-> > >
-> > >  Since it's probably only big systems that really need the extra address space,
-> > >  I'd rather to the opposite:  allocate ROM space by default and let a boot
-> > >  option avoid it.
-> > 
-> > that boot option will get rid of that ROM BAR for all devices...
-> > big system could use several graphical cards that need ROM BAR and
-> > several cards that don't need ROM BAR.
-> 
-> Correct, not a perfect solution but better than we have right now.
+On Wed, May 14, 2008 at 08:18:21AM -0700, Linus Torvalds wrote:
+>
+>
+> On Wed, 14 May 2008, Robin Holt wrote:
+> >
+> > Are you suggesting the sending side would not need to sleep or the
+> > receiving side?
+>
+> One thing to realize is that most of the time (read: pretty much *always*)
+> when we have the problem of wanting to sleep inside a spinlock, the
+> solution is actually to just move the sleeping to outside the lock, and
+> then have something else that serializes things.
+>
+> That way, the core code (protected by the spinlock, and in all the hot
+> paths) doesn't sleep, but the special case code (that wants to sleep) can
+> have some other model of serialization that allows sleeping, and that
+> includes as a small part the spinlocked region.
+>
+> I do not know how XPMEM actually works, or how you use it, but it
+> seriously sounds like that is how things *should* work. And yes, that
+> probably means that the mmu-notifiers as they are now are simply not
+> workable: they'd need to be moved up so that they are inside the mmap
+> semaphore but not the spinlocks.
 
-...but don't let this comment make you think that I am not in
-favor of something like you are suggesting.  I am interested
-in getting the 'pci=norom' change into mainline quickly but it
-is obviously less than ideal for the long term.
+We are in the process of attempting this now.  Unfortunately for SGI,
+Christoph is on vacation right now so we have been trying to work it
+internally.
 
-Jesse, any idea how many different devices absolutely need
-memory allocated for their expansion ROMs?
+We are looking through two possible methods, one we add a callout to the
+tlb flush paths for both the mmu_gather and flush_tlb_page locations.
+The other we place a specific callout seperate from the gather callouts
+in the paths we are concerned with.  We will look at both more carefully
+before posting.
 
-Gary
 
--- 
-Gary Hade
-System x Enablement
-IBM Linux Technology Center
-503-578-4503  IBM T/L: 775-4503
-garyhade@us.ibm.com
-http://www.ibm.com/linux/ltc
+In either implementation, not all call paths would require the stall
+to ensure data integrity.  Would it be acceptable to always put a
+sleepable stall in even if the code path did not require the pages be
+unwritable prior to continuing?  If we did that, I would be freed from
+having a pool of invalidate threads ready for XPMEM to use for that work.
+Maybe there is a better way, but the sleeping requirement we would have
+on the threads make most options seem unworkable.
 
+
+Thanks,
+Robin
