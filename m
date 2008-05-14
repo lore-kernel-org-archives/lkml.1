@@ -1,49 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753147AbYENUdz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752697AbYENUhn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753147AbYENUdz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 16:33:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbYENUdp
+	id S1752697AbYENUhn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 16:37:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbYENUhc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 16:33:45 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:44216 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752635AbYENUdm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 16:33:42 -0400
-Date: Wed, 14 May 2008 13:33:39 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Matt Mackall <mpm@selenic.com>
-cc: Andi Kleen <andi@firstfloor.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, Matthew Wilcox <matthew@wil.cx>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Subject: Re: [patch 21/21] slab defrag: Obsolete SLAB
-In-Reply-To: <1210794563.4093.57.camel@calx>
-Message-ID: <Pine.LNX.4.64.0805141333060.18231@schroedinger.engr.sgi.com>
-References: <20080510030831.796641881@sgi.com>  <20080510030919.604216074@sgi.com>
- <4825709A.2020407@firstfloor.org>  <20080510221515.3540a6cc@bree.surriel.com>
-  <2f11576a0805120038s334dc56cuaf16b8b7c6f87098@mail.gmail.com> 
- <84144f020805120054t1370236ei5ff52279457e026e@mail.gmail.com> 
- <Pine.LNX.4.64.0805141009210.15194@schroedinger.engr.sgi.com> 
- <482B2617.5010605@firstfloor.org>  <Pine.LNX.4.64.0805141100110.15633@schroedinger.engr.sgi.com>
-  <1210789112.4093.14.camel@calx>  <Pine.LNX.4.64.0805141220440.16223@schroedinger.engr.sgi.com>
- <1210794563.4093.57.camel@calx>
+	Wed, 14 May 2008 16:37:32 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:58942 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750888AbYENUhb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 16:37:31 -0400
+Message-ID: <482B4D80.5080808@garzik.org>
+Date: Wed, 14 May 2008 16:37:20 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+CC: Jamie Lokier <jamie@shareable.org>, Sage Weil <sage@newdream.net>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: POHMELFS high performance network filesystem. Transactions, failover,
+ performance.
+References: <20080513174523.GA1677@2ka.mipt.ru> <4829E752.8030104@garzik.org> <20080513205114.GA16489@2ka.mipt.ru> <Pine.LNX.4.64.0805140623001.14334@cobra.newdream.net> <20080514135156.GA23131@2ka.mipt.ru> <20080514143105.GB14987@shareable.org> <20080514150052.GA15826@2ka.mipt.ru> <482B3899.9070008@garzik.org> <20080514193234.GA10165@2ka.mipt.ru>
+In-Reply-To: <20080514193234.GA10165@2ka.mipt.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 May 2008, Matt Mackall wrote:
-
-> > allocator?
+Evgeniy Polyakov wrote:
+> No, server to connect is the server, which stores data. By addition it
+> will also store it to some other places according to distributed
+> algorithm (like weaver, raid, mirror, whatever).
+[...]
+> Sure the less number of machines between client and storage we have, the
+> faster and more robust we are.
 > 
-> No, slow path here means we're already under memory pressure, so we
-> don't care if something takes longer if it saves memory.
+> Either client has to write data to all servers, or it has to write it to
+> one and wait utill that server will broadcast it further (to quorum or any
+> number of machines it wants). Having pure client to think to what
+> servers it has to put its data is a bit wrong (if not saying more),
+> since it has to join not only data network, but also control one, to
+> check that some servers are alive or not, to be able not to race, when
+> server is recovering and so on...
 
-So expire the queues under memory pressure only? Trigger queue cleanup 
-from reclaim?
+Quite true.  It is a trade-off:  additional complexity in the client 
+permits reduced latency and increased throughput.  But is the additional 
+complexity -- including administrative and access control headaches -- 
+worth it?  As you say, the "complex" clients must join the data network.
+
+Hardware manufacturers are putting so much effort into zero-copy and 
+RDMA.  The client-to-many approach mimics that trend by minimizing 
+latency and data copying (and permitting use of more exotic or unusual 
+hardware).
+
+But the client-to-many approach is not as complex as you make out.  A 
+key attribute is simply for a client to be able to store new objects and 
+metadata on multiple servers in parallel.  Once the data is stored 
+redundantly, the metadata controller may take quick action to 
+commit/abort the transaction.  You can even shortcut the process further 
+by having the replicas send confirmations to the metadata controller.
+
+That said, the biggest distributed systems seem to inevitably grow their 
+own "front end server" layer.  Clients connect to N caching/application 
+servers, each of which behaves as you describe:  the caching/app server 
+connects to the control and data networks, and performs the necessary 
+load/store operations.
+
+Personally, I think the most simple thing for _users_ is where 
+semi-smart clients open multiple connections to an amorphous cloud of 
+servers, where the cloud is self-optimizing, self-balancing, and 
+self-repairing internally.
+
+	Jeff
+
 
 
