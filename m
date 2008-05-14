@@ -1,94 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761005AbYENRSD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759042AbYENRYK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761005AbYENRSD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 13:18:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbYENRRy
+	id S1759042AbYENRYK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 13:24:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753869AbYENRX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 13:17:54 -0400
-Received: from po-out-1718.google.com ([72.14.252.159]:57292 "EHLO
-	po-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752750AbYENRRx (ORCPT
+	Wed, 14 May 2008 13:23:56 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:45457 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752599AbYENRXz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 13:17:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fPvj7z7Zzl0QFo18vquwCM58mvhC4i4gyyOTfumcC/SHtwbxBN88lJ/D2+QDeXI6iAYJXANdu35Rgs5SOmghOqWyitm2RuUf8/Ot/f6aikBpLQP1eY6AJe46TaJ6yI6e/+fm0Q7lANP2FC/yHWtcKUHh0404JeUdJQbq16BH2dc=
-Message-ID: <19f34abd0805141017g26c13e96t2e7edc23bec263d0@mail.gmail.com>
-Date: Wed, 14 May 2008 19:17:53 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Harald Dunkel" <harald.dunkel@t-online.de>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: 2.6.25.3: su gets stuck for root
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <482B1BD2.8040400@t-online.de>
+	Wed, 14 May 2008 13:23:55 -0400
+Message-ID: <482B1FD7.70108@s5r6.in-berlin.de>
+Date: Wed, 14 May 2008 19:22:31 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.13) Gecko/20080313 SeaMonkey/1.1.9
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Georgi Chorbadzhiyski <gf@unixsol.org>
+CC: Jan Engelhardt <jengelh@medozas.de>, xfs@oss.sgi.com,
+       jfs-discussion@lists.sourceforge.net, cluster-devel@redhat.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Unneeded kernel threads (xfs, jfs, gfs2)
+References: <4828CAC6.3090402@unixsol.org> <alpine.LNX.1.10.0805130115090.25441@fbirervta.pbzchgretzou.qr> <482952F2.3080608@unixsol.org>
+In-Reply-To: <482952F2.3080608@unixsol.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4829326A.6060808@t-online.de>
-	 <19f34abd0805122347x4d9c5d03m16679d724189790e@mail.gmail.com>
-	 <4829D345.7020909@t-online.de>
-	 <19f34abd0805140034j75d97ecbw5a03c200645768cb@mail.gmail.com>
-	 <482B1BD2.8040400@t-online.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 14, 2008 at 7:05 PM, Harald Dunkel
-<harald.dunkel@t-online.de> wrote:
-> Vegard Nossum wrote:
->>
->> Ah, tough luck. What if you attach an strace to the already stuck
->> process? Like strace -p pid. It's a long shot, but worth a try, I
->> suppose.
->>
->
-> As suggested I attached strace to the blocking stty. I got a
-> continuous flow of
->
-> :
-> :
-> ioctl(0, SNDCTL_TMR_STOP or TCSETSW, {B38400 opost isig icanon echo ...}) =
-> ? ERESTARTSYS (To be restarted)
-> --- SIGTTOU (Stopped (tty output)) @ 0 (0) ---
-> --- SIGTTOU (Stopped (tty output)) @ 0 (0) ---
-> :
-> :
->
-> I also moved back to an old version of coreutils from about
-> 4 months ago. Same result.
+Georgi Chorbadzhiyski wrote:
+> Jan Engelhardt mumbled something about, On 5/13/08 2:21 AM:
+>> On Tuesday 2008-05-13 00:55, Georgi Chorbadzhiyski wrote:
+>>>>  1148 ?        S<     0:00  \_ [khpsbpkt]
+>>> What is this?
+>> 
+>> ieee1394/ieee1394_core.c:static struct task_struct *khpsbpkt_thread;
+> 
+> Strange names :)
 
-Looks good. Adding Alan Cox to conversation. Original report:
+Fixed in drivers/firewire/.  :-)
 
---------
-If I run "su someuser" as root, then it gets stuck. No prompt. I cannot
-interrupt it with ^C or ^Z either. /var/log/auth.log says:
-
-May 13 08:06:41 pluto su[4193]: Successful su for root by harri
-May 13 08:06:41 pluto su[4193]: + pts/3 harri:root
-May 13 08:06:41 pluto su[4193]: pam_unix(su:session): session opened
-for user root by harri(uid=1000)
-
-ps shows:
-
-% ps -ef | grep pts/3
-harri     4007  4006  0 07:58 pts/3    00:00:00 bash
-root      4193  4007  0 08:06 pts/3    00:00:00 su
-root      4194  4193  0 08:06 pts/3    00:00:00 bash
-root      4209  4194  0 08:08 pts/3    00:00:00 su
-root      4210  4209  0 08:08 pts/3    00:00:00 bash
-root      4217  4210  0 08:08 pts/3    00:00:00 stty intr ^C
-
-So obviously 'stty' is to blame here (called from root's .bashrc, as
-it seems). But for 2.6.24.4 there is no such problem.
---------
-
-
-Vegard
-
+PS:
+"k" = kernel
+"hpsb" = High Performance Serial Bus ( = IEEE 1394)
+"pkt" = packet  (The thread completes split transactions associated with
+outbound request packets.)
 -- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Stefan Richter
+-=====-==--- -=-= -===-
+http://arcgraph.de/sr/
