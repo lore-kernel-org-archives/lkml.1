@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761186AbYENOco@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758922AbYENOkv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761186AbYENOco (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 10:32:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760541AbYENOcf
+	id S1758922AbYENOkv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 10:40:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755761AbYENOkm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 10:32:35 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:59712 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760485AbYENOcf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 10:32:35 -0400
-Date: Wed, 14 May 2008 18:32:15 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [1/1] Export __lock_page_killable()
-Message-ID: <20080514143214.GA12700@2ka.mipt.ru>
-References: <20080514141157.GA27047@2ka.mipt.ru> <20080514151356.0cb4abfe@core>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 14 May 2008 10:40:42 -0400
+Received: from mu-out-0910.google.com ([209.85.134.190]:13489 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754109AbYENOkm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 10:40:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent;
+        b=kOuGNpTd+DLriKXhgEoSGgRNvwtOfHgkPbv+pvrPJY03IEmoKh8zn7NLbLE9nwwPTdtb0nwKAYflQPP2ZgsMLubFnBF6tKUd78VIlUuq9eamjZePR4SDr8vkKt6K2Ss/+G9wjzGG+8/XElAlV3Hn1eyfieaoFFFR1A3bjx5QbMA=
+Date: Wed, 14 May 2008 18:40:31 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Andreas Schwab <schwab@suse.de>
+Cc: Adrian Bunk <bunk@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: m68k: main.c:(.init.text+0x730): undefined reference to
+	`strlen'
+Message-ID: <20080514144031.GA6902@cvg>
+References: <Pine.LNX.4.64.0805140958400.5778@anakin> <jeprrpth5m.fsf@sykes.suse.de> <20080514141056.GB19909@cs181133002.pp.htv.fi> <jeabitt0xj.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20080514151356.0cb4abfe@core>
-User-Agent: Mutt/1.5.9i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <jeabitt0xj.fsf@sykes.suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan.
+[Andreas Schwab - Wed, May 14, 2008 at 04:28:24PM +0200]
+| Adrian Bunk <bunk@kernel.org> writes:
+| 
+| > Or replace all the strlen stuff in include/asm-m68k/string.h with a 
+| 
+| I don't think the strlen macros has any influence in this case (it
+| already uses __builtin_strlen anyway).  I'd rather guess that gcc is
+| expanding strncat internally to something involving strlen with
+| non-constant argument, although I cannot see how that can happen from a
+| quick look.
+| 
+| Andreas.
+| 
+| -- 
+| Andreas Schwab, SuSE Labs, schwab@suse.de
+| SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+| PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+| "And now for something completely different."
+| 
 
-On Wed, May 14, 2008 at 03:13:56PM +0100, Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
-> > There are users, who would like to use lock_page_killable() in modules,
-> > so far there are no users in kernel, but for consistency it can be
-> > exported without them.
-> 
-> Missing information #1: Who are the users and what are the URLs to the
-> code in question
+I think it would help to see ..tmp_vmlinux1.cmd to ensure for inclusion
+of lib/lib.a. strlen was there without my patch as Andreas already pointed,
+I've just added strncat wich is coming from lib/string.o for this arch.
 
-POHMELFS wants to use that in two places: one to lock page in writeback,
-another one is about second part of the message - it waits for timeout
-or signal or locks the page. If page can not be locked, it performs own
-steps, not sleeps forever...
-
-POHMELFS is a high performance network filesystem, homepage for interested
-reader:
-http://tservice.net.ru/~s0mbre/old/?section=projects&item=pohmelfs
-or yesterdays mail to mail lists:
-http://lwn.net/Articles/282010/
-
-> > Not that it is particulary needed
-> 
-> Humm..
-
-I copied page_waitqueue() and use wait_on_bit() logic myself.
-Andrew choked with his breakfast when saw that.
-
-> > +EXPORT_SYMBOL(__lock_page_killable);
-> 
-> _GPL - or better yet this could be added *when* we have an actual in tree
-> user who really needs it and can show it is appropriate to export.
-> That'll also save Adrian from removing it again ;)
-
-No problem wiht GPL-only exporting, but carring it over the whole
-release means no ability to build out-of-tree module.
-
-Actually what I want to hear, is that it is needed or not at all...
-
--- 
-	Evgeniy Polyakov
+		- Cyrill -
