@@ -1,114 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758712AbYENXk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758112AbYENXnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758712AbYENXk0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 19:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754903AbYENXkR
+	id S1758112AbYENXnT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 19:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755668AbYENXnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 19:40:17 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:49387 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753107AbYENXkQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 19:40:16 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       nigel@nigel.suspend2.net,
-       Kexec Mailing List <kexec@lists.infradead.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Vivek Goyal <vgoyal@redhat.com>
-References: <Pine.LNX.4.44L0.0803121055510.4595-100000@iolanthe.rowland.org>
-	<200803140231.39282.rjw@sisk.pl>
-	<m1prtsug2e.fsf@ebiederm.dsl.xmission.com>
-	<200805142341.52078.maximlevitsky@gmail.com>
-Date: Wed, 14 May 2008 16:34:48 -0700
-In-Reply-To: <200805142341.52078.maximlevitsky@gmail.com> (Maxim Levitsky's
-	message of "Wed, 14 May 2008 23:41:51 +0300")
-Message-ID: <m1od78tq7b.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: Maxim Levitsky <maximlevitsky@gmail.com>
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -0.2 BAYES_40 BODY: Bayesian spam probability is 20 to 40%
-	*      [score: 0.3176]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [linux-pm] [PATCH -mm] kexec jump -v9
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+	Wed, 14 May 2008 19:43:08 -0400
+Received: from threatwall.zlynx.org ([199.45.143.218]:37030 "EHLO zlynx.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755394AbYENXnH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 19:43:07 -0400
+Subject: Re: troubleshooting/debugging hard locks
+From: Zan Lynx <zlynx@acm.org>
+To: Ray Lee <ray-lk@madrabbit.org>
+Cc: Lee Howard <faxguy@howardsilvan.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <2c0942db0805141543n20e6eb6eq5fe13fe1cb50d67e@mail.gmail.com>
+References: <482B3D21.5020903@howardsilvan.com>
+	 <2c0942db0805141543n20e6eb6eq5fe13fe1cb50d67e@mail.gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-iW1iRdo2pcqYp8Y3LzXe"
+Date: Wed, 14 May 2008 17:42:58 -0600
+Message-Id: <1210808578.3784.7.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+X-Envelope-From: zlynx@acm.org
+X-Spam-Id: 20080514/1JwQcd-00048S-VR-linux-kernel@vger.kernel.org:zlynx@acm.org:199.45.143.218
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maxim Levitsky <maximlevitsky@gmail.com> writes:
 
-> First of all S4 ACPI code turns some leds on some systems,
-> cosmetic thing, but still nice.
->
-> Secondary, what about wakeup devices?
-> Hardware can disable some devices in S5 while leave them running in S4
-> on my system for example network card will do WOL in S4,
-> but to make it WOL in S5 I have to turn a specific option in BIOS.
->
-> While my system doesn't have this, it isn't uncommon for system to leave USB
-> ports
-> running so one can turn the PC with keyboard/mouse even in S4.
-> in S5 those ports  will probably  be disabled.
-> My system on have this for S3 only.
->
-> On laptops we can expect even more ACPI functionality, so some more differences
-> between
-> S4 and S5 can happen.
->
-> Last thing that I want to say is that, when linux puts PC in S? state, on top of
-> executing
-> _PTS, _GTS acpi functions, it writes the destination S state to a fixed
-> register, thus the hardware
-> can (and does) behave differently.
+--=-iW1iRdo2pcqYp8Y3LzXe
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Yes.
+On Wed, 2008-05-14 at 15:43 -0700, Ray Lee wrote:
+> On Wed, May 14, 2008 at 12:27 PM, Lee Howard <faxguy@howardsilvan.com> wr=
+ote:
 
-S4 looks interesting.  Especially the weird fans don't work on restore
-from S5 case.
+> >  But, without kernel messages indicating where to look to debug... what=
+ is
+> > the best approach to start troubleshooting and debugging this condition=
+?  Is
+> > there some general debug feature that can be enabled in the kernel that
+> > would help hone in on the culprit?
+>=20
+> There's something called the NMI watchdog, that will print debugging
+> messages out if it finds the system has hard locked. The short version
+> is that you should add "nmi_watchdog=3D1" (no quotes) to the line in
+> GRUB that has the kernel options. That assumes you have an APIC on the
+> system. If that's not the case (you're on Uniprocessor, and no APIC)
+> then you can try nmi_watchdog=3D2 instead. That'll only work on some
+> systems, though.
+>=20
+> Better docs (than my cheesy writeup) are in
+> Documentation/nmi_watchdog.txt in the kernel source distribution.
 
-S4 still appears to be a premature optimization, that ads lots of
-complexity and reduces the reliability of the code.
+I was once told to add these to the kernel command line as well when
+using NMI watchdog and they do seem to help it trigger more reliably:=20
 
-Software hibernation to disk should be a rock solid proposition, that
-needs little if any cooperation from drivers, and it should work on
-every box, because fundamentally it is hardware agnostic.  The only
-cooperation we need from drivers is for devices that we can't tolerate
-at upper layers an unplug and replug event like block devices because
-we would loose our filesystems.
+"idle=3Dpoll nohz=3Doff"
 
-All of the reports say hibernation is not rock solid reliable.
-Things like S4 support keep us from being hardware agnostic.
-Therefore it appears to me we have a design bug.
+--=20
+Zan Lynx <zlynx@acm.org>
 
-Which is why I'm not at all happy with S4 support.
+--=-iW1iRdo2pcqYp8Y3LzXe
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
 
+iEYEABECAAYFAkgreQIACgkQolqWs/Y4NLx/OQCeNJBtCwzzMB8ZummC7fxXYkug
+UqkAnjgqjenFEJoEDRAXUlXeX1ZBW/Ua
+=tb5t
+-----END PGP SIGNATURE-----
 
-It actually occurs to me that the first mode we should really support
-is the mode where the user hits the power button themselves.  That
-totally removes the hibernation path from any weird hardware
-interactions.
+--=-iW1iRdo2pcqYp8Y3LzXe--
 
-Then S5 is an optimization upon that (just a little more work on the
-shutdown path).
-
-Then ultimately S4 reusing and refactoring the work for S3? suspend to
-ram to allow us to leave very specific devices on.  But that is lot
-of complexity, for a little bit of gain.
-
-We should have code that works by design. Code that practically
-every time.  Something that is easy to diagnose.
-
-
-Eric
