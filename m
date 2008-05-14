@@ -1,82 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759861AbYENW25@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760188AbYENW3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759861AbYENW25 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 18:28:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754156AbYENW2p
+	id S1760188AbYENW3T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 18:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754617AbYENW2q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 18:28:45 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:33939 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754049AbYENW2o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 18:28:46 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:55563 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752936AbYENW2o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 14 May 2008 18:28:44 -0400
-Date: Thu, 15 May 2008 01:27:04 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: "Darrick J. Wong" <djwong@us.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, mhoffman@lightlink.com,
-       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
-Subject: Re: [PATCH] ibmaem: Fix 64-bit division on 32-bit platforms
-Message-ID: <20080514222704.GA11439@cs181133002.pp.htv.fi>
-References: <20080508180858.GM16078@tree.beaverton.ibm.com> <20080508163443.a1e9ffe7.akpm@linux-foundation.org> <20080509045527.GI16404@tree.beaverton.ibm.com>
+Date: Wed, 14 May 2008 23:28:37 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Sage Weil <sage@newdream.net>, Jeff Garzik <jeff@garzik.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: POHMELFS high performance network filesystem. Transactions, failover, performance.
+Message-ID: <20080514222837.GF23758@shareable.org>
+Mail-Followup-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+	Sage Weil <sage@newdream.net>, Jeff Garzik <jeff@garzik.org>,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org
+References: <20080513174523.GA1677@2ka.mipt.ru> <4829E752.8030104@garzik.org> <20080513205114.GA16489@2ka.mipt.ru> <Pine.LNX.4.64.0805140623001.14334@cobra.newdream.net> <20080514135156.GA23131@2ka.mipt.ru> <20080514143105.GB14987@shareable.org> <20080514150052.GA15826@2ka.mipt.ru> <20080514213251.GB23758@shareable.org> <20080514220252.GA14378@2ka.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080509045527.GI16404@tree.beaverton.ibm.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080514220252.GA14378@2ka.mipt.ru>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 08, 2008 at 09:55:27PM -0700, Darrick J. Wong wrote:
-> On Thu, May 08, 2008 at 04:34:43PM -0700, Andrew Morton wrote:
+Evgeniy Polyakov wrote:
+> > Look up Bittorrent, and bandwidth diffusion generally.  Also look up
+> > multicast trees.
+> > 
+> > Sometimes it's faster for a client to send to many servers; sometimes
+> > it's faster to send fewer and have them relayed by intermediaries -
+> > because every packet takes time to transmit, and network topologies
+> > aren't always homogenous or symmetric.
+> > 
+> > There is no simple answer which is optimal for all networks.
 > 
-> > This driver is littered with 64-bit divides and doesn't link on i386.
-> > I'll make it depend on CONFIG_64BIT for now.
+> Yep, having multiple connections is worse for high-performance networks
+> and is a great win for long latency links.
+
+Not just long latency.  If you have a low latency link which is very
+busy, perhaps a client doing lots of requests, or doing other things,
+that pushes up the _effective_ latency.
+
+> > If you have a single data forwarder elected per client, then if one
+> > client generates a lot of traffic, you concentrate a lot of traffic to
+> > one network link and one CPU.  Sometimes it's better to elect several
+> > leaders per client, and hash requests onto them.  You diffuse CPU and
+> > traffic, but reduce opportunities to aggregate transactions into fewer
+> > message.  It's an interesting problem, again probably with different
+> > optimal results for different networks.
 > 
-> Oops, sorry, I didn't remember that one can't do 64-bit division on
-> i386.  The patch below fixes that.
-> ---
-> ibmaem: Fix 64-bit division on 32-bit platforms
-> 
-> Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
-> ---
-> 
->  drivers/hwmon/ibmaem.c |    6 ++++--
->  1 files changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/hwmon/ibmaem.c b/drivers/hwmon/ibmaem.c
-> index 22fa7d6..f808ca3 100644
-> --- a/drivers/hwmon/ibmaem.c
-> +++ b/drivers/hwmon/ibmaem.c
->...
-> @@ -864,9 +865,10 @@ static ssize_t aem_show_power(struct device *dev,
->...
->  	time = timespec_to_ns(&a) - timespec_to_ns(&b);
-> -	time /= 1000;
-> +	time = div_u64(time, 1000);
->  
-> -	return sprintf(buf, "%llu\n", (after - before) * 1000000000 / time);
-> +	return sprintf(buf, "%llu\n",
-> +		       div64_u64((after - before) * 1000000000, time));
->  }
->...
+> Probably idea I described in other mail to Jeff, when client just
+> connects to number of servers and can process command of adding/dropping
+> server from that group, and balances reading between them and sends
+> writes/metadata update to all of them, and all logic behind that group
+> selection is hidded in the servers cloud, is the best choice...
 
-What are you actually trying to do here?
+I think that's a fine choice, but it doesn't solve difficult
+problems.  You still have to implement the server cloud. :-)
 
-Converting mJ/ns to uJ/s?
+It's possible that implementing server cloud protocol _and_ simple
+client protocol may be more work than just server cloud protocol.  I'm
+not sure.  Thoughts welcome.
 
-Or do you want to convert mJ/ns to Watt in which case you should
-multiply "time" with 1000 instead of dividing it through 1000?
-
-In any case you should only need one expensive 64bit division
-and you can fold the operation with 1000 into the second division.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+-- Jamie
