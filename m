@@ -1,64 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762319AbYENOwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762341AbYENOyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762319AbYENOwe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 10:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756616AbYENOwX
+	id S1762341AbYENOyT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 10:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757756AbYENOyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 10:52:23 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:45684 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1761591AbYENOwW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 10:52:22 -0400
-Date: Wed, 14 May 2008 10:52:10 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
-Cc: WANG Cong <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org,
-       "Kirill A. Shutemov" <k.shutemov@gmail.com>
-Subject: Re: UML build issue with v2.6.26-rc2-129-g9604006
-Message-ID: <20080514145210.GA8639@c2.user-mode-linux.org>
-References: <200805141301.30027.toralf.foerster@gmx.de> <20080514112217.GC2520@hacking> <20080514125548.GA6373@c2.user-mode-linux.org> <200805141503.20065.toralf.foerster@gmx.de>
+	Wed, 14 May 2008 10:54:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33922 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757015AbYENOyD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 10:54:03 -0400
+Date: Wed, 14 May 2008 10:37:47 -0400
+From: Josef Bacik <jbacik@redhat.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Josef Bacik <jbacik@redhat.com>,
+       Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, sct@redhat.com,
+       adilger@clusterfs.com, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, Mingming Cao <cmm@us.ibm.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
+       sugita <yumiko.sugita.yf@hitachi.com>
+Subject: Re: [PATCH 4/4] jbd: fix error handling for checkpoint io (rebased)
+Message-ID: <20080514143747.GC20256@unused.rdu.redhat.com>
+References: <482A6E00.6080303@hitachi.com> <482A6FA3.9000104@hitachi.com> <20080514131621.GB20256@unused.rdu.redhat.com> <20080514144410.GG24363@duck.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200805141503.20065.toralf.foerster@gmx.de>
+In-Reply-To: <20080514144410.GG24363@duck.suse.cz>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 14, 2008 at 03:03:17PM +0200, Toralf Förster wrote:
-> > > Hmm, it seems that I can't reproduce it with your .config.
-> > > And <asm/user.h> does exist.
+On Wed, May 14, 2008 at 04:44:10PM +0200, Jan Kara wrote:
+> > >  
+> > > Index: linux-2.6.26-rc2/fs/ext3/super.c
+> > > ===================================================================
+> > > --- linux-2.6.26-rc2.orig/fs/ext3/super.c
+> > > +++ linux-2.6.26-rc2/fs/ext3/super.c
+> > > @@ -395,7 +395,10 @@ static void ext3_put_super (struct super
+> > >  	ext3_xattr_put_super(sb);
+> > >  	journal_destroy(sbi->s_journal);
+> > >  	if (!(sb->s_flags & MS_RDONLY)) {
+> > > -		EXT3_CLEAR_INCOMPAT_FEATURE(sb, EXT3_FEATURE_INCOMPAT_RECOVER);
+> > > +		if (!is_checkpoint_aborted(sbi->s_journal)) {
+> > > +			EXT3_CLEAR_INCOMPAT_FEATURE(sb,
+> > > +				EXT3_FEATURE_INCOMPAT_RECOVER);
+> > > +		}
+> > >  		es->s_state = cpu_to_le16(sbi->s_mount_state);
+> > >  		BUFFER_TRACE(sbi->s_sbh, "marking dirty");
+> > >  		mark_buffer_dirty(sbi->s_sbh);
 > > 
-> > I bet he's using the headers exported by the current kernel, not what
-> > his distro gives him.
-> > 
-> > 			Jeff
-> > 
-> 
-> Right, IIRC I ran into this some times ago under Gentoo Linux.
+> > Is this bit here really needed?  If we abort the journal the fs will be mounted
+> > read only and we should never get in here.  Is there a case where we could abort
+> > the journal and not be flipped to being read-only?  If there is such a case I
+> > would think that we should fix that by making the fs read-only, and not have
+> > this check.
+>   Actually, journal_abort() (which could be called from journal_destroy())
+> does nothing to the filesystem as such. So at this moment, ext3 can still
+> happily think everything is OK. We only detect aborted journal in
+> ext3_journal_start_sb() and call ext3_abort() in that case, which does all
+> that is needed...
+>
 
-Commit c1445db9f72db0537c43a2eab6e1b0f6741162f5 unexported asm/user.h
-(and linux/user.h):
+Hmm you're right, I was thinking we did some other stuff before put_super which
+would have caught a journal abort but it looks like thats not the case.  Still
+shouldn't do is_checkpoint_aborted(sbi->s_journal) since journal_destroy()
+kfree's the journal.  Should probably move the is_journal_aborted() check above
+that or something.  Thanks,
 
-     Author: Kirill A. Shutemov <k.shutemov@gmail.com>
-     Date:   Thu Feb 7 00:15:53 2008 -0800
-
-         Unexport asm/user.h and linux/user.h
-    
-        Do not export asm/user.h and linux/user.h during make
-        headers_install.
-
-As far as I can see, this renders PTRACE_[SG]ETFPREGS and
-PTRACE_[SG]ETFPXREGS unusable, as userspace has no way to figure out
-what size buffer to pass in.
-
-I think we either need to make user_i387_struct and user_fxsr_struct
-available someplace else, or re-export user.h.
-
-	  	    	     Jeff
-
--- 
-Work email - jdike at linux dot intel dot com
+Josef 
