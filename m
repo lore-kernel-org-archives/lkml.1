@@ -1,58 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762078AbYENP6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762696AbYENP6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762078AbYENP6Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 11:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759548AbYENP6J
+	id S1762696AbYENP6l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 11:58:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759548AbYENP6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 11:58:09 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:42377 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758758AbYENP6I (ORCPT
+	Wed, 14 May 2008 11:58:30 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:34105 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760276AbYENP63 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 11:58:08 -0400
-Date: Wed, 14 May 2008 08:57:29 -0700
-From: Greg KH <greg@kroah.com>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/3] struct class sem to mutex converting
-Message-ID: <20080514155729.GC28594@kroah.com>
-References: <20080509072231.GB2740@darkstar.te-china.tietoenator.com> <20080513220103.GA7599@kroah.com> <a8e1da0805131834g759523bfw396b0daa532252f9@mail.gmail.com>
+	Wed, 14 May 2008 11:58:29 -0400
+Date: Wed, 14 May 2008 17:58:27 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Greg KH <greg@kroah.com>
+cc: jgarzik@pobox.com, netdev@vger.kernel.org,
+       Andrew Bird <ajb@spheresystems.co.uk>,
+       Javier Marcet <javier@krausbeck.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Filip Aben <f.aben@option.com>,
+       Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
+       Oliver Neukum <oliver@neukum.org>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] HSO: add option hso driver
+In-Reply-To: <20080513215134.GC6139@kroah.com>
+Message-ID: <alpine.LNX.1.10.0805141746150.5292@fbirervta.pbzchgretzou.qr>
+References: <20080513215134.GC6139@kroah.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a8e1da0805131834g759523bfw396b0daa532252f9@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 14, 2008 at 09:34:13AM +0800, Dave Young wrote:
-> On Wed, May 14, 2008 at 6:01 AM, Greg KH <greg@kroah.com> wrote:
-> > On Fri, May 09, 2008 at 03:22:31PM +0800, Dave Young wrote:
-> >  > The class_device is already removed, so do the class->sem to mutex converting.
-> >
-> >  Are you sure this will work?  Have you tried running lockdep to verify
-> >  that there are no problems here?  People have tried this in the past
-> >  with devices and I don't think it will work here either :(
-> 
-> Yes, lockdep doesn't generate warnings on my side.
 
-I think Andrew's recent post to linux-scsi proves this is incorrect :)
+On Tuesday 2008-05-13 23:51, Greg KH wrote:
+>+#define MOD_AUTHOR			"Option Wireless"
+>+#define MOD_DESCRIPTION			"USB High Speed Option driver"
+>+#define MOD_LICENSE			"GPL"
+>...
+That MODULE_DESCRIPTION(MOD_DESCRIPTION) looks so redundant. [Same
+for MOD_AUTHOR and MOD_LICENSE.]
+Just write MODULE_DESCRIPTION("USB High Speed Option driver"), no?
 
-> I ever wanted to do the conversion, please see:
-> http://lkml.org/lkml/2008/1/12/49
-> 
-> The result is that device sem2mutex is not possible now, but class
-> sem2mutex is possible.  After the class_device removing, all the
-> class->sem usage exist in class.c except for i2c part.
-> 
-> So I make i2c to use class_for_each_device api, so we can do the
-> class->sem conversion.
+Also, "Option" sounds a bit misleading. Is Option a company name,
+a product name, or the original English word "option"? It's confusing.
 
-Ah, I didn't realize that the i2c patch was required.  Let me know when
-Jean takes that patch in his tree.
+>+struct hso_device {
+>+	union {
+>+		struct hso_serial *dev_serial;
+>+		struct hso_net *dev_net;
+>+	} port_data;
 
-thanks,
+This does not really need a name, since it is an anon union anyway.
 
-greg k-h
+>+};
+>+
+
+The usual bunch of \s.. er, has this gone through checkpatch? [Seems 
+mostly clean though.]
+
+>+/* Type of interface */
+>+#define HSO_INTF_MASK		0xFF00
+>+#define	HSO_INTF_MUX		0x0100
+>+#define	HSO_INTF_BULK   	0x0200
+>+
+>+/* Type of port */
+>+#define HSO_PORT_MASK		0xFF
+>+#define HSO_PORT_NO_PORT	0x0
+>+#define	HSO_PORT_CONTROL	0x1
+>+#define	HSO_PORT_APP		0x2
+>+#define	HSO_PORT_GPS		0x3
+>+#define	HSO_PORT_PCSC		0x4
+>+#define	HSO_PORT_APP2		0x5
+>+#define HSO_PORT_GPS_CONTROL	0x6
+>+#define HSO_PORT_MSD		0x7
+>+#define HSO_PORT_VOICE		0x8
+>+#define HSO_PORT_DIAG2		0x9
+>+#define	HSO_PORT_DIAG		0x10
+>+#define	HSO_PORT_MODEM		0x11
+>+#define	HSO_PORT_NETWORK	0x12
+>+
+>+/* Additional device info */
+>+#define HSO_INFO_MASK		0xFF000000
+>+#define HSO_INFO_CRC_BUG	0x01000000
+>+
+>+/* Sysfs attribute */
+>+static ssize_t hso_sysfs_show_porttype(struct device *dev,
+>+				       struct device_attribute *attr,
+>+				       char *buf)
+>+{
+>+	struct hso_device *hso_dev = dev->driver_data;
+>+	char *port_name;
+	const char *port_name;
+
+>...
+>+	case HSO_PORT_DIAG2:
+>+		port_name = "Diagnostic2";
+>+		break;
+>+	case HSO_PORT_MODEM:
+>+		port_name = "Modem";
+>+		break;
+>+	case HSO_PORT_NETWORK:
+>+		port_name = "Network";
+>+		break;
+>+	default:
+>+		port_name = "Unknown";
+>+		break;
+>+	}
+>+
+>+	return sprintf(buf, "%s\n", port_name);
+>+}
+
+You could refactor this using a static array mapping from port to 
+string. Same for the following three functions (hso_port_to_mux and 
+hso_mux_to_port).
+
+	static const char *const names[] = {
+		[HSO_PORT_xxx] = "xxx";
+	};
+
+>+static struct ethtool_ops ops = {
+const?
+
+>+	.get_drvinfo = hso_get_drvinfo,
+>+	.get_link = ethtool_op_get_link
+>+};
+>+
+>+static void hso_serial_set_termios(struct tty_struct *tty, struct ktermios *old)
+>+{
+[...]
+>+	/* done */
+>+	return;
+>+}
+
+I would have never thought! (Also elsewhere.)
+
