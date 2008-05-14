@@ -1,139 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759593AbYENGBw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756540AbYENGGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759593AbYENGBw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 02:01:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751882AbYENGBo
+	id S1756540AbYENGGX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 02:06:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbYENGGO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 02:01:44 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:52768 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751841AbYENGBn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 02:01:43 -0400
-Date: Wed, 14 May 2008 03:01:20 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Mike Isely <isely@pobox.com>
-Cc: isely@isely.net, Michael Krufky <mkrufky@linuxtv.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
-Subject: Re: [patch] video: build fix for drivers/media/video/pvrusb2/
-Message-ID: <20080514030120.7521b9a9@gaivota>
-In-Reply-To: <Pine.LNX.4.64.0805131101070.20885@cnc.isely.net>
-References: <20080511072137.GA16772@elte.hu>
-	<37219a840805110534r4865623y6f9510554e2716ac@mail.gmail.com>
-	<20080512235445.3a56cea0@gaivota>
-	<37219a840805122103u2a74b050h95c006f99ff8690f@mail.gmail.com>
-	<20080513124630.111c465b@gaivota>
-	<Pine.LNX.4.64.0805131050210.20885@cnc.isely.net>
-	<Pine.LNX.4.64.0805131101070.20885@cnc.isely.net>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
+	Wed, 14 May 2008 02:06:14 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:51486 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751273AbYENGGO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 02:06:14 -0400
+Date: Wed, 14 May 2008 08:06:11 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrea Arcangeli <andrea@qumranet.com>,
+       Andrew Morton <akpm@linux-foundation.org>, clameter@sgi.com,
+       steiner@sgi.com, holt@sgi.com, a.p.zijlstra@chello.nl,
+       kvm-devel@lists.sourceforge.net, kanojsarcar@yahoo.com,
+       rdreier@cisco.com, swise@opengridcomputing.com,
+       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
+       general@lists.openfabrics.org, hugh@veritas.com, rusty@rustcorp.com.au,
+       aliguori@us.ibm.com, chrisw@redhat.com, marcelo@kvack.org,
+       dada1@cosmosbay.com, paulmck@us.ibm.com
+Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
+Message-ID: <20080514060610.GB30448@wotan.suse.de>
+References: <6b384bb988786aa78ef0.1210170958@duo.random> <20080507234521.GN8276@duo.random> <20080508013459.GS8276@duo.random> <200805132214.27510.nickpiggin@yahoo.com.au> <1210743839.8297.55.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1210743839.8297.55.camel@pasglop>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 May 2008 11:02:05 -0500 (CDT)
-Mike Isely <isely@isely.net> wrote:
-
-> On Tue, 13 May 2008, Mike Isely wrote:
+On Tue, May 13, 2008 at 10:43:59PM -0700, Benjamin Herrenschmidt wrote:
 > 
-> > On Tue, 13 May 2008, Mauro Carvalho Chehab wrote:
+> On Tue, 2008-05-13 at 22:14 +1000, Nick Piggin wrote:
+> > ea.
 > > 
-> > > On Tue, 13 May 2008 00:03:02 -0400
-> > > "Michael Krufky" <mkrufky@linuxtv.org> wrote:
-> > > 
-> > > > 
-> > > > That sounds like it would be OK, although something like this would
-> > > > probably be better:
-> > > > 
-> > > >  config VIDEO_PVRUSB2
-> > > >        tristate "Hauppauge WinTV-PVR USB2 support"
-> > > > -       depends on VIDEO_V4L2 && I2C
-> > > > +       depends on VIDEO_V4L2 && I2C && (DVB_CORE if VIDEO_PVRUSB2_DVB)
-> > > >        select FW_LOADER
-> > > >        select MEDIA_TUNER
-> > > >        select VIDEO_TVEEPROM
-> > > 
-> > > This doesn't look to be a good idea, since VIDEO_PVRUSB2_DVB depends on
-> > > VIDEO_PVRUSB2. So, you'll create a circular dependency. The syntax I've
-> > > proposed seems cleaner. Of course, it needs to be tested. IMO, all hybrid
-> > > devices should be dependent of VIDEO_MEDIA. This will help to avoid this kind
-> > > of issue.
-> > > 
-> > > > I don't know if that syntax works for "depends on" , but it does work
-> > > > for select.
-> > > > 
-> > > > if "depends on FOO if BAR" doesnt work, would adding "select DVB_CORE
-> > > > if VIDEO_PVRUSB2_DVB" solve the problem?
-> > > 
-> > > Also, this leads into a circular reference.
-> > 
-> > Mauro:
-> > 
-> > Where is the loop that results in a circular reference?  No part of V4L 
-> > or DVB depends (or otherwise has any reliance) on VIDEO_PVRUSB2.  All 
-> > Mike Krufky is trying to set up is that VIDEO_PVRUSB2 should only depend 
-> > on DVB_CORE if the DVB part of the driver (i.e. VIDEO_PVRUSB2_DVB) has 
-> > been enabled.  Without VIDEO_PVRUSB2_DVB selected, then DVB_CORE is not 
-> > required by the driver.
-> > 
-> > I've been quiet about this issue because I'm not a kconfig expert, but 
-> > you've lost me with this conclusion.
-> > 
-> >   -Mike
+> > I don't see why you're bending over so far backwards to accommodate
+> > this GRU thing that we don't even have numbers for and could actually
+> > potentially be batched up in other ways (eg. using mmu_gather or
+> > mmu_gather-like idea).
 > 
-> Never mind.  I think I see it, and will figure out the rest off-line.
+> I agree, we're better off generalizing the mmu_gather batching
+> instead...
 
-The solution were not as easy as I've originally imagined. VIDEO_MEDIA logic
-were broken. So, all tuners were still broken.
+Well, the first thing would be just to get rid of the whole start/end
+idea, which completely departs from the standard Linux system of
+clearing ptes, then flushing TLBs, then freeing memory.
 
-I needed to fix VIDEO_MEDIA logic first, to obey to this truth table:
+The onus would then be on GRU to come up with some numbers to justify
+batching, and a patch which works nicely with the rest of the Linux
+mm. And yes, mmu-gather is *the* obvious first choice of places to
+look if one wanted batching hooks.
 
-CONFIG_VIDEO_DEV        CONFIG_DVB_CORE         CONFIG_VIDEO_MEDIA
-        N                       N                       N
-        N                       M                       M
-        N                       Y                       Y
-        M                       N                       M
-        M                       M                       M
-        M                       Y                       M
-        Y                       N                       Y
-        Y                       M                       M
-        Y                       Y                       Y
 
-After this change, a simple dependency add solved the reported issue:
+> I had some never-finished patches to use the mmu_gather for pretty much
+> everything except single page faults, tho various subtle differences
+> between archs and lack of time caused me to let them take the dust and
+> not finish them...
+> 
+> I can try to dig some of that out when I'm back from my current travel,
+> though it's probably worth re-doing from scratch now.
 
- config VIDEO_PVRUSB2
-	tristate "Hauppauge WinTV-PVR USB2 support"
-	depends on VIDEO_V4L2 && I2C
-+	depends on VIDEO_MEDIA  # Avoids pvrusb = Y / DVB = M
-
-I've tested the logic. seems fine now.
-
-I did a quick review at the other modules that has hybrid support (cx88,
-saa7134, em28xx, bttv) and they seemed ok to my eyes. Yet, I didn't test.
-
----
-
-There are other configurations that seem to be broken. For example, if
-V4L_CORE=m and DVB_CORE=y, a V4L driver should be 'M'. So, a tuner should also
-be 'M', otherwise, it will break compilation. a DVB support for that card will
-also be 'M', at the drivers I've reviewed.
-
-However, a DVB-only driver can be 'Y', but can select a tuner. This will cause
-a breakage.
-
-I'll try to simulate some of those issues and see what happens.
-
-Anyway, I've added severak Kbuild fixes at my -git tree:
-
-http://www.kernel.org/git/?p=linux/kernel/git/mchehab/v4l-dvb.git
-
-I intend to send the fixes I have later today. Now, I need to sleep ;)
-
-Cheers,
-Mauro
+I always liked the idea as you know. But I don't think that should
+be mixed in with the first iteration of the mmu notifiers patch
+anyway. GRU actually can work without batching, but there is simply
+some (unquantified to me) penalty for not batching it. I think it
+is far better to first put in a clean and simple and working functionality
+first. The idea that we have to unload some monster be-all-and-end-all
+solution onto mainline in a single go seems counter productive to me.
