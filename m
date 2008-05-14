@@ -1,82 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759171AbYENNl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762501AbYENNmO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759171AbYENNl2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 09:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbYENNlT
+	id S1762501AbYENNmO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 09:42:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753748AbYENNlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 09:41:19 -0400
-Received: from sacred.ru ([62.205.161.221]:37712 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750906AbYENNlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 09:41:18 -0400
-Message-ID: <482AE9FA.4080004@openvz.org>
-Date: Wed, 14 May 2008 17:32:42 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Wed, 14 May 2008 09:41:55 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:56046 "EHLO
+	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750906AbYENNly (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 09:41:54 -0400
+X-Greylist: delayed 392 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 May 2008 09:41:54 EDT
+Date: Wed, 14 May 2008 06:41:53 -0700 (PDT)
+From: Sage Weil <sage@newdream.net>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: POHMELFS high performance network filesystem. Transactions,
+ failover, performance.
+In-Reply-To: <20080514080801.GE28330@2ka.mipt.ru>
+Message-ID: <Pine.LNX.4.64.0805140638450.14334@cobra.newdream.net>
+References: <20080513174523.GA1677@2ka.mipt.ru> <20080513233341.47edea7f.akpm@linux-foundation.org>
+ <20080514074028.GA28330@2ka.mipt.ru> <20080514080801.GE28330@2ka.mipt.ru>
 MIME-Version: 1.0
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-CC: linux-mm@kvack.org, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [-mm][PATCH 4/4] Add memrlimit controller accounting and control
- (v4)
-References: <20080514130904.24440.23486.sendpatchset@localhost.localdomain> <20080514130951.24440.73671.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080514130951.24440.73671.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 14 May 2008 17:35:03 +0400 (MSD)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> This patch adds support for accounting and control of virtual address space
-> limits. The accounting is done via the rlimit_cgroup_(un)charge_as functions.
-> The core of the accounting takes place during fork time in copy_process(),
-> may_expand_vm(), remove_vma_list() and exit_mmap(). There are some special
-> cases that are handled here as well (arch/ia64/kernel/perform.c,
-> arch/x86/kernel/ptrace.c, insert_special_mapping())
+> On Wed, May 14, 2008 at 11:40:28AM +0400, Evgeniy Polyakov (johnpol@2ka.mipt.ru) wrote:
+> > > If any thread takes more than one kmap() at a time, it is deadlockable.
+> > > Because there is a finite pool of kmaps.  Everyone can end up holding
+> > > one or more kmaps, then waiting for someone else to release one.
+> > 
+> > It never takes the whole LAST_PKMAP maps. So the same can be applied to
+> > any user who kmaps at least one page - while user waits for free slot,
+> > it can be reused by someone else and so on.
 > 
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> ---
-> 
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> ---
-> 
->  arch/ia64/kernel/perfmon.c      |    6 ++
->  arch/x86/kernel/ptrace.c        |   17 +++++--
->  fs/exec.c                       |    5 ++
->  include/linux/memrlimitcgroup.h |   21 ++++++++
->  kernel/fork.c                   |    8 +++
->  mm/memrlimitcgroup.c            |   94 ++++++++++++++++++++++++++++++++++++++++
->  mm/mmap.c                       |   11 ++++
->  7 files changed, 157 insertions(+), 5 deletions(-)
-> 
-> diff -puN arch/ia64/kernel/perfmon.c~memrlimit-controller-address-space-accounting-and-control arch/ia64/kernel/perfmon.c
-> --- linux-2.6.26-rc2/arch/ia64/kernel/perfmon.c~memrlimit-controller-address-space-accounting-and-control	2008-05-14 18:09:32.000000000 +0530
-> +++ linux-2.6.26-rc2-balbir/arch/ia64/kernel/perfmon.c	2008-05-14 18:09:32.000000000 +0530
-> @@ -40,6 +40,7 @@
->  #include <linux/capability.h>
->  #include <linux/rcupdate.h>
->  #include <linux/completion.h>
-> +#include <linux/memrlimitcgroup.h>
->  
->  #include <asm/errno.h>
->  #include <asm/intrinsics.h>
-> @@ -2294,6 +2295,9 @@ pfm_smpl_buffer_alloc(struct task_struct
->  
->  	DPRINT(("sampling buffer rsize=%lu size=%lu bytes\n", rsize, size));
->  
-> +	if (memrlimit_cgroup_charge_as(mm, size >> PAGE_SHIFT))
-> +		return -ENOMEM;
-> +
+> Actually CIFS uses the same logic: maps multiple pages in wrteback path
+> and release them after received reply.
 
-AFAIS you didn't cover all the cases when VM expands. At least all
-the arch/ia64/ia32/binfmt_elf32.c is missed.
+Yes.  Only a pagevec at a time, though... apparently 14 is a small enough 
+number not to bite too many people in practice?
 
-I'd insert this charge into insert_vm_struct. This would a) cover
-all of the missed cases and b) reduce the amount of places to patch.
-
-[snip the rest of the patch]
+sage
