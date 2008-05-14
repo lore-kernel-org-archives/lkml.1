@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753807AbYENPPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762865AbYENPQN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753807AbYENPPi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 11:15:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758772AbYENPPO
+	id S1762865AbYENPQN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 11:16:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760315AbYENPP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 11:15:14 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:48152 "EHLO relay.sgi.com"
+	Wed, 14 May 2008 11:15:26 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:48174 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758494AbYENPPM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 11:15:12 -0400
+	id S1760209AbYENPPY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 11:15:24 -0400
 From: Paul Jackson <pj@sgi.com>
 To: "Andrew Morton" <akpm@linux-foundation.org>
 Cc: "Thomas Gleixner" <tglx@linutronix.de>, "Jack Steiner" <steiner@sgi.com>,
@@ -16,63 +16,52 @@ Cc: "Thomas Gleixner" <tglx@linutronix.de>, "Jack Steiner" <steiner@sgi.com>,
        linux-kernel@vger.kernel.org, "Huang, Ying" <ying.huang@intel.com>,
        "Andi Kleen" <andi@firstfloor.org>, "Ingo Molnar" <mingo@elte.hu>,
        Paul Jackson <pj@sgi.com>
-Date: Wed, 14 May 2008 08:15:10 -0700
-Message-Id: <20080514151510.148486.51487.sendpatchset@jackhammer.engr.sgi.com>
+Date: Wed, 14 May 2008 08:15:23 -0700
+Message-Id: <20080514151523.148486.35372.sendpatchset@jackhammer.engr.sgi.com>
 In-Reply-To: <20080514151504.148486.32236.sendpatchset@jackhammer.engr.sgi.com>
 References: <20080514151504.148486.32236.sendpatchset@jackhammer.engr.sgi.com>
-Subject: [PATCH 2/10] x86 boot: remove some unused extern function declarations
+Subject: [PATCH 4/10] x86 boot: simplify pageblock_bits enum declaration
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Jackson <pj@sgi.com
+From: Paul Jackson <pj@sgi.com>
 
-Remove three extern declarations for routines
-that don't exist.  Fix a typo in a comment.
+The use of #defines with '##' pre-processor concatenation is a useful
+way to form several symbol names with a common pattern.  But when there
+is just a single name obtained from that #define, it's just obfuscation.
+Better to just write the plain symbol name, as is.
+
+The following patch is a result of my wasting ten minutes looking through
+the kernel to figure out what 'PB_migrate_end' meant, and forgetting what
+I came to do, by the time I figured out that the #define PB_range macro
+defined it.
 
 Signed-off-by: Paul Jackson <pj@sgi.com>
 
 ---
- arch/x86/mm/numa_64.c |    2 +-
- include/linux/efi.h   |    4 ----
- 2 files changed, 1 insertion(+), 5 deletions(-)
+ include/linux/pageblock-flags.h |    8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
 
---- 2.6.26-rc2-mm1.orig/include/linux/efi.h	2008-05-14 03:07:03.231239814 -0700
-+++ 2.6.26-rc2-mm1/include/linux/efi.h	2008-05-14 03:07:07.039302049 -0700
-@@ -287,7 +287,6 @@ efi_guid_unparse(efi_guid_t *guid, char 
- extern void efi_init (void);
- extern void *efi_get_pal_addr (void);
- extern void efi_map_pal_code (void);
--extern void efi_map_memmap(void);
- extern void efi_memmap_walk (efi_freemem_callback_t callback, void *arg);
- extern void efi_gettimeofday (struct timespec *ts);
- extern void efi_enter_virtual_mode (void);	/* switch EFI to virtual mode, if possible */
-@@ -295,14 +294,11 @@ extern u64 efi_get_iobase (void);
- extern u32 efi_mem_type (unsigned long phys_addr);
- extern u64 efi_mem_attributes (unsigned long phys_addr);
- extern u64 efi_mem_attribute (unsigned long phys_addr, unsigned long size);
--extern int efi_mem_attribute_range (unsigned long phys_addr, unsigned long size,
--				    u64 attr);
- extern int __init efi_uart_console_only (void);
- extern void efi_initialize_iomem_resources(struct resource *code_resource,
- 		struct resource *data_resource, struct resource *bss_resource);
- extern unsigned long efi_get_time(void);
- extern int efi_set_rtc_mmss(unsigned long nowtime);
--extern int is_available_memory(efi_memory_desc_t * md);
- extern struct efi_memory_map memmap;
+--- linux.orig/include/linux/pageblock-flags.h	2008-05-13 05:42:39.869811856 -0700
++++ linux/include/linux/pageblock-flags.h	2008-05-13 05:51:47.994829315 -0700
+@@ -25,13 +25,11 @@
  
- /**
---- 2.6.26-rc2-mm1.orig/arch/x86/mm/numa_64.c	2008-05-14 03:07:03.231239814 -0700
-+++ 2.6.26-rc2-mm1/arch/x86/mm/numa_64.c	2008-05-14 03:07:07.047302180 -0700
-@@ -231,7 +231,7 @@ void __init setup_node_bootmem(int nodei
- 	else
- 		bootmap_start = round_up(start, PAGE_SIZE);
- 	/*
--	 * SMP_CAHCE_BYTES could be enough, but init_bootmem_node like
-+	 * SMP_CACHE_BYTES could be enough, but init_bootmem_node like
- 	 * to use that to align to PAGE_SIZE
- 	 */
- 	bootmap = early_node_mem(nodeid, bootmap_start, end,
+ #include <linux/types.h>
+ 
+-/* Macro to aid the definition of ranges of bits */
+-#define PB_range(name, required_bits) \
+-	name, name ## _end = (name + required_bits) - 1
+-
+ /* Bit indices that affect a whole block of pages */
+ enum pageblock_bits {
+-	PB_range(PB_migrate, 3), /* 3 bits required for migrate types */
++	PB_migrate,
++	PB_migrate_end = PB_migrate + 3 - 1,
++			/* 3 bits required for migrate types */
+ 	NR_PAGEBLOCK_BITS
+ };
+ 
 
 -- 
                           I won't rest till it's the best ...
