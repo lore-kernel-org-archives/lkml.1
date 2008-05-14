@@ -1,82 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762575AbYENNJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762678AbYENNKI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762575AbYENNJt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 09:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762439AbYENNJj
+	id S1762678AbYENNKI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 09:10:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762455AbYENNJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 14 May 2008 09:09:41 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57069 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758354AbYENNJj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 14 May 2008 09:09:39 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:48734 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762430AbYENNJi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 09:09:38 -0400
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: linux-mm@kvack.org
-Cc: Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, Pavel Emelianov <xemul@openvz.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Wed, 14 May 2008 18:39:15 +0530
-Message-Id: <20080514130915.24440.56106.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080514130904.24440.23486.sendpatchset@localhost.localdomain>
-References: <20080514130904.24440.23486.sendpatchset@localhost.localdomain>
-Subject: [-mm][PATCH 1/4] Add memrlimit controller documentation (v4)
+Message-ID: <482AE47F.7080700@redhat.com>
+Date: Wed, 14 May 2008 09:09:19 -0400
+From: Steven Rostedt <srostedt@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: mingo@elte.hu, acme@redhat.com, linux-kernel@vger.kernel.org,
+       rostedt@goodmis.org
+Subject: Re: [PATCH 0/2]: Add sparc64 ftrace support.
+References: <20080513.220652.24245811.davem@davemloft.net>
+In-Reply-To: <20080513.220652.24245811.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Miller wrote:
+> This was a lot more trivial than I expected, about a 20 minute
+> hack.  Most of the time was spent on test boots :)
 
+Cool! This is what we tried to do with ftrace (make it trivial ;-)
 
-Documentation patch - describes the goals and usage of the memrlimit
-controller.
+> 
+> The first patch removes the packed attribute from the ftrace_page
+> blob of dynamic ftrace entries, because not only does it cause
+> unaligned accesses on sparc64 it's also totally useless.
+> 
+> The second patch adds sparc64 ftrace support.
+> 
+> One thing I noticed is that sparc64 uses an mcount implementation
+> already for a quick-and-dirty stack usage checker.  I tried to
+> make them live alongside eachother.
+> 
+> Next, I think the mcount symbol export needs some tweaking.  On sparc,
+> the symbol _mcount is what the compiler references (this seems to be a
+> sparc sysv4'ism) whereas on x86 it appears that plain "mcount" is
+> used.  I provide both symbols and we already have a local export of
+> "_mcount" to take care of this.  I think architectures should deal
+> with this symbol exporting since it is different on every system.
 
+No, the same is for PPC (_mcount). I have a port for this ready. I'll 
+look at your code and compare it with my PPC port.
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
+Ingo, do you think it's time I can hand the PPC stuff over to you? I'll 
+just have to update it to the lastest linux-ftrace.git.
 
- Documentation/controllers/memrlimit.txt |   29 +++++++++++++++++++++++++++++
- 1 file changed, 29 insertions(+)
+Thanks,
 
-diff -puN /dev/null Documentation/controllers/memrlimit.txt
---- /dev/null	2008-05-14 04:27:30.032276540 +0530
-+++ linux-2.6.26-rc2-balbir/Documentation/controllers/memrlimit.txt	2008-05-14 18:35:55.000000000 +0530
-@@ -0,0 +1,29 @@
-+This controller is enabled by the CONFIG_CGROUP_MEMRLIMIT_CTLR option. Prior
-+to reading this documentation please read Documentation/cgroups.txt and
-+Documentation/controllers/memory.txt. Several of the principles of this
-+controller are similar to the memory resource controller.
-+
-+This controller framework is designed to be extensible to control any
-+memory resource limit with little effort.
-+
-+This new controller, controls the address space expansion of the tasks
-+belonging to a cgroup. Address space control is provided along the same lines as
-+RLIMIT_AS control, which is available via getrlimit(2)/setrlimit(2).
-+The interface for controlling address space is provided through
-+"rlimit.limit_in_bytes". The file is similar to "limit_in_bytes" w.r.t. the user
-+interface. Please see section 3 of the memory resource controller documentation
-+for more details on how to use the user interface to get and set values.
-+
-+The "memrlimit.usage_in_bytes" file provides information about the total address
-+space usage of the tasks in the cgroup, in bytes.
-+
-+Advantages of providing this feature
-+
-+1. Control over virtual address space allows for a cgroup to fail gracefully
-+   i.e., via a malloc or mmap failure as compared to OOM kill when no
-+   pages can be reclaimed.
-+2. It provides better control over how many pages can be swapped out when
-+   the cgroup goes over its limit. A badly setup cgroup can cause excessive
-+   swapping. Providing control over the address space allocations ensures
-+   that the system administrator has control over the total swapping that
-+   can take place.
-_
+-- Steve
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
