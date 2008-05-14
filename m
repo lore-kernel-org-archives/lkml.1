@@ -1,66 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761262AbYENOoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761565AbYENOp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761262AbYENOoY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 10:44:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757199AbYENOoN
+	id S1761565AbYENOp2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 10:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbYENOpU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 10:44:13 -0400
-Received: from styx.suse.cz ([82.119.242.94]:36353 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755639AbYENOoL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 10:44:11 -0400
-Date: Wed, 14 May 2008 16:44:10 +0200
-From: Jan Kara <jack@suse.cz>
-To: Josef Bacik <jbacik@redhat.com>
-Cc: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, sct@redhat.com,
-       adilger@clusterfs.com, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, Jan Kara <jack@suse.cz>,
-       Mingming Cao <cmm@us.ibm.com>,
-       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
-       sugita <yumiko.sugita.yf@hitachi.com>
-Subject: Re: [PATCH 4/4] jbd: fix error handling for checkpoint io (rebased)
-Message-ID: <20080514144410.GG24363@duck.suse.cz>
-References: <482A6E00.6080303@hitachi.com> <482A6FA3.9000104@hitachi.com> <20080514131621.GB20256@unused.rdu.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080514131621.GB20256@unused.rdu.redhat.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 14 May 2008 10:45:20 -0400
+Received: from mail.queued.net ([207.210.101.209]:3826 "EHLO mail.queued.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751769AbYENOpT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 10:45:19 -0400
+Date: Wed, 14 May 2008 10:49:38 -0400
+From: Andres Salomon <dilinger@queued.net>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Andy Whitcroft <apw@shadowen.org>, mingo@elte.hu, rdunlap@xenotime.net,
+       jschopp@austin.ibm.com
+Subject: Re: [PATCH] checkpatch: update the 80-char-line check to allow for
+ long strings
+Message-ID: <20080514104938.4b16c735@ephemeral>
+In-Reply-To: <1210751346.10126.8.camel@twins>
+References: <20080514005325.765178fc@ephemeral>
+	<1210751346.10126.8.camel@twins>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >  
-> > Index: linux-2.6.26-rc2/fs/ext3/super.c
-> > ===================================================================
-> > --- linux-2.6.26-rc2.orig/fs/ext3/super.c
-> > +++ linux-2.6.26-rc2/fs/ext3/super.c
-> > @@ -395,7 +395,10 @@ static void ext3_put_super (struct super
-> >  	ext3_xattr_put_super(sb);
-> >  	journal_destroy(sbi->s_journal);
-> >  	if (!(sb->s_flags & MS_RDONLY)) {
-> > -		EXT3_CLEAR_INCOMPAT_FEATURE(sb, EXT3_FEATURE_INCOMPAT_RECOVER);
-> > +		if (!is_checkpoint_aborted(sbi->s_journal)) {
-> > +			EXT3_CLEAR_INCOMPAT_FEATURE(sb,
-> > +				EXT3_FEATURE_INCOMPAT_RECOVER);
-> > +		}
-> >  		es->s_state = cpu_to_le16(sbi->s_mount_state);
-> >  		BUFFER_TRACE(sbi->s_sbh, "marking dirty");
-> >  		mark_buffer_dirty(sbi->s_sbh);
-> 
-> Is this bit here really needed?  If we abort the journal the fs will be mounted
-> read only and we should never get in here.  Is there a case where we could abort
-> the journal and not be flipped to being read-only?  If there is such a case I
-> would think that we should fix that by making the fs read-only, and not have
-> this check.
-  Actually, journal_abort() (which could be called from journal_destroy())
-does nothing to the filesystem as such. So at this moment, ext3 can still
-happily think everything is OK. We only detect aborted journal in
-ext3_journal_start_sb() and call ext3_abort() in that case, which does all
-that is needed...
+On Wed, 14 May 2008 09:49:06 +0200
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+> On Wed, 2008-05-14 at 00:53 -0400, Andres Salomon wrote:
+> > 19:29 * dilinger sends his patch to lkml for a proper flaming
+> > 19:32  Quozl> dilinger: it's called "patch hardening"?  ;-}  the
+> > heat of the flames makes the patch stronger.
+> > 
+> > I've wasted too much time massaging printk strings in order to
+> > satisfy checkpatch.pl.  Comments on this?
+> 
+> How about treating like its meant to be; as a guide instead of a hard
+> rule. That means you can ignore it with good taste.. :-)
+> 
+> 
+
+The point is that we tell people to make sure that their patches are
+checkpatch-clean.  Let's make the tool reflect what we're actually
+looking for.
