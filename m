@@ -1,40 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754754AbYENUnW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754911AbYENUou@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754754AbYENUnW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 16:43:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbYENUnL
+	id S1754911AbYENUou (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 16:44:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751071AbYENUom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 16:43:11 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:47918 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751585AbYENUnK (ORCPT
+	Wed, 14 May 2008 16:44:42 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:41513 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750862AbYENUom (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 16:43:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=NzRactfWFbX/bmCHepLPIsAK1XSbYwAbLcuxGVqLOHVf14slGQarrQGHnCDJByaZ1BXNMxJ6KatnH+ut5ZtXm3gSyqnwypZJyHLj0OXeg/hzT5I+cAZA4/cwzZq8qcQpzoJxm6TxFkfItjfqZHzc7tA/5wzjBT3yWXyQgUbRLdY=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: [PATCH 03/12] ide: use the common ascii hex helpers
-Date: Wed, 14 May 2008 22:48:22 +0200
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-ide <linux-ide@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <1210619136.24092.54.camel@brick>
-In-Reply-To: <1210619136.24092.54.camel@brick>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Wed, 14 May 2008 16:44:42 -0400
+Date: Wed, 14 May 2008 13:43:18 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, davidel@xmailserver.org, drepper@redhat.com
+Subject: Re: 2.6.26-rc2-mm1 (CONFIG_*FD build errors)
+Message-Id: <20080514134318.d888457f.randy.dunlap@oracle.com>
+In-Reply-To: <20080514010129.4f672378.akpm@linux-foundation.org>
+References: <20080514010129.4f672378.akpm@linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805142248.22642.bzolnier@gmail.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 12 May 2008, Harvey Harrison wrote:
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+On Wed, 14 May 2008 01:01:29 -0700 Andrew Morton wrote:
 
-Acked-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> 
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.26-rc2/2.6.26-rc2-mm1/
+
+With CONFIG_*FD=n:
+# CONFIG_SIGNALFD is not set
+# CONFIG_TIMERFD is not set
+# CONFIG_EVENTFD is not set
+
+the build fails with:
+
+arch/x86/kernel/built-in.o: In function `sys_call_table':
+(.rodata+0x89c): undefined reference to `sys_signalfd4'
+arch/x86/kernel/built-in.o: In function `sys_call_table':
+(.rodata+0x8a0): undefined reference to `sys_eventfd2'
+make[1]: *** [.tmp_vmlinux1] Error 1
+
+---
+~Randy
