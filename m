@@ -1,53 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757763AbYENWuf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756408AbYENWxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757763AbYENWuf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 18:50:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbYENWuV
+	id S1756408AbYENWxl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 18:53:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751731AbYENWxd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 18:50:21 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:37755 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750939AbYENWuU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 18:50:20 -0400
-Date: Thu, 15 May 2008 02:50:08 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Jamie Lokier <jamie@shareable.org>, Sage Weil <sage@newdream.net>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: POHMELFS high performance network filesystem. Transactions, failover, performance.
-Message-ID: <20080514225008.GB3739@2ka.mipt.ru>
-References: <20080513174523.GA1677@2ka.mipt.ru> <4829E752.8030104@garzik.org> <20080513205114.GA16489@2ka.mipt.ru> <Pine.LNX.4.64.0805140623001.14334@cobra.newdream.net> <20080514135156.GA23131@2ka.mipt.ru> <482B378C.5070807@garzik.org> <20080514193843.GB10165@2ka.mipt.ru> <20080514215704.GE23758@shareable.org> <482B6259.3070507@garzik.org> <20080514224132.GB19570@2ka.mipt.ru>
+	Wed, 14 May 2008 18:53:33 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36089 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751680AbYENWxc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 18:53:32 -0400
+Date: Wed, 14 May 2008 15:52:44 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: sitsofe@yahoo.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       pavel@ucw.cz, a.p.zijlstra@chello.nl, jbarnes@virtuousgeek.org
+Subject: Re: BUG: sleeping function called from invalid context when
+ hibernating
+Message-Id: <20080514155244.c064559f.akpm@linux-foundation.org>
+In-Reply-To: <200805150027.53217.rjw@sisk.pl>
+References: <g0fnt2$5cr$1@ger.gmane.org>
+	<200805150027.53217.rjw@sisk.pl>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080514224132.GB19570@2ka.mipt.ru>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 15, 2008 at 02:41:33AM +0400, Evgeniy Polyakov (johnpol@2ka.mipt.ru) wrote:
-> > This is the core reason why I am so interested in distributed storage... 
-> >  a single storage device is usually slower than network wire speed. 
-> > Multiple nodes helps remove that limitation and max out the network.
-> > 
-> > I want to be able to stream data _faster_ than a single hard drive can 
-> > handle :)
+On Thu, 15 May 2008 00:27:52 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+
+> On Thursday, 15 of May 2008, Sitsofe Wheeler wrote:
+> > When using the linux-next kernel from 13 May 2008 I see the following in 
+> > the logs when resuming from hibernate (system is Ubuntu 7.10):
 > 
-> In that case yes, network will _not_ be saturated and multiple
-> simultaneous streams will have a win, but POHMELFS client design was
-> specially created to increase network performance as much as possible,
-> since we can increase storage speed (add more drives, more RAM
-> for caches, better hardware), but can not easily increase network
-> bandwidth.
+> Something in the PCI department attempted to take a lock with interrupts
+> disabled, but that lock had previously been held with interrupts enabled, or so
+> it seems.  That something was called from pci_device_resume_early and it was
+> a VIA quirk, AFAICS.
+> 
+> I always need some help from people who actually understand these messages,
+> though.  Oh, well.
+> 
+> > [ 3283.928033] BUG: sleeping function called from invalid context at kernel/rwsem.c:21
+> > [ 3283.928033] in_atomic():0, irqs_disabled():1
+> > [ 3283.928033] 3 locks held by hibernate.sh/5892:
+> > [ 3283.928033]  #0:  (&buffer->mutex){--..}, at: [<c01958e3>] sysfs_write_file+0x25/0xdf
+> > [ 3283.928033]  #1:  (pm_mutex){--..}, at: [<c013d6c1>] hibernate+0x10/0x177
+> > [ 3283.928033]  #2:  (pm_sleep_rwsem){--..}, at: [<c021c32f>] device_suspend+0x2a/0x1c7
+> > [ 3283.928033] irq event stamp: 461790
+> > [ 3283.928033] hardirqs last  enabled at (461789): [<c0298283>] __mutex_unlock_slowpath+0xd6/0xde
+> > [ 3283.928033] hardirqs last disabled at (461790): [<c013d5fa>] hibernation_snapshot+0xab/0x162
+> > [ 3283.928033] softirqs last  enabled at (461166): [<c011e1de>] __do_softirq+0x8f/0x94
+> > [ 3283.928033] softirqs last disabled at (461161): [<c011e20d>] do_softirq+0x2a/0x42
+> > [ 3283.928033] Pid: 5892, comm: hibernate.sh Not tainted 2.6.25skw #25
+> > [ 3283.928033]  [<c0114aad>] __might_sleep+0xb8/0xbf
+> > [ 3283.928033]  [<c0298835>] down_read+0x19/0x68
+> > [ 3283.928033]  [<c01c5152>] pci_get_subsys+0x48/0xc5
+> > [ 3283.928033]  [<c01c51dd>] pci_get_device+0xe/0x10
+> > [ 3283.928033]  [<c01c41eb>] quirk_vialatency+0x1b/0xac
+> > [ 3283.928033]  [<c01c3fe0>] pci_fixup_device+0x70/0x7c
+> > [ 3283.928033]  [<c01c4ae5>] pci_device_resume_early+0x17/0x2e
+> > [ 3283.928033]  [<c021c154>] dpm_power_up+0x66/0x94
+> > [ 3283.928033]  [<c021c4d9>] device_power_up+0xd/0xf
+> > [ 3283.928033]  [<c013d66f>] hibernation_snapshot+0x120/0x162
+> > [ 3283.928033]  [<c013d771>] hibernate+0xc0/0x177
+> > [ 3283.928033]  [<c013c5ce>] ? state_store+0x0/0xaa
+> > [ 3283.928033]  [<c013c613>] state_store+0x45/0xaa
+> > [ 3283.928033]  [<c013c5ce>] ? state_store+0x0/0xaa
+> > [ 3283.928033]  [<c01b0c3d>] kobj_attr_store+0x1a/0x22
+> > [ 3283.928033]  [<c019596b>] sysfs_write_file+0xad/0xdf
+> > [ 3283.928033]  [<c01958be>] ? sysfs_write_file+0x0/0xdf
+> > [ 3283.928033]  [<c0164afd>] vfs_write+0x88/0xf8
+> > [ 3283.928033]  [<c0164f76>] sys_write+0x3b/0x60
+> > [ 3283.928033]  [<c01047a2>] sysenter_past_esp+0x5f/0xa5
+> > [ 3283.928033]  =======================
+> > [ 3283.928033] pci 0000:00:07.0: Disabling VIA external APIC routing
+> > 
 
-Actually experiments with async processing in POHMELFS lead to the
-conclusion, that if protocol waits until request is completed and does
-not proceed with the next one (like CIFS and somewhat NFS), such design
-does not scale to multiple parallel IOs.
-That from different angle shows benefits of caching and aiming at
-getting as much performance as possible from single node connection :)
+That's the device_power_up() "Must be called with interrupts disabled"
+thing.
 
--- 
-	Evgeniy Polyakov
+We break it again and again.
