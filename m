@@ -1,80 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755153AbYENQ4X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757672AbYENQ6Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755153AbYENQ4X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 12:56:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbYENQ4N
+	id S1757672AbYENQ6Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 12:58:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752226AbYENQ6Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 12:56:13 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:53188 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751649AbYENQ4M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 12:56:12 -0400
-Date: Wed, 14 May 2008 19:54:34 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+	Wed, 14 May 2008 12:58:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54202 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752086AbYENQ6Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 12:58:16 -0400
+Date: Wed, 14 May 2008 09:56:18 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Robin Holt <holt@sgi.com>
+cc: Nick Piggin <npiggin@suse.de>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrea Arcangeli <andrea@qumranet.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [GIT PATCHES] V4L/DVB fixes for 2.6.26
-Message-ID: <20080514165434.GC22115@cs181133002.pp.htv.fi>
-References: <20080514114910.4bcfd220@gaivota>
+       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
+       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>
+Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
+In-Reply-To: <20080514162223.GZ9878@sgi.com>
+Message-ID: <alpine.LFD.1.10.0805140954280.3019@woody.linux-foundation.org>
+References: <6b384bb988786aa78ef0.1210170958@duo.random> <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org> <20080508003838.GA9878@sgi.com> <200805132206.47655.nickpiggin@yahoo.com.au> <20080513153238.GL19717@sgi.com> <20080514041122.GE24516@wotan.suse.de>
+ <20080514112625.GY9878@sgi.com> <alpine.LFD.1.10.0805140807400.3019@woody.linux-foundation.org> <20080514162223.GZ9878@sgi.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080514114910.4bcfd220@gaivota>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 14, 2008 at 11:49:10AM -0300, Mauro Carvalho Chehab wrote:
->...
-> PS.: There are yet a number of other Kconfig potential breakages at V4L/DVB. I'm 
-> currently working on fixing those issues. Basically, what users do is to select 
-> I2C, DVB and V4L as module. This works fine, but more complex scenarios where
-> you mix 'M' and 'Y' inside the subsystem generally cause compilation breakage.
-> Those scenarios are more theorical, since there's not much practical sense on
-> having a DVB driver foo as module, and V4L driver bar as in-kernel. However,
-> the better is to not allow compilation of the scenarios that don't work.
+
+
+On Wed, 14 May 2008, Robin Holt wrote:
 > 
-> The main trouble at drivers/media Kbuild is that several rules there assumed that
-> "select" would check the "depends on" dependencies of the selected drivers.
-> However, this feature doesn't exist at the current Kbuild implementation. Even
-> if implemented, I suspect that this will generate circular dependency errors on
-> some cases.
->...
+> Would it be acceptable to always put a sleepable stall in even if the 
+> code path did not require the pages be unwritable prior to continuing?  
+> If we did that, I would be freed from having a pool of invalidate 
+> threads ready for XPMEM to use for that work. Maybe there is a better 
+> way, but the sleeping requirement we would have on the threads make most 
+> options seem unworkable.
 
-The basic problem is that drivers/media/ does the most fancy kconfig 
-stuff in the kernel since it tries to both have very fine grained 
-dependencies and offer a usable kconfig UI to the user, which results
-in very complicated dependencies.
+I'm not understanding the question. If you can do you management outside 
+of the spinlocks, then you can obviously do whatever you want, including 
+sleping. It's changing the existing spinlocks to be sleepable that is not 
+acceptable, because it's such a performance problem.
 
-We are not getting this solved by any changes in the kconfig 
-implementation.
-
-Thinking about reasonable ways to reduce the problem space:
-
-Where could we reduce the complexity without big disadvantages?
-
-Could we e.g. let VIDEO_DEV select I2C which would remove all the 
-fiddling with I2C dependencies (which is a bigger part of recent
-problems)?
-
-I can make a patch for it after this pull went into Linus' tree if it is 
-considered an acceptable option.
-
-> Cheers,
-> Mauro.
->...
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+		Linus
