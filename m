@@ -1,109 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753647AbYENPNX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756848AbYENPO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753647AbYENPNX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 11:13:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750988AbYENPNI
+	id S1756848AbYENPO1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 11:14:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753807AbYENPOS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 11:13:08 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:2772 "EHLO
-	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751072AbYENPMz (ORCPT
+	Wed, 14 May 2008 11:14:18 -0400
+Received: from mu-out-0910.google.com ([209.85.134.191]:28422 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753990AbYENPOR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 11:12:55 -0400
-Subject: Re: volanoMark regression with kernel 2.6.26-rc1
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: vatsa@linux.vnet.ibm.com
-Cc: Mike Galbraith <efault@gmx.de>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <20080514134414.GA12693@linux.vnet.ibm.com>
-References: <1210226013.3453.113.camel@ymzhang>
-	 <20080508061125.GC3644@linux.vnet.ibm.com>
-	 <20080509155240.GH3612@linux.vnet.ibm.com>
-	 <1210556351.3151.2.camel@ymzhang>
-	 <20080512023758.GN3612@linux.vnet.ibm.com>
-	 <1210563200.3151.10.camel@ymzhang>
-	 <20080512045246.GP3612@linux.vnet.ibm.com>
-	 <1210568533.3151.13.camel@ymzhang>
-	 <1210583090.7402.4.camel@marge.simson.net>
-	 <1210584047.6524.12.camel@lappy.programming.kicks-ass.net>
-	 <20080514134414.GA12693@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Wed, 14 May 2008 17:12:47 +0200
-Message-Id: <1210777967.10126.17.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 14 May 2008 11:14:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=lG6kDpycoWBRh+Zdp9hkvNwfm0rCx4q7SFv1iSqPrpyTBjC5cZh4neLjyLK/VlHwh2//HVf+1EeZqlxTVeMFl0y6dEk3pK2hCNhEHILgRgBOFW0KbGms/DN7x1QXnHwiVesEQUBWA7nxc7r8GrAcav7GzXcMyRjic9/yyJFcokM=
+Date: Wed, 14 May 2008 19:14:07 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Andreas Schwab <schwab@suse.de>
+Cc: Adrian Bunk <bunk@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: m68k: main.c:(.init.text+0x730): undefined reference to
+	`strlen'
+Message-ID: <20080514151407.GD6902@cvg>
+References: <Pine.LNX.4.64.0805140958400.5778@anakin> <jeprrpth5m.fsf@sykes.suse.de> <20080514141056.GB19909@cs181133002.pp.htv.fi> <jeabitt0xj.fsf@sykes.suse.de> <20080514144031.GA6902@cvg> <je63thszo6.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <je63thszo6.fsf@sykes.suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Andreas Schwab - Wed, May 14, 2008 at 04:55:37PM +0200]
+| Cyrill Gorcunov <gorcunov@gmail.com> writes:
+| 
+| > I think it would help to see ..tmp_vmlinux1.cmd to ensure for inclusion
+| > of lib/lib.a. strlen was there without my patch as Andreas already pointed,
+| > I've just added strncat wich is coming from lib/string.o for this arch.
+| 
+| Actually the way strncat is used here is broken anyway, it does not
+| prevent array overrun.  The third argument of strncat only limits the
+| amount of characters copied, without taking into account the length of
+| the string already in the buffer.  Consequently gcc has optimized the
+| call to strncat into a simple call to strcat, since none of the copied
+| strings are longer than sizeof(msgbuf).  This strcat call is then
+| expanded to include a call to strlen.
+| 
+| So a better fix would probably be to make msgbuf big enough and use
+| strcat instead.
+| 
+| Andreas.
+| 
+| 
 
-> +#define GROUP_SCALE	(2*1024)
-> +
->  static inline void inc_cpu_load(struct rq *rq, unsigned long load)
->  {
-> +	load *= GROUP_SCALE;
->  	update_load_add(&rq->load, load);
->  }
->  
->  static inline void dec_cpu_load(struct rq *rq, unsigned long load)
->  {
-> +	load *= GROUP_SCALE;
->  	update_load_sub(&rq->load, load);
->  }
+Andreas, could you test/review the following patch
+(what is worse - I *have* introduced buffer overflow with my
+patch, so I think we should fix it asap)
+---
 
-
-Yeah, this bit makes a huge difference; I do that by:
-
-mkdir /cgroup/foo
-for i in `cat /cgroup/tasks`; do echo $i > /cgroup/foo/tasks; done
-echo $((1024*1024)) > /cgroup/foo/cpu.shares
-
-I'm still pulling my hairs out on why this makes a difference though - I
-eliminated all direct assumption on SCHED_LOAD_SCALE(_FUZZ) with an
-average of the weight per task. - but all that doesn't help (much)
-
-A few other things I found that make a significant difference:
-
-
-
-+static void update_aggregate(int cpu, struct sched_domain *sd)
-+{
-+       aggregate_walk_tree(aggregate_get_down, aggregate_get_nop, cpu, sd);
-+}
-
-
-@@ -3224,6 +3189,8 @@ static int move_tasks(struct rq *this_rq, int this_cpu, st
-ruct rq *busiest,
-        unsigned long total_load_moved = 0;
-        int this_best_prio = this_rq->curr->prio;
-
-+       update_aggregate(this_cpu, sd);
-+
-        do {
-                total_load_moved +=
-                        class->load_balance(this_rq, this_cpu, busiest,
-
-
-
-and
-
-@@ -1169,7 +1168,10 @@ static unsigned long wakeup_gran(struct sched_entity *se)
-         * More easily preempt - nice tasks, while not making it harder for
-         * + nice tasks.
-         */
--       gran = calc_delta_asym(sysctl_sched_wakeup_granularity, se);
-+       if (sched_feat(ASYM_GRAN))
-+               gran = calc_delta_asym(sysctl_sched_wakeup_granularity, se);
-+       else
-+               gran = calc_delta_fair(sysctl_sched_wakeup_granularity, se);
-
-        return gran;
- }
-
-
-the asym logic is wrong wrt shares - it should look at tg->weight
-
+Index: linux-2.6.git/init/main.c
+===================================================================
+--- linux-2.6.git.orig/init/main.c	2008-05-14 17:55:10.000000000 +0400
++++ linux-2.6.git/init/main.c	2008-05-14 19:11:18.000000000 +0400
+@@ -702,7 +702,7 @@ static void __init do_initcalls(void)
+ 
+ 	for (call = __initcall_start; call < __initcall_end; call++) {
+ 		ktime_t t0, t1, delta;
+-		char msgbuf[40];
++		char msgbuf[64];
+ 		int result;
+ 
+ 		if (initcall_debug) {
+@@ -729,11 +729,11 @@ static void __init do_initcalls(void)
+ 			sprintf(msgbuf, "error code %d ", result);
+ 
+ 		if (preempt_count() != count) {
+-			strncat(msgbuf, "preemption imbalance ", sizeof(msgbuf));
++			strcat(msgbuf, "preemption imbalance ");
+ 			preempt_count() = count;
+ 		}
+ 		if (irqs_disabled()) {
+-			strncat(msgbuf, "disabled interrupts ", sizeof(msgbuf));
++			strcat(msgbuf, "disabled interrupts ");
+ 			local_irq_enable();
+ 		}
+ 		if (msgbuf[0]) {
