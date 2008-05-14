@@ -1,68 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757828AbYENXVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758583AbYENX1v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757828AbYENXVc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 19:21:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbYENXVU
+	id S1758583AbYENX1v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 19:27:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756125AbYENX1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 19:21:20 -0400
-Received: from mho-01-bos.mailhop.org ([63.208.196.178]:52890 "EHLO
-	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754657AbYENXVT (ORCPT
+	Wed, 14 May 2008 19:27:40 -0400
+Received: from mjg.x.mythic-beasts.com ([93.93.128.6]:55516 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1756119AbYENX1j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 19:21:19 -0400
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 69.181.40.92
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1+5wi2nBYJm8Jp1fYmwBRWK
-Date: Wed, 14 May 2008 16:21:11 -0700
-From: Tony Lindgren <tony@atomide.com>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Matthias Kaehlcke <matthias@kaehlcke.net>,
-       Russell King <rmk+kernel@arm.linux.org.uk>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] ARM: OMAP1: N770: Convert audio_pwr_sem in a mutex
-Message-ID: <20080514232111.GJ8928@atomide.com>
-References: <20080505203154.GF11462@traven> <1210608572.22306.4.camel@localhost.localdomain> <20080514210958.GA7831@atomide.com> <1210804867.22306.18.camel@localhost.localdomain>
+	Wed, 14 May 2008 19:27:39 -0400
+Date: Thu, 15 May 2008 00:27:22 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Greg KH <greg@kroah.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, jkosina@suse.cz,
+       linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Message-ID: <20080514232722.GA12314@srcf.ucam.org>
+References: <20080514221519.GA6575@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1210804867.22306.18.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080514221519.GA6575@kroah.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [PATCH] Input: add appleir USB driver
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Daniel Walker <dwalker@mvista.com> [080514 16:04]:
-> 
-> On Wed, 2008-05-14 at 14:09 -0700, Tony Lindgren wrote:
-> > Hi,
-> > 
-> > * Daniel Walker <dwalker@mvista.com> [080512 09:09]:
-> > > 
-> > > On Mon, 2008-05-05 at 22:31 +0200, Matthias Kaehlcke wrote:
-> > > > ARM: OMAP1: N770: The semaphore audio_pwr_sem is used as a
-> > > > mutex. Convert it to the mutex API
-> > > > 
-> > > 
-> > > I submitted an identical patch to Tony in January .. I assumed it was
-> > > making it's way through the ARM tree .. I'm surprised it's not in
-> > > mainline yet ..
-> > > 
-> > > Tony any status on this?
-> > 
-> > Hmm, I can't seem to find your patch and it does not show up in git-log
-> > either in linux-omap. Maybe I never got it or never applied it?
-> > 
-> > Do you have a link for you patch in the mailing list archives so I can
-> > look into it further?
-> > 
-> > Regards,
-> 
-> http://marc.info/?l=linux-omap&m=120063553504911&w=2
-> 
-> We had a discussion about it as I recall.
+On Wed, May 14, 2008 at 03:15:19PM -0700, Greg KH wrote:
 
-Thanks, I must have run git-reset --hard before I got it committed or
-something. Sorry about that.
+> +	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_IRCONTROL, HID_QUIRK_IGNORE },
+>  	{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_IRCONTROL4, HID_QUIRK_HIDDEV | HID_QUIRK_IGNORE_HIDINPUT },
 
-Tony
+Hm. How is the IRCONTROL4 handled? Is the protocol completely different?
+
+> +	  Say Y here if you want to use a Apple USB remote control.  This
+> +	  device is traditionally inside an Intel Apple Mac Mini, but might
+> +	  show up in other places.
+
+Minor nit, but it's supported on all the desktop Intel Macs and not just 
+the Mini.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
