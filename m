@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759683AbYENWa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760626AbYENWav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759683AbYENWa0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 18:30:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541AbYENWaK
+	id S1760626AbYENWav (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 18:30:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541AbYENWah
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 18:30:10 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44562
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753067AbYENWaJ (ORCPT
+	Wed, 14 May 2008 18:30:37 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:50042 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752453AbYENWag (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 18:30:09 -0400
-Date: Wed, 14 May 2008 15:30:03 -0700 (PDT)
-Message-Id: <20080514.153003.77372633.davem@davemloft.net>
-To: bunk@kernel.org
-Cc: graf.yang@analog.com, cooloney@kernel.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [2.6 patch] irnet_irda.c must #include <asm/unaligned.h>
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080514202709.GB21795@cs181133002.pp.htv.fi>
-References: <20080514202709.GB21795@cs181133002.pp.htv.fi>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=utf-8
+	Wed, 14 May 2008 18:30:36 -0400
+Date: Wed, 14 May 2008 18:30:03 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Greg KH <greg@kroah.com>, Andreas Gruenbacher <agruen@suse.de>,
+       Tiger Yang <tiger.yang@oracle.com>, linux-fsdevel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [stable] [PATCH] ext3/4: fix uninitialized bs in
+	ext3/4_xattr_set_handle()
+Message-ID: <20080514223003.GJ7054@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+	Andreas Gruenbacher <agruen@suse.de>,
+	Tiger Yang <tiger.yang@oracle.com>, linux-fsdevel@vger.kernel.org,
+	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+	stable@kernel.org
+References: <4827B878.50903@oracle.com> <20080512170254.f79fe869.akpm@linux-foundation.org> <4828FD68.40608@oracle.com> <200805141256.43272.agruen@suse.de> <20080514160035.GD28594@kroah.com> <20080514102809.3fc190f0.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080514102809.3fc190f0.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m4EMUVEB021607
 
-From: Adrian Bunk <bunk@kernel.org>
-Date: Wed, 14 May 2008 23:27:09 +0300
+On Wed, May 14, 2008 at 10:28:09AM -0700, Andrew Morton wrote:
+> 
+> It's in -mm and I just added the "Cc:stable" tag to it.
 
-> This patch fixes the following compile error caused by
-> commit 332223831e86b2e17b48b4afafad07d8e3b73861
-> (irda: Fix a misalign access issue. (v2)):
-> 
-> <--  snip  -->
-> 
-> ...
->   CC      net/irda/irnet/irnet_irda.o
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/net/irda/irnet/irnet_irda.c: In function â€˜irnet_discovery_indicationâ€™:
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/net/irda/irnet/irnet_irda.c:1676: error: implicit declaration of function â€˜get_unalignedâ€™
-> make[4]: *** [net/irda/irnet/irnet_irda.o] Error 1
-> 
-> <--  snip  -->
-> 
-> Reported-by: Adrian Bunk <bunk@kernel.org>
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+This patch has both ext3 and ext4 changes in it, so Andrew, I'm
+assuming that you'll push it directly to Linus in the near future?
+That's why I didn't suck it into the ext4 tree....
 
-Applied, thanks a lot Adrian.
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+       	     	    	    	     - Ted
