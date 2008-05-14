@@ -1,104 +1,377 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761350AbYENIJ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761783AbYENIJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761350AbYENIJ5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 04:09:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761646AbYENIIi
+	id S1761783AbYENIJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 04:09:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761403AbYENIIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 04:08:38 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:33026 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761513AbYENIIe (ORCPT
+	Wed, 14 May 2008 04:08:31 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:58883 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932142AbYENIIN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 04:08:34 -0400
-Date: Wed, 14 May 2008 17:13:01 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
-       "hugh@veritas.com" <hugh@veritas.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [RFC/PATCH 6/6] memcg: remove redundant check at charge
-Message-Id: <20080514171301.99e5d55e.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080514170236.23c9ddd7.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080514170236.23c9ddd7.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+	Wed, 14 May 2008 04:08:13 -0400
+To: "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
+       "dm-devel@redhat.com" <dm-devel@redhat.com>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [RFC PATCH 3/3] Add timeout feature
+Message-Id: <20080514170750t-sato@mail.jp.nec.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: WeMail32[2.51] ID:1K0086
+From: Takashi Sato <t-sato@yk.jp.nec.com>
+Date: Wed, 14 May 2008 17:07:50 +0900
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Because of remove refcnt patch, it's very rare case to that
-mem_cgroup_charge_common() is called against a page which is accounted.
+The timeout feature is added to freeze ioctl.  And new ioctl
+to reset the timeout period is added.
+o Freeze the filesystem
+  int ioctl(int fd, int FIFREEZE, long *timeval)
+    fd: The file descriptor of the mountpoint
+    FIFREEZE: request code for the freeze
+    timeval: the timeout period in seconds
+             If it's 0 or 1, the timeout isn't set.
+             This special case of "1" is implemented to keep
+             the compatibility with XFS applications.
+    Return value: 0 if the operation succeeds. Otherwise, -1
 
-mem_cgroup_charge_common() is called when.
- 1. a page is added into file cache.
- 2. an anon page is _newly_ mapped.
+o Reset the timeout period
+  int ioctl(int fd, int FIFREEZE_RESET_TIMEOUT, long *timeval)
+    fd:file descriptor of mountpoint
+    FIFREEZE_RESET_TIMEOUT: request code for reset of timeout period
+    timeval: new timeout period in seconds
+    Return value: 0 if the operation succeeds. Otherwise, -1
+    Error number: If the filesystem has already been unfrozen,
+                  errno is set to EINVAL.
 
-A racy case is that a newly-swapped-in anonymous page is referred from
-prural threads in do_swap_page() at the same time.
-(a page is not Locked when mem_cgroup_charge() is called from do_swap_page.)
-
-Signed-off-by : KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
+Signed-off-by: Takashi Sato <t-sato@yk.jp.nec.com>
+Signed-off-by: Masayuki Hamaguchi <m-hamaguchi@ys.jp.nec.com>
 ---
- mm/memcontrol.c |   34 ++++------------------------------
- 1 file changed, 4 insertions(+), 30 deletions(-)
+ drivers/md/dm.c             |    2 -
+ fs/block_dev.c              |    2 +
+ fs/buffer.c                 |   14 ++++++-
+ fs/ioctl.c                  |   78 ++++++++++++++++++++++++++++++++++++++++++--
+ fs/super.c                  |   51 ++++++++++++++++++++++++++++
+ fs/xfs/xfs_fsops.c          |    2 -
+ include/linux/buffer_head.h |    2 -
+ include/linux/fs.h          |    8 ++++
+ 8 files changed, 151 insertions(+), 8 deletions(-)
 
-Index: linux-2.6.26-rc2/mm/memcontrol.c
-===================================================================
---- linux-2.6.26-rc2.orig/mm/memcontrol.c
-+++ linux-2.6.26-rc2/mm/memcontrol.c
-@@ -536,28 +536,6 @@ static int mem_cgroup_charge_common(stru
- 	if (mem_cgroup_subsys.disabled)
- 		return 0;
+diff -uprN -X /home/sho/pub/MC/freeze-set/dontdiff linux-2.6.26-rc2-xfs/drivers/md/dm.c linux-2.6.26-rc2-timeout/drivers
+/md/dm.c
+--- linux-2.6.26-rc2-xfs/drivers/md/dm.c	2008-05-12 11:20:47.000000000 +0900
++++ linux-2.6.26-rc2-timeout/drivers/md/dm.c	2008-05-12 21:14:13.000000000 +0900
+@@ -1407,7 +1407,7 @@ static int lock_fs(struct mapped_device 
  
--	/*
--	 * Should page_cgroup's go to their own slab?
--	 * One could optimize the performance of the charging routine
--	 * by saving a bit in the page_flags and using it as a lock
--	 * to see if the cgroup page already has a page_cgroup associated
--	 * with it
--	 */
--retry:
--	lock_page_cgroup(page);
--	pc = page_get_page_cgroup(page);
--	/*
--	 * The page_cgroup exists and
--	 * the page has already been accounted.
--	 */
--	if (unlikely(pc)) {
--		VM_BUG_ON(pc->page != page);
--		VM_BUG_ON(!pc->mem_cgroup);
--		unlock_page_cgroup(page);
--		goto done;
--	}
--	unlock_page_cgroup(page);
--
- 	pc = kmem_cache_alloc(page_cgroup_cache, gfp_mask);
- 	if (unlikely(pc == NULL))
- 		goto err;
-@@ -618,15 +596,10 @@ retry:
- 	lock_page_cgroup(page);
- 	if (unlikely(page_get_page_cgroup(page))) {
- 		unlock_page_cgroup(page);
--		/*
--		 * Another charge has been added to this page already.
--		 * We take lock_page_cgroup(page) again and read
--		 * page->cgroup, increment refcnt.... just retry is OK.
--		 */
- 		res_counter_uncharge(&mem->res, PAGE_SIZE);
- 		css_put(&mem->css);
- 		kmem_cache_free(page_cgroup_cache, pc);
--		goto retry;
-+		goto done;
+ 	WARN_ON(md->frozen_sb);
+ 
+-	md->frozen_sb = freeze_bdev(md->suspended_bdev);
++	md->frozen_sb = freeze_bdev(md->suspended_bdev, 0);
+ 	if (IS_ERR(md->frozen_sb)) {
+ 		r = PTR_ERR(md->frozen_sb);
+ 		md->frozen_sb = NULL;
+diff -uprN -X /home/sho/pub/MC/freeze-set/dontdiff linux-2.6.26-rc2-xfs/fs/block_dev.c linux-2.6.26-rc2-timeout/fs/block
+_dev.c
+--- linux-2.6.26-rc2-xfs/fs/block_dev.c	2008-05-12 11:20:58.000000000 +0900
++++ linux-2.6.26-rc2-timeout/fs/block_dev.c	2008-05-12 21:14:13.000000000 +0900
+@@ -284,6 +284,8 @@ static void init_once(struct kmem_cache 
+ 	INIT_LIST_HEAD(&bdev->bd_holder_list);
+ #endif
+ 	inode_init_once(&ei->vfs_inode);
++	/* Setup freeze timeout function. */
++	INIT_DELAYED_WORK(&bdev->bd_freeze_timeout, freeze_timeout);
+ }
+ 
+ static inline void __bd_forget(struct inode *inode)
+diff -uprN -X /home/sho/pub/MC/freeze-set/dontdiff linux-2.6.26-rc2-xfs/fs/buffer.c linux-2.6.26-rc2-timeout/fs/buffer.c
+--- linux-2.6.26-rc2-xfs/fs/buffer.c	2008-05-12 11:20:56.000000000 +0900
++++ linux-2.6.26-rc2-timeout/fs/buffer.c	2008-05-12 21:14:13.000000000 +0900
+@@ -190,14 +190,17 @@ int fsync_bdev(struct block_device *bdev
+ 
+ /**
+  * freeze_bdev  --  lock a filesystem and force it into a consistent state
+- * @bdev:	blockdevice to lock
++ * @bdev:              blockdevice to lock
++ * @timeout_msec:      timeout period
+  *
+  * This takes the block device bd_mount_sem to make sure no new mounts
+  * happen on bdev until thaw_bdev() is called.
+  * If a superblock is found on this device, we take the s_umount semaphore
+  * on it to make sure nobody unmounts until the snapshot creation is done.
++ * If timeout_msec is bigger than 0, this registers the delayed work for
++ * timeout of the freeze feature.
+  */
+-struct super_block *freeze_bdev(struct block_device *bdev)
++struct super_block *freeze_bdev(struct block_device *bdev, long timeout_msec)
+ {
+ 	struct super_block *sb;
+ 
+@@ -234,6 +237,10 @@ struct super_block *freeze_bdev(struct b
  	}
- 	page_assign_page_cgroup(page, pc);
  
-
+ 	sync_blockdev(bdev);
++	/* Setup unfreeze timer. */
++	if (timeout_msec > 0)
++		add_freeze_timeout(bdev, timeout_msec);
++
+ 	clear_bit(BD_FREEZE_OP, &bdev->bd_state);
+ 
+ 	return sb;	/* thaw_bdev releases s->s_umount and bd_mount_sem */
+@@ -258,6 +265,9 @@ int thaw_bdev(struct block_device *bdev,
+ 		return 0;
+ 	}
+ 
++	/* Delete unfreeze timer. */
++	del_freeze_timeout(bdev);
++
+ 	if (sb) {
+ 		BUG_ON(sb->s_bdev != bdev);
+ 
+diff -uprN -X /home/sho/pub/MC/freeze-set/dontdiff linux-2.6.26-rc2-xfs/fs/ioctl.c linux-2.6.26-rc2-timeout/fs/ioctl.c
+--- linux-2.6.26-rc2-xfs/fs/ioctl.c	2008-05-13 14:35:59.000000000 +0900
++++ linux-2.6.26-rc2-timeout/fs/ioctl.c	2008-05-13 14:59:09.000000000 +0900
+@@ -145,12 +145,16 @@ static int ioctl_fioasync(unsigned int f
+  * ioctl_freeze - Freeze the filesystem.
+  *
+  * @filp:	target file
++ * @argp:       timeout value(sec)
+  *
+  * Call freeze_bdev() to freeze the filesystem.
+  */
+-static int ioctl_freeze(struct file *filp)
++static int ioctl_freeze(struct file *filp, unsigned long arg)
+ {
++	long timeout_sec;
++	long timeout_msec;
+ 	struct super_block *sb = filp->f_path.dentry->d_inode->i_sb;
++	int error;
+ 
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
+@@ -159,8 +163,27 @@ static int ioctl_freeze(struct file *fil
+ 	if (sb->s_op->write_super_lockfs == NULL)
+ 		return -EINVAL;
+ 
++	/* arg(sec) to tick value. */
++	error = get_user(timeout_sec, (long __user *) arg);
++	if (error != 0)
++		return error;
++	/*
++	 * If 1 is specified as the timeout period,
++	 * it will be changed into 0 to keep the compatibility
++	 * of XFS application(xfs_freeze).
++	 */
++	if (timeout_sec < 0)
++		return -EINVAL;
++	else if (timeout_sec < 2)
++		timeout_sec = 0;
++
++	timeout_msec = timeout_sec * 1000;
++	/* overflow case */
++	if (timeout_msec < 0)
++		return -EINVAL;
++
+ 	/* Freeze */
+-	sb = freeze_bdev(sb->s_bdev);
++	sb = freeze_bdev(sb->s_bdev, timeout_msec);
+ 	if (IS_ERR(sb))
+ 		return PTR_ERR(sb);
+ 	return 0;
+@@ -185,6 +208,51 @@ static int ioctl_thaw(struct file *filp)
+ }
+ 
+ /*
++ * ioctl_freeze_reset_timeout - Reset timeout for freeze.
++ *
++ * @filp:       target file
++ * @argp:       timeout value(sec)
++ *
++ * Rest timeout for freeze.
++ */
++static int
++ioctl_freeze_reset_timeout(struct file *filp, unsigned long arg)
++{
++	long timeout_sec;
++	long timeout_msec;
++	struct super_block *sb
++			= filp->f_path.dentry->d_inode->i_sb;
++	int error;
++
++	if (!capable(CAP_SYS_ADMIN))
++		return -EPERM;
++
++	/* arg(sec) to tick value */
++	error = get_user(timeout_sec, (long __user *) arg);
++	if (error)
++		return error;
++	timeout_msec = timeout_sec * 1000;
++	if (timeout_msec < 0)
++		return -EINVAL;
++
++	if (sb) {
++		if (test_and_set_bit(BD_FREEZE_OP, &sb->s_bdev->bd_state))
++			return -EBUSY;
++		if (sb->s_frozen == SB_UNFROZEN) {
++			clear_bit(BD_FREEZE_OP, &sb->s_bdev->bd_state);
++			return -EINVAL;
++		}
++		/* setup unfreeze timer */
++		if (timeout_msec > 0)
++			add_freeze_timeout(sb->s_bdev,
++					timeout_msec);
++		clear_bit(BD_FREEZE_OP, &sb->s_bdev->bd_state);
++	}
++
++	return 0;
++}
++
++/*
+  * When you add any new common ioctls to the switches above and below
+  * please update compat_sys_ioctl() too.
+  *
+@@ -227,13 +295,17 @@ int do_vfs_ioctl(struct file *filp, unsi
+ 		break;
+ 
+ 	case FIFREEZE:
+-		error = ioctl_freeze(filp);
++		error = ioctl_freeze(filp, arg);
+ 		break;
+ 
+ 	case FITHAW:
+ 		error = ioctl_thaw(filp);
+ 		break;
+ 
++	case FIFREEZE_RESET_TIMEOUT:
++		error = ioctl_freeze_reset_timeout(filp, arg);
++		break;
++
+ 	default:
+ 		if (S_ISREG(filp->f_path.dentry->d_inode->i_mode))
+ 			error = file_ioctl(filp, cmd, arg);
+diff -uprN -X /home/sho/pub/MC/freeze-set/dontdiff linux-2.6.26-rc2-xfs/fs/super.c linux-2.6.26-rc2-timeout/fs/super.c
+--- linux-2.6.26-rc2-xfs/fs/super.c	2008-05-12 11:20:59.000000000 +0900
++++ linux-2.6.26-rc2-timeout/fs/super.c	2008-05-12 21:14:13.000000000 +0900
+@@ -1010,3 +1010,54 @@ struct vfsmount *kern_mount_data(struct 
+ }
+ 
+ EXPORT_SYMBOL_GPL(kern_mount_data);
++
++/*
++ * freeze_timeout - Thaw the filesystem.
++ *
++ * @work:	work queue (delayed_work.work)
++ *
++ * Called by the delayed work when elapsing the timeout period.
++ * Thaw the filesystem.
++ */
++void freeze_timeout(struct work_struct *work)
++{
++	struct block_device *bd = container_of(work,
++			struct block_device, bd_freeze_timeout.work);
++	struct super_block *sb = get_super_without_lock(bd);
++
++	thaw_bdev(bd, sb);
++
++	if (sb)
++		put_super(sb);
++}
++EXPORT_SYMBOL_GPL(freeze_timeout);
++
++/*
++ * add_freeze_timeout - Add timeout for freeze.
++ *
++ * @bdev:		block device struct
++ * @timeout_msec:	timeout period
++ *
++ * Add the delayed work for freeze timeout to the delayed work queue.
++ */
++void add_freeze_timeout(struct block_device *bdev, long timeout_msec)
++{
++	s64 timeout_jiffies = msecs_to_jiffies(timeout_msec);
++
++	/* Set delayed work queue */
++	cancel_delayed_work(&bdev->bd_freeze_timeout);
++	schedule_delayed_work(&bdev->bd_freeze_timeout, timeout_jiffies);
++}
++
++/*
++ * del_freeze_timeout - Delete timeout for freeze.
++ *
++ * @bdev:	block device struct
++ *
++ * Delete the delayed work for freeze timeout from the delayed work queue.
++ */
++void del_freeze_timeout(struct block_device *bdev)
++{
++	if (delayed_work_pending(&bdev->bd_freeze_timeout))
++		cancel_delayed_work(&bdev->bd_freeze_timeout);
++}
+diff -uprN -X /home/sho/pub/MC/freeze-set/dontdiff linux-2.6.26-rc2-xfs/fs/xfs/xfs_fsops.c linux-2.6.26-rc2-timeout/fs/x
+fs/xfs_fsops.c
+--- linux-2.6.26-rc2-xfs/fs/xfs/xfs_fsops.c	2008-05-12 11:20:57.000000000 +0900
++++ linux-2.6.26-rc2-timeout/fs/xfs/xfs_fsops.c	2008-05-12 21:14:13.000000000 +0900
+@@ -619,7 +619,7 @@ xfs_fs_goingdown(
+ {
+ 	switch (inflags) {
+ 	case XFS_FSOP_GOING_FLAGS_DEFAULT: {
+-		struct super_block *sb = freeze_bdev(mp->m_super->s_bdev);
++		struct super_block *sb = freeze_bdev(mp->m_super->s_bdev, 0);
+ 
+ 		if (sb && !IS_ERR(sb)) {
+ 			xfs_force_shutdown(mp, SHUTDOWN_FORCE_UMOUNT);
+diff -uprN -X /home/sho/pub/MC/freeze-set/dontdiff linux-2.6.26-rc2-xfs/include/linux/buffer_head.h linux-2.6.26-rc2-tim
+eout/include/linux/buffer_head.h
+--- linux-2.6.26-rc2-xfs/include/linux/buffer_head.h	2008-05-12 11:21:09.000000000 +0900
++++ linux-2.6.26-rc2-timeout/include/linux/buffer_head.h	2008-05-12 21:14:13.000000000 +0900
+@@ -170,7 +170,7 @@ int sync_blockdev(struct block_device *b
+ void __wait_on_buffer(struct buffer_head *);
+ wait_queue_head_t *bh_waitq_head(struct buffer_head *bh);
+ int fsync_bdev(struct block_device *);
+-struct super_block *freeze_bdev(struct block_device *);
++struct super_block *freeze_bdev(struct block_device *, long timeout_msec);
+ int thaw_bdev(struct block_device *, struct super_block *);
+ int fsync_super(struct super_block *);
+ int fsync_no_super(struct block_device *);
+diff -uprN -X /home/sho/pub/MC/freeze-set/dontdiff linux-2.6.26-rc2-xfs/include/linux/fs.h linux-2.6.26-rc2-timeout/incl
+ude/linux/fs.h
+--- linux-2.6.26-rc2-xfs/include/linux/fs.h	2008-05-12 11:21:09.000000000 +0900
++++ linux-2.6.26-rc2-timeout/include/linux/fs.h	2008-05-12 21:14:13.000000000 +0900
+@@ -8,6 +8,7 @@
+ 
+ #include <linux/limits.h>
+ #include <linux/ioctl.h>
++#include <linux/workqueue.h>
+ 
+ /*
+  * It's silly to have NR_OPEN bigger than NR_FILE, but you can change
+@@ -225,6 +226,7 @@ extern int dir_notify_enable;
+ #define FIGETBSZ   _IO(0x00,2)	/* get the block size used for bmap */
+ #define FIFREEZE	_IOWR('X', 119, int)	/* Freeze */
+ #define FITHAW		_IOWR('X', 120, int)	/* Thaw */
++#define	FIFREEZE_RESET_TIMEOUT	_IO(0x00, 3)	/* Reset freeze timeout */
+ 
+ #define	FS_IOC_GETFLAGS			_IOR('f', 1, long)
+ #define	FS_IOC_SETFLAGS			_IOW('f', 2, long)
+@@ -559,6 +561,8 @@ struct block_device {
+ 
+ 	/* State of the block device. (Used by freeze feature) */
+ 	unsigned long		bd_state;
++	/* Delayed work for freeze */
++	struct delayed_work     bd_freeze_timeout;
+ };
+ 
+ /*
+@@ -2146,5 +2150,9 @@ int proc_nr_files(struct ctl_table *tabl
+ 
+ int get_filesystem_list(char * buf);
+ 
++extern void add_freeze_timeout(struct block_device *bdev, long timeout_msec);
++extern void del_freeze_timeout(struct block_device *bdev);
++extern void freeze_timeout(struct work_struct *work);
++
+ #endif /* __KERNEL__ */
+ #endif /* _LINUX_FS_H */
