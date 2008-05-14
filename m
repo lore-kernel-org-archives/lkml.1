@@ -1,100 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758492AbYENIGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761141AbYENIGs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758492AbYENIGU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 04:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758606AbYENIFw
+	id S1761141AbYENIGs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 04:06:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757589AbYENIGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 04:05:52 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:6767 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760239AbYENIFr (ORCPT
+	Wed, 14 May 2008 04:06:10 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:36033 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755773AbYENIGF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 04:05:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pTj2fOw0YO1i1jpuO7Ea8JKdzMuFcxLTszXLUqE2FJAHXUdl+tgJFsXioj1U9hhId2VfDd98dNQoqsYxIVXMN/yTuAsuRaErS3pcLyg1zHELSkAguosYCoiykj4NH9Wx/EhbsMn+xHm+0np4FpkRci4l5BlqwDYLXV3c5+yPNyk=
-Message-ID: <6278d2220805140105x27292033u6a97dcf13ab54263@mail.gmail.com>
-Date: Wed, 14 May 2008 09:05:46 +0100
-From: "Daniel J Blueman" <daniel.blueman@gmail.com>
-To: "Jens Axboe" <jens.axboe@oracle.com>
-Subject: Re: performance "regression" in cfq compared to anticipatory, deadline and noop
-Cc: Matthew <jackdachef@gmail.com>, "Kasper Sandberg" <lkml@metanurb.dk>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080513184057.GU16217@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 14 May 2008 04:06:05 -0400
+To: Christoph Hellwig <hch@infradead.org>
+Cc: "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       "xfs@oss.sgi.com" <xfs@oss.sgi.com>,
+       "dm-devel@redhat.com" <dm-devel@redhat.com>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [RFC PATCH 0/3] freeze feature ver 1.3
+Message-Id: <20080514170534t-sato@mail.jp.nec.com>
+Mime-Version: 1.0
+X-Mailer: WeMail32[2.51] ID:1K0086
+From: Takashi Sato <t-sato@yk.jp.nec.com>
+Date: Wed, 14 May 2008 17:05:34 +0900
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <6278d2220805110614i7160a8a5o36d55acb732c1b59@mail.gmail.com>
-	 <1210514567.7827.62.camel@localhost>
-	 <20080513122021.GP16217@kernel.dk>
-	 <e85b9d30805130558l502addbcq21996b92fdbfdc5b@mail.gmail.com>
-	 <20080513130508.GQ16217@kernel.dk>
-	 <e85b9d30805130842p3a34305l4ab1e7926e4b0dba@mail.gmail.com>
-	 <20080513180334.GS16217@kernel.dk> <20080513184057.GU16217@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  > > >  > >  > On Sun, 2008-05-11 at 14:14 +0100, Daniel J Blueman wrote:
->  > > >  > >  > > I've been experiencing this for a while also; an almost 50% regression
->  > > >  > >  > > is seen for single-process reads (ie sync) if slice_idle is 1ms or
->  > > >  > >  > > more (eg default of 8) [1], which seems phenomenal.
->  > > >  > >  > >
->  > > >  > >  > > Jens, is this the expected price to pay for optimal busy-spindle
->  > > >  > >  > > scheduling, a design issue, bug or am I missing something totally?
-[snip]
->  > They seem to start out the same, but then CFQ gets interrupted by a
->  > timer unplug (which is also odd) and after that the request size drops.
->  > On most devices you don't notice, but some are fairly picky about
->  > request sizes. The end result is that CFQ has an average dispatch
->  > request size of 142kb, where AS is more than double that at 306kb. I'll
->  > need to analyze the data and look at the code a bit more to see WHY this
->  > happens.
->
->  Here's a test patch, I think we get into this situation due to CFQ being
->  a bit too eager to start queuing again. Not tested, I'll need to spend
->  some testing time on this. But I'd appreciate some feedback on whether
->  this changes the situation! The final patch will be a little more
->  involved.
->
->  diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
->  index b399c62..ebd8ce2 100644
->  --- a/block/cfq-iosched.c
->  +++ b/block/cfq-iosched.c
->  @@ -1775,18 +1775,8 @@ cfq_rq_enqueued(struct cfq_data *cfqd, struct cfq_queue *cfqq,
->
->         cic->last_request_pos = rq->sector + rq->nr_sectors;
->
->  -       if (cfqq == cfqd->active_queue) {
->  -               /*
->  -                * if we are waiting for a request for this queue, let it rip
->  -                * immediately and flag that we must not expire this queue
->  -                * just now
->  -                */
->  -               if (cfq_cfqq_wait_request(cfqq)) {
->  -                       cfq_mark_cfqq_must_dispatch(cfqq);
->  -                       del_timer(&cfqd->idle_slice_timer);
->  -                       blk_start_queueing(cfqd->queue);
->  -               }
->  -       } else if (cfq_should_preempt(cfqd, cfqq, rq)) {
->  +       if ((cfqq != cfqd->active_queue) &&
->  +                  cfq_should_preempt(cfqd, cfqq, rq)) {
->                 /*
->                  * not the active queue - expire current slice if it is
->                  * idle and has expired it's mean thinktime or this new queue
+Hi,
 
-I find this does address the issue (both with 64KB stride dd and
-hdparm -t; presumably the requests getting merged). Tested on
-2.6.26-rc2 on Ubuntu HH 804 x86-64, with slice_idle defaulting to 8
-and AHCI on ICH9; disk is ST3320613AS.
+Christoph Hellwig wrote:
+>> + case FIFREEZE: {
+> 
+> This would be better to split intot a small helper ala ioctl_fibmap()
+> 
+>> + case FITHAW: {
+> 
+> Same here.
 
-Blktrace profiles from 'dd if=/dev/sda of=/dev/null bs=64k count=1000' are at:
+I have added two new helper functions (ioctl_freeze and ioctl_thaw)
+in "[PATCH 1/3] Implement generic freeze feature".
 
-http://quora.org/blktrace-profiles.tar.bz2
+>>> I think the protection against double freezes would be better done by
+>>> using a trylock on bd_mount_sem.
+>>
+>> bd_mount_sem can protect against only freezes and cannot protect against
+>> unfreezes.  If multiple unfreezes run in parallel,  the multiple up() for
+>> bd_mount_sem might occur incorrectly.
+> 
+> Indeed.  The bit flag would fix that because unfreeze could then check
+> for the bit beeing set first.  So that's probably the easiest way to go.
 
-Let me know when you have an updated patch to test,
-  Daniel
--- 
-Daniel J Blueman
+I have replaced the semaphore (bd_freeze_sem) with new bit flag
+in "[PATCH 1/3] Implement generic freeze feature".
+When a thread is in freeze operation, subsequent freeze operations
+will fail immediately.
+(They waited for the thread in the previous patches.)
+I think this change of the behavior doesn't matter because
+freezes and unfreezes don't run in parallel in usual situation.
+
+In addition, the patches are re-based from linux-2.6.25 to
+linux-2.6.26-rc2.
+The patch-set consists of the following three patches.
+Only [PATCH 1/3] is modified as above from the previous version.
+
+[PATCH 1/3] Implement generic freeze feature
+  I have modified the following two points from the previous version.
+  These are suggested by Christoph Hellwig.
+  o Two helper functions for ioctls (ioctl_freeze and ioctl_thaw) are
+    added for the readability.
+  o The semaphore for the freeze operation is replaced with new bit
+    flag (bd_state) for the efficiency of the locking. 
+    
+  The ioctls for the generic freeze feature are below.
+  o Freeze the filesystem
+    int ioctl(int fd, int FIFREEZE, arg)
+      fd: The file descriptor of the mountpoint
+      FIFREEZE: request code for the freeze
+      arg: Ignored
+      Return value: 0 if the operation succeeds. Otherwise, -1
+
+  o Unfreeze the filesystem
+    int ioctl(int fd, int FITHAW, arg)
+      fd: The file descriptor of the mountpoint
+      FITHAW: request code for unfreeze
+      arg: Ignored
+      Return value: 0 if the operation succeeds. Otherwise, -1
+
+[PATCH 2/3] Remove XFS specific ioctl interfaces for freeze feature
+  It removes XFS specific ioctl interfaces and request codes
+  for freeze feature.
+  This patch has been supplied by David Chinner.
+
+[PATCH 3/3] Add timeout feature
+  The timeout feature is added to freeze ioctl.  And new ioctl
+  to reset the timeout period is added.
+  o Freeze the filesystem
+    int ioctl(int fd, int FIFREEZE, long *timeval)
+      fd: The file descriptor of the mountpoint
+      FIFREEZE: request code for the freeze
+      timeval: the timeout period in seconds
+               If it's 0 or 1, the timeout isn't set.
+               This special case of "1" is implemented to keep
+               the compatibility with XFS applications.
+      Return value: 0 if the operation succeeds. Otherwise, -1
+
+  o Reset the timeout period
+    This is useful for the application to set the timeval more accurately.
+    For example, the freezer resets the timeval to 10 seconds every 5
+    seconds.  In this approach, even if the freezer causes a deadlock
+    by accessing the frozen filesystem, it will be solved by the timeout
+    in 10 seconds and the freezer can recognize that at the next reset
+    of timeval.
+    int ioctl(int fd, int FIFREEZE_RESET_TIMEOUT, long *timeval)
+      fd:file descriptor of mountpoint
+      FIFREEZE_RESET_TIMEOUT: request code for reset of timeout period
+      timeval: new timeout period in seconds
+      Return value: 0 if the operation succeeds. Otherwise, -1
+      Error number: If the filesystem has already been unfrozen,
+                    errno is set to EINVAL.
+
+Any comments are very welcome.
+
+Cheers, Takashi
