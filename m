@@ -1,62 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761686AbYENIN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762148AbYENINy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761686AbYENIN1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 04:13:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753812AbYENINN
+	id S1762148AbYENINy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 04:13:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761872AbYENIN3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 04:13:13 -0400
-Received: from slowhand.arndnet.de ([88.198.19.76]:55255 "EHLO mail.unitix.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753151AbYENINL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 04:13:11 -0400
-X-Greylist: delayed 1462 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 May 2008 04:13:11 EDT
-Message-ID: <482A995C.7040806@arndnet.de>
-Date: Wed, 14 May 2008 09:48:44 +0200
-From: Arnd Hannemann <arnd@arndnet.de>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Wed, 14 May 2008 04:13:29 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:35571 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761635AbYENINZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 04:13:25 -0400
+Message-ID: <482A9F29.3040805@oss.ntt.co.jp>
+Date: Wed, 14 May 2008 17:13:29 +0900
+From: Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@medozas.de>
-CC: Arnd Hannemann <arnd@arndnet.de>, Roland <devzero@web.de>,
-       tvrtko@ursulin.net, pernegger@gmail.com, snitzer@gmail.com,
-       zorglub_olsen@hotmail.com, renatoyamane@mandic.com.br,
-       linux-kernel@vger.kernel.org
-Subject: Re: WD doesn`t use disks with Linux - was Re: Re:Western Digital
- GreenPower drives and Linux
-References: <003201c8b53c$67ff02d0$6400a8c0@bui.materna.com> <482A062B.3010308@arndnet.de> <alpine.LNX.1.10.0805132343470.448@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <alpine.LNX.1.10.0805132343470.448@fbirervta.pbzchgretzou.qr>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Mark Salyzyn <Mark_Salyzyn@adaptec.com>
+CC: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       AACRAID <AACRAID@adaptec.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       =?ISO-8859-1?Q?Fernando_Luis_V=E1zquez_Cao?= 
+	<fernando@oss.ntt.co.jp>
+Subject: Re: PROBLEM: <AACRAID SCSI RAID DRIVER> in 2.6.25.3 -- reply to your
+ suggestions
+References: <4828E995.3080509@oss.ntt.co.jp> <2EB68762-7B3A-4E0E-A1AB-4581C6011E10@adaptec.com>
+In-Reply-To: <2EB68762-7B3A-4E0E-A1AB-4581C6011E10@adaptec.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Tuesday 2008-05-13 23:20, Arnd Hannemann wrote:
->> Well the answer was probably just from a first level support person so
->> nothing one should get excited about.
->> Anyway to the high Load_Cycle_Count; if I understood the technology
->> correctly the WD GreenPower drives are exactly "Green" because they
-> 
-> I don't find it Green when I have to buy new disks because of
-> their detrimental parking technique.
-> 
->> unload the heads on a plastic ramp (no landing zone!) quite often during
-> 
-> ramp or LZ, it's quite a force with which the head is parked.
-> 
+Reply to your suggestions,
 
-Well I'm no expert, but I would say comparing to the normal wear out due
-to use (seeking, bearing wear out, vibrations, spin up, bumps) the
-factor of a controlled unload/load cycle on a plastic ramp is probably
-negligible.
+1. with the kernel parameters, **aacraid.expose_physicals=0, 
+aacraid.dacmode=0**:
+I tried both parameters, but failed.
 
-BTW: my hitachi notebook drive, which I believe has a similar
-load/unload technology has:
-> 193 Load_Cycle_Count        0x0032   057   057   000    Old_age   Always       -       258528/258360
+2. about "[PATCH] Stop using num_physpages in aacraid":
+I am not using this patch: I saw drivers/scsi/aacraid/aachba.c 
+(kernel-2.6.25.3)
 
-And it didn't fail on me yet...
-Of course this is just one data point.
+3. about other kernels
+Our machine normally runs with kernel-2.6.24 and
+this failure occurs only with kernel-2.6.25 and later, including 2.6.26-rc1
 
-Regards,
-Arnd Hannemann
+Sincerely,
+-------------------------------------------------------------
+Takuya Yoshikawa @ NTT Open Source Software Center
+e-mail: yoshikawa.takuya@oss.ntt.co.jp
+-------------------------------------------------------------
+
+
+> Not a panic, merely a problem probing the physical devices. It may 
+> seem 'forever' but that is what happens when it must issue commands to 
+> every target and lun on two physical busses. You may be able to 
+> mitigate this with the kernel parameter aacraid.expose_physicals=0, or 
+> aacraid.dacmode=0
+>
+> Status 8193 (0x2003) is not a known valid response code from the 
+> Firmware, it is a result of the Firmware not processing the command in 
+> the first place.
+>
+> Could be a result of 'Subject: Re: [PATCH] Stop using num_physpages in 
+> aacraid '? Could you revert that one out to see? Could you instrument 
+> the return value to the new referenced function 
+> dma_get_required_mask(&dev->pdev->dev) that is incorporated in that 
+> patch?
+>
+> Sincerely -- Mark Salyzyn
