@@ -1,59 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762337AbYENRzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762472AbYENR5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762337AbYENRzS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 13:55:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669AbYENRzE
+	id S1762472AbYENR5V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 13:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755419AbYENR5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 13:55:04 -0400
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:6670 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753452AbYENRzD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 13:55:03 -0400
-Message-ID: <482B2752.2090600@panasas.com>
-Date: Wed, 14 May 2008 10:54:26 -0700
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 14 May 2008 13:57:13 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:50494 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753685AbYENR5M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 13:57:12 -0400
+Date: Wed, 14 May 2008 10:57:08 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Robin Holt <holt@sgi.com>, Nick Piggin <npiggin@suse.de>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrea Arcangeli <andrea@qumranet.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
+       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>
+Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
+In-Reply-To: <alpine.LFD.1.10.0805140807400.3019@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0805141053350.15490@schroedinger.engr.sgi.com>
+References: <6b384bb988786aa78ef0.1210170958@duo.random>
+ <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org>
+ <20080508003838.GA9878@sgi.com> <200805132206.47655.nickpiggin@yahoo.com.au>
+ <20080513153238.GL19717@sgi.com> <20080514041122.GE24516@wotan.suse.de>
+ <20080514112625.GY9878@sgi.com> <alpine.LFD.1.10.0805140807400.3019@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] SLUB: clear c->freelist in __slab_alloc()/load_freelist:/SlabDebug
- path
-References: <4828A940.2090604@panasas.com> <84144f020805131140s233090e5v4f77c4853a91f2ec@mail.gmail.com> <4829ED5C.6080503@panasas.com> <Pine.LNX.4.64.0805141043200.15374@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0805141043200.15374@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 14 May 2008 17:54:41.0865 (UTC) FILETIME=[96010390:01C8B5EB]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On May. 14, 2008, 10:44 -0700, Christoph Lameter <clameter@sgi.com> wrote:
-> On Tue, 13 May 2008, Benny Halevy wrote:
-> 
->>> But for debug pages, we never load c->page->freelist to c->freelist so
->>> it should always be NULL.
->> Hmm, I see.  Then it might have got corrupted...
->> I'll keep looking for the root cause.
-> 
-> Correct.
+On Wed, 14 May 2008, Linus Torvalds wrote:
 
-Yeah, I've moved to SLAB and the mem corruption now pops up at a different
-place.
+> One thing to realize is that most of the time (read: pretty much *always*) 
+> when we have the problem of wanting to sleep inside a spinlock, the 
+> solution is actually to just move the sleeping to outside the lock, and 
+> then have something else that serializes things.
 
-> 
->>> How did you make SLUB hit the debug path since you have
->>> CONFIG_SLUB_DEBUG_ON disabled?
-> 
-> I guess he passed slub_debug on the kernel command line.
-> 
+The problem is that the code in rmap.c try_to_umap() and friends loops 
+over reverse maps after taking a spinlock. The mm_struct is only known 
+after the rmap has been acccessed. This means *inside* the spinlock.
 
-I did not.
+That is why I tried to convert the locks to scan the revese maps to 
+semaphores. If that is done then one can indeed do the callouts outside of 
+atomic contexts.
 
-I probably have misunderstood how the slub debugging infrastructure works
-and did not execute the debug path at all.
+> Can it be done? I don't know. But I do know that I'm unlikely to accept a 
+> noticeable slowdown in some very core code for a case that affects about 
+> 0.00001% of the population. In other words, I think you *have* to do it.
 
-Thanks for your help!
+With larger number of processor semaphores make a lot of sense since the 
+holdoff times on spinlocks will increase. If we go to sleep then the 
+processor can do something useful instead of hogging a cacheline.
 
-Benny
+A rw lock there can also increase concurrency during reclaim espcially if 
+the anon_vma chains and the number of address spaces mapping a page is 
+high.
+
