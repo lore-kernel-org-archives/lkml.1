@@ -1,50 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759624AbYENLnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760618AbYENLoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759624AbYENLnR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 07:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756832AbYENLnA
+	id S1760618AbYENLoR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 07:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757808AbYENLoG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 07:43:00 -0400
-Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:59510 "EHLO
-	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753992AbYENLm7 (ORCPT
+	Wed, 14 May 2008 07:44:06 -0400
+Received: from bipbip.grupopie.com ([195.23.16.24]:35521 "EHLO
+	bipbip.grupopie.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756832AbYENLoF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 07:42:59 -0400
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Vegard Nossum <vegard.nossum@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       =?utf-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>,
-       Valdis.Kletnieks@vt.edu, Matt Mackall <mpm@selenic.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BISECTED] Lots of "rescheduling IPIs" in powertop
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080513204206.GA17781@damson.getinternet.no>
-	<20080514065605.GB21369@elte.hu>
-	<20080514090923.GC5607@alberich.amd.com>
-Date: Wed, 14 May 2008 13:42:54 +0200
-In-Reply-To: <20080514090923.GC5607@alberich.amd.com> (Andreas Herrmann's message of "Wed, 14 May 2008 11:09:23 +0200")
-Message-ID: <87prrp6ri9.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Wed, 14 May 2008 07:44:05 -0400
+Message-ID: <482AD08D.7070206@grupopie.com>
+Date: Wed, 14 May 2008 12:44:13 +0100
+From: Paulo Marques <pmarques@grupopie.com>
+Organization: Grupo PIE
+User-Agent: Thunderbird 1.5.0.14 (X11/20071210)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 14 May 2008 11:35:54.0631 (UTC) FILETIME=[AB845170:01C8B5B6]
+To: Vegard Nossum <vegard.nossum@gmail.com>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kallsyms: fix potential overflow in binary search
+References: <20080513200736.GA17909@damson.getinternet.no>
+In-Reply-To: <20080513200736.GA17909@damson.getinternet.no>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Herrmann <andreas.herrmann3@amd.com> writes:
->
-> It depends on the CPU. For AMD CPUs that support MWAIT this is wrong.
-> Family 0x10 and 0x11 CPUs will enter C1 on HLT. Powersavings then
-                                ^ not
+Vegard Nossum wrote:
+>>From 61b840f071e496f632fcc293f5435428cfc98844 Mon Sep 17 00:00:00 2001
+> From: Vegard Nossum <vegard.nossum@gmail.com>
+> Date: Tue, 13 May 2008 10:20:27 +0200
+> Subject: [PATCH] kallsyms: fix potential overflow in binary search
+> 
+> This will probably never trigger... but it won't hurt to be careful.
 
-> It might be best to switch off the mwait flag for these AMD CPU
-> families like it was introduced with commit
-> f039b754714a422959027cb18bb33760eb8153f0 (x86: Don't use MWAIT on AMD
-> Family 10)
+Not "probably", this will never trigger _period_. If you ever have more 
+than 2^31 symbols in the kernel's kallsyms table you'll have worse 
+problems to worry about than the binary search overflowing.
 
-Then you have to special case everything again. We still need to 
-work out if the P4 is even correct here or not, but if it's not
-i would rather quirk the cpuid reporting on it.
+So, I don't think it is worth this des-optimization at all...
 
--Andi
+> http://googleresearch.blogspot.com/2006/06/extra-extra-read-all-about-it-nearly.html
+> 
+> Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+> ---
+>  kernel/kallsyms.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
+> index 6fc0040..38fc10a 100644
+> --- a/kernel/kallsyms.c
+> +++ b/kernel/kallsyms.c
+> @@ -176,7 +176,7 @@ static unsigned long get_symbol_pos(unsigned long addr,
+>  	high = kallsyms_num_syms;
+>  
+>  	while (high - low > 1) {
+> -		mid = (low + high) / 2;
+> +		mid = low + (high - low) / 2;
+>  		if (kallsyms_addresses[mid] <= addr)
+>  			low = mid;
+>  		else
+
+
+-- 
+Paulo Marques - www.grupopie.com
+
+Dear aunt, let's set so double the killer delete select all.
+-- Microsoft voice recognition live demonstration
