@@ -1,88 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760095AbYENJvI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760691AbYENJyd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760095AbYENJvI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 05:51:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbYENJu4
+	id S1760691AbYENJyd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 05:54:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754777AbYENJy0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 05:50:56 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:38066 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752363AbYENJuz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 05:50:55 -0400
-Message-ID: <482AB615.5030000@bull.net>
-Date: Wed, 14 May 2008 11:51:17 +0200
-From: Benjamin Thery <benjamin.thery@bull.net>
+	Wed, 14 May 2008 05:54:26 -0400
+Received: from gw.goop.org ([64.81.55.164]:33381 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752167AbYENJyZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 05:54:25 -0400
+Message-ID: <482AB6C5.4060604@goop.org>
+Date: Wed, 14 May 2008 10:54:13 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Randy Dunlap <RANDY.DUNLAP@ORACLE.COM>, Greg KH <greg@kroah.com>,
-       Al Viro <viro@ftp.linux.org.uk>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Daniel Lezcano <dlezcano@fr.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, Tejun Heo <htejun@gmail.com>
-Subject: Re: [PATCH] Fix kobject_rename and !CONFIG_SYSFS v4
-References: <m163tocw43.fsf_-_@frodo.ebiederm.org>	<20080512220232.GA16914@kroah.com>	<m1prrqbseh.fsf@frodo.ebiederm.org>	<4829A4BD.3020007@bull.net>	<20080513164438.GA31563@kroah.com>	<m18wyeay1q.fsf_-_@frodo.ebiederm.org>	<20080513201602.GA31578@kroah.com>	<m1od7a9bmr.fsf_-_@frodo.ebiederm.org>	<24291087.1210713535895.JavaMail.oracle@acsmt301.oracle.com>	<m1hcd1a48e.fsf_-_@frodo.ebiederm.org>	<20080513220304.b2f5a588.akpm@linux-foundation.org>	<m163th6yz2.fsf@frodo.ebiederm.org> <20080514022059.2fc883b1.akpm@linux-foundation.org>
-In-Reply-To: <20080514022059.2fc883b1.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: x86-64 build problem with tip
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 14 May 2008 02:01:37 -0700 ebiederm@xmission.com (Eric W. Biederman) wrote:
-> 
->> Andrew Morton <akpm@linux-foundation.org> writes:
->>
->>>> diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
->>>> index 7858eac..6e61033 100644
->>>> --- a/include/linux/sysfs.h
->>>> +++ b/include/linux/sysfs.h
->>>> @@ -20,6 +20,8 @@
->>>>  struct kobject;
->>>>  struct module;
->>>>  
->>>> +extern int kobject_set_name(struct kobject *kobj, const char *name, ...)
->>>> +			    __attribute__((format(printf, 2, 3)));
->>> Duplicating the kobject_set_name() declaration in sysfs.h is rather a hack.
->> A bit.  It really isn't worse then a struct declaration like struct kobject;
->>
->>> It'd be better to move it into a new header file, included by both
->>> sysfs.h and kobject.h.  Perhaps there are other declarations which can
->>> be moved with it.
->> My gut feel says that sysfs.h should include kobject.h instead of the
->> other way around.
+I'm getting this when I build for x86-64 with
 
-This is also my feeling.
-To do this, we need to move "struct attributes" related definitions to 
-kboject.h, and fix some .c files that don't include sysfs.h as they 
-should (sysfs.h was included indirectly via kojbect.h in these files: eg 
-kernel/sched.c, fs/partitions/check.c).
+jeremy@cosworth:~/hg/xen/paravirt/linux-x86_64$ gcc -v
+Reading specs from /usr/lib/gcc/x86_64-linux/3.4.4/specs
+Configured with: ../src/configure -v --enable-languages=c,c++,java,f77,pascal,objc,ada,treelang --prefix=/usr --libexecdir=/usr/lib --with-gxx-include-dir=/usr/include/c++/3.4 --enable-shared --with-system-zlib --enable-nls --without-included-gettext --program-suffix=-3.4 --enable-__cxa_atexit --enable-libstdcxx-allocator=mt --enable-clocale=gnu --enable-libstdcxx-debug --enable-java-gc=boehm --enable-java-awt=gtk --disable-werror x86_64-linux
+Thread model: posix
+gcc version 3.4.4 20050314 (prerelease) (Debian 3.4.3-13)
 
->>
->> However it gets reorganized, it is an entirely separate problem
->> from the one this patch sets out to solve and so should go in
->> a different patch.
->>
-> 
-> umm, well, actually, it's a problem which your patch introduces, by adding a
-> new dependency.
-> 
-> uninlining sysfs_rename_dir() would be a sensible solution.
 
-It is inlined only when CONFIG_SYSFS=n. When sysfs is enabled 
-sysfs_rename_dir() is compiled from fs/sysfs/dir.c
+  CC      kernel/sched.o
+/home/jeremy/hg/xen/paravirt/linux/kernel/sched_trace.h: In function `wait_task_inactive':
+/home/jeremy/hg/xen/paravirt/linux/kernel/sched_trace.h:5: warning: asm operand 1 probably doesn't match constraints
+/home/jeremy/hg/xen/paravirt/linux/kernel/sched_trace.h:5: error: impossible constraint in `asm'
+/home/jeremy/hg/xen/paravirt/linux/kernel/sched_trace.h:5: warning: 'value' might be used uninitialized in this function
+/home/jeremy/hg/xen/paravirt/linux/kernel/sched.c: At top level:
+/home/jeremy/hg/xen/paravirt/linux/kernel/sched_fair.c:1167: warning: 'wakeup_preempt_entity' defined but not used
+make[3]: *** [kernel/sched.o] Error 1
 
-Uninlining it will require us to find an appropriate .c file to put it
-in: we can't put it in fs/sysfs/dir.c. It is not built if CONFIG_SYSFS 
-is disabled.
 
--Benjamin
+Turning CONFIG_MARKER off avoids the problem.
 
--- 
-B e n j a m i n   T h e r y  - BULL/DT/Open Software R&D
-
-    http://www.bull.com
+    J
