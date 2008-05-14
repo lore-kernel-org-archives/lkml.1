@@ -1,50 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758486AbYEND1n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759355AbYENDce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758486AbYEND1n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 23:27:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755650AbYEND1d
+	id S1759355AbYENDce (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 23:32:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757194AbYENDcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 23:27:33 -0400
-Received: from imo-m21.mx.aol.com ([64.12.137.2]:39871 "EHLO
-	imo-m21.mx.aol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755549AbYEND1c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 23:27:32 -0400
-Message-ID: <482A5C19.6090503@aol.com>
-Date: Tue, 13 May 2008 23:27:21 -0400
-From: AndrewL733 <AndrewL733@aol.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070914)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Macbook Pro SATA Drives not seen in 2.6.25
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 13 May 2008 23:32:25 -0400
+Received: from mga02.intel.com ([134.134.136.20]:32423 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755878AbYENDcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 23:32:25 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,483,1204531200"; 
+   d="scan'208";a="383503240"
+Subject: Re: [PATCH] kexec based hibernation: a prototype of kexec
+	multi-stage load
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+In-Reply-To: <20080514025607.GA19944@redhat.com>
+References: <1210574441.30365.8.camel@caritas-dev.intel.com>
+	 <20080513053408.GA5870@redhat.com>
+	 <1210730266.23707.50.camel@caritas-dev.intel.com>
+	 <20080514025607.GA19944@redhat.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-X-AOL-IP: 207.180.154.47
-X-Mailer: Unknown (No Version)
-X-Spam-Flag: NO
+Date: Wed, 14 May 2008 11:37:55 +0800
+Message-ID: <1210736275.23707.62.camel@caritas-dev.intel.com>
+MIME-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+X-OriginalArrivalTime: 14 May 2008 03:31:34.0759 (UTC) FILETIME=[027BBF70:01C8B573]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have a couple of Macbook Pros. The newest one -- based on the Penryn 
-Core 2 Duo with ICH8 -- will not boot with any 2.6.25 kernel (I have 
-tried 2.6.25 and 2.6.25.3). It boots fine with 2.6.24.7 as well as with 
-2.6.26-rc2. It also boots fine with 2.6.22. I have specific reasons why 
-I need to run 2.6.25 so I would appreciate any help here. It seems the 
-SATA drives are detected, but then for each partition during bootup I see:
+On Tue, 2008-05-13 at 22:56 -0400, Vivek Goyal wrote:
+[...]
+> > 
+> > > Last time I tried the patches (V9) and kexec jump did not work for me. I
+> > > was not getting timer interrupts in second kernel. Then I had to put 
+> > > LAPIC and IOAPIC in legacy mode and then at one way jump started working.
+> > > I am not sure how the next kernel boots for you without putting APICs
+> > > in legacy mode. (Yet to make returning back to original kernel work
+> > > using V9). 
+> > 
+> > Can normal kexec (without kexec jump) works without putting LAPIC and
+> > IOAPIC in legacy mode? Does this mean we should put LAPIC and IOAPIC
+> > into legacy mode before kexec and restore them after?
+> > 
+> 
+> We do put LAPIC and IOAPIC in legacy mode in normal kexec. Look at 
+> disable_IO_APIC() in native_machine_shutdown(). So I think we shall
+> have to do the same thing in kexec jump code too.
 
-ata3: SATA link down (SStatus 0 SControl 0)
+OK. I will look at this.
 
-The same 2.6.25 kernels boot fine on my older Macbook Pro with ICH7 and 
-I do not see this error.
+> I went through above mail thread again where we were discussing what all
+> information need to be passed between kernels.
+> 
+> Last time we enumerated three things.
+> 
+> - kernel entry/re-entry point for switch between kernels.
+> - backup pages map for core filtering
+> - Probably ELF core notes for saving hibernated image.
+> 
+> I think if we just implement the functionality so that one can switch
+> back and forth between kernels (no hibernated image saving),then we probably
+> need to pass around only kernel entry/re-entry point and nothing else and in
+> your patches I think you are already doing using %edi.
 
-I would be happy to run a git bisect to help identify the issue, but if 
-this problem is already well understood (hey, it's fixed in 2.6.26), I 
-can think of better ways to spend my time.
+Yes.
 
-Please copy me personally on any replies. I often subscribe to the list 
-but it's too much mail right now. Thanks in advance.
+> So, IMHO, for first simple implementation, we don't have to pass around
+> any data between kernels except entry point. (Please correct me if I am 
+> wrong). Lets get that implementation in first and then we can get rest
+> of the pieces in place.
 
-Andrew
+Yes. Kernel entry/re-entry point is the only information need to be
+communicated between kernels for just switching between them. So we can
+focus on kexec jump patch firstly.
 
+Best Regards,
+Huang Ying
 
