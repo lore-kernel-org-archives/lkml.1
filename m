@@ -1,79 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760295AbYENGAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759593AbYENGBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760295AbYENGAm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 02:00:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757099AbYENGAU
+	id S1759593AbYENGBw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 02:01:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751882AbYENGBo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 02:00:20 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:56494 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753372AbYENGAS (ORCPT
+	Wed, 14 May 2008 02:01:44 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:52768 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751841AbYENGBn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 02:00:18 -0400
-Message-ID: <482A7F64.50705@ak.jp.nec.com>
-Date: Wed, 14 May 2008 14:57:56 +0900
-From: KaiGai Kohei <kaigai@ak.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Chris Wright <chrisw@sous-sol.org>
-CC: greg@kroah.com, morgan@kernel.org, serue@us.ibm.com,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] exporting capability name/code pairs (for 2.6.26)
-References: <47C25AE9.7080305@ak.jp.nec.com> <480DC80F.3060403@ak.jp.nec.com> <20080423053726.GF3861@localhost.localdomain> <480EE1F6.3070205@ak.jp.nec.com> <482A33FA.5030109@ak.jp.nec.com> <20080514005238.GZ17453@sequoia.sous-sol.org>
-In-Reply-To: <20080514005238.GZ17453@sequoia.sous-sol.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 14 May 2008 02:01:43 -0400
+Date: Wed, 14 May 2008 03:01:20 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Mike Isely <isely@pobox.com>
+Cc: isely@isely.net, Michael Krufky <mkrufky@linuxtv.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Guennadi Liakhovetski <g.liakhovetski@pengutronix.de>
+Subject: Re: [patch] video: build fix for drivers/media/video/pvrusb2/
+Message-ID: <20080514030120.7521b9a9@gaivota>
+In-Reply-To: <Pine.LNX.4.64.0805131101070.20885@cnc.isely.net>
+References: <20080511072137.GA16772@elte.hu>
+	<37219a840805110534r4865623y6f9510554e2716ac@mail.gmail.com>
+	<20080512235445.3a56cea0@gaivota>
+	<37219a840805122103u2a74b050h95c006f99ff8690f@mail.gmail.com>
+	<20080513124630.111c465b@gaivota>
+	<Pine.LNX.4.64.0805131050210.20885@cnc.isely.net>
+	<Pine.LNX.4.64.0805131101070.20885@cnc.isely.net>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Wright wrote:
-> * KaiGai Kohei (kaigai@ak.jp.nec.com) wrote:
->> Chris, what is the status of the patch?
+On Tue, 13 May 2008 11:02:05 -0500 (CDT)
+Mike Isely <isely@isely.net> wrote:
+
+> On Tue, 13 May 2008, Mike Isely wrote:
 > 
-> I still don't understand how ...
-
-Hmm...
-
->>> When we run a userspace utility on the latest kernel, it has to be compiled
->>> with kernel-headers which have same capability set at least.
->>> If installed userspace utility does not support newly added capabilities,
->>> it requires users to rebuild their utilities when they update the kernel.
->>>
->>> Typically, kernel developer faces this kind of version mismatching.
->>> When they boots their kernel with new capabilities, it also requires to
->>> rebuild libcap. Then, they have to revert it, when they boots with normal
->>> kernel.
->>>
->>> If libcap can know what capabilities are supported on the running kernel
->>> automatically, it does not need users to rebuild libcap concurrently.
+> > On Tue, 13 May 2008, Mauro Carvalho Chehab wrote:
+> > 
+> > > On Tue, 13 May 2008 00:03:02 -0400
+> > > "Michael Krufky" <mkrufky@linuxtv.org> wrote:
+> > > 
+> > > > 
+> > > > That sounds like it would be OK, although something like this would
+> > > > probably be better:
+> > > > 
+> > > >  config VIDEO_PVRUSB2
+> > > >        tristate "Hauppauge WinTV-PVR USB2 support"
+> > > > -       depends on VIDEO_V4L2 && I2C
+> > > > +       depends on VIDEO_V4L2 && I2C && (DVB_CORE if VIDEO_PVRUSB2_DVB)
+> > > >        select FW_LOADER
+> > > >        select MEDIA_TUNER
+> > > >        select VIDEO_TVEEPROM
+> > > 
+> > > This doesn't look to be a good idea, since VIDEO_PVRUSB2_DVB depends on
+> > > VIDEO_PVRUSB2. So, you'll create a circular dependency. The syntax I've
+> > > proposed seems cleaner. Of course, it needs to be tested. IMO, all hybrid
+> > > devices should be dependent of VIDEO_MEDIA. This will help to avoid this kind
+> > > of issue.
+> > > 
+> > > > I don't know if that syntax works for "depends on" , but it does work
+> > > > for select.
+> > > > 
+> > > > if "depends on FOO if BAR" doesnt work, would adding "select DVB_CORE
+> > > > if VIDEO_PVRUSB2_DVB" solve the problem?
+> > > 
+> > > Also, this leads into a circular reference.
+> > 
+> > Mauro:
+> > 
+> > Where is the loop that results in a circular reference?  No part of V4L 
+> > or DVB depends (or otherwise has any reliance) on VIDEO_PVRUSB2.  All 
+> > Mike Krufky is trying to set up is that VIDEO_PVRUSB2 should only depend 
+> > on DVB_CORE if the DVB part of the driver (i.e. VIDEO_PVRUSB2_DVB) has 
+> > been enabled.  Without VIDEO_PVRUSB2_DVB selected, then DVB_CORE is not 
+> > required by the driver.
+> > 
+> > I've been quiet about this issue because I'm not a kconfig expert, but 
+> > you've lost me with this conclusion.
+> > 
+> >   -Mike
 > 
-> ...libcap can do anything meaningful here with capabilities it doesn't
-> know about?  This interface is already versioned, what is wrong is old
-> cap version on new kernel (clearly new cap version on old kernel would
-> have to fall back to older cap version)?
+> Never mind.  I think I see it, and will figure out the rest off-line.
 
-The versioning info is just a hint in this case.
+The solution were not as easy as I've originally imagined. VIDEO_MEDIA logic
+were broken. So, all tuners were still broken.
 
-The major purpose of this patch is to save steps of maintainance.
-When we tries to run a application using a new capability provided by
-the latest kernel, we have to rebuild libcap to follow kernel updates.
+I needed to fix VIDEO_MEDIA logic first, to obey to this truth table:
 
-If we can obtain an information what capabilities are supported in
-the running kernel, we don't need to rebuild libcap for the latest
-kernel everytime.
+CONFIG_VIDEO_DEV        CONFIG_DVB_CORE         CONFIG_VIDEO_MEDIA
+        N                       N                       N
+        N                       M                       M
+        N                       Y                       Y
+        M                       N                       M
+        M                       M                       M
+        M                       Y                       M
+        Y                       N                       Y
+        Y                       M                       M
+        Y                       Y                       Y
 
-For example, we got CAP_MAC_ADMIN at 2.6.25. If an application tries to
-use it, we have to replace libcap for 2.6.24 by libcap for 2.6.25.
-Although, we don't get any updates in libcap. :-(
+After this change, a simple dependency add solved the reported issue:
 
-In addition, I noticed it will be usefull for applications which have
-a possibility to use arbitary number of capabilities, like busybox
-if setcap/getcap stuff is ported.
-(IMO, we should not use libcap for busybox, because its first priority
-  is to reduce binary size, limited to minimun functionalities.)
+ config VIDEO_PVRUSB2
+	tristate "Hauppauge WinTV-PVR USB2 support"
+	depends on VIDEO_V4L2 && I2C
++	depends on VIDEO_MEDIA  # Avoids pvrusb = Y / DVB = M
 
-Thanks,
--- 
-OSS Platform Development Division, NEC
-KaiGai Kohei <kaigai@ak.jp.nec.com>
+I've tested the logic. seems fine now.
+
+I did a quick review at the other modules that has hybrid support (cx88,
+saa7134, em28xx, bttv) and they seemed ok to my eyes. Yet, I didn't test.
+
+---
+
+There are other configurations that seem to be broken. For example, if
+V4L_CORE=m and DVB_CORE=y, a V4L driver should be 'M'. So, a tuner should also
+be 'M', otherwise, it will break compilation. a DVB support for that card will
+also be 'M', at the drivers I've reviewed.
+
+However, a DVB-only driver can be 'Y', but can select a tuner. This will cause
+a breakage.
+
+I'll try to simulate some of those issues and see what happens.
+
+Anyway, I've added severak Kbuild fixes at my -git tree:
+
+http://www.kernel.org/git/?p=linux/kernel/git/mchehab/v4l-dvb.git
+
+I intend to send the fixes I have later today. Now, I need to sleep ;)
+
+Cheers,
+Mauro
