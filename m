@@ -1,103 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760534AbYENEt0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760710AbYENEuL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760534AbYENEt0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 00:49:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758216AbYENEtP
+	id S1760710AbYENEuL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 00:50:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbYENEt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 00:49:15 -0400
-Received: from mail.queued.net ([207.210.101.209]:4791 "EHLO mail.queued.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752067AbYENEtO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 00:49:14 -0400
-Date: Wed, 14 May 2008 00:53:25 -0400
-From: Andres Salomon <dilinger@queued.net>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andy Whitcroft <apw@shadowen.org>, mingo@elte.hu, rdunlap@xenotime.net,
-       jschopp@austin.ibm.com
-Subject: [PATCH] checkpatch: update the 80-char-line check to allow for long
- strings
-Message-ID: <20080514005325.765178fc@ephemeral>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 14 May 2008 00:49:57 -0400
+Received: from mail9.hitachi.co.jp ([133.145.228.44]:38483 "EHLO
+	mail9.hitachi.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751658AbYENEt4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 00:49:56 -0400
+X-AuditID: 0ac90647-ab321ba000004aeb-41-482a6f728738
+Message-ID: <482A6F6F.20002@hitachi.com>
+Date: Wed, 14 May 2008 13:49:51 +0900
+From: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja-JP; rv:1.4) 
+    Gecko/20030624 Netscape/7.1 (ax)
+X-Accept-Language: ja
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>, sct@redhat.com,
+       adilger@clusterfs.com
+Cc: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       Jan Kara <jack@suse.cz>, Josef Bacik <jbacik@redhat.com>,
+       Mingming Cao <cmm@us.ibm.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
+       sugita <yumiko.sugita.yf@hitachi.com>
+Subject: [PATCH 3/4] jbd: abort when failed to log metadata buffers (rebased)
+References: <482A6E00.6080303@hitachi.com>
+In-Reply-To: <482A6E00.6080303@hitachi.com>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-19:29 * dilinger sends his patch to lkml for a proper flaming
-19:32  Quozl> dilinger: it's called "patch hardening"?  ;-}  the heat
-              of the flames makes the patch stronger.
+Subject: [PATCH 3/4] jbd: abort when failed to log metadata buffers
 
-I've wasted too much time massaging printk strings in order to satisfy
-checkpatch.pl.  Comments on this?
+If we failed to write metadata buffers to the journal space and
+succeeded to write the commit record, stale data can be written
+back to the filesystem as metadata in the recovery phase.
 
+To avoid this, when we failed to write out metadata buffers,
+abort the journal before writing the commit record.
 
-
-
-
-From: Andres Salomon <dilinger@debian.org>
-
-
-Checkpatch.pl is pretty strict in its lines-must-be-less-than-80-chars
-check.  I consider this a good thing in most scenarios; however,
-when it comes to strings, I don't consider the following to be readable:
-
-       printk(KERN_WARNING
-                       "one two three "
-                       "fooooooooooooooooooooooooooooooooooooooooooooooo\n");
-
-CodingStyle backs me up on this (if I'm interpreting that section clearly).
-Ingo[0] has also pointed out why this might be a bad thing as well.
-
-This patch is an attempt to make checkpatch.pl more useful.  Folks ignore
-long string warnings[1], which is bad form; we don't _want_ people getting
-used to ignoring checkpatch.pl warnings any more than we want people
-getting used to ignoring compiler warnings.
-
-The patch updates checkpatch.pl to ignore lines that are > 80 chars
-if they contain only (quoted) strings and perhaps some additional stuff
-at the end.  For example, the following no longer has warnings emitted:
-
-+ printk(KERN_WARNING
-+                       "one two three fooooooooooooooooooooooooooooooooooooooooooooooo\n");
-
-+       printk(KERN_WARNING
-+                       "one two three fooooooooooooooooooooooooooooooooooooooooo\n",
-+                       xyz);
-
-However, the following still triggers checkpatch.pl warnings:
-
-+ printk(KERN_WARNING "one two three fooooooooooooooooooooooooooooooooooooooooooooooo\n");
-
-+       printk(KERN_WARNING
-+                       "one two three foooooooooooooooooooooooooooooooooooooo\n", xyz);
-
-I'm sure it's possible to fool the check, but we're not trying to guard
-against malicious patch authors.
-
-[0] http://thread.gmane.org/gmane.linux.kernel/679732/focus=679760
-[1] http://lists.laptop.org/pipermail/devel/2008-May/014121.html
-
-Signed-off-by: Andres Salomon <dilinger@debian.org>
+Signed-off-by: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
 ---
- scripts/checkpatch.pl |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ fs/jbd/commit.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index b6bbbcd..00f3d05 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -1117,7 +1117,7 @@ sub process {
- 			ERROR("trailing whitespace\n" . $herevet);
- 		}
- #80 column limit
--		if ($line =~ /^\+/ && !($prevrawline=~/\/\*\*/) && $length > 80) {
-+		if ($line =~ /^\+/ && !($prevrawline=~/\/\*\*/) && !($line =~ /^\+\s*"/ && $line =~ /"[);,\s]*$/) && $length > 80) {
- 			WARN("line over 80 characters\n" . $herecurr);
- 		}
+Index: linux-2.6.26-rc2/fs/jbd/commit.c
+===================================================================
+--- linux-2.6.26-rc2.orig/fs/jbd/commit.c
++++ linux-2.6.26-rc2/fs/jbd/commit.c
+@@ -703,6 +703,9 @@ wait_for_iobuf:
+ 		__brelse(bh);
+ 	}
  
--- 
-1.5.5.1
++	if (err)
++		journal_abort(journal, err);
++
+ 	J_ASSERT (commit_transaction->t_shadow_list == NULL);
+ 
+ 	jbd_debug(3, "JBD: commit phase 5\n");
+
 
