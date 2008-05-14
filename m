@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762011AbYENIKf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761824AbYENILM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762011AbYENIKf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 04:10:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbYENIKO
+	id S1761824AbYENILM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 04:11:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbYENIKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 04:10:14 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46376 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757819AbYENIKL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 04:10:11 -0400
-Date: Wed, 14 May 2008 01:10:07 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Robert Goldner <robert@au-79.de>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: Problems with mainboard INTEL D201GLY2A, pci devices only
- available with acpi=noirq
-Message-Id: <20080514011007.58f9be4a.akpm@linux-foundation.org>
-In-Reply-To: <482A7F92.8030504@au-79.de>
-References: <482A7F92.8030504@au-79.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Wed, 14 May 2008 04:10:47 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:51909 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758148AbYENIKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 04:10:44 -0400
+Date: Wed, 14 May 2008 12:10:29 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Florian Wiessner <ich@netz-guru.de>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: POHMELFS high performance network filesystem. Transactions, failover, performance.
+Message-ID: <20080514081029.GA16134@2ka.mipt.ru>
+References: <20080513174523.GA1677@2ka.mipt.ru> <4829E752.8030104@garzik.org> <20080513205114.GA16489@2ka.mipt.ru> <20080514005223.GE27483@shareable.org> <482A3D88.2060105@netz-guru.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <482A3D88.2060105@netz-guru.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 May 2008 07:58:42 +0200 Robert Goldner <robert@au-79.de> wrote:
+Hi.
 
-> I use a INTEL D201GLY2A mainboard, and after serveral trys PCI devices 
-> were only useable (not visable) with the boot-parameter acpi=noirq (or 
-> noacpi). I tryed several kernel-versions (stated with 2.6.22), and no 
-> sucess without his parameter.
-> Without acpi=noirq all pci devices are deteced well, but if you want to 
-> use them, there is no response.
+On Wed, May 14, 2008 at 03:16:56AM +0200, Florian Wiessner (ich@netz-guru.de) wrote:
+> I am currently working on mysqlfs which is a fuse fs which can be used 
+> in conjunction with mysql-ndb cluster.
 > 
-> So, now some (as I thnik) relevant informations:
-> lspci
-> 00:00.0 Host bridge: Silicon Integrated Systems [SiS] 662 Host (rev 01)
-> 00:01.0 PCI bridge: Silicon Integrated Systems [SiS] SiS AGP Port
-> 00:02.0 ISA bridge: Silicon Integrated Systems [SiS] SiS964 [MuTIOL
-> 00:02.5 IDE interface: Silicon Integrated Systems [SiS] 5513 [IDE] (rev
-> 00:02.7 Multimedia audio controller: Silicon Integrated Systems [SiS]
-> 00:03.0 USB Controller: Silicon Integrated Systems [SiS] USB 1.1
-> 00:03.1 USB Controller: Silicon Integrated Systems [SiS] USB 1.1
-> 00:03.2 USB Controller: Silicon Integrated Systems [SiS] USB 1.1
-> 00:03.3 USB Controller: Silicon Integrated Systems [SiS] USB 2.0
-> 00:04.0 Ethernet controller: Silicon Integrated Systems [SiS] SiS900 PCI
-> 00:05.0 IDE interface: Silicon Integrated Systems [SiS] SATA (rev 01)
-> 00:06.0 Ethernet controller: Atheros Communications Inc. AR5212/AR5213
-> 00:1f.0 PCI bridge: Silicon Integrated Systems [SiS] PCI-to-PCI bridge
-> 01:00.0 VGA compatible controller: Silicon Integrated Systems [SiS]
+> You can find the details here: http://sourceforge.net/projects/mysqlfs/
+> and a howto (in german, though) here: 
+> http://www.netz-guru.de/2008/04/03/mysqlfs-mit-mysql-ndb-cluster-als-verteiltes-dateisystem/
 > 
-> 
-> .config (I did not attach all information about drivers, because I don__t 
-> think that this is relevant)
+> It is working quite well, but still lacks of caching which makes it slow
+> if your connection between the DB-servers have high latency/many hops.
 
-Probably your best approach will be to raise a report against acpi at
-bugzilla.kernel.org, please.  These things do get fixed, but it takes
-some time.
+Did FUSE start to make a fiendship with performance? Last time I saw it,
+they hated each other...
 
-Thanks.
+Caching actually useful not only on slow, but also very fast links
+because of its ability to batch data and greatly reduce latencies of
+reply-request protocols, which in turn (for that protocols) greatly
+increases performance. If you are using async processing (like POHMELFS,
+iirc it is the only such approach in networked fs, cifs/smbfs and others
+wait after request is sent and only then proceed with the next one) that
+will allow to drain the cache very quickly and proceed with the next
+data set.
+
+-- 
+	Evgeniy Polyakov
