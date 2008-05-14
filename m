@@ -1,109 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762421AbYENTnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758280AbYENTnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762421AbYENTnY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 15:43:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756896AbYENTmy
+	id S1758280AbYENTnr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 15:43:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757109AbYENTm4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 15:42:54 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:34902 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753413AbYENTkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 15:40:01 -0400
-Date: Wed, 14 May 2008 22:38:22 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [GIT PATCHES] V4L/DVB fixes for 2.6.26
-Message-ID: <20080514193822.GA21795@cs181133002.pp.htv.fi>
-References: <20080514114910.4bcfd220@gaivota> <20080514165434.GC22115@cs181133002.pp.htv.fi> <20080514145554.10e3385c@gaivota>
+	Wed, 14 May 2008 15:42:56 -0400
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:38104 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755172AbYENTkM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 15:40:12 -0400
+Date: Thu, 15 May 2008 01:09:46 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: linux-mm@kvack.org, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [-mm][PATCH 4/4] Add memrlimit controller accounting and
+	control (v4)
+Message-ID: <20080514193946.GA31115@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Mail-Followup-To: Pavel Emelyanov <xemul@openvz.org>, linux-mm@kvack.org,
+	Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+	YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+	Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+	linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080514130904.24440.23486.sendpatchset@localhost.localdomain> <20080514130951.24440.73671.sendpatchset@localhost.localdomain> <482AE9FA.4080004@openvz.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20080514145554.10e3385c@gaivota>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <482AE9FA.4080004@openvz.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 14, 2008 at 02:55:54PM -0300, Mauro Carvalho Chehab wrote:
-> On Wed, 14 May 2008 19:54:34 +0300
-> Adrian Bunk <bunk@kernel.org> wrote:
-> 
-> > On Wed, May 14, 2008 at 11:49:10AM -0300, Mauro Carvalho Chehab wrote:
-> > >...
-> > > PS.: There are yet a number of other Kconfig potential breakages at V4L/DVB. I'm 
-> > > currently working on fixing those issues. Basically, what users do is to select 
-> > > I2C, DVB and V4L as module. This works fine, but more complex scenarios where
-> > > you mix 'M' and 'Y' inside the subsystem generally cause compilation breakage.
-> > > Those scenarios are more theorical, since there's not much practical sense on
-> > > having a DVB driver foo as module, and V4L driver bar as in-kernel. However,
-> > > the better is to not allow compilation of the scenarios that don't work.
-> > > 
-> > > The main trouble at drivers/media Kbuild is that several rules there assumed that
-> > > "select" would check the "depends on" dependencies of the selected drivers.
-> > > However, this feature doesn't exist at the current Kbuild implementation. Even
-> > > if implemented, I suspect that this will generate circular dependency errors on
-> > > some cases.
-> > >...
-> > 
-> > The basic problem is that drivers/media/ does the most fancy kconfig 
-> > stuff in the kernel since it tries to both have very fine grained 
-> > dependencies and offer a usable kconfig UI to the user, which results
-> > in very complicated dependencies.
-> 
-> True.
-> 
-> > We are not getting this solved by any changes in the kconfig 
-> > implementation.
-> > 
-> > Thinking about reasonable ways to reduce the problem space:
-> > 
-> > Where could we reduce the complexity without big disadvantages?
-> > 
-> > Could we e.g. let VIDEO_DEV select I2C which would remove all the 
-> > fiddling with I2C dependencies (which is a bigger part of recent
-> > problems)?
-> 
-> This seems to be reasonable. However, there are quite a few devices that don't
-> need I2C (for example, some legacy ISA radio modules - also, some webcam
-> drivers don't use i2c layer to communicate with their i2c sensor - so - they
-> don't need I2C. The same also applies to some DVB drivers).
-> 
-> So, I'm not sure if this would be a good idea, since it will force I2C even for
-> devices that don't need. This is bad, for example, on embedded devices like
-> set-top-boxes and maybe on cellular phones with non-i2c webcams.
+* Pavel Emelyanov <xemul@openvz.org> [2008-05-14 17:32:42]:
 
-I'm not completely agreeing the space savings you are doing are worth 
-the complicated stuff, but OK.
-
-> > I can make a patch for it after this pull went into Linus' tree if it is 
-> > considered an acceptable option.
 > 
-> It would be nice if you could help on fixing those issues.
+> AFAIS you didn't cover all the cases when VM expands. At least all
+> the arch/ia64/ia32/binfmt_elf32.c is missed.
 > 
-> One dependency that will probably solve is to add "depends on VIDEO_MEDIA &&
-> I2C" to all devices that are hybrid (bttv, saa7134, cx88, pvrusb, em28xx).
+> I'd insert this charge into insert_vm_struct. This would a) cover
+> all of the missed cases and b) reduce the amount of places to patch.
+>
 
-What about converting all dependencies on I2C to select's?
-
-VIDEO_V4L2_COMMON might perhaps need a small trick, but otherwise that 
-would be a straightforward solution to solve these problems.
-
-Any problem I miss or should I bake a patch?
-
-> Cheers,
-> Mauro
-
-cu
-Adrian
+I thought I have those covered. insert_vm_struct() is called from
+places that we have covered in this patch. As far as
+arch/ia64/ia32/binfmt_elf32.c is concerned, it inserts a GDT, LDT
+and does not change total_vm. Having said that, I am not against
+putting the hooks in insert_vm_struct().
+ 
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
