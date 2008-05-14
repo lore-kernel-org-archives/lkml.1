@@ -1,63 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758030AbYENWl3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754506AbYENWmE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758030AbYENWl3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 18:41:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbYENWlO
+	id S1754506AbYENWmE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 18:42:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754211AbYENWls
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 18:41:14 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:18230 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752232AbYENWlN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 18:41:13 -0400
-Subject: Re: [PATCH] ARM: OMAP1: N770: Convert audio_pwr_sem in a mutex
-From: Daniel Walker <dwalker@mvista.com>
-To: Tony Lindgren <tony@atomide.com>
-Cc: Matthias Kaehlcke <matthias@kaehlcke.net>,
-       Russell King <rmk+kernel@arm.linux.org.uk>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <20080514210958.GA7831@atomide.com>
-References: <20080505203154.GF11462@traven>
-	 <1210608572.22306.4.camel@localhost.localdomain>
-	 <20080514210958.GA7831@atomide.com>
-Content-Type: text/plain
-Date: Wed, 14 May 2008 15:41:07 -0700
-Message-Id: <1210804867.22306.18.camel@localhost.localdomain>
+	Wed, 14 May 2008 18:41:48 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:45784 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754070AbYENWlr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 18:41:47 -0400
+Date: Thu, 15 May 2008 02:41:33 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Jamie Lokier <jamie@shareable.org>, Sage Weil <sage@newdream.net>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: POHMELFS high performance network filesystem. Transactions, failover, performance.
+Message-ID: <20080514224132.GB19570@2ka.mipt.ru>
+References: <20080513174523.GA1677@2ka.mipt.ru> <4829E752.8030104@garzik.org> <20080513205114.GA16489@2ka.mipt.ru> <Pine.LNX.4.64.0805140623001.14334@cobra.newdream.net> <20080514135156.GA23131@2ka.mipt.ru> <482B378C.5070807@garzik.org> <20080514193843.GB10165@2ka.mipt.ru> <20080514215704.GE23758@shareable.org> <482B6259.3070507@garzik.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-3.fc8) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <482B6259.3070507@garzik.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2008-05-14 at 14:09 -0700, Tony Lindgren wrote:
-> Hi,
+On Wed, May 14, 2008 at 06:06:17PM -0400, Jeff Garzik (jeff@garzik.org) wrote:
+> This is the core reason why I am so interested in distributed storage... 
+>  a single storage device is usually slower than network wire speed. 
+> Multiple nodes helps remove that limitation and max out the network.
 > 
-> * Daniel Walker <dwalker@mvista.com> [080512 09:09]:
-> > 
-> > On Mon, 2008-05-05 at 22:31 +0200, Matthias Kaehlcke wrote:
-> > > ARM: OMAP1: N770: The semaphore audio_pwr_sem is used as a
-> > > mutex. Convert it to the mutex API
-> > > 
-> > 
-> > I submitted an identical patch to Tony in January .. I assumed it was
-> > making it's way through the ARM tree .. I'm surprised it's not in
-> > mainline yet ..
-> > 
-> > Tony any status on this?
-> 
-> Hmm, I can't seem to find your patch and it does not show up in git-log
-> either in linux-omap. Maybe I never got it or never applied it?
-> 
-> Do you have a link for you patch in the mailing list archives so I can
-> look into it further?
-> 
-> Regards,
+> I want to be able to stream data _faster_ than a single hard drive can 
+> handle :)
 
-http://marc.info/?l=linux-omap&m=120063553504911&w=2
+In that case yes, network will _not_ be saturated and multiple
+simultaneous streams will have a win, but POHMELFS client design was
+specially created to increase network performance as much as possible,
+since we can increase storage speed (add more drives, more RAM
+for caches, better hardware), but can not easily increase network
+bandwidth.
 
-We had a discussion about it as I recall.
+But, as was already noted, even being network bound, client-to-many
+is likely a better solution from other points of view (like management
+and/ro failure cases).
 
-Daniel
-
+-- 
+	Evgeniy Polyakov
