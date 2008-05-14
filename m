@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762913AbYENPTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763551AbYENPVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762913AbYENPTz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 11:19:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbYENPTp
+	id S1763551AbYENPVX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 11:21:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751490AbYENPVO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 11:19:45 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59702 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751406AbYENPTo (ORCPT
+	Wed, 14 May 2008 11:21:14 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49857 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751072AbYENPVN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 11:19:44 -0400
-Date: Wed, 14 May 2008 08:18:21 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Robin Holt <holt@sgi.com>
-cc: Nick Piggin <npiggin@suse.de>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrea Arcangeli <andrea@qumranet.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
-       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>
-Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
-In-Reply-To: <20080514112625.GY9878@sgi.com>
-Message-ID: <alpine.LFD.1.10.0805140807400.3019@woody.linux-foundation.org>
-References: <6b384bb988786aa78ef0.1210170958@duo.random> <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org> <20080508003838.GA9878@sgi.com> <200805132206.47655.nickpiggin@yahoo.com.au> <20080513153238.GL19717@sgi.com> <20080514041122.GE24516@wotan.suse.de>
- <20080514112625.GY9878@sgi.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 14 May 2008 11:21:13 -0400
+Message-ID: <482B0363.6080700@firstfloor.org>
+Date: Wed, 14 May 2008 17:21:07 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Vegard Nossum <vegard.nossum@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>, caglar@pardus.org.tr,
+       Valdis.Kletnieks@vt.edu, Matt Mackall <mpm@selenic.com>,
+       linux-kernel@vger.kernel.org, lenb@kernel.org
+Subject: Re: [BISECTED] Lots of "rescheduling IPIs" in powertop
+References: <20080513204206.GA17781@damson.getinternet.no>	<873aol9b73.fsf@basil.nowhere.org>	<19f34abd0805131409w2914fbedgb608c7b87c234e2e@mail.gmail.com>	<482A05F3.7020408@firstfloor.org>	<20080513210217.59a7ca65@infradead.org>	<482A8D7D.7000208@firstfloor.org> <20080514065558.41071ca8@infradead.org>
+In-Reply-To: <20080514065558.41071ca8@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 14 May 2008, Robin Holt wrote:
+Arjan van de Ven wrote:
+> On Wed, 14 May 2008 08:58:05 +0200
+>>> If the bios says mwait is usable, we need to use it with the values
+>>> IT gives us.
+>> At least to my knowledge the ACPI FADT just says what C states are
+>> available, not if they are implemented with MWAIT or using IO ports.
 > 
-> Are you suggesting the sending side would not need to sleep or the
-> receiving side?
+> _CST does; which is what the mwait C-state selection code uses.
+> 
+> (and we've seen quirky systems where C1 mwait didn't work, SMM did
+> something wrong or something,
 
-One thing to realize is that most of the time (read: pretty much *always*) 
-when we have the problem of wanting to sleep inside a spinlock, the 
-solution is actually to just move the sleeping to outside the lock, and 
-then have something else that serializes things.
+What do you mean with didn't work? And they did not report it in CPUID?
+And are they wide spread? I haven't heard of any such problems before.
 
-That way, the core code (protected by the spinlock, and in all the hot 
-paths) doesn't sleep, but the special case code (that wants to sleep) can 
-have some other model of serialization that allows sleeping, and that 
-includes as a small part the spinlocked region.
+Even the P4 problem is not really that serious btw.
 
-I do not know how XPMEM actually works, or how you use it, but it 
-seriously sounds like that is how things *should* work. And yes, that 
-probably means that the mmu-notifiers as they are now are simply not 
-workable: they'd need to be moved up so that they are inside the mmap 
-semaphore but not the spinlocks.
+ because the other OS doesn't seem to use
+> it for that, so making it the default is not really an option)
 
-Can it be done? I don't know. But I do know that I'm unlikely to accept a 
-noticeable slowdown in some very core code for a case that affects about 
-0.00001% of the population. In other words, I think you *have* to do it.
+But it has been default for practically forever.   It is strange
+if you declare Linux default behavior for years suddenly as "not really
+an option"
 
-			Linus
+I think it's a sane default. And MWAIT is a valuable optimization.
+
+I don't think we should stop sanely architected interfaces on the first
+BIOS quirk someone reports. I'm sure for nearly every feature there's
+some broken BIOS out there that gets it wrong somehow. If we did this in
+general soon we couldn't use anything.
+
+-Andi
+
