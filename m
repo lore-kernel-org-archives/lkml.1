@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbYENWcu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759564AbYENWep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754833AbYENWcu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 18:32:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755383AbYENWcZ
+	id S1759564AbYENWep (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 18:34:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751589AbYENWeg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 18:32:25 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:49228 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754011AbYENWcX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 18:32:23 -0400
-Date: Thu, 15 May 2008 02:32:03 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Jeff Garzik <jeff@garzik.org>, Sage Weil <sage@newdream.net>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: POHMELFS high performance network filesystem. Transactions, failover, performance.
-Message-ID: <20080514223155.GA19570@2ka.mipt.ru>
-References: <20080513174523.GA1677@2ka.mipt.ru> <4829E752.8030104@garzik.org> <20080513205114.GA16489@2ka.mipt.ru> <Pine.LNX.4.64.0805140623001.14334@cobra.newdream.net> <20080514135156.GA23131@2ka.mipt.ru> <482B378C.5070807@garzik.org> <20080514193843.GB10165@2ka.mipt.ru> <20080514215704.GE23758@shareable.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080514215704.GE23758@shareable.org>
-User-Agent: Mutt/1.5.9i
+	Wed, 14 May 2008 18:34:36 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:48835 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751302AbYENWef (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 18:34:35 -0400
+Date: Wed, 14 May 2008 15:34:34 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Matthew Wilcox <matthew@wil.cx>
+cc: Andi Kleen <andi@firstfloor.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, mpm@selenic.com,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: [patch 21/21] slab defrag: Obsolete SLAB
+In-Reply-To: <20080514220058.GG9921@parisc-linux.org>
+Message-ID: <Pine.LNX.4.64.0805141533430.20440@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0805141009210.15194@schroedinger.engr.sgi.com>
+ <482B2617.5010605@firstfloor.org> <Pine.LNX.4.64.0805141104260.15633@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0805141333550.18231@schroedinger.engr.sgi.com>
+ <20080514205842.GC9921@parisc-linux.org> <Pine.LNX.4.64.0805141359420.18958@schroedinger.engr.sgi.com>
+ <20080514212130.GD9921@parisc-linux.org> <Pine.LNX.4.64.0805141426440.19073@schroedinger.engr.sgi.com>
+ <20080514214326.GF9921@parisc-linux.org> <Pine.LNX.4.64.0805141444220.19897@schroedinger.engr.sgi.com>
+ <20080514220058.GG9921@parisc-linux.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 14, 2008 at 10:57:06PM +0100, Jamie Lokier (jamie@shareable.org) wrote:
-> 
-> If desired, arrange it in a tree to reduce even the microseconds.
-> 
-> Such network hardware is quite feasible, indeed quite easy with an
-> FPGA based NIC.
-> 
-> Enjoy the speed :-)
+On Wed, 14 May 2008, Matthew Wilcox wrote:
 
-And if client-server link is fully saturated by messages
-we do not win :) We also lose if client-server is slower than
-server-server... I completely agree that there are cases where each
-approach is more beneficial, and likely client-to-many os better in
-terms of management and/or failover, but for speed there is always a
-different side of the coin.
+> Since there's no way we've found to date to get the TPC test to you,
+> how about we settle for analysing _this_ testcase which did show a
+> significant performance degradation for slub?
 
--- 
-	Evgeniy Polyakov
+Could I get the latest version of the test? Or was the March 31st version 
+the latest? No later changes?
+
