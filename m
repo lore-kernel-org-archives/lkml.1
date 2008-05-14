@@ -1,79 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761891AbYENPsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751849AbYENPtC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761891AbYENPsb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 11:48:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756882AbYENPsN
+	id S1751849AbYENPtC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 11:49:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbYENPsW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 11:48:13 -0400
-Received: from mu-out-0910.google.com ([209.85.134.187]:43107 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755238AbYENPsL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 11:48:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=b3SkWvSyJjrC/BY3URHyxDcax7isGsSDtZdiJpMoeknvksM4UaQRYM+1+ONY5A5qxcAGk7wibyQwooAYdN+vwFh7CuUNVxRMfGTLqjs4YMTb7XaikVeJ1poJyE908w5rW8GY174xlS5kHxYgCvDZY4OIsLjSxzII7kj30yVGoeU=
-Date: Wed, 14 May 2008 19:48:01 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Andreas Schwab <schwab@suse.de>, Geert Uytterhoeven <geert@linux-m68k.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: m68k: main.c:(.init.text+0x730): undefined reference to
-	`strlen'
-Message-ID: <20080514154801.GG6902@cvg>
-References: <Pine.LNX.4.64.0805140958400.5778@anakin> <jeprrpth5m.fsf@sykes.suse.de> <20080514141056.GB19909@cs181133002.pp.htv.fi> <jeabitt0xj.fsf@sykes.suse.de> <20080514153059.GA22115@cs181133002.pp.htv.fi>
+	Wed, 14 May 2008 11:48:22 -0400
+Received: from gw.goop.org ([64.81.55.164]:49800 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760628AbYENPsV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 11:48:21 -0400
+Message-ID: <482B09B9.5090509@goop.org>
+Date: Wed, 14 May 2008 16:48:09 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080514153059.GA22115@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <andi@firstfloor.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 3/3] always_inline timespec_add_ns
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Adrian Bunk - Wed, May 14, 2008 at 06:30:59PM +0300]
-| On Wed, May 14, 2008 at 04:28:24PM +0200, Andreas Schwab wrote:
-| > Adrian Bunk <bunk@kernel.org> writes:
-| > 
-| > > Or replace all the strlen stuff in include/asm-m68k/string.h with a 
-| > 
-| > I don't think the strlen macros has any influence in this case (it
-| > already uses __builtin_strlen anyway).
-| 
-| The problem is that it sets __HAVE_ARCH_STRLEN, and therefore the 
-| out-of-line function in lib/string.c is not built.
-| 
-| That breaks when gcc replaces a call to a different function with a call 
-| to strlen().
-| 
-| > I'd rather guess that gcc is
-| > expanding strncat internally to something involving strlen with
-| > non-constant argument,
-| 
-| We agree on this one.
-| 
-| > although I cannot see how that can happen from a
-| > quick look.
-| 
-| It isn't the first time we have these problems in the kernel...
-| 
-| > Andreas.
-| 
-| cu
-| Adrian
-| 
-| -- 
-| 
-|        "Is there not promise of rain?" Ling Tan asked suddenly out
-|         of the darkness. There had been need of rain for many days.
-|        "Only a promise," Lao Er said.
-|                                        Pearl S. Buck - Dragon Seed
-| 
-| 
+timespec_add_ns is used from the x86-64 vdso, which cannot call out to
+other kernel code.  Make sure that timespec_add_ns is always inlined
+(and only uses always_inlined functions) to make sure there are no
+unexpected calls.
 
-Adrian, I've just sent the updated patch, and accidentally forget
-to CC you - please take a look on http://lkml.org/lkml/2008/5/14/267
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ include/linux/time.h |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-		- Cyrill -
+===================================================================
+--- a/include/linux/time.h
++++ b/include/linux/time.h
+@@ -170,10 +170,13 @@
+  * timespec_add_ns - Adds nanoseconds to a timespec
+  * @a:		pointer to timespec to be incremented
+  * @ns:		unsigned nanoseconds value to be added
++ *
++ * This must always be inlined because its used from the x86-64 vdso,
++ * which cannot call other kernel functions.
+  */
+-static inline void timespec_add_ns(struct timespec *a, u64 ns)
++static __always_inline void timespec_add_ns(struct timespec *a, u64 ns)
+ {
+-	a->tv_sec += iter_div_u64_rem(a->tv_nsec + ns, NSEC_PER_SEC, &ns);
++	a->tv_sec += __iter_div_u64_rem(a->tv_nsec + ns, NSEC_PER_SEC, &ns);
+ 	a->tv_nsec = ns;
+ }
+ #endif /* __KERNEL__ */
+
+
