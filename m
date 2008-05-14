@@ -1,66 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760669AbYENCBK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758671AbYENCNh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760669AbYENCBK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 22:01:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757910AbYENCAz
+	id S1758671AbYENCNh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 22:13:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754862AbYENCN0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 22:00:55 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:11854 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757474AbYENCAy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 22:00:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=Ma6476nmmtKvQ/BjtA/j93QcUBKuaZv+n5uftF/3U4LLpYPPev8z4FN62EfRlfIBHznfTypo55ctT14s/dI4gikxG0x0IP2MwimNQYqW8lsp3fwZP3JGfEv1LQ1HaGEWJtxUDRI72/hSYYh5y/1uOZb47348BCGvkJ/7J0hikqc=
-Message-ID: <86802c440805131900r2c3cca56sb45f80f26dc65780@mail.gmail.com>
-Date: Tue, 13 May 2008 19:00:53 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>,
-       "James Bottomley" <James.Bottomley@hansenpartnership.com>
-Subject: blk_queue_init_tags warning
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Linux-Scsi <linux-scsi@vger.kernel.org>
+	Tue, 13 May 2008 22:13:26 -0400
+Received: from ns1.suse.de ([195.135.220.2]:50112 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753682AbYENCNZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 22:13:25 -0400
+Date: Tue, 13 May 2008 19:03:33 -0700
+From: Greg KH <gregkh@suse.de>
+To: Michael Krufky <mkrufky@linuxtv.org>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Chuck Ebbert <cebbert@redhat.com>, Domenico Andreoli <cavokz@gmail.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Hans-Frieder Vogt <hfvogt@gmx.net>,
+       Felix Apitzsch <F.Apitzsch@soz.uni-frankfurt.de>,
+       Antti Palosaari <crope@iki.fi>,
+       Albert Comerma <albert.comerma@gmail.com>,
+       Patrick Boettcher <pb@linuxtv.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Michel Morisot <mmorisot.abonnement@belcenter.com>
+Subject: Re: [patch 01/37] V4L/DVB (7473): PATCH for various Dibcom based
+	devices
+Message-ID: <20080514020333.GA30079@suse.de>
+References: <20080513200453.064446337@mini.kroah.org> <20080513201053.GA31167@suse.de> <20080513201120.GB31167@suse.de> <37219a840805131827v5faf7710pf0b3f67e570bdc7f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <37219a840805131827v5faf7710pf0b3f67e570bdc7f@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------------[ cut here ]------------
-WARNING: at include/linux/blkdev.h:431 blk_queue_init_tags+0xfe/0x154()
-Modules linked in:
-Pid: 1509, comm: scsi_wq_0 Not tainted
-2.6.26-rc1-sched-devel.git-x86-latest.git-00589-g5bb43f9-dirty #382
+On Tue, May 13, 2008 at 09:27:30PM -0400, Michael Krufky wrote:
+> On Tue, May 13, 2008 at 4:11 PM, Greg KH <gregkh@suse.de> wrote:
+> > 2.6.25-stable review patch.  If anyone has any objections, please let us know.
+> >
+> >  ------------------
+> >
+> >  From: Albert Comerma <albert.comerma@gmail.com>
+> >
+> >  patch 6ca8f0b97473dcef3a754bab5239dcfcdd00b244 upstream
+> >
+> >  This patch introduces support for dvb-t for the following DiBcom based cards:
+> >
+> >  - Terratec Cinergy HT USB XE (USB-ID: 0ccd:0058)
+> >  - Terratec Cinergy HT Express (USB-ID: 0ccd:0060)
+> >  - Pinnacle 320CX (USB-ID: 2304:022e)
+> >  - Pinnacle PCTV72e (USB-ID: 2304:0236)
+> >  - Pinnacle PCTV73e (USB-ID: 2304:0237)
+> >  - Yuan EC372S (USB-ID: 1164:1edc)
+> >
+> >  Signed-off-by: Hans-Frieder Vogt <hfvogt@gmx.net>
+> >  Signed-off-by: Felix Apitzsch <F.Apitzsch@soz.uni-frankfurt.de>
+> >  Signed-off-by: Antti Palosaari <crope@iki.fi>
+> >  Signed-off-by: Albert Comerma <albert.comerma@gmail.com>
+> >  Signed-off-by: Patrick Boettcher <pb@linuxtv.org>
+> >  Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
+> >  Cc: Michel Morisot <mmorisot.abonnement@belcenter.com>
+> >  Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> >
+> >  ---
+> >   drivers/media/dvb/dvb-usb/dib0700_devices.c |  259 ++++++++++++++++++++++++----
+> >   drivers/media/dvb/dvb-usb/dvb-usb-ids.h     |    9
+> >   2 files changed, 238 insertions(+), 30 deletions(-)
+> 
+> 
+> This patch is entirely inappropriate for -stable
 
-Call Trace:
- [<ffffffff802634d5>] warn_on_slowpath+0x6c/0xa7
- [<ffffffff802a8b42>] ? ftrace_record_ip+0x223/0x286
- [<ffffffff8050607f>] ? __blk_queue_init_tags+0x38/0x8e
- [<ffffffff80505f33>] ? init_tag_map+0x96/0xdb
- [<ffffffff80506095>] ? __blk_queue_init_tags+0x4e/0x8e
- [<ffffffff80506326>] blk_queue_init_tags+0xfe/0x154
- [<ffffffff806fa7d8>] qla2xxx_slave_configure+0x8b/0xf7
- [<ffffffff8068da34>] scsi_probe_and_add_lun+0x99f/0xb1f
- [<ffffffff8068cbc8>] ? scsi_alloc_target+0x25b/0x2d7
- [<ffffffff8068dec8>] __scsi_scan_target+0xdd/0x657
- [<ffffffff802a8b42>] ? ftrace_record_ip+0x223/0x286
- [<ffffffff8022a4f0>] ? mcount_call+0x5/0x35
- [<ffffffff8068ea76>] scsi_scan_target+0xab/0xd6
- [<ffffffff8022a4f0>] ? mcount_call+0x5/0x35
- [<ffffffff80697dc1>] fc_scsi_scan_rport+0x92/0xc8
- [<ffffffff80697d2f>] ? fc_scsi_scan_rport+0x0/0xc8
- [<ffffffff80276d45>] run_workqueue+0x97/0x13c
- [<ffffffff80277b1d>] worker_thread+0xf4/0x119
- [<ffffffff8027b8e0>] ? autoremove_wake_function+0x0/0x63
- [<ffffffff80277a29>] ? worker_thread+0x0/0x119
- [<ffffffff8027b6dd>] kthread+0x61/0xa8
- [<ffffffff8025ce01>] ? schedule_tail+0x3c/0x87
- [<ffffffff8022b528>] child_rip+0xa/0x12
- [<ffffffff8027b67c>] ? kthread+0x0/0xa8
- [<ffffffff8022b51e>] ? child_rip+0x0/0x12
+Why do you say that?  It adds new device ids for devices to a driver,
+which is find for stable.
 
----[ end trace b774192c17464dd8 ]---
+> Who sent this in?
+
+I did.
+
+> I usually send in the v4l-dvb backports for -stable, and this was
+> never in my queue, not to mention that it doesn't qualify, based on
+> the -stable rules.
+
+I think it does qualify and I've been asking for feedback about this for
+the past week to everyone on the signed-off-lines above with no real
+objections :)
+
+openSUSE had a user that requested this patch be added as they had
+hardware that needed this patch to work properly on 2.6.25.  As it only
+added device ids, I didn't see the problem with it.
+
+Does it cause any problems that you can see?
+
+thanks,
+
+greg k-h
