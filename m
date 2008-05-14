@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757222AbYENWsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757763AbYENWuf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757222AbYENWsl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 18:48:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751639AbYENWsd
+	id S1757763AbYENWuf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 18:50:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbYENWuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 18:48:33 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:62399 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751488AbYENWsc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 18:48:32 -0400
-Date: Wed, 14 May 2008 23:46:05 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Ben Dooks <ben@fluff.org>
-cc: Jean Delvare <khali@linux-fr.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mips@linux-mips.org,
-       i2c@lm-sensors.org, linux-kernel@vger.kernel.org
-Subject: Re: [i2c] [PATCH] I2C: SiByte: Convert the driver to make use of
- interrupts
-In-Reply-To: <20080514213841.GC16881@fluff.org.uk>
-Message-ID: <Pine.LNX.4.55.0805142309190.15223@cliff.in.clinika.pl>
-References: <Pine.LNX.4.55.0805130353250.535@cliff.in.clinika.pl>
- <20080514213841.GC16881@fluff.org.uk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 14 May 2008 18:50:21 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:37755 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750939AbYENWuU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 18:50:20 -0400
+Date: Thu, 15 May 2008 02:50:08 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Jamie Lokier <jamie@shareable.org>, Sage Weil <sage@newdream.net>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: POHMELFS high performance network filesystem. Transactions, failover, performance.
+Message-ID: <20080514225008.GB3739@2ka.mipt.ru>
+References: <20080513174523.GA1677@2ka.mipt.ru> <4829E752.8030104@garzik.org> <20080513205114.GA16489@2ka.mipt.ru> <Pine.LNX.4.64.0805140623001.14334@cobra.newdream.net> <20080514135156.GA23131@2ka.mipt.ru> <482B378C.5070807@garzik.org> <20080514193843.GB10165@2ka.mipt.ru> <20080514215704.GE23758@shareable.org> <482B6259.3070507@garzik.org> <20080514224132.GB19570@2ka.mipt.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080514224132.GB19570@2ka.mipt.ru>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 May 2008, Ben Dooks wrote:
+On Thu, May 15, 2008 at 02:41:33AM +0400, Evgeniy Polyakov (johnpol@2ka.mipt.ru) wrote:
+> > This is the core reason why I am so interested in distributed storage... 
+> >  a single storage device is usually slower than network wire speed. 
+> > Multiple nodes helps remove that limitation and max out the network.
+> > 
+> > I want to be able to stream data _faster_ than a single hard drive can 
+> > handle :)
+> 
+> In that case yes, network will _not_ be saturated and multiple
+> simultaneous streams will have a win, but POHMELFS client design was
+> specially created to increase network performance as much as possible,
+> since we can increase storage speed (add more drives, more RAM
+> for caches, better hardware), but can not easily increase network
+> bandwidth.
 
-> My recollection is that the return of ioremap() was meant to be
-> used with read{b,w,l} and not their __raw_xxx() counterparts.
+Actually experiments with async processing in POHMELFS lead to the
+conclusion, that if protocol waits until request is completed and does
+not proceed with the next one (like CIFS and somewhat NFS), such design
+does not scale to multiple parallel IOs.
+That from different angle shows benefits of caching and aiming at
+getting as much performance as possible from single node connection :)
 
- Well, what would the definition of the cookie passed to these raw MMIO
-access calls be then?
-
- They have to be used here, because SOC on-chip registers are accessed by
-the driver and therefore data transferred must never be swapped in any
-way.  The internal registers always have the same numerical value (bit
-positions) regardless of the endianness configured when the SOC's on-chip
-CPU cores are reset.
-
- For the external buses the arrangement varies, for example the PCI
-interface is always little-endian and the Generic Bus is always
-big-endian.  To access these, cooked MMIO calls would normally be used
-(these without a prefix) which swap bytes as necessary to preserve bit
-positions.  The notable exception are PIO-style data transfers, such as
-ones used by some IDE drivers (including the GenBus one), where the
-ultimate destination is system memory (which is endian-neutral) and thus
-bit positions do not matter but addresses of individual bytes do --
-__mem_xxx() calls have been defined for this purpose, which swap bytes as
-necessary.  See include/asm-mips/mach-generic/mangle-port.h for details.
-
-  Maciej
+-- 
+	Evgeniy Polyakov
