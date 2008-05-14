@@ -1,61 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761291AbYENM7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762242AbYENNAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761291AbYENM7Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 08:59:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758227AbYENM7Q
+	id S1762242AbYENNAV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 09:00:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756340AbYENNAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 08:59:16 -0400
-Received: from gw.goop.org ([64.81.55.164]:34183 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757803AbYENM7P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 08:59:15 -0400
-Message-ID: <482AE211.9040907@goop.org>
-Date: Wed, 14 May 2008 13:58:57 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 14 May 2008 09:00:07 -0400
+Received: from imo-m28.mx.aol.com ([64.12.137.9]:63874 "EHLO
+	imo-m28.mx.aol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753682AbYENNAF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 09:00:05 -0400
+Message-ID: <482AE24A.1020203@aol.com>
+Date: Wed, 14 May 2008 08:59:54 -0400
+From: AndrewL733 <AndrewL733@aol.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070914)
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Segher Boessenkool <segher@kernel.crashing.org>,
-       Robert Hancock <hancockr@shaw.ca>,
-       Christian Kujau <lists@nerdbynature.de>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>
-Subject: Re: [PATCH] common implementation of iterative div/mod
-References: <fa.QTbvQYXhEm5VNP5dvkl5JG7NHYQ@ifi.uio.no>	<481DF3D8.3010108@shaw.ca>	<a6dd201e0149f8dbdf10a7a194673833@kernel.crashing.org>	<48217674.8080903@goop.org>	<48231959.4050406@goop.org> <20080513234627.30476c20.akpm@linux-foundation.org> <482A95BB.1000001@goop.org> <482AA3BD.1030600@firstfloor.org> <482AB6FC.7020202@goop.org> <482AC3E4.2050200@firstfloor.org> <482AC467.1060100@goop.org> <482ACB24.5080400@firstfloor.org>
-In-Reply-To: <482ACB24.5080400@firstfloor.org>
-X-Enigmail-Version: 0.95.6
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: SOLVED:  Macbook Pro SATA Drives not seen in 2.6.25
+References: <482A5C19.6090503@aol.com> <20080514010618.2e1e510a.akpm@linux-foundation.org>
+In-Reply-To: <20080514010618.2e1e510a.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-AOL-IP: 146.115.19.135
+X-Mailer: Unknown (No Version)
+X-Spam-Flag: NO
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->> It's:
->> jeremy@cosworth:~/hg/xen/paravirt/linux-x86_64$ gcc -v
->> Reading specs from /usr/lib/gcc/x86_64-linux/3.4.4/specs
->> Configured with: ../src/configure -v
->> --enable-languages=c,c++,java,f77,pascal,objc,ada,treelang --prefix=/usr
->> --libexecdir=/usr/lib --with-gxx-include-dir=/usr/include/c++/3.4
->> --enable-shared --with-system-zlib --enable-nls
->> --without-included-gettext --program-suffix=-3.4 --enable-__cxa_atexit
->> --enable-libstdcxx-allocator=mt --enable-clocale=gnu
->> --enable-libstdcxx-debug --enable-java-gc=boehm --enable-java-awt=gtk
->> --disable-werror x86_64-linux
->> Thread model: posix
->> gcc version 3.4.4 20050314 (prerelease) (Debian 3.4.3-13)
->>
->> I think this is still a supported compiler, isn't it?
+Thanks.  The patch below solves the problem.  I applied it to 2.6.25.3.
+
+Andrew
+
+
+Andrew Morton wrote:
+> On Tue, 13 May 2008 23:27:21 -0400 AndrewL733 <AndrewL733@aol.com> wrote:
+>
+>   
+>> I have a couple of Macbook Pros. The newest one -- based on the Penryn 
+>> Core 2 Duo with ICH8 -- will not boot with any 2.6.25 kernel (I have 
+>> tried 2.6.25 and 2.6.25.3).
 >>     
 >
-> Yes. Here's a patch. You probably didn't see problems because you either
-> don't have a glibc that supports the vdso or none of your programs
-> gets the timezone from gettimeofday() [that is very obscure obsolete
-> functionality anyways, normally it should be gotten from the disk locales]
+> Let's cc linux-ide.
+>
+>   
+>> It boots fine with 2.6.24.7 as well as with 
+>> 2.6.26-rc2. It also boots fine with 2.6.22. I have specific reasons why 
+>> I need to run 2.6.25 so I would appreciate any help here. It seems the 
+>> SATA drives are detected, but then for each partition during bootup I see:
+>>
+>> ata3: SATA link down (SStatus 0 SControl 0)
+>>
+>> The same 2.6.25 kernels boot fine on my older Macbook Pro with ICH7 and 
+>> I do not see this error.
+>>
+>> I would be happy to run a git bisect to help identify the issue, but if 
+>> this problem is already well understood (hey, it's fixed in 2.6.26), I 
+>> can think of better ways to spend my time.
+>>     
+>
+> The below went into 2.6.25.1 (or will do so).  It looks hopful.  Can
+> you test it please?
+>
+>   
+>> Please copy me personally on any replies. I often subscribe to the list 
+>> but it's too much mail right now. Thanks in advance.
+>>     
+>
+> We do that as a matter of course.  Or we should...
+>
+>
+> From: Tejun Heo <htejun@gmail.com>
+>
+> commit cb6716c879ecf49e2af344926c6a476821812061 upstream
+>
+> On certain configurations (certain macbooks), even though all the
+> conditions for SIDPR access described in the datasheet are met,
+> actually reading those registers just returns 0 and have no effect on
+> write.  Verify SIDPR is actually working before enabling it.
+>
+> This is reported by Ryan Roth in bz#10512.
+>
+> Signed-off-by: Tejun Heo <htejun@gmail.com>
+> Cc: Ryan Roth <ryan.roth@ch2m.com>
+> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+>
+> ---
+>  drivers/ata/ata_piix.c |   25 +++++++++++++++++++++++++
+>  1 file changed, 25 insertions(+)
+>
+> --- a/drivers/ata/ata_piix.c
+> +++ b/drivers/ata/ata_piix.c
+> @@ -1531,6 +1531,8 @@ static void __devinit piix_init_sidpr(st
+>  {
+>     struct pci_dev *pdev = to_pci_dev(host->dev);
+>     struct piix_host_priv *hpriv = host->private_data;
+> +   struct ata_device *dev0 = &host->ports[0]->link.device[0];
+> +   u32 scontrol;
+>     int i;
+>  
+>     /* check for availability */
+> @@ -1549,6 +1551,29 @@ static void __devinit piix_init_sidpr(st
+>         return;
+>  
+>     hpriv->sidpr = pcim_iomap_table(pdev)[PIIX_SIDPR_BAR];
+> +
+> +   /* SCR access via SIDPR doesn't work on some configurations.
+> +    * Give it a test drive by inhibiting power save modes which
+> +    * we'll do anyway.
+> +    */
+> +   scontrol = piix_sidpr_read(dev0, SCR_CONTROL);
+> +
+> +   /* if IPM is already 3, SCR access is probably working.  Don't
+> +    * un-inhibit power save modes as BIOS might have inhibited
+> +    * them for a reason.
+> +    */
+> +   if ((scontrol & 0xf00) != 0x300) {
+> +       scontrol |= 0x300;
+> +       piix_sidpr_write(dev0, SCR_CONTROL, scontrol);
+> +       scontrol = piix_sidpr_read(dev0, SCR_CONTROL);
+> +
+> +       if ((scontrol & 0xf00) != 0x300) {
+> +           dev_printk(KERN_INFO, host->dev, "SCR access via "
+> +                  "SIDPR is available but doesn't work\n");
+> +           return;
+> +       }
+> +   }
+> +
+>     host->ports[0]->ops = &piix_sidpr_sata_ops;
+>     host->ports[1]->ops = &piix_sidpr_sata_ops;
+>  }
+>
 >   
 
-Patch looks fine to me.  I just noticed the call to memcpy by 
-inspection; I haven't tried to run this.
-
-    J
