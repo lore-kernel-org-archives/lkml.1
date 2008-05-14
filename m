@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759319AbYENOXu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761848AbYENOYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759319AbYENOXu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 10:23:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755544AbYENOXm
+	id S1761848AbYENOYU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 10:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759310AbYENOYH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 10:23:42 -0400
-Received: from adnil.foobar.fi ([81.17.206.99]:44777 "EHLO ikijono.foobar.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755542AbYENOXl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 10:23:41 -0400
-Message-ID: <482AF5E7.9070801@bluegiga.com>
-Date: Wed, 14 May 2008 17:23:35 +0300
-From: "Kim B. Heino" <Kim.Heino@bluegiga.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20080501)
+	Wed, 14 May 2008 10:24:07 -0400
+Received: from bipbip.grupopie.com ([195.23.16.24]:38285 "EHLO
+	bipbip.grupopie.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755544AbYENOYF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 10:24:05 -0400
+Message-ID: <482AF60F.5050002@grupopie.com>
+Date: Wed, 14 May 2008 15:24:15 +0100
+From: Paulo Marques <pmarques@grupopie.com>
+Organization: Grupo PIE
+User-Agent: Thunderbird 1.5.0.14 (X11/20071210)
 MIME-Version: 1.0
-To: rtc-linux@googlegroups.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [rtc-linux] Re: [PATCH] add support for ST M41T94 SPI RTC
-References: <482AD8D9.4090805@bluegiga.com> <20080514150820.7eb523c6@i1501.lan.towertech.it>
-In-Reply-To: <20080514150820.7eb523c6@i1501.lan.towertech.it>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Vegard Nossum <vegard.nossum@gmail.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kallsyms: fix potential overflow in binary search
+References: <20080513200736.GA17909@damson.getinternet.no>	 <482AD08D.7070206@grupopie.com> <84144f020805140522m6136ff69w7ffa6f9c9248706f@mail.gmail.com>
+In-Reply-To: <84144f020805140522m6136ff69w7ffa6f9c9248706f@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alessandro,
+Pekka Enberg wrote:
+> On Wed, May 14, 2008 at 2:44 PM, Paulo Marques <pmarques@grupopie.com> wrote:
+>>> This will probably never trigger... but it won't hurt to be careful.
+>>  Not "probably", this will never trigger _period_. If you ever have more
+>> than 2^31 symbols in the kernel's kallsyms table you'll have worse problems
+>> to worry about than the binary search overflowing.
+>>
+>>  So, I don't think it is worth this des-optimization at all...
+> 
+> Yes it is. It serves as correct reference code and the
+> "deoptimization" is not measurable.
 
->  can you check that you really require
->  all of those #includes ?
+Hum? "reference code"? in the middle of a kallsyms function?
 
-You're right, I don't. Fixed.
+And are you really worried about contiguous arrays that are bigger than 
+2^31 elements? What kind of kernel structure would that be?
 
->> +struct m41t94 {
->> +	struct rtc_device *rtc;
->> +	u8 buf[8]; /* Burst read cmd + 7 registers */
->> +};
->  why are you keeping the buffer here?
+The fact that the "deoptimization" isn't measurable isn't an excuse for 
+unnecessary bloat.
 
-rtc-max6902.c did that too... Fixed.
+This all seems like a wild goose chase to me...
 
->  the choice is up to you, but I'd use the century bit if there
->  is one.
+-- 
+Paulo Marques - www.grupopie.com
 
-Ok, I'll add support for century bit. Again there are some other 
-rtc-drivers (like rtc-m41t80.c and rtc-ds1307.c) not using it.
-
->  no spaces between MODULE_XXX and the ( please.
-
-Fixed.
-
-I'll wait for more comments and post a new patch tomorrow.
+"To be, or not to be? That is ..... liable to be removed at -O2 and above."
