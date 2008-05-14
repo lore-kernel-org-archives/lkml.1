@@ -1,85 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756690AbYENXTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757828AbYENXVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756690AbYENXTm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 19:19:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754143AbYENXTe
+	id S1757828AbYENXVc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 19:21:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbYENXVU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 19:19:34 -0400
-Received: from mail.ift.unesp.br ([200.145.46.3]:59430 "EHLO mail.ift.unesp.br"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754006AbYENXTd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 19:19:33 -0400
-Date: Wed, 14 May 2008 20:11:36 -0300
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: "Darrick J. Wong" <djwong@us.ibm.com>
-Cc: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       mhoffman@lightlink.com, linux-kernel@vger.kernel.org,
-       lm-sensors@lm-sensors.org
-Subject: Re: [PATCH] ibmaem: Fix 64-bit division on 32-bit platforms
-Message-ID: <20080514231136.GA4308@beyonder.ift.unesp.br>
-Mail-Followup-To: "Darrick J. Wong" <djwong@us.ibm.com>,
-	Adrian Bunk <bunk@kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>, mhoffman@lightlink.com,
-	linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
-References: <20080508180858.GM16078@tree.beaverton.ibm.com> <20080508163443.a1e9ffe7.akpm@linux-foundation.org> <20080509045527.GI16404@tree.beaverton.ibm.com> <20080514222704.GA11439@cs181133002.pp.htv.fi>
+	Wed, 14 May 2008 19:21:20 -0400
+Received: from mho-01-bos.mailhop.org ([63.208.196.178]:52890 "EHLO
+	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754657AbYENXVT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 19:21:19 -0400
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 69.181.40.92
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX1+5wi2nBYJm8Jp1fYmwBRWK
+Date: Wed, 14 May 2008 16:21:11 -0700
+From: Tony Lindgren <tony@atomide.com>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: Matthias Kaehlcke <matthias@kaehlcke.net>,
+       Russell King <rmk+kernel@arm.linux.org.uk>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] ARM: OMAP1: N770: Convert audio_pwr_sem in a mutex
+Message-ID: <20080514232111.GJ8928@atomide.com>
+References: <20080505203154.GF11462@traven> <1210608572.22306.4.camel@localhost.localdomain> <20080514210958.GA7831@atomide.com> <1210804867.22306.18.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080514222704.GA11439@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <1210804867.22306.18.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 15.May'08 at  1:27:04 +0300, Adrian Bunk wrote:
-> On Thu, May 08, 2008 at 09:55:27PM -0700, Darrick J. Wong wrote:
-> > On Thu, May 08, 2008 at 04:34:43PM -0700, Andrew Morton wrote:
-> > 
-> > > This driver is littered with 64-bit divides and doesn't link on i386.
-> > > I'll make it depend on CONFIG_64BIT for now.
-> > 
-> > Oops, sorry, I didn't remember that one can't do 64-bit division on
-> > i386.  The patch below fixes that.
-> > ---
-> > ibmaem: Fix 64-bit division on 32-bit platforms
-> > 
-> > Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
-> > ---
-> > 
-> >  drivers/hwmon/ibmaem.c |    6 ++++--
-> >  1 files changed, 4 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/drivers/hwmon/ibmaem.c b/drivers/hwmon/ibmaem.c
-> > index 22fa7d6..f808ca3 100644
-> > --- a/drivers/hwmon/ibmaem.c
-> > +++ b/drivers/hwmon/ibmaem.c
-> >...
-> > @@ -864,9 +865,10 @@ static ssize_t aem_show_power(struct device *dev,
-> >...
-> >  	time = timespec_to_ns(&a) - timespec_to_ns(&b);
-> > -	time /= 1000;
-> > +	time = div_u64(time, 1000);
-> >  
-> > -	return sprintf(buf, "%llu\n", (after - before) * 1000000000 / time);
-> > +	return sprintf(buf, "%llu\n",
-> > +		       div64_u64((after - before) * 1000000000, time));
-> >  }
-> >...
+* Daniel Walker <dwalker@mvista.com> [080514 16:04]:
 > 
-> What are you actually trying to do here?
+> On Wed, 2008-05-14 at 14:09 -0700, Tony Lindgren wrote:
+> > Hi,
+> > 
+> > * Daniel Walker <dwalker@mvista.com> [080512 09:09]:
+> > > 
+> > > On Mon, 2008-05-05 at 22:31 +0200, Matthias Kaehlcke wrote:
+> > > > ARM: OMAP1: N770: The semaphore audio_pwr_sem is used as a
+> > > > mutex. Convert it to the mutex API
+> > > > 
+> > > 
+> > > I submitted an identical patch to Tony in January .. I assumed it was
+> > > making it's way through the ARM tree .. I'm surprised it's not in
+> > > mainline yet ..
+> > > 
+> > > Tony any status on this?
+> > 
+> > Hmm, I can't seem to find your patch and it does not show up in git-log
+> > either in linux-omap. Maybe I never got it or never applied it?
+> > 
+> > Do you have a link for you patch in the mailing list archives so I can
+> > look into it further?
+> > 
+> > Regards,
 > 
-> Converting mJ/ns to uJ/s?
+> http://marc.info/?l=linux-omap&m=120063553504911&w=2
 > 
-> Or do you want to convert mJ/ns to Watt in which case you should
-> multiply "time" with 1000 instead of dividing it through 1000?
+> We had a discussion about it as I recall.
 
-To avoid these kind of doubts may I suggest using the time 
-conversion definitions of include/linux/time.h?
+Thanks, I must have run git-reset --hard before I got it committed or
+something. Sorry about that.
 
-It would be much easier to understand the intention with
-NSEC_PER_SEC, USEC_PER_SEC etc (comments would also help)
-
-> In any case you should only need one expensive 64bit division
-> and you can fold the operation with 1000 into the second division.
-
-I agree.
+Tony
