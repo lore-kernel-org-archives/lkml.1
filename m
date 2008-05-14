@@ -1,70 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762472AbYENR5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762984AbYENR5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762472AbYENR5V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 13:57:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755419AbYENR5N
+	id S1762984AbYENR5m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 13:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756645AbYENR5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 13:57:13 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:50494 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753685AbYENR5M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 13:57:12 -0400
-Date: Wed, 14 May 2008 10:57:08 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Robin Holt <holt@sgi.com>, Nick Piggin <npiggin@suse.de>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrea Arcangeli <andrea@qumranet.com>,
+	Wed, 14 May 2008 13:57:31 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:57878 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755773AbYENR5a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 13:57:30 -0400
+Date: Wed, 14 May 2008 14:55:54 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
-       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>
-Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
-In-Reply-To: <alpine.LFD.1.10.0805140807400.3019@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0805141053350.15490@schroedinger.engr.sgi.com>
-References: <6b384bb988786aa78ef0.1210170958@duo.random>
- <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org>
- <20080508003838.GA9878@sgi.com> <200805132206.47655.nickpiggin@yahoo.com.au>
- <20080513153238.GL19717@sgi.com> <20080514041122.GE24516@wotan.suse.de>
- <20080514112625.GY9878@sgi.com> <alpine.LFD.1.10.0805140807400.3019@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [GIT PATCHES] V4L/DVB fixes for 2.6.26
+Message-ID: <20080514145554.10e3385c@gaivota>
+In-Reply-To: <20080514165434.GC22115@cs181133002.pp.htv.fi>
+References: <20080514114910.4bcfd220@gaivota>
+	<20080514165434.GC22115@cs181133002.pp.htv.fi>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 May 2008, Linus Torvalds wrote:
+On Wed, 14 May 2008 19:54:34 +0300
+Adrian Bunk <bunk@kernel.org> wrote:
 
-> One thing to realize is that most of the time (read: pretty much *always*) 
-> when we have the problem of wanting to sleep inside a spinlock, the 
-> solution is actually to just move the sleeping to outside the lock, and 
-> then have something else that serializes things.
+> On Wed, May 14, 2008 at 11:49:10AM -0300, Mauro Carvalho Chehab wrote:
+> >...
+> > PS.: There are yet a number of other Kconfig potential breakages at V4L/DVB. I'm 
+> > currently working on fixing those issues. Basically, what users do is to select 
+> > I2C, DVB and V4L as module. This works fine, but more complex scenarios where
+> > you mix 'M' and 'Y' inside the subsystem generally cause compilation breakage.
+> > Those scenarios are more theorical, since there's not much practical sense on
+> > having a DVB driver foo as module, and V4L driver bar as in-kernel. However,
+> > the better is to not allow compilation of the scenarios that don't work.
+> > 
+> > The main trouble at drivers/media Kbuild is that several rules there assumed that
+> > "select" would check the "depends on" dependencies of the selected drivers.
+> > However, this feature doesn't exist at the current Kbuild implementation. Even
+> > if implemented, I suspect that this will generate circular dependency errors on
+> > some cases.
+> >...
+> 
+> The basic problem is that drivers/media/ does the most fancy kconfig 
+> stuff in the kernel since it tries to both have very fine grained 
+> dependencies and offer a usable kconfig UI to the user, which results
+> in very complicated dependencies.
 
-The problem is that the code in rmap.c try_to_umap() and friends loops 
-over reverse maps after taking a spinlock. The mm_struct is only known 
-after the rmap has been acccessed. This means *inside* the spinlock.
+True.
 
-That is why I tried to convert the locks to scan the revese maps to 
-semaphores. If that is done then one can indeed do the callouts outside of 
-atomic contexts.
+> We are not getting this solved by any changes in the kconfig 
+> implementation.
+> 
+> Thinking about reasonable ways to reduce the problem space:
+> 
+> Where could we reduce the complexity without big disadvantages?
+> 
+> Could we e.g. let VIDEO_DEV select I2C which would remove all the 
+> fiddling with I2C dependencies (which is a bigger part of recent
+> problems)?
 
-> Can it be done? I don't know. But I do know that I'm unlikely to accept a 
-> noticeable slowdown in some very core code for a case that affects about 
-> 0.00001% of the population. In other words, I think you *have* to do it.
+This seems to be reasonable. However, there are quite a few devices that don't
+need I2C (for example, some legacy ISA radio modules - also, some webcam
+drivers don't use i2c layer to communicate with their i2c sensor - so - they
+don't need I2C. The same also applies to some DVB drivers).
 
-With larger number of processor semaphores make a lot of sense since the 
-holdoff times on spinlocks will increase. If we go to sleep then the 
-processor can do something useful instead of hogging a cacheline.
+So, I'm not sure if this would be a good idea, since it will force I2C even for
+devices that don't need. This is bad, for example, on embedded devices like
+set-top-boxes and maybe on cellular phones with non-i2c webcams.
 
-A rw lock there can also increase concurrency during reclaim espcially if 
-the anon_vma chains and the number of address spaces mapping a page is 
-high.
+> I can make a patch for it after this pull went into Linus' tree if it is 
+> considered an acceptable option.
 
+It would be nice if you could help on fixing those issues.
+
+One dependency that will probably solve is to add "depends on VIDEO_MEDIA &&
+I2C" to all devices that are hybrid (bttv, saa7134, cx88, pvrusb, em28xx).
+
+Cheers,
+Mauro
