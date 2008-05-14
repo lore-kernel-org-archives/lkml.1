@@ -1,89 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763637AbYENSe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762691AbYENSk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763637AbYENSe0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 14:34:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758342AbYENSeK
+	id S1762691AbYENSk3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 14:40:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758647AbYENSkS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 14:34:10 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39212 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758398AbYENSeI (ORCPT
+	Wed, 14 May 2008 14:40:18 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:58233 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758454AbYENSkQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 14:34:08 -0400
-Date: Wed, 14 May 2008 11:27:14 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-cc: Robin Holt <holt@sgi.com>, Nick Piggin <npiggin@suse.de>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrea Arcangeli <andrea@qumranet.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
-       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>
-Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
-In-Reply-To: <Pine.LNX.4.64.0805141053350.15490@schroedinger.engr.sgi.com>
-Message-ID: <alpine.LFD.1.10.0805141114410.3019@woody.linux-foundation.org>
-References: <6b384bb988786aa78ef0.1210170958@duo.random> <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org> <20080508003838.GA9878@sgi.com> <200805132206.47655.nickpiggin@yahoo.com.au> <20080513153238.GL19717@sgi.com> <20080514041122.GE24516@wotan.suse.de>
- <20080514112625.GY9878@sgi.com> <alpine.LFD.1.10.0805140807400.3019@woody.linux-foundation.org> <Pine.LNX.4.64.0805141053350.15490@schroedinger.engr.sgi.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 14 May 2008 14:40:16 -0400
+Message-ID: <482B3274.2060006@keyaccess.nl>
+Date: Wed, 14 May 2008 20:41:56 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Takashi Iwai <tiwai@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       ALSA devel <alsa-devel@alsa-project.org>
+Subject: Re: 2.6.26-rc1 regression: ISA DMA broken (bisected)
+References: <4823AAF2.7070102@keyaccess.nl>	<20080513180107.1a3893f1@core>	<4829D0E5.8050905@keyaccess.nl>	<200805131718.40138.bjorn.helgaas@hp.com>	<482ADF34.2010004@keyaccess.nl> <s5hod79avks.wl%tiwai@suse.de> <482B0807.9050404@keyaccess.nl>
+In-Reply-To: <482B0807.9050404@keyaccess.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 14-05-08 17:40, Rene Herman wrote:
 
+CC list trimmed as now PNP and ALSA specific.
 
-On Wed, 14 May 2008, Christoph Lameter wrote:
-> 
-> The problem is that the code in rmap.c try_to_umap() and friends loops 
-> over reverse maps after taking a spinlock. The mm_struct is only known 
-> after the rmap has been acccessed. This means *inside* the spinlock.
+> Like this? With this (on top of the previous patch setting the
+> dma_mask ofcourse) legacy ISA actually appears to be fine but it's
+> then ISAPnP which goes bonkers again. Sigh. Getting an allocation
+> failure. Don't understand why yet since pnp_alloc_dev() definitely
+> sets the mask already. Will stare...
 
-So you queue them. That's what we do with things like the dirty bit. We 
-need to hold various spinlocks to look up pages, but then we can't 
-actually call the filesystem with the spinlock held.
+You're in a maze of struct device *s, all alike... I was passing the 
+pnp_card->dev instead of the initialized pnp_dev->dev.
 
-Converting a spinlock to a waiting lock for things like that is simply not 
-acceptable. You have to work with the system.
+And, not doing so brings out a difference between ISAPnP and legacy ISA 
+again insofar that legacy ISA does not consist of cards with multiple 
+devices. We just have the single struct device * for the ISA device.
 
-Yeah, there's only a single bit worth of information on whether a page is 
-dirty or not, so "queueing" that information is trivial (it's just the 
-return value from "page_mkclean_file()". Some things are harder than 
-others, and I suspect you need some kind of "gather" structure to queue up 
-all the vma's that can be affected.
+This therefore would be the easiest solution (and works fine) but seems 
+a bit of a hack. Bjorn, do you have an opinion? If I abstract things out 
+a bit more I might be able to do this nicer. One might on the other hand 
+argue that the dma_mask is going to be constant for all card devices so 
+might as well just use the card dev.
 
-But it sounds like for the case of rmap, the approach of:
+sound/{isa,oss} together with drivers/isdn/hisax/ are the only pnp_card 
+users.
 
- - the page lock is the higher-level "sleeping lock" (which makes sense, 
-   since this is very close to an IO event, and that is what the page lock 
-   is generally used for)
+diff --git a/drivers/pnp/card.c b/drivers/pnp/card.c
+index a762a41..a2842a7 100644
+--- a/drivers/pnp/card.c
++++ b/drivers/pnp/card.c
+@@ -7,6 +7,7 @@
+ #include <linux/module.h>
+ #include <linux/ctype.h>
+ #include <linux/slab.h>
++#include <linux/dma-mapping.h>
+ #include <linux/pnp.h>
+ #include "base.h"
 
-   But hey, it could be anything else - maybe you have some other even 
-   bigger lock to allow you to handle lots of pages in one go.
+@@ -167,6 +168,9 @@ struct pnp_card *pnp_alloc_card(struct pnp_protocol *protocol, int id, char *pnp
+ 	sprintf(card->dev.bus_id, "%02x:%02x", card->protocol->number,
+ 		card->number);
 
- - with that lock held, you do the whole rmap dance (which requires 
-   spinlocks) and gather up the vma's and the struct mm's involved. 
++	card->dev.coherent_dma_mask = DMA_24BIT_MASK;
++	card->dev.dma_mask = &card->dev.coherent_dma_mask;
++
+ 	dev_id = pnp_add_card_id(card, pnpid);
+ 	if (!dev_id) {
+ 		kfree(card);
 
- - outside the spinlocks you then do whatever it is you need to do.
-
-This doesn't sound all that different from TLB shoot-down in SMP, and the 
-"mmu_gather" structure. Now, admittedly we can do the TLB shoot-down while 
-holding the spinlocks, but if we couldn't that's how we'd still do it: 
-it would get more involved (because we'd need to guarantee that the gather 
-can hold *all* the pages - right now we can just flush in the middle if we 
-need to), but it wouldn't be all that fundamentally different.
-
-And no, I really haven't even wanted to look at what XPMEM really needs to 
-do, so maybe the above thing doesn't work for you, and you have other 
-issues. I'm just pointing you in a general direction, not trying to say 
-"this is exactly how to get there". 
-
-		Linus
