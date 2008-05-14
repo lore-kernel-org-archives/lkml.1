@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760621AbYENK44@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761374AbYENK7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760621AbYENK44 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 06:56:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755619AbYENK4r
+	id S1761374AbYENK7W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 06:59:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754985AbYENK7O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 06:56:47 -0400
-Received: from cantor.suse.de ([195.135.220.2]:58669 "EHLO mx1.suse.de"
+	Wed, 14 May 2008 06:59:14 -0400
+Received: from mta1.siol.net ([193.189.160.88]:43279 "EHLO mta1.siol.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754506AbYENK4q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 06:56:46 -0400
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: Novell, SuSE Labs
-To: Tiger Yang <tiger.yang@oracle.com>
-Subject: Re: [PATCH] ext3/4: fix uninitialized bs in ext3/4_xattr_set_handle()
-Date: Wed, 14 May 2008 12:56:42 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-References: <4827B878.50903@oracle.com> <20080512170254.f79fe869.akpm@linux-foundation.org> <4828FD68.40608@oracle.com>
-In-Reply-To: <4828FD68.40608@oracle.com>
+	id S1752283AbYENK7O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 06:59:14 -0400
+Message-ID: <482AC5DC.1050701@siol.net>
+Date: Wed, 14 May 2008 12:58:36 +0200
+From: Grega Fajdiga <gregor.fajdiga@siol.net>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: linux-kernel@vger.kernel.org
+Subject: DVD-R drive error
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805141256.43272.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 13 May 2008 04:31:04 Tiger Yang wrote:
-> Hi, Andrew
->
-> This situation only happens we format ext3/4 with inode size more than
-> 128 and we have put xattr entries both in ibody and block.
-> The consequences about this bug is we will lost the xattr block which
-> pointed by i_file_acl with all xattr entires in it. We will alloc a new
-> xattr block and put that large value entry in it. The old xattr block
-> will become orphan block.
+Hi,
 
-The patch looks good, and it obviously fixes the described problem. Thanks!
+I get this message when I'm trying to mount a DVD:
 
-Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+[  101.782461] attempt to access beyond end of device
+[  101.782465] sr0: rw=0, want=68, limit=4
+[  101.784408] attempt to access beyond end of device
+[  101.784411] sr0: rw=0, want=1252, limit=4
+[  101.784414] attempt to access beyond end of device
+[  101.784416] sr0: rw=0, want=1028, limit=4
+[  101.784417] UDF-fs: No partition found (1)
+[  101.787177] attempt to access beyond end of device
+[  101.787180] sr0: rw=0, want=68, limit=4
+[  101.787183] isofs_fill_super: bread failed, dev=sr0, iso_blknum=16, 
+block=16
 
+Does it mean that the drive is dieing? My DVD player can read the drive 
+just fine.
 
-Could it please be added to -stable?
+Please CC me as I'm not subscribed.
 
-Andreas
+Thanks,
+Grega Fajdiga
