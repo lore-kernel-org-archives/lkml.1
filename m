@@ -1,45 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761205AbYENReP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761990AbYENRgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761205AbYENReP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 13:34:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756462AbYENRd7
+	id S1761990AbYENRgU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 13:36:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756349AbYENRgG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 13:33:59 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37743 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755970AbYENRd7 (ORCPT
+	Wed, 14 May 2008 13:36:06 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:54659 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755885AbYENRgE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 13:33:59 -0400
-Date: Wed, 14 May 2008 10:32:21 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: maximilian attems <max@stro.at>
-Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Richard Henderson <rth@twiddle.net>, Mike Frysinger <vapier@gentoo.org>,
-       debian-kernel@lists.debian.org
-Subject: Re: asm-{alpha,h8300,um,v850,xtensa}/param.h: unbreak HZ for
- userspace
-Message-Id: <20080514103221.5ce3059c.akpm@linux-foundation.org>
-In-Reply-To: <20080514110531.GA11775@stro.at>
-References: <200805100836.48046.vapier@gentoo.org>
-	<20080514110531.GA11775@stro.at>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Wed, 14 May 2008 13:36:04 -0400
+Subject: Re: HSO: add option hso driver
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
+Cc: linux-usb@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <482AF058.3020505@teltonika.lt>
+References: <20080513215134.GC6139@kroah.com>
+	 <20080513232727.21c74bb2@core> <482A23B8.7050705@pobox.com>
+	 <20080514015815.GA29785@kroah.com> <20080514045712.GA2843@kroah.com>
+	 <482AF058.3020505@teltonika.lt>
+Content-Type: text/plain
+Date: Wed, 14 May 2008 19:36:00 +0200
+Message-Id: <1210786560.7025.0.camel@violet.holtmann.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 May 2008 13:05:31 +0200 maximilian attems <max@stro.at> wrote:
+Hi Paulius,
 
-> without it currently perl 5.10 doesn't build on alpha:
-> perl.c: In function 'perl_construct':
-> perl.c:388: error: 'CONFIG_HZ' undeclared (first use in this function)
-> -> http://buildd.debian.org/fetch.cgi?pkg=perl;ver=5.10.0-10;arch=alpha;stamp=1210252894
+> > +/* called once for each interface upon device insertion */
+> > +static int hso_probe(struct usb_interface *interface,
+> > +		     const struct usb_device_id *id)
+> > +{
+> > +	int mux, i, if_num, port_spec;
+> > +	unsigned char port_mask;
+> > +	struct hso_device *hso_dev = NULL;
+> > +	struct hso_shared_int *shared_int;
+> > +	struct hso_device *tmp_dev = NULL;
+> > +
+> > +	if_num = interface->altsetting->desc.bInterfaceNumber;
+> > +
+> > +	/* Get the interface/port specification from either driver_info or from
+> > +	 * the device itself */
+> > +	if (id->driver_info)
+> > +		port_spec = ((u32 *)(id->driver_info))[if_num];
+> > +	else
+> > +		port_spec = hso_get_config_data(interface);
+> > +
+> > +	if (interface->cur_altsetting->desc.bInterfaceClass != 0xFF) {
+> > +		dev_err(&interface->dev, "Not our interface\n");
+> > +		return -ENODEV;
+> > +	}
+> > +	/* Check if we need to switch to alt interfaces prior to port
+> > +	 * configuration */
+> > +	if (interface->num_altsetting > 1)
+> > +		usb_set_interface(interface_to_usbdev(interface), if_num, 1);
+> > +	interface->needs_remote_wakeup = 1;
+> > +
+> > +	/* Allocate new hso device(s) */
+> > +	switch (port_spec & HSO_INTF_MASK) {
+> > +	case HSO_INTF_MUX:
+> > +		if ((port_spec & HSO_PORT_MASK) == HSO_PORT_NETWORK) {
+> > +			/* Create the network device */
+> > +			if (!disable_net) {
+> > +				hso_dev = hso_create_net_device(interface);
+> > +				if (!hso_dev)
+> > +					goto exit;
+> > +				tmp_dev = hso_dev;
+> > +			}
+> > +		}
+> > +
+> > +		if (hso_get_mux_ports(interface, &port_mask))
+> > +			/* TODO: de-allocate everything */
+> > +			goto exit;
+> > +
+> > +		shared_int = hso_create_shared_int(interface);
+> > +		if (!shared_int)
+> > +			goto exit;
+> > +
+> > +		for (i = 1, mux = 0; i < 0x100; i = i << 1, mux++) {
+> > +			if (port_mask & i) {
+> > +				hso_dev = hso_create_mux_serial_device(
+> > +						interface, i, shared_int);
+> > +				if (!hso_dev)
+> > +					goto exit;
+> > +			}
+> > +		}
+> > +
+> > +		if (tmp_dev)
+> > +			hso_dev = tmp_dev;
+> > +		break;
+> > +
+> > +	case HSO_INTF_BULK:
+> > +		/* It's a regular bulk interface */
+> > +		if (((port_spec & HSO_PORT_MASK) == HSO_PORT_NETWORK)
+> > +		    && !disable_net)
+> > +			hso_dev = hso_create_net_device(interface);
+> > +		else
+> > +			hso_dev =
+> > +			    hso_create_bulk_serial_device(interface, port_spec);
+> > +		if (!hso_dev)
+> > +			goto exit;
+> > +		break;
+> > +	default:
+> > +		goto exit;
+> > +	}
+> > +
+> > +	usb_driver_claim_interface(&hso_driver, interface, hso_dev);
+> 
+> Is usb_driver_claim_interface really needed?
 
-um, that was a fairly important piece of information which was cruelly
-hidden from us - thanks.
+no it is not. That can be removed.
 
-I happened to have already planned on sending this fix in for 2.6.26
-but it wasn't an obvious call.
+Regards
+
+Marcel
+
+
