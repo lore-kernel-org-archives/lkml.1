@@ -1,253 +1,348 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760749AbYENM03@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760972AbYENMar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760749AbYENM03 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 08:26:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757017AbYENM0W
+	id S1760972AbYENMar (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 08:30:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757585AbYENMaj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 08:26:22 -0400
-Received: from adnil.foobar.fi ([81.17.206.99]:57645 "EHLO ikijono.foobar.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752756AbYENM0U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 08:26:20 -0400
-X-Greylist: delayed 397 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 May 2008 08:26:20 EDT
-Message-ID: <482AD8D9.4090805@bluegiga.com>
-Date: Wed, 14 May 2008 15:19:37 +0300
-From: "Kim B. Heino" <Kim.Heino@bluegiga.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20080501)
+	Wed, 14 May 2008 08:30:39 -0400
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:13015
+	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757561AbYENMai (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 08:30:38 -0400
+Message-ID: <482ADB69.8010305@qumranet.com>
+Date: Wed, 14 May 2008 15:30:33 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: rtc-linux@googlegroups.com, a.zummo@towertech.it
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] add support for ST M41T94 SPI RTC
-Content-Type: text/plain; charset=UTF-8
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Subject: Re: [BUG] cpu hotplug vs scheduler
+References: <4829A6A0.5040208@qumranet.com> <b647ffbd0805140113i4296076cna3f371c86c479653@mail.gmail.com>
+In-Reply-To: <b647ffbd0805140113i4296076cna3f371c86c479653@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds kernel driver for M41T94 RTC chip connected via SPI.
-I've tested it on two different AT91-based hardwares.
+Dmitry Adamushko wrote:
+> Hi,
+>
+>   
+>> [ ... ]
+>>
+>>  [4298303.713901] Call Trace:
+>>  [4298303.713901]  [<ffffffff804373fe>] schedule+0x414/0x6ab
+>>  [4298303.713901]  [<ffffffff8023060a>] ? hrtick_set+0x9d/0xe8
+>>  [4298303.713901]  [<ffffffff8043772f>] ? thread_return+0x9a/0xbf
+>>  [4298303.713901]  [<ffffffff80231652>] migration_thread+0x185/0x22d
+>>  [4298303.713901]  [<ffffffff802314cd>] ? migration_thread+0x0/0x22d
+>>  [4298303.713901]  [<ffffffff8024afe6>] kthread+0x49/0x77
+>>  [4298303.713901]  [<ffffffff8020d228>] child_rip+0xa/0x12
+>>  [4298303.713901]  [<ffffffff8024af9d>] ? kthread+0x0/0x77
+>>  [4298303.713901]  [<ffffffff8020d21e>] ? child_rip+0x0/0x12
+>>  [4298303.713901]
+>>  [4298303.713901]
+>>  [4298303.713901] Code: c0 74 28 48 8b 7b 58 4c 8d 60 f0 48 85 ff 74 10 4c
+>> 89 e6 e8 df cc ff ff 85 c0 75 04 4c 8b 63 58 4c 89 e6 48 89 df e8 4a e5 ff
+>> ff <49> 8b 9c 24 58 01 00 00 48 85 db 75 bf 49 83 ec 38 4c 89 ef 4c
+>>  [4298303.713901] RIP  [<ffffffff8022e722>] pick_next_task_fair+0x55/0x7c
+>>
+>>  This seems to be the assignment to cfs_rq after pick_next_entity().
+>>     
+>
+> [ cc'ed a few folks. ]
+>
+>
+> So the cfs-tree likely gets out-of-sync. I pressume, it won't be
+> reproducible with CONFIG_SCHED_GROUP options being disabled.
+>
+> Anyway, would you try one of these debug-patches (not sure about the
+> workability of the second one though :-/)
+>
+> Let's check what are the values for 'cfs_rq->weight.load/nr_running'.
+>
+>   
 
-Signed-off-by: Kim B. Heino <Kim.Heino@bluegiga.com>
+Got this for the first patch:
+
+[4302727.615522] Booting processor 3/7 ip 6000
+[4302727.625923] Initializing CPU#3
+[4302727.625923] Calibrating delay using timer specific routine.. 
+5319.76 BogoMIPS (lpj=2659883)
+[4302727.625923] CPU: L1 I cache: 32K, L1 D cache: 32K
+[4302727.625923] CPU: L2 cache: 4096K
+[4302727.625923] CPU: Physical Processor ID: 3
+[4302727.625923] CPU: Processor Core ID: 1
+[4302727.625923] x86 PAT enabled: cpu 3, old 0x7040600070406, new 
+0x7010600070106
+[4302727.692484] CPU3: Intel(R) Xeon(R) CPU            5150  @ 2.66GHz 
+stepping 06
+[4302727.694236] checking TSC synchronization [CPU#1 -> CPU#3]: passed.
+[4302727.824185] Switched to high resolution mode on CPU 3
+[4302727.859184] kvm: enabling virtualization on CPU3
+[4302727.859714] Sched Debug Version: v0.07, 2.6.26-rc2 #726
+[4302727.859714] now at 6918576.148656 msecs
+[4302727.859714]   .sysctl_sched_latency                    : 60.000000
+[4302727.859714]   .sysctl_sched_min_granularity            : 12.000000
+[4302727.859714]   .sysctl_sched_wakeup_granularity         : 30.000000
+[4302727.859714]   .sysctl_sched_child_runs_first           : 0.000001
+[4302727.860191]   .sysctl_sched_features                   : 895
+[4302727.860191]
+[4302727.860191] cpu#0, 2659.999 MHz
+[4302727.860191]   .nr_running                    : 2
+[4302727.860191]   .load                          : 841
+[4302727.860191]   .nr_switches                   : 3427530
+[4302727.861205]   .nr_load_updates               : 2183358
+[4302727.861205]   .nr_uninterruptible            : 15
+[4302727.861205]   .jiffies                       : 4301585875
+[4302727.861205]   .next_balance                  : 4301.585696
+[4302727.861205]   .curr->pid                     : 4678
+[4302727.861205]   .clock                         : 6918579.002757
+[4302727.862216]   .cpu_load[0]                   : 841
+[4302727.862216]   .cpu_load[1]                   : 841
+[4302727.862216]   .cpu_load[2]                   : 841
+[4302727.862216]   .cpu_load[3]                   : 841
+[4302727.862216]   .cpu_load[4]                   : 841
+[4302727.862216]
+[4302727.862216] cfs_rq[0]:
+[4302727.867209]   .exec_clock                    : 3970.569663
+[4302727.867209]   .MIN_vruntime                  : 0.000001
+[4302727.867209]   .min_vruntime                  : 5178969.408050
+[4302727.867209]   .max_vruntime                  : 0.000001
+[4302727.867209]   .spread                        : 0.000000
+[4302727.867209]   .spread0                       : 0.000000
+[4302727.867209]   .nr_running                    : 0
+[4302727.867209]   .load                          : 0
+[4302727.867209]   .bkl_count                     : 513
+[4302727.867209]   .nr_spread_over                : 6
+[4302727.867209]   .shares                        : 1024
+[4302727.867209]
+[4302727.867209] cfs_rq[0]:
+[4302727.867209]   .exec_clock                    : 14.588517
+[4302727.867209]   .MIN_vruntime                  : 0.000001
+[4302727.867209]   .min_vruntime                  : 5178971.405628
+[4302727.867209]   .max_vruntime                  : 0.000001
+[4302727.867209]   .spread                        : 0.000000
+[4302727.867209]   .spread0                       : 0.000000
+[4302727.867209]   .nr_running                    : 0
+[4302727.867209]   .load                          : 0
+[4302727.867209]   .bkl_count                     : 513
+[4302727.867209]   .nr_spread_over                : 0
+[4302727.867209]   .shares                        : 1024
+[4302727.867209]
+[4302727.867209] cfs_rq[0]:
+[4302727.867209]   .exec_clock                    : 41.615870
+[4302727.867209]   .MIN_vruntime                  : 0.000001
+[4302727.867209]   .min_vruntime                  : 5178973.403544
+[4302727.867209]   .max_vruntime                  : 0.000001
+[4302727.867209]   .spread                        : 0.000000
+[4302727.867209]   .spread0                       : 0.000000
+[4302727.867209]   .nr_running                    : 0
+[4302727.867209]   .load                          : 0
+[4302727.867209]   .bkl_count                     : 513
+[4302727.867209]   .nr_spread_over                : 2
+[4302727.867209]   .shares                        : 1024
+[4302727.867209]
+[4302727.867209] cfs_rq[0]:
+[4302727.867209]   .exec_clock                    : 0.000000
+[4302727.867209]   .MIN_vruntime                  : 0.000001
+[4302727.867209]   .min_vruntime                  : 5178975.401320
+[4302727.867209]   .max_vruntime                  : 0.000001
+[4302727.867209]   .spread                        : 0.000000
+[4302727.867209]   .spread0                       : 0.000000
+[4302727.867209]   .nr_running                    : 0
+[4302727.867209]   .load                          : 0
+[4302727.867209]   .bkl_count                     : 513
+[4302727.867209]   .nr_spread_over                : 0
+[4302727.867209]   .shares                        : 0
+[4302727.867209]
+[4302727.867209] cfs_rq[0]:
+[4302727.867209]   .exec_clock                    : 0.000001
+[4302727.867209]   .MIN_vruntime                  : 0.000001
+[4302727.867209]   .min_vruntime                  : 5178977.398314
+[4302727.867209]   .max_vruntime                  : 0.000001
+[4302727.867209]   .spread                        : 0.000000
+[4302727.867209]   .spread0                       : 0.000000
+[4302727.867209]   .nr_running                    : 0
+[4302727.867209]   .load                          : 0
+[4302727.867209]   .bkl_count                     : 513
+[4302727.867209]   .nr_spread_over                : 0
+[4302727.867209]   .shares                        : 0
+[4302727.867209]
+[4302727.867209] cfs_rq[0]:
+[4302727.867209]   .exec_clock                    : 2165242.484786
+[4302727.867209]   .MIN_vruntime                  : 10323214.742376
+[4302727.867209]   .min_vruntime                  : 5178979.396488
+[4302727.867209]   .max_vruntime                  : 10323214.742376
+[4302727.867209]   .spread                        : 0.000000
+[4302727.867209]   .spread0                       : 0.000000
+[4302727.867209]   .nr_running                    : 2
+[4302727.867209]   .load                          : 2048
+[4302727.867209]   .bkl_count                     : 513
+[4302727.867209]   .nr_spread_over                : 1789825
+[4302727.867209]   .shares                        : 843
+[4302727.867209]
+[4302727.867209] runnable tasks:
+[4302727.867209]             task   PID         tree-key  switches  
+prio     exec-runtime         sum-exec        sum-sleep
+[4302727.867209] 
+----------------------------------------------------------------------------------------------------------
+[4302727.867209] Rqemu-system-x86  4678  10323337.578253    553310   
+120  10323337.578255   1380505.796830     42439.250368
+[4302727.867209]
+[4302727.867209] cpu#1, 2659.999 MHz
+[4302727.867209]   .nr_running                    : 3
+[4302727.867209]   .load                          : 415
+[4302727.867209]   .nr_switches                   : 629498
+[4302727.867209]   .nr_load_updates               : 838874
+[4302727.867209]   .nr_uninterruptible            : -6
+[4302727.867209]   .jiffies                       : 4301585895
+[4302727.867209]   .next_balance                  : 4301.585634
+[4302727.867209]   .curr->pid                     : 7799
+[4302727.867209]   .clock                         : 6918576.130865
+[4302727.867209]   .cpu_load[0]                   : 415
+[4302727.867209]   .cpu_load[1]                   : 415
+[4302727.867209]   .cpu_load[2]                   : 415
+[4302727.867209]   .cpu_load[3]                   : 415
+[4302727.867209]   .cpu_load[4]                   : 415
+[4302727.867209]
+[4302727.867209] cfs_rq[1]:
+[4302727.867209]   .exec_clock                    : 74.637431
+[4302727.867209]   .MIN_vruntime                  : 0.000001
+[4302727.867209]   .min_vruntime                  : 759396.868495
+[4302727.867209]   .max_vruntime                  : 0.000001
+[4302727.867209]   .spread                        : 0.000000
+[4302727.867209]   .spread0                       : -4419588.520858
+[4302727.867209]   .nr_running                    : 0
+[4302727.867209]   .load                          : 0
+[4302727.867209]   .bkl_count                     : 299
+[4302727.867209]   .nr_spread_over                : 1
+[4302727.867209]   .shares                        : 0
+[4302727.867209]
+[4302727.867209] cfs_rq[1]:
+[4302727.867209]   .exec_clock                    : 22.707771
+[4302727.867209]   .MIN_vruntime                  : 0.000001
+[4302727.867209]   .min_vruntime                  : 759396.868495
+[4302727.867209]   .max_vruntime                  : 0.000001
+[4302727.867209]   .spread                        : 0.000000
+[4302727.867209]   .spread0                       : -4419590.518446
+[4302727.867209]   .nr_running                    : 0
+[4302727.867209]   .load                          : 0
+[4302727.867209]   .bkl_count                     : 299
+[4302727.867209]   .nr_spread_over                : 1
+[4302727.867209]   .shares                        : 0
+[4302727.867209]
+[4302727.867209] cfs_rq[1]:
+[4302727.867209]   .exec_clock                    : 0.033026
+[4302727.867209]   .MIN_vruntime                  : 0.000001
+[4302727.867209]   .min_vruntime                  : 759396.868495
+[4302727.867209]   .max_vruntime                  : 0.000001
+[4302727.867209]   .spread                        : 0.000000
+[4302727.867209]   .spread0                       : -4419590.518446
+[4302727.867209]   .nr_running                    : 0
+[4302727.867209]   .load                          : 0
+[4302727.867209]   .bkl_count                     : 299
+[4302727.867209]   .nr_spread_over                : 0
+[4302727.867209]   .shares                        : 0
+[4302727.867209]
+[4302727.867209] cfs_rq[1]:
+[4302727.867209]   .exec_clock                    : 0.000000
+[4302727.867209]   .MIN_vruntime                  : 0.000001
+[4302727.867209]   .min_vruntime                  : 759396.868495
+[4302727.867209]   .max_vruntime                  : 0.000001
+[4302727.867209]   .spread                        : 0.000000
+[4302727.867209]   .spread0                       : -4419590.518446
+[4302727.867209]   .nr_running                    : 0
+[4302727.867209]   .load                          : 0
+[4302727.867209]   .bkl_count                     : 299
+[4302727.867209]   .nr_spread_over                : 0
+[4302727.867209]   .shares                        : 0
+[4302727.867209]
+[4302727.867209] cfs_rq[1]:
+[4302727.867209]   .exec_clock                    : 0.026450
+[4302727.867209]   .MIN_vruntime                  : 0.000001
+[4302727.867209]   .min_vruntime                  : 759396.868495
+[4302727.867209]   .max_vruntime                  : 0.000001
+[4302727.867209]   .spread                        : 0.000000
+[4302727.867209]   .spread0                       : -4419590.518446
+[4302727.867209]   .nr_running                    : 0
+[4302727.867209]   .load                          : 0
+[4302727.867209]   .bkl_count                     : 299
+[4302727.867209]   .nr_spread_over                : 0
+[4302727.867209]   .shares                        : 0
+[4302727.867209]
+[4302727.867210] cfs_rq[1]:
+[4302727.867210]   .exec_clock                    : 754981.092689
+[4302727.867210]   .MIN_vruntime                  : 1239813.449102
+[4302727.867210]   .min_vruntime                  : 759396.868495
+[4302727.867210]   .max_vruntime                  : 1239819.334711
+[4302727.867210]   .spread                        : 5.885609
+[4302727.867210]   .spread0                       : -4419590.518446
+[4302727.867210]   .nr_running                    : 3
+[4302727.867210]   .load                          : 3072
+[4302727.867210]   .bkl_count                     : 299
+[4302727.867210]   .nr_spread_over                : 53817
+[4302727.867210]   .shares                        : 415
+[4302727.867210]
+[4302727.867210] runnable tasks:
+[4302727.867210]             task   PID         tree-key  switches  
+prio     exec-runtime         sum-exec        sum-sleep
+[4302727.867210] 
+----------------------------------------------------------------------------------------------------------
+[4302727.900184]  qemu-system-x86  4987   1239813.449102    709828   
+120   1239813.449102   1410504.949783     22865.206608
+[4302727.900184]  qemu-system-x86  5052   1239819.334711    530481   
+120   1239819.334711   1365146.519564     50937.064744
+[4302727.900184] Rtoggle-processo  7799   1239811.208673     47886   
+120   1239811.208673     57552.631854   1592798.974913
+[4302727.900184]
+[4302727.900184] cpu#3, 2659.999 MHz
+[4302727.900184]   .nr_running                    : 1
+[4302727.900184]   .load                          : 285
+[4302727.900184]   .nr_switches                   : 611209
+[4302727.900184]   .nr_load_updates               : 843051
+[4302727.900184]   .nr_uninterruptible            : -2
+[4302727.900184]   .jiffies                       : 4301585916
+[4302727.900184]   .next_balance                  : 4301.586873
+[4302727.900184]   .curr->pid                     : 0
+[4302727.900184]   .clock                         : 6918576.376068
+[4302727.900184]   .cpu_load[0]                   : 0
+[4302727.900184]   .cpu_load[1]                   : 0
+[4302727.900184]   .cpu_load[2]                   : 0
+[4302727.900184]   .cpu_load[3]                   : 181
+[4302727.900184]   .cpu_load[4]                   : 1108
+[4302727.900184]
+[4302727.900184] cfs_rq[3]:
+[4302727.900184]   .exec_clock                    : 8.224765
+[4302727.900184] BUG: spinlock recursion on CPU#3, swapper/0
+[4302727.900184]  lock: ffff81000103df00, .magic: dead4ead, .owner: 
+swapper/0, .owner_cpu: 3
+[4302727.900184] Pid: 0, comm: swapper Not tainted 2.6.26-rc2 #726
+[4302727.900184]
+[4302727.900184] Call Trace:
+[4302727.900184]  [<ffffffff803249de>] spin_bug+0x9e/0xe9
+[4302727.900184]  [<ffffffff80324af4>] _raw_spin_lock+0x41/0x123
+[4302727.900184]  [<ffffffff80439638>] _spin_lock_irqsave+0x2f/0x37
+[4302727.900184]  [<ffffffff8022ef7c>] print_cfs_rq+0xca/0x46a
+[4302727.900184]  [<ffffffff80231f97>] sched_debug_show+0x7a3/0xb8c
+[4302727.900184]  [<ffffffff8023238d>] sysrq_sched_debug_show+0xd/0xf
+[4302727.900184]  [<ffffffff802323ee>] pick_next_task_fair+0x5f/0x86
+[4302727.900184]  [<ffffffff804373f6>] schedule+0x3fc/0x6ab
+[4302727.900184]  [<ffffffff8024e03f>] ? ktime_get_ts+0x49/0x4e
+[4302727.900184]  [<ffffffff80253a28>] ? tick_nohz_stop_idle+0x2d/0x54
+[4302727.900184]  [<ffffffff8021283f>] ? mwait_idle+0x0/0x59
+[4302727.900184]  [<ffffffff8020ae37>] cpu_idle+0xc8/0xd7
+[4302727.900184]  [<ffffffff804332f1>] start_secondary+0x173/0x178
+[4302727.900184]
 
 
-diff -urN orig.full/drivers/rtc/Kconfig linux-2.6.25/drivers/rtc/Kconfig
---- orig.full/drivers/rtc/Kconfig	2008-05-14 11:06:23.000000000 +0300
-+++ linux-2.6.25/drivers/rtc/Kconfig	2008-05-14 11:54:57.000000000 +0300
-@@ -266,6 +266,15 @@
- 
- if SPI_MASTER
- 
-+config RTC_DRV_M41T94
-+	tristate "ST M41T94"
-+	help
-+	  If you say yes here you will get support for the
-+	  ST M41T94 SPI RTC chip.
-+
-+	  This driver can also be built as a module. If so, the module
-+	  will be called rtc-m41t94.
-+
- config RTC_DRV_MAX6902
- 	tristate "Maxim MAX6902"
- 	help
-diff -urN orig.full/drivers/rtc/Makefile linux-2.6.25/drivers/rtc/Makefile
---- orig.full/drivers/rtc/Makefile	2008-04-17 05:49:44.000000000 +0300
-+++ linux-2.6.25/drivers/rtc/Makefile	2008-05-14 11:53:43.000000000 +0300
-@@ -33,6 +33,7 @@
- obj-$(CONFIG_RTC_DRV_EP93XX)	+= rtc-ep93xx.o
- obj-$(CONFIG_RTC_DRV_ISL1208)	+= rtc-isl1208.o
- obj-$(CONFIG_RTC_DRV_M41T80)	+= rtc-m41t80.o
-+obj-$(CONFIG_RTC_DRV_M41T94)	+= rtc-m41t94.o
- obj-$(CONFIG_RTC_DRV_M48T59)	+= rtc-m48t59.o
- obj-$(CONFIG_RTC_DRV_M48T86)	+= rtc-m48t86.o
- obj-$(CONFIG_RTC_DRV_MAX6900)	+= rtc-max6900.o
-diff -urN orig.full/drivers/rtc/rtc-m41t94.c linux-2.6.25/drivers/rtc/rtc-m41t94.c
---- orig.full/drivers/rtc/rtc-m41t94.c	1970-01-01 02:00:00.000000000 +0200
-+++ linux-2.6.25/drivers/rtc/rtc-m41t94.c	2008-05-14 13:42:21.000000000 +0300
-@@ -0,0 +1,187 @@
-+/*
-+ * Driver for ST M41T94 SPI RTC
-+ *
-+ * Copyright (C) 2008 Kim B. Heino
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/version.h>
-+
-+#include <linux/kernel.h>
-+#include <linux/platform_device.h>
-+#include <linux/init.h>
-+#include <linux/rtc.h>
-+#include <linux/spi/spi.h>
-+#include <linux/bcd.h>
-+
-+#define M41T94_REG_SECONDS	0x01
-+#define M41T94_REG_MINUTES	0x02
-+#define M41T94_REG_HOURS	0x03
-+#define M41T94_REG_WDAY		0x04
-+#define M41T94_REG_DAY		0x05
-+#define M41T94_REG_MONTH	0x06
-+#define M41T94_REG_YEAR		0x07
-+#define M41T94_REG_HT		0x0c
-+
-+#define M41T94_BIT_HALT		0x40
-+#define M41T94_BIT_STOP		0x80
-+
-+struct m41t94 {
-+	struct rtc_device *rtc;
-+	u8 buf[8]; /* Burst read cmd + 7 registers */
-+};
-+
-+static int m41t94_set_time(struct device *dev, struct rtc_time *tm)
-+{
-+	struct spi_device *spi = to_spi_device(dev);
-+	struct m41t94 *m41t94 = dev_get_drvdata(dev);
-+	u8 *buf = m41t94->buf;
-+
-+	dev_dbg(dev, "%s secs=%d, mins=%d, "
-+		"hours=%d, mday=%d, mon=%d, year=%d, wday=%d\n",
-+		"write", tm->tm_sec, tm->tm_min,
-+		tm->tm_hour, tm->tm_mday,
-+		tm->tm_mon, tm->tm_year, tm->tm_wday);
-+
-+	buf[0] = 0x80 | M41T94_REG_SECONDS; /* write time + date */
-+	buf[M41T94_REG_SECONDS] = BIN2BCD(tm->tm_sec);
-+	buf[M41T94_REG_MINUTES] = BIN2BCD(tm->tm_min);
-+	buf[M41T94_REG_HOURS]   = BIN2BCD(tm->tm_hour);
-+	buf[M41T94_REG_WDAY]    = BIN2BCD(tm->tm_wday + 1);
-+	buf[M41T94_REG_DAY]     = BIN2BCD(tm->tm_mday);
-+	buf[M41T94_REG_MONTH]   = BIN2BCD(tm->tm_mon + 1);
-+	/* assume 20YY not 19YY */
-+	buf[M41T94_REG_YEAR]    = BIN2BCD(tm->tm_year - 100);
-+
-+	return spi_write(spi, buf, 8);
-+}
-+
-+static int m41t94_read_time(struct device *dev, struct rtc_time *tm)
-+{
-+	struct spi_device *spi = to_spi_device(dev);
-+	struct m41t94 *m41t94 = dev_get_drvdata(dev);
-+	u8 *buf = m41t94->buf;
-+	int ret;
-+
-+	/* clear halt update bit */
-+	ret = spi_w8r8(spi, M41T94_REG_HT);
-+	if (ret < 0)
-+		return ret;
-+	if (ret & M41T94_BIT_HALT) {
-+		buf[0] = 0x80 | M41T94_REG_HT;
-+		buf[1] = ret & ~M41T94_BIT_HALT;
-+		spi_write(spi, buf, 2);
-+	}
-+
-+	/* clear stop bit */
-+	ret = spi_w8r8(spi, M41T94_REG_SECONDS);
-+	if (ret < 0)
-+		return ret;
-+	if (ret & M41T94_BIT_STOP) {
-+		buf[0] = 0x80 | M41T94_REG_SECONDS;
-+		buf[1] = ret & ~M41T94_BIT_STOP;
-+		spi_write(spi, buf, 2);
-+	}
-+
-+	tm->tm_sec  = BCD2BIN(spi_w8r8(spi, M41T94_REG_SECONDS));
-+	tm->tm_min  = BCD2BIN(spi_w8r8(spi, M41T94_REG_MINUTES));
-+	tm->tm_hour = BCD2BIN(spi_w8r8(spi, M41T94_REG_HOURS));
-+	tm->tm_wday = BCD2BIN(spi_w8r8(spi, M41T94_REG_WDAY)) - 1;
-+	tm->tm_mday = BCD2BIN(spi_w8r8(spi, M41T94_REG_DAY));
-+	tm->tm_mon  = BCD2BIN(spi_w8r8(spi, M41T94_REG_MONTH)) - 1;
-+	/* assume 20YY not 19YY, and ignore century bit */
-+	tm->tm_year = BCD2BIN(spi_w8r8(spi, M41T94_REG_YEAR)) + 100;
-+
-+	dev_dbg(dev, "%s secs=%d, mins=%d, "
-+		"hours=%d, mday=%d, mon=%d, year=%d, wday=%d\n",
-+		"read", tm->tm_sec, tm->tm_min,
-+		tm->tm_hour, tm->tm_mday,
-+		tm->tm_mon, tm->tm_year, tm->tm_wday);
-+
-+	/* initial clock setting can be undefined */
-+	return rtc_valid_tm(tm);
-+}
-+
-+static const struct rtc_class_ops m41t94_rtc_ops = {
-+	.read_time	= m41t94_read_time,
-+	.set_time	= m41t94_set_time,
-+};
-+
-+static struct spi_driver m41t94_driver;
-+
-+static int __devinit m41t94_probe(struct spi_device *spi)
-+{
-+	struct rtc_device *rtc;
-+	struct m41t94 *m41t94;
-+	int res;
-+
-+	m41t94 = kzalloc(sizeof(struct m41t94), GFP_KERNEL);
-+	if (!m41t94)
-+		return -ENOMEM;
-+	dev_set_drvdata(&spi->dev, m41t94);
-+
-+	spi->bits_per_word = 8;
-+	spi_setup(spi);
-+
-+	res = spi_w8r8(spi, M41T94_REG_SECONDS);
-+	if (res < 0) {
-+		dev_err(&spi->dev, "not found.\n");
-+		kfree(m41t94);
-+		return res;
-+	}
-+
-+	rtc = rtc_device_register(m41t94_driver.driver.name,
-+		&spi->dev, &m41t94_rtc_ops, THIS_MODULE);
-+	if (IS_ERR(rtc)) {
-+		kfree(m41t94);
-+		return PTR_ERR(rtc);
-+	}
-+
-+	m41t94->rtc = rtc;
-+
-+	return 0;
-+}
-+
-+static int __devexit m41t94_remove(struct spi_device *spi)
-+{
-+	struct m41t94 *m41t94 = platform_get_drvdata(spi);
-+	struct rtc_device *rtc = m41t94->rtc;
-+
-+	if (rtc)
-+		rtc_device_unregister(rtc);
-+	kfree(m41t94);
-+
-+	return 0;
-+}
-+
-+static struct spi_driver m41t94_driver = {
-+	.driver = {
-+		.name	= "rtc-m41t94",
-+		.bus	= &spi_bus_type,
-+		.owner	= THIS_MODULE,
-+	},
-+	.probe	= m41t94_probe,
-+	.remove = __devexit_p(m41t94_remove),
-+};
-+
-+static __init int m41t94_init(void)
-+{
-+	return spi_register_driver(&m41t94_driver);
-+}
-+
-+module_init(m41t94_init);
-+
-+static __exit void m41t94_exit(void)
-+{
-+	spi_unregister_driver(&m41t94_driver);
-+}
-+
-+module_exit(m41t94_exit);
-+
-+MODULE_AUTHOR ("Kim B. Heino <Kim.Heino@bluegiga.com>");
-+MODULE_DESCRIPTION ("Driver for ST M41T94 SPI RTC");
-+MODULE_LICENSE ("GPL");
+
+
+-- 
+error compiling committee.c: too many arguments to function
+
