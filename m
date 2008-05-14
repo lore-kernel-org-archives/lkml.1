@@ -1,81 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752697AbYENUhn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753371AbYENUia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752697AbYENUhn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 16:37:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbYENUhc
+	id S1753371AbYENUia (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 16:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751181AbYENUiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 16:37:32 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:58942 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750888AbYENUhb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 16:37:31 -0400
-Message-ID: <482B4D80.5080808@garzik.org>
-Date: Wed, 14 May 2008 16:37:20 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 14 May 2008 16:38:19 -0400
+Received: from winston.telenet-ops.be ([195.130.137.75]:37199 "EHLO
+	winston.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751071AbYENUiS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 16:38:18 -0400
+Date: Wed, 14 May 2008 22:38:15 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for May 14
+In-Reply-To: <20080514170106.3cbcb201.sfr@canb.auug.org.au>
+Message-ID: <Pine.LNX.4.64.0805142237240.11631@anakin>
+References: <20080514170106.3cbcb201.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-CC: Jamie Lokier <jamie@shareable.org>, Sage Weil <sage@newdream.net>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: POHMELFS high performance network filesystem. Transactions, failover,
- performance.
-References: <20080513174523.GA1677@2ka.mipt.ru> <4829E752.8030104@garzik.org> <20080513205114.GA16489@2ka.mipt.ru> <Pine.LNX.4.64.0805140623001.14334@cobra.newdream.net> <20080514135156.GA23131@2ka.mipt.ru> <20080514143105.GB14987@shareable.org> <20080514150052.GA15826@2ka.mipt.ru> <482B3899.9070008@garzik.org> <20080514193234.GA10165@2ka.mipt.ru>
-In-Reply-To: <20080514193234.GA10165@2ka.mipt.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Evgeniy Polyakov wrote:
-> No, server to connect is the server, which stores data. By addition it
-> will also store it to some other places according to distributed
-> algorithm (like weaver, raid, mirror, whatever).
-[...]
-> Sure the less number of machines between client and storage we have, the
-> faster and more robust we are.
-> 
-> Either client has to write data to all servers, or it has to write it to
-> one and wait utill that server will broadcast it further (to quorum or any
-> number of machines it wants). Having pure client to think to what
-> servers it has to put its data is a bit wrong (if not saying more),
-> since it has to join not only data network, but also control one, to
-> check that some servers are alive or not, to be able not to race, when
-> server is recovering and so on...
+On Wed, 14 May 2008, Stephen Rothwell wrote:
+> Status of my local build tests will be at
+> http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
 
-Quite true.  It is a trade-off:  additional complexity in the client 
-permits reduced latency and increased throughput.  But is the additional 
-complexity -- including administrative and access control headaches -- 
-worth it?  As you say, the "complex" clients must join the data network.
+Do you have any idea why there's no real error message for the failure
+of m68k defconfig?
 
-Hardware manufacturers are putting so much effort into zero-copy and 
-RDMA.  The client-to-many approach mimics that trend by minimizing 
-latency and data copying (and permitting use of more exotic or unusual 
-hardware).
+http://kisskb.ellerman.id.au/kisskb/buildresult/27635/
 
-But the client-to-many approach is not as complex as you make out.  A 
-key attribute is simply for a client to be able to store new objects and 
-metadata on multiple servers in parallel.  Once the data is stored 
-redundantly, the metadata controller may take quick action to 
-commit/abort the transaction.  You can even shortcut the process further 
-by having the replicas send confirmations to the metadata controller.
+Gr{oetje,eeting}s,
 
-That said, the biggest distributed systems seem to inevitably grow their 
-own "front end server" layer.  Clients connect to N caching/application 
-servers, each of which behaves as you describe:  the caching/app server 
-connects to the control and data networks, and performs the necessary 
-load/store operations.
+						Geert
 
-Personally, I think the most simple thing for _users_ is where 
-semi-smart clients open multiple connections to an amorphous cloud of 
-servers, where the cloud is self-optimizing, self-balancing, and 
-self-repairing internally.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-	Jeff
-
-
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
