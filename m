@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761160AbYENJL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760196AbYENJPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761160AbYENJL1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 05:11:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755135AbYENJLN
+	id S1760196AbYENJPx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 05:15:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbYENJPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 05:11:13 -0400
-Received: from styx.suse.cz ([82.119.242.94]:48996 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753808AbYENJLL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 05:11:11 -0400
-Date: Wed, 14 May 2008 11:11:09 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: "Dylan R. Semler" <dsemler@astro.columbia.edu>
-cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] USB HID/HIDBP DRIVERS: Add iMON LCDs to HID blacklist
-In-Reply-To: <482A347B.7020203@astro.columbia.edu>
-Message-ID: <Pine.LNX.4.64.0805141109510.11363@jikos.suse.cz>
-References: <482A347B.7020203@astro.columbia.edu>
+	Wed, 14 May 2008 05:15:44 -0400
+Received: from sous-sol.org ([216.99.217.87]:55254 "EHLO sous-sol.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754111AbYENJPn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 05:15:43 -0400
+Date: Wed, 14 May 2008 02:15:26 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: casey@schaufler-ca.com, lsm <linux-security-module@vger.kernel.org>,
+       Chris Wright <chrisw@sous-sol.org>, James Morris <jmorris@namei.org>,
+       Eric Paris <eparis@parisplace.org>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH] security:  split ptrace checking in proc
+Message-ID: <20080514091526.GB17453@sequoia.sous-sol.org>
+References: <648615.23893.qm@web36601.mail.mud.yahoo.com> <1210687270.6206.129.camel@moss-spartans.epoch.ncsc.mil>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1210687270.6206.129.camel@moss-spartans.epoch.ncsc.mil>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 May 2008, Dylan R. Semler wrote:
+* Stephen Smalley (sds@tycho.nsa.gov) wrote:
+> As above, it isn't quite a read vs. readwrite mode distinction (which is
+> why I called it ptrace_may_readstate rather than just ptrace_may_read),
+> and the advantage of implementing it via a new interface is that we only
+> need to update the callers where we want to apply this different
+> checking, leaving all other callers unmodified and unaffected.  So while
+> I could do it the way you describe, I'm not sure it would yield a better
+> result.  Maybe others can chime in with their opinions.
 
-> >  the patch is whitespace damaged and line wrapped, could you please 
-> >  resend properly?
-> Sorry guys.  I tried to keep gmail from word-wrapping my patch by going 
-> through Thunderbird, but looks like the SMTP server still took care of 
-> that (or something).  Trying with a different server now...
+It is slightly ad-hoc.  Is it just the audit messages that you described
+that made you pick environ and fd, or was there more specific (threat
+based) reasoning?  Would /proc/pid/fd/ + genfs + e.g. anonfd be a little
+wider than just readstate?
 
-Well, no, it is still broken.
+Perhaps you could update the comments in ptrace_may_inspect() to clarify.
 
-As the patch is fairly trivial I will fix that up on my side and apply it, 
-but please have it in mind for any future patch submissions.
-
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs
+thanks,
+-chris
