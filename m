@@ -1,93 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762096AbYENLZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932168AbYENLYw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762096AbYENLZW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 07:25:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758392AbYENLZG
+	id S932168AbYENLYw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 07:24:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760119AbYENLYf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 07:25:06 -0400
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:36894 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755143AbYENLZE (ORCPT
+	Wed, 14 May 2008 07:24:35 -0400
+Received: from xi.wantstofly.org ([83.160.184.112]:53493 "EHLO
+	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758649AbYENLYe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 07:25:04 -0400
-Message-ID: <482ACBFE.9010606@linux.vnet.ibm.com>
-Date: Wed, 14 May 2008 16:54:46 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080505)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: [BUG] 2.6.26-rc2-mm1 - kernel bug while bootup at __alloc_pages_internal
- () on x86_64
-References: <20080514010129.4f672378.akpm@linux-foundation.org>
-In-Reply-To: <20080514010129.4f672378.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 14 May 2008 07:24:34 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
+	d=wantstofly.org;
+	h=date:from:to:cc:subject:message-id:mime-version:content-type:
+	content-disposition:user-agent;
+	b=Ry/7X/TTF3Kj58Lvt1ay1QwOhFG5u/cNfGRscrGJ/OWJykqMt0GRyeowfWjQi
+	DHfvPoh6Ckb6spryDI0kLFuLQ==
+Date: Wed, 14 May 2008 13:24:29 +0200
+From: Lennert Buytenhek <buytenh@wantstofly.org>
+To: linux-kernel@vger.kernel.org
+Cc: David Brownell <david-b@pacbell.net>, Nicolas Pitre <nico@cam.org>,
+       Sylver Bruneau <sylver.bruneau@googlemail.com>,
+       Byron Bradley <byron.bbradley@gmail.com>,
+       Martin Michlmayr <tbm@cyrius.com>
+Subject: ehci splatter in 2.6.26-rc2
+Message-ID: <20080514112429.GA25926@xi.wantstofly.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+On 2.6.26-rc2, plugging in a certain USB device (haven't tested yet
+with other devices) gives me (on two different ARM boards) the oops
+below.
 
-The 2.6.26-rc2-mm1 kernel panic's while bootup on the x86_64 machine.
+Anyone else seeing the same?
 
 
-BUG: unable to handle kernel paging request at 0000000000001e08
-IP: [<ffffffff8026ac60>] __alloc_pages_internal+0x80/0x470
-PGD 0 
-Oops: 0000 [1] SMP 
-last sysfs file: 
-CPU 31 
+usb 1-1: new low speed USB device using orion-ehci and address 2
+Unable to handle kernel NULL pointer dereference at virtual address 00000000
+pgd = c0004000
+[00000000] *pgd=00000000
+Internal error: Oops: 17 [#1] PREEMPT
 Modules linked in:
-Pid: 1, comm: swapper Not tainted 2.6.26-rc2-mm1-autotest #1
-RIP: 0010:[<ffffffff8026ac60>]  [<ffffffff8026ac60>] __alloc_pages_internal+0x80/0x470
-RSP: 0018:ffff810bf9dbdbc0  EFLAGS: 00010202
-RAX: 0000000000000002 RBX: ffff810bef4786c0 RCX: 0000000000000001
-RDX: 0000000000001e00 RSI: 0000000000000001 RDI: 0000000000001020
-RBP: ffff810bf9dbb6d0 R08: 0000000000001020 R09: 0000000000000000
-R10: 0000000000000008 R11: ffffffff8046d130 R12: 0000000000001020
-R13: 0000000000000001 R14: 0000000000001e00 R15: ffff810bf8d29878
-FS:  0000000000000000(0000) GS:ffff810bf916dec0(0000) knlGS:0000000000000000
-CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-CR2: 0000000000001e08 CR3: 0000000000201000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process swapper (pid: 1, threadinfo ffff810bf9dbc000, task ffff810bf9dbb6d0)
-Stack:  0002102000000000 0000000000000002 0000000000000000 0000000200000000
- 0000000000000000 0000000000000000 0000000000000000 0000000000000000
- 0000000000000000 ffff810bef4786c0 0000000000001020 ffffffffffffffff
-Call Trace:
- [<ffffffff802112e9>] dma_alloc_coherent+0xa9/0x280
- [<ffffffff804e8c9e>] tg3_init_one+0xa3e/0x15e0
- [<ffffffff8028d0e4>] alternate_node_alloc+0x84/0xd0
- [<ffffffff802286fc>] task_rq_lock+0x4c/0x90
- [<ffffffff8022de62>] set_cpus_allowed_ptr+0x72/0xf0
- [<ffffffff802e12fb>] sysfs_addrm_finish+0x1b/0x210
- [<ffffffff802e0f99>] sysfs_find_dirent+0x29/0x40
- [<ffffffff8036cc34>] pci_device_probe+0xe4/0x130
- [<ffffffff803bfc26>] driver_probe_device+0x96/0x1a0
- [<ffffffff803bfdb9>] __driver_attach+0x89/0x90
- [<ffffffff803bfd30>] __driver_attach+0x0/0x90
- [<ffffffff803bf29d>] bus_for_each_dev+0x4d/0x80
- [<ffffffff8028d676>] kmem_cache_alloc+0x116/0x130
- [<ffffffff803bf78e>] bus_add_driver+0xae/0x220
- [<ffffffff803c0046>] driver_register+0x56/0x130
- [<ffffffff8036cee8>] __pci_register_driver+0x68/0xb0
- [<ffffffff80708a29>] kernel_init+0x139/0x390
- [<ffffffff8020c358>] child_rip+0xa/0x12
- [<ffffffff807088f0>] kernel_init+0x0/0x390
- [<ffffffff8020c34e>] child_rip+0x0/0x12
-
-
-Code: c9 00 00 02 00 25 00 08 00 00 89 4c 24 04 89 04 24 44 89 e9 b8 01 00 00 00 d3 e0 48 98 48 89 44 24 08 65 48 8b 2c 25 00 00 00 00 <49> 83 7e 08 00 0f 84 9a 03 00 00 44 8b 44 24 1c 48 8b 74 24 10 
-RIP  [<ffffffff8026ac60>] __alloc_pages_internal+0x80/0x470
- RSP <ffff810bf9dbdbc0>
-CR2: 0000000000001e08
----[ end trace 111493bba2b1f3db ]---
-
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+CPU: 0    Not tainted  (2.6.26-rc2 #340)
+PC is at qh_append_tds+0x24c/0x44c
+LR is at ehci_qtd_alloc+0x30/0x5c
+pc : [<c02238b4>]    lr : [<c02235a8>]    psr: 00000093
+sp : c7c3bcb0  ip : c7dd86c0  fp : c7c3bcfc
+r10: ffc42080  r9 : 00000008  r8 : c7fec820
+r7 : 80000080  r6 : 00000080  r5 : 00000000  r4 : 00000002
+r3 : c7d69c00  r2 : 00000000  r1 : 40800000  r0 : 08085000
+Flags: nzcv  IRQs off  FIQs on  Mode SVC_32  ISA ARM  Segment kernel
+Control: a005317f  Table: 06a1c000  DAC: 00000017
+Process khubd (pid: 72, stack limit = 0xc7c3a268)
+Stack: (0xc7c3bcb0 to 0xc7c3c000)
+[...]
+Backtrace: 
+[<c0223668>] (qh_append_tds+0x0/0x44c) from [<c0225470>] (ehci_urb_enqueue+0x100
+/0xfb8)
+[<c0225370>] (ehci_urb_enqueue+0x0/0xfb8) from [<c02163e8>] (usb_hcd_submit_urb+
+0x824/0x91c)
+[<c0215bc4>] (usb_hcd_submit_urb+0x0/0x91c) from [<c0216850>] (usb_submit_urb+0x
+224/0x260)
+[<c021662c>] (usb_submit_urb+0x0/0x260) from [<c02172e8>] (usb_start_wait_urb+0x
+44/0xac)
+ r6:c7fec820 r5:c7c3be80 r4:00000000
+[<c02172a4>] (usb_start_wait_urb+0x0/0xac) from [<c0217538>] (usb_control_msg+0x
+c8/0xec)
+ r8:00000000 r7:00000100 r6:fffffff4 r5:00000040 r4:c7df4540
+[<c0217470>] (usb_control_msg+0x0/0xec) from [<c021206c>] (hub_port_init+0x274/0
+x5e4)
+[<c0211df8>] (hub_port_init+0x0/0x5e4) from [<c0213408>] (hub_thread+0x60c/0xc1c
+)
+[<c0212dfc>] (hub_thread+0x0/0xc1c) from [<c0058844>] (kthread+0x5c/0x94)
+[<c00587e8>] (kthread+0x0/0x94) from [<c0046484>] (do_exit+0x0/0x72c)
+ r6:00000000 r5:00000000 r4:00000000
+Code: e51bc040 e5932000 e51c309c e1520003 (15923000)
+---[ end trace e1e1758047d6bb3f ]---
+note: khubd[72] exited with preempt_count 1
