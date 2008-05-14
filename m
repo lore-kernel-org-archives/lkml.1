@@ -1,57 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757328AbYENWBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757387AbYENWDW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757328AbYENWBZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 18:01:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751726AbYENWBQ
+	id S1757387AbYENWDW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 18:03:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbYENWDK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 18:01:16 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:39684 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751302AbYENWBP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 18:01:15 -0400
-Date: Wed, 14 May 2008 16:00:58 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, mpm@selenic.com,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Subject: Re: [patch 21/21] slab defrag: Obsolete SLAB
-Message-ID: <20080514220058.GG9921@parisc-linux.org>
-References: <Pine.LNX.4.64.0805141009210.15194@schroedinger.engr.sgi.com> <482B2617.5010605@firstfloor.org> <Pine.LNX.4.64.0805141104260.15633@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0805141333550.18231@schroedinger.engr.sgi.com> <20080514205842.GC9921@parisc-linux.org> <Pine.LNX.4.64.0805141359420.18958@schroedinger.engr.sgi.com> <20080514212130.GD9921@parisc-linux.org> <Pine.LNX.4.64.0805141426440.19073@schroedinger.engr.sgi.com> <20080514214326.GF9921@parisc-linux.org> <Pine.LNX.4.64.0805141444220.19897@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
+	Wed, 14 May 2008 18:03:10 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:59167 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752035AbYENWDI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 18:03:08 -0400
+Date: Thu, 15 May 2008 02:02:52 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: Sage Weil <sage@newdream.net>, Jeff Garzik <jeff@garzik.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: POHMELFS high performance network filesystem. Transactions, failover, performance.
+Message-ID: <20080514220252.GA14378@2ka.mipt.ru>
+References: <20080513174523.GA1677@2ka.mipt.ru> <4829E752.8030104@garzik.org> <20080513205114.GA16489@2ka.mipt.ru> <Pine.LNX.4.64.0805140623001.14334@cobra.newdream.net> <20080514135156.GA23131@2ka.mipt.ru> <20080514143105.GB14987@shareable.org> <20080514150052.GA15826@2ka.mipt.ru> <20080514213251.GB23758@shareable.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0805141444220.19897@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080514213251.GB23758@shareable.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 14, 2008 at 02:53:57PM -0700, Christoph Lameter wrote:
-> > Note the complete lack of comparison between slub and slab here!  As far
-> > as I know, slub still loses against slab by a few % -- but I haven't
-> > finished running a comparison with -rc2 yet.
+On Wed, May 14, 2008 at 10:32:51PM +0100, Jamie Lokier (jamie@shareable.org) wrote:
+> Look up Bittorrent, and bandwidth diffusion generally.  Also look up
+> multicast trees.
 > 
-> Indeed remote frees are slightly slower in some situations. Dont really 
-> dispute that. I am just not sure that the TPC test is really suffering 
-> from that symptom. I thought for a long time that the tbench regression 
-> was due to a similar effect too until I got down to it.
+> Sometimes it's faster for a client to send to many servers; sometimes
+> it's faster to send fewer and have them relayed by intermediaries -
+> because every packet takes time to transmit, and network topologies
+> aren't always homogenous or symmetric.
+> 
+> There is no simple answer which is optimal for all networks.
 
-Since there's no way we've found to date to get the TPC test to you,
-how about we settle for analysing _this_ testcase which did show a
-significant performance degradation for slub?
+Yep, having multiple connections is worse for high-performance networks
+and is a great win for long latency links. If client to server
+connection is slower than server-server one, than having single gate
+server, which broadcasts data to others is a win over multiple
+connection to different servers. But if communication is roughly the
+same over all links, than... I think I agree that client-to-many is a
+better approach, since perormance of client-to-many will be the same as
+client-to-gate-to-others (since link is the same everywhere), but if
+gate server fails, reconnection and other management tasks introduce
+huge latency here (new gate server, new connection and so on), while
+with client-to-many we just proceed with other connections.
 
-I don't think it's an unreasonable testcase either -- effectively it's
-allocating memory on all CPUs and then freeing it all on one.  If that's
-a worst-case scenario for slub, then slub isn't suitable for replacing
-slab yet.
+> > Another approach, which seems also intersting is leader election (per
+> > client), so that leader would broadcast all the data.
+> 
+> Leader election is part of standard Paxos too :-)
+
+But that's a different leader :)
+
+> If you have a single data forwarder elected per client, then if one
+> client generates a lot of traffic, you concentrate a lot of traffic to
+> one network link and one CPU.  Sometimes it's better to elect several
+> leaders per client, and hash requests onto them.  You diffuse CPU and
+> traffic, but reduce opportunities to aggregate transactions into fewer
+> message.  It's an interesting problem, again probably with different
+> optimal results for different networks.
+
+Probably idea I described in other mail to Jeff, when client just
+connects to number of servers and can process command of adding/dropping
+server from that group, and balances reading between them and sends
+writes/metadata update to all of them, and all logic behind that group
+selection is hidded in the servers cloud, is the best choice...
 
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+	Evgeniy Polyakov
