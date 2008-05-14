@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760935AbYENA4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761370AbYENA4q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760935AbYENA4U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 20:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757350AbYENA4F
+	id S1761370AbYENA4q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 20:56:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757422AbYENA4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 20:56:05 -0400
-Received: from fmailhost05.isp.att.net ([204.127.217.105]:49251 "EHLO
-	fmailhost01.isp.att.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755299AbYENA4D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 20:56:03 -0400
-X-Originating-IP: [70.152.106.110]
-From: Jay Cliburn <jacliburn@bellsouth.net>
-To: jeff@garzik.org
-Cc: adobriyan@gmail.com, csnook@redhat.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jay Cliburn <jacliburn@bellsouth.net>
-Subject: [PATCH] atl1: fix 4G memory corruption bug
-Date: Tue, 13 May 2008 19:50:58 -0500
-Message-Id: <1210726258-3053-1-git-send-email-jacliburn@bellsouth.net>
-X-Mailer: git-send-email 1.5.4.1
+	Tue, 13 May 2008 20:56:36 -0400
+Received: from mail.gmx.net ([213.165.64.20]:45396 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1757085AbYENA4f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 20:56:35 -0400
+X-Authenticated: #476490
+X-Provags-ID: V01U2FsdGVkX1/JzL1YVATJ5J9RkMnhMcxDtYkS3EVZFjreX0tPT7
+	ApjXtTiOq1+xmK
+From: Oliver Endriss <o.endriss@gmx.de>
+Organization: ESCAPE GmbH EDV-Loesungen
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch, 2.6.26-rc2] dvb: drivers/media/dvb/ttpci/fdump firmware build error fix
+Date: Wed, 14 May 2008 02:55:56 +0200
+User-Agent: KMail/1.9.6
+Cc: Johannes Stezenbach <js@linuxtv.org>, linux-kernel@vger.kernel.org,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Andrew de Quincey <adq_dvb@lidskialf.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+References: <20080512101231.GA11755@elte.hu> <20080513163647.GA21678@elte.hu> <20080513164140.GA21877@elte.hu>
+In-Reply-To: <20080513164140.GA21877@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805140255.57562@orion.escape-edv.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alexey Dobriyan <adobriyan@gmail.com>
+Ingo Molnar wrote:
+> 
+> * Oliver Endriss <o.endriss@gmx.de> wrote:
+> 
+> > Sure. And without the patch you can simply add
+> > - STANDALONE=y or
+> > - DVB_AV7110_FIRMWARE=n
+> > to your allrandom.config. ;-)
+>  
+> hm, you are right - i've added STANDALONE=y previously but it went 
+> missing in action. So forget my patch, it was user error - the driver is 
+> right in that it already depends on STANDALONE :-)
 
-When using 4+ GB RAM and SWIOTLB is active, the driver corrupts
-memory by writing an skb after the relevant DMA page has been
-unmapped.  Although this doesn't happen when *not* using bounce
-buffers, clearing the pointer to the DMA page after unmapping
-it fixes the problem.
+Ok. I already wondered why this issue came up now.
+The dependencies of DVB_AV7110_FIRMWARE did not change during the last
+4 years...
 
-Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
----
- drivers/net/atlx/atl1.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+> I guess STANDALONE  
+> should enable PREVENT_FIRMWARE_BUILD as well to avoid such errors ...
 
-diff --git a/drivers/net/atlx/atl1.c b/drivers/net/atlx/atl1.c
-index 0afe522..e67b154 100644
---- a/drivers/net/atlx/atl1.c
-+++ b/drivers/net/atlx/atl1.c
-@@ -2027,6 +2027,7 @@ rrd_ok:
- 		/* Good Receive */
- 		pci_unmap_page(adapter->pdev, buffer_info->dma,
- 			       buffer_info->length, PCI_DMA_FROMDEVICE);
-+		buffer_info->dma = 0;
- 		skb = buffer_info->skb;
- 		length = le16_to_cpu(rrd->xsz.xsum_sz.pkt_size);
- 
+Yes, it does not make much sense to build the firmware if the driver
+will not be compiled anyway.
+
+CU
+Oliver
+
 -- 
-1.5.4.1
-
+----------------------------------------------------------------
+VDR Remote Plugin 0.4.0: http://www.escape-edv.de/endriss/vdr/
+----------------------------------------------------------------
