@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762816AbYENTCP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763349AbYENTD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762816AbYENTCP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 15:02:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757963AbYENTB6
+	id S1763349AbYENTD6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 15:03:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758233AbYENTDp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 15:01:58 -0400
-Received: from waste.org ([66.93.16.53]:46407 "EHLO waste.org"
+	Wed, 14 May 2008 15:03:45 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:58142 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755067AbYENTB5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 15:01:57 -0400
-Subject: Re: [PATCH] x86: fix PAE pmd_bad bootup warning
-From: Matt Mackall <mpm@selenic.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Hans Rosenfeld <hans.rosenfeld@amd.com>, Hugh Dickins <hugh@veritas.com>,
-       Nishanth Aravamudan <nacc@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Jeff Chua <jeff.chua.linux@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       Arjan van de Ven <arjan@linux.intel.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-Reply-To: <1210288532.7905.89.camel@nimitz.home.sr71.net>
-References: <1210106579.4747.51.camel@nimitz.home.sr71.net>
-	 <20080508143453.GE12654@escobedo.amd.com>
-	 <1210258350.7905.45.camel@nimitz.home.sr71.net>
-	 <20080508151145.GG12654@escobedo.amd.com>
-	 <1210261882.7905.49.camel@nimitz.home.sr71.net>
-	 <20080508161925  <20080508200239.GJ12654@escobedo.amd.com>
-	 <1210288532.7905.89.camel@nimitz.home.sr71.net>
-Content-Type: text/plain
-Date: Wed, 14 May 2008 14:01:41 -0500
-Message-Id: <1210791701.4093.29.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+	id S1755515AbYENTDo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 15:03:44 -0400
+Message-ID: <482B378C.5070807@garzik.org>
+Date: Wed, 14 May 2008 15:03:40 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+CC: Sage Weil <sage@newdream.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: POHMELFS high performance network filesystem. Transactions, failover,
+ performance.
+References: <20080513174523.GA1677@2ka.mipt.ru> <4829E752.8030104@garzik.org> <20080513205114.GA16489@2ka.mipt.ru> <Pine.LNX.4.64.0805140623001.14334@cobra.newdream.net> <20080514135156.GA23131@2ka.mipt.ru>
+In-Reply-To: <20080514135156.GA23131@2ka.mipt.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 2008-05-08 at 16:15 -0700, Dave Hansen wrote:
-> Here's one quick stab at a solution.  I figured that we already pass
-> that 'private' variable around.  This patch just sticks that variable
-> *in* the mm_walk and also makes the caller fill in an 'mm' as well.
-> Then, we just pass the actual mm_walk around.
+Evgeniy Polyakov wrote:
+> Hi Sage.
 > 
-> Maybe we should just stick the VMA in the mm_walk as well, and have the
-> common code keep it up to date with the addresses currently being
-> walked.
+> On Wed, May 14, 2008 at 06:35:19AM -0700, Sage Weil (sage@newdream.net) wrote:
+>>>> What is your opinion of the Paxos algorithm?
+>>> It is slow. But it does solve failure cases.
+>> For writes, Paxos is actually more or less optimal (in the non-failure 
+>> cases, at least).  Reads are trickier, but there are ways to keep that 
+>> fast as well.  FWIW, Ceph extends basic Paxos with a leasing mechanism to 
+>> keep reads fast, consistent, and distributed.  It's only used for cluster 
+>> state, though, not file data.
 > 
-> Sadly, I didn't quite get enough time to flesh this idea out very far
-> today, and I'll be offline for a couple of days now.  But, if someone
-> wants to go this route, I thought this might be useful.  
+> Well, it depends... If we are talking about single node perfromance,
+> then any protocol, which requries to wait for authorization (or any
+> approach, which waits for acknowledge just after data was sent) is slow.
 
-This much looks reasonable. But the real test of course is to actually
-teach it about detecting huge pages efficiently. And I suspect that
-means tracking the current VMA all the time in the walk. Am I wrong?
+Quite true, but IMO single-node performance is largely an academic 
+exercise today.  What production system is run without backups or 
+replication?
 
--- 
-Mathematics is the supreme nostalgia of our time.
+
+> If we are talking about agregate parallel perfromance, then its basic
+> protocol with 2 messages is (probably) optimal, but still I'm not
+> convinced, that 2 messages case is a good choise, I want one :)
+
+I think part of Paxos' attraction is that it is provably correct for the 
+chosen goal, which historically has not been true for hand-rolled 
+consensus algorithms often found these days.
+
+There are a bunch of variants (fast paxos, byzantine paxos, fast 
+byzantine paxos, etc., etc.) based on Classical Paxos which make 
+improvements in the performance/latency areas.  There is even a Paxos 
+Commit which appears to be more efficient than the standard transaction 
+two-phase commit used by several existing clustered databases.
+
+	Jeff
+
+
 
