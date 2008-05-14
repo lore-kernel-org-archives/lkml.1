@@ -1,79 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760184AbYENApf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760689AbYENAqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760184AbYENApf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 20:45:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756823AbYENAp0
+	id S1760689AbYENAqe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 20:46:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757202AbYENAq0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 20:45:26 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:45064 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756322AbYENApZ (ORCPT
+	Tue, 13 May 2008 20:46:26 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:23451 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756189AbYENAqY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 20:45:25 -0400
-Message-ID: <482A33FA.5030109@ak.jp.nec.com>
-Date: Wed, 14 May 2008 09:36:10 +0900
-From: KaiGai Kohei <kaigai@ak.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Tue, 13 May 2008 20:46:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=D9UqaifG/rJ5Qb6L3zIkt8+oOcKFHloRgl8pec3Xbkp/JY9p/88uFl9Sfr5BNZdTJ33/qFcucHZP3PoFkhrMt+pLqKeJuu1gCehpqdZxGDnluw5uuDBxvrEcrsyxjYn/VNLmOgt9tO8CuGFO1Fs3K02WOzQjaCCEZzXYH5VFsrY=
+Message-ID: <85e7c2fc0805131746k5284d66dj7cfac5f9138186e2@mail.gmail.com>
+Date: Wed, 14 May 2008 08:46:24 +0800
+From: "Bob Zhang" <zhanglinbao@gmail.com>
+To: "Jared Hulbert" <jaredeh@gmail.com>
+Subject: Re: Does anyone run AXFS in 2.4 version of kernel ? I am trying my best to apply AXFS patches into 2.4.18
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <6934efce0805120923v636d2dbjb062d33fb861f5a2@mail.gmail.com>
 MIME-Version: 1.0
-To: Chris Wright <chrisw@sous-sol.org>
-CC: greg@kroah.com, morgan@kernel.org, serue@us.ibm.com,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] exporting capability name/code pairs (for 2.6.26)
-References: <47C25AE9.7080305@ak.jp.nec.com> <480DC80F.3060403@ak.jp.nec.com> <20080423053726.GF3861@localhost.localdomain> <480EE1F6.3070205@ak.jp.nec.com>
-In-Reply-To: <480EE1F6.3070205@ak.jp.nec.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <85e7c2fc0805090919v613fb823m8dd979b8cd959889@mail.gmail.com>
+	 <6934efce0805120923v636d2dbjb062d33fb861f5a2@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris, what is the status of the patch?
+> >  Anyone is doing this work ? Can you share with me ?
+>
+> Yeah.  I got a copy that works on 2.4.21-ish Montavista CEE like kernels.
+>
+> I just haven't got around to posting the patches.  Okay, Okay.  You
+> are the third person to ask.  I'll update sourceforge and repost here.
+>
 
-KaiGai Kohei wrote:
-> Chris Wright wrote:
->> * KaiGai Kohei (kaigai@ak.jp.nec.com) wrote:
->>> [PATCH 2/3] exporting capability name/code pairs
->>>
->>> This patch enables to export code/name pairs of capabilities the running
->>> kernel supported.
->>>
->>> A newer kernel sometimes adds new capabilities, like CAP_MAC_ADMIN
->>> at 2.6.25. However, we have no interface to disclose what capabilities
->>> are supported on the running kernel. Thus, we have to maintain libcap
->>> version in appropriate one synchronously.
->>>
->>> This patch enables libcap to collect the list of capabilities at run 
->>> time,
->>> and provide them for users. It helps to improve portability of library.
->>>
->>> It exports these information as regular files under 
->>> /sys/kernel/capability.
->>> The numeric node exports its name, the symbolic node exports its code.
->>
->> I do not understand why this is necessary.  The capability bits are an 
->> ABI
->> that shouldn't change in a non-backward compat way (i.e. only additions).
->>
->> We typically don't export strings <-> number conversions for constants.
->> I know you've explained this a few times before, but it still seems to me
->> like a userspace only problem.  What can userspace do with a capability
->> it does not know about?
-> 
-> When we run a userspace utility on the latest kernel, it has to be compiled
-> with kernel-headers which have same capability set at least.
-> If installed userspace utility does not support newly added capabilities,
-> it requires users to rebuild their utilities when they update the kernel.
-> 
-> Typically, kernel developer faces this kind of version mismatching.
-> When they boots their kernel with new capabilities, it also requires to
-> rebuild libcap. Then, they have to revert it, when they boots with normal
-> kernel.
-> 
-> If libcap can know what capabilities are supported on the running kernel
-> automatically, it does not need users to rebuild libcap concurrently.
-> 
-> Thanks,
 
--- 
-OSS Platform Development Division, NEC
-KaiGai Kohei <kaigai@ak.jp.nec.com>
+thanks for your work . we look forward your paches for 2.4.21 or
+2.4.18 or other 2.4.x . thanks again .
+In the meantime , I am compiling axfs patches in 2.4.18 .My policy is
+that I basicly don't changed the AXFS code , and only add some
+functions existed in 2.6.x into 2.4 kernel ,if necessary , I will
+modify it . Thus , I think such working is not rather difficult ,
+anyway , I am
+analysing the implement of AXFS code , if necessary , I will modify
+some functions of axfs.
+
+ Till now , AXFS_super.c has been almost ok . Next ,I will compile
+other axfs code and check some errors and warnning , and run the
+kernel in the skyeye which supported smdk2410 .
+
+Best Regards,
+Bob
