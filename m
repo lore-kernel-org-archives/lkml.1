@@ -1,47 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755913AbYENVoO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757777AbYENVoe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755913AbYENVoO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 17:44:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbYENVnz
+	id S1757777AbYENVoe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 17:44:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbYENVoW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 17:43:55 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:56711 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752116AbYENVnx (ORCPT
+	Wed, 14 May 2008 17:44:22 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41587 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757465AbYENVoU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 17:43:53 -0400
-Date: Wed, 14 May 2008 22:43:49 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, Sage Weil <sage@newdream.net>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: POHMELFS high performance network filesystem. Transactions, failover, performance.
-Message-ID: <20080514214347.GD23758@shareable.org>
-Mail-Followup-To: Jeff Garzik <jeff@garzik.org>,
-	Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-	Sage Weil <sage@newdream.net>, linux-kernel@vger.kernel.org,
-	netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org
-References: <20080513174523.GA1677@2ka.mipt.ru> <4829E752.8030104@garzik.org> <20080513205114.GA16489@2ka.mipt.ru> <Pine.LNX.4.64.0805140623001.14334@cobra.newdream.net> <20080514135156.GA23131@2ka.mipt.ru> <20080514143105.GB14987@shareable.org> <20080514150052.GA15826@2ka.mipt.ru> <20080514213251.GB23758@shareable.org> <482B5BB6.3040308@garzik.org>
+	Wed, 14 May 2008 17:44:20 -0400
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH] mm: Fix atomic_t overflow in vm
+To: torvalds@osdl.org
+Cc: linux-kernel@vger.kernel.org
+Date: Wed, 14 May 2008 22:33:03 +0100
+Message-ID: <20080514213302.5631.54560.stgit@core>
+User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <482B5BB6.3040308@garzik.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Definitely.  "several leaders" aka partitioning is also becoming 
-> increasing paired with efforts at enhancing locality of reference.  Both 
-> Google and Amazon sort their distributed tables lexographically, which 
-> [ideally] results in similar data being stored near each other.
-> 
-> A bit of an improvement over partitioning-by-hash, anyway, for some 
-> workloads.
+From: Alan Cox <alan@redhat.com>
 
-As with B-trees on disks, and in-memory structures, application
-knowledge of locality is very much worth passing to the storage layer.
+The atomic_t type is 32bit but a 64bit system can have more than 2^32
+pages of virtual address space available. Without this we overflow on
+ludicrously large mappings
+---
 
--- Jamie
+ fs/proc/proc_misc.c  |    2 +-
+ include/linux/mman.h |    4 ++--
+ mm/mmap.c            |    4 ++--
+ mm/nommu.c           |    4 ++--
+ mm/swap.c            |    4 ++--
+ 5 files changed, 9 insertions(+), 9 deletions(-)
+
+
+diff --git a/fs/proc/proc_misc.c b/fs/proc/proc_misc.c
+index 74a323d..32dc14c 100644
+--- a/fs/proc/proc_misc.c
++++ b/fs/proc/proc_misc.c
+@@ -139,7 +139,7 @@ static int meminfo_read_proc(char *page, char **start, off_t off,
+ #define K(x) ((x) << (PAGE_SHIFT - 10))
+ 	si_meminfo(&i);
+ 	si_swapinfo(&i);
+-	committed = atomic_read(&vm_committed_space);
++	committed = atomic_long_read(&vm_committed_space);
+ 	allowed = ((totalram_pages - hugetlb_total_pages())
+ 		* sysctl_overcommit_ratio / 100) + total_swap_pages;
+ 
+diff --git a/include/linux/mman.h b/include/linux/mman.h
+index 87920a0..dab8892 100644
+--- a/include/linux/mman.h
++++ b/include/linux/mman.h
+@@ -17,14 +17,14 @@
+ 
+ extern int sysctl_overcommit_memory;
+ extern int sysctl_overcommit_ratio;
+-extern atomic_t vm_committed_space;
++extern atomic_long_t vm_committed_space;
+ 
+ #ifdef CONFIG_SMP
+ extern void vm_acct_memory(long pages);
+ #else
+ static inline void vm_acct_memory(long pages)
+ {
+-	atomic_add(pages, &vm_committed_space);
++	atomic_long_add(pages, &vm_committed_space);
+ }
+ #endif
+ 
+diff --git a/mm/mmap.c b/mm/mmap.c
+index fac6633..669499e 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -80,7 +80,7 @@ EXPORT_SYMBOL(vm_get_page_prot);
+ int sysctl_overcommit_memory = OVERCOMMIT_GUESS;  /* heuristic overcommit */
+ int sysctl_overcommit_ratio = 50;	/* default is 50% */
+ int sysctl_max_map_count __read_mostly = DEFAULT_MAX_MAP_COUNT;
+-atomic_t vm_committed_space = ATOMIC_INIT(0);
++atomic_long_t vm_committed_space = ATOMIC_LONG_INIT(0);
+ 
+ /*
+  * Check that a process has enough memory to allocate a new virtual
+@@ -177,7 +177,7 @@ int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin)
+ 	 * cast `allowed' as a signed long because vm_committed_space
+ 	 * sometimes has a negative value
+ 	 */
+-	if (atomic_read(&vm_committed_space) < (long)allowed)
++	if (atomic_long_read(&vm_committed_space) < (long)allowed)
+ 		return 0;
+ error:
+ 	vm_unacct_memory(pages);
+diff --git a/mm/nommu.c b/mm/nommu.c
+index ef8c62c..dca93fc 100644
+--- a/mm/nommu.c
++++ b/mm/nommu.c
+@@ -39,7 +39,7 @@ struct page *mem_map;
+ unsigned long max_mapnr;
+ unsigned long num_physpages;
+ unsigned long askedalloc, realalloc;
+-atomic_t vm_committed_space = ATOMIC_INIT(0);
++atomic_long_t vm_committed_space = ATOMIC_LONG_INIT(0);
+ int sysctl_overcommit_memory = OVERCOMMIT_GUESS; /* heuristic overcommit */
+ int sysctl_overcommit_ratio = 50; /* default is 50% */
+ int sysctl_max_map_count = DEFAULT_MAX_MAP_COUNT;
+@@ -1410,7 +1410,7 @@ int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin)
+ 	 * cast `allowed' as a signed long because vm_committed_space
+ 	 * sometimes has a negative value
+ 	 */
+-	if (atomic_read(&vm_committed_space) < (long)allowed)
++	if (atomic_long_read(&vm_committed_space) < (long)allowed)
+ 		return 0;
+ error:
+ 	vm_unacct_memory(pages);
+diff --git a/mm/swap.c b/mm/swap.c
+index 91e1944..45c9f25 100644
+--- a/mm/swap.c
++++ b/mm/swap.c
+@@ -503,7 +503,7 @@ void vm_acct_memory(long pages)
+ 	local = &__get_cpu_var(committed_space);
+ 	*local += pages;
+ 	if (*local > ACCT_THRESHOLD || *local < -ACCT_THRESHOLD) {
+-		atomic_add(*local, &vm_committed_space);
++		atomic_long_add(*local, &vm_committed_space);
+ 		*local = 0;
+ 	}
+ 	preempt_enable();
+@@ -520,7 +520,7 @@ static int cpu_swap_callback(struct notifier_block *nfb,
+ 
+ 	committed = &per_cpu(committed_space, (long)hcpu);
+ 	if (action == CPU_DEAD || action == CPU_DEAD_FROZEN) {
+-		atomic_add(*committed, &vm_committed_space);
++		atomic_long_add(*committed, &vm_committed_space);
+ 		*committed = 0;
+ 		drain_cpu_pagevecs((long)hcpu);
+ 	}
+
