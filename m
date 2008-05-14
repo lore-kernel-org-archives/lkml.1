@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756536AbYENVU6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756302AbYENVVo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756536AbYENVU6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 17:20:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029AbYENVUr
+	id S1756302AbYENVVo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 17:21:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752986AbYENVVe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 17:20:47 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:40788 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752470AbYENVUq (ORCPT
+	Wed, 14 May 2008 17:21:34 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:40871 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752429AbYENVVd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 17:20:46 -0400
-Message-ID: <482B56B9.8040703@zytor.com>
-Date: Wed, 14 May 2008 14:16:41 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 14 May 2008 17:21:33 -0400
+Date: Wed, 14 May 2008 15:21:31 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, mpm@selenic.com,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: [patch 21/21] slab defrag: Obsolete SLAB
+Message-ID: <20080514212130.GD9921@parisc-linux.org>
+References: <4825709A.2020407@firstfloor.org> <20080510221515.3540a6cc@bree.surriel.com> <2f11576a0805120038s334dc56cuaf16b8b7c6f87098@mail.gmail.com> <84144f020805120054t1370236ei5ff52279457e026e@mail.gmail.com> <Pine.LNX.4.64.0805141009210.15194@schroedinger.engr.sgi.com> <482B2617.5010605@firstfloor.org> <Pine.LNX.4.64.0805141104260.15633@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0805141333550.18231@schroedinger.engr.sgi.com> <20080514205842.GC9921@parisc-linux.org> <Pine.LNX.4.64.0805141359420.18958@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alexander Viro <viro@ftp.linux.org.uk>
-Subject: Re: [announce] "kill the Big Kernel Lock (BKL)" tree
-References: <20080514174955.GA515@elte.hu>	<87fxsk7n7e.fsf@basil.nowhere.org> <20080514220034.51eae9e0@core> <482B5614.3060203@firstfloor.org>
-In-Reply-To: <482B5614.3060203@firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0805141359420.18958@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Alan Cox wrote:
->>> Most of the legacy users are unlikely to be latency problems,
->>> simply because only very few people (or nobody) still has that hardware
->>> and the code will never run.
->>>
->>> Also I wouldn't lose sleep over e.g. let ISDN continue using BKL forever.
->> Most 
+On Wed, May 14, 2008 at 02:00:15PM -0700, Christoph Lameter wrote:
+> On Wed, 14 May 2008, Matthew Wilcox wrote:
 > 
-> Most?
+> > On Wed, May 14, 2008 at 01:46:52PM -0700, Christoph Lameter wrote:
+> > > Some more on SMP scaling:
+> > 
+> > These are all great theories, and you mentioned that you'd fixed the
+> > regressions with tbench, but did you fix the regression with the io-gen
+> > program I sent you?
 > 
->> of the legacy users inflict that locking on other code - eg the ISN
->> use of the BKL directly impacts on the tty layer work.
-> 
-> So you just stick unlock_kernel()/lock_kernel() around the call
-> to TTY (or similar to the entry points)
-> 
+> No. I thought you were satisfied with the performance increase you saw 
+> when pinning the process to a single processor?
 
-... assuming that the ISDN code doesn't assume lock continuity across 
-the TTY call.
+Er, no.  That program emulates a TPC-C run from the point of view of
+doing as much IO as possible from all CPUs.  Pinning the process to one
+CPU would miss the point somewhat.
 
-	-hpa
+I seem to remember telling you that you might get more realistic
+performance numbers by pinning the scsi_ram_0 kernel thread to a single
+CPU (ie emulating an interrupt tied to one CPU rather than letting the
+scheduler choose to run the thread on the 'best' CPU).
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
