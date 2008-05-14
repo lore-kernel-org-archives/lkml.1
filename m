@@ -1,79 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932112AbYENNQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762203AbYENNVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932112AbYENNQT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 09:16:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757803AbYENNQF
+	id S1762203AbYENNVS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 09:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758665AbYENNVI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 09:16:05 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41719 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755366AbYENNQE (ORCPT
+	Wed, 14 May 2008 09:21:08 -0400
+Received: from spirit.analogic.com ([204.178.40.4]:2143 "EHLO
+	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758620AbYENNVH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 09:16:04 -0400
-Date: Wed, 14 May 2008 08:15:32 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrea Arcangeli <andrea@qumranet.com>,
-       Andrew Morton <akpm@linux-foundation.org>, clameter@sgi.com,
-       holt@sgi.com, npiggin@suse.de, a.p.zijlstra@chello.nl,
-       kvm-devel@lists.sourceforge.net, kanojsarcar@yahoo.com,
-       rdreier@cisco.com, swise@opengridcomputing.com,
-       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
-       general@lists.openfabrics.org, hugh@veritas.com, rusty@rustcorp.com.au,
-       aliguori@us.ibm.com, chrisw@redhat.com, marcelo@kvack.org,
-       dada1@cosmosbay.com, paulmck@us.ibm.com
-Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
-Message-ID: <20080514131531.GA10393@sgi.com>
-References: <6b384bb988786aa78ef0.1210170958@duo.random> <20080507234521.GN8276@duo.random> <20080508013459.GS8276@duo.random> <200805132214.27510.nickpiggin@yahoo.com.au> <1210743839.8297.55.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1210743839.8297.55.camel@pasglop>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 14 May 2008 09:21:07 -0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 14 May 2008 13:20:58.0039 (UTC) FILETIME=[58A40C70:01C8B5C5]
+Content-class: urn:content-classes:message
+Subject: Re: WD doesn`t use disks with Linux - was Re: Re:Western Digital GreenPower drives and Linux
+Date: Wed, 14 May 2008 09:20:46 -0400
+Message-ID: <Pine.LNX.4.61.0805140912170.9528@chaos.analogic.com>
+In-Reply-To: <482A062B.3010308@arndnet.de>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: WD doesn`t use disks with Linux - was Re: Re:Western Digital GreenPower drives and Linux
+thread-index: Aci1xViwKLZuktijRNOvHHUWbuTuIg==
+References: <003201c8b53c$67ff02d0$6400a8c0@bui.materna.com> <482A062B.3010308@arndnet.de>
+From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+To: "Arnd Hannemann" <arnd@arndnet.de>
+Cc: "Roland" <devzero@web.de>, <tvrtko@ursulin.net>, <pernegger@gmail.com>,
+       <snitzer@gmail.com>, <jengelh@computergmbh.de>,
+       <zorglub_olsen@hotmail.com>, <renatoyamane@mandic.com.br>,
+       <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+X-TM-AS-Product-Ver: SMEX-8.0.0.1259-5.500.1026-15908.007
+X-TM-AS-Result: No--21.809000-8.000000-31
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 13, 2008 at 10:43:59PM -0700, Benjamin Herrenschmidt wrote:
-> On Tue, 2008-05-13 at 22:14 +1000, Nick Piggin wrote:
-> > ea.
-> > 
-> > I don't see why you're bending over so far backwards to accommodate
-> > this GRU thing that we don't even have numbers for and could actually
-> > potentially be batched up in other ways (eg. using mmu_gather or
-> > mmu_gather-like idea).
-> 
-> I agree, we're better off generalizing the mmu_gather batching
-> instead...
 
-Unfortunately, we are at least several months away from being able to
-provide numbers to justify batching - assuming it is really needed.  We need
-large systems running real user workloads. I wish we had that available
-right now, but we don't.
+On Tue, 13 May 2008, Arnd Hannemann wrote:
 
-It also depends on what you mean by "no batching". If you mean that the
-notifier gets called for each pte that is removed from the page table, then
-the overhead is clearly very high for some operations. Consider the unmap of
-a very large object. A TLB flush per page will be too costly.
+> Roland wrote:
+>>> BTW, WD's tech support has gone silent so chances for an easier
+>>> solution are not so great.
+>>>
+>>> Tvrtko
+>>
+>> I`ve got a real funky response from WD support  today, i`d like to
+>> share here.
+>> This is just too weird....
+>>
+>> After asking if they could give a comment if the problem with the high
+>> Load_Cycle_Count may be an issue of their drives or an issue of Linux
+>> i got:
+>>
+>> ------
+>> Dear......
+>> The problem is, that we actually don`t use the disks with Linux. I´m
+>> sorry that i cannot send further information to you.
+>>
+>> Sincery yours
+>> <insert support employee name here>
+>> Western Digital Service and Support
+>> ------
+>> (translated from german)
+>
+> Well the answer was probably just from a first level support person so
+> nothing one should get excited about.
+> Anyway to the high Load_Cycle_Count; if I understood the technology
+> correctly the WD GreenPower drives are exactly "Green" because they
+> unload the heads on a plastic ramp (no landing zone!) quite often during
+> longer idle periods. Thus they can power off the positioning logic and
+> actuator of the heads. -> safe Power
+> This also explains why the power usage under seek is comparable with
+> other "non-green" drives...
+>
+> <snipped a lot of stuff>
+>> 193 Load_Cycle_Count 0x0032 197 197 000 Old_age  Always  - 10233
+> my 1 TB drive has also a relative high value:
+>
+> 193 Load_Cycle_Count        0x0032   200   200   000    Old_age
+> Always       -       2786
+>
+>
+> Just my 2 cents,
+> Arnd
+> ||
 
-However, something based on the mmu_gather seems like it should provide
-exactly what is needed to do efficient flushing of the TLB. The GRU does not
-require that it be called in a sleepable context. As long as the notifier
-callout provides the mmu_gather and vaddr range being flushed, the GRU can
-do the efficiently do the rest.
+Practically nobody has any on-line support that means anything
+anymore. The person who wrote the response is probably in the
+Philippines, makes about $US 3.00 per hour, and is allowed to
+pee twice a day. Don't worry. The tiny "bump-proof" drives
+cycle on an off many times to conserve power. They also
+keep the heads from landing "crashing" by inserting a plastic
+wedge between the swing-arms during power down. It's probably
+a lot less harmful than letting the heads touch down somewhere.
 
-> 
-> I had some never-finished patches to use the mmu_gather for pretty much
-> everything except single page faults, tho various subtle differences
-> between archs and lack of time caused me to let them take the dust and
-> not finish them...
-> 
-> I can try to dig some of that out when I'm back from my current travel,
-> though it's probably worth re-doing from scratch now.
-> 
-> Ben.
-> 
+It's not just the positioning logic that gets powered off. The
+discs are spun down, which saves a lot of power.
 
 
--- jack
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.29 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
+
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+
+Thank you.
