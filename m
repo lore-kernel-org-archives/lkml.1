@@ -1,171 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759553AbYENBwP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759297AbYENB6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759553AbYENBwP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 21:52:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757273AbYENBv7
+	id S1759297AbYENB6v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 21:58:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757286AbYENB6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 21:51:59 -0400
-Received: from mga03.intel.com ([143.182.124.21]:41210 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757181AbYENBv6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 21:51:58 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,482,1204531200"; 
-   d="scan'208";a="246446646"
-Subject: Re: [PATCH] kexec based hibernation: a prototype of kexec
-	multi-stage load
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-In-Reply-To: <20080513053408.GA5870@redhat.com>
-References: <1210574441.30365.8.camel@caritas-dev.intel.com>
-	 <20080513053408.GA5870@redhat.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 14 May 2008 09:57:46 +0800
-Message-ID: <1210730266.23707.50.camel@caritas-dev.intel.com>
+	Tue, 13 May 2008 21:58:39 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35320 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755549AbYENB6i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 13 May 2008 21:58:38 -0400
+Date: Tue, 13 May 2008 18:58:15 -0700
+From: Greg KH <greg@kroah.com>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, netdev@vger.kernel.org,
+       Andrew Bird <ajb@spheresystems.co.uk>,
+       Javier Marcet <javier@krausbeck.org>, Filip Aben <f.aben@option.com>,
+       Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
+       Oliver Neukum <oliver@neukum.org>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] HSO: add option hso driver
+Message-ID: <20080514015815.GA29785@kroah.com>
+References: <20080513215134.GC6139@kroah.com> <20080513232727.21c74bb2@core> <482A23B8.7050705@pobox.com>
 MIME-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-X-OriginalArrivalTime: 14 May 2008 01:51:48.0044 (UTC) FILETIME=[121F88C0:01C8B565]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <482A23B8.7050705@pobox.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Vivek,
+On Tue, May 13, 2008 at 07:26:48PM -0400, Jeff Garzik wrote:
+> Alan Cox wrote:
+>>> Jeff, please queue this up for 2.6.27 if there are no problems that you
+>>> can see.  It has been in the linux-next tree for a while, and many users
+>>> are reporting that it is working for them.
+>>>
+>>> Or if you feel it's ok for 2.6.26, I will not object to that either :)
+>> Can we get it into 2.6.26 - its a driver for new hardware and the driver
+>> is going to get a clean up for 2.6.27 anyway.
+>> Comments below are minor and I don't think blockers
+>> So for the serial side
+>> Acked-by: Alan Cox <alan@redhat.com>
 
-On Tue, 2008-05-13 at 01:34 -0400, Vivek Goyal wrote:
-> On Mon, May 12, 2008 at 02:40:41PM +0800, Huang, Ying wrote:
-> > This patch implements a prototype of kexec multi-stage load. With this
-> > patch, the "backup pages map" can be passed to kexeced kernel via
-> > /sbin/kexec; and the sys_kexec_load can be used to load large
-> > hibernated image with huge number of segments.
-> > 
-> > 
-> 
-> Hi Huang,
-> 
-> Had a quick look at the patch. Will review in detail soon. Had few
-> thoughts.
-> 
-> In general, these patches are on top of previous kexec jump patches.
-> It would be good if you could repost your updated patches so that
-> I can apply the patches and and get some testing going.
+Thanks, I'll provide a clean-up patch based on this review in a few
+hours.
 
-The kexec jump patch v9 is sufficient for this patch to work. I have no
-new version of kexec jump patch so far.
+Unless Jeff would just like a whole new patch?
 
-> Last time I tried the patches (V9) and kexec jump did not work for me. I
-> was not getting timer interrupts in second kernel. Then I had to put 
-> LAPIC and IOAPIC in legacy mode and then at one way jump started working.
-> I am not sure how the next kernel boots for you without putting APICs
-> in legacy mode. (Yet to make returning back to original kernel work
-> using V9). 
+> AFAIK new drivers are OK post-rc1, since no possibility of regression and 
+> it enables new users.
 
-Can normal kexec (without kexec jump) works without putting LAPIC and
-IOAPIC in legacy mode? Does this mean we should put LAPIC and IOAPIC
-into legacy mode before kexec and restore them after?
+Thanks, I appreciate it.
 
-The kexec jump patch works well on my IBM T42. But it seems that the
-IOAPIC is disabled in BIOS, so I can only use i8259 and LAPIC on this
-machine.
-
-> > In kexec based hibernation, resuming from disk is implemented as
-> > loading the hibernated disk image with sys_kexec_load(). But unlike
-> > the normal kexec load, the hibernated image may have huge number of
-> > segments. So multi-stage loading is necessary for kexec load based
-> > resuming from disk implementation.
-> 
-> I understand that hibernated images are huge. But why do we require
-> multi stage loading? I knew there was a maximum segment limit in kexec.
-> But I think we can change that limit. Anything else prevents us from
-> loading large images in one go?
-
-There are two reason for multi-stage loading:
-
-- Pass backup pages map from original kernel (A) to kexeced kernel (B),
-because it is not known before loading. We have discussed this before
-in:
-	http://lkml.org/lkml/2008/3/12/308
-	http://lkml.org/lkml/2008/3/14/59
-	http://lkml.org/lkml/2008/3/21/299
-
-- Load large hibernated image. The hibernated image can be not only
-large but also discontinuous. For example, the physical memory size is
-4G, and there is one free page every 2 pages, that is, there will be
-nearly 2G segments. Loading these segments in one go is impossible. So
-multi-stage load is necessary. And if the hibernated image is
-compressed, it is also very difficult to load it in one go because the
-anonymous pages needed.
-
-> > And, multi-stage loading is also
-> > necessary for parameter passing from original kernel to kexeced kernel
-> > because some information such as "backup pages map" is not available
-> > before loading.
-> > 
-> > 
-> > Four stages are defined:
-> > 
-> > - KS_start: start stage; begin a new kexec loading; there must be only
-> >   one KS_start stage in one kexec loading.
-> > 
-> > - KS_mid: middle stage; continue load some segments; there may be many
-> >   or zero KS_mid stages in one kexec loading; follows a KS_start or
-> >   KS_mid stage.
-> > 
-> > - KS_final: final stage; finish a kexec loading; there must be only
-> >   one KS_final stage in one kexec loading; follows a KS_start or
-> >   KS_mid stage.
-> > 
-> > - KS_full: back compatible with original loading semantics, finish all
-> >   work of a kexec loading in one KS_full stage.
-> > 
-> > 
-> > Overlapping between pages of different segments is allowed to support
-> > "parameter passing".
-> > 
-> > 
-> > During loading, a hash table mapped from destination page to source
-> > page is used instead of original linear mapping
-> > implementation. Because the hibernated image may be very large (up to
-> > near the size of physical memory), it is very time-consuming to search
-> > a source page given the destination page, which is used to check
-> > whether an newly allocated page is in the range of allocated
-> > destination pages.
-> 
-> This seems to be an optimization of kexec so that it becomes efficient
-> in loading large images (containing large number of segments). Probably
-> this can be a separate patch.
-
-If it is desired, I can separate it into another patch.
-
-> IMHO, we can just first write a minimal patch where one can just switch
-> between kernels. Once that patch is upstream, we can enhance
-> it to do the hibernation and saving core functionality. Incremental
-> review becomes easier. Your last patch (v9) was a good attempt at that and
-> I thought very soon we shall have something mergable.
-
-Agreed. We can first focus on kexec jump patch. But as in last thread of
-kexec jump (v9), we need a protocol for parameter passing between kernel
-A and kernel B. So, we can use this patch as a prototype for the
-communication protocol.
-
-> > The original mapping is only used by assembly code
-> > to swap the page contents. This map is also exported to user space via
-> > /proc/kexec_pgmap, so that /sbin/kexec can use it to construct the
-> > "backup pages map" parameter for kexeced kernel.
-> > 
-> > 
-> > This patch is based on Linux kernel 2.6.25 and kexec_jump patch, and
-> > has been tested on an IBM T42.
-> > 
-> 
-> Is kexec_jump v9 patch good enough or you have anohter internal version
-> of patch on top of this patch applies?
-
-v9 is the latest kexec jump patch, no other internal version so far.
-
-Best Regards,
-Huang Ying
+greg k-h
