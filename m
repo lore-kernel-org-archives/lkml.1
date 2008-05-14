@@ -1,71 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757243AbYENH5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759164AbYENH6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757243AbYENH5k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 03:57:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbYENH53
+	id S1759164AbYENH6m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 03:58:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907AbYENH6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 03:57:29 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:41590 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753362AbYENH53 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 03:57:29 -0400
-Date: Wed, 14 May 2008 17:02:36 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
-       "hugh@veritas.com" <hugh@veritas.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [RFC/PATCH 0/6] memcg: peformance improvement at el. v3
-Message-Id: <20080514170236.23c9ddd7.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+	Wed, 14 May 2008 03:58:30 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:48291 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753552AbYENH63 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 03:58:29 -0400
+Date: Wed, 14 May 2008 11:57:56 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: POHMELFS high performance network filesystem. Transactions, failover, performance.
+Message-ID: <20080514075756.GC28330@2ka.mipt.ru>
+References: <20080513174523.GA1677@2ka.mipt.ru> <4829E752.8030104@garzik.org> <20080513205114.GA16489@2ka.mipt.ru> <20080514005223.GE27483@shareable.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080514005223.GE27483@shareable.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This set is for memory resource controller, reviewer and testers. 
+On Wed, May 14, 2008 at 01:52:23AM +0100, Jamie Lokier (jamie@shareable.org) wrote:
+> I feel you have glossed over the more difficult parts of transactions
+> and cache coherency etc. with this brief summary ;-)
 
-Updated against 2.6.26-rc2 and added fixes.
+It was (and is) also a different time zone here :)
 
-This set does
- - remove refcnt from page_cgroup. By this, codes can be simplified and
-   we can avoid tons of unnecessary calls just for maintain refcnt.
- - handle swap-cache, which is now ignored by memory resource controller.
- - small optimization.
- - make force_empty to drop pages. (NEW)
- 
-major changes : v2 -> v3
- - fixed shared memory handling.
- - added a call to request recalaim memory from specified memcg (NEW) for shmem.
- - added drop_all_pages_in_mem_cgroup before calling force_empty()
- - dropped 3 patches because it's already sent to -mm queue.
+> Yours does sound a very interesting project.  Do you know how it
+> compares with NFSv4 for performance?  I think that has some similar
+> caching abilities?  I think CRFS should be similar.
 
- 1/6 -- make force_empty to drop pages. (NEW)
- 2/6 -- remove refcnt from page_cgroup (shmem handling is fixed.)
- 3/6 -- handle swap cache
- 4/6 -- add an interface to reclaim memory from memcg (NEW) (for shmem)
- 5/6 -- small optimzation with likely()/unlikely()
- 6/6 -- remove redundant check.
+NFSv4 does not use similar caching scheme, but it has interesting
+batching abilities for bulk data transfer. CRFS was originally a source
+of inspiration for this project (before it was opened, we had some talk
+with Zach Brown, so I decided that it worth deeper investigation and
+started this FS). CRFS performance is also very good, but the fact, that
+it is only limited to BTRFS server seriously limits its usage imho.
 
-If positive feedback, I'd like to send some of them agaisnt -mm queue.
+> > As practice shows, the smaller and simpler initial steps are, the better
+> > results eventually become :)
+> 
+> I think you are right.  I am struggling with the opposite approach
+> (too big steps, trying to be too clever with algorithms) on a similar
+> project!  That said, I did try simpler steps earlier, and it worked
+> but showed a lot of tricky problems.
 
-This is based on
-  - 2.6.26-rc2 
-  - memcg-avoid-unnecessary-initialization.patch (in -mm queue)
-  - memcg-make-global-var-read_mostly.patch (in -mm queue)
-  - memcg-better-migration-handling.patch (in -mm queue)
-tested on x86-64 box. Seems to work very well.
+The more we develop, more problems arises, so it is possible (and I had
+such situation), when very complex, but solvable problem, during
+development translates into multiple problems of the same complexity,
+which takes more and more time... Essentially this can be solved, until
+something is dropped and added when other things are completed.
 
-Any comments are welcome.
+For example there is a really interesting lockless algorithm for storing
+path cache in the POHMELFS, but implementation is really complex, so I
+used much simler tree based one, and things scale good even with it.
 
-Thanks,
--Kame
+> Fwiw, I've been working on what started as a distributed database that
+> is coming to be a filesystem too.  It has many qualities of both,
+> hopefully the best ones.  I'm aiming for high LAN file performance
+> similar to what you report with POHMELFS and would expect from any
+> modern fs, while also supporting database style transactions and
+> coherent queries, in a self-organising distributed system that handles
+> LAN/WAN/Internet each at their best.  Mention of Paxos stirred me to
+> reply - a relative of that is in there somewhere.  I have a long way
+> to go before a release.
 
+Depending on what to call a release :)
+
+> If anyone is working on something similar, I would be delighted to
+> hear from them.
+
+I belive that (only block?) FS which exports its structure in database
+accessible way, i.e. ability to search objects not only by name key and
+assign that new keys similar to how it is done in database, but not via
+assign_xattr(search(name)), is a very interesting and useful approach.
+Also the more I follow general purpose fs developments, the more I
+become sure that they (general purpose) will never be the best on any
+given workload, and instead special purpose (like databasefs or
+whatever) filesystems will get the niche. IMHO of course.
+
+> It scares me that I'm actually trying to do this.  But very exciting
+> it is too.
+
+Scares problems which we can not solve, this one kind of increases
+adrenalin level :)
+
+> It seems there's quite a bit of interesting work on Linux in this area
+> right now, with BTRFS and CRFS too.
+
+Yeah, probably this is time to move further in given area, so lots of
+interesting new developments.
+
+-- 
+	Evgeniy Polyakov
