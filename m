@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760966AbYENEvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760287AbYENEzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760966AbYENEvn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 00:51:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755177AbYENEve
+	id S1760287AbYENEzw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 00:55:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbYENEzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 00:51:34 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56888 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754777AbYENEvd (ORCPT
+	Wed, 14 May 2008 00:55:44 -0400
+Received: from mailout07.t-online.de ([194.25.134.83]:49284 "EHLO
+	mailout07.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751283AbYENEzo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 00:51:33 -0400
-Date: Tue, 13 May 2008 21:51:25 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/3] Example use of WARN()
-Message-ID: <20080513215125.53424262@infradead.org>
-In-Reply-To: <20080513213606.1a295609.akpm@linux-foundation.org>
-References: <20080506232017.247001e0@infradead.org>
-	<20080506232113.7f066c26@infradead.org>
-	<20080506232156.159ed493@infradead.org>
-	<20080513213606.1a295609.akpm@linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 14 May 2008 00:55:44 -0400
+Message-ID: <482A70BC.3010607@t-online.de>
+Date: Wed, 14 May 2008 06:55:24 +0200
+From: Harald Dunkel <harald.dunkel@t-online.de>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080503)
+MIME-Version: 1.0
+To: Willy Tarreau <w@1wt.eu>
+CC: Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25.3: su gets stuck for root
+References: <4829326A.6060808@t-online.de> <19f34abd0805122347x4d9c5d03m16679d724189790e@mail.gmail.com> <4829D345.7020909@t-online.de> <20080513194612.GV8474@1wt.eu>
+In-Reply-To: <20080513194612.GV8474@1wt.eu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-ID: ZSvZnrZaQh0xMfv6oLdMryvqGNwjvGDDypijvg9yBb4O0JDiNrmcGERqjpz7lBrwWG
+X-TOI-MSGID: 0886328a-cb0e-4a66-86ea-93f3da6861ed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 May 2008 21:36:06 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Tue, 6 May 2008 23:21:56 -0700 Arjan van de Ven
-> <arjan@infradead.org> wrote:
+Willy Tarreau wrote:
 > 
-> > From: Arjan van de Ven <arjan@linux.intel.com>
-> > Subject: Example use of WARN()
-> > 
-> > now that WARN() exists, we can fold some of the printk's into it
-> 
-> Wanna take a look at mips allnoconfig, please?
-> 
-> lib/kobject.c: In function `kobject_add_internal':
-> lib/kobject.c:218: error: implicit declaration of function `WARN'
-> 
-> # CONFIG_BUG is not set
-
-
+> even as root ? Because if you run strace on "su" as a user, you will
+> lose the setuid which may change the conditions.
 > 
 
+It gets stuck _only_ if I am root. Running su without root permission
+is no problem.
 
-I'll take a look tomorrow at work when I have access to more beefy
-build stuff
+As written before, If I kick out the "stty intr '^C'" from root's
+.bashrc, then the second su succeeds. Running the stty command
+manually in this new shell is no problem.
+
+Can you reproduce this problem? It doesn't need XWindow or any
+special user. Simply login as root on tty2, and run "su". If it
+gets stuck, then you could login on tty3 and kill -9 ### the blocking
+stty.
+
+
+Regards
+
+Harri
+
