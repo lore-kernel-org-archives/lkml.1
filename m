@@ -1,230 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763089AbYENPHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753647AbYENPNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763089AbYENPHP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 11:07:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757559AbYENPG5
+	id S1753647AbYENPNX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 11:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750988AbYENPNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 11:06:57 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:58865 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758698AbYENPG4 (ORCPT
+	Wed, 14 May 2008 11:13:08 -0400
+Received: from viefep18-int.chello.at ([213.46.255.22]:2772 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751072AbYENPMz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 11:06:56 -0400
-Message-ID: <482B0023.7090704@bull.net>
-Date: Wed, 14 May 2008 17:07:15 +0200
-From: Benjamin Thery <benjamin.thery@bull.net>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-Cc: Daniel Lezcano <dlezcano@fr.ibm.com>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Tejun Heo <htejun@gmail.com>, Al Viro <viro@ftp.linux.org.uk>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Pavel Emelyanov <xemul@openvz.org>, netdev@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RESEND][PATCH 00/11] sysfs tagged directories
-References: <20080506173030.653828076@theryb.frec.bull.fr> <20080506175331.GA1815@suse.de> <4821AC4A.1010905@fr.ibm.com>
-In-Reply-To: <4821AC4A.1010905@fr.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 14 May 2008 11:12:55 -0400
+Subject: Re: volanoMark regression with kernel 2.6.26-rc1
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: vatsa@linux.vnet.ibm.com
+Cc: Mike Galbraith <efault@gmx.de>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <20080514134414.GA12693@linux.vnet.ibm.com>
+References: <1210226013.3453.113.camel@ymzhang>
+	 <20080508061125.GC3644@linux.vnet.ibm.com>
+	 <20080509155240.GH3612@linux.vnet.ibm.com>
+	 <1210556351.3151.2.camel@ymzhang>
+	 <20080512023758.GN3612@linux.vnet.ibm.com>
+	 <1210563200.3151.10.camel@ymzhang>
+	 <20080512045246.GP3612@linux.vnet.ibm.com>
+	 <1210568533.3151.13.camel@ymzhang>
+	 <1210583090.7402.4.camel@marge.simson.net>
+	 <1210584047.6524.12.camel@lappy.programming.kicks-ass.net>
+	 <20080514134414.GA12693@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Wed, 14 May 2008 17:12:47 +0200
+Message-Id: <1210777967.10126.17.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-So, what is the status for this patchset?
 
-So far, we discussed patch 10 a bit and Eric found a better way to fix
-the kobject_rename() issue. But there hasn't been much discussion on the
-rest of the patchset this time.
-
-Does this mean that there is no strong objection against it now?
-Do you think the approach is suitable for what we're aiming to?
-
-Reminder: We need this for network namespaces. Without it network
-namespaces testing is still a bit complicated in 2.6.26 (need to disable
-sysfs). Also, Serge uses it too for user namespaces.
-
-Should I resend it one more time ported on top of a more recent tree in
-the hope it can be merged?
-BTW which tree is the best? Linus', Greg's, -mm?
-
-Regards,
-Benjamin
-
-Daniel Lezcano wrote:
-> Greg KH wrote:
->> On Tue, May 06, 2008 at 07:30:30PM +0200, Benjamin Thery wrote:
->>> This is still the same port of Eric Biederman's patchset to implement
->>> tagged directories in sysfs that was discussed a few days ago.
->>>
->>> This time it applies on top of 2.6.26-rc1, which includes a fix from 
->>> Daniel Lezcano to fix net device renaming
->>> for sysfs (and of course all the network namespaces stuff that was 
->>> committed in net-2.6.26).
->>>
->>> This patchset still contains the patch from Serge Hallyn that implements
->>> tagging for user namespaces.
->>>
->>> It also contains a patch from Daniel Lezcano which allows to have net 
->>> devices with the same name in two different network namespaces.
->>
->> Does this all work properly with both CONFIG_SYSFS_DEPRECATED enabled
->> and disabled?
->>
->> Can you show some outputs of 'tree' in both cases on the /sys/class/net/
->> directory?
->>
->> thanks,
->>
->> greg k-h
-> 
-> Here is the output from an ls -l of /sys/class/net. I tryed with 
-> different configurations and checked the renamed network devices are 
-> propagated to the sysfs.
-> 
-> 1) CONFIG_SYSFS_DEPRECATED && CONFIG_SYS && CONFIG_NET_NS
-> =========================================================
-> 
-> Outside a namespace:
-> --------------------
-> 
-> qemu:~> ip l
-> 1: lo: <LOOPBACK,UP,10000> mtu 16436 qdisc noqueue
->     link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-> 2: eth0: <BROADCAST,MULTICAST,UP,10000> mtu 1500 qdisc pfifo_fast qlen 1000
->     link/ether 52:54:00:12:34:56 brd ff:ff:ff:ff:ff:ff
-> 3: dummy0: <BROADCAST,NOARP> mtu 1500 qdisc noop
->     link/ether 1e:43:9e:1f:1f:55 brd ff:ff:ff:ff:ff:ff
-> 4: br0: <BROADCAST,MULTICAST,UP,10000> mtu 1500 qdisc noqueue
->     link/ether 52:54:00:12:34:56 brd ff:ff:ff:ff:ff:ff
-> 16: veth1: <BROADCAST,MULTICAST,PROMISC> mtu 1500 qdisc pfifo_fast qlen 
-> 1000
->     link/ether 8e:94:e6:72:63:cf brd ff:ff:ff:ff:ff:ff
-> 
-> qemu:~/lxc> ll /sys/class/net/
-> total 0
-> drwxr-xr-x 5 root root 0 2008-05-07 15:24 br0
-> drwxr-xr-x 3 root root 0 2008-05-07 13:16 dummy0
-> drwxr-xr-x 4 root root 0 2008-05-07 15:24 eth0
-> drwxr-xr-x 3 root root 0 2008-05-07 13:16 lo
-> drwxr-xr-x 4 root root 0 2008-05-07 15:26 veth1
-> 
-> 
-> Inside the namespace:
-> ----------------------
-> 
-> qemu:~> ip l
-> 14: lo: <LOOPBACK,UP,10000> mtu 16436 qdisc noqueue
->     link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-> 15: veth2: <BROADCAST,MULTICAST,UP,10000> mtu 1500 qdisc pfifo_fast qlen 
-> 1000
->     link/ether 46:85:e5:76:90:05 brd ff:ff:ff:ff:ff:ff
-> 
-> virtnode:~lxc # ll /sys/class/net/
-> total 0
-> drwxr-xr-x 3 root root 0 May  7 15:28 lo
-> drwxr-xr-x 3 root root 0 May  7 15:26 veth2
-> 
-> 2) CONFIG_SYSFS && CONFIG_NET_NS
-> ================================
-> 
-> 
-> Outside the namespace:
-> ----------------------
-> 
-> qemu:~> ip l
-> 1: lo: <LOOPBACK,UP,10000> mtu 16436 qdisc noqueue
->     link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-> 2: eth0: <BROADCAST,MULTICAST,UP,10000> mtu 1500 qdisc pfifo_fast qlen 1000
->     link/ether 52:54:00:12:34:56 brd ff:ff:ff:ff:ff:ff
-> 3: dummy0: <BROADCAST,NOARP> mtu 1500 qdisc noop
->     link/ether 72:16:3d:88:11:70 brd ff:ff:ff:ff:ff:ff
-> 4: br0: <BROADCAST,MULTICAST,UP,10000> mtu 1500 qdisc noqueue
->     link/ether 52:54:00:12:34:56 brd ff:ff:ff:ff:ff:ff
-> 13: veth1: <BROADCAST,MULTICAST,PROMISC> mtu 1500 qdisc pfifo_fast qlen 
-> 1000
->     link/ether aa:6f:e8:dd:b8:ba brd ff:ff:ff:ff:ff:ff
-> 
->  * Content of /sys/class/net:
-> 
-> qemu:~/lxc> ll /sys/class/net/
-> total 0
-> lrwxrwxrwx 1 root root 0 2008-05-07 14:31 br0 -> 
-> ../../devices/virtual/net/br0
-> lrwxrwxrwx 1 root root 0 2008-05-07 14:28 dummy0 -> 
-> ../../devices/virtual/net/dummy0
-> lrwxrwxrwx 1 root root 0 2008-05-07 14:28 eth0 -> 
-> ../../devices/pci0000:00/0000:00:03.0/net/eth0
-> lrwxrwxrwx 1 root root 0 2008-05-07 14:28 lo -> 
-> ../../devices/virtual/net/lo
-> lrwxrwxrwx 1 root root 0 2008-05-07 14:35 veth1 -> 
-> ../../devices/virtual/net/veth1
-> 
-> Inside the namespace:
-> ----------------------
-> 
-> qemu:~> ip l
-> 11: lo: <LOOPBACK,UP,10000> mtu 16436 qdisc noqueue
->     link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-> 12: veth2: <BROADCAST,MULTICAST,UP,10000> mtu 1500 qdisc pfifo_fast qlen 
-> 1000
->     link/ether ee:c5:a3:7c:58:bd brd ff:ff:ff:ff:ff:ff
-> 
-> virtnode:~/lxc # ll /sys/class/net/
-> total 0
-> lrwxrwxrwx 1 root root 0 May  7 14:40 lo -> ../../devices/virtual/net/lo
-> lrwxrwxrwx 1 root root 0 May  7 14:40 veth2 -> 
-> ../../devices/virtual/net/veth2
-> 
-> 
-> 3) CONFIG_SYSFS
-> ===============
-> 
-> qemu:~> ip l
-> 1: lo: <LOOPBACK,UP,10000> mtu 16436 qdisc noqueue
->     link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-> 2: eth0: <BROADCAST,MULTICAST,UP,10000> mtu 1500 qdisc pfifo_fast qlen 1000
->     link/ether 52:54:00:12:34:56 brd ff:ff:ff:ff:ff:ff
-> 3: dummy0: <BROADCAST,NOARP> mtu 1500 qdisc noop
->     link/ether 6e:3a:5f:2f:fa:cb brd ff:ff:ff:ff:ff:ff
-> 4: br0: <BROADCAST,MULTICAST,UP,10000> mtu 1500 qdisc noqueue
->     link/ether 52:54:00:12:34:56 brd ff:ff:ff:ff:ff:ff
-> 
-> qemu:~/lxc> ll /sys/class/net/
-> total 0
-> lrwxrwxrwx 1 root root 0 2008-05-07 15:01 br0 -> 
-> ../../devices/virtual/net/br0
-> lrwxrwxrwx 1 root root 0 2008-05-07 14:59 dummy0 -> 
-> ../../devices/virtual/net/dummy0
-> lrwxrwxrwx 1 root root 0 2008-05-07 14:59 eth0 -> 
-> ../../devices/pci0000:00/0000:00:03.0/net/eth0
-> lrwxrwxrwx 1 root root 0 2008-05-07 14:59 lo -> 
-> ../../devices/virtual/net/lo
-> 
-> 4) CONFIG_SYSFS_DEPRECATED && CONFIG_SYSFS
-> ==========================================
-> 
-> qemu:~> ip l
-> 1: lo: <LOOPBACK,UP,10000> mtu 16436 qdisc noqueue
->     link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-> 2: eth0: <BROADCAST,MULTICAST,UP,10000> mtu 1500 qdisc pfifo_fast qlen 1000
->     link/ether 52:54:00:12:34:56 brd ff:ff:ff:ff:ff:ff
-> 3: dummy0: <BROADCAST,NOARP> mtu 1500 qdisc noop
->     link/ether 16:85:f0:a8:34:44 brd ff:ff:ff:ff:ff:ff
-> 4: br0: <BROADCAST,MULTICAST,UP,10000> mtu 1500 qdisc noqueue
->     link/ether 52:54:00:12:34:56 brd ff:ff:ff:ff:ff:ff
-> 
-> qemu:~> ll /sys/class/net/
-> total 0
-> drwxr-xr-x 5 root root 0 2008-05-07 15:07 br0
-> drwxr-xr-x 3 root root 0 2008-05-07 15:06 dummy0
-> drwxr-xr-x 4 root root 0 2008-05-07 15:07 eth0
-> drwxr-xr-x 3 root root 0 2008-05-07 15:06 lo
-> 
-> 
+> +#define GROUP_SCALE	(2*1024)
+> +
+>  static inline void inc_cpu_load(struct rq *rq, unsigned long load)
+>  {
+> +	load *= GROUP_SCALE;
+>  	update_load_add(&rq->load, load);
+>  }
+>  
+>  static inline void dec_cpu_load(struct rq *rq, unsigned long load)
+>  {
+> +	load *= GROUP_SCALE;
+>  	update_load_sub(&rq->load, load);
+>  }
 
 
--- 
-B e n j a m i n   T h e r y  - BULL/DT/Open Software R&D
+Yeah, this bit makes a huge difference; I do that by:
 
-    http://www.bull.com
+mkdir /cgroup/foo
+for i in `cat /cgroup/tasks`; do echo $i > /cgroup/foo/tasks; done
+echo $((1024*1024)) > /cgroup/foo/cpu.shares
+
+I'm still pulling my hairs out on why this makes a difference though - I
+eliminated all direct assumption on SCHED_LOAD_SCALE(_FUZZ) with an
+average of the weight per task. - but all that doesn't help (much)
+
+A few other things I found that make a significant difference:
+
+
+
++static void update_aggregate(int cpu, struct sched_domain *sd)
++{
++       aggregate_walk_tree(aggregate_get_down, aggregate_get_nop, cpu, sd);
++}
+
+
+@@ -3224,6 +3189,8 @@ static int move_tasks(struct rq *this_rq, int this_cpu, st
+ruct rq *busiest,
+        unsigned long total_load_moved = 0;
+        int this_best_prio = this_rq->curr->prio;
+
++       update_aggregate(this_cpu, sd);
++
+        do {
+                total_load_moved +=
+                        class->load_balance(this_rq, this_cpu, busiest,
+
+
+
+and
+
+@@ -1169,7 +1168,10 @@ static unsigned long wakeup_gran(struct sched_entity *se)
+         * More easily preempt - nice tasks, while not making it harder for
+         * + nice tasks.
+         */
+-       gran = calc_delta_asym(sysctl_sched_wakeup_granularity, se);
++       if (sched_feat(ASYM_GRAN))
++               gran = calc_delta_asym(sysctl_sched_wakeup_granularity, se);
++       else
++               gran = calc_delta_fair(sysctl_sched_wakeup_granularity, se);
+
+        return gran;
+ }
+
+
+the asym logic is wrong wrt shares - it should look at tg->weight
+
