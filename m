@@ -1,136 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761555AbYENRJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760486AbYENRQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761555AbYENRJi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 13:09:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757270AbYENRJZ
+	id S1760486AbYENRQl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 13:16:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbYENRQa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 13:09:25 -0400
-Received: from cantor.suse.de ([195.135.220.2]:43760 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760980AbYENRJY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 13:09:24 -0400
-Date: Wed, 14 May 2008 10:08:54 -0700
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: [GIT PATCH] USB fixes for 2.6.26-rc2
-Message-ID: <20080514170854.GA15059@suse.de>
+	Wed, 14 May 2008 13:16:30 -0400
+Received: from spirit.analogic.com ([204.178.40.4]:1808 "EHLO
+	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752226AbYENRQ3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 13:16:29 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 14 May 2008 17:16:07.0764 (UTC) FILETIME=[32B13940:01C8B5E6]
+Content-class: urn:content-classes:message
+Subject: Re: WD doesn`t use disks with Linux - was Re: Re:Western Digital GreenPower drives and Linux
+Date: Wed, 14 May 2008 13:15:56 -0400
+Message-ID: <Pine.LNX.4.61.0805141311190.10326@chaos.analogic.com>
+In-Reply-To: <Pine.LNX.4.61.0805141207120.10191@chaos.analogic.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: WD doesn`t use disks with Linux - was Re: Re:Western Digital GreenPower drives and Linux
+thread-index: Aci15jK6U0EyPSAHRfmqaZhYzqd8Xg==
+References: <003201c8b53c$67ff02d0$6400a8c0@bui.materna.com> <482A062B.3010308@arndnet.de> <Pine.LNX.4.61.0805140912170.9528@chaos.analogic.com> <alpine.LNX.1.10.0805141538420.5292@fbirervta.pbzchgretzou.qr> <Pine.LNX.4.61.0805141207120.10191@chaos.analogic.com>
+From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+To: "Jan Engelhardt" <jengelh@medozas.de>
+Cc: "Arnd Hannemann" <arnd@arndnet.de>, "Roland" <devzero@web.de>,
+       <tvrtko@ursulin.net>, <pernegger@gmail.com>, <snitzer@gmail.com>,
+       <zorglub_olsen@hotmail.com>, <renatoyamane@mandic.com.br>,
+       <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+X-TM-AS-Product-Ver: SMEX-8.0.0.1259-5.500.1026-15910.000
+X-TM-AS-Result: No--11.255000-8.000000-31
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are some USB fixes for your 2.6.25-git tree.
 
-They include:
-	- new usb-serial driver for Jeff Garzik's phone
-	- new device ids
-	- minor bugfixes
-	- finally fix the issue of the kevent showing up before the
-	  sysfs files for the usb devices are present in sysfs.  This
-	  has made userspace programmers much happier now.
-	- gadget serial driver rework and fixes (this is the majority of
-	  the diff, it's a bit large, but worth it in the end as there
-	  have been reports of problems with this code that these fixes
-	  address.)
-	- new usb header file for things in the published spec
+On Wed, 14 May 2008, Richard B. Johnson wrote:
 
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
+> On Wed, 14 May 2008, Jan Engelhardt wrote:
+>
+>> 
+>> On Wednesday 2008-05-14 15:20, linux-os (Dick Johnson) wrote:
+>>> 
+>>> It's not just the positioning logic that gets powered off. The
+>>> discs are spun down, which saves a lot of power.
+>> 
+>> And drives latencies into the skies.
+>> Not to mention that the permanent spinups and downs also affect life.
+>> 
+>
+> Yes. Maybe there is a way to turn if off? That's why we
+> should be able to get somebody from WD who will answer
+> a Linux question, instead of the usual on-line "help."
+>
+> I'm going to poke around and see if I can  find a real
+> person at WD.
+>
+It took about 3/4 hour to access their web-page and get
+a question submitted. It has been my experience that companies
+that don't maintain their web-pages, don't really care about
+customers. My query was, "How do I turn off Green Power so
+I don't have the horrible latencies on virtual memory systems
+that have active swapping?"
 
-All of these patches have been in the -mm tree for a while, as well as
--next.
+In the unlikely event that they answer me, I will put the
+answer on this list. My guess is that if they do answer
+me, the answer will be, "Duhh?" We'll see.
 
-The full patches will be sent to the linux-usb mailing list, if anyone
-wants to see them.
 
-thanks,
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.29 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
 
-greg k-h
 
-------------
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
 
- drivers/usb/class/cdc-acm.c         |    3 +
- drivers/usb/core/endpoint.c         |   11 +-
- drivers/usb/core/message.c          |    1 +
- drivers/usb/core/sysfs.c            |  137 ++++---
- drivers/usb/core/usb.c              |    1 +
- drivers/usb/core/usb.h              |    4 +
- drivers/usb/gadget/amd5536udc.c     |   10 +-
- drivers/usb/gadget/atmel_usba_udc.c |   48 ++-
- drivers/usb/gadget/pxa27x_udc.c     |   17 +-
- drivers/usb/gadget/pxa27x_udc.h     |    8 +
- drivers/usb/gadget/serial.c         |  778 +++++++++++++++--------------------
- drivers/usb/host/isp1760-hcd.c      |    4 +-
- drivers/usb/host/isp1760-if.c       |    2 +-
- drivers/usb/host/ohci-sm501.c       |    2 +-
- drivers/usb/misc/ldusb.c            |    4 -
- drivers/usb/misc/usbtest.c          |    5 +
- drivers/usb/serial/Kconfig          |    9 +
- drivers/usb/serial/Makefile         |    1 +
- drivers/usb/serial/moto_modem.c     |   70 ++++
- drivers/usb/serial/option.c         |    9 +-
- drivers/usb/storage/unusual_devs.h  |   71 ++--
- include/linux/usb/association.h     |  150 +++++++
- 22 files changed, 777 insertions(+), 568 deletions(-)
- create mode 100644 drivers/usb/serial/moto_modem.c
- create mode 100644 include/linux/usb/association.h
-
----------------
-
-Alan Stern (1):
-      USB: create attributes before sending uevent
-
-Dan Williams (1):
-      USB: option: add new Dell 5520 HSDPA variant
-
-David Brownell (5):
-      USB: serial gadget: cleanup/reorg
-      USB: serial gadget: remove needless data structure
-      USB: serial gadget: simplify endpoint handling
-      USB: serial gadget: descriptor cleanup
-      USB: atmel_usba_udc fixes, mostly disconnect()
-
-Eugeniy Meshcheryakov (1):
-      USB: do not handle device 1410:5010 in 'option' driver
-
-Filip Aben (1):
-      USB: unusual_devs: Add support for GI 0401 SD-Card interface
-
-Greg Kroah-Hartman (3):
-      USB: add new moto_modem driver for some Morotola phones
-      USB: add association.h
-      USB: add Telstra NextG CDMA id to option driver
-
-Harvey Harrison (1):
-      usb: fix integer as NULL pointer warnings found by sparse
-
-Iain McFarlane (1):
-      USB: add Zoom Telephonics Model 3095F V.92 USB Mini External modem to cdc-acm
-
-Marcin Slusarz (1):
-      usbtest: comment on why this code "expects" negative and positive errnos
-
-Phil Dibowitz (1):
-      USB: Fix unusual_devs.h ordering
-
-Randy Dunlap (1):
-      USB: isp1760: fix printk format
-
-Robert Jarzmik (1):
-      USB: pxa27x_udc: minor fixes
-
-Sebastian Siewior (1):
-      usb: fix compile warning in isp1760
-
-Xiaofan Chen (1):
-      USB: remove PICDEM FS USB demo (04d8:000c) device from ldusb
-
-andreoli@samba.ing.unimo.it (2):
-      USB: Support for the ET502HS HDSPA modem
-      USB: Support for the ET502HS HDSPA modem in option driver
-
+Thank you.
