@@ -1,75 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757387AbYENWDW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758411AbYENWD7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757387AbYENWDW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 18:03:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbYENWDK
+	id S1758411AbYENWD7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 18:03:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbYENWDv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 18:03:10 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:59167 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752035AbYENWDI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 18:03:08 -0400
-Date: Thu, 15 May 2008 02:02:52 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Sage Weil <sage@newdream.net>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: POHMELFS high performance network filesystem. Transactions, failover, performance.
-Message-ID: <20080514220252.GA14378@2ka.mipt.ru>
-References: <20080513174523.GA1677@2ka.mipt.ru> <4829E752.8030104@garzik.org> <20080513205114.GA16489@2ka.mipt.ru> <Pine.LNX.4.64.0805140623001.14334@cobra.newdream.net> <20080514135156.GA23131@2ka.mipt.ru> <20080514143105.GB14987@shareable.org> <20080514150052.GA15826@2ka.mipt.ru> <20080514213251.GB23758@shareable.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080514213251.GB23758@shareable.org>
-User-Agent: Mutt/1.5.9i
+	Wed, 14 May 2008 18:03:51 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:60693 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752886AbYENWDu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 18:03:50 -0400
+Message-ID: <482B61C2.9070106@firstfloor.org>
+Date: Thu, 15 May 2008 00:03:46 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alexander Viro <viro@ftp.linux.org.uk>
+Subject: Re: [announce] "kill the Big Kernel Lock (BKL)" tree
+References: <20080514174955.GA515@elte.hu> <87fxsk7n7e.fsf@basil.nowhere.org> <20080514220034.51eae9e0@core> <482B5614.3060203@firstfloor.org> <20080514221957.6edb2d60@core> <alpine.LFD.1.10.0805141435540.3019@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0805141435540.3019@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 14, 2008 at 10:32:51PM +0100, Jamie Lokier (jamie@shareable.org) wrote:
-> Look up Bittorrent, and bandwidth diffusion generally.  Also look up
-> multicast trees.
+Linus Torvalds wrote:
 > 
-> Sometimes it's faster for a client to send to many servers; sometimes
-> it's faster to send fewer and have them relayed by intermediaries -
-> because every packet takes time to transmit, and network topologies
-> aren't always homogenous or symmetric.
+> On Wed, 14 May 2008, Alan Cox wrote:
+>> That in itself is a problem Ingo's stuff won't help with: We have lots of
+>> "magic" accidental, undocumented and pot luck BKL locking semantics
+>> between subsystems that are not even visible.
 > 
-> There is no simple answer which is optimal for all networks.
+> The good news is that I suspect they are going away. It probably is mainly 
+> tty and /proc by now, and /proc is pretty close to done.
 
-Yep, having multiple connections is worse for high-performance networks
-and is a great win for long latency links. If client to server
-connection is slower than server-server one, than having single gate
-server, which broadcasts data to others is a win over multiple
-connection to different servers. But if communication is roughly the
-same over all links, than... I think I agree that client-to-many is a
-better approach, since perormance of client-to-many will be the same as
-client-to-gate-to-others (since link is the same everywhere), but if
-gate server fails, reconnection and other management tasks introduce
-huge latency here (new gate server, new connection and so on), while
-with client-to-many we just proceed with other connections.
+Character devices in general.
 
-> > Another approach, which seems also intersting is leader election (per
-> > client), so that leader would broadcast all the data.
+And what's pretty nasty is that some interfaces force BKL still, so
+not even new code can opt out.
+
+> In the VFS layer, we still have 
 > 
-> Leader election is part of standard Paxos too :-)
+>  - the ioctl thing, obviously. That's just mind-numbing "move things 
+>    down", not hard per se. But there's a *lot* of them (and I suspect the 
+>    huge majority of them don't actually need it, since they'd already be 
+>    racing against read/write anyway if they did).
+> 
+>  - default_llseek(). Probably the same, just a lot less of it.
 
-But that's a different leader :)
+I had some patches for those.
 
-> If you have a single data forwarder elected per client, then if one
-> client generates a lot of traffic, you concentrate a lot of traffic to
-> one network link and one CPU.  Sometimes it's better to elect several
-> leaders per client, and hash requests onto them.  You diffuse CPU and
-> traffic, but reduce opportunities to aggregate transactions into fewer
-> message.  It's an interesting problem, again probably with different
-> optimal results for different networks.
+> 
+>  - superblock read/write.
+> 
 
-Probably idea I described in other mail to Jeff, when client just
-connects to number of servers and can process command of adding/dropping
-server from that group, and balances reading between them and sends
-writes/metadata update to all of them, and all logic behind that group
-selection is hidded in the servers cloud, is the best choice...
+- fasync
 
--- 
-	Evgeniy Polyakov
+[had some patches for "fasync_locked", not sure if it's worth it]
+
+- character device open
+
+That's a nasty one. Either open_unlocked or a special cdev_init?
+
+> and the latter one in particular is really dubious (we already have 
+> "[un]lock_super()" around it all, I think).
+> 
+> The core kernel, VM and networking already don't really do BKL. And it's 
+> seldom the case that subsystems interact with other unrelated subsystems 
+> outside of the core areas.
+> 
+> So it's a lot of work, no doubt, but I do think we should be able to do 
+> it. The most mind-numbing part is literally all the ioctl crud. There's 
+> more ioctl points than there are lock_kernel() calls left anywhere else.
+
+I tried to recruit kernel janitors some time ago to just do all the
+ioctl -> ioctl_unlocked/explicit lock_kernel changes. There were a few
+patches generated but the effort died down then.
+
+BTW for ioctl the dynamic instrumentation method proposed also won't
+work because it's basically impossible to exercise all these ioctls
+
+-Andi
+
+
