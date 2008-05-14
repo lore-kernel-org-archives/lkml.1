@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761454AbYENJ5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753059AbYENJ5y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761454AbYENJ5j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 05:57:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754936AbYENJ52
+	id S1753059AbYENJ5y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 05:57:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756650AbYENJ53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 05:57:28 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:51341 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754018AbYENJ51 convert rfc822-to-8bit (ORCPT
+	Wed, 14 May 2008 05:57:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60023 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753059AbYENJ52 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 05:57:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=amhCCWVXGkjsqwnNowPHBQSmA3V+aBb2Uftsc+Uj7k5VQJz0icwmEeDFa4kR5+3ExAo/BIeVqyijptFT1PSB0UJc/CD1c4mvarPGCYuKDKagSj/jM+HdUpqiRG0g4wB2Tm8gtGmtUZG9djjyh+DaSerN9cvX84fwMtlemweKWzA=
-Message-ID: <aa79d98a0805140257o1bf00647od1eecdf73695c76c@mail.gmail.com>
-Date: Wed, 14 May 2008 13:57:24 +0400
-From: "Cyrill Gorcunov" <gorcunov@gmail.com>
-To: "Andreas Schwab" <schwab@suse.de>
-Subject: Re: m68k: main.c:(.init.text+0x730): undefined reference to `strlen'
-Cc: "Geert Uytterhoeven" <geert@linux-m68k.org>,
-       "Linux/m68k" <linux-m68k@vger.kernel.org>,
-       "Linux Kernel Development" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <jeprrpth5m.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0805140958400.5778@anakin>
-	 <jeprrpth5m.fsf@sykes.suse.de>
+	Wed, 14 May 2008 05:57:28 -0400
+Date: Wed, 14 May 2008 02:56:12 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Benjamin Thery <benjamin.thery@bull.net>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Randy Dunlap <RANDY.DUNLAP@ORACLE.COM>, Greg KH <greg@kroah.com>,
+       Al Viro <viro@ftp.linux.org.uk>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>, Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH] Fix kobject_rename and !CONFIG_SYSFS v4
+Message-Id: <20080514025612.914a05fe.akpm@linux-foundation.org>
+In-Reply-To: <482AB615.5030000@bull.net>
+References: <m163tocw43.fsf_-_@frodo.ebiederm.org>
+	<20080512220232.GA16914@kroah.com>
+	<m1prrqbseh.fsf@frodo.ebiederm.org>
+	<4829A4BD.3020007@bull.net>
+	<20080513164438.GA31563@kroah.com>
+	<m18wyeay1q.fsf_-_@frodo.ebiederm.org>
+	<20080513201602.GA31578@kroah.com>
+	<m1od7a9bmr.fsf_-_@frodo.ebiederm.org>
+	<24291087.1210713535895.JavaMail.oracle@acsmt301.oracle.com>
+	<m1hcd1a48e.fsf_-_@frodo.ebiederm.org>
+	<20080513220304.b2f5a588.akpm@linux-foundation.org>
+	<m163th6yz2.fsf@frodo.ebiederm.org>
+	<20080514022059.2fc883b1.akpm@linux-foundation.org>
+	<482AB615.5030000@bull.net>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 14, 2008 at 12:37 PM, Andreas Schwab <schwab@suse.de> wrote:
-> Geert Uytterhoeven <geert@linux-m68k.org> writes:
->
->  > My first guess is gcc is turning sizeof() into strlen() again.
->
->  Definitely not.  sizeof is a compile-time constant, strlen is not.  More
->  likely the strlen call is embedded in the expansion of strncat.
->
->  Andreas.
->
->  --
->  Andreas Schwab, SuSE Labs, schwab@suse.de
->  SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
->  PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
->  "And now for something completely different."
->
+On Wed, 14 May 2008 11:51:17 +0200 Benjamin Thery <benjamin.thery@bull.net> wrote:
 
-I've missed to add
+> > uninlining sysfs_rename_dir() would be a sensible solution.
+> 
+> It is inlined only when CONFIG_SYSFS=n. When sysfs is enabled 
+> sysfs_rename_dir() is compiled from fs/sysfs/dir.c
+> 
+> Uninlining it will require us to find an appropriate .c file to put it
+> in: we can't put it in fs/sysfs/dir.c. It is not built if CONFIG_SYSFS 
+> is disabled.
 
-#include <linux/string.h>
+Well yes, that's the problem.  I stuck it in lib/kobject.c but ugh.
 
-sorry, will make the patch today evening (or maybe someone could
-make it). Thanks for report!
+I guess we could make it a macro and quickly run away.
