@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757729AbYENEjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758073AbYENEnh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757729AbYENEjl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 00:39:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751650AbYENEjd
+	id S1758073AbYENEnh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 00:43:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751727AbYENEn0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 00:39:33 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45839
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751583AbYENEjc (ORCPT
+	Wed, 14 May 2008 00:43:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48360 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751712AbYENEnZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 00:39:32 -0400
-Date: Tue, 13 May 2008 21:39:27 -0700 (PDT)
-Message-Id: <20080513.213927.191790810.davem@davemloft.net>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Cc: mm-commits@vger.kernel.org, linville@tuxdriver.com,
-       ron.rindjunsky@intel.com, sfr@canb.auug.org.au, tomas.winkler@intel.com
-Subject: Re: + wireless-fix-iwlwifi-unify-init-driver-flow.patch added to
- -mm tree
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200805140405.m4E45oBc015343@imap1.linux-foundation.org>
-References: <200805140405.m4E45oBc015343@imap1.linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 14 May 2008 00:43:25 -0400
+Date: Tue, 13 May 2008 21:43:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, davidel@xmailserver.org, mtk.manpages@gmail.com,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH 18/18] flag parameters: check magic constants
+Message-Id: <20080513214302.876c5f47.akpm@linux-foundation.org>
+In-Reply-To: <48292A5A.4050606@redhat.com>
+References: <200805062118.m46LI74j004096@devserv.devel.redhat.com>
+	<20080512201341.9ead6a9a.akpm@linux-foundation.org>
+	<482910FA.1080703@redhat.com>
+	<20080512.210225.167924945.davem@davemloft.net>
+	<20080512220416.ef9a9645.akpm@linux-foundation.org>
+	<482922E2.3040902@redhat.com>
+	<20080512221917.07cf7b06.akpm@linux-foundation.org>
+	<48292A5A.4050606@redhat.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: akpm@linux-foundation.org
-Date: Tue, 13 May 2008 21:05:50 -0700
+On Mon, 12 May 2008 22:42:50 -0700 Ulrich Drepper <drepper@redhat.com> wrote:
 
-> Subject: wireless: fix "iwlwifi: unify init driver flow"
-> From: Andrew Morton <akpm@linux-foundation.org>
+> Andrew Morton wrote:
+> > Different bug, I think.
+> > 
+> > net/socket.c: In function 'sys_paccept':
+> > net/socket.c:1543: error: implicit declaration of function 'set_restore_sigmask'
 > 
-> drivers/net/wireless/iwlwifi/iwl-core.c: In function 'iwlcore_init_geos':
-> drivers/net/wireless/iwlwifi/iwl-core.c:323: error: implicit declaration of function 'iwlcore_init_ht_hw_capab'
-> 
-> This (or something like it) should be folded into the base patch to avoid
-> breaking bisection, please.
-> 
-> Cc: Ron Rindjunsky <ron.rindjunsky@intel.com>
-> Cc: Tomas Winkler <tomas.winkler@intel.com>
-> Cc: John W. Linville <linville@tuxdriver.com>
-> Cc: Stephen Rothwell <sfr@canb.auug.org.au>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> Right, that's the signal mask stuff.  Should be fixed by the other patch
+> I sent.
 
-Andrew, you have to figure out what we're supposed to do here.
+mips allmodconfig is unhappy still.
 
-If I "fold in the patch" to avoid breaking bisection, I have to
-completely rebase my tree screwing up everyone of my downstream
-developers.
 
-Or is this some patch I'm supposed to remember to fold in several
-months from now, to some random changeset out of thousands, when the
-merge window opens?
-
-Neither option is tenable, and the headaches of neither are
-worth it purely for the sake of bisection.
-
-My solution to the bisection problem is to wait a day before pushing
-out usually, it's a best effort thing.  I do as many sanity builds as
-I can, and we also hope that someone during that day might solve the
-problem independantly and post a fix.  That way I can fix it in my
-tree locally before the tree goes public.
-
-And I think this is the most reasonable approach.
-
-Once I push something to my public tree, quite frankly, it's the real
-deal, it's staying there, and it's a part of the permanent record.
-And therefore, we'll put fixes on top.
+net/socket.c: In function `sys_socket':
+net/socket.c:1225: error: `SOCK_CLOEXEC' undeclared (first use in this function)
+net/socket.c:1225: error: (Each undeclared identifier is reported only once
+net/socket.c:1225: error: for each function it appears in.)
+net/socket.c:1226: error: `SOCK_NONBLOCK' undeclared (first use in this function)
+net/socket.c:1227: error: `SOCK_TYPE_MASK' undeclared (first use in this function)
+net/socket.c: In function `sys_socketpair':
+net/socket.c:1268: error: `SOCK_TYPE_MASK' undeclared (first use in this function)
+net/socket.c:1269: error: `SOCK_CLOEXEC' undeclared (first use in this function)
+net/socket.c:1269: error: `SOCK_NONBLOCK' undeclared (first use in this function)
+net/socket.c: In function `do_accept':
+net/socket.c:1438: error: `SOCK_CLOEXEC' undeclared (first use in this function)
+net/socket.c:1438: error: `SOCK_NONBLOCK' undeclared (first use in this function)
