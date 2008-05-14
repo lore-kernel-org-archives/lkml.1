@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761799AbYENIbw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761654AbYENIdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761799AbYENIbw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 04:31:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754899AbYENIbk
+	id S1761654AbYENIdS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 04:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753936AbYENIdG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 04:31:40 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:33329 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752940AbYENIbj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 04:31:39 -0400
-Date: Wed, 14 May 2008 12:31:31 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: POHMELFS high performance network filesystem. Transactions, failover, performance.
-Message-ID: <20080514083131.GA31506@2ka.mipt.ru>
-References: <20080513174523.GA1677@2ka.mipt.ru> <20080513233341.47edea7f.akpm@linux-foundation.org> <20080514074028.GA28330@2ka.mipt.ru> <20080514010101.8ef541b3.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080514010101.8ef541b3.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+	Wed, 14 May 2008 04:33:06 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:32806 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753812AbYENIdF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 04:33:05 -0400
+Message-ID: <482AA3BD.1030600@firstfloor.org>
+Date: Wed, 14 May 2008 10:33:01 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       Robert Hancock <hancockr@shaw.ca>,
+       Christian Kujau <lists@nerdbynature.de>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>
+Subject: Re: [PATCH] common implementation of iterative div/mod
+References: <fa.QTbvQYXhEm5VNP5dvkl5JG7NHYQ@ifi.uio.no>	<481DF3D8.3010108@shaw.ca>	<a6dd201e0149f8dbdf10a7a194673833@kernel.crashing.org>	<48217674.8080903@goop.org>	<48231959.4050406@goop.org> <20080513234627.30476c20.akpm@linux-foundation.org> <482A95BB.1000001@goop.org>
+In-Reply-To: <482A95BB.1000001@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 14, 2008 at 01:01:01AM -0700, Andrew Morton (akpm@linux-foundation.org) wrote:
-> > When ->writepage() is used, it has to wait until page is written (remote
-> > side sent acknowledge), so if multiple pages are being written
-> > simultaneously we either have to allocate shared structure or use
-> > per-page wait.
+Jeremy Fitzhardinge wrote:
+
 > 
-> That sounds exactly like wait_on_page_writeback()?
+> arch/x86/vdso/vclock_gettime.c has its own copies of other kernel
+> functions which it can't directly call.  We could add
+> timespec_add_ns()/iter_div_u64_rem() to that list, though its pretty
+> hacky.  Could we link lib/div64.o into the vdso?
 
-Except that we can interrupt waiting and have a timeout, which is
-allowed there (page will be unlocked sometime in the future, but we
-return error now).
+You would need to annotate it and have a separate object file for the
+different sections. Also it would need to be compiled PIC.
 
-> > Will lock_page_killable()/__lock_page_killable() be exported to modules?
-> 
-> Maybe, if there's a need.  I see no particular problem with that.
+Inlining is better.
 
-Every good boys, who write own ->writepages() and locks pages there,
-want that.
+-Andi
 
--- 
-	Evgeniy Polyakov
