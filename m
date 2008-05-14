@@ -1,58 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760689AbYENAqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760244AbYENAwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760689AbYENAqe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 20:46:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757202AbYENAq0
+	id S1760244AbYENAwr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 20:52:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756322AbYENAwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 20:46:26 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:23451 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756189AbYENAqY (ORCPT
+	Tue, 13 May 2008 20:52:35 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:33906 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753191AbYENAwe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 20:46:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=D9UqaifG/rJ5Qb6L3zIkt8+oOcKFHloRgl8pec3Xbkp/JY9p/88uFl9Sfr5BNZdTJ33/qFcucHZP3PoFkhrMt+pLqKeJuu1gCehpqdZxGDnluw5uuDBxvrEcrsyxjYn/VNLmOgt9tO8CuGFO1Fs3K02WOzQjaCCEZzXYH5VFsrY=
-Message-ID: <85e7c2fc0805131746k5284d66dj7cfac5f9138186e2@mail.gmail.com>
-Date: Wed, 14 May 2008 08:46:24 +0800
-From: "Bob Zhang" <zhanglinbao@gmail.com>
-To: "Jared Hulbert" <jaredeh@gmail.com>
-Subject: Re: Does anyone run AXFS in 2.4 version of kernel ? I am trying my best to apply AXFS patches into 2.4.18
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <6934efce0805120923v636d2dbjb062d33fb861f5a2@mail.gmail.com>
+	Tue, 13 May 2008 20:52:34 -0400
+Date: Wed, 14 May 2008 01:52:23 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: POHMELFS high performance network filesystem. Transactions, failover, performance.
+Message-ID: <20080514005223.GE27483@shareable.org>
+Mail-Followup-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+	Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+	netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <20080513174523.GA1677@2ka.mipt.ru> <4829E752.8030104@garzik.org> <20080513205114.GA16489@2ka.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <85e7c2fc0805090919v613fb823m8dd979b8cd959889@mail.gmail.com>
-	 <6934efce0805120923v636d2dbjb062d33fb861f5a2@mail.gmail.com>
+In-Reply-To: <20080513205114.GA16489@2ka.mipt.ru>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >  Anyone is doing this work ? Can you share with me ?
->
-> Yeah.  I got a copy that works on 2.4.21-ish Montavista CEE like kernels.
->
-> I just haven't got around to posting the patches.  Okay, Okay.  You
-> are the third person to ask.  I'll update sourceforge and repost here.
->
+Evgeniy Polyakov wrote:
+> > Where is the best place to look at client<->server protocol?
+> 
+> Hmm, in sources I think, I need to kick myself to write a somewhat good
+> spec for the next release.
+> 
+> Basically protocol contains of fixed sized header (struct netfs_cmd) and
+> attached data [..]
 
+I feel you have glossed over the more difficult parts of transactions
+and cache coherency etc. with this brief summary ;-)
 
-thanks for your work . we look forward your paches for 2.4.21 or
-2.4.18 or other 2.4.x . thanks again .
-In the meantime , I am compiling axfs patches in 2.4.18 .My policy is
-that I basicly don't changed the AXFS code , and only add some
-functions existed in 2.6.x into 2.4 kernel ,if necessary , I will
-modify it . Thus , I think such working is not rather difficult ,
-anyway , I am
-analysing the implement of AXFS code , if necessary , I will modify
-some functions of axfs.
+> > Are you planning to support the case where the server filesystem dataset 
+> > does not fit entirely on one server?
+> 
+> Sure. First by allowing whole object to be placed on different servers
+> (i.e. one subdir is on server1 and another on server2), probably in the
+> future there will be added support for the same object being distributed
+> to different servers (i.e. half of the big file on server1 and another
+> half on server2).
+> 
+> > What is your opinion of the Paxos algorithm?
+> 
+> It is slow. But it does solve failure cases.
+> So far POHMELFS does not work as distributed filesystem, so it should
+> not care about it at all, i.e. at most in the very nearest future it
+> will just have number of acceptors in paxos terminology (metadata
+> servers in others) without need for active dynamical reconfiguration,
+> so protocol will be greatly reduced, with addition of dynamical
+> metadata cluster extension protocol will have to be extended.
 
- Till now , AXFS_super.c has been almost ok . Next ,I will compile
-other axfs code and check some errors and warnning , and run the
-kernel in the skyeye which supported smdk2410 .
+Yours does sound a very interesting project.  Do you know how it
+compares with NFSv4 for performance?  I think that has some similar
+caching abilities?  I think CRFS should be similar.
 
-Best Regards,
-Bob
+> As practice shows, the smaller and simpler initial steps are, the better
+> results eventually become :)
+
+I think you are right.  I am struggling with the opposite approach
+(too big steps, trying to be too clever with algorithms) on a similar
+project!  That said, I did try simpler steps earlier, and it worked
+but showed a lot of tricky problems.
+
+Fwiw, I've been working on what started as a distributed database that
+is coming to be a filesystem too.  It has many qualities of both,
+hopefully the best ones.  I'm aiming for high LAN file performance
+similar to what you report with POHMELFS and would expect from any
+modern fs, while also supporting database style transactions and
+coherent queries, in a self-organising distributed system that handles
+LAN/WAN/Internet each at their best.  Mention of Paxos stirred me to
+reply - a relative of that is in there somewhere.  I have a long way
+to go before a release.
+
+If anyone is working on something similar, I would be delighted to
+hear from them.
+
+It scares me that I'm actually trying to do this.  But very exciting
+it is too.
+
+It seems there's quite a bit of interesting work on Linux in this area
+right now, with BTRFS and CRFS too.
+
+-- Jamie
