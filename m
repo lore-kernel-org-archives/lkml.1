@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764058AbYENTNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932148AbYENTVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764058AbYENTNU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 15:13:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759130AbYENTND
+	id S932148AbYENTVl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 15:21:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754493AbYENTVb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 15:13:03 -0400
-Received: from saeurebad.de ([85.214.36.134]:43657 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760541AbYENTNB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 15:13:01 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 0/3] bootmem2 III
-References: <20080509151713.939253437@saeurebad.de>
-	<20080509184044.GA19109@one.firstfloor.org>
-	<87lk2gtzta.fsf@saeurebad.de> <48275493.40601@firstfloor.org>
-	<874p92qsvn.fsf@saeurebad.de> <482990AB.7070905@firstfloor.org>
-Date: Wed, 14 May 2008 21:12:47 +0200
-In-Reply-To: <482990AB.7070905@firstfloor.org> (Andi Kleen's message of "Tue,
-	13 May 2008 14:59:23 +0200")
-Message-ID: <87ve1gpumo.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Wed, 14 May 2008 15:21:31 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:43936 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752993AbYENTVa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 15:21:30 -0400
+Date: Wed, 14 May 2008 12:21:27 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Matt Mackall <mpm@selenic.com>
+cc: Andi Kleen <andi@firstfloor.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, Matthew Wilcox <matthew@wil.cx>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: [patch 21/21] slab defrag: Obsolete SLAB
+In-Reply-To: <1210789112.4093.14.camel@calx>
+Message-ID: <Pine.LNX.4.64.0805141220440.16223@schroedinger.engr.sgi.com>
+References: <20080510030831.796641881@sgi.com>  <20080510030919.604216074@sgi.com>
+ <4825709A.2020407@firstfloor.org>  <20080510221515.3540a6cc@bree.surriel.com>
+  <2f11576a0805120038s334dc56cuaf16b8b7c6f87098@mail.gmail.com> 
+ <84144f020805120054t1370236ei5ff52279457e026e@mail.gmail.com> 
+ <Pine.LNX.4.64.0805141009210.15194@schroedinger.engr.sgi.com> 
+ <482B2617.5010605@firstfloor.org>  <Pine.LNX.4.64.0805141100110.15633@schroedinger.engr.sgi.com>
+ <1210789112.4093.14.camel@calx>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andi,
+On Wed, 14 May 2008, Matt Mackall wrote:
 
-Andi Kleen <andi@firstfloor.org> writes:
+> > Interrupt exit in general would have to inspect the per cpu structures of 
+> > all slab caches on the system?
+> 
+> Why's that? When we're not under pressure (fast path), we can delay (and
+> batch) remote frees. When we are under pressure (slow path), we can do
+> everything immediately.
 
->> I was wondering yesterday if it would be feasible to enforce
->> contiguousness for nodes.
->
-> And lose the memory? That would make people not happy.
+Fastpath is what? I guess slow path means we called into the page 
+allocator?
 
-No, one node descriptor per contiguous block on the physical node.
-
-So this setup:
-
-node 0: 0-2G, 4-6G
-node 1: 2-4G, 6-8G
-
-would have 4 pgdats.
-
->> So that arch-code does not create one pgdat
->> for each node but one for each contiguous block.  I have not yet looked
->> deeper into it, but I suspect that other mm code has similar problems
->> with nodes spanning other nodes.
->
-> I wouldn't think so. At least sparse memory with large holes is not that
-> uncommon in the non x86 world.
-
-I do not quite understand.  Holes are not the problem - the overlapping
-is.
-
-The current bootmem allocator for example might pass the same pfn twice
-to the buddy allocator when two nodes overlap.  And I don't know if
-other mm code has the same problem.
-
-	Hannes
