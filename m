@@ -1,90 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932286AbYENUAe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932414AbYENUBM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932286AbYENUAe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 16:00:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763921AbYENT7h
+	id S932414AbYENUBM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 16:01:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932216AbYENUAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 15:59:37 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:50399 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763122AbYENT7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 15:59:32 -0400
-Date: Wed, 14 May 2008 12:59:25 -0700
-From: Tim Pepper <lnxninja@linux.vnet.ibm.com>
-To: Nadia.Derbey@bull.net
-Cc: manfred@colorfullife.com, paulmck@linux.vnet.ibm.com,
-       lnxninja@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       efault@gmx.de, akpm@linux-foundation.org
-Subject: Re: [PATCH 7/9] Make idr_remove rcu-safe
-Message-ID: <20080514195925.GA8994@tpepper-t42p.dolavim.us>
-References: <20080507113553.395937000@bull.net> <20080507113737.562143000@bull.net>
+	Wed, 14 May 2008 16:00:15 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:38392 "EHLO
+	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764161AbYENUAJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 16:00:09 -0400
+Date: Wed, 14 May 2008 13:00:05 -0700 (PDT)
+From: Sage Weil <sage@newdream.net>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: POHMELFS high performance network filesystem. Transactions,
+ failover, performance.
+In-Reply-To: <482B2E50.2030601@garzik.org>
+Message-ID: <Pine.LNX.4.64.0805141247180.23143@cobra.newdream.net>
+References: <20080513174523.GA1677@2ka.mipt.ru> <4829E752.8030104@garzik.org>
+ <20080513205114.GA16489@2ka.mipt.ru> <Pine.LNX.4.64.0805140623001.14334@cobra.newdream.net>
+ <482B2E50.2030601@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080507113737.562143000@bull.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 07 May at 13:36:00 +0200 Nadia.Derbey@bull.net said:
-> [PATCH 07/09]
+On Wed, 14 May 2008, Jeff Garzik wrote:
+> > Similarly, if only 1 out of 3 replicas is surviving, most people want to be
+> > able to read their data, while Paxos demands a majority to ensure it is
+> > correct.
 > 
-> This patch introduces the free_layer() routine: it is the one that actually
-> frees memory after a grace period has elapsed.
+> This isn't necessarily true -- it's quite easy for most applications to come
+> up with an alternate method for ensuring correctness of retrieved data, if one
+> assumes Paxos consensus was achieved during the write-data phase earlier in
+> time.  Checksumming is a common solution, but not the only one.  Domain- or
+> app-specific solution, as noted, of course.
+
+You mean if, say, some verifiable metadata or a trusted third party stores 
+that checksum?  Sure.  This is just pushing the what-has-committed 
+information to some other party, though, who will presumably face the same 
+problem of requiring a majority for verifiable correctness.  This is more 
+or less what most people do in practice... using Paxos for critical state 
+and piggybacking the rest of the system's consistency off of that.
+
+> > (This is why Paxos is typically used only for critical cluster
+> > configuration/state, not regular data.)
 > 
-> Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
-> 
-> ---
->  lib/idr.c |   59 ++++++++++++++++++++++++++++++++++++++++++++---------------
->  1 file changed, 44 insertions(+), 15 deletions(-)
-> 
-> Index: linux-2.6.25-mm1/lib/idr.c
-> ===================================================================
-> --- linux-2.6.25-mm1.orig/lib/idr.c	2008-05-06 18:06:43.000000000 +0200
-> +++ linux-2.6.25-mm1/lib/idr.c	2008-05-07 09:07:31.000000000 +0200
-> @@ -424,15 +455,13 @@ void idr_remove_all(struct idr *idp)
-> 
->  		id += 1 << n;
->  		while (n < fls(id)) {
-> -			if (p) {
-> -				memset(p, 0, sizeof *p);
-> -				move_to_free_list(idp, p);
-> -			}
-> +			if (p)
-> +				free_layer(p);
->  			n += IDR_BITS;
->  			p = *--paa;
->  		}
->  	}
-> -	idp->top = NULL;
-> +	rcu_assign_pointer(idp->top, NULL);
->  	idp->layers = 0;
->  }
->  EXPORT_SYMBOL(idr_remove_all);
+> Yep, I'm working on a config daemon a la Chubby or zookeeper, based on Paxos,
+> that does just this.  :)
 
-Does idr_remove_all() need an rcu_dereference() in the loop preceeding the
-above, where it does:
+Cool.  Do you have a URL?  I'd be interested in seeing how you diverge 
+from classic paxos.  For Ceph's monitor daemon, the main requirements 
+(besides strict correctness guarantees) were scalable (distributed) read 
+access, and a history of state changes.  Nothing too unusual.
 
-                while (n > IDR_BITS && p) {
-                        n -= IDR_BITS;
-                        *paa++ = p;
-     ---->              p = p->ary[(id >> n) & IDR_MASK];
-                }
-
-idr_replace() also has that loop without rcu_derefernce, but I _think_
-I see why that one should be ok.  At least there the comment is clear
-that locking at a higher level should be happening.  And then
-idr_remove_all() is almost unused and it looks like it is only in
-serialized places.
-
-Otherwise, thanks for redoing...This patch set was much easier to digest
-and looks reasonable to me.
-
-I've been having some machine issues, but hope to give this patch set a run
-still on a 128way machine and mainline to provide some additional
-datapoints.
-
--- 
-Tim Pepper  <lnxninja@linux.vnet.ibm.com>
-IBM Linux Technology Center
+sage
