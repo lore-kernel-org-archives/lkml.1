@@ -1,50 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759858AbYENO2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758271AbYENObV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759858AbYENO2f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 10:28:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755124AbYENO21
+	id S1758271AbYENObV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 10:31:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754481AbYENObN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 10:28:27 -0400
-Received: from mx1.suse.de ([195.135.220.2]:57853 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754766AbYENO20 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 10:28:26 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: m68k: main.c:(.init.text+0x730): undefined reference to `strlen'
-References: <Pine.LNX.4.64.0805140958400.5778@anakin>
-	<jeprrpth5m.fsf@sykes.suse.de>
-	<20080514141056.GB19909@cs181133002.pp.htv.fi>
-X-Yow: Two with FLUFFO, hold th' BEETS..side of SOYETTES!
-Date: Wed, 14 May 2008 16:28:24 +0200
-In-Reply-To: <20080514141056.GB19909@cs181133002.pp.htv.fi> (Adrian Bunk's
-	message of "Wed, 14 May 2008 17:10:56 +0300")
-Message-ID: <jeabitt0xj.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.1 (gnu/linux)
+	Wed, 14 May 2008 10:31:13 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:52948 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754034AbYENObL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 10:31:11 -0400
+Date: Wed, 14 May 2008 15:31:05 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Sage Weil <sage@newdream.net>, Jeff Garzik <jeff@garzik.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: POHMELFS high performance network filesystem. Transactions, failover, performance.
+Message-ID: <20080514143105.GB14987@shareable.org>
+Mail-Followup-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+	Sage Weil <sage@newdream.net>, Jeff Garzik <jeff@garzik.org>,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org
+References: <20080513174523.GA1677@2ka.mipt.ru> <4829E752.8030104@garzik.org> <20080513205114.GA16489@2ka.mipt.ru> <Pine.LNX.4.64.0805140623001.14334@cobra.newdream.net> <20080514135156.GA23131@2ka.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080514135156.GA23131@2ka.mipt.ru>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk <bunk@kernel.org> writes:
+Evgeniy Polyakov wrote:
+> > For writes, Paxos is actually more or less optimal (in the non-failure 
+> > cases, at least).  Reads are trickier, but there are ways to keep that 
+> > fast as well.  FWIW, Ceph extends basic Paxos with a leasing mechanism to 
+> > keep reads fast, consistent, and distributed.  It's only used for cluster 
+> > state, though, not file data.
+> 
+> Well, it depends... If we are talking about single node perfromance,
+> then any protocol, which requries to wait for authorization (or any
+> approach, which waits for acknowledge just after data was sent) is slow.
+>
+> If we are talking about agregate parallel perfromance, then its basic
+> protocol with 2 messages is (probably) optimal, but still I'm not
+> convinced, that 2 messages case is a good choise, I want one :)
 
-> Or replace all the strlen stuff in include/asm-m68k/string.h with a 
+Look up "one-phase commit" or even "zero-phase commit".  (The
+terminology is cheating a bit.)  As I've understood it, all commit
+protocols have a step where each node guarantees it can commit if
+asked and node failure at that point does not invalidate the guarantee
+if the node recovers (if it can't maintain the guarantee, the node
+doesn't recover in a technical sense and a higher level protocol may
+reintegrate the node).  One/zero-phase commit extends that to
+guaranteeing a certain amounts and types of data can be written before
+it knows what the data is, so write messages within that window are
+sufficient for global commits.  Guarantees can be acquired
+asynchronously in advance of need, and can have time and other limits.
+These guarantees are no different in principle from the 1-bit
+guarantee offered by the "can you commit" phase of other commit
+protocols, so they aren't as weak as they seem.
 
-I don't think the strlen macros has any influence in this case (it
-already uses __builtin_strlen anyway).  I'd rather guess that gcc is
-expanding strncat internally to something involving strlen with
-non-constant argument, although I cannot see how that can happen from a
-quick look.
+Now combine it with a quorum protocol like Paxos, you can commit with
+async guarantees from a subset of nodes.  Guarantees can be
+piggybacked on earlier requests.  There, single node write
+performance with quorum robustness.
 
-Andreas.
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+-- Jamie
