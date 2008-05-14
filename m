@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757206AbYENAzH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760935AbYENA4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757206AbYENAzH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 13 May 2008 20:55:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756992AbYENAy4
+	id S1760935AbYENA4U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 13 May 2008 20:56:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757350AbYENA4F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 20:54:56 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40475 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755017AbYENAyz (ORCPT
+	Tue, 13 May 2008 20:56:05 -0400
+Received: from fmailhost05.isp.att.net ([204.127.217.105]:49251 "EHLO
+	fmailhost01.isp.att.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755299AbYENA4D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 20:54:55 -0400
-Date: Wed, 14 May 2008 09:52:56 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andy Whitcroft <apw@shadowen.org>, Dave Hansen <haveblue@us.ibm.com>,
-       Gerald Schaefer <gerald.schaefer@de.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: memory_hotplug: always initialize pageblock bitmap.
-Message-Id: <20080514095256.741fe70a.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080513185242.GA6465@osiris.boeblingen.de.ibm.com>
-References: <20080509060609.GB9840@osiris.boeblingen.de.ibm.com>
-	<20080509153910.6b074a30.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080510124501.GA4796@osiris.boeblingen.de.ibm.com>
-	<20080512105500.ff89c0d3.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080512181928.cd41c055.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080513115825.GB12339@osiris.boeblingen.de.ibm.com>
-	<20080513185242.GA6465@osiris.boeblingen.de.ibm.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 13 May 2008 20:56:03 -0400
+X-Originating-IP: [70.152.106.110]
+From: Jay Cliburn <jacliburn@bellsouth.net>
+To: jeff@garzik.org
+Cc: adobriyan@gmail.com, csnook@redhat.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jay Cliburn <jacliburn@bellsouth.net>
+Subject: [PATCH] atl1: fix 4G memory corruption bug
+Date: Tue, 13 May 2008 19:50:58 -0500
+Message-Id: <1210726258-3053-1-git-send-email-jacliburn@bellsouth.net>
+X-Mailer: git-send-email 1.5.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 13 May 2008 20:52:42 +0200
-Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
-> Oops... the patch is tested and works for me. However it was not Signed-off
-> by Andrew. And in addition I forgot to add [PATCH] to the subject.
-> Sorry about that!
-> 
-> If all agree that this patch is ok it should probably also go into
-> -stable, since it fixes the above mentioned regression.
-> 
-Thank you very much! The patch seems ok to me.
-(But I cannot test this until my box is available...)
+From: Alexey Dobriyan <adobriyan@gmail.com>
 
-If other memory-hotplug guys say ok, I have no objection to -stable.
+When using 4+ GB RAM and SWIOTLB is active, the driver corrupts
+memory by writing an skb after the relevant DMA page has been
+unmapped.  Although this doesn't happen when *not* using bounce
+buffers, clearing the pointer to the DMA page after unmapping
+it fixes the problem.
 
-Thanks,
--Kame
+Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
+---
+ drivers/net/atlx/atl1.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/net/atlx/atl1.c b/drivers/net/atlx/atl1.c
+index 0afe522..e67b154 100644
+--- a/drivers/net/atlx/atl1.c
++++ b/drivers/net/atlx/atl1.c
+@@ -2027,6 +2027,7 @@ rrd_ok:
+ 		/* Good Receive */
+ 		pci_unmap_page(adapter->pdev, buffer_info->dma,
+ 			       buffer_info->length, PCI_DMA_FROMDEVICE);
++		buffer_info->dma = 0;
+ 		skb = buffer_info->skb;
+ 		length = le16_to_cpu(rrd->xsz.xsum_sz.pkt_size);
+ 
+-- 
+1.5.4.1
 
