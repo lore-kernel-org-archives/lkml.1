@@ -1,61 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758462AbYENV6K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758366AbYENV6o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758462AbYENV6K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 17:58:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757551AbYENV5q
+	id S1758366AbYENV6o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 17:58:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752582AbYENV6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 17:57:46 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56154 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757383AbYENV5p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 17:57:45 -0400
-Date: Wed, 14 May 2008 14:56:37 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jonathan Corbet <corbet@lwn.net>
-cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Alexander Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [announce] "kill the Big Kernel Lock (BKL)" tree 
-In-Reply-To: <6457.1210801515@vena.lwn.net>
-Message-ID: <alpine.LFD.1.10.0805141452330.3019@woody.linux-foundation.org>
-References: <6457.1210801515@vena.lwn.net>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 14 May 2008 17:58:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37097 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751539AbYENV6d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 17:58:33 -0400
+Message-ID: <482B6075.4030904@redhat.com>
+Date: Wed, 14 May 2008 17:58:13 -0400
+From: Steven Rostedt <srostedt@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: David Miller <davem@davemloft.net>
+CC: mingo@elte.hu, acme@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2]: sparc64: Add ftrace support.
+References: <20080513.220659.95712585.davem@davemloft.net>	<482AE9E2.6040801@redhat.com> <20080514.142932.95610533.davem@davemloft.net>
+In-Reply-To: <20080514.142932.95610533.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 14 May 2008, Jonathan Corbet wrote:
+David Miller wrote:
+> From: Steven Rostedt <srostedt@redhat.com>
+> Date: Wed, 14 May 2008 09:32:18 -0400
 > 
-> There's also every char device open() method - a rather long list in its
-> own right.  I'd be surprised if one in ten of them really needs it, but
-> one has to look...
+>> If you add the following in arch/sparc64/kernel/Makefile
+>>
+>> ifdef CONFIG_DYNAMIC_FTRACE
+>> obj-y += ftrace.o
+>> # Do not trace the ftrace code itself
+>> ORIG_CFLAGS := $(KBUILD_CFLAGS)
+>> KBUILD_CFLAGS = $(if $(filter-out ftrace, $(basename $(notdir $@))), \
+>> 	$(ORIG_CFLAGS), \
+>> 	$(subst -pg,,$(ORIG_CFLAGS)))
+>> endif
+>>
+>> Then you wont need the "notrace" annotations on the functions.
+> 
+> That frankly looks like crap compared to the simple "notrace"
+> annotations in the *.c file.
+> 
+> This Makefile turd is in fact seemingly multiplying in various
+> places in the ftrace tree, please reverse this trend.
 
-I don't think there are *that* many. I found only 83 instances of 
-"register_chrdev()" in the kernel, so the open methods should be pretty 
-limited.
+I wish it wasn't so ugly. The Makefile scripts allow you to add more 
+CFLAGS to specific files but does not have a way to remove generic 
+flags. If there was a better way then I would love to do it.
 
-Of course, some open methods call other sub-registrations, but you'd start 
-off by moving the lock_kernel() down just *one* stage. 
+The problem is that adding "notrace" on ever function that needs it, 
+also becomes quite messy. Especially when you have files where all 
+functions in the file needs a notrace and there is 40 or so small 
+functions that this applies to.
 
-So it literally should be:
- - remove one lock_kernel/unlock_kernel pair in fs/char_dev.c
- - add max 83 pairs in the places that register those things
- - external modules will need to add it themselves some day.
+To add flags to file foo.c one simply needs to do
 
-> 1: We could add an unlocked_open() to the file_operations structure;
->    drivers could be converted over as they are verified not to need the
->    BKL on open.  Disadvantages are that it grows this structure for a
->    relatively rare case - most open() calls already don't need the BKL.
->    But it's a relatively easy path without flag days.
+CFLAGS_foo.o = -newflags
 
-I really don't think it's worth the pain. See above. The numbers aren't 
-that huge, and external modules simply aren't a pressing enough issue.
+It would be nice to have something like
 
-		Linus
+CFLAGS_REMOVE_foo.o = -pg
+
+Perhaps that is possible to do. Then the above "Makefile turd" wont be 
+so crappy.
+
+-- Steve
+
+
