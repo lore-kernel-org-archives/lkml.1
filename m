@@ -1,56 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760459AbYENICj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760995AbYENIDl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760459AbYENICj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 04:02:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbYENICP
+	id S1760995AbYENIDl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 04:03:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbYENIDS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 04:02:15 -0400
-Received: from nelson.telenet-ops.be ([195.130.133.66]:51202 "EHLO
-	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754150AbYENICN (ORCPT
+	Wed, 14 May 2008 04:03:18 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:42002 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755217AbYENIDP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 04:02:13 -0400
-Date: Wed, 14 May 2008 10:02:11 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linux/m68k <linux-m68k@vger.kernel.org>
-cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: m68k: main.c:(.init.text+0x730): undefined reference to `strlen'
-Message-ID: <Pine.LNX.4.64.0805140958400.5778@anakin>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 14 May 2008 04:03:15 -0400
+Date: Wed, 14 May 2008 17:08:17 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
+       "hugh@veritas.com" <hugh@veritas.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [RFC/PATCH 3/6] memcg: handle swapcache.
+Message-Id: <20080514170817.cf96f280.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080514170236.23c9ddd7.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080514170236.23c9ddd7.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Including changes in memory.stat file.
 
-M68k builds with current mainline fail with
+=
+Now swapcache is not accounted. (because it had some troubles.)
 
-    init/built-in.o: In function `kernel_init':
-    main.c:(.init.text+0x730): undefined reference to `strlen'
+This is retrying account swap cache, based on remove-refcnt patch.
 
-Reverting commit e662e1cfd434aa234b72fbc781f1d70211cb785b
+ * If a page is swap-cache,  mem_cgroup_uncharge_page() will *not*
+   uncharge a page even if page->mapcount == 0.
+ * If a page is removed from swap-cache, mem_cgroup_uncharge_page()
+   is called.
+ * A new swapcache page is not charged until when it's mapped. By this
+   we can avoid complicated read-ahead troubles.
 
-    Author: Cyrill Gorcunov <gorcunov@gmail.com>
-    Date:   Mon May 12 14:02:22 2008 -0700
+ A file, memory.stat,"rss" member is changed to "anon/swapcache".
+ (rss is not precise name here...)
+ When all processes in cgroup exits, rss/swapcache counter can have some
+ numbers because of lazy behavior of LRU. So the word "rss" is confusing.
+ I can easily imagine a user says "Oh, there may be memory leak..."
+ Precise counting of swapcache is too costly to be handled in memcg.
 
-    init: don't lose initcall return values
+Change log: v2->v3
+ - adjusted to 2.6.26-rc2+x
+ - changed "rss" in stat to "rss/swapcache". (stat value includes swapcache)
+Change log: v1->v2
+ - adjusted to 2.6.25-mm1.
 
-    There is an ability to lose an initcall return value if it happened with irq
-    disabled or imbalanced preemption (and if we debug initcall).
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-fixes the problem. My first guess is gcc is turning sizeof() into strlen()
-again.
+---
+ mm/memcontrol.c |    9 +++++----
+ mm/migrate.c    |    3 ++-
+ mm/swap_state.c |    1 +
+ 3 files changed, 8 insertions(+), 5 deletions(-)
 
-Sample build log available at
-http://kisskb.ellerman.id.au/kisskb/buildresult/27596/
+Index: linux-2.6.26-rc2/mm/migrate.c
+===================================================================
+--- linux-2.6.26-rc2.orig/mm/migrate.c
++++ linux-2.6.26-rc2/mm/migrate.c
+@@ -359,7 +359,8 @@ static int migrate_page_move_mapping(str
+ 	write_unlock_irq(&mapping->tree_lock);
+ 	if (!PageSwapCache(newpage)) {
+ 		mem_cgroup_uncharge_cache_page(page);
+-	}
++	} else
++		mem_cgroup_uncharge_page(page);
+ 
+ 	return 0;
+ }
+Index: linux-2.6.26-rc2/mm/swap_state.c
+===================================================================
+--- linux-2.6.26-rc2.orig/mm/swap_state.c
++++ linux-2.6.26-rc2/mm/swap_state.c
+@@ -110,6 +110,7 @@ void __delete_from_swap_cache(struct pag
+ 	total_swapcache_pages--;
+ 	__dec_zone_page_state(page, NR_FILE_PAGES);
+ 	INC_CACHE_INFO(del_total);
++	mem_cgroup_uncharge_page(page);
+ }
+ 
+ /**
+Index: linux-2.6.26-rc2/mm/memcontrol.c
+===================================================================
+--- linux-2.6.26-rc2.orig/mm/memcontrol.c
++++ linux-2.6.26-rc2/mm/memcontrol.c
+@@ -44,10 +44,10 @@ static struct kmem_cache *page_cgroup_ca
+  */
+ enum mem_cgroup_stat_index {
+ 	/*
+-	 * For MEM_CONTAINER_TYPE_ALL, usage = pagecache + rss.
++	 * For MEM_CONTAINER_TYPE_ALL, usage = pagecache + rss/swapcache.
+ 	 */
+ 	MEM_CGROUP_STAT_CACHE, 	   /* # of pages charged as cache */
+-	MEM_CGROUP_STAT_RSS,	   /* # of pages charged as rss */
++	MEM_CGROUP_STAT_RSS,	   /* # of pages charged as anon/swapcache */
+ 	MEM_CGROUP_STAT_PGPGIN_COUNT,	/* # of pages paged in */
+ 	MEM_CGROUP_STAT_PGPGOUT_COUNT,	/* # of pages paged out */
+ 
+@@ -696,7 +696,8 @@ void __mem_cgroup_uncharge_common(struct
+ 
+ 	if ((ctype == MEM_CGROUP_CHARGE_TYPE_MAPPED)
+ 	    && ((pc->flags & PAGE_CGROUP_FLAG_CACHE)
+-		|| page_mapped(page)))
++		|| page_mapped(page)
++		|| PageSwapCache(page)))
+ 		goto unlock;
+ 
+ 	mz = page_cgroup_zoneinfo(pc);
+@@ -922,7 +923,7 @@ static const struct mem_cgroup_stat_desc
+ 	u64 unit;
+ } mem_cgroup_stat_desc[] = {
+ 	[MEM_CGROUP_STAT_CACHE] = { "cache", PAGE_SIZE, },
+-	[MEM_CGROUP_STAT_RSS] = { "rss", PAGE_SIZE, },
++	[MEM_CGROUP_STAT_RSS] = { "anon/swapcache", PAGE_SIZE, },
+ 	[MEM_CGROUP_STAT_PGPGIN_COUNT] = {"pgpgin", 1, },
+ 	[MEM_CGROUP_STAT_PGPGOUT_COUNT] = {"pgpgout", 1, },
+ };
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
