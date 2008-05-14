@@ -1,71 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760503AbYENOmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761208AbYENOmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760503AbYENOmA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 10:42:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbYENOlu
+	id S1761208AbYENOmd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 10:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757671AbYENOmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 10:41:50 -0400
-Received: from mx2.suse.de ([195.135.220.15]:45630 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751363AbYENOlt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 10:41:49 -0400
-Message-ID: <482AFA28.8020403@suse.com>
-Date: Wed, 14 May 2008 10:41:44 -0400
-From: Jeff Mahoney <jeffm@suse.com>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Cc: reiserfs-devel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       kamalesh@linux.vnet.ibm.com
-Subject: Re: [patch 2/3] [PATCH] reiserfs: convert j_flush_sem to mutex
-References: <20080508063557.757413878@suse.com> <20080508063651.715221085@suse.com>
-In-Reply-To: <20080508063651.715221085@suse.com>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 14 May 2008 10:42:24 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:57740 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753079AbYENOmY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 10:42:24 -0400
+Date: Wed, 14 May 2008 16:42:05 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Yan <rottled@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Comprehensive list of kernel self-modifications?
+Message-ID: <20080514143526.GA6260@ucw.cz>
+References: <54b90fdf0805011246v64d28c7ao8eb848419890d20a@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <54b90fdf0805011246v64d28c7ao8eb848419890d20a@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Mahoney wrote:
->  j_flush_sem is a semaphore but uses it as if it were a mutex. This
->  patch converts it to a mutex.
-> --- a/fs/reiserfs/journal.c
-> +++ b/fs/reiserfs/journal.c
-> @@ -1411,8 +1411,8 @@ static int flush_journal_list(struct sup
->  
->  	/* if flushall == 0, the lock is already held */
->  	if (flushall) {
-> -		down(&journal->j_flush_sem);
-> -	} else if (!down_trylock(&journal->j_flush_sem)) {
-> +		mutex_lock(&journal->j_flush_mutex);
-> +	} else if (!mutex_trylock(&journal->j_flush_mutex)) {
->  		BUG();
->  	}
 
-Oops. This chunk didn't get refreshed, here's the right one.
+Hi!
 
--Jeff
+> I have been working on verifying kernel integrity and am trying to
+> differentiate
+> between vmlinux image on disk and the kernel loaded into memory. I understand
+>  that the kernel modifies itself (on x86 at least) during at least a few points:
 
-Signed-off-by: Jeff Mahoney <jeffm@suse.com>
----
- fs/reiserfs/journal.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/fs/reiserfs/journal.c
-+++ b/fs/reiserfs/journal.c
-@@ -1410,7 +1410,7 @@ static int flush_journal_list(struct sup
- 	/* if flushall == 0, the lock is already held */
- 	if (flushall) {
- 		mutex_lock(&journal->j_flush_mutex);
--	} else if (!mutex_trylock(&journal->j_flush_mutex)) {
-+	} else if (mutex_trylock(&journal->j_flush_mutex)) {
- 		BUG();
- 	}
- 
-
-
+This should go into Doc*/ somewhere. Self-modifying code just loves
+provoking cpu bugs...
+							Pavel
 -- 
-Jeff Mahoney
-SUSE Labs
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
