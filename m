@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762106AbYENSKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762547AbYENSO5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762106AbYENSKc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 14:10:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754762AbYENSKX
+	id S1762547AbYENSO5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 14:14:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757416AbYENSOr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 14:10:23 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54810 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752830AbYENSKV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 14:10:21 -0400
-Date: Wed, 14 May 2008 10:56:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Sage Weil <sage@newdream.net>
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: POHMELFS high performance network filesystem. Transactions,
- failover, performance.
-Message-Id: <20080514105654.673aee98.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0805140638450.14334@cobra.newdream.net>
-References: <20080513174523.GA1677@2ka.mipt.ru>
-	<20080513233341.47edea7f.akpm@linux-foundation.org>
-	<20080514074028.GA28330@2ka.mipt.ru>
-	<20080514080801.GE28330@2ka.mipt.ru>
-	<Pine.LNX.4.64.0805140638450.14334@cobra.newdream.net>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 14 May 2008 14:14:47 -0400
+Received: from styx.suse.cz ([82.119.242.94]:44705 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757203AbYENSOr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 14:14:47 -0400
+Date: Wed, 14 May 2008 20:14:45 +0200
+From: Jan Kara <jack@suse.cz>
+To: Mingming Cao <cmm@us.ibm.com>
+Cc: Badari Pulavarty <pbadari@us.ibm.com>, akpm@linux-foundation.org,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] jbd_commit_transaction() races with
+	journal_try_to_drop_buffers() causing DIO failures
+Message-ID: <20080514181444.GI24363@duck.suse.cz>
+References: <20080429124321.GD1987@duck.suse.cz> <1209654981.27240.19.camel@badari-desktop> <20080505170636.GK25722@duck.suse.cz> <1210372072.3639.52.camel@localhost.localdomain> <20080512155419.GD15856@duck.suse.cz> <1210639184.3661.43.camel@localhost.localdomain> <20080513145449.GC20806@duck.suse.cz> <1210717389.3638.24.camel@localhost.localdomain> <20080514170856.GH24363@duck.suse.cz> <1210786872.3657.48.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1210786872.3657.48.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 May 2008 06:41:53 -0700 (PDT) Sage Weil <sage@newdream.net> wrote:
-
-> > On Wed, May 14, 2008 at 11:40:28AM +0400, Evgeniy Polyakov (johnpol@2ka.mipt.ru) wrote:
-> > > > If any thread takes more than one kmap() at a time, it is deadlockable.
-> > > > Because there is a finite pool of kmaps.  Everyone can end up holding
-> > > > one or more kmaps, then waiting for someone else to release one.
-> > > 
-> > > It never takes the whole LAST_PKMAP maps. So the same can be applied to
-> > > any user who kmaps at least one page - while user waits for free slot,
-> > > it can be reused by someone else and so on.
+On Wed 14-05-08 10:41:12, Mingming Cao wrote:
+> > > Bummer, we can't free buffers in ext3_launder_page() before calling
+> > > try_to_free_page, as later
+> > > invalidate_complete_page2()->try_to_free_page() expecting the page
+> > > buffers are still here, and will return EIO if it launder_page() has
+> > > already freed those buffers.:(
+> >   Are you sure? Because if bufferes are released in ext3_launder_page(),
+> > PagePrivate() has been set to 0 and we should directly fall through to
+> > releasing the page without ever calling try_to_release_page()... So I'd
+> > want to find out why PagePrivate is still set in
+> > invalidate_complete_page2().
 > > 
-> > Actually CIFS uses the same logic: maps multiple pages in wrteback path
-> > and release them after received reply.
 > 
-> Yes.  Only a pagevec at a time, though... apparently 14 is a small enough 
-> number not to bite too many people in practice?
+> You are right. PagePrivate() is being set to 0 in drop_buffers(). 
 > 
+> The problem is do_launder_page() returns successfully if the page is not
+> dirty (our case), so ext3_launder_page() is not even get called. This
+> also explains why the log_wait_commit() approach doesn't work for me:(
+  I didn't realize PageDirty() is going to be already cleared by previous
+writes... :(
 
-In practice you need a large number of threads performing writeout to
-trigger this.  iirc that's how it was demonstrated back in the 2.4
-days.  Say, thousands of processes/threads doing write+fsync to
-separate files.
+> Have to think other ways...could we pass some flag to
+> journal_try_to_free_buffers(), and ask journal_try_to_free_buffers()
+> wait for jbd commit to finish flushing the data, if the request is from
+> directo IO?
+  Well, we could do that but we'd have to change try_to_release_page() call
+to accept an extra argument which would consequently mean changing all the
+filesystems... But yes, it probably makes sence because it is really
+different whether we should just release the page because of memory
+pressure or because direct IO needs to write to that area of the file.
+So adding the parameter to releasepage() callback is probably a reasonable
+thing to do.
 
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
