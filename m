@@ -1,71 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762148AbYENINy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762180AbYENIO5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762148AbYENINy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 04:13:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761872AbYENIN3
+	id S1762180AbYENIO5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 04:14:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757652AbYENIOh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 04:13:29 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:35571 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761635AbYENINZ (ORCPT
+	Wed, 14 May 2008 04:14:37 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33282 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752231AbYENIOd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 04:13:25 -0400
-Message-ID: <482A9F29.3040805@oss.ntt.co.jp>
-Date: Wed, 14 May 2008 17:13:29 +0900
-From: Takuya Yoshikawa <yoshikawa.takuya@oss.ntt.co.jp>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Mark Salyzyn <Mark_Salyzyn@adaptec.com>
-CC: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       AACRAID <AACRAID@adaptec.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       =?ISO-8859-1?Q?Fernando_Luis_V=E1zquez_Cao?= 
-	<fernando@oss.ntt.co.jp>
-Subject: Re: PROBLEM: <AACRAID SCSI RAID DRIVER> in 2.6.25.3 -- reply to your
- suggestions
-References: <4828E995.3080509@oss.ntt.co.jp> <2EB68762-7B3A-4E0E-A1AB-4581C6011E10@adaptec.com>
-In-Reply-To: <2EB68762-7B3A-4E0E-A1AB-4581C6011E10@adaptec.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 14 May 2008 04:14:33 -0400
+Date: Wed, 14 May 2008 01:01:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: POHMELFS high performance network filesystem. Transactions,
+ failover, performance.
+Message-Id: <20080514010101.8ef541b3.akpm@linux-foundation.org>
+In-Reply-To: <20080514074028.GA28330@2ka.mipt.ru>
+References: <20080513174523.GA1677@2ka.mipt.ru>
+	<20080513233341.47edea7f.akpm@linux-foundation.org>
+	<20080514074028.GA28330@2ka.mipt.ru>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reply to your suggestions,
+On Wed, 14 May 2008 11:40:30 +0400 Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
 
-1. with the kernel parameters, **aacraid.expose_physicals=0, 
-aacraid.dacmode=0**:
-I tried both parameters, but failed.
+> Hi Andrew.
+> 
+> On Tue, May 13, 2008 at 11:33:41PM -0700, Andrew Morton (akpm@linux-foundation.org) wrote:
+> > If any thread takes more than one kmap() at a time, it is deadlockable.
+> > Because there is a finite pool of kmaps.  Everyone can end up holding
+> > one or more kmaps, then waiting for someone else to release one.
+> 
+> It never takes the whole LAST_PKMAP maps. So the same can be applied to
+> any user who kmaps at least one page - while user waits for free slot,
+> it can be reused by someone else and so on.
+> 
+> But it can be speed issue, on 32 bit machine with 8gb of ram essentially
+> all pages were highmem and required mapping, so this does slows things
+> down (probably a lot), so I will extend writeback path of the POHMELFS
+> not to kmap pages, but instead use ->sendpage(), which if needed will
+> map page one-by-one. Current approach when page is mapped and then
+> copied looks really beter since the only one sending function is used
+> which takes lock only single time.
 
-2. about "[PATCH] Stop using num_physpages in aacraid":
-I am not using this patch: I saw drivers/scsi/aacraid/aachba.c 
-(kernel-2.6.25.3)
+OK.
 
-3. about other kernels
-Our machine normally runs with kernel-2.6.24 and
-this failure occurs only with kernel-2.6.25 and later, including 2.6.26-rc1
+> > Duplicating page_waitqueue() is bad.  Exporting it is probably bad too.
+> > Better would be to help us work out why the core kernel infrastructure is
+> > unsuitable, then make it suitable.
+> 
+> When ->writepage() is used, it has to wait until page is written (remote
+> side sent acknowledge), so if multiple pages are being written
+> simultaneously we either have to allocate shared structure or use
+> per-page wait.
 
-Sincerely,
--------------------------------------------------------------
-Takuya Yoshikawa @ NTT Open Source Software Center
-e-mail: yoshikawa.takuya@oss.ntt.co.jp
--------------------------------------------------------------
+That sounds exactly like wait_on_page_writeback()?
 
-
-> Not a panic, merely a problem probing the physical devices. It may 
-> seem 'forever' but that is what happens when it must issue commands to 
-> every target and lun on two physical busses. You may be able to 
-> mitigate this with the kernel parameter aacraid.expose_physicals=0, or 
-> aacraid.dacmode=0
+> Right now there are transactions (and they will be used
+> for all operations eventually), so this waiting can go away.
+> It is exactly the same logic which lock_page() uses.
 >
-> Status 8193 (0x2003) is not a known valid response code from the 
-> Firmware, it is a result of the Firmware not processing the command in 
-> the first place.
->
-> Could be a result of 'Subject: Re: [PATCH] Stop using num_physpages in 
-> aacraid '? Could you revert that one out to see? Could you instrument 
-> the return value to the new referenced function 
-> dma_get_required_mask(&dev->pdev->dev) that is incorporated in that 
-> patch?
->
-> Sincerely -- Mark Salyzyn
+> Will lock_page_killable()/__lock_page_killable() be exported to modules?
+
+Maybe, if there's a need.  I see no particular problem with that.
