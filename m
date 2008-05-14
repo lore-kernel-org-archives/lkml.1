@@ -1,50 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794AbYENVBD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755705AbYENVBk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754794AbYENVBD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 17:01:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbYENVAW
+	id S1755705AbYENVBk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 17:01:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754822AbYENVBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 17:00:22 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:47347 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752116AbYENVAR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 17:00:17 -0400
-Date: Wed, 14 May 2008 14:00:15 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Matthew Wilcox <matthew@wil.cx>
-cc: Andi Kleen <andi@firstfloor.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, mpm@selenic.com,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Subject: Re: [patch 21/21] slab defrag: Obsolete SLAB
-In-Reply-To: <20080514205842.GC9921@parisc-linux.org>
-Message-ID: <Pine.LNX.4.64.0805141359420.18958@schroedinger.engr.sgi.com>
-References: <20080510030831.796641881@sgi.com> <20080510030919.604216074@sgi.com>
- <4825709A.2020407@firstfloor.org> <20080510221515.3540a6cc@bree.surriel.com>
- <2f11576a0805120038s334dc56cuaf16b8b7c6f87098@mail.gmail.com>
- <84144f020805120054t1370236ei5ff52279457e026e@mail.gmail.com>
- <Pine.LNX.4.64.0805141009210.15194@schroedinger.engr.sgi.com>
- <482B2617.5010605@firstfloor.org> <Pine.LNX.4.64.0805141104260.15633@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0805141333550.18231@schroedinger.engr.sgi.com>
- <20080514205842.GC9921@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 14 May 2008 17:01:31 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39586 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754311AbYENVBa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 17:01:30 -0400
+Date: Wed, 14 May 2008 14:00:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Zan Lynx <zlynx@acm.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.26-rc2-mm1
+Message-Id: <20080514140032.83fc25b7.akpm@linux-foundation.org>
+In-Reply-To: <1210798147.4234.5.camel@localhost>
+References: <20080514010129.4f672378.akpm@linux-foundation.org>
+	<1210798147.4234.5.camel@localhost>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 May 2008, Matthew Wilcox wrote:
+On Wed, 14 May 2008 14:49:07 -0600
+Zan Lynx <zlynx@acm.org> wrote:
 
-> On Wed, May 14, 2008 at 01:46:52PM -0700, Christoph Lameter wrote:
-> > Some more on SMP scaling:
+> On Wed, 2008-05-14 at 01:01 -0700, Andrew Morton wrote: 
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.26-rc2/2.6.26-rc2-mm1/
+> > 
+> > 
+> > - The -mm tree is now based on linux-next.
+> > 
+> >   I will occasionally pick up later versions of trees which are already
+> >   in linux-next, to catch material which was added after Stephen last
+> >   pulled that tree.  That happened this time: git-net had a lot of driver
+> >   changes which weren't in linux-next and which I wanted in
+> >   2.6.26-rc2-mm1.
+> > 
+> > - A few more git trees were added: git-ubifs.patch, git-regulator.patch,
+> >   git-logfs.patch, git-orion.patch.
 > 
-> These are all great theories, and you mentioned that you'd fixed the
-> regressions with tbench, but did you fix the regression with the io-gen
-> program I sent you?
+> No good on my first attempt.  Here is what I ran into:
+> 
+> The printk timestamps have gone wild.  I cannot paste a dmesg but here
+> is one line I wrote down:
+> [17180644.495790] Testing tracer ftrace: NMI watchdog ...
 
-No. I thought you were satisfied with the performance increase you saw 
-when pinning the process to a single processor?
+I've seen reports like this against mainline, but I'm not sure that
+much has been done about it yet.
 
+> Which leads into the next problem: The kernel freezes after Testing
+> tracer ftrace.  Then I rebooted with my special testing command line
+> "kernel /bzImage-2.6.26-rc2-mm1 root=/dev/sda2 rootfstype=reiser4
+> rootflags=defaults,noatime i8042.nomux elevator=cfq resume=/dev/sda3
+> panic=5 nmi_watchdog=2,panic debug idle=poll nohz=off"
+> 
+> and I got the same freeze but then the NMI watchdog message.  Which is
+> the third problem.
+> 
+> Why did the NMI watchdog not panic and reboot the system?  It detected
+> the lock and printed the message.  It should have then panicked, waited
+> 5 seconds, and rebooted.
+> 
+> System is a 64-bit Gentoo AMD-64 Compaq R3000 laptop.  Compiler is GCC
+> 4.3.
+
+afaict this is all Ingo/Thomas stuff, so I'll add the ccs and run away :(
+
+> Config follows:
+
+Thanks.
