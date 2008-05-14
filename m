@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761848AbYENOYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762346AbYENOZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761848AbYENOYU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 10:24:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759310AbYENOYH
+	id S1762346AbYENOZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 10:25:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbYENOZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 10:24:07 -0400
-Received: from bipbip.grupopie.com ([195.23.16.24]:38285 "EHLO
-	bipbip.grupopie.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755544AbYENOYF (ORCPT
+	Wed, 14 May 2008 10:25:18 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43150 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753697AbYENOZR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 10:24:05 -0400
-Message-ID: <482AF60F.5050002@grupopie.com>
-Date: Wed, 14 May 2008 15:24:15 +0100
-From: Paulo Marques <pmarques@grupopie.com>
-Organization: Grupo PIE
-User-Agent: Thunderbird 1.5.0.14 (X11/20071210)
-MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Vegard Nossum <vegard.nossum@gmail.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kallsyms: fix potential overflow in binary search
-References: <20080513200736.GA17909@damson.getinternet.no>	 <482AD08D.7070206@grupopie.com> <84144f020805140522m6136ff69w7ffa6f9c9248706f@mail.gmail.com>
-In-Reply-To: <84144f020805140522m6136ff69w7ffa6f9c9248706f@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 14 May 2008 10:25:17 -0400
+Date: Wed, 14 May 2008 15:13:56 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [1/1] Export __lock_page_killable()
+Message-ID: <20080514151356.0cb4abfe@core>
+In-Reply-To: <20080514141157.GA27047@2ka.mipt.ru>
+References: <20080514141157.GA27047@2ka.mipt.ru>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg wrote:
-> On Wed, May 14, 2008 at 2:44 PM, Paulo Marques <pmarques@grupopie.com> wrote:
->>> This will probably never trigger... but it won't hurt to be careful.
->>  Not "probably", this will never trigger _period_. If you ever have more
->> than 2^31 symbols in the kernel's kallsyms table you'll have worse problems
->> to worry about than the binary search overflowing.
->>
->>  So, I don't think it is worth this des-optimization at all...
+On Wed, 14 May 2008 18:11:58 +0400
+Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+
+> Hi.
 > 
-> Yes it is. It serves as correct reference code and the
-> "deoptimization" is not measurable.
+> There are users, who would like to use lock_page_killable() in modules,
+> so far there are no users in kernel, but for consistency it can be
+> exported without them.
 
-Hum? "reference code"? in the middle of a kallsyms function?
+Missing information #1: Who are the users and what are the URLs to the
+code in question
 
-And are you really worried about contiguous arrays that are bigger than 
-2^31 elements? What kind of kernel structure would that be?
+> Not that it is particulary needed
 
-The fact that the "deoptimization" isn't measurable isn't an excuse for 
-unnecessary bloat.
+Humm..
 
-This all seems like a wild goose chase to me...
+> +EXPORT_SYMBOL(__lock_page_killable);
 
--- 
-Paulo Marques - www.grupopie.com
-
-"To be, or not to be? That is ..... liable to be removed at -O2 and above."
+_GPL - or better yet this could be added *when* we have an actual in tree
+user who really needs it and can show it is appropriate to export.
+That'll also save Adrian from removing it again ;)
