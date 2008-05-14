@@ -1,125 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756468AbYENU4B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753246AbYENU7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756468AbYENU4B (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 16:56:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755771AbYENUzQ
+	id S1753246AbYENU7R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 16:59:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750999AbYENU7A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 16:55:16 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:35665 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755709AbYENUzO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 16:55:14 -0400
-Subject: Re: [PATCH 3/3] Guarantee that COW faults for a process that
-	called mmap(MAP_PRIVATE) on hugetlbfs will succeed
-From: Adam Litke <agl@us.ibm.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: linux-mm@kvack.org, dean@arctic.org, linux-kernel@vger.kernel.org,
-       wli@holomorphy.com, dwg@au1.ibm.com, andi@firstfloor.org,
-       kenchen@google.com, apw@shadowen.org
-In-Reply-To: <20080507193926.5765.78883.sendpatchset@skynet.skynet.ie>
-References: <20080507193826.5765.49292.sendpatchset@skynet.skynet.ie>
-	 <20080507193926.5765.78883.sendpatchset@skynet.skynet.ie>
-Content-Type: text/plain
-Organization: IBM
-Date: Wed, 14 May 2008 15:55:25 -0500
-Message-Id: <1210798525.19507.55.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 14 May 2008 16:59:00 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:52039 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750862AbYENU7A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 16:59:00 -0400
+Date: Wed, 14 May 2008 14:58:42 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, mpm@selenic.com,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: [patch 21/21] slab defrag: Obsolete SLAB
+Message-ID: <20080514205842.GC9921@parisc-linux.org>
+References: <20080510030831.796641881@sgi.com> <20080510030919.604216074@sgi.com> <4825709A.2020407@firstfloor.org> <20080510221515.3540a6cc@bree.surriel.com> <2f11576a0805120038s334dc56cuaf16b8b7c6f87098@mail.gmail.com> <84144f020805120054t1370236ei5ff52279457e026e@mail.gmail.com> <Pine.LNX.4.64.0805141009210.15194@schroedinger.engr.sgi.com> <482B2617.5010605@firstfloor.org> <Pine.LNX.4.64.0805141104260.15633@schroedinger.engr.sgi.com> <Pine.LNX.4.64.0805141333550.18231@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0805141333550.18231@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-05-07 at 20:39 +0100, Mel Gorman wrote:
+On Wed, May 14, 2008 at 01:46:52PM -0700, Christoph Lameter wrote:
+> Some more on SMP scaling:
 
-> diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.25-mm1-0020-map_private_reserve/mm/hugetlb.c linux-2.6.25-mm1-0030-reliable_parent_faults/mm/hugetlb.c
-> --- linux-2.6.25-mm1-0020-map_private_reserve/mm/hugetlb.c	2008-05-07 18:39:34.000000000 +0100
-> +++ linux-2.6.25-mm1-0030-reliable_parent_faults/mm/hugetlb.c	2008-05-07 20:05:18.000000000 +0100
-> @@ -40,6 +40,9 @@ static int hugetlb_next_nid;
->   */
->  static DEFINE_SPINLOCK(hugetlb_lock);
-> 
-> +#define HPAGE_RESV_OWNER    (1UL << (BITS_PER_LONG - 1))
-> +#define HPAGE_RESV_UNMAPPED (1UL << (BITS_PER_LONG - 2))
-> +#define HPAGE_RESV_MASK (HPAGE_RESV_OWNER | HPAGE_RESV_UNMAPPED)
->  /*
->   * These three helpers are used to track how many pages are reserved for
->   * faults in a MAP_PRIVATE mapping. Only the process that called mmap()
-> @@ -49,20 +52,23 @@ static unsigned long vma_resv_huge_pages
->  {
->  	VM_BUG_ON(!is_vm_hugetlb_page(vma));
->  	if (!(vma->vm_flags & VM_SHARED))
-> -		return (unsigned long)vma->vm_private_data;
-> +		return (unsigned long)vma->vm_private_data & ~HPAGE_RESV_MASK;
->  	return 0;
->  }
-
-Ick.  Though I don't really have a suggestion on how to improve it
-unless a half-word is enough room to contain the reservation.  In that
-case we could create a structure which would make this much clearer.
-
-struct hugetlb_vma_reservation {
-	unsigned int flags;
-	unsigned int resv;
-};
-
->  static void adjust_vma_resv_huge_pages(struct vm_area_struct *vma, int delta)
->  {
->  	unsigned long reserve;
-> +	unsigned long flags;
->  	VM_BUG_ON(vma->vm_flags & VM_SHARED);
->  	VM_BUG_ON(!is_vm_hugetlb_page(vma));
-> 
->  	reserve = (unsigned long)vma->vm_private_data + delta;
-> -	vma->vm_private_data = (void *)reserve;
-> +	flags = (unsigned long)vma->vm_private_data & HPAGE_RESV_MASK;
-> +	vma->vm_private_data = (void *)(reserve | flags);
->  }
-> 
-> +/* Reset counters to 0 and clear all HPAGE_RESV_* flags */
->  void reset_vma_resv_huge_pages(struct vm_area_struct *vma)
->  {
->  	VM_BUG_ON(!is_vm_hugetlb_page(vma));
-> @@ -73,10 +79,27 @@ void reset_vma_resv_huge_pages(struct vm
->  static void set_vma_resv_huge_pages(struct vm_area_struct *vma,
->  							unsigned long reserve)
->  {
-> +	unsigned long flags;
-> +
->  	VM_BUG_ON(!is_vm_hugetlb_page(vma));
->  	VM_BUG_ON(vma->vm_flags & VM_SHARED);
-> 
-> -	vma->vm_private_data = (void *)reserve;
-> +	flags = (unsigned long)vma->vm_private_data & HPAGE_RESV_MASK;
-> +	vma->vm_private_data = (void *)(reserve | flags);
-> +}
-> +
-> +static void set_vma_resv_flags(struct vm_area_struct *vma, unsigned long flags)
-> +{
-> +	unsigned long reserveflags = (unsigned long)vma->vm_private_data;
-> +	VM_BUG_ON(!is_vm_hugetlb_page(vma));
-> +	reserveflags |= flags;
-> +	vma->vm_private_data = (void *)reserveflags;
-> +}
-> +
-> +static int is_vma_resv_set(struct vm_area_struct *vma, unsigned long flag)
-> +{
-> +	VM_BUG_ON(!is_vm_hugetlb_page(vma));
-> +	return ((unsigned long)vma->vm_private_data & flag) != 0;
->  }
-> 
->  static void clear_huge_page(struct page *page, unsigned long addr)
-> @@ -139,7 +162,7 @@ static void decrement_hugepage_resv_vma(
->  		 * Only the process that called mmap() has reserves for
->  		 * private mappings.
->  		 */
-> -		if (vma_resv_huge_pages(vma)) {
-> +		if (is_vma_resv_set(vma, HPAGE_RESV_OWNER)) {
->  			resv_huge_pages--;
->  			adjust_vma_resv_huge_pages(vma, -1);
->  		}
+These are all great theories, and you mentioned that you'd fixed the
+regressions with tbench, but did you fix the regression with the io-gen
+program I sent you?
 
 -- 
-Adam Litke - (agl at us.ibm.com)
-IBM Linux Technology Center
-
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
