@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761225AbYENO62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761725AbYENPBd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761225AbYENO62 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 10:58:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757236AbYENO6U
+	id S1761725AbYENPBd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 11:01:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757236AbYENPBV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 10:58:20 -0400
-Received: from mu-out-0910.google.com ([209.85.134.184]:21215 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751769AbYENO6T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 10:58:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent;
-        b=tfSQ01dEFMjKAtkTyprnsEPS1UzJMkgoTdMfhDbKr+DhhQSYYH0vYW8yH+aUVItBy3g63B7hemtrH9a2nZXTH9xw5RoLcc7oDTur7oQg+1DAq82zavka5KWm11QlbGktq7lmfqcLpHUWRFb7HGMVf3eH3SM/3kcwbIzl4haWpwM=
-Date: Wed, 14 May 2008 18:58:08 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Andreas Schwab <schwab@suse.de>
-Cc: Adrian Bunk <bunk@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: m68k: main.c:(.init.text+0x730): undefined reference to
-	`strlen'
-Message-ID: <20080514145808.GC6902@cvg>
-References: <Pine.LNX.4.64.0805140958400.5778@anakin> <jeprrpth5m.fsf@sykes.suse.de> <20080514141056.GB19909@cs181133002.pp.htv.fi> <jeabitt0xj.fsf@sykes.suse.de> <20080514144031.GA6902@cvg> <je63thszo6.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Wed, 14 May 2008 11:01:21 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:51991 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752745AbYENPBU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 11:01:20 -0400
+Date: Wed, 14 May 2008 19:00:53 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: Sage Weil <sage@newdream.net>, Jeff Garzik <jeff@garzik.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: POHMELFS high performance network filesystem. Transactions, failover, performance.
+Message-ID: <20080514150052.GA15826@2ka.mipt.ru>
+References: <20080513174523.GA1677@2ka.mipt.ru> <4829E752.8030104@garzik.org> <20080513205114.GA16489@2ka.mipt.ru> <Pine.LNX.4.64.0805140623001.14334@cobra.newdream.net> <20080514135156.GA23131@2ka.mipt.ru> <20080514143105.GB14987@shareable.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <je63thszo6.fsf@sykes.suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080514143105.GB14987@shareable.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Andreas Schwab - Wed, May 14, 2008 at 04:55:37PM +0200]
-| Cyrill Gorcunov <gorcunov@gmail.com> writes:
-| 
-| > I think it would help to see ..tmp_vmlinux1.cmd to ensure for inclusion
-| > of lib/lib.a. strlen was there without my patch as Andreas already pointed,
-| > I've just added strncat wich is coming from lib/string.o for this arch.
-| 
-| Actually the way strncat is used here is broken anyway, it does not
-| prevent array overrun.  The third argument of strncat only limits the
-| amount of characters copied, without taking into account the length of
-| the string already in the buffer.  Consequently gcc has optimized the
-| call to strncat into a simple call to strcat, since none of the copied
-| strings are longer than sizeof(msgbuf).  This strcat call is then
-| expanded to include a call to strlen.
-| 
-| So a better fix would probably be to make msgbuf big enough and use
-| strcat instead.
-| 
-| Andreas.
-| 
-| -- 
-| Andreas Schwab, SuSE Labs, schwab@suse.de
-| SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-| PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-| "And now for something completely different."
-| 
+On Wed, May 14, 2008 at 03:31:05PM +0100, Jamie Lokier (jamie@shareable.org) wrote:
+> > If we are talking about agregate parallel perfromance, then its basic
+> > protocol with 2 messages is (probably) optimal, but still I'm not
+> > convinced, that 2 messages case is a good choise, I want one :)
+> 
+> Look up "one-phase commit" or even "zero-phase commit".  (The
+> terminology is cheating a bit.)  As I've understood it, all commit
+> protocols have a step where each node guarantees it can commit if
+> asked and node failure at that point does not invalidate the guarantee
+> if the node recovers (if it can't maintain the guarantee, the node
+> doesn't recover in a technical sense and a higher level protocol may
+> reintegrate the node).  One/zero-phase commit extends that to
+> guaranteeing a certain amounts and types of data can be written before
+> it knows what the data is, so write messages within that window are
+> sufficient for global commits.  Guarantees can be acquired
+> asynchronously in advance of need, and can have time and other limits.
+> These guarantees are no different in principle from the 1-bit
+> guarantee offered by the "can you commit" phase of other commit
+> protocols, so they aren't as weak as they seem.
 
-Thanks Andreas, I'll fix it.
+If I understood that, client has to connect to all servers and send data
+there, so that after single reply things got committed. That is
+definitely not the issue, when there are lots of servers.
 
-		- Cyrill -
+That can be the case if client connects to some gate server, which in
+turn broadcasts data further, that is how I plan to implement things at
+first.
+
+Another approach, which seems also intersting is leader election (per
+client), so that leader would broadcast all the data.
+
+-- 
+	Evgeniy Polyakov
