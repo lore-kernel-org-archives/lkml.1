@@ -1,142 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757777AbYENVoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757309AbYENVpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757777AbYENVoe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 17:44:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752348AbYENVoW
+	id S1757309AbYENVpa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 17:45:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbYENVpR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 17:44:22 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41587 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757465AbYENVoU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 17:44:20 -0400
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH] mm: Fix atomic_t overflow in vm
-To: torvalds@osdl.org
-Cc: linux-kernel@vger.kernel.org
-Date: Wed, 14 May 2008 22:33:03 +0100
-Message-ID: <20080514213302.5631.54560.stgit@core>
-User-Agent: StGIT/0.14.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Wed, 14 May 2008 17:45:17 -0400
+Received: from vena.lwn.net ([206.168.112.25]:50018 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751020AbYENVpQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 17:45:16 -0400
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Alexander Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [announce] "kill the Big Kernel Lock (BKL)" tree 
+From: corbet@lwn.net (Jonathan Corbet)
+In-reply-to: Your message of "Wed, 14 May 2008 19:49:55 +0200."
+             <20080514174955.GA515@elte.hu> 
+Date: Wed, 14 May 2008 15:45:15 -0600
+Message-ID: <6457.1210801515@vena.lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Cox <alan@redhat.com>
+Sez Ingo:
 
-The atomic_t type is 32bit but a 64bit system can have more than 2^32
-pages of virtual address space available. Without this we overflow on
-ludicrously large mappings
----
+> This task is not easy at all. 12 years after Linux has been converted to 
+> an SMP OS we still have 1300+ legacy BKL using sites. There are 400+ 
+> lock_kernel() critical sections and 800+ ioctls.
 
- fs/proc/proc_misc.c  |    2 +-
- include/linux/mman.h |    4 ++--
- mm/mmap.c            |    4 ++--
- mm/nommu.c           |    4 ++--
- mm/swap.c            |    4 ++--
- 5 files changed, 9 insertions(+), 9 deletions(-)
+There's also every char device open() method - a rather long list in its
+own right.  I'd be surprised if one in ten of them really needs it, but
+one has to look...
 
+I've been looking at the chrdev code anyway, and pondering on how this
+might be addressed.  Here's some thoughts on alternatives, I'd be
+curious what people think:
 
-diff --git a/fs/proc/proc_misc.c b/fs/proc/proc_misc.c
-index 74a323d..32dc14c 100644
---- a/fs/proc/proc_misc.c
-+++ b/fs/proc/proc_misc.c
-@@ -139,7 +139,7 @@ static int meminfo_read_proc(char *page, char **start, off_t off,
- #define K(x) ((x) << (PAGE_SHIFT - 10))
- 	si_meminfo(&i);
- 	si_swapinfo(&i);
--	committed = atomic_read(&vm_committed_space);
-+	committed = atomic_long_read(&vm_committed_space);
- 	allowed = ((totalram_pages - hugetlb_total_pages())
- 		* sysctl_overcommit_ratio / 100) + total_swap_pages;
- 
-diff --git a/include/linux/mman.h b/include/linux/mman.h
-index 87920a0..dab8892 100644
---- a/include/linux/mman.h
-+++ b/include/linux/mman.h
-@@ -17,14 +17,14 @@
- 
- extern int sysctl_overcommit_memory;
- extern int sysctl_overcommit_ratio;
--extern atomic_t vm_committed_space;
-+extern atomic_long_t vm_committed_space;
- 
- #ifdef CONFIG_SMP
- extern void vm_acct_memory(long pages);
- #else
- static inline void vm_acct_memory(long pages)
- {
--	atomic_add(pages, &vm_committed_space);
-+	atomic_long_add(pages, &vm_committed_space);
- }
- #endif
- 
-diff --git a/mm/mmap.c b/mm/mmap.c
-index fac6633..669499e 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -80,7 +80,7 @@ EXPORT_SYMBOL(vm_get_page_prot);
- int sysctl_overcommit_memory = OVERCOMMIT_GUESS;  /* heuristic overcommit */
- int sysctl_overcommit_ratio = 50;	/* default is 50% */
- int sysctl_max_map_count __read_mostly = DEFAULT_MAX_MAP_COUNT;
--atomic_t vm_committed_space = ATOMIC_INIT(0);
-+atomic_long_t vm_committed_space = ATOMIC_LONG_INIT(0);
- 
- /*
-  * Check that a process has enough memory to allocate a new virtual
-@@ -177,7 +177,7 @@ int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin)
- 	 * cast `allowed' as a signed long because vm_committed_space
- 	 * sometimes has a negative value
- 	 */
--	if (atomic_read(&vm_committed_space) < (long)allowed)
-+	if (atomic_long_read(&vm_committed_space) < (long)allowed)
- 		return 0;
- error:
- 	vm_unacct_memory(pages);
-diff --git a/mm/nommu.c b/mm/nommu.c
-index ef8c62c..dca93fc 100644
---- a/mm/nommu.c
-+++ b/mm/nommu.c
-@@ -39,7 +39,7 @@ struct page *mem_map;
- unsigned long max_mapnr;
- unsigned long num_physpages;
- unsigned long askedalloc, realalloc;
--atomic_t vm_committed_space = ATOMIC_INIT(0);
-+atomic_long_t vm_committed_space = ATOMIC_LONG_INIT(0);
- int sysctl_overcommit_memory = OVERCOMMIT_GUESS; /* heuristic overcommit */
- int sysctl_overcommit_ratio = 50; /* default is 50% */
- int sysctl_max_map_count = DEFAULT_MAX_MAP_COUNT;
-@@ -1410,7 +1410,7 @@ int __vm_enough_memory(struct mm_struct *mm, long pages, int cap_sys_admin)
- 	 * cast `allowed' as a signed long because vm_committed_space
- 	 * sometimes has a negative value
- 	 */
--	if (atomic_read(&vm_committed_space) < (long)allowed)
-+	if (atomic_long_read(&vm_committed_space) < (long)allowed)
- 		return 0;
- error:
- 	vm_unacct_memory(pages);
-diff --git a/mm/swap.c b/mm/swap.c
-index 91e1944..45c9f25 100644
---- a/mm/swap.c
-+++ b/mm/swap.c
-@@ -503,7 +503,7 @@ void vm_acct_memory(long pages)
- 	local = &__get_cpu_var(committed_space);
- 	*local += pages;
- 	if (*local > ACCT_THRESHOLD || *local < -ACCT_THRESHOLD) {
--		atomic_add(*local, &vm_committed_space);
-+		atomic_long_add(*local, &vm_committed_space);
- 		*local = 0;
- 	}
- 	preempt_enable();
-@@ -520,7 +520,7 @@ static int cpu_swap_callback(struct notifier_block *nfb,
- 
- 	committed = &per_cpu(committed_space, (long)hcpu);
- 	if (action == CPU_DEAD || action == CPU_DEAD_FROZEN) {
--		atomic_add(*committed, &vm_committed_space);
-+		atomic_long_add(*committed, &vm_committed_space);
- 		*committed = 0;
- 		drain_cpu_pagevecs((long)hcpu);
- 	}
+1: We could add an unlocked_open() to the file_operations structure;
+   drivers could be converted over as they are verified not to need the
+   BKL on open.  Disadvantages are that it grows this structure for a
+   relatively rare case - most open() calls already don't need the BKL.
+   But it's a relatively easy path without flag days.
 
+2: Create a char_dev_ops structure for char devs and use it instead of
+   file_operations.  I vaguely remember seeing Al mutter about that a
+   while back.  Quite a while back.  This mirrors what was done with
+   block devices, and makes some sense - there's a lot of stuff in
+   struct file_operations which is not really applicable to char devs.
+   Then struct char_dev_ops could have open() and locked_open(), with
+   the latter destined for removal sometime around 2015 or so.
+
+   Advantages are that it's cleaner and separates out some things which
+   perhaps shouldn't be mixed anyway.  Disadvantage is...well...a fair
+   amount of code churn.  It would also require chrdev-specific wrappers
+   to map straight file_operations calls in the VFS to the new
+   callbacks.
+
+3: Provide a new form of cdev_add() which lets the driver indicate
+   that the BKL is not needed on open (or anything else?).  At a
+   minimum, it could just be a new parameter on cdev_add which has a
+   value of zero or FIXME_I_STILL_NEED_BKL.  Still some churn but easier
+   to script and smaller because a lot of drivers are still using
+   register_chrdev() - something else worth fixing.
+
+   A more involved form might provide a new chardev_add() which takes
+   the new char_dev_ops structure too.  Mapping between new and old
+   operations vectors would be done internally to avoid breaking older
+   drivers before they can be fixed.
+
+4: Just find every char dev open() function and shove in lock_kernel()
+   calls, then remove the call from chrdev_open().  The disadvantage
+   here is that, beyond lots of work and churn, there's no way to know
+   which ones you missed.
+
+I kind of like the combination of 2 and 3, done in such a way that
+there's no "every driver must change" flag day.  This could be an
+interesting project, even...  Thoughts?
+
+jon
