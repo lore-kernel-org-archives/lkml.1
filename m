@@ -1,113 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763403AbYENTp6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763697AbYENTuH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763403AbYENTp6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 15:45:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759036AbYENTp2
+	id S1763697AbYENTuH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 15:50:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763231AbYENTtk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 15:45:28 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54590 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759102AbYENTpY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 15:45:24 -0400
-Date: Wed, 14 May 2008 12:44:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, apw@shadowen.org, balbir@linux.vnet.ibm.com,
-       linux-mm@kvack.org
-Subject: Re: [BUG] 2.6.26-rc2-mm1 - kernel bug while bootup at
- __alloc_pages_internal () on x86_64
-Message-Id: <20080514124455.cf7c3097.akpm@linux-foundation.org>
-In-Reply-To: <482B2DB0.9030102@linux.vnet.ibm.com>
-References: <20080514010129.4f672378.akpm@linux-foundation.org>
-	<482ACBFE.9010606@linux.vnet.ibm.com>
-	<20080514103601.32d20889.akpm@linux-foundation.org>
-	<482B2DB0.9030102@linux.vnet.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 14 May 2008 15:49:40 -0400
+Received: from waste.org ([66.93.16.53]:60692 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763022AbYENTth (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 15:49:37 -0400
+Subject: Re: [patch 21/21] slab defrag: Obsolete SLAB
+From: Matt Mackall <mpm@selenic.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, Matthew Wilcox <matthew@wil.cx>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+In-Reply-To: <Pine.LNX.4.64.0805141220440.16223@schroedinger.engr.sgi.com>
+References: <20080510030831.796641881@sgi.com>
+	 <20080510030919.604216074@sgi.com> <4825709A.2020407@firstfloor.org>
+	 <20080510221515.3540a6cc@bree.surriel.com>
+	 <2f11576a0805120038s334dc56cuaf16b8b7c6f87098@mail.gmail.com>
+	 <84144f020805120054t1370236ei5ff52279457e026e@mail.gmail.com>
+	 <Pine.LNX.4.64.0805141009210.15194@schroedinger.engr.sgi.com>
+	 <482B2617.5010605@firstfloor.org>
+	 <Pine.LNX.4.64.0805141100110.15633@schroedinger.engr.sgi.com>
+	 <1210789112.4093.14.camel@calx>
+	 <Pine.LNX.4.64.0805141220440.16223@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Wed, 14 May 2008 14:49:23 -0500
+Message-Id: <1210794563.4093.57.camel@calx>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 May 2008 23:51:36 +0530
-Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 
-> Andrew Morton wrote:
-> > On Wed, 14 May 2008 16:54:46 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+On Wed, 2008-05-14 at 12:21 -0700, Christoph Lameter wrote:
+> On Wed, 14 May 2008, Matt Mackall wrote:
+> 
+> > > Interrupt exit in general would have to inspect the per cpu structures of 
+> > > all slab caches on the system?
 > > 
-> >> Hi Andrew,
-> >>
-> >> The 2.6.26-rc2-mm1 kernel panic's while bootup on the x86_64 machine.
-> >>
-> >>
-> >> BUG: unable to handle kernel paging request at 0000000000001e08
-> >> IP: [<ffffffff8026ac60>] __alloc_pages_internal+0x80/0x470
-> >> PGD 0 
-> >> Oops: 0000 [1] SMP 
-> >> last sysfs file: 
-> >> CPU 31 
-> >> Modules linked in:
-> >> Pid: 1, comm: swapper Not tainted 2.6.26-rc2-mm1-autotest #1
-> >> RIP: 0010:[<ffffffff8026ac60>]  [<ffffffff8026ac60>] __alloc_pages_internal+0x80/0x470
-> >> RSP: 0018:ffff810bf9dbdbc0  EFLAGS: 00010202
-> >> RAX: 0000000000000002 RBX: ffff810bef4786c0 RCX: 0000000000000001
-> >> RDX: 0000000000001e00 RSI: 0000000000000001 RDI: 0000000000001020
-> >> RBP: ffff810bf9dbb6d0 R08: 0000000000001020 R09: 0000000000000000
-> >> R10: 0000000000000008 R11: ffffffff8046d130 R12: 0000000000001020
-> >> R13: 0000000000000001 R14: 0000000000001e00 R15: ffff810bf8d29878
-> >> FS:  0000000000000000(0000) GS:ffff810bf916dec0(0000) knlGS:0000000000000000
-> >> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> >> CR2: 0000000000001e08 CR3: 0000000000201000 CR4: 00000000000006e0
-> >> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> >> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> >> Process swapper (pid: 1, threadinfo ffff810bf9dbc000, task ffff810bf9dbb6d0)
-> >> Stack:  0002102000000000 0000000000000002 0000000000000000 0000000200000000
-> >>  0000000000000000 0000000000000000 0000000000000000 0000000000000000
-> >>  0000000000000000 ffff810bef4786c0 0000000000001020 ffffffffffffffff
-> >> Call Trace:
-> >>  [<ffffffff802112e9>] dma_alloc_coherent+0xa9/0x280
-> >>  [<ffffffff804e8c9e>] tg3_init_one+0xa3e/0x15e0
-> >>  [<ffffffff8028d0e4>] alternate_node_alloc+0x84/0xd0
-> >>  [<ffffffff802286fc>] task_rq_lock+0x4c/0x90
-> >>  [<ffffffff8022de62>] set_cpus_allowed_ptr+0x72/0xf0
-> >>  [<ffffffff802e12fb>] sysfs_addrm_finish+0x1b/0x210
-> >>  [<ffffffff802e0f99>] sysfs_find_dirent+0x29/0x40
-> >>  [<ffffffff8036cc34>] pci_device_probe+0xe4/0x130
-> >>  [<ffffffff803bfc26>] driver_probe_device+0x96/0x1a0
-> >>  [<ffffffff803bfdb9>] __driver_attach+0x89/0x90
-> >>  [<ffffffff803bfd30>] __driver_attach+0x0/0x90
-> >>  [<ffffffff803bf29d>] bus_for_each_dev+0x4d/0x80
-> >>  [<ffffffff8028d676>] kmem_cache_alloc+0x116/0x130
-> >>  [<ffffffff803bf78e>] bus_add_driver+0xae/0x220
-> >>  [<ffffffff803c0046>] driver_register+0x56/0x130
-> >>  [<ffffffff8036cee8>] __pci_register_driver+0x68/0xb0
-> >>  [<ffffffff80708a29>] kernel_init+0x139/0x390
-> >>  [<ffffffff8020c358>] child_rip+0xa/0x12
-> >>  [<ffffffff807088f0>] kernel_init+0x0/0x390
-> >>  [<ffffffff8020c34e>] child_rip+0x0/0x12
-> >>
-> >>
-> >> Code: c9 00 00 02 00 25 00 08 00 00 89 4c 24 04 89 04 24 44 89 e9 b8 01 00 00 00 d3 e0 48 98 48 89 44 24 08 65 48 8b 2c 25 00 00 00 00 <49> 83 7e 08 00 0f 84 9a 03 00 00 44 8b 44 24 1c 48 8b 74 24 10 
-> >> RIP  [<ffffffff8026ac60>] __alloc_pages_internal+0x80/0x470
-> >>  RSP <ffff810bf9dbdbc0>
-> >> CR2: 0000000000001e08
-> >> ---[ end trace 111493bba2b1f3db ]---
-> > 
-> > grumble.  why.  There are lots of patches already which changed the
-> > page allocator.
-> > 
-> > config, please?
-> I have attached the .config file.
+> > Why's that? When we're not under pressure (fast path), we can delay (and
+> > batch) remote frees. When we are under pressure (slow path), we can do
+> > everything immediately.
+> 
+> Fastpath is what? I guess slow path means we called into the page 
+> allocator?
 
-I cannot reproduce it with your config on my non-numa box.
+No, slow path here means we're already under memory pressure, so we
+don't care if something takes longer if it saves memory.
 
-> > Is it NUMA?
-> It is a NUMA box, with 4 nodes.
+-- 
+Mathematics is the supreme nostalgia of our time.
 
-Can you bisect it please?
-
-Wrecking the page allocator is a fairly unusual thing to do.  I'd start
-out by looking at *bootmem*.patch and perhaps
-acpi-acpi_numa_init-build-fix.patch.
