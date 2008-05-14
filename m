@@ -1,69 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760690AbYENPuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760754AbYENPwa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760690AbYENPuk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 11:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbYENPuc
+	id S1760754AbYENPwa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 11:52:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbYENPwW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 11:50:32 -0400
-Received: from zombie.ncsc.mil ([144.51.88.131]:34596 "EHLO zombie.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751800AbYENPub (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 11:50:31 -0400
-Subject: Re: [RFC][PATCH] security:  split ptrace checking in proc
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: casey@schaufler-ca.com, lsm <linux-security-module@vger.kernel.org>,
-       James Morris <jmorris@namei.org>, Eric Paris <eparis@parisplace.org>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080514152817.GC17453@sequoia.sous-sol.org>
-References: <648615.23893.qm@web36601.mail.mud.yahoo.com>
-	 <1210687270.6206.129.camel@moss-spartans.epoch.ncsc.mil>
-	 <20080514091526.GB17453@sequoia.sous-sol.org>
-	 <1210762984.6206.293.camel@moss-spartans.epoch.ncsc.mil>
-	 <20080514152817.GC17453@sequoia.sous-sol.org>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Wed, 14 May 2008 11:50:16 -0400
-Message-Id: <1210780216.28282.4.camel@moss-spartans.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
-Content-Transfer-Encoding: 7bit
+	Wed, 14 May 2008 11:52:22 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:7173 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752244AbYENPwV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 11:52:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=PULjHpMdU7cPgW52HDsRqBx6/2wQPT8h3oo3qctCFn5jGmYH9E9CjrPtVl+emHE1nfTfk8YNZszk5weOVQdwGuVmd3mR1mcV46z7WtQVPipgmfmDY1fB9a30q2Qi4HNXgGLwf09+f07DPheAO8Ea4goTnm/B8TUSKO9ekpug4iI=
+Date: Wed, 14 May 2008 11:52:18 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Byron Bradley <byron.bbradley@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       akpm@linux-foundation.org, nico@cam.org, buytenh@wantstofly.org
+Subject: Re: 2.6.26-rc2-mm1: oops on ARM while registering GPIO Keys
+Message-ID: <20080514115114.ZZRA012@mailhub.coreip.homeip.net>
+References: <alpine.DEB.1.00.0805141620080.3865@gamma>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.00.0805141620080.3865@gamma>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2008-05-14 at 08:28 -0700, Chris Wright wrote:
-> * Stephen Smalley (sds@tycho.nsa.gov) wrote:
-> > On Wed, 2008-05-14 at 02:15 -0700, Chris Wright wrote:
-> > > It is slightly ad-hoc.  Is it just the audit messages that you described
-> > > that made you pick environ and fd, or was there more specific (threat
-> > > based) reasoning?  Would /proc/pid/fd/ + genfs + e.g. anonfd be a little
-> > > wider than just readstate?
-> > 
-> > Well, it is being driven by experience with what applications try to
-> > access w/o requiring full ptrace access, but also by a threat-based
-> > reasoning that it is less dangerous to grant limited read access to
-> > parts of the process state than to grant complete read access to its
-> > entire memory image or full control of the target process.
-> > 
-> > Not entirely sure what you mean by the latter question.
+On Wed, May 14, 2008 at 04:34:41PM +0100, Byron Bradley wrote:
+> Testing on a QNAP TS-209 (ARM, Marvell Orion 88F5182 SoC). GPIO Keys works 
+> correctly on 2.6.26-rc2 but panics on 2.6.26-rc2-mm1. If nobody knows the 
+> cause of this I can look into it/bisect later.
 > 
-> fd/ access gives a view in the ->files, which could include rather
-> internal bits like pipes, sockets, or anonfd descriptors -- things w/out
-> external handles.  That view includes ability to open the fd (similar
-> to dup()) and use it (granted subject to further security checks, but
-> they may be quite generic at that point).
 
-What do you mean by "generic" in the above?  Just the fact that there
-wouldn't be any distinction between such access and access to a
-descriptor received explicitly via local IPC from the target task?
-
-Ok, so perhaps the only distinction that makes sense is read vs.
-write/control, with all checks within proc except mem_write using the
-former and ptrace_attach and mem_write using the latter?
+Yeah, it seems I applied the wrong version of the debouncing patch.
+Just revert git-input from -mm for now.
 
 -- 
-Stephen Smalley
-National Security Agency
-
+Dmitry
