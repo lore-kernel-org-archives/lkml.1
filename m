@@ -1,62 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763884AbYENT4E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764043AbYENT7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763884AbYENT4E (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 15:56:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762445AbYENTzo
+	id S1764043AbYENT7q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 15:59:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761356AbYENT7Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 15:55:44 -0400
-Received: from 1wt.eu ([62.212.114.60]:4312 "EHLO 1wt.eu"
+	Wed, 14 May 2008 15:59:24 -0400
+Received: from mail.aknet.ru ([78.158.192.26]:65133 "EHLO mail.aknet.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762069AbYENTzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 15:55:43 -0400
-Date: Wed, 14 May 2008 21:55:34 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Marco Berizzi <pupilla@hotmail.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: v2.6.25: SKB BUG: Invalid truesize (260) len=134, sizeof(sk_buff)=164
-Message-ID: <20080514195531.GW8474@1wt.eu>
-References: <BAY103-DAV9C4667C3BA5764E61DA2CB2CE0@phx.gbl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <BAY103-DAV9C4667C3BA5764E61DA2CB2CE0@phx.gbl>
-User-Agent: Mutt/1.5.11
+	id S1761169AbYENT7X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 15:59:23 -0400
+Message-ID: <482B4494.9030800@aknet.ru>
+Date: Wed, 14 May 2008 23:59:16 +0400
+From: Stas Sergeev <stsp@aknet.ru>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Roberto Oppedisano <roberto.oppedisano@infracom.it>
+CC: LKML <linux-kernel@vger.kernel.org>, Takashi Iwai <tiwai@suse.de>
+Subject: Re: Non-working snd-pcsp
+References: <482737BE.20502@infracom.it> <4827415A.7060101@aknet.ru> <482756F0.8020609@infracom.it> <48275D8D.10500@aknet.ru> <4827F0A1.9090600@infracom.it> <48288ACC.1020909@aknet.ru> <48299F08.2060702@infracom.it> <4829B6A1.90707@infracom.it>
+In-Reply-To: <4829B6A1.90707@infracom.it>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[CC'd netdev]
+Hello.
 
-On Wed, May 14, 2008 at 05:04:03PM +0200, Marco Berizzi wrote:
-> Hi folks.
-> After 20 days uptime linux 2.6.25 has
-> started logging a ton of these messages:
-> 
-> May 14 17:00:23 Pleiadi kernel: SKB BUG: Invalid truesize (260) len=134,
-> sizeof(sk_buff)=164
-> May 14 17:00:23 Pleiadi kernel: SKB BUG: Invalid truesize (260) len=118,
-> sizeof(sk_buff)=164
-> May 14 17:00:23 Pleiadi kernel: SKB BUG: Invalid truesize (324) len=166,
-> sizeof(sk_buff)=164
-> May 14 17:00:23 Pleiadi kernel: SKB BUG: Invalid truesize (324) len=166,
-> sizeof(sk_buff)=164
-> May 14 17:00:23 Pleiadi kernel: SKB BUG: Invalid truesize (260) len=118,
-> sizeof(sk_buff)=164
-> May 14 17:00:23 Pleiadi kernel: SKB BUG: Invalid truesize (260) len=118,
-> sizeof(sk_buff)=164
-> May 14 17:00:23 Pleiadi kernel: SKB BUG: Invalid truesize (292) len=166,
-> sizeof(sk_buff)=164
-> May 14 17:00:23 Pleiadi kernel: SKB BUG: Invalid truesize (324) len=166,
-> sizeof(sk_buff)=164
-> May 14 17:00:23 Pleiadi kernel: SKB BUG: Invalid truesize (324) len=166,
-> sizeof(sk_buff)=164
-> May 14 17:00:24 Pleiadi kernel: SKB BUG: Invalid truesize (260) len=118,
-> sizeof(sk_buff)=164
-> 
-> Does it mean there is a problem?
-
-Most likely. I think you'll have to bring your config and a bit of info
-about the workload of the machine reporting this.
-
-Willy
-
+Roberto Oppedisano wrote:
+> In alsamixer i see:
+> Item: PC Speaker [Off]
+> and I cant' find a way to toggle it.
+Thats simple. Just press 'm' button.
+There are also the M letters right
+above the percentage value of the
+control. That means Mute. By pressing
+m, make sure no controls have M but
+instead have O (not sure what does O
+stand for).
+You can also use F1 for help.
