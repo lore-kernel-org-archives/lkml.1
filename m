@@ -1,93 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756315AbYENV0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755428AbYENV1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756315AbYENV0y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 17:26:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752286AbYENV0m
+	id S1755428AbYENV1W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 17:27:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750988AbYENV1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 17:26:42 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:53629 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750988AbYENV0l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 17:26:41 -0400
-Date: Wed, 14 May 2008 14:26:37 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Matt Mackall <mpm@selenic.com>
-cc: Andi Kleen <andi@firstfloor.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, Matthew Wilcox <matthew@wil.cx>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Subject: Re: [patch 21/21] slab defrag: Obsolete SLAB
-In-Reply-To: <1210798978.4093.82.camel@calx>
-Message-ID: <Pine.LNX.4.64.0805141405350.19073@schroedinger.engr.sgi.com>
-References: <20080510030831.796641881@sgi.com>  <20080510030919.604216074@sgi.com>
- <4825709A.2020407@firstfloor.org>  <20080510221515.3540a6cc@bree.surriel.com>
-  <2f11576a0805120038s334dc56cuaf16b8b7c6f87098@mail.gmail.com> 
- <84144f020805120054t1370236ei5ff52279457e026e@mail.gmail.com> 
- <Pine.LNX.4.64.0805141009210.15194@schroedinger.engr.sgi.com> 
- <482B2617.5010605@firstfloor.org>  <Pine.LNX.4.64.0805141100110.15633@schroedinger.engr.sgi.com>
-  <1210789112.4093.14.camel@calx>  <Pine.LNX.4.64.0805141220440.16223@schroedinger.engr.sgi.com>
-  <1210794563.4093.57.camel@calx>  <Pine.LNX.4.64.0805141333060.18231@schroedinger.engr.sgi.com>
- <1210798978.4093.82.camel@calx>
+	Wed, 14 May 2008 17:27:12 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:35533 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752986AbYENV1K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 17:27:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=nbis9Ko9NFI6vO8qJZ72DoZMAd9EonhctDeqUpgit+7ILEG0Hz6F/5tV7ONL4dif2Kdy+EI/GVHxdxa3R3/OJ/4/8J0CSg/l3Cr0j1N+7UHdFVBHdf/lhmABZqaq8vlExG9evvd7hqOvNBcAi1pHs1Xbey0D9AHEazWNXL1bZvs=
+Message-ID: <482B58FA.30000@gmail.com>
+Date: Wed, 14 May 2008 23:26:18 +0200
+From: Franck Bui-Huu <vagabon.xyz@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: paulmck@linux.vnet.ibm.com, Josh Triplett <josh@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 2/2] rculist.h: use the rcu API
+References: <482B5887.9050804@gmail.com>
+In-Reply-To: <482B5887.9050804@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 May 2008, Matt Mackall wrote:
+From: Franck Bui-Huu <fbuihuu@gmail.com>
 
-> First, we should obviously always expire all queues when we hit low
-> water marks as it'll be cheaper/faster than other forms of reclaim.
+This patch makes almost all list mutation primitives use
+rcu_assign_pointer().
 
-Hmmm... I tried a scheme like that awhile back but it did not improve 
-performance. The cost of queuing the object degraded the fast path (Note 
-SLUB object queuing is fundamentally different due to no in slab 
-metadata structure).
+The main point of this being readability improvement.
 
-> Second, if our queues were per-slab (this might be hard, I realize), we
-> can sweep the queue at alloc time.
+Signed-off-by: Franck Bui-Huu <fbuihuu@gmail.com>
+---
+ include/linux/rculist.h |   23 +++++++++--------------
+ 1 files changed, 9 insertions(+), 14 deletions(-)
 
-In that case we dirty the same cacheline that we also need to take the 
-page lock. Wonder if there would be any difference? The freelist is 
-essentially a kind of per page queue (As pointed out by Ingo in the past).
-
-> We can also sweep before falling back to the page allocator. That should
-> guarantee that delayed frees don't negatively impact fragmentation.
-
-That would introduce additional complexity for the NUMA case because now 
-we would need to distinguish between the nodes that these objects came 
-from. So we would have to scan the queue and classify the objects? Or 
-determine the object node when queueing them and put them into an remote 
-node queue? Sounds similar to all the trouble that we ended up with 
-in SLAB.
-
-> And lastly, we can always have a periodic thread/timer/workqueue
-> operation.
-
-I have had enough trouble in the last years with the 2 second hiccups that 
-come with SLAB and that affect timing sensitive operations between 
-processors in a SMP configuration and also cause trouble for applications 
-that require fast network latencies. I'd rather avoid that.
+diff --git a/include/linux/rculist.h b/include/linux/rculist.h
+index e673c26..52cee71 100644
+--- a/include/linux/rculist.h
++++ b/include/linux/rculist.h
+@@ -5,6 +5,7 @@
+  * RCU-protected list version
+  */
+ #include <linux/list.h>
++#include <linux/rcupdate.h>
  
-> So far this is a bunch of hand-waving but I think this ends up basically
-> being an anti-magazine. A magazine puts a per-cpu queue on the alloc
-> side which costs on both the alloc and free side, regardless of whether
-> the workload demands it. This puts a per-cpu queue on the free side that
-> we can bypass in the cache-friendly case. I think that's a step in the
-> right direction.
+ /*
+  * Insert a new entry between two known consecutive entries.
+@@ -17,9 +18,8 @@ static inline void __list_add_rcu(struct list_head *new,
+ {
+ 	new->next = next;
+ 	new->prev = prev;
+-	smp_wmb();
++	rcu_assign_pointer(prev->next, new);
+ 	next->prev = new;
+-	prev->next = new;
+ }
+ 
+ /**
+@@ -108,9 +108,8 @@ static inline void list_replace_rcu(struct list_head *old,
+ {
+ 	new->next = old->next;
+ 	new->prev = old->prev;
+-	smp_wmb();
++	rcu_assign_pointer(new->prev->next, new);
+ 	new->next->prev = new;
+-	new->prev->next = new;
+ 	old->prev = LIST_POISON2;
+ }
+ 
+@@ -164,8 +163,7 @@ static inline void list_splice_init_rcu(struct list_head *list,
+ 	 */
+ 
+ 	last->next = at;
+-	smp_wmb();
+-	head->next = first;
++	rcu_assign_pointer(head->next, first);
+ 	first->prev = head;
+ 	at->prev = last;
+ }
+@@ -260,10 +258,9 @@ static inline void hlist_replace_rcu(struct hlist_node *old,
+ 
+ 	new->next = next;
+ 	new->pprev = old->pprev;
+-	smp_wmb();
++	rcu_assign_pointer(*new->pprev, new);
+ 	if (next)
+ 		new->next->pprev = &new->next;
+-	*new->pprev = new;
+ 	old->pprev = LIST_POISON2;
+ }
+ 
+@@ -290,12 +287,12 @@ static inline void hlist_add_head_rcu(struct hlist_node *n,
+ 					struct hlist_head *h)
+ {
+ 	struct hlist_node *first = h->first;
++
+ 	n->next = first;
+ 	n->pprev = &h->first;
+-	smp_wmb();
++	rcu_assign_pointer(h->first, n);
+ 	if (first)
+ 		first->pprev = &n->next;
+-	h->first = n;
+ }
+ 
+ /**
+@@ -321,9 +318,8 @@ static inline void hlist_add_before_rcu(struct hlist_node *n,
+ {
+ 	n->pprev = next->pprev;
+ 	n->next = next;
+-	smp_wmb();
++	rcu_assign_pointer(*(n->pprev), n);
+ 	next->pprev = &n->next;
+-	*(n->pprev) = n;
+ }
+ 
+ /**
+@@ -349,8 +345,7 @@ static inline void hlist_add_after_rcu(struct hlist_node *prev,
+ {
+ 	n->next = prev->next;
+ 	n->pprev = &prev->next;
+-	smp_wmb();
+-	prev->next = n;
++	rcu_assign_pointer(prev->next, n);
+ 	if (n->next)
+ 		n->next->pprev = &n->next;
+ }
+-- 
+1.5.5.GIT
 
-I think if you want queues for an SMP only system, do not care too much 
-about memory use, dont do any frequent allocations on multicore systems 
-and can tolerate the hiccups because your application does not care (most 
-enterprise apps are constructed that way) or if you are running benchmarks 
-that only access a limited dataset that fits into SLABs queues amd 
-avoid touch the contenst of objects then the SLAB concept is the right way 
-to go.
-
-If we would strip the NUMA stuff out and make it an SMP only allocator for 
-enterprise apps then the code may become much smaller and simpler. I guess 
-Arjan suggested something similar in the past. But that would result in 
-SLAB no longer being a general allocator.
