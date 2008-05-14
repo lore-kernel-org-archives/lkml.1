@@ -1,59 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750963AbYENU3H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752859AbYENU3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750963AbYENU3H (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 16:29:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751854AbYENU2t
+	id S1752859AbYENU3Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 16:29:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbYENU27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 16:28:49 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:38361 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750862AbYENU2s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 16:28:48 -0400
-Date: Wed, 14 May 2008 23:27:09 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Graf Yang <graf.yang@analog.com>, Bryan Wu <cooloney@kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [2.6 patch] irnet_irda.c must #include <asm/unaligned.h>
-Message-ID: <20080514202709.GB21795@cs181133002.pp.htv.fi>
+	Wed, 14 May 2008 16:28:59 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44810 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752351AbYENU25 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 16:28:57 -0400
+Date: Wed, 14 May 2008 13:28:53 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Russ Anderson <rja@sgi.com>
+cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Tony Luck <tony.luck@intel.com>, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH 1/3] mm: Minor clean-up of page flags in mm/page_alloc.c
+ v4
+In-Reply-To: <20080513230220.GB26722@sgi.com>
+Message-ID: <alpine.LFD.1.10.0805141321020.3019@woody.linux-foundation.org>
+References: <20080513230220.GB26722@sgi.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the following compile error caused by
-commit 332223831e86b2e17b48b4afafad07d8e3b73861
-(irda: Fix a misalign access issue. (v2)):
 
-<--  snip  -->
 
-...
-  CC      net/irda/irnet/irnet_irda.o
-/home/bunk/linux/kernel-2.6/git/linux-2.6/net/irda/irnet/irnet_irda.c: In function ‘irnet_discovery_indication’:
-/home/bunk/linux/kernel-2.6/git/linux-2.6/net/irda/irnet/irnet_irda.c:1676: error: implicit declaration of function ‘get_unaligned’
-make[4]: *** [net/irda/irnet/irnet_irda.o] Error 1
+On Tue, 13 May 2008, Russ Anderson wrote:
+>
+> Minor source code cleanup of page flags in mm/page_alloc.c.  
 
-<--  snip  -->
+Could we (a) make the naming reflect the *use* rather than the flags 
+involved and (b) perhaps add a comment about that use at the point of 
+definition?
 
-Reported-by: Adrian Bunk <bunk@kernel.org>
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> @@ -237,16 +237,7 @@ static void bad_page(struct page *page)
+>  	printk(KERN_EMERG "Trying to fix it up, but a reboot is needed\n"
+>  		KERN_EMERG "Backtrace:\n");
+>  	dump_stack();
+> -	page->flags &= ~(1 << PG_lru	|
+> -			1 << PG_private |
+> -			1 << PG_locked	|
+> -			1 << PG_active	|
+> -			1 << PG_dirty	|
+> -			1 << PG_reclaim |
+> -			1 << PG_slab    |
+> -			1 << PG_swapcache |
+> -			1 << PG_writeback |
+> -			1 << PG_buddy );
+> +	page->flags &= ~(PAGE_FLAGS_RECLAIM);
 
----
-41881ccc5581fe2e27ca15b942c9f79e28b45276 diff --git a/net/irda/irnet/irnet_irda.c b/net/irda/irnet/irnet_irda.c
-index a3ec002..cf9a4b5 100644
---- a/net/irda/irnet/irnet_irda.c
-+++ b/net/irda/irnet/irnet_irda.c
-@@ -10,6 +10,7 @@
- 
- #include "irnet_irda.h"		/* Private header */
- #include <linux/seq_file.h>
-+#include <asm/unaligned.h>
- 
- /*
-  * PPP disconnect work: we need to make sure we're in
+Because here I'm now otherwise looking at the code, and I wonder
+ - why the extra odd parenthesis?
+ - what does PAGE_FLAG_RECLAIM mean?
 
+and it would be much nicer (I think) if the mask was instead called 
+something that reflected what it was all about, ie something along the 
+lines of PAGE_FLAG_CLEAR_WHEN_BAD instead.
+
+> @@ -463,16 +454,7 @@ static inline int free_pages_check(struc
+>  		(page->mapping != NULL)  |
+>  		(page_get_page_cgroup(page) != NULL) |
+>  		(page_count(page) != 0)  |
+> +		(page->flags & (PAGE_FLAGS_RESERVE))))
+>  		bad_page(page);
+
+Same exact thing. I wonder
+ - why are those parenthesis there
+ - what does "PAGE_FLAGS_RESERVE" mean?
+
+Woudln't it be much more readable if it was called 
+"PAGE_FLAGS_CHECK_AT_FREE" or something? That says "those flags will be 
+checked when the page is free'd", and now the use _and_ the definition 
+hopefully makes some sense?
+
+> @@ -616,17 +598,7 @@ static int prep_new_page(struct page *pa
+>  		(page->mapping != NULL)  |
+>  		(page_get_page_cgroup(page) != NULL) |
+>  		(page_count(page) != 0)  |
+> +		(page->flags & (PAGE_FLAGS_DIRTY))))
+>  		bad_page(page);
+
+And again - parenthesis, and perhaps "PAGE_FLAGS_CHECK_AT_PREP"?
+
+> +++ linus/include/linux/page-flags.h	2008-05-13 10:26:46.513459253 -0500
+> +
+> +#define PAGE_FLAGS	(1 << PG_lru   | 1 << PG_private   | 1 << PG_locked | \
+> +			 1 << PG_buddy | 1 << PG_writeback | \
+> +			 1 << PG_slab  | 1 << PG_swapcache | 1 << PG_active)
+> +
+> +#define PAGE_FLAGS_RECLAIM	(PAGE_FLAGS | 1 << PG_reclaim | 1 << PG_dirty)
+> +#define PAGE_FLAGS_RESERVE	(PAGE_FLAGS | 1 << PG_reserved)
+> +#define PAGE_FLAGS_DIRTY	(PAGE_FLAGS | 1 << PG_reserved | 1 << PG_dirty)
+
+This part would also be more explainable - rather than being a random 
+collection of flags, wouldn't it be more natural to think of them as 
+"flags I check at free", or "flags that I clear when they are corrupt" or 
+"flags that I check before I pass on a new page allocation".
+
+Right now it is _totally_ unclear why we should call something 
+PAGE_FLAGS_DIRTY when it has a lot of other bits set than just PG_dirty. 
+Hmm?
+
+			Linus
