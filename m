@@ -1,45 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762351AbYENN5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761349AbYENN5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762351AbYENN5X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 09:57:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758398AbYENN5K
+	id S1761349AbYENN5f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 09:57:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761526AbYENN5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 09:57:10 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:40989 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751691AbYENN5J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 09:57:09 -0400
-Date: Wed, 14 May 2008 17:56:52 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Sage Weil <sage@newdream.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: POHMELFS high performance network filesystem. Transactions, failover, performance.
-Message-ID: <20080514135652.GB23131@2ka.mipt.ru>
-References: <20080513174523.GA1677@2ka.mipt.ru> <20080513233341.47edea7f.akpm@linux-foundation.org> <20080514074028.GA28330@2ka.mipt.ru> <20080514080801.GE28330@2ka.mipt.ru> <Pine.LNX.4.64.0805140638450.14334@cobra.newdream.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0805140638450.14334@cobra.newdream.net>
-User-Agent: Mutt/1.5.9i
+	Wed, 14 May 2008 09:57:13 -0400
+Received: from ns.miraclelinux.com ([219.118.163.66]:60780 "EHLO
+	mail.miraclelinux.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754465AbYENN5L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 09:57:11 -0400
+Message-ID: <482AEE85.2070807@miraclelinux.com>
+Date: Wed, 14 May 2008 22:52:05 +0900
+From: Hirofumi Nakagawa <hnakagawa@miraclelinux.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org
+Subject: Re: [RFC][PATCH 0/1] MAZE: Mazed processes monitor
+References: <48297FD0.2090905@miraclelinux.com> <87y76d7w0n.fsf@basil.nowhere.org>
+In-Reply-To: <87y76d7w0n.fsf@basil.nowhere.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-PMX-Version: 5.3.1.294258, Antispam-Engine: 2.5.1.298604, Antispam-Data: 2008.5.14.64028
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 14, 2008 at 06:41:53AM -0700, Sage Weil (sage@newdream.net) wrote:
-> Yes.  Only a pagevec at a time, though... apparently 14 is a small enough 
-> number not to bite too many people in practice?
+Thank you for your comments and feedbacks.
+I got valuable comments.
+I'll study your comments closely and post take2.
 
-Well, POHMELFS can use up to 90 out of 512 or 1024 on x86, but that just
-moves a problem a bit closer.
-
-IMHO problem can be in fact, that copy can be more significant overhead
-than per page sockt lock and direct DMA (I belive most of the GigE and
-above (and of course RDMA) links have scatter-gather and RX checksumming),
-it has to be tested, so I will change writeback path for POHMELFS to test
-things. If there will not be any performance degradataion (and I believe
-there will not be, as long as no improvements, since tests were always
-network bound), I will use that approach.
-
--- 
-	Evgeniy Polyakov
+Thanks.
+Hirofumi Nakagawa
