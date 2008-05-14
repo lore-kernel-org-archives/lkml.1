@@ -1,50 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763593AbYENPWx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761084AbYENP0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763593AbYENPWx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 11:22:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbYENPWo
+	id S1761084AbYENP0T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 11:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbYENP0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 11:22:44 -0400
-Received: from mailer2.option.com ([81.246.70.163]:16867 "EHLO
-	mailer2.option.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751490AbYENPWo (ORCPT
+	Wed, 14 May 2008 11:26:07 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:33074 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751406AbYENP0F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 11:22:44 -0400
-X-Greylist: delayed 595 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 May 2008 11:22:43 EDT
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AuUAAB6eKkgKAAAZ/2dsb2JhbAAIrgQ
-Message-ID: <482B016E.2080306@option.com>
-Date: Wed, 14 May 2008 17:12:46 +0200
-From: Filip Aben <f.aben@option.com>
-User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
+	Wed, 14 May 2008 11:26:05 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Subject: Re: 2.6.26-rc1 regression: ISA DMA broken (bisected)
+Date: Wed, 14 May 2008 09:26:04 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Takashi Iwai <tiwai@suse.de>,
+       Glauber Costa <gcosta@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Pete Clements <clem@clem.clem-digital.net>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       ALSA devel <alsa-devel@alsa-project.org>
+References: <4823AAF2.7070102@keyaccess.nl> <200805131718.40138.bjorn.helgaas@hp.com> <482ADF34.2010004@keyaccess.nl>
+In-Reply-To: <482ADF34.2010004@keyaccess.nl>
 MIME-Version: 1.0
-To: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
-CC: linux-usb@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: HSO: add option hso driver
-References: <20080513215134.GC6139@kroah.com> <20080513232727.21c74bb2@core> <482A23B8.7050705@pobox.com> <20080514015815.GA29785@kroah.com> <20080514045712.GA2843@kroah.com> <482AF058.3020505@teltonika.lt>
-In-Reply-To: <482AF058.3020505@teltonika.lt>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 14 May 2008 15:12:46.0094 (UTC) FILETIME=[F6F402E0:01C8B5D4]
+Content-Disposition: inline
+Message-Id: <200805140926.05103.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paulius Zaleckas schreef:
-> Greg Kroah-Hartman wrote:
->> +#define DRIVER_VERSION            "1.2"
+On Wednesday 14 May 2008 06:46:44 am Rene Herman wrote:
+> On 14-05-08 01:18, Bjorn Helgaas wrote:
 > 
-> Maybe we should bump the version?
-> Now it is the same as the different driver at PHARscape.
+> > On Tuesday 13 May 2008 11:33:25 am Rene Herman wrote:
+> 
+> >> No, isa_device is its own thing, on its own isa_bus (*). It has a struct 
+> >> device * readily available though...
+> >>
+> >> (*) drivers/base/isa.c, and explanatory changelog at:
+> >>
+> >> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=a5117ba7da37deb09df5eb802dace229b3fb1e9f
+> > 
+> > Thanks for the nice changelog.
+> > 
+> > isa_register_driver() currently doesn't set a DMA mask.  Should it?
+> 
+> If it's going to be useful, definitely. The attached does not just set
+> 
+>    dev->dma_mask = &dev->coherent_dma_mask
+> 
+> as in the fallback_dev when dma_alloc_coherent() is passed a NULL device 
+> only due to the mask juggling in snd_dma_hack_alloc_coherent() (which 
+> wouldn't break, but...) but introduces its own copy in struct isa_dev 
+> same as struct pnp_dev. As far as I'm aware, there's no actual reason 
+> for keeping it other than that and if the hack could go I'd rather lose 
+> the private mask copy again also.
+> 
+> (the device model still uses a plain u64 by the way but I guess the 
+> clean type would be a dma64_addr_t)
+> 
+> Inlining is whitespace-failing here. Patch itself is trivial...
+> 
+> > I only see about 35 dma_alloc_coherent() calls that pass NULL.  I 
+> > guess even those would be a fair amount of work to change, and I 
+> > suppose there would be more that I missed.
+> 
+> At least the ALSA one isn't passing a literal NULL it seems. But yes, 
+> current NULL-hack reinstatement (it's been merged by Linus already) is 
+> definitely the correct fix for now.
+> 
+> Would like a comment on the snd_dma_hack_alloc_coherent thing first (no 
+> signoff...) but other than that I'll submit this in preparation for it 
+> being useful, I guess?
 
-Probably the best thing would be to drop it altogether as it doesn't 
-make a lot of sense to maintain it in the kernel. Also the pharscape 
-version will continue to live it's own life till the hso driver is fully 
-settled in an official kernel, so version conflicts would be bound to 
-happen anyway.
-
-Regards,
-
-Filip-
-
+Yes, I like this patch.
