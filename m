@@ -1,100 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759164AbYENH6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759824AbYENH7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759164AbYENH6m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 03:58:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907AbYENH6a
+	id S1759824AbYENH7q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 03:59:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbYENH7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 03:58:30 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:48291 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753552AbYENH63 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 03:58:29 -0400
-Date: Wed, 14 May 2008 11:57:56 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: POHMELFS high performance network filesystem. Transactions, failover, performance.
-Message-ID: <20080514075756.GC28330@2ka.mipt.ru>
-References: <20080513174523.GA1677@2ka.mipt.ru> <4829E752.8030104@garzik.org> <20080513205114.GA16489@2ka.mipt.ru> <20080514005223.GE27483@shareable.org>
+	Wed, 14 May 2008 03:59:38 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:60723 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753883AbYENH7h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 03:59:37 -0400
+Date: Wed, 14 May 2008 17:04:59 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
+       "hugh@veritas.com" <hugh@veritas.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [RFC/PATCH 1/6] memcg: drop_pages at force_empty.
+Message-Id: <20080514170459.ec03d1fd.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080514170236.23c9ddd7.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080514170236.23c9ddd7.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080514005223.GE27483@shareable.org>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 14, 2008 at 01:52:23AM +0100, Jamie Lokier (jamie@shareable.org) wrote:
-> I feel you have glossed over the more difficult parts of transactions
-> and cache coherency etc. with this brief summary ;-)
+This is NEW one ;)
+==
+Now, when we remove memcg, we call force_empty().
+This call drops all page_cgroup accounting in this mem_cgroup but doesn't
+drop pages. So, some page caches can be remaind as "not accounted" memory
+while they are alive. (because it's accounted only when add_to_page_cache())
+If they are not used by other memcg, global LRU will drop them.
 
-It was (and is) also a different time zone here :)
+This patch tries to drop pages at removing memcg. Other memcg will
+reload and re-account page caches.
 
-> Yours does sound a very interesting project.  Do you know how it
-> compares with NFSv4 for performance?  I think that has some similar
-> caching abilities?  I think CRFS should be similar.
+Consideration: should we add knob to drop pages or not?
 
-NFSv4 does not use similar caching scheme, but it has interesting
-batching abilities for bulk data transfer. CRFS was originally a source
-of inspiration for this project (before it was opened, we had some talk
-with Zach Brown, so I decided that it worth deeper investigation and
-started this FS). CRFS performance is also very good, but the fact, that
-it is only limited to BTRFS server seriously limits its usage imho.
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-> > As practice shows, the smaller and simpler initial steps are, the better
-> > results eventually become :)
-> 
-> I think you are right.  I am struggling with the opposite approach
-> (too big steps, trying to be too clever with algorithms) on a similar
-> project!  That said, I did try simpler steps earlier, and it worked
-> but showed a lot of tricky problems.
+---
+ include/linux/res_counter.h |   11 +++++++++++
+ mm/memcontrol.c             |   21 ++++++++++++++++++---
+ 2 files changed, 29 insertions(+), 3 deletions(-)
 
-The more we develop, more problems arises, so it is possible (and I had
-such situation), when very complex, but solvable problem, during
-development translates into multiple problems of the same complexity,
-which takes more and more time... Essentially this can be solved, until
-something is dropped and added when other things are completed.
+Index: linux-2.6.26-rc2/mm/memcontrol.c
+===================================================================
+--- linux-2.6.26-rc2.orig/mm/memcontrol.c
++++ linux-2.6.26-rc2/mm/memcontrol.c
+@@ -763,6 +763,20 @@ void mem_cgroup_end_migration(struct pag
+ 	mem_cgroup_uncharge_page(newpage);
+ }
+ 
++
++static void mem_cgroup_drop_all_page(struct mem_cgroup *mem)
++{
++	int progress;
++	while (res_counter_check_empty(&mem->res)) {
++		progress = try_to_free_mem_cgroup_pages(mem,
++					GFP_HIGHUSER_MOVABLE);
++		if (!progress) /* we did as much as possible */
++			break;
++		cond_resched();
++	}
++	return;
++}
++
+ /*
+  * This routine traverse page_cgroup in given list and drop them all.
+  * This routine ignores page_cgroup->ref_cnt.
+@@ -820,7 +834,12 @@ static int mem_cgroup_force_empty(struct
+ 	if (mem_cgroup_subsys.disabled)
+ 		return 0;
+ 
++	if (atomic_read(&mem->css.cgroup->count) > 0)
++		goto out;
++
+ 	css_get(&mem->css);
++	/* drop pages as much as possible */
++	mem_cgroup_drop_all_pages(mem);
+ 	/*
+ 	 * page reclaim code (kswapd etc..) will move pages between
+ 	 * active_list <-> inactive_list while we don't take a lock.
+Index: linux-2.6.26-rc2/include/linux/res_counter.h
+===================================================================
+--- linux-2.6.26-rc2.orig/include/linux/res_counter.h
++++ linux-2.6.26-rc2/include/linux/res_counter.h
+@@ -151,4 +151,15 @@ static inline void res_counter_reset_fai
+ 	cnt->failcnt = 0;
+ 	spin_unlock_irqrestore(&cnt->lock, flags);
+ }
++
++static inline int res_counter_check_empty(struct res_counter *cnt)
++{
++	unsigned long flags;
++	int ret;
++
++	spin_lock_irqsave(&cnt->lock, flags);
++	ret = (cnt->usage == 0);
++	spin_unlock_irqrestore(&cnt->lock, flags);
++	return ret;
++}
+ #endif
 
-For example there is a really interesting lockless algorithm for storing
-path cache in the POHMELFS, but implementation is really complex, so I
-used much simler tree based one, and things scale good even with it.
-
-> Fwiw, I've been working on what started as a distributed database that
-> is coming to be a filesystem too.  It has many qualities of both,
-> hopefully the best ones.  I'm aiming for high LAN file performance
-> similar to what you report with POHMELFS and would expect from any
-> modern fs, while also supporting database style transactions and
-> coherent queries, in a self-organising distributed system that handles
-> LAN/WAN/Internet each at their best.  Mention of Paxos stirred me to
-> reply - a relative of that is in there somewhere.  I have a long way
-> to go before a release.
-
-Depending on what to call a release :)
-
-> If anyone is working on something similar, I would be delighted to
-> hear from them.
-
-I belive that (only block?) FS which exports its structure in database
-accessible way, i.e. ability to search objects not only by name key and
-assign that new keys similar to how it is done in database, but not via
-assign_xattr(search(name)), is a very interesting and useful approach.
-Also the more I follow general purpose fs developments, the more I
-become sure that they (general purpose) will never be the best on any
-given workload, and instead special purpose (like databasefs or
-whatever) filesystems will get the niche. IMHO of course.
-
-> It scares me that I'm actually trying to do this.  But very exciting
-> it is too.
-
-Scares problems which we can not solve, this one kind of increases
-adrenalin level :)
-
-> It seems there's quite a bit of interesting work on Linux in this area
-> right now, with BTRFS and CRFS too.
-
-Yeah, probably this is time to move further in given area, so lots of
-interesting new developments.
-
--- 
-	Evgeniy Polyakov
