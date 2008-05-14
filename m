@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752385AbYENUdI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753147AbYENUdz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752385AbYENUdI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 16:33:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751047AbYENUc4
+	id S1753147AbYENUdz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 16:33:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbYENUdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 16:32:56 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:49078 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750758AbYENUcz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 16:32:55 -0400
-Date: Wed, 14 May 2008 13:32:51 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, davem@davemloft.net,
-       Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [BUG] 2.6.26-rc2-mm1 - kernel panic at inet_create() on powerpc
-Message-ID: <20080514203251.GF8812@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080514010129.4f672378.akpm@linux-foundation.org> <482B066F.4010605@linux.vnet.ibm.com> <20080514160705.GB8812@linux.vnet.ibm.com> <20080514200546.GA4802@martell.zuzino.mipt.ru>
+	Wed, 14 May 2008 16:33:45 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:44216 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752635AbYENUdm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 16:33:42 -0400
+Date: Wed, 14 May 2008 13:33:39 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Matt Mackall <mpm@selenic.com>
+cc: Andi Kleen <andi@firstfloor.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, Matthew Wilcox <matthew@wil.cx>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: [patch 21/21] slab defrag: Obsolete SLAB
+In-Reply-To: <1210794563.4093.57.camel@calx>
+Message-ID: <Pine.LNX.4.64.0805141333060.18231@schroedinger.engr.sgi.com>
+References: <20080510030831.796641881@sgi.com>  <20080510030919.604216074@sgi.com>
+ <4825709A.2020407@firstfloor.org>  <20080510221515.3540a6cc@bree.surriel.com>
+  <2f11576a0805120038s334dc56cuaf16b8b7c6f87098@mail.gmail.com> 
+ <84144f020805120054t1370236ei5ff52279457e026e@mail.gmail.com> 
+ <Pine.LNX.4.64.0805141009210.15194@schroedinger.engr.sgi.com> 
+ <482B2617.5010605@firstfloor.org>  <Pine.LNX.4.64.0805141100110.15633@schroedinger.engr.sgi.com>
+  <1210789112.4093.14.camel@calx>  <Pine.LNX.4.64.0805141220440.16223@schroedinger.engr.sgi.com>
+ <1210794563.4093.57.camel@calx>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080514200546.GA4802@martell.zuzino.mipt.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 15, 2008 at 12:05:46AM +0400, Alexey Dobriyan wrote:
-> On Wed, May 14, 2008 at 09:07:05AM -0700, Paul E. McKenney wrote:
-> > On Wed, May 14, 2008 at 09:04:07PM +0530, Kamalesh Babulal wrote:
-> > > Hi Andrew,
-> > > 
-> > > 2.6.26-rc2-mm1 kernel panics on powerpc, while running ltp test over it.
-> > > I have attached the gdb output of the pc and lr registers. The patch
-> > > list_for_each_rcu-must-die-networking.patch points to changes made 
-> > > to the same lines listed by the gdb output.
-> > 
-> > Hmmm....  Does the panic go away when this patch is reverted?
+On Wed, 14 May 2008, Matt Mackall wrote:
+
+> > allocator?
 > 
-> Yes.
+> No, slow path here means we're already under memory pressure, so we
+> don't care if something takes longer if it saves memory.
 
-OK, am awake now, apologies for my confusion.  Not sure -what- state
-I was in when generating and validating the original...
+So expire the queues under memory pressure only? Trigger queue cleanup 
+from reclaim?
 
-							Thanx, Paul
+
