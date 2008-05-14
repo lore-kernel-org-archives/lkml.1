@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756722AbYENQR6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759098AbYENQTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756722AbYENQR6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 12:17:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbYENQRq
+	id S1759098AbYENQTS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 12:19:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbYENQTF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 12:17:46 -0400
-Received: from OSB1387.piap.pl ([195.187.100.11]:52324 "EHLO khc.piap.pl"
+	Wed, 14 May 2008 12:19:05 -0400
+Received: from mail.queued.net ([207.210.101.209]:1923 "EHLO mail.queued.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751352AbYENQRp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 12:17:45 -0400
-To: David Miller <davem@davemloft.net>
-Cc: alan@lxorguk.ukuu.org.uk, jeff@garzik.org, paulkf@microgate.com,
-       jchapman@katalix.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH v2] Re: WAN: new PPP code for generic HDLC
-References: <20080424.065555.30390704.davem@davemloft.net>
-	<m3ve27nfpx.fsf@maximus.localdomain>
-	<20080424214457.1d5a1655@the-village.bc.nu>
-	<20080512.033244.153113922.davem@davemloft.net>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Wed, 14 May 2008 18:17:41 +0200
-In-Reply-To: <20080512.033244.153113922.davem@davemloft.net> (David Miller's message of "Mon\, 12 May 2008 03\:32\:44 -0700 \(PDT\)")
-Message-ID: <m3hcd0kggq.fsf@maximus.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751252AbYENQTE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 12:19:04 -0400
+Date: Wed, 14 May 2008 12:23:19 -0400
+From: Andres Salomon <dilinger@queued.net>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       rdunlap@xenotime.net, jschopp@austin.ibm.com
+Subject: Re: [PATCH] checkpatch: update the 80-char-line check to allow for
+ long strings
+Message-ID: <20080514122319.054d9aaa@ephemeral>
+In-Reply-To: <20080514155926.GF2821@shadowen.org>
+References: <20080514005325.765178fc@ephemeral>
+	<1210751346.10126.8.camel@twins>
+	<20080514104938.4b16c735@ephemeral>
+	<20080514155926.GF2821@shadowen.org>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-BTW: The dev->ml_priv addition is obviously a good step but I guess
-you don't need the dev->priv hackery duplicated with dev->ml_priv.
+On Wed, 14 May 2008 16:59:26 +0100
+Andy Whitcroft <apw@shadowen.org> wrote:
 
-Can't test it at the moment but I'd leave dev->priv alone and only get
-rid of the syncppp_ptr here. Then I'd simply use dev->ml_priv as
-syncppp_ptr and dev->priv would be a private driver pointer, as
-usual. Generic HDLC uses dev->priv for itself but the relevant hw
-drivers use hdlc->priv instead so it's not a problem.
+> On Wed, May 14, 2008 at 10:49:38AM -0400, Andres Salomon wrote:
+> > On Wed, 14 May 2008 09:49:06 +0200
+> > Peter Zijlstra <peterz@infradead.org> wrote:
+> > 
+[...]
+> > 
+> > The point is that we tell people to make sure that their patches are
+> > checkpatch-clean.  Let's make the tool reflect what we're actually
+> > looking for.
+> 
+> We did have a mini discussion on this when Ingo suggested allowing the
+> strings to run off the end of the line so that grep would work.  I did
+> put together a patch then for this.  There was no real response to the
+> suggestion we should take that recommendation into CodingStyle and
+> thus into checkpatch.
+> 
+> -apw
 
-When syncppp.c is removed we can use dev->ml_priv for HDLC layer,
-dev->priv for hw driver, and hdlc->priv would be no longer needed.
-
-I mean the following:
-
-David Miller <davem@davemloft.net> writes:
-
-> --- a/include/net/syncppp.h
-> +++ b/include/net/syncppp.h
-> @@ -59,7 +59,7 @@ struct ppp_device
->  
->  static inline struct sppp *sppp_of(struct net_device *dev) 
->  {
-> -	struct ppp_device **ppp = dev->priv;
-> +	struct ppp_device **ppp = dev->ml_priv;
->  	BUG_ON((*ppp)->dev != dev);
->  	return &(*ppp)->sppp;
->  }
-
-would become:
-
-static inline struct sppp *sppp_of(struct net_device *dev) 
-{
-	return dev->ml_priv;
-}
-
-The changes are not automatic, I'll look at it when able.
--- 
-Krzysztof Halasa
+I've yet to hear anyone say that this idea is awful...
