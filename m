@@ -1,93 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758761AbYENXvA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758711AbYENXzd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758761AbYENXvA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 19:51:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753917AbYENXuv
+	id S1758711AbYENXzd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 19:55:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbYENXzZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 19:50:51 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:45784 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753318AbYENXuu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 19:50:50 -0400
-Message-ID: <482B7AC0.2050800@oracle.com>
-Date: Wed, 14 May 2008 16:50:24 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Wed, 14 May 2008 19:55:25 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60571 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753144AbYENXzY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 19:55:24 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH -mm] kexec jump -v9
+Date: Thu, 15 May 2008 01:55:32 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Huang, Ying" <ying.huang@intel.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, Andrew Morton <akpm@linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+References: <1204773188.4707.109.camel@caritas-dev.intel.com> <m13aok1pt1.fsf@frodo.ebiederm.org>
+In-Reply-To: <m13aok1pt1.fsf@frodo.ebiederm.org>
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>,
-       reiserfs-devel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: reiserfs BUG in 2.6.26-rc2-mm1
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200805150155.33787.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is blocksize=1024 bytes, data=ordered.
+On Thursday, 15 of May 2008, Eric W. Biederman wrote:
+> "Huang, Ying" <ying.huang@intel.com> writes:
+> 
+> > This is a minimal patch with only the essential features. All
+> > additional features are split out and can be discussed later. I think
+> > it may be easier to get consensus on this minimal patch.
+> 
+> A minimal patch route sounds good.
+> 
+> 
+> >   * Do not allocate memory (or fail in any way) in machine_kexec().
+> >   * We are past the point of no return, committed to rebooting now.
+> >   */
+> > -NORET_TYPE void machine_kexec(struct kimage *image)
+> > +void machine_kexec(struct kimage *image)
+> >  {
+> >  	unsigned long page_list[PAGES_NR];
+> >  	void *control_page;
+> > +	asmlinkage NORET_TYPE void
+> > +		(*relocate_kernel_ptr)(unsigned long indirection_page,
+> > +				       unsigned long control_page,
+> > +				       unsigned long start_address,
+> > +				       unsigned int has_pae) ATTRIB_NORET;
+> >  
+> >  	/* Interrupts aren't acceptable while we reboot */
+> >  	local_irq_disable();
+> >  
+> >  	control_page = page_address(image->control_code_page);
+> > -	memcpy(control_page, relocate_kernel, PAGE_SIZE);
+> > +	memcpy(control_page, kexec_relocate_page, PAGE_SIZE/2);
+> > +	KJUMP_MAGIC(control_page) = 0;
+> >  
+> > +	if (image->preserve_context) {
+> > +		KJUMP_MAGIC(control_page) = KJUMP_MAGIC_NUMBER;
+> > +		if (kexec_jump_save_cpu(control_page)) {
+> > +			image->start = KJUMP_ENTRY(control_page);
+> > +			return;
+> 
+> Tricky, and I expect unnecessary.
+> We should be able to just have relocate_new_kernel return?
+> 
+> > +		}
+> > +	}
+> > +
+> > +	relocate_kernel_ptr = control_page +
+> > +		((void *)relocate_kernel - (void *)kexec_relocate_page);
+> >  	page_list[PA_CONTROL_PAGE] = __pa(control_page);
+> > -	page_list[VA_CONTROL_PAGE] = (unsigned long)relocate_kernel;
+> > +	page_list[VA_CONTROL_PAGE] = (unsigned long)control_page;
+> >  	page_list[PA_PGD] = __pa(kexec_pgd);
+> >  	page_list[VA_PGD] = (unsigned long)kexec_pgd;
+> >  #ifdef CONFIG_X86_PAE
+> > @@ -127,6 +148,7 @@ NORET_TYPE void machine_kexec(struct kim
+> >  	page_list[VA_PTE_0] = (unsigned long)kexec_pte0;
+> >  	page_list[PA_PTE_1] = __pa(kexec_pte1);
+> >  	page_list[VA_PTE_1] = (unsigned long)kexec_pte1;
+> > + page_list[PA_SWAP_PAGE] = (page_to_pfn(image->swap_page) << PAGE_SHIFT);
+> >  
+> >  	/* The segment registers are funny things, they have both a
+> >  	 * visible and an invisible part.  Whenever the visible part is
+> > @@ -145,8 +167,9 @@ NORET_TYPE void machine_kexec(struct kim
+> >  	set_idt(phys_to_virt(0),0);
+> >  
+> >  	/* now call it */
+> > -	relocate_kernel((unsigned long)image->head, (unsigned long)page_list,
+> > -			image->start, cpu_has_pae);
+> > +	relocate_kernel_ptr((unsigned long)image->head,
+> > +			    (unsigned long)page_list,
+> > +			    image->start, cpu_has_pae);
+> >  }
+> 
+> 
+> > --- a/kernel/sys.c
+> > +++ b/kernel/sys.c
+> > @@ -301,18 +301,26 @@ EXPORT_SYMBOL_GPL(kernel_restart);
+> >   *	Move into place and start executing a preloaded standalone
+> >   *	executable.  If nothing was preloaded return an error.
+> >   */
+> > -static void kernel_kexec(void)
+> > +static int kernel_kexec(void)
+> >  {
+> > +	int ret = -ENOSYS;
+> >  #ifdef CONFIG_KEXEC
+> > -	struct kimage *image;
+> > -	image = xchg(&kexec_image, NULL);
+> > -	if (!image)
+> > -		return;
+> > -	kernel_restart_prepare(NULL);
+> > -	printk(KERN_EMERG "Starting new kernel\n");
+> > -	machine_shutdown();
+> > -	machine_kexec(image);
+> > +	if (xchg(&kexec_lock, 1))
+> > +		return -EBUSY;
+> > +	if (!kexec_image) {
+> > +		ret = -EINVAL;
+> > +		goto unlock;
+> > +	}
+> > +	if (!kexec_image->preserve_context) {
+> > +		kernel_restart_prepare(NULL);
+> > +		printk(KERN_EMERG "Starting new kernel\n");
+> > +		machine_shutdown();
+> > +	}
+> > +	ret = kexec_jump(kexec_image);
+> > +unlock:
+> > +	xchg(&kexec_lock, 0);
+> >  #endif
+> 
+> Ugh.  No.  Not sharing the shutdown methods with reboot and
+> the normal kexec path looks like a recipe for failure to me.
+> 
+> This looks like where we really need to have the conversation.
+> What methods do we use to shutdown the system.
+> 
+> My take on the situation is this.  For proper handling we
+> need driver device_detach and device_reattach methods.
+> 
+> With the following semantics.  The device_detach methods
+> will disable DMA and place the hardware in a sane state
+> from which the device driver can reclaim and reinitialize it,
+> but the hardware will not be touched.
+> 
+> device_reattach reattaches the driver to the hardware.
+> 
+> So looking at this patch I see two very productive directions
+> we can go.
+> 1) A patch that just fixes up the kexec infrastructure code
+>    so it implements the swap page and provides the kernel
+>    reentry point.  And doesn't handle the upper layer
+>    user interface portion.
+> 
+> 2) A patch that renames device_shutdown to device_detach.
+>    And starts implementing the driver hooks needed from
+>    a resumable kexec.
+> 
+> Then we have the question what do we do with devices in the
+> kernel that don't have a device_reattach method, when we
+> expect to come back from a kexec.  The two choices are:
+> (a) fail the operations before we commit to anything.
+> (b) hotunplug/hotreplug the device.
+> 
+> With respect to device methods.  I don't think any of
+> the current power saving methods make sense.  Certainly
+> nothing that prepares the way for using weird ACPI states.
+> 
+> I don't think there is not enough difference between
+> device_detach and device_shutdown for us to maintain two
+> separate methods, and that seems to place an unreasonable
+> maintenance burden on device driver developers.
 
-On x86_64.
+Well, it looks like we do similar things concurrently.  Please have a look 
+here: http://kerneltrap.org/Linux/Separating_Suspend_and_Hibernation
 
-------------[ cut here ]------------
-kernel BUG at fs/reiserfs/journal.c:1414!
-invalid opcode: 0000 [1] SMP
-last sysfs file: /sys/devices/pci0000:40/0000:40:0c.0/0000:41:00.0/0000:42:08.0/class
-CPU 3
-Modules linked in: reiserfs parport_pc lp parport tg3 cciss ehci_hcd ohci_hcd uhci_hcd [last unloaded: xfs]
-Pid: 7153, comm: fsx-linux Not tainted 2.6.26-rc2-mm1 #1
-RIP: 0010:[<ffffffffa0073d35>]  [<ffffffffa0073d35>] :reiserfs:flush_journal_list+0x7b/0x5e4
-RSP: 0018:ffff81027946d458  EFLAGS: 00010246                                            RAX: 0000000000000000 RBX: 0000000000000002 RCX: 00000000000020fc
-RDX: ffff81027946d4a8 RSI: ffff81027041b700 RDI: ffffc200104d20b8                       RBP: ffff81027946d4a8 R08: ffff81027946c000 R09: 000000007946d268
-R10: 0000000000000400 R11: ffff8102588c1400 R12: 000000000000004a
-R13: ffff81027041b700 R14: ffff8102588c1400 R15: ffff8102588c1400
-FS:  00007fb71152a6f0(0000) GS:ffff81027f807980(0000) knlGS:00000000f7f1b6c0
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 00007fb71173a000 CR3: 000000014f5b9000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process fsx-linux (pid: 7153, threadinfo ffff81027946c000, task ffff81024dc686f0)
-Stack:  000000000000004d 00000000104d2000 00000000104d20b8 ffffc200104d2000
- ffff81027903db60 ffffc200104d2000 000000000000004a ffff810279c25300
- ffff8102588c1400 ffff8102588c1400 ffff81027946d508 ffffffffa0074064
-Call Trace:
- [<ffffffffa0074064>] :reiserfs:flush_journal_list+0x3aa/0x5e4
- [<ffffffffa00745a0>] :reiserfs:flush_used_journal_lists+0x302/0x316
- [<ffffffffa0075075>] :reiserfs:do_journal_end+0xac1/0xc8f
- [<ffffffffa0075601>] :reiserfs:do_journal_begin_r+0x1ed/0x2aa
- [<ffffffffa0075776>] :reiserfs:journal_begin+0xb8/0xf5
- [<ffffffffa0060f84>] :reiserfs:restart_transaction+0x78/0x96
- [<ffffffffa0061d71>] :reiserfs:reiserfs_get_block+0xdcf/0xf6f
- [<ffffffff802b40dc>] __block_prepare_write+0x1ba/0x3a0
- [<ffffffffa0060fa2>] ? :reiserfs:reiserfs_get_block+0x0/0xf6f
- [<ffffffff80278a54>] ? __inc_zone_page_state+0x1e/0x20
- [<ffffffff802b436f>] block_write_begin+0x7d/0xce
- [<ffffffffa00630a3>] :reiserfs:reiserfs_write_begin+0x13d/0x1c6
- [<ffffffffa0060fa2>] ? :reiserfs:reiserfs_get_block+0x0/0xf6f
- [<ffffffff8026e2de>] generic_file_buffered_write+0x14b/0x63c
- [<ffffffffa007520f>] ? :reiserfs:do_journal_end+0xc5b/0xc8f
- [<ffffffff8023623e>] ? current_fs_time+0x22/0x29
- [<ffffffff8026ecbf>] __generic_file_aio_write_nolock+0x356/0x3c0
- [<ffffffff8024b67e>] ? debug_mutex_free_waiter+0x46/0x4a
- [<ffffffff8026ed8d>] generic_file_aio_write+0x64/0xc0
- [<ffffffff802927f6>] do_sync_write+0xe2/0x126
- [<ffffffff80295aad>] ? cp_new_stat+0xf6/0x10f
- [<ffffffff80243b3e>] ? autoremove_wake_function+0x0/0x38
- [<ffffffff8022bd94>] ? __dequeue_entity+0x61/0x69
- [<ffffffffa0063ba4>] :reiserfs:reiserfs_file_write+0x38/0x4d
- [<ffffffff80292fd3>] vfs_write+0xae/0x157
- [<ffffffff802935a0>] sys_write+0x47/0x70
- [<ffffffff8020c042>] tracesys+0xd5/0xda
+Similar patches are in the Greg's tree already.
 
-
-Code: 83 7d 58 00 75 04 0f 0b eb fe 83 7d bc 00 48 8b 55 c8 48 8d ba b8 00 00 00 74 07 e8 ad e3 4c e0 eb 0d e8 b4 dd 4c e0 85 c0 75 04 <0f> 0b eb fe 48 8b 55 c8 8b 82 1c 01 00 00 48 39 c3 76 18 49 8b
-RIP  [<ffffffffa0073d35>] :reiserfs:flush_journal_list+0x7b/0x5e4
- RSP <ffff81027946d458>
-Kernel panic - not syncing: Fatal exception
-
--- 
-~Randy
+Thanks,
+Rafael
