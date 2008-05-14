@@ -1,84 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760600AbYENP56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762078AbYENP6Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760600AbYENP56 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 11:57:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751675AbYENP5t
+	id S1762078AbYENP6Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 11:58:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759548AbYENP6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 11:57:49 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:41944 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751333AbYENP5t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 11:57:49 -0400
-Date: Wed, 14 May 2008 18:56:11 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Andreas Schwab <schwab@suse.de>, Geert Uytterhoeven <geert@linux-m68k.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: m68k: main.c:(.init.text+0x730): undefined reference to
-	`strlen'
-Message-ID: <20080514155611.GB22115@cs181133002.pp.htv.fi>
-References: <Pine.LNX.4.64.0805140958400.5778@anakin> <jeprrpth5m.fsf@sykes.suse.de> <20080514141056.GB19909@cs181133002.pp.htv.fi> <jeabitt0xj.fsf@sykes.suse.de> <20080514153059.GA22115@cs181133002.pp.htv.fi> <20080514154801.GG6902@cvg>
+	Wed, 14 May 2008 11:58:09 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:42377 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758758AbYENP6I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 11:58:08 -0400
+Date: Wed, 14 May 2008 08:57:29 -0700
+From: Greg KH <greg@kroah.com>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/3] struct class sem to mutex converting
+Message-ID: <20080514155729.GC28594@kroah.com>
+References: <20080509072231.GB2740@darkstar.te-china.tietoenator.com> <20080513220103.GA7599@kroah.com> <a8e1da0805131834g759523bfw396b0daa532252f9@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080514154801.GG6902@cvg>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <a8e1da0805131834g759523bfw396b0daa532252f9@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 14, 2008 at 07:48:01PM +0400, Cyrill Gorcunov wrote:
-> [Adrian Bunk - Wed, May 14, 2008 at 06:30:59PM +0300]
-> | On Wed, May 14, 2008 at 04:28:24PM +0200, Andreas Schwab wrote:
-> | > Adrian Bunk <bunk@kernel.org> writes:
-> | > 
-> | > > Or replace all the strlen stuff in include/asm-m68k/string.h with a 
-> | > 
-> | > I don't think the strlen macros has any influence in this case (it
-> | > already uses __builtin_strlen anyway).
-> | 
-> | The problem is that it sets __HAVE_ARCH_STRLEN, and therefore the 
-> | out-of-line function in lib/string.c is not built.
-> | 
-> | That breaks when gcc replaces a call to a different function with a call 
-> | to strlen().
-> | 
-> | > I'd rather guess that gcc is
-> | > expanding strncat internally to something involving strlen with
-> | > non-constant argument,
-> | 
-> | We agree on this one.
-> | 
-> | > although I cannot see how that can happen from a
-> | > quick look.
-> | 
-> | It isn't the first time we have these problems in the kernel...
-> | 
-> | > Andreas.
-> | 
-> | cu
-> | Adrian
+On Wed, May 14, 2008 at 09:34:13AM +0800, Dave Young wrote:
+> On Wed, May 14, 2008 at 6:01 AM, Greg KH <greg@kroah.com> wrote:
+> > On Fri, May 09, 2008 at 03:22:31PM +0800, Dave Young wrote:
+> >  > The class_device is already removed, so do the class->sem to mutex converting.
+> >
+> >  Are you sure this will work?  Have you tried running lockdep to verify
+> >  that there are no problems here?  People have tried this in the past
+> >  with devices and I don't think it will work here either :(
 > 
-> Adrian, I've just sent the updated patch, and accidentally forget
-> to CC you - please take a look on http://lkml.org/lkml/2008/5/14/267
+> Yes, lockdep doesn't generate warnings on my side.
 
-It removes the strncat() calls and should therefore remove the current 
-compile error.
+I think Andrew's recent post to linux-scsi proves this is incorrect :)
 
-But the underlying problem that actually causes the compile error is not 
-fixed and might occur again in other places (but that's nothing you 
-have to worry about).
+> I ever wanted to do the conversion, please see:
+> http://lkml.org/lkml/2008/1/12/49
+> 
+> The result is that device sem2mutex is not possible now, but class
+> sem2mutex is possible.  After the class_device removing, all the
+> class->sem usage exist in class.c except for i2c part.
+> 
+> So I make i2c to use class_for_each_device api, so we can do the
+> class->sem conversion.
 
-> 		- Cyrill -
+Ah, I didn't realize that the i2c patch was required.  Let me know when
+Jean takes that patch in his tree.
 
-cu
-Adrian
+thanks,
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+greg k-h
