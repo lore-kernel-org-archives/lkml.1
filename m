@@ -1,116 +1,446 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762203AbYENNVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761741AbYENN3y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762203AbYENNVS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 09:21:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758665AbYENNVI
+	id S1761741AbYENN3y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 09:29:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbYENN3p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 09:21:08 -0400
-Received: from spirit.analogic.com ([204.178.40.4]:2143 "EHLO
-	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758620AbYENNVH convert rfc822-to-8bit (ORCPT
+	Wed, 14 May 2008 09:29:45 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:55607 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752197AbYENN3o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 09:21:07 -0400
+	Wed, 14 May 2008 09:29:44 -0400
+Date: Wed, 14 May 2008 18:55:29 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: linux-mm@kvack.org
+Cc: Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, Pavel Emelianov <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [-mm][PATCH 4/4] Add memrlimit controller accounting and
+	control (v4)
+Message-ID: <20080514132529.GA25653@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Mail-Followup-To: linux-mm@kvack.org,
+	Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+	YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+	Paul Menage <menage@google.com>, lizf@cn.fujitsu.com,
+	linux-kernel@vger.kernel.org, Pavel Emelianov <xemul@openvz.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080514130904.24440.23486.sendpatchset@localhost.localdomain> <20080514130951.24440.73671.sendpatchset@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 14 May 2008 13:20:58.0039 (UTC) FILETIME=[58A40C70:01C8B5C5]
-Content-class: urn:content-classes:message
-Subject: Re: WD doesn`t use disks with Linux - was Re: Re:Western Digital GreenPower drives and Linux
-Date: Wed, 14 May 2008 09:20:46 -0400
-Message-ID: <Pine.LNX.4.61.0805140912170.9528@chaos.analogic.com>
-In-Reply-To: <482A062B.3010308@arndnet.de>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: WD doesn`t use disks with Linux - was Re: Re:Western Digital GreenPower drives and Linux
-thread-index: Aci1xViwKLZuktijRNOvHHUWbuTuIg==
-References: <003201c8b53c$67ff02d0$6400a8c0@bui.materna.com> <482A062B.3010308@arndnet.de>
-From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-To: "Arnd Hannemann" <arnd@arndnet.de>
-Cc: "Roland" <devzero@web.de>, <tvrtko@ursulin.net>, <pernegger@gmail.com>,
-       <snitzer@gmail.com>, <jengelh@computergmbh.de>,
-       <zorglub_olsen@hotmail.com>, <renatoyamane@mandic.com.br>,
-       <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-X-TM-AS-Product-Ver: SMEX-8.0.0.1259-5.500.1026-15908.007
-X-TM-AS-Result: No--21.809000-8.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20080514130951.24440.73671.sendpatchset@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Balbir Singh <balbir@linux.vnet.ibm.com> [2008-05-14 18:39:51]:
 
-On Tue, 13 May 2008, Arnd Hannemann wrote:
+Here's a better version of the patch. ptrace.c changes have a bug,
+where uncharge is called unconditionally. We now check for ret < 0.
+The two signed-off-by's by the same person did not look good either :)
 
-> Roland wrote:
->>> BTW, WD's tech support has gone silent so chances for an easier
->>> solution are not so great.
->>>
->>> Tvrtko
->>
->> I`ve got a real funky response from WD support  today, i`d like to
->> share here.
->> This is just too weird....
->>
->> After asking if they could give a comment if the problem with the high
->> Load_Cycle_Count may be an issue of their drives or an issue of Linux
->> i got:
->>
->> ------
->> Dear......
->> The problem is, that we actually don`t use the disks with Linux. I´m
->> sorry that i cannot send further information to you.
->>
->> Sincery yours
->> <insert support employee name here>
->> Western Digital Service and Support
->> ------
->> (translated from german)
->
-> Well the answer was probably just from a first level support person so
-> nothing one should get excited about.
-> Anyway to the high Load_Cycle_Count; if I understood the technology
-> correctly the WD GreenPower drives are exactly "Green" because they
-> unload the heads on a plastic ramp (no landing zone!) quite often during
-> longer idle periods. Thus they can power off the positioning logic and
-> actuator of the heads. -> safe Power
-> This also explains why the power usage under seek is comparable with
-> other "non-green" drives...
->
-> <snipped a lot of stuff>
->> 193 Load_Cycle_Count 0x0032 197 197 000 Old_age  Always  - 10233
-> my 1 TB drive has also a relative high value:
->
-> 193 Load_Cycle_Count        0x0032   200   200   000    Old_age
-> Always       -       2786
->
->
-> Just my 2 cents,
-> Arnd
-> ||
+Description
 
-Practically nobody has any on-line support that means anything
-anymore. The person who wrote the response is probably in the
-Philippines, makes about $US 3.00 per hour, and is allowed to
-pee twice a day. Don't worry. The tiny "bump-proof" drives
-cycle on an off many times to conserve power. They also
-keep the heads from landing "crashing" by inserting a plastic
-wedge between the swing-arms during power down. It's probably
-a lot less harmful than letting the heads touch down somewhere.
-
-It's not just the positioning logic that gets powered off. The
-discs are spun down, which saves a lot of power.
+This patch adds support for accounting and control of virtual address space
+limits. The accounting is done via the rlimit_cgroup_(un)charge_as functions.
+The core of the accounting takes place during fork time in copy_process(),
+may_expand_vm(), remove_vma_list() and exit_mmap(). There are some special
+cases that are handled here as well (arch/ia64/kernel/perform.c,
+arch/x86/kernel/ptrace.c, insert_special_mapping())
 
 
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.22.1 on an i686 machine (5588.29 BogoMips).
-My book : http://www.AbominableFirebug.com/
+
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
+
+ arch/ia64/kernel/perfmon.c      |    6 ++
+ arch/x86/kernel/ptrace.c        |   18 +++++--
+ fs/exec.c                       |    5 ++
+ include/linux/memrlimitcgroup.h |   21 ++++++++
+ kernel/fork.c                   |    8 +++
+ mm/memrlimitcgroup.c            |   94 ++++++++++++++++++++++++++++++++++++++++
+ mm/mmap.c                       |   11 ++++
+ 7 files changed, 158 insertions(+), 5 deletions(-)
+
+diff -puN arch/ia64/kernel/perfmon.c~memrlimit-controller-address-space-accounting-and-control arch/ia64/kernel/perfmon.c
+--- linux-2.6.26-rc2/arch/ia64/kernel/perfmon.c~memrlimit-controller-address-space-accounting-and-control	2008-05-14 18:37:11.000000000 +0530
++++ linux-2.6.26-rc2-balbir/arch/ia64/kernel/perfmon.c	2008-05-14 18:37:11.000000000 +0530
+@@ -40,6 +40,7 @@
+ #include <linux/capability.h>
+ #include <linux/rcupdate.h>
+ #include <linux/completion.h>
++#include <linux/memrlimitcgroup.h>
+ 
+ #include <asm/errno.h>
+ #include <asm/intrinsics.h>
+@@ -2294,6 +2295,9 @@ pfm_smpl_buffer_alloc(struct task_struct
+ 
+ 	DPRINT(("sampling buffer rsize=%lu size=%lu bytes\n", rsize, size));
+ 
++	if (memrlimit_cgroup_charge_as(mm, size >> PAGE_SHIFT))
++		return -ENOMEM;
++
+ 	/*
+ 	 * check requested size to avoid Denial-of-service attacks
+ 	 * XXX: may have to refine this test
+@@ -2313,6 +2317,7 @@ pfm_smpl_buffer_alloc(struct task_struct
+ 	smpl_buf = pfm_rvmalloc(size);
+ 	if (smpl_buf == NULL) {
+ 		DPRINT(("Can't allocate sampling buffer\n"));
++		memrlimit_cgroup_uncharge_as(mm, size >> PAGE_SHIFT);
+ 		return -ENOMEM;
+ 	}
+ 
+@@ -2390,6 +2395,7 @@ pfm_smpl_buffer_alloc(struct task_struct
+ 	return 0;
+ 
+ error:
++	memrlimit_cgroup_uncharge_as(mm, size >> PAGE_SHIFT);
+ 	kmem_cache_free(vm_area_cachep, vma);
+ error_kmem:
+ 	pfm_rvfree(smpl_buf, size);
+diff -puN arch/x86/kernel/ds.c~memrlimit-controller-address-space-accounting-and-control arch/x86/kernel/ds.c
+diff -puN fs/exec.c~memrlimit-controller-address-space-accounting-and-control fs/exec.c
+--- linux-2.6.26-rc2/fs/exec.c~memrlimit-controller-address-space-accounting-and-control	2008-05-14 18:37:11.000000000 +0530
++++ linux-2.6.26-rc2-balbir/fs/exec.c	2008-05-14 18:37:11.000000000 +0530
+@@ -52,6 +52,7 @@
+ #include <linux/tsacct_kern.h>
+ #include <linux/cn_proc.h>
+ #include <linux/audit.h>
++#include <linux/memrlimitcgroup.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/mmu_context.h>
+@@ -230,6 +231,9 @@ static int __bprm_mm_init(struct linux_b
+ 	if (!vma)
+ 		goto err;
+ 
++	if (memrlimit_cgroup_charge_as(mm, 1))
++		goto err;
++
+ 	down_write(&mm->mmap_sem);
+ 	vma->vm_mm = mm;
+ 
+@@ -247,6 +251,7 @@ static int __bprm_mm_init(struct linux_b
+ 	err = insert_vm_struct(mm, vma);
+ 	if (err) {
+ 		up_write(&mm->mmap_sem);
++		memrlimit_cgroup_uncharge_as(mm, 1);
+ 		goto err;
+ 	}
+ 
+diff -puN include/linux/memrlimitcgroup.h~memrlimit-controller-address-space-accounting-and-control include/linux/memrlimitcgroup.h
+--- linux-2.6.26-rc2/include/linux/memrlimitcgroup.h~memrlimit-controller-address-space-accounting-and-control	2008-05-14 18:37:11.000000000 +0530
++++ linux-2.6.26-rc2-balbir/include/linux/memrlimitcgroup.h	2008-05-14 18:37:11.000000000 +0530
+@@ -16,4 +16,25 @@
+ #ifndef LINUX_MEMRLIMITCGROUP_H
+ #define LINUX_MEMRLIMITCGROUP_H
+ 
++#ifdef CONFIG_CGROUP_MEMRLIMIT_CTLR
++
++int memrlimit_cgroup_charge_as(struct mm_struct *mm, unsigned long nr_pages);
++void memrlimit_cgroup_uncharge_as(struct mm_struct *mm, unsigned long nr_pages);
++
++#else /* !CONFIG_CGROUP_RLIMIT_CTLR */
++
++static inline int
++memrlimit_cgroup_charge_as(struct mm_struct *mm, unsigned long nr_pages)
++{
++	return 0;
++}
++
++static inline void
++memrlimit_cgroup_uncharge_as(struct mm_struct *mm, unsigned long nr_pages)
++{
++}
++
++#endif /* CONFIG_CGROUP_RLIMIT_CTLR */
++
++
+ #endif /* LINUX_MEMRLIMITCGROUP_H */
+diff -puN kernel/fork.c~memrlimit-controller-address-space-accounting-and-control kernel/fork.c
+--- linux-2.6.26-rc2/kernel/fork.c~memrlimit-controller-address-space-accounting-and-control	2008-05-14 18:37:11.000000000 +0530
++++ linux-2.6.26-rc2-balbir/kernel/fork.c	2008-05-14 18:37:11.000000000 +0530
+@@ -54,6 +54,7 @@
+ #include <linux/tty.h>
+ #include <linux/proc_fs.h>
+ #include <linux/blkdev.h>
++#include <linux/memrlimitcgroup.h>
+ 
+ #include <asm/pgtable.h>
+ #include <asm/pgalloc.h>
+@@ -267,6 +268,7 @@ static int dup_mmap(struct mm_struct *mm
+ 			mm->total_vm -= pages;
+ 			vm_stat_account(mm, mpnt->vm_flags, mpnt->vm_file,
+ 								-pages);
++			memrlimit_cgroup_uncharge_as(mm, pages);
+ 			continue;
+ 		}
+ 		charge = 0;
+@@ -596,6 +598,12 @@ static int copy_mm(unsigned long clone_f
+ 		atomic_inc(&oldmm->mm_users);
+ 		mm = oldmm;
+ 		goto good_mm;
++	} else {
++		down_read(&oldmm->mmap_sem);
++		retval = memrlimit_cgroup_charge_as(oldmm, oldmm->total_vm);
++		up_read(&oldmm->mmap_sem);
++		if (retval)
++			goto fail_nomem;
+ 	}
+ 
+ 	retval = -ENOMEM;
+diff -puN mm/memrlimitcgroup.c~memrlimit-controller-address-space-accounting-and-control mm/memrlimitcgroup.c
+--- linux-2.6.26-rc2/mm/memrlimitcgroup.c~memrlimit-controller-address-space-accounting-and-control	2008-05-14 18:37:11.000000000 +0530
++++ linux-2.6.26-rc2-balbir/mm/memrlimitcgroup.c	2008-05-14 18:37:11.000000000 +0530
+@@ -45,6 +45,41 @@ static struct memrlimit_cgroup *memrlimi
+ 				struct memrlimit_cgroup, css);
+ }
+ 
++static struct memrlimit_cgroup *
++memrlimit_cgroup_from_task(struct task_struct *p)
++{
++	return container_of(task_subsys_state(p, memrlimit_cgroup_subsys_id),
++				struct memrlimit_cgroup, css);
++}
++
++int memrlimit_cgroup_charge_as(struct mm_struct *mm, unsigned long nr_pages)
++{
++	int ret;
++	struct memrlimit_cgroup *memrcg;
++
++	rcu_read_lock();
++	memrcg = memrlimit_cgroup_from_task(rcu_dereference(mm->owner));
++	css_get(&memrcg->css);
++	rcu_read_unlock();
++
++	ret = res_counter_charge(&memrcg->as_res, (nr_pages << PAGE_SHIFT));
++	css_put(&memrcg->css);
++	return ret;
++}
++
++void memrlimit_cgroup_uncharge_as(struct mm_struct *mm, unsigned long nr_pages)
++{
++	struct memrlimit_cgroup *memrcg;
++
++	rcu_read_lock();
++	memrcg = memrlimit_cgroup_from_task(rcu_dereference(mm->owner));
++	css_get(&memrcg->css);
++	rcu_read_unlock();
++
++	res_counter_uncharge(&memrcg->as_res, (nr_pages << PAGE_SHIFT));
++	css_put(&memrcg->css);
++}
++
+ static struct cgroup_subsys_state *
+ memrlimit_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cgrp)
+ {
+@@ -134,11 +169,70 @@ static int memrlimit_cgroup_populate(str
+ 				ARRAY_SIZE(memrlimit_cgroup_files));
+ }
+ 
++static void memrlimit_cgroup_move_task(struct cgroup_subsys *ss,
++					struct cgroup *cgrp,
++					struct cgroup *old_cgrp,
++					struct task_struct *p)
++{
++	struct mm_struct *mm;
++	struct memrlimit_cgroup *memrcg, *old_memrcg;
++
++	mm = get_task_mm(p);
++	if (mm == NULL)
++		return;
++
++	rcu_read_lock();
++	if (p != rcu_dereference(mm->owner))
++		goto out;
++
++	memrcg = memrlimit_cgroup_from_cgrp(cgrp);
++	old_memrcg = memrlimit_cgroup_from_cgrp(old_cgrp);
++
++	if (memrcg == old_memrcg)
++		goto out;
++
++	/*
++	 * Hold mmap_sem, so that total_vm does not change underneath us
++	 */
++	down_read(&mm->mmap_sem);
++	if (res_counter_charge(&memrcg->as_res, (mm->total_vm << PAGE_SHIFT)))
++		goto out;
++	res_counter_uncharge(&old_memrcg->as_res, (mm->total_vm << PAGE_SHIFT));
++out:
++	up_read(&mm->mmap_sem);
++	rcu_read_unlock();
++	mmput(mm);
++}
++
++static void memrlimit_cgroup_mm_owner_changed(struct cgroup_subsys *ss,
++						struct cgroup *cgrp,
++						struct cgroup *old_cgrp,
++						struct task_struct *p)
++{
++	struct memrlimit_cgroup *memrcg, *old_memrcg;
++	struct mm_struct *mm = get_task_mm(p);
++
++	BUG_ON(!mm);
++	memrcg = memrlimit_cgroup_from_cgrp(cgrp);
++	old_memrcg = memrlimit_cgroup_from_cgrp(old_cgrp);
++
++	down_read(&mm->mmap_sem);
++	if (res_counter_charge(&memrcg->as_res, (mm->total_vm << PAGE_SHIFT)))
++		goto out;
++	res_counter_uncharge(&old_memrcg->as_res, (mm->total_vm << PAGE_SHIFT));
++out:
++	up_read(&mm->mmap_sem);
++
++	mmput(mm);
++}
++
+ struct cgroup_subsys memrlimit_cgroup_subsys = {
+ 	.name = "memrlimit",
+ 	.subsys_id = memrlimit_cgroup_subsys_id,
+ 	.create = memrlimit_cgroup_create,
+ 	.destroy = memrlimit_cgroup_destroy,
+ 	.populate = memrlimit_cgroup_populate,
++	.attach = memrlimit_cgroup_move_task,
++	.mm_owner_changed = memrlimit_cgroup_mm_owner_changed,
+ 	.early_init = 0,
+ };
+diff -puN mm/mmap.c~memrlimit-controller-address-space-accounting-and-control mm/mmap.c
+--- linux-2.6.26-rc2/mm/mmap.c~memrlimit-controller-address-space-accounting-and-control	2008-05-14 18:37:11.000000000 +0530
++++ linux-2.6.26-rc2-balbir/mm/mmap.c	2008-05-14 18:37:11.000000000 +0530
+@@ -26,6 +26,7 @@
+ #include <linux/mount.h>
+ #include <linux/mempolicy.h>
+ #include <linux/rmap.h>
++#include <linux/memrlimitcgroup.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/cacheflush.h>
+@@ -1730,6 +1731,7 @@ static void remove_vma_list(struct mm_st
+ 		long nrpages = vma_pages(vma);
+ 
+ 		mm->total_vm -= nrpages;
++		memrlimit_cgroup_uncharge_as(mm, nrpages);
+ 		if (vma->vm_flags & VM_LOCKED)
+ 			mm->locked_vm -= nrpages;
+ 		vm_stat_account(mm, vma->vm_flags, vma->vm_file, -nrpages);
+@@ -2056,6 +2058,7 @@ void exit_mmap(struct mm_struct *mm)
+ 	/* Use -1 here to ensure all VMAs in the mm are unmapped */
+ 	end = unmap_vmas(&tlb, vma, 0, -1, &nr_accounted, NULL);
+ 	vm_unacct_memory(nr_accounted);
++	memrlimit_cgroup_uncharge_as(mm, mm->total_vm);
+ 	free_pgtables(&tlb, vma, FIRST_USER_ADDRESS, 0);
+ 	tlb_finish_mmu(tlb, 0, end);
+ 
+@@ -2174,6 +2177,10 @@ int may_expand_vm(struct mm_struct *mm, 
+ 
+ 	if (cur + npages > lim)
+ 		return 0;
++
++	if (memrlimit_cgroup_charge_as(mm, npages))
++		return 0;
++
+ 	return 1;
+ }
+ 
+@@ -2236,6 +2243,9 @@ int install_special_mapping(struct mm_st
+ 	if (unlikely(vma == NULL))
+ 		return -ENOMEM;
+ 
++	if (memrlimit_cgroup_charge_as(mm, len >> PAGE_SHIFT))
++		return -ENOMEM;
++
+ 	vma->vm_mm = mm;
+ 	vma->vm_start = addr;
+ 	vma->vm_end = addr + len;
+@@ -2248,6 +2258,7 @@ int install_special_mapping(struct mm_st
+ 
+ 	if (unlikely(insert_vm_struct(mm, vma))) {
+ 		kmem_cache_free(vm_area_cachep, vma);
++		memrlimit_cgroup_uncharge_as(mm, len >> PAGE_SHIFT);
+ 		return -ENOMEM;
+ 	}
+ 
+diff -puN arch/x86/kernel/ptrace.c~memrlimit-controller-address-space-accounting-and-control arch/x86/kernel/ptrace.c
+--- linux-2.6.26-rc2/arch/x86/kernel/ptrace.c~memrlimit-controller-address-space-accounting-and-control	2008-05-14 18:37:11.000000000 +0530
++++ linux-2.6.26-rc2-balbir/arch/x86/kernel/ptrace.c	2008-05-14 18:43:13.000000000 +0530
+@@ -20,6 +20,7 @@
+ #include <linux/audit.h>
+ #include <linux/seccomp.h>
+ #include <linux/signal.h>
++#include <linux/memrlimitcgroup.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/pgtable.h>
+@@ -782,21 +783,25 @@ static int ptrace_bts_realloc(struct tas
+ 
+ 	current->mm->total_vm  -= old_size;
+ 	current->mm->locked_vm -= old_size;
++	memrlimit_cgroup_uncharge_as(mm, old_size);
+ 
+ 	if (size == 0)
+ 		goto out;
+ 
++	if (memrlimit_cgroup_charge_as(current->mm, size))
++		goto out;
++
+ 	rlim = current->signal->rlim[RLIMIT_AS].rlim_cur >> PAGE_SHIFT;
+ 	vm = current->mm->total_vm  + size;
+ 	if (rlim < vm) {
+ 		ret = -ENOMEM;
+ 
+ 		if (!reduce_size)
+-			goto out;
++			goto out_uncharge;
+ 
+ 		size = rlim - current->mm->total_vm;
+ 		if (size <= 0)
+-			goto out;
++			goto out_uncharge;
+ 	}
+ 
+ 	rlim = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur >> PAGE_SHIFT;
+@@ -805,21 +810,24 @@ static int ptrace_bts_realloc(struct tas
+ 		ret = -ENOMEM;
+ 
+ 		if (!reduce_size)
+-			goto out;
++			goto out_uncharge;
+ 
+ 		size = rlim - current->mm->locked_vm;
+ 		if (size <= 0)
+-			goto out;
++			goto out_uncharge;
+ 	}
+ 
+ 	ret = ds_allocate((void **)&child->thread.ds_area_msr,
+ 			  size << PAGE_SHIFT);
+ 	if (ret < 0)
+-		goto out;
++		goto out_uncharge;
+ 
+ 	current->mm->total_vm  += size;
+ 	current->mm->locked_vm += size;
+ 
++out_uncharge:
++	if (ret < 0)
++		memrlimit_cgroup_uncharge_as(mm, size);
+ out:
+ 	if (child->thread.ds_area_msr)
+ 		set_tsk_thread_flag(child, TIF_DS_AREA_MSR);
 _
 
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
 
-Thank you.
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
