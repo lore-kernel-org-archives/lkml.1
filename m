@@ -1,69 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758380AbYENWMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753024AbYENWNA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758380AbYENWMm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 18:12:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751419AbYENWMc
+	id S1753024AbYENWNA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 18:13:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754760AbYENWMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 18:12:32 -0400
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:52339 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751221AbYENWMb (ORCPT
+	Wed, 14 May 2008 18:12:50 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49334 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751419AbYENWMt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 18:12:31 -0400
-To: corbet@lwn.net (Jonathan Corbet)
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Wed, 14 May 2008 18:12:49 -0400
+Date: Wed, 14 May 2008 15:11:39 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
        Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Thomas Gleixner <tglx@linutronix.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Alexander Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org
+       Alexander Viro <viro@ftp.linux.org.uk>
 Subject: Re: [announce] "kill the Big Kernel Lock (BKL)" tree
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080514174955.GA515@elte.hu> <6457.1210801515@vena.lwn.net>
-Date: Thu, 15 May 2008 00:11:44 +0200
-In-Reply-To: <6457.1210801515@vena.lwn.net> (Jonathan Corbet's message of "Wed, 14 May 2008 15:45:15 -0600")
-Message-ID: <87bq387cyn.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+In-Reply-To: <20080514224600.5bb5db5c@core>
+Message-ID: <alpine.LFD.1.10.0805141510120.3019@woody.linux-foundation.org>
+References: <20080514174955.GA515@elte.hu> <20080514224600.5bb5db5c@core>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 14 May 2008 22:04:44.0539 (UTC) FILETIME=[844B64B0:01C8B60E]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-corbet@lwn.net (Jonathan Corbet) writes:
->
-> 3: Provide a new form of cdev_add() which lets the driver indicate
->    that the BKL is not needed on open (or anything else?).  At a
->    minimum, it could just be a new parameter on cdev_add which has a
->    value of zero or FIXME_I_STILL_NEED_BKL.  Still some churn but easier
->    to script and smaller because a lot of drivers are still using
->    register_chrdev() - something else worth fixing.
->
->    A more involved form might provide a new chardev_add() which takes
->    the new char_dev_ops structure too.  Mapping between new and old
->    operations vectors would be done internally to avoid breaking older
->    drivers before they can be fixed.
->
-> 4: Just find every char dev open() function and shove in lock_kernel()
->    calls, then remove the call from chrdev_open().  The disadvantage
->    here is that, beyond lots of work and churn, there's no way to know
->    which ones you missed.
 
-In general when changing semantics drastically you should force
-compile errors by renaming the respective entry point. That
-has been the standard Linux method for this for years.
 
-I've been also pondering a variant of 1, but 3 might be better.
+On Wed, 14 May 2008, Alan Cox wrote:
+> 
+> Here is a fun one for general discussion - right now driver probe
+> functions request resources. We have no ordering on the requests so we
+> have deadlocks if two drivers do resource requests for conflicting
+> resources in reverse order.
 
-> I kind of like the combination of 2 and 3, done in such a way that
-> there's no "every driver must change" flag day.  This could be an
-> interesting project, even...  Thoughts?
+resource requests aren't blocking, so it wouldn't actually be a deadlock. 
+It would just be a "both failed, try again".
 
-I doubt it will be very interesting, but it would be useful.
-The goal less being to get rid of BKL in old drivers, but not 
-requiring BKL in new drivers. Basically all BKL assumptions
-in interfaces really should go.
+That said, two drivers shouldn't be probing the same hardware at the same 
+time regardless, so I can't imagine that it's much of a problem in real 
+life. 
 
--Andi
+		Linus
