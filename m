@@ -1,31 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760828AbYENFBO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759728AbYENFGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760828AbYENFBO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 01:01:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752901AbYENFA7
+	id S1759728AbYENFGr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 01:06:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbYENFGf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 01:00:59 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46465 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751920AbYENFA6 (ORCPT
+	Wed, 14 May 2008 01:06:35 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57722 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751583AbYENFGe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 01:00:58 -0400
-Date: Wed, 14 May 2008 14:04:23 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Bryan Wu" <cooloney@kernel.org>
-Cc: "Hennerich, Michael" <Michael.Hennerich@analog.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, dwmw2@infradead.org
-Subject: Re: [PATCH 1/4] [mm] buddy page allocator: add tunable big order
- allocation
-Message-Id: <20080514140423.4c004019.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <386072610805132122l5d017fe1u404c38ea3f05664a@mail.gmail.com>
-References: <1210588325-11027-1-git-send-email-cooloney@kernel.org>
-	<1210588325-11027-2-git-send-email-cooloney@kernel.org>
-	<20080513110902.80a87ac9.kamezawa.hiroyu@jp.fujitsu.com>
-	<8A42379416420646B9BFAC9682273B6D015F52E4@limkexm3.ad.analog.com>
-	<386072610805132122l5d017fe1u404c38ea3f05664a@mail.gmail.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+	Wed, 14 May 2008 01:06:34 -0400
+Date: Tue, 13 May 2008 22:03:04 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: Randy Dunlap <RANDY.DUNLAP@ORACLE.COM>, Greg KH <greg@kroah.com>,
+       Al Viro <viro@ftp.linux.org.uk>,
+       Benjamin Thery <benjamin.thery@bull.net>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Daniel Lezcano <dlezcano@fr.ibm.com>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>, Tejun Heo <htejun@gmail.com>
+Subject: Re: [PATCH] Fix kobject_rename and !CONFIG_SYSFS v4
+Message-Id: <20080513220304.b2f5a588.akpm@linux-foundation.org>
+In-Reply-To: <m1hcd1a48e.fsf_-_@frodo.ebiederm.org>
+References: <m163tocw43.fsf_-_@frodo.ebiederm.org>
+	<20080512220232.GA16914@kroah.com>
+	<m1prrqbseh.fsf@frodo.ebiederm.org>
+	<4829A4BD.3020007@bull.net>
+	<20080513164438.GA31563@kroah.com>
+	<m18wyeay1q.fsf_-_@frodo.ebiederm.org>
+	<20080513201602.GA31578@kroah.com>
+	<m1od7a9bmr.fsf_-_@frodo.ebiederm.org>
+	<24291087.1210713535895.JavaMail.oracle@acsmt301.oracle.com>
+	<m1hcd1a48e.fsf_-_@frodo.ebiederm.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -33,67 +41,95 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 May 2008 12:22:35 +0800
-"Bryan Wu" <cooloney@kernel.org> wrote:
+On Tue, 13 May 2008 21:39:45 -0700 ebiederm@xmission.com (Eric W. Biederman) wrote:
 
-> On Tue, May 13, 2008 at 7:42 PM, Hennerich, Michael
-> <Michael.Hennerich@analog.com> wrote:
-> >
-> >
-> >  >-----Original Message-----
-> >  >From: KAMEZAWA Hiroyuki [mailto:kamezawa.hiroyu@jp.fujitsu.com]
-> >  >Sent: Dienstag, 13. Mai 2008 04:09
-> >  >To: Bryan Wu
-> >  >Cc: linux-kernel@vger.kernel.org; linux-mm@kvack.org;
-> >  dwmw2@infradead.org;
-> >  >Michael Hennerich
-> >  >Subject: Re: [PATCH 1/4] [mm] buddy page allocator: add tunable big
-> >  order
-> >  >allocation
-> >  >
-> >  >On Mon, 12 May 2008 18:32:02 +0800
-> >  >Bryan Wu <cooloney@kernel.org> wrote:
-> >  >
-> >  >> From: Michael Hennerich <michael.hennerich@analog.com>
-> >  >>
-> >  >> Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-> >  >> Signed-off-by: Bryan Wu <cooloney@kernel.org>
-> >  >
-> >  >Does this really solve your problem ? possible hang-up is better than
-> >  >page allocation failure ?
-> >
-> >  On nommu this helped quite a bit, when we run out of memory, eaten up by
-> >  the page cache. But yes - with this option it's likely that we sit there
-> >  and wait form memory that might never get available.
-> >
-> >  We now use a better workaround for freeing up "available" memory
-> >  currently used as page cache.
-> >
-> >  I think we should drop this patch.
-> >
 > 
-> OK, I dropped it. And do you think the limited page_cache patch is the
-> replacement of this patch?
+> When looking at kobject_rename I found two bugs with
+> that exist when sysfs support is disabled in the kernel.
 > 
+> kobject_rename does not change the name on the kobject when
+> sysfs support is not compiled in.
+> 
+> kobject_rename without locking attempts to check the
+> validity of a rename operation, which the kobject layer
+> simply does not have the infrastructure to do.
+> 
+> This patch documents the previously unstated requirement of
+> kobject_rename that is the responsibility of the caller to
+> provide mutual exclusion and to be certain that the new_name
+> for the kobject is valid.
+> 
+> This patch modifies sysfs_rename_dir in !CONFIG_SYSFS case
+> to call kobject_set_name to actually change the kobject_name.
+> 
+> This patch removes the bogus and misleading check in kobject_rename
+> that attempts to see if a rename is valid.  The check is bogus
+> because we do not have the proper locking.  The check is misleading
+> because it looks like we can and do perform checking at the kobject
+> level that we don't.
+> 
+> Changelog:
+> v4:	Documentation typo fixes
+> 
+> v2:	Added a declaration of kboject_set_name to sysfs.h
+> 	so the code actually compiles with !CONFIG_SYSFS.
+> 
+> 	Unscrambling the header dependencies so everything looks
+> 	beautiful is a project for another day.
+> 
+> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+> ---
+>  Documentation/kobject.txt |    4 ++++
+>  drivers/base/core.c       |    5 +++++
+>  include/linux/sysfs.h     |    4 +++-
+>  lib/kobject.c             |   18 +++++-------------
+>  4 files changed, 17 insertions(+), 14 deletions(-)
+> 
+> diff --git a/Documentation/kobject.txt b/Documentation/kobject.txt
+> index bf3256e..ac80d82 100644
+> --- a/Documentation/kobject.txt
+> +++ b/Documentation/kobject.txt
+> @@ -118,6 +118,10 @@ the name of the kobject, call kobject_rename():
+>  
+>      int kobject_rename(struct kobject *kobj, const char *new_name);
+>  
+> +Note kobject_rename does not perform any locking or have a solid notion of
+> +what names are valid so the caller must provide their own sanity checking
+> +and serialization.
+> +
+>  There is a function called kobject_set_name() but that is legacy cruft and
+>  is being removed.  If your code needs to call this function, it is
+>  incorrect and needs to be fixed.
+> diff --git a/drivers/base/core.c b/drivers/base/core.c
+> index be288b5..ad68f4c 100644
+> --- a/drivers/base/core.c
+> +++ b/drivers/base/core.c
+> @@ -1171,6 +1171,11 @@ EXPORT_SYMBOL_GPL(device_destroy);
+>   * device_rename - renames a device
+>   * @dev: the pointer to the struct device to be renamed
+>   * @new_name: the new name of the device
+> + *
+> + * It is the responsibility of the caller to provide mutual
+> + * exclusion between two different calls of device_rename
+> + * on the same device to ensure that new_name is valid and
+> + * won't conflict with other devices.
+>   */
+>  int device_rename(struct device *dev, char *new_name)
+>  {
+> diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+> index 7858eac..6e61033 100644
+> --- a/include/linux/sysfs.h
+> +++ b/include/linux/sysfs.h
+> @@ -20,6 +20,8 @@
+>  struct kobject;
+>  struct module;
+>  
+> +extern int kobject_set_name(struct kobject *kobj, const char *name, ...)
+> +			    __attribute__((format(printf, 2, 3)));
 
-I'm not so familiar with nommu environments but have some thoughts.
+Duplicating the kobject_set_name() declaration in sysfs.h is rather a hack.
 
-one idea is 
- - use memory resource controller.
-   but this eats much amount of GFP_KERNEL memory and maybe not useful ;)
- - use ZONE_MOVABLE and set lowmem_reserve_ratio value to be suitable value.
-   then, the page cache just uses MOVABLE zone...(maybe)
-
-Thanks,
--Kame
-
-
-
-
-
-
-
-
-
-
+It'd be better to move it into a new header file, included by both
+sysfs.h and kobject.h.  Perhaps there are other declarations which can
+be moved with it.
 
