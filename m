@@ -1,109 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752859AbYENU3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752385AbYENUdI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752859AbYENU3Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 16:29:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbYENU27
+	id S1752385AbYENUdI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 16:33:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751047AbYENUc4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 16:28:59 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44810 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752351AbYENU25 (ORCPT
+	Wed, 14 May 2008 16:32:56 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:49078 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750758AbYENUcz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 16:28:57 -0400
-Date: Wed, 14 May 2008 13:28:53 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Russ Anderson <rja@sgi.com>
-cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tony Luck <tony.luck@intel.com>, Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH 1/3] mm: Minor clean-up of page flags in mm/page_alloc.c
- v4
-In-Reply-To: <20080513230220.GB26722@sgi.com>
-Message-ID: <alpine.LFD.1.10.0805141321020.3019@woody.linux-foundation.org>
-References: <20080513230220.GB26722@sgi.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Wed, 14 May 2008 16:32:55 -0400
+Date: Wed, 14 May 2008 13:32:51 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, davem@davemloft.net,
+       Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [BUG] 2.6.26-rc2-mm1 - kernel panic at inet_create() on powerpc
+Message-ID: <20080514203251.GF8812@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080514010129.4f672378.akpm@linux-foundation.org> <482B066F.4010605@linux.vnet.ibm.com> <20080514160705.GB8812@linux.vnet.ibm.com> <20080514200546.GA4802@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080514200546.GA4802@martell.zuzino.mipt.ru>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 15, 2008 at 12:05:46AM +0400, Alexey Dobriyan wrote:
+> On Wed, May 14, 2008 at 09:07:05AM -0700, Paul E. McKenney wrote:
+> > On Wed, May 14, 2008 at 09:04:07PM +0530, Kamalesh Babulal wrote:
+> > > Hi Andrew,
+> > > 
+> > > 2.6.26-rc2-mm1 kernel panics on powerpc, while running ltp test over it.
+> > > I have attached the gdb output of the pc and lr registers. The patch
+> > > list_for_each_rcu-must-die-networking.patch points to changes made 
+> > > to the same lines listed by the gdb output.
+> > 
+> > Hmmm....  Does the panic go away when this patch is reverted?
+> 
+> Yes.
 
+OK, am awake now, apologies for my confusion.  Not sure -what- state
+I was in when generating and validating the original...
 
-On Tue, 13 May 2008, Russ Anderson wrote:
->
-> Minor source code cleanup of page flags in mm/page_alloc.c.  
-
-Could we (a) make the naming reflect the *use* rather than the flags 
-involved and (b) perhaps add a comment about that use at the point of 
-definition?
-
-> @@ -237,16 +237,7 @@ static void bad_page(struct page *page)
->  	printk(KERN_EMERG "Trying to fix it up, but a reboot is needed\n"
->  		KERN_EMERG "Backtrace:\n");
->  	dump_stack();
-> -	page->flags &= ~(1 << PG_lru	|
-> -			1 << PG_private |
-> -			1 << PG_locked	|
-> -			1 << PG_active	|
-> -			1 << PG_dirty	|
-> -			1 << PG_reclaim |
-> -			1 << PG_slab    |
-> -			1 << PG_swapcache |
-> -			1 << PG_writeback |
-> -			1 << PG_buddy );
-> +	page->flags &= ~(PAGE_FLAGS_RECLAIM);
-
-Because here I'm now otherwise looking at the code, and I wonder
- - why the extra odd parenthesis?
- - what does PAGE_FLAG_RECLAIM mean?
-
-and it would be much nicer (I think) if the mask was instead called 
-something that reflected what it was all about, ie something along the 
-lines of PAGE_FLAG_CLEAR_WHEN_BAD instead.
-
-> @@ -463,16 +454,7 @@ static inline int free_pages_check(struc
->  		(page->mapping != NULL)  |
->  		(page_get_page_cgroup(page) != NULL) |
->  		(page_count(page) != 0)  |
-> +		(page->flags & (PAGE_FLAGS_RESERVE))))
->  		bad_page(page);
-
-Same exact thing. I wonder
- - why are those parenthesis there
- - what does "PAGE_FLAGS_RESERVE" mean?
-
-Woudln't it be much more readable if it was called 
-"PAGE_FLAGS_CHECK_AT_FREE" or something? That says "those flags will be 
-checked when the page is free'd", and now the use _and_ the definition 
-hopefully makes some sense?
-
-> @@ -616,17 +598,7 @@ static int prep_new_page(struct page *pa
->  		(page->mapping != NULL)  |
->  		(page_get_page_cgroup(page) != NULL) |
->  		(page_count(page) != 0)  |
-> +		(page->flags & (PAGE_FLAGS_DIRTY))))
->  		bad_page(page);
-
-And again - parenthesis, and perhaps "PAGE_FLAGS_CHECK_AT_PREP"?
-
-> +++ linus/include/linux/page-flags.h	2008-05-13 10:26:46.513459253 -0500
-> +
-> +#define PAGE_FLAGS	(1 << PG_lru   | 1 << PG_private   | 1 << PG_locked | \
-> +			 1 << PG_buddy | 1 << PG_writeback | \
-> +			 1 << PG_slab  | 1 << PG_swapcache | 1 << PG_active)
-> +
-> +#define PAGE_FLAGS_RECLAIM	(PAGE_FLAGS | 1 << PG_reclaim | 1 << PG_dirty)
-> +#define PAGE_FLAGS_RESERVE	(PAGE_FLAGS | 1 << PG_reserved)
-> +#define PAGE_FLAGS_DIRTY	(PAGE_FLAGS | 1 << PG_reserved | 1 << PG_dirty)
-
-This part would also be more explainable - rather than being a random 
-collection of flags, wouldn't it be more natural to think of them as 
-"flags I check at free", or "flags that I clear when they are corrupt" or 
-"flags that I check before I pass on a new page allocation".
-
-Right now it is _totally_ unclear why we should call something 
-PAGE_FLAGS_DIRTY when it has a lot of other bits set than just PG_dirty. 
-Hmm?
-
-			Linus
+							Thanx, Paul
