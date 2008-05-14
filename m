@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760923AbYENOwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762319AbYENOwe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760923AbYENOwT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 10:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756616AbYENOwE
+	id S1762319AbYENOwe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 10:52:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756616AbYENOwX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 10:52:04 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:9540 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757270AbYENOwE (ORCPT
+	Wed, 14 May 2008 10:52:23 -0400
+Received: from [198.99.130.12] ([198.99.130.12]:45684 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1761591AbYENOwW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 10:52:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent;
-        b=Ac382QsLYkTxB0FMn2BQrrqrvkeBzmWkAAZAOhHyMjNOec/wfM7dYy7LlYxz/M3q0NTFXxJvssP0HyPnnNPzb/4TAWtLK5Sr4UmSzqeKUYLQuXrJEcppvllrmeMMlC7xlG6QhokwArwOViO5eJ+Rzl8Kb0Nvd1pyhRsFa6uKvXE=
-Date: Wed, 14 May 2008 18:51:52 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Andreas Schwab <schwab@suse.de>
-Cc: Adrian Bunk <bunk@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: m68k: main.c:(.init.text+0x730): undefined reference to
-	`strlen'
-Message-ID: <20080514145152.GB6902@cvg>
-References: <Pine.LNX.4.64.0805140958400.5778@anakin> <jeprrpth5m.fsf@sykes.suse.de> <20080514141056.GB19909@cs181133002.pp.htv.fi> <jeabitt0xj.fsf@sykes.suse.de>
+	Wed, 14 May 2008 10:52:22 -0400
+Date: Wed, 14 May 2008 10:52:10 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
+Cc: WANG Cong <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org,
+       "Kirill A. Shutemov" <k.shutemov@gmail.com>
+Subject: Re: UML build issue with v2.6.26-rc2-129-g9604006
+Message-ID: <20080514145210.GA8639@c2.user-mode-linux.org>
+References: <200805141301.30027.toralf.foerster@gmx.de> <20080514112217.GC2520@hacking> <20080514125548.GA6373@c2.user-mode-linux.org> <200805141503.20065.toralf.foerster@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <jeabitt0xj.fsf@sykes.suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <200805141503.20065.toralf.foerster@gmx.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Andreas Schwab - Wed, May 14, 2008 at 04:28:24PM +0200]
-| Adrian Bunk <bunk@kernel.org> writes:
-| 
-| > Or replace all the strlen stuff in include/asm-m68k/string.h with a 
-| 
-| I don't think the strlen macros has any influence in this case (it
-| already uses __builtin_strlen anyway).  I'd rather guess that gcc is
-| expanding strncat internally to something involving strlen with
-| non-constant argument, although I cannot see how that can happen from a
-| quick look.
-| 
-| Andreas.
-| 
-| -- 
-| Andreas Schwab, SuSE Labs, schwab@suse.de
-| SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-| PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-| "And now for something completely different."
-| 
+On Wed, May 14, 2008 at 03:03:17PM +0200, Toralf Förster wrote:
+> > > Hmm, it seems that I can't reproduce it with your .config.
+> > > And <asm/user.h> does exist.
+> > 
+> > I bet he's using the headers exported by the current kernel, not what
+> > his distro gives him.
+> > 
+> > 			Jeff
+> > 
+> 
+> Right, IIRC I ran into this some times ago under Gentoo Linux.
 
-actually, i can rewrite it using memcpy if strncat causes such a problems
+Commit c1445db9f72db0537c43a2eab6e1b0f6741162f5 unexported asm/user.h
+(and linux/user.h):
 
-		- Cyrill -
+     Author: Kirill A. Shutemov <k.shutemov@gmail.com>
+     Date:   Thu Feb 7 00:15:53 2008 -0800
+
+         Unexport asm/user.h and linux/user.h
+    
+        Do not export asm/user.h and linux/user.h during make
+        headers_install.
+
+As far as I can see, this renders PTRACE_[SG]ETFPREGS and
+PTRACE_[SG]ETFPXREGS unusable, as userspace has no way to figure out
+what size buffer to pass in.
+
+I think we either need to make user_i387_struct and user_fxsr_struct
+available someplace else, or re-export user.h.
+
+	  	    	     Jeff
+
+-- 
+Work email - jdike at linux dot intel dot com
