@@ -1,54 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758072AbYENGYG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759454AbYENG0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758072AbYENGYG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 02:24:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbYENGX4
+	id S1759454AbYENG0Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 02:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbYENG0S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 02:23:56 -0400
-Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:52236 "EHLO
-	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751841AbYENGXz (ORCPT
+	Wed, 14 May 2008 02:26:18 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43707
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751453AbYENG0R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 02:23:55 -0400
-Date: Wed, 14 May 2008 08:23:54 +0200
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.26-rc2 hosed X?
-Message-ID: <20080514062354.GM10353@gamma.logic.tuwien.ac.at>
-References: <20080513103828.GA8288@gamma.logic.tuwien.ac.at> <20080513232139.812a36dd.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080513232139.812a36dd.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Norbert Preining <preining@logic.at>
+	Wed, 14 May 2008 02:26:17 -0400
+Date: Tue, 13 May 2008 23:26:11 -0700 (PDT)
+Message-Id: <20080513.232611.97850193.davem@davemloft.net>
+To: cooloney@kernel.org
+Cc: marcel@holtmann.org, irda-users@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, samuel@sortiz.org, graf.yang@analog.com
+Subject: Re: [PATCH 1/1] [net/irda]: Fix a misalign access issue. (v2)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1210666187-739-1-git-send-email-cooloney@kernel.org>
+References: <1210666187-739-1-git-send-email-cooloney@kernel.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Di, 13 Mai 2008, Andrew Morton wrote:
-> 2.6.26-rc2-mm1 (hopefully a couple of hours away) would be best.
+From: Bryan Wu <cooloney@kernel.org>
+Date: Tue, 13 May 2008 16:09:47 +0800
 
-Ok, will try that.
+> Replace u16ho with put/get_unaligned functions
+> 
+> Signed-off-by: Graf Yang <graf.yang@analog.com>
+> Signed-off-by: Bryan Wu <cooloney@kernel.org>
 
-> If we haven't fixed it then I'm afraid our best shot would be for you
-> to run a bisection (please). 
-
-Umpf, I always tried to avoid that ;-) Will see...
-
-Thanks for the feed back.
-
-Best wishes
-
-Norbert
-
--------------------------------------------------------------------------------
-Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
-Debian Developer <preining@debian.org>                         Debian TeX Group
-gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
--------------------------------------------------------------------------------
-BODMIN
-The irrational and inevitable discrepancy between the amount pooled
-and the amount needed when a large group of people try to pay a bill
-together after a meal.
-			--- Douglas Adams, The Meaning of Liff
+Applied, thanks everyone.
