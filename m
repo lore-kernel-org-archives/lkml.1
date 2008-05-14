@@ -1,42 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761208AbYENOmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761262AbYENOoY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761208AbYENOmd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 10:42:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757671AbYENOmY
+	id S1761262AbYENOoY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 10:44:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757199AbYENOoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 10:42:24 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:57740 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753079AbYENOmY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 10:42:24 -0400
-Date: Wed, 14 May 2008 16:42:05 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Yan <rottled@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Comprehensive list of kernel self-modifications?
-Message-ID: <20080514143526.GA6260@ucw.cz>
-References: <54b90fdf0805011246v64d28c7ao8eb848419890d20a@mail.gmail.com>
-Mime-Version: 1.0
+	Wed, 14 May 2008 10:44:13 -0400
+Received: from styx.suse.cz ([82.119.242.94]:36353 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755639AbYENOoL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 10:44:11 -0400
+Date: Wed, 14 May 2008 16:44:10 +0200
+From: Jan Kara <jack@suse.cz>
+To: Josef Bacik <jbacik@redhat.com>
+Cc: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, sct@redhat.com,
+       adilger@clusterfs.com, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, Jan Kara <jack@suse.cz>,
+       Mingming Cao <cmm@us.ibm.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
+       sugita <yumiko.sugita.yf@hitachi.com>
+Subject: Re: [PATCH 4/4] jbd: fix error handling for checkpoint io (rebased)
+Message-ID: <20080514144410.GG24363@duck.suse.cz>
+References: <482A6E00.6080303@hitachi.com> <482A6FA3.9000104@hitachi.com> <20080514131621.GB20256@unused.rdu.redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <54b90fdf0805011246v64d28c7ao8eb848419890d20a@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20080514131621.GB20256@unused.rdu.redhat.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> >  
+> > Index: linux-2.6.26-rc2/fs/ext3/super.c
+> > ===================================================================
+> > --- linux-2.6.26-rc2.orig/fs/ext3/super.c
+> > +++ linux-2.6.26-rc2/fs/ext3/super.c
+> > @@ -395,7 +395,10 @@ static void ext3_put_super (struct super
+> >  	ext3_xattr_put_super(sb);
+> >  	journal_destroy(sbi->s_journal);
+> >  	if (!(sb->s_flags & MS_RDONLY)) {
+> > -		EXT3_CLEAR_INCOMPAT_FEATURE(sb, EXT3_FEATURE_INCOMPAT_RECOVER);
+> > +		if (!is_checkpoint_aborted(sbi->s_journal)) {
+> > +			EXT3_CLEAR_INCOMPAT_FEATURE(sb,
+> > +				EXT3_FEATURE_INCOMPAT_RECOVER);
+> > +		}
+> >  		es->s_state = cpu_to_le16(sbi->s_mount_state);
+> >  		BUFFER_TRACE(sbi->s_sbh, "marking dirty");
+> >  		mark_buffer_dirty(sbi->s_sbh);
+> 
+> Is this bit here really needed?  If we abort the journal the fs will be mounted
+> read only and we should never get in here.  Is there a case where we could abort
+> the journal and not be flipped to being read-only?  If there is such a case I
+> would think that we should fix that by making the fs read-only, and not have
+> this check.
+  Actually, journal_abort() (which could be called from journal_destroy())
+does nothing to the filesystem as such. So at this moment, ext3 can still
+happily think everything is OK. We only detect aborted journal in
+ext3_journal_start_sb() and call ext3_abort() in that case, which does all
+that is needed...
 
-Hi!
-
-> I have been working on verifying kernel integrity and am trying to
-> differentiate
-> between vmlinux image on disk and the kernel loaded into memory. I understand
->  that the kernel modifies itself (on x86 at least) during at least a few points:
-
-This should go into Doc*/ somewhere. Self-modifying code just loves
-provoking cpu bugs...
-							Pavel
+									Honza
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
