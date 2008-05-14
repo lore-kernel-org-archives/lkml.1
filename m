@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758912AbYENTIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763379AbYENTKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758912AbYENTIb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 15:08:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758379AbYENTIQ
+	id S1763379AbYENTKa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 15:10:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbYENTKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 15:08:16 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:41996 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752158AbYENTIP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 15:08:15 -0400
-Message-ID: <482B3899.9070008@garzik.org>
-Date: Wed, 14 May 2008 15:08:09 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 14 May 2008 15:10:19 -0400
+Received: from fk-out-0910.google.com ([209.85.128.189]:57425 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751797AbYENTKR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 15:10:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=kqfoHLmqRbkxZKqjKwHeei3N0WN0e5FEx0Xq2q/K6TG6xN9NZWzRne6bm4Lg2Ot+d7ScDxm/cBh1uWxR0lsXBAKVae3iiR+vc0YDXbWI0l84IjkEh5JTDUbVf70GS/d14pYY50Hwl5G62swP5yQRhrUY1pw++SbM2elTMZZAhaA=
+Date: Thu, 15 May 2008 00:05:46 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, davem@davemloft.net,
+       Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [BUG] 2.6.26-rc2-mm1 - kernel panic at inet_create() on powerpc
+Message-ID: <20080514200546.GA4802@martell.zuzino.mipt.ru>
+References: <20080514010129.4f672378.akpm@linux-foundation.org> <482B066F.4010605@linux.vnet.ibm.com> <20080514160705.GB8812@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-CC: Jamie Lokier <jamie@shareable.org>, Sage Weil <sage@newdream.net>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: POHMELFS high performance network filesystem. Transactions, failover,
- performance.
-References: <20080513174523.GA1677@2ka.mipt.ru> <4829E752.8030104@garzik.org> <20080513205114.GA16489@2ka.mipt.ru> <Pine.LNX.4.64.0805140623001.14334@cobra.newdream.net> <20080514135156.GA23131@2ka.mipt.ru> <20080514143105.GB14987@shareable.org> <20080514150052.GA15826@2ka.mipt.ru>
-In-Reply-To: <20080514150052.GA15826@2ka.mipt.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080514160705.GB8812@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Evgeniy Polyakov wrote:
-> That can be the case if client connects to some gate server, which in
-> turn broadcasts data further, that is how I plan to implement things at
-> first.
+On Wed, May 14, 2008 at 09:07:05AM -0700, Paul E. McKenney wrote:
+> On Wed, May 14, 2008 at 09:04:07PM +0530, Kamalesh Babulal wrote:
+> > Hi Andrew,
+> > 
+> > 2.6.26-rc2-mm1 kernel panics on powerpc, while running ltp test over it.
+> > I have attached the gdb output of the pc and lr registers. The patch
+> > list_for_each_rcu-must-die-networking.patch points to changes made 
+> > to the same lines listed by the gdb output.
+> 
+> Hmmm....  Does the panic go away when this patch is reverted?
 
-That means you are less optimal than the direct-to-storage-server path 
-in NFSv4.1, then........
-
-<waves red flag in front of the bull>
-
-If access controls permit, the ideal would be for the client to avoid an 
-intermediary when storing data.  The client only _needs_ a consensus 
-reply that their transaction was committed.  They don't necessarily need 
-an intermediary to do the boring data transfer work.
-
-	Jeff
-
-
+Yes.
 
