@@ -1,73 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759515AbYENL3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760637AbYENL30@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759515AbYENL3A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 07:29:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755949AbYENL2w
+	id S1760637AbYENL30 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 07:29:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757428AbYENL3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 07:28:52 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59035 "EHLO mx1.redhat.com"
+	Wed, 14 May 2008 07:29:16 -0400
+Received: from nef2.ens.fr ([129.199.96.40]:2431 "EHLO nef2.ens.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755914AbYENL2w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 07:28:52 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1210619142.24092.60.camel@brick>
-References: <1210619142.24092.60.camel@brick>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 09/12] mn10300: use the common ascii hex helpers
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Wed, 14 May 2008 12:28:47 +0100
-Message-ID: <1533.1210764527@redhat.com>
+	id S1755949AbYENL3P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 07:29:15 -0400
+Date: Wed, 14 May 2008 13:27:02 +0200
+From: Eric.Brunet@lps.ens.fr
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Linux Kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: Bug with keyboard input
+Message-ID: <20080514112701.GA9639@platane.lps.ens.fr>
+References: <20080513092735.GA32087@platane.lps.ens.fr> <4829FE73.20709@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4829FE73.20709@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.1.4 (nef2.ens.fr [129.199.96.32]); Wed, 14 May 2008 13:29:11 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Harvey Harrison <harvey.harrison@gmail.com> wrote:
+On Tue, May 13, 2008 at 10:47:47PM +0200, Jiri Slaby wrote:
+> On 05/13/2008 11:27 AM, Eric.Brunet@lps.ens.fr wrote:
+>> Hi list,
+>>
+>> With uptodate Fedora 7 (kernel kernel-2.6.23.15-80.fc7) on a Dell D430 laptop.
+>
+> Please file a bug on redhat bugzilla. They (like other distro providers) 
+> have bunch of patches included in it.
+>
+> Or try some kernel.org tree and recheck if the problem persist, then report it here.
 
-> @@ -1322,22 +1310,22 @@ static int gdbstub(struct pt_regs *regs, enum exception_code excep)
->  		*ptr++ = 'O';
->  		ptr = mem2hex(tbcberr, ptr, sizeof(tbcberr) - 1, 0);
->  
-> -		hx = hexchars[(bcberr & 0xf0000000) >> 28];
-> -		*ptr++ = hexchars[hx >> 4];	*ptr++ = hexchars[hx & 0xf];
-> -		hx = hexchars[(bcberr & 0x0f000000) >> 24];
-> -		*ptr++ = hexchars[hx >> 4];	*ptr++ = hexchars[hx & 0xf];
-> -		hx = hexchars[(bcberr & 0x00f00000) >> 20];
-> -		*ptr++ = hexchars[hx >> 4];	*ptr++ = hexchars[hx & 0xf];
-> -		hx = hexchars[(bcberr & 0x000f0000) >> 16];
-> -		*ptr++ = hexchars[hx >> 4];	*ptr++ = hexchars[hx & 0xf];
-> -		hx = hexchars[(bcberr & 0x0000f000) >> 12];
-> -		*ptr++ = hexchars[hx >> 4];	*ptr++ = hexchars[hx & 0xf];
-> -		hx = hexchars[(bcberr & 0x00000f00) >> 8];
-> -		*ptr++ = hexchars[hx >> 4];	*ptr++ = hexchars[hx & 0xf];
-> -		hx = hexchars[(bcberr & 0x000000f0) >> 4];
-> -		*ptr++ = hexchars[hx >> 4];	*ptr++ = hexchars[hx & 0xf];
-> -		hx = hexchars[(bcberr & 0x0000000f)];
-> -		*ptr++ = hexchars[hx >> 4];	*ptr++ = hexchars[hx & 0xf];
-> +		hx = hex_asc_hi(excep >> 24);
-> +		ptr = pack_hex_byte(ptr, hx);
-> +		hx = hex_asc_lo(excep >> 24);
-> +		ptr = pack_hex_byte(ptr, hx);
-> +		hx = hex_asc_hi(excep >> 16);
-> +		ptr = pack_hex_byte(ptr, hx);
-> +		hx = hex_asc_lo(excep >> 16);
-> +		ptr = pack_hex_byte(ptr, hx);
-> +		hx = hex_asc_hi(excep >> 8);
-> +		ptr = pack_hex_byte(ptr, hx);
-> +		hx = hex_asc_lo(excep >> 8);
-> +		ptr = pack_hex_byte(ptr, hx);
-> +		hx = hex_asc_hi(excep);
-> +		ptr = pack_hex_byte(ptr, hx);
-> +		hx = hex_asc_lo(excep);
-> +		ptr = pack_hex_byte(ptr, hx);
+Well that's not the sort of things distributions are patching, but you're
+of course right, it is better to make sure. So I downloaded the sources
+of a linux-2.6.25, copied the fedora .config, ran make oldconfig and
+made the default answer to every question. With that pristine kernel, the
+bug is still here.
 
-NAK.
+Thanks,
 
-You made the code now emit excep rather than bcberr.
+	Éric Brunet
 
-David
+> In short, if I do
+>         echo -n "i8042" > /sys/bus/platform/drivers/i8042/unbind
+> followed by
+>         echo -n "i8042" > /sys/bus/platform/drivers/i8042/bind
+> everything works fine, EXCEPT if I hit a key on the keyboard between the
+> unbind and the bind (tested with leftcontrol and spacebar). If I hit a
+> key, it looks like the keyboard isn't taking release events anymore and
+> the next key I hit is forever repeated. When my keyboard is in its
+> working
+> state, I read
+>         N: Name="AT Translated Set 2 keyboard"
+> in /proc/bus/input/devices. When it is in its non-working state (I hit a
+> key between unbind and bind), I read
+>         N: Name="AT Raw Set 2 keyboard"
+> in the same file, and each time I hit a key, I have messages such as
+>     atkbd.c: Unknown key pressed (raw set 2, code 0x11f on
+> isa0060/serio0).
+>     atkbd.c: Use 'setkeycodes 1f <keycode>' to make it known.
+>     atkbd.c: Unknown key pressed (raw set 2, code 0x11e on
+> isa0060/serio0).
+>     atkbd.c: Use 'setkeycodes 1e <keycode>' to make it known.
+> in my logs.
+> 
+> Note that the key doesn't have to be pressed while the bind happens, it
+> is sufficient that the key have been pressed and released before the
+> bind.
+> 
+> So, is there a way to make it work and have the input layer automatically
+> recognize the correct keyboard type or keyboard mode ? If not, is there a
+> way to keep it from guessing and to force it to treat the keyboard as an
+> "AT Translated Set 2 keyboard" ?
+> 
+> As a final note, I get hit by this bug quite often during suspend/resume
+> cycles. I had found that the keyboard wasn't all the time properly waking up,
+> (it was getting stuck) so I've added a file in /etc/pm/sleep.d to do the
+> unbind at suspend time and the bind at resume time. This fixed my
+> problem, except that at times I stupidly press a key in the hope that the
+> resume is done and that the screen is black only because of the
+> screensaver, and that hitting a key will make appear the unlocking
+> window...
+
