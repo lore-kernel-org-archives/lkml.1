@@ -1,106 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757412AbYENIFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758492AbYENIGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757412AbYENIFv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 04:05:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753097AbYENIFc
+	id S1758492AbYENIGU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 04:06:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758606AbYENIFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 04:05:32 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:42123 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752987AbYENIF2 (ORCPT
+	Wed, 14 May 2008 04:05:52 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:6767 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760239AbYENIFr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 04:05:28 -0400
-Date: Wed, 14 May 2008 17:10:25 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
-       "hugh@veritas.com" <hugh@veritas.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [RFC/PATCH 4/6] memcg: shmem reclaim helper
-Message-Id: <20080514171025.2f0fb1ca.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080514170236.23c9ddd7.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080514170236.23c9ddd7.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 14 May 2008 04:05:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=pTj2fOw0YO1i1jpuO7Ea8JKdzMuFcxLTszXLUqE2FJAHXUdl+tgJFsXioj1U9hhId2VfDd98dNQoqsYxIVXMN/yTuAsuRaErS3pcLyg1zHELSkAguosYCoiykj4NH9Wx/EhbsMn+xHm+0np4FpkRci4l5BlqwDYLXV3c5+yPNyk=
+Message-ID: <6278d2220805140105x27292033u6a97dcf13ab54263@mail.gmail.com>
+Date: Wed, 14 May 2008 09:05:46 +0100
+From: "Daniel J Blueman" <daniel.blueman@gmail.com>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Subject: Re: performance "regression" in cfq compared to anticipatory, deadline and noop
+Cc: Matthew <jackdachef@gmail.com>, "Kasper Sandberg" <lkml@metanurb.dk>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080513184057.GU16217@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <6278d2220805110614i7160a8a5o36d55acb732c1b59@mail.gmail.com>
+	 <1210514567.7827.62.camel@localhost>
+	 <20080513122021.GP16217@kernel.dk>
+	 <e85b9d30805130558l502addbcq21996b92fdbfdc5b@mail.gmail.com>
+	 <20080513130508.GQ16217@kernel.dk>
+	 <e85b9d30805130842p3a34305l4ab1e7926e4b0dba@mail.gmail.com>
+	 <20080513180334.GS16217@kernel.dk> <20080513184057.GU16217@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A new call, mem_cgroup_shrink_usage() is added for shmem handling
-and removing not usual usage of mem_cgroup_charge/uncharge.
+>  > > >  > >  > On Sun, 2008-05-11 at 14:14 +0100, Daniel J Blueman wrote:
+>  > > >  > >  > > I've been experiencing this for a while also; an almost 50% regression
+>  > > >  > >  > > is seen for single-process reads (ie sync) if slice_idle is 1ms or
+>  > > >  > >  > > more (eg default of 8) [1], which seems phenomenal.
+>  > > >  > >  > >
+>  > > >  > >  > > Jens, is this the expected price to pay for optimal busy-spindle
+>  > > >  > >  > > scheduling, a design issue, bug or am I missing something totally?
+[snip]
+>  > They seem to start out the same, but then CFQ gets interrupted by a
+>  > timer unplug (which is also odd) and after that the request size drops.
+>  > On most devices you don't notice, but some are fairly picky about
+>  > request sizes. The end result is that CFQ has an average dispatch
+>  > request size of 142kb, where AS is more than double that at 306kb. I'll
+>  > need to analyze the data and look at the code a bit more to see WHY this
+>  > happens.
+>
+>  Here's a test patch, I think we get into this situation due to CFQ being
+>  a bit too eager to start queuing again. Not tested, I'll need to spend
+>  some testing time on this. But I'd appreciate some feedback on whether
+>  this changes the situation! The final patch will be a little more
+>  involved.
+>
+>  diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+>  index b399c62..ebd8ce2 100644
+>  --- a/block/cfq-iosched.c
+>  +++ b/block/cfq-iosched.c
+>  @@ -1775,18 +1775,8 @@ cfq_rq_enqueued(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+>
+>         cic->last_request_pos = rq->sector + rq->nr_sectors;
+>
+>  -       if (cfqq == cfqd->active_queue) {
+>  -               /*
+>  -                * if we are waiting for a request for this queue, let it rip
+>  -                * immediately and flag that we must not expire this queue
+>  -                * just now
+>  -                */
+>  -               if (cfq_cfqq_wait_request(cfqq)) {
+>  -                       cfq_mark_cfqq_must_dispatch(cfqq);
+>  -                       del_timer(&cfqd->idle_slice_timer);
+>  -                       blk_start_queueing(cfqd->queue);
+>  -               }
+>  -       } else if (cfq_should_preempt(cfqd, cfqq, rq)) {
+>  +       if ((cfqq != cfqd->active_queue) &&
+>  +                  cfq_should_preempt(cfqd, cfqq, rq)) {
+>                 /*
+>                  * not the active queue - expire current slice if it is
+>                  * idle and has expired it's mean thinktime or this new queue
 
-Now, shmem calls mem_cgroup_charge() just for reclaim some pages from
-mem_cgroup. In general, shmem is used by some process group and not for
-global resource (like file caches). So, it's reasonable to reclaim pages from
-mem_cgroup where shmem is mainly used.
+I find this does address the issue (both with 64KB stride dd and
+hdparm -t; presumably the requests getting merged). Tested on
+2.6.26-rc2 on Ubuntu HH 804 x86-64, with slice_idle defaulting to 8
+and AHCI on ICH9; disk is ST3320613AS.
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Blktrace profiles from 'dd if=/dev/sda of=/dev/null bs=64k count=1000' are at:
 
----
- mm/memcontrol.c |   18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+http://quora.org/blktrace-profiles.tar.bz2
 
-Index: linux-2.6.26-rc2/mm/memcontrol.c
-===================================================================
---- linux-2.6.26-rc2.orig/mm/memcontrol.c
-+++ linux-2.6.26-rc2/mm/memcontrol.c
-@@ -783,6 +783,30 @@ static void mem_cgroup_drop_all_pages(st
- }
- 
- /*
-+ * A call to try to shrink memory usage under specified resource controller.
-+ * This is typically used for page reclaiming for shmem for reducing side
-+ * effect of page allocation from shmem, which is used by some mem_cgroup.
-+ */
-+int mem_cgroup_shrink_usage(struct mm_struct *mm, gfp_t gfp_mask)
-+{
-+	struct mem_cgroup *mem;
-+	int progress = 0;
-+	int retry = MEM_CGROUP_RECLAIM_RETRIES;
-+
-+	rcu_read_lock();
-+	mem = mem_cgroup_from_task(rcu_dereference(mm->owner));
-+	css_get(&mem->css);
-+	rcu_read_unlock();
-+
-+	while(!progress && --retry) {
-+		progress = try_to_free_mem_cgroup_pages(mem, gfp_mask);
-+	}
-+	if (!retry)
-+		return -ENOMEM;
-+	return 0;
-+}
-+
-+/*
-  * This routine traverse page_cgroup in given list and drop them all.
-  * *And* this routine doesn't reclaim page itself, just removes page_cgroup.
-  */
-Index: linux-2.6.26-rc2/mm/shmem.c
-===================================================================
---- linux-2.6.26-rc2.orig/mm/shmem.c
-+++ linux-2.6.26-rc2/mm/shmem.c
-@@ -1314,13 +1314,12 @@ repeat:
- 			unlock_page(swappage);
- 			if (error == -ENOMEM) {
- 				/* allow reclaim from this memory cgroup */
--				error = mem_cgroup_cache_charge(swappage,
--					current->mm, gfp & ~__GFP_HIGHMEM);
-+				error = mem_cgroup_shrink_usage(current->mm,
-+					gfp & ~__GFP_HIGHMEM);
- 				if (error) {
- 					page_cache_release(swappage);
- 					goto failed;
- 				}
--				mem_cgroup_uncharge_cache_page(swappage);
- 			}
- 			page_cache_release(swappage);
- 			goto repeat;
-
+Let me know when you have an updated patch to test,
+  Daniel
+-- 
+Daniel J Blueman
