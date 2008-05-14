@@ -1,64 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762699AbYENRuA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756528AbYENRud@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762699AbYENRuA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 13:50:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbYENRtv
+	id S1756528AbYENRud (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 13:50:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbYENRuO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 13:49:51 -0400
-Received: from mail.suse.de ([195.135.220.2]:55701 "EHLO mx1.suse.de"
+	Wed, 14 May 2008 13:50:14 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59533 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758912AbYENRtu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 13:49:50 -0400
-Date: Wed, 14 May 2008 10:49:20 -0700
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [GIT PATCH] driver core fixes against 2.6.26-rc2
-Message-ID: <20080514174920.GA25856@suse.de>
+	id S1762742AbYENRuM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 13:50:12 -0400
+Date: Wed, 14 May 2008 13:49:34 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>,
+       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org
+Subject: Re: [PATCH -mm] kexec jump -v9
+Message-ID: <20080514174934.GG30469@redhat.com>
+References: <1204773188.4707.109.camel@caritas-dev.intel.com> <20080514160329.GF30469@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080514160329.GF30469@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are two patches against your 2.6.26-rc2-git tree.
+On Wed, May 14, 2008 at 12:03:29PM -0400, Vivek Goyal wrote:
+> On Thu, Mar 06, 2008 at 11:13:08AM +0800, Huang, Ying wrote:
+> > This is a minimal patch with only the essential features. All
+> > additional features are split out and can be discussed later. I think
+> > it may be easier to get consensus on this minimal patch.
+> > 
+> 
+> Hi Huang,
+> 
+> Ok, after a long time, I am back to testing and reviewing this patch.
+> 
+> 
+> [..]
+> > 7. Boot kernel compiled in step 1 (kernel C). Use the rootfs.gz as
+> >    root file system.
+> > 
+> > 8. In kernel C, load the memory image of kernel A as follow:
+> > 
+> >    /sbin/kexec -l --args-none --entry=`cat kexec_jump_back_entry` dump.elf
+> > 
+> 
+> How do I got back to original kernel without loading dump.elf. I mean,
+> original kernel is already in memory and I don't have to first save
+> it to disk and then reload back. Is there a way to do it? If not, then
+> we need to modify kexec-tools to support that.
+> 
+> Something like
+> 
+> kexec --entry=<entry point>, should tell kexec that kernel is already
+> loaded. Just do the bit to set the entry point properly.
+> 
 
-They do:
-	- remove an unused list head in struct class now that struct
-	  class_device is gone.
-	- fix a bug at boot time with raid partitions.  This is a
-	  regression from 2.6.24 that is now finally fixed.  Many thanks
-	  to Kay for doing this work.  It will be added to the
-	  2.6.25-stable tree as well.
+Never mind. I found it. Following worked for me for returning back to
+original kernel.
 
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-2.6.git/
+kexec --load-jump-back-helper --entry=<entry point>
 
-Both of these patches have been in the -next and -mm trees for a while.
+Just wondering if "--load-jump-back-helper" should be an explicit option
+or kexec should silently assume it if no "-l" or "-p" is given.
 
-The patch will be sent as a follow-on to this message to lkml for people
-to see.
-
-thanks,
-
-greg k-h
-
-------------
-
- block/genhd.c          |    9 ++++++---
- drivers/base/class.c   |    1 -
- include/linux/device.h |    1 -
- include/linux/genhd.h  |    4 ++--
- init/do_mounts.c       |   27 ++++++++++++++++++++++++++-
- 5 files changed, 34 insertions(+), 8 deletions(-)
-
----------------
-
-Dave Young (1):
-      Driver core: struct class remove children list
-
-Kay Sievers (1):
-      block: do_mounts - accept root=<non-existant partition>
-
+Thanks
+Vivek
