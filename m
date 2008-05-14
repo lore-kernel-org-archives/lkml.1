@@ -1,63 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762874AbYENQEY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763153AbYENQEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762874AbYENQEY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 12:04:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751152AbYENQEN
+	id S1763153AbYENQEk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 12:04:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751152AbYENQE3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 12:04:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52393 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761579AbYENQEL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 12:04:11 -0400
-Date: Wed, 14 May 2008 12:03:29 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [PATCH -mm] kexec jump -v9
-Message-ID: <20080514160329.GF30469@redhat.com>
-References: <1204773188.4707.109.camel@caritas-dev.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1204773188.4707.109.camel@caritas-dev.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 14 May 2008 12:04:29 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:42387 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762915AbYENQE3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 12:04:29 -0400
+Date: Wed, 14 May 2008 09:03:35 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Timur Tabi <timur@freescale.com>
+Cc: andi@firstfloor.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][RFC] Add alloc_pages_exact() and free_pages_exact()
+Message-Id: <20080514090335.a4bacd17.randy.dunlap@oracle.com>
+In-Reply-To: <1210714006-8976-1-git-send-email-timur@freescale.com>
+References: <1210714006-8976-1-git-send-email-timur@freescale.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 06, 2008 at 11:13:08AM +0800, Huang, Ying wrote:
-> This is a minimal patch with only the essential features. All
-> additional features are split out and can be discussed later. I think
-> it may be easier to get consensus on this minimal patch.
+On Tue, 13 May 2008 16:26:46 -0500 Timur Tabi wrote:
+
+>  include/linux/gfp.h |    3 ++
+>  mm/page_alloc.c     |   53 +++++++++++++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 56 insertions(+), 0 deletions(-)
 > 
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index bdd5c43..2b685eb 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1736,6 +1736,59 @@ void free_pages(unsigned long addr, unsigned int order)
+>  
+>  EXPORT_SYMBOL(free_pages);
 
-Hi Huang,
+Hi Timur,
 
-Ok, after a long time, I am back to testing and reviewing this patch.
+Please use kernel-doc notation/format for these functions as documented
+in Documentation/kernel-doc-nano-HOWTO.txt.  Ask me if you have
+any questions/problems with it.
+
+> +/**
+> + * Allocate an exact number of pages of physically-contiguous memory.
+> + *
+> + * This function is similar to alloc_pages(), except that it allocates the
+> + * minimum number of pages to satisfy the request.  alloc_pages() can only
+> + * allocate memory in power-of-two pages.
+> + *
+> + * This function is also limited by MAX_ORDER.
+> + *
+> + * Memory allocated by this function must be released by free_pages_exact().
+> + */
+> +void *alloc_pages_exact(size_t size, gfp_t gfp_mask)
+> +{
+> +	unsigned int order = get_order(size);
+> +	unsigned long addr;
+> +
+> +	addr = __get_free_pages(gfp_mask, order);
+> +	if (addr) {
+> +		unsigned long alloc_end = addr + (PAGE_SIZE << order);
+> +		unsigned long used = addr + PAGE_ALIGN(size);
+> +
+> +		split_page(virt_to_page(addr), order);
+> +		while (used < alloc_end) {
+> +			free_page(used);
+> +			used += PAGE_SIZE;
+> +		}
+> +	}
+> +
+> +	return (void *)addr;
+> +}
+> +EXPORT_SYMBOL(alloc_pages_exact);
+> +
+> +/**
+> + * Releases memory allocated via alloc_pages_exact()
+> + *
+> + * Release the memory allocated by a previous call to alloc_pages_exact.
+> + *
+> + * The first parameter must be the value returned by alloc_pages_exact(),
+> + * and the 'size' parameter must be the same as was passed to
+> + * alloc_pages_exact().
+> + */
+> +void free_pages_exact(void *virt, size_t size)
+> +{
+> +	unsigned long addr = (unsigned long)virt;
+> +	unsigned long end = addr + PAGE_ALIGN(size);
+> +
+> +	while (addr < end) {
+> +		free_page(addr);
+> +		addr += PAGE_SIZE;
+> +	}
+> +}
+> +EXPORT_SYMBOL(free_pages_exact);
 
 
-[..]
-> 7. Boot kernel compiled in step 1 (kernel C). Use the rootfs.gz as
->    root file system.
-> 
-> 8. In kernel C, load the memory image of kernel A as follow:
-> 
->    /sbin/kexec -l --args-none --entry=`cat kexec_jump_back_entry` dump.elf
-> 
-
-How do I got back to original kernel without loading dump.elf. I mean,
-original kernel is already in memory and I don't have to first save
-it to disk and then reload back. Is there a way to do it? If not, then
-we need to modify kexec-tools to support that.
-
-Something like
-
-kexec --entry=<entry point>, should tell kexec that kernel is already
-loaded. Just do the bit to set the entry point properly.
-
-Thanks
-Vivek
+---
+~Randy
