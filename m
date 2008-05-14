@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763539AbYENUK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751373AbYENUPR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763539AbYENUK1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 16:10:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760876AbYENUKS
+	id S1751373AbYENUPR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 16:15:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750720AbYENUOf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 16:10:18 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:52458 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759316AbYENUKR (ORCPT
+	Wed, 14 May 2008 16:14:35 -0400
+Received: from harold.telenet-ops.be ([195.130.133.65]:47003 "EHLO
+	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750735AbYENUOd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 16:10:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=wM6kEwlXITZI6+6oArlPkuWJY1k6OaxqDlW7N6OGv7u0HuWCoXUBf0OAwemoNOThK5mYnw+3UTEqKun0bBweXa/ryduTcjKCrouZNyNcMlRSdMzCH+hQqYD2mSq8XskIAIKWCZQkfIisbMV/2uxmMYeggjNbZmX0MrKnqSd00dU=
-Date: Thu, 15 May 2008 01:40:06 +0530
-From: Pradeep Singh Rautela <rautelap@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org
-Subject: [PATCH 2.6.26-rc2] driver:Remove unused macro KERNEL_OFFSET
-Message-ID: <20080514201006.GD7338@kernelpanic>
+	Wed, 14 May 2008 16:14:33 -0400
+Date: Wed, 14 May 2008 22:14:30 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Andreas Schwab <schwab@suse.de>
+cc: Cyrill Gorcunov <gorcunov@gmail.com>, Adrian Bunk <bunk@kernel.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: m68k: main.c:(.init.text+0x730): undefined reference to `strlen'
+In-Reply-To: <je1w44ucrc.fsf@sykes.suse.de>
+Message-ID: <Pine.LNX.4.64.0805142214000.11631@anakin>
+References: <Pine.LNX.4.64.0805140958400.5778@anakin> <jeprrpth5m.fsf@sykes.suse.de>
+ <20080514141056.GB19909@cs181133002.pp.htv.fi> <jeabitt0xj.fsf@sykes.suse.de>
+ <20080514144031.GA6902@cvg> <je63thszo6.fsf@sykes.suse.de> <20080514151407.GD6902@cvg>
+ <je1w44ucrc.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 14 May 2008, Andreas Schwab wrote:
+> Cyrill Gorcunov <gorcunov@gmail.com> writes:
+> > Andreas, could you test/review the following patch
+> > (what is worse - I *have* introduced buffer overflow with my
+> > patch, so I think we should fix it asap)
+> 
+> I've compiled the file with the various cross compilers I have laying
+> around here, no reference to strlen any more.
 
-KERNEL_OFFSET macro in eni.h is not required as it is not used anywhere.
-Remove the unused macro from eni.h header file.
+Same here. Builds and runs fine (on ARAnyM). Thanks!
 
-Signed-off-by: Pradeep Singh <rautelap@gmail.com>
----
- drivers/atm/eni.h |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+Gr{oetje,eeting}s,
 
-diff --git a/drivers/atm/eni.h b/drivers/atm/eni.h
-index d04fefb..e4c9525 100644
---- a/drivers/atm/eni.h
-+++ b/drivers/atm/eni.h
-@@ -18,7 +18,6 @@
- #include "midway.h"
- 
- 
--#define KERNEL_OFFSET	0xC0000000	/* kernel 0x0 is at phys 0xC0000000 */
- #define DEV_LABEL	"eni"
- 
- #define UBR_BUFFER	(128*1024)	/* UBR buffer size */
--- 
-1.5.5.1
+						Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
