@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755799AbYENVbi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756054AbYENVdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755799AbYENVbi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 17:31:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbYENVba
+	id S1756054AbYENVdR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 17:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbYENVc6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 17:31:30 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35298 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750954AbYENVba (ORCPT
+	Wed, 14 May 2008 17:32:58 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:42015 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750954AbYENVc5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 17:31:30 -0400
-Date: Wed, 14 May 2008 22:19:57 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alexander Viro <viro@ftp.linux.org.uk>
-Subject: Re: [announce] "kill the Big Kernel Lock (BKL)" tree
-Message-ID: <20080514221957.6edb2d60@core>
-In-Reply-To: <482B5614.3060203@firstfloor.org>
-References: <20080514174955.GA515@elte.hu>
-	<87fxsk7n7e.fsf@basil.nowhere.org>
-	<20080514220034.51eae9e0@core>
-	<482B5614.3060203@firstfloor.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 14 May 2008 17:32:57 -0400
+Date: Wed, 14 May 2008 22:32:51 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Sage Weil <sage@newdream.net>, Jeff Garzik <jeff@garzik.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: POHMELFS high performance network filesystem. Transactions, failover, performance.
+Message-ID: <20080514213251.GB23758@shareable.org>
+Mail-Followup-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+	Sage Weil <sage@newdream.net>, Jeff Garzik <jeff@garzik.org>,
+	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org
+References: <20080513174523.GA1677@2ka.mipt.ru> <4829E752.8030104@garzik.org> <20080513205114.GA16489@2ka.mipt.ru> <Pine.LNX.4.64.0805140623001.14334@cobra.newdream.net> <20080514135156.GA23131@2ka.mipt.ru> <20080514143105.GB14987@shareable.org> <20080514150052.GA15826@2ka.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080514150052.GA15826@2ka.mipt.ru>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Most?
-
-Yes
-
+Evgeniy Polyakov wrote:
+> If I understood that, client has to connect to all servers and send data
+> there, so that after single reply things got committed. That is
+> definitely not the issue, when there are lots of servers.
 > 
-> >of the legacy users inflict that locking on other code - eg the ISN
-> > use of the BKL directly impacts on the tty layer work.
-> 
-> So you just stick unlock_kernel()/lock_kernel() around the call
-> to TTY (or similar to the entry points)
+> That can be the case if client connects to some gate server, which in
+> turn broadcasts data further, that is how I plan to implement things at
+> first.
 
-It isn't that simple - I've spent a good deal of time working on it.
-There are lots of paths that rely on interactions between modules. Eg we
-found stuff racing between the pid structs tty internals and procfs that
-happened to be saved by the BKL.
+Look up Bittorrent, and bandwidth diffusion generally.  Also look up
+multicast trees.
 
-That in itself is a problem Ingo's stuff won't help with: We have lots of
-"magic" accidental, undocumented and pot luck BKL locking semantics
-between subsystems that are not even visible.
+Sometimes it's faster for a client to send to many servers; sometimes
+it's faster to send fewer and have them relayed by intermediaries -
+because every packet takes time to transmit, and network topologies
+aren't always homogenous or symmetric.
+
+There is no simple answer which is optimal for all networks.
+
+> Another approach, which seems also intersting is leader election (per
+> client), so that leader would broadcast all the data.
+
+Leader election is part of standard Paxos too :-)
+
+If you have a single data forwarder elected per client, then if one
+client generates a lot of traffic, you concentrate a lot of traffic to
+one network link and one CPU.  Sometimes it's better to elect several
+leaders per client, and hash requests onto them.  You diffuse CPU and
+traffic, but reduce opportunities to aggregate transactions into fewer
+message.  It's an interesting problem, again probably with different
+optimal results for different networks.
+
+-- Jamie
