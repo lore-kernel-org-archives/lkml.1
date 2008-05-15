@@ -1,276 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754670AbYEOCZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756267AbYEOC1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754670AbYEOCZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 22:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbYEOCZQ
+	id S1756267AbYEOC1Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 22:27:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752399AbYEOC1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 22:25:16 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:23033 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752213AbYEOCZO (ORCPT
+	Wed, 14 May 2008 22:27:00 -0400
+Received: from mga14.intel.com ([143.182.124.37]:43066 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752263AbYEOC07 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 22:25:14 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=R7reN1X6u8Q3IXs3Jz5XKE+cNoHlI7xuSLZ5R6AjSjgrdWstojl7d5qAgPrVAuJOo
-	K1D/5ETi7CZFU3xFkkZNA==
-Message-ID: <6599ad830805141925mf8a13daq7309148153a3c2df@mail.gmail.com>
-Date: Wed, 14 May 2008 19:25:07 -0700
-From: "Paul Menage" <menage@google.com>
-To: balbir@linux.vnet.ibm.com, linux-mm@kvack.org,
-       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
-       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>,
-       "Paul Menage" <menage@google.com>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, "Pavel Emelianov" <xemul@openvz.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [-mm][PATCH 4/4] Add memrlimit controller accounting and control (v4)
-In-Reply-To: <20080514132529.GA25653@balbir.in.ibm.com>
+	Wed, 14 May 2008 22:26:59 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,489,1204531200"; 
+   d="scan'208";a="247034763"
+Subject: Re: [PATCH -mm] kexec jump -v9
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+In-Reply-To: <20080514205204.GJ30469@redhat.com>
+References: <1204773188.4707.109.camel@caritas-dev.intel.com>
+	 <20080514205204.GJ30469@redhat.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Date: Thu, 15 May 2008 10:32:42 +0800
+Message-ID: <1210818762.23707.102.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080514130904.24440.23486.sendpatchset@localhost.localdomain>
-	 <20080514130951.24440.73671.sendpatchset@localhost.localdomain>
-	 <20080514132529.GA25653@balbir.in.ibm.com>
+X-Mailer: Evolution 2.22.1 
+X-OriginalArrivalTime: 15 May 2008 02:26:17.0066 (UTC) FILETIME=[0DC4FCA0:01C8B633]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 14, 2008 at 6:25 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->  +
->  +int memrlimit_cgroup_charge_as(struct mm_struct *mm, unsigned long nr_pages)
->  +{
->  +       int ret;
->  +       struct memrlimit_cgroup *memrcg;
->  +
->  +       rcu_read_lock();
->  +       memrcg = memrlimit_cgroup_from_task(rcu_dereference(mm->owner));
->  +       css_get(&memrcg->css);
->  +       rcu_read_unlock();
->  +
->  +       ret = res_counter_charge(&memrcg->as_res, (nr_pages << PAGE_SHIFT));
->  +       css_put(&memrcg->css);
->  +       return ret;
->  +}
+On Wed, 2008-05-14 at 16:52 -0400, Vivek Goyal wrote:
+[...]
+> Ok, I have done some testing on this patch. Currently I have just
+> tested switching back and forth between two kernels and it is working for
+> me.
 
-Assuming that we're holding a write lock on mm->mmap_sem here, and we
-additionally hold mmap_sem for the whole of mm_update_next_owner(),
-then maybe we don't need any extra synchronization here? Something
-like simply:
+Thanks.
 
-int memrlimit_cgroup_charge_as(struct mm_struct *mm, unsigned long nr_pages)
-{
-       struct memrlimit_cgroup *memrcg = memrlimit_cgroup_from_task(mm->owner);
-       return res_counter_charge(&memrcg->as_res, (nr_pages << PAGE_SHIFT));
-}
+[...]
+> > +/*
+> > + * Entry point for jumping back from kexeced kernel, the paging is
+> > + * turned off.
+> > + */
+> > +kexec_jump_back_entry:
+> > +	call	1f
+> > +1:
+> > +	popl	%ebx
+> > +	subl	$(1b - kexec_relocate_page), %ebx
+> > +	movl	%edi, KJUMP_ENTRY_OFF(%ebx)
+> > +	movl	CP_VA_CONTROL_PAGE(%ebx), %edi
+> > +	lea	STACK_TOP(%ebx), %esp
+> > +	movl	CP_PA_SWAP_PAGE(%ebx), %eax
+> > +	movl	CP_PA_BACKUP_PAGES_MAP(%ebx), %edx
+> > +	pushl	%eax
+> > +	pushl	%edx
+> > +	call	swap_pages
+> > +	addl	$8, %esp
+> > +	movl	CP_PA_PGD(%ebx), %eax
+> > +	movl	%eax, %cr3
+> > +	movl	%cr0, %eax
+> > +	orl	$(1<<31), %eax
+> > +	movl	%eax, %cr0
+> > +	lea	STACK_TOP(%edi), %esp
+> > +	movl	%edi, %eax
+> > +	addl	$(virtual_mapped - kexec_relocate_page), %eax
+> > +	pushl	%eax
+> > +	ret
+> 
+> Upon re-entering the kernel, what happens to GDT table? So gdtr will be
+> pointing to GDT of other kernel (which is not there as pages have been
+> swapped)? Do we need to reload the gdtr upon re-entering the kernel.
 
-Seems good to minimize additional synchronization on the fast path.
+After re-entering the kernel and returning from machine_kexec,
+restore_processor_state() is called, where the GDTR and some other CPU
+state such as FPU, IDT, etc are restored.
 
-The only thing that's still broken is that the task_struct.cgroups
-pointer gets updated only under the synchronization of task_lock(), so
-we've still got the race of:
+> [..]
+> > @@ -197,8 +282,54 @@ identity_mapped:
+> >  	xorl	%eax, %eax
+> >  	movl	%eax, %cr3
+> >  
+> > +	movl	CP_PA_SWAP_PAGE(%edi), %eax
+> > +	pushl	%eax
+> > +	pushl	%ebx
+> > +	call	swap_pages
+> > +	addl	$8, %esp
+> > +
+> > +	/* To be certain of avoiding problems with self-modifying code
+> > +	 * I need to execute a serializing instruction here.
+> > +	 * So I flush the TLB, it's handy, and not processor dependent.
+> > +	 */
+> > +	xorl	%eax, %eax
+> > +	movl	%eax, %cr3
+> > +
+> > +	/* set all of the registers to known values */
+> > +	/* leave %esp alone */
+> > +
+> > +	movl	KJUMP_MAGIC_OFF(%edi), %eax
+> > +	cmpl	$KJUMP_MAGIC_NUMBER, %eax
+> > +	jz 1f
+> > +	xorl	%edi, %edi
+> > +	xorl	%eax, %eax
+> > +	xorl	%ebx, %ebx
+> > +	xorl    %ecx, %ecx
+> > +	xorl    %edx, %edx
+> > +	xorl    %esi, %esi
+> > +	xorl    %ebp, %ebp
+> > +	ret
+> > +1:
+> > +	popl	%edx
+> > +	movl	CP_PA_SWAP_PAGE(%edi), %esp
+> > +	addl	$PAGE_SIZE_asm, %esp
+> > +	pushl	%edx
+> > +2:
+> > +	call	*%edx
+> 
+> > +	movl	%edi, %edx
+> > +	popl	%edi
+> > +	pushl	%edx
+> > +	jmp	2b
+> > +
+> 
+> What does above piece of code do? Looks like redundant for switching
+> between the kernels? After call *%edx, we never return here. Instead
+> we come back to "kexec_jump_back_entry"?
 
-A: attach_task() updates B->cgroups
+For switching between the kernels, this is redundant. Originally another
+feature of kexec jump is to call some code in physical mode. ﻿This is
+used to provide a C ABI to called code.
 
-B: memrlimit_cgroup_charge_as() charges the new res counter and
-updates mm->total_vm
+Now, Eric suggests to use a C ABI compatible mode to pass the jump back
+entry point too, that is, use the return address on stack instead of %
+edi. I think that is reasonable. Maybe we can revise this code to be
+compatible with C ABI and provide a convenient interface for both kernel
+and other physical mode code.
 
-A: memrlimit_cgroup_move_task() moves mm->total_vm from the old
-counter to the new counter
+> [..]
+> > --- /dev/null
+> > +++ b/Documentation/i386/jump_back_protocol.txt
+> > @@ -0,0 +1,66 @@
+> > +		THE LINUX/I386 JUMP BACK PROTOCOL
+> > +		---------------------------------
+> > +
+> > +		Huang Ying <ying.huang@intel.com>
+> > +		    Last update 2007-12-19
+> > +
+> > +Currently, the following versions of the jump back protocol exist.
+> > +
+> > +Protocol 1.00:	Jumping between original kernel and kexeced kernel
+> > +		support. Calling ordinary C function support.
+> > +
+> > +
+> > +*** JUMP BACK ENTRY
+> > +
+> > +At jump back entry of callee, the CPU must be in 32-bit protected mode
+> > +with paging disabled; the CS, DS, ES and SS must be 4G flat segments;
+> > +CS must have execute/read permission, and DS, ES and SS must have
+> > +read/write permission; interrupt must be disabled; the contents of
+> > +registers and corresponding memory must be as follow:
+> > +
+> > +Offset/Size	Meaning
+> > +
+> > +%edi		Real jump back entry of caller if supported,
+> > +		otherwise 0.
+> > +%esp		Stack top pointer, the size of stack is about 4k bytes.
+> > +(%esp)/4	Helper jump back entry of caller if %edi != 0,
+> > +		otherwise undefined.
+> > +
+> 
+> I am not sure what is helper jump back entry? I understand that you 
+> are using %edi to pass around entry point between two kernels. Can
+> you please shed some more light on this?
 
-Here's one way I see to fix this:
+Helper jump back entry is used to provide a C ABI to some physical mode
+code other than kernel. It is the above redundant code.
 
-We change attach_task() so that rather than updating the
-task_struct.cgroups pointer once from the original css_set to the
-final css_set, it goes through a series of intermediate css_set
-structures, one for each subsystem in the hierarchy, transitioning
-from the old set to the final set. Then for each subsystem ss, it
-would do:
+Best Regards,
+Huang Ying
 
-next_css = <old css with pointer for ss updated>
-if (ss->attach) {
-  ss->attach(ss, p, next_css);
-} else {
-  task_lock(p);
-  rcu_assign_ptr(p->cgroups, next_css);
-  task_unlock(p);
-}
-
-i.e. the subsystem would be free to implement any synchronization it
-desired in the attach() code. The attach() method's responsibility
-would be to ensure that p->cgroups was updated to point to next_css
-before returning. This should make it much simpler for a subsystem to
-handle potential races between attach() and accounting. The current
-semantics of can_attach()/update/attach() are sufficient for cpusets,
-but probably not for systems with more complex accounting. I'd still
-need to figure out a nice way to get the kind of transactional
-semantics that you want from can_attach().
-
->  +
->  +void memrlimit_cgroup_uncharge_as(struct mm_struct *mm, unsigned long nr_pages)
->  +{
->  +       struct memrlimit_cgroup *memrcg;
->  +
->  +       rcu_read_lock();
->  +       memrcg = memrlimit_cgroup_from_task(rcu_dereference(mm->owner));
->  +       css_get(&memrcg->css);
->  +       rcu_read_unlock();
->  +
->  +       res_counter_uncharge(&memrcg->as_res, (nr_pages << PAGE_SHIFT));
->  +       css_put(&memrcg->css);
->  +}
->  +
->   static struct cgroup_subsys_state *
->   memrlimit_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cgrp)
->   {
->  @@ -134,11 +169,70 @@ static int memrlimit_cgroup_populate(str
->                                 ARRAY_SIZE(memrlimit_cgroup_files));
->   }
->
->  +static void memrlimit_cgroup_move_task(struct cgroup_subsys *ss,
->  +                                       struct cgroup *cgrp,
->  +                                       struct cgroup *old_cgrp,
->  +                                       struct task_struct *p)
->  +{
->  +       struct mm_struct *mm;
->  +       struct memrlimit_cgroup *memrcg, *old_memrcg;
->  +
->  +       mm = get_task_mm(p);
->  +       if (mm == NULL)
->  +               return;
->  +
->  +       rcu_read_lock();
->  +       if (p != rcu_dereference(mm->owner))
->  +               goto out;
-
-out: does up_read() on mmap_sem, which you don't currently hold.
-
-Can you add more comments about why you're using RCU here?
-
-You have a refcounted pointer on mm, so mm can't go away, and you
-never dereference the result of the rcu_dereference(mm->owner), so
-you're not protecting the validity of that pointer. The only way this
-could help would be if anything that changes mm->owner calls
-synchronize_rcu() before, say, doing accounting changes, and I don't
-believe that's the case.
-
-Would it be simpler to use task_lock(p) here to ensure that it doesn't
-lose its owner status (by exiting or execing) while we're moving it?
-
-i.e., something like: [ this assumes the new semantics of attach that
-I proposed above ]
-
-
-static void memrlimit_cgroup_move_task(struct cgroup_subsys *ss,
-                                       struct cgroup *cgrp,
-                                       struct cgroup *old_cgrp,
-                                       struct task_struct *p,
-                                       struct css_set new_css_set)
-{
-        struct mm_struct *mm;
-        struct memrlimit_cgroup *memrcg, *old_memrcg;
-
- retry:
-        mm = get_task_mm(p);
-        if (mm == NULL) {
-          task_lock(p);
-          rcu_assign_ptr(p->cgroups, new_css_set);
-          task_unlock(p);
-          return;
-        }
-
-        /* Take mmap_sem to prevent address space changes */
-        down_read(&mm->mmap_sem);
-        /* task_lock(p) to prevent mm ownership changes */
-        task_lock(p);
-        if (p->mm != mm) {
-                /* We raced */
-                task_unlock(p);
-                up_read(&mm->mmap_sem);
-                mmput(mm);
-                goto retry;
-        }
-        if (p != mm->owner)
-                goto out_assign;
-
-        memrcg = memrlimit_cgroup_from_cgrp(cgrp);
-        old_memrcg = memrlimit_cgroup_from_cgrp(old_cgrp);
-
-        if (memrcg == old_memrcg)
-                goto out_assign;
-
-        if (res_counter_charge(&memrcg->as_res, (mm->total_vm << PAGE_SHIFT)))
-                goto out_assign;
-        res_counter_uncharge(&old_memrcg->as_res, (mm->total_vm << PAGE_SHIFT));
-  out_assign:
-        rcu_assign_ptr(p->cgroups, new_css_set);
-        task_unlock(p);
-        up_read(&mm->mmap_sem);
-        mmput(mm);
-}
-
-
-
-
->  +
->  +       memrcg = memrlimit_cgroup_from_cgrp(cgrp);
->  +       old_memrcg = memrlimit_cgroup_from_cgrp(old_cgrp);
->  +
->  +       if (memrcg == old_memrcg)
->  +               goto out;
-
-mmap_sem is also not held here.
-
->  +
->  +       /*
->  +        * Hold mmap_sem, so that total_vm does not change underneath us
->  +        */
->  +       down_read(&mm->mmap_sem);
-
-You can't block inside rcu_read_lock().
-
->  +       if (res_counter_charge(&memrcg->as_res, (mm->total_vm << PAGE_SHIFT)))
->  +               goto out;
->  +       res_counter_uncharge(&old_memrcg->as_res, (mm->total_vm << PAGE_SHIFT));
->  +out:
->  +       up_read(&mm->mmap_sem);
->  +       rcu_read_unlock();
->  +       mmput(mm);
->  +}
->  +
->  +static void memrlimit_cgroup_mm_owner_changed(struct cgroup_subsys *ss,
->  +                                               struct cgroup *cgrp,
->  +                                               struct cgroup *old_cgrp,
->  +                                               struct task_struct *p)
->  +{
->  +       struct memrlimit_cgroup *memrcg, *old_memrcg;
->  +       struct mm_struct *mm = get_task_mm(p);
->  +
->  +       BUG_ON(!mm);
->  +       memrcg = memrlimit_cgroup_from_cgrp(cgrp);
->  +       old_memrcg = memrlimit_cgroup_from_cgrp(old_cgrp);
->  +
->  +       down_read(&mm->mmap_sem);
-
-At this point we're holding p->alloc_lock, so we can't do a blocking
-down_read().
-
-How about if we down_read(&mm->mmap_sem) in mm_update_next_owner()
-prior to taking tasklist_lock? That will ensure that mm ownership
-changes are synchronized against mmap/munmap operations on that mm,
-and since the cgroups-based owners are likely to be wanting to track
-the ownership changes for accounting purposes, this seems like an
-appropriate lock to hold.
-
->  +       if (res_counter_charge(&memrcg->as_res, (mm->total_vm << PAGE_SHIFT)))
->  +               goto out;
->  +       res_counter_uncharge(&old_memrcg->as_res, (mm->total_vm << PAGE_SHIFT));
->  +out:
->  +       up_read(&mm->mmap_sem);
->  +
->  +       mmput(mm);
->  +}
->  +
