@@ -1,25 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763017AbYEOVIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762239AbYEOVLp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763017AbYEOVIV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 17:08:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761645AbYEOVIA
+	id S1762239AbYEOVLp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 17:11:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755570AbYEOVLe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 17:08:00 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57590
+	Thu, 15 May 2008 17:11:34 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33279
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752466AbYEOVH7 (ORCPT
+	by vger.kernel.org with ESMTP id S1755831AbYEOVLd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 17:07:59 -0400
-Date: Thu, 15 May 2008 14:07:54 -0700 (PDT)
-Message-Id: <20080515.140754.06902962.davem@davemloft.net>
-To: mikpe@it.uu.se
-Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] 2.6.26-rc1 lost half the RAM on UltraSPARC 5
+	Thu, 15 May 2008 17:11:33 -0400
+Date: Thu, 15 May 2008 14:11:27 -0700 (PDT)
+Message-Id: <20080515.141127.154825097.davem@davemloft.net>
+To: wrs@pt.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: TAHI IPv6 testing of kernel 2.6.20
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <18476.33854.71781.133881@harpo.it.uu.se>
-References: <18473.60551.911448.98269@alkaid.it.uu.se>
-	<20080514.231111.107604885.davem@davemloft.net>
-	<18476.33854.71781.133881@harpo.it.uu.se>
+In-Reply-To: <OFAB0C1694.0B207957-ON8525744A.006A249F-8525744A.006A50C8@pt.com>
+References: <OFAB0C1694.0B207957-ON8525744A.006A249F-8525744A.006A50C8@pt.com>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -28,15 +26,87 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mikael Pettersson <mikpe@it.uu.se>
-Date: Thu, 15 May 2008 20:43:10 +0200
+From: William Seppeler <wrs@pt.com>
+Date: Thu, 15 May 2008 15:21:14 -0400
 
-> Thanks Dave. As the dmesg diff below shows, this patch fixed
-> my lost RAM issue. I actually have about 8KB more available
-> now than I had with 2.6.25.
+You'll get a lot more feedback from the networking developers
+if you actually send it to the list they subscribe to.
+Thus, netdev CC:'d
 
-Don't spend it all in one place :-)
-
-> Tested-by: Mikael Pettersson <mikpe@it.uu.se>
-
-Thanks a lot for all of your help.
+> I noticed on the TAHI website that kernel.org had the 2.6.20 kernel 
+> certified for IPv6 Ready Logo Phase2 as a router device. 
+> 
+> The application was submitted on 20070827 (Application ID: 
+> US-2-C-20070827-000142) and certified on 20070926. 
+> 
+> I'm currently testing a 2.6.20 kernel using Self_Test_1.4.14 (performing 
+> Phase2 host testing - ipv6ready_p2_host).  It passes all tests except for 
+> one.  I'm failing test: 
+> 
+>     v6LC_2_3_6_G - Redirected to Alternate Router: Invalid (Target Address 
+> is Multicast) 
+> 
+> Based on the kernel.org application date, I assume the application was 
+> submitted using TAHI Self_Test_1.4.8.  I see from the Self_Test CHANGELOG 
+> that test v6LC_2_3_6_G was modified after the application date: 
+> 
+>     2007/09/26    Yukiyo Akisada
+>        nd.p2/v6LC_2_3_6_G.def - correct packet definition 
+> 
+> 
+> Q: Has the kernel.org group retested the 2.6.20 kernel using any of the 
+> recent Self_Test releases?  In particular, Self_Test_1.4.14 or greater? 
+> And were there any failures? 
+> 
+> As for details into the v6LC_2_3_6_G test failure: 
+> 
+> The log shows the test fails due to processing an invalid redirect packet 
+> (ie: it's a negative test).  The redirect packet contains a multicast 
+> address as a target address.  RFC2461 (p.26) doesn't explicitly state this 
+> is invalid: 
+> 
+>       Target Address 
+>                      An IP address that is a better first hop to use for
+>                     the ICMP Destination Address.  When the target is
+>                     the actual endpoint of communication, i.e., the
+>                     destination is a neighbor, the Target Address field
+>                     MUST contain the same value as the ICMP Destination
+>                     Address field.  Otherwise the target is a better
+>                     first-hop router and the Target Address MUST be the
+>                     router's link-local address so that hosts can
+>                     uniquely identify routers.
+> 
+> But the test does appear to make sense based on the last sentence.  The 
+> linux kernel I'm testing shows an echo response trying to use the 
+> multicast address from the redirect packet as it's first hop.  This is 
+> what causes the test to fail.  The expectation is that the linux kernel 
+> would ignore the redirect packet entirely. 
+> 
+> As stated, this is the ONLY test in the whole Phase2 test suite that 
+> fails.  I understand the failure, but I don't understand how the 2.6.20 
+> kernel is Phase2 certified.  At least not with the current Self_Test test 
+> suite. 
+> 
+> Q: Has anyone else had issues in getting the 2.6.20 kernel to pass all 
+> TAHI IPv6 Ready Logo Phase2 tests? 
+> 
+> Please CC answers to wrs@pt.com
+> 
+> Thank You, 
+> 
+> ========================================
+> William Seppeler
+> Test Engineer
+> Performance Technologies Inc.
+> 205 Indigo Creek Dr.
+> Rochester, NY  14626
+> 
+> Phone:  (585) 256-0200, Fax:  (585) 256-0791
+> Email:  wrs@pt.com, Web:  www.pt.com
+> ========================================
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
