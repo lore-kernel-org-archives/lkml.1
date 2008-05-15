@@ -1,59 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753658AbYEOFtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753685AbYEOGL3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753658AbYEOFtU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 01:49:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750894AbYEOFtE
+	id S1753685AbYEOGL3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 02:11:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbYEOGLS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 01:49:04 -0400
-Received: from twinlark.arctic.org ([208.69.40.136]:46928 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750812AbYEOFtD (ORCPT
+	Thu, 15 May 2008 02:11:18 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55877
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750812AbYEOGLR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 01:49:03 -0400
-Message-ID: <482BCEB4.9050906@kernel.org>
-Date: Wed, 14 May 2008 22:48:36 -0700
-From: Andrew Morgan <morgan@kernel.org>
-User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
-MIME-Version: 1.0
-To: KaiGai Kohei <kaigai@ak.jp.nec.com>
-CC: Chris Wright <chrisw@sous-sol.org>, greg@kroah.com, serue@us.ibm.com,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] exporting capability name/code pairs (for 2.6.26)
-References: <47C25AE9.7080305@ak.jp.nec.com> <480DC80F.3060403@ak.jp.nec.com> <20080423053726.GF3861@localhost.localdomain> <480EE1F6.3070205@ak.jp.nec.com> <482A33FA.5030109@ak.jp.nec.com> <20080514005238.GZ17453@sequoia.sous-sol.org> <482A7F64.50705@ak.jp.nec.com>
-In-Reply-To: <482A7F64.50705@ak.jp.nec.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 15 May 2008 02:11:17 -0400
+Date: Wed, 14 May 2008 23:11:11 -0700 (PDT)
+Message-Id: <20080514.231111.107604885.davem@davemloft.net>
+To: mikpe@it.uu.se
+Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] 2.6.26-rc1 lost half the RAM on UltraSPARC 5
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <18473.60551.911448.98269@alkaid.it.uu.se>
+References: <20080512.153628.193699676.davem@davemloft.net>
+	<20080512.153948.193688062.davem@davemloft.net>
+	<18473.60551.911448.98269@alkaid.it.uu.se>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+From: Mikael Pettersson <mikpe@it.uu.se>
+Date: Tue, 13 May 2008 21:31:19 +0200
 
-KaiGai Kohei wrote:
-| For example, we got CAP_MAC_ADMIN at 2.6.25. If an application tries to
-| use it, we have to replace libcap for 2.6.24 by libcap for 2.6.25.
-| Although, we don't get any updates in libcap. :-(
+Ok, Mikael, I think I figured out this bug:
 
-I'm not sure what you mean here. I think you will find that this
-particular capability was supported in libcap 2.03. Current is 2.09.
+> Found ramdisk at physical address 0x10800000, size 3683665
+> lmb_dump_all:
+>     memory.cnt		  = 0x4
+>     memory.size		  = 0xff40000
+>     memory.region[0x0].base       = 0x0
+> 		      .size     = 0x8000000
+>     memory.region[0x1].base       = 0x10000000
+> 		      .size     = 0x7efe000
+>     memory.region[0x2].base       = 0x17f00000
+> 		      .size     = 0x3a000
+>     memory.region[0x3].base       = 0x17f3e000
+> 		      .size     = 0x8000
+>     reserved.cnt	  = 0x2
+>     reserved.size	  = 0x0
+>     reserved.region[0x0].base       = 0x10000000
+> 		      .size     = 0x35bf60
+>     reserved.region[0x1].base       = 0x10800000
+> 		      .size     = 0x10b83551
 
-Also, having Ack'd your proposed kernel patch, I speculatively included
-support for it in libcap-2.08. I will, of course, remove this support if
-the kernel doesn't adopt your change - or picks a different strategy...
-As it is, the patched kernel works nicely. :-)
+>From the very beginning your higher RAM is gone.
+It's correct that some memory should be reserved,
+for the ramdisk, but not 128MB :-)
 
-http://www.kernel.org/pub/linux/libs/security/linux-privs/libcap2/
+The ramdisk is just under 4MB in size, so something is fishy here.
 
-Cheers
+And indeed, I'm reserving the wrong length.  Please try this
+patch:
 
-Andrew
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+sparc64: Fix lmb_reserve() args in find_ramdisk().
 
-iD4DBQFIK86y+bHCR3gb8jsRAnV4AJ9gCaTwfKs8r7KX4DFixT84A5buOQCYlbaX
-mnMx52Yt2pRcLAXTOXElLA==
-=31Cy
------END PGP SIGNATURE-----
+This fixes the missing ram regression reported by
+Mikael Pettersson <mikpe@it.uu.se>, much thanks for
+all of this help in diagnosing this.
+
+The second argument to lmb_reserve() is a size,
+not an end address bounds.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+---
+ arch/sparc64/mm/init.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/sparc64/mm/init.c b/arch/sparc64/mm/init.c
+index a9828d7..3c7b947 100644
+--- a/arch/sparc64/mm/init.c
++++ b/arch/sparc64/mm/init.c
+@@ -768,7 +768,7 @@ static void __init find_ramdisk(unsigned long phys_base)
+ 		initrd_start = ramdisk_image;
+ 		initrd_end = ramdisk_image + sparc_ramdisk_size;
+ 
+-		lmb_reserve(initrd_start, initrd_end);
++		lmb_reserve(initrd_start, sparc_ramdisk_size);
+ 
+ 		initrd_start += PAGE_OFFSET;
+ 		initrd_end += PAGE_OFFSET;
+-- 
+1.5.5.1.57.g5909c
+
