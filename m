@@ -1,87 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763535AbYEOXyQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762910AbYEOX65@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763535AbYEOXyQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 19:54:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755460AbYEOXyA
+	id S1762910AbYEOX65 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 19:58:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756069AbYEOX6n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 19:54:00 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57360 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755456AbYEOXx7 (ORCPT
+	Thu, 15 May 2008 19:58:43 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:48683 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754793AbYEOX6l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 19:53:59 -0400
-Date: Thu, 15 May 2008 16:51:34 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: hskinnemoen@atmel.com, nurhussein@gmail.com, linux-kernel@vger.kernel.org,
-       randy.dunlap@oracle.com, arjan@infradead.org, mingo@elte.hu,
-       a.p.zijlstra@chello.nl, kyle@parisc-linux.org, schwidefsky@de.ibm.com
-Subject: Re: Taint kernel after WARN_ON(condition) v2
-Message-Id: <20080515165134.cb7df5ed.akpm@linux-foundation.org>
-In-Reply-To: <20080515040635.GA2164@linux-sh.org>
-References: <20080213142740.GA4895@gandalf.middleearth>
-	<20080213155520.681e7c06@dhcp-252-066.norway.atmel.com>
-	<20080515040635.GA2164@linux-sh.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 15 May 2008 19:58:41 -0400
+X-Sasl-enc: Hq8Mm302gbcP3JP+QECEkgtu2WbV6TarOjzE8pIzZqyX 1210895920
+Date: Thu, 15 May 2008 20:58:38 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Theodore Tso <tytso@mit.edu>, Jeff Garzik <jeff@garzik.org>,
+       Chris Peterson <cpeterso@cpeterso.com>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>, Rick Jones <rick.jones2@hp.com>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
+	IRQF_SAMPLE_RANDOM
+Message-ID: <20080515235838.GB23721@khazad-dum.debian.net>
+References: <482C7E53.3050300@hp.com> <482C8184.2030906@garzik.org> <482C8550.5000909@intel.com> <482C8D4D.3040702@garzik.org> <a24804730805151301s3c6644d0hc2c78b8008fe035d@mail.gmail.com> <20080515214721.GP18825@mit.edu> <482CB1FB.7080807@garzik.org> <20080515222941.GB20976@khazad-dum.debian.net> <482CBCC6.6010905@garzik.org> <20080515233305.GS18825@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080515233305.GS18825@mit.edu>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 May 2008 13:06:35 +0900
-Paul Mundt <lethal@linux-sh.org> wrote:
-
-> On Wed, Feb 13, 2008 at 03:55:20PM +0100, Haavard Skinnemoen wrote:
-> > On Wed, 13 Feb 2008 22:27:40 +0800
-> > Nur Hussein <nurhussein@gmail.com> wrote:
-> > 
-> > > This does not work on architectures where WARN_ON has its own definition. 
-> > > These archs are:
-> > > 	1. s390
-> > > 	2. superh
-> > > 	3. avr32
-> > > 	4. parisc
-> > 
-> > Hmm. Relying on the generic code in lib/bug.c qualifies as "own
-> > definition" these days? I think the patch below should take care of all
-> > four...unless I've misunderstood something.
-> > 
-> > Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
-> > 
-> > diff --git a/lib/bug.c b/lib/bug.c
-> > index 530f38f..0d67419 100644
-> > --- a/lib/bug.c
-> > +++ b/lib/bug.c
-> > @@ -35,6 +35,7 @@
-> >  
-> >      Jeremy Fitzhardinge <jeremy@goop.org> 2006
-> >   */
-> > +#include <linux/kernel.h>
-> >  #include <linux/list.h>
-> >  #include <linux/module.h>
-> >  #include <linux/bug.h>
-> > @@ -149,6 +150,7 @@ enum bug_trap_type report_bug(unsigned long bugaddr, struct pt_regs *regs)
-> >  			       (void *)bugaddr);
-> >  
-> >  		show_regs(regs);
-> > +		add_taint(TAINT_WARN);
-> >  		return BUG_TRAP_TYPE_WARN;
-> >  	}
-> >  
+On Thu, 15 May 2008, Theodore Tso wrote:
+> On Thu, May 15, 2008 at 06:44:22PM -0400, Jeff Garzik wrote:
+> > I just sorta assumed a buffering, interrupt-driver TPM RNG driver would be 
+> > better than doing it from userspace, but maybe that was a bad assumption to 
+> > make on my part.  It should be quite doable to support TPM RNG entirely via 
+> > userspace, at any rate.
 > 
-> I was just about to submit the exact same patch, so it looks like this
-> slipped through the cracks. Andrew, please apply.
+> If I recall correctly, you need access to a magic TPM key just to
+> *talk* to the TPM.  Normally that key is stored in a file, and of
 
-<goes dumpster-diving through lkml history>
+The TPM has some sort of idea of restricted operations.  It will depend
+whether one can get random numbers as an anonymous party (and frankly, I
+don't care for looking at the TCG docs right now to find out).
 
-> Acked-by: Paul Mundt <lethal@linux-sh.org>
+I certaily can ask the TPM "are you there?" even when it is disabled(!),
+so I would not be too surprised to find out that, as long as it is
+enabled, it will return random numbers to anyone.
 
-I'd have ducked that one partly because of lack of changelog but mainly
-because it didn't look like anyone tested it.
+But access to the TPM requires a control layer which must have excusive
+access to the chip.  That layer would have to move into the kernel...
+IMHO, it is just not worth even bothering with the idea, and just do it
+all in userspace.
 
-It's hard to see how it could go wrong, but stranger things have
-happened.  To me.  Regularly :(
-
-
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
