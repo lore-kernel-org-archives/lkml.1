@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759655AbYEONqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760625AbYEONqa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759655AbYEONqQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 09:46:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753477AbYEONqA
+	id S1760625AbYEONqa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 09:46:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754156AbYEONqE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 09:46:00 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:43585 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753203AbYEONp7 (ORCPT
+	Thu, 15 May 2008 09:46:04 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35462 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753887AbYEONqB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 09:45:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=eBfX2Y2N3RDGKcIT+E7zmhjroPnZldial2Do2/+s5dtesBWT50qWvTpF1o1yT4JKxcTuS2OsnLpVjiZABdTR0K6tGS0+8dN9tFoh5t8BL3st74JqULWR7AVySV3b6YAapKZIJYJsA9+CCgRJD68qFq3HhzF8zkdLWFDO0q8NFYY=
-Date: Thu, 15 May 2008 09:45:52 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Greg KH <greg@kroah.com>, jkosina@suse.cz, linux-input@vger.kernel.org,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Input: add appleir USB driver
-Message-ID: <20080515094212.ZZRA012@mailhub.coreip.homeip.net>
-References: <20080514221519.GA6575@kroah.com> <20080515132108.GA9327@dose.home.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080515132108.GA9327@dose.home.local>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 15 May 2008 09:46:01 -0400
+Date: Thu, 15 May 2008 14:34:30 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alexander Viro <viro@ftp.linux.org.uk>
+Subject: Re: [announce] "kill the Big Kernel Lock (BKL)" tree
+Message-ID: <20080515143430.6a94508d@core>
+In-Reply-To: <482B61C2.9070106@firstfloor.org>
+References: <20080514174955.GA515@elte.hu>
+	<87fxsk7n7e.fsf@basil.nowhere.org>
+	<20080514220034.51eae9e0@core>
+	<482B5614.3060203@firstfloor.org>
+	<20080514221957.6edb2d60@core>
+	<alpine.LFD.1.10.0805141435540.3019@woody.linux-foundation.org>
+	<482B61C2.9070106@firstfloor.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Tino,
+> >  - superblock read/write.
+> > 
+> - fasync
+> 
+> [had some patches for "fasync_locked", not sure if it's worth it]
+> 
+> - character device open
 
-On Thu, May 15, 2008 at 03:21:08PM +0200, Tino Keitel wrote:
-> Hi,
->
-> I'm pretty sure that this breaks the macmini LIRC driver again, see
-> commit 3e1928e8793208802589aae851b6685671187242.
->
+file structures - as well
 
-But with in-kernel driver can't LIRC feed of event device? Ane people
-that dont use LIRC can also have access to the remote?
+> I tried to recruit kernel janitors some time ago to just do all the
+> ioctl -> ioctl_unlocked/explicit lock_kernel changes. There were a few
+> patches generated but the effort died down then.
 
--- 
-Dmitry
+Start at the other end - you can't fix the ioctls until you fix what the
+ioctls interact with. That ends up at the basic data structure and once
+you fix those the rest just starts to fall into place.
