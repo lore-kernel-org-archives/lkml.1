@@ -1,53 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760284AbYEOWpJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758471AbYEOWuT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760284AbYEOWpJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 18:45:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754067AbYEOWoy
+	id S1758471AbYEOWuT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 18:50:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbYEOWuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 18:44:54 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:54333 "EHLO mail.dvmed.net"
+	Thu, 15 May 2008 18:50:06 -0400
+Received: from mail.ift.unesp.br ([200.145.46.3]:44173 "EHLO mail.ift.unesp.br"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753804AbYEOWox (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 18:44:53 -0400
-Message-ID: <482CBCC6.6010905@garzik.org>
-Date: Thu, 15 May 2008 18:44:22 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1751350AbYEOWuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 18:50:05 -0400
+Date: Thu, 15 May 2008 19:49:14 -0300
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: "Darrick J. Wong" <djwong@us.ibm.com>
+Cc: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       mhoffman@lightlink.com, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org
+Subject: Re: [PATCH v2] ibmaem: Fix 64-bit division on 32-bit platforms
+Message-ID: <20080515224914.GA27674@beyonder.ift.unesp.br>
+Mail-Followup-To: "Darrick J. Wong" <djwong@us.ibm.com>,
+	Adrian Bunk <bunk@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>, mhoffman@lightlink.com,
+	linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
+References: <20080508180858.GM16078@tree.beaverton.ibm.com> <20080508163443.a1e9ffe7.akpm@linux-foundation.org> <20080509045527.GI16404@tree.beaverton.ibm.com> <20080514222704.GA11439@cs181133002.pp.htv.fi> <20080514231136.GA4308@beyonder.ift.unesp.br> <20080515211809.GB7323@tree.beaverton.ibm.com>
 MIME-Version: 1.0
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-CC: Theodore Tso <tytso@mit.edu>, Chris Peterson <cpeterso@cpeterso.com>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>, Rick Jones <rick.jones2@hp.com>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
- IRQF_SAMPLE_RANDOM
-References: <20080515142154.0595e475@core> <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com> <482C7B18.6060003@garzik.org> <482C7E53.3050300@hp.com> <482C8184.2030906@garzik.org> <482C8550.5000909@intel.com> <482C8D4D.3040702@garzik.org> <a24804730805151301s3c6644d0hc2c78b8008fe035d@mail.gmail.com> <20080515214721.GP18825@mit.edu> <482CB1FB.7080807@garzik.org> <20080515222941.GB20976@khazad-dum.debian.net>
-In-Reply-To: <20080515222941.GB20976@khazad-dum.debian.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080515211809.GB7323@tree.beaverton.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Henrique de Moraes Holschuh wrote:
-> If anyone wants to poke at it, get the Debian rng-tools source package.
-> It directly supports the VIA PadLock in userspace in a suitably paranoid
-> mode (checks that the RNG was not reprogrammed at every read), and does
-> multithreading so that FIPS and output processing does not block (nor
-> gets blocked) by /dev/hw_random reading, etc.
+On Thu 15.May'08 at 14:18:09 -0700, Darrick J. Wong wrote:
+> > To avoid these kind of doubts may I suggest using the time 
+> > conversion definitions of include/linux/time.h?
+> > 
+> > It would be much easier to understand the intention with
+> > NSEC_PER_SEC, USEC_PER_SEC etc (comments would also help)
+> 
+> Ok, here's an updated version that makes the conversions a bit clearer.
+> Tested and run on i386/x86-64.
+> ---
+> ibmaem: Fix 64-bit division on 32-bit platforms
+> 
+> Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+> ---
+> 
+>  drivers/hwmon/ibmaem.c |    9 ++++++---
+>  1 files changed, 6 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/hwmon/ibmaem.c b/drivers/hwmon/ibmaem.c
+> index 22fa7d6..3013492 100644
+> --- a/drivers/hwmon/ibmaem.c
+> +++ b/drivers/hwmon/ibmaem.c
+> @@ -31,6 +31,8 @@
+>  #include <linux/idr.h>
+>  #include <linux/sched.h>
+>  #include <linux/platform_device.h>
+> +#include <linux/math64.h>
+> +#include <linux/time.h>
+>  
+>  #define REFRESH_INTERVAL	(HZ)
+>  #define IPMI_TIMEOUT		(30 * HZ)
+> @@ -81,6 +83,7 @@
+>  
+>  #define AEM_DEFAULT_POWER_INTERVAL 1000
+>  #define AEM_MIN_POWER_INTERVAL	200
+> +#define UJ_PER_MJ		1000L
+>  
+>  static DEFINE_IDR(aem_idr);
+>  static DEFINE_SPINLOCK(aem_idr_lock);
+> @@ -841,7 +844,7 @@ static ssize_t aem_show_power(struct device *dev,
+>  {
+>  	struct sensor_device_attribute *attr = to_sensor_dev_attr(devattr);
+>  	struct aem_data *data = dev_get_drvdata(dev);
+> -	u64 before, after, time;
+> +	u64 before, after, delta, time;
+>  	signed long leftover;
+>  	struct timespec b, a;
+>  
+> @@ -864,9 +867,9 @@ static ssize_t aem_show_power(struct device *dev,
+>  	mutex_unlock(&data->lock);
+>  
+>  	time = timespec_to_ns(&a) - timespec_to_ns(&b);
+> -	time /= 1000;
+> +	delta = (after - before) * UJ_PER_MJ;
+>  
+> -	return sprintf(buf, "%llu\n", (after - before) * 1000000000 / time);
+> +	return sprintf(buf, "%llu\n", div64_u64(delta * NSEC_PER_SEC, time));
+>  }
 
+Thanks!
 
-Neat.  I always did prefer VIA padlock in userspace.
-
-I just sorta assumed a buffering, interrupt-driver TPM RNG driver would 
-be better than doing it from userspace, but maybe that was a bad 
-assumption to make on my part.  It should be quite doable to support TPM 
-RNG entirely via userspace, at any rate.
-
-	Jeff
-
-
+Wow...so the power unit really is uW, which is a nice precision! 
