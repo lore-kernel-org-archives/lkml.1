@@ -1,62 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932672AbYEOPLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760412AbYEOPQE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932672AbYEOPLU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 11:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756903AbYEOPLB
+	id S1760412AbYEOPQE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 11:16:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754679AbYEOPPy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 11:11:01 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:46859 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755550AbYEOPLA (ORCPT
+	Thu, 15 May 2008 11:15:54 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:18721 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753192AbYEOPPx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 11:11:00 -0400
-Message-ID: <482C5281.7020306@firstfloor.org>
-Date: Thu, 15 May 2008 17:10:57 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Thu, 15 May 2008 11:15:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=L7u5IpnyjFKrAHD8HwJMf6wG2yG2Fo+/y4C6vBmu4p766onl5nimDitN51d5fpioS9K8skv/NlRbiGtf0gDDfy/Nxz9fgomG7ATtHYx7SU8hrMaUPwTweHNKo0eafitrZgNulP4eGtbMp0sf7PjXMylFCBltdfn7DEEThi+YN3k=
+Message-ID: <b647ffbd0805150815t523a6242xd78e85b3f4c5045b@mail.gmail.com>
+Date: Thu, 15 May 2008 17:15:50 +0200
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: vatsa@linux.vnet.ibm.com
+Subject: Re: [PATCH] sched: Improve readability in update_cpu_load() code
+Cc: "Gautham R Shenoy" <ego@in.ibm.com>, "Ingo Molnar" <mingo@elte.hu>,
+       npiggin@suse.de, linux-kernel@vger.kernel.org,
+       "Srivatsa Vaddagiri" <vatsa@in.ibm.com>
+In-Reply-To: <20080515145215.GD14823@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: John Stoffel <john@stoffel.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jonathan Corbet <corbet@lwn.net>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Alexander Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [announce] "kill the Big Kernel Lock (BKL)" tree
-References: <20080514174955.GA515@elte.hu>	<6457.1210801515@vena.lwn.net>	<87bq387cyn.fsf@basil.nowhere.org>	<alpine.LFD.1.10.0805141515020.3019@woody.linux-foundation.org>	<482B65FE.4040402@firstfloor.org> <18476.20788.142218.370584@stoffel.org>
-In-Reply-To: <18476.20788.142218.370584@stoffel.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080515130459.GA9650@in.ibm.com>
+	 <20080515145215.GD14823@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John Stoffel wrote:
->>>>>> "Andi" == Andi Kleen <andi@firstfloor.org> writes:
-> 
-> Andi> Linus Torvalds wrote:
->>> On Thu, 15 May 2008, Andi Kleen wrote:
->>>> The goal less being to get rid of BKL in old drivers, but not 
->>>> requiring BKL in new drivers. Basically all BKL assumptions
->>>> in interfaces really should go.
->>> No, we really do want to get rid of BKL in old drivers too. Or at least in 
->>> the interfaces.
-> 
-> Andi> In the interfaces definitely yes and all subsystems should have
-> Andi> their own lock_kernel calls, but why in the old drivers? For
-> Andi> those it's very unlikely they are used on any SMP system anyways
-> Andi> (e.g. anything depending on CONFIG_ISA) or if they do only on 2
-> Andi> CPU systems.
-> 
-> I'm still running an SMP server with ISA slots. 
+2008/5/15 Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>:
+> On Thu, May 15, 2008 at 06:34:59PM +0530, Gautham R Shenoy wrote:
+>> Author: Gautham R Shenoy <ego@in.ibm.com>
+>> Date:   Thu May 15 17:55:49 2008 +0530
+>>
+>>     sched: Improve readability in update_cpu_load() code
+>>
+>>     Currently the cpu_load[i] is calculated as:
+>>       this_rq->cpu_load[i] = (old_load*(scale-1) + new_load) >> i;
+>>
+>>     However, since scale = 2^i, this can be simplified as:
+>>       this_rq->cpu_load[i] = old_load + ((new_load - old_load) >> i);
+>>
+>>     Makes it easier to read.
+>>     Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+>>
+>> diff --git a/kernel/sched.c b/kernel/sched.c
+>> index 2d7d8f1..e1a6985 100644
+>> --- a/kernel/sched.c
+>> +++ b/kernel/sched.c
+>> @@ -2921,7 +2921,7 @@ static void update_cpu_load(struct rq *this_rq)
+>>                */
+>>               if (new_load > old_load)
+>>                       new_load += scale-1;
+>> -             this_rq->cpu_load[i] = (old_load*(scale-1) + new_load) >> i;
+>> +             this_rq->cpu_load[i] = old_load + ((new_load - old_load) >> i);
+>
+> This wont work when new_load < old_load ..
+>
+> For ex: I tried this prog:
+>
+> #include <stdio.h>
+>
+> main()
+> {
+>        unsigned long old_load = 100, new_load = 90, this_load, this_load1;
+>        int i = 1, scale = 2 << i;
+>
+>        this_load = (old_load*(scale-1) + new_load) >> i;
+>        this_load1 = old_load + ((new_load - old_load) >> i);
 
-I do too (although one CPU has died recently), but how many ISA devices
-do you use in it? Mine used to have a ISA ISDN card, but that was it
-and then no ISA anymore even though the slots are still in there.
+it should be
 
-Also on 2 CPU systems BKL is not that critical anyways. It only starts
-to hurt on larger CPU counts.
+this_load2 = 2 * old_load + (new_load >> i) - (old_load >> i);
 
--Andi
+scale == 2 << i == 1 << (i + 1), so scale >> i = 2.
 
+and it may result in (probably) little difefrences due to different rounding.
+I think, for me the currently existing version is more easy-to-read.
+
+
+> --
+> Regards,
+> vatsa
+
+-- 
+Best regards,
+Dmitry Adamushko
