@@ -1,33 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757863AbYEOKJA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757532AbYEOKNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757863AbYEOKJA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 06:09:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbYEOKIv
+	id S1757532AbYEOKNX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 06:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbYEOKNQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 06:08:51 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:45985 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752318AbYEOKIu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 06:08:50 -0400
-Date: Thu, 15 May 2008 12:06:19 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: David Miller <davem@davemloft.net>
-Cc: shemminger@vyatta.com, greg@kroah.com, fubar@us.ibm.com,
-       netdev@vger.kernel.org, bonding-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] sysfs: remove error messages for -EEXIST case
-Message-ID: <20080515120619.6c867bfb@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20080515.030054.247673168.davem@davemloft.net>
-References: <20080515095246.3b6a0d1d@gondolin.boeblingen.de.ibm.com>
-	<20080515.010139.219194657.davem@davemloft.net>
-	<20080515113131.2cea2bce@gondolin.boeblingen.de.ibm.com>
-	<20080515.030054.247673168.davem@davemloft.net>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
+	Thu, 15 May 2008 06:13:16 -0400
+Received: from mx0.towertech.it ([213.215.222.73]:47629 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753532AbYEOKNP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 06:13:15 -0400
+Date: Thu, 15 May 2008 12:13:12 +0200
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: rtc-linux@googlegroups.com
+Cc: Kim.Heino@bluegiga.com, linux-kernel@vger.kernel.org
+Subject: Re: [rtc-linux] [PATCH] add support for ST M41T94 SPI RTC (patch
+ rev. 2)
+Message-ID: <20080515121312.4af159d9@i1501.lan.towertech.it>
+In-Reply-To: <482C0801.7030007@bluegiga.com>
+References: <482C0801.7030007@bluegiga.com>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+X-This-Is-A-Real-Message: Yes
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -35,12 +28,55 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 May 2008 03:00:54 -0700 (PDT),
-David Miller <davem@davemloft.net> wrote:
+On Thu, 15 May 2008 12:53:05 +0300
+"Kim B. Heino" <Kim.Heino@bluegiga.com> wrote:
 
-> No, the idea is that the __sysfs_add_one() wouldn't need a parameter
-> at all.  sysfs_add_one() just needs to check for -EEXIST from
-> __sysfs_add_one() to decide whether to warn or not.
+> 
+> +struct m41t94 {
+> +	struct rtc_device *rtc;
+> +};
 
-But that is what the patch does? Only the upper layers need to pass a
-flag around.
+ [...]
+
+
+> +
+> +static int __devinit m41t94_probe(struct spi_device *spi)
+> +{
+> +	struct rtc_device *rtc;
+> +	struct m41t94 *m41t94;
+> +	int res;
+> +
+> +	m41t94 = kzalloc(sizeof(struct m41t94), GFP_KERNEL);
+> +	if (!m41t94)
+> +		return -ENOMEM;
+> +	dev_set_drvdata(&spi->dev, m41t94);
+
+ [..]
+
+> +	rtc = rtc_device_register(m41t94_driver.driver.name,
+> +		&spi->dev, &m41t94_rtc_ops, THIS_MODULE);
+> +	if (IS_ERR(rtc)) {
+> +		kfree(m41t94);
+> +		return PTR_ERR(rtc);
+> +	}
+> +
+> +	m41t94->rtc = rtc;
+> +
+> +	return 0;
+> +}
+>
+
+ thanks for having implemented the sugestions.
+
+ one more thing. now that the struct m41t94 is
+ almost empty it makes no sense to keep it.
+
+-- 
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
+
