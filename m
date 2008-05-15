@@ -1,79 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756082AbYEOHXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756669AbYEOHYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756082AbYEOHXg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 03:23:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbYEOHXY
+	id S1756669AbYEOHYV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 03:24:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753080AbYEOHYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 03:23:24 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:38042 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752894AbYEOHXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 03:23:22 -0400
-Date: Thu, 15 May 2008 17:23:10 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Tony Breeds <tony@bakeyournoodle.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jgarzik@redhat.com>,
-       David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: linux-next: Tree for May 14
-Message-Id: <20080515172310.6583453e.sfr@canb.auug.org.au>
-In-Reply-To: <Pine.LNX.4.64.0805150914220.11631@anakin>
-References: <20080514170106.3cbcb201.sfr@canb.auug.org.au>
-	<Pine.LNX.4.64.0805142237240.11631@anakin>
-	<20080514135008.60e5df96.randy.dunlap@oracle.com>
-	<20080514210447.GK20457@bakeyournoodle.com>
-	<20080515010550.GL20457@bakeyournoodle.com>
-	<Pine.LNX.4.64.0805150914220.11631@anakin>
-X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__15_May_2008_17_23_10_+1000_h9SG_wfJgFPtAFre"
+	Thu, 15 May 2008 03:24:08 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:34093 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753028AbYEOHYH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 03:24:07 -0400
+Date: Thu, 15 May 2008 08:23:58 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, hch@infradead.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 08/24] vfs: immutable inode checking cleanup
+Message-ID: <20080515072358.GS13907@ZenIV.linux.org.uk>
+References: <20080506091327.259950960@szeredi.hu> <20080506091416.025653274@szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080506091416.025653274@szeredi.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__15_May_2008_17_23_10_+1000_h9SG_wfJgFPtAFre
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> --- linux-2.6.orig/fs/attr.c	2008-05-06 11:04:29.000000000 +0200
+> +++ linux-2.6/fs/attr.c	2008-05-06 11:04:35.000000000 +0200
+> @@ -108,6 +108,12 @@ int notify_change(struct dentry * dentry
+>  	struct timespec now;
+>  	unsigned int ia_valid = attr->ia_valid;
+>  
+> +	if (ia_valid & (ATTR_MODE | ATTR_UID | ATTR_GID |
+> +			ATTR_ATIME_SET | ATTR_MTIME_SET)) {
+> +		if (IS_IMMUTABLE(inode) || IS_APPEND(inode))
+> +			return -EPERM;
+> +	}
+> +
+>  	now = current_fs_time(inode->i_sb);
+>  
+>  	attr->ia_ctime = now;
+> Index: linux-2.6/fs/utimes.c
+> ===================================================================
+> --- linux-2.6.orig/fs/utimes.c	2008-05-06 11:04:29.000000000 +0200
+> +++ linux-2.6/fs/utimes.c	2008-05-06 11:04:35.000000000 +0200
+> @@ -105,10 +105,6 @@ long do_utimes(int dfd, char __user *fil
+>  	/* Don't worry, the checks are done in inode_change_ok() */
+>  	newattrs.ia_valid = ATTR_CTIME | ATTR_MTIME | ATTR_ATIME;
+>  	if (times) {
+> -		error = -EPERM;
+> -                if (IS_APPEND(inode) || IS_IMMUTABLE(inode))
+> -			goto mnt_drop_write_and_out;
+> -
+>  		if (times[0].tv_nsec == UTIME_OMIT)
+>  			newattrs.ia_valid &= ~ATTR_ATIME;
+>  		else if (times[0].tv_nsec != UTIME_NOW) {
 
-Hi Geert,
+Erm...  What happens if we have UTIME_NOW on both and inode is marked
+immutable?  AFAICS, you've just switched from -EPERM to -EACCES.
+For append-only it's even more interesting - you go from -EPERM to
+success.
 
-On Thu, 15 May 2008 09:17:15 +0200 (CEST) Geert Uytterhoeven <geert@linux-m=
-68k.org> wrote:
->
-> Wow, did you really get all of this from that webpage??
-
-No, he didn't.  He reran the build by hand.  Sorry, but there appears to
-a bug somewhere in our build system (or one of the tools it is using)
-that very occasionally loses a line of the log.  We are trying to track
-it down.
-
-> > The patch below fixes the zorro8390 build, and I think will keep the wa=
-rnings
-> > that Jeff is trying to silence silenced.
-
-I have applied this patch to today's linux-next, so that this particular
-bug will not prevent the m68k builds.  I am hoping someone will pick it
-up (or an equivalent patch) so I can drop it again.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__15_May_2008_17_23_10_+1000_h9SG_wfJgFPtAFre
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIK+TmTgG2atn1QN8RAgCpAJsGoCnHoEreHK3VwUDqPfr/0GPN0wCfbPqO
-bAISpwUqIcYB6hBlPoKXg+0=
-=kt78
------END PGP SIGNATURE-----
-
---Signature=_Thu__15_May_2008_17_23_10_+1000_h9SG_wfJgFPtAFre--
+It might or might not be the right thing to do, and the syscall is
+new, but...  Do you have an ACK from Ulrich?
