@@ -1,96 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755342AbYEOCQ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755980AbYEOCUc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755342AbYEOCQ5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 22:16:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbYEOCQr
+	id S1755980AbYEOCUc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 22:20:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbYEOCUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 22:16:47 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:55290 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752059AbYEOCQq (ORCPT
+	Wed, 14 May 2008 22:20:24 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:54431 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752355AbYEOCUX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 22:16:46 -0400
-Message-Id: <482B9CCA.9060203@mxp.nes.nec.co.jp>
-Date: Thu, 15 May 2008 11:15:38 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 14 May 2008 22:20:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=QzosIWwxuUPGI0/XSML4fJ/BIUnmqvfEXY1iA9xMuPsSZH1YEBpzDoKgOd0Ie0s/5sZeUbnWkF+kO8PXKYmkVVXDkKRHdlEolt1iQv+SmpKSaZ+EzOwYPz2LzMTTdByfHuc/eXzv9c7e/8+sZ73V+QrrONnkoL1x6TA3XXZSfOQ=
+Message-ID: <a4e6962a0805141920x7d96df33gb9c22a5777b1732c@mail.gmail.com>
+Date: Wed, 14 May 2008 21:20:21 -0500
+From: "Eric Van Hensbergen" <ericvh@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: [PULL] v9fs bug fixes and documentation updates for 2.6.26
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "V9FS Developers" <v9fs-developer@lists.sourceforge.net>
 MIME-Version: 1.0
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-CC: Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
-       kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] take pageout refcount into account for remove_exclusive_swap_page
-References: <20080428181835.502876582@redhat.com>	 <20080428181852.620969450@redhat.com> <4828283C.4000803@mxp.nes.nec.co.jp>	 <20080512093307.2ace3096@bree.surriel.com>	 <482990FC.3020303@mxp.nes.nec.co.jp>	 <20080513120417.0833cec1@cuia.bos.redhat.com>	 <1210700635.6208.40.camel@lts-notebook>	 <20080513140902.1030afaa@cuia.bos.redhat.com> <1210705370.6208.47.camel@lts-notebook>
-In-Reply-To: <1210705370.6208.47.camel@lts-notebook>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2008/05/14 4:02 +0900, Lee Schermerhorn wrote:
-> On Tue, 2008-05-13 at 14:09 -0400, Rik van Riel wrote:
->> On Tue, 13 May 2008 13:43:55 -0400
->> Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
->>
->>> Or, more generally, 2 + N, for an anon page that is mapped [must be
->>> read-only, right?] by N processes.  This can happen after, e.g., fork().
->>> Looks like this patch handles the condition just fine, but you might
->>> want to reflect this in the comment.
->> No, this patch only removes a page from the swap cache that is mapped
->> by one process.  The function page_mapped() returns either 1 or 0, not
->> the same as page_mapcount().
-> 
-> Duh!  I was reading "page_mapcount()", 'cause that's what I've been
-> considering using for this purpose.
-> 
->>  
->> I am not sure if trying to handle swap cache pages that are mapped by
->> multiple processes could get us into other corner cases and think that
->> we should probably try to stick to the safe thing for now.
+Linus, please pull the following bug-fixes and documentation updates
+from my kernel.org for-linus branch.
 
-I think it would be better to add a comment of
-remove_exclusive_swap_page_ref() that it doesn't handle
-swap caches that are mapped by multiple processes for safty.
+The following changes since commit dd286422fefdcff784e8d336deeb88ce817e14db:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.kernel.org/.../roland/infiniband
 
-> 
-> OK.  I can test the more general case down the road.
-> 
->> Besides, shouldn't anonymous shared pages be COW and relatively rare?
-> 
-> Well, all anon pages are shared right after fork(), right?  They only
-> become private once they've been written to.  I don't have a feel for
-> the relative numbers of shared anon vs COWed anon--either in general or
-> in the swap cache.
-> 
->>> Now, I think I can use this to try to remove anon pages from the swap
->>> cache when they're mlocked.
-> 
-> ﻿I suppose I can just go ahead and use this version with my stress load
-> and count the times when I could have freed the swap cache entry, but
-> didn't because it's mapped in multiple address spaces.  Later ... :)
-> 
+are available in the git repository at:
 
-Lee, Rik's version looks good to me except mlocked case, but
-do you have any plan to handle these cases?
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/ericvh/v9fs.git for-linus
 
+Eric Van Hensbergen (4):
+      9p: Documentation updates
+      9p: propagate parse_option changes to client and transports
+      9p: make cryptic unknown error from server less scary
+      9p: fix error path during early mount
 
->>>> + */
->>>> +int remove_exclusive_swap_page_ref(struct page *page)
->>>> +{
->>>> +	return remove_exclusive_swap_page_count(page, 2 + page_mapped(page));
->>>> +}
->>>> +
->>>> +/*
->>>>   * Free the swap entry like above, but also try to
->>>>   * free the page cache entry if it is the last user.
->>>>   */
->>>>
->>>> All Rights Reversed
->>
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+Jim Meyering (1):
+      fs/9p/v9fs.c (v9fs_parse_options): Handle kstrdup and
+match_strdup failure. Now that this function can fail, return an int,
+diagnose other option-parsing failures, and adjust the sole caller:
+(v9fs_session_init): Handle kstrdup failure. Propagate any new
+v9fs_parse_options failure "up".
+
+Josef 'Jeff' Sipek (2):
+      9p: use struct mutex instead of struct semaphore
+      9p: Correct fidpool creation failure in p9_client_create
+
+Markus Armbruster (1):
+      add match_strlcpy() us it to make v9fs make uname and remotename
+parsing more robust
+
+Steven Rostedt (1):
+      9p: fix flags length in net
+
+ fs/9p/fid.h                |   15 +++
+ fs/9p/v9fs.c               |   57 ++++++++---
+ fs/9p/v9fs.h               |   85 +++++++++++-----
+ fs/9p/vfs_addr.c           |    2 +-
+ fs/9p/vfs_dir.c            |    2 +-
+ fs/9p/vfs_file.c           |   11 +-
+ fs/9p/vfs_inode.c          |   50 +++++++---
+ fs/9p/vfs_super.c          |   35 +++----
+ include/linux/parser.h     |    2 +-
+ include/net/9p/9p.h        |  240 ++++++++++++++++++++++++++++++++++++++------
+ include/net/9p/client.h    |   35 +++++++
+ include/net/9p/transport.h |   44 ++++++++-
+ lib/parser.c               |   32 ++++--
+ net/9p/Kconfig             |   10 --
+ net/9p/Makefile            |    3 -
+ net/9p/client.c            |   32 +++++--
+ net/9p/conv.c              |  128 +++++++++++++++++++++++-
+ net/9p/error.c             |   15 ++-
+ net/9p/fcprint.c           |    8 ++
+ net/9p/mod.c               |    8 +-
+ net/9p/trans_fd.c          |  204 +++++++++++++++++++++++++++++++-------
+ net/9p/trans_virtio.c      |  175 ++++++++++++++++++++++++++++----
+ net/9p/util.c              |   36 +++++--
+ 23 files changed, 1014 insertions(+), 215 deletions(-)
