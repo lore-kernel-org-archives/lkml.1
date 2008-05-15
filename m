@@ -1,62 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760592AbYEOPUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761201AbYEOPVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760592AbYEOPUU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 11:20:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755564AbYEOPUB
+	id S1761201AbYEOPVP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 11:21:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756494AbYEOPU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 11:20:01 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:41105 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754922AbYEOPUB (ORCPT
+	Thu, 15 May 2008 11:20:58 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:55475 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755564AbYEOPU5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 11:20:01 -0400
-X-Greylist: delayed 789 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 May 2008 11:19:55 EDT
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18476.20788.142218.370584@stoffel.org>
-Date: Thu, 15 May 2008 11:05:24 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jonathan Corbet <corbet@lwn.net>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Alexander Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [announce] "kill the Big Kernel Lock (BKL)" tree
-In-Reply-To: <482B65FE.4040402@firstfloor.org>
-References: <20080514174955.GA515@elte.hu>
-	<6457.1210801515@vena.lwn.net>
-	<87bq387cyn.fsf@basil.nowhere.org>
-	<alpine.LFD.1.10.0805141515020.3019@woody.linux-foundation.org>
-	<482B65FE.4040402@firstfloor.org>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+	Thu, 15 May 2008 11:20:57 -0400
+Subject: Re: Sparse annotation for "context imbalance" false positives?
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org,
+       David Brownell <david-b@pacbell.net>
+In-Reply-To: <ada7idvfw0c.fsf@cisco.com>
+References: <adaod78fe94.fsf@cisco.com>
+	 <1210841663.4282.9.camel@johannes.berg>  <ada7idvfw0c.fsf@cisco.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-PVlW/DD8BTDL2ypw2Hru"
+Date: Thu, 15 May 2008 17:20:02 +0200
+Message-Id: <1210864802.3900.8.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Andi" == Andi Kleen <andi@firstfloor.org> writes:
 
-Andi> Linus Torvalds wrote:
->> 
->> On Thu, 15 May 2008, Andi Kleen wrote:
->>> The goal less being to get rid of BKL in old drivers, but not 
->>> requiring BKL in new drivers. Basically all BKL assumptions
->>> in interfaces really should go.
->> 
->> No, we really do want to get rid of BKL in old drivers too. Or at least in 
->> the interfaces.
+--=-PVlW/DD8BTDL2ypw2Hru
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Andi> In the interfaces definitely yes and all subsystems should have
-Andi> their own lock_kernel calls, but why in the old drivers? For
-Andi> those it's very unlikely they are used on any SMP system anyways
-Andi> (e.g. anything depending on CONFIG_ISA) or if they do only on 2
-Andi> CPU systems.
 
-I'm still running an SMP server with ISA slots.  I'd love to
-contribute testing and possibly coding to this effort, but
-realisticlly I'll be able to compile and boot stuff.
+> but the problem sparse sees is not that some paths take only one lock
+> and some take two -- sparse is complaining that this function is
+> returning without unlocking the locks that it takes.  Even if I change
+> the function to something as simple as:
+>=20
+> 	static void mlx4_ib_lock_cqs(struct mlx4_ib_cq *send_cq, struct mlx4_ib_=
+cq *recv_cq)
+> 	{
+> 		spin_lock_irq(&recv_cq->lock);
+> 	}
+>=20
+> I still get
+>=20
+>     drivers/infiniband/hw/mlx4/qp.c:603:13: warning: context imbalance in=
+ 'mlx4_ib_lock_cqs' - wrong count at exitn
 
-John
+Oh. Well yes, you also have to annotate the function:
+
+static void =EF=BB=BFmlx4_ib_lock_cqs(struct mlx4_ib_cq *send_cq, struct ml=
+x4_ib_cq *recv_cq)
+	__acquires(&recv_cq->lock) __acquires(&send_cq->lock)
+{
+	...
+}
+
+but we're still discussing whether the & should be in there or not. I'd
+think right now is a bad time for you to be working on this unless you
+want to help with how sparse should behave too.
+
+johannes
+
+--=-PVlW/DD8BTDL2ypw2Hru
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUASCxUoaVg1VMiehFYAQLXwg/+LiE4kk01kIQX9Hn05sT6ZEIjm2ADpZVM
+ngeN50RkeIwRvj87T79MuCJvdTJkRlQp8Be+FujKO4+7DGPjtaRUx8/bgmWSD36t
+Jp/H0S7v3xLgQRj6WH6ke9Xpw5J+ow3a/soT+bV8TdUqqInHlw0TzZiDlITLR4do
+X+MC2+3xN4YM652aH/a79tatxc2UIesKkf303DINKLXv6xATo4pQkGsHcQhLTulC
+tI8dFTjMpOA+T9Hn1ZH59Zi/M0aJml/73XHi2HEkmPJqU2SzNXgmYZABRgpyJvWv
+F5VLvNRG1t+ydUl6LY0mBjgn6EX2W1X/AE22u6FLf6emL1Gkz8Blpu7z7CWp6zXr
+CwX59v59oz5YRJMqmfywmqp0rH9ahdiz/gIDDBeFmBMwOnBvIVJtITKHDmQZWZQt
+7ubjsDrcKSTQ8nqh4LuJ6+9zmUpaoznuxWJHysQiU6Viz0lCWEZ9NJ0iIfBWwm9f
+sVQR/EGm3EZVUdqr38A0iZyQQgwFuVvCpHrb0xteIwWtaOtZF1KlrDrJ+1Q/g5T/
+Nqi+j8WbAk6K40f/g//Vh6vZ0w5DgCDsA1dLZkB2UVX1NpZ76UBSx/aZqgse3iCA
+Vwit35yvdeCvLuUf1/kdsnuZUoTrunpbQesUN+WmukuNnSOKFfeaM139bMmnBRG1
+oElfChxZedQ=
+=FdzP
+-----END PGP SIGNATURE-----
+
+--=-PVlW/DD8BTDL2ypw2Hru--
+
