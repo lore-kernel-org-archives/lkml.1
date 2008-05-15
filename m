@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757396AbYEODPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758065AbYEODQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757396AbYEODPj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 23:15:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753132AbYEODP1
+	id S1758065AbYEODQu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 23:16:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753984AbYEODQm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 23:15:27 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:36304 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751406AbYEODP0 (ORCPT
+	Wed, 14 May 2008 23:16:42 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:47151 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753940AbYEODQk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 23:15:26 -0400
-Date: Wed, 14 May 2008 20:14:58 -0700
-From: Greg KH <greg@kroah.com>
-To: David Miller <davem@davemloft.net>
-Cc: shemminger@vyatta.com, fubar@us.ibm.com, netdev@vger.kernel.org,
-       bonding-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] sysfs: remove error messages for -EEXIST case
-Message-ID: <20080515031458.GA4423@kroah.com>
-References: <20080514170316.672f809d@extreme> <20080514181257.74fbb5aa@extreme> <20080514181603.411e834f@extreme> <20080514.182637.211478588.davem@davemloft.net>
+	Wed, 14 May 2008 23:16:40 -0400
+X-IronPort-AV: E=Sophos;i="4.27,489,1204531200"; 
+   d="scan'208";a="98929611"
+From: Roland Dreier <rdreier@cisco.com>
+To: linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
+Subject: Sparse annotation for "context imbalance" false positives?
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 14 May 2008 20:16:39 -0700
+Message-ID: <adaod78fe94.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080514.182637.211478588.davem@davemloft.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 15 May 2008 03:16:39.0701 (UTC) FILETIME=[17667C50:01C8B63A]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 14, 2008 at 06:26:37PM -0700, David Miller wrote:
-> From: Stephen Hemminger <shemminger@vyatta.com>
-> Date: Wed, 14 May 2008 18:16:03 -0700
-> 
-> > It is possible that the entry in sysfs already exists, one case of this is
-> > when a network device is renamed to bonding_masters. Anyway, in this case
-> > the proper error path is for device_rename to return an error code, not to
-> > generate bogus backtrace and errors.
-> > 
-> > Also, to avoid possible races, the create link should be done before the
-> > remove link. This makes a device rename atomic operation like other renames.
-> > 
-> > Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
-> 
-> I definitely agree with this change.
-> 
-> We have several cases where device names are user configurable,
-> yet the devices live in a directory which also has subdirectories
-> created by other subsystems.
-> 
-> It's pointless to require the top-level guy to look for any
-> purge out any subdirectory cases, that's none of it's business.
-> 
-> I realize the backtrace is useful for finding bugs, but in this
-> case it's definitely not appropriate.
+Now that I've gotten the sparse noise in drivers/infiniband down to a
+fairly low level, I'm starting to look at some of the more recalcitrant
+false positive warnings.  One example is:
 
-Fair enough, I have no objection to these.
+    drivers/infiniband/hw/mlx4/qp.c:605:2: warning: context imbalance in 'mlx4_ib_lock_cqs' - wrong count at exit
 
-David, do you want me to take them through my tree?  Or are they
-dependant on the network core changes as well?  If so, I have no
-problem you taking them.  Feel free to add a:
-	Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-to them in that case.
+where the function being warned about is:
 
-thanks,
+	static void mlx4_ib_lock_cqs(struct mlx4_ib_cq *send_cq, struct mlx4_ib_cq *recv_cq)
+	{
+		if (send_cq == recv_cq)
+			spin_lock_irq(&send_cq->lock);
+		else if (send_cq->mcq.cqn < recv_cq->mcq.cqn) {
+			spin_lock_irq(&send_cq->lock);
+			spin_lock_nested(&recv_cq->lock, SINGLE_DEPTH_NESTING);
+		} else {
+			spin_lock_irq(&recv_cq->lock);
+			spin_lock_nested(&send_cq->lock, SINGLE_DEPTH_NESTING);
+		}
+	}
 
-greg k-h
+this function wraps up the locking rules for aquiring the completion
+queue (CQ) locks associated with a queue pair (QP) -- the rule is that
+if both the send and receive CQs are the same object, we (obviously)
+only lock it once, otherwise we take the lock belonging to the CQ with a
+numerically lower ID first (to avoid AB-BA deadlocks).
+
+So obviously is it correct and intended that this function return
+holding one or two locks, but I don't know how to tell sparse that.
+I've tried messing around with __acquires() etc but it doesn't seem to
+be exactly what I want.
+
+Is there any way to tell sparse what's going on here, or do I just live
+with the warnings?
+
+Thanks,
+  Roland
