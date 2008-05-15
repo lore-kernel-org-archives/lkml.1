@@ -1,42 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765327AbYEOVst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763122AbYEOV5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765327AbYEOVst (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 17:48:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756917AbYEOVsl
+	id S1763122AbYEOV5Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 17:57:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbYEOV5D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 17:48:41 -0400
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:50908 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751904AbYEOVsk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 17:48:40 -0400
-Date: Fri, 16 May 2008 00:53:15 +0300
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       alexisb@us.ibm.com
-Subject: Re: [PATCH 0/2] x86: per-device dma_mapping_ops
-Message-ID: <20080515215315.GG10434@il.ibm.com>
-References: <87y76cym96.fsf@basil.nowhere.org> <20080515181619R.tomof@acm.org> <482C02A4.80101@firstfloor.org> <20080515184126O.tomof@acm.org> <20080515152631.GG6778@il.ibm.com> <20080515210340.GC318@one.firstfloor.org> <20080515213946.GE10434@il.ibm.com> <482CAEE6.5080509@firstfloor.org>
+	Thu, 15 May 2008 17:57:03 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:33310 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751687AbYEOV5C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 17:57:02 -0400
+Date: Fri, 16 May 2008 00:55:17 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Chris Peterson <cpeterso@cpeterso.com>, jeff@garzik.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, mpm@selenic.com
+Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
+	IRQF_SAMPLE_RANDOM
+Message-ID: <20080515215517.GI1936@cs181133002.pp.htv.fi>
+References: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com> <20080515142154.0595e475@core> <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <482CAEE6.5080509@firstfloor.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 15, 2008 at 11:45:10PM +0200, Andi Kleen wrote:
+On Thu, May 15, 2008 at 09:07:52AM -0700, Brandeburg, Jesse wrote:
+> Alan Cox wrote:
+> > Chris Peterson <cpeterso@cpeterso.com> wrote:
+> >> I know Jeff Garzik says he's not interested in an anti-entropy
+> >> pogrom for existing net drivers, but here is the patch if anyone
+> >> else is interested..? :)  
+> >> 
+> >> Only 12 net drivers are affected, the last of the
+> >> theoretically-exploitable network entropy. 
+> > 
+> > Looks fine to me. If Jeff doesn't want to touch them then send them
+> > direct to Andrew/Linus.
+> > 
+> > A more interesting alternative might be to mark things like network
+> > drivers with a new flag say IRQF_SAMPLE_DUBIOUS so that users can be
+> > given a switch to enable/disable their use depending upon the
+> > environment. 
+> 
+> we've been hearing rumblings of big customers wanting (maybe requiring)
+> wired network drivers from Intel to  advertise this flag.  Jeff have you
+> heard of such?
+> 
+> I think the argument is that a headless system (no keyboard/mouse, no
+> soundcard, probably no video) with a libata based driver and a network
+> driver without IRQF_SAMPLE_RANDOM has *no* sources of entropy.  In this
+> case the argument is very strong for at least *some* source of entropy
+> from interrupts so that randomness can get some external input.  Just
+> try rebuilding a kernel RPM over an ssh session and you'll see what I
+> mean.
+> 
+> In short, I agree with Alan's IRQF_SAMPLE_DUBIOUS, and know of Linux
+> customers who also want the same.
 
-> Even rare cases need to be handled.
+We have two random number interfaces:
+- /dev/random
+- /dev/urandom
 
-Sure, but I'd rather we handle the common case first.
+If a customer wants to get data from /dev/random although there's not 
+enough entropy that's not a problem we can solve (we can only try to 
+gather more real entropy if possible).
 
-> In the nodma bitmap case it was the same always btw.
+If he can live with dubious data he can simply use /dev/urandom .
 
-Not sure what you mean?
+If a customer wants to use /dev/random and demands to get dubious data 
+there if nothing better is available fulfilling his wish only moves 
+the security bug from his crappy application to the Linux kernel.
 
-Cheers,
-Muli
+But what we could perhaps do with some kind of IRQF_SAMPLE_DUBIOUS would 
+be to improve the quality of the data in /dev/urandom if there's not 
+enough entropy available?
+
+I have seen embedded systems with zero entropy, and dubious entropy 
+might there be better than no entropy at all.
+Or am I wrong on the latter?
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
