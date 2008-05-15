@@ -1,89 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753409AbYEOEvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753774AbYEOEyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753409AbYEOEvo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 00:51:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751728AbYEOEve
+	id S1753774AbYEOEyw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 00:54:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751702AbYEOEyo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 00:51:34 -0400
-Received: from mga11.intel.com ([192.55.52.93]:51467 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751702AbYEOEvd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 00:51:33 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,489,1204531200"; 
-   d="scan'208";a="328453589"
-Subject: Re: [PATCH] kexec based hibernation: a prototype of kexec
-	multi-stage load
-From: "Huang, Ying" <ying.huang@intel.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Vivek Goyal <vgoyal@redhat.com>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-In-Reply-To: <m1lk2c4l4i.fsf@frodo.ebiederm.org>
-References: <1210574441.30365.8.camel@caritas-dev.intel.com>
-	 <20080513053408.GA5870@redhat.com>
-	 <1210730266.23707.50.camel@caritas-dev.intel.com>
-	 <20080514025607.GA19944@redhat.com>
-	 <1210736275.23707.62.camel@caritas-dev.intel.com>
-	 <m1lk2c4l4i.fsf@frodo.ebiederm.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 15 May 2008 12:57:53 +0800
-Message-ID: <1210827473.23707.133.camel@caritas-dev.intel.com>
+	Thu, 15 May 2008 00:54:44 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:49839 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751640AbYEOEyn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 00:54:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=gso8J3xIyHvclwmKJU0YxBb2ZvkdeT/yqRg0sh7ufiobF26ARJCVlV5ijXWuKUZ/+8K/BnhVu/UJOv2UYWFLbiQt0xUz3MEEF7TJyIHnIiIGvqOZMhmWe7kvnPCd1RwuJLFH3Y2uV7KUV+hZRo9o4vzYfHb1bJRznoi8Rdq4Nw4=
+Date: Thu, 15 May 2008 09:50:11 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Franck Bui-Huu <vagabon.xyz@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, paulmck@linux.vnet.ibm.com,
+       Josh Triplett <josh@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] rculist.h: use the rcu API
+Message-ID: <20080515055011.GA12809@martell.zuzino.mipt.ru>
+References: <482B5887.9050804@gmail.com> <482B58FA.30000@gmail.com>
 MIME-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-X-OriginalArrivalTime: 15 May 2008 04:51:27.0361 (UTC) FILETIME=[55828710:01C8B647]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <482B58FA.30000@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-05-14 at 14:43 -0700, Eric W. Biederman wrote:
-[...]
-> Then as a preliminary design let's plan on this.
-> 
-> - Pass the rentry point as the return address (using the C ABI).
->   We may want to load the stack pointer etc so we can act as
->   a direct entry point for new code.
+On Wed, May 14, 2008 at 11:26:18PM +0200, Franck Bui-Huu wrote:
+> This patch makes almost all list mutation primitives use
+> rcu_assign_pointer().
+>
+> The main point of this being readability improvement.
 
-There are some issues about passing entry point as return address. The
-kexec jump (or kexec with return) is used for
+Which is not an improvement at all.
 
-- Switching between original kernel (A) and kexeced kernel (B)
-- Call some code (such as BIOS code) in physical mode
+> --- a/include/linux/rculist.h
+> +++ b/include/linux/rculist.h
+> @@ -17,9 +18,8 @@ static inline void __list_add_rcu(struct list_head *new,
+> {
+> 	new->next = next;
+> 	new->prev = prev;
+> -	smp_wmb();
+> +	rcu_assign_pointer(prev->next, new);
+> 	next->prev = new;
+> -	prev->next = new;
+> }
 
-1) When call some code in physical mode, the called code can use a
-simple return to return to kernel A. So there is no return address on
-stack after return to kernel A. Instead, argument 1 is on stack top.
+Nice chunk to demonstrate.
 
-2) When switch back from kernel B to kernel A, kernel B will call the
-jump back entry of kernel A with C ABI. So, the return address is on
-stack top. And kernel A get jump back entry of kernel B via the return
-address.
+Before one could write this like:
 
-Because the stack state is different between 1) and 2), the jump back
-entry of kernel A should distinguish them. Possible solution can be as
-follow:
+	smp_wmb();			smp_wmb();
+	next->prev = new;	or	prev->next = new;
+	prev->next = new;		next->prev = new;
 
-a) Before kernel A call some physical mode code or kernel B, it set
-argument 1 to be a magic number that can not be return address (such as
--1). Jump back entry of kernel A can check whether the stack top is
-argument 1 or return address.
+And both examples aren't buggy.
 
-b) Distinguish by return address. Such as, called physical mode code
-must return 0, while kernel B must set %eax to some other number.
+After, you can't write:
 
-c) Use different entry point for 1) and 2). Two entry points are deduced
-from return address. Such as:
+	next->prev = new;
+	rcu_assign_pointer(prev->next, new);
 
-entry1 = return_address;
-entry2 = return_address & ~0xfff;	/* page aligned */
+Guess why?
 
-entry1 is used by physical mode code. entry2 is used by kernel B.
+This barrier is related not only to next assignment, but to the whole
+group of assignments.
 
-
-Which one is better? Or some other solution?
-
-Best Regards,
-Huang Ying
+> @@ -108,9 +108,8 @@ static inline void list_replace_rcu(struct list_head 
+> *old,
+> {
+> 	new->next = old->next;
+> 	new->prev = old->prev;
+> -	smp_wmb();
+> +	rcu_assign_pointer(new->prev->next, new);
+> 	new->next->prev = new;
+> -	new->prev->next = new;
+> 	old->prev = LIST_POISON2;
+> }
 
