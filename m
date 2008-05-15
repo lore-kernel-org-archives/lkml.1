@@ -1,59 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758205AbYEOIB4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758306AbYEOICh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758205AbYEOIB4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 04:01:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754944AbYEOIBp
+	id S1758306AbYEOICh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 04:02:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755536AbYEOICR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 04:01:45 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49674
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753184AbYEOIBo (ORCPT
+	Thu, 15 May 2008 04:02:17 -0400
+Received: from fmmailgate02.web.de ([217.72.192.227]:34743 "EHLO
+	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755030AbYEOICO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 04:01:44 -0400
-Date: Thu, 15 May 2008 01:01:39 -0700 (PDT)
-Message-Id: <20080515.010139.219194657.davem@davemloft.net>
-To: cornelia.huck@de.ibm.com
-Cc: shemminger@vyatta.com, greg@kroah.com, fubar@us.ibm.com,
-       netdev@vger.kernel.org, bonding-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] sysfs: remove error messages for -EEXIST case
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080515095246.3b6a0d1d@gondolin.boeblingen.de.ibm.com>
-References: <20080514181257.74fbb5aa@extreme>
-	<20080514181603.411e834f@extreme>
-	<20080515095246.3b6a0d1d@gondolin.boeblingen.de.ibm.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 15 May 2008 04:02:14 -0400
+Message-ID: <010801c8b661$f86e72d0$6400a8c0@bui.materna.com>
+From: "Roland" <devzero@web.de>
+To: <corbe@lwn.net>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: Re: Tracking and crediting bug reporters
+Date: Thu, 15 May 2008 10:02:07 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
 Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3138
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+X-Provags-ID: V01U2FsdGVkX1/sm3DGqRIBECkmW/TT2WcLtAvDBgGf0uuhfqEK
+	8Jwwei6nv/hJbcL4VAmmPEhTC6ZJVTTRTqpOaXoBcxG53zRXC0
+	MeJsLX14I=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-Date: Thu, 15 May 2008 09:52:46 +0200
+On Monday, 12 of May 2008, Jonathan Corbet wrote:
+> Several members of the Linux Foundation's Technical Advisory Board 
+> recently
+> got together with Andrew Morton to talk about kernel quality issues.  One
+> of the things which came out of that meeting was a desire to improve
+> incentives for people who report bugs.  Clearly, actually fixing those 
+> bugs
+> would qualify; nobody has lost sight of that.  But it was suggested that
+> the creation and publication of statistics on bug reporting would also
+> help.
+>
+> One way to do this might be for Andrew (being the only one who actually
+> reads every message posted on the list) to keep a spreadsheet along with
+> everything else he does.  That idea did not go over very well.
+>
+> So here's what we would like to try instead.  Whenever somebody sends up a
+> patch fixing a reported bug, the name of the person who reported the bug
+> would be immortalized with this tag:
+>
+> 	Reported-by: A. Bug Reporter <email@goes.here>
+>
+> In particular, reporters who work with the developers toward the 
+> resolution
+> of the bug should be thanked in this way.  If we wanted to take things
+> further, perhaps we could add a Bisected-by: tag for really hard-core
+> helpers.
+>
+> If these tags go into the commit messages in any sort of consistent way, 
+> it
+> should be possible generate the usual sort of statistics from them.  I'll
+> then happily publicize them next to the traditional lists of people who 
+> are
+> adding new bugs.  The result will certainly be fame, fortune, and job
+> offers for the people at the top of the list.  Or something like that.
+>
+> If the rest of the community is agreeable, it would be nice to make an
+> immediate start on this; it's not yet too late to get reasonable data for
+> the 2.6.26 kernel, and to have the habits well ingrained for 2.6.27.
+>
+> Thoughts?
 
-> >  int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
-> >  {
-> > -	if (sysfs_find_dirent(acxt->parent_sd, sd->s_name)) {
-> > -		printk(KERN_WARNING "sysfs: duplicate filename '%s' "
-> > -		       "can not be created\n", sd->s_name);
-> > -		WARN_ON(1);
-> > +	if (sysfs_find_dirent(acxt->parent_sd, sd->s_name))
-> >  		return -EEXIST;
-> > -	}
-> > 
-> >  	sd->s_parent = sysfs_get(acxt->parent_sd);
-> 
-> ...but this will cause many useful warnings to disappear.
-> 
-> What to do here?
+very good idea !
 
-Make a __sysfs_add_one() that doesn't warn.   Make
-sysfs_add_one() be a wrapper around __sysfs_add_one()
-that warns.
+anyhow, i`m browsing trough bugzilla for some time and try helping
+where i can and there is one thing which is really noticeable:
 
-Change networking to call __sysfs_add_one().
+there are bugreports not being worked on systematically enough and
+reporters often don`t feel welcome there.
+i saw bug reports which didn`t get a reply for a year or so.
+somebody excused for "posting so much" - all he did was posting a
+proper description of his problem.
 
-Repeat and rinse up the call chain, as needed.
+improving of bugzilla handling would be another incentive for bug reporter,
+imho.
+
+someone who reports a bug there and never gets a response (not even a formal
+"thanks for your report....") will probably never report again.
+
+i have worked for support (software product) some time ago and i
+learned one thing there:
+
+there needs to be someone to keep track of the users` input and to keep
+track of the developers action/response.
+
+bugreporters forget about their bug if they found a workaround (buying
+new hardware or whatever) and developers mostly prefer working on
+new code rather than fixing issues. that`s not true for ever user or 
+developer,
+but if you really want bugs get fixed, someone acting as a mediator is 
+essential.
+.
+regards
+roland
 
