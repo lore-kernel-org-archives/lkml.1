@@ -1,75 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757497AbYEOD3Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754925AbYEOD3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757497AbYEOD3Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 23:29:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752883AbYEOD3P
+	id S1754925AbYEOD3o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 23:29:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752883AbYEOD3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 23:29:15 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:37582 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751215AbYEOD3P (ORCPT
+	Wed, 14 May 2008 23:29:33 -0400
+Received: from mga06.intel.com ([134.134.136.21]:10434 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751215AbYEOD3c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 23:29:15 -0400
-Date: Thu, 15 May 2008 12:34:23 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
-       "hugh@veritas.com" <hugh@veritas.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC/PATCH 2/6] memcg: remove refcnt
-Message-Id: <20080515123423.db3f79e2.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080515105740.66e210db.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080514170236.23c9ddd7.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080514170703.db2d9802.kamezawa.hiroyu@jp.fujitsu.com>
-	<482B950C.2060408@cn.fujitsu.com>
-	<20080515105740.66e210db.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+	Wed, 14 May 2008 23:29:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,489,1204531200"; 
+   d="scan'208";a="383884515"
+Subject: Re: [patch 21/21] slab defrag: Obsolete SLAB
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, mpm@selenic.com,
+       Matthew Wilcox <matthew@wil.cx>
+In-Reply-To: <Pine.LNX.4.64.0805141100110.15633@schroedinger.engr.sgi.com>
+References: <20080510030831.796641881@sgi.com>
+	 <20080510030919.604216074@sgi.com> <4825709A.2020407@firstfloor.org>
+	 <20080510221515.3540a6cc@bree.surriel.com>
+	 <2f11576a0805120038s334dc56cuaf16b8b7c6f87098@mail.gmail.com>
+	 <84144f020805120054t1370236ei5ff52279457e026e@mail.gmail.com>
+	 <Pine.LNX.4.64.0805141009210.15194@schroedinger.engr.sgi.com>
+	 <482B2617.5010605@firstfloor.org>
+	 <Pine.LNX.4.64.0805141100110.15633@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 15 May 2008 11:26:42 +0800
+Message-Id: <1210822002.3177.121.camel@ymzhang>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.21.5 (2.21.5-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 May 2008 10:57:40 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > >  #ifdef CONFIG_DEBUG_VM
-> > > Index: linux-2.6.26-rc2/mm/shmem.c
-> > > ===================================================================
-> > > --- linux-2.6.26-rc2.orig/mm/shmem.c
-> > > +++ linux-2.6.26-rc2/mm/shmem.c
-> > > @@ -961,13 +961,14 @@ found:
-> > >  		shmem_swp_unmap(ptr);
-> > >  	spin_unlock(&info->lock);
-> > >  	radix_tree_preload_end();
-> > > -uncharge:
-> > > -	mem_cgroup_uncharge_page(page);
-> > >  out:
-> > >  	unlock_page(page);
-> > >  	page_cache_release(page);
-> > >  	iput(inode);		/* allows for NULL */
-> > >  	return error;
-> > > +uncharge:
-> > > +	mem_cgroup_uncharge_cache_page(page);
-> > > +	goto out;
-> > >  }
-> > >  
-> > 
-> > Seems the logic is changed here. is it intended ?
-> > 
-> intended. (if success, uncharge is not necessary because there is no refcnt.
-> I'll add comment.
-> 
-But, it seems patch 6/6 doesn't seem to be optimal in this case.
-and have some troubles...I'll find a workaround.
-It seems that shmem's memcg is complicated...
 
-Thanks,
--Kame
+On Wed, 2008-05-14 at 11:03 -0700, Christoph Lameter wrote:
+> On Wed, 14 May 2008, Andi Kleen wrote:
+> 
+> > iirc profiling analysis showed that the problem was the page lock
+> > serialization (in particular the slab_lock() in __slab_free). That
+> > was on 2.6.24.2
+> 
+> Do you have an URL?
+> 
+> > I think the problem is that this atomic operation thrashes cache lines
+> > around. Really counting cycles on instructions is not that interesting,
+> > but minimizing the cache thrashing is. And for that it looks like slub
+> > is worse.
+> 
+> It can thrash cachelines if objects from the same slab page are freed 
+> simultaneously on multiple processors. That occurred in the hackbench 
+> regression that we addressed with the dynamic configuration of slab sizes.
+hackbench regression is because of slow allocation instead of slow freeing.
+With ﻿dynamic configuration of slab sizes, fast allocation becomes 97% (the bad
+one is 68%), but fast free is always 8~9% with/without the patch.
 
 
