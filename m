@@ -1,69 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762598AbYEOXqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763327AbYEOXsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762598AbYEOXqc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 19:46:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755460AbYEOXqX
+	id S1763327AbYEOXsS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 19:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756170AbYEOXsI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 19:46:23 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:34345 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755456AbYEOXqW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 19:46:22 -0400
-X-Sasl-enc: vs4VmrjLBRSybhADPcRU5bCfw7IcmbIlp0wJPUpQB0MP 1210895181
-Date: Thu, 15 May 2008 20:46:18 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Theodore Tso <tytso@mit.edu>, Jeff Garzik <jeff@garzik.org>,
-       Chris Peterson <cpeterso@cpeterso.com>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>, Rick Jones <rick.jones2@hp.com>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, netdev@vger.kernel.org,
+	Thu, 15 May 2008 19:48:08 -0400
+Received: from fugue.toroid.org ([85.10.196.113]:32948 "EHLO fugue.toroid.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755488AbYEOXsH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 19:48:07 -0400
+X-Greylist: delayed 410 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 May 2008 19:48:07 EDT
+Date: Fri, 16 May 2008 05:11:14 +0530
+From: Abhijit Menon-Sen <ams@toroid.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
-	IRQF_SAMPLE_RANDOM
-Message-ID: <20080515234618.GA23721@khazad-dum.debian.net>
-References: <482C8184.2030906@garzik.org> <482C8550.5000909@intel.com> <482C8D4D.3040702@garzik.org> <a24804730805151301s3c6644d0hc2c78b8008fe035d@mail.gmail.com> <20080515214721.GP18825@mit.edu> <482CB1FB.7080807@garzik.org> <20080515222941.GB20976@khazad-dum.debian.net> <482CBCC6.6010905@garzik.org> <20080515230221.GC20976@khazad-dum.debian.net> <20080515233642.GT18825@mit.edu>
+Subject: [PATCH] Add a void * alternative to print_fn_descriptor_symbol()
+Message-ID: <20080515234114.GA656@toroid.org>
+References: <20080514154402.GF6902@cvg> <20080515105803.7c9ab8c7.akpm@linux-foundation.org> <20080515180528.GC7481@cvg> <Pine.LNX.4.64.0805152132530.22059@anakin> <aa79d98a0805151322s20a2bb34x4491bcacfcef310@mail.gmail.com> <20080515134928.83b2d948.akpm@linux-foundation.org> <alpine.LFD.1.10.0805151406030.3019@woody.linux-foundation.org> <20080515144554.7b759b3c.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080515233642.GT18825@mit.edu>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080515144554.7b759b3c.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 May 2008, Theodore Tso wrote:
-> On Thu, May 15, 2008 at 08:02:21PM -0300, Henrique de Moraes Holschuh wrote:
-> > I will tell you what.  If someone manages to get trousers to actually
-> > *work* for data binding and sealing to the TPM in a ThinkPad T43 with an
-> > NSC/Winbond TPM (their "sup3r s3kr1t TPM-inside-the-SuperIO 8394T" crap
-> > one needs a NDA to get the documentation for), and I manage to duplicate
-> > it (i.e. make it work here too), I will write the rng-tools trousers
-> > interface code (at least for the Debian version) :-)
-> > 
-> > The kernel TPM driver works, the BIOS works, and I have the PCRs updated
-> > properly during boot, but trousers get the tpm pubek key wrong for some
-> > reason (the kernel driver can read it just fine).  The chip is good,
-> > IBM's stuff worked just fine with it.
+At 2008-05-15 14:45:54 -0700, akpm@linux-foundation.org wrote:
+>
+> > Would somebody please want to move that cast into the macro (or
+> > better yet, make it an inline function that takes a 'void *'),
+> > and remove all the casts from the callers?
 > 
-> There were some web pages on this subject that seemed imply that IBM
-> used a non-standard string-to-key algorithm, and that caused the
+> Would be nice.
 
-None of that, I cleared the TPM.  In fact, it took a while to find a
-non-black-magic way to get the IBM BIOS to unhide the "Clear the TPM"
-prompt...
+Something like this?
 
-Anyway, the TPM is clean, and I have tried with and without passphrases
-(owner and operator), etc.  It is either a userspace to kernel
-communications bug, or a trousers bug.  The PUBEK is there, the kernel
-exports it nicely through sysfs, but trousers gets crap instead of the
-PUBEK if I ask it to get the PUBEK (and therefore, nothing useful in
-trousers works).
+-- ams
 
+All the callers of print_fn_descriptor_symbol() had to cast their void *
+argument to unsigned long. This patch adds an inline print_fn_symbolic()
+that takes a void * directly, and updates the callers to use it instead.
+
+Signed-off-by: Abhijit Menon-Sen <ams@toroid.org>
+---
+ include/linux/kallsyms.h  |   10 ++++++++++
+ drivers/base/power/main.c |    2 +-
+ drivers/pci/quirks.c      |    3 +--
+ drivers/pnp/quirks.c      |    3 +--
+ init/main.c               |    9 +++------
+ 5 files changed, 16 insertions(+), 11 deletions(-)
+
+diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
+index 82de2fb..ed8ab42 100644
+--- a/include/linux/kallsyms.h
++++ b/include/linux/kallsyms.h
+@@ -101,6 +101,16 @@ static inline void print_symbol(const char *fmt, unsigned long addr)
+ 		       __builtin_extract_return_addr((void *)addr));
+ }
+ 
++static inline void print_fn_symbolic(const char *fmt, const void *addr)
++{
++#if defined(CONFIG_IA64) || defined(CONFIG_PPC64)
++	unsigned long *faddr = (unsigned long *)addr;
++	print_symbol(fmt, faddr[0]);
++#else
++	print_symbol(fmt, (unsigned long)addr);
++#endif
++}
++
+ #ifndef CONFIG_64BIT
+ #define print_ip_sym(ip)		\
+ do {					\
+
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 7b76fd3..9625317 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -418,7 +418,7 @@ void __suspend_report_result(const char *function, void *fn, int ret)
+ {
+ 	if (ret) {
+ 		printk(KERN_ERR "%s(): ", function);
+-		print_fn_descriptor_symbol("%s() returns ", (unsigned long)fn);
++		print_fn_symbolic("%s returns ", fn);
+ 		printk("%d\n", ret);
+ 	}
+ }
+
+diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+index f2d9c77..12d07eb 100644
+--- a/drivers/pci/quirks.c
++++ b/drivers/pci/quirks.c
+@@ -1503,8 +1503,7 @@ static void pci_do_fixups(struct pci_dev *dev, struct pci_fixup *f, struct pci_f
+  		    (f->device == dev->device || f->device == (u16) PCI_ANY_ID)) {
+ #ifdef DEBUG
+ 			dev_dbg(&dev->dev, "calling ");
+-			print_fn_descriptor_symbol("%s()\n",
+-				(unsigned long) f->hook);
++			print_fn_symbolic("%s\n", f->hook);
+ #endif
+ 			f->hook(dev);
+ 		}
+
+diff --git a/drivers/pnp/quirks.c b/drivers/pnp/quirks.c
+index ffdb12a..f84d79f 100644
+--- a/drivers/pnp/quirks.c
++++ b/drivers/pnp/quirks.c
+@@ -331,8 +331,7 @@ void pnp_fixup_device(struct pnp_dev *dev)
+ 			continue;
+ #ifdef DEBUG
+ 		dev_dbg(&dev->dev, "%s: calling ", f->id);
+-		print_fn_descriptor_symbol("%s\n",
+-				(unsigned long) f->quirk_function);
++		print_fn_symbolic("%s\n", f->quirk_function);
+ #endif
+ 		f->quirk_function(dev);
+ 	}
+
+diff --git a/init/main.c b/init/main.c
+index f406fef..c456ca8 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -706,8 +706,7 @@ static void __init do_initcalls(void)
+ 		int result;
+ 
+ 		if (initcall_debug) {
+-			print_fn_descriptor_symbol("calling  %s()\n",
+-					(unsigned long) *call);
++			print_fn_symbolic("calling %s\n", *call);
+ 			t0 = ktime_get();
+ 		}
+ 
+@@ -717,8 +716,7 @@ static void __init do_initcalls(void)
+ 			t1 = ktime_get();
+ 			delta = ktime_sub(t1, t0);
+ 
+-			print_fn_descriptor_symbol("initcall %s()",
+-					(unsigned long) *call);
++			print_fn_symbolic("initcall %s", *call);
+ 			printk(" returned %d after %Ld msecs\n", result,
+ 				(unsigned long long) delta.tv64 >> 20);
+ 		}
+@@ -737,8 +735,7 @@ static void __init do_initcalls(void)
+ 			local_irq_enable();
+ 		}
+ 		if (msgbuf[0]) {
+-			print_fn_descriptor_symbol(KERN_WARNING "initcall %s()",
+-					(unsigned long) *call);
++			print_fn_symbolic(KERN_WARNING "initcall %s", *call);
+ 			printk(" returned with %s\n", msgbuf);
+ 		}
+ 	}
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+1.5.5.1
+
