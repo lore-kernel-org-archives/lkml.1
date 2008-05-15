@@ -1,53 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757302AbYEOWSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757520AbYEOWXa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757302AbYEOWSS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 18:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205AbYEOWSI
+	id S1757520AbYEOWXa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 18:23:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753904AbYEOWXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 18:18:08 -0400
-Received: from mail.gmx.net ([213.165.64.20]:47810 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751790AbYEOWSH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 18:18:07 -0400
-X-Authenticated: #5039886
-X-Provags-ID: V01U2FsdGVkX1/nEls1K9Tnrur3NyX8c9BRIE78LUAH9a9nTE257Z
-	rOJxFUiN+Z6VP0
-Date: Fri, 16 May 2008 00:18:03 +0200
-From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-To: Pascal =?iso-8859-1?Q?Br=FCckner?= <pascal_2001@web.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Strange C3/C4 sleep state behaviour
-Message-ID: <20080515221803.GA17259@atjola.homenet>
-References: <482CA6E4.1010807@web.de>
+	Thu, 15 May 2008 18:23:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44596 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751687AbYEOWXU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 18:23:20 -0400
+Message-ID: <482CB7D7.30008@redhat.com>
+Date: Thu, 15 May 2008 18:23:19 -0400
+From: Tony Camuso <tcamuso@redhat.com>
+Reply-To: tcamuso@redhat.com
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <482CA6E4.1010807@web.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Y-GMX-Trusted: 0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: jbarnes@virtuousgeek.org, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org,
+       "Schoeller, Patrick (Linux - Houston, TX)" <Patrick.Schoeller@hp.com>
+Subject: Re: [PATCH] PCI: Correct last two HP entries in the bfsort whitelist
+References: <482C838E.3030203@redhat.com> <20080515220215.76eea915@core>
+In-Reply-To: <20080515220215.76eea915@core>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2008.05.15 23:11:00 +0200, Pascal Brückner wrote:
-> Hello!
->
-> I'm recompiling my kernel recently to optimize the power usage of my
-> laptop (IBM ThinkPad X31). So far, my most efficient kernel at the
-> moment is a self-compiled 2.6.22 with phc patches for undervolting,
-> suspend2/tuxonice and hrtimers patches to force HPET on my ICH4-M chipset.
->
-> Because everyone says, that newer kernel revisions are much more energy
-> efficient than my 2.6.22, i tried to compile one to reach at least the
-> energy usage of my recent kernel.
-> Sadly, this doesn't work because of only one issue:
-> With activated wireless networking (atheros chipset with recent madwifi
-> driver) i'm losing much energy due to the fact, that my cpu is
-> significant more in C2 state than in C3/C4.
+Alan Cox wrote:
 
-Do you have CONFIG_CPU_IDLE enabled? That made a huge difference for me.
-Before that was available, _disabling_ CONFIG_NO_HZ also helped when
-wifi was enabled (but IIRC made things worse with wifi disabled).
+> This is going to make everyone with those boxes who upgrades suddenely
+> get their devices re-ordered and renamed when the probe order changes.
+> That seems extremely inappropriate.
+> 
+> Alan
 
-Björn
+HP maintains that more of our customers, especially new customers,
+will be adversely affected by NOT implementing this patch for the
+following reasons.
+
+1. HP issued a Customer Advisory for existing customers to use "pci=bfsort"
+    in the boot command for these systems. Customers using pci=bfsort in
+    their boot scripts will be unaffected by this patch.
+
+2. Customers using only the two embedded NI devices will be unaffected.
+
+3. Because of the use of labels for disk devices, they are unaffected.
+
+4. New customers who must add pci=bfsort to their boot scripts have
+    expressed dissatisfaction.
+
+The only time this patch would induce any confusion for an existing customer
+is upon the convergence of the following situations.
+
+1. The user has not followed the instructions in the release notes
+    for the DL360 and DL380,
+
+    AND
+
+2. The user has added NI cards to the option slots,
+
+    AND
+
+3. The user upgrades his kernel.
+
+
+
