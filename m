@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763365AbYEOW7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756067AbYEOW7w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763365AbYEOW7g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 18:59:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753491AbYEOW7V
+	id S1756067AbYEOW7w (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 18:59:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762665AbYEOW7a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 18:59:21 -0400
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:4525 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751008AbYEOW7U (ORCPT
+	Thu, 15 May 2008 18:59:30 -0400
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:33557 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761591AbYEOW71 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 18:59:20 -0400
-Message-Id: <20080515220755.127620227@ldl.fc.hp.com>
+	Thu, 15 May 2008 18:59:27 -0400
+Message-Id: <20080515220754.916930897@ldl.fc.hp.com>
 References: <20080515220726.029505668@ldl.fc.hp.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 15 May 2008 16:07:30 -0600
+Date: Thu, 15 May 2008 16:07:29 -0600
 From: Bjorn Helgaas <bjorn.helgaas@hp.com>
 To: Len Brown <lenb@kernel.org>
 Cc: linux-acpi@vger.kernel.org
@@ -27,116 +27,99 @@ Cc: Rene Herman <rene.herman@keyaccess.nl>
 Cc: Jaroslav Kysela <perex@perex.cz>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: Takashi Iwai <tiwai@suse.de>
-Subject: [patch 4/4] PNP: dont sort by type in /sys/.../resources
-Content-Disposition: inline; filename=pnp-unsort-sysfs-resources
+Subject: [patch 3/4] PNP: remove ratelimit on add resource failures
+Content-Disposition: inline; filename=pnp-remove-warning-ratelimit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rather than stepping through all IO resources, then stepping through
-all MMIO resources, etc., we can just iterate over the resource list
-once directly.
+We used to have a fixed-size resource table.  If a device had
+twenty resources when the table only had space for ten, we didn't
+need ten warnings, so we added the ratelimit.
 
-This can change the order in /sys, e.g.,
-
-    # cat /sys/devices/pnp0/00:07/resources     # OLD
-    state = active
-    io 0x3f8-0x3ff
-    irq 4
-
-    # cat /sys/devices/pnp0/00:07/resources     # NEW
-    state = active
-    irq 4
-    io 0x3f8-0x3ff
-
-The old code artificially sorted resources by type; the new code
-just lists them in the order we read them from the ISAPNP hardware
-or the BIOS.
+Now that we can dynamically allocate new resources, we should
+only get failures if the allocation fails.  That should be
+rare enough that we don't need to ratelimit the messages.
 
 Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-Index: work10/drivers/pnp/interface.c
+Index: work10/drivers/pnp/resource.c
 ===================================================================
---- work10.orig/drivers/pnp/interface.c	2008-05-05 11:54:26.000000000 -0600
-+++ work10/drivers/pnp/interface.c	2008-05-05 11:59:53.000000000 -0600
-@@ -248,8 +248,9 @@ static ssize_t pnp_show_current_resource
- 					  char *buf)
+--- work10.orig/drivers/pnp/resource.c	2008-05-05 11:38:16.000000000 -0600
++++ work10/drivers/pnp/resource.c	2008-05-05 11:49:05.000000000 -0600
+@@ -537,15 +537,10 @@ struct pnp_resource *pnp_add_irq_resourc
  {
- 	struct pnp_dev *dev = to_pnp_dev(dmdev);
-+	struct pnp_resource *pnp_res;
+ 	struct pnp_resource *pnp_res;
  	struct resource *res;
--	int i, ret;
-+	int ret;
- 	pnp_info_buffer_t *buffer;
+-	static unsigned char warned;
  
- 	if (!dev)
-@@ -262,46 +263,33 @@ static ssize_t pnp_show_current_resource
- 	buffer->buffer = buf;
- 	buffer->curr = buffer->buffer;
- 
--	pnp_printf(buffer, "state = ");
--	if (dev->active)
--		pnp_printf(buffer, "active\n");
--	else
--		pnp_printf(buffer, "disabled\n");
--
--	for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_IO, i)); i++) {
--		pnp_printf(buffer, "io");
--		if (res->flags & IORESOURCE_DISABLED)
--			pnp_printf(buffer, " disabled\n");
--		else
--			pnp_printf(buffer, " 0x%llx-0x%llx\n",
--				   (unsigned long long) res->start,
--				   (unsigned long long) res->end);
--	}
--	for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_MEM, i)); i++) {
--		pnp_printf(buffer, "mem");
--		if (res->flags & IORESOURCE_DISABLED)
-+	pnp_printf(buffer, "state = %s\n", dev->active ? "active" : "disabled");
-+
-+	list_for_each_entry(pnp_res, &dev->resources, list) {
-+		res = &pnp_res->res;
-+
-+		pnp_printf(buffer, pnp_resource_type_name(res));
-+
-+		if (res->flags & IORESOURCE_DISABLED) {
- 			pnp_printf(buffer, " disabled\n");
--		else
--			pnp_printf(buffer, " 0x%llx-0x%llx\n",
-+			continue;
-+		}
-+
-+		switch (pnp_resource_type(res)) {
-+		case IORESOURCE_IO:
-+		case IORESOURCE_MEM:
-+			pnp_printf(buffer, " %#llx-%#llx\n",
- 				   (unsigned long long) res->start,
- 				   (unsigned long long) res->end);
--	}
--	for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_IRQ, i)); i++) {
--		pnp_printf(buffer, "irq");
--		if (res->flags & IORESOURCE_DISABLED)
--			pnp_printf(buffer, " disabled\n");
--		else
--			pnp_printf(buffer, " %lld\n",
--				   (unsigned long long) res->start);
--	}
--	for (i = 0; (res = pnp_get_resource(dev, IORESOURCE_DMA, i)); i++) {
--		pnp_printf(buffer, "dma");
--		if (res->flags & IORESOURCE_DISABLED)
--			pnp_printf(buffer, " disabled\n");
--		else
-+			break;
-+		case IORESOURCE_IRQ:
-+		case IORESOURCE_DMA:
- 			pnp_printf(buffer, " %lld\n",
- 				   (unsigned long long) res->start);
-+			break;
-+		}
+ 	pnp_res = pnp_new_resource(dev);
+ 	if (!pnp_res) {
+-		if (!warned) {
+-			dev_err(&dev->dev, "can't add resource for IRQ %d\n",
+-				irq);
+-			warned = 1;
+-		}
++		dev_err(&dev->dev, "can't add resource for IRQ %d\n", irq);
+ 		return NULL;
  	}
-+
- 	ret = (buffer->curr - buf);
- 	kfree(buffer);
- 	return ret;
+ 
+@@ -563,15 +558,10 @@ struct pnp_resource *pnp_add_dma_resourc
+ {
+ 	struct pnp_resource *pnp_res;
+ 	struct resource *res;
+-	static unsigned char warned;
+ 
+ 	pnp_res = pnp_new_resource(dev);
+ 	if (!pnp_res) {
+-		if (!warned) {
+-			dev_err(&dev->dev, "can't add resource for DMA %d\n",
+-				dma);
+-			warned = 1;
+-		}
++		dev_err(&dev->dev, "can't add resource for DMA %d\n", dma);
+ 		return NULL;
+ 	}
+ 
+@@ -590,16 +580,12 @@ struct pnp_resource *pnp_add_io_resource
+ {
+ 	struct pnp_resource *pnp_res;
+ 	struct resource *res;
+-	static unsigned char warned;
+ 
+ 	pnp_res = pnp_new_resource(dev);
+ 	if (!pnp_res) {
+-		if (!warned) {
+-			dev_err(&dev->dev, "can't add resource for IO "
+-				"%#llx-%#llx\n",(unsigned long long) start,
+-				(unsigned long long) end);
+-			warned = 1;
+-		}
++		dev_err(&dev->dev, "can't add resource for IO %#llx-%#llx\n",
++			(unsigned long long) start,
++			(unsigned long long) end);
+ 		return NULL;
+ 	}
+ 
+@@ -619,16 +605,12 @@ struct pnp_resource *pnp_add_mem_resourc
+ {
+ 	struct pnp_resource *pnp_res;
+ 	struct resource *res;
+-	static unsigned char warned;
+ 
+ 	pnp_res = pnp_new_resource(dev);
+ 	if (!pnp_res) {
+-		if (!warned) {
+-			dev_err(&dev->dev, "can't add resource for MEM "
+-				"%#llx-%#llx\n",(unsigned long long) start,
+-				(unsigned long long) end);
+-			warned = 1;
+-		}
++		dev_err(&dev->dev, "can't add resource for MEM %#llx-%#llx\n",
++			(unsigned long long) start,
++			(unsigned long long) end);
+ 		return NULL;
+ 	}
+ 
 
 -- 
