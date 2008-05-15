@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764200AbYEOR6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764290AbYEOR6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764200AbYEOR6e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 13:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764077AbYEOR6F
+	id S1764290AbYEOR6u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 13:58:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763572AbYEOR6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 13:58:05 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:52967 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754603AbYEOR6D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 13:58:03 -0400
-Date: Thu, 15 May 2008 10:58:01 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Matthew Wilcox <matthew@wil.cx>
-cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Andi Kleen <andi@firstfloor.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, mpm@selenic.com
-Subject: Re: [patch 21/21] slab defrag: Obsolete SLAB
-In-Reply-To: <20080515174953.GN9921@parisc-linux.org>
-Message-ID: <Pine.LNX.4.64.0805151054250.18991@schroedinger.engr.sgi.com>
-References: <20080510030919.604216074@sgi.com> <4825709A.2020407@firstfloor.org>
- <20080510221515.3540a6cc@bree.surriel.com> <2f11576a0805120038s334dc56cuaf16b8b7c6f87098@mail.gmail.com>
- <84144f020805120054t1370236ei5ff52279457e026e@mail.gmail.com>
- <Pine.LNX.4.64.0805141009210.15194@schroedinger.engr.sgi.com>
- <482B2617.5010605@firstfloor.org> <Pine.LNX.4.64.0805141100110.15633@schroedinger.engr.sgi.com>
- <1210822002.3177.121.camel@ymzhang> <Pine.LNX.4.64.0805151002420.18354@schroedinger.engr.sgi.com>
- <20080515174953.GN9921@parisc-linux.org>
+	Thu, 15 May 2008 13:58:33 -0400
+Received: from orion.ambsoft.pl ([212.109.144.130]:41362 "EHLO
+	orion.ambsoft.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764184AbYEOR6c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 13:58:32 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] Re: 2.6.26-rc2-mm1 - fix parenthesis in include/asm-arm/arch-omap/control.h
+Date: Thu, 15 May 2008 19:58:26 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+References: <20080514010129.4f672378.akpm@linux-foundation.org>
+In-Reply-To: <20080514010129.4f672378.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805151958.26764.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 May 2008, Matthew Wilcox wrote:
+Parenthesis fix in include/asm-arm/arch-omap/control.h
 
-> On Thu, May 15, 2008 at 10:05:35AM -0700, Christoph Lameter wrote:
-> > Thanks for using the slab statistics. I wish I had these numbers for the 
-> > TPC benchmark. That would allow us to understand what is going on while it 
-> > is running.
-> 
-> Hang on, you want slab statistics for the TPC run?  You didn't tell me
-> that.  We're trying to gather oprofile data (and having trouble because
-> the machine crashes when we start using oprofile -- this is with the git
-> tree you/pekka put together for us to test).
+Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
-Well we talked about this when you send me the test program. I just 
-thought that it would be logical to do the same for the real case.
-
-Details of the crash please?
-
-You could just start with 2.6.25.X which already contains the slab 
-statistics.
-
-Also re: the test program since pinning a process does increase the 
-performance by orders of magnitude. Are you sure that the application was 
-properly tuned for an 8p configuration? Pinning is usually not necessary 
-for lower numbers of processors because the scheduler thrashing effect is 
-less of an issue.  If the test program is an accurate representation of 
-the TP-C benchmark then you can drastically increase its performance by 
-doing the same to the real test.
-
+diff -upr linux-2.6.26-rc2-mm1-a/include/asm-arm/arch-omap/control.h linux-2.6.26-rc2-mm1-b/include/asm-arm/arch-omap/control.h
+--- linux-2.6.26-rc2-mm1-a/include/asm-arm/arch-omap/control.h	2008-05-15 19:44:38.000000000 +0200
++++ linux-2.6.26-rc2-mm1-b/include/asm-arm/arch-omap/control.h	2008-05-15 19:51:30.000000000 +0200
+@@ -80,7 +80,7 @@
+ #define OMAP24XX_CONTROL_SEC_TAP	(OMAP2_CONTROL_GENERAL + 0x0064)
+ #define OMAP24XX_CONTROL_OCM_PUB_RAM_ADD	(OMAP2_CONTROL_GENERAL + 0x006c)
+ #define OMAP24XX_CONTROL_EXT_SEC_RAM_START_ADD	(OMAP2_CONTROL_GENERAL + 0x0070)
+-#define OMAP24XX_CONTROL_EXT_SEC_RAM_STOP_ADD	(OMAP2_CONTROL_GENERAL + 0x0074
++#define OMAP24XX_CONTROL_EXT_SEC_RAM_STOP_ADD	(OMAP2_CONTROL_GENERAL + 0x0074)
+ #define OMAP24XX_CONTROL_SEC_STATUS		(OMAP2_CONTROL_GENERAL + 0x0080)
+ #define OMAP24XX_CONTROL_SEC_ERR_STATUS		(OMAP2_CONTROL_GENERAL + 0x0084)
+ #define OMAP24XX_CONTROL_STATUS			(OMAP2_CONTROL_GENERAL + 0x0088)
+	
