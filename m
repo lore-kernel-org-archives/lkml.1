@@ -1,70 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764510AbYEOS1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763359AbYEOS3F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764510AbYEOS1T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 14:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbYEOS1J
+	id S1763359AbYEOS3F (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 14:29:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756180AbYEOS2y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 14:27:09 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:51030 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751563AbYEOS1I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 14:27:08 -0400
-Date: Thu, 15 May 2008 14:26:43 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Stas Sergeev <stsp@aknet.ru>
-Cc: Takashi Iwai <tiwai@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Roberto Oppedisano <roberto.oppedisano@infracom.it>
-Subject: Re: [Bug #10679] 2.6.26-rc1 regression:
-	e5e1d3cb20034a3cbcfff1f0bae12201aa2ce17e breaks artsd
-Message-ID: <20080515182643.GL18825@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Stas Sergeev <stsp@aknet.ru>, Takashi Iwai <tiwai@suse.de>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Roberto Oppedisano <roberto.oppedisano@infracom.it>
-References: <hPXlJLjt4XG.A._lF.Jv1JIB@chimera> <88YBFoyd1CN.A._sF.Ov1JIB@chimera> <s5hskwmeb1h.wl%tiwai@suse.de> <20080514212011.GH7054@mit.edu> <s5hhcd0azv1.wl%tiwai@suse.de> <20080515130654.GC18825@mit.edu> <482C71B3.8090200@aknet.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <482C71B3.8090200@aknet.ru>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Thu, 15 May 2008 14:28:54 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:50259 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755267AbYEOS2x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 14:28:53 -0400
+Subject: Re: [PATCH 0/2] x86: per-device dma_mapping_ops
+From: Alexis Bruemmer <alexisb@us.ibm.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, andi@firstfloor.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, muli@il.ibm.com
+In-Reply-To: <20080515181619R.tomof@acm.org>
+References: <1210658692-960-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	 <87y76cym96.fsf@basil.nowhere.org>  <20080515181619R.tomof@acm.org>
+Content-Type: text/plain
+Date: Thu, 15 May 2008 11:25:11 -0700
+Message-Id: <1210875911.5596.22.camel@alexis>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 15, 2008 at 09:24:03PM +0400, Stas Sergeev wrote:
-> Hello.
+On Thu, 2008-05-15 at 18:16 +0900, FUJITA Tomonori wrote:
+> On Thu, 15 May 2008 11:01:09 +0200
+> Andi Kleen <andi@firstfloor.org> wrote:
 > 
-> Theodore Tso wrote:
-> >> Sounds reasonable.  To where should it be added, BTW?
-> >> Little people seem to care about Kconfig help texts, and an extra
-> >> comment block (with depends on SND_PCSP) could be annoying...
-> > That's a good question.  A note that including including this module
-> > could potentially cause sound cards to be renumbered might be
-> > reasonable,
-> I guess so, and in the description
-> string we can probably add something
-> to the effect of "READ HELP!".
+> > FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> writes:
+> > 
+> > > This patchset adds per-device dma_mapping_ops support for
+> > > CONFIG_X86_64 like POWER architecture does. This change enables us to
+> > > cleanly fix the Calgary IOMMU issue that some devices are not behind
+> > > the IOMMU [1]. It also would be helpful to handle KVM PCI passthrough.
+> > 
+> > This makes it basically impossible to do stack ops, which some 
+> > people have been doing.
+> 
+> Seems that I misunderstand what those people want.
+> 
+> What those people want to do and how the stack ops achieve it? Or can
+> you tell me where their patches are?
+Yes an explanation of stack ops, or a pointer to a patch set that
+implements them would be very useful.
 
-I don't know if this would be considered too ugly a suggestion to put
-in the Kconfig description, but the suggestion in:
 
-http://lkml.org/lkml/2008/5/11/172
-
-To put the following in /etc/modprobe.conf:
-
-options snd-pcsp index=2
-
-Would probably avoid confusion for most users.  It's more than a
-little bit hackish, and I imagine I can imagine hotplug/udev fanatics
-throwing up all over their keyboard, but short of having udev rules
-that run around editing user's ~/.asoundrc files, or creating some
-kind of system wide naming scheme so that people can use stable names
-in their alsa config files, this is going to be an, ah, "interesting"
-problem for various sound applications to deal with.
-
-	      	      	  	  		     - Ted
