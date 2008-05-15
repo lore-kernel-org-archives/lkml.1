@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763619AbYEOULn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764326AbYEOUL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763619AbYEOULn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 16:11:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbYEOULd
+	id S1764326AbYEOUL5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 16:11:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762930AbYEOULk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 16:11:33 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:33343 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753488AbYEOULc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 16:11:32 -0400
-Date: Thu, 15 May 2008 13:07:51 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 22/37] x86: sysfs cpu?/topology is empty in 2.6.25
-	(32-bit Intel system)
-Message-ID: <20080515200751.GA24902@suse.de>
-References: <20080513200453.064446337@mini.kroah.org> <20080513201222.GW31167@suse.de> <20080515180643.GD6787@dirshya.in.ibm.com>
+	Thu, 15 May 2008 16:11:40 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:60586 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761089AbYEOULj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 16:11:39 -0400
+Date: Thu, 15 May 2008 13:10:49 -0700
+From: Greg KH <greg@kroah.com>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       video4linux-list@redhat.com
+Subject: Re: [PATCH] USB: add Sensoray 2255 v4l driver
+Message-ID: <20080515201049.GA24999@kroah.com>
+References: <20080514205927.GA13134@kroah.com> <200805151403.19323.oliver@neukum.org> <20080515184424.GD15231@kroah.com> <200805152154.13630.oliver@neukum.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080515180643.GD6787@dirshya.in.ibm.com>
+In-Reply-To: <200805152154.13630.oliver@neukum.org>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 15, 2008 at 11:36:43PM +0530, Vaidyanathan Srinivasan wrote:
-> * Greg KH <gregkh@suse.de> [2008-05-13 13:12:22]:
+On Thu, May 15, 2008 at 09:54:12PM +0200, Oliver Neukum wrote:
+> Am Donnerstag 15 Mai 2008 20:44:24 schrieb Greg KH:
+> > On Thu, May 15, 2008 at 02:03:18PM +0200, Oliver Neukum wrote:
+> > > Am Donnerstag 15 Mai 2008 13:38:37 schrieb Oliver Neukum:
+> > > > 3. The firmware stuff. That's an interesting solution. However:
+> > > 
+> > > Actually, on second thought, I take that back. It's a bad solution.
+> > > If you don't want to do it in probe(), the only other sensible place
+> > > is in open(). That way you can avoid the whole trouble if nobody
+> > > opens the device. And you need to handle the case of unloaded
+> > > firmware anyway, so you can trigger firmware load there.
+> > 
+> > No, we want to do firmware load on probe, I'll change it to be async so
 > 
-> > 2.6.25-stable review patch.  If anyone has any objections, please let us
-> > know.
-> 
-> Hi Greg,
-> 
-> This fix has been included in 2.6.26-rc2 and has been tested for
-> correct topology information in the following system configurations:
-> 
-> 32-bit Two socket dual core xeon 5160 processor system
-> 32-bit Two socket quad core xeon E5450 processor system
-> 
-> Tested-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> Could you state your reasons for that preference?
 
-Thanks for the testing, sorry I didn't get to add you to the changelog,
-I got your response after I did the release :(
+I don't want to create the device nodes, and have userspace think the
+device really is working, only to have everything fall down and die if
+open() is called and the firmware isn't present.  I'd rather not create
+the video devices if we know this isn't going to work at all.
+
+Just trying to be nicer to users who would get very confused, "but wait,
+the device nodes are there, and the application finds the device, why is
+it not working properly?"
+
+thanks,
 
 greg k-h
