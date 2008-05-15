@@ -1,58 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759958AbYEONoq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759655AbYEONqQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759958AbYEONoq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 09:44:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753070AbYEONoi
+	id S1759655AbYEONqQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 09:46:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753477AbYEONqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 09:44:38 -0400
-Received: from wx-out-0506.google.com ([66.249.82.231]:59194 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752843AbYEONoh (ORCPT
+	Thu, 15 May 2008 09:46:00 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:43585 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753203AbYEONp7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 09:44:37 -0400
+	Thu, 15 May 2008 09:45:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:x-enigmail-version:content-type:content-transfer-encoding;
-        b=oG0n6w4bN1r+ah4fNruh+Xtdl73C5O2CR2du9igPUsdR13HcJHS895dvB1vGiwurAVkJAAQs873x2N301yELwcfVeWPuN8Nuhj55kudiAaZmgYR+QtnNMsR3XaoZRwdemRBj3B2KLIgDesvRIVL6eCpnP2mfRlytcbhSktLmZcY=
-Message-ID: <482C3E3E.9090204@gmail.com>
-Date: Thu, 15 May 2008 15:44:30 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+        h=date:from:to:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=eBfX2Y2N3RDGKcIT+E7zmhjroPnZldial2Do2/+s5dtesBWT50qWvTpF1o1yT4JKxcTuS2OsnLpVjiZABdTR0K6tGS0+8dN9tFoh5t8BL3st74JqULWR7AVySV3b6YAapKZIJYJsA9+CCgRJD68qFq3HhzF8zkdLWFDO0q8NFYY=
+Date: Thu, 15 May 2008 09:45:52 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Greg KH <greg@kroah.com>, jkosina@suse.cz, linux-input@vger.kernel.org,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Input: add appleir USB driver
+Message-ID: <20080515094212.ZZRA012@mailhub.coreip.homeip.net>
+References: <20080514221519.GA6575@kroah.com> <20080515132108.GA9327@dose.home.local>
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@uranus.ravnborg.org>
-CC: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Michael Buesch <mb@bu3sch.de>,
-       Gordon Farquharson <gordonfarquharson@gmail.com>
-Subject: crossbuild fails in modpost
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080515132108.GA9327@dose.home.local>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi Tino,
 
-probably
-4ce6efed48d736e3384c39ff87bda723e1f8e041
-kbuild: soften modpost checks when doing cross builds
+On Thu, May 15, 2008 at 03:21:08PM +0200, Tino Keitel wrote:
+> Hi,
+>
+> I'm pretty sure that this breaks the macmini LIRC driver again, see
+> commit 3e1928e8793208802589aae851b6685671187242.
+>
 
-causes build failures on x86_64 kernel build on 32 bit machine:
+But with in-kernel driver can't LIRC feed of event device? Ane people
+that dont use LIRC can also have access to the remote?
 
-make -f /local/xslaby/hid/scripts/Makefile.modpost
-YYYYYYYYYYYYYY x86_64 x86_64
-   scripts/mod/modpost -m -a -o /local/xslaby/buhid/Module.symvers    -S -K 
-/local/xslaby/buhid/Module.markers -M /local/xslaby/buhid/Module.markers   -s
-XXXXXXXXXXXXXXXXXX 20: 0 (2), 4 (4), 8 (4), 12 (8)
-FATAL: drivers/hid/hid-apple: sizeof(struct hid_device_id)=20 is not a 
-modulo of the size of section __mod_hid_device_table=648.
-Fix definition of struct hid_device_id in mod_devicetable.h
-make[2]: *** [__modpost] Error 1
-make[1]: *** [modules] Error 2
-make: *** [sub-make] Error 2
-
-after sticking echo into:
-  __modpost: $(modules:.ko=.o) FORCE
-+       @echo YYYYYYYYYYYYYY $(KBUILD_BUILDHOST) $(ARCH)
-         $(call cmd,modpost) $(wildcard vmlinux) $(filter-out FORCE,$^)
-
+-- 
+Dmitry
