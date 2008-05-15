@@ -1,90 +1,276 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755980AbYEOCUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754670AbYEOCZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755980AbYEOCUc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 22:20:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbYEOCUY
+	id S1754670AbYEOCZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 22:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbYEOCZQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 22:20:24 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:54431 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752355AbYEOCUX (ORCPT
+	Wed, 14 May 2008 22:25:16 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:23033 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752213AbYEOCZO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 22:20:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=QzosIWwxuUPGI0/XSML4fJ/BIUnmqvfEXY1iA9xMuPsSZH1YEBpzDoKgOd0Ie0s/5sZeUbnWkF+kO8PXKYmkVVXDkKRHdlEolt1iQv+SmpKSaZ+EzOwYPz2LzMTTdByfHuc/eXzv9c7e/8+sZ73V+QrrONnkoL1x6TA3XXZSfOQ=
-Message-ID: <a4e6962a0805141920x7d96df33gb9c22a5777b1732c@mail.gmail.com>
-Date: Wed, 14 May 2008 21:20:21 -0500
-From: "Eric Van Hensbergen" <ericvh@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: [PULL] v9fs bug fixes and documentation updates for 2.6.26
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "V9FS Developers" <v9fs-developer@lists.sourceforge.net>
+	Wed, 14 May 2008 22:25:14 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=R7reN1X6u8Q3IXs3Jz5XKE+cNoHlI7xuSLZ5R6AjSjgrdWstojl7d5qAgPrVAuJOo
+	K1D/5ETi7CZFU3xFkkZNA==
+Message-ID: <6599ad830805141925mf8a13daq7309148153a3c2df@mail.gmail.com>
+Date: Wed, 14 May 2008 19:25:07 -0700
+From: "Paul Menage" <menage@google.com>
+To: balbir@linux.vnet.ibm.com, linux-mm@kvack.org,
+       "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
+       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>,
+       "Paul Menage" <menage@google.com>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, "Pavel Emelianov" <xemul@openvz.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [-mm][PATCH 4/4] Add memrlimit controller accounting and control (v4)
+In-Reply-To: <20080514132529.GA25653@balbir.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <20080514130904.24440.23486.sendpatchset@localhost.localdomain>
+	 <20080514130951.24440.73671.sendpatchset@localhost.localdomain>
+	 <20080514132529.GA25653@balbir.in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull the following bug-fixes and documentation updates
-from my kernel.org for-linus branch.
+On Wed, May 14, 2008 at 6:25 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>  +
+>  +int memrlimit_cgroup_charge_as(struct mm_struct *mm, unsigned long nr_pages)
+>  +{
+>  +       int ret;
+>  +       struct memrlimit_cgroup *memrcg;
+>  +
+>  +       rcu_read_lock();
+>  +       memrcg = memrlimit_cgroup_from_task(rcu_dereference(mm->owner));
+>  +       css_get(&memrcg->css);
+>  +       rcu_read_unlock();
+>  +
+>  +       ret = res_counter_charge(&memrcg->as_res, (nr_pages << PAGE_SHIFT));
+>  +       css_put(&memrcg->css);
+>  +       return ret;
+>  +}
 
-The following changes since commit dd286422fefdcff784e8d336deeb88ce817e14db:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../roland/infiniband
+Assuming that we're holding a write lock on mm->mmap_sem here, and we
+additionally hold mmap_sem for the whole of mm_update_next_owner(),
+then maybe we don't need any extra synchronization here? Something
+like simply:
 
-are available in the git repository at:
+int memrlimit_cgroup_charge_as(struct mm_struct *mm, unsigned long nr_pages)
+{
+       struct memrlimit_cgroup *memrcg = memrlimit_cgroup_from_task(mm->owner);
+       return res_counter_charge(&memrcg->as_res, (nr_pages << PAGE_SHIFT));
+}
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/ericvh/v9fs.git for-linus
+Seems good to minimize additional synchronization on the fast path.
 
-Eric Van Hensbergen (4):
-      9p: Documentation updates
-      9p: propagate parse_option changes to client and transports
-      9p: make cryptic unknown error from server less scary
-      9p: fix error path during early mount
+The only thing that's still broken is that the task_struct.cgroups
+pointer gets updated only under the synchronization of task_lock(), so
+we've still got the race of:
 
-Jim Meyering (1):
-      fs/9p/v9fs.c (v9fs_parse_options): Handle kstrdup and
-match_strdup failure. Now that this function can fail, return an int,
-diagnose other option-parsing failures, and adjust the sole caller:
-(v9fs_session_init): Handle kstrdup failure. Propagate any new
-v9fs_parse_options failure "up".
+A: attach_task() updates B->cgroups
 
-Josef 'Jeff' Sipek (2):
-      9p: use struct mutex instead of struct semaphore
-      9p: Correct fidpool creation failure in p9_client_create
+B: memrlimit_cgroup_charge_as() charges the new res counter and
+updates mm->total_vm
 
-Markus Armbruster (1):
-      add match_strlcpy() us it to make v9fs make uname and remotename
-parsing more robust
+A: memrlimit_cgroup_move_task() moves mm->total_vm from the old
+counter to the new counter
 
-Steven Rostedt (1):
-      9p: fix flags length in net
+Here's one way I see to fix this:
 
- fs/9p/fid.h                |   15 +++
- fs/9p/v9fs.c               |   57 ++++++++---
- fs/9p/v9fs.h               |   85 +++++++++++-----
- fs/9p/vfs_addr.c           |    2 +-
- fs/9p/vfs_dir.c            |    2 +-
- fs/9p/vfs_file.c           |   11 +-
- fs/9p/vfs_inode.c          |   50 +++++++---
- fs/9p/vfs_super.c          |   35 +++----
- include/linux/parser.h     |    2 +-
- include/net/9p/9p.h        |  240 ++++++++++++++++++++++++++++++++++++++------
- include/net/9p/client.h    |   35 +++++++
- include/net/9p/transport.h |   44 ++++++++-
- lib/parser.c               |   32 ++++--
- net/9p/Kconfig             |   10 --
- net/9p/Makefile            |    3 -
- net/9p/client.c            |   32 +++++--
- net/9p/conv.c              |  128 +++++++++++++++++++++++-
- net/9p/error.c             |   15 ++-
- net/9p/fcprint.c           |    8 ++
- net/9p/mod.c               |    8 +-
- net/9p/trans_fd.c          |  204 +++++++++++++++++++++++++++++++-------
- net/9p/trans_virtio.c      |  175 ++++++++++++++++++++++++++++----
- net/9p/util.c              |   36 +++++--
- 23 files changed, 1014 insertions(+), 215 deletions(-)
+We change attach_task() so that rather than updating the
+task_struct.cgroups pointer once from the original css_set to the
+final css_set, it goes through a series of intermediate css_set
+structures, one for each subsystem in the hierarchy, transitioning
+from the old set to the final set. Then for each subsystem ss, it
+would do:
+
+next_css = <old css with pointer for ss updated>
+if (ss->attach) {
+  ss->attach(ss, p, next_css);
+} else {
+  task_lock(p);
+  rcu_assign_ptr(p->cgroups, next_css);
+  task_unlock(p);
+}
+
+i.e. the subsystem would be free to implement any synchronization it
+desired in the attach() code. The attach() method's responsibility
+would be to ensure that p->cgroups was updated to point to next_css
+before returning. This should make it much simpler for a subsystem to
+handle potential races between attach() and accounting. The current
+semantics of can_attach()/update/attach() are sufficient for cpusets,
+but probably not for systems with more complex accounting. I'd still
+need to figure out a nice way to get the kind of transactional
+semantics that you want from can_attach().
+
+>  +
+>  +void memrlimit_cgroup_uncharge_as(struct mm_struct *mm, unsigned long nr_pages)
+>  +{
+>  +       struct memrlimit_cgroup *memrcg;
+>  +
+>  +       rcu_read_lock();
+>  +       memrcg = memrlimit_cgroup_from_task(rcu_dereference(mm->owner));
+>  +       css_get(&memrcg->css);
+>  +       rcu_read_unlock();
+>  +
+>  +       res_counter_uncharge(&memrcg->as_res, (nr_pages << PAGE_SHIFT));
+>  +       css_put(&memrcg->css);
+>  +}
+>  +
+>   static struct cgroup_subsys_state *
+>   memrlimit_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cgrp)
+>   {
+>  @@ -134,11 +169,70 @@ static int memrlimit_cgroup_populate(str
+>                                 ARRAY_SIZE(memrlimit_cgroup_files));
+>   }
+>
+>  +static void memrlimit_cgroup_move_task(struct cgroup_subsys *ss,
+>  +                                       struct cgroup *cgrp,
+>  +                                       struct cgroup *old_cgrp,
+>  +                                       struct task_struct *p)
+>  +{
+>  +       struct mm_struct *mm;
+>  +       struct memrlimit_cgroup *memrcg, *old_memrcg;
+>  +
+>  +       mm = get_task_mm(p);
+>  +       if (mm == NULL)
+>  +               return;
+>  +
+>  +       rcu_read_lock();
+>  +       if (p != rcu_dereference(mm->owner))
+>  +               goto out;
+
+out: does up_read() on mmap_sem, which you don't currently hold.
+
+Can you add more comments about why you're using RCU here?
+
+You have a refcounted pointer on mm, so mm can't go away, and you
+never dereference the result of the rcu_dereference(mm->owner), so
+you're not protecting the validity of that pointer. The only way this
+could help would be if anything that changes mm->owner calls
+synchronize_rcu() before, say, doing accounting changes, and I don't
+believe that's the case.
+
+Would it be simpler to use task_lock(p) here to ensure that it doesn't
+lose its owner status (by exiting or execing) while we're moving it?
+
+i.e., something like: [ this assumes the new semantics of attach that
+I proposed above ]
+
+
+static void memrlimit_cgroup_move_task(struct cgroup_subsys *ss,
+                                       struct cgroup *cgrp,
+                                       struct cgroup *old_cgrp,
+                                       struct task_struct *p,
+                                       struct css_set new_css_set)
+{
+        struct mm_struct *mm;
+        struct memrlimit_cgroup *memrcg, *old_memrcg;
+
+ retry:
+        mm = get_task_mm(p);
+        if (mm == NULL) {
+          task_lock(p);
+          rcu_assign_ptr(p->cgroups, new_css_set);
+          task_unlock(p);
+          return;
+        }
+
+        /* Take mmap_sem to prevent address space changes */
+        down_read(&mm->mmap_sem);
+        /* task_lock(p) to prevent mm ownership changes */
+        task_lock(p);
+        if (p->mm != mm) {
+                /* We raced */
+                task_unlock(p);
+                up_read(&mm->mmap_sem);
+                mmput(mm);
+                goto retry;
+        }
+        if (p != mm->owner)
+                goto out_assign;
+
+        memrcg = memrlimit_cgroup_from_cgrp(cgrp);
+        old_memrcg = memrlimit_cgroup_from_cgrp(old_cgrp);
+
+        if (memrcg == old_memrcg)
+                goto out_assign;
+
+        if (res_counter_charge(&memrcg->as_res, (mm->total_vm << PAGE_SHIFT)))
+                goto out_assign;
+        res_counter_uncharge(&old_memrcg->as_res, (mm->total_vm << PAGE_SHIFT));
+  out_assign:
+        rcu_assign_ptr(p->cgroups, new_css_set);
+        task_unlock(p);
+        up_read(&mm->mmap_sem);
+        mmput(mm);
+}
+
+
+
+
+>  +
+>  +       memrcg = memrlimit_cgroup_from_cgrp(cgrp);
+>  +       old_memrcg = memrlimit_cgroup_from_cgrp(old_cgrp);
+>  +
+>  +       if (memrcg == old_memrcg)
+>  +               goto out;
+
+mmap_sem is also not held here.
+
+>  +
+>  +       /*
+>  +        * Hold mmap_sem, so that total_vm does not change underneath us
+>  +        */
+>  +       down_read(&mm->mmap_sem);
+
+You can't block inside rcu_read_lock().
+
+>  +       if (res_counter_charge(&memrcg->as_res, (mm->total_vm << PAGE_SHIFT)))
+>  +               goto out;
+>  +       res_counter_uncharge(&old_memrcg->as_res, (mm->total_vm << PAGE_SHIFT));
+>  +out:
+>  +       up_read(&mm->mmap_sem);
+>  +       rcu_read_unlock();
+>  +       mmput(mm);
+>  +}
+>  +
+>  +static void memrlimit_cgroup_mm_owner_changed(struct cgroup_subsys *ss,
+>  +                                               struct cgroup *cgrp,
+>  +                                               struct cgroup *old_cgrp,
+>  +                                               struct task_struct *p)
+>  +{
+>  +       struct memrlimit_cgroup *memrcg, *old_memrcg;
+>  +       struct mm_struct *mm = get_task_mm(p);
+>  +
+>  +       BUG_ON(!mm);
+>  +       memrcg = memrlimit_cgroup_from_cgrp(cgrp);
+>  +       old_memrcg = memrlimit_cgroup_from_cgrp(old_cgrp);
+>  +
+>  +       down_read(&mm->mmap_sem);
+
+At this point we're holding p->alloc_lock, so we can't do a blocking
+down_read().
+
+How about if we down_read(&mm->mmap_sem) in mm_update_next_owner()
+prior to taking tasklist_lock? That will ensure that mm ownership
+changes are synchronized against mmap/munmap operations on that mm,
+and since the cgroups-based owners are likely to be wanting to track
+the ownership changes for accounting purposes, this seems like an
+appropriate lock to hold.
+
+>  +       if (res_counter_charge(&memrcg->as_res, (mm->total_vm << PAGE_SHIFT)))
+>  +               goto out;
+>  +       res_counter_uncharge(&old_memrcg->as_res, (mm->total_vm << PAGE_SHIFT));
+>  +out:
+>  +       up_read(&mm->mmap_sem);
+>  +
+>  +       mmput(mm);
+>  +}
+>  +
