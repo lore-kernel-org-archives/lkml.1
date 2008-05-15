@@ -1,42 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759289AbYEOHpv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757986AbYEOHsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759289AbYEOHpv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 03:45:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755478AbYEOHpi
+	id S1757986AbYEOHsQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 03:48:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbYEOHsA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 03:45:38 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:55373 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754851AbYEOHph (ORCPT
+	Thu, 15 May 2008 03:48:00 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:33107 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753042AbYEOHr6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 03:45:37 -0400
-To: viro@ZenIV.linux.org.uk
-CC: miklos@szeredi.hu, akpm@linux-foundation.org, hch@infradead.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       drepper@redhat.com
-In-reply-to: <20080515073901.GT13907@ZenIV.linux.org.uk> (message from Al Viro
-	on Thu, 15 May 2008 08:39:01 +0100)
-Subject: Re: [patch 13/24] vfs: utimes cleanup
-References: <20080506091327.259950960@szeredi.hu> <20080506091422.705393283@szeredi.hu> <E1JtK1S-00018D-55@pomaz-ex.szeredi.hu> <20080515073901.GT13907@ZenIV.linux.org.uk>
-Message-Id: <E1JwY9N-0006Dw-47@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 15 May 2008 09:45:17 +0200
+	Thu, 15 May 2008 03:47:58 -0400
+Message-ID: <482BEA9A.3010006@ak.jp.nec.com>
+Date: Thu, 15 May 2008 16:47:38 +0900
+From: KaiGai Kohei <kaigai@ak.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Andrew Morgan <morgan@kernel.org>
+CC: Chris Wright <chrisw@sous-sol.org>, greg@kroah.com, serue@us.ibm.com,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] exporting capability name/code pairs (for 2.6.26)
+References: <47C25AE9.7080305@ak.jp.nec.com> <480DC80F.3060403@ak.jp.nec.com> <20080423053726.GF3861@localhost.localdomain> <480EE1F6.3070205@ak.jp.nec.com> <482A33FA.5030109@ak.jp.nec.com> <20080514005238.GZ17453@sequoia.sous-sol.org> <482A7F64.50705@ak.jp.nec.com> <482BCEB4.9050906@kernel.org>
+In-Reply-To: <482BCEB4.9050906@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > + * do_futimesat - change times on filename
+Andrew Morgan wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
 > 
-> > +int do_utimes(int dfd, char __user *filename, struct timespec *times, int flags)
+> KaiGai Kohei wrote:
+> | For example, we got CAP_MAC_ADMIN at 2.6.25. If an application tries to
+> | use it, we have to replace libcap for 2.6.24 by libcap for 2.6.25.
+> | Although, we don't get any updates in libcap. :-(
 > 
-> Erm...  Is there any reason to
-> 	* have do_utimes() used anywhere
-> 	* _not_ have do_futimesat() called "do_utimes"?
+> I'm not sure what you mean here. I think you will find that this
+> particular capability was supported in libcap 2.03. Current is 2.09.
 
-Review ping-pong.  My original patch did that, and Christoph didn't
-like it.  I don't care that much actually, one thing I like better in
-the second version is to have a separate function for the path lookup
-thing (now called do_utimes(), but it could be renamed to
-name_utimes() or whatever).
+What I wanted to say is that we have to update/rebuild/reinstall
+userland packages using arbitary number of capabilities (like libcap)
+whenever the newer kernel adds a new capability, however, is it really
+necessary?
 
-Miklos
+Thanks,
+
+> Also, having Ack'd your proposed kernel patch, I speculatively included
+> support for it in libcap-2.08. I will, of course, remove this support if
+> the kernel doesn't adopt your change - or picks a different strategy...
+> As it is, the patched kernel works nicely. :-)
+> 
+> http://www.kernel.org/pub/linux/libs/security/linux-privs/libcap2/
+> 
+> Cheers
+> 
+> Andrew
+> -----BEGIN PGP SIGNATURE-----
+> Version: GnuPG v1.4.7 (Darwin)
+> Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+> 
+> iD4DBQFIK86y+bHCR3gb8jsRAnV4AJ9gCaTwfKs8r7KX4DFixT84A5buOQCYlbaX
+> mnMx52Yt2pRcLAXTOXElLA==
+> =31Cy
+> -----END PGP SIGNATURE-----
+
+-- 
+OSS Platform Development Division, NEC
+KaiGai Kohei <kaigai@ak.jp.nec.com>
