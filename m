@@ -1,45 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757746AbYEOHxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756226AbYEOHxh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757746AbYEOHxW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 03:53:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbYEOHxF
+	id S1756226AbYEOHxh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 03:53:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755676AbYEOHxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 03:53:05 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:47146 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753346AbYEOHxE (ORCPT
+	Thu, 15 May 2008 03:53:10 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:38501 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755093AbYEOHxI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 03:53:04 -0400
-Message-ID: <482BEC42.9060605@keyaccess.nl>
-Date: Thu, 15 May 2008 09:54:42 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Adam Belay <ambx1@neo.rr.com>, Adam M Belay <abelay@mit.edu>,
-       Li Shaohua <shaohua.li@intel.com>,
-       Matthieu Castet <castet.matthieu@free.fr>,
-       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>
-Subject: Re: [patch 6/8] PNP: replace pnp_resource_table with dynamically
- allocated resources
-References: <20080505223630.682082986@ldl.fc.hp.com> <20080505224000.013817328@ldl.fc.hp.com> <20080513194241.d11664df.akpm@linux-foundation.org> <200805141718.35158.bjorn.helgaas@hp.com>
-In-Reply-To: <200805141718.35158.bjorn.helgaas@hp.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Thu, 15 May 2008 03:53:08 -0400
+Date: Thu, 15 May 2008 09:52:46 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: Greg KH <greg@kroah.com>, David Miller <davem@davemloft.net>,
+       fubar@us.ibm.com, netdev@vger.kernel.org,
+       bonding-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] sysfs: remove error messages for -EEXIST case
+Message-ID: <20080515095246.3b6a0d1d@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20080514181603.411e834f@extreme>
+References: <20080514170316.672f809d@extreme>
+	<20080514181257.74fbb5aa@extreme>
+	<20080514181603.411e834f@extreme>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 15-05-08 01:18, Bjorn Helgaas wrote:
+On Wed, 14 May 2008 18:16:03 -0700,
+Stephen Hemminger <shemminger@vyatta.com> wrote:
 
-> Thanks for the report.  I think I've fixed the problem.
+> --- a/drivers/base/core.c	2008-05-14 17:56:36.000000000 -0700
+> +++ b/drivers/base/core.c	2008-05-14 17:56:40.000000000 -0700
+> @@ -1218,13 +1218,11 @@ int device_rename(struct device *dev, ch
+>  	}
+>  #else
+>  	if (dev->class) {
+> -		sysfs_remove_link(&dev->class->subsys.kobj, old_device_name);
+>  		error = sysfs_create_link(&dev->class->subsys.kobj, &dev->kobj,
+>  					  dev->bus_id);
+> -		if (error) {
+> -			dev_err(dev, "%s: sysfs_create_symlink failed (%d)\n",
+> -				__func__, error);
+> -		}
+> +		if (error)
+> +			goto out;
+> +		sysfs_remove_link(&dev->class->subsys.kobj, old_device_name);
+>  	}
+>  #endif
+> 
 
-I saw it was PnPBIOS by the way. PnPBIOS appears to be obsolete these 
-days; do you have machines to test it on yourself? I do (plenty), so 
-although I'm not being fast with testing anyway, would you want me to 
-switch those from PnPACPI to PnPBIOS?
+This looks reasonable...
 
-Rene.
+> --- a/fs/sysfs/dir.c	2008-05-14 17:56:36.000000000 -0700
+> +++ b/fs/sysfs/dir.c	2008-05-14 17:56:40.000000000 -0700
+> @@ -419,12 +419,8 @@ void sysfs_addrm_start(struct sysfs_addr
+>   */
+>  int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+>  {
+> -	if (sysfs_find_dirent(acxt->parent_sd, sd->s_name)) {
+> -		printk(KERN_WARNING "sysfs: duplicate filename '%s' "
+> -		       "can not be created\n", sd->s_name);
+> -		WARN_ON(1);
+> +	if (sysfs_find_dirent(acxt->parent_sd, sd->s_name))
+>  		return -EEXIST;
+> -	}
+> 
+>  	sd->s_parent = sysfs_get(acxt->parent_sd);
+
+...but this will cause many useful warnings to disappear.
+
+What to do here?
+
+- Rely on people checking all __must_check stuff and printing a warning
+when desired. Not everyone seems to like that (see, for example,
+http://marc.info/?l=linux-kernel&m=121012176111154&w=2).
+- Put the burden unto the callers of sysfs_add_one() (or maybe even
+further up). They should hopefully know whether -EEXIST is "might
+happen" or "argh, we've messed up" (and print a warning in the latter
+case so that it gets reported).
+- Make this a debugging thing. Unfortunately then we won't neccessarily
+get reports when things are busted.
