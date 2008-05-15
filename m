@@ -1,60 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932191AbYEOLMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760048AbYEOLNM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932191AbYEOLMr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 07:12:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754854AbYEOLMi
+	id S1760048AbYEOLNM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 07:13:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932220AbYEOLMz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 07:12:38 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:49085
-	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752396AbYEOLMi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 07:12:38 -0400
-Message-ID: <482C1AA2.20307@qumranet.com>
-Date: Thu, 15 May 2008 14:12:34 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 15 May 2008 07:12:55 -0400
+Received: from sacred.ru ([62.205.161.221]:41579 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932225AbYEOLMz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 07:12:55 -0400
+Message-ID: <482C1A17.9050607@openvz.org>
+Date: Thu, 15 May 2008 15:10:15 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-To: Robin Holt <holt@sgi.com>
-CC: Nick Piggin <npiggin@suse.de>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrea Arcangeli <andrea@qumranet.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, general@lists.openfabrics.org,
-       Hugh Dickins <hugh@veritas.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
-       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>
-Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
-References: <6b384bb988786aa78ef0.1210170958@duo.random> <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org> <20080508003838.GA9878@sgi.com> <200805132206.47655.nickpiggin@yahoo.com.au> <20080513153238.GL19717@sgi.com> <20080514041122.GE24516@wotan.suse.de> <20080514112625.GY9878@sgi.com> <20080515075747.GA7177@wotan.suse.de> <20080515110147.GD10126@sgi.com>
-In-Reply-To: <20080515110147.GD10126@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Oleg Nesterov <oleg@tv-sign.ru>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 9/10] Bsdacct: turn acct off for all pidns-s on umount time
+References: <482C15FE.7070300@openvz.org>
+In-Reply-To: <482C15FE.7070300@openvz.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 15 May 2008 15:12:35 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robin Holt wrote:
-> Then we need to deposit the information needed to do the invalidate.
->
-> Lastly, we would need to interrupt.  Unfortunately, here we have a
-> thundering herd.  There could be up to 16256 processors interrupting the
-> same processor.  That will be a lot of work.  It will need to look up the
-> mm (without grabbing any sleeping locks in either xpmem or the kernel)
-> and do the tlb invalidates.
->
->   
+All the bsd_acct_strcts with opened accounting are linked into
+a global list. So, the acct_auto_close(_mnt) walks one and drops
+the accounting for each.
 
-You don't need to interrupt every time.  Place your data in a queue (you 
-do support rmw operations, right?) and interrupt.  Invalidates from 
-other processors will see that the queue hasn't been processed yet and 
-skip the interrupt.
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+---
+ kernel/acct.c |   28 ++++++++++++++++------------
+ 1 files changed, 16 insertions(+), 12 deletions(-)
 
+diff --git a/kernel/acct.c b/kernel/acct.c
+index febbbc6..7fc9f9d 100644
+--- a/kernel/acct.c
++++ b/kernel/acct.c
+@@ -89,9 +89,11 @@ struct bsd_acct_struct {
+ 	struct file		*file;
+ 	struct pid_namespace	*ns;
+ 	struct timer_list	timer;
++	struct list_head	list;
+ };
+ 
+ static DEFINE_SPINLOCK(acct_lock);
++static LIST_HEAD(acct_list);
+ 
+ /*
+  * Called whenever the timer says to check the free space.
+@@ -188,12 +190,14 @@ static void acct_file_reopen(struct bsd_acct_struct *acct, struct file *file,
+ 		acct->needcheck = 0;
+ 		acct->file = NULL;
+ 		acct->ns = NULL;
++		list_del(&acct->list);
+ 	}
+ 	if (file) {
+ 		acct->file = file;
+ 		acct->ns = ns;
+ 		acct->needcheck = 0;
+ 		acct->active = 1;
++		list_add(&acct->list, &acct_list);
+ 		/* It's been deleted if it was used before so this is safe */
+ 		setup_timer(&acct->timer, acct_timeout, (unsigned long)acct);
+ 		acct->timer.expires = jiffies + ACCT_TIMEOUT*HZ;
+@@ -314,13 +318,13 @@ void acct_auto_close_mnt(struct vfsmount *m)
+ {
+ 	struct bsd_acct_struct *acct;
+ 
+-	acct = init_pid_ns.bacct;
+-	if (acct == NULL)
+-		return;
+-
+ 	spin_lock(&acct_lock);
+-	if (acct->file && acct->file->f_path.mnt == m)
+-		acct_file_reopen(acct, NULL, NULL);
++restart:
++	list_for_each_entry(acct, &acct_list, list)
++		if (acct->file && acct->file->f_path.mnt == m) {
++			acct_file_reopen(acct, NULL, NULL);
++			goto restart;
++		}
+ 	spin_unlock(&acct_lock);
+ }
+ 
+@@ -335,13 +339,13 @@ void acct_auto_close(struct super_block *sb)
+ {
+ 	struct bsd_acct_struct *acct;
+ 
+-	acct = init_pid_ns.bacct;
+-	if (acct == NULL)
+-		return;
+-
+ 	spin_lock(&acct_lock);
+-	if (acct->file && acct->file->f_path.mnt->mnt_sb == sb)
+-		acct_file_reopen(acct, NULL, NULL);
++restart:
++	list_for_each_entry(acct, &acct_list, list)
++		if (acct->file && acct->file->f_path.mnt->mnt_sb == sb) {
++			acct_file_reopen(acct, NULL, NULL);
++			goto restart;
++		}
+ 	spin_unlock(&acct_lock);
+ }
+ 
 -- 
-error compiling committee.c: too many arguments to function
+1.5.3.4
 
