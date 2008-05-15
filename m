@@ -1,76 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759751AbYEORty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762701AbYEORuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759751AbYEORty (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 13:49:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbYEORtn
+	id S1762701AbYEORuU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 13:50:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762111AbYEORt4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 13:49:43 -0400
-Received: from eazy.amigager.de ([213.239.192.238]:50591 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751264AbYEORtl (ORCPT
+	Thu, 15 May 2008 13:49:56 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:34519 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761516AbYEORtz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 13:49:41 -0400
-Date: Thu, 15 May 2008 19:49:39 +0200
-From: Tino Keitel <tino.keitel@gmx.de>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Greg KH <greg@kroah.com>, jkosina@suse.cz, linux-input@vger.kernel.org,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Input: add appleir USB driver
-Message-ID: <20080515174939.GA10881@dose.home.local>
-Mail-Followup-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Greg KH <greg@kroah.com>, jkosina@suse.cz,
-	linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20080514221519.GA6575@kroah.com> <20080515132108.GA9327@dose.home.local> <20080515094212.ZZRA012@mailhub.coreip.homeip.net>
+	Thu, 15 May 2008 13:49:55 -0400
+Date: Thu, 15 May 2008 11:49:53 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Andi Kleen <andi@firstfloor.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, mpm@selenic.com
+Subject: Re: [patch 21/21] slab defrag: Obsolete SLAB
+Message-ID: <20080515174953.GN9921@parisc-linux.org>
+References: <20080510030919.604216074@sgi.com> <4825709A.2020407@firstfloor.org> <20080510221515.3540a6cc@bree.surriel.com> <2f11576a0805120038s334dc56cuaf16b8b7c6f87098@mail.gmail.com> <84144f020805120054t1370236ei5ff52279457e026e@mail.gmail.com> <Pine.LNX.4.64.0805141009210.15194@schroedinger.engr.sgi.com> <482B2617.5010605@firstfloor.org> <Pine.LNX.4.64.0805141100110.15633@schroedinger.engr.sgi.com> <1210822002.3177.121.camel@ymzhang> <Pine.LNX.4.64.0805151002420.18354@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080515094212.ZZRA012@mailhub.coreip.homeip.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <Pine.LNX.4.64.0805151002420.18354@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 15, 2008 at 09:45:52 -0400, Dmitry Torokhov wrote:
-> Hi Tino,
-> 
-> On Thu, May 15, 2008 at 03:21:08PM +0200, Tino Keitel wrote:
-> > Hi,
-> >
-> > I'm pretty sure that this breaks the macmini LIRC driver again, see
-> > commit 3e1928e8793208802589aae851b6685671187242.
-> >
-> 
-> But with in-kernel driver can't LIRC feed of event device?
+On Thu, May 15, 2008 at 10:05:35AM -0700, Christoph Lameter wrote:
+> Thanks for using the slab statistics. I wish I had these numbers for the 
+> TPC benchmark. That would allow us to understand what is going on while it 
+> is running.
 
-Sure, it can. But in its current state, it breaks existing scenarios
-and seems to have restrictions. See the comment below regarding
-learning remotes, and my other mail in this thread regarding broken
-suspend with the appleir driver.
+Hang on, you want slab statistics for the TPC run?  You didn't tell me
+that.  We're trying to gather oprofile data (and having trouble because
+the machine crashes when we start using oprofile -- this is with the git
+tree you/pekka put together for us to test).
 
-> Ane people that dont use LIRC can also have access to the remote?
-
-I know. I just wanted to point out that this is a regression for all
-people who use the macmini LIRC driver. This driver was present at
-least in the last 2 LIRC releases. The quirks stuff in the above patch
-looks like there is no way to make the macmini LIRC driver work with
-the patch applied. It relies on a USB HID device, which wouldn't be
-created anymore, and the user has no way to bring it back. Please
-correct me with a pointer to the appropriate documentation if I'm
-wrong.
-
->From the user's point of view: There are no official kernel release
-notes about what devices are added/removed to/from the various ignore
-lists and blacklists. The kernel doesn't produce any output about
-devices that are ignored or blacklisted in may cases (and also this
-one). The user has no indication why his LIRC setup stops working with
-the new kernel.
-
-Even if all LIRC users switch to the appleir driver, what about people
-who use a learning remote to have more than 6 keys that the Apple
-remote has? Does this work at all? After a quick look at the key
-handling it seems to me that the codes of the 6 keys are hardcoded in
-the driver. So a learning remote with more keys wouldn't work anymore.
-
-Regards,
-Tino
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
