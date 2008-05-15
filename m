@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755210AbYEORYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756220AbYEOR0I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755210AbYEORYV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 13:24:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750968AbYEORYN
+	id S1756220AbYEOR0I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 13:26:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751432AbYEORZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 13:24:13 -0400
-Received: from mail.aknet.ru ([78.158.192.26]:60034 "EHLO mail.aknet.ru"
+	Thu, 15 May 2008 13:25:58 -0400
+Received: from mx2.suse.de ([195.135.220.15]:47648 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750758AbYEORYM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 13:24:12 -0400
-Message-ID: <482C71B3.8090200@aknet.ru>
-Date: Thu, 15 May 2008 21:24:03 +0400
-From: Stas Sergeev <stsp@aknet.ru>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1751042AbYEORZ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 13:25:58 -0400
+Date: Thu, 15 May 2008 10:25:18 -0700
+From: Greg KH <gregkh@suse.de>
+To: "Randy.Dunlap" <rdunlap@xenotime.net>, stern@rowland.harvard.edu
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org
+Subject: Re: Linux 2.6.25.4
+Message-ID: <20080515172518.GA23810@suse.de>
+References: <20080515150721.GA8420@kroah.com> <Pine.LNX.4.64.0805150942070.7254@shark.he.net>
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>
-CC: Takashi Iwai <tiwai@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Roberto Oppedisano <roberto.oppedisano@infracom.it>
-Subject: Re: [Bug #10679] 2.6.26-rc1 regression:	e5e1d3cb20034a3cbcfff1f0bae12201aa2ce17e
- breaks artsd
-References: <hPXlJLjt4XG.A._lF.Jv1JIB@chimera> <88YBFoyd1CN.A._sF.Ov1JIB@chimera> <s5hskwmeb1h.wl%tiwai@suse.de> <20080514212011.GH7054@mit.edu> <s5hhcd0azv1.wl%tiwai@suse.de> <20080515130654.GC18825@mit.edu>
-In-Reply-To: <20080515130654.GC18825@mit.edu>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0805150942070.7254@shark.he.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Thu, May 15, 2008 at 09:43:04AM -0700, Randy.Dunlap wrote:
+> On Thu, 15 May 2008, Greg Kroah-Hartman wrote:
+> 
+> > We (the -stable team) are announcing the release of the 2.6.25.4 kernel.
+> > 
+> > It contains a bunch of bug fixes, and one security update, so all users
+> > of the 2.6.25 series are encouraged to upgrade.
+> 
+> Build errors on i386 and x86_64 allyesconfig:
+> 
+> drivers/usb/host/ohci-sm501.c:242: error: 'hcd' undeclared (first use in this function)
+> drivers/usb/host/ohci-sm501.c:242: error: (Each undeclared identifier is reported only once
+> drivers/usb/host/ohci-sm501.c:242: error: for each function it appears in.)
+> make[3]: *** [drivers/usb/host/ohci-hcd.o] Error 1
 
-Theodore Tso wrote:
->> Sounds reasonable.  To where should it be added, BTW?
->> Little people seem to care about Kconfig help texts, and an extra
->> comment block (with depends on SND_PCSP) could be annoying...
-> That's a good question.  A note that including including this module
-> could potentially cause sound cards to be renumbered might be
-> reasonable,
-I guess so, and in the description
-string we can probably add something
-to the effect of "READ HELP!".
+Alan, this is due to your OHCI patch :(
 
-> enabling it as a module.  BTW, what *is* the utility of this card, and
-Any utility will do.
+Care to send me a fix for this?
 
-> how do you use it?  I haven't been able to figure out how to use it do
-> anything entertaining at all.  Any attempts to use it on my system
-> just lead to various confusing error messages.
-That's because it is a bit broken
-in alsa-lib right now, more details
-and the fix here:
-http://lkml.org/lkml/2008/5/11/172
+thanks,
 
-> Also, BTW, it might be nice to remove the following hunk of text from
-> drivers/sound/Kconfig:
-Yeah - that old driver never worked
-with alsa anyway, so that removal is
-an overdue. :)
-
-> So I'm still rather puzzled how to make the snd-pcsp actually do
-> anything useful,
-It will be handled properly by default
-with the next alsa-lib release. But the
-trivial fix on the above URL should work
-too.
+greg k-h
