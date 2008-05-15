@@ -1,50 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755554AbYEOJJF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756560AbYEOJLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755554AbYEOJJF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 05:09:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbYEOJIu
+	id S1756560AbYEOJLT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 05:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbYEOJLD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 05:08:50 -0400
-Received: from mu-out-0910.google.com ([209.85.134.184]:25820 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752476AbYEOJIt (ORCPT
+	Thu, 15 May 2008 05:11:03 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:53508 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752570AbYEOJLC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 05:08:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=isgj2+qznEKk1Kb5IuE53ZQBaQ4bamZtuAqAPMiM5veaYBR+T4QTN0s4PU6pKiPTgwoKfAH8rkKP84YQgjd6GlDXYIyKDRtliZ/lXLmmIutMBov53r7zpDoGceyKGR/h6SXrAgORUDD591Ls9wO+5VAlTZcn/WNsFBBwlNq1Ubw=
-Date: Thu, 15 May 2008 09:12:17 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Kingsley Foreman <kingsley@internode.com.au>
-Cc: Eric Dumazet <dada1@cosmosbay.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: NET_SCHED cbq dropping too many packets on a bonding interface
-Message-ID: <20080515091216.GA6550@ff.dom.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <B0A599AA8CD34E47901804F014F15903@uglypunk>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 15 May 2008 05:11:02 -0400
+Subject: Re: [PATCH 2/9] HID: make a bus from hid code
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Jiri Kosina <jkosina@suse.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       anssi.hannula@gmail.com, akpm@linux-foundation.org,
+       Jiri Slaby <jslaby@suse.cz>
+In-Reply-To: <482AB12F.20106@gmail.com>
+References: <1210536043-19812-1-git-send-email-jirislaby@gmail.com>
+	 <1210536043-19812-2-git-send-email-jirislaby@gmail.com>
+	 <1210547158.16390.28.camel@violet.holtmann.net>  <482AB12F.20106@gmail.com>
+Content-Type: text/plain
+Date: Thu, 15 May 2008 11:11:02 +0200
+Message-Id: <1210842662.7025.21.camel@violet.holtmann.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 15-05-2008 08:16, Kingsley Foreman wrote:
-...
->>>> Ive been using qdisc for quite a while without any problems,
->>>> I just rebuilt a gentoo box with 2.6.25 kernel that does a lot of 
->>>> traffic
->>>> ~1000mbits+ over a bonded interface
->>>>
->>>> Im however seeing a big problem with cbq class dropping packets for no
->>>> reason i can see, and it is causing a lot of speed issues.
-...
+Hi Jiri,
 
-Do you mean the same box with the same config but the previous kernel
-(2.6.24) doesn't show this problem? BTW, what is txqueuelen on this
-bond0?
+> >> +static struct hid_driver hid_generic_bt = {
+> >> +	.name = "hid-generic-bt",
+> >> +	.id_table = hid_generic_bt_ids,
+> >> +};
+> > 
+> > And this one to hidp_driver instead of hid_generic_bt.
+> > 
+> > Also the name "hid-generic-bt" is not okay. Call it "hidp" since that is
+> > the driver name. An alternative would be "hid-bluetooth". I don't like
+> > the "generic" part and we never used the shortcut "bt" in any sysfs
+> > visible file.
+> 
+> Thanks for comments, I fixed all those except this one. The generic- word is 
+> tested in the core to recognize generic drivers which bind non-blacklisted 
+> devices and are handled separately. Anyway I've renamed them to 
+> generic-bluetooth and generic-usb instead of hid-generic-{bt,usb}.
+> 
+> I think the generic word in the driver name is OK, so that one ordinary user 
+> can see, my device is handled by the generic driver without special 
+> processing. Would you rather see some flag or something?
 
-Regards,
-Jarek P.
+actually generic-usb and generic-bluetooth sound perfectly fine to me.
+
+Regards
+
+Marcel
+
+
