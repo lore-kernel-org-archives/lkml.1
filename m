@@ -1,75 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763071AbYEOSDh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764706AbYEOSEY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763071AbYEOSDh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 14:03:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbYEOSDX
+	id S1764706AbYEOSEY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 14:04:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbYEOSEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 14:03:23 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:51771 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762610AbYEOSDW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 14:03:22 -0400
-Subject: Re: [PATCH] Fix for OProfile callgraph for Power 64 bit user apps
-From: Carl Love <cel@us.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Maynard Johnson <maynardj@us.ibm.com>
-In-Reply-To: <18476.5290.709729.582063@cargo.ozlabs.ibm.com>
-References: <1210183924.7726.28.camel@carll-linux-desktop>
-	 <18476.5290.709729.582063@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Thu, 15 May 2008 11:01:01 -0700
-Message-Id: <1210874462.20791.54.camel@carll-linux-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Thu, 15 May 2008 14:04:14 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:43079 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751350AbYEOSEN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 14:04:13 -0400
+Message-ID: <482C7B18.6060003@garzik.org>
+Date: Thu, 15 May 2008 14:04:08 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Chris Peterson <cpeterso@cpeterso.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
+ IRQF_SAMPLE_RANDOM
+References: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com> <20080515142154.0595e475@core> <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com>
+In-Reply-To: <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Brandeburg, Jesse wrote:
+> we've been hearing rumblings of big customers wanting (maybe requiring)
+> wired network drivers from Intel to  advertise this flag.  Jeff have you
+> heard of such?
 
-On Thu, 2008-05-15 at 20:47 +1000, Paul Mackerras wrote:
-> Carl Love writes:
-> 
-> > The following patch fixes the 64 bit user code backtrace 
-> > which currently may hang the system.  
-> 
-> What exactly is wrong with it?
-> 
-> Having now taken a much closer look, I now don't think Nate Case's
-> patch addresses this, since it only affects constant size arguments
-> <= 8 to copy_{to,from}_user_inatomic.
-> 
-> However, I don't see why your patch fixes anything.  It means we do
-> two access_ok calls and two __copy_from_user_inatomic calls, for 8
-> bytes, at sp and at sp + 16, rather than doing one access_ok and
-> __copy_from_user_inatomic for 24 bytes at sp.  Why does that make any
-> difference (apart from being slower)?
-> 
-> Paul
+I do indeed hear requests all the time, from people who want to make 
+their boxes externally exploitable.  :)
 
-When I tried testing the oprofile call graph on a 64 bit app the system
-consistently hung.  I was able to isolate it to the
-__copy_from_user_inatomic() call.  When I made the change in my patch to
-make sure I was only requesting one of the values (8bytes) listed in the
-case statement this fixed the issue.  I do not know nor was I able to
-figure out why the __copy_from_user_inatomic() call failed trying to
-read 24 bytes.  The system would hang and any attempt to use printk to
-see what was going on failed as the output of the print would not go to
-the console before the system hangs.  
 
-I backed out my patch, put in Nate's patch.  The call graph test ran
-fine.  I then backed out Nate's patch to go back and try to re-validate
-that the system still hangs with the original code and it is not
-hanging.  Not sure why it now seems to work.  I have done some other
-work on the system but I don't see how that would have changed this.
-Argh, I hate chasing phantom bugs!  I was working on 2.6.21. I believe
-the 2.6.21 kernel had not been changed. Let me load the latest 2.6.25
-and start over with a pristine kernel and see if I can reproduce the
-hang.  Sorry for all the hassle.
+> I think the argument is that a headless system (no keyboard/mouse, no
+> soundcard, probably no video) with a libata based driver and a network
+> driver without IRQF_SAMPLE_RANDOM has *no* sources of entropy.  In this
+> case the argument is very strong for at least *some* source of entropy
+> from interrupts so that randomness can get some external input.  Just
+> try rebuilding a kernel RPM over an ssh session and you'll see what I
+> mean.
 
-                 Carl Love
+There are entropy sources on a headless box, even one without audio and 
+video, that are more secure than adding IRQF_SAMPLE_RANDOM to network 
+drivers.
+
+EGD demonstrates this, for example:  http://egd.sourceforge.net/  It 
+looks at snmp, w, last, uptime, iostats, vmstats, etc.
+
+And there are plenty of untapped entropy sources even so, such as 
+reading temperature sensors, fan speed sensors on variable-speed fans, etc.
+
+Heck, "smartctl -d ata -a /dev/FOO" produces output that could be hashed 
+and added as entropy.
+
+I'm interested to hear peoples' opinion of Chris P's patch, but 
+definitely do not want to go in the other direction and start adding 
+IRQF_SAMPLE_RANDOM, thus moving randomness in the direction of being 
+externally exploitable.
+
+	Jeff
+
 
 
