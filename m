@@ -1,46 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763587AbYEOSBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764297AbYEOSBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763587AbYEOSBe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 14:01:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754543AbYEOSBZ
+	id S1764297AbYEOSBw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 14:01:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756481AbYEOSBl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 14:01:25 -0400
-Received: from orion.ambsoft.pl ([212.109.144.130]:44382 "EHLO
-	orion.ambsoft.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750935AbYEOSBY (ORCPT
+	Thu, 15 May 2008 14:01:41 -0400
+Received: from web95116.mail.in2.yahoo.com ([203.104.18.168]:28385 "HELO
+	web95116.mail.in2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1764570AbYEOSBk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 14:01:24 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] Re: 2.6.26-rc2-mm1 - fix parenthesis in include/asm-mips/mach-au1x00/au1000.h
-Date: Thu, 15 May 2008 20:01:23 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org
-References: <20080514010129.4f672378.akpm@linux-foundation.org>
-In-Reply-To: <20080514010129.4f672378.akpm@linux-foundation.org>
+	Thu, 15 May 2008 14:01:40 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=P7rbfrepCFvdOsto8AJuS3t2A5bedfzFW/0/qWsRyTdKwPfepvdGmKz7K7VHGPt4UBtECmyU694PcE44u4uxyYHT+I3KGzYfsOohKLvnNrqMePXksOwymhVaq49licd/Uw3BaL1J9S66WkEFJTB22kCePwGQA4jPISVdDR7myPw=;
+X-YMail-OSG: hKSl11wVM1nOnY4cNb0Wo8CExJV7aTwWzM10Q81klP1WD_wJjzHaK_UWZr2hMQJ92y.Ed_xOGz192zp09p3G4AXX7IFyQvwm98jbcle3AGJ44pUwB_QEy3sphg--
+Date: Thu, 15 May 2008 19:01:37 +0100 (BST)
+From: murtuja bharmal <murtuja_bharmal@yahoo.com>
+Subject: Re: Kbuild Makefile output
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kernel@vger.kernel.org, linux-kbuild <linux-kbuild@vger.kernel.org>
+In-Reply-To: <20080515174222.GB24024@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805152001.23207.m.kozlowski@tuxland.pl>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Message-ID: <140961.15510.qm@web95116.mail.in2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Parenthesis fix in include/asm-mips/mach-au1x00/au1000.h
+Hello Sam,
 
-Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Thanks for reply.
+Actually Problem is.
+As I told you I have near near about 1000 file that
+compiles for single module creation which spread in
+multiple directies in 2.4 with lots of makefile.
 
-diff -upr linux-2.6.26-rc2-mm1-a/include/asm-mips/mach-au1x00/au1000.h linux-2.6.26-rc2-mm1-b/include/asm-mips/mach-au1x00/au1000.h
---- linux-2.6.26-rc2-mm1-a/include/asm-mips/mach-au1x00/au1000.h	2008-05-15 19:44:48.000000000 +0200
-+++ linux-2.6.26-rc2-mm1-b/include/asm-mips/mach-au1x00/au1000.h	2008-05-15 19:52:38.000000000 +0200
-@@ -1036,7 +1036,7 @@ enum soc_au1200_ints {
- #define USBD_INTSTAT		0xB020001C
- #  define USBDEV_INT_SOF	(1 << 12)
- #  define USBDEV_INT_HF_BIT	6
--#  define USBDEV_INT_HF_MASK	0x3f << USBDEV_INT_HF_BIT)
-+#  define USBDEV_INT_HF_MASK	(0x3f << USBDEV_INT_HF_BIT)
- #  define USBDEV_INT_CMPLT_BIT	0
- #  define USBDEV_INT_CMPLT_MASK (0x3f << USBDEV_INT_CMPLT_BIT)
- #define USBD_CONFIG		0xB0200020
+Now I have created single makefile to compile all this
+file and able to create kernel module.
+
+But now the problem is lots of file included in kernel
+module, compiled twice or even more then twice for
+user space (whithou kernel flag set) and kernel space
+and this userspace binary is not a part of kbuild
+makefile.
+
+Previously in 2.4 we use to put all output object file
+in different directories for kernel module and user
+binaries based in their compilation Flags.
+
+Now after attaching kbuild makefile with this system,
+kbuild make all object file in source directory itself
+becasue of that userspace makefiles not able to
+compile those file again. Because one object file is
+already there by kbuild. So I am not able create
+userspace binary.
+
+Now either solution is generate kbuild object file in
+different directory not in source directory as per our
+previous design or make a copy of exsisting file with
+some other name. One for kernel and one for user
+space.
+
+So I thought lets check the possibility of generating
+all kernel related object file in some other directory
+not in source directory.
+
+
+Thanks 
+Murtuja
+
+--- Sam Ravnborg <sam@ravnborg.org> wrote:
+
+> On Thu, May 15, 2008 at 11:07:19PM +0530, murtuja
+> bharmal wrote:
+> > Hello All.
+> > I want to collect all my object file in
+> onedirectory and then want to create a kernel
+> module.
+> > For example: This my directory structure.
+> > dir
+> > |
+> > --------------------------------------
+> > |            |        |        |
+> > dir1    dir2       dir3   dir4
+> > This is my makefile in 'dir'.
+> > obj-m := test.o
+> > test-objs += \
+> >                 dir1/test1.o  \
+> >                 dir2/test2.o  \
+> >                 dir3/test3.o
+> > all:
+> >             make -C /usr/src/linux M=`pwd` modules
+> > 
+> > Now I want to save all output objectfile test1.o
+> test2.o test3.o in one directory
+> > called 'dir4' not in source directory. 'test.o'
+> should look all this object file in 'dir4' for
+> linking, not in the source directory and 'test.ko'
+> should also be create in 'dir4'.
+> > Can any one tell me, what is require changes in
+> Kernel Makefile for the same.
+> 
+> Do not do that...
+> 
+> If you really need to do so - please explain why so
+> we can understand the rationale.
+> There are ~2000 modules that does not need this so
+> what makes your maodule so special?
+> 
+> [Added kbuild@vger to cc as you also asked there]
+> 
+> 	Sam
+> 
+
+
+
+      Connect with friends all over the world. Get Yahoo! India Messenger at http://in.messenger.yahoo.com/?wm=n/
