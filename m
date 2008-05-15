@@ -1,88 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763578AbYEOVSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763487AbYEOVUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763578AbYEOVSk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 17:18:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755815AbYEOVSd
+	id S1763487AbYEOVUZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 17:20:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753924AbYEOVUM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 17:18:33 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:56980 "EHLO e3.ny.us.ibm.com"
+	Thu, 15 May 2008 17:20:12 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40581 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752247AbYEOVSc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 17:18:32 -0400
-Date: Thu, 15 May 2008 14:18:09 -0700
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       mhoffman@lightlink.com, linux-kernel@vger.kernel.org,
-       lm-sensors@lm-sensors.org
-Subject: [PATCH v2] ibmaem: Fix 64-bit division on 32-bit platforms
-Message-ID: <20080515211809.GB7323@tree.beaverton.ibm.com>
-Reply-To: djwong@us.ibm.com
-References: <20080508180858.GM16078@tree.beaverton.ibm.com> <20080508163443.a1e9ffe7.akpm@linux-foundation.org> <20080509045527.GI16404@tree.beaverton.ibm.com> <20080514222704.GA11439@cs181133002.pp.htv.fi> <20080514231136.GA4308@beyonder.ift.unesp.br>
+	id S1751867AbYEOVUK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 17:20:10 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [linux-pm] [PATCH -mm] kexec jump -v9
+Date: Thu, 15 May 2008 23:20:13 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Alan Stern <stern@rowland.harvard.edu>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>,
+       Len Brown <len.brown@intel.com>
+References: <Pine.LNX.4.44L0.0803221645190.27399-100000@netrider.rowland.org> <200805150147.24968.rjw@sisk.pl> <m1fxsjp9ry.fsf@frodo.ebiederm.org>
+In-Reply-To: <m1fxsjp9ry.fsf@frodo.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080514231136.GA4308@beyonder.ift.unesp.br>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200805152320.14016.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> To avoid these kind of doubts may I suggest using the time 
-> conversion definitions of include/linux/time.h?
+On Thursday, 15 of May 2008, Eric W. Biederman wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > 
-> It would be much easier to understand the intention with
-> NSEC_PER_SEC, USEC_PER_SEC etc (comments would also help)
+> > On Thursday, 15 of May 2008, Eric W. Biederman wrote:
+> >> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+> >> 
+> >> Just an added data partial point.  In the kexec case I have had not heard
+> >> anyone screaming to me that ACPI doesn't work after we switch kernels.
+> >
+> > You don't remove power from devices while doing that.
+> 
+> No.  It is the second half of S5.  When we go from the boot kernel
+> to the restored kernel I am talking about.
 
-Ok, here's an updated version that makes the conversions a bit clearer.
-Tested and run on i386/x86-64.
----
-ibmaem: Fix 64-bit division on 32-bit platforms
+Well, you don't remove the power from devices doing that, do you?
 
-Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
----
+I was referring to the fact that you remove the power from devices after saving
+the image (ie. in the "poweroff" stage).  Then, you initialize them and pass
+all that to the restored kernel and the question here is:
+(a) Should they be reinitialized before the restored kernel has a chance to
+    access them?
+(b) If they should, what state they ought to be in when the restored kernel
+    accesses them.
 
- drivers/hwmon/ibmaem.c |    9 ++++++---
- 1 files changed, 6 insertions(+), 3 deletions(-)
+That basically depends on how you're going to handle the resuming of devices,
+especially on the ACPI bus, in the restored kernel.
 
-diff --git a/drivers/hwmon/ibmaem.c b/drivers/hwmon/ibmaem.c
-index 22fa7d6..3013492 100644
---- a/drivers/hwmon/ibmaem.c
-+++ b/drivers/hwmon/ibmaem.c
-@@ -31,6 +31,8 @@
- #include <linux/idr.h>
- #include <linux/sched.h>
- #include <linux/platform_device.h>
-+#include <linux/math64.h>
-+#include <linux/time.h>
- 
- #define REFRESH_INTERVAL	(HZ)
- #define IPMI_TIMEOUT		(30 * HZ)
-@@ -81,6 +83,7 @@
- 
- #define AEM_DEFAULT_POWER_INTERVAL 1000
- #define AEM_MIN_POWER_INTERVAL	200
-+#define UJ_PER_MJ		1000L
- 
- static DEFINE_IDR(aem_idr);
- static DEFINE_SPINLOCK(aem_idr_lock);
-@@ -841,7 +844,7 @@ static ssize_t aem_show_power(struct device *dev,
- {
- 	struct sensor_device_attribute *attr = to_sensor_dev_attr(devattr);
- 	struct aem_data *data = dev_get_drvdata(dev);
--	u64 before, after, time;
-+	u64 before, after, delta, time;
- 	signed long leftover;
- 	struct timespec b, a;
- 
-@@ -864,9 +867,9 @@ static ssize_t aem_show_power(struct device *dev,
- 	mutex_unlock(&data->lock);
- 
- 	time = timespec_to_ns(&a) - timespec_to_ns(&b);
--	time /= 1000;
-+	delta = (after - before) * UJ_PER_MJ;
- 
--	return sprintf(buf, "%llu\n", (after - before) * 1000000000 / time);
-+	return sprintf(buf, "%llu\n", div64_u64(delta * NSEC_PER_SEC, time));
- }
- 
- /* Display energy use */
+If we are to follow ACPI, the answer to (a) is "no", except for devices used to
+read the image and it's better if the boot kernel doesn't touch ACPI at all.
+Then, the benefit of putting the system into S4 during the "poweroff" stage is
+that (a) the resume can be carried out faster and (b) the restored kernel may
+use some context preserved by the platform over the sleep state.
+
+Also, that allows you to use the wake up capabilities of some devices that
+need not be available from S5.
+
+In any case, however, I don't really think that doing the kexec jump before
+creating the image is really necessary.  The kexec jump during resume is in
+fact very similar to what the current hibernation code does, but it's slightly
+more complicated. :-)
+
+Thanks,
+Rafael
