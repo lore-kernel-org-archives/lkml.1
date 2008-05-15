@@ -1,102 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764247AbYEOTxn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762771AbYEOTyG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764247AbYEOTxn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 15:53:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755268AbYEOTvc
+	id S1762771AbYEOTyG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 15:54:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755759AbYEOTvh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 15:51:32 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:57977 "EHLO
+	Thu, 15 May 2008 15:51:37 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:57984 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762137AbYEOTv3 (ORCPT
+	with ESMTP id S1754715AbYEOTvd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 15:51:29 -0400
-Message-Id: <20080515195109.463292559@szeredi.hu>
+	Thu, 15 May 2008 15:51:33 -0400
+Message-Id: <20080515195111.741636711@szeredi.hu>
 References: <20080515195019.754545421@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Thu, 15 May 2008 21:50:24 +0200
+Date: Thu, 15 May 2008 21:50:26 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org
 Cc: hch@infradead.org, bfields@fieldses.org, linux-fsdevel@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [patch 5/9] fuse: prepare lookup for nfs export
-Content-Disposition: inline; filename=fuse_nfs_export_prep.patch
+Subject: [patch 7/9] fuse: add fuse_lookup_name() helper
+Content-Disposition: inline; filename=fuse_nfs_export_lookup_name.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Use d_splice_alias() instead of d_add() in fuse lookup code, to allow
-NFS exporting.
+Add a new helper function which sends a LOOKUP request with the
+supplied name.  This will be used by the next patch to send special
+LOOKUP requests with "." and ".." as the name.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
- fs/fuse/dir.c |   24 ++++++++++++++----------
- 1 file changed, 14 insertions(+), 10 deletions(-)
+ fs/fuse/dir.c |  117 ++++++++++++++++++++++++++++++++++++++--------------------
+ 1 file changed, 77 insertions(+), 40 deletions(-)
 
 Index: linux-2.6/fs/fuse/dir.c
 ===================================================================
---- linux-2.6.orig/fs/fuse/dir.c	2008-05-09 14:04:16.000000000 +0200
-+++ linux-2.6/fs/fuse/dir.c	2008-05-09 14:04:49.000000000 +0200
-@@ -239,18 +239,20 @@ int fuse_valid_type(int m)
-  * Add a directory inode to a dentry, ensuring that no other dentry
-  * refers to this inode.  Called with fc->inst_mutex.
-  */
--static int fuse_d_add_directory(struct dentry *entry, struct inode *inode)
-+static struct dentry *fuse_d_add_directory(struct dentry *entry,
-+					   struct inode *inode)
- {
- 	struct dentry *alias = d_find_alias(inode);
--	if (alias) {
-+	if (alias && !(alias->d_flags & DCACHE_DISCONNECTED)) {
- 		/* This tries to shrink the subtree below alias */
- 		fuse_invalidate_entry(alias);
- 		dput(alias);
- 		if (!list_empty(&inode->i_dentry))
--			return -EBUSY;
-+			return ERR_PTR(-EBUSY);
-+	} else {
-+		dput(alias);
- 	}
--	d_add(entry, inode);
--	return 0;
-+	return d_splice_alias(inode, entry);
+--- linux-2.6.orig/fs/fuse/dir.c	2008-05-09 14:04:50.000000000 +0200
++++ linux-2.6/fs/fuse/dir.c	2008-05-09 14:04:51.000000000 +0200
+@@ -112,18 +112,16 @@ static void fuse_invalidate_entry(struct
+ 	fuse_invalidate_entry_cache(entry);
  }
  
- static struct dentry *fuse_lookup(struct inode *dir, struct dentry *entry,
-@@ -259,6 +261,7 @@ static struct dentry *fuse_lookup(struct
- 	int err;
- 	struct fuse_entry_out outarg;
- 	struct inode *inode = NULL;
-+	struct dentry *newent;
- 	struct fuse_conn *fc = get_fuse_conn(dir);
+-static void fuse_lookup_init(struct fuse_req *req, struct inode *dir,
+-			     struct dentry *entry,
++static void fuse_lookup_init(struct fuse_conn *fc, struct fuse_req *req,
++			     u64 nodeid, struct qstr *name,
+ 			     struct fuse_entry_out *outarg)
+ {
+-	struct fuse_conn *fc = get_fuse_conn(dir);
+-
+ 	memset(outarg, 0, sizeof(struct fuse_entry_out));
+ 	req->in.h.opcode = FUSE_LOOKUP;
+-	req->in.h.nodeid = get_node_id(dir);
++	req->in.h.nodeid = nodeid;
+ 	req->in.numargs = 1;
+-	req->in.args[0].size = entry->d_name.len + 1;
+-	req->in.args[0].value = entry->d_name.name;
++	req->in.args[0].size = name->len + 1;
++	req->in.args[0].value = name->name;
+ 	req->out.numargs = 1;
+ 	if (fc->minor < 9)
+ 		req->out.args[0].size = FUSE_COMPAT_ENTRY_OUT_SIZE;
+@@ -189,7 +187,8 @@ static int fuse_dentry_revalidate(struct
+ 		attr_version = fuse_get_attr_version(fc);
+ 
+ 		parent = dget_parent(entry);
+-		fuse_lookup_init(req, parent->d_inode, entry, &outarg);
++		fuse_lookup_init(fc, req, get_node_id(parent->d_inode),
++				 &entry->d_name, &outarg);
+ 		request_send(fc, req);
+ 		dput(parent);
+ 		err = req->out.h.error;
+@@ -255,73 +254,111 @@ static struct dentry *fuse_d_add_directo
+ 	return d_splice_alias(inode, entry);
+ }
+ 
+-static struct dentry *fuse_lookup(struct inode *dir, struct dentry *entry,
+-				  struct nameidata *nd)
++int fuse_lookup_name(struct super_block *sb, u64 nodeid, struct qstr *name,
++		     struct fuse_entry_out *outarg, struct inode **inode)
+ {
+-	int err;
+-	struct fuse_entry_out outarg;
+-	struct inode *inode = NULL;
+-	struct dentry *newent;
+-	struct fuse_conn *fc = get_fuse_conn(dir);
++	struct fuse_conn *fc = get_fuse_conn_super(sb);
  	struct fuse_req *req;
  	struct fuse_req *forget_req;
-@@ -303,21 +306,22 @@ static struct dentry *fuse_lookup(struct
+ 	u64 attr_version;
++	int err;
+ 
+-	if (entry->d_name.len > FUSE_NAME_MAX)
+-		return ERR_PTR(-ENAMETOOLONG);
++	*inode = NULL;
++	err = -ENAMETOOLONG;
++	if (name->len > FUSE_NAME_MAX)
++		goto out;
+ 
+ 	req = fuse_get_req(fc);
++	err = PTR_ERR(req);
+ 	if (IS_ERR(req))
+-		return ERR_CAST(req);
++		goto out;
+ 
+ 	forget_req = fuse_get_req(fc);
++	err = PTR_ERR(forget_req);
+ 	if (IS_ERR(forget_req)) {
+ 		fuse_put_request(fc, req);
+-		return ERR_CAST(forget_req);
++		goto out;
+ 	}
+ 
+ 	attr_version = fuse_get_attr_version(fc);
+ 
+-	fuse_lookup_init(req, dir, entry, &outarg);
++	fuse_lookup_init(fc, req, nodeid, name, outarg);
+ 	request_send(fc, req);
+ 	err = req->out.h.error;
+ 	fuse_put_request(fc, req);
+ 	/* Zero nodeid is same as -ENOENT, but with valid timeout */
+-	if (!err && outarg.nodeid &&
+-	    (invalid_nodeid(outarg.nodeid) ||
+-	     !fuse_valid_type(outarg.attr.mode)))
+-		err = -EIO;
+-	if (!err && outarg.nodeid) {
+-		inode = fuse_iget(dir->i_sb, outarg.nodeid, outarg.generation,
+-				  &outarg.attr, entry_attr_timeout(&outarg),
+-				  attr_version);
+-		if (!inode) {
+-			fuse_send_forget(fc, forget_req, outarg.nodeid, 1);
+-			return ERR_PTR(-ENOMEM);
+-		}
++	if (err || !outarg->nodeid)
++		goto out_put_forget;
++
++	err = -EIO;
++	if (!outarg->nodeid)
++		goto out_put_forget;
++	if (!fuse_valid_type(outarg->attr.mode))
++		goto out_put_forget;
++
++	*inode = fuse_iget(sb, outarg->nodeid, outarg->generation,
++			   &outarg->attr, entry_attr_timeout(outarg),
++			   attr_version);
++	err = -ENOMEM;
++	if (!*inode) {
++		fuse_send_forget(fc, forget_req, outarg->nodeid, 1);
++		goto out;
+ 	}
++	err = 0;
++
++ out_put_forget:
+ 	fuse_put_request(fc, forget_req);
+-	if (err && err != -ENOENT)
+-		return ERR_PTR(err);
++ out:
++	return err;
++}
++
++static struct dentry *fuse_lookup(struct inode *dir, struct dentry *entry,
++				  struct nameidata *nd)
++{
++	int err;
++	struct fuse_entry_out outarg;
++	struct inode *inode;
++	struct dentry *newent;
++	struct fuse_conn *fc = get_fuse_conn(dir);
++	bool outarg_valid = true;
++
++	err = fuse_lookup_name(dir->i_sb, get_node_id(dir), &entry->d_name,
++			       &outarg, &inode);
++	if (err == -ENOENT) {
++		outarg_valid = false;
++		err = 0;
++	}
++	if (err)
++		goto out_err;
++
++	err = -EIO;
++	if (inode && get_node_id(inode) == FUSE_ROOT_ID)
++		goto out_iput;
  
  	if (inode && S_ISDIR(inode->i_mode)) {
  		mutex_lock(&fc->inst_mutex);
--		err = fuse_d_add_directory(entry, inode);
-+		newent = fuse_d_add_directory(entry, inode);
+ 		newent = fuse_d_add_directory(entry, inode);
  		mutex_unlock(&fc->inst_mutex);
--		if (err) {
-+		if (IS_ERR(newent)) {
- 			iput(inode);
--			return ERR_PTR(err);
-+			return newent;
- 		}
- 	} else
--		d_add(entry, inode);
-+		newent = d_splice_alias(inode, entry);
+-		if (IS_ERR(newent)) {
+-			iput(inode);
+-			return newent;
+-		}
+-	} else
++		err = PTR_ERR(newent);
++		if (IS_ERR(newent))
++			goto out_iput;
++	} else {
+ 		newent = d_splice_alias(inode, entry);
++	}
  
-+	entry = newent ? newent : entry;
+ 	entry = newent ? newent : entry;
  	entry->d_op = &fuse_dentry_operations;
- 	if (!err)
+-	if (!err)
++	if (outarg_valid)
  		fuse_change_entry_timeout(entry, &outarg);
  	else
  		fuse_invalidate_entry_cache(entry);
--	return NULL;
-+	return newent;
++
+ 	return newent;
++
++ out_iput:
++	iput(inode);
++ out_err:
++	return ERR_PTR(err);
  }
  
  /*
