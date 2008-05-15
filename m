@@ -1,108 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758216AbYEOClY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757466AbYEOCmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758216AbYEOClY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 22:41:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbYEOCku
+	id S1757466AbYEOCmj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 22:42:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbYEOCma
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 22:40:50 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:20930 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750999AbYEOCkt (ORCPT
+	Wed, 14 May 2008 22:42:30 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35415 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751513AbYEOCm3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 22:40:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=a51yUjEe8Qcm0jHXXbunvNhf9sEzo1pPv/NrHh6NvHfgQU3OJ/A5lLGJfcLV8j23+/t7yKfhmkdFb9oN94Xdkv/KAAJIZnRJMAbFCSj3t2PdIZDm2tZ5z0fVRtbwN/wNrJBbmBcqx3BzC5KwnxQhMJ1BI3O9OGHKYEHlIGl6ECE=
-Subject: [PATCHv2 2/2] mtd: mtdchar.c remove shadowed variable warnings
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Woodhouse <dwmw2@infradead.org>, Al Viro <viro@ZenIV.linux.org.uk>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 14 May 2008 19:40:47 -0700
-Message-Id: <1210819247.6191.61.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 14 May 2008 22:42:29 -0400
+Date: Wed, 14 May 2008 19:41:41 -0700
+From: Greg KH <greg@kroah.com>
+To: Markus Rechberger <mrechberger@gmail.com>
+Cc: mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org,
+       video4linux-list@redhat.com, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, dean@sensoray.com
+Subject: Re: [v4l-dvb-maintainer] [PATCH] USB: add Sensoray 2255 v4l driver
+Message-ID: <20080515024141.GB21941@kroah.com>
+References: <20080514205927.GA13134@kroah.com> <d9def9db0805141817n4182deedp780791b0a51fb7be@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d9def9db0805141817n4182deedp780791b0a51fb7be@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use einfo, oinfo for the inner erase_info and otp_info structs
-used in individual case statements.
+On Thu, May 15, 2008 at 03:17:42AM +0200, Markus Rechberger wrote:
+> Hi Dean, Greg,
 
-drivers/mtd/mtdchar.c:582:26: warning: symbol 'info' shadows an earlier one
-drivers/mtd/mtdchar.c:380:23: originally declared here
-drivers/mtd/mtdchar.c:596:26: warning: symbol 'info' shadows an earlier one
-drivers/mtd/mtdchar.c:380:23: originally declared here
-drivers/mtd/mtdchar.c:704:19: warning: symbol 'info' shadows an earlier one
-drivers/mtd/mtdchar.c:380:23: originally declared here
+Adding dean to the cc: line...  :)
+> 
+> On 5/14/08, Greg KH <greg@kroah.com> wrote:
+> > From: Dean Anderson <dean@sensoray.com>
+> >
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- drivers/mtd/mtdchar.c |   18 +++++++++---------
- 1 files changed, 9 insertions(+), 9 deletions(-)
+<big patch snipped>
 
-diff --git a/drivers/mtd/mtdchar.c b/drivers/mtd/mtdchar.c
-index 9c2af46..7fda4c2 100644
---- a/drivers/mtd/mtdchar.c
-+++ b/drivers/mtd/mtdchar.c
-@@ -579,29 +579,29 @@ static int mtd_ioctl(struct inode *inode, struct file *file,
- 
- 	case MEMLOCK:
- 	{
--		struct erase_info_user info;
-+		struct erase_info_user einfo;
- 
--		if (copy_from_user(&info, argp, sizeof(info)))
-+		if (copy_from_user(&einfo, argp, sizeof(einfo)))
- 			return -EFAULT;
- 
- 		if (!mtd->lock)
- 			ret = -EOPNOTSUPP;
- 		else
--			ret = mtd->lock(mtd, info.start, info.length);
-+			ret = mtd->lock(mtd, einfo.start, einfo.length);
- 		break;
- 	}
- 
- 	case MEMUNLOCK:
- 	{
--		struct erase_info_user info;
-+		struct erase_info_user einfo;
- 
--		if (copy_from_user(&info, argp, sizeof(info)))
-+		if (copy_from_user(&einfo, argp, sizeof(einfo)))
- 			return -EFAULT;
- 
- 		if (!mtd->unlock)
- 			ret = -EOPNOTSUPP;
- 		else
--			ret = mtd->unlock(mtd, info.start, info.length);
-+			ret = mtd->unlock(mtd, einfo.start, einfo.length);
- 		break;
- 	}
- 
-@@ -701,15 +701,15 @@ static int mtd_ioctl(struct inode *inode, struct file *file,
- 
- 	case OTPLOCK:
- 	{
--		struct otp_info info;
-+		struct otp_info oinfo;
- 
- 		if (mfi->mode != MTD_MODE_OTP_USER)
- 			return -EINVAL;
--		if (copy_from_user(&info, argp, sizeof(info)))
-+		if (copy_from_user(&oinfo, argp, sizeof(oinfo)))
- 			return -EFAULT;
- 		if (!mtd->lock_user_prot_reg)
- 			return -EOPNOTSUPP;
--		ret = mtd->lock_user_prot_reg(mtd, info.start, info.length);
-+		ret = mtd->lock_user_prot_reg(mtd, oinfo.start, oinfo.length);
- 		break;
- 	}
- #endif
--- 
-1.5.5.1.482.g0f174
+> Why do you do those conversions in kernelspace?
+> ffmpeg/libswscale has optimized code for colourspace conversions.
+> I know a few drivers do that in kernelspace but it's way more flexible
+> in userspace and depending on the optimization requires less CPU
+> power.
 
+I thought they were there as needed by some V4L1 applications, but that
+code was recently removed by Dean I think.  If they don't need to be
+there, and userspace apps can properly handle the different colorspace,
+then I'll be glad to remove them.
+
+thanks,
+
+greg k-h
