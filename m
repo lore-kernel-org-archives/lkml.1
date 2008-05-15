@@ -1,48 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754890AbYEOTvE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761837AbYEOTv1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754890AbYEOTvE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 15:51:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758167AbYEOTuU
+	id S1761837AbYEOTv1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 15:51:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758446AbYEOTuZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 15:50:20 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:50667 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757870AbYEOTuS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 15:50:18 -0400
-Date: Thu, 15 May 2008 11:44:24 -0700
-From: Greg KH <greg@kroah.com>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       video4linux-list@redhat.com
-Subject: Re: [PATCH] USB: add Sensoray 2255 v4l driver
-Message-ID: <20080515184424.GD15231@kroah.com>
-References: <20080514205927.GA13134@kroah.com> <200805151338.38801.oliver@neukum.org> <200805151403.19323.oliver@neukum.org>
+	Thu, 15 May 2008 15:50:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42172 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758218AbYEOTuW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 15:50:22 -0400
+Date: Thu, 15 May 2008 15:42:59 -0400
+From: Bill Nottingham <notting@redhat.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: Problems with suspend and USB storage
+Message-ID: <20080515194259.GA28848@nostromo.devel.redhat.com>
+Mail-Followup-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
+	linux-kernel@vger.kernel.org,
+	Alan Stern <stern@rowland.harvard.edu>, Pavel Machek <pavel@ucw.cz>
+References: <20080515163315.GA17779@nostromo.devel.redhat.com> <200805152140.43292.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200805151403.19323.oliver@neukum.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <200805152140.43292.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 15, 2008 at 02:03:18PM +0200, Oliver Neukum wrote:
-> Am Donnerstag 15 Mai 2008 13:38:37 schrieb Oliver Neukum:
-> > 3. The firmware stuff. That's an interesting solution. However:
-> 
-> Actually, on second thought, I take that back. It's a bad solution.
-> If you don't want to do it in probe(), the only other sensible place
-> is in open(). That way you can avoid the whole trouble if nobody
-> opens the device. And you need to handle the case of unloaded
-> firmware anyway, so you can trigger firmware load there.
+Rafael J. Wysocki (rjw@sisk.pl) said: 
+> Well, the problem is that USB storage devices are disconnected during suspend
+> and hibernation and connected once again during resume.  Then, however, we
+> are not able to tell whether the device in the slot is the same that was in
+> there before the system was put into the sleep state.
 
-No, we want to do firmware load on probe, I'll change it to be async so
-that probe can continue on.  Need to see if I can disconnect the driver
-from device after probe succeeds in case the firmware fails.
+1) If they're disconnected, how come they work as a hibernate device? Or
+   are they disconnected twice?
+2) Isn't USB persist supposed to work around this?
 
-thanks for the review, I appreciate it and will fix them up later today
-or tomorrow.
-
-greg k-h
+Bill
