@@ -1,67 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758065AbYEODQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757497AbYEOD3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758065AbYEODQu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 23:16:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753984AbYEODQm
+	id S1757497AbYEOD3Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 23:29:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752883AbYEOD3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 23:16:42 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:47151 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753940AbYEODQk (ORCPT
+	Wed, 14 May 2008 23:29:15 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:37582 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751215AbYEOD3P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 23:16:40 -0400
-X-IronPort-AV: E=Sophos;i="4.27,489,1204531200"; 
-   d="scan'208";a="98929611"
-From: Roland Dreier <rdreier@cisco.com>
-To: linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org
-Subject: Sparse annotation for "context imbalance" false positives?
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 14 May 2008 20:16:39 -0700
-Message-ID: <adaod78fe94.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 15 May 2008 03:16:39.0701 (UTC) FILETIME=[17667C50:01C8B63A]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+	Wed, 14 May 2008 23:29:15 -0400
+Date: Thu, 15 May 2008 12:34:23 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
+       "hugh@veritas.com" <hugh@veritas.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC/PATCH 2/6] memcg: remove refcnt
+Message-Id: <20080515123423.db3f79e2.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080515105740.66e210db.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080514170236.23c9ddd7.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080514170703.db2d9802.kamezawa.hiroyu@jp.fujitsu.com>
+	<482B950C.2060408@cn.fujitsu.com>
+	<20080515105740.66e210db.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that I've gotten the sparse noise in drivers/infiniband down to a
-fairly low level, I'm starting to look at some of the more recalcitrant
-false positive warnings.  One example is:
-
-    drivers/infiniband/hw/mlx4/qp.c:605:2: warning: context imbalance in 'mlx4_ib_lock_cqs' - wrong count at exit
-
-where the function being warned about is:
-
-	static void mlx4_ib_lock_cqs(struct mlx4_ib_cq *send_cq, struct mlx4_ib_cq *recv_cq)
-	{
-		if (send_cq == recv_cq)
-			spin_lock_irq(&send_cq->lock);
-		else if (send_cq->mcq.cqn < recv_cq->mcq.cqn) {
-			spin_lock_irq(&send_cq->lock);
-			spin_lock_nested(&recv_cq->lock, SINGLE_DEPTH_NESTING);
-		} else {
-			spin_lock_irq(&recv_cq->lock);
-			spin_lock_nested(&send_cq->lock, SINGLE_DEPTH_NESTING);
-		}
-	}
-
-this function wraps up the locking rules for aquiring the completion
-queue (CQ) locks associated with a queue pair (QP) -- the rule is that
-if both the send and receive CQs are the same object, we (obviously)
-only lock it once, otherwise we take the lock belonging to the CQ with a
-numerically lower ID first (to avoid AB-BA deadlocks).
-
-So obviously is it correct and intended that this function return
-holding one or two locks, but I don't know how to tell sparse that.
-I've tried messing around with __acquires() etc but it doesn't seem to
-be exactly what I want.
-
-Is there any way to tell sparse what's going on here, or do I just live
-with the warnings?
+On Thu, 15 May 2008 10:57:40 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > >  #ifdef CONFIG_DEBUG_VM
+> > > Index: linux-2.6.26-rc2/mm/shmem.c
+> > > ===================================================================
+> > > --- linux-2.6.26-rc2.orig/mm/shmem.c
+> > > +++ linux-2.6.26-rc2/mm/shmem.c
+> > > @@ -961,13 +961,14 @@ found:
+> > >  		shmem_swp_unmap(ptr);
+> > >  	spin_unlock(&info->lock);
+> > >  	radix_tree_preload_end();
+> > > -uncharge:
+> > > -	mem_cgroup_uncharge_page(page);
+> > >  out:
+> > >  	unlock_page(page);
+> > >  	page_cache_release(page);
+> > >  	iput(inode);		/* allows for NULL */
+> > >  	return error;
+> > > +uncharge:
+> > > +	mem_cgroup_uncharge_cache_page(page);
+> > > +	goto out;
+> > >  }
+> > >  
+> > 
+> > Seems the logic is changed here. is it intended ?
+> > 
+> intended. (if success, uncharge is not necessary because there is no refcnt.
+> I'll add comment.
+> 
+But, it seems patch 6/6 doesn't seem to be optimal in this case.
+and have some troubles...I'll find a workaround.
+It seems that shmem's memcg is complicated...
 
 Thanks,
-  Roland
+-Kame
+
+
