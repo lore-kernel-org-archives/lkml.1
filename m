@@ -1,49 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753655AbYEOTv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760920AbYEOTwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753655AbYEOTv4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 15:51:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760108AbYEOTus
+	id S1760920AbYEOTwZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 15:52:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759063AbYEOTvX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 15:50:48 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:4818 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759709AbYEOTuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 15:50:46 -0400
-Date: Thu, 15 May 2008 15:16:47 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: Daniel Drake <dsd@gentoo.org>, Ulrich Kunitz <kune@deine-taler.de>,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] zd1211rw: Use DMA-aware buffer for usb transfer
-Message-ID: <20080515191647.GB17690@tuxdriver.com>
-References: <20080516.001215.39152691.anemo@mba.ocn.ne.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080516.001215.39152691.anemo@mba.ocn.ne.jp>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 15 May 2008 15:51:23 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:57965 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762068AbYEOTvW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 15:51:22 -0400
+Message-Id: <20080515195019.754545421@szeredi.hu>
+User-Agent: quilt/0.45-1
+Date: Thu, 15 May 2008 21:50:19 +0200
+From: Miklos Szeredi <miklos@szeredi.hu>
+To: akpm@linux-foundation.org
+Cc: hch@infradead.org, bfields@fieldses.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [patch 0/9] file locking fixes + fuse nfs export support (v2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16, 2008 at 12:12:15AM +0900, Atsushi Nemoto wrote:
-> The zd1211rw driver uses unaligned stack buffer for USB control
-> message.  But it might cause stack corruption on non-coherent
-> platform, such as MIPS.  Use DMA-aware buffers for USB transfer.
-> 
-> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+The following issues have been fixed since the last post:
 
-Nemoto,
+  - the lockd fix was incorrect for non-sleeping locks
+  - synchronize file handle type numbers with XFS
 
-This looks like a reasonable fix to me.  I would prefer to see a
-comment in the code indicating why you are reusing the "p" buffer
-instead of simply using "ret" directly.  Also, I think the style
-suggestion by Michael Buesch would make the code appear more idiomatic
-as well.
+Thanks to Bruce and Christoph for the reviews.
 
-Thanks!
+Patches 1-4 are file locking API changes required for the rest of the
+patches.
 
-John
--- 
-John W. Linville
-linville@tuxdriver.com
+Patches 5-9 add nfs exporting support for fuse filesystems.
+
+This is for 2.6.27.
+
+Thanks,
+Miklos
+
+--
