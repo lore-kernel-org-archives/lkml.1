@@ -1,51 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752250AbYEORKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754688AbYEORKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752250AbYEORKU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 13:10:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750748AbYEORKG
+	id S1754688AbYEORKl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 13:10:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbYEORK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 13:10:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56516 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750758AbYEORKF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 13:10:05 -0400
-Date: Thu, 15 May 2008 14:10:03 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: Re: [PATCH][PCI]: Introduce pci_find_capability_cached and make
-	MSI use it
-Message-ID: <20080515171003.GF14846@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Matthew Wilcox <matthew@wil.cx>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>,
-	linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-	linux-rt-users@vger.kernel.org
-References: <20080515160426.GD14846@ghostprotocols.net> <20080515170407.GM9921@parisc-linux.org>
+	Thu, 15 May 2008 13:10:27 -0400
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:42602 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752131AbYEORK0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 13:10:26 -0400
+Date: Thu, 15 May 2008 22:41:43 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, npiggin@suse.de, linux-kernel@vger.kernel.org,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Subject: Re: [PATCH] sched: Improve readability in update_cpu_load() code
+Message-ID: <20080515171143.GA3584@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20080515130459.GA9650@in.ibm.com> <20080515145215.GD14823@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080515170407.GM9921@parisc-linux.org>
-X-Url: http://oops.ghostprotocols.net:81/blog
+In-Reply-To: <20080515145215.GD14823@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Thu, May 15, 2008 at 11:04:07AM -0600, Matthew Wilcox escreveu:
-> On Thu, May 15, 2008 at 01:04:26PM -0300, Arnaldo Carvalho de Melo wrote:
-> > 	So I implemented pci_find_capability_cached and made MSI use it
-> > for good measure, please consider applying.
+On Thu, May 15, 2008 at 08:22:15PM +0530, Srivatsa Vaddagiri wrote:
+> On Thu, May 15, 2008 at 06:34:59PM +0530, Gautham R Shenoy wrote:
+> > Author: Gautham R Shenoy <ego@in.ibm.com>
+> > Date:   Thu May 15 17:55:49 2008 +0530
+> > 
+> >     sched: Improve readability in update_cpu_load() code
+> >     
+> >     Currently the cpu_load[i] is calculated as:
+> >     	this_rq->cpu_load[i] = (old_load*(scale-1) + new_load) >> i;
+> >     
+> >     However, since scale = 2^i, this can be simplified as:
+> >     	this_rq->cpu_load[i] = old_load + ((new_load - old_load) >> i);
+> >     
+> >     Makes it easier to read.
+> >     Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+> > 
+> > diff --git a/kernel/sched.c b/kernel/sched.c
+> > index 2d7d8f1..e1a6985 100644
+> > --- a/kernel/sched.c
+> > +++ b/kernel/sched.c
+> > @@ -2921,7 +2921,7 @@ static void update_cpu_load(struct rq *this_rq)
+> >  		 */
+> >  		if (new_load > old_load)
+> >  			new_load += scale-1;
+> > -		this_rq->cpu_load[i] = (old_load*(scale-1) + new_load) >> i;
+> > +		this_rq->cpu_load[i] = old_load + ((new_load - old_load) >> i);
 > 
-> As I told you on IRC, this is just the MSI code being complete crap.
-> It should be caching the offset itself.  We shouldn't have this extra
-> array in the struct pci_dev just because MSI is broken.
+> This wont work when new_load < old_load ..
+>
 
-Well, we can certainly do that, its just that I did this first and
-thought that perhaps there could be some other users, but I see that 44
-extra bytes per pci_dev can be a pain if the only one to reap benefits
-is MSI, can't you think of any other users? I couldn't detect any so far
-in my admitedly limited testing.
+Sorry for the noise. I must have read the previous if() condition
+incorrectly.
 
-- Arnaldo
+> For ex: I tried this prog:
+> 
+> #include <stdio.h>
+> 
+> main()
+> {
+> 	unsigned long old_load = 100, new_load = 90, this_load, this_load1;
+> 	int i = 1, scale = 2 << i;
+> 
+> 	this_load = (old_load*(scale-1) + new_load) >> i;
+> 	this_load1 = old_load + ((new_load - old_load) >> i);
+> 
+> 	printf ("this_load = %u, this_load1 = %u \n", this_load, this_load1);
+> }
+> 
+> This is what I get:
+> 
+> $ ./a.out
+> this_load = 195, this_load1 = 2147483743
+> $
+> 
+> 	
+> 
+> -- 
+> Regards,
+> vatsa
+
+-- 
+Thanks and Regards
+gautham
