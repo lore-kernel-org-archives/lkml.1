@@ -1,278 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759997AbYEOUVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757119AbYEOUWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759997AbYEOUVW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 16:21:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754150AbYEOUVI
+	id S1757119AbYEOUWa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 16:22:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbYEOUWR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 16:21:08 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:2124 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752573AbYEOUVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 16:21:05 -0400
-Date: Thu, 15 May 2008 15:53:41 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: pull request: wireless-2.6 2008-05-15
-Message-ID: <20080515195341.GB25905@tuxdriver.com>
+	Thu, 15 May 2008 16:22:17 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:48789 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751546AbYEOUWP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 16:22:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Y6AnijYV6Zdgh6kANJVdqh5zTNuG7uqrh1VSWo6pOf6gUEN4bbdRDB8vfn0QfYYhyxIKWmqIGVm0bxw77wapLyBLk59NVAPYvTNPG8Ie9A8Z2VRqYrUNebHlZRLPsiXD2kTfVf1FO+EzIQu06MqEB4MxkMY4JONfRa569V4IbPU=
+Message-ID: <aa79d98a0805151322s20a2bb34x4491bcacfcef310@mail.gmail.com>
+Date: Fri, 16 May 2008 00:22:14 +0400
+From: "Cyrill Gorcunov" <gorcunov@gmail.com>
+To: "Geert Uytterhoeven" <geert@linux-m68k.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Roman Zippel" <zippel@linux-m68k.org>,
+       "Andreas Schwab" <schwab@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       "Linux/m68k" <linux-m68k@vger.kernel.org>
+Subject: Re: [PATCH] init - fix building bug and potential buffer overflow
+In-Reply-To: <Pine.LNX.4.64.0805152132530.22059@anakin>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <20080514154402.GF6902@cvg>
+	 <20080515105803.7c9ab8c7.akpm@linux-foundation.org>
+	 <20080515180528.GC7481@cvg> <Pine.LNX.4.64.0805152132530.22059@anakin>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David,
+Could you please make an update to the patch? I can make it only
+tomorrow evening (ie not that fast)
 
-Another quick round of fixes intended for 2.6.26...
-
-Thanks!
-
-John
-
----
-
-Individual patches are available here:
-
-	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/
-
----
-
-The following changes since commit 066b2118976e6e7cc50eed39e2747c75343a23c4:
-  Marcin Slusarz (1):
-        isdn/capi: Return proper errnos on module init.
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
-
-Abhijeet Kolekar (1):
-      mac80211 : Association with 11n hidden ssid ap.
-
-Brian Cavagnolo (1):
-      libertas: fix command timeout after firmware failure
-
-Ivo van Doorn (1):
-      mac80211: Add RTNL version of ieee80211_iterate_active_interfaces
-
-Masakazu Mokuno (1):
-      wireless: Create 'device' symlink in sysfs
-
-Mathieu Chouquet-Stringer (1):
-      hostap: fix "registers" registration in procfs
-
-Roel Kluin (1):
-      wireless, airo: waitbusy() won't delay
-
- drivers/net/wireless/airo.c             |    3 +-
- drivers/net/wireless/hostap/hostap_hw.c |    9 +++----
- drivers/net/wireless/ipw2200.c          |    1 +
- drivers/net/wireless/libertas/main.c    |    2 +
- include/net/mac80211.h                  |   25 +++++++++++++++++++-
- net/mac80211/mlme.c                     |    7 ------
- net/mac80211/util.c                     |   37 ++++++++++++++++++++++++++++++-
- 7 files changed, 68 insertions(+), 16 deletions(-)
-
-diff --git a/drivers/net/wireless/airo.c b/drivers/net/wireless/airo.c
-index 45f47c1..4e1c690 100644
---- a/drivers/net/wireless/airo.c
-+++ b/drivers/net/wireless/airo.c
-@@ -2668,6 +2668,7 @@ static struct net_device *init_wifidev(struct airo_info *ai,
- 	dev->irq = ethdev->irq;
- 	dev->base_addr = ethdev->base_addr;
- 	dev->wireless_data = ethdev->wireless_data;
-+	SET_NETDEV_DEV(dev, ethdev->dev.parent);
- 	memcpy(dev->dev_addr, ethdev->dev_addr, dev->addr_len);
- 	err = register_netdev(dev);
- 	if (err<0) {
-@@ -2904,7 +2905,7 @@ EXPORT_SYMBOL(init_airo_card);
- 
- static int waitbusy (struct airo_info *ai) {
- 	int delay = 0;
--	while ((IN4500 (ai, COMMAND) & COMMAND_BUSY) & (delay < 10000)) {
-+	while ((IN4500 (ai, COMMAND) & COMMAND_BUSY) && (delay < 10000)) {
- 		udelay (10);
- 		if ((++delay % 20) == 0)
- 			OUT4500(ai, EVACK, EV_CLEARCOMMANDBUSY);
-diff --git a/drivers/net/wireless/hostap/hostap_hw.c b/drivers/net/wireless/hostap/hostap_hw.c
-index 7be68db..cdf90c4 100644
---- a/drivers/net/wireless/hostap/hostap_hw.c
-+++ b/drivers/net/wireless/hostap/hostap_hw.c
-@@ -3276,11 +3276,6 @@ while (0)
- 	}
- 	printk(KERN_INFO "%s: Registered netdevice %s\n", dev_info, dev->name);
- 
--#ifndef PRISM2_NO_PROCFS_DEBUG
--	create_proc_read_entry("registers", 0, local->proc,
--			       prism2_registers_proc_read, local);
--#endif /* PRISM2_NO_PROCFS_DEBUG */
--
- 	hostap_init_data(local);
- 	return dev;
- 
-@@ -3307,6 +3302,10 @@ static int hostap_hw_ready(struct net_device *dev)
- 			netif_carrier_off(local->ddev);
- 		}
- 		hostap_init_proc(local);
-+#ifndef PRISM2_NO_PROCFS_DEBUG
-+		create_proc_read_entry("registers", 0, local->proc,
-+				       prism2_registers_proc_read, local);
-+#endif /* PRISM2_NO_PROCFS_DEBUG */
- 		hostap_init_ap_proc(local);
- 		return 0;
- 	}
-diff --git a/drivers/net/wireless/ipw2200.c b/drivers/net/wireless/ipw2200.c
-index fa87c5c..d74c061 100644
---- a/drivers/net/wireless/ipw2200.c
-+++ b/drivers/net/wireless/ipw2200.c
-@@ -11584,6 +11584,7 @@ static int ipw_prom_alloc(struct ipw_priv *priv)
- 	priv->prom_net_dev->hard_start_xmit = ipw_prom_hard_start_xmit;
- 
- 	priv->prom_priv->ieee->iw_mode = IW_MODE_MONITOR;
-+	SET_NETDEV_DEV(priv->prom_net_dev, &priv->pci_dev->dev);
- 
- 	rc = register_netdev(priv->prom_net_dev);
- 	if (rc) {
-diff --git a/drivers/net/wireless/libertas/main.c b/drivers/net/wireless/libertas/main.c
-index 406f54d..e1f0660 100644
---- a/drivers/net/wireless/libertas/main.c
-+++ b/drivers/net/wireless/libertas/main.c
-@@ -756,6 +756,7 @@ static int lbs_thread(void *data)
- 				priv->nr_retries = 0;
- 			} else {
- 				priv->cur_cmd = NULL;
-+				priv->dnld_sent = DNLD_RES_RECEIVED;
- 				lbs_pr_info("requeueing command %x due to timeout (#%d)\n",
- 					    le16_to_cpu(cmdnode->cmdbuf->command), priv->nr_retries);
- 
-@@ -1564,6 +1565,7 @@ static int lbs_add_rtap(struct lbs_private *priv)
- 	rtap_dev->hard_start_xmit = lbs_rtap_hard_start_xmit;
- 	rtap_dev->set_multicast_list = lbs_set_multicast_list;
- 	rtap_dev->priv = priv;
-+	SET_NETDEV_DEV(rtap_dev, priv->dev->dev.parent);
- 
- 	ret = register_netdev(rtap_dev);
- 	if (ret) {
-diff --git a/include/net/mac80211.h b/include/net/mac80211.h
-index 4a80d74..dae3f9e 100644
---- a/include/net/mac80211.h
-+++ b/include/net/mac80211.h
-@@ -1594,13 +1594,16 @@ void ieee80211_wake_queues(struct ieee80211_hw *hw);
- void ieee80211_scan_completed(struct ieee80211_hw *hw);
- 
- /**
-- * ieee80211_iterate_active_interfaces - iterate active interfaces
-+ * ieee80211_iterate_active_interfaces- iterate active interfaces
-  *
-  * This function iterates over the interfaces associated with a given
-  * hardware that are currently active and calls the callback for them.
-+ * This function allows the iterator function to sleep, when the iterator
-+ * function is atomic @ieee80211_iterate_active_interfaces_atomic can
-+ * be used.
-  *
-  * @hw: the hardware struct of which the interfaces should be iterated over
-- * @iterator: the iterator function to call, cannot sleep
-+ * @iterator: the iterator function to call
-  * @data: first argument of the iterator function
-  */
- void ieee80211_iterate_active_interfaces(struct ieee80211_hw *hw,
-@@ -1609,6 +1612,24 @@ void ieee80211_iterate_active_interfaces(struct ieee80211_hw *hw,
- 					 void *data);
- 
- /**
-+ * ieee80211_iterate_active_interfaces_atomic - iterate active interfaces
-+ *
-+ * This function iterates over the interfaces associated with a given
-+ * hardware that are currently active and calls the callback for them.
-+ * This function requires the iterator callback function to be atomic,
-+ * if that is not desired, use @ieee80211_iterate_active_interfaces instead.
-+ *
-+ * @hw: the hardware struct of which the interfaces should be iterated over
-+ * @iterator: the iterator function to call, cannot sleep
-+ * @data: first argument of the iterator function
-+ */
-+void ieee80211_iterate_active_interfaces_atomic(struct ieee80211_hw *hw,
-+						void (*iterator)(void *data,
-+						    u8 *mac,
-+						    struct ieee80211_vif *vif),
-+						void *data);
-+
-+/**
-  * ieee80211_start_tx_ba_session - Start a tx Block Ack session.
-  * @hw: pointer as obtained from ieee80211_alloc_hw().
-  * @ra: receiver address of the BA session recipient
-diff --git a/net/mac80211/mlme.c b/net/mac80211/mlme.c
-index 4adba09..e0bf727 100644
---- a/net/mac80211/mlme.c
-+++ b/net/mac80211/mlme.c
-@@ -3446,13 +3446,6 @@ static int ieee80211_sta_config_auth(struct net_device *dev,
- 	struct ieee80211_sta_bss *bss, *selected = NULL;
- 	int top_rssi = 0, freq;
- 
--	if (!(ifsta->flags & (IEEE80211_STA_AUTO_SSID_SEL |
--	    IEEE80211_STA_AUTO_BSSID_SEL | IEEE80211_STA_AUTO_CHANNEL_SEL))) {
--		ifsta->state = IEEE80211_AUTHENTICATE;
--		ieee80211_sta_reset_auth(dev, ifsta);
--		return 0;
--	}
--
- 	spin_lock_bh(&local->sta_bss_lock);
- 	freq = local->oper_channel->center_freq;
- 	list_for_each_entry(bss, &local->sta_bss_list, list) {
-diff --git a/net/mac80211/util.c b/net/mac80211/util.c
-index 24a465c..131e9e6 100644
---- a/net/mac80211/util.c
-+++ b/net/mac80211/util.c
-@@ -389,6 +389,41 @@ void ieee80211_iterate_active_interfaces(
- 	struct ieee80211_local *local = hw_to_local(hw);
- 	struct ieee80211_sub_if_data *sdata;
- 
-+	rtnl_lock();
-+
-+	list_for_each_entry(sdata, &local->interfaces, list) {
-+		switch (sdata->vif.type) {
-+		case IEEE80211_IF_TYPE_INVALID:
-+		case IEEE80211_IF_TYPE_MNTR:
-+		case IEEE80211_IF_TYPE_VLAN:
-+			continue;
-+		case IEEE80211_IF_TYPE_AP:
-+		case IEEE80211_IF_TYPE_STA:
-+		case IEEE80211_IF_TYPE_IBSS:
-+		case IEEE80211_IF_TYPE_WDS:
-+		case IEEE80211_IF_TYPE_MESH_POINT:
-+			break;
-+		}
-+		if (sdata->dev == local->mdev)
-+			continue;
-+		if (netif_running(sdata->dev))
-+			iterator(data, sdata->dev->dev_addr,
-+				 &sdata->vif);
-+	}
-+
-+	rtnl_unlock();
-+}
-+EXPORT_SYMBOL_GPL(ieee80211_iterate_active_interfaces);
-+
-+void ieee80211_iterate_active_interfaces_atomic(
-+	struct ieee80211_hw *hw,
-+	void (*iterator)(void *data, u8 *mac,
-+			 struct ieee80211_vif *vif),
-+	void *data)
-+{
-+	struct ieee80211_local *local = hw_to_local(hw);
-+	struct ieee80211_sub_if_data *sdata;
-+
- 	rcu_read_lock();
- 
- 	list_for_each_entry_rcu(sdata, &local->interfaces, list) {
-@@ -413,4 +448,4 @@ void ieee80211_iterate_active_interfaces(
- 
- 	rcu_read_unlock();
- }
--EXPORT_SYMBOL_GPL(ieee80211_iterate_active_interfaces);
-+EXPORT_SYMBOL_GPL(ieee80211_iterate_active_interfaces_atomic);
--- 
-John W. Linville
-linville@tuxdriver.com
+On 5/15/08, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> On Thu, 15 May 2008, Cyrill Gorcunov wrote:
+>> [Andrew Morton - Thu, May 15, 2008 at 10:58:03AM -0700]
+>> | On Wed, 14 May 2008 19:44:02 +0400 Cyrill Gorcunov <gorcunov@gmail.com>
+>> wrote:
+>> |
+>> | > This patch does fix build bug on m68k wich does not have strncat in
+>> straight way.
+>> | >
+>> | > What is more important - my previous patch
+>> | >
+>> | > commit e662e1cfd434aa234b72fbc781f1d70211cb785b
+>> | > Author: Cyrill Gorcunov <gorcunov@gmail.com>
+>> | > Date:   Mon May 12 14:02:22 2008 -0700
+>> | >
+>> | >     init: don't lose initcall return values
+>> | >
+>> | > has introduced potential buffer overflow by wrong calculation
+>> | > of string accumulator size.
+>> | >
+>> | > Many thanks Andreas Schwab and Geert Uytterhoeven for helping
+>> | > to catch and fix the bug.
+>> | >
+>> | > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+>> | > ---
+>> | >
+>> | > Index: linux-2.6.git/init/main.c
+>> | > ===================================================================
+>> | > --- linux-2.6.git.orig/init/main.c	2008-05-14 17:55:10.000000000 +0400
+>> | > +++ linux-2.6.git/init/main.c	2008-05-14 19:11:18.000000000 +0400
+>> | > @@ -702,7 +702,7 @@ static void __init do_initcalls(void)
+>> | >
+>> | >  	for (call = __initcall_start; call < __initcall_end; call++) {
+>> | >  		ktime_t t0, t1, delta;
+>> | > -		char msgbuf[40];
+>> | > +		char msgbuf[64];
+>> | >  		int result;
+>> | >
+>> | >  		if (initcall_debug) {
+>> | > @@ -729,11 +729,11 @@ static void __init do_initcalls(void)
+>> | >  			sprintf(msgbuf, "error code %d ", result);
+>> | >
+>> | >  		if (preempt_count() != count) {
+>> | > -			strncat(msgbuf, "preemption imbalance ", sizeof(msgbuf));
+>> | > +			strcat(msgbuf, "preemption imbalance ");
+>> | >  			preempt_count() = count;
+>> | >  		}
+>> | >  		if (irqs_disabled()) {
+>> | > -			strncat(msgbuf, "disabled interrupts ", sizeof(msgbuf));
+>> | > +			strcat(msgbuf, "disabled interrupts ");
+>> | >  			local_irq_enable();
+>> | >  		}
+>> | >  		if (msgbuf[0]) {
+>> |
+>> | umm, why can't m68k call strncat() from init/main.c??
+>> |
+>>
+>> there some problem with headers iirc, we have to declare it first or
+>> use some gcc option (as Adrian suggested). Actually I would prefer to use
+>
+> gcc turns the strncat() into an implicit call to strlen() and some form
+> of expanded memcpy(). E.g.
+>
+>
+> 	if (preempt_count() != count) {
+> 		strncat(msgbuf, "preemption imbalance ", sizeof(msgbuf));
+> 		preempt_count() = count;
+> 	}
+>
+> becomes
+>
+>         cmp.l 884(%a2),%d6      | <variable>.thread.info.preempt_count,
+> count
+>         jeq .L61        |
+>         move.l %d7,-(%sp)       | tmp76,
+>         jbsr strlen     |
+>         addq.l #4,%sp   |,
+>         move.l %d7,%a0  | tmp76, tmp80
+>         add.l %d0,%a0   |, tmp80
+>         move.l #1886545253,(%a0)+       |,
+>         move.l #1836086377,(%a0)+       |,
+>         move.l #1869488233,(%a0)+       |,
+>         move.l #1835164012,(%a0)+       |,
+>         move.l #1634624357,(%a0)+       |,
+>         move.w #8192,(%a0)      |,* D.28541
+>         move.l %d6,884(%a2)     | count,
+> <variable>.thread.info.preempt_count
+> .L61:
+>
+> All other explicit calls to strlen() are inlined, as per
+> include/asm-m68k/string.h.
+>
+>> strlcat there but it seems it would fail to build too. Originally I've
+>> messed
+>> strlcat with strncat :(
+>
+> Actually it build and runs fine after s/strncat/strlcat/...
+>
+> Gr{oetje,eeting}s,
+>
+> 						Geert
+>
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 --
+> geert@linux-m68k.org
+>
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like
+> that.
+> 							    -- Linus Torvalds
+>
