@@ -1,60 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764388AbYEOV6s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764751AbYEOWBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764388AbYEOV6s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 17:58:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbYEOV6h
+	id S1764751AbYEOWBR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 18:01:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754263AbYEOWBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 17:58:37 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:43865 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752239AbYEOV6g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 17:58:36 -0400
-Message-ID: <482CB1FB.7080807@garzik.org>
-Date: Thu, 15 May 2008 17:58:19 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 15 May 2008 18:01:04 -0400
+Received: from mtagate2.uk.ibm.com ([195.212.29.135]:5129 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754410AbYEOWBD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 18:01:03 -0400
+Date: Fri, 16 May 2008 01:05:26 +0300
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       alexisb@us.ibm.com
+Subject: Re: [PATCH 0/2] x86: per-device dma_mapping_ops
+Message-ID: <20080515220526.GH10434@il.ibm.com>
+References: <87y76cym96.fsf@basil.nowhere.org> <20080515181619R.tomof@acm.org> <482C02A4.80101@firstfloor.org> <20080515184126O.tomof@acm.org> <20080515152631.GG6778@il.ibm.com> <20080515210340.GC318@one.firstfloor.org> <20080515213946.GE10434@il.ibm.com> <482CAEE6.5080509@firstfloor.org> <20080515215315.GG10434@il.ibm.com>
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Chris Peterson <cpeterso@cpeterso.com>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>, Rick Jones <rick.jones2@hp.com>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
- IRQF_SAMPLE_RANDOM
-References: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com> <20080515142154.0595e475@core> <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com> <482C7B18.6060003@garzik.org> <482C7E53.3050300@hp.com> <482C8184.2030906@garzik.org> <482C8550.5000909@intel.com> <482C8D4D.3040702@garzik.org> <a24804730805151301s3c6644d0hc2c78b8008fe035d@mail.gmail.com> <20080515214721.GP18825@mit.edu>
-In-Reply-To: <20080515214721.GP18825@mit.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080515215315.GG10434@il.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> On Thu, May 15, 2008 at 01:01:36PM -0700, Chris Peterson wrote:
->> Please correct me if I'm wrong, but this thread's conclusions seem to be:
->>
->> * network interrupts are an inappropriate source of entropy (see my patch)
->> * headless servers need entropy, but should seek a better solution,
->> such as EGD, hardware RNG, or other kernel entropy sources (but that
->> is a separate task)
->> * TPM RNG is a separate task and, if implemented, should be in
->> drivers/char/hw_random/
+On Fri, May 16, 2008 at 12:53:15AM +0300, Muli Ben-Yehuda wrote:
+> On Thu, May 15, 2008 at 11:45:10PM +0200, Andi Kleen wrote:
 > 
-> The TPM RNG task is probably best done in a user space process, which
-> might also do other things like pulling environmental noise from the
-> sound card's microphone, etc.
+> > Even rare cases need to be handled.
 > 
-> The problem is finding someone with the skills, time, and energy to
-> create the appropriate user space daemon.  All of the kernel
-> interfaces already exist; it's just matter of implementing the user
-> space support.
+> Sure, but I'd rather we handle the common case first.
 
-rngd is already deployed in most distros, via rng-tools.  Motivated 
-people are welcome to steal maintainership from me...
+... which is not to say of course we can't do both, dev_archdata could
+have a list of struct dma_mapping_ops instead of (or in addition to) a
+struct dma_mapping_ops pointer. If space was at a premium we could
+even multiplex both on the same pointer by using one of the low bits
+to select between them.
 
-	Jeff
-
-
+Cheers,
+Muli
