@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760831AbYEOWfq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759705AbYEOWmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760831AbYEOWfq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 18:35:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759759AbYEOWfb
+	id S1759705AbYEOWmW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 18:42:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754852AbYEOWmM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 18:35:31 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:16170 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759446AbYEOWf3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 18:35:29 -0400
-Message-ID: <31763212.1210890834426.JavaMail.oracle@acsmt305.oracle.com>
-Date: Thu, 15 May 2008 17:33:54 -0500 (CDT)
-From: Randy Dunlap <RANDY.DUNLAP@ORACLE.COM>
-To: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>
-Subject: Re: [PATCH] crypto: fix cryptd build fix due to missing ahash
-Cc: linux-kernel@vger.kernel.org, Loc Ho <lho@amcc.com>,
-       herbert@gondor.apana.org.au, linux-next@vger.kernel.org
-In-Reply-To: <20080515212856.GB3081@Chamillionaire.breakpoint.cc>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-15"
+	Thu, 15 May 2008 18:42:12 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:36902 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753916AbYEOWmL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 18:42:11 -0400
+Message-ID: <482CBC3E.8060305@garzik.org>
+Date: Thu, 15 May 2008 18:42:06 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Chris Peterson <cpeterso@cpeterso.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
+ IRQF_SAMPLE_RANDOM
+References: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com> <20080515142154.0595e475@core> <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com>
+In-Reply-To: <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-References: <4694288.1210878773358.JavaMail.oracle@acsmt302.oracle.com> <20080515212856.GB3081@Chamillionaire.breakpoint.cc>
-X-Priority: 3
-X-Mailer: Oracle Webmail Client(UIX)
-Content-Language: en-US
-Accept-Language: en-US
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> This was reported by Randy Dunlap:
-> |crypto/built-in.o: In function `cryptd_alloc':
-> |cryptd.c:(.text+0x9b5a): undefined reference to `crypto_ahash_type'
+Brandeburg, Jesse wrote:
+> we've been hearing rumblings of big customers wanting (maybe requiring)
+> wired network drivers from Intel to  advertise this flag.  Jeff have you
+> heard of such?
 > 
-> Signed-off-by: Sebastian Siewior <sebastian@breakpoint.cc>
-
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
-
-Thanks.
-
-> ---
->  crypto/Kconfig |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
+> I think the argument is that a headless system (no keyboard/mouse, no
+> soundcard, probably no video) with a libata based driver and a network
+> driver without IRQF_SAMPLE_RANDOM has *no* sources of entropy.  In this
+> case the argument is very strong for at least *some* source of entropy
+> from interrupts so that randomness can get some external input.  Just
+> try rebuilding a kernel RPM over an ssh session and you'll see what I
+> mean.
 > 
-> diff --git a/crypto/Kconfig b/crypto/Kconfig
-> index 5963a95..ffcd467 100644
-> --- a/crypto/Kconfig
-> +++ b/crypto/Kconfig
-> @@ -66,6 +66,7 @@ config CRYPTO_CRYPTD
->  	tristate "Software async crypto daemon"
->  	select CRYPTO_BLKCIPHER
->  	select CRYPTO_MANAGER
-> +	select CRYPTO_HASH
->  	help
->  	  This is a generic software asynchronous crypto daemon that
->  	  converts an arbitrary synchronous software crypto algorithm
-> -- 
-> 1.5.4.3
-> 
+> In short, I agree with Alan's IRQF_SAMPLE_DUBIOUS, and know of Linux
+> customers who also want the same.
+
+
+So I guess a good message for customers might be:
+
+Don't depend on an entropy source whose volume decreases as workload and 
+network traffic increase.
+
+	Jeff
+
 
