@@ -1,66 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762659AbYEOQK7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760936AbYEOQ0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762659AbYEOQK7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 12:10:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759023AbYEOQKu
+	id S1760936AbYEOQ0T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 12:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754715AbYEOQ0F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 12:10:50 -0400
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:53658 "EHLO
-	outbound3-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757909AbYEOQKt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 12:10:49 -0400
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
-X-WSS-ID: 0K0X3JW-01-FRE-01
-Date: Thu, 15 May 2008 18:10:10 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Vegard Nossum <vegard.nossum@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       =?utf-8?B?Uy7Dh2HEn2xhcg==?= Onur <caglar@pardus.org.tr>,
-       Valdis.Kletnieks@vt.edu, Matt Mackall <mpm@selenic.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BISECTED] Lots of "rescheduling IPIs" in powertop
-Message-ID: <20080515161010.GA9506@alberich.amd.com>
-References: <20080513204206.GA17781@damson.getinternet.no> <20080514065605.GB21369@elte.hu> <20080514090923.GC5607@alberich.amd.com> <87prrp6ri9.fsf@basil.nowhere.org>
-MIME-Version: 1.0
+	Thu, 15 May 2008 12:26:05 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:39328 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754523AbYEOQ0E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 12:26:04 -0400
+Date: Thu, 15 May 2008 20:27:03 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH] tty_check_change-avoid-taking-tasklist_lock-while-holding-tty-ctrl_lock-simplify
+Message-ID: <20080515162703.GA430@tv-sign.ru>
+References: <20080512183235.GB6031@joi> <20080513184736.a385ffe2.akpm@linux-foundation.org> <20080514153933.GA122@tv-sign.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87prrp6ri9.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 15 May 2008 16:09:37.0158 (UTC) FILETIME=[1284D260:01C8B6A6]
+In-Reply-To: <20080514153933.GA122@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 14, 2008 at 01:42:54PM +0200, Andi Kleen wrote:
-> Andreas Herrmann <andreas.herrmann3@amd.com> writes:
-> >
-> > It depends on the CPU. For AMD CPUs that support MWAIT this is wrong.
-> > Family 0x10 and 0x11 CPUs will enter C1 on HLT. Powersavings then
->                                 ^ not
+On 05/14, Oleg Nesterov wrote:
+>
+> The patch looks correct anyway, but perhaps tty_check_change() doesn't need
+> ->ctrl_lock at all? We don't dereference tty->pgrp.
 
-Not sure what you meant by your comment.
-Maybe you should re-read the paragraph.
+IOW, I think the patch below makes sense.
 
-It's as simple as that:
-If OS executes Halt the core enters C1.
-The core exits C1 if an interrupt is received.
+With the previous patch tty->ctrl_lock buys nothing, it only protects the
+"task_pgrp(current) == tty->pgrp" check, but tty->pgrp can be changed right
+after spin_unlock_irqrestore(tty->ctrl_lock) anyway.
 
-> > It might be best to switch off the mwait flag for these AMD CPU
-> > families like it was introduced with commit
-> > f039b754714a422959027cb18bb33760eb8153f0 (x86: Don't use MWAIT on AMD
-> > Family 10)
-> 
-> Then you have to special case everything again. We still need to 
-> work out if the P4 is even correct here or not, but if it's not
-> i would rather quirk the cpuid reporting on it.
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-I just want to ensure that for AMD family 0x10 and 0x11 halt and not
-mwait is executed when the core is idle.
-
-
-Andreas
-
+--- HL/drivers/char/tty_io.c~TTY	2008-05-15 19:09:35.000000000 +0400
++++ HL/drivers/char/tty_io.c	2008-05-15 19:11:57.000000000 +0400
+@@ -1199,27 +1199,21 @@ EXPORT_SYMBOL_GPL(tty_find_polling_drive
+  *	If we try to write to, or set the state of, a terminal and we're
+  *	not in the foreground, send a SIGTTOU.  If the signal is blocked or
+  *	ignored, go ahead and perform the operation.  (POSIX 7.2)
+- *
+- *	Locking: ctrl_lock
+  */
+ 
+ int tty_check_change(struct tty_struct *tty)
+ {
+-	unsigned long flags;
+ 	int ret = 0;
+ 
+ 	if (current->signal->tty != tty)
+ 		return 0;
+ 
+-	spin_lock_irqsave(&tty->ctrl_lock, flags);
+-
+ 	if (!tty->pgrp) {
+ 		printk(KERN_WARNING "tty_check_change: tty->pgrp == NULL!\n");
+-		goto out_unlock;
++		goto out;
+ 	}
+ 	if (task_pgrp(current) == tty->pgrp)
+-		goto out_unlock;
+-	spin_unlock_irqrestore(&tty->ctrl_lock, flags);
++		goto out;
+ 	if (is_ignored(SIGTTOU))
+ 		goto out;
+ 	if (is_current_pgrp_orphaned()) {
+@@ -1231,9 +1225,6 @@ int tty_check_change(struct tty_struct *
+ 	ret = -ERESTARTSYS;
+ out:
+ 	return ret;
+-out_unlock:
+-	spin_unlock_irqrestore(&tty->ctrl_lock, flags);
+-	return ret;
+ }
+ 
+ EXPORT_SYMBOL(tty_check_change);
 
