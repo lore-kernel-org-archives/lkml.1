@@ -1,112 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762239AbYEOVLp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758389AbYEOVMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762239AbYEOVLp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 17:11:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755570AbYEOVLe
+	id S1758389AbYEOVMU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 17:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756235AbYEOVME
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 17:11:34 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33279
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755831AbYEOVLd (ORCPT
+	Thu, 15 May 2008 17:12:04 -0400
+Received: from fmmailgate01.web.de ([217.72.192.221]:50593 "EHLO
+	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752247AbYEOVMB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 17:11:33 -0400
-Date: Thu, 15 May 2008 14:11:27 -0700 (PDT)
-Message-Id: <20080515.141127.154825097.davem@davemloft.net>
-To: wrs@pt.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: TAHI IPv6 testing of kernel 2.6.20
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <OFAB0C1694.0B207957-ON8525744A.006A249F-8525744A.006A50C8@pt.com>
-References: <OFAB0C1694.0B207957-ON8525744A.006A249F-8525744A.006A50C8@pt.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 15 May 2008 17:12:01 -0400
+Message-ID: <482CA6E4.1010807@web.de>
+Date: Thu, 15 May 2008 23:11:00 +0200
+From: =?ISO-8859-15?Q?Pascal_Br=FCckner?= <pascal_2001@web.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080420)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Strange C3/C4 sleep state behaviour
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Provags-ID: V01U2FsdGVkX1968RD2MFfW68ttSkMlQn7pGlgltj4Yr3vBP6ab
+	ZYie+GhbOnddIO5DzLOuhhIY7T6r0YaOBLblQy6AmbAntrxU1a
+	ed74wjNQQ=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: William Seppeler <wrs@pt.com>
-Date: Thu, 15 May 2008 15:21:14 -0400
+Hello!
 
-You'll get a lot more feedback from the networking developers
-if you actually send it to the list they subscribe to.
-Thus, netdev CC:'d
+I'm recompiling my kernel recently to optimize the power usage of my
+laptop (IBM ThinkPad X31). So far, my most efficient kernel at the
+moment is a self-compiled 2.6.22 with phc patches for undervolting,
+suspend2/tuxonice and hrtimers patches to force HPET on my ICH4-M chipset.
 
-> I noticed on the TAHI website that kernel.org had the 2.6.20 kernel 
-> certified for IPv6 Ready Logo Phase2 as a router device. 
-> 
-> The application was submitted on 20070827 (Application ID: 
-> US-2-C-20070827-000142) and certified on 20070926. 
-> 
-> I'm currently testing a 2.6.20 kernel using Self_Test_1.4.14 (performing 
-> Phase2 host testing - ipv6ready_p2_host).  It passes all tests except for 
-> one.  I'm failing test: 
-> 
->     v6LC_2_3_6_G - Redirected to Alternate Router: Invalid (Target Address 
-> is Multicast) 
-> 
-> Based on the kernel.org application date, I assume the application was 
-> submitted using TAHI Self_Test_1.4.8.  I see from the Self_Test CHANGELOG 
-> that test v6LC_2_3_6_G was modified after the application date: 
-> 
->     2007/09/26    Yukiyo Akisada
->        nd.p2/v6LC_2_3_6_G.def - correct packet definition 
-> 
-> 
-> Q: Has the kernel.org group retested the 2.6.20 kernel using any of the 
-> recent Self_Test releases?  In particular, Self_Test_1.4.14 or greater? 
-> And were there any failures? 
-> 
-> As for details into the v6LC_2_3_6_G test failure: 
-> 
-> The log shows the test fails due to processing an invalid redirect packet 
-> (ie: it's a negative test).  The redirect packet contains a multicast 
-> address as a target address.  RFC2461 (p.26) doesn't explicitly state this 
-> is invalid: 
-> 
->       Target Address 
->                      An IP address that is a better first hop to use for
->                     the ICMP Destination Address.  When the target is
->                     the actual endpoint of communication, i.e., the
->                     destination is a neighbor, the Target Address field
->                     MUST contain the same value as the ICMP Destination
->                     Address field.  Otherwise the target is a better
->                     first-hop router and the Target Address MUST be the
->                     router's link-local address so that hosts can
->                     uniquely identify routers.
-> 
-> But the test does appear to make sense based on the last sentence.  The 
-> linux kernel I'm testing shows an echo response trying to use the 
-> multicast address from the redirect packet as it's first hop.  This is 
-> what causes the test to fail.  The expectation is that the linux kernel 
-> would ignore the redirect packet entirely. 
-> 
-> As stated, this is the ONLY test in the whole Phase2 test suite that 
-> fails.  I understand the failure, but I don't understand how the 2.6.20 
-> kernel is Phase2 certified.  At least not with the current Self_Test test 
-> suite. 
-> 
-> Q: Has anyone else had issues in getting the 2.6.20 kernel to pass all 
-> TAHI IPv6 Ready Logo Phase2 tests? 
-> 
-> Please CC answers to wrs@pt.com
-> 
-> Thank You, 
-> 
-> ========================================
-> William Seppeler
-> Test Engineer
-> Performance Technologies Inc.
-> 205 Indigo Creek Dr.
-> Rochester, NY  14626
-> 
-> Phone:  (585) 256-0200, Fax:  (585) 256-0791
-> Email:  wrs@pt.com, Web:  www.pt.com
-> ========================================
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Because everyone says, that newer kernel revisions are much more energy
+efficient than my 2.6.22, i tried to compile one to reach at least the
+energy usage of my recent kernel.
+Sadly, this doesn't work because of only one issue:
+With activated wireless networking (atheros chipset with recent madwifi
+driver) i'm losing much energy due to the fact, that my cpu is
+significant more in C2 state than in C3/C4.
+
+With 2.6.22 the Pentium M reaches according to powertop 70-80% C3/C4
+sleep states, but with newer kernels only 30-40% are left with the same
+kernel config and the same patches (and same userland, of course).
+The result is a 20 to 30 minutes reduced runtime of a laptop and a
+frustrated user, who has no more ideas what module or setting could
+cause this behaviour.
+
+I've tried a stable 2.6.23, 2.6.24 last  vanilla and from Debian
+repository and the recent 2.6.26-rc2, with and without zen-sources
+(patchset).
+
+The people in madwifi IRC already told me that it may be a kernel issue,
+so my last hope is this mailing list.
+
+System specs:
+
+IBM ThinkPad X31
+Centrino (1st generation)
+Banias Pentium M 1.4 GHz
+
+part of lspci output
+
+00:00.0 Host bridge: Intel Corporation 82855PM Processor to I/O
+Controller (rev 03)
+00:01.0 PCI bridge: Intel Corporation 82855PM Processor to AGP
+Controller (rev 03)
+00:1d.0 USB Controller: Intel Corporation 82801DB/DBL/DBM
+(ICH4/ICH4-L/ICH4-M) USB UHCI Controller #1 (rev 01)
+00:1d.1 USB Controller: Intel Corporation 82801DB/DBL/DBM
+(ICH4/ICH4-L/ICH4-M) USB UHCI Controller #2 (rev 01)
+00:1d.2 USB Controller: Intel Corporation 82801DB/DBL/DBM
+(ICH4/ICH4-L/ICH4-M) USB UHCI Controller #3 (rev 01)
+00:1d.7 USB Controller: Intel Corporation 82801DB/DBM (ICH4/ICH4-M) USB2
+EHCI Controller (rev 01)
+00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev 81)
+00:1f.0 ISA bridge: Intel Corporation 82801DBM (ICH4-M) LPC Interface
+Bridge (rev 01)
+00:1f.1 IDE interface: Intel Corporation 82801DBM (ICH4-M) IDE
+Controller (rev 01)
+02:02.0 Ethernet controller: Atheros Communications Inc. AR5212
+802.11abg NIC (rev 01)
+
+Powertop output kernel 2.6.22:
+Cn                 Verweildauer       P-States (Frequenzen)
+C0 (Prozessor läuft)    ( 1,0%)         1400 MHz   100,0%
+C1                0,0ms ( 0,0%)         1200 MHz     0,0%
+C2                7,0ms (16,0%)         1000 MHz     0,0%
+C3               15,9ms (83,0%)          800 MHz     0,0%
+
+
+Aufwachen pro Sekunde : 75,1    Intervall: 15,0s
+Stromverbrauch (nach ACPI): 11,4W (3,5 Std.)
+
+Häufigste Ursachen für das Aufwachen:
+   45,3% ( 32,1)       <interrupt> : uhci_hcd:usb1, uhci_hcd:usb2,
+uhci_hcd:usb3, ehci_hcd:usb4, ohci1394, yenta, yenta, wifi0, Intel
+82801DB-ICH4 Modem, Intel 82801DB-IC
+   25,4% ( 18,0)       <interrupt> : acpi
+    7,1% (  5,0)               tpb : do_nanosleep (hrtimer_wakeup)
+    4,2% (  3,0)           xfsbufd : schedule_timeout (process_timeout)
+    3,8% (  2,7)       <interrupt> : ide0
+
+Powertop output kernel 2.6.26-rc2:
+Cn                 Verweildauer       P-States (Frequenzen)
+C0 (Prozessor läuft)    ( 2,0%)         1400 MHz     0,0%
+C1                0,0ms ( 0,0%)         1200 MHz     0,0%
+C2               18,4ms (73,8%)         1000 MHz     0,0%
+C3               11,2ms (24,1%)          600 MHz   100,0%
+
+
+Aufwachen pro Sekunde : 61,6    Intervall: 15,0s
+Stromverbrauch (nach ACPI): 13,0W (3,0 Std.)
+
+Häufigste Ursachen für das Aufwachen:
+   50,6% ( 31,1)       <interrupt> : uhci_hcd:usb1, uhci_hcd:usb2, 
+uhci_hcd:usb3, ehci_hcd:usb4, Intel 82801DB-ICH4 Modem, Intel 
+82801DB-ICH4, yenta, yenta, ohci1394, wif
+    8,1% (  5,0)               tpb : do_nanosleep (hrtimer_wakeup)
+    5,7% (  3,5)       <interrupt> : acpi
+    4,9% (  3,0)           xfsbufd : schedule_timeout (process_timeout)
+    4,9% (  3,0)           xfsaild : schedule_timeout (process_timeout)
+
+
+Thanks in advance!
+
+Pascal
