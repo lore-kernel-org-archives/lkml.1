@@ -1,42 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761837AbYEOTv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753655AbYEOTv4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761837AbYEOTv1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 15:51:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758446AbYEOTuZ
+	id S1753655AbYEOTv4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 15:51:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760108AbYEOTus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 15:50:25 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42172 "EHLO mx1.redhat.com"
+	Thu, 15 May 2008 15:50:48 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:4818 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758218AbYEOTuW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 15:50:22 -0400
-Date: Thu, 15 May 2008 15:42:59 -0400
-From: Bill Nottingham <notting@redhat.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: Problems with suspend and USB storage
-Message-ID: <20080515194259.GA28848@nostromo.devel.redhat.com>
-Mail-Followup-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
-	linux-kernel@vger.kernel.org,
-	Alan Stern <stern@rowland.harvard.edu>, Pavel Machek <pavel@ucw.cz>
-References: <20080515163315.GA17779@nostromo.devel.redhat.com> <200805152140.43292.rjw@sisk.pl>
+	id S1759709AbYEOTuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 15:50:46 -0400
+Date: Thu, 15 May 2008 15:16:47 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: Daniel Drake <dsd@gentoo.org>, Ulrich Kunitz <kune@deine-taler.de>,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] zd1211rw: Use DMA-aware buffer for usb transfer
+Message-ID: <20080515191647.GB17690@tuxdriver.com>
+References: <20080516.001215.39152691.anemo@mba.ocn.ne.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200805152140.43292.rjw@sisk.pl>
+In-Reply-To: <20080516.001215.39152691.anemo@mba.ocn.ne.jp>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki (rjw@sisk.pl) said: 
-> Well, the problem is that USB storage devices are disconnected during suspend
-> and hibernation and connected once again during resume.  Then, however, we
-> are not able to tell whether the device in the slot is the same that was in
-> there before the system was put into the sleep state.
+On Fri, May 16, 2008 at 12:12:15AM +0900, Atsushi Nemoto wrote:
+> The zd1211rw driver uses unaligned stack buffer for USB control
+> message.  But it might cause stack corruption on non-coherent
+> platform, such as MIPS.  Use DMA-aware buffers for USB transfer.
+> 
+> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
 
-1) If they're disconnected, how come they work as a hibernate device? Or
-   are they disconnected twice?
-2) Isn't USB persist supposed to work around this?
+Nemoto,
 
-Bill
+This looks like a reasonable fix to me.  I would prefer to see a
+comment in the code indicating why you are reusing the "p" buffer
+instead of simply using "ret" directly.  Also, I think the style
+suggestion by Michael Buesch would make the code appear more idiomatic
+as well.
+
+Thanks!
+
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
