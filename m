@@ -1,92 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756721AbYEOSgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756482AbYEOSjG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756721AbYEOSgz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 14:36:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764178AbYEOSgB
+	id S1756482AbYEOSjG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 14:39:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751723AbYEOSiy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 14:36:01 -0400
-Received: from py-out-1112.google.com ([64.233.166.176]:4774 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764171AbYEOSf5 (ORCPT
+	Thu, 15 May 2008 14:38:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49908 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751350AbYEOSix (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 14:35:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=kHBGUyxILUaR67O52cLZWQndtsXgTmdJSsKfO/uNraYwx3nrOAm5Q+uUqpM2DI5svnfIr8RNFbub6jlDOJ+/ZdOiZipg9c26iWAZpRFSXpKx5uUF/+rBbLim2UJpa22H6AjUy37UUSpBsesRA7iN2pGfWYP7UgCd830jp0oXFM8=
-Date: Thu, 15 May 2008 14:35:54 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Greg KH <greg@kroah.com>, jkosina@suse.cz, linux-input@vger.kernel.org,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Input: add appleir USB driver
-Message-ID: <20080515142845.ZZRA012@mailhub.coreip.homeip.net>
-References: <20080514221519.GA6575@kroah.com> <20080515132108.GA9327@dose.home.local> <20080515094212.ZZRA012@mailhub.coreip.homeip.net> <20080515174939.GA10881@dose.home.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080515174939.GA10881@dose.home.local>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 15 May 2008 14:38:53 -0400
+Date: Thu, 15 May 2008 11:38:15 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Greg KH <gregkh@suse.de>
+Cc: "Randy.Dunlap" <rdunlap@xenotime.net>, stern@rowland.harvard.edu,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       stable@kernel.org
+Subject: Re: Linux 2.6.25.4
+Message-Id: <20080515113815.1a728226.akpm@linux-foundation.org>
+In-Reply-To: <20080515172518.GA23810@suse.de>
+References: <20080515150721.GA8420@kroah.com>
+	<Pine.LNX.4.64.0805150942070.7254@shark.he.net>
+	<20080515172518.GA23810@suse.de>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 15, 2008 at 07:49:39PM +0200, Tino Keitel wrote:
-> On Thu, May 15, 2008 at 09:45:52 -0400, Dmitry Torokhov wrote:
-> > Hi Tino,
+On Thu, 15 May 2008 10:25:18 -0700 Greg KH <gregkh@suse.de> wrote:
+
+> On Thu, May 15, 2008 at 09:43:04AM -0700, Randy.Dunlap wrote:
+> > On Thu, 15 May 2008, Greg Kroah-Hartman wrote:
 > > 
-> > On Thu, May 15, 2008 at 03:21:08PM +0200, Tino Keitel wrote:
-> > > Hi,
-> > >
-> > > I'm pretty sure that this breaks the macmini LIRC driver again, see
-> > > commit 3e1928e8793208802589aae851b6685671187242.
-> > >
+> > > We (the -stable team) are announcing the release of the 2.6.25.4 kernel.
+> > > 
+> > > It contains a bunch of bug fixes, and one security update, so all users
+> > > of the 2.6.25 series are encouraged to upgrade.
 > > 
-> > But with in-kernel driver can't LIRC feed of event device?
+> > Build errors on i386 and x86_64 allyesconfig:
+> > 
+> > drivers/usb/host/ohci-sm501.c:242: error: 'hcd' undeclared (first use in this function)
+> > drivers/usb/host/ohci-sm501.c:242: error: (Each undeclared identifier is reported only once
+> > drivers/usb/host/ohci-sm501.c:242: error: for each function it appears in.)
+> > make[3]: *** [drivers/usb/host/ohci-hcd.o] Error 1
 > 
-> Sure, it can. But in its current state, it breaks existing scenarios
-> and seems to have restrictions. See the comment below regarding
-> learning remotes, and my other mail in this thread regarding broken
-> suspend with the appleir driver.
+> Alan, this is due to your OHCI patch :(
+> 
+> Care to send me a fix for this?
 > 
 
-These needs to be fixed before it is in mainline, no argument here.
+umm, I was just berated for repeatedly sending the below "unneeded"
+patch to you:
 
-> > Ane people that dont use LIRC can also have access to the remote?
-> 
-> I know. I just wanted to point out that this is a regression for all
-> people who use the macmini LIRC driver. This driver was present at
-> least in the last 2 LIRC releases. The quirks stuff in the above patch
-> looks like there is no way to make the macmini LIRC driver work with
-> the patch applied. It relies on a USB HID device, which wouldn't be
-> created anymore, and the user has no way to bring it back. Please
-> correct me with a pointer to the appropriate documentation if I'm
-> wrong.
->
+From: Reynes Philippe <tremyfr@yahoo.fr>
 
-There is a way to dynamically manipulate quirks for a VID/PID pair via
-sysfs. I think if you set the quirk to 0 it will efefctively disable
-the ignore quirk restoring the old behaviour.
+The function ohci_sm501_resume in drivers/usb/host/ohci-hcd.c use the variable
+hcd, but this variable is undeclared in this function, so the compilation
+fails with this error :
 
-> From the user's point of view: There are no official kernel release
-> notes about what devices are added/removed to/from the various ignore
-> lists and blacklists. The kernel doesn't produce any output about
-> devices that are ignored or blacklisted in may cases (and also this
-> one). The user has no indication why his LIRC setup stops working with
-> the new kernel.
->
+  CC      drivers/usb/host/ohci-hcd.o
+In file included from drivers/usb/host/ohci-hcd.c:1056:
+drivers/usb/host/ohci-sm501.c: In function `ohci_sm501_resume':
+drivers/usb/host/ohci-sm501.c:241: erreur: `hcd' undeclared (first use in this function)
+drivers/usb/host/ohci-sm501.c:241: erreur: (Each undeclared identifier is reported only once
+drivers/usb/host/ohci-sm501.c:241: erreur: for each function it appears in.)
 
-Not sure what we can do here... The only thing I guess is better
-commit message mentioning LIRC setup concerns.
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <greg@kroah.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
-> Even if all LIRC users switch to the appleir driver, what about people
-> who use a learning remote to have more than 6 keys that the Apple
-> remote has? Does this work at all? After a quick look at the key
-> handling it seems to me that the codes of the 6 keys are hardcoded in
-> the driver. So a learning remote with more keys wouldn't work anymore.
->
+ drivers/usb/host/ohci-sm501.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-We'll have to adjust the driver to allow changing keymap on a
-per-device base from userspace. That's pretty easy actually.
+diff -puN drivers/usb/host/ohci-sm501.c~fix-gregkh-usb-usb-ohci-host-controller-resumes-leave-root-hub-suspended drivers/usb/host/ohci-sm501.c
+--- a/drivers/usb/host/ohci-sm501.c~fix-gregkh-usb-usb-ohci-host-controller-resumes-leave-root-hub-suspended
++++ a/drivers/usb/host/ohci-sm501.c
+@@ -238,7 +238,7 @@ static int ohci_sm501_resume(struct plat
+ 	ohci->next_statechange = jiffies;
+ 
+ 	sm501_unit_power(dev->parent, SM501_GATE_USB_HOST, 1);
+-	ohci_finish_controller_resume(hcd);
++	ohci_finish_controller_resume(ohci_to_hcd(ohci));
+ 	return 0;
+ }
+ #else
+_
 
--- 
-Dmitry
