@@ -1,93 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753685AbYEOGL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752893AbYEOGMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753685AbYEOGL3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 02:11:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbYEOGLS
+	id S1752893AbYEOGMW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 02:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754144AbYEOGMB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 02:11:18 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55877
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750812AbYEOGLR (ORCPT
+	Thu, 15 May 2008 02:12:01 -0400
+Received: from www262.sakura.ne.jp ([202.181.97.72]:54323 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753823AbYEOGMA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 02:11:17 -0400
-Date: Wed, 14 May 2008 23:11:11 -0700 (PDT)
-Message-Id: <20080514.231111.107604885.davem@davemloft.net>
-To: mikpe@it.uu.se
-Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] 2.6.26-rc1 lost half the RAM on UltraSPARC 5
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <18473.60551.911448.98269@alkaid.it.uu.se>
-References: <20080512.153628.193699676.davem@davemloft.net>
-	<20080512.153948.193688062.davem@davemloft.net>
-	<18473.60551.911448.98269@alkaid.it.uu.se>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 15 May 2008 02:12:00 -0400
+Message-Id: <200805150611.m4F6Bv4J046219@www262.sakura.ne.jp>
+Subject: Re: Kernel hangs in SMP + VMware environment.
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: Alok Kataria <akataria@vmware.com>
+Cc: devzero@web.de, linux-kernel@vger.kernel.org,
+       Dan Hecht <dhecht@vmware.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="ISO-2022-JP"
 Content-Transfer-Encoding: 7bit
+Date: Thu, 15 May 2008 15:11:57 +0900
+References: <1210789834.8798.20.camel@promb-2n-dhcp368.eng.vmware.com>
+In-Reply-To: <1210789834.8798.20.camel@promb-2n-dhcp368.eng.vmware.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mikael Pettersson <mikpe@it.uu.se>
-Date: Tue, 13 May 2008 21:31:19 +0200
+Hello.
 
-Ok, Mikael, I think I figured out this bug:
+Alok Kataria wrote:
+> Can you try the patch attached with this mail, I made this on top of
+> 2.6.24.7 but should fit on any other 2.6.24 based distro kernel.
 
-> Found ramdisk at physical address 0x10800000, size 3683665
-> lmb_dump_all:
->     memory.cnt		  = 0x4
->     memory.size		  = 0xff40000
->     memory.region[0x0].base       = 0x0
-> 		      .size     = 0x8000000
->     memory.region[0x1].base       = 0x10000000
-> 		      .size     = 0x7efe000
->     memory.region[0x2].base       = 0x17f00000
-> 		      .size     = 0x3a000
->     memory.region[0x3].base       = 0x17f3e000
-> 		      .size     = 0x8000
->     reserved.cnt	  = 0x2
->     reserved.size	  = 0x0
->     reserved.region[0x0].base       = 0x10000000
-> 		      .size     = 0x35bf60
->     reserved.region[0x1].base       = 0x10800000
-> 		      .size     = 0x10b83551
+I tried 2.6.24.5-85.fc8 with your patch, and I can no longer reproduce
+this problem. I think the problem has been solved.
 
->From the very beginning your higher RAM is gone.
-It's correct that some memory should be reserved,
-for the ramdisk, but not 128MB :-)
+Also, workaround till your patch is applied to distro kernels seems to be
+to add "clocksource=jiffies" or something to avoid using tsc as clocksource.
+Fedora 9's 2.6.25-14.fc9 also hangs since the default clocksource is tsc, but
+with "clocksource=jiffies" added, I encounter no hangs so far.
 
-The ramdisk is just under 4MB in size, so something is fishy here.
-
-And indeed, I'm reserving the wrong length.  Please try this
-patch:
-
-sparc64: Fix lmb_reserve() args in find_ramdisk().
-
-This fixes the missing ram regression reported by
-Mikael Pettersson <mikpe@it.uu.se>, much thanks for
-all of this help in diagnosing this.
-
-The second argument to lmb_reserve() is a size,
-not an end address bounds.
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
----
- arch/sparc64/mm/init.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/sparc64/mm/init.c b/arch/sparc64/mm/init.c
-index a9828d7..3c7b947 100644
---- a/arch/sparc64/mm/init.c
-+++ b/arch/sparc64/mm/init.c
-@@ -768,7 +768,7 @@ static void __init find_ramdisk(unsigned long phys_base)
- 		initrd_start = ramdisk_image;
- 		initrd_end = ramdisk_image + sparc_ramdisk_size;
- 
--		lmb_reserve(initrd_start, initrd_end);
-+		lmb_reserve(initrd_start, sparc_ramdisk_size);
- 
- 		initrd_start += PAGE_OFFSET;
- 		initrd_end += PAGE_OFFSET;
--- 
-1.5.5.1.57.g5909c
-
+>From today, I can compile kernels using 2 CPUs.
+Thank you very much.
