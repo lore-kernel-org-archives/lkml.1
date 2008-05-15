@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760738AbYEOPDn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932223AbYEOPD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760738AbYEOPDn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 11:03:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755893AbYEOPDc
+	id S932223AbYEOPD6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 11:03:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756804AbYEOPDe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 11:03:32 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:23880 "EHLO
+	Thu, 15 May 2008 11:03:34 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:23882 "EHLO
 	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755550AbYEOPDc (ORCPT
+	with ESMTP id S1755828AbYEOPDd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 11:03:32 -0400
-Message-Id: <20080515145705.188435204@de.ibm.com>
+	Thu, 15 May 2008 11:03:33 -0400
+Message-Id: <20080515150008.316487133@de.ibm.com>
+References: <20080515145705.188435204@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 15 May 2008 16:57:05 +0200
+Date: Thu, 15 May 2008 16:57:09 +0200
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Subject: [patch 00/11] s390 patches for 2.6.26-rc2
+Cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 04/11] vmlogrdr: module initialization function should return negative errors
+Content-Disposition: inline; filename=004-vmlogrdr-rc.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi folks,
-the number of bug fixes has grown past 10 so I guess it's time for
-another patch set to get them upstream. Nothing exiting, the shortlog:
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
 
-Cornelia Huck (4):
-      [S390] Remove last traces of cio_msg=.
-      [S390] dasd: Use const in busid functions.
-      [S390] s390dbf: Use const char * for dbf name.
-      [S390] tape: Use ccw_dev_id to build cdev_id.
+Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
 
-Heiko Carstens (3):
-      [S390] sparsemem vmemmap: initialize memmap.
-      [S390] smp: __smp_call_function_map vs cpu_online_map fix.
-      [S390] show_interrupts: prevent cpu hotplug when walking cpu_online_map.
+ drivers/s390/char/vmlogrdr.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Huang Weiyi (1):
-      [S390] blacklist.c: removed duplicated include
-
-Marcin Slusarz (1):
-      [S390] vmlogrdr: module initialization function should return negative errors
-
-Michael Ernst (1):
-      [S390] cio: Remove CCW_CMD_SUSPEND_RECONN in front of CCW_CMD_SET_PGID.
-
-Stefan Weinhuber (1):
-      [S390] dasd: fix timeout handling in interrupt handler
-
+Index: quilt-2.6/drivers/s390/char/vmlogrdr.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/char/vmlogrdr.c
++++ quilt-2.6/drivers/s390/char/vmlogrdr.c
+@@ -858,7 +858,7 @@ static int __init vmlogrdr_init(void)
+ 	for (i=0; i < MAXMINOR; ++i ) {
+ 		sys_ser[i].buffer = (char *) get_zeroed_page(GFP_KERNEL);
+ 		if (!sys_ser[i].buffer) {
+-			rc = ENOMEM;
++			rc = -ENOMEM;
+ 			break;
+ 		}
+ 		sys_ser[i].current_position = sys_ser[i].buffer;
 
 -- 
 blue skies,
