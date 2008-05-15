@@ -1,72 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759338AbYEOW2s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758802AbYEOW37@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759338AbYEOW2s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 18:28:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754201AbYEOW2i
+	id S1758802AbYEOW37 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 18:29:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754165AbYEOW3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 18:28:38 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38928 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752638AbYEOW2h (ORCPT
-	<rfc822;@sgi.com:linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 18:28:37 -0400
-Date: Fri, 16 May 2008 08:27:53 +1000
-From: David Chinner <dgc@sgi.com>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: David Chinner <dgc@sgi.com>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>, pvp-lsts@fs.ru.acad.bg,
-       kernel-testers@vger.kernel.org,
-       kernel list <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       peterz@infradead.org, xfs@oss.sgi.com
-Subject: Re: 2.6.26-rc1: possible circular locking dependency with xfs filesystem
-Message-ID: <20080515222753.GV155679365@sgi.com>
-References: <a4423d670805101005x113c4813w2b95c1fb535cf080@mail.gmail.com> <4825DF71.1030209@linux.vnet.ibm.com> <48266C77.3040102@linux.vnet.ibm.com> <20080511231002.GN103491721@sgi.com> <a4423d670805151045k4d2f9459geaeeff7418957487@mail.gmail.com>
-Mime-Version: 1.0
+	Thu, 15 May 2008 18:29:46 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:59295 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752253AbYEOW3p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 18:29:45 -0400
+X-Sasl-enc: hVHGCcCjmADOG66zCOFTYc5aUX1j+09ePtJP8V2kA2gE 1210890584
+Date: Thu, 15 May 2008 19:29:41 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Theodore Tso <tytso@mit.edu>, Chris Peterson <cpeterso@cpeterso.com>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>, Rick Jones <rick.jones2@hp.com>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
+	IRQF_SAMPLE_RANDOM
+Message-ID: <20080515222941.GB20976@khazad-dum.debian.net>
+References: <20080515142154.0595e475@core> <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com> <482C7B18.6060003@garzik.org> <482C7E53.3050300@hp.com> <482C8184.2030906@garzik.org> <482C8550.5000909@intel.com> <482C8D4D.3040702@garzik.org> <a24804730805151301s3c6644d0hc2c78b8008fe035d@mail.gmail.com> <20080515214721.GP18825@mit.edu> <482CB1FB.7080807@garzik.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <a4423d670805151045k4d2f9459geaeeff7418957487@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <482CB1FB.7080807@garzik.org>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 15, 2008 at 09:45:55PM +0400, Alexander Beregalov wrote:
-> 2008/5/12 David Chinner <dgc@sgi.com>:
-> > On Sun, May 11, 2008 at 09:18:07AM +0530, Kamalesh Babulal wrote:
-> >> Kamalesh Babulal wrote:
-> >> > Adding the cc to kernel-list, Ingo Molnar and Peter Zijlstra
-> >> >
-> >> > Alexander Beregalov wrote:
-> >> >> [ INFO: possible circular locking dependency detected ]
-> >> >> 2.6.26-rc1-00279-g28a4acb #13
-> >> >> -------------------------------------------------------
-> >> >> nfsd/3087 is trying to acquire lock:
-> >> >>  (iprune_mutex){--..}, at: [<c016f947>] shrink_icache_memory+0x38/0x19b
-> >> >>
-> >> >> but task is already holding lock:
-> >> >>  (&(&ip->i_iolock)->mr_lock){----}, at: [<c0210b83>] xfs_ilock+0xa2/0xd6
+On Thu, 15 May 2008, Jeff Garzik wrote:
+> rngd is already deployed in most distros, via rng-tools.  Motivated  
+> people are welcome to steal maintainership from me...
 
-[snip]
+I was, once.  But I got into the trap of getting too out of sync from
+upsteam rngd, and suddenly, packaging all those changes into incremental
+patches become too much non-fun work for me to find the energy to do so.
 
-> > Oh, yeah, that. Direct inode reclaim through memory pressure.
-> >
-> > Effectively memory reclaim inverts locking order w.r.t. iprune_mutex
-> > when it recurses into the filesystem. False positive - can never
-> > cause a deadlock on XFS. Can't be solved from the XFS side of things
-> > without effectively turning off lockdep checking for xfs inode
-> > locking.
-> Yes, it is not a deadlock, but machine hangs for few seconds.
-> It still happens about once a day for me. Every kernel report looks
-> similar to the above.
+It has been a few years since I really looked at that code, except for a
+few minor Debian packaging fixes.  It is old code, and if my C is not
+world-class now, it was even worse at that time.  But at least valgrind
+tells me I fixed the worst bugs, and FIPS 140-2 (the old version of it
+that still had criteria for non-deterministic RNGs) and DIEHARD couldn't
+find any issues with its output after several runs on gigabyte-sized
+files produced both from an Intel FWH RNG, and from a VIA PadLock RNG.
 
-That hang is just memory reclaim running, I think you'll find.
-It can take some time for reclaim to find pages to use, and meanwhile
-everything in the machine will back up behind it....
+If anyone wants to poke at it, get the Debian rng-tools source package.
+It directly supports the VIA PadLock in userspace in a suitably paranoid
+mode (checks that the RNG was not reprogrammed at every read), and does
+multithreading so that FIPS and output processing does not block (nor
+gets blocked) by /dev/hw_random reading, etc.
 
-Cheers,
+Lots of cowebs on it, though.  And you probably need to get the version
+in Debian unstable AND the version in Debian experimental, to get the
+full code.  If someone really wants to work on it, I can send the VC
+repo for them to play with.
 
-Dave.
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
