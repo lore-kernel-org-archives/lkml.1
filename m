@@ -1,145 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757802AbYEOJ3Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757473AbYEOJbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757802AbYEOJ3Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 05:29:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839AbYEOJ3Q
+	id S1757473AbYEOJbX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 05:31:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbYEOJbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 05:29:16 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45315 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753191AbYEOJ3Q (ORCPT
+	Thu, 15 May 2008 05:31:15 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:36553 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752685AbYEOJbO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 05:29:16 -0400
-Date: Thu, 15 May 2008 18:34:13 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
-       "hugh@veritas.com" <hugh@veritas.com>, minchan.kim@gmail.com
-Subject: [PATCH -mm 5/5] memcg: remove a redundant check
-Message-Id: <20080515183413.e2c008e6.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080515182516.763967cc.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080515182516.763967cc.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 15 May 2008 05:31:14 -0400
+Message-ID: <482C02A4.80101@firstfloor.org>
+Date: Thu, 15 May 2008 11:30:12 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, muli@il.ibm.com,
+       alexisb@us.ibm.com
+Subject: Re: [PATCH 0/2] x86: per-device dma_mapping_ops
+References: <1210658692-960-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>	<87y76cym96.fsf@basil.nowhere.org> <20080515181619R.tomof@acm.org>
+In-Reply-To: <20080515181619R.tomof@acm.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Because of remove refcnt patch, it's very rare case to that
-mem_cgroup_charge_common() is called against a page which is accounted.
+FUJITA Tomonori wrote:
+> On Thu, 15 May 2008 11:01:09 +0200
+> Andi Kleen <andi@firstfloor.org> wrote:
+> 
+>> FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> writes:
+>>
+>>> This patchset adds per-device dma_mapping_ops support for
+>>> CONFIG_X86_64 like POWER architecture does. This change enables us to
+>>> cleanly fix the Calgary IOMMU issue that some devices are not behind
+>>> the IOMMU [1]. It also would be helpful to handle KVM PCI passthrough.
+>> This makes it basically impossible to do stack ops, which some 
+>> people have been doing.
+> 
+> Seems that I misunderstand what those people want.
+> 
+> What those people want to do and how the stack ops achieve it? Or can
+> you tell me where their patches are?
 
-mem_cgroup_charge_common() is called when.
- 1. a page is added into file cache.
- 2. an anon page is _newly_ mapped.
+I've seen it in two cases: first was for KVM IO bypass and the other was a 
+(unfinished) patch to support the NoDMA bitmaps on some systems.
 
-A racy case is that a newly-swapped-in anonymous page is referred from
-prural threads in do_swap_page() at the same time.
-(a page is not Locked when mem_cgroup_charge() is called from do_swap_page.)
+In this case you really want to do a wrapper around the existing ops
+and extend the mapping. 
 
-Another case is shmem. It charges its page before calling add_to_page_cache().
-Then, mem_cgroup_charge_cache() is called twice. This case is handled in
-mem_cgroup_cache_charge(). But this check may be too hacky...
+That worked fine by just replacing the global pointer, but will
+be quite hard in your set up.
 
-Changelog v3->v4
- - added shmem's corner case handling in mem_cgroup_charge_cache().
+-Andi
 
-
-Signed-off-by : KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
----
- mm/memcontrol.c |   53 +++++++++++++++++++++++++----------------------------
- 1 file changed, 25 insertions(+), 28 deletions(-)
-
-Index: mm-2.6.26-rc2-mm1/mm/memcontrol.c
-===================================================================
---- mm-2.6.26-rc2-mm1.orig/mm/memcontrol.c
-+++ mm-2.6.26-rc2-mm1/mm/memcontrol.c
-@@ -536,28 +536,6 @@ static int mem_cgroup_charge_common(stru
- 	if (mem_cgroup_subsys.disabled)
- 		return 0;
- 
--	/*
--	 * Should page_cgroup's go to their own slab?
--	 * One could optimize the performance of the charging routine
--	 * by saving a bit in the page_flags and using it as a lock
--	 * to see if the cgroup page already has a page_cgroup associated
--	 * with it
--	 */
--retry:
--	lock_page_cgroup(page);
--	pc = page_get_page_cgroup(page);
--	/*
--	 * The page_cgroup exists and
--	 * the page has already been accounted.
--	 */
--	if (unlikely(pc)) {
--		VM_BUG_ON(pc->page != page);
--		VM_BUG_ON(!pc->mem_cgroup);
--		unlock_page_cgroup(page);
--		goto done;
--	}
--	unlock_page_cgroup(page);
--
- 	pc = kmem_cache_alloc(page_cgroup_cache, gfp_mask);
- 	if (unlikely(pc == NULL))
- 		goto err;
-@@ -618,15 +596,10 @@ retry:
- 	lock_page_cgroup(page);
- 	if (unlikely(page_get_page_cgroup(page))) {
- 		unlock_page_cgroup(page);
--		/*
--		 * Another charge has been added to this page already.
--		 * We take lock_page_cgroup(page) again and read
--		 * page->cgroup, increment refcnt.... just retry is OK.
--		 */
- 		res_counter_uncharge(&mem->res, PAGE_SIZE);
- 		css_put(&mem->css);
- 		kmem_cache_free(page_cgroup_cache, pc);
--		goto retry;
-+		goto done;
- 	}
- 	page_assign_page_cgroup(page, pc);
- 
-@@ -665,8 +638,32 @@ int mem_cgroup_charge(struct page *page,
- int mem_cgroup_cache_charge(struct page *page, struct mm_struct *mm,
- 				gfp_t gfp_mask)
- {
-+	/*
-+	 * Corner case handling. This is called from add_to_page_cache()
-+	 * in usual. But some FS (shmem) precharges this page before calling it
-+	 * and call add_to_page_cache() with GFP_NOWAIT.
-+	 *
-+	 * For GFP_NOWAIT case, the page may be pre-charged before calling
-+	 * add_to_page_cache(). (See shmem.c) check it here and avoid to call
-+	 * charge twice. (It works but has to pay a bit larger cost.)
-+	 */
-+	if (!(gfp_mask & __GFP_WAIT)) {
-+		struct page_cgroup *pc;
-+
-+		lock_page_cgroup(page);
-+		pc = page_get_page_cgroup(page);
-+		if (pc) {
-+			VM_BUG_ON(pc->page != page);
-+			VM_BUG_ON(!pc->mem_cgroup);
-+			unlock_page_cgroup(page);
-+			return 0;
-+		}
-+		unlock_page_cgroup(page);
-+	}
-+
- 	if (unlikely(!mm))
- 		mm = &init_mm;
-+
- 	return mem_cgroup_charge_common(page, mm, gfp_mask,
- 				MEM_CGROUP_CHARGE_TYPE_CACHE, NULL);
- }
 
