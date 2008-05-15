@@ -1,86 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932363AbYEOP1H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761284AbYEOP3P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932363AbYEOP1H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 11:27:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756551AbYEOP0z
+	id S1761284AbYEOP3P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 11:29:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757963AbYEOP3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 11:26:55 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:41273 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755310AbYEOP0y (ORCPT
+	Thu, 15 May 2008 11:29:00 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:42303 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757744AbYEOP27 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 11:26:54 -0400
+	Thu, 15 May 2008 11:28:59 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=RP3YtJSSlJd577xwX49lFBnKRqHpO/8se17sBEVh3K0GzT3j+mTqWtJlmBUOHq8jD
+	W9UBEwq+le99ZRmxZH18Q==
+Message-ID: <6599ad830805150828i6b61755dk9ce5213607621af7@mail.gmail.com>
+Date: Thu, 15 May 2008 08:28:46 -0700
+From: "Paul Menage" <menage@google.com>
+To: balbir@linux.vnet.ibm.com, "Paul Menage" <menage@google.com>,
+       linux-mm@kvack.org, "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
+       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, "Pavel Emelianov" <xemul@openvz.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [-mm][PATCH 4/4] Add memrlimit controller accounting and control (v4)
+In-Reply-To: <20080515082553.GK31115@balbir.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-ID: <18476.21589.315367.664174@stoffel.org>
-Date: Thu, 15 May 2008 11:18:45 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: John Stoffel <john@stoffel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jonathan Corbet <corbet@lwn.net>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Alexander Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [announce] "kill the Big Kernel Lock (BKL)" tree
-In-Reply-To: <482C5281.7020306@firstfloor.org>
-References: <20080514174955.GA515@elte.hu>
-	<6457.1210801515@vena.lwn.net>
-	<87bq387cyn.fsf@basil.nowhere.org>
-	<alpine.LFD.1.10.0805141515020.3019@woody.linux-foundation.org>
-	<482B65FE.4040402@firstfloor.org>
-	<18476.20788.142218.370584@stoffel.org>
-	<482C5281.7020306@firstfloor.org>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
+References: <20080514130904.24440.23486.sendpatchset@localhost.localdomain>
+	 <20080514130951.24440.73671.sendpatchset@localhost.localdomain>
+	 <20080514132529.GA25653@balbir.in.ibm.com>
+	 <6599ad830805141925mf8a13daq7309148153a3c2df@mail.gmail.com>
+	 <20080515061727.GC31115@balbir.in.ibm.com>
+	 <6599ad830805142355ifeeb0e2w86ccfd96aa27aea6@mail.gmail.com>
+	 <20080515070342.GJ31115@balbir.in.ibm.com>
+	 <6599ad830805150039u76c9002cg6c873fd71e687a69@mail.gmail.com>
+	 <20080515082553.GK31115@balbir.in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Andi" == Andi Kleen <andi@firstfloor.org> writes:
+On Thu, May 15, 2008 at 1:25 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>  >
+>  > But the only *new* cases of taking the mmap_sem that this would
+>  > introduce would be:
+>  >
+>  > - on a failed vm limit charge
+>
+>  Why a failed charge? Aren't we talking of moving all charge/uncharge
+>  under mmap_sem?
+>
 
-Andi> John Stoffel wrote:
->>>>>>> "Andi" == Andi Kleen <andi@firstfloor.org> writes:
->> 
-Andi> Linus Torvalds wrote:
->>>> On Thu, 15 May 2008, Andi Kleen wrote:
->>>>> The goal less being to get rid of BKL in old drivers, but not 
->>>>> requiring BKL in new drivers. Basically all BKL assumptions
->>>>> in interfaces really should go.
->>>> No, we really do want to get rid of BKL in old drivers too. Or at least in 
->>>> the interfaces.
->> 
-Andi> In the interfaces definitely yes and all subsystems should have
-Andi> their own lock_kernel calls, but why in the old drivers? For
-Andi> those it's very unlikely they are used on any SMP system anyways
-Andi> (e.g. anything depending on CONFIG_ISA) or if they do only on 2
-Andi> CPU systems.
->> 
->> I'm still running an SMP server with ISA slots. 
+Sorry, I worded that wrongly - I meant "cleaning up a successful
+charge after an expansion fails for other reasons"
 
-Andi> I do too (although one CPU has died recently), but how many ISA
-Andi> devices do you use in it? Mine used to have a ISA ISDN card, but
-Andi> that was it and then no ISA anymore even though the slots are
-Andi> still in there.
+I thought that all the charges and most of the uncharges were already
+under mmap_sem, and it would just be a few of the cleanup paths that
+needed to take it.
 
-I must admit I used to have an ISA Cyclades 8 port serial card running
-in there, but now it's all PCI stuff.  It only had one ISA slot.  So
-yes, ISA SMP boxes are slowly dying, but they'll be around for a long
-time to come.
+>
+>  > - when a task moves between two cgroups in the memrlimit hierarchy.
+>  >
+>
+>  Yes, this would nest cgroup_mutex and mmap_sem. Not sure if that would
+>  be a bad side-effect.
+>
 
-Andi> Also on 2 CPU systems BKL is not that critical anyways. It only
-Andi> starts to hurt on larger CPU counts.
+I think it's already nested that way - e.g. the cpusets code can call
+various migration functions (which take mmap_sem) while holding
+cgroup_mutex.
 
-True, but with the growing number of multicore systems, esp on
-desktops, it's going to be an issue.  How will the BKL work on quad
-core boxes?
+>
+>  Refactor the code to try and use mmap_sem and see what I come up
+>  with. Basically use mmap_sem for all charge/uncharge operations as
+>  well use mmap_sem in read_mode in the move_task() and
+>  mm_owner_changed() callbacks. That should take care of the race
+>  conditions discussed, unless I missed something.
 
-I'm going to shutup now,  since I don't have the knowledge to really
-contribute much to the discussion.  
+Sounds good.
 
-John
+Thanks,
 
-
-
+Paul
