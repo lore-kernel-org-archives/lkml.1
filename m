@@ -1,69 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757520AbYEOWXa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758226AbYEOWYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757520AbYEOWXa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 18:23:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753904AbYEOWXV
+	id S1758226AbYEOWYU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 18:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752549AbYEOWYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 18:23:21 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44596 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751687AbYEOWXU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 18:23:20 -0400
-Message-ID: <482CB7D7.30008@redhat.com>
-Date: Thu, 15 May 2008 18:23:19 -0400
-From: Tony Camuso <tcamuso@redhat.com>
-Reply-To: tcamuso@redhat.com
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: jbarnes@virtuousgeek.org, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org,
-       "Schoeller, Patrick (Linux - Houston, TX)" <Patrick.Schoeller@hp.com>
-Subject: Re: [PATCH] PCI: Correct last two HP entries in the bfsort whitelist
-References: <482C838E.3030203@redhat.com> <20080515220215.76eea915@core>
-In-Reply-To: <20080515220215.76eea915@core>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 15 May 2008 18:24:09 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:58316 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751687AbYEOWYG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 18:24:06 -0400
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subect: [GIT PULL] ext4 bugfixes
+From: "Theodore Ts'o" <tytso@mit.edu>
+Phone: (781) 391-3464
+Message-Id: <E1Jwlro-0000lF-1g@closure.thunk.org>
+Date: Thu, 15 May 2008 18:24:04 -0400
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
+Hi Linus,
 
-> This is going to make everyone with those boxes who upgrades suddenely
-> get their devices re-ordered and renamed when the probe order changes.
-> That seems extremely inappropriate.
-> 
-> Alan
+Please pull from:
 
-HP maintains that more of our customers, especially new customers,
-will be adversely affected by NOT implementing this patch for the
-following reasons.
+        git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git for_linus
 
-1. HP issued a Customer Advisory for existing customers to use "pci=bfsort"
-    in the boot command for these systems. Customers using pci=bfsort in
-    their boot scripts will be unaffected by this patch.
+These are all cleanups and bug fixes for 2.6.26.
 
-2. Customers using only the two embedded NI devices will be unaffected.
+Many thanks,
 
-3. Because of the use of labels for disk devices, they are unaffected.
+						- Ted
 
-4. New customers who must add pci=bfsort to their boot scripts have
-    expressed dissatisfaction.
+ fs/ext4/balloc.c  |   17 +++++++----
+ fs/ext4/mballoc.c |   66 +++++++++++++++++++++++++++++--------------
+ fs/ext4/super.c   |   80 ++++++++++++++++++++++++++++++++++++++--------------
+ fs/jbd2/commit.c  |    2 +
+ 4 files changed, 116 insertions(+), 49 deletions(-)
 
-The only time this patch would induce any confusion for an existing customer
-is upon the convergence of the following situations.
+Aneesh Kumar K.V (1):
+      ext4: Retry block allocation if new blocks are allocated from system zone.
 
-1. The user has not followed the instructions in the release notes
-    for the DL360 and DL380,
+Jan Kara (4):
+      ext4: correct mount option parsing to detect when quota options can be changed
+      ext4: Fix mount messages when quota disabled
+      ext4: fix synchronization of quota files in journal=data mode
+      ext4: fix typos in messages and comments (journalled -> journaled)
 
-    AND
+Mingming Cao (1):
+      jbd2: update transaction t_state to T_COMMIT fix
 
-2. The user has added NI cards to the option slots,
-
-    AND
-
-3. The user upgrades his kernel.
-
-
+Valerie Clement (1):
+      ext4: mballoc fix mb_normalize_request algorithm for 1KB block size filesystems
 
