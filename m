@@ -1,164 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763959AbYEOVQJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763578AbYEOVSk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763959AbYEOVQJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 17:16:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756018AbYEOVPz
+	id S1763578AbYEOVSk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 17:18:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755815AbYEOVSd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 17:15:55 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41161 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754694AbYEOVPy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 17:15:54 -0400
-Date: Thu, 15 May 2008 14:15:38 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Cyrill Gorcunov <gorcunov@gmail.com>, geert@linux-m68k.org,
-       zippel@linux-m68k.org, schwab@suse.de, linux-kernel@vger.kernel.org,
-       linux-m68k@vger.kernel.org
-Subject: Re: [PATCH] init - fix building bug and potential buffer overflow
-In-Reply-To: <20080515134928.83b2d948.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0805151406030.3019@woody.linux-foundation.org>
-References: <20080514154402.GF6902@cvg> <20080515105803.7c9ab8c7.akpm@linux-foundation.org> <20080515180528.GC7481@cvg> <Pine.LNX.4.64.0805152132530.22059@anakin> <aa79d98a0805151322s20a2bb34x4491bcacfcef310@mail.gmail.com>
- <20080515134928.83b2d948.akpm@linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Thu, 15 May 2008 17:18:33 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:56980 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752247AbYEOVSc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 17:18:32 -0400
+Date: Thu, 15 May 2008 14:18:09 -0700
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+To: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       mhoffman@lightlink.com, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org
+Subject: [PATCH v2] ibmaem: Fix 64-bit division on 32-bit platforms
+Message-ID: <20080515211809.GB7323@tree.beaverton.ibm.com>
+Reply-To: djwong@us.ibm.com
+References: <20080508180858.GM16078@tree.beaverton.ibm.com> <20080508163443.a1e9ffe7.akpm@linux-foundation.org> <20080509045527.GI16404@tree.beaverton.ibm.com> <20080514222704.GA11439@cs181133002.pp.htv.fi> <20080514231136.GA4308@beyonder.ift.unesp.br>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080514231136.GA4308@beyonder.ift.unesp.br>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 15 May 2008, Andrew Morton wrote:
+> To avoid these kind of doubts may I suggest using the time 
+> conversion definitions of include/linux/time.h?
 > 
-> (yeah, I normally parenthesise sizeof too, but this provided 80-col
-> salvation)
+> It would be much easier to understand the intention with
+> NSEC_PER_SEC, USEC_PER_SEC etc (comments would also help)
 
-Why?
-
-The nice way to provide 80-col salvation is to just fix the code. Instead 
-of having complex nested loops, have a really trivial outer loop like
-
-	for (call = __initcall_start; call < __initcall_end; call++)
-		do_one_initcall(*call);
-
-and then the code to actually do one of the initcalls is much simpler to 
-read, and because it's not as indented, the 80-column issues just go away.
-
-IOW, something like this (the diff looks ugly, but the end result is 
-better).
-
-Talking about cleanups, why the *hell* does print_fn_descriptor_symbol() 
-take an "unsigned long", when every single user would want to give it a 
-pointer?
-
-Would somebody please want to move that cast into the macro (or better 
-yet, make it an inline function that takes a 'void *'), and remove all the 
-casts from the callers?
-
-		Linus
-
+Ok, here's an updated version that makes the conversions a bit clearer.
+Tested and run on i386/x86-64.
 ---
- init/main.c |   78 +++++++++++++++++++++++++++++++----------------------------
- 1 files changed, 41 insertions(+), 37 deletions(-)
+ibmaem: Fix 64-bit division on 32-bit platforms
 
-diff --git a/init/main.c b/init/main.c
-index f406fef..0a1d65e 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -695,53 +695,57 @@ __setup("initcall_debug", initcall_debug_setup);
+Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+---
+
+ drivers/hwmon/ibmaem.c |    9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/hwmon/ibmaem.c b/drivers/hwmon/ibmaem.c
+index 22fa7d6..3013492 100644
+--- a/drivers/hwmon/ibmaem.c
++++ b/drivers/hwmon/ibmaem.c
+@@ -31,6 +31,8 @@
+ #include <linux/idr.h>
+ #include <linux/sched.h>
+ #include <linux/platform_device.h>
++#include <linux/math64.h>
++#include <linux/time.h>
  
- extern initcall_t __initcall_start[], __initcall_end[];
+ #define REFRESH_INTERVAL	(HZ)
+ #define IPMI_TIMEOUT		(30 * HZ)
+@@ -81,6 +83,7 @@
  
--static void __init do_initcalls(void)
-+static void __init do_one_initcall(initcall_t call)
+ #define AEM_DEFAULT_POWER_INTERVAL 1000
+ #define AEM_MIN_POWER_INTERVAL	200
++#define UJ_PER_MJ		1000L
+ 
+ static DEFINE_IDR(aem_idr);
+ static DEFINE_SPINLOCK(aem_idr_lock);
+@@ -841,7 +844,7 @@ static ssize_t aem_show_power(struct device *dev,
  {
--	initcall_t *call;
- 	int count = preempt_count();
-+	ktime_t t0, t1, delta;
-+	char msgbuf[64];
-+	int result;
-+
-+	if (initcall_debug) {
-+		print_fn_descriptor_symbol("calling  %s()\n",
-+				(unsigned long) call);
-+		t0 = ktime_get();
-+	}
+ 	struct sensor_device_attribute *attr = to_sensor_dev_attr(devattr);
+ 	struct aem_data *data = dev_get_drvdata(dev);
+-	u64 before, after, time;
++	u64 before, after, delta, time;
+ 	signed long leftover;
+ 	struct timespec b, a;
  
--	for (call = __initcall_start; call < __initcall_end; call++) {
--		ktime_t t0, t1, delta;
--		char msgbuf[40];
--		int result;
-+	result = call();
+@@ -864,9 +867,9 @@ static ssize_t aem_show_power(struct device *dev,
+ 	mutex_unlock(&data->lock);
  
--		if (initcall_debug) {
--			print_fn_descriptor_symbol("calling  %s()\n",
--					(unsigned long) *call);
--			t0 = ktime_get();
--		}
-+	if (initcall_debug) {
-+		t1 = ktime_get();
-+		delta = ktime_sub(t1, t0);
+ 	time = timespec_to_ns(&a) - timespec_to_ns(&b);
+-	time /= 1000;
++	delta = (after - before) * UJ_PER_MJ;
  
--		result = (*call)();
-+		print_fn_descriptor_symbol("initcall %s()",
-+				(unsigned long) call);
-+		printk(" returned %d after %Ld msecs\n", result,
-+			(unsigned long long) delta.tv64 >> 20);
-+	}
+-	return sprintf(buf, "%llu\n", (after - before) * 1000000000 / time);
++	return sprintf(buf, "%llu\n", div64_u64(delta * NSEC_PER_SEC, time));
+ }
  
--		if (initcall_debug) {
--			t1 = ktime_get();
--			delta = ktime_sub(t1, t0);
-+	msgbuf[0] = 0;
- 
--			print_fn_descriptor_symbol("initcall %s()",
--					(unsigned long) *call);
--			printk(" returned %d after %Ld msecs\n", result,
--				(unsigned long long) delta.tv64 >> 20);
--		}
-+	if (result && result != -ENODEV && initcall_debug)
-+		sprintf(msgbuf, "error code %d ", result);
- 
--		msgbuf[0] = 0;
-+	if (preempt_count() != count) {
-+		strlcat(msgbuf, "preemption imbalance ", sizeof(msgbuf));
-+		preempt_count() = count;
-+	}
-+	if (irqs_disabled()) {
-+		strlcat(msgbuf, "disabled interrupts ", sizeof(msgbuf));
-+		local_irq_enable();
-+	}
-+	if (msgbuf[0]) {
-+		print_fn_descriptor_symbol(KERN_WARNING "initcall %s()",
-+				(unsigned long) call);
-+		printk(" returned with %s\n", msgbuf);
-+	}
-+}
- 
--		if (result && result != -ENODEV && initcall_debug)
--			sprintf(msgbuf, "error code %d ", result);
-+static void __init do_initcalls(void)
-+{
-+	initcall_t *call;
- 
--		if (preempt_count() != count) {
--			strncat(msgbuf, "preemption imbalance ", sizeof(msgbuf));
--			preempt_count() = count;
--		}
--		if (irqs_disabled()) {
--			strncat(msgbuf, "disabled interrupts ", sizeof(msgbuf));
--			local_irq_enable();
--		}
--		if (msgbuf[0]) {
--			print_fn_descriptor_symbol(KERN_WARNING "initcall %s()",
--					(unsigned long) *call);
--			printk(" returned with %s\n", msgbuf);
--		}
--	}
-+	for (call = __initcall_start; call < __initcall_end; call++)
-+		do_one_initcall(*call);
- 
- 	/* Make sure there is no pending stuff from the initcall sequence */
- 	flush_scheduled_work();
+ /* Display energy use */
