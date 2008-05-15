@@ -1,101 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759131AbYEORnK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762333AbYEORoR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759131AbYEORnK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 13:43:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762508AbYEORms
+	id S1762333AbYEORoR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 13:44:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751569AbYEORoE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 13:42:48 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:1854 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762462AbYEORmr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 13:42:47 -0400
-From: Andy Whitcroft <apw@shadowen.org>
-To: linux-mm@kvack.org
-Cc: Andrew Morton <akpm@osdl.org>, Christoph Lameter <clameter@sgi.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] slob: record page flag overlays explicitly v2
-References: <1210872010.0@pinky>
-InReply-To: <1210872010.0@pinky>
-Date: Thu, 15 May 2008 18:42:46 +0100
-Message-Id: <1210873366.0@pinky>
+	Thu, 15 May 2008 13:44:04 -0400
+Received: from web95104.mail.in2.yahoo.com ([203.104.18.156]:36878 "HELO
+	web95104.mail.in2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751552AbYEORoD convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 13:44:03 -0400
+X-Greylist: delayed 397 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 May 2008 13:44:02 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=uo3gYfHQBHCKujenW3gtL/MtR0u/ZJ2WE8b55K658pNo/FSpm4E+XjuIbX9ugSzv12/tMVtSyiLJKcmS1gs4nHLaMZU7Rb1e+uDycuSf1ztV6XILdz1LS+oeC+OaaOc1LYIImrNG7fwGTN0e+T6LG4BhK3d0FypV3kMoOESsVuc=;
+X-YMail-OSG: cbUeeOcVM1mEWc11lTG9BlVp0KLXZvL8gN4uAOEq8EVtOw08oAo8gjRO3yRHiJcB8Zf0NUfLQFa89IsZUBrfze7l31mJYBbyBAEDlKpGoPnmSEREYs8GesT3bw--
+X-Mailer: YahooMailRC/975.23 YahooMailWebService/0.7.185
+Date: Thu, 15 May 2008 23:07:19 +0530 (IST)
+From: murtuja bharmal <murtuja_bharmal@yahoo.com>
+Subject: Kbuild Makefile output
+To: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-ID: <339763.26248.qm@web95104.mail.in2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello All.
+I want to collect all my object file in onedirectory and then want to create a kernel module.
+For example: This my directory structure.
+dir
+|
+--------------------------------------
+|            |        |        |
+dir1    dir2       dir3   dir4
+This is my makefile in 'dir'.
+obj-m := test.o
+test-objs += \
+                dir1/test1.o  \
+                dir2/test2.o  \
+                dir3/test3.o
+all:
+            make -C /usr/src/linux M=`pwd` modules
 
-SLOB reuses two page bits for internal purposes, it overlays PG_active
-and PG_private.  This is hidden away in slob.c.  Document these overlays
-explicitly in the main page-flags enum along with all the others.
+Now I want to save all output objectfile test1.o test2.o test3.o in one directory
+called 'dir4' not in source directory. 'test.o' should look all this object file in 'dir4' for linking, not in the source directory and 'test.ko' should also be create in 'dir4'.
+Can any one tell me, what is require changes in Kernel Makefile for the same.
 
-Signed-off-by: Andy Whitcroft <apw@shadowen.org>
----
- include/linux/page-flags.h |    4 ++++
- mm/slob.c                  |   12 ++++++------
- 2 files changed, 10 insertions(+), 6 deletions(-)
-diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
-index 2e88df6..71aec98 100644
---- a/include/linux/page-flags.h
-+++ b/include/linux/page-flags.h
-@@ -104,6 +104,10 @@ enum pageflags {
- 	/* XEN */
- 	PG_pinned = PG_owner_priv_1,
- 
-+	/* SLOB */
-+	PG_slob_page = PG_active,
-+	PG_slob_free = PG_private,
-+
- 	/* SLUB */
- 	PG_slub_frozen = PG_active,
- 	PG_slub_debug = PG_error,
-diff --git a/mm/slob.c b/mm/slob.c
-index 6038cba..0aaf54f 100644
---- a/mm/slob.c
-+++ b/mm/slob.c
-@@ -130,17 +130,17 @@ static LIST_HEAD(free_slob_large);
-  */
- static inline int slob_page(struct slob_page *sp)
- {
--	return test_bit(PG_active, &sp->flags);
-+	return test_bit(PG_slob_page, &sp->flags);
- }
- 
- static inline void set_slob_page(struct slob_page *sp)
- {
--	__set_bit(PG_active, &sp->flags);
-+	__set_bit(PG_slob_page, &sp->flags);
- }
- 
- static inline void clear_slob_page(struct slob_page *sp)
- {
--	__clear_bit(PG_active, &sp->flags);
-+	__clear_bit(PG_slob_page, &sp->flags);
- }
- 
- /*
-@@ -148,19 +148,19 @@ static inline void clear_slob_page(struct slob_page *sp)
-  */
- static inline int slob_page_free(struct slob_page *sp)
- {
--	return test_bit(PG_private, &sp->flags);
-+	return test_bit(PG_slob_free, &sp->flags);
- }
- 
- static void set_slob_page_free(struct slob_page *sp, struct list_head *list)
- {
- 	list_add(&sp->list, list);
--	__set_bit(PG_private, &sp->flags);
-+	__set_bit(PG_slob_free, &sp->flags);
- }
- 
- static inline void clear_slob_page_free(struct slob_page *sp)
- {
- 	list_del(&sp->list);
--	__clear_bit(PG_private, &sp->flags);
-+	__clear_bit(PG_slob_free, &sp->flags);
- }
- 
- #define SLOB_UNIT sizeof(slob_t)
+Thanks
+Murtuja
+
+
+
+      Share files, take polls, and make new friends - all under one roof. Go to http://in.promos.yahoo.com/groups/
