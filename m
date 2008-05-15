@@ -1,67 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763298AbYEOUfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760597AbYEOUie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763298AbYEOUfa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 16:35:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755424AbYEOUfV
+	id S1760597AbYEOUie (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 16:38:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752805AbYEOUi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 16:35:21 -0400
-Received: from smtp6-g19.free.fr ([212.27.42.36]:43005 "EHLO smtp6-g19.free.fr"
+	Thu, 15 May 2008 16:38:26 -0400
+Received: from mail.aknet.ru ([78.158.192.26]:58741 "EHLO mail.aknet.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753780AbYEOUfU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 16:35:20 -0400
-Message-ID: <482C9E73.2040202@free.fr>
-Date: Thu, 15 May 2008 22:34:59 +0200
-From: Nicolas 2P <nicolas.2p.debian@free.fr>
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
+	id S1752509AbYEOUiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 16:38:25 -0400
+Message-ID: <482C9F3E.4050104@aknet.ru>
+Date: Fri, 16 May 2008 00:38:22 +0400
+From: Stas Sergeev <stsp@aknet.ru>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Jay Vosburgh <fubar@us.ibm.com>, David Miller <davem@davemloft.net>,
-       bonding-devel@lists.sourceforge.net, linux-net@vger.kernel.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [patch]  bondig - arp_interval with low value => Oops.
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+To: Roberto Oppedisano <roberto.oppedisano@infracom.it>
+CC: Takashi Iwai <tiwai@suse.de>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Non-working snd-pcsp
+References: <482737BE.20502@infracom.it>	<4827415A.7060101@aknet.ru>	<482756F0.8020609@infracom.it>	<48275D8D.10500@aknet.ru>	<4827F0A1.9090600@infracom.it>	<48288ACC.1020909@aknet.ru>	<48299F08.2060702@infracom.it>	<4829B6A1.90707@infracom.it>	<s5h7idycfmf.wl%tiwai@suse.de>	<482A7A17.8070706@infracom.it> <s5hwslxb3t8.wl%tiwai@suse.de> <482C9A3E.3000009@infracom.it>
+In-Reply-To: <482C9A3E.3000009@infracom.it>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When setting arp_interval parameter to a very low value, delta_in_ticks 
-for next arp might become 0, causing an infinite loop.
+Hello.
 
-See http://bugzilla.kernel.org/show_bug.cgi?id=10680
+Roberto Oppedisano wrote:
+> I tried different switch combination with  alsamixer, but no still no
+> sound from the speaker...
+Both no beeps and no PCM?
+Please show us your current full
+mixer config again.
+Please don't forget to try the
+options snd-pcsp nforce_wa=1
+too.
 
-Same problem for miimon parameter already fixed, but fix might be 
-enhanced, by using msecs_to_jiffies() function.
-
-Signed-off-by: Nicolas de Pesloüan <nicolas.2p.debian@free.fr>
-
---- /usr/src/linux/drivers/net/bonding/bond_main_orig.c 2008-05-13 
-02:00:01.000000000 +0200
-+++ /usr/src/linux/drivers/net/bonding/bond_main.c      2008-05-14 
-14:55:53.000000000 +0200
-@@ -2391,7 +2391,7 @@
-                 read_lock(&bond->lock);
-         }
-
--       delay = ((bond->params.miimon * HZ) / 1000) ? : 1;
-+       delay = msecs_to_jiffies(bond->params.miimon);
-         read_unlock(&bond->lock);
-         queue_delayed_work(bond->wq, &bond->mii_work, delay);
-  }
-@@ -2704,7 +2704,7 @@
-
-         read_lock(&bond->lock);
-
--       delta_in_ticks = (bond->params.arp_interval * HZ) / 1000;
-+       delta_in_ticks = msecs_to_jiffies(bond->params.arp_interval);
-
-         if (bond->kill_timers) {
-                 goto out;
-@@ -2837,7 +2837,7 @@
-
-         read_lock(&bond->lock);
-
--       delta_in_ticks = (bond->params.arp_interval * HZ) / 1000;
-+       delta_in_ticks = msecs_to_jiffies(bond->params.arp_interval * HZ);
-
-         if (bond->kill_timers) {
-                 goto out;
+> (I managed to enable the speaker, following Stas suggestion)
+With the master volume at maximum?
+Then I am almost out of ideas... :(
