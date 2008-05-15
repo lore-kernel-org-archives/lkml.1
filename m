@@ -1,98 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764628AbYEOUs0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763764AbYEOUua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764628AbYEOUs0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 16:48:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754960AbYEOUsR
+	id S1763764AbYEOUua (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 16:50:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754857AbYEOUuT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 16:48:17 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:52607 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751824AbYEOUsQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 16:48:16 -0400
-Date: Thu, 15 May 2008 23:46:32 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Michael Buesch <mb@bu3sch.de>,
-       Gordon Farquharson <gordonfarquharson@gmail.com>
-Subject: Re: crossbuild fails in modpost
-Message-ID: <20080515204632.GG1936@cs181133002.pp.htv.fi>
-References: <482C3E3E.9090204@gmail.com> <482C6F02.1000205@gmail.com> <20080515173539.GA23959@uranus.ravnborg.org> <20080515174015.GA24024@uranus.ravnborg.org> <482C8CBE.2060101@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <482C8CBE.2060101@gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 15 May 2008 16:50:19 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53220 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753751AbYEOUuR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 16:50:17 -0400
+Date: Thu, 15 May 2008 13:49:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Cyrill Gorcunov" <gorcunov@gmail.com>
+Cc: geert@linux-m68k.org, torvalds@linux-foundation.org, zippel@linux-m68k.org,
+       schwab@suse.de, linux-kernel@vger.kernel.org,
+       linux-m68k@vger.kernel.org
+Subject: Re: [PATCH] init - fix building bug and potential buffer overflow
+Message-Id: <20080515134928.83b2d948.akpm@linux-foundation.org>
+In-Reply-To: <aa79d98a0805151322s20a2bb34x4491bcacfcef310@mail.gmail.com>
+References: <20080514154402.GF6902@cvg>
+	<20080515105803.7c9ab8c7.akpm@linux-foundation.org>
+	<20080515180528.GC7481@cvg>
+	<Pine.LNX.4.64.0805152132530.22059@anakin>
+	<aa79d98a0805151322s20a2bb34x4491bcacfcef310@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 15, 2008 at 09:19:26PM +0200, Jiri Slaby wrote:
-> Sam Ravnborg napsal(a):
->> On Thu, May 15, 2008 at 07:35:39PM +0200, Sam Ravnborg wrote:
->>> On Thu, May 15, 2008 at 07:12:34PM +0200, Jiri Slaby wrote:
->>>> Well, let's fix sam's email.
->>>>
->>>> Jiri Slaby napsal(a):
->>>>> Hi,
->>>>>
->>>>> probably
->>>>> 4ce6efed48d736e3384c39ff87bda723e1f8e041
->>>>> kbuild: soften modpost checks when doing cross builds
->>>>>
->>>>> causes build failures on x86_64 kernel build on 32 bit machine:
->>>>>
->>>>> make -f /local/xslaby/hid/scripts/Makefile.modpost
->>>>> YYYYYYYYYYYYYY x86_64 x86_64
->>>>>  scripts/mod/modpost -m -a -o /local/xslaby/buhid/Module.symvers  
->>>>>   -S -K /local/xslaby/buhid/Module.markers -M  
->>>>> /local/xslaby/buhid/Module.markers   -s
->>>>> XXXXXXXXXXXXXXXXXX 20: 0 (2), 4 (4), 8 (4), 12 (8)
->>>>> FATAL: drivers/hid/hid-apple: sizeof(struct hid_device_id)=20 is 
->>>>> not a modulo of the size of section __mod_hid_device_table=648.
->>>>> Fix definition of struct hid_device_id in mod_devicetable.h
->>>>> make[2]: *** [__modpost] Error 1
->>>>> make[1]: *** [modules] Error 2
->>>>> make: *** [sub-make] Error 2
->>>>>
->>>>> after sticking echo into:
->>>>> __modpost: $(modules:.ko=.o) FORCE
->>>>> +       @echo YYYYYYYYYYYYYY $(KBUILD_BUILDHOST) $(ARCH)
->>>>>        $(call cmd,modpost) $(wildcard vmlinux) $(filter-out FORCE,$^)
->>>>>
->>> Your machine claims it is a x86_64 and you are building for a x86_64
->>> according to the following line:
->>>>> YYYYYYYYYYYYYY x86_64 x86_64
->>> So it looks to me that you are building for 64 bit on a 64 bit machine.
->>> So when you write:
->>>  on x86_64 kernel build on 32 bit machine:
->>>
->>> I assume you try to say that your HOSTCC is 32 bit and your
->>> kernel cc is 64 bit (or something similar).
->>>
->>> The commit you reference loosen up the check so we do not do the
->>> check if we _know_ that the host and the target system differs.
->>> The only thing I can imagine right now to solve your issue would
->>> be to skip the check if we do not use the same gcc for target and host?
->
-> Well, the compiler is the same, but it's told to compile the kernel with  
-> -m64. It runs on x86_64 kernel and i386 userspace. It's debian i386 gcc  
-> package which understands x86_64 objects too. No SUBARCH option, it seems 
-> to default to x86_64.
->...
+On Fri, 16 May 2008 00:22:14 +0400
+"Cyrill Gorcunov" <gorcunov@gmail.com> wrote:
 
-Unless you manually fiddle with ARCH you can only build a kernel with 
-the same 32<->64bit setting as your currently running kernel (no matter 
-which userspace you use)...
+> 
+> On 5/15/08, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > On Thu, 15 May 2008, Cyrill Gorcunov wrote:
+> >> [Andrew Morton - Thu, May 15, 2008 at 10:58:03AM -0700]
+> >> | On Wed, 14 May 2008 19:44:02 +0400 Cyrill Gorcunov <gorcunov@gmail.com>
+> >> wrote:
+> >> |
+> >> | > This patch does fix build bug on m68k wich does not have strncat in
+> >> straight way.
+> >> | >
+> >> | > What is more important - my previous patch
+> >> | >
+> >> | > commit e662e1cfd434aa234b72fbc781f1d70211cb785b
+> >> | > Author: Cyrill Gorcunov <gorcunov@gmail.com>
+> >> | > Date:   Mon May 12 14:02:22 2008 -0700
+> >> | >
+> >> | >     init: don't lose initcall return values
+> >> | >
+> >> | > has introduced potential buffer overflow by wrong calculation
+> >> | > of string accumulator size.
+> >> | >
+> >> | > Many thanks Andreas Schwab and Geert Uytterhoeven for helping
+> >> | > to catch and fix the bug.
+> >> | >
+> >> | > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> >> | > ---
+> >> | >
+> >> | > Index: linux-2.6.git/init/main.c
+> >> | > ===================================================================
+> >> | > --- linux-2.6.git.orig/init/main.c	2008-05-14 17:55:10.000000000 +0400
+> >> | > +++ linux-2.6.git/init/main.c	2008-05-14 19:11:18.000000000 +0400
+> >> | > @@ -702,7 +702,7 @@ static void __init do_initcalls(void)
+> >> | >
+> >> | >  	for (call = __initcall_start; call < __initcall_end; call++) {
+> >> | >  		ktime_t t0, t1, delta;
+> >> | > -		char msgbuf[40];
+> >> | > +		char msgbuf[64];
+> >> | >  		int result;
+> >> | >
+> >> | >  		if (initcall_debug) {
+> >> | > @@ -729,11 +729,11 @@ static void __init do_initcalls(void)
+> >> | >  			sprintf(msgbuf, "error code %d ", result);
+> >> | >
+> >> | >  		if (preempt_count() != count) {
+> >> | > -			strncat(msgbuf, "preemption imbalance ", sizeof(msgbuf));
+> >> | > +			strcat(msgbuf, "preemption imbalance ");
+> >> | >  			preempt_count() = count;
+> >> | >  		}
+> >> | >  		if (irqs_disabled()) {
+> >> | > -			strncat(msgbuf, "disabled interrupts ", sizeof(msgbuf));
+> >> | > +			strcat(msgbuf, "disabled interrupts ");
+> >> | >  			local_irq_enable();
+> >> | >  		}
+> >> | >  		if (msgbuf[0]) {
+> >> |
+> >> | umm, why can't m68k call strncat() from init/main.c??
+> >> |
+> >>
+> >> there some problem with headers iirc, we have to declare it first or
+> >> use some gcc option (as Adrian suggested). Actually I would prefer to use
+> >
+> > gcc turns the strncat() into an implicit call to strlen() and some form
+> > of expanded memcpy(). E.g.
+> >
+> >
+> > 	if (preempt_count() != count) {
+> > 		strncat(msgbuf, "preemption imbalance ", sizeof(msgbuf));
+> > 		preempt_count() = count;
+> > 	}
+> >
+> > becomes
+> >
+> >         cmp.l 884(%a2),%d6      | <variable>.thread.info.preempt_count,
+> > count
+> >         jeq .L61        |
+> >         move.l %d7,-(%sp)       | tmp76,
+> >         jbsr strlen     |
+> >         addq.l #4,%sp   |,
+> >         move.l %d7,%a0  | tmp76, tmp80
+> >         add.l %d0,%a0   |, tmp80
+> >         move.l #1886545253,(%a0)+       |,
+> >         move.l #1836086377,(%a0)+       |,
+> >         move.l #1869488233,(%a0)+       |,
+> >         move.l #1835164012,(%a0)+       |,
+> >         move.l #1634624357,(%a0)+       |,
+> >         move.w #8192,(%a0)      |,* D.28541
+> >         move.l %d6,884(%a2)     | count,
+> > <variable>.thread.info.preempt_count
+> > .L61:
+> >
+> > All other explicit calls to strlen() are inlined, as per
+> > include/asm-m68k/string.h.
+> >
+> >> strlcat there but it seems it would fail to build too. Originally I've
+> >> messed
+> >> strlcat with strncat :(
+> >
+> > Actually it build and runs fine after s/strncat/strlcat/...
+> >
 
-cu
-Adrian
+(top-posting repaired)
 
--- 
+> Could you please make an update to the patch? I can make it only
+> tomorrow evening (ie not that fast)
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Like this?
+
+
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+
+This patch fixes a build bug on m68k - gcc decides to emit a call to the
+strlen library function, which we don't implement.  Use strlcat() instead.
+
+
+What is more important - my previous patch
+
+commit e662e1cfd434aa234b72fbc781f1d70211cb785b
+Author: Cyrill Gorcunov <gorcunov@gmail.com>
+Date:   Mon May 12 14:02:22 2008 -0700
+
+    init: don't lose initcall return values
+
+Has introduced potential buffer overflow by wrong calculation of string
+accumulator size.
+
+Many thanks Andreas Schwab and Geert Uytterhoeven for helping
+to catch and fix the bug.
+
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ init/main.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff -puN init/main.c~init-fix-building-bug-and-potential-buffer-overflow init/main.c
+--- a/init/main.c~init-fix-building-bug-and-potential-buffer-overflow
++++ a/init/main.c
+@@ -702,7 +702,7 @@ static void __init do_initcalls(void)
+ 
+ 	for (call = __initcall_start; call < __initcall_end; call++) {
+ 		ktime_t t0, t1, delta;
+-		char msgbuf[40];
++		char msgbuf[64];
+ 		int result;
+ 
+ 		if (initcall_debug) {
+@@ -729,11 +729,11 @@ static void __init do_initcalls(void)
+ 			sprintf(msgbuf, "error code %d ", result);
+ 
+ 		if (preempt_count() != count) {
+-			strncat(msgbuf, "preemption imbalance ", sizeof(msgbuf));
++			strlcat(msgbuf, "preemption imbalance ", sizeof msgbuf);
+ 			preempt_count() = count;
+ 		}
+ 		if (irqs_disabled()) {
+-			strncat(msgbuf, "disabled interrupts ", sizeof(msgbuf));
++			strlcat(msgbuf, "disabled interrupts ", sizeof msgbuf);
+ 			local_irq_enable();
+ 		}
+ 		if (msgbuf[0]) {
+_
+
+(yeah, I normally parenthesise sizeof too, but this provided 80-col
+salvation)
 
