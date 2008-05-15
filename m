@@ -1,262 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764634AbYEOVDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754699AbYEOVHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764634AbYEOVDw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 17:03:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756260AbYEOVDo
+	id S1754699AbYEOVHu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 17:07:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbYEOVHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 17:03:44 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:36806 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751669AbYEOVDn (ORCPT
+	Thu, 15 May 2008 17:07:42 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:51719 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752247AbYEOVHl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 17:03:43 -0400
-Date: Thu, 15 May 2008 14:02:54 -0700
-From: Greg KH <greg@kroah.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, ajones@riverbed.com,
-       a.p.zijlstra@chello.nl, mszeredi@suse.cz, akpm@linux-foundation.org,
-       kay.sievers@vrfy.org, trond.myklebust@fys.uio.no,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BUG] mm: bdi: export BDI attributes in sysfs
-Message-ID: <20080515210254.GA23684@kroah.com>
-References: <20080513190435.GG23649@ajones-laptop.nbttech.com> <20080514144030.GD6458@ajones-laptop.nbttech.com> <E1JwiZa-0007UA-Tm@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0805151213430.3019@woody.linux-foundation.org> <E1Jwj7G-0007Zs-GB@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0805151247010.3019@woody.linux-foundation.org>
+	Thu, 15 May 2008 17:07:41 -0400
+Date: Thu, 15 May 2008 17:07:40 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+cc: "Huang, Ying" <ying.huang@intel.com>, <nigel@nigel.suspend2.net>,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       <linux-pm@lists.linux-foundation.org>, Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [linux-pm] [PATCH -mm] kexec jump -v9
+In-Reply-To: <m18wybqooh.fsf@frodo.ebiederm.org>
+Message-ID: <Pine.LNX.4.44L0.0805151700190.3639-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805151247010.3019@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 15, 2008 at 12:54:57PM -0700, Linus Torvalds wrote:
+On Thu, 15 May 2008, Eric W. Biederman wrote:
+
+> Alan Stern <stern@rowland.harvard.edu> writes:
 > 
+> > On Wed, 14 May 2008, Eric W. Biederman wrote:
+> >
+> >> My take on the situation is this.  For proper handling we
+> >> need driver device_detach and device_reattach methods.
+> >> 
+> >> With the following semantics.  The device_detach methods
+> >> will disable DMA and place the hardware in a sane state
+> >> from which the device driver can reclaim and reinitialize it,
+> >> but the hardware will not be touched.
+> >> 
+> >> device_reattach reattaches the driver to the hardware.
+> >
+> > How would these differ from the already-existing remove and probe 
+> > methods?
 > 
-> On Thu, 15 May 2008, Miklos Szeredi wrote:
-> > 
-> > Actually nothing should need protection.  The only problem AFAICS is
-> > that the device_create()/dev_set_drvdata() interface is racy: somebody
-> > can come in after the device has been created but before drvdata has
-> > been set, and then we are in trouble.
+> Honestly I would like for them not to, and they should be
+> proper factors of the remove and probe methods.
+
+So then there's no need for new methods, right?
+
+> However we have a fundamental gotcha that we need to handle.
+> Logical abstractions on physical devices.
 > 
-> Well, I'm not sure that the locking should be at that level. Maybe the 
-> locking *should* be in the driver that does this. It may need to do other 
-> setup too, after all.
-> 
-> Of course, doing a device_create_drvdata() thing might be the right 
-> solution, at least part of the time. Greg?
+> i.e.  How do we handle the case of a filesystem on a block
+>       device, when we remove the block device and then read it.
 
-Here's a patch that is build tested only.
+The filesystem code should then receive an error for any I/O operating 
+it tries to carry out.  That's what happens when you unplug a USB flash 
+drive.
 
-Can someone who can reproduce this let me know if it solves the problem?
+> We have two choices.
+> 1) We go through the pain of teaching the upper layers in the
+>    kernel of how to deal with hotplug and then we are sane
+>    when someone removes a usb stick accidentally before
+>    unmounting it and then reinserts the usb stick.
 
-thanks,
+I don't understand.  Suppose you teach the filesystem layer about 
+hot-unplugging.  So the user removes a USB stick before unmounting it, 
+and when the filesystem tries to access the media it learns that the 
+device is gone -- and the filesystem is gone with it.  How is that any 
+better than getting an I/O error (apart from not filling the system log 
+up with error messages)?
 
-greg k-h
+> 2) Teach the drivers how to do just the lower have of hotplug/remove.
+>    In which case with the driver still present and presenting it's
+>    upper layer queues we have the driver relinquish it's hardware
+>    and then later check to see if it's hardware is still present
+>    and reinitialize it.
 
---------------------
+That's how usb-storage works in 2.4.  Linus told us to change it,
+probably because there was no mechanism for removing the driver's data
+structures after a device was unplugged.  They had to be kept around
+indefinitely, in case the device was plugged in again.
 
-Subject: Driver core: add device_create_vargs and device_create_drvdata
+> I don't know if anyone has looked at moving this to an upper layer.
+> Definitely a question worth asking.  The simpler we can make this
+> for driver authors the better.  Especially as that will make
+> the drivers more maintainable long term.
 
-We want to have the drvdata field set properly when creating the device
-as sysfs callbacks can assume it is present and it can race the later
-setting of this field.
+Maybe you're talking about adding some sort of Persistent-Device
+feature to the LVM?
 
-So, create two new functions, deviec_create_vargs() and
-device_create_drvdata() that take this new field.
+In an event, I'm not sure why you brought all this up.  How is it 
+relevant to kexec or kexec jump?
 
-Also move the mm/backing-dev.c code to use it as it is showing this
-problem today.
+Are you worried that there needs to be a way to tell drivers to quiesce 
+their devices before doing the kexec?
 
-device_create_drvdata() will go away in 2.6.27 as the drvdata field will
-just be moved to the device_create() call as it should be.
+Alan Stern
 
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/base/core.c    |   85 +++++++++++++++++++++++++++++++++++++++++++++----
- include/linux/device.h |   12 ++++++
- mm/backing-dev.c       |   12 +-----
- 3 files changed, 93 insertions(+), 16 deletions(-)
-
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -1163,11 +1163,13 @@ static void device_create_release(struct
- }
- 
- /**
-- * device_create - creates a device and registers it with sysfs
-+ * device_create_vargs - creates a device and registers it with sysfs
-  * @class: pointer to the struct class that this device should be registered to
-  * @parent: pointer to the parent struct device of this new device, if any
-  * @devt: the dev_t for the char device to be added
-+ * @drvdata: the data to be added to the device for callbacks
-  * @fmt: string for the device's name
-+ * @args: va_list for the device's name
-  *
-  * This function can be used by char device classes.  A struct device
-  * will be created in sysfs, registered to the specified class.
-@@ -1183,10 +1185,10 @@ static void device_create_release(struct
-  * Note: the struct class passed to this function must have previously
-  * been created with a call to class_create().
-  */
--struct device *device_create(struct class *class, struct device *parent,
--			     dev_t devt, const char *fmt, ...)
-+struct device *device_create_vargs(struct class *class, struct device *parent,
-+				   dev_t devt, void *drvdata, const char *fmt,
-+				   va_list args)
- {
--	va_list args;
- 	struct device *dev = NULL;
- 	int retval = -ENODEV;
- 
-@@ -1203,10 +1205,9 @@ struct device *device_create(struct clas
- 	dev->class = class;
- 	dev->parent = parent;
- 	dev->release = device_create_release;
-+	dev_set_drvdata(dev, drvdata);
- 
--	va_start(args, fmt);
- 	vsnprintf(dev->bus_id, BUS_ID_SIZE, fmt, args);
--	va_end(args);
- 	retval = device_register(dev);
- 	if (retval)
- 		goto error;
-@@ -1217,6 +1218,78 @@ error:
- 	kfree(dev);
- 	return ERR_PTR(retval);
- }
-+EXPORT_SYMBOL_GPL(device_create_vargs);
-+
-+/**
-+ * device_create_drvdata - creates a device and registers it with sysfs
-+ * @class: pointer to the struct class that this device should be registered to
-+ * @parent: pointer to the parent struct device of this new device, if any
-+ * @devt: the dev_t for the char device to be added
-+ * @drvdata: the data to be added to the device for callbacks
-+ * @fmt: string for the device's name
-+ *
-+ * This function can be used by char device classes.  A struct device
-+ * will be created in sysfs, registered to the specified class.
-+ *
-+ * A "dev" file will be created, showing the dev_t for the device, if
-+ * the dev_t is not 0,0.
-+ * If a pointer to a parent struct device is passed in, the newly created
-+ * struct device will be a child of that device in sysfs.
-+ * The pointer to the struct device will be returned from the call.
-+ * Any further sysfs files that might be required can be created using this
-+ * pointer.
-+ *
-+ * Note: the struct class passed to this function must have previously
-+ * been created with a call to class_create().
-+ */
-+struct device *device_create_drvdata(struct class *class,
-+				     struct device *parent,
-+				     dev_t devt,
-+				     void *drvdata,
-+				     const char *fmt, ...)
-+{
-+	va_list vargs;
-+	struct device *dev;
-+
-+	va_start(vargs, fmt);
-+	dev = device_create_vargs(class, parent, devt, drvdata, fmt, vargs);
-+	va_end(vargs);
-+	return dev;
-+}
-+EXPORT_SYMBOL_GPL(device_create_drvdata);
-+
-+/**
-+ * device_create - creates a device and registers it with sysfs
-+ * @class: pointer to the struct class that this device should be registered to
-+ * @parent: pointer to the parent struct device of this new device, if any
-+ * @devt: the dev_t for the char device to be added
-+ * @fmt: string for the device's name
-+ *
-+ * This function can be used by char device classes.  A struct device
-+ * will be created in sysfs, registered to the specified class.
-+ *
-+ * A "dev" file will be created, showing the dev_t for the device, if
-+ * the dev_t is not 0,0.
-+ * If a pointer to a parent struct device is passed in, the newly created
-+ * struct device will be a child of that device in sysfs.
-+ * The pointer to the struct device will be returned from the call.
-+ * Any further sysfs files that might be required can be created using this
-+ * pointer.
-+ *
-+ * Note: the struct class passed to this function must have previously
-+ * been created with a call to class_create().
-+ */
-+struct device *device_create(struct class *class, struct device *parent,
-+			     dev_t devt, const char *fmt, ...)
-+{
-+	va_list vargs;
-+	struct device *dev;
-+
-+	va_start(vargs, fmt);
-+	dev = device_create_vargs(class, parent, devt, NULL, fmt, vargs);
-+	va_end(vargs);
-+	return dev;
-+}
- EXPORT_SYMBOL_GPL(device_create);
- 
- static int __match_devt(struct device *dev, void *data)
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -456,9 +456,21 @@ extern int __must_check device_reprobe(s
- /*
-  * Easy functions for dynamically creating devices on the fly
-  */
-+extern struct device *device_create_vargs(struct class *cls,
-+					  struct device *parent,
-+					  dev_t devt,
-+					  void *drvdata,
-+					  const char *fmt,
-+					  va_list vargs);
- extern struct device *device_create(struct class *cls, struct device *parent,
- 				    dev_t devt, const char *fmt, ...)
- 				    __attribute__((format(printf, 4, 5)));
-+extern struct device *device_create_drvdata(struct class *cls,
-+					    struct device *parent,
-+					    dev_t devt,
-+					    void *drvdata,
-+					    const char *fmt, ...)
-+				    __attribute__((format(printf, 5, 6)));
- extern void device_destroy(struct class *cls, dev_t devt);
- 
- /*
---- a/mm/backing-dev.c
-+++ b/mm/backing-dev.c
-@@ -172,30 +172,22 @@ postcore_initcall(bdi_class_init);
- int bdi_register(struct backing_dev_info *bdi, struct device *parent,
- 		const char *fmt, ...)
- {
--	char *name;
- 	va_list args;
- 	int ret = 0;
- 	struct device *dev;
- 
- 	va_start(args, fmt);
--	name = kvasprintf(GFP_KERNEL, fmt, args);
-+	dev = device_create_vargs(bdi_class, parent, MKDEV(0, 0), bdi, fmt, args);
- 	va_end(args);
--
--	if (!name)
--		return -ENOMEM;
--
--	dev = device_create(bdi_class, parent, MKDEV(0, 0), name);
- 	if (IS_ERR(dev)) {
- 		ret = PTR_ERR(dev);
- 		goto exit;
- 	}
- 
- 	bdi->dev = dev;
--	dev_set_drvdata(bdi->dev, bdi);
--	bdi_debug_register(bdi, name);
-+	bdi_debug_register(bdi, dev_name(dev));
- 
- exit:
--	kfree(name);
- 	return ret;
- }
- EXPORT_SYMBOL(bdi_register);
