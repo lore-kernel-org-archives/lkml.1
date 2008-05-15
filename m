@@ -1,57 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756161AbYEOHf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756745AbYEOHhg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756161AbYEOHf1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 03:35:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbYEOHfJ
+	id S1756745AbYEOHhg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 03:37:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbYEOHh2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 03:35:09 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:57365 "EHLO 2ka.mipt.ru"
+	Thu, 15 May 2008 03:37:28 -0400
+Received: from smtp25.orange.fr ([193.252.22.22]:4511 "EHLO smtp25.orange.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752520AbYEOHfH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 03:35:07 -0400
-Date: Thu, 15 May 2008 11:34:44 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Sage Weil <sage@newdream.net>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: POHMELFS high performance network filesystem. Transactions, failover, performance.
-Message-ID: <20080515073443.GA4082@2ka.mipt.ru>
-References: <20080513205114.GA16489@2ka.mipt.ru> <Pine.LNX.4.64.0805140623001.14334@cobra.newdream.net> <20080514135156.GA23131@2ka.mipt.ru> <20080514143105.GB14987@shareable.org> <20080514150052.GA15826@2ka.mipt.ru> <20080514213251.GB23758@shareable.org> <20080514220252.GA14378@2ka.mipt.ru> <20080514222837.GF23758@shareable.org> <20080514224519.GA3739@2ka.mipt.ru> <20080515011009.GA28687@shareable.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080515011009.GA28687@shareable.org>
-User-Agent: Mutt/1.5.9i
+	id S1752856AbYEOHh1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 03:37:27 -0400
+X-ME-UUID: 20080515073725920.166FA1C00085@mwinf2517.orange.fr
+Message-ID: <482BE82C.4010004@cosmosbay.com>
+Date: Thu, 15 May 2008 09:37:16 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] percpu: Introduce DEFINE_PER_CPU_PAGE_ALIGNED()
+Content-Type: multipart/mixed;
+ boundary="------------040206030809000502010508"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 15, 2008 at 02:10:09AM +0100, Jamie Lokier (jamie@shareable.org) wrote:
-> Since, I learned that my clients need to have parts of the complex
-> server protocol for fast, safe transactions (think ACID (or ACI)) over
-> relatively slow links, especially with multiple servers.
-> 
-> Also, efficiently recovering from a link/server failure, when clients
-> have large zero-latency caches (using leases), appears similar to the
-> synchronising protocol between recovering servers.
+This is a multi-part message in MIME format.
+--------------040206030809000502010508
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-That's a part of the 'simple' client protocol already, there are
-transactions, which are only committed completed, when server replies
-that they are, there is also failover reconnection and timeout detection
-features as long as switching to different servers in case of failure.
+While examining  percpu section on i386 I found we were wasting about 
+8000 bytes
+because of two large holes :
 
-Yes, it is a bit more than 'simple' protocol, but I think that's what it
-has to have, and hopefuly not more :)
+c05dd000 D __per_cpu_start
+c05dd000 D per_cpu__current_task
+c05dd004 D per_cpu__cpu_number
+c05dd008 D per_cpu__irq_regs
+c05dd00c D per_cpu__x86_cpu_to_apicid
+c05dd010 d per_cpu__cpu_devices
+c05dd044 D per_cpu__cyc2ns
+*HOLE* of 4Kbytes
+c05de000 d per_cpu__cpuid4_info
+c05de004 d per_cpu__cache_kobject
+c05de008 d per_cpu__index_kobject
+*HOLE* of 4Kbytes
+c05df000 D per_cpu__gdt_page
+c05e0000 d per_cpu__next_check
+c05e0008 d per_cpu__thermal_throttle_count
 
-> But, on the bright side, these things are only necessary for
-> performance in scenarios you might not encounter or care about :-)
-> 
-> I'm finding it's a really interesting but large problem.
+This is because gdt_page is a percpu variable, defined with a page 
+alignement,
+and linker is doing its job, two times because of .o nesting in the 
+build process,
+mixing variables with quite different alignment requirements.
 
-Yeah, it is far from 'small' problem :)
-Really simple protocol was in the first version, and it was also fast,
-but yes, it was rather miserable from failure point of view.
+I introduced a new macro DEFINE_PER_CPU_PAGE_ALIGNED() to avoid
+wasting this space. All page aligned variables (only one at this time) 
+are put in
+a separate subsection .data.percpu.page_aligned.
 
--- 
-	Evgeniy Polyakov
+# size -A vmlinux.old vmlinux | grep percpu
+.data.percpu                22272   3227373568
+.data.percpu                30336   3227373568
+
+Thats 8064 bytes saved for each CPU (plus one for the .data.percpu 
+storage itself)
+
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+
+
+--------------040206030809000502010508
+Content-Type: text/plain;
+ name="percpu_page_aligned.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="percpu_page_aligned.patch"
+
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index d0463a9..b2f54fa 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -21,7 +21,7 @@
+ 
+ #include "cpu.h"
+ 
+-DEFINE_PER_CPU(struct gdt_page, gdt_page) = { .gdt = {
++DEFINE_PER_CPU_PAGE_ALIGNED(struct gdt_page, gdt_page) = { .gdt = {
+ 	[GDT_ENTRY_KERNEL_CS] = { { { 0x0000ffff, 0x00cf9a00 } } },
+ 	[GDT_ENTRY_KERNEL_DS] = { { { 0x0000ffff, 0x00cf9200 } } },
+ 	[GDT_ENTRY_DEFAULT_USER_CS] = { { { 0x0000ffff, 0x00cffa00 } } },
+diff --git a/arch/x86/kernel/vmlinux_32.lds.S b/arch/x86/kernel/vmlinux_32.lds.S
+index ce5ed08..0f7c29a 100644
+--- a/arch/x86/kernel/vmlinux_32.lds.S
++++ b/arch/x86/kernel/vmlinux_32.lds.S
+@@ -189,6 +189,7 @@ SECTIONS
+   . = ALIGN(PAGE_SIZE);
+   .data.percpu  : AT(ADDR(.data.percpu) - LOAD_OFFSET) {
+ 	__per_cpu_start = .;
++	*(.data.percpu.page_aligned)
+ 	*(.data.percpu)
+ 	*(.data.percpu.shared_aligned)
+ 	__per_cpu_end = .;
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index f054778..69e5c11 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -348,6 +348,7 @@
+ 	. = ALIGN(align);						\
+ 	__per_cpu_start = .;						\
+ 	.data.percpu  : AT(ADDR(.data.percpu) - LOAD_OFFSET) {		\
++		*(.data.percpu.page_aligned)				\
+ 		*(.data.percpu)						\
+ 		*(.data.percpu.shared_aligned)				\
+ 	}								\
+diff --git a/include/linux/percpu.h b/include/linux/percpu.h
+index 4cdd393..b4d7fdb 100644
+--- a/include/linux/percpu.h
++++ b/include/linux/percpu.h
+@@ -15,19 +15,28 @@
+ 
+ #ifdef MODULE
+ #define SHARED_ALIGNED_SECTION ".data.percpu"
++#define PAGE_ALIGNED_SECTION   ".data.percpu"
+ #else
+ #define SHARED_ALIGNED_SECTION ".data.percpu.shared_aligned"
++#define PAGE_ALIGNED_SECTION   ".data.percpu.page_aligned"
+ #endif
+ 
+ #define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)			\
+ 	__attribute__((__section__(SHARED_ALIGNED_SECTION)))		\
+ 	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name		\
+ 	____cacheline_aligned_in_smp
++
++#define DEFINE_PER_CPU_PAGE_ALIGNED(type, name)				\
++	__attribute__((__section__(PAGE_ALIGNED_SECTION)))		\
++	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
+ #else
+ #define DEFINE_PER_CPU(type, name)					\
+ 	PER_CPU_ATTRIBUTES __typeof__(type) per_cpu__##name
+ 
+-#define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)		      \
++#define DEFINE_PER_CPU_SHARED_ALIGNED(type, name)			\
++	DEFINE_PER_CPU(type, name)
++
++#define DEFINE_PER_CPU_PAGE_ALIGNED(type, name)				\
+ 	DEFINE_PER_CPU(type, name)
+ #endif
+ 
+
+--------------040206030809000502010508--
+
+
