@@ -1,101 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757963AbYEORUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755210AbYEORYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757963AbYEORUu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 13:20:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756163AbYEORUN
+	id S1755210AbYEORYV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 13:24:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750968AbYEORYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 13:20:13 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:3245 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756109AbYEORUL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 13:20:11 -0400
-From: Andy Whitcroft <apw@shadowen.org>
-To: linux-mm@kvack.org
-Cc: Andrew Morton <akpm@osdl.org>, Christoph Lameter <clameter@sgi.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] slob: record page flag overlays explicitly
-References: <exportbomb.1210871946@pinky>
-InReply-To: <exportbomb.1210871946@pinky>
-Date: Thu, 15 May 2008 18:20:10 +0100
-Message-Id: <1210872010.0@pinky>
+	Thu, 15 May 2008 13:24:13 -0400
+Received: from mail.aknet.ru ([78.158.192.26]:60034 "EHLO mail.aknet.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750758AbYEORYM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 13:24:12 -0400
+Message-ID: <482C71B3.8090200@aknet.ru>
+Date: Thu, 15 May 2008 21:24:03 +0400
+From: Stas Sergeev <stsp@aknet.ru>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Theodore Tso <tytso@mit.edu>
+CC: Takashi Iwai <tiwai@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Roberto Oppedisano <roberto.oppedisano@infracom.it>
+Subject: Re: [Bug #10679] 2.6.26-rc1 regression:	e5e1d3cb20034a3cbcfff1f0bae12201aa2ce17e
+ breaks artsd
+References: <hPXlJLjt4XG.A._lF.Jv1JIB@chimera> <88YBFoyd1CN.A._sF.Ov1JIB@chimera> <s5hskwmeb1h.wl%tiwai@suse.de> <20080514212011.GH7054@mit.edu> <s5hhcd0azv1.wl%tiwai@suse.de> <20080515130654.GC18825@mit.edu>
+In-Reply-To: <20080515130654.GC18825@mit.edu>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello.
 
-SLOB reuses two page bits for internal purposes, it overlays PG_active
-and PG_private.  This is hidden away in slob.c.  Document these overlays
-explicitly in the main page-flags enum along with all the others.
+Theodore Tso wrote:
+>> Sounds reasonable.  To where should it be added, BTW?
+>> Little people seem to care about Kconfig help texts, and an extra
+>> comment block (with depends on SND_PCSP) could be annoying...
+> That's a good question.  A note that including including this module
+> could potentially cause sound cards to be renumbered might be
+> reasonable,
+I guess so, and in the description
+string we can probably add something
+to the effect of "READ HELP!".
 
-Signed-off-by: Andy Whitcroft <apw@shadowen.org>
----
- include/linux/page-flags.h |    4 ++++
- mm/slob.c                  |   12 ++++++------
- 2 files changed, 10 insertions(+), 6 deletions(-)
-diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
-index 2e88df6..71aec98 100644
---- a/include/linux/page-flags.h
-+++ b/include/linux/page-flags.h
-@@ -104,6 +104,10 @@ enum pageflags {
- 	/* XEN */
- 	PG_pinned = PG_owner_priv_1,
- 
-+	/* SLOB */
-+	PG_slob_page = PG_active,
-+	PG_slob_free = PG_private,
-+
- 	/* SLUB */
- 	PG_slub_frozen = PG_active,
- 	PG_slub_debug = PG_error,
-diff --git a/mm/slob.c b/mm/slob.c
-index 6038cba..9bc3147 100644
---- a/mm/slob.c
-+++ b/mm/slob.c
-@@ -130,17 +130,17 @@ static LIST_HEAD(free_slob_large);
-  */
- static inline int slob_page(struct slob_page *sp)
- {
--	return test_bit(PG_active, &sp->flags);
-+	return test_bit(PG_slob_page, &sp->flags);
- }
- 
- static inline void set_slob_page(struct slob_page *sp)
- {
--	__set_bit(PG_active, &sp->flags);
-+	__set_bit(PG_slob_page, &sp->flags);
- }
- 
- static inline void clear_slob_page(struct slob_page *sp)
- {
--	__clear_bit(PG_active, &sp->flags);
-+	__clear_bit(PG_slob_free, &sp->flags);
- }
- 
- /*
-@@ -148,19 +148,19 @@ static inline void clear_slob_page(struct slob_page *sp)
-  */
- static inline int slob_page_free(struct slob_page *sp)
- {
--	return test_bit(PG_private, &sp->flags);
-+	return test_bit(PG_slob_free, &sp->flags);
- }
- 
- static void set_slob_page_free(struct slob_page *sp, struct list_head *list)
- {
- 	list_add(&sp->list, list);
--	__set_bit(PG_private, &sp->flags);
-+	__set_bit(PG_slob_free, &sp->flags);
- }
- 
- static inline void clear_slob_page_free(struct slob_page *sp)
- {
- 	list_del(&sp->list);
--	__clear_bit(PG_private, &sp->flags);
-+	__clear_bit(PG_slob_free, &sp->flags);
- }
- 
- #define SLOB_UNIT sizeof(slob_t)
+> enabling it as a module.  BTW, what *is* the utility of this card, and
+Any utility will do.
+
+> how do you use it?  I haven't been able to figure out how to use it do
+> anything entertaining at all.  Any attempts to use it on my system
+> just lead to various confusing error messages.
+That's because it is a bit broken
+in alsa-lib right now, more details
+and the fix here:
+http://lkml.org/lkml/2008/5/11/172
+
+> Also, BTW, it might be nice to remove the following hunk of text from
+> drivers/sound/Kconfig:
+Yeah - that old driver never worked
+with alsa anyway, so that removal is
+an overdue. :)
+
+> So I'm still rather puzzled how to make the snd-pcsp actually do
+> anything useful,
+It will be handled properly by default
+with the next alsa-lib release. But the
+trivial fix on the above URL should work
+too.
