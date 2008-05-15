@@ -1,152 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757119AbYEOUWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758270AbYEOUZW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757119AbYEOUWa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 16:22:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbYEOUWR
+	id S1758270AbYEOUZW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 16:25:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbYEOUZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 16:22:17 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:48789 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751546AbYEOUWP (ORCPT
+	Thu, 15 May 2008 16:25:06 -0400
+Received: from mtagate2.uk.ibm.com ([195.212.29.135]:2797 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751748AbYEOUZE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 16:22:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Y6AnijYV6Zdgh6kANJVdqh5zTNuG7uqrh1VSWo6pOf6gUEN4bbdRDB8vfn0QfYYhyxIKWmqIGVm0bxw77wapLyBLk59NVAPYvTNPG8Ie9A8Z2VRqYrUNebHlZRLPsiXD2kTfVf1FO+EzIQu06MqEB4MxkMY4JONfRa569V4IbPU=
-Message-ID: <aa79d98a0805151322s20a2bb34x4491bcacfcef310@mail.gmail.com>
-Date: Fri, 16 May 2008 00:22:14 +0400
-From: "Cyrill Gorcunov" <gorcunov@gmail.com>
-To: "Geert Uytterhoeven" <geert@linux-m68k.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Roman Zippel" <zippel@linux-m68k.org>,
-       "Andreas Schwab" <schwab@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       "Linux/m68k" <linux-m68k@vger.kernel.org>
-Subject: Re: [PATCH] init - fix building bug and potential buffer overflow
-In-Reply-To: <Pine.LNX.4.64.0805152132530.22059@anakin>
+	Thu, 15 May 2008 16:25:04 -0400
+Date: Thu, 15 May 2008 19:48:05 +0300
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] OSS trident: switch from ->write_proc
+Message-ID: <20080515164805.GA7162@il.ibm.com>
+References: <20080513210544.GB23977@martell.zuzino.mipt.ru> <20080514054707.GB6682@il.ibm.com> <20080514204930.GA10513@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080514154402.GF6902@cvg>
-	 <20080515105803.7c9ab8c7.akpm@linux-foundation.org>
-	 <20080515180528.GC7481@cvg> <Pine.LNX.4.64.0805152132530.22059@anakin>
+In-Reply-To: <20080514204930.GA10513@martell.zuzino.mipt.ru>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Could you please make an update to the patch? I can make it only
-tomorrow evening (ie not that fast)
+On Thu, May 15, 2008 at 12:49:30AM +0400, Alexey Dobriyan wrote:
 
-On 5/15/08, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> On Thu, 15 May 2008, Cyrill Gorcunov wrote:
->> [Andrew Morton - Thu, May 15, 2008 at 10:58:03AM -0700]
->> | On Wed, 14 May 2008 19:44:02 +0400 Cyrill Gorcunov <gorcunov@gmail.com>
->> wrote:
->> |
->> | > This patch does fix build bug on m68k wich does not have strncat in
->> straight way.
->> | >
->> | > What is more important - my previous patch
->> | >
->> | > commit e662e1cfd434aa234b72fbc781f1d70211cb785b
->> | > Author: Cyrill Gorcunov <gorcunov@gmail.com>
->> | > Date:   Mon May 12 14:02:22 2008 -0700
->> | >
->> | >     init: don't lose initcall return values
->> | >
->> | > has introduced potential buffer overflow by wrong calculation
->> | > of string accumulator size.
->> | >
->> | > Many thanks Andreas Schwab and Geert Uytterhoeven for helping
->> | > to catch and fix the bug.
->> | >
->> | > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
->> | > ---
->> | >
->> | > Index: linux-2.6.git/init/main.c
->> | > ===================================================================
->> | > --- linux-2.6.git.orig/init/main.c	2008-05-14 17:55:10.000000000 +0400
->> | > +++ linux-2.6.git/init/main.c	2008-05-14 19:11:18.000000000 +0400
->> | > @@ -702,7 +702,7 @@ static void __init do_initcalls(void)
->> | >
->> | >  	for (call = __initcall_start; call < __initcall_end; call++) {
->> | >  		ktime_t t0, t1, delta;
->> | > -		char msgbuf[40];
->> | > +		char msgbuf[64];
->> | >  		int result;
->> | >
->> | >  		if (initcall_debug) {
->> | > @@ -729,11 +729,11 @@ static void __init do_initcalls(void)
->> | >  			sprintf(msgbuf, "error code %d ", result);
->> | >
->> | >  		if (preempt_count() != count) {
->> | > -			strncat(msgbuf, "preemption imbalance ", sizeof(msgbuf));
->> | > +			strcat(msgbuf, "preemption imbalance ");
->> | >  			preempt_count() = count;
->> | >  		}
->> | >  		if (irqs_disabled()) {
->> | > -			strncat(msgbuf, "disabled interrupts ", sizeof(msgbuf));
->> | > +			strcat(msgbuf, "disabled interrupts ");
->> | >  			local_irq_enable();
->> | >  		}
->> | >  		if (msgbuf[0]) {
->> |
->> | umm, why can't m68k call strncat() from init/main.c??
->> |
->>
->> there some problem with headers iirc, we have to declare it first or
->> use some gcc option (as Adrian suggested). Actually I would prefer to use
->
-> gcc turns the strncat() into an implicit call to strlen() and some form
-> of expanded memcpy(). E.g.
->
->
-> 	if (preempt_count() != count) {
-> 		strncat(msgbuf, "preemption imbalance ", sizeof(msgbuf));
-> 		preempt_count() = count;
-> 	}
->
-> becomes
->
->         cmp.l 884(%a2),%d6      | <variable>.thread.info.preempt_count,
-> count
->         jeq .L61        |
->         move.l %d7,-(%sp)       | tmp76,
->         jbsr strlen     |
->         addq.l #4,%sp   |,
->         move.l %d7,%a0  | tmp76, tmp80
->         add.l %d0,%a0   |, tmp80
->         move.l #1886545253,(%a0)+       |,
->         move.l #1836086377,(%a0)+       |,
->         move.l #1869488233,(%a0)+       |,
->         move.l #1835164012,(%a0)+       |,
->         move.l #1634624357,(%a0)+       |,
->         move.w #8192,(%a0)      |,* D.28541
->         move.l %d6,884(%a2)     | count,
-> <variable>.thread.info.preempt_count
-> .L61:
->
-> All other explicit calls to strlen() are inlined, as per
-> include/asm-m68k/string.h.
->
->> strlcat there but it seems it would fail to build too. Originally I've
->> messed
->> strlcat with strncat :(
->
-> Actually it build and runs fine after s/strncat/strlcat/...
->
-> Gr{oetje,eeting}s,
->
-> 						Geert
->
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 --
-> geert@linux-m68k.org
->
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like
-> that.
-> 							    -- Linus Torvalds
->
+> Sorry, I just want to remove ->write_proc totally and auditing proc
+> users are for later.
+
+Ok, here's an updated patch to not leak the proc entry. Fix is
+trivial, so I took the liberty of keeping your 'From' and
+'Signed-off-by' lines. Andrew, please push to Linus.
+
+Subject: [PATCH] OSS trident: switch from ->write_proc
+From: Alexey Dobriyan <adobriyan@gmail.com>
+
+[muli: don't leak the proc entry]
+
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+Signed-off-by: Muli Ben-Yehuda <muli@il.ibm.com>
+---
+ sound/oss/trident.c |   18 ++++++++++--------
+ 1 files changed, 10 insertions(+), 8 deletions(-)
+
+diff --git a/sound/oss/trident.c b/sound/oss/trident.c
+index f43f91e..ff70a81 100644
+--- a/sound/oss/trident.c
++++ b/sound/oss/trident.c
+@@ -4028,10 +4028,10 @@ ali_free_other_states_resources(struct trident_state *state)
+ 
+ static struct proc_dir_entry *res;
+ 
+-static int
+-ali_write_proc(struct file *file, const char __user *buffer, unsigned long count, void *data)
++static ssize_t
++ali_write_proc(struct file *file, const char __user *buffer, size_t count, loff_t *ppos)
+ {
+-	struct trident_card *card = (struct trident_card *) data;
++	struct trident_card *card = PDE(file->f_path.dentry->d_inode)->data;
+ 	unsigned long flags;
+ 	char c;
+ 
+@@ -4068,6 +4068,11 @@ ali_write_proc(struct file *file, const char __user *buffer, unsigned long count
+ 	return count;
+ }
+ 
++static const struct file_operations ali_proc_fops = {
++	.owner	= THIS_MODULE,
++	.write	= ali_write_proc,
++};
++
+ /* OSS /dev/mixer file operation methods */
+ static int
+ trident_open_mixdev(struct inode *inode, struct file *file)
+@@ -4441,11 +4446,8 @@ trident_probe(struct pci_dev *pci_dev, const struct pci_device_id *pci_id)
+ 		/* ALi SPDIF OUT function */
+ 		if (card->revision == ALI_5451_V02) {
+ 			ali_setup_spdif_out(card, ALI_PCM_TO_SPDIF_OUT);
+-			res = create_proc_entry("ALi5451", 0, NULL);
+-			if (res) {
+-				res->write_proc = ali_write_proc;
+-				res->data = card;
+-			}
++			res = proc_create_data("ALi5451", 0, NULL,
++					       &ali_proc_fops, card);
+ 		}
+ 
+ 		/* Add H/W Volume Control By Matt Wu Jul. 06, 2001 */
+-- 
+1.5.2.5
+
+
