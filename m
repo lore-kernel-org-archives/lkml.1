@@ -1,141 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754266AbYEOHE2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755155AbYEOHL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754266AbYEOHE2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 03:04:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbYEOHEU
+	id S1755155AbYEOHL1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 03:11:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbYEOHLO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 03:04:20 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:48493 "EHLO
-	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752458AbYEOHET (ORCPT
+	Thu, 15 May 2008 03:11:14 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:42247 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752458AbYEOHLM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 03:04:19 -0400
-Date: Thu, 15 May 2008 12:33:42 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Paul Menage <menage@google.com>
-Cc: linux-mm@kvack.org, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, Pavel Emelianov <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [-mm][PATCH 4/4] Add memrlimit controller accounting and
-	control (v4)
-Message-ID: <20080515070342.GJ31115@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Mail-Followup-To: Paul Menage <menage@google.com>, linux-mm@kvack.org,
-	Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-	YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-	linux-kernel@vger.kernel.org, Pavel Emelianov <xemul@openvz.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080514130904.24440.23486.sendpatchset@localhost.localdomain> <20080514130951.24440.73671.sendpatchset@localhost.localdomain> <20080514132529.GA25653@balbir.in.ibm.com> <6599ad830805141925mf8a13daq7309148153a3c2df@mail.gmail.com> <20080515061727.GC31115@balbir.in.ibm.com> <6599ad830805142355ifeeb0e2w86ccfd96aa27aea6@mail.gmail.com>
+	Thu, 15 May 2008 03:11:12 -0400
+Date: Thu, 15 May 2008 00:11:10 -0700 (PDT)
+From: Chris Peterson <cpeterso@cpeterso.com>
+To: netdev@vger.kernel.org
+cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] drivers/net: remove network drivers' last few uses of
+ IRQF_SAMPLE_RANDOM
+Message-ID: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <6599ad830805142355ifeeb0e2w86ccfd96aa27aea6@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul Menage <menage@google.com> [2008-05-14 23:55:07]:
 
-> On Wed, May 14, 2008 at 11:17 PM, Balbir Singh
-> <balbir@linux.vnet.ibm.com> wrote:
-> >  >
-> >  > Assuming that we're holding a write lock on mm->mmap_sem here, and we
-> >  > additionally hold mmap_sem for the whole of mm_update_next_owner(),
-> >  > then maybe we don't need any extra synchronization here? Something
-> >  > like simply:
-> >  >
-> >  > int memrlimit_cgroup_charge_as(struct mm_struct *mm, unsigned long nr_pages)
-> >  > {
-> >  >        struct memrlimit_cgroup *memrcg = memrlimit_cgroup_from_task(mm->owner);
-> >  >        return res_counter_charge(&memrcg->as_res, (nr_pages << PAGE_SHIFT));
-> >  > }
-> >
-> >  The charge_as routine is not always called with mmap_sem held, since
-> >  the undo path gets more complicated under the lock. We already have
-> >  our own locking mechanism for the counters.
-> 
-> I'm not worried about the counters themselves being inconsistent - I'm
-> worried about the case where charge_as() is called in the middle of
-> the attach operation, and we account the charge X to the new cgroup's
-> res_counter and update mm->total_vm, and then when we do the move, we
-> charge the whole of mm->total_mm to the new cgroup even though the
-> last charge was already accounted to the new res_counter, not the old
-> one.
-> 
-> That's what I'm hoping to address with the idea of splitting the
-> attach into one update per subsystem, and letting the subsystems
-> control their own synchronization.
-> 
-> > We're not really accessing
-> >  any member of the mm here except the owner. Do we need to be called
-> >  with mmap_sem held?
-> >
-> 
-> Not necessarily mmap_sem, but there needs to be something to ensure
-> that the update to mm->total_vm and the charge/uncharge against the
-> res_counter are an atomic pair with respect to the code that shifts an
-> mm between two cgroups, either due to mm->owner change or due to an
-> attach_task(). Since mmap_sem is held for write on almost all the fast
-> path calls to the rlimit_as charge/uncharge functions, using that for
-> the synchronization avoids the need for any additional synchronization
-> in the fast path.
-> 
-> Can you say more about the complications of holding a write lock on
-> mmap_sem in the cleanup calls to uncharge?
-> 
-> >  >  retry:
-> >  >         mm = get_task_mm(p);
-> >  >         if (mm == NULL) {
-> >  >           task_lock(p);
-> >  >           rcu_assign_ptr(p->cgroups, new_css_set);
-> >
-> >  Will each callback assign p->cgroups to new_css_set?
-> 
-> Yes - but new_css_set will be slightly different for each callback.
-> Specifically, it will differ from the existing set pointed to by
-> p->cgroups in the pointer for this particular subsystem. So the task
-> will move over in a staggered fashion, and each subsystem will get to
-> choose its own synchronization.
-> 
-> >  >         task_lock(p);
-> >  >         if (p->mm != mm) {
-> >  >                 /* We raced */
-> >
-> >  With exit_mmap() or exec_mmap() right?
-> >
-> 
-> Yes.
-> 
-> >  If we agree with the assertion/conclusion above, then a simple lock
-> >  might be able to protect us, assuming that it does not create a
-> >  interwined locking hierarchy.
-> >
-> 
-> Right - and if we can make that lock be the mmap_sem of the mm in
-> question, we avoid introducing a new lock into the fast path.
->
+I know Jeff Garzik says he's not interested in an anti-entropy pogrom for existing net drivers, but here is the patch if anyone else is interested..? :)
 
-I want to focus on this conclusion/assertion, since it takes care of
-most of the locking related discussion above, unless I missed
-something.
+Only 12 net drivers are affected, the last of the theoretically-exploitable network entropy.
 
-My concern with using mmap_sem, is that
+drivers/net/3c523.c
+drivers/net/3c527.c
+drivers/net/atlx/atl1.c
+drivers/net/cris/eth_v10.c
+drivers/net/ibmlana.c
+drivers/net/macb.c
+drivers/net/mv643xx_eth.c
+drivers/net/netxen/netxen_nic_main.c
+drivers/net/niu.c
+drivers/net/qla3xxx.c
+drivers/net/tg3.c
+drivers/net/xen-netfront.c
 
-1. It's highly contended (every page fault, vma change, etc)
-2. It's going to make the locking hierarchy deeper and complex
-3. It's not appropriate to call all the accounting callbacks with
-   the mmap_sem() held, since the undo operations _can get_ complicated
-   at the caller.
+chris
 
-I would prefer introducing a new lock, so that other subsystems are
-not affected. 
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Signed-off-by: Chris Peterson <cpeterso@cpeterso.com>
+---
+diff -uprN linux-2.6.26-rc2-git3.orig/drivers/net/3c523.c linux-2.6.26-rc2-git3/drivers/net/3c523.c
+--- linux-2.6.26-rc2-git3.orig/drivers/net/3c523.c	2008-05-13 22:37:06.000000000 -0700
++++ linux-2.6.26-rc2-git3/drivers/net/3c523.c	2008-05-13 23:11:58.000000000 -0700
+@@ -289,8 +289,7 @@ static int elmc_open(struct net_device *
+ 
+ 	elmc_id_attn586();	/* disable interrupts */
+ 
+-	ret = request_irq(dev->irq, &elmc_interrupt, IRQF_SHARED | IRQF_SAMPLE_RANDOM,
+-			  dev->name, dev);
++	ret = request_irq(dev->irq, &elmc_interrupt, IRQF_SHARED, dev->name, dev);
+ 	if (ret) {
+ 		printk(KERN_ERR "%s: couldn't get irq %d\n", dev->name, dev->irq);
+ 		elmc_id_reset586();
+diff -uprN linux-2.6.26-rc2-git3.orig/drivers/net/3c527.c linux-2.6.26-rc2-git3/drivers/net/3c527.c
+--- linux-2.6.26-rc2-git3.orig/drivers/net/3c527.c	2008-05-13 22:37:06.000000000 -0700
++++ linux-2.6.26-rc2-git3/drivers/net/3c527.c	2008-05-13 23:12:15.000000000 -0700
+@@ -434,7 +434,7 @@ static int __init mc32_probe1(struct net
+ 	 *	Grab the IRQ
+ 	 */
+ 
+-	err = request_irq(dev->irq, &mc32_interrupt, IRQF_SHARED | IRQF_SAMPLE_RANDOM, DRV_NAME, dev);
++	err = request_irq(dev->irq, &mc32_interrupt, IRQF_SHARED, DRV_NAME, dev);
+ 	if (err) {
+ 		release_region(dev->base_addr, MC32_IO_EXTENT);
+ 		printk(KERN_ERR "%s: unable to get IRQ %d.\n", DRV_NAME, dev->irq);
+diff -uprN linux-2.6.26-rc2-git3.orig/drivers/net/atlx/atl1.c linux-2.6.26-rc2-git3/drivers/net/atlx/atl1.c
+--- linux-2.6.26-rc2-git3.orig/drivers/net/atlx/atl1.c	2008-05-13 22:38:11.000000000 -0700
++++ linux-2.6.26-rc2-git3/drivers/net/atlx/atl1.c	2008-05-13 23:13:00.000000000 -0700
+@@ -2614,7 +2614,7 @@ static s32 atl1_up(struct atl1_adapter *
+ {
+ 	struct net_device *netdev = adapter->netdev;
+ 	int err;
+-	int irq_flags = IRQF_SAMPLE_RANDOM;
++	int irq_flags = 0;
+ 
+ 	/* hardware has been reset, we need to reload some things */
+ 	atlx_set_multi(netdev);
+diff -uprN linux-2.6.26-rc2-git3.orig/drivers/net/cris/eth_v10.c linux-2.6.26-rc2-git3/drivers/net/cris/eth_v10.c
+--- linux-2.6.26-rc2-git3.orig/drivers/net/cris/eth_v10.c	2008-05-13 22:37:10.000000000 -0700
++++ linux-2.6.26-rc2-git3/drivers/net/cris/eth_v10.c	2008-05-13 23:14:19.000000000 -0700
+@@ -490,7 +490,7 @@ e100_open(struct net_device *dev)
+ 	/* allocate the irq corresponding to the receiving DMA */
+ 
+ 	if (request_irq(NETWORK_DMA_RX_IRQ_NBR, e100rxtx_interrupt,
+-			IRQF_SAMPLE_RANDOM, cardname, (void *)dev)) {
++			0, cardname, (void *)dev)) {
+ 		goto grace_exit0;
+ 	}
+ 
+diff -uprN linux-2.6.26-rc2-git3.orig/drivers/net/ibmlana.c linux-2.6.26-rc2-git3/drivers/net/ibmlana.c
+--- linux-2.6.26-rc2-git3.orig/drivers/net/ibmlana.c	2008-05-13 22:37:29.000000000 -0700
++++ linux-2.6.26-rc2-git3/drivers/net/ibmlana.c	2008-05-13 23:14:54.000000000 -0700
+@@ -783,7 +783,7 @@ static int ibmlana_open(struct net_devic
+ 
+ 	/* register resources - only necessary for IRQ */
+ 
+-	result = request_irq(priv->realirq, irq_handler, IRQF_SHARED | IRQF_SAMPLE_RANDOM, dev->name, dev);
++	result = request_irq(priv->realirq, irq_handler, IRQF_SHARED, dev->name, dev);
+ 	if (result != 0) {
+ 		printk(KERN_ERR "%s: failed to register irq %d\n", dev->name, dev->irq);
+ 		return result;
+diff -uprN linux-2.6.26-rc2-git3.orig/drivers/net/macb.c linux-2.6.26-rc2-git3/drivers/net/macb.c
+--- linux-2.6.26-rc2-git3.orig/drivers/net/macb.c	2008-05-13 22:37:32.000000000 -0700
++++ linux-2.6.26-rc2-git3/drivers/net/macb.c	2008-05-13 23:15:17.000000000 -0700
+@@ -1151,8 +1151,7 @@ static int __init macb_probe(struct plat
+ 	}
+ 
+ 	dev->irq = platform_get_irq(pdev, 0);
+-	err = request_irq(dev->irq, macb_interrupt, IRQF_SAMPLE_RANDOM,
+-			  dev->name, dev);
++	err = request_irq(dev->irq, macb_interrupt, 0, dev->name, dev);
+ 	if (err) {
+ 		printk(KERN_ERR
+ 		       "%s: Unable to request IRQ %d (error %d)\n",
+diff -uprN linux-2.6.26-rc2-git3.orig/drivers/net/mv643xx_eth.c linux-2.6.26-rc2-git3/drivers/net/mv643xx_eth.c
+--- linux-2.6.26-rc2-git3.orig/drivers/net/mv643xx_eth.c	2008-05-13 22:37:33.000000000 -0700
++++ linux-2.6.26-rc2-git3/drivers/net/mv643xx_eth.c	2008-05-13 23:15:37.000000000 -0700
+@@ -1329,7 +1329,7 @@ static int mv643xx_eth_open(struct net_d
+ 	rdl(mp, INTERRUPT_CAUSE_EXTEND_REG(port_num));
+ 
+ 	err = request_irq(dev->irq, mv643xx_eth_int_handler,
+-			IRQF_SHARED | IRQF_SAMPLE_RANDOM, dev->name, dev);
++			IRQF_SHARED, dev->name, dev);
+ 	if (err) {
+ 		printk(KERN_ERR "%s: Can not assign IRQ\n", dev->name);
+ 		return -EAGAIN;
+diff -uprN linux-2.6.26-rc2-git3.orig/drivers/net/netxen/netxen_nic_main.c linux-2.6.26-rc2-git3/drivers/net/netxen/netxen_nic_main.c
+--- linux-2.6.26-rc2-git3.orig/drivers/net/netxen/netxen_nic_main.c	2008-05-13 22:37:33.000000000 -0700
++++ linux-2.6.26-rc2-git3/drivers/net/netxen/netxen_nic_main.c	2008-05-13 23:15:49.000000000 -0700
+@@ -838,7 +838,7 @@ static int netxen_nic_open(struct net_de
+ 	int err = 0;
+ 	int ctx, ring;
+ 	irq_handler_t handler;
+-	unsigned long flags = IRQF_SAMPLE_RANDOM;
++	unsigned long flags = 0;
+ 
+ 	if (adapter->is_up != NETXEN_ADAPTER_UP_MAGIC) {
+ 		err = netxen_init_firmware(adapter);
+diff -uprN linux-2.6.26-rc2-git3.orig/drivers/net/niu.c linux-2.6.26-rc2-git3/drivers/net/niu.c
+--- linux-2.6.26-rc2-git3.orig/drivers/net/niu.c	2008-05-13 22:37:26.000000000 -0700
++++ linux-2.6.26-rc2-git3/drivers/net/niu.c	2008-05-13 23:19:55.000000000 -0700
+@@ -5605,8 +5605,7 @@ static int niu_request_irq(struct niu *n
+ 		struct niu_ldg *lp = &np->ldg[i];
+ 
+ 		err = request_irq(lp->irq, niu_interrupt,
+-				  IRQF_SHARED | IRQF_SAMPLE_RANDOM,
+-				  np->dev->name, lp);
++				  IRQF_SHARED, np->dev->name, lp);
+ 		if (err)
+ 			goto out_free_irqs;
+ 
+diff -uprN linux-2.6.26-rc2-git3.orig/drivers/net/qla3xxx.c linux-2.6.26-rc2-git3/drivers/net/qla3xxx.c
+--- linux-2.6.26-rc2-git3.orig/drivers/net/qla3xxx.c	2008-05-13 22:38:09.000000000 -0700
++++ linux-2.6.26-rc2-git3/drivers/net/qla3xxx.c	2008-05-13 23:20:09.000000000 -0700
+@@ -3618,7 +3618,7 @@ static int ql_adapter_up(struct ql3_adap
+ {
+ 	struct net_device *ndev = qdev->ndev;
+ 	int err;
+-	unsigned long irq_flags = IRQF_SAMPLE_RANDOM | IRQF_SHARED;
++	unsigned long irq_flags = IRQF_SHARED;
+ 	unsigned long hw_flags;
+ 
+ 	if (ql_alloc_mem_resources(qdev)) {
+diff -uprN linux-2.6.26-rc2-git3.orig/drivers/net/tg3.c linux-2.6.26-rc2-git3/drivers/net/tg3.c
+--- linux-2.6.26-rc2-git3.orig/drivers/net/tg3.c	2008-05-13 22:38:12.000000000 -0700
++++ linux-2.6.26-rc2-git3/drivers/net/tg3.c	2008-05-13 23:22:03.000000000 -0700
+@@ -7496,12 +7496,12 @@ static int tg3_request_irq(struct tg3 *t
+ 		fn = tg3_msi;
+ 		if (tp->tg3_flags2 & TG3_FLG2_1SHOT_MSI)
+ 			fn = tg3_msi_1shot;
+-		flags = IRQF_SAMPLE_RANDOM;
++		flags = 0;
+ 	} else {
+ 		fn = tg3_interrupt;
+ 		if (tp->tg3_flags & TG3_FLAG_TAGGED_STATUS)
+ 			fn = tg3_interrupt_tagged;
+-		flags = IRQF_SHARED | IRQF_SAMPLE_RANDOM;
++		flags = IRQF_SHARED;
+ 	}
+ 	return (request_irq(tp->pdev->irq, fn, flags, dev->name, dev));
+ }
+@@ -7519,7 +7519,7 @@ static int tg3_test_interrupt(struct tg3
+ 	free_irq(tp->pdev->irq, dev);
+ 
+ 	err = request_irq(tp->pdev->irq, tg3_test_isr,
+-			  IRQF_SHARED | IRQF_SAMPLE_RANDOM, dev->name, dev);
++			  IRQF_SHARED, dev->name, dev);
+ 	if (err)
+ 		return err;
+ 
+diff -uprN linux-2.6.26-rc2-git3.orig/drivers/net/xen-netfront.c linux-2.6.26-rc2-git3/drivers/net/xen-netfront.c
+--- linux-2.6.26-rc2-git3.orig/drivers/net/xen-netfront.c	2008-05-13 22:37:38.000000000 -0700
++++ linux-2.6.26-rc2-git3/drivers/net/xen-netfront.c	2008-05-13 23:20:47.000000000 -0700
+@@ -1363,8 +1363,7 @@ static int setup_netfront(struct xenbus_
+ 		goto fail;
+ 
+ 	err = bind_evtchn_to_irqhandler(info->evtchn, xennet_interrupt,
+-					IRQF_SAMPLE_RANDOM, netdev->name,
+-					netdev);
++					0, netdev->name, netdev);
+ 	if (err < 0)
+ 		goto fail;
+ 	netdev->irq = err;
