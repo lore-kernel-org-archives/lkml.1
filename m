@@ -1,77 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932459AbYEOPnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932572AbYEOPoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932459AbYEOPnT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 11:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757394AbYEOPnI
+	id S932572AbYEOPoV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 11:44:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbYEOPoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 11:43:08 -0400
-Received: from vs166246.vserver.de ([62.75.166.246]:45531 "EHLO
-	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752862AbYEOPnH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 11:43:07 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Subject: Re: [PATCH] zd1211rw: Use DMA-aware buffer for usb transfer
-Date: Thu, 15 May 2008 17:42:35 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Daniel Drake <dsd@gentoo.org>, Ulrich Kunitz <kune@deine-taler.de>,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20080516.001215.39152691.anemo@mba.ocn.ne.jp>
-In-Reply-To: <20080516.001215.39152691.anemo@mba.ocn.ne.jp>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 15 May 2008 11:44:09 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52145 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755310AbYEOPoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 11:44:07 -0400
+Subject: Re: [PATCH] virtio_net: free transmit skbs in a timer
+From: Mark McLoughlin <markmc@redhat.com>
+Reply-To: Mark McLoughlin <markmc@redhat.com>
+To: Avi Kivity <avi@qumranet.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Anthony Liguori <aliguori@us.ibm.com>, linux-kernel@vger.kernel.org,
+       virtualization@lists.linux-foundation.org
+In-Reply-To: <482AAA0F.2020607@qumranet.com>
+References: <1209565906-9019-1-git-send-email-markmc@redhat.com>
+	 <1210624663.14409.20.camel@muff> <48294776.3010504@qumranet.com>
+	 <200805141607.26306.rusty@rustcorp.com.au>  <482AAA0F.2020607@qumranet.com>
+Content-Type: text/plain
+Date: Thu, 15 May 2008 16:29:40 +0100
+Message-Id: <1210865380.16012.15.camel@muff>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805151742.35366.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 May 2008 17:12:15 Atsushi Nemoto wrote:
-> @@ -312,22 +313,29 @@ int zd_usb_read_fw(struct zd_usb *usb, zd_addr_t addr, u8 *data, u16 len)
->  {
->  	int r;
->  	struct usb_device *udev = zd_usb_to_usbdev(usb);
-> +	u8 *buf = kmalloc(len, GFP_KERNEL);
->  
-> +	if (!buf)
-> +		return -ENOMEM;
+On Wed, 2008-05-14 at 11:59 +0300, Avi Kivity wrote:
+> Rusty Russell wrote:
+> >> Sorry to barge in late, but IMO the timer should be on the host, which
+> >> is cheaper than on the guest (well, a 100ms timer is likely zero cost,
+> >> but  I still don't like it).
+> >>
+> >> the host should fire a tx completion interrupt whenever the completion
+> >> queue has "enough" entries, where we can define "enough" now as the
+> >> halfway mark or a timer expiry, whichever comes earlier.
+> >>
+> >> We can later improve "enough" to be "just enough so the timer never
+> >> triggers" and adjust it dynamically.  It probably doesn't matter for
+> >> Linux, but I don't want to punish guests that can do true async
+> >> networking and depend on timely completion notification.
+> >>     
+> >
+> > This implies that we should not be supressing notifications in the guest at 
+> > all (unless we're sure there are more packets to come, which currently we 
+> > never are: that needs new net infrastructure).
+> >   
+> 
+> We don't have to be sure, just reasonably confident.  If we see a stream 
+> of packets, we open the window, but set a timer in case we're wrong.  
+> The expectation is that the timer will only fire when tx rate drops (or 
+> tx stops completely).
+> 
+> > But that means we'd get a notification on every xmit at the moment.  
+> > Benchmarks anyone?
+> >   
+> 
+> Notification on every xmit will surely kill performance.  I'm trying to 
+> get batching to work but also good latency when the link is not saturated.
 
-Not that my opinion counts here, but I don't like the coding style of
-doing work in the variable definition block.
-Pointer assignments in there are OK (like the zd_usb_to_usbdev, which just
-fetches a pointer), but a kmalloc() call is IMO very confusing.
+I think Rusty is speaking from the POV of the guest driver - i.e. that
+virtio_net should never disable notifications on the xmit queue using
+disable_cb()?
 
-But the decision whether this is OK or not is not up to me.
+Sounds like you think agree, but that the host side should throttle the
+rate of xmit notifications?
 
->  	r = usb_control_msg(udev, usb_rcvctrlpipe(udev, 0),
->  		USB_REQ_FIRMWARE_READ_DATA, USB_DIR_IN | 0x40, addr, 0,
-> -		data, len, 5000);
-> +		buf, len, 5000);
->  	if (r < 0) {
->  		dev_err(&udev->dev,
->  			"read over firmware interface failed: %d\n", r);
-> -		return r;
-> +		goto exit;
->  	} else if (r != len) {
->  		dev_err(&udev->dev,
->  			"incomplete read over firmware interface: %d/%d\n",
->  			r, len);
-> -		return -EIO;
-> +		r = -EIO;
-> +		goto exit;
->  	}
-> -
-> -	return 0;
-> +	r = 0;
-> +	memcpy(data, buf, len);
-> +exit:
-> +	kfree(buf);
-> +	return r;
->  }
+Cheers,
+Mark.
 
-
--- 
-Greetings Michael.
