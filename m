@@ -1,100 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760253AbYEORjr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761938AbYEORkg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760253AbYEORjr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 13:39:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbYEORjj
+	id S1761938AbYEORkg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 13:40:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751911AbYEORkQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 13:39:39 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:41856 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751122AbYEORji (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 13:39:38 -0400
-Date: Thu, 15 May 2008 19:40:15 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Michael Buesch <mb@bu3sch.de>,
-       Gordon Farquharson <gordonfarquharson@gmail.com>
-Subject: Re: crossbuild fails in modpost
-Message-ID: <20080515174015.GA24024@uranus.ravnborg.org>
-References: <482C3E3E.9090204@gmail.com> <482C6F02.1000205@gmail.com> <20080515173539.GA23959@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080515173539.GA23959@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 15 May 2008 13:40:16 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:57102 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751553AbYEORkO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 13:40:14 -0400
+Date: Thu, 15 May 2008 10:40:11 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, andi@firstfloor.org,
+       Rik van Riel <riel@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       mpm@selenic.com
+Subject: Re: [patch 18/21] Filesystem: Socket inode defragmentation
+In-Reply-To: <20080513132810.GA7152@2ka.mipt.ru>
+Message-ID: <Pine.LNX.4.64.0805151039060.18708@schroedinger.engr.sgi.com>
+References: <20080510030831.796641881@sgi.com> <20080510030918.882272887@sgi.com>
+ <20080513132810.GA7152@2ka.mipt.ru>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 15, 2008 at 07:35:39PM +0200, Sam Ravnborg wrote:
-> On Thu, May 15, 2008 at 07:12:34PM +0200, Jiri Slaby wrote:
-> > Well, let's fix sam's email.
-> > 
-> > Jiri Slaby napsal(a):
-> > >Hi,
-> > >
-> > >probably
-> > >4ce6efed48d736e3384c39ff87bda723e1f8e041
-> > >kbuild: soften modpost checks when doing cross builds
-> > >
-> > >causes build failures on x86_64 kernel build on 32 bit machine:
-> > >
-> > >make -f /local/xslaby/hid/scripts/Makefile.modpost
-> > >YYYYYYYYYYYYYY x86_64 x86_64
-> > >  scripts/mod/modpost -m -a -o /local/xslaby/buhid/Module.symvers    -S 
-> > >-K /local/xslaby/buhid/Module.markers -M 
-> > >/local/xslaby/buhid/Module.markers   -s
-> > >XXXXXXXXXXXXXXXXXX 20: 0 (2), 4 (4), 8 (4), 12 (8)
-> > >FATAL: drivers/hid/hid-apple: sizeof(struct hid_device_id)=20 is not a 
-> > >modulo of the size of section __mod_hid_device_table=648.
-> > >Fix definition of struct hid_device_id in mod_devicetable.h
-> > >make[2]: *** [__modpost] Error 1
-> > >make[1]: *** [modules] Error 2
-> > >make: *** [sub-make] Error 2
-> > >
-> > >after sticking echo into:
-> > > __modpost: $(modules:.ko=.o) FORCE
-> > >+       @echo YYYYYYYYYYYYYY $(KBUILD_BUILDHOST) $(ARCH)
-> > >        $(call cmd,modpost) $(wildcard vmlinux) $(filter-out FORCE,$^)
-> > >
+On Tue, 13 May 2008, Evgeniy Polyakov wrote:
+
+> Out of curiosity, how can you drop socket inode, since it is always
+> attached to socket which is removed automatically when connection is
+> closed. Any force of dropping socket inode can only result in connection
+> drop, i.e. there are no inodes, which are placed in cache and are not
+> yet freed, if there are no attached sockets.
 > 
-> Your machine claims it is a x86_64 and you are building for a x86_64
-> according to the following line:
-> > >YYYYYYYYYYYYYY x86_64 x86_64
-> 
-> So it looks to me that you are building for 64 bit on a 64 bit machine.
-> So when you write:
->  on x86_64 kernel build on 32 bit machine:
-> 
-> I assume you try to say that your HOSTCC is 32 bit and your
-> kernel cc is 64 bit (or something similar).
-> 
-> The commit you reference loosen up the check so we do not do the
-> check if we _know_ that the host and the target system differs.
-> The only thing I can imagine right now to solve your issue would
-> be to skip the check if we do not use the same gcc for target and host?
+> So question is how does it work for sockets?
 
-So something like this (entirely untested):
+All inodes are inactivated and put on a lru before they are freed. Those 
+could be reclaimed by inode defrag. Socket inode defrag is not that 
+important. Just shows that this can be applied in a general way.
 
---- a/scripts/Makefile.modpost
-+++ b/scripts/Makefile.modpost
-@@ -65,7 +65,7 @@ modules   := $(patsubst %.o,%.ko, $(wildcard $(__modules:.ko=.o)))
- # Stop after building .o files if NOFINAL is set. Makes compile tests quicker
- _modpost: $(if $(KBUILD_MODPOST_NOFINAL), $(modules:.ko:.o),$(modules))
- 
--ifneq ($(KBUILD_BUILDHOST),$(ARCH))
-+ifneq ($(CC),$(HOSTCC))
-         cross_build := 1
- endif
- 
 
-Only powerpc (and ppc) does seems to do the wrong thing
-and fiddle with CC:
-
-powerpc/Makefile:override CC    += -m$(CONFIG_WORD_SIZE)
-
-So for most users this is OK.
-(If it works as expected).
-
-	Sam
