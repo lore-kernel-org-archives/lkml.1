@@ -1,43 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755265AbYEOCCO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756114AbYEOCEI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755265AbYEOCCO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 22:02:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751713AbYEOCCA
+	id S1756114AbYEOCEI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 22:04:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbYEOCD4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 22:02:00 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:46440 "EHLO
-	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751513AbYEOCB7 (ORCPT
+	Wed, 14 May 2008 22:03:56 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:37137 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751802AbYEOCDz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 22:01:59 -0400
-Date: Wed, 14 May 2008 20:04:03 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Problems with mainboard INTEL D201GLY2A,
- pci devices only available with acpi=noirq
-In-reply-to: <fa.vWXVKBGhH014XMsboBQBMW6GFwA@ifi.uio.no>
-To: Robert Goldner <robert@au-79.de>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <482B9A13.2020400@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.vWXVKBGhH014XMsboBQBMW6GFwA@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Wed, 14 May 2008 22:03:55 -0400
+Subject: Re: [PATCH 0/2] x86: per-device dma_mapping_ops
+From: Alexis Bruemmer <alexisb@us.ibm.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: muli@il.ibm.com, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <20080515101212Z.tomof@acm.org>
+References: <1210658692-960-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	 <20080514054924.GD6682@il.ibm.com>  <20080515101212Z.tomof@acm.org>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 14 May 2008 19:00:13 -0700
+Message-Id: <1210816813.5596.13.camel@alexis>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Goldner wrote:
-> Hi everyone,
+On Thu, 2008-05-15 at 10:12 +0900, FUJITA Tomonori wrote:
+> On Wed, 14 May 2008 08:49:24 +0300
+> Muli Ben-Yehuda <muli@il.ibm.com> wrote:
 > 
-> I use a INTEL D201GLY2A mainboard, and after serveral trys PCI devices 
-> were only useable (not visable) with the boot-parameter acpi=noirq (or 
-> noacpi). I tryed several kernel-versions (stated with 2.6.22), and no 
-> sucess without his parameter.
-> Without acpi=noirq all pci devices are deteced well, but if you want to 
-> use them, there is no response.
+> > On Tue, May 13, 2008 at 03:04:50PM +0900, FUJITA Tomonori wrote:
+<snip>
+> > Awesome! Much needed, thank you for doing this.
+> 
+> No problem. Well, as you know, it's just a base. We need more work to
+> solve the problems on the top of this.
+Yes thank you!  
+> 
+> I'd like to have a mechanism to register a hook called when a new pci
+> (or dma capable) device is created. It enables IOMMUs to set up an
+> appropriate dma_mapping_ops per device. It could also enables us to
+> simplify the IOMMUs code to initilize devices at startup (for exmple,
+> intel-iommu checks all the pci devices and creates a domain per device
+> if necessary).
+﻿I wanted to try and create a test version of this, at least for the
+calgary side, but ran into an error with this patch set:
 
-Do you have the latest BIOS on this board? Any nonstandard BIOS 
-settings? It looks like the board is not using APIC but the ACPI IRQ 
-information is giving out IRQs over 15, which doesn't make any sense. 
-Maybe you're running in some kind of broken/untested BIOS configuration.
+Fusion MPT SAS Host driver 3.04.06
+ACPI: PCI Interrupt 0000:34:00.0[A] -> GSI 142 (level, low) -> IRQ 142
+mptbase: ioc0: Initiating bringup
+ioc0: LSISAS1078 C1: Capabilities={Initiator}
+mptbase: ioc0: PCI-MSI enabled
+Calgary: DMA error on CalIOC2 PHB 0x33
+Calgary: 0x02000000@CSR 0x00000000@PLSSR 0xb0008000@CSMR 0x00000000@MCK
+Calgary: 0x00000000@0x810 0xfee0c000@0x820 0x00000000@0x830
+0x00000000@0x840 0x03804a00@0x850 0x00000000@0x860 0x00000000@0x870
+Calgary: 0x00000000@0xcb0
+mptbase: ioc0: Initiating recovery
+mptbase: ioc0: WARNING - Unexpected doorbell active!
+mptbase: ioc0: WARNING - NOT READY!
+mptbase: ioc0: WARNING - Cannot recover rc = -1!
+mptbase: ioc0: WARNING - Firmware Reload FAILED!
+Clocksource tsc unstable (delta = 48333779773 ns)
+
+Not sure what is causing this error, but will keep digging.  Any ideas?
+
+--Alexis
+
