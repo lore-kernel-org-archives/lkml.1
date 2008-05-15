@@ -1,43 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758677AbYEOON1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760104AbYEOOOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758677AbYEOON1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 10:13:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbYEOONP
+	id S1760104AbYEOOOS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 10:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbYEOOOD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 10:13:15 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:54227 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751645AbYEOONP (ORCPT
+	Thu, 15 May 2008 10:14:03 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:58511 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753233AbYEOOOB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 10:13:15 -0400
-Date: Thu, 15 May 2008 10:13:11 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: hch@infradead.org, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 6/9] fuse: add export operations
-Message-ID: <20080515141311.GA14965@infradead.org>
-References: <20080509124107.645600519@szeredi.hu> <20080509124133.577558326@szeredi.hu> <20080509194030.GA29118@infradead.org> <20080509194642.GA783@infradead.org> <E1JwdAj-0006ix-QP@pomaz-ex.szeredi.hu>
+	Thu, 15 May 2008 10:14:01 -0400
+Date: Thu, 15 May 2008 10:14:00 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+cc: "Huang, Ying" <ying.huang@intel.com>, <nigel@nigel.suspend2.net>,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       <linux-pm@lists.linux-foundation.org>, Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [linux-pm] [PATCH -mm] kexec jump -v9
+In-Reply-To: <m13aok1pt1.fsf@frodo.ebiederm.org>
+Message-ID: <Pine.LNX.4.44L0.0805151012150.2107-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1JwdAj-0006ix-QP@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 15, 2008 at 03:07:01PM +0200, Miklos Szeredi wrote:
-> in i_ino.  This is not entirely trivial to fix: we either supply the
-> inode numbers to the encoding function explicitly, or use something
-> like the get_inode callback in generic_fh_to_dentry/_parent.  At which
-> point I begin to doubt if it's worth the effort to share this code.
-> After all the encoding/decoding functions are not complicated at all.
+On Wed, 14 May 2008, Eric W. Biederman wrote:
 
-Doh, in that case using the generic encoce helper doesn't make any
-sense.  decode doesn't care about i_ino, so it should be useable.  I'd
-say go ahead with your fuse-local implementation for now, but please use
-the 0x8n fh_type values.
+> My take on the situation is this.  For proper handling we
+> need driver device_detach and device_reattach methods.
+> 
+> With the following semantics.  The device_detach methods
+> will disable DMA and place the hardware in a sane state
+> from which the device driver can reclaim and reinitialize it,
+> but the hardware will not be touched.
+> 
+> device_reattach reattaches the driver to the hardware.
+
+How would these differ from the already-existing remove and probe 
+methods?
+
+Alan Stern
 
