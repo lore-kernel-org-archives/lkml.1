@@ -1,72 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764706AbYEOSEY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763387AbYEOSFt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764706AbYEOSEY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 14:04:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbYEOSEO
+	id S1763387AbYEOSFt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 14:05:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbYEOSFk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 14:04:14 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:43079 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751350AbYEOSEN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 14:04:13 -0400
-Message-ID: <482C7B18.6060003@garzik.org>
-Date: Thu, 15 May 2008 14:04:08 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 15 May 2008 14:05:40 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:50031 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751258AbYEOSFi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 14:05:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=w54xcNGtYMSR0aCaFRFfhGlNMSoSsif8CtqD6HS0MN4S4uN38GDCG6NM6qxawZfB3hi3uR4mfhW9XvZVcCb6TVXhFISDOjukXLAqYnQk2e2Iq9FjDhu1ug5zNQ7kqtAcpc5Y6pxKTmN0Xmt9udrZCHM2V8t+RW+KDSSNbvaABiA=
+Date: Thu, 15 May 2008 22:05:28 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Roman Zippel <zippel@linux-m68k.org>, Andreas Schwab <schwab@suse.de>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] init - fix building bug and potential buffer overflow
+Message-ID: <20080515180528.GC7481@cvg>
+References: <20080514154402.GF6902@cvg> <20080515105803.7c9ab8c7.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Chris Peterson <cpeterso@cpeterso.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
- IRQF_SAMPLE_RANDOM
-References: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com> <20080515142154.0595e475@core> <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com>
-In-Reply-To: <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080515105803.7c9ab8c7.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Brandeburg, Jesse wrote:
-> we've been hearing rumblings of big customers wanting (maybe requiring)
-> wired network drivers from Intel to  advertise this flag.  Jeff have you
-> heard of such?
+[Andrew Morton - Thu, May 15, 2008 at 10:58:03AM -0700]
+| On Wed, 14 May 2008 19:44:02 +0400 Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+| 
+| > This patch does fix build bug on m68k wich does not have strncat in straight way.
+| > 
+| > What is more important - my previous patch
+| > 
+| > commit e662e1cfd434aa234b72fbc781f1d70211cb785b
+| > Author: Cyrill Gorcunov <gorcunov@gmail.com>
+| > Date:   Mon May 12 14:02:22 2008 -0700
+| > 
+| >     init: don't lose initcall return values
+| > 
+| > has introduced potential buffer overflow by wrong calculation
+| > of string accumulator size.
+| > 
+| > Many thanks Andreas Schwab and Geert Uytterhoeven for helping
+| > to catch and fix the bug.
+| > 
+| > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+| > ---
+| > 
+| > Index: linux-2.6.git/init/main.c
+| > ===================================================================
+| > --- linux-2.6.git.orig/init/main.c	2008-05-14 17:55:10.000000000 +0400
+| > +++ linux-2.6.git/init/main.c	2008-05-14 19:11:18.000000000 +0400
+| > @@ -702,7 +702,7 @@ static void __init do_initcalls(void)
+| >  
+| >  	for (call = __initcall_start; call < __initcall_end; call++) {
+| >  		ktime_t t0, t1, delta;
+| > -		char msgbuf[40];
+| > +		char msgbuf[64];
+| >  		int result;
+| >  
+| >  		if (initcall_debug) {
+| > @@ -729,11 +729,11 @@ static void __init do_initcalls(void)
+| >  			sprintf(msgbuf, "error code %d ", result);
+| >  
+| >  		if (preempt_count() != count) {
+| > -			strncat(msgbuf, "preemption imbalance ", sizeof(msgbuf));
+| > +			strcat(msgbuf, "preemption imbalance ");
+| >  			preempt_count() = count;
+| >  		}
+| >  		if (irqs_disabled()) {
+| > -			strncat(msgbuf, "disabled interrupts ", sizeof(msgbuf));
+| > +			strcat(msgbuf, "disabled interrupts ");
+| >  			local_irq_enable();
+| >  		}
+| >  		if (msgbuf[0]) {
+| 
+| umm, why can't m68k call strncat() from init/main.c??
+| 
 
-I do indeed hear requests all the time, from people who want to make 
-their boxes externally exploitable.  :)
+there some problem with headers iirc, we have to declare it first or
+use some gcc option (as Adrian suggested). Actually I would prefer to use
+strlcat there but it seems it would fail to build too. Originally I've messed
+strlcat with strncat :(
 
-
-> I think the argument is that a headless system (no keyboard/mouse, no
-> soundcard, probably no video) with a libata based driver and a network
-> driver without IRQF_SAMPLE_RANDOM has *no* sources of entropy.  In this
-> case the argument is very strong for at least *some* source of entropy
-> from interrupts so that randomness can get some external input.  Just
-> try rebuilding a kernel RPM over an ssh session and you'll see what I
-> mean.
-
-There are entropy sources on a headless box, even one without audio and 
-video, that are more secure than adding IRQF_SAMPLE_RANDOM to network 
-drivers.
-
-EGD demonstrates this, for example:  http://egd.sourceforge.net/  It 
-looks at snmp, w, last, uptime, iostats, vmstats, etc.
-
-And there are plenty of untapped entropy sources even so, such as 
-reading temperature sensors, fan speed sensors on variable-speed fans, etc.
-
-Heck, "smartctl -d ata -a /dev/FOO" produces output that could be hashed 
-and added as entropy.
-
-I'm interested to hear peoples' opinion of Chris P's patch, but 
-definitely do not want to go in the other direction and start adding 
-IRQF_SAMPLE_RANDOM, thus moving randomness in the direction of being 
-externally exploitable.
-
-	Jeff
-
-
-
+		- Cyrill -
