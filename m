@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758253AbYEOTuo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754890AbYEOTvE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758253AbYEOTuo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 15:50:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbYEOTuH
+	id S1754890AbYEOTvE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 15:51:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758167AbYEOTuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 15:50:07 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:50658 "EHLO
+	Thu, 15 May 2008 15:50:20 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50667 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753148AbYEOTuF (ORCPT
+	with ESMTP id S1757870AbYEOTuS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 15:50:05 -0400
-Date: Thu, 15 May 2008 11:41:27 -0700
+	Thu, 15 May 2008 15:50:18 -0400
+Date: Thu, 15 May 2008 11:44:24 -0700
 From: Greg KH <greg@kroah.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>, jkosina@suse.cz,
-       linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Input: add appleir USB driver
-Message-ID: <20080515184127.GC15231@kroah.com>
-References: <20080514221519.GA6575@kroah.com> <20080515134046.GA9529@dose.home.local>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       video4linux-list@redhat.com
+Subject: Re: [PATCH] USB: add Sensoray 2255 v4l driver
+Message-ID: <20080515184424.GD15231@kroah.com>
+References: <20080514205927.GA13134@kroah.com> <200805151338.38801.oliver@neukum.org> <200805151403.19323.oliver@neukum.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080515134046.GA9529@dose.home.local>
+In-Reply-To: <200805151403.19323.oliver@neukum.org>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 15, 2008 at 03:40:46PM +0200, Tino Keitel wrote:
-> On Wed, May 14, 2008 at 15:15:19 -0700, Greg KH wrote:
-> > From: Greg Kroah-Hartman <gregkh@suse.de>
-> > 
-> > This driver was originally written by James McKenzie but forward ported
-> > and cleaned up by me to get it to work with modern kernel versions.
-> > 
-> > Tested on my mac mini and it actually works!
+On Thu, May 15, 2008 at 02:03:18PM +0200, Oliver Neukum wrote:
+> Am Donnerstag 15 Mai 2008 13:38:37 schrieb Oliver Neukum:
+> > 3. The firmware stuff. That's an interesting solution. However:
 > 
-> Did you test suspend to RAM? Last time I used the original driver, I
-> had to reload it after resume, otherwise LIRC didn't receive events
-> anymore.
+> Actually, on second thought, I take that back. It's a bad solution.
+> If you don't want to do it in probe(), the only other sensible place
+> is in open(). That way you can avoid the whole trouble if nobody
+> opens the device. And you need to handle the case of unloaded
+> firmware anyway, so you can trigger firmware load there.
 
-Yes, suspend to ram did seem to work for me with this driver.  But I
-haven't tested that in a while, will do so later today.
+No, we want to do firmware load on probe, I'll change it to be async so
+that probe can continue on.  Need to see if I can disconnect the driver
+from device after probe succeeds in case the firmware fails.
 
-I don't use LIRC though, so I really can not speak for that chunk of
-code at all.
-
-thanks,
+thanks for the review, I appreciate it and will fix them up later today
+or tomorrow.
 
 greg k-h
