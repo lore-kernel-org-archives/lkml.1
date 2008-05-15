@@ -1,44 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760372AbYEORhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761069AbYEORii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760372AbYEORhx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 13:37:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbYEORhn
+	id S1761069AbYEORii (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 13:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbYEORia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 13:37:43 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:2434 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751264AbYEORhm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 13:37:42 -0400
-Date: Thu, 15 May 2008 18:37:37 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: linux-mm@kvack.org
-Cc: Andrew Morton <akpm@osdl.org>, Christoph Lameter <clameter@sgi.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] slob: record page flag overlays explicitly
-Message-ID: <20080515173737.GA21787@shadowen.org>
-References: <exportbomb.1210871946@pinky> <1210872010.0@pinky>
+	Thu, 15 May 2008 13:38:30 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:51675 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750905AbYEORi3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 13:38:29 -0400
+Date: Thu, 15 May 2008 10:38:28 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: =?ISO-8859-1?Q?St=E9phane_ANCELOT?= <sancelot@free.fr>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+Subject: Re: detecting kernel mem leak
+In-Reply-To: <4829566B.7090804@free.fr>
+Message-ID: <Pine.LNX.4.64.0805151036030.18708@schroedinger.engr.sgi.com>
+References: <1209462094.4816ed4e93977@imp.free.fr>
+ <84144f020804290546h666983aci77fbb08eb507e777@mail.gmail.com>
+ <Pine.LNX.4.64.0804290956360.10847@schroedinger.engr.sgi.com>
+ <4821C526.8030901@free.fr> <Pine.LNX.4.64.0805071020210.3173@schroedinger.engr.sgi.com>
+ <4829566B.7090804@free.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1210872010.0@pinky>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1700579579-1226595496-1210873060=:18708"
+Content-ID: <Pine.LNX.4.64.0805151037450.18708@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 15, 2008 at 06:20:10PM +0100, Andy Whitcroft wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
->  static inline void clear_slob_page(struct slob_page *sp)
->  {
-> -	__clear_bit(PG_active, &sp->flags);
-> +	__clear_bit(PG_slob_free, &sp->flags);
->  }
+---1700579579-1226595496-1210873060=:18708
+Content-Type: TEXT/PLAIN; CHARSET=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-ID: <Pine.LNX.4.64.0805151037451.18708@schroedinger.engr.sgi.com>
 
-Bah, this hunk is wrong.  Seems this is not the latest version.  Will
-replace this patch momentarily.
+On Tue, 13 May 2008, St=E9phane ANCELOT wrote:
 
--apw
+> I kept my kernel running with few applications for 5 days , doing
+> nothing more than backing up few kb of data on disk and refresh few X app=
+s.
+>=20
+> Ater five days the global memory available go down from 24Mb to 8Mb ...
+
+That is normal. Linux tries to put all memory to use and will free on=20
+demand.
+
+> The are some signifiant changes in slabinfo but now, I do not know where
+> to search ?
+
+Compile the slabinfo tool.
+
+gcc -o slabinfo linux/Documentation/vm/slabinfo.c
+
+Then you can do
+
+slabinfo -T
+
+to get an overview of how much is used by slabs. But I do not see that=20
+slabs are using an excessive amount. So toying around with slabinfo is=20
+not going to get you anywhere.
+
+
+---1700579579-1226595496-1210873060=:18708--
