@@ -1,78 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762222AbYEOQJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762339AbYEOQJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762222AbYEOQJU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 12:09:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759185AbYEOQJJ
+	id S1762339AbYEOQJv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 12:09:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756796AbYEOQJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 12:09:09 -0400
-Received: from waste.org ([66.93.16.53]:60465 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758545AbYEOQJI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 12:09:08 -0400
-Subject: Re: [patch 21/21] slab defrag: Obsolete SLAB
-From: Matt Mackall <mpm@selenic.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, Matthew Wilcox <matthew@wil.cx>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-In-Reply-To: <Pine.LNX.4.64.0805141405350.19073@schroedinger.engr.sgi.com>
-References: <20080510030831.796641881@sgi.com>
-	 <20080510030919.604216074@sgi.com> <4825709A.2020407@firstfloor.org>
-	 <20080510221515.3540a6cc@bree.surriel.com>
-	 <2f11576a0805120038s334dc56cuaf16b8b7c6f87098@mail.gmail.com>
-	 <84144f020805120054t1370236ei5ff52279457e026e@mail.gmail.com>
-	 <Pine.LNX.4.64.0805141009210.15194@schroedinger.engr.sgi.com>
-	 <482B2617.5010605@firstfloor.org>
-	 <Pine.LNX.4.64.0805141100110.15633@schroedinger.engr.sgi.com>
-	 <1210789112.4093.14.camel@calx>
-	 <Pine.LNX.4.64.0805141220440.16223@schroedinger.engr.sgi.com>
-	 <1210794563.4093.57.camel@calx>
-	 <Pine.LNX.4.64.0805141333060.18231@schroedinger.engr.sgi.com>
-	 <1210798978.4093.82.camel@calx>
-	 <Pine.LNX.4.64.0805141405350.19073@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Wed, 14 May 2008 16:54:55 -0500
-Message-Id: <1210802095.4093.109.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+	Thu, 15 May 2008 12:09:39 -0400
+Received: from stinky.trash.net ([213.144.137.162]:46285 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759889AbYEOQJi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 12:09:38 -0400
+Message-ID: <482C6040.9030808@trash.net>
+Date: Thu, 15 May 2008 18:09:36 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080405)
+MIME-Version: 1.0
+To: Kingsley Foreman <kingsley@internode.com.au>
+CC: Jarek Poplawski <jarkao2@gmail.com>, Eric Dumazet <dada1@cosmosbay.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: NET_SCHED cbq dropping too many packets on a bonding interface
+References: <20080515091216.GA6550@ff.dom.local> <8ECDBB4EB5394859BFFACAAEE3A6EDB0@uglypunk>
+In-Reply-To: <8ECDBB4EB5394859BFFACAAEE3A6EDB0@uglypunk>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2008-05-14 at 14:26 -0700, Christoph Lameter wrote:
-> > So far this is a bunch of hand-waving but I think this ends up
-> basically
-> > being an anti-magazine. A magazine puts a per-cpu queue on the alloc
-> > side which costs on both the alloc and free side, regardless of whether
-> > the workload demands it. This puts a per-cpu queue on the free side that
-> > we can bypass in the cache-friendly case. I think that's a step in the
-> > right direction.
+Kingsley Foreman wrote:
+> i just rolled back the kernel to 2.6.24 and im seeing the same thing,
 > 
-> I think if you want queues for an SMP only system, do not care too much 
-> about memory use, dont do any frequent allocations on multicore systems 
-> and can tolerate the hiccups because your application does not care (most 
-> enterprise apps are constructed that way) or if you are running benchmarks 
-> that only access a limited dataset that fits into SLABs queues amd 
-> avoid touch the contenst of objects then the SLAB concept is the right way 
-> to go.
+> I was using 2.6.22 before and didn't see the problem, txqueuelen on the 
+> bond0 interface is 0 (the default)
 
-> If we would strip the NUMA stuff out and make it an SMP only allocator for 
-> enterprise apps then the code may become much smaller and simpler. I guess 
-> Arjan suggested something similar in the past. But that would result in 
-> SLAB no longer being a general allocator.
+That might explain things, although it shouldn't have worked before
+either.
 
-What does this have to do with anything? I'm not talking about going
-back to SLAB. I'm talking about plugging the use cases where SLUB
-currently loses to SLAB. That's what has to happen before SLAB can be
-obsoleted.
+CBQ creates default pfifo qdiscs for its leaves, these use a limit
+of txqueuelen or 1 if it is zero. So even small bursts will cause
+drops. Do things improve if you set txqueuelen to a larger value
+*before* configuring the qdiscs?
 
-I'll certainly grant you that queueing might not break even.
-
--- 
-Mathematics is the supreme nostalgia of our time.
-
+Another thing is that CBQ on bond will probably not work properly
+at all, it needs a real device since it measures the timing between
+dequeue events for idle time estimation. On software devices this
+doesn't work.
