@@ -1,71 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756114AbYEOCEI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098AbYEOCLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756114AbYEOCEI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 22:04:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbYEOCD4
+	id S1754098AbYEOCLc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 22:11:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751204AbYEOCLW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 22:03:56 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:37137 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751802AbYEOCDz (ORCPT
+	Wed, 14 May 2008 22:11:22 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:58079 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750980AbYEOCLW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 22:03:55 -0400
-Subject: Re: [PATCH 0/2] x86: per-device dma_mapping_ops
-From: Alexis Bruemmer <alexisb@us.ibm.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: muli@il.ibm.com, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <20080515101212Z.tomof@acm.org>
-References: <1210658692-960-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	 <20080514054924.GD6682@il.ibm.com>  <20080515101212Z.tomof@acm.org>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 14 May 2008 19:00:13 -0700
-Message-Id: <1210816813.5596.13.camel@alexis>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 8bit
+	Wed, 14 May 2008 22:11:22 -0400
+Date: Wed, 14 May 2008 22:10:54 -0400 (EDT)
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Trent Piepho <xyzzy@speakeasy.org>
+cc: Adrian Bunk <bunk@kernel.org>, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org, linux-dvb-maintainer@linuxtv.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [v4l-dvb-maintainer] [GIT PATCHES] V4L/DVB fixes for 2.6.26
+In-Reply-To: <Pine.LNX.4.58.0805141749470.23876@shell4.speakeasy.net>
+Message-ID: <Pine.LNX.4.64.0805142154410.12257@bombadil.infradead.org>
+References: <20080514114910.4bcfd220@gaivota> <20080514165434.GC22115@cs181133002.pp.htv.fi>
+ <20080514145554.10e3385c@gaivota> <20080514193822.GA21795@cs181133002.pp.htv.fi>
+ <Pine.LNX.4.58.0805141749470.23876@shell4.speakeasy.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-05-15 at 10:12 +0900, FUJITA Tomonori wrote:
-> On Wed, 14 May 2008 08:49:24 +0300
-> Muli Ben-Yehuda <muli@il.ibm.com> wrote:
-> 
-> > On Tue, May 13, 2008 at 03:04:50PM +0900, FUJITA Tomonori wrote:
-<snip>
-> > Awesome! Much needed, thank you for doing this.
-> 
-> No problem. Well, as you know, it's just a base. We need more work to
-> solve the problems on the top of this.
-Yes thank you!  
-> 
-> I'd like to have a mechanism to register a hook called when a new pci
-> (or dma capable) device is created. It enables IOMMUs to set up an
-> appropriate dma_mapping_ops per device. It could also enables us to
-> simplify the IOMMUs code to initilize devices at startup (for exmple,
-> intel-iommu checks all the pci devices and creates a domain per device
-> if necessary).
-﻿I wanted to try and create a test version of this, at least for the
-calgary side, but ran into an error with this patch set:
+On Wed, 14 May 2008, Trent Piepho wrote:
 
-Fusion MPT SAS Host driver 3.04.06
-ACPI: PCI Interrupt 0000:34:00.0[A] -> GSI 142 (level, low) -> IRQ 142
-mptbase: ioc0: Initiating bringup
-ioc0: LSISAS1078 C1: Capabilities={Initiator}
-mptbase: ioc0: PCI-MSI enabled
-Calgary: DMA error on CalIOC2 PHB 0x33
-Calgary: 0x02000000@CSR 0x00000000@PLSSR 0xb0008000@CSMR 0x00000000@MCK
-Calgary: 0x00000000@0x810 0xfee0c000@0x820 0x00000000@0x830
-0x00000000@0x840 0x03804a00@0x850 0x00000000@0x860 0x00000000@0x870
-Calgary: 0x00000000@0xcb0
-mptbase: ioc0: Initiating recovery
-mptbase: ioc0: WARNING - Unexpected doorbell active!
-mptbase: ioc0: WARNING - NOT READY!
-mptbase: ioc0: WARNING - Cannot recover rc = -1!
-mptbase: ioc0: WARNING - Firmware Reload FAILED!
-Clocksource tsc unstable (delta = 48333779773 ns)
+> On Wed, 14 May 2008, Adrian Bunk wrote:
+>>> It would be nice if you could help on fixing those issues.
+>>>
+>>> One dependency that will probably solve is to add "depends on VIDEO_MEDIA &&
+>>> I2C" to all devices that are hybrid (bttv, saa7134, cx88, pvrusb, em28xx).
+>>
+>> What about converting all dependencies on I2C to select's?
+>
+> Doesn't that just increase the problems with failing to have correct
+> dependencies?  Anything that selects I2C needs to depend on everything I2C
+> depends on.
+>
 
-Not sure what is causing this error, but will keep digging.  Any ideas?
+True. Currently, the only dependency is this one:
 
---Alexis
+menuconfig I2C
+         tristate "I2C support"
+         depends on HAS_IOMEM
 
+HAS_IOMEM is true on every architecture, except usermode linux (um) and 
+s390. Also, Multimedia menu is already dependent of HAS_IOMEM, so, this 
+currently won't add any extra complexity.
+
+I agree that this may add an extra issue to concern, since future changes 
+at I2C dependencies will need to be addressed.
+
+-- 
+Cheers,
+Mauro Carvalho Chehab
+http://linuxtv.org
+mchehab@infradead.org
