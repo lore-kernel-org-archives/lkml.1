@@ -1,129 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755386AbYEOHRe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755752AbYEOHVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755386AbYEOHRe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 03:17:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbYEOHRW
+	id S1755752AbYEOHVX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 03:21:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbYEOHVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 03:17:22 -0400
-Received: from harold.telenet-ops.be ([195.130.133.65]:56483 "EHLO
-	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752558AbYEOHRV (ORCPT
+	Thu, 15 May 2008 03:21:15 -0400
+Received: from relay4.jackal-net.at ([193.154.151.101]:43532 "EHLO
+	vm02.server04.jackal-net.at" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752781AbYEOHVO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 03:17:21 -0400
-Date: Thu, 15 May 2008 09:17:15 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Tony Breeds <tony@bakeyournoodle.com>
-cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jgarzik@redhat.com>,
-       David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: linux-next: Tree for May 14
-In-Reply-To: <20080515010550.GL20457@bakeyournoodle.com>
-Message-ID: <Pine.LNX.4.64.0805150914220.11631@anakin>
-References: <20080514170106.3cbcb201.sfr@canb.auug.org.au>
- <Pine.LNX.4.64.0805142237240.11631@anakin> <20080514135008.60e5df96.randy.dunlap@oracle.com>
- <20080514210447.GK20457@bakeyournoodle.com> <20080515010550.GL20457@bakeyournoodle.com>
+	Thu, 15 May 2008 03:21:14 -0400
+Message-ID: <482BE440.9070206@jackal-net.at>
+Date: Thu, 15 May 2008 09:20:32 +0200
+From: Michael Lang <Michael.Lang@jackal-net.at>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080213)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "J. Bruce Fields" <bfields@fieldses.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>
+Subject: Re: Kernel Panic when accessing NFS share and locking files
+References: <482B2108.4090902@jackal-net.at>	<20080514204932.13243cab.akpm@linux-foundation.org> <20080514205528.3bf3955d@infradead.org>
+In-Reply-To: <20080514205528.3bf3955d@infradead.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Milter: vm02.server04.jackal-net.at
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 May 2008, Tony Breeds wrote:
-> On Thu, May 15, 2008 at 07:04:47AM +1000, Tony Breeds wrote:
-> > On Wed, May 14, 2008 at 01:50:08PM -0700, Randy Dunlap wrote:
-> >  
-> > > Ugh.  Can you please make the log file more readable?
-> > > 
-> > > Or is a problem with my browser (firefox)?
-> > 
-> > It's a raw download, save it as a file and then view it (or look at the
-> > source).
+Arjan van de Ven wrote:
+> On Wed, 14 May 2008 20:49:32 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+>
+>   
+>> On Wed, 14 May 2008 19:27:36 +0200 Michael Lang
+>> <Michael.Lang@jackal-net.at> wrote:
+>>
+>>     
+>>> Hi,
+>>>
+>>> we encountered a serious problem, when using Solaris NFS (Server) 
+>>> accessing it with a CentOS5.1/RHEL5.1 client.
+>>>       
+>
+>
+>
+>   
+>> Which kernel version is being used?
+>>     
+>
+> that'll be a 2.6.18 variant ;)
+>
+> there have been some, but not too many, reports of a trace like this:
+> http://www.kerneloops.org/search.php?search=__fput
+>   
+thanks for your quick response ...
 
-That's what I did....
+yes it's the hole 2.6.18+ series which is provided by RedHat, i'm 
+currently compiling a 2.6.25-3 to verify that the problem still persists in
+the new versions. I'll try to get it running today an let you know, if 
+so i'll forward the code and instructions how to recreate the problem to the
+enclosed recipients only ...
 
-> FWIW the error in question is:
->   Using /scratch1/tony/next as source for kernel
->   GEN     /scratch1/tony/next_out/Makefile
->   CHK     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   CALL    /scratch1/tony/next/scripts/checksyscalls.sh
->   CHK     include/linux/compile.h
->   CC [M]  drivers/net/zorro8390.o
-> In file included from /scratch1/tony/next/drivers/net/zorro8390.c:47:
-> /scratch1/tony/next/drivers/net/lib8390.c: In function 'ei_tx_err':
-> /scratch1/tony/next/drivers/net/lib8390.c:556: error: 'ei_local' undeclared (first use in this function)
-> /scratch1/tony/next/drivers/net/lib8390.c:556: error: (Each undeclared identifier is reported only once
-> /scratch1/tony/next/drivers/net/lib8390.c:556: error: for each function it appears in.)
-> /scratch1/tony/next/drivers/net/lib8390.c: In function 'ei_rx_overrun':
-> /scratch1/tony/next/drivers/net/lib8390.c:823: error: 'ei_local' undeclared (first use in this function)
-> make[3]: *** [drivers/net/zorro8390.o] Error 1
-> make[2]: *** [drivers/net] Error 2
-> make[1]: *** [drivers] Error 2
-> make: *** [sub-make] Error 2
+kind regards
+Michael Lang
 
-Wow, did you really get all of this from that webpage??
 
-> It was introduced by 3f8cb098859bbea29d7b3765a3102e4a6bf81b85
-> (drivers/net/lib8390: fix warning, trim trailing whitespace)
-> 
-> The problem is that ei_inb_p() is using various #defines (from
-> drivers/net/8390.h) that use EI_SHIFT, which in the zorro8390 case uses
-> ei_local.  Since zorro8390 is only build for m68k, guard the definition of
-
-Thanks for chasing this down!
-
-> ei_local with CONFIG_M68K
-
-Technically, it could also happen on PPC (APUS), but all APUS support got
-removed a few months ago.
-So maybe CONFIG_ZORRO is more appropriate?
-
-(CONFIG_ZORRO8390 || CONFIG_ZORRO8390_MODULE is probably frowned upon?)
-
-> The patch below fixes the zorro8390 build, and I think will keep the warnings
-> that Jeff is trying to silence silenced.
-> 
-> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
-> 
-> ---
-> 
->  drivers/net/lib8390.c |    6 ++++++
->  1 files changed, 6 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/net/lib8390.c b/drivers/net/lib8390.c
-> index ed49527..a3d04a1 100644
-> --- a/drivers/net/lib8390.c
-> +++ b/drivers/net/lib8390.c
-> @@ -553,6 +553,9 @@ static void __ei_poll(struct net_device *dev)
->  static void ei_tx_err(struct net_device *dev)
->  {
->  	unsigned long e8390_base = dev->base_addr;
-> +#ifdef CONFIG_M68K
-> +	struct ei_device *ei_local = (struct ei_device *) netdev_priv(dev);
-> +#endif
->  	unsigned char txsr = ei_inb_p(e8390_base+EN0_TSR);
->  	unsigned char tx_was_aborted = txsr & (ENTSR_ABT+ENTSR_FU);
->  
-> @@ -815,6 +818,9 @@ static void ei_rx_overrun(struct net_device *dev)
->  {
->  	unsigned long e8390_base = dev->base_addr;
->  	unsigned char was_txing, must_resend = 0;
-> +#ifdef CONFIG_M68K
-> +	struct ei_device *ei_local = (struct ei_device *) netdev_priv(dev);
-> +#endif
->  
->  	/*
->  	 * Record whether a Tx was in progress and then issue the
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
