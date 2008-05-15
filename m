@@ -1,272 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756802AbYEOWF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755964AbYEOWKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756802AbYEOWF1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 18:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751655AbYEOWFQ
+	id S1755964AbYEOWKa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 18:10:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751739AbYEOWKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 18:05:16 -0400
-Received: from smtp1.riverbed.com ([206.169.144.12]:14843 "EHLO
-	smtp1.riverbed.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752800AbYEOWFP (ORCPT
+	Thu, 15 May 2008 18:10:20 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:49178 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751334AbYEOWKS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 18:05:15 -0400
-Date: Thu, 15 May 2008 15:05:10 -0700
-From: Arthur Jones <ajones@riverbed.com>
-To: Greg KH <greg@kroah.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Miklos Szeredi <miklos@szeredi.hu>,
-       Arthur Jones <Arthur.Jones@riverbed.com>,
-       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>,
-       "mszeredi@suse.cz" <mszeredi@suse.cz>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "kay.sievers@vrfy.org" <kay.sievers@vrfy.org>,
-       "trond.myklebust@fys.uio.no" <trond.myklebust@fys.uio.no>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] mm: bdi: export BDI attributes in sysfs
-Message-ID: <20080515220510.GY23649@ajones-laptop.nbttech.com>
-References: <20080513190435.GG23649@ajones-laptop.nbttech.com> <20080514144030.GD6458@ajones-laptop.nbttech.com> <E1JwiZa-0007UA-Tm@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0805151213430.3019@woody.linux-foundation.org> <E1Jwj7G-0007Zs-GB@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0805151247010.3019@woody.linux-foundation.org> <20080515210254.GA23684@kroah.com>
+	Thu, 15 May 2008 18:10:18 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "Huang, Ying" <ying.huang@intel.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, Andrew Morton <akpm@linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+References: <1204773188.4707.109.camel@caritas-dev.intel.com>
+	<m13aok1pt1.fsf@frodo.ebiederm.org> <200805150155.33787.rjw@sisk.pl>
+Date: Thu, 15 May 2008 15:03:17 -0700
+In-Reply-To: <200805150155.33787.rjw@sisk.pl> (Rafael J. Wysocki's message of
+	"Thu, 15 May 2008 01:55:32 +0200")
+Message-ID: <m163tfi5sq.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20080515210254.GA23684@kroah.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: *****;"Rafael J. Wysocki" <rjw@sisk.pl>
+X-Spam-Report: *  7.0 XM_URI_RBL URI's domain appears in surbl.xmission.com
+	*      [URIs: kerneltrap.org]
+	* -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
+	*      [score: 0.4999]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH -mm] kexec jump -v9
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg, ...
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-On Thu, May 15, 2008 at 02:02:54PM -0700, Greg KH wrote:
-> On Thu, May 15, 2008 at 12:54:57PM -0700, Linus Torvalds wrote:
-> >
-> >
-> > On Thu, 15 May 2008, Miklos Szeredi wrote:
-> > >
-> > > Actually nothing should need protection.  The only problem AFAICS is
-> > > that the device_create()/dev_set_drvdata() interface is racy: somebody
-> > > can come in after the device has been created but before drvdata has
-> > > been set, and then we are in trouble.
-> >
-> > Well, I'm not sure that the locking should be at that level. Maybe the
-> > locking *should* be in the driver that does this. It may need to do other
-> > setup too, after all.
-> >
-> > Of course, doing a device_create_drvdata() thing might be the right
-> > solution, at least part of the time. Greg?
-> 
-> Here's a patch that is build tested only.
-> 
-> Can someone who can reproduce this let me know if it solves the problem?
+> Well, it looks like we do similar things concurrently.  Please have a look 
+> here: http://kerneltrap.org/Linux/Separating_Suspend_and_Hibernation
 
-Yes, this patch survives many power cycles
-without hitting the BUG...
+Yes.  Part of the reason I wanted to separate these two conversations
+I knew something was going on.
 
-Thanks for looking into this...
+> Similar patches are in the Greg's tree already.
 
-Arthur
-> --------------------
-> 
-> Subject: Driver core: add device_create_vargs and device_create_drvdata
-> 
-> We want to have the drvdata field set properly when creating the device
-> as sysfs callbacks can assume it is present and it can race the later
-> setting of this field.
-> 
-> So, create two new functions, deviec_create_vargs() and
-> device_create_drvdata() that take this new field.
-> 
-> Also move the mm/backing-dev.c code to use it as it is showing this
-> problem today.
-> 
-> device_create_drvdata() will go away in 2.6.27 as the drvdata field will
-> just be moved to the device_create() call as it should be.
-> 
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> ---
->  drivers/base/core.c    |   85 +++++++++++++++++++++++++++++++++++++++++++++----
->  include/linux/device.h |   12 ++++++
->  mm/backing-dev.c       |   12 +-----
->  3 files changed, 93 insertions(+), 16 deletions(-)
-> 
-> --- a/drivers/base/core.c
-> +++ b/drivers/base/core.c
-> @@ -1163,11 +1163,13 @@ static void device_create_release(struct
->  }
-> 
->  /**
-> - * device_create - creates a device and registers it with sysfs
-> + * device_create_vargs - creates a device and registers it with sysfs
->   * @class: pointer to the struct class that this device should be registered to
->   * @parent: pointer to the parent struct device of this new device, if any
->   * @devt: the dev_t for the char device to be added
-> + * @drvdata: the data to be added to the device for callbacks
->   * @fmt: string for the device's name
-> + * @args: va_list for the device's name
->   *
->   * This function can be used by char device classes.  A struct device
->   * will be created in sysfs, registered to the specified class.
-> @@ -1183,10 +1185,10 @@ static void device_create_release(struct
->   * Note: the struct class passed to this function must have previously
->   * been created with a call to class_create().
->   */
-> -struct device *device_create(struct class *class, struct device *parent,
-> -                            dev_t devt, const char *fmt, ...)
-> +struct device *device_create_vargs(struct class *class, struct device *parent,
-> +                                  dev_t devt, void *drvdata, const char *fmt,
-> +                                  va_list args)
->  {
-> -       va_list args;
->         struct device *dev = NULL;
->         int retval = -ENODEV;
-> 
-> @@ -1203,10 +1205,9 @@ struct device *device_create(struct clas
->         dev->class = class;
->         dev->parent = parent;
->         dev->release = device_create_release;
-> +       dev_set_drvdata(dev, drvdata);
-> 
-> -       va_start(args, fmt);
->         vsnprintf(dev->bus_id, BUS_ID_SIZE, fmt, args);
-> -       va_end(args);
->         retval = device_register(dev);
->         if (retval)
->                 goto error;
-> @@ -1217,6 +1218,78 @@ error:
->         kfree(dev);
->         return ERR_PTR(retval);
->  }
-> +EXPORT_SYMBOL_GPL(device_create_vargs);
-> +
-> +/**
-> + * device_create_drvdata - creates a device and registers it with sysfs
-> + * @class: pointer to the struct class that this device should be registered to
-> + * @parent: pointer to the parent struct device of this new device, if any
-> + * @devt: the dev_t for the char device to be added
-> + * @drvdata: the data to be added to the device for callbacks
-> + * @fmt: string for the device's name
-> + *
-> + * This function can be used by char device classes.  A struct device
-> + * will be created in sysfs, registered to the specified class.
-> + *
-> + * A "dev" file will be created, showing the dev_t for the device, if
-> + * the dev_t is not 0,0.
-> + * If a pointer to a parent struct device is passed in, the newly created
-> + * struct device will be a child of that device in sysfs.
-> + * The pointer to the struct device will be returned from the call.
-> + * Any further sysfs files that might be required can be created using this
-> + * pointer.
-> + *
-> + * Note: the struct class passed to this function must have previously
-> + * been created with a call to class_create().
-> + */
-> +struct device *device_create_drvdata(struct class *class,
-> +                                    struct device *parent,
-> +                                    dev_t devt,
-> +                                    void *drvdata,
-> +                                    const char *fmt, ...)
-> +{
-> +       va_list vargs;
-> +       struct device *dev;
-> +
-> +       va_start(vargs, fmt);
-> +       dev = device_create_vargs(class, parent, devt, drvdata, fmt, vargs);
-> +       va_end(vargs);
-> +       return dev;
-> +}
-> +EXPORT_SYMBOL_GPL(device_create_drvdata);
-> +
-> +/**
-> + * device_create - creates a device and registers it with sysfs
-> + * @class: pointer to the struct class that this device should be registered to
-> + * @parent: pointer to the parent struct device of this new device, if any
-> + * @devt: the dev_t for the char device to be added
-> + * @fmt: string for the device's name
-> + *
-> + * This function can be used by char device classes.  A struct device
-> + * will be created in sysfs, registered to the specified class.
-> + *
-> + * A "dev" file will be created, showing the dev_t for the device, if
-> + * the dev_t is not 0,0.
-> + * If a pointer to a parent struct device is passed in, the newly created
-> + * struct device will be a child of that device in sysfs.
-> + * The pointer to the struct device will be returned from the call.
-> + * Any further sysfs files that might be required can be created using this
-> + * pointer.
-> + *
-> + * Note: the struct class passed to this function must have previously
-> + * been created with a call to class_create().
-> + */
-> +struct device *device_create(struct class *class, struct device *parent,
-> +                            dev_t devt, const char *fmt, ...)
-> +{
-> +       va_list vargs;
-> +       struct device *dev;
-> +
-> +       va_start(vargs, fmt);
-> +       dev = device_create_vargs(class, parent, devt, NULL, fmt, vargs);
-> +       va_end(vargs);
-> +       return dev;
-> +}
->  EXPORT_SYMBOL_GPL(device_create);
-> 
->  static int __match_devt(struct device *dev, void *data)
-> --- a/include/linux/device.h
-> +++ b/include/linux/device.h
-> @@ -456,9 +456,21 @@ extern int __must_check device_reprobe(s
->  /*
->   * Easy functions for dynamically creating devices on the fly
->   */
-> +extern struct device *device_create_vargs(struct class *cls,
-> +                                         struct device *parent,
-> +                                         dev_t devt,
-> +                                         void *drvdata,
-> +                                         const char *fmt,
-> +                                         va_list vargs);
->  extern struct device *device_create(struct class *cls, struct device *parent,
->                                     dev_t devt, const char *fmt, ...)
->                                     __attribute__((format(printf, 4, 5)));
-> +extern struct device *device_create_drvdata(struct class *cls,
-> +                                           struct device *parent,
-> +                                           dev_t devt,
-> +                                           void *drvdata,
-> +                                           const char *fmt, ...)
-> +                                   __attribute__((format(printf, 5, 6)));
->  extern void device_destroy(struct class *cls, dev_t devt);
-> 
->  /*
-> --- a/mm/backing-dev.c
-> +++ b/mm/backing-dev.c
-> @@ -172,30 +172,22 @@ postcore_initcall(bdi_class_init);
->  int bdi_register(struct backing_dev_info *bdi, struct device *parent,
->                 const char *fmt, ...)
->  {
-> -       char *name;
->         va_list args;
->         int ret = 0;
->         struct device *dev;
-> 
->         va_start(args, fmt);
-> -       name = kvasprintf(GFP_KERNEL, fmt, args);
-> +       dev = device_create_vargs(bdi_class, parent, MKDEV(0, 0), bdi, fmt, args);
->         va_end(args);
-> -
-> -       if (!name)
-> -               return -ENOMEM;
-> -
-> -       dev = device_create(bdi_class, parent, MKDEV(0, 0), name);
->         if (IS_ERR(dev)) {
->                 ret = PTR_ERR(dev);
->                 goto exit;
->         }
-> 
->         bdi->dev = dev;
-> -       dev_set_drvdata(bdi->dev, bdi);
-> -       bdi_debug_register(bdi, name);
-> +       bdi_debug_register(bdi, dev_name(dev));
-> 
->  exit:
-> -       kfree(name);
->         return ret;
->  }
->  EXPORT_SYMBOL(bdi_register);
+Taking a look.
+
+I just can't get past the fact in that the only reason hibernation can
+not use the widely implemented and tested probe/remove is because of
+filesystems on block devices, and that you are proposing to add 4
+methods for each and every driver to handle that case, when they
+don't need ANYTHING!
+
+I wonder how hard teaching the upper layers to deal with
+hotplug/remove is?
+
+The more I look at this the more I get the impression that
+hibernation and suspend should be solved in separate patches.  I'm
+not at all convinced that is what is good for the goose is good for
+the gander for things like your prepare method.
+
+Hibernation seems to be an extreme case of hotplug.
+
+Suspend seems to be just an extreme case of putting unused
+devices in low power state.
+
+....
+
+
+I don't like the fact that these methods are power management specific.
+How should this impact the greater kernel ecosystem.
+
++ * The externally visible transitions are handled with the help of the following
++ * callbacks included in this structure:
++ *
++ * @prepare: Prepare the device for the upcoming transition, but do NOT change
++ *	its hardware state.  Prevent new children of the device from being
++ *	registered after @prepare() returns (the driver's subsystem and
++ *	generally the rest of the kernel is supposed to prevent new calls to the
++ *	probe method from being made too once @prepare() has succeeded).  If
++ *	@prepare() detects a situation it cannot handle (e.g. registration of a
++ *	child already in progress), it may return -EAGAIN, so that the PM core
++ *	can execute it once again (e.g. after the new child has been registered)
++ *	to recover from the race condition.  This method is executed for all
++ *	kinds of suspend transitions and is followed by one of the suspend
++ *	callbacks: @suspend(), @freeze(), or @poweroff().
++ *	The PM core executes @prepare() for all devices before starting to
++ *	execute suspend callbacks for any of them, so drivers may assume all of
++ *	the other devices to be present and functional while @prepare() is being
++ *	executed.  In particular, it is safe to make GFP_KERNEL memory
++ *	allocations from within @prepare(), although they are likely to fail in
++ *	case of hibernation, if a substantial amount of memory is requested.
++ *	However, drivers may NOT assume anything about the availability of the
++ *	user space at that time and it is not correct to request firmware from
++ *	within @prepare() (it's too late to do that).
++ *
++ * @complete: Undo the changes made by @prepare().  This method is executed for
++ *	all kinds of resume transitions, following one of the resume callbacks:
++ *	@resume(), @thaw(), @restore().  Also called if the state transition
++ *	fails before the driver's suspend callback (@suspend(), @freeze(),
++ *	@poweroff()) can be executed (e.g. if the suspend callback fails for one
++ *	of the other devices that the PM core has unsucessfully attempted to
++ *	suspend earlier).
++ *	The PM core executes @complete() after it has executed the appropriate
++ *	resume callback for all devices.
+
+The names above are terrible.  Perhaps: @pause/@unpause.
+
+@pause Stop all device driver user space facing activities, and prepare
+       for a possible power state transition.
+
+Essentially these should be very much like bringing an ethernet
+interface down.  The device is still there but we can't do anything
+with it.  The only difference is that this may not be user visible.
+
++ * @suspend: Executed before putting the system into a sleep state in which the
++ *	contents of main memory are preserved.  Quiesce the device, put it into
++ *	a low power state appropriate for the upcoming system state (such as
++ *	PCI_D3hot), and enable wakeup events as appropriate.
++ *
++ * @resume: Executed after waking the system up from a sleep state in which the
++ *	contents of main memory were preserved.  Put the device into the
++ *	appropriate state, according to the information saved in memory by the
++ *	preceding @suspend().  The driver starts working again, responding to
++ *	hardware events and software requests.  The hardware may have gone
++ *	through a power-off reset, or it may have maintained state from the
++ *	previous suspend() which the driver may rely on while resuming.  On most
++ *	platforms, there are no restrictions on availability of resources like
++ *	clocks during @resume().
+
+Unless I have misread something.  These are exactly the same as
+@poweroff and @restore.
+
+@suspend place the device in a low power state.
+         Enable wakeup events.
+
+         Can we use this for cases when we need low power but haven't
+         stopped the cpu?  I think so.
+
+
++ * @freeze: Hibernation-specific, executed before creating a hibernation image.
++ *	Quiesce operations so that a consistent image can be created, but do NOT
++ *	otherwise put the device into a low power device state and do NOT emit
++ *	system wakeup events.  Save in main memory the device settings to be
++ *	used by @restore() during the subsequent resume from hibernation or by
++ *	the subsequent @thaw(), if the creation of the image or the restoration
++ *	of main memory contents from it fails.
++ *
++ * @thaw: Hibernation-specific, executed after creating a hibernation image OR
++ *	if the creation of the image fails.  Also executed after a failing
++ *	attempt to restore the contents of main memory from such an image.
++ *	Undo the changes made by the preceding @freeze(), so the device can be
++ *	operated in the same way as immediately before the call to @freeze().
+
+Just @detach/@reattach.
+
+@detach Detach the driver from the hardware, while keeping the driver
+        instance for the hardware alive.
+
+        Essentially this is what the shutdown method is today.
+        Except for being ready for a reattach.
+
+@reattach
+        See if the hardware for the driver is present and reclaim
+        it and bring it up to speed for processing requests.
+
++ * @poweroff: Hibernation-specific, executed after saving a hibernation image.
++ *	Quiesce the device, put it into a low power state appropriate for the
++ *	upcoming system state (such as PCI_D3hot), and enable wakeup events as
++ *	appropriate.
++ *
++ * @restore: Hibernation-specific, executed after restoring the contents of main
++ *	memory from a hibernation image.  Driver starts working again,
++ *	responding to hardware events and software requests.  Drivers may NOT
++ *	make ANY assumptions about the hardware state right prior to @restore().
++ *	On most platforms, there are no restrictions on availability of
++ *	resources like clocks during @restore().
++ *
+
+If we have events we care about we just need to do:
+reattach(); suspend();  It is all the same from the point of view of
+the device.  Not the system but the device.
+
+Eric
