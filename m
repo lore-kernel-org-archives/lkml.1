@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755189AbYEOBKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755712AbYEOBMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755189AbYEOBKc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 21:10:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752281AbYEOBKT
+	id S1755712AbYEOBMz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 21:12:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbYEOBMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 21:10:19 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:37507 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752247AbYEOBKS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 21:10:18 -0400
-Date: Thu, 15 May 2008 02:10:09 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: Sage Weil <sage@newdream.net>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: POHMELFS high performance network filesystem. Transactions, failover, performance.
-Message-ID: <20080515011009.GA28687@shareable.org>
-Mail-Followup-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-	Sage Weil <sage@newdream.net>, Jeff Garzik <jeff@garzik.org>,
-	linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org
-References: <4829E752.8030104@garzik.org> <20080513205114.GA16489@2ka.mipt.ru> <Pine.LNX.4.64.0805140623001.14334@cobra.newdream.net> <20080514135156.GA23131@2ka.mipt.ru> <20080514143105.GB14987@shareable.org> <20080514150052.GA15826@2ka.mipt.ru> <20080514213251.GB23758@shareable.org> <20080514220252.GA14378@2ka.mipt.ru> <20080514222837.GF23758@shareable.org> <20080514224519.GA3739@2ka.mipt.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080514224519.GA3739@2ka.mipt.ru>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 14 May 2008 21:12:47 -0400
+Received: from mo11.iij4u.or.jp ([210.138.174.79]:34889 "EHLO mo11.iij4u.or.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750895AbYEOBMr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 21:12:47 -0400
+Date: Thu, 15 May 2008 10:12:25 +0900
+To: muli@il.ibm.com
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, alexisb@us.ibm.com
+Subject: Re: [PATCH 0/2] x86: per-device dma_mapping_ops
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080514054924.GD6682@il.ibm.com>
+References: <1210658692-960-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	<20080514054924.GD6682@il.ibm.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20080515101212Z.tomof@acm.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Evgeniy Polyakov wrote:
-> > It's possible that implementing server cloud protocol _and_ simple
-> > client protocol may be more work than just server cloud protocol.  I'm
-> > not sure.  Thoughts welcome.
+On Wed, 14 May 2008 08:49:24 +0300
+Muli Ben-Yehuda <muli@il.ibm.com> wrote:
+
+> On Tue, May 13, 2008 at 03:04:50PM +0900, FUJITA Tomonori wrote:
 > 
-> Well, getting that client protocol is mostly ready, and its design
-> allows infinite (blah!) extensions and extremely (blah!) flexible
-> processing, we are close to just difficult server one :)
+> > This patchset adds per-device dma_mapping_ops support for
+> > CONFIG_X86_64 like POWER architecture does. This change enables us
+> > to cleanly fix the Calgary IOMMU issue that some devices are not
+> > behind the IOMMU [1]. It also would be helpful to handle KVM PCI
+> > passthrough.
+> 
+> Awesome! Much needed, thank you for doing this.
 
-That's what I thought when I had my system working fine with just one
-server.  The client was very simple. :-)
+No problem. Well, as you know, it's just a base. We need more work to
+solve the problems on the top of this.
 
-Since, I learned that my clients need to have parts of the complex
-server protocol for fast, safe transactions (think ACID (or ACI)) over
-relatively slow links, especially with multiple servers.
+I'd like to have a mechanism to register a hook called when a new pci
+(or dma capable) device is created. It enables IOMMUs to set up an
+appropriate dma_mapping_ops per device. It could also enables us to
+simplify the IOMMUs code to initilize devices at startup (for exmple,
+intel-iommu checks all the pci devices and creates a domain per device
+if necessary).
 
-Also, efficiently recovering from a link/server failure, when clients
-have large zero-latency caches (using leases), appears similar to the
-synchronising protocol between recovering servers.
-
-But, on the bright side, these things are only necessary for
-performance in scenarios you might not encounter or care about :-)
-
-I'm finding it's a really interesting but large problem.
-
--- Jamie
+I'll post an updated version against -mm. If people seems to be fine
+with per-device dma_mapping_ops, then I'll work on further issues.
