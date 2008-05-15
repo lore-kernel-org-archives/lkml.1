@@ -1,71 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764129AbYEOVrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764857AbYEOVsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764129AbYEOVrT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 17:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754477AbYEOVrK
+	id S1764857AbYEOVsQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 17:48:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754716AbYEOVr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 17:47:10 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58425 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753443AbYEOVrJ (ORCPT
+	Thu, 15 May 2008 17:47:57 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:37957 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754477AbYEOVr4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 17:47:09 -0400
-Date: Thu, 15 May 2008 14:45:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: gorcunov@gmail.com, geert@linux-m68k.org, zippel@linux-m68k.org,
-       schwab@suse.de, linux-kernel@vger.kernel.org,
-       linux-m68k@vger.kernel.org
-Subject: Re: [PATCH] init - fix building bug and potential buffer overflow
-Message-Id: <20080515144554.7b759b3c.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0805151406030.3019@woody.linux-foundation.org>
-References: <20080514154402.GF6902@cvg>
-	<20080515105803.7c9ab8c7.akpm@linux-foundation.org>
-	<20080515180528.GC7481@cvg>
-	<Pine.LNX.4.64.0805152132530.22059@anakin>
-	<aa79d98a0805151322s20a2bb34x4491bcacfcef310@mail.gmail.com>
-	<20080515134928.83b2d948.akpm@linux-foundation.org>
-	<alpine.LFD.1.10.0805151406030.3019@woody.linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 15 May 2008 17:47:56 -0400
+Date: Thu, 15 May 2008 17:47:21 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Chris Peterson <cpeterso@cpeterso.com>
+Cc: Jeff Garzik <jeff@garzik.org>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Rick Jones <rick.jones2@hp.com>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
+	IRQF_SAMPLE_RANDOM
+Message-ID: <20080515214721.GP18825@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Chris Peterson <cpeterso@cpeterso.com>,
+	Jeff Garzik <jeff@garzik.org>,
+	"Kok, Auke" <auke-jan.h.kok@intel.com>,
+	Rick Jones <rick.jones2@hp.com>,
+	"Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com> <20080515142154.0595e475@core> <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com> <482C7B18.6060003@garzik.org> <482C7E53.3050300@hp.com> <482C8184.2030906@garzik.org> <482C8550.5000909@intel.com> <482C8D4D.3040702@garzik.org> <a24804730805151301s3c6644d0hc2c78b8008fe035d@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a24804730805151301s3c6644d0hc2c78b8008fe035d@mail.gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 May 2008 14:15:38 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
+On Thu, May 15, 2008 at 01:01:36PM -0700, Chris Peterson wrote:
+> Please correct me if I'm wrong, but this thread's conclusions seem to be:
 > 
-> 
-> On Thu, 15 May 2008, Andrew Morton wrote:
-> > 
-> > (yeah, I normally parenthesise sizeof too, but this provided 80-col
-> > salvation)
-> 
-> Why?
+> * network interrupts are an inappropriate source of entropy (see my patch)
+> * headless servers need entropy, but should seek a better solution,
+> such as EGD, hardware RNG, or other kernel entropy sources (but that
+> is a separate task)
+> * TPM RNG is a separate task and, if implemented, should be in
+> drivers/char/hw_random/
 
-this, basically:
+The TPM RNG task is probably best done in a user space process, which
+might also do other things like pulling environmental noise from the
+sound card's microphone, etc.
 
->  init/main.c |   78 +++++++++++++++++++++++++++++++----------------------------
->  1 files changed, 41 insertions(+), 37 deletions(-)
+The problem is finding someone with the skills, time, and energy to
+create the appropriate user space daemon.  All of the kernel
+interfaces already exist; it's just matter of implementing the user
+space support.
 
-the dont-mix-bugfixes-and-cleanups mantra.
-
-The patch looks good to me and compiles cleanly on various architectures.
-
-> Talking about cleanups, why the *hell* does print_fn_descriptor_symbol() 
-> take an "unsigned long", when every single user would want to give it a 
-> pointer?
-
-Yes, we make that mistake fairly regularly (looks at timer_list.data). 
-We start out not being sure whether most callers will pass in a ulong
-or a pointer and guess wrongly.
-
-> Would somebody please want to move that cast into the macro (or better 
-> yet, make it an inline function that takes a 'void *'), and remove all the 
-> casts from the callers?
-
-Would be nice.
-
+						- Ted
