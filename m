@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759025AbYEONny@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759958AbYEONoq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759025AbYEONny (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 09:43:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbYEONnq
+	id S1759958AbYEONoq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 09:44:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753070AbYEONoi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 09:43:46 -0400
-Received: from mxl.seznam.cz ([77.75.72.44]:56320 "EHLO mxl.seznam.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750902AbYEONnp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 09:43:45 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=beta; d=seznam.cz;
-	h=To:Date:From:Received:Subject:Mime-Version:Message-Id:Content-Transfer-Encoding:Content-Type:X-Abuse:X-Seznam-User:X-QM-Mark;
-	b=P8GVTmGhUoV2SghAap/ZRqMbms9uC4lS5lYH+HtT5BV0NHKlCa8yAKNoTBYGrOxiN
-	Ar5QmXdC9m0KDL48BR3punWRz2s61dvyZKjyY4BefcAVmME3SKc74hoHZ2xJMZEUHu/
-	NHqlCWdM8jIzk8bRdORydiiNePuPd+2TMU2e/+U=
-To: =?us-ascii?Q?Linux=20Kernel=20list?= <linux-kernel@vger.kernel.org>
-Date: Thu, 15 May 2008 15:37:35 +0200 (CEST)
-From: =?us-ascii?Q?Michal=20Simek?= <Monstr@seznam.cz>
-Subject: =?us-ascii?Q?PRINTK=5FTIME?=
-Mime-Version: 1.0
-Message-Id: <5284.8268-13007-901443894-1210858655@seznam.cz>
+	Thu, 15 May 2008 09:44:38 -0400
+Received: from wx-out-0506.google.com ([66.249.82.231]:59194 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752843AbYEONoh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 09:44:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:x-enigmail-version:content-type:content-transfer-encoding;
+        b=oG0n6w4bN1r+ah4fNruh+Xtdl73C5O2CR2du9igPUsdR13HcJHS895dvB1vGiwurAVkJAAQs873x2N301yELwcfVeWPuN8Nuhj55kudiAaZmgYR+QtnNMsR3XaoZRwdemRBj3B2KLIgDesvRIVL6eCpnP2mfRlytcbhSktLmZcY=
+Message-ID: <482C3E3E.9090204@gmail.com>
+Date: Thu, 15 May 2008 15:44:30 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Sam Ravnborg <sam@uranus.ravnborg.org>
+CC: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Michael Buesch <mb@bu3sch.de>,
+       Gordon Farquharson <gordonfarquharson@gmail.com>
+Subject: crossbuild fails in modpost
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain;
-	charset="us-ascii"
-X-Abuse: abuse@seznam.cz
-X-Seznam-User: Monstr@seznam.cz
-X-QM-Mark: email-qm1<70912870>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-HI All,
+Hi,
 
-I had problem with non zero value when I turn on PRINTK_TIME.
+probably
+4ce6efed48d736e3384c39ff87bda723e1f8e041
+kbuild: soften modpost checks when doing cross builds
 
-Part of log. Zero value is only before sched starting.
+causes build failures on x86_64 kernel build on 32 bit machine:
 
-[    0.000000]   Movable zone: 0 pages used for memmap
-[    0.000000] Self modified code enable
-[42949372.960000] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 8128
-[42949372.960000] Kernel command line: console=ttyUL0,115200
-[42949372.960000] xlnx,xps-intc-1.00.a #0 at 0x40000000, num_irq=8, edge=0x0
+make -f /local/xslaby/hid/scripts/Makefile.modpost
+YYYYYYYYYYYYYY x86_64 x86_64
+   scripts/mod/modpost -m -a -o /local/xslaby/buhid/Module.symvers    -S -K 
+/local/xslaby/buhid/Module.markers -M /local/xslaby/buhid/Module.markers   -s
+XXXXXXXXXXXXXXXXXX 20: 0 (2), 4 (4), 8 (4), 12 (8)
+FATAL: drivers/hid/hid-apple: sizeof(struct hid_device_id)=20 is not a 
+modulo of the size of section __mod_hid_device_table=648.
+Fix definition of struct hid_device_id in mod_devicetable.h
+make[2]: *** [__modpost] Error 1
+make[1]: *** [modules] Error 2
+make: *** [sub-make] Error 2
 
-I think I need to set this starting value to zero.
-Could you give me a hit where the problem can be?
+after sticking echo into:
+  __modpost: $(modules:.ko=.o) FORCE
++       @echo YYYYYYYYYYYYYY $(KBUILD_BUILDHOST) $(ARCH)
+         $(call cmd,modpost) $(wildcard vmlinux) $(filter-out FORCE,$^)
 
-Thanks,
-Michal
