@@ -1,77 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763487AbYEOVUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763696AbYEOVWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763487AbYEOVUZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 17:20:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753924AbYEOVUM
+	id S1763696AbYEOVWg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 17:22:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754787AbYEOVW3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 17:20:12 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40581 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751867AbYEOVUK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 17:20:10 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [linux-pm] [PATCH -mm] kexec jump -v9
-Date: Thu, 15 May 2008 23:20:13 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Alan Stern <stern@rowland.harvard.edu>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net,
-       Kexec Mailing List <kexec@lists.infradead.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-pm@lists.linux-foundation.org, Vivek Goyal <vgoyal@redhat.com>,
-       Len Brown <len.brown@intel.com>
-References: <Pine.LNX.4.44L0.0803221645190.27399-100000@netrider.rowland.org> <200805150147.24968.rjw@sisk.pl> <m1fxsjp9ry.fsf@frodo.ebiederm.org>
-In-Reply-To: <m1fxsjp9ry.fsf@frodo.ebiederm.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 15 May 2008 17:22:29 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:60300 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753072AbYEOVW2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 17:22:28 -0400
+Date: Thu, 15 May 2008 14:22:01 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Alexander Viro <viro@ftp.linux.org.uk>
+Subject: Re: [announce] "kill the Big Kernel Lock (BKL)" tree
+Message-ID: <20080515142201.3bc8d6bf@infradead.org>
+In-Reply-To: <1210884355.6524.21.camel@lappy.programming.kicks-ass.net>
+References: <20080514174955.GA515@elte.hu>
+	<alpine.LFD.1.10.0805151020460.3019@woody.linux-foundation.org>
+	<20080515132713.18f1b953@infradead.org>
+	<1210884355.6524.21.camel@lappy.programming.kicks-ass.net>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805152320.14016.rjw@sisk.pl>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 15 of May 2008, Eric W. Biederman wrote:
-> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Thu, 15 May 2008 22:45:55 +0200
+Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+
+> On Thu, 2008-05-15 at 13:27 -0700, Arjan van de Ven wrote:
+> > On Thu, 15 May 2008 10:41:54 -0700 (PDT)
+> > Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > 
+> > > 
+> > > So looking a bit more at your trivial fixups, I'd suggest strongly
+> > > that they be re-organized a bit.
+> > 
+> > > >
+> > > > diff --git a/net/sunrpc/sched.c b/net/sunrpc/sched.c
+> > > > index 6eab9bf..e12e571 100644
+> > > > --- a/net/sunrpc/sched.c
+> > > > +++ b/net/sunrpc/sched.c
+> > > > @@ -224,9 +224,15 @@ EXPORT_SYMBOL_GPL(rpc_destroy_wait_queue);
+> > > >  
+> > > >  static int rpc_wait_bit_killable(void *word)
+> > > >  {
+> > > > +	int bkl = kernel_locked();
+> > > > +
+> > > >  	if (fatal_signal_pending(current))
+> > > >  		return -ERESTARTSYS;
+> > > > +	if (bkl)
+> > > > +		unlock_kernel();
+> > > >  	schedule();
+> > > > +	if (bkl)
+> > > > +		lock_kernel();
+> > > >  	return 0;
+> > > >  }
+> > > 
+> > > The above doesn't even work in general. It depends on having just
+> > > a single level of locking, and is ugly to boot. So wow about we
+> > > just expose some version of
+> > > 
+> > > 	depth = release_kernel_lock()
+> > > 	..
+> > > 	reacquire_kernel_lock(depth);
+> > > 
+> > > to existing BKL users as a way to safely release and re-aquire it 
+> > > regardless of depth. That makes the code more generic, but it
+> > > *also* makes it more readable than that "if (bkl)
+> > > [un]lock_kernel()" sequence.
+> > 
+> > 
+> > can we make this even more specific/restricted? Like having
+> > something like
+> > 
+> > call_bkl_unlocked(function_pointer, argument);
+> > 
+> > or something that will internally do the full unlock and then the
+> > function call. The last thing we need is another nailgun that BKL
+> > using code can use to staple themselves to something big and fast
+> > moving. By having a more restricted interface... less likely.
+> > Maybe we can even get away with only a
+> > 
+> > drop_bkl_and_schedule();
+> > 
+> > and nothing else.
 > 
-> > On Thursday, 15 of May 2008, Eric W. Biederman wrote:
-> >> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> >> 
-> >> Just an added data partial point.  In the kexec case I have had not heard
-> >> anyone screaming to me that ACPI doesn't work after we switch kernels.
-> >
-> > You don't remove power from devices while doing that.
-> 
-> No.  It is the second half of S5.  When we go from the boot kernel
-> to the restored kernel I am talking about.
+> No, that would defeat the whole purpose of the exercise. This drop on
+> schedule property makes it possible to have inverse lock order and not
+> deadlock.
 
-Well, you don't remove the power from devices doing that, do you?
+I would totally agree with you, except that all these patches
+effectively do it manually again ANYWAY :(
 
-I was referring to the fact that you remove the power from devices after saving
-the image (ie. in the "poweroff" stage).  Then, you initialize them and pass
-all that to the restored kernel and the question here is:
-(a) Should they be reinitialized before the restored kernel has a chance to
-    access them?
-(b) If they should, what state they ought to be in when the restored kernel
-    accesses them.
+so what I propose is make it explicit drop_bkl_and_schedule() call only,
+and only do them as a very very last resort.
 
-That basically depends on how you're going to handle the resuming of devices,
-especially on the ACPI bus, in the restored kernel.
-
-If we are to follow ACPI, the answer to (a) is "no", except for devices used to
-read the image and it's better if the boot kernel doesn't touch ACPI at all.
-Then, the benefit of putting the system into S4 during the "poweroff" stage is
-that (a) the resume can be carried out faster and (b) the restored kernel may
-use some context preserved by the platform over the sleep state.
-
-Also, that allows you to use the wake up capabilities of some devices that
-need not be available from S5.
-
-In any case, however, I don't really think that doing the kexec jump before
-creating the image is really necessary.  The kexec jump during resume is in
-fact very similar to what the current hibernation code does, but it's slightly
-more complicated. :-)
-
-Thanks,
-Rafael
+For 99% of the rest it does give exactly the regular benefits you
+describe. And we can then prioritize these ugly cases to get de-bkl'd
+first.
