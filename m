@@ -1,157 +1,373 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754330AbYEOGQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754735AbYEOGSY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754330AbYEOGQu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 02:16:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752157AbYEOGQl
+	id S1754735AbYEOGSY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 02:18:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750999AbYEOGSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 02:16:41 -0400
-Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:2402 "EHLO
-	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752028AbYEOGQk (ORCPT
+	Thu, 15 May 2008 02:18:16 -0400
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:49946 "EHLO
+	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750759AbYEOGSO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 02:16:40 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AuIIAClwK0iWZR7iWmdsb2JhbACSDQEdm1w
-X-IronPort-AV: E=Sophos;i="4.27,489,1204464600"; 
-   d="scan'208";a="112756008"
-Message-ID: <B0A599AA8CD34E47901804F014F15903@uglypunk>
-From: "Kingsley Foreman" <kingsley@internode.com.au>
-To: "Eric Dumazet" <dada1@cosmosbay.com>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
-References: <B28DA1911F61434C804723B7EE8A5C67@uglypunk> <20080514205604.e669a28f.akpm@linux-foundation.org> <482BC84E.3000401@cosmosbay.com>
-Subject: Re: NET_SCHED cbq dropping too many packets on a bonding interface
-Date: Thu, 15 May 2008 15:46:11 +0930
+	Thu, 15 May 2008 02:18:14 -0400
+Date: Thu, 15 May 2008 11:47:27 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Paul Menage <menage@google.com>
+Cc: linux-mm@kvack.org, Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, Pavel Emelianov <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [-mm][PATCH 4/4] Add memrlimit controller accounting and
+	control (v4)
+Message-ID: <20080515061727.GC31115@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Mail-Followup-To: Paul Menage <menage@google.com>, linux-mm@kvack.org,
+	Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+	YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+	linux-kernel@vger.kernel.org, Pavel Emelianov <xemul@openvz.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080514130904.24440.23486.sendpatchset@localhost.localdomain> <20080514130951.24440.73671.sendpatchset@localhost.localdomain> <20080514132529.GA25653@balbir.in.ibm.com> <6599ad830805141925mf8a13daq7309148153a3c2df@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=response
-Content-Transfer-Encoding: 8bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-Importance: Normal
-X-Mailer: Microsoft Windows Live Mail 12.0.1606
-X-MimeOLE: Produced By Microsoft MimeOLE V12.0.1606
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <6599ad830805141925mf8a13daq7309148153a3c2df@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Paul Menage <menage@google.com> [2008-05-14 19:25:07]:
 
+> On Wed, May 14, 2008 at 6:25 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> >  +
+> >  +int memrlimit_cgroup_charge_as(struct mm_struct *mm, unsigned long nr_pages)
+> >  +{
+> >  +       int ret;
+> >  +       struct memrlimit_cgroup *memrcg;
+> >  +
+> >  +       rcu_read_lock();
+> >  +       memrcg = memrlimit_cgroup_from_task(rcu_dereference(mm->owner));
+> >  +       css_get(&memrcg->css);
+> >  +       rcu_read_unlock();
+> >  +
+> >  +       ret = res_counter_charge(&memrcg->as_res, (nr_pages << PAGE_SHIFT));
+> >  +       css_put(&memrcg->css);
+> >  +       return ret;
+> >  +}
+> 
+> Assuming that we're holding a write lock on mm->mmap_sem here, and we
+> additionally hold mmap_sem for the whole of mm_update_next_owner(),
+> then maybe we don't need any extra synchronization here? Something
+> like simply:
+> 
+> int memrlimit_cgroup_charge_as(struct mm_struct *mm, unsigned long nr_pages)
+> {
+>        struct memrlimit_cgroup *memrcg = memrlimit_cgroup_from_task(mm->owner);
+>        return res_counter_charge(&memrcg->as_res, (nr_pages << PAGE_SHIFT));
+> }
 
---------------------------------------------------
-From: "Eric Dumazet" <dada1@cosmosbay.com>
-Sent: Thursday, May 15, 2008 2:51 PM
-To: "Kingsley Foreman" <kingsley@internode.com.au>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>; 
-<linux-kernel@vger.kernel.org>; <netdev@vger.kernel.org>
-Subject: Re: NET_SCHED cbq dropping too many packets on a bonding interface
+The charge_as routine is not always called with mmap_sem held, since
+the undo path gets more complicated under the lock. We already have
+our own locking mechanism for the counters. We're not really accessing
+any member of the mm here except the owner. Do we need to be called
+with mmap_sem held?
 
-> Andrew Morton a écrit :
->> (cc netdev)
->>
->> On Thu, 15 May 2008 12:25:19 +0930 "Kingsley Foreman" 
->> <kingsley@internode.com.au> wrote:
->>
->>
->>> Ive been using qdisc for quite a while without any problems,
->>> I just rebuilt a gentoo box with 2.6.25 kernel that does a lot of 
->>> traffic
->>> ~1000mbits+ over a bonded interface
->>>
->>> Im however seeing a big problem with cbq class dropping packets for no
->>> reason i can see, and it is causing a lot of speed issues.
->>>
->>> the basic config is this
->>> _____________________________________________________________________
->>> /sbin/tc qdisc del dev bond0 root
->>> /sbin/tc qdisc add dev bond0 root handle 1 cbq bandwidth 2000Mbit avpkt 
->>> 1000
->>> cell 8
->>> /sbin/tc class change dev bond0 root cbq weight 200Mbit allot 1514
->>>
->>> /sbin/tc class add dev bond0 parent 1: classid 1:1280 cbq bandwidth 
->>> 2000Mbit
->>> rate 1200Mbit weight 120Mbit prio 1 allot 1514 cell 8 maxburst 120 
->>> minburst
->>> 1 minidle 0 avpkt 1000 bounded
->>> /sbin/tc filter add dev bond0 parent 1:0 protocol ip prio 300 route to 5
->>> classid 1:1280
->>>
->>> /sbin/tc class add dev bond0 parent 1: classid 1:1281 cbq bandwidth 
->>> 2000Mbit
->>> rate 400Mbit weight 40Mbit prio 6 allot 1514 cell 8 maxburst 120 
->>> minburst 1
->>> minidle 0 avpkt 1000 bounded
->>> /sbin/tc filter add dev bond0 parent 1:0 protocol ip prio 300 route to 6
->>> classid 1:1281
->>> ____________________________________________________________________
->>>
->>> So there is a lot of bandwidth handed out but it is still dropping a lot 
->>> of
->>> packets  for very small ammounts of traffic eg 300mbits.
->>>
->>> However the biggest problem im seeing is if i just do this
->>>
->>> __________________________________________________________________
->>> /sbin/tc qdisc del dev bond0 root
->>> /sbin/tc qdisc add dev bond0 root handle 1 cbq bandwidth 2000Mbit avpkt 
->>> 1000
->>> cell 8
->>> /sbin/tc class change dev bond0 root cbq weight 200Mbit allot 1514
->>> ___________________________________________________________________
->>>
->>> after 30sec I get results like
->>> ___________________________________________________________________
->>>
->>> ### bond0: queueing disciplines
->>>
->>> qdisc cbq 1: root rate 2000Mbit (bounded,isolated) prio no-transmit
->>>  Sent 574230043 bytes 407156 pkt (dropped 2524, overlimits 0 requeues 0)
->>>  rate 0bit 0pps backlog 0b 0p requeues 0
->>>   borrowed 0 overactions 0 avgidle 3 undertime 0
->>>
->>> ### bond0: traffic classes
->>>
->>> class cbq 1: root rate 2000Mbit (bounded,isolated) prio no-transmit
->>>  Sent 574330783 bytes 407225 pkt (dropped 2525, overlimits 0 requeues 0)
->>>  rate 0bit 0pps backlog 0b 0p requeues 0
->>>   borrowed 0 overactions 0 avgidle 3 undertime 0
->>> __________________________________________________________________
->>>
->>> I can't for the life if me work out why it is dropping so many packets 
->>> for while doing so little traffic when i enable  cbq the transfer rate 
->>> drops by approx 30%, any help would be great, and any improvements to my 
->>> command lines would be good also.
->>>
->>>
->>> Kingsley Foreman
->>>
->>
->>
->>
->>
-> Could you provide your linux-2.6.25 .config file please ?
+> 
+> Seems good to minimize additional synchronization on the fast path.
 >
-> What kind of hardware is your box ? (CPU, network interfaces)
+> The only thing that's still broken is that the task_struct.cgroups
+> pointer gets updated only under the synchronization of task_lock(), so
+> we've still got the race of:
+> 
+> A: attach_task() updates B->cgroups
+> 
+> B: memrlimit_cgroup_charge_as() charges the new res counter and
+> updates mm->total_vm
+> 
+> A: memrlimit_cgroup_move_task() moves mm->total_vm from the old
+> counter to the new counter
+> 
+> Here's one way I see to fix this:
+> 
+> We change attach_task() so that rather than updating the
+> task_struct.cgroups pointer once from the original css_set to the
+> final css_set, it goes through a series of intermediate css_set
+> structures, one for each subsystem in the hierarchy, transitioning
+> from the old set to the final set. Then for each subsystem ss, it
+> would do:
+> 
+> next_css = <old css with pointer for ss updated>
+> if (ss->attach) {
+>   ss->attach(ss, p, next_css);
+> } else {
+>   task_lock(p);
+>   rcu_assign_ptr(p->cgroups, next_css);
+>   task_unlock(p);
+> }
+> 
+> i.e. the subsystem would be free to implement any synchronization it
+> desired in the attach() code. The attach() method's responsibility
+> would be to ensure that p->cgroups was updated to point to next_css
+> before returning. This should make it much simpler for a subsystem to
+> handle potential races between attach() and accounting. The current
+> semantics of can_attach()/update/attach() are sufficient for cpusets,
+> but probably not for systems with more complex accounting. I'd still
+> need to figure out a nice way to get the kind of transactional
+> semantics that you want from can_attach().
+> 
+
+A transaction manager would be great. We do the
+mm_update_owner_changes under the task_lock(), may be the attach
+callback should do the same to ensure that
+
+
+> >  +
+> >  +void memrlimit_cgroup_uncharge_as(struct mm_struct *mm, unsigned long nr_pages)
+> >  +{
+> >  +       struct memrlimit_cgroup *memrcg;
+> >  +
+> >  +       rcu_read_lock();
+> >  +       memrcg = memrlimit_cgroup_from_task(rcu_dereference(mm->owner));
+> >  +       css_get(&memrcg->css);
+> >  +       rcu_read_unlock();
+> >  +
+> >  +       res_counter_uncharge(&memrcg->as_res, (nr_pages << PAGE_SHIFT));
+> >  +       css_put(&memrcg->css);
+> >  +}
+> >  +
+> >   static struct cgroup_subsys_state *
+> >   memrlimit_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cgrp)
+> >   {
+> >  @@ -134,11 +169,70 @@ static int memrlimit_cgroup_populate(str
+> >                                 ARRAY_SIZE(memrlimit_cgroup_files));
+> >   }
+> >
+> >  +static void memrlimit_cgroup_move_task(struct cgroup_subsys *ss,
+> >  +                                       struct cgroup *cgrp,
+> >  +                                       struct cgroup *old_cgrp,
+> >  +                                       struct task_struct *p)
+> >  +{
+> >  +       struct mm_struct *mm;
+> >  +       struct memrlimit_cgroup *memrcg, *old_memrcg;
+> >  +
+> >  +       mm = get_task_mm(p);
+> >  +       if (mm == NULL)
+> >  +               return;
+> >  +
+> >  +       rcu_read_lock();
+> >  +       if (p != rcu_dereference(mm->owner))
+> >  +               goto out;
+> 
+> out: does up_read() on mmap_sem, which you don't currently hold.
+> 
+
+Yes, good catch!
+
+> Can you add more comments about why you're using RCU here?
 >
-> CBQ and other packet schedulers depend on a fast ktime_get() interface, so 
-> maybe
-> slowdown you notice has its root on core kernel facilities
-> (CONFIG_HZ, SCHED_HRTICK, HIGH_RES_TIMERS, ...)
+
+Sure, I will. One of things we want to ensure is that mm->owner does
+not go away.
+
+> You have a refcounted pointer on mm, so mm can't go away, and you
+> never dereference the result of the rcu_dereference(mm->owner), so
+> you're not protecting the validity of that pointer. The only way this
+> could help would be if anything that changes mm->owner calls
+> synchronize_rcu() before, say, doing accounting changes, and I don't
+> believe that's the case.
+> 
+> Would it be simpler to use task_lock(p) here to ensure that it doesn't
+> lose its owner status (by exiting or execing) while we're moving it?
+> 
+
+That's what I've been thinking as well, based on the discussion above.
+
+> i.e., something like: [ this assumes the new semantics of attach that
+> I proposed above ]
+> 
+> 
+> static void memrlimit_cgroup_move_task(struct cgroup_subsys *ss,
+>                                        struct cgroup *cgrp,
+>                                        struct cgroup *old_cgrp,
+>                                        struct task_struct *p,
+>                                        struct css_set new_css_set)
+> {
+>         struct mm_struct *mm;
+>         struct memrlimit_cgroup *memrcg, *old_memrcg;
+> 
+>  retry:
+>         mm = get_task_mm(p);
+>         if (mm == NULL) {
+>           task_lock(p);
+>           rcu_assign_ptr(p->cgroups, new_css_set);
+
+Will each callback assign p->cgroups to new_css_set?
+
+>           task_unlock(p);
+>           return;
+>         }
+> 
+>         /* Take mmap_sem to prevent address space changes */
+>         down_read(&mm->mmap_sem);
+>         /* task_lock(p) to prevent mm ownership changes */
+>         task_lock(p);
+>         if (p->mm != mm) {
+>                 /* We raced */
+
+With exit_mmap() or exec_mmap() right?
+
+>                 task_unlock(p);
+>                 up_read(&mm->mmap_sem);
+>                 mmput(mm);
+>                 goto retry;
+>         }
+>         if (p != mm->owner)
+>                 goto out_assign;
+> 
+>         memrcg = memrlimit_cgroup_from_cgrp(cgrp);
+>         old_memrcg = memrlimit_cgroup_from_cgrp(old_cgrp);
+> 
+>         if (memrcg == old_memrcg)
+>                 goto out_assign;
+> 
+>         if (res_counter_charge(&memrcg->as_res, (mm->total_vm << PAGE_SHIFT)))
+>                 goto out_assign;
+>         res_counter_uncharge(&old_memrcg->as_res, (mm->total_vm << PAGE_SHIFT));
+>   out_assign:
+>         rcu_assign_ptr(p->cgroups, new_css_set);
+>         task_unlock(p);
+>         up_read(&mm->mmap_sem);
+>         mmput(mm);
+> }
+> 
+
+Taking the mmap_sem here would mean, we would need to document
+(something I should have done earlier), that mmap_sem nests under
+cgroup_mutex
+
+
+Looking at the mm->owner patches, I am thinking of writing down a race
+scenario card
+
+
+        Race conditions
+
+        R1: mm->owner can change dynamically under task_lock
+        R2: mm->owner's cgroup can change under cgroup_mutex
+
+                        Read            Write
+
+        mm->owner       Prevent         hold task_lock 
+                        cgroup from
+                        changing
+
+                        Prevent owner
+                        from changing
+
+        Scenarios requiring protection/consistency
+
+        R1: causes no problem, since we expect to make appropriate
+            adjustment in mm_owner_changed
+        R2: Is handled by the attach() callback
+
+        Which leaves us with the following conclusion
+
+        We don't have move_task(), mm_owner_changed() and charge/uncharge()
+        running in parallel at the same time.
+
+If we agree with the assertion/conclusion above, then a simple lock
+might be able to protect us, assuming that it does not create a
+interwined locking hierarchy.
+
+> 
+> 
+> 
+> >  +
+> >  +       memrcg = memrlimit_cgroup_from_cgrp(cgrp);
+> >  +       old_memrcg = memrlimit_cgroup_from_cgrp(old_cgrp);
+> >  +
+> >  +       if (memrcg == old_memrcg)
+> >  +               goto out;
+> 
+> mmap_sem is also not held here.
+> 
+
+Will fix
+
+> >  +
+> >  +       /*
+> >  +        * Hold mmap_sem, so that total_vm does not change underneath us
+> >  +        */
+> >  +       down_read(&mm->mmap_sem);
+> 
+> You can't block inside rcu_read_lock().
 >
-> If you remove CBQ, do you get same slowdown if you have a tcpdump running 
-> on your machine ?
->
-Im seeing it on a sun v20z and a sun x220m2, both multicore Opteron both tg3
-Im not seeing a slowdown if tcpdump is running on the same machine without 
-CBQ
 
-you can grab the config here
-http://games.internode.on.net/ker-config.txt
-
-
-
-
+Good catch!
  
+> >  +       if (res_counter_charge(&memrcg->as_res, (mm->total_vm << PAGE_SHIFT)))
+> >  +               goto out;
+> >  +       res_counter_uncharge(&old_memrcg->as_res, (mm->total_vm << PAGE_SHIFT));
+> >  +out:
+> >  +       up_read(&mm->mmap_sem);
+> >  +       rcu_read_unlock();
+> >  +       mmput(mm);
+> >  +}
+> >  +
+> >  +static void memrlimit_cgroup_mm_owner_changed(struct cgroup_subsys *ss,
+> >  +                                               struct cgroup *cgrp,
+> >  +                                               struct cgroup *old_cgrp,
+> >  +                                               struct task_struct *p)
+> >  +{
+> >  +       struct memrlimit_cgroup *memrcg, *old_memrcg;
+> >  +       struct mm_struct *mm = get_task_mm(p);
+> >  +
+> >  +       BUG_ON(!mm);
+> >  +       memrcg = memrlimit_cgroup_from_cgrp(cgrp);
+> >  +       old_memrcg = memrlimit_cgroup_from_cgrp(old_cgrp);
+> >  +
+> >  +       down_read(&mm->mmap_sem);
+> 
+> At this point we're holding p->alloc_lock, so we can't do a blocking
+> down_read().
+> 
 
+Good catch!
+
+> How about if we down_read(&mm->mmap_sem) in mm_update_next_owner()
+> prior to taking tasklist_lock? That will ensure that mm ownership
+> changes are synchronized against mmap/munmap operations on that mm,
+> and since the cgroups-based owners are likely to be wanting to track
+> the ownership changes for accounting purposes, this seems like an
+> appropriate lock to hold.
+
+Hmmm.. may be worth doing
+
+> 
+> >  +       if (res_counter_charge(&memrcg->as_res, (mm->total_vm << PAGE_SHIFT)))
+> >  +               goto out;
+> >  +       res_counter_uncharge(&old_memrcg->as_res, (mm->total_vm << PAGE_SHIFT));
+> >  +out:
+> >  +       up_read(&mm->mmap_sem);
+> >  +
+> >  +       mmput(mm);
+> >  +}
+> >  +
+> 
+
+Thanks for the detailed review.
+
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
