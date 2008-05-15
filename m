@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755976AbYEORUE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756673AbYEORUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755976AbYEORUE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 13:20:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754844AbYEORTv
+	id S1756673AbYEORUe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 13:20:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755956AbYEORUB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 13:19:51 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:3229 "EHLO
+	Thu, 15 May 2008 13:20:01 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:3237 "EHLO
 	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754316AbYEORTt (ORCPT
+	with ESMTP id S1755834AbYEORUA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 13:19:49 -0400
+	Thu, 15 May 2008 13:20:00 -0400
 From: Andy Whitcroft <apw@shadowen.org>
 To: linux-mm@kvack.org
 Cc: Andrew Morton <akpm@osdl.org>, Christoph Lameter <clameter@sgi.com>,
@@ -17,56 +17,54 @@ Cc: Andrew Morton <akpm@osdl.org>, Christoph Lameter <clameter@sgi.com>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Rik van Riel <riel@redhat.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] page-flags: record page flag overlays explicitly
+Subject: [PATCH 2/3] slub: record page flag overlays explicitly
 References: <exportbomb.1210871946@pinky>
 InReply-To: <exportbomb.1210871946@pinky>
-Date: Thu, 15 May 2008 18:19:49 +0100
-Message-Id: <1210871989.0@pinky>
+Date: Thu, 15 May 2008 18:19:59 +0100
+Message-Id: <1210871999.0@pinky>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Some page flags are used for more than one purpose, for example
-PG_owner_priv_1.  Currently there are individual accessors for each user,
-each built using the common flag name far away from the bit definitions.
-This makes it hard to see all possible uses of these bits.
-
-Now that we have a single enum to generate the bit orders it makes sense
-to express overlays in the same place.  So create per use aliases for
-this bit in the main page-flags enum and use those in the accessors.
+SLUB reuses two page bits for internal purposes, it overlays PG_active
+and PG_error.  This is hidden away in slub.c.  Document these overlays
+explicitly in the main page-flags enum along with all the others.
 
 Signed-off-by: Andy Whitcroft <apw@shadowen.org>
 ---
- include/linux/page-flags.h |   12 +++++++++---
- 1 files changed, 9 insertions(+), 3 deletions(-)
+ include/linux/page-flags.h |    4 ++++
+ mm/slub.c                  |    4 ++--
+ 2 files changed, 6 insertions(+), 2 deletions(-)
 diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
-index 590cff3..2cc1fb1 100644
+index 2cc1fb1..2e88df6 100644
 --- a/include/linux/page-flags.h
 +++ b/include/linux/page-flags.h
-@@ -96,7 +96,13 @@ enum pageflags {
- #ifdef CONFIG_IA64_UNCACHED_ALLOCATOR
- 	PG_uncached,		/* Page has been mapped as uncached */
- #endif
--	__NR_PAGEFLAGS
-+	__NR_PAGEFLAGS,
+@@ -103,6 +103,10 @@ enum pageflags {
+ 
+ 	/* XEN */
+ 	PG_pinned = PG_owner_priv_1,
 +
-+	/* Filesystems */
-+	PG_checked = PG_owner_priv_1,
-+
-+	/* XEN */
-+	PG_pinned = PG_owner_priv_1,
++	/* SLUB */
++	PG_slub_frozen = PG_active,
++	PG_slub_debug = PG_error,
  };
  
  #ifndef __GENERATING_BOUNDS_H
-@@ -155,8 +161,8 @@ PAGEFLAG(Dirty, dirty) TESTSCFLAG(Dirty, dirty) __CLEARPAGEFLAG(Dirty, dirty)
- PAGEFLAG(LRU, lru) __CLEARPAGEFLAG(LRU, lru)
- PAGEFLAG(Active, active) __CLEARPAGEFLAG(Active, active)
- __PAGEFLAG(Slab, slab)
--PAGEFLAG(Checked, owner_priv_1)		/* Used by some filesystems */
--PAGEFLAG(Pinned, owner_priv_1) TESTSCFLAG(Pinned, owner_priv_1) /* Xen */
-+PAGEFLAG(Checked, checked)		/* Used by some filesystems */
-+PAGEFLAG(Pinned, pinned) TESTSCFLAG(Pinned, pinned) /* Xen */
- PAGEFLAG(Reserved, reserved) __CLEARPAGEFLAG(Reserved, reserved)
- PAGEFLAG(Private, private) __CLEARPAGEFLAG(Private, private)
- 	__SETPAGEFLAG(Private, private)
+diff --git a/mm/slub.c b/mm/slub.c
+index a505a82..fd7c61a 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -102,10 +102,10 @@
+  * 			the fast path and disables lockless freelists.
+  */
+ 
+-#define FROZEN (1 << PG_active)
++#define FROZEN (1 << PG_slub_frozen)
+ 
+ #ifdef CONFIG_SLUB_DEBUG
+-#define SLABDEBUG (1 << PG_error)
++#define SLABDEBUG (1 << PG_slub_debug)
+ #else
+ #define SLABDEBUG 0
+ #endif
