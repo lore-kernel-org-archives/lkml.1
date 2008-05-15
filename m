@@ -1,133 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757448AbYEOTrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758134AbYEOTuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757448AbYEOTrk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 15:47:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbYEOTrb
+	id S1758134AbYEOTuU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 15:50:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753210AbYEOTuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 15:47:31 -0400
-Received: from monty.telenet-ops.be ([195.130.132.56]:37311 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753049AbYEOTra (ORCPT
+	Thu, 15 May 2008 15:50:05 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50655 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752880AbYEOTuD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 15:47:30 -0400
-Date: Thu, 15 May 2008 21:47:26 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Roman Zippel <zippel@linux-m68k.org>, Andreas Schwab <schwab@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>
-Subject: Re: [PATCH] init - fix building bug and potential buffer overflow
-In-Reply-To: <20080515180528.GC7481@cvg>
-Message-ID: <Pine.LNX.4.64.0805152132530.22059@anakin>
-References: <20080514154402.GF6902@cvg> <20080515105803.7c9ab8c7.akpm@linux-foundation.org>
- <20080515180528.GC7481@cvg>
+	Thu, 15 May 2008 15:50:03 -0400
+Date: Thu, 15 May 2008 11:40:34 -0700
+From: Greg KH <greg@kroah.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: jkosina@suse.cz, linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Input: add appleir USB driver
+Message-ID: <20080515184034.GB15231@kroah.com>
+References: <20080514221519.GA6575@kroah.com> <20080515132108.GA9327@dose.home.local> <20080515094212.ZZRA012@mailhub.coreip.homeip.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080515094212.ZZRA012@mailhub.coreip.homeip.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 May 2008, Cyrill Gorcunov wrote:
-> [Andrew Morton - Thu, May 15, 2008 at 10:58:03AM -0700]
-> | On Wed, 14 May 2008 19:44:02 +0400 Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-> | 
-> | > This patch does fix build bug on m68k wich does not have strncat in straight way.
-> | > 
-> | > What is more important - my previous patch
-> | > 
-> | > commit e662e1cfd434aa234b72fbc781f1d70211cb785b
-> | > Author: Cyrill Gorcunov <gorcunov@gmail.com>
-> | > Date:   Mon May 12 14:02:22 2008 -0700
-> | > 
-> | >     init: don't lose initcall return values
-> | > 
-> | > has introduced potential buffer overflow by wrong calculation
-> | > of string accumulator size.
-> | > 
-> | > Many thanks Andreas Schwab and Geert Uytterhoeven for helping
-> | > to catch and fix the bug.
-> | > 
-> | > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-> | > ---
-> | > 
-> | > Index: linux-2.6.git/init/main.c
-> | > ===================================================================
-> | > --- linux-2.6.git.orig/init/main.c	2008-05-14 17:55:10.000000000 +0400
-> | > +++ linux-2.6.git/init/main.c	2008-05-14 19:11:18.000000000 +0400
-> | > @@ -702,7 +702,7 @@ static void __init do_initcalls(void)
-> | >  
-> | >  	for (call = __initcall_start; call < __initcall_end; call++) {
-> | >  		ktime_t t0, t1, delta;
-> | > -		char msgbuf[40];
-> | > +		char msgbuf[64];
-> | >  		int result;
-> | >  
-> | >  		if (initcall_debug) {
-> | > @@ -729,11 +729,11 @@ static void __init do_initcalls(void)
-> | >  			sprintf(msgbuf, "error code %d ", result);
-> | >  
-> | >  		if (preempt_count() != count) {
-> | > -			strncat(msgbuf, "preemption imbalance ", sizeof(msgbuf));
-> | > +			strcat(msgbuf, "preemption imbalance ");
-> | >  			preempt_count() = count;
-> | >  		}
-> | >  		if (irqs_disabled()) {
-> | > -			strncat(msgbuf, "disabled interrupts ", sizeof(msgbuf));
-> | > +			strcat(msgbuf, "disabled interrupts ");
-> | >  			local_irq_enable();
-> | >  		}
-> | >  		if (msgbuf[0]) {
-> | 
-> | umm, why can't m68k call strncat() from init/main.c??
-> | 
+On Thu, May 15, 2008 at 09:45:52AM -0400, Dmitry Torokhov wrote:
+> Hi Tino,
 > 
-> there some problem with headers iirc, we have to declare it first or
-> use some gcc option (as Adrian suggested). Actually I would prefer to use
+> On Thu, May 15, 2008 at 03:21:08PM +0200, Tino Keitel wrote:
+> > Hi,
+> >
+> > I'm pretty sure that this breaks the macmini LIRC driver again, see
+> > commit 3e1928e8793208802589aae851b6685671187242.
+> >
+> 
+> But with in-kernel driver can't LIRC feed of event device? Ane people
+> that dont use LIRC can also have access to the remote?
 
-gcc turns the strncat() into an implicit call to strlen() and some form
-of expanded memcpy(). E.g.
+And, to be blunt, why would an in-kernel driver be concerned about an
+out-of-tree-project-that-refuses-to-be-included chunk of code?
 
+thanks,
 
-	if (preempt_count() != count) {
-		strncat(msgbuf, "preemption imbalance ", sizeof(msgbuf));
-		preempt_count() = count;
-	}
-
-becomes
-
-        cmp.l 884(%a2),%d6      | <variable>.thread.info.preempt_count, count
-        jeq .L61        |
-        move.l %d7,-(%sp)       | tmp76,
-        jbsr strlen     |
-        addq.l #4,%sp   |,
-        move.l %d7,%a0  | tmp76, tmp80
-        add.l %d0,%a0   |, tmp80
-        move.l #1886545253,(%a0)+       |,
-        move.l #1836086377,(%a0)+       |,
-        move.l #1869488233,(%a0)+       |,
-        move.l #1835164012,(%a0)+       |,
-        move.l #1634624357,(%a0)+       |,
-        move.w #8192,(%a0)      |,* D.28541
-        move.l %d6,884(%a2)     | count, <variable>.thread.info.preempt_count
-.L61:
-
-All other explicit calls to strlen() are inlined, as per
-include/asm-m68k/string.h.
-
-> strlcat there but it seems it would fail to build too. Originally I've messed
-> strlcat with strncat :(
-
-Actually it build and runs fine after s/strncat/strlcat/...
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+greg k-h
