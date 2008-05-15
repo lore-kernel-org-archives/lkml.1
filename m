@@ -1,38 +1,41 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759189AbYEMHXy (ORCPT <rfc822;ralf@linux-mips.org>);
-	Tue, 13 May 2008 03:23:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755828AbYEMHXp
+	id S1756923AbYEOD1f (ORCPT <rfc822;ralf@linux-mips.org>);
+	Wed, 14 May 2008 23:27:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753355AbYEOD1X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 13 May 2008 03:23:45 -0400
-Received: from [220.178.254.34] ([220.178.254.34]:1109 "HELO 192.168.1.195"
-	rhost-flags-FAIL-FAIL-FAIL-FAIL) by vger.kernel.org with SMTP
-	id S1754703AbYEMHXp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 13 May 2008 03:23:45 -0400
-Reply-To: sl@cnjczz.com
-Message-ID: <00f401c8b4ca$2456a5a8$00009e35@cnjczz.com>
-From: "cnsl" <sl@cnjczz.com>
-To: "linux" <linux-kernel@vger.kernel.org>
-Subject: 
-Date: Tue, 13 May 2008 15:23:47 +0800
-X-Priority: 3
-X-Mailer: Microsoft Outlook IMO, Build 9.0.2416 (9.0.2910.0)
+	Wed, 14 May 2008 23:27:23 -0400
+Received: from tomts28-srv.bellnexxia.net ([209.226.175.102]:52887 "EHLO
+	tomts28-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753028AbYEOD1W convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 23:27:22 -0400
+X-Greylist: delayed 55907 seconds by postgrey-1.27 at vger.kernel.org; Wed, 14 May 2008 23:27:22 EDT
+Message-Id: <6ktq1m$124fce@toip37-bus.srvr.bell.ca>
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAE5ulEfR4q+G/2dsb2JhbACPJA
+X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
+X-Originating-IP: [80.191.83.5]
+From: <atheatre@bellnet.ca>
+Reply-To: britishlotto78@yahoo.ie
+To: <info@winner.org>
+Subject: 2008 Winner
+Date: Wed, 14 May 2008 23:27:19 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1759189AbYEMHXy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1756923AbYEOD1f@vger.kernel.org>
 
-sLK71cqhyP3Bprv6tLLWxtTs09DP3rmry76jrMr0sLK71cqhw/vFxqGiw+K87LL6xrfJ+rL6xvPS
-taOssLK71cqhuN/Qwry8yvXG89K1o6zC7bCwyb3K0KGw16ihor6roaLM2KGi0MKhscbz0rWjrMLt
-sLDJvcrQz8K42sqn0rXWsLmk1Nm+zdK1u/m12KOsvenT2sTPvqmhos7fuv7Wrrzko6zX+MLk1NrW
-+MP7tcS41rPHwu2wsMm9ytCjrLfhuLu1xLjWzPrXytS0zqq5q8u+tcS3otW5zOG5qcHLtcPM7LbA
-uvG1xNPFysaho7mry77VvLXYw+a7/TEwODAwMMa9t73D16Os1vfSqsn6svqhsLTzyqKhscXGz7XB
-0Lz0sOW7+qGi1dvN5Lv6oaK+7bDlu/qhor/sy9nRucGmu/qhorPltLKhor+qvu3Qo8a9u/qhotDN
-ssTN5Mf6u/q1tsSjvt+1yLL6xrejrNeo0rXOqrq9v9WhosfhuaShotKxvfChoruvuaShor2o1v7G
-+7O1oaK158GmoaLXsOTqtcjQ0NK1zOG5qcv50OjSqrXE16jTw7v60LW6zbPJzNfJ6LG4o6yy+sa3
-z/rN+cirufq497XYus3Ft8PLvLC2q8TP0ce12Mf4sqLUts/6xM+3x6GjIA0Ktee7sKO6MDU1NS02
-NzIxMjQ5ICAgIHd3dy5jbmpjenouY29t
-
+You won the sum of =A31,200,000,00 GBP from our monthly PROGRAM, you ar=
+e
+hereby advised to get back to us via email, to claim your prize.Contact=
+ Mr. Richard Carpenter Email: mr.richardcarpenter90@yahoo.ie
+Claims Requirements:1.full name:2.Home Address,Country.
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
+ in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
