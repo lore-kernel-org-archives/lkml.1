@@ -1,72 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758749AbYEOK7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759149AbYEOK7t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758749AbYEOK7c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 06:59:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754057AbYEOK7Y
+	id S1759149AbYEOK7t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 06:59:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758321AbYEOK7b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 06:59:24 -0400
-Received: from sacred.ru ([62.205.161.221]:59536 "EHLO sacred.ru"
+	Thu, 15 May 2008 06:59:31 -0400
+Received: from nebensachen.de ([195.34.83.29]:50063 "EHLO mail.nebensachen.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752947AbYEOK7X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 06:59:23 -0400
-Message-ID: <482C16EA.4010301@openvz.org>
-Date: Thu, 15 May 2008 14:56:42 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	id S1756529AbYEOK73 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 06:59:29 -0400
+X-Hashcash: 1:20:080515:jens.axboe@oracle.com::uZpo1SwomsXNR5g9:00000000000000000000000000000000000000008+1X
+X-Hashcash: 1:20:080515:james.bottomley@hansenpartnership.com::+b1aPCL7NIu9SaoW:0000000000000000000000004Xwp
+X-Hashcash: 1:20:080515:linux-scsi@vger.kernel.org::cAbI0Am/0s272g1+:000000000000000000000000000000000005z1w
+X-Hashcash: 1:20:080515:linux-kernel@vger.kernel.org::luZkoh4KR3rwJEfc:0000000000000000000000000000000003kZv
+From: Elias Oltmanns <eo@nebensachen.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Linux specific scsi CDBs vs REQ_TYPE_LINUX_BLOCK requests
+References: <87r6ccadzd.fsf@denkblock.local>
+	<20080509115520.GS16217@kernel.dk>
+Date: Thu, 15 May 2008 12:58:29 +0200
+Message-ID: <87ej83ygtm.fsf@denkblock.local>
+User-Agent: Gnus/5.110007 (No Gnus v0.7)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Oleg Nesterov <oleg@tv-sign.ru>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/10] Pidns: use kzalloc when allocating new pid_namespace
- struct
-References: <482C15FE.7070300@openvz.org>
-In-Reply-To: <482C15FE.7070300@openvz.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 15 May 2008 14:59:03 +0400 (MSD)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It makes many fields initialization implicit helping in auto-setting
-#ifdef-ed fields (bsd-acct related pointer will be such).
+Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Thu, May 08 2008, Elias Oltmanns wrote:
+[...]
+>> In fact, unless you are definitely in favour of the block layer approach
+>> (as realised in [2]) and can give me a hint as to how I could solve the
+>> problems described above, I will probably prepare a patch series using
+>> ioctls and post it on linux-ide. The reason is that this approach might
+>> even solve another problem I see further down the road.
+>
+> There isn't going to be a lot of common code, since all the park
+> handling will be driver/device specific.
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
----
- kernel/pid_namespace.c |    8 ++------
- 1 files changed, 2 insertions(+), 6 deletions(-)
+Yes, it's just the expiration timer and possibly the interface to user
+space that could be considered common code.
 
-diff --git a/kernel/pid_namespace.c b/kernel/pid_namespace.c
-index 98702b4..06331cc 100644
---- a/kernel/pid_namespace.c
-+++ b/kernel/pid_namespace.c
-@@ -71,7 +71,7 @@ static struct pid_namespace *create_pid_namespace(unsigned int level)
- 	struct pid_namespace *ns;
- 	int i;
- 
--	ns = kmem_cache_alloc(pid_ns_cachep, GFP_KERNEL);
-+	ns = kmem_cache_zalloc(pid_ns_cachep, GFP_KERNEL);
- 	if (ns == NULL)
- 		goto out;
- 
-@@ -84,17 +84,13 @@ static struct pid_namespace *create_pid_namespace(unsigned int level)
- 		goto out_free_map;
- 
- 	kref_init(&ns->kref);
--	ns->last_pid = 0;
--	ns->child_reaper = NULL;
- 	ns->level = level;
- 
- 	set_bit(0, ns->pidmap[0].page);
- 	atomic_set(&ns->pidmap[0].nr_free, BITS_PER_PAGE - 1);
- 
--	for (i = 1; i < PIDMAP_ENTRIES; i++) {
--		ns->pidmap[i].page = NULL;
-+	for (i = 1; i < PIDMAP_ENTRIES; i++)
- 		atomic_set(&ns->pidmap[i].nr_free, BITS_PER_PAGE);
--	}
- 
- 	return ns;
- 
--- 
-1.5.3.4
+> It still makes sense to use the queue as the transport for the command
+> though, using an ioctl is both ugly from a design POV and (more
+> importantly) has serialization issues since it's an out-of-band
+> signalling mechanism. If you pass down a request as the park request,
+> then you need only deal with the device specific details of parking
+> the head.
+
+Well, the request queue is certainly the most obvious and preferable way
+to solve these serialisation issues -- the only drawback being that
+other paths might involve less memory allocations, thus reducing
+potential issues with paging in when time is of the essence. The
+question remains, however, who should be responsible for enqueueing such
+a request? And if it is going to be a REQ_TYPE_LINUX_BLOCK request, how
+am I supposed to get it past scsi midlayer to the LLDD? But I'll discuss
+that particular issue in a seperate mail.
+
+Here is another aspect which I'd like to have your opinion as maintainer
+of the block layer about. The more I think about it, the more I am
+opposed to the idea to expose a generic queue freezing facility to user
+space for *all* block devices. Or rather, I don't consider disk shock
+protection an extension, as it were, of such a generic facility. The
+reason is simply that I don't see how the two concepts can be generally
+compatible. If queue freezing was sufficient for any given application
+and for any given block device, then we'd most likely want to freeze the
+queue of ATA devices just as we'd do  for other devices, i.e., without
+disk head unloading. This is because the number of head unloads is
+considered an indicator of disk aging.
+
+So, I'd like to export an interface to user space which is specifically
+dedicated to disk shock protection, i.e., only available for ATA / IDE
+devices. On the other hand, it would be desirable to make this interface
+transparent, so user space doesn't have to differentiate between devices
+driven by the libata or the ide subsystem. A sysfs attribute
+/sys/block/.../queue/protect or even just /sys/block/.../protect would
+be very convenient from a user's point of view. However, this would
+require something like a blk_register_protect_attr() /
+blk_unregister_protect_attr() interface so that libata and ide can
+export this attribute for disks after calling blk_init_queue(). Would
+that be alright with you? Otherwise, I'd have to implement this
+interface directly in the subsystems and *thats* where ioctls seem to be
+the easiest way to make this interface as transparent as possible to
+user space. In this case a park request of some sort would be fed to the
+request queue internally.
+
+Any comments?
+
+Elias
