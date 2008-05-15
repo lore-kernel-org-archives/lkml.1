@@ -1,179 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761468AbYEOPkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761680AbYEOPli@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761468AbYEOPkl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 11:40:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756533AbYEOPkd
+	id S1761680AbYEOPli (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 11:41:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758245AbYEOPl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 11:40:33 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:60209 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756903AbYEOPkb (ORCPT
+	Thu, 15 May 2008 11:41:29 -0400
+Received: from mail11b.verio-web.com ([204.202.242.87]:2495 "HELO
+	mail11b.verio-web.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755506AbYEOPl2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 11:40:31 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Carl Love <cel@us.ibm.com>
-Subject: Re: [PATCH] Updated: Reworked Cell OProfile: SPU mutex lock fix
-Date: Thu, 15 May 2008 17:39:25 +0200
-User-Agent: KMail/1.9.9
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>
-References: <1209652994.17842.1.camel@carll-linux-desktop>
-In-Reply-To: <1209652994.17842.1.camel@carll-linux-desktop>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 15 May 2008 11:41:28 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 15 May 2008 11:41:28 EDT
+Message-ID: <482C5812.9090903@sensoray.com>
+Date: Thu, 15 May 2008 08:34:42 -0700
+From: Dean Anderson <dean@sensoray.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Trent Piepho <xyzzy@speakeasy.org>
+CC: Greg KH <greg@kroah.com>, Markus Rechberger <mrechberger@gmail.com>,
+       video4linux-list@redhat.com, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mchehab@infradead.org,
+       v4l-dvb-maintainer@linuxtv.org
+Subject: Re: [v4l-dvb-maintainer] [PATCH] USB: add Sensoray 2255 v4l driver
+References: <20080514205927.GA13134@kroah.com> <d9def9db0805141817n4182deedp780791b0a51fb7be@mail.gmail.com> <20080515024141.GB21941@kroah.com> <Pine.LNX.4.58.0805142006130.23876@shell4.speakeasy.net>
+In-Reply-To: <Pine.LNX.4.58.0805142006130.23876@shell4.speakeasy.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805151739.26392.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/xRLaS9ey3tmhcncBU04RH9y2ZSMsBcjfEucg
- YCyEBqBrYAs29+PS+A4GeVdDrXxHKoyCa+pHQfQpj+zA6OXGrq
- cRyYnyKwmsOwO2bQcTr/w==
+X-Spam: [F=0.0100000000; S=0.010(2008040101); MH=0.500(2008040918)]
+X-MAIL-FROM: <dean@sensoray.com>
+X-SOURCE-IP: [161.58.148.42]
+X-SF-Loop: 1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 01 May 2008, Carl Love wrote:
+Trent Piepho wrote:
+> On Wed, 14 May 2008, Greg KH wrote:
+>   
+>> On Thu, May 15, 2008 at 03:17:42AM +0200, Markus Rechberger wrote:
+>>     
+>>> Hi Dean, Greg,
+>>>       
+>> Adding dean to the cc: line...  :)
+>>     
+>>> On 5/14/08, Greg KH <greg@kroah.com> wrote:
+>>>       
+>>>> From: Dean Anderson <dean@sensoray.com>
+>>>>
+>>>>         
+>> <big patch snipped>
+>>
+>>     
+>>> Why do you do those conversions in kernelspace?
+>>> ffmpeg/libswscale has optimized code for colourspace conversions.
+>>> I know a few drivers do that in kernelspace but it's way more flexible
+>>> in userspace and depending on the optimization requires less CPU
+>>> power.
+>>>       
+>> I thought they were there as needed by some V4L1 applications, but that
+>> code was recently removed by Dean I think.  If they don't need to be
+>> there, and userspace apps can properly handle the different colorspace,
+>> then I'll be glad to remove them.
+>>     
+>
+> Virtually all apps (V4L1 & 2) can handle YUV and RGB colorspaces.
+> Certainly all the major ones do and all the major libraries as well.
+>
+> The problem is when the device only supports some vendor specific or
+> otherwise very uncommon format.  In that case not doing the conversion in
+> the kernel means the device won't work with any existing software without
+> patches.  In this case, while it's not "the right way", drivers often end
+> up including an in kernel conversion for pragmatic reasons.
+>
+> This was a problem with the bayer format, but now userspace support for
+> that format is more common.
+>   
 
-> Finally, this patch backs out the changes previously added to the 
-> oprofile generic code for handling the architecture specific 
-> ops.sync_start and ops.sync_stop that allowed the architecture
-> to skip the per CPU buffer creation.
+I agree the conversions don't belong in a driver. For the record, the 
+following are done in the 2255 hardware: V4L2_PIX_FMT_GREY and 
+V4L2_PIX_FMT_YUV422P.
 
-Thanks for your patch, it looks a lot better than your previous version.
-It would be good to have an oprofile person look into the changes
-to the common code though.
+Since planar YUV formats such as V4L2_PIX_FMT_YUV422P are still not that 
+well supported, is it possible to keep at least one packed YUV 
+format(V4L2_PIX_FMT_YUYV) in the driver?  If not, let me know.  I will 
+strongly suggest that the hardware Engineers add YUY2 or YUYV on board 
+in the DSP firmware.  Thanks, Dean
 
-Just a few more comments/questions this time:
 
-> -static DEFINE_SPINLOCK(buffer_lock);
-> +static DEFINE_SPINLOCK(add_value_lock);
->  static DEFINE_SPINLOCK(cache_lock);
->  static int num_spu_nodes;
->  int spu_prof_num_nodes;
->  int last_guard_val[MAX_NUMNODES * 8];
-> +static int spu_ctx_sw_seen[MAX_NUMNODES * 8];
->  
->  /* Container for caching information about an active SPU task. */
->  struct cached_info {
 
-I noticed now that you are indexing arrays by SPU number. This is not
-a good idea, because you make assumptions about the system that may
-not be true. Better pass around 'struct spu' pointers and put those
-values in there if you need them. Then again, the last_guard_val looks
-like you should really store that information in the context instead
-of the physical SPU, but that is something else to work on.
 
-Let's leave this one as it is for now and fix the current bug at hand,
-but please remember to fix the assumptions in the code later.
 
-> @@ -289,6 +290,7 @@ static int process_context_switch(struct
->  	int retval;
->  	unsigned int offset = 0;
->  	unsigned long spu_cookie = 0, app_dcookie;
-> +	int cpu_buf;
->  
->  	retval = prepare_cached_spu_info(spu, objectId);
->  	if (retval)
-> @@ -303,17 +305,28 @@ static int process_context_switch(struct
->  		goto out;
->  	}
->  
-> -	/* Record context info in event buffer */
-> -	spin_lock_irqsave(&buffer_lock, flags);
-> -	add_event_entry(ESCAPE_CODE);
-> -	add_event_entry(SPU_CTX_SWITCH_CODE);
-> -	add_event_entry(spu->number);
-> -	add_event_entry(spu->pid);
-> -	add_event_entry(spu->tgid);
-> -	add_event_entry(app_dcookie);
-> -	add_event_entry(spu_cookie);
-> -	add_event_entry(offset);
-> -	spin_unlock_irqrestore(&buffer_lock, flags);
-> +	/* Record context info in event buffer.  Note, there are 4x more
-> +	 * SPUs then CPUs.  Map the SPU events/data for a given SPU to
-> +	 * the same CPU buffer.  Need to ensure the cntxt switch data and
-> +	 * samples stay in order.
-> +	 */
-> +	cpu_buf = spu->number >> 2;
 
-The ratio of CPUs versus SPUs is anything but fixed, and the CPU numbers
-may not start at 0. If you have a hypervisor (think PS3), or you are
-running a non-SMP kernel, this is practically always wrong.
-Please use get_cpu()/put_cpu() to read the current CPU number instead.
-This one needs to be fixed now.
 
-> +	spin_lock_irqsave(&add_value_lock, flags);
-> +	oprofile_add_value(ESCAPE_CODE, cpu_buf);
-> +	oprofile_add_value(SPU_CTX_SWITCH_CODE, cpu_buf);
-> +	oprofile_add_value(spu->number, cpu_buf);
-> +	oprofile_add_value(spu->pid, cpu_buf);
-> +	oprofile_add_value(spu->tgid, cpu_buf);
-> +	oprofile_add_value(app_dcookie, cpu_buf);
-> +	oprofile_add_value(spu_cookie, cpu_buf);
-> +	oprofile_add_value(offset, cpu_buf);
-> +
-> +	/* Set flag to indicate SPU PC data can now be written out.  If
-> +	 * the SPU program counter data is seen before an SPU context
-> +	 * record is seen, the postprocessing will fail.
-> +	 */
-> +	spu_ctx_sw_seen[spu->number] = 1;
-> +	spin_unlock_irqrestore(&add_value_lock, flags);
->  	smp_wmb();	/* insure spu event buffer updates are written */
->  			/* don't want entries intermingled... */
->  out:
 
-How does the spinlock protect you from racing against other values added
-for the same CPU?
 
-I'm not sure if this patch can still fix the original bug that you
-are trying to solve, although it will certainly be harder to trigger.
 
-If you are using the get_cpu() number for passing down the samples,
-it is probably safe because you then can't add anything else to the
-same buffer from a different CPU or from an interrupt, but I don't
-understand enough about oprofile to be sure about that.
-
-> -	spin_lock_irqsave(&buffer_lock, flags);
-> -	add_event_entry(ESCAPE_CODE);
-> -	add_event_entry(SPU_PROFILING_CODE);
-> -	add_event_entry(num_spu_nodes);
-> -	spin_unlock_irqrestore(&buffer_lock, flags);
-> +	/* The SPU_PROFILING_CODE escape sequence must proceed
-> +	 * the SPU context switch info.
-> +	 */
-> +	for_each_online_cpu(cpu) {
-> +		oprofile_add_value(ESCAPE_CODE, cpu);
-> +		oprofile_add_value(SPU_PROFILING_CODE, cpu);
-> +		oprofile_add_value((unsigned long int)
-> +					    num_spu_nodes, cpu);
-> +	}
->  
-
-You are no longer holding a lock while adding the events, which
-may be correct as long as no switch_events come in, but it's
-still inconsistent. Do you mind just adding the spinlock here
-as well?
-
-> @@ -452,31 +464,38 @@ void spu_sync_buffer(int spu_num, unsign
->  			break;
->  		}
->  
-> -		add_event_entry(file_offset | spu_num_shifted);
-> +		/* We must ensure that the SPU context switch has been written
-> +		 * out before samples for the SPU.  Otherwise, the SPU context
-> +		 * information is not available and the postprocessing of the
-> +		 * SPU PC will fail with no available anonymous map information.
-> +		 */
-> +		if (spu_ctx_sw_seen[spu_num])
-> +			oprofile_add_value((file_offset | spu_num_shifted),
-> +						    (spu_num >> 2));
-
-Again, I think this should just be added on the local CPU, as 'spu_num >> 2'
-may not be a valid CPU number.
-
-	Arnd <><
