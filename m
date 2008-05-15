@@ -1,87 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761706AbYEOV2B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763500AbYEOV3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761706AbYEOV2B (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 17:28:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbYEOV1v
+	id S1763500AbYEOV3R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 17:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753037AbYEOV3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 17:27:51 -0400
-Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:53363 "EHLO
-	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752667AbYEOV1u (ORCPT
+	Thu, 15 May 2008 17:29:04 -0400
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:51669 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751380AbYEOV3D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 17:27:50 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: As0IAFdGLEiWZR7iWmdsb2JhbACSGQEdnTA
-X-IronPort-AV: E=Sophos;i="4.27,493,1204464600"; 
-   d="scan'208";a="115535856"
-Message-ID: <1A70765F4B30462EB21A3B3A8A442633@uglypunk>
-From: "Kingsley Foreman" <kingsley@internode.com.au>
-To: "Jarek Poplawski" <jarkao2@gmail.com>, "Patrick McHardy" <kaber@trash.net>
-Cc: "Eric Dumazet" <dada1@cosmosbay.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
-References: <20080515091216.GA6550@ff.dom.local> <8ECDBB4EB5394859BFFACAAEE3A6EDB0@uglypunk> <482C6040.9030808@trash.net> <20080515182504.GB2936@ami.dom.local> <482C81CC.7000305@trash.net> <20080515184646.GC2936@ami.dom.local>
-Subject: Re: NET_SCHED cbq dropping too many packets on a bonding interface
-Date: Fri, 16 May 2008 06:57:23 +0930
+	Thu, 15 May 2008 17:29:03 -0400
+Date: Thu, 15 May 2008 23:28:56 +0200
+From: Sebastian Siewior <linux-crypto@ml.breakpoint.cc>
+To: Randy Dunlap <RANDY.DUNLAP@ORACLE.COM>
+Cc: herbert@gondor.apana.org.au, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Loc Ho <lho@amcc.com>
+Subject: [PATCH] crypto: fix cryptd build fix due to missing ahash
+Message-ID: <20080515212856.GB3081@Chamillionaire.breakpoint.cc>
+References: <4694288.1210878773358.JavaMail.oracle@acsmt302.oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-Importance: Normal
-X-Mailer: Microsoft Windows Live Mail 12.0.1606
-X-MimeOLE: Produced By Microsoft MimeOLE V12.0.1606
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <4694288.1210878773358.JavaMail.oracle@acsmt302.oracle.com>
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This was reported by Randy Dunlap:
+|crypto/built-in.o: In function `cryptd_alloc':
+|cryptd.c:(.text+0x9b5a): undefined reference to `crypto_ahash_type'
 
+Signed-off-by: Sebastian Siewior <sebastian@breakpoint.cc>
+---
+ crypto/Kconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
---------------------------------------------------
-From: "Jarek Poplawski" <jarkao2@gmail.com>
-Sent: Friday, May 16, 2008 4:16 AM
-To: "Patrick McHardy" <kaber@trash.net>
-Cc: "Kingsley Foreman" <kingsley@internode.com.au>; "Eric Dumazet" 
-<dada1@cosmosbay.com>; "Andrew Morton" <akpm@linux-foundation.org>; 
-<linux-kernel@vger.kernel.org>; <netdev@vger.kernel.org>
-Subject: Re: NET_SCHED cbq dropping too many packets on a bonding interface
-
-> On Thu, May 15, 2008 at 08:32:44PM +0200, Patrick McHardy wrote:
->> Jarek Poplawski wrote:
->>> On Thu, May 15, 2008 at 06:09:36PM +0200, Patrick McHardy wrote:
->>> ...
->>>> Do things improve if you set txqueuelen to a larger value
->>>> *before* configuring the qdiscs?
->>>
->>> BTW, I hope it was *before*, but since pfifo_fast_enqueue() uses
->>> "qdisc->dev->tx_queue_len" does it really matter? (Until it's
->>> before the test of course...)
->>
->>
->> Yes, CBQ uses pfifo, not pfifo_fast. pfifo uses txqueuelen
->> to inialize q->limit, but thats whats used during ->enqueue().
->
-> ...My bad! I missed this and this (only!?) seems to explain this
-> puzzle. So, I hope it was really because *not before* (and not only
-> size matters...)
->
-> Thanks,
-> Jarek P.
->
-
-running
-
-tc qdisc add dev bond0 root pfifo limit 1000
-
-or
-
-tc qdisc add dev bond0 root handle 1: cbq bandwidth 2000Mbit avpkt 1000 cell 
-0
-tc qdisc add dev bond0 parent 1: pfifo limit 1000
-
-
-doesn't appear to be dropping packets. 
+diff --git a/crypto/Kconfig b/crypto/Kconfig
+index 5963a95..ffcd467 100644
+--- a/crypto/Kconfig
++++ b/crypto/Kconfig
+@@ -66,6 +66,7 @@ config CRYPTO_CRYPTD
+ 	tristate "Software async crypto daemon"
+ 	select CRYPTO_BLKCIPHER
+ 	select CRYPTO_MANAGER
++	select CRYPTO_HASH
+ 	help
+ 	  This is a generic software asynchronous crypto daemon that
+ 	  converts an arbitrary synchronous software crypto algorithm
+-- 
+1.5.4.3
 
