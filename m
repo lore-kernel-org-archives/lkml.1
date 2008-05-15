@@ -1,121 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764213AbYEOVki@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764723AbYEOVln@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764213AbYEOVki (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 17:40:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755107AbYEOVka
+	id S1764723AbYEOVln (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 17:41:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbYEOVlc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 17:40:30 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:38401 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754917AbYEOVk2 (ORCPT
+	Thu, 15 May 2008 17:41:32 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:25496 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751827AbYEOVl3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 17:40:28 -0400
-Date: Thu, 15 May 2008 17:40:20 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Stas Sergeev <stsp@aknet.ru>
-Cc: Takashi Iwai <tiwai@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Roberto Oppedisano <roberto.oppedisano@infracom.it>
-Subject: Re: [patch] snd-pcsp: adjust help texts to frighten users
-Message-ID: <20080515214020.GO18825@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Stas Sergeev <stsp@aknet.ru>, Takashi Iwai <tiwai@suse.de>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Roberto Oppedisano <roberto.oppedisano@infracom.it>
-References: <88YBFoyd1CN.A._sF.Ov1JIB@chimera> <s5hskwmeb1h.wl%tiwai@suse.de> <20080514212011.GH7054@mit.edu> <s5hhcd0azv1.wl%tiwai@suse.de> <20080515130654.GC18825@mit.edu> <482C71B3.8090200@aknet.ru> <20080515182643.GL18825@mit.edu> <482C8A43.1020208@aknet.ru> <20080515195331.GM18825@mit.edu> <482C99A4.8030201@aknet.ru>
+	Thu, 15 May 2008 17:41:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=l9sgythq6eVpqi+Vye2gpo+PShP62DdaiWVZSCCkOdfK00daAQMYz3YdJy5KF6yXkSIjRHdm1JY93NMNLhmDT1hzCXOP3M31xxUU5KPCHB6nqsyn3tFByFQeuGKMRMEHxio7eCM3dHDhVhOTwLWtP4uxSF9b2CLpzYkspxE6ti4=
+Message-ID: <482CADEC.9000104@gmail.com>
+Date: Thu, 15 May 2008 23:41:00 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <482C99A4.8030201@aknet.ru>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, Al Viro <viro@ZenIV.linux.org.uk>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: 2.6.26-rc2-mm1: sloooow mkfs.ext2
+References: <20080514010129.4f672378.akpm@linux-foundation.org> <20080514211600.GA4748@martell.zuzino.mipt.ru> <20080514213352.GA6523@martell.zuzino.mipt.ru>
+In-Reply-To: <20080514213352.GA6523@martell.zuzino.mipt.ru>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16, 2008 at 12:14:28AM +0400, Stas Sergeev wrote:
-> Hello.
+On 05/14/2008 11:33 PM, Alexey Dobriyan wrote:
+> On Thu, May 15, 2008 at 01:16:00AM +0400, Alexey Dobriyan wrote:
+>> mkfs.ext2 became kick-ass slow:
+>>
+>> + sudo mkfs.ext2 -F 
+>> mke2fs 1.40.6 (09-Feb-2008)
+>> Warning: 256-byte inodes not usable on older systems
+>> Filesystem label=
+>> OS type: Linux
+>> Block size=4096 (log=2)
+>> Fragment size=4096 (log=2)
+>> 9773056 inodes, 39072726 blocks
+>> 1953636 blocks (5.00%) reserved for the super user
+>> First data block=0
+>> Maximum filesystem blocks=4294967296
+>> 1193 block groups
+>> 32768 blocks per group, 32768 fragments per group
+>> 8192 inodes per group
+>> Superblock backups stored on blocks:
+>> 	...
+>>
+>> Writing inode tables:  193/1193
+>> 		       ^^^^
+>> 		       counter moves slowly,
+>> 		       occasional counting at what seems to be normal
+>> 		       speed occur.
+>>
+>> 160 GB SATA disk, no partitions.
+>> According to sysfs, CFQ is in use, the rest is compiled out.
+>> 2.6.26-rc2 is fine, mkfs takes ~1 min.
+>>
+>> Slowdown is totally reproducible.
+>>
+>>
+>> CONFIG_ATA=y
+>> CONFIG_ATA_ACPI=y
+>> CONFIG_SATA_AHCI=y
+>> CONFIG_ATA_SFF=y
+>> CONFIG_ATA_PIIX=y
+>> CONFIG_PATA_JMICRON=y
+>>
+>>
+>> /sys/block/sdb/queue/iosched/back_seek_max
+>> 16384
+>> /sys/block/sdb/queue/iosched/back_seek_penalty
+>> 2
+>> /sys/block/sdb/queue/iosched/fifo_expire_async
+>> 250
+>> /sys/block/sdb/queue/iosched/fifo_expire_sync
+>> 120
+>> /sys/block/sdb/queue/iosched/quantum
+>> 4
+>> /sys/block/sdb/queue/iosched/slice_async
+>> 40
+>> /sys/block/sdb/queue/iosched/slice_async_rq
+>> 2
+>> /sys/block/sdb/queue/iosched/slice_idle
+>> 10
+>> /sys/block/sdb/queue/iosched/slice_sync
+>> 100
 > 
-> Theodore Tso wrote:
-> > I tried replacing it, but I'm still getting silence when I use "aplay
-> > -D plughw:0,0 /usr/share/sounds/login.wav".  If I use "aplay -D
-> > hw:0,0", I still get the "aplay: set_params:900: Sample format non
-> > available" error message.
-> You don't need to specify anything
-> with the fixed conf. You probably
-> even _should_ not. Could you please
-> just try "aplay /usr/share/sounds/login.wav"
-> or mpg123 or anything else the most
-> usual way you do?
-> Oh, and it would be best to remove
-> for the moment the custom /etc/asound.conf
-> if any.
+> Here is where it spends time (seems to be always the same):
+> 
+> mkfs.ext2     D 0000000000000000     0  4760   4759
+>  ffff81017ce93a58 0000000000000046 0000000000000000 0000000000000282
+>  ffff81017e14d640 ffffffff8056f4c0 ffff81017e14d880 ffffffff804679a2
+>  00000000ffffb5c4 000000007ce93a68 0000000000000003 ffffffff8023d504
+> Call Trace:
+>  [<ffffffff804679a2>] ? _spin_unlock_irqrestore+0x42/0x80
+>  [<ffffffff8023d504>] ? __mod_timer+0xc4/0x110
+>  [<ffffffff80465012>] schedule_timeout+0x62/0xe0
+>  [<ffffffff8023cee0>] ? process_timeout+0x0/0x10
+>  [<ffffffff80464ef8>] io_schedule_timeout+0x28/0x40
+>  [<ffffffff8027663a>] congestion_wait+0x8a/0xb0
+>  [<ffffffff80248720>] ? autoremove_wake_function+0x0/0x40
+>  [<ffffffff8026fe31>] balance_dirty_pages_ratelimited_nr+0x1a1/0x3f0
+>  [<ffffffff8026915f>] generic_file_buffered_write+0x1ff/0x740
+>  [<ffffffff80467870>] ? _spin_unlock+0x30/0x60
+>  [<ffffffff802acafb>] ? mnt_drop_write+0x7b/0x160
+>  [<ffffffff80269b30>] __generic_file_aio_write_nolock+0x2a0/0x460
+>  [<ffffffff802548ed>] ? trace_hardirqs_off+0xd/0x10
+>  [<ffffffff80269df7>] generic_file_aio_write_nolock+0x37/0xa0
+>  [<ffffffff80292be1>] do_sync_write+0xf1/0x130
+>  [<ffffffff80256485>] ? trace_hardirqs_on_caller+0xd5/0x160
+>  [<ffffffff80248720>] ? autoremove_wake_function+0x0/0x40
+>  [<ffffffff80256485>] ? trace_hardirqs_on_caller+0xd5/0x160
+>  [<ffffffff8025651d>] ? trace_hardirqs_on+0xd/0x10
+>  [<ffffffff8029339a>] vfs_write+0xaa/0xe0
+>  [<ffffffff80293940>] sys_write+0x50/0x90
+>  [<ffffffff8020b69b>] system_call_after_swapgs+0x7b/0x80
 
-OK, with my ~/.asoundrc file moved out of the way (but with the fixed
-config file installed):
-
-# aplay /usr/share/sounds/login.wav 
-ALSA lib pcm_direct.c:901:(snd_pcm_direct_initialize_slave) requested or auto-format is not available
-ALSA lib pcm_dmix.c:876:(snd_pcm_dmix_open) unable to initialize slave
-
-# aplay -D hw:0,0 /usr/share/sounds/login.wav 
-Playing WAVE '/usr/share/sounds/login.wav' : Signed 16 bit Little Endian, Rate 44100 Hz, Stereo
-aplay: set_params:900: Sample format non available
-
-# aplay -D plughw:0 /usr/share/sounds/login.wav 
-Playing WAVE '/usr/share/sounds/login.wav' : Signed 16 bit Little Endian, Rate 44100 Hz, Stereo
-  <no sound, but aplay sits there as if it was sending sound to a muted
-  speaker and exits after approximately the amount of time for the wav
-  file would take to play>
-
-Is moving ~/.asoundrc out of the way sufficient?  Or do I need to
-reboot or logout/login again to clear something?  I don't think there
-are any user space daemons involved here, but...
-
-> > This is with Ubuntu Gutsy; for a variety of
-> > reasons, I haven't yet updated my primary laptop to Hardy yet.  I can
-> > try booting a bleeding edge kernel on my Hardy machine and see whether
-> > it works any better there.
-> Well, yeah, it would be nice to have
-> alsa-lib 1.0.16, which one is on Gutsy?
-
-1.0.14.  Yeah, it's over 12 months old.....
-
-						- Ted
-
-> PS: your messages are a bit strange.
-> When I press "Reply to All" in a
-> thunderbird mailer, it sets all the
-> e-mail addresses as "To:". And it
-> includes my own address. And it includes
-> your address twice. This is weird. I
-> am fixing that by hands.
-> With all other messages, by pressing
-> "reply to all", it composes the message
-> with all addresses set to "Cc:", and only
-> one is set to "To:", with my own address
-> not included at all
-
-Hmm, I don't know.  I'm not setting a reply-to header.  My e-mail
-messages do have an SMTP envelope from field of tytso@thunk.org, but
-that shouldn't be visible to MUA's.  (It just means that MTA's send
-bounce messages to tytso@thunk.org, which I need to do since my
-outgoing e-mail path goes through thunk.org, and if I didn't do I
-might trip certain spam filters which check to see if the domain of
-the SMTP "MAIL FROM" matches the domain of the sending SMTP server.)
-
-In any case, my outgoing RFC 822 message headers on my end looks like
-this:
-
-To: Stas Sergeev <stsp@aknet.ru>
-Cc: Takashi Iwai <tiwai@suse.de>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Roberto Oppedisano <roberto.oppedisano@infracom.it>
-Bcc: tytso@mit.edu
-Subject: Re: [patch] snd-pcsp: adjust help texts to frighten users
-Reply-To: 
-In-Reply-To: <482C99A4.8030201@aknet.ru>
-
-It might be interesting to see what you receive it on your end.
+And not only mkfs, ld took ages to link vmlinux.o:
+ld            D 0000000000000000     0 17340  17339
+  ffff8100681819c8 0000000000000082 0000000000000000 ffff81006818198c
+  ffffffff806c90c0 ffff81006b50d2e0 ffffffff80636360 ffff81006b50d558
+  0000000068181978 0000000100a7523e ffff81006b50d558 0000000100a75269
+Call Trace:
+  [<ffffffff805056b2>] schedule_timeout+0x62/0xd0
+  [<ffffffff802403b0>] ? process_timeout+0x0/0x10
+  [<ffffffff805056ad>] ? schedule_timeout+0x5d/0xd0
+  [<ffffffff80504956>] io_schedule_timeout+0x76/0xd0
+  [<ffffffff80282cac>] congestion_wait+0x6c/0x90
+  [<ffffffff8024c2c0>] ? autoremove_wake_function+0x0/0x40
+  [<ffffffff8027c82f>] balance_dirty_pages_ratelimited_nr+0x13f/0x330
+  [<ffffffff80275a3d>] generic_file_buffered_write+0x1dd/0x6d0
+  [<ffffffff8027d0e7>] ? __do_page_cache_readahead+0x167/0x220
+  [<ffffffff802763ae>] __generic_file_aio_write_nolock+0x25e/0x450
+  [<ffffffff80276c75>] ? generic_file_aio_read+0x565/0x640
+  [<ffffffff80276607>] generic_file_aio_write+0x67/0xd0
+  [<ffffffff802f8bd6>] ext3_file_write+0x26/0xc0
+  [<ffffffff8029ffa1>] do_sync_write+0xf1/0x140
+  [<ffffffff8024c2c0>] ? autoremove_wake_function+0x0/0x40
+  [<ffffffff80289703>] ? remove_vma+0x53/0x70
+  [<ffffffff80505a01>] ? mutex_lock+0x11/0x30
+  [<ffffffff802a0a2b>] vfs_write+0xcb/0x190
+  [<ffffffff802a0be0>] sys_write+0x50/0x90
+  [<ffffffff8020b82b>] system_call_after_swapgs+0x7b/0x80
