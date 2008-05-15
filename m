@@ -1,55 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757466AbYEOCmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756041AbYEOCoB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757466AbYEOCmj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 22:42:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbYEOCma
+	id S1756041AbYEOCoB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 22:44:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbYEOCnx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 22:42:30 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35415 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751513AbYEOCm3 (ORCPT
+	Wed, 14 May 2008 22:43:53 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:16143 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750720AbYEOCnw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 22:42:29 -0400
-Date: Wed, 14 May 2008 19:41:41 -0700
-From: Greg KH <greg@kroah.com>
-To: Markus Rechberger <mrechberger@gmail.com>
-Cc: mchehab@infradead.org, v4l-dvb-maintainer@linuxtv.org,
-       video4linux-list@redhat.com, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, dean@sensoray.com
-Subject: Re: [v4l-dvb-maintainer] [PATCH] USB: add Sensoray 2255 v4l driver
-Message-ID: <20080515024141.GB21941@kroah.com>
-References: <20080514205927.GA13134@kroah.com> <d9def9db0805141817n4182deedp780791b0a51fb7be@mail.gmail.com>
+	Wed, 14 May 2008 22:43:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZV7IgRRP6cYfvlXKbeiAFDTKOHoqf3Xtr1jYyqRqJoPeLcHMtB31t3XrFU5FSY4EogMnHrUI/vt+2EKLI3yusG9LqXYdDDECf86/Xu1WmMb1KDcQQmDq8gIcpD5ecB1KTccKcJm1eHB1cBKVUP54TF/ZWqOO9MYkQeIcjQpePj0=
+Message-ID: <a4e6962a0805141943va8a9043k9ca3ff023bc6aa5@mail.gmail.com>
+Date: Wed, 14 May 2008 21:43:50 -0500
+From: "Eric Van Hensbergen" <ericvh@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [PULL] v9fs bug fixes and documentation updates for 2.6.26
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "V9FS Developers" <v9fs-developer@lists.sourceforge.net>
+In-Reply-To: <alpine.LFD.1.10.0805141930530.3019@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <d9def9db0805141817n4182deedp780791b0a51fb7be@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <a4e6962a0805141920x7d96df33gb9c22a5777b1732c@mail.gmail.com>
+	 <alpine.LFD.1.10.0805141930530.3019@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 15, 2008 at 03:17:42AM +0200, Markus Rechberger wrote:
-> Hi Dean, Greg,
+On Wed, May 14, 2008 at 9:40 PM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+>
+>
+> On Wed, 14 May 2008, Eric Van Hensbergen wrote:
+>>
+>> Jim Meyering (1):
+>>       fs/9p/v9fs.c (v9fs_parse_options): Handle kstrdup and
+>> match_strdup failure. Now that this function can fail, return an int,
+>> diagnose other option-parsing failures, and adjust the sole caller:
+>> (v9fs_session_init): Handle kstrdup failure. Propagate any new
+>> v9fs_parse_options failure "up".
+>
+> Grr. Somebody isn't following the nice rules we have and that git
+> encourages: make a commit message be a nice "one-line header" with the
+> more complete explanation separated by an empty line (and with nice
+> line-breaks etc).
+>
 
-Adding dean to the cc: line...  :)
-> 
-> On 5/14/08, Greg KH <greg@kroah.com> wrote:
-> > From: Dean Anderson <dean@sensoray.com>
-> >
+Sorry boss.  I had a nagging feeling I was doing the wrong thing about
+not diving in and fixing that comment.  Not sure where I messed up
+applying the email, but if I see that sort of thing in the future I'll
+edit it by hand.
 
-<big patch snipped>
+>
+> There are other commits that don't follow the rules, btw: you've applied
+> patches from others that have the rigth Sign-off's from the authors, but
+> you should sign off yourself, not just ack them. By actually taking that
+> thing and committing it, you're doing more than ack'ing somebody elses
+> work.
+>
 
-> Why do you do those conversions in kernelspace?
-> ffmpeg/libswscale has optimized code for colourspace conversions.
-> I know a few drivers do that in kernelspace but it's way more flexible
-> in userspace and depending on the optimization requires less CPU
-> power.
+Sure, long term misunderstand on my part.  Thanks for clearing this
+up, I'll be sure to properly sign off in the future.
 
-I thought they were there as needed by some V4L1 applications, but that
-code was recently removed by Dean I think.  If they don't need to be
-there, and userspace apps can properly handle the different colorspace,
-then I'll be glad to remove them.
-
-thanks,
-
-greg k-h
+          -eric
