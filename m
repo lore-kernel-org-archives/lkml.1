@@ -1,96 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760857AbYEOU1i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761619AbYEOUaX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760857AbYEOU1i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 16:27:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753142AbYEOU12
+	id S1761619AbYEOUaX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 16:30:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751860AbYEOUaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 16:27:28 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:42142 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752126AbYEOU10 (ORCPT
+	Thu, 15 May 2008 16:30:09 -0400
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:44527
+	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751669AbYEOUaI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 16:27:26 -0400
-Date: Thu, 15 May 2008 13:27:13 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Alexander Viro <viro@ftp.linux.org.uk>
-Subject: Re: [announce] "kill the Big Kernel Lock (BKL)" tree
-Message-ID: <20080515132713.18f1b953@infradead.org>
-In-Reply-To: <alpine.LFD.1.10.0805151020460.3019@woody.linux-foundation.org>
-References: <20080514174955.GA515@elte.hu>
-	<alpine.LFD.1.10.0805151020460.3019@woody.linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+	Thu, 15 May 2008 16:30:08 -0400
+Subject: Re: Virt RNG?
+From: Dor Laor <dor.laor@qumranet.com>
+Reply-To: dor.laor@qumranet.com
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Jeff Garzik <jeff@garzik.org>, virtualization@lists.osdl.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>
+In-Reply-To: <482C94AF.2010202@goop.org>
+References: <482C8595.5030509@garzik.org>  <482C94AF.2010202@goop.org>
+Content-Type: text/plain
+Organization: Qumranet
+Date: Thu, 15 May 2008 23:26:18 +0300
+Message-Id: <1210883178.24261.914.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 May 2008 10:41:54 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> 
-> So looking a bit more at your trivial fixups, I'd suggest strongly
-> that they be re-organized a bit.
-
+On Thu, 2008-05-15 at 20:53 +0100, Jeremy Fitzhardinge wrote:
+> Jeff Garzik wrote:
+> > Has anyone yet written a "hw" RNG module for virt, that reads the host's 
+> > random number pool?
 > >
-> > diff --git a/net/sunrpc/sched.c b/net/sunrpc/sched.c
-> > index 6eab9bf..e12e571 100644
-> > --- a/net/sunrpc/sched.c
-> > +++ b/net/sunrpc/sched.c
-> > @@ -224,9 +224,15 @@ EXPORT_SYMBOL_GPL(rpc_destroy_wait_queue);
-> >  
-> >  static int rpc_wait_bit_killable(void *word)
-> >  {
-> > +	int bkl = kernel_locked();
-> > +
-> >  	if (fatal_signal_pending(current))
-> >  		return -ERESTARTSYS;
-> > +	if (bkl)
-> > +		unlock_kernel();
-> >  	schedule();
-> > +	if (bkl)
-> > +		lock_kernel();
-> >  	return 0;
-> >  }
+> > All this talk[1] about IRQF_SAMPLE_RANDOM in network drivers reminds me 
+> > that virt guest instances should be grabbing random numbers from the 
+> > host, especially if the host has a hardware RNG.
 > 
-> The above doesn't even work in general. It depends on having just a
-> single level of locking, and is ugly to boot. So wow about we just
-> expose some version of
+> It was actually one of the first device types proposed for what would 
+> become virtio, but as far as I know there has been no work on such a 
+> device.  It certainly makes lots of sense.
 > 
-> 	depth = release_kernel_lock()
-> 	..
-> 	reacquire_kernel_lock(depth);
-> 
-> to existing BKL users as a way to safely release and re-aquire it 
-> regardless of depth. That makes the code more generic, but it *also*
-> makes it more readable than that "if (bkl) [un]lock_kernel()"
-> sequence.
 
+There was a virtio-rng device:
+http://www.mail-archive.com/virtualization@lists.linux-foundation.org/msg02902.html
 
-can we make this even more specific/restricted? Like having something
-like
-
-call_bkl_unlocked(function_pointer, argument);
-
-or something that will internally do the full unlock and then the
-function call. The last thing we need is another nailgun that BKL using
-code can use to staple themselves to something big and fast moving.
-By having a more restricted interface... less likely.
-Maybe we can even get away with only a
-
-drop_bkl_and_schedule();
-
-and nothing else.
-
-
+Need to search what happened to it in Rusty's queues.
+>     J
+> _______________________________________________
+> Virtualization mailing list
+> Virtualization@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/virtualization
 
