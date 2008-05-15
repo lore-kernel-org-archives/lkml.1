@@ -1,66 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756735AbYEOTkg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757014AbYEOToy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756735AbYEOTkg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 15:40:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752336AbYEOTk2
+	id S1757014AbYEOToy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 15:44:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752396AbYEOToq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 15:40:28 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39887 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752201AbYEOTk1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 15:40:27 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Bill Nottingham <notting@redhat.com>
-Subject: Re: Problems with suspend and USB storage
-Date: Thu, 15 May 2008 21:40:42 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>,
-       Pavel Machek <pavel@ucw.cz>
-References: <20080515163315.GA17779@nostromo.devel.redhat.com>
-In-Reply-To: <20080515163315.GA17779@nostromo.devel.redhat.com>
+	Thu, 15 May 2008 15:44:46 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:49234 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752198AbYEOTop convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 15:44:45 -0400
+From: Alok Kataria <akataria@vmware.com>
+To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+CC: "devzero@web.de" <devzero@web.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Daniel Hecht <dhecht@vmware.com>
+Date: Thu, 15 May 2008 12:44:40 -0700
+Subject: RE: Kernel hangs in SMP + VMware environment.
+Thread-Topic: Kernel hangs in SMP + VMware environment.
+Thread-Index: Aci2Uphznj/UMB3nSQ2ok+QDzNYWjAAcHlzK
+Message-ID: <D3C12B2AD838B44DA9D6B2CA334246D00D8F38DA60@PA-EXMBX04.vmware.com>
+References: <1210789834.8798.20.camel@promb-2n-dhcp368.eng.vmware.com>,<200805150611.m4F6Bv4J046219@www262.sakura.ne.jp>
+In-Reply-To: <200805150611.m4F6Bv4J046219@www262.sakura.ne.jp>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805152140.43292.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 15 of May 2008, Bill Nottingham wrote:
-> 
-> I've been testing suspend/hibernate with various USB devices under
-> 2.6.25.2. Test box is a Thinkpad T60 (uhci, ehci).
-> The results are somewhat dismal.
-> 
-> Using USB as a hibernate device:
-> - A directly connected USB stick works OK as a hibernate device
-> - A directly connected USB hard drive works OK as a hibernate device
-> - A USB stick connected via an ExpressCard reader does not - it appears
->   to just not be there when the hibernate code attemps to write
->   the data.
-> 
-> On resume (from either hibernate or suspend from RAM):
-> - Any 'in use' USB storage, whether it be as swap (a hibernate device),
->   or a mounted filesystem, immediately generates errors on resume. It
->   appears the filesystem and/or swap tasks are woken up before the
->   actual USB device - it enumerates the disks after the errors have
->   already been thrown.
-> - As a consequence, the USB devices shift their device names
-> - Using USB_PERSIST has no effect on this problem
-> - This appears to happen for all USB connection types (hard drive,
->   stick, via ExpressCard reader.)
-> 
-> Is there any way to get sane behavior out of suspend/resume with
-> USB storage?
+Hi Tetsuo,
 
-Well, the problem is that USB storage devices are disconnected during suspend
-and hibernation and connected once again during resume.  Then, however, we
-are not able to tell whether the device in the slot is the same that was in
-there before the system was put into the sleep state.
+Thanks for testing.
 
-I'm not sure if there's any workaround available in the current mainline.
+Actually it would be better to use clocksource=acpi_pm on kernels which don't have this patch, as ACPI_PM comes with many more featuers like hrtimers, nohz, etc.
 
-Thanks,
-Rafael
+On the other hand for kernels which have this patch attached,  it would be best to use TSC, for performance.
+
+HTH,
+Alok.
+
+________________________________________
+From: Tetsuo Handa [penguin-kernel@i-love.sakura.ne.jp]
+Sent: Wednesday, May 14, 2008 11:11 PM
+To: Alok Kataria
+Cc: devzero@web.de; linux-kernel@vger.kernel.org; Daniel Hecht
+Subject: Re: Kernel hangs in SMP + VMware environment.
+
+Hello.
+
+Alok Kataria wrote:
+> Can you try the patch attached with this mail, I made this on top of
+> 2.6.24.7 but should fit on any other 2.6.24 based distro kernel.
+
+I tried 2.6.24.5-85.fc8 with your patch, and I can no longer reproduce
+this problem. I think the problem has been solved.
+
+
+Also, workaround till your patch is applied to distro kernels seems to be
+to add "clocksource=jiffies" or something to avoid using tsc as clocksource.
+Fedora 9's 2.6.25-14.fc9 also hangs since the default clocksource is tsc, but
+with "clocksource=jiffies" added, I encounter no hangs so far.
+
+
+
+>From today, I can compile kernels using 2 CPUs.
+Thank you very much.
