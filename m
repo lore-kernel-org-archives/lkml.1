@@ -1,80 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764257AbYEOSvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932285AbYEOSv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764257AbYEOSvY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 14:51:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756496AbYEOSuZ
+	id S932285AbYEOSv6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 14:51:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763495AbYEOSuh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 14:50:25 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:36806 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754402AbYEOSuW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 14:50:22 -0400
-Date: Thu, 15 May 2008 20:49:55 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Michelle Konzack <linux4michelle@tamay-dogan.net>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: Hardware designt to prevent Damages... [WAS: [patch 23/37]
- i2c-piix4: Blacklist two mainboards]
-Message-ID: <20080515204955.7f877be8@hyperion.delvare>
-In-Reply-To: <20080514195253.GB5673@freenet.de>
-References: <20080513200453.064446337@mini.kroah.org>
-	<20080513201225.GX31167@suse.de>
-	<20080514195253.GB5673@freenet.de>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 15 May 2008 14:50:37 -0400
+Received: from mga02.intel.com ([134.134.136.20]:11635 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763447AbYEOSue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 14:50:34 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,493,1204531200"; 
+   d="scan'208";a="281892341"
+Message-ID: <482C8550.5000909@intel.com>
+Date: Thu, 15 May 2008 11:47:44 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080417)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: Rick Jones <rick.jones2@hp.com>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Chris Peterson <cpeterso@cpeterso.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
+ IRQF_SAMPLE_RANDOM
+References: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com>	<20080515142154.0595e475@core>	<36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com> <482C7B18.6060003@garzik.org> <482C7E53.3050300@hp.com> <482C8184.2030906@garzik.org>
+In-Reply-To: <482C8184.2030906@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 May 2008 21:52:53 +0200, Michelle Konzack wrote:
-> Am 2008-05-13 13:12:25, schrieb Greg KH:
-> > We had a report that running sensors-detect on a Sapphire AM2RD790
-> > motherbord killed the CPU. While the exact cause is still unknown,
-> > I'd rather play it safe and prevent any access to the SMBus on that
-> > machine by not letting the i2c-piix4 driver attach to the SMBus host
-> > device on that machine. Also blacklist a similar board made by DFI.
-> ------------------------ END OF REPLIED MESSAGE ------------------------
+Jeff Garzik wrote:
+> Rick Jones wrote:
+>> Is there nothing associated with the networking stack - NIC, driver,
+>> protocols, system calls which can be used as a source of entropy?
 > 
-> Hell, since I do not depend on LOW-BUDGET, I have  never  killed  a  CPU
-> even by SICK programming even my SuperSparc CPU survived.
+> The issue is with being externally observable and controllable, or, with
+> some irq mitigation schemes, be made /too regular/.
 > 
-> Please can anyone advice me, about VERY VERY  good  Hardware  design  to
-> prevent its destruction by software Errors?
+> Interrupts (or timed mitigation events) may be triggered by the outside
+> world, which makes it a very short path from remote attacker to local
+> kernel entropy pool.
 > 
-> You can even send me examples of such broken Hardware...
+> Finally, with severe load, there are little or no interrupts thanks to
+> heavy mitigation, which means your entropy pool may be externally DoS'd.
+> 
+> Or at the very least, when your entropy needs to be INCREASED (due to
+> heavy workload due to heavy traffic), your incoming entropy DECREASES
+> due to decreased interrupts.
+> 
+> [I just realized that last one.  Heck, I'm even convincing myself even
+> more its a bad idea]
 
-In this particular case, the CPU was apparently damaged as the result
-of accidental memory over-voltage. It is worth noting though that said
-CPU had gone through intensive overclocking session beforehand, and
-this might explain the death. Other CPUs are known to have gone through
-the same experience and are still working.
+so you have established that with any type of interrupt moderation (either NAPI or
+some form of irq throttling in the NIC hardware) that IRQF_SA_RANDOM will become
+more predictable.
 
-So, to clear up any misunderstanding: the CPU damage did not occur
-because we used some odd CPU instruction sequence or anything like
-that. The damage came to the CPU from other hardware on the board.
+How about the non-NAPI and non-throttled case? I would argue that without any irq
+mitigation we can still use SA_RANDOM. Many (e.g. embedded) devices will want some
+extra form of entropy, and providing them it in this form will be very beneficial
+as these devices more commonly have no other form of entropy anymore.
 
-To be a bit more technical, the design mistake (I think) that was made
-by the designers of the motherboard in question, was to use an
-I2C/SMBus chip on a PC motherboard, which uses SMBus receive byte and
-SMBus send byte for control, and which lives at an I2C address which is
-very common amongst hardware monitoring chip. The 4th factor being, of
-course, that improperly programming the chip in question can result in
-hardware damage. If only 3 of these 4 factors had been present, most
-probably there would have been no issue in practice. But with all 4
-factors, bad things just had to happen. And it's not just Linux, users
-had similar problems running hardware monitoring tools under Windows
-too.
+Auke
 
--- 
-Jean Delvare
