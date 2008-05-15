@@ -1,46 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754566AbYEPERV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754660AbYEPEjB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754566AbYEPERV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 00:17:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbYEPERJ
+	id S1754660AbYEPEjB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 00:39:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750968AbYEPEiv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 00:17:09 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:13006 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751085AbYEPERH (ORCPT
+	Fri, 16 May 2008 00:38:51 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50575 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750773AbYEPEiv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 00:17:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=YrTUC60mum3mE0zzkDVyb3S1H4Yr9LuhdlBZQpMkF3vHEiZkq1NW8PvjlfZVDCxb163tnqqhGJfuleN+jYKD4MNGT+w/CjPu+7D9i5WhyIZPaUNNcfkcYQMqfL/zzQwOqLQUwxCRoF62Noff1ZsQlkzc9ozVrCjHlpPz29YiqZ4=
-Message-ID: <aa79d98a0805152117p205303c9w3732b403c34ce8e0@mail.gmail.com>
-Date: Fri, 16 May 2008 08:17:06 +0400
-From: "Cyrill Gorcunov" <gorcunov@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>, geert@linux-m68k.org,
-       torvalds@linux-foundation.org, zippel@linux-m68k.org, schwab@suse.de,
-       linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org
-Subject: Re: [PATCH] init - fix building bug and potential buffer overflow
-In-Reply-To: <aa79d98a0805152029l6aeacae4rb7c54ff047177c70@mail.gmail.com>
+	Fri, 16 May 2008 00:38:51 -0400
+Date: Thu, 15 May 2008 16:20:13 -0700
+From: Greg KH <greg@kroah.com>
+To: Arthur Jones <ajones@riverbed.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Miklos Szeredi <miklos@szeredi.hu>,
+       Arthur Jones <Arthur.Jones@riverbed.com>,
+       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>,
+       "mszeredi@suse.cz" <mszeredi@suse.cz>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "kay.sievers@vrfy.org" <kay.sievers@vrfy.org>,
+       "trond.myklebust@fys.uio.no" <trond.myklebust@fys.uio.no>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] mm: bdi: export BDI attributes in sysfs
+Message-ID: <20080515232013.GA4583@kroah.com>
+References: <20080513190435.GG23649@ajones-laptop.nbttech.com> <20080514144030.GD6458@ajones-laptop.nbttech.com> <E1JwiZa-0007UA-Tm@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0805151213430.3019@woody.linux-foundation.org> <E1Jwj7G-0007Zs-GB@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0805151247010.3019@woody.linux-foundation.org> <20080515210254.GA23684@kroah.com> <20080515220510.GY23649@ajones-laptop.nbttech.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080514154402.GF6902@cvg>
-	 <20080515105803.7c9ab8c7.akpm@linux-foundation.org>
-	 <20080515180528.GC7481@cvg> <Pine.LNX.4.64.0805152132530.22059@anakin>
-	 <aa79d98a0805151322s20a2bb34x4491bcacfcef310@mail.gmail.com>
-	 <20080515134928.83b2d948.akpm@linux-foundation.org>
-	 <aa79d98a0805152029l6aeacae4rb7c54ff047177c70@mail.gmail.com>
+In-Reply-To: <20080515220510.GY23649@ajones-laptop.nbttech.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16, 2008 at 7:29 AM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-> Yes! Exactly! Thanks, Andrew! (i didn't look into what Linus suggested
-> 'cause i just waked up and have to go to my job)
->
-[...]
+On Thu, May 15, 2008 at 03:05:10PM -0700, Arthur Jones wrote:
+> Hi Greg, ...
+> 
+> On Thu, May 15, 2008 at 02:02:54PM -0700, Greg KH wrote:
+> > On Thu, May 15, 2008 at 12:54:57PM -0700, Linus Torvalds wrote:
+> > >
+> > >
+> > > On Thu, 15 May 2008, Miklos Szeredi wrote:
+> > > >
+> > > > Actually nothing should need protection.  The only problem AFAICS is
+> > > > that the device_create()/dev_set_drvdata() interface is racy: somebody
+> > > > can come in after the device has been created but before drvdata has
+> > > > been set, and then we are in trouble.
+> > >
+> > > Well, I'm not sure that the locking should be at that level. Maybe the
+> > > locking *should* be in the driver that does this. It may need to do other
+> > > setup too, after all.
+> > >
+> > > Of course, doing a device_create_drvdata() thing might be the right
+> > > solution, at least part of the time. Greg?
+> > 
+> > Here's a patch that is build tested only.
+> > 
+> > Can someone who can reproduce this let me know if it solves the problem?
+> 
+> Yes, this patch survives many power cycles
+> without hitting the BUG...
+> 
+> Thanks for looking into this...
 
-And sorry about top-posting (gmail mobile client is really screwed up,
-trying to force top-post all the time)
+Great!
+
+Thanks for testing this, I'll clean it up a bit more and send it to
+Linus later this evening.  Gotta go take the kids to swimming lessons...
+
+thanks,
+
+greg k-h
