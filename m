@@ -1,71 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756081AbYEOCk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757660AbYEOCk7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756081AbYEOCk1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 22:40:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbYEOCkQ
+	id S1757660AbYEOCk7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 22:40:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbYEOCks
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 22:40:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42846 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752083AbYEOCkP (ORCPT
+	Wed, 14 May 2008 22:40:48 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:39263 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752526AbYEOCkr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 22:40:15 -0400
-Date: Wed, 14 May 2008 19:40:02 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Eric Van Hensbergen <ericvh@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       V9FS Developers <v9fs-developer@lists.sourceforge.net>
-Subject: Re: [PULL] v9fs bug fixes and documentation updates for 2.6.26
-In-Reply-To: <a4e6962a0805141920x7d96df33gb9c22a5777b1732c@mail.gmail.com>
-Message-ID: <alpine.LFD.1.10.0805141930530.3019@woody.linux-foundation.org>
-References: <a4e6962a0805141920x7d96df33gb9c22a5777b1732c@mail.gmail.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 14 May 2008 22:40:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=SwVlDguuAmhRC6aJwK9QloYFYXrxZUZ+J3/EzLGZlGWnmiIxolGY9H0ZiqQXSIptn8of1u/IVDy/lUdAdz/QWxbzeP/Leu1p5cnWssDviJ43Xcoei33ZEOzI2JfGOaKcWchirxqO7TdNOGtlKMP1TViXq+TfarO7WEA/n04tATU=
+Subject: [PATCHv2 1/2] mtd: mtdchar.c silence sparse warning
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, Al Viro <viro@ZenIV.linux.org.uk>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 14 May 2008 19:40:46 -0700
+Message-Id: <1210819246.6191.60.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The copy_to_user was casting away the address space to get the offset
+of the length member.  Use offsetof() instead and add it to the void __user *argp.
+
+drivers/mtd/mtdchar.c:527:23: warning: cast removes address space of expression
+drivers/mtd/mtdchar.c:527:23: warning: incorrect type in argument 1 (different address spaces)
+drivers/mtd/mtdchar.c:527:23:    expected void [noderef] <asn:1>*to
+drivers/mtd/mtdchar.c:527:23:    got unsigned int *<noident>
+
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ drivers/mtd/mtdchar.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/mtd/mtdchar.c b/drivers/mtd/mtdchar.c
+index 5d3ac51..9c2af46 100644
+--- a/drivers/mtd/mtdchar.c
++++ b/drivers/mtd/mtdchar.c
+@@ -481,6 +481,7 @@ static int mtd_ioctl(struct inode *inode, struct file *file,
+ 	{
+ 		struct mtd_oob_buf buf;
+ 		struct mtd_oob_ops ops;
++		struct mtd_oob_buf __user *user_buf = argp;
+ 	        uint32_t retlen;
+ 
+ 		if(!(file->f_mode & 2))
+@@ -524,8 +525,7 @@ static int mtd_ioctl(struct inode *inode, struct file *file,
+ 		if (ops.oobretlen > 0xFFFFFFFFU)
+ 			ret = -EOVERFLOW;
+ 		retlen = ops.oobretlen;
+-		if (copy_to_user(&((struct mtd_oob_buf *)argp)->length,
+-				 &retlen, sizeof(buf.length)))
++		if (copy_to_user(&user_buf->length, &retlen, sizeof(buf.length)))
+ 			ret = -EFAULT;
+ 
+ 		kfree(ops.oobbuf);
+-- 
+1.5.5.1.482.g0f174
 
 
-On Wed, 14 May 2008, Eric Van Hensbergen wrote:
-> 
-> Jim Meyering (1):
->       fs/9p/v9fs.c (v9fs_parse_options): Handle kstrdup and
-> match_strdup failure. Now that this function can fail, return an int,
-> diagnose other option-parsing failures, and adjust the sole caller:
-> (v9fs_session_init): Handle kstrdup failure. Propagate any new
-> v9fs_parse_options failure "up".
-
-Grr. Somebody isn't following the nice rules we have and that git 
-encourages: make a commit message be a nice "one-line header" with the 
-more complete explanation separated by an empty line (and with nice 
-line-breaks etc).
-
-IOW, womebody has bad habits from SCM systems that didn't have good 
-visualization tools, so likely nobody actually looked at the messages 
-anyway.
-
-In fact, looking closer, I don't even know how you did that. The thing 
-must have been forwarded as email, because the author is Jim Meyering, but 
-it's been forwarded through Andrew etc, so I bet the message was fine at 
-some point. And all the git email-application tools do the rigth thing. 
-
-Anyway, I don't *quite* care enough to ask you to re-do this, and I merged 
-it, but I do actually enjoy the fact that our commit messages are 
-generally pretty readable, and the one-liner header rule means that gitk 
-and various shortlog tools all give nice summaries too.
-
-So please look out for this in the future.
-
-There are other commits that don't follow the rules, btw: you've applied 
-patches from others that have the rigth Sign-off's from the authors, but 
-you should sign off yourself, not just ack them. By actually taking that 
-thing and committing it, you're doing more than ack'ing somebody elses 
-work.
-
-I know it isn't really a big deal, especially with those things mostly 
-being pretty trivial, but I'd rather nip these issues in the bud than have 
-it come back when it actually might matter.
-
-			Linus
