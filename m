@@ -1,84 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764886AbYEOSwo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762633AbYEOSyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764886AbYEOSwo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 14:52:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764376AbYEOSvd
+	id S1762633AbYEOSyR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 14:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbYEOSyA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 14:51:33 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:37133 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764360AbYEOSvc (ORCPT
+	Thu, 15 May 2008 14:54:00 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:53304 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752087AbYEOSx7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 14:51:32 -0400
-Date: Thu, 15 May 2008 12:51:30 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Andi Kleen <andi@firstfloor.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, mpm@selenic.com
-Subject: Re: [patch 21/21] slab defrag: Obsolete SLAB
-Message-ID: <20080515185130.GR9921@parisc-linux.org>
-References: <84144f020805120054t1370236ei5ff52279457e026e@mail.gmail.com> <Pine.LNX.4.64.0805141009210.15194@schroedinger.engr.sgi.com> <482B2617.5010605@firstfloor.org> <Pine.LNX.4.64.0805141100110.15633@schroedinger.engr.sgi.com> <1210822002.3177.121.camel@ymzhang> <Pine.LNX.4.64.0805151002420.18354@schroedinger.engr.sgi.com> <20080515174953.GN9921@parisc-linux.org> <Pine.LNX.4.64.0805151054250.18991@schroedinger.engr.sgi.com> <20080515181356.GP9921@parisc-linux.org> <Pine.LNX.4.64.0805151141510.19915@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0805151141510.19915@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 15 May 2008 14:53:59 -0400
+To: ajones@riverbed.com
+CC: a.p.zijlstra@chello.nl, mszeredi@suse.cz, akpm@linux-foundation.org,
+       kay.sievers@vrfy.org, greg@kroah.com, trond.myklebust@fys.uio.no,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+In-reply-to: <20080514144030.GD6458@ajones-laptop.nbttech.com> (message from
+	Arthur Jones on Wed, 14 May 2008 07:40:30 -0700)
+Subject: Re: [BUG] mm: bdi: export BDI attributes in sysfs
+References: <20080513190435.GG23649@ajones-laptop.nbttech.com> <20080514144030.GD6458@ajones-laptop.nbttech.com>
+Message-Id: <E1JwiZa-0007UA-Tm@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 15 May 2008 20:53:02 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 15, 2008 at 11:43:40AM -0700, Christoph Lameter wrote:
-> On Thu, 15 May 2008, Matthew Wilcox wrote:
-> 
-> > > Details of the crash please?
-> > 
-> > I don't have any.
-> 
-> Well the amount of information we are getting has always been the main 
-> factor in delaying this further and further. Sigh.
+> About 1 in 4 times, when turning the power back
+> on for a drive, I get the BUG reported below.  The
+> drives are not mounted, just sitting there getting
+> power cycled (the test looks to make sure they are
+> being seen by the scsi subsystem and udev).
 
-Or possibly your assumptions have been the main factor.  I gave you a
-reproducer for this problem 6 weeks ago.  As far as I can tell, you
-haven't run it since.
+> > BUG: unable to handle kernel NULL pointer dereference at
+> > 0000000000000000
+> > IP: [<ffffffff802694e3>] read_ahead_kb_show+0x1b/0x2d
 
-> > > You could just start with 2.6.25.X which already contains the slab 
-> > > statistics.
-> > 
-> > Certainly.  Exactly how does collecting these stats work?  Am I supposed
-> > to zero the counters after the TPC has done its initial ramp-up?  What
-> > commands should I run, and at exactly which points?
-> 
-> Compile slabinfo and then do f.e. slabinfo -AD (this is documented in the 
-> help text provided when enabling statistics).
+I suspect this is because there's a race between the show/store
+functions and dev_set_drvdata() in bdi_register().
 
-That's an utterly unhelpful answer.  Let me try asking again.
+Could you try this patch to verify that this is indeed the problem?
 
-Exactly how does collecting these stats work?  Am I supposed to zero
-the counters after the TPC has done its initial ramp-up?  What commands
-should I run, and at exactly which points?
+This is not meant as a final solution, I'm sure Greg or Kay can help
+find a better solution.
 
-Otherwise I'll get something wrong and these numbers will be useless to
-you.  Or that's what you'll claim anyway.
+Thanks,
+Miklos
 
-For reference the helptext says:
 
-          SLUB statistics are useful to debug SLUBs allocation behavior in
-          order find ways to optimize the allocator. This should never be
-          enabled for production use since keeping statistics slows down
-          the allocator by a few percentage points. The slabinfo command
-          supports the determination of the most active slabs to figure
-          out which slabs are relevant to a particular load.
-          Try running: slabinfo -DA
+Index: linux-2.6/mm/backing-dev.c
+===================================================================
+--- linux-2.6.orig/mm/backing-dev.c	2008-05-14 12:49:33.000000000 +0200
++++ linux-2.6/mm/backing-dev.c	2008-05-15 20:37:55.000000000 +0200
+@@ -15,6 +15,7 @@ static struct class *bdi_class;
+ #include <linux/seq_file.h>
+ 
+ static struct dentry *bdi_debug_root;
++static DEFINE_MUTEX(bdi_dev_mutex);
+ 
+ static void bdi_debug_init(void)
+ {
+@@ -84,11 +85,19 @@ static inline void bdi_debug_unregister(
+ }
+ #endif
+ 
++static struct backing_dev_info *dev_get_bdi(struct device *dev)
++{
++	mutex_lock(&bdi_dev_mutex);
++	mutex_unlock(&bdi_dev_mutex);
++
++	return dev_get_drvdata(dev);
++}
++
+ static ssize_t read_ahead_kb_store(struct device *dev,
+ 				  struct device_attribute *attr,
+ 				  const char *buf, size_t count)
+ {
+-	struct backing_dev_info *bdi = dev_get_drvdata(dev);
++	struct backing_dev_info *bdi = dev_get_bdi(dev);
+ 	char *end;
+ 	unsigned long read_ahead_kb;
+ 	ssize_t ret = -EINVAL;
+@@ -107,7 +116,7 @@ static ssize_t read_ahead_kb_store(struc
+ static ssize_t name##_show(struct device *dev,				\
+ 			   struct device_attribute *attr, char *page)	\
+ {									\
+-	struct backing_dev_info *bdi = dev_get_drvdata(dev);		\
++	struct backing_dev_info *bdi = dev_get_bdi(dev);		\
+ 									\
+ 	return snprintf(page, PAGE_SIZE-1, "%lld\n", (long long)expr);	\
+ }
+@@ -117,7 +126,7 @@ BDI_SHOW(read_ahead_kb, K(bdi->ra_pages)
+ static ssize_t min_ratio_store(struct device *dev,
+ 		struct device_attribute *attr, const char *buf, size_t count)
+ {
+-	struct backing_dev_info *bdi = dev_get_drvdata(dev);
++	struct backing_dev_info *bdi = dev_get_bdi(dev);
+ 	char *end;
+ 	unsigned int ratio;
+ 	ssize_t ret = -EINVAL;
+@@ -135,7 +144,7 @@ BDI_SHOW(min_ratio, bdi->min_ratio)
+ static ssize_t max_ratio_store(struct device *dev,
+ 		struct device_attribute *attr, const char *buf, size_t count)
+ {
+-	struct backing_dev_info *bdi = dev_get_drvdata(dev);
++	struct backing_dev_info *bdi = dev_get_bdi(dev);
+ 	char *end;
+ 	unsigned int ratio;
+ 	ssize_t ret = -EINVAL;
+@@ -184,6 +193,7 @@ int bdi_register(struct backing_dev_info
+ 	if (!name)
+ 		return -ENOMEM;
+ 
++	mutex_lock(&bdi_dev_mutex);
+ 	dev = device_create(bdi_class, parent, MKDEV(0, 0), name);
+ 	if (IS_ERR(dev)) {
+ 		ret = PTR_ERR(dev);
+@@ -195,6 +205,7 @@ int bdi_register(struct backing_dev_info
+ 	bdi_debug_register(bdi, name);
+ 
+ exit:
++	mutex_unlock(&bdi_dev_mutex);
+ 	kfree(name);
+ 	return ret;
+ }
 
-By the way, when you say 'compile slabinfo', you mean the file shipped
-as Documentation/vm/slabinfo.c (rather than, say, something out of tree?)
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
