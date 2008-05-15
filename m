@@ -1,66 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756125AbYEODNI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757396AbYEODPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756125AbYEODNI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 23:13:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752805AbYEODMz
+	id S1757396AbYEODPj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 23:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753132AbYEODP1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 23:12:55 -0400
-Received: from mail1.sea5.speakeasy.net ([69.17.117.3]:53392 "EHLO
-	mail1.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752356AbYEODMz (ORCPT
+	Wed, 14 May 2008 23:15:27 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:36304 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751406AbYEODP0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 23:12:55 -0400
-Date: Wed, 14 May 2008 20:12:53 -0700 (PDT)
-From: Trent Piepho <xyzzy@speakeasy.org>
-X-X-Sender: xyzzy@shell4.speakeasy.net
-To: Greg KH <greg@kroah.com>
-cc: Markus Rechberger <mrechberger@gmail.com>, video4linux-list@redhat.com,
-       linux-usb@vger.kernel.org, dean@sensoray.com,
-       linux-kernel@vger.kernel.org, mchehab@infradead.org,
-       v4l-dvb-maintainer@linuxtv.org
-Subject: Re: [v4l-dvb-maintainer] [PATCH] USB: add Sensoray 2255 v4l driver
-In-Reply-To: <20080515024141.GB21941@kroah.com>
-Message-ID: <Pine.LNX.4.58.0805142006130.23876@shell4.speakeasy.net>
-References: <20080514205927.GA13134@kroah.com>
- <d9def9db0805141817n4182deedp780791b0a51fb7be@mail.gmail.com>
- <20080515024141.GB21941@kroah.com>
+	Wed, 14 May 2008 23:15:26 -0400
+Date: Wed, 14 May 2008 20:14:58 -0700
+From: Greg KH <greg@kroah.com>
+To: David Miller <davem@davemloft.net>
+Cc: shemminger@vyatta.com, fubar@us.ibm.com, netdev@vger.kernel.org,
+       bonding-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] sysfs: remove error messages for -EEXIST case
+Message-ID: <20080515031458.GA4423@kroah.com>
+References: <20080514170316.672f809d@extreme> <20080514181257.74fbb5aa@extreme> <20080514181603.411e834f@extreme> <20080514.182637.211478588.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080514.182637.211478588.davem@davemloft.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 14 May 2008, Greg KH wrote:
-> On Thu, May 15, 2008 at 03:17:42AM +0200, Markus Rechberger wrote:
-> > Hi Dean, Greg,
->
-> Adding dean to the cc: line...  :)
-> >
-> > On 5/14/08, Greg KH <greg@kroah.com> wrote:
-> > > From: Dean Anderson <dean@sensoray.com>
-> > >
->
-> <big patch snipped>
->
-> > Why do you do those conversions in kernelspace?
-> > ffmpeg/libswscale has optimized code for colourspace conversions.
-> > I know a few drivers do that in kernelspace but it's way more flexible
-> > in userspace and depending on the optimization requires less CPU
-> > power.
->
-> I thought they were there as needed by some V4L1 applications, but that
-> code was recently removed by Dean I think.  If they don't need to be
-> there, and userspace apps can properly handle the different colorspace,
-> then I'll be glad to remove them.
+On Wed, May 14, 2008 at 06:26:37PM -0700, David Miller wrote:
+> From: Stephen Hemminger <shemminger@vyatta.com>
+> Date: Wed, 14 May 2008 18:16:03 -0700
+> 
+> > It is possible that the entry in sysfs already exists, one case of this is
+> > when a network device is renamed to bonding_masters. Anyway, in this case
+> > the proper error path is for device_rename to return an error code, not to
+> > generate bogus backtrace and errors.
+> > 
+> > Also, to avoid possible races, the create link should be done before the
+> > remove link. This makes a device rename atomic operation like other renames.
+> > 
+> > Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+> 
+> I definitely agree with this change.
+> 
+> We have several cases where device names are user configurable,
+> yet the devices live in a directory which also has subdirectories
+> created by other subsystems.
+> 
+> It's pointless to require the top-level guy to look for any
+> purge out any subdirectory cases, that's none of it's business.
+> 
+> I realize the backtrace is useful for finding bugs, but in this
+> case it's definitely not appropriate.
 
-Virtually all apps (V4L1 & 2) can handle YUV and RGB colorspaces.
-Certainly all the major ones do and all the major libraries as well.
+Fair enough, I have no objection to these.
 
-The problem is when the device only supports some vendor specific or
-otherwise very uncommon format.  In that case not doing the conversion in
-the kernel means the device won't work with any existing software without
-patches.  In this case, while it's not "the right way", drivers often end
-up including an in kernel conversion for pragmatic reasons.
+David, do you want me to take them through my tree?  Or are they
+dependant on the network core changes as well?  If so, I have no
+problem you taking them.  Feel free to add a:
+	Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+to them in that case.
 
-This was a problem with the bayer format, but now userspace support for
-that format is more common.
+thanks,
+
+greg k-h
