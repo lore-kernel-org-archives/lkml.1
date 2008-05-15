@@ -1,59 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757473AbYEOJbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757981AbYEOJcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757473AbYEOJbX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 05:31:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbYEOJbP
+	id S1757981AbYEOJcq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 05:32:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbYEOJcf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 05:31:15 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:36553 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752685AbYEOJbO (ORCPT
+	Thu, 15 May 2008 05:32:35 -0400
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:52734 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751331AbYEOJcd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 05:31:14 -0400
-Message-ID: <482C02A4.80101@firstfloor.org>
-Date: Thu, 15 May 2008 11:30:12 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, muli@il.ibm.com,
-       alexisb@us.ibm.com
-Subject: Re: [PATCH 0/2] x86: per-device dma_mapping_ops
-References: <1210658692-960-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>	<87y76cym96.fsf@basil.nowhere.org> <20080515181619R.tomof@acm.org>
-In-Reply-To: <20080515181619R.tomof@acm.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 15 May 2008 05:32:33 -0400
+Date: Thu, 15 May 2008 11:31:31 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: David Miller <davem@davemloft.net>
+Cc: shemminger@vyatta.com, greg@kroah.com, fubar@us.ibm.com,
+       netdev@vger.kernel.org, bonding-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] sysfs: remove error messages for -EEXIST case
+Message-ID: <20080515113131.2cea2bce@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20080515.010139.219194657.davem@davemloft.net>
+References: <20080514181257.74fbb5aa@extreme>
+	<20080514181603.411e834f@extreme>
+	<20080515095246.3b6a0d1d@gondolin.boeblingen.de.ibm.com>
+	<20080515.010139.219194657.davem@davemloft.net>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FUJITA Tomonori wrote:
-> On Thu, 15 May 2008 11:01:09 +0200
-> Andi Kleen <andi@firstfloor.org> wrote:
+On Thu, 15 May 2008 01:01:39 -0700 (PDT),
+David Miller <davem@davemloft.net> wrote:
+
+> From: Cornelia Huck <cornelia.huck@de.ibm.com>
+> Date: Thu, 15 May 2008 09:52:46 +0200
 > 
->> FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> writes:
->>
->>> This patchset adds per-device dma_mapping_ops support for
->>> CONFIG_X86_64 like POWER architecture does. This change enables us to
->>> cleanly fix the Calgary IOMMU issue that some devices are not behind
->>> the IOMMU [1]. It also would be helpful to handle KVM PCI passthrough.
->> This makes it basically impossible to do stack ops, which some 
->> people have been doing.
+> > >  int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+> > >  {
+> > > -	if (sysfs_find_dirent(acxt->parent_sd, sd->s_name)) {
+> > > -		printk(KERN_WARNING "sysfs: duplicate filename '%s' "
+> > > -		       "can not be created\n", sd->s_name);
+> > > -		WARN_ON(1);
+> > > +	if (sysfs_find_dirent(acxt->parent_sd, sd->s_name))
+> > >  		return -EEXIST;
+> > > -	}
+> > > 
+> > >  	sd->s_parent = sysfs_get(acxt->parent_sd);
+> > 
+> > ...but this will cause many useful warnings to disappear.
+> > 
+> > What to do here?
 > 
-> Seems that I misunderstand what those people want.
+> Make a __sysfs_add_one() that doesn't warn.   Make
+> sysfs_add_one() be a wrapper around __sysfs_add_one()
+> that warns.
 > 
-> What those people want to do and how the stack ops achieve it? Or can
-> you tell me where their patches are?
+> Change networking to call __sysfs_add_one().
 
-I've seen it in two cases: first was for KVM IO bypass and the other was a 
-(unfinished) patch to support the NoDMA bitmaps on some systems.
+Like this (not even compile tested)? This depends on being able to
+properly isolate the functions called though, or we need to get the
+nowarn flag one level further up.
 
-In this case you really want to do a wrapper around the existing ops
-and extend the mapping. 
-
-That worked fine by just replacing the global pointer, but will
-be quite hard in your set up.
-
--Andi
-
-
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index be288b5..a9058f4 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -1209,8 +1209,8 @@ #ifdef CONFIG_SYSFS_DEPRECATED
+ 	if (old_class_name) {
+ 		new_class_name = make_class_name(dev->class->name, &dev->kobj);
+ 		if (new_class_name) {
+-			error = sysfs_create_link(&dev->parent->kobj,
+-						  &dev->kobj, new_class_name);
++			error = __sysfs_create_link(&dev->parent->kobj,
++						  &dev->kobj, new_class_name, 1);
+ 			if (error)
+ 				goto out;
+ 			sysfs_remove_link(&dev->parent->kobj, old_class_name);
+@@ -1219,8 +1219,8 @@ #ifdef CONFIG_SYSFS_DEPRECATED
+ #else
+ 	if (dev->class) {
+ 		sysfs_remove_link(&dev->class->subsys.kobj, old_device_name);
+-		error = sysfs_create_link(&dev->class->subsys.kobj, &dev->kobj,
+-					  dev->bus_id);
++		error = __sysfs_create_link(&dev->class->subsys.kobj, &dev->kobj,
++					  dev->bus_id, 1);
+ 		if (error) {
+ 			dev_err(dev, "%s: sysfs_create_symlink failed (%d)\n",
+ 				__func__, error);
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index a1c3a1f..b7914a0 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -397,6 +397,23 @@ void sysfs_addrm_start(struct sysfs_addr
+ 		iput(inode);
+ }
+ 
++int __sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
++{
++	if (sysfs_find_dirent(acxt->parent_sd, sd->s_name))
++		return -EEXIST;
++
++	sd->s_parent = sysfs_get(acxt->parent_sd);
++
++	if (sysfs_type(sd) == SYSFS_DIR && acxt->parent_inode)
++		inc_nlink(acxt->parent_inode);
++
++	acxt->cnt++;
++
++	sysfs_link_sibling(sd);
++
++	return 0;
++}
++
+ /**
+  *	sysfs_add_one - add sysfs_dirent to parent
+  *	@acxt: addrm context to use
+@@ -419,23 +436,14 @@ void sysfs_addrm_start(struct sysfs_addr
+  */
+ int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+ {
+-	if (sysfs_find_dirent(acxt->parent_sd, sd->s_name)) {
++	int err = __sysfs_add_one(acxt, sd);
++
++	if (err == -EEXIST) {
+ 		printk(KERN_WARNING "sysfs: duplicate filename '%s' "
+ 		       "can not be created\n", sd->s_name);
+ 		WARN_ON(1);
+-		return -EEXIST;
+ 	}
+-
+-	sd->s_parent = sysfs_get(acxt->parent_sd);
+-
+-	if (sysfs_type(sd) == SYSFS_DIR && acxt->parent_inode)
+-		inc_nlink(acxt->parent_inode);
+-
+-	acxt->cnt++;
+-
+-	sysfs_link_sibling(sd);
+-
+-	return 0;
++	return err;
+ }
+ 
+ /**
+diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
+index 817f596..c08184d 100644
+--- a/fs/sysfs/symlink.c
++++ b/fs/sysfs/symlink.c
+@@ -25,7 +25,8 @@ #include "sysfs.h"
+  *	@target:	object we're pointing to.
+  *	@name:		name of the symlink.
+  */
+-int sysfs_create_link(struct kobject * kobj, struct kobject * target, const char * name)
++int __sysfs_create_link(struct kobject * kobj, struct kobject * target,
++			const char * name, int nowarn)
+ {
+ 	struct sysfs_dirent *parent_sd = NULL;
+ 	struct sysfs_dirent *target_sd = NULL;
+@@ -65,7 +66,10 @@ int sysfs_create_link(struct kobject * k
+ 	target_sd = NULL;	/* reference is now owned by the symlink */
+ 
+ 	sysfs_addrm_start(&acxt, parent_sd);
+-	error = sysfs_add_one(&acxt, sd);
++	if (nowarn)
++		error = __sysfs_add_one(&acxt, sd);
++	else
++		error = sysfs_add_one(&acxt, sd);
+ 	sysfs_addrm_finish(&acxt);
+ 
+ 	if (error)
+@@ -79,6 +83,12 @@ int sysfs_create_link(struct kobject * k
+ 	return error;
+ }
+ 
++int sysfs_create_link(struct kobject * kobj, struct kobject * target,
++		      const char * name)
++{
++	return sysfs_create_link(kobj, target, name, 0);
++}
++
+ /**
+  *	sysfs_remove_link - remove symlink in object's directory.
+  *	@kobj:	object we're acting for.
+diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
+index ce4e15f..1d459f5 100644
+--- a/fs/sysfs/sysfs.h
++++ b/fs/sysfs/sysfs.h
+@@ -108,6 +108,7 @@ void sysfs_put_active_two(struct sysfs_d
+ void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
+ 		       struct sysfs_dirent *parent_sd);
+ int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd);
++int __sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd);
+ void sysfs_remove_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd);
+ void sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt);
+ 
+diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+index 7858eac..3ef8ae7 100644
+--- a/include/linux/sysfs.h
++++ b/include/linux/sysfs.h
+@@ -101,6 +101,8 @@ void sysfs_remove_bin_file(struct kobjec
+ 
+ int __must_check sysfs_create_link(struct kobject *kobj, struct kobject *target,
+ 				   const char *name);
++int __sysfs_create_link(struct kobject *kobj, struct kobject *target,
++			const char *name, int nowarn);
+ void sysfs_remove_link(struct kobject *kobj, const char *name);
+ 
+ int __must_check sysfs_create_group(struct kobject *kobj,
