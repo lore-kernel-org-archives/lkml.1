@@ -1,57 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750870AbYEOSoL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762949AbYEOSo6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750870AbYEOSoL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 14:44:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761404AbYEOSno
+	id S1762949AbYEOSo6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 14:44:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755272AbYEOSoq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 14:43:44 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59399 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761234AbYEOSnn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 14:43:43 -0400
-Date: Thu, 15 May 2008 11:43:40 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Matthew Wilcox <matthew@wil.cx>
-cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Andi Kleen <andi@firstfloor.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, mpm@selenic.com
-Subject: Re: [patch 21/21] slab defrag: Obsolete SLAB
-In-Reply-To: <20080515181356.GP9921@parisc-linux.org>
-Message-ID: <Pine.LNX.4.64.0805151141510.19915@schroedinger.engr.sgi.com>
-References: <20080510221515.3540a6cc@bree.surriel.com>
- <2f11576a0805120038s334dc56cuaf16b8b7c6f87098@mail.gmail.com>
- <84144f020805120054t1370236ei5ff52279457e026e@mail.gmail.com>
- <Pine.LNX.4.64.0805141009210.15194@schroedinger.engr.sgi.com>
- <482B2617.5010605@firstfloor.org> <Pine.LNX.4.64.0805141100110.15633@schroedinger.engr.sgi.com>
- <1210822002.3177.121.camel@ymzhang> <Pine.LNX.4.64.0805151002420.18354@schroedinger.engr.sgi.com>
- <20080515174953.GN9921@parisc-linux.org> <Pine.LNX.4.64.0805151054250.18991@schroedinger.engr.sgi.com>
- <20080515181356.GP9921@parisc-linux.org>
+	Thu, 15 May 2008 14:44:46 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60766 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756282AbYEOSop (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 14:44:45 -0400
+Message-ID: <482C838E.3030203@redhat.com>
+Date: Thu, 15 May 2008 14:40:14 -0400
+From: Tony Camuso <tcamuso@redhat.com>
+Reply-To: tcamuso@redhat.com
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: jbarnes@virtuousgeek.org, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org,
+       "Schoeller, Patrick (Linux - Houston, TX)" <Patrick.Schoeller@hp.com>
+Subject: [PATCH] PCI: Correct last two HP entries in the bfsort whitelist
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 May 2008, Matthew Wilcox wrote:
+Greetings.
 
-> > Details of the crash please?
-> 
-> I don't have any.
+There is a code flaw in the bfsort whitelist, where there are redundant
+entries for the same two HP systems, DL385 G2 and DL585 G2. This patch
+replaces those redundant entries with the correct ones. The correct
+entries are for large-volume systems, the DL360 and DL380.
 
-Well the amount of information we are getting has always been the main 
-factor in delaying this further and further. Sigh.
+-----------------------------------------------------------------------
 
-> > You could just start with 2.6.25.X which already contains the slab 
-> > statistics.
-> 
-> Certainly.  Exactly how does collecting these stats work?  Am I supposed
-> to zero the counters after the TPC has done its initial ramp-up?  What
-> commands should I run, and at exactly which points?
+commit ec69f0374c3b0ad7ea991b0e9ac00377acfe5b1a
+Author: Tony Camuso <tony.camuso@hp.com>
+Date:   Wed May 14 07:09:28 2008 -0400
 
-Compile slabinfo and then do f.e. slabinfo -AD (this is documented in the 
-help text provided when enabling statistics).
+     Replace Redundant Whitelist Entries with the Correct Ones
+
+     The ProLiant DL585 G2 and the DL585 G2 are entered reundantly
+     in the dmi_system_id table. What should have been there are the
+     DL360 and DL380. This patch simply replaces the redundant
+     entries with the correct entries.
+
+          arch/x86/pci/common.c |    8 ++++----
+          1 files changed, 4 insertions(+), 4 deletions(-)
+
+     Signed-off-by: Tony Camuso <tony.camuso@hp.com>
+     Signed-off-by: Pat Schoeller <patrick.schoeller@hp.com>
+
+diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
+index 8545c8a..ee76b02 100644
+--- a/arch/x86/pci/common.c
++++ b/arch/x86/pci/common.c
+@@ -328,18 +328,18 @@ static struct dmi_system_id __devinitdata pciprobe_dmi_table[] = {
+  #endif
+  	{
+  		.callback = set_bf_sort,
+-		.ident = "HP ProLiant DL385 G2",
++		.ident = "HP ProLiant DL360",
+  		.matches = {
+  			DMI_MATCH(DMI_SYS_VENDOR, "HP"),
+-			DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant DL385 G2"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant DL360"),
+  		},
+  	},
+  	{
+  		.callback = set_bf_sort,
+-		.ident = "HP ProLiant DL585 G2",
++		.ident = "HP ProLiant DL380",
+  		.matches = {
+  			DMI_MATCH(DMI_SYS_VENDOR, "HP"),
+-			DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant DL585 G2"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "ProLiant DL380"),
+  		},
+  	},
+  	{}
