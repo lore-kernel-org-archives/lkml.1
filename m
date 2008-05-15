@@ -1,72 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756105AbYEOMIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756379AbYEOMQT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756105AbYEOMIu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 08:08:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751640AbYEOMIk
+	id S1756379AbYEOMQT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 08:16:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbYEOMQD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 08:08:40 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:53044 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751514AbYEOMIj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 08:08:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=i9rstpgOK8gjUd6W5bsivWBhJ1MvcUcSFvgI7Pd4/YZrUE65mROF5ZlG3sdEUaQEvS88u/1Jmsjp3N5vAJvsmEDHtsIzF2+ZI6WGo/o9GX1X08G8LVCD0k8VivHhfT5f1r6vhHYyWv0HIM/DMgPpnjPdge0cnhYbb/fG5XMc6hE=
-Message-ID: <38b2ab8a0805150508j5adc4755n8eb378b414b2dc03@mail.gmail.com>
-Date: Thu, 15 May 2008 14:08:39 +0200
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: "Arnd Hannemann" <arnd@arndnet.de>
-Subject: Re: How to avoid data copies in a driver ?
-Cc: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <482C2383.5070206@arndnet.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 15 May 2008 08:16:03 -0400
+Received: from smtp2.sssup.it ([193.205.80.100]:56226 "EHLO smtp2.sssup.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752457AbYEOMQB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 08:16:01 -0400
+Date: Thu, 15 May 2008 14:21:56 +0200
+From: Fabio Checconi <fchecconi@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Matthew <jackdachef@gmail.com>,
+       Daniel J Blueman <daniel.blueman@gmail.com>,
+       Kasper Sandberg <lkml@metanurb.dk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: performance "regression" in cfq compared to anticipatory, deadline and noop
+Message-ID: <20080515122156.GA11600@gandalf.sssup.it>
+References: <e85b9d30805130558l502addbcq21996b92fdbfdc5b@mail.gmail.com> <20080513130508.GQ16217@kernel.dk> <e85b9d30805130842p3a34305l4ab1e7926e4b0dba@mail.gmail.com> <20080513180334.GS16217@kernel.dk> <20080513184057.GU16217@kernel.dk> <6278d2220805140105x27292033u6a97dcf13ab54263@mail.gmail.com> <20080514082622.GA16217@kernel.dk> <6278d2220805141352s3624d7b7qc90567f6b7a410dc@mail.gmail.com> <e85b9d30805141437u6a4b4caby1712c6f04bd4cc05@mail.gmail.com> <20080515070127.GH16217@kernel.dk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <38b2ab8a0805141254i2437a0ccq130b914748f53db0@mail.gmail.com>
-	 <Pine.LNX.4.61.0805141716120.11052@chaos.analogic.com>
-	 <38b2ab8a0805150040s6933de14p7c2014945ba0810d@mail.gmail.com>
-	 <482C2383.5070206@arndnet.de>
+In-Reply-To: <20080515070127.GH16217@kernel.dk>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 15, 2008 at 1:50 PM, Arnd Hannemann <arnd@arndnet.de> wrote:
-> Francis Moreau wrote:
->> Hello,
->>
->> On Wed, May 14, 2008 at 11:23 PM, linux-os (Dick Johnson)
->> <linux-os@analogic.com> wrote:
->>> You memory-map the data. Impliment mmap() in your driver.
->>> You can also impliment poll()  { select() } so your
->>> application knows when new data are available.
->>>
->>> You cannot use a user-mode file-descriptor in the kernel.
->>>
->>
->> Why not ?
+> From: Jens Axboe <jens.axboe@oracle.com>
+> Date: Thu, May 15, 2008 09:01:28AM +0200
 >
-> http://kernelnewbies.org/FAQ/WhyWritingFilesFromKernelIsBad
->
+> I don't think it's 2.6.25 vs 2.6.26-rc2, I can still reproduce some
+> request size offsets with the patch. So still fumbling around with this,
+> I'll be sending out another test patch when I'm confident it's solved
+> the size issue.
+> 
 
-ok, relayfs might be what I need, thanks.
+IMO an interesting thing is how/why anticipatory doesn't show the
+issue.  The device is not put into ANTIC_WAIT_NEXT if there is no
+dispatch returning no requests while the queue is not empty.  This
+seems to be enough in the reported workloads.
 
->>
->> I'm suprised because what I need doens't seem so uncommon, usually
->> devices send or
->> receive data to/from files. So a helper (system call ?) to achieve
->> that other than the basic
->> read/write seems needed, no ?
->
-> Usually devices send or receive just data, and they shouldn't care about
-> file format, filesystems, permissions and all this stuff...
->
+I don't think this behavior is the correct one (it is still racy
+WRT merges after breaking anticipation) anyway it should make things
+a little bit better.  I fear that a complete solution would not
+involve only the scheduler.
 
-The fact is that the data usually ends into a file.
+Introducing the very same behavior in cfq seems to be not so easy
+(i.e., start idling only if there was a dispatch round while the
+last request was being served) but an approximated version can be
+introduced quite easily.  The patch below should do that, rescheduling
+the dispatch only if necessary; it is not tested at all, just posted
+for discussion.
 
-thanks
--- 
-Francis
+---
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index b399c62..41f1e0e 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -169,6 +169,7 @@ enum cfqq_state_flags {
+ 	CFQ_CFQQ_FLAG_queue_new,	/* queue never been serviced */
+ 	CFQ_CFQQ_FLAG_slice_new,	/* no requests dispatched in slice */
+ 	CFQ_CFQQ_FLAG_sync,		/* synchronous queue */
++	CFQ_CFQQ_FLAG_dispatched,	/* empty dispatch while idling */
+ };
+ 
+ #define CFQ_CFQQ_FNS(name)						\
+@@ -196,6 +197,7 @@ CFQ_CFQQ_FNS(prio_changed);
+ CFQ_CFQQ_FNS(queue_new);
+ CFQ_CFQQ_FNS(slice_new);
+ CFQ_CFQQ_FNS(sync);
++CFQ_CFQQ_FNS(dispatched);
+ #undef CFQ_CFQQ_FNS
+ 
+ static void cfq_dispatch_insert(struct request_queue *, struct request *);
+@@ -749,6 +751,7 @@ static void __cfq_set_active_queue(struct cfq_data *cfqd,
+ 		cfqq->slice_end = 0;
+ 		cfq_clear_cfqq_must_alloc_slice(cfqq);
+ 		cfq_clear_cfqq_fifo_expire(cfqq);
++		cfq_clear_cfqq_dispatched(cfqq);
+ 		cfq_mark_cfqq_slice_new(cfqq);
+ 		cfq_clear_cfqq_queue_new(cfqq);
+ 	}
+@@ -978,6 +981,7 @@ static struct cfq_queue *cfq_select_queue(struct cfq_data *cfqd)
+ 	 */
+ 	if (timer_pending(&cfqd->idle_slice_timer) ||
+ 	    (cfqq->dispatched && cfq_cfqq_idle_window(cfqq))) {
++		cfq_mark_cfqq_dispatched(cfqq);
+ 		cfqq = NULL;
+ 		goto keep_queue;
+ 	}
+@@ -1784,7 +1788,10 @@ cfq_rq_enqueued(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+ 		if (cfq_cfqq_wait_request(cfqq)) {
+ 			cfq_mark_cfqq_must_dispatch(cfqq);
+ 			del_timer(&cfqd->idle_slice_timer);
+-			blk_start_queueing(cfqd->queue);
++			if (cfq_cfqq_dispatched(cfqq)) {
++				cfq_clear_cfqq_dispatched(cfqq);
++				cfq_schedule_dispatch(cfqd);
++			}
+ 		}
+ 	} else if (cfq_should_preempt(cfqd, cfqq, rq)) {
+ 		/*
