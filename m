@@ -1,44 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763003AbYEORyu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763147AbYEOR4D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763003AbYEORyu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 13:54:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbYEORyl
+	id S1763147AbYEOR4D (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 13:56:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752298AbYEORzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 13:54:41 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:58034 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762297AbYEORyk (ORCPT
+	Thu, 15 May 2008 13:55:52 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:26139 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752167AbYEORzv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 13:54:40 -0400
-Date: Thu, 15 May 2008 10:54:26 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       len.brown@intel.com, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Suspend/Resume bug in PCI layer wrt quirks
-Message-ID: <20080515105426.24ee37d9@infradead.org>
-In-Reply-To: <200805150907.06930.jbarnes@virtuousgeek.org>
-References: <20080515070546.6ea9c681@infradead.org>
-	<200805150907.06930.jbarnes@virtuousgeek.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+	Thu, 15 May 2008 13:55:51 -0400
+Subject: Re: [PATCH] take pageout refcount into account for
+	remove_exclusive_swap_page
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
+       kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org
+In-Reply-To: <482B9CCA.9060203@mxp.nes.nec.co.jp>
+References: <20080428181835.502876582@redhat.com>
+	 <20080428181852.620969450@redhat.com> <4828283C.4000803@mxp.nes.nec.co.jp>
+	 <20080512093307.2ace3096@bree.surriel.com>
+	 <482990FC.3020303@mxp.nes.nec.co.jp>
+	 <20080513120417.0833cec1@cuia.bos.redhat.com>
+	 <1210700635.6208.40.camel@lts-notebook>
+	 <20080513140902.1030afaa@cuia.bos.redhat.com>
+	 <1210705370.6208.47.camel@lts-notebook>
+	 <482B9CCA.9060203@mxp.nes.nec.co.jp>
+Content-Type: text/plain; charset=UTF-8
+Organization: HP/OSLO
+Date: Thu, 15 May 2008 13:55:24 -0400
+Message-Id: <1210874124.7389.51.camel@lts-notebook>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 May 2008 09:07:06 -0700
-> > internally. ioremap()/iounmap() does a global tlb flush of course,
-> > which includes doing an IPI to other cpus. However, during early
-> > resume, interrupts are disabled, and it's not allowed to do a
-> > IPI/global tlbflush with interrupts off...
+On Thu, 2008-05-15 at 11:15 +0900, Daisuke Nishimura wrote:
+> On 2008/05/14 4:02 +0900, Lee Schermerhorn wrote:
+> > On Tue, 2008-05-13 at 14:09 -0400, Rik van Riel wrote:
+> >> On Tue, 13 May 2008 13:43:55 -0400
+> >> Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
+> >>
+> >>> Or, more generally, 2 + N, for an anon page that is mapped [must be
+> >>> read-only, right?] by N processes.  This can happen after, e.g., fork().
+> >>> Looks like this patch handles the condition just fine, but you might
+> >>> want to reflect this in the comment.
+> >> No, this patch only removes a page from the swap cache that is mapped
+> >> by one process.  The function page_mapped() returns either 1 or 0, not
+> >> the same as page_mapcount().
+> > 
+> > Duh!  I was reading "page_mapcount()", 'cause that's what I've been
+> > considering using for this purpose.
+> > 
+> >>  
+> >> I am not sure if trying to handle swap cache pages that are mapped by
+> >> multiple processes could get us into other corner cases and think that
+> >> we should probably try to stick to the safe thing for now.
 > 
-> Yeah I just got a similar report for quirk_vialatency().  But why are
-> we only seeing these issues now?  Is our interrupt disabled check
-> catching more stuff these days?
+> I think it would be better to add a comment of
+> remove_exclusive_swap_page_ref() that it doesn't handle
+> swap caches that are mapped by multiple processes for safty.
+> 
+> > 
+> > OK.  I can test the more general case down the road.
+> > 
+> >> Besides, shouldn't anonymous shared pages be COW and relatively rare?
+> > 
+> > Well, all anon pages are shared right after fork(), right?  They only
+> > become private once they've been written to.  I don't have a feel for
+> > the relative numbers of shared anon vs COWed anon--either in general or
+> > in the swap cache.
+> > 
+> >>> Now, I think I can use this to try to remove anon pages from the swap
+> >>> cache when they're mlocked.
+> > 
+> > ﻿I suppose I can just go ahead and use this version with my stress load
+> > and count the times when I could have freed the swap cache entry, but
+> > didn't because it's mapped in multiple address spaces.  Later ... :)
+> > 
+> 
+> Lee, Rik's version looks good to me except mlocked case, but
+> do you have any plan to handle these cases?
 
-we're now more systematically collecting WARN_ON()'s.....
+Well, it's really just an optimization--freeing swap cache entry, if
+possible, when mlocking a page.  I'll patch Rik's version to use
+page_mapcount() and test heavily before proposing to do this.  I suppose
+we can also discuss whether we want a separate version that frees swap
+mapped by multiple tasks for the mlock case, and keep Rik's version for
+vmscan.  However, I think that if it's safe in the mlock case, it should
+be safe for vmscan.  We'll see.
+
+Lee
+
+> 
+> 
+> >>>> + */
+> >>>> +int remove_exclusive_swap_page_ref(struct page *page)
+> >>>> +{
+> >>>> +	return remove_exclusive_swap_page_count(page, 2 + page_mapped(page));
+> >>>> +}
+> >>>> +
+> >>>> +/*
+> >>>>   * Free the swap entry like above, but also try to
+> >>>>   * free the page cache entry if it is the last user.
+> >>>>   */
+> >>>>
+> >>>> All Rights Reversed
+> >>
+> > 
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> > 
+
