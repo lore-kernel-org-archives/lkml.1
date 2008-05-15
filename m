@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757660AbYEOCk7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758216AbYEOClY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757660AbYEOCk7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 22:40:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbYEOCks
+	id S1758216AbYEOClY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 22:41:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbYEOCku
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 22:40:48 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:39263 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752526AbYEOCkr (ORCPT
+	Wed, 14 May 2008 22:40:50 -0400
+Received: from rv-out-0506.google.com ([209.85.198.232]:20930 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750999AbYEOCkt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 22:40:47 -0400
+	Wed, 14 May 2008 22:40:49 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=SwVlDguuAmhRC6aJwK9QloYFYXrxZUZ+J3/EzLGZlGWnmiIxolGY9H0ZiqQXSIptn8of1u/IVDy/lUdAdz/QWxbzeP/Leu1p5cnWssDviJ43Xcoei33ZEOzI2JfGOaKcWchirxqO7TdNOGtlKMP1TViXq+TfarO7WEA/n04tATU=
-Subject: [PATCHv2 1/2] mtd: mtdchar.c silence sparse warning
+        b=a51yUjEe8Qcm0jHXXbunvNhf9sEzo1pPv/NrHh6NvHfgQU3OJ/A5lLGJfcLV8j23+/t7yKfhmkdFb9oN94Xdkv/KAAJIZnRJMAbFCSj3t2PdIZDm2tZ5z0fVRtbwN/wNrJBbmBcqx3BzC5KwnxQhMJ1BI3O9OGHKYEHlIGl6ECE=
+Subject: [PATCHv2 2/2] mtd: mtdchar.c remove shadowed variable warnings
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: David Woodhouse <dwmw2@infradead.org>, Al Viro <viro@ZenIV.linux.org.uk>,
        LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Wed, 14 May 2008 19:40:46 -0700
-Message-Id: <1210819246.6191.60.camel@brick>
+Date: Wed, 14 May 2008 19:40:47 -0700
+Message-Id: <1210819247.6191.61.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
@@ -29,42 +29,80 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The copy_to_user was casting away the address space to get the offset
-of the length member.  Use offsetof() instead and add it to the void __user *argp.
+Use einfo, oinfo for the inner erase_info and otp_info structs
+used in individual case statements.
 
-drivers/mtd/mtdchar.c:527:23: warning: cast removes address space of expression
-drivers/mtd/mtdchar.c:527:23: warning: incorrect type in argument 1 (different address spaces)
-drivers/mtd/mtdchar.c:527:23:    expected void [noderef] <asn:1>*to
-drivers/mtd/mtdchar.c:527:23:    got unsigned int *<noident>
+drivers/mtd/mtdchar.c:582:26: warning: symbol 'info' shadows an earlier one
+drivers/mtd/mtdchar.c:380:23: originally declared here
+drivers/mtd/mtdchar.c:596:26: warning: symbol 'info' shadows an earlier one
+drivers/mtd/mtdchar.c:380:23: originally declared here
+drivers/mtd/mtdchar.c:704:19: warning: symbol 'info' shadows an earlier one
+drivers/mtd/mtdchar.c:380:23: originally declared here
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- drivers/mtd/mtdchar.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/mtd/mtdchar.c |   18 +++++++++---------
+ 1 files changed, 9 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/mtd/mtdchar.c b/drivers/mtd/mtdchar.c
-index 5d3ac51..9c2af46 100644
+index 9c2af46..7fda4c2 100644
 --- a/drivers/mtd/mtdchar.c
 +++ b/drivers/mtd/mtdchar.c
-@@ -481,6 +481,7 @@ static int mtd_ioctl(struct inode *inode, struct file *file,
+@@ -579,29 +579,29 @@ static int mtd_ioctl(struct inode *inode, struct file *file,
+ 
+ 	case MEMLOCK:
  	{
- 		struct mtd_oob_buf buf;
- 		struct mtd_oob_ops ops;
-+		struct mtd_oob_buf __user *user_buf = argp;
- 	        uint32_t retlen;
+-		struct erase_info_user info;
++		struct erase_info_user einfo;
  
- 		if(!(file->f_mode & 2))
-@@ -524,8 +525,7 @@ static int mtd_ioctl(struct inode *inode, struct file *file,
- 		if (ops.oobretlen > 0xFFFFFFFFU)
- 			ret = -EOVERFLOW;
- 		retlen = ops.oobretlen;
--		if (copy_to_user(&((struct mtd_oob_buf *)argp)->length,
--				 &retlen, sizeof(buf.length)))
-+		if (copy_to_user(&user_buf->length, &retlen, sizeof(buf.length)))
- 			ret = -EFAULT;
+-		if (copy_from_user(&info, argp, sizeof(info)))
++		if (copy_from_user(&einfo, argp, sizeof(einfo)))
+ 			return -EFAULT;
  
- 		kfree(ops.oobbuf);
+ 		if (!mtd->lock)
+ 			ret = -EOPNOTSUPP;
+ 		else
+-			ret = mtd->lock(mtd, info.start, info.length);
++			ret = mtd->lock(mtd, einfo.start, einfo.length);
+ 		break;
+ 	}
+ 
+ 	case MEMUNLOCK:
+ 	{
+-		struct erase_info_user info;
++		struct erase_info_user einfo;
+ 
+-		if (copy_from_user(&info, argp, sizeof(info)))
++		if (copy_from_user(&einfo, argp, sizeof(einfo)))
+ 			return -EFAULT;
+ 
+ 		if (!mtd->unlock)
+ 			ret = -EOPNOTSUPP;
+ 		else
+-			ret = mtd->unlock(mtd, info.start, info.length);
++			ret = mtd->unlock(mtd, einfo.start, einfo.length);
+ 		break;
+ 	}
+ 
+@@ -701,15 +701,15 @@ static int mtd_ioctl(struct inode *inode, struct file *file,
+ 
+ 	case OTPLOCK:
+ 	{
+-		struct otp_info info;
++		struct otp_info oinfo;
+ 
+ 		if (mfi->mode != MTD_MODE_OTP_USER)
+ 			return -EINVAL;
+-		if (copy_from_user(&info, argp, sizeof(info)))
++		if (copy_from_user(&oinfo, argp, sizeof(oinfo)))
+ 			return -EFAULT;
+ 		if (!mtd->lock_user_prot_reg)
+ 			return -EOPNOTSUPP;
+-		ret = mtd->lock_user_prot_reg(mtd, info.start, info.length);
++		ret = mtd->lock_user_prot_reg(mtd, oinfo.start, oinfo.length);
+ 		break;
+ 	}
+ #endif
 -- 
 1.5.5.1.482.g0f174
-
 
