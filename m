@@ -1,60 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761563AbYEOPiL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761797AbYEOPib@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761563AbYEOPiL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 11:38:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755055AbYEOPh4
+	id S1761797AbYEOPib (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 11:38:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761505AbYEOPiF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 11:37:56 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:51319 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752902AbYEOPh4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 11:37:56 -0400
-Date: Thu, 15 May 2008 17:45:33 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: John Stoffel <john@stoffel.org>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jonathan Corbet <corbet@lwn.net>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Alexander Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [announce] "kill the Big Kernel Lock (BKL)" tree
-Message-ID: <20080515154533.GB30216@one.firstfloor.org>
-References: <20080514174955.GA515@elte.hu> <6457.1210801515@vena.lwn.net> <87bq387cyn.fsf@basil.nowhere.org> <alpine.LFD.1.10.0805141515020.3019@woody.linux-foundation.org> <482B65FE.4040402@firstfloor.org> <18476.20788.142218.370584@stoffel.org> <482C5281.7020306@firstfloor.org> <18476.21589.315367.664174@stoffel.org>
+	Thu, 15 May 2008 11:38:05 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38564 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758894AbYEOPiD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 11:38:03 -0400
+Date: Thu, 15 May 2008 15:37:14 +0000
+From: Kyle McMartin <kyle@hera.kernel.org>
+To: torvalds@linux-foundation.org
+Cc: kyle@mcmartin.ca, akpm@linux-foundation.org, linux-parisc@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [git patches] parisc updates for 2.6.26
+Message-ID: <20080515153714.GA10374@hera.kernel.org>
+Reply-To: kyle@mcmartin.ca
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=unknown-8bit
 Content-Disposition: inline
-In-Reply-To: <18476.21589.315367.664174@stoffel.org>
+Content-Transfer-Encoding: 8bit
 User-Agent: Mutt/1.4.2.1i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0rc1 (hera.kernel.org [127.0.0.1]); Thu, 15 May 2008 15:37:15 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I must admit I used to have an ISA Cyclades 8 port serial card running
-> in there, but now it's all PCI stuff.  It only had one ISA slot.  So
-> yes, ISA SMP boxes are slowly dying, but they'll be around for a long
-> time to come.
+The following changes since commit 492c2e476eac010962850006c49df326919b284c:
+  Linus Torvalds (1):
+        Linux 2.6.26-rc2
 
-My point was that for those few users it's actually better to keep
-the BKL. If you try to remove it on some old driver you cannot test
-due to lack of hardware the risk of breaking the driver is higher than the 
-gain you would get from removing it.  The best you can do in this
-legacy code is to keep it running with minimal changes in the old
-tested state (although for some of it it's doubtful it still does actually)
+are available in the git repository at:
 
-> 
-> Andi> Also on 2 CPU systems BKL is not that critical anyways. It only
-> Andi> starts to hurt on larger CPU counts.
-> 
-> True, but with the growing number of multicore systems, esp on
-> desktops, it's going to be an issue.  
+  /pub/scm/linux/kernel/git/kyle/parisc-2.6.git master
 
-Multicore systems don't have ISA slots.
+Alan Cox (1):
+      parisc: new termios definitions
 
-[yes I'm sure someone will tell me now about the ISA-over-USB device
-that exists. Don't bother, it doesn't add anything to the point]
+Harvey Harrison (2):
+      parisc: replace remaining __FUNCTION__ occurrences
+      drivers/parisc: replace remaining __FUNCTION__ occurrences
 
--Andi
+Helge Deller (1):
+      parisc: fix trivial section name warnings
+
+Johannes Weiner (1):
+      parisc: remove redundant display of free swap space in show_mem()
+
+Kyle McMartin (3):
+      parisc: use conditional macro for 64-bit wide ops
+      parisc: remove -traditional from assembler flags
+      arch/parisc/kernel/perf_asm.S: build fix
+
+Robert P. J. Day (1):
+      parisc: Remove ioctl.h content picked up from <asm-generic/ioctl.h>.
+
+S.Çağlar Onur (1):
+      arch/parisc/kernel/unaligned.c: use time_* macros
+
+ arch/parisc/hpux/gate.S        |    3 +-
+ arch/parisc/hpux/wrappers.S    |    3 +-
+ arch/parisc/kernel/Makefile    |    3 --
+ arch/parisc/kernel/entry.S     |   49 +++++++++++---------------
+ arch/parisc/kernel/head.S      |    2 +-
+ arch/parisc/kernel/hpmc.S      |    3 +-
+ arch/parisc/kernel/inventory.c |    2 +-
+ arch/parisc/kernel/pacache.S   |   73 ++++++++++++++++++++-------------------
+ arch/parisc/kernel/perf_asm.S  |    4 ++-
+ arch/parisc/kernel/real2.S     |   13 ++++---
+ arch/parisc/kernel/syscall.S   |    5 ++-
+ arch/parisc/kernel/traps.c     |    2 +-
+ arch/parisc/kernel/unaligned.c |    5 ++-
+ arch/parisc/lib/fixup.S        |    3 +-
+ arch/parisc/lib/lusercopy.S    |    5 ++-
+ arch/parisc/lib/memcpy.c       |    2 +-
+ arch/parisc/mm/init.c          |    2 -
+ drivers/parisc/asp.c           |    2 +-
+ drivers/parisc/ccio-dma.c      |   36 ++++++++++----------
+ drivers/parisc/dino.c          |   14 ++++----
+ drivers/parisc/gsc.c           |    4 +-
+ drivers/parisc/lasi.c          |    2 +-
+ drivers/parisc/lba_pci.c       |   22 ++++++------
+ drivers/parisc/led.c           |    2 +-
+ drivers/parisc/sba_iommu.c     |   42 +++++++++++-----------
+ drivers/parisc/wax.c           |    2 +-
+ include/asm-parisc/assembly.h  |    6 +--
+ include/asm-parisc/ioctl.h     |   51 +---------------------------
+ include/asm-parisc/ioctls.h    |    4 ++
+ include/asm-parisc/termbits.h  |    5 ++-
+ include/asm-parisc/termios.h   |    6 ++-
+ 31 files changed, 167 insertions(+), 210 deletions(-)
