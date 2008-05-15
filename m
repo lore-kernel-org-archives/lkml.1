@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758364AbYEOK4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758623AbYEOK5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758364AbYEOK4S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 06:56:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754057AbYEOK4F
+	id S1758623AbYEOK5f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 06:57:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754175AbYEOK51
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 06:56:05 -0400
-Received: from sacred.ru ([62.205.161.221]:59497 "EHLO sacred.ru"
+	Thu, 15 May 2008 06:57:27 -0400
+Received: from sacred.ru ([62.205.161.221]:59519 "EHLO sacred.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753081AbYEOK4E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 06:56:04 -0400
-Message-ID: <482C15FE.7070300@openvz.org>
-Date: Thu, 15 May 2008 14:52:46 +0400
+	id S1754154AbYEOK50 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 06:57:26 -0400
+Message-ID: <482C1677.9010701@openvz.org>
+Date: Thu, 15 May 2008 14:54:47 +0400
 From: Pavel Emelyanov <xemul@openvz.org>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
 To: Andrew Morton <akpm@linux-foundation.org>
 CC: Oleg Nesterov <oleg@tv-sign.ru>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 0/10] Make bsd process accounting work in pid namespaces
+Subject: [PATCH 1/10] Bsdacct: rename acct_blbls to bsd_acct_struct
+References: <482C15FE.7070300@openvz.org>
+In-Reply-To: <482C15FE.7070300@openvz.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 15 May 2008 14:55:08 +0400 (MSD)
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 15 May 2008 14:57:07 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After I fixed access to task->tgid in kernel/acct.c, Oleg 
-pointed out some bad side effects with this accounting vs pid 
-namespaces interaction. I.e. when some task in pid namespace 
-sets this accounting up, this blocks all the others from doing 
-the same. Restricting this to init namespace only could help, 
-but didn't look as a grace solution.
-
-So here is the approach to make this accounting work with pid
-namespaces properly.
-
-The idea is simple - when a task dies it accounts itself in 
-each namespace it is visible from and which set the accounting 
-up. 
-
-For example here are the commands run and the output of lastcomm 
-from init and sub namespaces:
-
-init_ns# accton pacct
- sub_ns# accton pacct (this is a different file - sub ns is run in
-                       a chroot-ed environment)
-init_ns# cat /dev/null
- sub_ns# ls /dev/null
-init_ns# accton
- sub_ns# accton
-
- sub_ns#  lastcomm -f pacct
-ls                      0        [136,0]    0.00 secs Thu May 15 10:30
-accton                  0        [136,0]    0.00 secs Thu May 15 10:30
-
-init_ns# lastcomm -f pacct
-accton                  root     pts/0      0.00 secs Thu May 15 14:30 << got from sub
-cat                     root     pts/1      0.00 secs Thu May 15 14:30
-ls                      root     pts/0      0.00 secs Thu May 15 14:30 << got from sub
-accton                  root     pts/1      0.00 secs Thu May 15 14:30
-
-That was the summary, the details are in patches.
-
-The set was sent for RFC a month ago, but I got only one, but
-positive response from Oleg. Hopefully, he can confirm one now.
+It will be visible in pid_namespace.h file, so fix its name to
+look better outside the acct.c file.
 
 Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+---
+ kernel/acct.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/acct.c b/kernel/acct.c
+index 91e1cfd..ee3e605 100644
+--- a/kernel/acct.c
++++ b/kernel/acct.c
+@@ -82,7 +82,7 @@ static void do_acct_process(struct pid_namespace *ns, struct file *);
+  * can be placed in the same cache line as the lock.  This primes
+  * the cache line to have the data after getting the lock.
+  */
+-struct acct_glbs {
++struct bsd_acct_struct {
+ 	spinlock_t		lock;
+ 	volatile int		active;
+ 	volatile int		needcheck;
+@@ -91,7 +91,7 @@ struct acct_glbs {
+ 	struct timer_list	timer;
+ };
+ 
+-static struct acct_glbs acct_globals __cacheline_aligned =
++static struct bsd_acct_struct acct_globals __cacheline_aligned =
+ 	{__SPIN_LOCK_UNLOCKED(acct_globals.lock)};
+ 
+ /*
+-- 
+1.5.3.4
