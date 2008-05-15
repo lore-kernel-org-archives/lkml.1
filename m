@@ -1,76 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757169AbYEONiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759244AbYEONjM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757169AbYEONiS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 09:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbYEONiK
+	id S1759244AbYEONjM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 09:39:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbYEONi5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 09:38:10 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:36520 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752063AbYEONiJ (ORCPT
+	Thu, 15 May 2008 09:38:57 -0400
+Received: from fnoeppeil48.netpark.at ([217.175.205.176]:46107 "EHLO
+	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753313AbYEONi5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 09:38:09 -0400
-Date: Thu, 15 May 2008 09:38:07 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: David Miller <davem@davemloft.net>
-cc: mingo@elte.hu, linux-kernel@vger.kernel.org, pq@iki.fi, proski@gnu.org,
-       sandmann@redhat.com, a.p.zijlstra@chello.nl, linuxppc-dev@ozlabs.org,
-       paulus@samba.org, benh@kernel.crashing.org, srostedt@redhat.com
-Subject: Re: [PATCH 2/2] ftrace: support for PowerPC
-In-Reply-To: <20080514.222857.246967279.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.58.0805150935400.16421@gandalf.stny.rr.com>
-References: <20080515034942.109223655@goodmis.org> <20080515035918.896765954@goodmis.org>
- <20080514.222857.246967279.davem@davemloft.net>
+	Thu, 15 May 2008 09:38:57 -0400
+Date: Thu, 15 May 2008 15:38:55 +0200
+From: Manuel Lauss <mano@roarinelk.homelinux.net>
+To: abhiruchi.g@vaultinfo.com
+Cc: linux-kernel@vger.kernel.org,
+       "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
+       kernel-testers <kernel-testers@vger.kernel.org>
+Subject: Re: MIPS kernel hangs: Warning: unable to open an initial console.
+	/sbin/init
+Message-ID: <20080515133855.GA20300@roarinelk.homelinux.net>
+References: <55815.192.168.1.71.1210856139.webmail@192.168.1.71>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <55815.192.168.1.71.1210856139.webmail@192.168.1.71>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 15, 2008 at 08:55:39AM -0400, abhiruchi.g@vaultinfo.com wrote:
+> Hi,
+> 
+> My kernel hangs by initializing the system. My target is Alchemy DB1200. I use crosstool-ng to build MIPS cross toolchain and ptxdist to build ext2 filesystem.
+> kernel version:linux-2.6.22
 
-On Wed, 14 May 2008, David Miller wrote:
+Try and add "console=ttyS0,115200" to the kernel commandline (either in
+yamon or kernel config).
 
-> From: Steven Rostedt <rostedt@goodmis.org>
-> Date: Wed, 14 May 2008 23:49:44 -0400
->
-> > +#ifdef CONFIG_FTRACE
-> > +#ifdef CONFIG_DYNAMIC_FTRACE
-> > +_GLOBAL(mcount)
-> > +_GLOBAL(_mcount)
-> > +	stwu	r1,-48(r1)
-> > +	stw	r3, 12(r1)
-> > +	stw	r4, 16(r1)
-> > +	stw	r5, 20(r1)
-> > +	stw	r6, 24(r1)
-> > +	mflr	r3
-> > +	stw	r7, 28(r1)
-> > +	mfcr	r5
-> > +	stw	r8, 32(r1)
-> > +	stw	r9, 36(r1)
-> > +	stw	r10,40(r1)
-> > +	stw	r3, 44(r1)
-> > +	stw	r5, 8(r1)
->
-> Yikes, that's really expensive.
 
-Well, at least with dynamic ftrace, it's only expensive when tracing is
-enabled.
-
->
-> Can't you do a tail call and let the function you end
-> up calling do all the callee-saved register pops onto
-> the stack?
-
-Not sure PPC has such a thing. I'm only a hobby PPC hacker (did it full
-time in another life). If there is such a way, I'll be happy to Ack any
-patches.
-
->
-> That's what I did on sparc.
->
-
-So that was your secret! ;-)
-
--- Steve
-
+	Manuel Lauss
