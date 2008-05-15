@@ -1,58 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764300AbYEOT4y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764763AbYEOT5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764300AbYEOT4y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 15:56:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762137AbYEOTxt
+	id S1764763AbYEOT5g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 15:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764744AbYEOTyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 15:53:49 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:48127 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762604AbYEOTxr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 15:53:47 -0400
-Date: Thu, 15 May 2008 15:53:31 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Stas Sergeev <stsp@aknet.ru>
-Cc: Takashi Iwai <tiwai@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Roberto Oppedisano <roberto.oppedisano@infracom.it>
-Subject: Re: [patch] snd-pcsp: adjust help texts to frighten users
-Message-ID: <20080515195331.GM18825@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Stas Sergeev <stsp@aknet.ru>, Takashi Iwai <tiwai@suse.de>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Roberto Oppedisano <roberto.oppedisano@infracom.it>
-References: <hPXlJLjt4XG.A._lF.Jv1JIB@chimera> <88YBFoyd1CN.A._sF.Ov1JIB@chimera> <s5hskwmeb1h.wl%tiwai@suse.de> <20080514212011.GH7054@mit.edu> <s5hhcd0azv1.wl%tiwai@suse.de> <20080515130654.GC18825@mit.edu> <482C71B3.8090200@aknet.ru> <20080515182643.GL18825@mit.edu> <482C8A43.1020208@aknet.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <482C8A43.1020208@aknet.ru>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Thu, 15 May 2008 15:54:36 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:41311 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764707AbYEOTyb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 15:54:31 -0400
+Subject: Re: 2.6.26-rc2-mm1 (SCSI_DH build errors)
+From: Chandra Seetharaman <sekharan@us.ibm.com>
+Reply-To: sekharan@us.ibm.com
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       hare@suse.de, scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <1210862779.15852.4.camel@localhost.localdomain>
+References: <20080514010129.4f672378.akpm@linux-foundation.org>
+	 <20080514141348.e71feed6.randy.dunlap@oracle.com>
+	 <1210862779.15852.4.camel@localhost.localdomain>
+Content-Type: multipart/mixed; boundary="=-BJearIvH68NmH0wgeTAh"
+Organization: IBM
+Date: Thu, 15 May 2008 12:56:14 -0700
+Message-Id: <1210881374.21974.285.camel@chandra-ubuntu>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 15, 2008 at 11:08:51PM +0400, Stas Sergeev wrote:
-> By description I did actually mean a
-> menu string, not a help text.
-> In any case, here's what I mean, in
-> an attached patch.
 
-Yep, it looks good to me.
+--=-BJearIvH68NmH0wgeTAh
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-> PS: please let us know whether the new
-> PC-Speaker.conf allowed you to get any
-> sound from it.
+Hi James, Andrew,
 
-I tried replacing it, but I'm still getting silence when I use "aplay
--D plughw:0,0 /usr/share/sounds/login.wav".  If I use "aplay -D
-hw:0,0", I still get the "aplay: set_params:900: Sample format non
-available" error message.  This is with Ubuntu Gutsy; for a variety of
-reasons, I haven't yet updated my primary laptop to Hardy yet.  I can
-try booting a bleeding edge kernel on my Hardy machine and see whether
-it works any better there.
+Here is a patch to remove the automatic "select" of scsi_dh for
+dm-multipath.
 
-					- Ted
+Sorry about the mishap.
+
+chandra
+On Thu, 2008-05-15 at 15:46 +0100, James Bottomley wrote:
+> On Wed, 2008-05-14 at 14:13 -0700, Randy Dunlap wrote:
+> > On Wed, 14 May 2008 01:01:29 -0700 Andrew Morton wrote:
+> > 
+> > > 
+> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.26-rc2/2.6.26-rc2-mm1/
+> > 
+> > SCSI_DH has some problems when CONFIG_SCSI=n:
+> > 
+> > drivers/built-in.o: In function `activate_path':
+> > dm-mpath.c:(.text+0x18a292): undefined reference to `scsi_dh_activate'
+> > drivers/built-in.o: In function `multipath_ctr':
+> > dm-mpath.c:(.text+0x18a6f0): undefined reference to `scsi_dh_handler_exist'
+> > make[1]: *** [.tmp_vmlinux1] Error 1
+> > 
+> > 
+> > #
+> > # SCSI device support
+> > #
+> > CONFIG_RAID_ATTRS=y
+> > # CONFIG_SCSI is not set
+> > # CONFIG_SCSI_DMA is not set
+> > # CONFIG_SCSI_NETLINK is not set
+> > CONFIG_SCSI_DH=y
+> > CONFIG_SCSI_DH_RDAC=y
+> > CONFIG_SCSI_DH_HP_SW=y
+> > CONFIG_SCSI_DH_EMC=y
+> 
+> This is one more of those annoying selects.  The SCSI_DH Kconfig file is
+> correctly dependent on SCSI:
+> 
+> menuconfig SCSI_DH
+> 	tristate "SCSI Device Handlers"
+> 	depends on SCSI
+> 	default n
+> 	help
+> 
+> but we've also got a select in md/Kconfig:
+> 
+> config DM_MULTIPATH
+> 	tristate "Multipath target"
+> 	depends on BLK_DEV_DM
+> 	select SCSI_DH
+> 
+> Which ignores the dependency.
+> 
+> My best guess for fixing this is either to make the select a depends or
+> just drop it altogether (after all, it's possible to have multipath on
+> non-SCSI devices).
+> 
+> James
+> 
+> 
+
+--=-BJearIvH68NmH0wgeTAh
+Content-Disposition: attachment; filename=remove_select_on_multipath
+Content-Type: text/plain; name=remove_select_on_multipath; charset=utf-8
+Content-Transfer-Encoding: 7bit
+
+Do not automatically "select" SCSI_DH for dm-multipath. If SCSI_DH
+doesn't exist,just do not allow  hardware handlers to be used.
+
+Signed-off-by: Chandra Seetharaman <sekharan@us.ibm.com>
+---
+
+Index: scsi-misc-2.6/drivers/md/Kconfig
+===================================================================
+--- scsi-misc-2.6.orig/drivers/md/Kconfig
++++ scsi-misc-2.6/drivers/md/Kconfig
+@@ -252,7 +252,6 @@ config DM_ZERO
+ config DM_MULTIPATH
+ 	tristate "Multipath target"
+ 	depends on BLK_DEV_DM
+-	select SCSI_DH
+ 	---help---
+ 	  Allow volume managers to support multipath hardware.
+ 
+Index: scsi-misc-2.6/drivers/md/dm-mpath.c
+===================================================================
+--- scsi-misc-2.6.orig/drivers/md/dm-mpath.c
++++ scsi-misc-2.6/drivers/md/dm-mpath.c
+@@ -664,6 +664,8 @@ static int parse_hw_handler(struct arg_s
+ 	request_module("scsi_dh_%s", m->hw_handler_name);
+ 	if (scsi_dh_handler_exist(m->hw_handler_name) == 0) {
+ 		ti->error = "unknown hardware handler type";
++		kfree(m->hw_handler_name);
++		m->hw_handler_name = NULL;
+ 		return -EINVAL;
+ 	}
+ 	consume(as, hw_argc - 1);
+Index: scsi-misc-2.6/include/scsi/scsi_dh.h
+===================================================================
+--- scsi-misc-2.6.orig/include/scsi/scsi_dh.h
++++ scsi-misc-2.6/include/scsi/scsi_dh.h
+@@ -54,6 +54,16 @@ enum {
+ 	SCSI_DH_NOSYS,
+ 	SCSI_DH_DRIVER_MAX,
+ };
+-
++#ifdef CONFIG_SCSI_DH
+ extern int scsi_dh_activate(struct request_queue *);
+ extern int scsi_dh_handler_exist(const char *);
++#else
++inline int scsi_dh_activate(struct request_queue *req)
++{
++	return 0;
++}
++inline int scsi_dh_handler_exist(const char *name)
++{
++	return 0;
++}
++#endif
+
+--=-BJearIvH68NmH0wgeTAh--
+
