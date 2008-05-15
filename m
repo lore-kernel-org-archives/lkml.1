@@ -1,66 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754925AbYEOD3o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755869AbYEODnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754925AbYEOD3o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 23:29:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752883AbYEOD3d
+	id S1755869AbYEODnZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 23:43:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbYEODnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 23:29:33 -0400
-Received: from mga06.intel.com ([134.134.136.21]:10434 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751215AbYEOD3c (ORCPT
+	Wed, 14 May 2008 23:43:16 -0400
+Received: from frodo.howardsilvan.com ([66.119.206.113]:43526 "EHLO
+	mail.howardsilvan.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751512AbYEODnP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 23:29:32 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,489,1204531200"; 
-   d="scan'208";a="383884515"
-Subject: Re: [patch 21/21] slab defrag: Obsolete SLAB
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, mpm@selenic.com,
-       Matthew Wilcox <matthew@wil.cx>
-In-Reply-To: <Pine.LNX.4.64.0805141100110.15633@schroedinger.engr.sgi.com>
-References: <20080510030831.796641881@sgi.com>
-	 <20080510030919.604216074@sgi.com> <4825709A.2020407@firstfloor.org>
-	 <20080510221515.3540a6cc@bree.surriel.com>
-	 <2f11576a0805120038s334dc56cuaf16b8b7c6f87098@mail.gmail.com>
-	 <84144f020805120054t1370236ei5ff52279457e026e@mail.gmail.com>
-	 <Pine.LNX.4.64.0805141009210.15194@schroedinger.engr.sgi.com>
-	 <482B2617.5010605@firstfloor.org>
-	 <Pine.LNX.4.64.0805141100110.15633@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 15 May 2008 11:26:42 +0800
-Message-Id: <1210822002.3177.121.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 (2.21.5-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Wed, 14 May 2008 23:43:15 -0400
+Message-ID: <482BB151.4010109@howardsilvan.com>
+Date: Wed, 14 May 2008 20:43:13 -0700
+From: Lee Howard <faxguy@howardsilvan.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Zan Lynx <zlynx@acm.org>
+CC: Ray Lee <ray-lk@madrabbit.org>, linux-kernel@vger.kernel.org
+Subject: Re: troubleshooting/debugging hard locks
+References: <482B3D21.5020903@howardsilvan.com>	 <2c0942db0805141543n20e6eb6eq5fe13fe1cb50d67e@mail.gmail.com> <1210808578.3784.7.camel@localhost>
+In-Reply-To: <1210808578.3784.7.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Zan Lynx wrote:
+> On Wed, 2008-05-14 at 15:43 -0700, Ray Lee wrote:
+>   
+>> On Wed, May 14, 2008 at 12:27 PM, Lee Howard <faxguy@howardsilvan.com> wrote:
+>>     
+>
+>   
+>>>  But, without kernel messages indicating where to look to debug... what is
+>>> the best approach to start troubleshooting and debugging this condition?  Is
+>>> there some general debug feature that can be enabled in the kernel that
+>>> would help hone in on the culprit?
+>>>       
+>> There's something called the NMI watchdog, that will print debugging
+>> messages out if it finds the system has hard locked. The short version
+>> is that you should add "nmi_watchdog=1" (no quotes) to the line in
+>> GRUB that has the kernel options. That assumes you have an APIC on the
+>> system. If that's not the case (you're on Uniprocessor, and no APIC)
+>> then you can try nmi_watchdog=2 instead. That'll only work on some
+>> systems, though.
+>>
+>> Better docs (than my cheesy writeup) are in
+>> Documentation/nmi_watchdog.txt in the kernel source distribution.
+>>     
+>
+> I was once told to add these to the kernel command line as well when
+> using NMI watchdog and they do seem to help it trigger more reliably: 
+>
+> "idle=poll nohz=off"
 
-On Wed, 2008-05-14 at 11:03 -0700, Christoph Lameter wrote:
-> On Wed, 14 May 2008, Andi Kleen wrote:
-> 
-> > iirc profiling analysis showed that the problem was the page lock
-> > serialization (in particular the slab_lock() in __slab_free). That
-> > was on 2.6.24.2
-> 
-> Do you have an URL?
-> 
-> > I think the problem is that this atomic operation thrashes cache lines
-> > around. Really counting cycles on instructions is not that interesting,
-> > but minimizing the cache thrashing is. And for that it looks like slub
-> > is worse.
-> 
-> It can thrash cachelines if objects from the same slab page are freed 
-> simultaneously on multiple processors. That occurred in the hackbench 
-> regression that we addressed with the dynamic configuration of slab sizes.
-hackbench regression is because of slow allocation instead of slow freeing.
-With ﻿dynamic configuration of slab sizes, fast allocation becomes 97% (the bad
-one is 68%), but fast free is always 8~9% with/without the patch.
+Thank you to both Ray and Zan.  This was very helpful, and I think that 
+it has gotten me what I needed.
 
+"serial8250: too much work for irq16"
 
+Interestingly, now CTRL-SysRq-H will wake it back up... things get 
+running normally afterwards - the hard lock never occurs.
+
+Thanks,
+
+Lee.
