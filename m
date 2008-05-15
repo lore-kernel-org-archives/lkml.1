@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761474AbYEOWnK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760284AbYEOWpJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761474AbYEOWnK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 18:43:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754884AbYEOWmy
+	id S1760284AbYEOWpJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 18:45:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754067AbYEOWoy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 18:42:54 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:56064 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754793AbYEOWmx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 18:42:53 -0400
-Message-ID: <482CBCCB.8070101@keyaccess.nl>
-Date: Fri, 16 May 2008 00:44:27 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Thu, 15 May 2008 18:44:54 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:54333 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753804AbYEOWox (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 18:44:53 -0400
+Message-ID: <482CBCC6.6010905@garzik.org>
+Date: Thu, 15 May 2008 18:44:22 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Cyrill Gorcunov <gorcunov@gmail.com>, geert@linux-m68k.org,
-       zippel@linux-m68k.org, schwab@suse.de, linux-kernel@vger.kernel.org,
-       linux-m68k@vger.kernel.org
-Subject: Re: [PATCH] init - fix building bug and potential buffer overflow
-References: <20080514154402.GF6902@cvg> <20080515105803.7c9ab8c7.akpm@linux-foundation.org> <20080515180528.GC7481@cvg> <Pine.LNX.4.64.0805152132530.22059@anakin> <aa79d98a0805151322s20a2bb34x4491bcacfcef310@mail.gmail.com> <20080515134928.83b2d948.akpm@linux-foundation.org> <alpine.LFD.1.10.0805151406030.3019@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0805151406030.3019@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+CC: Theodore Tso <tytso@mit.edu>, Chris Peterson <cpeterso@cpeterso.com>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>, Rick Jones <rick.jones2@hp.com>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
+ IRQF_SAMPLE_RANDOM
+References: <20080515142154.0595e475@core> <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com> <482C7B18.6060003@garzik.org> <482C7E53.3050300@hp.com> <482C8184.2030906@garzik.org> <482C8550.5000909@intel.com> <482C8D4D.3040702@garzik.org> <a24804730805151301s3c6644d0hc2c78b8008fe035d@mail.gmail.com> <20080515214721.GP18825@mit.edu> <482CB1FB.7080807@garzik.org> <20080515222941.GB20976@khazad-dum.debian.net>
+In-Reply-To: <20080515222941.GB20976@khazad-dum.debian.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 15-05-08 23:15, Linus Torvalds wrote:
-
-> Talking about cleanups, why the *hell* does print_fn_descriptor_symbol() 
-> take an "unsigned long", when every single user would want to give it a 
-> pointer?
-> 
-> Would somebody please want to move that cast into the macro (or better 
-> yet, make it an inline function that takes a 'void *'), and remove all the 
-> casts from the callers?
-
-[ ... ]
-
-> +		print_fn_descriptor_symbol("calling  %s()\n",
-> +				(unsigned long) call);
+Henrique de Moraes Holschuh wrote:
+> If anyone wants to poke at it, get the Debian rng-tools source package.
+> It directly supports the VIA PadLock in userspace in a suitably paranoid
+> mode (checks that the RNG was not reprogrammed at every read), and does
+> multithreading so that FIPS and output processing does not block (nor
+> gets blocked) by /dev/hw_random reading, etc.
 
 
-And while that person is at it, could he or she please remove the silly 
-() from the "foo+0x0/0x1234()" (or the "foo+0x0/0x1234 [bar]()" or the 
-"0x12345678()").
+Neat.  I always did prefer VIA padlock in userspace.
 
-Rene.
+I just sorta assumed a buffering, interrupt-driver TPM RNG driver would 
+be better than doing it from userspace, but maybe that was a bad 
+assumption to make on my part.  It should be quite doable to support TPM 
+RNG entirely via userspace, at any rate.
+
+	Jeff
+
+
