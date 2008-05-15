@@ -1,235 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761621AbYEOUk7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764252AbYEOUlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761621AbYEOUk7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 16:40:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbYEOUku
+	id S1764252AbYEOUlz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 16:41:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754775AbYEOUlr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 16:40:50 -0400
-Received: from smtp23.orange.fr ([193.252.22.30]:65521 "EHLO smtp23.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752530AbYEOUkt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 16:40:49 -0400
-X-ME-UUID: 20080515204047351.55BBE1C00084@mwinf2336.orange.fr
-Message-ID: <482C9FC5.2070508@cosmosbay.com>
-Date: Thu, 15 May 2008 22:40:37 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
+	Thu, 15 May 2008 16:41:47 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57840 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752315AbYEOUlq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 16:41:46 -0400
+Date: Thu, 15 May 2008 13:37:48 -0700
+From: Greg KH <greg@kroah.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: torvalds@linux-foundation.org, ajones@riverbed.com, a.p.zijlstra@chello.nl,
+       mszeredi@suse.cz, akpm@linux-foundation.org, kay.sievers@vrfy.org,
+       trond.myklebust@fys.uio.no, linux-kernel@vger.kernel.org
+Subject: Re: [BUG] mm: bdi: export BDI attributes in sysfs
+Message-ID: <20080515203748.GC7491@kroah.com>
+References: <20080513190435.GG23649@ajones-laptop.nbttech.com> <20080514144030.GD6458@ajones-laptop.nbttech.com> <E1JwiZa-0007UA-Tm@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0805151213430.3019@woody.linux-foundation.org> <E1Jwj7G-0007Zs-GB@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Mike Travis <travis@sgi.com>
-Subject: [PATCH] modules: Use a better scheme for refcounting
-Content-Type: multipart/mixed;
- boundary="------------050906020109040509020701"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1Jwj7G-0007Zs-GB@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050906020109040509020701
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Thu, May 15, 2008 at 09:27:50PM +0200, Miklos Szeredi wrote:
+> > On Thu, 15 May 2008, Miklos Szeredi wrote:
+> > > 
+> > > This is not meant as a final solution, I'm sure Greg or Kay can help
+> > > find a better solution.
+> > 
+> > Yeah, don't do this:
+> > 
+> > > +static struct backing_dev_info *dev_get_bdi(struct device *dev)
+> > > +{
+> > > +	mutex_lock(&bdi_dev_mutex);
+> > > +	mutex_unlock(&bdi_dev_mutex);
+> > > +
+> > > +	return dev_get_drvdata(dev);
+> > > +}
+> > 
+> > This kind of serialization can often hide bugs, and in some cases even 
+> > make them go away (if the caller of the function means that the device is 
+> > pinned and the tear-down cannot happen, for example), but it's really 
+> > really bad form.
+> 
+> Yeah, I know.
+> 
+> > In order to use locking in a repeatable manner that is easy to think 
+> > about, you really need to *keep* the lock until you've stopped using the 
+> > data (or have dereferenced it into a stable form - eg maybe accessing the 
+> > pointer itself needs locking, but some individual data read _off_ the 
+> > pointer does not).
+> > 
+> > So the above kind of "get and release the lock" does obviously serialize 
+> > wrt others that hold the lock, but it's still wrong.
+> > 
+> > >  static ssize_t read_ahead_kb_store(struct device *dev,
+> > >  				  struct device_attribute *attr,
+> > >  				  const char *buf, size_t count)
+> > >  {
+> > > -	struct backing_dev_info *bdi = dev_get_drvdata(dev);
+> > > +	struct backing_dev_info *bdi = dev_get_bdi(dev);
+> > >  	char *end;
+> > >  	unsigned long read_ahead_kb;
+> > >  	ssize_t ret = -EINVAL;
+> > 
+> > You should just get the lock in the routines that acually use this thing.
+> > 
+> > Or, if the "struct backing_dev_info *" pointer itself is stable, and it 
+> > really is just the access from "struct device" that needs protection, then 
+> > at the very least it should have been
+> 
+> Actually nothing should need protection.  The only problem AFAICS is
+> that the device_create()/dev_set_drvdata() interface is racy: somebody
+> can come in after the device has been created but before drvdata has
+> been set, and then we are in trouble.
 
-Current refcounting for modules (done if CONFIG_MODULE_UNLOAD=y)
-is using a lot of memory.
+Then that needs to be fixed in the code that registered the device
+itself.  The driver core knows nothing about this at all.  Is this
+something in the block layer?
 
-Each 'struct module' contains an [NR_CPUS] array of full cache lines.
+> I'm quite sure this is not the only place in the kernel where this
+> would be an issue, that's why I expect the sysfs guys to have some
+> sort of alternative solution, that doesn't necessarily involve adding
+> a new mutex.
 
-This patch uses existing infrastructure (percpu_modalloc() & 
-percpu_modfree())
-to allocate percpu space for the refcount storage.
+It should be fixed in the bus/subsystem that is creating the device, the
+pointer must be set up before device_register() is called (or
+device_add()).
 
-Instead of wasting NR_CPUS*128 bytes (on i386), we now use
-num_possible_cpus*sizeof(local_t) bytes.
+thanks,
 
-On a typical distro, where NR_CPUS=8, shiping 2000 modules, we reduce
-size of module files by about 2 Mbytes. (1Kb per module)
-
-Instead of having all refcounters in the same memory node - with TLB misses
-because of vmalloc() - this new implementation permits to have better
-NUMA properties, since each  CPU will use storage on its preferred node,
-thanks to percpu storage.
-
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
----
- include/linux/module.h |   25 ++++++++++++++++---------
- kernel/module.c        |   37 +++++++++++++++++++++++++++----------
- 2 files changed, 43 insertions(+), 19 deletions(-)
-
-
---------------050906020109040509020701
-Content-Type: text/plain;
- name="module.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="module.patch"
-
-diff --git a/include/linux/module.h b/include/linux/module.h
-index 3e03b1a..72db614 100644
---- a/include/linux/module.h
-+++ b/include/linux/module.h
-@@ -217,11 +217,6 @@ void *__symbol_get_gpl(const char *symbol);
- 
- #endif
- 
--struct module_ref
--{
--	local_t count;
--} ____cacheline_aligned;
--
- enum module_state
- {
- 	MODULE_STATE_LIVE,
-@@ -307,8 +302,11 @@ struct module
- 
- #ifdef CONFIG_MODULE_UNLOAD
- 	/* Reference counts */
--	struct module_ref ref[NR_CPUS];
--
-+#ifdef CONFIG_SMP
-+	char *refptr;
-+#else
-+	local_t ref;
-+#endif
- 	/* What modules depend on me? */
- 	struct list_head modules_which_use_me;
- 
-@@ -378,13 +376,22 @@ void __symbol_put(const char *symbol);
- #define symbol_put(x) __symbol_put(MODULE_SYMBOL_PREFIX #x)
- void symbol_put_addr(void *addr);
- 
-+static inline local_t *__module_ref_addr(struct module *mod, int cpu)
-+{
-+#ifdef CONFIG_SMP
-+	return (local_t *) (mod->refptr + per_cpu_offset(cpu));
-+#else
-+	return &mod->ref;
-+#endif
-+}
-+
- /* Sometimes we know we already have a refcount, and it's easier not
-    to handle the error case (which only happens with rmmod --wait). */
- static inline void __module_get(struct module *module)
- {
- 	if (module) {
- 		BUG_ON(module_refcount(module) == 0);
--		local_inc(&module->ref[get_cpu()].count);
-+		local_inc(__module_ref_addr(module, get_cpu()));
- 		put_cpu();
- 	}
- }
-@@ -396,7 +403,7 @@ static inline int try_module_get(struct module *module)
- 	if (module) {
- 		unsigned int cpu = get_cpu();
- 		if (likely(module_is_live(module)))
--			local_inc(&module->ref[cpu].count);
-+			local_inc(__module_ref_addr(module, cpu));
- 		else
- 			ret = 0;
- 		put_cpu();
-diff --git a/kernel/module.c b/kernel/module.c
-index f5e9491..e0e8712 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -522,13 +522,13 @@ static char last_unloaded_module[MODULE_NAME_LEN+1];
- /* Init the unload section of the module. */
- static void module_unload_init(struct module *mod)
- {
--	unsigned int i;
-+	int cpu;
- 
- 	INIT_LIST_HEAD(&mod->modules_which_use_me);
--	for (i = 0; i < NR_CPUS; i++)
--		local_set(&mod->ref[i].count, 0);
-+	for_each_possible_cpu(cpu)
-+		local_set(__module_ref_addr(mod, cpu), 0);
- 	/* Hold reference count during initialization. */
--	local_set(&mod->ref[raw_smp_processor_id()].count, 1);
-+	local_set(__module_ref_addr(mod, raw_smp_processor_id()), 1);
- 	/* Backwards compatibility macros put refcount during init. */
- 	mod->waiter = current;
- }
-@@ -659,10 +659,11 @@ static int try_stop_module(struct module *mod, int flags, int *forced)
- 
- unsigned int module_refcount(struct module *mod)
- {
--	unsigned int i, total = 0;
-+	unsigned int total = 0;
-+	int cpu;
- 
--	for (i = 0; i < NR_CPUS; i++)
--		total += local_read(&mod->ref[i].count);
-+	for_each_possible_cpu(cpu)
-+		total += local_read(__module_ref_addr(mod, cpu));
- 	return total;
- }
- EXPORT_SYMBOL(module_refcount);
-@@ -824,7 +825,7 @@ void module_put(struct module *module)
- {
- 	if (module) {
- 		unsigned int cpu = get_cpu();
--		local_dec(&module->ref[cpu].count);
-+		local_dec(__module_ref_addr(module, cpu));
- 		/* Maybe they're waiting for us to drop reference? */
- 		if (unlikely(!module_is_live(module)))
- 			wake_up_process(module->waiter);
-@@ -1392,7 +1393,10 @@ static void free_module(struct module *mod)
- 	kfree(mod->args);
- 	if (mod->percpu)
- 		percpu_modfree(mod->percpu);
--
-+#if defined(CONFIG_MODULE_UNLOAD) && defined(CONFIG_SMP)
-+	if (mod->refptr)
-+		percpu_modfree(mod->refptr);
-+#endif
- 	/* Free lock-classes: */
- 	lockdep_free_key_range(mod->module_core, mod->core_size);
- 
-@@ -1760,6 +1764,9 @@ static struct module *load_module(void __user *umod,
- 	unsigned int markersstringsindex;
- 	struct module *mod;
- 	long err = 0;
-+#if defined(CONFIG_MODULE_UNLOAD) && defined(CONFIG_SMP)
-+	void *refptr = NULL;
-+#endif
- 	void *percpu = NULL, *ptr = NULL; /* Stops spurious gcc warning */
- 	struct exception_table_entry *extable;
- 	mm_segment_t old_fs;
-@@ -1904,6 +1911,12 @@ static struct module *load_module(void __user *umod,
- 	if (err < 0)
- 		goto free_mod;
- 
-+#if defined(CONFIG_MODULE_UNLOAD) && defined(CONFIG_SMP)
-+	refptr = percpu_modalloc(sizeof(local_t), sizeof(local_t), mod->name);
-+	if (!refptr)
-+		goto free_mod;
-+	mod->refptr = refptr;
-+#endif
- 	if (pcpuindex) {
- 		/* We have a special allocation for this section. */
- 		percpu = percpu_modalloc(sechdrs[pcpuindex].sh_size,
-@@ -1911,7 +1924,7 @@ static struct module *load_module(void __user *umod,
- 					 mod->name);
- 		if (!percpu) {
- 			err = -ENOMEM;
--			goto free_mod;
-+			goto free_percpu;
- 		}
- 		sechdrs[pcpuindex].sh_flags &= ~(unsigned long)SHF_ALLOC;
- 		mod->percpu = percpu;
-@@ -2164,6 +2177,10 @@ static struct module *load_module(void __user *umod,
-  free_percpu:
- 	if (percpu)
- 		percpu_modfree(percpu);
-+#if defined(CONFIG_MODULE_UNLOAD) && defined(CONFIG_SMP)
-+	if (refptr)
-+		percpu_modfree(refptr);
-+#endif
-  free_mod:
- 	kfree(args);
-  free_hdr:
-
---------------050906020109040509020701--
-
-
+greg k-h
