@@ -1,62 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756767AbYEOIpO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756037AbYEOIzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756767AbYEOIpO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 04:45:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbYEOIpA
+	id S1756037AbYEOIzf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 04:55:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbYEOIz0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 04:45:00 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:53847 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752934AbYEOIo6 (ORCPT
+	Thu, 15 May 2008 04:55:26 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:44860 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751613AbYEOIzZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 04:44:58 -0400
-Date: Thu, 15 May 2008 10:44:57 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Jonathan Corbet <corbet@lwn.net>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Alexander Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [announce] "kill the Big Kernel Lock (BKL)" tree 
-In-Reply-To: <6457.1210801515@vena.lwn.net>
-Message-ID: <alpine.LNX.1.10.0805151041380.16151@fbirervta.pbzchgretzou.qr>
-References: <6457.1210801515@vena.lwn.net>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 15 May 2008 04:55:25 -0400
+Subject: Re: Sparse annotation for "context imbalance" false positives?
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org,
+       David Brownell <david-b@pacbell.net>
+In-Reply-To: <adaod78fe94.fsf@cisco.com> (sfid-20080515_051646_455778_42A2EDF3)
+References: <adaod78fe94.fsf@cisco.com>
+	 (sfid-20080515_051646_455778_42A2EDF3)
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-XHPX6qtXCJCj2Aog5uOA"
+Date: Thu, 15 May 2008 10:54:23 +0200
+Message-Id: <1210841663.4282.9.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wednesday 2008-05-14 23:45, Jonathan Corbet wrote:
->Sez Ingo:
->1: We could add an unlocked_open() to the file_operations structure;
->   drivers could be converted over as they are verified not to need the
->   BKL on open.  Disadvantages are that it grows this structure for a
->   relatively rare case - most open() calls already don't need the BKL.
->   But it's a relatively easy path without flag days.
+--=-XHPX6qtXCJCj2Aog5uOA
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-1b: add a .locked_open and move all BKL-requiring code to use that.
-When time comes and BKL is gone, .locked_open can be removed again,
-and no rename was ever done for BKL-free code.
+You could, for example, insert this:
 
->2: Create a char_dev_ops structure for char devs and use it instead of
->   file_operations.  I vaguely remember seeing Al mutter about that a
->   while back.  Quite a while back.  This mirrors what was done with
->   block devices, and makes some sense - there's a lot of stuff in
->   struct file_operations which is not really applicable to char devs.
->   Then struct char_dev_ops could have open() and locked_open(), with
->   the latter destined for removal sometime around 2015 or so.
+> 	static void mlx4_ib_lock_cqs(struct mlx4_ib_cq *send_cq, struct mlx4_ib_=
+cq *recv_cq)
+> 	{
+> 		if (send_cq =3D=3D recv_cq)
+		{
+> 			spin_lock_irq(&send_cq->lock);
+			 /* pretend to have acquired both for sparse */=09
+			__acquire(&recv_cq->lock);
+		}
+> 		else if (send_cq->mcq.cqn < recv_cq->mcq.cqn) {
+> 			spin_lock_irq(&send_cq->lock);
+> 			spin_lock_nested(&recv_cq->lock, SINGLE_DEPTH_NESTING);
+> 		} else {
+> 			spin_lock_irq(&recv_cq->lock);
+> 			spin_lock_nested(&send_cq->lock, SINGLE_DEPTH_NESTING);
+> 		}
+> 	}
 
-Iff you create a new char_dev_ops, don't clutter it with the old stuff.
-BKL-using code could continue using file_operations, would not it?
+and then declare that you take "both" locks. Not sure if that will bite
+you in the callers again though.
 
->3: Provide a new form of cdev_add() which lets the driver indicate
->   that the BKL is not needed on open (or anything else?).  At a
+The exact syntax is still a bit under discussion though, whether to use
+&recv_cq->lock or leave out the "&" there, I'm favouring the approach
+with & but the kernel uses no & in some places.
 
-This is the BSD/Solaris tactic, heh :)
+johannes
+
+--=-XHPX6qtXCJCj2Aog5uOA
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUASCv6PqVg1VMiehFYAQIc0RAAmxfNytGFfQn0Uua2XpahBdoppI71mNUY
+7b25Cyq7aYpNGF3YSIWUhMHXFiz58XUvTZEzbb1a7CMP3e0nurmaY3SwATaDgUhD
+tl84WNryZeKdLIqoDlIZVXD7rLD04rQ+aDmKoBVFAMBCV8e/FNJ9n+h14LNBr0O2
+SKX9t+VmK5dc7TbfHHfeNZuyholdb1IVcAOCl7XdfmOPZ55Gz6ULilKPRRynvqUm
+AZct0AK+eOJytTKezDZKm7jbL82EeO6Uq/y+JVbZpWYSgK4tDc6CluvpGWssWDBZ
+DNNFDTl7YVVcazazRQ1cElrNJN0QmOvPk+t67MYAAvuq83jxvlhhS3MTrGfkvC3i
+gIpatqQsv7JETn/M+wdu9NW1Tsiavy7/MJl+WEqjJTCeuynPxuNxM2RjGLwnmO8D
+KTiK88VxuvQbK+knMtsGUzjq/ezpeZCgU0m0WCsHoKQ8krm3lv8tJRdz+vFuzMBw
+wcBSoLmH+nmBc7EZHl7MZLuFPM0LaRINAIYwKIItZhl3qfOHLUZH9roXX9VRY1UF
+eWYTATOwwTBeIKf+5v7wdSetQF+o5uCWW2pC3QFBfdlb1NVsq4cZ4a8NEkpN9PSN
+ZaGif9YmGx8H2q2MljaLvmKnV1SQg8WtYYHzp6PbsMNkK4jC8fqpVsRznTWCPXOB
+6sFtXUh5xtg=
+=bgZU
+-----END PGP SIGNATURE-----
+
+--=-XHPX6qtXCJCj2Aog5uOA--
 
