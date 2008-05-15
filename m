@@ -1,57 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756739AbYEOJQF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756861AbYEOJUv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756739AbYEOJQF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 05:16:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbYEOJPx
+	id S1756861AbYEOJUv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 05:20:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbYEOJUn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 05:15:53 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:27945 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752318AbYEOJPw (ORCPT
+	Thu, 15 May 2008 05:20:43 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59809 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751951AbYEOJUl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 05:15:52 -0400
-X-IronPort-AV: E=Sophos;i="4.27,490,1204520400"; 
-   d="scan'208";a="53579933"
-Message-ID: <482BFF2C.4090506@analog.com>
-Date: Thu, 15 May 2008 17:15:24 +0800
-From: Jie Zhang <jie.zhang@analog.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
-MIME-Version: 1.0
-To: Oliver Neukum <oliver@neukum.org>
-CC: Bryan Wu <cooloney@kernel.org>, harvey.harrison@gmail.com,
-       david-b@pacbell.net, greg@kroah.com, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] [usb/host]: use get/put_unaligned_* helpers to fix
- more potential unaligned issues.
-References: <1210832364-20012-1-git-send-email-cooloney@kernel.org> <200805150940.34516.oliver@neukum.org> <482BEE57.6040704@analog.com> <200805151036.09386.oliver@neukum.org>
-In-Reply-To: <200805151036.09386.oliver@neukum.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Thu, 15 May 2008 05:20:41 -0400
+Date: Thu, 15 May 2008 18:25:16 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>,
+       "hugh@veritas.com" <hugh@veritas.com>, minchan.kim@gmail.com
+Subject: [PATCH -mm 0/5] memcg: performance improvement v4
+Message-Id: <20080515182516.763967cc.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 15 May 2008 09:15:23.0546 (UTC) FILETIME=[349C97A0:01C8B66C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oliver Neukum wrote:
-> Am Donnerstag 15 Mai 2008 10:03:35 schrieb Jie Zhang:
->> Oliver Neukum wrote:
->>> Am Donnerstag 15 Mai 2008 08:19:24 schrieb Bryan Wu:
->>>> --- a/drivers/usb/host/uhci-hub.c
->>>> +++ b/drivers/usb/host/uhci-hub.c
->>>> @@ -253,7 +253,7 @@ static int uhci_hub_control(struct usb_hcd *hcd, u16 typeReq, u16 wValue,
->>>>         switch (typeReq) {
->>>>  
->>>>         case GetHubStatus:
->>>> -               *(__le32 *)buf = cpu_to_le32(0);
->>>> +               put_unaligned_le32(0, buf);
->>> What is supposed to make all these changes a good idea?
->>>
->> Since buf might not be 4-byte aligned.
-> 
-> It is. Please analyze the code before you use these access methods.
-> 
-You are right. buf has been 4-byte aligned since 2.6.19. My patch was 
-written two years ago. Sorry for the noise I caused.
+Hi, this version is against 2.6.26-rc2-mm1...much easier to try ;)
+please test.
+
+Major changes from v3.
+ - shmem handling is fixed.
+ - dropped drop_pages patch (1/6 in v3). It will be rescheduled.
+ - applied comments (Thanks!)
+
+brief test result on x86-64 (2core) system is attached below but it seems
+better to be tested on bigger system/bigger benchmark.
+(But I can't do now, sorry)
+
+Patch Description
+ 1/5 ... remove refcnt fron page_cgroup patch (shmem handling is fixed)
+ 2/5 ... swapcache handling patch
+ 3/5 ... add helper function for shmem's memory reclaim patch
+ 4/5 ... optimize by likely/unlikely ppatch
+ 5/5 ... remove redundunt check patch (shmem handling is fixed.)
+
+Unix bench result.
+
+== 2.6.26-rc2-mm1 + memory resource controller
+Execl Throughput                           2915.4 lps   (29.6 secs, 3 samples)
+C Compiler Throughput                      1019.3 lpm   (60.0 secs, 3 samples)
+Shell Scripts (1 concurrent)               5796.0 lpm   (60.0 secs, 3 samples)
+Shell Scripts (8 concurrent)               1097.7 lpm   (60.0 secs, 3 samples)
+Shell Scripts (16 concurrent)               565.3 lpm   (60.0 secs, 3 samples)
+File Read 1024 bufsize 2000 maxblocks    1022128.0 KBps  (30.0 secs, 3 samples)
+File Write 1024 bufsize 2000 maxblocks   544057.0 KBps  (30.0 secs, 3 samples)
+File Copy 1024 bufsize 2000 maxblocks    346481.0 KBps  (30.0 secs, 3 samples)
+File Read 256 bufsize 500 maxblocks      319325.0 KBps  (30.0 secs, 3 samples)
+File Write 256 bufsize 500 maxblocks     148788.0 KBps  (30.0 secs, 3 samples)
+File Copy 256 bufsize 500 maxblocks       99051.0 KBps  (30.0 secs, 3 samples)
+File Read 4096 bufsize 8000 maxblocks    2058917.0 KBps  (30.0 secs, 3 samples)
+File Write 4096 bufsize 8000 maxblocks   1606109.0 KBps  (30.0 secs, 3 samples)
+File Copy 4096 bufsize 8000 maxblocks    854789.0 KBps  (30.0 secs, 3 samples)
+Dc: sqrt(2) to 99 decimal places         126145.2 lpm   (30.0 secs, 3 samples)
 
 
-Jie
+                     INDEX VALUES
+TEST                                        BASELINE     RESULT      INDEX
+
+Execl Throughput                                43.0     2915.4      678.0
+File Copy 1024 bufsize 2000 maxblocks         3960.0   346481.0      875.0
+File Copy 256 bufsize 500 maxblocks           1655.0    99051.0      598.5
+File Copy 4096 bufsize 8000 maxblocks         5800.0   854789.0     1473.8
+Shell Scripts (8 concurrent)                     6.0     1097.7     1829.5
+                                                                 =========
+     FINAL SCORE                                                     991.3
+
+== 2.6.26-rc2-mm1 + this set ==
+Execl Throughput                           3012.9 lps   (29.9 secs, 3 samples)
+C Compiler Throughput                       981.0 lpm   (60.0 secs, 3 samples)
+Shell Scripts (1 concurrent)               5872.0 lpm   (60.0 secs, 3 samples)
+Shell Scripts (8 concurrent)               1120.3 lpm   (60.0 secs, 3 samples)
+Shell Scripts (16 concurrent)               578.0 lpm   (60.0 secs, 3 samples)
+File Read 1024 bufsize 2000 maxblocks    1003993.0 KBps  (30.0 secs, 3 samples)
+File Write 1024 bufsize 2000 maxblocks   550452.0 KBps  (30.0 secs, 3 samples)
+File Copy 1024 bufsize 2000 maxblocks    347159.0 KBps  (30.0 secs, 3 samples)
+File Read 256 bufsize 500 maxblocks      314644.0 KBps  (30.0 secs, 3 samples)
+File Write 256 bufsize 500 maxblocks     151852.0 KBps  (30.0 secs, 3 samples)
+File Copy 256 bufsize 500 maxblocks      101000.0 KBps  (30.0 secs, 3 samples)
+File Read 4096 bufsize 8000 maxblocks    2033256.0 KBps  (30.0 secs, 3 samples)
+File Write 4096 bufsize 8000 maxblocks   1611814.0 KBps  (30.0 secs, 3 samples)
+File Copy 4096 bufsize 8000 maxblocks    847979.0 KBps  (30.0 secs, 3 samples)
+Dc: sqrt(2) to 99 decimal places         128148.7 lpm   (30.0 secs, 3 samples)
+
+
+                     INDEX VALUES
+TEST                                        BASELINE     RESULT      INDEX
+
+Execl Throughput                                43.0     3012.9      700.7
+File Copy 1024 bufsize 2000 maxblocks         3960.0   347159.0      876.7
+File Copy 256 bufsize 500 maxblocks           1655.0   101000.0      610.3
+File Copy 4096 bufsize 8000 maxblocks         5800.0   847979.0     1462.0
+Shell Scripts (8 concurrent)                     6.0     1120.3     1867.2
+                                                                 =========
+     FINAL SCORE                                                    1004.6
+
+
+Thanks,
+-Kame
+
