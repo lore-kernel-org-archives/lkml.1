@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756147AbYEONDd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755273AbYEONHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756147AbYEONDd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 09:03:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751696AbYEONDY
+	id S1755273AbYEONHZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 09:07:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751077AbYEONHL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 09:03:24 -0400
-Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:32120 "HELO
-	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751042AbYEONDX (ORCPT
+	Thu, 15 May 2008 09:07:11 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:41459 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750902AbYEONHK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 09:03:23 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=0F/zhvhlKMADs30WLGBamgLqghnvmTbK9KCDT70pe0YVrNS7QaGE4LJxaMO+IHshB0fgT2fJCf87vQp9F25WUZDQxWMNRya5Lvk6nVo0+OStB930M828axTyulgQOuDJVC39A/VpB4xHm9YRRVfJwmWSbjkxRpIX64qxxNHHca0=  ;
-X-YMail-OSG: 6h1c38EVM1lX.pZUOiG4j8MsUX9yznR8xLxOJu5bnj1lg10fFdkFjx9ZJ5X7gopGIGwAG_KO9q22YiFgEfQ67G1cRyqx.WGJhOGAI7SxAuX_jfZj_BgcBihSq56AKtitwp0-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Oliver Neukum <oliver@neukum.org>
-Subject: Re: [PATCH 1/1] [usb/host]: use get/put_unaligned_* helpers to fix more potential unaligned issues.
-Date: Thu, 15 May 2008 06:03:20 -0700
-User-Agent: KMail/1.9.6
-Cc: "Bryan Wu" <cooloney@kernel.org>, "Jie Zhang" <jie.zhang@analog.com>,
-       harvey.harrison@gmail.com, greg@kroah.com, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <1210832364-20012-1-git-send-email-cooloney@kernel.org> <386072610805150254p6161627er9f99910066287f2f@mail.gmail.com> <200805151419.16026.oliver@neukum.org>
-In-Reply-To: <200805151419.16026.oliver@neukum.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805150603.21199.david-b@pacbell.net>
+	Thu, 15 May 2008 09:07:10 -0400
+To: hch@infradead.org
+CC: miklos@szeredi.hu, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-reply-to: <20080509194642.GA783@infradead.org> (message from Christoph
+	Hellwig on Fri, 9 May 2008 15:46:42 -0400)
+Subject: Re: [patch 6/9] fuse: add export operations
+References: <20080509124107.645600519@szeredi.hu> <20080509124133.577558326@szeredi.hu> <20080509194030.GA29118@infradead.org> <20080509194642.GA783@infradead.org>
+Message-Id: <E1JwdAj-0006ix-QP@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 15 May 2008 15:07:01 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 May 2008, Oliver Neukum wrote:
-> This is not very nice. If we pass around unaligned pointers we should mark
-> those not catch errors later on.
+> > This is the same filehandle type XFS uses for 64bit inode filesystems
+> > where the parent is not encoded.  I'll post a patch soon to move that
+> > 64bit inode handling to common code.  I don't think it's a good idea
+> > to delay your patch until that happens, but can you chose the fid
+> > types to be the same as XFS does currently so that a conversion is
+> > easily possible.  The fh_type should be 0x81 (fh type 1 order by 0x80
+> > to imply it's 64bit inodes)
+> > 
+> > In case you want to look at that patch I'v uploaded the current
+> > version at http://verein.lst.de/~hch/generic-64bit-inode-export
 
-ISTR that GCC doesn't have a way to annotate pointers that way.
+OK, the problem is: fuse doesn't store the number indexing the inodes
+in i_ino.  This is not entirely trivial to fix: we either supply the
+inode numbers to the encoding function explicitly, or use something
+like the get_inode callback in generic_fh_to_dentry/_parent.  At which
+point I begin to doubt if it's worth the effort to share this code.
+After all the encoding/decoding functions are not complicated at all.
 
+Miklos
