@@ -1,74 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763581AbYEOS3l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761690AbYEOSbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763581AbYEOS3l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 14:29:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757187AbYEOS3a
+	id S1761690AbYEOSbq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 14:31:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752982AbYEOSbg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 14:29:30 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:25472 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757152AbYEOS33 (ORCPT
+	Thu, 15 May 2008 14:31:36 -0400
+Received: from web95109.mail.in2.yahoo.com ([203.104.18.161]:37524 "HELO
+	web95109.mail.in2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752297AbYEOSbe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 14:29:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=K7GNQfUZTsONZFQVxyxfI2n6qL+1DCtH/y5Y+/ZjJJaQlIXy/8jVm22OKeP8uWNFQKz+FKcdba21jjT0BLBo0pD3YB3Pp3yUkxE8QS6YgtTJdKi3D1LRQNnQD2JUvNNIUflwqoAfPswYT8NIgW9ZSWzIrJxyuvvyZNWpjRZ2qBE=
-Message-ID: <19f34abd0805151129j5e3de513s59875271fb4d9fab@mail.gmail.com>
-Date: Thu, 15 May 2008 20:29:26 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Matthew Wilcox" <matthew@wil.cx>
-Subject: Re: [patch 21/21] slab defrag: Obsolete SLAB
-Cc: "Christoph Lameter" <clameter@sgi.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       "Andi Kleen" <andi@firstfloor.org>,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>,
-       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
-       "Rik van Riel" <riel@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       "Mel Gorman" <mel@skynet.ie>, mpm@selenic.com
-In-Reply-To: <20080515174953.GN9921@parisc-linux.org>
+	Thu, 15 May 2008 14:31:34 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=s1DsmYisSB29gqbcr5hhteJ5auJW0EDMLeBxJ2ffNikxnPlIiA84iPJHPECa/b656NbVykoZbdy9bzH7pDyOsyyg4JaD+QTg9UC6u8mrmRJdsNayKcOzUNxDbtnJAGaebwZRmL6QKjFLCyy+wJQQ+j38whmmWcfbLV4vLDCC9tM=;
+X-YMail-OSG: eKJTeUcVM1n_mySuAkEg2xPIXr6ld.CWWGZ7GOj8ZP9tVbvUodk7y8xjc8tqotuWdyQS1ANwb0TQhugqnAYZyQBVRbr1RU9kEeVSVMYHAcvz06oOahA4WecrAg--
+Date: Thu, 15 May 2008 19:31:31 +0100 (BST)
+From: murtuja bharmal <murtuja_bharmal@yahoo.com>
+Subject: Re: Kbuild Makefile output
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kernel@vger.kernel.org, linux-kbuild <linux-kbuild@vger.kernel.org>
+In-Reply-To: <20080515174222.GB24024@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080510030919.604216074@sgi.com>
-	 <20080510221515.3540a6cc@bree.surriel.com>
-	 <2f11576a0805120038s334dc56cuaf16b8b7c6f87098@mail.gmail.com>
-	 <84144f020805120054t1370236ei5ff52279457e026e@mail.gmail.com>
-	 <Pine.LNX.4.64.0805141009210.15194@schroedinger.engr.sgi.com>
-	 <482B2617.5010605@firstfloor.org>
-	 <Pine.LNX.4.64.0805141100110.15633@schroedinger.engr.sgi.com>
-	 <1210822002.3177.121.camel@ymzhang>
-	 <Pine.LNX.4.64.0805151002420.18354@schroedinger.engr.sgi.com>
-	 <20080515174953.GN9921@parisc-linux.org>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Message-ID: <818830.6509.qm@web95109.mail.in2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 15, 2008 at 7:49 PM, Matthew Wilcox <matthew@wil.cx> wrote:
-> On Thu, May 15, 2008 at 10:05:35AM -0700, Christoph Lameter wrote:
->> Thanks for using the slab statistics. I wish I had these numbers for the
->> TPC benchmark. That would allow us to understand what is going on while it
->> is running.
->
-> Hang on, you want slab statistics for the TPC run?  You didn't tell me
-> that.  We're trying to gather oprofile data (and having trouble because
-> the machine crashes when we start using oprofile -- this is with the git
-> tree you/pekka put together for us to test).
 
-Hi,
+--- Sam Ravnborg <sam@ravnborg.org> wrote:
 
-oprofile was recently fixed, maybe try cherry-picking these will help:
+> On Thu, May 15, 2008 at 11:07:19PM +0530, murtuja
+> bharmal wrote:
+> > Hello All.
+> > I want to collect all my object file in
+> onedirectory and then want to create a kernel
+> module.
+> > For example: This my directory structure.
+> > dir
+> > |
+> > --------------------------------------
+> > |            |        |        |
+> > dir1    dir2       dir3   dir4
+> > This is my makefile in 'dir'.
+> > obj-m := test.o
+> > test-objs += \
+> >                 dir1/test1.o  \
+> >                 dir2/test2.o  \
+> >                 dir3/test3.o
+> > all:
+> >             make -C /usr/src/linux M=`pwd` modules
+> > 
+> > Now I want to save all output objectfile test1.o
+> test2.o test3.o in one directory
+> > called 'dir4' not in source directory. 'test.o'
+> should look all this object file in 'dir4' for
+> linking, not in the source directory and 'test.ko'
+> should also be create in 'dir4'.
+> > Can any one tell me, what is require changes in
+> Kernel Makefile for the same.
+> 
+> Do not do that...
+> 
+> If you really need to do so - please explain why so
+> we can understand the rationale.
+> There are ~2000 modules that does not need this so
+> what makes your maodule so special?
+> 
+> [Added kbuild@vger to cc as you also asked there]
+> 
+> 	Sam
+> 
 
-http://git.kernel.org/?p=linux/kernel/git/smurf/linux-trees.git;a=commit;h=7ded2dcf5f2c30889d7ac743ed64fff272ec190d
-http://git.kernel.org/?p=linux/kernel/git/smurf/linux-trees.git;a=commit;h=08bc5caced1f322255f44880529a651e204a38eb
-http://git.kernel.org/?p=linux/kernel/git/smurf/linux-trees.git;a=commit;h=2b56af59ed24d25be0282de9ae98c290e03a7dd9
+Hello Sam,
 
-Vegard
+Thanks for reply.
+Actually Problem is.
+As I told you I have near near about 1000 file that
+compiles for single module creation which spread in
+multiple directies in 2.4 with lots of makefile.
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+Now I have created single makefile to compile all this
+file and able to create kernel module.
+
+But now the problem is lots of file included in kernel
+module, compiled twice or even more then twice for
+user space (whithou kernel flag set) and kernel space
+as well.
+
+Previously in 2.4 we use to put all output object file
+in different directories for kernel module and user
+binaries based on their compilation Flags.
+
+Now after attaching kbuild makefile with this system,
+kbuild make all object file in source directory itself
+becasue of that userspace makefiles not able to
+compile those file again. Because one object file is
+already there by kbuild. So I am not able create
+userspace binary.
+
+Now either solution is generate kbuild object file in
+different directory not in source directory as per our
+previous design or make a copy of exsisting file with
+some other name. One for kernel and one for user
+space but this is also not a good approach.
+
+So I thought lets check the possibility of generating
+all kernel related object file in some other directory
+not in source directory.
+So I just want to know whether it is possible or not
+and if possible how.
+
+
+Thanks 
+Murtuja
+
+
+
+
+      Forgot the famous last words? Access your message archive online at http://in.messenger.yahoo.com/webmessengerpromo.php
