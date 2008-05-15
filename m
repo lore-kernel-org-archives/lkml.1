@@ -1,120 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756725AbYEOWNx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757302AbYEOWSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756725AbYEOWNx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 18:13:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbYEOWNl
+	id S1757302AbYEOWSS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 18:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205AbYEOWSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 18:13:41 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:64321 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752814AbYEOWNk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 18:13:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CrU/HG22iSCANourQ+A/j5Y9Oo2msWN5t2bwP3QecIZWZExFsh4i3CTcSFO1tx7xsu8N5EDEoFGNb/nOKWIke650xHQZ8y+O6Xnf2rSq3/phIckTN9ge6G0bTZAiCf+ryQ3hjA2E/cMXy9aUjY2+zreYq4gSuQ2xJpJtErln9l4=
-Message-ID: <9a8748490805151513j74f9b99dla900ebc636941636@mail.gmail.com>
-Date: Fri, 16 May 2008 00:13:39 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Adrian Bunk" <bunk@kernel.org>
-Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of IRQF_SAMPLE_RANDOM
-Cc: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Chris Peterson" <cpeterso@cpeterso.com>, jeff@garzik.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org, mpm@selenic.com
-In-Reply-To: <20080515215517.GI1936@cs181133002.pp.htv.fi>
+	Thu, 15 May 2008 18:18:08 -0400
+Received: from mail.gmx.net ([213.165.64.20]:47810 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751790AbYEOWSH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 18:18:07 -0400
+X-Authenticated: #5039886
+X-Provags-ID: V01U2FsdGVkX1/nEls1K9Tnrur3NyX8c9BRIE78LUAH9a9nTE257Z
+	rOJxFUiN+Z6VP0
+Date: Fri, 16 May 2008 00:18:03 +0200
+From: =?iso-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
+To: Pascal =?iso-8859-1?Q?Br=FCckner?= <pascal_2001@web.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Strange C3/C4 sleep state behaviour
+Message-ID: <20080515221803.GA17259@atjola.homenet>
+References: <482CA6E4.1010807@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com>
-	 <20080515142154.0595e475@core>
-	 <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com>
-	 <20080515215517.GI1936@cs181133002.pp.htv.fi>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <482CA6E4.1010807@web.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/5/15 Adrian Bunk <bunk@kernel.org>:
-> On Thu, May 15, 2008 at 09:07:52AM -0700, Brandeburg, Jesse wrote:
->> Alan Cox wrote:
->> > Chris Peterson <cpeterso@cpeterso.com> wrote:
->> >> I know Jeff Garzik says he's not interested in an anti-entropy
->> >> pogrom for existing net drivers, but here is the patch if anyone
->> >> else is interested..? :)
->> >>
->> >> Only 12 net drivers are affected, the last of the
->> >> theoretically-exploitable network entropy.
->> >
->> > Looks fine to me. If Jeff doesn't want to touch them then send them
->> > direct to Andrew/Linus.
->> >
->> > A more interesting alternative might be to mark things like network
->> > drivers with a new flag say IRQF_SAMPLE_DUBIOUS so that users can be
->> > given a switch to enable/disable their use depending upon the
->> > environment.
->>
->> we've been hearing rumblings of big customers wanting (maybe requiring)
->> wired network drivers from Intel to  advertise this flag.  Jeff have you
->> heard of such?
->>
->> I think the argument is that a headless system (no keyboard/mouse, no
->> soundcard, probably no video) with a libata based driver and a network
->> driver without IRQF_SAMPLE_RANDOM has *no* sources of entropy.  In this
->> case the argument is very strong for at least *some* source of entropy
->> from interrupts so that randomness can get some external input.  Just
->> try rebuilding a kernel RPM over an ssh session and you'll see what I
->> mean.
->>
->> In short, I agree with Alan's IRQF_SAMPLE_DUBIOUS, and know of Linux
->> customers who also want the same.
+On 2008.05.15 23:11:00 +0200, Pascal Brückner wrote:
+> Hello!
 >
-> We have two random number interfaces:
-> - /dev/random
-> - /dev/urandom
+> I'm recompiling my kernel recently to optimize the power usage of my
+> laptop (IBM ThinkPad X31). So far, my most efficient kernel at the
+> moment is a self-compiled 2.6.22 with phc patches for undervolting,
+> suspend2/tuxonice and hrtimers patches to force HPET on my ICH4-M chipset.
 >
-> If a customer wants to get data from /dev/random although there's not
-> enough entropy that's not a problem we can solve (we can only try to
-> gather more real entropy if possible).
->
-> If he can live with dubious data he can simply use /dev/urandom .
->
-> If a customer wants to use /dev/random and demands to get dubious data
-> there if nothing better is available fulfilling his wish only moves
-> the security bug from his crappy application to the Linux kernel.
->
-> But what we could perhaps do with some kind of IRQF_SAMPLE_DUBIOUS would
-> be to improve the quality of the data in /dev/urandom if there's not
-> enough entropy available?
->
-> I have seen embedded systems with zero entropy, and dubious entropy
-> might there be better than no entropy at all.
-> Or am I wrong on the latter?
->
+> Because everyone says, that newer kernel revisions are much more energy
+> efficient than my 2.6.22, i tried to compile one to reach at least the
+> energy usage of my recent kernel.
+> Sadly, this doesn't work because of only one issue:
+> With activated wireless networking (atheros chipset with recent madwifi
+> driver) i'm losing much energy due to the fact, that my cpu is
+> significant more in C2 state than in C3/C4.
 
-Note: I'm far from being any kind of expert on this topic, but I just
-had a crazy idea.
+Do you have CONFIG_CPU_IDLE enabled? That made a huge difference for me.
+Before that was available, _disabling_ CONFIG_NO_HZ also helped when
+wifi was enabled (but IIRC made things worse with wifi disabled).
 
-What if we use the time between syscalls being made as a source of
-(very little) entropy?
-
-My point is that the rate (and timing between) syscalls is depending
-on very many factors; the kernel version (and configuration), the
-software installed, the software currently executing, the state of the
-software currently executing, the number of apps executing, the amount
-of network traffic, the accuracy of the hardware clock, the speed of
-(various) IO sources (network, disk, USB, etc), the speed (and type)
-of the CPU, the speed of memory. And various other things.
-I'd guess that predicting the syscall rate and interval between
-syscalls would be too hard to accurately predict to predict the actual
-entropy generated by that sampling in any real world scenario.
-Wouldn't that make it a reasonable entropy source for machines that
-have no other sources (and a fair contributor of entropy even for
-machines that do have other sources) ??
-
-
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please http://www.expita.com/nomime.html
+Björn
