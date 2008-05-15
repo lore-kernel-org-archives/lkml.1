@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763171AbYEOSOx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763528AbYEOSPZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763171AbYEOSOx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 14:14:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756198AbYEOSOm
+	id S1763528AbYEOSPZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 14:15:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758453AbYEOSPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 14:14:42 -0400
-Received: from stinky.trash.net ([213.144.137.162]:49509 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751479AbYEOSOm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 14:14:42 -0400
-Message-ID: <482C7D8F.3040401@trash.net>
-Date: Thu, 15 May 2008 20:14:39 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080405)
+	Thu, 15 May 2008 14:15:05 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:45614 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756198AbYEOSPD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 14:15:03 -0400
+Message-ID: <482C7DA3.1090809@garzik.org>
+Date: Thu, 15 May 2008 14:14:59 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Jarek Poplawski <jarkao2@gmail.com>
-CC: Kingsley Foreman <kingsley@internode.com.au>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: NET_SCHED cbq dropping too many packets on a bonding interface
-References: <20080515091216.GA6550@ff.dom.local> <8ECDBB4EB5394859BFFACAAEE3A6EDB0@uglypunk> <482C6040.9030808@trash.net> <20080515180914.GA2936@ami.dom.local>
-In-Reply-To: <20080515180914.GA2936@ami.dom.local>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       Chris Peterson <cpeterso@cpeterso.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
+ IRQF_SAMPLE_RANDOM
+References: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com>	<20080515142154.0595e475@core>	<36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com> <20080515173939.1ec968be@core>
+In-Reply-To: <20080515173939.1ec968be@core>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jarek Poplawski wrote:
-> On Thu, May 15, 2008 at 06:09:36PM +0200, Patrick McHardy wrote:
->> Kingsley Foreman wrote:
->>> i just rolled back the kernel to 2.6.24 and im seeing the same thing,
->>>
->>> I was using 2.6.22 before and didn't see the problem, txqueuelen on the 
->>> bond0 interface is 0 (the default)
->> That might explain things, although it shouldn't have worked before
->> either.
->>
->> CBQ creates default pfifo qdiscs for its leaves, these use a limit
->> of txqueuelen or 1 if it is zero. So even small bursts will cause
->> drops. Do things improve if you set txqueuelen to a larger value
->> *before* configuring the qdiscs?
+Alan Cox wrote:
+>> In short, I agree with Alan's IRQF_SAMPLE_DUBIOUS, and know of Linux
+>> customers who also want the same.
 > 
-> Kingsley wrote to me that even after changing txqueuelen to 1000 the
-> "dropped" number didn't change much. A debugging patch with printks
-> around all "sch->qstats.dropps++" showed only the end of cbq_enqueue().
-
-
-Thats where packets dropped by default pfifo would be accounted.
-Did you change txqueuelen before or after setting up the qdiscs?
-
-> I've asked to check tomorrow "pfifo limit 1000" for these drops too.
-
-That will clear it up.
-
->> Another thing is that CBQ on bond will probably not work properly
->> at all, it needs a real device since it measures the timing between
->> dequeue events for idle time estimation. On software devices this
->> doesn't work.
+> They should be made to read the Debian ssh security report - three times
+> and understand the same would apply to them if something did cause their
+> network packet arrivals to be observed or non-random
 > 
-> Right, but these drops without any sign of overactions or overlimits
-> seem to show it's not about shaping (or it's not counted/documented
-> enough).
+> Far better would be to get your CPU guys to put an RNG back into the
+> systems or on the CPU die ala VIA. Given I've even seen people using VIA
+> boxes as a random number feeder (streaming random numbers over SSL) there
+> is clearly a demand 8)
 
-Yes, these drops are probably unrelated, just thought I mention it.
+The Treacherous Platform Module includes an RNG.
+
+Someone (hi Jesse?) should implement support for TPM_GetRandom.
+
+All the specs are public, and the hardware is already in users' hands.
+
+	Jeff
+
+
+
+
