@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756560AbYEOJLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756739AbYEOJQF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756560AbYEOJLT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 05:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbYEOJLD
+	id S1756739AbYEOJQF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 05:16:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbYEOJPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 05:11:03 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:53508 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752570AbYEOJLC (ORCPT
+	Thu, 15 May 2008 05:15:53 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:27945 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752318AbYEOJPw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 05:11:02 -0400
-Subject: Re: [PATCH 2/9] HID: make a bus from hid code
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Jiri Kosina <jkosina@suse.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       anssi.hannula@gmail.com, akpm@linux-foundation.org,
-       Jiri Slaby <jslaby@suse.cz>
-In-Reply-To: <482AB12F.20106@gmail.com>
-References: <1210536043-19812-1-git-send-email-jirislaby@gmail.com>
-	 <1210536043-19812-2-git-send-email-jirislaby@gmail.com>
-	 <1210547158.16390.28.camel@violet.holtmann.net>  <482AB12F.20106@gmail.com>
-Content-Type: text/plain
-Date: Thu, 15 May 2008 11:11:02 +0200
-Message-Id: <1210842662.7025.21.camel@violet.holtmann.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+	Thu, 15 May 2008 05:15:52 -0400
+X-IronPort-AV: E=Sophos;i="4.27,490,1204520400"; 
+   d="scan'208";a="53579933"
+Message-ID: <482BFF2C.4090506@analog.com>
+Date: Thu, 15 May 2008 17:15:24 +0800
+From: Jie Zhang <jie.zhang@analog.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
+MIME-Version: 1.0
+To: Oliver Neukum <oliver@neukum.org>
+CC: Bryan Wu <cooloney@kernel.org>, harvey.harrison@gmail.com,
+       david-b@pacbell.net, greg@kroah.com, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] [usb/host]: use get/put_unaligned_* helpers to fix
+ more potential unaligned issues.
+References: <1210832364-20012-1-git-send-email-cooloney@kernel.org> <200805150940.34516.oliver@neukum.org> <482BEE57.6040704@analog.com> <200805151036.09386.oliver@neukum.org>
+In-Reply-To: <200805151036.09386.oliver@neukum.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 May 2008 09:15:23.0546 (UTC) FILETIME=[349C97A0:01C8B66C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jiri,
-
-> >> +static struct hid_driver hid_generic_bt = {
-> >> +	.name = "hid-generic-bt",
-> >> +	.id_table = hid_generic_bt_ids,
-> >> +};
-> > 
-> > And this one to hidp_driver instead of hid_generic_bt.
-> > 
-> > Also the name "hid-generic-bt" is not okay. Call it "hidp" since that is
-> > the driver name. An alternative would be "hid-bluetooth". I don't like
-> > the "generic" part and we never used the shortcut "bt" in any sysfs
-> > visible file.
+Oliver Neukum wrote:
+> Am Donnerstag 15 Mai 2008 10:03:35 schrieb Jie Zhang:
+>> Oliver Neukum wrote:
+>>> Am Donnerstag 15 Mai 2008 08:19:24 schrieb Bryan Wu:
+>>>> --- a/drivers/usb/host/uhci-hub.c
+>>>> +++ b/drivers/usb/host/uhci-hub.c
+>>>> @@ -253,7 +253,7 @@ static int uhci_hub_control(struct usb_hcd *hcd, u16 typeReq, u16 wValue,
+>>>>         switch (typeReq) {
+>>>>  
+>>>>         case GetHubStatus:
+>>>> -               *(__le32 *)buf = cpu_to_le32(0);
+>>>> +               put_unaligned_le32(0, buf);
+>>> What is supposed to make all these changes a good idea?
+>>>
+>> Since buf might not be 4-byte aligned.
 > 
-> Thanks for comments, I fixed all those except this one. The generic- word is 
-> tested in the core to recognize generic drivers which bind non-blacklisted 
-> devices and are handled separately. Anyway I've renamed them to 
-> generic-bluetooth and generic-usb instead of hid-generic-{bt,usb}.
+> It is. Please analyze the code before you use these access methods.
 > 
-> I think the generic word in the driver name is OK, so that one ordinary user 
-> can see, my device is handled by the generic driver without special 
-> processing. Would you rather see some flag or something?
-
-actually generic-usb and generic-bluetooth sound perfectly fine to me.
-
-Regards
-
-Marcel
+You are right. buf has been 4-byte aligned since 2.6.19. My patch was 
+written two years ago. Sorry for the noise I caused.
 
 
+Jie
