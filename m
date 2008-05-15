@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762950AbYEOVf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764207AbYEOVhQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762950AbYEOVf0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 17:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbYEOVfP
+	id S1764207AbYEOVhQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 17:37:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbYEOVhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 17:35:15 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:63115 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754072AbYEOVfN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 17:35:13 -0400
-Date: Fri, 16 May 2008 00:39:46 +0300
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       alexisb@us.ibm.com
-Subject: Re: [PATCH 0/2] x86: per-device dma_mapping_ops
-Message-ID: <20080515213946.GE10434@il.ibm.com>
-References: <87y76cym96.fsf@basil.nowhere.org> <20080515181619R.tomof@acm.org> <482C02A4.80101@firstfloor.org> <20080515184126O.tomof@acm.org> <20080515152631.GG6778@il.ibm.com> <20080515210340.GC318@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080515210340.GC318@one.firstfloor.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Thu, 15 May 2008 17:37:04 -0400
+Received: from main.gmane.org ([80.91.229.2]:43604 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754122AbYEOVhD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 17:37:03 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+Subject: Re: Weird Xorg radeon mirroring with linux-next-20080515 [paritial
+ bisect]
+Date: Thu, 15 May 2008 21:36:51 +0000 (UTC)
+Message-ID: <g0iadj$dip$1@ger.gmane.org>
+References: <g0hflu$b4q$1@ger.gmane.org> <482C744C.3050308@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: cpc1-cwma5-0-0-cust137.swan.cable.ntl.com
+User-Agent: Pan/0.129 (Benson & Hedges Moscow Gold)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 15, 2008 at 11:03:40PM +0200, Andi Kleen wrote:
-> On Thu, May 15, 2008 at 06:26:31PM +0300, Muli Ben-Yehuda wrote:
-> > On Thu, May 15, 2008 at 06:41:26PM +0900, FUJITA Tomonori wrote:
-> > 
-> > > I thought that KVM people want to do it per device (in the first
-> > > case). So with my patchse, they can replace the dma_ops pointer
-> > > in dev_archdata with what they want.
-> > 
-> > That's my understanding too. We use stackable ops as a poor man's
-> > replacement for per-device ops (depending on what kind of device
-> > it is, call the original ops or our pvdma ops).
-> 
-> But in the KVM case you still need to support the underlying ops
-> too, e.g. in case of bouncing through swiotlb needed
+On Thu, 15 May 2008 13:35:08 -0400, Chris Snook wrote:
 
-Good point, although "secondary" DMA-ops should only be needed in rare
-cases (the only one I can think of is bouncing through swiotlb for a
-pass-through device which has a limited DMA mask), whereas per-device
-ops are needed for every pass-through device.
+> Sitsofe Wheeler wrote:
+>> Hi,
+>> 
+>> When using the radeon xorg driver with linux-next-20080515 there is a
+>> strange mirroring/stretching effect in the bottom eighth of the screen.
+>> The problem seems to have started sometime between linux-next-20080513
+>> and linux-next-20080515.
+>> 
+>> (Do you always have to have done bisection before reporting
+>> regressions?)
+>> 
+>> 
+> NO!
 
-Cheers,
-Muli
+Ah, now you tell me : ) It sounded like bisection was what you did if you 
+weren't a regular dev and you wanted your bug to get attention. I've 
+spent a while trying to bisect this but didn't get all the way. My tests 
+make me believe it lies somewhere between commits 
+f5fbb15f66bd0a6017e4ca513217e823395502b7 and 
+6a305693b777ecd710107387a9753117a54bcbf9 ...
+
+The problem doesn't manifest directly after Xorg is started after boot - 
+it seems to happen a few seconds later while services are still being 
+started. Switching to a VT and back can make the problem go away.
+
+-- 
+Sitsofe | http://sucs.org/~sits/
+
