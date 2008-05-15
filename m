@@ -1,64 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765030AbYEOVnd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765135AbYEOVp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765030AbYEOVnd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 17:43:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbYEOVnW
+	id S1765135AbYEOVp0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 17:45:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbYEOVpP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 17:43:22 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:38220 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755857AbYEOVnV (ORCPT
+	Thu, 15 May 2008 17:45:15 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:55858 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752208AbYEOVpO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 17:43:21 -0400
-Date: Thu, 15 May 2008 14:43:13 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Christophe Jaillet" <christophe.jaillet@wanadoo.fr>
-Cc: "cj" <christophe.jaillet@wanadoo.fr>,
-       "linux" <linux-kernel@vger.kernel.org>,
-       <florian.fainelli@telecomint.eu>, <netdev@vger.kernel.org>
-Subject: Re: [PATCH 1/1] /drivers/net/r6040.c: bad use of round_jiffies()
- ???
-Message-ID: <20080515144313.524d199d@infradead.org>
-In-Reply-To: <20080515212624.D56371C00093@mwinf2723.orange.fr>
-References: <20080515212624.D56371C00093@mwinf2723.orange.fr>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 15 May 2008 17:45:14 -0400
+Message-ID: <482CAEE6.5080509@firstfloor.org>
+Date: Thu, 15 May 2008 23:45:10 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
+To: Muli Ben-Yehuda <muli@il.ibm.com>
+CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       alexisb@us.ibm.com
+Subject: Re: [PATCH 0/2] x86: per-device dma_mapping_ops
+References: <87y76cym96.fsf@basil.nowhere.org> <20080515181619R.tomof@acm.org> <482C02A4.80101@firstfloor.org> <20080515184126O.tomof@acm.org> <20080515152631.GG6778@il.ibm.com> <20080515210340.GC318@one.firstfloor.org> <20080515213946.GE10434@il.ibm.com>
+In-Reply-To: <20080515213946.GE10434@il.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 May 2008 23:26:22 +0200
-"Christophe Jaillet" <christophe.jaillet@wanadoo.fr> wrote:
+Muli Ben-Yehuda wrote:
+> On Thu, May 15, 2008 at 11:03:40PM +0200, Andi Kleen wrote:
+>> On Thu, May 15, 2008 at 06:26:31PM +0300, Muli Ben-Yehuda wrote:
+>>> On Thu, May 15, 2008 at 06:41:26PM +0900, FUJITA Tomonori wrote:
+>>>
+>>>> I thought that KVM people want to do it per device (in the first
+>>>> case). So with my patchse, they can replace the dma_ops pointer
+>>>> in dev_archdata with what they want.
+>>> That's my understanding too. We use stackable ops as a poor man's
+>>> replacement for per-device ops (depending on what kind of device
+>>> it is, call the original ops or our pvdma ops).
+>> But in the KVM case you still need to support the underlying ops
+>> too, e.g. in case of bouncing through swiotlb needed
+> 
+> Good point, although "secondary" DMA-ops should only be needed in rare
+> cases 
 
-> From: Christophe Jaillet <christophe.jaillet@wanadoo.fr>
-> 
-> Hi, here is a patch against linux/drivers/net/r6040.c.
-> 
-> Compared to other places in the kernel, I think that this driver
-> misuses the function round_jiffies.
-> 
-> 
-> Note: this patch is based on 'linux-2.6.25.tar.bz2'
-> 
-> Signed-off-by: Christophe Jaillet <christophe.jaillet@wanadoo.fr>
-> 
-> ---
-> 
-> --- linux 2.6.25/drivers/net/r6040.c	2008-05-15
-> 23:21:28.000000000 +0200 +++ linux
-> 2.6.25/drivers/net/r6040.c.cj	2008-05-15 22:16:44.000000000
-> +0200 @@ -733,7 +733,7 @@ static void r6040_timer(unsigned long da }
->  
->  	/* Timer active again */
-> -	mod_timer(&lp->timer, jiffies + round_jiffies(HZ));
-> +	mod_timer(&lp->timer, round_jiffies(jiffies + HZ));
->  }
->  
+Even rare cases need to be handled. In the nodma bitmap case it was the
+same always btw
 
-good catch!
-Acked-by: Arjan van de Ven <arjan@linux.intel.com>
+-Andi
+
