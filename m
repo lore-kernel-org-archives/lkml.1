@@ -1,73 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757361AbYEOHjn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757554AbYEOHkV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757361AbYEOHjn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 03:39:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753421AbYEOHjb
+	id S1757554AbYEOHkV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 03:40:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbYEOHkF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 03:39:31 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:46185 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753042AbYEOHja (ORCPT
+	Thu, 15 May 2008 03:40:05 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:48526 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753608AbYEOHkC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 03:39:30 -0400
-To: viro@ZenIV.linux.org.uk
-CC: miklos@szeredi.hu, akpm@linux-foundation.org, hch@infradead.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-reply-to: <20080515072358.GS13907@ZenIV.linux.org.uk> (message from Al Viro
-	on Thu, 15 May 2008 08:23:58 +0100)
-Subject: Re: [patch 08/24] vfs: immutable inode checking cleanup
-References: <20080506091327.259950960@szeredi.hu> <20080506091416.025653274@szeredi.hu> <20080515072358.GS13907@ZenIV.linux.org.uk>
-Message-Id: <E1JwY3V-0006CO-Lz@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 15 May 2008 09:39:13 +0200
+	Thu, 15 May 2008 03:40:02 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=Snx1ePAgSjfJjN9NZTCGW+bHJYYLGA++2UtU1YSGFQMM52LMZC/w3bS8pcR2oTTYN
+	M62iC7Y+ATwHsnV1JkBdQ==
+Message-ID: <6599ad830805150039u76c9002cg6c873fd71e687a69@mail.gmail.com>
+Date: Thu, 15 May 2008 00:39:45 -0700
+From: "Paul Menage" <menage@google.com>
+To: balbir@linux.vnet.ibm.com, "Paul Menage" <menage@google.com>,
+       linux-mm@kvack.org, "Sudhir Kumar" <skumar@linux.vnet.ibm.com>,
+       "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, "Pavel Emelianov" <xemul@openvz.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [-mm][PATCH 4/4] Add memrlimit controller accounting and control (v4)
+In-Reply-To: <20080515070342.GJ31115@balbir.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080514130904.24440.23486.sendpatchset@localhost.localdomain>
+	 <20080514130951.24440.73671.sendpatchset@localhost.localdomain>
+	 <20080514132529.GA25653@balbir.in.ibm.com>
+	 <6599ad830805141925mf8a13daq7309148153a3c2df@mail.gmail.com>
+	 <20080515061727.GC31115@balbir.in.ibm.com>
+	 <6599ad830805142355ifeeb0e2w86ccfd96aa27aea6@mail.gmail.com>
+	 <20080515070342.GJ31115@balbir.in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > --- linux-2.6.orig/fs/attr.c	2008-05-06 11:04:29.000000000 +0200
-> > +++ linux-2.6/fs/attr.c	2008-05-06 11:04:35.000000000 +0200
-> > @@ -108,6 +108,12 @@ int notify_change(struct dentry * dentry
-> >  	struct timespec now;
-> >  	unsigned int ia_valid = attr->ia_valid;
-> >  
-> > +	if (ia_valid & (ATTR_MODE | ATTR_UID | ATTR_GID |
-> > +			ATTR_ATIME_SET | ATTR_MTIME_SET)) {
-> > +		if (IS_IMMUTABLE(inode) || IS_APPEND(inode))
-> > +			return -EPERM;
-> > +	}
-> > +
-> >  	now = current_fs_time(inode->i_sb);
-> >  
-> >  	attr->ia_ctime = now;
-> > Index: linux-2.6/fs/utimes.c
-> > ===================================================================
-> > --- linux-2.6.orig/fs/utimes.c	2008-05-06 11:04:29.000000000 +0200
-> > +++ linux-2.6/fs/utimes.c	2008-05-06 11:04:35.000000000 +0200
-> > @@ -105,10 +105,6 @@ long do_utimes(int dfd, char __user *fil
-> >  	/* Don't worry, the checks are done in inode_change_ok() */
-> >  	newattrs.ia_valid = ATTR_CTIME | ATTR_MTIME | ATTR_ATIME;
-> >  	if (times) {
-> > -		error = -EPERM;
-> > -                if (IS_APPEND(inode) || IS_IMMUTABLE(inode))
-> > -			goto mnt_drop_write_and_out;
-> > -
-> >  		if (times[0].tv_nsec == UTIME_OMIT)
-> >  			newattrs.ia_valid &= ~ATTR_ATIME;
-> >  		else if (times[0].tv_nsec != UTIME_NOW) {
-> 
-> Erm...  What happens if we have UTIME_NOW on both and inode is marked
-> immutable?  AFAICS, you've just switched from -EPERM to -EACCES.
-> For append-only it's even more interesting - you go from -EPERM to
-> success.
+On Thu, May 15, 2008 at 12:03 AM, Balbir Singh
+<balbir@linux.vnet.ibm.com> wrote:
+>
+>  I want to focus on this conclusion/assertion, since it takes care of
+>  most of the locking related discussion above, unless I missed
+>  something.
+>
+>  My concern with using mmap_sem, is that
+>
+>  1. It's highly contended (every page fault, vma change, etc)
 
-Yup.  These are defensible on the ground that times == NULL should be
-equivalent to UTIME_NOW on both.  There's really no reason to be
-stricter on the latter case.
+But the only *new* cases of taking the mmap_sem that this would
+introduce would be:
 
-> It might or might not be the right thing to do, and the syscall is
-> new, but...  Do you have an ACK from Ulrich?
+- on a failed vm limit charge
+- when a task exit/exec causes an mm ownership change
+- when a task moves between two cgroups in the memrlimit hierarchy.
 
-No.  I could CC him on these, but he's not even acking my security
-patches on utimesat, so I don't have high hopes.
+All of these should be rare events, so I don't think the additional
+contention is a worry.
 
-Miklos
+>  2. It's going to make the locking hierarchy deeper and complex
+
+Yes, potentially. But if the upside of that is that we eliminate a
+lock/unlock on a shared lock on every mmap/munmap call, it might well
+be worth it.
+
+>  3. It's not appropriate to call all the accounting callbacks with
+>    the mmap_sem() held, since the undo operations _can get_ complicated
+>    at the caller.
+>
+
+Can you give an example?
+
+>  I would prefer introducing a new lock, so that other subsystems are
+>  not affected.
+>
+
+For getting the first cut of the memrlimit controller working this may
+well make sense. But it would be nice to avoid it longer-term.
+
+Paul
