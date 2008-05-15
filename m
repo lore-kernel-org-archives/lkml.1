@@ -1,118 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763666AbYEOT5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764861AbYEOT6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763666AbYEOT5x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 15:57:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760225AbYEOTzp
+	id S1764861AbYEOT6W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 15:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758559AbYEOTz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 15:55:45 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:51285 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764914AbYEOTzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 15:55:43 -0400
-Message-ID: <482C953A.4080205@garzik.org>
-Date: Thu, 15 May 2008 15:55:38 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 15 May 2008 15:55:59 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:42330 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1762666AbYEOTz5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 15:55:57 -0400
+Date: Thu, 15 May 2008 15:55:56 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Bill Nottingham <notting@redhat.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: Problems with suspend and USB storage
+In-Reply-To: <200805152140.43292.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0805151552140.3307-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       Chris Peterson <cpeterso@cpeterso.com>,
-       tpmdd-devel@lists.sourceforge.net, tpm@selhorst.net,
-       Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [PATCH] Re: [PATCH] drivers/net: remove network drivers' last few
- uses of IRQF_SAMPLE_RANDOM
-References: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com>	<20080515142154.0595e475@core>	<36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com> <20080515173939.1ec968be@core> <482C7DA3.1090809@garzik.org>
-In-Reply-To: <482C7DA3.1090809@garzik.org>
-Content-Type: multipart/mixed;
- boundary="------------050705040308050407000605"
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050705040308050407000605
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Thu, 15 May 2008, Rafael J. Wysocki wrote:
 
-Jeff Garzik wrote:
-> Someone (hi Jesse?) should implement support for TPM_GetRandom.
+> On Thursday, 15 of May 2008, Bill Nottingham wrote:
+> > 
+> > I've been testing suspend/hibernate with various USB devices under
+> > 2.6.25.2. Test box is a Thinkpad T60 (uhci, ehci).
+> > The results are somewhat dismal.
+> > 
+> > Using USB as a hibernate device:
+> > - A directly connected USB stick works OK as a hibernate device
+> > - A directly connected USB hard drive works OK as a hibernate device
+> > - A USB stick connected via an ExpressCard reader does not - it appears
+> >   to just not be there when the hibernate code attemps to write
+> >   the data.
+> > 
+> > On resume (from either hibernate or suspend from RAM):
+> > - Any 'in use' USB storage, whether it be as swap (a hibernate device),
+> >   or a mounted filesystem, immediately generates errors on resume. It
+> >   appears the filesystem and/or swap tasks are woken up before the
+> >   actual USB device - it enumerates the disks after the errors have
+> >   already been thrown.
+> > - As a consequence, the USB devices shift their device names
+> > - Using USB_PERSIST has no effect on this problem
+> > - This appears to happen for all USB connection types (hard drive,
+> >   stick, via ExpressCard reader.)
+> > 
+> > Is there any way to get sane behavior out of suspend/resume with
+> > USB storage?
+> 
+> Well, the problem is that USB storage devices are disconnected during suspend
+> and hibernation and connected once again during resume.  Then, however, we
+> are not able to tell whether the device in the slot is the same that was in
+> there before the system was put into the sleep state.
+> 
+> I'm not sure if there's any workaround available in the current mainline.
 
-Here's an example patch (compile-tested only) to get people started.
+You can try applying one of the gregkh-04-usb-* patches at
 
-This function calls the TPM command, and returns TPM header + RNG data 
-in the supplied buffer.
+http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
 
-A hw_random driver for TPM still needs to (a) parse the TPM header for 
-return code, (b) extract RNG bytes out at offset 14, and (c) figure out 
-some way to get a tpm_chip pointer.
+They include changes to the way hub-resume handling works, as well as 
+more debugging output.  Be sure to enable CONFIG_USB_DEBUG and post the 
+relevant dmesg log.
 
-Spec at 
-https://www.trustedcomputinggroup.org/specs/TPM/TCPA_Main_TCG_Architecture_v1_1b.pdf 
-describes TPM_GetRandom on page 215.
+Alan Stern
 
-	Jeff
-
-
-
---------------050705040308050407000605
-Content-Type: text/plain;
- name="patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="patch"
-
-diff --git a/drivers/char/tpm/tpm.c b/drivers/char/tpm/tpm.c
-index a5d8bcb..4c3963b 100644
---- a/drivers/char/tpm/tpm.c
-+++ b/drivers/char/tpm/tpm.c
-@@ -579,6 +579,31 @@ void tpm_continue_selftest(struct tpm_chip *chip)
- }
- EXPORT_SYMBOL_GPL(tpm_continue_selftest);
- 
-+int tpm_getrandom(struct tpm_chip *chip, void *buf, size_t buflen)
-+{
-+	u8 rng_cmd[] = {
-+		0, 193,			/* TPM_TAG_RQU_COMMAND */
-+		0, 0, 0, 14,		/* length */
-+		0, 0, 0, 70,		/* TPM_ORD_GetRandom */
-+		0, 0, 0, 0,		/* number of bytes to return */
-+	};
-+	size_t tmp;
-+
-+	if (buflen <= sizeof(rng_cmd))
-+		return -ENOSPC;
-+
-+	/* patch in requested/returned byte count.  TODO: more than 8-bit */
-+	tmp = buflen - sizeof(rng_cmd);
-+	if (tmp > 255)
-+		tmp = 255;
-+	rng_cmd[13] = tmp;
-+
-+	memcpy(buf, rng_cmd, sizeof(rng_cmd));
-+
-+	return tpm_transmit(chip, buf, buflen);
-+}
-+EXPORT_SYMBOL_GPL(tpm_getrandom);
-+
- ssize_t tpm_show_enabled(struct device * dev, struct device_attribute * attr,
- 			char *buf)
- {
-diff --git a/drivers/char/tpm/tpm.h b/drivers/char/tpm/tpm.h
-index e885148..bbab3c8 100644
---- a/drivers/char/tpm/tpm.h
-+++ b/drivers/char/tpm/tpm.h
-@@ -127,6 +127,7 @@ static inline void tpm_write_index(int base, int index, int value)
- extern void tpm_get_timeouts(struct tpm_chip *);
- extern void tpm_gen_interrupt(struct tpm_chip *);
- extern void tpm_continue_selftest(struct tpm_chip *);
-+extern int tpm_getrandom(struct tpm_chip *, void *, size_t);
- extern unsigned long tpm_calc_ordinal_duration(struct tpm_chip *, u32);
- extern struct tpm_chip* tpm_register_hardware(struct device *,
- 				 const struct tpm_vendor_specific *);
-
---------------050705040308050407000605--
