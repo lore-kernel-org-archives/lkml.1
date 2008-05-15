@@ -1,54 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758579AbYEOPHX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932091AbYEOPHq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758579AbYEOPHX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 11:07:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932351AbYEOPEK
+	id S932091AbYEOPHq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 11:07:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758473AbYEOPEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 11:04:10 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:23025 "EHLO
+	Thu, 15 May 2008 11:04:12 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:23028 "EHLO
 	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932319AbYEOPEH (ORCPT
+	with ESMTP id S1761095AbYEOPEJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 11:04:07 -0400
-Message-Id: <20080515150007.788644684@de.ibm.com>
+	Thu, 15 May 2008 11:04:09 -0400
+Message-Id: <20080515150009.589155198@de.ibm.com>
 References: <20080515145705.188435204@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 15 May 2008 16:57:07 +0200
+Date: Thu, 15 May 2008 16:57:14 +0200
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
 Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
        Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 02/11] Remove last traces of cio_msg=.
-Content-Disposition: inline; filename=002-cio-cio_msg.diff
+Subject: [patch 09/11] tape: Use ccw_dev_id to build cdev_id.
+Content-Disposition: inline; filename=009-tape-devid.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-cio_msg= is gone, also remove it from kernel-parameters.txt.
+To construct the integer containing the information from the bus_id,
+it is easier to use the data from ccw_dev_id than to parse the bus_id.
 
 Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- Documentation/kernel-parameters.txt |    3 ---
- 1 file changed, 3 deletions(-)
+ drivers/s390/char/tape_core.c |   31 +++++--------------------------
+ 1 file changed, 5 insertions(+), 26 deletions(-)
 
-Index: quilt-2.6/Documentation/kernel-parameters.txt
+Index: quilt-2.6/drivers/s390/char/tape_core.c
 ===================================================================
---- quilt-2.6.orig/Documentation/kernel-parameters.txt
-+++ quilt-2.6/Documentation/kernel-parameters.txt
-@@ -398,9 +398,6 @@ and is between 256 and 4096 characters. 
- 	cio_ignore=	[S390]
- 			See Documentation/s390/CommonIO for details.
+--- quilt-2.6.orig/drivers/s390/char/tape_core.c
++++ quilt-2.6/drivers/s390/char/tape_core.c
+@@ -76,32 +76,9 @@ const char *tape_op_verbose[TO_SIZE] =
+ 	[TO_KEKL_QUERY] = "KLQ",[TO_RDC] = "RDC",
+ };
  
--	cio_msg=	[S390]
--			See Documentation/s390/CommonIO for details.
+-static int
+-busid_to_int(char *bus_id)
++static int devid_to_int(struct ccw_dev_id *dev_id)
+ {
+-	int	dec;
+-	int	d;
+-	char *	s;
 -
- 	clock=		[BUGS=X86-32, HW] gettimeofday clocksource override.
- 			[Deprecated]
- 			Forces specified clocksource (if available) to be used
+-	for(s = bus_id, d = 0; *s != '\0' && *s != '.'; s++)
+-		d = (d * 10) + (*s - '0');
+-	dec = d;
+-	for(s++, d = 0; *s != '\0' && *s != '.'; s++)
+-		d = (d * 10) + (*s - '0');
+-	dec = (dec << 8) + d;
+-
+-	for(s++; *s != '\0'; s++) {
+-		if (*s >= '0' && *s <= '9') {
+-			d = *s - '0';
+-		} else if (*s >= 'a' && *s <= 'f') {
+-			d = *s - 'a' + 10;
+-		} else {
+-			d = *s - 'A' + 10;
+-		}
+-		dec = (dec << 4) + d;
+-	}
+-
+-	return dec;
++	return dev_id->devno + (dev_id->ssid << 16);
+ }
+ 
+ /*
+@@ -551,6 +528,7 @@ tape_generic_probe(struct ccw_device *cd
+ {
+ 	struct tape_device *device;
+ 	int ret;
++	struct ccw_dev_id dev_id;
+ 
+ 	device = tape_alloc_device();
+ 	if (IS_ERR(device))
+@@ -565,7 +543,8 @@ tape_generic_probe(struct ccw_device *cd
+ 	cdev->dev.driver_data = device;
+ 	cdev->handler = __tape_do_irq;
+ 	device->cdev = cdev;
+-	device->cdev_id = busid_to_int(cdev->dev.bus_id);
++	ccw_device_get_id(cdev, &dev_id);
++	device->cdev_id = devid_to_int(&dev_id);
+ 	PRINT_INFO("tape device %s found\n", cdev->dev.bus_id);
+ 	return ret;
+ }
 
 -- 
 blue skies,
