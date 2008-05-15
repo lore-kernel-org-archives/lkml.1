@@ -1,42 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756960AbYEOAat@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756573AbYEOAvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756960AbYEOAat (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 20:30:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754001AbYEOAaj
+	id S1756573AbYEOAvw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 20:51:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbYEOAvn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 20:30:39 -0400
-Received: from ozlabs.org ([203.10.76.45]:55406 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750864AbYEOAaj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 20:30:39 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: "Matti Linnanvuori" <mattilinn@gmail.com>
-Subject: Re: [patch] doc: add a chapter about trylock functions [Bug 9011]
-Date: Thu, 15 May 2008 10:30:18 +1000
-User-Agent: KMail/1.9.9
-Cc: "Randy Dunlap" <randy.dunlap@oracle.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-References: <ca0148c30805130831h11fe0ca0qf501bd07d1141940@mail.gmail.com>
-In-Reply-To: <ca0148c30805130831h11fe0ca0qf501bd07d1141940@mail.gmail.com>
+	Wed, 14 May 2008 20:51:43 -0400
+Received: from mail6.sea5.speakeasy.net ([69.17.117.8]:33501 "EHLO
+	mail6.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751363AbYEOAvm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 14 May 2008 20:51:42 -0400
+Date: Wed, 14 May 2008 17:51:40 -0700 (PDT)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell4.speakeasy.net
+To: Adrian Bunk <bunk@kernel.org>
+cc: Mauro Carvalho Chehab <mchehab@infradead.org>, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org, linux-dvb-maintainer@linuxtv.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [v4l-dvb-maintainer] [GIT PATCHES] V4L/DVB fixes for 2.6.26
+In-Reply-To: <20080514193822.GA21795@cs181133002.pp.htv.fi>
+Message-ID: <Pine.LNX.4.58.0805141749470.23876@shell4.speakeasy.net>
+References: <20080514114910.4bcfd220@gaivota> <20080514165434.GC22115@cs181133002.pp.htv.fi>
+ <20080514145554.10e3385c@gaivota> <20080514193822.GA21795@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805151030.18959.rusty@rustcorp.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 14 May 2008 01:31:47 Matti Linnanvuori wrote:
-> +    <function>mutex_trylock()</function> does not suspend your task
-> +    but returns non-zero if it could lock the mutex on the first try
-> +    or 0 if not. This function cannot be safely used in hardware or
-> +    software interrupt contexts despite not sleeping.
+On Wed, 14 May 2008, Adrian Bunk wrote:
+> > It would be nice if you could help on fixing those issues.
+> >
+> > One dependency that will probably solve is to add "depends on VIDEO_MEDIA &&
+> > I2C" to all devices that are hybrid (bttv, saa7134, cx88, pvrusb, em28xx).
+>
+> What about converting all dependencies on I2C to select's?
 
-I know this is what the documentation says, but I can't see why.  Ingo?
-
-Thanks,
-Rusty.
-PS. Patch fixed up and applied.
+Doesn't that just increase the problems with failing to have correct
+dependencies?  Anything that selects I2C needs to depend on everything I2C
+depends on.
