@@ -1,67 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761069AbYEORii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760253AbYEORjr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761069AbYEORii (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 13:38:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbYEORia
+	id S1760253AbYEORjr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 13:39:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbYEORjj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 13:38:30 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:51675 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750905AbYEORi3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 13:38:29 -0400
-Date: Thu, 15 May 2008 10:38:28 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: =?ISO-8859-1?Q?St=E9phane_ANCELOT?= <sancelot@free.fr>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: detecting kernel mem leak
-In-Reply-To: <4829566B.7090804@free.fr>
-Message-ID: <Pine.LNX.4.64.0805151036030.18708@schroedinger.engr.sgi.com>
-References: <1209462094.4816ed4e93977@imp.free.fr>
- <84144f020804290546h666983aci77fbb08eb507e777@mail.gmail.com>
- <Pine.LNX.4.64.0804290956360.10847@schroedinger.engr.sgi.com>
- <4821C526.8030901@free.fr> <Pine.LNX.4.64.0805071020210.3173@schroedinger.engr.sgi.com>
- <4829566B.7090804@free.fr>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1700579579-1226595496-1210873060=:18708"
-Content-ID: <Pine.LNX.4.64.0805151037450.18708@schroedinger.engr.sgi.com>
+	Thu, 15 May 2008 13:39:39 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:41856 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751122AbYEORji (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 13:39:38 -0400
+Date: Thu, 15 May 2008 19:40:15 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Michael Buesch <mb@bu3sch.de>,
+       Gordon Farquharson <gordonfarquharson@gmail.com>
+Subject: Re: crossbuild fails in modpost
+Message-ID: <20080515174015.GA24024@uranus.ravnborg.org>
+References: <482C3E3E.9090204@gmail.com> <482C6F02.1000205@gmail.com> <20080515173539.GA23959@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080515173539.GA23959@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Thu, May 15, 2008 at 07:35:39PM +0200, Sam Ravnborg wrote:
+> On Thu, May 15, 2008 at 07:12:34PM +0200, Jiri Slaby wrote:
+> > Well, let's fix sam's email.
+> > 
+> > Jiri Slaby napsal(a):
+> > >Hi,
+> > >
+> > >probably
+> > >4ce6efed48d736e3384c39ff87bda723e1f8e041
+> > >kbuild: soften modpost checks when doing cross builds
+> > >
+> > >causes build failures on x86_64 kernel build on 32 bit machine:
+> > >
+> > >make -f /local/xslaby/hid/scripts/Makefile.modpost
+> > >YYYYYYYYYYYYYY x86_64 x86_64
+> > >  scripts/mod/modpost -m -a -o /local/xslaby/buhid/Module.symvers    -S 
+> > >-K /local/xslaby/buhid/Module.markers -M 
+> > >/local/xslaby/buhid/Module.markers   -s
+> > >XXXXXXXXXXXXXXXXXX 20: 0 (2), 4 (4), 8 (4), 12 (8)
+> > >FATAL: drivers/hid/hid-apple: sizeof(struct hid_device_id)=20 is not a 
+> > >modulo of the size of section __mod_hid_device_table=648.
+> > >Fix definition of struct hid_device_id in mod_devicetable.h
+> > >make[2]: *** [__modpost] Error 1
+> > >make[1]: *** [modules] Error 2
+> > >make: *** [sub-make] Error 2
+> > >
+> > >after sticking echo into:
+> > > __modpost: $(modules:.ko=.o) FORCE
+> > >+       @echo YYYYYYYYYYYYYY $(KBUILD_BUILDHOST) $(ARCH)
+> > >        $(call cmd,modpost) $(wildcard vmlinux) $(filter-out FORCE,$^)
+> > >
+> 
+> Your machine claims it is a x86_64 and you are building for a x86_64
+> according to the following line:
+> > >YYYYYYYYYYYYYY x86_64 x86_64
+> 
+> So it looks to me that you are building for 64 bit on a 64 bit machine.
+> So when you write:
+>  on x86_64 kernel build on 32 bit machine:
+> 
+> I assume you try to say that your HOSTCC is 32 bit and your
+> kernel cc is 64 bit (or something similar).
+> 
+> The commit you reference loosen up the check so we do not do the
+> check if we _know_ that the host and the target system differs.
+> The only thing I can imagine right now to solve your issue would
+> be to skip the check if we do not use the same gcc for target and host?
 
----1700579579-1226595496-1210873060=:18708
-Content-Type: TEXT/PLAIN; CHARSET=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Content-ID: <Pine.LNX.4.64.0805151037451.18708@schroedinger.engr.sgi.com>
+So something like this (entirely untested):
 
-On Tue, 13 May 2008, St=E9phane ANCELOT wrote:
+--- a/scripts/Makefile.modpost
++++ b/scripts/Makefile.modpost
+@@ -65,7 +65,7 @@ modules   := $(patsubst %.o,%.ko, $(wildcard $(__modules:.ko=.o)))
+ # Stop after building .o files if NOFINAL is set. Makes compile tests quicker
+ _modpost: $(if $(KBUILD_MODPOST_NOFINAL), $(modules:.ko:.o),$(modules))
+ 
+-ifneq ($(KBUILD_BUILDHOST),$(ARCH))
++ifneq ($(CC),$(HOSTCC))
+         cross_build := 1
+ endif
+ 
 
-> I kept my kernel running with few applications for 5 days , doing
-> nothing more than backing up few kb of data on disk and refresh few X app=
-s.
->=20
-> Ater five days the global memory available go down from 24Mb to 8Mb ...
+Only powerpc (and ppc) does seems to do the wrong thing
+and fiddle with CC:
 
-That is normal. Linux tries to put all memory to use and will free on=20
-demand.
+powerpc/Makefile:override CC    += -m$(CONFIG_WORD_SIZE)
 
-> The are some signifiant changes in slabinfo but now, I do not know where
-> to search ?
+So for most users this is OK.
+(If it works as expected).
 
-Compile the slabinfo tool.
-
-gcc -o slabinfo linux/Documentation/vm/slabinfo.c
-
-Then you can do
-
-slabinfo -T
-
-to get an overview of how much is used by slabs. But I do not see that=20
-slabs are using an excessive amount. So toying around with slabinfo is=20
-not going to get you anywhere.
-
-
----1700579579-1226595496-1210873060=:18708--
+	Sam
