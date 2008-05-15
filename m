@@ -1,62 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756980AbYEOTL4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764249AbYEOTM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756980AbYEOTL4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 15:11:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762191AbYEOTLp
+	id S1764249AbYEOTM7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 15:12:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbYEOTMv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 15:11:45 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:52396 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751438AbYEOTLo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 15:11:44 -0400
-Message-ID: <482C8AE7.7070709@garzik.org>
-Date: Thu, 15 May 2008 15:11:35 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 15 May 2008 15:12:51 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:2343 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751763AbYEOTMu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 15:12:50 -0400
+Date: Thu, 15 May 2008 20:12:10 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Johannes Weiner <hannes@saeurebad.de>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 0/3] bootmem2 III
+Message-ID: <20080515191210.GE21787@shadowen.org>
+References: <20080509151713.939253437@saeurebad.de> <20080509184044.GA19109@one.firstfloor.org> <87lk2gtzta.fsf@saeurebad.de> <48275493.40601@firstfloor.org> <874p92qsvn.fsf@saeurebad.de>
 MIME-Version: 1.0
-To: Rick Jones <rick.jones2@hp.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       Chris Peterson <cpeterso@cpeterso.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
- IRQF_SAMPLE_RANDOM
-References: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com>	<20080515142154.0595e475@core>	<36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com>	<20080515173939.1ec968be@core> <482C7DA3.1090809@garzik.org> <482C8606.6000308@hp.com>
-In-Reply-To: <482C8606.6000308@hp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <874p92qsvn.fsf@saeurebad.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rick Jones wrote:
-> Jeff Garzik wrote:
->>
->>
->> The Treacherous Platform Module includes an RNG.
->>
->> Someone (hi Jesse?) should implement support for TPM_GetRandom.
->>
->> All the specs are public, and the hardware is already in users' hands.
+On Tue, May 13, 2008 at 02:40:44PM +0200, Johannes Weiner wrote:
+> Hi,
 > 
-> I will not pretend to understand everything mentioned, but having web 
-> searched on "TPM RNG" I came across this:
+> Andi Kleen <andi@firstfloor.org> writes:
 > 
-> http://www.mail-archive.com/cryptography@metzdowd.com/msg06299.html
+> > Johannes Weiner wrote:
+> >
+> >>> On Fri, May 09, 2008 at 05:17:13PM +0200, Johannes Weiner wrote:
+> >>>> here is bootmem2, a memory block-oriented boot time allocator.
+> >>>>
+> >>>> Recent NUMA topologies broke the current bootmem's assumption that
+> >>>> memory nodes provide non-overlapping and contiguous ranges of pages.
+> >>> I'm still not sure that's a really good rationale for bootmem2.
+> >>> e.g. the non continuous nodes are really special cases and there tends
+> >>> to be enough memory at the beginning which is enough for boot time
+> >>> use, so for those systems it would be quite reasonably to only 
+> >>> put the continuous starts of the nodes into bootmem.
+> >> 
+> >> Hm, that would put the logic into arch-code.  I have no strong opinion
+> >> about it.
+> >
+> > In fact I suspect the current code will already work like that
+> > implicitely. The aliasing is only a problem for the new "arbitary node
+> > free_bootmem" right?
 > 
-> which may either encourage or discourage depending on one's point of view.
+> And that alloc_bootmem_node() can not garuantee node-locality which is
+> the much worse part, I think.
+> 
+> >>> That said the bootmem code has gotten a little crufty and a clean
+> >>> rewrite might be a good idea.
+> >> 
+> >> I agree completely.
+> >
+> > The trouble is just that bootmem is used in early boot and early boot is
+> > very subtle and getting it working over all architectures could be a
+> > challenge. Not wanting to discourage you, but it's not exactly the
+> > easiest part of the kernel to hack on.
+> 
+> Bootmem seemed pretty self-contained to me, at least in the beginning.
+> The bad thing is that I can test only the most simple configuration with
+> it.
+> 
+> I was wondering yesterday if it would be feasible to enforce
+> contiguousness for nodes.  So that arch-code does not create one pgdat
+> for each node but one for each contiguous block.  I have not yet looked
 
-Yep, in theory you can do it in userspace right now, with zero kernel 
-modifications.
+That re-introduces the concept that a node is not a unit of numa locality,
+but one of memory contiguity.  The kernel pretty much assumes that a node
+exhibits memory locality.  
 
-But just my gut feeling about the Treacherous Platform Module makes me 
-think we should have a kernel driver, for both ease of use, and ease of 
-replacement should that usage turn out to be unwise.
+> deeper into it, but I suspect that other mm code has similar problems
+> with nodes spanning other nodes.
 
-	Jeff
+One thing we do know is that we already have systems in the wild with
+overlapping nodes.  PowerPC systems sometimes exhibit this behaviour, the
+ones I have seen have node 1 embedded within node 0.  x86_64 also enables
+this support.  This necessitated checks when initially freeing memory
+into the allocator to make sure it ended up freed into the right node.
+For non-sparsemem configurations these systems have some wasted mem_map,
+but otherwise it does work.
 
+Check out NODES_SPAN_OTHER_NODES for the code to avoid miss-placing
+memory.
 
-
+-apw
