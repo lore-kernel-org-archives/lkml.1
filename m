@@ -1,71 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754204AbYEOBBh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754649AbYEOBGB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754204AbYEOBBh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 14 May 2008 21:01:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbYEOBB0
+	id S1754649AbYEOBGB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 14 May 2008 21:06:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752039AbYEOBFx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 14 May 2008 21:01:26 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:33543 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751362AbYEOBBM (ORCPT
+	Wed, 14 May 2008 21:05:53 -0400
+Received: from pythia.bakeyournoodle.com ([203.82.209.197]:35759 "EHLO
+	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751567AbYEOBFw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 14 May 2008 21:01:12 -0400
-X-Sasl-enc: yXapaUtltAFSiZRibYCM0GXkI/6Wm73JLicgV2uI7LlZ 1210812557
-Date: Wed, 14 May 2008 21:49:11 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Karol Lewandowski <lmctlx@gmail.com>
-Subject: Re: [Bug #10670] BUG: linux-2.6.26-rc1 oops at
-	thinkpad_acpi:led_set_status
-Message-ID: <20080515004911.GA3415@khazad-dum.debian.net>
-References: <hPXlJLjt4XG.A._lF.Jv1JIB@chimera> <88YBFoyd1CN.A.qfG.mv1JIB@chimera> <20080512041753.GA4543@khazad-dum.debian.net> <20080514233037.GB11439@cs181133002.pp.htv.fi>
+	Wed, 14 May 2008 21:05:52 -0400
+Date: Thu, 15 May 2008 11:05:50 +1000
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jgarzik@redhat.com>,
+       David Miller <davem@davemloft.net>, netdev@vger.kernel.org
+Subject: Re: linux-next: Tree for May 14
+Message-ID: <20080515010550.GL20457@bakeyournoodle.com>
+References: <20080514170106.3cbcb201.sfr@canb.auug.org.au> <Pine.LNX.4.64.0805142237240.11631@anakin> <20080514135008.60e5df96.randy.dunlap@oracle.com> <20080514210447.GK20457@bakeyournoodle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080514233037.GB11439@cs181133002.pp.htv.fi>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080514210447.GK20457@bakeyournoodle.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: tony@bakeyournoodle.com (Tony Breeds)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 May 2008, Adrian Bunk wrote:
-> static int led_set_status(unsigned int led, enum led_status_t ledstatus)
-> {
-> ...
->         switch (led_supported) {
-> ...
->         case TPACPI_LED_OLD:
->                         /* 600e/x, 770e, 770x, A21e, A2xm/p, T20-22, X20 */
-> ----->                  led = 1 << led;
->                         rc = ec_write(TPACPI_LED_EC_HLMS, led);
->                         if (rc >= 0)
->                                 rc = ec_write(TPACPI_LED_EC_HLBL,
->                                               led * led_exp_hlbl[ledstatus]);
->                         if (rc >= 0)
->                                 rc = ec_write(TPACPI_LED_EC_HLCL,
->                                               led * led_exp_hlcl[ledstatus]);
->                         break;
-> ...
->         if (!rc)
->                 tpacpi_led_state_cache[led] = ledstatus;
-> ...                                    ^^^
-> }
+On Thu, May 15, 2008 at 07:04:47AM +1000, Tony Breeds wrote:
+> On Wed, May 14, 2008 at 01:50:08PM -0700, Randy Dunlap wrote:
+>  
+> > Ugh.  Can you please make the log file more readable?
+> > 
+> > Or is a problem with my browser (firefox)?
+> 
+> It's a raw download, save it as a file and then view it (or look at the
+> source).
 
-ARGH.  Thanks.  Will fix ASAP.  This is really one of those cases where
-one is "too close to actualy see the picture".
+FWIW the error in question is:
+  Using /scratch1/tony/next as source for kernel
+  GEN     /scratch1/tony/next_out/Makefile
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  CALL    /scratch1/tony/next/scripts/checksyscalls.sh
+  CHK     include/linux/compile.h
+  CC [M]  drivers/net/zorro8390.o
+In file included from /scratch1/tony/next/drivers/net/zorro8390.c:47:
+/scratch1/tony/next/drivers/net/lib8390.c: In function 'ei_tx_err':
+/scratch1/tony/next/drivers/net/lib8390.c:556: error: 'ei_local' undeclared (first use in this function)
+/scratch1/tony/next/drivers/net/lib8390.c:556: error: (Each undeclared identifier is reported only once
+/scratch1/tony/next/drivers/net/lib8390.c:556: error: for each function it appears in.)
+/scratch1/tony/next/drivers/net/lib8390.c: In function 'ei_rx_overrun':
+/scratch1/tony/next/drivers/net/lib8390.c:823: error: 'ei_local' undeclared (first use in this function)
+make[3]: *** [drivers/net/zorro8390.o] Error 1
+make[2]: *** [drivers/net] Error 2
+make[1]: *** [drivers] Error 2
+make: *** [sub-make] Error 2
 
-> What happens when you write to tpacpi_led_state_cache[0x80] is 
-> undefined, and it's not a surprise that random changes let the
-> bug seem to disappear.
+It was introduced by 3f8cb098859bbea29d7b3765a3102e4a6bf81b85
+(drivers/net/lib8390: fix warning, trim trailing whitespace)
 
-Indeed.  Thanks Adrian.
+The problem is that ei_inb_p() is using various #defines (from
+drivers/net/8390.h) that use EI_SHIFT, which in the zorro8390 case uses
+ei_local.  Since zorro8390 is only build for m68k, guard the definition of
+ei_local with CONFIG_M68K
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+The patch below fixes the zorro8390 build, and I think will keep the warnings
+that Jeff is trying to silence silenced.
+
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+
+---
+
+ drivers/net/lib8390.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/net/lib8390.c b/drivers/net/lib8390.c
+index ed49527..a3d04a1 100644
+--- a/drivers/net/lib8390.c
++++ b/drivers/net/lib8390.c
+@@ -553,6 +553,9 @@ static void __ei_poll(struct net_device *dev)
+ static void ei_tx_err(struct net_device *dev)
+ {
+ 	unsigned long e8390_base = dev->base_addr;
++#ifdef CONFIG_M68K
++	struct ei_device *ei_local = (struct ei_device *) netdev_priv(dev);
++#endif
+ 	unsigned char txsr = ei_inb_p(e8390_base+EN0_TSR);
+ 	unsigned char tx_was_aborted = txsr & (ENTSR_ABT+ENTSR_FU);
+ 
+@@ -815,6 +818,9 @@ static void ei_rx_overrun(struct net_device *dev)
+ {
+ 	unsigned long e8390_base = dev->base_addr;
+ 	unsigned char was_txing, must_resend = 0;
++#ifdef CONFIG_M68K
++	struct ei_device *ei_local = (struct ei_device *) netdev_priv(dev);
++#endif
+ 
+ 	/*
+ 	 * Record whether a Tx was in progress and then issue the
+
+Yours Tony
+
+  linux.conf.au    http://www.marchsouth.org/
+  Jan 19 - 24 2009 The Australian Linux Technical Conference!
+
