@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764356AbYEPPCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764495AbYEPPCk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764356AbYEPPCT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 11:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755589AbYEPOoc
+	id S1764495AbYEPPCk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 11:02:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757841AbYEPOoe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 10:44:32 -0400
-Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49284 "EHLO
+	Fri, 16 May 2008 10:44:34 -0400
+Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49286 "EHLO
 	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754095AbYEPOmV (ORCPT
+	with ESMTP id S1754079AbYEPOmV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 16 May 2008 10:42:21 -0400
 From: hooanon05@yahoo.co.jp
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Junjiro Okajima <hooanon05@yahoo.co.jp>
-Subject: [PATCH 4/67] aufs configuration
-Date: Fri, 16 May 2008 23:32:18 +0900
-Message-Id: <12109484013051-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [PATCH 6/67] aufs main header file
+Date: Fri, 16 May 2008 23:32:20 +0900
+Message-Id: <1210948401415-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <12109484012997-git-send-email-hooanon05@yahoo.co.jp>
-References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <12109484012532-git-send-email-hooanon05@yahoo.co.jp> <12109484012997-git-send-email-hooanon05@yahoo.co.jp>
+In-Reply-To: <12109484013436-git-send-email-hooanon05@yahoo.co.jp>
+References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <12109484012532-git-send-email-hooanon05@yahoo.co.jp> <12109484012997-git-send-email-hooanon05@yahoo.co.jp> <12109484013051-git-send-email-hooanon05@yahoo.co.jp> <12109484013436-git-send-email-hooanon05@yahoo.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -26,217 +26,75 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Junjiro Okajima <hooanon05@yahoo.co.jp>
 
 	initial commit
-	aufs configuration
+	aufs main header file
 
 Signed-off-by: Junjiro Okajima <hooanon05@yahoo.co.jp>
 ---
- fs/aufs/Kconfig |  198 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 198 insertions(+), 0 deletions(-)
+ fs/aufs/aufs.h |   56 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 56 insertions(+), 0 deletions(-)
 
-diff --git a/fs/aufs/Kconfig b/fs/aufs/Kconfig
+diff --git a/fs/aufs/aufs.h b/fs/aufs/aufs.h
 new file mode 100644
-index 0000000..aa99e50
+index 0000000..915bde0
 --- /dev/null
-+++ b/fs/aufs/Kconfig
-@@ -0,0 +1,198 @@
-+config AUFS
-+	bool "Another unionfs (EXPERIMENTAL)"
-+	depends on EXPERIMENTAL
-+	help
-+	Aufs is a stackable unification filesystem such as Unionfs,
-+	which unifies several directories and provides a merged single
-+	directory.
-+	In the early days, aufs was entirely re-designed and
-+	re-implemented Unionfs Version 1.x series. After many original
-+	ideas, approaches and improvements, it becomes totally
-+	different from Unionfs while keeping the basic features.
-+	See Unionfs for the basic features.
++++ b/fs/aufs/aufs.h
+@@ -0,0 +1,56 @@
++/*
++ * Copyright (C) 2005-2008 Junjiro Okajima
++ *
++ * This program, aufs is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++ */
 +
-+if AUFS
-+config AUFS_FAKE_DM
-+	bool
-+	depends on AUFS
-+	default n
++/*
++ * main header files
++ *
++ * $Id: aufs.h,v 1.2 2008/04/21 01:31:49 sfjro Exp $
++ */
 +
-+choice
-+	prompt "Maximum number of branches"
-+	depends on AUFS
-+	default AUFS_BRANCH_MAX_127
-+	help
-+	Specifies the maximum number of branches (or member directories)
-+	in a single aufs. The larger value consumes more system
-+	resources and has an impact to performance.
-+config AUFS_BRANCH_MAX_127
-+	bool "127"
-+	help
-+	Specifies the maximum number of branches (or member directories)
-+	in a single aufs. The larger value consumes more system
-+	resources and has an impact to performance.
-+config AUFS_BRANCH_MAX_511
-+	bool "511"
-+	help
-+	Specifies the maximum number of branches (or member directories)
-+	in a single aufs. The larger value consumes more system
-+	resources and has an impact to performance.
-+config AUFS_BRANCH_MAX_1023
-+	bool "1023"
-+	help
-+	Specifies the maximum number of branches (or member directories)
-+	in a single aufs. The larger value consumes more system
-+	resources and has an impact to performance.
-+# config AUFS_BRANCH_MAX_32767
-+# 	bool "32767"
-+# 	help
-+# 	Specifies the maximum number of branches (or member directories)
-+# 	in a single aufs. The larger value consumes more system
-+# 	resources and has an impact to performance.
-+endchoice
++#ifndef __AUFS_H__
++#define __AUFS_H__
 +
-+config AUFS_STAT
-+	bool "Use <sysfs>/fs/aufs/stat"
-+	depends on AUFS
-+	depends on SYSFS
-+	default n
-+	help
-+	Shows some statistic data via <sysfs>/fs/aufs/stat.
-+	See detail in aufs.5.
++#ifdef __KERNEL__
 +
-+config AUFS_HINOTIFY
-+	bool "Use inotify to detect actions on a branch"
-+	depends on AUFS
-+	depends on INOTIFY
-+	default n
-+	help
-+	If you want to modify files on branches directly, eg. bypassing aufs,
-+	and want aufs to detect the changes of them fully, then enable this
-+	option and use 'udba=inotify' mount option.
-+	It will damage the performance.
-+	See detail in aufs.5.
++#include <linux/version.h>
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 25)
++#error you got wrong version
++#endif
 +
-+config AUFS_EXPORT
-+	bool "NFS-exportable aufs"
-+	depends on AUFS
-+	select EXPORTFS
-+	default n
-+	help
-+	If you want to export your mounted aufs, then enable this
-+	option. There are several requirements to export aufs.
-+	See detail in aufs.5.
++#include "debug.h"
 +
-+config AUFS_ROBR
-+	bool "Aufs as an readonly branch of another aufs"
-+	depends on AUFS
-+	default n
-+	help
-+	If you want make your aufs to be a part of another aufs, then
-+	enable this option. In other words, you can specify your aufs
-+	path in 'br:' mount option for another aufs, but cannot
-+	specify 'rw' as the branch permission.
-+	It will damage the performance.
-+	See detail in aufs.5.
++#include "branch.h"
++#include "cpup.h"
++#include "dcsub.h"
++#include "dentry.h"
++#include "dir.h"
++#include "file.h"
++#include "hinode.h"
++#include "inode.h"
++#include "misc.h"
++#include "module.h"
++#include "opts.h"
++#include "super.h"
++#include "sysaufs.h"
++#include "vfsub.h"
++#include "whout.h"
++#include "wkq.h"
++//#include "xattr.h"
 +
-+config AUFS_DLGT
-+	bool "Delegate the internal branch access the kernel thread"
-+	depends on AUFS
-+	default n
-+	help
-+	If you want aufs to delegate
-+	the internal access to the branches which is made by aufs, to
-+	the kernel thread, in order to hide the access issued by your
-+	application from your LSM or something or make your
-+	application to be traced strictly by the task I/O accounting,
-+	then enable this option and use 'dlgt' mount option.
-+	It will damage the performance.
-+	See detail in aufs.5.
-+
-+config AUFS_SHWH
-+	bool "show whiteouts"
-+	depends on AUFS
-+	default n
-+	help
-+	If you want to make the whiteouts in aufs visible, then enable
-+	this option and specify 'shwh' mount option. Although it may
-+	sounds like philosophy or something, but in technically it
-+	simply shows the name of whiteout with keeping its behaviour.
-+
-+config AUFS_SPLICE_PATCH
-+	bool
-+	depends on AUFS
-+	default y
-+
-+config AUFS_LHASH_PATCH
-+	bool
-+	depends on AUFS
-+	depends on NFS_FS
-+	depends on AUFS_FAKE_DM = n
-+	default y
-+
-+config AUFS_BR_NFS
-+	bool
-+	depends on AUFS
-+	depends on NFS_FS
-+	depends on !AUFS_FAKE_DM
-+	default n if (!AUFS_LHASH_PATCH || AUFS_FAKE_DM)
-+	default y
-+
-+config AUFS_BR_XFS
-+	bool
-+	depends on AUFS
-+	depends on XFS_FS
-+	default y
-+
-+config AUFS_WORKAROUND_FUSE
-+	bool "Special handling for FUSE-based filesystem"
-+	depends on AUFS && FUSE_FS
-+	default n
-+	help
-+	A FUSE-based filesystem may not initialize its inode
-+	attributes and the FUSE developer thinks the inode attributes
-+	in a positive dentry which is returned by VFS lookup operation
-+	are not reliable.
-+	If you use a FUSE-based filesystem as an aufs branch, and it
-+	customizes the inode attribute on it without overriding
-+	fuse_lowlevel_ops.lookup, probably you need to enable this
-+	configuration.
-+	If you enable this configuration, aufs calls getattr operation
-+	in every lookup and revalidate operation for the FUSE-based
-+	filesystem branch.
-+	It will damage the performance even if you don't use a
-+	FUSE-based filesystem branch.
-+
-+config AUFS_DEBUG
-+	bool "Debug aufs"
-+	depends on AUFS
-+	default y
-+	help
-+	Enable this to compile aufs internal debug code.
-+	The performance will be damaged.
-+
-+config AUFS_MAGIC_SYSRQ
-+	bool
-+	depends on AUFS
-+	depends on AUFS_DEBUG
-+	depends on MAGIC_SYSRQ
-+	default y
-+
-+config AUFS_COMPAT
-+	bool "Compatibility with Unionfs (obsolete)"
-+	depends on AUFS
-+	default n
-+	help
-+	This makes aufs compatible with unionfs-style mount options and some
-+	behaviours.
-+	The dirs= mount option and =nfsro branch permission flag are always
-+	interpreted as br: mount option and =ro flag respectively. The
-+	'debug', 'delete' and 'imap' mount options are ignored.
-+	If you disable this option, you will get,
-+	- aufs issues a warning about the ignored mount options
-+	- the default branch permission flag is set. RW for the first branch,
-+	  and RO for the rests.
-+	- the name of a internal file which represents the directory is
-+	  'opaque', becomes '.wh..wh..opq'
-+	- the 'diropq=w' mount option is set by default
-+endif
++#endif /* __KERNEL__ */
++#endif /* __AUFS_H__ */
 -- 
 1.4.4.4
 
