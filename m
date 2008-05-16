@@ -1,43 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760740AbYEPU7I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759671AbYEPU55@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760740AbYEPU7I (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 16:59:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbYEPU64
+	id S1759671AbYEPU55 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 16:57:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbYEPU5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 16:58:56 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:34800 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754384AbYEPU6z (ORCPT
+	Fri, 16 May 2008 16:57:46 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39400 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754173AbYEPU5p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 16:58:55 -0400
-Date: Fri, 16 May 2008 21:58:40 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeff Dike <jdike@addtoit.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] missed kmalloc() in pcap_user.c
-Message-ID: <20080516205840.GV13907@ZenIV.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Fri, 16 May 2008 16:57:45 -0400
+Date: Fri, 16 May 2008 21:46:12 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Cc: Jeff Garzik <jeff@garzik.org>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Rick Jones <rick.jones2@hp.com>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       Chris Peterson <cpeterso@cpeterso.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
+ IRQF_SAMPLE_RANDOM
+Message-ID: <20080516214612.127412a7@core>
+In-Reply-To: <20080516203932.GH27126@csclub.uwaterloo.ca>
+References: <482C7E53.3050300@hp.com>
+	<482C8184.2030906@garzik.org>
+	<482C8550.5000909@intel.com>
+	<482C8D4D.3040702@garzik.org>
+	<20080516132107.GA11304@csclub.uwaterloo.ca>
+	<20080516161029.44ded734@core>
+	<20080516173610.GA27126@csclub.uwaterloo.ca>
+	<20080516191125.46f59ad6@core>
+	<20080516184138.GF27126@csclub.uwaterloo.ca>
+	<20080516210445.6f961627@core>
+	<20080516203932.GH27126@csclub.uwaterloo.ca>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 16 May 2008 16:39:33 -0400
+lsorense@csclub.uwaterloo.ca (Lennart Sorensen) wrote:
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-Acked-by: Jeff Dike <jdike@addtoit.com>
----
-diff --git a/arch/um/drivers/pcap_user.c b/arch/um/drivers/pcap_user.c
-index e980935..5f90358 100644
---- a/arch/um/drivers/pcap_user.c
-+++ b/arch/um/drivers/pcap_user.c
-@@ -50,7 +50,7 @@ static int pcap_open(void *data)
- 			return -EIO;
- 		}
- 
--		pri->compiled = kmalloc(sizeof(struct bpf_program),
-+		pri->compiled = uml_kmalloc(sizeof(struct bpf_program),
- 					UM_GFP_KERNEL);
- 		if (pri->compiled == NULL) {
- 			printk(UM_KERN_ERR "pcap_open : kmalloc failed\n");
+> On Fri, May 16, 2008 at 09:04:45PM +0100, Alan Cox wrote:
+> > So open /dev/urandom in that case. It's a user space problem - this is
+> > policy.
+> 
+> How does user space know?  Maybe someone is using the serial console,
+> maybe not.
+
+How does the kernel know - it has even less useful policy information ?
