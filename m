@@ -1,55 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758103AbYEPNlX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758303AbYEPNlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758103AbYEPNlX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 09:41:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755770AbYEPNlL
+	id S1758303AbYEPNlg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 09:41:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757873AbYEPNlO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 09:41:11 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:58652 "EHLO mail.dvmed.net"
+	Fri, 16 May 2008 09:41:14 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39204 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755736AbYEPNlK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 09:41:10 -0400
-Message-ID: <482D8EE9.10404@garzik.org>
-Date: Fri, 16 May 2008 09:40:57 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	id S1755961AbYEPNlL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 09:41:11 -0400
+Date: Fri, 16 May 2008 09:40:24 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: nigel@nigel.suspend2.net, Kexec Mailing List <kexec@lists.infradead.org>,
+       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] kexec based hibernation: a prototype of kexec
+	multi-stage load
+Message-ID: <20080516134024.GF6926@redhat.com>
+References: <1210730266.23707.50.camel@caritas-dev.intel.com> <20080514025607.GA19944@redhat.com> <1210736275.23707.62.camel@caritas-dev.intel.com> <m1lk2c4l4i.fsf@frodo.ebiederm.org> <1210827473.23707.133.camel@caritas-dev.intel.com> <m1lk2bs970.fsf@frodo.ebiederm.org> <1210902114.23707.156.camel@caritas-dev.intel.com> <m14p8zgf43.fsf@frodo.ebiederm.org> <1210906575.23707.189.camel@caritas-dev.intel.com> <20080516032758.GD6926@redhat.com>
 MIME-Version: 1.0
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-CC: "Kok, Auke" <auke-jan.h.kok@intel.com>, Rick Jones <rick.jones2@hp.com>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Chris Peterson <cpeterso@cpeterso.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
- IRQF_SAMPLE_RANDOM
-References: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com> <20080515142154.0595e475@core> <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com> <482C7B18.6060003@garzik.org> <482C7E53.3050300@hp.com> <482C8184.2030906@garzik.org> <482C8550.5000909@intel.com> <482C8D4D.3040702@garzik.org> <20080516132107.GA11304@csclub.uwaterloo.ca>
-In-Reply-To: <20080516132107.GA11304@csclub.uwaterloo.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080516032758.GD6926@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lennart Sorensen wrote:
-> On Thu, May 15, 2008 at 03:21:49PM -0400, Jeff Garzik wrote:
->> "no other form of entropy"?   See examples in this thread.
+On Thu, May 15, 2008 at 11:27:58PM -0400, Vivek Goyal wrote:
+> On Fri, May 16, 2008 at 10:56:15AM +0800, Huang, Ying wrote:
+> > On Thu, 2008-05-15 at 19:25 -0700, Eric W. Biederman wrote:
+> > > "Huang, Ying" <ying.huang@intel.com> writes:
+> > > 
+> > > > On Thu, 2008-05-15 at 11:39 -0700, Eric W. Biederman wrote:
+> > > > [...]
+> > > >> 2) After we figure out our address read the stack pointer from
+> > > >>    a fixed location and simply set it.  (This is my preference)
+> > > >
+> > > > Just for confirmation (My English is poor).
+> > > >
+> > > > Do you mean that kernel A just read the stack top as re-entry point,
+> > > > regardless of whether it is return address or argument 1?
+> > > 
+> > > What I was thinking was:
+> > > 
+> > > In kernel A()
+> > > 
+> > > relocate_new_kernel:
+> > > 
+> > >         ...
+> > > 
+> > >         call	*%eax
+> > > 
+> > > kexec_jump_back_entry:
+> > >         /* This code should be PIC so figure out where we are */
+> > >         call	1f
+> > > 1:
+> > >         popl	%edi
+> > >         subl	$(1b - relocate_kernel), %edi
+> > > 
+> > >         /* Setup a safe stack */
+> > >         leal    PAGE_SIZE(%edi), %esp
+> > >         ...
+> > > 
+> > > 
+> > > Then in purgatory we can read the address of kexec_jump_back_entry
+> > > by examining 0(%esp) and export it in whatever fashion is sane.
+> > > 
+> > > However we reach kexec_jump_back_entry we should be fine.
+> > 
 > 
-> So where does one get entropy if not the ethernet adapter on many
-> embedded systems?  If you have no mouse, no keyboard, no hardware number
-> generator, just ethernet ports and a serial console that usually
-> receives no input.  While ethernet might not be preferable if you have
-> something else, sometimes you really don't have anything else.
+> Huang is making use of purgatory only for booting kernel B for the first
+> time. Once the kernel B is booted, all the trasitions (A-->B and B<--A)
+> happen without using purgatory. Just keep on jumping back and forth
+> to "kexec_jump_back_entry".
+> 
+> Probably not using purgatory for later transitions is justified as long as
+> kernel code is simple and small. Otherwise we will shall have to teach
+> purgatory also of special case of resuming kernel B or booting kernel B.
+> 
+> > I think it is reasonable to enable jumping back and forth more than one
+> > time. So the following should be possible:
+> > 
+> > 1. Jump from A to B (actually jump to purgatory, trigger the boot of B)
+> > 2. Jump from B to A
+> > 3. Jump from A to B again (jump to the kexec_jump_back_entry of B)
+> > 4. Jump from B to A
+> > ...
+> > 
+> > So it should be possible to get the re-entry point of kernel B in
+> > kexec_jump_back_entry of kernel A too. So I think in
+> > kexec_jump_back_entry, the caller's stack should be checked to get
+> > re-entry point of peer. And the stack state is different depend on where
+> > come from, from relocate_new_kernel() or return.
+> > 
+> 
+> To me this idea also looks good. So control flow will look something
+> as follows?
+> 
+> relocate_new kernel:
+> 	
+> 	if (!preserve_context)
+> 		set registers to known state.
+> 		jump to purgatory.
+> 	else
+> 		goto jump-back-setup:
+> 
+> jump-back-setup:
+> - Color the stack.
+>   move $0xffffffff 0(%esp)
+> 
+> - call %edx
+> 
 
-Already answered in this thread...  EGD illustrates how many sources of 
-entropy remain, even in the example you just gave.
+Thinking more about it, probably we don't have to separate out preserve
+context and normal kexec path. Both can transition to purgatory using
+call %edx. Coloring the stack should not harm in normal kexec.
 
-Further, you do not want to rely on entropy from a source that declines 
-just as network traffic increases.
-
-	Jeff
-
-
-
+Thanks
+Vivek
