@@ -1,44 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759468AbYEPSlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760644AbYEPSmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759468AbYEPSlv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 14:41:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753652AbYEPSlk
+	id S1760644AbYEPSmU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 14:42:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759927AbYEPSl6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 14:41:40 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:56570 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755356AbYEPSlj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 14:41:39 -0400
-Date: Fri, 16 May 2008 14:41:38 -0400
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Jeff Garzik <jeff@garzik.org>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Rick Jones <rick.jones2@hp.com>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       Chris Peterson <cpeterso@cpeterso.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of IRQF_SAMPLE_RANDOM
-Message-ID: <20080516184138.GF27126@csclub.uwaterloo.ca>
-References: <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com> <482C7B18.6060003@garzik.org> <482C7E53.3050300@hp.com> <482C8184.2030906@garzik.org> <482C8550.5000909@intel.com> <482C8D4D.3040702@garzik.org> <20080516132107.GA11304@csclub.uwaterloo.ca> <20080516161029.44ded734@core> <20080516173610.GA27126@csclub.uwaterloo.ca> <20080516191125.46f59ad6@core>
+	Fri, 16 May 2008 14:41:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53309 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753652AbYEPSl4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 14:41:56 -0400
+Date: Fri, 16 May 2008 15:41:40 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Matthias Urlichs <smurf@smurf.noris.de>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+       Augusto Campos <brain@matrix.com.br>
+Subject: [PATCH][OPTION]: Add id for Onda MSA501HS HSDPA modem
+Message-ID: <20080516184140.GA8111@ghostprotocols.net>
+Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+	Matthias Urlichs <smurf@smurf.noris.de>,
+	linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
+	Augusto Campos <brain@matrix.com.br>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080516191125.46f59ad6@core>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16, 2008 at 07:11:25PM +0100, Alan Cox wrote:
-> If they don't need that level of security they can use /dev/urandom.
-> Piping network randomness into /dev/urandom is probably quite sensible
-> but not into /dev/random.
+Hi Matthias,
 
-Well it isn't that things liks ssh and ssl and such don't need that
-level of security, but if there is no way to get it you have to go for
-the best you can get.  Fortunately it seems hardware RNG is becoming
-more common on embedded CPUs.
+	Please consider adding the following USB product id to the
+option GSM modem driver.
 
--- 
-Len Sorensen
+        Using the generic usbserial kernel driver I can only get to
+~490 Kbit/s, while when using your excellent driver I'm being able to
+saturate the 1 Mbit/s bandwidth I subscribed from TIM WEB here in Brazil.
+
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+
+Best Regards,
+
+- Arnaldo
+
+diff --git a/drivers/usb/serial/option.c b/drivers/usb/serial/option.c
+index e7e016e..47be78b 100644
+--- a/drivers/usb/serial/option.c
++++ b/drivers/usb/serial/option.c
+@@ -183,6 +183,7 @@ static int  option_send_setup(struct usb_serial_port *port);
+ #define AXESSTEL_PRODUCT_MV110H			0x1000
+ 
+ #define ONDA_VENDOR_ID				0x19d2
++#define ONDA_PRODUCT_MSA501HS			0x0001
+ #define ONDA_PRODUCT_ET502HS			0x0002
+ 
+ #define BANDRICH_VENDOR_ID			0x1A8D
+@@ -297,6 +298,7 @@ static struct usb_device_id option_ids[] = {
+ 	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ADU_E100A) },
+ 	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ADU_500A) },
+ 	{ USB_DEVICE(AXESSTEL_VENDOR_ID, AXESSTEL_PRODUCT_MV110H) },
++	{ USB_DEVICE(ONDA_VENDOR_ID, ONDA_PRODUCT_MSA501HS) },
+ 	{ USB_DEVICE(ONDA_VENDOR_ID, ONDA_PRODUCT_ET502HS) },
+ 	{ USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_C100_1) },
+ 	{ USB_DEVICE(BANDRICH_VENDOR_ID, BANDRICH_PRODUCT_C100_2) },
