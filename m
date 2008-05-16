@@ -1,72 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758167AbYEPCCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755687AbYEPCK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758167AbYEPCCr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 22:02:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416AbYEPCCj
+	id S1755687AbYEPCK1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 22:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbYEPCKN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 22:02:39 -0400
-Received: from mga14.intel.com ([143.182.124.37]:17982 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753382AbYEPCCi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 22:02:38 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,494,1204531200"; 
-   d="scan'208";a="247629253"
-Subject: Re: [PATCH -mm] kexec jump -v9
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-In-Reply-To: <20080516015142.GB6926@redhat.com>
-References: <1204773188.4707.109.camel@caritas-dev.intel.com>
-	 <20080514205204.GJ30469@redhat.com>
-	 <1210818762.23707.102.camel@caritas-dev.intel.com>
-	 <20080515200923.GC9718@redhat.com>
-	 <1210902514.23707.161.camel@caritas-dev.intel.com>
-	 <20080516015142.GB6926@redhat.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 16 May 2008 10:08:06 +0800
-Message-ID: <1210903686.23707.171.camel@caritas-dev.intel.com>
+	Thu, 15 May 2008 22:10:13 -0400
+Received: from pythia.bakeyournoodle.com ([203.82.209.197]:38588 "EHLO
+	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751569AbYEPCKL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 22:10:11 -0400
+Date: Fri, 16 May 2008 12:10:09 +1000
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jgarzik@redhat.com>,
+       David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       Linux/m68k <linux-m68k@vger.kernel.org>
+Subject: Re: linux-next: Tree for May 14
+Message-ID: <20080516021009.GS20457@bakeyournoodle.com>
+References: <20080514170106.3cbcb201.sfr@canb.auug.org.au> <Pine.LNX.4.64.0805142237240.11631@anakin> <20080514135008.60e5df96.randy.dunlap@oracle.com> <20080514210447.GK20457@bakeyournoodle.com> <20080515010550.GL20457@bakeyournoodle.com> <Pine.LNX.4.64.0805150914220.11631@anakin>
 MIME-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-X-OriginalArrivalTime: 16 May 2008 02:01:36.0018 (UTC) FILETIME=[C568BF20:01C8B6F8]
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0805150914220.11631@anakin>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: tony@bakeyournoodle.com (Tony Breeds)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-05-15 at 21:51 -0400, Vivek Goyal wrote:
-> On Fri, May 16, 2008 at 09:48:34AM +0800, Huang, Ying wrote:
-> > On Thu, 2008-05-15 at 16:09 -0400, Vivek Goyal wrote:
-> > [...]
-> > > Ok, You want to make BIOS calls. We already do that using vm86 mode and
-> > > use bios real mode interrupts. So why do we need this interface? Or, IOW,
-> > > how is this interface better?
-> > 
-> > It can call code in 32-bit physical mode in addition to real mode. So It
-> > can be used to call EFI runtime service, especially call EFI 64 runtime
-> > service under 32-bit kernel or vice versa.
-> > 
-> > The main purpose of kexec jump is for hibernation. But I think if the
-> > effort is small, why not support general 32-bit physical mode code call
-> > at same time.
-> > 
-> 
-> In general what's the environment requirements for EFI runtime 
-> services? I mean, just that processor should be in protected mode with
-> paging disabled or one need to stop all other cpus and devices and then make
-> the call (as we are doing in this case?). 
+On Thu, May 15, 2008 at 09:17:15AM +0200, Geert Uytterhoeven wrote:
+ 
+> Wow, did you really get all of this from that webpage??
 
-Put processor in protected mode with paging disabled is sufficient. In
-one of previous kexec jump versions, I provide some option to choose the
-state saved (whether stop other cpus, whether stop devices).
+Sorry no.  I ran the build again ... mmm cross compilers :)
 
-I agree that now we should focus on kexec based hibernation. But I think
-it is reasonable to keep the possibility with minimal effort.
+> Thanks for chasing this down!
 
-Best Regards,
-Huang Ying
+np.
+ 
+> Technically, it could also happen on PPC (APUS), but all APUS support got
+> removed a few months ago.
+> So maybe CONFIG_ZORRO is more appropriate?
+
+Well as it turns out it can happen in a few other plcaes (the same error
+is visible on sh aswell:
+	http://kisskb.ellerman.id.au/kisskb/buildresult/27769/ )
+
+Below is a new fix. Thoughts?.
+
+From: Tony Breeds <tony@bakeyournoodle.com>
+Subject: [PATCH] Fix various 8390 builds
+
+The commit 3f8cb098859bbea29d7b3765a3102e4a6bf81b85
+(drivers/net/lib8390: fix warning, trim trailing whitespace) removed
+ei_local from ei_tx_err() and ei_rx_overrun() resulting in the following
+build errors on m68k and sh:
+
+  Using /scratch1/tony/next as source for kernel
+  GEN     /scratch1/tony/next_out/Makefile
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  CALL    /scratch1/tony/next/scripts/checksyscalls.sh
+  CHK     include/linux/compile.h
+  CC [M]  drivers/net/zorro8390.o
+In file included from /scratch1/tony/next/drivers/net/zorro8390.c:47:
+drivers/net/lib8390.c: In function 'ei_tx_err':
+drivers/net/lib8390.c:556: error: 'ei_local' undeclared (first use in this function)
+drivers/net/lib8390.c:556: error: (Each undeclared identifier is reported only once
+drivers/net/lib8390.c:556: error: for each function it appears in.)
+drivers/net/lib8390.c: In function 'ei_rx_overrun':
+drivers/net/lib8390.c:823: error: 'ei_local' undeclared (first use in this function)
+make[3]: *** [drivers/net/zorro8390.o] Error 1
+make[2]: *** [drivers/net] Error 2
+make[1]: *** [drivers] Error 2
+make: *** [sub-make] Error 2
+
+The problem is that ei_inb_p() is using various #defines (from
+drivers/net/8390.h) that use EI_SHIFT, which in some drivers on some
+architectures use ei_local.  Tag ei_local as "__maybe_unused" to keep it
+around and keep the warnings the original commit is trying to silence
+... silenced.
+
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+---
+ drivers/net/lib8390.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/net/lib8390.c b/drivers/net/lib8390.c
+index ed49527..fb00268 100644
+--- a/drivers/net/lib8390.c
++++ b/drivers/net/lib8390.c
+@@ -553,6 +553,9 @@ static void __ei_poll(struct net_device *dev)
+ static void ei_tx_err(struct net_device *dev)
+ {
+ 	unsigned long e8390_base = dev->base_addr;
++	/* ei_local is used on some platforms via the EI_SHIFT macro */
++	struct ei_device *ei_local __maybe_unused =
++		(struct ei_device *) netdev_priv(dev);
+ 	unsigned char txsr = ei_inb_p(e8390_base+EN0_TSR);
+ 	unsigned char tx_was_aborted = txsr & (ENTSR_ABT+ENTSR_FU);
+ 
+@@ -815,6 +818,9 @@ static void ei_rx_overrun(struct net_device *dev)
+ {
+ 	unsigned long e8390_base = dev->base_addr;
+ 	unsigned char was_txing, must_resend = 0;
++	/* ei_local is used on some platforms via the EI_SHIFT macro */
++	struct ei_device *ei_local __maybe_unused =
++		(struct ei_device *) netdev_priv(dev);
+ 
+ 	/*
+ 	 * Record whether a Tx was in progress and then issue the
+-- 
+1.5.5.1
 
