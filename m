@@ -1,130 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760531AbYEPWjc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761170AbYEPWj5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760531AbYEPWjc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 18:39:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbYEPWjX
+	id S1761170AbYEPWj5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 18:39:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbYEPWjq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 18:39:23 -0400
-Received: from fk-out-0910.google.com ([209.85.128.191]:8799 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752987AbYEPWjW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 18:39:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=MufWfX7fQujVEJ62fMpPRcwjDlG+llA7gOZwWTsHqKNWDJnAW+JipF7rcmvLNhrUnJj9+MWYy76sEBjyWIWmsmS8qVoRVRQILmxvoHQKiape2MGPOakKAh4mnBA8pYyUPqFI+79xQ0HUQWwWurNokMcHlG8qfjD2lTKW8xe0srw=
-Date: Sat, 17 May 2008 03:34:58 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@osdl.org, rmk@arm.linux.org.uk
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] arm: switch /proc/cpu/alignment to seq_files
-Message-ID: <20080516233458.GA27794@martell.zuzino.mipt.ru>
+	Fri, 16 May 2008 18:39:46 -0400
+Received: from www.tglx.de ([62.245.132.106]:50022 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751119AbYEPWjp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 18:39:45 -0400
+Date: Sat, 17 May 2008 00:38:53 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: [GIT pull] x86 fixes for 2.6.26
+Message-ID: <alpine.LFD.1.10.0805170037180.3255@apollo.tec.linutronix.de>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+Linus, 
 
- arch/arm/mm/alignment.c |   55 +++++++++++++++++++++++-------------------------
- 1 file changed, 27 insertions(+), 28 deletions(-)
+please pull the latest x86 fixes from:
 
---- a/arch/arm/mm/alignment.c
-+++ b/arch/arm/mm/alignment.c
-@@ -16,6 +16,7 @@
- #include <linux/errno.h>
- #include <linux/string.h>
- #include <linux/proc_fs.h>
-+#include <linux/seq_file.h>
- #include <linux/init.h>
+   ssh://master.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+
+Thanks,
+
+	tglx
+
+------------------>
+Avi Kivity (1):
+      x86: fix crash on cpu hotplug on pat-incapable machines
+
+Ingo Molnar (1):
+      x86: remove mwait capability C-state check
+
+Thomas Gleixner (1):
+      x86: disable mwait for AMD family 10H/11H CPUs
+
+ arch/x86/kernel/process.c |   36 +++++++++++++++++++++++++++---------
+ arch/x86/mm/pat.c         |    2 +-
+ 2 files changed, 28 insertions(+), 10 deletions(-)
+
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index 67e9b4a..ba370dc 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -99,15 +99,6 @@ static void mwait_idle(void)
+ 		local_irq_enable();
+ }
  
- #include <asm/uaccess.h>
-@@ -80,36 +81,28 @@ static const char *usermode_action[] = {
- 	"signal+warn"
- };
+-
+-static int __cpuinit mwait_usable(const struct cpuinfo_x86 *c)
+-{
+-	if (force_mwait)
+-		return 1;
+-	/* Any C1 states supported? */
+-	return c->cpuid_level >= 5 && ((cpuid_edx(5) >> 4) & 0xf) > 0;
+-}
+-
+ /*
+  * On SMP it's slightly faster (but much more power-consuming!)
+  * to poll the ->work.need_resched flag instead of waiting for the
+@@ -119,6 +110,33 @@ static void poll_idle(void)
+ 	cpu_relax();
+ }
  
--static int
--proc_alignment_read(char *page, char **start, off_t off, int count, int *eof,
--		    void *data)
-+static int alignment_proc_show(struct seq_file *m, void *v)
- {
--	char *p = page;
--	int len;
--
--	p += sprintf(p, "User:\t\t%lu\n", ai_user);
--	p += sprintf(p, "System:\t\t%lu\n", ai_sys);
--	p += sprintf(p, "Skipped:\t%lu\n", ai_skipped);
--	p += sprintf(p, "Half:\t\t%lu\n", ai_half);
--	p += sprintf(p, "Word:\t\t%lu\n", ai_word);
-+	seq_printf(m, "User:\t\t%lu\n", ai_user);
-+	seq_printf(m, "System:\t\t%lu\n", ai_sys);
-+	seq_printf(m, "Skipped:\t%lu\n", ai_skipped);
-+	seq_printf(m, "Half:\t\t%lu\n", ai_half);
-+	seq_printf(m, "Word:\t\t%lu\n", ai_word);
- 	if (cpu_architecture() >= CPU_ARCH_ARMv5TE)
--		p += sprintf(p, "DWord:\t\t%lu\n", ai_dword);
--	p += sprintf(p, "Multi:\t\t%lu\n", ai_multi);
--	p += sprintf(p, "User faults:\t%i (%s)\n", ai_usermode,
-+		seq_printf(m, "DWord:\t\t%lu\n", ai_dword);
-+	seq_printf(m, "Multi:\t\t%lu\n", ai_multi);
-+	seq_printf(m, "User faults:\t%i (%s)\n", ai_usermode,
- 			usermode_action[ai_usermode]);
-+	return 0;
-+}
- 
--	len = (p - page) - off;
--	if (len < 0)
--		len = 0;
--
--	*eof = (len <= count) ? 1 : 0;
--	*start = page + off;
--
--	return len;
-+static int alignment_proc_open(struct inode *inode, struct file *file)
++/*
++ * mwait selection logic:
++ *
++ * It depends on the CPU. For AMD CPUs that support MWAIT this is
++ * wrong. Family 0x10 and 0x11 CPUs will enter C1 on HLT. Powersavings
++ * then depend on a clock divisor and current Pstate of the core. If
++ * all cores of a processor are in halt state (C1) the processor can
++ * enter the C1E (C1 enhanced) state. If mwait is used this will never
++ * happen.
++ *
++ * idle=mwait overrides this decision and forces the usage of mwait.
++ */
++static int __cpuinit mwait_usable(const struct cpuinfo_x86 *c)
 +{
-+	return single_open(file, alignment_proc_show, NULL);
- }
- 
--static int proc_alignment_write(struct file *file, const char __user *buffer,
--				unsigned long count, void *data)
-+static ssize_t alignment_proc_write(struct file *file,
-+		const char __user *buffer, size_t count, loff_t *ppos)
- {
- 	char mode;
- 
-@@ -122,6 +115,14 @@ static int proc_alignment_write(struct file *file, const char __user *buffer,
- 	return count;
- }
- 
-+static const struct file_operations alignment_proc_fops = {
-+	.open		= alignment_proc_open,
-+	.read		= seq_read,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+	.write		= alignment_proc_write,
-+};
++	if (force_mwait)
++		return 1;
 +
- #endif /* CONFIG_PROC_FS */
++	if (c->x86_vendor == X86_VENDOR_AMD) {
++		switch(c->x86) {
++		case 0x10:
++		case 0x11:
++			return 0;
++		}
++	}
++	return 1;
++}
++
+ void __cpuinit select_idle_routine(const struct cpuinfo_x86 *c)
+ {
+ 	static int selected;
+diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
+index bcb1a8e..de3a998 100644
+--- a/arch/x86/mm/pat.c
++++ b/arch/x86/mm/pat.c
+@@ -28,7 +28,7 @@
+ #ifdef CONFIG_X86_PAT
+ int __read_mostly pat_wc_enabled = 1;
  
- union offset_union {
-@@ -788,12 +789,10 @@ static int __init alignment_init(void)
- 	if (!res)
- 		return -ENOMEM;
- 
--	res = create_proc_entry("alignment", S_IWUSR | S_IRUGO, res);
-+	res = proc_create("alignment", S_IWUSR | S_IRUGO, res,
-+			  &alignment_proc_fops);
- 	if (!res)
- 		return -ENOMEM;
--
--	res->read_proc = proc_alignment_read;
--	res->write_proc = proc_alignment_write;
- #endif
- 
- 	hook_fault_code(1, do_alignment, SIGILL, "alignment exception");
-
+-void __init pat_disable(char *reason)
++void __cpuinit pat_disable(char *reason)
+ {
+ 	pat_wc_enabled = 0;
+ 	printk(KERN_INFO "%s\n", reason);
