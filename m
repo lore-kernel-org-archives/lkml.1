@@ -1,98 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756115AbYEPLUQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756492AbYEPLWt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756115AbYEPLUQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 07:20:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752888AbYEPLUF
+	id S1756492AbYEPLWt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 07:22:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbYEPLWl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 07:20:05 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33195 "EHLO mx2.mail.elte.hu"
+	Fri, 16 May 2008 07:22:41 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55387 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752846AbYEPLUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 07:20:04 -0400
-Date: Fri, 16 May 2008 13:19:48 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
+	id S1752167AbYEPLWk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 07:22:40 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20080516090150.GA16496@linux-sh.org>
+References: <20080516090150.GA16496@linux-sh.org>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
        linux-kernel@vger.kernel.org
-Subject: Re: [patch] drivers/media/video build fix for certain modular
-	builds
-Message-ID: <20080516111948.GA4847@elte.hu>
-References: <20080516071029.GA13147@elte.hu> <20080516092440.GA31432@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080516092440.GA31432@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Subject: Re: [PATCH] binfmt_elf_fdpic: Magical stack pointer index, for NEW_AUX_ENT compat.
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Fri, 16 May 2008 12:22:33 +0100
+Message-ID: <12478.1210936953@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Paul Mundt <lethal@linux-sh.org> wrote:
 
-* Sam Ravnborg <sam@ravnborg.org> wrote:
-
-> On Fri, May 16, 2008 at 09:10:29AM +0200, Ingo Molnar wrote:
-> > 
-> > testing of the -tip tree found the following missing symbols build bug:
-> > 
-> >     LD      init/built-in.o
-> >     LD      .tmp_vmlinux1
-> >     drivers/built-in.o: In function `vidioc_g_ctrl':
-> >     radio-maxiradio.c:(.text+0xd3337): undefined reference to `video_devdata'
-> >     drivers/built-in.o: In function `vidioc_g_frequency':
-> >     radio-maxiradio.c:(.text+0xd3368): undefined reference to `video_devdata'
-> >     drivers/built-in.o: In function `vidioc_s_ctrl':
-> >     [...]
-> > 
-> > which happens if certain media drivers are modular:
-> > 
-> >     http://redhat.com/~mingo/misc/config-Thu_May_15_18_10_27_CEST_2008.bad
-> > 
-> > the problem is:
-> > 
-> >     CONFIG_VIDEO_MEDIA=m
-> >     CONFIG_VIDEO_DEV=y
-> >     CONFIG_RADIO_MAXIRADIO=y
-> >     CONFIG_VIDEO_V4L2=y
-> > 
-> > Connecting the build dependencies tree from drivers/media/ to 
-> > drivers/media/video/ allows the built-in drivers(s) to pick up the 
-> > CONFIG_VIDEO_DEV=y symbols.
-> > 
-> > ---
-> >  drivers/media/Makefile |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > Index: linux/drivers/media/Makefile
-> > ===================================================================
-> > --- linux.orig/drivers/media/Makefile
-> > +++ linux/drivers/media/Makefile
-> > @@ -2,7 +2,7 @@
-> >  # Makefile for the kernel multimedia device drivers.
-> >  #
-> >  
-> > -obj-y := common/
-> > +obj-y := common/ video/
-> >  
-> >  obj-$(CONFIG_VIDEO_MEDIA) += common/
-> >  
+> While implementing binfmt_elf_fdpic on SH it quickly became apparent
+> that SH was the first platform to support both binfmt_elf_fdpic and
+> binfmt_elf, as well as the only of the FDPIC platforms to make use of the
+> auxvt.
 > 
-> Adrian just posted a similar fix that I like better because it
-> cleans up the Makefile a bit.
-> The obj-$(CONFIG_VIDEO_MEDIA) += common/ assignment in the
-> above is for example now redundant.
+> Currently binfmt_elf_fdpic uses a special version of NEW_AUX_ENT() where
+> the first argument is the entry displacement after csp has been adjusted,
+> being reset after each adjustment. As we have no ability to sort this out
+> through the platform's ARCH_DLINFO, this index needs to be managed
+> entirely in create_elf_fdpic_tables(). Presently none of the platforms
+> that set their own auxvt entries are able to do so through their
+> respective ARCH_DLINFOs when using binfmt_elf_fdpic.
 > 
-> But otherwise obviously correct.
+> In addition to this, binfmt_elf_fdpic has been looking at
+> DLINFO_ARCH_ITEMS for the number of architecture-specific entries in the
+> auxvt. This is legacy cruft, and is not defined by any platforms in-tree,
+> even those that make heavy use of the auxvt. AT_VECTOR_SIZE_ARCH is
+> always available, and contains the number that is of interest here, so we
+> switch to using that unconditionally as well.
+> 
+> As this has direct bearing on how much stack is used, platforms that have
+> configurable (or dynamically adjustable) NEW_AUX_ENT calls need to either
+> make AT_VECTOR_SIZE_ARCH more fine-grained, or leave it as a worst-case
+> and live with some lost stack space if those entries aren't pushed (some
+> platforms may also need to purposely sacrifice some space here for
+> alignment considerations, as noted in the code -- although not an issue
+> for any FDPIC-capable platform today).
+> 
+> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 
-sure enough, i went for the minimal fix. Adrian's patch looks good too.
-
-Acked-by: Ingo Molnar <mingo@elte.hu>
-
-	Ingo
+Acked-by: David Howells <dhowells@redhat.com>
