@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759452AbYEPRHd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbYEPRHs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759452AbYEPRHd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 13:07:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754189AbYEPRHS
+	id S1755547AbYEPRHs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 13:07:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757247AbYEPRHW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 13:07:18 -0400
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:33850 "EHLO
+	Fri, 16 May 2008 13:07:22 -0400
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:33994 "EHLO
 	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753869AbYEPRHP convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1754515AbYEPRHU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 13:07:15 -0400
+	Fri, 16 May 2008 13:07:20 -0400
 To: linux-kernel@vger.kernel.org
-Subject: [RFC Patch 1/5] Blktrace - introducing trace_dump() to log output
+Subject: [RFC Patch 2/5] Blktrace - Remove the 'dropped' file from blktrace.c
 Reply-To: prasad@linux.vnet.ibm.com
 From: "K.Prasad" <prasad@linux.vnet.ibm.com>
 Organization: IBM
@@ -22,144 +22,109 @@ MIME-Version: 1.0
 In-Reply-To: <20080516164644.GA22928@in.ibm.com>
 References: <20080516164644.GA22928@in.ibm.com>
 Content-Transfer-Encoding: 8BIT
-Date: Fri, 16 May 2008 22:36:49 +0530
-Message-ID: <op.ua9a5ncx03j166@prasadkr_t60p.in.ibm.com>
+Date: Fri, 16 May 2008 22:36:54 +0530
+Message-ID: <op.ua9a5sq103j166@prasadkr_t60p.in.ibm.com>
 User-Agent: Opera Mail/9.26 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch replaces the memcpy in the output functions to use trace_dump()
-function. This renders several other operations done in blktrace.c such as
-setup/tear-down/read operation definitions redundant.
-
-This patch also introduces instances of a few structures required to use
-trace_dump() function in struct blk_trace.
+Remove the 'dropped' file and the setup/removal/access operations  
+surrounding
+it. The use of trace_dump() has rendered this file redundant, as 'trace'
+infrastructure makes this file available already.
 
 Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
 ---
-  block/blktrace.c             |   32 +++++++++++++++++++++++++++-----
-  include/linux/blktrace_api.h |    3 +++
-  2 files changed, 30 insertions(+), 5 deletions(-)
+  block/blktrace.c             |   33 ---------------------------------
+  include/linux/blktrace_api.h |    2 --
+  2 files changed, 35 deletions(-)
 
 Index: linux-blktrace-many/block/blktrace.c
 ===================================================================
 --- linux-blktrace-many.orig/block/blktrace.c
 +++ linux-blktrace-many/block/blktrace.c
-@@ -25,6 +25,7 @@
-  #include <linux/time.h>
-  #include <asm/uaccess.h>
-
-+#define BLKTRACE_ROOT_DIR "block"
-  static unsigned int blktrace_seq __read_mostly = 1;
-
-  /*
-@@ -35,7 +36,7 @@ static void trace_note(struct blk_trace
+@@ -232,7 +232,6 @@ err:
+  static void blk_trace_cleanup(struct blk_trace *bt)
   {
-  	struct blk_io_trace *t;
-
--	t = relay_reserve(bt->rchan, sizeof(*t) + len);
-+	t = kzalloc(sizeof(*t), GFP_KERNEL);
-  	if (t) {
-  		const int cpu = smp_processor_id();
-
-@@ -46,7 +47,8 @@ static void trace_note(struct blk_trace
-  		t->pid = pid;
-  		t->cpu = cpu;
-  		t->pdu_len = len;
--		memcpy((void *) t + sizeof(*t), data, len);
-+		trace_dump(bt->tpk, t, sizeof(*t));
-+		trace_dump(bt->tpk, data, len);
-  	}
-  }
-
-@@ -151,7 +153,7 @@ void __blk_add_trace(struct blk_trace *b
-  	if (unlikely(tsk->btrace_seq != blktrace_seq))
-  		trace_note_tsk(bt, tsk);
-
--	t = relay_reserve(bt->rchan, sizeof(*t) + pdu_len);
-+	t = kzalloc(sizeof(*t), GFP_KERNEL);
-  	if (t) {
-  		cpu = smp_processor_id();
-  		sequence = per_cpu_ptr(bt->sequence, cpu);
-@@ -168,8 +170,9 @@ void __blk_add_trace(struct blk_trace *b
-  		t->error = error;
-  		t->pdu_len = pdu_len;
-
-+		trace_dump(bt->tpk, t, sizeof(*t));
-  		if (pdu_len)
--			memcpy((void *) t + sizeof(*t), pdu_data, pdu_len);
-+			trace_dump(bt->tpk, pdu_data, pdu_len);
-  	}
-
-  	local_irq_restore(flags);
-@@ -206,7 +209,7 @@ static struct dentry *blk_create_tree(co
-  	mutex_lock(&blk_tree_mutex);
-
-  	if (!blk_tree_root) {
--		blk_tree_root = debugfs_create_dir("block", NULL);
-+		blk_tree_root = debugfs_create_dir("block_old", NULL);
-  		if (!blk_tree_root)
-  			goto err;
-  		created = 1;
-@@ -232,6 +235,11 @@ static void blk_trace_cleanup(struct blk
-  	debugfs_remove(bt->dropped_file);
+  	relay_close(bt->rchan);
+-	debugfs_remove(bt->dropped_file);
   	blk_remove_tree(bt->dir);
   	free_percpu(bt->sequence);
-+	trace_cleanup(bt->tpk->ti);
-+
-+	kfree(bt->tpk->parent_dir);
-+	kfree(bt->tpk->dir);
-+	kfree(bt->tpk);
-  	kfree(bt);
+  	trace_cleanup(bt->tpk->ti);
+@@ -259,30 +258,6 @@ int blk_trace_remove(struct request_queu
+  }
+  EXPORT_SYMBOL_GPL(blk_trace_remove);
+
+-static int blk_dropped_open(struct inode *inode, struct file *filp)
+-{
+-	filp->private_data = inode->i_private;
+-
+-	return 0;
+-}
+-
+-static ssize_t blk_dropped_read(struct file *filp, char __user *buffer,
+-				size_t count, loff_t *ppos)
+-{
+-	struct blk_trace *bt = filp->private_data;
+-	char buf[16];
+-
+-	snprintf(buf, sizeof(buf), "%u\n", atomic_read(&bt->dropped));
+-
+-	return simple_read_from_buffer(buffer, count, ppos, buf, strlen(buf));
+-}
+-
+-static const struct file_operations blk_dropped_fops = {
+-	.owner =	THIS_MODULE,
+-	.open =		blk_dropped_open,
+-	.read =		blk_dropped_read,
+-};
+-
+  /*
+   * Keep track of how many times we encountered a full subbuffer, to aid
+   * the user space app in telling how many lost events there were.
+@@ -296,7 +271,6 @@ static int blk_subbuf_start_callback(str
+  		return 1;
+
+  	bt = buf->chan->private_data;
+-	atomic_inc(&bt->dropped);
+  	return 0;
   }
 
-@@ -342,6 +350,16 @@ int do_blk_trace_setup(struct request_qu
-  	if (!bt)
-  		goto err;
+@@ -371,13 +345,8 @@ int do_blk_trace_setup(struct request_qu
 
-+	bt->tpk = kzalloc(sizeof(*(bt->tpk)), GFP_KERNEL);
-+	if (!bt->tpk)
-+		goto err;
-+	bt->tpk->parent_dir = kstrdup(BLKTRACE_ROOT_DIR, GFP_KERNEL);
-+	if (!bt->tpk->parent_dir)
-+		goto parent_dir_err;
-+	bt->tpk->dir = kstrdup(name, GFP_KERNEL);
-+	if (!bt->tpk->dir)
-+		goto dir_err;
-+
-  	bt->sequence = alloc_percpu(unsigned long);
-  	if (!bt->sequence)
-  		goto err;
-@@ -385,6 +403,10 @@ int do_blk_trace_setup(struct request_qu
-  	}
+  	bt->dir = dir;
+  	bt->dev = dev;
+-	atomic_set(&bt->dropped, 0);
 
-  	return 0;
-+dir_err:
-+	kfree(bt->tpk->parent_dir);
-+parent_dir_err:
-+	kfree(bt->tpk);
-  err:
+  	ret = -EIO;
+-	bt->dropped_file = debugfs_create_file("dropped", 0444, dir, bt,  
+&blk_dropped_fops);
+-	if (!bt->dropped_file)
+-		goto err;
+-
+  	bt->rchan = relay_open("trace", dir, buts->buf_size,
+  				buts->buf_nr, &blk_relay_callbacks, bt);
+  	if (!bt->rchan)
+@@ -411,8 +380,6 @@ err:
   	if (dir)
   		blk_remove_tree(dir);
+  	if (bt) {
+-		if (bt->dropped_file)
+-			debugfs_remove(bt->dropped_file);
+  		free_percpu(bt->sequence);
+  		if (bt->rchan)
+  			relay_close(bt->rchan);
 Index: linux-blktrace-many/include/linux/blktrace_api.h
 ===================================================================
 --- linux-blktrace-many.orig/include/linux/blktrace_api.h
 +++ linux-blktrace-many/include/linux/blktrace_api.h
-@@ -3,6 +3,7 @@
-
-  #include <linux/blkdev.h>
-  #include <linux/relay.h>
-+#include <linux/trace.h>
-
-  /*
-   * Trace categories
-@@ -127,6 +128,8 @@ struct blk_trace {
+@@ -126,8 +126,6 @@ struct blk_trace {
+  	u32 pid;
+  	u32 dev;
   	struct dentry *dir;
-  	struct dentry *dropped_file;
-  	atomic_t dropped;
-+	struct trace_info *ti;
-+	struct trace_printk_data *tpk;
+-	struct dentry *dropped_file;
+-	atomic_t dropped;
+  	struct trace_info *ti;
+  	struct trace_printk_data *tpk;
   };
-
-  /*
