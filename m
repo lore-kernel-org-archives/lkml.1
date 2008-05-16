@@ -1,145 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760397AbYEPPUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760414AbYEPPWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760397AbYEPPUZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 11:20:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759003AbYEPPTz
+	id S1760414AbYEPPWa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 11:22:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbYEPPWS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 11:19:55 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49488 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758901AbYEPPTx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 11:19:53 -0400
-Date: Fri, 16 May 2008 11:01:46 -0400
-From: Josef Bacik <jbacik@redhat.com>
-To: Mingming Cao <cmm@us.ibm.com>
-Cc: Jan Kara <jack@suse.cz>, Badari Pulavarty <pbadari@us.ibm.com>,
-       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+	Fri, 16 May 2008 11:22:18 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43148 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751104AbYEPPWR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 11:22:17 -0400
+Date: Fri, 16 May 2008 16:10:29 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Cc: Jeff Garzik <jeff@garzik.org>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Rick Jones <rick.jones2@hp.com>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       Chris Peterson <cpeterso@cpeterso.com>, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix DIO EIO error caused by race between
-	jbd_commit_transaction() and journal_try_to_drop_buffers()
-Message-ID: <20080516150146.GA21018@unused.rdu.redhat.com>
-References: <20080505170636.GK25722@duck.suse.cz> <1210372072.3639.52.camel@localhost.localdomain> <20080512155419.GD15856@duck.suse.cz> <1210639184.3661.43.camel@localhost.localdomain> <20080513145449.GC20806@duck.suse.cz> <1210717389.3638.24.camel@localhost.localdomain> <20080514170856.GH24363@duck.suse.cz> <1210786872.3657.48.camel@localhost.localdomain> <20080514181444.GI24363@duck.suse.cz> <1210947250.3608.18.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1210947250.3608.18.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
+ IRQF_SAMPLE_RANDOM
+Message-ID: <20080516161029.44ded734@core>
+In-Reply-To: <20080516132107.GA11304@csclub.uwaterloo.ca>
+References: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com>
+	<20080515142154.0595e475@core>
+	<36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com>
+	<482C7B18.6060003@garzik.org>
+	<482C7E53.3050300@hp.com>
+	<482C8184.2030906@garzik.org>
+	<482C8550.5000909@intel.com>
+	<482C8D4D.3040702@garzik.org>
+	<20080516132107.GA11304@csclub.uwaterloo.ca>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16, 2008 at 07:14:10AM -0700, Mingming Cao wrote:
-> This patch fixed a few races between direct IO and kjournld commit transaction.
-> An unexpected EIO error gets returned to direct IO caller when it failed to
-> free those data buffers. This could be reproduced easily with parallel 
-> direct write and buffered write to the same file
-> 
-> More specific, those races could cause journal_try_to_free_buffers()
-> fail to free the data buffers, when jbd is committing the transaction that has
-> those data buffers on its t_syncdata_list or t_locked_list. 
-> journal_commit_transaction() still holds the reference to those buffers
->  before data reach to disk and buffers are removed from the 
-> t_syncdata_list of t_locked_list. This prevent the concurrent 
-> journal_try_to_free_buffers() to free those buffers at the same time, and cause
-> EIO error returns back to direct IO.
-> 
-> With this patch, in case of direct IO and when try_to_free_buffers() failed,
-> let's waiting for journal_commit_transaction() to finish
-> flushing the current committing transaction's data buffers to disk, 
-> then try to free those buffers again.
-> 
-> Signed-off-by: Mingming Cao <cmm@us.ibm.com>
-> Reviewed-by: Badari Pulavarty <pbadari@us.ibm.com> 
-> ---
->  fs/jbd/commit.c      |    1 +
->  fs/jbd/journal.c     |    1 +
->  fs/jbd/transaction.c |   46 ++++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/jbd.h  |    3 +++
->  4 files changed, 51 insertions(+)
-> 
-> Index: linux-2.6.26-rc1/include/linux/jbd.h
-> ===================================================================
-> --- linux-2.6.26-rc1.orig/include/linux/jbd.h	2008-05-14 16:36:41.000000000 -0700
-> +++ linux-2.6.26-rc1/include/linux/jbd.h	2008-05-15 14:12:10.000000000 -0700
-> @@ -667,6 +667,9 @@ struct journal_s
->  	 */
->  	wait_queue_head_t	j_wait_transaction_locked;
->  
-> +	/* Wait queu for waiting for data buffers to flushed to disk*/
-> +	wait_queue_head_t	j_wait_data_flushed;
-> +
->  	/* Wait queue for waiting for checkpointing to complete */
->  	wait_queue_head_t	j_wait_logspace;
->  
-> Index: linux-2.6.26-rc1/fs/jbd/commit.c
-> ===================================================================
-> --- linux-2.6.26-rc1.orig/fs/jbd/commit.c	2008-05-03 11:59:44.000000000 -0700
-> +++ linux-2.6.26-rc1/fs/jbd/commit.c	2008-05-15 14:12:46.000000000 -0700
-> @@ -462,6 +462,7 @@ void journal_commit_transaction(journal_
->  	 * clean by now, so check that it is in fact empty.
->  	 */
->  	J_ASSERT (commit_transaction->t_sync_datalist == NULL);
-> +	wake_up(&journal->j_wait_data_flushed)
->  
->  	jbd_debug (3, "JBD: commit phase 3\n");
->  
-> Index: linux-2.6.26-rc1/fs/jbd/journal.c
-> ===================================================================
-> --- linux-2.6.26-rc1.orig/fs/jbd/journal.c	2008-05-14 16:36:41.000000000 -0700
-> +++ linux-2.6.26-rc1/fs/jbd/journal.c	2008-05-15 14:13:02.000000000 -0700
-> @@ -660,6 +660,7 @@ static journal_t * journal_init_common (
->  		goto fail;
->  
->  	init_waitqueue_head(&journal->j_wait_transaction_locked);
-> +	init_waitqueue_head(&journal->j_wait_data_flushed);
->  	init_waitqueue_head(&journal->j_wait_logspace);
->  	init_waitqueue_head(&journal->j_wait_done_commit);
->  	init_waitqueue_head(&journal->j_wait_checkpoint);
-> Index: linux-2.6.26-rc1/fs/jbd/transaction.c
-> ===================================================================
-> --- linux-2.6.26-rc1.orig/fs/jbd/transaction.c	2008-05-03 11:59:44.000000000 -0700
-> +++ linux-2.6.26-rc1/fs/jbd/transaction.c	2008-05-16 06:42:30.000000000 -0700
-> @@ -1648,12 +1648,47 @@ out:
->  	return;
->  }
->  
-> +/*
-> + * Journal_try_to_free_buffers() will call this function to w
-> + * waiting for the current transaction finishing syncing data buffers, before
-> + * try to free that buffer.
-> + *
-> + * journal_try_to_free_buffers() could race with journal_commit_transaction()
-> + * The later might still hold the reference count to the buffers when inspecting
-> + * them on t_syncdata_list or t_locked_list.
-> + */
-> +static void journal_wait_for_transaction_sync_data(journal_t *journal)
-> +{
-> +        transaction_t *transaction = NULL;
-> +
-> +        transaction = journal->j_committing_transaction;
-> +
-> +        if (!transaction)
-> +                return;
-> +
-> +        /*
-> +         * If the current transaction is flushing and waiting for data buffers
-> +	 * (t_state is T_FLUSH), wait for the j_wait_data_flushed event
-> +         */
-> +        if (transaction->t_state == T_FLUSH) {
-> +                DEFINE_WAIT(wait);
-> +
-> +                prepare_to_wait(&journal->j_wait_data_flushed,
-> +                                        &wait, TASK_UNINTERRUPTIBLE);
-> +                spin_unlock(&journal->j_state_lock);
-> +                schedule();
-> +                finish_wait(&journal->j_wait_data_flushed, &wait);
-> +        	spin_lock(&journal->j_state_lock);
-> +        }
-> +	return;
-> +}
-> 
+> receives no input.  While ethernet might not be preferable if you have
+> something else, sometimes you really don't have anything else.
 
-Got a couple of whitespace problems above it looks like.  Thanks,
-
-Josef
-
+Ethernet is observable so ethernet isn't entropy. There is no "anything
+else" here -> there is no *anything*
