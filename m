@@ -1,92 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755381AbYEPCa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756058AbYEPCdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755381AbYEPCa2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 22:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751569AbYEPCaR
+	id S1756058AbYEPCdf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 22:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbYEPCd0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 22:30:17 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:44238 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751424AbYEPCaP (ORCPT
+	Thu, 15 May 2008 22:33:26 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:36294 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750759AbYEPCdZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 22:30:15 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>, Pavel Machek <pavel@ucw.cz>,
-       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-References: <1210574441.30365.8.camel@caritas-dev.intel.com>
-	<20080513053408.GA5870@redhat.com>
-	<1210730266.23707.50.camel@caritas-dev.intel.com>
-	<20080514025607.GA19944@redhat.com>
-	<1210736275.23707.62.camel@caritas-dev.intel.com>
-	<m1lk2c4l4i.fsf@frodo.ebiederm.org>
-	<1210827473.23707.133.camel@caritas-dev.intel.com>
-	<m1lk2bs970.fsf@frodo.ebiederm.org>
-	<1210902114.23707.156.camel@caritas-dev.intel.com>
-Date: Thu, 15 May 2008 19:25:00 -0700
-In-Reply-To: <1210902114.23707.156.camel@caritas-dev.intel.com> (Ying Huang's
-	message of "Fri, 16 May 2008 09:41:54 +0800")
-Message-ID: <m14p8zgf43.fsf@frodo.ebiederm.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 15 May 2008 22:33:25 -0400
+Date: Thu, 15 May 2008 19:32:36 -0700
+From: Greg KH <greg@kroah.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>, jkosina@suse.cz,
+       linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Input: add appleir USB driver
+Message-ID: <20080516023236.GB17375@kroah.com>
+References: <20080514221519.GA6575@kroah.com> <20080515132108.GA9327@dose.home.local> <20080515094212.ZZRA012@mailhub.coreip.homeip.net> <20080515184034.GB15231@kroah.com> <20080515205959.GA11683@dose.home.local> <20080515211117.GA32573@kroah.com> <20080515232733.GA16655@dose.home.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 24.130.11.59
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;"Huang, Ying" <ying.huang@intel.com>
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -1.1 BAYES_05 BODY: Bayesian spam probability is 1 to 5%
-	*      [score: 0.0217]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH] kexec based hibernation: a prototype of kexec multi-stage load
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
+Content-Disposition: inline
+In-Reply-To: <20080515232733.GA16655@dose.home.local>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Huang, Ying" <ying.huang@intel.com> writes:
-
-> On Thu, 2008-05-15 at 11:39 -0700, Eric W. Biederman wrote:
+On Fri, May 16, 2008 at 01:27:33AM +0200, Tino Keitel wrote:
+> On Thu, May 15, 2008 at 14:11:17 -0700, Greg KH wrote:
+> > On Thu, May 15, 2008 at 10:59:59PM +0200, Tino Keitel wrote:
+> 
 > [...]
->> 2) After we figure out our address read the stack pointer from
->>    a fixed location and simply set it.  (This is my preference)
->
-> Just for confirmation (My English is poor).
->
-> Do you mean that kernel A just read the stack top as re-entry point,
-> regardless of whether it is return address or argument 1?
+> 
+> > > The macmini LIRC driver is a pure userspace driver, so nothing
+> > > needs to
+> > > be ever included in the kernel.
+> >
+> > So does this driver work with the macmini USB ir device today
+> > somehow?
+> 
+> Yes, I'm using it for months.
+> 
+> > From what I can tell, this driver is still necessary for things to
+> > work
+> > properly for this hardware, right?
+> 
+> When the appleir kernel driver is used, the IR device acts as in input
+> device, not as a HID device. LIRC has to be configured to use its
+> dev/input driver in this case. This is a generic driver to use any
+> input device as lirc device. The dev/input driver relies on the key
+> events that are generated by the kernel.
 
-What I was thinking was:
+Hm, I just got a private email (for some odd reason) saying this driver
+isn't needed at all, they just add a hid quirk line.
 
-In kernel A()
+Now why that hid quirk line hadn't been added for the year or so that
+the person knew about it, sure is odd to me...
 
-relocate_new_kernel:
+I'll test it out and probably reduce this whole thing to a one-line
+hid-quirk patch...
 
-        ...
+ugh, why do people not send stuff upstream, it just wastes everyone's
+time in the end :(
 
-        call	*%eax
-
-kexec_jump_back_entry:
-        /* This code should be PIC so figure out where we are */
-        call	1f
-1:
-        popl	%edi
-        subl	$(1b - relocate_kernel), %edi
-
-        /* Setup a safe stack */
-        leal    PAGE_SIZE(%edi), %esp
-        ...
-
-
-Then in purgatory we can read the address of kexec_jump_back_entry
-by examining 0(%esp) and export it in whatever fashion is sane.
-
-However we reach kexec_jump_back_entry we should be fine.
-
-Eric
+greg k-h
