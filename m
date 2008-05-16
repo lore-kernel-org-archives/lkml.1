@@ -1,62 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759420AbYEPWak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760010AbYEPWbV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759420AbYEPWak (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 18:30:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753907AbYEPWa3
+	id S1760010AbYEPWbV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 18:31:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755436AbYEPWbL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 18:30:29 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:49925 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753392AbYEPWa2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 18:30:28 -0400
-Date: Fri, 16 May 2008 23:30:23 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
-Message-ID: <20080516223023.GF15334@shareable.org>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-References: <482DDA56.6000301@redhat.com> <20080516130545.845a3be9.akpm@linux-foundation.org>
+	Fri, 16 May 2008 18:31:11 -0400
+Received: from saeurebad.de ([85.214.36.134]:47018 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754811AbYEPWbJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 18:31:09 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: bootmem: Double freeing a PFN on nodes spanning other nodes
+CC: Linux MM Mailing List <linux-mm@kvack.org>
+Date: Sat, 17 May 2008 00:30:55 +0200
+Message-ID: <87skwhyj8g.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080516130545.845a3be9.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> > A collection of patches to make ext3 & 4 use barriers by
-> > default, and to call blkdev_issue_flush on fsync if they
-> > are enabled.
-> 
-> Last time this came up lots of workloads slowed down by 30% so I
-> dropped the patches in horror.
+Hi,
 
-Apart from batching larger journal commits, I thought of another way
-which might improve write performance with barriers.
+When memory nodes overlap each other, the bootmem allocator is not aware
+of this and might pass the same page twice to __free_pages_bootmem().
 
-Basically, right now a barrier prevents any write I/Os from being
-moved before or after it in the elevator, as well as issuing commands
-itself.
+As I traced the code, this should result in bad_page() calls on every
+boot but noone has yet reported something like this and I am wondering
+why.
 
-It may be that relaxing barriers to allow moving writes when it's fine
-will allow the elevator to schedule writes to reduce seeking?
+__free_pages_bootmem() boils down to either free_hot_cold_page() or
+__free_one_page().  Either path should lead to setting the page private
+or buddy:
 
-A clear example of when it's fine is data=ordered, overwriting data in
-a file.  Those data writes don't have to be ordered against other
-filesystem activity which is triggering journal commits.  So they
-could be moved around barrier ops, if the elevator deems that would
-reduce seeks or to coalesce ops.
+free_hot_cold_page() sets ->private to the page block's migratetype (and
+sets PG_private).
 
-Similar arguments apply to moving writes past fsync() flushes, but the
-rules are a bit different.
+__free_one_page sets ->private to the page's order (and sets PG_private
+and PG_buddy).
 
--- Jamie
+If a page is passed in twice, free_pages_check() should now warn (via
+bad_page()) on the flags set above.
 
+Am I missing something?  Thanks in advance.
 
+	Hannes
