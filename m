@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763893AbYEPO7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761499AbYEPPAO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763893AbYEPO7v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 10:59:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758553AbYEPOoQ
+	id S1761499AbYEPPAO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 11:00:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758059AbYEPOoU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 10:44:16 -0400
-Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49296 "EHLO
+	Fri, 16 May 2008 10:44:20 -0400
+Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49294 "EHLO
 	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751431AbYEPOmX (ORCPT
+	with ESMTP id S1754169AbYEPOmX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 16 May 2008 10:42:23 -0400
 From: hooanon05@yahoo.co.jp
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Junjiro Okajima <hooanon05@yahoo.co.jp>
-Subject: [PATCH 16/67] aufs lookup functions for NFS branch in linux-2.6.19 and later
-Date: Fri, 16 May 2008 23:32:30 +0900
-Message-Id: <12109484012213-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [PATCH 8/67] aufs module global variables and operations
+Date: Fri, 16 May 2008 23:32:22 +0900
+Message-Id: <1210948401506-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <12109484013834-git-send-email-hooanon05@yahoo.co.jp>
-References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <12109484012532-git-send-email-hooanon05@yahoo.co.jp> <12109484012997-git-send-email-hooanon05@yahoo.co.jp> <12109484013051-git-send-email-hooanon05@yahoo.co.jp> <12109484013436-git-send-email-hooanon05@yahoo.co.jp> <1210948401415-git-send-email-hooanon05@yahoo.co.jp> <12109484011533-git-send-email-hooanon05@yahoo.co.jp> <1210948401506-git-send-email-hooanon05@yahoo.co.jp> <12109484013156-git-send-email-hooanon05@yahoo.co.jp> <12109484012724-git-send-email-hooanon05@yahoo.co.jp> <12109484013264-git-send-email-hooanon05@yahoo.co.jp> <12109484012658-git-send-email-hooanon05@yahoo.co.jp> <12109484011282-git-send-email-hooanon05@yahoo.co.jp> <12109484012543-git-send-email-hooanon05@yahoo.co.jp> <12109484013834-git-send-email-hooanon05@yahoo.co.jp>
+In-Reply-To: <12109484011533-git-send-email-hooanon05@yahoo.co.jp>
+References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <12109484012532-git-send-email-hooanon05@yahoo.co.jp> <12109484012997-git-send-email-hooanon05@yahoo.co.jp> <12109484013051-git-send-email-hooanon05@yahoo.co.jp> <12109484013436-git-send-email-hooanon05@yahoo.co.jp> <1210948401415-git-send-email-hooanon05@yahoo.co.jp> <12109484011533-git-send-email-hooanon05@yahoo.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -26,21 +26,21 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Junjiro Okajima <hooanon05@yahoo.co.jp>
 
 	initial commit
-	aufs lookup functions for NFS branch in linux-2.6.19 and later
+	aufs module global variables and operations
 
 Signed-off-by: Junjiro Okajima <hooanon05@yahoo.co.jp>
 ---
- fs/aufs/br_nfs.c |  391 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 391 insertions(+), 0 deletions(-)
+ fs/aufs/module.c |  243 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 243 insertions(+), 0 deletions(-)
 
-diff --git a/fs/aufs/br_nfs.c b/fs/aufs/br_nfs.c
+diff --git a/fs/aufs/module.c b/fs/aufs/module.c
 new file mode 100644
-index 0000000..ab5c8c2
+index 0000000..c5577c7
 --- /dev/null
-+++ b/fs/aufs/br_nfs.c
-@@ -0,0 +1,391 @@
++++ b/fs/aufs/module.c
+@@ -0,0 +1,243 @@
 +/*
-+ * Copyright (C) 2008 Junjiro Okajima
++ * Copyright (C) 2007 Junjiro Okajima
 + *
 + * This program, aufs is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -58,378 +58,230 @@ index 0000000..ab5c8c2
 + */
 +
 +/*
-+ * lookup functions for NFS branch in linux-2.6.19 and later
++ * module global variables and operations
 + *
-+ * $Id: br_nfs.c,v 1.3 2008/05/04 23:51:14 sfjro Exp $
++ * $Id: module.c,v 1.3 2008/04/28 03:02:06 sfjro Exp $
 + */
 +
++#include <linux/module.h>
 +#include "aufs.h"
 +
-+static struct file *au_find_h_intent(struct au_hdentry *hd, struct file *file)
++/* ---------------------------------------------------------------------- */
++
++/*
++ * aufs caches
++ */
++struct kmem_cache *au_cachep[AuCache_Last];
++static int __init create_cache(void)
 +{
-+	struct file *h_file, *hf;
-+	struct au_hdintent *hdi, *tmp, *do_free;
++	au_cachep[AuCache_DINFO] = AuCache(au_dinfo);
++	if (au_cachep[AuCache_DINFO])
++		au_cachep[AuCache_ICNTNR] = AuCache(aufs_icntnr);
++	if (au_cachep[AuCache_ICNTNR])
++		au_cachep[AuCache_FINFO] = AuCache(au_finfo);
++	//au_cachep[AuCache_FINFO] = NULL;
++	if (au_cachep[AuCache_FINFO])
++		au_cachep[AuCache_VDIR] = AuCache(au_vdir);
++	if (au_cachep[AuCache_VDIR])
++		au_cachep[AuCache_DEHSTR] = AuCache(au_vdir_dehstr);
++	if (au_cachep[AuCache_DEHSTR])
++		return 0;
 +
-+	LKTRTrace("%.*s\n", AuDLNPair(hd->hd_dentry));
-+
-+	h_file = NULL;
-+	do_free = NULL;
-+	spin_lock(&hd->hd_lock);
-+	list_for_each_entry_safe(hdi, tmp, hd->hd_intent_list, hdi_list) {
-+		hf = hdi->hdi_file[AuIntent_BRANCH];
-+		if (hdi->hdi_file[AuIntent_AUFS] == file
-+		    && hf->f_dentry == hd->hd_dentry) {
-+			h_file = hf;
-+			do_free = hdi;
-+			list_del(&hdi->hdi_list);
-+			break;
-+		}
-+	}
-+	spin_unlock(&hd->hd_lock);
-+	kfree(do_free);
-+
-+	return h_file;
++	return -ENOMEM;
 +}
 +
-+struct file *au_h_intent(struct dentry *dentry, aufs_bindex_t bindex,
-+			 struct file *file)
++static void destroy_cache(void)
 +{
-+	struct file *h_file;
-+	struct au_hdentry *hd = au_di(dentry)->di_hdentry + bindex;
-+
-+	LKTRTrace("%.*s, b%d, f %p\n", AuDLNPair(dentry), bindex, file);
-+	DiMustAnyLock(dentry);
-+	AuDebugOn(bindex < au_di(dentry)->di_bstart
-+		  || bindex > au_di(dentry)->di_bend);
-+
-+	h_file = NULL;
-+	if (!hd->hd_intent_list || !file)
-+		return h_file; /* success */
-+
-+	//AuDebugOn(au_test_wkq(current));
-+	h_file = au_find_h_intent(hd, file);
-+	//AuDbgFile(h_file);
-+	return h_file;
-+}
-+
-+static int au_set_h_intent(struct dentry *dentry, aufs_bindex_t bindex,
-+			   struct file *file, struct file *h_file)
-+{
-+	int err;
-+	struct au_hdentry *hd = au_di(dentry)->di_hdentry + bindex;
-+	struct au_hdintent *hdi;
-+	struct file *hf;
-+
-+	LKTRTrace("%.*s, b%d, f %p\n", AuDLNPair(dentry), bindex, file);
-+	/* d_revalidate() holds read_lock */
-+	//DiMustWriteLock(dentry);
-+	AuDebugOn(bindex < au_di(dentry)->di_bstart
-+		  || bindex > au_di(dentry)->di_bend
-+		  || !file
-+		  || !h_file
-+		  /* || au_test_wkq(current) */);
-+
-+	err = -ENOMEM;
-+	if (hd->hd_intent_list) {
-+		while (1) {
-+			hf = au_find_h_intent(hd, file);
-+			if (!hf)
-+				break;
-+#if 0 //def CONFIG_AUFS_DEBUG
-+			au_debug_on();
-+			DbgDentry(dentry);
-+			DbgFile(hf);
-+			au_debug_off();
-+#endif
-+			fput(hf);
-+			AuWarn("freed hfile %.*s b%d left\n",
-+			       AuDLNPair(dentry), bindex);
++	int i;
++	for (i = 0; i < AuCache_Last; i++)
++		if (au_cachep[i]) {
++			kmem_cache_destroy(au_cachep[i]);
++			au_cachep[i] = NULL;
 +		}
-+	} else {
-+		spin_lock(&hd->hd_lock);
-+		if (!hd->hd_intent_list) {
-+			hd->hd_intent_list
-+				= kmalloc(sizeof(*hd->hd_intent_list),
-+					  GFP_ATOMIC);
-+			if (unlikely(!hd->hd_intent_list)) {
-+				spin_unlock(&hd->hd_lock);
-+				goto out;
-+			}
-+			INIT_LIST_HEAD(hd->hd_intent_list);
-+		}
-+		spin_unlock(&hd->hd_lock);
-+	}
-+
-+	hdi = kmalloc(sizeof(*hdi), GFP_TEMPORARY);
-+	if (unlikely(!hdi))
-+		goto out;
-+
-+	err = 0;
-+	//hdi->hdi_pid = current->pid;
-+	hdi->hdi_file[AuIntent_AUFS] = file;
-+	hdi->hdi_file[AuIntent_BRANCH] = h_file;
-+	spin_lock(&hd->hd_lock);
-+	list_add(&hdi->hdi_list, hd->hd_intent_list);
-+	spin_unlock(&hd->hd_lock);
-+	//AuDbgDentry(dentry);
-+	//AuDbgFile(h_file);
-+
-+ out:
-+	AuTraceErr(err);
-+	return err;
-+}
-+
-+int au_br_nfs_h_intent(struct file *nd_file, struct dentry *dentry,
-+		       aufs_bindex_t bindex, struct nameidata *nd)
-+{
-+	int err;
-+
-+	AuTraceEnter();
-+
-+	err = 0;
-+	if (!nd_file)
-+		goto out;
-+
-+	AuDebugOn(!nd);
-+	err = au_set_h_intent(dentry, bindex, nd->intent.open.file, nd_file);
-+	//err = -1;
-+	if (unlikely(err)) {
-+		fput(nd_file);
-+		au_set_h_dptr(dentry, bindex, NULL);
-+		//todo: update bstart and bend?
-+	}
-+
-+ out:
-+	AuTraceErr(err);
-+	return err;
 +}
 +
 +/* ---------------------------------------------------------------------- */
 +
-+void au_hintent_put(struct au_hdentry *hd, int do_free)
-+{
-+	struct au_hdintent *hdi, *tmp;
-+	struct file *hf;
++char au_esc_chars[0x20 + 3]; /* 0x01-0x20, backslash, del, and NULL */
++int au_dir_roflags;
 +
-+	if (unlikely(hd->hd_intent_list)) {
-+		// no spin lock
-+		list_for_each_entry_safe(hdi, tmp, hd->hd_intent_list,
-+					 hdi_list) {
-+			LKTRTrace("hdi %p\n", hdi);
-+			hf = hdi->hdi_file[AuIntent_BRANCH];
-+			if (unlikely(hf))
-+				fput(hf);
-+			//list_del(&hdi->hdi_list);
-+			kfree(hdi);
-+		}
-+		if (do_free)
-+			kfree(hd->hd_intent_list);
-+	}
-+}
++/*
++ * functions for module interface.
++ */
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Junjiro Okajima");
++MODULE_DESCRIPTION(AUFS_NAME " -- Another unionfs");
++MODULE_VERSION(AUFS_VERSION);
++
++/* it should be 'byte', but param_set_byte() prints it by "%c" */
++short aufs_nwkq = AUFS_NWKQ_DEF;
++MODULE_PARM_DESC(nwkq, "the number of workqueue thread, " AUFS_WKQ_NAME);
++module_param_named(nwkq, aufs_nwkq, short, S_IRUGO);
++
++int sysaufs_brs;
++MODULE_PARM_DESC(brs, "use <sysfs>/fs/aufs/si_*/brN");
++module_param_named(brs, sysaufs_brs, int, S_IRUGO);
 +
 +/* ---------------------------------------------------------------------- */
 +
-+#if 0
-+/* subset of nameidata */
-+struct au_ndsub {
-+	struct dentry	*dentry;
-+	struct vfsmount *mnt;
-+	unsigned int	flags;
-+
-+	union {
-+		struct open_intent open;
-+	} intent;
-+};
-+
-+static void au_ndsub_restore(struct nameidata *nd, struct au_ndsub *save)
++static int __init aufs_init(void)
 +{
-+	nd->path.dentry = save->dentty;
-+	nd->path.mnt = save->mnt;
-+	nd->flags = save->flags;
-+	nd->intent = save->intent;
-+}
-+#endif
-+
-+int au_fake_intent(/* struct au_ndsub *save,  */struct nameidata *nd,
-+		   int perm)
-+{
-+	int err;
-+
-+	LKTRTrace("perm %d\n", perm);
-+
-+	err = 0;
-+#if 0
-+	nd->path.dentry = save->dentty;
-+	nd->path.mnt = save->mnt;
-+	save->flags = nd->flags;
-+	save->intent = nd->intent;
-+#endif
-+
-+	nd->intent.open.file = NULL;
-+	if (nd->flags & LOOKUP_OPEN) {
-+		err = -ENFILE;
-+		nd->intent.open.file = get_empty_filp();
-+		if (unlikely(!nd->intent.open.file)) {
-+			//nd->intent.open.file = save->intent.open.file;
-+			goto out;
-+		}
-+
-+		err = 0;
-+		if (!au_br_writable(perm)) {
-+			nd->intent.open.flags = FMODE_READ
-+				| au_file_roflags(nd->intent.open.flags);
-+			nd->flags &= ~LOOKUP_CREATE;
-+		}
-+	}
-+
-+ out:
-+	AuTraceErr(err);
-+	return err;
-+}
-+
-+int au_hin_after_reval(struct nameidata *nd, struct dentry *dentry,
-+		       aufs_bindex_t bindex, struct file *file)
-+{
-+	int err;
-+
-+	LKTRTrace("nd %p, %.*s, b%d, f %d\n",
-+		  nd, AuDLNPair(dentry), bindex, !!file);
-+
-+	err = 0;
-+	if ((nd->flags & LOOKUP_OPEN)
-+	    && nd->intent.open.file
-+	    && !IS_ERR(nd->intent.open.file)) {
-+		if (nd->intent.open.file->f_dentry) {
-+			//AuDbgFile(nd->intent.open.file);
-+			err = au_set_h_intent(dentry, bindex, file,
-+					      nd->intent.open.file);
-+			if (!err)
-+				nd->intent.open.file = NULL;
-+		}
-+		if (unlikely(nd->intent.open.file))
-+			put_filp(nd->intent.open.file);
-+	}
-+
-+	return err;
-+}
-+
-+#ifdef CONFIG_AUFS_DLGT
-+struct au_lookup_hash_args {
-+	struct dentry **errp;
-+	struct qstr *name;
-+	struct dentry *base;
-+	struct nameidata *nd;
-+};
-+
-+static void au_call_lookup_hash(void *args)
-+{
-+	struct au_lookup_hash_args *a = args;
-+	*a->errp = vfsub__lookup_hash(a->name, a->base, a->nd);
-+}
-+
-+static struct dentry *
-+au_lkup_hash_dlgt(struct qstr *this, struct dentry *parent,
-+		  struct nameidata *nd, unsigned int flags)
-+{
-+	struct dentry *dentry;
-+	int dirperm1;
-+
-+	dirperm1 = au_ftest_ndx(flags, DIRPERM1);
-+	if (!dirperm1 && !au_ftest_ndx(flags, DLGT))
-+		dentry = vfsub__lookup_hash(this, parent, nd);
-+	else {
-+		int wkq_err;
-+		struct au_lookup_hash_args args = {
-+			.errp	= &dentry,
-+			.name	= this,
-+			.base	= parent,
-+			.nd	= nd
-+		};
-+		wkq_err = au_wkq_wait(au_call_lookup_hash, &args,
-+				      /*dlgt*/!dirperm1);
-+		if (unlikely(wkq_err))
-+			dentry = ERR_PTR(wkq_err);
-+	}
-+
-+	AuTraceErrPtr(dentry);
-+	return dentry;
-+}
-+#else
-+static struct dentry *
-+au_lkup_hash_dlgt(struct qstr *this, struct dentry *parent,
-+		  struct nameidata *nd, unsigned int flags)
-+{
-+	return vfsub__lookup_hash(this, parent, nd);
-+}
-+#endif /* CONFIG_AUFS_DLGT */
-+
-+struct dentry *au_lkup_hash(const char *name, struct dentry *parent,
-+			    int len, struct au_ndx *ndx)
-+{
-+	struct dentry *dentry;
++	int err, i;
 +	char *p;
-+	unsigned long hash;
-+	struct qstr this;
-+	unsigned int c;
-+	struct nameidata tmp_nd, *ndo;
-+	int err;
 +
-+	LKTRTrace("%.*s/%.*s\n", AuDLNPair(parent), len, name);
++	au_debug_init();
 +
-+	//todo: export and call __lookup_one_len() in fs/namei.c
-+	dentry = ERR_PTR(-EACCES);
-+	this.name = name;
-+	this.len = len;
-+	if (unlikely(!len))
++	p = au_esc_chars;
++	for (i = 1; i <= ' '; i++)
++		*p++ = i;
++	*p++ = '\\';
++	*p++ = '\x7f';
++	*p = 0;
++
++	au_dir_roflags = au_file_roflags(O_DIRECTORY | O_LARGEFILE);
++
++	err = -EINVAL;
++	if (unlikely(aufs_nwkq <= 0))
 +		goto out;
 +
-+	p = (void *)name;
-+	hash = init_name_hash();
-+	while (len--) {
-+		c = *p++;
-+		if (unlikely(c == '/' || c == '\0'))
-+			goto out;
-+		hash = partial_name_hash(c, hash);
-+	}
-+	this.hash = end_name_hash(hash);
++	err = sysaufs_init();
++	if (unlikely(err))
++		goto out;
++	err = au_wkq_init();
++	if (unlikely(err))
++		goto out_sysaufs;
++	err = au_inotify_init();
++	if (unlikely(err))
++		goto out_wkq;
++	err = au_sysrq_init();
++	if (unlikely(err))
++		goto out_inotify;
 +
-+	ndo = ndx->nd;
-+	if (ndo) {
-+		tmp_nd = *ndo;
-+		err = au_fake_intent(&tmp_nd, ndx->br->br_perm);
-+		dentry = ERR_PTR(err);
-+		if (unlikely(err))
-+			goto out_intent;
-+	} else
-+		memset(&tmp_nd, 0, sizeof(tmp_nd));
++	err = create_cache();
++	if (unlikely(err))
++		goto out_sysrq;
 +
-+	tmp_nd.path.dentry = parent;
-+	tmp_nd.path.mnt = ndx->nfsmnt;
-+	path_get(&tmp_nd.path);
-+	dentry = au_lkup_hash_dlgt(&this, parent, &tmp_nd, ndx->flags);
-+	if (0 && !IS_ERR(dentry))
-+		AuDbgDentry(dentry);
-+	if (!IS_ERR(dentry)) {
-+		/* why negative dentry for a new dir was unhashed? */
-+		if (unlikely(d_unhashed(dentry)))
-+			d_rehash(dentry);
-+		if (tmp_nd.intent.open.file
-+		    && tmp_nd.intent.open.file->f_dentry) {
-+			//AuDbgFile(tmp_nd.intent.open.file);
-+			ndx->nd_file = tmp_nd.intent.open.file;
-+			tmp_nd.intent.open.file = NULL;
-+			//au_br_get(ndx->br);
-+		}
-+	}
-+	path_put(&tmp_nd.path);
++	err = register_filesystem(&aufs_fs_type);
++	if (unlikely(err))
++		goto out_cache;
++	pr_info(AUFS_NAME " " AUFS_VERSION "\n");
++	return 0; /* success */
 +
-+ out_intent:
-+	if (tmp_nd.intent.open.file)
-+		put_filp(tmp_nd.intent.open.file);
++ out_cache:
++	destroy_cache();
++ out_sysrq:
++	au_sysrq_fin();
++ out_inotify:
++	au_inotify_fin();
++ out_wkq:
++	au_wkq_fin();
++ out_sysaufs:
++	sysaufs_fin();
 + out:
-+	AuTraceErrPtr(dentry);
-+	return dentry;
++	AuTraceErr(err);
++	return err;
 +}
++
++static void __exit aufs_exit(void)
++{
++	unregister_filesystem(&aufs_fs_type);
++	destroy_cache();
++
++	au_sysrq_fin();
++	au_inotify_fin();
++	au_wkq_fin();
++	sysaufs_fin();
++}
++
++module_init(aufs_init);
++module_exit(aufs_exit);
++
++/* ---------------------------------------------------------------------- */
++
++/* fake Kconfig */
++#if 1
++
++#ifdef CONFIG_AUFS_HINOTIFY
++#ifndef CONFIG_INOTIFY
++#error enable CONFIG_INOTIFY to use CONFIG_AUFS_HINOTIFY.
++#endif
++#endif /* CONFIG_AUFS_HINOTIFY */
++
++#if AUFS_BRANCH_MAX > 511 && PAGE_SIZE > 4096
++#warning pagesize is larger than 4kb, \
++	CONFIG_AUFS_BRANCH_MAX_511 or smaller is recommended.
++#endif
++
++#ifdef CONFIG_AUFS_STAT
++#ifndef CONFIG_SYSFS
++#error CONFIG_AUFS_STAT requires CONFIG_SYSFS.
++#endif
++#endif /* CONFIG_AUFS_STAT */
++
++#ifdef CONFIG_AUFS_SYSAUFS
++#warning CONFIG_AUFS_SYSAUFS is unnecessary for linux-2.6.25 and later.
++#endif
++
++#ifdef CONFIG_AUFS_EXPORT
++#if !defined(CONFIG_EXPORTFS) && !defined(CONFIG_EXPORTFS_MODULE)
++#error CONFIG_AUFS_EXPORT requires CONFIG_EXPORTFS
++#endif
++#if defined(CONFIG_EXPORTFS_MODULE) && defined(CONFIG_AUFS)
++#error need CONFIG_EXPORTFS = y to link aufs statically with CONFIG_AUFS_EXPORT
++#endif
++#endif /* CONFIG_AUFS_EXPORT */
++
++#ifdef CONFIG_AUFS_SEC_PERM_PATCH
++#ifndef CONFIG_SECURITY
++#warning CONFIG_AUFS_SEC_PERM_PATCH is unnecessary since CONFIG_SECURITY is disabled.
++#endif
++#ifdef CONFIG_AUFS
++#warning CONFIG_AUFS_SEC_PERM_PATCH is unnecessary since CONFIG_AUFS is not a module.
++#endif
++#endif
++
++#ifdef CONFIG_AUFS_PUT_FILP_PATCH
++#if !defined(CONFIG_NFS_FS) && !defined(CONFIG_NFS_FS_MODULE)
++#warning CONFIG_AUFS_PUT_FILP_PATCH is unnecessary since CONFIG_NFS_FS is disabled.
++#endif
++#ifdef CONFIG_AUFS
++#warning CONFIG_AUFS_PUT_FILP_PATCH is unnecessary since CONFIG_AUFS is not a module.
++#endif
++#ifdef CONFIG_AUFS_FAKE_DM
++#error CONFIG_AUFS_FAKE_DM must be disabled for CONFIG_AUFS_PUT_FILP_PATCH.
++#endif
++#endif /* CONFIG_AUFS_PUT_FILP_PATCH */
++
++#ifdef CONFIG_AUFS_LHASH_PATCH
++#if !defined(CONFIG_NFS_FS) && !defined(CONFIG_NFS_FS_MODULE)
++#warning CONFIG_AUFS_LHASH_PATCH is unnecessary since CONFIG_NFS_FS is disabled.
++#endif
++#ifdef CONFIG_AUFS_FAKE_DM
++#error CONFIG_AUFS_FAKE_DM must be disabled for CONFIG_AUFS_LHASH_PATCH.
++#endif
++#endif
++
++#ifdef CONFIG_AUFS_KSIZE_PATCH
++#warning CONFIG_AUFS_KSIZE_PATCH is unnecessary for linux-2.6.22 and later.
++#endif
++
++#ifdef CONFIG_AUFS_WORKAROUND_FUSE
++#if !defined(CONFIG_FUSE_FS) && !defined(CONFIG_FUSE_FS_MODULE)
++#warning CONFIG_AUFS_WORKAROUND_FUSE is enabled while FUSE is disabled.
++#endif
++#endif
++
++#ifdef CONFIG_DEBUG_PROVE_LOCKING
++#if MAX_LOCKDEP_SUBCLASSES < AuLsc_I_End
++#warning lockdep will not work since aufs uses deeper locks.
++#endif
++#endif
++
++#ifdef CONFIG_AUFS_COMPAT
++#warning CONFIG_AUFS_COMPAT will be removed in the near future.
++#endif
++
++#endif
 -- 
 1.4.4.4
 
