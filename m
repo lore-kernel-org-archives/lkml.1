@@ -1,83 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754733AbYEPJYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755392AbYEPJZU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754733AbYEPJYT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 05:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbYEPJYF
+	id S1755392AbYEPJZU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 05:25:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752114AbYEPJZI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 05:24:05 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:35444 "EHLO pasmtpB.tele.dk"
+	Fri, 16 May 2008 05:25:08 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:43988 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751118AbYEPJYE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 05:24:04 -0400
-Date: Fri, 16 May 2008 11:24:40 +0200
+	id S1751902AbYEPJZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 05:25:07 -0400
+Date: Fri, 16 May 2008 11:25:43 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] drivers/media/video build fix for certain modular builds
-Message-ID: <20080516092440.GA31432@uranus.ravnborg.org>
-References: <20080516071029.GA13147@elte.hu>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-kernel@vger.kernel.org, video4linux-list@redhat.com
+Subject: Re: [2.6 patch] always enter drivers/media/video/
+Message-ID: <20080516092543.GB31432@uranus.ravnborg.org>
+References: <200805151515.28249.toralf.foerster@gmx.de> <20080516080113.GO1936@cs181133002.pp.htv.fi>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20080516071029.GA13147@elte.hu>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080516080113.GO1936@cs181133002.pp.htv.fi>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16, 2008 at 09:10:29AM +0200, Ingo Molnar wrote:
+On Fri, May 16, 2008 at 11:01:13AM +0300, Adrian Bunk wrote:
+> After commit 039d40019f3c5e26ea50ec5af4270189f63365e1
+> (V4L/DVB (7898): Fix VIDEO_MEDIA Kconfig logic)
+> VIDEO_MEDIA is no longer usable in Makefile's for deciding
+> which directories we enter, resulting in compile errors like the 
+> following with CONFIG_VIDEO_DEV=y, CONFIG_DVB_CORE=m:
 > 
-> testing of the -tip tree found the following missing symbols build bug:
+> <--  snip  -->
 > 
->     LD      init/built-in.o
->     LD      .tmp_vmlinux1
->     drivers/built-in.o: In function `vidioc_g_ctrl':
->     radio-maxiradio.c:(.text+0xd3337): undefined reference to `video_devdata'
->     drivers/built-in.o: In function `vidioc_g_frequency':
->     radio-maxiradio.c:(.text+0xd3368): undefined reference to `video_devdata'
->     drivers/built-in.o: In function `vidioc_s_ctrl':
->     [...]
+> ...
+>   MODPOST 187 modules
+> ERROR: "video_exclusive_release" [drivers/media/radio/radio-zoltrix.ko] undefined!
+> ERROR: "video_exclusive_open" [drivers/media/radio/radio-zoltrix.ko] undefined!
+> ERROR: "video_ioctl2" [drivers/media/radio/radio-zoltrix.ko] undefined!
+> ERROR: "video_register_device" [drivers/media/radio/radio-zoltrix.ko] undefined!
+> ERROR: "video_devdata" [drivers/media/radio/radio-zoltrix.ko] undefined!
+> ERROR: "video_unregister_device" [drivers/media/radio/radio-zoltrix.ko] undefined!
+> ...
+> make[2]: *** [__modpost] Error 1
 > 
-> which happens if certain media drivers are modular:
+> <--  snip  -->
 > 
->     http://redhat.com/~mingo/misc/config-Thu_May_15_18_10_27_CEST_2008.bad
+> The easiest solution is to always enter video/
 > 
-> the problem is:
-> 
->     CONFIG_VIDEO_MEDIA=m
->     CONFIG_VIDEO_DEV=y
->     CONFIG_RADIO_MAXIRADIO=y
->     CONFIG_VIDEO_V4L2=y
-> 
-> Connecting the build dependencies tree from drivers/media/ to 
-> drivers/media/video/ allows the built-in drivers(s) to pick up the 
-> CONFIG_VIDEO_DEV=y symbols.
+> Reported-by: Toralf Förster <toralf.foerster@gmx.de>
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 > 
 > ---
->  drivers/media/Makefile |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux/drivers/media/Makefile
-> ===================================================================
-> --- linux.orig/drivers/media/Makefile
-> +++ linux/drivers/media/Makefile
-> @@ -2,7 +2,7 @@
+> 62aa0f0990ec569868b34764c255268a5e425486 diff --git a/drivers/media/Makefile b/drivers/media/Makefile
+> index cc11c4c..09a829d 100644
+> --- a/drivers/media/Makefile
+> +++ b/drivers/media/Makefile
+> @@ -2,12 +2,7 @@
 >  # Makefile for the kernel multimedia device drivers.
 >  #
 >  
 > -obj-y := common/
-> +obj-y := common/ video/
+> -
+> -obj-$(CONFIG_VIDEO_MEDIA) += common/
+> -
+> -# Since hybrid devices are here, should be compiled if DVB and/or V4L
+> -obj-$(CONFIG_VIDEO_MEDIA) += video/
+> +obj-y += common/ video/
 >  
->  obj-$(CONFIG_VIDEO_MEDIA) += common/
->  
+>  obj-$(CONFIG_VIDEO_DEV) += radio/
+>  obj-$(CONFIG_DVB_CORE)  += dvb/
 
-Adrian just posted a similar fix that I like better because it
-cleans up the Makefile a bit.
-The obj-$(CONFIG_VIDEO_MEDIA) += common/ assignment in the
-above is for example now redundant.
-
-But otherwise obviously correct.
+Looks good. We end up with a simpler Makefile.
 
 	Sam
-
