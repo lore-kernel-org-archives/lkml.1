@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761915AbYEPPB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763757AbYEPO72@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761915AbYEPPB2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 11:01:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758589AbYEPOo1
+	id S1763757AbYEPO72 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 10:59:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758057AbYEPOoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 10:44:27 -0400
-Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49290 "EHLO
+	Fri, 16 May 2008 10:44:13 -0400
+Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49298 "EHLO
 	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754115AbYEPOmW (ORCPT
+	with ESMTP id S1754654AbYEPOmX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 10:42:22 -0400
+	Fri, 16 May 2008 10:42:23 -0400
 From: hooanon05@yahoo.co.jp
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Junjiro Okajima <hooanon05@yahoo.co.jp>
-Subject: [PATCH 15/67] aufs special handling for inode attributes on FUSE branch
-Date: Fri, 16 May 2008 23:32:29 +0900
-Message-Id: <12109484013834-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [PATCH 28/67] aufs copy-up/down functions
+Date: Fri, 16 May 2008 23:32:42 +0900
+Message-Id: <12109484011862-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <12109484012543-git-send-email-hooanon05@yahoo.co.jp>
-References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <12109484012532-git-send-email-hooanon05@yahoo.co.jp> <12109484012997-git-send-email-hooanon05@yahoo.co.jp> <12109484013051-git-send-email-hooanon05@yahoo.co.jp> <12109484013436-git-send-email-hooanon05@yahoo.co.jp> <1210948401415-git-send-email-hooanon05@yahoo.co.jp> <12109484011533-git-send-email-hooanon05@yahoo.co.jp> <1210948401506-git-send-email-hooanon05@yahoo.co.jp> <12109484013156-git-send-email-hooanon05@yahoo.co.jp> <12109484012724-git-send-email-hooanon05@yahoo.co.jp> <12109484013264-git-send-email-hooanon05@yahoo.co.jp> <12109484012658-git-send-email-hooanon05@yahoo.co.jp> <12109484011282-git-send-email-hooanon05@yahoo.co.jp> <12109484012543-git-send-email-hooanon05@yahoo.co.jp>
+In-Reply-To: <121094840127-git-send-email-hooanon05@yahoo.co.jp>
+References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <12109484012532-git-send-email-hooanon05@yahoo.co.jp> <12109484012997-git-send-email-hooanon05@yahoo.co.jp> <12109484013051-git-send-email-hooanon05@yahoo.co.jp> <12109484013436-git-send-email-hooanon05@yahoo.co.jp> <1210948401415-git-send-email-hooanon05@yahoo.co.jp> <12109484011533-git-send-email-hooanon05@yahoo.co.jp> <1210948401506-git-send-email-hooanon05@yahoo.co.jp> <12109484013156-git-send-email-hooanon05@yahoo.co.jp> <12109484012724-git-send-email-hooanon05@yahoo.co.jp> <12109484013264-git-send-email-hooanon05@yahoo.co.jp> <12109484012658-git-send-email-hooanon05@yahoo.co.jp> <12109484011282-git-send-email-hooanon05@yahoo.co.jp> <12109484012543-git-send-email-hooanon05@yahoo.co.jp> <12109484013834-git-send-email-hooanon05@yahoo.co.jp> <12109484012213-git-send-email-hooanon05@yahoo.co.jp> <12109484012301-git-send-email-hooanon05@yahoo.co.jp> <1210948401175-git-send-email-hooanon05@yahoo.co.jp> <1210948!
+ 4013702-git-send-email-hooanon05@yahoo.co.jp> <12109484012871-git-send-email-hooanon05@yahoo.co.jp> <12109484013438-git-send-email-hooanon05@yahoo.co.jp> <12109484013559-git-send-email-hooanon05@yahoo.co.jp> <12109484012111-git-send-email-hooanon05@yahoo.co.jp> <1210948401543-git-send-email-hooanon05@yahoo.co.jp> <1210948401147-git-send-email-hooanon05@yahoo.co.jp> <12109484012904-git-send-email-hooanon05@yahoo.co.jp> <121094840127-git-send-email-hooanon05@yahoo.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -26,21 +27,21 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Junjiro Okajima <hooanon05@yahoo.co.jp>
 
 	initial commit
-	aufs special handling for inode attributes on FUSE branch
+	aufs copy-up/down functions
 
 Signed-off-by: Junjiro Okajima <hooanon05@yahoo.co.jp>
 ---
- fs/aufs/br_fuse.c |  109 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 109 insertions(+), 0 deletions(-)
+ fs/aufs/cpup.h |   82 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 82 insertions(+), 0 deletions(-)
 
-diff --git a/fs/aufs/br_fuse.c b/fs/aufs/br_fuse.c
+diff --git a/fs/aufs/cpup.h b/fs/aufs/cpup.h
 new file mode 100644
-index 0000000..295139b
+index 0000000..0e398f2
 --- /dev/null
-+++ b/fs/aufs/br_fuse.c
-@@ -0,0 +1,109 @@
++++ b/fs/aufs/cpup.h
+@@ -0,0 +1,82 @@
 +/*
-+ * Copyright (C) 2008 Junjiro Okajima
++ * Copyright (C) 2005-2008 Junjiro Okajima
 + *
 + * This program, aufs is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -58,96 +59,69 @@ index 0000000..295139b
 + */
 +
 +/*
-+ * special handling for inode attributes on FUSE branch
++ * copy-up/down functions
 + *
-+ * $Id: br_fuse.c,v 1.2 2008/04/21 01:32:05 sfjro Exp $
++ * $Id: cpup.h,v 1.2 2008/04/21 01:33:43 sfjro Exp $
 + */
 +
-+#include "aufs.h"
++#ifndef __AUFS_CPUP_H__
++#define __AUFS_CPUP_H__
 +
-+/* h_mnt can be NULL, is it safe? */
-+int au_update_fuse_h_inode(struct vfsmount *h_mnt, struct dentry *h_dentry)
-+{
-+	int err;
-+	struct kstat st;
++#ifdef __KERNEL__
 +
-+	LKTRTrace("%.*s\n", AuDLNPair(h_dentry));
++#include <linux/fs.h>
++#include <linux/aufs_type.h>
 +
-+	err = 0;
-+	if (unlikely(h_dentry->d_inode
-+		     //&& atomic_read(&h_dentry->d_inode->i_count)
-+		     && au_test_fuse(h_dentry->d_sb))) {
-+		err = vfsub_getattr(h_mnt, h_dentry, &st, /*dlgt*/0);
-+		if (unlikely(err)) {
-+			AuDbg("err %d\n", err);
-+			au_debug_on();
-+			AuDbgDentry(h_dentry);
-+			au_debug_off();
-+			WARN_ON(err);
-+		}
-+	}
-+	return err;
-+}
++void au_cpup_attr_timesizes(struct inode *inode);
++void au_cpup_attr_nlink(struct inode *inode);
++void au_cpup_attr_changeable(struct inode *inode);
++void au_cpup_igen(struct inode *inode, struct inode *h_inode);
++void au_cpup_attr_all(struct inode *inode);
 +
-+/* currently, for fuse only */
-+int aufs_getattr(struct vfsmount *mnt, struct dentry *dentry, struct kstat *st)
-+{
-+	int err;
-+	struct inode *inode, *h_inode;
-+	struct dentry *h_dentry;
++/* ---------------------------------------------------------------------- */
 +
-+	LKTRTrace("%.*s\n", AuDLNPair(dentry));
++/* cpup flags */
++#define AuCpup_DTIME	1	/* do dtime_store/revert */
++#define au_ftest_cpup(flags, name)	((flags) & AuCpup_##name)
++#define au_fset_cpup(flags, name)	{ (flags) |= AuCpup_##name; }
++#define au_fclr_cpup(flags, name)	{ (flags) &= ~AuCpup_##name; }
 +
-+	err = 0;
-+	aufs_read_lock(dentry, AuLock_IR);
-+	inode = dentry->d_inode;
-+	h_inode = au_h_iptr(inode, au_ibstart(inode));
-+	if (unlikely(au_test_fuse(h_inode->i_sb))) {
-+		h_dentry = d_find_alias(h_inode);
-+		/* simply gave up updating fuse inode */
-+		if (h_dentry) {
-+			/*ignore*/
-+			if (!au_update_fuse_h_inode(NULL, h_dentry))
-+				au_cpup_attr_all(inode);
-+			dput(h_dentry);
-+		}
-+	}
-+	generic_fillattr(inode, st);
++int au_cpup_single(struct dentry *dentry, aufs_bindex_t bdst,
++		   aufs_bindex_t bsrc, loff_t len, unsigned int flags);
++int au_sio_cpup_single(struct dentry *dentry, aufs_bindex_t bdst,
++		       aufs_bindex_t bsrc, loff_t len, unsigned int flags);
++int au_cpup_simple(struct dentry *dentry, aufs_bindex_t bdst, loff_t len,
++		   unsigned int flags);
++int au_sio_cpup_simple(struct dentry *dentry, aufs_bindex_t bdst, loff_t len,
++		       unsigned int flags);
++int au_cpup_wh(struct dentry *dentry, aufs_bindex_t bdst, loff_t len,
++	       struct file *file);
++int au_sio_cpup_wh(struct dentry *dentry, aufs_bindex_t bdst, loff_t len,
++		   struct file *file);
 +
-+	aufs_read_unlock(dentry, AuLock_IR);
-+	return err;
-+}
++int au_cp_dirs(struct dentry *dentry, aufs_bindex_t bdst, struct dentry *locked,
++	       int (*cp)(struct dentry *dentry, aufs_bindex_t bdst,
++			 struct dentry *h_parent, void *arg),
++	       void *arg);
++int au_cpup_dirs(struct dentry *dentry, aufs_bindex_t bdst,
++		 struct dentry *locked);
++int au_test_and_cpup_dirs(struct dentry *dentry, aufs_bindex_t bdst,
++			  struct dentry *locked);
 +
-+#if 0 // temp
-+/*
-+ * This function was born after a discussion with the FUSE developer.
-+ * The inode attributes on a filesystem who defines i_op->getattr()
-+ * is unreliable since such fs may not maintain the attributes at lookup.
-+ * This function doesn't want the result of stat, instead wants the side-effect
-+ * which refreshes the attributes.
-+ * Hmm, there seems to be no such filesystem except fuse.
-+ */
-+int vfsub_i_attr(struct vfsmount *mnt, struct dentry *dentry, int dlgt)
-+{
-+	int err;
-+	struct inode *inode;
-+	struct inode_operations *op;
-+	struct kstat st;
++/* ---------------------------------------------------------------------- */
 +
-+	inode = dentry->d_inode;
-+	AuDebugOn(!inode);
++/* keep timestamps when copyup */
++struct au_dtime {
++	struct dentry *dt_dentry, *dt_h_dentry;
++	struct au_hinode *dt_hdir;
++	struct timespec dt_atime, dt_mtime;
++};
++void au_dtime_store(struct au_dtime *dt, struct dentry *dentry,
++		    struct dentry *h_dentry, struct au_hinode *hdir);
++void au_dtime_revert(struct au_dtime *dt);
 +
-+	err = 0;
-+	op = inode->i_op;
-+	if (unlikely(op && op->getattr && !au_test_aufs(dentry->d_sb))) {
-+		err = security_inode_getattr(mnt, dentry);
-+		if (!err)
-+			err = op->getattr(mnt, dentry, &st);
-+	}
-+	AuTraceErr(err);
-+	return err;
-+}
-+#endif
++#endif /* __KERNEL__ */
++#endif /* __AUFS_CPUP_H__ */
 -- 
 1.4.4.4
 
