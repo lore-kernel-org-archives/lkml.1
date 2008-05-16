@@ -1,76 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757683AbYEPOjp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752348AbYEPOm0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757683AbYEPOjp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 10:39:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754932AbYEPOj3
+	id S1752348AbYEPOm0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 10:42:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751063AbYEPOl7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 10:39:29 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:39744 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754584AbYEPOj2 (ORCPT
+	Fri, 16 May 2008 10:41:59 -0400
+Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49178 "EHLO
+	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750767AbYEPOl6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 10:39:28 -0400
-Date: Fri, 16 May 2008 15:39:23 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.site
-To: Jan Beulich <jbeulich@novell.com>
-cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Andrea Arcangeli <andrea@qumranet.com>,
-       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] remove double indirection on tlb parameter to free_pgd_range()
- & Co
-In-Reply-To: <482C6917.76E4.0078.0@novell.com>
-Message-ID: <Pine.LNX.4.64.0805161517510.8758@blonde.site>
-References: <482C6917.76E4.0078.0@novell.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 16 May 2008 10:41:58 -0400
+X-Greylist: delayed 515 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 May 2008 10:41:57 EDT
+From: hooanon05@yahoo.co.jp
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Junjiro Okajima <hooanon05@yahoo.co.jp>
+Subject: [PATCH 67/67] merge aufs
+Date: Fri, 16 May 2008 23:33:21 +0900
+Message-Id: <121094840365-git-send-email-hooanon05@yahoo.co.jp>
+X-Mailer: git-send-email 1.4.4.4
+In-Reply-To: <12109484031925-git-send-email-hooanon05@yahoo.co.jp>
+References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <12109484012532-git-send-email-hooanon05@yahoo.co.jp> <12109484012997-git-send-email-hooanon05@yahoo.co.jp> <12109484013051-git-send-email-hooanon05@yahoo.co.jp> <12109484013436-git-send-email-hooanon05@yahoo.co.jp> <1210948401415-git-send-email-hooanon05@yahoo.co.jp> <12109484011533-git-send-email-hooanon05@yahoo.co.jp> <1210948401506-git-send-email-hooanon05@yahoo.co.jp> <12109484013156-git-send-email-hooanon05@yahoo.co.jp> <12109484012724-git-send-email-hooanon05@yahoo.co.jp> <12109484013264-git-send-email-hooanon05@yahoo.co.jp> <12109484012658-git-send-email-hooanon05@yahoo.co.jp> <12109484011282-git-send-email-hooanon05@yahoo.co.jp> <12109484012543-git-send-email-hooanon05@yahoo.co.jp> <12109484013834-git-send-email-hooanon05@yahoo.co.jp> <12109484012213-git-send-email-hooanon05@yahoo.co.jp> <12109484012301-git-send-email-hooanon05@yahoo.co.jp> <1210948401175-git-send-email-hooanon05@yahoo.co.jp> <1210948!
+ 4013702-git-send-email-hooanon05@yahoo.co.jp> <12109484012871-git-send-email-hooanon05@yahoo.co.jp> <12109484013438-git-send-email-hooanon05@yahoo.co.jp> <12109484013559-git-send-email-hooanon05@yahoo.co.jp> <12109484012111-git-send-email-hooanon05@yahoo.co.jp> <1210948401543-git-send-email-hooanon05@yahoo.co.jp> <1210948401147-git-send-email-hooanon05@yahoo.co.jp> <12109484012904-git-send-email-hooanon05@yahoo.co.jp> <121094840127-git-send-email-hooanon05@yahoo.co.jp> <12109484011862-git-send-email-hooanon05@yahoo.co.jp> <12109484011143-git-send-email-hooanon05@yahoo.co.jp> <12109484011867-git-send-email-hooanon05@yahoo.co.jp> <12109484021033-git-send-email-hooanon05@yahoo.co.jp> <12109484021234-git-send-email-hooanon05@yahoo.co.jp> <12109484022680-git-send-email-hooanon05@yahoo.co.jp> <12109484021974-git-send-email-hooanon05@yahoo.co.jp> <12109484021281-git-send-email-hooanon05@yahoo.co.jp> <12109484022659-git-send-email-hooanon05@yahoo.co.jp> <12109484023036-git-send-ema!
+ il-hooanon05@yahoo.co.jp> <12109484021939-git-send-email-hooanon05@yahoo.co.jp> <12109484022745-git-send-email-hooanon05@yahoo.co.jp> <12109484023224-git-send-email-hooanon05@yahoo.co.jp> <12109484023618-git-send-email-hooanon05@yahoo.co.jp> <12109484023820-git-send-email-hooanon05@yahoo.co.jp> <12109484021927-git-send-email
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 May 2008, Jan Beulich wrote:
-> The double indirection here is not needed anywhere and hence (at least)
-> confusing.
-> 
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
+From: Junjiro Okajima <hooanon05@yahoo.co.jp>
 
-Please hold off on this.  I was writing a mail to say that it should be
-okay (might as well include what I wrote then below), then checked and
-noticed that Andrea/Christoph have an mmu_notifier patch which removes
-that argument to free_pgtables (it could alternatively keep the argument,
-but make use of the double indirection).  It's not yet clear whether
-or when their patch goes in, but let's not obstruct their functional
-enhancements with this cleanup.
+	incorporate aufs, export __lookup_hash() and deeper lockdep
 
-What I originally wrote was...
-I had to look up my original comment on it:
+Signed-off-by: Junjiro Okajima <hooanon05@yahoo.co.jp>
+---
+ fs/Kconfig              |    2 ++
+ fs/Makefile             |    1 +
+ fs/namei.c              |    2 +-
+ include/linux/lockdep.h |    4 ++++
+ include/linux/namei.h   |    1 +
+ 5 files changed, 9 insertions(+), 1 deletions(-)
 
-    Pass mmu_gather** in the
-    public interfaces, since we might want to add latency lockdrops later;
-    but no attempt to do so yet, going by vma should itself reduce latency.
+diff --git a/fs/Kconfig b/fs/Kconfig
+index 379eb47..6df842f 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -1072,6 +1072,8 @@ config UNION_FS_DEBUG
+ 	help
+ 	  If you say Y here, you can turn on debugging output from Unionfs.
+ 
++source "fs/aufs/Kconfig"
++
+ endmenu
+ 
+ menu "Miscellaneous filesystems"
+diff --git a/fs/Makefile b/fs/Makefile
+index 7996220..bc5964a 100644
+--- a/fs/Makefile
++++ b/fs/Makefile
+@@ -121,3 +121,4 @@ obj-$(CONFIG_DEBUG_FS)		+= debugfs/
+ obj-$(CONFIG_OCFS2_FS)		+= ocfs2/
+ obj-$(CONFIG_GFS2_FS)           += gfs2/
+ obj-$(CONFIG_UNION_FS)		+= unionfs/
++obj-$(CONFIG_AUFS)		+= aufs/
+diff --git a/fs/namei.c b/fs/namei.c
+index 185d56c..1b9e577 100644
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -1297,7 +1297,7 @@ int __user_path_lookup_open(const char __user *name, unsigned int lookup_flags,
+ 	return err;
+ }
+ 
+-static struct dentry *__lookup_hash(struct qstr *name,
++struct dentry *__lookup_hash(struct qstr *name,
+ 		struct dentry *base, struct nameidata *nd)
+ {
+ 	struct dentry *dentry;
+diff --git a/include/linux/lockdep.h b/include/linux/lockdep.h
+index 4c4d236..f5d0642 100644
+--- a/include/linux/lockdep.h
++++ b/include/linux/lockdep.h
+@@ -58,7 +58,11 @@ enum lock_usage_bit
+ #define LOCKF_USED_IN_IRQ_READ \
+ 		(LOCKF_USED_IN_HARDIRQ_READ | LOCKF_USED_IN_SOFTIRQ_READ)
+ 
++#ifdef CONFIG_AUFS
++#define MAX_LOCKDEP_SUBCLASSES		16UL
++#else
+ #define MAX_LOCKDEP_SUBCLASSES		8UL
++#endif
+ 
+ /*
+  * Lock-classes are keyed via unique addresses, by embedding the
+diff --git a/include/linux/namei.h b/include/linux/namei.h
+index 24d88e9..33c7f23 100644
+--- a/include/linux/namei.h
++++ b/include/linux/namei.h
+@@ -74,6 +74,7 @@ extern struct file *lookup_instantiate_filp(struct nameidata *nd, struct dentry
+ extern struct file *nameidata_to_filp(struct nameidata *nd, int flags);
+ extern void release_open_intent(struct nameidata *);
+ 
++struct dentry * __lookup_hash(struct qstr *name, struct dentry * base, struct nameidata *nd);
+ extern struct dentry *lookup_one_len(const char *, struct dentry *, int);
+ extern struct dentry *lookup_one_noperm(const char *, struct dentry *);
+ 
+-- 
+1.4.4.4
 
-By "latency lockdrops" I meant the tlb_finish_mmu/tlb_gather_mmu pair
-you find in unmap_vmas: I expected free_pgtables to need the same soon.
-
-free_pgtables does have a latency issue, but not so bad that we've rushed
-in to reduce it, at the expense of increasing TLB flushes, and ugliness.
-
-We'd several of us like to rework the mmu_gathering so as not to disable
-preemption: I got stuck and BenH took over, a patch much like yours below
-was a part of what I had - I too was glad to get rid of the **s.
-
-So, assuming we won't suddenly need a quick hack fix to free_pgtables
-latency before one of us fixes the wider mmu_gathering issues, your
-patch should be fine (and could be reverted if a sudden need occurs).
-
-But... could I ask you to omit that move from include/linux/mm.h to
-mm/internal.h?  To me that's nothing but an irritation, and internal.h
-is the last place I think of to look for anything.  There's a thousand
-other things internal to mm which aren't in it, and personally I wouldn't
-even be thrilled by a janitorial project to move stuff over to it in bulk.
-
-But, returning to the start, please let's hold yours back after all.
-
-Thanks,
-Hugh
