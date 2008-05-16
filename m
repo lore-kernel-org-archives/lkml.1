@@ -1,91 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754965AbYEPWBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759809AbYEPWD1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754965AbYEPWBp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 18:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756526AbYEPWB0
+	id S1759809AbYEPWD1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 18:03:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbYEPWDP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 18:01:26 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:55386 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756244AbYEPWBY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 18:01:24 -0400
-Date: Fri, 16 May 2008 15:00:40 -0700
-From: Greg KH <greg@kroah.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, Andrew Bird <ajb@spheresystems.co.uk>
-Subject: Re: 2.6.26-rc2-mm1: high speed something
-Message-ID: <20080516220040.GA16909@kroah.com>
-References: <20080514010129.4f672378.akpm@linux-foundation.org> <20080516221749.GA3808@martell.zuzino.mipt.ru> <20080516143108.7b3b5d25.akpm@linux-foundation.org>
+	Fri, 16 May 2008 18:03:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59154 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751253AbYEPWDN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 18:03:13 -0400
+Message-ID: <482E049A.5020005@redhat.com>
+Date: Fri, 16 May 2008 17:03:06 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080516143108.7b3b5d25.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
+References: <482DDA56.6000301@redhat.com> <20080516130545.845a3be9.akpm@linux-foundation.org> <482DF44B.50204@redhat.com> <20080516135814.1c973bd5.akpm@linux-foundation.org> <20080516214516.GA15334@shareable.org>
+In-Reply-To: <20080516214516.GA15334@shareable.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16, 2008 at 02:31:08PM -0700, Andrew Morton wrote:
-> On Sat, 17 May 2008 02:17:49 +0400
-> Alexey Dobriyan <adobriyan@gmail.com> wrote:
+Jamie Lokier wrote:
+> Andrew Morton wrote:
+>>> I suppose alternately I could send another patch to remove "remember
+>>> that ext3/4 by default offers higher data integrity guarantees than
+>>> most." from Documentation/filesystems/ext4.txt  ;)
+>> We could add a big scary printk at mount time and provide a document?
 > 
-> > >  linux-next.patch
-> > 
-> > That's terse. ;-)
+> Can I suggest making /proc/mounts say "barrier=0" when journal is not
+> enabled, instead of omitting the option.
 > 
-> well, it's a git tree, and all that this implies.  The git URL is
-> right at the top of linux-next.patch.
+> Boot logs are too large to pay close attention to unless it's really
+> obvious.  (2.4 kernels _do_ have a similar message about "data
+> integrity not guaranteed" with USB drivers - I never understood what
+> it was getting it, and why it was removed for 2.6).
 > 
-> > Who is responsible for something called "Option High Speed Mobile
-> > Devices"?
-> 
-> The full changelog is contained in linux-next.patch.  Searching it for
-> "Option" quickly leads to
-> 
-> commit a50a26ba350a5f32ec6481c85b938fc7fb476671
-> Author: Greg Kroah-Hartman <gregkh@suse.de>
-> Date:   Mon Apr 14 11:41:16 2008 -0700
-> 
->     USB: add option hso driver
->     
->     This driver is for a number of different Option devices.  Originally
->     written by Option and Andrew Bird, but cleaned up massivly for
->     acceptance into mainline by me (Greg).
->     
->     TODO:
->     	- remove proc files and move to debugfs
->     	- review network interfaces
->     	- add better changelog information
->     	- Use netif_msg_ for the message level rather than module parameter
->     	- net_device_stats are now available in dev->stats
->     
->     Many thanks to the following for their help in cleaning up the driver by
->     providing feedback and patches to it:
->     	- Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
->     	- Oliver Neukum <oliver@neukum.org>
->     	- Alan Cox <alan@lxorguk.ukuu.org.uk>
->     
->     
->     Cc: Andrew Bird <ajb@spheresystems.co.uk>
->     Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
->     Cc: Filip Aben <f.aben@option.com>
->     Cc: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
->     Cc: Oliver Neukum <oliver@neukum.org>
->     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> 
-> > It's using create_proc_read_entry() interface, so should be switched
-> > to seq_files before merging.
+> However, if I saw barrier=0 in /proc/mounts it would at least prompt
+> me to look it up and then making an informed decision.
 
-The whole proc interface is gone, so no need for that.
+Right now, ext3_show_options has the scheme:
 
-> > And "procfs" module parameter is plain stupid, sorry.
+/*
+ * Show an option if
+ *  - it's set to a non-default value OR
+ *  - if the per-sb default is different from the global default
+ */
 
-That parameter is gone, see the patches posted to lkml for an updated
-version.
+so only non-default is shown, so today barrier=0 is not shown.  I
+suppose that could be changed...
 
-thanks,
+FWIW, my patch would show barrier=0 if it's manually mounted that way
+(against new proposed defaults), or if we are running w/o barriers due
+to a failed barrier IO even though barriers were requested.
 
-greg "i'm stupid" k-h
+> Personally I had assumed barriers were enabled by default with ext3,
+> as some distros do that, the 2.4 patches did that, and:
+> 
+>    I *have* experienced corruption following power loss without
+>    barriers, and none with barriers.
+> 
+>    When I mentioned that turning off write cache or using barriers is
+>    a solution to a programmer working on the same project, she said
+>    "oh, yes, we've had reports of disk corruption too - thanks for the
+>    advice", and the advice worked, so I am not the only one.
+> 
+>    (In the interests of perspective, that's with ext3 on patched 2.4
+>    kernels on a ARM device, but still - the barriers seem to work).
+> 
+> On a related note, there is advice floating about the net to run with
+> IDE write cache turned off if you're running a database and care about
+> integrity.  That has much worse performance than barriers.
+
+... and I've seen hand-waving about shortened drive life running this
+way?  but who really knows....
+
+Thanks,
+-Eric
+
+> I guess the patch which fixes fsync is particularly useful for those
+> database users, as it means they can run with write cache enabled and
+> depend on fsync() to give equivalent integrity now.  (Enabling
+> journalling is not really relevant to this).
+> 
+> -- Jamie
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
