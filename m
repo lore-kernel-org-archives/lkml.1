@@ -1,74 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754660AbYEPEjB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755473AbYEPEoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754660AbYEPEjB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 00:39:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750968AbYEPEiv
+	id S1755473AbYEPEoT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 00:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbYEPEoL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 00:38:51 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:50575 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750773AbYEPEiv (ORCPT
+	Fri, 16 May 2008 00:44:11 -0400
+Received: from smtp2a.orange.fr ([80.12.242.139]:19500 "EHLO smtp2a.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751211AbYEPEoL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 00:38:51 -0400
-Date: Thu, 15 May 2008 16:20:13 -0700
-From: Greg KH <greg@kroah.com>
-To: Arthur Jones <ajones@riverbed.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Miklos Szeredi <miklos@szeredi.hu>,
-       Arthur Jones <Arthur.Jones@riverbed.com>,
-       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>,
-       "mszeredi@suse.cz" <mszeredi@suse.cz>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "kay.sievers@vrfy.org" <kay.sievers@vrfy.org>,
-       "trond.myklebust@fys.uio.no" <trond.myklebust@fys.uio.no>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] mm: bdi: export BDI attributes in sysfs
-Message-ID: <20080515232013.GA4583@kroah.com>
-References: <20080513190435.GG23649@ajones-laptop.nbttech.com> <20080514144030.GD6458@ajones-laptop.nbttech.com> <E1JwiZa-0007UA-Tm@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0805151213430.3019@woody.linux-foundation.org> <E1Jwj7G-0007Zs-GB@pomaz-ex.szeredi.hu> <alpine.LFD.1.10.0805151247010.3019@woody.linux-foundation.org> <20080515210254.GA23684@kroah.com> <20080515220510.GY23649@ajones-laptop.nbttech.com>
+	Fri, 16 May 2008 00:44:11 -0400
+X-ME-UUID: 20080516044409503.7ACC27000090@mwinf2a07.orange.fr
+Message-ID: <482D1110.2040604@cosmosbay.com>
+Date: Fri, 16 May 2008 06:44:00 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080515220510.GY23649@ajones-laptop.nbttech.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Mike Travis <travis@sgi.com>
+Subject: Re: [PATCH] modules: Use a better scheme for refcounting
+References: <482C9FC5.2070508@cosmosbay.com> <87ej83z0va.fsf@basil.nowhere.org>
+In-Reply-To: <87ej83z0va.fsf@basil.nowhere.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 15, 2008 at 03:05:10PM -0700, Arthur Jones wrote:
-> Hi Greg, ...
-> 
-> On Thu, May 15, 2008 at 02:02:54PM -0700, Greg KH wrote:
-> > On Thu, May 15, 2008 at 12:54:57PM -0700, Linus Torvalds wrote:
-> > >
-> > >
-> > > On Thu, 15 May 2008, Miklos Szeredi wrote:
-> > > >
-> > > > Actually nothing should need protection.  The only problem AFAICS is
-> > > > that the device_create()/dev_set_drvdata() interface is racy: somebody
-> > > > can come in after the device has been created but before drvdata has
-> > > > been set, and then we are in trouble.
-> > >
-> > > Well, I'm not sure that the locking should be at that level. Maybe the
-> > > locking *should* be in the driver that does this. It may need to do other
-> > > setup too, after all.
-> > >
-> > > Of course, doing a device_create_drvdata() thing might be the right
-> > > solution, at least part of the time. Greg?
-> > 
-> > Here's a patch that is build tested only.
-> > 
-> > Can someone who can reproduce this let me know if it solves the problem?
-> 
-> Yes, this patch survives many power cycles
-> without hitting the BUG...
-> 
-> Thanks for looking into this...
+Andi Kleen a écrit :
+> Eric Dumazet <dada1@cosmosbay.com> writes:
+>   
+>> Instead of wasting NR_CPUS*128 bytes (on i386), we now use
+>> num_possible_cpus*sizeof(local_t) bytes.
+>>
+>> On a typical distro, where NR_CPUS=8, 
+>>     
+>
+> More typical would be NR_CPUS=128, with NR_CPUS=four digits 
+> when Mike Travis et.al. are finished
+>
+>   
+Yes. With NR_CPUS=4096, we save about half a megabyte per module. (!!!)
 
-Great!
+>> shiping 2000 modules, we reduce
+>>     
+>
+> Surely only the loaded modules count? Perhaps 20-30.
+>
+>   
+Well, I should have stated that this saving also takes place in the 
+module disk file.
+(The "struct module" is included in it, in the 
+".gnu.linkonce.this_module" section)
+Here on my distro, around 2000 modules are shiped.
+> But it's a cool improvement. Very nice.
+>   
+Thanks
 
-Thanks for testing this, I'll clean it up a bit more and send it to
-Linus later this evening.  Gotta go take the kids to swimming lessons...
 
-thanks,
 
-greg k-h
+
