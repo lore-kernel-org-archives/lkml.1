@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932256AbYEPPIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761142AbYEPPIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932256AbYEPPIT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 11:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758955AbYEPOpu
+	id S1761142AbYEPPIm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 11:08:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758974AbYEPOpv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 10:45:50 -0400
-Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49197 "EHLO
+	Fri, 16 May 2008 10:45:51 -0400
+Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49194 "EHLO
 	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751131AbYEPOmB (ORCPT
+	with ESMTP id S1751042AbYEPOmA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 10:42:01 -0400
+	Fri, 16 May 2008 10:42:00 -0400
 From: hooanon05@yahoo.co.jp
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Junjiro Okajima <hooanon05@yahoo.co.jp>
-Subject: [PATCH 55/67] aufs export via nfs
-Date: Fri, 16 May 2008 23:33:09 +0900
-Message-Id: <12109484023300-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [PATCH 56/67] aufs 'robr', aufs as readonly branch of another aufs
+Date: Fri, 16 May 2008 23:33:10 +0900
+Message-Id: <1210948402310-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <12109484022265-git-send-email-hooanon05@yahoo.co.jp>
+In-Reply-To: <12109484023300-git-send-email-hooanon05@yahoo.co.jp>
 References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <12109484012532-git-send-email-hooanon05@yahoo.co.jp> <12109484012997-git-send-email-hooanon05@yahoo.co.jp> <12109484013051-git-send-email-hooanon05@yahoo.co.jp> <12109484013436-git-send-email-hooanon05@yahoo.co.jp> <1210948401415-git-send-email-hooanon05@yahoo.co.jp> <12109484011533-git-send-email-hooanon05@yahoo.co.jp> <1210948401506-git-send-email-hooanon05@yahoo.co.jp> <12109484013156-git-send-email-hooanon05@yahoo.co.jp> <12109484012724-git-send-email-hooanon05@yahoo.co.jp> <12109484013264-git-send-email-hooanon05@yahoo.co.jp> <12109484012658-git-send-email-hooanon05@yahoo.co.jp> <12109484011282-git-send-email-hooanon05@yahoo.co.jp> <12109484012543-git-send-email-hooanon05@yahoo.co.jp> <12109484013834-git-send-email-hooanon05@yahoo.co.jp> <12109484012213-git-send-email-hooanon05@yahoo.co.jp> <12109484012301-git-send-email-hooanon05@yahoo.co.jp> <1210948401175-git-send-email-hooanon05@yahoo.co.jp> <1210948!
  4013702-git-send-email-hooanon05@yahoo.co.jp> <12109484012871-git-send-email-hooanon05@yahoo.co.jp> <12109484013438-git-send-email-hooanon05@yahoo.co.jp> <12109484013559-git-send-email-hooanon05@yahoo.co.jp> <12109484012111-git-send-email-hooanon05@yahoo.co.jp> <1210948401543-git-send-email-hooanon05@yahoo.co.jp> <1210948401147-git-send-email-hooanon05@yahoo.co.jp> <12109484012904-git-send-email-hooanon05@yahoo.co.jp> <121094840127-git-send-email-hooanon05@yahoo.co.jp> <12109484011862-git-send-email-hooanon05@yahoo.co.jp> <12109484011143-git-send-email-hooanon05@yahoo.co.jp> <12109484011867-git-send-email-hooanon05@yahoo.co.jp> <12109484021033-git-send-email-hooanon05@yahoo.co.jp> <12109484021234-git-send-email-hooanon05@yahoo.co.jp> <12109484022680-git-send-email-hooanon05@yahoo.co.jp> <12109484021974-git-send-email-hooanon05@yahoo.co.jp> <12109484021281-git-send-email-hooanon05@yahoo.co.jp> <12109484022659-git-send-email-hooanon05@yahoo.co.jp> <12109484023036-git-send-ema!
  il-hooanon05@yahoo.co.jp> <12109484021939-git-send-email-hooanon05@yahoo.co.jp> <12109484022745-git-send-email-hooanon05@yahoo.co.jp> <12109484023224-git-send-email-hooanon05@yahoo.co.jp> <12109484023618-git-send-email-hooanon05@yahoo.co.jp> <12109484023820-git-send-email-hooanon05@yahoo.co.jp> <12109484021927-git-send-email
@@ -28,21 +28,21 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Junjiro Okajima <hooanon05@yahoo.co.jp>
 
 	initial commit
-	aufs export via nfs
+	aufs 'robr', aufs as readonly branch of another aufs
 
 Signed-off-by: Junjiro Okajima <hooanon05@yahoo.co.jp>
 ---
- fs/aufs/export.c |  597 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 597 insertions(+), 0 deletions(-)
+ fs/aufs/robr.c |  111 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 111 insertions(+), 0 deletions(-)
 
-diff --git a/fs/aufs/export.c b/fs/aufs/export.c
+diff --git a/fs/aufs/robr.c b/fs/aufs/robr.c
 new file mode 100644
-index 0000000..edcbb6f
+index 0000000..0e508bc
 --- /dev/null
-+++ b/fs/aufs/export.c
-@@ -0,0 +1,597 @@
++++ b/fs/aufs/robr.c
+@@ -0,0 +1,111 @@
 +/*
-+ * Copyright (C) 2007-2008 Junjiro Okajima
++ * Copyright (C) 2008 Junjiro Okajima
 + *
 + * This program, aufs is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -60,584 +60,98 @@ index 0000000..edcbb6f
 + */
 +
 +/*
-+ * export via nfs
++ * 'robr', aufs as readonly branch of another aufs
 + *
-+ * $Id: export.c,v 1.4 2008/05/04 23:52:08 sfjro Exp $
++ * $Id: robr.c,v 1.2 2008/05/12 00:26:53 sfjro Exp $
 + */
 +
-+#include <linux/exportfs.h>
 +#include "aufs.h"
 +
-+union conv {
-+#if BITS_PER_LONG == 32
-+	__u32 a[1];
-+#else
-+	__u32 a[2];
-+#endif
-+	ino_t ino;
-+};
++/* ---------------------------------------------------------------------- */
 +
-+static ino_t decode_ino(__u32 *a)
++int au_test_robr_wh(struct qstr *name, struct dentry *h_parent,
++		    struct qstr *wh_name, int try_sio, struct au_ndx *ndx)
 +{
-+	union conv u;
-+
-+	u.a[0] = a[0];
-+#if BITS_PER_LONG == 64
-+	u.a[1] = a[1];
-+#endif
-+	return u.ino;
++	if (strncmp(name->name, AUFS_WH_PFX, AUFS_WH_PFX_LEN))
++		return au_wh_test(h_parent, wh_name, try_sio, ndx);
++	return -EPERM;
 +}
 +
-+static void encode_ino(__u32 *a, ino_t ino)
++int au_test_robr_shwh(struct super_block *sb, const struct qstr *name)
 +{
-+	union conv u;
-+
-+	u.ino = ino;
-+	a[0] = u.a[0];
-+#if BITS_PER_LONG == 64
-+	a[1] = u.a[1];
-+#endif
-+}
-+
-+/* NFS file handle */
-+enum {
-+	Fh_br_id,
-+	Fh_sigen,
-+#if BITS_PER_LONG == 64
-+	/* support 64bit inode number */
-+	Fh_ino1,
-+	Fh_ino2,
-+	Fh_dir_ino1,
-+	Fh_dir_ino2,
-+	Fh_h_ino1,
-+	Fh_h_ino2,
-+#else
-+	Fh_ino1,
-+	Fh_dir_ino1,
-+	Fh_h_ino1,
-+#endif
-+	Fh_h_igen,
-+	Fh_h_type,
-+	Fh_tail,
-+
-+	Fh_ino = Fh_ino1,
-+	Fh_dir_ino = Fh_dir_ino1,
-+	Fh_h_ino = Fh_h_ino1,
-+};
-+
-+static int au_test_anon(struct dentry *dentry)
-+{
-+	return !!(dentry->d_flags & DCACHE_DISCONNECTED);
++	return 0;
 +}
 +
 +/* ---------------------------------------------------------------------- */
 +
-+static struct dentry *decode_by_ino(struct super_block *sb, ino_t ino,
-+				    ino_t dir_ino)
-+{
-+	struct dentry *dentry, *parent;
-+	struct inode *inode;
-+
-+	LKTRTrace("i%lu, diri%lu\n", ino, dir_ino);
-+
-+	dentry = NULL;
-+	inode = ilookup(sb, ino);
-+	if (unlikely(!inode))
-+		goto out;
-+
-+	dentry = ERR_PTR(-ESTALE);
-+	if (unlikely(is_bad_inode(inode)))
-+		goto out_iput;
-+
-+	dentry = NULL;
-+	if (!S_ISDIR(inode->i_mode)) {
-+		struct dentry *d;
-+		spin_lock(&dcache_lock);
-+		list_for_each_entry(d, &inode->i_dentry, d_alias)
-+			if (!au_test_anon(d)
-+			    && d->d_parent->d_inode->i_ino == dir_ino) {
-+				dentry = dget_locked(d);
-+				break;
-+			}
-+		spin_unlock(&dcache_lock);
-+	} else {
-+		dentry = d_find_alias(inode);
-+		if (dentry && !au_test_anon(dentry)) {
-+			int same_ino;
-+			parent = dget_parent(dentry);
-+			same_ino = (parent->d_inode->i_ino == dir_ino);
-+			dput(parent);
-+			if (same_ino)
-+				goto out_iput; /* success */
-+		}
-+
-+		dput(dentry);
-+		dentry = NULL;
-+	}
-+
-+ out_iput:
-+	iput(inode);
-+ out:
-+	AuTraceErrPtr(dentry);
-+	return dentry;
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+
-+struct find_name_by_ino {
-+	int called, found;
-+	ino_t ino;
-+	char *name;
-+	int namelen;
++struct au_robr_lvma {
++	struct list_head list;
++	struct vm_area_struct *vma;
 +};
 +
-+static int
-+find_name_by_ino(void *arg, const char *name, int namelen, loff_t offset,
-+		 u64 ino, unsigned int d_type)
++struct file *au_robr_safe_file(struct vm_area_struct *vma)
 +{
-+	struct find_name_by_ino *a = arg;
-+
-+	a->called++;
-+	if (a->ino != ino)
-+		return 0;
-+
-+	memcpy(a->name, name, namelen);
-+	a->namelen = namelen;
-+	a->found = 1;
-+	return 1;
-+}
-+
-+static struct dentry *decode_by_dir_ino(struct super_block *sb, ino_t ino,
-+					ino_t dir_ino)
-+{
-+	struct dentry *dentry, *parent;
-+	struct inode *dir;
-+	struct find_name_by_ino arg;
-+	struct file *file;
-+	int err;
-+
-+	LKTRTrace("i%lu, diri%lu\n", ino, dir_ino);
-+
-+	dentry = NULL;
-+	dir = ilookup(sb, dir_ino);
-+	if (unlikely(!dir))
-+		goto out;
-+
-+	dentry = ERR_PTR(-ESTALE);
-+	if (unlikely(is_bad_inode(dir)))
-+		goto out_iput;
-+
-+	dentry = NULL;
-+	parent = d_find_alias(dir);
-+	if (parent) {
-+		if (unlikely(au_test_anon(parent))) {
-+			dput(parent);
-+			goto out_iput;
-+		}
-+	} else
-+		goto out_iput;
-+
-+	file = dentry_open(parent, au_mntcache_get(sb), au_dir_roflags);
-+	dentry = (void *)file;
-+	if (IS_ERR(file))
-+		goto out_iput;
-+
-+	dentry = ERR_PTR(-ENOMEM);
-+	arg.name = __getname();
-+	if (unlikely(!arg.name))
-+		goto out_fput;
-+	arg.ino = ino;
-+	arg.found = 0;
-+
-+	do {
-+		arg.called = 0;
-+		//smp_mb();
-+		err = vfsub_readdir(file, find_name_by_ino, &arg, /*dlgt*/0);
-+	} while (!err && !arg.found && arg.called);
-+	dentry = ERR_PTR(err);
-+	if (arg.found) {
-+		/* do not call au_lkup_one(), nor dlgt */
-+		mutex_lock(&dir->i_mutex);
-+		dentry = vfsub_lookup_one_len(arg.name, parent, arg.namelen);
-+		mutex_unlock(&dir->i_mutex);
-+		AuTraceErrPtr(dentry);
-+	}
-+
-+	//out_putname:
-+	__putname(arg.name);
-+ out_fput:
-+	fput(file);
-+ out_iput:
-+	iput(dir);
-+ out:
-+	AuTraceErrPtr(dentry);
-+	return dentry;
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+
-+struct append_name {
-+	int found, called, len;
-+	char *h_path;
-+	ino_t h_ino;
-+};
-+
-+static int append_name(void *arg, const char *name, int len, loff_t pos,
-+		       u64 ino, unsigned int d_type)
-+{
-+	struct append_name *a = arg;
-+	char *p;
-+
-+	a->called++;
-+	if (ino != a->h_ino)
-+		return 0;
-+
-+	AuDebugOn(len == 1 && *name == '.');
-+	AuDebugOn(len == 2 && name[0] == '.' && name[1] == '.');
-+	a->len = strlen(a->h_path);
-+	memmove(a->h_path - len - 1, a->h_path, a->len);
-+	a->h_path -= len + 1;
-+	p = a->h_path + a->len;
-+	*p++ = '/';
-+	memcpy(p, name, len);
-+	a->len += 1 + len;
-+	a->found++;
-+	return 1;
-+}
-+
-+static int h_acceptable(void *expv, struct dentry *dentry)
-+{
-+	return 1;
-+}
-+
-+static char *au_build_path(struct super_block *sb, __u32 *fh, char *path,
-+			     struct vfsmount *h_mnt, struct dentry *h_root,
-+			     struct dentry *h_parent)
-+{
-+	char *ret;
-+	int err, len;
-+	struct file *h_file;
-+	struct append_name arg;
-+	struct path dm_path = {
-+		.mnt	= h_mnt,
-+		.dentry	= h_root
-+	};
++	struct file *file = vma->vm_file;
++	struct super_block *sb = file->f_dentry->d_sb;
++	struct au_robr_lvma *lvma, *entry;
++	struct au_sbinfo *sbinfo;
++	int found, warn;
 +
 +	AuTraceEnter();
++	AuDebugOn(!au_test_aufs(sb));
 +
-+	arg.h_path = d_path(&dm_path, path, PATH_MAX);
-+	ret = arg.h_path;
-+	if (unlikely(!arg.h_path || IS_ERR(arg.h_path)))
-+		goto out;
-+
-+	len = strlen(arg.h_path);
-+	dm_path.dentry = h_parent;
-+	arg.h_path = d_path(&dm_path, path, PATH_MAX);
-+	ret = arg.h_path;
-+	if (unlikely(!arg.h_path || IS_ERR(arg.h_path)))
-+		goto out;
-+	LKTRTrace("%s\n", arg.h_path);
-+	if (len != 1)
-+		arg.h_path += len;
-+	LKTRTrace("%p, %s, %ld\n",
-+		  arg.h_path, arg.h_path, (long)(arg.h_path - path));
-+
-+	/* cf. fs/exportfs/expfs.c */
-+	h_file = dentry_open(dget(h_parent), mntget(h_mnt), au_dir_roflags);
-+	ret = (void *)h_file;
-+	if (IS_ERR(h_file))
-+		goto out;
-+
-+	arg.found = 0;
-+	arg.h_ino = decode_ino(fh + Fh_h_ino);
-+	do {
-+		arg.called = 0;
-+		err = vfsub_readdir(h_file, append_name, &arg, /*dlgt*/0);
-+	} while (!err && !arg.found && arg.called);
-+	LKTRTrace("%p, %s, %d\n", arg.h_path, arg.h_path, arg.len);
-+	fput(h_file);
-+	ret = ERR_PTR(err);
-+	if (unlikely(err))
-+		goto out;
-+
-+	dm_path.mnt = au_mntcache_get(sb);
-+	dm_path.dentry = sb->s_root;
-+	ret = d_path(&dm_path, path, PATH_MAX - arg.len);
-+	mntput(dm_path.mnt);
-+	if (unlikely(!ret || IS_ERR(ret)))
-+		goto out;
-+	ret[strlen(ret)] = '/';
-+	LKTRTrace("%s\n", ret);
-+
-+ out:
-+	AuTraceErrPtr(ret);
-+	return ret;
-+}
-+
-+static struct dentry *
-+decode_by_path(struct super_block *sb, aufs_bindex_t bindex, __u32 *fh,
-+	       int fh_len, void *context)
-+{
-+	struct dentry *dentry, *h_parent, *root, *h_root;
-+	struct super_block *h_sb;
-+	char *path, *p;
-+	struct vfsmount *h_mnt;
-+	int err;
-+	struct nameidata nd;
-+	struct au_branch *br;
-+
-+	LKTRTrace("b%d\n", bindex);
-+	SiMustAnyLock(sb);
-+
-+	br = au_sbr(sb, bindex);
-+	/* au_br_get(br); */
-+	h_mnt = br->br_mnt;
-+	h_sb = h_mnt->mnt_sb;
-+	LKTRTrace("%s, h_decode_fh\n", au_sbtype(h_sb));
-+	/* in linux-2.6.24, it takes struct fid * as file handle */
-+	//todo: call lower fh_to_dentry()? fh_to_parent()?
-+	h_parent = exportfs_decode_fh(h_mnt, (void *)(fh + Fh_tail),
-+				      fh_len - Fh_tail, fh[Fh_h_type],
-+				      h_acceptable, /*context*/NULL);
-+	dentry = h_parent;
-+	if (unlikely(!h_parent || IS_ERR(h_parent))) {
-+		AuWarn1("%s decode_fh failed\n", au_sbtype(h_sb));
-+		goto out;
++	warn = 0;
++	found = 0;
++	sbinfo = au_sbi(sb);
++	spin_lock(&sbinfo->si_lvma_lock);
++	list_for_each_entry(entry, &sbinfo->si_lvma, list) {
++		found = (entry->vma == vma);
++		if (unlikely(found))
++			break;
 +	}
-+	dentry = NULL;
-+	if (unlikely(au_test_anon(h_parent))) {
-+		AuWarn1("%s decode_fh returned a disconnected dentry\n",
-+			au_sbtype(h_sb));
-+		dput(h_parent);
-+		goto out;
-+	}
-+
-+	dentry = ERR_PTR(-ENOMEM);
-+	path = __getname();
-+	if (unlikely(!path)) {
-+		dput(h_parent);
-+		goto out;
-+	}
-+
-+	root = sb->s_root;
-+	di_read_lock_parent(root, !AuLock_IR);
-+	h_root = au_h_dptr(root, bindex);
-+	di_read_unlock(root, !AuLock_IR);
-+	p = au_build_path(sb, fh, path, h_mnt, h_root, h_parent);
-+	dput(h_parent);
-+	if (IS_ERR(p))
-+		goto out_putname;
-+
-+	err = vfsub_path_lookup(p, LOOKUP_FOLLOW, &nd);
-+	dentry = ERR_PTR(err);
-+	if (!err) {
-+		dentry = dget(nd.path.dentry);
-+		if (unlikely(au_test_anon(dentry))) {
-+			dput(dentry);
-+			dentry = ERR_PTR(-ESTALE);
++	if (!found) {
++		lvma = kmalloc(sizeof(*lvma), GFP_ATOMIC);
++		if (lvma) {
++			lvma->vma = vma;
++			list_add(&lvma->list, &sbinfo->si_lvma);
++		} else {
++			warn = 1;
++			file = NULL;
 +		}
-+		path_put(&nd.path);
-+	}
++	} else
++		file = NULL;
++	spin_unlock(&sbinfo->si_lvma_lock);
 +
-+ out_putname:
-+	__putname(path);
-+ out:
-+	/* au_br_put(br); */
-+	AuTraceErrPtr(dentry);
-+	return dentry;
++	if (unlikely(warn))
++		AuWarn1("no memory for lvma\n");
++	return file;
 +}
 +
-+/* ---------------------------------------------------------------------- */
-+
-+static noinline_for_stack struct dentry *
-+aufs_decode_fh(struct super_block *sb, __u32 *fh, int fh_len, int fh_type,
-+	       int (*acceptable)(void *context, struct dentry *de),
-+	       void *context)
++void au_robr_reset_file(struct vm_area_struct *vma, struct file *file)
 +{
-+	struct dentry *dentry;
-+	ino_t ino, dir_ino;
-+	aufs_bindex_t bindex, br_id;
-+	struct inode *inode, *h_inode;
-+	au_gen_t sigen;
++	struct super_block *sb = file->f_dentry->d_sb;
++	struct au_robr_lvma *entry, *found;
++	struct au_sbinfo *sbinfo;
 +
-+	//au_debug_on();
-+	LKTRTrace("%d, fh{i%u, br_id %u, sigen %u, hi%u}\n",
-+		  fh_type, fh[Fh_ino], fh[Fh_br_id], fh[Fh_sigen],
-+		  fh[Fh_h_ino]);
-+	AuDebugOn(fh_len < Fh_tail);
++	AuTraceEnter();
++	AuDebugOn(!au_test_aufs(sb));
 +
-+	si_read_lock(sb, AuLock_FLUSH);
-+	lockdep_off();
++	vma->vm_file = file;
++	//smp_mb(); /* flush vm_file */
 +
-+	/* branch id may be wrapped around */
-+	dentry = ERR_PTR(-ESTALE);
-+	br_id = fh[Fh_br_id];
-+	sigen = fh[Fh_sigen];
-+	bindex = au_br_index(sb, br_id);
-+	if (unlikely(bindex < 0 || sigen + AUFS_BRANCH_MAX <= au_sigen(sb)))
-+		goto out;
-+
-+	/* is this inode still cached? */
-+	ino = decode_ino(fh + Fh_ino);
-+	dir_ino = decode_ino(fh + Fh_dir_ino);
-+	dentry = decode_by_ino(sb, ino, dir_ino);
-+	if (IS_ERR(dentry))
-+		goto out;
-+	if (dentry)
-+		goto accept;
-+
-+	/* is the parent dir cached? */
-+	dentry = decode_by_dir_ino(sb, ino, dir_ino);
-+	if (IS_ERR(dentry))
-+		goto out;
-+	if (dentry)
-+		goto accept;
-+
-+	/* lookup path */
-+	dentry = decode_by_path(sb, bindex, fh, fh_len, context);
-+	if (IS_ERR(dentry))
-+		goto out;
-+	if (unlikely(!dentry))
-+		goto out_stale;
-+	if (unlikely(dentry->d_inode->i_ino != ino))
-+		goto out_dput;
-+
-+ accept:
-+	inode = dentry->d_inode;
-+	h_inode = NULL;
-+	ii_read_lock_child(inode);
-+	if (au_ibstart(inode) <= bindex && bindex <= au_ibend(inode))
-+		h_inode = au_h_iptr(inode, bindex);
-+	ii_read_unlock(inode);
-+	if (h_inode
-+	    && h_inode->i_generation == fh[Fh_h_igen]
-+	    && acceptable(context, dentry))
-+		goto out; /* success */
-+ out_dput:
-+	dput(dentry);
-+ out_stale:
-+	dentry = ERR_PTR(-ESTALE);
-+ out:
-+	lockdep_on();
-+	si_read_unlock(sb);
-+	AuTraceErrPtr(dentry);
-+	//au_debug_off();
-+	return dentry;
++	found = NULL;
++	sbinfo = au_sbi(sb);
++	spin_lock(&sbinfo->si_lvma_lock);
++	list_for_each_entry(entry, &sbinfo->si_lvma, list)
++		if (entry->vma == vma) {
++			found = entry;
++			break;
++		}
++	AuDebugOn(!found);
++	list_del(&found->list);
++	spin_unlock(&sbinfo->si_lvma_lock);
++	kfree(found);
 +}
-+
-+static struct dentry *
-+aufs_fh_to_dentry(struct super_block *sb, struct fid *fid, int fh_len,
-+		  int fh_type)
-+{
-+	return aufs_decode_fh(sb, fid->raw, fh_len, fh_type, h_acceptable,
-+			      /*context*/NULL);
-+}
-+
-+#if 0
-+/* support subtreecheck option */
-+static struct dentry *au_fh_to_parent(struct super_block *sb, struct fid *fid,
-+				      int fh_len, int fh_type)
-+{
-+}
-+#endif
-+
-+/* ---------------------------------------------------------------------- */
-+
-+static int aufs_encode_fh(struct dentry *dentry, __u32 *fh, int *max_len,
-+			  int connectable)
-+{
-+	int err;
-+	struct super_block *sb, *h_sb;
-+	struct inode *inode, *h_inode, *dir;
-+	aufs_bindex_t bindex;
-+	union conv u;
-+	struct dentry *parent, *h_parent;
-+
-+	//au_debug_on();
-+	BUILD_BUG_ON(sizeof(u.ino) != sizeof(u.a));
-+	LKTRTrace("%.*s, max %d, conn %d\n",
-+		  AuDLNPair(dentry), *max_len, connectable);
-+	AuDebugOn(au_test_anon(dentry));
-+	inode = dentry->d_inode;
-+	AuDebugOn(!inode);
-+	parent = dget_parent(dentry);
-+	AuDebugOn(au_test_anon(parent));
-+
-+	err = -ENOSPC;
-+	if (unlikely(*max_len <= Fh_tail)) {
-+		AuWarn1("NFSv2 client (max_len %d)?\n", *max_len);
-+		goto out;
-+	}
-+
-+	sb = dentry->d_sb;
-+	si_read_lock(sb, AuLock_FLUSH);
-+	di_read_lock_child(dentry, AuLock_IR);
-+	di_read_lock_parent(parent, AuLock_IR);
-+#ifdef CONFIG_AUFS_DEBUG
-+	if (unlikely(!au_opt_test(au_mntflags(sb), XINO)))
-+		AuWarn1("NFS-exporting requires xino\n");
-+#if 0 // temp
-+	if (unlikely(au_opt_test(au_mntflags(sb), UDBA_INOTIFY)))
-+		AuWarn1("udba=inotify is not recommended when exporting\n");
-+#endif
-+#endif
-+
-+	err = -EPERM;
-+	bindex = au_dbstart(dentry);
-+	h_sb = au_sbr_sb(sb, bindex);
-+	if (unlikely(!h_sb->s_export_op)) {
-+		AuErr1("%s branch is not exportable\n", au_sbtype(h_sb));
-+		goto out_unlock;
-+	}
-+
-+#if 0 //def CONFIG_AUFS_ROBR
-+	if (unlikely(au_test_aufs(h_sb))) {
-+		AuErr1("aufs branch is not supported\n");
-+		goto out_unlock;
-+	}
-+#endif
-+
-+	fh[Fh_br_id] = au_sbr_id(sb, bindex);
-+	fh[Fh_sigen] = au_sigen(sb);
-+	encode_ino(fh + Fh_ino, inode->i_ino);
-+	dir = parent->d_inode;
-+	encode_ino(fh + Fh_dir_ino, dir->i_ino);
-+	h_inode = au_h_dptr(dentry, bindex)->d_inode;
-+	encode_ino(fh + Fh_h_ino, h_inode->i_ino);
-+	fh[Fh_h_igen] = h_inode->i_generation;
-+
-+	*max_len -= Fh_tail;
-+	//LKTRTrace("Fh_tail %d, max_len %d\n", Fh_tail, *max_len);
-+	h_parent = au_h_dptr(parent, bindex);
-+	AuDebugOn(au_test_anon(h_parent));
-+	/* in linux-2.6.24, it takes struct fid * as file handle */
-+	fh[Fh_h_type] = exportfs_encode_fh(h_parent, (void *)(fh + Fh_tail),
-+					   max_len, connectable);
-+	err = fh[Fh_h_type];
-+	*max_len += Fh_tail;
-+	if (err != 255)
-+		err = 2; //??
-+	else
-+		AuWarn1("%s encode_fh failed\n", au_sbtype(h_sb));
-+
-+ out_unlock:
-+	di_read_unlock(parent, AuLock_IR);
-+	aufs_read_unlock(dentry, AuLock_IR);
-+ out:
-+	dput(parent);
-+	AuTraceErr(err);
-+	//au_debug_off();
-+	if (unlikely(err < 0))
-+		err = 255;
-+	return err;
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+
-+struct export_operations aufs_export_op = {
-+	.fh_to_dentry	= aufs_fh_to_dentry,
-+	.encode_fh	= aufs_encode_fh
-+};
 -- 
 1.4.4.4
 
