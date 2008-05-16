@@ -1,59 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755864AbYEPK5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756095AbYEPLJi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755864AbYEPK5o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 06:57:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbYEPK5f
+	id S1756095AbYEPLJi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 07:09:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbYEPLJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 06:57:35 -0400
-Received: from sacred.ru ([62.205.161.221]:57743 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750845AbYEPK5e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 06:57:34 -0400
-Message-ID: <482D6803.60205@openvz.org>
-Date: Fri, 16 May 2008 14:54:59 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Fri, 16 May 2008 07:09:28 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:55212 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752668AbYEPLJ1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 07:09:27 -0400
+Date: Fri, 16 May 2008 12:09:19 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Randy Johnson <theraptor2005@gmail.com>
+cc: akpm@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25.1: Kernel BUG at mm/rmap.c:669, General Protection Faults,
+ and generic hard locks
+In-Reply-To: <8347f3fb0805121555k266fab9fvf9d006ab2a89dd7a@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0805161110210.565@blonde.site>
+References: <8347f3fb0805111721m57ba99e4l21df02d38ca3f41f@mail.gmail.com>
+ <8347f3fb0805121555k266fab9fvf9d006ab2a89dd7a@mail.gmail.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Bsdacct: stir up comments around acct_process.
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 16 May 2008 14:57:20 +0400 (MSD)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix the one describing what this function is and add one
-more - about locking absence around pid namespaces loop.
+On Mon, 12 May 2008, Randy Johnson wrote:
+> Sent this to linux-kernel, then realized I probably should have sent
+> this here as well...
+> 
+> Hi,
+> 
+> Recently moved from 2.6.22 up to 2.6.25.1 to solve some AHCI issues.
+> Following this update, Matlab has caused numerous hard lockups. I've
+> gotten lucky twice and been able to remote in and get the logs, which
+> follow below. System is an AM2 with 6G ram installed, but booted with
+> mem=3200M to circumvent some IOMMU issues. It is possible to
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+I expect your "mem=3200M" is just fine, I'm fond of "mem=" myself;
+but be aware that you can get into trouble with it, and I've heard
+"memmap=" recommended instead.  If you're unfamiliar with that,
+try Documentation/kernel-parameters.txt or googling.
 
----
+> eventually replicate the issue, but not with a specific sequence of
+> activities that I've found. General activity from Matlab when it
+> occurs is heavy disk IO (reading, no writting), and large memory
+> consumption. Latest version of memtest86+ was run overnight and shows
+> no issues.
 
-diff --git a/kernel/acct.c b/kernel/acct.c
-index 0feba97..d7b670c 100644
---- a/kernel/acct.c
-+++ b/kernel/acct.c
-@@ -657,7 +657,8 @@ static void acct_process_in_ns(struct pid_namespace *ns)
- }
- 
- /**
-- * acct_process - now just a wrapper around do_acct_process
-+ * acct_process - now just a wrapper around acct_process_in_ns,
-+ * which int turn is a wrapper around do_acct_process.
-  *
-  * handles process accounting for an exiting task
-  */
-@@ -665,6 +666,11 @@ void acct_process(void)
- {
- 	struct pid_namespace *ns;
- 
-+	/*
-+	 * This loop is safe lockless, since current it still
-+	 * alive and holds its namespace, which in turn holds
-+	 * its parent.
-+	 */
- 	for (ns = task_active_pid_ns(current); ns != NULL; ns = ns->parent)
- 		acct_process_in_ns(ns);
- }
+memtest86+ overnight was certainly the right thing to try;
+but I'm not convinced by its success.  Maybe there's a pattern
+in Matlab which is tickling a bad RAM issue more effectively
+than memtest does (sometimes gcc hits problems which memtest
+hasn't shown).  And since (sadly!) you have plenty of memory
+to spare, it'd be well worth switching boards around: your
+lowest bank does look suspect (and I'm guessing 2.6.25.1 just
+places things differently from 2.6.22, some important data now
+being placed on bad RAM where something unused went before).
+
+I could perfectly well be wrong about all that: maybe you do have
+a kernel bug corrupting your memory; but I've no idea where if so.
+
+> 
+> Any thoughts?
+> 
+> -Randy Johnson
+> 
+> 
+> log #1
+> 
+> Eeek! page_mapcount(page) went negative! (-1946157056)
+
+That's the most interesting line of it: page_mapcount(page) isn't
+off-by one or something like that, instead its high byte has been
+corrupted at some point from 0x00 to 0x8c.
+
+(Unfortunately, what with all the printk'ing that's gone on, I'm not
+at all confident whether or where the address of the page in question
+is in the registers or stack displayed: the messages suit tracking
+a relevant kernel bug rather than a random corruption.)
+
+> 
+> And log #2
+> 
+> general protection fault: 0000 [1] SMP
+> CPU 1
+> Modules linked in: af_packet aic7xxx fan button thermal processor unix
+> Pid: 6232, comm: MATLAB Not tainted 2.6.25.1 #1
+> RIP: 0010:[<ffffffff802652e3>]  [<ffffffff802652e3>]
+> get_page_from_freelist+0x303/0x670
+> RSP: 0000:ffff8100b2421d78  EFLAGS: 00010002
+> RAX: ffff8100bf64bb10 RBX: ffff8100bf64bb10 RCX: ffffe200029538d8
+> RDX: 7fffe200004bee10 RSI: 0000000000000000 RDI: 000000000000001d
+       ^
+There it's doing the list_del(&page->lru) in buffered_rmqueue(),
+and hitting a corrupted prev pointer: the top bit of the address has
+been cleared, causing that and subsequent general protection faults
+(same list pointer RCX and prev contents RDX each time).
+
+But I'm afraid that tells me nothing about the cause of these
+corruptions.  If you've gathered more crash logs during the week,
+please do post the logs or send them to me privately, I'll try
+to decipher what I can - but that may not help you much.
+
+Hugh
