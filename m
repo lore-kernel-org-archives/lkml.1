@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292AbYEPHRE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755857AbYEPHTj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755292AbYEPHRE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 03:17:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbYEPHQx
+	id S1755857AbYEPHTj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 03:19:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbYEPHT2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 03:16:53 -0400
-Received: from www.tglx.de ([62.245.132.106]:35567 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751407AbYEPHQw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 03:16:52 -0400
-Date: Fri, 16 May 2008 09:15:54 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Justin Madru <jdm64@gawab.com>
-cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       David Airlie <airlied@linux.ie>,
-       Sylvain Meyer <sylvain.meyer@worldonline.fr>,
-       Antonino Daplas <adaplas@gmail.com>,
-       Roman Zippel <zippel@linux-m68k.org>, Greg KH <gregkh@suse.de>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [regression bisected] HR-timers bug >=2.6.25
-In-Reply-To: <482C8FD6.10808@gawab.com>
-Message-ID: <alpine.LFD.1.10.0805160909450.3255@apollo.tec.linutronix.de>
-References: <482C8FD6.10808@gawab.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Fri, 16 May 2008 03:19:28 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:19822 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751471AbYEPHT1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 03:19:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=LSh6TVRgdy5xC2xCf0iBWlxihHbaXvbKgKr5SqpFRLWq+kNK2olKBficGo3rlxDsKYcqd+vWdJdDObOJhUxQ//1kwZTxihHVdFVNO1Gu2K7Cu7+ITXsu16qT9bOCDlfylHfwn9YChIuLRzQunYH0UGjUed+0L0bq5GA5i4EzMqA=
+Date: Fri, 16 May 2008 07:22:54 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Kingsley Foreman <kingsley@internode.com.au>
+Cc: Patrick McHardy <kaber@trash.net>, Eric Dumazet <dada1@cosmosbay.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: NET_SCHED cbq dropping too many packets on a bonding interface
+Message-ID: <20080516072254.GC3992@ff.dom.local>
+References: <20080515091216.GA6550@ff.dom.local> <8ECDBB4EB5394859BFFACAAEE3A6EDB0@uglypunk> <482C6040.9030808@trash.net> <20080515182504.GB2936@ami.dom.local> <482C81CC.7000305@trash.net> <20080515184646.GC2936@ami.dom.local> <1A70765F4B30462EB21A3B3A8A442633@uglypunk> <20080516054959.GA3918@ff.dom.local> <05be01c8b71b$cbb0c9e0$f903a33a@SABINE> <20080516070102.GB3992@ff.dom.local>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080516070102.GB3992@ff.dom.local>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 May 2008, Justin Madru wrote:
-> I've reported this problem previously:
-> http://lkml.org/lkml/2008/3/12/290
-> http://bugzilla.kernel.org/show_bug.cgi?id=10235
-> https://bugs.freedesktop.org/show_bug.cgi?id=15602
+On Fri, May 16, 2008 at 07:01:02AM +0000, Jarek Poplawski wrote:
+> On Fri, May 16, 2008 at 03:42:18PM +0930, Kingsley Foreman wrote:
+> ...
+> > ok after some playing a bit if i use
+> >
+> > tc qdisc change dev bond0 parent 1: pfifo limit 30
+> >
+> > the dropped packets go away, im not sure if that is considered normal or  
+> > not, however any number under 30 gives me issues.
 > 
-> This bug is still in mainline as of 2.6.26-rc1. (affected versions 2.6.25-rc0
-> - 2.6.26-rc1)
-> 
-> Ever since 2.6.25-rc3 (the first rc I tested), my screen would blank out when
-> mode switching from the Ubuntu uplash to the gdm login. Normally after the
-> boot splash, the screen goes black and "refreshes" to select the correct
-> resolution. But when using a kernel newer than 2.6.24 the screen doesn't come
-> back on - it stays blank. This doesn't happen every time, but a good majority
-> of the time. The workaround is to disable the splash, and that fixes the
-> problem almost completely.
-> 
-> I did a git bisect. Rebooting 3 times if the problem didn't occur just to make
-> sure.
-> The git bisect reports that it's timing related - which is what Jesse Barnes
-> said it could be.
+> If there are no significant differences in configs between these 2.6.22
+> and 2.6.24/25 (e.g. things mentionned earlier by Eric) IMHO it's "more
+> than normal", but as I've written it would need a lot of your time and
+> work to check the rason.
 
-Well, it's a timing problem related to splash which is exposed by the
-scheduler timing changes. This is neither a hrtimer nor a scheduler
-bug. Something in the splash / video driver switchover relies on some
-obscure timing which is nowhere guaranteed.
+BTW, it still doesn't have to mean any error: e.g. it could happen when
+kernel throughput is better while NIC tx speed stayed the same. So, it
+shouldn't probably bother you too much until there is no visible impact
+on latency or rates.
 
-Thanks,
-	tglx
-
-
+Jarek P.
