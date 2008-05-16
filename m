@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759188AbYEPOwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758372AbYEPOwn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759188AbYEPOwW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 10:52:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758190AbYEPOnL
+	id S1758372AbYEPOwn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 10:52:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757281AbYEPOnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 10:43:11 -0400
-Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49269 "EHLO
+	Fri, 16 May 2008 10:43:16 -0400
+Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49304 "EHLO
 	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753002AbYEPOmR (ORCPT
+	with ESMTP id S1755025AbYEPOm0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 10:42:17 -0400
+	Fri, 16 May 2008 10:42:26 -0400
 From: hooanon05@yahoo.co.jp
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Junjiro Okajima <hooanon05@yahoo.co.jp>
-Subject: [PATCH 11/67] aufs superblock private data
-Date: Fri, 16 May 2008 23:32:25 +0900
-Message-Id: <12109484013264-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [PATCH 23/67] aufs workqueue for asynchronous/super-io/delegated operations, source
+Date: Fri, 16 May 2008 23:32:37 +0900
+Message-Id: <12109484012111-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <12109484012724-git-send-email-hooanon05@yahoo.co.jp>
-References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <12109484012532-git-send-email-hooanon05@yahoo.co.jp> <12109484012997-git-send-email-hooanon05@yahoo.co.jp> <12109484013051-git-send-email-hooanon05@yahoo.co.jp> <12109484013436-git-send-email-hooanon05@yahoo.co.jp> <1210948401415-git-send-email-hooanon05@yahoo.co.jp> <12109484011533-git-send-email-hooanon05@yahoo.co.jp> <1210948401506-git-send-email-hooanon05@yahoo.co.jp> <12109484013156-git-send-email-hooanon05@yahoo.co.jp> <12109484012724-git-send-email-hooanon05@yahoo.co.jp>
+In-Reply-To: <12109484013559-git-send-email-hooanon05@yahoo.co.jp>
+References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <12109484012532-git-send-email-hooanon05@yahoo.co.jp> <12109484012997-git-send-email-hooanon05@yahoo.co.jp> <12109484013051-git-send-email-hooanon05@yahoo.co.jp> <12109484013436-git-send-email-hooanon05@yahoo.co.jp> <1210948401415-git-send-email-hooanon05@yahoo.co.jp> <12109484011533-git-send-email-hooanon05@yahoo.co.jp> <1210948401506-git-send-email-hooanon05@yahoo.co.jp> <12109484013156-git-send-email-hooanon05@yahoo.co.jp> <12109484012724-git-send-email-hooanon05@yahoo.co.jp> <12109484013264-git-send-email-hooanon05@yahoo.co.jp> <12109484012658-git-send-email-hooanon05@yahoo.co.jp> <12109484011282-git-send-email-hooanon05@yahoo.co.jp> <12109484012543-git-send-email-hooanon05@yahoo.co.jp> <12109484013834-git-send-email-hooanon05@yahoo.co.jp> <12109484012213-git-send-email-hooanon05@yahoo.co.jp> <12109484012301-git-send-email-hooanon05@yahoo.co.jp> <1210948401175-git-send-email-hooanon05@yahoo.co.jp> <1210948!
+ 4013702-git-send-email-hooanon05@yahoo.co.jp> <12109484012871-git-send-email-hooanon05@yahoo.co.jp> <12109484013438-git-send-email-hooanon05@yahoo.co.jp> <12109484013559-git-send-email-hooanon05@yahoo.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -26,19 +27,19 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Junjiro Okajima <hooanon05@yahoo.co.jp>
 
 	initial commit
-	aufs superblock private data
+	aufs workqueue for asynchronous/super-io/delegated operations, source
 
 Signed-off-by: Junjiro Okajima <hooanon05@yahoo.co.jp>
 ---
- fs/aufs/sbinfo.c |  268 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 268 insertions(+), 0 deletions(-)
+ fs/aufs/wkq.c |  321 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 321 insertions(+), 0 deletions(-)
 
-diff --git a/fs/aufs/sbinfo.c b/fs/aufs/sbinfo.c
+diff --git a/fs/aufs/wkq.c b/fs/aufs/wkq.c
 new file mode 100644
-index 0000000..a412811
+index 0000000..965d1e4
 --- /dev/null
-+++ b/fs/aufs/sbinfo.c
-@@ -0,0 +1,268 @@
++++ b/fs/aufs/wkq.c
+@@ -0,0 +1,321 @@
 +/*
 + * Copyright (C) 2005-2008 Junjiro Okajima
 + *
@@ -58,111 +59,233 @@ index 0000000..a412811
 + */
 +
 +/*
-+ * superblock private data
++ * workqueue for asynchronous/super-io/delegated operations
 + *
-+ * $Id: sbinfo.c,v 1.4 2008/05/12 00:28:22 sfjro Exp $
++ * $Id: wkq.c,v 1.4 2008/05/04 23:53:38 sfjro Exp $
 + */
 +
-+#include <linux/mnt_namespace.h>
-+#include <linux/smp_lock.h>
++#include <linux/module.h>
 +#include "aufs.h"
 +
-+/*
-+ * they are necessary regardless sysfs is disabled.
-+ */
-+void au_si_free(struct kobject *kobj)
++struct au_wkq *au_wkq;
++
++struct au_cred {
++#ifdef CONFIG_AUFS_DLGT
++	int umask;
++	uid_t fsuid;
++	gid_t fsgid;
++	kernel_cap_t cap_effective, cap_inheritable, cap_permitted;
++	//unsigned keep_capabilities:1;
++	//struct user_struct *user;
++	//struct fs_struct *fs;
++	//struct nsproxy *nsproxy;
++#endif
++};
++
++struct au_wkinfo {
++	struct work_struct wk;
++	struct vfsmount *mnt;
++
++	unsigned int flags;
++	struct au_cred cred;
++
++	au_wkq_func_t func;
++	void *args;
++
++	atomic_t *busyp;
++	struct completion *comp;
++};
++
++/* ---------------------------------------------------------------------- */
++
++#ifdef CONFIG_AUFS_DLGT
++static void cred_store(struct au_cred *cred)
 +{
-+	struct au_sbinfo *sbinfo;
-+	struct super_block *sb;
-+
-+	LKTRTrace("kobj %p\n", kobj);
-+	sbinfo = container_of(kobj, struct au_sbinfo, si_kobj);
-+	LKTRTrace("sbinfo %p\n", sbinfo);
-+	AuDebugOn(!list_empty(&sbinfo->si_plink));
-+
-+	sb = sbinfo->si_sb;
-+	if (unlikely(!au_ftest_si(sbinfo, FAILED_INIT))) {
-+		au_sbilist_lock();
-+		au_sbilist_del(sbinfo);
-+		au_sbilist_unlock();
-+	}
-+
-+	si_write_lock(sb);
-+	au_xino_clr(sb);
-+	au_br_free(sbinfo);
-+	kfree(sbinfo->si_branch);
-+	si_write_unlock(sb);
-+
-+	//AuDbg("free\n");
-+ 	kfree(sbinfo);
++	cred->umask = current->fs->umask;
++	cred->fsuid = current->fsuid;
++	cred->fsgid = current->fsgid;
++	cred->cap_effective = current->cap_effective;
++	cred->cap_inheritable = current->cap_inheritable;
++	cred->cap_permitted = current->cap_permitted;
 +}
 +
-+int au_si_alloc(struct super_block *sb)
++static void cred_revert(struct au_cred *cred)
 +{
-+	int err;
-+	struct au_sbinfo *sbinfo;
++	AuDebugOn(!au_test_wkq(current));
++	current->fs->umask = cred->umask;
++	current->fsuid = cred->fsuid;
++	current->fsgid = cred->fsgid;
++	current->cap_effective = cred->cap_effective;
++	current->cap_inheritable = cred->cap_inheritable;
++	current->cap_permitted = cred->cap_permitted;
++}
++
++static void cred_switch(struct au_cred *old, struct au_cred *new)
++{
++	cred_store(old);
++	cred_revert(new);
++}
++
++static void dlgt_cred_store(unsigned int flags, struct au_wkinfo *wkinfo)
++{
++	if (unlikely(au_ftest_wkq(flags, DLGT)))
++		cred_store(&wkinfo->cred);
++}
++
++static void dlgt_func(struct au_wkinfo *wkinfo)
++{
++	if (!au_ftest_wkq(wkinfo->flags, DLGT))
++		wkinfo->func(wkinfo->args);
++	else {
++		struct au_cred cred;
++		cred_switch(&cred, &wkinfo->cred);
++		wkinfo->func(wkinfo->args);
++		cred_revert(&cred);
++	}
++}
++#else
++static void dlgt_cred_store(unsigned int flags, struct au_wkinfo *wkinfo)
++{
++	/* empty */
++}
++
++static void dlgt_func(struct au_wkinfo *wkinfo)
++{
++	wkinfo->func(wkinfo->args);
++}
++#endif /* CONFIG_AUFS_DLGT */
++
++/* ---------------------------------------------------------------------- */
++
++static void update_busy(struct au_wkq *wkq, struct au_wkinfo *wkinfo)
++{
++#ifdef CONFIG_AUFS_STAT
++	unsigned int new, old;
++
++	do {
++		new = atomic_read(wkinfo->busyp);
++		old = wkq->max_busy;
++		if (new <= old)
++			break;
++	} while (cmpxchg(&wkq->max_busy, old, new) == old);
++#endif
++}
++
++static int enqueue(struct au_wkq *wkq, struct au_wkinfo *wkinfo)
++{
++	AuTraceEnter();
++	wkinfo->busyp = &wkq->busy;
++	update_busy(wkq, wkinfo);
++	if (au_ftest_wkq(wkinfo->flags, WAIT))
++		return !queue_work(wkq->q, &wkinfo->wk);
++	else
++		return !schedule_work(&wkinfo->wk);
++}
++
++static void do_wkq(struct au_wkinfo *wkinfo)
++{
++	unsigned int idle, n;
++	int i, idle_idx;
 +
 +	AuTraceEnter();
 +
-+	err = -ENOMEM;
-+	sbinfo = kmalloc(sizeof(*sbinfo), GFP_KERNEL);
-+	//if (LktrCond) {kfree(sbinfo); sbinfo = NULL;}
-+	if (unlikely(!sbinfo))
-+		goto out;
-+	sbinfo->si_branch = kzalloc(sizeof(*sbinfo->si_branch), GFP_KERNEL);
-+	//if (LktrCond) {kfree(sbinfo->si_branch); sbinfo->si_branch = NULL;}
-+	if (unlikely(!sbinfo->si_branch))
-+		goto out_sbinfo;
++	while (1) {
++		if (au_ftest_wkq(wkinfo->flags, WAIT)) {
++			idle_idx = 0;
++			idle = UINT_MAX;
++			for (i = 0; i < aufs_nwkq; i++) {
++				n = atomic_inc_return(&au_wkq[i].busy);
++				if (n == 1 && !enqueue(au_wkq + i, wkinfo))
++					return; /* success */
 +
-+	memset(&sbinfo->si_kobj, 0, sizeof(sbinfo->si_kobj));
-+	err = sysaufs_si_init(sbinfo);
-+	if (unlikely(err))
-+		goto out_br;
++				if (n < idle) {
++					idle_idx = i;
++					idle = n;
++				}
++				atomic_dec_return(&au_wkq[i].busy);
++			}
++		} else
++			idle_idx = aufs_nwkq;
 +
-+	au_rw_init_wlock(&sbinfo->si_rwsem);
-+	sbinfo->si_generation = 0;
-+	//sbinfo->si_generation = INT_MAX - 2;
-+	sbinfo->au_si_status = 0;
-+	sbinfo->si_bend = -1;
-+	sbinfo->si_last_br_id = 0;
++		atomic_inc_return(&au_wkq[idle_idx].busy);
++		if (!enqueue(au_wkq + idle_idx, wkinfo))
++			return; /* success */
 +
-+	sbinfo->si_wbr_copyup = AuWbrCopyup_Def;
-+	sbinfo->si_wbr_create = AuWbrCreate_Def;
-+	sbinfo->si_wbr_copyup_ops = au_wbr_copyup_ops + AuWbrCopyup_Def;
-+	sbinfo->si_wbr_create_ops = au_wbr_create_ops + AuWbrCreate_Def;
++		/* impossible? */
++		AuWarn1("failed to queue_work()\n");
++		yield();
++	}
++}
 +
-+	sbinfo->si_mntflags = AuOpt_Def;
++static void wkq_func(struct work_struct *wk)
++{
++	struct au_wkinfo *wkinfo = container_of(wk, struct au_wkinfo, wk);
 +
-+	sbinfo->si_xread = NULL;
-+	sbinfo->si_xwrite = NULL;
-+	sbinfo->si_xib = NULL;
-+	mutex_init(&sbinfo->si_xib_mtx);
-+	sbinfo->si_xib_buf = NULL;
-+	/* leave si_xib_last_pindex and si_xib_next_bit */
++	LKTRTrace("wkinfo{0x%x, %p, %p, %p}\n",
++		  wkinfo->flags, wkinfo->func, wkinfo->busyp, wkinfo->comp);
 +
-+	au_nwt_init(&sbinfo->si_nowait);
++	dlgt_func(wkinfo);
++	atomic_dec_return(wkinfo->busyp);
++	if (au_ftest_wkq(wkinfo->flags, WAIT))
++		complete(wkinfo->comp);
++	else {
++#if 0 // rfu
++		struct au_sbinfo *sbinfo;
++		sbinfo = au_sbi(wkinfo->mnt->mnt_sb);
++		if (atomic_dec_and_test(&sbinfo->si_wkq_nowait))
++			wake_up_all(&sbinfo->si_wkq_nowait_wq);
++#endif
++		mntput(wkinfo->mnt);
++		module_put(THIS_MODULE);
++		kfree(wkinfo);
++	}
++}
 +
-+	sbinfo->si_rdcache = AUFS_RDCACHE_DEF * HZ;
-+	sbinfo->si_dirwh = AUFS_DIRWH_DEF;
++int au_wkq_run(au_wkq_func_t func, void *args, struct super_block *sb,
++	       unsigned int flags)
++{
++	int err;
++	//int queued;
++	//struct workqueue_struct *wkq;
++	DECLARE_COMPLETION_ONSTACK(comp);
++	struct au_wkinfo _wkinfo = {
++		//.sb	= sb,
++		.flags	= flags,
++		.func	= func,
++		.args	= args,
++		.comp	= &comp
++	}, *wkinfo = &_wkinfo;
 +
-+	spin_lock_init(&sbinfo->si_plink_lock);
-+	INIT_LIST_HEAD(&sbinfo->si_plink);
++	LKTRTrace("0x%x\n", flags);
++	AuDebugOn(au_test_wkq(current));
 +
-+	au_robr_lvma_init(sbinfo);
++	err = 0;
++	if (unlikely(!au_ftest_wkq(flags, WAIT))) {
++		AuDebugOn(!sb);
++		/*
++		 * wkq_func() must free this wkinfo.
++		 * it highly depends upon the implementation of workqueue.
++		 */
++		err = -ENOMEM;
++		wkinfo = kmalloc(sizeof(*wkinfo), GFP_TEMPORARY);
++		if (unlikely(!wkinfo))
++			goto out;
++		err = 0;
++		/* prohibit umount */
++		wkinfo->mnt = au_mntcache_get(sb);
++		wkinfo->flags = flags;
++		wkinfo->func = func;
++		wkinfo->args = args;
++		wkinfo->comp = NULL;
++		__module_get(THIS_MODULE);
++	}
 +
-+	/* leave other members for sysaufs and si_mnt. */
-+	sbinfo->si_sb = sb;
-+
-+	sb->s_fs_info = sbinfo;
-+	//sysaufs_si_get(sb);
-+
-+	au_debug_sbinfo_init(sbinfo);
-+	return 0; /* success */
-+
-+ out_br:
-+	kfree(sbinfo->si_branch);
-+ out_sbinfo:
-+	kfree(sbinfo);
++	INIT_WORK(&wkinfo->wk, wkq_func);
++	dlgt_cred_store(flags, wkinfo);
++	do_wkq(wkinfo);
++	if (au_ftest_wkq(flags, WAIT))
++		/* no timeout, no interrupt */
++		wait_for_completion(wkinfo->comp);
 + out:
 +	AuTraceErr(err);
 +	return err;
@@ -170,142 +293,73 @@ index 0000000..a412811
 +
 +/* ---------------------------------------------------------------------- */
 +
-+struct au_branch *au_sbr(struct super_block *sb, aufs_bindex_t bindex)
++void au_wkq_fin(void)
 +{
-+	struct au_branch *br;
-+
-+	SiMustAnyLock(sb);
-+	AuDebugOn(bindex < 0 || au_sbend(sb) < bindex);
-+	br = au_sbi(sb)->si_branch[0 + bindex];
-+	AuDebugOn(!br);
-+	return br;
-+}
-+
-+au_gen_t au_sigen_inc(struct super_block *sb)
-+{
-+	au_gen_t gen;
-+
-+	SiMustWriteLock(sb);
-+	gen = ++au_sbi(sb)->si_generation;
-+	au_update_digen(sb->s_root);
-+	au_update_iigen(sb->s_root->d_inode);
-+	sb->s_root->d_inode->i_version++;
-+	return gen;
-+}
-+
-+int au_find_bindex(struct super_block *sb, struct au_branch *br)
-+{
-+	aufs_bindex_t bindex, bend;
-+
-+	bend = au_sbend(sb);
-+	for (bindex = 0; bindex <= bend; bindex++)
-+		if (au_sbr(sb, bindex) == br)
-+			return bindex;
-+	return -1;
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+
-+/* dentry and super_block lock. call at entry point */
-+void aufs_read_lock(struct dentry *dentry, int flags)
-+{
-+	si_read_lock(dentry->d_sb, flags);
-+	if (au_ftest_lock(flags, DW))
-+		di_write_lock_child(dentry);
-+	else
-+		di_read_lock_child(dentry, flags);
-+}
-+
-+void aufs_read_unlock(struct dentry *dentry, int flags)
-+{
-+	if (au_ftest_lock(flags, DW))
-+		di_write_unlock(dentry);
-+	else
-+		di_read_unlock(dentry, flags);
-+	si_read_unlock(dentry->d_sb);
-+}
-+
-+void aufs_write_lock(struct dentry *dentry)
-+{
-+	si_write_lock(dentry->d_sb);
-+	di_write_lock_child(dentry);
-+}
-+
-+void aufs_write_unlock(struct dentry *dentry)
-+{
-+	di_write_unlock(dentry);
-+	si_write_unlock(dentry->d_sb);
-+}
-+
-+void aufs_read_and_write_lock2(struct dentry *d1, struct dentry *d2, int flags)
-+{
-+	AuDebugOn(d1 == d2 || d1->d_sb != d2->d_sb);
-+	si_read_lock(d1->d_sb, flags);
-+	di_write_lock2_child(d1, d2, au_ftest_lock(flags, DIR));
-+}
-+
-+void aufs_read_and_write_unlock2(struct dentry *d1, struct dentry *d2)
-+{
-+	AuDebugOn(d1 == d2 || d1->d_sb != d2->d_sb);
-+	di_write_unlock2(d1, d2);
-+	si_read_unlock(d1->d_sb);
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+
-+aufs_bindex_t au_new_br_id(struct super_block *sb)
-+{
-+	aufs_bindex_t br_id;
-+	struct au_sbinfo *sbinfo;
-+
-+	AuTraceEnter();
-+	SiMustWriteLock(sb);
-+
-+	sbinfo = au_sbi(sb);
-+	while (1) {
-+		br_id = ++sbinfo->si_last_br_id;
-+		if (br_id && au_br_index(sb, br_id) < 0)
-+			return br_id;
-+	}
-+}
-+
-+//todo: dirty
-+/*
-+ * when you mntput() for the return value of this function,
-+ * you have to store it to your local var.
-+ * ie. never mntput si_mntcache directly.
-+ */
-+struct vfsmount *au_mntcache_get(struct super_block *sb)
-+{
-+	struct au_sbinfo *sbinfo;
-+	struct mnt_namespace *ns;
-+	struct vfsmount *pos, *mnt;
++	int i;
 +
 +	AuTraceEnter();
 +
-+	sbinfo = au_sbi(sb);
++	for (i = 0; i < aufs_nwkq; i++)
++		if (au_wkq[i].q && !IS_ERR(au_wkq[i].q))
++			destroy_workqueue(au_wkq[i].q);
++	kfree(au_wkq);
++}
 +
-+	spin_lock(&sbinfo->si_mntcache_lock);
-+	if (sbinfo->si_mntcache)
++int __init au_wkq_init(void)
++{
++	int err, i;
++	struct au_wkq *nowaitq;
++
++	LKTRTrace("%d\n", aufs_nwkq);
++
++	/* '+1' is for accounting  of nowait queue */
++	err = -ENOMEM;
++	au_wkq = kcalloc(aufs_nwkq + 1, sizeof(*au_wkq), GFP_KERNEL);
++	if (unlikely(!au_wkq))
 +		goto out;
 +
-+	/* vfsmount_lock is not exported */
-+	//root_mnt = current->fs->root.mnt;
-+	/* no get/put */
-+	AuDebugOn(!current->nsproxy);
-+	ns = current->nsproxy->mnt_ns;
-+	AuDebugOn(!ns);
-+	list_for_each_entry(pos, &ns->list, mnt_list)
-+		if (pos->mnt_sb == sb) {
-+			sbinfo->si_mntcache = pos;
-+			break;
++	err = 0;
++	for (i = 0; i < aufs_nwkq; i++) {
++		au_wkq[i].q = create_singlethread_workqueue(AUFS_WKQ_NAME);
++		if (au_wkq[i].q && !IS_ERR(au_wkq[i].q)) {
++			atomic_set(&au_wkq[i].busy, 0);
++			au_wkq[i].max_busy = 0;
++			continue;
 +		}
-+	AuDebugOn(!sbinfo->si_mntcache);
++
++		err = PTR_ERR(au_wkq[i].q);
++		au_wkq_fin();
++		break;
++	}
++
++	/* nowait accounting */
++	nowaitq = au_wkq + aufs_nwkq;
++	atomic_set(&nowaitq->busy, 0);
++	nowaitq->max_busy = 0;
++	nowaitq->q = NULL;
++	//smp_mb(); /* atomic_set */
++
++#if 0 // test accouting
++	if (!err) {
++		static void f(void *args)
++		{
++			DbgSleep(1);
++		}
++		int i;
++		//au_debug_on();
++		LKTRTrace("f %p\n", f);
++		for (i = 0; i < 10; i++)
++			au_wkq_nowait(f, NULL, 0);
++		for (i = 0; i < aufs_nwkq; i++)
++			au_wkq_wait(f, NULL, 0);
++		DbgSleep(11);
++		//au_debug_off();
++	}
++#endif
 +
 + out:
-+	mnt = mntget(sbinfo->si_mntcache);
-+	spin_unlock(&sbinfo->si_mntcache_lock);
-+	return mnt;
++	AuTraceErr(err);
++	return err;
 +}
 -- 
 1.4.4.4
