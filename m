@@ -1,73 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760665AbYEPU1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761263AbYEPU2H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760665AbYEPU1m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 16:27:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754849AbYEPU1e
+	id S1761263AbYEPU2H (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 16:28:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760838AbYEPU1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 16:27:34 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:34790 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754762AbYEPU1d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 16:27:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WPVdQ9AyyR6K807cM0mda5L39fvn4XcJEZ9wZNDhtxzioVmi7HCnBwGL0mbBqR5Eft1KT6/gT3kjt2W9NzbTCk/8vWu13yNbp9PtY862mouZbrmABweub7R2gTEhiMRggHcR/OUtV0+1HqS5+NyX0xtitrT7dRJ285WtUCy0YLI=
-Message-ID: <9e4733910805161327u4c42fd1dg5b09319d89db447c@mail.gmail.com>
-Date: Fri, 16 May 2008 16:27:33 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [RFC PATCH 0/4] Describe SPI devices in the OF device tree and add mpc5200-spi driver
-Cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
-       fabrizio.garetto@gmail.com
-In-Reply-To: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 16 May 2008 16:27:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34416 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754849AbYEPU1v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 16:27:51 -0400
+Date: Fri, 16 May 2008 16:27:34 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       ajackson@redhat.com, airlied@redhat.com, benh@kernel.crashing.org
+Subject: [PATCH 6/5] Add documentation for the vm_ops->access function.
+Message-ID: <20080516162734.5e69d336@cuia.bos.redhat.com>
+In-Reply-To: <1210926049.7886.21.camel@twins>
+References: <20080515175357.636334082@redhat.com>
+	<20080515175431.000301639@redhat.com>
+	<1210926049.7886.21.camel@twins>
+Organization: Red Hat, Inc
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/16/08, Grant Likely <grant.likely@secretlab.ca> wrote:
-> This series is a set of changes to allow the slaves on an SPI bus to be
->  described in the OF device tree (useful in arch/powerpc) and adds a driver
->  that uses it (the Freescale MPC5200 SoC's SPI device).
+From: Rik van Riel <riel@redhat.com>
 
-Right now we have SPI hooked up to PSC3. Hardware engineer is gone but
-I'll see if I can get him to alter things to use the SPI controller. I
-have an old mail from him where he thinks the Phytec board is missing
-a signal needed to use the SPI controller.
+Add documentation for the vm_ops->access function.
 
-Is the current SPI driver working on PSC3? I have a MMC card wired up
-to it but I've never tried using it.
+Signed-off-by: Rik van Riel <riel@redhat.com>
 
-I have the MPC5200 PSC SPI driver enabled and "MMC/SD over SPI"
-enabled in my kernel. The MMC bus gets created but there aren't any
-devices on it. Do we need something in the SPI driver so that the MMC
-layer can find it?
-
-Are you going to keeps this as two drivers or merge them? If it is two
-drivers there should be one entry in Kconfig and two sub choices for
-the types of drivers.
-
->  Please review and comment.  David, I've included in this series my earlier
->  patch to change modalias from a pointer to a string as one of the later
->  patches depends on it.
->
->  Cheers,
->  g.
->
->
->  --
->  Grant Likely, B.Sc. P.Eng.
->  Secret Lab Technologies Ltd.
->
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+Index: ptrace-2.6.26-rc2-mm1/Documentation/filesystems/Locking
+===================================================================
+--- ptrace-2.6.26-rc2-mm1.orig/Documentation/filesystems/Locking	2008-05-15 12:46:37.000000000 -0400
++++ ptrace-2.6.26-rc2-mm1/Documentation/filesystems/Locking	2008-05-16 16:25:10.000000000 -0400
+@@ -510,6 +510,7 @@ prototypes:
+ 	void (*close)(struct vm_area_struct*);
+ 	int (*fault)(struct vm_area_struct*, struct vm_fault *);
+ 	int (*page_mkwrite)(struct vm_area_struct *, struct page *);
++	int (*access)(struct vm_area_struct *, unsigned long, void*, int, int);
+ 
+ locking rules:
+ 		BKL	mmap_sem	PageLocked(page)
+@@ -517,6 +518,7 @@ open:		no	yes
+ close:		no	yes
+ fault:		no	yes
+ page_mkwrite:	no	yes		no
++access:		no	yes
+ 
+ 	->page_mkwrite() is called when a previously read-only page is
+ about to become writeable. The file system is responsible for
+@@ -525,6 +527,11 @@ taking to lock out truncate, the page ra
+ within i_size. The page mapping should also be checked that it is not
+ NULL.
+ 
++	->access() is called when get_user_pages() fails in
++acces_process_vm(), typically used to debug a process through
++/proc/pid/mem or ptrace.  This function is needed only for
++VM_IO | VM_PFNMAP VMAs.
++
+ ================================================================================
+ 			Dubious stuff
+ 
