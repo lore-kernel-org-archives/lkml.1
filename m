@@ -1,83 +1,253 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757742AbYEPRRD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759046AbYEPRRa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757742AbYEPRRD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 13:17:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbYEPRQu
+	id S1759046AbYEPRRa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 13:17:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbYEPRRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 13:16:50 -0400
-Received: from lucidpixels.com ([75.144.35.66]:45718 "EHLO lucidpixels.com"
+	Fri, 16 May 2008 13:17:10 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:33645 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751241AbYEPRQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 13:16:49 -0400
-Date: Fri, 16 May 2008 13:16:48 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: David Greaves <david@dgreaves.com>
-cc: David Chinner <dgc@sgi.com>, LinuxRaid <linux-raid@vger.kernel.org>,
-       xfs@oss.sgi.com,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>
-Subject: Re: Regression- XFS won't mount on partitioned md array
-In-Reply-To: <482DC043.5000307@dgreaves.com>
-Message-ID: <alpine.DEB.1.10.0805161316100.3118@p34.internal.lan>
-References: <482DC043.5000307@dgreaves.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	id S1758067AbYEPRRG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 13:17:06 -0400
+Subject: Re: [PATCH] Fix DIO EIO error caused by race between
+	jbd_commit_transaction() and journal_try_to_drop_buffers()
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: cmm@us.ibm.com
+Cc: Josef Bacik <jbacik@redhat.com>, Jan Kara <jack@suse.cz>,
+       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1210957894.3608.23.camel@localhost.localdomain>
+References: <20080505170636.GK25722@duck.suse.cz>
+	 <1210372072.3639.52.camel@localhost.localdomain>
+	 <20080512155419.GD15856@duck.suse.cz>
+	 <1210639184.3661.43.camel@localhost.localdomain>
+	 <20080513145449.GC20806@duck.suse.cz>
+	 <1210717389.3638.24.camel@localhost.localdomain>
+	 <20080514170856.GH24363@duck.suse.cz>
+	 <1210786872.3657.48.camel@localhost.localdomain>
+	 <20080514181444.GI24363@duck.suse.cz>
+	 <1210947250.3608.18.camel@localhost.localdomain>
+	 <20080516150146.GA21018@unused.rdu.redhat.com>
+	 <1210957894.3608.23.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 16 May 2008 10:17:19 -0700
+Message-Id: <1210958239.4231.34.camel@badari-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+On Fri, 2008-05-16 at 10:11 -0700, Mingming Cao wrote:
+> On Fri, 2008-05-16 at 11:01 -0400, Josef Bacik wrote:
+> 
+> > 
+> > Got a couple of whitespace problems above it looks like.  Thanks,
+> > 
+> 
+> Thanks for catching this, below is updated patch, fixed the whitespace
+> and comments.
+> 
+> 
+> ---------------------------------------------------
+> JBD: fix journal_try_to_free_buffers race with
+> journal_commit_transaction
+> 
+> From: Mingming Cao <cmm@us.ibm.com>
+> 
+> This patch fixed a few races between direct IO and kjournld commit
+> transaction.
+> An unexpected EIO error gets returned to direct IO caller when it failed
+> to
+> free those data buffers. This could be reproduced easily with parallel 
+> direct write and buffered write to the same file
+> 
+> More specificly, those races could cause journal_try_to_free_buffers()
+> fail to free the data buffers, when jbd is committing the transaction
+> that has
+> those data buffers on its t_syncdata_list or t_locked_list. 
+> journal_commit_transaction() still holds the reference to those buffers
+>  before data reach to disk and buffers are removed from the 
+> t_syncdata_list of t_locked_list. This prevent the concurrent 
+> journal_try_to_free_buffers() to free those buffers at the same time,
+> but cause
+> EIO error returns back to direct IO.
+> 
+> With this patch, in case of direct IO and when try_to_free_buffers()
+> failed,
+> let's waiting for journal_commit_transaction() to finish
+> flushing the current committing transaction's data buffers to disk, 
+> then try to free those buffers again.
+> 
+> Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+> Reviewed-by: Badari Pulavarty <pbadari@us.ibm.com> 
+> ---
+>  fs/jbd/commit.c      |    1 +
+>  fs/jbd/journal.c     |    1 +
+>  fs/jbd/transaction.c |   46
+> ++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/jbd.h  |    3 +++
+>  4 files changed, 51 insertions(+)
+> 
+> Index: linux-2.6.26-rc1/include/linux/jbd.h
+> ===================================================================
+> --- linux-2.6.26-rc1.orig/include/linux/jbd.h	2008-05-14
+> 16:36:41.000000000 -0700
+> +++ linux-2.6.26-rc1/include/linux/jbd.h	2008-05-15 14:12:10.000000000
+> -0700
+> @@ -667,6 +667,9 @@ struct journal_s
+>  	 */
+>  	wait_queue_head_t	j_wait_transaction_locked;
+> 
+> +	/* Wait queu for waiting for data buffers to flushed to disk*/
+> +	wait_queue_head_t	j_wait_data_flushed;
+> +
+>  	/* Wait queue for waiting for checkpointing to complete */
+>  	wait_queue_head_t	j_wait_logspace;
+> 
+> Index: linux-2.6.26-rc1/fs/jbd/commit.c
+> ===================================================================
+> --- linux-2.6.26-rc1.orig/fs/jbd/commit.c	2008-05-03 11:59:44.000000000
+> -0700
+> +++ linux-2.6.26-rc1/fs/jbd/commit.c	2008-05-15 14:12:46.000000000 -0700
+> @@ -462,6 +462,7 @@ void journal_commit_transaction(journal_
+>  	 * clean by now, so check that it is in fact empty.
+>  	 */
+>  	J_ASSERT (commit_transaction->t_sync_datalist == NULL);
+> +	wake_up(&journal->j_wait_data_flushed)
+> 
+>  	jbd_debug (3, "JBD: commit phase 3\n");
+> 
+> Index: linux-2.6.26-rc1/fs/jbd/journal.c
+> ===================================================================
+> --- linux-2.6.26-rc1.orig/fs/jbd/journal.c	2008-05-14 16:36:41.000000000
+> -0700
+> +++ linux-2.6.26-rc1/fs/jbd/journal.c	2008-05-15 14:13:02.000000000
+> -0700
+> @@ -660,6 +660,7 @@ static journal_t * journal_init_common (
+>  		goto fail;
+> 
+>  	init_waitqueue_head(&journal->j_wait_transaction_locked);
+> +	init_waitqueue_head(&journal->j_wait_data_flushed);
+>  	init_waitqueue_head(&journal->j_wait_logspace);
+>  	init_waitqueue_head(&journal->j_wait_done_commit);
+>  	init_waitqueue_head(&journal->j_wait_checkpoint);
+> Index: linux-2.6.26-rc1/fs/jbd/transaction.c
+> ===================================================================
+> --- linux-2.6.26-rc1.orig/fs/jbd/transaction.c	2008-05-03
+> 11:59:44.000000000 -0700
+> +++ linux-2.6.26-rc1/fs/jbd/transaction.c	2008-05-16 09:27:21.000000000
+> -0700
+> @@ -1648,12 +1648,49 @@ out:
+>  	return;
+>  }
+> 
+> +/*
+> + * journal_try_to_free_buffers() could race with
+> journal_commit_transaction()
+> + * The later might still hold the reference count to the buffers when
+> inspecting
+> + * them on t_syncdata_list or t_locked_list.
+> + *
+> + * Journal_try_to_free_buffers() will call this function to
+> + * wait for the current transaction finishing syncing data buffers,
+> before
+> + * try to free that buffer.
+> + *
+> + * Called with journal->j_state_lock hold.
 
-On Fri, 16 May 2008, David Greaves wrote:
+Fix wrapping lines ?
 
-> I just attempted a kernel upgrade from 2.6.20.7 to 2.6.25.3 and it no longer
-> mounts my xfs filesystem.
->
-> I bisected it to around
-> a67d7c5f5d25d0b13a4dfb182697135b014fa478
-> [XFS] Move platform specific mount option parse out of core XFS code
->
-> I have a RAID5 array with partitions:
->
-> Partition Table for /dev/md_d0
->
->               First       Last
-> # Type       Sector      Sector   Offset    Length   Filesystem Type (ID) Flag
-> -- ------- ----------- ----------- ------ ----------- -------------------- ----
-> 1 Primary           0  2500288279      4  2500288280 Linux (83)           None
-> 2 Primary  2500288280  2500483583      0      195304 Non-FS data (DA)     None
->
->
-> when I attempt to mount /media:
-> /dev/md_d0p1 /media xfs rw,nobarrier,noatime,logdev=/dev/md_d0p2,allocsize=512m 0 0
->
-> I get:
-> md_d0: p1 p2
-> XFS mounting filesystem md_d0p1
-> attempt to access beyond end of device
-> md_d0p2: rw=0, want=195311, limit=195304
-> I/O error in filesystem ("md_d0p1") meta-data dev md_d0p2 block 0x2fae7
-> ("xlog_bread") error 5 buf count 512
-> XFS: empty log check failed
-> XFS: log mount/recovery failed: error 5
-> XFS: log mount failed
->
-> A repair:
->  xfs_repair /dev/md_d0p1 -l /dev/md_d0p2
-> gives no errors.
->
-> Phase 1 - find and verify superblock...
-> Phase 2 - using external log on /dev/md_d0p2
->        - zero log...
->        - scan filesystem freespace and inode maps...
->        - found root inode chunk
-> ...
->
->
-> David
->
->
+> + */
+> +static void journal_wait_for_transaction_sync_data(journal_t *journal)
+> +{
+> +	transaction_t *transaction = NULL;
+> +
+> +	transaction = journal->j_committing_transaction;
+> +
+> +	if (!transaction)
+> +		return;
+> +
+> +	/*
+> +	 * If the current transaction is flushing and waiting for data buffers
+> +	 * (t_state is T_FLUSH), wait for the j_wait_data_flushed event
+> +	 */
+> +	if (transaction->t_state == T_FLUSH) {
+> +		DEFINE_WAIT(wait);
+> +
+> +		prepare_to_wait(&journal->j_wait_data_flushed,
+> +			&wait, TASK_UNINTERRUPTIBLE);
+> +		spin_unlock(&journal->j_state_lock);
+> +		schedule();
+> +		finish_wait(&journal->j_wait_data_flushed, &wait);
+> +		spin_lock(&journal->j_state_lock);
+> +	}
+> +	return;
+> +}
+> 
+>  /**
+>   * int journal_try_to_free_buffers() - try to free page buffers.
+>   * @journal: journal for operation
+>   * @page: to try and free
+> - * @unused_gfp_mask: unused
+> + * @gfp_mask: unused for allocation purpose. Here is used
+> + * 	      as a flag to tell if direct IO is attemping to free buffers.
+>   *
+>   *
+>   * For all the buffers on this page,
+> @@ -1682,13 +1719,16 @@ out:
+>   * journal_try_to_free_buffer() is changing its state.  But that
+>   * cannot happen because we never reallocate freed data as metadata
+>   * while the data is part of a transaction.  Yes?
+> + *
+> + * Return 0 on failure, 1 on success
+>   */
+>  int journal_try_to_free_buffers(journal_t *journal,
+> -				struct page *page, gfp_t unused_gfp_mask)
+> +				struct page *page, gfp_t gfp_mask)
+>  {
+>  	struct buffer_head *head;
+>  	struct buffer_head *bh;
+>  	int ret = 0;
+> +	int dio = gfp_mask & __GFP_REPEAT;
+> 
+>  	J_ASSERT(PageLocked(page));
+> 
+> @@ -1713,7 +1753,31 @@ int journal_try_to_free_buffers(journal_
+>  		if (buffer_jbd(bh))
+>  			goto busy;
+>  	} while ((bh = bh->b_this_page) != head);
+> +
+>  	ret = try_to_free_buffers(page);
+> +
+> + 	/*
+> +	 * In the case of concurrent direct IO and buffered IO,
+> +	 * There are a number of places where we
+> +	 * could race with journal_commit_transaction(), the later still
+> +	 * helds the reference to the buffers to free while processing them.
+> +	 * try_to_free_buffers() failed to free those buffers,
+> +	 * resulting in an unexpected EIO error
+> +	 * returns back to the generic_file_direct_IO()
+> +	 *
+> +	 * So let's wait for the current transaction finished flush
+> +	 * dirty data buffers before we try to free those buffers
+> +	 * again. This wait is needed by direct IO code path only,
+> +	 * gfp_mask __GFP_REPEAT is passed from the direct IO code
+> +	 * path to flag if we need to wait and retry free buffers.
+> +	 */
+> +	if (ret == 0 && dio) {
 
-Ouch, still on 2.6.25.1 here, didn't reboot yet, but I do not use 
-mdraid'ed partitions, just regular mdraid, if you boot back to 2.6.20.7 
-does it work again?
+drop "dio" variable and compare here, like 
+	  if (ret == 0 && (gfp_mask & __GFP_REPEAT)
+
+> +        	spin_lock(&journal->j_state_lock);
+> +		journal_wait_for_transaction_sync_data(journal);
+> +		ret = try_to_free_buffers(page);
+> +		spin_unlock(&journal->j_state_lock);
+> +	}
+
+Thanks,
+Badari
+
