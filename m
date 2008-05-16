@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762839AbYEPOys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760191AbYEPOzM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762839AbYEPOys (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 10:54:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750924AbYEPOnl
+	id S1760191AbYEPOzM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 10:55:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758279AbYEPOnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 10:43:41 -0400
-Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49330 "EHLO
+	Fri, 16 May 2008 10:43:32 -0400
+Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49333 "EHLO
 	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756660AbYEPOma (ORCPT
+	with ESMTP id S1756699AbYEPOmc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 10:42:30 -0400
+	Fri, 16 May 2008 10:42:32 -0400
 From: hooanon05@yahoo.co.jp
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Junjiro Okajima <hooanon05@yahoo.co.jp>
-Subject: [PATCH 59/67] aufs misc functions, source
-Date: Fri, 16 May 2008 23:33:13 +0900
-Message-Id: <12109484021382-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [PATCH 61/67] aufs debug print functions, source
+Date: Fri, 16 May 2008 23:33:15 +0900
+Message-Id: <12109484021767-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <12109484023487-git-send-email-hooanon05@yahoo.co.jp>
+In-Reply-To: <12109484022031-git-send-email-hooanon05@yahoo.co.jp>
 References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <12109484012532-git-send-email-hooanon05@yahoo.co.jp> <12109484012997-git-send-email-hooanon05@yahoo.co.jp> <12109484013051-git-send-email-hooanon05@yahoo.co.jp> <12109484013436-git-send-email-hooanon05@yahoo.co.jp> <1210948401415-git-send-email-hooanon05@yahoo.co.jp> <12109484011533-git-send-email-hooanon05@yahoo.co.jp> <1210948401506-git-send-email-hooanon05@yahoo.co.jp> <12109484013156-git-send-email-hooanon05@yahoo.co.jp> <12109484012724-git-send-email-hooanon05@yahoo.co.jp> <12109484013264-git-send-email-hooanon05@yahoo.co.jp> <12109484012658-git-send-email-hooanon05@yahoo.co.jp> <12109484011282-git-send-email-hooanon05@yahoo.co.jp> <12109484012543-git-send-email-hooanon05@yahoo.co.jp> <12109484013834-git-send-email-hooanon05@yahoo.co.jp> <12109484012213-git-send-email-hooanon05@yahoo.co.jp> <12109484012301-git-send-email-hooanon05@yahoo.co.jp> <1210948401175-git-send-email-hooanon05@yahoo.co.jp> <1210948!
  4013702-git-send-email-hooanon05@yahoo.co.jp> <12109484012871-git-send-email-hooanon05@yahoo.co.jp> <12109484013438-git-send-email-hooanon05@yahoo.co.jp> <12109484013559-git-send-email-hooanon05@yahoo.co.jp> <12109484012111-git-send-email-hooanon05@yahoo.co.jp> <1210948401543-git-send-email-hooanon05@yahoo.co.jp> <1210948401147-git-send-email-hooanon05@yahoo.co.jp> <12109484012904-git-send-email-hooanon05@yahoo.co.jp> <121094840127-git-send-email-hooanon05@yahoo.co.jp> <12109484011862-git-send-email-hooanon05@yahoo.co.jp> <12109484011143-git-send-email-hooanon05@yahoo.co.jp> <12109484011867-git-send-email-hooanon05@yahoo.co.jp> <12109484021033-git-send-email-hooanon05@yahoo.co.jp> <12109484021234-git-send-email-hooanon05@yahoo.co.jp> <12109484022680-git-send-email-hooanon05@yahoo.co.jp> <12109484021974-git-send-email-hooanon05@yahoo.co.jp> <12109484021281-git-send-email-hooanon05@yahoo.co.jp> <12109484022659-git-send-email-hooanon05@yahoo.co.jp> <12109484023036-git-send-ema!
  il-hooanon05@yahoo.co.jp> <12109484021939-git-send-email-hooanon05@yahoo.co.jp> <12109484022745-git-send-email-hooanon05@yahoo.co.jp> <12109484023224-git-send-email-hooanon05@yahoo.co.jp> <12109484023618-git-send-email-hooanon05@yahoo.co.jp> <12109484023820-git-send-email-hooanon05@yahoo.co.jp> <12109484021927-git-send-email
@@ -28,19 +28,19 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Junjiro Okajima <hooanon05@yahoo.co.jp>
 
 	initial commit
-	aufs misc functions, source
+	aufs debug print functions, source
 
 Signed-off-by: Junjiro Okajima <hooanon05@yahoo.co.jp>
 ---
- fs/aufs/misc.c |  307 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 307 insertions(+), 0 deletions(-)
+ fs/aufs/debug.c |  485 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 485 insertions(+), 0 deletions(-)
 
-diff --git a/fs/aufs/misc.c b/fs/aufs/misc.c
+diff --git a/fs/aufs/debug.c b/fs/aufs/debug.c
 new file mode 100644
-index 0000000..edb5f7c
+index 0000000..e6e178d
 --- /dev/null
-+++ b/fs/aufs/misc.c
-@@ -0,0 +1,307 @@
++++ b/fs/aufs/debug.c
+@@ -0,0 +1,485 @@
 +/*
 + * Copyright (C) 2005-2008 Junjiro Okajima
 + *
@@ -60,293 +60,471 @@ index 0000000..edb5f7c
 + */
 +
 +/*
-+ * $Id: misc.c,v 1.5 2008/05/12 00:27:16 sfjro Exp $
++ * debug print functions
++ *
++ * $Id: debug.c,v 1.2 2008/04/21 01:33:00 sfjro Exp $
 + */
 +
-+//#include <linux/fs.h>
-+//#include <linux/namei.h>
-+//#include <linux/mm.h>
-+//#include <asm/uaccess.h>
++//#include <linux/errno.h>
 +#include "aufs.h"
 +
-+void *au_kzrealloc(void *p, unsigned int nused, unsigned int new_sz, gfp_t gfp)
-+{
-+	void *q;
++atomic_t au_cond = ATOMIC_INIT(0);
 +
-+	LKTRTrace("p %p, nused %d, sz %d\n", p, nused, new_sz);
-+	AuDebugOn(new_sz <= 0);
-+	if (new_sz <= nused)
-+		return p;
-+
-+	q = krealloc(p, new_sz, gfp);
-+	if (q)
-+		memset(q + nused, 0, new_sz - nused);
-+	return q;
-+}
++char *au_plevel = KERN_DEBUG;
++#define dpri(fmt, arg...) do { \
++	if (LktrCond) \
++		printk("%s" fmt, au_plevel, ##arg); \
++} while (0)
 +
 +/* ---------------------------------------------------------------------- */
 +
-+struct nameidata *au_dup_nd(struct au_sbinfo *sbinfo, struct nameidata *dst,
-+			    struct nameidata *src)
++void au_dpri_whlist(struct au_nhash *whlist)
 +{
-+	LKTRTrace("src %p\n", src);
++	int i;
++	struct hlist_head *head;
++	struct au_vdir_wh *tpos;
++	struct hlist_node *pos;
 +
-+	if (src) {
-+		*dst = *src;
-+		dst->flags &= ~LOOKUP_PARENT;
-+		if (sbinfo->si_wbr_create == AuWbrCreate_TDP) {
-+			if ((dst->flags & LOOKUP_CREATE)
-+			    && !(dst->intent.open.flags & O_CREAT))
-+				dst->flags &= ~LOOKUP_CREATE;
-+		} else {
-+			dst->flags &= ~LOOKUP_CREATE;
-+			dst->intent.open.flags &= ~O_CREAT;
++	for (i = 0; i < AuSize_NHASH; i++) {
++		head = whlist->heads + i;
++		hlist_for_each_entry(tpos, pos, head, wh_hash)
++			dpri("b%d, %.*s, %d\n",
++			     tpos->wh_bindex,
++			     tpos->wh_str.len, tpos->wh_str.name,
++			     tpos->wh_str.len);
++	}
++}
++
++void au_dpri_vdir(struct au_vdir *vdir)
++{
++	int i;
++	union au_vdir_deblk_p p;
++	unsigned char *o;
++
++	if (!vdir || IS_ERR(vdir)) {
++		dpri("err %ld\n", PTR_ERR(vdir));
++		return;
++	}
++
++	dpri("nblk %d, deblk %p, last{%d, %p}, ver %lu\n",
++	     vdir->vd_nblk, vdir->vd_deblk,
++	     vdir->vd_last.i, vdir->vd_last.p.p, vdir->vd_version);
++	for (i = 0; i < vdir->vd_nblk; i++) {
++		p.deblk = vdir->vd_deblk[i];
++		o = p.p;
++		dpri("[%d]: %p\n", i, o);
++#if 0 // verbose
++		int j;
++		for (j = 0; j < 8; j++) {
++			dpri("%p(+%d) {%02x %02x %02x %02x %02x %02x %02x %02x "
++			     "%02x %02x %02x %02x %02x %02x %02x %02x}\n",
++			     p.p, p.p - o,
++			     p.p[0], p.p[1], p.p[2], p.p[3],
++			     p.p[4], p.p[5], p.p[6], p.p[7],
++			     p.p[8], p.p[9], p.p[10], p.p[11],
++			     p.p[12], p.p[13], p.p[14], p.p[15]);
++			p.p += 16;
 +		}
-+	} else
-+		dst = NULL;
-+
-+	return dst;
++#endif
++	}
 +}
 +
-+#ifdef CONFIG_AUFS_FAKE_DM
-+struct nameidata *au_fake_dm(struct nameidata *fake_nd, struct nameidata *nd,
-+			     struct super_block *sb, aufs_bindex_t bindex)
++static int do_pri_inode(aufs_bindex_t bindex, struct inode *inode,
++			struct dentry *wh)
 +{
-+	LKTRTrace("nd %p, b%d\n", nd, bindex);
++	char *n = NULL;
++	int l = 0, ntfy = 0;
 +
-+	if (!nd)
-+		return NULL;
++	if (!inode || IS_ERR(inode)) {
++		dpri("i%d: err %ld\n", bindex, PTR_ERR(inode));
++		return -1;
++	}
 +
-+	fake_nd->path.dentry = NULL;
-+	fake_nd->path.mnt = NULL;
-+	return fake_nd;
++	/* the type of i_blocks depends upon CONFIG_LSF */
++	BUILD_BUG_ON(sizeof(inode->i_blocks) != sizeof(unsigned long)
++		     && sizeof(inode->i_blocks) != sizeof(u64));
++	if (wh) {
++		n = (void *)wh->d_name.name;
++		l = wh->d_name.len;
++	}
++
++	ntfy = au_test_inotify(inode);
++	dpri("i%d: i%lu, %s, cnt %d, nl %u, 0%o, ntfy %d, sz %Lu, blk %Lu,"
++	     " ct %Ld, np %lu, st 0x%lx, f 0x%x, g %x%s%.*s\n",
++	     bindex,
++	     inode->i_ino, inode->i_sb ? au_sbtype(inode->i_sb) : "??",
++	     atomic_read(&inode->i_count), inode->i_nlink, inode->i_mode,
++	     ntfy,
++	     i_size_read(inode), (u64)inode->i_blocks,
++	     timespec_to_ns(&inode->i_ctime) & 0x0ffff,
++	     inode->i_mapping ? inode->i_mapping->nrpages : 0,
++	     inode->i_state, inode->i_flags, inode->i_generation,
++	     l ? ", wh " : "", l, n);
++	return 0;
 +}
 +
-+void au_fake_dm_release(struct nameidata *fake_nd)
++void au_dpri_inode(struct inode *inode)
 +{
-+	/* empty */
-+}
-+
-+int au_h_create(struct inode *h_dir, struct dentry *h_dentry, int mode,
-+		int dlgt, struct nameidata *nd, struct vfsmount *nfsmnt)
-+{
++	struct au_iinfo *iinfo;
++	aufs_bindex_t bindex;
 +	int err;
 +
-+	LKTRTrace("hi%lu, %.*s, 0%o, nd %d, nfsmnt %d\n",
-+		  h_dir->i_ino, AuDLNPair(h_dentry), mode, !!nd, !!nfsmnt);
++	err = do_pri_inode(-1, inode, NULL);
++	if (err || !au_test_aufs(inode->i_sb))
++		return;
 +
-+	err = -ENOSYS;
-+	if (!nfsmnt)
-+		err = vfsub_create(h_dir, h_dentry, mode, /*nd*/NULL, dlgt);
-+
-+	AuTraceErr(err);
-+	return err;
++	iinfo = au_ii(inode);
++	if (!iinfo)
++		return;
++	dpri("i-1: bstart %d, bend %d, gen %d\n",
++	     iinfo->ii_bstart, iinfo->ii_bend, au_iigen(inode));
++	if (iinfo->ii_bstart < 0)
++		return;
++	for (bindex = iinfo->ii_bstart; bindex <= iinfo->ii_bend; bindex++)
++		do_pri_inode(bindex, iinfo->ii_hinode[0 + bindex].hi_inode,
++			     iinfo->ii_hinode[0 + bindex].hi_whdentry);
 +}
++
++static int do_pri_dentry(aufs_bindex_t bindex, struct dentry *dentry,
++			 struct list_head *intent)
++{
++	struct dentry *wh = NULL;
++
++	if (!dentry || IS_ERR(dentry)) {
++		dpri("d%d: err %ld\n", bindex, PTR_ERR(dentry));
++		return -1;
++	}
++	/* do not call dget_parent() here */
++	dpri("d%d: %.*s/%.*s, %s, cnt %d, flags 0x%x, intent %d\n",
++	     bindex,
++	     AuDLNPair(dentry->d_parent), AuDLNPair(dentry),
++	     dentry->d_sb ? au_sbtype(dentry->d_sb) : "??",
++	     atomic_read(&dentry->d_count), dentry->d_flags, !!intent);
++	if (bindex >= 0 && dentry->d_inode && au_test_aufs(dentry->d_sb)) {
++		struct au_iinfo *iinfo = au_ii(dentry->d_inode);
++		if (iinfo)
++			wh = iinfo->ii_hinode[0 + bindex].hi_whdentry;
++	}
++	do_pri_inode(bindex, dentry->d_inode, wh);
++	return 0;
++}
++
++static struct list_head *au_dbg_h_intent(struct au_dinfo *dinfo,
++					 aufs_bindex_t bindex)
++{
++#ifdef CONFIG_AUFS_BR_NFS
++	return dinfo->di_hdentry[0 + bindex].hd_intent_list;
 +#else
-+struct nameidata *au_fake_dm(struct nameidata *fake_nd, struct nameidata *nd,
-+			     struct super_block *sb, aufs_bindex_t bindex)
-+{
-+	LKTRTrace("nd %p, b%d\n", nd, bindex);
-+
-+	if (!nd)
-+		return NULL;
-+
-+	DiMustAnyLock(nd->path.dentry);
-+
-+	fake_nd->path.dentry = NULL;
-+	fake_nd->path.mnt = NULL;
-+
-+	if (bindex <= au_dbend(nd->path.dentry))
-+		fake_nd->path.dentry = au_h_dptr(nd->path.dentry, bindex);
-+	if (fake_nd->path.dentry) {
-+		fake_nd->path.mnt = au_sbr_mnt(sb, bindex);
-+		AuDebugOn(!fake_nd->path.mnt);
-+		path_get(&fake_nd->path);
-+	} else
-+		fake_nd = ERR_PTR(-ENOENT);
-+
-+	AuTraceErrPtr(fake_nd);
-+	return fake_nd;
++	return NULL;
++#endif
 +}
 +
-+void au_fake_dm_release(struct nameidata *fake_nd)
++void au_dpri_dentry(struct dentry *dentry)
 +{
-+	if (fake_nd)
-+		path_put(&fake_nd->path);
-+}
-+
-+int au_h_create(struct inode *h_dir, struct dentry *h_dentry, int mode,
-+		int dlgt, struct nameidata *nd, struct vfsmount *nfsmnt)
-+{
++	struct au_dinfo *dinfo;
++	aufs_bindex_t bindex;
 +	int err;
 +
-+	LKTRTrace("hi%lu, %.*s, 0%o, nd %d, nfsmnt %d\n",
-+		  h_dir->i_ino, AuDLNPair(h_dentry), mode, !!nd, !!nfsmnt);
++	err = do_pri_dentry(-1, dentry, NULL);
++	if (err || !au_test_aufs(dentry->d_sb))
++		return;
 +
-+	err = -ENOSYS;
-+	if (!nfsmnt)
-+		err = vfsub_create(h_dir, h_dentry, mode, /*nd*/NULL, dlgt);
-+	else {
-+		struct nameidata fake_nd;
++	dinfo = au_di(dentry);
++	if (!dinfo)
++		return;
++	dpri("d-1: bstart %d, bend %d, bwh %d, bdiropq %d, gen %d\n",
++	     dinfo->di_bstart, dinfo->di_bend,
++	     dinfo->di_bwh, dinfo->di_bdiropq, au_digen(dentry));
++	if (dinfo->di_bstart < 0)
++		return;
++	for (bindex = dinfo->di_bstart; bindex <= dinfo->di_bend; bindex++)
++		do_pri_dentry(bindex, dinfo->di_hdentry[0 + bindex].hd_dentry,
++			      au_dbg_h_intent(dinfo, bindex));
++}
 +
-+		if (nd)
-+			fake_nd = *nd;
-+		else
-+			memset(&fake_nd, 0, sizeof(fake_nd));
-+		fake_nd.path.dentry = h_dentry;
-+		fake_nd.path.mnt = nfsmnt;
-+		path_get(&fake_nd.path);
-+		fake_nd.flags = LOOKUP_CREATE;
-+		fake_nd.intent.open.flags = O_CREAT | FMODE_READ;
-+		fake_nd.intent.open.create_mode = mode;
++static int do_pri_file(aufs_bindex_t bindex, struct file *file)
++{
++	char a[32];
 +
-+		err = vfsub_create(h_dir, h_dentry, mode, &fake_nd, dlgt);
-+		path_put(&fake_nd.path);
++	if (!file || IS_ERR(file)) {
++		dpri("f%d: err %ld\n", bindex, PTR_ERR(file));
++		return -1;
++	}
++	a[0] = 0;
++	if (bindex < 0
++	    && file->f_dentry
++	    && au_test_aufs(file->f_dentry->d_sb)
++	    && au_fi(file))
++		snprintf(a, sizeof(a), ", mmapped %d", au_test_mmapped(file));
++	dpri("f%d: mode 0x%x, flags 0%o, cnt %d, pos %Lu%s\n",
++	     bindex, file->f_mode, file->f_flags, file_count(file),
++	     file->f_pos, a);
++	if (file->f_dentry)
++		do_pri_dentry(bindex, file->f_dentry, NULL);
++	return 0;
++}
++
++void au_dpri_file(struct file *file)
++{
++	struct au_finfo *finfo;
++	aufs_bindex_t bindex;
++	int err;
++
++	err = do_pri_file(-1, file);
++	if (err || !file->f_dentry || !au_test_aufs(file->f_dentry->d_sb))
++		return;
++
++	finfo = au_fi(file);
++	if (!finfo)
++		return;
++	if (finfo->fi_bstart < 0)
++		return;
++	for (bindex = finfo->fi_bstart; bindex <= finfo->fi_bend; bindex++) {
++		struct au_hfile *hf;
++		//dpri("bindex %d\n", bindex);
++		hf = finfo->fi_hfile + bindex;
++		do_pri_file(bindex, hf ? hf->hf_file : NULL);
++	}
++}
++
++static int do_pri_br(aufs_bindex_t bindex, struct au_branch *br)
++{
++	struct vfsmount *mnt;
++	struct super_block *sb;
++
++	if (!br || IS_ERR(br)
++	    || !(mnt = br->br_mnt) || IS_ERR(mnt)
++	    || !(sb = mnt->mnt_sb) || IS_ERR(sb)) {
++		dpri("s%d: err %ld\n", bindex, PTR_ERR(br));
++		return -1;
 +	}
 +
-+	AuTraceErr(err);
-+	return err;
++	dpri("s%d: {perm 0x%x, cnt %d}, "
++	     "%s, flags 0x%lx, cnt(BIAS) %d, active %d, xino %d\n",
++	     bindex, br->br_perm, au_br_count(br),
++	     au_sbtype(sb), sb->s_flags, sb->s_count - S_BIAS,
++	     atomic_read(&sb->s_active), !!br->br_xino);
++	return 0;
 +}
-+#endif /* CONFIG_AUFS_FAKE_DM */
++
++void au_dpri_sb(struct super_block *sb)
++{
++	struct au_sbinfo *sbinfo;
++	aufs_bindex_t bindex;
++	int err;
++	struct vfsmount mnt = { .mnt_sb = sb };
++	struct au_branch fake = {
++		.br_perm = 0,
++		.br_mnt = &mnt,
++		.br_count = ATOMIC_INIT(0),
++		.br_xino = NULL
++	};
++
++	atomic_set(&fake.br_count, 0);
++	smp_mb(); /* atomic_set */
++	err = do_pri_br(-1, &fake);
++	dpri("dev 0x%x\n", sb->s_dev);
++	if (err || !au_test_aufs(sb))
++		return;
++
++	sbinfo = au_sbi(sb);
++	if (!sbinfo)
++		return;
++	for (bindex = 0; bindex <= sbinfo->si_bend; bindex++) {
++		//dpri("bindex %d\n", bindex);
++		do_pri_br(bindex, sbinfo->si_branch[0 + bindex]);
++	}
++}
 +
 +/* ---------------------------------------------------------------------- */
 +
-+int au_copy_file(struct file *dst, struct file *src, loff_t len,
-+		 struct super_block *sb)
++void au_dbg_sleep(int sec)
 +{
-+	int err, all_zero;
-+	unsigned long blksize;
-+	char *buf;
-+	struct vfsub_args vargs;
-+	/* reduce stack space */
-+	struct iattr *ia;
++	static DECLARE_WAIT_QUEUE_HEAD(wq);
++	wait_event_timeout(wq, 0, sec * HZ);
++}
 +
-+	LKTRTrace("%.*s, %.*s\n",
-+		  AuDLNPair(dst->f_dentry), AuDLNPair(src->f_dentry));
-+	AuDebugOn(!(dst->f_mode & FMODE_WRITE));
-+#ifdef CONFIG_AUFS_DEBUG
++/* ---------------------------------------------------------------------- */
++
++void au_debug_sbinfo_init(struct au_sbinfo *sbinfo)
++{
++#ifdef ForceInotify
++	au_opt_set_udba(sbinfo->si_mntflags, UDBA_INOTIFY);
++#endif
++#ifdef ForceDlgt
++	au_opt_set(sbinfo->si_mntflags, DLGT);
++#endif
++#ifdef ForceNoPlink
++	au_opt_clr(sbinfo->si_mntflags, PLINK);
++#endif
++#ifdef ForceNoXino
++	au_opt_clr(sbinfo->si_mntflags, XINO);
++#endif
++#ifdef ForceNoRefrof
++	au_opt_clr(sbinfo->si_mntflags, REFROF);
++#endif
++}
++
++int __init au_debug_init(void)
++{
++	aufs_bindex_t bindex;
++	struct au_vdir_destr destr;
++
++	bindex = -1;
++	AuDebugOn(bindex >= 0);
++
++	destr.len = -1;
++	AuDebugOn(destr.len < NAME_MAX);
++
++#ifdef CONFIG_4KSTACKS
++	AuWarn("CONFIG_4KSTACKS is defined.\n");
++#endif
++
++#if 0 // verbose debug
 +	{
-+		struct dentry *parent;
-+		parent = dget_parent(dst->f_dentry);
-+		IMustLock(parent->d_inode);
-+		dput(parent);
++		union {
++			struct au_branch *br;
++			struct au_dinfo *di;
++			struct au_finfo *fi;
++			struct au_iinfo *ii;
++			struct au_hinode *hi;
++			struct au_sbinfo *si;
++			struct au_vdir_destr *destr;
++			struct au_vdir_de *de;
++			struct au_vdir_wh *wh;
++			struct au_vdir *vd;
++		} u;
++
++		pr_info("br{"
++			"xino %d, "
++			"id %d, perm %d, mnt %d, count %d, "
++			"wh_sem %d, wh %d, run %d, plink %d, "
++			"xup %d, xrun %d, "
++			"by %d, "
++			"gen %d, "
++			"sa %d} %d\n",
++			offsetof(typeof(*u.br), br_xino),
++			offsetof(typeof(*u.br), br_id),
++			offsetof(typeof(*u.br), br_perm),
++			offsetof(typeof(*u.br), br_mnt),
++			offsetof(typeof(*u.br), br_count),
++			offsetof(typeof(*u.br), br_wh_rwsem),
++			offsetof(typeof(*u.br), br_wh),
++			offsetof(typeof(*u.br), br_wh_running),
++			offsetof(typeof(*u.br), br_plink),
++			offsetof(typeof(*u.br), br_xino_upper),
++			offsetof(typeof(*u.br), br_xino_running),
++			offsetof(typeof(*u.br), br_bytes),
++			offsetof(typeof(*u.br), br_generation),
++			offsetof(typeof(*u.br), br_sabr),
++			sizeof(*u.br));
++		pr_info("di{gen %d, rwsem %d, bstart %d, bend %d, bwh %d, "
++			"bdiropq %d, hdentry %d} %d\n",
++			offsetof(typeof(*u.di), di_generation),
++			offsetof(typeof(*u.di), di_rwsem),
++			offsetof(typeof(*u.di), di_bstart),
++			offsetof(typeof(*u.di), di_bend),
++			offsetof(typeof(*u.di), di_bwh),
++			offsetof(typeof(*u.di), di_bdiropq),
++			offsetof(typeof(*u.di), di_hdentry),
++			sizeof(*u.di));
++		pr_info("fi{gen %d, rwsem %d, hfile %d, bstart %d, bend %d, "
++			"h_vm_ops %d, vdir_cach %d} %d\n",
++			offsetof(typeof(*u.fi), fi_generation),
++			offsetof(typeof(*u.fi), fi_rwsem),
++			offsetof(typeof(*u.fi), fi_hfile),
++			offsetof(typeof(*u.fi), fi_bstart),
++			offsetof(typeof(*u.fi), fi_bend),
++			offsetof(typeof(*u.fi), fi_h_vm_ops),
++			offsetof(typeof(*u.fi), fi_vdir_cache),
++			sizeof(*u.fi));
++		pr_info("ii{gen %d, hsb %d, "
++			"rwsem %d, bstart %d, bend %d, hinode %d, vdir %d} "
++			"%d\n",
++			offsetof(typeof(*u.ii), ii_generation),
++			offsetof(typeof(*u.ii), ii_hsb1),
++			offsetof(typeof(*u.ii), ii_rwsem),
++			offsetof(typeof(*u.ii), ii_bstart),
++			offsetof(typeof(*u.ii), ii_bend),
++			offsetof(typeof(*u.ii), ii_hinode),
++			offsetof(typeof(*u.ii), ii_vdir),
++			sizeof(*u.ii));
++		pr_info("hi{inode %d, id %d, notify %d, wh %d} %d\n",
++			offsetof(typeof(*u.hi), hi_inode),
++			offsetof(typeof(*u.hi), hi_id),
++			offsetof(typeof(*u.hi), hi_notify),
++			offsetof(typeof(*u.hi), hi_whdentry),
++			sizeof(*u.hi));
++		pr_info("si{nwt %d, rwsem %d, gen %d, stat %d, "
++			"bend %d, last id %d, br %d, "
++			"cpup %d, creat %d, ops %d, ops %d, "
++			"rr %d, mfs %d, "
++			"mntflags %d, "
++			"xread %d, xwrite %d, xib %d, xmtx %d, buf %d, "
++			"xlast %d, xnext %d, "
++			"rdcache %d, "
++			"dirwh %d, "
++			"pl_lock %d, pl %d, "
++			"mnt %d, "
++			"l %d, sys %d, "
++			//"lvma_l %d, lvma %d"
++			"} %d\n",
++			offsetof(typeof(*u.si), si_nowait),
++			offsetof(typeof(*u.si), si_rwsem),
++			offsetof(typeof(*u.si), si_generation),
++			offsetof(typeof(*u.si), au_si_status),
++			offsetof(typeof(*u.si), si_bend),
++			offsetof(typeof(*u.si), si_last_br_id),
++			offsetof(typeof(*u.si), si_branch),
++			offsetof(typeof(*u.si), si_wbr_copyup),
++			offsetof(typeof(*u.si), si_wbr_create),
++			offsetof(typeof(*u.si), si_wbr_copyup_ops),
++			offsetof(typeof(*u.si), si_wbr_create_ops),
++			offsetof(typeof(*u.si), si_wbr_rr_next),
++			offsetof(typeof(*u.si), si_wbr_mfs),
++			offsetof(typeof(*u.si), si_mntflags),
++			offsetof(typeof(*u.si), si_xread),
++			offsetof(typeof(*u.si), si_xwrite),
++			offsetof(typeof(*u.si), si_xib),
++			offsetof(typeof(*u.si), si_xib_mtx),
++			offsetof(typeof(*u.si), si_xib_buf),
++			offsetof(typeof(*u.si), si_xib_last_pindex),
++			offsetof(typeof(*u.si), si_xib_next_bit),
++			offsetof(typeof(*u.si), si_rdcache),
++			offsetof(typeof(*u.si), si_dirwh),
++			offsetof(typeof(*u.si), si_plink_lock),
++			offsetof(typeof(*u.si), si_plink),
++			offsetof(typeof(*u.si), si_mnt),
++			offsetof(typeof(*u.si), si_list),
++			offsetof(typeof(*u.si), si_sa),
++			//offsetof(typeof(*u.si), si_lvma_lock),
++			//offsetof(typeof(*u.si), si_lvma),
++			sizeof(*u.si));
++		pr_info("destr{len %d, name %d} %d\n",
++			offsetof(typeof(*u.destr), len),
++			offsetof(typeof(*u.destr), name),
++			sizeof(*u.destr));
++		pr_info("de{ino %d, type %d, str %d} %d\n",
++			offsetof(typeof(*u.de), de_ino),
++			offsetof(typeof(*u.de), de_type),
++			offsetof(typeof(*u.de), de_str),
++			sizeof(*u.de));
++		pr_info("wh{hash %d, bindex %d, str %d} %d\n",
++			offsetof(typeof(*u.wh), wh_hash),
++			offsetof(typeof(*u.wh), wh_bindex),
++			offsetof(typeof(*u.wh), wh_str),
++			sizeof(*u.wh));
++		pr_info("vd{deblk %d, nblk %d, last %d, ver %d, jiffy %d} %d\n",
++			offsetof(typeof(*u.vd), vd_deblk),
++			offsetof(typeof(*u.vd), vd_nblk),
++			offsetof(typeof(*u.vd), vd_last),
++			offsetof(typeof(*u.vd), vd_version),
++			offsetof(typeof(*u.vd), vd_jiffy),
++			sizeof(*u.vd));
 +	}
 +#endif
 +
-+	err = -ENOMEM;
-+	blksize = dst->f_dentry->d_sb->s_blocksize;
-+	if (!blksize || PAGE_SIZE < blksize)
-+		blksize = PAGE_SIZE;
-+	LKTRTrace("blksize %lu\n", blksize);
-+	buf = kmalloc(blksize, GFP_TEMPORARY);
-+	//buf = NULL;
-+	if (unlikely(!buf))
-+		goto out;
-+	ia = kmalloc(sizeof(*ia), GFP_TEMPORARY);
-+	if (unlikely(!ia))
-+		goto out_buf;
-+
-+#ifdef CONFIG_AUFS_DEBUG
-+	if (len > (1 << 22))
-+		AuWarn("copying a large file %Ld\n", (long long)len);
-+#endif
-+	vfsub_args_init(&vargs, NULL, au_opt_test_dlgt(au_mntflags(sb)), 0);
-+	err = 0;
-+	all_zero = 0;
-+	src->f_pos = 0;
-+	dst->f_pos = 0;
-+	while (len) {
-+		size_t sz, rbytes, wbytes, i;
-+		char *p;
-+
-+		LKTRTrace("len %lld\n", len);
-+		sz = blksize;
-+		if (len < blksize)
-+			sz = len;
-+
-+		/* support LSM and notify */
-+		rbytes = 0;
-+		// signal_pending
-+		while (!rbytes || err == -EAGAIN || err == -EINTR) {
-+			rbytes = vfsub_read_k(src, buf, sz, &src->f_pos,
-+					      vfsub_ftest(vargs.flags, DLGT));
-+			err = rbytes;
-+		}
-+		if (unlikely(err < 0))
-+			break;
-+
-+		all_zero = 0;
-+		if (len >= rbytes && rbytes == blksize) {
-+			//todo: try bitmap or memcmp()/get_zeroed_page()
-+			unsigned long *ulp;
-+			size_t n;
-+
-+			all_zero = 1;
-+			ulp = (void *)buf;
-+			n = rbytes / sizeof(*ulp);
-+			i = n;
-+			while (n-- > 0 && all_zero)
-+				all_zero = !*ulp++;
-+			p = (void *)ulp;
-+			i *= sizeof(*ulp);
-+			for (; all_zero && i < rbytes; i++)
-+				all_zero = !*p++;
-+		}
-+		if (!all_zero) {
-+			wbytes = rbytes;
-+			p = buf;
-+			while (wbytes) {
-+				size_t b;
-+				/* support LSM and notify */
-+				b = vfsub_write_k(dst, p, wbytes, &dst->f_pos,
-+						  &vargs);
-+				err = b;
-+				// signal_pending
-+				if (unlikely(err == -EAGAIN || err == -EINTR))
-+					continue;
-+				if (unlikely(err < 0))
-+					break;
-+				wbytes -= b;
-+				p += b;
-+			}
-+		} else {
-+			loff_t res;
-+			LKTRLabel(hole);
-+			res = vfsub_llseek(dst, rbytes, SEEK_CUR);
-+			err = res;
-+			if (unlikely(res < 0))
-+				break;
-+		}
-+		len -= rbytes;
-+		err = 0;
-+	}
-+
-+	/* the last block may be a hole */
-+	if (unlikely(!err && all_zero)) {
-+		struct dentry *h_d = dst->f_dentry;
-+		struct inode *h_i = h_d->d_inode;
-+
-+		LKTRLabel(last hole);
-+		do {
-+			// signal_pending
-+			err = vfsub_write_k(dst, "\0", 1, &dst->f_pos, &vargs);
-+		} while (err == -EAGAIN || err == -EINTR);
-+		if (err == 1) {
-+			ia->ia_size = dst->f_pos;
-+			ia->ia_valid = ATTR_SIZE | ATTR_FILE;
-+			ia->ia_file = dst;
-+			mutex_lock_nested(&h_i->i_mutex, AuLsc_I_CHILD2);
-+			err = vfsub_notify_change(h_d, ia, &vargs);
-+			mutex_unlock(&h_i->i_mutex);
-+		}
-+	}
-+
-+	kfree(ia);
-+ out_buf:
-+	kfree(buf);
-+ out:
-+	AuTraceErr(err);
-+	return err;
++	return 0;
 +}
 -- 
 1.4.4.4
