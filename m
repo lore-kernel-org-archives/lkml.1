@@ -1,168 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754175AbYEPFk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754760AbYEPFne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754175AbYEPFk0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 01:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750826AbYEPFkN
+	id S1754760AbYEPFne (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 01:43:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751424AbYEPFnZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 01:40:13 -0400
-Received: from ozlabs.org ([203.10.76.45]:44055 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750789AbYEPFkL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 01:40:11 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: virtualization@lists.linux-foundation.org
-Subject: [PATCH 2/2] lguest: virtio-rng support
-Date: Fri, 16 May 2008 15:39:59 +1000
-User-Agent: KMail/1.9.9
-Cc: Jeff Garzik <jeff@garzik.org>, Herbert Xu <herbert@gondor.apana.org.au>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>, "H. Anvin" <hpa@zytor.com>
-References: <482C8595.5030509@garzik.org> <200805160943.08788.rusty@rustcorp.com.au> <200805161531.44725.rusty@rustcorp.com.au>
-In-Reply-To: <200805161531.44725.rusty@rustcorp.com.au>
+	Fri, 16 May 2008 01:43:25 -0400
+Received: from eazy.amigager.de ([213.239.192.238]:47081 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750826AbYEPFnY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 01:43:24 -0400
+Date: Fri, 16 May 2008 07:44:11 +0200
+From: Tino Keitel <tino.keitel@gmx.de>
+To: Greg KH <greg@kroah.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, jkosina@suse.cz,
+       linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Input: add appleir USB driver
+Message-ID: <20080516054411.GA20503@dose.home.local>
+Mail-Followup-To: Greg KH <greg@kroah.com>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>, jkosina@suse.cz,
+	linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20080514221519.GA6575@kroah.com> <20080515132108.GA9327@dose.home.local> <20080515094212.ZZRA012@mailhub.coreip.homeip.net> <20080515184034.GB15231@kroah.com> <20080515205959.GA11683@dose.home.local> <20080515211117.GA32573@kroah.com> <20080515232733.GA16655@dose.home.local> <20080516023236.GB17375@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200805161539.59739.rusty@rustcorp.com.au>
+In-Reply-To: <20080516023236.GB17375@kroah.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a simple patch to add support for the virtio "hardware random
-generator" to lguest.  It gets about 1.2 MB/sec reading from /dev/hwrng
-in the guest.
+On Thu, May 15, 2008 at 19:32:36 -0700, Greg KH wrote:
+> On Fri, May 16, 2008 at 01:27:33AM +0200, Tino Keitel wrote:
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- Documentation/lguest/lguest.c |   90 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 90 insertions(+)
+[...]
 
-diff --git a/Documentation/lguest/lguest.c b/Documentation/lguest/lguest.c
---- a/Documentation/lguest/lguest.c
-+++ b/Documentation/lguest/lguest.c
-@@ -41,6 +41,7 @@
- #include "linux/virtio_net.h"
- #include "linux/virtio_blk.h"
- #include "linux/virtio_console.h"
-+#include "linux/virtio_rng.h"
- #include "linux/virtio_ring.h"
- #include "asm-x86/bootparam.h"
- /*L:110 We can ignore the 39 include files we need for this program, but I do
-@@ -195,6 +196,33 @@ static void *_convert(struct iovec *iov,
- #define le16_to_cpu(v16) (v16)
- #define le32_to_cpu(v32) (v32)
- #define le64_to_cpu(v64) (v64)
-+
-+/* Is this iovec empty? */
-+static bool iov_empty(const struct iovec iov[], unsigned int num_iov)
-+{
-+	unsigned int i;
-+
-+	for (i = 0; i < num_iov; i++)
-+		if (iov[i].iov_len)
-+			return false;
-+	return true;
-+}
-+
-+/* Take len bytes from the front of this iovec. */
-+static void iov_consume(struct iovec iov[], unsigned num_iov, unsigned len)
-+{
-+	unsigned int i;
-+
-+	for (i = 0; i < num_iov; i++) {
-+		unsigned int used;
-+
-+		used = iov[i].iov_len < len ? iov[i].iov_len : len;
-+		iov[i].iov_base += used;
-+		iov[i].iov_len -= used;
-+		len -= used;
-+	}
-+	assert(len == 0);
-+}
- 
- /* The device virtqueue descriptors are followed by feature bitmasks. */
- static u8 *get_feature_bits(struct device *dev)
-@@ -1613,6 +1641,64 @@ static void setup_block_file(const char 
- 	verbose("device %u: virtblock %llu sectors\n",
- 		devices.device_num, le64_to_cpu(conf.capacity));
- }
-+
-+/* Our random number generator device reads from /dev/urandom into the Guest's
-+ * input buffers.  The usual case is that the Guest doesn't want random numbers
-+ * and so has no buffers although /dev/urandom is still readable, whereas
-+ * console is the reverse.
-+ *
-+ * The same logic applies, however. */
-+static bool handle_rng_input(int fd, struct device *dev)
-+{
-+	int len;
-+	unsigned int head, in_num, out_num, totlen = 0;
-+	struct iovec iov[dev->vq->vring.num];
-+
-+	/* First we need a buffer from the Guests's virtqueue. */
-+	head = get_vq_desc(dev->vq, iov, &out_num, &in_num);
-+
-+	/* If they're not ready for input, stop listening to this file
-+	 * descriptor.  We'll start again once they add an input buffer. */
-+	if (head == dev->vq->vring.num)
-+		return false;
-+
-+	if (out_num)
-+		errx(1, "Output buffers in rng?");
-+
-+	/* This is why we convert to iovecs: the readv() call uses them, and so
-+	 * it reads straight into the Guest's buffer.  We loop to make sure we
-+	 * fill it. */
-+	while (!iov_empty(iov, in_num)) {
-+		len = readv(dev->fd, iov, in_num);
-+		if (len <= 0)
-+			err(1, "Read from /dev/urandom gave %i", len);
-+		iov_consume(iov, in_num, len);
-+		totlen += len;
-+	}
-+
-+	/* Tell the Guest about the new input. */
-+	add_used_and_trigger(fd, dev->vq, head, totlen);
-+
-+	/* Everything went OK! */
-+	return true;
-+}
-+
-+/* And this creates a "hardware" random number device for the Guest. */
-+static void setup_rng(void)
-+{
-+	struct device *dev;
-+	int fd;
-+
-+	fd = open_or_die("/dev/urandom", O_RDONLY);
-+
-+	/* The device responds to return from I/O thread. */
-+	dev = new_device("rng", VIRTIO_ID_RNG, fd, handle_rng_input);
-+
-+	/* The device has one virtqueue, where the Guest places inbufs. */
-+	add_virtqueue(dev, VIRTQUEUE_NUM, enable_fd);
-+
-+	verbose("device %u: rng\n", devices.device_num++);
-+}
- /* That's the end of device setup. */
- 
- /*L:230 Reboot is pretty easy: clean up and exec() the Launcher afresh. */
-@@ -1683,6 +1769,7 @@ static struct option opts[] = {
- 	{ "verbose", 0, NULL, 'v' },
- 	{ "tunnet", 1, NULL, 't' },
- 	{ "block", 1, NULL, 'b' },
-+	{ "rng", 0, NULL, 'r' },
- 	{ "initrd", 1, NULL, 'i' },
- 	{ NULL },
- };
-@@ -1756,6 +1843,9 @@ int main(int argc, char *argv[])
- 			break;
- 		case 'b':
- 			setup_block_file(optarg);
-+			break;
-+		case 'r':
-+			setup_rng();
- 			break;
- 		case 'i':
- 			initrd_name = optarg;
+> > When the appleir kernel driver is used, the IR device acts as in input
+> > device, not as a HID device. LIRC has to be configured to use its
+> > dev/input driver in this case. This is a generic driver to use any
+> > input device as lirc device. The dev/input driver relies on the key
+> > events that are generated by the kernel.
+> 
+> Hm, I just got a private email (for some odd reason) saying this driver
+> isn't needed at all, they just add a hid quirk line.
+
+Maybe this email came from a person who uses a distro kernel that
+already included the appleir driver? IIRC at least Ubuntu did that
+once. If not, I'd be interested in the detailed setup.
+
+> Now why that hid quirk line hadn't been added for the year or so that
+> the person knew about it, sure is odd to me...
+
+There was a quirk line in the past. It was introduced by accident with
+2.6.22 with commit a417a21e10831bca695b4ba9c74f4ddf5a95ac06. The commit
+message only mentions keyboard and mouse devices, so I think the quirk
+for the IR device was unintended.
+
+Then I wasted several hours when I tried to use the macmini LIRC driver
+with 2.6.22. The HID device that I saw came from my LCD, not from the
+IR device, and I wasn't aware of the HID ignore quirk as the kernel
+didn't mention it when the device was detected. That's why I also
+suggested that the kernel should be more verbose about such ignore
+quirks and blacklists.
+
+In the end I found that quirk an requested to remove it. This was done
+in 2.6.23-rc2.
+
+Regards,
+Tino
