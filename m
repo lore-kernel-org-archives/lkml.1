@@ -1,64 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758770AbYEPSG1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758730AbYEPSKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758770AbYEPSG1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 14:06:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbYEPSGQ
+	id S1758730AbYEPSKA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 14:10:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754457AbYEPSJv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 14:06:16 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:35058 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751409AbYEPSGP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 14:06:15 -0400
-Date: Fri, 16 May 2008 21:04:26 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       NetDev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: Top kernel oopses/warnings for the week of May 16th 2008
-Message-ID: <20080516180426.GA3284@cs181133002.pp.htv.fi>
-References: <482DB93B.2080100@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <482DB93B.2080100@linux.intel.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Fri, 16 May 2008 14:09:51 -0400
+Received: from wr-out-0506.google.com ([64.233.184.234]:29617 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754224AbYEPSJu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 14:09:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=leUORcWaUZWZYB/cF/Hxwwpm9MPxJ+aLuYiOjBbNLXze//+Z0U/PVzixMcJjeeMOWHoR6yuV7n3lMtOxxFabmgONk5BPepyb34vsnVpKxihh+/IWjt6ukm3gByMcbaVzjyxXBeq6Bxo8+APQKRgqTGE+lLNdPI6/rNxpTHyW0hk=
+Subject: [RFC-PATCH] lib: add byteorder helpers for the aligned case
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Bryan Wu <cooloney@kernel.org>, Jie Zhang <jie.zhang@analog.com>,
+       Oliver Neukum <oliver@neukum.org>, david-b@pacbell.net, greg@kroah.com,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.0805161021450.25035-100000@netrider.rowland.org>
+References: <Pine.LNX.4.44L0.0805161021450.25035-100000@netrider.rowland.org>
+Content-Type: text/plain
+Date: Fri, 16 May 2008 11:09:45 -0700
+Message-Id: <1210961386.5915.43.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16, 2008 at 09:41:31AM -0700, Arjan van de Ven wrote:
->...
-> Bug of the week
-> ---------------
-> Not in the top 10 (but barely not so), but upcoming fast is a bug that has a very
-> distinct pattern.
-> The backtraces are at http://www.kerneloops.org/searchweek.php?search=fput
->
-> The pattern is that the kernel gets an invalid pointer passed to fput(),
-> coming down from a select() system call done by the "wpa_supplicant" program.
-> The fact that it is ONLY wpa_supplicant implicates the wireless/network stack.
-> Another observation is that this only happens with 64 bit kernels, even though
-> a large portion of the users uses 32 bit kernels. This implies that this is a 64-bit
-> type of bug. It appears that the top 32 bit of the pointers is getting corrupted
-> (the bottom part at least looks valid).
->...
+Some users know the pointer they are writing to are aligned,
+rather than doing *(__le16 *)ptr = cpu_to_le16(val) add helpers
+wrapping this up that have the same convention as put_unaligned_le/be.
 
-Unless I misunderstand your webinterface another pattern is a "fc9" in 
-the version string.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+Alan, as requested, I'm looking around a bit to see if there are actual
+users for this.  But it does make a nice complement to the unaligned
+versions.
 
-My first guess would be that it might be a problem in some code that is 
-only in Fedora kernels?
+ include/linux/byteorder/generic.h |   30 ++++++++++++++++++++++++++++++
+ 1 files changed, 30 insertions(+), 0 deletions(-)
 
-cu
-Adrian
-
+diff --git a/include/linux/byteorder/generic.h b/include/linux/byteorder/generic.h
+index 0846e6b..38ff3e6 100644
+--- a/include/linux/byteorder/generic.h
++++ b/include/linux/byteorder/generic.h
+@@ -119,6 +119,36 @@
+ #define cpu_to_be16s __cpu_to_be16s
+ #define be16_to_cpus __be16_to_cpus
+ 
++static inline void put_le16(u16 val, void *ptr)
++{
++	*(__le16 *)ptr = cpu_to_le16(val);
++}
++
++static inline void put_le32(u32 val, void *ptr)
++{
++	*(__le32 *)ptr = cpu_to_le32(val);
++}
++
++static inline void put_le64(u64 val, void *ptr)
++{
++	*(__le64 *)ptr = cpu_to_le64(val);
++}
++
++static inline void put_be16(u16 val, void *ptr)
++{
++	*(__be16 *)ptr = cpu_to_be16(val);
++}
++
++static inline void put_be32(u32 val, void *ptr)
++{
++	*(__be32 *)ptr = cpu_to_be32(val);
++}
++
++static inline void put_be64(u64 val, void *ptr)
++{
++	*(__be64 *)ptr = cpu_to_be64(val);
++}
++
+ /*
+  * They have to be macros in order to do the constant folding
+  * correctly - if the argument passed into a inline function
 -- 
+1.5.5.1.570.g26b5e
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+
 
