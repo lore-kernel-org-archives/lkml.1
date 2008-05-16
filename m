@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757946AbYEPAxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754700AbYEPBgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757946AbYEPAxR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 20:53:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753297AbYEPAxH
+	id S1754700AbYEPBgt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 21:36:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbYEPBgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 20:53:07 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36631 "EHLO mx1.redhat.com"
+	Thu, 15 May 2008 21:36:39 -0400
+Received: from mga02.intel.com ([134.134.136.20]:43642 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752852AbYEPAxF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 20:53:05 -0400
-Date: Thu, 15 May 2008 20:51:21 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+	id S1751687AbYEPBgi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 21:36:38 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,494,1204531200"; 
+   d="scan'208";a="282002936"
+Subject: Re: [PATCH] kexec based hibernation: a prototype of kexec
+	multi-stage load
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Vivek Goyal <vgoyal@redhat.com>, Pavel Machek <pavel@ucw.cz>,
        nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
        Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [PATCH -mm] kexec jump -v9
-Message-ID: <20080516005121.GA6926@redhat.com>
-References: <1204773188.4707.109.camel@caritas-dev.intel.com> <20080514205204.GJ30469@redhat.com> <1210830110.23707.141.camel@caritas-dev.intel.com>
+In-Reply-To: <m1lk2bs970.fsf@frodo.ebiederm.org>
+References: <1210574441.30365.8.camel@caritas-dev.intel.com>
+	 <20080513053408.GA5870@redhat.com>
+	 <1210730266.23707.50.camel@caritas-dev.intel.com>
+	 <20080514025607.GA19944@redhat.com>
+	 <1210736275.23707.62.camel@caritas-dev.intel.com>
+	 <m1lk2c4l4i.fsf@frodo.ebiederm.org>
+	 <1210827473.23707.133.camel@caritas-dev.intel.com>
+	 <m1lk2bs970.fsf@frodo.ebiederm.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 16 May 2008 09:41:54 +0800
+Message-ID: <1210902114.23707.156.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1210830110.23707.141.camel@caritas-dev.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Mailer: Evolution 2.22.1 
+X-OriginalArrivalTime: 16 May 2008 01:35:45.0256 (UTC) FILETIME=[29153E80:01C8B6F5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 15, 2008 at 01:41:50PM +0800, Huang, Ying wrote:
-> Hi, Vivek,
-> 
-> On Wed, 2008-05-14 at 16:52 -0400, Vivek Goyal wrote:
-> [...]
-> > Ok, I have done some testing on this patch. Currently I have just
-> > tested switching back and forth between two kernels and it is working for
-> > me.
-> > 
-> > Just that I had to put LAPIC and IOAPIC in legacy mode for it to work. Few
-> > comments/questions are inline.
-> 
-> It seems that for LAPIC and IOAPIC, there is
-> lapic_suspend()/lapic_resume() and ioapic_suspend()/ioapic_resume(),
-> which will be called before/after kexec jump through
-> device_power_down()/device_power_up(). So, the mechanism for
-> LAPIC/IOAPIC is there, we may need to check the corresponding
-> implementation.
-> 
+On Thu, 2008-05-15 at 11:39 -0700, Eric W. Biederman wrote:
+[...]
+> 2) After we figure out our address read the stack pointer from
+>    a fixed location and simply set it.  (This is my preference)
 
-ioapic_suspend() is not putting APICs in Legacy mode and that's why
-we are seeing the issue. It only saves the IOAPIC routing table entries
-and these entries are restored during ioapic_resume().
+Just for confirmation (My English is poor).
 
-But I think somebody has to put APICs in legacy mode for normal 
-hibernation also. Not sure who does it. May be BIOS, so that during
-resume, second kernel can get the timer interrupts.
+Do you mean that kernel A just read the stack top as re-entry point,
+regardless of whether it is return address or argument 1?
 
-Thanks
-Vivek
+Best Regards,
+Huang Ying
+
