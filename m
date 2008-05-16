@@ -1,253 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759046AbYEPRRa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756834AbYEPRYL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759046AbYEPRRa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 13:17:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbYEPRRK
+	id S1756834AbYEPRYL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 13:24:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751119AbYEPRX5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 13:17:10 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:33645 "EHLO e4.ny.us.ibm.com"
+	Fri, 16 May 2008 13:23:57 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:41958 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758067AbYEPRRG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 13:17:06 -0400
-Subject: Re: [PATCH] Fix DIO EIO error caused by race between
-	jbd_commit_transaction() and journal_try_to_drop_buffers()
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: cmm@us.ibm.com
-Cc: Josef Bacik <jbacik@redhat.com>, Jan Kara <jack@suse.cz>,
-       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1210957894.3608.23.camel@localhost.localdomain>
-References: <20080505170636.GK25722@duck.suse.cz>
-	 <1210372072.3639.52.camel@localhost.localdomain>
-	 <20080512155419.GD15856@duck.suse.cz>
-	 <1210639184.3661.43.camel@localhost.localdomain>
-	 <20080513145449.GC20806@duck.suse.cz>
-	 <1210717389.3638.24.camel@localhost.localdomain>
-	 <20080514170856.GH24363@duck.suse.cz>
-	 <1210786872.3657.48.camel@localhost.localdomain>
-	 <20080514181444.GI24363@duck.suse.cz>
-	 <1210947250.3608.18.camel@localhost.localdomain>
-	 <20080516150146.GA21018@unused.rdu.redhat.com>
-	 <1210957894.3608.23.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 16 May 2008 10:17:19 -0700
-Message-Id: <1210958239.4231.34.camel@badari-desktop>
+	id S1750832AbYEPRXz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 13:23:55 -0400
+Date: Fri, 16 May 2008 21:14:07 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       NetDev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jgarzik@pobox.com>, Francois Romieu <romieu@fr.zoreil.com>
+Subject: Re: Top kernel oopses/warnings for the week of May 16th 2008
+Message-ID: <20080516171407.GA1694@2ka.mipt.ru>
+References: <482DB93B.2080100@linux.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <482DB93B.2080100@linux.intel.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, May 16, 2008 at 09:41:31AM -0700, Arjan van de Ven (arjan@linux.intel.com) wrote:
+> Rank 10: __alloc_pages
+> 	Reported 16 times (31 total reports)
+> 	Sleeping allocation in interrupt context, some in netlink, some in 
+> 	the nv sata driver
+> 	This oops was last seen in version 2.6.25.3, and first seen in 
+> 	2.6.18-rc1.
+> 	More info: 
+> 	http://www.kerneloops.org/searchweek.php?search=__alloc_pages
 
-On Fri, 2008-05-16 at 10:11 -0700, Mingming Cao wrote:
-> On Fri, 2008-05-16 at 11:01 -0400, Josef Bacik wrote:
-> 
-> > 
-> > Got a couple of whitespace problems above it looks like.  Thanks,
-> > 
-> 
-> Thanks for catching this, below is updated patch, fixed the whitespace
-> and comments.
-> 
-> 
-> ---------------------------------------------------
-> JBD: fix journal_try_to_free_buffers race with
-> journal_commit_transaction
-> 
-> From: Mingming Cao <cmm@us.ibm.com>
-> 
-> This patch fixed a few races between direct IO and kjournld commit
-> transaction.
-> An unexpected EIO error gets returned to direct IO caller when it failed
-> to
-> free those data buffers. This could be reproduced easily with parallel 
-> direct write and buffered write to the same file
-> 
-> More specificly, those races could cause journal_try_to_free_buffers()
-> fail to free the data buffers, when jbd is committing the transaction
-> that has
-> those data buffers on its t_syncdata_list or t_locked_list. 
-> journal_commit_transaction() still holds the reference to those buffers
->  before data reach to disk and buffers are removed from the 
-> t_syncdata_list of t_locked_list. This prevent the concurrent 
-> journal_try_to_free_buffers() to free those buffers at the same time,
-> but cause
-> EIO error returns back to direct IO.
-> 
-> With this patch, in case of direct IO and when try_to_free_buffers()
-> failed,
-> let's waiting for journal_commit_transaction() to finish
-> flushing the current committing transaction's data buffers to disk, 
-> then try to free those buffers again.
-> 
-> Signed-off-by: Mingming Cao <cmm@us.ibm.com>
-> Reviewed-by: Badari Pulavarty <pbadari@us.ibm.com> 
-> ---
->  fs/jbd/commit.c      |    1 +
->  fs/jbd/journal.c     |    1 +
->  fs/jbd/transaction.c |   46
-> ++++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/jbd.h  |    3 +++
->  4 files changed, 51 insertions(+)
-> 
-> Index: linux-2.6.26-rc1/include/linux/jbd.h
-> ===================================================================
-> --- linux-2.6.26-rc1.orig/include/linux/jbd.h	2008-05-14
-> 16:36:41.000000000 -0700
-> +++ linux-2.6.26-rc1/include/linux/jbd.h	2008-05-15 14:12:10.000000000
-> -0700
-> @@ -667,6 +667,9 @@ struct journal_s
->  	 */
->  	wait_queue_head_t	j_wait_transaction_locked;
-> 
-> +	/* Wait queu for waiting for data buffers to flushed to disk*/
-> +	wait_queue_head_t	j_wait_data_flushed;
-> +
->  	/* Wait queue for waiting for checkpointing to complete */
->  	wait_queue_head_t	j_wait_logspace;
-> 
-> Index: linux-2.6.26-rc1/fs/jbd/commit.c
-> ===================================================================
-> --- linux-2.6.26-rc1.orig/fs/jbd/commit.c	2008-05-03 11:59:44.000000000
-> -0700
-> +++ linux-2.6.26-rc1/fs/jbd/commit.c	2008-05-15 14:12:46.000000000 -0700
-> @@ -462,6 +462,7 @@ void journal_commit_transaction(journal_
->  	 * clean by now, so check that it is in fact empty.
->  	 */
->  	J_ASSERT (commit_transaction->t_sync_datalist == NULL);
-> +	wake_up(&journal->j_wait_data_flushed)
-> 
->  	jbd_debug (3, "JBD: commit phase 3\n");
-> 
-> Index: linux-2.6.26-rc1/fs/jbd/journal.c
-> ===================================================================
-> --- linux-2.6.26-rc1.orig/fs/jbd/journal.c	2008-05-14 16:36:41.000000000
-> -0700
-> +++ linux-2.6.26-rc1/fs/jbd/journal.c	2008-05-15 14:13:02.000000000
-> -0700
-> @@ -660,6 +660,7 @@ static journal_t * journal_init_common (
->  		goto fail;
-> 
->  	init_waitqueue_head(&journal->j_wait_transaction_locked);
-> +	init_waitqueue_head(&journal->j_wait_data_flushed);
->  	init_waitqueue_head(&journal->j_wait_logspace);
->  	init_waitqueue_head(&journal->j_wait_done_commit);
->  	init_waitqueue_head(&journal->j_wait_checkpoint);
-> Index: linux-2.6.26-rc1/fs/jbd/transaction.c
-> ===================================================================
-> --- linux-2.6.26-rc1.orig/fs/jbd/transaction.c	2008-05-03
-> 11:59:44.000000000 -0700
-> +++ linux-2.6.26-rc1/fs/jbd/transaction.c	2008-05-16 09:27:21.000000000
-> -0700
-> @@ -1648,12 +1648,49 @@ out:
->  	return;
->  }
-> 
-> +/*
-> + * journal_try_to_free_buffers() could race with
-> journal_commit_transaction()
-> + * The later might still hold the reference count to the buffers when
-> inspecting
-> + * them on t_syncdata_list or t_locked_list.
-> + *
-> + * Journal_try_to_free_buffers() will call this function to
-> + * wait for the current transaction finishing syncing data buffers,
-> before
-> + * try to free that buffer.
-> + *
-> + * Called with journal->j_state_lock hold.
+Number of them from via-velocity driver should be fixed by attached
+patch (added Francois Romieu <romieu@fr.zoreil.com> to copy), but
+frankly that looks really bad. Allocations are protected by lock, which
+is used for interrupts, but that is safe, since device is turned off,
+but also for suspend (which can free them again, btw), mii register dump
+(will break without lock) and something else, which should be fine
+though because of rtnl. What we could do better, is to allocate new
+rings in advance, and only substitue pointers and write registers under
+the lock, Francois?
 
-Fix wrapping lines ?
+diff --git a/drivers/net/via-velocity.c b/drivers/net/via-velocity.c
+index 6b8d882..d6b7972 100644
+--- a/drivers/net/via-velocity.c
++++ b/drivers/net/via-velocity.c
+@@ -1251,7 +1251,7 @@ static int velocity_init_rd_ring(struct velocity_info *vptr)
+ 	vptr->rx_buf_sz = (mtu <= ETH_DATA_LEN) ? PKT_BUF_SZ : mtu + 32;
+ 
+ 	vptr->rd_info = kcalloc(vptr->options.numrx,
+-				sizeof(struct velocity_rd_info), GFP_KERNEL);
++				sizeof(struct velocity_rd_info), GFP_ATOMIC);
+ 	if (!vptr->rd_info)
+ 		return -ENOMEM;
+ 
+@@ -1324,7 +1324,7 @@ static int velocity_init_td_ring(struct velocity_info *vptr)
+ 
+ 		vptr->td_infos[j] = kcalloc(vptr->options.numtx,
+ 					    sizeof(struct velocity_td_info),
+-					    GFP_KERNEL);
++					    GFP_ATOMIC);
+ 		if (!vptr->td_infos[j])	{
+ 			while(--j >= 0)
+ 				kfree(vptr->td_infos[j]);
 
-> + */
-> +static void journal_wait_for_transaction_sync_data(journal_t *journal)
-> +{
-> +	transaction_t *transaction = NULL;
-> +
-> +	transaction = journal->j_committing_transaction;
-> +
-> +	if (!transaction)
-> +		return;
-> +
-> +	/*
-> +	 * If the current transaction is flushing and waiting for data buffers
-> +	 * (t_state is T_FLUSH), wait for the j_wait_data_flushed event
-> +	 */
-> +	if (transaction->t_state == T_FLUSH) {
-> +		DEFINE_WAIT(wait);
-> +
-> +		prepare_to_wait(&journal->j_wait_data_flushed,
-> +			&wait, TASK_UNINTERRUPTIBLE);
-> +		spin_unlock(&journal->j_state_lock);
-> +		schedule();
-> +		finish_wait(&journal->j_wait_data_flushed, &wait);
-> +		spin_lock(&journal->j_state_lock);
-> +	}
-> +	return;
-> +}
-> 
->  /**
->   * int journal_try_to_free_buffers() - try to free page buffers.
->   * @journal: journal for operation
->   * @page: to try and free
-> - * @unused_gfp_mask: unused
-> + * @gfp_mask: unused for allocation purpose. Here is used
-> + * 	      as a flag to tell if direct IO is attemping to free buffers.
->   *
->   *
->   * For all the buffers on this page,
-> @@ -1682,13 +1719,16 @@ out:
->   * journal_try_to_free_buffer() is changing its state.  But that
->   * cannot happen because we never reallocate freed data as metadata
->   * while the data is part of a transaction.  Yes?
-> + *
-> + * Return 0 on failure, 1 on success
->   */
->  int journal_try_to_free_buffers(journal_t *journal,
-> -				struct page *page, gfp_t unused_gfp_mask)
-> +				struct page *page, gfp_t gfp_mask)
->  {
->  	struct buffer_head *head;
->  	struct buffer_head *bh;
->  	int ret = 0;
-> +	int dio = gfp_mask & __GFP_REPEAT;
-> 
->  	J_ASSERT(PageLocked(page));
-> 
-> @@ -1713,7 +1753,31 @@ int journal_try_to_free_buffers(journal_
->  		if (buffer_jbd(bh))
->  			goto busy;
->  	} while ((bh = bh->b_this_page) != head);
-> +
->  	ret = try_to_free_buffers(page);
-> +
-> + 	/*
-> +	 * In the case of concurrent direct IO and buffered IO,
-> +	 * There are a number of places where we
-> +	 * could race with journal_commit_transaction(), the later still
-> +	 * helds the reference to the buffers to free while processing them.
-> +	 * try_to_free_buffers() failed to free those buffers,
-> +	 * resulting in an unexpected EIO error
-> +	 * returns back to the generic_file_direct_IO()
-> +	 *
-> +	 * So let's wait for the current transaction finished flush
-> +	 * dirty data buffers before we try to free those buffers
-> +	 * again. This wait is needed by direct IO code path only,
-> +	 * gfp_mask __GFP_REPEAT is passed from the direct IO code
-> +	 * path to flag if we need to wait and retry free buffers.
-> +	 */
-> +	if (ret == 0 && dio) {
 
-drop "dio" variable and compare here, like 
-	  if (ret == 0 && (gfp_mask & __GFP_REPEAT)
-
-> +        	spin_lock(&journal->j_state_lock);
-> +		journal_wait_for_transaction_sync_data(journal);
-> +		ret = try_to_free_buffers(page);
-> +		spin_unlock(&journal->j_state_lock);
-> +	}
-
-Thanks,
-Badari
-
+-- 
+	Evgeniy Polyakov
