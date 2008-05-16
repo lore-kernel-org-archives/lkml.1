@@ -1,41 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760746AbYEPUjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760799AbYEPUtG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760746AbYEPUjq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 16:39:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754584AbYEPUjf
+	id S1760799AbYEPUtG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 16:49:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbYEPUsx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 16:39:35 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:59545 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752197AbYEPUje (ORCPT
+	Fri, 16 May 2008 16:48:53 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:37414 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754587AbYEPUsw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 16:39:34 -0400
-Date: Fri, 16 May 2008 16:39:33 -0400
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Jeff Garzik <jeff@garzik.org>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Rick Jones <rick.jones2@hp.com>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       Chris Peterson <cpeterso@cpeterso.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of IRQF_SAMPLE_RANDOM
-Message-ID: <20080516203932.GH27126@csclub.uwaterloo.ca>
-References: <482C7E53.3050300@hp.com> <482C8184.2030906@garzik.org> <482C8550.5000909@intel.com> <482C8D4D.3040702@garzik.org> <20080516132107.GA11304@csclub.uwaterloo.ca> <20080516161029.44ded734@core> <20080516173610.GA27126@csclub.uwaterloo.ca> <20080516191125.46f59ad6@core> <20080516184138.GF27126@csclub.uwaterloo.ca> <20080516210445.6f961627@core>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080516210445.6f961627@core>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Fri, 16 May 2008 16:48:52 -0400
+Date: Fri, 16 May 2008 13:47:20 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
+       fabrizio.garetto@gmail.com, jonsmirl@gmail.com
+Subject: Re: [PATCH 3/4] spi: Add OF binding support for SPI busses
+Message-Id: <20080516134720.22d0569b.randy.dunlap@oracle.com>
+In-Reply-To: <20080516193613.28030.13950.stgit@trillian.secretlab.ca>
+References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
+	<20080516193613.28030.13950.stgit@trillian.secretlab.ca>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16, 2008 at 09:04:45PM +0100, Alan Cox wrote:
-> So open /dev/urandom in that case. It's a user space problem - this is
-> policy.
+On Fri, 16 May 2008 13:36:13 -0600 Grant Likely wrote:
 
-How does user space know?  Maybe someone is using the serial console,
-maybe not.
+> diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+> index 1d2a772..452c242 100644
+> --- a/Documentation/powerpc/booting-without-of.txt
+> +++ b/Documentation/powerpc/booting-without-of.txt
+> @@ -2870,6 +2871,66 @@ platforms are moved over to use the flattened-device-tree model.
+>  		reg = <0xe8000000 32>;
+>  	};
+>  
+> +    s) SPI (Serial Peripheral Interface) busses
+> +
+> +    SPI busses can be described with a node for the SPI master device
+> +    and a set of child nodes for each SPI slave on the bus.  For this
+> +    discussion, it is assumed that the system's SPI controller is in
+> +    SPI master mode.  This binding does not describe SPI controllers
+> +    in slave mode.
+> +
+> +    The SPI master node requires the following properties:
+> +    - #address-cells  - number of cells required to define a chip select
+> +			address on the SPI bus.
+> +    - #size-cells     - should be zero.
+> +    - compatible      - name of SPI bus controller following generic names
+> +			recommended practice.
+> +    No other properties are required in the spi bus node.  It is assumed
+                                               ~~~
 
--- 
-Len Sorensen
+> +    that a driver for an SPI bus device will understand that it is an SPI bus.
+> +    However, the binding does not attempt to define the specific method for
+> +    assigning chip select numbers.  Since SPI chip select configuration is
+> +    flexible and non-standardized, it is left out of this binding with the
+> +    assumption that board specific platform code will be used to manage
+> +    chip selects.  Individual drivers can define additional properties to
+> +    support describing the chip select layout.
+> +
+> +    SPI slave nodes must be children of the spi master node and can
+                                               ~~~
+
+> +    contain the following properties.
+> +    - reg             - (required) chip select address of device.
+> +    - compatible      - (required) name of SPI device following generic names
+> +			recommended practice
+> +    - max-speed       - (optional) Maximum SPI clocking speed of device in Hz
+> +    - spi,cpol        - (optional) Device requires inverse clock polarity
+> +    - spi,cpha        - (optional) Device requires shifted clock phase
+> +    - linux,modalias  - (optional, Linux specific) Force binding of SPI device
+> +			to a particular spi_device driver.  Useful for changing
+> +			driver binding between spidev and a kernel spi driver.
+                                                                   ~~~
+
+Hi,
+You mostly capitalize "SPI" in sentences (i.e., when it's not part of
+a function name or OF data), so could the 3 underlined instances of it
+also be all caps?
+
+Thanks,
+---
+~Randy
