@@ -1,90 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762296AbYEPQlq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762744AbYEPQmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762296AbYEPQlq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 12:41:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758521AbYEPQeQ
+	id S1762744AbYEPQmr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 12:42:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759845AbYEPQli
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 12:34:16 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:55949 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758499AbYEPQeN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 12:34:13 -0400
-Subject: Re: [PATCH] Fix for OProfile callgraph for Power 64 bit user apps
-From: Carl Love <cel@us.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Maynard Johnson <maynardj@us.ibm.com>
-In-Reply-To: <1210874462.20791.54.camel@carll-linux-desktop>
-References: <1210183924.7726.28.camel@carll-linux-desktop>
-	 <18476.5290.709729.582063@cargo.ozlabs.ibm.com>
-	 <1210874462.20791.54.camel@carll-linux-desktop>
-Content-Type: text/plain
-Date: Fri, 16 May 2008 09:32:03 -0700
-Message-Id: <1210955523.20791.193.camel@carll-linux-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Fri, 16 May 2008 12:41:38 -0400
+Received: from mga10.intel.com ([192.55.52.92]:15125 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762212AbYEPQlf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 12:41:35 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,498,1204531200"; 
+   d="scan'208";a="329120484"
+Message-ID: <482DB93B.2080100@linux.intel.com>
+Date: Fri, 16 May 2008 09:41:31 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       NetDev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jgarzik@pobox.com>
+Subject: Top kernel oopses/warnings for the week of May 16th 2008
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The http://www.kerneloops.org website collects kernel oops and
+warning reports from various mailing lists and bugzillas as well as
+with a client users can install to auto-submit oopses.
+Below is a top 10 list of the oopses collected in the last 7 days.
+(Reports prior to 2.6.23 have been omitted in collecting the top 10)
 
-On Thu, 2008-05-15 at 11:01 -0700, Carl Love wrote:
-> On Thu, 2008-05-15 at 20:47 +1000, Paul Mackerras wrote:
-> > Carl Love writes:
-> > 
-> > > The following patch fixes the 64 bit user code backtrace 
-> > > which currently may hang the system.  
-> > 
-> > What exactly is wrong with it?
-> > 
-> > Having now taken a much closer look, I now don't think Nate Case's
-> > patch addresses this, since it only affects constant size arguments
-> > <= 8 to copy_{to,from}_user_inatomic.
-> > 
-> > However, I don't see why your patch fixes anything.  It means we do
-> > two access_ok calls and two __copy_from_user_inatomic calls, for 8
-> > bytes, at sp and at sp + 16, rather than doing one access_ok and
-> > __copy_from_user_inatomic for 24 bytes at sp.  Why does that make any
-> > difference (apart from being slower)?
-> > 
-> > Paul
-> 
-> When I tried testing the oprofile call graph on a 64 bit app the system
-> consistently hung.  I was able to isolate it to the
-> __copy_from_user_inatomic() call.  When I made the change in my patch to
-> make sure I was only requesting one of the values (8bytes) listed in the
-> case statement this fixed the issue.  I do not know nor was I able to
-> figure out why the __copy_from_user_inatomic() call failed trying to
-> read 24 bytes.  The system would hang and any attempt to use printk to
-> see what was going on failed as the output of the print would not go to
-> the console before the system hangs.  
-> 
-> I backed out my patch, put in Nate's patch.  The call graph test ran
-> fine.  I then backed out Nate's patch to go back and try to re-validate
-> that the system still hangs with the original code and it is not
-> hanging.  Not sure why it now seems to work.  I have done some other
-> work on the system but I don't see how that would have changed this.
-> Argh, I hate chasing phantom bugs!  I was working on 2.6.21. I believe
-> the 2.6.21 kernel had not been changed. Let me load the latest 2.6.25
-> and start over with a pristine kernel and see if I can reproduce the
-> hang.  Sorry for all the hassle.
-> 
->                  Carl Love
-> 
+This week, a total of 1617 oopses and warnings have been reported,
+compared to 452 reports in the previous week. This sharp increase
+is due to Fedora 9 being released, which includes the automatic
+collection client.
 
-I installed the latest 2.6.25 kernel and tested OProfile call graph on
-the 64 bit user application.  I did not see any hangs for the tests that
-I ran.  I tried things multiple times.  So, I guess we should drop the
-OProfile callgraph patch.  Clearly if there still is a problem it is not
-in how the OProfile call graph code is written but is probably in the
-underlying calls, i.e. __copy_from_user_inatomic().  I will continue to
-test the functionality and see if I can find a example where the system
-will hang so we can investigate the underlying cause.
 
-Thank you for your time on this. 
+Per file statistics
+-------------------
+743	kernel/sysctl.c
+113	fs/buffer.c
+76	fs/sysfs/dir.c
+38	kernel/spinlock.c
+22	fs/inotify.c
+21	kernel/sysctl_check.c (P)
+21	net/core/sock.c
+18	fs/file_table.c
+17	mm/page_alloc.c
+15	lib/iomap.c
 
-               Carl Love
 
+Bug of the week
+---------------
+Not in the top 10 (but barely not so), but upcoming fast is a bug that has a very
+distinct pattern.
+The backtraces are at http://www.kerneloops.org/searchweek.php?search=fput
+
+The pattern is that the kernel gets an invalid pointer passed to fput(),
+coming down from a select() system call done by the "wpa_supplicant" program.
+The fact that it is ONLY wpa_supplicant implicates the wireless/network stack.
+Another observation is that this only happens with 64 bit kernels, even though
+a large portion of the users uses 32 bit kernels. This implies that this is a 64-bit
+type of bug. It appears that the top 32 bit of the pointers is getting corrupted
+(the bottom part at least looks valid).
+
+
+
+Top 10 reported bugs
+--------------------
+
+Rank 1: __register_sysctl_paths
+	Reported 741 times (1254 total reports)
+	Duplicate /proc registration. Bugs in madwifi but also in the parport driver
+	This oops was last seen in version 2.6.25.3, and first seen in 2.6.25-rc3.
+	More info: http://www.kerneloops.org/searchweek.php?search=__register_sysctl_paths
+
+Rank 2: mark_buffer_dirty
+	Reported 110 times (306 total reports)
+	EXT3 bug while hot-removing a USB device
+	This oops was last seen in version 2.6.25.3, and first seen in 2.6.24-rc6.
+	More info: http://www.kerneloops.org/searchweek.php?search=mark_buffer_dirty
+
+Rank 3: sysfs_add_one
+	Reported 67 times (272 total reports)
+	Adding duplicate sysfs files... seems to be mostly around USB so all in GregKH's park
+	This oops was last seen in version 2.6.26-rc2, and first seen in 2.6.24-rc6.
+	More info: http://www.kerneloops.org/searchweek.php?search=sysfs_add_one
+
+Rank 4: _spin_unlock_irqrestore
+	Reported 38 times (130 total reports)
+	Mostly "softlockups" coming out of idle. This could well be mostly hardware issues;
+	idle is the most harsh thing in terms of voltage/current swings.
+	This oops was last seen in version 2.6.25.3, and first seen in 2.6.22-rc1.
+	More info: http://www.kerneloops.org/searchweek.php?search=_spin_unlock_irqrestore
+
+Rank 5: ieee80211_stop_tx_ba_session
+	Reported 36 times (56 total reports)
+	Seems to be caused by the 4965 driver
+	This oops was last seen in version 2.6.25.3, and first seen in 2.6.25-rc7-git6.
+	More info: http://www.kerneloops.org/searchweek.php?search=ieee80211_stop_tx_ba_session
+
+Rank 6: nouveau_gpuobj_ref_del
+	Reported 22 times (40 total reports)
+	Bug in the out-of-tree nouveau driver
+	This oops was last seen in version 2.6.25, and first seen in 2.6.25-rc4.
+	More info: http://www.kerneloops.org/searchweek.php?search=nouveau_gpuobj_ref_del
+
+Rank 7: set_dentry_child_flags
+	Reported 22 times (741 total reports)
+	Bug in the 2.6.24 inotify code that got exposed by KDE4 and got fixed in 2.6.25
+	This oops was last seen in version 2.6.24.4, and first seen in 2.6.24-rc8-git4.
+	More info: http://www.kerneloops.org/searchweek.php?search=set_dentry_child_flags
+
+Rank 8: sysctl_check_lookup
+	Reported 21 times (239 total reports)
+	Bug in the proprietary madwifi driver
+	Oops only shows up in tainted kernels
+	This oops was last seen in version 2.6.24.5, and first seen in 2.6.24-rc5.
+	More info: http://www.kerneloops.org/searchweek.php?search=sysctl_check_lookup
+
+Rank 9: sk_free
+	Reported 19 times (80 total reports)
+	VMWare driver bug
+	Oops only shows up in tainted kernels
+	This oops was last seen in version 2.6.25.3, and first seen in 2.6.23.9.
+	More info: http://www.kerneloops.org/searchweek.php?search=sk_free
+
+Rank 10: __alloc_pages
+	Reported 16 times (31 total reports)
+	Sleeping allocation in interrupt context, some in netlink, some in the nv sata driver
+	This oops was last seen in version 2.6.25.3, and first seen in 2.6.18-rc1.
+	More info: http://www.kerneloops.org/searchweek.php?search=__alloc_pages
 
