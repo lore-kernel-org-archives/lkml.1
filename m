@@ -1,41 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbYEPH3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757041AbYEPHdK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753575AbYEPH3g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 03:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbYEPH33
+	id S1757041AbYEPHdK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 03:33:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbYEPHc4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 03:29:29 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40821 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752080AbYEPH32 (ORCPT
+	Fri, 16 May 2008 03:32:56 -0400
+Received: from mtagate8.uk.ibm.com ([195.212.29.141]:17123 "EHLO
+	mtagate8.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752080AbYEPHc4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 03:29:28 -0400
-Date: Fri, 16 May 2008 00:29:07 -0700
-From: Greg KH <greg@kroah.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Problems with suspend and USB storage
-Message-ID: <20080516072907.GA21157@kroah.com>
-References: <20080515163315.GA17779@nostromo.devel.redhat.com>
+	Fri, 16 May 2008 03:32:56 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 1/2] virtio: hardware random device
+Date: Fri, 16 May 2008 09:31:53 +0200
+User-Agent: KMail/1.9.9
+Cc: virtualization@lists.linux-foundation.org, Jeff Garzik <jeff@garzik.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       LKML <linux-kernel@vger.kernel.org>, "H. Anvin" <hpa@zytor.com>
+References: <482C8595.5030509@garzik.org> <200805160943.08788.rusty@rustcorp.com.au> <200805161531.44725.rusty@rustcorp.com.au>
+In-Reply-To: <200805161531.44725.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080515163315.GA17779@nostromo.devel.redhat.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200805160931.53875.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 15, 2008 at 12:33:15PM -0400, Bill Nottingham wrote:
+Am Freitag, 16. Mai 2008 schrieb Rusty Russell:
+> virtio: An entropy device, as suggested by hpa.
 > 
-> I've been testing suspend/hibernate with various USB devices under
-> 2.6.25.2. Test box is a Thinkpad T60 (uhci, ehci).
-> The results are somewhat dismal.
+> Note that by itself, having a "hardware" random generator does very
+> little: you should probably run "rngd" in your guest to feed this into
+> the kernel entropy pool.
+> 
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> ---
+>  drivers/char/hw_random/Kconfig      |   10 ++
+>  drivers/char/hw_random/Makefile     |    1 
+>  drivers/char/hw_random/virtio-rng.c |  143 +++++++++++++++++++++++++++++++
+>  include/linux/virtio_rng.h          |    8 ++
+>  4 files changed, 162 insertions(+)
 
-If you look at 2.6.26-rc, there are some good changes there that should
-help things out a lot.  USB_PERSIST is much better there, but it missed
-.25 as it wasn't tested enough (although it is shipping in openSUSE
-11.0, and seems to be working well there...)
+Acked-by: Christian Borntraeger <borntraeger@de.ibm.com>
 
-thanks,
 
-greg k-h
