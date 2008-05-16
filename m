@@ -1,49 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763930AbYEPAIJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764064AbYEPAJc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763930AbYEPAIJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 20:08:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756922AbYEPAH4
+	id S1764064AbYEPAJc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 20:09:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757634AbYEPAJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 20:07:56 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:57336 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755873AbYEPAHz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 20:07:55 -0400
-X-Sasl-enc: 5gloVNmYHigNCUVGNmGYpX3yLF4sx3MdpBKO1zfNLCqt 1210896474
-Date: Thu, 15 May 2008 21:07:51 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>,
-       virtualization@lists.osdl.org, jeremy@xensource.com,
-       Herbert Xu <herbert@gondor.apana.org.au>, Avi Kivity <avi@qumranet.com>,
-       Christian Borntraeger <borntraeger@de.ibm.com>
-Subject: Re: Virt RNG?
-Message-ID: <20080516000751.GC23721@khazad-dum.debian.net>
-References: <482C8595.5030509@garzik.org> <200805160943.08788.rusty@rustcorp.com.au>
+	Thu, 15 May 2008 20:09:25 -0400
+Received: from ozlabs.org ([203.10.76.45]:42906 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757690AbYEPAJZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 20:09:25 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [PATCH] modules: Use a better scheme for refcounting
+Date: Fri, 16 May 2008 10:09:11 +1000
+User-Agent: KMail/1.9.9
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Mike Travis <travis@sgi.com>
+References: <482C9FC5.2070508@cosmosbay.com>
+In-Reply-To: <482C9FC5.2070508@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200805160943.08788.rusty@rustcorp.com.au>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200805161009.12142.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 May 2008, Rusty Russell wrote:
-> Yes, I prepared one earlier.  I was a little surprised to see that hwrng 
-> drivers don't contribute in any way to the entropy pool though, but now
-> reading the thread I find out about rngd (not installed on my Ubuntu system, 
-> but available at least).
+On Friday 16 May 2008 06:40:37 Eric Dumazet wrote:
+> Current refcounting for modules (done if CONFIG_MODULE_UNLOAD=y)
+> is using a lot of memory.
 
-It would be easy to implement rng-tools as a kernel driver, as long as
-proper in-kernel interfaces exist for it to work in an event-driven way.
-I don't see what we would win over rng-tools in userspace, however.
+Hi Eric,
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+   I like this patch!  The plan was always to create a proper dynamic per-cpu
+allocator which used the normal per-cpu offsets, but I think module refcounts
+are worthwhile as a special case.
+
+   Any chance I can ask you look at the issue of full dynamic per-cpu
+allocation?  The problem of allocating memory which is laid out precisely
+as the original per-cpu alloc is vexing on NUMA, and probably requires
+reserving virtual address space and remapping into it, but the rewards
+would be maximally-efficient per-cpu accessors, and getting rid of that
+boutique allocator in module.c.
+
+Only minor commentry on the patch itself:
+
+> +#ifdef CONFIG_SMP
+> +       char *refptr;
+> +#else
+
+void * would seem more natural here (love those gcc'isms)
+
+> +#if defined(CONFIG_MODULE_UNLOAD) && defined(CONFIG_SMP)
+> +       void *refptr = NULL;
+> +#endif
+
+Looks like you can skip this if you assign to mod->refptr directly below:
+
+> +#if defined(CONFIG_MODULE_UNLOAD) && defined(CONFIG_SMP)
+> +       refptr = percpu_modalloc(sizeof(local_t), sizeof(local_t), mod->name);
+> +       if (!refptr)
+> +               goto free_mod;
+> +       mod->refptr = refptr;
+> +#endif
+
+And finally:
+
+> +#if defined(CONFIG_MODULE_UNLOAD) && defined(CONFIG_SMP)
+> +       if (refptr)
+> +               percpu_modfree(refptr);
+> +#endif
+
+This if (refptr) seems redundant.
+
+Thanks!
+Rusty.
