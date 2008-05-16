@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758141AbYEPOnB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758386AbYEPOnj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758141AbYEPOnB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 10:43:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbYEPOmF
+	id S1758386AbYEPOnj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 10:43:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbYEPOmH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 10:42:05 -0400
-Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49183 "EHLO
+	Fri, 16 May 2008 10:42:07 -0400
+Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49185 "EHLO
 	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750880AbYEPOl6 (ORCPT
+	with ESMTP id S1750947AbYEPOl7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 10:41:58 -0400
+	Fri, 16 May 2008 10:41:59 -0400
 From: hooanon05@yahoo.co.jp
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Junjiro Okajima <hooanon05@yahoo.co.jp>
-Subject: [PATCH 62/67] aufs magic sysrq handler
-Date: Fri, 16 May 2008 23:33:16 +0900
-Message-Id: <12109484021127-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [PATCH 60/67] aufs debug print functions, header
+Date: Fri, 16 May 2008 23:33:14 +0900
+Message-Id: <12109484022031-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <12109484021767-git-send-email-hooanon05@yahoo.co.jp>
+In-Reply-To: <12109484021382-git-send-email-hooanon05@yahoo.co.jp>
 References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <12109484012532-git-send-email-hooanon05@yahoo.co.jp> <12109484012997-git-send-email-hooanon05@yahoo.co.jp> <12109484013051-git-send-email-hooanon05@yahoo.co.jp> <12109484013436-git-send-email-hooanon05@yahoo.co.jp> <1210948401415-git-send-email-hooanon05@yahoo.co.jp> <12109484011533-git-send-email-hooanon05@yahoo.co.jp> <1210948401506-git-send-email-hooanon05@yahoo.co.jp> <12109484013156-git-send-email-hooanon05@yahoo.co.jp> <12109484012724-git-send-email-hooanon05@yahoo.co.jp> <12109484013264-git-send-email-hooanon05@yahoo.co.jp> <12109484012658-git-send-email-hooanon05@yahoo.co.jp> <12109484011282-git-send-email-hooanon05@yahoo.co.jp> <12109484012543-git-send-email-hooanon05@yahoo.co.jp> <12109484013834-git-send-email-hooanon05@yahoo.co.jp> <12109484012213-git-send-email-hooanon05@yahoo.co.jp> <12109484012301-git-send-email-hooanon05@yahoo.co.jp> <1210948401175-git-send-email-hooanon05@yahoo.co.jp> <1210948!
  4013702-git-send-email-hooanon05@yahoo.co.jp> <12109484012871-git-send-email-hooanon05@yahoo.co.jp> <12109484013438-git-send-email-hooanon05@yahoo.co.jp> <12109484013559-git-send-email-hooanon05@yahoo.co.jp> <12109484012111-git-send-email-hooanon05@yahoo.co.jp> <1210948401543-git-send-email-hooanon05@yahoo.co.jp> <1210948401147-git-send-email-hooanon05@yahoo.co.jp> <12109484012904-git-send-email-hooanon05@yahoo.co.jp> <121094840127-git-send-email-hooanon05@yahoo.co.jp> <12109484011862-git-send-email-hooanon05@yahoo.co.jp> <12109484011143-git-send-email-hooanon05@yahoo.co.jp> <12109484011867-git-send-email-hooanon05@yahoo.co.jp> <12109484021033-git-send-email-hooanon05@yahoo.co.jp> <12109484021234-git-send-email-hooanon05@yahoo.co.jp> <12109484022680-git-send-email-hooanon05@yahoo.co.jp> <12109484021974-git-send-email-hooanon05@yahoo.co.jp> <12109484021281-git-send-email-hooanon05@yahoo.co.jp> <12109484022659-git-send-email-hooanon05@yahoo.co.jp> <12109484023036-git-send-ema!
  il-hooanon05@yahoo.co.jp> <12109484021939-git-send-email-hooanon05@yahoo.co.jp> <12109484022745-git-send-email-hooanon05@yahoo.co.jp> <12109484023224-git-send-email-hooanon05@yahoo.co.jp> <12109484023618-git-send-email-hooanon05@yahoo.co.jp> <12109484023820-git-send-email-hooanon05@yahoo.co.jp> <12109484021927-git-send-email
@@ -28,21 +28,21 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Junjiro Okajima <hooanon05@yahoo.co.jp>
 
 	initial commit
-	aufs magic sysrq handler
+	aufs debug print functions, header
 
 Signed-off-by: Junjiro Okajima <hooanon05@yahoo.co.jp>
 ---
- fs/aufs/sysrq.c |  112 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 112 insertions(+), 0 deletions(-)
+ fs/aufs/debug.h |  210 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 210 insertions(+), 0 deletions(-)
 
-diff --git a/fs/aufs/sysrq.c b/fs/aufs/sysrq.c
+diff --git a/fs/aufs/debug.h b/fs/aufs/debug.h
 new file mode 100644
-index 0000000..c50c885
+index 0000000..5e723a0
 --- /dev/null
-+++ b/fs/aufs/sysrq.c
-@@ -0,0 +1,112 @@
++++ b/fs/aufs/debug.h
+@@ -0,0 +1,210 @@
 +/*
-+ * Copyright (C) 2008 Junjiro Okajima
++ * Copyright (C) 2005-2008 Junjiro Okajima
 + *
 + * This program, aufs is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -60,99 +60,197 @@ index 0000000..c50c885
 + */
 +
 +/*
-+ * magic sysrq hanlder
++ * debug print functions
 + *
-+ * $Id: sysrq.c,v 1.4 2008/05/04 23:53:27 sfjro Exp $
++ * $Id: debug.h,v 1.2 2008/04/21 02:00:37 sfjro Exp $
 + */
 +
++#ifndef __AUFS_DEBUG_H__
++#define __AUFS_DEBUG_H__
++
++#ifdef __KERNEL__
++
 +#include <linux/fs.h>
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+#include <linux/sysrq.h>
-+#include "aufs.h"
 +
-+static void sysrq_sb(struct super_block *sb)
++/* to debug easier, do not make it an inlined function */
++#define MtxMustLock(mtx)	AuDebugOn(!mutex_is_locked(mtx))
++
++#ifdef CONFIG_AUFS_DEBUG
++/* sparse warns about pointer */
++#define AuDebugOn(a)		BUG_ON(!!(a))
++extern atomic_t au_cond;
++#define au_debug_on()		atomic_inc_return(&au_cond)
++#define au_debug_off()		atomic_dec_return(&au_cond)
++static inline int au_debug_test(void)
 +{
-+	char *plevel;
-+	struct inode *i;
-+
-+	plevel = au_plevel;
-+	au_plevel = KERN_WARNING;
-+	au_debug_on();
-+
-+	pr_warning(AUFS_NAME ": superblock\n");
-+	au_dpri_sb(sb);
-+	pr_warning(AUFS_NAME ": root dentry\n");
-+	au_dpri_dentry(sb->s_root);
-+#if 0
-+	pr_warning(AUFS_NAME ": root inode\n");
-+	au_dpri_inode(sb->s_root->d_inode);
-+#endif
-+#if 1
-+	pr_warning(AUFS_NAME ": isolated inode\n");
-+	list_for_each_entry(i, &sb->s_inodes, i_sb_list)
-+		if (list_empty(&i->i_dentry))
-+			au_dpri_inode(i);
-+#endif
-+
-+	au_plevel = plevel;
-+	au_debug_off();
++	return atomic_read(&au_cond);
 +}
++#else
++#define AuDebugOn(a)		do {} while (0)
++#define au_debug_on()		do {} while (0)
++#define au_debug_off()		do {} while (0)
++static inline int au_debug_test(void)
++{
++	return 0;
++}
++#endif /* CONFIG_AUFS_DEBUG */
 +
 +/* ---------------------------------------------------------------------- */
 +
-+/* module parameter */
-+static char *aufs_sysrq_key = "a";
-+module_param_named(sysrq, aufs_sysrq_key, charp, S_IRUGO);
-+MODULE_PARM_DESC(sysrq, "MagicSysRq key for " AUFS_NAME);
-+
-+static void au_sysrq(int key, struct tty_struct *tty)
-+{
-+	struct au_sbinfo *sbinfo;
-+
-+#if 0
-+	if (au_debug_test())
-+		au_debug_off();
-+	else
-+		au_debug_on();
++/* debug print */
++#if defined(CONFIG_LKTR) || defined(CONFIG_LKTR_MODULE)
++#include <linux/lktr.h>
++#ifdef CONFIG_AUFS_DEBUG
++#undef LktrCond
++#define LktrCond	unlikely(au_debug_test() || (lktr_cond && lktr_cond()))
 +#endif
++#else
++#define LktrCond			au_debug_test()
++#define LKTRDumpVma(pre, vma, suf)	do {} while (0)
++#define LKTRDumpStack()			do {} while (0)
++#define LKTRTrace(fmt, args...) do { \
++	if (LktrCond) \
++		AuDbg(fmt, ##args); \
++} while (0)
++#define LKTRLabel(label)		LKTRTrace("%s\n", #label)
++#endif /* CONFIG_LKTR */
 +
-+	//mutex_lock(&au_sbilist_mtx);
-+	list_for_each_entry(sbinfo, &au_sbilist, si_list)
-+		sysrq_sb(sbinfo->si_sb);
-+	//mutex_unlock(&au_sbilist_mtx);
-+}
++#define AuTraceErr(e) do { \
++	if (unlikely((e) < 0)) \
++		LKTRTrace("err %d\n", (int)(e)); \
++} while (0)
 +
-+static struct sysrq_key_op au_sysrq_op = {
-+	.handler	= au_sysrq,
-+	.help_msg	= "Aufs",
-+	.action_msg	= "Aufs",
-+	.enable_mask	= SYSRQ_ENABLE_DUMP //??
-+};
++#define AuTraceErrPtr(p) do { \
++	if (IS_ERR(p)) \
++		LKTRTrace("err %ld\n", PTR_ERR(p)); \
++} while (0)
++
++#define AuTraceEnter()	LKTRLabel(enter)
++
++/* dirty macros for debug print, use with "%.*s" and caution */
++#define AuLNPair(qstr)		(qstr)->len, (qstr)->name
++#define AuDLNPair(d)		AuLNPair(&(d)->d_name)
 +
 +/* ---------------------------------------------------------------------- */
 +
-+int __init au_sysrq_init(void)
-+{
-+	int err;
-+	char key;
++#define AuDpri(lvl, fmt, arg...) \
++	printk(lvl AUFS_NAME " %s:%d:%s[%d]: " fmt, \
++	       __func__, __LINE__, current->comm, current->pid, ##arg)
++#define AuDbg(fmt, arg...)	AuDpri(KERN_DEBUG, fmt, ##arg)
++#define AuInfo(fmt, arg...)	AuDpri(KERN_INFO, fmt, ##arg)
++#define AuWarn(fmt, arg...)	AuDpri(KERN_WARNING, fmt, ##arg)
++#define AuErr(fmt, arg...)	AuDpri(KERN_ERR, fmt, ##arg)
++#define AuIOErr(fmt, arg...)	AuErr("I/O Error, " fmt, ##arg)
++#define AuIOErrWhck(fmt, arg...) AuErr("I/O Error, try whck. " fmt, ##arg)
++#define AuWarn1(fmt, arg...) do { \
++	static unsigned char _c; \
++	if (!_c++) AuWarn(fmt, ##arg); \
++} while (0)
 +
-+	err = -1;
-+	key = *aufs_sysrq_key;
-+	if ('a' <= key && key <= 'z')
-+		err = register_sysrq_key(key, &au_sysrq_op);
-+	if (unlikely(err))
-+		AuErr("err %d, sysrq=%c\n", err, key);
-+	return err;
-+}
++#define AuErr1(fmt, arg...) do { \
++	static unsigned char _c; \
++	if (!_c++) AuErr(fmt, ##arg); \
++} while (0)
 +
-+void au_sysrq_fin(void)
++#define AuIOErr1(fmt, arg...) do { \
++	static unsigned char _c; \
++	if (!_c++) AuIOErr(fmt, ##arg); \
++} while (0)
++
++#define AuUnsupportMsg	"This operation is not supported." \
++			" Please report this application to aufs-users ML."
++#define AuUnsupport(fmt, args...) do { \
++	AuErr(AuUnsupportMsg "\n" fmt, ##args); \
++	dump_stack(); \
++} while (0)
++
++/* ---------------------------------------------------------------------- */
++
++struct au_sbinfo;
++#ifdef CONFIG_AUFS_DEBUG
++extern char *au_plevel;
++struct au_nhash;
++void au_dpri_whlist(struct au_nhash *whlist);
++struct au_vdir;
++void au_dpri_vdir(struct au_vdir *vdir);
++void au_dpri_inode(struct inode *inode);
++void au_dpri_dentry(struct dentry *dentry);
++void au_dpri_file(struct file *filp);
++void au_dpri_sb(struct super_block *sb);
++void au_dbg_sleep(int sec);
++int __init au_debug_init(void);
++void au_debug_sbinfo_init(struct au_sbinfo *sbinfo);
++#define AuDbgWhlist(w) do { \
++	LKTRTrace(#w "\n"); \
++	au_dpri_whlist(w); \
++} while (0)
++
++#define AuDbgVdir(v) do { \
++	LKTRTrace(#v "\n"); \
++	au_dpri_vdir(v); \
++} while (0)
++
++#define AuDbgInode(i) do { \
++	LKTRTrace(#i "\n"); \
++	au_dpri_inode(i); \
++} while (0)
++
++#define AuDbgDentry(d) do { \
++	LKTRTrace(#d "\n"); \
++	au_dpri_dentry(d); \
++} while (0)
++
++#define AuDbgFile(f) do { \
++	LKTRTrace(#f "\n"); \
++	au_dpri_file(f); \
++} while (0)
++
++#define AuDbgSb(sb) do { \
++	LKTRTrace(#sb "\n"); \
++	au_dpri_sb(sb); \
++} while (0)
++
++#define AuDbgSleep(sec) do { \
++	AuDbg("sleep %d sec\n", sec); \
++	au_dbg_sleep(sec); \
++} while (0)
++#else
++static inline int au_debug_init(void)
 +{
-+	int err;
-+	err = unregister_sysrq_key(*aufs_sysrq_key, &au_sysrq_op);
-+	if (unlikely(err))
-+		AuErr("err %d (ignored)\n", err);
++	return 0;
 +}
++static inline void au_debug_sbinfo_init(struct au_sbinfo *sbinfo)
++{
++	/* empty */
++}
++#define AuDbgWhlist(w)		do {} while (0)
++#define AuDbgVdir(v)		do {} while (0)
++#define AuDbgInode(i)		do {} while (0)
++#define AuDbgDentry(d)		do {} while (0)
++#define AuDbgFile(f)		do {} while (0)
++#define AuDbgSb(sb)		do {} while (0)
++#define AuDbgSleep(sec)		do {} while (0)
++#endif /* CONFIG_AUFS_DEBUG */
++
++#ifdef DbgUdbaRace
++#define AuDbgSleep_UdbaRace()	AuDbgSleep(DbgUdbaRace)
++#else
++#define AuDbgSleep_UdbaRace()	do {} while (0)
++#endif
++
++#ifdef CONFIG_AUFS_MAGIC_SYSRQ
++int __init au_sysrq_init(void);
++void au_sysrq_fin(void);
++#else
++static inline int au_sysrq_init(void)
++{
++	return 0;
++}
++#define au_sysrq_fin()		do {} while (0)
++#endif
++
++#endif /* __KERNEL__ */
++#endif /* __AUFS_DEBUG_H__ */
 -- 
 1.4.4.4
 
