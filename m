@@ -1,42 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765797AbYEPPLg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932475AbYEPPLz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765797AbYEPPLg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 11:11:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765337AbYEPPGS
+	id S932475AbYEPPLz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 11:11:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765941AbYEPPJ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 11:06:18 -0400
-Received: from mummy.ncsc.mil ([144.51.88.129]:49972 "EHLO mummy.ncsc.mil"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765335AbYEPPGP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 11:06:15 -0400
-Subject: Re: [PATCH 1/67] aufs document
-From: Dave Quigley <dpquigl@tycho.nsa.gov>
-To: hooanon05@yahoo.co.jp
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <12109484013324-git-send-email-hooanon05@yahoo.co.jp>
-References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp>
-Content-Type: text/plain
-Date: Fri, 16 May 2008 10:59:36 -0400
-Message-Id: <1210949976.14706.28.camel@moss-terrapins.epoch.ncsc.mil>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
-Content-Transfer-Encoding: 7bit
+	Fri, 16 May 2008 11:09:59 -0400
+Received: from 206-248-169-182.dsl.ncf.ca ([206.248.169.182]:42143 "EHLO
+	phobos.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765926AbYEPPJ5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 11:09:57 -0400
+Date: Fri, 16 May 2008 10:57:18 -0400
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Paul Mundt <lethal@linux-sh.org>,
+       Andrew Morton <akpm@linux-foundation.org>, hskinnemoen@atmel.com,
+       nurhussein@gmail.com, linux-kernel@vger.kernel.org,
+       randy.dunlap@oracle.com, arjan@infradead.org, mingo@elte.hu,
+       a.p.zijlstra@chello.nl, kyle@parisc-linux.org, schwidefsky@de.ibm.com
+Subject: Re: [PATCH] lib: Taint kernel in common report_bug() WARN path.
+Message-ID: <20080516145718.GD9666@phobos.i.cabal.ca>
+References: <20080516052127.GB15431@linux-sh.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080516052127.GB15431@linux-sh.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A couple of comments about this. First off you might want to reconsider
-how you are breaking up the patches. 67 patches seems a bit much to me
-and while the separation between patches is clear it seems that some of
-them can be folded. Second I'm not sure if I haven't gotten it yet or if
-it wasn't sent but I am missing an Email 0/67. Typically this contains a
-description of the patch set, an index of the patches (possibly with
-descriptions), and a diffstat for the entire patch set. The last thing
-is that each patch should have a worth wile description attached to it.
-All of your comments are two lines and that may make sense based on how
-you have it broken up but if you start breaking up the patch set
-differently you will need better descriptions (possibly even now for
-some of the more obscure functionality).
+On Fri, May 16, 2008 at 02:21:27PM +0900, Paul Mundt wrote:
+> Commit 95b570c9cef3b12356454c7112571b7e406b4b51 introduced a
+> TAINT_WARN that was implemented for all architectures using the
+> generic warn_on_slowpath(), which excluded any architecture that
+> set HAVE_ARCH_WARN_ON.
+> 
+> As all of the architectures that implement their own WARN_ON()
+> all go through the report_bug() path (specifically handling
+> BUG_TRAP_TYPE_WARN), taint the kernel there as well for consistency.
+> 
+> Tested on avr32 and sh. Also relevant for s390, parisc, and powerpc.
+> 
+> Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+> 
 
-Dave
+obviously fine by me.
 
+Acked-by: Kyle McMartin <kyle@mcmartin.ca>
