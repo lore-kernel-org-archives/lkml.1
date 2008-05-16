@@ -1,77 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757934AbYEPWOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758637AbYEPWOF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757934AbYEPWOg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 18:14:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754499AbYEPWO0
+	id S1758637AbYEPWOF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 18:14:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754499AbYEPWNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 18:14:26 -0400
-Received: from an-out-0708.google.com ([209.85.132.246]:44011 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755395AbYEPWOY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 18:14:24 -0400
-Message-ID: <fa686aa40805161514r513d0eebt380a76f64abe8434@mail.gmail.com>
-Date: Fri, 16 May 2008 16:14:23 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: cbouatmailru@gmail.com
-Subject: Re: [PATCH 3/4] spi: Add OF binding support for SPI busses
-Cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
-       fabrizio.garetto@gmail.com
-In-Reply-To: <20080516220338.GA3255@zarina>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
-	 <20080516193613.28030.13950.stgit@trillian.secretlab.ca>
-	 <20080516220338.GA3255@zarina>
-X-Google-Sender-Auth: bffc067c1fff41ab
+	Fri, 16 May 2008 18:13:54 -0400
+Received: from mx.4pi.com ([24.172.19.59]:54708 "EHLO mx.4pi.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753746AbYEPWNy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 18:13:54 -0400
+X-Greylist: delayed 1606 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 May 2008 18:13:53 EDT
+Mime-Version: 1.0
+Message-Id: <p0623098ac453a5767fbb@[192.168.2.55]>
+Date: Fri, 16 May 2008 17:46:01 -0400
+To: linux-kernel@vger.kernel.org
+From: "Scott D. Davilla" <davilla@4pi.com>
+Subject: Re: [PATCH] Input: add appleir USB driver
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16, 2008 at 4:03 PM, Anton Vorontsov <cbouatmailru@gmail.com> wrote:
-> On Fri, May 16, 2008 at 01:36:13PM -0600, Grant Likely wrote:
->> +             /* Store a pointer to the node in the device structure */
->> +             of_node_get(nc);
->> +             spi->dev.archdata.of_node = nc;
->> +
->> +             /* Register the new device */
->> +             rc = spi_register_device(spi);
->> +             if (rc) {
->> +                     dev_err(&master->dev, "spi_device register error %s\n",
->> +                             np->full_name);
->> +                     spi_device_release(spi);
->> +             }
->
-> No way to pass platform data... can you suggest any idea to use
-> this for things like
-> "[POWERPC] 86xx: mpc8610_hpcd: add support for SPI and MMC-over-SPI"
-> I've sent just recently...?
+That would be me sending to Greg. my bad. I should be posting here 
+and I've disciplined myself accordingly (a smack upside the head).
 
-That's right.  platform_data being a very driver specific thing there
-is no way to generically extract a pdata structure from the device
-tree.  Instead, I'm storing the device node in archdata.of_node (line
-immediately above spi_register_device) so that drivers can read the
-device node themselves to populate a platform_device structure.
-(Protected by CONFIG_OF of course).
+The history of the appleir patch is that James McKenzie created it as 
+a method to get IR controller support working for the MacMini. This 
+was way back in time before Apple EFI even had a PC BIOS 
+compatibility layer.
 
-> Maybe this code could do something like
-> spi->dev.platform_data = nc->data;
-> and board code would fill nc->data at early stages? This needs to be a
-> convention, not just random use though.. Maybe we can expand the struct
-> device_node to explicitly include .platform_data for such cases?
+The patch was migrated to the MacTel mactel-linux svn by huceke and 
+stayed for 2.6.17, 2.6.18, 2.6.20 and 2.6.21 kernel usage. There were 
+numerous other patches there that did not migrate upstream for 
+various reasons mainly I think because it was known that they would 
+never be accepted. These were niche patches for Linux support on 
+Apple hardware, some using EFI boots, others using Apples EFI PC BIOS 
+compatibility layer. Some patches were pushed upstream (imacfb), 
+others stayed.
 
-Hmmm, as you say, this could end up being rather messy.  However, by
-passing the device node pointer, the driver could extract that data on
-a per case basis.  (ie. it would be decided on a per driver basis
-where to get the platform data).  I'm not sure; this bears more
-thought...
+In 2.6.22, the appleir patch was dropped at mactel-linux because 
+usbhid support was added in the kernel by including the proper 
+VID/PID so that the Apple IR devices (now more than one) was 
+recognized by usbhid and can be seen as "/dev/usb/usbhid0" typically. 
+I'm not sure when support for the MacMini using usbhid was added to 
+LIRC.
 
-Cheers,
-g.
+Just about every distro that has any form of IR support uses LIRC and 
+LIRC uses usbhid for Apple IR support. This is a userland device as 
+it should be.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+The Apple IR remote can increment an IR user device id such that you 
+can pair specific IR remotes to computers and not have them control 
+each other. This user device id is the last byte in the pre_data 
+(LIRC speak) so there are 256 possible values. There are also 256 
+possible key values. I believe there might be forbidden values as the 
+actual IR protocol has a checksum. You can use a JP1 programmable 
+remote or a learning remote to "extend" beyond the six button limit 
+of the Apple IR remote controller. Numerous users do this as it 
+eliminates having to purchase a replacement IR remote and IR receiver 
+if they find a six button IR remote limiting.
+
+So while you could continue with including this patch, you would need 
+to include key tables for 256 x 256 keys and provide a method to 
+disable this device in favor of the usbhid method. A method to 
+disable the usbhid usage could be using the modprobe option usbhid 
+quirk and passing the ignore flag (the usbhid modprobe quirk passing 
+was enabled in 2.6.23.x
+
+I do not understand why this patch is not dropped. The Apple IR is a 
+USB HID device and LIRC handles this very nicely. If you do not want 
+to use LIRC, then talk to the usbhid device directly.
+
+I use it for the AppleTV (which has an even different device id). I 
+have two patches pending that add IR support and audio support for 
+the AppleTV. They are pending even though the patches have existed 
+since the 2.6.22 kernel because the only way then to boot the AppleTV 
+was a nasty EFI patch which would never be accepted.
+
+The AppleTV now has a stable bootloader (atv-bootloader) that uses a 
+standard non-EFI linux kerenel and kexec to launch the real standard 
+kernel in a similar method as Linux on the PS3. The atv-bootloader 
+translates EFI structures into E820 structures and moves the ACPI and 
+SMBIOS pointers to where Linux can find them and sets up for a vesafb 
+device. The AppleTV is a pure EFI box with no PC BIOS compatibility 
+layer.
+
+With atv-bootloader in place and stable (several months and numerous 
+users), now I can work on pushing these two patches upstream.
+
+I'm off list so please "CC" to respond.
+
+Scott
+
+
+
+
+
+
+
+
