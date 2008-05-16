@@ -1,137 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761484AbYEPWx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761509AbYEPW66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761484AbYEPWx3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 18:53:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757031AbYEPWxP
+	id S1761509AbYEPW66 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 18:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755902AbYEPW6r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 18:53:15 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:51893 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756904AbYEPWxN (ORCPT
+	Fri, 16 May 2008 18:58:47 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55013 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755368AbYEPW6q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 18:53:13 -0400
-Date: Fri, 16 May 2008 23:53:04 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
-Message-ID: <20080516225304.GG15334@shareable.org>
-Mail-Followup-To: Eric Sandeen <sandeen@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org
-References: <482DDA56.6000301@redhat.com> <20080516130545.845a3be9.akpm@linux-foundation.org> <482DF44B.50204@redhat.com> <20080516220315.GB15334@shareable.org> <482E08E6.4030507@redhat.com>
+	Fri, 16 May 2008 18:58:46 -0400
+Date: Fri, 16 May 2008 15:58:22 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Remove BKL from FAT/VFAT/MSDOS (v1) (was Re: Fw: Regression
+ caused by bf726e "semaphore: fix,")
+In-Reply-To: <alpine.LFD.1.10.0805161514570.3020@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.1.10.0805161552510.3020@woody.linux-foundation.org>
+References: <20080510121020.f33c83f7.akpm@linux-foundation.org> <20080511075522.GA18214@elte.hu> <Pine.LNX.4.64.0805111150250.32758@titan.stealer.net> <20080511125731.GA28174@elte.hu> <alpine.LFD.1.10.0805110941540.3330@woody.linux-foundation.org>
+ <20080511111210.77858eb4.akpm@linux-foundation.org> <alpine.LFD.1.10.0805111221070.3188@woody.linux-foundation.org> <alpine.LFD.1.10.0805111243250.3188@woody.linux-foundation.org> <20080511235112.GA16101@elte.hu> <alpine.LFD.1.10.0805120155490.3514@apollo.tec.linutronix.de>
+ <alpine.LFD.1.10.0805120723440.3188@woody.linux-foundation.org> <alpine.LFD.1.10.0805121659470.3514@apollo.tec.linutronix.de> <alpine.LFD.1.10.0805121324410.3019@woody.linux-foundation.org> <alpine.LFD.1.10.0805161025510.3255@apollo.tec.linutronix.de>
+ <alpine.LFD.1.10.0805160906580.2941@woody.linux-foundation.org> <alpine.LFD.1.10.0805160950180.2941@woody.linux-foundation.org> <alpine.LFD.1.10.0805161514570.3020@woody.linux-foundation.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <482E08E6.4030507@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Sandeen wrote:
-> > Checking filesystem is hard.  Something systematic would be good - for
-> > which you will want an electronically controlled power switch.
-> 
-> Right, that was the plan.  I wasn't really going to stand there and pull
-> the plug.  :)  I'd like to get to "out of $NUMBER power-loss events
-> under this usage, I saw $THIS corruption $THISMANY times ..."
 
-That would be lovely.
 
-> > If you just want to test the block I/O layer and drive itself, don't
-> > use the filesystem, but write a program which just access the block
-> > device, continuously writing with/without barriers every so often, and
-> > after power cycle read back to see what was and wasn't written.
-> 
-> Well, I think it is worth testing through the filesystem, different
-> journaling mechanisms will probably react^wcorrupt in different ways.
-
-I agree, but intentional tests on the block device will show the
-drives characteristcs on power failure much sooner and more
-consistently.  Then you can concentrate on the worst drivers :-)
-
-> > I think there may be drives which won't show any effect - if they have
-> > enough internal power (from platter inertia) to write everything in
-> > the cache before losing it.
-> 
-> ... and those with flux capacitors.  ;)  I've heard of this mechanism
-> but I'm  not sure I believe it is present in any modern drive.  Not sure
-> the seagates of the world will tell us, either ....
-
-If you do the large-seek write pattern I suggested, and timing
-confirms the drive is queueing many of them in cache, it will be
-really, really clear if the drive has a flux capacitor or equivalent :-)
-
-> > If you want to test, the worst case is to queue many small writes at
-> > seek positions acrosss the disk, so that flushing the disk's write
-> > cache takes the longest time.  A good pattern might be take numbers
-> > 0..2^N-1 (e.g. 0..255), for each number reverse the bit order (0, 128,
-> > 64, 192...) and do writes at those block positions, scaling up to the
-> > range of the whole disk.  The idea is if the disk just caches the last
-> > few queued, they will always be quite spread out.
-> 
-> I suppose we could go about it 2 ways; come up with something diabolical
-> and  try very hard to break it (I think we know that we can) or do
-> something more realistic (like untarring & building a kernel?) and see
-> what happens in that case...
-
-I would suggest one of the metadata intensive filesystem tests,
-creating lots of files in different directories, that sort of thing.
-
-> > The MacOS X folks decided that speed is most important for fsync().
-> > fsync() does not guarantee commit to platter.  *But* they added an
-> > fcntl() for applications to request a commit to platter, which SQLite
-> > at least uses.  I don't know if MacOS X uses barriers for filesystem
-> > operations.
-> 
-> heh,  reminds me of xfs's "osyncisosync" option ;)
-
-VxFS have a few similar options ;-)
-
-> >> and install by default on lvm which won't pass barriers anyway.
-> > 
-> > Considering how many things depend on LVM not passing barriers, that
-> > is scary.  People use software RAID assuming integrity.  They are
-> > immune to many hardware faults.  But it turns out, on Linux, that a
-> > single disk can have higher integrity against power failure than a
-> > RAID.
-> 
-> FWIW...  md also only does it on raid1... but lvm with a single device
-> or mirror underneath really *should* IMHO...
+On Fri, 16 May 2008, Linus Torvalds wrote:
 >
-> >> So maybe it's hypocritical to send this patch from redhat.com :)
-> > 
-> > So send the patch to fix LVM too :-)
-> 
-> hehe, I'll try ... ;)
+> 				[...] but I do think this is at 
+> least an interesting starting point, and it's at least not "totally 
+> obviously broken".
 
-Fwiw, if it were implemented in MD, the difference between barriers
-and flushes could be worth having for performance, even when
-underlying devices implement barriers with flush.
+To clarify: lock_super() is actually a much *stronger* lock than 
+lock_kernel(), which is why testing is actually interesting: the locking 
+hasn't been weakened, it's actually become much stricter (because unlike 
+the kernel lock, the superblock lock is kept over scheduling events, and 
+doesn't silently nest).
 
-It would be good, especially for MT, to optimising away those
-operations in unnecessary cases on underlying device request queues,
-as well as the main MD queue.  An example is WRITE-BARRIER, usually
-implemented as FLUSH, WRITE, FLUSH, can actually report completion
-when the WRITE is finished, and doesn't need to issue the second FLUSH
-at all for a long time, until there's a subsequent WRITE on that drive
-(and on the same partition, fwiw.)
+So the most likely failure case is not that some locking went away and 
+you'd race on the data structures, it's that something deadlocks on itself 
+if the locking isn't right.
 
-I'm increasingly thinking that decomposing WRITE-BARRIER to three
-requests, FLUSH+WRITE+FLUSH, should be done at the generic I/O request
-level, because that is the best place to optimise away, merge, or
-delay unnecessary flushes, and to relax request ordering around them
-if we ever do that.  (BARRIER would remain only as an op for extra
-performance only on drivers which can do barriers another way; many
-drivers would never see or handle it).
+There could be some implicit kernel lock I missed (ie something that acts 
+like the "ioctl" callback I already mentioned), of course, so I'm not 
+going to swear myself blue in the face that there isn't a new race, but on 
+the whole this patch should be pretty safe from the angle that at least 
+the obvious locking bugs should cause deadlocks, not race conditions.
 
-Since we need FLUSH for proper fsync() anyway, that would simplify
-drivers too.
+And if you enable lockdep, the deadlocks aren't silent deaths, but clear 
+"this is where you took it, and here is where you deadlocked due to 
+nesting" reports in dmesg. So this should be eminently debuggable even by 
+almost total newbies that are just interested in BKL removal.
 
-Then the MD patch could just implement FLUSH, which is probably
-simpler than implementing WRITE-BARRIER.
-
--- Jamie
+		Linus
