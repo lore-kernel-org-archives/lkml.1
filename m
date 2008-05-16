@@ -1,69 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757896AbYEPNWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757128AbYEPN1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757896AbYEPNWs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 09:22:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755166AbYEPNWi
+	id S1757128AbYEPN1a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 09:27:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755166AbYEPN1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 09:22:38 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:58180 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754655AbYEPNWh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 09:22:37 -0400
-Date: Fri, 16 May 2008 16:20:49 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       Chris Peterson <cpeterso@cpeterso.com>,
-       tpmdd-devel@lists.sourceforge.net, tpm@selhorst.net,
-       Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: [PATCH] Re: [PATCH] drivers/net: remove network drivers' last
-	few uses of IRQF_SAMPLE_RANDOM
-Message-ID: <20080516132049.GC8029@cs181133002.pp.htv.fi>
-References: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com> <20080515142154.0595e475@core> <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com> <20080515173939.1ec968be@core> <482C7DA3.1090809@garzik.org> <482C953A.4080205@garzik.org> <87abirytxj.fsf@basil.nowhere.org> <20080516105635.6cb1f505@core> <482D5FC5.2070103@firstfloor.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <482D5FC5.2070103@firstfloor.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Fri, 16 May 2008 09:27:22 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:1907 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754419AbYEPN1V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 09:27:21 -0400
+Date: Fri, 16 May 2008 15:27:12 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: "Oliver Pinter" <oliver.pntr@gmail.com>
+Cc: LM Sensors <lm-sensors@lm-sensors.org>, linux-kernel@vger.kernel.org
+Subject: Re: Bad value with w83627thf
+Message-ID: <20080516152712.629606bf@hyperion.delvare>
+In-Reply-To: <6101e8c40805160559i4eb94ba7y7cbfea9c3f528821@mail.gmail.com>
+References: <6101e8c40805160559i4eb94ba7y7cbfea9c3f528821@mail.gmail.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16, 2008 at 12:19:49PM +0200, Andi Kleen wrote:
->...
-> The only problem you got from possible bogus input is that the entropy
-> counts will be wrong, but in my experience nearly all programs
-> use /dev/urandom anyways because /dev/random is just a DoS waiting
-> to happen and user space programmers know that.
->...
+Hi Oliver,
 
-If programs just need some random data without relying on the fact that 
-it's cryptographically strong /dev/urandom is the right choice.
+You are writing to the wrong mailing list (i2c instead of lm-sensors)
+so I am redirecting.
 
-But some programs need entropy for doing crypto stuff, and a local DoS 
-is harmless compared to the consequences of bad /dev/random data.
+On Fri, 16 May 2008 14:59:21 +0200, Oliver Pinter wrote:
+> linux-2.6 - git HEAD on: 9662369
+> lm-sensors: 1:3.0.1-5
+> libsensors4: 1:3.0.1-5
+> os: debian lenny
+> sernsor: w83627thf on asus p4c800 MB
+> 
+> with 2.6.26-rcX kernel, reported false Battery values,
+> -------------------------------------->
+> VBat:        +3.26 V  (min =  +0.02 V, max =  +3.01 V)   ALARM
+> <-------------------------------------
 
-Consider as a worst case the just discovered OpenSSL bug in Debian where 
-all accounts with public key authentification and keys created on a 
-Debian/Ubuntu system during the last 20 months [1] can be taken over by 
-an attacker within less than 20 minutes with a simple brute force 
-attack. [2]
+There is nothing wrong here. +3.26V sounds possible and correct for the
+battery voltage. If you are worried about the min and max values: it is
+up to you to edit your sensors3.conf file to set them properly if the
+BIOS of your motherboard did not (apply the changes with "sensors -s").
+The alarm will go away when you do.
 
-> -Andi
+> lspci -xxx
+> 00:1f.3 SMBus: Intel Corporation 82801EB/ER (ICH5/ICH5R) SMBus
+> Controller (rev 02)
+> 00: 86 80 d3 24 01 00 80 02 02 00 05 0c 00 00 00 00
+> 10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> 20: 01 04 00 00 00 00 00 00 00 00 00 00 43 10 a6 80
+> 30: 00 00 00 00 00 00 00 00 00 00 00 00 03 02 00 00
+> 40: 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> 50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> 60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> 70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> 80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> 90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> f0: 00 00 00 00 00 00 00 00 66 0f 04 00 00 00 00 00
 
-cu
-Adrian
-
-[1] 13 months for Debian stable users
-[2] http://www.derkeiler.com/Mailing-Lists/Full-Disclosure/2008-05/msg00416.html
+Completely irrelevant here, the Winbond W83627THF is an LPC chip, it
+doesn't have an I2C/SMBus interface, so the SMBus controller doesn't
+matter at all.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Jean Delvare
