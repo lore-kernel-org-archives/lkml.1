@@ -1,44 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760948AbYEPSnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760622AbYEPSro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760948AbYEPSnT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 14:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756030AbYEPSm7
+	id S1760622AbYEPSro (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 14:47:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756679AbYEPSrd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 14:42:59 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:53891 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754311AbYEPSm6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 14:42:58 -0400
-Date: Fri, 16 May 2008 14:42:57 -0400
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Jeff Garzik <jeff@garzik.org>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Rick Jones <rick.jones2@hp.com>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       Chris Peterson <cpeterso@cpeterso.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of IRQF_SAMPLE_RANDOM
-Message-ID: <20080516184257.GB27128@csclub.uwaterloo.ca>
-References: <482C7B18.6060003@garzik.org> <482C7E53.3050300@hp.com> <482C8184.2030906@garzik.org> <482C8550.5000909@intel.com> <482C8D4D.3040702@garzik.org> <20080516132107.GA11304@csclub.uwaterloo.ca> <20080516161029.44ded734@core> <20080516173610.GA27126@csclub.uwaterloo.ca> <20080516191125.46f59ad6@core> <20080516184138.GF27126@csclub.uwaterloo.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080516184138.GF27126@csclub.uwaterloo.ca>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Fri, 16 May 2008 14:47:33 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46922 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752092AbYEPSrc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 14:47:32 -0400
+Message-Id: <20080516183224.078229572@redhat.com>
+References: <20080516183207.361608893@redhat.com>
+User-Agent: quilt/0.46-1
+Date: Fri, 16 May 2008 14:32:08 -0400
+From: Rik van Riel <riel@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Subject: [patch 01/14] move isolate_lru_page() to vmscan.c
+Content-Disposition: inline; filename=np-01-move-and-rework-isolate_lru_page-v2.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16, 2008 at 02:41:38PM -0400, Lennart Sorensen wrote:
-> Well it isn't that things liks ssh and ssl and such don't need that
-> level of security, but if there is no way to get it you have to go for
-> the best you can get.  Fortunately it seems hardware RNG is becoming
-> more common on embedded CPUs.
+From: Nick Piggin <npiggin@suse.de>
 
-Of course in some cases, someone might be typing stuff at the serial
-console and you get some actual random input, but you can't rely on it
-being there, its nice to get it if its there though.
+isolate_lru_page logically belongs to be in vmscan.c than migrate.c.
+
+It is tough, because we don't need that function without memory migration
+so there is a valid argument to have it in migrate.c. However a subsequent
+patch needs to make use of it in the core mm, so we can happily move it
+to vmscan.c.
+
+Also, make the function a little more generic by not requiring that it
+adds an isolated page to a given list. Callers can do that.
+
+	Note that we now have '__isolate_lru_page()', that does
+	something quite different, visible outside of vmscan.c
+	for use with memory controller.  Methinks we need to
+	rationalize these names/purposes.	--lts
+
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+Signed-off-by: Rik van Riel <riel@redhat.com>
+Signed-off-by: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+
+---
+
+V1 -> V2 [lts]:
++  fix botched merge -- add back "get_page_unless_zero()"
+
+  From: Nick Piggin <npiggin@suse.de>
+  To: Linux Memory Management <linux-mm@kvack.org>
+  Subject: [patch 1/4] mm: move and rework isolate_lru_page
+  Date:	Mon, 12 Mar 2007 07:38:44 +0100 (CET)
+
+Index: linux-2.6.26-rc2-mm1/include/linux/migrate.h
+===================================================================
+--- linux-2.6.26-rc2-mm1.orig/include/linux/migrate.h	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.26-rc2-mm1/include/linux/migrate.h	2008-05-15 16:07:44.000000000 -0400
+@@ -25,7 +25,6 @@ static inline int vma_migratable(struct 
+ 	return 1;
+ }
+ 
+-extern int isolate_lru_page(struct page *p, struct list_head *pagelist);
+ extern int putback_lru_pages(struct list_head *l);
+ extern int migrate_page(struct address_space *,
+ 			struct page *, struct page *);
+@@ -42,8 +41,6 @@ extern int migrate_vmas(struct mm_struct
+ static inline int vma_migratable(struct vm_area_struct *vma)
+ 					{ return 0; }
+ 
+-static inline int isolate_lru_page(struct page *p, struct list_head *list)
+-					{ return -ENOSYS; }
+ static inline int putback_lru_pages(struct list_head *l) { return 0; }
+ static inline int migrate_pages(struct list_head *l, new_page_t x,
+ 		unsigned long private) { return -ENOSYS; }
+Index: linux-2.6.26-rc2-mm1/mm/internal.h
+===================================================================
+--- linux-2.6.26-rc2-mm1.orig/mm/internal.h	2008-05-15 11:21:11.000000000 -0400
++++ linux-2.6.26-rc2-mm1/mm/internal.h	2008-05-15 16:07:44.000000000 -0400
+@@ -34,6 +34,8 @@ static inline void __put_page(struct pag
+ 	atomic_dec(&page->_count);
+ }
+ 
++extern int isolate_lru_page(struct page *page);
++
+ extern void __free_pages_bootmem(struct page *page, unsigned int order);
+ 
+ /*
+Index: linux-2.6.26-rc2-mm1/mm/migrate.c
+===================================================================
+--- linux-2.6.26-rc2-mm1.orig/mm/migrate.c	2008-05-15 11:21:11.000000000 -0400
++++ linux-2.6.26-rc2-mm1/mm/migrate.c	2008-05-15 16:07:44.000000000 -0400
+@@ -37,36 +37,6 @@
+ #define lru_to_page(_head) (list_entry((_head)->prev, struct page, lru))
+ 
+ /*
+- * Isolate one page from the LRU lists. If successful put it onto
+- * the indicated list with elevated page count.
+- *
+- * Result:
+- *  -EBUSY: page not on LRU list
+- *  0: page removed from LRU list and added to the specified list.
+- */
+-int isolate_lru_page(struct page *page, struct list_head *pagelist)
+-{
+-	int ret = -EBUSY;
+-
+-	if (PageLRU(page)) {
+-		struct zone *zone = page_zone(page);
+-
+-		spin_lock_irq(&zone->lru_lock);
+-		if (PageLRU(page) && get_page_unless_zero(page)) {
+-			ret = 0;
+-			ClearPageLRU(page);
+-			if (PageActive(page))
+-				del_page_from_active_list(zone, page);
+-			else
+-				del_page_from_inactive_list(zone, page);
+-			list_add_tail(&page->lru, pagelist);
+-		}
+-		spin_unlock_irq(&zone->lru_lock);
+-	}
+-	return ret;
+-}
+-
+-/*
+  * migrate_prep() needs to be called before we start compiling a list of pages
+  * to be migrated using isolate_lru_page().
+  */
+@@ -895,7 +865,9 @@ static int do_move_pages(struct mm_struc
+ 				!migrate_all)
+ 			goto put_and_set;
+ 
+-		err = isolate_lru_page(page, &pagelist);
++		err = isolate_lru_page(page);
++		if (!err)
++			list_add_tail(&page->lru, &pagelist);
+ put_and_set:
+ 		/*
+ 		 * Either remove the duplicate refcount from
+Index: linux-2.6.26-rc2-mm1/mm/vmscan.c
+===================================================================
+--- linux-2.6.26-rc2-mm1.orig/mm/vmscan.c	2008-05-15 11:21:11.000000000 -0400
++++ linux-2.6.26-rc2-mm1/mm/vmscan.c	2008-05-15 16:07:44.000000000 -0400
+@@ -816,6 +816,51 @@ static unsigned long clear_active_flags(
+ 	return nr_active;
+ }
+ 
++/**
++ * isolate_lru_page - tries to isolate a page from its LRU list
++ * @page: page to isolate from its LRU list
++ *
++ * Isolates a @page from an LRU list, clears PageLRU and adjusts the
++ * vmstat statistic corresponding to whatever LRU list the page was on.
++ *
++ * Returns 0 if the page was removed from an LRU list.
++ * Returns -EBUSY if the page was not on an LRU list.
++ *
++ * The returned page will have PageLRU() cleared.  If it was found on
++ * the active list, it will have PageActive set.  That flag may need
++ * to be cleared by the caller before letting the page go.
++ *
++ * The vmstat statistic corresponding to the list on which the page was
++ * found will be decremented.
++ *
++ * Restrictions:
++ * (1) Must be called with an elevated refcount on the page. This is a
++ *     fundamentnal difference from isolate_lru_pages (which is called
++ *     without a stable reference).
++ * (2) the lru_lock must not be held.
++ * (3) interrupts must be enabled.
++ */
++int isolate_lru_page(struct page *page)
++{
++	int ret = -EBUSY;
++
++	if (PageLRU(page)) {
++		struct zone *zone = page_zone(page);
++
++		spin_lock_irq(&zone->lru_lock);
++		if (PageLRU(page) && get_page_unless_zero(page)) {
++			ret = 0;
++			ClearPageLRU(page);
++			if (PageActive(page))
++				del_page_from_active_list(zone, page);
++			else
++				del_page_from_inactive_list(zone, page);
++		}
++		spin_unlock_irq(&zone->lru_lock);
++	}
++	return ret;
++}
++
+ /*
+  * shrink_inactive_list() is a helper for shrink_zone().  It returns the number
+  * of reclaimed pages
+Index: linux-2.6.26-rc2-mm1/mm/mempolicy.c
+===================================================================
+--- linux-2.6.26-rc2-mm1.orig/mm/mempolicy.c	2008-05-15 11:20:57.000000000 -0400
++++ linux-2.6.26-rc2-mm1/mm/mempolicy.c	2008-05-15 16:07:44.000000000 -0400
+@@ -93,6 +93,8 @@
+ #include <asm/tlbflush.h>
+ #include <asm/uaccess.h>
+ 
++#include "internal.h"
++
+ /* Internal flags */
+ #define MPOL_MF_DISCONTIG_OK (MPOL_MF_INTERNAL << 0)	/* Skip checks for continuous vmas */
+ #define MPOL_MF_INVERT (MPOL_MF_INTERNAL << 1)		/* Invert check for nodemask */
+@@ -758,8 +760,11 @@ static void migrate_page_add(struct page
+ 	/*
+ 	 * Avoid migrating a page that is shared with others.
+ 	 */
+-	if ((flags & MPOL_MF_MOVE_ALL) || page_mapcount(page) == 1)
+-		isolate_lru_page(page, pagelist);
++	if ((flags & MPOL_MF_MOVE_ALL) || page_mapcount(page) == 1) {
++		if (!isolate_lru_page(page)) {
++			list_add_tail(&page->lru, pagelist);
++		}
++	}
+ }
+ 
+ static struct page *new_node_page(struct page *page, unsigned long node, int **x)
 
 -- 
-Len Sorensen
+All Rights Reversed
+
