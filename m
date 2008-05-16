@@ -1,284 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761251AbYEPUip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760746AbYEPUjq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761251AbYEPUip (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 16:38:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756163AbYEPUib
+	id S1760746AbYEPUjq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 16:39:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754584AbYEPUjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 16:38:31 -0400
-Received: from fk-out-0910.google.com ([209.85.128.184]:18609 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759358AbYEPUi3 (ORCPT
+	Fri, 16 May 2008 16:39:35 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:59545 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752197AbYEPUje (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 16:38:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding:sender;
-        b=IJbjV9Uuv0A5LzgduQQyC/9bI0N7dDwvCRRxTQGlvzgmN6hnbShPwVBJQxAtaY2O7vwpeegIN9FojuLgc6VoxQLyCR2bw8gwv53YclmMiaLhILBJ/K6qGVK/mHlPKxcudQnLDXxmiz95bKWhSP7oRwaeBagFKDyqxZCgNnI76PI=
-Message-ID: <482DF0C0.6050208@users.sourceforge.net>
-Date: Fri, 16 May 2008 22:38:24 +0200
-From: Andrea Righi <righiandr@users.sourceforge.net>
-Reply-To: righiandr@users.sourceforge.net
-User-Agent: Swiftdove 2.0.0.14 (X11/20080505)
+	Fri, 16 May 2008 16:39:34 -0400
+Date: Fri, 16 May 2008 16:39:33 -0400
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Jeff Garzik <jeff@garzik.org>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Rick Jones <rick.jones2@hp.com>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       Chris Peterson <cpeterso@cpeterso.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of IRQF_SAMPLE_RANDOM
+Message-ID: <20080516203932.GH27126@csclub.uwaterloo.ca>
+References: <482C7E53.3050300@hp.com> <482C8184.2030906@garzik.org> <482C8550.5000909@intel.com> <482C8D4D.3040702@garzik.org> <20080516132107.GA11304@csclub.uwaterloo.ca> <20080516161029.44ded734@core> <20080516173610.GA27126@csclub.uwaterloo.ca> <20080516191125.46f59ad6@core> <20080516184138.GF27126@csclub.uwaterloo.ca> <20080516210445.6f961627@core>
 MIME-Version: 1.0
-To: Shailabh Nagar <nagar@watson.ibm.com>, Mark Seger <Mark.Seger@hp.com>
-CC: Balbir Singh <balbir@linux.vnet.ibm.com>, Jes Sorensen <jes@sgi.com>,
-       Chris Sturtivant <csturtiv@sgi.com>, Tony Ernst <tee@sgi.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] distinct tgid/tid I/O statistics (was: taskstats and /proc/.../io
- asymmetry?)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080516210445.6f961627@core>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> Mark Seger wrote:
->> If you look at /proc/pid/stat, you can get the total CPU consumed by a
->> process.  If you look at /proc/pid/task/tid/stat you can get the cpu
->> consumed by a thread and if the tid is that of the parent you only gets
->> its consumption as opposed to all its children.
->>
->> I was surprised to see that the way process I/O is reported doesn't
->> follow this model.  There are no /prod/pid/task/tid/io entries but
->> rather you need to look in /proc/tid/io.  While I view this as a minor
->> inconvenience, I can certainly live with it.  However, /proc/pid/io does
->> not show the aggregate I/O numbers for the whole process and that both
->> surprises and disappoints.  This means if I have a process that starts a
->> bunch of worker threads that do the real work and I want to find the top
->> I/O consumers I can't simply walk the /proc/pid tree but rather have to
->> look at all the threads of each process and add them up.
->>
->> Or am I missing something?
->>
-> 
-> I looked through the code and your argument seems to be correct. The behaviour
-> is inconsistent w.r.t. other statistics like utime and stime. We currently
-> accumulate tgid information in signal_struct, we need to do something similar
-> for io as well. If nobody gets to it by the time I finish my backlog, I'll try
-> and get to it.
+On Fri, May 16, 2008 at 09:04:45PM +0100, Alan Cox wrote:
+> So open /dev/urandom in that case. It's a user space problem - this is
+> policy.
 
-Balbir, Mark,
+How does user space know?  Maybe someone is using the serial console,
+maybe not.
 
-what do you think about the following approach?
-Patch against 2.6.25.4, tested in KVM.
-
--Andrea
-
---
-Report per-thread I/O statistics in /proc/pid/task/tid/io and aggregate
-parent I/O statistics in /proc/pid/io. This approach follows the same
-model used to account per-process and per-thread CPU times.
-
-As a practial application, this allows for example to quickly find the
-top I/O consumer when a process spawns many child threads that perform
-the actual I/O work, because the aggregated I/O statistics can always be
-found in /proc/pid/io.
-
-Bug reported by Mark Seger <Mark.Seger@hp.com>.
-
-Signed-off-by: Andrea Righi <righiandr@users.sourceforge.net>
----
- fs/proc/base.c        |   83 +++++++++++++++++++++++++++++++++++++++++++------
- include/linux/sched.h |    4 ++
- kernel/exit.c         |   27 ++++++++++++++++
- kernel/fork.c         |    6 +++
- 4 files changed, 110 insertions(+), 10 deletions(-)
-
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 81d7d14..23763c5 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -2255,8 +2255,58 @@ static int proc_base_fill_cache(struct file *filp, void *dirent,
- }
- 
- #ifdef CONFIG_TASK_IO_ACCOUNTING
--static int proc_pid_io_accounting(struct task_struct *task, char *buffer)
-+static int do_io_accounting(struct task_struct *task, char *buffer, int whole)
- {
-+	unsigned long flags;
-+	u64 rchar, wchar, syscr, syscw;
-+	struct task_io_accounting ioac;
-+
-+	if (!whole) {
-+#ifdef CONFIG_TASK_XACCT
-+		rchar = task->rchar;
-+		wchar = task->wchar;
-+		syscr = task->syscr;
-+		syscw = task->syscw;
-+#endif
-+		memcpy(&ioac, &task->ioac, sizeof(ioac));
-+	} else {
-+		rchar = wchar = syscr = syscw = 0;
-+		memset(&ioac, 0, sizeof(ioac));
-+		rcu_read_lock();
-+		if (lock_task_sighand(task, &flags)) {
-+		struct signal_struct *sig = task->signal;
-+		struct task_struct *t = task;
-+
-+			do {
-+#ifdef CONFIG_TASK_XACCT
-+				rchar += t->rchar;
-+				wchar += t->wchar;
-+				syscr += t->syscr;
-+				syscw += t->syscw;
-+#endif
-+				ioac.read_bytes += t->ioac.read_bytes;
-+				ioac.write_bytes += t->ioac.write_bytes;
-+				ioac.cancelled_write_bytes +=
-+						t->ioac.cancelled_write_bytes;
-+				t = next_thread(t);
-+			} while (t != task);
-+
-+#ifdef CONFIG_TASK_XACCT
-+			rchar += sig->rchar;
-+			wchar += sig->wchar;
-+			syscr += sig->syscr;
-+			syscw += sig->syscw;
-+#endif
-+			ioac.read_bytes += sig->ioac.read_bytes;
-+			ioac.write_bytes += sig->ioac.write_bytes;
-+			ioac.cancelled_write_bytes +=
-+					sig->ioac.cancelled_write_bytes;
-+
-+			unlock_task_sighand(task, &flags);
-+		}
-+		rcu_read_unlock();
-+	}
-+
- 	return sprintf(buffer,
- #ifdef CONFIG_TASK_XACCT
- 			"rchar: %llu\n"
-@@ -2268,16 +2318,26 @@ static int proc_pid_io_accounting(struct task_struct *task, char *buffer)
- 			"write_bytes: %llu\n"
- 			"cancelled_write_bytes: %llu\n",
- #ifdef CONFIG_TASK_XACCT
--			(unsigned long long)task->rchar,
--			(unsigned long long)task->wchar,
--			(unsigned long long)task->syscr,
--			(unsigned long long)task->syscw,
-+			(unsigned long long)rchar,
-+			(unsigned long long)wchar,
-+			(unsigned long long)syscr,
-+			(unsigned long long)syscw,
- #endif
--			(unsigned long long)task->ioac.read_bytes,
--			(unsigned long long)task->ioac.write_bytes,
--			(unsigned long long)task->ioac.cancelled_write_bytes);
-+			(unsigned long long)ioac.read_bytes,
-+			(unsigned long long)ioac.write_bytes,
-+			(unsigned long long)ioac.cancelled_write_bytes);
-+}
-+
-+static int proc_tid_io_accounting(struct task_struct *task, char *buffer)
-+{
-+	return do_io_accounting(task, buffer, 0);
- }
--#endif
-+
-+static int proc_tgid_io_accounting(struct task_struct *task, char *buffer)
-+{
-+	return do_io_accounting(task, buffer, 1);
-+}
-+#endif /* CONFIG_TASK_IO_ACCOUNTING */
- 
- /*
-  * Thread groups
-@@ -2348,7 +2408,7 @@ static const struct pid_entry tgid_base_stuff[] = {
- 	REG("coredump_filter", S_IRUGO|S_IWUSR, coredump_filter),
- #endif
- #ifdef CONFIG_TASK_IO_ACCOUNTING
--	INF("io",	S_IRUGO, pid_io_accounting),
-+	INF("io",	S_IRUGO, tgid_io_accounting),
- #endif
- };
- 
-@@ -2675,6 +2735,9 @@ static const struct pid_entry tid_base_stuff[] = {
- #ifdef CONFIG_FAULT_INJECTION
- 	REG("make-it-fail", S_IRUGO|S_IWUSR, fault_inject),
- #endif
-+#ifdef CONFIG_TASK_IO_ACCOUNTING
-+	INF("io",	S_IRUGO, tid_io_accounting),
-+#endif
- };
- 
- static int proc_tid_base_readdir(struct file * filp,
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 6a1e7af..ebf8b45 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -504,6 +504,10 @@ struct signal_struct {
- 	unsigned long nvcsw, nivcsw, cnvcsw, cnivcsw;
- 	unsigned long min_flt, maj_flt, cmin_flt, cmaj_flt;
- 	unsigned long inblock, oublock, cinblock, coublock;
-+#ifdef CONFIG_TASK_XACCT
-+	u64 rchar, wchar, syscr, syscw;
-+#endif
-+	struct task_io_accounting ioac;
- 
- 	/*
- 	 * Cumulative ns of scheduled CPU time for dead threads in the
-diff --git a/kernel/exit.c b/kernel/exit.c
-index 073005b..1a35583 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -114,6 +114,18 @@ static void __exit_signal(struct task_struct *tsk)
- 		sig->nivcsw += tsk->nivcsw;
- 		sig->inblock += task_io_get_inblock(tsk);
- 		sig->oublock += task_io_get_oublock(tsk);
-+#ifdef CONFIG_TASK_XACCT
-+		sig->rchar += tsk->rchar;
-+		sig->wchar += tsk->wchar;
-+		sig->syscr += tsk->syscr;
-+		sig->syscw += tsk->syscw;
-+#endif /* CONFIG_TASK_XACCT */
-+#ifdef CONFIG_TASK_IO_ACCOUNTING
-+		sig->ioac.read_bytes += tsk->ioac.read_bytes;
-+		sig->ioac.write_bytes += tsk->ioac.write_bytes;
-+		sig->ioac.cancelled_write_bytes +=
-+					tsk->ioac.cancelled_write_bytes;
-+#endif /* CONFIG_TASK_IO_ACCOUNTING */
- 		sig->sum_sched_runtime += tsk->se.sum_exec_runtime;
- 		sig = NULL; /* Marker for below. */
- 	}
-@@ -1250,6 +1262,21 @@ static int wait_task_zombie(struct task_struct *p, int noreap,
- 		psig->coublock +=
- 			task_io_get_oublock(p) +
- 			sig->oublock + sig->coublock;
-+#ifdef CONFIG_TASK_XACCT
-+		psig->rchar += p->rchar + sig->rchar;
-+		psig->wchar += p->wchar + sig->wchar;
-+		psig->syscr += p->syscr + sig->syscr;
-+		psig->syscw += p->syscw + sig->syscw;
-+#endif /* CONFIG_TASK_XACCT */
-+#ifdef CONFIG_TASK_IO_ACCOUNTING
-+		psig->ioac.read_bytes +=
-+			p->ioac.read_bytes + sig->ioac.read_bytes;
-+		psig->ioac.write_bytes +=
-+			p->ioac.write_bytes + sig->ioac.write_bytes;
-+		psig->ioac.cancelled_write_bytes +=
-+				p->ioac.cancelled_write_bytes +
-+				sig->ioac.cancelled_write_bytes;
-+#endif /* CONFIG_TASK_IO_ACCOUNTING */
- 		spin_unlock_irq(&p->parent->sighand->siglock);
- 	}
- 
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 9c042f9..b8f408e 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -924,6 +924,12 @@ static int copy_signal(unsigned long clone_flags, struct task_struct *tsk)
- 	sig->nvcsw = sig->nivcsw = sig->cnvcsw = sig->cnivcsw = 0;
- 	sig->min_flt = sig->maj_flt = sig->cmin_flt = sig->cmaj_flt = 0;
- 	sig->inblock = sig->oublock = sig->cinblock = sig->coublock = 0;
-+#ifdef CONFIG_TASK_XACCT
-+	sig->rchar = sig->wchar = sig->syscr = sig->syscw = 0;
-+#endif
-+#ifdef CONFIG_TASK_IO_ACCOUNTING
-+	memset(&sig->ioac, 0, sizeof(sig->ioac));
-+#endif
- 	sig->sum_sched_runtime = 0;
- 	INIT_LIST_HEAD(&sig->cpu_timers[0]);
- 	INIT_LIST_HEAD(&sig->cpu_timers[1]);
 -- 
-1.5.4.3
+Len Sorensen
