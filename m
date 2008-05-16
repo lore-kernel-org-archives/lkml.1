@@ -1,64 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755816AbYEPNU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757819AbYEPNVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755816AbYEPNU1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 09:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754655AbYEPNUT
+	id S1757819AbYEPNVV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 09:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754974AbYEPNVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 09:20:19 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:43996 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751888AbYEPNUS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 09:20:18 -0400
-Message-ID: <482D8A0D.7020902@sgi.com>
-Date: Fri, 16 May 2008 06:20:13 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 16 May 2008 09:21:09 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:51376 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753305AbYEPNVI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 09:21:08 -0400
+Date: Fri, 16 May 2008 09:21:07 -0400
+To: Jeff Garzik <jeff@garzik.org>
+Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>, Rick Jones <rick.jones2@hp.com>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Chris Peterson <cpeterso@cpeterso.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of IRQF_SAMPLE_RANDOM
+Message-ID: <20080516132107.GA11304@csclub.uwaterloo.ca>
+References: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com> <20080515142154.0595e475@core> <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com> <482C7B18.6060003@garzik.org> <482C7E53.3050300@hp.com> <482C8184.2030906@garzik.org> <482C8550.5000909@intel.com> <482C8D4D.3040702@garzik.org>
 MIME-Version: 1.0
-To: Paul Jackson <pj@sgi.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Jack Steiner <steiner@sgi.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       "Huang, Ying" <ying.huang@intel.com>, Andi Kleen <andi@firstfloor.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 1/10] x86 boot: include missing smp.h header
-References: <20080514151504.148486.32236.sendpatchset@jackhammer.engr.sgi.com>
-In-Reply-To: <20080514151504.148486.32236.sendpatchset@jackhammer.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <482C8D4D.3040702@garzik.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Acked-By: Mike Travis <travis@sgi.com>
+On Thu, May 15, 2008 at 03:21:49PM -0400, Jeff Garzik wrote:
+> "no other form of entropy"?   See examples in this thread.
 
-Paul Jackson wrote:
-> From: Paul Jackson <pj@sgi.com>
-> 
-> The patch:
->     x86: convert cpu_to_apicid to be a per cpu variable
-> introduced a dependency of ipi.h on smp.h in x86
-> builds with an allnoconfig.  Including smp.h in ipi.h
-> fixes the build error:
->     In file included from arch/x86/kernel/traps_64.c:48:
->     include/asm/ipi.h: In function 'send_IPI_mask_sequence':
->     include/asm/ipi.h:114: error: 'per_cpu__x86_cpu_to_apicid' undeclared (first use in this function)
-> 
-> Signed-off-by: Paul Jackson <pj@sgi.com>
-> Cc: Mike Travis <travis@sgi.com>
-> 
-> ---
->  include/asm-x86/ipi.h |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> --- linux.orig/include/asm-x86/ipi.h	2008-05-13 10:44:39.000000000 -0700
-> +++ linux/include/asm-x86/ipi.h	2008-05-13 10:56:37.431506774 -0700
-> @@ -20,6 +20,7 @@
->  
->  #include <asm/hw_irq.h>
->  #include <asm/apic.h>
-> +#include <asm/smp.h>
->  
->  /*
->   * the following functions deal with sending IPIs between CPUs.
-> 
+So where does one get entropy if not the ethernet adapter on many
+embedded systems?  If you have no mouse, no keyboard, no hardware number
+generator, just ethernet ports and a serial console that usually
+receives no input.  While ethernet might not be preferable if you have
+something else, sometimes you really don't have anything else.
 
+-- 
+Len Sorensen
