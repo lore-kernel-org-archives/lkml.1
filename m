@@ -1,104 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759586AbYEPRoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760113AbYEPRpU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759586AbYEPRoz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 13:44:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754866AbYEPRoo
+	id S1760113AbYEPRpU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 13:45:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759443AbYEPRou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 13:44:44 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:54898 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752569AbYEPRon (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 13:44:43 -0400
-Message-ID: <482DC807.6080406@sgi.com>
-Date: Fri, 16 May 2008 10:44:39 -0700
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 16 May 2008 13:44:50 -0400
+Received: from outbound-mail-115.bluehost.com ([69.89.24.5]:57889 "HELO
+	outbound-mail-115.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759363AbYEPRot (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 13:44:49 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: Re: [PATCH][PCI]: Introduce pci_find_capability_cached and make MSI use it
+Date: Fri, 16 May 2008 10:44:34 -0700
+User-Agent: KMail/1.9.9
+Cc: Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, linux-rt-users@vger.kernel.org
+References: <20080515160426.GD14846@ghostprotocols.net> <20080515170407.GM9921@parisc-linux.org> <20080515171003.GF14846@ghostprotocols.net>
+In-Reply-To: <20080515171003.GF14846@ghostprotocols.net>
 MIME-Version: 1.0
-To: Dave Jones <davej@codemonkey.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, travis@sgi.com
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: x86-64 NODES_SHIFT compile failure.
-References: <20080516165456.GA30854@codemonkey.org.uk>
-In-Reply-To: <20080516165456.GA30854@codemonkey.org.uk>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805161044.34938.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
-> 4323838215184f5a2f081e0d17b8d60731b03164 added this line to x86's Kconfig..
-> 
->  config NODES_SHIFT
->         int
-> +       range 1 15  if X86_64
->         default "6" if X86_64
->         default "4" if X86_NUMAQ
->         default "3"
-> 
-> Selecting 15 causes:
-> 
-> drivers/base/node.c: In function â€˜node_read_distanceâ€™:
-> drivers/base/node.c:140: error: size of array â€˜type nameâ€™ is negative
-> 
-> Should the upper limit be reduced to 14 (which compiles), or should
-> the BUILD_BUG_ON be changed to somehow cope with this set of changes?
-> 
-> 	Dave
-> 
+On Thursday, May 15, 2008 10:10 am Arnaldo Carvalho de Melo wrote:
+> Em Thu, May 15, 2008 at 11:04:07AM -0600, Matthew Wilcox escreveu:
+> > On Thu, May 15, 2008 at 01:04:26PM -0300, Arnaldo Carvalho de Melo wrote:
+> > > 	So I implemented pci_find_capability_cached and made MSI use it
+> > > for good measure, please consider applying.
+> >
+> > As I told you on IRC, this is just the MSI code being complete crap.
+> > It should be caching the offset itself.  We shouldn't have this extra
+> > array in the struct pci_dev just because MSI is broken.
+>
+> Well, we can certainly do that, its just that I did this first and
+> thought that perhaps there could be some other users, but I see that 44
+> extra bytes per pci_dev can be a pain if the only one to reap benefits
+> is MSI, can't you think of any other users? I couldn't detect any so far
+> in my admitedly limited testing.
 
-A later patch changed it to 9 which is the current real limit of NODES_SHIFT
-(or at least the fully tested limit).  I think it might be in Ingo's
-sched/latest tree, but here it is again.. (cleaned up with MAXSMP not included.)
+There are a few other common cap checks, but I don't think they compare to MSI 
+in terms of latency sensitivity (though I didn't audit all the CAP_ID_EXP 
+checks, there are quite a few of those).
 
+Since we know MSI is a problem, let's just go with fixing that for now.  If we 
+find that other caps are also causing problems we can revisit caching all of 
+them; the patch is simple enough.
 
-Subject: [PATCH 1/1] x86: change maximum NR_CPUS to 4096 and MAX_NUMNODES to 512
-
-  * Change the range of NR_CPUS from 2-255 to 2-4096 and change the
-    range of MAX_NUMNODES (NODES_SHIFT) from 1-32768 to 1-512.
-
-  * Alter comment about how much each increment of NR_CPUS consumes.
-    (This was found by configuring for 256 cpus and then 512 cpus
-     and dividing the difference by 256.)
-
-Signed-off-by: Mike Travis <travis@sgi.com>
----
- arch/x86/Kconfig |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
-
---- linux-2.6-next.orig/arch/x86/Kconfig
-+++ linux-2.6-next/arch/x86/Kconfig
-@@ -566,18 +566,18 @@ config IOMMU_HELPER
- 	def_bool (CALGARY_IOMMU || GART_IOMMU || SWIOTLB)
- 
- config NR_CPUS
--	int "Maximum number of CPUs (2-255)"
--	range 2 255
-+	int "Maximum number of CPUs (2-4096)"
-+	range 2 4096
- 	depends on SMP
- 	default "32" if X86_NUMAQ || X86_SUMMIT || X86_BIGSMP || X86_ES7000
- 	default "8"
- 	help
- 	  This allows you to specify the maximum number of CPUs which this
--	  kernel will support.  The maximum supported value is 255 and the
-+	  kernel will support.  The maximum supported value is 4096 and the
- 	  minimum value which makes sense is 2.
- 
- 	  This is purely to save memory - each supported CPU adds
--	  approximately eight kilobytes to the kernel image.
-+	  approximately one kilobyte to the kernel image.
- 
- config SCHED_SMT
- 	bool "SMT (Hyperthreading) scheduler support"
-@@ -969,8 +969,8 @@ config NUMA_EMU
- 	  number of nodes. This is only useful for debugging.
- 
- config NODES_SHIFT
--	int "Max num nodes shift(1-15)"
--	range 1 15  if X86_64
-+	int "Max num nodes shift(1-9)"
-+	range 1 9  if X86_64
- 	default "6" if X86_64
- 	default "4" if X86_NUMAQ
- 	default "3"
+Thanks,
+Jesse
