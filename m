@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760770AbYEPUTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760416AbYEPUWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760770AbYEPUTf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 16:19:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754897AbYEPUS5
+	id S1760416AbYEPUWg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 16:22:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754642AbYEPUWY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 16:18:57 -0400
-Received: from [158.64.110.160] ([158.64.110.160]:46767 "EHLO
-	bonbons.gotdns.org" rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754305AbYEPUSz convert rfc822-to-8bit (ORCPT
+	Fri, 16 May 2008 16:22:24 -0400
+Received: from mail-out.m-online.net ([212.18.0.9]:59174 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752197AbYEPUWX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 16:18:55 -0400
-From: Bruno =?iso-8859-1?q?Pr=E9mont?= <bonbons@linux-vserver.org>
-To: Dmitry Torokhov <dtor@mail.ru>
-Subject: [PATCH] Input: i8042 - add Dritek quirk for Acer TravelMate 660
-Date: Fri, 16 May 2008 22:08:32 +0200
-User-Agent: KMail/1.9.7
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Input <linux-input@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+	Fri, 16 May 2008 16:22:23 -0400
+Date: Fri, 16 May 2008 22:22:28 +0200
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Ondrej Zajicek <santiago@crfreenet.org>,
+       Krzysztof Helt <krzysztof.h1@poczta.fm>, JosephChan@via.com.tw,
+       akpm@linux-foundation.org, linux-fbdev-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/9] viafb: VIA Frame Buffer Device Driver - Resend
+Message-ID: <20080516202228.GA15817@skynet.be>
+References: <C80EF34A3D2E494DBAF9AC29C7AE4EB806F67745@exchtp03.taipei.via.com.tw> <20080507184333.7d0f1bf4.krzysztof.h1@poczta.fm> <20080508081508.GD11121@localhost.localdomain> <Pine.LNX.4.64.0805081452120.8604@anakin>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200805162208.33370.bonbons@linux-vserver.org>
-X-VirusProbe: ClamAV, untested
-X-SpamProbe: GOOD 0.0001426 5e13a41f180e93ba1d6e9866111de053
+In-Reply-To: <Pine.LNX.4.64.0805081452120.8604@anakin>
+User-Agent: Mutt/1.5.9i
+From: Luc Verhaegen <libv@skynet.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Acer TravelMate 660 series also requires the Dritek quirk to enable the
-extra scancodes.
+On Thu, May 08, 2008 at 02:52:34PM +0200, Geert Uytterhoeven wrote:
+> On Thu, 8 May 2008, Ondrej Zajicek wrote:
+> > On Wed, May 07, 2008 at 06:43:33PM +0200, Krzysztof Helt wrote:
+> > > PS. I assume that your driver will replace the existing vt8623fb (CLE266?) driver when ready. Am I right?
+> > 
+> > These drivers are hardly comparable. vt8623fb supports CLE266 with VGA output only,
+> > but allows arbitrary resolutions and pixclocks, high-res text mode and
+> > (partially) suspend/resume. viafb implements fixed resolutions only and
+> > have no text mode and no suspend/resume support (according to my quick
+> > look on it).
+> 
+> It's a pity viafb implements fixed resolutions only. Is there any
+> specific reason for that?
+> 
+> Gr{oetje,eeting}s,
+> 
+> 						Geert
 
-Signed-off-by: Bruno Prémont <bonbons@linux-vserver.org>
-CC: Dmitry Torokhov <dtor@mail.ru>
+Known good dotclock parameters versus a routine to generate stable dotclocks
+parameters.
 
-diff -NurpP linux-2.6.25.4-orig/drivers/input/serio/i8042-x86ia64io.h linux-2.6.25.4/drivers/input/serio/i8042-x86ia64io.h
---- linux-2.6.25.4-orig/drivers/input/serio/i8042-x86ia64io.h	2008-04-17 04:49:44.000000000 +0200
-+++ linux-2.6.25.4/drivers/input/serio/i8042-x86ia64io.h	2008-05-16 19:20:30.000000000 +0200
-@@ -331,6 +331,13 @@ static struct dmi_system_id __initdata i
- 		},
- 	},
- 	{
-+		.ident = "Acer TravelMate 660",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Acer"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "TravelMate 660"),
-+		},
-+	},
-+	{
- 		.ident = "Acer TravelMate 2490",
- 		.matches = {
- 			DMI_MATCH(DMI_SYS_VENDOR, "Acer"),
-
+Luc Verhaegen.
+SUSE/Novell X Driver Developer.
