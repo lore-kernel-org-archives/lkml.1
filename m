@@ -1,72 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763632AbYEPTK7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763860AbYEPTLY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763632AbYEPTK7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 15:10:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759766AbYEPTKr
+	id S1763860AbYEPTLY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 15:11:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763165AbYEPTKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 16 May 2008 15:10:47 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50410 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758667AbYEPTKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 15:10:44 -0400
-Message-ID: <482DDC04.7020706@redhat.com>
-Date: Fri, 16 May 2008 14:09:56 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
+Received: from pentafluge.infradead.org ([213.146.154.40]:44845 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759671AbYEPTKq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 15:10:46 -0400
+Date: Fri, 16 May 2008 12:08:54 -0700
+From: Greg KH <greg@kroah.com>
+To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Matthias Urlichs <smurf@smurf.noris.de>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org, Augusto Campos <brain@matrix.com.br>
+Subject: Re: [PATCH][OPTION]: Add id for Onda MSA501HS HSDPA modem
+Message-ID: <20080516190854.GC28415@kroah.com>
+References: <20080516184140.GA8111@ghostprotocols.net>
 MIME-Version: 1.0
-To: ext4 development <linux-ext4@vger.kernel.org>,
-       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Jamie Lokier <jamie@shareable.org>
-Subject: [PATCH 4/4] ext4: call blkdev_issue_flush on fsync
-References: <482DDA56.6000301@redhat.com>
-In-Reply-To: <482DDA56.6000301@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080516184140.GA8111@ghostprotocols.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To ensure that bits are truly on-disk after an fsync,
-we should call blkdev_issue_flush if barriers are supported.
+On Fri, May 16, 2008 at 03:41:40PM -0300, Arnaldo Carvalho de Melo wrote:
+> Hi Matthias,
+> 
+> 	Please consider adding the following USB product id to the
+> option GSM modem driver.
+> 
+>         Using the generic usbserial kernel driver I can only get to
+> ~490 Kbit/s, while when using your excellent driver I'm being able to
+> saturate the 1 Mbit/s bandwidth I subscribed from TIM WEB here in Brazil.
+> 
+> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 
-Inspired by an old thread on barriers, by reiserfs & xfs
-which do the same, and by a patch SuSE ships with their kernel
+Hm, I already added this device to the driver a few days ago, but it was
+under a different section and name.  I'll go fix it up to use these
+defines as that makes more sense, sorry for missing that previously.
 
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
----
- fs/ext4/fsync.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+thanks,
 
-diff --git a/fs/ext4/fsync.c b/fs/ext4/fsync.c
-index 1c8ba48..a45c373 100644
---- a/fs/ext4/fsync.c
-+++ b/fs/ext4/fsync.c
-@@ -27,6 +27,7 @@
- #include <linux/sched.h>
- #include <linux/writeback.h>
- #include <linux/jbd2.h>
-+#include <linux/blkdev.h>
- #include "ext4.h"
- #include "ext4_jbd2.h"
- 
-@@ -45,6 +46,7 @@
- int ext4_sync_file(struct file * file, struct dentry *dentry, int datasync)
- {
- 	struct inode *inode = dentry->d_inode;
-+	journal_t *journal = EXT4_SB(inode->i_sb)->s_journal;
- 	int ret = 0;
- 
- 	J_ASSERT(ext4_journal_current_handle() == NULL);
-@@ -85,6 +87,8 @@ int ext4_sync_file(struct file * file, struct dentry *dentry, int datasync)
- 			.nr_to_write = 0, /* sys_fsync did this */
- 		};
- 		ret = sync_inode(inode, &wbc);
-+		if (journal && (journal->j_flags & JBD2_BARRIER))
-+			blkdev_issue_flush(inode->i_sb->s_bdev, NULL);
- 	}
- out:
- 	return ret;
--- 1.5.3.6
-
+greg k-h
