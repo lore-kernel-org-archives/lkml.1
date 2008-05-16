@@ -1,138 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758333AbYEPUA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759345AbYEPUD1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758333AbYEPUA0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 16:00:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbYEPUAL
+	id S1759345AbYEPUD1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 16:03:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbYEPUDQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 16:00:11 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37315
+	Fri, 16 May 2008 16:03:16 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36748
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751331AbYEPUAJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 16:00:09 -0400
-Date: Fri, 16 May 2008 13:00:04 -0700 (PDT)
-Message-Id: <20080516.130004.18881610.davem@davemloft.net>
-To: jimi@sngx.net
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+	by vger.kernel.org with ESMTP id S1753300AbYEPUDP convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 16:03:15 -0400
+Date: Fri, 16 May 2008 13:03:09 -0700 (PDT)
+Message-Id: <20080516.130309.258561311.davem@davemloft.net>
+To: dada1@cosmosbay.com
+Cc: jimi@sngx.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH updated] net: add ability to clear per-interface
  network statistics via procfs
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <482DA5B6.1020606@sngx.net>
+In-Reply-To: <482DB46A.8020103@cosmosbay.com>
 References: <482DA5B6.1020606@sngx.net>
+	<482DB46A.8020103@cosmosbay.com>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: James Cammarata <jimi@sngx.net>
-Date: Fri, 16 May 2008 10:18:14 -0500
+From: Eric Dumazet <dada1@cosmosbay.com>
+Date: Fri, 16 May 2008 18:20:58 +0200
 
-We saw your initial patch posting, you don't need to send this
-again.
+netdev CC:'d, people please...  Eric, you in particular know
+better :-)))
 
-netdev added to CC:
-
-> From: James Cammarata <jimi@sngx.net>
+> James Cammarata a écrit :
+> > From: James Cammarata <jimi@sngx.net>
+> >
+> > Added the ability to write to /proc/net/dev in order to clear the 
+> > interface counters for a given interface.  The ability to zero out 
+> > counters (especially the error counters) is extremely useful when 
+> > troubleshooting interface issues.  Now diffed against 2.6.25.4, and 
+> > added some sanity checking.
+> >
+> Hello James
 > 
-> Added the ability to write to /proc/net/dev in order to clear the interface counters for a given interface.  The ability to zero out counters (especially the error counters) is extremely useful when troubleshooting interface issues.  Now diffed against 2.6.25.4, and added some sanity checking.
+> 1) Every call to get_proc_net() should be paired with a call to 
+> put_net(), or else you  leak  struct net.
 > 
-> Syntax:
->   echo 'net clear-stats ifdev' > /proc/net/dev
-> Where "ifdev" is the device name you wish to clear.
+> 2) I am not sure this is the right way to do this... Did you consider to 
+> extend ethtool instead ?
 > 
-> This code is based mainly on the code found in drivers/scsi/scsi_proc.c
+> > Syntax:
+> >  echo 'net clear-stats ifdev' > /proc/net/dev
+> > Where "ifdev" is the device name you wish to clear.
+> >
+> > This code is based mainly on the code found in drivers/scsi/scsi_proc.c
+> >
+> > Signed-off-by: James Cammarata <jimi@sngx.net>
+> > ---
+> >
+> > --- linux-2.6.25.4/net/core/dev.c       2008-05-15 10:00:12.000000000 
+> > -0500
+> > +++ linux-2.6.25.4-jcammara/net/core/dev.c      2008-05-16 
+> > 07:02:48.000000000 -0500
+> > @@ -2455,2 +2455,78 @@
+> >
+> > +/**
+> > + * proc_net_dev_write - handle writes to /proc/net/dev
+> > + * @file: not used
+> > + * @buf: buffer to write
+> > + * @length: length of buf, at most PAGE_SIZE
+> > + * @ppos: not used
+> > + *
+> > + * Description: this provides a mechanism to clear statistics on a
+> > + * per-interface basis
+> > + * "echo 'net clear-stats ifdev' >/proc/net/dev"
+> > + * with  "ifdev" replaced by the device name you wish to clear.
+> > + *
+> > + */
+> > +static ssize_t proc_net_dev_write(struct file *file, const char 
+> > __user *buf,
+> > +                                  size_t length, loff_t *ppos)
+> > +{
+> > +        char *buffer, *p;
+> > +        char devname[IFNAMSIZ];
+> > +        struct net *net;
+> > +        struct net_device *dev;
+> > +        int err;
+> > +
+> > +        if (!buf || length > PAGE_SIZE)
+> > +                return -EINVAL;
+> > +
+> > +        buffer = (char *)__get_free_page(GFP_KERNEL);
+> > +        if (!buffer)
+> > +                return -ENOMEM;
+> > +
+> > +        err = -EFAULT;
+> > +        if (copy_from_user(buffer, buf, length))
+> > +                goto out;
+> > +
+> > +        err = -EINVAL;
+> > +        if (length < PAGE_SIZE)
+> > +                buffer[length] = '\0';
+> > +        else if (buffer[PAGE_SIZE-1])
+> > +                goto out;
+> > +
+> > +        err = -ENXIO;
+> > +        net = get_proc_net(file->f_dentry->d_inode);
+> > +        if (!net)
+> > +                goto out;
+> > +
+> > +        /*
+> > +         * Usage: echo "net clear-stats ifdev" >/proc/net/dev
+> > +         * with  "ifdev" replaced by the device name you wish to clear.
+> > +         */
+> > +        if (!strncmp("net clear-stats",buffer,15)) {
+> > +                p = buffer + 16;
+> > +                if(sscanf(p,"%16s",devname)>0) {
+> > +                        dev = dev_get_by_name(net,devname);
+> > +                        if (dev) {
+> > +                                if (dev->get_stats) {
+> > +                                        struct net_device_stats *stats =
+> > +                                               dev->get_stats(dev);
+> > +                                        memset(stats,0,
+> > +                                               sizeof(struct 
+> > net_device_stats));
+> > +                                }
+> > +                                dev_put(dev);
+> > +                        }
+> > +                }
+> > +        }
+> > +
+> > +        /*
+> > +         * convert success returns so that we return the
+> > +         * number of bytes consumed.
+> > +         */
+> > +        if (!err)
+> > +                err = length;
+> > +
+> Here probably, you should add
 > 
-> Signed-off-by: James Cammarata <jimi@sngx.net>
-> ---
+>     put_net(net);
 > 
-> --- linux-2.6.25.4/net/core/dev.c       2008-05-15 10:00:12.000000000 -0500
-> +++ linux-2.6.25.4-jcammara/net/core/dev.c      2008-05-16 07:02:48.000000000 -0500
-> @@ -2455,2 +2455,78 @@
+> > + out:
+> > +        free_page((unsigned long)buffer);
+> > +        return err;
+> > +}
+> > +
+> > static void *softnet_seq_start(struct seq_file *seq, loff_t *pos)
+> > @@ -2498,2 +2574,3 @@
+> >        .read    = seq_read,
+> > +        .write   = proc_net_dev_write,
+> >        .llseek  = seq_lseek,
+> >
+> >
 > 
-> +/**
-> + * proc_net_dev_write - handle writes to /proc/net/dev
-> + * @file: not used
-> + * @buf: buffer to write
-> + * @length: length of buf, at most PAGE_SIZE
-> + * @ppos: not used
-> + *
-> + * Description: this provides a mechanism to clear statistics on a
-> + * per-interface basis
-> + * "echo 'net clear-stats ifdev' >/proc/net/dev"
-> + * with  "ifdev" replaced by the device name you wish to clear.
-> + *
-> + */
-> +static ssize_t proc_net_dev_write(struct file *file, const char __user *buf,
-> +                                  size_t length, loff_t *ppos)
-> +{
-> +        char *buffer, *p;
-> +        char devname[IFNAMSIZ];
-> +        struct net *net;
-> +        struct net_device *dev;
-> +        int err;
-> +
-> +        if (!buf || length > PAGE_SIZE)
-> +                return -EINVAL;
-> +
-> +        buffer = (char *)__get_free_page(GFP_KERNEL);
-> +        if (!buffer)
-> +                return -ENOMEM;
-> +
-> +        err = -EFAULT;
-> +        if (copy_from_user(buffer, buf, length))
-> +                goto out;
-> +
-> +        err = -EINVAL;
-> +        if (length < PAGE_SIZE)
-> +                buffer[length] = '\0';
-> +        else if (buffer[PAGE_SIZE-1])
-> +                goto out;
-> +
-> +        err = -ENXIO;
-> +        net = get_proc_net(file->f_dentry->d_inode);
-> +        if (!net)
-> +                goto out;
-> +
-> +        /*
-> +         * Usage: echo "net clear-stats ifdev" >/proc/net/dev
-> +         * with  "ifdev" replaced by the device name you wish to clear.
-> +         */
-> +        if (!strncmp("net clear-stats",buffer,15)) {
-> +                p = buffer + 16;
-> +                if(sscanf(p,"%16s",devname)>0) {
-> +                        dev = dev_get_by_name(net,devname);
-> +                        if (dev) {
-> +                                if (dev->get_stats) {
-> +                                        struct net_device_stats *stats =
-> +                                               dev->get_stats(dev);
-> +                                        memset(stats,0,
-> +                                               sizeof(struct net_device_stats));
-> +                                }
-> +                                dev_put(dev);
-> +                        }
-> +                }
-> +        }
-> +
-> +        /*
-> +         * convert success returns so that we return the
-> +         * number of bytes consumed.
-> +         */
-> +        if (!err)
-> +                err = length;
-> +
-> + out:
-> +        free_page((unsigned long)buffer);
-> +        return err;
-> +}
-> +
->  static void *softnet_seq_start(struct seq_file *seq, loff_t *pos)
-> @@ -2498,2 +2574,3 @@
->         .read    = seq_read,
-> +        .write   = proc_net_dev_write,
->         .llseek  = seq_lseek,
+> 
+> 
 > 
 > --
 > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
