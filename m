@@ -1,151 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755862AbYEPJDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbYEPJQn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755862AbYEPJDY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 05:03:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751317AbYEPJDR
+	id S1754578AbYEPJQn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 05:16:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751902AbYEPJQd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 05:03:17 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:21441 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750845AbYEPJDP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 05:03:15 -0400
-Date: Fri, 16 May 2008 18:01:50 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: David Howells <dhowells@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] binfmt_elf_fdpic: Magical stack pointer index, for NEW_AUX_ENT compat.
-Message-ID: <20080516090150.GA16496@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	David Howells <dhowells@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 16 May 2008 05:16:33 -0400
+Received: from mail.windriver.com ([147.11.1.11]:52271 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751263AbYEPJQc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 05:16:32 -0400
+Subject: Re: [PATCH] x86: Get irq for hpet timer
+From: Kevin Hao <kexin.hao@windriver.com>
+To: Clemens Ladisch <clemens@ladisch.de>
+Cc: venkatesh.pallipadi@intel.com, bob.picco@hp.com, mingo@redhat.com,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       Kevin Hao <kexin.hao@windriver.com>
+In-Reply-To: <482D49CF.4030902@ladisch.de>
+References: <1210917912.10881.1.camel@kevin-desktop>
+	 <482D49CF.4030902@ladisch.de>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 16 May 2008 17:14:30 +0800
+Message-Id: <1210929270.11912.3.camel@kevin-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+X-OriginalArrivalTime: 16 May 2008 09:15:51.0457 (UTC) FILETIME=[6FA93910:01C8B735]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While implementing binfmt_elf_fdpic on SH it quickly became apparent
-that SH was the first platform to support both binfmt_elf_fdpic and
-binfmt_elf, as well as the only of the FDPIC platforms to make use of the
-auxvt.
+On Fri, 2008-05-16 at 10:46 +0200, Clemens Ladisch wrote:
+> Kevin Hao wrote:
+> > HPET timer's IRQ is 0 by default, so we have to select which irq
+> > will be used for these timers. We wait to set the timer's irq until
+> > we really turn on interrupt in order to reduce the chance of
+> > conflicting with some legacy device.
+> >
+> > +	for (irq = find_first_bit(&cap, HPET_MAX_IRQ); irq < HPET_MAX_IRQ;
+> > +		irq = find_next_bit(&cap, HPET_MAX_IRQ, 1 + irq)) {
+> > +		if (request_irq(irq, hpet_interrupt, irq_flags,
+> > +				devp->hd_name, (void *)devp)) {
+> > +			printk(KERN_WARNING "hpet: IRQ %d is not free\n", irq);
+> > +			continue;
+> 
+> This warning message will be output for every interrupt that is in use
+> by another device.  I think it would be better to postpone complaining
+> until after the loop, if no interrupt has been found at all.
+> 
 
-Currently binfmt_elf_fdpic uses a special version of NEW_AUX_ENT() where
-the first argument is the entry displacement after csp has been adjusted,
-being reset after each adjustment. As we have no ability to sort this out
-through the platform's ARCH_DLINFO, this index needs to be managed
-entirely in create_elf_fdpic_tables(). Presently none of the platforms
-that set their own auxvt entries are able to do so through their
-respective ARCH_DLINFOs when using binfmt_elf_fdpic.
+Ok, I agree with you.
+This is the revised version.
 
-In addition to this, binfmt_elf_fdpic has been looking at
-DLINFO_ARCH_ITEMS for the number of architecture-specific entries in the
-auxvt. This is legacy cruft, and is not defined by any platforms in-tree,
-even those that make heavy use of the auxvt. AT_VECTOR_SIZE_ARCH is
-always available, and contains the number that is of interest here, so we
-switch to using that unconditionally as well.
-
-As this has direct bearing on how much stack is used, platforms that have
-configurable (or dynamically adjustable) NEW_AUX_ENT calls need to either
-make AT_VECTOR_SIZE_ARCH more fine-grained, or leave it as a worst-case
-and live with some lost stack space if those entries aren't pushed (some
-platforms may also need to purposely sacrifice some space here for
-alignment considerations, as noted in the code -- although not an issue
-for any FDPIC-capable platform today).
-
-Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-
+Best Regards,
+Kevin
 ---
+ drivers/char/hpet.c  |   63 ++++++++++++++++++++++++++++++++++++++------------
+ include/linux/hpet.h |    3 +-
+ 2 files changed, 50 insertions(+), 16 deletions(-)
 
- fs/binfmt_elf_fdpic.c |   45 +++++++++++++++++++++++++--------------------
- 1 file changed, 25 insertions(+), 20 deletions(-)
-
-diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
-index ddd35d8..341a88b 100644
---- a/fs/binfmt_elf_fdpic.c
-+++ b/fs/binfmt_elf_fdpic.c
-@@ -477,6 +477,7 @@ static int create_elf_fdpic_tables(struct linux_binprm *bprm,
- 	char __user *u_platform, *p;
- 	long hwcap;
- 	int loop;
-+	int nr;	/* reset for each csp adjustment */
+diff --git a/drivers/char/hpet.c b/drivers/char/hpet.c
+index e7fb0bc..0fdc627 100644
+--- a/drivers/char/hpet.c
++++ b/drivers/char/hpet.c
+@@ -383,6 +383,52 @@ hpet_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+ 	return hpet_ioctl_common(devp, cmd, arg, 0);
+ }
  
- 	/* we're going to shovel a whole load of stuff onto the stack */
- #ifdef CONFIG_MMU
-@@ -549,10 +550,7 @@ static int create_elf_fdpic_tables(struct linux_binprm *bprm,
- 	/* force 16 byte _final_ alignment here for generality */
- #define DLINFO_ITEMS 13
- 
--	nitems = 1 + DLINFO_ITEMS + (k_platform ? 1 : 0);
--#ifdef DLINFO_ARCH_ITEMS
--	nitems += DLINFO_ARCH_ITEMS;
--#endif
-+	nitems = 1 + DLINFO_ITEMS + (k_platform ? 1 : 0) + AT_VECTOR_SIZE_ARCH;
- 
- 	csp = sp;
- 	sp -= nitems * 2 * sizeof(unsigned long);
-@@ -564,39 +562,46 @@ static int create_elf_fdpic_tables(struct linux_binprm *bprm,
- 	sp -= sp & 15UL;
- 
- 	/* put the ELF interpreter info on the stack */
--#define NEW_AUX_ENT(nr, id, val)					\
-+#define NEW_AUX_ENT(id, val)						\
- 	do {								\
- 		struct { unsigned long _id, _val; } __user *ent;	\
- 									\
- 		ent = (void __user *) csp;				\
- 		__put_user((id), &ent[nr]._id);				\
- 		__put_user((val), &ent[nr]._val);			\
-+		nr++;							\
- 	} while (0)
- 
-+	nr = 0;
- 	csp -= 2 * sizeof(unsigned long);
--	NEW_AUX_ENT(0, AT_NULL, 0);
-+	NEW_AUX_ENT(AT_NULL, 0);
- 	if (k_platform) {
-+		nr = 0;
- 		csp -= 2 * sizeof(unsigned long);
--		NEW_AUX_ENT(0, AT_PLATFORM,
-+		NEW_AUX_ENT(AT_PLATFORM,
- 			    (elf_addr_t) (unsigned long) u_platform);
- 	}
- 
-+	nr = 0;
- 	csp -= DLINFO_ITEMS * 2 * sizeof(unsigned long);
--	NEW_AUX_ENT( 0, AT_HWCAP,	hwcap);
--	NEW_AUX_ENT( 1, AT_PAGESZ,	PAGE_SIZE);
--	NEW_AUX_ENT( 2, AT_CLKTCK,	CLOCKS_PER_SEC);
--	NEW_AUX_ENT( 3, AT_PHDR,	exec_params->ph_addr);
--	NEW_AUX_ENT( 4, AT_PHENT,	sizeof(struct elf_phdr));
--	NEW_AUX_ENT( 5, AT_PHNUM,	exec_params->hdr.e_phnum);
--	NEW_AUX_ENT( 6,	AT_BASE,	interp_params->elfhdr_addr);
--	NEW_AUX_ENT( 7, AT_FLAGS,	0);
--	NEW_AUX_ENT( 8, AT_ENTRY,	exec_params->entry_addr);
--	NEW_AUX_ENT( 9, AT_UID,		(elf_addr_t) current->uid);
--	NEW_AUX_ENT(10, AT_EUID,	(elf_addr_t) current->euid);
--	NEW_AUX_ENT(11, AT_GID,		(elf_addr_t) current->gid);
--	NEW_AUX_ENT(12, AT_EGID,	(elf_addr_t) current->egid);
-+	NEW_AUX_ENT(AT_HWCAP,	hwcap);
-+	NEW_AUX_ENT(AT_PAGESZ,	PAGE_SIZE);
-+	NEW_AUX_ENT(AT_CLKTCK,	CLOCKS_PER_SEC);
-+	NEW_AUX_ENT(AT_PHDR,	exec_params->ph_addr);
-+	NEW_AUX_ENT(AT_PHENT,	sizeof(struct elf_phdr));
-+	NEW_AUX_ENT(AT_PHNUM,	exec_params->hdr.e_phnum);
-+	NEW_AUX_ENT(AT_BASE,	interp_params->elfhdr_addr);
-+	NEW_AUX_ENT(AT_FLAGS,	0);
-+	NEW_AUX_ENT(AT_ENTRY,	exec_params->entry_addr);
-+	NEW_AUX_ENT(AT_UID,	(elf_addr_t) current->uid);
-+	NEW_AUX_ENT(AT_EUID,	(elf_addr_t) current->euid);
-+	NEW_AUX_ENT(AT_GID,	(elf_addr_t) current->gid);
-+	NEW_AUX_ENT(AT_EGID,	(elf_addr_t) current->egid);
- 
- #ifdef ARCH_DLINFO
-+	nr = 0;
-+	csp -= AT_VECTOR_SIZE_ARCH * 2 * sizeof(unsigned long);
++static int hpet_timer_get_irq(struct hpet_dev *devp)
++{
++	struct hpet_timer __iomem *timer;
++	struct hpet __iomem *hpet;
++	struct hpets *hpetp;
++	unsigned long cap, irq_flags;
++	int irq;
 +
- 	/* ARCH_DLINFO must come last so platform specific code can enforce
- 	 * special alignment requirements on the AUXV if necessary (eg. PPC).
- 	 */
++	timer = devp->hd_timer;
++	hpet = devp->hd_hpet;
++	hpetp = devp->hd_hpets;
++
++	irq = devp->hd_hdwirq;
++
++	sprintf(devp->hd_name, "hpet%d", (int)(devp - hpetp->hp_dev));
++	irq_flags = devp->hd_flags & HPET_SHARED_IRQ
++					? IRQF_SHARED : IRQF_DISABLED;
++	if (irq) {
++		if (request_irq(irq, hpet_interrupt, irq_flags,
++				devp->hd_name, (void *)devp)) {
++			printk(KERN_ERR "hpet: IRQ %d is not free\n", irq);
++			irq = 0;
++		}
++		return irq;
++	}
++
++	cap = (readq(&timer->hpet_config) & Tn_INT_ROUTE_CAP_MASK)
++				 >> Tn_INT_ROUTE_CAP_SHIFT;
++
++	for (irq = find_first_bit(&cap, HPET_MAX_IRQ); irq < HPET_MAX_IRQ;
++		irq = find_next_bit(&cap, HPET_MAX_IRQ, 1 + irq)) {
++		if (request_irq(irq, hpet_interrupt, irq_flags,
++				devp->hd_name, (void *)devp))
++			continue;
++		break;
++	}
++
++	if  (irq >= HPET_MAX_IRQ) {
++		printk(KERN_WARNING "hpet: No available IRQ for %s timer\n",
++			devp->hd_name);
++		irq = 0;
++	}
++
++	return irq;
++}
++
+ static int hpet_ioctl_ieon(struct hpet_dev *devp)
+ {
+ 	struct hpet_timer __iomem *timer;
+@@ -412,21 +458,7 @@ static int hpet_ioctl_ieon(struct hpet_dev *devp)
+ 		devp->hd_flags |= HPET_SHARED_IRQ;
+ 	spin_unlock_irq(&hpet_lock);
+ 
+-	irq = devp->hd_hdwirq;
+-
+-	if (irq) {
+-		unsigned long irq_flags;
+-
+-		sprintf(devp->hd_name, "hpet%d", (int)(devp - hpetp->hp_dev));
+-		irq_flags = devp->hd_flags & HPET_SHARED_IRQ
+-						? IRQF_SHARED : IRQF_DISABLED;
+-		if (request_irq(irq, hpet_interrupt, irq_flags,
+-				devp->hd_name, (void *)devp)) {
+-			printk(KERN_ERR "hpet: IRQ %d is not free\n", irq);
+-			irq = 0;
+-		}
+-	}
+-
++	irq = hpet_timer_get_irq(devp);
+ 	if (irq == 0) {
+ 		spin_lock_irq(&hpet_lock);
+ 		devp->hd_flags ^= HPET_IE;
+@@ -438,6 +470,7 @@ static int hpet_ioctl_ieon(struct hpet_dev *devp)
+ 	t = devp->hd_ireqfreq;
+ 	v = readq(&timer->hpet_config);
+ 	g = v | Tn_INT_ENB_CNF_MASK;
++	g |= irq << Tn_INT_ROUTE_CNF_SHIFT;
+ 
+ 	if (devp->hd_flags & HPET_PERIODIC) {
+ 		write_counter(t, &timer->hpet_compare);
+diff --git a/include/linux/hpet.h b/include/linux/hpet.h
+index 2dc29ce..440ca72 100644
+--- a/include/linux/hpet.h
++++ b/include/linux/hpet.h
+@@ -37,6 +37,7 @@ struct hpet {
+ #define	hpet_compare	_u1._hpet_compare
+ 
+ #define	HPET_MAX_TIMERS	(32)
++#define HPET_MAX_IRQ	(32)
+ 
+ /*
+  * HPET general capabilities register
+@@ -64,7 +65,7 @@ struct hpet {
+  */
+ 
+ #define	Tn_INT_ROUTE_CAP_MASK		(0xffffffff00000000ULL)
+-#define	Tn_INI_ROUTE_CAP_SHIFT		(32UL)
++#define	Tn_INT_ROUTE_CAP_SHIFT		(32UL)
+ #define	Tn_FSB_INT_DELCAP_MASK		(0x8000UL)
+ #define	Tn_FSB_INT_DELCAP_SHIFT		(15)
+ #define	Tn_FSB_EN_CNF_MASK		(0x4000UL)
+
+> 
+> Regards,
+> Clemens
