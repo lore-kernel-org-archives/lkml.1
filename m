@@ -1,75 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbYEPIHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753984AbYEPIKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754825AbYEPIHf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 04:07:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbYEPIHV
+	id S1753984AbYEPIKt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 04:10:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751092AbYEPIKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 04:07:21 -0400
-Received: from mail.windriver.com ([147.11.1.11]:52661 "EHLO mail.wrs.com"
+	Fri, 16 May 2008 04:10:34 -0400
+Received: from gw.goop.org ([64.81.55.164]:41633 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750902AbYEPIHT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 04:07:19 -0400
-Subject: Re: [PATCH] x86: Get irq for hpet timer
-From: Kevin Hao <kexin.hao@windriver.com>
-To: Balaji Rao R <balajirrao@gmail.com>
-Cc: venkatesh.pallipadi@intel.com, clemens@ladisch.de, bob.picco@hp.com,
-       mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org
-In-Reply-To: <569c97d20805160053n8a5deceu25c8b37f02e02842@mail.gmail.com>
-References: <1210917912.10881.1.camel@kevin-desktop>
-	 <569c97d20805160053n8a5deceu25c8b37f02e02842@mail.gmail.com>
-Content-Type: text/plain
+	id S1750990AbYEPIKd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 04:10:33 -0400
+Message-ID: <482D416B.8060501@goop.org>
+Date: Fri, 16 May 2008 09:10:19 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Francis Moreau <francis.moro@gmail.com>
+CC: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: How to avoid data copies in a driver ?
+References: <38b2ab8a0805141254i2437a0ccq130b914748f53db0@mail.gmail.com>	 <Pine.LNX.4.61.0805141716120.11052@chaos.analogic.com> <38b2ab8a0805150040s6933de14p7c2014945ba0810d@mail.gmail.com>
+In-Reply-To: <38b2ab8a0805150040s6933de14p7c2014945ba0810d@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Fri, 16 May 2008 16:03:25 +0800
-Message-Id: <1210925005.10881.12.camel@kevin-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-X-OriginalArrivalTime: 16 May 2008 08:05:46.0972 (UTC) FILETIME=[A597B9C0:01C8B72B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-05-16 at 13:23 +0530, Balaji Rao R wrote:
-> On Fri, May 16, 2008 at 11:35 AM, Kevin Hao <kexin.hao@windriver.com> wrote:
-> >
-> > Hi,
-> >
-> > x86: get irq for hpet timer
-> >
-> > HPET timer's IRQ is 0 by default, so we have to select which irq
-> > will be used for these timers. We wait to set the timer's irq until
-> > we really turn on interrupt in order to reduce the chance of
-> > conflicting with some legacy device.
-> >
-> Yes, this is alright. But  i've seen some machines where we have a
-> valid IRQ in 'devp->hd_hdwirq' which you should not ignore. So, first
-> check if it is zero and only then do a hpet_timer_get_irq.
+Francis Moreau wrote:
+> I'm suprised because what I need doens't seem so uncommon, usually
+> devices send or
+> receive data to/from files. So a helper (system call ?) to achieve
+> that other than the basic
+> read/write seems needed, no ?
+>   
 
-Yes, I have checked that case in hpet_timer_get_irq function. See the
-following code:
+It's fairly rare to have an application which requires moving data to 
+file with absolutely no processing; normally there's at least a bit of 
+massaging/parsing/etc.  If that's really what you want to do, maybe you 
+can do it with splice?  I haven't looked at it at all, but the intention 
+is that you can splice file descriptors together, so you can splice your 
+device fd to a file fd and have it all just work...
 
-+       irq = devp->hd_hdwirq;
+Alternatively you could read() from your device into a mmaped file.  
+That's a single copy from device to file, which is about the best you 
+can do without going to heroic lengths.
+
+Also, it really depends on your application.  Is it a high-bandwidth 
+thing in which the copy is a huge cost?  Or do you want to eliminate the 
+copies because it seems like a nice thing to do?
 
 
-+       if (irq) {
-+               if (request_irq(irq, hpet_interrupt, irq_flags,
-+                               devp->hd_name, (void *)devp)) {
-+                       printk(KERN_ERR "hpet: IRQ %d is not free\n",
-irq);
-+                       irq = 0;
-+               }
-+               return irq;
-+       }
-
-Is that right?
-
-Thanks for your comments.
-
-Best Regards,
-Kevin
-
-> 
-> --
-> warm regards
-> 
-> Balaji Rao
-> NITK Surathkal
+    J
