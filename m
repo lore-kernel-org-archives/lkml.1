@@ -1,57 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759026AbYEPXZh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbYEPX2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759026AbYEPXZh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 19:25:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbYEPXZ0
+	id S1756076AbYEPX2m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 19:28:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbYEPX2a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 19:25:26 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:57697 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751615AbYEPXZZ (ORCPT
+	Fri, 16 May 2008 19:28:30 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:9596 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751350AbYEPX23 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 19:25:25 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, hch@infradead.org, viro@ZenIV.linux.org.uk,
-       ezk@cs.sunysb.edu, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 07/22] fat: dont call notify_change
-References: <20080516163136.560107038@szeredi.hu>
-	<20080516163222.235825996@szeredi.hu>
-Date: Sat, 17 May 2008 08:25:15 +0900
-In-Reply-To: <20080516163222.235825996@szeredi.hu> (Miklos Szeredi's message
-	of "Fri, 16 May 2008 18:31:43 +0200")
-Message-ID: <87prrl7rxg.fsf@duaron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Fri, 16 May 2008 19:28:29 -0400
+Message-ID: <482E1899.7020604@hp.com>
+Date: Fri, 16 May 2008 16:28:25 -0700
+From: Rick Jones <rick.jones2@hp.com>
+User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+To: Jeff Garzik <jeff@garzik.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       Chris Peterson <cpeterso@cpeterso.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
+ IRQF_SAMPLE_RANDOM
+References: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com>	<20080515142154.0595e475@core>	<36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com>	<20080515173939.1ec968be@core> <482C7DA3.1090809@garzik.org>
+In-Reply-To: <482C7DA3.1090809@garzik.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi <miklos@szeredi.hu> writes:
+Jeff Garzik wrote:
+> The Treacherous Platform Module includes an RNG.
+> 
+> Someone (hi Jesse?) should implement support for TPM_GetRandom.
+> 
+> All the specs are public, and the hardware is already in users' hands.
 
-> From: Miklos Szeredi <mszeredi@suse.cz>
->
-> The FAT_IOCTL_SET_ATTRIBUTES ioctl() calls notify_change() to change
-> the file mode before changing the inode attributes.  Replace with
-> explicit calls to security_inode_setattr(), fat_setattr() and
-> fsnotify_change().
->
-> This is equivalent to the original.  The reason it is needed, is that
-> later in the series we move the immutable check into notify_change().
-> That would break the FAT_IOCTL_SET_ATTRIBUTES ioctl, as it needs to
-> perform the mode change regardless of the immutability of the file.
->
-> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-> CC: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+My curiousity got the better of me, so I enabled the TPM (Infineon)
 
-Don't we need to add EXPORT_SYMBOL(security_inode_setattr)? Otherwise,
-looks good to me.
+moe:~# dmesg | grep -i tpm
+tpm_inf_pnp 00:05: Found TPM with ID IFX0101
+tpm_inf_pnp 00:05: TPM found: config base 0xff5b804e, data base 
+0xff5b8000, chip version 0x0006, vendor id 0x15d1 (Infineon), product id 
+0x0006 (SLD 9630 TT 1.1)
 
-Acked-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+on a system I had, and using whatever Debian Lenny (w 2.6.24-1 kernel) 
+offers for trousers and tcsd etc, a bunch of help from some other HPers, 
+and a hacked example program from an HP-UX document I pressed-on without 
+much understanding and arrived at:
 
-Thanks.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+moe:~# time ./raj_example -c 1000
+making 1000 Tspi_TPM_GetRandom calls of 16 bytes each
+
+real    0m28.033s
+user    0m0.000s
+sys     0m0.000s
+
+
+28.0033s / 1000 calls = 2.8 ms per call.  While this was happening top 
+was reporting  1% CPU time in the tcsd.
+
+I've no idea how much feeding /dev/random would want and how often, but 
+there is some crude data on overhead for pulling random numbers out of 
+at least one TPM.  Here is some varying of the number of bytes requested 
+each time:
+
+moe:~# for i in 1 16 32 64
+ > do
+ > time ./raj_example -c 1000 -r $i
+ > done
+making 1000 Tspi_TPM_GetRandom calls of 1 bytes each
+
+real    0m24.146s
+user    0m0.008s
+sys     0m0.000s
+making 1000 Tspi_TPM_GetRandom calls of 16 bytes each
+
+real    0m28.032s
+user    0m0.000s
+sys     0m0.000s
+making 1000 Tspi_TPM_GetRandom calls of 32 bytes each
+
+real    0m28.032s
+user    0m0.004s
+sys     0m0.000s
+making 1000 Tspi_TPM_GetRandom calls of 64 bytes each
+
+real    0m36.032s
+user    0m0.004s
+sys     0m0.000s
+
+rick jones
+no, i don't plan on adding this to netperf :)
