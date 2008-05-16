@@ -1,49 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756879AbYEPH2z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbYEPH3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756879AbYEPH2z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 03:28:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245AbYEPH2q
+	id S1753575AbYEPH3g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 03:29:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752162AbYEPH33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 03:28:46 -0400
-Received: from web52910.mail.re2.yahoo.com ([206.190.49.20]:44382 "HELO
-	web52910.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751960AbYEPH2p (ORCPT
+	Fri, 16 May 2008 03:29:29 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:40821 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752080AbYEPH32 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 03:28:45 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=rdfQxyoy3XX9ySjc2TDTiLi65A1uwgiTyEPdyTKFxA5OJdWb2wcegrIiua4gtSQf4NZj8u+5U7oxmw4CpRvJtYAPmEX0hKk+D0QhevPKrENKdKBPNnKFrhKHo/UaZZ6V+lJob1w9PFIzGeJe4UTLdOVbejAHE1nBxhxjlCtIuEs=;
-X-YMail-OSG: 8.OXKU0VM1lpcYzyhAhO.7CT2MsznnG8LKR_fh6pHBzWmEhvVxjpmBgnzkcJZ6.vnOlApZwC9l9UpY6MZ.q7sRbbO5yq7EmHIgQK3ZAaakNTD8Se_b1jqInVrg--
-Date: Fri, 16 May 2008 08:28:41 +0100 (BST)
-From: Chris Rankin <rankincj@yahoo.com>
-Subject: Re: 2.6.25.3: serial problem (minicom)
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
-In-Reply-To: <20080515202300.4d0465ac.akpm@linux-foundation.org>
+	Fri, 16 May 2008 03:29:28 -0400
+Date: Fri, 16 May 2008 00:29:07 -0700
+From: Greg KH <greg@kroah.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Problems with suspend and USB storage
+Message-ID: <20080516072907.GA21157@kroah.com>
+References: <20080515163315.GA17779@nostromo.devel.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <150988.90868.qm@web52910.mail.re2.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080515163315.GA17779@nostromo.devel.redhat.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- Andrew Morton <akpm@linux-foundation.org> wrote:
-> All of which builds up to the dreaded....  would you be able to perform
-> a bisection search to work out which commit caused this?
-> http://www.kernel.org/doc/local/git-quick.html has instructions.
+On Thu, May 15, 2008 at 12:33:15PM -0400, Bill Nottingham wrote:
+> 
+> I've been testing suspend/hibernate with various USB devices under
+> 2.6.25.2. Test box is a Thinkpad T60 (uhci, ehci).
+> The results are somewhat dismal.
 
-Can't you just send me those 4 serial patches instead, and I'll try backing them out one by one?
+If you look at 2.6.26-rc, there are some good changes there that should
+help things out a lot.  USB_PERSIST is much better there, but it missed
+.25 as it wasn't tested enough (although it is shipping in openSUSE
+11.0, and seems to be working well there...)
 
-I have another pair of boxes both running Fedora 8 that I'll try replicating this on, just in case
-there's something dodgy about my machine's userspace environment.
+thanks,
 
-Cheers,
-Chris
-
-
-
-      __________________________________________________________
-Sent from Yahoo! Mail.
-A Smarter Email http://uk.docs.yahoo.com/nowyoucan.html
+greg k-h
