@@ -1,99 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756942AbYEPAv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757946AbYEPAxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756942AbYEPAv6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 20:51:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbYEPAvs
+	id S1757946AbYEPAxR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 20:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753297AbYEPAxH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 20:51:48 -0400
-Received: from ozlabs.org ([203.10.76.45]:46112 "EHLO ozlabs.org"
+	Thu, 15 May 2008 20:53:07 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36631 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752252AbYEPAvr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 20:51:47 -0400
+	id S1752852AbYEPAxF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 20:53:05 -0400
+Date: Thu, 15 May 2008 20:51:21 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: [PATCH -mm] kexec jump -v9
+Message-ID: <20080516005121.GA6926@redhat.com>
+References: <1204773188.4707.109.camel@caritas-dev.intel.com> <20080514205204.GJ30469@redhat.com> <1210830110.23707.141.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18476.55963.847697.493815@cargo.ozlabs.ibm.com>
-Date: Fri, 16 May 2008 10:51:39 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: [git pull] Please pull powerpc.git merge branch
-X-Mailer: VM 7.19 under Emacs 22.1.1
+Content-Disposition: inline
+In-Reply-To: <1210830110.23707.141.camel@caritas-dev.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Thu, May 15, 2008 at 01:41:50PM +0800, Huang, Ying wrote:
+> Hi, Vivek,
+> 
+> On Wed, 2008-05-14 at 16:52 -0400, Vivek Goyal wrote:
+> [...]
+> > Ok, I have done some testing on this patch. Currently I have just
+> > tested switching back and forth between two kernels and it is working for
+> > me.
+> > 
+> > Just that I had to put LAPIC and IOAPIC in legacy mode for it to work. Few
+> > comments/questions are inline.
+> 
+> It seems that for LAPIC and IOAPIC, there is
+> lapic_suspend()/lapic_resume() and ioapic_suspend()/ioapic_resume(),
+> which will be called before/after kexec jump through
+> device_power_down()/device_power_up(). So, the mechanism for
+> LAPIC/IOAPIC is there, we may need to check the corresponding
+> implementation.
+> 
 
-Please pull from the 'merge' branch of
+ioapic_suspend() is not putting APICs in Legacy mode and that's why
+we are seeing the issue. It only saves the IOAPIC routing table entries
+and these entries are restored during ioapic_resume().
 
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+But I think somebody has to put APICs in legacy mode for normal 
+hibernation also. Not sure who does it. May be BIOS, so that during
+resume, second kernel can get the timer interrupts.
 
-Most of the bulk is in defconfig and device-tree source (.dts) files,
-which are effectively documentation.  The change to mpc85xx_mds.c is
-adding some fixups to allow ethernet to work on the 8568 MDS board
-even if firmware doesn't initialize it properly.  The rest are all
-relatively small, well-contained bug and compile fixes.
-
-Thanks,
-Paul.
-
- arch/powerpc/boot/dts/mpc8377_mds.dts        |   27 ++++++
- arch/powerpc/boot/dts/mpc8610_hpcd.dts       |   60 ++++++++++++-
- arch/powerpc/boot/dts/sbc8548.dts            |   94 ++++++++++++++++++++
- arch/powerpc/configs/mpc8610_hpcd_defconfig  |   95 +++++++++++++++++++-
- arch/powerpc/mm/hash_utils_64.c              |   28 ++++++
- arch/powerpc/mm/init_64.c                    |   10 +-
- arch/powerpc/mm/slb.c                        |   16 +++
- arch/powerpc/mm/slb_low.S                    |   16 +++
- arch/powerpc/platforms/85xx/mpc85xx_mds.c    |  121 ++++++++++++++++++++++++++
- arch/powerpc/platforms/85xx/sbc8548.c        |   30 ++++++
- arch/powerpc/platforms/86xx/mpc8610_hpcd.c   |   15 +++
- arch/powerpc/platforms/cell/io-workarounds.c |    6 +
- arch/powerpc/platforms/cell/io-workarounds.h |    6 +
- arch/powerpc/platforms/cell/spufs/file.c     |    1 
- arch/powerpc/platforms/cell/spufs/sched.c    |    2 
- drivers/macintosh/adb.c                      |    2 
- drivers/of/base.c                            |    3 +
- include/asm-powerpc/mmu-hash64.h             |    1 
- include/asm-powerpc/pgtable-ppc64.h          |   10 +-
- include/asm-powerpc/uaccess.h                |    4 -
- 20 files changed, 508 insertions(+), 39 deletions(-)
-
-Andy Fleming (2):
-      [POWERPC] 85xx: Add 8568 PHY workarounds to board code
-      [POWERPC] 85xx: Fix some sparse warnings for 85xx MDS
-
-Anton Vorontsov (3):
-      [POWERPC] 86xx: mpc8610_hpcd: use ULI526X driver for on-board ethernet
-      [POWERPC] 86xx: mpc8610_hpcd: add support for NOR and NAND flashes
-      [POWERPC] 86xx: mpc8610_hpcd: fix second serial port
-
-Benjamin Herrenschmidt (1):
-      [POWERPC] vmemmap fixes to use smaller pages
-
-FUJITA Tomonori (1):
-      [POWERPC] spufs: Fix compile error
-
-Ishizaki Kou (1):
-      [POWERPC] cell: Fix section mismatches in io-workarounds code
-
-Jeremy McNicoll (1):
-      [POWERPC] 85xx: SBC8548 - Add flash support and HW Rev reporting
-
-Luke Browning (1):
-      [POWERPC] spufs: Fix pointer reference in find_victim
-
-Nate Case (1):
-      [POWERPC] Fix uninitialized variable bug in copy_{to|from}_user
-
-Robert P. J. Day (1):
-      [POWERPC] macintosh: Replace deprecated __initcall with device_initcall
-
-Timur Tabi (1):
-      [POWERPC] Add null pointer check to of_find_property
-
-Zhang Wei (1):
-      [POWERPC] 83xx: Enable DMA engine on the MPC8377 MDS board.
-
+Thanks
+Vivek
