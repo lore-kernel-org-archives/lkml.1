@@ -1,63 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761509AbYEPW66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759979AbYEPXL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761509AbYEPW66 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 18:58:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755902AbYEPW6r
+	id S1759979AbYEPXL6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 19:11:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756665AbYEPXLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 18:58:47 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55013 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755368AbYEPW6q (ORCPT
+	Fri, 16 May 2008 19:11:48 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:14286 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755958AbYEPXLr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 18:58:46 -0400
-Date: Fri, 16 May 2008 15:58:22 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Remove BKL from FAT/VFAT/MSDOS (v1) (was Re: Fw: Regression
- caused by bf726e "semaphore: fix,")
-In-Reply-To: <alpine.LFD.1.10.0805161514570.3020@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0805161552510.3020@woody.linux-foundation.org>
-References: <20080510121020.f33c83f7.akpm@linux-foundation.org> <20080511075522.GA18214@elte.hu> <Pine.LNX.4.64.0805111150250.32758@titan.stealer.net> <20080511125731.GA28174@elte.hu> <alpine.LFD.1.10.0805110941540.3330@woody.linux-foundation.org>
- <20080511111210.77858eb4.akpm@linux-foundation.org> <alpine.LFD.1.10.0805111221070.3188@woody.linux-foundation.org> <alpine.LFD.1.10.0805111243250.3188@woody.linux-foundation.org> <20080511235112.GA16101@elte.hu> <alpine.LFD.1.10.0805120155490.3514@apollo.tec.linutronix.de>
- <alpine.LFD.1.10.0805120723440.3188@woody.linux-foundation.org> <alpine.LFD.1.10.0805121659470.3514@apollo.tec.linutronix.de> <alpine.LFD.1.10.0805121324410.3019@woody.linux-foundation.org> <alpine.LFD.1.10.0805161025510.3255@apollo.tec.linutronix.de>
- <alpine.LFD.1.10.0805160906580.2941@woody.linux-foundation.org> <alpine.LFD.1.10.0805160950180.2941@woody.linux-foundation.org> <alpine.LFD.1.10.0805161514570.3020@woody.linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 16 May 2008 19:11:47 -0400
+Date: Fri, 16 May 2008 16:11:16 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Olaf Dietsche <olaf+list.linux-kernel@olafdietsche.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 2.6.25: access permission filesystem 0.21
+Message-Id: <20080516161116.37774c5e.randy.dunlap@oracle.com>
+In-Reply-To: <873aon44sr.fsf@rat.lan>
+References: <873aon44sr.fsf@rat.lan>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 12 May 2008 22:59:32 +0200 Olaf Dietsche wrote:
+
+> This patch adds a new permission managing file system.
+> Furthermore, it adds two modules, which make use of this file system.
 
 
-On Fri, 16 May 2008, Linus Torvalds wrote:
->
-> 				[...] but I do think this is at 
-> least an interesting starting point, and it's at least not "totally 
-> obviously broken".
+(attachment fragments copied as needed for comments:)
 
-To clarify: lock_super() is actually a much *stronger* lock than 
-lock_kernel(), which is why testing is actually interesting: the locking 
-hasn't been weakened, it's actually become much stricter (because unlike 
-the kernel lock, the superblock lock is kept over scheduling events, and 
-doesn't silently nest).
+fs/accessfs/Kconfig:
 
-So the most likely failure case is not that some locking went away and 
-you'd race on the data structures, it's that something deadlocks on itself 
-if the locking isn't right.
++config ACCESSFS_USER_PORTS
++	tristate "User permission based IP ports"
++	depends on ACCESS_FS
++	select NET_HOOKS
++	default n
++	help
++	  If you say Y here, you will be able to control access to IP ports
++	  based on user-/groupid. For this to work, you must say Y
++	  to CONFIG_NET_HOOKS.
++
++	  If you're unsure, say N.
 
-There could be some implicit kernel lock I missed (ie something that acts 
-like the "ioctl" callback I already mentioned), of course, so I'm not 
-going to swear myself blue in the face that there isn't a new race, but on 
-the whole this patch should be pretty safe from the angle that at least 
-the obvious locking bugs should cause deadlocks, not race conditions.
+Just spell out userid instead of using "user-".  The hyphen is only
+saving one character, so just make it clearer by spelling it out.
+(Several instances of this, including in the Documentation.)
 
-And if you enable lockdep, the deadlocks aren't silent deaths, but clear 
-"this is where you took it, and here is where you deadlocked due to 
-nesting" reports in dmesg. So this should be eminently debuggable even by 
-almost total newbies that are just interested in BKL removal.
+This config option should probably also depend on INET since
+it selects NET_HOOKS and NET_HOOKS depends on INET (and since
+select won't follow any dependency chain).
 
-		Linus
++config ACCESSFS_IGNORE_NET_BIND_SERVICE
++	bool "Ignore CAP_NET_BIND_SERVICE capability"
++	depends on ACCESSFS_USER_PORTS
++	default n
++	help
++	  This option lets you decide, wether a user with 
+
+                                       whether
+
+Oh.  That line ends with a space.  Please check all Kconfig and
+source file lines to make sure that they do not end with whitespace.
+
++	  CAP_NET_BIND_SERVICE capability is able to override
++	  your userport configuration.
++
++	  If you build this as a module, you can specify this
++	  option at module load time (ignore_net_bind_service).
++
++	  If you're unsure, say n.
+
+
+Have the networking people commented on the NET_HOOKS and their
+function methods?
+
+
+inode.c:
+
++static inline void accessfs_readdir_aux(struct file *filp,
++					struct accessfs_direntry *dir,
++					int start, void *dirent,
++					filldir_t filldir)
+
+is rather large to be inlined.  Why do that?
+
++int accessfs_register(struct accessfs_direntry *dir, const char *name,
++		      struct access_attr *attr)
++{
++	int err;
++	if (dir == 0)
++		return -EINVAL;
+
+Don't check for 0, check for NULL (when it's a pointer being tested).
+So use either
+	if (dir == NULL)
+or
+	if (!dir)
+
+(several of these seen)
+
++static int __init init_accessfs_fs(void)
++{
++
++	/* create mount point for accessfs */
++	mountdir = proc_mkdir("access",&proc_root);
+
+space after comma.
+
++	return register_filesystem(&accessfs_fs_type);
++}
++
++static void __exit exit_accessfs_fs(void)
++{
++	unregister_filesystem(&accessfs_fs_type);
++	remove_proc_entry("access",&proc_root);
+
+ditto.
+
++}
+
+
+ip.c:
+
++	bind_to_port = kmalloc(max_prot_sock * sizeof(*bind_to_port),
++			       GFP_KERNEL);
++	if (bind_to_port == 0)
++		return -ENOMEM;
+
+Test pointer for NULL or use !bind_to_port.
+
++static void __exit exit_ip(void)
++{
++	struct accessfs_direntry *dir = accessfs_make_dirpath("net/ip/bind");
++	int i;
++	net_hooks_unregister(&ip_net_ops);
++	for (i = 1; i < max_prot_sock; ++i) {
++		char	buf[sizeof("65536")];
+
+			buf[sizeof("65536") + 1]; ???
+
++		sprintf(buf, "%d", i);
++		accessfs_unregister(dir, buf);
++	}
+
+
+Documentation/filesystems/accessfs.txt:
+
+Change "user-/" to "userid/".
+
+---
+~Randy
