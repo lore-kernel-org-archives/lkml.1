@@ -1,85 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbYEPINn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753926AbYEPIOL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755927AbYEPINn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 04:13:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbYEPIN0
+	id S1753926AbYEPIOL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 04:14:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752199AbYEPINu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 04:13:26 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:60668 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755336AbYEPINX (ORCPT
+	Fri, 16 May 2008 04:13:50 -0400
+Received: from topsns2.toshiba-tops.co.jp ([202.230.225.126]:62563 "EHLO
+	topsns2.toshiba-tops.co.jp" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753172AbYEPINr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 04:13:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Dj8GFEdLVT9ilwwWTuH+5sbPgTtdNDlv/8/p0FVauPhIii9LkAAoQ+38LyU7pH7nS1nC9Iy6t3apqshspyDLjSZ3CMIq3TXHXYEWk4wGyPkqhgyaCwdRskZ+CIp1NHNMSNO7TPf6seb2m0rGBmgYWa3XzIBhs5/aTE2yVIwqago=
-Message-ID: <19f34abd0805160113i17eea98aub287f2d1be8f05d9@mail.gmail.com>
-Date: Fri, 16 May 2008 10:13:22 +0200
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Mariusz Kozlowski" <m.kozlowski@tuxland.pl>
-Subject: Re: spontaneous reboots and hangs on x86_64
-Cc: "Stephen Rothwell" <sfr@canb.auug.org.au>, "Adrian Bunk" <bunk@kernel.org>,
-       kernel-testers@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <200805160737.50373.m.kozlowski@tuxland.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Fri, 16 May 2008 04:13:47 -0400
+X-Greylist: delayed 469 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 May 2008 04:13:47 EDT
+Date: Fri, 16 May 2008 17:13:45 +0900 (JST)
+Message-Id: <20080516.171345.01918000.nemoto@toshiba-tops.co.jp>
+To: akirat@rd.scei.sony.co.jp
+Cc: gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: [PATCH] usb-serial: pl2303: add support for RATOC REX-USB60F
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <20080118185231.0B48.4D252088@rd.scei.sony.co.jp>
+References: <20080118185231.0B48.4D252088@rd.scei.sony.co.jp>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200805152201.49154.m.kozlowski@tuxland.pl>
-	 <20080516140625.25fac6a2.sfr@canb.auug.org.au>
-	 <200805160717.31618.m.kozlowski@tuxland.pl>
-	 <200805160737.50373.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16, 2008 at 7:37 AM, Mariusz Kozlowski
-<m.kozlowski@tuxland.pl> wrote:
-> Hello,
->
->> > > > ~/linux/linux-next $ git bisect start
->> > > > fatal: ref HEAD is not a symbolic ref
->> > > > Bad HEAD - I need a symbolic ref
->> >
->> > This would indicate something wrong with your clone of linux-next.  How
->> > did you create the repository?
->> >
->> > > > - how does one bisect on linux-next?
->> >
->> > Any day's linux-next tree is a git tree like any other ...
->>
->> Hm it can be that I did something wrong ...
->
-> and I did :/ I think I just started this repo in wrong way - according to linux-next FAQ.
-> I'll just start from scratch then.
+# Sorry, resend with new linux-usb ML address.
 
-You need to be on a branch. If git-branch says this:
+On Fri, 18 Jan 2008 18:58:28 +0900, Akira Tsukamoto <akirat@rd.scei.sony.co.jp> wrote:
+> pl2303: add support for RATOC REX-USB60F
+> 
+> This patch adds support for RATOC REX-USB60F Serial Adapters,
+> which is widely used in Japan recently.
+> 
+> Signed-off-by: Akira Tsukamoto <akirat@rd.scei.sony.co.jp>
+> ---
+> 
+> diff -uprX dontdiff linux-2.6.24-rc8.orig/drivers/usb/serial/pl2303.c linux-2.6.24-rc8/drivers/usb/serial/pl2303.c
+> --- linux-2.6.24-rc8.orig/drivers/usb/serial/pl2303.c	2008-01-18 18:11:51.000000000 +0900
+> +++ linux-2.6.24-rc8/drivers/usb/serial/pl2303.c	2008-01-18 18:43:28.000000000 +0900
+> @@ -65,6 +65,7 @@ static struct usb_device_id id_table [] 
+>  	{ USB_DEVICE(ITEGNO_VENDOR_ID, ITEGNO_PRODUCT_ID_2080) },
+>  	{ USB_DEVICE(MA620_VENDOR_ID, MA620_PRODUCT_ID) },
+>  	{ USB_DEVICE(RATOC_VENDOR_ID, RATOC_PRODUCT_ID) },
+> + 	{ USB_DEVICE(RATOC_VENDOR_ID, RATOC_PRODUCT_ID_USB60F) },
+>  	{ USB_DEVICE(TRIPP_VENDOR_ID, TRIPP_PRODUCT_ID) },
+>  	{ USB_DEVICE(RADIOSHACK_VENDOR_ID, RADIOSHACK_PRODUCT_ID) },
+>  	{ USB_DEVICE(DCU10_VENDOR_ID, DCU10_PRODUCT_ID) },
 
-$ git branch
-* (no branch)
+Hi.  I tried RATOC REX-USB60F with pl2303 driver and got oops in
+pl2303_open().  The pl2303 expects a interrupt_in endpoint but my
+device does not have interrupt_in.  So this line in pl2303_open()
+cause oops.
 
-then git will not allow you to bisect:
+	port->interrupt_in_urb->dev = serial->dev;
 
-$ git bisect start v2.6.24 v2.6.25
-fatal: ref HEAD is not a symbolic ref
-Bad HEAD - I need a symbolic ref
+This device works fine with the ftdi_sio driver, with "vendor=0x584
+product=0xb020" module option.  (0x584 is RATOC_VENDOR_ID and 0xb020
+is RATOC_PRODUCT_ID_USB60F).
 
-Try first checkout out a new branch:
 
-$ git checkout -b bisect
-Switched to a new branch "bisect"
+Is the pl2303 driver appropriate for this device?
 
-$ git bisect start v2.6.24 v2.6.25
-Switched to branch "master"
+Here is lsusb output:
 
-Good luck!
+Bus 001 Device 003: ID 0584:b020 RATOC System, Inc. 
+Device Descriptor:
+  bLength                18
+  bDescriptorType         1
+  bcdUSB               2.00
+  bDeviceClass            0 (Defined at Interface level)
+  bDeviceSubClass         0 
+  bDeviceProtocol         0 
+  bMaxPacketSize0         8
+  idVendor           0x0584 RATOC System, Inc.
+  idProduct          0xb020 
+  bcdDevice            4.00
+  iManufacturer           1 RATOC Systems,Inc.
+  iProduct                2 USB-Serial Converter
+  iSerial                 0 
+  bNumConfigurations      1
+  Configuration Descriptor:
+    bLength                 9
+    bDescriptorType         2
+    wTotalLength           32
+    bNumInterfaces          1
+    bConfigurationValue     1
+    iConfiguration          0 
+    bmAttributes         0xa0
+      (Bus Powered)
+      Remote Wakeup
+    MaxPower              100mA
+    Interface Descriptor:
+      bLength                 9
+      bDescriptorType         4
+      bInterfaceNumber        0
+      bAlternateSetting       0
+      bNumEndpoints           2
+      bInterfaceClass       255 Vendor Specific Class
+      bInterfaceSubClass    255 Vendor Specific Subclass
+      bInterfaceProtocol    255 Vendor Specific Protocol
+      iInterface              2 USB-Serial Converter
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x81  EP 1 IN
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0040  1x 64 bytes
+        bInterval               0
+      Endpoint Descriptor:
+        bLength                 7
+        bDescriptorType         5
+        bEndpointAddress     0x02  EP 2 OUT
+        bmAttributes            2
+          Transfer Type            Bulk
+          Synch Type               None
+          Usage Type               Data
+        wMaxPacketSize     0x0040  1x 64 bytes
+        bInterval               0
+Device Status:     0x0000
+  (Bus Powered)
 
-Vegard
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+
