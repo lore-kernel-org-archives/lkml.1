@@ -1,62 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756492AbYEPLWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756766AbYEPLXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756492AbYEPLWt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 07:22:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbYEPLWl
+	id S1756766AbYEPLXW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 07:23:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbYEPLXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 07:22:41 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55387 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752167AbYEPLWk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 07:22:40 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20080516090150.GA16496@linux-sh.org>
-References: <20080516090150.GA16496@linux-sh.org>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] binfmt_elf_fdpic: Magical stack pointer index, for NEW_AUX_ENT compat.
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Fri, 16 May 2008 12:22:33 +0100
-Message-ID: <12478.1210936953@redhat.com>
+	Fri, 16 May 2008 07:23:12 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:49114 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752846AbYEPLXK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 07:23:10 -0400
+Date: Fri, 16 May 2008 06:23:06 -0500
+From: Robin Holt <holt@sgi.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Christoph Lameter <clameter@sgi.com>, Robin Holt <holt@sgi.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrea Arcangeli <andrea@qumranet.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
+       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>
+Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
+Message-ID: <20080516112306.GA4287@sgi.com>
+References: <6b384bb988786aa78ef0.1210170958@duo.random> <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org> <20080508003838.GA9878@sgi.com> <200805132206.47655.nickpiggin@yahoo.com.au> <20080513153238.GL19717@sgi.com> <20080514041122.GE24516@wotan.suse.de> <20080514112625.GY9878@sgi.com> <20080515075747.GA7177@wotan.suse.de> <Pine.LNX.4.64.0805151031250.18708@schroedinger.engr.sgi.com> <20080515235203.GB25305@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080515235203.GB25305@wotan.suse.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mundt <lethal@linux-sh.org> wrote:
+On Fri, May 16, 2008 at 01:52:03AM +0200, Nick Piggin wrote:
+> On Thu, May 15, 2008 at 10:33:57AM -0700, Christoph Lameter wrote:
+> > On Thu, 15 May 2008, Nick Piggin wrote:
+> > 
+> > > Oh, I get that confused because of the mixed up naming conventions
+> > > there: unmap_page_range should actually be called zap_page_range. But
+> > > at any rate, yes we can easily zap pagetables without holding mmap_sem.
+> > 
+> > How is that synchronized with code that walks the same pagetable. These 
+> > walks may not hold mmap_sem either. I would expect that one could only 
+> > remove a portion of the pagetable where we have some sort of guarantee 
+> > that no accesses occur. So the removal of the vma prior ensures that?
+>  
+> I don't really understand the question. If you remove the pte and invalidate
+> the TLBS on the remote image's process (importing the page), then it can
+> of course try to refault the page in because it's vma is still there. But
+> you catch that refault in your driver , which can prevent the page from
+> being faulted back in.
 
-> While implementing binfmt_elf_fdpic on SH it quickly became apparent
-> that SH was the first platform to support both binfmt_elf_fdpic and
-> binfmt_elf, as well as the only of the FDPIC platforms to make use of the
-> auxvt.
-> 
-> Currently binfmt_elf_fdpic uses a special version of NEW_AUX_ENT() where
-> the first argument is the entry displacement after csp has been adjusted,
-> being reset after each adjustment. As we have no ability to sort this out
-> through the platform's ARCH_DLINFO, this index needs to be managed
-> entirely in create_elf_fdpic_tables(). Presently none of the platforms
-> that set their own auxvt entries are able to do so through their
-> respective ARCH_DLINFOs when using binfmt_elf_fdpic.
-> 
-> In addition to this, binfmt_elf_fdpic has been looking at
-> DLINFO_ARCH_ITEMS for the number of architecture-specific entries in the
-> auxvt. This is legacy cruft, and is not defined by any platforms in-tree,
-> even those that make heavy use of the auxvt. AT_VECTOR_SIZE_ARCH is
-> always available, and contains the number that is of interest here, so we
-> switch to using that unconditionally as well.
-> 
-> As this has direct bearing on how much stack is used, platforms that have
-> configurable (or dynamically adjustable) NEW_AUX_ENT calls need to either
-> make AT_VECTOR_SIZE_ARCH more fine-grained, or leave it as a worst-case
-> and live with some lost stack space if those entries aren't pushed (some
-> platforms may also need to purposely sacrifice some space here for
-> alignment considerations, as noted in the code -- although not an issue
-> for any FDPIC-capable platform today).
-> 
-> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+I think Christoph's question has more to do with faults that are
+in flight.  A recently requested fault could have just released the
+last lock that was holding up the invalidate callout.  It would then
+begin messaging back the response PFN which could still be in flight.
+The invalidate callout would then fire and do the interrupt shoot-down
+while that response was still active (essentially beating the inflight
+response).  The invalidate would clear up nothing and then the response
+would insert the PFN after it is no longer the correct PFN.
 
-Acked-by: David Howells <dhowells@redhat.com>
+Thanks,
+Robin
