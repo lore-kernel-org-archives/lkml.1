@@ -1,103 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760140AbYEPSYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759909AbYEPS0y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760140AbYEPSYA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 14:24:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbYEPSXw
+	id S1759909AbYEPS0y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 14:26:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbYEPS0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 14:23:52 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:56546 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751409AbYEPSXv (ORCPT
+	Fri, 16 May 2008 14:26:45 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:37604 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752785AbYEPS0o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 14:23:51 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Fri, 16 May 2008 20:23:10 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] firewire: prevent userspace from accessing shut down devices
-To: linux-kernel@vger.kernel.org
-cc: linux1394-devel@lists.sourceforge.net, Jay Fenlason <fenlason@redhat.com>
-In-Reply-To: <482DCF65.6060503@s5r6.in-berlin.de>
-Message-ID: <tkrat.4d3a5a4fed86a318@s5r6.in-berlin.de>
-References: <20080516151523.GA25026@redhat.com>
- <482DCF65.6060503@s5r6.in-berlin.de>
+	Fri, 16 May 2008 14:26:44 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Rene Herman <rene.herman@keyaccess.nl>
+Subject: Re: [patch 6/8] PNP: replace pnp_resource_table with dynamically allocated resources
+Date: Fri, 16 May 2008 11:17:25 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Adam Belay <ambx1@neo.rr.com>, Adam M Belay <abelay@mit.edu>,
+       Li Shaohua <shaohua.li@intel.com>,
+       Matthieu Castet <castet.matthieu@free.fr>,
+       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>
+References: <20080505223630.682082986@ldl.fc.hp.com> <200805141718.35158.bjorn.helgaas@hp.com> <482BEC42.9060605@keyaccess.nl>
+In-Reply-To: <482BEC42.9060605@keyaccess.nl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805161117.26288.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I almost forgot that we generally Cc LKML on patches.  So here is an -rc
-fix candidate for LKML to see:
+On Thursday 15 May 2008 01:54:42 am Rene Herman wrote:
+> On 15-05-08 01:18, Bjorn Helgaas wrote:
+> 
+> > Thanks for the report.  I think I've fixed the problem.
+> 
+> I saw it was PnPBIOS by the way. PnPBIOS appears to be obsolete these 
+> days; do you have machines to test it on yourself? I do (plenty), so 
+> although I'm not being fast with testing anyway, would you want me to 
+> switch those from PnPACPI to PnPBIOS?
 
-Date: Fri, 16 May 2008 11:15:23 -0400
-From: Jay Fenlason <fenlason@redhat.com>
+All of my machines have ACPI, but in this case, I was able to
+reproduce the null pointer dereference Andrew by booting with
+"pnpacpi=off".
 
-If userspace ignores the POLLERR bit from poll(), and only attempts to
-read() the device when POLLIN is set, it can still make ioctl() calls on
-a device that has been removed from the system.  The node_id and
-generation returned by GET_INFO will be outdated, but INITIATE_BUS_RESET
-would still cause a bus reset, and GET_CYCLE_TIMER will return data.
+PNPBIOS testing is pretty scarce, though, so anything you
+do along those lines would be much appreciated.
 
-We now immediately fail open, ioctl, compat_ioctl, and mmap against
-shutdown devices.
-
-Signed-off-by: Jay Fenlason <fenlason@redhat.com>
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/fw-cdev.c |   14 ++++++++++++++
- 1 file changed, 14 insertions(+)
-
-Index: linux/drivers/firewire/fw-cdev.c
-===================================================================
---- linux.orig/drivers/firewire/fw-cdev.c
-+++ linux/drivers/firewire/fw-cdev.c
-@@ -113,6 +113,11 @@ static int fw_device_op_open(struct inod
- 	if (device == NULL)
- 		return -ENODEV;
- 
-+	if (fw_device_is_shutdown(device)) {
-+		fw_device_put(device);
-+		return -ENODEV;
-+	}
-+
- 	client = kzalloc(sizeof(*client), GFP_KERNEL);
- 	if (client == NULL) {
- 		fw_device_put(device);
-@@ -901,6 +906,9 @@ fw_device_op_ioctl(struct file *file,
- {
- 	struct client *client = file->private_data;
- 
-+	if (fw_device_is_shutdown(client->device))
-+		return -ENODEV;
-+
- 	return dispatch_ioctl(client, cmd, (void __user *) arg);
- }
- 
-@@ -911,6 +919,9 @@ fw_device_op_compat_ioctl(struct file *f
- {
- 	struct client *client = file->private_data;
- 
-+	if (fw_device_is_shutdown(client->device))
-+		return -ENODEV;
-+
- 	return dispatch_ioctl(client, cmd, compat_ptr(arg));
- }
- #endif
-@@ -922,6 +933,9 @@ static int fw_device_op_mmap(struct file
- 	unsigned long size;
- 	int page_count, retval;
- 
-+	if (fw_device_is_shutdown(client->device))
-+		return -ENODEV;
-+
- 	/* FIXME: We could support multiple buffers, but we don't. */
- 	if (client->buffer.pages != NULL)
- 		return -EBUSY;
-
-
--- 
-Stefan Richter
--=====-==--- -=-= =----
-http://arcgraph.de/sr/
-
+Bjorn
