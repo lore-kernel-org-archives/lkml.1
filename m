@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759281AbYEPXQD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759026AbYEPXZh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759281AbYEPXQD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 19:16:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbYEPXPx
+	id S1759026AbYEPXZh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 19:25:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbYEPXZ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 19:15:53 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:55637 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752837AbYEPXPx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 19:15:53 -0400
-Date: Fri, 16 May 2008 16:15:52 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Russ Anderson <rja@sgi.com>
-cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Tony Luck <tony.luck@intel.com>
-Subject: Re: [PATCH 3/3] ia64: Call migration code on correctable errors v5
-In-Reply-To: <20080516192359.GF7885@sgi.com>
-Message-ID: <Pine.LNX.4.64.0805161614020.5114@schroedinger.engr.sgi.com>
-References: <20080516192359.GF7885@sgi.com>
+	Fri, 16 May 2008 19:25:26 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:57697 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751615AbYEPXZZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 19:25:25 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, hch@infradead.org, viro@ZenIV.linux.org.uk,
+       ezk@cs.sunysb.edu, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 07/22] fat: dont call notify_change
+References: <20080516163136.560107038@szeredi.hu>
+	<20080516163222.235825996@szeredi.hu>
+Date: Sat, 17 May 2008 08:25:15 +0900
+In-Reply-To: <20080516163222.235825996@szeredi.hu> (Miklos Szeredi's message
+	of "Fri, 16 May 2008 18:31:43 +0200")
+Message-ID: <87prrl7rxg.fsf@duaron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 May 2008, Russ Anderson wrote:
+Miklos Szeredi <miklos@szeredi.hu> writes:
 
-> Index: linus/include/asm-ia64/page.h
-> ===================================================================
-> --- linus.orig/include/asm-ia64/page.h	2008-05-14 15:36:06.826294509 -0500
-> +++ linus/include/asm-ia64/page.h	2008-05-15 12:59:06.022712144 -0500
-> @@ -122,6 +122,7 @@ extern unsigned long max_low_pfn;
->  #endif
->  
->  #define page_to_phys(page)	(page_to_pfn(page) << PAGE_SHIFT)
-> +#define	phys_to_page(kaddr)	(pfn_to_page(kaddr >> PAGE_SHIFT))
->  #define virt_to_page(kaddr)	pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
->  #define pfn_to_kaddr(pfn)	__va((pfn) << PAGE_SHIFT)
+> From: Miklos Szeredi <mszeredi@suse.cz>
+>
+> The FAT_IOCTL_SET_ATTRIBUTES ioctl() calls notify_change() to change
+> the file mode before changing the inode attributes.  Replace with
+> explicit calls to security_inode_setattr(), fat_setattr() and
+> fsnotify_change().
+>
+> This is equivalent to the original.  The reason it is needed, is that
+> later in the series we move the immutable check into notify_change().
+> That would break the FAT_IOCTL_SET_ATTRIBUTES ioctl, as it needs to
+> perform the mode change regardless of the immutability of the file.
+>
+> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+> CC: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
 
-There is still a whitespace inconsistency here. Sorry about the 
-earlier cryptic ocmment. Replacing the tab in phys_to_page 
-with a blank should fix things.
+Don't we need to add EXPORT_SYMBOL(security_inode_setattr)? Otherwise,
+looks good to me.
 
+Acked-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+
+Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
