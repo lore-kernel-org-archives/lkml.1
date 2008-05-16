@@ -1,53 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759909AbYEPS0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760225AbYEPS2n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759909AbYEPS0y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 14:26:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbYEPS0p
+	id S1760225AbYEPS2n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 14:28:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbYEPS2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 14:26:45 -0400
-Received: from g4t0016.houston.hp.com ([15.201.24.19]:37604 "EHLO
-	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752785AbYEPS0o (ORCPT
+	Fri, 16 May 2008 14:28:34 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:35707 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751618AbYEPS2d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 14:26:44 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: [patch 6/8] PNP: replace pnp_resource_table with dynamically allocated resources
-Date: Fri, 16 May 2008 11:17:25 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Adam Belay <ambx1@neo.rr.com>, Adam M Belay <abelay@mit.edu>,
-       Li Shaohua <shaohua.li@intel.com>,
-       Matthieu Castet <castet.matthieu@free.fr>,
-       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>
-References: <20080505223630.682082986@ldl.fc.hp.com> <200805141718.35158.bjorn.helgaas@hp.com> <482BEC42.9060605@keyaccess.nl>
-In-Reply-To: <482BEC42.9060605@keyaccess.nl>
+	Fri, 16 May 2008 14:28:33 -0400
+Date: Fri, 16 May 2008 11:28:07 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, matthew@wil.cx
+Subject: Re: [PATCH] Remove argument from open_softirq which is always NULL
+Message-ID: <20080516182807.GA28406@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080515141537.GA22826@beyonder.ift.unesp.br>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200805161117.26288.bjorn.helgaas@hp.com>
+In-Reply-To: <20080515141537.GA22826@beyonder.ift.unesp.br>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 15 May 2008 01:54:42 am Rene Herman wrote:
-> On 15-05-08 01:18, Bjorn Helgaas wrote:
+On Thu, May 15, 2008 at 11:15:37AM -0300, Carlos R. Mafra wrote:
+> From 9371c45e92c308425c0aad4794f61acb6fe6d140 Mon Sep 17 00:00:00 2001
+> From: Carlos R. Mafra <crmafra@ift.unesp.br>
+> Date: Wed, 14 May 2008 18:26:06 -0300
+> Subject: [PATCH] Remove argument from open_softirq which is always NULL
 > 
-> > Thanks for the report.  I think I've fixed the problem.
+> As git-grep shows, open_softirq() is always called with the last argument
+> being NULL
 > 
-> I saw it was PnPBIOS by the way. PnPBIOS appears to be obsolete these 
-> days; do you have machines to test it on yourself? I do (plenty), so 
-> although I'm not being fast with testing anyway, would you want me to 
-> switch those from PnPACPI to PnPBIOS?
+> block/blk-core.c:       open_softirq(BLOCK_SOFTIRQ, blk_done_softirq, NULL);
+> kernel/hrtimer.c:       open_softirq(HRTIMER_SOFTIRQ, run_hrtimer_softirq, NULL);
+> kernel/rcuclassic.c:    open_softirq(RCU_SOFTIRQ, rcu_process_callbacks, NULL);
+> kernel/rcupreempt.c:    open_softirq(RCU_SOFTIRQ, rcu_process_callbacks, NULL);
+> kernel/sched.c: open_softirq(SCHED_SOFTIRQ, run_rebalance_domains, NULL);
+> kernel/softirq.c:       open_softirq(TASKLET_SOFTIRQ, tasklet_action, NULL);
+> kernel/softirq.c:       open_softirq(HI_SOFTIRQ, tasklet_hi_action, NULL);
+> kernel/timer.c: open_softirq(TIMER_SOFTIRQ, run_timer_softirq, NULL);
+> net/core/dev.c: open_softirq(NET_TX_SOFTIRQ, net_tx_action, NULL);
+> net/core/dev.c: open_softirq(NET_RX_SOFTIRQ, net_rx_action, NULL);
+> 
+> This observation has already been made by Matthew Wilcox in June 2002
+> (http://www.cs.helsinki.fi/linux/linux-kernel/2002-25/0687.html)
+> 
+> "I notice that none of the current softirq routines use the data element
+> passed to them."
+> 
+> and the situation hasn't changed since them. So it appears we can safely
+> remove that extra argument to save 128 (54) bytes of kernel data (text).
 
-All of my machines have ACPI, but in this case, I was able to
-reproduce the null pointer dereference Andrew by booting with
-"pnpacpi=off".
+Good stuff!!!
 
-PNPBIOS testing is pretty scarce, though, so anything you
-do along those lines would be much appreciated.
+Will there also be a similar set of patches that removes the extra
+argument from the invoked function?  For example:
 
-Bjorn
+	static void rcu_process_callbacks(struct softirq_action *unused)
+
+could now become:
+
+	static void rcu_process_callbacks(void)
+
+Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+
+> Signed-off-by: Carlos R. Mafra <crmafra@ift.unesp.br>
+> ---
+>  block/blk-core.c          |    2 +-
+>  include/linux/interrupt.h |    3 +--
+>  kernel/hrtimer.c          |    2 +-
+>  kernel/rcuclassic.c       |    2 +-
+>  kernel/rcupreempt.c       |    2 +-
+>  kernel/sched.c            |    2 +-
+>  kernel/softirq.c          |    7 +++----
+>  kernel/timer.c            |    2 +-
+>  net/core/dev.c            |    4 ++--
+>  9 files changed, 12 insertions(+), 14 deletions(-)
+> 
+> diff --git a/block/blk-core.c b/block/blk-core.c
+> index 2987fe4..667efc4 100644
+> --- a/block/blk-core.c
+> +++ b/block/blk-core.c
+> @@ -2049,7 +2049,7 @@ int __init blk_dev_init(void)
+>  	for_each_possible_cpu(i)
+>  		INIT_LIST_HEAD(&per_cpu(blk_cpu_done, i));
+> 
+> -	open_softirq(BLOCK_SOFTIRQ, blk_done_softirq, NULL);
+> +	open_softirq(BLOCK_SOFTIRQ, blk_done_softirq);
+>  	register_hotcpu_notifier(&blk_cpu_notifier);
+> 
+>  	return 0;
+> diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
+> index f1fc747..a86186d 100644
+> --- a/include/linux/interrupt.h
+> +++ b/include/linux/interrupt.h
+> @@ -285,12 +285,11 @@ enum
+>  struct softirq_action
+>  {
+>  	void	(*action)(struct softirq_action *);
+> -	void	*data;
+>  };
+> 
+>  asmlinkage void do_softirq(void);
+>  asmlinkage void __do_softirq(void);
+> -extern void open_softirq(int nr, void (*action)(struct softirq_action*), void *data);
+> +extern void open_softirq(int nr, void (*action)(struct softirq_action *));
+>  extern void softirq_init(void);
+>  #define __raise_softirq_irqoff(nr) do { or_softirq_pending(1UL << (nr)); } while (0)
+>  extern void raise_softirq_irqoff(unsigned int nr);
+> diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+> index 421be5f..861b408 100644
+> --- a/kernel/hrtimer.c
+> +++ b/kernel/hrtimer.c
+> @@ -1669,7 +1669,7 @@ void __init hrtimers_init(void)
+>  			  (void *)(long)smp_processor_id());
+>  	register_cpu_notifier(&hrtimers_nb);
+>  #ifdef CONFIG_HIGH_RES_TIMERS
+> -	open_softirq(HRTIMER_SOFTIRQ, run_hrtimer_softirq, NULL);
+> +	open_softirq(HRTIMER_SOFTIRQ, run_hrtimer_softirq);
+>  #endif
+>  }
+> 
+> diff --git a/kernel/rcuclassic.c b/kernel/rcuclassic.c
+> index f4ffbd0..f6e01f3 100644
+> --- a/kernel/rcuclassic.c
+> +++ b/kernel/rcuclassic.c
+> @@ -529,7 +529,7 @@ static void __cpuinit rcu_online_cpu(int cpu)
+> 
+>  	rcu_init_percpu_data(cpu, &rcu_ctrlblk, rdp);
+>  	rcu_init_percpu_data(cpu, &rcu_bh_ctrlblk, bh_rdp);
+> -	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks, NULL);
+> +	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
+>  }
+> 
+>  static int __cpuinit rcu_cpu_notify(struct notifier_block *self,
+> diff --git a/kernel/rcupreempt.c b/kernel/rcupreempt.c
+> index e1cdf19..9dd827d 100644
+> --- a/kernel/rcupreempt.c
+> +++ b/kernel/rcupreempt.c
+> @@ -1125,7 +1125,7 @@ void __init __rcu_init(void)
+>  	for_each_online_cpu(cpu)
+>  		rcu_cpu_notify(&rcu_nb, CPU_UP_PREPARE,	(void *)(long) cpu);
+> 
+> -	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks, NULL);
+> +	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
+>  }
+> 
+>  /*
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 8841a91..80f6661 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -8154,7 +8154,7 @@ void __init sched_init(void)
+>  #endif
+> 
+>  #ifdef CONFIG_SMP
+> -	open_softirq(SCHED_SOFTIRQ, run_rebalance_domains, NULL);
+> +	open_softirq(SCHED_SOFTIRQ, run_rebalance_domains);
+>  #endif
+> 
+>  #ifdef CONFIG_RT_MUTEXES
+> diff --git a/kernel/softirq.c b/kernel/softirq.c
+> index 36e0617..0592568 100644
+> --- a/kernel/softirq.c
+> +++ b/kernel/softirq.c
+> @@ -347,9 +347,8 @@ void raise_softirq(unsigned int nr)
+>  	local_irq_restore(flags);
+>  }
+> 
+> -void open_softirq(int nr, void (*action)(struct softirq_action*), void *data)
+> +void open_softirq(int nr, void (*action)(struct softirq_action *))
+>  {
+> -	softirq_vec[nr].data = data;
+>  	softirq_vec[nr].action = action;
+>  }
+> 
+> @@ -503,8 +502,8 @@ void __init softirq_init(void)
+>  			&per_cpu(tasklet_hi_vec, cpu).head;
+>  	}
+> 
+> -	open_softirq(TASKLET_SOFTIRQ, tasklet_action, NULL);
+> -	open_softirq(HI_SOFTIRQ, tasklet_hi_action, NULL);
+> +	open_softirq(TASKLET_SOFTIRQ, tasklet_action);
+> +	open_softirq(HI_SOFTIRQ, tasklet_hi_action);
+>  }
+> 
+>  static int ksoftirqd(void * __bind_cpu)
+> diff --git a/kernel/timer.c b/kernel/timer.c
+> index ceacc66..b4da888 100644
+> --- a/kernel/timer.c
+> +++ b/kernel/timer.c
+> @@ -1502,7 +1502,7 @@ void __init init_timers(void)
+> 
+>  	BUG_ON(err == NOTIFY_BAD);
+>  	register_cpu_notifier(&timers_nb);
+> -	open_softirq(TIMER_SOFTIRQ, run_timer_softirq, NULL);
+> +	open_softirq(TIMER_SOFTIRQ, run_timer_softirq);
+>  }
+> 
+>  /**
+> diff --git a/net/core/dev.c b/net/core/dev.c
+> index a1607bc..692d971 100644
+> --- a/net/core/dev.c
+> +++ b/net/core/dev.c
+> @@ -4559,8 +4559,8 @@ static int __init net_dev_init(void)
+> 
+>  	dev_boot_phase = 0;
+> 
+> -	open_softirq(NET_TX_SOFTIRQ, net_tx_action, NULL);
+> -	open_softirq(NET_RX_SOFTIRQ, net_rx_action, NULL);
+> +	open_softirq(NET_TX_SOFTIRQ, net_tx_action);
+> +	open_softirq(NET_RX_SOFTIRQ, net_rx_action);
+> 
+>  	hotcpu_notifier(dev_cpu_callback, 0);
+>  	dst_init();
+> -- 
+> 1.5.4.3
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
