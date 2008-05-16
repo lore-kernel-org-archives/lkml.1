@@ -1,136 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757539AbYEPMPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756962AbYEPMRu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757539AbYEPMPZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 08:15:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbYEPMPN
+	id S1756962AbYEPMRu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 08:17:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754445AbYEPMRm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 08:15:13 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:55084 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754787AbYEPMPM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 08:15:12 -0400
-Date: Fri, 16 May 2008 13:15:10 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Adam Litke <agl@us.ibm.com>
-Cc: linux-mm@kvack.org, dean@arctic.org, linux-kernel@vger.kernel.org,
-       wli@holomorphy.com, dwg@au1.ibm.com, andi@firstfloor.org,
-       kenchen@google.com, apw@shadowen.org
-Subject: Re: [PATCH 3/3] Guarantee that COW faults for a process that called mmap(MAP_PRIVATE) on hugetlbfs will succeed
-Message-ID: <20080516121510.GC2637@csn.ul.ie>
-References: <20080507193826.5765.49292.sendpatchset@skynet.skynet.ie> <20080507193926.5765.78883.sendpatchset@skynet.skynet.ie> <1210798525.19507.55.camel@localhost.localdomain>
+	Fri, 16 May 2008 08:17:42 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:54179 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752737AbYEPMRl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 08:17:41 -0400
+Date: Fri, 16 May 2008 14:18:36 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Huang, Ying" <ying.huang@intel.com>,
+       nigel@nigel.suspend2.net, Andrew Morton <akpm@linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: [PATCH -mm] kexec jump -v9
+Message-ID: <20080516121836.GE22264@elf.ucw.cz>
+References: <1204773188.4707.109.camel@caritas-dev.intel.com> <m13aok1pt1.fsf@frodo.ebiederm.org> <200805150155.33787.rjw@sisk.pl> <m163tfi5sq.fsf@frodo.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1210798525.19507.55.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <m163tfi5sq.fsf@frodo.ebiederm.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (14/05/08 15:55), Adam Litke didst pronounce:
-> On Wed, 2008-05-07 at 20:39 +0100, Mel Gorman wrote:
+On Thu 2008-05-15 15:03:17, Eric W. Biederman wrote:
+> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
 > 
-> > diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.25-mm1-0020-map_private_reserve/mm/hugetlb.c linux-2.6.25-mm1-0030-reliable_parent_faults/mm/hugetlb.c
-> > --- linux-2.6.25-mm1-0020-map_private_reserve/mm/hugetlb.c	2008-05-07 18:39:34.000000000 +0100
-> > +++ linux-2.6.25-mm1-0030-reliable_parent_faults/mm/hugetlb.c	2008-05-07 20:05:18.000000000 +0100
-> > @@ -40,6 +40,9 @@ static int hugetlb_next_nid;
-> >   */
-> >  static DEFINE_SPINLOCK(hugetlb_lock);
-> > 
-> > +#define HPAGE_RESV_OWNER    (1UL << (BITS_PER_LONG - 1))
-> > +#define HPAGE_RESV_UNMAPPED (1UL << (BITS_PER_LONG - 2))
-> > +#define HPAGE_RESV_MASK (HPAGE_RESV_OWNER | HPAGE_RESV_UNMAPPED)
-> >  /*
-> >   * These three helpers are used to track how many pages are reserved for
-> >   * faults in a MAP_PRIVATE mapping. Only the process that called mmap()
-> > @@ -49,20 +52,23 @@ static unsigned long vma_resv_huge_pages
-> >  {
-> >  	VM_BUG_ON(!is_vm_hugetlb_page(vma));
-> >  	if (!(vma->vm_flags & VM_SHARED))
-> > -		return (unsigned long)vma->vm_private_data;
-> > +		return (unsigned long)vma->vm_private_data & ~HPAGE_RESV_MASK;
-> >  	return 0;
-> >  }
+> > Well, it looks like we do similar things concurrently.  Please have a look 
+> > here: http://kerneltrap.org/Linux/Separating_Suspend_and_Hibernation
 > 
-> Ick.  Though I don't really have a suggestion on how to improve it
-> unless a half-word is enough room to contain the reservation.  In that
-> case we could create a structure which would make this much clearer.
+> Yes.  Part of the reason I wanted to separate these two conversations
+> I knew something was going on.
 > 
-> struct hugetlb_vma_reservation {
-> 	unsigned int flags;
-> 	unsigned int resv;
-> };
+> > Similar patches are in the Greg's tree already.
 > 
+> Taking a look.
+> 
+> I just can't get past the fact in that the only reason hibernation can
+> not use the widely implemented and tested probe/remove is because of
+> filesystems on block devices, and that you are proposing to add 4
+> methods for each and every driver to handle that case, when they
+> don't need ANYTHING!
+> 
+> I wonder how hard teaching the upper layers to deal with
+> hotplug/remove is?
 
-That won't fit into a void * on 32 bit. The use of a pointer to store
-values like this is a little ugly but it's confined to the helpers whose
-naming makes it obvious what is going on.
+It looked _too_ hard when I was looking... at least if we are thinking
+off "keep the filesystem mounted over unplug-replug".
 
-It would be done with bit-fields and the like but I don't think it helps
-the readability a whole lot.
-
-> >  static void adjust_vma_resv_huge_pages(struct vm_area_struct *vma, int delta)
-> >  {
-> >  	unsigned long reserve;
-> > +	unsigned long flags;
-> >  	VM_BUG_ON(vma->vm_flags & VM_SHARED);
-> >  	VM_BUG_ON(!is_vm_hugetlb_page(vma));
-> > 
-> >  	reserve = (unsigned long)vma->vm_private_data + delta;
-> > -	vma->vm_private_data = (void *)reserve;
-> > +	flags = (unsigned long)vma->vm_private_data & HPAGE_RESV_MASK;
-> > +	vma->vm_private_data = (void *)(reserve | flags);
-> >  }
-> > 
-> > +/* Reset counters to 0 and clear all HPAGE_RESV_* flags */
-> >  void reset_vma_resv_huge_pages(struct vm_area_struct *vma)
-> >  {
-> >  	VM_BUG_ON(!is_vm_hugetlb_page(vma));
-> > @@ -73,10 +79,27 @@ void reset_vma_resv_huge_pages(struct vm
-> >  static void set_vma_resv_huge_pages(struct vm_area_struct *vma,
-> >  							unsigned long reserve)
-> >  {
-> > +	unsigned long flags;
-> > +
-> >  	VM_BUG_ON(!is_vm_hugetlb_page(vma));
-> >  	VM_BUG_ON(vma->vm_flags & VM_SHARED);
-> > 
-> > -	vma->vm_private_data = (void *)reserve;
-> > +	flags = (unsigned long)vma->vm_private_data & HPAGE_RESV_MASK;
-> > +	vma->vm_private_data = (void *)(reserve | flags);
-> > +}
-> > +
-> > +static void set_vma_resv_flags(struct vm_area_struct *vma, unsigned long flags)
-> > +{
-> > +	unsigned long reserveflags = (unsigned long)vma->vm_private_data;
-> > +	VM_BUG_ON(!is_vm_hugetlb_page(vma));
-> > +	reserveflags |= flags;
-> > +	vma->vm_private_data = (void *)reserveflags;
-> > +}
-> > +
-> > +static int is_vma_resv_set(struct vm_area_struct *vma, unsigned long flag)
-> > +{
-> > +	VM_BUG_ON(!is_vm_hugetlb_page(vma));
-> > +	return ((unsigned long)vma->vm_private_data & flag) != 0;
-> >  }
-> > 
-> >  static void clear_huge_page(struct page *page, unsigned long addr)
-> > @@ -139,7 +162,7 @@ static void decrement_hugepage_resv_vma(
-> >  		 * Only the process that called mmap() has reserves for
-> >  		 * private mappings.
-> >  		 */
-> > -		if (vma_resv_huge_pages(vma)) {
-> > +		if (is_vma_resv_set(vma, HPAGE_RESV_OWNER)) {
-> >  			resv_huge_pages--;
-> >  			adjust_vma_resv_huge_pages(vma, -1);
-> >  		}
-> 
-> -- 
-> Adam Litke - (agl at us.ibm.com)
-> IBM Linux Technology Center
-> 
-
+Or do you have something else in mind?
+									Pavel
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
