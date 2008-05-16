@@ -1,63 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760404AbYEPSeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760613AbYEPSfp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760404AbYEPSeT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 14:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755004AbYEPSeE
+	id S1760613AbYEPSfp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 14:35:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755004AbYEPSff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 14:34:04 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36211 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751409AbYEPSeB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 14:34:01 -0400
-Date: Fri, 16 May 2008 15:33:56 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: Re: [PATCH][PCI]: Introduce pci_find_capability_cached and make
-	MSI use it
-Message-ID: <20080516183356.GA7307@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>,
-	Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-	linux-pci@vger.kernel.org, linux-rt-users@vger.kernel.org
-References: <20080515160426.GD14846@ghostprotocols.net> <20080515170407.GM9921@parisc-linux.org> <20080515171003.GF14846@ghostprotocols.net> <200805161044.34938.jbarnes@virtuousgeek.org>
+	Fri, 16 May 2008 14:35:35 -0400
+Received: from gv-out-0910.google.com ([216.239.58.186]:4432 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751409AbYEPSfe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 14:35:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=eKgwXR+ZAWiPitXjwTe13ehc19VTdjf1J2lm8CxwE8r9T7Lfkb22S9LizuQwTJTnvCJ/AtwjCDS11oy46/fN6dBotniCzQ0ocNwrZIhtH+5Le+agJJpCxWOQjMA2cx1I74WowvRy6WG92F+uvsP8t2AgcQY2rmHVlo1s3Nme8zQ=
+Message-ID: <6101e8c40805161135w7470123uaac93ca59caee026@mail.gmail.com>
+Date: Fri, 16 May 2008 20:35:32 +0200
+From: "Oliver Pinter" <oliver.pntr@gmail.com>
+To: "David Greaves" <david@dgreaves.com>
+Subject: Re: Regression- XFS won't mount on partitioned md array
+Cc: "Justin Piszcz" <jpiszcz@lucidpixels.com>, "David Chinner" <dgc@sgi.com>,
+       LinuxRaid <linux-raid@vger.kernel.org>, xfs@oss.sgi.com,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <482DCCCD.8020503@dgreaves.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200805161044.34938.jbarnes@virtuousgeek.org>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <482DC043.5000307@dgreaves.com>
+	 <alpine.DEB.1.10.0805161316100.3118@p34.internal.lan>
+	 <482DCCCD.8020503@dgreaves.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Fri, May 16, 2008 at 10:44:34AM -0700, Jesse Barnes escreveu:
-> On Thursday, May 15, 2008 10:10 am Arnaldo Carvalho de Melo wrote:
-> > Em Thu, May 15, 2008 at 11:04:07AM -0600, Matthew Wilcox escreveu:
-> > > On Thu, May 15, 2008 at 01:04:26PM -0300, Arnaldo Carvalho de Melo wrote:
-> > > > 	So I implemented pci_find_capability_cached and made MSI use it
-> > > > for good measure, please consider applying.
-> > >
-> > > As I told you on IRC, this is just the MSI code being complete crap.
-> > > It should be caching the offset itself.  We shouldn't have this extra
-> > > array in the struct pci_dev just because MSI is broken.
-> >
-> > Well, we can certainly do that, its just that I did this first and
-> > thought that perhaps there could be some other users, but I see that 44
-> > extra bytes per pci_dev can be a pain if the only one to reap benefits
-> > is MSI, can't you think of any other users? I couldn't detect any so far
-> > in my admitedly limited testing.
-> 
-> There are a few other common cap checks, but I don't think they compare to MSI 
-> in terms of latency sensitivity (though I didn't audit all the CAP_ID_EXP 
-> checks, there are quite a few of those).
-> 
-> Since we know MSI is a problem, let's just go with fixing that for now.  If we 
-> find that other caps are also causing problems we can revisit caching all of 
-> them; the patch is simple enough.
+this[1] patch fixed?
 
-Do you want me to submit another patch or can you cook up one?
+this patch is for 2.6.25.5 kernel
 
-- Arnaldo
+1: http://git.kernel.org/?p=linux/kernel/git/stable/stable-queue.git;a=blob;f=queue-2.6.25/block-do_mounts-accept-root-non-existant-partition.patch;h=097cda9928b434994dbb157065b2ca38e7cec3a1;hb=8cc4c3b370d59deb16c2e92165a466c82e914020
+
+On 5/16/08, David Greaves <david@dgreaves.com> wrote:
+>> Ouch, still on 2.6.25.1 here, didn't reboot yet, but I do not use
+>> mdraid'ed partitions, just regular mdraid, if you boot back to 2.6.20.7
+>> does it work again?
+> Yes, no probs.
+>
+> It came in prior to 2.6.25-rc1
+> The machine has a root xfs filesystem with an internal log on a sata disk
+> and a
+> data filesystem on a partitioned array with an external log (also on the
+> partitioned array).
+> Only the partitioned array/external-log filesystem is affected.
+>
+> David
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+
+
+-- 
+Thanks,
+Oliver
