@@ -1,61 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758901AbYEPPT4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760397AbYEPPUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758901AbYEPPT4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 11:19:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751429AbYEPPTq
+	id S1760397AbYEPPUZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 11:20:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759003AbYEPPTz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 11:19:46 -0400
-Received: from gate.crashing.org ([63.228.1.57]:38149 "EHLO gate.crashing.org"
+	Fri, 16 May 2008 11:19:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49488 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750791AbYEPPTp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 11:19:45 -0400
-Message-Id: <5DA48DE4-1DEF-438D-AA65-0F4DA73AA33A@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: tty_driver, wait_until_sent, and types
-Date: Fri, 16 May 2008 10:19:30 -0500
-Cc: lkml List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-X-Mailer: Apple Mail (2.919.2)
+	id S1758901AbYEPPTx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 11:19:53 -0400
+Date: Fri, 16 May 2008 11:01:46 -0400
+From: Josef Bacik <jbacik@redhat.com>
+To: Mingming Cao <cmm@us.ibm.com>
+Cc: Jan Kara <jack@suse.cz>, Badari Pulavarty <pbadari@us.ibm.com>,
+       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix DIO EIO error caused by race between
+	jbd_commit_transaction() and journal_try_to_drop_buffers()
+Message-ID: <20080516150146.GA21018@unused.rdu.redhat.com>
+References: <20080505170636.GK25722@duck.suse.cz> <1210372072.3639.52.camel@localhost.localdomain> <20080512155419.GD15856@duck.suse.cz> <1210639184.3661.43.camel@localhost.localdomain> <20080513145449.GC20806@duck.suse.cz> <1210717389.3638.24.camel@localhost.localdomain> <20080514170856.GH24363@duck.suse.cz> <1210786872.3657.48.camel@localhost.localdomain> <20080514181444.GI24363@duck.suse.cz> <1210947250.3608.18.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1210947250.3608.18.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm getting the following reported back on both a ppc64 and x86_64  
-box, running 2.6.25:
+On Fri, May 16, 2008 at 07:14:10AM -0700, Mingming Cao wrote:
+> This patch fixed a few races between direct IO and kjournld commit transaction.
+> An unexpected EIO error gets returned to direct IO caller when it failed to
+> free those data buffers. This could be reproduced easily with parallel 
+> direct write and buffered write to the same file
+> 
+> More specific, those races could cause journal_try_to_free_buffers()
+> fail to free the data buffers, when jbd is committing the transaction that has
+> those data buffers on its t_syncdata_list or t_locked_list. 
+> journal_commit_transaction() still holds the reference to those buffers
+>  before data reach to disk and buffers are removed from the 
+> t_syncdata_list of t_locked_list. This prevent the concurrent 
+> journal_try_to_free_buffers() to free those buffers at the same time, and cause
+> EIO error returns back to direct IO.
+> 
+> With this patch, in case of direct IO and when try_to_free_buffers() failed,
+> let's waiting for journal_commit_transaction() to finish
+> flushing the current committing transaction's data buffers to disk, 
+> then try to free those buffers again.
+> 
+> Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+> Reviewed-by: Badari Pulavarty <pbadari@us.ibm.com> 
+> ---
+>  fs/jbd/commit.c      |    1 +
+>  fs/jbd/journal.c     |    1 +
+>  fs/jbd/transaction.c |   46 ++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/jbd.h  |    3 +++
+>  4 files changed, 51 insertions(+)
+> 
+> Index: linux-2.6.26-rc1/include/linux/jbd.h
+> ===================================================================
+> --- linux-2.6.26-rc1.orig/include/linux/jbd.h	2008-05-14 16:36:41.000000000 -0700
+> +++ linux-2.6.26-rc1/include/linux/jbd.h	2008-05-15 14:12:10.000000000 -0700
+> @@ -667,6 +667,9 @@ struct journal_s
+>  	 */
+>  	wait_queue_head_t	j_wait_transaction_locked;
+>  
+> +	/* Wait queu for waiting for data buffers to flushed to disk*/
+> +	wait_queue_head_t	j_wait_data_flushed;
+> +
+>  	/* Wait queue for waiting for checkpointing to complete */
+>  	wait_queue_head_t	j_wait_logspace;
+>  
+> Index: linux-2.6.26-rc1/fs/jbd/commit.c
+> ===================================================================
+> --- linux-2.6.26-rc1.orig/fs/jbd/commit.c	2008-05-03 11:59:44.000000000 -0700
+> +++ linux-2.6.26-rc1/fs/jbd/commit.c	2008-05-15 14:12:46.000000000 -0700
+> @@ -462,6 +462,7 @@ void journal_commit_transaction(journal_
+>  	 * clean by now, so check that it is in fact empty.
+>  	 */
+>  	J_ASSERT (commit_transaction->t_sync_datalist == NULL);
+> +	wake_up(&journal->j_wait_data_flushed)
+>  
+>  	jbd_debug (3, "JBD: commit phase 3\n");
+>  
+> Index: linux-2.6.26-rc1/fs/jbd/journal.c
+> ===================================================================
+> --- linux-2.6.26-rc1.orig/fs/jbd/journal.c	2008-05-14 16:36:41.000000000 -0700
+> +++ linux-2.6.26-rc1/fs/jbd/journal.c	2008-05-15 14:13:02.000000000 -0700
+> @@ -660,6 +660,7 @@ static journal_t * journal_init_common (
+>  		goto fail;
+>  
+>  	init_waitqueue_head(&journal->j_wait_transaction_locked);
+> +	init_waitqueue_head(&journal->j_wait_data_flushed);
+>  	init_waitqueue_head(&journal->j_wait_logspace);
+>  	init_waitqueue_head(&journal->j_wait_done_commit);
+>  	init_waitqueue_head(&journal->j_wait_checkpoint);
+> Index: linux-2.6.26-rc1/fs/jbd/transaction.c
+> ===================================================================
+> --- linux-2.6.26-rc1.orig/fs/jbd/transaction.c	2008-05-03 11:59:44.000000000 -0700
+> +++ linux-2.6.26-rc1/fs/jbd/transaction.c	2008-05-16 06:42:30.000000000 -0700
+> @@ -1648,12 +1648,47 @@ out:
+>  	return;
+>  }
+>  
+> +/*
+> + * Journal_try_to_free_buffers() will call this function to w
+> + * waiting for the current transaction finishing syncing data buffers, before
+> + * try to free that buffer.
+> + *
+> + * journal_try_to_free_buffers() could race with journal_commit_transaction()
+> + * The later might still hold the reference count to the buffers when inspecting
+> + * them on t_syncdata_list or t_locked_list.
+> + */
+> +static void journal_wait_for_transaction_sync_data(journal_t *journal)
+> +{
+> +        transaction_t *transaction = NULL;
+> +
+> +        transaction = journal->j_committing_transaction;
+> +
+> +        if (!transaction)
+> +                return;
+> +
+> +        /*
+> +         * If the current transaction is flushing and waiting for data buffers
+> +	 * (t_state is T_FLUSH), wait for the j_wait_data_flushed event
+> +         */
+> +        if (transaction->t_state == T_FLUSH) {
+> +                DEFINE_WAIT(wait);
+> +
+> +                prepare_to_wait(&journal->j_wait_data_flushed,
+> +                                        &wait, TASK_UNINTERRUPTIBLE);
+> +                spin_unlock(&journal->j_state_lock);
+> +                schedule();
+> +                finish_wait(&journal->j_wait_data_flushed, &wait);
+> +        	spin_lock(&journal->j_state_lock);
+> +        }
+> +	return;
+> +}
+> 
 
-schedule_timeout: wrong timeout value ffffffffffffffff
-Call Trace:
-[c0000000558ef3f0] [c000000000010b7c] .show_stack+0x70/0x19c  
-(unreliable)
-[c0000000558ef4a0] [c00000000045137c] .schedule_timeout+0x5c/0xe8
-[c0000000558ef590] [d0000000005793f0] .espx_wait_until_sent 
-+0x154/0x240 [espx]
-[c0000000558ef670] [c0000000002caa30] .tty_wait_until_sent+0x17c/0x1ac
-[c0000000558ef750] [c0000000002cadc0] .set_termios+0x360/0x3c0
-[c0000000558ef830] [c0000000002cb33c] .tty_mode_ioctl+0x51c/0x8a8
-[c0000000558ef910] [c0000000002c6f34] .tty_ioctl+0x1228/0x12b0
-[c0000000558efaf0] [c000000000134928] .vfs_ioctl+0xb4/0xec
-[c0000000558efb80] [c000000000134df8] .do_vfs_ioctl+0x498/0x4c4
-[c0000000558efc30] [c000000000134e94] .sys_ioctl+0x70/0xb4
-[c0000000558efce0] [c000000000167594] .do_ioctl32_pointer+0x14/0x2c
-[c0000000558efd50] [c00000000016c788] .compat_sys_ioctl+0x3ec/0x470
-[c0000000558efe30] [c000000000008748] syscall_exit+0x0/0x40
+Got a couple of whitespace problems above it looks like.  Thanks,
 
-It seems like the issue has to do with types:
+Josef
 
-in drivers/char/tty_ioctl.c:
-
-void tty_wait_until_sent(struct tty_struct *tty, long timeout)
-	tty->ops->wait_until_sent(tty, timeout);
-
-however, from include/linux/tty_driver.h we see:
-
-void (*wait_until_sent)(struct tty_struct *tty, int timeout);
-
-should timeout be a long instead of an int?
-
-- k
