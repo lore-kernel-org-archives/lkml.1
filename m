@@ -1,80 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759228AbYEPUs0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761887AbYEPVBz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759228AbYEPUs0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 16:48:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbYEPUsT
+	id S1761887AbYEPVBz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 17:01:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754226AbYEPVBo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 16:48:19 -0400
-Received: from an-out-0708.google.com ([209.85.132.241]:63924 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752158AbYEPUsS (ORCPT
+	Fri, 16 May 2008 17:01:44 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:52086 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752291AbYEPVBn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 16:48:18 -0400
-Message-ID: <fa686aa40805161348t52b94956w112ef6926ff30892@mail.gmail.com>
-Date: Fri, 16 May 2008 14:48:16 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Jon Smirl" <jonsmirl@gmail.com>
-Subject: Re: [RFC PATCH 0/4] Describe SPI devices in the OF device tree and add mpc5200-spi driver
-Cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
-       fabrizio.garetto@gmail.com
-In-Reply-To: <9e4733910805161327u4c42fd1dg5b09319d89db447c@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 16 May 2008 17:01:43 -0400
+Subject: [PATCH] JBD: Fix DIO EIO error caused by race between free buffer
+	and commit trasanction
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: Jan Kara <jack@suse.cz>, akpm@linux-foundation.org,
+       Badari Pulavarty <pbadari@us.ibm.com>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1210957976.4231.31.camel@badari-desktop>
+References: <20080429124321.GD1987@duck.suse.cz>
+	 <1209654981.27240.19.camel@badari-desktop>
+	 <20080505170636.GK25722@duck.suse.cz>
+	 <1210372072.3639.52.camel@localhost.localdomain>
+	 <20080512155419.GD15856@duck.suse.cz>
+	 <1210639184.3661.43.camel@localhost.localdomain>
+	 <20080513145449.GC20806@duck.suse.cz>
+	 <1210717389.3638.24.camel@localhost.localdomain>
+	 <20080514170856.GH24363@duck.suse.cz>
+	 <1210786872.3657.48.camel@localhost.localdomain>
+	 <20080514181444.GI24363@duck.suse.cz>
+	 <1210947250.3608.18.camel@localhost.localdomain>
+	 <1210957976.4231.31.camel@badari-desktop>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Fri, 16 May 2008 14:01:33 -0700
+Message-Id: <1210971693.3608.46.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
-	 <9e4733910805161327u4c42fd1dg5b09319d89db447c@mail.gmail.com>
-X-Google-Sender-Auth: a306407ec82ced4a
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16, 2008 at 2:27 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
-> On 5/16/08, Grant Likely <grant.likely@secretlab.ca> wrote:
->> This series is a set of changes to allow the slaves on an SPI bus to be
->>  described in the OF device tree (useful in arch/powerpc) and adds a driver
->>  that uses it (the Freescale MPC5200 SoC's SPI device).
->
-> Right now we have SPI hooked up to PSC3. Hardware engineer is gone but
-> I'll see if I can get him to alter things to use the SPI controller. I
-> have an old mail from him where he thinks the Phytec board is missing
-> a signal needed to use the SPI controller.
+This patch fixed a few races between direct IO and kjournald commit transaction.
+An unexpected EIO error gets returned to direct IO caller when it failed to
+free those data buffers. This could be reproduced easily with parallel 
+direct write and buffered write to the same file
 
-While I'd appreciate the testing, I suspect that you really don't want
-to do that.  The dedicated SPI controller isn't very good.  It only
-does a byte at a time and so is rather slow.  A PSC is SPI mode should
-be better (but I haven't tried it personally it yet).
+More specific, those races could cause journal_try_to_free_buffers()
+fail to free the data buffers, when jbd is committing the transaction that has
+those data buffers on its t_syncdata_list or t_locked_list. 
+journal_commit_transaction() still holds the reference to those buffers
+ before data reach to disk and buffers are removed from the 
+t_syncdata_list of t_locked_list. This prevent the concurrent 
+journal_try_to_free_buffers() to free those buffers at the same time, but cause
+EIO error returns back to direct IO.
 
->
-> Is the current SPI driver working on PSC3? I have a MMC card wired up
-> to it but I've never tried using it.
+With this patch, in case of direct IO and when try_to_free_buffers() failed,
+let's waiting for journal_commit_transaction() to finish
+flushing the current committing transaction's data buffers to disk, 
+then try to free those buffers again.
 
-It should work.
+Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+Reviewed-by: Badari Pulavarty <pbadari@us.ibm.com> 
+---
+ fs/jbd/transaction.c |   57 +++++++++++++++++++++++++++++++++++++++++++++++++--
+ mm/truncate.c        |    3 +-
+ 2 files changed, 57 insertions(+), 3 deletions(-)
 
-> I have the MPC5200 PSC SPI driver enabled and "MMC/SD over SPI"
-> enabled in my kernel. The MMC bus gets created but there aren't any
-> devices on it. Do we need something in the SPI driver so that the MMC
-> layer can find it?
+Index: linux-2.6.26-rc2/fs/jbd/transaction.c
+===================================================================
+--- linux-2.6.26-rc2.orig/fs/jbd/transaction.c	2008-05-16 11:51:02.000000000 -0700
++++ linux-2.6.26-rc2/fs/jbd/transaction.c	2008-05-16 13:43:02.000000000 -0700
+@@ -1648,12 +1648,39 @@ out:
+ 	return;
+ }
+ 
++/*
++ * journal_try_to_free_buffers() could race with journal_commit_transaction()
++ * The later might still hold the reference count to the buffers when inspecting
++ * them on t_syncdata_list or t_locked_list.
++ *
++ * Journal_try_to_free_buffers() will call this function to
++ * wait for the current transaction to finish syncing data buffers, before
++ * try to free that buffer.
++ *
++ * Called with journal->j_state_lock hold.
++ */
++static void journal_wait_for_transaction_sync_data(journal_t *journal)
++{
++	transaction_t *transaction = NULL;
++	tid_t tid;
++
++	transaction = journal->j_committing_transaction;
++
++	if (!transaction)
++		return;
++
++	tid = transaction->t_tid;
++	spin_unlock(&journal->j_state_lock);
++	log_wait_commit(journal, tid);
++	spin_lock(&journal->j_state_lock);
++}
+ 
+ /**
+  * int journal_try_to_free_buffers() - try to free page buffers.
+  * @journal: journal for operation
+  * @page: to try and free
+- * @unused_gfp_mask: unused
++ * @gfp_mask: unused for allocation purpose. Here is used
++ * 	      as a flag to tell if direct IO is attemping to free buffers.
+  *
+  *
+  * For all the buffers on this page,
+@@ -1682,9 +1709,11 @@ out:
+  * journal_try_to_free_buffer() is changing its state.  But that
+  * cannot happen because we never reallocate freed data as metadata
+  * while the data is part of a transaction.  Yes?
++ *
++ * Return 0 on failure, 1 on success
+  */
+ int journal_try_to_free_buffers(journal_t *journal,
+-				struct page *page, gfp_t unused_gfp_mask)
++				struct page *page, gfp_t gfp_mask)
+ {
+ 	struct buffer_head *head;
+ 	struct buffer_head *bh;
+@@ -1713,7 +1742,31 @@ int journal_try_to_free_buffers(journal_
+ 		if (buffer_jbd(bh))
+ 			goto busy;
+ 	} while ((bh = bh->b_this_page) != head);
++
+ 	ret = try_to_free_buffers(page);
++
++ 	/*
++	 * In the case of concurrent direct IO and buffered IO,
++	 * There are a number of places where we
++	 * could race with journal_commit_transaction(), the later still
++	 * holds the reference to the buffers to free while processing them.
++	 * try_to_free_buffers() failed to free those buffers,
++	 * resulting in an unexpected EIO error
++	 * returns back to the generic_file_direct_IO()
++	 *
++	 * So let's wait for the current transaction to finish flush of
++	 * dirty data buffers before we try to free those buffers
++	 * again. This wait is needed by direct IO code path only,
++	 * gfp_mask __GFP_REPEAT is passed from the direct IO code
++	 * path to flag if we need to wait and retry free buffers.
++	 */
++	if (ret == 0 && gfp_mask & __GFP_REPEAT) {
++        	spin_lock(&journal->j_state_lock);
++		journal_wait_for_transaction_sync_data(journal);
++		ret = try_to_free_buffers(page);
++		spin_unlock(&journal->j_state_lock);
++	}
++
+ busy:
+ 	return ret;
+ }
+Index: linux-2.6.26-rc2/mm/truncate.c
+===================================================================
+--- linux-2.6.26-rc2.orig/mm/truncate.c	2008-05-16 11:51:02.000000000 -0700
++++ linux-2.6.26-rc2/mm/truncate.c	2008-05-16 13:42:18.000000000 -0700
+@@ -346,7 +346,8 @@ invalidate_complete_page2(struct address
+ 	if (page->mapping != mapping)
+ 		return 0;
+ 
+-	if (PagePrivate(page) && !try_to_release_page(page, GFP_KERNEL))
++	if (PagePrivate(page) &&
++			!try_to_release_page(page,GFP_KERNEL|__GFP_REPEAT))
+ 		return 0;
+ 
+ 	write_lock_irq(&mapping->tree_lock);
 
-Yes, see patch 3 in my series.  the PSC SPI driver needs to do
-something like this.  SPI busses don't really do autodetection (but
-some sub-protocols, like MMC, do IIRC).
 
-> Are you going to keeps this as two drivers or merge them? If it is two
-> drivers there should be one entry in Kconfig and two sub choices for
-> the types of drivers.
-
-It will remain as two drivers.  The devices are entirely separate.  I
-don't think putting them under a single Kconfig is needed or a good
-idea.  They both depend on PPC_MPC52xx anyway so they only show up if
-you're building for a 5200 platform.
-
-Thanks for the comments.
-
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
