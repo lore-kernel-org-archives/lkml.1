@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758386AbYEPOnj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758622AbYEPOoi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758386AbYEPOnj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 10:43:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbYEPOmH
+	id S1758622AbYEPOoi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 10:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbYEPOmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 10:42:07 -0400
-Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49185 "EHLO
+	Fri, 16 May 2008 10:42:09 -0400
+Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49190 "EHLO
 	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750947AbYEPOl7 (ORCPT
+	with ESMTP id S1750970AbYEPOmA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 10:41:59 -0400
+	Fri, 16 May 2008 10:42:00 -0400
 From: hooanon05@yahoo.co.jp
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Junjiro Okajima <hooanon05@yahoo.co.jp>
-Subject: [PATCH 60/67] aufs debug print functions, header
-Date: Fri, 16 May 2008 23:33:14 +0900
-Message-Id: <12109484022031-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [PATCH 63/67] aufs mount helper
+Date: Fri, 16 May 2008 23:33:17 +0900
+Message-Id: <1210948402777-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <12109484021382-git-send-email-hooanon05@yahoo.co.jp>
+In-Reply-To: <12109484021127-git-send-email-hooanon05@yahoo.co.jp>
 References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <12109484012532-git-send-email-hooanon05@yahoo.co.jp> <12109484012997-git-send-email-hooanon05@yahoo.co.jp> <12109484013051-git-send-email-hooanon05@yahoo.co.jp> <12109484013436-git-send-email-hooanon05@yahoo.co.jp> <1210948401415-git-send-email-hooanon05@yahoo.co.jp> <12109484011533-git-send-email-hooanon05@yahoo.co.jp> <1210948401506-git-send-email-hooanon05@yahoo.co.jp> <12109484013156-git-send-email-hooanon05@yahoo.co.jp> <12109484012724-git-send-email-hooanon05@yahoo.co.jp> <12109484013264-git-send-email-hooanon05@yahoo.co.jp> <12109484012658-git-send-email-hooanon05@yahoo.co.jp> <12109484011282-git-send-email-hooanon05@yahoo.co.jp> <12109484012543-git-send-email-hooanon05@yahoo.co.jp> <12109484013834-git-send-email-hooanon05@yahoo.co.jp> <12109484012213-git-send-email-hooanon05@yahoo.co.jp> <12109484012301-git-send-email-hooanon05@yahoo.co.jp> <1210948401175-git-send-email-hooanon05@yahoo.co.jp> <1210948!
  4013702-git-send-email-hooanon05@yahoo.co.jp> <12109484012871-git-send-email-hooanon05@yahoo.co.jp> <12109484013438-git-send-email-hooanon05@yahoo.co.jp> <12109484013559-git-send-email-hooanon05@yahoo.co.jp> <12109484012111-git-send-email-hooanon05@yahoo.co.jp> <1210948401543-git-send-email-hooanon05@yahoo.co.jp> <1210948401147-git-send-email-hooanon05@yahoo.co.jp> <12109484012904-git-send-email-hooanon05@yahoo.co.jp> <121094840127-git-send-email-hooanon05@yahoo.co.jp> <12109484011862-git-send-email-hooanon05@yahoo.co.jp> <12109484011143-git-send-email-hooanon05@yahoo.co.jp> <12109484011867-git-send-email-hooanon05@yahoo.co.jp> <12109484021033-git-send-email-hooanon05@yahoo.co.jp> <12109484021234-git-send-email-hooanon05@yahoo.co.jp> <12109484022680-git-send-email-hooanon05@yahoo.co.jp> <12109484021974-git-send-email-hooanon05@yahoo.co.jp> <12109484021281-git-send-email-hooanon05@yahoo.co.jp> <12109484022659-git-send-email-hooanon05@yahoo.co.jp> <12109484023036-git-send-ema!
  il-hooanon05@yahoo.co.jp> <12109484021939-git-send-email-hooanon05@yahoo.co.jp> <12109484022745-git-send-email-hooanon05@yahoo.co.jp> <12109484023224-git-send-email-hooanon05@yahoo.co.jp> <12109484023618-git-send-email-hooanon05@yahoo.co.jp> <12109484023820-git-send-email-hooanon05@yahoo.co.jp> <12109484021927-git-send-email
@@ -28,229 +28,224 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Junjiro Okajima <hooanon05@yahoo.co.jp>
 
 	initial commit
-	aufs debug print functions, header
+	aufs mount helper
 
 Signed-off-by: Junjiro Okajima <hooanon05@yahoo.co.jp>
 ---
- fs/aufs/debug.h |  210 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 210 insertions(+), 0 deletions(-)
+ Documentation/filesystems/aufs/mount.aufs |  205 +++++++++++++++++++++++++++++
+ 1 files changed, 205 insertions(+), 0 deletions(-)
 
-diff --git a/fs/aufs/debug.h b/fs/aufs/debug.h
-new file mode 100644
-index 0000000..5e723a0
+diff --git a/Documentation/filesystems/aufs/mount.aufs b/Documentation/filesystems/aufs/mount.aufs
+new file mode 100755
+index 0000000..28db51e
 --- /dev/null
-+++ b/fs/aufs/debug.h
-@@ -0,0 +1,210 @@
-+/*
-+ * Copyright (C) 2005-2008 Junjiro Okajima
-+ *
-+ * This program, aufs is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
++++ b/Documentation/filesystems/aufs/mount.aufs
+@@ -0,0 +1,205 @@
++#!/bin/sh -
 +
-+/*
-+ * debug print functions
-+ *
-+ * $Id: debug.h,v 1.2 2008/04/21 02:00:37 sfjro Exp $
-+ */
++# Copyright (C) 2005, 2006, 2007 Junjiro Okajima
++#
++# This program, aufs is free software; you can redistribute it and/or modify
++# it under the terms of the GNU General Public License as published by
++# the Free Software Foundation; either version 2 of the License, or
++# (at your option) any later version.
++#
++# This program is distributed in the hope that it will be useful,
++# but WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++# GNU General Public License for more details.
++#
++# You should have received a copy of the GNU General Public License
++# along with this program; if not, write to the Free Software
++# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 +
-+#ifndef __AUFS_DEBUG_H__
-+#define __AUFS_DEBUG_H__
++# $Id: mount.aufs,v 1.17 2008/03/31 07:44:10 sfjro Exp $
 +
-+#ifdef __KERNEL__
++#
++# The main purpose of this script is updating /etc/mtab and calling auplilnk.
++# This script is highly depending on mount(8) in util-linux-2.12p package.
++# TODO: rewrite in C.
++# TODO: updating mtab for bind-mount is not fully supportetd.
++#
 +
-+#include <linux/fs.h>
++PATH=/usr/bin:/usr/sbin:/bin:/sbin
++export PATH
++eecho() { echo "$@" 1>&2; }
 +
-+/* to debug easier, do not make it an inlined function */
-+#define MtxMustLock(mtx)	AuDebugOn(!mutex_is_locked(mtx))
-+
-+#ifdef CONFIG_AUFS_DEBUG
-+/* sparse warns about pointer */
-+#define AuDebugOn(a)		BUG_ON(!!(a))
-+extern atomic_t au_cond;
-+#define au_debug_on()		atomic_inc_return(&au_cond)
-+#define au_debug_off()		atomic_dec_return(&au_cond)
-+static inline int au_debug_test(void)
++conv() # [escape]
 +{
-+	return atomic_read(&au_cond);
++	sed -r -e '
++	s/\\/\\134/g
++	s/$/\\012/
++	' |
++	tr -d '\n' |
++	sed -r -e '
++	s/ /\\040/g
++	s/\t/\\011/g
++	s/\r/\\015/g
++	s/\\012$//
++	' |
++	{ test "$1" = "escape" && sed -r -e 's/\\/\\\\/g' || cat; }
++	echo
 +}
-+#else
-+#define AuDebugOn(a)		do {} while (0)
-+#define au_debug_on()		do {} while (0)
-+#define au_debug_off()		do {} while (0)
-+static inline int au_debug_test(void)
++
++########################################
++
++set -e
++#set -x; echo $0 $@
++tmp=/tmp/$$
++fstype=`basename "$0" | cut -f2 -d.`
++
++########################################
++# mount(8) always passes the arguments in this order
++
++do_update=1
++verbose=0
++dev="$1"
++e_dev=`echo "$dev" | conv escape`
++cd "$2"
++mntpnt=`readlink -f "$PWD"`
++e_mntpnt=`echo "$mntpnt" | conv escape`
++cd "$OLDPWD"
++shift 2
++test "$1" = "-n" && do_update=0 && shift
++test "$1" = "-v" && verbose=1 && shift
++test "$1" = "-o" || { eecho Bad arg. "$@"; exit 1; }
++shift
++remount=0
++echo "$@" | grep -q ',remount[,$]' && remount=1
++
++f=/etc/mtab
++test ! -r $f -o \( $do_update -eq 1 -a ! -w $f \) &&
++eecho ${f}: Permission denied &&
++exit 1
++
++f=/proc/mounts
++test \( $do_update -eq 1 -o $verbose -eq 1 \) -a ! -r $f &&
++eecho ${f}: Permission denied. &&
++exit 1
++
++oldmtab=
++> $tmp.old_opt
++if [ $remount -eq 1 ]
++then
++oldmtab=`grep "^$e_dev $e_mntpnt $fstype .*,si=" $f | tail -n 1`
++echo "$oldmtab" |
++sed -e '
++s:^'"$dev $mntpnt $fstype"' ::
++s/\( [0-9]*\)\{2\}$//
++' | tr ',' '\n' > $tmp.old_opt
++#test -s $tmp.old_opt
++eval `grep '^si=' $tmp.old_opt`
++
++# append brs from sysfs
++si_dir=/sys/fs/aufs/si_$si
++if [ -r $si_dir/br0 ]
++then
++	cd $si_dir
++	{
++	ls -1 br* |
++	cut -c3- |
++	sort -n |
++	sed -e 's/^/br/' |
++	xargs -n 200 sed -e 's/^/:/' |
++	tr -d '\n' |
++	sed -e 's/^/br/'
++	echo # last newline
++	} >> $tmp.old_opt
++	cd $OLDPWD
++	#cat $tmp.old_opt; #rm -f $tmp $tmp.*; exit
++fi
++fi
++
++echo "$@" | tr ',' '\n' > $tmp.new_opt
++remount=
++fgrep -v remount $tmp.new_opt > $tmp #|| :
++diff -q $tmp.new_opt $tmp > /dev/null ||
 +{
-+	return 0;
++	mv $tmp $tmp.new_opt
++	remount="remount,"
 +}
-+#endif /* CONFIG_AUFS_DEBUG */
++#cat $tmp.new_opt; rm -f $tmp $tmp.*; exit
 +
-+/* ---------------------------------------------------------------------- */
++#more $tmp.old_opt $tmp.new_opt
++real_opt=`comm -13 $tmp.old_opt $tmp.new_opt | tee $tmp | paste -s -d, -`
++real_opt="${remount}${real_opt}"
++test "$real_opt" = "" &&
++eecho bad arg "$@" &&
++rm -f $tmp $tmp.* &&
++exit 1
++#echo ${real_opt}; exit
 +
-+/* debug print */
-+#if defined(CONFIG_LKTR) || defined(CONFIG_LKTR_MODULE)
-+#include <linux/lktr.h>
-+#ifdef CONFIG_AUFS_DEBUG
-+#undef LktrCond
-+#define LktrCond	unlikely(au_debug_test() || (lktr_cond && lktr_cond()))
-+#endif
-+#else
-+#define LktrCond			au_debug_test()
-+#define LKTRDumpVma(pre, vma, suf)	do {} while (0)
-+#define LKTRDumpStack()			do {} while (0)
-+#define LKTRTrace(fmt, args...) do { \
-+	if (LktrCond) \
-+		AuDbg(fmt, ##args); \
-+} while (0)
-+#define LKTRLabel(label)		LKTRTrace("%s\n", #label)
-+#endif /* CONFIG_LKTR */
++test "$remount" &&
++egrep -q '^((add|ins|append|prepend|del)[:=]|(mod|imod)[:=][^,]*=ro|(noplink|ro)$)' $tmp &&
++auplink "$mntpnt" flush
++rm -f $tmp $tmp.*
 +
-+#define AuTraceErr(e) do { \
-+	if (unlikely((e) < 0)) \
-+		LKTRTrace("err %d\n", (int)(e)); \
-+} while (0)
++########################################
++# actual mount operation
 +
-+#define AuTraceErrPtr(p) do { \
-+	if (IS_ERR(p)) \
-+		LKTRTrace("err %ld\n", PTR_ERR(p)); \
-+} while (0)
++set +e
++mount -in -t $fstype -o "$real_opt" "$dev" "$mntpnt"
++err=$?
++set -e
 +
-+#define AuTraceEnter()	LKTRLabel(enter)
++test $do_update -eq 0 -a $verbose -eq 0 && exit $err
 +
-+/* dirty macros for debug print, use with "%.*s" and caution */
-+#define AuLNPair(qstr)		(qstr)->len, (qstr)->name
-+#define AuDLNPair(d)		AuLNPair(&(d)->d_name)
++########################################
++# in order to handle '-v' option, keep going even if we failed
 +
-+/* ---------------------------------------------------------------------- */
-+
-+#define AuDpri(lvl, fmt, arg...) \
-+	printk(lvl AUFS_NAME " %s:%d:%s[%d]: " fmt, \
-+	       __func__, __LINE__, current->comm, current->pid, ##arg)
-+#define AuDbg(fmt, arg...)	AuDpri(KERN_DEBUG, fmt, ##arg)
-+#define AuInfo(fmt, arg...)	AuDpri(KERN_INFO, fmt, ##arg)
-+#define AuWarn(fmt, arg...)	AuDpri(KERN_WARNING, fmt, ##arg)
-+#define AuErr(fmt, arg...)	AuDpri(KERN_ERR, fmt, ##arg)
-+#define AuIOErr(fmt, arg...)	AuErr("I/O Error, " fmt, ##arg)
-+#define AuIOErrWhck(fmt, arg...) AuErr("I/O Error, try whck. " fmt, ##arg)
-+#define AuWarn1(fmt, arg...) do { \
-+	static unsigned char _c; \
-+	if (!_c++) AuWarn(fmt, ##arg); \
-+} while (0)
-+
-+#define AuErr1(fmt, arg...) do { \
-+	static unsigned char _c; \
-+	if (!_c++) AuErr(fmt, ##arg); \
-+} while (0)
-+
-+#define AuIOErr1(fmt, arg...) do { \
-+	static unsigned char _c; \
-+	if (!_c++) AuIOErr(fmt, ##arg); \
-+} while (0)
-+
-+#define AuUnsupportMsg	"This operation is not supported." \
-+			" Please report this application to aufs-users ML."
-+#define AuUnsupport(fmt, args...) do { \
-+	AuErr(AuUnsupportMsg "\n" fmt, ##args); \
-+	dump_stack(); \
-+} while (0)
-+
-+/* ---------------------------------------------------------------------- */
-+
-+struct au_sbinfo;
-+#ifdef CONFIG_AUFS_DEBUG
-+extern char *au_plevel;
-+struct au_nhash;
-+void au_dpri_whlist(struct au_nhash *whlist);
-+struct au_vdir;
-+void au_dpri_vdir(struct au_vdir *vdir);
-+void au_dpri_inode(struct inode *inode);
-+void au_dpri_dentry(struct dentry *dentry);
-+void au_dpri_file(struct file *filp);
-+void au_dpri_sb(struct super_block *sb);
-+void au_dbg_sleep(int sec);
-+int __init au_debug_init(void);
-+void au_debug_sbinfo_init(struct au_sbinfo *sbinfo);
-+#define AuDbgWhlist(w) do { \
-+	LKTRTrace(#w "\n"); \
-+	au_dpri_whlist(w); \
-+} while (0)
-+
-+#define AuDbgVdir(v) do { \
-+	LKTRTrace(#v "\n"); \
-+	au_dpri_vdir(v); \
-+} while (0)
-+
-+#define AuDbgInode(i) do { \
-+	LKTRTrace(#i "\n"); \
-+	au_dpri_inode(i); \
-+} while (0)
-+
-+#define AuDbgDentry(d) do { \
-+	LKTRTrace(#d "\n"); \
-+	au_dpri_dentry(d); \
-+} while (0)
-+
-+#define AuDbgFile(f) do { \
-+	LKTRTrace(#f "\n"); \
-+	au_dpri_file(f); \
-+} while (0)
-+
-+#define AuDbgSb(sb) do { \
-+	LKTRTrace(#sb "\n"); \
-+	au_dpri_sb(sb); \
-+} while (0)
-+
-+#define AuDbgSleep(sec) do { \
-+	AuDbg("sleep %d sec\n", sec); \
-+	au_dbg_sleep(sec); \
-+} while (0)
-+#else
-+static inline int au_debug_init(void)
++failure()
 +{
-+	return 0;
++	eecho failure "$1" $?
++	exit 1
 +}
-+static inline void au_debug_sbinfo_init(struct au_sbinfo *sbinfo)
++
++newmtab=`{ grep "^$e_dev $e_mntpnt $fstype" /proc/mounts ||
++	failure "bad /proc/mounts"; } |
++	tail -n 1 | sed -e 's:^'"$e_dev $e_mntpnt $fstype"' ::'`
++digits=`echo "$newmtab" | rev | cut -f-2 -d' ' | rev`
++newmtab=`echo "$newmtab" | rev | cut -f3- -d' ' | rev | conv escape`
++newmtab="$e_dev $e_mntpnt $fstype $newmtab $digits"
++
++#if [ $do_update -eq 1 -a -w /etc -a -w /etc/mtab ]
++if [ $do_update -eq 1 ]
++then
++lock_pid=/etc/mtab~$$
++lock=/etc/mtab~
++f=/etc/mtab.aufs.tmp
++touch $lock_pid || failure "creating pid lockfile"
++
++# re-define
++failure()
 +{
-+	/* empty */
++	eecho failure "$1" $?
++	test $err -eq 0 && eecho failed updating /etc/mtab
++	exit 1
 +}
-+#define AuDbgWhlist(w)		do {} while (0)
-+#define AuDbgVdir(v)		do {} while (0)
-+#define AuDbgInode(i)		do {} while (0)
-+#define AuDbgDentry(d)		do {} while (0)
-+#define AuDbgFile(f)		do {} while (0)
-+#define AuDbgSb(sb)		do {} while (0)
-+#define AuDbgSleep(sec)		do {} while (0)
-+#endif /* CONFIG_AUFS_DEBUG */
++#trap "rm -f $lock; failure" `seq 32`
 +
-+#ifdef DbgUdbaRace
-+#define AuDbgSleep_UdbaRace()	AuDbgSleep(DbgUdbaRace)
-+#else
-+#define AuDbgSleep_UdbaRace()	do {} while (0)
-+#endif
++ln $lock_pid $lock || failure "linking lockfile"
++rm $lock_pid || failure "removing pid lockfile"
 +
-+#ifdef CONFIG_AUFS_MAGIC_SYSRQ
-+int __init au_sysrq_init(void);
-+void au_sysrq_fin(void);
-+#else
-+static inline int au_sysrq_init(void)
-+{
-+	return 0;
-+}
-+#define au_sysrq_fin()		do {} while (0)
-+#endif
++if [ "$oldmtab" = "" ]
++then
++	{ cat /etc/mtab; echo "$newmtab"; } |
++	dd of=$f 2> /dev/null || failure "appending $f"
++else
++	tac /etc/mtab |
++	awk -v new="$newmtab" -v mntpnt="$e_mntpnt" -v fstype="$fstype" '
++	!done && $2 == mntpnt && $3 == fstype {print new; done = 1; next}
++	{print}
++	' | tac > $f || failure "creating $f"
++fi
++mv $f /etc/mtab || failure "renaming from $f"
++rm $lock || failure "removing lockfile"
++fi
 +
-+#endif /* __KERNEL__ */
-+#endif /* __AUFS_DEBUG_H__ */
++test $verbose -eq 1 &&
++echo "$dev" on "$mntpnt" type "$fstype" \(`echo "$newmtab" | cut -f4 -d' '`\)
++exit $err
 -- 
 1.4.4.4
 
