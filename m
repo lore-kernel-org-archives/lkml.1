@@ -1,43 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757894AbYEPSFT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758770AbYEPSG1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757894AbYEPSFT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 14:05:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbYEPSFF
+	id S1758770AbYEPSG1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 14:06:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbYEPSGQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 14:05:05 -0400
-Received: from mx1.ukfsn.org ([77.75.108.10]:58720 "EHLO mail.ukfsn.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751409AbYEPSFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 14:05:04 -0400
-Message-ID: <482DCCCD.8020503@dgreaves.com>
-Date: Fri, 16 May 2008 19:05:01 +0100
-From: David Greaves <david@dgreaves.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080406)
+	Fri, 16 May 2008 14:06:16 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:35058 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751409AbYEPSGP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 14:06:15 -0400
+Date: Fri, 16 May 2008 21:04:26 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       NetDev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: Top kernel oopses/warnings for the week of May 16th 2008
+Message-ID: <20080516180426.GA3284@cs181133002.pp.htv.fi>
+References: <482DB93B.2080100@linux.intel.com>
 MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-CC: David Chinner <dgc@sgi.com>, LinuxRaid <linux-raid@vger.kernel.org>,
-       xfs@oss.sgi.com,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>
-Subject: Re: Regression- XFS won't mount on partitioned md array
-References: <482DC043.5000307@dgreaves.com> <alpine.DEB.1.10.0805161316100.3118@p34.internal.lan>
-In-Reply-To: <alpine.DEB.1.10.0805161316100.3118@p34.internal.lan>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <482DB93B.2080100@linux.intel.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Ouch, still on 2.6.25.1 here, didn't reboot yet, but I do not use
-> mdraid'ed partitions, just regular mdraid, if you boot back to 2.6.20.7
-> does it work again?
-Yes, no probs.
+On Fri, May 16, 2008 at 09:41:31AM -0700, Arjan van de Ven wrote:
+>...
+> Bug of the week
+> ---------------
+> Not in the top 10 (but barely not so), but upcoming fast is a bug that has a very
+> distinct pattern.
+> The backtraces are at http://www.kerneloops.org/searchweek.php?search=fput
+>
+> The pattern is that the kernel gets an invalid pointer passed to fput(),
+> coming down from a select() system call done by the "wpa_supplicant" program.
+> The fact that it is ONLY wpa_supplicant implicates the wireless/network stack.
+> Another observation is that this only happens with 64 bit kernels, even though
+> a large portion of the users uses 32 bit kernels. This implies that this is a 64-bit
+> type of bug. It appears that the top 32 bit of the pointers is getting corrupted
+> (the bottom part at least looks valid).
+>...
 
-It came in prior to 2.6.25-rc1
-The machine has a root xfs filesystem with an internal log on a sata disk and a
-data filesystem on a partitioned array with an external log (also on the
-partitioned array).
-Only the partitioned array/external-log filesystem is affected.
+Unless I misunderstand your webinterface another pattern is a "fc9" in 
+the version string.
 
-David
+My first guess would be that it might be a problem in some code that is 
+only in Fedora kernels?
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
