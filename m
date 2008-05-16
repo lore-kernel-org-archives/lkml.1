@@ -1,55 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763463AbYEPTKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763632AbYEPTK7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763463AbYEPTKh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 15:10:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758667AbYEPTKY
+	id S1763632AbYEPTK7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 15:10:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759766AbYEPTKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 15:10:24 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50393 "EHLO mx1.redhat.com"
+	Fri, 16 May 2008 15:10:47 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50410 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758457AbYEPTKW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 15:10:22 -0400
-Date: Fri, 16 May 2008 16:10:15 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH][PCI]: Introduce pci_find_capability_cached and make
-	MSI use it
-Message-ID: <20080516191015.GB8111@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>,
-	Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
-	linux-pci@vger.kernel.org, linux-rt-users@vger.kernel.org,
-	Steven Rostedt <rostedt@goodmis.org>
-References: <20080515160426.GD14846@ghostprotocols.net> <200805161044.34938.jbarnes@virtuousgeek.org> <20080516183356.GA7307@ghostprotocols.net> <200805161201.48644.jbarnes@virtuousgeek.org>
+	id S1758667AbYEPTKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 15:10:44 -0400
+Message-ID: <482DDC04.7020706@redhat.com>
+Date: Fri, 16 May 2008 14:09:56 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200805161201.48644.jbarnes@virtuousgeek.org>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: ext4 development <linux-ext4@vger.kernel.org>,
+       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Jamie Lokier <jamie@shareable.org>
+Subject: [PATCH 4/4] ext4: call blkdev_issue_flush on fsync
+References: <482DDA56.6000301@redhat.com>
+In-Reply-To: <482DDA56.6000301@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Fri, May 16, 2008 at 12:01:48PM -0700, Jesse Barnes escreveu:
-> On Friday, May 16, 2008 11:33 am Arnaldo Carvalho de Melo wrote:
-> > > There are a few other common cap checks, but I don't think they compare
-> > > to MSI in terms of latency sensitivity (though I didn't audit all the
-> > > CAP_ID_EXP checks, there are quite a few of those).
-> > >
-> > > Since we know MSI is a problem, let's just go with fixing that for now. 
-> > > If we find that other caps are also causing problems we can revisit
-> > > caching all of them; the patch is simple enough.
-> >
-> > Do you want me to submit another patch or can you cook up one?
-> 
-> I can hack it up, probably not until Monday though (I'll be out of town this 
-> weekend).
+To ensure that bits are truly on-disk after an fsync,
+we should call blkdev_issue_flush if barriers are supported.
 
-OK, for now this patch should be in the next rt patchset, we'll drop it
-when you get The Right Thing merged 8)
+Inspired by an old thread on barriers, by reiserfs & xfs
+which do the same, and by a patch SuSE ships with their kernel
 
-- Arnaldo
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+---
+ fs/ext4/fsync.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/fs/ext4/fsync.c b/fs/ext4/fsync.c
+index 1c8ba48..a45c373 100644
+--- a/fs/ext4/fsync.c
++++ b/fs/ext4/fsync.c
+@@ -27,6 +27,7 @@
+ #include <linux/sched.h>
+ #include <linux/writeback.h>
+ #include <linux/jbd2.h>
++#include <linux/blkdev.h>
+ #include "ext4.h"
+ #include "ext4_jbd2.h"
+ 
+@@ -45,6 +46,7 @@
+ int ext4_sync_file(struct file * file, struct dentry *dentry, int datasync)
+ {
+ 	struct inode *inode = dentry->d_inode;
++	journal_t *journal = EXT4_SB(inode->i_sb)->s_journal;
+ 	int ret = 0;
+ 
+ 	J_ASSERT(ext4_journal_current_handle() == NULL);
+@@ -85,6 +87,8 @@ int ext4_sync_file(struct file * file, struct dentry *dentry, int datasync)
+ 			.nr_to_write = 0, /* sys_fsync did this */
+ 		};
+ 		ret = sync_inode(inode, &wbc);
++		if (journal && (journal->j_flags & JBD2_BARRIER))
++			blkdev_issue_flush(inode->i_sb->s_bdev, NULL);
+ 	}
+ out:
+ 	return ret;
+-- 1.5.3.6
+
