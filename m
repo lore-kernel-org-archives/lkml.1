@@ -1,119 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759062AbYEPRIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758568AbYEPRL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759062AbYEPRIq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 13:08:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760246AbYEPRII
+	id S1758568AbYEPRL6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 13:11:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbYEPRLq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 13:08:08 -0400
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:35895 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760169AbYEPRIG convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 13:08:06 -0400
-To: linux-kernel@vger.kernel.org
-Subject: [RFC Patch 5/5] Blktrace - Remove trace_state and associated flags from blktrace.[ch]
-Reply-To: prasad@linux.vnet.ibm.com
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Organization: IBM
-Cc: dwilder@us.ibm.com, axboe@kernel.dk, linux-btrace@vger.kernel.org,
-       akpm@linux-foundation.org, prasad@linux.vnet.ibm.com
-Content-Type: text/plain; format=flowed; delsp=yes; charset=utf-8
+	Fri, 16 May 2008 13:11:46 -0400
+Received: from mx1.ukfsn.org ([77.75.108.10]:54246 "EHLO mail.ukfsn.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751934AbYEPRLp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 13:11:45 -0400
+Message-ID: <482DC043.5000307@dgreaves.com>
+Date: Fri, 16 May 2008 18:11:31 +0100
+From: David Greaves <david@dgreaves.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080406)
 MIME-Version: 1.0
-In-Reply-To: <20080516164644.GA22928@in.ibm.com>
-References: <20080516164644.GA22928@in.ibm.com>
-Content-Transfer-Encoding: 8BIT
-Date: Fri, 16 May 2008 22:37:39 +0530
-Message-ID: <op.ua9a61lw03j166@prasadkr_t60p.in.ibm.com>
-User-Agent: Opera Mail/9.26 (Linux)
+To: David Chinner <dgc@sgi.com>
+CC: LinuxRaid <linux-raid@vger.kernel.org>, xfs@oss.sgi.com,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>
+Subject: Regression- XFS won't mount on partitioned md array
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes the 'trace_state' flag from blk_trace structure, since  
-the
-state transitions will now be managed using 'trace' infrastructure.
+I just attempted a kernel upgrade from 2.6.20.7 to 2.6.25.3 and it no longer
+mounts my xfs filesystem.
 
-Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
----
-  block/blktrace.c             |   26 +++++++-------------------
-  include/linux/blktrace_api.h |    7 -------
-  2 files changed, 7 insertions(+), 26 deletions(-)
+I bisected it to around
+a67d7c5f5d25d0b13a4dfb182697135b014fa478
+[XFS] Move platform specific mount option parse out of core XFS code
 
-Index: linux-blktrace-many/include/linux/blktrace_api.h
-===================================================================
---- linux-blktrace-many.orig/include/linux/blktrace_api.h
-+++ linux-blktrace-many/include/linux/blktrace_api.h
-@@ -110,14 +110,7 @@ struct blk_io_trace_remap {
-  	__be64 sector;
-  };
+I have a RAID5 array with partitions:
 
--enum {
--	Blktrace_setup = 1,
--	Blktrace_running,
--	Blktrace_stopped,
--};
--
-  struct blk_trace {
--	int trace_state;
-  	unsigned long *sequence;
-  	u16 act_mask;
-  	u64 start_lba;
-Index: linux-blktrace-many/block/blktrace.c
-===================================================================
---- linux-blktrace-many.orig/block/blktrace.c
-+++ linux-blktrace-many/block/blktrace.c
-@@ -127,9 +127,6 @@ void __blk_add_trace(struct blk_trace *b
-  	pid_t pid;
-  	int cpu;
+Partition Table for /dev/md_d0
 
--	if (unlikely(bt->trace_state != Blktrace_running))
--		return;
--
-  	what |= ddir_act[rw & WRITE];
-  	what |= bio_act[trace_barrier_bit(rw)];
-  	what |= bio_act[trace_sync_bit(rw)];
-@@ -199,8 +196,7 @@ int blk_trace_remove(struct request_queu
-  	if (!bt)
-  		return -EINVAL;
+               First       Last
+ # Type       Sector      Sector   Offset    Length   Filesystem Type (ID) Flag
+-- ------- ----------- ----------- ------ ----------- -------------------- ----
+ 1 Primary           0  2500288279      4  2500288280 Linux (83)           None
+ 2 Primary  2500288280  2500483583      0      195304 Non-FS data (DA)     None
 
--	if (bt->trace_state == Blktrace_setup ||
--	    bt->trace_state == Blktrace_stopped)
-+	if(!trace_running(bt->tpk->ti))
-  		blk_trace_cleanup(bt);
 
-  	return 0;
-@@ -262,7 +258,6 @@ int do_blk_trace_setup(struct request_qu
-  		bt->end_lba = -1ULL;
+when I attempt to mount /media:
+/dev/md_d0p1 /media xfs rw,nobarrier,noatime,logdev=/dev/md_d0p2,allocsize=512m 0 0
 
-  	bt->pid = buts->pid;
--	bt->trace_state = Blktrace_setup;
+I get:
+ md_d0: p1 p2
+XFS mounting filesystem md_d0p1
+attempt to access beyond end of device
+md_d0p2: rw=0, want=195311, limit=195304
+I/O error in filesystem ("md_d0p1") meta-data dev md_d0p2 block 0x2fae7
+("xlog_bread") error 5 buf count 512
+XFS: empty log check failed
+XFS: log mount/recovery failed: error 5
+XFS: log mount failed
 
-  	ret = -EBUSY;
-  	old_bt = xchg(&q->blk_trace, bt);
-@@ -319,20 +314,13 @@ int blk_trace_startstop(struct request_q
-  	 */
-  	ret = -EINVAL;
-  	if (start) {
--		if (bt->trace_state == Blktrace_setup ||
--		    bt->trace_state == Blktrace_stopped) {
--			blktrace_seq++;
--			smp_mb();
--			bt->trace_state = Blktrace_running;
--
--			trace_note_time(bt);
--			ret = 0;
--		}
-+		blktrace_seq++;
-+		smp_mb();
-+		trace_note_time(bt);
-+		ret = 0;
-  	} else {
--		if (bt->trace_state == Blktrace_running) {
--			bt->trace_state = Blktrace_stopped;
--			ret = 0;
--		}
-+		trace_stop(bt->tpk->ti);
-+		ret = 0;
-  	}
+A repair:
+  xfs_repair /dev/md_d0p1 -l /dev/md_d0p2
+gives no errors.
 
-  	return ret;
+Phase 1 - find and verify superblock...
+Phase 2 - using external log on /dev/md_d0p2
+        - zero log...
+        - scan filesystem freespace and inode maps...
+        - found root inode chunk
+...
+
+
+David
+
