@@ -1,245 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756946AbYEPJw4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757311AbYEPJy6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756946AbYEPJw4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 05:52:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752846AbYEPJwr
+	id S1757311AbYEPJy6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 05:54:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753583AbYEPJys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 05:52:47 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:49857 "EHLO WNmonitoring"
+	Fri, 16 May 2008 05:54:48 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:49871 "EHLO WNmonitoring"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752583AbYEPJwp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 05:52:45 -0400
+	id S1752563AbYEPJyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 05:54:47 -0400
 From: Jiri Slaby <jirislaby@gmail.com>
 To: Jiri Kosina <jkosina@suse.cz>
 Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
        marcel@holtmann.org, linux-kernel@vger.kernel.org,
-       anssi.hannula@gmail.com, Jiri Slaby <jirislaby@gmail.com>,
-       Jiri Slaby <jslaby@suse.cz>
-Subject: [PATCH 06/10] HID: move logitech report quirks
-Date: Fri, 16 May 2008 11:49:19 +0200
-Message-Id: <1210931362-18422-6-git-send-email-jirislaby@gmail.com>
+       anssi.hannula@gmail.com, Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH 09/10] HID: add compat support
+Date: Fri, 16 May 2008 11:49:22 +0200
+Message-Id: <1210931362-18422-9-git-send-email-jirislaby@gmail.com>
 X-Mailer: git-send-email 1.5.4.5
-In-Reply-To: <1210931362-18422-5-git-send-email-jirislaby@gmail.com>
+In-Reply-To: <1210931362-18422-8-git-send-email-jirislaby@gmail.com>
 References: <1210931362-18422-1-git-send-email-jirislaby@gmail.com>
  <1210931362-18422-2-git-send-email-jirislaby@gmail.com>
  <1210931362-18422-3-git-send-email-jirislaby@gmail.com>
  <1210931362-18422-4-git-send-email-jirislaby@gmail.com>
  <1210931362-18422-5-git-send-email-jirislaby@gmail.com>
+ <1210931362-18422-6-git-send-email-jirislaby@gmail.com>
+ <1210931362-18422-7-git-send-email-jirislaby@gmail.com>
+ <1210931362-18422-8-git-send-email-jirislaby@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move them from core code to a separate driver.
+Add compat option to hid code to allow loading of all modules on
+systems which don't allow autoloading because of old userspace.
 
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 ---
- drivers/hid/Kconfig             |   13 +++++++
- drivers/hid/Makefile            |    2 +
- drivers/hid/hid-core.c          |    5 +++
- drivers/hid/hid-logitech.c      |   74 +++++++++++++++++++++++++++++++++++++++
- drivers/hid/usbhid/hid-quirks.c |   23 ------------
- include/linux/hid.h             |    1 -
- 6 files changed, 94 insertions(+), 24 deletions(-)
- create mode 100644 drivers/hid/hid-logitech.c
+ Documentation/feature-removal-schedule.txt |    7 +++++++
+ drivers/hid/Kconfig                        |   11 +++++++++++
+ drivers/hid/Makefile                       |    4 ++++
+ drivers/hid/hid-apple.c                    |    2 ++
+ drivers/hid/hid-core.c                     |   12 ++++++++++++
+ drivers/hid/hid-dummy.c                    |   13 +++++++++++++
+ drivers/hid/hid-logitech.c                 |    2 ++
+ include/linux/hid.h                        |   17 +++++++++++++++--
+ 8 files changed, 66 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/hid/hid-dummy.c
 
+diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+index 3c35d45..1564e87 100644
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@ -289,6 +289,13 @@ Who:	Glauber Costa <gcosta@redhat.com>
+ 
+ ---------------------------
+ 
++What:	remove HID compat support
++When:	2.6.29
++Why:	needed only as a temporary solution until distros fix themselves up
++Who:	Jiri Slaby <jirislaby@gmail.com>
++
++---------------------------
++
+ What:	/sys/o2cb symlink
+ When:	January 2010
+ Why:	/sys/fs/o2cb is the proper location for this information - /sys/o2cb
 diff --git a/drivers/hid/Kconfig b/drivers/hid/Kconfig
-index cacf89e..066e8c0 100644
+index 9a9fd7d..ba9ca39 100644
 --- a/drivers/hid/Kconfig
 +++ b/drivers/hid/Kconfig
-@@ -67,4 +67,17 @@ config HIDRAW
+@@ -70,6 +70,17 @@ source "drivers/hid/usbhid/Kconfig"
+ menu "Special HID drivers"
+ 	depends on HID
  
- source "drivers/hid/usbhid/Kconfig"
- 
-+menu "Special HID drivers"
-+	depends on HID
-+
-+config HID_LOGITECH
-+	tristate "Logitech"
-+	default m
-+	depends on USB_HID
++config HID_COMPAT
++	bool "Load all HID drivers on hid core load"
 +	---help---
-+	Support for some Logitech devices which breaks less or more
-+	HID specification.
++	Compatible option for older userspace. If you have system without udev
++	support of module loading through aliases and also old
++	module-init-tools which can't handle hid bus, choose Y here. Otherwise
++	say N. If you say N and your userspace is old enough, the only
++	functionality you loose is modules autoloading.
 +
-+endmenu
++	If unsure, say N.
 +
- endif # HID_SUPPORT
+ config HID_LOGITECH
+ 	tristate "Logitech"
+ 	default m
 diff --git a/drivers/hid/Makefile b/drivers/hid/Makefile
-index 275dc52..cae036b 100644
+index 8a5cbbe..ccc169d 100644
 --- a/drivers/hid/Makefile
 +++ b/drivers/hid/Makefile
-@@ -8,6 +8,8 @@ obj-$(CONFIG_HID)		+= hid.o
+@@ -8,6 +8,10 @@ obj-$(CONFIG_HID)		+= hid.o
  hid-$(CONFIG_HID_DEBUG)		+= hid-debug.o
  hid-$(CONFIG_HIDRAW)		+= hidraw.o
  
-+obj-$(CONFIG_HID_LOGITECH)	+= hid-logitech.o
++ifdef CONFIG_HID_COMPAT
++obj-m				+= hid-dummy.o
++endif
 +
- obj-$(CONFIG_USB_HID)		+= usbhid/
- obj-$(CONFIG_USB_MOUSE)		+= usbhid/
- obj-$(CONFIG_USB_KBD)		+= usbhid/
+ obj-$(CONFIG_HID_LOGITECH)	+= hid-logitech.o
+ obj-$(CONFIG_HID_APPLE)		+= hid-apple.o
+ 
+diff --git a/drivers/hid/hid-apple.c b/drivers/hid/hid-apple.c
+index b39d25c..325d27f 100644
+--- a/drivers/hid/hid-apple.c
++++ b/drivers/hid/hid-apple.c
+@@ -464,3 +464,5 @@ static void apple_exit(void)
+ module_init(apple_init);
+ module_exit(apple_exit);
+ MODULE_LICENSE("GPL");
++
++HID_COMPAT_LOAD_DRIVER(hid_apple);
 diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
-index 984d5d8..4b1b814 100644
+index be080d4..5134d41 100644
 --- a/drivers/hid/hid-core.c
 +++ b/drivers/hid/hid-core.c
-@@ -33,6 +33,8 @@
- #include <linux/hid-debug.h>
- #include <linux/hidraw.h>
- 
-+#include "hid-ids.h"
-+
- /*
-  * Version Information
-  */
-@@ -1124,6 +1126,9 @@ static const struct hid_device_id *hid_match_id(struct hid_device *hdev,
+@@ -1565,6 +1565,14 @@ void hid_unregister_driver(struct hid_driver *hdrv)
  }
+ EXPORT_SYMBOL_GPL(hid_unregister_driver);
  
- static const struct hid_device_id hid_blacklist[] = {
-+	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_MX3000_RECEIVER) },
-+	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_S510_RECEIVER) },
-+	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_S510_RECEIVER_2) },
- 	{ }
- };
- 
-diff --git a/drivers/hid/hid-logitech.c b/drivers/hid/hid-logitech.c
-new file mode 100644
-index 0000000..5b145c9
---- /dev/null
-+++ b/drivers/hid/hid-logitech.c
-@@ -0,0 +1,74 @@
-+/*
-+ *  HID driver for some logitech "special" devices
-+ *
-+ *  Copyright (c) 1999 Andreas Gal
-+ *  Copyright (c) 2000-2005 Vojtech Pavlik <vojtech@suse.cz>
-+ *  Copyright (c) 2005 Michael Haboustak <mike-@cinci.rr.com> for Concept2, Inc
-+ *  Copyright (c) 2006-2007 Jiri Kosina
-+ *  Copyright (c) 2007 Paul Walmsley
-+ *  Copyright (c) 2008 Jiri Slaby
-+ */
-+
-+/*
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the Free
-+ * Software Foundation; either version 2 of the License, or (at your option)
-+ * any later version.
-+ */
-+
-+#include <linux/device.h>
-+#include <linux/hid.h>
-+#include <linux/module.h>
-+
-+#include "hid-ids.h"
-+
-+#define LOGITECH_RDESC	0x1
-+
-+/*
-+ * Certain Logitech keyboards send in report #3 keys which are far
-+ * above the logical maximum described in descriptor. This extends
-+ * the original value of 0x28c of logical maximum to 0x104d
-+ */
-+static void lg_report_fixup(struct hid_device *hdev, __u8 *rdesc,
-+		unsigned int rsize)
++#ifdef CONFIG_HID_COMPAT
++static void hid_compat_load(struct work_struct *ws)
 +{
-+	if (rsize >= 90 && rdesc[83] == 0x26
-+			&& rdesc[84] == 0x8c
-+			&& rdesc[85] == 0x02) {
-+		dev_info(&hdev->dev, "fixing up Logitech keyboard report "
-+				"descriptor\n");
-+		rdesc[84] = rdesc[89] = 0x4d;
-+		rdesc[85] = rdesc[90] = 0x10;
-+	}
++	request_module("hid-dummy");
 +}
++static DECLARE_WORK(hid_compat_work, hid_compat_load);
++#endif
 +
-+static const struct hid_device_id lg_devices[] = {
-+	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_MX3000_RECEIVER),
-+		.driver_data = LOGITECH_RDESC },
-+	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_S510_RECEIVER),
-+		.driver_data = LOGITECH_RDESC },
-+	{ HID_USB_DEVICE(USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_S510_RECEIVER_2),
-+		.driver_data = LOGITECH_RDESC },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(hid, lg_devices);
-+
-+static struct hid_driver lg_driver = {
-+	.name = "logitech",
-+	.id_table = lg_devices,
-+	.report_fixup = lg_report_fixup,
-+};
-+
-+static int lg_init(void)
-+{
-+	return hid_register_driver(&lg_driver);
-+}
-+
-+static void lg_exit(void)
-+{
-+	hid_unregister_driver(&lg_driver);
-+}
-+
-+module_init(lg_init);
-+module_exit(lg_exit);
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/hid/usbhid/hid-quirks.c b/drivers/hid/usbhid/hid-quirks.c
-index 7694edc..e2941b3 100644
---- a/drivers/hid/usbhid/hid-quirks.c
-+++ b/drivers/hid/usbhid/hid-quirks.c
-@@ -330,9 +330,6 @@ static const struct hid_rdesc_blacklist {
- 
- 	{ USB_VENDOR_ID_CHERRY, USB_DEVICE_ID_CHERRY_CYMOTION, HID_QUIRK_RDESC_CYMOTION },
- 
--	{ USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_MX3000_RECEIVER, HID_QUIRK_RDESC_LOGITECH },
--	{ USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_S510_RECEIVER, HID_QUIRK_RDESC_LOGITECH },
--	{ USB_VENDOR_ID_LOGITECH, USB_DEVICE_ID_S510_RECEIVER_2, HID_QUIRK_RDESC_LOGITECH },
- 	{ USB_VENDOR_ID_MICROSOFT, USB_DEVICE_ID_DESKTOP_RECV_1028, HID_QUIRK_RDESC_MICROSOFT_RECV_1028 },
- 
- 	{ USB_VENDOR_ID_MONTEREY, USB_DEVICE_ID_GENIUS_KB29E, HID_QUIRK_RDESC_BUTTON_CONSUMER },
-@@ -602,23 +599,6 @@ static void usbhid_fixup_cymotion_descriptor(char *rdesc, int rsize)
- 	}
- }
- 
--
--/*
-- * Certain Logitech keyboards send in report #3 keys which are far
-- * above the logical maximum described in descriptor. This extends
-- * the original value of 0x28c of logical maximum to 0x104d
-- */
--static void usbhid_fixup_logitech_descriptor(unsigned char *rdesc, int rsize)
--{
--	if (rsize >= 90 && rdesc[83] == 0x26
--			&& rdesc[84] == 0x8c
--			&& rdesc[85] == 0x02) {
--		printk(KERN_INFO "Fixing up Logitech keyboard report descriptor\n");
--		rdesc[84] = rdesc[89] = 0x4d;
--		rdesc[85] = rdesc[90] = 0x10;
--	}
--}
--
- static void usbhid_fixup_sunplus_wdesktop(unsigned char *rdesc, int rsize)
+ static int __init hid_init(void)
  {
- 	if (rsize >= 107 && rdesc[104] == 0x26
-@@ -744,9 +724,6 @@ static void __usbhid_fixup_report_descriptor(__u32 quirks, char *rdesc, unsigned
- 	if ((quirks & HID_QUIRK_RDESC_CYMOTION))
- 		usbhid_fixup_cymotion_descriptor(rdesc, rsize);
+ 	int ret;
+@@ -1579,6 +1587,10 @@ static int __init hid_init(void)
+ 	if (ret)
+ 		goto err_bus;
  
--	if (quirks & HID_QUIRK_RDESC_LOGITECH)
--		usbhid_fixup_logitech_descriptor(rdesc, rsize);
--
- 	if (quirks & HID_QUIRK_RDESC_SWAPPED_MIN_MAX)
- 		usbhid_fixup_cypress_descriptor(rdesc, rsize);
- 
++#ifdef CONFIG_HID_COMPAT
++	schedule_work(&hid_compat_work);
++#endif
++
+ 	return 0;
+ err_bus:
+ 	bus_unregister(&hid_bus_type);
+diff --git a/drivers/hid/hid-dummy.c b/drivers/hid/hid-dummy.c
+new file mode 100644
+index 0000000..b426134
+--- /dev/null
++++ b/drivers/hid/hid-dummy.c
+@@ -0,0 +1,13 @@
++#include <linux/module.h>
++#include <linux/hid.h>
++
++static int __init hid_dummy_init(void)
++{
++	HID_COMPAT_CALL_DRIVER(hid_logitech);
++	HID_COMPAT_CALL_DRIVER(hid_apple);
++
++	return -EIO;
++}
++module_init(hid_dummy_init);
++
++MODULE_LICENSE("GPL");
+diff --git a/drivers/hid/hid-logitech.c b/drivers/hid/hid-logitech.c
+index 5b145c9..6a70ca9 100644
+--- a/drivers/hid/hid-logitech.c
++++ b/drivers/hid/hid-logitech.c
+@@ -72,3 +72,5 @@ static void lg_exit(void)
+ module_init(lg_init);
+ module_exit(lg_exit);
+ MODULE_LICENSE("GPL");
++
++HID_COMPAT_LOAD_DRIVER(hid_logitech);
 diff --git a/include/linux/hid.h b/include/linux/hid.h
-index e4d718f..96f64d7 100644
+index c67e5fe..447aed9 100644
 --- a/include/linux/hid.h
 +++ b/include/linux/hid.h
-@@ -293,7 +293,6 @@ struct hid_item {
-  */
+@@ -784,10 +784,23 @@ dbg_hid(const char *fmt, ...)
+ 	return 0;
+ }
+ #define dbg_hid_line dbg_hid
+-#endif
++#endif /* HID_DEBUG */
  
- #define HID_QUIRK_RDESC_CYMOTION		0x00000001
--#define HID_QUIRK_RDESC_LOGITECH		0x00000002
- #define HID_QUIRK_RDESC_SWAPPED_MIN_MAX		0x00000004
- #define HID_QUIRK_RDESC_PETALYNX		0x00000008
- #define HID_QUIRK_RDESC_MACBOOK_JIS		0x00000010
+ #define err_hid(format, arg...) printk(KERN_ERR "%s: " format "\n" , \
+ 		__FILE__ , ## arg)
+-#endif
++#endif /* HID_FF */
++
++#ifdef CONFIG_HID_COMPAT
++#define HID_COMPAT_LOAD_DRIVER(name)	\
++void hid_compat_##name(void) { }	\
++EXPORT_SYMBOL(hid_compat_##name)
++#else
++#define HID_COMPAT_LOAD_DRIVER(name)
++#endif /* HID_COMPAT */
++#define HID_COMPAT_CALL_DRIVER(name)	do {	\
++	extern void hid_compat_##name(void);	\
++	hid_compat_##name();			\
++} while (0)
++
+ #endif
+ 
 -- 
 1.5.4.5
 
