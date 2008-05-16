@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757515AbYEPQwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757252AbYEPQy3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757515AbYEPQwQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 12:52:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757277AbYEPQvE
+	id S1757252AbYEPQy3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 12:54:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbYEPQyV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 12:51:04 -0400
-Received: from rtsoft2.corbina.net ([85.21.88.2]:34183 "HELO
-	mail.dev.rtsoft.ru" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with SMTP id S1756696AbYEPQvD (ORCPT
+	Fri, 16 May 2008 12:54:21 -0400
+Received: from testure.choralone.org ([194.9.77.134]:60846 "EHLO
+	testure.choralone.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750844AbYEPQyU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 12:51:03 -0400
-Date: Fri, 16 May 2008 20:51:00 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Pierre Ossman <drzeus-mmc@drzeus.cx>
-Cc: Jochen Friedrich <jochen@scram.de>, Timur Tabi <timur@freescale.com>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       spi-devel-general@lists.sourceforge.net
-Subject: [PATCH 4/4] [POWERPC] 86xx: mpc8610_hpcd: add SD/MMC card detect
-	polling
-Message-ID: <20080516165100.GD24196@polina.dev.rtsoft.ru>
+	Fri, 16 May 2008 12:54:20 -0400
+Date: Fri, 16 May 2008 12:54:56 -0400
+From: Dave Jones <davej@codemonkey.org.uk>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: travis@sgi.com
+Subject: x86-64 NODES_SHIFT compile failure.
+Message-ID: <20080516165456.GA30854@codemonkey.org.uk>
+Mail-Followup-To: Dave Jones <davej@codemonkey.org.uk>,
+	Linux Kernel <linux-kernel@vger.kernel.org>, travis@sgi.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-MPC8610HPCD seem to not use interrupts for the SD CD line, so we need
-poll it.
+4323838215184f5a2f081e0d17b8d60731b03164 added this line to x86's Kconfig..
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- arch/powerpc/platforms/86xx/mpc8610_hpcd.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+ config NODES_SHIFT
+        int
++       range 1 15  if X86_64
+        default "6" if X86_64
+        default "4" if X86_NUMAQ
+        default "3"
 
-diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-index be430bc..47078e3 100644
---- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-+++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-@@ -63,9 +63,15 @@ static int mmc_get_ro(struct device *dev)
- 	return in_8(pixis_sdcsr) & PX_SDCSR_SD_WP;
- }
- 
-+static int mmc_get_cd(struct device *dev)
-+{
-+	return !(in_8(pixis_sdcsr) & PX_SDCSR_SD_nCD);
-+}
-+
- static struct mmc_spi_platform_data mmc_pdata = {
- 	.ocr_mask = MMC_VDD_33_34,
- 	.get_ro = mmc_get_ro,
-+	.get_cd = mmc_get_cd,
- };
- 
- static struct spi_board_info spi_boardinfo = {
+Selecting 15 causes:
+
+drivers/base/node.c: In function ‘node_read_distance’:
+drivers/base/node.c:140: error: size of array ‘type name’ is negative
+
+Should the upper limit be reduced to 14 (which compiles), or should
+the BUILD_BUG_ON be changed to somehow cope with this set of changes?
+
+	Dave
+
 -- 
-1.5.5.1
+http://www.codemonkey.org.uk
