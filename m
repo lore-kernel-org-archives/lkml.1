@@ -1,84 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761670AbYEPUyc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760836AbYEPUxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761670AbYEPUyc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 16:54:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757553AbYEPUyT
+	id S1760836AbYEPUxl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 16:53:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbYEPUxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 16:54:19 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44420 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756376AbYEPUyS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 16:54:18 -0400
-Message-ID: <482DF44B.50204@redhat.com>
-Date: Fri, 16 May 2008 15:53:31 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, jamie@shareable.org
-Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
-References: <482DDA56.6000301@redhat.com> <20080516130545.845a3be9.akpm@linux-foundation.org>
-In-Reply-To: <20080516130545.845a3be9.akpm@linux-foundation.org>
+	Fri, 16 May 2008 16:53:30 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:39351 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752466AbYEPUxa convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 16:53:30 -0400
+Date: Fri, 16 May 2008 13:52:25 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: build issue #503 for v2.6.26-rc2-433-gf26a398 :  undefined
+ reference to `request_firmware'
+Message-Id: <20080516135225.e6f8b2c7.randy.dunlap@oracle.com>
+In-Reply-To: <200805162230.41350.rjw@sisk.pl>
+References: <200805161906.19321.toralf.foerster@gmx.de>
+	<200805162230.41350.rjw@sisk.pl>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 16 May 2008 14:02:46 -0500
-> Eric Sandeen <sandeen@redhat.com> wrote:
+On Fri, 16 May 2008 22:30:40 +0200 Rafael J. Wysocki wrote:
+
+> On Friday, 16 of May 2008, Toralf Förster wrote:
+> > Hello,
+> > 
+> > the build (.config attached) failed, make ends with :
+> > ...
+> >   UPD     include/linux/compile.h
+> >   CC      init/version.o
+> >   LD      init/built-in.o
+> >   LD      vmlinux
+> > drivers/built-in.o: In function `sas_request_addr':
+> > (.text+0x33bab): undefined reference to `request_firmware'
+> > drivers/built-in.o: In function `sas_request_addr':
+> > (.text+0x33c3f): undefined reference to `release_firmware'
+> > make: *** [vmlinux] Error 1
+> > 
+> > The build was made with :
+> > $>make randconfig; make clean; make
 > 
->> A collection of patches to make ext3 & 4 use barriers by
->> default, and to call blkdev_issue_flush on fsync if they
->> are enabled.
-> 
-> Last time this came up lots of workloads slowed down by 30% so I
-> dropped the patches in horror.
+> Is it the same as http://bugzilla.kernel.org/show_bug.cgi?id=10707 ?
 
-I actually did a bit of research and found the old thread, honestly.  I
-thought this might not be a shoo-in.  :)  Seems worth hashing out, though.
+It's in a different driver.
 
-> I just don't think we can quietly go and slow everyone's machines down
-> by this much.  The overhead of journalling is already pretty horrid.
-
-But if journali[zi]ng guarantees are thrown out the window by volatile
-caches on disk, why bother with the half-solution?  Slower while you
-run, worthless when you lose power?  Sounds like the worst of both
-worlds.  (well, ok, experience shows that it's not worthless in practice...)
-
-> If we were seeing a significant number of "hey, my disk got wrecked"
-> reports which attributable to this then yes, perhaps we should change
-> the default.  But I've never seen _any_, although I've seen claims that
-> others have seen reports.
-
-Hm, how would we know, really?  What does it look like?  It'd totally
-depend on what got lost...  When do you find out?  Again depends what
-you're doing, I think.  I'll admit that I don't have any good evidence
-of my own.  I'll go off and do some plug-pull-testing and a benchmark or
-two.
-
-But, drive caches are only getting bigger, I assume this can't help.  I
-have a hard time seeing how speed at the cost of correctness is the
-right call...
-
-> There are no happy solutions here, and I'm inclined to let this dog
-> remain asleep and continue to leave it up to distributors to decide
-> what their default should be.
-> 
-> Do we know which distros are enabling barriers by default?
-
-SuSE does (via patch for ext3).  Red Hat & Fedora don't, and install by
-default on lvm which won't pass barriers anyway.  So maybe it's
-hypocritical to send this patch from redhat.com  :)
-
-And as another "who uses barriers" datapoint, reiserfs & xfs both have
-them on by default.
-
-I suppose alternately I could send another patch to remove "remember
-that ext3/4 by default offers higher data integrity guarantees than
-most." from Documentation/filesystems/ext4.txt  ;)
-
--Eric
-
+---
+~Randy
