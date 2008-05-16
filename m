@@ -1,26 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757463AbYEPPJH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762363AbYEPPJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757463AbYEPPJH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 11:09:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758980AbYEPOpy
+	id S1762363AbYEPPJh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 11:09:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760239AbYEPOsD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 10:45:54 -0400
-Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49192 "EHLO
+	Fri, 16 May 2008 10:48:03 -0400
+Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49478 "EHLO
 	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751003AbYEPOmA (ORCPT
+	with ESMTP id S1760215AbYEPOr6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 10:42:00 -0400
+	Fri, 16 May 2008 10:47:58 -0400
 From: hooanon05@yahoo.co.jp
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Junjiro Okajima <hooanon05@yahoo.co.jp>
-Subject: [PATCH 58/67] aufs misc functions, header
-Date: Fri, 16 May 2008 23:33:12 +0900
-Message-Id: <12109484023487-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [PATCH 1/67] aufs document
+Date: Fri, 16 May 2008 23:32:15 +0900
+Message-Id: <12109484013324-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <1210948402783-git-send-email-hooanon05@yahoo.co.jp>
-References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <12109484012532-git-send-email-hooanon05@yahoo.co.jp> <12109484012997-git-send-email-hooanon05@yahoo.co.jp> <12109484013051-git-send-email-hooanon05@yahoo.co.jp> <12109484013436-git-send-email-hooanon05@yahoo.co.jp> <1210948401415-git-send-email-hooanon05@yahoo.co.jp> <12109484011533-git-send-email-hooanon05@yahoo.co.jp> <1210948401506-git-send-email-hooanon05@yahoo.co.jp> <12109484013156-git-send-email-hooanon05@yahoo.co.jp> <12109484012724-git-send-email-hooanon05@yahoo.co.jp> <12109484013264-git-send-email-hooanon05@yahoo.co.jp> <12109484012658-git-send-email-hooanon05@yahoo.co.jp> <12109484011282-git-send-email-hooanon05@yahoo.co.jp> <12109484012543-git-send-email-hooanon05@yahoo.co.jp> <12109484013834-git-send-email-hooanon05@yahoo.co.jp> <12109484012213-git-send-email-hooanon05@yahoo.co.jp> <12109484012301-git-send-email-hooanon05@yahoo.co.jp> <1210948401175-git-send-email-hooanon05@yahoo.co.jp> <1210948!
- 4013702-git-send-email-hooanon05@yahoo.co.jp> <12109484012871-git-send-email-hooanon05@yahoo.co.jp> <12109484013438-git-send-email-hooanon05@yahoo.co.jp> <12109484013559-git-send-email-hooanon05@yahoo.co.jp> <12109484012111-git-send-email-hooanon05@yahoo.co.jp> <1210948401543-git-send-email-hooanon05@yahoo.co.jp> <1210948401147-git-send-email-hooanon05@yahoo.co.jp> <12109484012904-git-send-email-hooanon05@yahoo.co.jp> <121094840127-git-send-email-hooanon05@yahoo.co.jp> <12109484011862-git-send-email-hooanon05@yahoo.co.jp> <12109484011143-git-send-email-hooanon05@yahoo.co.jp> <12109484011867-git-send-email-hooanon05@yahoo.co.jp> <12109484021033-git-send-email-hooanon05@yahoo.co.jp> <12109484021234-git-send-email-hooanon05@yahoo.co.jp> <12109484022680-git-send-email-hooanon05@yahoo.co.jp> <12109484021974-git-send-email-hooanon05@yahoo.co.jp> <12109484021281-git-send-email-hooanon05@yahoo.co.jp> <12109484022659-git-send-email-hooanon05@yahoo.co.jp> <12109484023036-git-send-ema!
- il-hooanon05@yahoo.co.jp> <12109484021939-git-send-email-hooanon05@yahoo.co.jp> <12109484022745-git-send-email-hooanon05@yahoo.co.jp> <12109484023224-git-send-email-hooanon05@yahoo.co.jp> <12109484023618-git-send-email-hooanon05@yahoo.co.jp> <12109484023820-git-send-email-hooanon05@yahoo.co.jp> <12109484021927-git-send-email
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -28,220 +24,393 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Junjiro Okajima <hooanon05@yahoo.co.jp>
 
 	initial commit
-	aufs misc functions, header
+	aufs document
 
 Signed-off-by: Junjiro Okajima <hooanon05@yahoo.co.jp>
 ---
- fs/aufs/misc.h |  201 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 201 insertions(+), 0 deletions(-)
+ Documentation/filesystems/aufs/README |  374 +++++++++++++++++++++++++++++++++
+ 1 files changed, 374 insertions(+), 0 deletions(-)
 
-diff --git a/fs/aufs/misc.h b/fs/aufs/misc.h
+diff --git a/Documentation/filesystems/aufs/README b/Documentation/filesystems/aufs/README
 new file mode 100644
-index 0000000..e57c398
+index 0000000..ebe19db
 --- /dev/null
-+++ b/fs/aufs/misc.h
-@@ -0,0 +1,201 @@
-+/*
-+ * Copyright (C) 2005-2008 Junjiro Okajima
-+ *
-+ * This program, aufs is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
++++ b/Documentation/filesystems/aufs/README
+@@ -0,0 +1,374 @@
 +
-+/*
-+ * $Id: misc.h,v 1.2 2008/04/21 01:33:00 sfjro Exp $
-+ */
++Aufs -- Another Unionfs
++Junjiro Okajima
 +
-+#ifndef __AUFS_MISC_H__
-+#define __AUFS_MISC_H__
++# $Id: README,v 1.79 2008/05/04 23:55:14 sfjro Exp $
 +
-+#ifdef __KERNEL__
 +
-+#include <linux/fs.h>
-+#include <linux/namei.h>
-+#include <linux/aufs_type.h>
++0. Introduction
++----------------------------------------
++In the early days, aufs was entirely re-designed and re-implemented
++Unionfs Version 1.x series. After many original ideas, approaches,
++improvements and implementations, it becomes totally different from
++Unionfs while keeping the basic features.
++Recently, Unionfs Version 2.x series begin taking some of same
++approaches to aufs's.
++Unionfs is being developed by Professor Erez Zadok at Stony Brook
++University and his team.
++If you don't know Unionfs, I recommend you becoming familiar with it
++before using aufs. Some terminology in aufs follows Unionfs's.
 +
-+/* ---------------------------------------------------------------------- */
++Bug reports (including my broken English), suggestions, comments
++and donations are always welcome. Your bug report may help other users,
++including future users. Especially the bug report which doesn't follow
++unix/linux filesystem's semantics is important.
 +
-+typedef unsigned int au_gen_t;
-+/* see linux/include/linux/jiffies.h */
-+#define AuGenYounger(a, b)	((int)(b) - (int)(a) < 0)
-+#define AuGenOlder(a, b)	AufsGenYounger(b, a)
 +
-+/* ---------------------------------------------------------------------- */
++1. Features
++----------------------------------------
++- unite several directories into a single virtual filesystem. The member
++  directory is called as a branch.
++- you can specify the permission flags to the branch, which are 'readonly',
++  'readwrite' and 'whiteout-able.'
++- by upper writable branch, internal copyup and whiteout, files/dirs on
++  readonly branch are modifiable logically.
++- dynamic branch manipulation, add, del.
++- etc... see Unionfs in detail.
 +
-+struct au_rwsem {
-+	struct rw_semaphore	rwsem;
-+#ifdef CONFIG_AUFS_DEBUG
-+	atomic_t		rcnt;
-+#endif
-+};
++Also there are many enhancements in aufs, such as:
++- safer and faster
++- keep inode number by external inode number table
++- keep the timestamps of file/dir in internal copyup operation
++- seekable directory, supporting NFS readdir.
++- support mmap(2) including /proc/PID/exe symlink, without page-copy
++- whiteout is hardlinked in order to reduce the consumption of inodes
++  on branch
++- do not copyup, nor create a whiteout when it is unnecessary
++- revert a single systemcall when an error occurs in aufs
++- remount interface instead of ioctl
++- maintain /etc/mtab by an external shell script, /sbin/mount.aufs.
++- loopback mounted filesystem as a branch
++- kernel thread for removing the dir who has a plenty of whiteouts
++- support copyup sparse file (a file which has a 'hole' in it)
++- default permission flags for branches
++- selectable permission flags for ro branch, whether whiteout can
++  exist or not
++- export via NFS.
++- support <sysfs>/fs/aufs.
++- support multiple writable branches, some policies to select one
++  among multiple writable branches.
++- a new semantics for link(2) and rename(2) to support multiple
++  writable branches.
++- a delegation of the internal branch access to support task I/O
++  accounting, which also supports Linux Security Modules (LSM) mainly
++  for Suse AppArmor.
++- nested mount, i.e. aufs as readonly no-whiteout branch of another aufs.
++- copyup-on-open or copyup-on-write
++- show-whiteout mode
++- show configuration even out of kernel tree
++- no glibc changes are required.
++- and more... see aufs manual in detail
 +
-+#ifdef CONFIG_AUFS_DEBUG
-+#define AuDbgRcntInit(rw) do { \
-+	atomic_set(&(rw)->rcnt, 0); \
-+	smp_mb(); \
-+} while (0)
++Aufs is in still development stage, especially:
++- pseudo hardlink (hardlink over branches)
++- allow a direct access manually to a file on branch, e.g. bypassing aufs.
++  including NFS or remote filesystem branch.
++- refine xino and revalidate
++- pseudo-link in NFS-exporting
 +
-+#define AuDbgRcntInc(rw)	atomic_inc_return(&(rw)->rcnt)
-+#define AuDbgRcntDec(rw)	WARN_ON(atomic_dec_return(&(rw)->rcnt) < 0)
-+#else
-+#define AuDbgRcntInit(rw)	do {} while (0)
-+#define AuDbgRcntInc(rw)	do {} while (0)
-+#define AuDbgRcntDec(rw)	do {} while (0)
-+#endif /* CONFIG_AUFS_DEBUG */
++(current work)
++- reorder the branch index without del/re-add.
++- permanent xino files
 +
-+static inline void au_rw_init_nolock(struct au_rwsem *rw)
-+{
-+	AuDbgRcntInit(rw);
-+	init_rwsem(&rw->rwsem);
-+}
++(next work)
++- an option for refreshing the opened files after add/del branches
++- 'move' policy for copy-up between two writable branches, after
++  checking free space.
++- ioctl to manipulate file between branches.
++- and documentation
 +
-+static inline void au_rw_init_wlock(struct au_rwsem *rw)
-+{
-+	au_rw_init_nolock(rw);
-+	down_write(&rw->rwsem);
-+}
++(just an idea)
++- remount option copy/move between two branches. (unnecessary?)
++- O_DIRECT (unnecessary?)
++- light version, without branch manipulation. (unnecessary?)
++- SMP, because I don't have such machine. But several users reported
++  aufs is working fine on SMP machines.
++- copyup in userspace
++- inotify in userspace
++- xattr, acl
 +
-+static inline void au_rw_init_wlock_nested(struct au_rwsem *rw,
-+					   unsigned int lsc)
-+{
-+	au_rw_init_nolock(rw);
-+	down_write_nested(&rw->rwsem, lsc);
-+}
 +
-+static inline void au_rw_read_lock(struct au_rwsem *rw)
-+{
-+	down_read(&rw->rwsem);
-+	AuDbgRcntInc(rw);
-+}
++2. Download
++----------------------------------------
++CVS tree is in aufs project of SourceForge.
++Here is simple instructions to get aufs source files. It is recommended to
++refer to the document about CVS on SourceForge.
++	$ mkdir aufs.wcvs
++	$ cd aufs.wcvs
++	$ cvs -d:pserver:anonymous@aufs.cvs.sourceforge.net:/cvsroot/aufs login
++	(CVS password is empty)
++	$ cvs -z3 -d:pserver:anonymous@aufs.cvs.sourceforge.net:/cvsroot/aufs co aufs
 +
-+static inline void au_rw_read_lock_nested(struct au_rwsem *rw, unsigned int lsc)
-+{
-+	down_read_nested(&rw->rwsem, lsc);
-+	AuDbgRcntInc(rw);
-+}
++In order to update files after the first checkout,
++	$ cd aufs.wcvs/aufs
++	$ cvs update
++Do not forget -A option for 'cvs update' if you have ever 'cvs update' with
++specifying a file version.
 +
-+static inline void au_rw_read_unlock(struct au_rwsem *rw)
-+{
-+	AuDbgRcntDec(rw);
-+	up_read(&rw->rwsem);
-+}
++In order to see what the difference between two versions (two dates) is,
++	$ cd aufs.wcvs/aufs
++	$ cvs diff -D20061212 -D20061219
 +
-+static inline void au_rw_dgrade_lock(struct au_rwsem *rw)
-+{
-+	AuDbgRcntInc(rw);
-+	downgrade_write(&rw->rwsem);
-+}
++Usually I am updating CVS tree on every Monday.
++I always try putting the stable version in CVS, so you can try CVS
++instead of SourceForge File Release. And every changes are summarized
++and reported to aufs-users at lists.sourceforge.net ML. I'd like to
++recommend you to join this ML.
 +
-+static inline void au_rw_write_lock(struct au_rwsem *rw)
-+{
-+	down_write(&rw->rwsem);
-+}
 +
-+static inline void au_rw_write_lock_nested(struct au_rwsem *rw,
-+					   unsigned int lsc)
-+{
-+	down_write_nested(&rw->rwsem, lsc);
-+}
++3. Configuration and Compilation
++----------------------------------------
++Aufs is being developed and tested on linux-2.6.16 and later.
++You need the correct environment to build a kernel module. Generally
++it is an environment which your kernel was built.
++The aufs source files are under ./fs/aufs or ./fs/aufs25, which are
++for linux-2.6.16 - 2.6.24, and linux-2.6.25 and later respectively.
++Aufs makefile refers the files which is generated by linux build
++system.
++If you are unsure that you got the correct environment, then I
++recommend you to built your kernel by yourself. If it succeeds, you've
++got the correct environment.
 +
-+static inline void au_rw_write_unlock(struct au_rwsem *rw)
-+{
-+	up_write(&rw->rwsem);
-+}
++Currently aufs configuration is written in ./Kconfig.in. You can
++generate the real ./fs/aufs/Kconfig file by make(1). And follow the
++instructions which will be produced by make(1). The built
++./fs/aufs/Kconfig depends upon the kernel version.
++Before you build ./fs/aufs/Kconfig, you need to configure your kernel,
++since this build refers to linux/include/version.h.
++	$ make -f local.mk kconfig
 +
-+/* why is not _nested version defined */
-+static inline int au_rw_read_trylock(struct au_rwsem *rw)
-+{
-+	int ret = down_read_trylock(&rw->rwsem);
-+	if (ret)
-+		AuDbgRcntInc(rw);
-+	return ret;
-+}
++The local.mk searches your kernel build path by
++	KDIR = /lib/modules/$(shell uname -r)/build
++If you are cross-compiling the aufs module, try
++	$ make KDIR=/your/kernel/build/path -f local.mk kconfig
++If you link aufs statically, the generated Kconfig will help you.
 +
-+static inline int au_rw_write_trylock(struct au_rwsem *rw)
-+{
-+	return down_write_trylock(&rw->rwsem);
-+}
++Also you can use ./local.mk to compile aufs as a module by simply,
++	$ make -f local.mk
++or
++	$ make KDIR=/your/kernel/build/path -f local.mk
 +
-+#undef AuDbgRcntInit
-+#undef AuDbgRcntInc
-+#undef AuDbgRcntDec
++The default configuration is written in ./local.mk too, they will work
++for you in most cases. You can edit this file and change the
++configuration for your aufs module.
++If you don't want to change the ./local.mk, then create a new file
++./priv_def.mk and write the definitions your aufs configuration. The
++./local.mk includes ./priv_def.mk if it exists.
++When you configure aufs by modifying ./local.mk (or ./priv_dev.mk),
++leave it blank/unset when you disable an aufs configuration, instead
++of setting 'n.'
 +
-+/* to debug easier, do not make them inlined functions */
-+#define AuRwMustNoWaiters(rw)	AuDebugOn(!list_empty(&(rw)->rwsem.wait_list))
-+#define AuRwMustAnyLock(rw)	AuDebugOn(down_write_trylock(&(rw)->rwsem))
-+#ifdef CONFIG_AUFS_DEBUG
-+#define AuRwMustReadLock(rw) do { \
-+	AuRwMustAnyLock(rw); \
-+	AuDebugOn(!atomic_read(&(rw)->rcnt)); \
-+} while (0)
++The aufs build system may refer some kernel source files for some
++macros or internal functions which are not declared in their header
++files. It depends upon the configuration whether these files will be
++referred or not.
++Even if you don't have these source files in your build environment,
++aufs can be built safely, but works less efficiently in some cases.
 +
-+#define AuRwMustWriteLock(rw) do { \
-+	AuRwMustAnyLock(rw); \
-+	AuDebugOn(atomic_read(&(rw)->rcnt)); \
-+} while (0)
-+#else
-+#define AuRwMustReadLock(rw)	AuRwMustAnyLock(rw)
-+#define AuRwMustWriteLock(rw)	AuRwMustAnyLock(rw)
-+#endif /* CONFIG_AUFS_DEBUG */
++There is a contributed Makefile for aufs users. You might want to try
++it. Check
++http://sourceforge.net/mailarchive/forum.php?thread_name=9c4865a10707241831r189f9646n5f2c4a9c303797d1%40mail.gmail.com&forum_name=aufs-users
++and see the attachment.
 +
-+#define AuSimpleLockRwsemFuncs(prefix, param, rwsem) \
-+static inline void prefix##_read_lock(param) \
-+{ au_rw_read_lock(&(rwsem)); } \
-+static inline void prefix##_write_lock(param) \
-+{ au_rw_write_lock(&(rwsem)); } \
-+static inline int prefix##_read_trylock(param) \
-+{ return au_rw_read_trylock(&(rwsem)); } \
-+static inline int prefix##_write_trylock(param) \
-+{ return au_rw_write_trylock(&(rwsem)); }
-+//static inline void prefix##_read_trylock_nested(param, lsc)
-+//{au_rw_read_trylock_nested(&(rwsem, lsc));}
-+//static inline void prefix##_write_trylock_nestd(param, lsc)
-+//{au_rw_write_trylock_nested(&(rwsem), nested);}
++Currently, CONFIG_DEBUG_PROVE_LOCKING (in linux kernel) is not
++supported since MAX_LOCKDEP_SUBCLASSES is too small for a stackable
++filesystem. I am trying reducing the depth of lock subclasses.
++Until then, you need to increase the value of MAX_LOCKDEP_SUBCLASSES
++macro in include/linux/lockdep.h, for example, 16UL, when you enable
++CONFIG_DEBUG_PROVE_LOCKING.
 +
-+#define AuSimpleUnlockRwsemFuncs(prefix, param, rwsem) \
-+static inline void prefix##_read_unlock(param) \
-+{ au_rw_read_unlock(&(rwsem)); } \
-+static inline void prefix##_write_unlock(param) \
-+{ au_rw_write_unlock(&(rwsem)); } \
-+static inline void prefix##_downgrade_lock(param) \
-+{ au_rw_dgrade_lock(&(rwsem)); }
++When you test the performance, it is recommended to disable
++CONFIG_AUFS_DEBUG. It is enabled by default for the feature test.
 +
-+#define AuSimpleRwsemFuncs(prefix, param, rwsem) \
-+	AuSimpleLockRwsemFuncs(prefix, param, rwsem) \
-+	AuSimpleUnlockRwsemFuncs(prefix, param, rwsem)
++Since aufs supports several versions of linux kernel, it uses the
++condition like this,
++	#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 18)
++On the other hand, some distributions modify their kernel by their own
++patches. For example, just a piece of code is brought from v2.6.18 and
++merged into a distribution kernel which calls itself as v2.6.17.
++Finally, the conditions in aufs will not work correctly.
++You may or may not find them when you compile aufs.
++You need to modify aufs source code for 'custom-version' kernel
++(cf. patch/ubuntu-edgy.patch).
 +
-+/* ---------------------------------------------------------------------- */
 +
-+void *au_kzrealloc(void *p, unsigned int nused, unsigned int new_sz, gfp_t gfp);
++o Patches
++There are several patches for linux kernel, in order to use aufs.
++All of them are not necessary essentially, but in some cases you need
++them. It is up to your environment and aufs usage.
++All these patches are just for exporting a kernel internal function to
++modules. If the function was already declared as extern and you link
++aufs statically to your kernel, then you don't need such patch. If the
++function was not extern and you want the feature, you need to apply
++the patch.
++When you apply a patch, you need to enable the corresponding aufs
++configuration.
++All these patches are under CVS_TREE/aufs/patch.
 +
-+struct au_sbinfo;
-+struct nameidata *au_dup_nd(struct au_sbinfo *sbinfo, struct nameidata *dst,
-+			    struct nameidata *src);
++- sec_perm-2.6.24.patch
++  For linux-2.6.24 and later.
++  When you compile aufs as a module and enable CONFIG_SECURITY, this
++  patch is required.
++- splice-2.6.23.patch
++  For linux-2.6.23 and later.
++  When you use splice(2) (sendfile(2) in linux-2.6.23 and later), or
++  loopback-mount an fs-image file in aufs, this patch is
++  required. Aufs doesn't support splice(2) in linux-2.6.22 and
++  earlier.
++- put_filp.patch
++  For linux-2.6.19 and later.
++  When you compile aufs as a module and use NFS as an aufs branch
++  filesystem, this patch is required.
++- lhash.patch
++  For linux-2.6.19 and later till linux-2.6.21.
++  When you use NFS as an aufs branch filesystem, this patch is
++  required.
++- lhash-2.6.22.patch
++  Same above, but this patch is for linux-2.6.22 only.
++- fsync_super-2.6.16.patch
++  For linux-2.6.16 and later.
++  When you compile aufs as a module, apply this patch and enable a
++  configuration, aufs tries flushing everything for branch filesystems
++  which are not marked as 'rr' or 'rr+wh' at umount or remount time.
++- fsync_super-2.6.19.patch
++  Same above, but this patch is for linux-2.6.19 and later.
++- deny_write_access.patch
++  For linux-2.6.17 and later.
++  When you compile aufs as a module, applied this patch and enabled a
++  configuration, a minor security enhancement will be available at
++  execve(2).
++  You can omit this if you don't care the writing to a running
++  executable on a lower branch filesystem which was invoked through
++  aufs.
++- ksize.patch
++  For linux-2.6.22 and earlier.
++  When you compile aufs as a module and applied this patch, an
++  optimization inside aufs will be available at adding or deleting a
++  branch filesystem. You can omit this if you don't care the aufs
++  performance.
 +
-+struct nameidata *au_fake_dm(struct nameidata *fake_nd, struct nameidata *nd,
-+			     struct super_block *sb, aufs_bindex_t bindex);
-+void au_fake_dm_release(struct nameidata *fake_nd);
-+int au_h_create(struct inode *h_dir, struct dentry *h_dentry, int mode,
-+		int dlgt, struct nameidata *nd, struct vfsmount *nfsmnt);
++Additionally, there are patches for aufs which will be necessary when
++you use non-standard kernel modules or patches. Some of them have been
++tested by several people, but not all.
++See also the comments in the patches.
++- ubuntu-2.6.22-14.46.patch
++  For Ubuntu kernel
++  (http://archive.ubuntu.com/ubuntu/pool/main/l/linux-source-2.6.22/
++  linux-source-2.6.22_2.6.22-14.46_all.deb) which is modified a lot by
++  ubuntu people.
++- ubuntu-2.6.24-5.8.patch
++  For http://archive.ubuntu.com/ubuntu/pool/main/l/linux/
++  linux-source-2.6.24_2.6.24-5.8_all.deb.
++- ubuntu-edgy.patch
++  For Ubuntu Edgy kernel which calls itself as 2.6.17, while its
++  umount_begin() interface has arguments of 2.6.18.
++- rt-compat.patch
++  For realtime patch (http://people.redhat.com/mingo/realtime-preempt).
++- vserver.patch
++  For linux-vserver module (http://linux-vserver.org).
++- openvz_028stab039.1.patch
++  For openvz module (http://openvz.org).
 +
-+int au_copy_file(struct file *dst, struct file *src, loff_t len,
-+		 struct super_block *sb);
 +
-+#endif /* __KERNEL__ */
-+#endif /* __AUFS_MISC_H__ */
++4. Usage
++----------------------------------------
++After 'make',
++	$ man -l ./aufs.5
++	# install -m 500 -p mount.aufs umount.aufs auplink aulchown /sbin (recommended)
++	# echo FLUSH=ALL > /etc/default/auplink (recommended)
++	# insmod ./aufs.ko
++	$ mkdir /tmp/rw /tmp/aufs
++	# mount -t aufs -o dirs=/tmp/rw:${HOME}=ro none /tmp/aufs
++
++If you are familiar with Unionfs Version 1.x series and want to use
++unionctl(8), you can try the sample unionctl script under sample/
++directory too.
++
++Here is another example.
++
++	# mount -t aufs -o br:/tmp/rw:${HOME}=ro none /tmp/aufs
++	or
++	# mount -t aufs -o br:/tmp/rw none /tmp/aufs
++	# mount -o remount,append:${HOME}=ro /tmp/aufs
++
++If you disable CONFIG_AUFS_COMPAT in your configuration, you can remove the
++default branch permission '=ro' since '=rw' is set to the first branch
++only by default.
++
++	# mount -t aufs -o br:/tmp/rw:${HOME} none /tmp/aufs
++
++Then, you can see whole tree of your home dir through /tmp/aufs. If
++you modify a file under /tmp/aufs, the one on your home directory is
++not affected, instead the same named file will be newly created under
++/tmp/rw. And all of your modification to the file will be applied to
++the one under /tmp/rw. This is called the file based Copy on Write
++(COW) method.
++Aufs mount options are described in the generated ./aufs.5.
++
++Additionally, there are some sample usages of aufs which are a
++diskless system with network booting, and LiveCD over NFS.
++See ./sample/diskless in detail.
++
++
++5. Contact
++----------------------------------------
++When you have any problems or strange behaviour in aufs, please let me
++know with:
++- /proc/mounts (instead of the output of mount(8))
++- /sys/fs/aufs/* (if you have them)
++- /sys/module/aufs/*
++- linux kernel version
++  if your kernel is not plain, for example modified by distributor,
++  the url where i can download its source is necessary too.
++- aufs version which was printed at loading the module or booting the
++  system, instead of the date you downloaded.
++- configuration (define/undefine CONFIG_AUFS_xxx, or plain local.mk is
++  used or not)
++- kernel configuration or /proc/config.gz (if you have it)
++- behaviour which you think to be incorrect
++- actual operation, reproducible one is better
++- mailto: aufs-users at lists.sourceforge.net
++
++Usually, I don't watch the Public Areas(Bugs, Support Requests, Patches,
++and Feature Requests) on SourceForge. Please join and write to
++aufs-users ML.
++
++
++6. Acknowledgements
++----------------------------------------
++Thanks to everyone who have tried and are using aufs, especially who
++have reported a bug or any feedback.
++
++Tomas Matejicek(slax.org) made a donation (much more than once).
++Dai Itasaka made a donation (2007/8).
++Chuck Smith made a donation (2008/4).
++
++Thank you very much.
++Donations are always, including future donations, very important and
++helpful for me to keep on developing aufs.
++If you have a plan to develop or customize linux, feel free to ask me
++a job with some donations or payments.
++
++
++7.
++----------------------------------------
++If you are an experienced user, no explanation is needed. Aufs is
++just a linux filesystem module. take a glance at ./local.mk,
++aufs.5, and Unionfs.
++
++
++Enjoy!
++
++# Local variables: ;
++# mode: text;
++# End: ;
 -- 
 1.4.4.4
 
