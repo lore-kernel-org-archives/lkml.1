@@ -1,176 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761887AbYEPVBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761423AbYEPUnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761887AbYEPVBz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 17:01:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754226AbYEPVBo
+	id S1761423AbYEPUnY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 16:43:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760589AbYEPUnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 17:01:44 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:52086 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752291AbYEPVBn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 17:01:43 -0400
-Subject: [PATCH] JBD: Fix DIO EIO error caused by race between free buffer
-	and commit trasanction
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: Jan Kara <jack@suse.cz>, akpm@linux-foundation.org,
-       Badari Pulavarty <pbadari@us.ibm.com>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1210957976.4231.31.camel@badari-desktop>
-References: <20080429124321.GD1987@duck.suse.cz>
-	 <1209654981.27240.19.camel@badari-desktop>
-	 <20080505170636.GK25722@duck.suse.cz>
-	 <1210372072.3639.52.camel@localhost.localdomain>
-	 <20080512155419.GD15856@duck.suse.cz>
-	 <1210639184.3661.43.camel@localhost.localdomain>
-	 <20080513145449.GC20806@duck.suse.cz>
-	 <1210717389.3638.24.camel@localhost.localdomain>
-	 <20080514170856.GH24363@duck.suse.cz>
-	 <1210786872.3657.48.camel@localhost.localdomain>
-	 <20080514181444.GI24363@duck.suse.cz>
-	 <1210947250.3608.18.camel@localhost.localdomain>
-	 <1210957976.4231.31.camel@badari-desktop>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Fri, 16 May 2008 14:01:33 -0700
-Message-Id: <1210971693.3608.46.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
-Content-Transfer-Encoding: 7bit
+	Fri, 16 May 2008 16:43:09 -0400
+Received: from saeurebad.de ([85.214.36.134]:45847 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760192AbYEPUnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 16:43:05 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 0/3] bootmem2 III
+References: <20080509151713.939253437@saeurebad.de>
+	<20080509184044.GA19109@one.firstfloor.org>
+	<87lk2gtzta.fsf@saeurebad.de> <48275493.40601@firstfloor.org>
+	<874p92qsvn.fsf@saeurebad.de> <20080515191210.GE21787@shadowen.org>
+Date: Fri, 16 May 2008 22:42:51 +0200
+In-Reply-To: <20080515191210.GE21787@shadowen.org> (Andy Whitcroft's message
+	of "Thu, 15 May 2008 20:12:10 +0100")
+Message-ID: <87zlqqx9o4.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixed a few races between direct IO and kjournald commit transaction.
-An unexpected EIO error gets returned to direct IO caller when it failed to
-free those data buffers. This could be reproduced easily with parallel 
-direct write and buffered write to the same file
+Hi Andy,
 
-More specific, those races could cause journal_try_to_free_buffers()
-fail to free the data buffers, when jbd is committing the transaction that has
-those data buffers on its t_syncdata_list or t_locked_list. 
-journal_commit_transaction() still holds the reference to those buffers
- before data reach to disk and buffers are removed from the 
-t_syncdata_list of t_locked_list. This prevent the concurrent 
-journal_try_to_free_buffers() to free those buffers at the same time, but cause
-EIO error returns back to direct IO.
+Andy Whitcroft <apw@shadowen.org> writes:
 
-With this patch, in case of direct IO and when try_to_free_buffers() failed,
-let's waiting for journal_commit_transaction() to finish
-flushing the current committing transaction's data buffers to disk, 
-then try to free those buffers again.
+> On Tue, May 13, 2008 at 02:40:44PM +0200, Johannes Weiner wrote:
+>> Hi,
+>> 
+>> Andi Kleen <andi@firstfloor.org> writes:
+>> 
+>> > Johannes Weiner wrote:
+>> >
+>> >>> On Fri, May 09, 2008 at 05:17:13PM +0200, Johannes Weiner wrote:
+>> >>>> here is bootmem2, a memory block-oriented boot time allocator.
+>> >>>>
+>> >>>> Recent NUMA topologies broke the current bootmem's assumption that
+>> >>>> memory nodes provide non-overlapping and contiguous ranges of pages.
+>> >>> I'm still not sure that's a really good rationale for bootmem2.
+>> >>> e.g. the non continuous nodes are really special cases and there tends
+>> >>> to be enough memory at the beginning which is enough for boot time
+>> >>> use, so for those systems it would be quite reasonably to only 
+>> >>> put the continuous starts of the nodes into bootmem.
+>> >> 
+>> >> Hm, that would put the logic into arch-code.  I have no strong opinion
+>> >> about it.
+>> >
+>> > In fact I suspect the current code will already work like that
+>> > implicitely. The aliasing is only a problem for the new "arbitary node
+>> > free_bootmem" right?
+>> 
+>> And that alloc_bootmem_node() can not garuantee node-locality which is
+>> the much worse part, I think.
+>> 
+>> >>> That said the bootmem code has gotten a little crufty and a clean
+>> >>> rewrite might be a good idea.
+>> >> 
+>> >> I agree completely.
+>> >
+>> > The trouble is just that bootmem is used in early boot and early boot is
+>> > very subtle and getting it working over all architectures could be a
+>> > challenge. Not wanting to discourage you, but it's not exactly the
+>> > easiest part of the kernel to hack on.
+>> 
+>> Bootmem seemed pretty self-contained to me, at least in the beginning.
+>> The bad thing is that I can test only the most simple configuration with
+>> it.
+>> 
+>> I was wondering yesterday if it would be feasible to enforce
+>> contiguousness for nodes.  So that arch-code does not create one pgdat
+>> for each node but one for each contiguous block.  I have not yet looked
+>
+> That re-introduces the concept that a node is not a unit of numa locality,
+> but one of memory contiguity.  The kernel pretty much assumes that a node
+> exhibits memory locality.
 
-Signed-off-by: Mingming Cao <cmm@us.ibm.com>
-Reviewed-by: Badari Pulavarty <pbadari@us.ibm.com> 
----
- fs/jbd/transaction.c |   57 +++++++++++++++++++++++++++++++++++++++++++++++++--
- mm/truncate.c        |    3 +-
- 2 files changed, 57 insertions(+), 3 deletions(-)
+Okay.
 
-Index: linux-2.6.26-rc2/fs/jbd/transaction.c
-===================================================================
---- linux-2.6.26-rc2.orig/fs/jbd/transaction.c	2008-05-16 11:51:02.000000000 -0700
-+++ linux-2.6.26-rc2/fs/jbd/transaction.c	2008-05-16 13:43:02.000000000 -0700
-@@ -1648,12 +1648,39 @@ out:
- 	return;
- }
- 
-+/*
-+ * journal_try_to_free_buffers() could race with journal_commit_transaction()
-+ * The later might still hold the reference count to the buffers when inspecting
-+ * them on t_syncdata_list or t_locked_list.
-+ *
-+ * Journal_try_to_free_buffers() will call this function to
-+ * wait for the current transaction to finish syncing data buffers, before
-+ * try to free that buffer.
-+ *
-+ * Called with journal->j_state_lock hold.
-+ */
-+static void journal_wait_for_transaction_sync_data(journal_t *journal)
-+{
-+	transaction_t *transaction = NULL;
-+	tid_t tid;
-+
-+	transaction = journal->j_committing_transaction;
-+
-+	if (!transaction)
-+		return;
-+
-+	tid = transaction->t_tid;
-+	spin_unlock(&journal->j_state_lock);
-+	log_wait_commit(journal, tid);
-+	spin_lock(&journal->j_state_lock);
-+}
- 
- /**
-  * int journal_try_to_free_buffers() - try to free page buffers.
-  * @journal: journal for operation
-  * @page: to try and free
-- * @unused_gfp_mask: unused
-+ * @gfp_mask: unused for allocation purpose. Here is used
-+ * 	      as a flag to tell if direct IO is attemping to free buffers.
-  *
-  *
-  * For all the buffers on this page,
-@@ -1682,9 +1709,11 @@ out:
-  * journal_try_to_free_buffer() is changing its state.  But that
-  * cannot happen because we never reallocate freed data as metadata
-  * while the data is part of a transaction.  Yes?
-+ *
-+ * Return 0 on failure, 1 on success
-  */
- int journal_try_to_free_buffers(journal_t *journal,
--				struct page *page, gfp_t unused_gfp_mask)
-+				struct page *page, gfp_t gfp_mask)
- {
- 	struct buffer_head *head;
- 	struct buffer_head *bh;
-@@ -1713,7 +1742,31 @@ int journal_try_to_free_buffers(journal_
- 		if (buffer_jbd(bh))
- 			goto busy;
- 	} while ((bh = bh->b_this_page) != head);
-+
- 	ret = try_to_free_buffers(page);
-+
-+ 	/*
-+	 * In the case of concurrent direct IO and buffered IO,
-+	 * There are a number of places where we
-+	 * could race with journal_commit_transaction(), the later still
-+	 * holds the reference to the buffers to free while processing them.
-+	 * try_to_free_buffers() failed to free those buffers,
-+	 * resulting in an unexpected EIO error
-+	 * returns back to the generic_file_direct_IO()
-+	 *
-+	 * So let's wait for the current transaction to finish flush of
-+	 * dirty data buffers before we try to free those buffers
-+	 * again. This wait is needed by direct IO code path only,
-+	 * gfp_mask __GFP_REPEAT is passed from the direct IO code
-+	 * path to flag if we need to wait and retry free buffers.
-+	 */
-+	if (ret == 0 && gfp_mask & __GFP_REPEAT) {
-+        	spin_lock(&journal->j_state_lock);
-+		journal_wait_for_transaction_sync_data(journal);
-+		ret = try_to_free_buffers(page);
-+		spin_unlock(&journal->j_state_lock);
-+	}
-+
- busy:
- 	return ret;
- }
-Index: linux-2.6.26-rc2/mm/truncate.c
-===================================================================
---- linux-2.6.26-rc2.orig/mm/truncate.c	2008-05-16 11:51:02.000000000 -0700
-+++ linux-2.6.26-rc2/mm/truncate.c	2008-05-16 13:42:18.000000000 -0700
-@@ -346,7 +346,8 @@ invalidate_complete_page2(struct address
- 	if (page->mapping != mapping)
- 		return 0;
- 
--	if (PagePrivate(page) && !try_to_release_page(page, GFP_KERNEL))
-+	if (PagePrivate(page) &&
-+			!try_to_release_page(page,GFP_KERNEL|__GFP_REPEAT))
- 		return 0;
- 
- 	write_lock_irq(&mapping->tree_lock);
+>> deeper into it, but I suspect that other mm code has similar problems
+>> with nodes spanning other nodes.
+>
+> One thing we do know is that we already have systems in the wild with
+> overlapping nodes.  PowerPC systems sometimes exhibit this behaviour, the
+> ones I have seen have node 1 embedded within node 0.  x86_64 also enables
+> this support.  This necessitated checks when initially freeing memory
+> into the allocator to make sure it ended up freed into the right node.
+> For non-sparsemem configurations these systems have some wasted mem_map,
+> but otherwise it does work.
+>
+> Check out NODES_SPAN_OTHER_NODES for the code to avoid miss-placing
+> memory.
 
+Will have a better look at all this.  Thanks for the comment.
 
+	Hannes
