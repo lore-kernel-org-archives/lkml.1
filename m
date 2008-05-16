@@ -1,49 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754442AbYEPG5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751924AbYEPHBF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754442AbYEPG5q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 02:57:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751805AbYEPG5d
+	id S1751924AbYEPHBF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 03:01:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbYEPHAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 02:57:33 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:21711 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751471AbYEPG5c (ORCPT
+	Fri, 16 May 2008 03:00:54 -0400
+Received: from edna.telenet-ops.be ([195.130.132.58]:38457 "EHLO
+	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751797AbYEPHAw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 02:57:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=XLXc5HGdJAfdZw+sNvOyO9iKh8eauVoaHAJPJ43pyt+Bw7LGoHTEjDvBW6nrdlfAyKuO1pVjsDtolzCFIIUhFbsGBgEbsJ1bua9Bj8biQk5HK4eiXnrY8mJPgbPl2LqaNFFPDV1O6EKP9ejhc64MC1n+aI+azi83yqtdO0ElHxY=
-Date: Fri, 16 May 2008 07:01:02 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Kingsley Foreman <kingsley@internode.com.au>
-Cc: Patrick McHardy <kaber@trash.net>, Eric Dumazet <dada1@cosmosbay.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: NET_SCHED cbq dropping too many packets on a bonding interface
-Message-ID: <20080516070102.GB3992@ff.dom.local>
-References: <20080515091216.GA6550@ff.dom.local> <8ECDBB4EB5394859BFFACAAEE3A6EDB0@uglypunk> <482C6040.9030808@trash.net> <20080515182504.GB2936@ami.dom.local> <482C81CC.7000305@trash.net> <20080515184646.GC2936@ami.dom.local> <1A70765F4B30462EB21A3B3A8A442633@uglypunk> <20080516054959.GA3918@ff.dom.local> <05be01c8b71b$cbb0c9e0$f903a33a@SABINE>
+	Fri, 16 May 2008 03:00:52 -0400
+Date: Fri, 16 May 2008 09:00:48 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Cyrill Gorcunov <gorcunov@gmail.com>, torvalds@linux-foundation.org,
+       zippel@linux-m68k.org, schwab@suse.de, linux-kernel@vger.kernel.org,
+       linux-m68k@vger.kernel.org
+Subject: Re: [PATCH] init - fix building bug and potential buffer overflow
+In-Reply-To: <20080515134928.83b2d948.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0805160900030.22059@anakin>
+References: <20080514154402.GF6902@cvg> <20080515105803.7c9ab8c7.akpm@linux-foundation.org>
+ <20080515180528.GC7481@cvg> <Pine.LNX.4.64.0805152132530.22059@anakin>
+ <aa79d98a0805151322s20a2bb34x4491bcacfcef310@mail.gmail.com>
+ <20080515134928.83b2d948.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <05be01c8b71b$cbb0c9e0$f903a33a@SABINE>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16, 2008 at 03:42:18PM +0930, Kingsley Foreman wrote:
-...
-> ok after some playing a bit if i use
->
-> tc qdisc change dev bond0 parent 1: pfifo limit 30
->
-> the dropped packets go away, im not sure if that is considered normal or  
-> not, however any number under 30 gives me issues.
+On Thu, 15 May 2008, Andrew Morton wrote:
+> On Fri, 16 May 2008 00:22:14 +0400
+> "Cyrill Gorcunov" <gorcunov@gmail.com> wrote:
+> > On 5/15/08, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > > On Thu, 15 May 2008, Cyrill Gorcunov wrote:
+> > >> [Andrew Morton - Thu, May 15, 2008 at 10:58:03AM -0700]
+> > >> | On Wed, 14 May 2008 19:44:02 +0400 Cyrill Gorcunov <gorcunov@gmail.com>
+> > >> wrote:
+> > >> strlcat there but it seems it would fail to build too. Originally I've
+> > >> messed
+> > >> strlcat with strncat :(
+> > >
+> > > Actually it build and runs fine after s/strncat/strlcat/...
+> > >
+> 
+> (top-posting repaired)
+> 
+> > Could you please make an update to the patch? I can make it only
+> > tomorrow evening (ie not that fast)
+> 
+> Like this?
 
-If there are no significant differences in configs between these 2.6.22
-and 2.6.24/25 (e.g. things mentionned earlier by Eric) IMHO it's "more
-than normal", but as I've written it would need a lot of your time and
-work to check the rason.
+Builds and boots fine!
 
-Jarek P.
+> From: Cyrill Gorcunov <gorcunov@gmail.com>
+> 
+> This patch fixes a build bug on m68k - gcc decides to emit a call to the
+> strlen library function, which we don't implement.  Use strlcat() instead.
+> 
+> 
+> What is more important - my previous patch
+> 
+> commit e662e1cfd434aa234b72fbc781f1d70211cb785b
+> Author: Cyrill Gorcunov <gorcunov@gmail.com>
+> Date:   Mon May 12 14:02:22 2008 -0700
+> 
+>     init: don't lose initcall return values
+> 
+> Has introduced potential buffer overflow by wrong calculation of string
+> accumulator size.
+> 
+> Many thanks Andreas Schwab and Geert Uytterhoeven for helping
+> to catch and fix the bug.
+> 
+> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
