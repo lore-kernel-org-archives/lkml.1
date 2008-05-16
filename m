@@ -1,74 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759458AbYEPUKt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759784AbYEPULd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759458AbYEPUKt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 16:10:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754034AbYEPUKg
+	id S1759784AbYEPULd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 16:11:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754297AbYEPULT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 16:10:36 -0400
-Received: from yumi.tdiedrich.de ([85.10.210.183]:46280 "EHLO mx.tdiedrich.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751331AbYEPUKf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 16:10:35 -0400
-X-Greylist: delayed 1416 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 May 2008 16:10:35 EDT
-Date: Fri, 16 May 2008 21:46:25 +0200
-From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-To: Herbert Xu <herbert@gondor.apana.org.au>, linux-net@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: IPv6 slab leak (was: Re: dst cache overflow)
-Message-ID: <20080516194625.GA21570@yamamaya.is-a-geek.org>
-Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-	Herbert Xu <herbert@gondor.apana.org.au>, linux-net@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Eric Dumazet <dada1@cosmosbay.com>
-References: <20071214172945.GA10809@yamamaya.is-a-geek.org> <E1J3QWn-0006sJ-00@gondolin.me.apana.org.au> <20071215100857.GA29839@yamamaya.is-a-geek.org> <20071216073533.GA2706@gondor.apana.org.au> <20071216083828.GA512@yamamaya.is-a-geek.org> <20080317012513.GA3139@yamamaya.is-a-geek.org> <20080318185914.GA9275@yamamaya.is-a-geek.org> <20080323092125.GB2950@yamamaya.is-a-geek.org>
+	Fri, 16 May 2008 16:11:19 -0400
+Received: from colobus.isomerica.net ([216.93.242.10]:48138 "EHLO
+	colobus.isomerica.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754202AbYEPULS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 16:11:18 -0400
+Message-ID: <482DEA5F.7020201@isomerica.net>
+Date: Fri, 16 May 2008 16:11:11 -0400
+From: =?ISO-8859-2?Q?Dan_No=E9?= <dpn@isomerica.net>
+Reply-To: dpn@isomerica.net
+Organization: isomerica.net
+User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="M9NhX3UHpAaciwkO"
-Content-Disposition: inline
-In-Reply-To: <20080323092125.GB2950@yamamaya.is-a-geek.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, Adrian Bunk <bunk@kernel.org>,
+       kernel-testers@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: spontaneous reboots and hangs on x86_64
+References: <200805152201.49154.m.kozlowski@tuxland.pl> <200805160737.50373.m.kozlowski@tuxland.pl> <20080516174452.6fff3a3e.sfr@canb.auug.org.au> <200805162053.36390.m.kozlowski@tuxland.pl>
+In-Reply-To: <200805162053.36390.m.kozlowski@tuxland.pl>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Mariusz Kozlowski wrote:
+> Ok I got bisection working finally, now I'm at d5be23e2 I have something like 80 revisions left and
+> I'm stuck with this:
+> 
+> In file included from kernel/sched.c:1861:
+> kernel/sched_rt.c: In function 'check_preempt_curr_rt':
+> kernel/sched_rt.c:653: error: implicit declaration of function 'cpupri_find'
+> kernel/sched_rt.c:653: error: 'struct root_domain' has no member named 'cpupri'
+> make[1]: *** [kernel/sched.o] Error 1
+> make: *** [kernel] Error 2
+> 
+> Another (dumb I guess) git question: how can I move forward with this?
 
---M9NhX3UHpAaciwkO
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+git bisect skip
 
-Tobias Diedrich wrote:
-> Tobias Diedrich wrote:
-> > Tobias Diedrich wrote:
-> >=20
-> > > just a reminder, the server is now running 2.6.24 and the leak is
-> > > still there.  I noticed there is a slab leak debug option and turned
-> > > it on, results should be visible in a few days I guess.
-
-I'm upgrading to 2.6.25.4 now and I hope that "sit: Add missing
-kfree_skb() on pskb_may_pull() failure." finally fixes the bug. :)
-There also was some IPv6 related leak-fix in 2.6.24.something IIRC,
-but that one did not help unfortunately.
-
-Cheers,
-
---=20
-Tobias						PGP: http://9ac7e0bc.uguu.de
-=E3=81=93=E3=81=AE=E3=83=A1=E3=83=BC=E3=83=AB=E3=81=AF=E5=8D=81=E5=89=B2=E5=
-=86=8D=E5=88=A9=E7=94=A8=E3=81=95=E3=82=8C=E3=81=9F=E3=83=93=E3=83=83=E3=83=
-=88=E3=81=A7=E4=BD=9C=E3=82=89=E3=82=8C=E3=81=A6=E3=81=84=E3=81=BE=E3=81=99=
-=E3=80=82
-
---M9NhX3UHpAaciwkO
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFILeSRzQZOfTz8JZwRAvkJAJ4oVQwpcfB7hOjGmqA1DlNfXTxxDQCfQy/Z
-DZ4dRlcqGy+UcUS6n3xQXnY=
-=MHju
------END PGP SIGNATURE-----
-
---M9NhX3UHpAaciwkO--
+-- 
+                     /--------------- - -  -  -   -   -
+                     |  Dan Noé
+                     |  http://isomerica.net/~dpn/
