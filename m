@@ -1,127 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757035AbYEPOU6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757919AbYEPOVY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757035AbYEPOU6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 10:20:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbYEPOUr
+	id S1757919AbYEPOVY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 10:21:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755533AbYEPOVF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 10:20:47 -0400
-Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:48644 "EHLO
-	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750894AbYEPOUq (ORCPT
+	Fri, 16 May 2008 10:21:05 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:1952 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757289AbYEPOVA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 10:20:46 -0400
-From: hooanon05@yahoo.co.jp
-Subject: Re: [RFC 2/2] AUFS: merging/stacking several filesystems 
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080511215458.44021c4a.akpm@linux-foundation.org>
-References: <7016.1207113135@jrobl> <8157.1207205925@jrobl> <9316.1210567436@jrobl> <20080511215458.44021c4a.akpm@linux-foundation.org>
-Date: Fri, 16 May 2008 23:20:40 +0900
-Message-ID: <13179.1210947640@jrobl>
+	Fri, 16 May 2008 10:21:00 -0400
+Date: Fri, 16 May 2008 10:20:58 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, <nigel@nigel.suspend2.net>,
+       Kexec Mailing List <kexec@lists.infradead.org>,
+       <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       <linux-pm@lists.linux-foundation.org>, Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: [linux-pm] [PATCH -mm] kexec jump -v9
+In-Reply-To: <m163tfi5sq.fsf@frodo.ebiederm.org>
+Message-ID: <Pine.LNX.4.44L0.0805160955320.25035-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 15 May 2008, Eric W. Biederman wrote:
 
-Andrew Morton:
-> On Mon, 12 May 2008 13:43:56 +0900 hooanon05@yahoo.co.jp wrote:
+> I just can't get past the fact in that the only reason hibernation can
+> not use the widely implemented and tested probe/remove is because of
+> filesystems on block devices, and that you are proposing to add 4
+> methods for each and every driver to handle that case, when they
+> don't need ANYTHING!
+
+You are mixing together several distinct concepts: powering-down
+devices, quiescing devices, blocking request queues, and so on.
+
+> The more I look at this the more I get the impression that
+> hibernation and suspend should be solved in separate patches.  I'm
+> not at all convinced that is what is good for the goose is good for
+> the gander for things like your prepare method.
+
+Isn't that exactly what Rafael has been doing?  Why do you think the 
+new PM framework has different methods for suspend and hibernate?
+
+> Hibernation seems to be an extreme case of hotplug.
+
+?  I don't follow this at all.
+
+> Suspend seems to be just an extreme case of putting unused
+> devices in low power state.
+
+To a large extent that is true.  But there is more to it.
+
+Normally, when a device is put in a low-power state while the system is 
+running, it's expected that an I/O request will cause the device to 
+return to full power.  But during suspend things don't work that way; 
+instead I/O requests are supposed to be blocked and the device is 
+supposed to remain at low power.
+
+There are other requirements too.  While the system is running, more or
+less arbitrary devices can go to low power at more or less arbitrary
+times (as appropriate, of course).  But during suspend, the PM core has
+to arrange that _all_ devices go to low power.  This means, among other
+things, that drivers have to be prevented from registering new devices
+while the transition is taking place.  (Not to mention the races 
+involved in registering a new child device at the same time as its 
+parent is being powered down.)
+
+> + * @prepare: Prepare the device for the upcoming transition, but do NOT change
+> + *	its hardware state.  Prevent new children of the device from being
+> + *	registered after @prepare() returns (the driver's subsystem and
+...
+> + * @complete: Undo the changes made by @prepare().  This method is executed for
+...
+
+> The names above are terrible.  Perhaps: @pause/@unpause.
+
+I think you have missed the point of these methods.  What they do is
+unrelated to pausing or unpausing; their main purpose is to prevent and
+to allow new children from being registered.
+
+> @pause Stop all device driver user space facing activities, and prepare
+>        for a possible power state transition.
 > 
-> > 
-> > > > Here are some of them and the intention of this post is to get some
-> > > > initial feedback about its design.
-> > 	:::
-> > 
-> > I have posted some of ideas, design or approaches which are implemented
-> > in AUFS stackable filesystem about a month before.
-> > While I have a plan to implement some more features still, the current
-> > AUFS status is better and used many people for years.
-> > Since I have received requests to submit AUFS into the mainline more
-> > than once, Now I'd ask you to include AUFS into mainline.
-> > But the source is large (see below).
-> > Should I send all of these files to this ML, or ask you to download them
-> > from CVS?
-> > If AUFS was much smaller, I would send files here without asking.
-> > 
+> Essentially these should be very much like bringing an ethernet
+> interface down.  The device is still there but we can't do anything
+> with it.  The only difference is that this may not be user visible.
+
+Why do we need this?  Why can't user-space-facing activities be stopped 
+when the power-level change occurs?
+
+> + * @freeze: Hibernation-specific, executed before creating a hibernation image.
+> + *	Quiesce operations so that a consistent image can be created, but do NOT
+> + *	otherwise put the device into a low power device state and do NOT emit
+> + *	system wakeup events.  Save in main memory the device settings to be
+> + *	used by @restore() during the subsequent resume from hibernation or by
+> + *	the subsequent @thaw(), if the creation of the image or the restoration
+> + *	of main memory contents from it fails.
+> + *
+> + * @thaw: Hibernation-specific, executed after creating a hibernation image OR
+> + *	if the creation of the image fails.  Also executed after a failing
+> + *	attempt to restore the contents of main memory from such an image.
+> + *	Undo the changes made by the preceding @freeze(), so the device can be
+> + *	operated in the same way as immediately before the call to @freeze().
 > 
-> Yup, prepare a patch series and email them out.  cc linux-kernel too.
+> Just @detach/@reattach.
+> 
+> @detach Detach the driver from the hardware, while keeping the driver
+>         instance for the hardware alive.
 
-Ok, I will send these patches to two MLs.
-I'd ask linux-kernel people to read previous posts too.
-http://marc.info/?l=linux-fsdevel&m=120716468102834&w=2
-http://marc.info/?l=linux-fsdevel&m=120720593114664&w=2
+This isn't the same thing at all.  @freeze doesn't detach the driver 
+from anything.  It merely tells the driver to quiesce the device.
 
- Documentation/filesystems/aufs/README      |  374 +++++++
- Documentation/filesystems/aufs/aufs.5      | 1608 ++++++++++++++++++++++++++++
- Documentation/filesystems/aufs/aulchown.c  |   29 +
- Documentation/filesystems/aufs/auplink     |  170 +++
- Documentation/filesystems/aufs/mount.aufs  |  205 ++++
- Documentation/filesystems/aufs/umount.aufs |   33 +
- fs/Kconfig                                 |    2 +
- fs/Makefile                                |    1 +
- fs/aufs/Kconfig                            |  203 ++++
- fs/aufs/Makefile                           |   57 +
- fs/aufs/aufs.h                             |   56 +
- fs/aufs/br_fuse.c                          |  109 ++
- fs/aufs/br_nfs.c                           |  391 +++++++
- fs/aufs/br_xfs.c                           |   69 ++
- fs/aufs/branch.c                           |  933 ++++++++++++++++
- fs/aufs/branch.h                           |  345 ++++++
- fs/aufs/cpup.c                             | 1043 ++++++++++++++++++
- fs/aufs/cpup.h                             |   82 ++
- fs/aufs/dcsub.c                            |  246 +++++
- fs/aufs/dcsub.h                            |   54 +
- fs/aufs/debug.c                            |  485 +++++++++
- fs/aufs/debug.h                            |  210 ++++
- fs/aufs/dentry.c                           | 1020 ++++++++++++++++++
- fs/aufs/dentry.h                           |  384 +++++++
- fs/aufs/dinfo.c                            |  425 ++++++++
- fs/aufs/dir.c                              |  573 ++++++++++
- fs/aufs/dir.h                              |  146 +++
- fs/aufs/dlgt.c                             |  113 ++
- fs/aufs/export.c                           |  597 +++++++++++
- fs/aufs/f_op.c                             |  665 ++++++++++++
- fs/aufs/file.c                             |  822 ++++++++++++++
- fs/aufs/file.h                             |  246 +++++
- fs/aufs/finfo.c                            |  185 ++++
- fs/aufs/hin_or_dlgt.c                      |  708 ++++++++++++
- fs/aufs/hinode.h                           |  188 ++++
- fs/aufs/hinotify.c                         | 1114 +++++++++++++++++++
- fs/aufs/i_op.c                             |  844 +++++++++++++++
- fs/aufs/i_op_add.c                         |  828 ++++++++++++++
- fs/aufs/i_op_del.c                         |  582 ++++++++++
- fs/aufs/i_op_ren.c                         |  832 ++++++++++++++
- fs/aufs/iinfo.c                            |  290 +++++
- fs/aufs/inode.c                            |  425 ++++++++
- fs/aufs/inode.h                            |  336 ++++++
- fs/aufs/misc.c                             |  307 ++++++
- fs/aufs/misc.h                             |  201 ++++
- fs/aufs/module.c                           |  243 +++++
- fs/aufs/module.h                           |   78 ++
- fs/aufs/opts.c                             | 1493 ++++++++++++++++++++++++++
- fs/aufs/opts.h                             |  245 +++++
- fs/aufs/plink.c                            |  349 ++++++
- fs/aufs/robr.c                             |  111 ++
- fs/aufs/sbinfo.c                           |  268 +++++
- fs/aufs/super.c                            |  891 +++++++++++++++
- fs/aufs/super.h                            |  410 +++++++
- fs/aufs/sysaufs.c                          |  104 ++
- fs/aufs/sysaufs.h                          |  150 +++
- fs/aufs/sysfs.c                            |  459 ++++++++
- fs/aufs/sysrq.c                            |  112 ++
- fs/aufs/vdir.c                             |  963 +++++++++++++++++
- fs/aufs/vfsub.c                            |  653 +++++++++++
- fs/aufs/vfsub.h                            |  493 +++++++++
- fs/aufs/wbr_policy.c                       |  693 ++++++++++++
- fs/aufs/whout.c                            | 1058 ++++++++++++++++++
- fs/aufs/whout.h                            |  140 +++
- fs/aufs/wkq.c                              |  321 ++++++
- fs/aufs/wkq.h                              |  160 +++
- fs/aufs/xino.c                             | 1249 +++++++++++++++++++++
- fs/namei.c                                 |    2 +-
- include/linux/aufs_type.h                  |  111 ++
- include/linux/lockdep.h                    |    4 +
- include/linux/namei.h                      |    1 +
- 71 files changed, 29296 insertions(+), 1 deletions(-)
+> If we have events we care about we just need to do:
+> reattach(); suspend();  It is all the same from the point of view of
+> the device.  Not the system but the device.
 
+?  Why are you worried about what the device sees?  The device can't 
+even tell the difference between a detach and a period of time with no 
+I/O.
 
-Junjiro Okajima
+Alan Stern
+
