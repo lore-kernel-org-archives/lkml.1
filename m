@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757465AbYEPMHU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756907AbYEPMJi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757465AbYEPMHU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 08:07:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755016AbYEPMHE
+	id S1756907AbYEPMJi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 08:09:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbYEPMJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 08:07:04 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60214 "EHLO mx3.mail.elte.hu"
+	Fri, 16 May 2008 08:09:31 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41666 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754418AbYEPMHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 08:07:03 -0400
-Date: Fri, 16 May 2008 14:06:20 +0200
+	id S1752169AbYEPMJa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 08:09:30 -0400
+Date: Fri, 16 May 2008 14:09:12 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, pq@iki.fi, proski@gnu.org,
-       sandmann@redhat.com, a.p.zijlstra@chello.nl, linuxppc-dev@ozlabs.org,
-       paulus@samba.org, benh@kernel.crashing.org,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 2/2] ftrace: support for PowerPC
-Message-ID: <20080516120620.GD11718@elte.hu>
-References: <20080515034942.109223655@goodmis.org> <20080515035918.896765954@goodmis.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Jan Beulich <jbeulich@novell.com>, tglx@linutronix.de, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86/xen: fix arbitrary_virt_to_machine()
+Message-ID: <20080516120911.GE11718@elte.hu>
+References: <482C47B4.76E4.0078.0@novell.com> <482C3360.1040309@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080515035918.896765954@goodmis.org>
+In-Reply-To: <482C3360.1040309@goop.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,11 +35,55 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> This patch adds full support for ftrace for PowerPC (both 64 and 32 
-> bit). This includes dynamic tracing and function filtering.
+> Jan Beulich wrote:
+>> While I realize that the function isn't currently being used, I still
+>> think an obvious mistake like this should be corrected.
+>>
+>> Signed-off-by: Jan Beulich <jbeulich@novell.com>
+>>
+>> --- a/arch/x86/xen/mmu.c
+>> +++ b/arch/x86/xen/mmu.c
+>> @@ -60,7 +60,7 @@ xmaddr_t arbitrary_virt_to_machine(unsig
+>>  {
+>>  	unsigned int level;
+>>  	pte_t *pte = lookup_address(address, &level);
+>> -	unsigned offset = address & PAGE_MASK;
+>> +	unsigned offset = address & (PAGE_SIZE - 1);
+>>   
+>
+> Yeah.  But I'd prefer "~PAGE_MASK".
 
-applied, thanks. Nice stuff! :)
+ok - queued up the patch below in -tip.
 
 	Ingo
+
+----------------------->
+Subject: x86/xen: fix arbitrary_virt_to_machine()
+From: "Jan Beulich" <jbeulich@novell.com>
+Date: Thu, 15 May 2008 13:24:52 +0100
+
+While I realize that the function isn't currently being used, I still
+think an obvious mistake like this should be corrected.
+
+Signed-off-by: Jan Beulich <jbeulich@novell.com>
+Acked-by: Jeremy Fitzhardinge <jeremy@goop.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/xen/mmu.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux/arch/x86/xen/mmu.c
+===================================================================
+--- linux.orig/arch/x86/xen/mmu.c
++++ linux/arch/x86/xen/mmu.c
+@@ -60,7 +60,7 @@ xmaddr_t arbitrary_virt_to_machine(unsig
+ {
+ 	unsigned int level;
+ 	pte_t *pte = lookup_address(address, &level);
+-	unsigned offset = address & PAGE_MASK;
++	unsigned offset = address & ~PAGE_SIZE;
+ 
+ 	BUG_ON(pte == NULL);
+ 
