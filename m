@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757504AbYEPHtm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756896AbYEPHyM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757504AbYEPHtm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 03:49:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751756AbYEPHtX
+	id S1756896AbYEPHyM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 03:54:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245AbYEPHx5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 03:49:23 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:8570 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751471AbYEPHtS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 03:49:18 -0400
-Date: Fri, 16 May 2008 09:49:14 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Fabio Checconi <fchecconi@gmail.com>
-Cc: Matthew <jackdachef@gmail.com>,
-       Daniel J Blueman <daniel.blueman@gmail.com>,
-       Kasper Sandberg <lkml@metanurb.dk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: performance "regression" in cfq compared to anticipatory, deadline and noop
-Message-ID: <20080516074913.GW16217@kernel.dk>
-References: <20080513180334.GS16217@kernel.dk> <20080513184057.GU16217@kernel.dk> <6278d2220805140105x27292033u6a97dcf13ab54263@mail.gmail.com> <20080514082622.GA16217@kernel.dk> <6278d2220805141352s3624d7b7qc90567f6b7a410dc@mail.gmail.com> <e85b9d30805141437u6a4b4caby1712c6f04bd4cc05@mail.gmail.com> <20080515070127.GH16217@kernel.dk> <20080515122156.GA11600@gandalf.sssup.it> <20080516064002.GL16217@kernel.dk> <20080516074628.GA17802@gandalf.sssup.it>
+	Fri, 16 May 2008 03:53:57 -0400
+Received: from ti-out-0910.google.com ([209.85.142.186]:15176 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751440AbYEPHx4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 03:53:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=EQBeHPkeJEWqGTMtUA7uWyQUn7k89jTQKvrWgqxXC6LzXNCk8FueHoX8huQftMT9W9FBELBjfanHpUPVt66MZ1AVczUpnXxxWRloQ3WS7U0dFe5/+c+xLXj6ieNdqSh2P2PIan4Zp6yPhEtSEacsLW7WNfb+Uxf6MqhNlI1xRdg=
+Message-ID: <569c97d20805160053n8a5deceu25c8b37f02e02842@mail.gmail.com>
+Date: Fri, 16 May 2008 13:23:52 +0530
+From: "Balaji Rao R" <balajirrao@gmail.com>
+To: "Kevin Hao" <kexin.hao@windriver.com>
+Subject: Re: [PATCH] x86: Get irq for hpet timer
+Cc: venkatesh.pallipadi@intel.com, clemens@ladisch.de, bob.picco@hp.com,
+       mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org
+In-Reply-To: <1210917912.10881.1.camel@kevin-desktop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080516074628.GA17802@gandalf.sssup.it>
+References: <1210917912.10881.1.camel@kevin-desktop>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16 2008, Fabio Checconi wrote:
-> > From: Jens Axboe <jens.axboe@oracle.com>
-> > Date: Fri, May 16, 2008 08:40:03AM +0200
-> >
-> ...
-> > I think we can improve this further without getting too involved. If a
-> > 2nd request is seen in cfq_rq_enqueued(), then DO schedule a dispatch
-> > since this likely means that we wont be doing more merges on the first
-> > one.
-> > 
-> 
-> But isn't there the risk that even the second request would be
-> dispatched, while it still could have grown?
+On Fri, May 16, 2008 at 11:35 AM, Kevin Hao <kexin.hao@windriver.com> wrote:
+>
+> Hi,
+>
+> x86: get irq for hpet timer
+>
+> HPET timer's IRQ is 0 by default, so we have to select which irq
+> will be used for these timers. We wait to set the timer's irq until
+> we really turn on interrupt in order to reduce the chance of
+> conflicting with some legacy device.
+>
+Yes, this is alright. But  i've seen some machines where we have a
+valid IRQ in 'devp->hd_hdwirq' which you should not ignore. So, first
+check if it is zero and only then do a hpet_timer_get_irq.
 
-Certainly, you'd only want to dispatch the first request. Ideally we'd
-just get rid of this logic of 'did empty dispatch round' and only
-dispatch requests once merging is done, it's basically the wrong thing
-to do to make it visible to the io scheduler so soon. Well of course
-even more ideally we'd always get big requests submitted, but
-unfortunately many producers aren't that nice.
+--
+warm regards
 
-The per-process plugging actually solves this nicely, since we do the
-merging outside of the io scheduler. Perhaps just not dispatch on a
-plugged queue would help a bit. I'm somewhat against this principle of
-messing too much with dispatch logic in the schedulers, it'd be nicer to
-solve this higher up.
-
--- 
-Jens Axboe
-
+Balaji Rao
+NITK Surathkal
