@@ -1,76 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760179AbYEPSq2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761106AbYEPTCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760179AbYEPSq2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 14:46:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755607AbYEPSqU
+	id S1761106AbYEPTCT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 15:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752436AbYEPTCL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 14:46:20 -0400
-Received: from orion.ambsoft.pl ([212.109.144.130]:43301 "EHLO
-	orion.ambsoft.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754224AbYEPSqT (ORCPT
+	Fri, 16 May 2008 15:02:11 -0400
+Received: from outbound-mail-34.bluehost.com ([69.89.18.154]:33373 "HELO
+	outbound-mail-34.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754439AbYEPTCK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 14:46:19 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: "Vegard Nossum" <vegard.nossum@gmail.com>
-Subject: Re: spontaneous reboots and hangs on x86_64
-Date: Fri, 16 May 2008 20:46:16 +0200
-User-Agent: KMail/1.9.7
-Cc: "Stephen Rothwell" <sfr@canb.auug.org.au>, "Adrian Bunk" <bunk@kernel.org>,
-       kernel-testers@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>
-References: <200805152201.49154.m.kozlowski@tuxland.pl> <200805160737.50373.m.kozlowski@tuxland.pl> <19f34abd0805160113i17eea98aub287f2d1be8f05d9@mail.gmail.com>
-In-Reply-To: <19f34abd0805160113i17eea98aub287f2d1be8f05d9@mail.gmail.com>
+	Fri, 16 May 2008 15:02:10 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: Re: [PATCH][PCI]: Introduce pci_find_capability_cached and make MSI use it
+Date: Fri, 16 May 2008 12:01:48 -0700
+User-Agent: KMail/1.9.9
+Cc: Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, linux-rt-users@vger.kernel.org
+References: <20080515160426.GD14846@ghostprotocols.net> <200805161044.34938.jbarnes@virtuousgeek.org> <20080516183356.GA7307@ghostprotocols.net>
+In-Reply-To: <20080516183356.GA7307@ghostprotocols.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200805162046.16992.m.kozlowski@tuxland.pl>
+Message-Id: <200805161201.48644.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-> >> > > > ~/linux/linux-next $ git bisect start
-> >> > > > fatal: ref HEAD is not a symbolic ref
-> >> > > > Bad HEAD - I need a symbolic ref
-> >> >
-> >> > This would indicate something wrong with your clone of linux-next.  How
-> >> > did you create the repository?
-> >> >
-> >> > > > - how does one bisect on linux-next?
-> >> >
-> >> > Any day's linux-next tree is a git tree like any other ...
-> >>
-> >> Hm it can be that I did something wrong ...
+On Friday, May 16, 2008 11:33 am Arnaldo Carvalho de Melo wrote:
+> > There are a few other common cap checks, but I don't think they compare
+> > to MSI in terms of latency sensitivity (though I didn't audit all the
+> > CAP_ID_EXP checks, there are quite a few of those).
 > >
-> > and I did :/ I think I just started this repo in wrong way - according to linux-next FAQ.
-> > I'll just start from scratch then.
-> 
-> You need to be on a branch. If git-branch says this:
-> 
-> $ git branch
-> * (no branch)
-> 
-> then git will not allow you to bisect:
-> 
-> $ git bisect start v2.6.24 v2.6.25
-> fatal: ref HEAD is not a symbolic ref
-> Bad HEAD - I need a symbolic ref
-> 
-> Try first checkout out a new branch:
-> 
-> $ git checkout -b bisect
-> Switched to a new branch "bisect"
-> 
-> $ git bisect start v2.6.24 v2.6.25
-> Switched to branch "master"
-> 
-> Good luck!
+> > Since we know MSI is a problem, let's just go with fixing that for now. 
+> > If we find that other caps are also causing problems we can revisit
+> > caching all of them; the patch is simple enough.
+>
+> Do you want me to submit another patch or can you cook up one?
 
-Thanks, that was the case and your recipe works.
+I can hack it up, probably not until Monday though (I'll be out of town this 
+weekend).
 
-	Mariusz
-
-
+Jesse
