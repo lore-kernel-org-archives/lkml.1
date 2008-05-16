@@ -1,46 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758788AbYEPRgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757425AbYEPRk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758788AbYEPRgY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 13:36:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753691AbYEPRgM
+	id S1757425AbYEPRk1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 13:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbYEPRkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 13:36:12 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:49609 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752005AbYEPRgL (ORCPT
+	Fri, 16 May 2008 13:40:17 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58296 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751888AbYEPRkQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 13:36:11 -0400
-Date: Fri, 16 May 2008 13:36:10 -0400
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Jeff Garzik <jeff@garzik.org>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Rick Jones <rick.jones2@hp.com>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       Chris Peterson <cpeterso@cpeterso.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of IRQF_SAMPLE_RANDOM
-Message-ID: <20080516173610.GA27126@csclub.uwaterloo.ca>
-References: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com> <20080515142154.0595e475@core> <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com> <482C7B18.6060003@garzik.org> <482C7E53.3050300@hp.com> <482C8184.2030906@garzik.org> <482C8550.5000909@intel.com> <482C8D4D.3040702@garzik.org> <20080516132107.GA11304@csclub.uwaterloo.ca> <20080516161029.44ded734@core>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080516161029.44ded734@core>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Fri, 16 May 2008 13:40:16 -0400
+Date: Fri, 16 May 2008 10:38:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Stas Sergeev <stsp@aknet.ru>,
+       Takashi Iwai <tiwai@suse.de>
+Subject: Re: [Bugme-new] [Bug 10701] New: snd_pcsp lockdep warning
+Message-Id: <20080516103827.0d5ab023.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0805161338500.3255@apollo.tec.linutronix.de>
+References: <bug-10701-10286@http.bugzilla.kernel.org/>
+	<20080515110244.6e15d4c3.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0805161338500.3255@apollo.tec.linutronix.de>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16, 2008 at 04:10:29PM +0100, Alan Cox wrote:
-> Ethernet is observable so ethernet isn't entropy. There is no "anything
-> else" here -> there is no *anything*
+On Fri, 16 May 2008 14:46:31 +0200 (CEST) Thomas Gleixner <tglx@linutronix.de> wrote:
 
-So what is one to do if a few applications want to read from /dev/random
-but you have no excellent source of entropy on the system?  Wait
-forever?  I think ethernet interrupts are better than nothing, and I
-really doubt that someone would be able to predict what the entropy
-generated would be in practice.  If you have that good access to the
-physical network, then probably have physical access to the system
-itself, in which case it is all irrelevant.
+> On Thu, 15 May 2008, Andrew Morton wrote:
+> 
+> > (switched to email.  Please respond via emailed reply-to-all, not via the
+> > bugzilla web interface).
+> > 
+> > On Thu, 15 May 2008 03:43:36 -0700 (PDT) bugme-daemon@bugzilla.kernel.org wrote:
+> > 
+> > > http://bugzilla.kernel.org/show_bug.cgi?id=10701
+> > > 
+> > >            Summary: snd_pcsp lockdep warning
+> > >            Product: Drivers
+> > >            Version: 2.5
+> > >      KernelVersion: 2.6.26-rc2
+> > >           Platform: All
+> > >         OS/Version: Linux
+> > >               Tree: Mainline
+> > >             Status: NEW
+> > >           Severity: normal
+> > >           Priority: P1
+> > >          Component: Sound(ALSA)
+> > >         AssignedTo: perex@perex.cz
+> > >         ReportedBy: nuclearcat@nuclearcat.com
+> > > 
+> > > 
+> > > Latest working kernel version: unknown
+> > > Earliest failing kernel version: 2.6.26-rc2
+> > > Distribution: Gentoo
+> > > Hardware Environment: Intel 965 chipset, Core 2 Duo
+> > > Software Environment: mplayer
+> > > Problem Description: Just lockdep warning in dmesg
+> > 
+> > This looks like a problem in the core hrtimers code?
+> 
+> No, this is a problem in the sound code. It uses the hrtimer callback
+> mode HRTIMER_CB_IRQSAFE. This mode was never intended to provide a
+> lock free call mode and was created for very fast callbacks like
+> wakeups and the like. Also I find it pretty amazing that the pscp code
+> has the following comment:
+> 
+> /*
+>  * We need the hrtimer_start as a tasklet to avoid
+>  * the nasty locking problem. :(
+>  * The problem:
+>  * - The timer handler is called with the cpu_base->lock
+>  *   already held by hrtimer code.
+>  * - snd_pcm_period_elapsed() takes the
+>  *   substream->self_group.lock.
+>  * So far so good.
+>  * But the snd_pcsp_trigger() is called with the
+>  * substream->self_group.lock held, and it calls
+>  * hrtimer_start(), which takes the cpu_base->lock.
+>  * You see the problem. We have the code pathes
+>  * which take two locks in a reverse order. This
+>  * can deadlock and the lock validator complains.
+>  * The only solution I could find was to move the
+>  * hrtimer_start() into a tasklet. -stsp
+>  */
+> 
+> So the author was well aware of locking problem and the whole code is
+> just a stupid hack around the problem without solving it. This code is
+> not at all suited for HRTIMER_CB_IRQSAFE.
 
--- 
-Len Sorensen
+You sound impressed!  So what's the fix?  HRTIMER_CB_SOFTIRQ?
