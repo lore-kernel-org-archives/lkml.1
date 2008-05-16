@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760601AbYEPOsx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760731AbYEPOtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760601AbYEPOsx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 10:48:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757936AbYEPOmp
+	id S1760731AbYEPOtR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 10:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757950AbYEPOmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 10:42:45 -0400
-Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49258 "EHLO
+	Fri, 16 May 2008 10:42:47 -0400
+Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49264 "EHLO
 	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752599AbYEPOmQ (ORCPT
+	with ESMTP id S1750751AbYEPOmQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 16 May 2008 10:42:16 -0400
 From: hooanon05@yahoo.co.jp
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Junjiro Okajima <hooanon05@yahoo.co.jp>
-Subject: [PATCH 19/67] aufs sysfs interface and lifetime management, source
-Date: Fri, 16 May 2008 23:32:33 +0900
-Message-Id: <12109484013702-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [PATCH 17/67] aufs special handling inode attributes on XFS branch in linux-2.6.24 and later
+Date: Fri, 16 May 2008 23:32:31 +0900
+Message-Id: <12109484012301-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <1210948401175-git-send-email-hooanon05@yahoo.co.jp>
-References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <12109484012532-git-send-email-hooanon05@yahoo.co.jp> <12109484012997-git-send-email-hooanon05@yahoo.co.jp> <12109484013051-git-send-email-hooanon05@yahoo.co.jp> <12109484013436-git-send-email-hooanon05@yahoo.co.jp> <1210948401415-git-send-email-hooanon05@yahoo.co.jp> <12109484011533-git-send-email-hooanon05@yahoo.co.jp> <1210948401506-git-send-email-hooanon05@yahoo.co.jp> <12109484013156-git-send-email-hooanon05@yahoo.co.jp> <12109484012724-git-send-email-hooanon05@yahoo.co.jp> <12109484013264-git-send-email-hooanon05@yahoo.co.jp> <12109484012658-git-send-email-hooanon05@yahoo.co.jp> <12109484011282-git-send-email-hooanon05@yahoo.co.jp> <12109484012543-git-send-email-hooanon05@yahoo.co.jp> <12109484013834-git-send-email-hooanon05@yahoo.co.jp> <12109484012213-git-send-email-hooanon05@yahoo.co.jp> <12109484012301-git-send-email-hooanon05@yahoo.co.jp> <1210948401175-git-send-email-hooanon05@yahoo.co.jp>
+In-Reply-To: <12109484012213-git-send-email-hooanon05@yahoo.co.jp>
+References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <12109484012532-git-send-email-hooanon05@yahoo.co.jp> <12109484012997-git-send-email-hooanon05@yahoo.co.jp> <12109484013051-git-send-email-hooanon05@yahoo.co.jp> <12109484013436-git-send-email-hooanon05@yahoo.co.jp> <1210948401415-git-send-email-hooanon05@yahoo.co.jp> <12109484011533-git-send-email-hooanon05@yahoo.co.jp> <1210948401506-git-send-email-hooanon05@yahoo.co.jp> <12109484013156-git-send-email-hooanon05@yahoo.co.jp> <12109484012724-git-send-email-hooanon05@yahoo.co.jp> <12109484013264-git-send-email-hooanon05@yahoo.co.jp> <12109484012658-git-send-email-hooanon05@yahoo.co.jp> <12109484011282-git-send-email-hooanon05@yahoo.co.jp> <12109484012543-git-send-email-hooanon05@yahoo.co.jp> <12109484013834-git-send-email-hooanon05@yahoo.co.jp> <12109484012213-git-send-email-hooanon05@yahoo.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -26,21 +26,21 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Junjiro Okajima <hooanon05@yahoo.co.jp>
 
 	initial commit
-	aufs sysfs interface and lifetime management, source
+	aufs special handling inode attributes on XFS branch in linux-2.6.24 and later
 
 Signed-off-by: Junjiro Okajima <hooanon05@yahoo.co.jp>
 ---
- fs/aufs/sysaufs.c |  104 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 104 insertions(+), 0 deletions(-)
+ fs/aufs/br_xfs.c |   69 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 69 insertions(+), 0 deletions(-)
 
-diff --git a/fs/aufs/sysaufs.c b/fs/aufs/sysaufs.c
+diff --git a/fs/aufs/br_xfs.c b/fs/aufs/br_xfs.c
 new file mode 100644
-index 0000000..7df12fd
+index 0000000..360ffaa
 --- /dev/null
-+++ b/fs/aufs/sysaufs.c
-@@ -0,0 +1,104 @@
++++ b/fs/aufs/br_xfs.c
+@@ -0,0 +1,69 @@
 +/*
-+ * Copyright (C) 2007-2008 Junjiro Okajima
++ * Copyright (C) 2008 Junjiro Okajima
 + *
 + * This program, aufs is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -58,90 +58,55 @@ index 0000000..7df12fd
 + */
 +
 +/*
-+ * sysfs interface and lifetime management
-+ * they are necessary regardless sysfs is disabled.
++ * special handling inode attributes on XFS branch in linux-2.6.24 and later
 + *
-+ * $Id: sysaufs.c,v 1.4 2008/04/28 03:05:39 sfjro Exp $
++ * $Id: br_xfs.c,v 1.2 2008/04/21 01:33:00 sfjro Exp $
 + */
 +
-+#include <linux/fs.h>
-+#include <linux/module.h>
-+#include <linux/sysfs.h>
 +#include "aufs.h"
 +
-+/* ---------------------------------------------------------------------- */
-+
-+/* super_blocks list is not exported */
-+DEFINE_MUTEX(au_sbilist_mtx);
-+LIST_HEAD(au_sbilist);
-+
-+/* ---------------------------------------------------------------------- */
-+
-+static struct kset au_kset;
-+
-+#define AuSbiAttr(_name) { \
-+	.attr   = { .name = __stringify(_name), .mode = 0444 },	\
-+	.show   = sysaufs_sbi_##_name,				\
-+}
-+
-+static struct au_sbi_attr au_sbi_attr_xino = AuSbiAttr(xino);
-+struct attribute *au_sbi_attrs[] = {
-+	&au_sbi_attr_xino.attr,
-+	NULL,
-+};
-+
-+static struct sysfs_ops au_sbi_ops = {
-+	.show   = sysaufs_sbi_show
-+};
-+
-+static struct kobj_type au_sbi_ktype = {
-+	.release	= au_si_free,
-+	.sysfs_ops	= &au_sbi_ops,
-+	.default_attrs	= au_sbi_attrs,
-+};
-+
-+/* ---------------------------------------------------------------------- */
-+
-+int sysaufs_si_init(struct au_sbinfo *sbinfo)
++/* h_mnt can be NULL, is it safe? */
++dev_t au_h_rdev(struct inode *h_inode, struct vfsmount *h_mnt,
++		struct dentry *h_dentry)
 +{
++	dev_t rdev;
 +	int err;
++	struct kstat st;
 +
-+	sbinfo->si_kobj.kset = &au_kset;
-+	err = kobject_init_and_add(&sbinfo->si_kobj, &au_sbi_ktype,
-+				   NULL/*&au_kset.kobj*/,
-+				   SysaufsSb_PREFIX "%p", sbinfo);
-+	AuTraceErr(err);
-+	return err;
-+}
++	LKTRTrace("hi%lu\n", h_inode->i_ino);
++	if (h_dentry)
++		LKTRTrace("%.*s\n", AuDLNPair(h_dentry));
 +
-+
-+/* ---------------------------------------------------------------------- */
-+
-+void sysaufs_fin(void)
-+{
-+	AuDebugOn(!list_empty(&au_sbilist));
-+	sysfs_remove_group(&au_kset.kobj, au_attr_group);
-+	kset_unregister(&au_kset);
-+}
-+
-+int __init sysaufs_init(void)
-+{
-+	int err;
-+
-+	sysaufs_brs_init();
-+	au_kset.kobj.parent = fs_kobj;
-+	kobject_set_name(&au_kset.kobj, AUFS_NAME);
-+	au_kset.kobj.ktype = au_ktype;
-+	err = kset_register(&au_kset);
-+	if (unlikely(err))
++	rdev = h_inode->i_rdev;
++	if (!rdev || !au_test_xfs(h_inode->i_sb))
 +		goto out;
-+	err = sysfs_create_group(&au_kset.kobj, au_attr_group);
-+	if (unlikely(err))
-+		kset_unregister(&au_kset);
 +
++	rdev = 0;
++	if (!h_dentry) {
++		err = 0;
++		h_dentry = d_find_alias(h_inode);
++		if (unlikely(!h_dentry))
++			goto failure;
++		err = PTR_ERR(h_dentry);
++		if (IS_ERR(h_dentry)) {
++			h_dentry = NULL;
++			goto failure;
++		}
++		LKTRTrace("%.*s\n", AuDLNPair(h_dentry));
++	} else
++		dget(h_dentry);
++
++	err = vfsub_getattr(h_mnt, h_dentry, &st, /*dlgt*/0);
++	dput(h_dentry);
++	if (!err) {
++		rdev = st.rdev;
++		goto out; /* success */
++	}
++
++ failure:
++	AuIOErr("failed rdev for XFS inode, hi%lu, %d\n", h_inode->i_ino, err);
 + out:
-+	AuTraceErr(err);
-+	return err;
++	return rdev;
 +}
 -- 
 1.4.4.4
