@@ -1,64 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762910AbYEOX65@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762483AbYEPADu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762910AbYEOX65 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 19:58:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756069AbYEOX6n
+	id S1762483AbYEPADu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 20:03:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755934AbYEPADm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 19:58:43 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:48683 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754793AbYEOX6l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 19:58:41 -0400
-X-Sasl-enc: Hq8Mm302gbcP3JP+QECEkgtu2WbV6TarOjzE8pIzZqyX 1210895920
-Date: Thu, 15 May 2008 20:58:38 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Theodore Tso <tytso@mit.edu>, Jeff Garzik <jeff@garzik.org>,
-       Chris Peterson <cpeterso@cpeterso.com>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>, Rick Jones <rick.jones2@hp.com>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
-	IRQF_SAMPLE_RANDOM
-Message-ID: <20080515235838.GB23721@khazad-dum.debian.net>
-References: <482C7E53.3050300@hp.com> <482C8184.2030906@garzik.org> <482C8550.5000909@intel.com> <482C8D4D.3040702@garzik.org> <a24804730805151301s3c6644d0hc2c78b8008fe035d@mail.gmail.com> <20080515214721.GP18825@mit.edu> <482CB1FB.7080807@garzik.org> <20080515222941.GB20976@khazad-dum.debian.net> <482CBCC6.6010905@garzik.org> <20080515233305.GS18825@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080515233305.GS18825@mit.edu>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 15 May 2008 20:03:42 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:52670 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755350AbYEPADl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 15 May 2008 20:03:41 -0400
+Date: Thu, 15 May 2008 19:03:40 -0500
+From: Paul Jackson <pj@sgi.com>
+To: "Huang, Ying" <ying.huang@intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Andi Kleen" <andi@firstfloor.org>, "Ingo Molnar" <mingo@elte.hu>
+Cc: akpm@linux-foundation.org, tglx@linutronix.de, steiner@sgi.com,
+       travis@sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 10/10] x86 boot: add code to add BIOS provided EFI
+ memory entries to kernel
+Message-Id: <20080515190340.b232ca7d.pj@sgi.com>
+In-Reply-To: <20080514151558.148486.91282.sendpatchset@jackhammer.engr.sgi.com>
+References: <20080514151504.148486.32236.sendpatchset@jackhammer.engr.sgi.com>
+	<20080514151558.148486.91282.sendpatchset@jackhammer.engr.sgi.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 May 2008, Theodore Tso wrote:
-> On Thu, May 15, 2008 at 06:44:22PM -0400, Jeff Garzik wrote:
-> > I just sorta assumed a buffering, interrupt-driver TPM RNG driver would be 
-> > better than doing it from userspace, but maybe that was a bad assumption to 
-> > make on my part.  It should be quite doable to support TPM RNG entirely via 
-> > userspace, at any rate.
-> 
-> If I recall correctly, you need access to a magic TPM key just to
-> *talk* to the TPM.  Normally that key is stored in a file, and of
+Ying Huang, H. Peter Anvin, Andi Kleen, Ingo Molnar (and anyone else
+interested):
 
-The TPM has some sort of idea of restricted operations.  It will depend
-whether one can get random numbers as an anonymous party (and frankly, I
-don't care for looking at the TCG docs right now to find out).
+I invite your review of these patches, especially 7, 9 and 10 of the
+set of 10, that I posted yesterday.
 
-I certaily can ask the TPM "are you there?" even when it is disabled(!),
-so I would not be too surprised to find out that, as long as it is
-enabled, it will return random numbers to anyone.
+In combination, I believe that they allow passing more than E820MAX
+(128) memory map entries from EFI firmware to a booting kernel, beyond
+the E820 constraints of non-EFI legacy BIOS's, without changing the
+EFI interface interface.  My understanding of the EFI interface is
+that it already allows for this, and that we just needed to add the
+ability, as done in these patches, for the kernel to make use of this.
 
-But access to the TPM requires a control layer which must have excusive
-access to the chip.  That layer would have to move into the kernel...
-IMHO, it is just not worth even bothering with the idea, and just do it
-all in userspace.
+The separate work of Ying Huang, to leverage Andi's reserve_early()
+and to revise the EFI interface, to pass multiple pages of information
+from the EFI firmware to the kernel at boot is, I presume, still needed
+for other extensions, such as for passing more hard disk drive entries.
+
+But the particular extension of interest to me, passing more memory map
+entries (for future x86_64 systems with more than 128 memory nodes)
+can I believe be done fairly easily, with these patches, with no need
+of revising the EFI interface or reserving early memory, and with code
+that is compatible across both x86_32 and x86_64 arch's.
 
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
