@@ -1,103 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762201AbYEPSuB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762309AbYEPSug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762201AbYEPSuB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 14:50:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760811AbYEPSrx
+	id S1762309AbYEPSug (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 14:50:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760845AbYEPSry
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 14:47:53 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46944 "EHLO mx1.redhat.com"
+	Fri, 16 May 2008 14:47:54 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46954 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760791AbYEPSrv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 14:47:51 -0400
-Message-Id: <20080516183207.361608893@redhat.com>
+	id S1760804AbYEPSrw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 14:47:52 -0400
+Message-Id: <20080516183224.802161855@redhat.com>
+References: <20080516183207.361608893@redhat.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 16 May 2008 14:32:07 -0400
+Date: Fri, 16 May 2008 14:32:20 -0400
 From: Rik van Riel <riel@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Lee Schermerhorn <lee.schermerhorn@hp.com>,
        Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: [patch 00/14] VM pageout scalability improvements (V7)
+Subject: [patch 13/14] ramfs pages are non-reclaimable
+Content-Disposition: inline; filename=rvr-13-lts-noreclaim-ramfs-pages-are-non-reclaimable.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On large memory systems, the VM can spend way too much time scanning
-through pages that it cannot (or should not) evict from memory. Not
-only does it use up CPU time, but it also provokes lock contention
-and can leave large systems under memory presure in a catatonic state.
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
 
-Against 2.6.25-rc2-mm1
+Christoph Lameter pointed out that ram disk pages also clutter the
+LRU lists.  When vmscan finds them dirty and tries to clean them,
+the ram disk writeback function just redirties the page so that it
+goes back onto the active list.  Round and round she goes...
 
-This patch series improves VM scalability by:
+Define new address_space flag [shares address_space flags member
+with mapping's gfp mask] to indicate that the address space contains
+all non-reclaimable pages.  This will provide for efficient testing
+of ramdisk pages in page_reclaimable().
 
-1) putting filesystem backed, swap backed and non-reclaimable pages
-   onto their own LRUs, so the system only scans the pages that it
-   can/should evict from memory
+Also provide wrapper functions to set/test the noreclaim state to
+minimize #ifdefs in ramdisk driver and any other users of this
+facility.
 
-2) switching to SEQ replacement for the anonymous LRUs, so the
-   number of pages that need to be scanned when the system
-   starts swapping is bound to a reasonable number
+Set the noreclaim state on address_space structures for new
+ramdisk inodes.  Test the noreclaim state in page_reclaimable()
+to cull non-reclaimable pages.
 
-3) keeping non-reclaimable pages off the LRU completely, so the
-   VM does not waste CPU time scanning them.  Currently only
-   ramfs and SHM_LOCKED pages are kept on the noreclaim list,
-   mlock()ed VMAs will be added later
+Similarly, ramfs pages are non-reclaimable.  Set the 'noreclaim'
+address_space flag for new ramfs inodes.
 
-More info on the overall design can be found at:
+These changes depend on [CONFIG_]NORECLAIM_LRU.
 
-	http://linux-mm.org/PageReplacementDesign
+Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
+Signed-off-by:  Rik van Riel <riel@redhat.com>
 
-An all-in-one patch can be found at:
+---
+V3 -> V4:
++ drivers/block/rd.c was replaced by brd.c in 24-rc4-mm1.
+  Update patch to add brd_open() to mark mapping as nonreclaimable
 
-	http://people.redhat.com/riel/splitvm/
+V2 -> V3:
++  rebase to 23-mm1 atop RvR's split LRU series [no changes]
 
-Changelog:
-- improve swap space freeing to deal with COW shared space
-  (Lee Schermerhorn, Daisuke Nishimura & Minchan Kim)
-- clean up PG_swapbacked setting in swapin path (Minchan Kim)
-- properly invoke shrink_active_list for background aging (Minchan Kim)
-- add authorship info to all patches (Rik van Riel)
-- clean up (or move below ---) the comments for the commit logs (Rik van Riel)
-- after some tests, reduce default swappiness to 20 for now (Rik van Riel)
+V1 -> V2:
++  add ramfs pages to this class of non-reclaimable pages by
+   marking ramfs address_space [mapping] as non-reclaimble.
 
-- several code cleanups (minchan Kim)
-- noreclaim patch refactoring and improvements (Lee Schermerhorn)
-- several PROT_NONE and vma merging fixes (KOSAKI Motohiro)
-- SMP bugfixes and efficiency improvements (Rik van Riel, Lee Schermerhorn)
-- fix NUMA node stats printing (Lee Schermerhorn)
-- remove the mlocked-VMA-noreclaim code for now, it still has
-  bugs on IA64 and is holding up the merge (Rik van Riel)
 
-- make page_alloc.c compile without CONFIG_NORECLAIM_MLOCK (minchan Kim)
-- BUG() does not take an argument (minchan Kim) 
-- clean up is_active_lru and is_file_lru (Andy Whitcroft)
-- clean up shrink_active_list temp list names (KOSAKI Motohiro)
-- add total active & inactive memory totals for vmstat -a (KOSAKI Motohiro)
-- only try global anon page aging on global lru scans (KOSAKI Motohiro)
-- make function descriptions follow the kernel-doc format (Rik van Riel)
-- simplify mlock_vma_pages_range and munlock_vma_pages_range (Lee Schermerhorn)
-- remove some more arguments, rename to mlock_vma_pages_all (Lee Schermerhorn)
-- many code cleanups (Lee Schermerhorn)
-- pass correct vma arg to mlock_vma_pages_range from do_brk (Rik van Riel)
-- port to 2.6.25-rc3-mm1
+ drivers/block/brd.c     |   13 +++++++++++++
+ fs/ramfs/inode.c        |    1 +
+ include/linux/pagemap.h |   22 ++++++++++++++++++++++
+ mm/vmscan.c             |    5 +++++
+ 4 files changed, 41 insertions(+)
 
-- pull the memcontrol lru arrayification earlier into the patch series
-- use a pagevec array similar to the lru array
-- clean up the code in various places
-- improved pageout balancing and reduced pageout cpu use
-
-- fix compilation on PPC and without memcontrol
-- make page_is_pagecache more readable
-- replace get_scan_ratio with correct version
-
-- merge memcontroller split LRU code into the main split LRU patch,
-  since it is not functionally different (it was split up only to help
-  people who had seen the last version of the patch series review it)
-- drop the page_file_cache debugging patch, since it never triggered
-- reintroduce code to not scan anon list if swap is full
-- add code to scan anon list if page cache is very small already
-- use lumpy reclaim more aggressively for smaller order > 1 allocations
+Index: linux-2.6.26-rc2-mm1/include/linux/pagemap.h
+===================================================================
+--- linux-2.6.26-rc2-mm1.orig/include/linux/pagemap.h	2008-05-15 11:20:43.000000000 -0400
++++ linux-2.6.26-rc2-mm1/include/linux/pagemap.h	2008-05-16 14:05:19.000000000 -0400
+@@ -30,6 +30,28 @@ static inline void mapping_set_error(str
+ 	}
+ }
+ 
++#ifdef CONFIG_NORECLAIM_LRU
++#define AS_NORECLAIM	(__GFP_BITS_SHIFT + 2)	/* e.g., ramdisk, SHM_LOCK */
++
++static inline void mapping_set_noreclaim(struct address_space *mapping)
++{
++	set_bit(AS_NORECLAIM, &mapping->flags);
++}
++
++static inline int mapping_non_reclaimable(struct address_space *mapping)
++{
++	if (mapping && (mapping->flags & AS_NORECLAIM))
++		return 1;
++	return 0;
++}
++#else
++static inline void mapping_set_noreclaim(struct address_space *mapping) { }
++static inline int mapping_non_reclaimable(struct address_space *mapping)
++{
++	return 0;
++}
++#endif
++
+ static inline gfp_t mapping_gfp_mask(struct address_space * mapping)
+ {
+ 	return (__force gfp_t)mapping->flags & __GFP_BITS_MASK;
+Index: linux-2.6.26-rc2-mm1/mm/vmscan.c
+===================================================================
+--- linux-2.6.26-rc2-mm1.orig/mm/vmscan.c	2008-05-16 14:05:09.000000000 -0400
++++ linux-2.6.26-rc2-mm1/mm/vmscan.c	2008-05-16 14:05:19.000000000 -0400
+@@ -2258,6 +2258,8 @@ int zone_reclaim(struct zone *zone, gfp_
+  * lists vs noreclaim list.
+  *
+  * Reasons page might not be reclaimable:
++ * (1) page's mapping marked non-reclaimable
++ *
+  * TODO - later patches
+  */
+ int page_reclaimable(struct page *page, struct vm_area_struct *vma)
+@@ -2265,6 +2267,9 @@ int page_reclaimable(struct page *page, 
+ 
+ 	VM_BUG_ON(PageNoreclaim(page));
+ 
++	if (mapping_non_reclaimable(page_mapping(page)))
++		return 0;
++
+ 	/* TODO:  test page [!]reclaimable conditions */
+ 
+ 	return 1;
+Index: linux-2.6.26-rc2-mm1/fs/ramfs/inode.c
+===================================================================
+--- linux-2.6.26-rc2-mm1.orig/fs/ramfs/inode.c	2008-05-15 11:20:57.000000000 -0400
++++ linux-2.6.26-rc2-mm1/fs/ramfs/inode.c	2008-05-16 14:05:19.000000000 -0400
+@@ -61,6 +61,7 @@ struct inode *ramfs_get_inode(struct sup
+ 		inode->i_mapping->a_ops = &ramfs_aops;
+ 		inode->i_mapping->backing_dev_info = &ramfs_backing_dev_info;
+ 		mapping_set_gfp_mask(inode->i_mapping, GFP_HIGHUSER);
++		mapping_set_noreclaim(inode->i_mapping);
+ 		inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
+ 		switch (mode & S_IFMT) {
+ 		default:
+Index: linux-2.6.26-rc2-mm1/drivers/block/brd.c
+===================================================================
+--- linux-2.6.26-rc2-mm1.orig/drivers/block/brd.c	2008-05-15 11:20:55.000000000 -0400
++++ linux-2.6.26-rc2-mm1/drivers/block/brd.c	2008-05-16 14:05:19.000000000 -0400
+@@ -374,8 +374,21 @@ static int brd_ioctl(struct inode *inode
+ 	return error;
+ }
+ 
++/*
++ * brd_open():
++ * Just mark the mapping as containing non-reclaimable pages
++ */
++static int brd_open(struct inode *inode, struct file *filp)
++{
++	struct address_space *mapping = inode->i_mapping;
++
++	mapping_set_noreclaim(mapping);
++	return 0;
++}
++
+ static struct block_device_operations brd_fops = {
+ 	.owner =		THIS_MODULE,
++	.open  =		brd_open,
+ 	.ioctl =		brd_ioctl,
+ #ifdef CONFIG_BLK_DEV_XIP
+ 	.direct_access =	brd_direct_access,
 
 -- 
 All Rights Reversed
