@@ -1,257 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759642AbYEPSvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762922AbYEPSwA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759642AbYEPSvj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 14:51:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761008AbYEPSsA
+	id S1762922AbYEPSwA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 14:52:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761016AbYEPSsA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 16 May 2008 14:48:00 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46960 "EHLO mx1.redhat.com"
+Received: from mx1.redhat.com ([66.187.233.31]:46961 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760879AbYEPSr4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1760904AbYEPSr4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 16 May 2008 14:47:56 -0400
-Message-Id: <20080516183224.436843032@redhat.com>
+Message-Id: <20080516183224.259161900@redhat.com>
 References: <20080516183207.361608893@redhat.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 16 May 2008 14:32:14 -0400
+Date: Fri, 16 May 2008 14:32:11 -0400
 From: Rik van Riel <riel@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: [patch 07/14] second chance replacement for anonymous pages
-Content-Disposition: inline; filename=rvr-03-linux-2.6-vm-anon-clock.patch
+       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Subject: [patch 04/14] free swap space on swap-in/activation
+Content-Disposition: inline; filename=rvr-00-linux-2.6-swapfree.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rik van Riel <riel@redhat.com>
 
-We avoid evicting and scanning anonymous pages for the most part, but
-under some workloads we can end up with most of memory filled with
-anonymous pages.  At that point, we suddenly need to clear the referenced
-bits on all of memory, which can take ages on very large memory systems.
-
-We can reduce the maximum number of pages that need to be scanned by
-not taking the referenced state into account when deactivating an
-anonymous page.  After all, every anonymous page starts out referenced,
-so why check?
-
-If an anonymous page gets referenced again before it reaches the end
-of the inactive list, we move it back to the active list.
-
-To keep the maximum amount of necessary work reasonable, we scale the
-active to inactive ratio with the size of memory, using the formula
-active:inactive ratio = sqrt(memory in GB * 10).
-
-Kswapd CPU use now seems to scale by the amount of pageout bandwidth,
-instead of by the amount of memory present in the system.
+Free swap cache entries when swapping in pages if vm_swap_full()
+[swap space > 1/2 used].  Uses new pagevec to reduce pressure
+on locks.
 
 Signed-off-by: Rik van Riel <riel@redhat.com>
-Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Signed-off-by: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
 
-Index: linux-2.6.26-rc2-mm1/include/linux/mm_inline.h
-===================================================================
---- linux-2.6.26-rc2-mm1.orig/include/linux/mm_inline.h	2008-05-16 13:53:09.000000000 -0400
-+++ linux-2.6.26-rc2-mm1/include/linux/mm_inline.h	2008-05-16 14:03:56.000000000 -0400
-@@ -97,4 +97,16 @@ del_page_from_lru(struct zone *zone, str
- 	__dec_zone_state(zone, NR_INACTIVE_ANON + l);
- }
- 
-+static inline int inactive_anon_low(struct zone *zone)
-+{
-+	unsigned long active, inactive;
-+
-+	active = zone_page_state(zone, NR_ACTIVE_ANON);
-+	inactive = zone_page_state(zone, NR_INACTIVE_ANON);
-+
-+	if (inactive * zone->inactive_ratio < active)
-+		return 1;
-+
-+	return 0;
-+}
- #endif
-Index: linux-2.6.26-rc2-mm1/include/linux/mmzone.h
-===================================================================
---- linux-2.6.26-rc2-mm1.orig/include/linux/mmzone.h	2008-05-16 13:53:09.000000000 -0400
-+++ linux-2.6.26-rc2-mm1/include/linux/mmzone.h	2008-05-16 14:03:56.000000000 -0400
-@@ -311,6 +311,11 @@ struct zone {
- 	 */
- 	int prev_priority;
- 
-+	/*
-+	 * The ratio of active to inactive pages.
-+	 */
-+	unsigned int inactive_ratio;
-+
- 
- 	ZONE_PADDING(_pad2_)
- 	/* Rarely used or read-mostly fields */
-Index: linux-2.6.26-rc2-mm1/mm/page_alloc.c
-===================================================================
---- linux-2.6.26-rc2-mm1.orig/mm/page_alloc.c	2008-05-16 13:53:09.000000000 -0400
-+++ linux-2.6.26-rc2-mm1/mm/page_alloc.c	2008-05-16 14:03:56.000000000 -0400
-@@ -4269,6 +4269,45 @@ void setup_per_zone_pages_min(void)
- 	calculate_totalreserve_pages();
- }
- 
-+/**
-+ * setup_per_zone_inactive_ratio - called when min_free_kbytes changes.
-+ *
-+ * The inactive anon list should be small enough that the VM never has to
-+ * do too much work, but large enough that each inactive page has a chance
-+ * to be referenced again before it is swapped out.
-+ *
-+ * The inactive_anon ratio is the ratio of active to inactive anonymous
-+ * pages.  Ie. a ratio of 3 means 3:1 or 25% of the anonymous pages are
-+ * on the inactive list.
-+ *
-+ * total     return    max
-+ * memory    value     inactive anon
-+ * -------------------------------------
-+ *   10MB       1         5MB
-+ *  100MB       1        50MB
-+ *    1GB       3       250MB
-+ *   10GB      10       0.9GB
-+ *  100GB      31         3GB
-+ *    1TB     101        10GB
-+ *   10TB     320        32GB
-+ */
-+void setup_per_zone_inactive_ratio(void)
-+{
-+	struct zone *zone;
-+
-+	for_each_zone(zone) {
-+		unsigned int gb, ratio;
-+
-+		/* Zone size in gigabytes */
-+		gb = zone->present_pages >> (30 - PAGE_SHIFT);
-+		ratio = int_sqrt(10 * gb);
-+		if (!ratio)
-+			ratio = 1;
-+
-+		zone->inactive_ratio = ratio;
-+	}
-+}
-+
- /*
-  * Initialise min_free_kbytes.
-  *
-@@ -4306,6 +4345,7 @@ static int __init init_per_zone_pages_mi
- 		min_free_kbytes = 65536;
- 	setup_per_zone_pages_min();
- 	setup_per_zone_lowmem_reserve();
-+	setup_per_zone_inactive_ratio();
- 	return 0;
- }
- module_init(init_per_zone_pages_min)
 Index: linux-2.6.26-rc2-mm1/mm/vmscan.c
 ===================================================================
---- linux-2.6.26-rc2-mm1.orig/mm/vmscan.c	2008-05-16 13:53:09.000000000 -0400
-+++ linux-2.6.26-rc2-mm1/mm/vmscan.c	2008-05-16 14:04:14.000000000 -0400
-@@ -114,7 +114,7 @@ struct scan_control {
- /*
-  * From 0 .. 100.  Higher means more swappy.
-  */
--int vm_swappiness = 60;
-+int vm_swappiness = 20;
- long vm_total_pages;	/* The total number of pages which the VM controls */
+--- linux-2.6.26-rc2-mm1.orig/mm/vmscan.c	2008-05-15 16:08:20.000000000 -0400
++++ linux-2.6.26-rc2-mm1/mm/vmscan.c	2008-05-15 16:08:31.000000000 -0400
+@@ -619,6 +619,9 @@ free_it:
+ 		continue;
  
- static LIST_HEAD(shrinker_list);
-@@ -1008,7 +1008,7 @@ static inline int zone_is_near_oom(struc
- static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
- 			struct scan_control *sc, int priority, int file)
- {
--	unsigned long pgmoved;
-+	unsigned long pgmoved = 0;
- 	int pgdeactivate = 0;
- 	unsigned long pgscanned;
- 	LIST_HEAD(l_hold);	/* The pages which were snipped off */
-@@ -1040,13 +1040,25 @@ static void shrink_active_list(unsigned 
- 		cond_resched();
- 		page = lru_to_page(&l_hold);
- 		list_del(&page->lru);
--		if (page_referenced(page, 0, sc->mem_cgroup))
-+		if (page_referenced(page, 0, sc->mem_cgroup) && file) {
-+			/* Referenced file pages stay active. */
- 			list_add(&page->lru, &l_active);
--		else
-+		} else {
- 			list_add(&page->lru, &l_inactive);
-+			if (!file)
-+				/* Anonymous pages always get deactivated. */
-+				pgmoved++;
-+		}
- 	}
- 
- 	/*
-+	 * Count the referenced anon pages as rotated, to balance pageout
-+	 * scan pressure between file and anonymous pages in get_sacn_ratio.
-+	 */
-+	if (!file)
-+		zone->recent_rotated_anon += pgmoved;
-+
-+	/*
- 	 * Now put the pages back on the appropriate [file or anon] inactive
- 	 * and active lists.
- 	 */
-@@ -1129,7 +1141,11 @@ static unsigned long shrink_list(enum lr
- {
- 	int file = is_file_lru(lru);
- 
--	if (lru == LRU_ACTIVE_ANON || lru == LRU_ACTIVE_FILE) {
-+	if (lru == LRU_ACTIVE_FILE) {
-+		shrink_active_list(nr_to_scan, zone, sc, priority, file);
-+		return 0;
-+	}
-+	if (lru == LRU_ACTIVE_ANON && inactive_anon_low(zone)) {
- 		shrink_active_list(nr_to_scan, zone, sc, priority, file);
- 		return 0;
- 	}
-@@ -1239,8 +1255,8 @@ static unsigned long shrink_zone(int pri
+ activate_locked:
++		/* Not a candidate for swapping, so reclaim swap space. */
++		if (PageSwapCache(page) && vm_swap_full())
++			remove_exclusive_swap_page_ref(page);
+ 		SetPageActive(page);
+ 		pgactivate++;
+ keep_locked:
+@@ -1203,6 +1206,8 @@ static void shrink_active_list(unsigned 
+ 			__mod_zone_page_state(zone, NR_ACTIVE, pgmoved);
+ 			pgmoved = 0;
+ 			spin_unlock_irq(&zone->lru_lock);
++			if (vm_swap_full())
++				pagevec_swap_free(&pvec);
+ 			__pagevec_release(&pvec);
+ 			spin_lock_irq(&zone->lru_lock);
  		}
- 	}
+@@ -1212,6 +1217,8 @@ static void shrink_active_list(unsigned 
+ 	__count_zone_vm_events(PGREFILL, zone, pgscanned);
+ 	__count_vm_events(PGDEACTIVATE, pgdeactivate);
+ 	spin_unlock_irq(&zone->lru_lock);
++	if (vm_swap_full())
++		pagevec_swap_free(&pvec);
  
--	while (nr[LRU_ACTIVE_ANON] || nr[LRU_INACTIVE_ANON] ||
--				nr[LRU_ACTIVE_FILE] || nr[LRU_INACTIVE_FILE]) {
-+	while (nr[LRU_INACTIVE_ANON] || nr[LRU_ACTIVE_FILE] ||
-+						 nr[LRU_INACTIVE_FILE]) {
- 		for_each_lru(l) {
- 			if (nr[l]) {
- 				nr_to_scan = min(nr[l],
-@@ -1542,6 +1558,14 @@ loop_again:
- 			    priority != DEF_PRIORITY)
- 				continue;
- 
-+			/*
-+			 * Do some background aging of the anon list, to give
-+			 * pages a chance to be referenced before reclaiming.
-+			 */
-+			if (inactive_anon_low(zone))
-+				shrink_active_list(SWAP_CLUSTER_MAX, zone,
-+							&sc, priority, 0);
-+
- 			if (!zone_watermark_ok(zone, order, zone->pages_high,
- 					       0, 0)) {
- 				end_zone = i;
-Index: linux-2.6.26-rc2-mm1/mm/vmstat.c
+ 	pagevec_release(&pvec);
+ }
+Index: linux-2.6.26-rc2-mm1/mm/swap.c
 ===================================================================
---- linux-2.6.26-rc2-mm1.orig/mm/vmstat.c	2008-05-16 13:53:09.000000000 -0400
-+++ linux-2.6.26-rc2-mm1/mm/vmstat.c	2008-05-16 14:03:56.000000000 -0400
-@@ -814,10 +814,12 @@ static void zoneinfo_show_print(struct s
- 	seq_printf(m,
- 		   "\n  all_unreclaimable: %u"
- 		   "\n  prev_priority:     %i"
--		   "\n  start_pfn:         %lu",
-+		   "\n  start_pfn:         %lu"
-+		   "\n  inactive_ratio:    %u",
- 			   zone_is_all_unreclaimable(zone),
- 		   zone->prev_priority,
--		   zone->zone_start_pfn);
-+		   zone->zone_start_pfn,
-+		   zone->inactive_ratio);
- 	seq_putc(m, '\n');
+--- linux-2.6.26-rc2-mm1.orig/mm/swap.c	2008-05-15 16:08:27.000000000 -0400
++++ linux-2.6.26-rc2-mm1/mm/swap.c	2008-05-15 16:08:31.000000000 -0400
+@@ -443,6 +443,24 @@ void pagevec_strip(struct pagevec *pvec)
+ 	}
  }
  
++/*
++ * Try to free swap space from the pages in a pagevec
++ */
++void pagevec_swap_free(struct pagevec *pvec)
++{
++	int i;
++
++	for (i = 0; i < pagevec_count(pvec); i++) {
++		struct page *page = pvec->pages[i];
++
++		if (PageSwapCache(page) && !TestSetPageLocked(page)) {
++			if (PageSwapCache(page))
++				remove_exclusive_swap_page_ref(page);
++			unlock_page(page);
++		}
++	}
++}
++
+ /**
+  * pagevec_lookup - gang pagecache lookup
+  * @pvec:	Where the resulting pages are placed
+Index: linux-2.6.26-rc2-mm1/include/linux/pagevec.h
+===================================================================
+--- linux-2.6.26-rc2-mm1.orig/include/linux/pagevec.h	2008-05-15 16:08:27.000000000 -0400
++++ linux-2.6.26-rc2-mm1/include/linux/pagevec.h	2008-05-15 16:08:31.000000000 -0400
+@@ -25,6 +25,7 @@ void __pagevec_release_nonlru(struct pag
+ void __pagevec_free(struct pagevec *pvec);
+ void ____pagevec_lru_add(struct pagevec *pvec, enum lru_list lru);
+ void pagevec_strip(struct pagevec *pvec);
++void pagevec_swap_free(struct pagevec *pvec);
+ unsigned pagevec_lookup(struct pagevec *pvec, struct address_space *mapping,
+ 		pgoff_t start, unsigned nr_pages);
+ unsigned pagevec_lookup_tag(struct pagevec *pvec,
+Index: linux-2.6.26-rc2-mm1/include/linux/swap.h
+===================================================================
+--- linux-2.6.26-rc2-mm1.orig/include/linux/swap.h	2008-05-15 16:08:27.000000000 -0400
++++ linux-2.6.26-rc2-mm1/include/linux/swap.h	2008-05-15 16:08:31.000000000 -0400
+@@ -265,6 +265,7 @@ extern sector_t swapdev_block(int, pgoff
+ extern struct swap_info_struct *get_swap_info_struct(unsigned);
+ extern int can_share_swap_page(struct page *);
+ extern int remove_exclusive_swap_page(struct page *);
++extern int remove_exclusive_swap_page_ref(struct page *);
+ struct backing_dev_info;
+ 
+ /* linux/mm/thrash.c */
+Index: linux-2.6.26-rc2-mm1/mm/swapfile.c
+===================================================================
+--- linux-2.6.26-rc2-mm1.orig/mm/swapfile.c	2008-05-15 11:21:11.000000000 -0400
++++ linux-2.6.26-rc2-mm1/mm/swapfile.c	2008-05-16 13:31:42.000000000 -0400
+@@ -343,7 +343,7 @@ int can_share_swap_page(struct page *pag
+  * Work out if there are any other processes sharing this
+  * swap cache page. Free it if you can. Return success.
+  */
+-int remove_exclusive_swap_page(struct page *page)
++static int remove_exclusive_swap_page_count(struct page *page, int count)
+ {
+ 	int retval;
+ 	struct swap_info_struct * p;
+@@ -356,7 +356,7 @@ int remove_exclusive_swap_page(struct pa
+ 		return 0;
+ 	if (PageWriteback(page))
+ 		return 0;
+-	if (page_count(page) != 2) /* 2: us + cache */
++	if (page_count(page) != count) /* us + cache + ptes */
+ 		return 0;
+ 
+ 	entry.val = page_private(page);
+@@ -369,7 +369,7 @@ int remove_exclusive_swap_page(struct pa
+ 	if (p->swap_map[swp_offset(entry)] == 1) {
+ 		/* Recheck the page count with the swapcache lock held.. */
+ 		write_lock_irq(&swapper_space.tree_lock);
+-		if ((page_count(page) == 2) && !PageWriteback(page)) {
++		if ((page_count(page) == count) && !PageWriteback(page)) {
+ 			__delete_from_swap_cache(page);
+ 			SetPageDirty(page);
+ 			retval = 1;
+@@ -387,6 +387,25 @@ int remove_exclusive_swap_page(struct pa
+ }
+ 
+ /*
++ * Most of the time the page should have two references: one for the
++ * process and one for the swap cache.
++ */
++int remove_exclusive_swap_page(struct page *page)
++{
++	return remove_exclusive_swap_page_count(page, 2);
++}
++
++/*
++ * The pageout code holds an extra reference to the page.  That raises
++ * the reference count to test for to 2 for a page that is only in the
++ * swap cache plus 1 for each process that maps the page.
++ */
++int remove_exclusive_swap_page_ref(struct page *page)
++{
++	return remove_exclusive_swap_page_count(page, 2 + page_mapcount(page));
++}
++
++/*
+  * Free the swap entry like above, but also try to
+  * free the page cache entry if it is the last user.
+  */
 
 -- 
 All Rights Reversed
