@@ -1,76 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758744AbYEPRaQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754936AbYEPRbE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758744AbYEPRaQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 13:30:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbYEPRaE
+	id S1754936AbYEPRbE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 13:31:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbYEPRat
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 13:30:04 -0400
-Received: from outbound-mail-115.bluehost.com ([69.89.24.5]:58803 "HELO
-	outbound-mail-115.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750832AbYEPRaD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 13:30:03 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: tcamuso@redhat.com
-Subject: Re: [PATCH] PCI: Correct last two HP entries in the bfsort whitelist
-Date: Fri, 16 May 2008 10:29:55 -0700
-User-Agent: KMail/1.9.9
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org,
-       "Schoeller, Patrick (Linux - Houston, TX)" <Patrick.Schoeller@hp.com>
-References: <482C838E.3030203@redhat.com> <20080515220215.76eea915@core> <482CB7D7.30008@redhat.com>
-In-Reply-To: <482CB7D7.30008@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 16 May 2008 13:30:49 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:40058 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752570AbYEPRas (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 13:30:48 -0400
+Subject: Re: [PATCH] Fix DIO EIO error caused by race between
+	jbd_commit_transaction() and journal_try_to_drop_buffers()
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Cc: Josef Bacik <jbacik@redhat.com>, Jan Kara <jack@suse.cz>,
+       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1210958239.4231.34.camel@badari-desktop>
+References: <20080505170636.GK25722@duck.suse.cz>
+	 <1210372072.3639.52.camel@localhost.localdomain>
+	 <20080512155419.GD15856@duck.suse.cz>
+	 <1210639184.3661.43.camel@localhost.localdomain>
+	 <20080513145449.GC20806@duck.suse.cz>
+	 <1210717389.3638.24.camel@localhost.localdomain>
+	 <20080514170856.GH24363@duck.suse.cz>
+	 <1210786872.3657.48.camel@localhost.localdomain>
+	 <20080514181444.GI24363@duck.suse.cz>
+	 <1210947250.3608.18.camel@localhost.localdomain>
+	 <20080516150146.GA21018@unused.rdu.redhat.com>
+	 <1210957894.3608.23.camel@localhost.localdomain>
+	 <1210958239.4231.34.camel@badari-desktop>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Fri, 16 May 2008 10:30:35 -0700
+Message-Id: <1210959035.3608.32.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805161029.55649.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, May 15, 2008 3:23 pm Tony Camuso wrote:
-> Alan Cox wrote:
-> > This is going to make everyone with those boxes who upgrades suddenely
-> > get their devices re-ordered and renamed when the probe order changes.
-> > That seems extremely inappropriate.
-> >
-> > Alan
->
-> HP maintains that more of our customers, especially new customers,
-> will be adversely affected by NOT implementing this patch for the
-> following reasons.
->
-> 1. HP issued a Customer Advisory for existing customers to use "pci=bfsort"
->     in the boot command for these systems. Customers using pci=bfsort in
->     their boot scripts will be unaffected by this patch.
->
-> 2. Customers using only the two embedded NI devices will be unaffected.
->
-> 3. Because of the use of labels for disk devices, they are unaffected.
->
-> 4. New customers who must add pci=bfsort to their boot scripts have
->     expressed dissatisfaction.
->
-> The only time this patch would induce any confusion for an existing
-> customer is upon the convergence of the following situations.
->
-> 1. The user has not followed the instructions in the release notes
->     for the DL360 and DL380,
->
->     AND
->
-> 2. The user has added NI cards to the option slots,
->
->     AND
->
-> 3. The user upgrades his kernel.
+On Fri, 2008-05-16 at 10:17 -0700, Badari Pulavarty wrote:
 
-Ok, I'll put it in linux-next for now then.  It would be good to hear some 
-feedback from users about it though...
+> > @@ -1713,7 +1753,31 @@ int journal_try_to_free_buffers(journal_
+> >  		if (buffer_jbd(bh))
+> >  			goto busy;
+> >  	} while ((bh = bh->b_this_page) != head);
+> > +
+> >  	ret = try_to_free_buffers(page);
+> > +
+> > + 	/*
+> > +	 * In the case of concurrent direct IO and buffered IO,
+> > +	 * There are a number of places where we
+> > +	 * could race with journal_commit_transaction(), the later still
+> > +	 * helds the reference to the buffers to free while processing them.
+> > +	 * try_to_free_buffers() failed to free those buffers,
+> > +	 * resulting in an unexpected EIO error
+> > +	 * returns back to the generic_file_direct_IO()
+> > +	 *
+> > +	 * So let's wait for the current transaction finished flush
+> > +	 * dirty data buffers before we try to free those buffers
+> > +	 * again. This wait is needed by direct IO code path only,
+> > +	 * gfp_mask __GFP_REPEAT is passed from the direct IO code
+> > +	 * path to flag if we need to wait and retry free buffers.
+> > +	 */
+> > +	if (ret == 0 && dio) {
+> 
+> drop "dio" variable and compare here, like 
+> 	  if (ret == 0 && (gfp_mask & __GFP_REPEAT)
+> 
 
-Thanks,
-Jesse
+Okay, will do. Also will update the patch with other format changes you
+suggested.
+
+> > +        	spin_lock(&journal->j_state_lock);
+> > +		journal_wait_for_transaction_sync_data(journal);
+> > +		ret = try_to_free_buffers(page);
+> > +		spin_unlock(&journal->j_state_lock);
+> > +	}
+> 
+
+
+Also, This patch changed the struct journal_s to add a new wait queue,
+so that journal_try_to_free_buffers() could only need to wait for data
+to be commited, rather than using j_wait_done_commit queue and wait for
+the whole transaction being committed. It might break other fs  that
+uses journal_s, thus not worth it. Will update the patch.
+
