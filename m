@@ -1,100 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757961AbYEPVms@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758597AbYEPVpf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757961AbYEPVms (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 17:42:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbYEPVmi
+	id S1758597AbYEPVpf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 17:45:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbYEPVpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 17:42:38 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:1945 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751490AbYEPVmh (ORCPT
+	Fri, 16 May 2008 17:45:25 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:60031 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751490AbYEPVpY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 17:42:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=buBBSni0o/WJWlevWmQOg16qm9gu+Iu0eOLSaixrOprJ5IA3i3sj5LfejpTdZLTG7yXX3PsLSdLU88Gz/E41JbB6LNLuvg+4FU/FwoiBOaH9xwrNVw9RHVXBkNGq4Sy2s2hcBWnIw/oRZpxu7Qn/6l4+Nzi/wZxaF2yhfNrjKck=
-Message-ID: <9e4733910805161442s7c457a6ekc8236d947613a386@mail.gmail.com>
-Date: Fri, 16 May 2008 17:42:35 -0400
-From: "Jon Smirl" <jonsmirl@gmail.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: [RFC PATCH 0/4] Describe SPI devices in the OF device tree and add mpc5200-spi driver
-Cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
-       fabrizio.garetto@gmail.com
-In-Reply-To: <fa686aa40805161432w6b5243f9nb0d0c32a87d86d02@mail.gmail.com>
+	Fri, 16 May 2008 17:45:24 -0400
+Date: Fri, 16 May 2008 22:45:16 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
+Message-ID: <20080516214516.GA15334@shareable.org>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <482DDA56.6000301@redhat.com> <20080516130545.845a3be9.akpm@linux-foundation.org> <482DF44B.50204@redhat.com> <20080516135814.1c973bd5.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
-	 <9e4733910805161327u4c42fd1dg5b09319d89db447c@mail.gmail.com>
-	 <fa686aa40805161348t52b94956w112ef6926ff30892@mail.gmail.com>
-	 <9e4733910805161425i2d6cc034y3377af053a4198b5@mail.gmail.com>
-	 <fa686aa40805161432w6b5243f9nb0d0c32a87d86d02@mail.gmail.com>
+In-Reply-To: <20080516135814.1c973bd5.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/16/08, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On Fri, May 16, 2008 at 3:25 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
->  > On 5/16/08, Grant Likely <grant.likely@secretlab.ca> wrote:
->  >> On Fri, May 16, 2008 at 2:27 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
->  >>  > On 5/16/08, Grant Likely <grant.likely@secretlab.ca> wrote:
->  >>  >> This series is a set of changes to allow the slaves on an SPI bus to be
->  >>  >>  described in the OF device tree (useful in arch/powerpc) and adds a driver
->  >>  >>  that uses it (the Freescale MPC5200 SoC's SPI device).
->  >>  >
->  >>  > Right now we have SPI hooked up to PSC3. Hardware engineer is gone but
->  >>  > I'll see if I can get him to alter things to use the SPI controller. I
->  >>  > have an old mail from him where he thinks the Phytec board is missing
->  >>  > a signal needed to use the SPI controller.
->  >>
->  >>
->  >> While I'd appreciate the testing, I suspect that you really don't want
->  >>  to do that.  The dedicated SPI controller isn't very good.  It only
->  >>  does a byte at a time and so is rather slow.  A PSC is SPI mode should
->  >>  be better (but I haven't tried it personally it yet).
->  >
->  > What is the device tree node for PSC3 supposed to look like when it
->  > has both serial and spi enabled?
->
->
-> The *PSC3 device* cannot support both serial and SPI at the same time.
->   Only one mode works at a time...
->
->  However, *PSC3 pin group* has can be configured to route both the
->  *PSC3 device* and the *SPI device* signal out to the board at the same
->  time.
+Andrew Morton wrote:
+> > I suppose alternately I could send another patch to remove "remember
+> > that ext3/4 by default offers higher data integrity guarantees than
+> > most." from Documentation/filesystems/ext4.txt  ;)
+> 
+> We could add a big scary printk at mount time and provide a document?
 
-I need to talk to my hardware guy.  He is using PSC3 for the boot
-console with the assumption that once booted it is ok to retask it to
-SPI. Serial console is only needed for software debugging.  SSH works
-after boot and can replace the serial console.
+Can I suggest making /proc/mounts say "barrier=0" when journal is not
+enabled, instead of omitting the option.
 
-I'll trying changing my device tree entry from UART to SPI and boot.
-Hopefully I'll see the console until the SPI driver loads.
+Boot logs are too large to pay close attention to unless it's really
+obvious.  (2.4 kernels _do_ have a similar message about "data
+integrity not guaranteed" with USB drivers - I never understood what
+it was getting it, and why it was removed for 2.6).
 
->
->  Pin routing is not something that is described by the device tree.
->  It's viewed as a board level initialization thing, similar to how DDR
->  RAM initialization is viewed.  Ideally, the bootloader will write the
->  correct value into port_config for pin routing and Linux will never
->  need to touch it.  If the bootloader cannot be changed, then
->  board-specific platform code can be added to fixup the port_config
->  setting.  However, the drivers should never touch or care about pin
->  routing.
->
->
->  Cheers,
->  g.
->
->  --
->  Grant Likely, B.Sc., P.Eng.
->  Secret Lab Technologies Ltd.
->
+However, if I saw barrier=0 in /proc/mounts it would at least prompt
+me to look it up and then making an informed decision.
 
+Personally I had assumed barriers were enabled by default with ext3,
+as some distros do that, the 2.4 patches did that, and:
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+   I *have* experienced corruption following power loss without
+   barriers, and none with barriers.
+
+   When I mentioned that turning off write cache or using barriers is
+   a solution to a programmer working on the same project, she said
+   "oh, yes, we've had reports of disk corruption too - thanks for the
+   advice", and the advice worked, so I am not the only one.
+
+   (In the interests of perspective, that's with ext3 on patched 2.4
+   kernels on a ARM device, but still - the barriers seem to work).
+
+On a related note, there is advice floating about the net to run with
+IDE write cache turned off if you're running a database and care about
+integrity.  That has much worse performance than barriers.
+
+I guess the patch which fixes fsync is particularly useful for those
+database users, as it means they can run with write cache enabled and
+depend on fsync() to give equivalent integrity now.  (Enabling
+journalling is not really relevant to this).
+
+-- Jamie
+
