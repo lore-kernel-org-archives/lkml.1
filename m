@@ -1,62 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754776AbYEPIVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754309AbYEPI1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754776AbYEPIVT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 04:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751430AbYEPIU6
+	id S1754309AbYEPI1Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 04:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751402AbYEPI1L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 04:20:58 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:60020 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751317AbYEPIU5 (ORCPT
+	Fri, 16 May 2008 04:27:11 -0400
+Received: from topsns2.toshiba-tops.co.jp ([202.230.225.126]:6489 "EHLO
+	topsns2.toshiba-tops.co.jp" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751345AbYEPI1I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 04:20:57 -0400
-Subject: Re: [patch 1/5] access_process_vm device memory infrastructure
-From: Peter Zijlstra <peterz@infradead.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       ajackson@redhat.com, airlied@redhat.com, benh@kernel.crashing.org
-In-Reply-To: <20080515175431.000301639@redhat.com>
-References: <20080515175357.636334082@redhat.com>
-	 <20080515175431.000301639@redhat.com>
-Content-Type: text/plain
-Date: Fri, 16 May 2008 10:20:49 +0200
-Message-Id: <1210926049.7886.21.camel@twins>
+	Fri, 16 May 2008 04:27:08 -0400
+Date: Fri, 16 May 2008 17:27:05 +0900 (JST)
+Message-Id: <20080516.172705.56564208.nemoto@toshiba-tops.co.jp>
+To: linville@tuxdriver.com
+Cc: dsd@gentoo.org, kune@deine-taler.de, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] zd1211rw: Use DMA-aware buffer for usb transfer
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <20080515191647.GB17690@tuxdriver.com>
+References: <20080516.001215.39152691.anemo@mba.ocn.ne.jp>
+	<20080515191647.GB17690@tuxdriver.com>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-05-15 at 13:53 -0400, Rik van Riel wrote:
-> plain text document attachment
-> (01-access_process_vm-device-memory.patch)
-> Add the generic_access_phys access function and put the hooks in place
-> to allow access_process_vm to access device or PPC Cell SPU memory.
-> 
-> Signed-off-by: Rik van Riel <riel@redhat.com>
-> Signed-off-by: Benjamin Herrensmidt <benh@kernel.crashing.org>
-> 
+On Thu, 15 May 2008 15:16:47 -0400, "John W. Linville" <linville@tuxdriver.com> wrote:
+> This looks like a reasonable fix to me.  I would prefer to see a
+> comment in the code indicating why you are reusing the "p" buffer
+> instead of simply using "ret" directly.  Also, I think the style
+> suggestion by Michael Buesch would make the code appear more idiomatic
+> as well.
 
-> Index: ptrace-2.6.26-rc2-mm1/include/linux/mm.h
-> ===================================================================
-> --- ptrace-2.6.26-rc2-mm1.orig/include/linux/mm.h	2008-05-15 13:50:13.000000000 -0400
-> +++ ptrace-2.6.26-rc2-mm1/include/linux/mm.h	2008-05-15 13:50:18.000000000 -0400
-> @@ -169,6 +169,12 @@ struct vm_operations_struct {
->  	/* notification that a previously read-only page is about to become
->  	 * writable, if an error is returned it will cause a SIGBUS */
->  	int (*page_mkwrite)(struct vm_area_struct *vma, struct page *page);
-> +
-> +	/* called by access_process_vm when get_user_pages() fails, typically
-> +	 * for use by special VMAs that can switch between memory and hardware
-> +	 */
-> +	int (*access)(struct vm_area_struct *vma, unsigned long addr,
-> +		      void *buf, int len, int write);
+OK, revised.  Thank you for review.
 
+------------------------------------------------------
+Subject: [PATCH] zd1211rw: Use DMA-aware buffer for usb transfer
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
 
-This bit misses corresponding Documentation/ changes.
+The zd1211rw driver uses unaligned stack buffer for USB control
+message.  But it might cause stack corruption on non-coherent
+platform, such as MIPS.  Use DMA-aware buffers for USB transfer.
 
-Other than that it looks good.
+Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+---
+ drivers/net/wireless/zd1211rw/zd_usb.c |   23 +++++++++++++++++------
+ 1 files changed, 17 insertions(+), 6 deletions(-)
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-
+diff --git a/drivers/net/wireless/zd1211rw/zd_usb.c b/drivers/net/wireless/zd1211rw/zd_usb.c
+index 12e24f0..f9a9a5d 100644
+--- a/drivers/net/wireless/zd1211rw/zd_usb.c
++++ b/drivers/net/wireless/zd1211rw/zd_usb.c
+@@ -169,10 +169,11 @@ static int upload_code(struct usb_device *udev,
+ 	if (flags & REBOOT) {
+ 		u8 ret;
+ 
++		/* Use "DMA-aware" buffer. */
+ 		r = usb_control_msg(udev, usb_rcvctrlpipe(udev, 0),
+ 			USB_REQ_FIRMWARE_CONFIRM,
+ 			USB_DIR_IN | USB_TYPE_VENDOR,
+-			0, 0, &ret, sizeof(ret), 5000 /* ms */);
++			0, 0, p, sizeof(ret), 5000 /* ms */);
+ 		if (r != sizeof(ret)) {
+ 			dev_err(&udev->dev,
+ 				"control request firmeware confirmation failed."
+@@ -181,6 +182,7 @@ static int upload_code(struct usb_device *udev,
+ 				r = -ENODEV;
+ 			goto error;
+ 		}
++		ret = p[0];
+ 		if (ret & 0x80) {
+ 			dev_err(&udev->dev,
+ 				"Internal error while downloading."
+@@ -312,22 +314,31 @@ int zd_usb_read_fw(struct zd_usb *usb, zd_addr_t addr, u8 *data, u16 len)
+ {
+ 	int r;
+ 	struct usb_device *udev = zd_usb_to_usbdev(usb);
++	u8 *buf;
+ 
++	/* Use "DMA-aware" buffer. */
++	buf = kmalloc(len, GFP_KERNEL);
++	if (!buf)
++		return -ENOMEM;
+ 	r = usb_control_msg(udev, usb_rcvctrlpipe(udev, 0),
+ 		USB_REQ_FIRMWARE_READ_DATA, USB_DIR_IN | 0x40, addr, 0,
+-		data, len, 5000);
++		buf, len, 5000);
+ 	if (r < 0) {
+ 		dev_err(&udev->dev,
+ 			"read over firmware interface failed: %d\n", r);
+-		return r;
++		goto exit;
+ 	} else if (r != len) {
+ 		dev_err(&udev->dev,
+ 			"incomplete read over firmware interface: %d/%d\n",
+ 			r, len);
+-		return -EIO;
++		r = -EIO;
++		goto exit;
+ 	}
+-
+-	return 0;
++	r = 0;
++	memcpy(data, buf, len);
++exit:
++	kfree(buf);
++	return r;
+ }
+ 
+ #define urb_dev(urb) (&(urb)->dev->dev)
