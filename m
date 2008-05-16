@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761362AbYEPOui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761485AbYEPOu4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761362AbYEPOui (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 10:50:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758078AbYEPOm5
+	id S1761485AbYEPOu4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 10:50:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758119AbYEPOnB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 10:42:57 -0400
-Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49231 "EHLO
+	Fri, 16 May 2008 10:43:01 -0400
+Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49228 "EHLO
 	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752183AbYEPOmM (ORCPT
+	with ESMTP id S1752049AbYEPOmK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 10:42:12 -0400
+	Fri, 16 May 2008 10:42:10 -0400
 From: hooanon05@yahoo.co.jp
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Junjiro Okajima <hooanon05@yahoo.co.jp>
-Subject: [PATCH 38/67] aufs handling file/dir, and address_space operation
-Date: Fri, 16 May 2008 23:32:52 +0900
-Message-Id: <12109484021939-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [PATCH 40/67] aufs file and vm operations
+Date: Fri, 16 May 2008 23:32:54 +0900
+Message-Id: <12109484023224-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <12109484023036-git-send-email-hooanon05@yahoo.co.jp>
+In-Reply-To: <12109484022745-git-send-email-hooanon05@yahoo.co.jp>
 References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <12109484012532-git-send-email-hooanon05@yahoo.co.jp> <12109484012997-git-send-email-hooanon05@yahoo.co.jp> <12109484013051-git-send-email-hooanon05@yahoo.co.jp> <12109484013436-git-send-email-hooanon05@yahoo.co.jp> <1210948401415-git-send-email-hooanon05@yahoo.co.jp> <12109484011533-git-send-email-hooanon05@yahoo.co.jp> <1210948401506-git-send-email-hooanon05@yahoo.co.jp> <12109484013156-git-send-email-hooanon05@yahoo.co.jp> <12109484012724-git-send-email-hooanon05@yahoo.co.jp> <12109484013264-git-send-email-hooanon05@yahoo.co.jp> <12109484012658-git-send-email-hooanon05@yahoo.co.jp> <12109484011282-git-send-email-hooanon05@yahoo.co.jp> <12109484012543-git-send-email-hooanon05@yahoo.co.jp> <12109484013834-git-send-email-hooanon05@yahoo.co.jp> <12109484012213-git-send-email-hooanon05@yahoo.co.jp> <12109484012301-git-send-email-hooanon05@yahoo.co.jp> <1210948401175-git-send-email-hooanon05@yahoo.co.jp> <1210948!
  4013702-git-send-email-hooanon05@yahoo.co.jp> <12109484012871-git-send-email-hooanon05@yahoo.co.jp> <12109484013438-git-send-email-hooanon05@yahoo.co.jp> <12109484013559-git-send-email-hooanon05@yahoo.co.jp> <12109484012111-git-send-email-hooanon05@yahoo.co.jp> <1210948401543-git-send-email-hooanon05@yahoo.co.jp> <1210948401147-git-send-email-hooanon05@yahoo.co.jp> <12109484012904-git-send-email-hooanon05@yahoo.co.jp> <121094840127-git-send-email-hooanon05@yahoo.co.jp> <12109484011862-git-send-email-hooanon05@yahoo.co.jp> <12109484011143-git-send-email-hooanon05@yahoo.co.jp> <12109484011867-git-send-email-hooanon05@yahoo.co.jp> <12109484021033-git-send-email-hooanon05@yahoo.co.jp> <12109484021234-git-send-email-hooanon05@yahoo.co.jp> <12109484022680-git-send-email-hooanon05@yahoo.co.jp> <12109484021974-git-send-email-hooanon05@yahoo.co.jp> <12109484021281-git-send-email-hooanon05@yahoo.co.jp> <12109484022659-git-send-email-hooanon05@yahoo.co.jp> <12109484023036-git-send-ema!
- il-hooanon05@yahoo.co.jp>
+ il-hooanon05@yahoo.co.jp> <12109484021939-git-send-email-hooanon05@yahoo.co.jp> <12109484022745-git-send-email-hooanon05@yahoo.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -28,19 +28,19 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Junjiro Okajima <hooanon05@yahoo.co.jp>
 
 	initial commit
-	aufs handling file/dir, and address_space operation
+	aufs file and vm operations
 
 Signed-off-by: Junjiro Okajima <hooanon05@yahoo.co.jp>
 ---
- fs/aufs/file.c |  822 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 822 insertions(+), 0 deletions(-)
+ fs/aufs/f_op.c |  665 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 665 insertions(+), 0 deletions(-)
 
-diff --git a/fs/aufs/file.c b/fs/aufs/file.c
+diff --git a/fs/aufs/f_op.c b/fs/aufs/f_op.c
 new file mode 100644
-index 0000000..d4396d3
+index 0000000..ee8a849
 --- /dev/null
-+++ b/fs/aufs/file.c
-@@ -0,0 +1,822 @@
++++ b/fs/aufs/f_op.c
+@@ -0,0 +1,665 @@
 +/*
 + * Copyright (C) 2005-2008 Junjiro Okajima
 + *
@@ -60,808 +60,651 @@ index 0000000..d4396d3
 + */
 +
 +/*
-+ * handling file/dir, and address_space operation
++ * file and vm operations
 + *
-+ * $Id: file.c,v 1.4 2008/05/04 23:54:53 sfjro Exp $
++ * $Id: f_op.c,v 1.4 2008/05/12 00:28:10 sfjro Exp $
 + */
 +
 +//#include <linux/fsnotify.h>
-+#include <linux/pagemap.h>
-+//#include <linux/poll.h>
++#include <linux/fs_stack.h>
++//#include <linux/pagemap.h>
++#include <linux/poll.h>
 +//#include <linux/security.h>
 +#include "aufs.h"
 +
-+/*
-+ * a dirty trick for handling FMODE_EXEC and deny_write_access().
-+ * because FMODE_EXEC flag is not passed to f_op->open(),
-+ * set it to file->private_data temporary.
-+ */
-+#if !defined(CONFIG_AUFS_MODULE) || defined(CONFIG_AUFS_DENY_WRITE_ACCESS_PATCH)
-+int au_store_fmode_exec(struct nameidata *nd, struct inode *inode)
++/* common function to regular file and dir */
++int aufs_flush(struct file *file, fl_owner_t id)
 +{
 +	int err;
-+	union {
-+		void *p;
-+		unsigned long ul;
-+	} u;
-+
-+	err = 0;
-+	if (nd
-+	    && (nd->flags & LOOKUP_OPEN)
-+	    && nd->intent.open.file
-+	    && (nd->intent.open.flags & FMODE_EXEC)
-+	    && inode
-+	    && S_ISREG(inode->i_mode)) {
-+		u.ul = nd->intent.open.flags;
-+		nd->intent.open.file->private_data = u.p;
-+		//smp_mb();
-+		err = 1;
-+	}
-+
-+	return err;
-+}
-+#endif
-+
-+/* drop flags for writing */
-+unsigned int au_file_roflags(unsigned int flags)
-+{
-+	flags &= ~(O_WRONLY | O_RDWR | O_APPEND | O_CREAT | O_TRUNC);
-+	flags |= O_RDONLY | O_NOATIME;
-+	return flags;
-+}
-+
-+/* common functions to regular file and dir */
-+struct file *au_h_open(struct dentry *dentry, aufs_bindex_t bindex, int flags,
-+		       struct file *file)
-+{
-+	struct file *h_file;
-+	struct dentry *h_dentry;
-+	struct inode *h_inode;
-+	struct super_block *sb;
-+	struct au_branch *br;
-+	int hinotify, err;
-+
-+	LKTRTrace("%.*s, b%d, flags 0%o, f %d\n",
-+		  AuDLNPair(dentry), bindex, flags, !!file);
-+	AuDebugOn(!dentry);
-+	h_dentry = au_h_dptr(dentry, bindex);
-+	AuDebugOn(!h_dentry);
-+	h_inode = h_dentry->d_inode;
-+	AuDebugOn(!h_inode);
-+
-+	sb = dentry->d_sb;
-+	hinotify = !!au_opt_test(au_mntflags(sb), UDBA_INOTIFY);
-+#if 0
-+	if (unlikely(hinotify))
-+		test here?
-+#endif
-+
-+	br = au_sbr(sb, bindex);
-+	au_br_get(br);
-+	/* drop flags for writing */
-+	if (au_test_ro(sb, bindex, dentry->d_inode))
-+		flags = au_file_roflags(flags);
-+	flags &= ~O_CREAT;
-+
-+	h_file = NULL;
-+	if (unlikely(file && au_test_nfs(h_dentry->d_sb)))
-+		h_file = au_h_intent(dentry, bindex, file);
-+	if (!h_file) {
-+		//DbgSleep(3);
-+		h_file = dentry_open(dget(h_dentry), mntget(br->br_mnt), flags);
-+		//if (LktrCond) {fput(h_file); h_file = ERR_PTR(-1);}
-+	}
-+
-+	/*
-+	 * a dirty trick for handling FMODE_EXEC and deny_write_access().
-+	 */
-+	if (file && (file->f_mode & FMODE_EXEC)) {
-+		h_file->f_mode |= FMODE_EXEC;
-+		smp_mb(); /* flush f_mode */
-+		err = au_deny_write_access(h_file);
-+		if (unlikely(err)) {
-+			fput(h_file);
-+			h_file = ERR_PTR(err);
-+		}
-+	}
-+	if (!IS_ERR(h_file))
-+		return h_file;
-+
-+	au_br_put(br);
-+	AuTraceErrPtr(h_file);
-+	return h_file;
-+}
-+
-+static int do_coo(struct dentry *dentry, aufs_bindex_t bstart)
-+{
-+	int err;
-+	struct dentry *parent, *h_parent, *h_dentry, *gparent;
-+	aufs_bindex_t bcpup;
-+	struct inode *h_dir, *h_inode, *dir;
-+	struct super_block *sb;
-+
-+	LKTRTrace("%.*s\n", AuDLNPair(dentry));
-+	AuDebugOn(IS_ROOT(dentry));
-+	DiMustWriteLock(dentry);
-+
-+	parent = dget_parent(dentry);
-+	di_write_lock_parent(parent);
-+	sb = dentry->d_sb;
-+	err = AuWbrCopyup(au_sbi(sb), dentry);
-+	bcpup = err;
-+	if (err < 0) {
-+		err = 0; /* stop copyup, it is not an error */
-+		goto out;
-+	}
-+	err = 0;
-+
-+	h_parent = au_h_dptr(parent, bcpup);
-+	if (!h_parent) {
-+		err = au_cpup_dirs(dentry, bcpup, NULL);
-+		if (unlikely(err))
-+			goto out;
-+		h_parent = au_h_dptr(parent, bcpup);
-+	}
-+
-+	h_dir = h_parent->d_inode;
-+	h_dentry = au_h_dptr(dentry, bstart);
-+	h_inode = h_dentry->d_inode;
-+	dir = parent->d_inode;
-+	//todo: meaningless lock if CONFIG_AUFS_DEBUG is disabled.
-+	gparent = NULL;
-+	if (unlikely(au_opt_test(au_mntflags(sb), UDBA_INOTIFY)
-+		     && !IS_ROOT(parent))) {
-+		gparent = dget_parent(parent);
-+		ii_read_lock_parent2(gparent->d_inode);
-+	}
-+	au_hdir_lock(h_dir, dir, bcpup);
-+	//todo: test parent-gparent relationship
-+	mutex_lock_nested(&h_inode->i_mutex, AuLsc_I_CHILD);
-+	AuDebugOn(au_h_dptr(dentry, bcpup));
-+	err = au_sio_cpup_simple(dentry, bcpup, -1, AuCpup_DTIME);
-+	AuTraceErr(err);
-+	mutex_unlock(&h_inode->i_mutex);
-+	au_hdir_unlock(h_dir, dir, bcpup);
-+	if (unlikely(gparent)) {
-+		ii_read_unlock(gparent->d_inode);
-+		dput(gparent);
-+	}
-+
-+ out:
-+	di_write_unlock(parent);
-+	dput(parent);
-+	AuTraceErr(err);
-+	return err;
-+}
-+
-+int au_do_open(struct inode *inode, struct file *file,
-+	       int (*open)(struct file *file, int flags))
-+{
-+	int err, coo;
 +	struct dentry *dentry;
-+	struct super_block *sb;
-+	aufs_bindex_t bstart;
-+	//struct inode *h_dir, *dir;
++	aufs_bindex_t bindex, bend;
 +
 +	dentry = file->f_dentry;
-+	LKTRTrace("i%lu, %.*s\n", inode->i_ino, AuDLNPair(dentry));
++	LKTRTrace("%.*s\n", AuDLNPair(dentry));
++
++	// aufs_read_lock_file()
++	si_noflush_read_lock(dentry->d_sb);
++	fi_read_lock(file);
++	di_read_lock_child(dentry, AuLock_IW);
++
++	err = 0;
++	bend = au_fbend(file);
++	for (bindex = au_fbstart(file); !err && bindex <= bend; bindex++) {
++		struct file *h_file;
++		h_file = au_h_fptr(file, bindex);
++		if (h_file && h_file->f_op && h_file->f_op->flush) {
++			err = h_file->f_op->flush(h_file, id);
++			if (!err)
++				au_update_fuse_h_inode
++					(h_file->f_vfsmnt, h_file->f_dentry);
++			/*ignore*/
++		}
++	}
++	au_cpup_attr_timesizes(dentry->d_inode);
++
++	di_read_unlock(dentry, AuLock_IW);
++	fi_read_unlock(file);
++	si_read_unlock(dentry->d_sb);
++	AuTraceErr(err);
++	return err;
++}
++
++/* ---------------------------------------------------------------------- */
++
++static int do_open_nondir(struct file *file, int flags)
++{
++	int err;
++	aufs_bindex_t bindex;
++	struct super_block *sb;
++	struct file *h_file;
++	struct dentry *dentry;
++	struct inode *inode;
++	struct au_finfo *finfo;
++
++	dentry = file->f_dentry;
++	LKTRTrace("%.*s, flags 0%o\n", AuDLNPair(dentry), flags);
++	FiMustWriteLock(file);
++	inode = dentry->d_inode;
++	AuDebugOn(!inode || S_ISDIR(inode->i_mode));
++
++	err = 0;
++	finfo = au_fi(file);
++	finfo->fi_h_vm_ops = NULL;
++	sb = dentry->d_sb;
++	bindex = au_dbstart(dentry);
++	AuDebugOn(!au_h_dptr(dentry, bindex)->d_inode);
++	/* O_TRUNC is processed already */
++	BUG_ON(au_test_ro(sb, bindex, inode) && (flags & O_TRUNC));
++
++	h_file = au_h_open(dentry, bindex, flags, file);
++	//if (LktrCond) {fput(h_file); au_br_put(au_sbr(dentry->d_sb, bindex));
++	//h_file = ERR_PTR(-1);}
++	if (!IS_ERR(h_file)) {
++		au_set_fbstart(file, bindex);
++		au_set_fbend(file, bindex);
++		au_set_h_fptr(file, bindex, h_file);
++		au_update_figen(file);
++		//file->f_ra = h_file->f_ra; //??
++		//AuDbgFile(file);
++		return 0; /* success */
++	}
++	err = PTR_ERR(h_file);
++	AuTraceErr(err);
++	return err;
++}
++
++static int aufs_open_nondir(struct inode *inode, struct file *file)
++{
++	return au_do_open(inode, file, do_open_nondir);
++}
++
++static int aufs_release_nondir(struct inode *inode, struct file *file)
++{
++	struct super_block *sb = file->f_dentry->d_sb;
++
++	LKTRTrace("i%lu, %.*s\n", inode->i_ino, AuDLNPair(file->f_dentry));
++
++	si_noflush_read_lock(sb);
++	au_finfo_fin(file);
++	si_read_unlock(sb);
++	return 0;
++}
++
++/* ---------------------------------------------------------------------- */
++
++static ssize_t aufs_read(struct file *file, char __user *buf, size_t count,
++			 loff_t *ppos)
++{
++	ssize_t err;
++	struct dentry *dentry;
++	struct file *h_file;
++	struct super_block *sb;
++	struct inode *h_inode;
++
++	dentry = file->f_dentry;
++	LKTRTrace("%.*s, cnt %lu, pos %Ld\n",
++		  AuDLNPair(dentry), (unsigned long)count, *ppos);
++	//AuDbgDentry(dentry);
 +
 +	sb = dentry->d_sb;
 +	si_read_lock(sb, AuLock_FLUSH);
-+	coo = 0;
-+	switch (au_mntflags(sb) & AuOptMask_COO) {
-+	case AuOpt_COO_LEAF:
-+		coo = !S_ISDIR(inode->i_mode);
-+		break;
-+	case AuOpt_COO_ALL:
-+		coo = 1;
-+		break;
-+	}
-+	err = au_finfo_init(file);
-+	//if (LktrCond) {fi_write_unlock(file); fin_finfo(file); err = -1;}
++	err = au_reval_and_lock_finfo(file, au_reopen_nondir, /*wlock*/0,
++				      /*locked*/0);
++	//if (LktrCond) {fi_read_unlock(file); err = -1;}
 +	if (unlikely(err))
 +		goto out;
 +
-+	if (!coo) {
-+		di_read_lock_child(dentry, AuLock_IR);
-+		bstart = au_dbstart(dentry);
-+	} else {
-+		di_write_lock_child(dentry);
-+		bstart = au_dbstart(dentry);
-+		if (au_test_ro(sb, bstart, dentry->d_inode)) {
-+			err = do_coo(dentry, bstart);
-+			if (err) {
-+				di_write_unlock(dentry);
-+				goto out_finfo;
-+			}
-+			bstart = au_dbstart(dentry);
-+		}
-+		di_downgrade_lock(dentry, AuLock_IR);
-+	}
++	/* support LSM and notify */
++	h_file = au_h_fptr(file, au_fbstart(file));
++	h_inode = h_file->f_dentry->d_inode;
++	err = vfsub_read_u(h_file, buf, count, ppos,
++			   au_opt_test_dlgt(au_mntflags(sb)));
++	//file->f_ra = h_file->f_ra; //??
++	fsstack_copy_attr_atime(dentry->d_inode, h_file->f_dentry->d_inode);
 +
-+	err = open(file, file->f_flags);
-+	//if (LktrCond) err = -1;
-+	di_read_unlock(dentry, AuLock_IR);
-+
-+ out_finfo:
-+	fi_write_unlock(file);
-+	if (unlikely(err))
-+		au_finfo_fin(file);
-+	//DbgFile(file);
++	fi_read_unlock(file);
 + out:
 +	si_read_unlock(sb);
 +	AuTraceErr(err);
 +	return err;
 +}
 +
-+int au_reopen_nondir(struct file *file)
++static ssize_t aufs_write(struct file *file, const char __user *ubuf,
++			  size_t count, loff_t *ppos)
++{
++	ssize_t err;
++	struct dentry *dentry, *parent;
++	struct inode *inode, *dir;
++	struct super_block *sb;
++	unsigned int mnt_flags;
++	struct file *h_file;
++	char __user *buf = (char __user *)ubuf;
++	struct au_hin_ignore ign;
++	struct vfsub_args vargs;
++
++	dentry = file->f_dentry;
++	LKTRTrace("%.*s, cnt %lu, pos %Ld\n",
++		  AuDLNPair(dentry), (unsigned long)count, *ppos);
++
++	inode = dentry->d_inode;
++	mutex_lock(&inode->i_mutex);
++	sb = dentry->d_sb;
++	si_read_lock(sb, AuLock_FLUSH);
++	err = au_reval_and_lock_finfo(file, au_reopen_nondir, /*wlock*/1,
++				      /*locked*/1);
++	//if (LktrCond) {fi_write_unlock(file); err = -1;}
++	if (unlikely(err))
++		goto out;
++	err = au_ready_to_write(file, -1);
++	//if (LktrCond) err = -1;
++	if (unlikely(err))
++		goto out_unlock;
++
++	/* support LSM and notify */
++	mnt_flags = au_mntflags(sb);
++	vfsub_args_init(&vargs, &ign, au_opt_test_dlgt(mnt_flags), 0);
++	h_file = au_h_fptr(file, au_fbstart(file));
++	if (!au_opt_test(mnt_flags, UDBA_INOTIFY))
++		err = vfsub_write_u(h_file, buf, count, ppos, &vargs);
++	else {
++		parent = dget_parent(dentry);
++		dir = parent->d_inode;
++		ii_read_lock_parent(dir);
++		vfsub_ign_hinode(&vargs, IN_MODIFY,
++				 au_hi(dir, au_fbstart(file)));
++		err = vfsub_write_u(h_file, buf, count, ppos, &vargs);
++		ii_read_unlock(dir);
++		dput(parent);
++	}
++	ii_write_lock_child(inode);
++	au_cpup_attr_timesizes(inode);
++	ii_write_unlock(inode);
++
++ out_unlock:
++	fi_write_unlock(file);
++ out:
++	si_read_unlock(sb);
++	mutex_unlock(&inode->i_mutex);
++	AuTraceErr(err);
++	return err;
++}
++
++#ifdef CONFIG_AUFS_SPLICE_PATCH
++static int au_test_loopback(void)
++{
++	const char c = current->comm[4];
++	/* true if a kernel thread named 'loop[0-9].*' accesses a file */
++	const int loopback = (current->mm == NULL
++			      && '0' <= c && c <= '9'
++			      && strncmp(current->comm, "loop", 4) == 0);
++	return loopback;
++}
++
++static ssize_t aufs_splice_read(struct file *file, loff_t *ppos,
++				struct pipe_inode_info *pipe, size_t len,
++				unsigned int flags)
++{
++	ssize_t err;
++	struct file *h_file;
++	struct dentry *dentry;
++	struct super_block *sb;
++
++	dentry = file->f_dentry;
++	LKTRTrace("%.*s, pos %Ld, len %lu\n",
++		  AuDLNPair(dentry), *ppos, (unsigned long)len);
++
++	sb = dentry->d_sb;
++	si_read_lock(sb, AuLock_FLUSH);
++	err = au_reval_and_lock_finfo(file, au_reopen_nondir, /*wlock*/0,
++				      /*locked*/0);
++	if (unlikely(err))
++		goto out;
++
++	err = -EINVAL;
++	/* support LSM and notify */
++	h_file = au_h_fptr(file, au_fbstart(file));
++	if (/* unlikely */(au_test_loopback())) {
++		file->f_mapping = h_file->f_mapping;
++		smp_mb(); /* unnecessary? */
++	}
++	err = vfsub_splice_to(h_file, ppos, pipe, len, flags,
++			      au_opt_test_dlgt(au_mntflags(sb)));
++	//file->f_ra = h_file->f_ra; //??
++	fsstack_copy_attr_atime(dentry->d_inode, h_file->f_dentry->d_inode);
++	fi_read_unlock(file);
++
++ out:
++	si_read_unlock(sb);
++	AuTraceErr(err);
++	return err;
++}
++
++static ssize_t
++aufs_splice_write(struct pipe_inode_info *pipe, struct file *file, loff_t *ppos,
++		  size_t len, unsigned int flags)
++{
++	ssize_t err;
++	struct dentry *dentry;
++	struct inode *inode, *h_inode;
++	struct super_block *sb;
++	struct file *h_file;
++	struct au_hin_ignore ign;
++	struct vfsub_args vargs;
++	unsigned int mnt_flags;
++
++	dentry = file->f_dentry;
++	LKTRTrace("%.*s, len %lu, pos %Ld\n",
++		  AuDLNPair(dentry), (unsigned long)len, *ppos);
++
++	inode = dentry->d_inode;
++	mutex_lock(&inode->i_mutex);
++	sb = dentry->d_sb;
++	si_read_lock(sb, AuLock_FLUSH);
++	err = au_reval_and_lock_finfo(file, au_reopen_nondir, /*wlock*/1,
++				      /*locked*/1);
++	//if (LktrCond) {fi_write_unlock(file); err = -1;}
++	if (unlikely(err))
++		goto out;
++	err = au_ready_to_write(file, -1);
++	//if (LktrCond) err = -1;
++	if (unlikely(err))
++		goto out_unlock;
++
++	/* support LSM and notify */
++	mnt_flags = au_mntflags(sb);
++	vfsub_args_init(&vargs, &ign, au_opt_test_dlgt(mnt_flags), 0);
++	h_file = au_h_fptr(file, au_fbstart(file));
++	h_inode = h_file->f_dentry->d_inode;
++	/* current do_splice_from() doesn't fire up the inotify event */
++	if (1 || !au_opt_test(mnt_flags, UDBA_INOTIFY))
++		err = vfsub_splice_from(pipe, h_file, ppos, len, flags, &vargs);
++	else {
++		//struct dentry *parent = dget_parent(dentry);
++		//vfsub_ign_hinode(&vargs, IN_MODIFY,
++		//au_hi(parent->d_inode, au_fbstart(file));
++		err = vfsub_splice_from(pipe, h_file, ppos, len, flags, &vargs);
++		//dput(parent);
++	}
++	ii_write_lock_child(inode);
++	au_cpup_attr_timesizes(inode);
++	ii_write_unlock(inode);
++
++ out_unlock:
++	fi_write_unlock(file);
++ out:
++	si_read_unlock(sb);
++	mutex_unlock(&inode->i_mutex);
++	AuTraceErr(err);
++	return err;
++}
++#endif /* CONFIG_AUFS_SPLICE_PATCH */
++
++/* ---------------------------------------------------------------------- */
++
++static int aufs_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
 +{
 +	int err;
 +	struct dentry *dentry;
-+	aufs_bindex_t bstart, bindex, bend;
-+	struct file *h_file, *h_file_tmp;
++	struct file *file, *h_file;
++	struct inode *inode;
++	static DECLARE_WAIT_QUEUE_HEAD(wq);
++	struct au_finfo *finfo;
++	//struct page *page;
 +
++	AuTraceEnter();
++	AuDebugOn(!vma || !vma->vm_file);
++	//todo: non-robr mode, user vm_file as it is.
++	wait_event(wq, (file = au_robr_safe_file(vma)));
++	AuDebugOn(!au_test_aufs(file->f_dentry->d_sb));
 +	dentry = file->f_dentry;
 +	LKTRTrace("%.*s\n", AuDLNPair(dentry));
-+	bstart = au_dbstart(dentry);
-+	AuDebugOn(S_ISDIR(dentry->d_inode->i_mode)
-+		  || !au_h_dptr(dentry, bstart)->d_inode);
++	inode = dentry->d_inode;
++	AuDebugOn(!S_ISREG(inode->i_mode));
 +
-+	h_file_tmp = NULL;
-+	if (au_fbstart(file) == bstart) {
-+		h_file = au_h_fptr(file, bstart);
-+		if (file->f_mode == h_file->f_mode)
-+			return 0; /* success */
-+		h_file_tmp = h_file;
-+		get_file(h_file_tmp);
-+		au_set_h_fptr(file, bstart, NULL);
-+	}
-+	AuDebugOn(au_fbstart(file) < bstart
-+		  || au_fi(file)->fi_hfile[0 + bstart].hf_file);
-+
-+	h_file = au_h_open(dentry, bstart, file->f_flags & ~O_TRUNC, file);
-+	//if (LktrCond) {fput(h_file); au_br_put(au_sbr(dentry->d_sb, bstart));
-+	//h_file = ERR_PTR(-1);}
-+	err = PTR_ERR(h_file);
-+	if (IS_ERR(h_file))
-+		goto out; // close all?
-+	err = 0;
-+	//cpup_file_flags(h_file, file);
-+	au_set_fbstart(file, bstart);
-+	au_set_h_fptr(file, bstart, h_file);
-+	au_update_figen(file);
++	/* do not revalidate, no si lock */
++	finfo = au_fi(file);
++	h_file = finfo->fi_hfile[0 + finfo->fi_bstart].hf_file;
++	AuDebugOn(!h_file || !au_test_mmapped(file));
++	fi_write_lock(file);
++	vma->vm_file = h_file;
++	err = finfo->fi_h_vm_ops->fault(vma, vmf);
 +	//file->f_ra = h_file->f_ra; //??
++	au_robr_reset_file(vma, file);
++	fi_write_unlock(file);
++#if 0 //def CONFIG_SMP
++	//wake_up_nr(&wq, online_cpu - 1);
++	wake_up_all(&wq);
++#else
++	wake_up(&wq);
++#endif
 +
-+	/* close lower files */
-+	bend = au_fbend(file);
-+	for (bindex = bstart + 1; bindex <= bend; bindex++)
-+		au_set_h_fptr(file, bindex, NULL);
-+	au_set_fbend(file, bstart);
++	if (!(err & VM_FAULT_ERROR)) {
++#if 0
++		page = vmf->page;
++		AuDbg("%p, %d\n", page, page_mapcount(page));
++#endif
++		//page->mapping = file->f_mapping;
++		//get_page(page);
++		//file->f_mapping = h_file->f_mapping;
++		//touch_atime(NULL, dentry);
++		//inode->i_atime = h_file->f_dentry->d_inode->i_atime;
++	}
++	AuTraceErr(err);
++	//AuDbg("err %d\n", err);
++	return err;
++}
++
++static struct vm_operations_struct aufs_vm_ops = {
++	//.open		= aufs_vmaopen,
++	//.close		= aufs_vmaclose,
++	.fault		= aufs_fault,
++#if 0 // rfu
++	unsigned long (*nopfn)(struct vm_area_struct *area,
++			       unsigned long address);
++	//page_mkwrite(struct vm_area_struct *vma, struct page *page)
++#endif
++};
++
++/* ---------------------------------------------------------------------- */
++
++static struct vm_operations_struct *au_vm_ops(struct file *h_file,
++					      struct vm_area_struct *vma)
++{
++	struct vm_operations_struct *vm_ops;
++	int err;
++
++	AuTraceEnter();
++
++	if (!au_test_nfs(h_file->f_vfsmnt->mnt_sb))
++		err = h_file->f_op->mmap(h_file, vma);
++	else {
++		lockdep_off();
++		err = h_file->f_op->mmap(h_file, vma);
++		lockdep_on();
++	}
++	vm_ops = ERR_PTR(err);
++	if (unlikely(err))
++		goto out;
++	vm_ops = vma->vm_ops;
++	err = do_munmap(current->mm, vma->vm_start,
++			vma->vm_end - vma->vm_start);
++	if (unlikely(err)) {
++		AuIOErr("failed internal unmapping %.*s, %d\n",
++			AuDLNPair(h_file->f_dentry), err);
++		vm_ops = ERR_PTR(-EIO);
++	}
 +
 + out:
-+	if (h_file_tmp)
-+		fput(h_file_tmp);
++	AuTraceErrPtr(vm_ops);
++	return vm_ops;
++}
++
++static int aufs_mmap(struct file *file, struct vm_area_struct *vma)
++{
++	int err, wlock, mmapped;
++	struct dentry *dentry;
++	struct super_block *sb;
++	struct file *h_file;
++	struct vm_operations_struct *vm_ops;
++
++	dentry = file->f_dentry;
++	LKTRTrace("%.*s, %lx, len %lu\n",
++		  AuDLNPair(dentry), vma->vm_start,
++		  vma->vm_end - vma->vm_start);
++	AuDebugOn(!S_ISREG(dentry->d_inode->i_mode));
++	AuDebugOn(down_write_trylock(&vma->vm_mm->mmap_sem));
++
++	mmapped = au_test_mmapped(file); /* can be harmless race condition */
++	wlock = !!(file->f_mode & FMODE_WRITE);
++	sb = dentry->d_sb;
++	si_read_lock(sb, AuLock_FLUSH);
++	err = au_reval_and_lock_finfo(file, au_reopen_nondir,
++				      wlock | !mmapped, /*locked*/0);
++	//err = -1;
++	if (unlikely(err))
++		goto out;
++
++	if (wlock) {
++		err = au_ready_to_write(file, -1);
++		//err = -1;
++		if (unlikely(err))
++			goto out_unlock;
++	}
++
++	h_file = au_h_fptr(file, au_fbstart(file));
++	if (unlikely(au_test_fuse(h_file->f_dentry->d_sb))) {
++		/*
++		 * by this assignment, f_mapping will differs from aufs inode
++		 * i_mapping.
++		 * if someone else mixes the use of f_dentry->d_inode and
++		 * f_mapping->host, then a problem may arise.
++		 */
++		file->f_mapping = h_file->f_mapping;
++	}
++
++	if (0 && h_file->f_op->mmap == generic_file_mmap) {
++		err = generic_file_mmap(file, vma); /* instead of h_file */
++		if (unlikely(err))
++			goto out_unlock;
++		au_fi(file)->fi_h_vm_ops = vma->vm_ops;
++	} else {
++		vm_ops = NULL;
++		if (!mmapped) {
++			vm_ops = au_vm_ops(h_file, vma);
++			err = PTR_ERR(vm_ops);
++			if (IS_ERR(vm_ops))
++				goto out_unlock;
++		}
++
++		err = generic_file_mmap(file, vma);
++		if (unlikely(err))
++			goto out_unlock;
++		vma->vm_ops = &aufs_vm_ops;
++		/* test again */
++		if (!au_test_mmapped(file)) {
++			FiMustWriteLock(file);
++			au_fi(file)->fi_h_vm_ops = vm_ops;
++		}
++	}
++
++	file_accessed(h_file);
++	au_update_fuse_h_inode(h_file->f_vfsmnt, h_file->f_dentry); /*ignore*/
++	fsstack_copy_attr_atime(dentry->d_inode, h_file->f_dentry->d_inode);
++
++ out_unlock:
++	if (!wlock && mmapped)
++		fi_read_unlock(file);
++	else
++		fi_write_unlock(file);
++ out:
++	si_read_unlock(sb);
 +	AuTraceErr(err);
 +	return err;
 +}
 +
 +/* ---------------------------------------------------------------------- */
 +
-+#if 0
-+static int au_ready_to_write_wh(struct file *file, loff_t len,
-+				aufs_bindex_t bcpup)
++static unsigned int aufs_poll(struct file *file, poll_table *wait)
 +{
++	unsigned int mask;
++	struct file *h_file;
 +	int err;
-+	struct dentry *dentry, *hi_wh, *old_h_dentry;
-+	struct au_dinfo *dinfo;
-+	aufs_bindex_t old_bstart;
-+
-+	AuTraceEnter();
-+
-+	dentry = file->f_dentry;
-+	hi_wh = au_hi_wh(dentry->d_inode, bcpup);
-+	if (!hi_wh)
-+		err = au_sio_cpup_wh(dentry, bcpup, len, file);
-+	else {
-+		/* already copied-up after unlink */
-+		dinfo = au_di(dentry);
-+		old_bstart = dinfo->di_bstart;
-+		dinfo->di_bstart = bcpup;
-+		old_h_dentry = dinfo->di_hdentry[0 + bcpup].hd_dentry;
-+		dinfo->di_hdentry[0 + bcpup].hd_dentry = hi_wh;
-+		err = au_reopen_nondir(file);
-+		dinfo->di_hdentry[0 + bcpup].hd_dentry = old_h_dentry;
-+		dinfo->di_bstart = old_bstart;
-+	}
-+	//if (LktrCond) err = -1;
-+
-+	AuTraceErr(err);
-+	return err;
-+}
-+#endif
-+
-+/*
-+ * prepare the @file for writing.
-+ */
-+int au_ready_to_write(struct file *file, loff_t len)
-+{
-+	int err;
-+	struct dentry *dentry, *parent, *h_dentry, *h_parent, *hi_wh,
-+		*old_h_dentry, *gparent;
-+	struct inode *h_inode, *h_dir, *inode, *dir;
++	struct dentry *dentry;
 +	struct super_block *sb;
-+	aufs_bindex_t bstart, bcpup, old_bstart;
-+	struct au_dinfo *dinfo;
 +
 +	dentry = file->f_dentry;
-+	LKTRTrace("%.*s, len %Ld\n", AuDLNPair(dentry), len);
-+	FiMustWriteLock(file);
++	LKTRTrace("%.*s, wait %p\n", AuDLNPair(dentry), wait);
++	AuDebugOn(S_ISDIR(dentry->d_inode->i_mode));
++
++	/* We should pretend an error happened. */
++	mask = POLLERR /* | POLLIN | POLLOUT */;
++	sb = dentry->d_sb;
++	si_read_lock(sb, AuLock_FLUSH);
++	err = au_reval_and_lock_finfo(file, au_reopen_nondir, /*wlock*/0,
++				      /*locked*/0);
++	//err = -1;
++	if (unlikely(err))
++		goto out;
++
++	/* it is not an error of hidden_file has no operation */
++	mask = DEFAULT_POLLMASK;
++	h_file = au_h_fptr(file, au_fbstart(file));
++	if (h_file->f_op && h_file->f_op->poll)
++		mask = h_file->f_op->poll(h_file, wait);
++	fi_read_unlock(file);
++
++ out:
++	si_read_unlock(sb);
++	AuTraceErr((int)mask);
++	return mask;
++}
++
++static int aufs_fsync_nondir(struct file *file, struct dentry *dentry,
++			     int datasync)
++{
++	int err;
++	struct inode *inode;
++	struct file *h_file;
++	struct super_block *sb;
++
++	LKTRTrace("%.*s, %d\n", AuDLNPair(dentry), datasync);
++	inode = dentry->d_inode;
++
++	IMustLock(file->f_mapping->host);
++	if (unlikely(inode != file->f_mapping->host)) {
++		mutex_unlock(&file->f_mapping->host->i_mutex);
++		mutex_lock(&inode->i_mutex);
++	}
++	IMustLock(inode);
 +
 +	sb = dentry->d_sb;
-+	bstart = au_fbstart(file);
-+	AuDebugOn(au_fbr(file, bstart) != au_sbr(sb, bstart));
-+
-+	inode = dentry->d_inode;
-+	AuDebugOn(S_ISDIR(inode->i_mode));
-+	ii_read_lock_child(inode);
-+	LKTRTrace("rdonly %d, bstart %d\n",
-+		  au_test_ro(sb, bstart, inode), bstart);
-+	err = au_test_ro(sb, bstart, inode);
-+	ii_read_unlock(inode);
-+	if (!err && (au_h_fptr(file, bstart)->f_mode & FMODE_WRITE))
-+		return 0;
-+
-+	/* need to cpup */
-+	di_write_lock_child(dentry);
-+	parent = dget_parent(dentry);
-+	di_write_lock_parent(parent);
-+	err = AuWbrCopyup(au_sbi(sb), dentry);
-+	bcpup = err;
-+	if (unlikely(err < 0))
++	si_read_lock(sb, AuLock_FLUSH);
++	err = 0; //-EBADF; // posix?
++	if (unlikely(!(file->f_mode & FMODE_WRITE)))
++		goto out;
++	err = au_reval_and_lock_finfo(file, au_reopen_nondir, /*wlock*/1,
++				      /*locked*/1);
++	//err = -1;
++	if (unlikely(err))
++		goto out;
++	err = au_ready_to_write(file, -1);
++	//err = -1;
++	if (unlikely(err))
 +		goto out_unlock;
-+	err = 0;
 +
-+	h_parent = au_h_dptr(parent, bcpup);
-+	if (!h_parent) {
-+		err = au_cpup_dirs(dentry, bcpup, NULL);
-+		//if (LktrCond) err = -1;
-+		if (unlikely(err))
-+			goto out_unlock;
-+		h_parent = au_h_dptr(parent, bcpup);
-+	}
-+
-+	//todo: meaningless lock if CONFIG_AUFS_DEBUG is disabled.
-+	gparent = NULL;
-+	if (unlikely(au_opt_test(au_mntflags(sb), UDBA_INOTIFY)
-+		     && !IS_ROOT(parent))) {
-+		gparent = dget_parent(parent);
-+		ii_read_lock_parent2(gparent->d_inode);
-+	}
-+	h_dir = h_parent->d_inode;
-+	h_dentry = au_h_fptr(file, au_fbstart(file))->f_dentry;
-+	h_inode = h_dentry->d_inode;
-+	dir = parent->d_inode;
-+	au_hdir_lock(h_dir, dir, bcpup);
-+	//todo: test parent-gparent relationship
-+	mutex_lock_nested(&h_inode->i_mutex, AuLsc_I_CHILD);
-+	if (d_unhashed(dentry) /* || d_unhashed(h_dentry) */
-+	    /* || !h_inode->i_nlink */) {
-+#if 0
-+		err = au_ready_to_write_wh(file, len, bcpup);
-+#else
-+		hi_wh = au_hi_wh(inode, bcpup);
-+		if (!hi_wh)
-+			err = au_sio_cpup_wh(dentry, bcpup, len, file);
-+		else {
-+			/* already copied-up after unlink */
-+			dinfo = au_di(dentry);
-+			old_bstart = dinfo->di_bstart;
-+			dinfo->di_bstart = bcpup;
-+			old_h_dentry = dinfo->di_hdentry[0 + bcpup].hd_dentry;
-+			dinfo->di_hdentry[0 + bcpup].hd_dentry = hi_wh;
-+			err = au_reopen_nondir(file);
-+			dinfo->di_hdentry[0 + bcpup].hd_dentry = old_h_dentry;
-+			dinfo->di_bstart = old_bstart;
-+		}
-+		//if (LktrCond) err = -1;
-+		AuTraceErr(err);
-+#endif
-+	} else {
-+		if (!au_h_dptr(dentry, bcpup))
-+			err = au_sio_cpup_simple(dentry, bcpup, len,
-+						 AuCpup_DTIME);
-+		//if (LktrCond) err = -1;
-+		AuTraceErr(err);
++	err = -EINVAL;
++	h_file = au_h_fptr(file, au_fbstart(file));
++	if (h_file->f_op && h_file->f_op->fsync) {
++		ii_write_lock_child(inode);
++		mutex_lock_nested(&h_file->f_dentry->d_inode->i_mutex,
++				  AuLsc_I_CHILD);
++		err = h_file->f_op->fsync(h_file, h_file->f_dentry, datasync);
++		//err = -1;
 +		if (!err)
-+			err = au_reopen_nondir(file);
-+		//if (LktrCond) err = -1;
-+		AuTraceErr(err);
-+	}
-+	mutex_unlock(&h_inode->i_mutex);
-+	au_hdir_unlock(h_dir, dir, bcpup);
-+	if (unlikely(gparent)) {
-+		ii_read_unlock(gparent->d_inode);
-+		dput(gparent);
++			au_update_fuse_h_inode(h_file->f_vfsmnt,
++					       h_file->f_dentry);
++		au_cpup_attr_timesizes(inode);
++		mutex_unlock(&h_file->f_dentry->d_inode->i_mutex);
++		ii_write_unlock(inode);
 +	}
 +
 + out_unlock:
-+	di_write_unlock(parent);
-+	di_write_unlock(dentry);
-+	dput(parent);
++	fi_write_unlock(file);
++ out:
++	si_read_unlock(sb);
++	if (unlikely(inode != file->f_mapping->host)) {
++		mutex_unlock(&inode->i_mutex);
++		mutex_lock(&file->f_mapping->host->i_mutex);
++	}
 +	AuTraceErr(err);
 +	return err;
-+
 +}
 +
-+/* ---------------------------------------------------------------------- */
-+
-+static int refresh_file_by_inode(struct file *file, int *need_reopen)
++static int aufs_fasync(int fd, struct file *file, int flag)
 +{
 +	int err;
-+	struct au_finfo *finfo;
-+	struct dentry *dentry, *parent, *old_h_dentry, *hi_wh;
-+	struct inode *inode, *dir, *h_dir;
-+	aufs_bindex_t bstart, new_bstart, old_bstart;
-+	struct super_block *sb;
-+	struct au_dinfo *dinfo;
-+
-+	dentry = file->f_dentry;
-+	LKTRTrace("%.*s\n", AuDLNPair(dentry));
-+	FiMustWriteLock(file);
-+
-+	err = 0;
-+	finfo = au_fi(file);
-+	inode = dentry->d_inode;
-+	sb = dentry->d_sb;
-+ again:
-+	bstart = au_ibstart(inode);
-+	if (bstart == finfo->fi_bstart)
-+		goto out;
-+
-+	new_bstart = bstart;
-+	parent = dget_parent(dentry);
-+	dir = parent->d_inode;
-+	if (au_test_ro(sb, bstart, inode)) {
-+		di_read_lock_parent(parent, !AuLock_IR);
-+		err = AuWbrCopyup(au_sbi(sb), dentry);
-+		new_bstart = err;
-+		di_read_unlock(parent, !AuLock_IR);
-+		//todo: err = -1;
-+		if (unlikely(err < 0))
-+			goto out_put;
-+	}
-+	di_read_unlock(dentry, AuLock_IR);
-+	di_write_lock_child(dentry);
-+	/* someone else might change our inode while we were sleeping */
-+	if (bstart != au_ibstart(inode)) { // todo
-+		di_downgrade_lock(dentry, AuLock_IR);
-+		err = 0;
-+		dput(parent);
-+		goto again;
-+	}
-+	di_read_lock_parent(parent, AuLock_IR);
-+	bstart = new_bstart;
-+
-+	hi_wh = au_hi_wh(inode, bstart);
-+	if (au_opt_test(au_mntflags(sb), PLINK)
-+	    && au_plink_test(sb, inode)
-+	    && !d_unhashed(dentry)) {
-+		err = au_test_and_cpup_dirs(dentry, bstart, NULL);
-+
-+		/* always superio. */
-+#if 1
-+		h_dir = au_h_dptr(parent, bstart)->d_inode;
-+		au_hdir_lock(h_dir, dir, bstart);
-+		err = au_sio_cpup_simple(dentry, bstart, -1, AuCpup_DTIME);
-+		au_hdir_unlock(h_dir, dir, bstart);
-+#else
-+		if (!au_test_wkq(current)) {
-+			int wkq_err;
-+			struct cpup_pseudo_link_args args = {
-+				.errp		= &err,
-+				.dentry		= dentry,
-+				.bdst		= bstart,
-+				.do_lock	= 1
-+			};
-+			wkq_err = au_wkq_wait(call_cpup_pseudo_link, &args);
-+			if (unlikely(wkq_err))
-+				err = wkq_err;
-+		} else
-+			err = cpup_pseudo_link(dentry, bstart, /*do_lock*/1);
-+#endif
-+	} else if (hi_wh) {
-+		/* already copied-up after unlink */
-+		dinfo = au_di(dentry);
-+		old_bstart = dinfo->di_bstart;
-+		dinfo->di_bstart = bstart;
-+		old_h_dentry = dinfo->di_hdentry[0 + bstart].hd_dentry;
-+		dinfo->di_hdentry[0 + bstart].hd_dentry = hi_wh;
-+		err = au_reopen_nondir(file);
-+		dinfo->di_hdentry[0 + bstart].hd_dentry = old_h_dentry;
-+		dinfo->di_bstart = old_bstart;
-+		*need_reopen = 0;
-+	}
-+	di_read_unlock(parent, AuLock_IR);
-+	di_downgrade_lock(dentry, AuLock_IR);
-+
-+ out_put:
-+	dput(parent);
-+ out:
-+	AuTraceErr(err);
-+	return err;
-+}
-+
-+/*
-+ * after branch manipulating, refresh the file.
-+ */
-+static int refresh_file(struct file *file, int (*reopen)(struct file *file))
-+{
-+	int err, new_sz, need_reopen;
-+	struct dentry *dentry;
-+	aufs_bindex_t bend, bindex, bstart, brid;
-+	struct au_hfile *p;
-+	struct au_finfo *finfo;
-+	struct super_block *sb;
-+	struct inode *inode;
-+	struct file *hidden_file;
-+
-+	dentry = file->f_dentry;
-+	LKTRTrace("%.*s\n", AuDLNPair(dentry));
-+	FiMustWriteLock(file);
-+	DiMustReadLock(dentry);
-+	inode = dentry->d_inode;
-+	IiMustReadLock(inode);
-+
-+	err = -ENOMEM;
-+	sb = dentry->d_sb;
-+	finfo = au_fi(file);
-+	bstart = finfo->fi_bstart;
-+	bend = finfo->fi_bstart;
-+	new_sz = sizeof(*finfo->fi_hfile) * (au_sbend(sb) + 1);
-+	p = au_kzrealloc(finfo->fi_hfile, sizeof(*p) * (finfo->fi_bend + 1),
-+			 new_sz, GFP_KERNEL);
-+	//p = NULL;
-+	if (unlikely(!p))
-+		goto out;
-+	finfo->fi_hfile = p;
-+	hidden_file = p[0 + bstart].hf_file;
-+
-+	p = finfo->fi_hfile + finfo->fi_bstart;
-+	brid = p->hf_br->br_id;
-+	bend = finfo->fi_bend;
-+	for (bindex = finfo->fi_bstart; bindex <= bend; bindex++, p++) {
-+		struct au_hfile tmp, *q;
-+		aufs_bindex_t new_bindex;
-+
-+		if (!p->hf_file)
-+			continue;
-+		new_bindex = au_find_bindex(sb, p->hf_br);
-+		if (new_bindex == bindex)
-+			continue;
-+		if (new_bindex < 0) { // test here
-+			au_set_h_fptr(file, bindex, NULL);
-+			continue;
-+		}
-+
-+		/* swap two hidden inode, and loop again */
-+		q = finfo->fi_hfile + new_bindex;
-+		tmp = *q;
-+		*q = *p;
-+		*p = tmp;
-+		if (tmp.hf_file) {
-+			bindex--;
-+			p--;
-+		}
-+	}
-+	{
-+		aufs_bindex_t s = finfo->fi_bstart, e = finfo->fi_bend;
-+		finfo->fi_bstart = 0;
-+		finfo->fi_bend = au_sbend(sb);
-+		finfo->fi_bstart = s;
-+		finfo->fi_bend = e;
-+	}
-+
-+	p = finfo->fi_hfile;
-+	if (!au_test_mmapped(file) && !d_unhashed(dentry)) {
-+		bend = au_sbend(sb);
-+		for (finfo->fi_bstart = 0; finfo->fi_bstart <= bend;
-+		     finfo->fi_bstart++, p++)
-+			if (p->hf_file) {
-+				if (p->hf_file->f_dentry
-+				    && p->hf_file->f_dentry->d_inode)
-+					break;
-+				else
-+					au_hfput(p);
-+			}
-+	} else {
-+		bend = au_br_index(sb, brid);
-+		//LKTRTrace("%d\n", bend);
-+		for (finfo->fi_bstart = 0; finfo->fi_bstart < bend;
-+		     finfo->fi_bstart++, p++)
-+			if (p->hf_file)
-+				au_hfput(p);
-+		//LKTRTrace("%d\n", finfo->fi_bstart);
-+		bend = au_sbend(sb);
-+	}
-+
-+	p = finfo->fi_hfile + bend;
-+	for (finfo->fi_bend = bend; finfo->fi_bend >= finfo->fi_bstart;
-+	     finfo->fi_bend--, p--)
-+		if (p->hf_file) {
-+			if (p->hf_file->f_dentry
-+			    && p->hf_file->f_dentry->d_inode)
-+				break;
-+			else
-+				au_hfput(p);
-+		}
-+	AuDebugOn(finfo->fi_bend < finfo->fi_bstart);
-+	//DbgFile(file);
-+	//DbgDentry(file->f_dentry);
-+
-+	err = 0;
-+	need_reopen = 1;
-+	if (!au_test_mmapped(file))
-+		err = refresh_file_by_inode(file, &need_reopen);
-+	if (!err && need_reopen && !d_unhashed(dentry))
-+		err = reopen(file);
-+		//err = -1;
-+	if (!err) {
-+		au_update_figen(file);
-+		//DbgFile(file);
-+		return 0; /* success */
-+	}
-+
-+	/* error, close all hidden files */
-+	bend = au_fbend(file);
-+	for (bindex = au_fbstart(file); bindex <= bend; bindex++)
-+		au_set_h_fptr(file, bindex, NULL);
-+
-+ out:
-+	AuTraceErr(err);
-+	return err;
-+}
-+
-+/* common function to regular file and dir */
-+int au_reval_and_lock_finfo(struct file *file, int (*reopen)(struct file *file),
-+			    int wlock, int locked)
-+{
-+	int err, pseudo_link;
++	struct file *h_file;
 +	struct dentry *dentry;
 +	struct super_block *sb;
-+	aufs_bindex_t bstart;
-+	au_gen_t sgen, fgen;
 +
 +	dentry = file->f_dentry;
-+	LKTRTrace("%.*s, w %d, l %d\n", AuDLNPair(dentry), wlock, locked);
++	LKTRTrace("%.*s, %d\n", AuDLNPair(dentry), flag);
++
 +	sb = dentry->d_sb;
-+	SiMustAnyLock(sb);
++	si_read_lock(sb, AuLock_FLUSH);
++	err = au_reval_and_lock_finfo(file, au_reopen_nondir, /*wlock*/0,
++				      /*locked*/0);
++	//err = -1;
++	if (unlikely(err))
++		goto out;
 +
-+	err = 0;
-+	sgen = au_sigen(sb);
-+	fi_write_lock(file);
-+	fgen = au_figen(file);
-+	di_read_lock_child(dentry, AuLock_IR);
-+	bstart = au_dbstart(dentry);
-+	pseudo_link = (bstart != au_ibstart(dentry->d_inode));
-+	di_read_unlock(dentry, AuLock_IR);
-+	if (sgen == fgen && !pseudo_link && au_fbstart(file) == bstart) {
-+		if (!wlock)
-+			fi_downgrade_lock(file);
-+		return 0; /* success */
-+	}
-+
-+	LKTRTrace("sgen %d, fgen %d\n", sgen, fgen);
-+	if (unlikely(sgen != au_digen(dentry)
-+		     || sgen != au_iigen(dentry->d_inode))) {
-+		/*
-+		 * d_path() and path_lookup() is a simple and good approach
-+		 * to revalidate. but si_rwsem in DEBUG_RWSEM will cause a
-+		 * deadlock. removed the code.
-+		 */
-+		di_write_lock_child(dentry);
-+		err = au_reval_dpath(dentry, sgen);
-+		//if (LktrCond) err = -1;
-+		di_write_unlock(dentry);
-+		if (unlikely(err < 0))
-+			goto out;
-+		AuDebugOn(au_digen(dentry) != sgen
-+			  || au_iigen(dentry->d_inode) != sgen);
-+	}
-+
-+	di_read_lock_child(dentry, AuLock_IR);
-+	err = refresh_file(file, reopen
-+			   /* , au_opt_test(au_mnt_flags(sb), REFROF) */);
-+	//if (LktrCond) err = -1;
-+	di_read_unlock(dentry, AuLock_IR);
-+	if (!err) {
-+		if (!wlock)
-+			fi_downgrade_lock(file);
-+	} else
-+		fi_write_unlock(file);
++	h_file = au_h_fptr(file, au_fbstart(file));
++	if (h_file->f_op && h_file->f_op->fasync)
++		err = h_file->f_op->fasync(fd, h_file, flag);
++	fi_read_unlock(file);
 +
 + out:
++	si_read_unlock(sb);
 +	AuTraceErr(err);
 +	return err;
 +}
 +
 +/* ---------------------------------------------------------------------- */
 +
-+/* cf. aufs_nopage() */
-+/* for madvise(2) */
-+static int aufs_readpage(struct file *file, struct page *page)
-+{
-+	AuTraceEnter();
-+	unlock_page(page);
-+	return 0;
-+}
-+
-+/* they will never be called. */
-+#ifdef CONFIG_AUFS_DEBUG
-+static int aufs_prepare_write(struct file *file, struct page *page,
-+			      unsigned from, unsigned to)
-+{ AuUnsupport(); return 0; }
-+static int aufs_commit_write(struct file *file, struct page *page,
-+			     unsigned from, unsigned to)
-+{ AuUnsupport(); return 0; }
-+static int aufs_write_begin(struct file *file, struct address_space *mapping,
-+			    loff_t pos, unsigned len, unsigned flags,
-+			    struct page **pagep, void **fsdata)
-+{ AuUnsupport(); return 0; }
-+static int aufs_write_end(struct file *file, struct address_space *mapping,
-+			  loff_t pos, unsigned len, unsigned copied,
-+			  struct page *page, void *fsdata)
-+{ AuUnsupport(); return 0; }
-+static int aufs_writepage(struct page *page, struct writeback_control *wbc)
-+{ AuUnsupport(); return 0; }
-+static void aufs_sync_page(struct page *page)
-+{ AuUnsupport(); }
-+
-+#if 0 // comment
-+static int aufs_writepages(struct address_space *mapping,
-+			   struct writeback_control *wbc)
-+{ AuUnsupport(); return 0; }
-+static int aufs_readpages(struct file *filp, struct address_space *mapping,
-+			  struct list_head *pages, unsigned nr_pages)
-+{ AuUnsupport(); return 0; }
-+static sector_t aufs_bmap(struct address_space *mapping, sector_t block)
-+{ AuUnsupport(); return 0; }
++struct file_operations aufs_file_fop = {
++	.read		= aufs_read,
++	.write		= aufs_write,
++	.poll		= aufs_poll,
++	.mmap		= aufs_mmap,
++	.open		= aufs_open_nondir,
++	.flush		= aufs_flush,
++	.release	= aufs_release_nondir,
++	.fsync		= aufs_fsync_nondir,
++	.fasync		= aufs_fasync,
++#ifdef CONFIG_AUFS_SPLICE_PATCH
++	.splice_write	= aufs_splice_write,
++	.splice_read	= aufs_splice_read,
 +#endif
-+
-+static int aufs_set_page_dirty(struct page *page)
-+{ AuUnsupport(); return 0; }
-+static void aufs_invalidatepage(struct page *page, unsigned long offset)
-+{ AuUnsupport(); }
-+static int aufs_releasepage(struct page *page, gfp_t gfp)
-+{ AuUnsupport(); return 0; }
-+static ssize_t aufs_direct_IO(int rw, struct kiocb *iocb,
-+			      const struct iovec *iov, loff_t offset,
-+			      unsigned long nr_segs)
-+{ AuUnsupport(); return 0; }
-+//static int aufs_migratepage (struct page *newpage, struct page *page)
-+//{ AuUnsupport(); return 0; }
-+#if 0 //LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 20)
-+int (*launder_page) (struct page *);
-+#endif
-+#endif /* CONFIG_AUFS_DEBUG */
-+
-+struct address_space_operations aufs_aop = {
-+	.readpage	= aufs_readpage,
-+#ifdef CONFIG_AUFS_DEBUG
-+	.writepage	= aufs_writepage,
-+	.sync_page	= aufs_sync_page,
-+	//.writepages	= aufs_writepages,
-+	.set_page_dirty	= aufs_set_page_dirty,
-+	//.readpages	= aufs_readpages,
-+	.prepare_write	= aufs_prepare_write,
-+	.commit_write	= aufs_commit_write,
-+	.write_begin	= aufs_write_begin,
-+	.write_end	= aufs_write_end,
-+	//.bmap		= aufs_bmap,
-+	.invalidatepage	= aufs_invalidatepage,
-+	.releasepage	= aufs_releasepage,
-+	.direct_IO	= aufs_direct_IO,
-+	//.migratepage	= aufs_migratepage
-+#endif /* CONFIG_AUFS_DEBUG */
 +};
 -- 
 1.4.4.4
