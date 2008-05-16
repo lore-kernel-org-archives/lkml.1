@@ -1,109 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754944AbYEPH53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756109AbYEPHjZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754944AbYEPH53 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 03:57:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751019AbYEPH5V
+	id S1756109AbYEPHjZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 03:39:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbYEPHjQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 03:57:21 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:1045 "EHLO kernel.dk"
+	Fri, 16 May 2008 03:39:16 -0400
+Received: from main.gmane.org ([80.91.229.2]:40195 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750845AbYEPH5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 03:57:19 -0400
-Date: Fri, 16 May 2008 09:57:15 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Fabio Checconi <fchecconi@gmail.com>
-Cc: Matthew <jackdachef@gmail.com>,
-       Daniel J Blueman <daniel.blueman@gmail.com>,
-       Kasper Sandberg <lkml@metanurb.dk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: performance "regression" in cfq compared to anticipatory, deadline and noop
-Message-ID: <20080516075715.GX16217@kernel.dk>
-References: <20080513184057.GU16217@kernel.dk> <6278d2220805140105x27292033u6a97dcf13ab54263@mail.gmail.com> <20080514082622.GA16217@kernel.dk> <6278d2220805141352s3624d7b7qc90567f6b7a410dc@mail.gmail.com> <e85b9d30805141437u6a4b4caby1712c6f04bd4cc05@mail.gmail.com> <20080515070127.GH16217@kernel.dk> <20080515122156.GA11600@gandalf.sssup.it> <20080516064002.GL16217@kernel.dk> <20080516074628.GA17802@gandalf.sssup.it> <20080516074913.GW16217@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080516074913.GW16217@kernel.dk>
+	id S1752080AbYEPHjP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 03:39:15 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+Subject: Re: Weird Xorg radeon mirroring with linux-next-20080515 [paritial
+ bisect]
+Date: Fri, 16 May 2008 07:39:04 +0000 (UTC)
+Message-ID: <g0jdmo$1nr$1@ger.gmane.org>
+References: <g0hflu$b4q$1@ger.gmane.org> <482C744C.3050308@redhat.com>
+	<g0iadj$dip$1@ger.gmane.org>
+	<21d7e9970805151618i71ccc581j7e07082bd0b7a8e@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: cpc1-cwma5-0-0-cust137.swan.cable.ntl.com
+User-Agent: Pan/0.129 (Benson & Hedges Moscow Gold)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16 2008, Jens Axboe wrote:
-> On Fri, May 16 2008, Fabio Checconi wrote:
-> > > From: Jens Axboe <jens.axboe@oracle.com>
-> > > Date: Fri, May 16, 2008 08:40:03AM +0200
-> > >
-> > ...
-> > > I think we can improve this further without getting too involved. If a
-> > > 2nd request is seen in cfq_rq_enqueued(), then DO schedule a dispatch
-> > > since this likely means that we wont be doing more merges on the first
-> > > one.
-> > > 
-> > 
-> > But isn't there the risk that even the second request would be
-> > dispatched, while it still could have grown?
-> 
-> Certainly, you'd only want to dispatch the first request. Ideally we'd
-> just get rid of this logic of 'did empty dispatch round' and only
-> dispatch requests once merging is done, it's basically the wrong thing
-> to do to make it visible to the io scheduler so soon. Well of course
-> even more ideally we'd always get big requests submitted, but
-> unfortunately many producers aren't that nice.
-> 
-> The per-process plugging actually solves this nicely, since we do the
-> merging outside of the io scheduler. Perhaps just not dispatch on a
-> plugged queue would help a bit. I'm somewhat against this principle of
-> messing too much with dispatch logic in the schedulers, it'd be nicer to
-> solve this higher up.
+On Fri, 16 May 2008 09:18:26 +1000, Dave Airlie wrote:
 
-Something like this...
+> wierd got any fglrx or anything installed on you're system.. the radeon
+> drm hasn't seen any changes that should affect this sorta thing, do you
+> run radeonfb or vesafb?
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index 5dfb7b9..5ab1a17 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -1775,6 +1775,9 @@ cfq_rq_enqueued(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 
- 	cic->last_request_pos = rq->sector + rq->nr_sectors;
- 
-+	if (blk_queue_plugged(cfqd->queue))
-+		return;
-+
- 	if (cfqq == cfqd->active_queue) {
- 		/*
- 		 * if we are waiting for a request for this queue, let it rip
-@@ -1784,7 +1787,7 @@ cfq_rq_enqueued(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 		if (cfq_cfqq_wait_request(cfqq)) {
- 			cfq_mark_cfqq_must_dispatch(cfqq);
- 			del_timer(&cfqd->idle_slice_timer);
--			blk_start_queueing(cfqd->queue);
-+			cfq_schedule_dispatch(cfqd);
- 		}
- 	} else if (cfq_should_preempt(cfqd, cfqq, rq)) {
- 		/*
-@@ -1794,7 +1797,7 @@ cfq_rq_enqueued(struct cfq_data *cfqd, struct cfq_queue *cfqq,
- 		 */
- 		cfq_preempt_queue(cfqd, cfqq);
- 		cfq_mark_cfqq_must_dispatch(cfqq);
--		blk_start_queueing(cfqd->queue);
-+		cfq_schedule_dispatch(cfqd);
- 	}
- }
- 
-@@ -1997,11 +2000,10 @@ static void cfq_kick_queue(struct work_struct *work)
- 	struct cfq_data *cfqd =
- 		container_of(work, struct cfq_data, unplug_work);
- 	struct request_queue *q = cfqd->queue;
--	unsigned long flags;
- 
--	spin_lock_irqsave(q->queue_lock, flags);
-+	spin_lock_irq(q->queue_lock);
- 	blk_start_queueing(q);
--	spin_unlock_irqrestore(q->queue_lock, flags);
-+	spin_unlock_irq(q->queue_lock);
- }
- 
- /*
+fglrx: Nope (I learned years ago that you can't post bugs here if you use 
+binary drivers)
+radeonfb: Nope.
+vesafb: I don't think so (certainly the res looks typical). I have a 
+feeling that trying to use vesafb left me with a completely blank console 
+on boot.
 
 -- 
-Jens Axboe
+Sitsofe | http://sucs.org/~sits/
 
