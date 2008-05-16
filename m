@@ -1,88 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755665AbYEPLuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756317AbYEPLw3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755665AbYEPLuX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 07:50:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbYEPLuJ
+	id S1756317AbYEPLw3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 07:52:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752448AbYEPLwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 07:50:09 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53768 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751048AbYEPLuI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 07:50:08 -0400
-Date: Fri, 16 May 2008 06:50:05 -0500
-From: Robin Holt <holt@sgi.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Christoph Lameter <clameter@sgi.com>, Robin Holt <holt@sgi.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrea Arcangeli <andrea@qumranet.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
-       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>
-Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
-Message-ID: <20080516115005.GC4287@sgi.com>
-References: <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org> <20080508003838.GA9878@sgi.com> <200805132206.47655.nickpiggin@yahoo.com.au> <20080513153238.GL19717@sgi.com> <20080514041122.GE24516@wotan.suse.de> <20080514112625.GY9878@sgi.com> <20080515075747.GA7177@wotan.suse.de> <Pine.LNX.4.64.0805151031250.18708@schroedinger.engr.sgi.com> <20080515235203.GB25305@wotan.suse.de> <20080516112306.GA4287@sgi.com>
+	Fri, 16 May 2008 07:52:21 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44403 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752297AbYEPLwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 07:52:20 -0400
+Date: Fri, 16 May 2008 13:52:08 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Richard Kennedy <richard@rsk.demon.co.uk>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH] scheduler: reorder task_struct to reduce padding on
+	64bit builds
+Message-ID: <20080516115208.GE6444@elte.hu>
+References: <1210849755.3274.11.camel@castor.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080516112306.GA4287@sgi.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1210849755.3274.11.camel@castor.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16, 2008 at 06:23:06AM -0500, Robin Holt wrote:
-> On Fri, May 16, 2008 at 01:52:03AM +0200, Nick Piggin wrote:
-> > On Thu, May 15, 2008 at 10:33:57AM -0700, Christoph Lameter wrote:
-> > > On Thu, 15 May 2008, Nick Piggin wrote:
-> > > 
-> > > > Oh, I get that confused because of the mixed up naming conventions
-> > > > there: unmap_page_range should actually be called zap_page_range. But
-> > > > at any rate, yes we can easily zap pagetables without holding mmap_sem.
-> > > 
-> > > How is that synchronized with code that walks the same pagetable. These 
-> > > walks may not hold mmap_sem either. I would expect that one could only 
-> > > remove a portion of the pagetable where we have some sort of guarantee 
-> > > that no accesses occur. So the removal of the vma prior ensures that?
-> >  
-> > I don't really understand the question. If you remove the pte and invalidate
-> > the TLBS on the remote image's process (importing the page), then it can
-> > of course try to refault the page in because it's vma is still there. But
-> > you catch that refault in your driver , which can prevent the page from
-> > being faulted back in.
-> 
-> I think Christoph's question has more to do with faults that are
-> in flight.  A recently requested fault could have just released the
-> last lock that was holding up the invalidate callout.  It would then
-> begin messaging back the response PFN which could still be in flight.
-> The invalidate callout would then fire and do the interrupt shoot-down
-> while that response was still active (essentially beating the inflight
-> response).  The invalidate would clear up nothing and then the response
-> would insert the PFN after it is no longer the correct PFN.
 
-I just looked over XPMEM.  I think we could make this work.  We already
-have a list of active faults which is protected by a simple spinlock.
-I would need to nest this lock within another lock protected our PFN
-table (currently it is a mutex) and then the invalidate interrupt handler
-would need to mark the fault as invalid (which is also currently there).
+* Richard Kennedy <richard@rsk.demon.co.uk> wrote:
 
-I think my sticking points with the interrupt method remain at fault
-containment and timeout.  The inability of the ia64 processor to handle
-provide predictive failures for the read/write of memory on other
-partitions prevents us from being able to contain the failure.  I don't
-think we can get the information we would need to do the invalidate
-without introducing fault containment issues which has been a continous
-area of concern for our customers.
+> This patch removes 24 bytes of padding and allows 1 extra object per 
+> slab on my fedora based config. Patch against 2.6.26-rc2 & running 
+> successfully on my AMD 64 desktop machine.
 
+applied, thanks. Nice patch - task_struct hasnt been field-ordering 
+optimized for quite some time.
 
-Thanks,
-Robin
+	Ingo
