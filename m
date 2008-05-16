@@ -1,96 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbYEPX2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758572AbYEPX33@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756076AbYEPX2m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 19:28:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbYEPX2a
+	id S1758572AbYEPX33 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 19:29:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751432AbYEPX3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 19:28:30 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:9596 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751350AbYEPX23 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 19:28:29 -0400
-Message-ID: <482E1899.7020604@hp.com>
-Date: Fri, 16 May 2008 16:28:25 -0700
-From: Rick Jones <rick.jones2@hp.com>
-User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
-X-Accept-Language: en-us, en
+	Fri, 16 May 2008 19:29:20 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57057 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750818AbYEPX3U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 19:29:20 -0400
+Date: Fri, 16 May 2008 19:29:20 -0400
+From: Dave Jones <davej@redhat.com>
+To: Paul Gortmaker <paul.gortmaker@windriver.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: gianfar build failure.
+Message-ID: <20080516232920.GA26131@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Paul Gortmaker <paul.gortmaker@windriver.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       Chris Peterson <cpeterso@cpeterso.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
- IRQF_SAMPLE_RANDOM
-References: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com>	<20080515142154.0595e475@core>	<36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com>	<20080515173939.1ec968be@core> <482C7DA3.1090809@garzik.org>
-In-Reply-To: <482C7DA3.1090809@garzik.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> The Treacherous Platform Module includes an RNG.
-> 
-> Someone (hi Jesse?) should implement support for TPM_GetRandom.
-> 
-> All the specs are public, and the hardware is already in users' hands.
+Hi Paul,
+ Since your commit d0313587547092af7f5ee8a576793e1e5d61be89
+I see this build failure:
 
-My curiousity got the better of me, so I enabled the TPM (Infineon)
+"get_phy_id" [drivers/net/gianfar_driver.ko] undefined!
 
-moe:~# dmesg | grep -i tpm
-tpm_inf_pnp 00:05: Found TPM with ID IFX0101
-tpm_inf_pnp 00:05: TPM found: config base 0xff5b804e, data base 
-0xff5b8000, chip version 0x0006, vendor id 0x15d1 (Infineon), product id 
-0x0006 (SLD 9630 TT 1.1)
+both CONFIG_PHYLIB and CONFIG_GIANFAR are =m
 
-on a system I had, and using whatever Debian Lenny (w 2.6.24-1 kernel) 
-offers for trousers and tcsd etc, a bunch of help from some other HPers, 
-and a hacked example program from an HP-UX document I pressed-on without 
-much understanding and arrived at:
+Missing exports ?
 
-moe:~# time ./raj_example -c 1000
-making 1000 Tspi_TPM_GetRandom calls of 16 bytes each
+	Dave
 
-real    0m28.033s
-user    0m0.000s
-sys     0m0.000s
-
-
-28.0033s / 1000 calls = 2.8 ms per call.  While this was happening top 
-was reporting  1% CPU time in the tcsd.
-
-I've no idea how much feeding /dev/random would want and how often, but 
-there is some crude data on overhead for pulling random numbers out of 
-at least one TPM.  Here is some varying of the number of bytes requested 
-each time:
-
-moe:~# for i in 1 16 32 64
- > do
- > time ./raj_example -c 1000 -r $i
- > done
-making 1000 Tspi_TPM_GetRandom calls of 1 bytes each
-
-real    0m24.146s
-user    0m0.008s
-sys     0m0.000s
-making 1000 Tspi_TPM_GetRandom calls of 16 bytes each
-
-real    0m28.032s
-user    0m0.000s
-sys     0m0.000s
-making 1000 Tspi_TPM_GetRandom calls of 32 bytes each
-
-real    0m28.032s
-user    0m0.004s
-sys     0m0.000s
-making 1000 Tspi_TPM_GetRandom calls of 64 bytes each
-
-real    0m36.032s
-user    0m0.004s
-sys     0m0.000s
-
-rick jones
-no, i don't plan on adding this to netperf :)
+-- 
+http://www.codemonkey.org.uk
