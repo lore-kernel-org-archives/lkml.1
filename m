@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757506AbYEPOeq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753180AbYEPOi5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757506AbYEPOeq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 10:34:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752231AbYEPOe0
+	id S1753180AbYEPOi5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 10:38:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750752AbYEPOit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 10:34:26 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:11710 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751585AbYEPOeZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 10:34:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RTm9dq6BJh+ZmktMMh86sDyzhBWLh5YbBOgHSM6u2Id8AlEPiH0mQ+D5S19BFyCYQ7c2dGQL3P12vD3L3KaE1SO3nrfoQDEhmbI5UO7jIYNoMjnEMBgWWtaMrkm+SbptrVgt+n627HvVoBTl1ST1wKSzZnHI9d3bAvDfU+WsdYo=
-Message-ID: <6101e8c40805160734t12d5fbe8ud63fe2ab1681cd13@mail.gmail.com>
-Date: Fri, 16 May 2008 16:34:23 +0200
-From: "Oliver Pinter" <oliver.pntr@gmail.com>
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: Bad value with w83627thf
-Cc: "LM Sensors" <lm-sensors@lm-sensors.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080516162634.26207258@hyperion.delvare>
+	Fri, 16 May 2008 10:38:49 -0400
+Received: from ozlabs.org ([203.10.76.45]:57372 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750751AbYEPOit (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 10:38:49 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH] lguest: use ioremap_cache, not ioremap
+Date: Sat, 17 May 2008 00:38:35 +1000
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, lguest <lguest@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <6101e8c40805160559i4eb94ba7y7cbfea9c3f528821@mail.gmail.com>
-	 <20080516152712.629606bf@hyperion.delvare>
-	 <6101e8c40805160645x5982d5ads61a422f5600f7507@mail.gmail.com>
-	 <20080516162634.26207258@hyperion.delvare>
+Message-Id: <200805170038.35282.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jean!
+Thanks to Jon Corbet & LWN.  Only took me a day to join the dots.
 
-[snip]
+Host->Guest netcat before (with unnecessily large receive buffers):
+1073741824 bytes (1.1 GB) copied, 24.7528 seconds, 43.4 MB/s
 
-> When you reboot your machine, the W83627THF device is not reset, so the
-> configuration steps done by the w83627hf driver of kernel 2.6.25+
-> remain. However, if you stop the machine then start it again, the
-> configuration is lost.
+After:
+1073741824 bytes (1.1 GB) copied, 17.6369 seconds, 60.9 MB/s
 
-yean I thinked this, but dont know, what is this base (the git commit explained)
->
-> [1]
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=ef878b11ba245d14b7db7816217a825d6a894182
->
-> --
-> Jean Delvare
->
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ drivers/lguest/lguest_device.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-thanks the help, and then i backported this commit to 2.6.22.y and
-changed the limit values in sensors.conf
-
--- 
-Thanks,
-Oliver
+diff -r f0417cb4869e drivers/lguest/lguest_device.c
+--- a/drivers/lguest/lguest_device.c	Fri May 16 15:51:08 2008 +1000
++++ b/drivers/lguest/lguest_device.c	Fri May 16 20:43:36 2008 +1000
+@@ -27,7 +27,7 @@ static unsigned int dev_index;
+  * __iomem to quieten sparse. */
+ static inline void *lguest_map(unsigned long phys_addr, unsigned long pages)
+ {
+-	return (__force void *)ioremap(phys_addr, PAGE_SIZE*pages);
++	return (__force void *)ioremap_cache(phys_addr, PAGE_SIZE*pages);
+ }
+ 
+ static inline void lguest_unmap(void *addr)
