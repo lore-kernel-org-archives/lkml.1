@@ -1,26 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761810AbYEPOvi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761964AbYEPOvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761810AbYEPOvi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 10:51:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758160AbYEPOnF
+	id S1761964AbYEPOvz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 10:51:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbYEPOnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 10:43:05 -0400
-Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49223 "EHLO
+	Fri, 16 May 2008 10:43:07 -0400
+Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49266 "EHLO
 	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751989AbYEPOmJ (ORCPT
+	with ESMTP id S1752897AbYEPOmR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 10:42:09 -0400
+	Fri, 16 May 2008 10:42:17 -0400
 From: hooanon05@yahoo.co.jp
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Junjiro Okajima <hooanon05@yahoo.co.jp>
-Subject: [PATCH 41/67] aufs directory operations, header
-Date: Fri, 16 May 2008 23:32:55 +0900
-Message-Id: <12109484023618-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [PATCH 12/67] aufs branch filesystems and xino for them
+Date: Fri, 16 May 2008 23:32:26 +0900
+Message-Id: <12109484012658-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <12109484023224-git-send-email-hooanon05@yahoo.co.jp>
-References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <12109484012532-git-send-email-hooanon05@yahoo.co.jp> <12109484012997-git-send-email-hooanon05@yahoo.co.jp> <12109484013051-git-send-email-hooanon05@yahoo.co.jp> <12109484013436-git-send-email-hooanon05@yahoo.co.jp> <1210948401415-git-send-email-hooanon05@yahoo.co.jp> <12109484011533-git-send-email-hooanon05@yahoo.co.jp> <1210948401506-git-send-email-hooanon05@yahoo.co.jp> <12109484013156-git-send-email-hooanon05@yahoo.co.jp> <12109484012724-git-send-email-hooanon05@yahoo.co.jp> <12109484013264-git-send-email-hooanon05@yahoo.co.jp> <12109484012658-git-send-email-hooanon05@yahoo.co.jp> <12109484011282-git-send-email-hooanon05@yahoo.co.jp> <12109484012543-git-send-email-hooanon05@yahoo.co.jp> <12109484013834-git-send-email-hooanon05@yahoo.co.jp> <12109484012213-git-send-email-hooanon05@yahoo.co.jp> <12109484012301-git-send-email-hooanon05@yahoo.co.jp> <1210948401175-git-send-email-hooanon05@yahoo.co.jp> <1210948!
- 4013702-git-send-email-hooanon05@yahoo.co.jp> <12109484012871-git-send-email-hooanon05@yahoo.co.jp> <12109484013438-git-send-email-hooanon05@yahoo.co.jp> <12109484013559-git-send-email-hooanon05@yahoo.co.jp> <12109484012111-git-send-email-hooanon05@yahoo.co.jp> <1210948401543-git-send-email-hooanon05@yahoo.co.jp> <1210948401147-git-send-email-hooanon05@yahoo.co.jp> <12109484012904-git-send-email-hooanon05@yahoo.co.jp> <121094840127-git-send-email-hooanon05@yahoo.co.jp> <12109484011862-git-send-email-hooanon05@yahoo.co.jp> <12109484011143-git-send-email-hooanon05@yahoo.co.jp> <12109484011867-git-send-email-hooanon05@yahoo.co.jp> <12109484021033-git-send-email-hooanon05@yahoo.co.jp> <12109484021234-git-send-email-hooanon05@yahoo.co.jp> <12109484022680-git-send-email-hooanon05@yahoo.co.jp> <12109484021974-git-send-email-hooanon05@yahoo.co.jp> <12109484021281-git-send-email-hooanon05@yahoo.co.jp> <12109484022659-git-send-email-hooanon05@yahoo.co.jp> <12109484023036-git-send-ema!
- il-hooanon05@yahoo.co.jp> <12109484021939-git-send-email-hooanon05@yahoo.co.jp> <12109484022745-git-send-email-hooanon05@yahoo.co.jp> <12109484023224-git-send-email-hooanon05@yahoo.co.jp>
+In-Reply-To: <12109484013264-git-send-email-hooanon05@yahoo.co.jp>
+References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <12109484012532-git-send-email-hooanon05@yahoo.co.jp> <12109484012997-git-send-email-hooanon05@yahoo.co.jp> <12109484013051-git-send-email-hooanon05@yahoo.co.jp> <12109484013436-git-send-email-hooanon05@yahoo.co.jp> <1210948401415-git-send-email-hooanon05@yahoo.co.jp> <12109484011533-git-send-email-hooanon05@yahoo.co.jp> <1210948401506-git-send-email-hooanon05@yahoo.co.jp> <12109484013156-git-send-email-hooanon05@yahoo.co.jp> <12109484012724-git-send-email-hooanon05@yahoo.co.jp> <12109484013264-git-send-email-hooanon05@yahoo.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -28,19 +26,19 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Junjiro Okajima <hooanon05@yahoo.co.jp>
 
 	initial commit
-	aufs directory operations, header
+	aufs branch filesystems and xino for them
 
 Signed-off-by: Junjiro Okajima <hooanon05@yahoo.co.jp>
 ---
- fs/aufs/dir.h |  146 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 146 insertions(+), 0 deletions(-)
+ fs/aufs/branch.h |  345 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 345 insertions(+), 0 deletions(-)
 
-diff --git a/fs/aufs/dir.h b/fs/aufs/dir.h
+diff --git a/fs/aufs/branch.h b/fs/aufs/branch.h
 new file mode 100644
-index 0000000..94ccbd1
+index 0000000..a9146eb
 --- /dev/null
-+++ b/fs/aufs/dir.h
-@@ -0,0 +1,146 @@
++++ b/fs/aufs/branch.h
+@@ -0,0 +1,345 @@
 +/*
 + * Copyright (C) 2005-2008 Junjiro Okajima
 + *
@@ -60,133 +58,332 @@ index 0000000..94ccbd1
 + */
 +
 +/*
-+ * directory operations
++ * branch filesystems and xino for them
 + *
-+ * $Id: dir.h,v 1.2 2008/04/21 01:34:26 sfjro Exp $
++ * $Id: branch.h,v 1.3 2008/04/28 03:03:32 sfjro Exp $
 + */
 +
-+#ifndef __AUFS_DIR_H__
-+#define __AUFS_DIR_H__
++#ifndef __AUFS_BRANCH_H__
++#define __AUFS_BRANCH_H__
 +
 +#ifdef __KERNEL__
 +
 +#include <linux/fs.h>
++#include <linux/mount.h>
++#include <linux/sysfs.h>
 +#include <linux/aufs_type.h>
++#include "misc.h"
++#include "super.h"
 +
 +/* ---------------------------------------------------------------------- */
 +
-+/* need to be faster and smaller */
++/* an entry in a xino file */
++struct au_xino_entry {
++	ino_t ino;
++	//__u32 h_gen;
++} __packed;
 +
-+#define AuSize_DEBLK	512 // todo: changeable
-+#define AuSize_NHASH	32 // todo: changeable
-+#if AuSize_DEBLK < NAME_MAX || PAGE_SIZE < AuSize_DEBLK
-+#error invalid size AuSize_DEBLK
++//#define AuXino_INVALID_HGEN	(-1)
++
++/* a xino file */
++struct au_xino_file {
++	//struct file		**xi_file;
++	struct file		*xi_file;
++
++	/* array management */
++	//unsigned long long	xi_limit;	/* Max xino file size */
++	//unsigned long long	xi_size; /* s_maxbytes */
++
++	/* truncation */
++	blkcnt_t		xi_upper;	/* watermark in blocks */
++	//u64			xi_upper;	/* watermark in bytes */
++	//u64			xi_step;	/* to next watermark in bytes */
++	atomic_t 		xi_running;
++};
++
++/* protected by superblock rwsem */
++struct au_branch {
++	struct file		*br_xino;
++	//struct au_xino_file		*br_xino;
++
++	aufs_bindex_t		br_id;
++
++	int			br_perm;
++	struct vfsmount		*br_mnt;
++	atomic_t		br_count;
++
++	/* whiteout base */
++	struct au_rwsem		br_wh_rwsem;
++	struct dentry		*br_wh;
++	atomic_t 		br_wh_running;
++
++	/* pseudo-link dir */
++	struct dentry		*br_plink;
++
++#if 1
++	/* xino truncation */
++	blkcnt_t		br_xino_upper;	/* watermark in blocks */
++	atomic_t		br_xino_running;
 +#endif
 +
-+typedef char au_vdir_deblk_t[AuSize_DEBLK];
++	/* mfs mode */
++	u64			br_bytes;
 +
-+struct au_nhash {
-+	struct hlist_head heads[AuSize_NHASH];
-+};
-+
-+struct au_vdir_destr {
-+	unsigned char	len;
-+	char		name[0];
-+} __packed;
-+
-+struct au_vdir_dehstr {
-+	struct hlist_node	hash;
-+	struct au_vdir_destr	*str;
-+};
-+
-+struct au_vdir_de {
-+	ino_t			de_ino;
-+	unsigned char		de_type;
-+	/* caution: packed */
-+	struct au_vdir_destr	de_str;
-+} __packed;
-+
-+struct au_vdir_wh {
-+	struct hlist_node	wh_hash;
-+	aufs_bindex_t		wh_bindex;
-+#ifdef CONFIG_AUFS_SHWH
-+	ino_t			wh_ino;
-+	unsigned char		wh_type;
-+	/* caution: packed */
++#ifdef CONFIG_SYSFS
++	/* an entry under sysfs per mount-point */
++	char			br_name[8];
++	struct attribute	br_attr;
 +#endif
-+	struct au_vdir_destr	wh_str;
-+} __packed;
 +
-+union au_vdir_deblk_p {
-+	unsigned char		*p;
-+	au_vdir_deblk_t		*deblk;
-+	struct au_vdir_de	*de;
-+};
-+
-+struct au_vdir {
-+	au_vdir_deblk_t	**vd_deblk;
-+	int		vd_nblk;
-+	struct {
-+		int			i;
-+		union au_vdir_deblk_p	p;
-+	} vd_last;
-+
-+	unsigned long	vd_version;
-+	unsigned long	vd_jiffy;
++	au_gen_t		br_generation;
 +};
 +
 +/* ---------------------------------------------------------------------- */
 +
-+/* dir.c */
-+extern struct file_operations aufs_dir_fop;
-+int au_test_empty_lower(struct dentry *dentry);
-+int au_test_empty(struct dentry *dentry, struct au_nhash *whlist);
++/* branch permission and attribute */
++enum {
++	AuBr_RW,		/* writable, linkable wh */
++	AuBr_RO,		/* readonly, no wh */
++	AuBr_RR,		/* natively readonly, no wh */
 +
-+/* vdir.c */
-+struct au_nhash *au_nhash_new(gfp_t gfp);
-+void au_nhash_del(struct au_nhash *nhash);
-+void au_nhash_init(struct au_nhash *nhash);
-+void au_nhash_move(struct au_nhash *dst, struct au_nhash *src);
-+void au_nhash_fin(struct au_nhash *nhash);
-+int au_nhash_test_longer_wh(struct au_nhash *whlist, aufs_bindex_t btgt,
-+			    int limit);
-+int au_nhash_test_known_wh(struct au_nhash *whlist, char *name, int namelen);
-+int au_nhash_append_wh(struct au_nhash *whlist, char *name, int namelen,
-+		       ino_t ino, unsigned int d_type, aufs_bindex_t bindex,
-+		    unsigned char shwh);
-+void au_vdir_free(struct au_vdir *vdir);
-+int au_vdir_init(struct file *file);
-+int au_vdir_fill_de(struct file *file, void *dirent, filldir_t filldir);
++	AuBr_RWNoLinkWH,	/* un-linkable whiteouts */
++
++	AuBr_ROWH,
++	AuBr_RRWH,		/* whiteout-able */
++
++	AuBr_Last
++};
++
++static inline int au_br_writable(int brperm)
++{
++	return (brperm == AuBr_RW || brperm == AuBr_RWNoLinkWH);
++}
++
++static inline int au_br_whable(int brperm)
++{
++	return (brperm == AuBr_RW
++		|| brperm == AuBr_ROWH
++		|| brperm == AuBr_RRWH);
++}
++
++#if 0 // rfu
++static inline int au_br_linkable_wh(int brperm)
++{
++	return (brperm == AuBr_RW);
++}
++#endif
++
++static inline int au_br_hinotifyable(int brperm)
++{
++#ifdef CONFIG_AUFS_HINOTIFY
++	return (brperm != AuBr_RR && brperm != AuBr_RRWH);
++#else
++	return 0;
++#endif
++}
 +
 +/* ---------------------------------------------------------------------- */
++
++/* branch.c */
++struct au_sbinfo;
++void au_br_free(struct au_sbinfo *sinfo);
++int au_test_def_rr(struct super_block *h_sb);
++int au_br_index(struct super_block *sb, aufs_bindex_t br_id);
++struct au_opt_add;
++int au_br_add(struct super_block *sb, struct au_opt_add *add, int remount);
++struct au_opt_del;
++int au_br_del(struct super_block *sb, struct au_opt_del *del, int remount);
++struct au_opt_mod;
++int au_br_mod(struct super_block *sb, struct au_opt_mod *mod, int remount,
++	      int *do_update);
++
++/* xino.c */
++int au_xib_trunc(struct super_block *sb);
++
++struct file *au_xino_create(struct super_block *sb, char *fname, int silent,
++			    struct dentry *parent);
++ino_t au_xino_new_ino(struct super_block *sb);
++int au_xino_write0(struct super_block *sb, aufs_bindex_t bindex, ino_t h_ino,
++		   ino_t ino);
++int au_xino_write(struct super_block *sb, aufs_bindex_t bindex, ino_t h_ino,
++		  struct au_xino_entry *xinoe);
++int au_xino_read(struct super_block *sb, aufs_bindex_t bindex, ino_t h_ino,
++		 struct au_xino_entry *xinoe);
++int au_xino_br(struct super_block *sb, struct au_branch *br, ino_t hino,
++	       struct file *base_file, int do_test);
++int au_xino_trunc(struct super_block *sb, aufs_bindex_t bindex);
++
++struct au_opt_xino;
++int au_xino_set(struct super_block *sb, struct au_opt_xino *xino, int remount);
++void au_xino_clr(struct super_block *sb);
++struct file *au_xino_def(struct super_block *sb);
++
++/* ---------------------------------------------------------------------- */
++
++//todo: memory barrier?
++static inline int au_br_count(struct au_branch *br)
++{
++	return atomic_read(&br->br_count);
++}
++
++static inline int au_br_get(struct au_branch *br)
++{
++	return atomic_inc_return(&br->br_count);
++}
++
++static inline int au_br_put(struct au_branch *br)
++{
++	return atomic_dec_return(&br->br_count);
++}
++
++static inline au_gen_t au_br_gen(struct au_branch *br)
++{
++	return br->br_generation;
++}
++
++/*
++ * test if the @br is readonly or not.
++ */
++static inline int au_br_rdonly(struct au_branch *br)
++{
++	return ((br->br_mnt->mnt_sb->s_flags & MS_RDONLY)
++		|| !au_br_writable(br->br_perm))
++		? -EROFS : 0;
++}
++
++/* ---------------------------------------------------------------------- */
++
++/* Superblock to branch */
++static inline
++aufs_bindex_t au_sbr_id(struct super_block *sb, aufs_bindex_t bindex)
++{
++	return au_sbr(sb, bindex)->br_id;
++}
 +
 +static inline
-+void au_shwh_init_wh(struct au_vdir_wh *wh, ino_t ino, unsigned char d_type)
++struct vfsmount *au_sbr_mnt(struct super_block *sb, aufs_bindex_t bindex)
 +{
-+#ifdef CONFIG_AUFS_SHWH
-+	wh->wh_ino = ino;
-+	wh->wh_type = d_type;
++	return au_sbr(sb, bindex)->br_mnt;
++}
++
++static inline
++struct super_block *au_sbr_sb(struct super_block *sb, aufs_bindex_t bindex)
++{
++	return au_sbr_mnt(sb, bindex)->mnt_sb;
++}
++
++#if 0 // rfu
++static inline int au_sbr_count(struct super_block *sb, aufs_bindex_t bindex)
++{
++	return au_br_count(au_sbr(sb, bindex));
++}
++
++static inline void au_sbr_get(struct super_block *sb, aufs_bindex_t bindex)
++{
++	au_br_get(au_sbr(sb, bindex));
++}
 +#endif
++
++static inline void au_sbr_put(struct super_block *sb, aufs_bindex_t bindex)
++{
++	au_br_put(au_sbr(sb, bindex));
 +}
 +
-+static inline void au_add_nlink(struct inode *dir, struct inode *h_dir)
++static inline int au_sbr_perm(struct super_block *sb, aufs_bindex_t bindex)
 +{
-+	AuDebugOn(!S_ISDIR(dir->i_mode) || !S_ISDIR(h_dir->i_mode));
-+	dir->i_nlink += h_dir->i_nlink - 2;
-+	if (unlikely(h_dir->i_nlink < 2))
-+		dir->i_nlink += 2;
++	return au_sbr(sb, bindex)->br_perm;
 +}
 +
-+static inline void au_sub_nlink(struct inode *dir, struct inode *h_dir)
++static inline int au_sbr_whable(struct super_block *sb, aufs_bindex_t bindex)
 +{
-+	AuDebugOn(!S_ISDIR(dir->i_mode) || !S_ISDIR(h_dir->i_mode));
-+	dir->i_nlink -= h_dir->i_nlink - 2;
-+	if (unlikely(h_dir->i_nlink < 2))
-+		dir->i_nlink -= 2;
++	return au_br_whable(au_sbr_perm(sb, bindex));
 +}
++
++static inline int au_test_trunc_xino(struct super_block *sb)
++{
++	return au_test_tmpfs(sb);
++}
++
++/* temporary support for i#1 in cramfs */
++static inline int au_test_unique_ino(struct dentry *h_dentry, ino_t h_ino)
++{
++#if defined(CONFIG_CRAMFS) || defined(CONFIG_CRAMFS_MODULE)
++	if (unlikely(h_dentry->d_sb->s_magic == CRAMFS_MAGIC))
++		return (h_ino != 1);
++#endif
++	return 1;
++}
++
++#ifdef CONFIG_AUFS_BR_NFS
++static inline int au_test_unsupported_nfs(struct super_block *h_sb)
++{
++	return 0;
++}
++
++static inline struct vfsmount *au_do_nfsmnt(struct vfsmount *h_mnt)
++{
++	if (!au_test_nfs(h_mnt->mnt_sb))
++		return NULL;
++	return h_mnt;
++}
++
++/* it doesn't mntget() */
++static inline
++struct vfsmount *au_nfsmnt(struct super_block *sb, aufs_bindex_t bindex)
++{
++	return au_do_nfsmnt(au_sbr_mnt(sb, bindex));
++}
++
++#define AuNoNfsBranchMsg "dummy"
++
++#else
++static inline int au_test_unsupported_nfs(struct super_block *h_sb)
++{
++	return au_test_nfs(h_sb);
++}
++
++static inline struct vfsmount *au_do_nfsmnt(struct vfsmount *h_mnt)
++{
++	return NULL;
++}
++
++static inline
++struct vfsmount *au_nfsmnt(struct super_block *sb, aufs_bindex_t bindex)
++{
++	return NULL;
++}
++
++#define AuNoNfsBranchMsg "NFS branch is not supported" \
++	", try some configurations and patches included in aufs source CVS."
++
++#endif /* CONFIG_AUFS_BR_NFS */
++
++/* ---------------------------------------------------------------------- */
++
++/*
++ * br_wh_read_lock, br_wh_write_lock
++ * br_wh_read_unlock, br_wh_write_unlock, br_wh_downgrade_lock
++ */
++AuSimpleRwsemFuncs(br_wh, struct au_branch *br, br->br_wh_rwsem);
++
++/* to debug easier, do not make them inlined functions */
++#define BrWhMustReadLock(br) do { \
++	/* SiMustAnyLock(sb); */ \
++	AuRwMustReadLock(&(br)->br_wh_rwsem); \
++} while (0)
++
++#define BrWhMustWriteLock(br) do { \
++	/* SiMustAnyLock(sb); */ \
++	AuRwMustWriteLock(&(br)->br_wh_rwsem); \
++} while (0)
++
++#define BrWhMustAnyLock(br) do { \
++	/* SiMustAnyLock(sb); */ \
++	AuRwMustAnyLock(&(br)->br_wh_rwsem); \
++} while (0)
 +
 +#endif /* __KERNEL__ */
-+#endif /* __AUFS_DIR_H__ */
++#endif /* __AUFS_BRANCH_H__ */
 -- 
 1.4.4.4
 
