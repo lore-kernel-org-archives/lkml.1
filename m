@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764721AbYEPPDa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764817AbYEPPDx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764721AbYEPPDa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 11:03:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758209AbYEPOok
+	id S1764817AbYEPPDx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 11:03:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758012AbYEPOon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 10:44:40 -0400
-Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49277 "EHLO
+	Fri, 16 May 2008 10:44:43 -0400
+Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49275 "EHLO
 	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750970AbYEPOmT (ORCPT
+	with ESMTP id S1753738AbYEPOmS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 10:42:19 -0400
+	Fri, 16 May 2008 10:42:18 -0400
 From: hooanon05@yahoo.co.jp
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Junjiro Okajima <hooanon05@yahoo.co.jp>
-Subject: [PATCH 7/67] aufs module initialization and module-global
-Date: Fri, 16 May 2008 23:32:21 +0900
-Message-Id: <12109484011533-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [PATCH 9/67] aufs super_block operations
+Date: Fri, 16 May 2008 23:32:23 +0900
+Message-Id: <12109484013156-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <1210948401415-git-send-email-hooanon05@yahoo.co.jp>
-References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <12109484012532-git-send-email-hooanon05@yahoo.co.jp> <12109484012997-git-send-email-hooanon05@yahoo.co.jp> <12109484013051-git-send-email-hooanon05@yahoo.co.jp> <12109484013436-git-send-email-hooanon05@yahoo.co.jp> <1210948401415-git-send-email-hooanon05@yahoo.co.jp>
+In-Reply-To: <1210948401506-git-send-email-hooanon05@yahoo.co.jp>
+References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <12109484012532-git-send-email-hooanon05@yahoo.co.jp> <12109484012997-git-send-email-hooanon05@yahoo.co.jp> <12109484013051-git-send-email-hooanon05@yahoo.co.jp> <12109484013436-git-send-email-hooanon05@yahoo.co.jp> <1210948401415-git-send-email-hooanon05@yahoo.co.jp> <12109484011533-git-send-email-hooanon05@yahoo.co.jp> <1210948401506-git-send-email-hooanon05@yahoo.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -26,21 +26,21 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Junjiro Okajima <hooanon05@yahoo.co.jp>
 
 	initial commit
-	aufs module initialization and module-global
+	aufs super_block operations
 
 Signed-off-by: Junjiro Okajima <hooanon05@yahoo.co.jp>
 ---
- fs/aufs/module.h |   78 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 78 insertions(+), 0 deletions(-)
+ fs/aufs/super.h |  410 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 410 insertions(+), 0 deletions(-)
 
-diff --git a/fs/aufs/module.h b/fs/aufs/module.h
+diff --git a/fs/aufs/super.h b/fs/aufs/super.h
 new file mode 100644
-index 0000000..cccee38
+index 0000000..f6e6d8b
 --- /dev/null
-+++ b/fs/aufs/module.h
-@@ -0,0 +1,78 @@
++++ b/fs/aufs/super.h
+@@ -0,0 +1,410 @@
 +/*
-+ * Copyright (C) 2007-2008 Junjiro Okajima
++ * Copyright (C) 2005-2008 Junjiro Okajima
 + *
 + * This program, aufs is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -58,65 +58,397 @@ index 0000000..cccee38
 + */
 +
 +/*
-+ * module initialization and module-global
++ * super_block operations
 + *
-+ * $Id: module.h,v 1.2 2008/04/21 01:33:00 sfjro Exp $
++ * $Id: super.h,v 1.4 2008/05/04 23:52:41 sfjro Exp $
 + */
 +
-+#ifndef __AUFS_MODULE_H__
-+#define __AUFS_MODULE_H__
++#ifndef __AUFS_SUPER_H__
++#define __AUFS_SUPER_H__
 +
 +#ifdef __KERNEL__
 +
-+//#include <linux/slab.h>
++#include <linux/fs.h>
++#include <linux/cramfs_fs.h>
++#include <linux/kobject.h>
++#include <linux/magic.h>
++#include <linux/aufs_type.h>
++//#include "hinode.h"
++#include "misc.h"
++//#include "opts.h"
++#include "wkq.h"
 +
-+/* ---------------------------------------------------------------------- */
++typedef ssize_t (*au_readf_t)(struct file *, char __user *, size_t, loff_t *);
++typedef ssize_t (*au_writef_t)(struct file *, const char __user *, size_t,
++			       loff_t *);
 +
-+/* module parameters */
-+extern short aufs_nwkq;
-+extern int sysaufs_brs;
-+
-+/* ---------------------------------------------------------------------- */
-+
-+extern char au_esc_chars[];
-+extern int au_dir_roflags;
-+
-+/* kmem cache */
-+enum {
-+	AuCache_DINFO,
-+	AuCache_ICNTNR,
-+	AuCache_FINFO,
-+	AuCache_VDIR,
-+	AuCache_DEHSTR,
-+#ifdef CONFIG_AUFS_HINOTIFY
-+	AuCache_HINOTIFY,
-+#endif
-+	AuCache_Last
++struct au_wbr_copyup_operations {
++	int (*copyup)(struct dentry *dentry);
 +};
 +
-+extern struct kmem_cache *au_cachep[];
++struct au_wbr_create_operations {
++	int (*create)(struct dentry *dentry, int isdir);
++	int (*init)(struct super_block *sb);
++	int (*fin)(struct super_block *sb);
++};
 +
-+#define AuCacheArgs(type, sz)	(type), (sz), 0, SLAB_RECLAIM_ACCOUNT, NULL
-+#define AuCacheX(type, extra) \
-+	kmem_cache_create(AuCacheArgs(#type, sizeof(struct type) + extra))
-+#define AuCache(type)		AuCacheX(type, 0)
++struct au_wbr_mfs {
++	struct mutex	mfs_lock; /* protect this structure */
++	unsigned long	mfs_jiffy;
++	unsigned long	mfs_expire;
++	aufs_bindex_t	mfs_bindex;
++
++	u64		mfsrr_bytes;
++	u64		mfsrr_watermark;
++};
++
++/* sbinfo status flags */
++/*
++ * set true when refresh_dirs() failed at remount time.
++ * then try refreshing dirs at access time again.
++ * if it is false, refreshing dirs at access time is unnecesary
++ */
++#define AuSi_FAILED_REFRESH_DIRS	1
++#define AuSi_FAILED_INIT		(1 << 1)
++#define au_ftest_si(sbinfo, name)	((sbinfo)->au_si_status & AuSi_##name)
++#define au_fset_si(sbinfo, name) \
++	{ (sbinfo)->au_si_status |= AuSi_##name; }
++#define au_fclr_si(sbinfo, name) \
++	{ (sbinfo)->au_si_status &= ~AuSi_##name; }
++
++struct au_branch;
++struct au_sbinfo {
++	/* nowait tasks in the system-wide workqueue */
++	struct au_nowait_tasks	si_nowait;
++
++	struct au_rwsem		si_rwsem;
++
++	/* branch management */
++	au_gen_t		si_generation;
++
++	/* see above flags */
++	unsigned char		au_si_status;
++
++	aufs_bindex_t		si_bend;
++	aufs_bindex_t		si_last_br_id;
++	struct au_branch	**si_branch;
++
++	/* policy to select a writable branch */
++	unsigned char		si_wbr_copyup;
++	unsigned char		si_wbr_create;
++	struct au_wbr_copyup_operations *si_wbr_copyup_ops;
++	struct au_wbr_create_operations *si_wbr_create_ops;
++
++	/* round robin */
++	atomic_t		si_wbr_rr_next;
++
++	/* most free space */
++	struct au_wbr_mfs	si_wbr_mfs;
++
++	/* mount flags */
++	/* include/asm-ia64/siginfo.h defines a macro named si_flags */
++	unsigned int		si_mntflags;
++
++	/* external inode number (bitmap and translation table) */
++	au_readf_t		si_xread;
++	au_writef_t		si_xwrite;
++	struct file		*si_xib;
++	struct mutex		si_xib_mtx; /* protect xib members */
++	unsigned long		*si_xib_buf;
++	unsigned long		si_xib_last_pindex;
++	int			si_xib_next_bit;
++	//unsigned long long	si_xib_limit;	/* Max xib file size */
++
++	/* readdir cache time, max, in HZ */
++	unsigned long		si_rdcache;
++
++	/*
++	 * If the number of whiteouts are larger than si_dirwh, leave all of
++	 * them after au_whtmp_ren to reduce the cost of rmdir(2).
++	 * future fsck.aufs or kernel thread will remove them later.
++	 * Otherwise, remove all whiteouts and the dir in rmdir(2).
++	 */
++	unsigned int		si_dirwh;
++
++	/*
++	 * rename(2) a directory with all children.
++	 */
++	//int			si_rendir;
++
++	/* pseudo_link list */ // dirty
++	spinlock_t		si_plink_lock;
++	struct list_head	si_plink;
++
++	/* dirty, for export, async ops, and sysfs */
++	spinlock_t		si_mntcache_lock;
++	struct vfsmount		*si_mntcache;	/* no get/put */
++
++	/*
++	 * sysfs and lifetime management.
++	 * this is not a small structure and it may be a waste of memory in case
++	 * of sysfs is disabled, particulary when many aufs-es are mounted.
++	 */
++	struct kobject		si_kobj;
++
++	//todo: remove this list.
++	/* super_blocks list is not exported */
++	struct list_head	si_list;
++
++#ifdef CONFIG_AUFS_ROBR
++	/* locked vma list for mmap() */ // dirty
++	spinlock_t		si_lvma_lock;
++	struct list_head	si_lvma;
++#endif
++
++	/* dirty, necessary for unmounting, sysfs and sysrq */
++	struct super_block	*si_sb;
++};
 +
 +/* ---------------------------------------------------------------------- */
 +
-+#define AuCacheFuncs(name, index) \
-+static inline void *au_cache_alloc_##name(void) \
-+{ return kmem_cache_alloc(au_cachep[index], GFP_KERNEL); } \
-+static inline void au_cache_free_##name(void *p) \
-+{ kmem_cache_free(au_cachep[index], p); }
++/* policy to select one among writable branches */
++#define AuWbrCopyup(sbinfo, args... ) \
++	(sbinfo)->si_wbr_copyup_ops->copyup(args)
++#define AuWbrCreate(sbinfo, args... ) \
++	(sbinfo)->si_wbr_create_ops->create(args)
 +
-+AuCacheFuncs(dinfo, AuCache_DINFO);
-+AuCacheFuncs(icntnr, AuCache_ICNTNR);
-+AuCacheFuncs(finfo, AuCache_FINFO);
-+AuCacheFuncs(vdir, AuCache_VDIR);
-+AuCacheFuncs(dehstr, AuCache_DEHSTR);
++/* flags for si_read_lock()/aufs_read_lock()/di_read_lock() */
++#define AuLock_DW		1		/* write-lock dentry */
++#define AuLock_IR		(1 << 1)	/* read-lock inode */
++#define AuLock_IW		(1 << 2)	/* write-lock inode */
++#define AuLock_FLUSH		(1 << 3)	/* wait for 'nowait' tasks */
++#define AuLock_DIR		(1 << 4)	/* target is a dir */
++#define au_ftest_lock(flags, name)	((flags) & AuLock_##name)
++#define au_fset_lock(flags, name)	{ (flags) |= AuLock_##name; }
++#define au_fclr_lock(flags, name)	{ (flags) &= ~AuLock_##name; }
++
++/* ---------------------------------------------------------------------- */
++
++/* super.c */
++extern struct file_system_type aufs_fs_type;
++struct inode *au_iget_locked(struct super_block *sb, ino_t ino);
++
++/* sbinfo.c */
++void au_si_free(struct kobject *kobj);
++int au_si_alloc(struct super_block *sb);
++struct au_branch *au_sbr(struct super_block *sb, aufs_bindex_t bindex);
++au_gen_t au_sigen_inc(struct super_block *sb);
++int au_find_bindex(struct super_block *sb, struct au_branch *br);
++
++void aufs_read_lock(struct dentry *dentry, int flags);
++void aufs_read_unlock(struct dentry *dentry, int flags);
++void aufs_write_lock(struct dentry *dentry);
++void aufs_write_unlock(struct dentry *dentry);
++void aufs_read_and_write_lock2(struct dentry *d1, struct dentry *d2, int isdir);
++void aufs_read_and_write_unlock2(struct dentry *d1, struct dentry *d2);
++
++aufs_bindex_t au_new_br_id(struct super_block *sb);
++struct vfsmount *au_mntcache_get(struct super_block *sb);
++
++/* wbr_policy.c */
++extern struct au_wbr_copyup_operations au_wbr_copyup_ops[];
++extern struct au_wbr_create_operations au_wbr_create_ops[];
++int au_cpdown_dirs(struct dentry *dentry, aufs_bindex_t bdst,
++		   struct dentry *locked);
++
++/* ---------------------------------------------------------------------- */
++
++static inline struct au_sbinfo *au_sbi(struct super_block *sb)
++{
++	return sb->s_fs_info;
++}
++
++static inline const char *au_sbtype(struct super_block *sb)
++{
++	return sb->s_type->name;
++}
++
++static inline int au_test_aufs(struct super_block *sb)
++{
++	return (sb->s_magic == AUFS_SUPER_MAGIC);
++}
++
++static inline int au_test_nfs(struct super_block *sb)
++{
++#ifdef CONFIG_AUFS_BR_NFS
++	return (sb->s_magic == NFS_SUPER_MAGIC);
++#else
++	return 0;
++#endif
++}
++
++static inline int au_test_fuse(struct super_block *sb)
++{
++#ifdef CONFIG_AUFS_WORKAROUND_FUSE
++#ifdef FUSE_SUPER_MAGIC
++	BUILD_BUG_ON(FUSE_SUPER_MAGIC != 0x65735546);
++	return (sb->s_magic == FUSE_SUPER_MAGIC);
++#else
++	return !strcmp(au_sbtype(sb), "fuse");
++#endif
++#endif
++	return 0;
++}
++
++static inline int au_test_xfs(struct super_block *sb)
++{
++#ifdef CONFIG_AUFS_BR_XFS
++#ifdef XFS_SB_MAGIC
++	BUILD_BUG_ON(XFS_SB_MAGIC != 0x58465342);
++	return (sb->s_magic == XFS_SB_MAGIC);
++#else
++	return !strcmp(au_sbtype(sb), "xfs");
++#endif
++#endif
++	return 0;
++}
++
++static inline int au_test_tmpfs(struct super_block *sb)
++{
++#ifdef CONFIG_TMPFS
++#ifdef TMPFS_MAGIC
++	BUILD_BUG_ON(TMPFS_MAGIC != 0x01021994);
++	return (sb->s_magic == TMPFS_MAGIC);
++#else
++	return !strcmp(au_sbtype(sb), "tmpfs");
++#endif
++#endif
++	return 0;
++}
++
++/* ---------------------------------------------------------------------- */
++
++#ifdef CONFIG_AUFS_EXPORT
++extern struct export_operations aufs_export_op;
++static inline void au_init_export_op(struct super_block *sb)
++{
++	sb->s_export_op = &aufs_export_op;
++}
++
++static inline int au_test_nfsd(struct task_struct *tsk)
++{
++	return (!tsk->mm && !strcmp(tsk->comm, "nfsd"));
++}
++
++static inline void au_nfsd_lockdep_off(void)
++{
++	if (au_test_nfsd(current))
++		lockdep_off();
++}
++
++static inline void au_nfsd_lockdep_on(void)
++{
++	if (au_test_nfsd(current))
++		lockdep_on();
++}
++#else
++static inline int au_test_nfsd(struct task_struct *tsk)
++{
++	return 0;
++}
++
++static inline void au_init_export_op(struct super_block *sb)
++{
++	/* nothing */
++}
++
++#define au_nfsd_lockdep_off()	do {} while (0)
++#define au_nfsd_lockdep_on()	do {} while (0)
++#endif /* CONFIG_AUFS_EXPORT */
++
++#ifdef CONFIG_AUFS_ROBR
++static inline int au_test_nested(struct super_block *h_sb)
++{
++	return 0;
++}
++
++static inline void au_robr_lvma_init(struct au_sbinfo *sbinfo)
++{
++	spin_lock_init(&sbinfo->si_lvma_lock);
++	INIT_LIST_HEAD(&sbinfo->si_lvma);
++}
++#else
++static inline int au_test_nested(struct super_block *h_sb)
++{
++	int err = 0;
++	if (unlikely(au_test_aufs(h_sb))) {
++		err = -EINVAL;
++		AuTraceErr(err);
++	}
++	return err;
++}
++
++static inline void au_robr_lvma_init(struct au_sbinfo *sbinfo)
++{
++	/* empty */
++}
++#endif /* CONFIG_AUFS_ROBR */
++
++/* ---------------------------------------------------------------------- */
++
++/* lock superblock. mainly for entry point functions */
++/*
++ * si_noflush_read_lock, si_noflush_write_lock,
++ * si_read_unlock, si_write_unlock, si_downgrade_lock
++ */
++AuSimpleLockRwsemFuncs(si_noflush, struct super_block *sb,
++		       au_sbi(sb)->si_rwsem);
++AuSimpleUnlockRwsemFuncs(si, struct super_block *sb, au_sbi(sb)->si_rwsem);
++
++static inline void si_read_lock(struct super_block *sb, int flags)
++{
++	if (au_ftest_lock(flags, FLUSH))
++		au_nwt_flush(&au_sbi(sb)->si_nowait);
++	si_noflush_read_lock(sb);
++}
++
++static inline void si_write_lock(struct super_block *sb)
++{
++	au_nwt_flush(&au_sbi(sb)->si_nowait);
++	si_noflush_write_lock(sb);
++}
++
++static inline int si_read_trylock(struct super_block *sb, int flags)
++{
++	if (au_ftest_lock(flags, FLUSH))
++		au_nwt_flush(&au_sbi(sb)->si_nowait);
++	return si_noflush_read_trylock(sb);
++}
++
++static inline int si_write_trylock(struct super_block *sb, int flags)
++{
++	if (au_ftest_lock(flags, FLUSH))
++		au_nwt_flush(&au_sbi(sb)->si_nowait);
++	return si_noflush_write_trylock(sb);
++}
++
++/* to debug easier, do not make them inlined functions */
++#define SiMustReadLock(sb)	AuRwMustReadLock(&au_sbi(sb)->si_rwsem)
++#define SiMustWriteLock(sb)	AuRwMustWriteLock(&au_sbi(sb)->si_rwsem)
++#define SiMustAnyLock(sb)	AuRwMustAnyLock(&au_sbi(sb)->si_rwsem)
++
++/* ---------------------------------------------------------------------- */
++
++static inline aufs_bindex_t au_sbend(struct super_block *sb)
++{
++	SiMustAnyLock(sb);
++	return au_sbi(sb)->si_bend;
++}
++
++static inline unsigned int au_mntflags(struct super_block *sb)
++{
++	SiMustAnyLock(sb);
++	return au_sbi(sb)->si_mntflags;
++}
++
++static inline au_gen_t au_sigen(struct super_block *sb)
++{
++	SiMustAnyLock(sb);
++	return au_sbi(sb)->si_generation;
++}
 +
 +#endif /* __KERNEL__ */
-+#endif /* __AUFS_MODULE_H__ */
++#endif /* __AUFS_SUPER_H__ */
 -- 
 1.4.4.4
 
