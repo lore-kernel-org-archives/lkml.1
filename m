@@ -1,216 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757985AbYEPDaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757461AbYEPDk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757985AbYEPDaV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 23:30:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575AbYEPDaI
+	id S1757461AbYEPDk3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 23:40:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575AbYEPDkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 23:30:08 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:38135 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754283AbYEPDaG (ORCPT
+	Thu, 15 May 2008 23:40:17 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:40304 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751553AbYEPDkQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 23:30:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=oa3Ca3Yprn2+OUJ9ojpc3wrNZMVbI8C2lechNat2UZ/KFWcFFc6EXzkgeulGGwxQXSHg6UaIIjaRFUGdMxT63Z+d9aHosUcW6pmsJM9CHa/1+8q1FP+tM4OZ6hTns/NzCAtjesL+nfO09EIDEx0kOJVxwAgdgCshmoTlmndj07M=
-Message-ID: <aa79d98a0805152029l6aeacae4rb7c54ff047177c70@mail.gmail.com>
-Date: Fri, 16 May 2008 07:29:18 +0400
-From: "Cyrill Gorcunov" <gorcunov@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>, geert@linux-m68k.org,
-       torvalds@linux-foundation.org, zippel@linux-m68k.org, schwab@suse.de,
-       linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org
-Subject: Re: [PATCH] init - fix building bug and potential buffer overflow
-In-Reply-To: <20080515134928.83b2d948.akpm@linux-foundation.org>
+	Thu, 15 May 2008 23:40:16 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>, Pavel Machek <pavel@ucw.cz>,
+       nigel@nigel.suspend2.net, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+References: <1210574441.30365.8.camel@caritas-dev.intel.com>
+	<20080513053408.GA5870@redhat.com>
+	<1210730266.23707.50.camel@caritas-dev.intel.com>
+	<20080514025607.GA19944@redhat.com>
+	<1210736275.23707.62.camel@caritas-dev.intel.com>
+	<m1lk2c4l4i.fsf@frodo.ebiederm.org>
+	<1210827473.23707.133.camel@caritas-dev.intel.com>
+	<m1lk2bs970.fsf@frodo.ebiederm.org>
+	<1210902114.23707.156.camel@caritas-dev.intel.com>
+	<m14p8zgf43.fsf@frodo.ebiederm.org>
+	<1210906575.23707.189.camel@caritas-dev.intel.com>
+Date: Thu, 15 May 2008 20:33:41 -0700
+In-Reply-To: <1210906575.23707.189.camel@caritas-dev.intel.com> (Ying Huang's
+	message of "Fri, 16 May 2008 10:56:15 +0800")
+Message-ID: <m1iqxegbxm.fsf@frodo.ebiederm.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080514154402.GF6902@cvg>
-	 <20080515105803.7c9ab8c7.akpm@linux-foundation.org>
-	 <20080515180528.GC7481@cvg> <Pine.LNX.4.64.0805152132530.22059@anakin>
-	 <aa79d98a0805151322s20a2bb34x4491bcacfcef310@mail.gmail.com>
-	 <20080515134928.83b2d948.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;"Huang, Ying" <ying.huang@intel.com>
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
+	*      [score: 0.0743]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH] kexec based hibernation: a prototype of kexec multi-stage load
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mgr1.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yes! Exactly! Thanks, Andrew! (i didn't look into what Linus suggested
-'cause i just waked up and have to go to my job)
+"Huang, Ying" <ying.huang@intel.com> writes:
 
-On 5/16/08, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Fri, 16 May 2008 00:22:14 +0400
-> "Cyrill Gorcunov" <gorcunov@gmail.com> wrote:
+
+> I think it is reasonable to enable jumping back and forth more than one
+> time.
+
+I'm not opposed.  I just don't understand the utility yet.
+
+> So the following should be possible:
 >
->>
->> On 5/15/08, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->> > On Thu, 15 May 2008, Cyrill Gorcunov wrote:
->> >> [Andrew Morton - Thu, May 15, 2008 at 10:58:03AM -0700]
->> >> | On Wed, 14 May 2008 19:44:02 +0400 Cyrill Gorcunov
->> >> <gorcunov@gmail.com>
->> >> wrote:
->> >> |
->> >> | > This patch does fix build bug on m68k wich does not have strncat in
->> >> straight way.
->> >> | >
->> >> | > What is more important - my previous patch
->> >> | >
->> >> | > commit e662e1cfd434aa234b72fbc781f1d70211cb785b
->> >> | > Author: Cyrill Gorcunov <gorcunov@gmail.com>
->> >> | > Date:   Mon May 12 14:02:22 2008 -0700
->> >> | >
->> >> | >     init: don't lose initcall return values
->> >> | >
->> >> | > has introduced potential buffer overflow by wrong calculation
->> >> | > of string accumulator size.
->> >> | >
->> >> | > Many thanks Andreas Schwab and Geert Uytterhoeven for helping
->> >> | > to catch and fix the bug.
->> >> | >
->> >> | > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
->> >> | > ---
->> >> | >
->> >> | > Index: linux-2.6.git/init/main.c
->> >> | > ===================================================================
->> >> | > --- linux-2.6.git.orig/init/main.c	2008-05-14 17:55:10.000000000
->> >> +0400
->> >> | > +++ linux-2.6.git/init/main.c	2008-05-14 19:11:18.000000000 +0400
->> >> | > @@ -702,7 +702,7 @@ static void __init do_initcalls(void)
->> >> | >
->> >> | >  	for (call = __initcall_start; call < __initcall_end; call++) {
->> >> | >  		ktime_t t0, t1, delta;
->> >> | > -		char msgbuf[40];
->> >> | > +		char msgbuf[64];
->> >> | >  		int result;
->> >> | >
->> >> | >  		if (initcall_debug) {
->> >> | > @@ -729,11 +729,11 @@ static void __init do_initcalls(void)
->> >> | >  			sprintf(msgbuf, "error code %d ", result);
->> >> | >
->> >> | >  		if (preempt_count() != count) {
->> >> | > -			strncat(msgbuf, "preemption imbalance ", sizeof(msgbuf));
->> >> | > +			strcat(msgbuf, "preemption imbalance ");
->> >> | >  			preempt_count() = count;
->> >> | >  		}
->> >> | >  		if (irqs_disabled()) {
->> >> | > -			strncat(msgbuf, "disabled interrupts ", sizeof(msgbuf));
->> >> | > +			strcat(msgbuf, "disabled interrupts ");
->> >> | >  			local_irq_enable();
->> >> | >  		}
->> >> | >  		if (msgbuf[0]) {
->> >> |
->> >> | umm, why can't m68k call strncat() from init/main.c??
->> >> |
->> >>
->> >> there some problem with headers iirc, we have to declare it first or
->> >> use some gcc option (as Adrian suggested). Actually I would prefer to
->> >> use
->> >
->> > gcc turns the strncat() into an implicit call to strlen() and some form
->> > of expanded memcpy(). E.g.
->> >
->> >
->> > 	if (preempt_count() != count) {
->> > 		strncat(msgbuf, "preemption imbalance ", sizeof(msgbuf));
->> > 		preempt_count() = count;
->> > 	}
->> >
->> > becomes
->> >
->> >         cmp.l 884(%a2),%d6      | <variable>.thread.info.preempt_count,
->> > count
->> >         jeq .L61        |
->> >         move.l %d7,-(%sp)       | tmp76,
->> >         jbsr strlen     |
->> >         addq.l #4,%sp   |,
->> >         move.l %d7,%a0  | tmp76, tmp80
->> >         add.l %d0,%a0   |, tmp80
->> >         move.l #1886545253,(%a0)+       |,
->> >         move.l #1836086377,(%a0)+       |,
->> >         move.l #1869488233,(%a0)+       |,
->> >         move.l #1835164012,(%a0)+       |,
->> >         move.l #1634624357,(%a0)+       |,
->> >         move.w #8192,(%a0)      |,* D.28541
->> >         move.l %d6,884(%a2)     | count,
->> > <variable>.thread.info.preempt_count
->> > .L61:
->> >
->> > All other explicit calls to strlen() are inlined, as per
->> > include/asm-m68k/string.h.
->> >
->> >> strlcat there but it seems it would fail to build too. Originally I've
->> >> messed
->> >> strlcat with strncat :(
->> >
->> > Actually it build and runs fine after s/strncat/strlcat/...
->> >
+> 1. Jump from A to B (actually jump to purgatory, trigger the boot of B)
+> 2. Jump from B to A
+> 3. Jump from A to B again (jump to the kexec_jump_back_entry of B)
+                      (And we go through purgatory which remembers
+                       the kexec_jump_back_entry of B)
+> 4. Jump from B to A
+> ...
 >
-> (top-posting repaired)
->
->> Could you please make an update to the patch? I can make it only
->> tomorrow evening (ie not that fast)
->
-> Like this?
->
->
-> From: Cyrill Gorcunov <gorcunov@gmail.com>
->
-> This patch fixes a build bug on m68k - gcc decides to emit a call to the
-> strlen library function, which we don't implement.  Use strlcat() instead.
->
->
-> What is more important - my previous patch
->
-> commit e662e1cfd434aa234b72fbc781f1d70211cb785b
-> Author: Cyrill Gorcunov <gorcunov@gmail.com>
-> Date:   Mon May 12 14:02:22 2008 -0700
->
->     init: don't lose initcall return values
->
-> Has introduced potential buffer overflow by wrong calculation of string
-> accumulator size.
->
-> Many thanks Andreas Schwab and Geert Uytterhoeven for helping
-> to catch and fix the bug.
->
-> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
->
->  init/main.c |    6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
->
-> diff -puN init/main.c~init-fix-building-bug-and-potential-buffer-overflow
-> init/main.c
-> --- a/init/main.c~init-fix-building-bug-and-potential-buffer-overflow
-> +++ a/init/main.c
-> @@ -702,7 +702,7 @@ static void __init do_initcalls(void)
->
->  	for (call = __initcall_start; call < __initcall_end; call++) {
->  		ktime_t t0, t1, delta;
-> -		char msgbuf[40];
-> +		char msgbuf[64];
->  		int result;
->
->  		if (initcall_debug) {
-> @@ -729,11 +729,11 @@ static void __init do_initcalls(void)
->  			sprintf(msgbuf, "error code %d ", result);
->
->  		if (preempt_count() != count) {
-> -			strncat(msgbuf, "preemption imbalance ", sizeof(msgbuf));
-> +			strlcat(msgbuf, "preemption imbalance ", sizeof msgbuf);
->  			preempt_count() = count;
->  		}
->  		if (irqs_disabled()) {
-> -			strncat(msgbuf, "disabled interrupts ", sizeof(msgbuf));
-> +			strlcat(msgbuf, "disabled interrupts ", sizeof msgbuf);
->  			local_irq_enable();
->  		}
->  		if (msgbuf[0]) {
-> _
->
-> (yeah, I normally parenthesise sizeof too, but this provided 80-col
-> salvation)
->
->
+> So it should be possible to get the re-entry point of kernel B in
+> kexec_jump_back_entry of kernel A too. So I think in
+> kexec_jump_back_entry, the caller's stack should be checked to get
+> re-entry point of peer. And the stack state is different depend on where
+> come from, from relocate_new_kernel() or return.
+
+Yes.
+
+Any conditional logic needs to be in purgatory or a similar trampoline.
+
+Eric
