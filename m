@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757581AbYEPMsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756590AbYEPM7d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757581AbYEPMsh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 08:48:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755358AbYEPMsR
+	id S1756590AbYEPM7d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 08:59:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbYEPM7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 08:48:17 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:64731 "EHLO smtp.wine.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755231AbYEPMsQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 08:48:16 -0400
-To: akataria@vmware.com
-Cc: devzero@web.de, linux-kernel@vger.kernel.org, dhecht@vmware.com
-Subject: Re: Kernel hangs in SMP + VMware environment.
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <1210789834.8798.20.camel@promb-2n-dhcp368.eng.vmware.com>
-	<200805150611.m4F6Bv4J046219@www262.sakura.ne.jp>
-	<D3C12B2AD838B44DA9D6B2CA334246D00D8F38DA60@PA-EXMBX04.vmware.com>
-In-Reply-To: <D3C12B2AD838B44DA9D6B2CA334246D00D8F38DA60@PA-EXMBX04.vmware.com>
-Message-Id: <200805162148.AAJ21381.QOSMOFFFLHOVJt@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Fri, 16 May 2008 21:48:12 +0900
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 16 May 2008 08:59:23 -0400
+Received: from fk-out-0910.google.com ([209.85.128.191]:31941 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751355AbYEPM7W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 08:59:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=PHV7qDqaQMfHNjQrfuFvnrX5ziiPjddtgyYSaEWz0//VXonzbOLhOriMlcNDNhOl6Knb65x0Tf4xRv5V6washuQUqjmtXHXmHxMN86SVO+BCwOoQsTLtCO8AaCMymj0dWapVsCdGm/qN9l7tV/kuhuPjE+Dc+Hgv60O3zLBjB5Q=
+Message-ID: <6101e8c40805160559i4eb94ba7y7cbfea9c3f528821@mail.gmail.com>
+Date: Fri, 16 May 2008 14:59:21 +0200
+From: "Oliver Pinter" <oliver.pntr@gmail.com>
+To: i2c@lm-sensors.org, linux-kernel@vger.kernel.org
+Subject: Bad value with w83627thf
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+linux-2.6 - git HEAD on: 9662369
+lm-sensors: 1:3.0.1-5
+libsensors4: 1:3.0.1-5
+os: debian lenny
+sernsor: w83627thf on asus p4c800 MB
 
-Alok Kataria wrote:
-> Actually it would be better to use clocksource=acpi_pm on kernels which don't
-> have this patch, as ACPI_PM comes with many more featuers like hrtimers,
-> nohz, etc.
-> 
-> On the other hand for kernels which have this patch attached,  it would be
-> best to use TSC, for performance.
-I see. Thanks.
+with 2.6.26-rcX kernel, reported false Battery values,
+-------------------------------------->
+VBat:        +3.26 V  (min =  +0.02 V, max =  +3.01 V)   ALARM
+<-------------------------------------
+lspci -xxx
+00:1f.3 SMBus: Intel Corporation 82801EB/ER (ICH5/ICH5R) SMBus
+Controller (rev 02)
+00: 86 80 d3 24 01 00 80 02 02 00 05 0c 00 00 00 00
+10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: 01 04 00 00 00 00 00 00 00 00 00 00 43 10 a6 80
+30: 00 00 00 00 00 00 00 00 00 00 00 00 03 02 00 00
+40: 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 66 0f 04 00 00 00 00 00
 
-
-
-I'm not sure, but this problem might exist in all kernels since 2.6.18 , for
-I can find clocksource= parameter in Documentation/kernel-parameters.txt .
-
-I didn't experience this problem in earlier kernels (e.g. 2.6.20)
-since I was running only 1 VMware guest at a time.
-Today I ran 2 VMware guests simultaneously (one with kernel 2.6.22 and
-the other with kernel 2.6.18, both are assigned 2 virtual CPUs) and I encountered
-may-be-hanged-up with the 2.6.18 one.
-The Ctrl-C didn't work, the Alt-F? didn't work, the Ctrl-Alt-Del didn't work.
-I had no time to reproduce it, so I'm not sure it has actually hanged up.
-
-Regards.
+-- 
+Thanks,
+Oliver
