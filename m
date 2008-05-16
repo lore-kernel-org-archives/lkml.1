@@ -1,53 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765987AbYEPPKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932367AbYEPPK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765987AbYEPPKl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 11:10:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762554AbYEPOxv
+	id S932367AbYEPPK6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 11:10:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763083AbYEPOzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 10:53:51 -0400
-Received: from mail11d.verio-web.com ([204.202.242.86]:29537 "HELO
-	mail11d.verio-web.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1762516AbYEPOxt (ORCPT
+	Fri, 16 May 2008 10:55:44 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:37411 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753567AbYEPOzm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 10:53:49 -0400
-Message-ID: <482D9FFA.9030402@sensoray.com>
-Date: Fri, 16 May 2008 07:53:46 -0700
-From: dean <dean@sensoray.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Fri, 16 May 2008 10:55:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=iOwZee2hBlFm2ldnISM8k2ERZkoQXBawRMoKoe1XHpYhn97UpM27lGSlPXiF2S2QQ2KNyoNwQIwCzo3cFSddY9v5MRGJyqmCgkda3TqInAhbyrlv4+I+mvDETf++iRpHXUra/trvk6bZucJVzbc5Eggvm/sA2tIoK6cVBz6ha6s=
+Message-ID: <8db1092f0805160755u54914884ibe1ed8a23b8e1015@mail.gmail.com>
+Date: Fri, 16 May 2008 16:55:36 +0200
+From: "Maciej Rutecki" <maciej.rutecki@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: [Re: Linux 2.6.26-rc2] Write protect on on
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-usb@vger.kernel.org, usb-storage@lists.one-eyed-alien.net
 MIME-Version: 1.0
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-CC: Greg KH <greg@kroah.com>, v4l-dvb-maintainer@linuxtv.org,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       video4linux-list@redhat.com
-Subject: Re: [PATCH] USB: add Sensoray 2255 v4l driver
-References: <20080514205927.GA13134@kroah.com> <20080515235102.756407d3@gaivota>
-In-Reply-To: <20080515235102.756407d3@gaivota>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam: [F=0.2357066621; S=0.235(2008040101); MH=0.500(2008040918)]
-X-MAIL-FROM: <dean@sensoray.com>
-X-SOURCE-IP: [161.58.148.42]
-X-SF-Loop: 1
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m4GFB3EB004572
 
->Btw, I noticed the lack of Dean's SOB. Is this intentional?
-
-
-It's not intentional, I can sign off on it.  The suggestions look good.
-
-I have a few other questions.  First, is Video for Linux version 1 going 
-to be obsoleted soon?  Do the V4L1 compatibility routines still work in 
-the latest driver?  I had problems running the VIVI (virtual video 
-driver) driver with VideoLan/VLC 0.8.6a-f, but it worked with VLC 9.0 
-with the new V4L2 interface.
-
-"videodev: "s2255v" has no release callback. Please fix your driver for 
-proper sysfs support, see http://lwn.net/Articles/36850/"
-
-Should we get rid of the warning message above? It's also been present 
-in VIVI for quite a few kernel releases.
-
-
-
+I have external drive connected via USB to computer. In 2.6.25.4 whenI plug into computer works fine, and have this messages in dmesg:usb 5-1: new high speed USB device using ehci_hcd and address 4usb 5-1: configuration #1 chosen from 1 choiceInitializing USB Mass Storage driver...scsi2 : SCSI emulation for USB Mass Storage devicesusbcore: registered new interface driver usb-storageUSB Mass Storage support registered.usb-storage: device found at 4usb-storage: waiting for device to settle before scanningscsi 2:0:0:0: Direct-Access     Initio   MHV2080BH PL     3.01 PQ: 0 ANSI: 0usb-storage: device scan completeDriver 'sd' needs updating - please use bus_type methodssd 2:0:0:0: [sda] 156301488 512-byte hardware sectors (80026 MB)sd 2:0:0:0: [sda] Write Protect is offsd 2:0:0:0: [sda] Mode Sense: 00 00 00 00sd 2:0:0:0: [sda] Assuming drive cache: write throughsd 2:0:0:0: [sda] 156301488 512-byte hardware sectors (80026 MB)sd 2:0:0:0: [sda] Write Protect is offsd 2:0:0:0: [sda] Mode Sense: 00 00 00 00sd 2:0:0:0: [sda] Assuming drive cache: write through sda: sda1sd 2:0:0:0: [sda] Attached SCSI disk
+Works fine:maciek@zlom:~/kernel.org/2.6.25.4$ ntfsmount /dev/sda1 ~/mnt/ntfs/maciek@zlom:~/kernel.org/2.6.25.4$ mount | grep fusefusectl on /sys/fs/fuse/connections type fusectl (rw)/dev/sda1 on /home/maciek/mnt/ntfs type fuseblk(rw,nosuid,nodev,default_permissions,allow_other,blksize=4096,user=maciek)
+But on 2.6.26-rc* sometimes I have messages "Write protect is on", e.g.:sd 2:0:0:0: [sda] 156301488 512-byte hardware sectors (80026 MB)sd 2:0:0:0: [sda] Write Protect is onsd 2:0:0:0: [sda] Mode Sense: 09 50 f8 afsd 2:0:0:0: [sda] Assuming drive cache: write throughsd 2:0:0:0: [sda] 156301488 512-byte hardware sectors (80026 MB)sd 2:0:0:0: [sda] Write Protect is offsd 2:0:0:0: [sda] Mode Sense: 00 00 00 00sd 2:0:0:0: [sda] Assuming drive cache: write through sda: sda1sd 2:0:0:0: [sda] Attached SCSI disk
+or:sd 2:0:0:0: [sda] 156301488 512-byte hardware sectors (80026 MB)sd 2:0:0:0: [sda] Write Protect is onsd 2:0:0:0: [sda] Mode Sense: 09 50 f8 afsd 2:0:0:0: [sda] Assuming drive cache: write throughsd 2:0:0:0: [sda] 156301488 512-byte hardware sectors (80026 MB)sd 2:0:0:0: [sda] Write Protect is onsd 2:0:0:0: [sda] Mode Sense: 09 50 f8 afsd 2:0:0:0: [sda] Assuming drive cache: write through sda: sda1sd 2:0:0:0: [sda] Attached SCSI disk
+Then mount fails:maciek@zlom:~/kernel.org/2.6.26-rc2$ ntfsmount /dev/sda1 ~/mnt/ntfs/Error opening partition device: System plik√≥w wy≈ÇƒÖcznie do odczytu.Failed to startup volume: System plik√≥w wy≈ÇƒÖcznie do odczytu.Failed to mount '/dev/sda1': System plik√≥w wy≈ÇƒÖcznie do odczytu.Mount failed.
+"System plik√≥w wy≈ÇƒÖcznie do odczytu." means "filesystem readonly"
+Tested on two computers PC and laptop.
+Dmesg and config:2.6.25.4: http://unixy.pl/maciek/download/kernel/2.6.25.4/2.6.26-rc1: http://unixy.pl/maciek/download/kernel/2.6.26-rc1/2.6.26-rc2: http://unixy.pl/maciek/download/kernel/2.6.26-rc2/
+-- Maciej Ruteckihttp://www.maciek.unixy.plˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
