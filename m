@@ -1,78 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757303AbYEPQct@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757875AbYEPQdY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757303AbYEPQct (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 12:32:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752750AbYEPQc3
+	id S1757875AbYEPQdY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 12:33:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753003AbYEPQca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 12:32:29 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:33683 "EHLO
+	Fri, 16 May 2008 12:32:30 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:33685 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751811AbYEPQc2 (ORCPT
+	with ESMTP id S1752683AbYEPQc2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 16 May 2008 12:32:28 -0400
-Message-Id: <20080516163215.374408327@szeredi.hu>
-References: <20080516163136.560107038@szeredi.hu>
+Message-Id: <20080516163136.560107038@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Fri, 16 May 2008 18:31:38 +0200
+Date: Fri, 16 May 2008 18:31:36 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org
 Cc: hch@infradead.org, viro@ZenIV.linux.org.uk, ezk@cs.sunysb.edu,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Paul Menage <menage@google.com>
-Subject: [patch 02/22] cgroup: dont call vfs_mkdir
-Content-Disposition: inline; filename=cgroup_mkdir_cleanup.patch
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [patch 00/22] vfs: fixes and cleanups (v3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+Changes since the last submission
 
-cgroup_clone() calls vfs_mkdir() to create a directory in the cgroup
-filesystem.  Replace with explicit call to cgroup_mkdir() and
-fsnotify_mkdir().
+  - drop patches already merged into mainline
+  - Al pointed out problems with "vfs: truncate: append-only checking
+    cleanup", drop it
+  - re-add the security call into "fat: dont call notify_change" to be
+    absolutely safe, but add comment noting this may not strictly be needed
+  - small changes to "vfs: utimes cleanup", hopefully everyone will
+    be happy with this
 
-This is equivalent, except that the following functions are not called
-before cgroup_mkdir():
+Thanks to Christoph and Al for the reviews.
 
- - may_create()
- - security_inode_mkdir()
- - DQUOT_INIT()
+The series contains the following changes:
 
-Permission to clone the cgroup has already been checked in
-copy_namespaces() (requiring CAP_SYS_ADMIN).  Additional file system
-related capability checks are inappropriate and confusing.
+1-7   filesystem cleanups/fixes, mainly removing vfs_* calls
+8-12  vfs cleanups/fixes
+13-22 add path_* helpers to check r/o bind mounts
 
-The quota check is unnecessary, as quotas don't make any sense for
-this filesystem.
+It's against mainline and the 13-22 patches have a small conflict with
+git-unionfs.patch.  They also break unionfs compilation.  Erez has a
+patch for that, what are the preferred logistics for getting that into
+-mm?
 
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-CC: Paul Menage <menage@google.com>
----
- kernel/cgroup.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+This series is also available from the following git tree:
 
-Index: linux-2.6/kernel/cgroup.c
-===================================================================
---- linux-2.6.orig/kernel/cgroup.c	2008-05-16 17:50:35.000000000 +0200
-+++ linux-2.6/kernel/cgroup.c	2008-05-16 17:50:43.000000000 +0200
-@@ -25,6 +25,7 @@
- #include <linux/cgroup.h>
- #include <linux/errno.h>
- #include <linux/fs.h>
-+#include <linux/fsnotify.h>
- #include <linux/kernel.h>
- #include <linux/list.h>
- #include <linux/mm.h>
-@@ -2928,7 +2929,9 @@ int cgroup_clone(struct task_struct *tsk
- 	}
- 
- 	/* Create the cgroup directory, which also creates the cgroup */
--	ret = vfs_mkdir(inode, dentry, S_IFDIR | 0755);
-+	ret = cgroup_mkdir(inode, dentry, S_IFDIR);
-+	if (!ret)
-+		fsnotify_mkdir(inode, dentry);
- 	child = __d_cgrp(dentry);
- 	dput(dentry);
- 	if (ret) {
+  git://git.kernel.org/pub/scm/linux/kernel/git/mszeredi/vfs.git vfs-cleanups
+
+Thanks,
+Miklos
 
 --
