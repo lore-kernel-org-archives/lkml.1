@@ -1,186 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757942AbYEPO1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758113AbYEPO2G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757942AbYEPO1S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 10:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756959AbYEPO07
+	id S1758113AbYEPO2G (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 10:28:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbYEPO1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 10:26:59 -0400
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:48608 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752024AbYEPO04 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 10:26:56 -0400
-Message-ID: <482D999D.5090408@linux.vnet.ibm.com>
-Date: Fri, 16 May 2008 19:56:37 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080505)
+	Fri, 16 May 2008 10:27:52 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:39700 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751393AbYEPO1v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 10:27:51 -0400
+Message-ID: <482D99DC.7040501@garzik.org>
+Date: Fri, 16 May 2008 10:27:40 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Nadia Derbey <Nadia.Derbey@bull.net>
-CC: Adrian Bunk <bunk@kernel.org>, kernel list <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org, Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [BUG] 2.6.26-rc1-git4 - task blocked on powerpc for more than
- 120 seconds
-References: <4821AD2D.8020001@linux.vnet.ibm.com> <20080507134057.GA30637@cs181133002.pp.htv.fi> <48227AAB.9000309@linux.vnet.ibm.com> <482C1ED8.3030508@bull.net>
-In-Reply-To: <482C1ED8.3030508@bull.net>
-Content-Type: text/plain; charset=us-ascii
+To: Will Newton <will.newton@gmail.com>
+CC: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>, Rick Jones <rick.jones2@hp.com>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Chris Peterson <cpeterso@cpeterso.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
+ IRQF_SAMPLE_RANDOM
+References: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com>	 <20080515142154.0595e475@core>	 <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com>	 <482C7B18.6060003@garzik.org> <482C7E53.3050300@hp.com>	 <482C8184.2030906@garzik.org> <482C8550.5000909@intel.com>	 <482C8D4D.3040702@garzik.org>	 <20080516132107.GA11304@csclub.uwaterloo.ca>	 <482D8EE9.10404@garzik.org> <87a5b0800805160659j1e8482efjea2fb8167f755e05@mail.gmail.com>
+In-Reply-To: <87a5b0800805160659j1e8482efjea2fb8167f755e05@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nadia Derbey wrote:
-> Kamalesh Babulal wrote:
->> Adrian Bunk wrote:
+Will Newton wrote:
+> On Fri, May 16, 2008 at 2:40 PM, Jeff Garzik <jeff@garzik.org> wrote:
+>> Lennart Sorensen wrote:
+>>> On Thu, May 15, 2008 at 03:21:49PM -0400, Jeff Garzik wrote:
+>>>> "no other form of entropy"?   See examples in this thread.
+>>> So where does one get entropy if not the ethernet adapter on many
+>>> embedded systems?  If you have no mouse, no keyboard, no hardware number
+>>> generator, just ethernet ports and a serial console that usually
+>>> receives no input.  While ethernet might not be preferable if you have
+>>> something else, sometimes you really don't have anything else.
+>> Already answered in this thread...  EGD illustrates how many sources of
+>> entropy remain, even in the example you just gave.
 >>
->>> On Wed, May 07, 2008 at 06:52:53PM +0530, Kamalesh Babulal wrote:
->>>
->>>> While running the ltp over the powerpc with the 2.6.26-rc1-git4 kernel,
->>>> task get blocked for more 120 seconds and does not proceeds future.
->>>>
->>>> The task msgctl08 is a ipc testcase, which test the msgget(2) msgctl(2)
->>>> syscalls.
->>> Thanks for your report.
->>>
->>> I assume this is reproducible?
->>>
->>> If yes, what was the last kernel that worked for you?
->>
->> This is reproducible on 2.6.26-rc1 and 2.6.26-rc1-git(s). 2.6.25 is the last know kernel
->> to work.
->>
->>
->>> I've also added Pierre Peiffer and Nadia Derbey to the Cc since their 
->>> recent ipc commits are my first suspects.
->>>
->>>
->>>> Machine is stuck in the task, printing the following call trace
->>>> more than 5000 times. The oom-killer invoked once in-between.
->>>>
->>>> INFO: task msgctl08:16248 blocked for more than 120 seconds.
->>>> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
->>>> Call Trace:
->>>> [c0000000762435a0] [0000000000000001] 0x1 (unreliable)
->>>> [c000000076243770] [c000000000010acc] .__switch_to+0x128/0x16c
->>>> [c000000076243800] [c0000000004b07a4] .schedule+0x7ac/0x890
->>>> [c0000000762438f0] [c0000000004b2ba4] .rwsem_down_failed_common+0x260/0x2b0
->>>> [c0000000762439b0] [c0000000004b2c60] .rwsem_down_read_failed+0x2c/0x44
->>>> [c000000076243a60] [c0000000004b1b84] .down_read+0x44/0x5c
->>>> [c000000076243af0] [c000000000295e10] .ipc_lock+0x34/0xe0
->>>> [c000000076243b90] [c00000000029690c] .ipc_lock_check+0x24/0x78
->>>> [c000000076243c20] [c0000000002972c0] .do_msgsnd+0xb0/0x3f8
->>>> [c000000076243d10] [c000000000293ce8] .compat_sys_msgsnd+0x94/0xc0
->>>> [c000000076243db0] [c000000000014418] .compat_sys_ipc+0x130/0x1f4
->>>> [c000000076243e30] [c000000000008734] syscall_exit+0x0/0x40
->>>> msgctl08 invoked oom-killer: gfp_mask=0x1200d2, order=0, oomkilladj=0
->>>> Call Trace:
->>>> [c00000001e1c7640] [c0000000000101bc] .show_stack+0x70/0x1bc (unreliable)
->>>> [c00000001e1c76f0] [c0000000000c2c78] .oom_kill_process+0x78/0x230
->>>> [c00000001e1c77a0] [c0000000000c3390] .out_of_memory+0x28c/0x320
->>>> [c00000001e1c7870] [c0000000000c70ac] .__alloc_pages_internal+0x364/0x468
->>>> [c00000001e1c7980] [c0000000000e83cc] .alloc_page_vma+0x120/0x14c
->>>> [c00000001e1c7a20] [c0000000000e0224] .read_swap_cache_async+0x7c/0x160
->>>> [c00000001e1c7ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
->>>> [c00000001e1c7ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
->>>> [c00000001e1c7c80] [c0000000004b5054] .do_page_fault+0x440/0x624
->>>> [c00000001e1c7e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
->>>> Mem-info:
->>>> Node 0 DMA per-cpu:
->>>> CPU    0: hi:    6, btch:   1 usd:   1
->>>> CPU    1: hi:    6, btch:   1 usd:   1
->>>> Node 1 DMA per-cpu:
->>>> CPU    0: hi:    6, btch:   1 usd:   5
->>>> CPU    1: hi:    6, btch:   1 usd:   5
->>>> Active:31 inactive:2628 dirty:1 writeback:6 unstable:0
->>>> free:156 slab:13071 mapped:548 pagetables:41109 bounce:0
->>>> Node 0 DMA free:5312kB min:5760kB low:7168kB high:8640kB active:1024kB inactive:768kB present:3928832kB pages_scanned:3912 all_unreclaimable? no
->>>> lowmem_reserve[]: 0 0 0
->>>> Node 1 DMA free:4672kB min:4992kB low:6208kB high:7488kB active:960kB inactive:169792kB present:3404992kB pages_scanned:140140 all_unreclaimable? no
->>>> lowmem_reserve[]: 0 0 0
->>>> Node 0 DMA: 5*64kB 15*128kB 2*256kB 1*512kB 0*1024kB 1*2048kB 0*4096kB 0*8192kB 0*16384kB = 5312kB
->>>> Node 1 DMA: 8*64kB 5*128kB 6*256kB 0*512kB 0*1024kB 1*2048kB 0*4096kB 0*8192kB 0*16384kB = 4736kB
->>>> 8185 total pagecache pages
->>>> Swap cache: add 29545, delete 21888, find 5602/10373
->>>> Free swap  = 803712kB
->>>> Total swap = 2048128kB
->>>> 114688 pages of RAM
->>>> 766 reserved pages
->>>> 231218 pages shared
->>>> 7657 pages swap cached
->>>> Out of memory: kill process 15371 (msgctl08) score 39223 or a child
->>>> Killed process 15373 (msgctl08)
->>>> INFO: task msgctl08:15385 blocked for more than 120 seconds.
->>>> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
->>>> Call Trace:
->>>> [c0000000e9a43290] [0000000000000001] 0x1 (unreliable)
->>>> [c0000000e9a43460] [c000000000010acc] .__switch_to+0x128/0x16c
->>>> [c0000000e9a434f0] [c0000000004b07a4] .schedule+0x7ac/0x890
->>>> [c0000000e9a435e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
->>>> [c0000000e9a43670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
->>>> [c0000000e9a43750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
->>>> [c0000000e9a43800] [c0000000002d6624] .generic_make_request+0x35c/0x3b0
->>>> [c0000000e9a438e0] [c0000000002d81b0] .submit_bio+0x118/0x140
->>>> [c0000000e9a439a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
->>>> [c0000000e9a43a20] [c0000000000e02b8] .read_swap_cache_async+0x110/0x160
->>>> [c0000000e9a43ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
->>>> [c0000000e9a43ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
->>>> [c0000000e9a43c80] [c0000000004b5054] .do_page_fault+0x440/0x624
->>>> [c0000000e9a43e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
->>>> INFO: task msgctl08:15405 blocked for more than 120 seconds.
->>>> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
->>>> Call Trace:
->>>> [c0000000b1757290] [0000000000000001] 0x1 (unreliable)
->>>> [c0000000b1757460] [c000000000010acc] .__switch_to+0x128/0x16c
->>>> [c0000000b17574f0] [c0000000004b07a4] .schedule+0x7ac/0x890
->>>> [c0000000b17575e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
->>>> [c0000000b1757670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
->>>> [c0000000b1757750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
->>>> [c0000000b1757800] [c0000000002d6624] .generic_make_request+0x35c/0x3b0
->>>> [c0000000b17578e0] [c0000000002d81b0] .submit_bio+0x118/0x140
->>>> [c0000000b17579a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
->>>> [c0000000b1757a20] [c0000000000e02b8] .read_swap_cache_async+0x110/0x160
->>>> [c0000000b1757ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
->>>> [c0000000b1757ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
->>>> [c0000000b1757c80] [c0000000004b5054] .do_page_fault+0x440/0x624
->>>> [c0000000b1757e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
->>>> INFO: task msgctl08:15406 blocked for more than 120 seconds.
->>>> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
->>>> Call Trace:
->>>> [c0000000eec53290] [0000000000000001] 0x1 (unreliable)
->>>> [c0000000eec53460] [c000000000010acc] .__switch_to+0x128/0x16c
->>>> [c0000000eec534f0] [c0000000004b07a4] .schedule+0x7ac/0x890
->>>> [c0000000eec535e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
->>>> [c0000000eec53670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
->>>> [c0000000eec53750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
->>>> [c0000000eec53800] [c0000000002d6624] .generic_make_request+0x35c/0x3b0
->>>> [c0000000eec538e0] [c0000000002d81b0] .submit_bio+0x118/0x140
->>>> [c0000000eec539a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
->>>> [c0000000eec53a20] [c0000000000e02b8] .read_swap_cache_async+0x110/0x160
->>>> [c0000000eec53ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
->>>> [c0000000eec53ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
->>>> [c0000000eec53c80] [c0000000004b5054] .do_page_fault+0x440/0x624
->>>> [c0000000eec53e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
+>> Further, you do not want to rely on entropy from a source that declines just
+>> as network traffic increases.
 > 
-> Kamalesh,
-> 
-> I'm wondering whether this is not related to a problem found in LTP 
-> after msgmni had been changed from 16 to a computed value.
-> 
-> Does your ltp test suite contain the patch I had sent in thread 
-> http://lkml.org/lkml/2008/2/21/123?
-> 
-> If you want to have a look at it, discussion started in thread 
-> http://lkml.org/lkml/2008/2/16/6
-> 
-> Regards,
-> Nadia
-> 
-Hi Nadia,
-Thanks, I am using the LTP-20080430 and tried it with the 2.6.26-rc2-git4 kernel.
-but the call trace remains the same.
+> I don't know egd that well, but from a cursory look it gets data from
+> such things as w or last (wtmp) which is static on most embedded
+> boxes.
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Inevitably some of the local-machine entropy sources will be static or 
+externally influenced.  That's the whole point of using several.  If 
+using one source was sufficient... we would just use that one and be 
+done with it.  :)
+
+The questions to ask are
+
+* is this collective snapshot of local machine state sufficiently unique?
+
+* is this local-machine state externally controllable within realistic 
+orders of complexity?
+
+
+> It also uses netstat and snmp - surely this is at least as easy
+> to manipulate as interrupt timings?
+
+netstat reflects local machine state of all sockets, including local 
+ones, and including local details like tcp in-q and out-q.  snmp can 
+query MIBs such as ethernet wire stats, gaining entropy from 
+pause/collision/etc. frame statistics.
+
+A set of mitigated network interrupt events is far, far more predictable 
+and controllable than the collective state of a machine's network 
+sockets, or the electrical state of the ethernet LAN link.
+
+For network-interrupt randomness to be subverted in some cases, one 
+might need only to increase overall network traffic to a certain level.
+
+	Jeff
+
+
