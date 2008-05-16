@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758241AbYEPRBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbYEPRCd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758241AbYEPRBz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 13:01:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbYEPRBp
+	id S1754855AbYEPRCd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 13:02:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754221AbYEPRCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 13:01:45 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:53074 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752523AbYEPRBo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 13:01:44 -0400
-Date: Fri, 16 May 2008 10:01:38 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: David Chinner <dgc@sgi.com>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       andi@firstfloor.org, Rik van Riel <riel@redhat.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, mpm@selenic.com
-Subject: Re: [patch 10/21] buffer heads: Support slab defrag
-In-Reply-To: <20080515231045.GY155679365@sgi.com>
-Message-ID: <Pine.LNX.4.64.0805161000390.29603@schroedinger.engr.sgi.com>
-References: <20080510030831.796641881@sgi.com> <20080510030916.935905242@sgi.com>
- <20080512002403.GP103491721@sgi.com> <Pine.LNX.4.64.0805151041230.18708@schroedinger.engr.sgi.com>
- <20080515231045.GY155679365@sgi.com>
+	Fri, 16 May 2008 13:02:23 -0400
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:46492 "EHLO
+	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752702AbYEPRCW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 13:02:22 -0400
+Date: Fri, 16 May 2008 22:31:51 +0530
+To: "kernel list" <linux-kernel@vger.kernel.org>
+Subject: [Patch 0/1] Enhancements to 'trace' infrastructure - v2
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+Organization: IBM
+Cc: dwilder@us.ibm.com, akpm@linux-foundation.org,
+       "prasad@linux.vnet.ibm.com" <prasad@linux.vnet.ibm.com>
+Content-Type: text/plain; format=flowed; delsp=yes; charset=utf-8
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Message-ID: <op.ua9axd2a03j166@prasadkr_t60p.in.ibm.com>
+User-Agent: Opera Mail/9.26 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 May 2008, David Chinner wrote:
+Hi All,
+	Please review the following patch which introduces two new
+interfaces to output data using 'trace' infrastructure. These interfaces
+can be used to print directly onto a debugfs mount. Since it uses
+'trace'
+interface underneath the directory and file structures are as created by
+'trace'.
 
-> On Thu, May 15, 2008 at 10:42:15AM -0700, Christoph Lameter wrote:
-> > On Mon, 12 May 2008, David Chinner wrote:
-> > 
-> > > If you are going to clean bufferheads (or pages), please clean entire
-> > > mappings via ->writepages as it leads to far superior I/O patterns
-> > > and a far higher aggregate rate of page cleaning.....
-> > 
-> > That brings up another issue: Lets say I use writepages on a large file 
-> > (couple of gig). How much do you want to write back?
-> 
-> We're out of memory. I'd suggest write backing as much as you can
-> without blocking.  e.g. treat it like pdflush and say 1024 pages, or
-> like balance_dirty_pages() and write a 'write_chunk' back from the
-> mapping (i.e.  sync_writeback_pages()).
+The proposed trace_* interfaces are meant to overcome the need to
+setup/tear-down 'trace' infrastructure by the user. In addition to this
+the patches help in:
 
-Why are we out of memory? How do you trigger such a special writeout?
- 
-> Any of these are better from an I/O perspective than single page
-> writeback....
+a) Printing out data into a debugfs mounted file without bothering about
+creating/re-using debugfs files, sizes of intermediate buffers, etc.
+(This is achieved through the functions init_trace_interface() and
+trace_exists()).
+b) Provide interfaces to do i)string output or ii)binary dump of data
+c) Tear-down of the trace infrastructure through a single function call
+using its parent directory name, and unmindful of the internal data
+structures such as 'struct trace_info'.(using trace_cleanup_all)
+d) The trace_printk_data may be further enhanced to provide features
+suh as the ability to invoke pre- and post- printing callback functions
+For e.g. A callback function to obtain a given lock before printing out
+a given data, etc.
 
-But then filesystem can do tricks like writing out the surrounding areas 
-as needed. The filesystem likely can estimate better how much writeout 
-makes sense.
+A quick look at samples/trace/fork_trace.c would help understand what is
+required to get data out using the 'trace' infrastructure (vs the
+proposed interfaces which have been exemplified in
+samples/trace/fork_new_trace.c).
 
+The patches are based against 2.6.25-mm1 and have been tested on an
+i386 machine.
+
+Thanks,
+K.Prasad
