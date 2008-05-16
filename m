@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760731AbYEPOtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760840AbYEPOte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760731AbYEPOtR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 10:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757950AbYEPOmr
+	id S1760840AbYEPOte (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 10:49:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757193AbYEPOmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 10:42:47 -0400
-Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49264 "EHLO
+	Fri, 16 May 2008 10:42:49 -0400
+Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49261 "EHLO
 	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750751AbYEPOmQ (ORCPT
+	with ESMTP id S1752441AbYEPOmQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 16 May 2008 10:42:16 -0400
 From: hooanon05@yahoo.co.jp
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Junjiro Okajima <hooanon05@yahoo.co.jp>
-Subject: [PATCH 17/67] aufs special handling inode attributes on XFS branch in linux-2.6.24 and later
-Date: Fri, 16 May 2008 23:32:31 +0900
-Message-Id: <12109484012301-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [PATCH 24/67] aufs sub-VFS, header
+Date: Fri, 16 May 2008 23:32:38 +0900
+Message-Id: <1210948401543-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <12109484012213-git-send-email-hooanon05@yahoo.co.jp>
-References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <12109484012532-git-send-email-hooanon05@yahoo.co.jp> <12109484012997-git-send-email-hooanon05@yahoo.co.jp> <12109484013051-git-send-email-hooanon05@yahoo.co.jp> <12109484013436-git-send-email-hooanon05@yahoo.co.jp> <1210948401415-git-send-email-hooanon05@yahoo.co.jp> <12109484011533-git-send-email-hooanon05@yahoo.co.jp> <1210948401506-git-send-email-hooanon05@yahoo.co.jp> <12109484013156-git-send-email-hooanon05@yahoo.co.jp> <12109484012724-git-send-email-hooanon05@yahoo.co.jp> <12109484013264-git-send-email-hooanon05@yahoo.co.jp> <12109484012658-git-send-email-hooanon05@yahoo.co.jp> <12109484011282-git-send-email-hooanon05@yahoo.co.jp> <12109484012543-git-send-email-hooanon05@yahoo.co.jp> <12109484013834-git-send-email-hooanon05@yahoo.co.jp> <12109484012213-git-send-email-hooanon05@yahoo.co.jp>
+In-Reply-To: <12109484012111-git-send-email-hooanon05@yahoo.co.jp>
+References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <12109484012532-git-send-email-hooanon05@yahoo.co.jp> <12109484012997-git-send-email-hooanon05@yahoo.co.jp> <12109484013051-git-send-email-hooanon05@yahoo.co.jp> <12109484013436-git-send-email-hooanon05@yahoo.co.jp> <1210948401415-git-send-email-hooanon05@yahoo.co.jp> <12109484011533-git-send-email-hooanon05@yahoo.co.jp> <1210948401506-git-send-email-hooanon05@yahoo.co.jp> <12109484013156-git-send-email-hooanon05@yahoo.co.jp> <12109484012724-git-send-email-hooanon05@yahoo.co.jp> <12109484013264-git-send-email-hooanon05@yahoo.co.jp> <12109484012658-git-send-email-hooanon05@yahoo.co.jp> <12109484011282-git-send-email-hooanon05@yahoo.co.jp> <12109484012543-git-send-email-hooanon05@yahoo.co.jp> <12109484013834-git-send-email-hooanon05@yahoo.co.jp> <12109484012213-git-send-email-hooanon05@yahoo.co.jp> <12109484012301-git-send-email-hooanon05@yahoo.co.jp> <1210948401175-git-send-email-hooanon05@yahoo.co.jp> <1210948!
+ 4013702-git-send-email-hooanon05@yahoo.co.jp> <12109484012871-git-send-email-hooanon05@yahoo.co.jp> <12109484013438-git-send-email-hooanon05@yahoo.co.jp> <12109484013559-git-send-email-hooanon05@yahoo.co.jp> <12109484012111-git-send-email-hooanon05@yahoo.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -26,21 +27,21 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Junjiro Okajima <hooanon05@yahoo.co.jp>
 
 	initial commit
-	aufs special handling inode attributes on XFS branch in linux-2.6.24 and later
+	aufs sub-VFS, header
 
 Signed-off-by: Junjiro Okajima <hooanon05@yahoo.co.jp>
 ---
- fs/aufs/br_xfs.c |   69 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 69 insertions(+), 0 deletions(-)
+ fs/aufs/vfsub.h |  493 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 493 insertions(+), 0 deletions(-)
 
-diff --git a/fs/aufs/br_xfs.c b/fs/aufs/br_xfs.c
+diff --git a/fs/aufs/vfsub.h b/fs/aufs/vfsub.h
 new file mode 100644
-index 0000000..360ffaa
+index 0000000..a7852bb
 --- /dev/null
-+++ b/fs/aufs/br_xfs.c
-@@ -0,0 +1,69 @@
++++ b/fs/aufs/vfsub.h
+@@ -0,0 +1,493 @@
 +/*
-+ * Copyright (C) 2008 Junjiro Okajima
++ * Copyright (C) 2007-2008 Junjiro Okajima
 + *
 + * This program, aufs is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -58,56 +59,480 @@ index 0000000..360ffaa
 + */
 +
 +/*
-+ * special handling inode attributes on XFS branch in linux-2.6.24 and later
++ * sub-routines for VFS
 + *
-+ * $Id: br_xfs.c,v 1.2 2008/04/21 01:33:00 sfjro Exp $
++ * $Id: vfsub.h,v 1.2 2008/04/21 01:49:22 sfjro Exp $
 + */
 +
-+#include "aufs.h"
++#ifndef __AUFS_VFSUB_H__
++#define __AUFS_VFSUB_H__
 +
-+/* h_mnt can be NULL, is it safe? */
++#ifdef __KERNEL__
++
++#include <linux/fs.h>
++#include <linux/namei.h>
++#include <linux/splice.h>
++#include <linux/inotify.h>
++
++/* ---------------------------------------------------------------------- */
++
++/* vfsub flags */
++#define Vfsub_DLGT		1		/* operation with delegation */
++#define Vfsub_FORCE_UNLINK	(1 << 1)	/* force unlinking */
++#define vfsub_ftest(flags, name)	((flags) & Vfsub_##name)
++#define vfsub_fset(flags, name)		{ (flags) |= Vfsub_##name; }
++#define vfsub_fclr(flags, name)		{ (flags) &= ~Vfsub_##name; }
++#ifndef CONFIG_AUFS_DLGT
++#undef Vfsub_DLGT
++#define Vfsub_DLGT	0
++#endif
++
++struct au_hin_ignore;
++struct vfsub_args {
++#ifdef CONFIG_AUFS_HINOTIFY
++	/* inotify events to be ignored */
++	int			nignore;
++	struct au_hin_ignore	*ignore;
++#endif
++
++	unsigned int		flags;
++};
++
++struct au_hinode;
++#ifdef CONFIG_AUFS_HINOTIFY
++static inline
++void do_vfsub_args_reinit(struct vfsub_args *vargs, struct au_hin_ignore *ign)
++{
++	vargs->nignore = 0;
++	vargs->ignore = ign;
++}
++
++static inline void vfsub_args_reinit(struct vfsub_args *vargs)
++{
++	vargs->nignore = 0;
++}
++
++__u32 vfsub_events_notify_change(struct iattr *ia);
++void vfsub_ign_hinode(struct vfsub_args *vargs, __u32 events,
++		      struct au_hinode *hinode);
++void vfsub_ign_inode(struct vfsub_args *vargs, __u32 events,
++		     struct inode *inode, struct inode *h_inode);
++
++void vfsub_ignore(struct vfsub_args *vargs);
++void vfsub_unignore(struct vfsub_args *vargs);
++#else
++static inline
++void do_vfsub_args_reinit(struct vfsub_args *vargs, struct au_hin_ignore *ign)
++{
++	/* empty */
++}
++
++static inline void vfsub_args_reinit(struct vfsub_args *vargs)
++{
++	/* empty */
++}
++
++static inline __u32 vfsub_events_notify_change(struct iattr *ia)
++{
++	return 0;
++}
++
++static inline void vfsub_ign_hinode(struct vfsub_args *vargs, __u32 events,
++				    struct au_hinode *hinode)
++{
++	/* empty */
++}
++
++static inline void vfsub_ign_inode(struct vfsub_args *vargs, __u32 events,
++				   struct inode *inode, struct inode *h_inode)
++{
++	/* empty */
++}
++
++static inline void vfsub_ignore(struct vfsub_args *vargs)
++{
++	/* empty */
++}
++
++static inline void vfsub_unignore(struct vfsub_args *vargs)
++{
++	/* empty */
++}
++#endif /* CONFIG_AUFS_HINOTIFY */
++
++void vfsub_args_init(struct vfsub_args *vargs, struct au_hin_ignore *ign,
++		     int dlgt, int force_unlink);
++
++/* ---------------------------------------------------------------------- */
++
++/* inotify_inode_watched() is not exported */
++static inline int au_test_inotify(struct inode *inode)
++{
++#ifdef CONFIG_INOTIFY
++	return !list_empty(&inode->inotify_watches);
++#endif
++	return 0;
++}
++
++/* ---------------------------------------------------------------------- */
++
++/* lock subclass for hidden inode */
++/* default MAX_LOCKDEP_SUBCLASSES(8) is not enough */
++// todo: reduce it
++enum {
++	AuLsc_I_Begin = I_MUTEX_QUOTA, /* 4 */
++	AuLsc_I_PARENT,		/* hidden inode, parent first */
++	AuLsc_I_CHILD,
++	AuLsc_I_PARENT2,	/* copyup dirs */
++	AuLsc_I_CHILD2,
++	AuLsc_I_End
++};
++
++#define IMustLock(i)	MtxMustLock(&(i)->i_mutex)
++
++static inline
++struct dentry *vfsub_lock_rename(struct dentry *d1, struct dentry *d2)
++{
++	struct dentry *d;
++
++	lockdep_off();
++	d = lock_rename(d1, d2);
++	lockdep_on();
++	return d;
++}
++
++static inline void vfsub_unlock_rename(struct dentry *d1, struct dentry *d2)
++{
++	lockdep_off();
++	unlock_rename(d1, d2);
++	lockdep_on();
++}
++
++/* ---------------------------------------------------------------------- */
++
++#ifdef CONFIG_AUFS_WORKAROUND_FUSE
++/* br_fuse.c */
++int au_update_fuse_h_inode(struct vfsmount *h_mnt, struct dentry *h_dentry);
++#else
++static inline
++int au_update_fuse_h_inode(struct vfsmount *h_mnt, struct dentry *h_dentry)
++{
++	return 0;
++}
++#endif
++
++#ifdef CONFIG_AUFS_BR_XFS
++/* br_xfs.c */
++dev_t au_h_rdev(struct inode *h_inode, struct vfsmount *h_mnt,
++		struct dentry *h_dentry);
++#else
++static inline
 +dev_t au_h_rdev(struct inode *h_inode, struct vfsmount *h_mnt,
 +		struct dentry *h_dentry)
 +{
-+	dev_t rdev;
-+	int err;
-+	struct kstat st;
-+
-+	LKTRTrace("hi%lu\n", h_inode->i_ino);
-+	if (h_dentry)
-+		LKTRTrace("%.*s\n", AuDLNPair(h_dentry));
-+
-+	rdev = h_inode->i_rdev;
-+	if (!rdev || !au_test_xfs(h_inode->i_sb))
-+		goto out;
-+
-+	rdev = 0;
-+	if (!h_dentry) {
-+		err = 0;
-+		h_dentry = d_find_alias(h_inode);
-+		if (unlikely(!h_dentry))
-+			goto failure;
-+		err = PTR_ERR(h_dentry);
-+		if (IS_ERR(h_dentry)) {
-+			h_dentry = NULL;
-+			goto failure;
-+		}
-+		LKTRTrace("%.*s\n", AuDLNPair(h_dentry));
-+	} else
-+		dget(h_dentry);
-+
-+	err = vfsub_getattr(h_mnt, h_dentry, &st, /*dlgt*/0);
-+	dput(h_dentry);
-+	if (!err) {
-+		rdev = st.rdev;
-+		goto out; /* success */
-+	}
-+
-+ failure:
-+	AuIOErr("failed rdev for XFS inode, hi%lu, %d\n", h_inode->i_ino, err);
-+ out:
-+	return rdev;
++	return h_inode->i_rdev;
 +}
++#endif
++
++/* simple abstractions, for future use */
++static inline
++int do_vfsub_permission(struct inode *inode, int mask, struct nameidata *nd)
++{
++	LKTRTrace("i%lu, mask 0x%x, nd %d\n", inode->i_ino, mask, !!nd);
++	IMustLock(inode);
++	return permission(inode, mask, nd);
++}
++
++/* ---------------------------------------------------------------------- */
++
++struct file *vfsub_filp_open(const char *path, int oflags, int mode);
++int vfsub_path_lookup(const char *name, unsigned int flags,
++		      struct nameidata *nd);
++struct dentry *vfsub_lookup_one_len(const char *name, struct dentry *parent,
++				    int len);
++
++#ifdef CONFIG_AUFS_LHASH_PATCH
++struct dentry *vfsub__lookup_hash(struct qstr *name, struct dentry *parent,
++				  struct nameidata *nd);
++#endif
++
++/* ---------------------------------------------------------------------- */
++
++int do_vfsub_create(struct inode *dir, struct dentry *dentry, int mode,
++		    struct nameidata *nd);
++int do_vfsub_symlink(struct inode *dir, struct dentry *dentry,
++		     const char *symname, int mode);
++int do_vfsub_mknod(struct inode *dir, struct dentry *dentry, int mode,
++		   dev_t dev);
++int do_vfsub_link(struct dentry *src_dentry, struct inode *dir,
++		  struct dentry *dentry);
++int do_vfsub_rename(struct inode *src_dir, struct dentry *src_dentry,
++		    struct inode *dir, struct dentry *dentry);
++int do_vfsub_mkdir(struct inode *dir, struct dentry *dentry, int mode);
++int do_vfsub_rmdir(struct inode *dir, struct dentry *dentry);
++int do_vfsub_unlink(struct inode *dir, struct dentry *dentry);
++
++/* ---------------------------------------------------------------------- */
++
++ssize_t do_vfsub_read_u(struct file *file, char __user *ubuf, size_t count,
++			loff_t *ppos);
++// kernel_read() ??
++ssize_t do_vfsub_read_k(struct file *file, void *kbuf, size_t count,
++			loff_t *ppos);
++ssize_t do_vfsub_write_u(struct file *file, const char __user *ubuf,
++			 size_t count, loff_t *ppos);
++ssize_t do_vfsub_write_k(struct file *file, void *kbuf, size_t count,
++			 loff_t *ppos);
++int do_vfsub_readdir(struct file *file, filldir_t filldir, void *arg);
++
++/* ---------------------------------------------------------------------- */
++
++#ifdef CONFIG_AUFS_SPLICE_PATCH
++long do_vfsub_splice_to(struct file *in, loff_t *ppos,
++			struct pipe_inode_info *pipe, size_t len,
++			unsigned int flags);
++long do_vfsub_splice_from(struct pipe_inode_info *pipe, struct file *out,
++			  loff_t *ppos, size_t len, unsigned int flags);
++#else
++static inline
++long do_vfsub_splice_to(struct file *in, loff_t *ppos,
++			struct pipe_inode_info *pipe, size_t len,
++			unsigned int flags)
++{
++	return -ENOSYS;
++}
++
++static inline
++long do_vfsub_splice_from(struct pipe_inode_info *pipe, struct file *out,
++			  loff_t *ppos, size_t len, unsigned int flags)
++{
++	return -ENOSYS;
++}
++#endif /* CONFIG_AUFS_SPLICE_PATCH */
++
++/* ---------------------------------------------------------------------- */
++
++static inline loff_t vfsub_llseek(struct file *file, loff_t offset, int origin)
++{
++	loff_t err;
++
++	LKTRTrace("%.*s\n", AuDLNPair(file->f_dentry));
++
++	lockdep_off();
++	err = vfs_llseek(file, offset, origin);
++	lockdep_on();
++	return err;
++}
++
++static inline int do_vfsub_getattr(struct vfsmount *mnt, struct dentry *dentry,
++				   struct kstat *st)
++{
++	LKTRTrace("%.*s\n", AuDLNPair(dentry));
++	return vfs_getattr(mnt, dentry, st);
++}
++
++/* ---------------------------------------------------------------------- */
++
++#if defined(CONFIG_AUFS_HINOTIFY) || defined(CONFIG_AUFS_DLGT)
++/* hin_or_dlgt.c */
++int vfsub_permission(struct inode *inode, int mask, struct nameidata *nd,
++		     int dlgt);
++
++int vfsub_create(struct inode *dir, struct dentry *dentry, int mode,
++		 struct nameidata *nd, int dlgt);
++int vfsub_symlink(struct inode *dir, struct dentry *dentry, const char *symname,
++		  int mode, int dlgt);
++int vfsub_mknod(struct inode *dir, struct dentry *dentry, int mode, dev_t dev,
++		int dlgt);
++int vfsub_link(struct dentry *src_dentry, struct inode *dir,
++	       struct dentry *dentry, int dlgt);
++int vfsub_rename(struct inode *src_dir, struct dentry *src_dentry,
++		 struct inode *dir, struct dentry *dentry,
++		 struct vfsub_args *vargs);
++int vfsub_mkdir(struct inode *dir, struct dentry *dentry, int mode, int dlgt);
++int vfsub_rmdir(struct inode *dir, struct dentry *dentry,
++		struct vfsub_args *vargs);
++
++ssize_t vfsub_read_u(struct file *file, char __user *ubuf, size_t count,
++		     loff_t *ppos, int dlgt);
++ssize_t vfsub_read_k(struct file *file, void *kbuf, size_t count, loff_t *ppos,
++		     int dlgt);
++ssize_t vfsub_write_u(struct file *file, const char __user *ubuf, size_t count,
++		      loff_t *ppos, struct vfsub_args *vargs);
++ssize_t vfsub_write_k(struct file *file, void *kbuf, size_t count, loff_t *ppos,
++		      struct vfsub_args *vargs);
++int vfsub_readdir(struct file *file, filldir_t filldir, void *arg, int dlgt);
++long vfsub_splice_to(struct file *in, loff_t *ppos,
++		     struct pipe_inode_info *pipe, size_t len,
++		     unsigned int flags, int dlgt);
++long vfsub_splice_from(struct pipe_inode_info *pipe, struct file *out,
++		       loff_t *ppos, size_t len, unsigned int flags,
++		       struct vfsub_args *vargs);
++
++int vfsub_getattr(struct vfsmount *mnt, struct dentry *dentry, struct kstat *st,
++		  int dlgt);
++#else
++
++static inline
++int vfsub_permission(struct inode *inode, int mask, struct nameidata *nd,
++		     int dlgt)
++{
++	return do_vfsub_permission(inode, mask, nd);
++}
++
++static inline
++int vfsub_create(struct inode *dir, struct dentry *dentry, int mode,
++		 struct nameidata *nd, int dlgt)
++{
++	return do_vfsub_create(dir, dentry, mode, nd);
++}
++
++static inline
++int vfsub_symlink(struct inode *dir, struct dentry *dentry, const char *symname,
++		  int mode, int dlgt)
++{
++	return do_vfsub_symlink(dir, dentry, symname, mode);
++}
++
++static inline
++int vfsub_mknod(struct inode *dir, struct dentry *dentry, int mode, dev_t dev,
++		int dlgt)
++{
++	return do_vfsub_mknod(dir, dentry, mode, dev);
++}
++
++static inline
++int vfsub_link(struct dentry *src_dentry, struct inode *dir,
++	       struct dentry *dentry, int dlgt)
++{
++	return do_vfsub_link(src_dentry, dir, dentry);
++}
++
++static inline
++int vfsub_rename(struct inode *src_dir, struct dentry *src_dentry,
++		 struct inode *dir, struct dentry *dentry,
++		 struct vfsub_args *vargs)
++{
++	int err;
++
++	vfsub_ignore(vargs);
++	err = do_vfsub_rename(src_dir, src_dentry, dir, dentry);
++	if (unlikely(err))
++		vfsub_unignore(vargs);
++	return err;
++}
++
++static inline
++int vfsub_mkdir(struct inode *dir, struct dentry *dentry, int mode, int dlgt)
++{
++	return do_vfsub_mkdir(dir, dentry, mode);
++}
++
++static inline
++int vfsub_rmdir(struct inode *dir, struct dentry *dentry,
++		struct vfsub_args *vargs)
++{
++	int err;
++
++	vfsub_ignore(vargs);
++	err = do_vfsub_rmdir(dir, dentry);
++	if (unlikely(err))
++		vfsub_unignore(vargs);
++	return err;
++}
++
++static inline
++ssize_t vfsub_read_u(struct file *file, char __user *ubuf, size_t count,
++		     loff_t *ppos, int dlgt)
++{
++	return do_vfsub_read_u(file, ubuf, count, ppos);
++}
++
++static inline
++ssize_t vfsub_read_k(struct file *file, void *kbuf, size_t count, loff_t *ppos,
++		     int dlgt)
++{
++	return do_vfsub_read_k(file, kbuf, count, ppos);
++}
++
++static inline
++ssize_t vfsub_write_u(struct file *file, const char __user *ubuf, size_t count,
++		      loff_t *ppos, struct vfsub_args *vargs)
++{
++	int err;
++
++	vfsub_ignore(vargs);
++	err = do_vfsub_write_u(file, ubuf, count, ppos);
++	if (unlikely(err < 0))
++		vfsub_unignore(vargs);
++	return err;
++}
++
++static inline
++ssize_t vfsub_write_k(struct file *file, void *kbuf, size_t count, loff_t *ppos,
++		      struct vfsub_args *vargs)
++{
++	int err;
++
++	vfsub_ignore(vargs);
++	err = do_vfsub_write_k(file, kbuf, count, ppos);
++	if (unlikely(err < 0))
++		vfsub_unignore(vargs);
++	return err;
++}
++
++static inline
++int vfsub_readdir(struct file *file, filldir_t filldir, void *arg, int dlgt)
++{
++	return do_vfsub_readdir(file, filldir, arg);
++}
++
++static inline
++long vfsub_splice_to(struct file *in, loff_t *ppos,
++		     struct pipe_inode_info *pipe, size_t len,
++		     unsigned int flags, int dlgt)
++{
++	return do_vfsub_splice_to(in, ppos, pipe, len, flags);
++}
++
++static inline
++long vfsub_splice_from(struct pipe_inode_info *pipe, struct file *out,
++		       loff_t *ppos, size_t len, unsigned int flags,
++		       struct vfsub_args *vargs)
++{
++	long err;
++
++	vfsub_ignore(vargs);
++	err = do_vfsub_splice_from(pipe, out, ppos, len, flags);
++	if (unlikely(err < 0))
++		vfsub_unignore(vargs);
++	return err;
++}
++
++static inline
++int vfsub_getattr(struct vfsmount *mnt, struct dentry *dentry, struct kstat *st,
++		  int dlgt)
++{
++	return do_vfsub_getattr(mnt, dentry, st);
++}
++#endif /* CONFIG_AUFS_DLGT || CONFIG_AUFS_HINOTIFY */
++
++/* ---------------------------------------------------------------------- */
++
++int vfsub_sio_mkdir(struct inode *dir, struct dentry *dentry, int mode,
++		    int dlgt);
++int vfsub_sio_rmdir(struct inode *dir, struct dentry *dentry, int dlgt);
++
++/* ---------------------------------------------------------------------- */
++
++int vfsub_notify_change(struct dentry *dentry, struct iattr *ia,
++			struct vfsub_args *vargs);
++int vfsub_unlink(struct inode *dir, struct dentry *dentry,
++		 struct vfsub_args *vargs);
++int vfsub_statfs(void *arg, struct kstatfs *buf, int dlgt);
++
++#endif /* __KERNEL__ */
++#endif /* __AUFS_VFSUB_H__ */
 -- 
 1.4.4.4
 
