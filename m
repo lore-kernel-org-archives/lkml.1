@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759918AbYEPOr2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760064AbYEPOrp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759918AbYEPOr2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 10:47:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757376AbYEPOma
+	id S1760064AbYEPOrp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 10:47:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752429AbYEPOmf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 10:42:30 -0400
-Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49235 "EHLO
+	Fri, 16 May 2008 10:42:35 -0400
+Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49237 "EHLO
 	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752307AbYEPOmN (ORCPT
+	with ESMTP id S1752265AbYEPOmN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 16 May 2008 10:42:13 -0400
 From: hooanon05@yahoo.co.jp
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Junjiro Okajima <hooanon05@yahoo.co.jp>
-Subject: [PATCH 37/67] aufs file operations
-Date: Fri, 16 May 2008 23:32:51 +0900
-Message-Id: <12109484023036-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [PATCH 34/67] aufs lookup and dentry operations, header
+Date: Fri, 16 May 2008 23:32:48 +0900
+Message-Id: <12109484021974-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <12109484022659-git-send-email-hooanon05@yahoo.co.jp>
+In-Reply-To: <12109484022680-git-send-email-hooanon05@yahoo.co.jp>
 References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <12109484012532-git-send-email-hooanon05@yahoo.co.jp> <12109484012997-git-send-email-hooanon05@yahoo.co.jp> <12109484013051-git-send-email-hooanon05@yahoo.co.jp> <12109484013436-git-send-email-hooanon05@yahoo.co.jp> <1210948401415-git-send-email-hooanon05@yahoo.co.jp> <12109484011533-git-send-email-hooanon05@yahoo.co.jp> <1210948401506-git-send-email-hooanon05@yahoo.co.jp> <12109484013156-git-send-email-hooanon05@yahoo.co.jp> <12109484012724-git-send-email-hooanon05@yahoo.co.jp> <12109484013264-git-send-email-hooanon05@yahoo.co.jp> <12109484012658-git-send-email-hooanon05@yahoo.co.jp> <12109484011282-git-send-email-hooanon05@yahoo.co.jp> <12109484012543-git-send-email-hooanon05@yahoo.co.jp> <12109484013834-git-send-email-hooanon05@yahoo.co.jp> <12109484012213-git-send-email-hooanon05@yahoo.co.jp> <12109484012301-git-send-email-hooanon05@yahoo.co.jp> <1210948401175-git-send-email-hooanon05@yahoo.co.jp> <1210948!
- 4013702-git-send-email-hooanon05@yahoo.co.jp> <12109484012871-git-send-email-hooanon05@yahoo.co.jp> <12109484013438-git-send-email-hooanon05@yahoo.co.jp> <12109484013559-git-send-email-hooanon05@yahoo.co.jp> <12109484012111-git-send-email-hooanon05@yahoo.co.jp> <1210948401543-git-send-email-hooanon05@yahoo.co.jp> <1210948401147-git-send-email-hooanon05@yahoo.co.jp> <12109484012904-git-send-email-hooanon05@yahoo.co.jp> <121094840127-git-send-email-hooanon05@yahoo.co.jp> <12109484011862-git-send-email-hooanon05@yahoo.co.jp> <12109484011143-git-send-email-hooanon05@yahoo.co.jp> <12109484011867-git-send-email-hooanon05@yahoo.co.jp> <12109484021033-git-send-email-hooanon05@yahoo.co.jp> <12109484021234-git-send-email-hooanon05@yahoo.co.jp> <12109484022680-git-send-email-hooanon05@yahoo.co.jp> <12109484021974-git-send-email-hooanon05@yahoo.co.jp> <12109484021281-git-send-email-hooanon05@yahoo.co.jp> <12109484022659-git-send-email-hooanon05@yahoo.co.jp>
+ 4013702-git-send-email-hooanon05@yahoo.co.jp> <12109484012871-git-send-email-hooanon05@yahoo.co.jp> <12109484013438-git-send-email-hooanon05@yahoo.co.jp> <12109484013559-git-send-email-hooanon05@yahoo.co.jp> <12109484012111-git-send-email-hooanon05@yahoo.co.jp> <1210948401543-git-send-email-hooanon05@yahoo.co.jp> <1210948401147-git-send-email-hooanon05@yahoo.co.jp> <12109484012904-git-send-email-hooanon05@yahoo.co.jp> <121094840127-git-send-email-hooanon05@yahoo.co.jp> <12109484011862-git-send-email-hooanon05@yahoo.co.jp> <12109484011143-git-send-email-hooanon05@yahoo.co.jp> <12109484011867-git-send-email-hooanon05@yahoo.co.jp> <12109484021033-git-send-email-hooanon05@yahoo.co.jp> <12109484021234-git-send-email-hooanon05@yahoo.co.jp> <12109484022680-git-send-email-hooanon05@yahoo.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -27,19 +27,19 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Junjiro Okajima <hooanon05@yahoo.co.jp>
 
 	initial commit
-	aufs file operations
+	aufs lookup and dentry operations, header
 
 Signed-off-by: Junjiro Okajima <hooanon05@yahoo.co.jp>
 ---
- fs/aufs/file.h |  246 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 246 insertions(+), 0 deletions(-)
+ fs/aufs/dentry.h |  384 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 384 insertions(+), 0 deletions(-)
 
-diff --git a/fs/aufs/file.h b/fs/aufs/file.h
+diff --git a/fs/aufs/dentry.h b/fs/aufs/dentry.h
 new file mode 100644
-index 0000000..33a1036
+index 0000000..3ed8ebf
 --- /dev/null
-+++ b/fs/aufs/file.h
-@@ -0,0 +1,246 @@
++++ b/fs/aufs/dentry.h
+@@ -0,0 +1,384 @@
 +/*
 + * Copyright (C) 2005-2008 Junjiro Okajima
 + *
@@ -59,233 +59,371 @@ index 0000000..33a1036
 + */
 +
 +/*
-+ * file operations
++ * lookup and dentry operations
 + *
-+ * $Id: file.h,v 1.2 2008/04/21 01:35:14 sfjro Exp $
++ * $Id: dentry.h,v 1.4 2008/05/04 23:54:53 sfjro Exp $
 + */
 +
-+#ifndef __AUFS_FILE_H__
-+#define __AUFS_FILE_H__
++#ifndef __AUFS_DENTRY_H__
++#define __AUFS_DENTRY_H__
 +
 +#ifdef __KERNEL__
 +
-+#include <linux/file.h>
 +#include <linux/fs.h>
-+#include <linux/mm.h>
++#include <linux/namei.h>
 +#include <linux/aufs_type.h>
-+#include "dentry.h"
 +#include "misc.h"
 +#include "super.h"
++#include "vfsub.h"
++
++/* nameidata open_intent */
++enum {
++	AuIntent_AUFS,
++	AuIntent_BRANCH,
++	AuIntent_Last
++};
++
++struct au_hdintent {
++	struct list_head	hdi_list;
++	struct file		*hdi_file[AuIntent_Last];
++};
++
++struct au_hdentry {
++	struct dentry		*hd_dentry;
++
++#ifdef CONFIG_AUFS_BR_NFS
++	spinlock_t		hd_lock; /* intest_list */
++	struct list_head	*hd_intent_list;
++#endif
++};
++
++struct au_dinfo {
++	atomic_t		di_generation;
++
++	struct au_rwsem		di_rwsem;
++	aufs_bindex_t		di_bstart, di_bend, di_bwh, di_bdiropq;
++	struct au_hdentry	*di_hdentry;
++};
++
++/* nameidata extension flags */
++#define AuNdx_DLGT	1
++#define AuNdx_DIRPERM1	(1 << 1)
++#define au_ftest_ndx(flags, name)	((flags) & AuNdx_##name)
++#define au_fset_ndx(flags, name)	{ (flags) |= AuNdx_##name; }
++#define au_fclr_ndx(flags, name)	{ (flags) &= ~AuNdx_##name; }
++#ifndef CONFIG_AUFS_DLGT
++#undef AuNdx_DLGT
++#define AuNdx_DLGT	0
++#undef AuNdx_DIRPERM1
++#define AuNdx_DIRPERM1	0
++#endif
++
++struct au_ndx {
++	struct vfsmount *nfsmnt;
++	unsigned int flags;
++	struct nameidata *nd;
++	struct au_branch *br;
++	struct file *nd_file;
++};
 +
 +/* ---------------------------------------------------------------------- */
 +
-+struct au_branch;
-+struct au_hfile {
-+	struct file		*hf_file;
-+	struct au_branch	*hf_br;
-+};
-+
-+struct au_vdir;
-+struct au_finfo {
-+	atomic_t		fi_generation;
-+
-+	struct au_rwsem		fi_rwsem;
-+	struct au_hfile		*fi_hfile;
-+	aufs_bindex_t		fi_bstart, fi_bend;
-+
-+	union {
-+		struct vm_operations_struct	*fi_h_vm_ops;
-+		struct au_vdir			*fi_vdir_cache;
-+	};
-+};
-+
-+/* ---------------------------------------------------------------------- */
-+
-+/* file.c */
-+extern struct address_space_operations aufs_aop;
-+unsigned int au_file_roflags(unsigned int flags);
-+struct file *au_h_open(struct dentry *dentry, aufs_bindex_t bindex, int flags,
-+		       struct file *file);
-+int au_do_open(struct inode *inode, struct file *file,
-+	       int (*open)(struct file *file, int flags));
-+int au_reopen_nondir(struct file *file);
-+int au_ready_to_write(struct file *file, loff_t len);
-+int au_reval_and_lock_finfo(struct file *file, int (*reopen)(struct file *file),
-+			    int wlock, int locked);
-+
-+/* f_op.c */
-+extern struct file_operations aufs_file_fop;
-+int aufs_flush(struct file *file, fl_owner_t id);
-+
-+/* finfo.c */
-+struct au_finfo *au_fi(struct file *file);
-+struct au_branch *au_fbr(struct file *file, aufs_bindex_t bindex);
-+struct file *au_h_fptr(struct file *file, aufs_bindex_t bindex);
-+
-+void au_hfput(struct au_hfile *hf);
-+void au_set_h_fptr(struct file *file, aufs_bindex_t bindex,
-+		   struct file *h_file);
-+
-+void au_finfo_fin(struct file *file);
-+int au_finfo_init(struct file *file);
-+
-+#ifdef CONFIG_AUFS_ROBR
-+/* robr.c */
-+struct file *au_robr_safe_file(struct vm_area_struct *vma);
-+void au_robr_reset_file(struct vm_area_struct *vma, struct file *file);
-+#else
-+static inline struct file *au_robr_safe_file(struct vm_area_struct *vma)
++static inline void au_do_h_dentry_init(struct au_hdentry *hdentry)
 +{
-+	struct file *file;
++	hdentry->hd_dentry = NULL;
++}
 +
-+	file = vma->vm_file;
-+	if (file->private_data && au_test_aufs(file->f_dentry->d_sb))
-+		return file;
++#ifdef CONFIG_AUFS_BR_NFS
++static inline void au_h_dentry_init(struct au_hdentry *hdentry)
++{
++	au_do_h_dentry_init(hdentry);
++	spin_lock_init(&hdentry->hd_lock);
++}
++
++static inline void au_h_dentry_init_all(struct au_hdentry *hdentry, int n)
++{
++	while (n--)
++		spin_lock_init(&hdentry[n].hd_lock);
++}
++
++/* br_nfs.c */
++struct file *au_h_intent(struct dentry *dentry, aufs_bindex_t bindex,
++			 struct file *file);
++int au_br_nfs_h_intent(struct file *nd_file, struct dentry *dentry,
++		       aufs_bindex_t bindex, struct nameidata *nd);
++void au_hintent_put(struct au_hdentry *hd, int do_free);
++int au_fake_intent(struct nameidata *nd, int perm);
++int au_hin_after_reval(struct nameidata *nd, struct dentry *dentry,
++		       aufs_bindex_t bindex, struct file *file);
++struct dentry *au_lkup_hash(const char *name, struct dentry *parent, int len,
++			    struct au_ndx *ndx);
++#else
++
++static inline void au_h_dentry_init(struct au_hdentry *hdentry)
++{
++	au_do_h_dentry_init(hdentry);
++}
++
++static inline void au_h_dentry_init_all(struct au_hdentry *hdentry, int n)
++{
++	/* nothing */
++}
++
++static inline
++struct file *au_h_intent(struct dentry *dentry, aufs_bindex_t bindex,
++			 struct file *file)
++{
++	//return ERR_PTR(-ENOSYS);
 +	return NULL;
 +}
 +
 +static inline
-+void au_robr_reset_file(struct vm_area_struct *vma, struct file *file)
++int au_br_nfs_h_intent(struct file *nd_file, struct dentry *dentry,
++		       aufs_bindex_t bindex, struct nameidata *nd)
 +{
-+	vma->vm_file = file;
-+	//smp_mb(); /* flush vm_file */
++	return 0;
 +}
-+#endif /* CONFIG_AUFS_ROBR */
++
++static inline void au_hintent_put(struct au_hdentry *hd, int do_free)
++{
++	/* empty */
++}
++
++static inline int au_fake_intent(struct nameidata *nd, int perm)
++{
++	return 0;
++}
++
++static inline
++int au_hin_after_reval(struct nameidata *nd, struct dentry *dentry,
++		       aufs_bindex_t bindex, struct file *file)
++{
++	return 0;
++}
++
++#ifdef CONFIG_AUFS_DLGT
++static inline
++struct dentry *au_lkup_hash(const char *name, struct dentry *parent, int len,
++			    struct au_ndx *ndx)
++{
++	//return ERR_PTR(-ENOSYS);
++	return vfsub_lookup_one_len(name, parent, len);
++}
++#endif
++#endif /* CONFIG_AUFS_BR_NFS */
++
++#ifdef CONFIG_AUFS_DLGT
++/* dlgt.c */
++struct dentry *au_lkup_one_dlgt(const char *name, struct dentry *parent,
++				int len, unsigned int flags);
++#elif defined(CONFIG_AUFS_BR_NFS)
++/* regardelss kernel version */
++static inline
++struct dentry *au_lkup_one_dlgt(const char *name, struct dentry *parent,
++				int len, unsigned int flags)
++{
++	return vfsub_lookup_one_len(name, parent, len);
++}
++#endif
++
++/* dentry.c */
++extern struct dentry_operations aufs_dop;
++#if defined(CONFIG_AUFS_BR_NFS) || defined(CONFIG_AUFS_DLGT)
++struct dentry *au_lkup_one(const char *name, struct dentry *parent, int len,
++			   struct au_ndx *ndx);
++#else
++static inline
++struct dentry *au_lkup_one(const char *name, struct dentry *parent, int len,
++			   struct au_ndx *ndx)
++{
++	//todo: ndx->nd_file = NULL;
++	return vfsub_lookup_one_len(name, parent, len);
++}
++#endif
++struct dentry *au_sio_lkup_one(const char *name, struct dentry *parent, int len,
++			       struct au_ndx *ndx);
++int au_lkup_dentry(struct dentry *dentry, aufs_bindex_t bstart, mode_t type,
++		   struct nameidata *nd);
++int au_lkup_neg(struct dentry *dentry, aufs_bindex_t bindex);
++int au_refresh_hdentry(struct dentry *dentry, mode_t type);
++int au_reval_dpath(struct dentry *dentry, au_gen_t sgen);
++
++/* dinfo.c */
++int au_alloc_dinfo(struct dentry *dentry);
++struct au_dinfo *au_di(struct dentry *dentry);
++
++void di_read_lock(struct dentry *d, int flags, unsigned int lsc);
++void di_read_unlock(struct dentry *d, int flags);
++void di_downgrade_lock(struct dentry *d, int flags);
++void di_write_lock(struct dentry *d, unsigned int lsc);
++void di_write_unlock(struct dentry *d);
++void di_write_lock2_child(struct dentry *d1, struct dentry *d2, int isdir);
++void di_write_lock2_parent(struct dentry *d1, struct dentry *d2, int isdir);
++void di_write_unlock2(struct dentry *d1, struct dentry *d2);
++
++struct dentry *au_h_dptr(struct dentry *dentry, aufs_bindex_t bindex);
++
++aufs_bindex_t au_dbtail(struct dentry *dentry);
++aufs_bindex_t au_dbtaildir(struct dentry *dentry);
++#if 0 // rfu
++aufs_bindex_t au_dbtail_generic(struct dentry *dentry);
++#endif
++
++void au_set_dbdiropq(struct dentry *dentry, aufs_bindex_t bindex);
++void au_set_h_dptr(struct dentry *dentry, aufs_bindex_t bindex,
++		   struct dentry *h_dentry);
++
++void au_update_dbrange(struct dentry *dentry, int do_put_zero);
++void au_update_dbstart(struct dentry *dentry);
++void au_update_dbend(struct dentry *dentry);
++int au_find_dbindex(struct dentry *dentry, struct dentry *h_dentry);
 +
 +/* ---------------------------------------------------------------------- */
 +
 +//todo: memory barrier?
-+static inline au_gen_t au_figen(struct file *f)
++static inline au_gen_t au_digen(struct dentry *d)
 +{
-+	return atomic_read(&au_fi(f)->fi_generation);
++	return atomic_read(&au_di(d)->di_generation);
 +}
 +
-+static inline int au_test_mmapped(struct file *f)
++#ifdef CONFIG_AUFS_HINOTIFY
++static inline au_gen_t au_digen_dec(struct dentry *d)
 +{
-+	return !!(au_fi(f)->fi_h_vm_ops);
++	return atomic_dec_return(&au_di(d)->di_generation);
 +}
-+
-+static inline int au_test_aufs_file(struct file *f)
-+{
-+	return !(f->f_dentry->d_inode->i_mode
-+		 & (S_IFCHR | S_IFBLK | S_IFIFO | S_IFSOCK));
-+}
++#endif /* CONFIG_AUFS_HINOTIFY */
 +
 +/* ---------------------------------------------------------------------- */
 +
-+#if !defined(CONFIG_AUFS_MODULE) || defined(CONFIG_AUFS_DENY_WRITE_ACCESS_PATCH)
-+int au_store_fmode_exec(struct nameidata *nd, struct inode *inode);
-+
-+static inline int au_deny_write_access(struct file *h_file)
-+{
-+	LKTRTrace("%.*s\n", AuDLNPair(h_file->f_dentry));
-+	return deny_write_access(h_file);
-+}
-+
-+static inline void au_allow_write_access(struct file *h_file)
-+{
-+	allow_write_access(h_file);
-+}
-+
-+#else
-+
-+static inline int au_store_fmode_exec(struct nameidata *nd, struct inode *inode)
-+{
-+	/* nothing */
-+	return 0;
-+}
-+
-+static inline int au_deny_write_access(struct file *h_file)
-+{
-+	/* nothing */
-+	return 0;
-+}
-+
-+static inline void au_allow_write_access(struct file *h_file)
-+{
-+	/* nothing */
-+}
-+#endif /* CONFIG_AUFS_DENY_WRITE_ACCESS_PATCH */
-+
-+/* ---------------------------------------------------------------------- */
++/* lock subclass for dinfo */
++enum {
++	AuLsc_DI_CHILD,		/* child first */
++	AuLsc_DI_CHILD2,	/* rename(2), link(2), and cpup at hinotify */
++	AuLsc_DI_CHILD3,	/* copyup dirs */
++	AuLsc_DI_PARENT,
++	AuLsc_DI_PARENT2,
++	AuLsc_DI_PARENT3
++};
 +
 +/*
-+ * fi_read_lock, fi_write_lock,
-+ * fi_read_unlock, fi_write_unlock, fi_downgrade_lock
++ * di_read_lock_child, di_write_lock_child,
++ * di_read_lock_child2, di_write_lock_child2,
++ * di_read_lock_child3, di_write_lock_child3,
++ * di_read_lock_parent, di_write_lock_parent,
++ * di_read_lock_parent2, di_write_lock_parent2,
++ * di_read_lock_parent3, di_write_lock_parent3,
 + */
-+AuSimpleRwsemFuncs(fi, struct file *f, au_fi(f)->fi_rwsem);
++#define AuReadLockFunc(name, lsc) \
++static inline void di_read_lock_##name(struct dentry *d, int flags) \
++{ di_read_lock(d, flags, AuLsc_DI_##lsc); }
++
++#define AuWriteLockFunc(name, lsc) \
++static inline void di_write_lock_##name(struct dentry *d) \
++{ di_write_lock(d, AuLsc_DI_##lsc); }
++
++#define AuRWLockFuncs(name, lsc) \
++	AuReadLockFunc(name, lsc) \
++	AuWriteLockFunc(name, lsc)
++
++AuRWLockFuncs(child, CHILD);
++AuRWLockFuncs(child2, CHILD2);
++AuRWLockFuncs(child3, CHILD3);
++AuRWLockFuncs(parent, PARENT);
++AuRWLockFuncs(parent2, PARENT2);
++AuRWLockFuncs(parent3, PARENT3);
++
++#undef AuReadLockFunc
++#undef AuWriteLockFunc
++#undef AuRWLockFuncs
 +
 +/* to debug easier, do not make them inlined functions */
-+#define FiMustReadLock(f) do { \
-+	SiMustAnyLock((f)->f_dentry->d_sb); \
-+	AuRwMustReadLock(&au_fi(f)->fi_rwsem); \
++#define DiMustReadLock(d) do { \
++	SiMustAnyLock((d)->d_sb); \
++	AuRwMustReadLock(&au_di(d)->di_rwsem); \
 +} while (0)
 +
-+#define FiMustWriteLock(f) do { \
-+	SiMustAnyLock((f)->f_dentry->d_sb); \
-+	AuRwMustWriteLock(&au_fi(f)->fi_rwsem); \
++#define DiMustWriteLock(d) do { \
++	SiMustAnyLock((d)->d_sb); \
++	AuRwMustWriteLock(&au_di(d)->di_rwsem); \
 +} while (0)
 +
-+#define FiMustAnyLock(f) do { \
-+	SiMustAnyLock((f)->f_dentry->d_sb); \
-+	AuRwMustAnyLock(&au_fi(f)->fi_rwsem); \
++#define DiMustAnyLock(d) do { \
++	SiMustAnyLock((d)->d_sb); \
++	AuRwMustAnyLock(&au_di(d)->di_rwsem); \
 +} while (0)
 +
-+#define FiMustNoWaiters(f)	AuRwMustNoWaiters(&au_fi(f)->fi_rwsem)
++#define DiMustNoWaiters(d)	AuRwMustNoWaiters(&au_di(d)->di_rwsem)
 +
 +/* ---------------------------------------------------------------------- */
 +
++static inline aufs_bindex_t au_dbstart(struct dentry *dentry)
++{
++	DiMustAnyLock(dentry);
++	return au_di(dentry)->di_bstart;
++}
++
++static inline aufs_bindex_t au_dbend(struct dentry *dentry)
++{
++	DiMustAnyLock(dentry);
++	return au_di(dentry)->di_bend;
++}
++
++static inline aufs_bindex_t au_dbwh(struct dentry *dentry)
++{
++	DiMustAnyLock(dentry);
++	return au_di(dentry)->di_bwh;
++}
++
++static inline aufs_bindex_t au_dbdiropq(struct dentry *dentry)
++{
++	DiMustAnyLock(dentry);
++	AuDebugOn(dentry->d_inode
++		  && dentry->d_inode->i_mode
++		  && !S_ISDIR(dentry->d_inode->i_mode));
++	return au_di(dentry)->di_bdiropq;
++}
++
 +// hard/soft set
-+static inline aufs_bindex_t au_fbstart(struct file *file)
++static inline void au_set_dbstart(struct dentry *dentry, aufs_bindex_t bindex)
 +{
-+	FiMustAnyLock(file);
-+	return au_fi(file)->fi_bstart;
++	DiMustWriteLock(dentry);
++	AuDebugOn(au_sbend(dentry->d_sb) < bindex);
++	/* */
++	au_di(dentry)->di_bstart = bindex;
 +}
 +
-+static inline aufs_bindex_t au_fbend(struct file *file)
++static inline void au_set_dbend(struct dentry *dentry, aufs_bindex_t bindex)
 +{
-+	FiMustAnyLock(file);
-+	return au_fi(file)->fi_bend;
++	DiMustWriteLock(dentry);
++	AuDebugOn(au_sbend(dentry->d_sb) < bindex
++		  || bindex < au_dbstart(dentry));
++	au_di(dentry)->di_bend = bindex;
 +}
 +
-+static inline struct au_vdir *au_fvdir_cache(struct file *file)
++static inline void au_set_dbwh(struct dentry *dentry, aufs_bindex_t bindex)
 +{
-+	FiMustAnyLock(file);
-+	return au_fi(file)->fi_vdir_cache;
++	DiMustWriteLock(dentry);
++	AuDebugOn(au_sbend(dentry->d_sb) < bindex);
++	/* dbwh can be outside of bstart - bend range */
++	au_di(dentry)->di_bwh = bindex;
 +}
 +
-+static inline void au_set_fbstart(struct file *file, aufs_bindex_t bindex)
++static inline void au_hdput(struct au_hdentry *hd, int do_free)
 +{
-+	FiMustWriteLock(file);
-+	AuDebugOn(au_sbend(file->f_dentry->d_sb) < bindex);
-+	au_fi(file)->fi_bstart = bindex;
++	au_hintent_put(hd, do_free);
++	dput(hd->hd_dentry);
 +}
 +
-+static inline void au_set_fbend(struct file *file, aufs_bindex_t bindex)
++static inline void au_update_digen(struct dentry *dentry)
 +{
-+	FiMustWriteLock(file);
-+	AuDebugOn(au_sbend(file->f_dentry->d_sb) < bindex
-+		  || bindex < au_fbstart(file));
-+	au_fi(file)->fi_bend = bindex;
-+}
-+
-+static inline void au_set_fvdir_cache(struct file *file,
-+				      struct au_vdir *vdir_cache)
-+{
-+	FiMustWriteLock(file);
-+	AuDebugOn(!S_ISDIR(file->f_dentry->d_inode->i_mode)
-+		  || (au_fi(file)->fi_vdir_cache && vdir_cache));
-+	au_fi(file)->fi_vdir_cache = vdir_cache;
-+}
-+
-+static inline void au_update_figen(struct file *file)
-+{
-+	atomic_set(&au_fi(file)->fi_generation, au_digen(file->f_dentry));
++	//DiMustWriteLock(dentry);
++	AuDebugOn(!dentry->d_sb);
++	atomic_set(&au_di(dentry)->di_generation, au_sigen(dentry->d_sb));
 +	//smp_mb(); /* atomic_set */
 +}
 +
 +#endif /* __KERNEL__ */
-+#endif /* __AUFS_FILE_H__ */
++#endif /* __AUFS_DENTRY_H__ */
 -- 
 1.4.4.4
 
