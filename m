@@ -1,86 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754000AbYEPGMg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753607AbYEPGRf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754000AbYEPGMg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 02:12:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751033AbYEPGMX
+	id S1753607AbYEPGRf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 02:17:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750826AbYEPGR1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 02:12:23 -0400
-Received: from ipmail04.adl2.internode.on.net ([203.16.214.57]:24537 "EHLO
-	ipmail04.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750695AbYEPGMW (ORCPT
+	Fri, 16 May 2008 02:17:27 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:22507 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750759AbYEPGR0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 02:12:22 -0400
-X-IronPort-CTest: t
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AkEBAK/ALEjLGl9BiGdsb2JhbACLWIZQAQEBDyCcAw
-X-IronPort-AV: E=Sophos;i="4.27,495,1204464600"; 
-   d="scan'208";a="113365919"
-Message-ID: <05be01c8b71b$cbb0c9e0$f903a33a@SABINE>
-From: "Kingsley Foreman" <kingsley@internode.com.au>
-To: "Jarek Poplawski" <jarkao2@gmail.com>
-Cc: "Patrick McHardy" <kaber@trash.net>, "Eric Dumazet" <dada1@cosmosbay.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
-References: <20080515091216.GA6550@ff.dom.local> <8ECDBB4EB5394859BFFACAAEE3A6EDB0@uglypunk> <482C6040.9030808@trash.net> <20080515182504.GB2936@ami.dom.local> <482C81CC.7000305@trash.net> <20080515184646.GC2936@ami.dom.local> <1A70765F4B30462EB21A3B3A8A442633@uglypunk> <20080516054959.GA3918@ff.dom.local>
-Subject: Re: NET_SCHED cbq dropping too many packets on a bonding interface
-Date: Fri, 16 May 2008 15:42:18 +0930
-MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
+	Fri, 16 May 2008 02:17:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=GcMh6Ns1DdwiqP1vXxzjBQAhyfM/b1RJ602nyGkQz6uPUx6fR95yOMxr+iL65rq5SyRRw96rZ6cGBb/TINFfUGudJx+L+Gcr5wu41dEj3SzbpY4JZ9ZTR9LncRnVpK1knktQw8wxidOA/aQmX0EFxJOWB/BQHd/3itsY/fU8wbw=
+Subject: [PATCH] crypto: make michael_block a function
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 15 May 2008 23:17:17 -0700
+Message-Id: <1210918637.5915.24.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3138
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ok after some playing a bit if i use
+Make the michael_block macro a function and change the calling
+function to take a struct michael_mic_ctx * and the value for
+the initial xor with ctx->l.
 
-tc qdisc change dev bond0 parent 1: pfifo limit 30
+Also open-code xswap in its one use in michael_block.
 
-the dropped packets go away, im not sure if that is considered normal or 
-not, however any number under 30 gives me issues.
+Some use of get_unaligned is probably needed as an add-on.
 
-Kingsley
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ crypto/michael_mic.c |   55 +++++++++++++++++++++----------------------------
+ 1 files changed, 24 insertions(+), 31 deletions(-)
 
------ Original Message ----- 
-From: "Jarek Poplawski" <jarkao2@gmail.com>
-To: "Kingsley Foreman" <kingsley@internode.com.au>
-Cc: "Patrick McHardy" <kaber@trash.net>; "Eric Dumazet" 
-<dada1@cosmosbay.com>; "Andrew Morton" <akpm@linux-foundation.org>; 
-<linux-kernel@vger.kernel.org>; <netdev@vger.kernel.org>
-Sent: Friday, May 16, 2008 3:19 PM
-Subject: Re: NET_SCHED cbq dropping too many packets on a bonding interface
+diff --git a/crypto/michael_mic.c b/crypto/michael_mic.c
+index 9e917b8..792dbf9 100644
+--- a/crypto/michael_mic.c
++++ b/crypto/michael_mic.c
+@@ -31,19 +31,18 @@ static inline u32 xswap(u32 val)
+ 	return ((val & 0x00ff00ff) << 8) | ((val & 0xff00ff00) >> 8);
+ }
+ 
+-
+-#define michael_block(l, r)	\
+-do {				\
+-	r ^= rol32(l, 17);	\
+-	l += r;			\
+-	r ^= xswap(l);		\
+-	l += r;			\
+-	r ^= rol32(l, 3);	\
+-	l += r;			\
+-	r ^= ror32(l, 2);	\
+-	l += r;			\
+-} while (0)
+-
++static void michael_block(struct michael_mic_ctx *ctx, u32 val)
++{
++	ctx->l ^= val;
++	ctx->r ^= rol32(ctx->l, 17);
++	ctx->l += ctx->r;
++	ctx->r ^= ((ctx->l & 0x00ff00ff) << 8) | ((ctx->l & 0xff00ff00) >> 8);
++	ctx->l += ctx->r;
++	ctx->r ^= rol32(ctx->l, 3);
++	ctx->l += ctx->r;
++	ctx->r ^= ror32(ctx->l, 2);
++	ctx->l += ctx->r;
++}
+ 
+ static void michael_init(struct crypto_tfm *tfm)
+ {
+@@ -71,16 +70,14 @@ static void michael_update(struct crypto_tfm *tfm, const u8 *data,
+ 			return;
+ 
+ 		src = (const __le32 *)mctx->pending;
+-		mctx->l ^= le32_to_cpup(src);
+-		michael_block(mctx->l, mctx->r);
++		michael_block(mctx, le32_to_cpup(src));
+ 		mctx->pending_len = 0;
+ 	}
+ 
+ 	src = (const __le32 *)data;
+ 
+ 	while (len >= 4) {
+-		mctx->l ^= le32_to_cpup(src++);
+-		michael_block(mctx->l, mctx->r);
++		michael_block(mctx, le32_to_cpup(src++));
+ 		len -= 4;
+ 	}
+ 
+@@ -96,26 +93,22 @@ static void michael_final(struct crypto_tfm *tfm, u8 *out)
+ 	struct michael_mic_ctx *mctx = crypto_tfm_ctx(tfm);
+ 	u8 *data = mctx->pending;
+ 	__le32 *dst = (__le32 *)out;
++	u32 tmp;
+ 
+ 	/* Last block and padding (0x5a, 4..7 x 0) */
++	tmp = 0x5a;
+ 	switch (mctx->pending_len) {
+-	case 0:
+-		mctx->l ^= 0x5a;
+-		break;
+-	case 1:
+-		mctx->l ^= data[0] | 0x5a00;
+-		break;
+-	case 2:
+-		mctx->l ^= data[0] | (data[1] << 8) | 0x5a0000;
+-		break;
+ 	case 3:
+-		mctx->l ^= data[0] | (data[1] << 8) | (data[2] << 16) |
+-			0x5a000000;
++		tmp = (tmp << 8) | data[2];
++	case 2:
++		tmp = (tmp << 8) | data[1];
++	case 1:
++		tmp = (tmp << 8) | data[0];
++	case 0:
+ 		break;
+ 	}
+-	michael_block(mctx->l, mctx->r);
+-	/* l ^= 0; */
+-	michael_block(mctx->l, mctx->r);
++	michael_block(mctx, tmp);
++	michael_block(mctx, 0);
+ 
+ 	dst[0] = cpu_to_le32(mctx->l);
+ 	dst[1] = cpu_to_le32(mctx->r);
+-- 
+1.5.5.1.570.g26b5e
 
 
-> On Fri, May 16, 2008 at 06:57:23AM +0930, Kingsley Foreman wrote:
-> ...
->> running
->>
->> tc qdisc add dev bond0 root pfifo limit 1000
->>
->> or
->>
->> tc qdisc add dev bond0 root handle 1: cbq bandwidth 2000Mbit avpkt 1000
->> cell 0
->> tc qdisc add dev bond0 parent 1: pfifo limit 1000
->>
->>
->> doesn't appear to be dropping packets.
->>
->
-> Great! So it looks like there is no error here unless there are needed
-> significantly bigger queues to stop this dropping compared to 2.6.22.
-> You could try to lower this limit now to something like 10 to find when
-> drops start to appear. Why 2.6.22 doesn't need this at all is a mistery
-> anyway (old scheduler?), and it would really need some work (like git
-> bisection) to find the reason for more than 5 or 10 packet difference.
->
-> Thanks,
-> Jarek P.
-> 
 
