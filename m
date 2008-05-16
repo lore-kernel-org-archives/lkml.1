@@ -1,88 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758521AbYEPTxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756977AbYEPTzl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758521AbYEPTxR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 15:53:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752363AbYEPTxG
+	id S1756977AbYEPTzl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 15:55:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbYEPTzd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 15:53:06 -0400
-Received: from mail.ift.unesp.br ([200.145.46.3]:49152 "EHLO mail.ift.unesp.br"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751909AbYEPTxF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 15:53:05 -0400
-Date: Fri, 16 May 2008 16:52:23 -0300
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, matthew@wil.cx
-Subject: Re: [PATCH] Remove argument from open_softirq which is always NULL
-Message-ID: <20080516195223.GA5308@beyonder.ift.unesp.br>
-Mail-Followup-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-	linux-kernel@vger.kernel.org, matthew@wil.cx
-References: <20080515141537.GA22826@beyonder.ift.unesp.br> <20080516182807.GA28406@linux.vnet.ibm.com>
+	Fri, 16 May 2008 15:55:33 -0400
+Received: from wr-out-0506.google.com ([64.233.184.229]:22360 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751331AbYEPTzc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 15:55:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=VHVym8EdYH28PnqU2y4qScFMkbXMsTW0SuAkZfDqjRHpRRqp+YRkebgT0BTGpibO4u57X8UWE/PJGzWnC5X2K5zCEuS9RLOoSlfAvMZ9ImZS6J1zCkQLFv3/FplmPt+iz6UCc2XjdZRCpDwWqiity5QqZB5KwkuLfOSqajHab9s=
+Message-ID: <170fa0d20805161255i31d768ceh3b15c2640f06524b@mail.gmail.com>
+Date: Fri, 16 May 2008 15:55:30 -0400
+From: "Mike Snitzer" <snitzer@gmail.com>
+To: "device-mapper development" <dm-devel@redhat.com>, agk@redhat.com,
+       "Ric Wheeler" <ric@emc.com>, "Michael Tokarev" <mjt@tls.msk.ru>,
+       "Andi Kleen" <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: [dm-devel] Re: [PATCH] Implement barrier support for single device DM devices
+In-Reply-To: <20080219024533.GC4066@agk.fab.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080516182807.GA28406@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <20080215120821.GA8267@basil.nowhere.org>
+	 <20080215122002.GM29914@agk.fab.redhat.com>
+	 <47B58EAA.8040405@msgid.tls.msk.ru>
+	 <20080215142010.GA29552@one.firstfloor.org>
+	 <20080215141229.GB1788@agk.fab.redhat.com> <47B97E87.6040209@emc.com>
+	 <47B9870B.8060005@msgid.tls.msk.ru> <47B98D8A.7090506@emc.com>
+	 <20080219024533.GC4066@agk.fab.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 16.May'08 at 11:28:07 -0700, Paul E. McKenney wrote:
-> On Thu, May 15, 2008 at 11:15:37AM -0300, Carlos R. Mafra wrote:
-> > From 9371c45e92c308425c0aad4794f61acb6fe6d140 Mon Sep 17 00:00:00 2001
-> > From: Carlos R. Mafra <crmafra@ift.unesp.br>
-> > Date: Wed, 14 May 2008 18:26:06 -0300
-> > Subject: [PATCH] Remove argument from open_softirq which is always NULL
-> > 
-> > As git-grep shows, open_softirq() is always called with the last argument
-> > being NULL
-> > 
-> > block/blk-core.c:       open_softirq(BLOCK_SOFTIRQ, blk_done_softirq, NULL);
-> > kernel/hrtimer.c:       open_softirq(HRTIMER_SOFTIRQ, run_hrtimer_softirq, NULL);
-> > kernel/rcuclassic.c:    open_softirq(RCU_SOFTIRQ, rcu_process_callbacks, NULL);
-> > kernel/rcupreempt.c:    open_softirq(RCU_SOFTIRQ, rcu_process_callbacks, NULL);
-> > kernel/sched.c: open_softirq(SCHED_SOFTIRQ, run_rebalance_domains, NULL);
-> > kernel/softirq.c:       open_softirq(TASKLET_SOFTIRQ, tasklet_action, NULL);
-> > kernel/softirq.c:       open_softirq(HI_SOFTIRQ, tasklet_hi_action, NULL);
-> > kernel/timer.c: open_softirq(TIMER_SOFTIRQ, run_timer_softirq, NULL);
-> > net/core/dev.c: open_softirq(NET_TX_SOFTIRQ, net_tx_action, NULL);
-> > net/core/dev.c: open_softirq(NET_RX_SOFTIRQ, net_rx_action, NULL);
-> > 
-> > This observation has already been made by Matthew Wilcox in June 2002
-> > (http://www.cs.helsinki.fi/linux/linux-kernel/2002-25/0687.html)
-> > 
-> > "I notice that none of the current softirq routines use the data element
-> > passed to them."
-> > 
-> > and the situation hasn't changed since them. So it appears we can safely
-> > remove that extra argument to save 128 (54) bytes of kernel data (text).
-> 
-> Good stuff!!!
+On Mon, Feb 18, 2008 at 10:45 PM, Alasdair G Kergon <agk@redhat.com> wrote:
+> On Mon, Feb 18, 2008 at 08:52:10AM -0500, Ric Wheeler wrote:
+>  > I understand that. Most of the time, dm or md devices are composed of
+>  > uniform components which will uniformly support (or not) the cache flush
+>  > commands used by barriers.
+>
+>  As a dm developer, it's "almost none of the time" because trivial
+>  configurations aren't the ones that require lots of testing effort.
+>
+>  Let's stop arguing over "most of the time":-)
+>
+>  As Andi points out, there are certainly enough real-world users of
+>  "single linear or crypt target using one physical device" for it to be
+>  worth our supporting it.
 
-Thanks a lot!
+Hi Alasdair,
 
-> Will there also be a similar set of patches that removes the extra
-> argument from the invoked function?  For example:
-> 
-> 	static void rcu_process_callbacks(struct softirq_action *unused)
-> 
-> could now become:
-> 
-> 	static void rcu_process_callbacks(void)
+Given that you feel supporting barriers on single device DM targets is
+a good thing, what is the status of such support (like Andi's patch)
+making it upstream?
 
-That was my intention at first when I came acroos 
-run_hrtimer_softirq(struct softirq_action *h) in hrtimer.c, which then led me to
-read more code and notice that I could do the cleanup in this patch.
-
-You've just gave me the motivation I needed to keep cleaning (and learning) further, 
-as the original bug which motivated me to look at those things does not
-happen anymore in my laptop :-)
-
-I will try to do another patch soon, but I will travel tomorrow so it
-may take a few days. 
-
-> Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-
-Thanks,
-Carlos
-
+Mike
