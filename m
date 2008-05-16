@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763757AbYEPO72@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764278AbYEPPBs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763757AbYEPO72 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 10:59:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758057AbYEPOoN
+	id S1764278AbYEPPBs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 11:01:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758014AbYEPOob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 10:44:13 -0400
-Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49298 "EHLO
+	Fri, 16 May 2008 10:44:31 -0400
+Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49288 "EHLO
 	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754654AbYEPOmX (ORCPT
+	with ESMTP id S1751166AbYEPOmV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 10:42:23 -0400
+	Fri, 16 May 2008 10:42:21 -0400
 From: hooanon05@yahoo.co.jp
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Junjiro Okajima <hooanon05@yahoo.co.jp>
-Subject: [PATCH 28/67] aufs copy-up/down functions
-Date: Fri, 16 May 2008 23:32:42 +0900
-Message-Id: <12109484011862-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [PATCH 45/67] aufs inode functions
+Date: Fri, 16 May 2008 23:32:59 +0900
+Message-Id: <1210948402867-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <121094840127-git-send-email-hooanon05@yahoo.co.jp>
+In-Reply-To: <12109484022004-git-send-email-hooanon05@yahoo.co.jp>
 References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <12109484012532-git-send-email-hooanon05@yahoo.co.jp> <12109484012997-git-send-email-hooanon05@yahoo.co.jp> <12109484013051-git-send-email-hooanon05@yahoo.co.jp> <12109484013436-git-send-email-hooanon05@yahoo.co.jp> <1210948401415-git-send-email-hooanon05@yahoo.co.jp> <12109484011533-git-send-email-hooanon05@yahoo.co.jp> <1210948401506-git-send-email-hooanon05@yahoo.co.jp> <12109484013156-git-send-email-hooanon05@yahoo.co.jp> <12109484012724-git-send-email-hooanon05@yahoo.co.jp> <12109484013264-git-send-email-hooanon05@yahoo.co.jp> <12109484012658-git-send-email-hooanon05@yahoo.co.jp> <12109484011282-git-send-email-hooanon05@yahoo.co.jp> <12109484012543-git-send-email-hooanon05@yahoo.co.jp> <12109484013834-git-send-email-hooanon05@yahoo.co.jp> <12109484012213-git-send-email-hooanon05@yahoo.co.jp> <12109484012301-git-send-email-hooanon05@yahoo.co.jp> <1210948401175-git-send-email-hooanon05@yahoo.co.jp> <1210948!
- 4013702-git-send-email-hooanon05@yahoo.co.jp> <12109484012871-git-send-email-hooanon05@yahoo.co.jp> <12109484013438-git-send-email-hooanon05@yahoo.co.jp> <12109484013559-git-send-email-hooanon05@yahoo.co.jp> <12109484012111-git-send-email-hooanon05@yahoo.co.jp> <1210948401543-git-send-email-hooanon05@yahoo.co.jp> <1210948401147-git-send-email-hooanon05@yahoo.co.jp> <12109484012904-git-send-email-hooanon05@yahoo.co.jp> <121094840127-git-send-email-hooanon05@yahoo.co.jp>
+ 4013702-git-send-email-hooanon05@yahoo.co.jp> <12109484012871-git-send-email-hooanon05@yahoo.co.jp> <12109484013438-git-send-email-hooanon05@yahoo.co.jp> <12109484013559-git-send-email-hooanon05@yahoo.co.jp> <12109484012111-git-send-email-hooanon05@yahoo.co.jp> <1210948401543-git-send-email-hooanon05@yahoo.co.jp> <1210948401147-git-send-email-hooanon05@yahoo.co.jp> <12109484012904-git-send-email-hooanon05@yahoo.co.jp> <121094840127-git-send-email-hooanon05@yahoo.co.jp> <12109484011862-git-send-email-hooanon05@yahoo.co.jp> <12109484011143-git-send-email-hooanon05@yahoo.co.jp> <12109484011867-git-send-email-hooanon05@yahoo.co.jp> <12109484021033-git-send-email-hooanon05@yahoo.co.jp> <12109484021234-git-send-email-hooanon05@yahoo.co.jp> <12109484022680-git-send-email-hooanon05@yahoo.co.jp> <12109484021974-git-send-email-hooanon05@yahoo.co.jp> <12109484021281-git-send-email-hooanon05@yahoo.co.jp> <12109484022659-git-send-email-hooanon05@yahoo.co.jp> <12109484023036-git-send-ema!
+ il-hooanon05@yahoo.co.jp> <12109484021939-git-send-email-hooanon05@yahoo.co.jp> <12109484022745-git-send-email-hooanon05@yahoo.co.jp> <12109484023224-git-send-email-hooanon05@yahoo.co.jp> <12109484023618-git-send-email-hooanon05@yahoo.co.jp> <12109484023820-git-send-email-hooanon05@yahoo.co.jp> <12109484021927-git-send-email
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -27,19 +28,19 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Junjiro Okajima <hooanon05@yahoo.co.jp>
 
 	initial commit
-	aufs copy-up/down functions
+	aufs inode functions
 
 Signed-off-by: Junjiro Okajima <hooanon05@yahoo.co.jp>
 ---
- fs/aufs/cpup.h |   82 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 82 insertions(+), 0 deletions(-)
+ fs/aufs/inode.c |  425 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 425 insertions(+), 0 deletions(-)
 
-diff --git a/fs/aufs/cpup.h b/fs/aufs/cpup.h
+diff --git a/fs/aufs/inode.c b/fs/aufs/inode.c
 new file mode 100644
-index 0000000..0e398f2
+index 0000000..7bab2cc
 --- /dev/null
-+++ b/fs/aufs/cpup.h
-@@ -0,0 +1,82 @@
++++ b/fs/aufs/inode.c
+@@ -0,0 +1,425 @@
 +/*
 + * Copyright (C) 2005-2008 Junjiro Okajima
 + *
@@ -59,69 +60,412 @@ index 0000000..0e398f2
 + */
 +
 +/*
-+ * copy-up/down functions
++ * inode functions
 + *
-+ * $Id: cpup.h,v 1.2 2008/04/21 01:33:43 sfjro Exp $
++ * $Id: inode.c,v 1.3 2008/04/28 03:04:12 sfjro Exp $
 + */
 +
-+#ifndef __AUFS_CPUP_H__
-+#define __AUFS_CPUP_H__
++#include "aufs.h"
 +
-+#ifdef __KERNEL__
++int au_refresh_hinode_self(struct inode *inode)
++{
++	int err, new_sz, update;
++	struct inode *first;
++	struct au_hinode *p, *q, tmp;
++	struct super_block *sb;
++	struct au_iinfo *iinfo;
++	aufs_bindex_t bindex, bend, new_bindex;
 +
-+#include <linux/fs.h>
-+#include <linux/aufs_type.h>
++	LKTRTrace("i%lu\n", inode->i_ino);
++	IiMustWriteLock(inode);
 +
-+void au_cpup_attr_timesizes(struct inode *inode);
-+void au_cpup_attr_nlink(struct inode *inode);
-+void au_cpup_attr_changeable(struct inode *inode);
-+void au_cpup_igen(struct inode *inode, struct inode *h_inode);
-+void au_cpup_attr_all(struct inode *inode);
++	err = -ENOMEM;
++	update = 0;
++	sb = inode->i_sb;
++	bend = au_sbend(sb);
++	new_sz = sizeof(*iinfo->ii_hinode) * (bend + 1);
++	iinfo = au_ii(inode);
++	p = au_kzrealloc(iinfo->ii_hinode, sizeof(*p) * (iinfo->ii_bend + 1),
++			 new_sz, GFP_KERNEL);
++	//p = NULL;
++	if (unlikely(!p))
++		goto out;
++
++	iinfo->ii_hinode = p;
++	p = iinfo->ii_hinode + iinfo->ii_bstart;
++	first = p->hi_inode;
++	err = 0;
++	for (bindex = iinfo->ii_bstart; bindex <= iinfo->ii_bend;
++	     bindex++, p++) {
++		if (!p->hi_inode)
++			continue;
++
++		new_bindex = au_br_index(sb, p->hi_id);
++		if (new_bindex == bindex)
++			continue;
++		if (new_bindex < 0) {
++			update++;
++			au_hiput(p);
++			p->hi_inode = NULL;
++			continue;
++		}
++
++		if (new_bindex < iinfo->ii_bstart)
++			iinfo->ii_bstart = new_bindex;
++		if (iinfo->ii_bend < new_bindex)
++			iinfo->ii_bend = new_bindex;
++		/* swap two hidden inode, and loop again */
++		q = iinfo->ii_hinode + new_bindex;
++		tmp = *q;
++		*q = *p;
++		*p = tmp;
++		if (tmp.hi_inode) {
++			bindex--;
++			p--;
++		}
++	}
++	au_update_brange(inode, /*do_put_zero*/0);
++
++	if (unlikely(err))
++		goto out;
++
++	if (1 || first != au_h_iptr(inode, iinfo->ii_bstart))
++		au_cpup_attr_all(inode);
++	if (update && S_ISDIR(inode->i_mode))
++		inode->i_version++;
++	au_update_iigen(inode);
++
++ out:
++	AuTraceErr(err);
++	return err;
++}
++
++int au_refresh_hinode(struct inode *inode, struct dentry *dentry)
++{
++	int err, update, isdir;
++	struct inode *first;
++	struct au_hinode *p;
++	struct super_block *sb;
++	struct au_iinfo *iinfo;
++	aufs_bindex_t bindex, bend;
++	unsigned int flags;
++
++	LKTRTrace("%.*s\n", AuDLNPair(dentry));
++	IiMustWriteLock(inode);
++
++	err = au_refresh_hinode_self(inode);
++	if (unlikely(err))
++		goto out;
++
++	sb = dentry->d_sb;
++	bend = au_sbend(sb);
++	iinfo = au_ii(inode);
++	update = 0;
++	p = iinfo->ii_hinode + iinfo->ii_bstart;
++	first = p->hi_inode;
++	isdir = S_ISDIR(inode->i_mode);
++	flags = au_hi_flags(inode, isdir);
++	bend = au_dbend(dentry);
++	for (bindex = au_dbstart(dentry); bindex <= bend; bindex++) {
++		struct inode *hi;
++		struct dentry *hd;
++
++		hd = au_h_dptr(dentry, bindex);
++		if (!hd || !hd->d_inode)
++			continue;
++
++		if (iinfo->ii_bstart <= bindex && bindex <= iinfo->ii_bend) {
++			hi = au_h_iptr(inode, bindex);
++			if (hi) {
++				if (hi == hd->d_inode)
++					continue;
++				err = -ESTALE;
++				break;
++			}
++		}
++		if (bindex < iinfo->ii_bstart)
++			iinfo->ii_bstart = bindex;
++		if (iinfo->ii_bend < bindex)
++			iinfo->ii_bend = bindex;
++		au_set_h_iptr(inode, bindex, igrab(hd->d_inode), flags);
++		update++;
++	}
++	au_update_brange(inode, /*do_put_zero*/0);
++
++	if (unlikely(err))
++		goto out;
++
++	if (1 || first != au_h_iptr(inode, iinfo->ii_bstart))
++		au_cpup_attr_all(inode);
++	if (update && isdir)
++		inode->i_version++;
++	au_update_iigen(inode);
++
++ out:
++	AuTraceErr(err);
++	return err;
++}
++
++static int set_inode(struct inode *inode, struct dentry *dentry)
++{
++	int err, isdir;
++	struct dentry *h_dentry;
++	struct inode *h_inode;
++	umode_t mode;
++	aufs_bindex_t bindex, bstart, btail;
++	struct au_iinfo *iinfo;
++	unsigned int flags;
++
++	LKTRTrace("i%lu, %.*s\n", inode->i_ino, AuDLNPair(dentry));
++	AuDebugOn(!(inode->i_state & I_NEW));
++	IiMustWriteLock(inode);
++	bstart = au_dbstart(dentry);
++	h_dentry = au_h_dptr(dentry, bstart);
++	AuDebugOn(!h_dentry);
++	h_inode = h_dentry->d_inode;
++	AuDebugOn(!h_inode);
++
++	err = 0;
++	isdir = 0;
++	mode = h_inode->i_mode;
++	switch (mode & S_IFMT) {
++	case S_IFREG:
++		btail = au_dbtail(dentry);
++		break;
++	case S_IFDIR:
++		isdir = 1;
++		btail = au_dbtaildir(dentry);
++		inode->i_op = &aufs_dir_iop;
++		inode->i_fop = &aufs_dir_fop;
++		break;
++	case S_IFLNK:
++		btail = au_dbtail(dentry);
++		inode->i_op = &aufs_symlink_iop;
++		break;
++	case S_IFBLK:
++	case S_IFCHR:
++	case S_IFIFO:
++	case S_IFSOCK:
++		btail = au_dbtail(dentry);
++		init_special_inode(inode, mode,
++				   au_h_rdev(h_inode, /*h_mnt*/NULL, h_dentry));
++		break;
++	default:
++		AuIOErr("Unknown file type 0%o\n", mode);
++		err = -EIO;
++		goto out;
++	}
++
++	flags = au_hi_flags(inode, isdir);
++	iinfo = au_ii(inode);
++	iinfo->ii_bstart = bstart;
++	iinfo->ii_bend = btail;
++	for (bindex = bstart; bindex <= btail; bindex++) {
++		h_dentry = au_h_dptr(dentry, bindex);
++		if (!h_dentry)
++			continue;
++		AuDebugOn(!h_dentry->d_inode);
++		au_set_h_iptr(inode, bindex, igrab(h_dentry->d_inode), flags);
++	}
++	au_cpup_attr_all(inode);
++
++ out:
++	AuTraceErr(err);
++	return err;
++}
++
++/* successful returns with iinfo write_locked */
++//todo: return with unlocked?
++static int reval_inode(struct inode *inode, struct dentry *dentry, int *matched)
++{
++	int err;
++	struct inode *h_inode, *h_dinode;
++	aufs_bindex_t bindex, bend;
++#if 0
++	const int hinotify = au_opt_test(au_mntflags(inode->i_sb),
++					 UDBA_INOTIFY);
++#endif
++
++	LKTRTrace("i%lu, %.*s\n", inode->i_ino, AuDLNPair(dentry));
++
++	*matched = 0;
++
++	/*
++	 * before this function, if aufs got any iinfo lock, it must be only
++	 * one, the parent dir.
++	 * it can happen by UDBA and the obsoleted inode number.
++	 */
++	err = -EIO;
++	if (unlikely(inode->i_ino == parent_ino(dentry)))
++		goto out;
++
++	err = 0;
++	h_dinode = au_h_dptr(dentry, au_dbstart(dentry))->d_inode;
++	mutex_lock_nested(&inode->i_mutex, AuLsc_I_CHILD);
++	ii_write_lock_new(inode);
++	bend = au_ibend(inode);
++	for (bindex = au_ibstart(inode); bindex <= bend; bindex++) {
++		h_inode = au_h_iptr(inode, bindex);
++		if (h_inode && h_inode == h_dinode) {
++			//&& (ibs != bstart || !au_test_higen(inode, h_inode)));
++			*matched = 1;
++			err = 0;
++			if (unlikely(au_iigen(inode) != au_digen(dentry)))
++				err = au_refresh_hinode(inode, dentry);
++			break;
++		}
++	}
++	if (unlikely(err))
++		ii_write_unlock(inode);
++	mutex_unlock(&inode->i_mutex);
++
++ out:
++	AuTraceErr(err);
++	return err;
++}
++
++/* successful returns with iinfo write_locked */
++//todo: return with unlocked?
++struct inode *au_new_inode(struct dentry *dentry)
++{
++	struct inode *inode, *h_inode;
++	struct dentry *h_dentry;
++	ino_t h_ino;
++	struct super_block *sb;
++	int err, match;
++	aufs_bindex_t bstart;
++	struct au_xino_entry xinoe;
++
++	LKTRTrace("%.*s\n", AuDLNPair(dentry));
++	sb = dentry->d_sb;
++	bstart = au_dbstart(dentry);
++	h_dentry = au_h_dptr(dentry, bstart);
++	AuDebugOn(!h_dentry);
++	h_inode = h_dentry->d_inode;
++	AuDebugOn(!h_inode);
++
++	h_ino = h_inode->i_ino;
++	err = au_xino_read(sb, bstart, h_ino, &xinoe);
++	//err = -1;
++	inode = ERR_PTR(err);
++	if (unlikely(err))
++		goto out;
++ new_ino:
++	if (!xinoe.ino) {
++		xinoe.ino = au_xino_new_ino(sb);
++		if (!xinoe.ino) {
++			inode = ERR_PTR(-EIO);
++			goto out;
++		}
++	}
++
++	LKTRTrace("i%lu\n", xinoe.ino);
++	inode = au_iget_locked(sb, xinoe.ino);
++	err = PTR_ERR(inode);
++	if (IS_ERR(inode))
++		goto out;
++
++	LKTRTrace("%lx, new %d\n", inode->i_state, !!(inode->i_state & I_NEW));
++	if (inode->i_state & I_NEW) {
++		ii_write_lock_new(inode);
++		err = set_inode(inode, dentry);
++		//err = -1;
++		unlock_new_inode(inode);
++		if (!err)
++			goto out; /* success */
++		iget_failed(inode);
++		ii_write_unlock(inode);
++		goto out_iput;
++	} else {
++		//todo: remove this
++		AuDebugOn(inode->i_state & I_LOCK);
++		err = reval_inode(inode, dentry, &match);
++		if (!err)
++			goto out; /* success */
++		else if (match)
++			goto out_iput;
++	}
++
++	if (unlikely(au_test_unique_ino(h_dentry, h_ino)))
++		AuWarn1("Un-notified UDBA or repeatedly renamed dir,"
++			" b%d, %s, %.*s, hi%lu, i%lu.\n",
++			bstart, au_sbtype(h_dentry->d_sb), AuDLNPair(dentry),
++			h_ino, xinoe.ino);
++#if 0 // debug
++	{
++		static unsigned char c;
++		if (!c++) {
++			struct dentry *d = d_find_alias(inode);
++			au_debug_on();
++			DbgDentry(dentry);
++			DbgInode(inode);
++			if (d) {
++				DbgDentry(d);
++				dput(d);
++			}
++			au_debug_off();
++		}
++	}
++#endif
++	xinoe.ino = 0;
++	err = au_xino_write0(sb, bstart, h_ino, 0);
++	if (!err) {
++		iput(inode);
++		goto new_ino;
++	}
++	/* force noxino? */
++
++ out_iput:
++	iput(inode);
++	inode = ERR_PTR(err);
++ out:
++	AuTraceErrPtr(inode);
++	return inode;
++}
 +
 +/* ---------------------------------------------------------------------- */
 +
-+/* cpup flags */
-+#define AuCpup_DTIME	1	/* do dtime_store/revert */
-+#define au_ftest_cpup(flags, name)	((flags) & AuCpup_##name)
-+#define au_fset_cpup(flags, name)	{ (flags) |= AuCpup_##name; }
-+#define au_fclr_cpup(flags, name)	{ (flags) &= ~AuCpup_##name; }
++int au_test_ro(struct super_block *sb, aufs_bindex_t bindex,
++	       struct inode *inode)
++{
++	int err;
 +
-+int au_cpup_single(struct dentry *dentry, aufs_bindex_t bdst,
-+		   aufs_bindex_t bsrc, loff_t len, unsigned int flags);
-+int au_sio_cpup_single(struct dentry *dentry, aufs_bindex_t bdst,
-+		       aufs_bindex_t bsrc, loff_t len, unsigned int flags);
-+int au_cpup_simple(struct dentry *dentry, aufs_bindex_t bdst, loff_t len,
-+		   unsigned int flags);
-+int au_sio_cpup_simple(struct dentry *dentry, aufs_bindex_t bdst, loff_t len,
-+		       unsigned int flags);
-+int au_cpup_wh(struct dentry *dentry, aufs_bindex_t bdst, loff_t len,
-+	       struct file *file);
-+int au_sio_cpup_wh(struct dentry *dentry, aufs_bindex_t bdst, loff_t len,
-+		   struct file *file);
++	err = au_br_rdonly(au_sbr(sb, bindex));
 +
-+int au_cp_dirs(struct dentry *dentry, aufs_bindex_t bdst, struct dentry *locked,
-+	       int (*cp)(struct dentry *dentry, aufs_bindex_t bdst,
-+			 struct dentry *h_parent, void *arg),
-+	       void *arg);
-+int au_cpup_dirs(struct dentry *dentry, aufs_bindex_t bdst,
-+		 struct dentry *locked);
-+int au_test_and_cpup_dirs(struct dentry *dentry, aufs_bindex_t bdst,
-+			  struct dentry *locked);
++	/* pseudo-link after flushed may out of bounds */
++	if (!err
++	    && inode
++	    && au_ibstart(inode) <= bindex
++	    && bindex <= au_ibend(inode)) {
++		/*
++		 * permission check is unnecessary since vfsub routine
++		 * will be called later
++		 */
++		struct inode *hi = au_h_iptr(inode, bindex);
++		if (hi)
++			err = IS_IMMUTABLE(hi) ? -EROFS : 0;
++	}
 +
-+/* ---------------------------------------------------------------------- */
++	AuTraceErr(err);
++	return err;
++}
 +
-+/* keep timestamps when copyup */
-+struct au_dtime {
-+	struct dentry *dt_dentry, *dt_h_dentry;
-+	struct au_hinode *dt_hdir;
-+	struct timespec dt_atime, dt_mtime;
-+};
-+void au_dtime_store(struct au_dtime *dt, struct dentry *dentry,
-+		    struct dentry *h_dentry, struct au_hinode *hdir);
-+void au_dtime_revert(struct au_dtime *dt);
++int au_test_h_perm(struct inode *h_inode, int mask, int dlgt)
++{
++	if (!current->fsuid)
++		return 0;
++	//todo: fake nameidata
++	return vfsub_permission(h_inode, mask, NULL, dlgt);
++}
 +
-+#endif /* __KERNEL__ */
-+#endif /* __AUFS_CPUP_H__ */
++int au_test_h_perm_sio(struct inode *h_inode, int mask, int dlgt)
++{
++	if (unlikely(au_test_nfs(h_inode->i_sb)
++		     && (mask & MAY_WRITE)
++		     && S_ISDIR(h_inode->i_mode)))
++		mask |= MAY_READ; /* force permission check */
++	return au_test_h_perm(h_inode, mask, dlgt);
++}
 -- 
 1.4.4.4
 
