@@ -1,244 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761598AbYEPQjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761699AbYEPQk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761598AbYEPQjz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 12:39:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757796AbYEPQdS
+	id S1761699AbYEPQk0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 12:40:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbYEPQdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 12:33:18 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:33775 "EHLO
+	Fri, 16 May 2008 12:33:20 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:33783 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752675AbYEPQdB (ORCPT
+	with ESMTP id S1757510AbYEPQdI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 12:33:01 -0400
-Message-Id: <20080516163236.356498075@szeredi.hu>
+	Fri, 16 May 2008 12:33:08 -0400
+Message-Id: <20080516163246.312498922@szeredi.hu>
 References: <20080516163136.560107038@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Fri, 16 May 2008 18:31:52 +0200
+Date: Fri, 16 May 2008 18:31:58 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org
 Cc: hch@infradead.org, viro@ZenIV.linux.org.uk, ezk@cs.sunysb.edu,
        linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 16/22] vfs: add path_unlink()
-Content-Disposition: inline; filename=path_unlink.patch
+Subject: [patch 22/22] vfs: add path_removexattr()
+Content-Disposition: inline; filename=path_removexattr.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Introduce path_unlink().  Make vfs_unlink() static.
+Introduce path_removexattr().  Make vfs_removexattr() static.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
- fs/ecryptfs/inode.c   |   12 ++++++------
- fs/namei.c            |   22 +++++++++++++++-------
- fs/nfsd/nfs4recover.c |    3 ++-
- fs/nfsd/vfs.c         |   12 ++----------
- include/linux/fs.h    |    2 +-
- ipc/mqueue.c          |   10 +++++-----
- 6 files changed, 31 insertions(+), 30 deletions(-)
+ fs/nfsd/vfs.c         |    6 +-----
+ fs/xattr.c            |   41 +++++++++++++++++++----------------------
+ include/linux/xattr.h |    2 +-
+ 3 files changed, 21 insertions(+), 28 deletions(-)
 
-Index: linux-2.6/fs/ecryptfs/inode.c
+Index: linux-2.6/fs/nfsd/vfs.c
 ===================================================================
---- linux-2.6.orig/fs/ecryptfs/inode.c	2008-05-16 17:50:49.000000000 +0200
-+++ linux-2.6/fs/ecryptfs/inode.c	2008-05-16 17:50:49.000000000 +0200
-@@ -415,22 +415,22 @@ static int ecryptfs_unlink(struct inode 
- {
- 	int rc = 0;
- 	struct dentry *lower_dentry = ecryptfs_dentry_to_lower(dentry);
--	struct inode *lower_dir_inode = ecryptfs_inode_to_lower(dir);
--	struct dentry *lower_dir_dentry;
-+	struct path lower_dir;
+--- linux-2.6.orig/fs/nfsd/vfs.c	2008-05-16 17:50:52.000000000 +0200
++++ linux-2.6/fs/nfsd/vfs.c	2008-05-16 17:50:53.000000000 +0200
+@@ -2071,9 +2071,6 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
+ 	} else
+ 		size = 0;
  
--	lower_dir_dentry = lock_parent(lower_dentry);
--	rc = vfs_unlink(lower_dir_inode, lower_dentry);
-+	lower_dir.mnt = ecryptfs_dentry_to_lower_mnt(dentry);
-+	lower_dir.dentry = lock_parent(lower_dentry);
-+	rc = path_unlink(&lower_dir, lower_dentry);
- 	if (rc) {
- 		printk(KERN_ERR "Error in vfs_unlink; rc = [%d]\n", rc);
- 		goto out_unlock;
+-	error = mnt_want_write(fhp->fh_export->ex_path.mnt);
+-	if (error)
+-		goto getout;
+ 	fh_to_path(fhp, &path);
+ 	if (size)
+ 		error = path_setxattr(&path, name, value, size, 0);
+@@ -2081,12 +2078,11 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
+ 		if (!S_ISDIR(inode->i_mode) && type == ACL_TYPE_DEFAULT)
+ 			error = 0;
+ 		else {
+-			error = vfs_removexattr(fhp->fh_dentry, name);
++			error = path_removexattr(&path, name);
+ 			if (error == -ENODATA)
+ 				error = 0;
+ 		}
  	}
--	fsstack_copy_attr_times(dir, lower_dir_inode);
-+	fsstack_copy_attr_times(dir, lower_dir.dentry->d_inode);
- 	dentry->d_inode->i_nlink =
- 		ecryptfs_inode_to_lower(dentry->d_inode)->i_nlink;
- 	dentry->d_inode->i_ctime = dir->i_ctime;
- 	d_drop(dentry);
- out_unlock:
--	unlock_dir(lower_dir_dentry);
-+	unlock_dir(lower_dir.dentry);
- 	return rc;
- }
+-	mnt_drop_write(fhp->fh_export->ex_path.mnt);
  
-Index: linux-2.6/fs/namei.c
+ getout:
+ 	kfree(value);
+Index: linux-2.6/fs/xattr.c
 ===================================================================
---- linux-2.6.orig/fs/namei.c	2008-05-16 17:50:49.000000000 +0200
-+++ linux-2.6/fs/namei.c	2008-05-16 17:50:49.000000000 +0200
-@@ -2324,7 +2324,7 @@ asmlinkage long sys_rmdir(const char __u
- 	return do_rmdir(AT_FDCWD, pathname);
+--- linux-2.6.orig/fs/xattr.c	2008-05-16 17:50:52.000000000 +0200
++++ linux-2.6/fs/xattr.c	2008-05-16 17:50:53.000000000 +0200
+@@ -199,7 +199,7 @@ vfs_listxattr(struct dentry *d, char *li
  }
+ EXPORT_SYMBOL_GPL(vfs_listxattr);
  
--int vfs_unlink(struct inode *dir, struct dentry *dentry)
-+static int vfs_unlink(struct inode *dir, struct dentry *dentry)
+-int
++static int
+ vfs_removexattr(struct dentry *dentry, const char *name)
  {
- 	int error = may_delete(dir, dentry, 0);
- 
-@@ -2355,6 +2355,19 @@ int vfs_unlink(struct inode *dir, struct
+ 	struct inode *inode = dentry->d_inode;
+@@ -224,8 +224,19 @@ vfs_removexattr(struct dentry *dentry, c
+ 		fsnotify_xattr(dentry);
  	return error;
  }
+-EXPORT_SYMBOL_GPL(vfs_removexattr);
  
-+int path_unlink(struct path *dir_path, struct dentry *dentry)
++int path_removexattr(struct path *path, const char *name)
 +{
-+	int error = mnt_want_write(dir_path->mnt);
++	int error = mnt_want_write(path->mnt);
 +
 +	if (!error) {
-+		error = vfs_unlink(dir_path->dentry->d_inode, dentry);
-+		mnt_drop_write(dir_path->mnt);
++		error = vfs_removexattr(path->dentry, name);
++		mnt_drop_write(path->mnt);
 +	}
 +
 +	return error;
 +}
-+EXPORT_SYMBOL(path_unlink);
-+
- /*
-  * Make sure that the actual truncation of the file will occur outside its
-  * directory's i_mutex.  Truncate can take a long time if there is a lot of
-@@ -2389,11 +2402,7 @@ static long do_unlinkat(int dfd, const c
- 		inode = dentry->d_inode;
- 		if (inode)
- 			atomic_inc(&inode->i_count);
--		error = mnt_want_write(nd.path.mnt);
--		if (error)
--			goto exit2;
--		error = vfs_unlink(nd.path.dentry->d_inode, dentry);
--		mnt_drop_write(nd.path.mnt);
-+		error = path_unlink(&nd.path, dentry);
- 	exit2:
- 		dput(dentry);
- 	}
-@@ -3004,6 +3013,5 @@ EXPORT_SYMBOL(generic_permission);
- EXPORT_SYMBOL(vfs_readlink);
- EXPORT_SYMBOL(vfs_rename);
- EXPORT_SYMBOL(vfs_symlink);
--EXPORT_SYMBOL(vfs_unlink);
- EXPORT_SYMBOL(dentry_unhash);
- EXPORT_SYMBOL(generic_readlink);
-Index: linux-2.6/fs/nfsd/nfs4recover.c
-===================================================================
---- linux-2.6.orig/fs/nfsd/nfs4recover.c	2008-05-16 17:50:49.000000000 +0200
-+++ linux-2.6/fs/nfsd/nfs4recover.c	2008-05-16 17:50:49.000000000 +0200
-@@ -252,6 +252,7 @@ out:
- static int
- nfsd4_remove_clid_file(struct dentry *dir, struct dentry *dentry)
- {
-+	struct path dir_path = { .dentry = dir, .mnt = rec_dir.path.mnt };
- 	int status;
++EXPORT_SYMBOL(path_removexattr);
  
- 	if (!S_ISREG(dir->d_inode->i_mode)) {
-@@ -259,7 +260,7 @@ nfsd4_remove_clid_file(struct dentry *di
- 		return -EINVAL;
- 	}
- 	mutex_lock_nested(&dir->d_inode->i_mutex, I_MUTEX_PARENT);
--	status = vfs_unlink(dir->d_inode, dentry);
-+	status = path_unlink(&dir_path, dentry);
- 	mutex_unlock(&dir->d_inode->i_mutex);
- 	return status;
+ /*
+  * Extended attribute SET operations
+@@ -471,7 +482,7 @@ sys_flistxattr(int fd, char __user *list
+  * Extended attribute REMOVE operations
+  */
+ static long
+-removexattr(struct dentry *d, const char __user *name)
++removexattr(struct path *path, const char __user *name)
+ {
+ 	int error;
+ 	char kname[XATTR_NAME_MAX + 1];
+@@ -482,7 +493,7 @@ removexattr(struct dentry *d, const char
+ 	if (error < 0)
+ 		return error;
+ 
+-	return vfs_removexattr(d, kname);
++	return path_removexattr(path, kname);
  }
-Index: linux-2.6/fs/nfsd/vfs.c
-===================================================================
---- linux-2.6.orig/fs/nfsd/vfs.c	2008-05-16 17:50:49.000000000 +0200
-+++ linux-2.6/fs/nfsd/vfs.c	2008-05-16 17:50:49.000000000 +0200
-@@ -1766,7 +1766,6 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
+ 
+ asmlinkage long
+@@ -494,11 +505,7 @@ sys_removexattr(const char __user *path,
+ 	error = user_path_walk(path, &nd);
+ 	if (error)
+ 		return error;
+-	error = mnt_want_write(nd.path.mnt);
+-	if (!error) {
+-		error = removexattr(nd.path.dentry, name);
+-		mnt_drop_write(nd.path.mnt);
+-	}
++	error = removexattr(&nd.path, name);
+ 	path_put(&nd.path);
+ 	return error;
+ }
+@@ -512,11 +519,7 @@ sys_lremovexattr(const char __user *path
+ 	error = user_path_walk_link(path, &nd);
+ 	if (error)
+ 		return error;
+-	error = mnt_want_write(nd.path.mnt);
+-	if (!error) {
+-		error = removexattr(nd.path.dentry, name);
+-		mnt_drop_write(nd.path.mnt);
+-	}
++	error = removexattr(&nd.path, name);
+ 	path_put(&nd.path);
+ 	return error;
+ }
+@@ -525,19 +528,13 @@ asmlinkage long
+ sys_fremovexattr(int fd, const char __user *name)
  {
- 	struct path 	dir_path;
- 	struct dentry	*dentry, *rdentry;
--	struct inode	*dirp;
- 	__be32		err;
- 	int		host_err;
+ 	struct file *f;
+-	struct dentry *dentry;
+ 	int error = -EBADF;
  
-@@ -1779,7 +1778,6 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
- 
- 	fh_lock_nested(fhp, I_MUTEX_PARENT);
- 	dentry = fhp->fh_dentry;
--	dirp = dentry->d_inode;
- 
- 	rdentry = lookup_one_len(fname, dentry, flen);
- 	host_err = PTR_ERR(rdentry);
-@@ -1795,10 +1793,6 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
- 	if (!type)
- 		type = rdentry->d_inode->i_mode & S_IFMT;
- 
--	host_err = mnt_want_write(fhp->fh_export->ex_path.mnt);
--	if (host_err)
--		goto out_nfserr;
--
- 	fh_to_path(fhp, &dir_path);
- 	if (type != S_IFDIR) { /* It's UNLINK */
- #ifdef MSNFS
-@@ -1807,7 +1801,7 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
- 			host_err = -EPERM;
- 		} else
- #endif
--		host_err = vfs_unlink(dirp, rdentry);
-+		host_err = path_unlink(&dir_path, rdentry);
- 	} else { /* It's RMDIR */
- 		host_err = path_rmdir(&dir_path, rdentry);
- 	}
-@@ -1815,12 +1809,10 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
- 	dput(rdentry);
- 
- 	if (host_err)
--		goto out_drop;
-+		goto out_nfserr;
- 	if (EX_ISSYNC(fhp->fh_export))
- 		host_err = nfsd_sync_dir(dentry);
- 
--out_drop:
--	mnt_drop_write(fhp->fh_export->ex_path.mnt);
- out_nfserr:
- 	err = nfserrno(host_err);
- out:
-Index: linux-2.6/include/linux/fs.h
+ 	f = fget(fd);
+ 	if (!f)
+ 		return error;
+-	dentry = f->f_path.dentry;
+-	audit_inode(NULL, dentry);
+-	error = mnt_want_write(f->f_path.mnt);
+-	if (!error) {
+-		error = removexattr(dentry, name);
+-		mnt_drop_write(f->f_path.mnt);
+-	}
++	audit_inode(NULL, f->f_path.dentry);
++	error = removexattr(&f->f_path, name);
+ 	fput(f);
+ 	return error;
+ }
+Index: linux-2.6/include/linux/xattr.h
 ===================================================================
---- linux-2.6.orig/include/linux/fs.h	2008-05-16 17:50:49.000000000 +0200
-+++ linux-2.6/include/linux/fs.h	2008-05-16 17:50:49.000000000 +0200
-@@ -1130,7 +1130,7 @@ extern int path_mknod(struct path *, str
- extern int vfs_symlink(struct inode *, struct dentry *, const char *, int);
- extern int vfs_link(struct dentry *, struct inode *, struct dentry *);
- extern int path_rmdir(struct path *, struct dentry *);
--extern int vfs_unlink(struct inode *, struct dentry *);
-+extern int path_unlink(struct path *, struct dentry *);
- extern int vfs_rename(struct inode *, struct dentry *, struct inode *, struct dentry *);
+--- linux-2.6.orig/include/linux/xattr.h	2008-05-16 17:50:52.000000000 +0200
++++ linux-2.6/include/linux/xattr.h	2008-05-16 17:50:53.000000000 +0200
+@@ -51,7 +51,7 @@ ssize_t xattr_getsecurity(struct inode *
+ ssize_t vfs_getxattr(struct dentry *, const char *, void *, size_t);
+ ssize_t vfs_listxattr(struct dentry *d, char *list, size_t size);
+ int path_setxattr(struct path *, const char *, const void *, size_t, int);
+-int vfs_removexattr(struct dentry *, const char *);
++int path_removexattr(struct path *, const char *);
  
- /*
-Index: linux-2.6/ipc/mqueue.c
-===================================================================
---- linux-2.6.orig/ipc/mqueue.c	2008-05-16 17:50:48.000000000 +0200
-+++ linux-2.6/ipc/mqueue.c	2008-05-16 17:50:49.000000000 +0200
-@@ -736,6 +736,7 @@ asmlinkage long sys_mq_unlink(const char
- 	char *name;
- 	struct dentry *dentry;
- 	struct inode *inode = NULL;
-+	struct path dir_path;
- 
- 	name = getname(u_name);
- 	if (IS_ERR(name))
-@@ -757,11 +758,10 @@ asmlinkage long sys_mq_unlink(const char
- 	inode = dentry->d_inode;
- 	if (inode)
- 		atomic_inc(&inode->i_count);
--	err = mnt_want_write(mqueue_mnt);
--	if (err)
--		goto out_err;
--	err = vfs_unlink(dentry->d_parent->d_inode, dentry);
--	mnt_drop_write(mqueue_mnt);
-+
-+	dir_path.mnt = mqueue_mnt;
-+	dir_path.dentry = dentry->d_parent;
-+	err = path_unlink(&dir_path, dentry);
- out_err:
- 	dput(dentry);
- 
+ ssize_t generic_getxattr(struct dentry *dentry, const char *name, void *buffer, size_t size);
+ ssize_t generic_listxattr(struct dentry *dentry, char *buffer, size_t buffer_size);
 
 --
