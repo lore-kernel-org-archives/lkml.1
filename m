@@ -1,130 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754282AbYEPIGZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbYEPIHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754282AbYEPIGZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 04:06:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751742AbYEPIGB
+	id S1754825AbYEPIHf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 04:07:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbYEPIHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 04:06:01 -0400
-Received: from topsns2.toshiba-tops.co.jp ([202.230.225.126]:58998 "EHLO
-	topsns2.toshiba-tops.co.jp" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750954AbYEPIF6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 04:05:58 -0400
-Date: Fri, 16 May 2008 17:05:50 +0900 (JST)
-Message-Id: <20080516.170550.71879418.nemoto@toshiba-tops.co.jp>
-To: akirat@rd.scei.sony.co.jp
-Cc: gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: [PATCH] usb-serial: pl2303: add support for RATOC REX-USB60F
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <20080118185231.0B48.4D252088@rd.scei.sony.co.jp>
-References: <20080118185231.0B48.4D252088@rd.scei.sony.co.jp>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 16 May 2008 04:07:21 -0400
+Received: from mail.windriver.com ([147.11.1.11]:52661 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750902AbYEPIHT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 04:07:19 -0400
+Subject: Re: [PATCH] x86: Get irq for hpet timer
+From: Kevin Hao <kexin.hao@windriver.com>
+To: Balaji Rao R <balajirrao@gmail.com>
+Cc: venkatesh.pallipadi@intel.com, clemens@ladisch.de, bob.picco@hp.com,
+       mingo@redhat.com, tglx@linutronix.de, linux-kernel@vger.kernel.org
+In-Reply-To: <569c97d20805160053n8a5deceu25c8b37f02e02842@mail.gmail.com>
+References: <1210917912.10881.1.camel@kevin-desktop>
+	 <569c97d20805160053n8a5deceu25c8b37f02e02842@mail.gmail.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Fri, 16 May 2008 16:03:25 +0800
+Message-Id: <1210925005.10881.12.camel@kevin-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+X-OriginalArrivalTime: 16 May 2008 08:05:46.0972 (UTC) FILETIME=[A597B9C0:01C8B72B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 18 Jan 2008 18:58:28 +0900, Akira Tsukamoto <akirat@rd.scei.sony.co.jp> wrote:
-> pl2303: add support for RATOC REX-USB60F
+On Fri, 2008-05-16 at 13:23 +0530, Balaji Rao R wrote:
+> On Fri, May 16, 2008 at 11:35 AM, Kevin Hao <kexin.hao@windriver.com> wrote:
+> >
+> > Hi,
+> >
+> > x86: get irq for hpet timer
+> >
+> > HPET timer's IRQ is 0 by default, so we have to select which irq
+> > will be used for these timers. We wait to set the timer's irq until
+> > we really turn on interrupt in order to reduce the chance of
+> > conflicting with some legacy device.
+> >
+> Yes, this is alright. But  i've seen some machines where we have a
+> valid IRQ in 'devp->hd_hdwirq' which you should not ignore. So, first
+> check if it is zero and only then do a hpet_timer_get_irq.
+
+Yes, I have checked that case in hpet_timer_get_irq function. See the
+following code:
+
++       irq = devp->hd_hdwirq;
+
+
++       if (irq) {
++               if (request_irq(irq, hpet_interrupt, irq_flags,
++                               devp->hd_name, (void *)devp)) {
++                       printk(KERN_ERR "hpet: IRQ %d is not free\n",
+irq);
++                       irq = 0;
++               }
++               return irq;
++       }
+
+Is that right?
+
+Thanks for your comments.
+
+Best Regards,
+Kevin
+
 > 
-> This patch adds support for RATOC REX-USB60F Serial Adapters,
-> which is widely used in Japan recently.
+> --
+> warm regards
 > 
-> Signed-off-by: Akira Tsukamoto <akirat@rd.scei.sony.co.jp>
-> ---
-> 
-> diff -uprX dontdiff linux-2.6.24-rc8.orig/drivers/usb/serial/pl2303.c linux-2.6.24-rc8/drivers/usb/serial/pl2303.c
-> --- linux-2.6.24-rc8.orig/drivers/usb/serial/pl2303.c	2008-01-18 18:11:51.000000000 +0900
-> +++ linux-2.6.24-rc8/drivers/usb/serial/pl2303.c	2008-01-18 18:43:28.000000000 +0900
-> @@ -65,6 +65,7 @@ static struct usb_device_id id_table [] 
->  	{ USB_DEVICE(ITEGNO_VENDOR_ID, ITEGNO_PRODUCT_ID_2080) },
->  	{ USB_DEVICE(MA620_VENDOR_ID, MA620_PRODUCT_ID) },
->  	{ USB_DEVICE(RATOC_VENDOR_ID, RATOC_PRODUCT_ID) },
-> + 	{ USB_DEVICE(RATOC_VENDOR_ID, RATOC_PRODUCT_ID_USB60F) },
->  	{ USB_DEVICE(TRIPP_VENDOR_ID, TRIPP_PRODUCT_ID) },
->  	{ USB_DEVICE(RADIOSHACK_VENDOR_ID, RADIOSHACK_PRODUCT_ID) },
->  	{ USB_DEVICE(DCU10_VENDOR_ID, DCU10_PRODUCT_ID) },
-
-Hi.  I tried RATOC REX-USB60F with pl2303 driver and got oops in
-pl2303_open().  The pl2303 expects a interrupt_in endpoint but my
-device does not have interrupt_in.  So this line in pl2303_open()
-cause oops.
-
-	port->interrupt_in_urb->dev = serial->dev;
-
-This device works fine with the ftdi_sio driver, with "vendor=0x584
-product=0xb020" module option.  (0x584 is RATOC_VENDOR_ID and 0xb020
-is RATOC_PRODUCT_ID_USB60F).
-
-
-Is the pl2303 driver appropriate for this device?
-
-Here is lsusb output:
-
-Bus 001 Device 003: ID 0584:b020 RATOC System, Inc. 
-Device Descriptor:
-  bLength                18
-  bDescriptorType         1
-  bcdUSB               2.00
-  bDeviceClass            0 (Defined at Interface level)
-  bDeviceSubClass         0 
-  bDeviceProtocol         0 
-  bMaxPacketSize0         8
-  idVendor           0x0584 RATOC System, Inc.
-  idProduct          0xb020 
-  bcdDevice            4.00
-  iManufacturer           1 RATOC Systems,Inc.
-  iProduct                2 USB-Serial Converter
-  iSerial                 0 
-  bNumConfigurations      1
-  Configuration Descriptor:
-    bLength                 9
-    bDescriptorType         2
-    wTotalLength           32
-    bNumInterfaces          1
-    bConfigurationValue     1
-    iConfiguration          0 
-    bmAttributes         0xa0
-      (Bus Powered)
-      Remote Wakeup
-    MaxPower              100mA
-    Interface Descriptor:
-      bLength                 9
-      bDescriptorType         4
-      bInterfaceNumber        0
-      bAlternateSetting       0
-      bNumEndpoints           2
-      bInterfaceClass       255 Vendor Specific Class
-      bInterfaceSubClass    255 Vendor Specific Subclass
-      bInterfaceProtocol    255 Vendor Specific Protocol
-      iInterface              2 USB-Serial Converter
-      Endpoint Descriptor:
-        bLength                 7
-        bDescriptorType         5
-        bEndpointAddress     0x81  EP 1 IN
-        bmAttributes            2
-          Transfer Type            Bulk
-          Synch Type               None
-          Usage Type               Data
-        wMaxPacketSize     0x0040  1x 64 bytes
-        bInterval               0
-      Endpoint Descriptor:
-        bLength                 7
-        bDescriptorType         5
-        bEndpointAddress     0x02  EP 2 OUT
-        bmAttributes            2
-          Transfer Type            Bulk
-          Synch Type               None
-          Usage Type               Data
-        wMaxPacketSize     0x0040  1x 64 bytes
-        bInterval               0
-Device Status:     0x0000
-  (Bus Powered)
-
-
-
+> Balaji Rao
+> NITK Surathkal
