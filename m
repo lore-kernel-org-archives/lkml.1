@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758622AbYEPOoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758224AbYEPOpK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758622AbYEPOoi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 10:44:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbYEPOmJ
+	id S1758224AbYEPOpK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 10:45:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753936AbYEPOmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 10:42:09 -0400
-Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49190 "EHLO
+	Fri, 16 May 2008 10:42:11 -0400
+Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49199 "EHLO
 	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750970AbYEPOmA (ORCPT
+	with ESMTP id S1751166AbYEPOmB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 10:42:00 -0400
+	Fri, 16 May 2008 10:42:01 -0400
 From: hooanon05@yahoo.co.jp
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Junjiro Okajima <hooanon05@yahoo.co.jp>
-Subject: [PATCH 63/67] aufs mount helper
-Date: Fri, 16 May 2008 23:33:17 +0900
-Message-Id: <1210948402777-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [PATCH 54/67] aufs lookup functions in 'delegate' mode
+Date: Fri, 16 May 2008 23:33:08 +0900
+Message-Id: <12109484022265-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <12109484021127-git-send-email-hooanon05@yahoo.co.jp>
+In-Reply-To: <12109484024124-git-send-email-hooanon05@yahoo.co.jp>
 References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <12109484012532-git-send-email-hooanon05@yahoo.co.jp> <12109484012997-git-send-email-hooanon05@yahoo.co.jp> <12109484013051-git-send-email-hooanon05@yahoo.co.jp> <12109484013436-git-send-email-hooanon05@yahoo.co.jp> <1210948401415-git-send-email-hooanon05@yahoo.co.jp> <12109484011533-git-send-email-hooanon05@yahoo.co.jp> <1210948401506-git-send-email-hooanon05@yahoo.co.jp> <12109484013156-git-send-email-hooanon05@yahoo.co.jp> <12109484012724-git-send-email-hooanon05@yahoo.co.jp> <12109484013264-git-send-email-hooanon05@yahoo.co.jp> <12109484012658-git-send-email-hooanon05@yahoo.co.jp> <12109484011282-git-send-email-hooanon05@yahoo.co.jp> <12109484012543-git-send-email-hooanon05@yahoo.co.jp> <12109484013834-git-send-email-hooanon05@yahoo.co.jp> <12109484012213-git-send-email-hooanon05@yahoo.co.jp> <12109484012301-git-send-email-hooanon05@yahoo.co.jp> <1210948401175-git-send-email-hooanon05@yahoo.co.jp> <1210948!
  4013702-git-send-email-hooanon05@yahoo.co.jp> <12109484012871-git-send-email-hooanon05@yahoo.co.jp> <12109484013438-git-send-email-hooanon05@yahoo.co.jp> <12109484013559-git-send-email-hooanon05@yahoo.co.jp> <12109484012111-git-send-email-hooanon05@yahoo.co.jp> <1210948401543-git-send-email-hooanon05@yahoo.co.jp> <1210948401147-git-send-email-hooanon05@yahoo.co.jp> <12109484012904-git-send-email-hooanon05@yahoo.co.jp> <121094840127-git-send-email-hooanon05@yahoo.co.jp> <12109484011862-git-send-email-hooanon05@yahoo.co.jp> <12109484011143-git-send-email-hooanon05@yahoo.co.jp> <12109484011867-git-send-email-hooanon05@yahoo.co.jp> <12109484021033-git-send-email-hooanon05@yahoo.co.jp> <12109484021234-git-send-email-hooanon05@yahoo.co.jp> <12109484022680-git-send-email-hooanon05@yahoo.co.jp> <12109484021974-git-send-email-hooanon05@yahoo.co.jp> <12109484021281-git-send-email-hooanon05@yahoo.co.jp> <12109484022659-git-send-email-hooanon05@yahoo.co.jp> <12109484023036-git-send-ema!
  il-hooanon05@yahoo.co.jp> <12109484021939-git-send-email-hooanon05@yahoo.co.jp> <12109484022745-git-send-email-hooanon05@yahoo.co.jp> <12109484023224-git-send-email-hooanon05@yahoo.co.jp> <12109484023618-git-send-email-hooanon05@yahoo.co.jp> <12109484023820-git-send-email-hooanon05@yahoo.co.jp> <12109484021927-git-send-email
@@ -28,224 +28,132 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Junjiro Okajima <hooanon05@yahoo.co.jp>
 
 	initial commit
-	aufs mount helper
+	aufs lookup functions in 'delegate' mode
 
 Signed-off-by: Junjiro Okajima <hooanon05@yahoo.co.jp>
 ---
- Documentation/filesystems/aufs/mount.aufs |  205 +++++++++++++++++++++++++++++
- 1 files changed, 205 insertions(+), 0 deletions(-)
+ fs/aufs/dlgt.c |  113 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 113 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/filesystems/aufs/mount.aufs b/Documentation/filesystems/aufs/mount.aufs
-new file mode 100755
-index 0000000..28db51e
+diff --git a/fs/aufs/dlgt.c b/fs/aufs/dlgt.c
+new file mode 100644
+index 0000000..0721a73
 --- /dev/null
-+++ b/Documentation/filesystems/aufs/mount.aufs
-@@ -0,0 +1,205 @@
-+#!/bin/sh -
++++ b/fs/aufs/dlgt.c
+@@ -0,0 +1,113 @@
++/*
++ * Copyright (C) 2008 Junjiro Okajima
++ *
++ * This program, aufs is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++ */
 +
-+# Copyright (C) 2005, 2006, 2007 Junjiro Okajima
-+#
-+# This program, aufs is free software; you can redistribute it and/or modify
-+# it under the terms of the GNU General Public License as published by
-+# the Free Software Foundation; either version 2 of the License, or
-+# (at your option) any later version.
-+#
-+# This program is distributed in the hope that it will be useful,
-+# but WITHOUT ANY WARRANTY; without even the implied warranty of
-+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+# GNU General Public License for more details.
-+#
-+# You should have received a copy of the GNU General Public License
-+# along with this program; if not, write to the Free Software
-+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++/*
++ * lookup functions in 'delegate' mode
++ *
++ * $Id: dlgt.c,v 1.2 2008/04/21 02:00:37 sfjro Exp $
++ */
 +
-+# $Id: mount.aufs,v 1.17 2008/03/31 07:44:10 sfjro Exp $
++//#include <linux/security.h>
++#include "aufs.h"
 +
-+#
-+# The main purpose of this script is updating /etc/mtab and calling auplilnk.
-+# This script is highly depending on mount(8) in util-linux-2.12p package.
-+# TODO: rewrite in C.
-+# TODO: updating mtab for bind-mount is not fully supportetd.
-+#
++/* ---------------------------------------------------------------------- */
 +
-+PATH=/usr/bin:/usr/sbin:/bin:/sbin
-+export PATH
-+eecho() { echo "$@" 1>&2; }
++struct au_lookup_one_len_args {
++	struct dentry **errp;
++	const char *name;
++	struct dentry *parent;
++	int len;
++};
 +
-+conv() # [escape]
++static void au_call_lookup_one_len(void *args)
 +{
-+	sed -r -e '
-+	s/\\/\\134/g
-+	s/$/\\012/
-+	' |
-+	tr -d '\n' |
-+	sed -r -e '
-+	s/ /\\040/g
-+	s/\t/\\011/g
-+	s/\r/\\015/g
-+	s/\\012$//
-+	' |
-+	{ test "$1" = "escape" && sed -r -e 's/\\/\\\\/g' || cat; }
-+	echo
++	struct au_lookup_one_len_args *a = args;
++	*a->errp = vfsub_lookup_one_len(a->name, a->parent, a->len);
 +}
 +
-+########################################
-+
-+set -e
-+#set -x; echo $0 $@
-+tmp=/tmp/$$
-+fstype=`basename "$0" | cut -f2 -d.`
-+
-+########################################
-+# mount(8) always passes the arguments in this order
-+
-+do_update=1
-+verbose=0
-+dev="$1"
-+e_dev=`echo "$dev" | conv escape`
-+cd "$2"
-+mntpnt=`readlink -f "$PWD"`
-+e_mntpnt=`echo "$mntpnt" | conv escape`
-+cd "$OLDPWD"
-+shift 2
-+test "$1" = "-n" && do_update=0 && shift
-+test "$1" = "-v" && verbose=1 && shift
-+test "$1" = "-o" || { eecho Bad arg. "$@"; exit 1; }
-+shift
-+remount=0
-+echo "$@" | grep -q ',remount[,$]' && remount=1
-+
-+f=/etc/mtab
-+test ! -r $f -o \( $do_update -eq 1 -a ! -w $f \) &&
-+eecho ${f}: Permission denied &&
-+exit 1
-+
-+f=/proc/mounts
-+test \( $do_update -eq 1 -o $verbose -eq 1 \) -a ! -r $f &&
-+eecho ${f}: Permission denied. &&
-+exit 1
-+
-+oldmtab=
-+> $tmp.old_opt
-+if [ $remount -eq 1 ]
-+then
-+oldmtab=`grep "^$e_dev $e_mntpnt $fstype .*,si=" $f | tail -n 1`
-+echo "$oldmtab" |
-+sed -e '
-+s:^'"$dev $mntpnt $fstype"' ::
-+s/\( [0-9]*\)\{2\}$//
-+' | tr ',' '\n' > $tmp.old_opt
-+#test -s $tmp.old_opt
-+eval `grep '^si=' $tmp.old_opt`
-+
-+# append brs from sysfs
-+si_dir=/sys/fs/aufs/si_$si
-+if [ -r $si_dir/br0 ]
-+then
-+	cd $si_dir
-+	{
-+	ls -1 br* |
-+	cut -c3- |
-+	sort -n |
-+	sed -e 's/^/br/' |
-+	xargs -n 200 sed -e 's/^/:/' |
-+	tr -d '\n' |
-+	sed -e 's/^/br/'
-+	echo # last newline
-+	} >> $tmp.old_opt
-+	cd $OLDPWD
-+	#cat $tmp.old_opt; #rm -f $tmp $tmp.*; exit
-+fi
-+fi
-+
-+echo "$@" | tr ',' '\n' > $tmp.new_opt
-+remount=
-+fgrep -v remount $tmp.new_opt > $tmp #|| :
-+diff -q $tmp.new_opt $tmp > /dev/null ||
++struct dentry *au_lkup_one_dlgt(const char *name, struct dentry *parent,
++				int len, unsigned int flags)
 +{
-+	mv $tmp $tmp.new_opt
-+	remount="remount,"
-+}
-+#cat $tmp.new_opt; rm -f $tmp $tmp.*; exit
++	struct dentry *dentry;
++	int dirperm1;
 +
-+#more $tmp.old_opt $tmp.new_opt
-+real_opt=`comm -13 $tmp.old_opt $tmp.new_opt | tee $tmp | paste -s -d, -`
-+real_opt="${remount}${real_opt}"
-+test "$real_opt" = "" &&
-+eecho bad arg "$@" &&
-+rm -f $tmp $tmp.* &&
-+exit 1
-+#echo ${real_opt}; exit
++	LKTRTrace("%.*s/%.*s, 0x%x\n", AuDLNPair(parent), len, name, flags);
 +
-+test "$remount" &&
-+egrep -q '^((add|ins|append|prepend|del)[:=]|(mod|imod)[:=][^,]*=ro|(noplink|ro)$)' $tmp &&
-+auplink "$mntpnt" flush
-+rm -f $tmp $tmp.*
++	dirperm1 = au_ftest_ndx(flags, DIRPERM1);
++	if (!dirperm1 && !au_ftest_ndx(flags, DLGT))
++		dentry = vfsub_lookup_one_len(name, parent, len);
++	else {
++		int wkq_err;
++		struct au_lookup_one_len_args args = {
++			.errp	= &dentry,
++			.name	= name,
++			.parent	= parent,
++			.len	= len
++		};
++		wkq_err = au_wkq_wait(au_call_lookup_one_len, &args,
++				      /*dlgt*/!dirperm1);
++		if (unlikely(wkq_err))
++			dentry = ERR_PTR(wkq_err);
++	}
 +
-+########################################
-+# actual mount operation
-+
-+set +e
-+mount -in -t $fstype -o "$real_opt" "$dev" "$mntpnt"
-+err=$?
-+set -e
-+
-+test $do_update -eq 0 -a $verbose -eq 0 && exit $err
-+
-+########################################
-+# in order to handle '-v' option, keep going even if we failed
-+
-+failure()
-+{
-+	eecho failure "$1" $?
-+	exit 1
++	AuTraceErrPtr(dentry);
++	return dentry;
 +}
 +
-+newmtab=`{ grep "^$e_dev $e_mntpnt $fstype" /proc/mounts ||
-+	failure "bad /proc/mounts"; } |
-+	tail -n 1 | sed -e 's:^'"$e_dev $e_mntpnt $fstype"' ::'`
-+digits=`echo "$newmtab" | rev | cut -f-2 -d' ' | rev`
-+newmtab=`echo "$newmtab" | rev | cut -f3- -d' ' | rev | conv escape`
-+newmtab="$e_dev $e_mntpnt $fstype $newmtab $digits"
++/* ---------------------------------------------------------------------- */
 +
-+#if [ $do_update -eq 1 -a -w /etc -a -w /etc/mtab ]
-+if [ $do_update -eq 1 ]
-+then
-+lock_pid=/etc/mtab~$$
-+lock=/etc/mtab~
-+f=/etc/mtab.aufs.tmp
-+touch $lock_pid || failure "creating pid lockfile"
++struct security_inode_permission_args {
++	int *errp;
++	struct inode *h_inode;
++	int mask;
++	struct nameidata *fake_nd;
++};
 +
-+# re-define
-+failure()
++static void call_security_inode_permission(void *args)
 +{
-+	eecho failure "$1" $?
-+	test $err -eq 0 && eecho failed updating /etc/mtab
-+	exit 1
++	struct security_inode_permission_args *a = args;
++	LKTRTrace("fsuid %d\n", current->fsuid);
++	*a->errp = security_inode_permission(a->h_inode, a->mask, a->fake_nd);
 +}
-+#trap "rm -f $lock; failure" `seq 32`
 +
-+ln $lock_pid $lock || failure "linking lockfile"
-+rm $lock_pid || failure "removing pid lockfile"
++int au_security_inode_permission(struct inode *h_inode, int mask,
++				 struct nameidata *fake_nd, int dlgt)
++{
++	int err;
 +
-+if [ "$oldmtab" = "" ]
-+then
-+	{ cat /etc/mtab; echo "$newmtab"; } |
-+	dd of=$f 2> /dev/null || failure "appending $f"
-+else
-+	tac /etc/mtab |
-+	awk -v new="$newmtab" -v mntpnt="$e_mntpnt" -v fstype="$fstype" '
-+	!done && $2 == mntpnt && $3 == fstype {print new; done = 1; next}
-+	{print}
-+	' | tac > $f || failure "creating $f"
-+fi
-+mv $f /etc/mtab || failure "renaming from $f"
-+rm $lock || failure "removing lockfile"
-+fi
++	AuTraceEnter();
 +
-+test $verbose -eq 1 &&
-+echo "$dev" on "$mntpnt" type "$fstype" \(`echo "$newmtab" | cut -f4 -d' '`\)
-+exit $err
++	if (!dlgt)
++		err = security_inode_permission(h_inode, mask, fake_nd);
++	else {
++		int wkq_err;
++		struct security_inode_permission_args args = {
++			.errp		= &err,
++			.h_inode	= h_inode,
++			.mask		= mask,
++			.fake_nd	= fake_nd
++		};
++		wkq_err = au_wkq_wait(call_security_inode_permission, &args,
++				      /*dlgt*/1);
++		if (unlikely(wkq_err))
++			err = wkq_err;
++	}
++
++	AuTraceErr(err);
++	return err;
++}
 -- 
 1.4.4.4
 
