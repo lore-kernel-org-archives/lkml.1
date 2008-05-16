@@ -1,133 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753926AbYEPIOL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755637AbYEPIP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753926AbYEPIOL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 04:14:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752199AbYEPINu
+	id S1755637AbYEPIP5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 04:15:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbYEPIPm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 04:13:50 -0400
-Received: from topsns2.toshiba-tops.co.jp ([202.230.225.126]:62563 "EHLO
-	topsns2.toshiba-tops.co.jp" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753172AbYEPINr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 04:13:47 -0400
-X-Greylist: delayed 469 seconds by postgrey-1.27 at vger.kernel.org; Fri, 16 May 2008 04:13:47 EDT
-Date: Fri, 16 May 2008 17:13:45 +0900 (JST)
-Message-Id: <20080516.171345.01918000.nemoto@toshiba-tops.co.jp>
-To: akirat@rd.scei.sony.co.jp
-Cc: gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org
-Subject: Re: [PATCH] usb-serial: pl2303: add support for RATOC REX-USB60F
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <20080118185231.0B48.4D252088@rd.scei.sony.co.jp>
-References: <20080118185231.0B48.4D252088@rd.scei.sony.co.jp>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Fri, 16 May 2008 04:15:42 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:47622 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751458AbYEPIPi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 04:15:38 -0400
+Date: Fri, 16 May 2008 18:15:29 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for May 16
+Message-Id: <20080516181529.c1109de1.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__16_May_2008_18_15_29_+1000_USv.Ld/uVd+iDGVV"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-# Sorry, resend with new linux-usb ML address.
+--Signature=_Fri__16_May_2008_18_15_29_+1000_USv.Ld/uVd+iDGVV
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, 18 Jan 2008 18:58:28 +0900, Akira Tsukamoto <akirat@rd.scei.sony.co.jp> wrote:
-> pl2303: add support for RATOC REX-USB60F
-> 
-> This patch adds support for RATOC REX-USB60F Serial Adapters,
-> which is widely used in Japan recently.
-> 
-> Signed-off-by: Akira Tsukamoto <akirat@rd.scei.sony.co.jp>
-> ---
-> 
-> diff -uprX dontdiff linux-2.6.24-rc8.orig/drivers/usb/serial/pl2303.c linux-2.6.24-rc8/drivers/usb/serial/pl2303.c
-> --- linux-2.6.24-rc8.orig/drivers/usb/serial/pl2303.c	2008-01-18 18:11:51.000000000 +0900
-> +++ linux-2.6.24-rc8/drivers/usb/serial/pl2303.c	2008-01-18 18:43:28.000000000 +0900
-> @@ -65,6 +65,7 @@ static struct usb_device_id id_table [] 
->  	{ USB_DEVICE(ITEGNO_VENDOR_ID, ITEGNO_PRODUCT_ID_2080) },
->  	{ USB_DEVICE(MA620_VENDOR_ID, MA620_PRODUCT_ID) },
->  	{ USB_DEVICE(RATOC_VENDOR_ID, RATOC_PRODUCT_ID) },
-> + 	{ USB_DEVICE(RATOC_VENDOR_ID, RATOC_PRODUCT_ID_USB60F) },
->  	{ USB_DEVICE(TRIPP_VENDOR_ID, TRIPP_PRODUCT_ID) },
->  	{ USB_DEVICE(RADIOSHACK_VENDOR_ID, RADIOSHACK_PRODUCT_ID) },
->  	{ USB_DEVICE(DCU10_VENDOR_ID, DCU10_PRODUCT_ID) },
+Hi all,
 
-Hi.  I tried RATOC REX-USB60F with pl2303 driver and got oops in
-pl2303_open().  The pl2303 expects a interrupt_in endpoint but my
-device does not have interrupt_in.  So this line in pl2303_open()
-cause oops.
+Changes since next-20080515:
 
-	port->interrupt_in_urb->dev = serial->dev;
+The build bug in upstream is gone.
 
-This device works fine with the ftdi_sio driver, with "vendor=0x584
-product=0xb020" module option.  (0x584 is RATOC_VENDOR_ID and 0xb020
-is RATOC_PRODUCT_ID_USB60F).
+The i2c revert is no longer needed.  But it gained a trivial conflict due
+to the fix.
 
+The net tree lost a couple of conflicts.
 
-Is the pl2303 driver appropriate for this device?
+The semaphore-removal tree needed three patches reverted because similar
+patches were merged into upstream and the scsi-rc-fixes trees.
 
-Here is lsusb output:
+I have applied the following temporary patches for known build problems:
 
-Bus 001 Device 003: ID 0584:b020 RATOC System, Inc. 
-Device Descriptor:
-  bLength                18
-  bDescriptorType         1
-  bcdUSB               2.00
-  bDeviceClass            0 (Defined at Interface level)
-  bDeviceSubClass         0 
-  bDeviceProtocol         0 
-  bMaxPacketSize0         8
-  idVendor           0x0584 RATOC System, Inc.
-  idProduct          0xb020 
-  bcdDevice            4.00
-  iManufacturer           1 RATOC Systems,Inc.
-  iProduct                2 USB-Serial Converter
-  iSerial                 0 
-  bNumConfigurations      1
-  Configuration Descriptor:
-    bLength                 9
-    bDescriptorType         2
-    wTotalLength           32
-    bNumInterfaces          1
-    bConfigurationValue     1
-    iConfiguration          0 
-    bmAttributes         0xa0
-      (Bus Powered)
-      Remote Wakeup
-    MaxPower              100mA
-    Interface Descriptor:
-      bLength                 9
-      bDescriptorType         4
-      bInterfaceNumber        0
-      bAlternateSetting       0
-      bNumEndpoints           2
-      bInterfaceClass       255 Vendor Specific Class
-      bInterfaceSubClass    255 Vendor Specific Subclass
-      bInterfaceProtocol    255 Vendor Specific Protocol
-      iInterface              2 USB-Serial Converter
-      Endpoint Descriptor:
-        bLength                 7
-        bDescriptorType         5
-        bEndpointAddress     0x81  EP 1 IN
-        bmAttributes            2
-          Transfer Type            Bulk
-          Synch Type               None
-          Usage Type               Data
-        wMaxPacketSize     0x0040  1x 64 bytes
-        bInterval               0
-      Endpoint Descriptor:
-        bLength                 7
-        bDescriptorType         5
-        bEndpointAddress     0x02  EP 2 OUT
-        bmAttributes            2
-          Transfer Type            Bulk
-          Synch Type               None
-          Usage Type               Data
-        wMaxPacketSize     0x0040  1x 64 bytes
-        bInterval               0
-Device Status:     0x0000
-  (Bus Powered)
+	"move of_device_get_modalias fo drivers/of" - the powerpc-next
+tree broke sparc - this should be in the powerpc-next tree shortly
 
+	"initcalls: Fix m68k build and possible buffer overflow" - the
+compiler was generating calls to strlen on m68k (this required me to also
+apply two other patches that Linus applied to his tree).  These three are
+already in Linus' tree.
 
+	"Fix various 8390 builds" - the net tree broke builds on various
+architectures - hopefully this patch will go into the net tree shortly.
 
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(tar balls and patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups, it is also built with powerpc allnoconfig,
+44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
+
+Below is a summary of the state of the merge.
+
+We are up to 74 trees (counting Linus' and 13 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging x86-fixes/for-linus
+Merging sched-fixes/for-linus
+Merging powerpc-merge/merge
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sparc-current/master
+Merging sound-current/for-linus
+Merging arm-current/master
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging quilt/driver-core
+Merging quilt/usb
+Merging x86/for-akpm
+Merging sched/for-akpm
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/mm
+Merging quilt/i2c
+CONFLICT (content): Merge conflict in arch/powerpc/platforms/pasemi/misc.c
+CONFLICT (content): Merge conflict in include/linux/i2c.h
+Merging quilt/kernel-doc
+Merging avr32/avr32-arch
+Merging v4l-dvb/stable
+Merging s390/features
+Merging sh/master
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+Merging blackfin/for-linus
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging hwmon/testing
+Merging ubi/master
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging ia64/test
+Merging tests/master
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+Merging ocfs2/linux-next
+Merging selinux/for-akpm
+Merging quilt/m68k
+Merging powerpc/powerpc-next
+Merging hrt/mm
+Merging lblnet/master
+Merging ext4/next
+Merging 4xx/next
+Merging async_tx/next
+Merging udf/for_next
+Merging security-testing/next
+Merging net/master
+Merging sparc/master
+Merging galak/powerpc-next
+Merging mtd/master
+Merging wireless/master
+Merging crypto/master
+Merging vfs/vfs-2.6.25
+Merging sound/master
+Merging arm/devel
+Merging cpufreq/master
+Merging v9fs/for-next
+Merging quilt/rr
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging semaphore/semaphore
+Merging semaphore-removal/semaphore-removal
+CONFLICT (content): Merge conflict in drivers/atm/ambassador.c
+CONFLICT (content): Merge conflict in drivers/net/bonding/bond_main.c
+CONFLICT (content): Merge conflict in drivers/net/bonding/bond_sysfs.c
+CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_attr.c
+CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_def.h
+CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_mbx.c
+CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_mid.c
+CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_os.c
+CONFLICT (content): Merge conflict in net/9p/trans_virtio.c
+$ git reset --hard
+$ git checkout -b tmp semaphore-removal/semaphore-removal
+Created commit 9732cab: Revert "Convert qla_os to use mutex instead of sema=
+phore"
+Created commit ca74900: Revert "9p: Convert from semaphore to spinlock"
+Created commit 2d4be98: Revert "qla2xxx: Turn vport_sem into vport_mutex"
+$ git checkout master
+CONFLICT (content): Merge conflict in drivers/atm/ambassador.c
+CONFLICT (content): Merge conflict in drivers/net/bonding/bond_main.c
+CONFLICT (content): Merge conflict in drivers/net/bonding/bond_sysfs.c
+$ git merge tmp
+Merging quilt/ldp.next
+Applying move of_device_get_modalias fo drivers/of
+Applying     Clean up 'print_fn_descriptor_symbol()' types
+Applying     Split up 'do_initcalls()' into two simpler functions
+Applying initcalls: Fix m68k build and possible buffer overflow
+Applying Fix various 8390 builds
+
+--Signature=_Fri__16_May_2008_18_15_29_+1000_USv.Ld/uVd+iDGVV
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFILUKlTgG2atn1QN8RAqgPAJ49qSTyT7Uaz0QIF2ZftySF9i/XeACeNKr8
+0o5WpaOq5g//+cXtokoG500=
+=z6k1
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__16_May_2008_18_15_29_+1000_USv.Ld/uVd+iDGVV--
