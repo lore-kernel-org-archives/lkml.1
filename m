@@ -1,161 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759894AbYEPQhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760771AbYEPQiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759894AbYEPQhx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 12:37:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753120AbYEPQdE
+	id S1760771AbYEPQiR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 12:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757533AbYEPQdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 12:33:04 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:33721 "EHLO
+	Fri, 16 May 2008 12:33:08 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:33769 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756784AbYEPQci (ORCPT
+	with ESMTP id S1755881AbYEPQc4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 12:32:38 -0400
-Message-Id: <20080516163223.610317060@szeredi.hu>
+	Fri, 16 May 2008 12:32:56 -0400
+Message-Id: <20080516163237.755590775@szeredi.hu>
 References: <20080516163136.560107038@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Fri, 16 May 2008 18:31:44 +0200
+Date: Fri, 16 May 2008 18:31:53 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: akpm@linux-foundation.org
 Cc: hch@infradead.org, viro@ZenIV.linux.org.uk, ezk@cs.sunysb.edu,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: [patch 08/22] vfs: immutable inode checking cleanup
-Content-Disposition: inline; filename=immutable_cleanup.patch
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [patch 17/22] vfs: add path_symlink()
+Content-Disposition: inline; filename=path_symlink.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Move the immutable and append-only checks from chmod, chown and utimes
-into notify_change().  Checks for immutable and append-only files are
-always performed by the VFS and not by the filesystem (see
-permission() and may_...() in namei.c), so these belong in
-notify_change(), and not in inode_change_ok().
-
-This causes the following semantic changes in sys_utimensat(), if both
-times are either UTIME_NOW or UTIME_OMIT:
-
- - if inode is immutable, then -EACCESS is returned instead of -EPERM
- - if inode is append-only, then success is returned instead of -EPERM
-
-This should be OK, becuase this makes the UTIME_NOW on both behave
-exactly the same as times == NULL.  If one of the times is UTIME_OMIT,
-and the other is UTIME_NOW, it also makes no sense to return a
-different error for immutable or append-only files.
+Introduce path_symlink().  Make vfs_symlink() static.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-CC: Ulrich Drepper <drepper@redhat.com>
 ---
- fs/attr.c   |    6 ++++++
- fs/open.c   |   24 ++----------------------
- fs/utimes.c |    4 ----
- 3 files changed, 8 insertions(+), 26 deletions(-)
+ fs/ecryptfs/inode.c |   14 +++++++-------
+ fs/namei.c          |   26 ++++++++++++++++++--------
+ fs/nfsd/vfs.c       |   12 ++++--------
+ include/linux/fs.h  |    2 +-
+ 4 files changed, 30 insertions(+), 24 deletions(-)
 
-Index: linux-2.6/fs/open.c
+Index: linux-2.6/fs/ecryptfs/inode.c
 ===================================================================
---- linux-2.6.orig/fs/open.c	2008-05-16 17:50:35.000000000 +0200
-+++ linux-2.6/fs/open.c	2008-05-16 17:50:45.000000000 +0200
-@@ -582,9 +582,6 @@ asmlinkage long sys_fchmod(unsigned int 
- 	err = mnt_want_write(file->f_path.mnt);
- 	if (err)
- 		goto out_putf;
--	err = -EPERM;
--	if (IS_IMMUTABLE(inode) || IS_APPEND(inode))
--		goto out_drop_write;
- 	mutex_lock(&inode->i_mutex);
- 	if (mode == (mode_t) -1)
- 		mode = inode->i_mode;
-@@ -592,8 +589,6 @@ asmlinkage long sys_fchmod(unsigned int 
- 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
- 	err = notify_change(dentry, &newattrs);
- 	mutex_unlock(&inode->i_mutex);
--
--out_drop_write:
- 	mnt_drop_write(file->f_path.mnt);
- out_putf:
- 	fput(file);
-@@ -617,11 +612,6 @@ asmlinkage long sys_fchmodat(int dfd, co
- 	error = mnt_want_write(nd.path.mnt);
- 	if (error)
- 		goto dput_and_out;
--
--	error = -EPERM;
--	if (IS_IMMUTABLE(inode) || IS_APPEND(inode))
--		goto out_drop_write;
--
- 	mutex_lock(&inode->i_mutex);
- 	if (mode == (mode_t) -1)
- 		mode = inode->i_mode;
-@@ -629,8 +619,6 @@ asmlinkage long sys_fchmodat(int dfd, co
- 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
- 	error = notify_change(nd.path.dentry, &newattrs);
- 	mutex_unlock(&inode->i_mutex);
--
--out_drop_write:
- 	mnt_drop_write(nd.path.mnt);
- dput_and_out:
- 	path_put(&nd.path);
-@@ -645,18 +633,10 @@ asmlinkage long sys_chmod(const char __u
- 
- static int chown_common(struct dentry * dentry, uid_t user, gid_t group)
+--- linux-2.6.orig/fs/ecryptfs/inode.c	2008-05-16 17:50:49.000000000 +0200
++++ linux-2.6/fs/ecryptfs/inode.c	2008-05-16 17:50:50.000000000 +0200
+@@ -439,7 +439,7 @@ static int ecryptfs_symlink(struct inode
  {
--	struct inode * inode;
-+	struct inode *inode = dentry->d_inode;
- 	int error;
- 	struct iattr newattrs;
+ 	int rc;
+ 	struct dentry *lower_dentry;
+-	struct dentry *lower_dir_dentry;
++	struct path lower_dir;
+ 	umode_t mode;
+ 	char *encoded_symname;
+ 	int encoded_symlen;
+@@ -447,7 +447,8 @@ static int ecryptfs_symlink(struct inode
  
--	error = -ENOENT;
--	if (!(inode = dentry->d_inode)) {
--		printk(KERN_ERR "chown_common: NULL inode\n");
--		goto out;
--	}
--	error = -EPERM;
--	if (IS_IMMUTABLE(inode) || IS_APPEND(inode))
--		goto out;
- 	newattrs.ia_valid =  ATTR_CTIME;
- 	if (user != (uid_t) -1) {
- 		newattrs.ia_valid |= ATTR_UID;
-@@ -672,7 +652,7 @@ static int chown_common(struct dentry * 
- 	mutex_lock(&inode->i_mutex);
- 	error = notify_change(dentry, &newattrs);
- 	mutex_unlock(&inode->i_mutex);
--out:
-+
+ 	lower_dentry = ecryptfs_dentry_to_lower(dentry);
+ 	dget(lower_dentry);
+-	lower_dir_dentry = lock_parent(lower_dentry);
++	lower_dir.mnt = ecryptfs_dentry_to_lower_mnt(dentry);
++	lower_dir.dentry = lock_parent(lower_dentry);
+ 	mode = S_IALLUGO;
+ 	encoded_symlen = ecryptfs_encode_filename(crypt_stat, symname,
+ 						  strlen(symname),
+@@ -456,18 +457,17 @@ static int ecryptfs_symlink(struct inode
+ 		rc = encoded_symlen;
+ 		goto out_lock;
+ 	}
+-	rc = vfs_symlink(lower_dir_dentry->d_inode, lower_dentry,
+-			 encoded_symname, mode);
++	rc = path_symlink(&lower_dir, lower_dentry, encoded_symname, mode);
+ 	kfree(encoded_symname);
+ 	if (rc || !lower_dentry->d_inode)
+ 		goto out_lock;
+ 	rc = ecryptfs_interpose(lower_dentry, dentry, dir->i_sb, 0);
+ 	if (rc)
+ 		goto out_lock;
+-	fsstack_copy_attr_times(dir, lower_dir_dentry->d_inode);
+-	fsstack_copy_inode_size(dir, lower_dir_dentry->d_inode);
++	fsstack_copy_attr_times(dir, lower_dir.dentry->d_inode);
++	fsstack_copy_inode_size(dir, lower_dir.dentry->d_inode);
+ out_lock:
+-	unlock_dir(lower_dir_dentry);
++	unlock_dir(lower_dir.dentry);
+ 	dput(lower_dentry);
+ 	if (!dentry->d_inode)
+ 		d_drop(dentry);
+Index: linux-2.6/fs/namei.c
+===================================================================
+--- linux-2.6.orig/fs/namei.c	2008-05-16 17:50:49.000000000 +0200
++++ linux-2.6/fs/namei.c	2008-05-16 17:50:50.000000000 +0200
+@@ -2437,7 +2437,7 @@ asmlinkage long sys_unlink(const char __
+ 	return do_unlinkat(AT_FDCWD, pathname);
+ }
+ 
+-int vfs_symlink(struct inode *dir, struct dentry *dentry, const char *oldname, int mode)
++static int vfs_symlink(struct inode *dir, struct dentry *dentry, const char *oldname, int mode)
+ {
+ 	int error = may_create(dir, dentry, NULL);
+ 
+@@ -2458,6 +2458,22 @@ int vfs_symlink(struct inode *dir, struc
  	return error;
  }
  
-Index: linux-2.6/fs/attr.c
-===================================================================
---- linux-2.6.orig/fs/attr.c	2008-05-16 17:50:35.000000000 +0200
-+++ linux-2.6/fs/attr.c	2008-05-16 17:50:45.000000000 +0200
-@@ -108,6 +108,12 @@ int notify_change(struct dentry * dentry
- 	struct timespec now;
- 	unsigned int ia_valid = attr->ia_valid;
- 
-+	if (ia_valid & (ATTR_MODE | ATTR_UID | ATTR_GID |
-+			ATTR_ATIME_SET | ATTR_MTIME_SET)) {
-+		if (IS_IMMUTABLE(inode) || IS_APPEND(inode))
-+			return -EPERM;
++int path_symlink(struct path *dir_path, struct dentry *dentry,
++		 const char *oldname, int mode)
++{
++	int error = mnt_want_write(dir_path->mnt);
++
++	if (!error) {
++		struct inode *dir = dir_path->dentry->d_inode;
++
++		error = vfs_symlink(dir, dentry, oldname, mode);
++		mnt_drop_write(dir_path->mnt);
 +	}
 +
- 	now = current_fs_time(inode->i_sb);
++	return error;
++}
++EXPORT_SYMBOL(path_symlink);
++
+ asmlinkage long sys_symlinkat(const char __user *oldname,
+ 			      int newdfd, const char __user *newname)
+ {
+@@ -2483,12 +2499,7 @@ asmlinkage long sys_symlinkat(const char
+ 	if (IS_ERR(dentry))
+ 		goto out_unlock;
  
- 	attr->ia_ctime = now;
-Index: linux-2.6/fs/utimes.c
+-	error = mnt_want_write(nd.path.mnt);
+-	if (error)
+-		goto out_dput;
+-	error = vfs_symlink(nd.path.dentry->d_inode, dentry, from, S_IALLUGO);
+-	mnt_drop_write(nd.path.mnt);
+-out_dput:
++	error = path_symlink(&nd.path, dentry, from, S_IALLUGO);
+ 	dput(dentry);
+ out_unlock:
+ 	mutex_unlock(&nd.path.dentry->d_inode->i_mutex);
+@@ -3012,6 +3023,5 @@ EXPORT_SYMBOL(vfs_link);
+ EXPORT_SYMBOL(generic_permission);
+ EXPORT_SYMBOL(vfs_readlink);
+ EXPORT_SYMBOL(vfs_rename);
+-EXPORT_SYMBOL(vfs_symlink);
+ EXPORT_SYMBOL(dentry_unhash);
+ EXPORT_SYMBOL(generic_readlink);
+Index: linux-2.6/fs/nfsd/vfs.c
 ===================================================================
---- linux-2.6.orig/fs/utimes.c	2008-05-16 17:50:35.000000000 +0200
-+++ linux-2.6/fs/utimes.c	2008-05-16 17:50:45.000000000 +0200
-@@ -105,10 +105,6 @@ long do_utimes(int dfd, char __user *fil
- 	/* Don't worry, the checks are done in inode_change_ok() */
- 	newattrs.ia_valid = ATTR_CTIME | ATTR_MTIME | ATTR_ATIME;
- 	if (times) {
--		error = -EPERM;
--                if (IS_APPEND(inode) || IS_IMMUTABLE(inode))
--			goto mnt_drop_write_and_out;
+--- linux-2.6.orig/fs/nfsd/vfs.c	2008-05-16 17:50:49.000000000 +0200
++++ linux-2.6/fs/nfsd/vfs.c	2008-05-16 17:50:50.000000000 +0200
+@@ -1518,6 +1518,7 @@ nfsd_symlink(struct svc_rqst *rqstp, str
+ 				struct svc_fh *resfhp,
+ 				struct iattr *iap)
+ {
++	struct path 	dir_path;
+ 	struct dentry	*dentry, *dnew;
+ 	__be32		err, cerr;
+ 	int		host_err;
+@@ -1545,10 +1546,7 @@ nfsd_symlink(struct svc_rqst *rqstp, str
+ 	if (iap && (iap->ia_valid & ATTR_MODE))
+ 		mode = iap->ia_mode & S_IALLUGO;
+ 
+-	host_err = mnt_want_write(fhp->fh_export->ex_path.mnt);
+-	if (host_err)
+-		goto out_nfserr;
 -
- 		if (times[0].tv_nsec == UTIME_OMIT)
- 			newattrs.ia_valid &= ~ATTR_ATIME;
- 		else if (times[0].tv_nsec != UTIME_NOW) {
++	fh_to_path(fhp, &dir_path);
+ 	if (unlikely(path[plen] != 0)) {
+ 		char *path_alloced = kmalloc(plen+1, GFP_KERNEL);
+ 		if (path_alloced == NULL)
+@@ -1556,11 +1554,11 @@ nfsd_symlink(struct svc_rqst *rqstp, str
+ 		else {
+ 			strncpy(path_alloced, path, plen);
+ 			path_alloced[plen] = 0;
+-			host_err = vfs_symlink(dentry->d_inode, dnew, path_alloced, mode);
++			host_err = path_symlink(&dir_path, dnew, path_alloced, mode);
+ 			kfree(path_alloced);
+ 		}
+ 	} else
+-		host_err = vfs_symlink(dentry->d_inode, dnew, path, mode);
++		host_err = path_symlink(&dir_path, dnew, path, mode);
+ 
+ 	if (!host_err) {
+ 		if (EX_ISSYNC(fhp->fh_export))
+@@ -1569,8 +1567,6 @@ nfsd_symlink(struct svc_rqst *rqstp, str
+ 	err = nfserrno(host_err);
+ 	fh_unlock(fhp);
+ 
+-	mnt_drop_write(fhp->fh_export->ex_path.mnt);
+-
+ 	cerr = fh_compose(resfhp, fhp->fh_export, dnew, fhp);
+ 	dput(dnew);
+ 	if (err==0) err = cerr;
+Index: linux-2.6/include/linux/fs.h
+===================================================================
+--- linux-2.6.orig/include/linux/fs.h	2008-05-16 17:50:49.000000000 +0200
++++ linux-2.6/include/linux/fs.h	2008-05-16 17:50:50.000000000 +0200
+@@ -1127,7 +1127,7 @@ extern int vfs_permission(struct nameida
+ extern int path_create(struct path *, struct dentry *, int, struct nameidata *);
+ extern int path_mkdir(struct path *, struct dentry *, int);
+ extern int path_mknod(struct path *, struct dentry *, int, dev_t);
+-extern int vfs_symlink(struct inode *, struct dentry *, const char *, int);
++extern int path_symlink(struct path *, struct dentry *, const char *, int);
+ extern int vfs_link(struct dentry *, struct inode *, struct dentry *);
+ extern int path_rmdir(struct path *, struct dentry *);
+ extern int path_unlink(struct path *, struct dentry *);
 
 --
