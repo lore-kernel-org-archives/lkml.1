@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758295AbYEPRmo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758847AbYEPRoO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758295AbYEPRmo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 13:42:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753288AbYEPRmf
+	id S1758847AbYEPRoO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 13:44:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbYEPRn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 13:42:35 -0400
-Received: from smtp-vbr3.xs4all.nl ([194.109.24.23]:1686 "EHLO
-	smtp-vbr3.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753033AbYEPRmf (ORCPT
+	Fri, 16 May 2008 13:43:58 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:56021 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753159AbYEPRn5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 13:42:35 -0400
-Date: Fri, 16 May 2008 19:42:30 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@localhost.localdomain
-To: debian developer <debiandev@gmail.com>
-cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.26-rc2 - ntp.c build failure
-In-Reply-To: <f24d23310805120313o6385ff7av148aa109b2408ed7@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0805161937381.18302@localhost.localdomain>
-References: <f24d23310805120313o6385ff7av148aa109b2408ed7@mail.gmail.com>
+	Fri, 16 May 2008 13:43:57 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Fri, 16 May 2008 19:43:43 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH 0/5] SCSI and FireWire: fix/add START STOP UNIT for SBP-2
+ disks
+To: Tino Keitel <tino.keitel@gmx.de>
+cc: linux1394-devel@lists.sourceforge.net,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+In-Reply-To: <20080516062315.GA4350@dose.home.local>
+Message-ID: <tkrat.ad2cb91dd8644559@s5r6.in-berlin.de>
+References: <20080429232606.GA14261@dose.home.local>
+ <481874BD.5010807@s5r6.in-berlin.de>
+ <20080507180042.GA32629@dose.home.local>
+ <tkrat.327b59f1366f8ea0@s5r6.in-berlin.de>
+ <tkrat.635f52f7035be2bc@s5r6.in-berlin.de>
+ <tkrat.5cf7605228f0006a@s5r6.in-berlin.de>
+ <20080516062315.GA4350@dose.home.local>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Tino Keitel wrote:
+> I applied all patches, and tried it on my system with a SATA, USB and
+> Firewire disk. All disks spun down at suspend, and spun up again at
+> resume.
 
-On Mon, 12 May 2008, debian developer wrote:
+So can I add "Tested-by: Tino Keitel <tino.keitel@gmx.de>" to the
+changelog of patches 1/5, 2/5, 4/5 (the patches affecting sd and
+fw-sbp2)?
 
-> The current rc2 does not build with allyesconfig. Seems there are lots
-> of errors...
-> 
-> Please find the error log below...
-> 
-> kernel/time/ntp.c: In function `ntp_leap_second':
-> kernel/time/ntp.c:150: error: `time_tai' undeclared (first use in this function)
-> kernel/time/ntp.c:150: error: (Each undeclared identifier is reported only once
-> kernel/time/ntp.c:150: error: for each function it appears in.)
-> kernel/time/ntp.c: In function `do_adjtimex':
-> kernel/time/ntp.c:328: error: `SHIFT_NSEC' undeclared (first use in
-> this function)
-> kernel/time/ntp.c:378: error: `mtemp' undeclared (first use in this function)
-> kernel/time/ntp.c:381: error: `freq_adj' undeclared (first use in this function)
-> kernel/time/ntp.c:382: warning: type defaults to `int' in declaration of `__x'
-> kernel/time/ntp.c:382: warning: type defaults to `int' in declaration of `__s'
-> kernel/time/ntp.c:386: error: `temp64' undeclared (first use in this function)
-> kernel/time/ntp.c:398: warning: type defaults to `int' in declaration of `_min1'
-> kernel/time/ntp.c:398: error: `MAXFREQ_NSEC' undeclared (first use in
-> this function)
-> kernel/time/ntp.c:398: warning: type defaults to `int' in declaration of `_min2'
-> kernel/time/ntp.c:399: warning: type defaults to `int' in declaration of `_max1'
-> kernel/time/ntp.c:399: warning: type defaults to `int' in declaration of `_max2'
-> kernel/time/ntp.c:400: error: implicit declaration of function
-> `div_long_long_rem_signed'
-> kernel/time/ntp.c:402: error: `rem' undeclared (first use in this function)
-> kernel/time/ntp.c:403: error: `SHIFT_UPDATE' undeclared (first use in
-> this function)
-> kernel/time/ntp.c:419: warning: type defaults to `int' in declaration of `__s'
-> kernel/time/ntp.c:279: warning: unused variable `sec'
-> kernel/time/ntp.c: At top level:
-> kernel/time/ntp.c:65: warning: 'ntp_update_offset' defined but not used
-> make[2]: *** [kernel/time/ntp.o] Error 1
-> make[1]: *** [kernel/time] Error 2
-> make: *** [kernel] Error 2
+Thanks for testing, and for finding in the first place that we need the
+power conditions field.
+-- 
+Stefan Richter
+-=====-==--- -=-= =----
+http://arcgraph.de/sr/
 
-Please use a clean source tree, a few of these symbols don't exist 
-anymore.
-
-bye, Roman
