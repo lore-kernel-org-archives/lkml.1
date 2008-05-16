@@ -1,77 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761279AbYEPVHK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758525AbYEPVZi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761279AbYEPVHK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 17:07:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756148AbYEPVG6
+	id S1758525AbYEPVZi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 17:25:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbYEPVZa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 17:06:58 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33528 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754226AbYEPVG5 (ORCPT
+	Fri, 16 May 2008 17:25:30 -0400
+Received: from rv-out-0506.google.com ([209.85.198.225]:23008 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752466AbYEPVZ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 17:06:57 -0400
-Date: Fri, 16 May 2008 21:55:17 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Jonathan Corbet <corbet@lwn.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alexander Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kill empty chardev open/release methods
-Message-ID: <20080516215517.30101a39@core>
-In-Reply-To: <20080516160306.GA9103@infradead.org>
-References: <alpine.LFD.1.10.0805141452330.3019@woody.linux-foundation.org>
-	<16082.1210952646@vena.lwn.net>
-	<20080516154922.GA25412@infradead.org>
-	<20080516160306.GA9103@infradead.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 16 May 2008 17:25:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=jhhMhVNXs094+Zd1Tq1hg/ehrbW59nlC35VCsSn/xnwXMBC+SUssrDkSRVABlDPOqLDArwxs75jsO0akI7epcKxkI9VjImyavWo48wjwUYnxVV7zjbPK9g660GAt4UdCOlOo2JXFsUaPo4rvmLo29Zm4VVpkuzqe3ha070L5fLQ=
+Message-ID: <9e4733910805161425i2d6cc034y3377af053a4198b5@mail.gmail.com>
+Date: Fri, 16 May 2008 17:25:28 -0400
+From: "Jon Smirl" <jonsmirl@gmail.com>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [RFC PATCH 0/4] Describe SPI devices in the OF device tree and add mpc5200-spi driver
+Cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
+       fabrizio.garetto@gmail.com
+In-Reply-To: <fa686aa40805161348t52b94956w112ef6926ff30892@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
+	 <9e4733910805161327u4c42fd1dg5b09319d89db447c@mail.gmail.com>
+	 <fa686aa40805161348t52b94956w112ef6926ff30892@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > If they literaly are 'return 0' you can just remove them, as a
-> > non-existing open op will just be fine.
-> 
-> And here's a patch to do just that:  remove all empty chardev
-> open/release methods.  Based on the list compiled by Jonathan.
+On 5/16/08, Grant Likely <grant.likely@secretlab.ca> wrote:
+> On Fri, May 16, 2008 at 2:27 PM, Jon Smirl <jonsmirl@gmail.com> wrote:
+>  > On 5/16/08, Grant Likely <grant.likely@secretlab.ca> wrote:
+>  >> This series is a set of changes to allow the slaves on an SPI bus to be
+>  >>  described in the OF device tree (useful in arch/powerpc) and adds a driver
+>  >>  that uses it (the Freescale MPC5200 SoC's SPI device).
+>  >
+>  > Right now we have SPI hooked up to PSC3. Hardware engineer is gone but
+>  > I'll see if I can get him to alter things to use the SPI controller. I
+>  > have an old mail from him where he thinks the Phytec board is missing
+>  > a signal needed to use the SPI controller.
+>
+>
+> While I'd appreciate the testing, I suspect that you really don't want
+>  to do that.  The dedicated SPI controller isn't very good.  It only
+>  does a byte at a time and so is rather slow.  A PSC is SPI mode should
+>  be better (but I haven't tried it personally it yet).
 
-Actually it turns out you can introduce bugs doing this when the BKL is
-pushed down.
+What is the device tree node for PSC3 supposed to look like when it
+has both serial and spi enabled?
 
-The problem is the methods are not NULL, they (with the lock pushed down
-are)
-
-{
-	lock_kernel();
-	unlock_kernel();
-}
-
-And we have drivers with setup code that does things in the wrong order
-but under the BKL. eg one I just fixed did
-
-	misc_register()
-	init locks
-	allocate memory
-	do stuff
-	return 0;
-
-The lock/unlock in the open happens to save your butt against the wrong
-order of intialisation because the open cannot occur before the lock is
-taken, and thanks to the BKL it cannot make any progress until the setup
-is completed. Fun too - udev loves opening things as they appear so in
-some cases we might actually trigger them too.
-
-So when you remove the _open() empty methods *please* make sure you have
-verified the correctness and ordering of the entire registration path.
-I've found three examples of this so far just cleaning up
-drivers/watchdog.
-
-Alan
+-- 
+Jon Smirl
+jonsmirl@gmail.com
