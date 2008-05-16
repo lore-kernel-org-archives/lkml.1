@@ -1,166 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759345AbYEPUD1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756607AbYEPUHN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759345AbYEPUD1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 16:03:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbYEPUDQ
+	id S1756607AbYEPUHN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 16:07:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbYEPUG5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 16:03:16 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36748
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753300AbYEPUDP convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 16:03:15 -0400
-Date: Fri, 16 May 2008 13:03:09 -0700 (PDT)
-Message-Id: <20080516.130309.258561311.davem@davemloft.net>
-To: dada1@cosmosbay.com
-Cc: jimi@sngx.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH updated] net: add ability to clear per-interface
- network statistics via procfs
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <482DB46A.8020103@cosmosbay.com>
-References: <482DA5B6.1020606@sngx.net>
-	<482DB46A.8020103@cosmosbay.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 16 May 2008 16:06:57 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43003 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752197AbYEPUG4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 16:06:56 -0400
+Date: Fri, 16 May 2008 13:05:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, jamie@shareable.org
+Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
+Message-Id: <20080516130545.845a3be9.akpm@linux-foundation.org>
+In-Reply-To: <482DDA56.6000301@redhat.com>
+References: <482DDA56.6000301@redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric Dumazet <dada1@cosmosbay.com>
-Date: Fri, 16 May 2008 18:20:58 +0200
+On Fri, 16 May 2008 14:02:46 -0500
+Eric Sandeen <sandeen@redhat.com> wrote:
 
-netdev CC:'d, people please...  Eric, you in particular know
-better :-)))
+> A collection of patches to make ext3 & 4 use barriers by
+> default, and to call blkdev_issue_flush on fsync if they
+> are enabled.
 
-> James Cammarata a écrit :
-> > From: James Cammarata <jimi@sngx.net>
-> >
-> > Added the ability to write to /proc/net/dev in order to clear the 
-> > interface counters for a given interface.  The ability to zero out 
-> > counters (especially the error counters) is extremely useful when 
-> > troubleshooting interface issues.  Now diffed against 2.6.25.4, and 
-> > added some sanity checking.
-> >
-> Hello James
-> 
-> 1) Every call to get_proc_net() should be paired with a call to 
-> put_net(), or else you  leak  struct net.
-> 
-> 2) I am not sure this is the right way to do this... Did you consider to 
-> extend ethtool instead ?
-> 
-> > Syntax:
-> >  echo 'net clear-stats ifdev' > /proc/net/dev
-> > Where "ifdev" is the device name you wish to clear.
-> >
-> > This code is based mainly on the code found in drivers/scsi/scsi_proc.c
-> >
-> > Signed-off-by: James Cammarata <jimi@sngx.net>
-> > ---
-> >
-> > --- linux-2.6.25.4/net/core/dev.c       2008-05-15 10:00:12.000000000 
-> > -0500
-> > +++ linux-2.6.25.4-jcammara/net/core/dev.c      2008-05-16 
-> > 07:02:48.000000000 -0500
-> > @@ -2455,2 +2455,78 @@
-> >
-> > +/**
-> > + * proc_net_dev_write - handle writes to /proc/net/dev
-> > + * @file: not used
-> > + * @buf: buffer to write
-> > + * @length: length of buf, at most PAGE_SIZE
-> > + * @ppos: not used
-> > + *
-> > + * Description: this provides a mechanism to clear statistics on a
-> > + * per-interface basis
-> > + * "echo 'net clear-stats ifdev' >/proc/net/dev"
-> > + * with  "ifdev" replaced by the device name you wish to clear.
-> > + *
-> > + */
-> > +static ssize_t proc_net_dev_write(struct file *file, const char 
-> > __user *buf,
-> > +                                  size_t length, loff_t *ppos)
-> > +{
-> > +        char *buffer, *p;
-> > +        char devname[IFNAMSIZ];
-> > +        struct net *net;
-> > +        struct net_device *dev;
-> > +        int err;
-> > +
-> > +        if (!buf || length > PAGE_SIZE)
-> > +                return -EINVAL;
-> > +
-> > +        buffer = (char *)__get_free_page(GFP_KERNEL);
-> > +        if (!buffer)
-> > +                return -ENOMEM;
-> > +
-> > +        err = -EFAULT;
-> > +        if (copy_from_user(buffer, buf, length))
-> > +                goto out;
-> > +
-> > +        err = -EINVAL;
-> > +        if (length < PAGE_SIZE)
-> > +                buffer[length] = '\0';
-> > +        else if (buffer[PAGE_SIZE-1])
-> > +                goto out;
-> > +
-> > +        err = -ENXIO;
-> > +        net = get_proc_net(file->f_dentry->d_inode);
-> > +        if (!net)
-> > +                goto out;
-> > +
-> > +        /*
-> > +         * Usage: echo "net clear-stats ifdev" >/proc/net/dev
-> > +         * with  "ifdev" replaced by the device name you wish to clear.
-> > +         */
-> > +        if (!strncmp("net clear-stats",buffer,15)) {
-> > +                p = buffer + 16;
-> > +                if(sscanf(p,"%16s",devname)>0) {
-> > +                        dev = dev_get_by_name(net,devname);
-> > +                        if (dev) {
-> > +                                if (dev->get_stats) {
-> > +                                        struct net_device_stats *stats =
-> > +                                               dev->get_stats(dev);
-> > +                                        memset(stats,0,
-> > +                                               sizeof(struct 
-> > net_device_stats));
-> > +                                }
-> > +                                dev_put(dev);
-> > +                        }
-> > +                }
-> > +        }
-> > +
-> > +        /*
-> > +         * convert success returns so that we return the
-> > +         * number of bytes consumed.
-> > +         */
-> > +        if (!err)
-> > +                err = length;
-> > +
-> Here probably, you should add
-> 
->     put_net(net);
-> 
-> > + out:
-> > +        free_page((unsigned long)buffer);
-> > +        return err;
-> > +}
-> > +
-> > static void *softnet_seq_start(struct seq_file *seq, loff_t *pos)
-> > @@ -2498,2 +2574,3 @@
-> >        .read    = seq_read,
-> > +        .write   = proc_net_dev_write,
-> >        .llseek  = seq_lseek,
-> >
-> >
-> 
-> 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Last time this came up lots of workloads slowed down by 30% so I
+dropped the patches in horror.
+
+I just don't think we can quietly go and slow everyone's machines down
+by this much.  The overhead of journalling is already pretty horrid.
+
+If we were seeing a significant number of "hey, my disk got wrecked"
+reports which attributable to this then yes, perhaps we should change
+the default.  But I've never seen _any_, although I've seen claims that
+others have seen reports.
+
+There are no happy solutions here, and I'm inclined to let this dog
+remain asleep and continue to leave it up to distributors to decide
+what their default should be.
+
+Do we know which distros are enabling barriers by default?
