@@ -1,82 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759462AbYEPPfh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760481AbYEPPgv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759462AbYEPPfh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 11:35:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbYEPPf1
+	id S1760481AbYEPPgv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 11:36:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752458AbYEPPgk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 11:35:27 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:45564 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751431AbYEPPf0 (ORCPT
+	Fri, 16 May 2008 11:36:40 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:57818 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750970AbYEPPgj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 11:35:26 -0400
-Date: Fri, 16 May 2008 12:34:54 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: dean <dean@sensoray.com>
-Cc: Greg KH <greg@kroah.com>, v4l-dvb-maintainer@linuxtv.org,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       video4linux-list@redhat.com
-Subject: Re: [PATCH] USB: add Sensoray 2255 v4l driver
-Message-ID: <20080516123454.5e8f897e@gaivota>
-In-Reply-To: <482D9FFA.9030402@sensoray.com>
-References: <20080514205927.GA13134@kroah.com>
-	<20080515235102.756407d3@gaivota>
-	<482D9FFA.9030402@sensoray.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 16 May 2008 11:36:39 -0400
+Date: Fri, 16 May 2008 17:36:38 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Junjiro Okajima <hooanon05@yahoo.co.jp>
+cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 8/67] aufs module global variables and operations
+In-Reply-To: <1210948401506-git-send-email-hooanon05@yahoo.co.jp>
+Message-ID: <alpine.LNX.1.10.0805161734370.15590@fbirervta.pbzchgretzou.qr>
+References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <12109484012532-git-send-email-hooanon05@yahoo.co.jp> <12109484012997-git-send-email-hooanon05@yahoo.co.jp> <12109484013051-git-send-email-hooanon05@yahoo.co.jp> <12109484013436-git-send-email-hooanon05@yahoo.co.jp>
+ <1210948401415-git-send-email-hooanon05@yahoo.co.jp> <12109484011533-git-send-email-hooanon05@yahoo.co.jp> <1210948401506-git-send-email-hooanon05@yahoo.co.jp>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 May 2008 07:53:46 -0700
-dean <dean@sensoray.com> wrote:
 
-> >Btw, I noticed the lack of Dean's SOB. Is this intentional?  
-> It's not intentional, I can sign off on it. 
+On Friday 2008-05-16 16:32, hooanon05@yahoo.co.jp wrote:
+>+/* ---------------------------------------------------------------------- */
+>+
+>+/* fake Kconfig */
 
-Thanks. Please send your SOB at the next version.
+I doubt this is needed anymore:
 
-> I have a few other questions.  First, is Video for Linux version 1 going 
-> to be obsoleted soon?
+>+#if 1
+>+
+>+#ifdef CONFIG_AUFS_HINOTIFY
+>+#ifndef CONFIG_INOTIFY
+>+#error enable CONFIG_INOTIFY to use CONFIG_AUFS_HINOTIFY.
+>+#endif
+>+#endif /* CONFIG_AUFS_HINOTIFY */
+>+
+>+#if AUFS_BRANCH_MAX > 511 && PAGE_SIZE > 4096
+>+#warning pagesize is larger than 4kb, \
+>+	CONFIG_AUFS_BRANCH_MAX_511 or smaller is recommended.
+>+#endif
+>+
+>+#ifdef CONFIG_AUFS_STAT
+>+#ifndef CONFIG_SYSFS
+>+#error CONFIG_AUFS_STAT requires CONFIG_SYSFS.
+>+#endif
+>+#endif /* CONFIG_AUFS_STAT */
+>+
+>+#ifdef CONFIG_AUFS_SYSAUFS
+>+#warning CONFIG_AUFS_SYSAUFS is unnecessary for linux-2.6.25 and later.
+>+#endif
+>+
+>+#ifdef CONFIG_AUFS_EXPORT
+>+#if !defined(CONFIG_EXPORTFS) && !defined(CONFIG_EXPORTFS_MODULE)
+>+#error CONFIG_AUFS_EXPORT requires CONFIG_EXPORTFS
+>+#endif
+>+#if defined(CONFIG_EXPORTFS_MODULE) && defined(CONFIG_AUFS)
+>+#error need CONFIG_EXPORTFS = y to link aufs statically with CONFIG_AUFS_EXPORT
+>+#endif
+>+#endif /* CONFIG_AUFS_EXPORT */
+>+
+...
 
-We intend to, but people are currently lacking time to port old drivers to V4L2.
-
->  Do the V4L1 compatibility routines still work in 
-> the latest driver?
-
-V4L1 compat will still be kept for some time after the end of V4L1 drivers.
-
->  I had problems running the VIVI (virtual video 
-> driver) driver with VideoLan/VLC 0.8.6a-f, but it worked with VLC 9.0 
-> with the new V4L2 interface.
-
-VLC V4L1 implementation were broken. It first starts DMA and streaming, then,
-it calls some ioctls that changes the buffer size. The compat handler doesn't
-accept this behaviour, since it would cause buffer overflow. AFAIK, only bttv
-driver used to support this behaviour. On V4L1 mode, bttv were allocating
-enough memory for the maximum resolution. So, subsequent buffer changes works
-properly. 
-
-It would be valuable if you could work on a safe way to implement backward
-compat for this broken behaviour. In this case, you would need to change the
-compat implementation at videobuf, and let v4l1-compat module to be aware that
-it is safe to allow buffer size changes.
-
-Yet, this seems to much work for something that should be already removed from
-kernel (V4L1).
-
-> "videodev: "s2255v" has no release callback. Please fix your driver for 
-> proper sysfs support, see http://lwn.net/Articles/36850/"
-
-> Should we get rid of the warning message above? It's also been present 
-> in VIVI for quite a few kernel releases.
-
-The message doesn't cause any harm, but the better is to fix this also. This
-were already corrected at the latest vivi versions.
-
-Cheers,
-Mauro
