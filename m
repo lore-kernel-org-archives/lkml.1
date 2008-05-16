@@ -1,90 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756197AbYEPLo7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755665AbYEPLuX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756197AbYEPLo7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 07:44:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754089AbYEPLot
+	id S1755665AbYEPLuX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 07:50:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbYEPLuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 07:44:49 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:33729 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752949AbYEPLos (ORCPT
+	Fri, 16 May 2008 07:50:09 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53768 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751048AbYEPLuI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 07:44:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=DbM1NJeUagbqPnCpqH17PGEUzRpttd3QYBV5eNPDFsZlZkat2Yjzfkx9/iXvcLtmGLDFk8BwxmzR0Yig6lSs6VpTrvCnhyeffz5Q3dTO4k/fnO6T7B2CtKzyMhgIEbzuVNB4aUiHwyG68fwEeuMnpncF2aFLUvnJ6F7Z/IEzENA=
-Message-ID: <38b2ab8a0805160444w1a982cffw94ba91b30f5c2aac@mail.gmail.com>
-Date: Fri, 16 May 2008 13:44:47 +0200
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>
-Subject: Re: How to avoid data copies in a driver ?
-Cc: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <482D416B.8060501@goop.org>
+	Fri, 16 May 2008 07:50:08 -0400
+Date: Fri, 16 May 2008 06:50:05 -0500
+From: Robin Holt <holt@sgi.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Christoph Lameter <clameter@sgi.com>, Robin Holt <holt@sgi.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrea Arcangeli <andrea@qumranet.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
+       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>
+Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
+Message-ID: <20080516115005.GC4287@sgi.com>
+References: <alpine.LFD.1.10.0805071429170.3024@woody.linux-foundation.org> <20080508003838.GA9878@sgi.com> <200805132206.47655.nickpiggin@yahoo.com.au> <20080513153238.GL19717@sgi.com> <20080514041122.GE24516@wotan.suse.de> <20080514112625.GY9878@sgi.com> <20080515075747.GA7177@wotan.suse.de> <Pine.LNX.4.64.0805151031250.18708@schroedinger.engr.sgi.com> <20080515235203.GB25305@wotan.suse.de> <20080516112306.GA4287@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <38b2ab8a0805141254i2437a0ccq130b914748f53db0@mail.gmail.com>
-	 <Pine.LNX.4.61.0805141716120.11052@chaos.analogic.com>
-	 <38b2ab8a0805150040s6933de14p7c2014945ba0810d@mail.gmail.com>
-	 <482D416B.8060501@goop.org>
+In-Reply-To: <20080516112306.GA4287@sgi.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Fri, May 16, 2008 at 06:23:06AM -0500, Robin Holt wrote:
+> On Fri, May 16, 2008 at 01:52:03AM +0200, Nick Piggin wrote:
+> > On Thu, May 15, 2008 at 10:33:57AM -0700, Christoph Lameter wrote:
+> > > On Thu, 15 May 2008, Nick Piggin wrote:
+> > > 
+> > > > Oh, I get that confused because of the mixed up naming conventions
+> > > > there: unmap_page_range should actually be called zap_page_range. But
+> > > > at any rate, yes we can easily zap pagetables without holding mmap_sem.
+> > > 
+> > > How is that synchronized with code that walks the same pagetable. These 
+> > > walks may not hold mmap_sem either. I would expect that one could only 
+> > > remove a portion of the pagetable where we have some sort of guarantee 
+> > > that no accesses occur. So the removal of the vma prior ensures that?
+> >  
+> > I don't really understand the question. If you remove the pte and invalidate
+> > the TLBS on the remote image's process (importing the page), then it can
+> > of course try to refault the page in because it's vma is still there. But
+> > you catch that refault in your driver , which can prevent the page from
+> > being faulted back in.
+> 
+> I think Christoph's question has more to do with faults that are
+> in flight.  A recently requested fault could have just released the
+> last lock that was holding up the invalidate callout.  It would then
+> begin messaging back the response PFN which could still be in flight.
+> The invalidate callout would then fire and do the interrupt shoot-down
+> while that response was still active (essentially beating the inflight
+> response).  The invalidate would clear up nothing and then the response
+> would insert the PFN after it is no longer the correct PFN.
 
-On Fri, May 16, 2008 at 10:10 AM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> Francis Moreau wrote:
->>
->> I'm suprised because what I need doens't seem so uncommon, usually
->> devices send or
->> receive data to/from files. So a helper (system call ?) to achieve
->> that other than the basic
->> read/write seems needed, no ?
->>
->
-> It's fairly rare to have an application which requires moving data to file
-> with absolutely no processing; normally there's at least a bit of
-> massaging/parsing/etc.
+I just looked over XPMEM.  I think we could make this work.  We already
+have a list of active faults which is protected by a simple spinlock.
+I would need to nest this lock within another lock protected our PFN
+table (currently it is a mutex) and then the invalidate interrupt handler
+would need to mark the fault as invalid (which is also currently there).
 
-Well, every cases where a client <-> server exchange files. I wouldn't call
-that a rare case...
+I think my sticking points with the interrupt method remain at fault
+containment and timeout.  The inability of the ia64 processor to handle
+provide predictive failures for the read/write of memory on other
+partitions prevents us from being able to contain the failure.  I don't
+think we can get the information we would need to do the invalidate
+without introducing fault containment issues which has been a continous
+area of concern for our customers.
 
-> If that's really what you want to do, maybe you can
-> do it with splice?  I haven't looked at it at all, but the intention is that
-> you can splice file descriptors together, so you can splice your device fd
-> to a file fd and have it all just work...
->
 
-yes but the kernel I'm working on (2.6.16) doens't have splice support.
-
-But relay may sound a good idea, and the version I use has sendfile support.
-
-The drawback of relay: the user application can receive a file from the kernel
-but the app can't send a file to the kernel.
-
-But I can be wrong since I haven't look at relay closely yet.
-
-> Alternatively you could read() from your device into a mmaped file.  That's
-> a single copy from device to file, which is about the best you can do
-> without going to heroic lengths.
->
-
-Don't know for now.
-
-I think using sendfile with relay may be a good answer without me becoming
-a hero ;)
-
-> Also, it really depends on your application.  Is it a high-bandwidth thing
-> in which the copy is a huge cost?  Or do you want to eliminate the copies
-> because it seems like a nice thing to do?
-
-No it has a real cost. The application receives files which are usually larger
-than 1Go.
-
-Thanks
--- 
-Francis
+Thanks,
+Robin
