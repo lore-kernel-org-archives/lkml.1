@@ -1,68 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760613AbYEPSfp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759468AbYEPSlv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760613AbYEPSfp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 14:35:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755004AbYEPSff
+	id S1759468AbYEPSlv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 14:41:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753652AbYEPSlk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 14:35:35 -0400
-Received: from gv-out-0910.google.com ([216.239.58.186]:4432 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751409AbYEPSfe (ORCPT
+	Fri, 16 May 2008 14:41:40 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:56570 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755356AbYEPSlj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 14:35:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=eKgwXR+ZAWiPitXjwTe13ehc19VTdjf1J2lm8CxwE8r9T7Lfkb22S9LizuQwTJTnvCJ/AtwjCDS11oy46/fN6dBotniCzQ0ocNwrZIhtH+5Le+agJJpCxWOQjMA2cx1I74WowvRy6WG92F+uvsP8t2AgcQY2rmHVlo1s3Nme8zQ=
-Message-ID: <6101e8c40805161135w7470123uaac93ca59caee026@mail.gmail.com>
-Date: Fri, 16 May 2008 20:35:32 +0200
-From: "Oliver Pinter" <oliver.pntr@gmail.com>
-To: "David Greaves" <david@dgreaves.com>
-Subject: Re: Regression- XFS won't mount on partitioned md array
-Cc: "Justin Piszcz" <jpiszcz@lucidpixels.com>, "David Chinner" <dgc@sgi.com>,
-       LinuxRaid <linux-raid@vger.kernel.org>, xfs@oss.sgi.com,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <482DCCCD.8020503@dgreaves.com>
+	Fri, 16 May 2008 14:41:39 -0400
+Date: Fri, 16 May 2008 14:41:38 -0400
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Jeff Garzik <jeff@garzik.org>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Rick Jones <rick.jones2@hp.com>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       Chris Peterson <cpeterso@cpeterso.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of IRQF_SAMPLE_RANDOM
+Message-ID: <20080516184138.GF27126@csclub.uwaterloo.ca>
+References: <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com> <482C7B18.6060003@garzik.org> <482C7E53.3050300@hp.com> <482C8184.2030906@garzik.org> <482C8550.5000909@intel.com> <482C8D4D.3040702@garzik.org> <20080516132107.GA11304@csclub.uwaterloo.ca> <20080516161029.44ded734@core> <20080516173610.GA27126@csclub.uwaterloo.ca> <20080516191125.46f59ad6@core>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <482DC043.5000307@dgreaves.com>
-	 <alpine.DEB.1.10.0805161316100.3118@p34.internal.lan>
-	 <482DCCCD.8020503@dgreaves.com>
+In-Reply-To: <20080516191125.46f59ad6@core>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-this[1] patch fixed?
+On Fri, May 16, 2008 at 07:11:25PM +0100, Alan Cox wrote:
+> If they don't need that level of security they can use /dev/urandom.
+> Piping network randomness into /dev/urandom is probably quite sensible
+> but not into /dev/random.
 
-this patch is for 2.6.25.5 kernel
-
-1: http://git.kernel.org/?p=linux/kernel/git/stable/stable-queue.git;a=blob;f=queue-2.6.25/block-do_mounts-accept-root-non-existant-partition.patch;h=097cda9928b434994dbb157065b2ca38e7cec3a1;hb=8cc4c3b370d59deb16c2e92165a466c82e914020
-
-On 5/16/08, David Greaves <david@dgreaves.com> wrote:
->> Ouch, still on 2.6.25.1 here, didn't reboot yet, but I do not use
->> mdraid'ed partitions, just regular mdraid, if you boot back to 2.6.20.7
->> does it work again?
-> Yes, no probs.
->
-> It came in prior to 2.6.25-rc1
-> The machine has a root xfs filesystem with an internal log on a sata disk
-> and a
-> data filesystem on a partitioned array with an external log (also on the
-> partitioned array).
-> Only the partitioned array/external-log filesystem is affected.
->
-> David
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
-
+Well it isn't that things liks ssh and ssl and such don't need that
+level of security, but if there is no way to get it you have to go for
+the best you can get.  Fortunately it seems hardware RNG is becoming
+more common on embedded CPUs.
 
 -- 
-Thanks,
-Oliver
+Len Sorensen
