@@ -1,62 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760836AbYEPUxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760740AbYEPU7I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760836AbYEPUxl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 16:53:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbYEPUxa
+	id S1760740AbYEPU7I (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 16:59:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbYEPU64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 16:53:30 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:39351 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752466AbYEPUxa convert rfc822-to-8bit (ORCPT
+	Fri, 16 May 2008 16:58:56 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:34800 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754384AbYEPU6z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 16:53:30 -0400
-Date: Fri, 16 May 2008 13:52:25 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: build issue #503 for v2.6.26-rc2-433-gf26a398 :  undefined
- reference to `request_firmware'
-Message-Id: <20080516135225.e6f8b2c7.randy.dunlap@oracle.com>
-In-Reply-To: <200805162230.41350.rjw@sisk.pl>
-References: <200805161906.19321.toralf.foerster@gmx.de>
-	<200805162230.41350.rjw@sisk.pl>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Fri, 16 May 2008 16:58:55 -0400
+Date: Fri, 16 May 2008 21:58:40 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jeff Dike <jdike@addtoit.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] missed kmalloc() in pcap_user.c
+Message-ID: <20080516205840.GV13907@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 May 2008 22:30:40 +0200 Rafael J. Wysocki wrote:
 
-> On Friday, 16 of May 2008, Toralf Förster wrote:
-> > Hello,
-> > 
-> > the build (.config attached) failed, make ends with :
-> > ...
-> >   UPD     include/linux/compile.h
-> >   CC      init/version.o
-> >   LD      init/built-in.o
-> >   LD      vmlinux
-> > drivers/built-in.o: In function `sas_request_addr':
-> > (.text+0x33bab): undefined reference to `request_firmware'
-> > drivers/built-in.o: In function `sas_request_addr':
-> > (.text+0x33c3f): undefined reference to `release_firmware'
-> > make: *** [vmlinux] Error 1
-> > 
-> > The build was made with :
-> > $>make randconfig; make clean; make
-> 
-> Is it the same as http://bugzilla.kernel.org/show_bug.cgi?id=10707 ?
-
-It's in a different driver.
-
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+Acked-by: Jeff Dike <jdike@addtoit.com>
 ---
-~Randy
+diff --git a/arch/um/drivers/pcap_user.c b/arch/um/drivers/pcap_user.c
+index e980935..5f90358 100644
+--- a/arch/um/drivers/pcap_user.c
++++ b/arch/um/drivers/pcap_user.c
+@@ -50,7 +50,7 @@ static int pcap_open(void *data)
+ 			return -EIO;
+ 		}
+ 
+-		pri->compiled = kmalloc(sizeof(struct bpf_program),
++		pri->compiled = uml_kmalloc(sizeof(struct bpf_program),
+ 					UM_GFP_KERNEL);
+ 		if (pri->compiled == NULL) {
+ 			printk(UM_KERN_ERR "pcap_open : kmalloc failed\n");
