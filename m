@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756162AbYEPH0u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756879AbYEPH2z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756162AbYEPH0u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 03:26:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbYEPH0i
+	id S1756879AbYEPH2z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 03:28:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245AbYEPH2q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 03:26:38 -0400
-Received: from eazy.amigager.de ([213.239.192.238]:49410 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751407AbYEPH0h (ORCPT
+	Fri, 16 May 2008 03:28:46 -0400
+Received: from web52910.mail.re2.yahoo.com ([206.190.49.20]:44382 "HELO
+	web52910.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751960AbYEPH2p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 03:26:37 -0400
-Date: Fri, 16 May 2008 09:26:34 +0200
-From: Tino Keitel <tino.keitel@gmx.de>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Greg KH <greg@kroah.com>,
-       linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Input: add appleir USB driver
-Message-ID: <20080516072634.GA4867@dose.home.local>
-Mail-Followup-To: Jiri Kosina <jkosina@suse.cz>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	Greg KH <greg@kroah.com>, linux-input@vger.kernel.org,
-	linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20080514221519.GA6575@kroah.com> <20080515132108.GA9327@dose.home.local> <20080515094212.ZZRA012@mailhub.coreip.homeip.net> <20080515174939.GA10881@dose.home.local> <20080515142845.ZZRA012@mailhub.coreip.homeip.net> <20080515205950.GA11794@dose.home.local> <Pine.LNX.4.64.0805160917350.11363@jikos.suse.cz>
+	Fri, 16 May 2008 03:28:45 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=rdfQxyoy3XX9ySjc2TDTiLi65A1uwgiTyEPdyTKFxA5OJdWb2wcegrIiua4gtSQf4NZj8u+5U7oxmw4CpRvJtYAPmEX0hKk+D0QhevPKrENKdKBPNnKFrhKHo/UaZZ6V+lJob1w9PFIzGeJe4UTLdOVbejAHE1nBxhxjlCtIuEs=;
+X-YMail-OSG: 8.OXKU0VM1lpcYzyhAhO.7CT2MsznnG8LKR_fh6pHBzWmEhvVxjpmBgnzkcJZ6.vnOlApZwC9l9UpY6MZ.q7sRbbO5yq7EmHIgQK3ZAaakNTD8Se_b1jqInVrg--
+Date: Fri, 16 May 2008 08:28:41 +0100 (BST)
+From: Chris Rankin <rankincj@yahoo.com>
+Subject: Re: 2.6.25.3: serial problem (minicom)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
+In-Reply-To: <20080515202300.4d0465ac.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0805160917350.11363@jikos.suse.cz>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <150988.90868.qm@web52910.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16, 2008 at 09:19:39 +0200, Jiri Kosina wrote:
-> On Thu, 15 May 2008, Tino Keitel wrote:
-> 
-> > Does setting the quirks to 0 lead to the creation of a HID device 
-> > immediately? 
-> 
-> The easiest way is either to handle this in the early stage, i.e. specify 
-> 'quirks' module parameter during the module insertion.
-> 
-> Other possibility is to detach the driver from the device using 'unbind' 
-> functionality of sysfs. libusb has a call for this too.
+--- Andrew Morton <akpm@linux-foundation.org> wrote:
+> All of which builds up to the dreaded....  would you be able to perform
+> a bisection search to work out which commit caused this?
+> http://www.kernel.org/doc/local/git-quick.html has instructions.
 
-Thanks for the hint.
+Can't you just send me those 4 serial patches instead, and I'll try backing them out one by one?
 
-So I guess that the LIRC driver should be extended to watch out for a
-USB device with the prober vendor/device ID and unbind it before usage,
-right?
+I have another pair of boxes both running Fedora 8 that I'll try replicating this on, just in case
+there's something dodgy about my machine's userspace environment.
 
-This wouldn't help users who use the current LIRC with a kernel that
-has the HID ignore quirk enabled by default, though (i.e., it would be
-a regression).
+Cheers,
+Chris
 
-Regards,
-Tino
+
+
+      __________________________________________________________
+Sent from Yahoo! Mail.
+A Smarter Email http://uk.docs.yahoo.com/nowyoucan.html
