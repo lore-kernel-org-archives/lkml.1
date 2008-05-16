@@ -1,109 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763292AbYEPTJr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763463AbYEPTKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763292AbYEPTJr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 15:09:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757229AbYEPTJf
+	id S1763463AbYEPTKh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 15:10:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758667AbYEPTKY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 15:09:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50349 "EHLO mx1.redhat.com"
+	Fri, 16 May 2008 15:10:24 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50393 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752282AbYEPTJe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 15:09:34 -0400
-Message-ID: <482DDBC8.50505@redhat.com>
-Date: Fri, 16 May 2008 14:08:56 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
+	id S1758457AbYEPTKW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 15:10:22 -0400
+Date: Fri, 16 May 2008 16:10:15 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH][PCI]: Introduce pci_find_capability_cached and make
+	MSI use it
+Message-ID: <20080516191015.GB8111@ghostprotocols.net>
+Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>,
+	Matthew Wilcox <matthew@wil.cx>, linux-kernel@vger.kernel.org,
+	linux-pci@vger.kernel.org, linux-rt-users@vger.kernel.org,
+	Steven Rostedt <rostedt@goodmis.org>
+References: <20080515160426.GD14846@ghostprotocols.net> <200805161044.34938.jbarnes@virtuousgeek.org> <20080516183356.GA7307@ghostprotocols.net> <200805161201.48644.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
-To: ext4 development <linux-ext4@vger.kernel.org>,
-       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Jamie Lokier <jamie@shareable.org>
-Subject: [PATCH 3/4] ext4: enable barriers by default
-References: <482DDA56.6000301@redhat.com>
-In-Reply-To: <482DDA56.6000301@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200805161201.48644.jbarnes@virtuousgeek.org>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I can't think of any valid reason for ext4 to not use barriers when
-they are available;  I believe this is necessary for filesystem
-integrity in the face of a volatile write cache on storage.
+Em Fri, May 16, 2008 at 12:01:48PM -0700, Jesse Barnes escreveu:
+> On Friday, May 16, 2008 11:33 am Arnaldo Carvalho de Melo wrote:
+> > > There are a few other common cap checks, but I don't think they compare
+> > > to MSI in terms of latency sensitivity (though I didn't audit all the
+> > > CAP_ID_EXP checks, there are quite a few of those).
+> > >
+> > > Since we know MSI is a problem, let's just go with fixing that for now. 
+> > > If we find that other caps are also causing problems we can revisit
+> > > caching all of them; the patch is simple enough.
+> >
+> > Do you want me to submit another patch or can you cook up one?
+> 
+> I can hack it up, probably not until Monday though (I'll be out of town this 
+> weekend).
 
-An administrator who trusts that the cache is sufficiently battery-
-backed (and power supplies are sufficiently redundant, etc...)
-can always turn it back off again.
+OK, for now this patch should be in the next rt patchset, we'll drop it
+when you get The Right Thing merged 8)
 
-SuSE has carried such a patch for ext3 for quite some time now.
-
-Also document the mount option while we're at it.
-
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
----
- Documentation/filesystems/ext4.txt |   12 ++++++++++--
- fs/ext4/super.c                    |   11 +++++++++--
- 2 files changed, 19 insertions(+), 4 deletions(-)
-
-diff --git a/Documentation/filesystems/ext4.txt b/Documentation/filesystems/ext4.txt
-index 560f88d..0c5086d 100644
---- a/Documentation/filesystems/ext4.txt
-+++ b/Documentation/filesystems/ext4.txt
-@@ -139,8 +139,16 @@ commit=nrsec	(*)	Ext4 can be told to sync all its data and metadata
- 			Setting it to very large values will improve
- 			performance.
- 
--barrier=1		This enables/disables barriers.  barrier=0 disables
--			it, barrier=1 enables it.
-+barrier=<0|1(*)>	This enables/disables the use of write barriers in
-+			the jbd code.  barrier=0 disables, barrier=1 enables.
-+			This also requires an IO stack which can support
-+			barriers, and if jbd gets an error on a barrier
-+			write, it will disable again with a warning.
-+			Write barriers enforce proper on-disk ordering
-+			of journal commits, making volatile disk write caches
-+			safe to use, at some performance penalty.  If
-+			your disks are battery-backed in one way or another,
-+			disabling barriers may safely improve performance.
- 
- orlov		(*)	This enables the new Orlov block allocator. It is
- 			enabled by default.
-diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 52dd067..77b036a 100644
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -671,6 +671,7 @@ static int ext4_show_options(struct seq_file *seq, struct vfsmount *vfs)
- 	unsigned long def_mount_opts;
- 	struct super_block *sb = vfs->mnt_sb;
- 	struct ext4_sb_info *sbi = EXT4_SB(sb);
-+	journal_t *journal = sbi->s_journal;
- 	struct ext4_super_block *es = sbi->s_es;
- 
- 	def_mount_opts = le32_to_cpu(es->s_default_mount_opts);
-@@ -729,8 +730,13 @@ static int ext4_show_options(struct seq_file *seq, struct vfsmount *vfs)
- 		seq_printf(seq, ",commit=%u",
- 			   (unsigned) (sbi->s_commit_interval / HZ));
- 	}
--	if (test_opt(sb, BARRIER))
--		seq_puts(seq, ",barrier=1");
-+	/*
-+	 * jbd2 inherits the barrier flag from ext4, and may actually
-+	 * turn off barriers if a write fails, so it's the real test.
-+	 */
-+	if (!test_opt(sb, BARRIER) ||
-+	    (journal && !(journal->j_flags & JBD2_BARRIER)))
-+		seq_puts(seq, ",barrier=0");
- 	if (test_opt(sb, NOBH))
- 		seq_puts(seq, ",nobh");
- 	if (!test_opt(sb, EXTENTS))
-@@ -1890,6 +1896,7 @@ static int ext4_fill_super (struct super_block *sb, void *data, int silent)
- 	sbi->s_resgid = le16_to_cpu(es->s_def_resgid);
- 
- 	set_opt(sbi->s_mount_opt, RESERVATION);
-+	set_opt(sbi->s_mount_opt, BARRIER);
- 
- 	/*
- 	 * turn on extents feature by default in ext4 filesystem
--- 1.5.3.6
-
+- Arnaldo
