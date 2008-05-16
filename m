@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760572AbYEPWqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760888AbYEPWs1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760572AbYEPWqW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 18:46:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756223AbYEPWqN
+	id S1760888AbYEPWs1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 18:48:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756516AbYEPWsT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 18:46:13 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:63911 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756202AbYEPWqM (ORCPT
+	Fri, 16 May 2008 18:48:19 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52194 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756223AbYEPWsS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 18:46:12 -0400
-Date: Fri, 16 May 2008 15:45:52 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>, samr <sam@ravnborg.org>
-Subject: [PATCH] kernel-doc: allow unnamed bit-fields
-Message-Id: <20080516154552.eadc454e.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Fri, 16 May 2008 18:48:18 -0400
+Date: Fri, 16 May 2008 15:47:53 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [GIT pull] x86 fixes for 2.6.26
+In-Reply-To: <alpine.LFD.1.10.0805170037180.3255@apollo.tec.linutronix.de>
+Message-ID: <alpine.LFD.1.10.0805161544080.3020@woody.linux-foundation.org>
+References: <alpine.LFD.1.10.0805170037180.3255@apollo.tec.linutronix.de>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Allow for unnamed bit-fields and skip them instead of printing an
-erroneous warning message for them, such as:
 
-Warning(include/asm-s390/cio.h:103): No description found for parameter 'u32'
+On Sat, 17 May 2008, Thomas Gleixner wrote:
+> 
+> please pull the latest x86 fixes from:
+> 
+>    ssh://master.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
 
-which contains:
+No.
 
-struct tm_scsw {
-	u32 :1;
+You have three real commits there.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- scripts/kernel-doc |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+And *six* unnecessary merges.
 
---- next-20080516.orig/scripts/kernel-doc
-+++ next-20080516/scripts/kernel-doc
-@@ -1556,7 +1556,9 @@ sub create_parameterlist($$$) {
- 		    push_parameter($2, "$type $1", $file);
- 		}
- 		elsif ($param =~ m/(.*?):(\d+)/) {
--		    push_parameter($1, "$type:$2", $file)
-+		    if ($type ne "") { # skip unnamed bit-fields
-+			push_parameter($1, "$type:$2", $file)
-+		    }
- 		}
- 		else {
- 		    push_parameter($param, $type, $file);
+Why do you merge my tree? Is it the x86 tree, or is it the "general 
+development tree"?
+
+If it's the x86 tree, it shouldn't need to merge everythign else all the 
+time. Certainly not if it means that moer than half the commits are just 
+merges.
+
+Do nice topic branches, where each branch has a reason for existing. The 
+"x86-fixes-for-linus" branch has x86 fixes. 
+
+This happens almost every time somebody starts using git properly: at that 
+point the rebasing no longer hides bad habits.
+
+		Linus
