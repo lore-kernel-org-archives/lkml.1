@@ -1,97 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760275AbYEPUv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758991AbYEPUnF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760275AbYEPUv4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 16:51:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754390AbYEPUvt
+	id S1758991AbYEPUnF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 16:43:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753560AbYEPUmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 16:51:49 -0400
-Received: from an-out-0708.google.com ([209.85.132.246]:4253 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752830AbYEPUvs (ORCPT
+	Fri, 16 May 2008 16:42:53 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34023 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752830AbYEPUmw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 16:51:48 -0400
-Message-ID: <fa686aa40805161351r6cc42c4ctb381fc4341fc7cd7@mail.gmail.com>
-Date: Fri, 16 May 2008 14:51:45 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Subject: Re: [PATCH 3/4] spi: Add OF binding support for SPI busses
-Cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
-       fabrizio.garetto@gmail.com, jonsmirl@gmail.com
-In-Reply-To: <20080516134720.22d0569b.randy.dunlap@oracle.com>
+	Fri, 16 May 2008 16:42:52 -0400
+Date: Fri, 16 May 2008 13:42:18 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Russ Anderson <rja@sgi.com>
+cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Tony Luck <tony.luck@intel.com>, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH 1/3] mm: Minor clean-up of page flags in mm/page_alloc.c
+ v5
+In-Reply-To: <20080516192244.GD7885@sgi.com>
+Message-ID: <alpine.LFD.1.10.0805161341140.2941@woody.linux-foundation.org>
+References: <20080516192244.GD7885@sgi.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
-	 <20080516193613.28030.13950.stgit@trillian.secretlab.ca>
-	 <20080516134720.22d0569b.randy.dunlap@oracle.com>
-X-Google-Sender-Auth: f6f527a637622a31
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16, 2008 at 2:47 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> On Fri, 16 May 2008 13:36:13 -0600 Grant Likely wrote:
->
->> diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
->> index 1d2a772..452c242 100644
->> --- a/Documentation/powerpc/booting-without-of.txt
->> +++ b/Documentation/powerpc/booting-without-of.txt
->> @@ -2870,6 +2871,66 @@ platforms are moved over to use the flattened-device-tree model.
->>               reg = <0xe8000000 32>;
->>       };
->>
->> +    s) SPI (Serial Peripheral Interface) busses
->> +
->> +    SPI busses can be described with a node for the SPI master device
->> +    and a set of child nodes for each SPI slave on the bus.  For this
->> +    discussion, it is assumed that the system's SPI controller is in
->> +    SPI master mode.  This binding does not describe SPI controllers
->> +    in slave mode.
->> +
->> +    The SPI master node requires the following properties:
->> +    - #address-cells  - number of cells required to define a chip select
->> +                     address on the SPI bus.
->> +    - #size-cells     - should be zero.
->> +    - compatible      - name of SPI bus controller following generic names
->> +                     recommended practice.
->> +    No other properties are required in the spi bus node.  It is assumed
->                                               ~~~
->
->> +    that a driver for an SPI bus device will understand that it is an SPI bus.
->> +    However, the binding does not attempt to define the specific method for
->> +    assigning chip select numbers.  Since SPI chip select configuration is
->> +    flexible and non-standardized, it is left out of this binding with the
->> +    assumption that board specific platform code will be used to manage
->> +    chip selects.  Individual drivers can define additional properties to
->> +    support describing the chip select layout.
->> +
->> +    SPI slave nodes must be children of the spi master node and can
->                                               ~~~
->
->> +    contain the following properties.
->> +    - reg             - (required) chip select address of device.
->> +    - compatible      - (required) name of SPI device following generic names
->> +                     recommended practice
->> +    - max-speed       - (optional) Maximum SPI clocking speed of device in Hz
->> +    - spi,cpol        - (optional) Device requires inverse clock polarity
->> +    - spi,cpha        - (optional) Device requires shifted clock phase
->> +    - linux,modalias  - (optional, Linux specific) Force binding of SPI device
->> +                     to a particular spi_device driver.  Useful for changing
->> +                     driver binding between spidev and a kernel spi driver.
->                                                                   ~~~
->
-> Hi,
-> You mostly capitalize "SPI" in sentences (i.e., when it's not part of
-> a function name or OF data), so could the 3 underlined instances of it
-> also be all caps?
 
-No problem.
 
-Cheers,
-g.
+On Fri, 16 May 2008, Russ Anderson wrote:
+>
+> Minor source code cleanup of page flags in mm/page_alloc.c.  
+> Move the definition of the groups of bits to page-flags.h.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+Ok, if you fix the comments (they are subtly wrong, probably due to 
+excessive cut-and-paste), I can happily apply 1/3 regardless of any other 
+issues.
+
+		Linus
