@@ -1,85 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758643AbYEPVbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758695AbYEPVgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758643AbYEPVbk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 17:31:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751075AbYEPVba
+	id S1758695AbYEPVgT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 17:36:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753876AbYEPVgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 17:31:30 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37951 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750752AbYEPVb3 (ORCPT
+	Fri, 16 May 2008 17:36:11 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:44488 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751839AbYEPVgK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 17:31:29 -0400
-Date: Fri, 16 May 2008 14:31:08 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
-       Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
-       Andrew Bird <ajb@spheresystems.co.uk>
-Subject: Re: 2.6.26-rc2-mm1: high speed something
-Message-Id: <20080516143108.7b3b5d25.akpm@linux-foundation.org>
-In-Reply-To: <20080516221749.GA3808@martell.zuzino.mipt.ru>
-References: <20080514010129.4f672378.akpm@linux-foundation.org>
-	<20080516221749.GA3808@martell.zuzino.mipt.ru>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 16 May 2008 17:36:10 -0400
+Message-ID: <482DFD65.10300@zytor.com>
+Date: Fri, 16 May 2008 14:32:21 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Fix immediate asm constraint for gcc 3 x86_64
+References: <482AB6C5.4060604@goop.org> <20080516124811.GC4226@Krystal>
+In-Reply-To: <20080516124811.GC4226@Krystal>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 17 May 2008 02:17:49 +0400
-Alexey Dobriyan <adobriyan@gmail.com> wrote:
+Mathieu Desnoyers wrote:
 
-> >  linux-next.patch
 > 
-> That's terse. ;-)
-
-well, it's a git tree, and all that this implies.  The git URL is
-right at the top of linux-next.patch.
-
-> Who is responsible for something called "Option High Speed Mobile
-> Devices"?
-
-The full changelog is contained in linux-next.patch.  Searching it for
-"Option" quickly leads to
-
-commit a50a26ba350a5f32ec6481c85b938fc7fb476671
-Author: Greg Kroah-Hartman <gregkh@suse.de>
-Date:   Mon Apr 14 11:41:16 2008 -0700
-
-    USB: add option hso driver
-    
-    This driver is for a number of different Option devices.  Originally
-    written by Option and Andrew Bird, but cleaned up massivly for
-    acceptance into mainline by me (Greg).
-    
-    TODO:
-    	- remove proc files and move to debugfs
-    	- review network interfaces
-    	- add better changelog information
-    	- Use netif_msg_ for the message level rather than module parameter
-    	- net_device_stats are now available in dev->stats
-    
-    Many thanks to the following for their help in cleaning up the driver by
-    providing feedback and patches to it:
-    	- Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
-    	- Oliver Neukum <oliver@neukum.org>
-    	- Alan Cox <alan@lxorguk.ukuu.org.uk>
-    
-    
-    Cc: Andrew Bird <ajb@spheresystems.co.uk>
-    Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-    Cc: Filip Aben <f.aben@option.com>
-    Cc: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
-    Cc: Oliver Neukum <oliver@neukum.org>
-    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
-
-> It's using create_proc_read_entry() interface, so should be switched
-> to seq_files before merging.
+> It seems that include/asm-x86/immediate.h in sched-devel.git causes
+> this. gcc-3.4 does not seem to like the "i" (&name##__imv) constraint. I
+> have seen no such problem with gcc-4.1. This is weird. It seems that
+> relaxing the constraint helps fixing this, but it's not clear whether
+> fixing the code or gcc-3.4 is the correct solution... here is the fix :
 > 
-> And "procfs" module parameter is plain stupid, sorry.
+> Fix immediate asm constraint for gcc 3 x86_64
+> 
 
-stupid people cc'ed ;)
+It might make it compile, but it's completely *wrong* for the purpose 
+intended.
+
+It permits gcc to present the address in a register, for example, so 
+there is no guarantee that you end up with an immediate.
+
+	-hpa
