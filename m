@@ -1,78 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755510AbYEPPta@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756886AbYEPPuN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755510AbYEPPta (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 11:49:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750831AbYEPPtV
+	id S1756886AbYEPPuN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 11:50:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751962AbYEPPt4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 11:49:21 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:46994 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751302AbYEPPtV (ORCPT
+	Fri, 16 May 2008 11:49:56 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:48993 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750831AbYEPPt4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 11:49:21 -0400
-Date: Fri, 16 May 2008 08:48:40 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Pavel Emelyanov <xemul@openvz.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Bsdacct: stir up comments around acct_process.
-Message-Id: <20080516084840.dfb4cd8d.randy.dunlap@oracle.com>
-In-Reply-To: <482D6803.60205@openvz.org>
-References: <482D6803.60205@openvz.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Fri, 16 May 2008 11:49:56 -0400
+Date: Fri, 16 May 2008 11:49:22 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Alexander Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, RFC] char dev BKL pushdown
+Message-ID: <20080516154922.GA25412@infradead.org>
+References: <alpine.LFD.1.10.0805141452330.3019@woody.linux-foundation.org> <16082.1210952646@vena.lwn.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <16082.1210952646@vena.lwn.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 May 2008 14:54:59 +0400 Pavel Emelyanov wrote:
+On Fri, May 16, 2008 at 09:44:06AM -0600, Jonathan Corbet wrote:
+> trivial as to not require locking (quite few of them are "return 0;"), or
 
-> Fix the one describing what this function is and add one
-> more - about locking absence around pid namespaces loop.
-> 
-> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-> 
-> ---
-> 
-> diff --git a/kernel/acct.c b/kernel/acct.c
-> index 0feba97..d7b670c 100644
-> --- a/kernel/acct.c
-> +++ b/kernel/acct.c
-> @@ -657,7 +657,8 @@ static void acct_process_in_ns(struct pid_namespace *ns)
->  }
->  
->  /**
-> - * acct_process - now just a wrapper around do_acct_process
-> + * acct_process - now just a wrapper around acct_process_in_ns,
-> + * which int turn is a wrapper around do_acct_process.
+If they literaly are 'return 0' you can just remove them, as a
+non-existing open op will just be fine.
 
-            in
+> (2) clearly doing its own locking, I wrapped the code in the BKL.
 
->   *
->   * handles process accounting for an exiting task
->   */
-> @@ -665,6 +666,11 @@ void acct_process(void)
->  {
->  	struct pid_namespace *ns;
->  
-> +	/*
-> +	 * This loop is safe lockless, since current it still
+Even if clearly does it's own locking please add the BKL for now and let
+the maintainers sort it out later, better be safe then sorry.
 
-                                                     is still
+Except for that thanks a lot, this is the kind of work that's more
+productive than all these discussions here :)
 
-> +	 * alive and holds its namespace, which in turn holds
-> +	 * its parent.
-> +	 */
->  	for (ns = task_active_pid_ns(current); ns != NULL; ns = ns->parent)
->  		acct_process_in_ns(ns);
->  }
-
----
-~Randy
+For some reason about 80 instances seem awfully few, but we've move a
+lot of device into subsystems from beeing plain chardevs so this
+might actually be correct.
