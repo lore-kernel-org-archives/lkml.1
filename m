@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759525AbYEPOqp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759918AbYEPOr2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759525AbYEPOqp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 10:46:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757215AbYEPOm0
+	id S1759918AbYEPOr2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 10:47:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757376AbYEPOma
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 10:42:26 -0400
-Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49249 "EHLO
+	Fri, 16 May 2008 10:42:30 -0400
+Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:49235 "EHLO
 	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752449AbYEPOmO (ORCPT
+	with ESMTP id S1752307AbYEPOmN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 10:42:14 -0400
+	Fri, 16 May 2008 10:42:13 -0400
 From: hooanon05@yahoo.co.jp
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Junjiro Okajima <hooanon05@yahoo.co.jp>
-Subject: [PATCH 22/67] aufs workqueue for asynchronous/super-io/delegated operations, header
-Date: Fri, 16 May 2008 23:32:36 +0900
-Message-Id: <12109484013559-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [PATCH 37/67] aufs file operations
+Date: Fri, 16 May 2008 23:32:51 +0900
+Message-Id: <12109484023036-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <12109484013438-git-send-email-hooanon05@yahoo.co.jp>
+In-Reply-To: <12109484022659-git-send-email-hooanon05@yahoo.co.jp>
 References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <12109484012532-git-send-email-hooanon05@yahoo.co.jp> <12109484012997-git-send-email-hooanon05@yahoo.co.jp> <12109484013051-git-send-email-hooanon05@yahoo.co.jp> <12109484013436-git-send-email-hooanon05@yahoo.co.jp> <1210948401415-git-send-email-hooanon05@yahoo.co.jp> <12109484011533-git-send-email-hooanon05@yahoo.co.jp> <1210948401506-git-send-email-hooanon05@yahoo.co.jp> <12109484013156-git-send-email-hooanon05@yahoo.co.jp> <12109484012724-git-send-email-hooanon05@yahoo.co.jp> <12109484013264-git-send-email-hooanon05@yahoo.co.jp> <12109484012658-git-send-email-hooanon05@yahoo.co.jp> <12109484011282-git-send-email-hooanon05@yahoo.co.jp> <12109484012543-git-send-email-hooanon05@yahoo.co.jp> <12109484013834-git-send-email-hooanon05@yahoo.co.jp> <12109484012213-git-send-email-hooanon05@yahoo.co.jp> <12109484012301-git-send-email-hooanon05@yahoo.co.jp> <1210948401175-git-send-email-hooanon05@yahoo.co.jp> <1210948!
- 4013702-git-send-email-hooanon05@yahoo.co.jp> <12109484012871-git-send-email-hooanon05@yahoo.co.jp> <12109484013438-git-send-email-hooanon05@yahoo.co.jp>
+ 4013702-git-send-email-hooanon05@yahoo.co.jp> <12109484012871-git-send-email-hooanon05@yahoo.co.jp> <12109484013438-git-send-email-hooanon05@yahoo.co.jp> <12109484013559-git-send-email-hooanon05@yahoo.co.jp> <12109484012111-git-send-email-hooanon05@yahoo.co.jp> <1210948401543-git-send-email-hooanon05@yahoo.co.jp> <1210948401147-git-send-email-hooanon05@yahoo.co.jp> <12109484012904-git-send-email-hooanon05@yahoo.co.jp> <121094840127-git-send-email-hooanon05@yahoo.co.jp> <12109484011862-git-send-email-hooanon05@yahoo.co.jp> <12109484011143-git-send-email-hooanon05@yahoo.co.jp> <12109484011867-git-send-email-hooanon05@yahoo.co.jp> <12109484021033-git-send-email-hooanon05@yahoo.co.jp> <12109484021234-git-send-email-hooanon05@yahoo.co.jp> <12109484022680-git-send-email-hooanon05@yahoo.co.jp> <12109484021974-git-send-email-hooanon05@yahoo.co.jp> <12109484021281-git-send-email-hooanon05@yahoo.co.jp> <12109484022659-git-send-email-hooanon05@yahoo.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -27,19 +27,19 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Junjiro Okajima <hooanon05@yahoo.co.jp>
 
 	initial commit
-	aufs workqueue for asynchronous/super-io/delegated operations, header
+	aufs file operations
 
 Signed-off-by: Junjiro Okajima <hooanon05@yahoo.co.jp>
 ---
- fs/aufs/wkq.h |  160 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 160 insertions(+), 0 deletions(-)
+ fs/aufs/file.h |  246 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 246 insertions(+), 0 deletions(-)
 
-diff --git a/fs/aufs/wkq.h b/fs/aufs/wkq.h
+diff --git a/fs/aufs/file.h b/fs/aufs/file.h
 new file mode 100644
-index 0000000..b9e2edd
+index 0000000..33a1036
 --- /dev/null
-+++ b/fs/aufs/wkq.h
-@@ -0,0 +1,160 @@
++++ b/fs/aufs/file.h
+@@ -0,0 +1,246 @@
 +/*
 + * Copyright (C) 2005-2008 Junjiro Okajima
 + *
@@ -59,147 +59,233 @@ index 0000000..b9e2edd
 + */
 +
 +/*
-+ * workqueue for asynchronous/super-io/delegated operations
++ * file operations
 + *
-+ * $Id: wkq.h,v 1.3 2008/04/28 03:18:21 sfjro Exp $
++ * $Id: file.h,v 1.2 2008/04/21 01:35:14 sfjro Exp $
 + */
 +
-+#ifndef __AUFS_WKQ_H__
-+#define __AUFS_WKQ_H__
++#ifndef __AUFS_FILE_H__
++#define __AUFS_FILE_H__
 +
 +#ifdef __KERNEL__
 +
++#include <linux/file.h>
 +#include <linux/fs.h>
-+#include <linux/sched.h>
-+#include <linux/workqueue.h>
++#include <linux/mm.h>
 +#include <linux/aufs_type.h>
++#include "dentry.h"
++#include "misc.h"
++#include "super.h"
 +
 +/* ---------------------------------------------------------------------- */
 +
-+/* internal workqueue named AUFS_WKQ_NAME */
-+struct au_wkq {
-+	struct workqueue_struct	*q;
-+
-+	/* accounting */
-+	atomic_t		busy;
-+	unsigned int		max_busy; // todo: STAT only
++struct au_branch;
++struct au_hfile {
++	struct file		*hf_file;
++	struct au_branch	*hf_br;
 +};
 +
-+/*
-+ * in the next operation, wait for the 'nowait' tasks in system-wide workqueue
-+ */
-+struct au_nowait_tasks {
-+#ifdef CONFIG_AUFS_HINOTIFY
-+	/*
-+	 * currently, the 'nowait' task which should be waited in the next
-+	 * operation is only hinotify.
-+	 */
-+	atomic_t		nw_len;
-+	wait_queue_head_t	nw_wq;
-+#endif
++struct au_vdir;
++struct au_finfo {
++	atomic_t		fi_generation;
++
++	struct au_rwsem		fi_rwsem;
++	struct au_hfile		*fi_hfile;
++	aufs_bindex_t		fi_bstart, fi_bend;
++
++	union {
++		struct vm_operations_struct	*fi_h_vm_ops;
++		struct au_vdir			*fi_vdir_cache;
++	};
 +};
 +
 +/* ---------------------------------------------------------------------- */
 +
-+extern struct au_wkq *au_wkq;
-+typedef void (*au_wkq_func_t)(void *args);
++/* file.c */
++extern struct address_space_operations aufs_aop;
++unsigned int au_file_roflags(unsigned int flags);
++struct file *au_h_open(struct dentry *dentry, aufs_bindex_t bindex, int flags,
++		       struct file *file);
++int au_do_open(struct inode *inode, struct file *file,
++	       int (*open)(struct file *file, int flags));
++int au_reopen_nondir(struct file *file);
++int au_ready_to_write(struct file *file, loff_t len);
++int au_reval_and_lock_finfo(struct file *file, int (*reopen)(struct file *file),
++			    int wlock, int locked);
 +
-+/* wkq flags */
-+#define AuWkq_WAIT	1
-+#define AuWkq_DLGT	(1 << 1)
-+#define au_ftest_wkq(flags, name)	((flags) & AuWkq_##name)
-+#define au_fset_wkq(flags, name)	{ (flags) |= AuWkq_##name; }
-+#define au_fclr_wkq(flags, name)	{ (flags) &= ~AuWkq_##name; }
-+#ifndef CONFIG_AUFS_DLGT
-+#undef AuWkq_DLGT
-+#define AuWkq_DLGT	0
-+#endif
++/* f_op.c */
++extern struct file_operations aufs_file_fop;
++int aufs_flush(struct file *file, fl_owner_t id);
 +
-+int au_wkq_run(au_wkq_func_t func, void *args, struct super_block *sb,
-+	       unsigned int flags);
-+int __init au_wkq_init(void);
-+void au_wkq_fin(void);
++/* finfo.c */
++struct au_finfo *au_fi(struct file *file);
++struct au_branch *au_fbr(struct file *file, aufs_bindex_t bindex);
++struct file *au_h_fptr(struct file *file, aufs_bindex_t bindex);
++
++void au_hfput(struct au_hfile *hf);
++void au_set_h_fptr(struct file *file, aufs_bindex_t bindex,
++		   struct file *h_file);
++
++void au_finfo_fin(struct file *file);
++int au_finfo_init(struct file *file);
++
++#ifdef CONFIG_AUFS_ROBR
++/* robr.c */
++struct file *au_robr_safe_file(struct vm_area_struct *vma);
++void au_robr_reset_file(struct vm_area_struct *vma, struct file *file);
++#else
++static inline struct file *au_robr_safe_file(struct vm_area_struct *vma)
++{
++	struct file *file;
++
++	file = vma->vm_file;
++	if (file->private_data && au_test_aufs(file->f_dentry->d_sb))
++		return file;
++	return NULL;
++}
++
++static inline
++void au_robr_reset_file(struct vm_area_struct *vma, struct file *file)
++{
++	vma->vm_file = file;
++	//smp_mb(); /* flush vm_file */
++}
++#endif /* CONFIG_AUFS_ROBR */
 +
 +/* ---------------------------------------------------------------------- */
 +
-+static inline int au_test_wkq(struct task_struct *tsk)
-+{
-+	return (!tsk->mm && !strcmp(tsk->comm, AUFS_WKQ_NAME));
-+#if 0 // per-cpu workqueue
-+	return (!tsk->mm
-+		&& !memcmp(tsk->comm, AUFS_WKQ_NAME "/",
-+			   sizeof(AUFS_WKQ_NAME)));
-+#endif
-+}
-+
-+static inline int au_wkq_wait(au_wkq_func_t func, void *args, int dlgt)
-+{
-+	unsigned int flags = AuWkq_WAIT;
-+	if (unlikely(dlgt))
-+		au_fset_wkq(flags, DLGT);
-+	return au_wkq_run(func, args, /*sb*/NULL, flags);
-+}
-+
-+static inline int au_wkq_nowait(au_wkq_func_t func, void *args,
-+				struct super_block *sb, int dlgt)
-+{
-+	unsigned int flags = !AuWkq_WAIT;
-+	if (unlikely(dlgt))
-+		au_fset_wkq(flags, DLGT);
-+	return au_wkq_run(func, args, sb, flags);
-+}
-+
-+#ifdef CONFIG_AUFS_HINOTIFY
 +//todo: memory barrier?
-+static inline void au_nwt_init(struct au_nowait_tasks *nwt)
++static inline au_gen_t au_figen(struct file *f)
 +{
-+	atomic_set(&nwt->nw_len, 0);
-+	smp_mb(); /* atomic_set */
-+	init_waitqueue_head(&nwt->nw_wq);
++	return atomic_read(&au_fi(f)->fi_generation);
 +}
 +
-+static inline int au_nwt_inc(struct au_nowait_tasks *nwt)
++static inline int au_test_mmapped(struct file *f)
 +{
-+	return atomic_inc_return(&nwt->nw_len);
++	return !!(au_fi(f)->fi_h_vm_ops);
 +}
 +
-+static inline int au_nwt_dec(struct au_nowait_tasks *nwt)
++static inline int au_test_aufs_file(struct file *f)
 +{
-+	int ret = atomic_dec_return(&nwt->nw_len);
-+	if (!ret)
-+		wake_up_all(&nwt->nw_wq);
-+	return ret;
++	return !(f->f_dentry->d_inode->i_mode
++		 & (S_IFCHR | S_IFBLK | S_IFIFO | S_IFSOCK));
 +}
 +
-+static inline int au_nwt_flush(struct au_nowait_tasks *nwt)
++/* ---------------------------------------------------------------------- */
++
++#if !defined(CONFIG_AUFS_MODULE) || defined(CONFIG_AUFS_DENY_WRITE_ACCESS_PATCH)
++int au_store_fmode_exec(struct nameidata *nd, struct inode *inode);
++
++static inline int au_deny_write_access(struct file *h_file)
 +{
-+	wait_event(nwt->nw_wq, !atomic_read(&nwt->nw_len));
++	LKTRTrace("%.*s\n", AuDLNPair(h_file->f_dentry));
++	return deny_write_access(h_file);
++}
++
++static inline void au_allow_write_access(struct file *h_file)
++{
++	allow_write_access(h_file);
++}
++
++#else
++
++static inline int au_store_fmode_exec(struct nameidata *nd, struct inode *inode)
++{
++	/* nothing */
 +	return 0;
 +}
-+#else
-+static inline void au_nwt_init(struct au_nowait_tasks *nwt)
++
++static inline int au_deny_write_access(struct file *h_file)
++{
++	/* nothing */
++	return 0;
++}
++
++static inline void au_allow_write_access(struct file *h_file)
 +{
 +	/* nothing */
 +}
++#endif /* CONFIG_AUFS_DENY_WRITE_ACCESS_PATCH */
 +
-+static inline int au_nwt_inc(struct au_nowait_tasks *nwt)
++/* ---------------------------------------------------------------------- */
++
++/*
++ * fi_read_lock, fi_write_lock,
++ * fi_read_unlock, fi_write_unlock, fi_downgrade_lock
++ */
++AuSimpleRwsemFuncs(fi, struct file *f, au_fi(f)->fi_rwsem);
++
++/* to debug easier, do not make them inlined functions */
++#define FiMustReadLock(f) do { \
++	SiMustAnyLock((f)->f_dentry->d_sb); \
++	AuRwMustReadLock(&au_fi(f)->fi_rwsem); \
++} while (0)
++
++#define FiMustWriteLock(f) do { \
++	SiMustAnyLock((f)->f_dentry->d_sb); \
++	AuRwMustWriteLock(&au_fi(f)->fi_rwsem); \
++} while (0)
++
++#define FiMustAnyLock(f) do { \
++	SiMustAnyLock((f)->f_dentry->d_sb); \
++	AuRwMustAnyLock(&au_fi(f)->fi_rwsem); \
++} while (0)
++
++#define FiMustNoWaiters(f)	AuRwMustNoWaiters(&au_fi(f)->fi_rwsem)
++
++/* ---------------------------------------------------------------------- */
++
++// hard/soft set
++static inline aufs_bindex_t au_fbstart(struct file *file)
 +{
-+	return 0;
++	FiMustAnyLock(file);
++	return au_fi(file)->fi_bstart;
 +}
 +
-+static inline int au_nwt_dec(struct au_nowait_tasks *nwt)
++static inline aufs_bindex_t au_fbend(struct file *file)
 +{
-+	return 0;
++	FiMustAnyLock(file);
++	return au_fi(file)->fi_bend;
 +}
 +
-+static inline int au_nwt_flush(struct au_nowait_tasks *nwt)
++static inline struct au_vdir *au_fvdir_cache(struct file *file)
 +{
-+	return 0;
++	FiMustAnyLock(file);
++	return au_fi(file)->fi_vdir_cache;
 +}
-+#endif /* CONFIG_AUFS_HINOTIFY */
++
++static inline void au_set_fbstart(struct file *file, aufs_bindex_t bindex)
++{
++	FiMustWriteLock(file);
++	AuDebugOn(au_sbend(file->f_dentry->d_sb) < bindex);
++	au_fi(file)->fi_bstart = bindex;
++}
++
++static inline void au_set_fbend(struct file *file, aufs_bindex_t bindex)
++{
++	FiMustWriteLock(file);
++	AuDebugOn(au_sbend(file->f_dentry->d_sb) < bindex
++		  || bindex < au_fbstart(file));
++	au_fi(file)->fi_bend = bindex;
++}
++
++static inline void au_set_fvdir_cache(struct file *file,
++				      struct au_vdir *vdir_cache)
++{
++	FiMustWriteLock(file);
++	AuDebugOn(!S_ISDIR(file->f_dentry->d_inode->i_mode)
++		  || (au_fi(file)->fi_vdir_cache && vdir_cache));
++	au_fi(file)->fi_vdir_cache = vdir_cache;
++}
++
++static inline void au_update_figen(struct file *file)
++{
++	atomic_set(&au_fi(file)->fi_generation, au_digen(file->f_dentry));
++	//smp_mb(); /* atomic_set */
++}
 +
 +#endif /* __KERNEL__ */
-+#endif /* __AUFS_WKQ_H__ */
++#endif /* __AUFS_FILE_H__ */
 -- 
 1.4.4.4
 
