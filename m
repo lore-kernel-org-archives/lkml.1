@@ -1,50 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762102AbYEPVHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762016AbYEPVAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762102AbYEPVHr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 17:07:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756148AbYEPVHh
+	id S1762016AbYEPVAs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 17:00:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757636AbYEPVAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 17:07:37 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:50770 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755619AbYEPVHg (ORCPT
+	Fri, 16 May 2008 17:00:20 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:34817 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755081AbYEPVAP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 17:07:36 -0400
-Date: Fri, 16 May 2008 17:07:20 -0400
-From: "Josef 'Jeff' Sipek" <jeffpc@josefsipek.net>
-To: Jan Engelhardt <jengelh@medozas.de>
-Cc: Dave Quigley <dpquigl@tycho.nsa.gov>, hooanon05@yahoo.co.jp,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/67] aufs document
-Message-ID: <20080516210720.GG730@josefsipek.net>
-References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <1210949976.14706.28.camel@moss-terrapins.epoch.ncsc.mil> <alpine.LNX.1.10.0805161731080.15590@fbirervta.pbzchgretzou.qr>
+	Fri, 16 May 2008 17:00:15 -0400
+Date: Fri, 16 May 2008 22:00:13 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jeff Dike <jdike@addtoit.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] fix include order in sys-i386/registers.c
+Message-ID: <20080516210013.GW13907@ZenIV.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LNX.1.10.0805161731080.15590@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16, 2008 at 05:32:45PM +0200, Jan Engelhardt wrote:
-> 
-> On Friday 2008-05-16 16:59, Dave Quigley wrote:
-> 
-> >A couple of comments about this. First off you might want to reconsider
-> >how you are breaking up the patches. 67 patches seems a bit much to me
-> >and while the separation between patches is clear it seems that some of
-> >them can be folded. Second I'm not sure if I haven't gotten it yet or if
-> >it wasn't sent but I am missing an Email 0/67. Typically this contains a
-> 
-> No 0/67 unfortunately, and --no-chain was also missing when calling
-> git-send-email. (Argh, git-send-email should default to no-chain!)
+	We want sys/ptrace.h before any includes of linux/ptrace.h and
+asm/user.h pulls the latter.
 
-If you use Guilt, it does all the brain-damage removal for you ;)
-(guilt-patchbomb to be exact)
-
-Josef 'Jeff' Sipek.
-
--- 
-I'm somewhere between geek and normal.
-		- Linus Torvalds
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+Acked-by: Jeff Dike <jdike@addtoit.com>
+---
+diff --git a/arch/um/os-Linux/sys-i386/registers.c b/arch/um/os-Linux/sys-i386/registers.c
+index c6183e7..b487cbe 100644
+--- a/arch/um/os-Linux/sys-i386/registers.c
++++ b/arch/um/os-Linux/sys-i386/registers.c
+@@ -5,6 +5,7 @@
+  */
+ 
+ #include <errno.h>
++#include <sys/ptrace.h>
+ #include <asm/user.h>
+ #include "kern_constants.h"
+ #include "longjmp.h"
