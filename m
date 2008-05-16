@@ -1,112 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761377AbYEPTGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762671AbYEPTHP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761377AbYEPTGt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 15:06:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762134AbYEPTGf
+	id S1762671AbYEPTHP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 15:07:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762443AbYEPTGz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 15:06:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:38480 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762094AbYEPTGc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 15:06:32 -0400
-Message-ID: <482DDB13.1050708@redhat.com>
-Date: Fri, 16 May 2008 14:05:55 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
+	Fri, 16 May 2008 15:06:55 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:39689 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762430AbYEPTGx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 15:06:53 -0400
+Date: Fri, 16 May 2008 12:06:47 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Matthew Wilcox <matthew@wil.cx>
+cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Andi Kleen <andi@firstfloor.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, mpm@selenic.com
+Subject: Re: [patch 21/21] slab defrag: Obsolete SLAB
+In-Reply-To: <20080515192959.GS9921@parisc-linux.org>
+Message-ID: <Pine.LNX.4.64.0805161203150.3393@schroedinger.engr.sgi.com>
+References: <482B2617.5010605@firstfloor.org>
+ <Pine.LNX.4.64.0805141100110.15633@schroedinger.engr.sgi.com>
+ <1210822002.3177.121.camel@ymzhang> <Pine.LNX.4.64.0805151002420.18354@schroedinger.engr.sgi.com>
+ <20080515174953.GN9921@parisc-linux.org> <Pine.LNX.4.64.0805151054250.18991@schroedinger.engr.sgi.com>
+ <20080515181356.GP9921@parisc-linux.org> <Pine.LNX.4.64.0805151141510.19915@schroedinger.engr.sgi.com>
+ <20080515185130.GR9921@parisc-linux.org> <Pine.LNX.4.64.0805151153440.20201@schroedinger.engr.sgi.com>
+ <20080515192959.GS9921@parisc-linux.org>
 MIME-Version: 1.0
-To: ext4 development <linux-ext4@vger.kernel.org>,
-       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Jamie Lokier <jamie@shareable.org>
-Subject: [PATCH 1/4] ext3: enable barriers by default
-References: <482DDA56.6000301@redhat.com>
-In-Reply-To: <482DDA56.6000301@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I can't think of any valid reason for ext3 to not use barriers when
-they are available;  I believe this is necessary for filesystem
-integrity in the face of a volatile write cache on storage.
+On Thu, 15 May 2008, Matthew Wilcox wrote:
 
-An administrator who trusts that the cache is sufficiently battery-
-backed (and power supplies are sufficiently redundant, etc...)
-can always turn it back off again.
+> On Thu, May 15, 2008 at 12:09:06PM -0700, Christoph Lameter wrote:
+> > Assumptions may be the issue. My own "reproducer" for remote frees is 
+> > available from my git tree and I usually prefer to run my own. We 
+> 
+> No doubt you prefer to run a test which fails to show a problem with
+> your code.  How about you try running a test which does show a problem?
 
-SuSE has carried such a patch for quite some time now.
+The test was designed to show the worst case effect of the additional 
+atomic op and it does its job. Look at the tests branch of my vm git tree.
 
-Also document the mount option while we're at it.
+> > There is no way of zeroing the counters. Run slabinfo -AD after the 
+> > test application has been running for awhile. If you want a differential 
+> > then you have to take two datapoints.
+> 
+> Is a differential interesting to you?
 
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
-Acked-by: Jan Kara <jack@suse.cz>
----
- Documentation/filesystems/ext3.txt |   12 ++++++++++--
- fs/ext3/super.c                    |   11 +++++++++--
- 2 files changed, 19 insertions(+), 4 deletions(-)
+Depends on how much other stuff is going on before.
 
-diff --git a/Documentation/filesystems/ext3.txt b/Documentation/filesystems/ext3.txt
-index b45f3c1..daab1f5 100644
---- a/Documentation/filesystems/ext3.txt
-+++ b/Documentation/filesystems/ext3.txt
-@@ -52,8 +52,16 @@ commit=nrsec	(*)	Ext3 can be told to sync all its data and metadata
- 			Setting it to very large values will improve
- 			performance.
- 
--barrier=1		This enables/disables barriers.  barrier=0 disables
--			it, barrier=1 enables it.
-+barrier=<0|1(*)>	This enables/disables the use of write barriers in
-+			the jbd code.  barrier=0 disables, barrier=1 enables.
-+			This also requires an IO stack which can support
-+			barriers, and if jbd gets an error on a barrier
-+			write, it will disable again with a warning.
-+			Write barriers enforce proper on-disk ordering
-+			of journal commits, making volatile disk write caches
-+			safe to use, at some performance penalty.  If
-+			your disks are battery-backed in one way or another,
-+			disabling barriers may safely improve performance.
- 
- orlov		(*)	This enables the new Orlov block allocator. It is
- 			enabled by default.
-diff --git a/fs/ext3/super.c b/fs/ext3/super.c
-index fe3119a..9c30dc7 100644
---- a/fs/ext3/super.c
-+++ b/fs/ext3/super.c
-@@ -555,6 +555,7 @@ static int ext3_show_options(struct seq_file *seq, struct vfsmount *vfs)
- 	struct super_block *sb = vfs->mnt_sb;
- 	struct ext3_sb_info *sbi = EXT3_SB(sb);
- 	struct ext3_super_block *es = sbi->s_es;
-+	journal_t *journal = sbi->s_journal;
- 	unsigned long def_mount_opts;
- 
- 	def_mount_opts = le32_to_cpu(es->s_default_mount_opts);
-@@ -613,8 +614,13 @@ static int ext3_show_options(struct seq_file *seq, struct vfsmount *vfs)
- 		seq_printf(seq, ",commit=%u",
- 			   (unsigned) (sbi->s_commit_interval / HZ));
- 	}
--	if (test_opt(sb, BARRIER))
--		seq_puts(seq, ",barrier=1");
-+	/*
-+ 	 * jbd inherits the barrier flag from ext3, and may actually
-+ 	 * turn off barriers if a write fails, so it's the real test.
-+ 	 */
-+	if (!test_opt(sb, BARRIER) ||
-+	    (journal && !(journal->j_flags & JFS_BARRIER)))
-+		seq_puts(seq, ",barrier=0");
- 	if (test_opt(sb, NOBH))
- 		seq_puts(seq, ",nobh");
- 
-@@ -1589,6 +1595,7 @@ static int ext3_fill_super (struct super_block *sb, void *data, int silent)
- 	sbi->s_resgid = le16_to_cpu(es->s_def_resgid);
- 
- 	set_opt(sbi->s_mount_opt, RESERVATION);
-+	set_opt(sbi->s_mount_opt, BARRIER);
- 
- 	if (!parse_options ((char *) data, sb, &journal_inum, &journal_devnum,
- 			    NULL, 0))
--- 1.5.3.6 -- To unsubscribe from this list: send the line "unsubscribe
-linux-fsdevel" in the body of a message to majordomo@vger.kernel.org
-More majordomo info at http://vger.kernel.org/majordomo-info.html
+> 
+> > > Otherwise I'll get something wrong and these numbers will be useless to
+> > > you.  Or that's what you'll claim anyway.
+> > 
+> > No. I guess I will end up with a lot of guess work of what is going on on 
+> > the system since the information is limited for some reason.
+> 
+> They're your statistics.  Tell me what you need.
+
+The output of slabinfo -AD.... 
+
 
