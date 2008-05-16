@@ -1,42 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763655AbYEPAGB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763930AbYEPAIJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763655AbYEPAGB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 15 May 2008 20:06:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756069AbYEPAFx
+	id S1763930AbYEPAIJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 15 May 2008 20:08:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756922AbYEPAH4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 15 May 2008 20:05:53 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46273 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755934AbYEPAFw (ORCPT
+	Thu, 15 May 2008 20:07:56 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:57336 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755873AbYEPAHz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 15 May 2008 20:05:52 -0400
-Date: Thu, 15 May 2008 17:05:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Bryan Wu <cooloney@kernel.org>
-Cc: harvey.harrison@gmail.com, david-b@pacbell.net, greg@kroah.com,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       cooloney@kernel.org, jie.zhang@analog.com
-Subject: Re: [PATCH 1/1] [usb/host]: use get/put_unaligned_* helpers to fix
- more potential unaligned issues.
-Message-Id: <20080515170530.a65dfc8a.akpm@linux-foundation.org>
-In-Reply-To: <1210832364-20012-1-git-send-email-cooloney@kernel.org>
-References: <1210832364-20012-1-git-send-email-cooloney@kernel.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 15 May 2008 20:07:55 -0400
+X-Sasl-enc: 5gloVNmYHigNCUVGNmGYpX3yLF4sx3MdpBKO1zfNLCqt 1210896474
+Date: Thu, 15 May 2008 21:07:51 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Jeff Garzik <jeff@garzik.org>, LKML <linux-kernel@vger.kernel.org>,
+       virtualization@lists.osdl.org, jeremy@xensource.com,
+       Herbert Xu <herbert@gondor.apana.org.au>, Avi Kivity <avi@qumranet.com>,
+       Christian Borntraeger <borntraeger@de.ibm.com>
+Subject: Re: Virt RNG?
+Message-ID: <20080516000751.GC23721@khazad-dum.debian.net>
+References: <482C8595.5030509@garzik.org> <200805160943.08788.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200805160943.08788.rusty@rustcorp.com.au>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 May 2008 14:19:24 +0800
-Bryan Wu <cooloney@kernel.org> wrote:
+On Fri, 16 May 2008, Rusty Russell wrote:
+> Yes, I prepared one earlier.  I was a little surprised to see that hwrng 
+> drivers don't contribute in any way to the entropy pool though, but now
+> reading the thread I find out about rngd (not installed on my Ubuntu system, 
+> but available at least).
 
-> Subject: [PATCH 1/1] [usb/host]: use get/put_unaligned_* helpers to fix more potential unaligned issues.
+It would be easy to implement rng-tools as a kernel driver, as long as
+proper in-kernel interfaces exist for it to work in an event-driven way.
+I don't see what we would win over rng-tools in userspace, however.
 
-Please don't put the subsystem identifier ("usb/host") inside square
-brackets.  Because text in square brackets is considered "not part of
-the patch title" and gets thrown away.  It contains text such as
-"patch", "BUG", "RFC", "2.6.26-rc2", etc.
-
-That should be in Documentation/SubmittingPatches but I can't find it. hrm.
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
