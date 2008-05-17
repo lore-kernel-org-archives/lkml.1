@@ -1,74 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760666AbYEQVtC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760639AbYEQV7O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760666AbYEQVtC (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 17:49:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759009AbYEQVsw
+	id S1760639AbYEQV7O (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 17:59:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759830AbYEQV65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 17:48:52 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:51775 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758585AbYEQVsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 17:48:51 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18479.21161.437325.251769@harpo.it.uu.se>
-Date: Sat, 17 May 2008 23:48:25 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Tom Spink <tspink@gmail.com>, Cyrill Gorcunov <gorcunov@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+	Sat, 17 May 2008 17:58:57 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45857 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759813AbYEQV65 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 May 2008 17:58:57 -0400
+Date: Sat, 17 May 2008 14:58:17 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jonathan Corbet <corbet@lwn.net>
+cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Thomas Gleixner <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, Jiri Slaby <jirislaby@gmail.com>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [RFC] x86: merge nmi_32-64 to nmi.c
-In-Reply-To: <Pine.LNX.4.55.0805172148380.10067@cliff.in.clinika.pl>
-References: <20080517192200.GA6914@cvg>
-	<7b9198260805171328u555eec17t3597f3378edbda88@mail.gmail.com>
-	<Pine.LNX.4.55.0805172148380.10067@cliff.in.clinika.pl>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Alexander Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, RFC] char dev BKL pushdown 
+In-Reply-To: <16082.1210952646@vena.lwn.net>
+Message-ID: <alpine.LFD.1.10.0805171452340.3020@woody.linux-foundation.org>
+References: <16082.1210952646@vena.lwn.net>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maciej W. Rozycki writes:
- > On Sat, 17 May 2008, Tom Spink wrote:
- > 
- > > static inline unsigned int get_nmi_count(int cpu)
- > > {
- > > #ifdef CONFIG_X86_64
- > >         return cpu_pda(cpu)->__nmi_count;
- > > #else
- > >         return nmi_count(cpu);
- > > #endif
- > > }
- > > 
- > > I know it introduces a lot of these conditionals, but at least there
- > > is one place to look for the get_nmi_count function, instead of
- > > searching for all variants of the function.
- > 
- >  Well, I suppose some header should provide a definition like:
- > 
- > #ifdef CONFIG_X86_64
- > #define cpu_x86_64 1
- > #else
- > #define cpu_x86_64 0
- > #endif
- > 
- > and the you can remove the horrible #ifdef clutter and make the quoted 
- > function look like:
- > 
- > static inline unsigned int get_nmi_count(int cpu)
- > {
- > 	return cpu_x86_64 ? cpu_pda(cpu)->__nmi_count : nmi_count(cpu);
- > }
- > 
- > Much better -- isn't it?
 
-IMO, no, the #ifdef is preferable.
 
-Why? Because the #ifdef is a very visible signal to the platform
-people that there are (in this case) subarch differences that force
-"clients" to behave differently on different subarchs. By removing
-the #ifdef you're IMO making it less likely for the platform people
-to take notice and work towards eliminating those differences.
+Btw, Jonathan, would you be willing to maintain some kind of tree of these 
+BKL removal patches? 
+
+This is different from the work Ingo is doing in the sense that these 
+things should be (a) safe and reasonably obvious and thus (b) presumably 
+ready to be merged in the next merge window. Ingo's BKL debugging tree is 
+likely a good thing to use to find places that need work, but actually 
+removing the BKL from some subsystem is a different issue.
+
+(And when I say "safe and reasonably obvious" I obviously don't mean that 
+there can't be bugs. Mistakes happen, and some BKL use might be overly 
+subtle like the issue that Alan pointed out with an empty ->open routine 
+almost accidentally serializing with initialization, but that's why I'd 
+not merge these things after -rc2 anyway, but in the next merge window).
+
+Because if you're willing to maintain a BKL-cleanup tree that gets merged 
+into linux-next etc, I'd submit my VFAT/MSDOS BKL removal patch to you. 
+The reason I did that one was that Thomas actually reported that to be a 
+major source of latency problems on one of his embedded systems (80ms 
+latency!), so it would be nice to have that patch in some place where it 
+might get tested.
+
+		Linus
