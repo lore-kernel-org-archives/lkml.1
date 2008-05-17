@@ -1,91 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758675AbYEQPQC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759509AbYEQPQ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758675AbYEQPQC (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 11:16:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758644AbYEQPOh
+	id S1759509AbYEQPQ2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 11:16:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757869AbYEQPPy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 11:14:37 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:47574 "EHLO mail.screens.ru"
+	Sat, 17 May 2008 11:15:54 -0400
+Received: from sandeen.net ([209.173.210.139]:17818 "EHLO sandeen.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758621AbYEQPOg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 11:14:36 -0400
-Date: Sat, 17 May 2008 19:14:21 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Austin Clements <amdragon+kernelbugzilla@mit.edu>,
-       Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Roland McGrath <roland@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] signals: introduce SIGQUEUE_CANCELLED
-Message-ID: <20080517151421.GA9499@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	id S1759366AbYEQPPx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 May 2008 11:15:53 -0400
+Message-ID: <482EF6A7.2020909@sandeen.net>
+Date: Sat, 17 May 2008 10:15:51 -0500
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
+MIME-Version: 1.0
+To: David Greaves <david@dgreaves.com>
+CC: David Chinner <dgc@sgi.com>, LinuxRaid <linux-raid@vger.kernel.org>,
+       xfs@oss.sgi.com,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>
+Subject: Re: Regression- XFS won't mount on partitioned md array
+References: <482DC043.5000307@dgreaves.com> <482DD981.5070004@sandeen.net> <482EEFDA.50101@dgreaves.com>
+In-Reply-To: <482EEFDA.50101@dgreaves.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suggested by Linus Torvalds.
+David Greaves wrote:
+> Eric Sandeen wrote:
 
-Introduce SIGQUEUE_CANCELLED flag. If it is set, the pending signal should be
-ignored and collect_signal() should return 0.
+>>> I get:
+>>>  md_d0: p1 p2
+>>> XFS mounting filesystem md_d0p1
+>>> attempt to access beyond end of device
+>>> md_d0p2: rw=0, want=195311, limit=195304
+>> what does /proc/partitions say about md_d0p1 and p2?  Is it different
+>> between the older & newer kernel?
 
-Note that the new flag is completely orthogonal to SIGQUEUE_PREALLOC, and it
-can be set without ->siglock held.
+...
 
-No users of this new flag yet, see the next patch.
+> 2.6.25.4 (bad)
+>  254     0 1250241792 md_d0
+>  254     1 1250144138 md_d0p1
+>  254     2      97652 md_d0p2
+> 
+> So nothing obvious there then...
+> 
+>> What does xfs_info /mount/point say about the filesystem when you mount
+>> it under the older kernel?  Or... if you can't mount it,
+> teak:~# xfs_info /media/
+> meta-data=/dev/md_d0p1           isize=256    agcount=32, agsize=9766751 blks
+>          =                       sectsz=512   attr=0
+> data     =                       bsize=4096   blocks=312536032, imaxpct=25
+>          =                       sunit=0      swidth=0 blks
+> naming   =version 2              bsize=4096
+> log      =external               bsize=4096   blocks=24413, version=2
+>          =                       sectsz=512   sunit=0 blks, lazy-count=0
+> realtime =none                   extsz=65536  blocks=0, rtextents=0
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+ok, and with:
 
---- 25/include/linux/signal.h~5_INTRODUCE_CANCELLED	2008-03-04 21:43:25.000000000 +0300
-+++ 25/include/linux/signal.h	2008-03-04 21:43:25.000000000 +0300
-@@ -20,6 +20,7 @@ struct sigqueue {
- 
- /* flags values. */
- #define SIGQUEUE_PREALLOC	1
-+#define SIGQUEUE_CANCELLED	2
- 
- struct sigpending {
- 	struct list_head list;
---- 25/kernel/signal.c~5_INTRODUCE_CANCELLED	2008-05-17 17:14:04.000000000 +0400
-+++ 25/kernel/signal.c	2008-05-17 17:40:09.000000000 +0400
-@@ -326,11 +326,13 @@ static int collect_signal(int sig, struc
- 		}
- 	}
- 	if (first) {
--		list_del_init(&first->list);
--		copy_siginfo(info, &first->info);
--		__sigqueue_free(first);
- 		if (!still_pending)
- 			sigdelset(&list->signal, sig);
-+		if (unlikely(first->flags & SIGQUEUE_CANCELLED))
-+			sig = 0;
-+		copy_siginfo(info, &first->info);
-+		list_del_init(&first->list);
-+		__sigqueue_free(first);
- 	} else {
- 
- 		/* Ok, it wasn't in the queue.  This must be
-@@ -344,7 +346,7 @@ static int collect_signal(int sig, struc
- 		info->si_pid = 0;
- 		info->si_uid = 0;
- 	}
--	return 1;
-+	return sig;
- }
- 
- static int __dequeue_signal(struct sigpending *pending, sigset_t *mask,
-@@ -362,8 +364,7 @@ static int __dequeue_signal(struct sigpe
- 			}
- 		}
- 
--		if (!collect_signal(sig, pending, info))
--			sig = 0;
-+		sig = collect_signal(sig, pending, info);
- 	}
- 
- 	return sig;
+> Partition Table for /dev/md_d0
+> 
+>                First       Last
+>  # Type       Sector      Sector   Offset    Length   Filesystem Type (ID) Flag
+> -- ------- ----------- ----------- ------ ----------- -------------------- ----
+>  1 Primary           0  2500288279      4  2500288280 Linux (83)           None
+>  2 Primary  2500288280  2500483583      0      195304 Non-FS data (DA)     None
 
+So, xfs thinks the external log is 24413 4k blocks (from the sb geometry
+printed by xfs_info).  This is 97652 1k units (matching your
+/proc/partitions output) and 195304 512-byte sectors (matching the
+partition table output).  So that all looks consistent.
+
+So if xfs is doing:
+
+>>> md_d0p2: rw=0, want=195311, limit=195304
+>>> XFS: empty log check failed
+
+it surely does seem to be trying to read past the end of what even it
+thinks is the end of its log.
+
+And, with your geometry I can reproduce this w/o md, partitioned or not.
+ So looks like xfs itself is busted:
+
+loop5: rw=0, want=195311, limit=195304
+
+I'll see if I have a little time today to track down the problem.
+
+Thanks,
+
+-Eric
