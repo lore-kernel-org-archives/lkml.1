@@ -1,107 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755546AbYEQGyO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753987AbYEQG5H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755546AbYEQGyO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 02:54:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbYEQGyC
+	id S1753987AbYEQG5H (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 02:57:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbYEQG4y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 02:54:02 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:41901 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751779AbYEQGyA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 02:54:00 -0400
-Date: Sat, 17 May 2008 08:54:37 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: David Miller <davem@davemloft.net>
-Cc: sparclinux@vger.kernel.org, jgarzik@pobox.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2]: sparc64: Add Niagara2 RNG driver.
-Message-ID: <20080517065437.GA8092@uranus.ravnborg.org>
-References: <20080516.165354.213801515.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080516.165354.213801515.davem@davemloft.net>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 17 May 2008 02:56:54 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:53073 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751196AbYEQG4x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 May 2008 02:56:53 -0400
+To: hirofumi@mail.parknet.co.jp
+CC: miklos@szeredi.hu, akpm@linux-foundation.org, hch@infradead.org,
+       viro@ZenIV.linux.org.uk, ezk@cs.sunysb.edu,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-reply-to: <87prrl7rxg.fsf@duaron.myhome.or.jp> (message from OGAWA Hirofumi
+	on Sat, 17 May 2008 08:25:15 +0900)
+Subject: Re: [patch 07/22] fat: dont call notify_change
+References: <20080516163136.560107038@szeredi.hu>
+	<20080516163222.235825996@szeredi.hu> <87prrl7rxg.fsf@duaron.myhome.or.jp>
+Message-Id: <E1JxGLP-000406-Eo@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sat, 17 May 2008 08:56:39 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David.
+> > From: Miklos Szeredi <mszeredi@suse.cz>
+> >
+> > The FAT_IOCTL_SET_ATTRIBUTES ioctl() calls notify_change() to change
+> > the file mode before changing the inode attributes.  Replace with
+> > explicit calls to security_inode_setattr(), fat_setattr() and
+> > fsnotify_change().
+> >
+> > This is equivalent to the original.  The reason it is needed, is that
+> > later in the series we move the immutable check into notify_change().
+> > That would break the FAT_IOCTL_SET_ATTRIBUTES ioctl, as it needs to
+> > perform the mode change regardless of the immutability of the file.
+> >
+> > Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+> > CC: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+> 
+> Don't we need to add EXPORT_SYMBOL(security_inode_setattr)?
 
-Small nitpick..
+Yes we do, thanks for noticing.  Committed the below patch to the
+vfs-cleanups tree.
 
-> diff --git a/drivers/char/hw_random/Makefile b/drivers/char/hw_random/Makefile
-> index c8b7300..32b327b 100644
-> --- a/drivers/char/hw_random/Makefile
-> +++ b/drivers/char/hw_random/Makefile
-> @@ -7,6 +7,8 @@ rng-core-y := core.o
->  obj-$(CONFIG_HW_RANDOM_INTEL) += intel-rng.o
->  obj-$(CONFIG_HW_RANDOM_AMD) += amd-rng.o
->  obj-$(CONFIG_HW_RANDOM_GEODE) += geode-rng.o
-> +obj-$(CONFIG_HW_RANDOM_N2RNG) += n2-rng.o
-> +n2-rng-objs := n2-drv.o n2-asm.o
+> Otherwise,
+> looks good to me.
+> 
+> Acked-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
 
-These days the preferred syntax is:
+Thanks.
 
-n2-rng-y := n2-drv.o n2-asm.o
+Miklos
+----
 
-Following this scheme in general allows us to easily
-introduce:
-n2-rng-$(CONFIG_FOO) += foo.o
+Subject: fat: don't call notify_change fix
 
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-I do not assume your n2-rng will need this,
-but doing so in general is a win.
+ERROR: "security_inode_setattr" [fs/fat/fat.ko] undefined!
 
->  obj-$(CONFIG_HW_RANDOM_VIA) += via-rng.o
->  obj-$(CONFIG_HW_RANDOM_IXP4XX) += ixp4xx-rng.o
->  obj-$(CONFIG_HW_RANDOM_OMAP) += omap-rng.o
-> diff --git a/drivers/char/hw_random/n2-asm.S b/drivers/char/hw_random/n2-asm.S
-> new file mode 100644
-> index 0000000..c504e53
-> --- /dev/null
-> +++ b/drivers/char/hw_random/n2-asm.S
-> @@ -0,0 +1,93 @@
-> +/* n2-asm.S: Niagara2 RNG hypervisor call assembler.
-> + *
-> + * Copyright (C) 2008 David S. Miller <davem@davemloft.net>
-> + */
-> +#include <asm/hypervisor.h>
-> +#include "n2rng.h"
-> +
-> +	.text
+Fix error if fat is built as a module.  Thanks to OGAWA Hirofumi for
+noticing.
 
-I had expected:
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+CC: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+---
+ security/security.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-	.section .text, "aw"
-
-here??
-
-(Maybe init.h should define a __TEXT macro)..
-
-> +	.globl	sun4v_rng_get_diag_ctl
-> +	.type	sun4v_rng_get_diag_ctl,#function
-> +sun4v_rng_get_diag_ctl:
-> +	mov	HV_FAST_RNG_GET_DIAG_CTL, %o5
-> +	ta	HV_FAST_TRAP
-> +	retl
-> +	 nop
-> +	.size	sun4v_rng_get_diag_ctl,.-sun4v_rng_get_diag_ctl
-
-Any specific reason why you do not use:
-
-ENTRY(sun4v_rng_get_diag_ctl)
-     mov     HV_FAST_RNG_GET_DIAG_CTL, %o5
-     ta      HV_FAST_TRAP
-     retl
-      nop
-ENDPROC(sun4v_rng_get_diag_ctl)
-
-I see these uses in other places and it
-do the .globl, .type, .size and the label: stuff for you.
-
-This is a general comment for all the 'functions' in this file.
-
-Only browsed the rest - looked good.
-
-	Sam
+Index: linux-2.6/security/security.c
+===================================================================
+--- linux-2.6.orig/security/security.c	2008-05-14 12:49:42.000000000 +0200
++++ linux-2.6/security/security.c	2008-05-17 08:46:52.000000000 +0200
+@@ -476,6 +476,7 @@ int security_inode_setattr(struct dentry
+ 		return 0;
+ 	return security_ops->inode_setattr(dentry, attr);
+ }
++EXPORT_SYMBOL_GPL(security_inode_setattr);
+ 
+ int security_inode_getattr(struct vfsmount *mnt, struct dentry *dentry)
+ {
