@@ -1,85 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758194AbYEQBXI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758293AbYEQBcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758194AbYEQBXI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 21:23:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbYEQBW5
+	id S1758293AbYEQBcV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 21:32:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbYEQBcH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 21:22:57 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:43979 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751152AbYEQBW4 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 21:22:56 -0400
-From: Alok Kataria <akataria@vmware.com>
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-CC: "devzero@web.de" <devzero@web.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Daniel Hecht <dhecht@vmware.com>
-Date: Fri, 16 May 2008 18:22:52 -0700
-Subject: RE: Kernel hangs in SMP + VMware environment.
-Thread-Topic: Kernel hangs in SMP + VMware environment.
-Thread-Index: Aci3Uxyd6THZHLaxThyTU5uq1n6qDQAaKKVj
-Message-ID: <D3C12B2AD838B44DA9D6B2CA334246D00DC43DE5E6@PA-EXMBX04.vmware.com>
-References: <1210789834.8798.20.camel@promb-2n-dhcp368.eng.vmware.com>
-	<200805150611.m4F6Bv4J046219@www262.sakura.ne.jp>
-	<D3C12B2AD838B44DA9D6B2CA334246D00D8F38DA60@PA-EXMBX04.vmware.com>,<200805162148.AAJ21381.QOSMOFFFLHOVJt@I-love.SAKURA.ne.jp>
-In-Reply-To: <200805162148.AAJ21381.QOSMOFFFLHOVJt@I-love.SAKURA.ne.jp>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Fri, 16 May 2008 21:32:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53043 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753160AbYEQBcG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 16 May 2008 21:32:06 -0400
+Date: Fri, 16 May 2008 18:31:29 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Remove BKL from FAT/VFAT/MSDOS (v1) (was Re: Fw: Regression
+ caused by bf726e "semaphore: fix,")
+In-Reply-To: <87abip7p4l.fsf@duaron.myhome.or.jp>
+Message-ID: <alpine.LFD.1.10.0805161812170.3020@woody.linux-foundation.org>
+References: <20080510121020.f33c83f7.akpm@linux-foundation.org> <Pine.LNX.4.64.0805111150250.32758@titan.stealer.net> <20080511125731.GA28174@elte.hu> <alpine.LFD.1.10.0805110941540.3330@woody.linux-foundation.org> <20080511111210.77858eb4.akpm@linux-foundation.org>
+ <alpine.LFD.1.10.0805111221070.3188@woody.linux-foundation.org> <alpine.LFD.1.10.0805111243250.3188@woody.linux-foundation.org> <20080511235112.GA16101@elte.hu> <alpine.LFD.1.10.0805120155490.3514@apollo.tec.linutronix.de> <alpine.LFD.1.10.0805120723440.3188@woody.linux-foundation.org>
+ <alpine.LFD.1.10.0805121659470.3514@apollo.tec.linutronix.de> <alpine.LFD.1.10.0805121324410.3019@woody.linux-foundation.org> <alpine.LFD.1.10.0805161025510.3255@apollo.tec.linutronix.de> <alpine.LFD.1.10.0805160906580.2941@woody.linux-foundation.org>
+ <alpine.LFD.1.10.0805160950180.2941@woody.linux-foundation.org> <alpine.LFD.1.10.0805161514570.3020@woody.linux-foundation.org> <87abip7p4l.fsf@duaron.myhome.or.jp>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-________________________________________
-From: Tetsuo Handa [penguin-kernel@I-love.SAKURA.ne.jp]
-Sent: Friday, May 16, 2008 5:48 AM
-To: Alok Kataria
-Cc: devzero@web.de; linux-kernel@vger.kernel.org; Daniel Hecht
-Subject: Re: Kernel hangs in SMP + VMware environment.
 
-Hello.
+On Sat, 17 May 2008, OGAWA Hirofumi wrote:
+> >  static struct inode *fat_alloc_inode(struct super_block *sb)
+> >  {
+> >  	struct msdos_inode_info *ei;
+> > -	ei = kmem_cache_alloc(fat_inode_cachep, GFP_KERNEL);
+> > +	ei = kmem_cache_alloc(fat_inode_cachep, GFP_NOFS);
+> >  	if (!ei)
+> >  		return NULL;
+> >  	return &ei->vfs_inode;
+> 
+> Um... do we need this? I think this path is not called from memory
+> allocation path...
 
-Alok Kataria wrote:
-> Actually it would be better to use clocksource=acpi_pm on kernels which don't
-> have this patch, as ACPI_PM comes with many more featuers like hrtimers,
-> nohz, etc.
->
-> On the other hand for kernels which have this patch attached,  it would be
-> best to use TSC, for performance.
-I see. Thanks.
+The issue isn't that *this* is called by memory allocation paths, but 
+whether this can hold the lock and then some memory allocation path calls 
+back to the filesystem two write something out - and deadlock.
 
+In other words, the chain is something like this:
 
+	msdos_lookup
+	  lock_super()			****
+	  fat_build_inode ->
+	    new_inode() ->
+	      s->s_ops->alloc_inode = fat_alloc_inode ->
+	        kmem_cache_alloc() ->
+	          .. pageout ..
+	            sync_inodes ->
+	            (or any other writeout)
+	              lock_super()	****
 
-I'm not sure, but this problem might exist in all kernels since 2.6.18 , for
-I can find clocksource= parameter in Documentation/kernel-parameters.txt .
+and now it deadlocks.
 
-ANK> Sorry, but I dont understand what you are pointing to, the 2.6.18 kernel does
-ANK> have clocksource parameter.
-ANK> And you are correct this could be a problem with all the kernels which are
-ANK> using clocksource.
+In other words, the kmem_cache_alloc() must _not_ be allowed to actually 
+cause a filesystem writeout, and that's what GFP_NOFS is all about.
 
-I didn't experience this problem in earlier kernels (e.g. 2.6.20)
-since I was running only 1 VMware guest at a time.
+That said, just removing the lock-kernel entirely obviously would not have 
+that problem either, but I feel safer at least keeping the same locking it 
+had, rather than removing locking entirely.
 
-Today I ran 2 VMware guests simultaneously (one with kernel 2.6.22 and
-the other with kernel 2.6.18, both are assigned 2 virtual CPUs) and I encountered
-may-be-hanged-up with the 2.6.18 one.
-
-
-ANK> If you are able to reproduce this with any of the kernels with the patch applied
-ANK> Please let me know.
-
-Thanks,
-Alok
-
-The Ctrl-C didn't work, the Alt-F? didn't work, the Ctrl-Alt-Del didn't work.
-I had no time to reproduce it, so I'm not sure it has actually hanged up.
-
-Regards.
+		Linus
