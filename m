@@ -1,55 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757650AbYEQPFk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756908AbYEQPKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757650AbYEQPFk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 11:05:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755294AbYEQPFd
+	id S1756908AbYEQPKo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 11:10:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755319AbYEQPKf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 11:05:33 -0400
-Received: from dsl093-193-175.stl1.dsl.speakeasy.net ([66.93.193.175]:55864
-	"EHLO hades.sngx.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753548AbYEQPFc (ORCPT
+	Sat, 17 May 2008 11:10:35 -0400
+Received: from fmailhost05.isp.att.net ([207.115.11.55]:58801 "EHLO
+	fmailhost01.isp.att.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754979AbYEQPKe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 11:05:32 -0400
-Message-ID: <482EF465.2050205@sngx.net>
-Date: Sat, 17 May 2008 10:06:13 -0500
-From: James Cammarata <jimi@sngx.net>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
-MIME-Version: 1.0
-To: Rick Jones <rick.jones2@hp.com>
-CC: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH updated] net: add ability to clear per-interface	network
- statistics via procfs
-References: <482DA5B6.1020606@sngx.net> <20080516.130004.18881610.davem@davemloft.net> <482DE9EC.3060803@hp.com>
-In-Reply-To: <482DE9EC.3060803@hp.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Sat, 17 May 2008 11:10:34 -0400
+X-Greylist: delayed 77529 seconds by postgrey-1.27 at vger.kernel.org; Sat, 17 May 2008 11:10:34 EDT
+X-Originating-IP: [70.152.106.225]
+Date: Sat, 17 May 2008 10:10:26 -0500
+From: Jay Cliburn <jacliburn@bellsouth.net>
+To: Chris Rankin <rankincj@yahoo.com>
+Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
+Subject: Re: 2.6.25.3: serial problem (minicom)
+Message-ID: <20080517101026.270a6f4e@osprey.hogchain.net>
+In-Reply-To: <543631.10570.qm@web52902.mail.re2.yahoo.com>
+References: <20080517082207.4b1e8556@osprey.hogchain.net>
+	<543631.10570.qm@web52902.mail.re2.yahoo.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> We saw your initial patch posting, you don't need to send this
->> again.
->>
->> netdev added to CC:
+On Sat, 17 May 2008 15:49:08 +0100 (BST)
+Chris Rankin <rankincj@yahoo.com> wrote:
 
-I had regenerated the diff against .25.4 and made a few changes so I resubmitted.
-Sorry if I made it seem like I was spamming the patch.
+> Does yours still work if you raise the baud rate to 115200? 
 
-> I don't wish to suggest I don't like the change - I've used similar 
-> features on "other oses" in the past, but when something like this has 
-> come-up in the past, haven't there been concerns about MIBs and SNMP and 
-> whatnot?
-> 
-> rick jones
-> ftp://ftp.cup.hp.com/dist/networking/tools - beforeafter - subtract one 
-> set of stats from another...
-
-Yes, this would definitely be a caveat, as it could cause problems if the software
-takes a baseline once, and calculates differences from that ever after.  For others,
-it would cause a hiccup where stats show as being negative for one period.
-
-However, I think the benefit of being able to troubleshoot issues on an interface 
-in a non-invasive manner outweigh the downside here.  Like you say, this ability 
-is already found elsewhere, most namely in network devices like Ciscos, and the 
-concern for clearing stats there does not exist.
+No, but I also get garbage characters and a generally unusable logging
+device.  57600 is slightly better, but not much.  I remember going
+through this progressive reduction in baud rate a long time ago,
+trying to find a speed that works reliably, which is why I settled on
+38400. I get unpredictable results for anything higher.
