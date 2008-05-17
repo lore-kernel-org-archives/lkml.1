@@ -1,55 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757076AbYEQPjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757254AbYEQPlm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757076AbYEQPjT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 11:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753657AbYEQPjI
+	id S1757254AbYEQPlm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 11:41:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754723AbYEQPlf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 11:39:08 -0400
-Received: from gate.crashing.org ([63.228.1.57]:40973 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753643AbYEQPjH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 11:39:07 -0400
-Subject: Re: [PATCH] remove double indirection on tlb parameter to
-	free_pgd_range()& Co
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Jan Beulich <jbeulich@novell.com>
-Cc: Hugh Dickins <hugh@veritas.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrea Arcangeli <andrea@qumranet.com>,
-       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <482DC4A9.76E4.0078.0@novell.com>
-References: <482C6917.76E4.0078.0@novell.com>
-	 <Pine.LNX.4.64.0805161517510.8758@blonde.site>
-	 <482DC4A9.76E4.0078.0@novell.com>
-Content-Type: text/plain
-Date: Sat, 17 May 2008 10:27:43 -0500
-Message-Id: <1211038063.8297.133.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 17 May 2008 11:41:35 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:41394 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753701AbYEQPle (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 May 2008 11:41:34 -0400
+Date: Sat, 17 May 2008 11:41:31 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 10732] REGRESSION: 2.6.26-rc2-git4: X server failed start on
+	X61s laptop
+Message-ID: <20080517154131.GA7651@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+	linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+	"Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+	bugme-daemon@bugzilla.kernel.org
+References: <E1JxGth-0001te-S4@closure.thunk.org> <924EFEDD5F540B4284297C4DC59F3DEE01119AFE@orsmsx423.amr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEE01119AFE@orsmsx423.amr.corp.intel.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 2008-05-16 at 16:30 +0100, Jan Beulich wrote:
-> >>> Hugh Dickins <hugh@veritas.com> 16.05.08 16:39 >>>
-> >    Pass mmu_gather** in the
-> >    public interfaces, since we might want to add latency lockdrops later;
-> >    but no attempt to do so yet, going by vma should itself reduce latency.
-> >...
-> >But, returning to the start, please let's hold yours back after all.
+On Sat, May 17, 2008 at 06:21:18AM -0700, Pallipadi, Venkatesh wrote:
 > 
-> If you want to keep and actively use the double indirection, would you
-> guarantee current semantics like ->mm and ->fullmm to always be what
-> was specified at the start of the operation? Verifying this was what
-> made me go through that call tree in the first place, and obviously this
-> is harder to verify when there is potential for the whole structure
-> pointed to to be replaced by another one.
+> Can you please send the complete dmesg after X failure, with patch here
+> and debugpat boot option.
+> http://www.ussg.iu.edu/hypermail/linux/kernel/0805.0/2657.html
 
-In my patches, I did drop the double indirection and just updated the
-fields inside of the batch. Worked fine.
+With debugpat enabled, the resulting dump that landed in
+/var/log/messages was something like 1.6 megabytes, so it totally
+overflowed the dmesg buffer.
 
-Ben.
+I've created a Bugzilla attachment of the bzip'ed messages excerpt here:
 
+http://bugzilla.kernel.org/attachment.cgi?id=16174&action=view
 
+The patch above was only available in HTML-only mode (and I couldn't
+find Ingo's patch on lkml.org, so I had to reconstruct it, and then
+forward part it to 2.6.26-rc2-git5).  What I actually used can be
+found here:
+
+http://bugzilla.kernel.org/attachment.cgi?id=16173&action=view
+
+I'm not sure this will be helpful for you, but this should be
+completely trivial for you to reproduce; just use Ubuntu Gutsy on
+Intel Video based laptop, with a 2.6.26-rc2-git4 or more recent
+kernel, and watch it fail.  
+
+For me, I'll just locally revert commit 1c12c4cf since otherwise X
+becomes more-or-less unsuable.  (Getting used to 1024x768 after using
+a 1600x1200 display is one thing; 800x600 is quite another, and the
+performance using the VESA driver is quite abysmal.)
+
+						- Ted
