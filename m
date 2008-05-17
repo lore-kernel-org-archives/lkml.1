@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756827AbYEQA2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760697AbYEQAgM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756827AbYEQA2y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 20:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754220AbYEQA2m
+	id S1760697AbYEQAgM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 20:36:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754042AbYEQAf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 20:28:42 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53361
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1760802AbYEQA2l (ORCPT
+	Fri, 16 May 2008 20:35:58 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2364 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753072AbYEQAf5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 20:28:41 -0400
-Date: Fri, 16 May 2008 17:28:35 -0700 (PDT)
-Message-Id: <20080516.172835.260358594.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       hpa@zytor.com
-Subject: Re: [GIT pull] x86 fixes for 2.6.26
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.1.10.0805161658450.3020@woody.linux-foundation.org>
-References: <alpine.LFD.1.10.0805161544080.3020@woody.linux-foundation.org>
-	<alpine.LFD.1.10.0805170116490.3255@apollo.tec.linutronix.de>
-	<alpine.LFD.1.10.0805161658450.3020@woody.linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 16 May 2008 20:35:57 -0400
+Date: Fri, 16 May 2008 20:35:56 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Harvey Harrison <harvey.harrison@gmail.com>
+cc: Bryan Wu <cooloney@kernel.org>, Jie Zhang <jie.zhang@analog.com>,
+       Oliver Neukum <oliver@neukum.org>, <david-b@pacbell.net>,
+       <greg@kroah.com>, <linux-usb@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC-PATCH] lib: add byteorder helpers for the aligned case
+In-Reply-To: <1210961386.5915.43.camel@brick>
+Message-ID: <Pine.LNX.4.44L0.0805162022050.13416-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Fri, 16 May 2008 17:03:37 -0700 (PDT)
+On Fri, 16 May 2008, Harvey Harrison wrote:
 
-> See the difference? You literally merged four times in two days. That's 
-> not "keeping reasonably up-to-date", that's just messy and OCD.
+> Some users know the pointer they are writing to are aligned,
+> rather than doing *(__le16 *)ptr = cpu_to_le16(val) add helpers
+> wrapping this up that have the same convention as put_unaligned_le/be.
+> 
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+> Alan, as requested, I'm looking around a bit to see if there are actual
+> users for this.  But it does make a nice complement to the unaligned
+> versions.
 
-Have a look at my networking tree if you want to see an example of how
-to handle things Thomas.
+This is great -- thanks!  I've wanted this sort of thing for a long
+time.  There's a good chance that the SCSI core could make use of
+it.  Try looking at the prep functions in sd.c and sr.c.
 
-I think I merged from Linus's tree only 3 or 4 times maximum since I
-created that tree way back when the 2.6.26 merge window opened up.
+> +static inline void put_le16(u16 val, void *ptr)
+> +{
+> +	*(__le16 *)ptr = cpu_to_le16(val);
+> +}
 
-If users, or even you, want to get a bug fix from Linus's tree or check
-if there will be merge conflicts, just create a test branch and play
-with such things there.
+Is this able to do the byte rearrangement at compile time if val is a 
+compile-time constant?  I imagine it would.
 
-The topic branch or topic tree should just keep developing,
-essentially living in it's own world oblivious to what is going on
-upstream.  And it should stay this way until an unavoidable merge
-conflict needs to be resolved or things become uncomfortably out of
-sync.
+Alan Stern
+
