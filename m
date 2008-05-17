@@ -1,53 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761561AbYEQAiZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758612AbYEQA7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761561AbYEQAiZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 20:38:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760338AbYEQAiA
+	id S1758612AbYEQA7S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 20:59:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbYEQA7G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 20:38:00 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:54714 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759205AbYEQAh6 (ORCPT
+	Fri, 16 May 2008 20:59:06 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:53686 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751741AbYEQA7F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 20:37:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=cT/xa/7UgFe/Xc1hZLEq2vTv4VDoJ16tpGLXuxgqyPUny7d+RoNhP1skp/yNmv51/AYCPxf7ni1R1j3ggPMo+lrVdaU/X1r4aB2pyxofhuN4vwT1OO2n+j5Upg7O4iKuSewAXBLSQbabIPQkleKnLpMRbhSrGYJNYN6nXZ9oJ3M=
-Subject: Re: [RFC-PATCH] lib: add byteorder helpers for the aligned case
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Bryan Wu <cooloney@kernel.org>, Jie Zhang <jie.zhang@analog.com>,
-       Oliver Neukum <oliver@neukum.org>, david-b@pacbell.net, greg@kroah.com,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0805162022050.13416-100000@netrider.rowland.org>
-References: <Pine.LNX.4.44L0.0805162022050.13416-100000@netrider.rowland.org>
+	Fri, 16 May 2008 20:59:05 -0400
+Subject: 2.6.24.7-rt5
+From: Steven Rostedt <rostedt@goodmis.org>
+To: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
 Content-Type: text/plain
-Date: Fri, 16 May 2008 17:37:56 -0700
-Message-Id: <1210984676.5915.70.camel@brick>
+Date: Fri, 16 May 2008 20:59:03 -0400
+Message-Id: <1210985943.14697.10.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-05-16 at 20:35 -0400, Alan Stern wrote:
-> On Fri, 16 May 2008, Harvey Harrison wrote:
-> 
-> > +static inline void put_le16(u16 val, void *ptr)
-> > +{
-> > +	*(__le16 *)ptr = cpu_to_le16(val);
-> > +}
-> 
-> Is this able to do the byte rearrangement at compile time if val is a 
-> compile-time constant?  I imagine it would.
-> 
+We are pleased to announce (after a long delay) the 2.6.24.7-rt5 tree, which can be
+downloaded from the location:
 
-Yes, the cpu_to_le/be functions to get optimized if they are passed a
-compile time constant.
+  http://rt.et.redhat.com/download/
+
+Information on the RT patch can be found at:
+
+  http://rt.wiki.kernel.org/index.php/Main_Page
+
+Changes since 2.6.24.4-rt4
+
+  - ported to 2.6.24.7
+
+  - Move update_wall_time back to interrupt (Thomas Gleixner)
+
+  - cache pci_find_capability (Arnaldo Carvalho de Melo)
+
+  - Removal of printks from ftrace max hits (Steven Rostedt)
+
+  - send NMI after nmi_show_regs (Hiroshi Shimamoto)
+
+  - return true for NMI handler (Hiroshi Shimamoto)
+
+  - NMI for irq_show_regs_callback (Hiroshi Shimamoto)
+
+  - wait for finish show_regs before panic (Hiroshi Shimamoto)
+
+  - avoid deadlock related swap_lock (Hiroshi Shimamoto)
+
+  - Shorten softirq thread names (Peter Zijlstra)
+
+  - push RT tasks after newly activated (Gregory Haskins)
+
+  - GCC 4.3 kernel linker error (Carsten Emde)
+
+  - Kconfig trace histogram typo fix (Carsten Emde)
 
 
-Harvey
+to build a 2.6.24.7-rt5 tree, the following patches should be applied:
+
+  http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.24.tar.bz2
+  http://kernel.org/pub/linux/kernel/v2.6/patch-2.6.24.7.bz2
+  http://rt.et.redhat.com/download/patch-2.6.24.7-rt5.bz2
+
+
+***** NOTE ******
+
+We are currently working hard to get 2.6.25.x-rt1 out the door. Seems
+that some of the new code with respect to sched_clock and sched_rt
+groups has broken the RT patch.  When this is resolved, we will push out
+a 2.6.25.x-rt1.  Sorry for any inconvenience.
+
+***** NOTE *****
+
+
+And like always, my RT version of Matt Mackall's ketchup will get this
+for you nicely:
+
+  http://people.redhat.com/srostedt/rt/tools/ketchup-0.9.8-rt3
+
+
+The broken out patches are also available.
+
+
+
+-- Steve
+
+	
 
