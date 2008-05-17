@@ -1,52 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759051AbYEQB54@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758272AbYEQCG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759051AbYEQB54 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 21:57:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbYEQB5s
+	id S1758272AbYEQCG3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 22:06:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752125AbYEQCGT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 21:57:48 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:39614 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751765AbYEQB5r (ORCPT
+	Fri, 16 May 2008 22:06:19 -0400
+Received: from vsmtp01.dti.ne.jp ([202.216.231.136]:57256 "EHLO
+	vsmtp01.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751490AbYEQCGS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 21:57:47 -0400
-Date: Fri, 16 May 2008 21:57:06 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [GIT pull] x86 fixes for 2.6.26
-Message-ID: <20080517015705.GA20375@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-	"H. Peter Anvin" <hpa@zytor.com>
-References: <alpine.LFD.1.10.0805170037180.3255@apollo.tec.linutronix.de> <alpine.LFD.1.10.0805161544080.3020@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805161544080.3020@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Fri, 16 May 2008 22:06:18 -0400
+From: hooanon05@yahoo.co.jp
+Subject: Re: [PATCH 1/67] aufs document 
+To: Dave Quigley <dpquigl@tycho.nsa.gov>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1210954152.14706.50.camel@moss-terrapins.epoch.ncsc.mil>
+References: <12109484013324-git-send-email-hooanon05@yahoo.co.jp> <1210949976.14706.28.camel@moss-terrapins.epoch.ncsc.mil> <18952.1210952732@jrobl> <1210954152.14706.50.camel@moss-terrapins.epoch.ncsc.mil>
+Date: Sat, 17 May 2008 11:06:11 +0900
+Message-ID: <7328.1210989971@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16, 2008 at 03:47:53PM -0700, Linus Torvalds wrote:
-> Do nice topic branches, where each branch has a reason for existing. The 
-> "x86-fixes-for-linus" branch has x86 fixes. 
-> 
-> This happens almost every time somebody starts using git properly: at that 
-> point the rebasing no longer hides bad habits.
 
-Why do you consider rebasing topic branches a bad thing?  It does help
-keep the history much cleaner, and it means that I can test to make
-sure the topic branch works well with the latest head of the
-development branch.
+Dave Quigley:
+> It is fine to have an overall document describing your FS but there are
+> things you have missing. For example patch 62. Why do you have magic
+> sysreq handling? What does it do? What problem is it solving? This isn't
+> in your 01 patch and I can't tell its purpose at all from the patch.
 
-Is there a write up of what you consider the "proper" git workflow?
+It simply dumps some aufs status to console. Because I think it is a
+nature of magic sysrq, and it is not a feature to solve a specific
+problem, I didn't write much, just simply 
+----------------------------------------------------------------------
+.B sysrq=key
+Specifies MagicSysRq key for debugging aufs.
+You need to enable both of CONFIG_MAGIC_SYSRQ and CONFIG_AUFS_DEBUG.
+If your linux version is linux\-2.6.24 and earlier, you need to enable
+CONFIG_AUFS_SYSAUFS too.
+Currently this is for developers only.
+The default is `a'.
+----------------------------------------------------------------------
+in the aufs manual.
 
-   	   	       	    		     	      - Ted
+
+> Another example is what are your sysfs entries for? A description of
+> what they are for in either the main doc or as a patch comment is
+> necessary. Why is your sysfs functionality broken out into two patches?
+
+One of them is for lifetime management as the description
+said. Generally an object correspoing to an entry might be under sysfs
+is managed by kref. This management is independent from CONFIG_SYSFS,
+and the former patch is compiled unconditionally.
+The other is for the actual entires under sysfs, and compiled when SYSFS
+is enabled only.
+I don't think it is a good idea to make them in a single patch.
+
+But I will re-send the entire aufs patch series in next week, after...
+- make some simple header + source pairs in a single patch and try more
+  description text, as you pointed out.
+- remove some lines unnecessary for -mm tree, pointed out by Jan
+  Engelhardt and Sam Ravnborg.
+- future other things if someone will point out.
+
+
+> The point of posting these sets to LKML is so people will review them.
+> If I have to read through a large document and then through each patch
+> individually just to figure out what the patch is trying to accomplish
+> before I can see how it is going about accomplishing it, then that is
+> extra resistance to actually looking through the set.
+
+I tried to do so...
+I thought first document is important too, but the smaller patches in
+the later is more preferable than larger ones. Addionally most of them
+are totally new files. So I chose "one patch by one new file" way.
+
+Anyway, I will re-send them in next week after trying some grouping.
+
+
+Thank you
+Junjiro Okajima
