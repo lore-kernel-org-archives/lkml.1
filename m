@@ -1,89 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755619AbYEQHgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752587AbYEQHhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755619AbYEQHgu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 03:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbYEQHgk
+	id S1752587AbYEQHhj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 03:37:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbYEQHhW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 03:36:40 -0400
-Received: from smtp25.orange.fr ([193.252.22.21]:8105 "EHLO smtp25.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751941AbYEQHgj convert rfc822-to-8bit (ORCPT
+	Sat, 17 May 2008 03:37:22 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:37130 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756050AbYEQHhI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 03:36:39 -0400
-X-ME-UUID: 20080517073637743.1221E1C00081@mwinf2536.orange.fr
-Message-ID: <482E8AF5.9050804@cosmosbay.com>
-Date: Sat, 17 May 2008 09:36:21 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
-MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH] modules: Use a better scheme for refcounting
-References: <482C9FC5.2070508@cosmosbay.com> <482D1BCE.3060501@cosmosbay.com> <482D8EFC.8040109@sgi.com> <200805171533.46295.rusty@rustcorp.com.au>
-In-Reply-To: <200805171533.46295.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+	Sat, 17 May 2008 03:37:08 -0400
+To: penguin-kernel@I-love.SAKURA.ne.jp
+CC: miklos@szeredi.hu, akpm@linux-foundation.org, hch@infradead.org,
+       viro@ZenIV.linux.org.uk, ezk@cs.sunysb.edu,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-reply-to: <200805171014.JJC34315.MOFSFQHOJFtLOV@I-love.SAKURA.ne.jp>
+	(message from Tetsuo Handa on Sat, 17 May 2008 10:14:33 +0900)
+Subject: Re: [patch 17/22] vfs: add path_symlink()
+References: <20080516163136.560107038@szeredi.hu>
+	<20080516163237.755590775@szeredi.hu> <200805171014.JJC34315.MOFSFQHOJFtLOV@I-love.SAKURA.ne.jp>
+Message-Id: <E1JxGyM-000456-CD@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sat, 17 May 2008 09:36:54 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell a écrit :
-> On Friday 16 May 2008 23:41:16 Mike Travis wrote:
->   
->> Eric Dumazet wrote:
->>     
->>> Rusty Russell a Ã©crit :
->>>       
->>>>    Any chance I can ask you look at the issue of full dynamic per-cpu
->>>> allocation?
->>>>         
->>> You mean using alloc_percpu() ? Problem is that current implementation
->>> is expensive,
->>>       
->
-> I mean rewriting alloc_percpu :)
->
->   
->>> We probably can change this to dynamic per-cpu as soon as Mike or
->>> Christopher finish their work on new dynamic per-cpu implementation ?
->>>       
->> Yes, the zero-based percpu variables followed by the cpu_alloc patch should
->> provide this and shrink the code quite well, including in some cases
->> removing locking requirements (because the resultant instructions will be
->> atomic.)
->>     
->
-> Ah, I hadn't realized that Mike was already working on this.  Mike, have you 
-> published patches already?
->
->   
-Christoph Lameter made good work last year and apparently the path is to :
+> Miklos Szeredi wrote:
+> > -int vfs_symlink(struct inode *dir, struct dentry *dentry, const char *oldname, int mode)
+> > +static int vfs_symlink(struct inode *dir, struct dentry *dentry, const char *oldname, int mode)
+> 
+> I think the "mode" parameter is not needed unless somebody has a
+> plan to pass it to "struct inode_operations"->symlink method.
 
-1) Put pda at the begining of percpu section.
-2) Relocate percpu variables to begin at zero
-3) Use %gs (or %fs) register to address pda AND percpu section.
-4) Reserve an appropriate large virtual zone into percpu section so that 
-it can fullfill :
-- percpu "static" allocations needed by module loader.
-- per_cpu "dynamic" allocations
-  (No more need for an array of pointers to find the address of dynamic 
-per_cpu variable)
-- Eventually allocates PAGES dynamically into this zone to satisfy any 
-size of percpu needs.
-(But with a limit of say 256 MB per cpu on x86_64)
+Yes, this would be a nice cleanup and I don't think it will ever be
+needed.  I've added this patch to the vfs-cleanups tree.
 
-Thats a lot of work and apparently Mike and Christoph are doing it.
-
-Some pointers to previous work:
-
-http://groups.google.pl/group/linux.kernel/browse_thread/thread/f2ff6901ca6ae9fc/b2ed3b7f3612a157?lnk=raot
-
-http://kerneltrap.org/mailarchive/linux-kernel/2008/2/1/683104
-
-http://linux.derkeiler.com/Mailing-Lists/Kernel/2008-01/msg09052.html
+Thanks,
+Miklos
+----
 
 
+Subject: vfs: remove mode parameter from path_symlink()
 
+From: Miklos Szeredi <mszeredi@suse.cz>
 
+Remove the unused mode parameter from vfs_symlink, path_symlink() and
+callers.
+
+Thanks to Tetsuo Handa for noticing.
+
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+CC: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+---
+ fs/ecryptfs/inode.c |    4 +---
+ fs/namei.c          |    8 ++++----
+ fs/nfsd/vfs.c       |   10 ++--------
+ include/linux/fs.h  |    2 +-
+ 4 files changed, 8 insertions(+), 16 deletions(-)
+
+Index: linux-2.6/fs/ecryptfs/inode.c
+===================================================================
+--- linux-2.6.orig/fs/ecryptfs/inode.c	2008-05-17 09:28:29.000000000 +0200
++++ linux-2.6/fs/ecryptfs/inode.c	2008-05-17 09:28:31.000000000 +0200
+@@ -440,7 +440,6 @@ static int ecryptfs_symlink(struct inode
+ 	int rc;
+ 	struct dentry *lower_dentry;
+ 	struct path lower_dir;
+-	umode_t mode;
+ 	char *encoded_symname;
+ 	int encoded_symlen;
+ 	struct ecryptfs_crypt_stat *crypt_stat = NULL;
+@@ -449,7 +448,6 @@ static int ecryptfs_symlink(struct inode
+ 	dget(lower_dentry);
+ 	lower_dir.mnt = ecryptfs_dentry_to_lower_mnt(dentry);
+ 	lower_dir.dentry = lock_parent(lower_dentry);
+-	mode = S_IALLUGO;
+ 	encoded_symlen = ecryptfs_encode_filename(crypt_stat, symname,
+ 						  strlen(symname),
+ 						  &encoded_symname);
+@@ -457,7 +455,7 @@ static int ecryptfs_symlink(struct inode
+ 		rc = encoded_symlen;
+ 		goto out_lock;
+ 	}
+-	rc = path_symlink(&lower_dir, lower_dentry, encoded_symname, mode);
++	rc = path_symlink(&lower_dir, lower_dentry, encoded_symname);
+ 	kfree(encoded_symname);
+ 	if (rc || !lower_dentry->d_inode)
+ 		goto out_lock;
+Index: linux-2.6/fs/namei.c
+===================================================================
+--- linux-2.6.orig/fs/namei.c	2008-05-17 09:28:29.000000000 +0200
++++ linux-2.6/fs/namei.c	2008-05-17 09:28:31.000000000 +0200
+@@ -2437,7 +2437,7 @@ asmlinkage long sys_unlink(const char __
+ 	return do_unlinkat(AT_FDCWD, pathname);
+ }
+ 
+-static int vfs_symlink(struct inode *dir, struct dentry *dentry, const char *oldname, int mode)
++static int vfs_symlink(struct inode *dir, struct dentry *dentry, const char *oldname)
+ {
+ 	int error = may_create(dir, dentry, NULL);
+ 
+@@ -2459,14 +2459,14 @@ static int vfs_symlink(struct inode *dir
+ }
+ 
+ int path_symlink(struct path *dir_path, struct dentry *dentry,
+-		 const char *oldname, int mode)
++		 const char *oldname)
+ {
+ 	int error = mnt_want_write(dir_path->mnt);
+ 
+ 	if (!error) {
+ 		struct inode *dir = dir_path->dentry->d_inode;
+ 
+-		error = vfs_symlink(dir, dentry, oldname, mode);
++		error = vfs_symlink(dir, dentry, oldname);
+ 		mnt_drop_write(dir_path->mnt);
+ 	}
+ 
+@@ -2499,7 +2499,7 @@ asmlinkage long sys_symlinkat(const char
+ 	if (IS_ERR(dentry))
+ 		goto out_unlock;
+ 
+-	error = path_symlink(&nd.path, dentry, from, S_IALLUGO);
++	error = path_symlink(&nd.path, dentry, from);
+ 	dput(dentry);
+ out_unlock:
+ 	mutex_unlock(&nd.path.dentry->d_inode->i_mutex);
+Index: linux-2.6/fs/nfsd/vfs.c
+===================================================================
+--- linux-2.6.orig/fs/nfsd/vfs.c	2008-05-17 09:28:29.000000000 +0200
++++ linux-2.6/fs/nfsd/vfs.c	2008-05-17 09:28:31.000000000 +0200
+@@ -1527,7 +1527,6 @@ nfsd_symlink(struct svc_rqst *rqstp, str
+ 	struct dentry	*dentry, *dnew;
+ 	__be32		err, cerr;
+ 	int		host_err;
+-	umode_t		mode;
+ 
+ 	err = nfserr_noent;
+ 	if (!flen || !plen)
+@@ -1546,11 +1545,6 @@ nfsd_symlink(struct svc_rqst *rqstp, str
+ 	if (IS_ERR(dnew))
+ 		goto out_nfserr;
+ 
+-	mode = S_IALLUGO;
+-	/* Only the MODE ATTRibute is even vaguely meaningful */
+-	if (iap && (iap->ia_valid & ATTR_MODE))
+-		mode = iap->ia_mode & S_IALLUGO;
+-
+ 	fh_to_path(fhp, &dir_path);
+ 	if (unlikely(path[plen] != 0)) {
+ 		char *path_alloced = kmalloc(plen+1, GFP_KERNEL);
+@@ -1559,11 +1553,11 @@ nfsd_symlink(struct svc_rqst *rqstp, str
+ 		else {
+ 			strncpy(path_alloced, path, plen);
+ 			path_alloced[plen] = 0;
+-			host_err = path_symlink(&dir_path, dnew, path_alloced, mode);
++			host_err = path_symlink(&dir_path, dnew, path_alloced);
+ 			kfree(path_alloced);
+ 		}
+ 	} else
+-		host_err = path_symlink(&dir_path, dnew, path, mode);
++		host_err = path_symlink(&dir_path, dnew, path);
+ 
+ 	if (!host_err) {
+ 		if (EX_ISSYNC(fhp->fh_export))
+Index: linux-2.6/include/linux/fs.h
+===================================================================
+--- linux-2.6.orig/include/linux/fs.h	2008-05-17 09:28:29.000000000 +0200
++++ linux-2.6/include/linux/fs.h	2008-05-17 09:28:31.000000000 +0200
+@@ -1127,7 +1127,7 @@ extern int vfs_permission(struct nameida
+ extern int path_create(struct path *, struct dentry *, int, struct nameidata *);
+ extern int path_mkdir(struct path *, struct dentry *, int);
+ extern int path_mknod(struct path *, struct dentry *, int, dev_t);
+-extern int path_symlink(struct path *, struct dentry *, const char *, int);
++extern int path_symlink(struct path *, struct dentry *, const char *);
+ extern int path_link(struct dentry *, struct path *, struct dentry *);
+ extern int path_rmdir(struct path *, struct dentry *);
+ extern int path_unlink(struct path *, struct dentry *);
