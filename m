@@ -1,89 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756187AbYEQRvc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756858AbYEQR5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756187AbYEQRvc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 13:51:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbYEQRvV
+	id S1756858AbYEQR5t (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 13:57:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbYEQR5i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 13:51:21 -0400
-Received: from yumi.tdiedrich.de ([85.10.210.183]:44981 "EHLO mx.tdiedrich.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752752AbYEQRvU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 13:51:20 -0400
-Date: Sat, 17 May 2008 19:50:46 +0200
-From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-To: linux-netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ayaz Abdulla <aabdulla@nvidia.com>
-Subject: hibernate event order question
-Message-ID: <20080517175046.GA9032@yamamaya.is-a-geek.org>
-Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-	linux-netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Ayaz Abdulla <aabdulla@nvidia.com>
+	Sat, 17 May 2008 13:57:38 -0400
+Received: from mail.mindmedia.com.sg ([210.193.7.34]:49143 "EHLO
+	mail.mindmedia.com.sg" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752752AbYEQR5h convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 May 2008 13:57:37 -0400
+Message-ID: <20080518015733.o7n8cvhomvgos8ow@mail.mindmedia.com.sg>
+X-Priority: 3 (Normal)
+Date: Sun, 18 May 2008 01:57:33 +0800
+From: "P.V.Anthony" <pvantony@singnet.com.sg>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Solved - How to change the FSINFO for nfsd?
+References: <482332CD.4010706@singnet.com.sg>
+	<20080509042238.GC21408@fieldses.org>
+In-Reply-To: <20080509042238.GC21408@fieldses.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-2022-jp
+Content-Type: text/plain;
+	charset=UTF-8;
+	DelSp="Yes";
+	format="flowed"
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Transfer-Encoding: 8BIT
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.6)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Quoting "J. Bruce Fields":
+> I think you'reprobably barking up the wrong tree, but the max file size
+> as returned by fsinfo is set in fs/nfsd/nfs3proc.c:nfsd3_proc_fsinfo().
 
-for some time now I had the problem that after a suspend to disk
-network connectivitiy was down and also wake-on-lan would not work.
+Just in case someone needs to know this information. Please note that  
+I am not a
+programmer. I am just hacking away.
 
-First a bit of information, for the real question please see (*)
-below.
+Most of the credit for the hack goes to the person in the forum  
+mentioned below
+for finding the Mac NFS behavior.
+http://forums.creativecow.net/thread/8/975362
 
-Now I just found the ethtool -d (register dump) option
-and decided I want to try to debug this long-standing bug:
-http://bugzilla.kernel.org/show_bug.cgi?id=8381
+The changes done seem to work well.
 
-I already found out why network connectivity is down after resume:
+I am dissapointed that Apple made changes to NFS to a point that we  
+have to use an Apple NFS. I thought that NFS is open. Anyway with  
+these changes, a Linux server can be used.
 
-The interfaces eth0 and eth1 are bridged into br0.
-The bridging code sets the interfaces into promiscous mode, but this
-is not properly restored after resume.
-This bug is easily fixable by calling nv_set_multicast(dev) either
-from within nv_open() or after nv_open() in nv_resume().
+Anyway this problem only happens from with in the video editing application,
+Final Cut Pro, an Apple product. I hope someday a good video editing  
+application
+comes to Linux. I am willing to pay for Linux video editing  
+application. It must
+be good that is.
 
-The second problem (does not wol after s2disk) is still unsolved
-though.  However I have found that wake-on-lan works fine if I
-"rmmod forcedeth" before suspending.  This is even a usable
-workaround for me, since the bridge device stays configured and I
-just have to reload forcedeth and readd the interfaces to the bridge
-after resume.
+Anyway here is the patch done.
 
-(*)
-Now for my question:
-AFAICS the ordering of events is as follows:
-1) User reqests hibernate
-2) Tasks are frozen
-3) Device suspend callbacks get called
-4) Device resume callbacks get called
-5) Memory image is written to disk
+------------------- start ------------------------------
 
-Now, the problem I see with this is that while step 3) prepares the
-device for suspend (and wake-on-lan), step 4) may undo some of this
-preparation.
+pv at videoserver2 ~ $ diff -ruN
+/usr/src/linux-2.6.22-gentoo-r8/fs/nfsd/nfs3proc.c.org
+/usr/src/linux-2.6.22-gentoo-r8/fs/nfsd/nfs3proc.c
+--- /usr/src/linux-2.6.22-gentoo-r8/fs/nfsd/nfs3proc.c.org 2008-05-09
+13:07:19.000000000 +0800
++++ /usr/src/linux-2.6.22-gentoo-r8/fs/nfsd/nfs3proc.c 2008-05-13
+23:54:56.000000000 +0800
+@@ -555,7 +555,7 @@
+resp->f_wtpref = max_blocksize;
+resp->f_wtmult = PAGE_SIZE;
+resp->f_dtpref = PAGE_SIZE;
+- resp->f_maxfilesize = ~(u32) 0;
++ resp->f_maxfilesize = 0xffffffffffffffff;
+resp->f_properties = NFS3_FSF_DEFAULT;
 
-In my case, I think the fix for the first bug (promiscous mode does
-not get restored on resume) breaks wake-on-lan (since the new value
-of NvRegPacketFilterFlags may be incompatible with wake-on-lan).
+nfserr = fh_verify(rqstp, &argp->fh, 0, MAY_NOP);
+@@ -570,7 +570,7 @@
+if (sb->s_magic == 0x4d44 /* MSDOS_SUPER_MAGIC */) {
+resp->f_properties = NFS3_FSF_BILLYBOY;
+}
+- resp->f_maxfilesize = sb->s_maxbytes;
++ resp->f_maxfilesize = 0xffffffffffffffff;
+}
 
-Shouldn't there be a 'prepare for poweroff'-callback, which gets called
-before the system is powered off for real?
+fh_put(&argp->fh);
 
---- linux-2.6.26-rc2/drivers/net/forcedeth.c	2008-05-17 14:22:06.000000000 +0200
-+++ linux-2.6.26-rc2/drivers/net/forcedeth.c	2008-05-17 19:48:56.000000000 +0200
-@@ -5823,6 +5823,7 @@
- 	writel(txreg, base + NvRegTransmitPoll);
- 
- 	rc = nv_open(dev);
-+	nv_set_multicast(dev);
- out:
- 	return rc;
- }
+---------------- end -------------------------------------------------
 
--- 
-Tobias						PGP: http://9ac7e0bc.uguu.de
-このメールは十割再利用されたビットで作られています。
+P.V.Anthony
+
+
