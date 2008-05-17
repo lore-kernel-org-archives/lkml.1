@@ -1,95 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756858AbYEQR5t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757364AbYEQSA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756858AbYEQR5t (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 13:57:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbYEQR5i
+	id S1757364AbYEQSA1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 14:00:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754277AbYEQSAL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 13:57:38 -0400
-Received: from mail.mindmedia.com.sg ([210.193.7.34]:49143 "EHLO
-	mail.mindmedia.com.sg" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752752AbYEQR5h convert rfc822-to-8bit (ORCPT
+	Sat, 17 May 2008 14:00:11 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:54412 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752868AbYEQSAJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 13:57:37 -0400
-Message-ID: <20080518015733.o7n8cvhomvgos8ow@mail.mindmedia.com.sg>
-X-Priority: 3 (Normal)
-Date: Sun, 18 May 2008 01:57:33 +0800
-From: "P.V.Anthony" <pvantony@singnet.com.sg>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Solved - How to change the FSINFO for nfsd?
-References: <482332CD.4010706@singnet.com.sg>
-	<20080509042238.GC21408@fieldses.org>
-In-Reply-To: <20080509042238.GC21408@fieldses.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=UTF-8;
-	DelSp="Yes";
-	format="flowed"
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-User-Agent: Internet Messaging Program (IMP) H3 (4.1.6)
+	Sat, 17 May 2008 14:00:09 -0400
+Date: Sat, 17 May 2008 11:59:58 -0600
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
+In-reply-to: <20080517134344.GA7411@mit.edu>
+To: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Message-id: <20080517175958.GL3491@webber.adilger.int>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <482DDA56.6000301@redhat.com>
+ <20080516130545.845a3be9.akpm@linux-foundation.org>
+ <482DF44B.50204@redhat.com> <20080516220315.GB15334@shareable.org>
+ <482E08E6.4030507@redhat.com> <20080516225304.GG15334@shareable.org>
+ <20080517002030.GA7374@mit.edu>
+ <20080516173552.e88183d9.akpm@linux-foundation.org>
+ <20080517134344.GA7411@mit.edu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting "J. Bruce Fields":
-> I think you'reprobably barking up the wrong tree, but the max file size
-> as returned by fsinfo is set in fs/nfsd/nfs3proc.c:nfsd3_proc_fsinfo().
+On May 17, 2008  09:43 -0400, Theodore Ts'o wrote:
+> On Fri, May 16, 2008 at 05:35:52PM -0700, Andrew Morton wrote:
+> > Journal wrapping could cause the commit block to get written before its
+> > data blocks.  We could improve that by changing the journal layout a bit:
+> > wrap the entire commit rather than just its tail.  Such a change might
+> > be intrusive though.
+> 
+> Or we backport jbd2's checksum support in the commit block to jbd;
+> with the checksum support, if the commit block is written out-of-order
+> with the rest of the blocks in the commit, the commit will simply not
+> be recognized as valid, and we'll use the previous commit block as the
+> last valid commit.
 
-Just in case someone needs to know this information. Please note that  
-I am not a
-programmer. I am just hacking away.
+The jbd2 journal checksum support, along with the 64-bit journal block
+layout is designed to be 100% compatible with jbd, so it would be
+trivial to "back port" jbd2.  Just copy jbd2 into jbd, and add the
+option to set (or set by default) the JBD_FEATURE_COMPAT_CHECKSUM
+feature in the journal.
 
-Most of the credit for the hack goes to the person in the forum  
-mentioned below
-for finding the Mac NFS behavior.
-http://forums.creativecow.net/thread/8/975362
+I was going to suggest complete removal of jbd2 at that point, but
+the ordered-mode rewrite is still pending and should live in ext4
+for a reasonably long while before going back to ext3.
 
-The changes done seem to work well.
-
-I am dissapointed that Apple made changes to NFS to a point that we  
-have to use an Apple NFS. I thought that NFS is open. Anyway with  
-these changes, a Linux server can be used.
-
-Anyway this problem only happens from with in the video editing application,
-Final Cut Pro, an Apple product. I hope someday a good video editing  
-application
-comes to Linux. I am willing to pay for Linux video editing  
-application. It must
-be good that is.
-
-Anyway here is the patch done.
-
-------------------- start ------------------------------
-
-pv at videoserver2 ~ $ diff -ruN
-/usr/src/linux-2.6.22-gentoo-r8/fs/nfsd/nfs3proc.c.org
-/usr/src/linux-2.6.22-gentoo-r8/fs/nfsd/nfs3proc.c
---- /usr/src/linux-2.6.22-gentoo-r8/fs/nfsd/nfs3proc.c.org 2008-05-09
-13:07:19.000000000 +0800
-+++ /usr/src/linux-2.6.22-gentoo-r8/fs/nfsd/nfs3proc.c 2008-05-13
-23:54:56.000000000 +0800
-@@ -555,7 +555,7 @@
-resp->f_wtpref = max_blocksize;
-resp->f_wtmult = PAGE_SIZE;
-resp->f_dtpref = PAGE_SIZE;
-- resp->f_maxfilesize = ~(u32) 0;
-+ resp->f_maxfilesize = 0xffffffffffffffff;
-resp->f_properties = NFS3_FSF_DEFAULT;
-
-nfserr = fh_verify(rqstp, &argp->fh, 0, MAY_NOP);
-@@ -570,7 +570,7 @@
-if (sb->s_magic == 0x4d44 /* MSDOS_SUPER_MAGIC */) {
-resp->f_properties = NFS3_FSF_BILLYBOY;
-}
-- resp->f_maxfilesize = sb->s_maxbytes;
-+ resp->f_maxfilesize = 0xffffffffffffffff;
-}
-
-fh_put(&argp->fh);
-
----------------- end -------------------------------------------------
-
-P.V.Anthony
-
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
 
