@@ -1,79 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757540AbYEQO6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757421AbYEQPBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757540AbYEQO6b (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 10:58:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755319AbYEQO6X
+	id S1757421AbYEQPBi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 11:01:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754554AbYEQPBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 10:58:23 -0400
-Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:42269 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755334AbYEQO6W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 10:58:22 -0400
-Date: Sat, 17 May 2008 10:58:04 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [GIT pull] x86 fixes for 2.6.26
-Message-ID: <20080517145802.GB6978@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-	"H. Peter Anvin" <hpa@zytor.com>
-References: <alpine.LFD.1.10.0805170037180.3255@apollo.tec.linutronix.de> <alpine.LFD.1.10.0805161544080.3020@woody.linux-foundation.org> <20080517015705.GA20375@mit.edu> <alpine.LFD.1.10.0805161933240.3020@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805161933240.3020@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Sat, 17 May 2008 11:01:31 -0400
+Received: from mba.ocn.ne.jp ([122.1.235.107]:51112 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753379AbYEQPBa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 May 2008 11:01:30 -0400
+Date: Sun, 18 May 2008 00:02:42 +0900 (JST)
+Message-Id: <20080518.000242.41199304.anemo@mba.ocn.ne.jp>
+To: macro@linux-mips.org
+Cc: a.zummo@towertech.it, hvr@gnu.org, akpm@linux-foundation.org,
+       rtc-linux@googlegroups.com, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] RTC: M41T80: Century Bit support
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <Pine.LNX.4.55.0805170057370.4049@cliff.in.clinika.pl>
+References: <Pine.LNX.4.55.0805170057370.4049@cliff.in.clinika.pl>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16, 2008 at 08:19:04PM -0700, Linus Torvalds wrote:
-> > Why do you consider rebasing topic branches a bad thing?
+On Sat, 17 May 2008 01:25:18 +0100 (BST), "Maciej W. Rozycki" <macro@linux-mips.org> wrote:
+>  Make use of the Century Bit to support years in the range from 1970 to 
+> 2169.  Enable toggling of the bit at the end of a century on a clock 
+> update.
+> ---
+>  The clock is used with the Broadcom SWARM and the D-Link DNS-323 
+> platform.
 > 
-> Rebasing branches is absolutely not a bad thing for individual developers.
+>  I have verified correct operation with the SWARM -- the firmware assumes
+> 19YY when CB is clear and 20YY otherwise.  Which means years 1900-1969
+> will be shown as 2100-2169 in Linux.  I think this is a feature rather
+> than a problem.  The firmware does not set the CEB bit itself and does not 
+> care of what its state is.
 > 
-> But it *is* a bad thing for a subsystem maintainer.
+>  I will be happy to hear from a DNS-323 user to confirm or deny whether
+> such an interpretation is compatible.
 
-Right, but so long as a subsystem maintainer doesn't publish his/her
-topic branches, and only sends out patches on their topic branches for
-discussion via e-mail, they're fine, right?  They can just rebase up
-until the point where the patch goes on a non-'pu' or non-'linux-next'
-branch.
+This patch enforces that all (including future) users of this device
+must use same interpretation of CB bit.  I think this is too
+intrusive.
 
-Basically, this would be the subsystem maintainer sometimes wearing an
-"end-point-developer" hat, and sometimes wearing a "subsystem
-maintainer" hat.  So rebasing is fine as long as it's clear that it's
-happening on branches which are not meant as a base for
-submaintainers.  
+And I have one (out-of-tree, and only one in the world) board with
+this device and its firmware uses different interpretation.
+Fortunately I can change this firmware, so this is not a serious
+problem for me. ;)
 
-I believe Junio does this himself for his own topic branches while
-developing git, yes?  And that's probably a good reason for him not
-actually *publishing* any of his topic branches, and only the 'pu'
-branch, which is well known to be a bad idea for folks to use as a
-branch point, since it is constantly getting rebased.
+How about doing like this?
 
-> And I realize that the x86 tree doesn't do git merges from other 
-> sub-maintaines of x86 stuff, and I think that's a problem waiting to 
-> happen. It's not a problem as long as Ingo and Thomas are on the net every 
-> single day, 12 hours a day, and respond to everything. But speaking from 
-> experience, you can try to do that for a decade, but it won't really work.
-> 
-> I've talked to Ingo about this a bit, and I'm personally fairly convinced 
-> that part of the friction with Ingo has been that micro-management on a 
-> per-patch level. I should know. I used to do it myself. And I still do it, 
-> but now I do it only for really "core" stuff. So now I get involved in 
-> stuff like really core VM locking, or the whole BKL thing, but on the 
-> whole I try to be the anti-thesis of a micro-manager, and just pull from 
-> the submaintainers.
+1. If CEB was 0, keep current behavior. (does not touch CB bit)
 
-Heh, can't really argue with your point here.
+2. If CEB was 1, detect polarity of CB bit on get_datetime, and set or
+   clear CB bit on set_datetime based on the polarity.
 
-							- Ted
+Please look at "c_polarity" variable in rtc-pcf8563.c driver.
+
+---
+Atsushi Nemoto
