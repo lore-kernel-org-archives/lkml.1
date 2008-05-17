@@ -1,85 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753987AbYEQG5H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755678AbYEQG7d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753987AbYEQG5H (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 02:57:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbYEQG4y
+	id S1755678AbYEQG7d (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 02:59:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751912AbYEQG7Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 02:56:54 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:53073 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751196AbYEQG4x (ORCPT
+	Sat, 17 May 2008 02:59:24 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:7983 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751870AbYEQG7X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 02:56:53 -0400
-To: hirofumi@mail.parknet.co.jp
-CC: miklos@szeredi.hu, akpm@linux-foundation.org, hch@infradead.org,
-       viro@ZenIV.linux.org.uk, ezk@cs.sunysb.edu,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-reply-to: <87prrl7rxg.fsf@duaron.myhome.or.jp> (message from OGAWA Hirofumi
-	on Sat, 17 May 2008 08:25:15 +0900)
-Subject: Re: [patch 07/22] fat: dont call notify_change
-References: <20080516163136.560107038@szeredi.hu>
-	<20080516163222.235825996@szeredi.hu> <87prrl7rxg.fsf@duaron.myhome.or.jp>
-Message-Id: <E1JxGLP-000406-Eo@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Sat, 17 May 2008 08:56:39 +0200
+	Sat, 17 May 2008 02:59:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=EfuM30dZ66VOLeX+qkszLA5RTqZgERzoATXbODa+rFBeurQXOALnRO/67lgbDfaRRvcbUR9aq1lnKkM3mzlRSirLfvzwig4dKkTnpPWnnvUagN0kB1R9EYUmt3IMbjYvFGtzAna6EsjTLOulfVleeaffCpkhtzlx3C/3nijd73U=
+Message-ID: <8db1092f0805162359k2def1738s91cc78d48bea2581@mail.gmail.com>
+Date: Sat, 17 May 2008 08:59:22 +0200
+From: "Maciej Rutecki" <maciej.rutecki@gmail.com>
+To: "Alan Stern" <stern@rowland.harvard.edu>
+Subject: Re: [Re: Linux 2.6.26-rc2] Write protect on on
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-usb@vger.kernel.org, usb-storage@lists.one-eyed-alien.net
+In-Reply-To: <Pine.LNX.4.44L0.0805162056230.13416-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <8db1092f0805160755u54914884ibe1ed8a23b8e1015@mail.gmail.com>
+	 <Pine.LNX.4.44L0.0805162056230.13416-100000@netrider.rowland.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > From: Miklos Szeredi <mszeredi@suse.cz>
-> >
-> > The FAT_IOCTL_SET_ATTRIBUTES ioctl() calls notify_change() to change
-> > the file mode before changing the inode attributes.  Replace with
-> > explicit calls to security_inode_setattr(), fat_setattr() and
-> > fsnotify_change().
-> >
-> > This is equivalent to the original.  The reason it is needed, is that
-> > later in the series we move the immutable check into notify_change().
-> > That would break the FAT_IOCTL_SET_ATTRIBUTES ioctl, as it needs to
-> > perform the mode change regardless of the immutability of the file.
-> >
-> > Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-> > CC: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-> 
-> Don't we need to add EXPORT_SYMBOL(security_inode_setattr)?
+2008/5/17 Alan Stern <stern@rowland.harvard.edu>:
 
-Yes we do, thanks for noticing.  Committed the below patch to the
-vfs-cleanups tree.
+> The best way to gather more data is to use usbmon and trace what
+> happens when you plug in the drive (see Documentation/usb/usbmon.txt).
+> If you collect traces under both 2.6.25.4 and 2.6.26-rc2 then we can
+> compare them to see what has changed.
+>
+> You don't have to trace the mount command; the activity at plug-in time
+> will be sufficient.
+>
+> Alan Stern
+>
+>
 
-> Otherwise,
-> looks good to me.
-> 
-> Acked-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+2.6.25.4 (works fine):
+http://unixy.pl/maciek/download/kernel/2.6.25.4/syslog_debug.txt
+http://unixy.pl/maciek/download/kernel/2.6.25.4/usbmon.txt
 
-Thanks.
+2.6.26-rc2 ("write protect is on" problem; can't mount device):
+http://unixy.pl/maciek/download/kernel/2.6.26-rc2/syslog_debug.txt
+http://unixy.pl/maciek/download/kernel/2.6.26-rc2/usbmon.txt
 
-Miklos
-----
-
-Subject: fat: don't call notify_change fix
-
-From: Miklos Szeredi <mszeredi@suse.cz>
-
-ERROR: "security_inode_setattr" [fs/fat/fat.ko] undefined!
-
-Fix error if fat is built as a module.  Thanks to OGAWA Hirofumi for
-noticing.
-
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-CC: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
----
- security/security.c |    1 +
- 1 file changed, 1 insertion(+)
-
-Index: linux-2.6/security/security.c
-===================================================================
---- linux-2.6.orig/security/security.c	2008-05-14 12:49:42.000000000 +0200
-+++ linux-2.6/security/security.c	2008-05-17 08:46:52.000000000 +0200
-@@ -476,6 +476,7 @@ int security_inode_setattr(struct dentry
- 		return 0;
- 	return security_ops->inode_setattr(dentry, attr);
- }
-+EXPORT_SYMBOL_GPL(security_inode_setattr);
- 
- int security_inode_getattr(struct vfsmount *mnt, struct dentry *dentry)
- {
+-- 
+Maciej Rutecki
+http://www.maciek.unixy.pl
