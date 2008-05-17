@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756001AbYEQOgq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756641AbYEQOhy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756001AbYEQOgq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 10:36:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753102AbYEQOgf
+	id S1756641AbYEQOhy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 10:37:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754861AbYEQOhp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 10:36:35 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:40662 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752411AbYEQOge (ORCPT
+	Sat, 17 May 2008 10:37:45 -0400
+Received: from smtp107.sbc.mail.mud.yahoo.com ([68.142.198.206]:22574 "HELO
+	smtp107.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755962AbYEQOhn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 10:36:34 -0400
-Cc: netdev <netdev@vger.kernel.org>, Jean Tourrilhes <jt@hpl.hp.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Message-Id: <31B1A5D6-8E8B-4148-860F-326FEEE5A3EE@holtmann.org>
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <1211032475.6252.2.camel@johannes.berg>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Sat, 17 May 2008 10:37:43 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=I0y3bcsEPOnhHNJVYENcMeyCZtlxECmcFziT2DEbPr5koi7inbM42XxNw3VFcjvos+u30XPXnkYp1yO2bd02TsN3Q+EnCGDUj58n68AvXPzoqihX4IDdV/WEPdNIh4yNHPJyFoIztujSvBWA65Bozg6X2Ex/xgotLn4JKY6KYz8=  ;
+X-YMail-OSG: LwRaKAwVM1ns.efuE8X22DcDyEFLR.c16B2PQMm0MDnC7wg.pz4su718FpvhNxFK9QZNYz3dGQ8MN3T.Z9vUj8b6s7ukvq2PyqQ3brpEocaUISqXhsiEZpsLek7IVQzmu5w-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Bryan Wu <cooloney@kernel.org>
+Subject: Re: [PATCH 0/2] MUSB: 2 patches to fix some bug found on Blackfin
+Date: Sat, 17 May 2008 07:37:37 -0700
+User-Agent: KMail/1.9.6
+Cc: me@felipebalbi.com, tony@atomide.com, linux-omap@vger.kernel.org,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1211022081-27298-1-git-send-email-cooloney@kernel.org>
+In-Reply-To: <1211022081-27298-1-git-send-email-cooloney@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [RFC] make wext wireless bits optional and deprecate them
-Date: Sat, 17 May 2008 16:36:31 +0200
-References: <1211026337.3827.25.camel@johannes.berg> <CD993362-B1DE-4E4D-8A5B-E9E2AD7DA04C@holtmann.org> (sfid-20080517_154639_384202_6D3479C2) <1211032475.6252.2.camel@johannes.berg>
-X-Mailer: Apple Mail (2.919.2)
+Content-Disposition: inline
+Message-Id: <200805170737.37806.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Johannes,
+On Saturday 17 May 2008, Bryan Wu wrote:
+> 
+> We discussed these 4 bugs before. Now we fixed them.
+> Please review following 2 patches.
 
->>> The /sys/class/net/*/wireless/ direcory is, as far as I know, not
->>> used by anyone. Additionally, the same data is available via wext
->>> ioctls. Hence the sysfs files are pretty much useless. This patch
->>> makes them optional and schedules them for removal.
->>
->> it is used by HAL to classify WiFi network cards as net.80211 instead
->> of net.80203 and so we do have an actual user. However HAL only tests
->> for the existence of the directory wireless/.
->
-> Oh, ok, I didn't know that, thanks.
->
->> Please fix HAL first before submitting such a patch.
->
-> Sure, I'll take a look at that.
+They looked plausible to me ... though the urb->status
+one is a bit of a band-aid, and when that field finally
+vanishes a better fix will be needed.
 
-saw your patch. Looks good to me. However what do we do with the non- 
-mac80211 drivers that are using WEXT directly. These should be  
-detected as net.80211, too.
-
-Regards
-
-Marcel
-
+- Dave
