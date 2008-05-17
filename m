@@ -1,103 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757844AbYEQQAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757496AbYEQQDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757844AbYEQQAm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 12:00:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbYEQQAC
+	id S1757496AbYEQQDX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 12:03:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753679AbYEQQDQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 12:00:02 -0400
-Received: from mga11.intel.com ([192.55.52.93]:59736 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751854AbYEQP75 convert rfc822-to-8bit (ORCPT
+	Sat, 17 May 2008 12:03:16 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:35879 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752039AbYEQQDP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 11:59:57 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,501,1204531200"; 
-   d="scan'208";a="565747951"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Sat, 17 May 2008 12:03:15 -0400
+Message-ID: <482F0053.2000509@zytor.com>
+Date: Sat, 17 May 2008 08:57:07 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [Bug 10732] REGRESSION: 2.6.26-rc2-git4: X server failed start onX61s laptop
-Date: Sat, 17 May 2008 09:02:32 -0700
-Message-ID: <924EFEDD5F540B4284297C4DC59F3DEE01119B07@orsmsx423.amr.corp.intel.com>
-In-reply-to: <20080517154131.GA7651@mit.edu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [Bug 10732] REGRESSION: 2.6.26-rc2-git4: X server failed start onX61s laptop
-Thread-Index: Aci4NH4X8vG743MPRJ+HmyPn0ccbTAAAgboQ
-References: <E1JxGth-0001te-S4@closure.thunk.org> <924EFEDD5F540B4284297C4DC59F3DEE01119AFE@orsmsx423.amr.corp.intel.com> <20080517154131.GA7651@mit.edu>
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Theodore Tso" <tytso@mit.edu>
-Cc: <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       <bugme-daemon@bugzilla.kernel.org>, <airlied@linux.ie>,
-       "Barnes, Jesse" <jesse.barnes@intel.com>,
-       "Packard, Keith" <keith.packard@intel.com>
-X-OriginalArrivalTime: 17 May 2008 15:59:50.0609 (UTC) FILETIME=[09BC0C10:01C8B837]
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Johannes Berg <johannes@sipsolutions.net>,
+       virtualization@lists.linux-foundation.org,
+       Jeff Garzik <jeff@garzik.org>, Herbert Xu <herbert@gondor.apana.org.au>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>, Theodore Tso <tytso@mit.edu>,
+       Matt Mackall <mpm@selenic.com>
+Subject: Re: [PATCH 2/2] lguest: virtio-rng support
+References: <482C8595.5030509@garzik.org> <200805171446.39814.rusty@rustcorp.com.au> <482E6417.8040602@zytor.com> <200805171628.03801.rusty@rustcorp.com.au>
+In-Reply-To: <200805171628.03801.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+Rusty Russell wrote:
+>> Uhm, no.  It's not.  Unless the host provides actual entropy
+>> information, you have a security hole.
+> 
+> Huh?  We just can't assume it adds entropy.  AFAICT rngd -H0 is what we want 
+> here.
 
->-----Original Message-----
->From: Theodore Tso [mailto:tytso@mit.edu] 
->Sent: Saturday, May 17, 2008 8:42 AM
->To: Pallipadi, Venkatesh
->Cc: linux-kernel@vger.kernel.org; Ingo Molnar; Siddha, Suresh 
->B; bugme-daemon@bugzilla.kernel.org
->Subject: [Bug 10732] REGRESSION: 2.6.26-rc2-git4: X server 
->failed start onX61s laptop
->
->
->On Sat, May 17, 2008 at 06:21:18AM -0700, Pallipadi, Venkatesh wrote:
->> 
->> Can you please send the complete dmesg after X failure, with 
->patch here
->> and debugpat boot option.
->> http://www.ussg.iu.edu/hypermail/linux/kernel/0805.0/2657.html
->
->With debugpat enabled, the resulting dump that landed in
->/var/log/messages was something like 1.6 megabytes, so it totally
->overflowed the dmesg buffer.
->
->I've created a Bugzilla attachment of the bzip'ed messages 
->excerpt here:
->
->http://bugzilla.kernel.org/attachment.cgi?id=16174&action=view
->
->The patch above was only available in HTML-only mode (and I couldn't
->find Ingo's patch on lkml.org, so I had to reconstruct it, and then
->forward part it to 2.6.26-rc2-git5).  What I actually used can be
->found here:
->
->http://bugzilla.kernel.org/attachment.cgi?id=16173&action=view
->
->I'm not sure this will be helpful for you, but this should be
->completely trivial for you to reproduce; just use Ubuntu Gutsy on
->Intel Video based laptop, with a 2.6.26-rc2-git4 or more recent
->kernel, and watch it fail.  
->
->For me, I'll just locally revert commit 1c12c4cf since otherwise X
->becomes more-or-less unsuable.  (Getting used to 1024x768 after using
->a 1600x1200 display is one thing; 800x600 is quite another, and the
->performance using the VESA driver is quite abysmal.)
->
+We can, if it comes from /dev/random.
 
-Thanks for the log Ted. From first looks, I don't see any PAT related
-failures
-in the log. And as the revert of the commit 1c12c4cf is fixing the
-problem here,
-adding the X guys to the thread.
+>>> If we use /dev/random in the host, we risk a DoS.  But since /dev/random
+>>> is 0666 on my system, perhaps noone actually cares?
+>> There is no point in feeding the host /dev/urandom to the guest (except 
+>> for seeding, which can be handled through other means); it will do its 
+>> own mixing anyway.
+> 
+> Seeding is good, but unlikely to be done properly for first boot of some 
+> standard virtualized container.  In practice, feeding /dev/urandom from the 
+> host will make /dev/urandom harder to predict in the guest.
 
-I am thinking that may be X is depending on mprotect changes somehow and
-failing when
-it cannot change PAT attributes with mprotect call. Keith earlier
-mentioned that X
-will not depend on this. May be something to do with earlier X version.
-Keith?
+Only up to a point.
 
-Thanks,
-Venki
+>> The reason to provide anything at all from the host 
+>> is to give it "golden" entropy bits.
+> 
+> But you did not address the DoS question: can we ignore it?  Or are we trading 
+> off a DoS in the host against a potential security weakness in the guest?
+> 
+> If so, how do we resolve it?
+
+I don't think you have a DoS situation at all.  The worst thing is that 
+you don't have any entropy available at all, at which point /dev/urandom 
+is as insecure as it ever is.
+
+	-hpa
+
