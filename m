@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755737AbYEQNdN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755953AbYEQNfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755737AbYEQNdN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 09:33:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753735AbYEQNc6
+	id S1755953AbYEQNfs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 09:35:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753771AbYEQNfk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 09:32:58 -0400
-Received: from fmailhost02.isp.att.net ([204.127.217.102]:43668 "EHLO
-	fmailhost01.isp.att.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753251AbYEQNc5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 09:32:57 -0400
-X-Originating-IP: [70.152.106.225]
-Date: Sat, 17 May 2008 08:32:54 -0500
-From: Jay Cliburn <jacliburn@bellsouth.net>
-To: Jay Cliburn <jacliburn@bellsouth.net>
-Cc: Chris Rankin <rankincj@yahoo.com>, linux-kernel@vger.kernel.org,
-       linux-serial@vger.kernel.org
-Subject: Re: 2.6.25.3: serial problem (minicom)
-Message-ID: <20080517083254.4eb6e07d@osprey.hogchain.net>
-In-Reply-To: <20080517082207.4b1e8556@osprey.hogchain.net>
-References: <20080516123321.5674952c@osprey.hogchain.net>
-	<762763.57234.qm@web52903.mail.re2.yahoo.com>
-	<20080517082207.4b1e8556@osprey.hogchain.net>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-redhat-linux-gnu)
+	Sat, 17 May 2008 09:35:40 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44099 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751796AbYEQNfk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 May 2008 09:35:40 -0400
+Date: Sat, 17 May 2008 09:35:22 -0400
+From: Rik van Riel <riel@redhat.com>
+To: MinChan Kim <minchan.kim@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [patch 00/14] VM pageout scalability improvements (V7)
+Message-ID: <20080517093522.1371a40e@bree.surriel.com>
+In-Reply-To: <482E7246.5070607@gmail.com>
+References: <20080516183207.361608893@redhat.com>
+	<482E7246.5070607@gmail.com>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -30,23 +29,25 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 17 May 2008 08:22:07 -0500
-Jay Cliburn <jacliburn@bellsouth.net> wrote:
-
-> On Sat, 17 May 2008 13:29:31 +0100 (BST)
-> Chris Rankin <rankincj@yahoo.com> wrote:
-> 
-> > --- Jay Cliburn <jacliburn@bellsouth.net> wrote:
-> > > Serial console using minicom works fine for me under 2.6.25 and
-> > > 2.6.25.4.  Keystrokes are accepted normally.
+On Sat, 17 May 2008 14:51:02 +0900
+MinChan Kim <minchan.kim@gmail.com> wrote:
+> Rik van Riel wrote:
+> > On large memory systems, the VM can spend way too much time scanning
+> > through pages that it cannot (or should not) evict from memory. Not
+> > only does it use up CPU time, but it also provokes lock contention
+> > and can leave large systems under memory presure in a catatonic state.
 > > 
-> > I have just replicated this problem between two Fedora 8 boxes;
-> > minicom reads the remote serial console fine, provided it is running
-> > on a 2.6.24.x kernel. (The serial console is from a 2.6.25.4
-> > machine.)
+> > Against 2.6.25-rc2-mm1
+> 
+> I think it's typo error. 
+> This patch is based on 2.6.26-rc2-mm1. :-)
 
-> Mine still works.  I was going to bisect it, but I don't encounter the
-> problem.
+Yeah, that was a typo.   I just inserted -rc2 after forward
+porting the stuff from 2.6.25-mm1 :)
 
-Another bit of info, FWIW: unlike your setup, the system at the other
-end of my null modem cable is running Fedora 9, not Fedora 8.
+Andrew, the code is against your latest tree and has been
+performance tested in a few scenarios. I believe it should
+be ready to be merged now.
+
+-- 
+All rights reversed.
