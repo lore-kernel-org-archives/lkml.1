@@ -1,67 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757364AbYEQSA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756717AbYEQSMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757364AbYEQSA1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 14:00:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754277AbYEQSAL
+	id S1756717AbYEQSMU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 14:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbYEQSMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 14:00:11 -0400
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:54412 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752868AbYEQSAJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 14:00:09 -0400
-Date: Sat, 17 May 2008 11:59:58 -0600
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
-In-reply-to: <20080517134344.GA7411@mit.edu>
-To: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Message-id: <20080517175958.GL3491@webber.adilger.int>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <482DDA56.6000301@redhat.com>
- <20080516130545.845a3be9.akpm@linux-foundation.org>
- <482DF44B.50204@redhat.com> <20080516220315.GB15334@shareable.org>
- <482E08E6.4030507@redhat.com> <20080516225304.GG15334@shareable.org>
- <20080517002030.GA7374@mit.edu>
- <20080516173552.e88183d9.akpm@linux-foundation.org>
- <20080517134344.GA7411@mit.edu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sat, 17 May 2008 14:12:09 -0400
+Received: from home.keithp.com ([63.227.221.253]:3312 "EHLO keithp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751937AbYEQSMI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 May 2008 14:12:08 -0400
+Subject: RE: [Bug 10732] REGRESSION: 2.6.26-rc2-git4: X server failed start
+	onX61s laptop
+From: Keith Packard <keithp@keithp.com>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Eric Anholt <eric@anholt.net>
+Cc: keithp@keithp.com, Theodore Tso <tytso@mit.edu>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       bugme-daemon@bugzilla.kernel.org, airlied@linux.ie,
+       "Barnes, Jesse" <jesse.barnes@intel.com>
+In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEE01119B07@orsmsx423.amr.corp.intel.com>
+References: <E1JxGth-0001te-S4@closure.thunk.org>
+	 <924EFEDD5F540B4284297C4DC59F3DEE01119AFE@orsmsx423.amr.corp.intel.com>
+	 <20080517154131.GA7651@mit.edu>
+	 <924EFEDD5F540B4284297C4DC59F3DEE01119B07@orsmsx423.amr.corp.intel.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ubSij2XFuKIfgO11DrGI"
+Date: Sat, 17 May 2008 11:11:56 -0700
+Message-Id: <1211047916.27447.314.camel@koto.keithp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On May 17, 2008  09:43 -0400, Theodore Ts'o wrote:
-> On Fri, May 16, 2008 at 05:35:52PM -0700, Andrew Morton wrote:
-> > Journal wrapping could cause the commit block to get written before its
-> > data blocks.  We could improve that by changing the journal layout a bit:
-> > wrap the entire commit rather than just its tail.  Such a change might
-> > be intrusive though.
-> 
-> Or we backport jbd2's checksum support in the commit block to jbd;
-> with the checksum support, if the commit block is written out-of-order
-> with the rest of the blocks in the commit, the commit will simply not
-> be recognized as valid, and we'll use the previous commit block as the
-> last valid commit.
 
-The jbd2 journal checksum support, along with the 64-bit journal block
-layout is designed to be 100% compatible with jbd, so it would be
-trivial to "back port" jbd2.  Just copy jbd2 into jbd, and add the
-option to set (or set by default) the JBD_FEATURE_COMPAT_CHECKSUM
-feature in the journal.
+--=-ubSij2XFuKIfgO11DrGI
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I was going to suggest complete removal of jbd2 at that point, but
-the ordered-mode rewrite is still pending and should live in ext4
-for a reasonably long while before going back to ext3.
+On Sat, 2008-05-17 at 09:02 -0700, Pallipadi, Venkatesh wrote:
 
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
+> I am thinking that may be X is depending on mprotect changes somehow and
+> failing when
+> it cannot change PAT attributes with mprotect call. Keith earlier
+> mentioned that X
+> will not depend on this. May be something to do with earlier X version.
+> Keith?
+
+It looks like we can turn off read/write access, but we can't turn it
+back on. So,
+
+        mprotect (map->memory, map->size, PROT_NONE);
+        mprotect (map->memory, map->size, PROT_READ|PROT_WRITE);
+=20
+leaves the memory with no access.
+
+Eric saw this last week; I don't know whether he debugged into it
+further.
+
+Which repository is commit 1c12c4cf in?
+
+--=20
+keith.packard@intel.com
+
+--=-ubSij2XFuKIfgO11DrGI
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBILx/sQp8BWwlsTdMRAuOsAJ4u7t2VqEHQLjT6/Nkg0ml/TsjwcgCgyNcO
+HC3c4wTImhDinq5OTdQLM80=
+=Q7LL
+-----END PGP SIGNATURE-----
+
+--=-ubSij2XFuKIfgO11DrGI--
 
