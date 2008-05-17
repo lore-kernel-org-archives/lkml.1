@@ -1,90 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757526AbYEQWe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760221AbYEQWhZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757526AbYEQWe7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 18:34:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750708AbYEQWet
+	id S1760221AbYEQWhZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 18:37:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbYEQWhP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 18:34:49 -0400
-Received: from www.tglx.de ([62.245.132.106]:36355 "EHLO www.tglx.de"
+	Sat, 17 May 2008 18:37:15 -0400
+Received: from yumi.tdiedrich.de ([85.10.210.183]:52861 "EHLO mx.tdiedrich.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750767AbYEQWes (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 18:34:48 -0400
-Date: Sun, 18 May 2008 00:34:15 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Mikael Pettersson <mikpe@it.uu.se>
-cc: "Maciej W. Rozycki" <macro@linux-mips.org>, Tom Spink <tspink@gmail.com>,
-       Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Jiri Slaby <jirislaby@gmail.com>, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [RFC] x86: merge nmi_32-64 to nmi.c
-In-Reply-To: <18479.21161.437325.251769@harpo.it.uu.se>
-Message-ID: <alpine.LFD.1.10.0805180023100.18798@apollo.tec.linutronix.de>
-References: <20080517192200.GA6914@cvg> <7b9198260805171328u555eec17t3597f3378edbda88@mail.gmail.com> <Pine.LNX.4.55.0805172148380.10067@cliff.in.clinika.pl> <18479.21161.437325.251769@harpo.it.uu.se>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	id S1752133AbYEQWhO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 May 2008 18:37:14 -0400
+Date: Sun, 18 May 2008 00:36:40 +0200
+From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ayaz Abdulla <aabdulla@nvidia.com>
+Subject: Re: hibernate event order question
+Message-ID: <20080517223622.GA2668@yamamaya.is-a-geek.org>
+Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Ayaz Abdulla <aabdulla@nvidia.com>
+References: <20080517175046.GA9032@yamamaya.is-a-geek.org> <200805172156.12686.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200805172156.12686.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 17 May 2008, Mikael Pettersson wrote:
-> Maciej W. Rozycki writes:
->  > On Sat, 17 May 2008, Tom Spink wrote:
->  > 
->  > > static inline unsigned int get_nmi_count(int cpu)
->  > > {
->  > > #ifdef CONFIG_X86_64
->  > >         return cpu_pda(cpu)->__nmi_count;
->  > > #else
->  > >         return nmi_count(cpu);
->  > > #endif
->  > > }
->  > > 
->  > > I know it introduces a lot of these conditionals, but at least there
->  > > is one place to look for the get_nmi_count function, instead of
->  > > searching for all variants of the function.
->  > 
->  >  Well, I suppose some header should provide a definition like:
->  > 
->  > #ifdef CONFIG_X86_64
->  > #define cpu_x86_64 1
->  > #else
->  > #define cpu_x86_64 0
->  > #endif
->  > 
->  > and the you can remove the horrible #ifdef clutter and make the quoted 
->  > function look like:
->  > 
->  > static inline unsigned int get_nmi_count(int cpu)
->  > {
->  > 	return cpu_x86_64 ? cpu_pda(cpu)->__nmi_count : nmi_count(cpu);
->  > }
->  > 
->  > Much better -- isn't it?
+Rafael J. Wysocki wrote:
+
+> > Now for my question:
+> > AFAICS the ordering of events is as follows:
+> > 1) User reqests hibernate
+> > 2) Tasks are frozen
+> > 3) Device suspend callbacks get called
+> > 4) Device resume callbacks get called
+> > 5) Memory image is written to disk
 > 
-> IMO, no, the #ifdef is preferable.
+> 6) Device suspend callbacks get called again to prepare for the system sleep
+>    state.
+
+According to my pci postcard this is not the case.
+I modified nv_suspend to wiggle port 0x80 with mdelay(100) between
+0xa0/0x50 wiggles and mdelay(1000) before returning, so it is easily
+countable.
+nv_suspend is called only once per ethernet port (step 3 above).
+I have not yet tried adding a suspend_late handler.
+
+> > In my case, I think the fix for the first bug (promiscous mode does
+> > not get restored on resume) breaks wake-on-lan (since the new value
+> > of NvRegPacketFilterFlags may be incompatible with wake-on-lan).
+
+I reconfirmed this.  Without the promiscous mode bugfix,
+wake-on-lan (partially) works.  With the promiscous mode bugfix the
+machine doesn't wake up.  This is also easily explainable by 6) not
+happening. :)
+
+> > Shouldn't there be a 'prepare for poweroff'-callback, which gets
+> > called
+> > before the system is powered off for real?
 > 
-> Why? Because the #ifdef is a very visible signal to the platform
-> people that there are (in this case) subarch differences that force
-> "clients" to behave differently on different subarchs. By removing
-> the #ifdef you're IMO making it less likely for the platform people
-> to take notice and work towards eliminating those differences.
+> Yes, it should and it's called in recent kernels.
 
-The #ifdef is a poor choice. Maciej is damned right, that the single
-function with a clear distinction of the return value is better in
-terms of readability and maintenance.
+For what values of 'recent'?
+I'm running 2.6.26-rc2 here. :)
+How do I hook into this callback?
+(suspend_late maybe? Going to try that one next...)
 
-As I said before, We can make this more visible with an uppercase
-CONFIG_WHATEVER instaed of the innocent cpu_x86_64 one, but both
-solutions are better than #ifdefs and provide simple grepable
-patterns.
-
-The awareness of those differences does not depend at all on an
-#ifdef. Developers who are aware of the platform differences prefer a
-readable not ifdef poluted code base. People who need to be poked into
-the difference via an #ifdef are probably not those who can actually
-clean it up.
-
-Thanks,
-
-	tglx
+-- 
+Tobias						PGP: http://9ac7e0bc.uguu.de
+このメールは十割再利用されたビットで作られています。
