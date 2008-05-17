@@ -1,87 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759863AbYEQUid@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759566AbYEQUpL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759863AbYEQUid (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 16:38:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758574AbYEQUi0
+	id S1759566AbYEQUpL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 16:45:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758501AbYEQUoy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 16:38:26 -0400
-Received: from www.tglx.de ([62.245.132.106]:35074 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758373AbYEQUiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 16:38:25 -0400
-Date: Sat, 17 May 2008 22:37:16 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Theodore Tso <tytso@mit.edu>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [GIT pull] x86 fixes for 2.6.26
-In-Reply-To: <alpine.LFD.1.10.0805170944000.3020@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.1.10.0805172022180.14337@apollo.tec.linutronix.de>
-References: <alpine.LFD.1.10.0805170037180.3255@apollo.tec.linutronix.de> <alpine.LFD.1.10.0805161544080.3020@woody.linux-foundation.org> <20080517015705.GA20375@mit.edu> <alpine.LFD.1.10.0805161933240.3020@woody.linux-foundation.org> <20080517145802.GB6978@mit.edu>
- <alpine.LFD.1.10.0805170944000.3020@woody.linux-foundation.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sat, 17 May 2008 16:44:54 -0400
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:51760 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758100AbYEQUox (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 May 2008 16:44:53 -0400
+Date: Sat, 17 May 2008 16:44:37 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
+Message-ID: <20080517204437.GB16496@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <482DDA56.6000301@redhat.com> <20080516130545.845a3be9.akpm@linux-foundation.org> <482DF44B.50204@redhat.com> <20080516220315.GB15334@shareable.org> <482E08E6.4030507@redhat.com> <20080516225304.GG15334@shareable.org> <20080517002030.GA7374@mit.edu> <20080516173552.e88183d9.akpm@linux-foundation.org> <20080517134344.GA7411@mit.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080517134344.GA7411@mit.edu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Sat, May 17, 2008 at 09:43:44AM -0400, Theodore Tso wrote:
+> Another question is whether we can do better in our implementation of
+> a barrier, and the way the jbd layer uses barriers.  The way we do it
+> in the jbd layer is actually pretty bad:
+> 
+> This means that while we are waiting for commit record to be written
+> out, any other writes that are happening via buffer heads (which
+> includes directory operations) are getting done with strict ordering.
+> All set_buffer_ordered() does is change make the submit_bh() done in
+> sync_dirty_buffer() actually be submitted with WRITE_BARRIER instead
+> of WRITE.  
 
-On Sat, 17 May 2008, Linus Torvalds wrote:
-> and in that sense they look very much non-managerial. But those ~200 
-> commits are still just two hundred out of 1900 commits total! We *need* 
-> managers, not just grunts. And I can well imagine how stressful it is to 
-> not just do the two hundred commits, but also try to orchestrate the other 
-> ~1700 ones.
+Never mind, I was confused when I wrote this; I somehow thought we
+were setting ordered mode on a per queue basis, instead of on a
+per-buffer-head basis.
 
-Hey, I can confirm that. :)
+Also, looking more closely on the jbd2 implementation, it looks like
+using the async_commit option, which relies on the checksum for more
+efficient commit, completely disables any barrier support.  That's
+because the only place we go into ordered more is if we are writing a
+synchronous journal commit.  If async journal commit is enabled, then
+we don't write a barrier at all, which leaves us in potential trouble
+with if data blocks end up getting reordered with respect to the
+journal commit in data=ordered more.
 
-One of the main obstacles of going a more managerial way is that x86
-is not yet in a shape which allows us to have real independent topic
-branches. The other one is the way we worked for 5 years in
-maintaining the preempt-rt patch and the related subprojects which
-trickled slowly into mainline. The second obstacle is the one which is
-easier to overcome.
+I *think* what we need to do is to issue an empty barrier request
+between the data blocks and the journal writes in data=ordered mode,
+and still issue a WRITE_BARRIER request when writing the commit block,
+but to not actually wait for the write to complete.  I think if we do
+that, we should be safe, and hopefully by not waiting for the commit
+block to complete, the performance hit shouldn't be as bad as
+previously reported.
 
-The work which was started by the x86 merger is still in progress and
-there is aside of the obvious "merge the two _32/_64 versions" a lot
-of work necessary to distangle stuff which is intermingled across the
-arch/x86 code base for historic reason.
-
-The balancing act between cleaning up these problems and at the same
-time not stalling further development completely is what causes quite
-a lot of work and in consequence the headaches with our repository
-management.
-
-We are not yet at a point where we can rely on a probabilistic non
-conflict of e.g. mcheck changes with boot process modifications.
-
-We made pretty good progress to get there, but it would be naive to
-say that we are ready for a pure topic related reliance on downstream
-developers, which you can observe for example in networking. And
-networking did not switch into this mode from one day to the other
-either and has the luxory of a rather clean code base which makes it
-easy to have clearly separated and (most of the time) independent
-topic branches.
-
-I really want to emphasise that the developers who were confronted by
-us with the request to clean up stuff _before_ adding new features
-were very cooperative and are responsible for the majority of the 1900
-commits which we juggled into shape. If you have a close look at the
-nature of the commits which were done by Ingo and me, you'll notice
-that they are often just the fixup of the fallout of this patch
-flood. Honestly, I did not imagine that the uptake of the new x86 tree
-would be so huge.
-
-We know that we need to adjust our workflow and trim it into the
-lazy^Wmanagerial direction, but this needs some time to establish the
-"independent" sub topics and find out those downstream developers who
-are willing and capable to do their own topic. This is something which
-does not happen overnight, but you are right that providing a stable
-base to work on and an append-only forest of topic trees/branches is
-definitely helpful.
-
-Thanks,
-
-	tglx
+						- Ted
