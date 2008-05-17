@@ -1,227 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760583AbYEQXFU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761204AbYEQXGN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760583AbYEQXFU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 19:05:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751962AbYEQXFI
+	id S1761204AbYEQXGN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 19:06:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751962AbYEQXF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 19:05:08 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:30310 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751712AbYEQXFE (ORCPT
+	Sat, 17 May 2008 19:05:56 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:56711 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760851AbYEQXFg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 19:05:04 -0400
+	Sat, 17 May 2008 19:05:36 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
-        b=H2khN8o4KqoOsr6ZYXg1xpgOsJ4PwVlDjPbHWCjISwHWjgcCPt27cedxYYIyU45alqp/+sY7GuiU/bsWJOFAwvAvCwq2EX1AtQz2dsX0qRSZG0XCzYnYK8MiS1mH6e8AYo04SFdi16goJVBaY3ztP2dwQ80N3bshw4nr2Dn0I5s=
-Date: Sun, 18 May 2008 01:04:58 +0200
-To: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Cc: Arjan van de Ven <arjan@linux.intel.com>, Andi Kleen <andi@firstfloor.org>
-Subject: [PATCH] kmemcheck: support for x86_64
-Message-ID: <20080517230458.GA18588@damson.getinternet.no>
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=t2gDxzNCvfpyysp8bq9q9kNmAmI/RqbIh0oUnW5gmwyPhVVfcz5wrUcxulizgnhIic/bhMPDJcVP7QbTBYfvpie+jY/zhflHP5ol0Q/6fgBdjjZAcDa/5BhBPsIwQEiaj0yUbraz6dTRq94pNkfmY6Rrhz6fspH/A2Wd1kr/mYU=
+Message-ID: <5a4c581d0805171605g674f3662le452298927b11ee1@mail.gmail.com>
+Date: Sun, 18 May 2008 01:05:33 +0200
+From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
+To: "Jeff Garzik" <jgarzik@pobox.com>
+Subject: SATA disk reports DRDY and goes to PIO0 eventually. noapic fixes it
+Cc: LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: Vegard Nossum <vegard.nossum@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Since some time I noticed my nephew's Fedora 8 box would have
+ some noise in /var/log/messages with timeouts reported by the
+ SATA layer, with the drive in DRDY state. Flux is like this (from
+ the base Fedora 9 kernel installed today):
 
-Here comes a particularly difficult patch. I am not submitting it for
-application to any tree yet, but I have a small hope that somebody will
-put their head out to look at it :-)
+May 17 17:18:39 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
+SErr 0x0 action 0x2 frozen
+May 17 17:18:39 rospo kernel: ata4.00: cmd
+a0/00:00:00:08:00/00:00:00:00:00/a0 tag 0 pio 16392 in
+May 17 17:18:39 rospo kernel:          cdb 4a 01 00 00 10 00 00 00  08
+00 00 00 00 00 00 00
+May 17 17:18:39 rospo kernel:          res
+40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
+May 17 17:18:39 rospo kernel: ata4.00: status: { DRDY }
+May 17 17:18:39 rospo kernel: ata4: soft resetting link
+May 17 17:18:39 rospo kernel: ata4.00: configured for UDMA/33
+May 17 17:18:39 rospo kernel: ata4: EH complete
+May 17 17:18:40 rospo kernel: ALSA sound/usb/usbaudio.c:1353: setting
+usb interface 1:1
+May 17 17:18:40 rospo kernel: ALSA sound/usb/usbaudio.c:1353: setting
+usb interface 1:1
+May 17 17:18:46 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
+SErr 0x0 action 0x2 frozen
+May 17 17:18:46 rospo kernel: ata4.00: cmd
+a0/00:00:00:08:00/00:00:00:00:00/a0 tag 0 pio 16392 in
+May 17 17:18:46 rospo kernel:          cdb 4a 01 00 00 10 00 00 00  08
+00 00 00 00 00 00 00
+May 17 17:18:46 rospo kernel:          res
+40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
+May 17 17:18:46 rospo kernel: ata4.00: status: { DRDY }
+May 17 17:18:46 rospo kernel: ata4: soft resetting link
+May 17 17:18:46 rospo kernel: ata4.00: configured for UDMA/33
+May 17 17:18:46 rospo kernel: ata4: EH complete
+May 17 17:18:53 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
+SErr 0x0 action 0x2 frozen
+May 17 17:18:53 rospo kernel: ata4.00: cmd
+a0/00:00:00:08:00/00:00:00:00:00/a0 tag 0 pio 16392 in
+May 17 17:18:53 rospo kernel:          cdb 4a 01 00 00 10 00 00 00  08
+00 00 00 00 00 00 00
+May 17 17:18:53 rospo kernel:          res
+40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
+May 17 17:18:53 rospo kernel: ata4.00: status: { DRDY }
+May 17 17:18:53 rospo kernel: ata4: soft resetting link
+May 17 17:18:54 rospo kernel: ata4.00: configured for UDMA/33
+May 17 17:18:54 rospo kernel: ata4: EH complete
+May 17 17:19:01 rospo kernel: ata4.00: limiting speed to UDMA/25:PIO4
+May 17 17:19:01 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
+SErr 0x0 action 0x2 frozen
+May 17 17:19:01 rospo kernel: ata4.00: cmd
+a0/00:00:00:08:00/00:00:00:00:00/a0 tag 0 pio 16392 in
+May 17 17:19:01 rospo kernel:          cdb 4a 01 00 00 10 00 00 00  08
+00 00 00 00 00 00 00
+May 17 17:19:01 rospo kernel:          res
+40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
+May 17 17:19:01 rospo kernel: ata4.00: status: { DRDY }
+May 17 17:19:01 rospo kernel: ata4: soft resetting link
+May 17 17:19:01 rospo kernel: ata4.00: configured for UDMA/25
+May 17 17:19:01 rospo kernel: ata4: EH complete
+May 17 17:19:01 rospo kernel: sr0: CDROM (ioctl) error, command: Get
+event status notification 4a 01 00 00 10 00 00 00 08 00
+May 17 17:19:01 rospo kernel: sr: Sense Key : Aborted Command
+[current] [descriptor]
+May 17 17:19:01 rospo kernel: sr: Add. Sense: No additional sense information
+May 17 17:19:06 rospo kernel: ALSA sound/usb/usbaudio.c:1353: setting
+usb interface 1:1
+May 17 17:19:06 rospo kernel: ALSA sound/usb/usbaudio.c:1353: setting
+usb interface 1:1
+May 17 17:19:11 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
+SErr 0x0 action 0x2 frozen
+May 17 17:19:11 rospo kernel: ata4.00: cmd
+a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+May 17 17:19:11 rospo kernel:          cdb 1e 00 00 00 00 00 00 00  00
+00 00 00 00 00 00 00
+May 17 17:19:11 rospo kernel:          res
+40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
+May 17 17:19:11 rospo kernel: ata4.00: status: { DRDY }
+May 17 17:19:11 rospo kernel: ata4: soft resetting link
+May 17 17:19:12 rospo kernel: ata4.00: configured for UDMA/25
+May 17 17:19:12 rospo kernel: ata4: EH complete
+May 17 17:19:22 rospo kernel: ata4.00: limiting speed to PIO4
+May 17 17:19:22 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
+SErr 0x0 action 0x2 frozen
+May 17 17:19:22 rospo kernel: ata4.00: cmd
+a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+May 17 17:19:22 rospo kernel:          cdb 1e 00 00 00 00 00 00 00  00
+00 00 00 00 00 00 00
+May 17 17:19:22 rospo kernel:          res
+40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
+May 17 17:19:22 rospo kernel: ata4.00: status: { DRDY }
+May 17 17:19:22 rospo kernel: ata4: soft resetting link
+May 17 17:19:22 rospo kernel: ata4.00: configured for PIO4
+May 17 17:19:22 rospo kernel: ata4: EH complete
+May 17 17:19:32 rospo kernel: ata4.00: limiting speed to PIO3
+May 17 17:19:32 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
+SErr 0x0 action 0x2 frozen
+May 17 17:19:32 rospo kernel: ata4.00: cmd
+a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+May 17 17:19:32 rospo kernel:          cdb 1e 00 00 00 00 00 00 00  00
+00 00 00 00 00 00 00
+May 17 17:19:32 rospo kernel:          res
+40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
+May 17 17:19:32 rospo kernel: ata4.00: status: { DRDY }
+May 17 17:19:32 rospo kernel: ata4: soft resetting link
+May 17 17:19:33 rospo kernel: ata4.00: configured for PIO3
+May 17 17:19:33 rospo kernel: ata4: EH complete
+May 17 17:19:43 rospo kernel: ata4.00: limiting speed to PIO0
+May 17 17:19:43 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
+SErr 0x0 action 0x2 frozen
+May 17 17:19:43 rospo kernel: ata4.00: cmd
+a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+May 17 17:19:43 rospo kernel:          cdb 1e 00 00 00 00 00 00 00  00
+00 00 00 00 00 00 00
+May 17 17:19:43 rospo kernel:          res
+40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
+May 17 17:19:43 rospo kernel: ata4.00: status: { DRDY }
+May 17 17:19:43 rospo kernel: ata4: soft resetting link
+May 17 17:19:43 rospo kernel: ata4.00: configured for PIO0
+May 17 17:19:43 rospo kernel: ata4: EH complete
+May 17 17:19:50 rospo kernel: ALSA sound/usb/usbaudio.c:1353: setting
+usb interface 1:1
+May 17 17:19:50 rospo kernel: ALSA sound/usb/usbaudio.c:1353: setting
+usb interface 1:1
+May 17 17:19:53 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
+SErr 0x0 action 0x2 frozen
+May 17 17:19:53 rospo kernel: ata4.00: cmd
+a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+May 17 17:19:53 rospo kernel:          cdb 1e 00 00 00 00 00 00 00  00
+00 00 00 00 00 00 00
+May 17 17:19:53 rospo kernel:          res
+40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
+May 17 17:19:53 rospo kernel: ata4.00: status: { DRDY }
+May 17 17:19:53 rospo kernel: ata4: soft resetting link
+May 17 17:19:54 rospo kernel: ata4.00: configured for PIO0
+May 17 17:19:54 rospo kernel: ata4: EH complete
+May 17 17:20:01 rospo kernel: ALSA sound/usb/usbaudio.c:1353: setting
+usb interface 1:1
+May 17 17:20:04 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
+SErr 0x0 action 0x2 frozen
+May 17 17:20:04 rospo kernel: ata4.00: cmd
+a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+May 17 17:20:04 rospo kernel:          cdb 1e 00 00 00 00 00 00 00  00
+00 00 00 00 00 00 00
+May 17 17:20:04 rospo kernel:          res
+40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
+May 17 17:20:04 rospo kernel: ata4.00: status: { DRDY }
+May 17 17:20:04 rospo kernel: ata4: soft resetting link
+May 17 17:20:04 rospo kernel: ata4.00: configured for PIO0
+May 17 17:20:04 rospo kernel: ata4: EH complete
+May 17 17:20:04 rospo kernel: sr 3:0:0:0: ioctl_internal_command
+return code = 8000002
+May 17 17:20:04 rospo kernel:    : Sense Key : Aborted Command
+[current] [descriptor]
+May 17 17:20:04 rospo kernel:    : Add. Sense: No additional sense information
+May 17 17:20:34 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
+SErr 0x0 action 0x2 frozen
+May 17 17:20:34 rospo kernel: ata4.00: cmd
+a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+May 17 17:20:34 rospo kernel:          cdb 00 00 00 00 00 00 00 00  00
+00 00 00 00 00 00 00
+May 17 17:20:34 rospo kernel:          res
+40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
+May 17 17:20:34 rospo kernel: ata4.00: status: { DRDY }
+May 17 17:20:34 rospo kernel: ata4: soft resetting link
+May 17 17:20:35 rospo kernel: ata4.00: configured for PIO0
+May 17 17:20:35 rospo kernel: ata4: EH complete
 
-I am fairly sure the REX handling bits themselves are okay -- the kernel
-gets to the point where it tries to mount the root partition. But before
-that, there is a torrent of error reports coming from kmemcheck.
+...and on and on and on.
 
-Most of them look something like this:
+Reading another report on lkml I turned to the ATA wiki @ kernel.org
+ today, as even the newest Fedora 9 update (2.6.25.3-18) was still
+ behaving the same way - pci=nomsi wasn't useful, acpi=off was
+ also not useful, noapic did instead get rid of the messages, even
+ under 'find /' (which would usually turn up the ATA resets in less
+ than 10 seconds).
 
-kmemcheck: Caught 8-bit read from freed memory (ffff81000780a904)
-ifffffffifffffffifffffffifffffffifffffffifffffffifffffffifffffff
-    ^
+Is there anything more useful than simply booting noapic that
+ can be done here, or is that it ?
 
-and my theory so far is that X86_64 uses some currently unhandled
-instruction set extensions like MMX, SSE, etc. (Not 3DNow! because we
-have a dependency for that), for a fairly common operation -- something
-like memset(), and where we decode the size of the instruction to being
-8 bits when in fact it is 64 and thus only mark 8 bits of the shadow
-memory as being initialized.
+Thanks,
 
-(I guess the easiest way to catch this would be to make cases for those
-instructions and WARN(), but... Did I mention I hate this opcode decoding
-business? It's just too ugly.)
+--alessandro
 
-Do the #ifdef X86_64 parts look okay?
+ "Give me love / Or give me hate
+ Give me anything that's not just ok"
 
-The patch applies to the 'current' branch of kmemcheck.git:
-http://git.kernel.org/?p=linux/kernel/git/vegard/kmemcheck.git;a=shortlog;h=current
-
-Note: kmemcheck reports from x86_64 are still not very good because of the
-stacktrace issues reported earlier; in short, we can't look further than
-the page fault stack entry, which makes it rather useless for debugging.
-We do still have the RIP of the crash, though. End of note.
-
-Thanks.
-
-
-Vegard
-
-
->From d7978af9df6e61b75f1d15a65cf455b89aafea08 Mon Sep 17 00:00:00 2001
-From: Vegard Nossum <vegard.nossum@gmail.com>
-Date: Sun, 11 May 2008 14:06:49 +0200
-Subject: [PATCH] kmemcheck: support for x86_64
-
-Add REX prefix handling to kmemcheck's opcode decoder.
-
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
----
- arch/x86/Kconfig.debug      |    2 +-
- arch/x86/kernel/kmemcheck.c |   67 ++++++++++++++++++++++++++++++++++--------
- 2 files changed, 55 insertions(+), 14 deletions(-)
-
-diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
-index af6c1b3..8f02410 100644
---- a/arch/x86/Kconfig.debug
-+++ b/arch/x86/Kconfig.debug
-@@ -244,7 +244,7 @@ endif
- 
- config KMEMCHECK
- 	bool "kmemcheck: trap use of uninitialized memory"
--	depends on X86_32
-+	depends on X86
- 	depends on !X86_USE_3DNOW
- 	depends on SLUB || SLAB
- 	depends on !CC_OPTIMIZE_FOR_SIZE
-diff --git a/arch/x86/kernel/kmemcheck.c b/arch/x86/kernel/kmemcheck.c
-index 80ef428..bd52609 100644
---- a/arch/x86/kernel/kmemcheck.c
-+++ b/arch/x86/kernel/kmemcheck.c
-@@ -600,6 +600,12 @@ opcode_is_prefix(uint8_t b)
- 		|| b == 0x67;
- }
- 
-+static bool
-+opcode_is_rex_prefix(uint8_t b)
-+{
-+	return (b & 0xf0) == 0x40;
-+}
-+
- /* This is a VERY crude opcode decoder. We only need to find the size of the
-  * load/store that caused our #PF and this should work for all the opcodes
-  * that we care about. Moreover, the ones who invented this instruction set
-@@ -616,6 +622,15 @@ opcode_get_size(const uint8_t *op)
- 			operand_size_override = 16;
- 	}
- 
-+#ifdef X86_64
-+	/* REX prefix */
-+	if (opcode_is_rex_prefix(*op)) {
-+		if (*op & 0x08)
-+			return 64;
-+		++op;
-+	}
-+#endif
-+
- 	/* escape opcode */
- 	if (*op == 0x0f) {
- 		++op;
-@@ -633,7 +648,10 @@ static const uint8_t *
- opcode_get_primary(const uint8_t *op)
- {
- 	/* skip prefixes */
--	for (; opcode_is_prefix(*op); ++op);
-+	while (opcode_is_prefix(*op))
-+		++op;
-+	if (opcode_is_rex_prefix(*op))
-+		++op;
- 	return op;
- }
- 
-@@ -644,22 +662,16 @@ opcode_get_primary(const uint8_t *op)
- static bool
- check_page_boundary(struct pt_regs *regs, unsigned long addr, unsigned int size)
- {
--	unsigned long page[4];
--
- 	if (size == 8)
- 		return false;
--
--	page[0] = (addr + 0) & PAGE_MASK;
--	page[1] = (addr + 1) & PAGE_MASK;
--
--	if (size == 16 && page[0] == page[1])
-+	if (size == 16 && (addr & PAGE_MASK) == ((addr + 1) & PAGE_MASK))
- 		return false;
--
--	page[2] = (addr + 2) & PAGE_MASK;
--	page[3] = (addr + 3) & PAGE_MASK;
--
--	if (size == 32 && page[0] == page[2] && page[0] == page[3])
-+	if (size == 32 && (addr & PAGE_MASK) == ((addr + 3) & PAGE_MASK))
- 		return false;
-+#ifdef X86_64
-+	if (size == 64 && (addr & PAGE_MASK) == ((addr + 7) & PAGE_MASK))
-+		return false;
-+#endif
- 
- 	/*
- 	 * XXX: The addr/size data is also really interesting if this
-@@ -683,6 +695,17 @@ test(void *shadow, unsigned int size)
- 	 * code to access neighboring bytes.
- 	 */
- 	switch (size) {
-+#ifdef X86_64
-+	case 64:
-+		if (x[7] == SHADOW_INITIALIZED)
-+			return x[7];
-+		if (x[6] == SHADOW_INITIALIZED)
-+			return x[6];
-+		if (x[5] == SHADOW_INITIALIZED)
-+			return x[5];
-+		if (x[4] == SHADOW_INITIALIZED)
-+			return x[4];
-+#endif
- 	case 32:
- 		if (x[3] == SHADOW_INITIALIZED)
- 			return x[3];
-@@ -697,6 +720,17 @@ test(void *shadow, unsigned int size)
- 	}
- #else
- 	switch (size) {
-+#ifdef X86_64
-+	case 64:
-+		if (x[7] != SHADOW_INITIALIZED)
-+			return x[7];
-+		if (x[6] != SHADOW_INITIALIZED)
-+			return x[6];
-+		if (x[5] != SHADOW_INITIALIZED)
-+			return x[5];
-+		if (x[4] != SHADOW_INITIALIZED)
-+			return x[4];
-+#endif
- 	case 32:
- 		if (x[3] != SHADOW_INITIALIZED)
- 			return x[3];
-@@ -722,6 +756,13 @@ set(void *shadow, unsigned int size)
- 	x = shadow;
- 
- 	switch (size) {
-+#ifdef X86_64
-+	case 64:
-+		x[7] = SHADOW_INITIALIZED;
-+		x[6] = SHADOW_INITIALIZED;
-+		x[5] = SHADOW_INITIALIZED;
-+		x[4] = SHADOW_INITIALIZED;
-+#endif
- 	case 32:
- 		x[3] = SHADOW_INITIALIZED;
- 		x[2] = SHADOW_INITIALIZED;
--- 
-1.5.4.1
-
+ (Sophia, 'Weightless')
