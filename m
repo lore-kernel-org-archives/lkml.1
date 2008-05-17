@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758536AbYEQT1B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758062AbYEQTfW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758536AbYEQT1B (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 15:27:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755034AbYEQT0y
+	id S1758062AbYEQTfW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 15:35:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751512AbYEQTfJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 15:26:54 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:49431 "EHLO
+	Sat, 17 May 2008 15:35:09 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:52486 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752645AbYEQT0x (ORCPT
+	with ESMTP id S1755013AbYEQTfI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 15:26:53 -0400
-Date: Sat, 17 May 2008 12:26:40 -0700
+	Sat, 17 May 2008 15:35:08 -0400
+Date: Sat, 17 May 2008 12:34:52 -0700
 From: Arjan van de Ven <arjan@infradead.org>
-To: "koos vriezen" <koos.vriezen@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mchehab@infradead.org
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: "koos vriezen" <koos.vriezen@gmail.com>, linux-kernel@vger.kernel.org,
+       mchehab@infradead.org
 Subject: Re: mplayer v4l hangs in 2.6.25.2/4    (likely regression)
-Message-ID: <20080517122640.2d15aeed@infradead.org>
-In-Reply-To: <d4e708d60805171211q1a1966a3i78dc3dc98d275dd1@mail.gmail.com>
+Message-ID: <20080517123452.79b82be2@infradead.org>
+In-Reply-To: <20080517122640.2d15aeed@infradead.org>
 References: <d4e708d60805170954n6b2044c7h306bc6cb76bf798d@mail.gmail.com>
 	<20080517111639.21a3e177@infradead.org>
 	<d4e708d60805171211q1a1966a3i78dc3dc98d275dd1@mail.gmail.com>
+	<20080517122640.2d15aeed@infradead.org>
 Organization: Intel
 X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -31,104 +33,88 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 17 May 2008 21:11:35 +0200
-"koos vriezen" <koos.vriezen@gmail.com> wrote:
 
-> 2008/5/17 Arjan van de Ven <arjan@infradead.org>:
-> 
-> > Is it possible for you to enable lockdep (CONFIG_PROVE_LOCKING)?
-> > With that on, the kernel will print nicely which locks are being
-> > waited on, and if there's a deadlock, it'll print that too.
-> > Speaking of that, since this looks like a mutex related issue, it's
-> > worth enabling CONFIG_DEBUG_MUTEXES as well.... more debug checks
-> > in this area. If you also enable CONFIG_FRAME_POINTER then the
-> > backtrace will get better too (but it's not totally required, just
-> > easier for diagnostics)
-> 
-> See attachments.
-> FWIW, while mplayer is hanging, I can use another Xvideo based tv
-> player.
 
-excellent, you caught a real deadlock.
+and here is an (untest) patch that should fix this problem:
+Koos, can you apply this to your kernel tree and report back if this
+fixes your deadlock?
 
-in drivers/media/bt8xx/bttv-driver.c the code looks like this:
 
-static int vidiocgmbuf(struct file *file, void *priv, struct video_mbuf *mbuf)
-{
-        int retval;
-        unsigned int i;
-        struct bttv_fh *fh = priv;
 
+From: Arjan van de Ven <arjan@linux.intel.com>
+Subject: [PATCH] Fix a deadlock in the bttv driver
+
+vidiocgmbuf() does this:
         mutex_lock(&fh->cap.vb_lock);
         retval = videobuf_mmap_setup(&fh->cap, gbuffers, gbufsize,
                                      V4L2_MEMORY_MMAP);
 
-
-
-and videobuf_mmap_setup is in drivers/media/videobuf-core.c:
-
-
-int videobuf_mmap_setup(struct videobuf_queue *q,
-                        unsigned int bcount, unsigned int bsize,
-                        enum v4l2_memory memory)
-{
-        int ret;
+and videobuf_mmap_setup() then just does
         mutex_lock(&q->vb_lock);
+        ret = __videobuf_mmap_setup(q, bcount, bsize, memory);
+        mutex_unlock(&q->vb_lock);
 
-so.. bttv first takes "fh->cap.vb_lock" in vidiocgmbuf, then calls videobuf_mmap_setup(), and the first thing that does
-is to also take fh->cap.vb_lock!  This isn't even an ABBA deadlock, but a straight AA deadlock :)
+which is an obvious double-take deadlock.
 
-According to git-blame, this code last got changed by Mauro (added to CC) with this commit:
+This patch fixes this by having vidiocgmbuf() just call the __videobuf_mmap_setup
+function instead.
 
-commit 64f9477f95bf5d4ba49dc3988d47a15bc06bb5da
-Author: Mauro Carvalho Chehab <mchehab@infradead.org>
-Date:   Thu Jan 31 13:57:53 2008 -0300
+Reported-by: Koos Vriezen <koos.vriezen@gmail.com>
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ drivers/media/video/bt8xx/bttv-driver.c |    2 +-
+ drivers/media/video/videobuf-core.c     |    3 ++-
+ include/media/videobuf-core.h           |    3 +++
+ 3 files changed, 6 insertions(+), 2 deletions(-)
 
-    V4L/DVB (7121): Renames videobuf lock to vb_lock
-    
-    This helps to identify where vb_lock is being used, and find missusages of the
-    locks.
-    
-    Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
+diff --git a/drivers/media/video/bt8xx/bttv-driver.c b/drivers/media/video/bt8xx/bttv-driver.c
+index 2ca3e9c..0165aac 100644
+--- a/drivers/media/video/bt8xx/bttv-driver.c
++++ b/drivers/media/video/bt8xx/bttv-driver.c
+@@ -2613,7 +2613,7 @@ static int vidiocgmbuf(struct file *file, void *priv, struct video_mbuf *mbuf)
+ 	struct bttv_fh *fh = priv;
+ 
+ 	mutex_lock(&fh->cap.vb_lock);
+-	retval = videobuf_mmap_setup(&fh->cap, gbuffers, gbufsize,
++	retval = __videobuf_mmap_setup(&fh->cap, gbuffers, gbufsize,
+ 				     V4L2_MEMORY_MMAP);
+ 	if (retval < 0) {
+ 		mutex_unlock(&fh->cap.vb_lock);
+diff --git a/drivers/media/video/videobuf-core.c b/drivers/media/video/videobuf-core.c
+index 982f446..0a88c44 100644
+--- a/drivers/media/video/videobuf-core.c
++++ b/drivers/media/video/videobuf-core.c
+@@ -331,7 +331,7 @@ int videobuf_mmap_free(struct videobuf_queue *q)
+ }
+ 
+ /* Locking: Caller holds q->vb_lock */
+-static int __videobuf_mmap_setup(struct videobuf_queue *q,
++int __videobuf_mmap_setup(struct videobuf_queue *q,
+ 			unsigned int bcount, unsigned int bsize,
+ 			enum v4l2_memory memory)
+ {
+@@ -1129,6 +1129,7 @@ EXPORT_SYMBOL_GPL(videobuf_read_stream);
+ EXPORT_SYMBOL_GPL(videobuf_read_one);
+ EXPORT_SYMBOL_GPL(videobuf_poll_stream);
+ 
++EXPORT_SYMBOL_GPL(__videobuf_mmap_setup);
+ EXPORT_SYMBOL_GPL(videobuf_mmap_setup);
+ EXPORT_SYMBOL_GPL(videobuf_mmap_free);
+ EXPORT_SYMBOL_GPL(videobuf_mmap_mapper);
+diff --git a/include/media/videobuf-core.h b/include/media/videobuf-core.h
+index 5b39a22..874f134 100644
+--- a/include/media/videobuf-core.h
++++ b/include/media/videobuf-core.h
+@@ -237,6 +237,9 @@ unsigned int videobuf_poll_stream(struct file *file,
+ int videobuf_mmap_setup(struct videobuf_queue *q,
+ 			unsigned int bcount, unsigned int bsize,
+ 			enum v4l2_memory memory);
++int __videobuf_mmap_setup(struct videobuf_queue *q,
++			unsigned int bcount, unsigned int bsize,
++			enum v4l2_memory memory);
+ int videobuf_mmap_free(struct videobuf_queue *q);
+ int videobuf_mmap_mapper(struct videobuf_queue *q,
+ 			 struct vm_area_struct *vma);
+-- 
+1.5.4.5
 
-
-
-
-Just for history purposes, below is the full lockdep message:
-
-
-
-[ INFO: possible recursive locking detected ]
-2.6.25.4 #6
----------------------------------------------
-mplayer/3454 is trying to acquire lock:
- (&q->vb_lock){--..}, at: [<ffffffff880d52f0>] videobuf_mmap_setup+0x1d/0x42 [videobuf_core]
-
-but task is already holding lock:
- (&q->vb_lock){--..}, at: [<ffffffff88139dbc>] vidiocgmbuf+0x1e/0xac [bttv]
-
-other info that might help us debug this:
-1 lock held by mplayer/3454:
- #0:  (&q->vb_lock){--..}, at: [<ffffffff88139dbc>] vidiocgmbuf+0x1e/0xac [bttv]
-
-stack backtrace:
-Pid: 3454, comm: mplayer Not tainted 2.6.25.4 #6
-
-Call Trace:
- [<ffffffff8024df94>] __lock_acquire+0x8b7/0xc60
- [<ffffffff880d52f0>] ? :videobuf_core:videobuf_mmap_setup+0x1d/0x42
- [<ffffffff8024e72d>] lock_acquire+0x55/0x6e
- [<ffffffff880d52f0>] ? :videobuf_core:videobuf_mmap_setup+0x1d/0x42
- [<ffffffff804c5790>] mutex_lock_nested+0xd9/0x255
- [<ffffffff880d52f0>] :videobuf_core:videobuf_mmap_setup+0x1d/0x42
- [<ffffffff88139dd5>] :bttv:vidiocgmbuf+0x37/0xac
- [<ffffffff88106997>] :videodev:__video_do_ioctl+0xb2/0x2e16
- [<ffffffff804c7048>] ? _spin_unlock_irq+0x2b/0x31
- [<ffffffff80286355>] ? __kmalloc+0xbd/0xe7
- [<ffffffff8024d25d>] ? trace_hardirqs_on+0xf1/0x115
- [<ffffffff88109934>] ? :videodev:video_ioctl2+0xe0/0x259
- [<ffffffff88109a0c>] :videodev:video_ioctl2+0x1b8/0x259
- [<ffffffff804c7048>] ? _spin_unlock_irq+0x2b/0x31
- [<ffffffff8024d25d>] ? trace_hardirqs_on+0xf1/0x115
- [<ffffffff804c7048>] ? _spin_unlock_irq+0x2b/0x31
- [<ffffffff80295b1a>] vfs_ioctl+0x5e/0x77
