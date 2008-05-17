@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbYEQMRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755220AbYEQMTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755304AbYEQMRT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 08:17:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753300AbYEQMRE
+	id S1755220AbYEQMTn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 08:19:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753300AbYEQMTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 08:17:04 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:49613 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753202AbYEQMRC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 08:17:02 -0400
-Subject: Re: [RFC] make wext wireless bits optional and deprecate them
-From: Johannes Berg <johannes@sipsolutions.net>
-To: netdev <netdev@vger.kernel.org>
-Cc: Jean Tourrilhes <jt@hpl.hp.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-In-Reply-To: <1211026337.3827.25.camel@johannes.berg> (sfid-20080517_141325_034902_8C317B32)
-References: <1211026337.3827.25.camel@johannes.berg>
-	 (sfid-20080517_141325_034902_8C317B32)
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-IdAFoWTV/EuZM8mKtLmt"
-Date: Sat, 17 May 2008 14:16:43 +0200
-Message-Id: <1211026603.3827.27.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Sat, 17 May 2008 08:19:36 -0400
+Received: from saeurebad.de ([85.214.36.134]:55570 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753251AbYEQMTf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 May 2008 08:19:35 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Possible partial miss in pages needed for zone's memory map?
+Date: Sat, 17 May 2008 14:19:15 +0200
+Message-ID: <87y769f7i4.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
---=-IdAFoWTV/EuZM8mKtLmt
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I stumbled over the following in the zone initialization code.  Please
+let me know if I overlooked something here.
 
-Umm, wrong subject, should be
+---
 
-"make wext sysfs bits [...]"
+From: Johannes Weiner <hannes@saeurebad.de>
+Subject: [PATCH] Don't drop a partial page in a zone's memory map size
 
-johannes
+In a zone's present pages number, account for all pages occupied by the
+memory map, including a partial.
 
---=-IdAFoWTV/EuZM8mKtLmt
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+---
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUASC7MqqVg1VMiehFYAQIciQ/8DXYXFVVsYryIMUojLv4QMX7VmxRg01PT
-0Sdso8shUtIkwBO0LIa9AItIzU1SsWgkHlsU5NfW/wrMLUSGT2iutricuQOQS9dv
-p64qyWcaGzo53gEi1jzEn6rG7WEYDY0bH17P1BVlukJdTGT9B+e0x84A/palklmo
-VjLnYbwnmuGVuanpXUJ25txKN1Y/aSgFHzoOSTDwuD83L7RmVKk7xb46glmpTFm0
-dD2SslVXMzxw1mO3UHeqe9GDQ0v0cpKeqyA0+Pln+iwU4jaaEWa/ptqRGHIppNwq
-xFkWSubRQWBD4lJgeQNVO+Iwn1WnaEZfLvasHbuKvBTexl8KWaVZFBfGZxrIYo4R
-B352mWthPmtMD0vG105c6AmJuvGvaCbabDzBv8NziDwrDEN+51BlJnGDFpAcDOnb
-+v/dvfRbDdy1v9cPpzO8yGtCjfm+d2OG4E9TkAsdRUvHSbvdsSh67nXv/RX6Wxjm
-mjM7r1avcbmN5ZWqdWKSaqjJsM0FCbCFk7DoD0snzcWYlnScxzXhdpcRqC8fLPpz
-iubPKqaO6UaPTsREGTfSv3yPAopTmBdLFeA8dXAjGuhS1G5IMWt+kHU5BxXeFRR7
-2/DEezc8V1MOrjNWzKUkwMOSty497BxtNUNevE/As5eGjcFk3XJ+qdr/CvlBDopr
-xo2pzoI+VZ8=
-=dSr6
------END PGP SIGNATURE-----
-
---=-IdAFoWTV/EuZM8mKtLmt--
-
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -3378,7 +3378,8 @@ static void __paginginit free_area_init_
+ 		 * is used by this zone for memmap. This affects the watermark
+ 		 * and per-cpu initialisations
+ 		 */
+-		memmap_pages = (size * sizeof(struct page)) >> PAGE_SHIFT;
++		memmap_pages =
++			PAGE_ALIGN(size * sizeof(struct page)) >> PAGE_SHIFT;
+ 		if (realsize >= memmap_pages) {
+ 			realsize -= memmap_pages;
+ 			printk(KERN_DEBUG
