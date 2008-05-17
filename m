@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760810AbYEQWFK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761043AbYEQWGA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760810AbYEQWFK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 18:05:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750880AbYEQWEy
+	id S1761043AbYEQWGA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 18:06:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760016AbYEQWFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 18:04:54 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:50068 "EHLO smtp6.pp.htv.fi"
+	Sat, 17 May 2008 18:05:52 -0400
+Received: from mail.aknet.ru ([78.158.192.26]:59808 "EHLO mail.aknet.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750767AbYEQWEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 18:04:53 -0400
-Date: Sun, 18 May 2008 01:02:58 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Gilles Espinasse <g.esp@free.fr>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
-	IRQF_SAMPLE_RANDOM
-Message-ID: <20080517220258.GC8140@cs181133002.pp.htv.fi>
-References: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com> <20080515142154.0595e475@core> <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com> <482C7B18.6060003@garzik.org> <482C7E53.3050300@hp.com> <482C8184.2030906@garzik.org> <20080516161029.44ded734@core> <0f7201c8b790$9c2a2340$f9b5a8c0@pii350>
+	id S1750880AbYEQWFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 May 2008 18:05:51 -0400
+Message-ID: <482F56A5.7000008@aknet.ru>
+Date: Sun, 18 May 2008 02:05:25 +0400
+From: Stas Sergeev <stsp@aknet.ru>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <0f7201c8b790$9c2a2340$f9b5a8c0@pii350>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Dave Jones <davej@codemonkey.org.uk>
+CC: Takashi Iwai <tiwai@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       alsa-devel@alsa-project.org
+Subject: Re: [Bug #10679] 2.6.26-rc1 regression:	e5e1d3cb20034a3cbcfff1f0bae12201aa2ce17e
+ breaks artsd
+References: <hPXlJLjt4XG.A._lF.Jv1JIB@chimera> <88YBFoyd1CN.A._sF.Ov1JIB@chimera> <s5hskwmeb1h.wl%tiwai@suse.de> <20080514212011.GH7054@mit.edu> <s5hhcd0azv1.wl%tiwai@suse.de> <20080515130654.GC18825@mit.edu> <s5h8wybr0c2.wl%tiwai@suse.de> <20080517204725.GA11460@codemonkey.org.uk> <482F47DC.60505@aknet.ru> <20080517213231.GA31440@codemonkey.org.uk>
+In-Reply-To: <20080517213231.GA31440@codemonkey.org.uk>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16, 2008 at 10:08:29PM +0200, Gilles Espinasse wrote:
-> 
-> That's funny
-> It does look to disturb some kernel developper that ethernet may be sniffed
-> to feed a RNG
-> even that could be very hard to reach any effective result in the case of a
-> machine splitting
-> different network segments.
-> 
-> In the same time, it does not disturb openssl developpers to include non
-> initialised
-> memory that may or may not be predictable to feed a RNG.
-> http://marc.info/?l=openssl-dev&m=121095151003011&w=2
+Hello.
 
-Why should it disturb them?
+Dave Jones wrote:
+> Unless someone has 10 sound cards :-)  (Sounds bizarre, but I never tire
+> of seeing some of the creative situations our users get themselves into).
+Yes, the hardcoded values sucks...
 
-As is explained in the email you quote it cannot make the RNG
-output worse.
+> Something like this is probably the only real supportable way to do it though.
+> It would be great if alsa took something like -1 to mean 'never make this default'.
+-1 seems to be already reserved for
+"use first free slot", but maybe it
+would be nice to reserve some value
+for the "movable" index. For example,
+the index -2 can mean "use the first
+free slot, but move to the next one
+when some other driver is registering
+with -1 or explicitly to that slot".
+Of course I have no idea whether this
+is possible and acceptable, but maybe
+the alsa guys can tell.
 
->  Gilles
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+> But until that lands in a module-init-tools update, we're kind of stuck.
+Well, they won't take 10 or any other
+value I guess...
