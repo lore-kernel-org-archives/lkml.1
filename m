@@ -1,180 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752587AbYEQHhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756631AbYEQHir@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752587AbYEQHhj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 03:37:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbYEQHhW
+	id S1756631AbYEQHir (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 03:38:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbYEQHij
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 03:37:22 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:37130 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756050AbYEQHhI (ORCPT
+	Sat, 17 May 2008 03:38:39 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:42476 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751941AbYEQHii (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 03:37:08 -0400
-To: penguin-kernel@I-love.SAKURA.ne.jp
-CC: miklos@szeredi.hu, akpm@linux-foundation.org, hch@infradead.org,
-       viro@ZenIV.linux.org.uk, ezk@cs.sunysb.edu,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-reply-to: <200805171014.JJC34315.MOFSFQHOJFtLOV@I-love.SAKURA.ne.jp>
-	(message from Tetsuo Handa on Sat, 17 May 2008 10:14:33 +0900)
-Subject: Re: [patch 17/22] vfs: add path_symlink()
-References: <20080516163136.560107038@szeredi.hu>
-	<20080516163237.755590775@szeredi.hu> <200805171014.JJC34315.MOFSFQHOJFtLOV@I-love.SAKURA.ne.jp>
-Message-Id: <E1JxGyM-000456-CD@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Sat, 17 May 2008 09:36:54 +0200
+	Sat, 17 May 2008 03:38:38 -0400
+To: linux-kernel@vger.kernel.org
+cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: REGRESSION: 2.6.26-rc2-git4: X server failed start on X61s laptop
+From: "Theodore Ts'o" <tytso@mit.edu>
+Phone: (781) 391-3464
+Message-Id: <E1JxGth-0001te-S4@closure.thunk.org>
+Date: Sat, 17 May 2008 03:32:05 -0400
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Miklos Szeredi wrote:
-> > -int vfs_symlink(struct inode *dir, struct dentry *dentry, const char *oldname, int mode)
-> > +static int vfs_symlink(struct inode *dir, struct dentry *dentry, const char *oldname, int mode)
-> 
-> I think the "mode" parameter is not needed unless somebody has a
-> plan to pass it to "struct inode_operations"->symlink method.
 
-Yes, this would be a nice cleanup and I don't think it will ever be
-needed.  I've added this patch to the vfs-cleanups tree.
+The X server failed to come up using the Intel driver, and forced a
+fallback to the 800x600 VESA server.  This was on my Lenovo X61s laptop
+with an Intel chipset, running Ubuntu Gutsy.  When it failed, there were
+a large number of these errors in the /var/log/messages:
 
-Thanks,
-Miklos
-----
+mtrr: type mismatch for e0760000,10000 old: write-back new: write-combining
+mtrr: type mismatch for e0740000,20000 old: write-back new: write-combining
+mtrr: type mismatch for e0700000,40000 old: write-back new: write-combining
+mtrr: type mismatch for e0600000,100000 old: write-back new: write-combining
+mtrr: type mismatch for e0400000,200000 old: write-back new: write-combining
+mtrr: type mismatch for e0000000,400000 old: write-back new: write-combining
+      ...
 
+On kernels where this error did not occur during the bisect, there would
+still be one of these messages:
 
-Subject: vfs: remove mode parameter from path_symlink()
+mtrr: type mismatch for e0000000,10000000 old: write-back new: write-combining
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+... but the X server would correctly start.
 
-Remove the unused mode parameter from vfs_symlink, path_symlink() and
-callers.
+The git bisect identified this commit as the guilty one:
 
-Thanks to Tetsuo Handa for noticing.
+1c12c4cf9411eb130b245fa8d0fbbaf989477c7b is first bad commit
+commit 1c12c4cf9411eb130b245fa8d0fbbaf989477c7b
+Author: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Date:   Wed May 14 16:05:51 2008 -0700
 
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-CC: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
----
- fs/ecryptfs/inode.c |    4 +---
- fs/namei.c          |    8 ++++----
- fs/nfsd/vfs.c       |   10 ++--------
- include/linux/fs.h  |    2 +-
- 4 files changed, 8 insertions(+), 16 deletions(-)
+    mprotect: prevent alteration of the PAT bits
+    
+    There is a defect in mprotect, which lets the user change the page cache
+    type bits by-passing the kernel reserve_memtype and free_memtype
+    wrappers.  Fix the problem by not letting mprotect change the PAT bits.
+    
+    Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+    Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
+    Signed-off-by: Hugh Dickins <hugh@veritas.com>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 
-Index: linux-2.6/fs/ecryptfs/inode.c
-===================================================================
---- linux-2.6.orig/fs/ecryptfs/inode.c	2008-05-17 09:28:29.000000000 +0200
-+++ linux-2.6/fs/ecryptfs/inode.c	2008-05-17 09:28:31.000000000 +0200
-@@ -440,7 +440,6 @@ static int ecryptfs_symlink(struct inode
- 	int rc;
- 	struct dentry *lower_dentry;
- 	struct path lower_dir;
--	umode_t mode;
- 	char *encoded_symname;
- 	int encoded_symlen;
- 	struct ecryptfs_crypt_stat *crypt_stat = NULL;
-@@ -449,7 +448,6 @@ static int ecryptfs_symlink(struct inode
- 	dget(lower_dentry);
- 	lower_dir.mnt = ecryptfs_dentry_to_lower_mnt(dentry);
- 	lower_dir.dentry = lock_parent(lower_dentry);
--	mode = S_IALLUGO;
- 	encoded_symlen = ecryptfs_encode_filename(crypt_stat, symname,
- 						  strlen(symname),
- 						  &encoded_symname);
-@@ -457,7 +455,7 @@ static int ecryptfs_symlink(struct inode
- 		rc = encoded_symlen;
- 		goto out_lock;
- 	}
--	rc = path_symlink(&lower_dir, lower_dentry, encoded_symname, mode);
-+	rc = path_symlink(&lower_dir, lower_dentry, encoded_symname);
- 	kfree(encoded_symname);
- 	if (rc || !lower_dentry->d_inode)
- 		goto out_lock;
-Index: linux-2.6/fs/namei.c
-===================================================================
---- linux-2.6.orig/fs/namei.c	2008-05-17 09:28:29.000000000 +0200
-+++ linux-2.6/fs/namei.c	2008-05-17 09:28:31.000000000 +0200
-@@ -2437,7 +2437,7 @@ asmlinkage long sys_unlink(const char __
- 	return do_unlinkat(AT_FDCWD, pathname);
- }
- 
--static int vfs_symlink(struct inode *dir, struct dentry *dentry, const char *oldname, int mode)
-+static int vfs_symlink(struct inode *dir, struct dentry *dentry, const char *oldname)
- {
- 	int error = may_create(dir, dentry, NULL);
- 
-@@ -2459,14 +2459,14 @@ static int vfs_symlink(struct inode *dir
- }
- 
- int path_symlink(struct path *dir_path, struct dentry *dentry,
--		 const char *oldname, int mode)
-+		 const char *oldname)
- {
- 	int error = mnt_want_write(dir_path->mnt);
- 
- 	if (!error) {
- 		struct inode *dir = dir_path->dentry->d_inode;
- 
--		error = vfs_symlink(dir, dentry, oldname, mode);
-+		error = vfs_symlink(dir, dentry, oldname);
- 		mnt_drop_write(dir_path->mnt);
- 	}
- 
-@@ -2499,7 +2499,7 @@ asmlinkage long sys_symlinkat(const char
- 	if (IS_ERR(dentry))
- 		goto out_unlock;
- 
--	error = path_symlink(&nd.path, dentry, from, S_IALLUGO);
-+	error = path_symlink(&nd.path, dentry, from);
- 	dput(dentry);
- out_unlock:
- 	mutex_unlock(&nd.path.dentry->d_inode->i_mutex);
-Index: linux-2.6/fs/nfsd/vfs.c
-===================================================================
---- linux-2.6.orig/fs/nfsd/vfs.c	2008-05-17 09:28:29.000000000 +0200
-+++ linux-2.6/fs/nfsd/vfs.c	2008-05-17 09:28:31.000000000 +0200
-@@ -1527,7 +1527,6 @@ nfsd_symlink(struct svc_rqst *rqstp, str
- 	struct dentry	*dentry, *dnew;
- 	__be32		err, cerr;
- 	int		host_err;
--	umode_t		mode;
- 
- 	err = nfserr_noent;
- 	if (!flen || !plen)
-@@ -1546,11 +1545,6 @@ nfsd_symlink(struct svc_rqst *rqstp, str
- 	if (IS_ERR(dnew))
- 		goto out_nfserr;
- 
--	mode = S_IALLUGO;
--	/* Only the MODE ATTRibute is even vaguely meaningful */
--	if (iap && (iap->ia_valid & ATTR_MODE))
--		mode = iap->ia_mode & S_IALLUGO;
--
- 	fh_to_path(fhp, &dir_path);
- 	if (unlikely(path[plen] != 0)) {
- 		char *path_alloced = kmalloc(plen+1, GFP_KERNEL);
-@@ -1559,11 +1553,11 @@ nfsd_symlink(struct svc_rqst *rqstp, str
- 		else {
- 			strncpy(path_alloced, path, plen);
- 			path_alloced[plen] = 0;
--			host_err = path_symlink(&dir_path, dnew, path_alloced, mode);
-+			host_err = path_symlink(&dir_path, dnew, path_alloced);
- 			kfree(path_alloced);
- 		}
- 	} else
--		host_err = path_symlink(&dir_path, dnew, path, mode);
-+		host_err = path_symlink(&dir_path, dnew, path);
- 
- 	if (!host_err) {
- 		if (EX_ISSYNC(fhp->fh_export))
-Index: linux-2.6/include/linux/fs.h
-===================================================================
---- linux-2.6.orig/include/linux/fs.h	2008-05-17 09:28:29.000000000 +0200
-+++ linux-2.6/include/linux/fs.h	2008-05-17 09:28:31.000000000 +0200
-@@ -1127,7 +1127,7 @@ extern int vfs_permission(struct nameida
- extern int path_create(struct path *, struct dentry *, int, struct nameidata *);
- extern int path_mkdir(struct path *, struct dentry *, int);
- extern int path_mknod(struct path *, struct dentry *, int, dev_t);
--extern int path_symlink(struct path *, struct dentry *, const char *, int);
-+extern int path_symlink(struct path *, struct dentry *, const char *);
- extern int path_link(struct dentry *, struct path *, struct dentry *);
- extern int path_rmdir(struct path *, struct dentry *);
- extern int path_unlink(struct path *, struct dentry *);
+:040000 040000 db42a4a31f711306205648690e97cbead50183ac 3f835886fcb56fc6e732ee6f985304c4c04b93d9 M      include
+:040000 040000 b3c046a2f1cdfa6a3ec4b46f89cbee6f2ab5018d 07a87010634f455313e1e7f7e3f7d3a94b9bfed3 M      mm
+
+And the bisect log follows here:
+
+git-bisect start
+# bad: [079d04dfa5198e3d43c6db2dcfa400f7fbbd516f] ext4: fiemap implementation Here is ext4_fiemap() itself.  This still needs a bit of testing & work, but is correct for most file layouts.... I still hit occasional problems with interesting mappings such as sparse/preallocated/etc.
+git-bisect bad 079d04dfa5198e3d43c6db2dcfa400f7fbbd516f
+# good: [e7f379d5cabb2790ecce5d623382fa6085e7686d] alim15x3: remove WDC_ALI15X3 config option
+git-bisect good e7f379d5cabb2790ecce5d623382fa6085e7686d
+# good: [9dcbf35afb7359466efdf7fb81ee32f3ae2d56a3] V4L/DVB (7887): cx18: fix Compro H900 analog support.
+git-bisect good 9dcbf35afb7359466efdf7fb81ee32f3ae2d56a3
+# bad: [8f40f672e6bb071812f61bfbd30efc3fc1263ad1] Merge branch 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/ericvh/v9fs
+git-bisect bad 8f40f672e6bb071812f61bfbd30efc3fc1263ad1
+# good: [90898709dfca860d9550c85f0924007f4c0467ea] atmel_lcdfb: fix initialization of a pre-allocated framebuffer
+git-bisect good 90898709dfca860d9550c85f0924007f4c0467ea
+# bad: [9ffee4cbc51907755809d98613d9e7133612803a] tty_check_change(): avoid taking tasklist_lock while holding tty->ctrl_lock
+git-bisect bad 9ffee4cbc51907755809d98613d9e7133612803a
+# good: [122a881c776b7c155bf3f379928cc27aab435288] video/logo: add support for Blackfin/Linux logo for framebuffer console
+git-bisect good 122a881c776b7c155bf3f379928cc27aab435288
+# bad: [1c12c4cf9411eb130b245fa8d0fbbaf989477c7b] mprotect: prevent alteration of the PAT bits
+git-bisect bad 1c12c4cf9411eb130b245fa8d0fbbaf989477c7b
+# good: [fd8a4221ad76df700ff34875c9fbc42302aa4ba3] memory_hotplug: check for walk_memory_resource() failure in online_pages()
+git-bisect good fd8a4221ad76df700ff34875c9fbc42302aa4ba3
+# good: [44c81433e8b05dbc85985d939046f10f95901184] per_cpu: fix DEFINE_PER_CPU_SHARED_ALIGNED for modules
+git-bisect good 44c81433e8b05dbc85985d939046f10f95901184
