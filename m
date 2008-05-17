@@ -1,101 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759704AbYEQUgg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759935AbYEQUhb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759704AbYEQUgg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 16:36:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758291AbYEQUg2
+	id S1759935AbYEQUhb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 16:37:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758581AbYEQUhX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 16:36:28 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:45084 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751942AbYEQUg1 (ORCPT
+	Sat, 17 May 2008 16:37:23 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:8424 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751942AbYEQUhW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 16:36:27 -0400
-Date: Sat, 17 May 2008 16:36:23 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Current list of includes of non-existent <linux/whatever.h>
- headers.
-Message-ID: <alpine.LFD.1.10.0805171633520.5061@localhost.localdomain>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sat, 17 May 2008 16:37:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=da+IrY+wluYlw0fq63XNNQLbZO9hhcONAZ8EbrbVugXO6N6i/LOZMcPV3W5Vel+SWNfL6GFd4yNonATFrvDA3SrswVyMSxelCc4cUhA670o6xoNLgnkq2XKHNULBLxuDqeC0pJWGjeUuQXqJq9KB8X+ZudH8/8VawrUNjl7NFjY=
+Message-ID: <df47b87a0805171337h5da01cc4pd9df7d318afc47c2@mail.gmail.com>
+Date: Sat, 17 May 2008 23:37:13 +0300
+From: "Ioan Ionita" <opslynx@gmail.com>
+To: "kernel list" <linux-kernel@vger.kernel.org>, mszeredi@suse.cz,
+       a.p.zijlstra@chello.nl, akpm@linux-foundation.org
+Subject: BISECTED REGRESSION: 2.6.26-rc2: FUSE changes break mount of ntfs-3g
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-  since the merge activity is cooling off, here's a list of references
-to <linux/whatever.h> headers that simply don't exist.  i've made no
-attempt to cull the list based on semantic rationalization of any
-kind.  enjoy.
+Running a Linux ops-desktop 2.6.26-rc1 #7 SMP PREEMPT Sat May 17
+19:33:36 EEST 2008 x86_64 GNU/Linux
+
+When attempting to mount a ntfs-3g partition under 2.6.26-rc2, i got
+the following error:
+
+fuse: mount failed: Cannot allocate memory
+
+I also got the OOPS included below. I bisected the error to:
+
+b6f2fcbcfca9db2bd7aa24940224fcd3bbdbb8aa is first bad commit
+commit b6f2fcbcfca9db2bd7aa24940224fcd3bbdbb8aa
+Author: Miklos Szeredi <mszeredi@suse.cz>
+Date:   Wed Apr 30 00:54:34 2008 -0700
+
+    mm: bdi: expose the BDI object in sysfs for FUSE
+
+    Register FUSE's backing_dev_info under sysfs with the name
+"fuse-MAJOR:MINOR"
+
+    Make the fuse control filesystem use s_dev instead of a fuse specific ID.
+    This makes it easier to match directories under
+/sys/fs/fuse/connections/ with
+    directories under /sys/class/bdi, and with actual mounts.
+
+    Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+    Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+
+:040000 040000 f993fbf0716b58bfcf12dd27abbb25c43ab78326
+176a10dec86edc841fc44db6ad4011377a9efe02 M	fs
 
 
-=== Missing: include/linux/autoconf.h ===
-arch/ia64/kvm/asm-offsets.c:#include <linux/autoconf.h>
-drivers/accessibility/braille/braille_console.c:#include <linux/autoconf.h>
-=== Missing: include/linux/blk.h ===
-arch/frv/kernel/setup.c:#include <linux/blk.h>
-=== Missing: include/linux/bounds.h ===
-include/linux/mmzone.h:#include <linux/bounds.h>
-include/linux/page-flags.h:#include <linux/bounds.h>
-=== Missing: include/linux/cachefs.h ===
-fs/afs/cache.h:#include <linux/cachefs.h>
-=== Missing: include/linux/compile.h ===
-arch/x86/boot/version.c:#include <linux/compile.h>
-init/version.c:#include <linux/compile.h>
-=== Missing: include/linux/debugger.h ===
-arch/blackfin/kernel/kgdb.c:#include <linux/debugger.h>
-=== Missing: include/linux/kdb.h ===
-drivers/acpi/osl.c:#include <linux/kdb.h>
-=== Missing: include/linux/l3/l3.h ===
-sound/arm/sa11xx-uda1341.c:#include <linux/l3/l3.h>
-sound/i2c/l3/uda1341.c:#include <linux/l3/l3.h>
-=== Missing: include/linux/pkthook.h ===
-arch/ppc/8xx_io/fec.c:#include <linux/pkthook.h>
-=== Missing: include/linux/r4k-timer.h ===
-arch/mips/kernel/sync-r4k.c:#include <linux/r4k-timer.h>
-=== Missing: include/linux/serial_ip3106.h ===
-arch/mips/nxp/pnx8550/common/gdb_hook.c:#include <linux/serial_ip3106.h>
-=== Missing: include/linux/spi/tsc2102.h ===
-arch/arm/mach-omap1/board-palmte.c:#include <linux/spi/tsc2102.h>
-=== Missing: include/linux/squashfs_fs.h ===
-arch/mips/pmc-sierra/msp71xx/msp_prom.c:#include <linux/squashfs_fs.h>
-=== Missing: include/linux/tqueue.h ===
-drivers/pcmcia/au1000_pb1x00.c:#include <linux/tqueue.h>
-drivers/pcmcia/au1000_xxs1500.c:#include <linux/tqueue.h>
-=== Missing: include/linux/usb/isp1362.h ===
-arch/blackfin/mach-bf533/boards/cm_bf533.c:#include <linux/usb/isp1362.h>
-arch/blackfin/mach-bf533/boards/stamp.c:#include <linux/usb/isp1362.h>
-arch/blackfin/mach-bf533/boards/ip0x.c:#include <linux/usb/isp1362.h>
-arch/blackfin/mach-bf533/boards/H8606.c:#include <linux/usb/isp1362.h>
-arch/blackfin/mach-bf533/boards/ezkit.c:#include <linux/usb/isp1362.h>
-arch/blackfin/mach-bf527/boards/ezkit.c:#include <linux/usb/isp1362.h>
-arch/blackfin/mach-bf537/boards/generic_board.c:#include <linux/usb/isp1362.h>
-arch/blackfin/mach-bf537/boards/stamp.c:#include <linux/usb/isp1362.h>
-arch/blackfin/mach-bf537/boards/cm_bf537.c:#include <linux/usb/isp1362.h>
-arch/blackfin/mach-bf537/boards/minotaur.c:#include <linux/usb/isp1362.h>
-arch/blackfin/mach-bf537/boards/pnav10.c:#include <linux/usb/isp1362.h>
-arch/blackfin/mach-bf561/boards/cm_bf561.c:#include <linux/usb/isp1362.h>
-arch/blackfin/mach-bf561/boards/ezkit.c:#include <linux/usb/isp1362.h>
-=== Missing: include/linux/usb/musb.h ===
-arch/arm/mach-omap2/usb-tusb6010.c:#include <linux/usb/musb.h>
-arch/blackfin/mach-bf548/boards/cm_bf548.c:#include <linux/usb/musb.h>
-arch/blackfin/mach-bf548/boards/ezkit.c:#include <linux/usb/musb.h>
-arch/blackfin/mach-bf527/boards/ezkit.c:#include <linux/usb/musb.h>
+OOPS:
 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
+WARNING: at fs/sysfs/dir.c:425 sysfs_add_one+0xa3/0xc0()
+Modules linked in:
+Pid: 7545, comm: mount.ntfs Not tainted 2.6.26-rc1 #7
 
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
+Call Trace:
+ [<ffffffff80250ce4>] warn_on_slowpath+0x64/0xa0
+ [<ffffffff80251e1e>] printk+0x4e/0x60
+ [<ffffffff802c2e93>] find_inode+0x43/0x70
+ [<ffffffff802f9cf0>] sysfs_ilookup_test+0x0/0x10
+ [<ffffffff802c3014>] ifind+0x64/0xc0
+ [<ffffffff802f9f99>] sysfs_find_dirent+0x29/0x40
+ [<ffffffff802fa053>] sysfs_add_one+0xa3/0xc0
+ [<ffffffff802fa670>] create_dir+0x60/0xb0
+ [<ffffffff802fa6f1>] sysfs_create_dir+0x31/0x50
+ [<ffffffff8037b4d2>] kobject_get+0x12/0x20
+ [<ffffffff8037b632>] kobject_add_internal+0xe2/0x1c0
+ [<ffffffff8037bc14>] kobject_add+0x54/0x80
+ [<ffffffff80314efa>] search_by_key+0x14a/0xe10
+ [<ffffffff802869be>] free_pages_bulk+0xde/0x300
+ [<ffffffff8037b4d2>] kobject_get+0x12/0x20
+ [<ffffffff803ed807>] get_device+0x17/0x30
+ [<ffffffff803edf6a>] device_add+0xba/0x5c0
+ [<ffffffff8037b273>] kobject_init+0x33/0x90
+ [<ffffffff803ee578>] device_create+0xe8/0x140
+ [<ffffffff8038080c>] vsnprintf+0x45c/0x700
+ [<ffffffff80382da1>] kvasprintf+0x71/0x90
+ [<ffffffff8028f375>] bdi_register+0x95/0x120
+ [<ffffffff802ab854>] percpu_populate+0x44/0x60
+ [<ffffffff802aa054>] __kmalloc+0xa4/0x100
+ [<ffffffff802ab9e7>] __percpu_alloc_mask+0x77/0xb0
+ [<ffffffff8038d86c>] percpu_counter_init+0x6c/0x80
+ [<ffffffff8028f227>] bdi_init+0x77/0xc0
+ [<ffffffff8035300a>] fuse_fill_super+0x23a/0x640
+ [<ffffffff805a14c1>] __down_write_nested+0xa1/0xc0
+ [<ffffffff8037f35e>] strlcpy+0x4e/0x80
+ [<ffffffff802b0664>] get_sb_bdev+0x144/0x180
+ [<ffffffff80352dd0>] fuse_fill_super+0x0/0x640
+ [<ffffffff802b0396>] vfs_kern_mount+0x56/0xc0
+ [<ffffffff802b0463>] do_kern_mount+0x53/0x110
+ [<ffffffff802c892b>] do_new_mount+0x9b/0xe0
+ [<ffffffff802c8b56>] do_mount+0x1e6/0x220
+ [<ffffffff8026a1a6>] down+0x16/0x50
+ [<ffffffff802c8c2b>] sys_mount+0x9b/0x100
+ [<ffffffff8022442b>] system_call_after_swapgs+0x7b/0x80
+
+---[ end trace 1f3b5efdffae7d27 ]---
+kobject_add_internal failed for 253:3 with -EEXIST, don't try to
+register things with the same name in the same directory.
+Pid: 7545, comm: mount.ntfs Tainted: G        W 2.6.26-rc1 #7
+
+Call Trace:
+ [<ffffffff8037b6c3>] kobject_add_internal+0x173/0x1c0
+ [<ffffffff8037bc14>] kobject_add+0x54/0x80
+ [<ffffffff80314efa>] search_by_key+0x14a/0xe10
+ [<ffffffff802869be>] free_pages_bulk+0xde/0x300
+ [<ffffffff8037b4d2>] kobject_get+0x12/0x20
+ [<ffffffff803ed807>] get_device+0x17/0x30
+ [<ffffffff803edf6a>] device_add+0xba/0x5c0
+ [<ffffffff8037b273>] kobject_init+0x33/0x90
+ [<ffffffff803ee578>] device_create+0xe8/0x140
+ [<ffffffff8038080c>] vsnprintf+0x45c/0x700
+ [<ffffffff80382da1>] kvasprintf+0x71/0x90
+ [<ffffffff8028f375>] bdi_register+0x95/0x120
+ [<ffffffff802ab854>] percpu_populate+0x44/0x60
+ [<ffffffff802aa054>] __kmalloc+0xa4/0x100
+ [<ffffffff802ab9e7>] __percpu_alloc_mask+0x77/0xb0
+ [<ffffffff8038d86c>] percpu_counter_init+0x6c/0x80
+ [<ffffffff8028f227>] bdi_init+0x77/0xc0
+ [<ffffffff8035300a>] fuse_fill_super+0x23a/0x640
+ [<ffffffff805a14c1>] __down_write_nested+0xa1/0xc0
+ [<ffffffff8037f35e>] strlcpy+0x4e/0x80
+ [<ffffffff802b0664>] get_sb_bdev+0x144/0x180
+ [<ffffffff80352dd0>] fuse_fill_super+0x0/0x640
+ [<ffffffff802b0396>] vfs_kern_mount+0x56/0xc0
+ [<ffffffff802b0463>] do_kern_mount+0x53/0x110
+ [<ffffffff802c892b>] do_new_mount+0x9b/0xe0
+ [<ffffffff802c8b56>] do_mount+0x1e6/0x220
+ [<ffffffff8026a1a6>] down+0x16/0x50
+ [<ffffffff802c8c2b>] sys_mount+0x9b/0x100
+ [<ffffffff8022442b>] system_call_after_swapgs+0x7b/0x80
+
+
+If any further info is required, let me know. I'm willing to test any
+patches as well.
+
+Kudos!
