@@ -1,56 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760697AbYEQAgM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758497AbYEQAgw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760697AbYEQAgM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 20:36:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754042AbYEQAf6
+	id S1758497AbYEQAgw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 20:36:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753603AbYEQAgi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 20:35:58 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:2364 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753072AbYEQAf5 (ORCPT
+	Fri, 16 May 2008 20:36:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39562 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760951AbYEQAgf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 20:35:57 -0400
-Date: Fri, 16 May 2008 20:35:56 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Harvey Harrison <harvey.harrison@gmail.com>
-cc: Bryan Wu <cooloney@kernel.org>, Jie Zhang <jie.zhang@analog.com>,
-       Oliver Neukum <oliver@neukum.org>, <david-b@pacbell.net>,
-       <greg@kroah.com>, <linux-usb@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC-PATCH] lib: add byteorder helpers for the aligned case
-In-Reply-To: <1210961386.5915.43.camel@brick>
-Message-ID: <Pine.LNX.4.44L0.0805162022050.13416-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 16 May 2008 20:36:35 -0400
+Date: Fri, 16 May 2008 17:35:52 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
+Message-Id: <20080516173552.e88183d9.akpm@linux-foundation.org>
+In-Reply-To: <20080517002030.GA7374@mit.edu>
+References: <482DDA56.6000301@redhat.com>
+	<20080516130545.845a3be9.akpm@linux-foundation.org>
+	<482DF44B.50204@redhat.com>
+	<20080516220315.GB15334@shareable.org>
+	<482E08E6.4030507@redhat.com>
+	<20080516225304.GG15334@shareable.org>
+	<20080517002030.GA7374@mit.edu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 May 2008, Harvey Harrison wrote:
+On Fri, 16 May 2008 20:20:30 -0400 Theodore Tso <tytso@mit.edu> wrote:
 
-> Some users know the pointer they are writing to are aligned,
-> rather than doing *(__le16 *)ptr = cpu_to_le16(val) add helpers
-> wrapping this up that have the same convention as put_unaligned_le/be.
+> On Fri, May 16, 2008 at 11:53:04PM +0100, Jamie Lokier wrote:
+> > > > If you just want to test the block I/O layer and drive itself, don't
+> > > > use the filesystem, but write a program which just access the block
+> > > > device, continuously writing with/without barriers every so often, and
+> > > > after power cycle read back to see what was and wasn't written.
+> > > 
+> > > Well, I think it is worth testing through the filesystem, different
+> > > journaling mechanisms will probably react^wcorrupt in different ways.
+> > 
+> > I agree, but intentional tests on the block device will show the
+> > drives characteristcs on power failure much sooner and more
+> > consistently.  Then you can concentrate on the worst drivers :-)
 > 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> ---
-> Alan, as requested, I'm looking around a bit to see if there are actual
-> users for this.  But it does make a nice complement to the unaligned
-> versions.
+> I suspect the real reason why we get away with it so much with ext3 is
+> that the journal is usually contiguous on disk, hence, when you write
+> to the journal, it's highly unlikely that commit block will be written
+> and the blocks before the commit block have not.
 
-This is great -- thanks!  I've wanted this sort of thing for a long
-time.  There's a good chance that the SCSI core could make use of
-it.  Try looking at the prep functions in sd.c and sr.c.
+yup.  Plus with a commit only happening once per few seconds, the time
+window for a corrupting power outage is really really small, in
+relative terms.  All these improbabilities multiply.
 
-> +static inline void put_le16(u16 val, void *ptr)
-> +{
-> +	*(__le16 *)ptr = cpu_to_le16(val);
-> +}
+Journal wrapping could cause the commit block to get written before its
+data blocks.  We could improve that by changing the journal layout a bit:
+wrap the entire commit rather than just its tail.  Such a change might
+be intrusive though.
 
-Is this able to do the byte rearrangement at compile time if val is a 
-compile-time constant?  I imagine it would.
+The other possible scenario is when the fs thinks the metadata blocks
+have been checkpointed, so it reuses the journal space, only they
+weren't really checkpointed.  But that would require that we'd gone
+through so much IO that the metadata probably _has_ been checkpointed.
 
-Alan Stern
+>  In addition, because
+> we are doing physical block journalling, it repairs a huge amount of
+> damage during the journal replay.  So as we are writing the journal,
+> the disk drive sees a large contiguous write stream, followed by
+> singleton writes where the disk blocks end up on disk.  The most
+> important reason, though, is that the blocks which are dirty don't get
+> flushed out to disk right away!
+> 
+> They don't have to, since they are in the journal, and the journal
+> replay will write the correct data to disk.  Before the journal
+> commit, the buffer heads are pinned, so they can't be written out.
+> After the journal commit, the buffer heads may be written out, but
+> they don't get written out right away; the kernel will only write them
+> out when the periodic buffer cache flush takes place, *or* if the
+> journal need to wrap, at which point if there are pending writes to an
+> old commit that haven't been superceded by another journal commit, the
+> jbd layer has to force them out.  But the point is this is done in an
+> extremely lazy fashion.
+> 
+> As a result, it's very tough to create a situation where a hard drive
+> will reorder write requests aggressively enough that we would see a
+> potential problem.
+> 
+> I suspect if we want to demonstrate the problem, we would need to do a
+> number of things:
+> 
+> 	* create a highly fragmented journal inode, forcing the jbd
+> 	  layer to seek all over the disk while writing out the
+> 	  journal blocks during a commit
+> 	* make the journal small, forcing the journal to wrap very often
+> 	* run with journal=data mode, to put maximal stress on the journal
+> 	* make the workload one which creates and deletes large number
+> 	  of files scattered all over the directory hierarchy, so that
+> 	  we limit the number of blocks which are rewritten, 
+>        * forcibly crash the system while subjecting the ext3
+>          filesystem to this torture test
+> 
+> Given that most ext3 filesystems have their journal created at mkfs
+> time, so it is contiguous, and the journal is generally nice and
+> large, in practice I suspect it's relatively difficult (I didn't say
+> impossible) for us to trigger corruption given how far away we are
+> from the worst case scenario described above.
+> 
+
+what he said.
 
