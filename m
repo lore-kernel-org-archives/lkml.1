@@ -1,51 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755309AbYEQHao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755619AbYEQHgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755309AbYEQHao (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 03:30:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752298AbYEQHaf
+	id S1755619AbYEQHgu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 03:36:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752020AbYEQHgk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 03:30:35 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:43649 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751908AbYEQHae (ORCPT
+	Sat, 17 May 2008 03:36:40 -0400
+Received: from smtp25.orange.fr ([193.252.22.21]:8105 "EHLO smtp25.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751941AbYEQHgj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 03:30:34 -0400
-Date: Sat, 17 May 2008 01:30:33 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Michal Simek <monstr@seznam.cz>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Arnd Bergmann <arnd@arndb.de>, rth@twiddle.net,
-       linux-ia64@vger.kernel.org, tony.luck@intel.com
-Subject: Re: Locking API testsuite problem - Microblaze
-Message-ID: <20080517073032.GA2638@parisc-linux.org>
-References: <482E8438.2040201@seznam.cz>
+	Sat, 17 May 2008 03:36:39 -0400
+X-ME-UUID: 20080517073637743.1221E1C00081@mwinf2536.orange.fr
+Message-ID: <482E8AF5.9050804@cosmosbay.com>
+Date: Sat, 17 May 2008 09:36:21 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <482E8438.2040201@seznam.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH] modules: Use a better scheme for refcounting
+References: <482C9FC5.2070508@cosmosbay.com> <482D1BCE.3060501@cosmosbay.com> <482D8EFC.8040109@sgi.com> <200805171533.46295.rusty@rustcorp.com.au>
+In-Reply-To: <200805171533.46295.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 17, 2008 at 09:07:36AM +0200, Michal Simek wrote:
-> Hi Richard, Tony, Arnd and others,
-> 
-> I turn on API testsuite for Microblaze CPU for stable 2.6.24 and I got nice log
-> with some faults. The same problem I have on latest version.
-> 
-> I found the similar problem for alpha CPU and ia64 but I haven't found solving
-> these issues. Could you give me a hint how to solve this problem.
+Rusty Russell a écrit :
+> On Friday 16 May 2008 23:41:16 Mike Travis wrote:
+>   
+>> Eric Dumazet wrote:
+>>     
+>>> Rusty Russell a Ã©crit :
+>>>       
+>>>>    Any chance I can ask you look at the issue of full dynamic per-cpu
+>>>> allocation?
+>>>>         
+>>> You mean using alloc_percpu() ? Problem is that current implementation
+>>> is expensive,
+>>>       
+>
+> I mean rewriting alloc_percpu :)
+>
+>   
+>>> We probably can change this to dynamic per-cpu as soon as Mike or
+>>> Christopher finish their work on new dynamic per-cpu implementation ?
+>>>       
+>> Yes, the zero-based percpu variables followed by the cpu_alloc patch should
+>> provide this and shrink the code quite well, including in some cases
+>> removing locking requirements (because the resultant instructions will be
+>> atomic.)
+>>     
+>
+> Ah, I hadn't realized that Mike was already working on this.  Mike, have you 
+> published patches already?
+>
+>   
+Christoph Lameter made good work last year and apparently the path is to :
 
-You missed the crucial line:
+1) Put pda at the begining of percpu section.
+2) Relocate percpu variables to begin at zero
+3) Use %gs (or %fs) register to address pda AND percpu section.
+4) Reserve an appropriate large virtual zone into percpu section so that 
+it can fullfill :
+- percpu "static" allocations needed by module loader.
+- per_cpu "dynamic" allocations
+  (No more need for an array of pointers to find the address of dynamic 
+per_cpu variable)
+- Eventually allocates PAGES dynamically into this zone to satisfy any 
+size of percpu needs.
+(But with a limit of say 256 MB per cpu on x86_64)
 
-143 out of 218 testcases failed, as expected.
+Thats a lot of work and apparently Mike and Christoph are doing it.
 
-Some of these testcases are /expected/ to fail.  Succeeding would be an
-bug.  There are no bugs here.
+Some pointers to previous work:
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+http://groups.google.pl/group/linux.kernel/browse_thread/thread/f2ff6901ca6ae9fc/b2ed3b7f3612a157?lnk=raot
+
+http://kerneltrap.org/mailarchive/linux-kernel/2008/2/1/683104
+
+http://linux.derkeiler.com/Mailing-Lists/Kernel/2008-01/msg09052.html
+
+
+
+
