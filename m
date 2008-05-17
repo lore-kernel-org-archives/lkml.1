@@ -1,144 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758834AbYEQUVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758945AbYEQU0r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758834AbYEQUVU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 16:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758026AbYEQUVI
+	id S1758945AbYEQU0r (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 16:26:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755364AbYEQU0h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 16:21:08 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:34268 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757947AbYEQUVH (ORCPT
+	Sat, 17 May 2008 16:26:37 -0400
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:58858 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753681AbYEQU0g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 16:21:07 -0400
-Date: Sat, 17 May 2008 13:20:50 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "koos vriezen" <koos.vriezen@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mchehab@infradead.org,
-       torvalds@linux-foundation.org
-Subject: Re: mplayer v4l hangs in 2.6.25.2/4 (likely regression)
-Message-ID: <20080517132050.2dae0ddd@infradead.org>
-In-Reply-To: <d4e708d60805171306n698192aas66b42a9468253448@mail.gmail.com>
-References: <d4e708d60805170954n6b2044c7h306bc6cb76bf798d@mail.gmail.com>
-	<20080517111639.21a3e177@infradead.org>
-	<d4e708d60805171211q1a1966a3i78dc3dc98d275dd1@mail.gmail.com>
-	<20080517122640.2d15aeed@infradead.org>
-	<20080517123452.79b82be2@infradead.org>
-	<d4e708d60805171306n698192aas66b42a9468253448@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 17 May 2008 16:26:36 -0400
+From: Junio C Hamano <gitster@pobox.com>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [GIT pull] x86 fixes for 2.6.26
+References: <alpine.LFD.1.10.0805170037180.3255@apollo.tec.linutronix.de>
+ <alpine.LFD.1.10.0805161544080.3020@woody.linux-foundation.org>
+ <20080517015705.GA20375@mit.edu>
+ <alpine.LFD.1.10.0805161933240.3020@woody.linux-foundation.org>
+ <20080517145802.GB6978@mit.edu>
+Date: Sat, 17 May 2008 13:26:19 -0700
+In-Reply-To: <20080517145802.GB6978@mit.edu> (Theodore Tso's message of "Sat,
+ 17 May 2008 10:58:04 -0400")
+Message-ID: <7vabiobrtg.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Pobox-Relay-ID: 8B3806CA-244F-11DD-B195-80001473D85F-77302942!a-sasl-fastnet.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 17 May 2008 22:06:12 +0200
-"koos vriezen" <koos.vriezen@gmail.com> wrote:
+Theodore Tso <tytso@mit.edu> writes:
 
-> 2008/5/17 Arjan van de Ven <arjan@infradead.org>:
-> 
-> > > so.. bttv first takes "fh->cap.vb_lock" in vidiocgmbuf, then
-> > > calls videobuf_mmap_setup(), and the first thing that does
-> is to also take fh->cap.vb_lock!  This isn't even an ABBA deadlock,
-> but a straight AA deadlock :)
-> 
-> Looks like I'm the only one actually running this code ;-)
-> 
-> > and here is an (untest) patch that should fix this problem:
-> > Koos, can you apply this to your kernel tree and report back if this
-> > fixes your deadlock?
-> 
-> patching file drivers/media/video/bt8xx/bttv-driver.c
-> patching file drivers/media/video/videobuf-core.c
-> Hunk #1 succeeded at 335 (offset 4 lines).
-> Hunk #2 succeeded at 1093 (offset -36 lines).
-> patching file include/media/videobuf-core.h
-> Hunk #1 succeeded at 227 (offset -10 lines).
-> 
-> Deadlock is gone, only mplayer fails to unmute the audio. 
+> Basically, this would be the subsystem maintainer sometimes wearing an
+> "end-point-developer" hat, and sometimes wearing a "subsystem
+> maintainer" hat.  So rebasing is fine as long as it's clear that it's
+> happening on branches which are not meant as a base for
+> submaintainers.  
+>
+> I believe Junio does this himself for his own topic branches while
+> developing git, yes?
 
-that's something else entirely ;)
+Yes, I used to and I still do sometimes.  Anything not merged to 'next'
+yet is a fair game for rebasing.  'pu' is strictly a patch queue in that
+sense.
 
-I'll call your deadlock bug fixed by the patch...
+When I am shuffling the topics that are not merged to 'next', I am not
+just wearing an end-point-developer hat, but pretending to be the original
+contributor (iow "how the patch could have been done better than the one
+that I received via e-mail") more often than not these days; I am writing
+less and less new code myself.
 
-Mauro: will you send this on to Linus or should this go direct?
+I used to religiously rebase topics that were not in 'next' on top of
+updated 'master' before I rebuilt 'pu' [*1*].  This was partly because
+when the topic eventually becomes 'next' worthy, the commit on 'next' to
+merge the topic will not have a parent that is too stale (and graphically
+the end result would look easier to view that way) if I did so, and partly
+because rebasing is one cheap way to detect and resolve conflicts with
+'master' much earlier before the topic becomes ready to be merged to
+'next'.
 
-From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: [PATCH] Fix a deadlock in the bttv driver
+I do not however do that so often anymore.
 
-vidiocgmbuf() does this:
-        mutex_lock(&fh->cap.vb_lock);
-        retval = videobuf_mmap_setup(&fh->cap, gbuffers, gbufsize,
-                                     V4L2_MEMORY_MMAP);
+Whenever I rebuild 'pu' starting from the tip of 'next', merging these
+uncooked topics, if they have conflicts with 'master' or 'next', I'd
+resolve them right there.  Next day, when I rebuild 'pu' again from
+updated 'next', it is very likely that I have to resolve the _same_
+conflicts again, but that process is largely automated because git
+remembers the conflict resolution I did when I merged that topic to 'pu'
+the previous day.  After the topics are polished further and when they are
+ready to be merged to 'next', the story is the same.  The same conflicts
+need to be resolved but that is largely automated.  That is one of the
+reasons I do not rebase topics as often as I used to these days.  IOW, I
+rely on and trust "rerere" magic a bit more than I used to.
 
-and videobuf_mmap_setup() then just does
-        mutex_lock(&q->vb_lock);
-        ret = __videobuf_mmap_setup(q, bcount, bsize, memory);
-        mutex_unlock(&q->vb_lock);
+[Footnote]
 
-which is an obvious double-take deadlock.
+*1* My "git day" goes like:
 
-This patch fixes this by having vidiocgmbuf() just call the __videobuf_mmap_setup
-function instead.
+ - advance 'maint' with obviously good patches, merges from completed
+   'maintenance' topics, and merges from subsystem trees;
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- drivers/media/video/bt8xx/bttv-driver.c |    2 +-
- drivers/media/video/videobuf-core.c     |    3 ++-
- include/media/videobuf-core.h           |    3 +++
- 3 files changed, 6 insertions(+), 2 deletions(-)
+ - merge updated 'maint' to 'master';
 
-diff --git a/drivers/media/video/bt8xx/bttv-driver.c b/drivers/media/video/bt8xx/bttv-driver.c
-index 2ca3e9c..0165aac 100644
---- a/drivers/media/video/bt8xx/bttv-driver.c
-+++ b/drivers/media/video/bt8xx/bttv-driver.c
-@@ -2613,7 +2613,7 @@ static int vidiocgmbuf(struct file *file, void *priv, struct video_mbuf *mbuf)
- 	struct bttv_fh *fh = priv;
- 
- 	mutex_lock(&fh->cap.vb_lock);
--	retval = videobuf_mmap_setup(&fh->cap, gbuffers, gbufsize,
-+	retval = __videobuf_mmap_setup(&fh->cap, gbuffers, gbufsize,
- 				     V4L2_MEMORY_MMAP);
- 	if (retval < 0) {
- 		mutex_unlock(&fh->cap.vb_lock);
-diff --git a/drivers/media/video/videobuf-core.c b/drivers/media/video/videobuf-core.c
-index 982f446..0a88c44 100644
---- a/drivers/media/video/videobuf-core.c
-+++ b/drivers/media/video/videobuf-core.c
-@@ -331,7 +331,7 @@ int videobuf_mmap_free(struct videobuf_queue *q)
- }
- 
- /* Locking: Caller holds q->vb_lock */
--static int __videobuf_mmap_setup(struct videobuf_queue *q,
-+int __videobuf_mmap_setup(struct videobuf_queue *q,
- 			unsigned int bcount, unsigned int bsize,
- 			enum v4l2_memory memory)
- {
-@@ -1129,6 +1129,7 @@ EXPORT_SYMBOL_GPL(videobuf_read_stream);
- EXPORT_SYMBOL_GPL(videobuf_read_one);
- EXPORT_SYMBOL_GPL(videobuf_poll_stream);
- 
-+EXPORT_SYMBOL_GPL(__videobuf_mmap_setup);
- EXPORT_SYMBOL_GPL(videobuf_mmap_setup);
- EXPORT_SYMBOL_GPL(videobuf_mmap_free);
- EXPORT_SYMBOL_GPL(videobuf_mmap_mapper);
-diff --git a/include/media/videobuf-core.h b/include/media/videobuf-core.h
-index 5b39a22..874f134 100644
---- a/include/media/videobuf-core.h
-+++ b/include/media/videobuf-core.h
-@@ -237,6 +237,9 @@ unsigned int videobuf_poll_stream(struct file *file,
- int videobuf_mmap_setup(struct videobuf_queue *q,
- 			unsigned int bcount, unsigned int bsize,
- 			enum v4l2_memory memory);
-+int __videobuf_mmap_setup(struct videobuf_queue *q,
-+			unsigned int bcount, unsigned int bsize,
-+			enum v4l2_memory memory);
- int videobuf_mmap_free(struct videobuf_queue *q);
- int videobuf_mmap_mapper(struct videobuf_queue *q,
- 			 struct vm_area_struct *vma);
--- 
-1.5.4.5
+ - advance 'master' with obviously good patches, merges from completed
+   topics, and merges from subsystem trees;
 
+ - merge updated 'master' to 'next';
+
+ - apply new patches into new topics forked from either 'maint' (if it
+   should eventually fix breakage in the maintenance track), 'master', or
+   some existing topic (if it has functional dependencies on it);
+
+ - apply update patches to existing topics;
+
+ - possibly rebase topics that have not been in 'next' but are now ready
+   for 'next';
+
+ - merge topics that are 'next' worthy to 'next';
+
+ - reset 'pu' to 'next';
+
+ - merge remaining topics to 'pu';
