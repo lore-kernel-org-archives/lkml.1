@@ -1,84 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756863AbYEQSQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757192AbYEQSXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756863AbYEQSQx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 14:16:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133AbYEQSQr
+	id S1757192AbYEQSXU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 14:23:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751176AbYEQSXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 14:16:47 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:41687 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751798AbYEQSQq (ORCPT
+	Sat, 17 May 2008 14:23:05 -0400
+Received: from smtp1.betherenow.co.uk ([87.194.0.68]:35955 "HELO
+	smtp1.betherenow.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754644AbYEQSXD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 14:16:46 -0400
-Date: Sat, 17 May 2008 11:16:39 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: "koos vriezen" <koos.vriezen@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: mplayer v4l hangs in 2.6.25.2/4
-Message-ID: <20080517111639.21a3e177@infradead.org>
-In-Reply-To: <d4e708d60805170954n6b2044c7h306bc6cb76bf798d@mail.gmail.com>
-References: <d4e708d60805170954n6b2044c7h306bc6cb76bf798d@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 17 May 2008 14:23:03 -0400
+From: Alistair John Strachan <alistair@devzero.co.uk>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: XFS/md/blkdev warning (was Re: Linux 2.6.26-rc2)
+Date: Sat, 17 May 2008 19:22:56 +0100
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, xfs@oss.sgi.com,
+       Neil Brown <neilb@suse.de>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org
+References: <alpine.LFD.1.10.0805120731480.3188@woody.linux-foundation.org> <alpine.LFD.1.10.0805120933310.3019@woody.linux-foundation.org> <20080512164920.GE16217@kernel.dk>
+In-Reply-To: <20080512164920.GE16217@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200805171922.56272.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 17 May 2008 18:54:06 +0200
-"koos vriezen" <koos.vriezen@gmail.com> wrote:
+(Added LKML CC)
 
-> Hi,
-> 
-> I'm using mplayer for tv watch quite some kernels but 2.6.25 makes
-> mplayer unkillable. Last working kernel is 2.24.5 that I have tried.
-> 
-> This gets printed on the console
-> 
-> INFO: task mplayer:3465 blocked for more than 120 seconds.
-> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this
-> message. mplayer       D 0000000000000000     0  3465   3464
->  ffff810074333c68 0000000000200086 0000000000000000 00000000ffffffff
->  ffff81007a3889c0 ffff810074333c18 ffff810074333c98 ffffffff8064a800
->  ffffffff8064a800 ffffffff80646eb0 ffffffff8064a800 ffff8100757c1900
-> Call Trace:
->  [<ffffffff8049b26f>] __mutex_lock_slowpath+0x68/0xa0
->  [<ffffffff802274aa>] enqueue_task_fair+0x72/0x9b
->  [<ffffffff8049b0ee>] mutex_lock+0x1a/0x1e
->  [<ffffffff802265aa>] enqueue_task+0x13/0x1e
->  [<ffffffff880b51ab>] :videobuf_core:videobuf_mmap_setup+0x1c/0x45
->  [<ffffffff8813dbbe>] :bttv:vidiocgmbuf+0x2c/0x99
->  [<ffffffff8810b91d>] :videodev:__video_do_ioctl+0xa1/0x2ad9
->  [<ffffffff802272d5>] set_next_entity+0x18/0x36
->  [<ffffffff8049aa70>] thread_return+0x3a/0xa4
->  [<ffffffff8810e622>] :videodev:video_ioctl2+0x17c/0x210
->  [<ffffffff80238c7b>] ptrace_stop+0xfc/0x140
->  [<ffffffff8023a705>] ptrace_notify+0x83/0xa6
->  [<ffffffff80289221>] vfs_ioctl+0x55/0x6b
->  [<ffffffff8028948a>] do_vfs_ioctl+0x253/0x264
->  [<ffffffff802894ec>] sys_ioctl+0x51/0x71
->  [<ffffffff8020bef8>] int_very_careful+0x35/0x3e
->  [<ffffffff8020be79>] tracesys+0xdc/0xe1
-> 
-> I've attached what might be usable wrt to this.
-> 
+On Monday 12 May 2008 17:49:20 Jens Axboe wrote:
+> On Mon, May 12 2008, Linus Torvalds wrote:
+> > On Mon, 12 May 2008, Alistair John Strachan wrote:
+> > > I've been getting this since -rc1. It's still present in -rc2, so I
+> > > thought I'd bug some people. Everything seems to be working fine.
+> >
+> > Hmm. The problem is that blk_remove_plug() does a non-atomic
+> >
+> > 	queue_flag_clear(QUEUE_FLAG_PLUGGED, q);
+> >
+> > without holding the queue lock.
+> >
+> > Now, sometimes that's ok, because of higher-level locking on the same
+> > queue, so there is no possibility of any races.
+> >
+> > And yes, this comes through the raid5 layer, and yes, the raid layer
+> > holds the 'device_lock' on the raid5_conf_t, so it's all safe from other
+> > accesses by that raid5 configuration, but I wonder if at least in theory
+> > somebody could access that same device directly.
+> >
+> > So I do suspect that this whole situation with md needs to be resolved
+> > some way. Either the queue is already safe (because of md layer locking),
+> > and in that case maybe the queue lock should be changed to point to that
+> > md layer lock (or that sanity test simply needs to be removed). Or the
+> > queue is unsafe (because non-md users can find it too), and we need to
+> > fix the locking.
+> >
+> > Alternatively, we may just need to totally revert the thing that made the
+> > bit operations non-atomic and depend on the locking. This was introduced
+> > by Nick in commit 75ad23bc0fcb4f992a5d06982bf0857ab1738e9e ("block: make
+> > queue flags non-atomic"), and maybe it simply isn't viable.
+>
+> There's been a proposed patch for at least a week, so Neil just needs to
+> send it in...
 
-Hi,
+(I could be perverting this report a bit by reporting something possibly not 
+related, but I have a gut feeling about this..)
 
-this smells like a deadlock (probably in v4l). Thankfully the kernel
-has a lot of diagnostics for detecting deadlocks (you just found
-that the  least invasive one caught the deadlock, but unfortunately it's
-also the method that yields the least information).
+So I applied Neil's patch which is now upstream to 2.6.26-rc2 and the warning 
+did go away. But I later found that I have another problem: if I copy more 
+than my free memory's worth of data, my machine hangs mysteriously.
 
-Is it possible for you to enable lockdep (CONFIG_PROVE_LOCKING)?
-With that on, the kernel will print nicely which locks are being waited
-on, and if there's a deadlock, it'll print that too. Speaking of that,
-since this looks like a mutex related issue, it's worth enabling
-CONFIG_DEBUG_MUTEXES as well.... more debug checks in this area.
-If you also enable CONFIG_FRAME_POINTER then the backtrace will get
-better too (but it's not totally required, just easier for diagnostics)
+My guess is that when the kernel runs out of MemFree and starts reclaiming the 
+cache, something is deadlocking somewhere. Just doing a:
 
+cat /dev/zero >/path/to/file
+
+Is enough to reproduce it. Doing this on my stacked XFS+md+libata causes a 
+hang, but if I try to reproduce on the only other filesystem I have handy (a 
+FUSE/ntfs-3g mounted NTFS partition) cache reclaim seems to work fine. Maybe 
+this test is contrived in a million different ways, but it would seem to 
+indicate the bug lies either in XFS or md.
+
+I don't have any disks handy at the moment to try another filesystem on top of 
+md (to eliminate md), and I've not yet tried enabling any kernel debugging 
+options. When the machine hangs, all disk I/O stops permanently. No logging 
+messages are shown.
+
+Does anybody have any ideas about what to try or switch on to debug this 
+problem?
+
+-- 
+Cheers,
+Alistair.
+
+137/1 Warrender Park Road, Edinburgh, UK.
