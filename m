@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755871AbYEQShA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757054AbYEQSi3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755871AbYEQShA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 14:37:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbYEQSgw
+	id S1757054AbYEQSi3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 14:38:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753179AbYEQSiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 14:36:52 -0400
-Received: from pat.uio.no ([129.240.10.15]:44240 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752570AbYEQSgv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 14:36:51 -0400
-Subject: Re: Solved - How to change the FSINFO for nfsd?
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: "P.V.Anthony" <pvantony@singnet.com.sg>
-Cc: "J. Bruce Fields" <bfields@fieldses.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LNX.1.10.0805172024440.15590@fbirervta.pbzchgretzou.qr>
-References: <482332CD.4010706@singnet.com.sg>
-	 <20080509042238.GC21408@fieldses.org>
-	 <20080518015733.o7n8cvhomvgos8ow@mail.mindmedia.com.sg>
-	 <alpine.LNX.1.10.0805172024440.15590@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain
-Date: Sat, 17 May 2008 14:36:42 -0400
-Message-Id: <1211049402.7498.4.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5)
-X-UiO-Scanned: BBB687B4E47FAF3E11C1411BF1CF3FB17CC0EB74
-X-UiO-SR-test: BFD96B7B45FE1D3AC4A3A77F3481E55470E1C22C
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 121 total 8444416 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+	Sat, 17 May 2008 14:38:22 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49939 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752570AbYEQSiV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 May 2008 14:38:21 -0400
+Date: Sat, 17 May 2008 11:37:35 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Alistair John Strachan <alistair@devzero.co.uk>
+cc: Jens Axboe <jens.axboe@oracle.com>, xfs@oss.sgi.com,
+       Neil Brown <neilb@suse.de>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: XFS/md/blkdev warning (was Re: Linux 2.6.26-rc2)
+In-Reply-To: <200805171922.56272.alistair@devzero.co.uk>
+Message-ID: <alpine.LFD.1.10.0805171131000.3020@woody.linux-foundation.org>
+References: <alpine.LFD.1.10.0805120731480.3188@woody.linux-foundation.org> <alpine.LFD.1.10.0805120933310.3019@woody.linux-foundation.org> <20080512164920.GE16217@kernel.dk> <200805171922.56272.alistair@devzero.co.uk>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-05-17 at 20:25 +0200, Jan Engelhardt wrote:
-> On Saturday 2008-05-17 19:57, P.V.Anthony wrote:
-> > resp->f_properties = NFS3_FSF_DEFAULT;
-> >
-> > nfserr = fh_verify(rqstp, &argp->fh, 0, MAY_NOP);
-> > @@ -570,7 +570,7 @@
-> > if (sb->s_magic == 0x4d44 /* MSDOS_SUPER_MAGIC */) {
-> > resp->f_properties = NFS3_FSF_BILLYBOY;
-> > }
-> > - resp->f_maxfilesize = sb->s_maxbytes;
-> > + resp->f_maxfilesize = 0xffffffffffffffff;
 
-   This is plain wrong! Pretending that your filesystem supports 64-bit
-files won't magically make it so.
 
-Trond
+On Sat, 17 May 2008, Alistair John Strachan wrote:
+>
+> My guess is that when the kernel runs out of MemFree and starts reclaiming the 
+> cache, something is deadlocking somewhere. Just doing a:
+> 
+> cat /dev/zero >/path/to/file
 
+Do this on the console (and having a serial console or working netconsole 
+is a wonderful thing to log it, because otherwise it will generally just 
+scroll off the screen), and trigger SysRQ-w. That dumps all blocked tasks 
+to the screen.
+
+You may need to do
+
+	echo 1 > /proc/sys/kernel/sysrq 
+
+before that to enable it.
+
+(Or if you have some things still running because they haevn't hit the 
+lock that causes the deadlock, you can try
+
+	echo w > /proc/sysrq-trigger
+
+rather than the key combination).
+
+			Linus
