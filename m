@@ -1,67 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757229AbYEQR2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757103AbYEQRgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757229AbYEQR2f (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 13:28:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbYEQR22
+	id S1757103AbYEQRgc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 13:36:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbYEQRgU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 13:28:28 -0400
-Received: from adsl-76-245-85-235.dsl.pltn13.sbcglobal.net ([76.245.85.235]:35384
-	"EHLO cynthia.pants.nu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752049AbYEQR21 (ORCPT
+	Sat, 17 May 2008 13:36:20 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:26382 "EHLO
+	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753378AbYEQRgS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 13:28:27 -0400
-Date: Sat, 17 May 2008 06:01:32 -0700
-From: Brad Boyer <flar@allandria.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: hirofumi@mail.parknet.co.jp, akpm@linux-foundation.org, hch@infradead.org,
-       viro@ZenIV.linux.org.uk, ezk@cs.sunysb.edu,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 07/22] fat: dont call notify_change
-Message-ID: <20080517130132.GB25261@cynthia.pants.nu>
-References: <20080516163136.560107038@szeredi.hu> <20080516163222.235825996@szeredi.hu> <87prrl7rxg.fsf@duaron.myhome.or.jp> <E1JxGLP-000406-Eo@pomaz-ex.szeredi.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1JxGLP-000406-Eo@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.9i
+	Sat, 17 May 2008 13:36:18 -0400
+Date: Sat, 17 May 2008 11:38:16 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Top kernel oopses/warnings for the week of May 16th 2008
+In-reply-to: <20080517141235.GA13130@duo>
+To: Andrea Arcangeli <andrea@qumranet.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       NetDev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jgarzik@pobox.com>, Jens Axboe <jens.axboe@oracle.com>,
+       yang.shi@windriver.com
+Message-id: <482F1808.4060700@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.LFS/TATb5YijFetLw6A+gczrVAQ@ifi.uio.no>
+ <482E3B1B.9070400@shaw.ca> <20080517141235.GA13130@duo>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 17, 2008 at 08:56:39AM +0200, Miklos Szeredi wrote:
-> > > The FAT_IOCTL_SET_ATTRIBUTES ioctl() calls notify_change() to change
-> > > the file mode before changing the inode attributes.  Replace with
-> > > explicit calls to security_inode_setattr(), fat_setattr() and
-> > > fsnotify_change().
-> > >
-> > > This is equivalent to the original.  The reason it is needed, is that
-> > > later in the series we move the immutable check into notify_change().
-> > > That would break the FAT_IOCTL_SET_ATTRIBUTES ioctl, as it needs to
-> > > perform the mode change regardless of the immutability of the file.
-> > 
-> > Don't we need to add EXPORT_SYMBOL(security_inode_setattr)?
+Andrea Arcangeli wrote:
+> On Fri, May 16, 2008 at 07:55:39PM -0600, Robert Hancock wrote:
+>> Arjan van de Ven wrote:
+>>> Rank 10: __alloc_pages
+>>>     Reported 16 times (31 total reports)
+>>>     Sleeping allocation in interrupt context, some in netlink, some in the 
+>>> nv sata driver
+>>>     This oops was last seen in version 2.6.25.3, and first seen in 
+>>> 2.6.18-rc1.
+>>>     More info: 
+>>> http://www.kerneloops.org/searchweek.php?search=__alloc_pages
+>> In the case of the sata_nv error, it appears this is happening now because 
+>> blk_queue_bounce_limit is initializing emergency ISA pools which can't be 
+>> done under spinlock. This is happening because the code in 
+>> blk_queue_bounce_limit now thinks that a 32-bit DMA mask requires 
+>> allocating with GFP_DMA. This is only needed for a DMA mask less than 
+>> 32-bit, which is what the original code did. It looks like this was broken 
+>> by this commit:
 > 
-> Yes we do, thanks for noticing.  Committed the below patch to the
-> vfs-cleanups tree.
-> ----
-> Index: linux-2.6/security/security.c
-> ===================================================================
-> --- linux-2.6.orig/security/security.c	2008-05-14 12:49:42.000000000 +0200
-> +++ linux-2.6/security/security.c	2008-05-17 08:46:52.000000000 +0200
-> @@ -476,6 +476,7 @@ int security_inode_setattr(struct dentry
->  		return 0;
->  	return security_ops->inode_setattr(dentry, attr);
->  }
-> +EXPORT_SYMBOL_GPL(security_inode_setattr);
+> Looks like or you're certain? I ask because I had your exact same
+> problem with a regression introduced in 2.6.25-rc, and my patch
+> attempted to fix it. It looks like it wasn't enough to fix all of it,
+> but at least it looked like to improve things a bit to reduce the
+> regression impact without introducing any other problem compared to
+> the previous 2.6.25-rc code.
 
-Is there any particular reason you made it EXPORT_SYMBOL_GPL? It seems
-like this is replacing functionality that was previously exported
-without a GPL tag. I won't argue forcefully for changing it, but I
-did want to mention it on the list. I understand people wanting to
-make new functionality tagged that way (even though I disagree), but
-this doesn't seem to fit either the notion of an internal thing that
-shouldn't be touched or new functionality.
+What was the original patch that you were trying to fix? If it's this 
+one, it does seem to be wrong:
 
-	Brad Boyer
-	flar@allandria.com
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=419c434c35614609fd0c79d335c134bf4b88b30b
 
+author	Yang Shi <yang.shi@windriver.com>
+	Tue, 4 Mar 2008 10:20:51 +0000 (11:20 +0100)
+committer	Jens Axboe <jens.axboe@oracle.com>
+	Tue, 4 Mar 2008 10:20:51 +0000 (11:20 +0100)
+
+Fix DMA access of block device in 64-bit kernel on some non-x86 systems 
+with 4GB or upper 4GB memory
+
+Originally it was using the DMA path only for DMA masks of less than 
+32-bit. This change made it use that path for 32-bit or less. Looking 
+more closely it doesn't seem like your patch is really harmful, it just 
+doesn't completely repair the damage from the first one.
+
+IMO both of these patches should just be reverted. The commit 
+description doesn't specify what arch the first one was trying to fix 
+but it seems to break x86_64 anyway..
