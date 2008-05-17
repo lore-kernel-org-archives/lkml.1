@@ -1,77 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756798AbYEQOlF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756689AbYEQOnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756798AbYEQOlF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 10:41:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754158AbYEQOky
+	id S1756689AbYEQOnU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 10:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754418AbYEQOnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 10:40:54 -0400
-Received: from the2masters.de ([213.146.113.64]:59751 "EHLO
-	smtp.the2masters.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752779AbYEQOkx (ORCPT
+	Sat, 17 May 2008 10:43:05 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:52320 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750894AbYEQOnC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 10:40:53 -0400
-X-Greylist: delayed 4294 seconds by postgrey-1.27 at vger.kernel.org; Sat, 17 May 2008 10:40:53 EDT
-Message-ID: <482EDDA0.6050002@the2masters.de>
-Date: Sat, 17 May 2008 15:29:04 +0200
-From: Stefan Hellermann <stefan@the2masters.de>
-User-Agent: Thunderbird 2.0.0.9 (X11/20080218)
-MIME-Version: 1.0
-To: Khem Raj <raj.khem@gmail.com>
-CC: k.shutemov@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: linux/a.out.h is not exported to userspace
-References: <1210983237.8550.28.camel@isis>
-In-Reply-To: <1210983237.8550.28.camel@isis>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	Sat, 17 May 2008 10:43:02 -0400
+Subject: Re: [RFC] make wext wireless bits optional and deprecate them
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: netdev <netdev@vger.kernel.org>, Jean Tourrilhes <jt@hpl.hp.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <31B1A5D6-8E8B-4148-860F-326FEEE5A3EE@holtmann.org>
+References: <1211026337.3827.25.camel@johannes.berg>
+	 <CD993362-B1DE-4E4D-8A5B-E9E2AD7DA04C@holtmann.org>
+	 (sfid-20080517_154639_384202_6D3479C2) <1211032475.6252.2.camel@johannes.berg>
+	 <31B1A5D6-8E8B-4148-860F-326FEEE5A3EE@holtmann.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-T6B3pK3mESP+Tct2gqvD"
+Date: Sat, 17 May 2008 16:42:34 +0200
+Message-Id: <1211035354.6252.4.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hi,
-> 
-> Looking for a compile failure for a package on uclibc system using
-> kernel-headers from 2.6.25 I found that linux/a.out.h is no more
-> exported to userland anymore.
-> 
-> This commit below has disabled it from being exported. The commit Do not
-> export asm/page.h during make headers_install so I was wondering if it
-> was intended to unexport linux/a.out.h or not.
-> 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=ed7b1889da256977574663689b598d88950bbd23
-> 
-> 
-> Looking at the patch from lkml post
-> 
-> http://linux.derkeiler.com/Mailing-Lists/Kernel/2007-10/msg08913.html
-> 
-> second hunk to include/linux/Kbuild was not applied which caused this
-> problem.
-> 
 
-I saw this problem, too. The patch fixes this.
+--=-T6B3pK3mESP+Tct2gqvD
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> I think I do not fall into Signed-off-by definition. I tested the
-> following patch on 2.6.25.
-> 
-> Thanks
-> 
-> -Khem
-> 
-> Tested-by: Khem Raj <raj.khem@gmail.com>
+On Sat, 2008-05-17 at 16:36 +0200, Marcel Holtmann wrote:
+> Hi Johannes,
+>=20
+> >>> The /sys/class/net/*/wireless/ direcory is, as far as I know, not
+> >>> used by anyone. Additionally, the same data is available via wext
+> >>> ioctls. Hence the sysfs files are pretty much useless. This patch
+> >>> makes them optional and schedules them for removal.
+> >>
+> >> it is used by HAL to classify WiFi network cards as net.80211 instead
+> >> of net.80203 and so we do have an actual user. However HAL only tests
+> >> for the existence of the directory wireless/.
+> >
+> > Oh, ok, I didn't know that, thanks.
+> >
+> >> Please fix HAL first before submitting such a patch.
+> >
+> > Sure, I'll take a look at that.
+>=20
+> saw your patch. Looks good to me. However what do we do with the non-=20
+> mac80211 drivers that are using WEXT directly. These should be =20
+> detected as net.80211, too.
 
-Tested-by: Stefan Hellermann
+Yes, this was just a bigfix while I was looking at the code, I'll look
+into that too :)
 
-> 
-> diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-> index b7d81b2..8a3d93e 100644
-> --- a/include/linux/Kbuild
-> +++ b/include/linux/Kbuild
-> @@ -168,6 +168,7 @@ unifdef-y += acct.h
->  unifdef-y += adb.h
->  unifdef-y += adfs_fs.h
->  unifdef-y += agpgart.h
-> +unifdef-y += a.out.h
->  unifdef-y += apm_bios.h
->  unifdef-y += atalk.h
->  unifdef-y += atmdev.h
-> 
+johannes
+
+--=-T6B3pK3mESP+Tct2gqvD
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIVAwUASC7u2aVg1VMiehFYAQLflRAAw1vS+oHXO9cPa+Fd+XrN1+9ibKX/g52r
+bFBI5SkcPO+0HnA8lAfM3PvOAtzjchmIWLhmGtkRPoLspmR2/C/SjrGkZTKjcfH9
+mFiBHmS0eT07qydOK2lypMicTyB2X7ljEMHzoDvcvbSvcg2MeNj5kmjJauykkEh+
+sdZnETq+FWM5+eJE4RdirkqvZUgJGReGClshyx/sNMqL1718QGT3D45Rp4g1M7IF
++zkhUJMZf7mhtQzv8afirsQm9UiAjglukV8o/PO+1imOeCBxcC2VhJjfMJ0vAhlo
+acqxs3/7FTQC1Q+3Vk43RRpfMW89Cuxy4KiHOSwZu9PDxuTSbm3YBur+HeqnzzdB
+uY4C7qPa40e06XnDeuaHiDbvWtyihCRX3FGgVBhpRO6fsdkf4eKVDYZSDs588lBz
+3f5eaVpIWGN9VnWSxUbHUffNuiGUOrDLpQhtXD0PqT8hoojhDCChwRre9BZSgPCu
+NPgMfmQRvRULAstlTXhGkm/g2LsBW62qW4VMDufr8Q5+0jZt2D5Ht51OTD4KA6LH
+Z8U5igyOqhPhS25HKcaHkzNXFTDm7ZLeqb0juJSCgvEcxLXjsuNJjhPQVlZ2j5yg
+gGDHsH0DzhFum+lVbq3iERKSr0PodnqS4zq9Sip9x5Ql7fDoDCShwblqm+Wwp6Zh
+K1T4kZulkNw=
+=p6JT
+-----END PGP SIGNATURE-----
+
+--=-T6B3pK3mESP+Tct2gqvD--
+
