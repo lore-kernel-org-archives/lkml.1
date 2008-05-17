@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753760AbYEQFeL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754328AbYEQFvV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753760AbYEQFeL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 01:34:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750937AbYEQFeA
+	id S1754328AbYEQFvV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 01:51:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751731AbYEQFvK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 01:34:00 -0400
-Received: from ozlabs.org ([203.10.76.45]:54737 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750769AbYEQFd7 convert rfc822-to-8bit (ORCPT
+	Sat, 17 May 2008 01:51:10 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:1235 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751713AbYEQFvJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 01:33:59 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Mike Travis <travis@sgi.com>
-Subject: Re: [PATCH] modules: Use a better scheme for refcounting
-Date: Sat, 17 May 2008 15:33:46 +1000
-User-Agent: KMail/1.9.9
-Cc: Eric Dumazet <dada1@cosmosbay.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>
-References: <482C9FC5.2070508@cosmosbay.com> <482D1BCE.3060501@cosmosbay.com> <482D8EFC.8040109@sgi.com>
-In-Reply-To: <482D8EFC.8040109@sgi.com>
+	Sat, 17 May 2008 01:51:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=Cwwrw3xXu2HGgbpRy0epIMHsv/xtztoE8ZA0S8TbWS5jTu9kxcGgQQmrC1AKQCQGcLS2XxcN1Ifggegvmr4i7LY4rTZjEoMrGaCzUlTDVD7iLj0jKWBGGjJLyiowP0IJZ/lVm2VnLi21YDxyt0Zb0bCULjHW9JoBt4SSNT29XMk=
+Message-ID: <482E7246.5070607@gmail.com>
+Date: Sat, 17 May 2008 14:51:02 +0900
+From: MinChan Kim <minchan.kim@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200805171533.46295.rusty@rustcorp.com.au>
+To: Rik van Riel <riel@redhat.com>
+CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [patch 00/14] VM pageout scalability improvements (V7)
+References: <20080516183207.361608893@redhat.com>
+In-Reply-To: <20080516183207.361608893@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 16 May 2008 23:41:16 Mike Travis wrote:
-> Eric Dumazet wrote:
-> > Rusty Russell a écrit :
-> >>    Any chance I can ask you look at the issue of full dynamic per-cpu
-> >> allocation?
-> >
-> > You mean using alloc_percpu() ? Problem is that current implementation
-> > is expensive,
+Rik van Riel wrote:
+> On large memory systems, the VM can spend way too much time scanning
+> through pages that it cannot (or should not) evict from memory. Not
+> only does it use up CPU time, but it also provokes lock contention
+> and can leave large systems under memory presure in a catatonic state.
+> 
+> Against 2.6.25-rc2-mm1
+> 
 
-I mean rewriting alloc_percpu :)
+I think it's typo error. 
+This patch is based on 2.6.26-rc2-mm1. :-)
 
-> > We probably can change this to dynamic per-cpu as soon as Mike or
-> > Christopher finish their work on new dynamic per-cpu implementation ?
->
-> Yes, the zero-based percpu variables followed by the cpu_alloc patch should
-> provide this and shrink the code quite well, including in some cases
-> removing locking requirements (because the resultant instructions will be
-> atomic.)
 
-Ah, I hadn't realized that Mike was already working on this.  Mike, have you 
-published patches already?
-
-Thanks,
-Rusty.
+> This patch series improves VM scalability by:
