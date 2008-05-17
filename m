@@ -1,93 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755809AbYEQOMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756068AbYEQOTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755809AbYEQOMx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 10:12:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbYEQOMo
+	id S1756068AbYEQOTz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 10:19:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754201AbYEQOTo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 10:12:44 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:41179
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751938AbYEQOMn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 10:12:43 -0400
-Date: Sat, 17 May 2008 16:12:35 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       NetDev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jgarzik@pobox.com>, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: Top kernel oopses/warnings for the week of May 16th 2008
-Message-ID: <20080517141235.GA13130@duo>
-References: <fa.LFS/TATb5YijFetLw6A+gczrVAQ@ifi.uio.no> <482E3B1B.9070400@shaw.ca>
+	Sat, 17 May 2008 10:19:44 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:53676 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754158AbYEQOTn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 May 2008 10:19:43 -0400
+Date: Sat, 17 May 2008 17:17:49 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: build issue #503 for v2.6.26-rc2-433-gf26a398 :  undefined
+	reference to `request_firmware'
+Message-ID: <20080517141749.GD3284@cs181133002.pp.htv.fi>
+References: <200805161906.19321.toralf.foerster@gmx.de> <1211018673.3603.7.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <482E3B1B.9070400@shaw.ca>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1211018673.3603.7.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16, 2008 at 07:55:39PM -0600, Robert Hancock wrote:
-> Arjan van de Ven wrote:
->> Rank 10: __alloc_pages
->>     Reported 16 times (31 total reports)
->>     Sleeping allocation in interrupt context, some in netlink, some in the 
->> nv sata driver
->>     This oops was last seen in version 2.6.25.3, and first seen in 
->> 2.6.18-rc1.
->>     More info: 
->> http://www.kerneloops.org/searchweek.php?search=__alloc_pages
->
-> In the case of the sata_nv error, it appears this is happening now because 
-> blk_queue_bounce_limit is initializing emergency ISA pools which can't be 
-> done under spinlock. This is happening because the code in 
-> blk_queue_bounce_limit now thinks that a 32-bit DMA mask requires 
-> allocating with GFP_DMA. This is only needed for a DMA mask less than 
-> 32-bit, which is what the original code did. It looks like this was broken 
-> by this commit:
+On Sat, May 17, 2008 at 11:04:31AM +0100, James Bottomley wrote:
+> On Fri, 2008-05-16 at 19:06 +0200, Toralf Förster wrote:
+> > Hello,
+> > 
+> > the build (.config attached) failed, make ends with :
+> > ...
+> >   UPD     include/linux/compile.h
+> >   CC      init/version.o
+> >   LD      init/built-in.o
+> >   LD      vmlinux
+> > drivers/built-in.o: In function `sas_request_addr':
+> > (.text+0x33bab): undefined reference to `request_firmware'
+> > drivers/built-in.o: In function `sas_request_addr':
+> > (.text+0x33c3f): undefined reference to `release_firmware'
+> > make: *** [vmlinux] Error 1
+> 
+> There's a slight fault in the stub logic.  It fails for FW_LOADER=m and
+> the user =y.
+> 
+> This should fix it.
 
-Looks like or you're certain? I ask because I had your exact same
-problem with a regression introduced in 2.6.25-rc, and my patch
-attempted to fix it. It looks like it wasn't enough to fix all of it,
-but at least it looked like to improve things a bit to reduce the
-regression impact without introducing any other problem compared to
-the previous 2.6.25-rc code.
+An interesting question is whether we actually want to have the stub at 
+all - the compile errors catched cases where someone forgot to select 
+FW_LOADER at compile time instead of turning them into possible runtime 
+problems as will happen after your patch.
 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=00d61e3e8c12d5f395b167856d2b3c430816afb0
->
-> author	Andrea Arcangeli <andrea@qumranet.com>
-> 	Wed, 2 Apr 2008 07:06:44 +0000 (09:06 +0200)
-> committer	Jens Axboe <jens.axboe@oracle.com>
-> 	Wed, 2 Apr 2008 07:06:44 +0000 (09:06 +0200)
->
-> Fix bounce setting for 64-bit
->
-> Not sure what this was intended to fix, but I don't think it's right..
+Are there any serious use cases where SCSI_SAS_LIBSAS is used in very 
+space limited environments and without any other drivers that select 
+FW_LOADER in the kernel?
 
-The reason I touched that code, is that a change introduced during
-2.6.25-rc initialized the isa dma pool even if not necessary and that
-broke the reserved-ram patch that requires no __GFP_DMA
-allocations. There was no crash in 2.6.24 based kernels, the
-regression started in 2.6.25-rc.
+> James
+> 
+> ---
+> 
+> diff --git a/include/linux/firmware.h b/include/linux/firmware.h
+> index 4d10c73..6c7eff2 100644
+> --- a/include/linux/firmware.h
+> +++ b/include/linux/firmware.h
+> @@ -13,7 +13,7 @@ struct firmware {
+>  
+>  struct device;
+>  
+> -#if defined(CONFIG_FW_LOADER) || defined(CONFIG_FW_LOADER_MODULE)
+> +#if defined(CONFIG_FW_LOADER) || (defined(CONFIG_FW_LOADER_MODULE) && defined(MODULE))
+>  int request_firmware(const struct firmware **fw, const char *name,
+>  		     struct device *device);
+>  int request_firmware_nowait(
 
-I think my patch isn't enough yet as I had another crash for the same
-reason but it doesn't seem to trigger with all controllers, simulated
-ata under kvm looked ok so I thought the regression was fixed after
-the problem was gone under kvm, but it seems other hardware
-configuration can still trigger the same problem. At least my patch
-reduced the impact of the regression.
+cu
+Adrian
 
-Please try to backout my patch, I suspect it'll make thing worse for
-you and no btter. You'll have to backout the other change as well to
-get back to 2.6.24 correct behavior like I still have too.
+-- 
 
-Then the fact that the isa pool may be initialized under spinlock that
-seems another orthogonal problem, the reason I noticed this wasn't
-because of some debug check but because there are no __GFP_DMA pages
-in my boot.
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-Can't work on this right now, but I'm confident my change only
-improved things, and the real trouble was with the previous commit.
