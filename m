@@ -1,216 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761204AbYEQXGN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760915AbYEQXMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761204AbYEQXGN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 19:06:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751962AbYEQXF4
+	id S1760915AbYEQXMS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 19:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbYEQXMK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 19:05:56 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:56711 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760851AbYEQXFg (ORCPT
+	Sat, 17 May 2008 19:12:10 -0400
+Received: from smtp1.betherenow.co.uk ([87.194.0.68]:38888 "HELO
+	smtp1.betherenow.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751898AbYEQXMJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 19:05:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=t2gDxzNCvfpyysp8bq9q9kNmAmI/RqbIh0oUnW5gmwyPhVVfcz5wrUcxulizgnhIic/bhMPDJcVP7QbTBYfvpie+jY/zhflHP5ol0Q/6fgBdjjZAcDa/5BhBPsIwQEiaj0yUbraz6dTRq94pNkfmY6Rrhz6fspH/A2Wd1kr/mYU=
-Message-ID: <5a4c581d0805171605g674f3662le452298927b11ee1@mail.gmail.com>
-Date: Sun, 18 May 2008 01:05:33 +0200
-From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-To: "Jeff Garzik" <jgarzik@pobox.com>
-Subject: SATA disk reports DRDY and goes to PIO0 eventually. noapic fixes it
-Cc: LKML <linux-kernel@vger.kernel.org>
+	Sat, 17 May 2008 19:12:09 -0400
+From: Alistair John Strachan <alistair@devzero.co.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: XFS/md/blkdev warning (was Re: Linux 2.6.26-rc2)
+Date: Sun, 18 May 2008 00:12:04 +0100
+User-Agent: KMail/1.9.9
+Cc: Jens Axboe <jens.axboe@oracle.com>, xfs@oss.sgi.com,
+       Neil Brown <neilb@suse.de>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org
+References: <alpine.LFD.1.10.0805120731480.3188@woody.linux-foundation.org> <200805172109.59244.alistair@devzero.co.uk> <alpine.LFD.1.10.0805171411250.3020@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0805171411250.3020@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200805180012.05011.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since some time I noticed my nephew's Fedora 8 box would have
- some noise in /var/log/messages with timeouts reported by the
- SATA layer, with the drive in DRDY state. Flux is like this (from
- the base Fedora 9 kernel installed today):
+On Saturday 17 May 2008 22:17:37 Linus Torvalds wrote:
+[snip]
+> Jens, there's been a *lot* of breakage in the block layer. The DMA bounce
+> buffer crap, and this looks like the atomic bit setting was broken too.
+>
+> Alistair, does the problem go away if you revert both the patch from Neil
+> and the original patch that caused the need for that patch to begin with
+> (ie commit 75ad23bc0fcb4f992a5d06982bf0857ab1738e9e "block: make queue
+> flags non-atomic").
 
-May 17 17:18:39 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
-SErr 0x0 action 0x2 frozen
-May 17 17:18:39 rospo kernel: ata4.00: cmd
-a0/00:00:00:08:00/00:00:00:00:00/a0 tag 0 pio 16392 in
-May 17 17:18:39 rospo kernel:          cdb 4a 01 00 00 10 00 00 00  08
-00 00 00 00 00 00 00
-May 17 17:18:39 rospo kernel:          res
-40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-May 17 17:18:39 rospo kernel: ata4.00: status: { DRDY }
-May 17 17:18:39 rospo kernel: ata4: soft resetting link
-May 17 17:18:39 rospo kernel: ata4.00: configured for UDMA/33
-May 17 17:18:39 rospo kernel: ata4: EH complete
-May 17 17:18:40 rospo kernel: ALSA sound/usb/usbaudio.c:1353: setting
-usb interface 1:1
-May 17 17:18:40 rospo kernel: ALSA sound/usb/usbaudio.c:1353: setting
-usb interface 1:1
-May 17 17:18:46 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
-SErr 0x0 action 0x2 frozen
-May 17 17:18:46 rospo kernel: ata4.00: cmd
-a0/00:00:00:08:00/00:00:00:00:00/a0 tag 0 pio 16392 in
-May 17 17:18:46 rospo kernel:          cdb 4a 01 00 00 10 00 00 00  08
-00 00 00 00 00 00 00
-May 17 17:18:46 rospo kernel:          res
-40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-May 17 17:18:46 rospo kernel: ata4.00: status: { DRDY }
-May 17 17:18:46 rospo kernel: ata4: soft resetting link
-May 17 17:18:46 rospo kernel: ata4.00: configured for UDMA/33
-May 17 17:18:46 rospo kernel: ata4: EH complete
-May 17 17:18:53 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
-SErr 0x0 action 0x2 frozen
-May 17 17:18:53 rospo kernel: ata4.00: cmd
-a0/00:00:00:08:00/00:00:00:00:00/a0 tag 0 pio 16392 in
-May 17 17:18:53 rospo kernel:          cdb 4a 01 00 00 10 00 00 00  08
-00 00 00 00 00 00 00
-May 17 17:18:53 rospo kernel:          res
-40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-May 17 17:18:53 rospo kernel: ata4.00: status: { DRDY }
-May 17 17:18:53 rospo kernel: ata4: soft resetting link
-May 17 17:18:54 rospo kernel: ata4.00: configured for UDMA/33
-May 17 17:18:54 rospo kernel: ata4: EH complete
-May 17 17:19:01 rospo kernel: ata4.00: limiting speed to UDMA/25:PIO4
-May 17 17:19:01 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
-SErr 0x0 action 0x2 frozen
-May 17 17:19:01 rospo kernel: ata4.00: cmd
-a0/00:00:00:08:00/00:00:00:00:00/a0 tag 0 pio 16392 in
-May 17 17:19:01 rospo kernel:          cdb 4a 01 00 00 10 00 00 00  08
-00 00 00 00 00 00 00
-May 17 17:19:01 rospo kernel:          res
-40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-May 17 17:19:01 rospo kernel: ata4.00: status: { DRDY }
-May 17 17:19:01 rospo kernel: ata4: soft resetting link
-May 17 17:19:01 rospo kernel: ata4.00: configured for UDMA/25
-May 17 17:19:01 rospo kernel: ata4: EH complete
-May 17 17:19:01 rospo kernel: sr0: CDROM (ioctl) error, command: Get
-event status notification 4a 01 00 00 10 00 00 00 08 00
-May 17 17:19:01 rospo kernel: sr: Sense Key : Aborted Command
-[current] [descriptor]
-May 17 17:19:01 rospo kernel: sr: Add. Sense: No additional sense information
-May 17 17:19:06 rospo kernel: ALSA sound/usb/usbaudio.c:1353: setting
-usb interface 1:1
-May 17 17:19:06 rospo kernel: ALSA sound/usb/usbaudio.c:1353: setting
-usb interface 1:1
-May 17 17:19:11 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
-SErr 0x0 action 0x2 frozen
-May 17 17:19:11 rospo kernel: ata4.00: cmd
-a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-May 17 17:19:11 rospo kernel:          cdb 1e 00 00 00 00 00 00 00  00
-00 00 00 00 00 00 00
-May 17 17:19:11 rospo kernel:          res
-40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-May 17 17:19:11 rospo kernel: ata4.00: status: { DRDY }
-May 17 17:19:11 rospo kernel: ata4: soft resetting link
-May 17 17:19:12 rospo kernel: ata4.00: configured for UDMA/25
-May 17 17:19:12 rospo kernel: ata4: EH complete
-May 17 17:19:22 rospo kernel: ata4.00: limiting speed to PIO4
-May 17 17:19:22 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
-SErr 0x0 action 0x2 frozen
-May 17 17:19:22 rospo kernel: ata4.00: cmd
-a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-May 17 17:19:22 rospo kernel:          cdb 1e 00 00 00 00 00 00 00  00
-00 00 00 00 00 00 00
-May 17 17:19:22 rospo kernel:          res
-40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-May 17 17:19:22 rospo kernel: ata4.00: status: { DRDY }
-May 17 17:19:22 rospo kernel: ata4: soft resetting link
-May 17 17:19:22 rospo kernel: ata4.00: configured for PIO4
-May 17 17:19:22 rospo kernel: ata4: EH complete
-May 17 17:19:32 rospo kernel: ata4.00: limiting speed to PIO3
-May 17 17:19:32 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
-SErr 0x0 action 0x2 frozen
-May 17 17:19:32 rospo kernel: ata4.00: cmd
-a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-May 17 17:19:32 rospo kernel:          cdb 1e 00 00 00 00 00 00 00  00
-00 00 00 00 00 00 00
-May 17 17:19:32 rospo kernel:          res
-40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-May 17 17:19:32 rospo kernel: ata4.00: status: { DRDY }
-May 17 17:19:32 rospo kernel: ata4: soft resetting link
-May 17 17:19:33 rospo kernel: ata4.00: configured for PIO3
-May 17 17:19:33 rospo kernel: ata4: EH complete
-May 17 17:19:43 rospo kernel: ata4.00: limiting speed to PIO0
-May 17 17:19:43 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
-SErr 0x0 action 0x2 frozen
-May 17 17:19:43 rospo kernel: ata4.00: cmd
-a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-May 17 17:19:43 rospo kernel:          cdb 1e 00 00 00 00 00 00 00  00
-00 00 00 00 00 00 00
-May 17 17:19:43 rospo kernel:          res
-40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-May 17 17:19:43 rospo kernel: ata4.00: status: { DRDY }
-May 17 17:19:43 rospo kernel: ata4: soft resetting link
-May 17 17:19:43 rospo kernel: ata4.00: configured for PIO0
-May 17 17:19:43 rospo kernel: ata4: EH complete
-May 17 17:19:50 rospo kernel: ALSA sound/usb/usbaudio.c:1353: setting
-usb interface 1:1
-May 17 17:19:50 rospo kernel: ALSA sound/usb/usbaudio.c:1353: setting
-usb interface 1:1
-May 17 17:19:53 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
-SErr 0x0 action 0x2 frozen
-May 17 17:19:53 rospo kernel: ata4.00: cmd
-a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-May 17 17:19:53 rospo kernel:          cdb 1e 00 00 00 00 00 00 00  00
-00 00 00 00 00 00 00
-May 17 17:19:53 rospo kernel:          res
-40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-May 17 17:19:53 rospo kernel: ata4.00: status: { DRDY }
-May 17 17:19:53 rospo kernel: ata4: soft resetting link
-May 17 17:19:54 rospo kernel: ata4.00: configured for PIO0
-May 17 17:19:54 rospo kernel: ata4: EH complete
-May 17 17:20:01 rospo kernel: ALSA sound/usb/usbaudio.c:1353: setting
-usb interface 1:1
-May 17 17:20:04 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
-SErr 0x0 action 0x2 frozen
-May 17 17:20:04 rospo kernel: ata4.00: cmd
-a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-May 17 17:20:04 rospo kernel:          cdb 1e 00 00 00 00 00 00 00  00
-00 00 00 00 00 00 00
-May 17 17:20:04 rospo kernel:          res
-40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-May 17 17:20:04 rospo kernel: ata4.00: status: { DRDY }
-May 17 17:20:04 rospo kernel: ata4: soft resetting link
-May 17 17:20:04 rospo kernel: ata4.00: configured for PIO0
-May 17 17:20:04 rospo kernel: ata4: EH complete
-May 17 17:20:04 rospo kernel: sr 3:0:0:0: ioctl_internal_command
-return code = 8000002
-May 17 17:20:04 rospo kernel:    : Sense Key : Aborted Command
-[current] [descriptor]
-May 17 17:20:04 rospo kernel:    : Add. Sense: No additional sense information
-May 17 17:20:34 rospo kernel: ata4.00: exception Emask 0x0 SAct 0x0
-SErr 0x0 action 0x2 frozen
-May 17 17:20:34 rospo kernel: ata4.00: cmd
-a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
-May 17 17:20:34 rospo kernel:          cdb 00 00 00 00 00 00 00 00  00
-00 00 00 00 00 00 00
-May 17 17:20:34 rospo kernel:          res
-40/00:03:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
-May 17 17:20:34 rospo kernel: ata4.00: status: { DRDY }
-May 17 17:20:34 rospo kernel: ata4: soft resetting link
-May 17 17:20:35 rospo kernel: ata4.00: configured for PIO0
-May 17 17:20:35 rospo kernel: ata4: EH complete
+I did a git revert on this and manually fixed up the conflicts; I also 
+reverted Neil's patch.
 
-...and on and on and on.
+Unfortunately (though the WARNING is still gone) it doesn't fix the hang.
 
-Reading another report on lkml I turned to the ATA wiki @ kernel.org
- today, as even the newest Fedora 9 update (2.6.25.3-18) was still
- behaving the same way - pci=nomsi wasn't useful, acpi=off was
- also not useful, noapic did instead get rid of the messages, even
- under 'find /' (which would usually turn up the ATA resets in less
- than 10 seconds).
+> Jens, Nick, I think that whole series just needs to be undone.
+>
+> 		Linus
 
-Is there anything more useful than simply booting noapic that
- can be done here, or is that it ?
+-- 
+Cheers,
+Alistair.
 
-Thanks,
-
---alessandro
-
- "Give me love / Or give me hate
- Give me anything that's not just ok"
-
- (Sophia, 'Weightless')
+137/1 Warrender Park Road, Edinburgh, UK.
