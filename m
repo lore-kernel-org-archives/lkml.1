@@ -1,104 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759376AbYEQU23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759481AbYEQU3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759376AbYEQU23 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 16:28:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755364AbYEQU2V
+	id S1759481AbYEQU3h (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 16:29:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758404AbYEQU31
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 16:28:21 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:18630 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751942AbYEQU2U (ORCPT
+	Sat, 17 May 2008 16:29:27 -0400
+Received: from qmta03.emeryville.ca.mail.comcast.net ([76.96.30.32]:49279 "EHLO
+	QMTA03.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758319AbYEQU30 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 16:28:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WcW4QX6/7igek1jiAYD1fmmHvpEuKTqAUXC74atjszyOa1+X7/KYyDNub7vWrpUVE1dntSf7rWDHz6tFCkoUEraGlzHUVJiQkgjeANlx1fMEZJF+rA6W+jvuQHo/OTnSuMK2FGNaqvjyAvNavLMTA7XEWdBL7yCDCd4DE5WQT34=
-Message-ID: <7b9198260805171328u555eec17t3597f3378edbda88@mail.gmail.com>
-Date: Sat, 17 May 2008 21:28:18 +0100
-From: "Tom Spink" <tspink@gmail.com>
-To: "Cyrill Gorcunov" <gorcunov@gmail.com>
-Subject: Re: [RFC] x86: merge nmi_32-64 to nmi.c
-Cc: "Ingo Molnar" <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>, "Jiri Slaby" <jirislaby@gmail.com>,
-       "Andi Kleen" <andi@firstfloor.org>
-In-Reply-To: <20080517192200.GA6914@cvg>
+	Sat, 17 May 2008 16:29:26 -0400
+X-Authority-Analysis: v=1.0 c=1 a=y2SMKWlHeE8A:10 a=n5JjvYRQxMoA:10
+ a=0k3DWULWOcjMIg4IU_oA:9 a=AcrQB6pki5UdPHVn-TZ_nFBDYW4A:4 a=KMEqjWUN97gA:10
+ a=HVLfEFYxIYkA:10
+Message-Id: <200805172026.m4HKQwh06910@www.watkins-home.com>
+From: "Guy Watkins" <linux-raid@watkins-home.com>
+To: "'David Lethe'" <david@santools.com>,
+       "'LinuxRaid'" <linux-raid@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: RE: Mechanism to safely force repair of single md stripe w/o hurting data integrity of file system
+Date: Sat, 17 May 2008 16:26:53 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080517192200.GA6914@cvg>
+X-Mailer: Microsoft Office Outlook, Build 11.0.6353
+In-Reply-To: <A20315AE59B5C34585629E258D76A97C6B3E91@34093-C3-EVS3.exchange.rackspace.com>
+Thread-Index: Aci4MYdPw9tbfNruRViIyv8sCMY+VwAGS7XQAARKeMA=
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/5/17 Cyrill Gorcunov <gorcunov@gmail.com>:
-> +/* a few helper functions */
-> +#ifdef CONFIG_X86_64
-> +
-> +static inline unsigned int get_nmi_count(int cpu)
-> +{
-> +       return cpu_pda(cpu)->__nmi_count;
-> +}
-> +
-> +static inline int mce_in_progress(void)
-> +{
-> +#ifdef CONFIG_X86_MCE
-> +       return atomic_read(&mce_entry) > 0;
-> +#endif
-> +       return 0;
-> +}
-> +
-> +static inline void __die_nmi(char *str, struct pt_regs *regs, int do_panic)
-> +{
-> +       die_nmi(str, regs, do_panic);
-> +}
-> +
-> +#else /* !CONFIG_X86_64 */
-> +
-> +static inline unsigned int get_nmi_count(int cpu)
-> +{
-> +       return nmi_count(cpu);
-> +}
-> +
-> +static inline int mce_in_progress(void)
-> +{
-> +       return 0;
-> +}
-> +
-> +static inline void __die_nmi(char *str, struct pt_regs *regs, int do_panic)
-> +{
-> +       die_nmi(regs, str);
-> +}
-> +
-> +#endif /* !CONFIG_X86_64 */
+} -----Original Message-----
+} From: linux-raid-owner@vger.kernel.org [mailto:linux-raid-
+} owner@vger.kernel.org] On Behalf Of David Lethe
+} Sent: Saturday, May 17, 2008 3:10 PM
+} To: LinuxRaid; linux-kernel@vger.kernel.org
+} Subject: Mechanism to safely force repair of single md stripe w/o hurting
+} data integrity of file system
+} 
+} I'm trying to figure out a mechanism to safely repair a stripe of data
+} when I know a particular disk has a unrecoverable read error at a
+} certain physical block (for 2.6 kernels)
+} 
+} My original plan was to figure out the range of blocks in md device that
+} utilizes the known bad block and force a raw read on physical device
+} that covers the entire chunk and let the md driver do all of the work.
+} 
+} Well, this didn't pan out. Problems include issues where if bad block
+} maps to the parity block in a stripe then md won't necessarily
+} read/verify parity, and in cases where you are running RAID1, then load
+} balancing might result in the kernel reading the bad block from the good
+} disk.
+} 
+} So the degree of difficulty is much higher than I expected.  I prefer
+} not to patch kernels due to maintenance issues as well as desire for the
+} technique to work across numerous kernels and  patch revisions, and
+} frankly, the odds are I would screw it up.  An application-level program
+} that can be invoked as necessary would be ideal.
+} 
+} As such, anybody up to the challenge of writing the code?  I want it
+} enough to paypal somebody $500 who can write it, and will gladly open
+} source the solution.
+} 
+} (And to clarify why, I know physical block x on disk y is bad before the
+} O/S reads the block, and just want to rebuild the stripe, not the entire
+} md device when this happens. I must not compromise any file system data,
+} cached or non-cached that is built on the md device.  I have system with
+} >100TB and if I did a rebuild every time I discovered a bad block
+} somewhere, then a full parity repair would never complete before another
+} physical bad block is discovered.)
+} 
+} Contact me offline for the financial details, but I would certainly
+} appreciate some thread discussion on an appropriate architecture.  At
+} least it is my opinion that such capability should eventually be native
+} Linux, but as long as there is a program that can be run on demand that
+} doesn't require rebuilding or patching kernels then that is all I need.
+} 
+} David @ santools.com
 
-Hi,
+I thought this would cause md to read all blocks in an array:
+echo repair > /sys/block/md0/md/sync_action
 
-I've always wondered if it's cleaner to define variants of functions
-like this with the conditionals inside the function, as opposed to one
-big conditional encapsulating all these functions.  IMO, it's cleaner
-to define the function with conditionals to define it's particular
-behaviour in the two different cases, because that way there is one
-definition of the function with both different behaviours inside,
-e.g.:
+And rewrite any blocks that can't be read.
 
-static inline unsigned int get_nmi_count(int cpu)
-{
-#ifdef CONFIG_X86_64
-        return cpu_pda(cpu)->__nmi_count;
-#else
-        return nmi_count(cpu);
-#endif
-}
+In the old days, md would kick out a disk on a read error.  When you added
+it back, md would rewrite everything on that disk, which corrected read
+errors.
 
-I know it introduces a lot of these conditionals, but at least there
-is one place to look for the get_nmi_count function, instead of
-searching for all variants of the function.
+Guy
 
-Just a thought!
-
--- 
-Regards,
-Tom Spink
