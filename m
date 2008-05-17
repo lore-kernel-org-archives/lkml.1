@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760549AbYEQVJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760465AbYEQVPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760549AbYEQVJS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 17:09:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759280AbYEQVJG
+	id S1760465AbYEQVPj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 17:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759447AbYEQVPa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 17:09:06 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:41892 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759125AbYEQVJF (ORCPT
+	Sat, 17 May 2008 17:15:30 -0400
+Received: from moutng.kundenserver.de ([212.227.126.179]:65423 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756799AbYEQVP3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 17:09:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WNyMieffGIfsvcEj6Z2YPTYAhz/2nyFI3aGUd+mZcMFX6147t8yLbwifY6OlJz/4nT5CsstF4rDEaPbZYjelo7ubLX3+S6HB4Stk+531SWbr8CWFS60SvMLQNN8b9eS/dlpsiyhDdTOiAex39i4jfpo+ejqs8nldkww4CPg2MoI=
-Message-ID: <d4e708d60805171409h7690c48aw98eeb3613a398c7d@mail.gmail.com>
-Date: Sat, 17 May 2008 23:09:02 +0200
-From: "koos vriezen" <koos.vriezen@gmail.com>
-To: "Arjan van de Ven" <arjan@infradead.org>
-Subject: Re: mplayer v4l hangs in 2.6.25.2/4 (likely regression)
-Cc: linux-kernel@vger.kernel.org, mchehab@infradead.org
-In-Reply-To: <d4e708d60805171306n698192aas66b42a9468253448@mail.gmail.com>
+	Sat, 17 May 2008 17:15:29 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [PATCH, RFC] char dev BKL pushdown
+Date: Sat, 17 May 2008 23:15:00 +0200
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Alexander Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org
+References: <16082.1210952646@vena.lwn.net>
+In-Reply-To: <16082.1210952646@vena.lwn.net>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <d4e708d60805170954n6b2044c7h306bc6cb76bf798d@mail.gmail.com>
-	 <20080517111639.21a3e177@infradead.org>
-	 <d4e708d60805171211q1a1966a3i78dc3dc98d275dd1@mail.gmail.com>
-	 <20080517122640.2d15aeed@infradead.org>
-	 <20080517123452.79b82be2@infradead.org>
-	 <d4e708d60805171306n698192aas66b42a9468253448@mail.gmail.com>
+Message-Id: <200805172315.02988.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/ZtLwPQKW9O6l7fucEBKY6A43A3miSTwb998l
+ /KVSA2wpk/qfFDanYRtXJj0SWrelidx7+5rMgpRvoOPn3myCKP
+ sBWs4W3LLaTR3LWRB3pWQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/5/17 koos vriezen <koos.vriezen@gmail.com>:
-> 2008/5/17 Arjan van de Ven <arjan@infradead.org>:
->
->> > so.. bttv first takes "fh->cap.vb_lock" in vidiocgmbuf, then calls videobuf_mmap_setup(), and the first thing that does
-> is to also take fh->cap.vb_lock!  This isn't even an ABBA deadlock,
-> but a straight AA deadlock :)
->
-> Looks like I'm the only one actually running this code ;-)
+On Friday 16 May 2008, Jonathan Corbet wrote:
 
-Just to emphases the happy ever after, this TV card is from '97. So no
-offense meant.
+> ...and so that's what I've done.  My approach was to find every
+> register_chrdev() and cdev_add() call, look at the associated
+> file_operations, then go back to the open() function, if any.
 
-> Hmm, using v4l2 (mplayer .. -tv noaudio:driver=v4l2:devic..) works
-> with audio now (used to be the other way around). I can live with
-> that.
+Note that the majority of drivers use (grep suggests up to 165
+of them) uses misc_register instead of register_chrdev/cdev_add.
+Your patches are still correct, because you pushed the BKL into the
+misc_open function, but there is an obvious next step in pushing
+it further into the misc drivers.
+There are probably a few more subsystems with minor number specific
+open() functions, misc is just the obvious one.
 
-And I'm very glad that I can finally drop the v4l1 compat support.
+> > ...and so that's what I've done.  My approach was to find every 
+> register_chrdev() and cdev_add() call, look at the associated
+> file_operations, then go back to the open() function, if any.  Unless it
+> was almost immediately obvious to me that the function was either (1) so
+> trivial as to not require locking (quite few of them are "return 0;"), or
+> (2) clearly doing its own locking, I wrapped the code in the BKL.
+> 
+> Finally, I removed the BKL from chrdev_open().
 
-Best regards,
+In your current git tree, this change is no longer the final one, so
+bisecting the series may cause other bugs. You should probably reorder
+the patches at some point to avoid this.
 
-Koos Vriezen
+	Arnd <><
