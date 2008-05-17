@@ -1,95 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761127AbYEQAiG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761561AbYEQAiZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761127AbYEQAiG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 20:38:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753158AbYEQAhy
+	id S1761561AbYEQAiZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 20:38:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760338AbYEQAiA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 20:37:54 -0400
-Received: from simmts7-qfe0.srvr.bell.ca ([206.47.199.165]:40604 "EHLO
-	simmts7-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753470AbYEQAhw (ORCPT
+	Fri, 16 May 2008 20:38:00 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:54714 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759205AbYEQAh6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 20:37:52 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtoAAMbFLUicIvmz/2dsb2JhbAAIinqiWw
-Message-ID: <482E28DE.3090609@gmail.com>
-Date: Fri, 16 May 2008 21:37:50 -0300
-From: Kevin Winchester <kjwinchester@gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Alexander Viro <viro@ftp.linux.org.uk>, airlied@linux.ie
-Subject: Re: [announce] "kill the Big Kernel Lock (BKL)" tree
-References: <20080514174955.GA515@elte.hu> <482E2378.9020007@gmail.com>
-In-Reply-To: <482E2378.9020007@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 16 May 2008 20:37:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=cT/xa/7UgFe/Xc1hZLEq2vTv4VDoJ16tpGLXuxgqyPUny7d+RoNhP1skp/yNmv51/AYCPxf7ni1R1j3ggPMo+lrVdaU/X1r4aB2pyxofhuN4vwT1OO2n+j5Upg7O4iKuSewAXBLSQbabIPQkleKnLpMRbhSrGYJNYN6nXZ9oJ3M=
+Subject: Re: [RFC-PATCH] lib: add byteorder helpers for the aligned case
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Bryan Wu <cooloney@kernel.org>, Jie Zhang <jie.zhang@analog.com>,
+       Oliver Neukum <oliver@neukum.org>, david-b@pacbell.net, greg@kroah.com,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.0805162022050.13416-100000@netrider.rowland.org>
+References: <Pine.LNX.4.44L0.0805162022050.13416-100000@netrider.rowland.org>
+Content-Type: text/plain
+Date: Fri, 16 May 2008 17:37:56 -0700
+Message-Id: <1210984676.5915.70.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kevin Winchester wrote:
-> Ingo Molnar wrote:
+On Fri, 2008-05-16 at 20:35 -0400, Alan Stern wrote:
+> On Fri, 16 May 2008, Harvey Harrison wrote:
 > 
-> <snip description and patches>
+> > +static inline void put_le16(u16 val, void *ptr)
+> > +{
+> > +	*(__le16 *)ptr = cpu_to_le16(val);
+> > +}
 > 
-> I decided to give this tree a try, and I got:
-> 
-> 
-> [4294034.386085] ------------[ cut here ]------------
-> [4294034.387882] WARNING: at fs/proc/generic.c:669 
-> create_proc_entry+0x3d/0xc5()
-> [4294034.390059] Pid: 2565, comm: Xorg Not tainted 
-> 2.6.26-rc2-00456-gd9df34e #35
-> [4294034.392682]
-> [4294034.392683] Call Trace:
-> [4294034.394071]  [<ffffffff8022a8ac>] warn_on_slowpath+0x53/0x81
-> [4294034.394077]  [<ffffffff802b57b4>] ? proc_register+0xf7/0x162
-> [4294034.394081]  [<ffffffff802b580b>] ? proc_register+0x14e/0x162
-> [4294034.394087]  [<ffffffff804afa05>] ? _spin_unlock+0x30/0x4b
-> [4294034.394091]  [<ffffffff802b580b>] ? proc_register+0x14e/0x162
-> [4294034.394095]  [<ffffffff8021a127>] ? startup_ioapic_irq+0x54/0x5f
-> [4294034.394099]  [<ffffffff802b5fcc>] create_proc_entry+0x3d/0xc5
-> [4294034.394103]  [<ffffffff80252008>] register_irq_proc+0x84/0xa0
-> [4294034.394108]  [<ffffffff80250b1a>] setup_irq+0x1b2/0x21b
-> [4294034.394113]  [<ffffffff80250cc8>] request_irq+0xf1/0x117
-> [4294034.394117]  [<ffffffff8038aaaa>] ? radeon_driver_irq_handler+0x0/0x7e
-> [4294034.394122]  [<ffffffff803789b6>] ? drm_control+0x0/0x186
-> [4294034.394126]  [<ffffffff80378acf>] drm_control+0x119/0x186
-> [4294034.394130]  [<ffffffff803770be>] drm_ioctl+0x1d3/0x265
-> [4294034.394589]  [<ffffffff80283e5e>] vfs_ioctl+0x5e/0x77
-> [4294034.394593]  [<ffffffff802840d2>] do_vfs_ioctl+0x25b/0x270
-> [4294034.394598]  [<ffffffff804af23e>] ? trace_hardirqs_on_thunk+0x35/0x3a
-> [4294034.394601]  [<ffffffff80284129>] sys_ioctl+0x42/0x65
-> [4294034.394606]  [<ffffffff8020b2eb>] system_call_after_swapgs+0x7b/0x80
-> [4294034.411597]
-> [4294034.411601] ---[ end trace 7f52164e4c2b9927 ]---
+> Is this able to do the byte rearrangement at compile time if val is a 
+> compile-time constant?  I imagine it would.
 > 
 
-And now applying the debugging tips that Linus, Al and others supplied 
-to me awhile back, I see from GDB that:
+Yes, the cpu_to_le/be functions to get optimized if they are passed a
+compile time constant.
 
-vfs_ioctl locks the kernel before calling drm_ioctl, and, that 
-create_proc_entry() has the following new line thanks to Ingo:
 
-     WARN_ON_ONCE(kernel_locked());
-
-According to Ingo's patch log:
-
-     The functions, if called from the BKL, show that the calling site
-     might have a dependency on the procfs code previously using the BKL
-     in the dir-entry manipulation functions.
-
-I do not really know what that means, so I cc'd Dave Airlie to see if he 
-has a solution.
-
--- 
-Kevin Winchester
-
+Harvey
 
