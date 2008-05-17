@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759566AbYEQUpL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760114AbYEQUpk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759566AbYEQUpL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 16:45:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758501AbYEQUoy
+	id S1760114AbYEQUpk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 16:45:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758686AbYEQUpa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 16:44:54 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:51760 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758100AbYEQUox (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 16:44:53 -0400
-Date: Sat, 17 May 2008 16:44:37 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
-Message-ID: <20080517204437.GB16496@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-References: <482DDA56.6000301@redhat.com> <20080516130545.845a3be9.akpm@linux-foundation.org> <482DF44B.50204@redhat.com> <20080516220315.GB15334@shareable.org> <482E08E6.4030507@redhat.com> <20080516225304.GG15334@shareable.org> <20080517002030.GA7374@mit.edu> <20080516173552.e88183d9.akpm@linux-foundation.org> <20080517134344.GA7411@mit.edu>
-MIME-Version: 1.0
+	Sat, 17 May 2008 16:45:30 -0400
+Received: from 1wt.eu ([62.212.114.60]:4348 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758647AbYEQUp2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 May 2008 16:45:28 -0400
+Date: Sat, 17 May 2008 22:45:08 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: koos vriezen <koos.vriezen@gmail.com>, linux-kernel@vger.kernel.org,
+       mchehab@infradead.org, torvalds@linux-foundation.org
+Subject: Re: mplayer v4l hangs in 2.6.25.2/4 (likely regression)
+Message-ID: <20080517204505.GX8474@1wt.eu>
+References: <d4e708d60805170954n6b2044c7h306bc6cb76bf798d@mail.gmail.com> <20080517111639.21a3e177@infradead.org> <d4e708d60805171211q1a1966a3i78dc3dc98d275dd1@mail.gmail.com> <20080517122640.2d15aeed@infradead.org> <20080517123452.79b82be2@infradead.org> <d4e708d60805171306n698192aas66b42a9468253448@mail.gmail.com> <20080517132050.2dae0ddd@infradead.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080517134344.GA7411@mit.edu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <20080517132050.2dae0ddd@infradead.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 17, 2008 at 09:43:44AM -0400, Theodore Tso wrote:
-> Another question is whether we can do better in our implementation of
-> a barrier, and the way the jbd layer uses barriers.  The way we do it
-> in the jbd layer is actually pretty bad:
+On Sat, May 17, 2008 at 01:20:50PM -0700, Arjan van de Ven wrote:
+> On Sat, 17 May 2008 22:06:12 +0200
+> "koos vriezen" <koos.vriezen@gmail.com> wrote:
 > 
-> This means that while we are waiting for commit record to be written
-> out, any other writes that are happening via buffer heads (which
-> includes directory operations) are getting done with strict ordering.
-> All set_buffer_ordered() does is change make the submit_bh() done in
-> sync_dirty_buffer() actually be submitted with WRITE_BARRIER instead
-> of WRITE.  
+> > 2008/5/17 Arjan van de Ven <arjan@infradead.org>:
+> > 
+> > > > so.. bttv first takes "fh->cap.vb_lock" in vidiocgmbuf, then
+> > > > calls videobuf_mmap_setup(), and the first thing that does
+> > is to also take fh->cap.vb_lock!  This isn't even an ABBA deadlock,
+> > but a straight AA deadlock :)
+> > 
+> > Looks like I'm the only one actually running this code ;-)
+> > 
+> > > and here is an (untest) patch that should fix this problem:
+> > > Koos, can you apply this to your kernel tree and report back if this
+> > > fixes your deadlock?
+> > 
+> > patching file drivers/media/video/bt8xx/bttv-driver.c
+> > patching file drivers/media/video/videobuf-core.c
+> > Hunk #1 succeeded at 335 (offset 4 lines).
+> > Hunk #2 succeeded at 1093 (offset -36 lines).
+> > patching file include/media/videobuf-core.h
+> > Hunk #1 succeeded at 227 (offset -10 lines).
+> > 
+> > Deadlock is gone, only mplayer fails to unmute the audio. 
+> 
+> that's something else entirely ;)
+> 
+> I'll call your deadlock bug fixed by the patch...
+> 
+> Mauro: will you send this on to Linus or should this go direct?
 
-Never mind, I was confused when I wrote this; I somehow thought we
-were setting ordered mode on a per queue basis, instead of on a
-per-buffer-head basis.
+also please do not forget to CC stable.
 
-Also, looking more closely on the jbd2 implementation, it looks like
-using the async_commit option, which relies on the checksum for more
-efficient commit, completely disables any barrier support.  That's
-because the only place we go into ordered more is if we are writing a
-synchronous journal commit.  If async journal commit is enabled, then
-we don't write a barrier at all, which leaves us in potential trouble
-with if data blocks end up getting reordered with respect to the
-journal commit in data=ordered more.
+Willy
 
-I *think* what we need to do is to issue an empty barrier request
-between the data blocks and the journal writes in data=ordered mode,
-and still issue a WRITE_BARRIER request when writing the commit block,
-but to not actually wait for the write to complete.  I think if we do
-that, we should be safe, and hopefully by not waiting for the commit
-block to complete, the performance hit shouldn't be as bad as
-previously reported.
-
-						- Ted
