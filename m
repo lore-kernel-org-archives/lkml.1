@@ -1,62 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758020AbYEQTSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758084AbYEQTU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758020AbYEQTSk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 15:18:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755043AbYEQTSc
+	id S1758084AbYEQTU3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 15:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755043AbYEQTUW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 15:18:32 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:40654 "EHLO smtp4.pp.htv.fi"
+	Sat, 17 May 2008 15:20:22 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:44295 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753888AbYEQTSb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 15:18:31 -0400
-Date: Sat, 17 May 2008 22:16:37 +0300
+	id S1755013AbYEQTUW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 May 2008 15:20:22 -0400
+Date: Sat, 17 May 2008 22:18:27 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: kyle@parisc-linux.org, matthew@wil.cx, grundler@parisc-linux.org
-Cc: linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: parisc setup_sigcontext32() array overflows
-Message-ID: <20080517191636.GA8140@cs181133002.pp.htv.fi>
+To: Dave Jones <davej@codemonkey.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, stsp@users.sourceforge.net
+Subject: Re: pcspkr lockdep trace.
+Message-ID: <20080517191827.GB8140@cs181133002.pp.htv.fi>
+References: <20080517172612.GA3522@codemonkey.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <20080517172612.GA3522@codemonkey.org.uk>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-include/asm-parisc/ptrace.h:
+On Sat, May 17, 2008 at 01:26:12PM -0400, Dave Jones wrote:
+> =======================================================
+> [ INFO: possible circular locking dependency detected ]
+> 2.6.26-0.13.rc2.git5.fc10.x86_64 #1
+> -------------------------------------------------------
+> ksoftirqd/0/4 is trying to acquire lock:
+>  (&pcsp_chip.substream_lock){++..}, at: [<ffffffffa0265333>] pcsp_do_timer+0x5a/0x2b3 [snd_pcsp]
+> 
+> but task is already holding lock:
+>  (&cpu_base->lock){++..}, at: [<ffffffff8104e0a8>] hrtimer_interrupt+0x79/0x14f
+>...
 
-<--  snip  -->
-
-...
-struct pt_regs {
-        unsigned long gr[32];   /* PSW is in gr[0] */
-...
-}
-
-<--  snip  -->
-
-
-arch/parisc/kernel/signal32.c:
-
-<--  snip  -->
-
-...
-setup_sigcontext32(struct compat_sigcontext __user *sc, struct compat_regfile __user * rf, 
-                struct pt_regs *regs, int in_syscall)            
-{
-...
-                /* Store upper half */
-                compat_reg = (compat_uint_t)(regs->gr[32] >> 32);
-...                                                   ^^
-                /* Store upper half */
-                compat_reg = (compat_uint_t)((regs->gr[32]+4) >> 32);
-...                                                    ^^
-
-<--  snip  -->
-
-
-Spotted by the GNU C compiler.
-
+Known bug:
+  http://bugzilla.kernel.org/show_bug.cgi?id=10701
 
 cu
 Adrian
