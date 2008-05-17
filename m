@@ -1,99 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760030AbYEQUqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760346AbYEQUqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760030AbYEQUqV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 16:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758529AbYEQUqE
+	id S1760346AbYEQUqx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 16:46:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758581AbYEQUqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 16:46:04 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:46939 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758691AbYEQUqB (ORCPT
+	Sat, 17 May 2008 16:46:45 -0400
+Received: from testure.choralone.org ([194.9.77.134]:43220 "EHLO
+	testure.choralone.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755286AbYEQUqo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 16:46:01 -0400
-Date: Sat, 17 May 2008 16:45:58 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: references from Makefiles to non-existent CONFIG variables
-Message-ID: <alpine.LFD.1.10.0805171641190.14930@localhost.localdomain>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sat, 17 May 2008 16:46:44 -0400
+Date: Sat, 17 May 2008 16:47:25 -0400
+From: Dave Jones <davej@codemonkey.org.uk>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Theodore Tso <tytso@mit.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Roberto Oppedisano <roberto.oppedisano@infracom.it>,
+       Stas Sergeev <stsp@aknet.ru>
+Subject: Re: [Bug #10679] 2.6.26-rc1 regression:
+	e5e1d3cb20034a3cbcfff1f0bae12201aa2ce17e breaks artsd
+Message-ID: <20080517204725.GA11460@codemonkey.org.uk>
+Mail-Followup-To: Dave Jones <davej@codemonkey.org.uk>,
+	Takashi Iwai <tiwai@suse.de>, Theodore Tso <tytso@mit.edu>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Roberto Oppedisano <roberto.oppedisano@infracom.it>,
+	Stas Sergeev <stsp@aknet.ru>
+References: <hPXlJLjt4XG.A._lF.Jv1JIB@chimera> <88YBFoyd1CN.A._sF.Ov1JIB@chimera> <s5hskwmeb1h.wl%tiwai@suse.de> <20080514212011.GH7054@mit.edu> <s5hhcd0azv1.wl%tiwai@suse.de> <20080515130654.GC18825@mit.edu> <s5h8wybr0c2.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <s5h8wybr0c2.wl%tiwai@suse.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 15, 2008 at 06:36:29PM +0200, Takashi Iwai wrote:
+ > At Thu, 15 May 2008 09:06:54 -0400,
+ > Theodore Tso wrote:
+ > > 
+ > > On Thu, May 15, 2008 at 07:41:06AM +0200, Takashi Iwai wrote:
+ > > > Sounds reasonable.  To where should it be added, BTW?
+ > > > Little people seem to care about Kconfig help texts, and an extra
+ > > > comment block (with depends on SND_PCSP) could be annoying...
+ > > 
+ > > That's a good question.  A note that including including this module
+ > > could potentially cause sound cards to be renumbered might be
+ > > reasonable, since I suspect most users (and most application
+ > > programs!) have been accustomed to only having one sound card, and so
+ > > building this module may cause sound cards to be renumbered in Kconfig
+ > > would at least be a start.
+ > 
+ > Yes.
+ > 
+ > > I know this wouldn't help users of distro kernels, but this would at
+ > > least be one way of warning distro maintainers to think twice about
+ > > enabling it as a module.
 
-  here's the current, unadulterated list of references from Makefiles
-to CONFIG variables that are not defined in any Kconfig file.  once
-again, enjoy.
+That arrived in my inbox slightly to late :)
 
-p.s.  if history is any guide, i'm sure i'll get an email or two from
-someone upbraiding me for mentioning one of their variables and
-staunchly defending its (utterly irrelevant) existence.  folks, some
-of these variables have been around so long, i can rattle off half of
-them from memory.  so howzabout dealing with them once and for all?
-it's just a thought.
+ > Well, yeah, for distro kernels, it's then a problem of distributors :)
+ 
+>From todays Fedora kernel changelog :-
 
+* Sat May 17 2008 Dave Jones <davej@redhat.com>
+- Disable CONFIG_SND_PCSP (#447039)
 
-===== ARCH_OMAP3 =====
-./arch/arm/mach-omap2/Makefile:obj-$(CONFIG_ARCH_OMAP3)		+= clock34xx.o
-===== CPU_ARM946T =====
-./arch/arm/Makefile:tune-$(CONFIG_CPU_ARM946T)	:=$(call cc-option,-mtune=arm9e,-mtune=arm9tdmi)
-===== CPU_R4000 =====
-./arch/mips/kernel/Makefile:obj-$(CONFIG_CPU_R4000)		+= r4k_fpu.o r4k_switch.o
-===== ETRAXFS_SIM =====
-./arch/cris/arch-v32/kernel/Makefile:obj-$(CONFIG_ETRAXFS_SIM) += vcs_hook.o
-===== L7200_KEYB =====
-./drivers/acorn/char/Makefile:obj-$(CONFIG_L7200_KEYB)	+= defkeymap-l7200.o keyb_l7200.o
-===== MSPETH =====
-./arch/mips/pmc-sierra/msp71xx/Makefile:obj-$(CONFIG_MSPETH) += msp_eth.o
-===== OMAP_MBOX_FWK =====
-./arch/arm/plat-omap/Makefile:obj-$(CONFIG_OMAP_MBOX_FWK) += mailbox.o
-===== PPC_MPC86XADS =====
-./arch/powerpc/boot/Makefile:image-$(CONFIG_PPC_MPC86XADS)		+= cuImage.mpc866ads
-===== PPC_MPC885ADS =====
-./arch/powerpc/boot/Makefile:image-$(CONFIG_PPC_MPC885ADS)		+= cuImage.mpc885ads
-===== PROFILE =====
-./arch/mn10300/kernel/Makefile:obj-$(CONFIG_PROFILE) += profile.o profile-low.o
-===== RADIO_MIROPCM20 =====
-./drivers/media/radio/Makefile:obj-$(CONFIG_RADIO_MIROPCM20) += miropcm20.o
-===== RADIO_MIROPCM20_RDS =====
-./drivers/media/radio/Makefile:obj-$(CONFIG_RADIO_MIROPCM20_RDS) += miropcm20-rds.o
-===== SA1100_USB =====
-./arch/arm/mach-sa1100/Makefile:#obj-$(CONFIG_SA1100_USB)		+= usb/
-===== SOUND_WM97XX =====
-./sound/oss/Makefile:obj-$(CONFIG_SOUND_WM97XX)	+= ac97_plugin_wm97xx.o
-===== TIPAR =====
-./drivers/char/Makefile:obj-$(CONFIG_TIPAR)		+= tipar.o
-===== TTY_LOG =====
-./arch/um/os-Linux/Makefile:obj-$(CONFIG_TTY_LOG) += tty_log.o
-./arch/um/os-Linux/Makefile:user-objs-$(CONFIG_TTY_LOG) += tty_log.o
-===== USB_MSP71XX =====
-./arch/mips/pmc-sierra/msp71xx/Makefile:obj-$(CONFIG_USB_MSP71XX) += msp_usb.o
-===== XEN_XENCOMM =====
-./drivers/xen/Makefile:obj-$(CONFIG_XEN_XENCOMM)	+= xencomm.o
-===== XFS_TRACE =====
-./fs/xfs/Makefile:xfs-$(CONFIG_XFS_TRACE)		+= xfs_dir2_trace.o
-./fs/xfs/Makefile:xfs-$(CONFIG_XFS_TRACE)		+= support/ktrace.o
-===== XTENSA_VARIANT_LINUX_CUSTOM =====
-./arch/xtensa/Makefile:variant-$(CONFIG_XTENSA_VARIANT_LINUX_CUSTOM)	:= custom
+Problem solved :-)
 
-rday
---
+More seriously, it doesn't seem that there's any way we can build
+this driver modular without it screwing up already working systems
+unless we cripple its MODULE_ALIAS to not autoload, allowing users
+who care about it (which will be in the minority anyway) to add it manually.
 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
+	Dave
 
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
+-- 
+http://www.codemonkey.org.uk
