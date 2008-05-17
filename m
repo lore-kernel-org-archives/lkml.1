@@ -1,107 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760248AbYEQUsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760040AbYEQUtZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760248AbYEQUsV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 16:48:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758879AbYEQUsO
+	id S1760040AbYEQUtZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 16:49:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758994AbYEQUtQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 16:48:14 -0400
-Received: from yugo.dsd.sztaki.hu ([195.111.2.114]:52291 "EHLO
-	yugo.frugalware.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758585AbYEQUsN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 16:48:13 -0400
-From: Miklos Vajna <vmiklos@frugalware.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] x86: janitor work in bugs.c
-Date: Sat, 17 May 2008 22:48:13 +0200
-Message-Id: <1211057293-19497-1-git-send-email-vmiklos@frugalware.org>
-X-Mailer: git-send-email 1.5.5.1.211.g65ea3.dirty
-In-Reply-To: <20080516134858.GC28910@elte.hu>
+	Sat, 17 May 2008 16:49:16 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:62099 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758539AbYEQUtP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 May 2008 16:49:15 -0400
+Date: Sat, 17 May 2008 21:46:35 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+cc: khali@linux-fr.org, a.zummo@towertech.it, akpm@linux-foundation.org,
+       dwmw2@infradead.org, ralf@linux-mips.org, tglx@linutronix.de,
+       rtc-linux@googlegroups.com, i2c@lm-sensors.org,
+       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/6] RTC: SMBus support for the M41T80, etc. driver (#2)
+In-Reply-To: <20080518.003157.126143021.anemo@mba.ocn.ne.jp>
+Message-ID: <Pine.LNX.4.55.0805172134420.10067@cliff.in.clinika.pl>
+References: <Pine.LNX.4.55.0805130254420.535@cliff.in.clinika.pl>
+ <20080513140444.49d7a044@hyperion.delvare> <Pine.LNX.4.55.0805131752340.7267@cliff.in.clinika.pl>
+ <20080518.003157.126143021.anemo@mba.ocn.ne.jp>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just moved trailing statements to the next line, removed space before
-open/close parenthesis, wrapped long lines.
+On Sun, 18 May 2008, Atsushi Nemoto wrote:
 
-Signed-off-by: Miklos Vajna <vmiklos@frugalware.org>
----
+> I suppose the "off by one second" issue is not the matter each driver
+> should take care of.  This race is common for most RTC chip.
 
-On Fri, May 16, 2008 at 03:48:58PM +0200, Ingo Molnar <mingo@elte.hu> wrote:
-> the two comments should be merged, somehow like this:
+ I agree, but with the reread it comes for free here.  Given you have two 
+values of seconds available here, which one would you choose?  You can't 
+take both at once. ;-)
 
-Merged.
+> I do not have strong opinion for optimization suggested by Jean.  It
+> might be better, but I'm OK with current your patch.
 
-> or just do:
->
-> > +   init_utsname()->machine[1] =
-> > +            '0' + (boot_cpu_data.x86 > 6 ? 6 : boot_cpu_data.x86);
+ Hmm, it looks as simple as putting a clause like:
 
-OK, I did so.
+	if (i2c_check_functionality(client->adapter, 
+				    I2C_FUNC_SMBUS_READ_I2C_BLOCK)
+		break;
 
- arch/x86/kernel/cpu/bugs.c |   27 +++++++++++++++++++--------
- 1 files changed, 19 insertions(+), 8 deletions(-)
+into the loop and even at 400kHz it saves a considerable amount of time.
+It sounds plausible -- I'll do that.
 
-diff --git a/arch/x86/kernel/cpu/bugs.c b/arch/x86/kernel/cpu/bugs.c
-index 170d2f5..12c27c8 100644
---- a/arch/x86/kernel/cpu/bugs.c
-+++ b/arch/x86/kernel/cpu/bugs.c
-@@ -59,8 +59,12 @@ static void __init check_fpu(void)
- 		return;
- 	}
- 
--/* trap_init() enabled FXSR and company _before_ testing for FP problems here. */
--	/* Test for the divl bug.. */
-+	/* 
-+	 * trap_init() enabled FXSR and company _before_ testing for FP
-+	 * problems here.
-+	 *
-+	 * Test for the divl bug..
-+	 */
- 	__asm__("fninit\n\t"
- 		"fldl %1\n\t"
- 		"fdivl %2\n\t"
-@@ -108,10 +112,15 @@ static void __init check_popad(void)
- 	  "movl $12345678,%%eax; movl $0,%%edi; pusha; popa; movl (%%edx,%%edi),%%ecx "
- 	  : "=&a" (res)
- 	  : "d" (inp)
--	  : "ecx", "edi" );
--	/* If this fails, it means that any user program may lock the CPU hard. Too bad. */
--	if (res != 12345678) printk( "Buggy.\n" );
--		        else printk( "OK.\n" );
-+	  : "ecx", "edi");
-+	/* 
-+	 * If this fails, it means that any user program may lock the
-+	 * CPU hard. Too bad.
-+	 */
-+	if (res != 12345678)
-+		printk("Buggy.\n");
-+	else
-+		printk("OK.\n");
- #endif
- }
- 
-@@ -137,7 +146,8 @@ static void __init check_config(void)
-  * i486+ only features! (WP works in supervisor mode and the
-  * new "invlpg" and "bswap" instructions)
-  */
--#if defined(CONFIG_X86_WP_WORKS_OK) || defined(CONFIG_X86_INVLPG) || defined(CONFIG_X86_BSWAP)
-+#if defined(CONFIG_X86_WP_WORKS_OK) || defined(CONFIG_X86_INVLPG) || \
-+	defined(CONFIG_X86_BSWAP)
- 	if (boot_cpu_data.x86 == 3)
- 		panic("Kernel requires i486+ for 'invlpg' and other features");
- #endif
-@@ -170,6 +180,7 @@ void __init check_bugs(void)
- 	check_fpu();
- 	check_hlt();
- 	check_popad();
--	init_utsname()->machine[1] = '0' + (boot_cpu_data.x86 > 6 ? 6 : boot_cpu_data.x86);
-+	init_utsname()->machine[1] =
-+		'0' + (boot_cpu_data.x86 > 6 ? 6 : boot_cpu_data.x86);
- 	alternative_instructions();
- }
--- 
-1.5.4.3
-
+  Maciej
