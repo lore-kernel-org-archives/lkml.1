@@ -1,87 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761176AbYEQXYt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760848AbYEQXjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761176AbYEQXYt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 19:24:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbYEQXYn
+	id S1760848AbYEQXjY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 19:39:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbYEQXjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 19:24:43 -0400
-Received: from yumi.tdiedrich.de ([85.10.210.183]:44633 "EHLO mx.tdiedrich.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751302AbYEQXYm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 19:24:42 -0400
-Date: Sun, 18 May 2008 01:24:11 +0200
-From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Ayaz Abdulla <aabdulla@nvidia.com>
-Subject: Re: hibernate event order question
-Message-ID: <20080517232411.GA8792@yamamaya.is-a-geek.org>
-Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, Ayaz Abdulla <aabdulla@nvidia.com>
-References: <20080517175046.GA9032@yamamaya.is-a-geek.org> <200805172156.12686.rjw@sisk.pl> <20080517223622.GA2668@yamamaya.is-a-geek.org>
+	Sat, 17 May 2008 19:39:18 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:52737 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751302AbYEQXjR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 May 2008 19:39:17 -0400
+Date: Sat, 17 May 2008 19:39:08 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Alistair John Strachan <alistair@devzero.co.uk>,
+       Jens Axboe <jens.axboe@oracle.com>, xfs@oss.sgi.com,
+       Neil Brown <neilb@suse.de>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org, dgc@sgi.com
+Subject: Re: XFS/md/blkdev warning (was Re: Linux 2.6.26-rc2)
+Message-ID: <20080517233908.GA15279@infradead.org>
+References: <alpine.LFD.1.10.0805120731480.3188@woody.linux-foundation.org> <200805171922.56272.alistair@devzero.co.uk> <alpine.LFD.1.10.0805171131000.3020@woody.linux-foundation.org> <200805172109.59244.alistair@devzero.co.uk> <alpine.LFD.1.10.0805171411250.3020@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: multipart/mixed; boundary="IJpNTDwzlM2Ie8A6"
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080517223622.GA2668@yamamaya.is-a-geek.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <alpine.LFD.1.10.0805171411250.3020@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tobias Diedrich wrote:
-> > > Shouldn't there be a 'prepare for poweroff'-callback, which gets
-> > > called
-> > > before the system is powered off for real?
-> > 
-> > Yes, it should and it's called in recent kernels.
+
+--IJpNTDwzlM2Ie8A6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Sat, May 17, 2008 at 02:17:37PM -0700, Linus Torvalds wrote:
+> > [4294293.003500]  [<ffffffff8028106a>] __kmalloc+0x3e/0xe6
+> > [4294293.003500]  [<ffffffff803067fc>] ? xfs_iflush_int+0x272/0x2fb
+> > [4294293.003500]  [<ffffffff80320552>] kmem_alloc+0x6a/0xd1
+> > [4294293.003500]  [<ffffffff80307a9c>] xfs_iflush_cluster+0x4b/0x33f
+> > [4294293.003500]  [<ffffffff8030681e>] ? xfs_iflush_int+0x294/0x2fb
+> > [4294293.003500]  [<ffffffff80307f4b>] xfs_iflush+0x1bb/0x29d
+> > [4294293.003500]  [<ffffffff8031bc30>] xfs_inode_flush+0xb8/0xdd
+> > [4294293.003500]  [<ffffffff80328b1f>] xfs_fs_write_inode+0x30/0x4c
 > 
-> For what values of 'recent'?
-> I'm running 2.6.26-rc2 here. :)
-> How do I hook into this callback?
-> (suspend_late maybe? Going to try that one next...)
+> And as a result, all the XFS stuff is then waiting for that lock which is 
+> held by pdflush above:
 
-Ok, this patch fixes the 'regression' introduced by the previous
-patch (at least for me ;)):
+Btw, just that function has a missing GFP_NOFS and a too large
+allocation which were fixed by Dave Chinner but aren't in mainline
+yet.  Can you check whether it still happens with the patch below?
 
-Index: linux-2.6.26-rc2.forcedwol/drivers/net/forcedeth.c
-===================================================================
---- linux-2.6.26-rc2.forcedwol.orig/drivers/net/forcedeth.c	2008-05-18 01:10:18.000000000 +0200
-+++ linux-2.6.26-rc2.forcedwol/drivers/net/forcedeth.c	2008-05-18 01:11:33.000000000 +0200
-@@ -5828,8 +5828,24 @@
- out:
- 	return rc;
- }
-+
-+static void nv_shutdown(struct pci_dev *pdev)
-+{
-+	struct net_device *dev = pci_get_drvdata(pdev);
-+	struct fe_priv *np = netdev_priv(dev);
-+	u8 __iomem *base = get_hwbase(dev);
-+
-+	if (netif_running(dev))
-+		nv_close(dev);
-+
-+	pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
-+	pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
-+	pci_disable_device(pdev);
-+	pci_set_power_state(pdev, PCI_D3hot);
-+}
- #else
- #define nv_suspend NULL
-+#define nv_shutdown NULL
- #define nv_resume NULL
- #endif /* CONFIG_PM */
- 
-@@ -6000,6 +6016,7 @@
- 	.remove		= __devexit_p(nv_remove),
- 	.suspend	= nv_suspend,
- 	.resume		= nv_resume,
-+	.shutdown	= nv_shutdown,
- };
- 
- static int __init init_nic(void)
 
+--IJpNTDwzlM2Ie8A6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename=xfs-icluster-add-nofs
+
+On Thu, May 01, 2008 at 09:15:21AM -0400, Christoph Hellwig wrote:
+> On Thu, May 01, 2008 at 10:26:11PM +1000, David Chinner wrote:
+> > Index: 2.6.x-xfs-new/fs/xfs/xfs_inode.c
+> > ===================================================================
+> > --- 2.6.x-xfs-new.orig/fs/xfs/xfs_inode.c	2008-04-28 16:35:23.000000000 +1000
+> > +++ 2.6.x-xfs-new/fs/xfs/xfs_inode.c	2008-05-01 20:04:55.151880341 +1000
+> > @@ -2986,7 +2986,7 @@ xfs_iflush_cluster(
+> >  	ASSERT(pag->pag_ici_init);
+> >  
+> >  	ilist_size = XFS_INODE_CLUSTER_SIZE(mp) * sizeof(xfs_inode_t *);
+> > -	ilist = kmem_alloc(ilist_size, KM_MAYFAIL);
+> > +	ilist = kmem_alloc(ilist_size, KM_NOFS);
+> >  	if (!ilist)
+> >  		return 0;
+> 
+> This should be KM_MAYFAIL | KM_NOFS, because KM_NOFS doesn't imply that
+> the allocation may fail.
+
+Yes, right you are - I only looked at the effect of __GFP_FS, not
+what kmem_alloc does. i.e. kmem_flags_convert() doesn't do anything
+with KM_MAYFAIL, forgetting that it's kmem_alloc() that uses it...
+
+New patch below.
+
+Cheers,
+
+Dave.
 -- 
-Tobias						PGP: http://9ac7e0bc.uguu.de
-このメールは十割再利用されたビットで作られています。
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
+
+---
+Don't allow memory reclaim to wait on the filesystem in inode writeback
+
+If we allow memory reclaim to wait on the pages under writeback in
+inode cluster writeback we could deadlock because we are currently
+holding the ILOCK on the initial writeback inode which is needed in
+data I/O completion to change the file size or do unwritten extent
+conversion before the pages are taken out of writeback state.
+
+Signed-off-by: Dave Chinner <dgc@sgi.com>
+---
+ fs/xfs/xfs_inode.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: 2.6.x-xfs-new/fs/xfs/xfs_inode.c
+===================================================================
+--- 2.6.x-xfs-new.orig/fs/xfs/xfs_inode.c	2008-04-28 16:35:23.000000000 +1000
++++ 2.6.x-xfs-new/fs/xfs/xfs_inode.c	2008-05-02 08:03:30.071824780 +1000
+@@ -2986,7 +2986,7 @@ xfs_iflush_cluster(
+ 	ASSERT(pag->pag_ici_init);
+ 
+ 	ilist_size = XFS_INODE_CLUSTER_SIZE(mp) * sizeof(xfs_inode_t *);
+-	ilist = kmem_alloc(ilist_size, KM_MAYFAIL);
++	ilist = kmem_alloc(ilist_size, KM_MAYFAIL|KM_NOFS);
+ 	if (!ilist)
+ 		return 0;
+ 
+
+
+
+--IJpNTDwzlM2Ie8A6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename=xfs-fix-icluster-alloc-size
+
+We only need to allocate space for the number of inodes in
+the cluster when writing back inodes, not every byte in the
+inode cluster. This reduces the amount of memory needing to
+be allocated to 256 bytes instead of 64k.
+
+Somebody pass me the brown paper bag, please.
+
+Signed-off-by: Dave Chinner <dgc@sgi.com>
+---
+ fs/xfs/xfs_inode.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+Index: 2.6.x-xfs-new/fs/xfs/xfs_inode.c
+===================================================================
+--- 2.6.x-xfs-new.orig/fs/xfs/xfs_inode.c	2008-05-16 19:43:55.000000000 +1000
++++ 2.6.x-xfs-new/fs/xfs/xfs_inode.c	2008-05-16 19:47:47.778141722 +1000
+@@ -2913,6 +2913,7 @@ xfs_iflush_cluster(
+ 	xfs_mount_t		*mp = ip->i_mount;
+ 	xfs_perag_t		*pag = xfs_get_perag(mp, ip->i_ino);
+ 	unsigned long		first_index, mask;
++	unsigned long		inodes_per_cluster;
+ 	int			ilist_size;
+ 	xfs_inode_t		**ilist;
+ 	xfs_inode_t		*iq;
+@@ -2924,7 +2925,8 @@ xfs_iflush_cluster(
+ 	ASSERT(pag->pagi_inodeok);
+ 	ASSERT(pag->pag_ici_init);
+ 
+-	ilist_size = XFS_INODE_CLUSTER_SIZE(mp) * sizeof(xfs_inode_t *);
++	inodes_per_cluster = XFS_INODE_CLUSTER_SIZE(mp) >> mp->m_sb.sb_inodelog;
++	ilist_size = inodes_per_cluster * sizeof(xfs_inode_t *);
+ 	ilist = kmem_alloc(ilist_size, KM_MAYFAIL|KM_NOFS);
+ 	if (!ilist)
+ 		return 0;
+@@ -2934,8 +2936,7 @@ xfs_iflush_cluster(
+ 	read_lock(&pag->pag_ici_lock);
+ 	/* really need a gang lookup range call here */
+ 	nr_found = radix_tree_gang_lookup(&pag->pag_ici_root, (void**)ilist,
+-					first_index,
+-					XFS_INODE_CLUSTER_SIZE(mp));
++					first_index, inodes_per_cluster);
+ 	if (nr_found == 0)
+ 		goto out_free;
+ 
+
+
+
+--IJpNTDwzlM2Ie8A6--
