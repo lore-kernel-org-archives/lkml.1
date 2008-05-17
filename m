@@ -1,55 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754533AbYEQEzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754671AbYEQFCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754533AbYEQEzc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 00:55:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbYEQEzW
+	id S1754671AbYEQFCU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 01:02:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbYEQFCI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 00:55:22 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:19229 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751051AbYEQEzV (ORCPT
+	Sat, 17 May 2008 01:02:08 -0400
+Received: from an-out-0708.google.com ([209.85.132.241]:4442 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751250AbYEQFCG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 00:55:21 -0400
-Message-ID: <a24804730805162155m72e6b40aweb8822515c880c50@mail.gmail.com>
-Date: Fri, 16 May 2008 21:55:20 -0700
-From: "Chris Peterson" <cpeterso@cpeterso.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of IRQF_SAMPLE_RANDOM
-Cc: "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>,
-       "Jeff Garzik" <jeff@garzik.org>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       "Rick Jones" <rick.jones2@hp.com>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080516191125.46f59ad6@core>
+	Sat, 17 May 2008 01:02:06 -0400
+Message-ID: <fa686aa40805162202m336aade4qd6cfa5b17d6f3892@mail.gmail.com>
+Date: Fri, 16 May 2008 23:02:05 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: cbouatmailru@gmail.com
+Subject: Re: [PATCH 3/4] spi: Add OF binding support for SPI busses
+Cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
+       fabrizio.garetto@gmail.com
+In-Reply-To: <20080516224916.GA16702@zarina>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com>
-	 <482C7B18.6060003@garzik.org> <482C7E53.3050300@hp.com>
-	 <482C8184.2030906@garzik.org> <482C8550.5000909@intel.com>
-	 <482C8D4D.3040702@garzik.org>
-	 <20080516132107.GA11304@csclub.uwaterloo.ca>
-	 <20080516161029.44ded734@core>
-	 <20080516173610.GA27126@csclub.uwaterloo.ca>
-	 <20080516191125.46f59ad6@core>
+References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
+	 <20080516193613.28030.13950.stgit@trillian.secretlab.ca>
+	 <20080516220338.GA3255@zarina>
+	 <fa686aa40805161514r513d0eebt380a76f64abe8434@mail.gmail.com>
+	 <20080516224916.GA16702@zarina>
+X-Google-Sender-Auth: c34216d1f5597072
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> If they don't need that level of security they can use /dev/urandom.
-> Piping network randomness into /dev/urandom is probably quite sensible
-> but not into /dev/random.
+On Fri, May 16, 2008 at 4:49 PM, Anton Vorontsov <cbouatmailru@gmail.com> wrote:
+> On Fri, May 16, 2008 at 04:14:23PM -0600, Grant Likely wrote:
+>> > Maybe this code could do something like
+>> > spi->dev.platform_data = nc->data;
+>> > and board code would fill nc->data at early stages? This needs to be a
+>> > convention, not just random use though.. Maybe we can expand the struct
+>> > device_node to explicitly include .platform_data for such cases?
+>>
+>> Hmmm, as you say, this could end up being rather messy.  However, by
+>> passing the device node pointer, the driver could extract that data on
+>> a per case basis.  (ie. it would be decided on a per driver basis
+>> where to get the platform data).  I'm not sure; this bears more
+>> thought...
+>
+> Sometimes it's not worth powder and shot adding OF functionality to
+> the drivers, I2C and SPI are major examples. Another [not mmc_spi]
+> example is drivers/input/touchscreen/ads7846.c, which is SPI driver
+> and needs platform data. There is a board that needs this (touchscreen
+> controller on a MPC8360E-RDK).
 
-If there was an IRQF_SAMPLE_DUBIOUS or IRQF_SAMPLE_URANDOM for network
-device IRQs to feed /dev/urandom, are there any other IRQs that should
-use it instead of IRQF_SAMPLE_RANDOM?
+In my mind; platform_data and the device tree are all about the same
+thing: representation.  In other words, how to describe the
+configuration of the hardware independent of the driver itself.  The
+device tree and platform data structures both solve the same problem.
+In both cases, the representation data must be
+translated/decoded/interpreted and stored in the drivers own private
+data structure so it can be of use.
 
->From a cursory search, it seems like:
+One of the things I find rather interesting is just how frequently
+drivers using platform data structures have a big block of code which
+simply copy pdata fields into identically named fields in the device
+private data... specifically: copied discretely instead of being a
+verbatim block that can be memcopied, or instead of maintaining a
+pointer and using the pdata itself.  It highlights for me just how
+much pdata structures are decoupled from the driver itself (just like
+how the device tree data is decoupled from the driver)... but I
+digress.
 
-* network drivers could use IRQF_SAMPLE_URANDOM
-* all (?) other device drivers could use IRQF_SAMPLE_RANDOM
-* and timer IRQs should not use either?
+The point is that the translation of data from the device tree (and
+from pdata for that matter) to a form usable by the driver has to live
+*somewhere*.  Does it belong in the platform code?  Or should it live
+with the driver itself?  I argue that it really belongs as much as
+feasibly possible with the driver code.  Even if a pdata structure is
+chosen to be used as an intermediary representation, the code is only
+relevant to the driver and therefore shouldn't appear anywhere else in
+the kernel tree.  Putting it with the driver also has the added
+advantage that it can be lumped in with the driver module and
+therefore will only get compiled into the kernel if the driver is
+present.  Putting driver specific (not platform specific) translation
+code anywhere other than with the device driver it is intended for is
+just wrong.
 
+In addition, I'd really like to avoid a situation where the same block
+of translation code (or at least calls to it) is duplicated all over
+the platform code directories.  It's that sort of duplication that the
+device tree (and similar schemes) is intended to solve.  I agree that
+using platform code is often the best solution, especially when
+dealing with one-off board ports that won't appear anywhere else.
+However, I strongly believe that the platform code approach should be
+the exception, not the rule.  If it is a common data property that all
+instantiations of the device must have, then encode it in the device
+tree and be done with it.  Doing so keeps platform code straight
+forward and reduces duplication.
 
-chris
+> Also there is no way to pass functions via device tree, we're
+> always end up doing board-specific hooks in the generic drivers...
+>
+> Finally, let's call this platform_data and be done with it. Then we
+> can use this for things like drivers/video/fsl-diu-fb.c (see diu_ops,
+> which is global struct, filled by
+> arch/powerpc/platforms/86xx/mpc8610_hpcd.c).
+
+Yes, I agree, there are always going to be platform/board specific
+hooks and I'm not saying that we should try to eliminate them.  But
+(as expressed in the argument above) I don't like the idea of making
+the platform code fill in all the necessary pdata structures.  How
+about this as an alternative:
+
+Instead of allowing platform code to fill in platform_data pointers at
+early platform setup, let it register a driver-specific callback hook
+instead.  If the hook it populated, the driver will call it at an
+appropriate time to allow the platform code to manipulate the driver
+configuration.  The signature of the hook can be driver dependent
+(just like how the pdata hook is platform dependent).  Doing this
+ensure that the translation code stays where it belongs: with the
+driver itself, and it defers execution of the code to a point to
+driver initialization time instead of earlier in the platform setup
+which should improve boot times in certain circumstances if the
+drivers are loaded as modules.
+
+As for adding OF support to the drivers "not worth powder and shot"; I
+must disagree.  Adding the device tree support really isn't very
+complex and the impact on existing drivers quite minimal.  All of the
+code can be restricted to a function called by the drivers probe
+routine that can be compiled out entirely if CONFIG_OF is not set.
+I've already done similar stuff with drivers supporting both platform
+and of_platform busses, and this situation I think should be even less
+invasive.
+
+Thoughts?
+
+Cheers,
+g.
+
+---
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
