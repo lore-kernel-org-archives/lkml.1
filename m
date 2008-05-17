@@ -1,110 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759721AbYEQUeu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759704AbYEQUgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759721AbYEQUeu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 16:34:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757995AbYEQUei
+	id S1759704AbYEQUgg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 16:36:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758291AbYEQUg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 16:34:38 -0400
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:47595
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758414AbYEQUeh (ORCPT
+	Sat, 17 May 2008 16:36:28 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:45084 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751942AbYEQUg1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 16:34:37 -0400
-Date: Sat, 17 May 2008 22:34:28 +0200
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Robert Hancock <hancockr@shaw.ca>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       NetDev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jgarzik@pobox.com>, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: Top kernel oopses/warnings for the week of May 16th 2008
-Message-ID: <20080517203428.GA16915@duo.random>
-References: <fa.LFS/TATb5YijFetLw6A+gczrVAQ@ifi.uio.no> <482E3B1B.9070400@shaw.ca> <20080517141235.GA13130@duo> <482EF256.8030305@linux.intel.com>
+	Sat, 17 May 2008 16:36:27 -0400
+Date: Sat, 17 May 2008 16:36:23 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Current list of includes of non-existent <linux/whatever.h>
+ headers.
+Message-ID: <alpine.LFD.1.10.0805171633520.5061@localhost.localdomain>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <482EF256.8030305@linux.intel.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 17, 2008 at 07:57:26AM -0700, Arjan van de Ven wrote:
-> Andrea Arcangeli wrote:
->> The reason I touched that code, is that a change introduced during
->> 2.6.25-rc initialized the isa dma pool even if not necessary and that
->> broke the reserved-ram patch that requires no __GFP_DMA
->> allocations. There was no crash in 2.6.24 based kernels, the
->> regression started in 2.6.25-rc.
->
-> I'd not really call "breaks external patch" a regression ;)
 
-The external patch only allowed me to notice the regression when
-nobody else noticed it. For mainline the regression was to put ram
-into the bounce buffer pool even if no dma could ever require the
-bounce buffering. There's no point to initialize the pool when total
-ram < highest dma address. That is the regression. My patch turned the
-regression from a waste of ram, to a kernel crash at boot. That's the
-only relation between the reserved-ram patch this bug.
+  since the merge activity is cooling off, here's a list of references
+to <linux/whatever.h> headers that simply don't exist.  i've made no
+attempt to cull the list based on semantic rationalization of any
+kind.  enjoy.
 
-I assume Robert has a similar issue with some debugging code checking
-for GFP_KERNEL allocations inside atomic context or similar, I assume
-his driver has a bug and calls that function in the wrong context. But
-if this didn't happen in 2.4.24, it means such bug has nothing to do
-with the bug in blk-settings.c. It's just that such a bug or the
-reserved-ram patches are required to notice the regression in
-blk-settings.c.
 
-rolling back to the code before this commit solves the problem for
-me. The weird thing is that I'm quite sure I verified my patch
-incremental with the below solved the crash at boot when run in qemu
-but I also noticed later that sata didn't fix it.
+=== Missing: include/linux/autoconf.h ===
+arch/ia64/kvm/asm-offsets.c:#include <linux/autoconf.h>
+drivers/accessibility/braille/braille_console.c:#include <linux/autoconf.h>
+=== Missing: include/linux/blk.h ===
+arch/frv/kernel/setup.c:#include <linux/blk.h>
+=== Missing: include/linux/bounds.h ===
+include/linux/mmzone.h:#include <linux/bounds.h>
+include/linux/page-flags.h:#include <linux/bounds.h>
+=== Missing: include/linux/cachefs.h ===
+fs/afs/cache.h:#include <linux/cachefs.h>
+=== Missing: include/linux/compile.h ===
+arch/x86/boot/version.c:#include <linux/compile.h>
+init/version.c:#include <linux/compile.h>
+=== Missing: include/linux/debugger.h ===
+arch/blackfin/kernel/kgdb.c:#include <linux/debugger.h>
+=== Missing: include/linux/kdb.h ===
+drivers/acpi/osl.c:#include <linux/kdb.h>
+=== Missing: include/linux/l3/l3.h ===
+sound/arm/sa11xx-uda1341.c:#include <linux/l3/l3.h>
+sound/i2c/l3/uda1341.c:#include <linux/l3/l3.h>
+=== Missing: include/linux/pkthook.h ===
+arch/ppc/8xx_io/fec.c:#include <linux/pkthook.h>
+=== Missing: include/linux/r4k-timer.h ===
+arch/mips/kernel/sync-r4k.c:#include <linux/r4k-timer.h>
+=== Missing: include/linux/serial_ip3106.h ===
+arch/mips/nxp/pnx8550/common/gdb_hook.c:#include <linux/serial_ip3106.h>
+=== Missing: include/linux/spi/tsc2102.h ===
+arch/arm/mach-omap1/board-palmte.c:#include <linux/spi/tsc2102.h>
+=== Missing: include/linux/squashfs_fs.h ===
+arch/mips/pmc-sierra/msp71xx/msp_prom.c:#include <linux/squashfs_fs.h>
+=== Missing: include/linux/tqueue.h ===
+drivers/pcmcia/au1000_pb1x00.c:#include <linux/tqueue.h>
+drivers/pcmcia/au1000_xxs1500.c:#include <linux/tqueue.h>
+=== Missing: include/linux/usb/isp1362.h ===
+arch/blackfin/mach-bf533/boards/cm_bf533.c:#include <linux/usb/isp1362.h>
+arch/blackfin/mach-bf533/boards/stamp.c:#include <linux/usb/isp1362.h>
+arch/blackfin/mach-bf533/boards/ip0x.c:#include <linux/usb/isp1362.h>
+arch/blackfin/mach-bf533/boards/H8606.c:#include <linux/usb/isp1362.h>
+arch/blackfin/mach-bf533/boards/ezkit.c:#include <linux/usb/isp1362.h>
+arch/blackfin/mach-bf527/boards/ezkit.c:#include <linux/usb/isp1362.h>
+arch/blackfin/mach-bf537/boards/generic_board.c:#include <linux/usb/isp1362.h>
+arch/blackfin/mach-bf537/boards/stamp.c:#include <linux/usb/isp1362.h>
+arch/blackfin/mach-bf537/boards/cm_bf537.c:#include <linux/usb/isp1362.h>
+arch/blackfin/mach-bf537/boards/minotaur.c:#include <linux/usb/isp1362.h>
+arch/blackfin/mach-bf537/boards/pnav10.c:#include <linux/usb/isp1362.h>
+arch/blackfin/mach-bf561/boards/cm_bf561.c:#include <linux/usb/isp1362.h>
+arch/blackfin/mach-bf561/boards/ezkit.c:#include <linux/usb/isp1362.h>
+=== Missing: include/linux/usb/musb.h ===
+arch/arm/mach-omap2/usb-tusb6010.c:#include <linux/usb/musb.h>
+arch/blackfin/mach-bf548/boards/cm_bf548.c:#include <linux/usb/musb.h>
+arch/blackfin/mach-bf548/boards/ezkit.c:#include <linux/usb/musb.h>
+arch/blackfin/mach-bf527/boards/ezkit.c:#include <linux/usb/musb.h>
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=419c434c35614609fd0c79d335c134bf4b88b30b
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
 
-So there are two possibilities:
-
-1) the current code in blk-settings is just fine after my last fix,
-but there's yet another bug in this area in sata code unrelated to my
-last fix
-
-2) my last fix only fixed part of the problem and it only solved the
-issue for ata or similar (my kvm setup where I tested my fix didn't
-have any sata, but without my fix not even ata was working correctly)
-and another fix is needed
-
-> What we really ought to be doing is always initialize the pool, from
-> the right process context. However, we need to make it such that we
-
-Yes, that's the bug that probably Robert found, and that's also what
-allowed him to notice we still have some regression in blk-settings.c
-compared to 2.6.24, just like I could notice it thanks to the
-reserved-ram patch.
-
-> can detect that there is zero __GFP_DMA memory in the system, and bail
-> out in that case. Doing it on-demand is just not going to fly; by that
-> time it's just too late (the pool may have been eaten already, the context
-> might be nasty to do allocations from etc etc).
-
-That surely sounds nice, and it's yet another problem. But let's say
-this last problem is low priority to solve because on any system where
-we want to reserve the ram for the guest to run pci-passthrough dma on
-hardware without VT-d, we can assume all devices are pci64 capable and
-the current reserved-ram patch doesn't allow to reserve more than 2G
-of the guest anyway because the host kernel has to run between -2GUL
-and -1UL (included) so running on hosts with >4G of ram with pci32
-devices attached isn't a top priority at the moment. Infact if
-something there should also be a pool from the 32bit zone and not only
-from the 24bit one.
-
-> the sata_nv driver has to do it on finding a cdrom; afaik it has something
-> like a different DMA mask for disks and cdroms, and it scales down once you
-> insert a CD.
-
-So that would surely give problems with reserved-ram. We'll sort this
-out later. So for sata_nv it would be right to call the bounce
-buffering, but in my hardware test the value was like 1000 and 1001,
-with driver claiming 1001 required and b_pfn set to 1000 or similar,
-so it was an off by one thing again with sata, and not a cdrom real
-low dma mask.
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
