@@ -1,67 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760934AbYEQWOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757526AbYEQWe7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760934AbYEQWOS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 18:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757927AbYEQWOL
+	id S1757526AbYEQWe7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 18:34:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750708AbYEQWet
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 18:14:11 -0400
-Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:46765 "HELO
-	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755403AbYEQWOK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 18:14:10 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=CWR1jwMpS2CPkB3ldNSyjUXjafrsDCaRWe6ytDCyU/ChJ1K1Syd/R41pIFbCA9xvxbmS2tkZ4HIBlLHgr+RoFpDGjfxc7pX2Yn42X9OWMGbdcc7/kfMxLiSd3KdebmSdAe5jHlzSo5wajHBkpveHFk7XWUL36K+Cb+3+MOPIEi8=  ;
-X-YMail-OSG: fVCq0UcVM1lfH75fQ_kFcwOeBQxBYZhS4A2iY5uYqzgVDlxRL3uQbCxwng1S.x45eiMgAOpccOrTY85wnrsG8GyV.LCevvi_Gc9zlA5AGjI6IkUPtGbT5E.t_VdB6W2aZV0-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [patch/rfc 2.6.25-git] gpio: sysfs interface
-Date: Sat, 17 May 2008 15:14:06 -0700
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Trent Piepho <tpiepho@freescale.com>,
-       hartleys <hartleys@visionengravers.com>,
-       Ben Nizette <bn@niasdigital.com>, Mike Frysinger <vapier.adi@gmail.com>,
-       Bryan Wu <cooloney@kernel.org>
-References: <200804281239.51729.david-b@pacbell.net> <20080428134649.44cf239c.akpm@linux-foundation.org> <20080502203637.GG3956@ucw.cz>
-In-Reply-To: <20080502203637.GG3956@ucw.cz>
+	Sat, 17 May 2008 18:34:49 -0400
+Received: from www.tglx.de ([62.245.132.106]:36355 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750767AbYEQWes (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 May 2008 18:34:48 -0400
+Date: Sun, 18 May 2008 00:34:15 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Mikael Pettersson <mikpe@it.uu.se>
+cc: "Maciej W. Rozycki" <macro@linux-mips.org>, Tom Spink <tspink@gmail.com>,
+       Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Jiri Slaby <jirislaby@gmail.com>, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [RFC] x86: merge nmi_32-64 to nmi.c
+In-Reply-To: <18479.21161.437325.251769@harpo.it.uu.se>
+Message-ID: <alpine.LFD.1.10.0805180023100.18798@apollo.tec.linutronix.de>
+References: <20080517192200.GA6914@cvg> <7b9198260805171328u555eec17t3597f3378edbda88@mail.gmail.com> <Pine.LNX.4.55.0805172148380.10067@cliff.in.clinika.pl> <18479.21161.437325.251769@harpo.it.uu.se>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200805171514.07619.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 02 May 2008, Pavel Machek wrote:
+On Sat, 17 May 2008, Mikael Pettersson wrote:
+> Maciej W. Rozycki writes:
+>  > On Sat, 17 May 2008, Tom Spink wrote:
+>  > 
+>  > > static inline unsigned int get_nmi_count(int cpu)
+>  > > {
+>  > > #ifdef CONFIG_X86_64
+>  > >         return cpu_pda(cpu)->__nmi_count;
+>  > > #else
+>  > >         return nmi_count(cpu);
+>  > > #endif
+>  > > }
+>  > > 
+>  > > I know it introduces a lot of these conditionals, but at least there
+>  > > is one place to look for the get_nmi_count function, instead of
+>  > > searching for all variants of the function.
+>  > 
+>  >  Well, I suppose some header should provide a definition like:
+>  > 
+>  > #ifdef CONFIG_X86_64
+>  > #define cpu_x86_64 1
+>  > #else
+>  > #define cpu_x86_64 0
+>  > #endif
+>  > 
+>  > and the you can remove the horrible #ifdef clutter and make the quoted 
+>  > function look like:
+>  > 
+>  > static inline unsigned int get_nmi_count(int cpu)
+>  > {
+>  > 	return cpu_x86_64 ? cpu_pda(cpu)->__nmi_count : nmi_count(cpu);
+>  > }
+>  > 
+>  > Much better -- isn't it?
 > 
-> > >   echo "export 23" > /sys/class/gpio/control
-> > >     ... will gpio_request(23, "sysfs") and gpio_export(23); use
-> > >     /sys/class/gpio/gpio-23/direction to configure it.
-> > >   echo "unexport 23" > /sys/class/gpio/control
-> > >     ... will gpio_free(23)
-> > 
-> > hm, does ths sysfs one-value-per-file rule apply to writes?
+> IMO, no, the #ifdef is preferable.
 > 
-> Having seen ibm acpi interface... yes, that rule should be aplied for
-> writes, too.
+> Why? Because the #ifdef is a very visible signal to the platform
+> people that there are (in this case) subarch differences that force
+> "clients" to behave differently on different subarchs. By removing
+> the #ifdef you're IMO making it less likely for the platform people
+> to take notice and work towards eliminating those differences.
 
-The latest version of this patch, which I'll post soonish,
-follows the suggestion to have one file for the "export"
-operation and another for "unexport".
+The #ifdef is a poor choice. Maciej is damned right, that the single
+function with a clear distinction of the return value is better in
+terms of readability and maintenance.
 
+As I said before, We can make this more visible with an uppercase
+CONFIG_WHATEVER instaed of the innocent cpu_x86_64 one, but both
+solutions are better than #ifdefs and provide simple grepable
+patterns.
 
-> What about mkdir gpio-N to export it?
+The awareness of those differences does not depend at all on an
+#ifdef. Developers who are aware of the platform differences prefer a
+readable not ifdef poluted code base. People who need to be poked into
+the difference via an #ifdef are probably not those who can actually
+clean it up.
 
-Ugh.  That would create way more complication than I want
-to see here.  I thought about that early on, and decided
-that was Not The Way To Go.
+Thanks,
 
-- Dave
-
+	tglx
