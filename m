@@ -1,439 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754122AbYEQKzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754259AbYEQLAS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754122AbYEQKzS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 06:55:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbYEQKzF
+	id S1754259AbYEQLAS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 07:00:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752067AbYEQLAB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 06:55:05 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:42886 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751189AbYEQKzB (ORCPT
+	Sat, 17 May 2008 07:00:01 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49875 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751966AbYEQK77 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 06:55:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:sender;
-        b=HzeacBDVH24LokJlpydnRvYCO6sJwTkWGlYn7TFRArZxZ5xSM0/Z5fSVdX52Gk1oGDqa9ZOMFGfUTqnRFi8KS8jy3lnWSORDrQuzf+o/7au+J87gvgMYY/3E1xo15c5NUopJUbPkboey7F/PY8KB2ZOZnnjSBIJ91/kIieFnjAs=
-From: Bryan Wu <cooloney@kernel.org>
-To: rmk+lkml@arm.linux.org.uk
-Cc: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 1/1] PCMCIA: add support the CF PCMCIA driver for Blackfin (try #2)
-Date: Sat, 17 May 2008 18:55:00 +0800
-Message-Id: <1211021700-24311-1-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.5
+	Sat, 17 May 2008 06:59:59 -0400
+Message-ID: <482EBAA8.3040506@firstfloor.org>
+Date: Sat, 17 May 2008 12:59:52 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
+To: Herbert Xu <herbert@gondor.apana.org.au>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       Chris Peterson <cpeterso@cpeterso.com>,
+       tpmdd-devel@lists.sourceforge.net, tpm@selhorst.net
+Subject: Re: [PATCH] Re: [PATCH] drivers/net: remove network drivers' last
+ few uses of IRQF_SAMPLE_RANDOM
+References: <20080515142154.0595e475@core> <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com> <20080515173939.1ec968be@core> <482C7DA3.1090809@garzik.org> <482C953A.4080205@garzik.org> <87abirytxj.fsf@basil.nowhere.org> <20080516105635.6cb1f505@core> <482D5FC5.2070103@firstfloor.org> <20080516121239.GA9627@gondor.apana.org.au> <482DB568.1040704@firstfloor.org> <20080517010136.GA15102@gondor.apana.org.au>
+In-Reply-To: <20080517010136.GA15102@gondor.apana.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Hennerich <michael.hennerich@analog.com>
+Herbert Xu wrote:
+> On Fri, May 16, 2008 at 06:25:12PM +0200, Andi Kleen wrote:
+>> You could do that, but what advantage would it have? I don't think it's
+>> worth running the FIPS test, or rather requiring the user land daemon
+>> and leaving behind most of the userbase just for this.
+> 
+> The obvious advantage is that you don't unblock /dev/random readers
+> until there is real entropy available.
 
-Try #2:
- - Coding style cleanup
- - Use platform device register
- - Use kzalloc
+As far as I can figure out with some research (stracing, strings) pretty
+much every interesting cryptographic software except gpg keygen uses
+/dev/urandom anyways. They have to because too many systems don't have
+enough entropy and /dev/random simply blocks far too often and does not
+really work. When you check the now famous openssl source you see it
+uses /dev/urandom first simply because of this problem.  They only
+have /dev/random for systems where /dev/urandom is not available.
 
-Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- drivers/pcmcia/Kconfig          |    7 +
- drivers/pcmcia/Makefile         |    1 +
- drivers/pcmcia/bfin_cf_pcmcia.c |  341 +++++++++++++++++++++++++++++++++++++++
- include/pcmcia/cs_types.h       |    2 +-
- 4 files changed, 350 insertions(+), 1 deletions(-)
- create mode 100644 drivers/pcmcia/bfin_cf_pcmcia.c
+That is because the real world cryptographers care as much about DoS as
+about other issues.
 
-diff --git a/drivers/pcmcia/Kconfig b/drivers/pcmcia/Kconfig
-index 1b0eb5a..e45402a 100644
---- a/drivers/pcmcia/Kconfig
-+++ b/drivers/pcmcia/Kconfig
-@@ -263,6 +263,13 @@ config OMAP_CF
- 	  Say Y here to support the CompactFlash controller on OMAP.
- 	  Note that this doesn't support "True IDE" mode.
- 
-+config BFIN_CFPCMCIA
-+	tristate "Blackfin CompactFlash PCMCIA Driver"
-+	depends on PCMCIA && BLACKFIN
-+	help
-+	  Say Y here to support the CompactFlash PCMCIA driver for Blackfin.
-+
-+
- config AT91_CF
- 	tristate "AT91 CompactFlash Controller"
- 	depends on PCMCIA && ARCH_AT91RM9200
-diff --git a/drivers/pcmcia/Makefile b/drivers/pcmcia/Makefile
-index 6f6478b..85c6cc9 100644
---- a/drivers/pcmcia/Makefile
-+++ b/drivers/pcmcia/Makefile
-@@ -36,6 +36,7 @@ obj-$(CONFIG_PCMCIA_AU1X00)			+= au1x00_ss.o
- obj-$(CONFIG_PCMCIA_VRC4171)			+= vrc4171_card.o
- obj-$(CONFIG_PCMCIA_VRC4173)			+= vrc4173_cardu.o
- obj-$(CONFIG_OMAP_CF)				+= omap_cf.o
-+obj-$(CONFIG_BFIN_CFPCMCIA)			+= bfin_cf_pcmcia.o
- obj-$(CONFIG_AT91_CF)				+= at91_cf.o
- obj-$(CONFIG_ELECTRA_CF)			+= electra_cf.o
- 
-diff --git a/drivers/pcmcia/bfin_cf_pcmcia.c b/drivers/pcmcia/bfin_cf_pcmcia.c
-new file mode 100644
-index 0000000..dd0c062
---- /dev/null
-+++ b/drivers/pcmcia/bfin_cf_pcmcia.c
-@@ -0,0 +1,341 @@
-+/*
-+ * file: drivers/pcmcia/bfin_cf.c
-+ * author: Michael Hennerich (hennerich@blackfin.uclinux.org)
-+ *
-+ * based on: drivers/pcmcia/omap_cf.c
-+ * omap_cf.c -- OMAP 16xx CompactFlash controller driver
-+ *
-+ * Copyright (c) 2005 David Brownell
-+ * Copyright (c) 2006-2008 Michael Hennerich Analog Devices Inc.
-+ *
-+ * bugs:         enter bugs at http://blackfin.uclinux.org/
-+ *
-+ * this program is free software; you can redistribute it and/or modify
-+ * it under the terms of the gnu general public license as published by
-+ * the free software foundation; either version 2, or (at your option)
-+ * any later version.
-+ *
-+ * this program is distributed in the hope that it will be useful,
-+ * but without any warranty; without even the implied warranty of
-+ * merchantability or fitness for a particular purpose.  see the
-+ * gnu general public license for more details.
-+ *
-+ * you should have received a copy of the gnu general public license
-+ * along with this program; see the file copying.
-+ * if not, write to the free software foundation,
-+ * 59 temple place - suite 330, boston, ma 02111-1307, usa.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/sched.h>
-+#include <linux/platform_device.h>
-+#include <linux/errno.h>
-+#include <linux/init.h>
-+#include <linux/delay.h>
-+#include <linux/interrupt.h>
-+#include <linux/irq.h>
-+
-+#include <pcmcia/ss.h>
-+#include <pcmcia/cisreg.h>
-+#include <asm/io.h>
-+#include <asm/gpio.h>
-+
-+#define	SZ_1K	0x00000400
-+#define	SZ_8K	0x00002000
-+#define	SZ_2K	(2 * SZ_1K)
-+
-+#define	POLL_INTERVAL	(2 * HZ)
-+
-+#define	CF_ATASEL_ENA 	0x20311802	/* Inverts RESET */
-+#define	CF_ATASEL_DIS 	0x20311800
-+
-+#define bfin_cf_present(pfx) (gpio_get_value(pfx))
-+
-+/*--------------------------------------------------------------------------*/
-+
-+static const char driver_name[] = "bfin_cf_pcmcia";
-+
-+struct bfin_cf_socket {
-+	struct pcmcia_socket socket;
-+
-+	struct timer_list timer;
-+	unsigned present:1;
-+	unsigned active:1;
-+
-+	struct platform_device *pdev;
-+	unsigned long phys_cf_io;
-+	unsigned long phys_cf_attr;
-+	u_int irq;
-+	u_short cd_pfx;
-+};
-+
-+/*--------------------------------------------------------------------------*/
-+static int bfin_cf_reset(void)
-+{
-+	outw(0, CF_ATASEL_ENA);
-+	mdelay(200);
-+	outw(0, CF_ATASEL_DIS);
-+
-+	return 0;
-+}
-+
-+static int bfin_cf_ss_init(struct pcmcia_socket *s)
-+{
-+	return 0;
-+}
-+
-+/* the timer is primarily to kick this socket's pccardd */
-+static void bfin_cf_timer(unsigned long _cf)
-+{
-+	struct bfin_cf_socket *cf = (void *)_cf;
-+	unsigned short present = bfin_cf_present(cf->cd_pfx);
-+
-+	if (present != cf->present) {
-+		cf->present = present;
-+		pr_debug("%s: card %s\n", driver_name,
-+			 present ? "present" : "gone");
-+		pcmcia_parse_events(&cf->socket, SS_DETECT);
-+	}
-+
-+	if (cf->active)
-+		mod_timer(&cf->timer, jiffies + POLL_INTERVAL);
-+}
-+
-+static int bfin_cf_get_status(struct pcmcia_socket *s, u_int * sp)
-+{
-+	struct bfin_cf_socket *cf;
-+
-+	if (!sp)
-+		return -EINVAL;
-+
-+	cf = container_of(s, struct bfin_cf_socket, socket);
-+
-+	if (bfin_cf_present(cf->cd_pfx)) {
-+		*sp = SS_READY | SS_DETECT | SS_POWERON | SS_3VCARD;
-+		s->irq.AssignedIRQ = 0;
-+		s->pci_irq = cf->irq;
-+
-+	} else
-+		*sp = 0;
-+	return 0;
-+}
-+
-+static int
-+bfin_cf_set_socket(struct pcmcia_socket *sock, struct socket_state_t *s)
-+{
-+
-+	struct bfin_cf_socket *cf;
-+	cf = container_of(sock, struct bfin_cf_socket, socket);
-+
-+	switch (s->Vcc) {
-+	case 0:
-+	case 33:
-+		break;
-+	case 50:
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	if (s->flags & SS_RESET) {
-+		disable_irq(cf->irq);
-+		bfin_cf_reset();
-+		enable_irq(cf->irq);
-+	}
-+
-+	pr_debug("%s: Vcc %d, io_irq %d, flags %04x csc %04x\n",
-+		 driver_name, s->Vcc, s->io_irq, s->flags, s->csc_mask);
-+
-+	return 0;
-+}
-+
-+static int bfin_cf_ss_suspend(struct pcmcia_socket *s)
-+{
-+	pr_debug("%s: %s\n", driver_name, __FUNCTION__);
-+	return bfin_cf_set_socket(s, &dead_socket);
-+}
-+
-+/* regions are 2K each:  mem, attrib, io (and reserved-for-ide) */
-+
-+static int bfin_cf_set_io_map(struct pcmcia_socket *s, struct pccard_io_map *io)
-+{
-+	struct bfin_cf_socket *cf;
-+
-+	cf = container_of(s, struct bfin_cf_socket, socket);
-+	io->flags &= MAP_ACTIVE | MAP_ATTRIB | MAP_16BIT;
-+	io->start = cf->phys_cf_io;
-+	io->stop = io->start + SZ_2K - 1;
-+	return 0;
-+}
-+
-+static int
-+bfin_cf_set_mem_map(struct pcmcia_socket *s, struct pccard_mem_map *map)
-+{
-+	struct bfin_cf_socket *cf;
-+
-+	if (map->card_start)
-+		return -EINVAL;
-+	cf = container_of(s, struct bfin_cf_socket, socket);
-+	map->static_start = cf->phys_cf_io;
-+	map->flags &= MAP_ACTIVE | MAP_ATTRIB | MAP_16BIT;
-+	if (map->flags & MAP_ATTRIB)
-+		map->static_start = cf->phys_cf_attr;
-+
-+	return 0;
-+}
-+
-+static struct pccard_operations bfin_cf_ops = {
-+	.init = bfin_cf_ss_init,
-+	.suspend = bfin_cf_ss_suspend,
-+	.get_status = bfin_cf_get_status,
-+	.set_socket = bfin_cf_set_socket,
-+	.set_io_map = bfin_cf_set_io_map,
-+	.set_mem_map = bfin_cf_set_mem_map,
-+};
-+
-+/*--------------------------------------------------------------------------*/
-+
-+static int __init bfin_cf_probe(struct platform_device *pdev)
-+{
-+	struct bfin_cf_socket *cf;
-+	struct resource *io_mem, *attr_mem;
-+	int irq;
-+	unsigned short cd_pfx;
-+	int status = 0;
-+
-+	printk(KERN_INFO "Blackfin CompactFlash/PCMCIA Socket Driver\n");
-+
-+	irq = platform_get_irq(pdev, 0);
-+	if (!irq)
-+		return -EINVAL;
-+
-+	cd_pfx = platform_get_irq(pdev, 1);	/*Card Detect GPIO PIN */
-+	if (cd_pfx > MAX_BLACKFIN_GPIOS)
-+		return -EINVAL;
-+
-+	if (gpio_request(cd_pfx, "pcmcia: CD")) {
-+		printk(KERN_ERR
-+		       "BF5xx flash: Failed ro request Card Detect GPIO_%d\n",
-+		       cd_pfx);
-+		return -EBUSY;
-+	}
-+	gpio_direction_input(cd_pfx);
-+
-+	cf = kzalloc(sizeof *cf, GFP_KERNEL);
-+	if (!cf)
-+		return -ENOMEM;
-+
-+	cf->cd_pfx = cd_pfx;
-+
-+	init_timer(&cf->timer);
-+	cf->timer.function = bfin_cf_timer;
-+	cf->timer.data = (unsigned long)cf;
-+
-+	cf->pdev = pdev;
-+	platform_set_drvdata(pdev, cf);
-+
-+	cf->irq = irq;
-+	cf->socket.pci_irq = irq;
-+
-+	set_irq_type(irq, IRQF_TRIGGER_LOW);
-+
-+	io_mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	attr_mem = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-+
-+	if (!io_mem || !attr_mem)
-+		goto fail0;
-+
-+	cf->phys_cf_io = io_mem->start;
-+	cf->phys_cf_attr = attr_mem->start;
-+
-+	/* pcmcia layer only remaps "real" memory */
-+	cf->socket.io_offset = (unsigned long)
-+	    ioremap(cf->phys_cf_io, SZ_2K);
-+
-+	if (!cf->socket.io_offset)
-+		goto fail0;
-+
-+	pr_info("%s: on irq %d\n", driver_name, irq);
-+
-+	pr_debug("%s: %s\n", driver_name,
-+		 bfin_cf_present(cf->cd_pfx) ? "present" : "(not present)");
-+
-+	cf->socket.owner = THIS_MODULE;
-+	cf->socket.dev.parent = &pdev->dev;
-+	cf->socket.ops = &bfin_cf_ops;
-+	cf->socket.resource_ops = &pccard_static_ops;
-+	cf->socket.features = SS_CAP_PCCARD | SS_CAP_STATIC_MAP
-+	    | SS_CAP_MEM_ALIGN;
-+	cf->socket.map_size = SZ_2K;
-+
-+	status = pcmcia_register_socket(&cf->socket);
-+	if (status < 0)
-+		goto fail2;
-+
-+	cf->active = 1;
-+	mod_timer(&cf->timer, jiffies + POLL_INTERVAL);
-+	return 0;
-+
-+fail2:
-+	iounmap((void __iomem *)cf->socket.io_offset);
-+	release_mem_region(cf->phys_cf_io, SZ_8K);
-+
-+fail0:
-+	kfree(cf);
-+	platform_set_drvdata(pdev, NULL);
-+
-+	return status;
-+}
-+
-+static int __devexit bfin_cf_remove(struct platform_device *pdev)
-+{
-+	struct bfin_cf_socket *cf = platform_get_drvdata(pdev);
-+
-+	gpio_free(cf->cd_pfx);
-+	cf->active = 0;
-+	pcmcia_unregister_socket(&cf->socket);
-+	del_timer_sync(&cf->timer);
-+	iounmap((void __iomem *)cf->socket.io_offset);
-+	release_mem_region(cf->phys_cf_io, SZ_8K);
-+	platform_set_drvdata(pdev, NULL);
-+	kfree(cf);
-+	return 0;
-+}
-+
-+static int bfin_cf_suspend(struct platform_device *pdev, pm_message_t mesg)
-+{
-+	return pcmcia_socket_dev_suspend(&pdev->dev, mesg);
-+}
-+
-+static int bfin_cf_resume(struct platform_device *pdev)
-+{
-+	return pcmcia_socket_dev_resume(&pdev->dev);
-+}
-+
-+static struct platform_driver bfin_cf_driver = {
-+	.driver = {
-+		   .name = (char *)driver_name,
-+		   .owner = THIS_MODULE,
-+		   },
-+	.probe = bfin_cf_probe,
-+	.remove = __devexit_p(bfin_cf_remove),
-+	.suspend = bfin_cf_suspend,
-+	.resume = bfin_cf_resume,
-+};
-+
-+static int __init bfin_cf_init(void)
-+{
-+	return platform_driver_register(&bfin_cf_driver);
-+}
-+
-+static void __exit bfin_cf_exit(void)
-+{
-+	platform_driver_unregister(&bfin_cf_driver);
-+}
-+
-+module_init(bfin_cf_init);
-+module_exit(bfin_cf_exit);
-+
-+MODULE_DESCRIPTION("BFIN CF/PCMCIA Driver");
-+MODULE_LICENSE("GPL");
-diff --git a/include/pcmcia/cs_types.h b/include/pcmcia/cs_types.h
-index 9a6bcc4..c3257c1 100644
---- a/include/pcmcia/cs_types.h
-+++ b/include/pcmcia/cs_types.h
-@@ -21,7 +21,7 @@
- #include <sys/types.h>
- #endif
- 
--#if defined(__arm__) || defined(__mips__) || defined(__avr32__)
-+#if defined(__arm__) || defined(__mips__) || defined(__avr32__) || defined(bfin)
- /* This (ioaddr_t) is exposed to userspace & hence cannot be changed. */
- typedef u_int   ioaddr_t;
- #else
--- 
-1.5.5
+It's also quite understandable:
+"Sorry our company couldn't receive email because nobody banged on the
+keyboard of the mail server"
+Clearly that would be absurd, but if e.g. openssl used /dev/random you
+would easily get into that situation.
+
+Part of the problem here is of course this strange insistence to not
+auto-feed from all available random sources. If you set this entropy
+standards too high soon none are left and the entropy pool
+is often only very poorly fed. So by setting too high
+standards you actually lower practical security.
+
+> Remember that a hardware RNG failure is a catastrophic event, 
+
+Is it? The pool is just as random as it was before because the hash
+output will depend on all previous input.  So even if you e.g. add a
+known string of zeroes for example it should be still as much or as
+little unpredictible as it was before. The big difference is
+that it is just cryptographic security instead of true entropy,
+but without enough entropy (or you not trusting your entropy) there's no
+choice.
+
+Also my assumption is that if the hardware RNG fails the rest of
+the system (CPU, memory) will likely fail with it. Well I admit
+I'm not 100% sure about that, but the stories going around about
+RNG failures are so vaguely folksy that my assumptions are likely
+as good as anybody elses :)
+
+> so a heavy-handed response such as blocking /dev/random is reasonable.
+
+I only know of GPG initial key gen who really relies on it and I'm sure
+I wasn't the only one to feel silly when  banging random keys on the
+keyboard while generating a key :)
+
+Obviously that doesn't work for all the interesting cases like
+session keys etc, or even ssh keygen so they don't use it for that. It's
+pretty much unusable for all "invisible cryptography" where the user is
+not (or only very vaguely) aware there is cryptography being used and
+that is the far majority of cryptography. gpg can only get away with it
+because they assume an educated user and even there it doesn't work
+well.
+
+I've been actually pondering a kind of compromise here:
+
+Would people be ok with kernel auto-feeding for /dev/urandom only? I've
+been pondering that and I think that would work just as well in practice
+ given the facts above. Then you would still only get blocking
+/dev/random with the user daemon, but that won't matter because all
+the usual users don't rely on thatanyways.
+
+The only open question is if the pools need to be duplicated or not for
+this case.
+
+-Andi
 
