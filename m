@@ -1,430 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759206AbYEQUSu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758834AbYEQUVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759206AbYEQUSu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 16:18:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758040AbYEQUSn
+	id S1758834AbYEQUVU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 16:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758026AbYEQUVI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 16:18:43 -0400
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:35821 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753681AbYEQUSm (ORCPT
+	Sat, 17 May 2008 16:21:08 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:34268 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757947AbYEQUVH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 16:18:42 -0400
-Date: Sun, 18 May 2008 01:47:55 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Paul Menage <menage@google.com>, linux-mm@kvack.org,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, Pavel Emelianov <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [-mm][PATCH 4/4] Add memrlimit controller accounting and
-	control (v4)
-Message-ID: <20080517201755.GB14727@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Mail-Followup-To: Paul Menage <menage@google.com>, linux-mm@kvack.org,
-	Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-	YAMAMOTO Takashi <yamamoto@valinux.co.jp>, lizf@cn.fujitsu.com,
-	linux-kernel@vger.kernel.org, Pavel Emelianov <xemul@openvz.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080514130951.24440.73671.sendpatchset@localhost.localdomain> <20080514132529.GA25653@balbir.in.ibm.com> <6599ad830805141925mf8a13daq7309148153a3c2df@mail.gmail.com> <20080515061727.GC31115@balbir.in.ibm.com> <6599ad830805142355ifeeb0e2w86ccfd96aa27aea6@mail.gmail.com> <20080515070342.GJ31115@balbir.in.ibm.com> <6599ad830805150039u76c9002cg6c873fd71e687a69@mail.gmail.com> <20080515082553.GK31115@balbir.in.ibm.com> <6599ad830805150828i6b61755dk9ce5213607621af7@mail.gmail.com> <20080517201545.GA14727@balbir.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20080517201545.GA14727@balbir.in.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Sat, 17 May 2008 16:21:07 -0400
+Date: Sat, 17 May 2008 13:20:50 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: "koos vriezen" <koos.vriezen@gmail.com>
+Cc: linux-kernel@vger.kernel.org, mchehab@infradead.org,
+       torvalds@linux-foundation.org
+Subject: Re: mplayer v4l hangs in 2.6.25.2/4 (likely regression)
+Message-ID: <20080517132050.2dae0ddd@infradead.org>
+In-Reply-To: <d4e708d60805171306n698192aas66b42a9468253448@mail.gmail.com>
+References: <d4e708d60805170954n6b2044c7h306bc6cb76bf798d@mail.gmail.com>
+	<20080517111639.21a3e177@infradead.org>
+	<d4e708d60805171211q1a1966a3i78dc3dc98d275dd1@mail.gmail.com>
+	<20080517122640.2d15aeed@infradead.org>
+	<20080517123452.79b82be2@infradead.org>
+	<d4e708d60805171306n698192aas66b42a9468253448@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Balbir Singh <balbir@linux.vnet.ibm.com> [2008-05-18 01:45:45]:
+On Sat, 17 May 2008 22:06:12 +0200
+"koos vriezen" <koos.vriezen@gmail.com> wrote:
 
-> * Paul Menage <menage@google.com> [2008-05-15 08:28:46]:
+> 2008/5/17 Arjan van de Ven <arjan@infradead.org>:
 > 
-> > On Thu, May 15, 2008 at 1:25 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > >  >
-> > >  > But the only *new* cases of taking the mmap_sem that this would
-> > >  > introduce would be:
-> > >  >
-> > >  > - on a failed vm limit charge
-> > >
-> > >  Why a failed charge? Aren't we talking of moving all charge/uncharge
-> > >  under mmap_sem?
-> > >
-> > 
-> > Sorry, I worded that wrongly - I meant "cleaning up a successful
-> > charge after an expansion fails for other reasons"
-> > 
-> > I thought that all the charges and most of the uncharges were already
-> > under mmap_sem, and it would just be a few of the cleanup paths that
-> > needed to take it.
-> > 
-> > >
-> > >  > - when a task moves between two cgroups in the memrlimit hierarchy.
-> > >  >
-> > >
-> > >  Yes, this would nest cgroup_mutex and mmap_sem. Not sure if that would
-> > >  be a bad side-effect.
-> > >
-> > 
-> > I think it's already nested that way - e.g. the cpusets code can call
-> > various migration functions (which take mmap_sem) while holding
-> > cgroup_mutex.
-> > 
-> > >
-> > >  Refactor the code to try and use mmap_sem and see what I come up
-> > >  with. Basically use mmap_sem for all charge/uncharge operations as
-> > >  well use mmap_sem in read_mode in the move_task() and
-> > >  mm_owner_changed() callbacks. That should take care of the race
-> > >  conditions discussed, unless I missed something.
-> > 
-> > Sounds good.
-> > 
-> > Thanks,
-> >
-> I've revamped the last two patches. Please review
->
+> > > so.. bttv first takes "fh->cap.vb_lock" in vidiocgmbuf, then
+> > > calls videobuf_mmap_setup(), and the first thing that does
+> is to also take fh->cap.vb_lock!  This isn't even an ABBA deadlock,
+> but a straight AA deadlock :)
+> 
+> Looks like I'm the only one actually running this code ;-)
+> 
+> > and here is an (untest) patch that should fix this problem:
+> > Koos, can you apply this to your kernel tree and report back if this
+> > fixes your deadlock?
+> 
+> patching file drivers/media/video/bt8xx/bttv-driver.c
+> patching file drivers/media/video/videobuf-core.c
+> Hunk #1 succeeded at 335 (offset 4 lines).
+> Hunk #2 succeeded at 1093 (offset -36 lines).
+> patching file include/media/videobuf-core.h
+> Hunk #1 succeeded at 227 (offset -10 lines).
+> 
+> Deadlock is gone, only mplayer fails to unmute the audio. 
 
-Here's the last patch for review
+that's something else entirely ;)
 
+I'll call your deadlock bug fixed by the patch...
 
-This patch adds support for accounting and control of virtual address space
-limits. The accounting is done via the rlimit_cgroup_(un)charge_as functions.
-The core of the accounting takes place during fork time in copy_process(),
-may_expand_vm(), remove_vma_list() and exit_mmap(). 
+Mauro: will you send this on to Linus or should this go direct?
 
-Changelog v5->v4
+From: Arjan van de Ven <arjan@linux.intel.com>
+Subject: [PATCH] Fix a deadlock in the bttv driver
 
-Move specific hooks in code to insert_vm_struct
-Use mmap_sem to protect mm->owner from changing and mm->owner from
-changing cgroups.
+vidiocgmbuf() does this:
+        mutex_lock(&fh->cap.vb_lock);
+        retval = videobuf_mmap_setup(&fh->cap, gbuffers, gbufsize,
+                                     V4L2_MEMORY_MMAP);
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+and videobuf_mmap_setup() then just does
+        mutex_lock(&q->vb_lock);
+        ret = __videobuf_mmap_setup(q, bcount, bsize, memory);
+        mutex_unlock(&q->vb_lock);
+
+which is an obvious double-take deadlock.
+
+This patch fixes this by having vidiocgmbuf() just call the __videobuf_mmap_setup
+function instead.
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
+ drivers/media/video/bt8xx/bttv-driver.c |    2 +-
+ drivers/media/video/videobuf-core.c     |    3 ++-
+ include/media/videobuf-core.h           |    3 +++
+ 3 files changed, 6 insertions(+), 2 deletions(-)
 
- arch/x86/kernel/ptrace.c        |   18 +++++--
- include/linux/memrlimitcgroup.h |   21 +++++++++
- kernel/fork.c                   |    8 +++
- mm/memrlimitcgroup.c            |   92 ++++++++++++++++++++++++++++++++++++++++
- mm/mmap.c                       |   17 ++++++-
- 5 files changed, 149 insertions(+), 7 deletions(-)
-
-diff -puN arch/ia64/kernel/perfmon.c~memrlimit-controller-address-space-accounting-and-control arch/ia64/kernel/perfmon.c
-diff -puN arch/x86/kernel/ds.c~memrlimit-controller-address-space-accounting-and-control arch/x86/kernel/ds.c
-diff -puN fs/exec.c~memrlimit-controller-address-space-accounting-and-control fs/exec.c
-diff -puN include/linux/memrlimitcgroup.h~memrlimit-controller-address-space-accounting-and-control include/linux/memrlimitcgroup.h
---- linux-2.6.26-rc2/include/linux/memrlimitcgroup.h~memrlimit-controller-address-space-accounting-and-control	2008-05-17 23:14:53.000000000 +0530
-+++ linux-2.6.26-rc2-balbir/include/linux/memrlimitcgroup.h	2008-05-17 23:14:53.000000000 +0530
-@@ -16,4 +16,25 @@
- #ifndef LINUX_MEMRLIMITCGROUP_H
- #define LINUX_MEMRLIMITCGROUP_H
+diff --git a/drivers/media/video/bt8xx/bttv-driver.c b/drivers/media/video/bt8xx/bttv-driver.c
+index 2ca3e9c..0165aac 100644
+--- a/drivers/media/video/bt8xx/bttv-driver.c
++++ b/drivers/media/video/bt8xx/bttv-driver.c
+@@ -2613,7 +2613,7 @@ static int vidiocgmbuf(struct file *file, void *priv, struct video_mbuf *mbuf)
+ 	struct bttv_fh *fh = priv;
  
-+#ifdef CONFIG_CGROUP_MEMRLIMIT_CTLR
-+
-+int memrlimit_cgroup_charge_as(struct mm_struct *mm, unsigned long nr_pages);
-+void memrlimit_cgroup_uncharge_as(struct mm_struct *mm, unsigned long nr_pages);
-+
-+#else /* !CONFIG_CGROUP_RLIMIT_CTLR */
-+
-+static inline int
-+memrlimit_cgroup_charge_as(struct mm_struct *mm, unsigned long nr_pages)
-+{
-+	return 0;
-+}
-+
-+static inline void
-+memrlimit_cgroup_uncharge_as(struct mm_struct *mm, unsigned long nr_pages)
-+{
-+}
-+
-+#endif /* CONFIG_CGROUP_RLIMIT_CTLR */
-+
-+
- #endif /* LINUX_MEMRLIMITCGROUP_H */
-diff -puN kernel/fork.c~memrlimit-controller-address-space-accounting-and-control kernel/fork.c
---- linux-2.6.26-rc2/kernel/fork.c~memrlimit-controller-address-space-accounting-and-control	2008-05-17 23:14:53.000000000 +0530
-+++ linux-2.6.26-rc2-balbir/kernel/fork.c	2008-05-17 23:15:55.000000000 +0530
-@@ -54,6 +54,7 @@
- #include <linux/tty.h>
- #include <linux/proc_fs.h>
- #include <linux/blkdev.h>
-+#include <linux/memrlimitcgroup.h>
- 
- #include <asm/pgtable.h>
- #include <asm/pgalloc.h>
-@@ -267,6 +268,7 @@ static int dup_mmap(struct mm_struct *mm
- 			mm->total_vm -= pages;
- 			vm_stat_account(mm, mpnt->vm_flags, mpnt->vm_file,
- 								-pages);
-+			memrlimit_cgroup_uncharge_as(mm, pages);
- 			continue;
- 		}
- 		charge = 0;
-@@ -596,6 +598,12 @@ static int copy_mm(unsigned long clone_f
- 		atomic_inc(&oldmm->mm_users);
- 		mm = oldmm;
- 		goto good_mm;
-+	} else {
-+		down_write(&oldmm->mmap_sem);
-+		retval = memrlimit_cgroup_charge_as(oldmm, oldmm->total_vm);
-+		up_write(&oldmm->mmap_sem);
-+		if (retval)
-+			goto fail_nomem;
- 	}
- 
- 	retval = -ENOMEM;
-diff -puN mm/memrlimitcgroup.c~memrlimit-controller-address-space-accounting-and-control mm/memrlimitcgroup.c
---- linux-2.6.26-rc2/mm/memrlimitcgroup.c~memrlimit-controller-address-space-accounting-and-control	2008-05-17 23:14:53.000000000 +0530
-+++ linux-2.6.26-rc2-balbir/mm/memrlimitcgroup.c	2008-05-18 00:47:31.000000000 +0530
-@@ -45,6 +45,38 @@ static struct memrlimit_cgroup *memrlimi
- 				struct memrlimit_cgroup, css);
+ 	mutex_lock(&fh->cap.vb_lock);
+-	retval = videobuf_mmap_setup(&fh->cap, gbuffers, gbufsize,
++	retval = __videobuf_mmap_setup(&fh->cap, gbuffers, gbufsize,
+ 				     V4L2_MEMORY_MMAP);
+ 	if (retval < 0) {
+ 		mutex_unlock(&fh->cap.vb_lock);
+diff --git a/drivers/media/video/videobuf-core.c b/drivers/media/video/videobuf-core.c
+index 982f446..0a88c44 100644
+--- a/drivers/media/video/videobuf-core.c
++++ b/drivers/media/video/videobuf-core.c
+@@ -331,7 +331,7 @@ int videobuf_mmap_free(struct videobuf_queue *q)
  }
  
-+static struct memrlimit_cgroup *
-+memrlimit_cgroup_from_task(struct task_struct *p)
-+{
-+	return container_of(task_subsys_state(p, memrlimit_cgroup_subsys_id),
-+				struct memrlimit_cgroup, css);
-+}
-+
-+/*
-+ * Charge the cgroup for address space usage - mmap(), malloc() (through
-+ * brk(), sbrk()), stack expansion, mremap(), etc - called with
-+ * mmap_sem held.
-+ */
-+int memrlimit_cgroup_charge_as(struct mm_struct *mm, unsigned long nr_pages)
-+{
-+	struct memrlimit_cgroup *memrcg;
-+
-+	memrcg = memrlimit_cgroup_from_task(mm->owner);
-+	return res_counter_charge(&memrcg->as_res, (nr_pages << PAGE_SHIFT));
-+}
-+
-+/*
-+ * Uncharge the cgroup, as the address space of one of the tasks is
-+ * decreasing - called with mmap_sem held.
-+ */
-+void memrlimit_cgroup_uncharge_as(struct mm_struct *mm, unsigned long nr_pages)
-+{
-+	struct memrlimit_cgroup *memrcg;
-+
-+	memrcg = memrlimit_cgroup_from_task(mm->owner);
-+	res_counter_uncharge(&memrcg->as_res, (nr_pages << PAGE_SHIFT));
-+}
-+
- static struct cgroup_subsys_state *
- memrlimit_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cgrp)
+ /* Locking: Caller holds q->vb_lock */
+-static int __videobuf_mmap_setup(struct videobuf_queue *q,
++int __videobuf_mmap_setup(struct videobuf_queue *q,
+ 			unsigned int bcount, unsigned int bsize,
+ 			enum v4l2_memory memory)
  {
-@@ -134,11 +166,71 @@ static int memrlimit_cgroup_populate(str
- 				ARRAY_SIZE(memrlimit_cgroup_files));
- }
+@@ -1129,6 +1129,7 @@ EXPORT_SYMBOL_GPL(videobuf_read_stream);
+ EXPORT_SYMBOL_GPL(videobuf_read_one);
+ EXPORT_SYMBOL_GPL(videobuf_poll_stream);
  
-+static void memrlimit_cgroup_move_task(struct cgroup_subsys *ss,
-+					struct cgroup *cgrp,
-+					struct cgroup *old_cgrp,
-+					struct task_struct *p)
-+{
-+	struct mm_struct *mm;
-+	struct memrlimit_cgroup *memrcg, *old_memrcg;
-+
-+	mm = get_task_mm(p);
-+	if (mm == NULL)
-+		return;
-+
-+	/*
-+	 * Hold mmap_sem, so that total_vm does not change underneath us
-+	 */
-+	down_read(&mm->mmap_sem);
-+
-+	rcu_read_lock();
-+	if (p != rcu_dereference(mm->owner))
-+		goto out;
-+
-+	memrcg = memrlimit_cgroup_from_cgrp(cgrp);
-+	old_memrcg = memrlimit_cgroup_from_cgrp(old_cgrp);
-+
-+	if (memrcg == old_memrcg)
-+		goto out;
-+
-+	if (res_counter_charge(&memrcg->as_res, (mm->total_vm << PAGE_SHIFT)))
-+		goto out;
-+	res_counter_uncharge(&old_memrcg->as_res, (mm->total_vm << PAGE_SHIFT));
-+out:
-+	rcu_read_unlock();
-+	up_read(&mm->mmap_sem);
-+	mmput(mm);
-+}
-+
-+/*
-+ * This callback is called with mmap_sem held
-+ */
-+static void memrlimit_cgroup_mm_owner_changed(struct cgroup_subsys *ss,
-+						struct cgroup *cgrp,
-+						struct cgroup *old_cgrp,
-+						struct task_struct *p)
-+{
-+	struct memrlimit_cgroup *memrcg, *old_memrcg;
-+	struct mm_struct *mm = get_task_mm(p);
-+
-+	BUG_ON(!mm);
-+	memrcg = memrlimit_cgroup_from_cgrp(cgrp);
-+	old_memrcg = memrlimit_cgroup_from_cgrp(old_cgrp);
-+
-+	if (res_counter_charge(&memrcg->as_res, (mm->total_vm << PAGE_SHIFT)))
-+		goto out;
-+	res_counter_uncharge(&old_memrcg->as_res, (mm->total_vm << PAGE_SHIFT));
-+out:
-+	mmput(mm);
-+}
-+
- struct cgroup_subsys memrlimit_cgroup_subsys = {
- 	.name = "memrlimit",
- 	.subsys_id = memrlimit_cgroup_subsys_id,
- 	.create = memrlimit_cgroup_create,
- 	.destroy = memrlimit_cgroup_destroy,
- 	.populate = memrlimit_cgroup_populate,
-+	.attach = memrlimit_cgroup_move_task,
-+	.mm_owner_changed = memrlimit_cgroup_mm_owner_changed,
- 	.early_init = 0,
- };
-diff -puN mm/mmap.c~memrlimit-controller-address-space-accounting-and-control mm/mmap.c
---- linux-2.6.26-rc2/mm/mmap.c~memrlimit-controller-address-space-accounting-and-control	2008-05-17 23:14:53.000000000 +0530
-+++ linux-2.6.26-rc2-balbir/mm/mmap.c	2008-05-17 23:14:53.000000000 +0530
-@@ -26,6 +26,7 @@
- #include <linux/mount.h>
- #include <linux/mempolicy.h>
- #include <linux/rmap.h>
-+#include <linux/memrlimitcgroup.h>
- 
- #include <asm/uaccess.h>
- #include <asm/cacheflush.h>
-@@ -1730,6 +1731,7 @@ static void remove_vma_list(struct mm_st
- 		long nrpages = vma_pages(vma);
- 
- 		mm->total_vm -= nrpages;
-+		memrlimit_cgroup_uncharge_as(mm, nrpages);
- 		if (vma->vm_flags & VM_LOCKED)
- 			mm->locked_vm -= nrpages;
- 		vm_stat_account(mm, vma->vm_flags, vma->vm_file, -nrpages);
-@@ -2056,6 +2058,7 @@ void exit_mmap(struct mm_struct *mm)
- 	/* Use -1 here to ensure all VMAs in the mm are unmapped */
- 	end = unmap_vmas(&tlb, vma, 0, -1, &nr_accounted, NULL);
- 	vm_unacct_memory(nr_accounted);
-+	memrlimit_cgroup_uncharge_as(mm, mm->total_vm);
- 	free_pgtables(&tlb, vma, FIRST_USER_ADDRESS, 0);
- 	tlb_finish_mmu(tlb, 0, end);
- 
-@@ -2078,6 +2081,9 @@ int insert_vm_struct(struct mm_struct * 
- 	struct vm_area_struct * __vma, * prev;
- 	struct rb_node ** rb_link, * rb_parent;
- 
-+	if (memrlimit_cgroup_charge_as(mm, vma_pages(vma)))
-+		return -ENOMEM;
-+
- 	/*
- 	 * The vm_pgoff of a purely anonymous vma should be irrelevant
- 	 * until its first write fault, when page's anon_vma and index
-@@ -2096,12 +2102,15 @@ int insert_vm_struct(struct mm_struct * 
- 	}
- 	__vma = find_vma_prepare(mm,vma->vm_start,&prev,&rb_link,&rb_parent);
- 	if (__vma && __vma->vm_start < vma->vm_end)
--		return -ENOMEM;
-+		goto err;
- 	if ((vma->vm_flags & VM_ACCOUNT) &&
- 	     security_vm_enough_memory_mm(mm, vma_pages(vma)))
--		return -ENOMEM;
-+		goto err;
- 	vma_link(mm, vma, prev, rb_link, rb_parent);
- 	return 0;
-+err:
-+	memrlimit_cgroup_uncharge_as(mm, vma_pages(vma));
-+	return -ENOMEM;
- }
- 
- /*
-@@ -2174,6 +2183,10 @@ int may_expand_vm(struct mm_struct *mm, 
- 
- 	if (cur + npages > lim)
- 		return 0;
-+
-+	if (memrlimit_cgroup_charge_as(mm, npages))
-+		return 0;
-+
- 	return 1;
- }
- 
-diff -puN arch/x86/kernel/ptrace.c~memrlimit-controller-address-space-accounting-and-control arch/x86/kernel/ptrace.c
---- linux-2.6.26-rc2/arch/x86/kernel/ptrace.c~memrlimit-controller-address-space-accounting-and-control	2008-05-17 23:14:53.000000000 +0530
-+++ linux-2.6.26-rc2-balbir/arch/x86/kernel/ptrace.c	2008-05-17 23:14:53.000000000 +0530
-@@ -20,6 +20,7 @@
- #include <linux/audit.h>
- #include <linux/seccomp.h>
- #include <linux/signal.h>
-+#include <linux/memrlimitcgroup.h>
- 
- #include <asm/uaccess.h>
- #include <asm/pgtable.h>
-@@ -782,21 +783,25 @@ static int ptrace_bts_realloc(struct tas
- 
- 	current->mm->total_vm  -= old_size;
- 	current->mm->locked_vm -= old_size;
-+	memrlimit_cgroup_uncharge_as(mm, old_size);
- 
- 	if (size == 0)
- 		goto out;
- 
-+	if (memrlimit_cgroup_charge_as(current->mm, size))
-+		goto out;
-+
- 	rlim = current->signal->rlim[RLIMIT_AS].rlim_cur >> PAGE_SHIFT;
- 	vm = current->mm->total_vm  + size;
- 	if (rlim < vm) {
- 		ret = -ENOMEM;
- 
- 		if (!reduce_size)
--			goto out;
-+			goto out_uncharge;
- 
- 		size = rlim - current->mm->total_vm;
- 		if (size <= 0)
--			goto out;
-+			goto out_uncharge;
- 	}
- 
- 	rlim = current->signal->rlim[RLIMIT_MEMLOCK].rlim_cur >> PAGE_SHIFT;
-@@ -805,21 +810,24 @@ static int ptrace_bts_realloc(struct tas
- 		ret = -ENOMEM;
- 
- 		if (!reduce_size)
--			goto out;
-+			goto out_uncharge;
- 
- 		size = rlim - current->mm->locked_vm;
- 		if (size <= 0)
--			goto out;
-+			goto out_uncharge;
- 	}
- 
- 	ret = ds_allocate((void **)&child->thread.ds_area_msr,
- 			  size << PAGE_SHIFT);
- 	if (ret < 0)
--		goto out;
-+		goto out_uncharge;
- 
- 	current->mm->total_vm  += size;
- 	current->mm->locked_vm += size;
- 
-+out_uncharge:
-+	if (ret < 0)
-+		memrlimit_cgroup_uncharge_as(mm, size);
- out:
- 	if (child->thread.ds_area_msr)
- 		set_tsk_thread_flag(child, TIF_DS_AREA_MSR);
-_
- 
++EXPORT_SYMBOL_GPL(__videobuf_mmap_setup);
+ EXPORT_SYMBOL_GPL(videobuf_mmap_setup);
+ EXPORT_SYMBOL_GPL(videobuf_mmap_free);
+ EXPORT_SYMBOL_GPL(videobuf_mmap_mapper);
+diff --git a/include/media/videobuf-core.h b/include/media/videobuf-core.h
+index 5b39a22..874f134 100644
+--- a/include/media/videobuf-core.h
++++ b/include/media/videobuf-core.h
+@@ -237,6 +237,9 @@ unsigned int videobuf_poll_stream(struct file *file,
+ int videobuf_mmap_setup(struct videobuf_queue *q,
+ 			unsigned int bcount, unsigned int bsize,
+ 			enum v4l2_memory memory);
++int __videobuf_mmap_setup(struct videobuf_queue *q,
++			unsigned int bcount, unsigned int bsize,
++			enum v4l2_memory memory);
+ int videobuf_mmap_free(struct videobuf_queue *q);
+ int videobuf_mmap_mapper(struct videobuf_queue *q,
+ 			 struct vm_area_struct *vma);
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+1.5.4.5
+
