@@ -1,115 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758497AbYEQAgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761127AbYEQAiG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758497AbYEQAgw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 20:36:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753603AbYEQAgi
+	id S1761127AbYEQAiG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 20:38:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753158AbYEQAhy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 20:36:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39562 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760951AbYEQAgf (ORCPT
+	Fri, 16 May 2008 20:37:54 -0400
+Received: from simmts7-qfe0.srvr.bell.ca ([206.47.199.165]:40604 "EHLO
+	simmts7-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753470AbYEQAhw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 20:36:35 -0400
-Date: Fri, 16 May 2008 17:35:52 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
-Message-Id: <20080516173552.e88183d9.akpm@linux-foundation.org>
-In-Reply-To: <20080517002030.GA7374@mit.edu>
-References: <482DDA56.6000301@redhat.com>
-	<20080516130545.845a3be9.akpm@linux-foundation.org>
-	<482DF44B.50204@redhat.com>
-	<20080516220315.GB15334@shareable.org>
-	<482E08E6.4030507@redhat.com>
-	<20080516225304.GG15334@shareable.org>
-	<20080517002030.GA7374@mit.edu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 16 May 2008 20:37:52 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtoAAMbFLUicIvmz/2dsb2JhbAAIinqiWw
+Message-ID: <482E28DE.3090609@gmail.com>
+Date: Fri, 16 May 2008 21:37:50 -0300
+From: Kevin Winchester <kjwinchester@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Alexander Viro <viro@ftp.linux.org.uk>, airlied@linux.ie
+Subject: Re: [announce] "kill the Big Kernel Lock (BKL)" tree
+References: <20080514174955.GA515@elte.hu> <482E2378.9020007@gmail.com>
+In-Reply-To: <482E2378.9020007@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 May 2008 20:20:30 -0400 Theodore Tso <tytso@mit.edu> wrote:
-
-> On Fri, May 16, 2008 at 11:53:04PM +0100, Jamie Lokier wrote:
-> > > > If you just want to test the block I/O layer and drive itself, don't
-> > > > use the filesystem, but write a program which just access the block
-> > > > device, continuously writing with/without barriers every so often, and
-> > > > after power cycle read back to see what was and wasn't written.
-> > > 
-> > > Well, I think it is worth testing through the filesystem, different
-> > > journaling mechanisms will probably react^wcorrupt in different ways.
-> > 
-> > I agree, but intentional tests on the block device will show the
-> > drives characteristcs on power failure much sooner and more
-> > consistently.  Then you can concentrate on the worst drivers :-)
+Kevin Winchester wrote:
+> Ingo Molnar wrote:
 > 
-> I suspect the real reason why we get away with it so much with ext3 is
-> that the journal is usually contiguous on disk, hence, when you write
-> to the journal, it's highly unlikely that commit block will be written
-> and the blocks before the commit block have not.
-
-yup.  Plus with a commit only happening once per few seconds, the time
-window for a corrupting power outage is really really small, in
-relative terms.  All these improbabilities multiply.
-
-Journal wrapping could cause the commit block to get written before its
-data blocks.  We could improve that by changing the journal layout a bit:
-wrap the entire commit rather than just its tail.  Such a change might
-be intrusive though.
-
-The other possible scenario is when the fs thinks the metadata blocks
-have been checkpointed, so it reuses the journal space, only they
-weren't really checkpointed.  But that would require that we'd gone
-through so much IO that the metadata probably _has_ been checkpointed.
-
->  In addition, because
-> we are doing physical block journalling, it repairs a huge amount of
-> damage during the journal replay.  So as we are writing the journal,
-> the disk drive sees a large contiguous write stream, followed by
-> singleton writes where the disk blocks end up on disk.  The most
-> important reason, though, is that the blocks which are dirty don't get
-> flushed out to disk right away!
+> <snip description and patches>
 > 
-> They don't have to, since they are in the journal, and the journal
-> replay will write the correct data to disk.  Before the journal
-> commit, the buffer heads are pinned, so they can't be written out.
-> After the journal commit, the buffer heads may be written out, but
-> they don't get written out right away; the kernel will only write them
-> out when the periodic buffer cache flush takes place, *or* if the
-> journal need to wrap, at which point if there are pending writes to an
-> old commit that haven't been superceded by another journal commit, the
-> jbd layer has to force them out.  But the point is this is done in an
-> extremely lazy fashion.
+> I decided to give this tree a try, and I got:
 > 
-> As a result, it's very tough to create a situation where a hard drive
-> will reorder write requests aggressively enough that we would see a
-> potential problem.
 > 
-> I suspect if we want to demonstrate the problem, we would need to do a
-> number of things:
-> 
-> 	* create a highly fragmented journal inode, forcing the jbd
-> 	  layer to seek all over the disk while writing out the
-> 	  journal blocks during a commit
-> 	* make the journal small, forcing the journal to wrap very often
-> 	* run with journal=data mode, to put maximal stress on the journal
-> 	* make the workload one which creates and deletes large number
-> 	  of files scattered all over the directory hierarchy, so that
-> 	  we limit the number of blocks which are rewritten, 
->        * forcibly crash the system while subjecting the ext3
->          filesystem to this torture test
-> 
-> Given that most ext3 filesystems have their journal created at mkfs
-> time, so it is contiguous, and the journal is generally nice and
-> large, in practice I suspect it's relatively difficult (I didn't say
-> impossible) for us to trigger corruption given how far away we are
-> from the worst case scenario described above.
+> [4294034.386085] ------------[ cut here ]------------
+> [4294034.387882] WARNING: at fs/proc/generic.c:669 
+> create_proc_entry+0x3d/0xc5()
+> [4294034.390059] Pid: 2565, comm: Xorg Not tainted 
+> 2.6.26-rc2-00456-gd9df34e #35
+> [4294034.392682]
+> [4294034.392683] Call Trace:
+> [4294034.394071]  [<ffffffff8022a8ac>] warn_on_slowpath+0x53/0x81
+> [4294034.394077]  [<ffffffff802b57b4>] ? proc_register+0xf7/0x162
+> [4294034.394081]  [<ffffffff802b580b>] ? proc_register+0x14e/0x162
+> [4294034.394087]  [<ffffffff804afa05>] ? _spin_unlock+0x30/0x4b
+> [4294034.394091]  [<ffffffff802b580b>] ? proc_register+0x14e/0x162
+> [4294034.394095]  [<ffffffff8021a127>] ? startup_ioapic_irq+0x54/0x5f
+> [4294034.394099]  [<ffffffff802b5fcc>] create_proc_entry+0x3d/0xc5
+> [4294034.394103]  [<ffffffff80252008>] register_irq_proc+0x84/0xa0
+> [4294034.394108]  [<ffffffff80250b1a>] setup_irq+0x1b2/0x21b
+> [4294034.394113]  [<ffffffff80250cc8>] request_irq+0xf1/0x117
+> [4294034.394117]  [<ffffffff8038aaaa>] ? radeon_driver_irq_handler+0x0/0x7e
+> [4294034.394122]  [<ffffffff803789b6>] ? drm_control+0x0/0x186
+> [4294034.394126]  [<ffffffff80378acf>] drm_control+0x119/0x186
+> [4294034.394130]  [<ffffffff803770be>] drm_ioctl+0x1d3/0x265
+> [4294034.394589]  [<ffffffff80283e5e>] vfs_ioctl+0x5e/0x77
+> [4294034.394593]  [<ffffffff802840d2>] do_vfs_ioctl+0x25b/0x270
+> [4294034.394598]  [<ffffffff804af23e>] ? trace_hardirqs_on_thunk+0x35/0x3a
+> [4294034.394601]  [<ffffffff80284129>] sys_ioctl+0x42/0x65
+> [4294034.394606]  [<ffffffff8020b2eb>] system_call_after_swapgs+0x7b/0x80
+> [4294034.411597]
+> [4294034.411601] ---[ end trace 7f52164e4c2b9927 ]---
 > 
 
-what he said.
+And now applying the debugging tips that Linus, Al and others supplied 
+to me awhile back, I see from GDB that:
+
+vfs_ioctl locks the kernel before calling drm_ioctl, and, that 
+create_proc_entry() has the following new line thanks to Ingo:
+
+     WARN_ON_ONCE(kernel_locked());
+
+According to Ingo's patch log:
+
+     The functions, if called from the BKL, show that the calling site
+     might have a dependency on the procfs code previously using the BKL
+     in the dir-entry manipulation functions.
+
+I do not really know what that means, so I cc'd Dave Airlie to see if he 
+has a solution.
+
+-- 
+Kevin Winchester
+
 
