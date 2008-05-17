@@ -1,49 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755483AbYEQGp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755546AbYEQGyO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755483AbYEQGp0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 02:45:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbYEQGpO
+	id S1755546AbYEQGyO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 02:54:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbYEQGyC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 02:45:14 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:42596 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751802AbYEQGpN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 02:45:13 -0400
-Date: Sat, 17 May 2008 14:43:07 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       virtualization@lists.linux-foundation.org,
-       Jeff Garzik <jeff@garzik.org>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>, Theodore Tso <tytso@mit.edu>,
-       Matt Mackall <mpm@selenic.com>
-Subject: Re: [PATCH 2/2] lguest: virtio-rng support
-Message-ID: <20080517064307.GA16857@gondor.apana.org.au>
-References: <482C8595.5030509@garzik.org> <200805171446.39814.rusty@rustcorp.com.au> <482E6417.8040602@zytor.com> <200805171628.03801.rusty@rustcorp.com.au>
-MIME-Version: 1.0
+	Sat, 17 May 2008 02:54:02 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:41901 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751779AbYEQGyA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 May 2008 02:54:00 -0400
+Date: Sat, 17 May 2008 08:54:37 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: David Miller <davem@davemloft.net>
+Cc: sparclinux@vger.kernel.org, jgarzik@pobox.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2]: sparc64: Add Niagara2 RNG driver.
+Message-ID: <20080517065437.GA8092@uranus.ravnborg.org>
+References: <20080516.165354.213801515.davem@davemloft.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200805171628.03801.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080516.165354.213801515.davem@davemloft.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 17, 2008 at 04:28:03PM +1000, Rusty Russell wrote:
->
-> But you did not address the DoS question: can we ignore it?  Or are we trading 
-> off a DoS in the host against a potential security weakness in the guest?
+Hi David.
 
-Why not do both? Use the host's urandom to make the guest at least
-unpredictable on start-up without increasing the guest's entropy,
-and use the host's random to actually increase the guest's entropy.
+Small nitpick..
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+> diff --git a/drivers/char/hw_random/Makefile b/drivers/char/hw_random/Makefile
+> index c8b7300..32b327b 100644
+> --- a/drivers/char/hw_random/Makefile
+> +++ b/drivers/char/hw_random/Makefile
+> @@ -7,6 +7,8 @@ rng-core-y := core.o
+>  obj-$(CONFIG_HW_RANDOM_INTEL) += intel-rng.o
+>  obj-$(CONFIG_HW_RANDOM_AMD) += amd-rng.o
+>  obj-$(CONFIG_HW_RANDOM_GEODE) += geode-rng.o
+> +obj-$(CONFIG_HW_RANDOM_N2RNG) += n2-rng.o
+> +n2-rng-objs := n2-drv.o n2-asm.o
+
+These days the preferred syntax is:
+
+n2-rng-y := n2-drv.o n2-asm.o
+
+Following this scheme in general allows us to easily
+introduce:
+n2-rng-$(CONFIG_FOO) += foo.o
+
+
+I do not assume your n2-rng will need this,
+but doing so in general is a win.
+
+>  obj-$(CONFIG_HW_RANDOM_VIA) += via-rng.o
+>  obj-$(CONFIG_HW_RANDOM_IXP4XX) += ixp4xx-rng.o
+>  obj-$(CONFIG_HW_RANDOM_OMAP) += omap-rng.o
+> diff --git a/drivers/char/hw_random/n2-asm.S b/drivers/char/hw_random/n2-asm.S
+> new file mode 100644
+> index 0000000..c504e53
+> --- /dev/null
+> +++ b/drivers/char/hw_random/n2-asm.S
+> @@ -0,0 +1,93 @@
+> +/* n2-asm.S: Niagara2 RNG hypervisor call assembler.
+> + *
+> + * Copyright (C) 2008 David S. Miller <davem@davemloft.net>
+> + */
+> +#include <asm/hypervisor.h>
+> +#include "n2rng.h"
+> +
+> +	.text
+
+I had expected:
+
+	.section .text, "aw"
+
+here??
+
+(Maybe init.h should define a __TEXT macro)..
+
+> +	.globl	sun4v_rng_get_diag_ctl
+> +	.type	sun4v_rng_get_diag_ctl,#function
+> +sun4v_rng_get_diag_ctl:
+> +	mov	HV_FAST_RNG_GET_DIAG_CTL, %o5
+> +	ta	HV_FAST_TRAP
+> +	retl
+> +	 nop
+> +	.size	sun4v_rng_get_diag_ctl,.-sun4v_rng_get_diag_ctl
+
+Any specific reason why you do not use:
+
+ENTRY(sun4v_rng_get_diag_ctl)
+     mov     HV_FAST_RNG_GET_DIAG_CTL, %o5
+     ta      HV_FAST_TRAP
+     retl
+      nop
+ENDPROC(sun4v_rng_get_diag_ctl)
+
+I see these uses in other places and it
+do the .globl, .type, .size and the label: stuff for you.
+
+This is a general comment for all the 'functions' in this file.
+
+Only browsed the rest - looked good.
+
+	Sam
