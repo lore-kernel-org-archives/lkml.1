@@ -1,156 +1,227 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755410AbYEQMwZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755346AbYEQNCN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755410AbYEQMwZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 08:52:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753447AbYEQMwS
+	id S1755346AbYEQNCN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 09:02:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753510AbYEQNCA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 08:52:18 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:41636 "EHLO pasmtpB.tele.dk"
+	Sat, 17 May 2008 09:02:00 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:44585 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753302AbYEQMwR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 08:52:17 -0400
-Date: Sat, 17 May 2008 14:52:04 +0200
+	id S1753442AbYEQNB7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 May 2008 09:01:59 -0400
+Date: Sat, 17 May 2008 15:01:58 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: your change to prevent needless re-building of vmlinux.o
-Message-ID: <20080517125204.GA19741@uranus.ravnborg.org>
-References: <482DCD89.76E4.0078.0@novell.com>
+To: Pau Oliva Fora <pau@eslack.org>
+Cc: dmitry.torokhov@gmail.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add support for HTC Shift Touchscreen
+Message-ID: <20080517130158.GB19741@uranus.ravnborg.org>
+References: <482ED31E.2000009@eslack.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <482DCD89.76E4.0078.0@novell.com>
+In-Reply-To: <482ED31E.2000009@eslack.org>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jan.
+Hi Pau.
 
-On Fri, May 16, 2008 at 05:08:09PM +0100, Jan Beulich wrote:
-> Sam,
+Some nitpick comments - looks good overall.
+
+
+On Sat, May 17, 2008 at 02:44:14PM +0200, Pau Oliva Fora wrote:
+> From: Pau Oliva Fora <pau@eslack.org>
 > 
-> while also looking into this issue (found time only now) I realized this is
-> already worked around in .26-rc2. However, it would seem to me that
-> suppressing the dependency on init/built-in.o altogether is likely to
-> cause problems in the future.
-What is not obvious is that the only reason we link vmlinux.o is to
-support the section mismatch check.
-I once had a version where I used vmlinux.o as an intermediate step
-but that did not speed up the following link so I dropped it again.
-Therefore the suppressed init/built-in.o dependency will only
-cause us to miss a section mismatch check in very rare cases and
-will not cause troubles for a normal kernel link.
-
-I have also had in mind to make the vmlinux.o link dependent
-on CONFIG_DEBUG_SECTION_MISMATCH so we could skip it for a
-kernel build where we do not do this analysis.
-But the vmlinux.o link were kept on the rationale that
-CONFIG_DEBUG_SECTION_MISMATCH should be used to trigger an
-analysis for all links and in the normal situation we would
-do the check only on vmlinux.o and for the individual modules.
-
-So I hope this explains why init/built-in.o is supressed today.
-
-
-> Going through the version generating
-> logic again I realized that since vmlinux.o is always built before the first
-> of the (perhaps multiple, due to kallsyms) final linking stages, it ought
-> to be possible to simply move the version generation into the vmlinux.o
-> rule. And indeed, this
+> The patch below adds support for HTC Shift UMPC touchscreen.
 > 
-> define rule_vmlinux-modpost
-> 	:
-> 	+$(call cmd,vmlinux_version)
-> 	+$(call cmd,vmlinux-modpost)
-> 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost $@
-> 	$(Q)echo 'cmd_$@ := $(cmd_vmlinux-modpost)' > $(dot-target).cmd
-> endef
+> Signed-off-by: Pau Oliva Fora <pau@eslack.org>
 > 
-> with the two other invocations of vmlinux_version removed, seems to
-> do what is wanted.A
-
-So what you suggest is something like this:
-
-diff --git a/Makefile b/Makefile
-index 3140145..3dbfffc 100644
---- a/Makefile
-+++ b/Makefile
-@@ -657,7 +657,6 @@ vmlinux-init := $(head-y) $(init-y)
- vmlinux-main := $(core-y) $(libs-y) $(drivers-y) $(net-y)
- vmlinux-all  := $(vmlinux-init) $(vmlinux-main)
- vmlinux-lds  := arch/$(SRCARCH)/kernel/vmlinux.lds
--export KBUILD_VMLINUX_OBJS := $(vmlinux-all)
- 
- # Rule to link vmlinux - also used during CONFIG_KALLSYMS
- # May be overridden by arch/$(ARCH)/Makefile
-@@ -690,8 +689,6 @@ quiet_cmd_sysmap = SYSMAP
- # First command is ':' to allow us to use + in front of the rule
- define rule_vmlinux__
- 	:
--	$(if $(CONFIG_KALLSYMS),,+$(call cmd,vmlinux_version))
--
- 	$(call cmd,vmlinux__)
- 	$(Q)echo 'cmd_$@ := $(cmd_vmlinux__)' > $(@D)/.$(@F).cmd
- 
-@@ -747,8 +744,7 @@ endef
- # First command is ':' to allow us to use + in front of this rule
- cmd_ksym_ld = $(cmd_vmlinux__)
- define rule_ksym_ld
--	: 
--	+$(call cmd,vmlinux_version)
-+	:
- 	$(call cmd,vmlinux__)
- 	$(Q)echo 'cmd_$@ := $(cmd_vmlinux__)' > $(@D)/.$(@F).cmd
- endef
-@@ -798,6 +794,7 @@ quiet_cmd_vmlinux-modpost = LD      $@
- define rule_vmlinux-modpost
- 	:
- 	+$(call cmd,vmlinux-modpost)
-+	+$(call cmd,vmlinux_version)
- 	$(Q)$(MAKE) -f $(srctree)/scripts/Makefile.modpost $@
- 	$(Q)echo 'cmd_$@ := $(cmd_vmlinux-modpost)' > $(dot-target).cmd
- endef
-@@ -810,7 +807,6 @@ endif
- ifdef CONFIG_SAMPLES
- 	$(Q)$(MAKE) $(build)=samples
- endif
--	$(call vmlinux-modpost)
- 	$(call if_changed_rule,vmlinux__)
- 	$(Q)rm -f .old_version
- 
-
-This is a welcome simplifications and I like it.
-If we decide to keep the intermediate vmlinux.o link than we should
-do so.
-If you agree I can try to give it a spin in -next.
-[There are two unrelated clean-ups in the patch - both are noops].
-
-Everything that can simplify the final link of vmlinux is welcome.
-
-I have several times been tempted to move it all to a shell script.
-What has prevented me to do so has only been:
-1) that um has some subtle requirement and therefore redefine the
-   vmlinux link
-2) that last time I reworked this stuff Andrew could not boot one
-   of his systems and I never figured out why
-3) lack of time..
-
-But if someone comes up with a patch that moves all this stuff out
-of the top-level Makefile I am all open for it.
-
+> ---
 > 
-> What do you think? Am I overlooking some aspect here?
+> Patch against linux-2.6.25.4, should apply clean on other versions too.
 > 
-> Btw., another slight anomaly I noticed is that modpost on the modules
-> is always performed (even when nothing changed in the tree), while
-> on vmlinux.o it is only performed when something caused a re-link. Is
-> that intentional, or just a to-be-tolerated side effect?
-It is intentional as in we do not have information available
-if a module has been build or not.
-modpost take care not to overwrite module.mod.c files if the
-generated file equals the old file. But could we skip the modpost
-entirely it would be better. But that was not trivial last I looked
-at it (loong time ago).
+> 
+> diff -uprN linux-2.6.25.4/drivers/input/touchscreen/htcpen.c 
+> linux/drivers/input/touchscreen/htcpen.c
+> --- linux-2.6.25.4/drivers/input/touchscreen/htcpen.c	1970-01-01 
+> 01:00:00.000000000 +0100
+> +++ linux/drivers/input/touchscreen/htcpen.c	2008-05-17 
+> 13:48:57.000000000 +0200
+> @@ -0,0 +1,148 @@
+> +/*
+> + * HTC Shift touchscreen driver
+> + *
+> + * Copyright (C) 2008 Pau Oliva Fora <pof@eslack.org>
+> + *
+> + * Thanks to:
+> + * 	Heikki Linnakangas - Penmount LPC touchscreen driver
+> + * 	Wacom / Ping Cheng - Help on linuxwacom-devel
+> + * 	Esteve Espuna      - Ideas, tips, moral support :)
+> + *
+> + * Changelog:
+> + *   29980517 v0.5 - code cleanup
+> + *   29980517 v0.4 - initialization works (thanks esteve!)
+> + *   20080514 v0.3 - works best with TouchKit egalax xorg driver
+> + *   20080511 v0.2 - little hacks to make it more usable
+> + *   20080510 v0.1 - works with evtouch driver
+> + *   20080428 first non-working attempt
+Drop changelog - we do not keep them in-kernel.
+Here we rely on git.
+You can add it to your commit message if your prefer to
+have it saved.
+
+> + */
+> +
+> +/*
+> + * This program is free software; you can redistribute it and/or modify it
+> + * under the terms of the GNU General Public License version 2 as published
+> + * by the Free Software Foundation.
+> + */
+> +
+> +#include <linux/errno.h>
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/input.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/io.h>
+> +#include <linux/init.h>
+> +#include <linux/irq.h>
+> +
+> +#define DRIVER_VERSION		"v0.5"
+> +#define DRIVER_DESC	"HTC Shift touchscreen driver"
+> +
+> +MODULE_AUTHOR("Pau Oliva Fora <pau@eslack.org>");
+> +MODULE_DESCRIPTION(DRIVER_DESC);
+> +MODULE_LICENSE("GPL");
+> +
+> +#define HTCPEN_PORT0 0x068
+> +#define HTCPEN_PORT1 0x06c
+> +#define HTCPEN_PORT2 0x0250
+> +#define HTCPEN_PORT3 0x0251
+The use of the four ports would be nice to be documented
+
+> +#define HTCPEN_IRQ 3
+> +
+> +static int inverse_y;
+> +module_param(inverse_y, bool, 0644);
+> +MODULE_PARM_DESC(inverse_y, "If set Y axe is inversed.");
+> +
+> +struct input_dev *htcpen_dev;
+> +
+> +static void poll_htcpen(void)
+> +{
+> +
+> +	unsigned short x, y, xy;
+General comment.
+In kernel we usually do not have an empty line following the
+opening '{'
+
+> +	unsigned short touch;
+> +
+> +	/* 0=press ; 1=release */
+> +	outb_p(0xb, HTCPEN_PORT2);
+> +	touch = inb_p(HTCPEN_PORT3);
+> +	if (touch)
+> +		touch = 0;
+> +	else
+> +		touch = 1;
+> +
+> +	input_report_key(htcpen_dev, BTN_TOUCH, touch);
+> +
+> +	/* only update x/y when screen is being touched */
+> +	if (touch) {
+> +		outb_p(3, HTCPEN_PORT2);
+What is the semantic of 3 here.
+Add a comment or a DEFINE
+> +		x = inb_p(HTCPEN_PORT3);
+> +
+> +		outb_p(5, HTCPEN_PORT2);
+Same here.
+
+> +		y = inb_p(HTCPEN_PORT3);
+> +
+> +		outb_p(0xc, HTCPEN_PORT2);
+Same here.
+
+> +		xy = inb_p(HTCPEN_PORT3);
+> +
+> +		x = 8*255-((x*8)+((xy>>4)&0xf));
+> +		y = (y*8)+(xy&0xf);
+> +		if (inverse_y)
+> +			y = 8*255-y;
+These calculations needs spaces and comments.
+
+
+> +
+> +		input_report_abs(htcpen_dev, ABS_X, x);
+> +		input_report_abs(htcpen_dev, ABS_Y, y);
+> +	}
+> +
+> +	input_sync(htcpen_dev);
+> +
+> +	inb_p(HTCPEN_PORT0);
+> +}
+> +
+> +static irqreturn_t htcpen_interrupt(int irq, void *handle)
+> +{
+> +	poll_htcpen();
+> +	return IRQ_HANDLED;
+> +}
+> +
+> +
+> +static int __init htcpen_init(void)
+> +{
+> +
+> +	printk(KERN_INFO "htcpen: module inserted\n");
+> +
+> +	inb_p(HTCPEN_PORT0);
+> +
+> +	htcpen_dev = input_allocate_device();
+> +	if (!htcpen_dev) {
+> +		printk(KERN_ERR "htcpen: can't allocate device\n");
+> +		return -ENOMEM;
+> +	}
+> +
+> +	if (request_irq(HTCPEN_IRQ, htcpen_interrupt, 0, "htcpen", NULL)) {
+> +		printk(KERN_ERR "htcpen: irq busy\n");
+> +		return -EBUSY;
+> +	}
+I would asusme you are missing a: input_unregister_device(htcpen_dev);?
+
+> +
+> +	htcpen_dev->name = "HTC Pen TouchScreen";
+> +	htcpen_dev->id.bustype = BUS_ISA;
+> +	htcpen_dev->id.vendor = 0;
+> +	htcpen_dev->id.product = 0;
+> +	htcpen_dev->id.version = 0;
+> +
+> +	input_set_abs_params(htcpen_dev, ABS_X, 0, 255*8, 0, 0);
+> +	input_set_abs_params(htcpen_dev, ABS_Y, 0, 255*8, 0, 0);
+Again a 'magic' calculation
+
+> +
+> +	htcpen_dev->evbit[0] = BIT_MASK(EV_ABS) | BIT_MASK(EV_KEY);
+> +	htcpen_dev->absbit[0] = BIT_MASK(ABS_X) | BIT_MASK(ABS_Y);
+> +	htcpen_dev->keybit[BIT_WORD(BTN_TOUCH)] = BIT_MASK(BTN_TOUCH);
+> +
+> +	input_register_device(htcpen_dev);
+> +
+> +	outb_p(0xa2, HTCPEN_PORT1);
+> +
+> +	return 0;
+> +}
+> +
+> +static void __exit htcpen_exit(void)
+> +{
+> +	input_unregister_device(htcpen_dev);
+> +	free_irq(HTCPEN_IRQ, NULL);
+> +	printk(KERN_INFO "htcpen: module removed\n");
+> +}
+> +
+> +module_init(htcpen_init);
+> +module_exit(htcpen_exit);
+
 
 	Sam
