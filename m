@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758681AbYEQPPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758675AbYEQPQC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758681AbYEQPPq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 11:15:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757994AbYEQPOe
+	id S1758675AbYEQPQC (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 11:16:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758644AbYEQPOh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 11:14:34 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:47569 "EHLO mail.screens.ru"
+	Sat, 17 May 2008 11:14:37 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:47574 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758589AbYEQPOd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 11:14:33 -0400
-Date: Sat, 17 May 2008 19:14:20 +0400
+	id S1758621AbYEQPOg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 May 2008 11:14:36 -0400
+Date: Sat, 17 May 2008 19:14:21 +0400
 From: Oleg Nesterov <oleg@tv-sign.ru>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Austin Clements <amdragon+kernelbugzilla@mit.edu>,
@@ -18,8 +18,8 @@ Cc: Austin Clements <amdragon+kernelbugzilla@mit.edu>,
        Michael Kerrisk <mtk.manpages@googlemail.com>,
        Roland McGrath <roland@redhat.com>,
        Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] signals: sigqueue_free: don't free sigqueue if it is queued
-Message-ID: <20080517151420.GA9496@tv-sign.ru>
+Subject: [PATCH 2/3] signals: introduce SIGQUEUE_CANCELLED
+Message-ID: <20080517151421.GA9499@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -28,48 +28,64 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently sigqueue_free() removes sigqueue from list, but doesn't cancel the
-pending signal. This is not consistent, the task should either receive the
-"full" signal along with siginfo_t, or it shouldn't receive the signal at all.
+Suggested by Linus Torvalds.
 
-Change sigqueue_free() to clear SIGQUEUE_PREALLOC but leave sigqueue on list
-if it is queued.
+Introduce SIGQUEUE_CANCELLED flag. If it is set, the pending signal should be
+ignored and collect_signal() should return 0.
 
-This patch doesn't change the behaviour of sys_timer_delete() and friends,
-just makes it more correct and allows us to introduce other SIGQUEUE_ flags
-passed to the receiver.
+Note that the new flag is completely orthogonal to SIGQUEUE_PREALLOC, and it
+can be set without ->siglock held.
+
+No users of this new flag yet, see the next patch.
 
 Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
---- 25/kernel/signal.c~4_SF_DONT_REMOVE	2008-05-17 16:22:07.000000000 +0400
-+++ 25/kernel/signal.c	2008-05-17 17:14:04.000000000 +0400
-@@ -1240,18 +1240,22 @@ void sigqueue_free(struct sigqueue *q)
+--- 25/include/linux/signal.h~5_INTRODUCE_CANCELLED	2008-03-04 21:43:25.000000000 +0300
++++ 25/include/linux/signal.h	2008-03-04 21:43:25.000000000 +0300
+@@ -20,6 +20,7 @@ struct sigqueue {
  
- 	BUG_ON(!(q->flags & SIGQUEUE_PREALLOC));
- 	/*
--	 * If the signal is still pending remove it from the
--	 * pending queue. We must hold ->siglock while testing
--	 * q->list to serialize with collect_signal() or with
-+	 * We must hold ->siglock while testing q->list
-+	 * to serialize with collect_signal() or with
- 	 * __exit_signal()->flush_sigqueue().
- 	 */
- 	spin_lock_irqsave(lock, flags);
-+	q->flags &= ~SIGQUEUE_PREALLOC;
-+	/*
-+	 * If it is queued it will be freed when dequeued,
-+	 * like the "regular" sigqueue.
-+	 */
- 	if (!list_empty(&q->list))
--		list_del_init(&q->list);
-+		q = NULL;
- 	spin_unlock_irqrestore(lock, flags);
+ /* flags values. */
+ #define SIGQUEUE_PREALLOC	1
++#define SIGQUEUE_CANCELLED	2
  
--	q->flags &= ~SIGQUEUE_PREALLOC;
--	__sigqueue_free(q);
-+	if (q)
-+		__sigqueue_free(q);
+ struct sigpending {
+ 	struct list_head list;
+--- 25/kernel/signal.c~5_INTRODUCE_CANCELLED	2008-05-17 17:14:04.000000000 +0400
++++ 25/kernel/signal.c	2008-05-17 17:40:09.000000000 +0400
+@@ -326,11 +326,13 @@ static int collect_signal(int sig, struc
+ 		}
+ 	}
+ 	if (first) {
+-		list_del_init(&first->list);
+-		copy_siginfo(info, &first->info);
+-		__sigqueue_free(first);
+ 		if (!still_pending)
+ 			sigdelset(&list->signal, sig);
++		if (unlikely(first->flags & SIGQUEUE_CANCELLED))
++			sig = 0;
++		copy_siginfo(info, &first->info);
++		list_del_init(&first->list);
++		__sigqueue_free(first);
+ 	} else {
+ 
+ 		/* Ok, it wasn't in the queue.  This must be
+@@ -344,7 +346,7 @@ static int collect_signal(int sig, struc
+ 		info->si_pid = 0;
+ 		info->si_uid = 0;
+ 	}
+-	return 1;
++	return sig;
  }
  
- int send_sigqueue(struct sigqueue *q, struct task_struct *t, int group)
+ static int __dequeue_signal(struct sigpending *pending, sigset_t *mask,
+@@ -362,8 +364,7 @@ static int __dequeue_signal(struct sigpe
+ 			}
+ 		}
+ 
+-		if (!collect_signal(sig, pending, info))
+-			sig = 0;
++		sig = collect_signal(sig, pending, info);
+ 	}
+ 
+ 	return sig;
 
