@@ -1,51 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759301AbYEQBCO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760122AbYEQBDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759301AbYEQBCO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 16 May 2008 21:02:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753158AbYEQBBz
+	id S1760122AbYEQBDS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 16 May 2008 21:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754819AbYEQBDE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 16 May 2008 21:01:55 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:58600 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752012AbYEQBBy (ORCPT
+	Fri, 16 May 2008 21:03:04 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2383 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754710AbYEQBDC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 16 May 2008 21:01:54 -0400
-Date: Sat, 17 May 2008 09:01:36 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       Chris Peterson <cpeterso@cpeterso.com>,
-       tpmdd-devel@lists.sourceforge.net, tpm@selhorst.net
-Subject: Re: [PATCH] Re: [PATCH] drivers/net: remove network drivers' last few uses of IRQF_SAMPLE_RANDOM
-Message-ID: <20080517010136.GA15102@gondor.apana.org.au>
-References: <20080515142154.0595e475@core> <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com> <20080515173939.1ec968be@core> <482C7DA3.1090809@garzik.org> <482C953A.4080205@garzik.org> <87abirytxj.fsf@basil.nowhere.org> <20080516105635.6cb1f505@core> <482D5FC5.2070103@firstfloor.org> <20080516121239.GA9627@gondor.apana.org.au> <482DB568.1040704@firstfloor.org>
+	Fri, 16 May 2008 21:03:02 -0400
+Date: Fri, 16 May 2008 21:03:00 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Maciej Rutecki <maciej.rutecki@gmail.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>, <usb-storage@lists.one-eyed-alien.net>
+Subject: Re: [Re: Linux 2.6.26-rc2] Write protect on on
+In-Reply-To: <8db1092f0805160755u54914884ibe1ed8a23b8e1015@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0805162056230.13416-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <482DB568.1040704@firstfloor.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16, 2008 at 06:25:12PM +0200, Andi Kleen wrote:
->
-> You could do that, but what advantage would it have? I don't think it's
-> worth running the FIPS test, or rather requiring the user land daemon
-> and leaving behind most of the userbase just for this.
+On Fri, 16 May 2008, Maciej Rutecki wrote:
 
-The obvious advantage is that you don't unblock /dev/random readers
-until there is real entropy available.
+> I have external drive connected via USB to computer. In 2.6.25.4 when
+> I plug into computer works fine, and have this messages in dmesg:
+> usb 5-1: new high speed USB device using ehci_hcd and address 4
+> usb 5-1: configuration #1 chosen from 1 choice
+> Initializing USB Mass Storage driver...
+> scsi2 : SCSI emulation for USB Mass Storage devices
+> usbcore: registered new interface driver usb-storage
+> USB Mass Storage support registered.
+> usb-storage: device found at 4
+> usb-storage: waiting for device to settle before scanning
+> scsi 2:0:0:0: Direct-Access     Initio   MHV2080BH PL     3.01 PQ: 0 ANSI: 0
+> usb-storage: device scan complete
+> Driver 'sd' needs updating - please use bus_type methods
+> sd 2:0:0:0: [sda] 156301488 512-byte hardware sectors (80026 MB)
+> sd 2:0:0:0: [sda] Write Protect is off
+> sd 2:0:0:0: [sda] Mode Sense: 00 00 00 00
+> sd 2:0:0:0: [sda] Assuming drive cache: write through
+> sd 2:0:0:0: [sda] 156301488 512-byte hardware sectors (80026 MB)
+> sd 2:0:0:0: [sda] Write Protect is off
+> sd 2:0:0:0: [sda] Mode Sense: 00 00 00 00
+> sd 2:0:0:0: [sda] Assuming drive cache: write through
+>  sda: sda1
+> sd 2:0:0:0: [sda] Attached SCSI disk
+> 
+> Works fine:
+> maciek@zlom:~/kernel.org/2.6.25.4$ ntfsmount /dev/sda1 ~/mnt/ntfs/
+> maciek@zlom:~/kernel.org/2.6.25.4$ mount | grep fuse
+> fusectl on /sys/fs/fuse/connections type fusectl (rw)
+> /dev/sda1 on /home/maciek/mnt/ntfs type fuseblk
+> (rw,nosuid,nodev,default_permissions,allow_other,blksize=4096,user=maciek)
+> 
+> But on 2.6.26-rc* sometimes I have messages "Write protect is on", e.g.:
+> sd 2:0:0:0: [sda] 156301488 512-byte hardware sectors (80026 MB)
+> sd 2:0:0:0: [sda] Write Protect is on
+> sd 2:0:0:0: [sda] Mode Sense: 09 50 f8 af
+> sd 2:0:0:0: [sda] Assuming drive cache: write through
+> sd 2:0:0:0: [sda] 156301488 512-byte hardware sectors (80026 MB)
+> sd 2:0:0:0: [sda] Write Protect is off
+> sd 2:0:0:0: [sda] Mode Sense: 00 00 00 00
+> sd 2:0:0:0: [sda] Assuming drive cache: write through
+>  sda: sda1
+> sd 2:0:0:0: [sda] Attached SCSI disk
+> 
+> or:
+> sd 2:0:0:0: [sda] 156301488 512-byte hardware sectors (80026 MB)
+> sd 2:0:0:0: [sda] Write Protect is on
+> sd 2:0:0:0: [sda] Mode Sense: 09 50 f8 af
+> sd 2:0:0:0: [sda] Assuming drive cache: write through
+> sd 2:0:0:0: [sda] 156301488 512-byte hardware sectors (80026 MB)
+> sd 2:0:0:0: [sda] Write Protect is on
+> sd 2:0:0:0: [sda] Mode Sense: 09 50 f8 af
+> sd 2:0:0:0: [sda] Assuming drive cache: write through
+>  sda: sda1
+> sd 2:0:0:0: [sda] Attached SCSI disk
+> 
+> Then mount fails:
+> maciek@zlom:~/kernel.org/2.6.26-rc2$ ntfsmount /dev/sda1 ~/mnt/ntfs/
+> Error opening partition device: System plików wyłącznie do odczytu.
+> Failed to startup volume: System plików wyłącznie do odczytu.
+> Failed to mount '/dev/sda1': System plików wyłącznie do odczytu.
+> Mount failed.
+> 
+> "System plików wyłącznie do odczytu." means "filesystem readonly"
+> 
+> Tested on two computers PC and laptop.
+> 
+> Dmesg and config:
+> 2.6.25.4: http://unixy.pl/maciek/download/kernel/2.6.25.4/
+> 2.6.26-rc1: http://unixy.pl/maciek/download/kernel/2.6.26-rc1/
+> 2.6.26-rc2: http://unixy.pl/maciek/download/kernel/2.6.26-rc2/
 
-Remember that a hardware RNG failure is a catastrophic event, so
-a heavy-handed response such as blocking /dev/random is reasonable.
+The best way to gather more data is to use usbmon and trace what
+happens when you plug in the drive (see Documentation/usb/usbmon.txt).  
+If you collect traces under both 2.6.25.4 and 2.6.26-rc2 then we can
+compare them to see what has changed.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+You don't have to trace the mount command; the activity at plug-in time
+will be sufficient.
+
+Alan Stern
+
