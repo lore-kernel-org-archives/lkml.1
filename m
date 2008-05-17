@@ -1,131 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757278AbYEQOxh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756905AbYEQO5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757278AbYEQOxh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 10:53:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754999AbYEQOxa
+	id S1756905AbYEQO5n (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 10:57:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbYEQO5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 10:53:30 -0400
-Received: from dsl093-193-175.stl1.dsl.speakeasy.net ([66.93.193.175]:60891
-	"EHLO hades.sngx.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754724AbYEQOx3 (ORCPT
+	Sat, 17 May 2008 10:57:32 -0400
+Received: from mga12.intel.com ([143.182.124.36]:21990 "EHLO
+	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750812AbYEQO5b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 10:53:29 -0400
-Message-ID: <482EF192.4070707@sngx.net>
-Date: Sat, 17 May 2008 09:54:10 -0500
-From: James Cammarata <jimi@sngx.net>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Sat, 17 May 2008 10:57:31 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,500,1204531200"; 
+   d="scan'208";a="248315010"
+Message-ID: <482EF256.8030305@linux.intel.com>
+Date: Sat, 17 May 2008 07:57:26 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH updated] net: add ability to clear per-interface network
- statistics via procfs
-References: <482DA5B6.1020606@sngx.net> <482DB46A.8020103@cosmosbay.com>
-In-Reply-To: <482DB46A.8020103@cosmosbay.com>
+To: Andrea Arcangeli <andrea@qumranet.com>
+CC: Robert Hancock <hancockr@shaw.ca>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       NetDev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jgarzik@pobox.com>, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: Top kernel oopses/warnings for the week of May 16th 2008
+References: <fa.LFS/TATb5YijFetLw6A+gczrVAQ@ifi.uio.no> <482E3B1B.9070400@shaw.ca> <20080517141235.GA13130@duo>
+In-Reply-To: <20080517141235.GA13130@duo>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 1) Every call to get_proc_net() should be paired with a call to 
-> put_net(), or else you  leak  struct net.
+Andrea Arcangeli wrote:
+> The reason I touched that code, is that a change introduced during
+> 2.6.25-rc initialized the isa dma pool even if not necessary and that
+> broke the reserved-ram patch that requires no __GFP_DMA
+> allocations. There was no crash in 2.6.24 based kernels, the
+> regression started in 2.6.25-rc.
 
-My mistake, I will add this and resubmit.
- 
-> 2) I am not sure this is the right way to do this... Did you consider to 
-> extend ethtool instead ?
-
-Yes, I did consider that.  My reasoning for adding it to procfs is that each
-driver defines their own ethtool interface, so it was much simpler to add it 
-here, with a lot less code changes and broader support.
+I'd not really call "breaks external patch" a regression ;)
 
 
----
+What we really ought to be doing is always initialize the pool, from
+the right process context. However, we need to make it such that we
+can detect that there is zero __GFP_DMA memory in the system, and bail
+out in that case. Doing it on-demand is just not going to fly; by that
+time it's just too late (the pool may have been eaten already, the context
+might be nasty to do allocations from etc etc).
 
---- linux-2.6.25.4/net/core/dev.c       2008-05-15 10:00:12.000000000 -0500
-+++ linux-2.6.25.4-jcammara/net/core/dev.c      2008-05-17 09:50:22.000000000 -0500
-@@ -2455,2 +2455,80 @@
+the sata_nv driver has to do it on finding a cdrom; afaik it has something
+like a different DMA mask for disks and cdroms, and it scales down once you
+insert a CD.
 
-+/**
-+ * proc_net_dev_write - handle writes to /proc/net/dev
-+ * @file: not used
-+ * @buf: buffer to write
-+ * @length: length of buf, at most PAGE_SIZE
-+ * @ppos: not used
-+ *
-+ * Description: this provides a mechanism to clear statistics on a
-+ * per-interface basis
-+ * "echo 'net clear-stats ifdev' >/proc/net/dev"
-+ * with  "ifdev" replaced by the device name you wish to clear.
-+ *
-+ */
-+static ssize_t proc_net_dev_write(struct file *file, const char __user *buf,
-+                                  size_t length, loff_t *ppos)
-+{
-+        char *buffer, *p;
-+        char devname[IFNAMSIZ];
-+        struct net *net;
-+        struct net_device *dev;
-+        int err;
-+
-+        if (!buf || length > PAGE_SIZE)
-+                return -EINVAL;
-+
-+        buffer = (char *)__get_free_page(GFP_KERNEL);
-+        if (!buffer)
-+                return -ENOMEM;
-+
-+        err = -EFAULT;
-+        if (copy_from_user(buffer, buf, length))
-+                goto out;
-+
-+        err = -EINVAL;
-+        if (length < PAGE_SIZE)
-+                buffer[length] = '\0';
-+        else if (buffer[PAGE_SIZE-1])
-+                goto out;
-+
-+        err = -ENXIO;
-+        net = get_proc_net(file->f_dentry->d_inode);
-+        if (!net)
-+                goto out;
-+
-+        /*
-+         * Usage: echo "net clear-stats ifdev" >/proc/net/dev
-+         * with  "ifdev" replaced by the device name you wish to clear.
-+         */
-+        if (!strncmp("net clear-stats",buffer,15)) {
-+                p = buffer + 16;
-+                if(sscanf(p,"%16s",devname)>0) {
-+                        dev = dev_get_by_name(net,devname);
-+                        if (dev) {
-+                                if (dev->get_stats) {
-+                                        struct net_device_stats *stats =
-+                                               dev->get_stats(dev);
-+                                        memset(stats,0,
-+                                               sizeof(struct net_device_stats));
-+                                }
-+                                dev_put(dev);
-+                        }
-+                }
-+        }
-+
-+        /*
-+         * convert success returns so that we return the
-+         * number of bytes consumed.
-+         */
-+        if (!err)
-+                err = length;
-+
-+ out:
-+        if(net)
-+                put_net(net);
-+        free_page((unsigned long)buffer);
-+        return err;
-+}
-+
- static void *softnet_seq_start(struct seq_file *seq, loff_t *pos)
-@@ -2498,2 +2576,3 @@
-        .read    = seq_read,
-+        .write   = proc_net_dev_write,
-        .llseek  = seq_lseek,
