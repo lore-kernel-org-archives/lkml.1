@@ -1,41 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756908AbYEQPKo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757351AbYEQPNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756908AbYEQPKo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 11:10:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755319AbYEQPKf
+	id S1757351AbYEQPNe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 11:13:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754521AbYEQPN0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 11:10:35 -0400
-Received: from fmailhost05.isp.att.net ([207.115.11.55]:58801 "EHLO
-	fmailhost01.isp.att.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754979AbYEQPKe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 11:10:34 -0400
-X-Greylist: delayed 77529 seconds by postgrey-1.27 at vger.kernel.org; Sat, 17 May 2008 11:10:34 EDT
-X-Originating-IP: [70.152.106.225]
-Date: Sat, 17 May 2008 10:10:26 -0500
-From: Jay Cliburn <jacliburn@bellsouth.net>
-To: Chris Rankin <rankincj@yahoo.com>
-Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
-Subject: Re: 2.6.25.3: serial problem (minicom)
-Message-ID: <20080517101026.270a6f4e@osprey.hogchain.net>
-In-Reply-To: <543631.10570.qm@web52902.mail.re2.yahoo.com>
-References: <20080517082207.4b1e8556@osprey.hogchain.net>
-	<543631.10570.qm@web52902.mail.re2.yahoo.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-redhat-linux-gnu)
+	Sat, 17 May 2008 11:13:26 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:47492 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753379AbYEQPN0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 May 2008 11:13:26 -0400
+Date: Sat, 17 May 2008 19:14:24 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] signals: collect_signal: remove the unneeded sigismember() check
+Message-ID: <20080517151424.GA9505@tv-sign.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 17 May 2008 15:49:08 +0100 (BST)
-Chris Rankin <rankincj@yahoo.com> wrote:
+collect_signal() checks sigismember(&list->signal, sig), this is not needed.
+This "sig" was just found by next_signal(), so it must be valid.
 
-> Does yours still work if you raise the baud rate to 115200? 
+We have a (completely broken) call to ->notifier in between, but it must not
+play with sigpending->signal bits or unlock ->siglock.
 
-No, but I also get garbage characters and a generally unusable logging
-device.  57600 is slightly better, but not much.  I remember going
-through this progressive reduction in baud rate a long time ago,
-trying to find a speed that works reliably, which is why I settled on
-38400. I get unpredictable results for anything higher.
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+
+--- 25/kernel/signal.c~7_CS_NO_CHECK	2008-05-17 18:07:10.000000000 +0400
++++ 25/kernel/signal.c	2008-05-17 18:41:28.000000000 +0400
+@@ -309,9 +309,6 @@ static int collect_signal(int sig, struc
+ 	struct sigqueue *q, *first = NULL;
+ 	int still_pending = 0;
+ 
+-	if (unlikely(!sigismember(&list->signal, sig)))
+-		return 0;
+-
+ 	/*
+ 	 * Collect the siginfo appropriate to this signal.  Check if
+ 	 * there is another siginfo for the same signal.
+
