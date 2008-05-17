@@ -1,88 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756689AbYEQOnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756209AbYEQOrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756689AbYEQOnU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 10:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754418AbYEQOnF
+	id S1756209AbYEQOrT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 10:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750894AbYEQOrE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 10:43:05 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:52320 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750894AbYEQOnC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 10:43:02 -0400
-Subject: Re: [RFC] make wext wireless bits optional and deprecate them
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: netdev <netdev@vger.kernel.org>, Jean Tourrilhes <jt@hpl.hp.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-In-Reply-To: <31B1A5D6-8E8B-4148-860F-326FEEE5A3EE@holtmann.org>
-References: <1211026337.3827.25.camel@johannes.berg>
-	 <CD993362-B1DE-4E4D-8A5B-E9E2AD7DA04C@holtmann.org>
-	 (sfid-20080517_154639_384202_6D3479C2) <1211032475.6252.2.camel@johannes.berg>
-	 <31B1A5D6-8E8B-4148-860F-326FEEE5A3EE@holtmann.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-T6B3pK3mESP+Tct2gqvD"
-Date: Sat, 17 May 2008 16:42:34 +0200
-Message-Id: <1211035354.6252.4.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Sat, 17 May 2008 10:47:04 -0400
+Received: from mx1.ukfsn.org ([77.75.108.10]:39720 "EHLO mail.ukfsn.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750812AbYEQOrB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 May 2008 10:47:01 -0400
+Message-ID: <482EEFDA.50101@dgreaves.com>
+Date: Sat, 17 May 2008 15:46:50 +0100
+From: David Greaves <david@dgreaves.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080406)
+MIME-Version: 1.0
+To: Eric Sandeen <sandeen@sandeen.net>
+CC: David Chinner <dgc@sgi.com>, LinuxRaid <linux-raid@vger.kernel.org>,
+       xfs@oss.sgi.com,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>
+Subject: Re: Regression- XFS won't mount on partitioned md array
+References: <482DC043.5000307@dgreaves.com> <482DD981.5070004@sandeen.net>
+In-Reply-To: <482DD981.5070004@sandeen.net>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Eric Sandeen wrote:
+> David Greaves wrote:
+>> I just attempted a kernel upgrade from 2.6.20.7 to 2.6.25.3 and it no longer
+>> mounts my xfs filesystem.
+>>
+>> I bisected it to around
+>> a67d7c5f5d25d0b13a4dfb182697135b014fa478
+>> [XFS] Move platform specific mount option parse out of core XFS code
+> 
+> around that... not exactly?  That commit should have been largely a code
+> move, which is not to say that it can't contain a bug... :)
+I got to within 4 on the bisect and my xfs partition containing the kernel src
+and the bisect history blew up telling me that files were directories and then
+exploding in a  heap of lost+found/  fragments. Quite, erm, "interesting" really.
 
---=-T6B3pK3mESP+Tct2gqvD
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+At that point I decided I was close enough to ask for advice, looked at the
+commits and took this one as the most likely to cause the bug :)
 
-On Sat, 2008-05-17 at 16:36 +0200, Marcel Holtmann wrote:
-> Hi Johannes,
->=20
-> >>> The /sys/class/net/*/wireless/ direcory is, as far as I know, not
-> >>> used by anyone. Additionally, the same data is available via wext
-> >>> ioctls. Hence the sysfs files are pretty much useless. This patch
-> >>> makes them optional and schedules them for removal.
-> >>
-> >> it is used by HAL to classify WiFi network cards as net.80211 instead
-> >> of net.80203 and so we do have an actual user. However HAL only tests
-> >> for the existence of the directory wireless/.
-> >
-> > Oh, ok, I didn't know that, thanks.
-> >
-> >> Please fix HAL first before submitting such a patch.
-> >
-> > Sure, I'll take a look at that.
->=20
-> saw your patch. Looks good to me. However what do we do with the non-=20
-> mac80211 drivers that are using WEXT directly. These should be =20
-> detected as net.80211, too.
+But, thinking about it, I can decode the kernel extraversion tags in /boot. From
+that I think my bounds were:
+40ebd81d1a7635cf92a59c387a599fce4863206b
+[XFS] Use kernel-supplied "roundup_pow_of_two" for simplicity
+and:
+3ed6526441053d79b85d206b14d75125e6f51cc2
+[XFS] Implement fallocate.
 
-Yes, this was just a bigfix while I was looking at the code, I'll look
-into that too :)
+so those bound:
+[XFS] Remove the BPCSHIFT and NB* based macros from XFS.
+[XFS] Remove bogus assert
+[XFS] optimize XFS_IS_REALTIME_INODE w/o realtime config
+[XFS] Move platform specific mount option parse out of core XFS code
 
-johannes
+and just glancing through the patches I didn't see any changes that looked
+likely in the others...
 
---=-T6B3pK3mESP+Tct2gqvD
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+> 
+>> I have a RAID5 array with partitions:
+>>
+>> Partition Table for /dev/md_d0
+>>
+>>                First       Last
+>>  # Type       Sector      Sector   Offset    Length   Filesystem Type (ID) Flag
+>> -- ------- ----------- ----------- ------ ----------- -------------------- ----
+>>  1 Primary           0  2500288279      4  2500288280 Linux (83)           None
+>>  2 Primary  2500288280  2500483583      0      195304 Non-FS data (DA)     None
+>>
+>>
+>> when I attempt to mount /media:
+>> /dev/md_d0p1 /media xfs rw,nobarrier,noatime,logdev=/dev/md_d0p2,allocsize=512m 0 0
+> 
+> mythbox?  :)
+Hey - we test some interesting corner cases... :)
+My *wife* just told *me* to buy, and I quote "No more than 10" 1Tb Samsung
+drives... I decided 5 would be plenty.
 
-iQIVAwUASC7u2aVg1VMiehFYAQLflRAAw1vS+oHXO9cPa+Fd+XrN1+9ibKX/g52r
-bFBI5SkcPO+0HnA8lAfM3PvOAtzjchmIWLhmGtkRPoLspmR2/C/SjrGkZTKjcfH9
-mFiBHmS0eT07qydOK2lypMicTyB2X7ljEMHzoDvcvbSvcg2MeNj5kmjJauykkEh+
-sdZnETq+FWM5+eJE4RdirkqvZUgJGReGClshyx/sNMqL1718QGT3D45Rp4g1M7IF
-+zkhUJMZf7mhtQzv8afirsQm9UiAjglukV8o/PO+1imOeCBxcC2VhJjfMJ0vAhlo
-acqxs3/7FTQC1Q+3Vk43RRpfMW89Cuxy4KiHOSwZu9PDxuTSbm3YBur+HeqnzzdB
-uY4C7qPa40e06XnDeuaHiDbvWtyihCRX3FGgVBhpRO6fsdkf4eKVDYZSDs588lBz
-3f5eaVpIWGN9VnWSxUbHUffNuiGUOrDLpQhtXD0PqT8hoojhDCChwRre9BZSgPCu
-NPgMfmQRvRULAstlTXhGkm/g2LsBW62qW4VMDufr8Q5+0jZt2D5Ht51OTD4KA6LH
-Z8U5igyOqhPhS25HKcaHkzNXFTDm7ZLeqb0juJSCgvEcxLXjsuNJjhPQVlZ2j5yg
-gGDHsH0DzhFum+lVbq3iERKSr0PodnqS4zq9Sip9x5Ql7fDoDCShwblqm+Wwp6Zh
-K1T4kZulkNw=
-=p6JT
------END PGP SIGNATURE-----
+> Hm, so it's the external log size that it doesn't much like...
+Yep - I noticed that - and ISTR that Neil has been fiddling in the md
+partitioning code over the last 6 months or so.
+I wondered where it got the larger figure from and if, somehow, md was changing
+the partition size somehow...
 
---=-T6B3pK3mESP+Tct2gqvD--
+
+>> I get:
+>>  md_d0: p1 p2
+>> XFS mounting filesystem md_d0p1
+>> attempt to access beyond end of device
+>> md_d0p2: rw=0, want=195311, limit=195304
+> 
+> what does /proc/partitions say about md_d0p1 and p2?  Is it different
+> between the older & newer kernel?
+2.6.20.7 (good)
+ 254     0 1250241792 md_d0
+ 254     1 1250144138 md_d0p1
+ 254     2      97652 md_d0p2
+
+2.6.25.3 (bad)
+ 254     0 1250241792 md_d0
+ 254     1 1250144138 md_d0p1
+ 254     2      97652 md_d0p2
+
+2.6.25.4 (bad)
+ 254     0 1250241792 md_d0
+ 254     1 1250144138 md_d0p1
+ 254     2      97652 md_d0p2
+
+So nothing obvious there then...
+
+> 
+> What does xfs_info /mount/point say about the filesystem when you mount
+> it under the older kernel?  Or... if you can't mount it,
+teak:~# xfs_info /media/
+meta-data=/dev/md_d0p1           isize=256    agcount=32, agsize=9766751 blks
+         =                       sectsz=512   attr=0
+data     =                       bsize=4096   blocks=312536032, imaxpct=25
+         =                       sunit=0      swidth=0 blks
+naming   =version 2              bsize=4096
+log      =external               bsize=4096   blocks=24413, version=2
+         =                       sectsz=512   sunit=0 blks, lazy-count=0
+realtime =none                   extsz=65536  blocks=0, rtextents=0
+
+
 
