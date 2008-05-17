@@ -1,223 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbYEQMob@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755009AbYEQMuq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754830AbYEQMob (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 08:44:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753251AbYEQMoW
+	id S1755009AbYEQMuq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 08:50:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbYEQMuh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 08:44:22 -0400
-Received: from 81.184.114.62.dyn.user.ono.com ([81.184.114.62]:40024 "EHLO
-	pof.eslack.org." rhost-flags-OK-OK-FAIL-FAIL) by vger.kernel.org
-	with ESMTP id S1753127AbYEQMoU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 08:44:20 -0400
-X-Greylist: delayed 1145 seconds by postgrey-1.27 at vger.kernel.org; Sat, 17 May 2008 08:44:20 EDT
-Message-ID: <482ED31E.2000009@eslack.org>
-Date: Sat, 17 May 2008 14:44:14 +0200
-From: Pau Oliva Fora <pau@eslack.org>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080227)
-MIME-Version: 1.0
-To: dmitry.torokhov@gmail.com
-CC: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] Add support for HTC Shift Touchscreen
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 17 May 2008 08:50:37 -0400
+Received: from main.gmane.org ([80.91.229.2]:48015 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753251AbYEQMuf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 May 2008 08:50:35 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+Subject: [BUG] unable to handle kernel paging request in next-20080516
+Date: Sat, 17 May 2008 12:50:24 +0000 (UTC)
+Message-ID: <g0mkaf$i1r$1@ger.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: cpc1-cwma5-0-0-cust137.swan.cable.ntl.com
+User-Agent: Pan/0.129 (Benson & Hedges Moscow Gold)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pau Oliva Fora <pau@eslack.org>
+Sometimes when booting next-20080516 on Ubuntu Gutsy an oops then a panic 
+will occur. At first I thought it might be provoked by vga=0x164 but this 
+does not appear to be the case and the issue is seemingly random. I've 
+hand transcribed the oops so there may be errors in it but hopefully it 
+will still help:
 
-The patch below adds support for HTC Shift UMPC touchscreen.
+BUG: unable to handle kernel paging request at e6f17fac
+IP: [<c02604d6>] scsi_bus_uevent+0x1/0x17
+*pde = 2714b163 *pte = 26f17160
+Oops: 0000 [#1] DEBUG_PAGEALLOC
+last sysfs file:
 
-Signed-off-by: Pau Oliva Fora <pau@eslack.org>
+Pid:  1, comm: swapper Not tainted (2.6.26-rc2-next-20080516skw #30)
+EIP: 0060:[<c02604d6>] EFLAGS: 00010282 CPU: 0
+EIP is at scsi_bus_uevent+0x1/0x17
+EAX: e6f18014 EBX: e6f18014 ECX: c02604d5 EDX: e7173000
+ESI: e7173000 EDI: e7173000 EBP: e7851ca0 ESP: e7851c90
+ DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
+Process swapper (pid: 1, ti=e7850000 task=e7848000 task.ti=e7850000)
+Stack: e7851ca0 c0237f3a c0237eac 00000000 e7851ce4 c01da36d 00000000 e6f180fc
+       e7835000 c03ebf42 e7163240 c03af631 c040b050 c040b598 00000000 e6f18014
+       00000000 e7851cdc 00000000 e6f18014 00000000 e7851cec c01da52a e7851d2c
+Call Trace:
+ [<c0237f3a>] ? dev_uevent+0x8e/0xca
+ [<c0237eac>] ? dev_uevent+0x0/0xca
+ [<c01da36d>] ? kobject_uevent_env+0x14c/0x2ff
+ [<c01da52a>] ? kobject_uevent_env+0xa/0xc
+ [<c023884b>] ? device_add+0x2bf/0x3f0
+ [<c0321905>] ? mutex_unlock+0x8/0xa
+ [<c02607b4>] ? scsi_sysfs_add_sdev+0x39/0x1d3
+ [<c025f037>] ? scsi_probe_and_add_lun+0x714/0x08
+ [<c025f9ef>] ? __scsi_add_device+0x85/0xab
+ [<c026a70c>] ? ata_scsi_scan_host+0x7f/0x15e
+ [<c0267ec8>] ? ata_host_register+0x1c8/0x1e5
+ [<c026ec75>] ? ata_pci_sff_activate_host+0x179/0x19f
+ [<c0270b61>] ? ata_sff_interupt+0x0/0x1d7
+ [<c026f076>] ? ata_pci_sff_init_one+0x97/0xe1
+ [<c027219c>] ? via_init_one+0x1da/0x1e3
+ [<c01e5670>] ? pci_device_probe+0x39/0x59
+ [<c023a0a1>] ? driver_probe_device+0x9f/0x119
+ [<c023a158>] ? __driver_attach+0x3d/0x5f
+ [<c023990a>] ? bus_for_each_dev+0x3e/0x60
+ [<c0239f39>] ? driver_attach+0x14/0x16
+ [<c023a11b>] ? __driver_attach+0x0/0x5f
+ [<c0239c9d>] ? bus_add_driver+0x99/0x1a0
+ [<c023a2d6>] ? driver_register+0x71/0xcd
+ [<c01e5852>] ? __pci_register_driver+0x53/0x81
+ [<c04205b1>] ? kernel_init+0x0/0xc4
+ [<c04378fc>] ? via_init+0x14/0x16
+ [<c0132800>] ? trace_softirqs_on+0x78/0x7e
+ [<c01dd90c>] ? trace_hardirqs_on_thunk+0xc/0x10
+ [<c0102c3a>] ? restore_nocheck_notrace+0x0/0xe
+ [<c04205b1>] ? kernel_init+0x0/0x1c4
+ [<c04205b1>] ? kernel_init+0x0/0x1c4
+ [<c010373f>] ? kernel_thread_helper+0x7/0x10
+ =======================
 
----
-
-Patch against linux-2.6.25.4, should apply clean on other versions too.
-
-
-diff -uprN linux-2.6.25.4/drivers/input/touchscreen/htcpen.c linux/drivers/input/touchscreen/htcpen.c
---- linux-2.6.25.4/drivers/input/touchscreen/htcpen.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux/drivers/input/touchscreen/htcpen.c	2008-05-17 13:48:57.000000000 +0200
-@@ -0,0 +1,148 @@
-+/*
-+ * HTC Shift touchscreen driver
-+ *
-+ * Copyright (C) 2008 Pau Oliva Fora <pof@eslack.org>
-+ *
-+ * Thanks to:
-+ * 	Heikki Linnakangas - Penmount LPC touchscreen driver
-+ * 	Wacom / Ping Cheng - Help on linuxwacom-devel
-+ * 	Esteve Espuna      - Ideas, tips, moral support :)
-+ *
-+ * Changelog:
-+ *   29980517 v0.5 - code cleanup
-+ *   29980517 v0.4 - initialization works (thanks esteve!)
-+ *   20080514 v0.3 - works best with TouchKit egalax xorg driver
-+ *   20080511 v0.2 - little hacks to make it more usable
-+ *   20080510 v0.1 - works with evtouch driver
-+ *   20080428 first non-working attempt
-+ */
-+
-+/*
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published
-+ * by the Free Software Foundation.
-+ */
-+
-+#include <linux/errno.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/input.h>
-+#include <linux/interrupt.h>
-+#include <linux/io.h>
-+#include <linux/init.h>
-+#include <linux/irq.h>
-+
-+#define DRIVER_VERSION		"v0.5"
-+#define DRIVER_DESC	"HTC Shift touchscreen driver"
-+
-+MODULE_AUTHOR("Pau Oliva Fora <pau@eslack.org>");
-+MODULE_DESCRIPTION(DRIVER_DESC);
-+MODULE_LICENSE("GPL");
-+
-+#define HTCPEN_PORT0 0x068
-+#define HTCPEN_PORT1 0x06c
-+#define HTCPEN_PORT2 0x0250
-+#define HTCPEN_PORT3 0x0251
-+#define HTCPEN_IRQ 3
-+
-+static int inverse_y;
-+module_param(inverse_y, bool, 0644);
-+MODULE_PARM_DESC(inverse_y, "If set Y axe is inversed.");
-+
-+struct input_dev *htcpen_dev;
-+
-+static void poll_htcpen(void)
-+{
-+
-+	unsigned short x, y, xy;
-+	unsigned short touch;
-+
-+	/* 0=press ; 1=release */
-+	outb_p(0xb, HTCPEN_PORT2);
-+	touch = inb_p(HTCPEN_PORT3);
-+	if (touch)
-+		touch = 0;
-+	else
-+		touch = 1;
-+
-+	input_report_key(htcpen_dev, BTN_TOUCH, touch);
-+
-+	/* only update x/y when screen is being touched */
-+	if (touch) {
-+		outb_p(3, HTCPEN_PORT2);
-+		x = inb_p(HTCPEN_PORT3);
-+
-+		outb_p(5, HTCPEN_PORT2);
-+		y = inb_p(HTCPEN_PORT3);
-+
-+		outb_p(0xc, HTCPEN_PORT2);
-+		xy = inb_p(HTCPEN_PORT3);
-+
-+		x = 8*255-((x*8)+((xy>>4)&0xf));
-+		y = (y*8)+(xy&0xf);
-+		if (inverse_y)
-+			y = 8*255-y;
-+
-+		input_report_abs(htcpen_dev, ABS_X, x);
-+		input_report_abs(htcpen_dev, ABS_Y, y);
-+	}
-+
-+	input_sync(htcpen_dev);
-+
-+	inb_p(HTCPEN_PORT0);
-+}
-+
-+static irqreturn_t htcpen_interrupt(int irq, void *handle)
-+{
-+	poll_htcpen();
-+	return IRQ_HANDLED;
-+}
-+
-+
-+static int __init htcpen_init(void)
-+{
-+
-+	printk(KERN_INFO "htcpen: module inserted\n");
-+
-+	inb_p(HTCPEN_PORT0);
-+
-+	htcpen_dev = input_allocate_device();
-+	if (!htcpen_dev) {
-+		printk(KERN_ERR "htcpen: can't allocate device\n");
-+		return -ENOMEM;
-+	}
-+
-+	if (request_irq(HTCPEN_IRQ, htcpen_interrupt, 0, "htcpen", NULL)) {
-+		printk(KERN_ERR "htcpen: irq busy\n");
-+		return -EBUSY;
-+	}
-+
-+	htcpen_dev->name = "HTC Pen TouchScreen";
-+	htcpen_dev->id.bustype = BUS_ISA;
-+	htcpen_dev->id.vendor = 0;
-+	htcpen_dev->id.product = 0;
-+	htcpen_dev->id.version = 0;
-+
-+	input_set_abs_params(htcpen_dev, ABS_X, 0, 255*8, 0, 0);
-+	input_set_abs_params(htcpen_dev, ABS_Y, 0, 255*8, 0, 0);
-+
-+	htcpen_dev->evbit[0] = BIT_MASK(EV_ABS) | BIT_MASK(EV_KEY);
-+	htcpen_dev->absbit[0] = BIT_MASK(ABS_X) | BIT_MASK(ABS_Y);
-+	htcpen_dev->keybit[BIT_WORD(BTN_TOUCH)] = BIT_MASK(BTN_TOUCH);
-+
-+	input_register_device(htcpen_dev);
-+
-+	outb_p(0xa2, HTCPEN_PORT1);
-+
-+	return 0;
-+}
-+
-+static void __exit htcpen_exit(void)
-+{
-+	input_unregister_device(htcpen_dev);
-+	free_irq(HTCPEN_IRQ, NULL);
-+	printk(KERN_INFO "htcpen: module removed\n");
-+}
-+
-+module_init(htcpen_init);
-+module_exit(htcpen_exit);
-diff -uprN linux-2.6.25.4/drivers/input/touchscreen/Kconfig linux/drivers/input/touchscreen/Kconfig
---- linux-2.6.25.4/drivers/input/touchscreen/Kconfig	2008-05-15 17:00:12.000000000 +0200
-+++ linux/drivers/input/touchscreen/Kconfig	2008-05-17 03:23:14.000000000 +0200
-@@ -134,6 +134,17 @@ config TOUCHSCREEN_HP7XX
-  	  To compile this driver as a module, choose M here: the
-  	  module will be called jornada720_ts.
-
-+config TOUCHSCREEN_HTCPEN
-+	tristate "HTC Shift X9500 touchscreen"
-+	help
-+	  Say Y here if you have an HTC Shift UMPC also known as HTC X9500
-+	  Clio / Shangrila and want to support the built-in touchscreen.
-+
-+	  If unsure, say N.
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called htcpen.
-+
-  config TOUCHSCREEN_PENMOUNT
-  	tristate "Penmount serial touchscreen"
-  	select SERIO
-diff -uprN linux-2.6.25.4/drivers/input/touchscreen/Makefile linux/drivers/input/touchscreen/Makefile
---- linux-2.6.25.4/drivers/input/touchscreen/Makefile	2008-05-15 17:00:12.000000000 +0200
-+++ linux/drivers/input/touchscreen/Makefile	2008-05-17 03:10:12.000000000 +0200
-@@ -14,6 +14,7 @@ obj-$(CONFIG_TOUCHSCREEN_MTOUCH)	+= mtou
-  obj-$(CONFIG_TOUCHSCREEN_MK712)		+= mk712.o
-  obj-$(CONFIG_TOUCHSCREEN_HP600)		+= hp680_ts_input.o
-  obj-$(CONFIG_TOUCHSCREEN_HP7XX)		+= jornada720_ts.o
-+obj-$(CONFIG_TOUCHSCREEN_HTCPEN)	+= htcpen.o
-  obj-$(CONFIG_TOUCHSCREEN_USB_COMPOSITE)	+= usbtouchscreen.o
-  obj-$(CONFIG_TOUCHSCREEN_PENMOUNT)	+= penmount.o
-  obj-$(CONFIG_TOUCHSCREEN_TOUCHRIGHT)	+= touchright.o
+-- 
+Sitsofe | http://sucs.org/~sits/
 
