@@ -1,68 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755514AbYERGtk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754151AbYERH0I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755514AbYERGtk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 02:49:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbYERGtc
+	id S1754151AbYERH0I (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 03:26:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbYERHZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 02:49:32 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:52882 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751434AbYERGtb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 02:49:31 -0400
-Date: Sun, 18 May 2008 01:49:26 -0500
-From: Paul Jackson <pj@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: ying.huang@intel.com, hpa@zytor.com, andi@firstfloor.org,
-       akpm@linux-foundation.org, tglx@linutronix.de, steiner@sgi.com,
-       travis@sgi.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 10/10] x86 boot: add code to add BIOS provided EFI
- memory entries to kernel
-Message-Id: <20080518014926.917ca9a7.pj@sgi.com>
-In-Reply-To: <20080516123820.GA16520@elte.hu>
-References: <20080514151504.148486.32236.sendpatchset@jackhammer.engr.sgi.com>
-	<20080514151558.148486.91282.sendpatchset@jackhammer.engr.sgi.com>
-	<20080515190340.b232ca7d.pj@sgi.com>
-	<20080516123820.GA16520@elte.hu>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 18 May 2008 03:25:56 -0400
+Received: from gw.goop.org ([64.81.55.164]:36620 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751645AbYERHZz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 03:25:55 -0400
+Message-ID: <482FD9F2.8080204@goop.org>
+Date: Sun, 18 May 2008 08:25:38 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: "Maciej W. Rozycki" <macro@linux-mips.org>, Tom Spink <tspink@gmail.com>,
+       Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Jiri Slaby <jirislaby@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [RFC] x86: merge nmi_32-64 to nmi.c
+References: <20080517192200.GA6914@cvg> <7b9198260805171328u555eec17t3597f3378edbda88@mail.gmail.com> <Pine.LNX.4.55.0805172148380.10067@cliff.in.clinika.pl> <alpine.LFD.1.10.0805172331030.18798@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.10.0805172331030.18798@apollo.tec.linutronix.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo wrote:
-> so double-checking [the merge of my x86 boot patches] would be nice.
+Thomas Gleixner wrote:
+> Definitely, but we should do it at the Kconfig level which allows us
+> to have integer defines as well, so we end up with something like:
+>
+> static inline unsigned int get_nmi_count(int cpu)
+> {
+>       return CONFIG_X86_64 ? cpu_pda(cpu)->__nmi_count : nmi_count(cpu);
+> }
+>   
 
-I only see one detail worth mentioning on reading the resulting merge
-in ingo.tip.
+Unfortunately that doesn't work because when CONFIG_X86_64 isn't defined 
+it doesn't expand to 0.  It would be nice if CONFIG_* expanded to 0/1, 
+but we'd need to change all the #ifdef CONFIG_* to #if CONFIG_*...
 
-Shouldn't the static array declarations in arch/x86/kernel/e820.c
-be indented?  It looks like the -file- static declarations
-from arch/x86/kernel/e820_32.c (which were not indented) took
-precedence in the merge over the -function- static declarations
-from arch/x86/kernel/e820_64.c.  The code, from the perspective
-of what ends up in the compiled kernel, seems fine -- just the
-indentation off.
-
-int __init sanitize_e820_map(struct e820entry *biosmap, int max_nr_map,
-				int *pnr_map)
-{
-	struct change_member {
-		struct e820entry *pbios; /* pointer to original bios entry */
-		unsigned long long addr; /* address for this change point */
-	};
-static struct change_member change_point_list[2*E820_X_MAX] __initdata;
-static struct change_member *change_point[2*E820_X_MAX] __initdata;
-static struct e820entry *overlap_list[E820_X_MAX] __initdata;
-static struct e820entry new_bios[E820_X_MAX] __initdata;
-	struct change_member *change_tmp;
-	unsigned long current_type, last_type;
-	unsigned long long last_addr;
-
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+    J
