@@ -1,58 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754584AbYERDzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753621AbYEREmF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754584AbYERDzb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 23:55:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751712AbYERDzV
+	id S1753621AbYEREmF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 00:42:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750875AbYERElx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 23:55:21 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:18101 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750994AbYERDzU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 23:55:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XlHRflJsdJlrioXli+u8xv5wZ/+9f5EWFMFmEh/OazJ5OB+t/G07Z3VEJfNpcocZcr62OUpyXfJLkIeJ3Ap+eHuxqGJtUs0Hs+mKFvsDb3MaaqkD5rhV/sTHi7iZa8jqCWvkSnE+Te/wZlelmDvlCqWII3j8NqU3DZEkpKnrpuk=
-Message-ID: <86802c440805172055x30c2c6feg441e16f5fb24f64f@mail.gmail.com>
-Date: Sat, 17 May 2008 20:55:20 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ciaran McCreesh" <ciaran.mccreesh@googlemail.com>
-Subject: Re: kernel boot hangs after x86: insert_resorce for lapic addr after e820_reserve_resources
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-In-Reply-To: <20080518014111.4f32298b@googlemail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 18 May 2008 00:41:53 -0400
+Received: from pxy2nd.nifty.com ([202.248.175.14]:64446 "HELO pxy2nd.nifty.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751124AbYERElw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 00:41:52 -0400
+X-Nifty-SrcIP: [210.170.193.31]
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=pxy2nd-default; d=mbf.nifty.com;
+  b=MYTmF+3lYbsBioWeNsP5DN4fFPm0zsaAF9Q2Tjzap6b1Qp7Uzou3Gze1/gAWDgbOAyVEuJWg9Q0Lhyg1K1k33w==  ;
+Date: Sun, 18 May 2008 13:37:58 +0900 (JST)
+Message-Id: <20080518.133758.260799446.takada@mbf.nifty.com>
+To: bzolnier@gmail.com
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: kernel 2.6.25 with ide driver cs5520 does not boot.
+From: TAKADA Yoshihito <takada@mbf.nifty.com>
+In-Reply-To: <200805142244.48548.bzolnier@gmail.com>
+References: <200805091127.53737.bzolnier@gmail.com>
+	<20080509.215601.208967867.takada@mbf.nifty.com>
+	<200805142244.48548.bzolnier@gmail.com>
+X-Mailer: Mew version 6.0.50 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080518014111.4f32298b@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 17, 2008 at 5:41 PM, Ciaran McCreesh
-<ciaran.mccreesh@googlemail.com> wrote:
-> The commit 3def3d6ddf43dbe20c00c3cbc38dfacc8586998f (x86:
-> insert_resorce for lapic addr after e820_reserve_resources) causes my
-> x86_64 box to to lock up early on in the boot process. Reverting only
-> this commit with current git head gives a successful boot.
->
-> The last messages outputted to the screen with a failed boot are:
->
->    pci 0000:00:13.2: OHCI: BIOS handoff failed (BIOS bug?) 00000184
->    Clocksource tsc unstable (delta = 475235503 ns)
->
-> The handoff message appears not to be related, and occurs with all
-> kernels. The 'clocksource' message appears only with the above commit.
->
-> The box has an Abit F-190HD motherboard with a Q6600 CPU. A .config,
-> dmesg from git head with the above commit reverted and lspci -v are
-> attached.
->
-> What further information can I provide to help work this issue out?
+Hi.
 
-can you try to boot with apic=verbose? please don't revert that patch...
+I disagree that this patch to remove IDE_HFLAG_VDMA.
+Because IDE_HFLAG_VDMA is refferd in drivers/ide/ide-dma.c.
+Well, currently, it's only cs5520 to sets thiss flag.
 
-wonder if init_apic_mapping need some delay with that strange chipset.
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: kernel 2.6.25 with ide driver cs5520 does not boot.
+Date: Wed, 14 May 2008 22:44:48 +0200
 
-YH
+> On Friday 09 May 2008, TAKADA Yoshihito wrote:
+> > Hi.
+> > 
+> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > Subject: Re: kernel 2.6.25 with ide driver cs5520 does not boot.
+> > Date: Fri, 9 May 2008 11:27:53 +0200
+> > 
+> > > On Friday 09 May 2008, TAKADA Yoshihito wrote:
+> > > > Thanks for quick reply.
+> > > > 
+> > > > I tried 2.6.26rc1. It hangs same as 2.6.25.
+> > > > kernel 2.6.26rc1 with cs5520 cannot boot. cs5520 scans ide0 and ide1.
+> > > > It seems 2nd port DMA base issue was solved.
+> > > 
+> > > [...]
+> > > 
+> > > Thanks.
+> > > 
+> > > The following patch for 2.6.26-rc1 disables VDMA, please give it a try
+> > > (I haven't time to fully audit VDMA support yet but lets see if it is
+> > > the main source of the problems).
+> > 
+> > I applied the patch. But kernel was hung.
+> > And I attempt to kill IDE_HFLAG_CS5520. It cannot boot, oo.
+> > 
+> >   kill IDE_HFLAG_VDMA  : hang  
+> >   kill IDE_HFLAG_CS5520: hang
+> >   kill both flags      : boot
+> 
+> Thanks for investigating this - I forgot that currently VDMA and CS5520
+> host flags use the same bit (so it also needs to be fixed).
+> 
+> I'm going to send the following patch to Linus (please verify it):
+> 
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH] cs5520: disable VDMA
+> 
+> Disable Virtual DMA support for now (it causes system hangs).
+> 
+> Thanks to TAKADA Yoshihito for the help with debugging the problem.
+> 
+> Reported-by: TAKADA Yoshihito <takada@mbf.nifty.com>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> ---
+>  drivers/ide/pci/cs5520.c |    2 +-
+>  include/linux/ide.h      |    8 ++++----
+>  2 files changed, 5 insertions(+), 5 deletions(-)
+> 
+> Index: b/drivers/ide/pci/cs5520.c
+> ===================================================================
+> --- a/drivers/ide/pci/cs5520.c
+> +++ b/drivers/ide/pci/cs5520.c
+> @@ -119,6 +119,7 @@ static const struct ide_dma_ops cs5520_d
+>  	.dma_timeout		= ide_dma_timeout,
+>  };
+>  
+> +/* FIXME: VDMA is disabled because it caused system hangs */
+>  #define DECLARE_CS_DEV(name_str)				\
+>  	{							\
+>  		.name		= name_str,			\
+> @@ -126,7 +127,6 @@ static const struct ide_dma_ops cs5520_d
+>  		.dma_ops	= &cs5520_dma_ops,		\
+>  		.host_flags	= IDE_HFLAG_ISA_PORTS |		\
+>  				  IDE_HFLAG_CS5520 |		\
+> -				  IDE_HFLAG_VDMA |		\
+>  				  IDE_HFLAG_NO_ATAPI_DMA |	\
+>  				  IDE_HFLAG_ABUSE_SET_DMA_MODE, \
+>  		.pio_mask	= ATA_PIO4,			\
+> Index: b/include/linux/ide.h
+> ===================================================================
+> --- a/include/linux/ide.h
+> +++ b/include/linux/ide.h
+> @@ -1058,8 +1058,8 @@ enum {
+>  	IDE_HFLAG_NO_SET_MODE		= (1 << 9),
+>  	/* trust BIOS for programming chipset/device for DMA */
+>  	IDE_HFLAG_TRUST_BIOS_FOR_DMA	= (1 << 10),
+> -	/* host uses VDMA (tied with IDE_HFLAG_CS5520 for now) */
+> -	IDE_HFLAG_VDMA			= (1 << 11),
+> +	/* host is CS5510/CS5520 */
+> +	IDE_HFLAG_CS5520		= (1 << 11),
+>  	/* ATAPI DMA is unsupported */
+>  	IDE_HFLAG_NO_ATAPI_DMA		= (1 << 12),
+>  	/* set if host is a "non-bootable" controller */
+> @@ -1070,8 +1070,6 @@ enum {
+>  	IDE_HFLAG_NO_AUTODMA		= (1 << 15),
+>  	/* host uses MMIO */
+>  	IDE_HFLAG_MMIO			= (1 << 16),
+> -	/* host is CS5510/CS5520 */
+> -	IDE_HFLAG_CS5520		= IDE_HFLAG_VDMA,
+>  	/* no LBA48 */
+>  	IDE_HFLAG_NO_LBA48		= (1 << 17),
+>  	/* no LBA48 DMA */
+> @@ -1101,6 +1099,8 @@ enum {
+>  	IDE_HFLAG_NO_IO_32BIT		= (1 << 30),
+>  	/* never unmask IRQs */
+>  	IDE_HFLAG_NO_UNMASK_IRQS	= (1 << 31),
+> +	/* host uses VDMA (disabled for now) */
+> +	IDE_HFLAG_VDMA			= 0,
+>  };
+>  
+>  #ifdef CONFIG_BLK_DEV_OFFBOARD
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
