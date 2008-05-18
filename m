@@ -1,72 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757215AbYERIst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756107AbYERJJ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757215AbYERIst (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 04:48:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbYERIsh
+	id S1756107AbYERJJ6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 05:09:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751082AbYERJJs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 04:48:37 -0400
-Received: from mx1.ukfsn.org ([77.75.108.10]:39839 "EHLO mail.ukfsn.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753008AbYERIsf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 04:48:35 -0400
-Message-ID: <482FED60.7060405@dgreaves.com>
-Date: Sun, 18 May 2008 09:48:32 +0100
-From: David Greaves <david@dgreaves.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080406)
+	Sun, 18 May 2008 05:09:48 -0400
+Received: from www.tglx.de ([62.245.132.106]:60924 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750880AbYERJJs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 05:09:48 -0400
+Date: Sun, 18 May 2008 11:09:22 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: "Maciej W. Rozycki" <macro@linux-mips.org>, Tom Spink <tspink@gmail.com>,
+       Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Jiri Slaby <jirislaby@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [RFC] x86: merge nmi_32-64 to nmi.c
+In-Reply-To: <482FD9F2.8080204@goop.org>
+Message-ID: <alpine.LFD.1.10.0805181108420.18798@apollo.tec.linutronix.de>
+References: <20080517192200.GA6914@cvg> <7b9198260805171328u555eec17t3597f3378edbda88@mail.gmail.com> <Pine.LNX.4.55.0805172148380.10067@cliff.in.clinika.pl> <alpine.LFD.1.10.0805172331030.18798@apollo.tec.linutronix.de> <482FD9F2.8080204@goop.org>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Eric Sandeen <sandeen@sandeen.net>
-CC: David Chinner <dgc@sgi.com>, xfs@oss.sgi.com,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       LinuxRaid <linux-raid@vger.kernel.org>
-Subject: Re: Regression- XFS won't mount on partitioned md array
-References: <482DC043.5000307@dgreaves.com> <482DD981.5070004@sandeen.net> <482EEFDA.50101@dgreaves.com> <482EF6A7.2020909@sandeen.net> <482F67D9.70400@sandeen.net> <482FBD4C.20608@sandeen.net>
-In-Reply-To: <482FBD4C.20608@sandeen.net>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Sandeen wrote:
-> Eric Sandeen wrote:
->> Eric Sandeen wrote:
->>
->>> I'll see if I have a little time today to track down the problem.
->>
->> Does this patch fix it for you?  Does for me though I can't yet explain
->> why ;)
->>
->> http://www.linux.sgi.com/archives/xfs/2008-05/msg00190.html
->>
->> -Eric
-Yes, this fixes it for me - thanks :)
+On Sun, 18 May 2008, Jeremy Fitzhardinge wrote:
 
-> So what's happening is that xfs is trying to read a page-sized IO from
-> the last sector of the log... which goes off the end of the device.
-> This looks like another regression introduced by
-> a9759f2de38a3443d5107bddde03b4f3f550060e, but fixed by Christoph's patch
-> in the URL above, which should be headed towards -stable.
-Damn, I guess I misread my bisect readings when things crashed then.
-Still, I said 'around' :)
-
-> (aside: it seems that this breaks any external log setup where the log
-> consists of the entire device... but I'd have expected the xfsqa suite
-> to catch this...?)
+> Thomas Gleixner wrote:
+> > Definitely, but we should do it at the Kconfig level which allows us
+> > to have integer defines as well, so we end up with something like:
+> > 
+> > static inline unsigned int get_nmi_count(int cpu)
+> > {
+> >       return CONFIG_X86_64 ? cpu_pda(cpu)->__nmi_count : nmi_count(cpu);
+> > }
+> >   
 > 
-> The patch avoids the problem by looking for some extra locking but it
-> seems to me that the root cause is that the buffer being read at this
-> point doesn't have it's b_offset, the offset in it's page, set.  Might
-> be another little buglet but harmless it seems.
-mmmm
-'little buglets' in the filesystem holding a few Tb of data...
-mmmm
-Anything I can do to help find that? I suspect not if you can reproduce it.
+> Unfortunately that doesn't work because when CONFIG_X86_64 isn't defined it
+> doesn't expand to 0.  It would be nice if CONFIG_* expanded to 0/1, but we'd
+> need to change all the #ifdef CONFIG_* to #if CONFIG_*...
 
-Anyhow - thanks again.
+You can have int type CONFIG_ which is always expanded. We have to add
+one of those though.
 
-David
-PS I'll be back soon, back in 2.6.23 I was hitting a hibernate/xfs bug which
-I've been avoiding by powering down. Well, it's still there in 2.6.25.3...
-
+Thanks,
+	tglx
