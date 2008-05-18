@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757318AbYERSjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757474AbYERSj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757318AbYERSjf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 14:39:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756446AbYERShy
+	id S1757474AbYERSj4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 14:39:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755018AbYERShz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 14:37:54 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:34439 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756414AbYERShw (ORCPT
+	Sun, 18 May 2008 14:37:55 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:13326 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754578AbYERShy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 14:37:52 -0400
-Subject: Re: [Bug #10634] volanoMark regression with kernel 2.6.26-rc1
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-In-Reply-To: <1211131273.6463.3.camel@lappy.programming.kicks-ass.net>
-References: <oKKSi1w1qaF.A.mEG.JrBMIB@albercik>
-	 <7wuznNhcUqC.A.iUB.ZtBMIB@albercik>
-	 <1211131273.6463.3.camel@lappy.programming.kicks-ass.net>
-Content-Type: text/plain
-Date: Sun, 18 May 2008 20:37:34 +0200
-Message-Id: <1211135855.6463.18.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 18 May 2008 14:37:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=C10O2pwrfEpG00pktWLIzyOoYSsAZQgPrZJaK9BL5tMEQ5AU/WkP2GpEOHeAHq+VPK7Jln3SYGh3++VShCxSOoMKiBsUe0khR9wnzIe2NXXxQt82lRgUJwThbsqdV/zYOaGxG6t4wXifavumNMRVJTrrUPTxpI5VHyyxlRqxs1s=
+From: Denis Cheng <crquan@gmail.com>
+To: "David S. Miller" <davem@davemloft.net>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] net/ipv4/arp.c: Use the exported hex_asc from lib/hexdump.c instead
+Date: Mon, 19 May 2008 02:37:44 +0800
+Message-Id: <1211135864-8235-1-git-send-email-crquan@gmail.com>
+X-Mailer: git-send-email 1.5.5.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-05-18 at 19:21 +0200, Peter Zijlstra wrote:
-> On Sun, 2008-05-18 at 13:13 +0200, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.25.  Please verify if it still should be listed.
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10634
-> > Subject		: volanoMark regression with kernel 2.6.26-rc1
-> > Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
-> > Date		: 2008-05-06 2:06 (13 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=121003968414287&w=2
-> > Handled-By	: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-> > 		  Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-> > 		  Ingo Molnar <mingo@elte.hu>
-> > 		  Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > Patch		: http://marc.info/?l=linux-kernel&m=121015292616788&w=2
-> > 
-> > 
-> 
-> Could people test this:
-> 
-> git://git.kernel.org/home/peterz/git/linux-2.6-sched.git/ v2.6.26-rc2-group-load-balance
+Here the local hexbuf is a duplicate of global const char hex_asc from
+lib/hexdump.c, except the hex letters' cases:
 
+const char hexbuf[] = "0123456789ABCDEF";
 
-Seems I got my own url wrong - the right one is:
+const char hex_asc[] = "0123456789abcdef";
 
-git://git.kernel.org/pub/scm/linux/kernel/git/peterz/linux-2.6-sched.git v2.6.26-rc2-group-load-balance
+and here to print HW addresses, the hex cases are not significant.
 
+Signed-off-by: Denis Cheng <crquan@gmail.com>
+---
+ net/ipv4/arp.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/net/ipv4/arp.c b/net/ipv4/arp.c
+index 418862f..f460fa0 100644
+--- a/net/ipv4/arp.c
++++ b/net/ipv4/arp.c
+@@ -1288,7 +1288,6 @@ static void arp_format_neigh_entry(struct seq_file *seq,
+ 				   struct neighbour *n)
+ {
+ 	char hbuffer[HBUFFERLEN];
+-	const char hexbuf[] = "0123456789ABCDEF";
+ 	int k, j;
+ 	char tbuf[16];
+ 	struct net_device *dev = n->dev;
+@@ -1302,8 +1301,8 @@ static void arp_format_neigh_entry(struct seq_file *seq,
+ 	else {
+ #endif
+ 	for (k = 0, j = 0; k < HBUFFERLEN - 3 && j < dev->addr_len; j++) {
+-		hbuffer[k++] = hexbuf[(n->ha[j] >> 4) & 15];
+-		hbuffer[k++] = hexbuf[n->ha[j] & 15];
++		hbuffer[k++] = hex_asc[(n->ha[j] >> 4) & 15];
++		hbuffer[k++] = hex_asc[n->ha[j] & 15];
+ 		hbuffer[k++] = ':';
+ 	}
+ 	hbuffer[--k] = 0;
+-- 
+1.5.5.1
 
