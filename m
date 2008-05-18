@@ -1,48 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755638AbYERSgH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755924AbYERShV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755638AbYERSgH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 14:36:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbYERSfz
+	id S1755924AbYERShV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 14:37:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753799AbYERShG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 14:35:55 -0400
-Received: from gw.goop.org ([64.81.55.164]:54087 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751567AbYERSfy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 14:35:54 -0400
-Message-ID: <483076FA.9040605@goop.org>
-Date: Sun, 18 May 2008 19:35:38 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Adrian Bunk <bunk@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Tom Spink <tspink@gmail.com>, Cyrill Gorcunov <gorcunov@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>, Jiri Slaby <jirislaby@gmail.com>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [RFC] x86: merge nmi_32-64 to nmi.c
-References: <20080517192200.GA6914@cvg> <7b9198260805171328u555eec17t3597f3378edbda88@mail.gmail.com> <Pine.LNX.4.55.0805172148380.10067@cliff.in.clinika.pl> <alpine.LFD.1.10.0805172331030.18798@apollo.tec.linutronix.de> <482FD9F2.8080204@goop.org> <20080518180811.GI8140@cs181133002.pp.htv.fi> <483071DE.6010404@firstfloor.org>
-In-Reply-To: <483071DE.6010404@firstfloor.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 18 May 2008 14:37:06 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:17236 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752608AbYERShE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 14:37:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:subject;
+        b=cKAauD2VKO3ALH9Eh0tLsVVZIxZSBHFeiFbwqUwWl2WTdwSlzdLZVu99EcT7wOENNwOzF5QIowNgpStjDepZn5j5FzTlaZNnGG4h0pAtjW97ciyEKK06mujm35JvErg4ZDphfVt1r8LrhXSq2SOXt1O7qs8BqbyjszzJtKtOXwg=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: Borislav Petkov <petkovbb@gmail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Sun, 18 May 2008 20:54:28 +0200
+Message-Id: <20080518185428.5636.77234.sendpatchset@localhost.localdomain>
+Subject: [PATCH 00/40] ide: generic ATAPI support
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> The whole idea was pretty bad. Ifdefs are not ugly because the syntax
-> looks ugly, but because it's a semantically ugly construct with bad
-> maintainability impact.
->
-> Trying to put syntactical sugar around that is a doomed exercise. It
-> will be still ugly, no matter what you do.
 
-Not true.  Using C rather than CPP to control the compilation of config 
-options has the big win that all code paths are still visible to the 
-compiler.  In some cases that's not what you want, but it often is, and 
-it would avoid some degree if inadvertent breakage of options.  It can 
-also be syntactically a lot more pleasant.
+Hi,
 
-    J
+This patch series unifies ATAPI support present in ide-{floppy,tape,scsi}
+device drivers and moves it out to the core IDE code (new ide-atapi.c file).
+
+In the process many bugs were shaken out and ~300 LOC were removed.
+
+diffstat:
+
+ drivers/ide/Kconfig      |    6 
+ drivers/ide/Makefile     |    1 
+ drivers/ide/ide-atapi.c  |  296 ++++++++++++++++++++++
+ drivers/ide/ide-cd.c     |    5 
+ drivers/ide/ide-floppy.c |  431 +++++++-------------------------
+ drivers/ide/ide-tape.c   |  630 ++++++++++++++---------------------------------
+ drivers/scsi/ide-scsi.c  |  455 +++++++++++----------------------
+ include/linux/ide.h      |   28 +-
+ 8 files changed, 777 insertions(+), 1075 deletions(-)
+
+Now, while this is a big step in the right direction there are still some
+things left on TODO for generic ATAPI support to be complete:
+
+- convert ide-cd to use generic ATAPI code
+
+- kill pc and rq stacks in ide-{floppy,tape}
+
+- generic handling of REQUEST SENSE command
+
+- generic handling of MODE SENSE command for ide-{floppy,tape}
+
+- convert ide-{cd,floppy,tape} to use scatterlists for PIO transers
+  (ala ide-scsi)
+
+I know that Borislav is working on the first two items but other ones
+are free at the moment so if you feel brave you may give it a try :-).
+
+PS I'll be travelling during this weekend and be rather busy with day job
+   so replies from me may be delayed a bit.
+
+Thanks,
+Bart
