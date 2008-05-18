@@ -1,56 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755412AbYESATQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755898AbYESAYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755412AbYESATQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 20:19:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbYESAS7
+	id S1755898AbYESAYY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 20:24:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbYESAYQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 20:18:59 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:4744 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753368AbYESAS6 (ORCPT
+	Sun, 18 May 2008 20:24:16 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:58783 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753314AbYESAYP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 20:18:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=PmvBG0Ya0/hd+AIWiJwYaaLooSmQX6uN4yI63zkIe93DkzCGKmli8m9XIulM8srzhuJ/PeEpMv7ZxI3d3P6AVuMOteJotSqhkmMaeae+n5upx78DPE9ORYG57k+L6UPDZK8Qk5qkWy6yIoaPXpc1Viq5ExVI+So9pCZ6ZT8fQac=
-Subject: [BUG] Winchip2A + 2.6.25 = klogd 100% CPU, /proc/mtrr busted
-From: David Hagood <david.hagood@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sun, 18 May 2008 19:18:49 -0500
-Message-Id: <1211156329.7192.16.camel@surfer>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 18 May 2008 20:24:15 -0400
+Date: Sun, 18 May 2008 17:04:35 -0400
+From: Theodore Tso <tytso@MIT.EDU>
+To: bernie@codewiz.org
+Cc: lkml <linux-kernel@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>,
+       ext3-users@redhat.com, ext2-devel@lists.sourceforge.net,
+       Stefano Fedrigo <aleph@develer.com>
+Subject: Re: ext3_dx_add_entry: Directory index full!
+Message-ID: <20080518210435.GA8335@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, bernie@codewiz.org,
+	lkml <linux-kernel@vger.kernel.org>,
+	David Woodhouse <dwmw2@infradead.org>, ext3-users@redhat.com,
+	ext2-devel@lists.sourceforge.net,
+	Stefano Fedrigo <aleph@develer.com>
+References: <48304CE2.1090808@codewiz.org> <48304D92.1080306@develer.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48304D92.1080306@develer.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm trying to resurrect an old laptop based on the Winchip2A, but I am
-unable to get a 2.6.25 kernel built that works.
+On Sun, May 18, 2008 at 05:38:58PM +0200, Bernie Innocenti wrote:
+> Bernie Innocenti wrote:
+>> On 2.6.24.4-64.fc8, I createed and mounted a filesystem like this:
+>>   mke2fs -m0 -b 1024 -R stride=64 -I 128 -i 2048 -j  -L mail -O 
+>> dir_index,sparse_super -v /dev/sdc1
+>
+> I cannot reproduce it any more if I reformat omitting "-b 1024".
+> Maybe it would reappear with 200K * 4 = 800K files?
 
-I've tried various combinations of gcc versions (4.1, 4.2.3, 4.3
-snapshots), various build options, and in all cases I get the same
-symptoms:
+Using a filesystem with 4k blocks, and assuming the filenames are of
+the same average length, you should be able to get approximately 200k
+* (4**3) = 12.8 million files in a single directory.  If you use a 2k
+block filesystem, the limit will be approximately 200k * (2**3) = 1.6
+million files in a single directory.
 
-1) klogd will take 100% CPU time once the system is up.
-2) attempting to access /proc/mtrr will yield "Input/output error"
+Regards,
 
-strace'ing the klogd process yields:
-syslog(0x2, 0x804d6e0, 0xfff)           = -1 EPERM (Operation not
-permitted)
-write(2, "klogd: Error return from sys_syc"..., 65) = -1 EBADF (Bad file
-descriptor)
+						- Ted
 
-I've tried building the kernel targeting the WinChip2a, the WinChip2,
-generic 586, with no preemption, preemption, no optimize for size,
-optimize for size.
-
-The funny thing is that if I run the stock kernels as built by Ubuntu
-this does not happen, and if I build a kernel in the same way for my
-Athlon machines it works.
-
-Has anybody else seen this?
-
-
+P.S.  Past a certain point, you really don't want to have that many
+files in a Maildir directory; if the user is never going to be
+deleting his SPAM, then you should seriously think about using a Unix
+mbox style storage scheme.  Even with a 1k block filesystem, at 12
+million files you'll be wasting 6 gigabytes of disk space of slack
+space that is totally being wasted since the whole point of using
+Maildir is to make it easy to delete or replace individual mail
+messages.  If you want to archive all of your SPAM, why use a Maildir
+format mbox at all?
