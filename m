@@ -1,81 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756474AbYEROpv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755505AbYERPHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756474AbYEROpv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 10:45:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbYEROpk
+	id S1755505AbYERPHp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 11:07:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752042AbYERPHg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 10:45:40 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:52197 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751740AbYEROpj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 10:45:39 -0400
-Date: Sun, 18 May 2008 17:43:40 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Theodore Tso <tytso@mit.edu>, Gilles Espinasse <g.esp@free.fr>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses
-	ofIRQF_SAMPLE_RANDOM
-Message-ID: <20080518144340.GH8140@cs181133002.pp.htv.fi>
-References: <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com> <482C7B18.6060003@garzik.org> <482C7E53.3050300@hp.com> <482C8184.2030906@garzik.org> <20080516161029.44ded734@core> <0f7201c8b790$9c2a2340$f9b5a8c0@pii350> <20080517220258.GC8140@cs181133002.pp.htv.fi> <10a001c8b8b2$28afd2c0$f9b5a8c0@pii350> <20080518120235.GE8140@cs181133002.pp.htv.fi> <20080518122410.GA31413@mit.edu>
+	Sun, 18 May 2008 11:07:36 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:35589 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751808AbYERPHf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 11:07:35 -0400
+Date: Sun, 18 May 2008 11:07:33 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: J?rgen Mell <j.mell@t-online.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: CONFIG_PREEMPT causes corruption of application's FPU stack
+Message-ID: <20080518150733.GC8100@goodmis.org>
+References: <200805171831.08490.j.mell@t-online.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080518122410.GA31413@mit.edu>
+In-Reply-To: <200805171831.08490.j.mell@t-online.de>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 18, 2008 at 08:24:10AM -0400, Theodore Tso wrote:
-> On Sun, May 18, 2008 at 03:02:36PM +0300, Adrian Bunk wrote:
-> > > Yes that's the whole point.
-> > > Why remove IRQF_SAMPLE_RANDOM if "it cannot make the RNG output worse."
-> > > We should not care if network traffic can be sniffed in some configurations
-> > > (plus sniffing could be very unlikely in some others).
-> > >...
-> > > Are network drivers better without SAMPLE_RANDOM?
-> > > My understanding of openssl developper answer is same as yours :
-> > > "it cannot make the RNG output worse."
-> > 
-> > The "it cannot make the RNG output worse." only applies to the OpenSSL 
-> > case (one could argue whether it makes sense, but it can't do harm).
+On Sat, May 17, 2008 at 06:31:08PM +0200, J?rgen Mell wrote:
 > 
-> Actually, it applies here too.  Or it can be made to apply here.  If
-> people are concerned that for certain cards the entropy could
-> potentially be guessed by someone on the local network (although I
-> suspect it's still useful for protecting against someone who doesn't
-> have local network access), we could still sample the entropy, and
-> just not increment the entropy credit for /dev/random's sake.
-
-The latter is exactly the difference between the two cases.
-
-But Gilles was implying using IRQF_SAMPLE_RANDOM for gathering entropy 
-was as harmless as OpenSSL mixing uninitialized memory into their RNG.
-
-> It will
-> still put something into the entropy pool which is also used by
-> /dev/urandom.
+> I tracked this down to a single kernel configuration option. If 
+> CONFIG_PREEMPT is set to 'y' the application will start crashing. If 
+> CONFIG_PREEMPT is replaced by CONFIG_PREEMPT_VOLUNTARY, the application 
+> will run without errors.
 > 
-> > The replacement solution ready on all Linux machines today is for 
-> > userspace to use /dev/urandom instead of /dev/random if feasible.
+> The problem is reproducible in so far as the error always occurs when 
+> CONFIG_PREEMPT is set, but the time to the first occurrence varies greatly 
+> from some minutes up to more than 10 CPU hours.
 > 
-> Sampling interrupt entropy will definitely not hurt /dev/urandon, and
-> may help, especially in the freshly installed server case.  Especially
-> if it's using kickstart-style install, where there is no keyboard
-> entropy, sampling the interrupts as it pulls RPM's from the network
-> and/or the CD-ROM drive may be all that we have.
+> I found this error first on an openSUSE kernel 2.6.22.17-0.1-rt. I verified 
+> the problem on the following kernel versions:
+> 
+> openSUSE 2.6.22.17-0.1-default
+> openSUSE 2.6.23.17-ccj64-rt
+> kernel.org 2.6.26-rc1
+> kernel.org 2.6.26-rc2-git5
 
-No disagreement on this.
+So you see this error in both the SuSE RT kernel, *and* mainline
+kernel.org?
 
->               	   	  	       	   	   - Ted
+If you see it in the kernel.org kernel, can you please do a git-bisect
+to see which commit caused the problem?
 
-cu
-Adrian
+Thanks,
 
--- 
+-- Steve
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+> 
+> My CPU is an Intel Core2Duo 6420, running two of the Einstein applications 
+> in 32-bit mode. From a discussion on the Einstein message boards I know 
+> that other user of the application are also affected.
+> 
