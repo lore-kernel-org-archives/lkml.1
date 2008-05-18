@@ -1,56 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756614AbYERLDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756446AbYERLQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756614AbYERLDU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 07:03:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751779AbYERLDM
+	id S1756446AbYERLQr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 07:16:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbYERLQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 07:03:12 -0400
-Received: from mail.gmx.net ([213.165.64.20]:52218 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750951AbYERLDL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 07:03:11 -0400
-X-Authenticated: #428038
-X-Provags-ID: V01U2FsdGVkX1+y0qdnJRSySiEG+ajnf6L5N5X7bPuX1LwAafcaTQ
-	Kw7Gxx1iFZAR+W
-Date: Sun, 18 May 2008 13:03:06 +0200
-From: Matthias Andree <matthias.andree@gmx.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
-	IRQF_SAMPLE_RANDOM
-Message-ID: <20080518110306.GD9845@merlin.emma.line.org>
-Mail-Followup-To: linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com> <20080515142154.0595e475@core> <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com> <20080515215517.GI1936@cs181133002.pp.htv.fi> <1211070968.18026.113.camel@calx>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1211070968.18026.113.camel@calx>
-X-PGP-Key: http://home.pages.de/~mandree/keys/GPGKEY.asc
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Y-GMX-Trusted: 0
+	Sun, 18 May 2008 07:16:41 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:38247 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751678AbYERLQk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 07:16:40 -0400
+Subject: Re: linux/a.out.h is not exported to userspace
+From: David Woodhouse <dwmw2@infradead.org>
+To: Khem Raj <raj.khem@gmail.com>
+Cc: k.shutemov@gmail.com, linux-kernel@vger.kernel.org, avi@qumranet.com
+In-Reply-To: <1210983237.8550.28.camel@isis>
+References: <1210983237.8550.28.camel@isis>
+Content-Type: text/plain
+Date: Sun, 18 May 2008 12:16:32 +0100
+Message-Id: <1211109392.3008.186.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 17 May 2008, Matt Mackall wrote:
-
-> It certainly makes sense to sample network timing noise. It often does
-> not make sense to assume that there's any entropy in those timing
-> samples. For instance:
+On Fri, 2008-05-16 at 17:13 -0700, Khem Raj wrote:
+> Hi,
 > 
-> - our clock resolution may be low enough that an attacker can guess our
-> samples (ie it's simply HZ, very common in embedded land)
-> - the bus involved (ISA, peripheral bus, even slow PCI) may have the
-> same issue
-> - it may be heavily correlated with some other measurement (ie network
-> vs disk samples on file servers)
+> Looking for a compile failure for a package on uclibc system using
+> kernel-headers from 2.6.25 I found that linux/a.out.h is no more
+> exported to userland anymore.
 > 
-> We currently assume that IRQF_SAMPLE_RANDOM means 'this is a completely
-> trusted unobservable entropy source' which is obviously wrong for
-> network devices but is right for some other classes of device.
+> This commit below has disabled it from being exported. The commit Do not
+> export asm/page.h during make headers_install so I was wondering if it
+> was intended to unexport linux/a.out.h or not.
+> 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=ed7b1889da256977574663689b598d88950bbd23
+> 
+> 
+> Looking at the patch from lkml post
+> 
+> http://linux.derkeiler.com/Mailing-Lists/Kernel/2007-10/msg08913.html
+> 
+> second hunk to include/linux/Kbuild was not applied which caused this
+> problem.
+> 
+> I think I do not fall into Signed-off-by definition. I tested the
+> following patch on 2.6.25.
+> 
+> Thanks
+> 
+> -Khem
+> 
+> Tested-by: Khem Raj <raj.khem@gmail.com>
+> 
+> diff --git a/include/linux/Kbuild b/include/linux/Kbuild
+> index b7d81b2..8a3d93e 100644
+> --- a/include/linux/Kbuild
+> +++ b/include/linux/Kbuild
+> @@ -168,6 +168,7 @@ unifdef-y += acct.h
+>  unifdef-y += adb.h
+>  unifdef-y += adfs_fs.h
+>  unifdef-y += agpgart.h
+> +unifdef-y += a.out.h
+>  unifdef-y += apm_bios.h
+>  unifdef-y += atalk.h
+>  unifdef-y += atmdev.h
 
-Without looking at code, should your summary should include
-"independent of (as in non-correlated with) other sources" according to
-your argument?
+That'll export <linux/a.out.h> even on architectures where <asm/a.out.h>
+doesn't exist -- which will cause headers_check to fail.
+
+Perhaps we could do it something like this:
+--- a/include/linux/Kbuild
++++ b/include/linux/Kbuild
+@@ -168,6 +168,9 @@ unifdef-y += acct.h
+ unifdef-y += adb.h
+ unifdef-y += adfs_fs.h
+ unifdef-y += agpgart.h
++ifeq ($(wildcard include/asm-$(SRCARCH)/a.out.h),include/asm-$(SRCARCH)/a.out.h)
++unifdef-y += a.out.h
++endif
+ unifdef-y += apm_bios.h
+ unifdef-y += atalk.h
+ unifdef-y += atmdev.h
+
+In fact, perhaps we could do <linux/kvm.h> that way too -- I believe I
+objected to using a CONFIG symbol, but the mere existence of the file
+would be fine. I don't think we thought of that at the time.
 
 -- 
-Matthias Andree
+dwmw2
+
