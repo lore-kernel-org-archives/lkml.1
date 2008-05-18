@@ -1,71 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756610AbYERTzF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757217AbYERT4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756610AbYERTzF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 15:55:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753830AbYERTyx
+	id S1757217AbYERT4Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 15:56:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbYERT4A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 15:54:53 -0400
-Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:34469 "EHLO
-	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753090AbYERTyv (ORCPT
+	Sun, 18 May 2008 15:56:00 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:42588 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752589AbYERTz7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 15:54:51 -0400
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       jamie@shareable.org
-Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
-From: Andi Kleen <andi@firstfloor.org>
-References: <482DDA56.6000301@redhat.com>
-	<20080516130545.845a3be9.akpm@linux-foundation.org>
-Date: Sun, 18 May 2008 21:54:48 +0200
-In-Reply-To: <20080516130545.845a3be9.akpm@linux-foundation.org> (Andrew Morton's message of "Fri, 16 May 2008 13:05:45 -0700")
-Message-ID: <87ej7zcrqv.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Sun, 18 May 2008 15:55:59 -0400
+Date: Sun, 18 May 2008 21:55:58 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Adrian Bunk <bunk@kernel.org>
+cc: Jiri Slaby <jirislaby@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Michael Buesch <mb@bu3sch.de>,
+       Gordon Farquharson <gordonfarquharson@gmail.com>
+Subject: Re: crossbuild fails in modpost
+In-Reply-To: <20080515204632.GG1936@cs181133002.pp.htv.fi>
+Message-ID: <alpine.LNX.1.10.0805182155011.15590@fbirervta.pbzchgretzou.qr>
+References: <482C3E3E.9090204@gmail.com> <482C6F02.1000205@gmail.com> <20080515173539.GA23959@uranus.ravnborg.org> <20080515174015.GA24024@uranus.ravnborg.org> <482C8CBE.2060101@gmail.com> <20080515204632.GG1936@cs181133002.pp.htv.fi>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 18 May 2008 19:47:47.0018 (UTC) FILETIME=[0BEC32A0:01C8B920]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
 
-> On Fri, 16 May 2008 14:02:46 -0500
-> Eric Sandeen <sandeen@redhat.com> wrote:
+On Thursday 2008-05-15 22:46, Adrian Bunk wrote:
+>>
+>> Well, the compiler is the same, but it's told to compile the kernel with  
+>> -m64. It runs on x86_64 kernel and i386 userspace. It's debian i386 gcc  
+>> package which understands x86_64 objects too. No SUBARCH option, it seems 
+>> to default to x86_64.
+>>...
 >
->> A collection of patches to make ext3 & 4 use barriers by
->> default, and to call blkdev_issue_flush on fsync if they
->> are enabled.
->
-> Last time this came up lots of workloads slowed down by 30% so I
-> dropped the patches in horror.
+>Unless you manually fiddle with ARCH you can only build a kernel with 
+>the same 32<->64bit setting as your currently running kernel (no matter 
+>which userspace you use)...
 
-Didn't ext4 have some new checksum trick to avoid them?
-
-> I just don't think we can quietly go and slow everyone's machines down
-> by this much.  The overhead of journalling is already pretty horrid.
->
-> If we were seeing a significant number of "hey, my disk got wrecked"
-
-There used to be a couple of reports of people doing
-
-some write workload
-use automatic power switch to reset
-turn on again
-repeat for 24 hours
-
-getting consistent corruption after some time <24hours and those
-went away with barriers.
-
-> Do we know which distros are enabling barriers by default?
-
-SUSE did for some releases, although reiserfs used to be the default there
-(but that one uses barriers too if the disk supports them) 
-
-BTW for a lot of distros which default to LVM install it won't make 
-any difference because DM right now doesn't pass barriers through.
-I have a patch queued for that for the one-disk case at least, but it 
-didn't make .26-rc.
-
--Andi
+echo -en '#!/bin/bash\nexec gcc -m32 "$@"\n' >/usr/local/bin/i386-linux-gcc
+make CC=i386-linux-gcc
+then the if($(CC),$(HOSTCC)) check should get true.
