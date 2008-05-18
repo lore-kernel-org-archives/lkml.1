@@ -1,131 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627AbYERRyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753110AbYERR5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754627AbYERRyV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 13:54:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752732AbYERRyJ
+	id S1753110AbYERR5S (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 13:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbYERR5F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 13:54:09 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:35814 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752778AbYERRyH (ORCPT
+	Sun, 18 May 2008 13:57:05 -0400
+Received: from mailout04.t-online.de ([194.25.134.18]:57199 "EHLO
+	mailout04.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752250AbYERR5D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 13:54:07 -0400
-Message-ID: <48306D36.6040706@firstfloor.org>
-Date: Sun, 18 May 2008 19:53:58 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Sun, 18 May 2008 13:57:03 -0400
+Message-ID: <48306DCA.9070108@t-online.de>
+Date: Sun, 18 May 2008 19:56:26 +0200
+From: Harald Dunkel <harald.dunkel@t-online.de>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080503)
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Chris Peterson <cpeterso@cpeterso.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       tpmdd-devel@lists.sourceforge.net, tpm@selhorst.net
-Subject: Re: [PATCH] Re: [PATCH] drivers/net: remove network drivers' last
- few uses of IRQF_SAMPLE_RANDOM
-References: <87abirytxj.fsf@basil.nowhere.org> <20080516105635.6cb1f505@core> <482D5FC5.2070103@firstfloor.org> <20080516121239.GA9627@gondor.apana.org.au> <482DB568.1040704@firstfloor.org> <20080517010136.GA15102@gondor.apana.org.au> <482EBAA8.3040506@firstfloor.org> <a24804730805171254i2a37da61mb47280db7b330ed5@mail.gmail.com> <20080517130535.02d45372@infradead.org> <4830014F.9040800@firstfloor.org> <20080518112657.GK16496@mit.edu>
-In-Reply-To: <20080518112657.GK16496@mit.edu>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25.3: su gets stuck for root
+References: <4829326A.6060808@t-online.de>	<19f34abd0805122347x4d9c5d03m16679d724189790e@mail.gmail.com>	<4829D345.7020909@t-online.de>	<19f34abd0805140034j75d97ecbw5a03c200645768cb@mail.gmail.com>	<482B1BD2.8040400@t-online.de>	<19f34abd0805141017g26c13e96t2e7edc23bec263d0@mail.gmail.com> <20080514183558.40178fe5@core>
+In-Reply-To: <20080514183558.40178fe5@core>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-ID: ZASag-Z6ghkPNmQzUUaVd6wSgxu4Ed-5I3F2+dfRzYf64cngC96UzVrZ9KuuXoIg+v
+X-TOI-MSGID: eb0c587a-bbb8-4ec2-b88b-6452f35e172a
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> See why the qualifying statements is so important?  If you really
-> believe that there isn't enough entropy after installing a
-> distribution, THEN YOU SHOULDN'T BE GENERATING SSH HOST KEYS.  The
-> problem is that the server scenario with no keyboard case is a really
-> nasty one.
-
-It's made worse by not feeding in the network interrupts.
-
-I never quite understood the rationale behind that one either:
-if you worry about someone else controlling the timing of these events,
-why do you not worry about timings on the local system. e.g.
-it's not that hard to predict with similar accuracy when a hard disk
-interrupt happened when a local process read something from disk. Or
-when the  keyboard/USB interrupt happened when you process keyboard input.
-
-On the other hand if only the low bits of the time stamp counter
-are used it should be still random enough in all cases because
-real systems don't behave predictable down to ns levels.
-
+Alan Cox wrote:
+>> If I run "su someuser" as root, then it gets stuck. No prompt. I cannot
+>> interrupt it with ^C or ^Z either. /var/log/auth.log says:
 > 
->> See also the distinction between "user controlled visible cryptography"
->> and "background cryptography" I introduced in a earlier mail on that
->> topic. gpg can only get away with it because they rely on a high level
->> of user education (so requiring banging on keys is ok), but that's
->> not really an option for your normal "everyday background crypto",
->> including longer term keys.
+> Is it then killable remotely, can you gdb it ?
 > 
-> No, this distinction is a specious one, I think.  It's really more a
-> level of paranoia.  
 
-If people don't realize cryptography is used they can't really
-have any paranoia. And you can only get away with paranoia requiring
-significant user action (like banging on keys) if they realize that.
+Attaching to the running stty failed:
 
-> People tend to be much more paranoid about their
-> own personal keys, 
+# gdb stty 26465
+GNU gdb 6.8-debian
+Copyright (C) 2008 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "x86_64-linux-gnu"...
+Attaching to program: /var/tmp/coreutils-6.10/coreutils-6.10/src/stty, process 26465
+/tmp/buildd/gdb-6.8/gdb/linux-nat.c:988: internal-error: linux_nat_attach: Assertion `pid == GET_PID (inferior_ptid) && WIFSTOPPED (status) && WSTOPSIG (status) == SIGSTOP' failed.
+A problem internal to GDB has been detected,
+further debugging may prove unreliable.
+:
 
-In this case I would say it's more the program authors because the users
-don't really have any choice.
 
-> That says
-> something about how much they care about security right there. 
+I can kill it with -9, but INTR, SEGV, BUS, etc. don't interrupt
+it. And if I run stty inside of the debugger (or on the command
+line), then it doesn't get stuck.
 
-It's more a question on how practical security is. If security
-gets too complicated nobody will use it.
+I have changed stty.c to do some print statements, and changed
+root's .bashrc to use it for "stty intr ^C": It gets stuck
+inside tcsetattr():
 
-[classical example of that is to force users to use unrememberable
-"strong" passwords -- result is that they are just written down on
-postit notes and pinned to monitors. Same effect here]
+       printf("here we are\n");
+       if (tcsetattr (STDIN_FILENO, TCSADRAIN, &mode))
+	error (EXIT_FAILURE, errno, "%s", device_name);
+       printf("born to be kings\n");
 
->> Instead I think just both urandom and random should try to rely
->> on TPMs and other hardware rngs and always get high quality bit noise.
-> 
-> Sure, if you can get access to a TPM or a hardware rng, that's
-> *always* a better choice. 
+The previous tcgetattr() to read the old terminal settings shows
+no problem (AFAICS).
 
-Yes definitely, but the trouble is /dev/random does not use it by
-default. So even if you have a working hardware RNG there's no
-improvement on what comes out of /dev/u?random
+Replacing TCSADRAIN by 0 doesn't help.
 
- But the reason for /dev/random and
-> /dev/urandom's existence is that hardware manufacturers have either
-> not included a real hardware RNG, or made it impossible to get to it.
-> (I *still* haven't figured out how to access my TPM on my Lenovo
-> laptops.  Anyone who can send me turn-key instructions, let me know
-> off-line.)  Intel used to provide a true hardware RNG in their
-> chipsets a few years ago (props to them), but then stopped after one
-> generation (boo, hiss).
 
-Yes, but we don't use it either by default. So even if you have
-such a chipset your /dev/random output isn't improved in any ways.
 
-> If there is a way that we can at least seed /dev/random from the TPM
-> (without needing any magic enabling keys, etc.) once at boot time, and
-> then rely on what we can get from the environment, maybe we can do it
-> in the kernel without needing to move all of the TPM access/contention
-> control logic from userspace into the kernel.
+Regards
 
-Jeff's patch looked like a good start. I'll try to come up with
-a complete patch series that auto feeds. The only system I have with a
-TPM is a T61, let's see if trousers works on that.
-
-There's also a couple of other problems here I believe, in particular
-some of the kernel subsystems who get random numbers for their purpose
-get it too early before there's any chance of seeing.
-
-Also for a lot of kernel purposes (like the networking hash tables) it's
-really wasteful to use the  precious entropy pool entropy.  It should
-rather just seed some cryptographic PRNG once and then use output
-from that for kernel purposes (or alternatively at least not
-remove entropy credit from the random pool)
-
--Andi
-
+Harri
