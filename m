@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761760AbYERS4K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762313AbYERS4e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761760AbYERS4K (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 14:56:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760059AbYERSsX
+	id S1762313AbYERS4e (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 14:56:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759998AbYERSsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Sun, 18 May 2008 14:48:23 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:43594 "EHLO
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:37519 "EHLO
 	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760572AbYERSsO (ORCPT
+	by vger.kernel.org with ESMTP id S1760574AbYERSsO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 18 May 2008 14:48:14 -0400
-X-Sasl-enc: NeW6NuPGtBKguLeNnnlLeSWNeRl/FmHfKhJTsavd4/J4 1211136492
+X-Sasl-enc: NeWtJOvBoA2orraTh2dZaTeAeRl/FmHfKhJTsavd4/J4 1211136492
 From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 To: linux-kernel@vger.kernel.org
 Cc: Ivo van Doorn <IvDoorn@gmail.com>, Thomas Renninger <trenn@suse.de>,
        Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: [PATCH 07/15] rfkill: add parameter to disable radios by default
-Date: Sun, 18 May 2008 15:47:57 -0300
-Message-Id: <1211136485-19878-8-git-send-email-hmh@hmh.eng.br>
+Subject: [PATCH 12/15] rfkill: add type string helper
+Date: Sun, 18 May 2008 15:48:02 -0300
+Message-Id: <1211136485-19878-13-git-send-email-hmh@hmh.eng.br>
 X-Mailer: git-send-email 1.5.5.1
 In-Reply-To: <1211136485-19878-1-git-send-email-hmh@hmh.eng.br>
 References: <1211136485-19878-1-git-send-email-hmh@hmh.eng.br>
@@ -25,53 +25,69 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently, radios are always enabled when their rfkill interface is
-registered.  This is not optimal, the safest state for a radio is to be
-offline unless the user turns it on.
-
-Add a module parameter that causes all radios to be disabled when their
-rfkill interface is registered.  The module default is not changed so
-unless the parameter is used, radios will still be forced to their enabled
-state when they are registered.
-
-The new rfkill module parameter is called "default_state".
+We will need access to the rfkill switch type in string format for more
+than just sysfs.  Therefore, move it to a generic helper.
 
 Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Acked-by: Ivo van Doorn <IvDoorn@gmail.com>
+Cc: Ivo van Doorn <IvDoorn@gmail.com>
 ---
- net/rfkill/rfkill.c |   11 ++++++++++-
- 1 files changed, 10 insertions(+), 1 deletions(-)
+ net/rfkill/rfkill.c |   33 +++++++++++++++------------------
+ 1 files changed, 15 insertions(+), 18 deletions(-)
 
 diff --git a/net/rfkill/rfkill.c b/net/rfkill/rfkill.c
-index f95081a..3edc585 100644
+index 251defe..4ed8d19 100644
 --- a/net/rfkill/rfkill.c
 +++ b/net/rfkill/rfkill.c
-@@ -39,6 +39,11 @@ MODULE_LICENSE("GPL");
- static LIST_HEAD(rfkill_list);	/* list of registered rf switches */
- static DEFINE_MUTEX(rfkill_mutex);
+@@ -220,34 +220,31 @@ static ssize_t rfkill_name_show(struct device *dev,
+ 	return sprintf(buf, "%s\n", rfkill->name);
+ }
  
-+static unsigned int rfkill_default_state = RFKILL_STATE_ON;
-+module_param_named(default_state, rfkill_default_state, uint, 0444);
-+MODULE_PARM_DESC(default_state,
-+		 "Default initial state for all radio types, 0 = radio off");
+-static ssize_t rfkill_type_show(struct device *dev,
+-				struct device_attribute *attr,
+-				char *buf)
++static const char const *rfkill_get_type_str(enum rfkill_type type)
+ {
+-	struct rfkill *rfkill = to_rfkill(dev);
+-	const char *type;
+-
+-	switch (rfkill->type) {
++	switch (type) {
+ 	case RFKILL_TYPE_WLAN:
+-		type = "wlan";
+-		break;
++		return "wlan";
+ 	case RFKILL_TYPE_BLUETOOTH:
+-		type = "bluetooth";
+-		break;
++		return "bluetooth";
+ 	case RFKILL_TYPE_UWB:
+-		type = "ultrawideband";
+-		break;
++		return "ultrawideband";
+ 	case RFKILL_TYPE_WIMAX:
+-		type = "wimax";
+-		break;
++		return "wimax";
+ 	case RFKILL_TYPE_WWAN:
+-		type = "wwan";
+-		break;
++		return "wwan";
+ 	default:
+ 		BUG();
+ 	}
++}
 +
- static enum rfkill_state rfkill_states[RFKILL_TYPE_MAX];
++static ssize_t rfkill_type_show(struct device *dev,
++				struct device_attribute *attr,
++				char *buf)
++{
++	struct rfkill *rfkill = to_rfkill(dev);
  
+-	return sprintf(buf, "%s\n", type);
++	return sprintf(buf, "%s\n", rfkill_get_type_str(rfkill->type));
+ }
  
-@@ -436,8 +441,12 @@ static int __init rfkill_init(void)
- 	int error;
- 	int i;
- 
-+	if (rfkill_default_state != RFKILL_STATE_OFF &&
-+	    rfkill_default_state != RFKILL_STATE_ON)
-+		return -EINVAL;
-+
- 	for (i = 0; i < ARRAY_SIZE(rfkill_states); i++)
--		rfkill_states[i] = RFKILL_STATE_ON;
-+		rfkill_states[i] = rfkill_default_state;
- 
- 	error = class_register(&rfkill_class);
- 	if (error) {
+ static ssize_t rfkill_state_show(struct device *dev,
 -- 
 1.5.5.1
 
