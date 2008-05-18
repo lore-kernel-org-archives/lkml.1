@@ -1,149 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753621AbYEREmF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754451AbYEREp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753621AbYEREmF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 00:42:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750875AbYERElx
+	id S1754451AbYEREp0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 00:45:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbYEREpQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 00:41:53 -0400
-Received: from pxy2nd.nifty.com ([202.248.175.14]:64446 "HELO pxy2nd.nifty.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751124AbYERElw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 00:41:52 -0400
-X-Nifty-SrcIP: [210.170.193.31]
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=pxy2nd-default; d=mbf.nifty.com;
-  b=MYTmF+3lYbsBioWeNsP5DN4fFPm0zsaAF9Q2Tjzap6b1Qp7Uzou3Gze1/gAWDgbOAyVEuJWg9Q0Lhyg1K1k33w==  ;
-Date: Sun, 18 May 2008 13:37:58 +0900 (JST)
-Message-Id: <20080518.133758.260799446.takada@mbf.nifty.com>
-To: bzolnier@gmail.com
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: kernel 2.6.25 with ide driver cs5520 does not boot.
-From: TAKADA Yoshihito <takada@mbf.nifty.com>
-In-Reply-To: <200805142244.48548.bzolnier@gmail.com>
-References: <200805091127.53737.bzolnier@gmail.com>
-	<20080509.215601.208967867.takada@mbf.nifty.com>
-	<200805142244.48548.bzolnier@gmail.com>
-X-Mailer: Mew version 6.0.50 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 18 May 2008 00:45:16 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:61317 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750875AbYEREpO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 00:45:14 -0400
+Date: Sun, 18 May 2008 05:39:47 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: john stultz <johnstul@us.ibm.com>
+cc: Alessandro Zummo <a.zummo@towertech.it>, Jean Delvare <khali@linux-fr.org>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>, rtc-linux@googlegroups.com,
+       i2c@lm-sensors.org, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 1/4] RTC: Class device support for persistent clock
+In-Reply-To: <1f1b08da0805071418q365680bexafb1996dcc77ebb0@mail.gmail.com>
+Message-ID: <Pine.LNX.4.55.0805160356570.519@cliff.in.clinika.pl>
+References: <Pine.LNX.4.55.0805070015360.16173@cliff.in.clinika.pl>
+ <1f1b08da0805071418q365680bexafb1996dcc77ebb0@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+Hi John,
 
-I disagree that this patch to remove IDE_HFLAG_VDMA.
-Because IDE_HFLAG_VDMA is refferd in drivers/ide/ide-dma.c.
-Well, currently, it's only cs5520 to sets thiss flag.
+ Sorry about the delay -- I have missed your comment in the flood.
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: kernel 2.6.25 with ide driver cs5520 does not boot.
-Date: Wed, 14 May 2008 22:44:48 +0200
+On Wed, 7 May 2008, john stultz wrote:
 
-> On Friday 09 May 2008, TAKADA Yoshihito wrote:
-> > Hi.
-> > 
-> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > Subject: Re: kernel 2.6.25 with ide driver cs5520 does not boot.
-> > Date: Fri, 9 May 2008 11:27:53 +0200
-> > 
-> > > On Friday 09 May 2008, TAKADA Yoshihito wrote:
-> > > > Thanks for quick reply.
-> > > > 
-> > > > I tried 2.6.26rc1. It hangs same as 2.6.25.
-> > > > kernel 2.6.26rc1 with cs5520 cannot boot. cs5520 scans ide0 and ide1.
-> > > > It seems 2nd port DMA base issue was solved.
-> > > 
-> > > [...]
-> > > 
-> > > Thanks.
-> > > 
-> > > The following patch for 2.6.26-rc1 disables VDMA, please give it a try
-> > > (I haven't time to fully audit VDMA support yet but lets see if it is
-> > > the main source of the problems).
-> > 
-> > I applied the patch. But kernel was hung.
-> > And I attempt to kill IDE_HFLAG_CS5520. It cannot boot, oo.
-> > 
-> >   kill IDE_HFLAG_VDMA  : hang  
-> >   kill IDE_HFLAG_CS5520: hang
-> >   kill both flags      : boot
+> >   As rtc_read_persistent_clock() is not available at the time
+> >  timekeeping_init() is called, it will now be disabled if the class device
+> >  is to be used as a reference.  In this case rtc_hctosys(), already
+> >  present, will be used to set up the system time at the late initcall time.
+> >  This call has now been rewritten to make use of
+> >  rtc_read_persistent_clock().
 > 
-> Thanks for investigating this - I forgot that currently VDMA and CS5520
-> host flags use the same bit (so it also needs to be fixed).
-> 
-> I'm going to send the following patch to Linus (please verify it):
-> 
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] cs5520: disable VDMA
-> 
-> Disable Virtual DMA support for now (it causes system hangs).
-> 
-> Thanks to TAKADA Yoshihito for the help with debugging the problem.
-> 
-> Reported-by: TAKADA Yoshihito <takada@mbf.nifty.com>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> ---
->  drivers/ide/pci/cs5520.c |    2 +-
->  include/linux/ide.h      |    8 ++++----
->  2 files changed, 5 insertions(+), 5 deletions(-)
-> 
-> Index: b/drivers/ide/pci/cs5520.c
-> ===================================================================
-> --- a/drivers/ide/pci/cs5520.c
-> +++ b/drivers/ide/pci/cs5520.c
-> @@ -119,6 +119,7 @@ static const struct ide_dma_ops cs5520_d
->  	.dma_timeout		= ide_dma_timeout,
->  };
->  
-> +/* FIXME: VDMA is disabled because it caused system hangs */
->  #define DECLARE_CS_DEV(name_str)				\
->  	{							\
->  		.name		= name_str,			\
-> @@ -126,7 +127,6 @@ static const struct ide_dma_ops cs5520_d
->  		.dma_ops	= &cs5520_dma_ops,		\
->  		.host_flags	= IDE_HFLAG_ISA_PORTS |		\
->  				  IDE_HFLAG_CS5520 |		\
-> -				  IDE_HFLAG_VDMA |		\
->  				  IDE_HFLAG_NO_ATAPI_DMA |	\
->  				  IDE_HFLAG_ABUSE_SET_DMA_MODE, \
->  		.pio_mask	= ATA_PIO4,			\
-> Index: b/include/linux/ide.h
-> ===================================================================
-> --- a/include/linux/ide.h
-> +++ b/include/linux/ide.h
-> @@ -1058,8 +1058,8 @@ enum {
->  	IDE_HFLAG_NO_SET_MODE		= (1 << 9),
->  	/* trust BIOS for programming chipset/device for DMA */
->  	IDE_HFLAG_TRUST_BIOS_FOR_DMA	= (1 << 10),
-> -	/* host uses VDMA (tied with IDE_HFLAG_CS5520 for now) */
-> -	IDE_HFLAG_VDMA			= (1 << 11),
-> +	/* host is CS5510/CS5520 */
-> +	IDE_HFLAG_CS5520		= (1 << 11),
->  	/* ATAPI DMA is unsupported */
->  	IDE_HFLAG_NO_ATAPI_DMA		= (1 << 12),
->  	/* set if host is a "non-bootable" controller */
-> @@ -1070,8 +1070,6 @@ enum {
->  	IDE_HFLAG_NO_AUTODMA		= (1 << 15),
->  	/* host uses MMIO */
->  	IDE_HFLAG_MMIO			= (1 << 16),
-> -	/* host is CS5510/CS5520 */
-> -	IDE_HFLAG_CS5520		= IDE_HFLAG_VDMA,
->  	/* no LBA48 */
->  	IDE_HFLAG_NO_LBA48		= (1 << 17),
->  	/* no LBA48 DMA */
-> @@ -1101,6 +1099,8 @@ enum {
->  	IDE_HFLAG_NO_IO_32BIT		= (1 << 30),
->  	/* never unmask IRQs */
->  	IDE_HFLAG_NO_UNMASK_IRQS	= (1 << 31),
-> +	/* host uses VDMA (disabled for now) */
-> +	IDE_HFLAG_VDMA			= 0,
->  };
->  
->  #ifdef CONFIG_BLK_DEV_OFFBOARD
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Hrmm. So how is this going to work with suspend and resume?
+
+ Hmm, I have never used suspend/resume, so I cannot really comment.  Here
+is what I gathered by glancing over the code and some bits of
+documentation.
+
+> Ideally, on resume we want to update the clock before interrupts are
+> reenabled so we don't get stale time values post-resume.  For systems
+> that sleep on reading the persistent clock, I'm open to having them
+> fix it up as best they can later (partly why the code can handle
+> read_persistent_clock() not returning anything), but unless I'm
+> misreading this, it seems you're proposing to make systems that do
+> have a safe persistent clock have to have the window where code may
+> see the pre-suspend time after resume.
+
+ Right now it looks the time is restored in two places, 
+timekeeping_resume() and rtc_resume().  Of course once the transition to 
+the new RTC infrastructure has been done, one is going to be redundant.  
+For the time being I think it is harmless to have them both.
+
+ That written, both are called from the relevant driver's ->resume()  
+method.  My set of patches does not change it and as far as I can tell if
+it worked before, it will work afterwards.  As I understand ->resume()  
+methods may sleep and are called with interrupts already enabled.
+ 
+> Am I missing something here?
+
+ No idea -- anyone?
+
+  Maciej
