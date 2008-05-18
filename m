@@ -1,67 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762603AbYERTAQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763007AbYERS7v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762603AbYERTAQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 15:00:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761945AbYERSx7
+	id S1763007AbYERS7v (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 14:59:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761484AbYERSwR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 14:53:59 -0400
-Received: from harold.telenet-ops.be ([195.130.133.65]:57571 "EHLO
-	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761918AbYERSx5 (ORCPT
+	Sun, 18 May 2008 14:52:17 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:40731 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761002AbYERSwQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 14:53:57 -0400
-Message-Id: <20080518185150.066335107@mail.of.borg>
-References: <20080518184706.631023070@mail.of.borg>
-User-Agent: quilt/0.46-1
-Date: Sun, 18 May 2008 20:47:07 +0200
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 01/18] m68k: Convert access_ok() to an inline function
-Content-Disposition: inline; filename=m68k-convert-access_ok-to-inline-func.diff
+	Sun, 18 May 2008 14:52:16 -0400
+Date: Sun, 18 May 2008 11:52:08 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+To: "Vegard Nossum" <vegard.nossum@gmail.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Pekka Enberg" <penberg@cs.helsinki.fi>
+Subject: Re: Error in save_stack_trace() on x86_64?
+Message-ID: <20080518115208.592375b8@linux.intel.com>
+In-Reply-To: <19f34abd0805181131o43da9abfle4d9362bee900727@mail.gmail.com>
+References: <19f34abd0805110609lf3180dm3b1078e373983ad7@mail.gmail.com>
+	<48274C9E.3020608@linux.intel.com>
+	<19f34abd0805181013g8274992uffbdb337e72bfa98@mail.gmail.com>
+	<19f34abd0805181131o43da9abfle4d9362bee900727@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+On Sun, 18 May 2008 20:31:18 +0200
+> 
+> Is the error obvious from the stack-trace I posted above? This is not
+> really my field, so I might easily miss it :-)
 
-Convert access_ok() from a macro to an inline function, so the compiler no
-longer complains about unused variables:
-
-    fs/read_write.c: In function 'rw_copy_check_uvector':
-    fs/read_write.c:556: warning: unused variable 'buf'
-
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- include/asm-m68k/uaccess.h |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
-
---- a/include/asm-m68k/uaccess.h
-+++ b/include/asm-m68k/uaccess.h
-@@ -14,7 +14,11 @@
- #define VERIFY_WRITE	1
- 
- /* We let the MMU do all checking */
--#define access_ok(type,addr,size) 1
-+static inline int access_ok(int type, const void __user *addr,
-+			    unsigned long size)
-+{
-+	return 1;
-+}
- 
- /*
-  * The exception table consists of pairs of addresses: the first is the
-
--- 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+unfortunately I don't really have time today to take a detailed look
+(social obligations), but the trick is to follow where EBP (rBP) is
+going...
