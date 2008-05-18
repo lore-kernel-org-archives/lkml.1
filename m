@@ -1,33 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755381AbYERUYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758345AbYERUYf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755381AbYERUYU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 16:24:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757629AbYERUX4
+	id S1758345AbYERUYf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 16:24:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757714AbYERUX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 16:23:56 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:12137 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753912AbYERUXS (ORCPT
+	Sun, 18 May 2008 16:23:59 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:49135 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753830AbYERUXP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 16:23:18 -0400
+	Sun, 18 May 2008 16:23:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:mime-version:content-type;
-        b=T++OIPREqcX4rK8UQ44wsQIgFcTn5zV4VZ2ZlaSI+E0SWt3cFpF2E4zYccIf3NqxoMurj4+bxvHZe4d9eytn4sTv0gHFf4K1WcDWNq39aJNbX2P0Ml+TjiNvRp+55SWqW3pzIDZQC+xF6BIsWl2sutS2xUJwgis+v2S0nhFAaYE=
-Message-ID: <81b0412b0805181322v44cfce00x64a37fa25a49527c@mail.gmail.com>
-Date: Sun, 18 May 2008 22:22:52 +0200
+        b=QZHDjuB0AfcpjQYCtywnUBy6p7D/NDc8/kmyr87HhA0Um4MKvtzKqf08VveM73W/KYIblgU5J8he04DblHgiJCyfoA0wnNLoOPOlkYDt1ozHsxKOb4xqL7Q673XPzwFXC8PK2Z+AJe7UDaM8DmSA5HKQVCPvENGnkIaCAwPP+CE=
+Message-ID: <81b0412b0805181323i5348b7fandaee5c3db001fa37@mail.gmail.com>
+Date: Sun, 18 May 2008 22:23:14 +0200
 From: "Alex Riesen" <raa.lkml@gmail.com>
 To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
        ipw3945-devel@lists.sourceforge.net
 Subject: ieee80211: unable to handle kernel NULL pointer dereference
 MIME-Version: 1.0
 Content-Type: multipart/mixed; 
-	boundary="----=_Part_13863_3186293.1211142172245"
+	boundary="----=_Part_16580_15749123.1211142194216"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_13863_3186293.1211142172245
+------=_Part_16580_15749123.1211142194216
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
@@ -154,7 +154,7 @@ May 18 18:59:24 blimp kernel:  RSP <ffff81007f261b20>
 May 18 18:59:24 blimp kernel: CR2: 00000000000000c0
 May 18 18:59:24 blimp kernel: ---[ end trace 0fbf8adf45e059dd ]---
 
-------=_Part_13863_3186293.1211142172245
+------=_Part_16580_15749123.1211142194216
 Content-Type: application/octet-stream; name=syslog
 Content-Transfer-Encoding: base64
 X-Attachment-Id: f_fge2qln00
@@ -559,7 +559,7 @@ b2dsZXZlbCBzZXQgdG8gNgpNYXkgMTggMTk6MTQ6MTYgYmxpbXAga2VybmVsOiBTeXNScSA6IENo
 YW5naW5nIExvZ2xldmVsCk1heSAxOCAxOToxNDoxNiBibGltcCBrZXJuZWw6IExvZ2xldmVsIHNl
 dCB0byA0Ck1heSAxOCAxOToxNDoxOSBibGltcCBpbml0OiByYzYgbWFpbiBwcm9jZXNzICg5NDQz
 KSBraWxsZWQgYnkgVEVSTSBzaWduYWwK
-------=_Part_13863_3186293.1211142172245
+------=_Part_16580_15749123.1211142194216
 Content-Type: application/octet-stream; name=wlan-timeout
 Content-Transfer-Encoding: base64
 X-Attachment-Id: f_fge2qz3i1
@@ -1120,4 +1120,4 @@ CkNQVTAgYXR0YWNoaW5nIE5VTEwgc2NoZWQtZG9tYWluLgpDUFUxIGF0dGFjaGluZyBOVUxMIHNj
 aGVkLWRvbWFpbi4KQ1BVMCBhdHRhY2hpbmcgc2NoZWQtZG9tYWluOgogZG9tYWluIDA6IHNwYW4g
 MC0xCiAgZ3JvdXBzOiAwIDEKQ1BVMSBhdHRhY2hpbmcgc2NoZWQtZG9tYWluOgogZG9tYWluIDA6
 IHNwYW4gMC0xCiAgZ3JvdXBzOiAxIDAK
-------=_Part_13863_3186293.1211142172245--
+------=_Part_16580_15749123.1211142194216--
