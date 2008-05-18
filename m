@@ -1,83 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759541AbYERWYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759705AbYERW1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759541AbYERWYR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 18:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753421AbYERWX7
+	id S1759705AbYERW1Y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 18:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755059AbYERW1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 18:23:59 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:27261 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753327AbYERWX6 (ORCPT
+	Sun, 18 May 2008 18:27:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60372 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754512AbYERW1P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 18:23:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type;
-        b=dnFruNz3GjeG81yjUrWoU9XT4bSokdnzdB1ETXY6T/ss2Wlwa8atK8O45sWpHwOYLb5XLOkFMhvOBvaC9NHOpqigedaXxCxOe5YVKtKuNnbPDq9C0M65ixbIpss5rR5/D/DrLw/StmQKyBo6w2GQ8yOquxTKhJJq79l2z6t2/q4=
-Date: Sun, 18 May 2008 23:23:47 +0100
-From: Ciaran McCreesh <ciaran.mccreesh@googlemail.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: kernel boot hangs after x86: insert_resorce for lapic addr
- after e820_reserve_resources
-Message-ID: <20080518232347.7964835c@snowcone>
-In-Reply-To: <86802c440805181400m5a3b4e28oeab6245e9a2ffd00@mail.gmail.com>
-References: <20080518014111.4f32298b@googlemail.com>
- <86802c440805172055x30c2c6feg441e16f5fb24f64f@mail.gmail.com>
- <20080518164127.2236d82a@googlemail.com>
- <86802c440805181400m5a3b4e28oeab6245e9a2ffd00@mail.gmail.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/hadD.1l3yhcQq/ciuc2iYKP";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+	Sun, 18 May 2008 18:27:15 -0400
+Date: Sun, 18 May 2008 15:26:25 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+cc: Theodore Tso <tytso@mit.edu>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [GIT pull] x86 fixes for 2.6.26
+In-Reply-To: <9a8748490805181509r751cd152l3c9a765806da195d@mail.gmail.com>
+Message-ID: <alpine.LFD.1.10.0805181513590.32253@woody.linux-foundation.org>
+References: <alpine.LFD.1.10.0805170037180.3255@apollo.tec.linutronix.de>  <alpine.LFD.1.10.0805161544080.3020@woody.linux-foundation.org>  <20080517015705.GA20375@mit.edu>  <alpine.LFD.1.10.0805161933240.3020@woody.linux-foundation.org> 
+ <9a8748490805171545j1811edc9ja0cd5f84105b71c4@mail.gmail.com>  <alpine.LFD.1.10.0805171715540.3020@woody.linux-foundation.org> <9a8748490805181509r751cd152l3c9a765806da195d@mail.gmail.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/hadD.1l3yhcQq/ciuc2iYKP
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
 
-On Sun, 18 May 2008 14:00:16 -0700
-"Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
-> >> wonder if init_apic_mapping need some delay with that strange
-> >> chipset.
-> >
-> > I don't see any additional information with apic=3Dverbose with the
-> > broken kernel (although I only have a screen's worth of text that I
-> > can see -- the kernel doesn't get far enough to let me grab it).
-> > I've attached dmesg from a working kernel with apic=3Dverbose in case
-> > that helps.
->=20
-> or try to boot with initcall_debug to see where did it hang.
 
-The last initcall_debug messages are:
+On Mon, 19 May 2008, Jesper Juhl wrote:
+> 
+> Ok, thanks a lot.  Now, I have one final question for you.
+> In order to be able to play around with the patches, see if they
+> apply, fix them up, test for merge conflicts etc etc, I obviously need
+> a tree with content, not just a bare tree. But I see on
+> master.kernel.org that all the published trees are bare trees.
 
-    calling atiixp_ide_init+0x0/0x20
-    initcall atiixp_ide_init+0x0/0x20 returned 0 after 0 msecs
-    calling piix_ide_init+0x0/0xc0
-    initcall piix_ide_init+0x0/0xc0 returned 0 after 0 msecs
-    calling ide_scan_pcibus+0x0/0x100
+I think just about *everybody* does their own development on their own 
+machine. I know I do, and I'm pretty certain that everybody else does too. 
+Then we just upload the end result to master.kernel.org into a bare 
+repository that is only used for exporting to others, never for anything 
+else.
 
-ide_scan_pcibus doesn't return. I tried shoving some printks in there,
-but as soon as I did it instead locked up in pci_init. Is it worth
-continuing this approach or will doing so not give useful results
-anyway?
+> So, I assume I create a tree in my homedir like so;
+>   $ git clone -l -s /pub/scm/linux/kernel/git/torvalds/linux-2.6.git /home/juhl/trivial-work-tree
+> create all the branches and do all the work in that one,
 
-Thanks,
---=20
-Ciaran McCreesh
+You can do that, and actually work on master.kernel.org, but do you really 
+want to?
 
---Sig_/hadD.1l3yhcQq/ciuc2iYKP
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
+It's much easier to work at home (or office, whatever - on your own 
+workstation), unless you have some really weak computer.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+Then, the easiest way to publish the result is to just create a bare 
+repository on master.kernel.org, and push to it. And just make sure that 
+you pre-populate that bare repo with my tree, so that when you push from 
+your home machine, it only pushes the (smallish) actual changes!
 
-iEYEARECAAYFAkgwrHYACgkQ96zL6DUtXhEDrgCfT9IYht/Q3zATWI6JlfogJltA
-DX8AoJPQbb+tGKCfWNMwYFO5sKqlHeBB
-=oAAK
------END PGP SIGNATURE-----
+So the workflow I'd suggest is:
 
---Sig_/hadD.1l3yhcQq/ciuc2iYKP--
+ - do all the work on your own hardware
+
+ - create the initial (bare) kernel.org tree with
+
+	cd /pub/scm/linux/kernel/git/juhl
+	git clone --bare -l -s ../torvalds/linux-2.6 trivial-2.6
+
+ - then just push to that tree from your own machine
+
+and voila, you're all done.
+
+> But that only seems to make my master branch accessible, not new
+> branches I create in my work tree.  How do I go about doing this
+> properly?
+
+If you do the "clone locally, then push from the remote", the "push" stage 
+is when you decide which branches you'll want to push.
+
+The easiest thing to do is to just use "--all", which will push all the 
+branches to the remote (you may want to use "--force" if this ends up 
+being a non-fast-forward, which can happen - for example - just because 
+your "clone" might have cloned a later version of my tree than the one you 
+based your own 'master' branch off).
+
+But you can push individual branches too, see 'man git-push'.
+
+If you really *want* to work on master.kernel.org, you can do so, and you 
+can do the final clone with "git clone --mirror --bare" and use that as a 
+way to clone all branches as a mirror of your work-tree, but it really is 
+a fairly unusual way to work.
+
+		Linus
