@@ -1,32 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755704AbYERKNr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756723AbYERKPm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755704AbYERKNr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 06:13:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbYERKNi
+	id S1756723AbYERKPm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 06:15:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbYERKPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 06:13:38 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:59700 "EHLO
+	Sun, 18 May 2008 06:15:35 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:59717 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751799AbYERKNh (ORCPT
+	with ESMTP id S1752160AbYERKPe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 06:13:37 -0400
-Message-ID: <4830014F.9040800@firstfloor.org>
-Date: Sun, 18 May 2008 12:13:35 +0200
+	Sun, 18 May 2008 06:15:34 -0400
+Message-ID: <483001C4.1010801@firstfloor.org>
+Date: Sun, 18 May 2008 12:15:32 +0200
 From: Andi Kleen <andi@firstfloor.org>
 User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Chris Peterson <cpeterso@cpeterso.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       tpmdd-devel@lists.sourceforge.net, tpm@selhorst.net
-Subject: Re: [PATCH] Re: [PATCH] drivers/net: remove network drivers' last
- few uses of IRQF_SAMPLE_RANDOM
-References: <20080515142154.0595e475@core>	<482C7DA3.1090809@garzik.org>	<482C953A.4080205@garzik.org>	<87abirytxj.fsf@basil.nowhere.org>	<20080516105635.6cb1f505@core>	<482D5FC5.2070103@firstfloor.org>	<20080516121239.GA9627@gondor.apana.org.au>	<482DB568.1040704@firstfloor.org>	<20080517010136.GA15102@gondor.apana.org.au>	<482EBAA8.3040506@firstfloor.org>	<a24804730805171254i2a37da61mb47280db7b330ed5@mail.gmail.com> <20080517130535.02d45372@infradead.org>
-In-Reply-To: <20080517130535.02d45372@infradead.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: "Maciej W. Rozycki" <macro@linux-mips.org>, Tom Spink <tspink@gmail.com>,
+       Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Jiri Slaby <jirislaby@gmail.com>, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [RFC] x86: merge nmi_32-64 to nmi.c
+References: <20080517192200.GA6914@cvg> <7b9198260805171328u555eec17t3597f3378edbda88@mail.gmail.com> <Pine.LNX.4.55.0805172148380.10067@cliff.in.clinika.pl> <alpine.LFD.1.10.0805172331030.18798@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.10.0805172331030.18798@apollo.tec.linutronix.de>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -34,32 +30,14 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> I think the big kicker is the difference between a session key (short
-> lived) and a "real" key such as a gpg key that lives for a long time
-> and is used for multile sessions and with different users (in crypto
-> speak, Alice uses the same random key for Bob, Charlotte and David and
-> potentially for a long time). For a session key, urandom is very likely
-> an acceptable compromise; there's only so much data it's used for.
-> For long term keys I can totally see why /dev/random is used instead.
+> Definitely, but we should do it at the Kconfig level which allows us
+> to have integer defines as well, so we end up with something like:
+> 
+> static inline unsigned int get_nmi_count(int cpu)
+> {
+>       return CONFIG_X86_64 ? cpu_pda(cpu)->__nmi_count : nmi_count(cpu);
+> }
 
-We don't use it for most long term keys, e.g. ssh host keys. That is
-because even on high entropy systems /dev/random usually doesn't work
-during distribution installation because the system has not run long
-enough to collect significant entropy yet.
-
-See also the distinction between "user controlled visible cryptography"
-and "background cryptography" I introduced in a earlier mail on that
-topic. gpg can only get away with it because they rely on a high level
-of user education (so requiring banging on keys is ok), but that's
-not really an option for your normal "everyday background crypto",
-including longer term keys.
-
-So yes it's a nice theory, but without using the available randomness
-sources always it doesn't work.
-
-Instead I think just both urandom and random should try to rely
-on TPMs and other hardware rngs and always get high quality bit noise.
+#ifdef CONFIG_X86_64 would evaluate true even with CONFIG_X86_64 == 0
 
 -Andi
-
-
