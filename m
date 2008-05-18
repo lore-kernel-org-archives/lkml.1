@@ -1,93 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756532AbYERJOo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755905AbYERJ12@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756532AbYERJOo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 05:14:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbYERJOe
+	id S1755905AbYERJ12 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 05:27:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbYERJ1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 05:14:34 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55366 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751799AbYERJOc (ORCPT
+	Sun, 18 May 2008 05:27:18 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:8096 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751803AbYERJ1R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 05:14:32 -0400
-Date: Sun, 18 May 2008 02:14:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Greg KH <greg@kroah.com>
-Subject: Re: [BUG] unable to handle kernel paging request in next-20080516
-Message-Id: <20080518021423.3dcf0ddd.akpm@linux-foundation.org>
-In-Reply-To: <g0mkaf$i1r$1@ger.gmane.org>
-References: <g0mkaf$i1r$1@ger.gmane.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 18 May 2008 05:27:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=RWrCmE+fyhbuhwnkB68473u5cNtlOT2BHltvctGUU3PAdoepzzo2Ji7BDffNKJeEBnEfgtGoIloOIrnjhFhSEkaaDnvF/JC/AYJCKxsfT1sjBvybxyz90IPTYMMxClcjO9AEojCjeRUniAoa7NG7eiiHdR4vpdGxzif905UX5Ak=
+Date: Sun, 18 May 2008 11:26:50 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Pau Oliva Fora <pau@eslack.org>
+Cc: dmitry.torokhov@gmail.com, sam@ravnborg.org, penberg@cs.helsinki.fi,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add support for HTC Shift Touchscreen
+Message-ID: <20080518092627.GA21237@joi>
+References: <482ED31E.2000009@eslack.org> <482F09FC.9050403@eslack.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <482F09FC.9050403@eslack.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, May 17, 2008 at 06:38:20PM +0200, Pau Oliva Fora wrote:
+> +static int __init htcpen_init(void)
+> +{
+> +	int err;
+> +
+> +	printk(KERN_INFO "htcpen: module inserted\n");
+> +
+> +	inb_p(HTCPEN_PORT_IRQ_CLEAR);
+> +
+> +	htcpen_dev = input_allocate_device();
+> +	if (!htcpen_dev) {
+> +		printk(KERN_ERR "htcpen: can't allocate device\n");
+> +		err = -ENOMEM;
+> +		goto fail1;
 
-(cc's added)
+htcpen_dev is null here, so no need to call input_free_device
 
-On Sat, 17 May 2008 12:50:24 +0000 (UTC) Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
+> +	}
+> +
+> +	htcpen_dev->name = "HTC Pen TouchScreen";
+> +	htcpen_dev->id.bustype = BUS_ISA;
+> +	htcpen_dev->id.vendor = 0;
+> +	htcpen_dev->id.product = 0;
+> +	htcpen_dev->id.version = 0;
+> +
+> +	input_set_abs_params(htcpen_dev, ABS_X, 0, X_AXIS_MAX, 0, 0);
+> +	input_set_abs_params(htcpen_dev, ABS_Y, 0, Y_AXIS_MAX, 0, 0);
+> +
+> +	htcpen_dev->evbit[0] = BIT_MASK(EV_ABS) | BIT_MASK(EV_KEY);
+> +	htcpen_dev->absbit[0] = BIT_MASK(ABS_X) | BIT_MASK(ABS_Y);
+> +	htcpen_dev->keybit[BIT_WORD(BTN_TOUCH)] = BIT_MASK(BTN_TOUCH);
+> +
+> +	err = request_irq(HTCPEN_IRQ, htcpen_interrupt, 0, "htcpen",
+> +		htcpen_dev);
+> +	if (err) {
+> +		printk(KERN_ERR "htcpen: irq busy\n");
+> +		err = -EBUSY;
+> +		goto fail1;
+> +	}
+> +
+> +	err = input_register_device(htcpen_dev);
+> +	if (err)
+> +		goto fail2;
+> +
+> +	outb_p(DEVICE_ENABLE, HTCPEN_PORT_INIT);
+> +
+> +	return 0;
+> +
+> + fail2:	free_irq(HTCPEN_IRQ, htcpen_dev);
+> + fail1:	input_free_device(htcpen_dev);
+> +	return err;
+> +}
+> +
+> +static void __exit htcpen_exit(void)
+> +{
+> +	input_unregister_device(htcpen_dev);
+> +	free_irq(HTCPEN_IRQ, htcpen_dev);
 
-> Sometimes when booting next-20080516 on Ubuntu Gutsy an oops then a panic 
-> will occur. At first I thought it might be provoked by vga=0x164 but this 
-> does not appear to be the case and the issue is seemingly random. I've 
-> hand transcribed the oops so there may be errors in it but hopefully it 
-> will still help:
-> 
-> BUG: unable to handle kernel paging request at e6f17fac
-> IP: [<c02604d6>] scsi_bus_uevent+0x1/0x17
-> *pde = 2714b163 *pte = 26f17160
-> Oops: 0000 [#1] DEBUG_PAGEALLOC
-> last sysfs file:
-> 
-> Pid:  1, comm: swapper Not tainted (2.6.26-rc2-next-20080516skw #30)
-> EIP: 0060:[<c02604d6>] EFLAGS: 00010282 CPU: 0
-> EIP is at scsi_bus_uevent+0x1/0x17
-> EAX: e6f18014 EBX: e6f18014 ECX: c02604d5 EDX: e7173000
-> ESI: e7173000 EDI: e7173000 EBP: e7851ca0 ESP: e7851c90
->  DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
-> Process swapper (pid: 1, ti=e7850000 task=e7848000 task.ti=e7850000)
-> Stack: e7851ca0 c0237f3a c0237eac 00000000 e7851ce4 c01da36d 00000000 e6f180fc
->        e7835000 c03ebf42 e7163240 c03af631 c040b050 c040b598 00000000 e6f18014
->        00000000 e7851cdc 00000000 e6f18014 00000000 e7851cec c01da52a e7851d2c
-> Call Trace:
->  [<c0237f3a>] ? dev_uevent+0x8e/0xca
->  [<c0237eac>] ? dev_uevent+0x0/0xca
->  [<c01da36d>] ? kobject_uevent_env+0x14c/0x2ff
->  [<c01da52a>] ? kobject_uevent_env+0xa/0xc
->  [<c023884b>] ? device_add+0x2bf/0x3f0
->  [<c0321905>] ? mutex_unlock+0x8/0xa
->  [<c02607b4>] ? scsi_sysfs_add_sdev+0x39/0x1d3
->  [<c025f037>] ? scsi_probe_and_add_lun+0x714/0x08
->  [<c025f9ef>] ? __scsi_add_device+0x85/0xab
->  [<c026a70c>] ? ata_scsi_scan_host+0x7f/0x15e
->  [<c0267ec8>] ? ata_host_register+0x1c8/0x1e5
->  [<c026ec75>] ? ata_pci_sff_activate_host+0x179/0x19f
->  [<c0270b61>] ? ata_sff_interupt+0x0/0x1d7
->  [<c026f076>] ? ata_pci_sff_init_one+0x97/0xe1
->  [<c027219c>] ? via_init_one+0x1da/0x1e3
->  [<c01e5670>] ? pci_device_probe+0x39/0x59
->  [<c023a0a1>] ? driver_probe_device+0x9f/0x119
->  [<c023a158>] ? __driver_attach+0x3d/0x5f
->  [<c023990a>] ? bus_for_each_dev+0x3e/0x60
->  [<c0239f39>] ? driver_attach+0x14/0x16
->  [<c023a11b>] ? __driver_attach+0x0/0x5f
->  [<c0239c9d>] ? bus_add_driver+0x99/0x1a0
->  [<c023a2d6>] ? driver_register+0x71/0xcd
->  [<c01e5852>] ? __pci_register_driver+0x53/0x81
->  [<c04205b1>] ? kernel_init+0x0/0xc4
->  [<c04378fc>] ? via_init+0x14/0x16
->  [<c0132800>] ? trace_softirqs_on+0x78/0x7e
->  [<c01dd90c>] ? trace_hardirqs_on_thunk+0xc/0x10
->  [<c0102c3a>] ? restore_nocheck_notrace+0x0/0xe
->  [<c04205b1>] ? kernel_init+0x0/0x1c4
->  [<c04205b1>] ? kernel_init+0x0/0x1c4
->  [<c010373f>] ? kernel_thread_helper+0x7/0x10
->  =======================
-> 
+input_free_device ?
 
-I thought we'd already fixed this?
+> +	printk(KERN_INFO "htcpen: module removed\n");
+> +}
+
+Marcin
