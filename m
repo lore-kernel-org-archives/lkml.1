@@ -1,68 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757474AbYERSj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757114AbYERSk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757474AbYERSj4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 14:39:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755018AbYERShz
+	id S1757114AbYERSk0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 14:40:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756026AbYERSh7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 14:37:55 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:13326 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754578AbYERShy (ORCPT
+	Sun, 18 May 2008 14:37:59 -0400
+Received: from fk-out-0910.google.com ([209.85.128.191]:17569 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756497AbYERSh5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 14:37:54 -0400
+	Sun, 18 May 2008 14:37:57 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=C10O2pwrfEpG00pktWLIzyOoYSsAZQgPrZJaK9BL5tMEQ5AU/WkP2GpEOHeAHq+VPK7Jln3SYGh3++VShCxSOoMKiBsUe0khR9wnzIe2NXXxQt82lRgUJwThbsqdV/zYOaGxG6t4wXifavumNMRVJTrrUPTxpI5VHyyxlRqxs1s=
-From: Denis Cheng <crquan@gmail.com>
-To: "David S. Miller" <davem@davemloft.net>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, netdev@vger.kernel.org,
+        h=from:to:cc:date:message-id:in-reply-to:references:subject;
+        b=fcdd5F6BmE4DN5qMBD3EAUByVvyAtSnwH/NvE6a0ki1npP6eHhWR4LnXxNQmedge5ByPk5HcQefPMLE7jCYcjHZ/EXIJkNV9Cd3b9qxO0c/QxWSRbA/Dfm6rWLikL3yAFwf6vVR+Zg0FkRQJiW1DbOpLuuye1+YBO2cU13KIjmE=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: Borislav Petkov <petkovbb@gmail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH] net/ipv4/arp.c: Use the exported hex_asc from lib/hexdump.c instead
-Date: Mon, 19 May 2008 02:37:44 +0800
-Message-Id: <1211135864-8235-1-git-send-email-crquan@gmail.com>
-X-Mailer: git-send-email 1.5.5.1
+Date: Sun, 18 May 2008 20:55:22 +0200
+Message-Id: <20080518185522.5636.90985.sendpatchset@localhost.localdomain>
+In-Reply-To: <20080518185428.5636.77234.sendpatchset@localhost.localdomain>
+References: <20080518185428.5636.77234.sendpatchset@localhost.localdomain>
+Subject: [PATCH 06/40] ide-scsi: remove superfluous BUG_ON() from idescsi_transfer_pc()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here the local hexbuf is a duplicate of global const char hex_asc from
-lib/hexdump.c, except the hex letters' cases:
+ide_set_handler() bugs on ->handler == NULL so no need to do it
+in idescsi_transfer_pc().
 
-const char hexbuf[] = "0123456789ABCDEF";
+There should be no functional changes caused by this patch.
 
-const char hex_asc[] = "0123456789abcdef";
-
-and here to print HW addresses, the hex cases are not significant.
-
-Signed-off-by: Denis Cheng <crquan@gmail.com>
+Cc: Borislav Petkov <petkovbb@gmail.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- net/ipv4/arp.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+ drivers/scsi/ide-scsi.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/net/ipv4/arp.c b/net/ipv4/arp.c
-index 418862f..f460fa0 100644
---- a/net/ipv4/arp.c
-+++ b/net/ipv4/arp.c
-@@ -1288,7 +1288,6 @@ static void arp_format_neigh_entry(struct seq_file *seq,
- 				   struct neighbour *n)
- {
- 	char hbuffer[HBUFFERLEN];
--	const char hexbuf[] = "0123456789ABCDEF";
- 	int k, j;
- 	char tbuf[16];
- 	struct net_device *dev = n->dev;
-@@ -1302,8 +1301,8 @@ static void arp_format_neigh_entry(struct seq_file *seq,
- 	else {
- #endif
- 	for (k = 0, j = 0; k < HBUFFERLEN - 3 && j < dev->addr_len; j++) {
--		hbuffer[k++] = hexbuf[(n->ha[j] >> 4) & 15];
--		hbuffer[k++] = hexbuf[n->ha[j] & 15];
-+		hbuffer[k++] = hex_asc[(n->ha[j] >> 4) & 15];
-+		hbuffer[k++] = hex_asc[n->ha[j] & 15];
- 		hbuffer[k++] = ':';
+Index: b/drivers/scsi/ide-scsi.c
+===================================================================
+--- a/drivers/scsi/ide-scsi.c
++++ b/drivers/scsi/ide-scsi.c
+@@ -469,7 +469,7 @@ static ide_startstop_t idescsi_transfer_
+ 				"issuing a packet command\n");
+ 		return ide_do_reset (drive);
  	}
- 	hbuffer[--k] = 0;
--- 
-1.5.5.1
-
+-	BUG_ON(HWGROUP(drive)->handler != NULL);
++
+ 	/* Set the interrupt routine */
+ 	ide_set_handler(drive, &idescsi_pc_intr, get_timeout(pc), idescsi_expiry);
+ 
