@@ -1,56 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754716AbYEREzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754802AbYERFIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754716AbYEREzq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 00:55:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbYEREzg
+	id S1754802AbYERFIw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 01:08:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752249AbYERFIq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 00:55:36 -0400
-Received: from outbound.icp-qv1-irony-out4.iinet.net.au ([203.59.1.150]:13523
-	"EHLO outbound.icp-qv1-irony-out4.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751411AbYEREzg (ORCPT
+	Sun, 18 May 2008 01:08:46 -0400
+Received: from dsl093-193-175.stl1.dsl.speakeasy.net ([66.93.193.175]:58561
+	"EHLO hades.sngx.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751863AbYERFIp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 00:55:36 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AjcBABhTL0h8qN2q/2dsb2JhbAAIq3A
-X-IronPort-AV: E=Sophos;i="4.27,503,1204470000"; 
-   d="scan'208";a="222177683"
-Subject: Re: [patch/rfc 2.6.25-git] gpio: sysfs interface
-From: Ben Nizette <bn@niasdigital.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Trent Piepho <tpiepho@freescale.com>,
-       hartleys <hartleys@visionengravers.com>,
-       Mike Frysinger <vapier.adi@gmail.com>, Bryan Wu <cooloney@kernel.org>
-In-Reply-To: <200805171514.07619.david-b@pacbell.net>
-References: <200804281239.51729.david-b@pacbell.net>
-	 <20080428134649.44cf239c.akpm@linux-foundation.org>
-	 <20080502203637.GG3956@ucw.cz>  <200805171514.07619.david-b@pacbell.net>
-Content-Type: text/plain
-Organization: Nias Digital
-Date: Sun, 18 May 2008 14:55:36 +1000
-Message-Id: <1211086536.3892.26.camel@moss.renham>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Sun, 18 May 2008 01:08:45 -0400
+Message-ID: <482FBA09.80201@sngx.net>
+Date: Sun, 18 May 2008 00:09:29 -0500
+From: James Cammarata <jimi@sngx.net>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+MIME-Version: 1.0
+To: Ben Hutchings <bhutchings@solarflare.com>
+CC: Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: [PATCH updated] net: add ability to clear per-interface network
+ statistics via procfs
+References: <482DA5B6.1020606@sngx.net> <482DB46A.8020103@cosmosbay.com> <482EF192.4070707@sngx.net> <482F5113.5090703@cosmosbay.com> <482F610D.2080108@sngx.net> <20080518003104.GK28241@solarflare.com>
+In-Reply-To: <20080518003104.GK28241@solarflare.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> You need to stop your mail client word-wrapping patches.  It looks like
+> something has converted tabs to spaces, too.
 
-On Sat, 2008-05-17 at 15:14 -0700, David Brownell wrote:
-> On Friday 02 May 2008, Pavel Machek wrote:
-> > What about mkdir gpio-N to export it?
-> 
-> Ugh.  That would create way more complication than I want
-> to see here.  I thought about that early on, and decided
-> that was Not The Way To Go.
+Hmm, I don't know what might be causing that.  I'm using Thunderbird and disabled 
+wrapping, and things look ok on lkml when I view the archives there. The tab/spaces 
+issue was a result of me copying it out of a terminal window, and the patch now 
+clears checkpatch.pl.
 
-I have a userspace gpio interface which uses /dev and configfs.  The
-configfs side was really nice (and used mkdir, as configfs does) but I
-wasn't a fan of needing udev..  On balance, I like the all-in-one sysfs
-way more.
+As for the rest, I've done as you suggested, my only comment about it is that 
+like I said, my code is based heavily on that found in drivers/scsi/scsi_proc.c, so
+it may be worth it to do the same changes there.
 
-> 
-> - Dave
-> 
+---
+
+--- linux-2.6.25.4/net/core/dev.c	2008-05-15 10:00:12.000000000 -0500
++++ linux-2.6.25.4-jcammara/net/core/dev.c	2008-05-17 20:53:13.000000000 -0500
+@@ -2453,6 +2453,75 @@ static struct netif_rx_stats *softnet_ge
+ 	return rc;
+ }
+ 
++/**
++ * proc_net_dev_write - handle writes to /proc/net/dev
++ * @file: not used
++ * @buf: buffer to write
++ * @length: length of buf, at most PAGE_SIZE
++ * @ppos: not used
++ *
++ * Description: this provides a mechanism to clear statistics on a
++ * per-interface basis
++ * "echo 'net clear-stats ifdev' >/proc/net/dev"
++ * with  "ifdev" replaced by the device name you wish to clear.
++ *
++ */
++static ssize_t proc_net_dev_write(struct file *file, const char __user *buf,
++				  size_t length, loff_t *ppos)
++{
++	char *buffer, *p;
++	char devname[IFNAMSIZ];
++	static const char command[] = "net clear-stats ";
++	struct net *net;
++	struct net_device *dev;
++	int err;
++
++	if (!buf || length > PAGE_SIZE)
++		return -EINVAL;
++
++	buffer = (char *)__get_free_page(GFP_KERNEL);
++	if (!buffer)
++		return -ENOMEM;
++
++	err = -EFAULT;
++	if (copy_from_user(buffer, buf, length))
++		goto out;
++
++	err = -EINVAL;
++	if (length < PAGE_SIZE)
++		buffer[length] = '\0';
++	else if (buffer[PAGE_SIZE-1])
++		goto out;
++
++	err = -ENXIO;
++	net = get_proc_net(file->f_dentry->d_inode);
++	if (!net)
++		goto out;
++
++	if (!strncmp(command, buffer, sizeof(command) - 1)) {
++		p = buffer + strlen(command);
++		if (sscanf(p, "%16s", devname) > 0) {
++			dev = dev_get_by_name(net, devname);
++			if (dev) {
++				if (dev->get_stats) {
++					struct net_device_stats *stats =
++					       dev->get_stats(dev);
++					memset(stats, 0,
++					       sizeof(struct net_device_stats));
++				}
++				dev_put(dev);
++				err = length;
++			}
++		}
++	}
++
++	put_net(net);
++
++ out:
++	free_page((unsigned long)buffer);
++	return err;
++}
++
+ static void *softnet_seq_start(struct seq_file *seq, loff_t *pos)
+ {
+ 	return softnet_get_online(pos);
+@@ -2496,6 +2565,7 @@ static const struct file_operations dev_
+ 	.owner	 = THIS_MODULE,
+ 	.open    = dev_seq_open,
+ 	.read    = seq_read,
++	.write   = proc_net_dev_write,
+ 	.llseek  = seq_lseek,
+ 	.release = seq_release_net,
+ };
