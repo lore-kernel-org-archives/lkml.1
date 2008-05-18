@@ -1,161 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754913AbYERR6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755203AbYERR7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754913AbYERR6p (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 13:58:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753054AbYERR6c
+	id S1755203AbYERR7x (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 13:59:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbYERR7p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 13:58:32 -0400
-Received: from mu-out-0910.google.com ([209.85.134.185]:14161 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753002AbYERR6a (ORCPT
+	Sun, 18 May 2008 13:59:45 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:36609 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752608AbYERR7p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 13:58:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=jbbb5+69XTjlVCyBLH2rhJxQjPgqry5olcUsVVaOfvslGzDkmy8saRN+MXrwzOXXZO0YHzdeNtqH5DgfmBObwRiUJKJ1uqU9PEtcztU/czurHFVhv28YyEEVi920M+RXaDrWed5cCGp9Q9kOsynemo+7ZVsYdzF4XVtRWmI7S3A=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: TAKADA Yoshihito <takada@mbf.nifty.com>
-Subject: Re: kernel 2.6.25 with ide driver cs5520 does not boot.
-Date: Sun, 18 May 2008 20:14:38 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <200805091127.53737.bzolnier@gmail.com> <200805142244.48548.bzolnier@gmail.com> <20080518.133758.260799446.takada@mbf.nifty.com>
-In-Reply-To: <20080518.133758.260799446.takada@mbf.nifty.com>
+	Sun, 18 May 2008 13:59:45 -0400
+Message-ID: <48306E8D.5050109@firstfloor.org>
+Date: Sun, 18 May 2008 19:59:41 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Vegard Nossum <vegard.nossum@gmail.com>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>, Arjan van de Ven <arjan@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Bug #10710] [BISECTED] Lots of "rescheduling IPIs" in powertop
+References: <oKKSi1w1qaF.A.mEG.JrBMIB@albercik>	 <7wuznNhcUqC.A.xiH.EsBMIB@albercik> <19f34abd0805180523o12732812k87b8ddd832843af4@mail.gmail.com>
+In-Reply-To: <19f34abd0805180523o12732812k87b8ddd832843af4@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805182014.38550.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Hi,
-
-On Sunday 18 May 2008, TAKADA Yoshihito wrote:
-> Hi.
+Vegard Nossum wrote:
+> On Sun, May 18, 2008 at 1:13 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>> This message has been generated automatically as a part of a report
+>> of recent regressions.
+>>
+>> The following bug entry is on the current list of known regressions
+>> from 2.6.25.  Please verify if it still should be listed.
+>>
+>>
+>> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10710
+>> Subject         : [BISECTED] Lots of "rescheduling IPIs" in powertop
+>> Submitter       : Vegard Nossum <vegard.nossum@gmail.com>
+>> Date            : 2008-05-13 20:42 (6 days old)
+>> References      : http://marc.info/?l=linux-kernel&amp;m=121071176205864&amp;w=4
+>> Handled-By      : Andi Kleen <andi@firstfloor.org>
+>>                  Arjan van de Ven <arjan@infradead.org>
+>>                  Ingo Molnar <mingo@elte.hu>
+>> Patch           : http://marc.info/?l=linux-kernel&amp;m=121074826823352&amp;w=4
+>>
 > 
-> I disagree that this patch to remove IDE_HFLAG_VDMA.
-> Because IDE_HFLAG_VDMA is refferd in drivers/ide/ide-dma.c.
-> Well, currently, it's only cs5520 to sets thiss flag.
+> Ingo Molnar provided the patch that solved the problem (the referenced
+> link) but he wanted to wait for Andreas Herrmann to provide an
+> additional patch that would solve some implication on AMD CPUs. So
+> this is in theory fixed, but the fix has not yet been applied anywhere
+> as far as I know.
 
-Depending on the results of the second patch that I posted (the one
-forcing bus-mastering in cs5520) we may want to:
+There's a CPUID way to distingush the cases I found out now (with help
+from Venki, thanks) so it would be possible to solve it properly, but
+once even a bad Ingo patch is in it's nearly impossible to replace it
+with something better so I bail out at this point.
 
-- extend ->host_flags to be of u64 type and re-enable IDE_HFLAG_VDMA
+[In case someone is interested it's CPUID 5 ECX bit 0 which enumerates
+if the MWAIT enumeration is there. So the correct mwait_usable() that
+would have avoided your problem would be something like (untested):
 
-or
+return c->cpuid_level >= 5 &&
+           ((cpuid_ecx(5) & 1) == 0 || (cpuid_edx(5) >> 4) & 0xf) > 0);
+]
 
-- remove IDE_HFLAG_VDMA host flag completely
-
-In the meantime the patch below un-broke cs5520 driver in the upstream
-kernel nicely.
-
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: Re: kernel 2.6.25 with ide driver cs5520 does not boot.
-> Date: Wed, 14 May 2008 22:44:48 +0200
-> 
-> > On Friday 09 May 2008, TAKADA Yoshihito wrote:
-> > > Hi.
-> > > 
-> > > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > > Subject: Re: kernel 2.6.25 with ide driver cs5520 does not boot.
-> > > Date: Fri, 9 May 2008 11:27:53 +0200
-> > > 
-> > > > On Friday 09 May 2008, TAKADA Yoshihito wrote:
-> > > > > Thanks for quick reply.
-> > > > > 
-> > > > > I tried 2.6.26rc1. It hangs same as 2.6.25.
-> > > > > kernel 2.6.26rc1 with cs5520 cannot boot. cs5520 scans ide0 and ide1.
-> > > > > It seems 2nd port DMA base issue was solved.
-> > > > 
-> > > > [...]
-> > > > 
-> > > > Thanks.
-> > > > 
-> > > > The following patch for 2.6.26-rc1 disables VDMA, please give it a try
-> > > > (I haven't time to fully audit VDMA support yet but lets see if it is
-> > > > the main source of the problems).
-> > > 
-> > > I applied the patch. But kernel was hung.
-> > > And I attempt to kill IDE_HFLAG_CS5520. It cannot boot, oo.
-> > > 
-> > >   kill IDE_HFLAG_VDMA  : hang  
-> > >   kill IDE_HFLAG_CS5520: hang
-> > >   kill both flags      : boot
-> > 
-> > Thanks for investigating this - I forgot that currently VDMA and CS5520
-> > host flags use the same bit (so it also needs to be fixed).
-> > 
-> > I'm going to send the following patch to Linus (please verify it):
-> > 
-> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > Subject: [PATCH] cs5520: disable VDMA
-> > 
-> > Disable Virtual DMA support for now (it causes system hangs).
-> > 
-> > Thanks to TAKADA Yoshihito for the help with debugging the problem.
-> > 
-> > Reported-by: TAKADA Yoshihito <takada@mbf.nifty.com>
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > ---
-> >  drivers/ide/pci/cs5520.c |    2 +-
-> >  include/linux/ide.h      |    8 ++++----
-> >  2 files changed, 5 insertions(+), 5 deletions(-)
-> > 
-> > Index: b/drivers/ide/pci/cs5520.c
-> > ===================================================================
-> > --- a/drivers/ide/pci/cs5520.c
-> > +++ b/drivers/ide/pci/cs5520.c
-> > @@ -119,6 +119,7 @@ static const struct ide_dma_ops cs5520_d
-> >  	.dma_timeout		= ide_dma_timeout,
-> >  };
-> >  
-> > +/* FIXME: VDMA is disabled because it caused system hangs */
-> >  #define DECLARE_CS_DEV(name_str)				\
-> >  	{							\
-> >  		.name		= name_str,			\
-> > @@ -126,7 +127,6 @@ static const struct ide_dma_ops cs5520_d
-> >  		.dma_ops	= &cs5520_dma_ops,		\
-> >  		.host_flags	= IDE_HFLAG_ISA_PORTS |		\
-> >  				  IDE_HFLAG_CS5520 |		\
-> > -				  IDE_HFLAG_VDMA |		\
-> >  				  IDE_HFLAG_NO_ATAPI_DMA |	\
-> >  				  IDE_HFLAG_ABUSE_SET_DMA_MODE, \
-> >  		.pio_mask	= ATA_PIO4,			\
-> > Index: b/include/linux/ide.h
-> > ===================================================================
-> > --- a/include/linux/ide.h
-> > +++ b/include/linux/ide.h
-> > @@ -1058,8 +1058,8 @@ enum {
-> >  	IDE_HFLAG_NO_SET_MODE		= (1 << 9),
-> >  	/* trust BIOS for programming chipset/device for DMA */
-> >  	IDE_HFLAG_TRUST_BIOS_FOR_DMA	= (1 << 10),
-> > -	/* host uses VDMA (tied with IDE_HFLAG_CS5520 for now) */
-> > -	IDE_HFLAG_VDMA			= (1 << 11),
-> > +	/* host is CS5510/CS5520 */
-> > +	IDE_HFLAG_CS5520		= (1 << 11),
-> >  	/* ATAPI DMA is unsupported */
-> >  	IDE_HFLAG_NO_ATAPI_DMA		= (1 << 12),
-> >  	/* set if host is a "non-bootable" controller */
-> > @@ -1070,8 +1070,6 @@ enum {
-> >  	IDE_HFLAG_NO_AUTODMA		= (1 << 15),
-> >  	/* host uses MMIO */
-> >  	IDE_HFLAG_MMIO			= (1 << 16),
-> > -	/* host is CS5510/CS5520 */
-> > -	IDE_HFLAG_CS5520		= IDE_HFLAG_VDMA,
-> >  	/* no LBA48 */
-> >  	IDE_HFLAG_NO_LBA48		= (1 << 17),
-> >  	/* no LBA48 DMA */
-> > @@ -1101,6 +1099,8 @@ enum {
-> >  	IDE_HFLAG_NO_IO_32BIT		= (1 << 30),
-> >  	/* never unmask IRQs */
-> >  	IDE_HFLAG_NO_UNMASK_IRQS	= (1 << 31),
-> > +	/* host uses VDMA (disabled for now) */
-> > +	IDE_HFLAG_VDMA			= 0,
-> >  };
-> >  
-> >  #ifdef CONFIG_BLK_DEV_OFFBOARD
+-Andi
