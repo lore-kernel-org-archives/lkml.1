@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757990AbYERU1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757802AbYERUam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757990AbYERU1A (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 16:27:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754881AbYERU0w
+	id S1757802AbYERUam (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 16:30:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952AbYERUaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 16:26:52 -0400
-Received: from vena.lwn.net ([206.168.112.25]:43014 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754273AbYERU0v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 16:26:51 -0400
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Alexander Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, RFC] char dev BKL pushdown 
-From: corbet@lwn.net (Jonathan Corbet)
-In-reply-to: Your message of "Sat, 17 May 2008 23:15:00 +0200."
-             <200805172315.02988.arnd@arndb.de> 
-Date: Sun, 18 May 2008 14:26:51 -0600
-Message-ID: <13762.1211142411@vena.lwn.net>
+	Sun, 18 May 2008 16:30:35 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:56311 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752817AbYERUae (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 16:30:34 -0400
+Message-ID: <483091E6.9080703@firstfloor.org>
+Date: Sun, 18 May 2008 22:30:30 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Vegard Nossum <vegard.nossum@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Bug #10710] [BISECTED] Lots of "rescheduling IPIs" in powertop
+References: <oKKSi1w1qaF.A.mEG.JrBMIB@albercik>  <7wuznNhcUqC.A.xiH.EsBMIB@albercik> <19f34abd0805180523o12732812k87b8ddd832843af4@mail.gmail.com> <48306E8D.5050109@firstfloor.org> <alpine.LFD.1.10.0805182017070.18798@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.10.0805182017070.18798@apollo.tec.linutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann <arnd@arndb.de> wrote:
+Thomas Gleixner wrote:
 
-> Note that the majority of drivers use (grep suggests up to 165
-> of them) uses misc_register instead of register_chrdev/cdev_add.
-> Your patches are still correct, because you pushed the BKL into the
-> misc_open function, but there is an obvious next step in pushing
-> it further into the misc drivers.
+> stop these pointless ad hominem attacks!
 
-There's a few intermediate dispatcher levels like this, actually.
-Lots of video drivers get called behind video_open(), usb drivers from
-usb_open(), etc.  Not much to be done but to push things down one level
-at a time.
+Just my experience from past incidents sorry. I'm sure it never happened
+to you.
 
-> In your current git tree, this change is no longer the final one, so
-> bisecting the series may cause other bugs. You should probably reorder
-> the patches at some point to avoid this.
+>> [In case someone is interested it's CPUID 5 ECX bit 0 which enumerates
+>> if the MWAIT enumeration is there. So the correct mwait_usable() that
+>> would have avoided your problem would be something like (untested):
+>>
+>> return c->cpuid_level >= 5 &&
+>>            ((cpuid_ecx(5) & 1) == 0 || (cpuid_edx(5) >> 4) & 0xf) > 0);
+>> ]
+> 
+> I'm interested, but I'd be even more interested in some useful pointer
+> to the magic bitnumbers in that check, but don't exert yourself in
+> providing the information,
 
-Bisection is going to be problem regardless - if a problem turns up,
-it's going to be the chrdev_open() change which gets fingered.  I bet,
-though, that it will be a rare BKL-related problem which is reproducible
-enough to be easily bisectable.
+It's documented in the IA32 SDM vol2 as part of the CPUID description.
+It's a reasonable expection that everyone hacking on cpuid code has that
+at hand.
 
-But, yes, I do need to reorganize the patch series once I'm done adding
-on changes.
-
-jon
+-Andi
