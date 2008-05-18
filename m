@@ -1,1021 +1,495 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757544AbYERAhW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761068AbYERAlh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757544AbYERAhW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 20:37:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756527AbYERAhG
+	id S1761068AbYERAlh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 20:41:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756556AbYERAl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 20:37:06 -0400
-Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:21386 "HELO
-	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756433AbYERAg7 (ORCPT
+	Sat, 17 May 2008 20:41:29 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:34794 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756390AbYERAl1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 20:36:59 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=beyfHuq9ttVJfvOg3hKD09Ub14ADRvIy6o23159EKhqPlyo6vIhHYwkR4vCezQZzbF9y70H0arQD9qRego3QMqqj2PlmfvSq17dMD+uYdIJ8xDg3gyFoFVjTpUZS2LhEOn9rIAND3zRLyGk2ZngaHcojgr6VuattXSVBQAx7Qj4=  ;
-X-YMail-OSG: guiinasVM1kuUBBGBR4UHeagXrjtpAeLSmIVh6vaYOosEHKQH6emCEx2JjfX74Xw5AwD8RrXD9JBQvRwLpj3mpXRRUq_JpR7P2UYWGTz_FkJLu4kohqjGoTgqZ4yyTwzGDI-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 2.6.26-rc2-git] gpio: sysfs interface
-Date: Sat, 17 May 2008 17:36:55 -0700
-User-Agent: KMail/1.9.6
-Cc: Pavel Machek <pavel@ucw.cz>, lkml <linux-kernel@vger.kernel.org>,
-       Trent Piepho <tpiepho@freescale.com>,
-       hartleys <hartleys@visionengravers.com>,
-       Ben Nizette <bn@niasdigital.com>, Mike Frysinger <vapier.adi@gmail.com>,
-       Bryan Wu <cooloney@kernel.org>
-References: <200804281239.51729.david-b@pacbell.net> <20080502203637.GG3956@ucw.cz> <200805171514.07619.david-b@pacbell.net>
-In-Reply-To: <200805171514.07619.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805171736.56340.david-b@pacbell.net>
+	Sat, 17 May 2008 20:41:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type;
+        b=hMCiXEzEWtrfuK3vtsMTbmirfjiwLYu1Fm8lAkqTgWWeJxZknYtA8oJ1H8xJnGc9pQmbaW5Cy+aTa/VGJ+vSgIp4bb+BqTMCeRpAZOaGZYzwQLcWhcuI24dVyEW6lQHfdAH5lEnAWHomTtMyrGGTHzBqRnIJtBl2bvu2tn082WI=
+Date: Sun, 18 May 2008 01:41:11 +0100
+From: Ciaran McCreesh <ciaran.mccreesh@googlemail.com>
+To: Yinghai.Lu@Sun.COM
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: kernel boot hangs after x86: insert_resorce for lapic addr after
+ e820_reserve_resources
+Message-ID: <20080518014111.4f32298b@googlemail.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.14; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_/HLLrK9tMDS/1BfKDKykfRtp";
+ protocol="application/pgp-signature"; micalg=PGP-SHA1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds a simple sysfs interface for GPIOs.
+--Sig_/HLLrK9tMDS/1BfKDKykfRtp
+Content-Type: multipart/mixed; boundary="MP_/lExgOVsBiT.jCdwRsNkL_ZN"
 
-    /sys/class/gpio
-    	/export ... asks the kernel to export a GPIO to userspace
-    	/unexport ... to return a GPIO to the kernel
-        /gpioN ... for each exported GPIO #N
-	    /value ... always readable, writes fail for input GPIOs
-	    /direction ... r/w as: in, out (default low); write high, low
-	/gpiochipN ... for each gpiochip; #N is its first GPIO
-	    /base ... (r/o) same as N
-	    /label ... (r/o) descriptive, not necessarily unique
-	    /ngpio ... (r/o) number of GPIOs; numbered N .. N+(ngpio - 1)
+--MP_/lExgOVsBiT.jCdwRsNkL_ZN
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-GPIOs claimed by kernel code may be exported by its owner using a new
-gpio_export() call, which should be most useful for driver debugging.
-Such exports may optionally be done without a "direction" attribute.
+The commit 3def3d6ddf43dbe20c00c3cbc38dfacc8586998f (x86:
+insert_resorce for lapic addr after e820_reserve_resources) causes my
+x86_64 box to to lock up early on in the boot process. Reverting only
+this commit with current git head gives a successful boot.
 
-Userspace may ask to take over a GPIO by writing to a sysfs control
-file, helping to cope with incomplete board support or other "one-off"
-requirements that don't merit full kernel support:
+The last messages outputted to the screen with a failed boot are:
 
-  echo 23 > /sys/class/gpio/export
-	... will gpio_request(23, "sysfs") and gpio_export(23);
-	use /sys/class/gpio/gpio-23/direction to (re)configure it,
-	when that GPIO can be used as both input and output.
-  echo 23 > /sys/class/gpio/unexport
-	... will gpio_free(23), when it was exported as above
+    pci 0000:00:13.2: OHCI: BIOS handoff failed (BIOS bug?) 00000184
+    Clocksource tsc unstable (delta =3D 475235503 ns)
 
-The extra D-space footprint is a few hundred bytes, except for the sysfs
-resources associated with each exported GPIO.  The additional I-space
-footprint is about two thirds of the current size of gpiolib (!).  Since
-no /dev node creation is involved, no "udev" support is needed.
+The handoff message appears not to be related, and occurs with all
+kernels. The 'clocksource' message appears only with the above commit.
 
-Related changes:
+The box has an Abit F-190HD motherboard with a Q6600 CPU. A .config,
+dmesg from git head with the above commit reverted and lspci -v are
+attached.
 
-  * This adds a device pointer to "struct gpio_chip".  When GPIO
-    providers initialize that, sysfs gpio class devices become
-    children of that device instead of being "virtual" devices.
+What further information can I provide to help work this issue out?
 
-  * The (few) gpio_chip providers which have such a device node
-    have been updated.
-    
-  * Some gpio_chip drivers also needed to update their module
-    "owner" field ... for which missing kerneldoc was added.
+Many thanks,
+--=20
+Ciaran McCreesh
 
-  * Some gpio_chips don't support input GPIOs.  Those GPIOs are
-    now flagged appropriately when the chip is registered.
+--MP_/lExgOVsBiT.jCdwRsNkL_ZN
+Content-Type: application/octet-stream; name=config.txt.gz
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename=config.txt.gz
 
-Based on previous patches, and discussion both on and off LKML.
+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
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
-Updates since the last version:  split "control" file in two;
-gpio_export() allows fixed-direction export; doc updates; cope
-with minor driver model change (we must test a different field
-to see if we're called too early in system init); added this to
-stubs for gpio-deprived platforms in <linux/gpio.h>.
+--MP_/lExgOVsBiT.jCdwRsNkL_ZN
+Content-Type: application/octet-stream; name=dmesg.txt.gz
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename=dmesg.txt.gz
 
- Documentation/gpio.txt       |  123 +++++++++-
- arch/arm/plat-omap/gpio.c    |    3 
- arch/avr32/mach-at32ap/pio.c |    2 
- drivers/gpio/Kconfig         |   15 +
- drivers/gpio/gpiolib.c       |  509 ++++++++++++++++++++++++++++++++++++++++++-
- drivers/gpio/mcp23s08.c      |    1 
- drivers/gpio/pca953x.c       |    1 
- drivers/gpio/pcf857x.c       |    1 
- drivers/i2c/chips/tps65010.c |    2 
- drivers/mfd/htc-egpio.c      |    2 
- include/asm-generic/gpio.h   |   33 ++
- include/linux/gpio.h         |   13 +
- 12 files changed, 689 insertions(+), 16 deletions(-)
+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
 
---- g26.orig/Documentation/gpio.txt	2008-05-17 17:12:11.000000000 -0700
-+++ g26/Documentation/gpio.txt	2008-05-17 17:15:04.000000000 -0700
-@@ -347,15 +347,12 @@ necessarily be nonportable.
- Dynamic definition of GPIOs is not currently standard; for example, as
- a side effect of configuring an add-on board with some GPIO expanders.
- 
--These calls are purely for kernel space, but a userspace API could be built
--on top of them.
--
- 
- GPIO implementor's framework (OPTIONAL)
- =======================================
- As noted earlier, there is an optional implementation framework making it
- easier for platforms to support different kinds of GPIO controller using
--the same programming interface.
-+the same programming interface.  This framework is called "gpiolib".
- 
- As a debugging aid, if debugfs is available a /sys/kernel/debug/gpio file
- will be found there.  That will list all the controllers registered through
-@@ -439,4 +436,120 @@ becomes available.  That may mean the de
- calls for that GPIO can work.  One way to address such dependencies is for
- such gpio_chip controllers to provide setup() and teardown() callbacks to
- board specific code; those board specific callbacks would register devices
--once all the necessary resources are available.
-+once all the necessary resources are available, and remove them later when
-+the GPIO controller device becomes unavailable.
-+
-+
-+Sysfs Interface for Userspace (OPTIONAL)
-+========================================
-+Platforms which use the "gpiolib" implementors framework may choose to
-+configure a sysfs user interface to GPIOs.  This is different from the
-+debugfs interface, since it provides control over GPIO direction and
-+value instead of just showing a gpio state summary.  Plus, it could be
-+present on production systems without debugging support.
-+
-+Given approprate hardware documentation for the system, userspace could
-+know for example that GPIO #23 controls the write protect line used to
-+protect boot loader segments in flash memory.  System upgrade procedures
-+may need to temporarily remove that protection, first importing a GPIO,
-+then changing its output state, then updating the code before re-enabling
-+the write protection.  In normal use, GPIO #23 would never be touched,
-+and the kernel would have no need to know about it.
-+
-+Again depending on appropriate hardware documentation, on some systems
-+userspace GPIO can be used to determine system configuration data that
-+standard kernels won't know about.  And for some tasks, simple userspace
-+GPIO drivers could be all that the system really needs.
-+
-+Note that standard kernel drivers exist for common "LEDs and Buttons"
-+GPIO tasks:  "leds-gpio" and "gpio_keys", respectively.  Use those
-+instead of talking directly to the GPIOs; they integrate with kernel
-+frameworks better than your userspace code could.
-+
-+
-+Paths in Sysfs
-+--------------
-+There are three kinds of entry in /sys/class/gpio:
-+
-+   -	Control interfaces used to get userspace control over GPIOs;
-+
-+   -	GPIOs themselves; and
-+
-+   -	GPIO controllers ("gpio_chip" instances).
-+
-+That's in addition to standard files including the "device" symlink.
-+
-+The control interfaces are write-only:
-+
-+    /sys/class/gpio/
-+
-+    	"export" ... Userspace may ask the kernel to export control of
-+		a GPIO to userspace by writing its number to this file.
-+
-+		Example:  "echo 19 > export" will create a "gpio19" node
-+		for GPIO #19, if that's not requested by kernel code.
-+
-+    	"unexport" ... Reverses the effect of exporting to userspace.
-+
-+		Example:  "echo 19 > unexport" will remove a "gpio19"
-+		node exported using the "export" file.
-+
-+GPIO signals have paths like /sys/class/gpio/gpio42/ (for GPIO #42)
-+and have the following read/write attributes:
-+
-+    /sys/class/gpio/gpioN/
-+
-+	"direction" ... reads as either "in" or "out".  This value may
-+		normally be written.  Writing as "out" defaults to
-+		initializing the value as low.  To ensure glitch free
-+		operation, values "low" and "high" may be written to
-+		configure the GPIO as an output with that initial value.
-+
-+		Note that this attribute *will not exist* if the kernel
-+		doesn't support changing the direction of a GPIO, or
-+		it was exported by kernel code that didn't explicitly
-+		allow userspace to reconfigure this GPIO's direction.
-+
-+	"value" ... reads as either 0 (low) or 1 (high).  If the GPIO
-+		is configured as an output, this value may be written;
-+		any nonzero value is treated as high.
-+
-+GPIO controllers have paths like /sys/class/gpio/chipchip42/ (for the
-+controller implementing GPIOs starting at #42) and have the following
-+read-only attributes:
-+
-+    /sys/class/gpio/gpiochipN/
-+
-+    	"base" ... same as N, the first GPIO managed by this chip
-+
-+    	"label" ... provided for diagnostics (not always unique)
-+
-+    	"ngpio" ... how many GPIOs this manges (N to N + ngpio - 1)
-+
-+Board documentation should in most cases cover what GPIOs are used for
-+what purposes.  However, those numbers are not always stable; GPIOs on
-+a daughtercard might be different depending on the base board being used,
-+or other cards in the stack.  In such cases, you may need to use the
-+gpiochip nodes (possibly in conjunction with schematics) to determine
-+the correct GPIO number to use for a given signal.
-+
-+
-+Exporting from Kernel code
-+--------------------------
-+Kernel code can explicitly manage exports of GPIOs which have already been
-+requested using gpio_request():
-+
-+	/* export the GPIO to userspace */
-+	int gpio_export(unsigned gpio, bool direction_may_change);
-+
-+	/* reverse gpio_export() */
-+	void gpio_unexport();
-+
-+After a kernel driver requests a GPIO, it may only be made available in
-+the sysfs interface by gpio_export().  The driver can control whether the
-+signal direction may change.  This helps drivers prevent userspace code
-+from accidentally clobbering important system state.
-+
-+This explicit exporting can help with debugging (by making some kinds
-+of experiments easier), or can provide an always-there interface that's
-+suitable for documenting as part of a board support package.
---- g26.orig/arch/arm/plat-omap/gpio.c	2008-05-17 17:12:11.000000000 -0700
-+++ g26/arch/arm/plat-omap/gpio.c	2008-05-17 17:15:04.000000000 -0700
-@@ -1488,6 +1488,9 @@ static int __init _omap_gpio_init(void)
- 		bank->chip.set = gpio_set;
- 		if (bank_is_mpuio(bank)) {
- 			bank->chip.label = "mpuio";
-+#ifdef CONFIG_ARCH_OMAP1
-+			bank->chip.dev = &omap_mpuio_device.dev;
-+#endif
- 			bank->chip.base = OMAP_MPUIO(0);
- 		} else {
- 			bank->chip.label = "gpio";
---- g26.orig/arch/avr32/mach-at32ap/pio.c	2008-05-17 17:12:11.000000000 -0700
-+++ g26/arch/avr32/mach-at32ap/pio.c	2008-05-17 17:15:04.000000000 -0700
-@@ -361,6 +361,8 @@ static int __init pio_probe(struct platf
- 	pio->chip.label = pio->name;
- 	pio->chip.base = pdev->id * 32;
- 	pio->chip.ngpio = 32;
-+	pio->chip.dev = &pdev->dev;
-+	pio->chip.owner = THIS_MODULE;
- 
- 	pio->chip.direction_input = direction_input;
- 	pio->chip.get = gpio_get;
---- g26.orig/drivers/gpio/Kconfig	2008-05-17 17:12:11.000000000 -0700
-+++ g26/drivers/gpio/Kconfig	2008-05-17 17:15:04.000000000 -0700
-@@ -23,6 +23,21 @@ config DEBUG_GPIO
- 	  slower.  The diagnostics help catch the type of setup errors
- 	  that are most common when setting up new platforms or boards.
- 
-+config GPIO_SYSFS
-+	bool "/sys/class/gpio/... (sysfs interface)"
-+	depends on SYSFS && EXPERIMENTAL
-+	help
-+	  Say Y here to add a sysfs interface for GPIOs.
-+
-+	  This is mostly useful to work around omissions in a system's
-+	  kernel support.  Those are common in custom and semicustom
-+	  hardware assembled using standard kernels with a minimum of
-+	  custom patches.  In those cases, userspace code may import
-+	  a given GPIO from the kernel, if no kernel driver requested it.
-+
-+	  Kernel drivers may also request that a particular GPIO be
-+	  exported to userspace; this can be useful when debugging.
-+
- # put expanders in the right section, in alphabetical order
- 
- comment "I2C GPIO expanders:"
---- g26.orig/drivers/gpio/gpiolib.c	2008-05-17 17:12:11.000000000 -0700
-+++ g26/drivers/gpio/gpiolib.c	2008-05-17 17:15:04.000000000 -0700
-@@ -2,8 +2,11 @@
- #include <linux/module.h>
- #include <linux/irq.h>
- #include <linux/spinlock.h>
--
--#include <asm/gpio.h>
-+#include <linux/device.h>
-+#include <linux/err.h>
-+#include <linux/debugfs.h>
-+#include <linux/seq_file.h>
-+#include <linux/gpio.h>
- 
- 
- /* Optional implementation infrastructure for GPIO interfaces.
-@@ -44,6 +47,8 @@ struct gpio_desc {
- #define FLAG_REQUESTED	0
- #define FLAG_IS_OUT	1
- #define FLAG_RESERVED	2
-+#define FLAG_EXPORT	3	/* protected by sysfs_lock */
-+#define FLAG_SYSFS	4	/* exported via /sys/class/gpio/control */
- 
- #ifdef CONFIG_DEBUG_FS
- 	const char		*label;
-@@ -151,6 +156,484 @@ err:
- 	return ret;
- }
- 
-+#ifdef CONFIG_GPIO_SYSFS
-+
-+/* lock protects against unexport_gpio() being called while
-+ * sysfs files are active.
-+ */
-+static DEFINE_MUTEX(sysfs_lock);
-+
-+/*
-+ * /sys/class/gpio/gpioN... only for GPIOs that are exported
-+ *   /direction
-+ *      * MAY BE OMITTED if kernel won't allow direction changes
-+ *      * is read/write as "in" or "out"
-+ *      * may also be written as "high" or "low", initializing
-+ *        output value as specified ("out" implies "low")
-+ *   /value
-+ *      * always readable, subject to hardware behavior
-+ *      * may be writable, as zero/nonzero
-+ *
-+ * REVISIT there will likely be an attribute for configuring async
-+ * notifications, e.g. to specify polling interval or IRQ trigger type
-+ * that would for example trigger a poll() on the "value".
-+ */
-+
-+static ssize_t gpio_direction_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	const struct gpio_desc	*desc = dev_get_drvdata(dev);
-+	ssize_t			status;
-+
-+	mutex_lock(&sysfs_lock);
-+
-+	if (!test_bit(FLAG_EXPORT, &desc->flags))
-+		status = -EIO;
-+	else
-+		status = sprintf(buf, "%s\n",
-+			test_bit(FLAG_IS_OUT, &desc->flags)
-+				? "out" : "in");
-+
-+	mutex_unlock(&sysfs_lock);
-+	return status;
-+}
-+
-+static ssize_t gpio_direction_store(struct device *dev,
-+		struct device_attribute *attr, const char *buf, size_t size)
-+{
-+	const struct gpio_desc	*desc = dev_get_drvdata(dev);
-+	unsigned		gpio = desc - gpio_desc;
-+	ssize_t			status;
-+
-+	mutex_lock(&sysfs_lock);
-+
-+	if (!test_bit(FLAG_EXPORT, &desc->flags))
-+		status = -EIO;
-+	else if (sysfs_streq(buf, "high"))
-+		status = gpio_direction_output(gpio, 1);
-+	else if (sysfs_streq(buf, "out") || sysfs_streq(buf, "low"))
-+		status = gpio_direction_output(gpio, 0);
-+	else if (sysfs_streq(buf, "in"))
-+		status = gpio_direction_input(gpio);
-+	else
-+		status = -EINVAL;
-+
-+	mutex_unlock(&sysfs_lock);
-+	return status ? : size;
-+}
-+
-+static const DEVICE_ATTR(direction, 0644,
-+		gpio_direction_show, gpio_direction_store);
-+
-+static ssize_t gpio_value_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	const struct gpio_desc	*desc = dev_get_drvdata(dev);
-+	unsigned		gpio = desc - gpio_desc;
-+	ssize_t			status;
-+
-+	mutex_lock(&sysfs_lock);
-+
-+	if (!test_bit(FLAG_EXPORT, &desc->flags))
-+		status = -EIO;
-+	else
-+		status = sprintf(buf, "%d\n", gpio_get_value_cansleep(gpio));
-+
-+	mutex_unlock(&sysfs_lock);
-+	return status;
-+}
-+
-+static ssize_t gpio_value_store(struct device *dev,
-+		struct device_attribute *attr, const char *buf, size_t size)
-+{
-+	const struct gpio_desc	*desc = dev_get_drvdata(dev);
-+	unsigned		gpio = desc - gpio_desc;
-+	ssize_t			status;
-+
-+	mutex_lock(&sysfs_lock);
-+
-+	if (!test_bit(FLAG_EXPORT, &desc->flags))
-+		status = -EIO;
-+	else if (!test_bit(FLAG_IS_OUT, &desc->flags))
-+		status = -EPERM;
-+	else {
-+		long		value;
-+
-+		status = strict_strtol(buf, 0, &value);
-+		if (status == 0) {
-+			gpio_set_value_cansleep(gpio, value != 0);
-+			status = size;
-+		}
-+	}
-+
-+	mutex_unlock(&sysfs_lock);
-+	return status;
-+}
-+
-+static /*const*/ DEVICE_ATTR(value, 0644,
-+		gpio_value_show, gpio_value_store);
-+
-+static const struct attribute *gpio_attrs[] = {
-+	&dev_attr_direction.attr,
-+	&dev_attr_value.attr,
-+	NULL,
-+};
-+
-+static const struct attribute_group gpio_attr_group = {
-+	.attrs = (struct attribute **) gpio_attrs,
-+};
-+
-+/*
-+ * /sys/class/gpio/gpiochipN/
-+ *   /base ... matching gpio_chip.base (N)
-+ *   /label ... matching gpio_chip.label
-+ *   /ngpio ... matching gpio_chip.ngpio
-+ */
-+
-+static ssize_t chip_base_show(struct device *dev,
-+			       struct device_attribute *attr, char *buf)
-+{
-+	const struct gpio_chip	*chip = dev_get_drvdata(dev);
-+
-+	return sprintf(buf, "%d\n", chip->base);
-+}
-+static DEVICE_ATTR(base, 0444, chip_base_show, NULL);
-+
-+static ssize_t chip_label_show(struct device *dev,
-+			       struct device_attribute *attr, char *buf)
-+{
-+	const struct gpio_chip	*chip = dev_get_drvdata(dev);
-+
-+	return sprintf(buf, "%s\n", chip->label ? : "");
-+}
-+static DEVICE_ATTR(label, 0444, chip_label_show, NULL);
-+
-+static ssize_t chip_ngpio_show(struct device *dev,
-+			       struct device_attribute *attr, char *buf)
-+{
-+	const struct gpio_chip	*chip = dev_get_drvdata(dev);
-+
-+	return sprintf(buf, "%u\n", chip->ngpio);
-+}
-+static DEVICE_ATTR(ngpio, 0444, chip_ngpio_show, NULL);
-+
-+static const struct attribute *gpiochip_attrs[] = {
-+	&dev_attr_base.attr,
-+	&dev_attr_label.attr,
-+	&dev_attr_ngpio.attr,
-+	NULL,
-+};
-+
-+static const struct attribute_group gpiochip_attr_group = {
-+	.attrs = (struct attribute **) gpiochip_attrs,
-+};
-+
-+/*
-+ * /sys/class/gpio/export ... write-only
-+ *	integer N ... number of GPIO to export (full access)
-+ * /sys/class/gpio/unexport ... write-only
-+ *	integer N ... number of GPIO to unexport
-+ */
-+static ssize_t export_store(struct class *class, const char *buf, size_t len)
-+{
-+	long	gpio;
-+	int	status;
-+
-+	status = strict_strtol(buf, 0, &gpio);
-+	if (status < 0)
-+		goto done;
-+
-+	/* No extra locking here; FLAG_SYSFS just signifies that the
-+	 * request and export were done by on behalf of userspace, so
-+	 * they may be undone on its behalf too.
-+	 */
-+
-+	status = gpio_request(gpio, "sysfs");
-+	if (status < 0)
-+		goto done;
-+
-+	status = gpio_export(gpio, true);
-+	if (status < 0)
-+		gpio_free(gpio);
-+	else
-+		set_bit(FLAG_SYSFS, &gpio_desc[gpio].flags);
-+
-+done:
-+	if (status)
-+		pr_debug("%s: status %d\n", __func__, status);
-+	return status ? : len;
-+}
-+
-+static ssize_t unexport_store(struct class *class, const char *buf, size_t len)
-+{
-+	long	gpio;
-+	int	status;
-+
-+	status = strict_strtol(buf, 0, &gpio);
-+	if (status < 0)
-+		goto done;
-+
-+	status = -EINVAL;
-+
-+	/* reject bogus commands (gpio_unexport ignores them) */
-+	if (!gpio_is_valid(gpio))
-+		goto done;
-+
-+	/* No extra locking here; FLAG_SYSFS just signifies that the
-+	 * request and export were done by on behalf of userspace, so
-+	 * they may be undone on its behalf too.
-+	 */
-+	if (test_and_clear_bit(FLAG_SYSFS, &gpio_desc[gpio].flags)) {
-+		status = 0;
-+		gpio_free(gpio);
-+	}
-+done:
-+	if (status)
-+		pr_debug("%s: status %d\n", __func__, status);
-+	return status ? : len;
-+}
-+
-+static struct class_attribute gpio_class_attrs[] = {
-+	__ATTR(export, 0200, NULL, export_store),
-+	__ATTR(unexport, 0200, NULL, unexport_store),
-+	{},
-+};
-+
-+static struct class gpio_class = {
-+	.name =		"gpio",
-+	.owner =	THIS_MODULE,
-+
-+	.class_attrs =	gpio_class_attrs,
-+};
-+
-+
-+/**
-+ * gpio_export - export a GPIO through sysfs
-+ * @gpio: gpio to make available, already requested
-+ * @direction_may_change: true if userspace may change gpio direction
-+ * Context: arch_initcall or later
-+ *
-+ * When drivers want to make a GPIO accessible to userspace after they
-+ * have requested it -- perhaps while debugging, or as part of their
-+ * public interface -- they may use this routine.  If the GPIO can
-+ * change direction (some can't) and the caller allows it, userspace
-+ * will see "direction" sysfs attribute which may be used to change
-+ * the gpio's direction.  A "value" attribute will always be provided.
-+ *
-+ * Returns zero on success, else an error.
-+ */
-+int gpio_export(unsigned gpio, bool direction_may_change)
-+{
-+	unsigned long		flags;
-+	struct gpio_desc	*desc;
-+	int			status = -EINVAL;
-+
-+	/* can't export until sysfs is available ... */
-+	if (!gpio_class.devices.next) {
-+		pr_debug("%s: called too early!\n", __func__);
-+		return -ENOENT;
-+	}
-+
-+	if (!gpio_is_valid(gpio))
-+		goto done;
-+
-+	mutex_lock(&sysfs_lock);
-+
-+	spin_lock_irqsave(&gpio_lock, flags);
-+	desc = &gpio_desc[gpio];
-+	if (test_bit(FLAG_REQUESTED, &desc->flags)
-+			&& !test_bit(FLAG_EXPORT, &desc->flags)) {
-+		status = 0;
-+		if (!desc->chip->direction_input
-+				|| !desc->chip->direction_output)
-+			direction_may_change = false;
-+	}
-+	spin_unlock_irqrestore(&gpio_lock, flags);
-+
-+	if (status == 0) {
-+		struct device	*dev;
-+
-+		dev = device_create(&gpio_class, desc->chip->dev, 0,
-+				"gpio%d", gpio);
-+		if (dev) {
-+			dev_set_drvdata(dev, desc);
-+			if (direction_may_change)
-+				status = sysfs_create_group(&dev->kobj,
-+						&gpio_attr_group);
-+			else
-+				status = device_create_file(dev,
-+						&dev_attr_value);
-+			if (status != 0)
-+				device_unregister(dev);
-+		} else
-+			status = -ENODEV;
-+		if (status == 0)
-+			set_bit(FLAG_EXPORT, &desc->flags);
-+	}
-+
-+	mutex_unlock(&sysfs_lock);
-+
-+done:
-+	if (status)
-+		pr_debug("%s: gpio%d status %d\n", __func__, gpio, status);
-+
-+	return status;
-+}
-+EXPORT_SYMBOL_GPL(gpio_export);
-+
-+static int match_export(struct device *dev, void *data)
-+{
-+	return dev_get_drvdata(dev) == data;
-+}
-+
-+/**
-+ * gpio_unexport - reverse effect of gpio_export()
-+ * @gpio: gpio to make unavailable
-+ *
-+ * This is implicit on gpio_free().
-+ */
-+void gpio_unexport(unsigned gpio)
-+{
-+	struct gpio_desc	*desc;
-+	int			status = -EINVAL;
-+
-+	if (!gpio_is_valid(gpio))
-+		goto done;
-+
-+	mutex_lock(&sysfs_lock);
-+
-+	desc = &gpio_desc[gpio];
-+	if (test_bit(FLAG_EXPORT, &desc->flags)) {
-+		struct device	*dev = NULL;
-+
-+		dev = class_find_device(&gpio_class, desc, match_export);
-+		if (dev) {
-+			clear_bit(FLAG_EXPORT, &desc->flags);
-+			put_device(dev);
-+			device_unregister(dev);
-+			status = 0;
-+		} else
-+			status = -ENODEV;
-+	}
-+
-+	mutex_unlock(&sysfs_lock);
-+done:
-+	if (status)
-+		pr_debug("%s: gpio%d status %d\n", __func__, gpio, status);
-+}
-+EXPORT_SYMBOL_GPL(gpio_unexport);
-+
-+static int gpiochip_export(struct gpio_chip *chip)
-+{
-+	int		status;
-+	struct device	*dev;
-+
-+	/* Many systems register gpio chips for SOC support very early,
-+	 * before driver model support is available.  In those cases we
-+	 * export this later, in gpiolib_sysfs_init() ... here we just
-+	 * verify that _some_ field of gpio_class got initialized.
-+	 */
-+	if (!gpio_class.devices.next)
-+		return 0;
-+
-+	/* use chip->base for the ID; it's already known to be unique */
-+	mutex_lock(&sysfs_lock);
-+	dev = device_create(&gpio_class, chip->dev, 0,
-+			"gpiochip%d", chip->base);
-+	if (dev) {
-+		dev_set_drvdata(dev, chip);
-+		status = sysfs_create_group(&dev->kobj,
-+				&gpiochip_attr_group);
-+	} else
-+		status = -ENODEV;
-+	chip->exported = (status == 0);
-+	mutex_unlock(&sysfs_lock);
-+
-+	if (status) {
-+		unsigned long	flags;
-+		unsigned	gpio;
-+
-+		spin_lock_irqsave(&gpio_lock, flags);
-+		gpio = chip->base;
-+		while (gpio_desc[gpio].chip == chip)
-+			gpio_desc[gpio++].chip = NULL;
-+		spin_unlock_irqrestore(&gpio_lock, flags);
-+
-+		pr_debug("%s: chip %s status %d\n", __func__,
-+				chip->label, status);
-+	}
-+
-+	return status;
-+}
-+
-+static void gpiochip_unexport(struct gpio_chip *chip)
-+{
-+	int			status;
-+	struct device		*dev;
-+
-+	mutex_lock(&sysfs_lock);
-+	dev = class_find_device(&gpio_class, chip, match_export);
-+	if (dev) {
-+		put_device(dev);
-+		device_unregister(dev);
-+		chip->exported = 0;
-+		status = 0;
-+	} else
-+		status = -ENODEV;
-+	mutex_unlock(&sysfs_lock);
-+
-+	if (status)
-+		pr_debug("%s: chip %s status %d\n", __func__,
-+				chip->label, status);
-+}
-+
-+static int __init gpiolib_sysfs_init(void)
-+{
-+	int		status;
-+	unsigned long	flags;
-+	unsigned	gpio;
-+
-+	status = class_register(&gpio_class);
-+	if (status < 0)
-+		return status;
-+
-+	/* Scan and register the gpio_chips which registered very
-+	 * early (e.g. before the class_register above was called).
-+	 *
-+	 * We run before arch_initcall() so chip->dev nodes can have
-+	 * registered, and so arch_initcall() can always gpio_export().
-+	 */
-+	spin_lock_irqsave(&gpio_lock, flags);
-+	for (gpio = 0; gpio < ARCH_NR_GPIOS; gpio++) {
-+		struct gpio_chip	*chip;
-+
-+		chip = gpio_desc[gpio].chip;
-+		if (!chip || chip->exported)
-+			continue;
-+
-+		spin_unlock_irqrestore(&gpio_lock, flags);
-+		status = gpiochip_export(chip);
-+		spin_lock_irqsave(&gpio_lock, flags);
-+	}
-+	spin_unlock_irqrestore(&gpio_lock, flags);
-+
-+
-+	return status;
-+}
-+postcore_initcall(gpiolib_sysfs_init);
-+
-+#else
-+static inline int gpiochip_export(struct gpio_chip *chip)
-+{
-+	return 0;
-+}
-+
-+static inline void gpiochip_unexport(struct gpio_chip *chip)
-+{
-+}
-+
-+#endif /* CONFIG_GPIO_SYSFS */
-+
- /**
-  * gpiochip_add() - register a gpio_chip
-  * @chip: the chip to register, with chip->base initialized
-@@ -160,6 +643,11 @@ err:
-  * because the chip->base is invalid or already associated with a
-  * different chip.  Otherwise it returns zero as a success code.
-  *
-+ * When gpiochip_add() is called very early during boot, so that GPIOs
-+ * can be freely used, the chip->dev device must be registered before
-+ * the gpio framework's arch_initcall().  Otherwise sysfs initialization
-+ * for GPIOs will fail rudely.
-+ *
-  * If chip->base is negative, this requests dynamic assignment of
-  * a range of valid GPIOs.
-  */
-@@ -182,7 +670,7 @@ int gpiochip_add(struct gpio_chip *chip)
- 		base = gpiochip_find_base(chip->ngpio);
- 		if (base < 0) {
- 			status = base;
--			goto fail_unlock;
-+			goto unlock;
- 		}
- 		chip->base = base;
- 	}
-@@ -197,12 +685,16 @@ int gpiochip_add(struct gpio_chip *chip)
- 	if (status == 0) {
- 		for (id = base; id < base + chip->ngpio; id++) {
- 			gpio_desc[id].chip = chip;
--			gpio_desc[id].flags = 0;
-+			gpio_desc[id].flags = chip->direction_input
-+				? (1 << FLAG_IS_OUT)
-+				: 0;
- 		}
- 	}
- 
--fail_unlock:
-+unlock:
- 	spin_unlock_irqrestore(&gpio_lock, flags);
-+	if (status == 0)
-+		status = gpiochip_export(chip);
- fail:
- 	/* failures here can mean systems won't boot... */
- 	if (status)
-@@ -234,6 +726,7 @@ int gpiochip_remove(struct gpio_chip *ch
- 		}
- 	}
- 	if (status == 0) {
-+		gpiochip_unexport(chip);
- 		for (id = chip->base; id < chip->base + chip->ngpio; id++)
- 			gpio_desc[id].chip = NULL;
- 	}
-@@ -296,6 +789,8 @@ void gpio_free(unsigned gpio)
- 		return;
- 	}
- 
-+	gpio_unexport(gpio);
-+
- 	spin_lock_irqsave(&gpio_lock, flags);
- 
- 	desc = &gpio_desc[gpio];
-@@ -534,10 +1029,6 @@ EXPORT_SYMBOL_GPL(gpio_set_value_canslee
- 
- #ifdef CONFIG_DEBUG_FS
- 
--#include <linux/debugfs.h>
--#include <linux/seq_file.h>
--
--
- static void gpiolib_dbg_show(struct seq_file *s, struct gpio_chip *chip)
- {
- 	unsigned		i;
---- g26.orig/drivers/gpio/mcp23s08.c	2008-05-17 17:12:11.000000000 -0700
-+++ g26/drivers/gpio/mcp23s08.c	2008-05-17 17:15:04.000000000 -0700
-@@ -239,6 +239,7 @@ static int mcp23s08_probe(struct spi_dev
- 	mcp->chip.base = pdata->base;
- 	mcp->chip.ngpio = 8;
- 	mcp->chip.can_sleep = 1;
-+	mcp->chip.dev = &spi->dev;
- 	mcp->chip.owner = THIS_MODULE;
- 
- 	spi_set_drvdata(spi, mcp);
---- g26.orig/drivers/gpio/pca953x.c	2008-05-17 17:12:11.000000000 -0700
-+++ g26/drivers/gpio/pca953x.c	2008-05-17 17:15:04.000000000 -0700
-@@ -187,6 +187,7 @@ static void pca953x_setup_gpio(struct pc
- 	gc->base = chip->gpio_start;
- 	gc->ngpio = gpios;
- 	gc->label = chip->client->name;
-+	gc->dev = &chip->client->dev;
- 	gc->owner = THIS_MODULE;
- }
- 
---- g26.orig/drivers/gpio/pcf857x.c	2008-05-17 17:12:11.000000000 -0700
-+++ g26/drivers/gpio/pcf857x.c	2008-05-17 17:15:04.000000000 -0700
-@@ -175,6 +175,7 @@ static int pcf857x_probe(struct i2c_clie
- 
- 	gpio->chip.base = pdata->gpio_base;
- 	gpio->chip.can_sleep = 1;
-+	gpio->chip.dev = &client->dev;
- 	gpio->chip.owner = THIS_MODULE;
- 
- 	/* NOTE:  the OnSemi jlc1562b is also largely compatible with
---- g26.orig/drivers/i2c/chips/tps65010.c	2008-05-17 17:12:11.000000000 -0700
-+++ g26/drivers/i2c/chips/tps65010.c	2008-05-17 17:15:04.000000000 -0700
-@@ -636,6 +636,8 @@ static int tps65010_probe(struct i2c_cli
- 		tps->outmask = board->outmask;
- 
- 		tps->chip.label = client->name;
-+		tps->chip.dev = &client->dev;
-+		tps->chip.owner = THIS_MODULE;
- 
- 		tps->chip.set = tps65010_gpio_set;
- 		tps->chip.direction_output = tps65010_output;
---- g26.orig/drivers/mfd/htc-egpio.c	2008-05-17 17:12:11.000000000 -0700
-+++ g26/drivers/mfd/htc-egpio.c	2008-05-17 17:15:04.000000000 -0700
-@@ -318,6 +318,8 @@ static int __init egpio_probe(struct pla
- 		ei->chip[i].dev = &(pdev->dev);
- 		chip = &(ei->chip[i].chip);
- 		chip->label           = "htc-egpio";
-+		chip->dev             = &pdev->dev;
-+		chip->owner           = THIS_MODULE;
- 		chip->get             = egpio_get;
- 		chip->set             = egpio_set;
- 		chip->direction_input = egpio_direction_input;
---- g26.orig/include/asm-generic/gpio.h	2008-05-17 17:12:11.000000000 -0700
-+++ g26/include/asm-generic/gpio.h	2008-05-17 17:15:04.000000000 -0700
-@@ -28,6 +28,8 @@ struct module;
- /**
-  * struct gpio_chip - abstract a GPIO controller
-  * @label: for diagnostics
-+ * @dev: optional device providing the GPIOs
-+ * @owner: helps prevent removal of modules exporting active GPIOs
-  * @direction_input: configures signal "offset" as input, or returns error
-  * @get: returns value for signal "offset"; for output signals this
-  *	returns either the value actually sensed, or zero
-@@ -55,6 +57,7 @@ struct module;
-  */
- struct gpio_chip {
- 	char			*label;
-+	struct device		*dev;
- 	struct module		*owner;
- 
- 	int			(*direction_input)(struct gpio_chip *chip,
-@@ -70,6 +73,7 @@ struct gpio_chip {
- 	int			base;
- 	u16			ngpio;
- 	unsigned		can_sleep:1;
-+	unsigned		exported:1;
- };
- 
- extern const char *gpiochip_is_requested(struct gpio_chip *chip,
-@@ -104,7 +108,18 @@ extern void __gpio_set_value(unsigned gp
- extern int __gpio_cansleep(unsigned gpio);
- 
- 
--#else
-+#ifdef CONFIG_GPIO_SYSFS
-+
-+/*
-+ * A sysfs interface can be exported by individual drivers if they want,
-+ * but more typically is configured entirely from userspace.
-+ */
-+extern int gpio_export(unsigned gpio, bool direction_may_change);
-+extern void gpio_unexport(unsigned gpio);
-+
-+#endif	/* CONFIG_GPIO_SYSFS */
-+
-+#else	/* !CONFIG_HAVE_GPIO_LIB */
- 
- static inline int gpio_is_valid(int number)
- {
-@@ -133,6 +148,20 @@ static inline void gpio_set_value_cansle
- 	gpio_set_value(gpio, value);
- }
- 
--#endif
-+#endif /* !CONFIG_HAVE_GPIO_LIB */
-+
-+#ifndef CONFIG_GPIO_SYSFS
-+
-+/* sysfs support is only available with gpiolib, where it's optional */
-+
-+static inline int gpio_export(unsigned gpio, bool direction_may_change)
-+{
-+	return -ENOSYS;
-+}
-+
-+static inline void gpio_unexport(unsigned gpio)
-+{
-+}
-+#endif	/* CONFIG_GPIO_SYSFS */
- 
- #endif /* _ASM_GENERIC_GPIO_H */
---- g26.orig/include/linux/gpio.h	2008-05-17 17:12:11.000000000 -0700
-+++ g26/include/linux/gpio.h	2008-05-17 17:15:04.000000000 -0700
-@@ -76,6 +76,19 @@ static inline void gpio_set_value_cansle
- 	WARN_ON(1);
- }
- 
-+static inline int gpio_export(unsigned gpio, bool direction_may_change)
-+{
-+	/* GPIO can never have been requested or set as {in,out}put */
-+	WARN_ON(1);
-+	return -EINVAL;
-+}
-+
-+static inline void gpio_unexport(unsigned gpio)
-+{
-+	/* GPIO can never have been exported */
-+	WARN_ON(1);
-+}
-+
- static inline int gpio_to_irq(unsigned gpio)
- {
- 	/* GPIO can never have been requested or set as input */
+--MP_/lExgOVsBiT.jCdwRsNkL_ZN
+Content-Type: application/octet-stream; name=lspci.txt.gz
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename=lspci.txt.gz
+
+H4sICBl4L0gAA2xzcGNpLnR4dADNmG1v4jgQx1/Dp/DLVget89AUqutJ0Pa2aMuWhe5pJYQqx3aK
+dSFBiem1/fQ3jgk0KYSQ7XYXqYQkM679+4/tGWN8hvERRtdhLJEbCfbAz1DnrofuOJ0GoR8+CB6j
+XkDRJX8UlKPTtoXrtdHCjZ9jyWdg3O3doYtwNl9IHsGPaH6U2pq2YdZrf/vkIT5D7iJGMwI+UQM5
+Tv/6pYFmnInFDDH+GHO/gXwieUCfkWXW6xj6ZUC/Bhe9st0y0cE8Ch+awkMYo/GXMJoRHxqnIeOT
+wwr9aLfrte4CXOaRmJHo+RzjBoqhvYAldwbcLdwwYiIAD33PaXPpfu606rXe8S1y+VQEbDUKDB8G
+f83kh+d59Vqfz8LoOW/oMU+Z4KanrBLDQcQ9LumUuD6HXm/ywssPa+lrc/XAS1u5IHPiCl9IYHiG
+/iSU8jiG0QeCs780ens/9Pb+6D24viGOi4GbOeBmFjjeypunIHghb57y5vvz9hjL8oYHpXjXPvMo
+4EArEo8wgUSAFjG0O6eCz8NINvXzRBbDBFlGnbsOAiQyCn2fR1u0GXUdUOJLGDSHRLDmiXZbq2Sg
+cecaBIY5pgR6PZ8LpLatVrUJ3UC94VdkmlohNa4YEYk8T4VLLF74eWuSf8dX7+w371iBHy3wc1fv
+DGeyCgT930w13dCBZTZdIRsoAHbzV/ofpo6fJxUlJVMqtI4W6Pht1IXVspSMyvTgFuTCh2sJDRiJ
+epaX7ycsx1o9w8kD46WA2QrYZiIhELmfUpZSMSpRMX4pldM8FfbeVMxKVMxfSqWVp0Lfm4pViYr1
+e8WK+95U7EpU7N8rVsh7UznZl8raFB1cAYxXfEzgc/WhfNp5Pu1SfMwTp+pOxTP8VDI46ieJ2RZs
+T3hpkQEX8UdkWNUwbUKT28xxwWauc7GSm/mWBEyIJ/s+noFgKQYD9S6vwAC67hG6LS3WUaQsVzHT
+ImjcT0RHI04HaBCJwYfu21lwhrc1e8KWZ6ds3rwzTgv8Trf6ee2sUJVCElD3vg/uAWuqhok6CyZC
+NW5RIIaKzc4L8QX5Yd6xH/63R3pkJyHo2DtC0KmcUF5fdmCQEmbGEomFeqNOcdGmo1PVdjJEN4ML
+1E2sf3Is4rSH9u6yUku27KG66B5mixforYwIlcCjuM7851MHzYnPpeQoDsJwvqurjl1chFq5ItTK
+Vf321iqUpuUhLaxCaVqF0vJVqMfc1MvVXnVsnOETWLkVAApaEimU/87KcThSATIeEsbDAH2HkIVA
+NEy1wvMIjCbZWl83n7b5DovaxoOBdJJlEqj0iGM9xzbOL7PVz+4OzPNwqanpJClGZi1j66q0zP66
+VKHUUqXBk1eGb1V4ekpV2F2z79teWS0ce2Nesjyt+rAFz9QHl1dyqkxlJrCHnPiS/wtjmwk1cRdU
+hir+jhroRrIjNLy7aRmGcdwynFY3WWOunjSST+IBuiU3NasTGmzsE+J4j7MvTTU5YcmEHM+H3Gvo
+3PNKQU8iefwoIrkg/kQNlwSxgFAY3vZ1S8uUacxErBzZZD1/KusVAeA2aGXppaiqVs2WYbWP1deF
+/v5jmVzirBa7m1LeGyXZdXJl5EShRaJQr9xR0g9k6GogMgzr9f8BayAJ/MEXAAA=
+
+--MP_/lExgOVsBiT.jCdwRsNkL_ZN--
+
+--Sig_/HLLrK9tMDS/1BfKDKykfRtp
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
+
+iD8DBQFIL3su96zL6DUtXhERAlp6AJsEeLVKVFgWoC1f/SjXir689+npbACgxDrI
+U1cwwPAuOOYZeh1bTUe/jpk=
+=sUfQ
+-----END PGP SIGNATURE-----
+
+--Sig_/HLLrK9tMDS/1BfKDKykfRtp--
