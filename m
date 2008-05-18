@@ -1,120 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760860AbYERArX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760347AbYERAy3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760860AbYERArX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 20:47:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756556AbYERArJ
+	id S1760347AbYERAy3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 20:54:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbYERAyT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 20:47:09 -0400
-Received: from waste.org ([66.93.16.53]:36710 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756048AbYERArH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 20:47:07 -0400
-Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses of
-	IRQF_SAMPLE_RANDOM
-From: Matt Mackall <mpm@selenic.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Chris Peterson <cpeterso@cpeterso.com>, jeff@garzik.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080515215517.GI1936@cs181133002.pp.htv.fi>
-References: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com>
-	 <20080515142154.0595e475@core>
-	 <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com>
-	 <20080515215517.GI1936@cs181133002.pp.htv.fi>
-Content-Type: text/plain
-Date: Sat, 17 May 2008 19:36:08 -0500
-Message-Id: <1211070968.18026.113.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+	Sat, 17 May 2008 20:54:19 -0400
+Received: from smtp110.sbc.mail.mud.yahoo.com ([68.142.198.209]:41564 "HELO
+	smtp110.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752167AbYERAyT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 17 May 2008 20:54:19 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=EG9kd9DNUq5jhIoK+cgRW1PuusXehmePvObS6nzze69DDqtH21eVnFydNnsWhL4e3YWoZ1EePBWMKHWZhcUTpKIapxZazsVPvvFefwdmIWkR5bO1/CAg4L2NyF8n7PWjX1518ulWDTdEMmyVFQgYIP4K0saChVX7f1I3d4WjeKc=  ;
+X-YMail-OSG: E8Az0hAVM1kIefDYT7VMr2PR4N_E8TFDkwW2THlwZcaUrxywCWj_izagpT_vKfFKy8fShU_5TAJMJDvR2NAxstgD87OoV1QhkzBlWqiPUPDkmac.8X1eyWv8w29pEpNecGE-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch 2.6.26-rc2-git] gpio: pca953x driver handles pca9554 too
+Date: Sat, 17 May 2008 17:39:57 -0700
+User-Agent: KMail/1.9.6
+Cc: lkml <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805171739.57655.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Teach drivers/gpio/pca953x.c about PCA9554, another compatible chip.
 
-On Fri, 2008-05-16 at 00:55 +0300, Adrian Bunk wrote:
-> On Thu, May 15, 2008 at 09:07:52AM -0700, Brandeburg, Jesse wrote:
-> > Alan Cox wrote:
-> > > Chris Peterson <cpeterso@cpeterso.com> wrote:
-> > >> I know Jeff Garzik says he's not interested in an anti-entropy
-> > >> pogrom for existing net drivers, but here is the patch if anyone
-> > >> else is interested..? :)  
-> > >> 
-> > >> Only 12 net drivers are affected, the last of the
-> > >> theoretically-exploitable network entropy. 
-> > > 
-> > > Looks fine to me. If Jeff doesn't want to touch them then send them
-> > > direct to Andrew/Linus.
-> > > 
-> > > A more interesting alternative might be to mark things like network
-> > > drivers with a new flag say IRQF_SAMPLE_DUBIOUS so that users can be
-> > > given a switch to enable/disable their use depending upon the
-> > > environment. 
-> > 
-> > we've been hearing rumblings of big customers wanting (maybe requiring)
-> > wired network drivers from Intel to  advertise this flag.  Jeff have you
-> > heard of such?
-> > 
-> > I think the argument is that a headless system (no keyboard/mouse, no
-> > soundcard, probably no video) with a libata based driver and a network
-> > driver without IRQF_SAMPLE_RANDOM has *no* sources of entropy.  In this
-> > case the argument is very strong for at least *some* source of entropy
-> > from interrupts so that randomness can get some external input.  Just
-> > try rebuilding a kernel RPM over an ssh session and you'll see what I
-> > mean.
-> > 
-> > In short, I agree with Alan's IRQF_SAMPLE_DUBIOUS, and know of Linux
-> > customers who also want the same.
-> 
-> We have two random number interfaces:
-> - /dev/random
-> - /dev/urandom
-> 
-> If a customer wants to get data from /dev/random although there's not 
-> enough entropy that's not a problem we can solve (we can only try to 
-> gather more real entropy if possible).
-> 
-> If he can live with dubious data he can simply use /dev/urandom .
-> 
-> If a customer wants to use /dev/random and demands to get dubious data 
-> there if nothing better is available fulfilling his wish only moves 
-> the security bug from his crappy application to the Linux kernel.
-> 
-> But what we could perhaps do with some kind of IRQF_SAMPLE_DUBIOUS would 
-> be to improve the quality of the data in /dev/urandom if there's not 
-> enough entropy available?
-> 
-> I have seen embedded systems with zero entropy, and dubious entropy 
-> might there be better than no entropy at all.
-> Or am I wrong on the latter?
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
 
-There are two issues that people need to separate here:
-
-- sampling noise
-- estimating entropy in that noise
-
-It certainly makes sense to sample network timing noise. It often does
-not make sense to assume that there's any entropy in those timing
-samples. For instance:
-
-- our clock resolution may be low enough that an attacker can guess our
-samples (ie it's simply HZ, very common in embedded land)
-- the bus involved (ISA, peripheral bus, even slow PCI) may have the
-same issue
-- it may be heavily correlated with some other measurement (ie network
-vs disk samples on file servers)
-
-We currently assume that IRQF_SAMPLE_RANDOM means 'this is a completely
-trusted unobservable entropy source' which is obviously wrong for
-network devices but is right for some other classes of device.
-
-I'd personally prefer to add a new interface, eg
-add_network_randomness(), that internalized the wisdom of what to do 
-with network samples. Similarly, the various 'input'-like devices that
-use SAMPLE_RANDOM should be switched to go through the 'input'
-interface.
-
--- 
-Mathematics is the supreme nostalgia of our time.
-
+--- g26.orig/drivers/gpio/pca953x.c	2008-05-01 12:46:39.000000000 -0700
++++ g26/drivers/gpio/pca953x.c	2008-05-01 00:14:13.000000000 -0700
+@@ -30,6 +30,7 @@ static const struct i2c_device_id pca953
+ 	{ "pca9537", 4, },
+ 	{ "pca9538", 8, },
+ 	{ "pca9539", 16, },
++	{ "pca9554", 8, },
+ 	{ "pca9555", 16, },
+ 	{ "pca9557", 8, },
+ 	/* REVISIT several pca955x parts should work here too */
