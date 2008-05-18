@@ -1,50 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756121AbYEROcD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756474AbYEROpv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756121AbYEROcD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 10:32:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbYEROby
+	id S1756474AbYEROpv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 10:45:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbYEROpk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 10:31:54 -0400
-Received: from ozlabs.org ([203.10.76.45]:33049 "EHLO ozlabs.org"
+	Sun, 18 May 2008 10:45:40 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:52197 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751731AbYERObx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 10:31:53 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [PATCH] modules: Use a better scheme for refcounting
-Date: Mon, 19 May 2008 00:31:44 +1000
-User-Agent: KMail/1.9.9
-Cc: Mike Travis <travis@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>
-References: <482C9FC5.2070508@cosmosbay.com> <200805171533.46295.rusty@rustcorp.com.au> <482E8AF5.9050804@cosmosbay.com>
-In-Reply-To: <482E8AF5.9050804@cosmosbay.com>
+	id S1751740AbYEROpj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 10:45:39 -0400
+Date: Sun, 18 May 2008 17:43:40 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Theodore Tso <tytso@mit.edu>, Gilles Espinasse <g.esp@free.fr>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses
+	ofIRQF_SAMPLE_RANDOM
+Message-ID: <20080518144340.GH8140@cs181133002.pp.htv.fi>
+References: <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com> <482C7B18.6060003@garzik.org> <482C7E53.3050300@hp.com> <482C8184.2030906@garzik.org> <20080516161029.44ded734@core> <0f7201c8b790$9c2a2340$f9b5a8c0@pii350> <20080517220258.GC8140@cs181133002.pp.htv.fi> <10a001c8b8b2$28afd2c0$f9b5a8c0@pii350> <20080518120235.GE8140@cs181133002.pp.htv.fi> <20080518122410.GA31413@mit.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200805190031.45136.rusty@rustcorp.com.au>
+In-Reply-To: <20080518122410.GA31413@mit.edu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 17 May 2008 17:36:21 Eric Dumazet wrote:
-> Christoph Lameter made good work last year and apparently the path is to :
->
-> 1) Put pda at the begining of percpu section.
+On Sun, May 18, 2008 at 08:24:10AM -0400, Theodore Tso wrote:
+> On Sun, May 18, 2008 at 03:02:36PM +0300, Adrian Bunk wrote:
+> > > Yes that's the whole point.
+> > > Why remove IRQF_SAMPLE_RANDOM if "it cannot make the RNG output worse."
+> > > We should not care if network traffic can be sniffed in some configurations
+> > > (plus sniffing could be very unlikely in some others).
+> > >...
+> > > Are network drivers better without SAMPLE_RANDOM?
+> > > My understanding of openssl developper answer is same as yours :
+> > > "it cannot make the RNG output worse."
+> > 
+> > The "it cannot make the RNG output worse." only applies to the OpenSSL 
+> > case (one could argue whether it makes sense, but it can't do harm).
+> 
+> Actually, it applies here too.  Or it can be made to apply here.  If
+> people are concerned that for certain cards the entropy could
+> potentially be guessed by someone on the local network (although I
+> suspect it's still useful for protecting against someone who doesn't
+> have local network access), we could still sample the entropy, and
+> just not increment the entropy credit for /dev/random's sake.
 
-Well, we killed the pda on i386: it's basically a limited arch-specific percpu 
-section.  Unfortunately, ISTR that doing so kills -fstack-protector on x86-64 
-(gcc was explicitly patched to support the kernel doing this, but it nailed 
-us to a fixed offset off %fs).  But the PDA is a redundant idea which should 
-be removed.
+The latter is exactly the difference between the two cases.
 
-> 2) Relocate percpu variables to begin at zero
-> 3) Use %gs (or %fs) register to address pda AND percpu section.
+But Gilles was implying using IRQF_SAMPLE_RANDOM for gathering entropy 
+was as harmless as OpenSSL mixing uninitialized memory into their RNG.
 
-Thanks for the prod Eric.  ISTR acking those patches; Christoph, what happened 
-to them?
+> It will
+> still put something into the entropy pool which is also used by
+> /dev/urandom.
+> 
+> > The replacement solution ready on all Linux machines today is for 
+> > userspace to use /dev/urandom instead of /dev/random if feasible.
+> 
+> Sampling interrupt entropy will definitely not hurt /dev/urandon, and
+> may help, especially in the freshly installed server case.  Especially
+> if it's using kickstart-style install, where there is no keyboard
+> entropy, sampling the interrupts as it pulls RPM's from the network
+> and/or the CD-ROM drive may be all that we have.
 
-Cheers,
-Rusty.
+No disagreement on this.
+
+>               	   	  	       	   	   - Ted
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
