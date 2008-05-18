@@ -1,54 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753054AbYERGkS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752608AbYERGlF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753054AbYERGkS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 02:40:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbYERGkJ
+	id S1752608AbYERGlF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 02:41:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbYERGkx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 02:40:09 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:42550
-	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751068AbYERGkI (ORCPT
+	Sun, 18 May 2008 02:40:53 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:22565 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751127AbYERGkw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 02:40:08 -0400
-Message-ID: <482FCF45.1050307@qumranet.com>
-Date: Sun, 18 May 2008 09:40:05 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sun, 18 May 2008 02:40:52 -0400
+Date: Sun, 18 May 2008 09:45:51 +0300
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, akpm@osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC: 2.6 patch] remove the OSS trident driver
+Message-ID: <20080518064551.GD7421@il.ibm.com>
+References: <20080513210544.GB23977@martell.zuzino.mipt.ru> <20080514054707.GB6682@il.ibm.com> <20080516002355.GM1936@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Mark McLoughlin <markmc@redhat.com>, Anthony Liguori <aliguori@us.ibm.com>,
-       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org
-Subject: Re: [PATCH] virtio_net: free transmit skbs in a timer
-References: <1209565906-9019-1-git-send-email-markmc@redhat.com> <1210865380.16012.15.camel@muff> <482C579F.4030509@qumranet.com> <200805160925.18087.rusty@rustcorp.com.au>
-In-Reply-To: <200805160925.18087.rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (firebolt.argo.co.il [0.0.0.0]); Sun, 18 May 2008 09:40:05 +0300 (IDT)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080516002355.GM1936@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Friday 16 May 2008 01:32:47 Avi Kivity wrote:
->   
->> Mark McLoughlin wrote:
->>     
->>> I think Rusty is speaking from the POV of the guest driver - i.e. that
->>> virtio_net should never disable notifications on the xmit queue using
->>> disable_cb()?
->>>
->>> Sounds like you think agree, but that the host side should throttle the
->>> rate of xmit notifications?
->>>       
->> Yes.
->>     
->
-> But performance is going to suck in the meantime, as currently our host 
-> doesn't do this.
->   
+On Fri, May 16, 2008 at 03:23:55AM +0300, Adrian Bunk wrote:
+> On Wed, May 14, 2008 at 08:47:08AM +0300, Muli Ben-Yehuda wrote:
+> >...
+> > Also, I no longer have working trident hardware---if someone else does
+> > and can test this, please let me know. Otherwise we can should
+> > probably go ahead and remove this old OSS driver.
+> 
+> Considering that we have a working ALSA driver for this hardware, and 
+> your past objections against the removal were the sole reason why this 
+> is the only PCI OSS driver we still have in the tree, I'd actually 
+> prefer doing this (patch below).
+> 
+> Is this OK for you?
 
-That's what the feature bits are for.
+Yep. Please also add to the patch the CREDITS snippet below.
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+> SOUND_TRIDENT was the last PCI OSS driver, and since there's already an 
+> ALSA driver for the same hardware we can remove it.
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
+Signed-off-by: Muli Ben-Yehuda <muli@il.ibm.com>
+
+diff --git a/CREDITS b/CREDITS
+index 8fec7b3..2259308 100644
+--- a/CREDITS
++++ b/CREDITS
+@@ -317,6 +317,14 @@ S: 2322 37th Ave SW
+ S: Seattle, Washington 98126-2010
+ S: USA
+ 
++N: Muli Ben-Yehuda
++E: mulix@mulix.org
++E: muli@il.ibm.com
++W: http://www.mulix.org
++D: trident OSS sound driver, x86-64 dma-ops and Calgary IOMMU,
++D: KVM and Xen bits and other misc. hackery.
++S: Haifa, Israel
++
+ N: Johannes Berg
+ E: johannes@sipsolutions.net
+ W: http://johannes.sipsolutions.net/
