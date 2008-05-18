@@ -1,17 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758645AbYERMOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760189AbYERMOz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758645AbYERMOl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 08:14:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758741AbYERMNL
+	id S1760189AbYERMOz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 08:14:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758811AbYERMNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 08:13:11 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58331 "EHLO ogre.sisk.pl"
+	Sun, 18 May 2008 08:13:14 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58333 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758636AbYERMNK convert rfc822-to-8bit (ORCPT
+	id S1758365AbYERMNN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 08:13:10 -0400
-Cc: "Parag Warudkar" <parag.warudkar@gmail.com>,
-       "Peter Zijlstra" <peterz@infradead.org>
+	Sun, 18 May 2008 08:13:13 -0400
+Cc: "Romano Giannetti" <romano.giannetti@gmail.com>
 References: <oKKSi1w1qaF.A.mEG.JrBMIB@albercik>
 In-Reply-To: <oKKSi1w1qaF.A.mEG.JrBMIB@albercik>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +18,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <7wuznNhcUqC.A.81B.-tBMIB@albercik>
-Subject: [Bug #10616] Horrendous Audio Stutter - current git
+Message-ID: <7wuznNhcUqC.A.ovB.6tBMIB@albercik>
+Subject: [Bug #10620] X does not resume (intel chipset)
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sun, 18 May 2008 13:13:55 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -34,13 +33,10 @@ The following bug entry is on the current list of known regressions
 from 2.6.25.  Please verify if it still should be listed.
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10616
-Subject		: Horrendous Audio Stutter - current git
-Submitter	: Parag Warudkar <parag.warudkar@gmail.com>
-Date		: 2008-05-02 20:14 (17 days old)
-References	: http://lkml.org/lkml/2008/5/1/440
-		  http://lkml.org/lkml/2008/5/11/230
-Handled-By	: Peter Zijlstra <peterz@infradead.org>
-Patch		: http://lkml.org/lkml/2008/5/2/126
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10620
+Subject		: X does not resume (intel chipset)
+Submitter	: Romano Giannetti <romano.giannetti@gmail.com>
+Date		: 2008-05-08 06:53 (11 days old)
+References	: http://lkml.org/lkml/2008/5/8/378
 
 
