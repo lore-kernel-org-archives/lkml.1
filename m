@@ -1,62 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757049AbYERK3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755522AbYERKpe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757049AbYERK3h (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 06:29:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751044AbYERK33
+	id S1755522AbYERKpe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 06:45:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbYERKpW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 06:29:29 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:64194 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751015AbYERK33 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 06:29:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=kFIZQP+Wk6G4GCG81E2IPi9lEzKhsAYMogG4UTXyK/EqcTnSyrHFqQwzvP0BO5qHkoI8KYC0NnzPRquAVqulFRUASiPMUjBpZwDkUW9mSvhGWO79X/eQic5BWMimMOR/BSHIBJUvQOEo2HyODnz67zIJMGjxpp9G9BJ0wS+UvcY=
-Date: Sun, 18 May 2008 14:29:14 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Tom Spink <tspink@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Jiri Slaby <jirislaby@gmail.com>, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [RFC] x86: merge nmi_32-64 to nmi.c
-Message-ID: <20080518102914.GI6948@cvg>
-References: <20080517192200.GA6914@cvg> <7b9198260805171328u555eec17t3597f3378edbda88@mail.gmail.com> <Pine.LNX.4.55.0805172148380.10067@cliff.in.clinika.pl> <alpine.LFD.1.10.0805172331030.18798@apollo.tec.linutronix.de> <483001C4.1010801@firstfloor.org> <20080518102015.GH6948@cvg> <48300426.8080300@firstfloor.org>
+	Sun, 18 May 2008 06:45:22 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57849 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752549AbYERKpU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 06:45:20 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+Subject: Re: hibernate event order question
+Date: Sun, 18 May 2008 12:45:13 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ayaz Abdulla <aabdulla@nvidia.com>
+References: <20080517175046.GA9032@yamamaya.is-a-geek.org> <20080517223622.GA2668@yamamaya.is-a-geek.org> <20080517232411.GA8792@yamamaya.is-a-geek.org>
+In-Reply-To: <20080517232411.GA8792@yamamaya.is-a-geek.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48300426.8080300@firstfloor.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200805181245.13899.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Andi Kleen - Sun, May 18, 2008 at 12:25:42PM +0200]
-| Cyrill Gorcunov wrote:
-| 
-| > yes, but what to do with absence of __nmi_count on 32bit and die_nmi
-| > uses different number of args? gcc follows both pathes anyway trying
-| > to evaluate where I prefer it would not... I mean I've got errors
-| > on compiling procedue 'cause of different number of args for die_nmi
-| > used in 32bit mode. That is why I've asked Thomas if it possible to
-| > add "panic" boot option for 32bit mode and make it familiar with 64bit
-| > mode and merge them eventually.
-| 
-| Sorry just pointed out why the Kconfig idea doesn't work, nothing more.
-| 
-| If you want to avoid ifdefs then you have to unify the functionality
-| first. Putting syntactical sugar on ifdefs doesn't make sense.
-| 
-| I haven't kept track of the exact state of the code, but if the per cpu
-| data macros are finally as efficient as the PDA you could move the
-| nmi_count to per_cpu in both for once.
-| 
-| -Andi
-| 
+On Sunday, 18 of May 2008, Tobias Diedrich wrote:
+> Tobias Diedrich wrote:
+> > > > Shouldn't there be a 'prepare for poweroff'-callback, which gets
+> > > > called
+> > > > before the system is powered off for real?
+> > > 
+> > > Yes, it should and it's called in recent kernels.
+> > 
+> > For what values of 'recent'?
+> > I'm running 2.6.26-rc2 here. :)
+> > How do I hook into this callback?
+> > (suspend_late maybe? Going to try that one next...)
+> 
+> Ok, this patch fixes the 'regression' introduced by the previous
+> patch (at least for me ;)):
 
-ok, thanks
+Well, what exactly do you do to hibernate the box?
 
-		- Cyrill -
+
+> Index: linux-2.6.26-rc2.forcedwol/drivers/net/forcedeth.c
+> ===================================================================
+> --- linux-2.6.26-rc2.forcedwol.orig/drivers/net/forcedeth.c	2008-05-18 01:10:18.000000000 +0200
+> +++ linux-2.6.26-rc2.forcedwol/drivers/net/forcedeth.c	2008-05-18 01:11:33.000000000 +0200
+> @@ -5828,8 +5828,24 @@
+>  out:
+>  	return rc;
+>  }
+> +
+> +static void nv_shutdown(struct pci_dev *pdev)
+> +{
+> +	struct net_device *dev = pci_get_drvdata(pdev);
+> +	struct fe_priv *np = netdev_priv(dev);
+> +	u8 __iomem *base = get_hwbase(dev);
+> +
+> +	if (netif_running(dev))
+> +		nv_close(dev);
+> +
+> +	pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
+> +	pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
+> +	pci_disable_device(pdev);
+> +	pci_set_power_state(pdev, PCI_D3hot);
+> +}
+>  #else
+>  #define nv_suspend NULL
+> +#define nv_shutdown NULL
+>  #define nv_resume NULL
+>  #endif /* CONFIG_PM */
+>  
+> @@ -6000,6 +6016,7 @@
+>  	.remove		= __devexit_p(nv_remove),
+>  	.suspend	= nv_suspend,
+>  	.resume		= nv_resume,
+> +	.shutdown	= nv_shutdown,
+>  };
+>  
+>  static int __init init_nic(void)
+> 
