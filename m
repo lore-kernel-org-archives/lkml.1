@@ -1,71 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754122AbYERR1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753805AbYERRfb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754122AbYERR1A (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 13:27:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750969AbYERR0x
+	id S1753805AbYERRfb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 13:35:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbYERRfW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 13:26:53 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39498 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750831AbYERR0w (ORCPT
+	Sun, 18 May 2008 13:35:22 -0400
+Received: from eazy.amigager.de ([213.239.192.238]:44956 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751013AbYERRfV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 13:26:52 -0400
-Date: Sun, 18 May 2008 10:24:25 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Austin Clements <amdragon+kernelbugzilla@mit.edu>,
-       Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Roland McGrath <roland@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] posix timers: use SIGQUEUE_CANCELLED when the timer
- is destroyed
-In-Reply-To: <20080518171543.GA25855@tv-sign.ru>
-Message-ID: <alpine.LFD.1.10.0805181024050.3020@woody.linux-foundation.org>
-References: <20080517151422.GA9502@tv-sign.ru> <20080517153140.GA9534@tv-sign.ru> <alpine.LFD.1.10.0805171006090.3020@woody.linux-foundation.org> <20080518171543.GA25855@tv-sign.ru>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	Sun, 18 May 2008 13:35:21 -0400
+Date: Sun, 18 May 2008 19:35:11 +0200
+From: Tino Keitel <tino.keitel@gmx.de>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: linux1394-devel@lists.sourceforge.net,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 0/5] SCSI and FireWire: fix/add START STOP UNIT for
+	SBP-2 disks
+Message-ID: <20080518173511.GA14742@dose.home.local>
+Mail-Followup-To: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	linux1394-devel@lists.sourceforge.net,
+	James Bottomley <James.Bottomley@HansenPartnership.com>,
+	linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+References: <20080429232606.GA14261@dose.home.local> <481874BD.5010807@s5r6.in-berlin.de> <20080507180042.GA32629@dose.home.local> <tkrat.327b59f1366f8ea0@s5r6.in-berlin.de> <tkrat.635f52f7035be2bc@s5r6.in-berlin.de> <tkrat.5cf7605228f0006a@s5r6.in-berlin.de> <20080516062315.GA4350@dose.home.local> <tkrat.ad2cb91dd8644559@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <tkrat.ad2cb91dd8644559@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sun, 18 May 2008, Oleg Nesterov wrote:
+On Fri, May 16, 2008 at 19:43:43 +0200, Stefan Richter wrote:
+> Tino Keitel wrote:
+> > I applied all patches, and tried it on my system with a SATA, USB and
+> > Firewire disk. All disks spun down at suspend, and spun up again at
+> > resume.
 > 
-> Initially, I did
-> 
-> 	q->flags |= SIGQUEUE_CANCELLED;
-> 	spin_lock_irqsave(lock, flags);
-> 	q->flags &= ~SIGQUEUE_PREALLOC;
-> 
-> to document the fact that SIGQUEUE_CANCELLED can be set lockless, but
-> then "optimized" the code, couldn't help myself... Besides, the code
-> above looks really confusing without the fat comment.
+> So can I add "Tested-by: Tino Keitel <tino.keitel@gmx.de>" to the
+> changelog of patches 1/5, 2/5, 4/5 (the patches affecting sd and
+> fw-sbp2)?
 
-Oh, and the above is *wrong*.
+Yes.
 
-Why?
+Now I need to figure out how to get the Firewire disk to spin down
+using HAL. It looks like HAL just uses /usr/bin/eject, which just sends
+a START STOP UNIT command without power conditions set, so the kernel
+can't do anything here.
 
-Becayse if SIGQUEUE_PREALLOC setting needs the lock, then setting any 
-*other* bit in that word will also need the lock!
-
-That's because
-
-	q->flags |= SIGQUEUE_CANCELLED;
-
-writes those other bits too - admittedly with the value they were read 
-just before, but if it races with something setting SIGQUEUE_PREALLOC that 
-doesn't matter - the newly written version will simply be wrong.
-
-So the rule is that if one bit of a word needs locking, then they *all* 
-do.
-
-(On alpha, this is true even for whole bytes or shortwords - because a 
-byte/shortword write is actually "read word, update byte/short, write 
-word" sequence on older CPU's. So you cannot do atomic byte updates, and 
-need to use locks).
-
-			Linus
+Regards,
+Tino
