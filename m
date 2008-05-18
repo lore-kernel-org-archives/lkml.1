@@ -1,181 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756391AbYERSjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757318AbYERSjf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756391AbYERSjR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 14:39:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756362AbYERShv
+	id S1757318AbYERSjf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 14:39:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756446AbYERShy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 14:37:51 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:25716 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756256AbYERSht (ORCPT
+	Sun, 18 May 2008 14:37:54 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:34439 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756414AbYERShw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 14:37:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=kUG52gHZiXD9EJfS5c+/nBJGc0SzARYeQvlKAKkTjhmCmpolTY4lY8kcQKBd42gHSvnms9QV3rkZFPggYu56DuFAhQ1P7ByzYr3xS/y3BYRqwAwshv0qdujXHOz80bFLPpK0MQHmk1kJmdMw9SLtN6782rUjkX2+oVuAdlGIFnI=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Cc: Borislav Petkov <petkovbb@gmail.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org
-Date: Sun, 18 May 2008 20:55:12 +0200
-Message-Id: <20080518185512.5636.28587.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080518185428.5636.77234.sendpatchset@localhost.localdomain>
-References: <20080518185428.5636.77234.sendpatchset@localhost.localdomain>
-Subject: [PATCH 05/40] ide-scsi: merge idescsi_input_buffers() and idescsi_output_buffers()
+	Sun, 18 May 2008 14:37:52 -0400
+Subject: Re: [Bug #10634] volanoMark regression with kernel 2.6.26-rc1
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+In-Reply-To: <1211131273.6463.3.camel@lappy.programming.kicks-ass.net>
+References: <oKKSi1w1qaF.A.mEG.JrBMIB@albercik>
+	 <7wuznNhcUqC.A.iUB.ZtBMIB@albercik>
+	 <1211131273.6463.3.camel@lappy.programming.kicks-ass.net>
+Content-Type: text/plain
+Date: Sun, 18 May 2008 20:37:34 +0200
+Message-Id: <1211135855.6463.18.camel@lappy.programming.kicks-ass.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Merge idescsi_input_buffers() and idescsi_output_buffers()
-  into ide_scsi_io_buffers() helper.
+On Sun, 2008-05-18 at 19:21 +0200, Peter Zijlstra wrote:
+> On Sun, 2008-05-18 at 13:13 +0200, Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.25.  Please verify if it still should be listed.
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10634
+> > Subject		: volanoMark regression with kernel 2.6.26-rc1
+> > Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+> > Date		: 2008-05-06 2:06 (13 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=121003968414287&w=2
+> > Handled-By	: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+> > 		  Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+> > 		  Ingo Molnar <mingo@elte.hu>
+> > 		  Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > Patch		: http://marc.info/?l=linux-kernel&m=121015292616788&w=2
+> > 
+> > 
+> 
+> Could people test this:
+> 
+> git://git.kernel.org/home/peterz/git/linux-2.6-sched.git/ v2.6.26-rc2-group-load-balance
 
-While at it:
 
-* Log device name instead of driver name on error.
+Seems I got my own url wrong - the right one is:
 
-* Use xfer_func_t.
+git://git.kernel.org/pub/scm/linux/kernel/git/peterz/linux-2.6-sched.git v2.6.26-rc2-group-load-balance
 
-Cc: Borislav Petkov <petkovbb@gmail.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/scsi/ide-scsi.c |   81 ++++++++++++++----------------------------------
- 1 file changed, 24 insertions(+), 57 deletions(-)
 
-Index: b/drivers/scsi/ide-scsi.c
-===================================================================
---- a/drivers/scsi/ide-scsi.c
-+++ b/drivers/scsi/ide-scsi.c
-@@ -129,51 +129,15 @@ static inline idescsi_scsi_t *drive_to_i
- #define IDESCSI_PC_RQ			90
- 
- /*
-- *	PIO data transfer routines using the scatter gather table.
-+ *	PIO data transfer routine using the scatter gather table.
-  */
--static void idescsi_input_buffers(ide_drive_t *drive, struct ide_atapi_pc *pc,
--		unsigned int bcount)
-+static void ide_scsi_io_buffers(ide_drive_t *drive, struct ide_atapi_pc *pc,
-+				unsigned int bcount, int write)
- {
- 	ide_hwif_t *hwif = drive->hwif;
--	int count;
-+	xfer_func_t *xf = write ? hwif->output_data : hwif->input_data;
- 	char *buf;
--
--	while (bcount) {
--		count = min(pc->sg->length - pc->b_count, bcount);
--		if (PageHighMem(sg_page(pc->sg))) {
--			unsigned long flags;
--
--			local_irq_save(flags);
--			buf = kmap_atomic(sg_page(pc->sg), KM_IRQ0) +
--					pc->sg->offset;
--			hwif->input_data(drive, NULL, buf + pc->b_count, count);
--			kunmap_atomic(buf - pc->sg->offset, KM_IRQ0);
--			local_irq_restore(flags);
--		} else {
--			buf = sg_virt(pc->sg);
--			hwif->input_data(drive, NULL, buf + pc->b_count, count);
--		}
--		bcount -= count; pc->b_count += count;
--		if (pc->b_count == pc->sg->length) {
--			if (!--pc->sg_cnt)
--				break;
--			pc->sg = sg_next(pc->sg);
--			pc->b_count = 0;
--		}
--	}
--
--	if (bcount) {
--		printk (KERN_ERR "ide-scsi: scatter gather table too small, discarding data\n");
--		ide_pad_transfer(drive, 0, bcount);
--	}
--}
--
--static void idescsi_output_buffers(ide_drive_t *drive, struct ide_atapi_pc *pc,
--		unsigned int bcount)
--{
--	ide_hwif_t *hwif = drive->hwif;
- 	int count;
--	char *buf;
- 
- 	while (bcount) {
- 		count = min(pc->sg->length - pc->b_count, bcount);
-@@ -182,13 +146,13 @@ static void idescsi_output_buffers(ide_d
- 
- 			local_irq_save(flags);
- 			buf = kmap_atomic(sg_page(pc->sg), KM_IRQ0) +
--						pc->sg->offset;
--			hwif->output_data(drive, NULL, buf + pc->b_count, count);
-+					  pc->sg->offset;
-+			xf(drive, NULL, buf + pc->b_count, count);
- 			kunmap_atomic(buf - pc->sg->offset, KM_IRQ0);
- 			local_irq_restore(flags);
- 		} else {
- 			buf = sg_virt(pc->sg);
--			hwif->output_data(drive, NULL, buf + pc->b_count, count);
-+			xf(drive, NULL, buf + pc->b_count, count);
- 		}
- 		bcount -= count; pc->b_count += count;
- 		if (pc->b_count == pc->sg->length) {
-@@ -200,8 +164,10 @@ static void idescsi_output_buffers(ide_d
- 	}
- 
- 	if (bcount) {
--		printk (KERN_ERR "ide-scsi: scatter gather table too small, padding with zeros\n");
--		ide_pad_transfer(drive, 1, bcount);
-+		printk(KERN_ERR "%s: scatter gather table too small, %s\n",
-+				drive->name, write ? "padding with zeros"
-+						   : "discarding data");
-+		ide_pad_transfer(drive, write, bcount);
- 	}
- }
- 
-@@ -370,6 +336,7 @@ static ide_startstop_t idescsi_pc_intr (
- 	ide_hwif_t *hwif = drive->hwif;
- 	struct ide_atapi_pc *pc = scsi->pc;
- 	struct request *rq = pc->rq;
-+	xfer_func_t *xferfunc;
- 	unsigned int temp;
- 	u16 bcount;
- 	u8 stat, ireason;
-@@ -445,8 +412,8 @@ static ide_startstop_t idescsi_pc_intr (
- 				temp = pc->buf_size - pc->xferred;
- 				if (temp) {
- 					if (pc->sg)
--						idescsi_input_buffers(drive, pc,
--									temp);
-+						ide_scsi_io_buffers(drive, pc,
-+								    temp, 0);
- 					else
- 						hwif->input_data(drive, NULL,
- 							pc->cur_pos, temp);
-@@ -464,16 +431,16 @@ static ide_startstop_t idescsi_pc_intr (
- 			printk (KERN_NOTICE "ide-scsi: The scsi wants to send us more data than expected - allowing transfer\n");
- #endif /* IDESCSI_DEBUG_LOG */
- 		}
--		if (pc->sg)
--			idescsi_input_buffers(drive, pc, bcount);
--		else
--			hwif->input_data(drive, NULL, pc->cur_pos, bcount);
--	} else {
--		if (pc->sg)
--			idescsi_output_buffers(drive, pc, bcount);
--		else
--			hwif->output_data(drive, NULL, pc->cur_pos, bcount);
--	}
-+		xferfunc = hwif->input_data;
-+	} else
-+		xferfunc = hwif->output_data;
-+
-+	if (pc->sg)
-+		ide_scsi_io_buffers(drive, pc, bcount,
-+				    !!(pc->flags & PC_FLAG_WRITING));
-+	else
-+		xferfunc(drive, NULL, pc->cur_pos, bcount);
-+
- 	/* Update the current position */
- 	pc->xferred += bcount;
- 	pc->cur_pos += bcount;
