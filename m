@@ -1,70 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758788AbYERSq7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759690AbYERSr0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758788AbYERSq7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 14:46:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757350AbYERSkf
+	id S1759690AbYERSr0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 14:47:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757364AbYERSkm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 14:40:35 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:31100 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757554AbYERSkd (ORCPT
+	Sun, 18 May 2008 14:40:42 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:20229 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757206AbYERSkj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 14:40:33 -0400
+	Sun, 18 May 2008 14:40:39 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=vVGOo9ZogqsE6J8Xcg8TAAI26/snF+la4A3xtGMGlHvFfO6uyRG/FeRJI9/zE5mHtWRFrUUkiB7Gfp85clREU8PXA0E6WvCCslgPuPlnXNTHMSAfl8RUf+r4ZpXzyyPmgenIrUbySAhivjVN4GU4a7CQerjnWLnurqaVOAC4JmA=
+        b=rHoLn+yNrVTXJmPUNR5oa30PIyP1pJ0t7oOh7580v1dqzneO87Xkr1PX37gaLUUqkU8LNhJZtuMcfr+2tJdb5Ez5oRdTzbfn16iiYuhbrlsRJxaRLDLHnzZtPTJcXc2NYEl6whvf2KxDEZa9Zor7VNBn1n2Ltw97ya6SdWwiEpo=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Borislav Petkov <petkovbb@gmail.com>,
        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Sun, 18 May 2008 20:57:55 +0200
-Message-Id: <20080518185755.5636.98728.sendpatchset@localhost.localdomain>
+Date: Sun, 18 May 2008 20:58:04 +0200
+Message-Id: <20080518185804.5636.39075.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080518185428.5636.77234.sendpatchset@localhost.localdomain>
 References: <20080518185428.5636.77234.sendpatchset@localhost.localdomain>
-Subject: [PATCH 23/40] ide-tape: set PC_FLAG_DMA_IN_PROGRESS flag in idetape_transfer_pc()
+Subject: [PATCH 24/40] ide-tape: factor out waiting for good ireason from idetape_transfer_pc()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Set PC_FLAG_DMA_IN_PROGRESS flag in idetape_transfer_pc() instead of
-idetape_issue_pc() to match the other ATAPI device drivers.
+Factor out waiting for good ireason from idetape_transfer_pc()
+to ide_tape_wait_ireason() as a preparation for adding generic
+ide_transfer_pc() helper.
+
+There should be no functional changes caused by this patch.
 
 Cc: Borislav Petkov <petkovbb@gmail.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-tape.c |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ drivers/ide/ide-tape.c |   34 +++++++++++++++++++++++-----------
+ 1 file changed, 23 insertions(+), 11 deletions(-)
 
 Index: b/drivers/ide/ide-tape.c
 ===================================================================
 --- a/drivers/ide/ide-tape.c
 +++ b/drivers/ide/ide-tape.c
-@@ -984,8 +984,10 @@ static ide_startstop_t idetape_transfer_
- 	ide_set_handler(drive, &idetape_pc_intr, IDETAPE_WAIT_CMD, NULL);
- 
- 	/* Begin DMA, if necessary */
--	if (pc->flags & PC_FLAG_DMA_IN_PROGRESS)
-+	if (pc->flags & PC_FLAG_DMA_OK) {
-+		pc->flags |= PC_FLAG_DMA_IN_PROGRESS;
- 		hwif->dma_ops->dma_start(drive);
-+	}
- 
- 	/* Send the actual packet */
- 	hwif->output_data(drive, NULL, pc->c, 12);
-@@ -1053,11 +1055,11 @@ static ide_startstop_t idetape_issue_pc(
- 	if ((pc->flags & PC_FLAG_DMA_OK) && drive->using_dma)
- 		dma_ok = !hwif->dma_ops->dma_setup(drive);
- 
-+	if (!dma_ok)
-+		pc->flags &= ~PC_FLAG_DMA_OK;
+@@ -947,21 +947,12 @@ static ide_startstop_t idetape_pc_intr(i
+  * again, the callback function will be called and then we will handle the next
+  * request.
+  */
+-static ide_startstop_t idetape_transfer_pc(ide_drive_t *drive)
 +
- 	ide_pktcmd_tf_load(drive, IDE_TFLAG_OUT_DEVICE, bcount, dma_ok);
++static u8 ide_tape_wait_ireason(ide_drive_t *drive, u8 ireason)
+ {
+ 	ide_hwif_t *hwif = drive->hwif;
+-	idetape_tape_t *tape = drive->driver_data;
+-	struct ide_atapi_pc *pc = tape->pc;
+ 	int retries = 100;
+-	ide_startstop_t startstop;
+-	u8 ireason;
  
--	if (dma_ok)
--		/* Will begin DMA later */
--		pc->flags |= PC_FLAG_DMA_IN_PROGRESS;
- 	if (test_bit(IDETAPE_FLAG_DRQ_INTERRUPT, &tape->flags)) {
- 		ide_execute_command(drive, WIN_PACKETCMD, &idetape_transfer_pc,
- 				    IDETAPE_WAIT_CMD, NULL);
+-	if (ide_wait_stat(&startstop, drive, DRQ_STAT, BUSY_STAT, WAIT_READY)) {
+-		printk(KERN_ERR "%s: Strange, packet command initiated yet "
+-				"DRQ isn't asserted\n", drive->name);
+-		return startstop;
+-	}
+-	ireason = hwif->INB(hwif->io_ports.nsect_addr);
+ 	while (retries-- && ((ireason & CD) == 0 || (ireason & IO))) {
+ 		printk(KERN_ERR "%s: (IO,CoD != (0,1) while issuing "
+ 				"a packet command, retrying\n", drive->name);
+@@ -975,6 +966,27 @@ static ide_startstop_t idetape_transfer_
+ 			ireason &= ~IO;
+ 		}
+ 	}
++
++	return ireason;
++}
++
++static ide_startstop_t idetape_transfer_pc(ide_drive_t *drive)
++{
++	ide_hwif_t *hwif = drive->hwif;
++	idetape_tape_t *tape = drive->driver_data;
++	struct ide_atapi_pc *pc = tape->pc;
++	ide_startstop_t startstop;
++	u8 ireason;
++
++	if (ide_wait_stat(&startstop, drive, DRQ_STAT, BUSY_STAT, WAIT_READY)) {
++		printk(KERN_ERR "%s: Strange, packet command initiated yet "
++				"DRQ isn't asserted\n", drive->name);
++		return startstop;
++	}
++
++	ireason = hwif->INB(hwif->io_ports.nsect_addr);
++	ireason = ide_tape_wait_ireason(drive, ireason);
++
+ 	if ((ireason & CD) == 0 || (ireason & IO)) {
+ 		printk(KERN_ERR "%s: (IO,CoD) != (0,1) while issuing "
+ 				"a packet command\n", drive->name);
