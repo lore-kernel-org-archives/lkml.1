@@ -1,49 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757986AbYERUcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758128AbYERUmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757986AbYERUcv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 16:32:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755081AbYERUcl
+	id S1758128AbYERUmz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 16:42:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754534AbYERUmq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 16:32:41 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:32855 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754881AbYERUck (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 16:32:40 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4830925B.5010802@s5r6.in-berlin.de>
-Date: Sun, 18 May 2008 22:32:27 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080419 SeaMonkey/1.1.9
+	Sun, 18 May 2008 16:42:46 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:49048 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753122AbYERUmp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 16:42:45 -0400
+Date: Sun, 18 May 2008 23:40:45 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Tom Spink <tspink@gmail.com>,
+       Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Jiri Slaby <jirislaby@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [RFC] x86: merge nmi_32-64 to nmi.c
+Message-ID: <20080518204045.GK8140@cs181133002.pp.htv.fi>
+References: <20080517192200.GA6914@cvg> <7b9198260805171328u555eec17t3597f3378edbda88@mail.gmail.com> <Pine.LNX.4.55.0805172148380.10067@cliff.in.clinika.pl> <alpine.LFD.1.10.0805172331030.18798@apollo.tec.linutronix.de> <482FD9F2.8080204@goop.org> <20080518180811.GI8140@cs181133002.pp.htv.fi> <Pine.LNX.4.55.0805181934220.16640@cliff.in.clinika.pl>
 MIME-Version: 1.0
-To: linux-scsi@vger.kernel.org
-CC: linux1394-devel@lists.sourceforge.net,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/5] SCSI and FireWire: fix/add START STOP UNIT for	SBP-2
- disks
-References: <20080429232606.GA14261@dose.home.local> <481874BD.5010807@s5r6.in-berlin.de> <20080507180042.GA32629@dose.home.local> <tkrat.327b59f1366f8ea0@s5r6.in-berlin.de> <tkrat.635f52f7035be2bc@s5r6.in-berlin.de> <tkrat.5cf7605228f0006a@s5r6.in-berlin.de> <20080516062315.GA4350@dose.home.local> <tkrat.ad2cb91dd8644559@s5r6.in-berlin.de> <20080518173511.GA14742@dose.home.local>
-In-Reply-To: <20080518173511.GA14742@dose.home.local>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.55.0805181934220.16640@cliff.in.clinika.pl>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tino Keitel wrote:
-> Now I need to figure out how to get the Firewire disk to spin down
-> using HAL. It looks like HAL just uses /usr/bin/eject, which just sends
-> a START STOP UNIT command without power conditions set, so the kernel
-> can't do anything here.
+On Sun, May 18, 2008 at 07:38:41PM +0100, Maciej W. Rozycki wrote:
+> On Sun, 18 May 2008, Adrian Bunk wrote:
+> 
+> > Even more important:
+> > How do you want to handle kconfig variables set to "m"?
+> > 
+> > Expand them to 0.5 ?  ;-)
+> 
+>  :-)
+> 
+>  Modules use a separate set of variables with _MODULE appended to their 
+> names.  Thus for an option FOO, you'll get:
+> 
+> #undef CONFIG_FOO
+> #undef CONFIG_FOO_MODULE
+> 
+> if it's set to "n",
+> 
+> #define CONFIG_FOO 1
+> #undef CONFIG_FOO_MODULE
+> 
+> if it's set to "y", and
+> 
+> #undef CONFIG_FOO
+> #define CONFIG_FOO_MODULE 1
+> 
+> if it's set to "m".  Individual tests may check these both as they find 
+> appropriate.
 
-What if you teach hal to unbind sd from the respective scsi_device?
-"echo -n 123:0:0:0 > /sys/bus/scsi/drivers/sd/unbind" is a manual way to 
-do it.  And the "bind" file does the reverse.
+I do know that.
 
-Or replace /usr/bin/eject by a shell script of yours which calls 
-sg_start when you need it to...
+
+But your suggestion was:
+
+static inline unsigned int get_nmi_count(int cpu)
+{
+        return cpu_x86_64 ? cpu_pda(cpu)->__nmi_count : nmi_count(cpu);
+}
+
+
+And Jeremy said "It would be nice if CONFIG_* expanded to 0/1".
+
+
+My point was simply that like most of the fun^Wproblems we already have 
+in kconfig also here the tristate logic we need would make stuff more 
+tricky.
+
+
+>   Maciej
+
+cu
+Adrian
+
 -- 
-Stefan Richter
--=====-==--- -=-= =--=-
-http://arcgraph.de/sr/
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
