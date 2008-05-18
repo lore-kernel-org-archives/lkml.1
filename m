@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758233AbYERVKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758685AbYERVP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758233AbYERVKh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 17:10:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755542AbYERVK1
+	id S1758685AbYERVP1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 17:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756125AbYERVPT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 17:10:27 -0400
-Received: from smtp27.orange.fr ([80.12.242.95]:41082 "EHLO smtp27.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755424AbYERVK0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 17:10:26 -0400
-X-ME-UUID: 20080518211024859.D1B751C00086@mwinf2714.orange.fr
-Subject: [PATCH 1/1] kconfig: incorrect 'len' field initialisation ?
-From: "Christophe Jaillet" <christophe.jaillet@wanadoo.fr>
-To: "cj" <christophe.jaillet@wanadoo.fr>,
-       "linux" <linux-kernel@vger.kernel.org>, <zippel@linux-m68k.org>,
-       <linux-kbuild@vger.kernel.org>
-Date: Sun, 18 May 2008 23:10:24 +0200
-Content-Type: text/plain
-X-Mailer: email v2.5.1 (CYGWIN_NT-5.0 1.5.25(0.156/4/2) i686 [http://email.cleancode.org])
-X-Antivirus: avast! (VPS 080518-1, 18/05/2008), Outbound message
-X-Antivirus-Status: Clean
-Message-Id: <20080518211024.D1B751C00086@mwinf2714.orange.fr>
+	Sun, 18 May 2008 17:15:19 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:36845 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756082AbYERVPS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 17:15:18 -0400
+Date: Sun, 18 May 2008 23:15:16 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Adrian Bunk <bunk@kernel.org>
+cc: Jiri Slaby <jirislaby@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Michael Buesch <mb@bu3sch.de>,
+       Gordon Farquharson <gordonfarquharson@gmail.com>
+Subject: Re: crossbuild fails in modpost
+In-Reply-To: <20080518204258.GL8140@cs181133002.pp.htv.fi>
+Message-ID: <alpine.LNX.1.10.0805182314450.15590@fbirervta.pbzchgretzou.qr>
+References: <482C3E3E.9090204@gmail.com> <482C6F02.1000205@gmail.com> <20080515173539.GA23959@uranus.ravnborg.org> <20080515174015.GA24024@uranus.ravnborg.org> <482C8CBE.2060101@gmail.com> <20080515204632.GG1936@cs181133002.pp.htv.fi>
+ <alpine.LNX.1.10.0805182155011.15590@fbirervta.pbzchgretzou.qr> <20080518204258.GL8140@cs181133002.pp.htv.fi>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christophe Jaillet <christophe.jaillet@wanadoo.fr>
 
-Hi, here is a patch against /scripts/kconfig/util.c :
-	
-1) The field 'len' of the 'gstr' structure seems to track the size of the memory 
-already allocated for the "growable string". So the value of this field should be
-the same as the 'malloc()' just above, shouldn't it ?
+On Sunday 2008-05-18 22:42, Adrian Bunk wrote:
+>> On Thursday 2008-05-15 22:46, Adrian Bunk wrote:
+>> >>
+>> >> Well, the compiler is the same, but it's told to compile the kernel with  
+>> >> -m64. It runs on x86_64 kernel and i386 userspace. It's debian i386 gcc  
+>> >> package which understands x86_64 objects too. No SUBARCH option, it seems 
+>> >> to default to x86_64.
+>> >>...
+>> >
+>> >Unless you manually fiddle with ARCH you can only build a kernel with 
+>> >the same 32<->64bit setting as your currently running kernel (no matter 
+>> >which userspace you use)...
+>> 
+>> echo -en '#!/bin/bash\nexec gcc -m32 "$@"\n' >/usr/local/bin/i386-linux-gcc
+>> make CC=i386-linux-gcc
+>> then the if($(CC),$(HOSTCC)) check should get true.
+>
+>No doubt that you can work around the problem.
+>
+>But that's not a solution.
 
-
-
-Note: this patch is based on 'linux-2.6.25.tar.bz2'
-
-Signed-off-by: Christophe Jaillet <christophe.jaillet@wanadoo.fr>
-
----
-
---- linux 2.6.25/scripts/kconfig/util.c	2008-04-17 04:49:44.000000000 +0200
-+++ linux 2.6.25/scripts/kconfig/util.c.cj	2008-05-18 22:56:14.000000000 +0200
-@@ -77,7 +77,7 @@ struct gstr str_new(void)
- {
- 	struct gstr gs;
- 	gs.s = malloc(sizeof(char) * 64);
--	gs.len = 16;
-+	gs.len = 64;
- 	strcpy(gs.s, "\0");
- 	return gs;
- }
-
-
+Of course not. Ever since the arch unification, building for the
+other bitness in bi- or multiarch systems has become harder.
