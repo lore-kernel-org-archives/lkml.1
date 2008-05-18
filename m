@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758706AbYERWBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759223AbYERWCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758706AbYERWBt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 18:01:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751915AbYERWBl
+	id S1759223AbYERWCb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 18:02:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbYERWCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 18:01:41 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:49709 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752692AbYERWBl (ORCPT
+	Sun, 18 May 2008 18:02:23 -0400
+Received: from fk-out-0910.google.com ([209.85.128.186]:56694 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752747AbYERWCW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 18:01:41 -0400
+	Sun, 18 May 2008 18:02:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=YtHw8DAH4Llw8cjc1D1LZ66ZvwCbe2e/b69d3j4kAZiDYKYCccJHZYmVKktgFN7e473LyfGgOL8vcJ5GPhI7tYiJLnKoe66EgOikTsrIW4vIR1hyboCJQzx9tr6/RrNNJbFcPlwVaTwNSbT+VtRZWin7rgMilK8zxj/RlTk15VI=
+        b=pIeQhacRFlstdH177j1jFFtQgEobjLiOzxqoeIpmaiXCJtYWwmxZfeBl8eA3fzkLgukJ357KzWTbub317HchNEj0Qt4yNO85urOaZVawlsF/tPuSf1gkk5GlZ3MAMha6leDaZ9RS1BRC9wcuJkaodmP+S/F8nHjUbd9bOaXkdUE=
 From: Marcin Slusarz <marcin.slusarz@gmail.com>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Al Viro <viro@ZenIV.linux.org.uk>, Christoph Hellwig <hch@lst.de>
-Subject: [PATCH 2/6] ERR_PTR: add ERR_OR_0_PTR
-Date: Mon, 19 May 2008 00:01:07 +0200
-Message-Id: <1211148067-16130-1-git-send-email-marcin.slusarz@gmail.com>
+Subject: [PATCH 3/6] vfs: open_exec cleanup
+Date: Mon, 19 May 2008 00:01:49 +0200
+Message-Id: <1211148109-16149-1-git-send-email-marcin.slusarz@gmail.com>
 X-Mailer: git-send-email 1.5.4.5
 In-Reply-To: <20080513201813.GA5869@joi>
 References: <20080513201813.GA5869@joi>
@@ -28,34 +28,79 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some codepaths call ERR_PTR with possibly 0 argument, which is not
-a valid errno and rely on conversion from 0 to NULL pointer.
-Add ERR_OR_0_PTR function which accepts errnos and 0 as an argument.
+open_exec is needlessly indented, calls ERR_PTR with 0 argument
+(which is not valid errno) and jumps into middle of function
+just to return value.
+So clean it up a bit.
 
 Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 ---
- include/linux/err.h |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+ fs/exec.c |   44 ++++++++++++++++++++++----------------------
+ 1 files changed, 22 insertions(+), 22 deletions(-)
 
-diff --git a/include/linux/err.h b/include/linux/err.h
-index 7b5daa6..cdec8b6 100644
---- a/include/linux/err.h
-+++ b/include/linux/err.h
-@@ -26,6 +26,13 @@ static inline void *__ERR_PTR(long error)
+diff --git a/fs/exec.c b/fs/exec.c
+index aeaa979..ca8b512 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -656,34 +656,34 @@ struct file *open_exec(const char *name)
+ 	struct nameidata nd;
+ 	int err;
+ 	struct file *file;
++	struct inode *inode;
  
- #define ERR_PTR(error) (BUILD_BUG_ON(__builtin_constant_p(error) && !IS_ERR_VALUE(error)), __ERR_PTR(error))
+ 	err = path_lookup_open(AT_FDCWD, name, LOOKUP_FOLLOW, &nd, FMODE_READ|FMODE_EXEC);
+-	file = ERR_PTR(err);
+-
+-	if (!err) {
+-		struct inode *inode = nd.path.dentry->d_inode;
+-		file = ERR_PTR(-EACCES);
+-		if (S_ISREG(inode->i_mode)) {
+-			int err = vfs_permission(&nd, MAY_EXEC);
+-			file = ERR_PTR(err);
+-			if (!err) {
+-				file = nameidata_to_filp(&nd,
+-							O_RDONLY|O_LARGEFILE);
+-				if (!IS_ERR(file)) {
+-					err = deny_write_access(file);
+-					if (err) {
+-						fput(file);
+-						file = ERR_PTR(err);
+-					}
++	if (err)
++		return ERR_PTR(err);
++
++	inode = nd.path.dentry->d_inode;
++	file = ERR_PTR(-EACCES);
++	if (S_ISREG(inode->i_mode)) {
++		int err = vfs_permission(&nd, MAY_EXEC);
++		if (!err) {
++			file = nameidata_to_filp(&nd, O_RDONLY|O_LARGEFILE);
++			if (!IS_ERR(file)) {
++				err = deny_write_access(file);
++				if (err) {
++					fput(file);
++					file = ERR_PTR(err);
+ 				}
+-out:
+-				return file;
+ 			}
++			goto out;
+ 		}
+-		release_open_intent(&nd);
+-		path_put(&nd.path);
++		else
++			file = ERR_PTR(err);
+ 	}
+-	goto out;
++	release_open_intent(&nd);
++	path_put(&nd.path);
++out:
++	return file;
+ }
  
-+static inline void *__ERR_OR_0_PTR(long error)
-+{
-+	return (void *) error;
-+}
-+
-+#define ERR_OR_0_PTR(error) (BUILD_BUG_ON(__builtin_constant_p(error) && error && !IS_ERR_VALUE(error)), __ERR_OR_0_PTR(error))
-+
- static inline long PTR_ERR(const void *ptr)
- {
- 	return (long) ptr;
+ EXPORT_SYMBOL(open_exec);
 -- 
 1.5.4.5
 
