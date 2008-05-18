@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761707AbYERMg1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761385AbYERMhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761707AbYERMg1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 08:36:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756824AbYERMgS
+	id S1761385AbYERMhN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 08:37:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbYERMg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 08:36:18 -0400
-Received: from mail.fuw.edu.pl ([193.0.80.14]:46973 "EHLO mail.fuw.edu.pl"
+	Sun, 18 May 2008 08:36:59 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:46651 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753836AbYERMgS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 08:36:18 -0400
-X-Greylist: delayed 1733 seconds by postgrey-1.27 at vger.kernel.org; Sun, 18 May 2008 08:36:17 EDT
-From: "R. J. Wysocki" <Rafal.Wysocki@fuw.edu.pl>
-Organization: FUW
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.25: Reported regressions from 2.6.26-rc2-git5
-Date: Sun, 18 May 2008 14:01:37 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>
-References: <4nDuoq2VVOG.A.8QB.YaBMIB@albercik>
-In-Reply-To: <4nDuoq2VVOG.A.8QB.YaBMIB@albercik>
+	id S1753081AbYERMg5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 08:36:57 -0400
+Date: Sun, 18 May 2008 15:34:58 +0300
+From: Adrian Bunk <bunk@stusta.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Toralf =?utf-8?Q?F=C3=B6rster?= <toralf.foerster@gmx.de>
+Subject: Re: [Bug #10716] VIDEO_DEV=y, DVB_CORE=m build error
+Message-ID: <20080518123458.GF8140@cs181133002.pp.htv.fi>
+References: <oKKSi1w1qaF.A.mEG.JrBMIB@albercik> <7wuznNhcUqC.A.dIH.2rBMIB@albercik>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200805181401.38130.Rafal.Wysocki@fuw.edu.pl>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <7wuznNhcUqC.A.dIH.2rBMIB@albercik>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 18 of May 2008, Rafael J. Wysocki wrote:
-> This message contains a list of some regressions from 2.6.26-rc2-git5, for which there
-> are no fixes in the mainline I know of.  If any of them have been fixed already,
-> please let me know.
+On Sun, May 18, 2008 at 01:13:56PM +0200, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> If you know of any other unresolved regressions from 2.6.26-rc2-git5, please let me know
-> either and I'll add them to the list.  Also, please let me know if any of the
-> entries below are invalid.
+> The following bug entry is on the current list of known regressions
+> from 2.6.25.  Please verify if it still should be listed.
+
+yes
+
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10716
+> Subject		: VIDEO_DEV=y, DVB_CORE=m build error
+> Submitter	: Toralf Förster <toralf.foerster@gmx.de>
+> Date		: 2008-05-15 13:15 (4 days old)
+> References	: http://marc.info/?l=linux-kernel&amp;m=121085736708543&amp;w=4
+> Handled-By	: Adrian Bunk <bunk@kernel.org>
+> Patch		: http://lkml.org/lkml/2008/5/16/47
 > 
-> Each entry from the list will be sent additionally in an automatic reply to
-> this message with CCs to the people involved in reporting and handling the
-> issue.
 
-Sorry, I've exchanged the kernel versions by mistake.
+cu
+Adrian
 
-Resending in a while.
+-- 
 
-Thanks,
-Rafael
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
