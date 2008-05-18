@@ -1,51 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756680AbYERJlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753499AbYERKFN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756680AbYERJlT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 05:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbYERJlM
+	id S1753499AbYERKFN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 06:05:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751783AbYERKFA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 05:41:12 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:51026 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750924AbYERJlM (ORCPT
+	Sun, 18 May 2008 06:05:00 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:41418 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751073AbYERKE7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 05:41:12 -0400
-Subject: Re: [PATCH] spelling of Linus
-From: Sven-Thorsten Dietrich <sdietrich@novell.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Jianjun Kong <kongjianjun@gmail.com>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080518084801.GA3081@infradead.org>
-References: <12111001012896-git-send-email-kongjianjun@gmail.com>
-	 <20080518084801.GA3081@infradead.org>
-Content-Type: text/plain
-Date: Sun, 18 May 2008 02:41:01 -0700
-Message-Id: <1211103661.25754.1.camel@sven.thebigcorporation.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Sun, 18 May 2008 06:04:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=Nn9075xu7/Pd/N0xSUrml1jpXpXeTm0LHlobzUVzN2qbIcjsDjQ6DzRIc5jEM8oc4rLJGVu/p8VN2y5kuC+FUdJfYoTK0Ol2NUzhWuphrWwAkjL6dakPsTkmYd6p3BfDJzhfMeZhJJkvPeafFaXaz2/wl172zp8qb9I2GGpMBXE=
+Date: Sun, 18 May 2008 14:04:47 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Mikael Pettersson <mikpe@it.uu.se>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Tom Spink <tspink@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Jiri Slaby <jirislaby@gmail.com>, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [RFC] x86: merge nmi_32-64 to nmi.c
+Message-ID: <20080518100447.GF6948@cvg>
+References: <20080517192200.GA6914@cvg> <7b9198260805171328u555eec17t3597f3378edbda88@mail.gmail.com> <Pine.LNX.4.55.0805172148380.10067@cliff.in.clinika.pl> <18479.21161.437325.251769@harpo.it.uu.se> <alpine.LFD.1.10.0805180023100.18798@apollo.tec.linutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.10.0805180023100.18798@apollo.tec.linutronix.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Thomas Gleixner - Sun, May 18, 2008 at 12:34:15AM +0200]
+| On Sat, 17 May 2008, Mikael Pettersson wrote:
+| > Maciej W. Rozycki writes:
+| >  > On Sat, 17 May 2008, Tom Spink wrote:
+| >  > 
+| >  > > static inline unsigned int get_nmi_count(int cpu)
+| >  > > {
+| >  > > #ifdef CONFIG_X86_64
+| >  > >         return cpu_pda(cpu)->__nmi_count;
+| >  > > #else
+| >  > >         return nmi_count(cpu);
+| >  > > #endif
+| >  > > }
+| >  > > 
+| >  > > I know it introduces a lot of these conditionals, but at least there
+| >  > > is one place to look for the get_nmi_count function, instead of
+| >  > > searching for all variants of the function.
+| >  > 
+| >  >  Well, I suppose some header should provide a definition like:
+| >  > 
+| >  > #ifdef CONFIG_X86_64
+| >  > #define cpu_x86_64 1
+| >  > #else
+| >  > #define cpu_x86_64 0
+| >  > #endif
+| >  > 
+| >  > and the you can remove the horrible #ifdef clutter and make the quoted 
+| >  > function look like:
+| >  > 
+| >  > static inline unsigned int get_nmi_count(int cpu)
+| >  > {
+| >  > 	return cpu_x86_64 ? cpu_pda(cpu)->__nmi_count : nmi_count(cpu);
+| >  > }
+| >  > 
+| >  > Much better -- isn't it?
+| > 
+| > IMO, no, the #ifdef is preferable.
+| > 
+| > Why? Because the #ifdef is a very visible signal to the platform
+| > people that there are (in this case) subarch differences that force
+| > "clients" to behave differently on different subarchs. By removing
+| > the #ifdef you're IMO making it less likely for the platform people
+| > to take notice and work towards eliminating those differences.
+| 
+| The #ifdef is a poor choice. Maciej is damned right, that the single
+| function with a clear distinction of the return value is better in
+| terms of readability and maintenance.
+| 
+| As I said before, We can make this more visible with an uppercase
+| CONFIG_WHATEVER instaed of the innocent cpu_x86_64 one, but both
+| solutions are better than #ifdefs and provide simple grepable
+| patterns.
+| 
+| The awareness of those differences does not depend at all on an
+| #ifdef. Developers who are aware of the platform differences prefer a
+| readable not ifdef poluted code base. People who need to be poked into
+| the difference via an #ifdef are probably not those who can actually
+| clean it up.
+| 
+| Thanks,
+| 
+| 	tglx
+| 
 
-On Sun, 2008-05-18 at 04:48 -0400, Christoph Hellwig wrote:
-> On Sun, May 18, 2008 at 04:41:41PM +0800, Jianjun Kong wrote:
-> > --- a/drivers/serial/mux.c
-> > +++ b/drivers/serial/mux.c
-> > @@ -356,7 +356,7 @@ static int mux_request_port(struct uart_port *port)
-> >   * Perform any autoconfiguration steps for the port.  This function is
-> >   * called if the UPF_BOOT_AUTOCONF flag is specified for the port.
-> >   * [Note: This is required for now because of a bug in the Serial core.
-> > - *  rmk has already submitted a patch to linus, should be available for
-> > + *  rmk has already submitted a patch to Linus, should be available
-> for
+Eventually these helpers could look like this, objections?
+---
 
-> + *  RMK has already submitted a patch to Linus, should be available
-for
+static inline unsigned int get_nmi_count(int cpu)
+{
+#ifdef CONFIG_X86_64
+	return cpu_pda(cpu)->__nmi_count;
+#else
+	return nmi_count(cpu);
+#endif
+}
 
-Lets also make RMK's initials caps while changing the line.
+static inline void __die_nmi(char *str, struct pt_regs *regs, int do_panic)
+{
+#ifdef CONFIG_X86_64
+	die_nmi(str, regs, do_panic);
+#else
+	die_nmi(regs, str);
+#endif
+}
 
-Cheers,
-Sven
+static inline int mce_in_progress(void)
+{
+#if defined(CONFIX_X86_64) && defined(CONFIG_X86_MCE)
+	return atomic_read(&mce_entry) > 0;
+#endif
+	return 0;
+}
+---
 
+they are pretty ugly anyway ;)
+
+		- Cyrill -
