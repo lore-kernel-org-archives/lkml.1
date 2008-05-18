@@ -1,52 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761486AbYERAy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761335AbYERA7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761486AbYERAy6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 20:54:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754949AbYERAyU
+	id S1761335AbYERA7U (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 20:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756107AbYERA7G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 20:54:20 -0400
-Received: from smtp110.sbc.mail.mud.yahoo.com ([68.142.198.209]:41568 "HELO
-	smtp110.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752249AbYERAyT (ORCPT
+	Sat, 17 May 2008 20:59:06 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:42054 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755357AbYERA7E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 20:54:19 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=oDhUs7/Wm4BoWggDgao1Z6lcaFNQSaU0Dn87iUiixu/Ll45oL+FVKztWYasLWRzZpe907MEd6Ld4FwcSNhdiBJaiZQBNNmHCJmVFhBd7bHTA8dgyP8ZINBn/4murMa35+ea4yN+LO0tjgwriMHprM+K0lfP6M2PJEZAJIqPCr0c=  ;
-X-YMail-OSG: BiW6.zMVM1lZBlVNRKib.W6Z1C7Dth__sywIMmmQC9tVFg2ql1sU0vDAGPvGNqsMWW7WloXULupKT2yNFMqHswUx9dJ8ObKcjXr_mUEChA--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
+	Sat, 17 May 2008 20:59:04 -0400
+From: Chris Mason <chris.mason@oracle.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 2.6.26-rc2-git] gpio: mcp23s08 debug fix
-Date: Sat, 17 May 2008 17:41:32 -0700
-User-Agent: KMail/1.9.6
-Cc: lkml <linux-kernel@vger.kernel.org>, Roel Kluin <12o3l@tiscali.nl>
+Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
+Date: Sat, 17 May 2008 20:48:33 -0400
+User-Agent: KMail/1.9.9
+Cc: Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+References: <482DDA56.6000301@redhat.com> <20080517002030.GA7374@mit.edu> <20080516173552.e88183d9.akpm@linux-foundation.org>
+In-Reply-To: <20080516173552.e88183d9.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200805171741.32404.david-b@pacbell.net>
+Message-Id: <200805172048.34455.chris.mason@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Roel Kluin <12o3l@tiscali.nl>
+On Friday 16 May 2008, Andrew Morton wrote:
+> On Fri, 16 May 2008 20:20:30 -0400 Theodore Tso <tytso@mit.edu> wrote:
+> > On Fri, May 16, 2008 at 11:53:04PM +0100, Jamie Lokier wrote:
+> > > > > If you just want to test the block I/O layer and drive itself,
+> > > > > don't use the filesystem, but write a program which just access the
+> > > > > block device, continuously writing with/without barriers every so
+> > > > > often, and after power cycle read back to see what was and wasn't
+> > > > > written.
+> > > >
+> > > > Well, I think it is worth testing through the filesystem, different
+> > > > journaling mechanisms will probably react^wcorrupt in different ways.
+> > >
+> > > I agree, but intentional tests on the block device will show the
+> > > drives characteristcs on power failure much sooner and more
+> > > consistently.  Then you can concentrate on the worst drivers :-)
+> >
+> > I suspect the real reason why we get away with it so much with ext3 is
+> > that the journal is usually contiguous on disk, hence, when you write
+> > to the journal, it's highly unlikely that commit block will be written
+> > and the blocks before the commit block have not.
+>
+> yup.  Plus with a commit only happening once per few seconds, the time
+> window for a corrupting power outage is really really small, in
+> relative terms.  All these improbabilities multiply.
 
-The return value of mcp23s08_read_regs() can only be evaluated when signed
+Well, the barriers happen like so (even if we actually only do one barrier in 
+submit_bh, it turns into two)
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+write log blocks
+flush #1
+write commit block
+flush #2
+write metadata blocks
 
---- a/drivers/gpio/mcp23s08.c
-+++ b/drivers/gpio/mcp23s08.c
-@@ -168,7 +168,7 @@ static void mcp23s08_dbg_show(struct seq_file *s, struct gpio_chip *chip)
- {
- 	struct mcp23s08	*mcp;
- 	char		bank;
--	unsigned	t;
-+	int		t;
- 	unsigned	mask;
- 
- 	mcp = container_of(chip, struct mcp23s08, chip);
+I'd agree with Ted, there's a fairly small chance of things get reordered 
+around flush #1.  flush #2 is likely to have lots of reordering though.  It 
+should be easy to create situations where the metadata for a transaction is 
+written before the log blocks ever see the disk.
+
+EMC did a ton of automated testing around this when Jens and I did the initial 
+barrier implementations, and they were able to trigger corruptions in fsync 
+heavy workloads with randomized power offs.  I'll dig up the workload they 
+used.
+
+-chris
