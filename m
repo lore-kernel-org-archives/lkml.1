@@ -1,101 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761868AbYERSxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761358AbYERSyM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761868AbYERSxr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 14:53:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760578AbYERSsP
+	id S1761358AbYERSyM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 14:54:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758997AbYERSsQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 14:48:15 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:47655 "EHLO
+	Sun, 18 May 2008 14:48:16 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:53161 "EHLO
 	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760561AbYERSsL (ORCPT
+	by vger.kernel.org with ESMTP id S1759346AbYERSsL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 18 May 2008 14:48:11 -0400
-X-Sasl-enc: HW2XqNe6dobymzTsSMZ18G/YmBhzjizdT3P+6G4SeSt2 1211136489
+X-Sasl-enc: 7prNOFE/AVUp0ivXeBOYyWTsnnORs3ryeUXmn7sc9n52 1211136490
 From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 To: linux-kernel@vger.kernel.org
-Cc: Ivo van Doorn <IvDoorn@gmail.com>, Thomas Renninger <trenn@suse.de>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: [PATCH 03/15] Input: rename SW_RADIO to SW_RFKILL_ALL (v2)
-Date: Sun, 18 May 2008 15:47:53 -0300
-Message-Id: <1211136485-19878-4-git-send-email-hmh@hmh.eng.br>
+Cc: Ivo van Doorn <IvDoorn@gmail.com>, Thomas Renninger <trenn@suse.de>
+Subject: [RFC] rfkill class rework
+Date: Sun, 18 May 2008 15:47:50 -0300
+Message-Id: <1211136485-19878-1-git-send-email-hmh@hmh.eng.br>
 X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1211136485-19878-1-git-send-email-hmh@hmh.eng.br>
-References: <1211136485-19878-1-git-send-email-hmh@hmh.eng.br>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The SW_RADIO code for EV_SW events has a name that is not descriptive
-enough of its intended function, and could induce someone to think
-KEY_RADIO is its EV_KEY counterpart, which is false.
 
-Rename it to SW_RFKILL_ALL, and document what this event is for.  Keep
-the old name around, to avoid userspace ABI breaks.
+This patch series contains what is ready so far of my rfkill rework
+effort.
 
-The SW_RFKILL_ALL event is meant to be used by rfkill master switches.  It
-is not bound to a particular radio switch type, and usually applies to all
-types.  It is semantically tied to master rfkill switches that enable or
-disable every radio in a system.
+Much has been talked about it already, please refer to the thread started
+by Message-Id: <1207946244-14525-1-git-send-email-hmh@hmh.eng.br>
+(http://thread.gmane.org/gmane.linux.kernel/664500) if you don't understand
+what brought this on.
 
-Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Acked-by: Dmitry Torokhov <dtor@mail.ru>
-Cc: Ivo van Doorn <IvDoorn@gmail.com>
----
- Documentation/laptops/thinkpad-acpi.txt |    2 +-
- drivers/misc/thinkpad_acpi.c            |    4 ++--
- include/linux/input.h                   |    4 +++-
- 3 files changed, 6 insertions(+), 4 deletions(-)
+In particular, anyone that still thinks drivers can use the input layer to
+send rfkill state change messages around, or that rfkill class and
+input-polldev work as a way to have read/write rfkill switches, go read
+that thread... Fixing this is about half the reason why this patchset
+exists (the other being that thinkpad-acpi needs it, and therefore I need
+it as an user and also as a kernel developer).
 
-diff --git a/Documentation/laptops/thinkpad-acpi.txt b/Documentation/laptops/thinkpad-acpi.txt
-index 01c6c3d..64b3f14 100644
---- a/Documentation/laptops/thinkpad-acpi.txt
-+++ b/Documentation/laptops/thinkpad-acpi.txt
-@@ -503,7 +503,7 @@ generate input device EV_KEY events.
- In addition to the EV_KEY events, thinkpad-acpi may also issue EV_SW
- events for switches:
- 
--SW_RADIO	T60 and later hardare rfkill rocker switch
-+SW_RFKILL_ALL	T60 and later hardare rfkill rocker switch
- SW_TABLET_MODE	Tablet ThinkPads HKEY events 0x5009 and 0x500A
- 
- Non hot-key ACPI HKEY event map:
-diff --git a/drivers/misc/thinkpad_acpi.c b/drivers/misc/thinkpad_acpi.c
-index 5a560d9..084a8f9 100644
---- a/drivers/misc/thinkpad_acpi.c
-+++ b/drivers/misc/thinkpad_acpi.c
-@@ -1293,7 +1293,7 @@ static void tpacpi_input_send_radiosw(void)
- 		mutex_lock(&tpacpi_inputdev_send_mutex);
- 
- 		input_report_switch(tpacpi_inputdev,
--				    SW_RADIO, !!wlsw);
-+				    SW_RFKILL_ALL, !!wlsw);
- 		input_sync(tpacpi_inputdev);
- 
- 		mutex_unlock(&tpacpi_inputdev_send_mutex);
-@@ -2231,7 +2231,7 @@ static int __init hotkey_init(struct ibm_init_struct *iibm)
- 
- 	if (tp_features.hotkey_wlsw) {
- 		set_bit(EV_SW, tpacpi_inputdev->evbit);
--		set_bit(SW_RADIO, tpacpi_inputdev->swbit);
-+		set_bit(SW_RFKILL_ALL, tpacpi_inputdev->swbit);
- 	}
- 	if (tp_features.hotkey_tablet) {
- 		set_bit(EV_SW, tpacpi_inputdev->evbit);
-diff --git a/include/linux/input.h b/include/linux/input.h
-index 28a094f..e075c4b 100644
---- a/include/linux/input.h
-+++ b/include/linux/input.h
-@@ -637,7 +637,9 @@ struct input_absinfo {
- #define SW_LID			0x00  /* set = lid shut */
- #define SW_TABLET_MODE		0x01  /* set = tablet mode */
- #define SW_HEADPHONE_INSERT	0x02  /* set = inserted */
--#define SW_RADIO		0x03  /* set = radio enabled */
-+#define SW_RFKILL_ALL		0x03  /* rfkill master switch, type "any"
-+					 set = radio enabled */
-+#define SW_RADIO		SW_RFKILL_ALL	/* deprecated */
- #define SW_MAX			0x0f
- #define SW_CNT			(SW_MAX+1)
- 
+This series is available as a git branch at:
+git://repo.or.cz/linux-2.6/linux-acpi-2.6/ibm-acpi-2.6.git rfkill
+
+The first two patches are just to sync the pending-merge queue of
+thinkpad-acpi to avoid wasting my time with various versions of other
+patches because of two patches that will hit mainline very soon.  Do not
+pay too much attention to them.
+
+The input layer patch is already approved by Dmitry, but he asked me to
+merge it along with the rest of the stuff that needs it.
+
+The full rfkill work is NOT complete.  The userspace interface is lacking a
+way to read and write to the global rfkill switch states, in order to let
+userspace do all that rfkill-input.c can do (i.e. something like the
+private rfkill_switch_all and rfkill_epo).  I do have some patches that do
+it, but I am not happy with them.  I will send them later, please comment
+on this "supposedly to be ready for merging" patch set first.
+
+As it stands, I'd like to know if the patches in this series are acceptable
+to go upstream.  They do NOT break anything further in the kernel, but they
+don't fix any drivers by themselves either (the drivers, like b43, need to
+be fixed to use the rfkill class properly).
+
+If you need a 2.6.23 (might also work on 2.6.24 and 2.6.25) backport of
+this series, OR if you want to play with a modified thinkpad-acpi that uses
+these rfkill changes, please look at:
+git://repo.or.cz/linux-2.6/linux-acpi-2.6/ibm-acpi-2.6.git devel
+
+Comments are appreciated.  The sooner this set of rfkill changes can begin
+the merge process, the better.  I'd *really* like to see them merged in
+mainline during the 2.6.27 merge window (so that I can do the same with the
+rfkill support in thinkpad-acpi).
+
 -- 
-1.5.5.1
-
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
