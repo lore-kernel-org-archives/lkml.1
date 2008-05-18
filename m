@@ -1,158 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759128AbYERSnn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758829AbYERSoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759128AbYERSnn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 14:43:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757128AbYERSjL
+	id S1758829AbYERSoa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 14:44:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757222AbYERSj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 14:39:11 -0400
-Received: from fk-out-0910.google.com ([209.85.128.191]:17569 "EHLO
+	Sun, 18 May 2008 14:39:28 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:17236 "EHLO
 	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754098AbYERSjJ (ORCPT
+	with ESMTP id S1757205AbYERSj1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 14:39:09 -0400
+	Sun, 18 May 2008 14:39:27 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=DyFVQzcF0v1nMWwkfyFnmCa94DnhDCFHLWNuk0ajZvEtdD+yYrb6NEJGBpuCATng489nTkUVT3QfJBGlXjKoPMeDd2b/CbMru5Thy8RXrG7yd7vaxaU5LPKNk8Q/M3Kzqdz8MolxIKHxP4ByZCGZfVH7pefMyfBWMyqRQPd8HHU=
+        b=DbPNBtCOBRz0xmXCPfkss8jVWKYhgzQbWTTxXBDXOuZXFh17uoTIxlzXb4RjWBvKIAtfSk/C+6PI9f17JoF2i6DfrYcHdCrSRgyuMuHLC4IN+sOG6PhpxesS/Obj+fqvvWFFYqn58bKHVfLICnwtNK2jbGW//MVVaOgDYIKevvk=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Borislav Petkov <petkovbb@gmail.com>,
        Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Sun, 18 May 2008 20:56:33 +0200
-Message-Id: <20080518185633.5636.61364.sendpatchset@localhost.localdomain>
+Date: Sun, 18 May 2008 20:56:52 +0200
+Message-Id: <20080518185652.5636.43332.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080518185428.5636.77234.sendpatchset@localhost.localdomain>
 References: <20080518185428.5636.77234.sendpatchset@localhost.localdomain>
-Subject: [PATCH 14/40] ide-floppy: merge idefloppy_transfer_pc() and idefloppy_transfer_pc1()
+Subject: [PATCH 16/40] ide-tape: make idetape_retry_pc() void
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Check IDEFLOPPY_FLAG_ZIP_DRIVE flag in idefloppy_transfer_pc1()
-  and skip idefloppy_transfer_pc2()-phase if the flag is not set.
-
-* Always use idefloppy_transfer_pc1() in idefloppy_issue_pc()
-  and remove no longer needed idefloppy_transfer_pc().
+idetape_retry_pc() always returns ide_stopped so make it void.
 
 There should be no functional changes caused by this patch.
 
 Cc: Borislav Petkov <petkovbb@gmail.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-floppy.c |   65 ++++++++++++-----------------------------------
- 1 file changed, 17 insertions(+), 48 deletions(-)
+ drivers/ide/ide-tape.c |    9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-Index: b/drivers/ide/ide-floppy.c
+Index: b/drivers/ide/ide-tape.c
 ===================================================================
---- a/drivers/ide/ide-floppy.c
-+++ b/drivers/ide/ide-floppy.c
-@@ -522,40 +522,6 @@ static ide_startstop_t idefloppy_pc_intr
+--- a/drivers/ide/ide-tape.c
++++ b/drivers/ide/ide-tape.c
+@@ -696,7 +696,7 @@ static void idetape_queue_pc_head(ide_dr
+  *	last packet command. We queue a request sense packet command in
+  *	the head of the request list.
+  */
+-static ide_startstop_t idetape_retry_pc (ide_drive_t *drive)
++static void idetape_retry_pc(ide_drive_t *drive)
+ {
+ 	idetape_tape_t *tape = drive->driver_data;
+ 	struct ide_atapi_pc *pc;
+@@ -708,7 +708,6 @@ static ide_startstop_t idetape_retry_pc 
+ 	idetape_create_request_sense_cmd(pc);
+ 	set_bit(IDETAPE_FLAG_IGNORE_DSC, &tape->flags);
+ 	idetape_queue_pc_head(drive, pc, rq);
+-	return ide_stopped;
  }
  
  /*
-- * This is the original routine that did the packet transfer.
-- * It fails at high speeds on the Iomega ZIP drive, so there's a slower version
-- * for that drive below. The algorithm is chosen based on drive type
-- */
--static ide_startstop_t idefloppy_transfer_pc(ide_drive_t *drive)
--{
--	ide_hwif_t *hwif = drive->hwif;
--	ide_startstop_t startstop;
--	idefloppy_floppy_t *floppy = drive->driver_data;
--	u8 ireason;
--
--	if (ide_wait_stat(&startstop, drive, DRQ_STAT, BUSY_STAT, WAIT_READY)) {
--		printk(KERN_ERR "ide-floppy: Strange, packet command "
--				"initiated yet DRQ isn't asserted\n");
--		return startstop;
--	}
--	ireason = hwif->INB(hwif->io_ports.nsect_addr);
--	if ((ireason & CD) == 0 || (ireason & IO)) {
--		printk(KERN_ERR "ide-floppy: (IO,CoD) != (0,1) while "
--				"issuing a packet command\n");
--		return ide_do_reset(drive);
--	}
--
--	/* Set the interrupt routine */
--	ide_set_handler(drive, &idefloppy_pc_intr, IDEFLOPPY_WAIT_CMD, NULL);
--
--	/* Send the actual packet */
--	hwif->output_data(drive, NULL, floppy->pc->c, 12);
--
--	return ide_started;
--}
--
--
--/*
-  * What we have here is a classic case of a top half / bottom half interrupt
-  * service routine. In interrupt mode, the device sends an interrupt to signal
-  * that it is ready to receive a packet. However, we need to delay about 2-3
-@@ -580,6 +546,8 @@ static ide_startstop_t idefloppy_transfe
- {
- 	ide_hwif_t *hwif = drive->hwif;
- 	idefloppy_floppy_t *floppy = drive->driver_data;
-+	ide_expiry_t *expiry;
-+	unsigned int timeout;
- 	ide_startstop_t startstop;
- 	u8 ireason;
+@@ -784,7 +783,8 @@ static ide_startstop_t idetape_pc_intr(i
+ 					pc->c[0]);
  
-@@ -602,9 +570,20 @@ static ide_startstop_t idefloppy_transfe
- 	 * 40 and 50msec work well. idefloppy_pc_intr will not be actually
- 	 * used until after the packet is moved in about 50 msec.
- 	 */
-+	if (floppy->flags & IDEFLOPPY_FLAG_ZIP_DRIVE) {
-+		timeout = floppy->ticks;
-+		expiry = &idefloppy_transfer_pc2;
-+	} else {
-+		timeout = IDEFLOPPY_WAIT_CMD;
-+		expiry = NULL;
-+	}
-+
-+	ide_set_handler(drive, &idefloppy_pc_intr, timeout, expiry);
-+
-+	if ((floppy->flags & IDEFLOPPY_FLAG_ZIP_DRIVE) == 0)
-+		/* Send the actual packet */
-+		hwif->output_data(drive, NULL, floppy->pc->c, 12);
- 
--	ide_set_handler(drive, &idefloppy_pc_intr, floppy->ticks,
--			&idefloppy_transfer_pc2);
- 	return ide_started;
- }
- 
-@@ -629,7 +608,6 @@ static ide_startstop_t idefloppy_issue_p
- {
- 	idefloppy_floppy_t *floppy = drive->driver_data;
- 	ide_hwif_t *hwif = drive->hwif;
--	ide_handler_t *pkt_xfer_routine;
- 	u16 bcount;
- 	u8 dma;
- 
-@@ -675,26 +653,17 @@ static ide_startstop_t idefloppy_issue_p
- 		hwif->dma_ops->dma_start(drive);
- 	}
- 
--	/* Can we transfer the packet when we get the interrupt or wait? */
--	if (floppy->flags & IDEFLOPPY_FLAG_ZIP_DRIVE) {
--		/* wait */
--		pkt_xfer_routine = &idefloppy_transfer_pc1;
--	} else {
--		/* immediate */
--		pkt_xfer_routine = &idefloppy_transfer_pc;
--	}
--
- 	if (floppy->flags & IDEFLOPPY_FLAG_DRQ_INTERRUPT) {
- 		/* Issue the packet command */
- 		ide_execute_command(drive, WIN_PACKETCMD,
--				pkt_xfer_routine,
-+				&idefloppy_transfer_pc1,
- 				IDEFLOPPY_WAIT_CMD,
- 				NULL);
- 		return ide_started;
- 	} else {
- 		/* Issue the packet command */
- 		ide_execute_pkt_cmd(drive);
--		return (*pkt_xfer_routine) (drive);
-+		return idefloppy_transfer_pc1(drive);
- 	}
- }
- 
+ 			/* Retry operation */
+-			return idetape_retry_pc(drive);
++			idetape_retry_pc(drive);
++			return ide_stopped;
+ 		}
+ 		pc->error = 0;
+ 		if ((pc->flags & PC_FLAG_WAIT_FOR_DSC) &&
+@@ -1078,7 +1078,8 @@ static ide_startstop_t idetape_media_acc
+ 				printk(KERN_ERR "ide-tape: %s: I/O error, ",
+ 						tape->name);
+ 			/* Retry operation */
+-			return idetape_retry_pc(drive);
++			idetape_retry_pc(drive);
++			return ide_stopped;
+ 		}
+ 		pc->error = 0;
+ 		if (tape->failed_pc == pc)
