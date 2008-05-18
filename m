@@ -1,44 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755102AbYERIsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757215AbYERIst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755102AbYERIsZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 04:48:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756377AbYERIsH
+	id S1757215AbYERIst (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 04:48:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbYERIsh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 04:48:07 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:46302 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756090AbYERIsD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 04:48:03 -0400
-Date: Sun, 18 May 2008 04:48:01 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Jianjun Kong <kongjianjun@gmail.com>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] spelling of Linus
-Message-ID: <20080518084801.GA3081@infradead.org>
-References: <12111001012896-git-send-email-kongjianjun@gmail.com>
+	Sun, 18 May 2008 04:48:37 -0400
+Received: from mx1.ukfsn.org ([77.75.108.10]:39839 "EHLO mail.ukfsn.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753008AbYERIsf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 04:48:35 -0400
+Message-ID: <482FED60.7060405@dgreaves.com>
+Date: Sun, 18 May 2008 09:48:32 +0100
+From: David Greaves <david@dgreaves.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080406)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <12111001012896-git-send-email-kongjianjun@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Eric Sandeen <sandeen@sandeen.net>
+CC: David Chinner <dgc@sgi.com>, xfs@oss.sgi.com,
+       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       LinuxRaid <linux-raid@vger.kernel.org>
+Subject: Re: Regression- XFS won't mount on partitioned md array
+References: <482DC043.5000307@dgreaves.com> <482DD981.5070004@sandeen.net> <482EEFDA.50101@dgreaves.com> <482EF6A7.2020909@sandeen.net> <482F67D9.70400@sandeen.net> <482FBD4C.20608@sandeen.net>
+In-Reply-To: <482FBD4C.20608@sandeen.net>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 18, 2008 at 04:41:41PM +0800, Jianjun Kong wrote:
-> --- a/drivers/serial/mux.c
-> +++ b/drivers/serial/mux.c
-> @@ -356,7 +356,7 @@ static int mux_request_port(struct uart_port *port)
->   * Perform any autoconfiguration steps for the port.  This function is
->   * called if the UPF_BOOT_AUTOCONF flag is specified for the port.
->   * [Note: This is required for now because of a bug in the Serial core.
-> - *  rmk has already submitted a patch to linus, should be available for
-> + *  rmk has already submitted a patch to Linus, should be available for
->   *  2.5.47.]
+Eric Sandeen wrote:
+> Eric Sandeen wrote:
+>> Eric Sandeen wrote:
+>>
+>>> I'll see if I have a little time today to track down the problem.
+>>
+>> Does this patch fix it for you?  Does for me though I can't yet explain
+>> why ;)
+>>
+>> http://www.linux.sgi.com/archives/xfs/2008-05/msg00190.html
+>>
+>> -Eric
+Yes, this fixes it for me - thanks :)
 
-I'd rather review this comment :)  It needs to be either removed or
-totally replaced with one explaining why the patch didn't make it in :)
+> So what's happening is that xfs is trying to read a page-sized IO from
+> the last sector of the log... which goes off the end of the device.
+> This looks like another regression introduced by
+> a9759f2de38a3443d5107bddde03b4f3f550060e, but fixed by Christoph's patch
+> in the URL above, which should be headed towards -stable.
+Damn, I guess I misread my bisect readings when things crashed then.
+Still, I said 'around' :)
+
+> (aside: it seems that this breaks any external log setup where the log
+> consists of the entire device... but I'd have expected the xfsqa suite
+> to catch this...?)
+> 
+> The patch avoids the problem by looking for some extra locking but it
+> seems to me that the root cause is that the buffer being read at this
+> point doesn't have it's b_offset, the offset in it's page, set.  Might
+> be another little buglet but harmless it seems.
+mmmm
+'little buglets' in the filesystem holding a few Tb of data...
+mmmm
+Anything I can do to help find that? I suspect not if you can reproduce it.
+
+Anyhow - thanks again.
+
+David
+PS I'll be back soon, back in 2.6.23 I was hitting a hibernate/xfs bug which
+I've been avoiding by powering down. Well, it's still there in 2.6.25.3...
 
