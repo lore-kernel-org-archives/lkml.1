@@ -1,268 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758204AbYERPlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758584AbYERPmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758204AbYERPlv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 11:41:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754088AbYERPln
+	id S1758584AbYERPmx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 11:42:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754468AbYERPmq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 11:41:43 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:18602 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753916AbYERPlm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 11:41:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type;
-        b=WtoM+BWV0LsOjhZOyWmUJ9aqRgsOEJz18QBLybHReJnMGGoMynOJXblDbQswmWICCiyIvdzlc4i32wrT64kT01XyPYTgjGoTQcDwz/tnixQLz01/lIBTI7Gp45f55sfZEk7DSrDsPQQYHptxSXaZVI7JnXqC/KHZ5vodA281HRA=
-Date: Sun, 18 May 2008 16:41:27 +0100
-From: Ciaran McCreesh <ciaran.mccreesh@googlemail.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: kernel boot hangs after x86: insert_resorce for lapic addr
- after e820_reserve_resources
-Message-ID: <20080518164127.2236d82a@googlemail.com>
-In-Reply-To: <86802c440805172055x30c2c6feg441e16f5fb24f64f@mail.gmail.com>
-References: <20080518014111.4f32298b@googlemail.com>
-	<86802c440805172055x30c2c6feg441e16f5fb24f64f@mail.gmail.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/RalIztpMG4Pg5KU0iVi==62";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+	Sun, 18 May 2008 11:42:46 -0400
+Received: from ns1.codewiz.org ([89.97.188.34]:57538 "EHLO trinity.develer.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754088AbYERPmp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 11:42:45 -0400
+X-Greylist: delayed 396 seconds by postgrey-1.27 at vger.kernel.org; Sun, 18 May 2008 11:42:44 EDT
+Message-ID: <48304CE2.1090808@codewiz.org>
+Date: Sun, 18 May 2008 17:36:02 +0200
+From: Bernie Innocenti <bernie@codewiz.org>
+Organization: Codewiz - http://www.codewiz.org/
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: lkml <linux-kernel@vger.kernel.org>
+CC: David Woodhouse <dwmw2@infradead.org>, ext3-users@redhat.com,
+       ext2-devel@lists.sourceforge.net, Stefano Fedrigo <aleph@develer.com>
+Subject: ext3_dx_add_entry: Directory index full!
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/RalIztpMG4Pg5KU0iVi==62
-Content-Type: multipart/mixed; boundary="MP_/EWrgM2J4Zu7fHLK3IBNp5MT"
+On 2.6.24.4-64.fc8, I createed and mounted a filesystem like this:
 
---MP_/EWrgM2J4Zu7fHLK3IBNp5MT
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+  mke2fs -m0 -b 1024 -R stride=64 -I 128 -i 2048 -j  -L mail -O dir_index,sparse_super -v /dev/sdc1
+  mount -t ext3 -o noatime,data=writeback,nosuid,usrquota /dev/sdc1 /mail
 
-On Sat, 17 May 2008 20:55:20 -0700
-"Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
-> On Sat, May 17, 2008 at 5:41 PM, Ciaran McCreesh
-> <ciaran.mccreesh@googlemail.com> wrote:
-> > The commit 3def3d6ddf43dbe20c00c3cbc38dfacc8586998f (x86:
-> > insert_resorce for lapic addr after e820_reserve_resources) causes
-> > my x86_64 box to to lock up early on in the boot process. Reverting
-> > only this commit with current git head gives a successful boot.
->
-> can you try to boot with apic=3Dverbose? please don't revert that
-> patch...
->=20
-> wonder if init_apic_mapping need some delay with that strange chipset.
+Then I copied a directory with 200K small files into it:
 
-I don't see any additional information with apic=3Dverbose with the
-broken kernel (although I only have a screen's worth of text that I can
-see -- the kernel doesn't get far enough to let me grab it). I've
-attached dmesg from a working kernel with apic=3Dverbose in case that
-helps.
+  cp -a home/simone/Maildir/YouHaveJunkSir /mail/
+  [...]
+  cp: cannot create regular file `/mnt/YouHaveJunkSir/1174170042.20731_2.trinity.develer.com:2,b': No space left on device
+  cp: cannot create regular file `/mnt/YouHaveJunkSir/1186341042.8337_2.trinity.develer.com:2,': No space left on device
+  cp: cannot create regular file `/mnt/YouHaveJunkSir/1209101786.3888_2.trinity.develer.com:2,': No space left on device
 
-Thanks,
---=20
-Ciaran McCreesh
+The kernel logs are also scary:
 
---MP_/EWrgM2J4Zu7fHLK3IBNp5MT
-Content-Type: application/octet-stream; name=dmesg-apic-verbose.txt.gz
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename=dmesg-apic-verbose.txt.gz
+  EXT3-fs warning (device sdc1): ext3_dx_add_entry: Directory index full!
+  EXT3-fs warning (device sdc1): ext3_dx_add_entry: Directory index full!
+  [...]
 
-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
+The failing check looks like this:
 
---MP_/EWrgM2J4Zu7fHLK3IBNp5MT--
+        if (levels && (dx_get_count(frames->entries) ==
+                   dx_get_limit(frames->entries))) {
+            ext3_warning(sb, __FUNCTION__,
+                     "Directory index full!");
+            err = -ENOSPC;
+            goto cleanup;
+        }
 
---Sig_/RalIztpMG4Pg5KU0iVi==62
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
+The limit is set in make_indexed_dir():
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+  dx_set_limit (entries, dx_root_limit(dir, sizeof(root->info)));
 
-iEYEARECAAYFAkgwTiwACgkQ96zL6DUtXhE9fACdH+xc/OPiAYqGGIEHBejvzmQq
-VC4AnjqvgHHp+fmYzXr26OGu19n2uFLz
-=0ymN
------END PGP SIGNATURE-----
+with this helper function:
 
---Sig_/RalIztpMG4Pg5KU0iVi==62--
+  static inline unsigned dx_root_limit (struct inode *dir, unsigned infosize)
+  {
+      unsigned entry_space = dir->i_sb->s_blocksize - EXT3_DIR_REC_LEN(1) -
+          EXT3_DIR_REC_LEN(2) - infosize;
+      return 0? 20: entry_space / sizeof(struct dx_entry);
+  }
+
+Am I reading the above code correctly?  Why does it always return
+20 no matter what?
+
+
+Some background: I'm moving users' Maildirs to a separate filesystem tuned
+for small files to increase performance.  One of our users intentionally
+collected spam for 5 years in one folder and likes it this way.
+We could easily work it around, but first I'd like to understand whether
+the particular parameters we used trigger a bug in ext3 or if we're just
+hitting a (possibly undocumented) limit.
+
+-- 
+   \___/
+  _| X |  Bernie Innocenti - http://www.codewiz.org/
+  \|_O_|  "It's an education project, not a laptop project!"
