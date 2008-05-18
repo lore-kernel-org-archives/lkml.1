@@ -1,41 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755546AbYERSc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755712AbYERSeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755546AbYERSc3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 14:32:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751854AbYERScV
+	id S1755712AbYERSeR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 14:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751567AbYERSeH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 14:32:21 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:35412 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751818AbYERScU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 14:32:20 -0400
-Date: Sun, 18 May 2008 20:32:19 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: bernie@codewiz.org
-cc: lkml <linux-kernel@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>,
-       ext3-users@redhat.com, ext2-devel@lists.sourceforge.net,
-       Stefano Fedrigo <aleph@develer.com>
-Subject: Re: ext3_dx_add_entry: Directory index full!
-In-Reply-To: <48304D92.1080306@develer.com>
-Message-ID: <alpine.LNX.1.10.0805182032030.15590@fbirervta.pbzchgretzou.qr>
-References: <48304CE2.1090808@codewiz.org> <48304D92.1080306@develer.com>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Sun, 18 May 2008 14:34:07 -0400
+Received: from gw.goop.org ([64.81.55.164]:38022 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753368AbYERSeG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 14:34:06 -0400
+Message-ID: <4830768B.1090902@goop.org>
+Date: Sun, 18 May 2008 19:33:47 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Adrian Bunk <bunk@kernel.org>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Tom Spink <tspink@gmail.com>, Cyrill Gorcunov <gorcunov@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>, Jiri Slaby <jirislaby@gmail.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [RFC] x86: merge nmi_32-64 to nmi.c
+References: <20080517192200.GA6914@cvg> <7b9198260805171328u555eec17t3597f3378edbda88@mail.gmail.com> <Pine.LNX.4.55.0805172148380.10067@cliff.in.clinika.pl> <alpine.LFD.1.10.0805172331030.18798@apollo.tec.linutronix.de> <482FD9F2.8080204@goop.org> <20080518180811.GI8140@cs181133002.pp.htv.fi>
+In-Reply-To: <20080518180811.GI8140@cs181133002.pp.htv.fi>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Sunday 2008-05-18 17:38, Bernie Innocenti wrote:
-> Bernie Innocenti wrote:
->> On 2.6.24.4-64.fc8, I createed and mounted a filesystem like this:
->> 
->>   mke2fs -m0 -b 1024 -R stride=64 -I 128 -i 2048 -j  -L mail -O
->>   dir_index,sparse_super -v /dev/sdc1
+Adrian Bunk wrote:
+> Even more important:
+> How do you want to handle kconfig variables set to "m"?
 >
-> I cannot reproduce it any more if I reformat omitting "-b 1024".
-> Maybe it would reappear with 200K * 4 = 800K files?
+> Expand them to 0.5 ?  ;-)
+>   
 
-In that case you might want to switch the filesystems.
+Doesn't much matter.  We can't do "#ifdef CONFIG_FOO == m" anyway.
+
+    J
