@@ -1,59 +1,212 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756857AbYERLWY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757242AbYERLXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756857AbYERLWY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 07:22:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbYERLWR
+	id S1757242AbYERLXc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 07:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbYERLXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 07:22:17 -0400
-Received: from main.gmane.org ([80.91.229.2]:49477 "EHLO ciao.gmane.org"
+	Sun, 18 May 2008 07:23:23 -0400
+Received: from yumi.tdiedrich.de ([85.10.210.183]:48151 "EHLO mx.tdiedrich.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752589AbYERLWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 07:22:16 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-Subject: Re: [BUG] unable to handle kernel paging request in next-20080516
- (scsi_bus_uevent)
-Date: Sun, 18 May 2008 11:22:06 +0000 (UTC)
-Message-ID: <g0p3gu$3gh$1@ger.gmane.org>
-References: <g0mkaf$i1r$1@ger.gmane.org>
-	<20080518021423.3dcf0ddd.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	id S1751678AbYERLXV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 07:23:21 -0400
+Date: Sun, 18 May 2008 13:22:48 +0200
+From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ayaz Abdulla <aabdulla@nvidia.com>
+Subject: Re: hibernate event order question
+Message-ID: <20080518112247.GA10502@yamamaya.is-a-geek.org>
+Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Ayaz Abdulla <aabdulla@nvidia.com>
+References: <20080517175046.GA9032@yamamaya.is-a-geek.org> <20080517223622.GA2668@yamamaya.is-a-geek.org> <20080517232411.GA8792@yamamaya.is-a-geek.org> <200805181245.13899.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: cpc1-cwma5-0-0-cust137.swan.cable.ntl.com
-User-Agent: Pan/0.129 (Benson & Hedges Moscow Gold)
-Cc: linux-scsi@vger.kernel.org
+In-Reply-To: <200805181245.13899.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 18 May 2008 02:14:23 -0700, Andrew Morton wrote:
-
-> (cc's added)
+Rafael J. Wysocki wrote:
+> On Sunday, 18 of May 2008, Tobias Diedrich wrote:
+> > Tobias Diedrich wrote:
+> > > > > Shouldn't there be a 'prepare for poweroff'-callback, which gets
+> > > > > called
+> > > > > before the system is powered off for real?
+> > > > 
+> > > > Yes, it should and it's called in recent kernels.
+> > > 
+> > > For what values of 'recent'?
+> > > I'm running 2.6.26-rc2 here. :)
+> > > How do I hook into this callback?
+> > > (suspend_late maybe? Going to try that one next...)
+> > 
+> > Ok, this patch fixes the 'regression' introduced by the previous
+> > patch (at least for me ;)):
 > 
-> On Sat, 17 May 2008 12:50:24 +0000 (UTC) Sitsofe Wheeler
-> 
->> Sometimes when booting next-20080516 on Ubuntu Gutsy an oops then a
->> panic will occur. At first I thought it might be provoked by vga=0x164
->> but this does not appear to be the case and the issue is seemingly
->> random. I've hand transcribed the oops so there may be errors in it but
->> hopefully it will still help:
->> 
->> BUG: unable to handle kernel paging request at e6f17fac IP:
->> [<c02604d6>] scsi_bus_uevent+0x1/0x17 *pde = 2714b163 *pte = 26f17160
->> Oops: 0000 [#1] DEBUG_PAGEALLOC
->> last sysfs file:
->> 
-> I thought we'd already fixed this?
+> Well, what exactly do you do to hibernate the box?
 
-Thanks to your tip off I've found that this bug is already in bugzilla 
-(complete with the commit that caused the regression) - http://
-bugzilla.kernel.org/show_bug.cgi?id=10711 . There's nothing there that 
-says it has been fixed though. I'll look harder before reporting problems 
-next time.
+/usr/local/bin/s2disk:
+|#!/bin/sh
+|
+|SYSPRINTK=/proc/sys/kernel/printk
+|OLDPRINTK=$(cat $SYSPRINTK)
+|chvt 1
+|# work around forcedeth wake-on-lan bug
+|#rmmod forcedeth
+|echo 9 > $SYSPRINTK
+|# shutdown/reboot/platform
+|echo shutdown > /sys/power/disk
+|echo disk > /sys/power/state
+|echo "$OLDPRINTK" > $SYSPRINTK
+|# work around forcedeth wake-on-lan bug
+|#modprobe forcedeth
+|#brctl addif br0 eth0
+|#brctl addif br0 eth1
+|#ifconfig eth0 up
+|#ifconfig eth1 up
+
+I now also now why I get the 'swapped mac' problem:
+
+In my case (DEV_HAS_CORRECT_MACADDR unset and
+NVREG_TRANSMITPOLL_MAC_ADDR_REV unset on probe)
+nv_probe() reads the original macaddress in reversed order to
+correct it and sets NVREG_TRANSMITPOLL_MAC_ADDR_REV.
+
+However the suspend/resume path does not touch the mac address at
+all, so after a cold boot and resume from disk the macaddress is
+again in 'BIOS order' and NVREG_TRANSMITPOLL_MAC_ADDR_REV is unset,
+but NVREG_TRANSMITPOLL_MAC_ADDR_REV gets set unconditionally in
+nv_resume(), so the net effect is that the MAC is now reversed.
+
+With the promisc fix this is hidden for my brige setup and only
+noticeable at the next hibernate, where I now have to use a reversed
+MAC to wakeup the device.
+
+The following patch (on top of the other two) fixes this by saving
+and restoring the memory mapped device configuration space in
+suspend/resume.  The shutdown hook is still needed since the promisc
+mode seems to be incompatible with wake on lan.
+
+It also reorders the code in suspend/resume to match that in e100/e1000e.
+(configuration space is also saved for devices that are not running)
+
+Index: linux-2.6.26-rc2.forcedwol/drivers/net/forcedeth.c
+===================================================================
+--- linux-2.6.26-rc2.forcedwol.orig/drivers/net/forcedeth.c	2008-05-18 11:26:12.000000000 +0200
++++ linux-2.6.26-rc2.forcedwol/drivers/net/forcedeth.c	2008-05-18 13:00:23.000000000 +0200
+@@ -426,6 +426,7 @@
+ #define NV_PCI_REGSZ_VER1      	0x270
+ #define NV_PCI_REGSZ_VER2      	0x2d4
+ #define NV_PCI_REGSZ_VER3      	0x604
++#define NV_PCI_REGSZ_MAX       	0x604
+ 
+ /* various timeout delays: all in usec */
+ #define NV_TXRX_RESET_DELAY	4
+@@ -784,6 +785,9 @@
+ 
+ 	/* flow control */
+ 	u32 pause_flags;
++
++	/* power saved state */
++	u32 saved_config_space[NV_PCI_REGSZ_MAX/4];
+ };
+ 
+ /*
+@@ -5785,19 +5789,24 @@
+ {
+ 	struct net_device *dev = pci_get_drvdata(pdev);
+ 	struct fe_priv *np = netdev_priv(dev);
+-
+-	if (!netif_running(dev))
+-		goto out;
++	u8 __iomem *base = get_hwbase(dev);
++	int i;
+ 
+ 	netif_device_detach(dev);
+ 
+-	// Gross.
+-	nv_close(dev);
++	if (netif_running(dev)) {
++		// Gross.
++		nv_close(dev);
++	}
++
++	/* save non-pci configuration space */
++	for (i = 0;i <= np->register_size/sizeof(u32); i++)
++		np->saved_config_space[i] = readl(base + i*sizeof(u32));
+ 
+ 	pci_save_state(pdev);
+ 	pci_enable_wake(pdev, pci_choose_state(pdev, state), np->wolenabled);
++	pci_disable_device(pdev);
+ 	pci_set_power_state(pdev, pci_choose_state(pdev, state));
+-out:
+ 
+ 	return 0;
+ }
+@@ -5805,27 +5814,25 @@
+ static int nv_resume(struct pci_dev *pdev)
+ {
+ 	struct net_device *dev = pci_get_drvdata(pdev);
++	struct fe_priv *np = netdev_priv(dev);
+ 	u8 __iomem *base = get_hwbase(dev);
+-	int rc = 0;
+-	u32 txreg;
+-
+-	if (!netif_running(dev))
+-		goto out;
+-
+-	netif_device_attach(dev);
++	int i, rc = 0;
+ 
+ 	pci_set_power_state(pdev, PCI_D0);
+ 	pci_restore_state(pdev);
++	/* ack any pending wake events, disable PME */
+ 	pci_enable_wake(pdev, PCI_D0, 0);
+ 
+-	/* restore mac address reverse flag */
+-	txreg = readl(base + NvRegTransmitPoll);
+-	txreg |= NVREG_TRANSMITPOLL_MAC_ADDR_REV;
+-	writel(txreg, base + NvRegTransmitPoll);
++	/* restore non-pci configuration space */
++	for (i = 0;i <= np->register_size/sizeof(u32); i++)
++		writel(np->saved_config_space[i], base+i*sizeof(u32));
++
++	netif_device_attach(dev);
++	if (netif_running(dev)) {
++		rc = nv_open(dev);
++		nv_set_multicast(dev);
++	}
+ 
+-	rc = nv_open(dev);
+-	nv_set_multicast(dev);
+-out:
+ 	return rc;
+ }
+ 
+@@ -5833,7 +5840,6 @@
+ {
+ 	struct net_device *dev = pci_get_drvdata(pdev);
+ 	struct fe_priv *np = netdev_priv(dev);
+-	u8 __iomem *base = get_hwbase(dev);
+ 
+ 	if (netif_running(dev))
+ 		nv_close(dev);
+@@ -5841,7 +5847,9 @@
+ 	pci_enable_wake(pdev, PCI_D3hot, np->wolenabled);
+ 	pci_enable_wake(pdev, PCI_D3cold, np->wolenabled);
+ 	pci_disable_device(pdev);
+-	pci_set_power_state(pdev, PCI_D3hot);
++	if (np->wolenabled) 
++		pci_set_power_state(pdev, PCI_D3hot);
++	else pci_set_power_state(pdev, PCI_D3cold);
+ }
+ #else
+ #define nv_suspend NULL
 
 -- 
-Sitsofe | http://sucs.org/~sits/
-
+Tobias						PGP: http://9ac7e0bc.uguu.de
+このメールは十割再利用されたビットで作られています。
