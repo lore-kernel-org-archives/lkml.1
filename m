@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763492AbYERMbB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763844AbYERMan@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763492AbYERMbB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 08:31:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762754AbYERMYW
+	id S1763844AbYERMan (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 08:30:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762905AbYERMYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 08:24:22 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:57878 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762759AbYERMYV (ORCPT
+	Sun, 18 May 2008 08:24:00 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:58028 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760329AbYERMX7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 08:24:21 -0400
-Date: Sun, 18 May 2008 08:24:10 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Gilles Espinasse <g.esp@free.fr>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses
-	ofIRQF_SAMPLE_RANDOM
-Message-ID: <20080518122410.GA31413@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Adrian Bunk <bunk@kernel.org>, Gilles Espinasse <g.esp@free.fr>,
-	netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20080515142154.0595e475@core> <36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com> <482C7B18.6060003@garzik.org> <482C7E53.3050300@hp.com> <482C8184.2030906@garzik.org> <20080516161029.44ded734@core> <0f7201c8b790$9c2a2340$f9b5a8c0@pii350> <20080517220258.GC8140@cs181133002.pp.htv.fi> <10a001c8b8b2$28afd2c0$f9b5a8c0@pii350> <20080518120235.GE8140@cs181133002.pp.htv.fi>
+	Sun, 18 May 2008 08:23:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=d808Xu6Si8QqixUvcKgNiD4SDrfxbjCz2q51MxK3BWmg6gLFQRZxjlSwRQNQHDQHhnSbzZXnRQxopEIduf7UqJp9+OoJgMK5xRCQko6aTxb78I2+epCpvUJ8QoZpRS6Zwvu8eXdEyGae0nLBJ8bUSF8S/k8Pc0/EPGms7It9M1k=
+Message-ID: <19f34abd0805180523o12732812k87b8ddd832843af4@mail.gmail.com>
+Date: Sun, 18 May 2008 14:23:59 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #10710] [BISECTED] Lots of "rescheduling IPIs" in powertop
+Cc: "Andreas Herrmann" <andreas.herrmann3@amd.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andi Kleen" <ak@suse.de>, "Andi Kleen" <andi@firstfloor.org>,
+       "Arjan van de Ven" <arjan@infradead.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <7wuznNhcUqC.A.xiH.EsBMIB@albercik>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080518120235.GE8140@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+References: <oKKSi1w1qaF.A.mEG.JrBMIB@albercik>
+	 <7wuznNhcUqC.A.xiH.EsBMIB@albercik>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 18, 2008 at 03:02:36PM +0300, Adrian Bunk wrote:
-> > Yes that's the whole point.
-> > Why remove IRQF_SAMPLE_RANDOM if "it cannot make the RNG output worse."
-> > We should not care if network traffic can be sniffed in some configurations
-> > (plus sniffing could be very unlikely in some others).
-> >...
-> > Are network drivers better without SAMPLE_RANDOM?
-> > My understanding of openssl developper answer is same as yours :
-> > "it cannot make the RNG output worse."
-> 
-> The "it cannot make the RNG output worse." only applies to the OpenSSL 
-> case (one could argue whether it makes sense, but it can't do harm).
+On Sun, May 18, 2008 at 1:13 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.25.  Please verify if it still should be listed.
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=10710
+> Subject         : [BISECTED] Lots of "rescheduling IPIs" in powertop
+> Submitter       : Vegard Nossum <vegard.nossum@gmail.com>
+> Date            : 2008-05-13 20:42 (6 days old)
+> References      : http://marc.info/?l=linux-kernel&amp;m=121071176205864&amp;w=4
+> Handled-By      : Andi Kleen <andi@firstfloor.org>
+>                  Arjan van de Ven <arjan@infradead.org>
+>                  Ingo Molnar <mingo@elte.hu>
+> Patch           : http://marc.info/?l=linux-kernel&amp;m=121074826823352&amp;w=4
+>
 
-Actually, it applies here too.  Or it can be made to apply here.  If
-people are concerned that for certain cards the entropy could
-potentially be guessed by someone on the local network (although I
-suspect it's still useful for protecting against someone who doesn't
-have local network access), we could still sample the entropy, and
-just not increment the entropy credit for /dev/random's sake.  It will
-still put something into the entropy pool which is also used by
-/dev/urandom.
+Ingo Molnar provided the patch that solved the problem (the referenced
+link) but he wanted to wait for Andreas Herrmann to provide an
+additional patch that would solve some implication on AMD CPUs. So
+this is in theory fixed, but the fix has not yet been applied anywhere
+as far as I know.
 
-> The replacement solution ready on all Linux machines today is for 
-> userspace to use /dev/urandom instead of /dev/random if feasible.
+Vegard
 
-Sampling interrupt entropy will definitely not hurt /dev/urandon, and
-may help, especially in the freshly installed server case.  Especially
-if it's using kickstart-style install, where there is no keyboard
-entropy, sampling the interrupts as it pulls RPM's from the network
-and/or the CD-ROM drive may be all that we have.
-
-              	   	  	       	   	   - Ted
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
