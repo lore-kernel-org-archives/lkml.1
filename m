@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760966AbYERTCm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763632AbYERTDB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760966AbYERTCm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 15:02:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761357AbYERSyO
+	id S1763632AbYERTDB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 15:03:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760841AbYERSyR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 14:54:14 -0400
-Received: from nelson.telenet-ops.be ([195.130.133.66]:57713 "EHLO
-	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760890AbYERSyD (ORCPT
+	Sun, 18 May 2008 14:54:17 -0400
+Received: from wilson.telenet-ops.be ([195.130.132.42]:55421 "EHLO
+	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761942AbYERSyF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 14:54:03 -0400
-Message-Id: <20080518184706.631023070@mail.of.borg>
+	Sun, 18 May 2008 14:54:05 -0400
+Message-Id: <20080518185153.632525339@mail.of.borg>
+References: <20080518184706.631023070@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Sun, 18 May 2008 20:47:06 +0200
+Date: Sun, 18 May 2008 20:47:22 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 00/18] Updated m68k patches for 2.6.26
+Subject: [patch 16/18] m68k: Correctly handle multi-ISA at runtime
+Content-Disposition: inline; filename=m68k-dynamic-isa.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Hi Linus, Andrew,
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Here is the updated set of m68k patches for 2.6.26:
-  [01] [PATCH] m68k: Convert access_ok() to an inline function
-  [02] [PATCH] m68k: Kill CONFIG_FB_DAFB
-  [03] [PATCH] m68k: FB_HP300 depends on DIO and doesn't need FB_CFB_FILLRECT
-  [04] [PATCH] m68k: Kill CONFIG_WHIPPET_SERIAL
-  [05] [PATCH] m68k vme_scc: avoid global namespace pollution
-  [06] [PATCH] m68k: Make gcc aware that BUG() does not return
-  [07] [PATCH] m68k: Correct jump if not running on HP300
-  [08] [PATCH] m68k: macide doesn't check for Mac
-  [09] [PATCH] m68k: dnfb doesn't check for Apollo
-  [10] [PATCH] m68k: Some network drivers do not check the platform
-  [11] [PATCH] m68k: Some input drivers do not check the platform
-  [12] [PATCH] m68k: Return -ENODEV if no device is found
-  [13] [PATCH] m68k: Q40/Q60 floppy support is broken
-  [14] [PATCH] m68k: export m68k_mmutype
-  [15] [PATCH] m68k: Prefix ISA type with ISA_TYPE_
-  [16] [PATCH] m68k: Correctly handle multi-ISA at runtime
-  [17] [PATCH] m68k: Update defconfigs
-  [18] [PATCH] m68k: Add multi_defconfig
+m68k: Correctly handle multi-ISA at runtime in multi-platform kernels
 
-Changes since last submission:
-  [11] Added hunk for drivers/input/keyboard/hilkbd.c
-  [14-16] New
-  [17-18] Updated
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ arch/m68k/kernel/setup.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Please apply, thanks!
+--- a/arch/m68k/kernel/setup.c
++++ b/arch/m68k/kernel/setup.c
+@@ -346,17 +346,17 @@ void __init setup_arch(char **cmdline_p)
+ 
+ /* set ISA defs early as possible */
+ #if defined(CONFIG_ISA) && defined(MULTI_ISA)
+-#if defined(CONFIG_Q40)
+ 	if (MACH_IS_Q40) {
+ 		isa_type = ISA_TYPE_Q40;
+ 		isa_sex = 0;
+ 	}
+-#elif defined(CONFIG_GG2)
++#ifdef CONFIG_GG2
+ 	if (MACH_IS_AMIGA && AMIGAHW_PRESENT(GG2_ISA)) {
+ 		isa_type = ISA_TYPE_GG2;
+ 		isa_sex = 0;
+ 	}
+-#elif defined(CONFIG_AMIGA_PCMCIA)
++#endif
++#ifdef CONFIG_AMIGA_PCMCIA
+ 	if (MACH_IS_AMIGA && AMIGAHW_PRESENT(PCMCIA)) {
+ 		isa_type = ISA_TYPE_AG;
+ 		isa_sex = 1;
 
+-- 
 Gr{oetje,eeting}s,
 
 						Geert
