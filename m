@@ -1,83 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763258AbYERTEG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757946AbYERTE0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763258AbYERTEG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 15:04:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761938AbYERSyV
+	id S1757946AbYERTE0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 15:04:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760454AbYERSyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 14:54:21 -0400
-Received: from monty.telenet-ops.be ([195.130.132.56]:35490 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761936AbYERSyG (ORCPT
+	Sun, 18 May 2008 14:54:23 -0400
+Received: from wilson.telenet-ops.be ([195.130.132.42]:55406 "EHLO
+	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760875AbYERSyF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 14:54:06 -0400
-Message-Id: <20080518185152.437771120@mail.of.borg>
+	Sun, 18 May 2008 14:54:05 -0400
+Message-Id: <20080518185152.201316321@mail.of.borg>
 References: <20080518184706.631023070@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Sun, 18 May 2008 20:47:17 +0200
+Date: Sun, 18 May 2008 20:47:16 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org, linux-parisc@vger.kernel.org
-Subject: [patch 11/18] m68k: Some input drivers do not check the platform
-Content-Disposition: inline; filename=m68k-input-drivers-break-multiplatform.diff
+       netdev@vger.kernel.org
+Subject: [patch 10/18] m68k: Some network drivers do not check the platform
+Content-Disposition: inline; filename=m68k-net-drivers-break-multiplatform.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Some input drivers do not check whether they're actually running on the
+Some network drivers do not check whether they're actually running on the
 correct platform, causing multi-platform kernels to crash if they are not.
 
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/input/keyboard/hilkbd.c  |    4 ++++
- drivers/input/misc/hp_sdc_rtc.c  |    5 +++++
- drivers/input/serio/hp_sdc_mlc.c |    5 +++++
- 3 files changed, 14 insertions(+)
+ drivers/net/82596.c     |    7 +++++++
+ drivers/net/apne.c      |    3 +++
+ drivers/net/mac89x0.c   |    3 +++
+ drivers/net/macmace.c   |    3 +++
+ drivers/net/sun3lance.c |    3 +++
+ 5 files changed, 19 insertions(+)
 
---- a/drivers/input/keyboard/hilkbd.c
-+++ b/drivers/input/keyboard/hilkbd.c
-@@ -217,6 +217,10 @@ hil_keyb_init(void)
- 		return -ENOMEM;
+--- a/drivers/net/82596.c
++++ b/drivers/net/82596.c
+@@ -1162,6 +1162,7 @@ struct net_device * __init i82596_probe(
+ 		memcpy(eth_addr, (void *) 0xfffc1f2c, 6);	/* YUCK! Get addr from NOVRAM */
+ 		dev->base_addr = MVME_I596_BASE;
+ 		dev->irq = (unsigned) MVME16x_IRQ_I596;
++		goto found;
+ 	}
+ #endif
+ #ifdef ENABLE_BVME6000_NET
+@@ -1176,6 +1177,7 @@ struct net_device * __init i82596_probe(
+ 		rtc[3] = msr;
+ 		dev->base_addr = BVME_I596_BASE;
+ 		dev->irq = (unsigned) BVME_IRQ_I596;
++		goto found;
+ 	}
+ #endif
+ #ifdef ENABLE_APRICOT
+@@ -1212,8 +1214,13 @@ struct net_device * __init i82596_probe(
+ 		}
  
- #if defined(CONFIG_HP300)
-+	if (!MACH_IS_HP300) {
-+		err = -ENODEV;
-+		goto err1;
-+	}
- 	if (!hwreg_present((void *)(HILBASE + HIL_DATA))) {
- 		printk(KERN_ERR "HIL: hardware register was not found\n");
- 		err = -ENODEV;
---- a/drivers/input/misc/hp_sdc_rtc.c
-+++ b/drivers/input/misc/hp_sdc_rtc.c
-@@ -691,6 +691,11 @@ static int __init hp_sdc_rtc_init(void)
- {
- 	int ret;
- 
-+#ifdef __mc68000__
-+	if (!MACH_IS_HP300)
-+		return -ENODEV;
-+#endif
+ 		dev->irq = 10;
++		goto found;
+ 	}
+ #endif
++	err = -ENODEV;
++	goto out;
 +
- 	init_MUTEX(&i8042tregs);
++found:
+ 	dev->mem_start = (int)__get_free_pages(GFP_ATOMIC, 0);
+ 	if (!dev->mem_start) {
+ 		err = -ENOMEM;
+--- a/drivers/net/apne.c
++++ b/drivers/net/apne.c
+@@ -127,6 +127,9 @@ struct net_device * __init apne_probe(in
+ #endif
+ 	int err;
  
- 	if ((ret = hp_sdc_request_timer_irq(&hp_sdc_rtc_isr)))
---- a/drivers/input/serio/hp_sdc_mlc.c
-+++ b/drivers/input/serio/hp_sdc_mlc.c
-@@ -306,6 +306,11 @@ static int __init hp_sdc_mlc_init(void)
- {
- 	hil_mlc *mlc = &hp_sdc_mlc;
- 
-+#ifdef __mc68000__
-+	if (!MACH_IS_HP300)
-+		return -ENODEV;
-+#endif
++	if (!MACH_IS_AMIGA)
++		return ERR_PTR(-ENODEV);
 +
- 	printk(KERN_INFO PREFIX "Registering the System Domain Controller's HIL MLC.\n");
+ 	if (apne_owned)
+ 		return ERR_PTR(-ENODEV);
  
- 	hp_sdc_mlc_priv.emtestmode = 0;
+--- a/drivers/net/mac89x0.c
++++ b/drivers/net/mac89x0.c
+@@ -183,6 +183,9 @@ struct net_device * __init mac89x0_probe
+ 	int err = -ENODEV;
+ 	DECLARE_MAC_BUF(mac);
+ 
++	if (!MACH_IS_MAC)
++		return ERR_PTR(-ENODEV);
++
+ 	dev = alloc_etherdev(sizeof(struct net_local));
+ 	if (!dev)
+ 		return ERR_PTR(-ENOMEM);
+--- a/drivers/net/macmace.c
++++ b/drivers/net/macmace.c
+@@ -781,6 +781,9 @@ static int __init mac_mace_init_module(v
+ {
+ 	int err;
+ 
++	if (!MACH_IS_MAC)
++		return -ENODEV;
++
+ 	if ((err = platform_driver_register(&mac_mace_driver))) {
+ 		printk(KERN_ERR "Driver registration failed\n");
+ 		return err;
+--- a/drivers/net/sun3lance.c
++++ b/drivers/net/sun3lance.c
+@@ -250,6 +250,9 @@ struct net_device * __init sun3lance_pro
+ 	static int found;
+ 	int err = -ENODEV;
+ 
++	if (!MACH_IS_SUN3 && !MACH_IS_SUN3X)
++		return ERR_PTR(-ENODEV);
++
+ 	/* check that this machine has an onboard lance */
+ 	switch(idprom->id_machtype) {
+ 	case SM_SUN3|SM_3_50:
 
 -- 
 Gr{oetje,eeting}s,
