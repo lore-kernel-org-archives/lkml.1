@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756395AbYERJji@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756680AbYERJlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756395AbYERJji (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 05:39:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbYERJjb
+	id S1756680AbYERJlT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 05:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751355AbYERJlM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 05:39:31 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:19997 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751315AbYERJja (ORCPT
+	Sun, 18 May 2008 05:41:12 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:51026 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750924AbYERJlM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 05:39:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=iNEhoILV87Qq6nDU6gbfv2oEnNfkLZIRSmF9vmqnPnPfXm03AdZ0JvZcFOxn44vPZ1Vr6+WkmmeA2icTgJdWzpCSfpHKR/qcHnaSJ3oSwUSRmjIvNkAOIy0fPV/4I4lEkKgXkVi4/yhR2me+ilgrd0+Fp13kU6tosjanWXz8dnQ=
-Message-ID: <84144f020805180239t4c4952e6i7dcaa224a53bebb7@mail.gmail.com>
-Date: Sun, 18 May 2008 12:39:29 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Pau Oliva Fora" <pau@eslack.org>
-Subject: Re: [PATCH] Add support for HTC Shift Touchscreen
-Cc: dmitry.torokhov@gmail.com, sam@ravnborg.org, linux-input@vger.kernel.org,
+	Sun, 18 May 2008 05:41:12 -0400
+Subject: Re: [PATCH] spelling of Linus
+From: Sven-Thorsten Dietrich <sdietrich@novell.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Jianjun Kong <kongjianjun@gmail.com>, torvalds@linux-foundation.org,
        linux-kernel@vger.kernel.org
-In-Reply-To: <482F09FC.9050403@eslack.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <20080518084801.GA3081@infradead.org>
+References: <12111001012896-git-send-email-kongjianjun@gmail.com>
+	 <20080518084801.GA3081@infradead.org>
+Content-Type: text/plain
+Date: Sun, 18 May 2008 02:41:01 -0700
+Message-Id: <1211103661.25754.1.camel@sven.thebigcorporation.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <482ED31E.2000009@eslack.org> <482F09FC.9050403@eslack.org>
-X-Google-Sender-Auth: 2339f58f303763e9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 17, 2008 at 7:38 PM, Pau Oliva Fora <pau@eslack.org> wrote:
->>> +struct input_dev *htcpen_dev;
->>
->> Why are you not using isa_register_driver() instead?
->
-> I have no specifications from the manufacturer, so don't know how to
-> properly prove the device, etc.
 
-You can still use isa_register_driver() which is nicer IMHO.
+On Sun, 2008-05-18 at 04:48 -0400, Christoph Hellwig wrote:
+> On Sun, May 18, 2008 at 04:41:41PM +0800, Jianjun Kong wrote:
+> > --- a/drivers/serial/mux.c
+> > +++ b/drivers/serial/mux.c
+> > @@ -356,7 +356,7 @@ static int mux_request_port(struct uart_port *port)
+> >   * Perform any autoconfiguration steps for the port.  This function is
+> >   * called if the UPF_BOOT_AUTOCONF flag is specified for the port.
+> >   * [Note: This is required for now because of a bug in the Serial core.
+> > - *  rmk has already submitted a patch to linus, should be available for
+> > + *  rmk has already submitted a patch to Linus, should be available
+> for
 
-On Sat, May 17, 2008 at 7:38 PM, Pau Oliva Fora <pau@eslack.org> wrote:
->>> +       printk(KERN_INFO "htcpen: module inserted\n");
->>> +
->>> +       inb_p(HTCPEN_PORT0);
->>
->> So there's no way to probe the existence of this device?
->
-> I can add a minimal sanity check if that is a must, but I don't have
-> a datasheet and contacting HTC did not help.
+> + *  RMK has already submitted a patch to Linus, should be available
+for
 
-Well, you probably want distributions to be able to enable this by
-default so any kind probing is helpful, yes.
+Lets also make RMK's initials caps while changing the line.
+
+Cheers,
+Sven
+
