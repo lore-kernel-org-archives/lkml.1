@@ -1,97 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756780AbYERVrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757416AbYERV6F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756780AbYERVrT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 17:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751166AbYERVrG
+	id S1757416AbYERV6F (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 17:58:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752233AbYERV5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 17:47:06 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:58683 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751818AbYERVrE (ORCPT
+	Sun, 18 May 2008 17:57:51 -0400
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:40767 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752066AbYERV5u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 17:47:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent;
-        b=VTZUxgdOacF5FD+vPTVP6eQGr725hL1Bn/NwBEu6CS3UZWAXK8kUSCbmWH8sXUi6/Sj2BJqsYmZ/+8kIIHi12/aZHgrCko3lNgwMTadeNXg/8JI3rMN23jkH2lcHX+d6qGUR7u3+Yb/vKKV2VTJbpdSVRoUuYO3EBWn7MbR06Xc=
-Date: Mon, 19 May 2008 01:46:56 +0400
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Andres Salomon <dilinger@queued.net>
-Cc: richard@laptop.org, avorontsov@ru.mvista.com,
-       Andrew Morton <akpm@linux-foundation.org>, cbou@mail.ru,
-       linux-kernel@vger.kernel.org, dwmw2@infradead.org
-Subject: Re: [PATCH] power_supply: add CHARGE_COUNTER property and
-	olpc_battery support for it
-Message-ID: <20080518214656.GA16808@zarina>
-Reply-To: cbouatmailru@gmail.com
-References: <20080508003454.722ba511@ephemeral> <20080508105145.GA32017@polina.dev.rtsoft.ru> <20080508130102.3218f1e9@ephemeral> <20080508171320.GA8226@polina.dev.rtsoft.ru> <48234C25.4040807@laptop.org> <20080508193614.GA31188@polina.dev.rtsoft.ru> <4823663B.6060409@laptop.org> <20080512214629.443a5999@ephemeral> <4829A39F.7050308@laptop.org> <20080513122330.4c81e289@ephemeral>
+	Sun, 18 May 2008 17:57:50 -0400
+Date: Sun, 18 May 2008 23:57:38 +0200
+From: Sebastian Siewior <lkml@ml.breakpoint.cc>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] crypto: make michael_block a function
+Message-ID: <20080518215738.GA6711@Chamillionaire.breakpoint.cc>
+References: <1210918637.5915.24.camel@brick> <20080516070157.GA9769@Chamillionaire.breakpoint.cc> <1210925405.4000.3.camel@johannes.berg> <1210953123.5915.33.camel@brick>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080513122330.4c81e289@ephemeral>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1210953123.5915.33.camel@brick>
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 13, 2008 at 12:23:30PM -0400, Andres Salomon wrote:
-> On Tue, 13 May 2008 10:20:15 -0400
-> "Richard A. Smith" <richard@laptop.org> wrote:
-> 
-> > Andres Salomon wrote:
-> > 
-> > > +		ec_word = be16_to_cpu(ec_word);
-> > > +		val->intval = ec_word * 4167 / 10;
-> > 
-> > Whats wrong with:
-> > 
-> >  > +		val->intval = ((int)ec_word) * 6250 / 15;
-> > 
-> > Which does not have overflow problems and keeps more precision.
-> > 
-> 
-> You're right, of course.  Anton, can you please apply the following?
+* Harvey Harrison | 2008-05-16 08:52:03 [-0700]:
 
-Sorry for the delay... Applied, thanks!
+>Well, the code-size difference is significant (about 200 bytes smaller
+>on X86-32).  This macro is essentially an inline function that is pretty
+>large.
 
-> Subject: [PATCH] power_supply: fix up CHARGE_COUNTER output to be more precise
-> 
-> As Richard Smith pointed out, ACR * 6250 / 15  provides for less precision
-> loss than ACR * 4167 / 10, _and_ it doesn't overflow.  Switch to using
-> that equation for CHARGE_COUNTER.
-> 
-> Signed-off-by: Andres Salomon <dilinger@debian.org>
-> ---
->  drivers/power/olpc_battery.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/power/olpc_battery.c b/drivers/power/olpc_battery.c
-> index a928165..f5d712a 100644
-> --- a/drivers/power/olpc_battery.c
-> +++ b/drivers/power/olpc_battery.c
-> @@ -19,7 +19,7 @@
->  
->  #define EC_BAT_VOLTAGE	0x10	/* uint16_t,	*9.76/32,    mV   */
->  #define EC_BAT_CURRENT	0x11	/* int16_t,	*15.625/120, mA   */
-> -#define EC_BAT_ACR	0x12	/* int16_t,	*416.7,      µAh  */
-> +#define EC_BAT_ACR	0x12	/* int16_t,	*6250/15,    µAh  */
->  #define EC_BAT_TEMP	0x13	/* uint16_t,	*100/256,   °C  */
->  #define EC_AMB_TEMP	0x14	/* uint16_t,	*100/256,   °C  */
->  #define EC_BAT_STATUS	0x15	/* uint8_t,	bitmask */
-> @@ -295,7 +295,7 @@ static int olpc_bat_get_property(struct power_supply *psy,
->  			return ret;
->  
->  		ec_word = be16_to_cpu(ec_word);
-> -		val->intval = ec_word * 4167 / 10;
-> +		val->intval = ec_word * 6250 / 15;
->  		break;
->  	case POWER_SUPPLY_PROP_SERIAL_NUMBER:
->  		ret = olpc_ec_cmd(EC_BAT_SERIAL, NULL, 0, (void *)&ser_buf, 8);
-> -- 
-> 1.5.5.1
+Can you please apply the attached patch and run
+| modprobe tcrypt mode=314
 
+before and after your patch?
+
+I get the following numbers on one of my maschines:
+
+before:
+~~~~~~~
+|test  0 (   16 byte blocks,   16 bytes per update,   1 updates):    122 cycles/operation,    7 cycles/byte
+|test  1 (   64 byte blocks,   16 bytes per update,   4 updates):    370 cycles/operation,    5 cycles/byte
+|test  2 (   64 byte blocks,   64 bytes per update,   1 updates):    216 cycles/operation,    3 cycles/byte
+|test  3 (  256 byte blocks,   16 bytes per update,  16 updates):   1304 cycles/operation,    5 cycles/byte
+|test  4 (  256 byte blocks,   64 bytes per update,   4 updates):    746 cycles/operation,    2 cycles/byte
+|test  5 (  256 byte blocks,  256 bytes per update,   1 updates):    592 cycles/operation,    2 cycles/byte
+|test  6 ( 1024 byte blocks,   16 bytes per update,  64 updates):   5040 cycles/operation,    4 cycles/byte
+|test  7 ( 1024 byte blocks,  256 bytes per update,   4 updates):   2252 cycles/operation,    2 cycles/byte
+|test  8 ( 1024 byte blocks, 1024 bytes per update,   1 updates):   2098 cycles/operation,    2 cycles/byte
+|test  9 ( 2048 byte blocks,   16 bytes per update, 128 updates):  10021 cycles/operation,    4 cycles/byte
+|test 10 ( 2048 byte blocks,  256 bytes per update,   8 updates):   4446 cycles/operation,    2 cycles/byte
+|test 11 ( 2048 byte blocks, 1024 bytes per update,   2 updates):   4167 cycles/operation,    2 cycles/byte
+|test 12 ( 2048 byte blocks, 2048 bytes per update,   1 updates):   4106 cycles/operation,    2 cycles/byte
+|test 13 ( 4096 byte blocks,   16 bytes per update, 256 updates):  19982 cycles/operation,    4 cycles/byte
+|test 14 ( 4096 byte blocks,  256 bytes per update,  16 updates):   8833 cycles/operation,    2 cycles/byte
+|test 15 ( 4096 byte blocks, 1024 bytes per update,   4 updates):   8275 cycles/operation,    2 cycles/byte
+|test 16 ( 4096 byte blocks, 4096 bytes per update,   1 updates):   8122 cycles/operation,    1 cycles/byte
+|test 17 ( 8192 byte blocks,   16 bytes per update, 512 updates):  39906 cycles/operation,    4 cycles/byte
+|test 18 ( 8192 byte blocks,  256 bytes per update,  32 updates):  17607 cycles/operation,    2 cycles/byte
+|test 19 ( 8192 byte blocks, 1024 bytes per update,   8 updates):  16492 cycles/operation,    2 cycles/byte
+|test 20 ( 8192 byte blocks, 4096 bytes per update,   2 updates):  16214 cycles/operation,    1 cycles/byte
+|test 21 ( 8192 byte blocks, 8192 bytes per update,   1 updates):  16173 cycles/operation,    1 cycles/byte
+
+after:
+~~~~~~
+|test  0 (   16 byte blocks,   16 bytes per update,   1 updates):    175 cycles/operation,   10 cycles/byte
+|test  1 (   64 byte blocks,   16 bytes per update,   4 updates):    510 cycles/operation,    7 cycles/byte
+|test  2 (   64 byte blocks,   64 bytes per update,   1 updates):    342 cycles/operation,    5 cycles/byte
+|test  3 (  256 byte blocks,   16 bytes per update,  16 updates):   1813 cycles/operation,    7 cycles/byte
+|test  4 (  256 byte blocks,   64 bytes per update,   4 updates):   1182 cycles/operation,    4 cycles/byte
+|test  5 (  256 byte blocks,  256 bytes per update,   1 updates):   1013 cycles/operation,    3 cycles/byte
+|test  6 ( 1024 byte blocks,   16 bytes per update,  64 updates):   7026 cycles/operation,    6 cycles/byte
+|test  7 ( 1024 byte blocks,  256 bytes per update,   4 updates):   3869 cycles/operation,    3 cycles/byte
+|test  8 ( 1024 byte blocks, 1024 bytes per update,   1 updates):   3701 cycles/operation,    3 cycles/byte
+|test  9 ( 2048 byte blocks,   16 bytes per update, 128 updates):  13975 cycles/operation,    6 cycles/byte
+|test 10 ( 2048 byte blocks,  256 bytes per update,   8 updates):   7662 cycles/operation,    3 cycles/byte
+|test 11 ( 2048 byte blocks, 1024 bytes per update,   2 updates):   7346 cycles/operation,    3 cycles/byte
+|test 12 ( 2048 byte blocks, 2048 bytes per update,   1 updates):   7282 cycles/operation,    3 cycles/byte
+|test 13 ( 4096 byte blocks,   16 bytes per update, 256 updates):  27875 cycles/operation,    6 cycles/byte
+|test 14 ( 4096 byte blocks,  256 bytes per update,  16 updates):  15247 cycles/operation,    3 cycles/byte
+|test 15 ( 4096 byte blocks, 1024 bytes per update,   4 updates):  14615 cycles/operation,    3 cycles/byte
+|test 16 ( 4096 byte blocks, 4096 bytes per update,   1 updates):  14447 cycles/operation,    3 cycles/byte
+|test 17 ( 8192 byte blocks,   16 bytes per update, 512 updates):  55673 cycles/operation,    6 cycles/byte
+|test 18 ( 8192 byte blocks,  256 bytes per update,  32 updates):  30416 cycles/operation,    3 cycles/byte
+|test 19 ( 8192 byte blocks, 1024 bytes per update,   8 updates):  29155 cycles/operation,    3 cycles/byte
+|test 20 ( 8192 byte blocks, 4096 bytes per update,   2 updates):  28839 cycles/operation,    3 cycles/byte
+|test 21 ( 8192 byte blocks, 8192 bytes per update,   1 updates):  28794 cycles/operation,    3 cycles/byte
+
+
+>
+>Harvey
+
+Sebastian
+
+---
+ crypto/tcrypt.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/crypto/tcrypt.c b/crypto/tcrypt.c
+index 1ab8c01..c0040d5 100644
+--- a/crypto/tcrypt.c
++++ b/crypto/tcrypt.c
+@@ -1761,6 +1761,10 @@ static void do_test(void)
+ 		test_hash_speed("sha224", sec, generic_hash_speed_template);
+ 		if (mode > 300 && mode < 400) break;
+ 
++	case 314:
++		test_hash_speed("michael_mic", sec, generic_hash_speed_template);
++		if (mode > 300 && mode < 400) break;
++
+ 	case 399:
+ 		break;
+ 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+1.5.4.3
+
