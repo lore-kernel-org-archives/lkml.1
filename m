@@ -1,99 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764320AbYERMb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761332AbYERMdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764320AbYERMb5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 08:31:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763438AbYERM3R
+	id S1761332AbYERMdT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 08:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754311AbYERMdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 08:29:17 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58678 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763289AbYERM3M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 08:29:12 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-Subject: Re: hibernate event order question
-Date: Sun, 18 May 2008 14:29:26 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ayaz Abdulla <aabdulla@nvidia.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>
-References: <20080517175046.GA9032@yamamaya.is-a-geek.org> <200805181332.13941.rjw@sisk.pl> <20080518122433.GA16663@yamamaya.is-a-geek.org>
-In-Reply-To: <20080518122433.GA16663@yamamaya.is-a-geek.org>
+	Sun, 18 May 2008 08:33:05 -0400
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:32910
+	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754480AbYERMdD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 08:33:03 -0400
+Message-ID: <483021FD.3040801@qumranet.com>
+Date: Sun, 18 May 2008 15:33:01 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-2022-jp"
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>
+Subject: Re: [Bug #10643] s390 kvm_virtio.c build error
+References: <oKKSi1w1qaF.A.mEG.JrBMIB@albercik> <7wuznNhcUqC.A.Y6.HtBMIB@albercik> <20080518122717.GB5577@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <20080518122717.GB5577@osiris.boeblingen.de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805181429.27686.rjw@sisk.pl>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (firebolt.argo.co.il [0.0.0.0]); Sun, 18 May 2008 15:33:01 +0300 (IDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 18 of May 2008, Tobias Diedrich wrote:
-> Rafael J. Wysocki wrote:
-> > On Sunday, 18 of May 2008, Tobias Diedrich wrote:
-> > > Rafael J. Wysocki wrote:
-> > > > On Sunday, 18 of May 2008, Tobias Diedrich wrote:
-> > > > > Tobias Diedrich wrote:
-> > > > > > > > Shouldn't there be a 'prepare for poweroff'-callback, which gets
-> > > > > > > > called
-> > > > > > > > before the system is powered off for real?
-> > > > > > > 
-> > > > > > > Yes, it should and it's called in recent kernels.
-> > > > > > 
-> > > > > > For what values of 'recent'?
-> > > > > > I'm running 2.6.26-rc2 here. :)
-> > > > > > How do I hook into this callback?
-> > > > > > (suspend_late maybe? Going to try that one next...)
-> > > > > 
-> > > > > Ok, this patch fixes the 'regression' introduced by the previous
-> > > > > patch (at least for me ;)):
-> > > > 
-> > > > Well, what exactly do you do to hibernate the box?
-> > > 
-> > > |#!/bin/sh
-> > > |
-> > > |SYSPRINTK=/proc/sys/kernel/printk
-> > > |OLDPRINTK=$(cat $SYSPRINTK)
-> > > |chvt 1
-> > > |# work around forcedeth wake-on-lan bug
-> > > |#rmmod forcedeth
-> > > |echo 9 > $SYSPRINTK
-> > > |# shutdown/reboot/platform
-> > > |echo shutdown > /sys/power/disk
-> > 
-> > You don't see the devices' suspend callbacks invoked before powering off
-> > because of this.  Change that to 'platform' (unless that breaks things).
-> 
-> Hmm, I think someone recommended to use shutdown since that is
-> supposed to be more reliable.
-> Anyway, I think the shutdown hook is good anyway since I suspect
-> that if I do a normal system shutdown with promiscous mode still on,
-> then wake-on-lan would also not work?
-> I haven't checked that though.
-> At least I think the shutdown hook won't hurt. :)
+Heiko Carstens wrote:
+> On Sun, May 18, 2008 at 01:13:55PM +0200, Rafael J. Wysocki wrote:
+>   
+>> This message has been generated automatically as a part of a report
+>> of recent regressions.
+>>
+>> The following bug entry is on the current list of known regressions
+>> from 2.6.25.  Please verify if it still should be listed.
+>>
+>>
+>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10643
+>> Subject		: s390 kvm_virtio.c build error
+>> Submitter	: Adrian Bunk <bunk@kernel.org>
+>> Date		: 2008-05-08 14:05 (11 days old)
+>> References	: http://lkml.org/lkml/2008/5/3/155
+>> Handled-By	: Heiko Carstens <heiko.carstens@de.ibm.com>
+>> Patch		:  several nearly identical patches, KVM tree should bring one
+>>     
+>
+> Still broken. Waiting for Avi's pull request.
+>   
 
-No, it won't.
+This was sent out a few minutes ago.
 
-> > I'm unable to comment on the device-specific things, but apart from this the
-> > patch looks okay to me except for one thing.
-> > > +	if (np->wolenabled) 
-> > > +		pci_set_power_state(pdev, PCI_D3hot);
-> > > +	else pci_set_power_state(pdev, PCI_D3cold);
-> > 
-> > I'm not sure if it's possible to put the device into D3cold without actually
-> > removing power from it.
-> 
-> Ok, I've cleaned it up a bit and split it up properly (I think):
-> http://www.tdiedrich.de/~ranma/patches/forcedeth/2.6.26-rc2/
-> series:
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
-Can you send those patches as a series of messages, please?
-
-> forcedeth.resume.promisc.patch
-> forcedeth.hibernate.wol.patch
-> forcedeth.swappedmac.patch
-> forcedeth.reorder_suspend_resume.patch
-
-Thanks,
-Rafael
