@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754585AbYERJf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756395AbYERJji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754585AbYERJf4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 05:35:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbYERJfp
+	id S1756395AbYERJji (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 05:39:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbYERJjb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 05:35:45 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:18678 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750924AbYERJfp (ORCPT
+	Sun, 18 May 2008 05:39:31 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:19997 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751315AbYERJja (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 05:35:45 -0400
+	Sun, 18 May 2008 05:39:30 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=l0JwSKtiK11aLH51zYHRWgKeihUcEnux9rIDEi6BuhYhLQRnTsGwi6vbCPiMMD/W9xZ4QTfERkIXjH0OjXkQsgMhZOaZ4jl9dBpXdjHrbU3x6Y4rSGQsgscfGCuj6hI5KK9x9xs9QQD9O/l0rO724wlB/jRKGIEHEypcg4BJ/S4=
-Date: Sun, 18 May 2008 13:35:33 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Tom Spink <tspink@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Jiri Slaby <jirislaby@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [RFC] x86: merge nmi_32-64 to nmi.c
-Message-ID: <20080518093533.GE6948@cvg>
-References: <20080517192200.GA6914@cvg> <7b9198260805171328u555eec17t3597f3378edbda88@mail.gmail.com> <Pine.LNX.4.55.0805172148380.10067@cliff.in.clinika.pl> <alpine.LFD.1.10.0805172331030.18798@apollo.tec.linutronix.de> <482FD9F2.8080204@goop.org> <alpine.LFD.1.10.0805181108420.18798@apollo.tec.linutronix.de>
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=iNEhoILV87Qq6nDU6gbfv2oEnNfkLZIRSmF9vmqnPnPfXm03AdZ0JvZcFOxn44vPZ1Vr6+WkmmeA2icTgJdWzpCSfpHKR/qcHnaSJ3oSwUSRmjIvNkAOIy0fPV/4I4lEkKgXkVi4/yhR2me+ilgrd0+Fp13kU6tosjanWXz8dnQ=
+Message-ID: <84144f020805180239t4c4952e6i7dcaa224a53bebb7@mail.gmail.com>
+Date: Sun, 18 May 2008 12:39:29 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Pau Oliva Fora" <pau@eslack.org>
+Subject: Re: [PATCH] Add support for HTC Shift Touchscreen
+Cc: dmitry.torokhov@gmail.com, sam@ravnborg.org, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <482F09FC.9050403@eslack.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805181108420.18798@apollo.tec.linutronix.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <482ED31E.2000009@eslack.org> <482F09FC.9050403@eslack.org>
+X-Google-Sender-Auth: 2339f58f303763e9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Thomas Gleixner - Sun, May 18, 2008 at 11:09:22AM +0200]
-| On Sun, 18 May 2008, Jeremy Fitzhardinge wrote:
-| 
-| > Thomas Gleixner wrote:
-| > > Definitely, but we should do it at the Kconfig level which allows us
-| > > to have integer defines as well, so we end up with something like:
-| > > 
-| > > static inline unsigned int get_nmi_count(int cpu)
-| > > {
-| > >       return CONFIG_X86_64 ? cpu_pda(cpu)->__nmi_count : nmi_count(cpu);
-| > > }
-| > >   
-| > 
-| > Unfortunately that doesn't work because when CONFIG_X86_64 isn't defined it
-| > doesn't expand to 0.  It would be nice if CONFIG_* expanded to 0/1, but we'd
-| > need to change all the #ifdef CONFIG_* to #if CONFIG_*...
-| 
-| You can have int type CONFIG_ which is always expanded. We have to add
-| one of those though.
-| 
-| Thanks,
-| 	tglx
-| 
+On Sat, May 17, 2008 at 7:38 PM, Pau Oliva Fora <pau@eslack.org> wrote:
+>>> +struct input_dev *htcpen_dev;
+>>
+>> Why are you not using isa_register_driver() instead?
+>
+> I have no specifications from the manufacturer, so don't know how to
+> properly prove the device, etc.
 
-Thomas, unfortunetly as I see we can't go by a simple way like that,
-these static funstions also hides the differen types and args list.
-So even we could leave it as it is now, or could define them as macroses.
-Anyway I'll try to find out how to handle this.
+You can still use isa_register_driver() which is nicer IMHO.
 
-		- Cyrill -
+On Sat, May 17, 2008 at 7:38 PM, Pau Oliva Fora <pau@eslack.org> wrote:
+>>> +       printk(KERN_INFO "htcpen: module inserted\n");
+>>> +
+>>> +       inb_p(HTCPEN_PORT0);
+>>
+>> So there's no way to probe the existence of this device?
+>
+> I can add a minimal sanity check if that is a must, but I don't have
+> a datasheet and contacting HTC did not help.
+
+Well, you probably want distributions to be able to enable this by
+default so any kind probing is helpful, yes.
