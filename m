@@ -1,37 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755649AbYERHou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756026AbYERHtq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755649AbYERHou (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 03:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389AbYERHok
+	id S1756026AbYERHtq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 03:49:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbYERHtj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 03:44:40 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:49675 "EHLO mx2.suse.de"
+	Sun, 18 May 2008 03:49:39 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:50855 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751915AbYERHok (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 03:44:40 -0400
-Date: Sun, 18 May 2008 09:44:38 +0200
-Message-ID: <s5hskwgkqe1.wl%tiwai@suse.de>
+	id S1752564AbYERHti (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 03:49:38 -0400
+Date: Sun, 18 May 2008 09:49:37 +0200
+Message-ID: <s5hr6c0kq5q.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: Stas Sergeev <stsp@aknet.ru>
-Cc: Roberto Oppedisano <roberto.oppedisano@infracom.it>,
-       LKML <linux-kernel@vger.kernel.org>, alsa-devel@alsa-project.org
-Subject: Re: [patch] snd-pcsp: silent misleading warning
-In-Reply-To: <482EFED2.1020504@aknet.ru>
-References: <482737BE.20502@infracom.it>
-	<4827415A.7060101@aknet.ru>
-	<482756F0.8020609@infracom.it>
-	<48275D8D.10500@aknet.ru>
-	<4827F0A1.9090600@infracom.it>
-	<48288ACC.1020909@aknet.ru>
-	<48299F08.2060702@infracom.it>
-	<4829B6A1.90707@infracom.it>
-	<s5h7idycfmf.wl%tiwai@suse.de>
-	<482A7A17.8070706@infracom.it>
-	<s5hwslxb3t8.wl%tiwai@suse.de>
-	<482C9A3E.3000009@infracom.it>
-	<482C9F3E.4050104@aknet.ru>
-	<482EC93E.7080702@infracom.it>
-	<482EFED2.1020504@aknet.ru>
+Cc: Dave Jones <davej@codemonkey.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       alsa-devel@alsa-project.org
+Subject: Re: [Bug #10679] 2.6.26-rc1 regression:	e5e1d3cb20034a3cbcfff1f0bae12201aa2ce17e breaks artsd
+In-Reply-To: <482F9EC3.8010907@aknet.ru>
+References: <hPXlJLjt4XG.A._lF.Jv1JIB@chimera>
+	<88YBFoyd1CN.A._sF.Ov1JIB@chimera>
+	<s5hskwmeb1h.wl%tiwai@suse.de>
+	<20080514212011.GH7054@mit.edu>
+	<s5hhcd0azv1.wl%tiwai@suse.de>
+	<20080515130654.GC18825@mit.edu>
+	<s5h8wybr0c2.wl%tiwai@suse.de>
+	<20080517204725.GA11460@codemonkey.org.uk>
+	<482F9EC3.8010907@aknet.ru>
 User-Agent: Wanderlust/2.14.0 (Africa) SEMI/1.14.6 (Maruoka) FLIM/1.14.7
  (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 MULE XEmacs/21.5 (beta28) (fuki)
  (+CVS-20070806) (i386-suse-linux)
@@ -41,29 +36,41 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Sat, 17 May 2008 19:50:42 +0400,
+At Sun, 18 May 2008 07:13:07 +0400,
 Stas Sergeev wrote:
 > 
 > Hello.
 > 
-> Roberto Oppedisano wrote:
-> > I noticed that when I run
-> > aplay -D plughw:2,0 /usr/share/sounds/KDE_Logout.wav
-> >  I get a flood of:
-> > [  417.338143] PCSP: playback_ptr inconsistent (4642 4661 18645)
-> It turns out that the buffer size you
-> get, is not evenly devided by period size.
-> 18645 % 4661 = 1.
-> That (wrongly) triggers the warning.
-> This may very well be an alsa bug, or
-> may not, but the code in the driver is
-> handling that properly, so there is no
-> need for such a verbose warning.
+> Dave Jones wrote:
+> > More seriously, it doesn't seem that there's any way we can build
+> > this driver modular without it screwing up already working systems
+> Actually, I have just upgraded
+> f8->f9, and guess what? Lost the
+> sound... And not because of snd-pcsp,
+> but rather because snd-hda-intel
+> started to take the first slot
+> and snd-intel8x0 takes the second.
+> On f8 snd-hda-intel have never been
+> loaded for me at all. I don't need
+> it, it finds a HDA chip on an ATI
+> video board, which it never did before.
+> 
+> So... it doesn't look like this
+> problem is specific to snd-pcsp.
+> Anyone can get into that trouble
+> it seems.
 
-The right fix would be to add a hw_constraint to align the buffer
-size.  The simplest way is to add the following in PCM open callback.
+You can better use slots option for snd module instead of specifying
+index in each driver for 2.6.25 or later kernels.  That is,
 
-	snd_pcm_hw_constraint_integer(runtime, SNDRV_PCM_HW_PARAM_PERIODS);
+	options snd slots=snd-intel8x0,snd-hda-intel
+
+will assign the specified drivers in the first two slots.  And this
+means also that these two slots are reserved.  The other drivers,
+e.g. a hotplugged usb-audio, won't be assigned in these slots even
+usb-audio is loaded before intel8x0.
+
+See ALSA-Configuration.txt for details.
 
 
 Takashi
