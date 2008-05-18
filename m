@@ -1,32 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756026AbYERHtq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756210AbYERHzd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756026AbYERHtq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 03:49:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbYERHtj
+	id S1756210AbYERHzd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 03:55:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbYERHzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 03:49:39 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:50855 "EHLO mx2.suse.de"
+	Sun, 18 May 2008 03:55:24 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:52161 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752564AbYERHti (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 03:49:38 -0400
-Date: Sun, 18 May 2008 09:49:37 +0200
-Message-ID: <s5hr6c0kq5q.wl%tiwai@suse.de>
+	id S1752000AbYERHzX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 03:55:23 -0400
+Date: Sun, 18 May 2008 09:55:21 +0200
+Message-ID: <s5hprrkkpw6.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: Stas Sergeev <stsp@aknet.ru>
-Cc: Dave Jones <davej@codemonkey.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       alsa-devel@alsa-project.org
-Subject: Re: [Bug #10679] 2.6.26-rc1 regression:	e5e1d3cb20034a3cbcfff1f0bae12201aa2ce17e breaks artsd
-In-Reply-To: <482F9EC3.8010907@aknet.ru>
-References: <hPXlJLjt4XG.A._lF.Jv1JIB@chimera>
-	<88YBFoyd1CN.A._sF.Ov1JIB@chimera>
-	<s5hskwmeb1h.wl%tiwai@suse.de>
-	<20080514212011.GH7054@mit.edu>
-	<s5hhcd0azv1.wl%tiwai@suse.de>
-	<20080515130654.GC18825@mit.edu>
-	<s5h8wybr0c2.wl%tiwai@suse.de>
-	<20080517204725.GA11460@codemonkey.org.uk>
-	<482F9EC3.8010907@aknet.ru>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       bugme-daemon@bugzilla.kernel.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Stas Sergeev <stsp@aknet.ru>
+Subject: Re: [Bugme-new] [Bug 10701] New: snd_pcsp lockdep warning
+In-Reply-To: <alpine.LFD.1.10.0805171720310.14337@apollo.tec.linutronix.de>
+References: <bug-10701-10286@http.bugzilla.kernel.org/>
+	<20080515110244.6e15d4c3.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0805161338500.3255@apollo.tec.linutronix.de>
+	<20080516103827.0d5ab023.akpm@linux-foundation.org>
+	<alpine.LFD.1.10.0805162132050.3255@apollo.tec.linutronix.de>
+	<s5hwsltm4bu.wl%tiwai@suse.de>
+	<alpine.LFD.1.10.0805171720310.14337@apollo.tec.linutronix.de>
 User-Agent: Wanderlust/2.14.0 (Africa) SEMI/1.14.6 (Maruoka) FLIM/1.14.7
  (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 MULE XEmacs/21.5 (beta28) (fuki)
  (+CVS-20070806) (i386-suse-linux)
@@ -36,41 +34,43 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Sun, 18 May 2008 07:13:07 +0400,
-Stas Sergeev wrote:
+At Sat, 17 May 2008 17:24:22 +0200 (CEST),
+Thomas Gleixner wrote:
 > 
-> Hello.
+> On Sat, 17 May 2008, Takashi Iwai wrote:
+> > At Fri, 16 May 2008 21:32:49 +0200 (CEST),
+> > Thomas Gleixner wrote:
+> > > 
+> > > On Fri, 16 May 2008, Andrew Morton wrote:
+> > > > > So the author was well aware of locking problem and the whole code is
+> > > > > just a stupid hack around the problem without solving it. This code is
+> > > > > not at all suited for HRTIMER_CB_IRQSAFE.
+> > > > 
+> > > > You sound impressed!  So what's the fix?  HRTIMER_CB_SOFTIRQ?
+> > > 
+> > > Yeah, impressed by creativity. HRTIMER_CB_SOFTIRQ should be the right
+> > > thing.
+> > 
+> > Well, it'd be basically a similar way like snd-pcsp currently does ("a
+> > stupid hack" :)  But, it's good to have a fix, anyway, since this
+> > sounds like a generic problem with a callback in a spinlock.  If the
+> > callback requires another own lock, this can easily lead to a AB/BA
+> > deadlock.  Actually, ALSA PCM core had sometimes similar problems,
+> > too.
 > 
-> Dave Jones wrote:
-> > More seriously, it doesn't seem that there's any way we can build
-> > this driver modular without it screwing up already working systems
-> Actually, I have just upgraded
-> f8->f9, and guess what? Lost the
-> sound... And not because of snd-pcsp,
-> but rather because snd-hda-intel
-> started to take the first slot
-> and snd-intel8x0 takes the second.
-> On f8 snd-hda-intel have never been
-> loaded for me at all. I don't need
-> it, it finds a HDA chip on an ATI
-> video board, which it never did before.
-> 
-> So... it doesn't look like this
-> problem is specific to snd-pcsp.
-> Anyone can get into that trouble
-> it seems.
+> HRTIMER_CB_SOFTIRQ is not a stupid hack :) It's the default for
+> hrtimers and it does not hold any locks when calling the callback. We
+> really want to avoid tons of callbacks in the timer interrupt itself.
 
-You can better use slots option for snd module instead of specifying
-index in each driver for 2.6.25 or later kernels.  That is,
+Yes, this would be an easy workaround for snd-pcsp problem, I guess.
 
-	options snd slots=snd-intel8x0,snd-hda-intel
+A better fix would be to make snd-pcsp hrtimer calback just change the
+pc-speaker port (0x61 and 0x42) and update the position.  These should
+be really fast path.  Then, occasionally invoke a tasklet that will
+call snd_pcm_period_elapsed(), which could be a (relatively) slow
+path and lead to a spinlock mess.
 
-will assign the specified drivers in the first two slots.  And this
-means also that these two slots are reserved.  The other drivers,
-e.g. a hotplugged usb-audio, won't be assigned in these slots even
-usb-audio is loaded before intel8x0.
 
-See ALSA-Configuration.txt for details.
-
+thanks,
 
 Takashi
