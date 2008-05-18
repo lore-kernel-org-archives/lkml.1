@@ -1,97 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755905AbYERJ12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754585AbYERJf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755905AbYERJ12 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 05:27:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbYERJ1S
+	id S1754585AbYERJf4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 05:35:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbYERJfp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 05:27:18 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:8096 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751803AbYERJ1R (ORCPT
+	Sun, 18 May 2008 05:35:45 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:18678 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750924AbYERJfp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 05:27:17 -0400
+	Sun, 18 May 2008 05:35:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=RWrCmE+fyhbuhwnkB68473u5cNtlOT2BHltvctGUU3PAdoepzzo2Ji7BDffNKJeEBnEfgtGoIloOIrnjhFhSEkaaDnvF/JC/AYJCKxsfT1sjBvybxyz90IPTYMMxClcjO9AEojCjeRUniAoa7NG7eiiHdR4vpdGxzif905UX5Ak=
-Date: Sun, 18 May 2008 11:26:50 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Pau Oliva Fora <pau@eslack.org>
-Cc: dmitry.torokhov@gmail.com, sam@ravnborg.org, penberg@cs.helsinki.fi,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add support for HTC Shift Touchscreen
-Message-ID: <20080518092627.GA21237@joi>
-References: <482ED31E.2000009@eslack.org> <482F09FC.9050403@eslack.org>
+        b=l0JwSKtiK11aLH51zYHRWgKeihUcEnux9rIDEi6BuhYhLQRnTsGwi6vbCPiMMD/W9xZ4QTfERkIXjH0OjXkQsgMhZOaZ4jl9dBpXdjHrbU3x6Y4rSGQsgscfGCuj6hI5KK9x9xs9QQD9O/l0rO724wlB/jRKGIEHEypcg4BJ/S4=
+Date: Sun, 18 May 2008 13:35:33 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Tom Spink <tspink@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Jiri Slaby <jirislaby@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: [RFC] x86: merge nmi_32-64 to nmi.c
+Message-ID: <20080518093533.GE6948@cvg>
+References: <20080517192200.GA6914@cvg> <7b9198260805171328u555eec17t3597f3378edbda88@mail.gmail.com> <Pine.LNX.4.55.0805172148380.10067@cliff.in.clinika.pl> <alpine.LFD.1.10.0805172331030.18798@apollo.tec.linutronix.de> <482FD9F2.8080204@goop.org> <alpine.LFD.1.10.0805181108420.18798@apollo.tec.linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <482F09FC.9050403@eslack.org>
+In-Reply-To: <alpine.LFD.1.10.0805181108420.18798@apollo.tec.linutronix.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 17, 2008 at 06:38:20PM +0200, Pau Oliva Fora wrote:
-> +static int __init htcpen_init(void)
-> +{
-> +	int err;
-> +
-> +	printk(KERN_INFO "htcpen: module inserted\n");
-> +
-> +	inb_p(HTCPEN_PORT_IRQ_CLEAR);
-> +
-> +	htcpen_dev = input_allocate_device();
-> +	if (!htcpen_dev) {
-> +		printk(KERN_ERR "htcpen: can't allocate device\n");
-> +		err = -ENOMEM;
-> +		goto fail1;
+[Thomas Gleixner - Sun, May 18, 2008 at 11:09:22AM +0200]
+| On Sun, 18 May 2008, Jeremy Fitzhardinge wrote:
+| 
+| > Thomas Gleixner wrote:
+| > > Definitely, but we should do it at the Kconfig level which allows us
+| > > to have integer defines as well, so we end up with something like:
+| > > 
+| > > static inline unsigned int get_nmi_count(int cpu)
+| > > {
+| > >       return CONFIG_X86_64 ? cpu_pda(cpu)->__nmi_count : nmi_count(cpu);
+| > > }
+| > >   
+| > 
+| > Unfortunately that doesn't work because when CONFIG_X86_64 isn't defined it
+| > doesn't expand to 0.  It would be nice if CONFIG_* expanded to 0/1, but we'd
+| > need to change all the #ifdef CONFIG_* to #if CONFIG_*...
+| 
+| You can have int type CONFIG_ which is always expanded. We have to add
+| one of those though.
+| 
+| Thanks,
+| 	tglx
+| 
 
-htcpen_dev is null here, so no need to call input_free_device
+Thomas, unfortunetly as I see we can't go by a simple way like that,
+these static funstions also hides the differen types and args list.
+So even we could leave it as it is now, or could define them as macroses.
+Anyway I'll try to find out how to handle this.
 
-> +	}
-> +
-> +	htcpen_dev->name = "HTC Pen TouchScreen";
-> +	htcpen_dev->id.bustype = BUS_ISA;
-> +	htcpen_dev->id.vendor = 0;
-> +	htcpen_dev->id.product = 0;
-> +	htcpen_dev->id.version = 0;
-> +
-> +	input_set_abs_params(htcpen_dev, ABS_X, 0, X_AXIS_MAX, 0, 0);
-> +	input_set_abs_params(htcpen_dev, ABS_Y, 0, Y_AXIS_MAX, 0, 0);
-> +
-> +	htcpen_dev->evbit[0] = BIT_MASK(EV_ABS) | BIT_MASK(EV_KEY);
-> +	htcpen_dev->absbit[0] = BIT_MASK(ABS_X) | BIT_MASK(ABS_Y);
-> +	htcpen_dev->keybit[BIT_WORD(BTN_TOUCH)] = BIT_MASK(BTN_TOUCH);
-> +
-> +	err = request_irq(HTCPEN_IRQ, htcpen_interrupt, 0, "htcpen",
-> +		htcpen_dev);
-> +	if (err) {
-> +		printk(KERN_ERR "htcpen: irq busy\n");
-> +		err = -EBUSY;
-> +		goto fail1;
-> +	}
-> +
-> +	err = input_register_device(htcpen_dev);
-> +	if (err)
-> +		goto fail2;
-> +
-> +	outb_p(DEVICE_ENABLE, HTCPEN_PORT_INIT);
-> +
-> +	return 0;
-> +
-> + fail2:	free_irq(HTCPEN_IRQ, htcpen_dev);
-> + fail1:	input_free_device(htcpen_dev);
-> +	return err;
-> +}
-> +
-> +static void __exit htcpen_exit(void)
-> +{
-> +	input_unregister_device(htcpen_dev);
-> +	free_irq(HTCPEN_IRQ, htcpen_dev);
-
-input_free_device ?
-
-> +	printk(KERN_INFO "htcpen: module removed\n");
-> +}
-
-Marcin
+		- Cyrill -
