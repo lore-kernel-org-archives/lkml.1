@@ -1,78 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098AbYERRrA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754526AbYERRuG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754098AbYERRrA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 13:47:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751818AbYERRqv
+	id S1754526AbYERRuG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 13:50:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbYERRty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 13:46:51 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:42952 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751013AbYERRqv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 13:46:51 -0400
-Date: Sun, 18 May 2008 21:46:46 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Austin Clements <amdragon+kernelbugzilla@mit.edu>,
-       Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Roland McGrath <roland@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] posix timers: use SIGQUEUE_CANCELLED when the timer is destroyed
-Message-ID: <20080518174646.GA25915@tv-sign.ru>
-References: <20080517151422.GA9502@tv-sign.ru> <20080517153140.GA9534@tv-sign.ru> <alpine.LFD.1.10.0805171006090.3020@woody.linux-foundation.org> <20080518171543.GA25855@tv-sign.ru> <alpine.LFD.1.10.0805181024050.3020@woody.linux-foundation.org>
-Mime-Version: 1.0
+	Sun, 18 May 2008 13:49:54 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:52865 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752587AbYERRtx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 13:49:53 -0400
+Date: Sun, 18 May 2008 10:47:49 -0700
+From: Greg KH <greg@kroah.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Sitsofe Wheeler <sitsofe@yahoo.com>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [BUG] unable to handle kernel paging request in next-20080516
+Message-ID: <20080518174749.GA22939@kroah.com>
+References: <g0mkaf$i1r$1@ger.gmane.org> <20080518021423.3dcf0ddd.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805181024050.3020@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20080518021423.3dcf0ddd.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/18, Linus Torvalds wrote:
+On Sun, May 18, 2008 at 02:14:23AM -0700, Andrew Morton wrote:
 > 
-> On Sun, 18 May 2008, Oleg Nesterov wrote:
+> (cc's added)
+> 
+> On Sat, 17 May 2008 12:50:24 +0000 (UTC) Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
+> 
+> > Sometimes when booting next-20080516 on Ubuntu Gutsy an oops then a panic 
+> > will occur. At first I thought it might be provoked by vga=0x164 but this 
+> > does not appear to be the case and the issue is seemingly random. I've 
+> > hand transcribed the oops so there may be errors in it but hopefully it 
+> > will still help:
 > > 
-> > Initially, I did
+> > BUG: unable to handle kernel paging request at e6f17fac
+> > IP: [<c02604d6>] scsi_bus_uevent+0x1/0x17
+> > *pde = 2714b163 *pte = 26f17160
+> > Oops: 0000 [#1] DEBUG_PAGEALLOC
+> > last sysfs file:
 > > 
-> > 	q->flags |= SIGQUEUE_CANCELLED;
-> > 	spin_lock_irqsave(lock, flags);
-> > 	q->flags &= ~SIGQUEUE_PREALLOC;
+> > Pid:  1, comm: swapper Not tainted (2.6.26-rc2-next-20080516skw #30)
+> > EIP: 0060:[<c02604d6>] EFLAGS: 00010282 CPU: 0
+> > EIP is at scsi_bus_uevent+0x1/0x17
+> > EAX: e6f18014 EBX: e6f18014 ECX: c02604d5 EDX: e7173000
+> > ESI: e7173000 EDI: e7173000 EBP: e7851ca0 ESP: e7851c90
+> >  DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
+> > Process swapper (pid: 1, ti=e7850000 task=e7848000 task.ti=e7850000)
+> > Stack: e7851ca0 c0237f3a c0237eac 00000000 e7851ce4 c01da36d 00000000 e6f180fc
+> >        e7835000 c03ebf42 e7163240 c03af631 c040b050 c040b598 00000000 e6f18014
+> >        00000000 e7851cdc 00000000 e6f18014 00000000 e7851cec c01da52a e7851d2c
+> > Call Trace:
+> >  [<c0237f3a>] ? dev_uevent+0x8e/0xca
+> >  [<c0237eac>] ? dev_uevent+0x0/0xca
+> >  [<c01da36d>] ? kobject_uevent_env+0x14c/0x2ff
+> >  [<c01da52a>] ? kobject_uevent_env+0xa/0xc
+> >  [<c023884b>] ? device_add+0x2bf/0x3f0
+> >  [<c0321905>] ? mutex_unlock+0x8/0xa
+> >  [<c02607b4>] ? scsi_sysfs_add_sdev+0x39/0x1d3
+> >  [<c025f037>] ? scsi_probe_and_add_lun+0x714/0x08
+> >  [<c025f9ef>] ? __scsi_add_device+0x85/0xab
+> >  [<c026a70c>] ? ata_scsi_scan_host+0x7f/0x15e
+> >  [<c0267ec8>] ? ata_host_register+0x1c8/0x1e5
+> >  [<c026ec75>] ? ata_pci_sff_activate_host+0x179/0x19f
+> >  [<c0270b61>] ? ata_sff_interupt+0x0/0x1d7
+> >  [<c026f076>] ? ata_pci_sff_init_one+0x97/0xe1
+> >  [<c027219c>] ? via_init_one+0x1da/0x1e3
+> >  [<c01e5670>] ? pci_device_probe+0x39/0x59
+> >  [<c023a0a1>] ? driver_probe_device+0x9f/0x119
+> >  [<c023a158>] ? __driver_attach+0x3d/0x5f
+> >  [<c023990a>] ? bus_for_each_dev+0x3e/0x60
+> >  [<c0239f39>] ? driver_attach+0x14/0x16
+> >  [<c023a11b>] ? __driver_attach+0x0/0x5f
+> >  [<c0239c9d>] ? bus_add_driver+0x99/0x1a0
+> >  [<c023a2d6>] ? driver_register+0x71/0xcd
+> >  [<c01e5852>] ? __pci_register_driver+0x53/0x81
+> >  [<c04205b1>] ? kernel_init+0x0/0xc4
+> >  [<c04378fc>] ? via_init+0x14/0x16
+> >  [<c0132800>] ? trace_softirqs_on+0x78/0x7e
+> >  [<c01dd90c>] ? trace_hardirqs_on_thunk+0xc/0x10
+> >  [<c0102c3a>] ? restore_nocheck_notrace+0x0/0xe
+> >  [<c04205b1>] ? kernel_init+0x0/0x1c4
+> >  [<c04205b1>] ? kernel_init+0x0/0x1c4
+> >  [<c010373f>] ? kernel_thread_helper+0x7/0x10
+> >  =======================
 > > 
-> > to document the fact that SIGQUEUE_CANCELLED can be set lockless, but
-> > then "optimized" the code, couldn't help myself... Besides, the code
-> > above looks really confusing without the fat comment.
 > 
-> Oh, and the above is *wrong*.
-> 
-> Why?
-> 
-> Becayse if SIGQUEUE_PREALLOC setting needs the lock, then setting any 
-> *other* bit in that word will also need the lock!
-> 
-> That's because
-> 
-> 	q->flags |= SIGQUEUE_CANCELLED;
-> 
-> writes those other bits too - admittedly with the value they were read 
-> just before, but if it races with something setting SIGQUEUE_PREALLOC that 
-> doesn't matter - the newly written version will simply be wrong.
-> 
-> So the rule is that if one bit of a word needs locking, then they *all* 
-> do.
+> I thought we'd already fixed this?
 
-Ah. I wasn't clear.
+I have a patch for it, posted to lkml on Friday (or was it thursday...)
+Then on Friday I went and audited all users of device_create and found 5
+other places where this same problem will occur (or something almost
+like it) and fixed them up and Cc:ed the subsystem maintainers that were
+affected.
 
-Clearing of SIGQUEUE_PREALLOC needs ->siglock, yes. But not because anybody
-else can write to q->flags. Nobody can, we (the timer) "own" this sigqueue.
+I wanted a round of tests in linux-next to happen before sending them
+all to Linus.  I'll do that on Monday as they missed the last linux-next
+release.
 
-Once we clear SIGQUEUE_PREALLOC, "q" can be freed by the receiver (it doesn't
-writes to q->flags, it only reads ->flags). After that we can't trust the
-list_empty() check, we just can't dereference this "struct sigqueue *".
+If you want to test them out yourself, the patches are this one first:
+  http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-01-driver-core.current/driver-core-add-device_create_vargs-and-device_create_drvdata.patch
+and then add any one of the rest of the patches in the directory at:
+  http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-01-driver-core.current/
+depending on the subsystem you are having problems with.  There are 12
+different ones in there.
 
-Taking ->siglock before "&= ~SIGQUEUE_PREALLOC" ensures that "q" can't be
-be freed if it is queued, nothing more.
+hope this helps,
 
-Oleg.
-
+greg k-h
