@@ -1,178 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757731AbYERWhw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbYERXFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757731AbYERWhw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 18:37:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbYERWhm
+	id S1755555AbYERXFX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 19:05:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbYERXFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 18:37:42 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:56993 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751365AbYERWhl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 18:37:41 -0400
-Date: Mon, 19 May 2008 00:37:39 +0200
-From: Jan Kara <jack@suse.cz>
-To: Mingming Cao <cmm@us.ibm.com>
-Cc: akpm@linux-foundation.org, Badari Pulavarty <pbadari@us.ibm.com>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] JBD: Fix DIO EIO error caused by race between free buffer and commit trasanction
-Message-ID: <20080518223739.GB11006@atrey.karlin.mff.cuni.cz>
-References: <20080512155419.GD15856@duck.suse.cz> <1210639184.3661.43.camel@localhost.localdomain> <20080513145449.GC20806@duck.suse.cz> <1210717389.3638.24.camel@localhost.localdomain> <20080514170856.GH24363@duck.suse.cz> <1210786872.3657.48.camel@localhost.localdomain> <20080514181444.GI24363@duck.suse.cz> <1210947250.3608.18.camel@localhost.localdomain> <1210957976.4231.31.camel@badari-desktop> <1210971693.3608.46.camel@localhost.localdomain>
+	Sun, 18 May 2008 19:05:09 -0400
+Received: from saeurebad.de ([85.214.36.134]:52013 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750716AbYERXFI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 19:05:08 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>, Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH 2/6] ERR_PTR: add ERR_OR_0_PTR
+References: <20080513201813.GA5869@joi>
+	<1211148067-16130-1-git-send-email-marcin.slusarz@gmail.com>
+Date: Mon, 19 May 2008 01:04:44 +0200
+In-Reply-To: <1211148067-16130-1-git-send-email-marcin.slusarz@gmail.com>
+	(Marcin Slusarz's message of "Mon, 19 May 2008 00:01:07 +0200")
+Message-ID: <87lk27usc3.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1210971693.3608.46.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi,
+Hi Marcin,
 
-> This patch fixed a few races between direct IO and kjournald commit
-> transaction.  An unexpected EIO error gets returned to direct IO
-> caller when it failed to free those data buffers. This could be
-> reproduced easily with parallel direct write and buffered write to the
-> same file
-> 
-> More specific, those races could cause journal_try_to_free_buffers()
-> fail to free the data buffers, when jbd is committing the transaction
-> that has those data buffers on its t_syncdata_list or t_locked_list.
-> journal_commit_transaction() still holds the reference to those
-> buffers before data reach to disk and buffers are removed from the
-> t_syncdata_list of t_locked_list. This prevent the concurrent
-> journal_try_to_free_buffers() to free those buffers at the same time,
-> but cause EIO error returns back to direct IO.
-> 
-> With this patch, in case of direct IO and when try_to_free_buffers() failed,
-> let's waiting for journal_commit_transaction() to finish
-> flushing the current committing transaction's data buffers to disk, 
-> then try to free those buffers again.
-  If Andrew or Christoph wouldn't beat you for "inventive use" of
-gfp_mask, I'm fine with the patch as well ;). You can add
-  Acked-by: Jan Kara <jack@suse.cz>
+Marcin Slusarz <marcin.slusarz@gmail.com> writes:
 
-> 
-> Signed-off-by: Mingming Cao <cmm@us.ibm.com>
-> Reviewed-by: Badari Pulavarty <pbadari@us.ibm.com> 
+> Some codepaths call ERR_PTR with possibly 0 argument, which is not
+> a valid errno and rely on conversion from 0 to NULL pointer.
+> Add ERR_OR_0_PTR function which accepts errnos and 0 as an argument.
+>
+> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
 > ---
->  fs/jbd/transaction.c |   57 +++++++++++++++++++++++++++++++++++++++++++++++++--
->  mm/truncate.c        |    3 +-
->  2 files changed, 57 insertions(+), 3 deletions(-)
-> 
-> Index: linux-2.6.26-rc2/fs/jbd/transaction.c
-> ===================================================================
-> --- linux-2.6.26-rc2.orig/fs/jbd/transaction.c	2008-05-16 11:51:02.000000000 -0700
-> +++ linux-2.6.26-rc2/fs/jbd/transaction.c	2008-05-16 13:43:02.000000000 -0700
-> @@ -1648,12 +1648,39 @@ out:
->  	return;
->  }
+>  include/linux/err.h |    7 +++++++
+>  1 files changed, 7 insertions(+), 0 deletions(-)
+>
+> diff --git a/include/linux/err.h b/include/linux/err.h
+> index 7b5daa6..cdec8b6 100644
+> --- a/include/linux/err.h
+> +++ b/include/linux/err.h
+> @@ -26,6 +26,13 @@ static inline void *__ERR_PTR(long error)
 >  
-> +/*
-> + * journal_try_to_free_buffers() could race with journal_commit_transaction()
-> + * The later might still hold the reference count to the buffers when inspecting
-> + * them on t_syncdata_list or t_locked_list.
-> + *
-> + * Journal_try_to_free_buffers() will call this function to
-> + * wait for the current transaction to finish syncing data buffers, before
-> + * try to free that buffer.
-> + *
-> + * Called with journal->j_state_lock hold.
-> + */
-> +static void journal_wait_for_transaction_sync_data(journal_t *journal)
+>  #define ERR_PTR(error) (BUILD_BUG_ON(__builtin_constant_p(error) && !IS_ERR_VALUE(error)), __ERR_PTR(error))
+>  
+> +static inline void *__ERR_OR_0_PTR(long error)
 > +{
-> +	transaction_t *transaction = NULL;
-> +	tid_t tid;
-> +
-> +	transaction = journal->j_committing_transaction;
-> +
-> +	if (!transaction)
-> +		return;
-> +
-> +	tid = transaction->t_tid;
-> +	spin_unlock(&journal->j_state_lock);
-> +	log_wait_commit(journal, tid);
-> +	spin_lock(&journal->j_state_lock);
+> +	return (void *) error;
 > +}
->  
->  /**
->   * int journal_try_to_free_buffers() - try to free page buffers.
->   * @journal: journal for operation
->   * @page: to try and free
-> - * @unused_gfp_mask: unused
-> + * @gfp_mask: unused for allocation purpose. Here is used
-> + * 	      as a flag to tell if direct IO is attemping to free buffers.
->   *
->   *
->   * For all the buffers on this page,
-> @@ -1682,9 +1709,11 @@ out:
->   * journal_try_to_free_buffer() is changing its state.  But that
->   * cannot happen because we never reallocate freed data as metadata
->   * while the data is part of a transaction.  Yes?
-> + *
-> + * Return 0 on failure, 1 on success
->   */
->  int journal_try_to_free_buffers(journal_t *journal,
-> -				struct page *page, gfp_t unused_gfp_mask)
-> +				struct page *page, gfp_t gfp_mask)
->  {
->  	struct buffer_head *head;
->  	struct buffer_head *bh;
-> @@ -1713,7 +1742,31 @@ int journal_try_to_free_buffers(journal_
->  		if (buffer_jbd(bh))
->  			goto busy;
->  	} while ((bh = bh->b_this_page) != head);
 > +
->  	ret = try_to_free_buffers(page);
-> +
-> + 	/*
-> +	 * In the case of concurrent direct IO and buffered IO,
-> +	 * There are a number of places where we
-> +	 * could race with journal_commit_transaction(), the later still
-> +	 * holds the reference to the buffers to free while processing them.
-> +	 * try_to_free_buffers() failed to free those buffers,
-> +	 * resulting in an unexpected EIO error
-> +	 * returns back to the generic_file_direct_IO()
-> +	 *
-> +	 * So let's wait for the current transaction to finish flush of
-> +	 * dirty data buffers before we try to free those buffers
-> +	 * again. This wait is needed by direct IO code path only,
-> +	 * gfp_mask __GFP_REPEAT is passed from the direct IO code
-> +	 * path to flag if we need to wait and retry free buffers.
-> +	 */
-> +	if (ret == 0 && gfp_mask & __GFP_REPEAT) {
-> +        	spin_lock(&journal->j_state_lock);
-> +		journal_wait_for_transaction_sync_data(journal);
-> +		ret = try_to_free_buffers(page);
-> +		spin_unlock(&journal->j_state_lock);
-> +	}
-> +
->  busy:
->  	return ret;
->  }
-> Index: linux-2.6.26-rc2/mm/truncate.c
-> ===================================================================
-> --- linux-2.6.26-rc2.orig/mm/truncate.c	2008-05-16 11:51:02.000000000 -0700
-> +++ linux-2.6.26-rc2/mm/truncate.c	2008-05-16 13:42:18.000000000 -0700
-> @@ -346,7 +346,8 @@ invalidate_complete_page2(struct address
->  	if (page->mapping != mapping)
->  		return 0;
->  
-> -	if (PagePrivate(page) && !try_to_release_page(page, GFP_KERNEL))
-> +	if (PagePrivate(page) &&
-> +			!try_to_release_page(page,GFP_KERNEL|__GFP_REPEAT))
->  		return 0;
->  
->  	write_lock_irq(&mapping->tree_lock);
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> +#define ERR_OR_0_PTR(error) (BUILD_BUG_ON(__builtin_constant_p(error) && error && !IS_ERR_VALUE(error)), __ERR_OR_0_PTR(error))
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+ERR_OR_0_PTR could use __ERR_PTR() too.
+
+And please break those lines ;)
+
+	Hannes
