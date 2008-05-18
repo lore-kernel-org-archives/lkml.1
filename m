@@ -1,115 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754526AbYERRuG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754627AbYERRyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754526AbYERRuG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 13:50:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbYERRty
+	id S1754627AbYERRyV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 13:54:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752732AbYERRyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 13:49:54 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52865 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752587AbYERRtx (ORCPT
+	Sun, 18 May 2008 13:54:09 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:35814 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752778AbYERRyH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 13:49:53 -0400
-Date: Sun, 18 May 2008 10:47:49 -0700
-From: Greg KH <greg@kroah.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Sitsofe Wheeler <sitsofe@yahoo.com>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [BUG] unable to handle kernel paging request in next-20080516
-Message-ID: <20080518174749.GA22939@kroah.com>
-References: <g0mkaf$i1r$1@ger.gmane.org> <20080518021423.3dcf0ddd.akpm@linux-foundation.org>
+	Sun, 18 May 2008 13:54:07 -0400
+Message-ID: <48306D36.6040706@firstfloor.org>
+Date: Sun, 18 May 2008 19:53:58 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080518021423.3dcf0ddd.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Chris Peterson <cpeterso@cpeterso.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       tpmdd-devel@lists.sourceforge.net, tpm@selhorst.net
+Subject: Re: [PATCH] Re: [PATCH] drivers/net: remove network drivers' last
+ few uses of IRQF_SAMPLE_RANDOM
+References: <87abirytxj.fsf@basil.nowhere.org> <20080516105635.6cb1f505@core> <482D5FC5.2070103@firstfloor.org> <20080516121239.GA9627@gondor.apana.org.au> <482DB568.1040704@firstfloor.org> <20080517010136.GA15102@gondor.apana.org.au> <482EBAA8.3040506@firstfloor.org> <a24804730805171254i2a37da61mb47280db7b330ed5@mail.gmail.com> <20080517130535.02d45372@infradead.org> <4830014F.9040800@firstfloor.org> <20080518112657.GK16496@mit.edu>
+In-Reply-To: <20080518112657.GK16496@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 18, 2008 at 02:14:23AM -0700, Andrew Morton wrote:
+
+> See why the qualifying statements is so important?  If you really
+> believe that there isn't enough entropy after installing a
+> distribution, THEN YOU SHOULDN'T BE GENERATING SSH HOST KEYS.  The
+> problem is that the server scenario with no keyboard case is a really
+> nasty one.
+
+It's made worse by not feeding in the network interrupts.
+
+I never quite understood the rationale behind that one either:
+if you worry about someone else controlling the timing of these events,
+why do you not worry about timings on the local system. e.g.
+it's not that hard to predict with similar accuracy when a hard disk
+interrupt happened when a local process read something from disk. Or
+when the  keyboard/USB interrupt happened when you process keyboard input.
+
+On the other hand if only the low bits of the time stamp counter
+are used it should be still random enough in all cases because
+real systems don't behave predictable down to ns levels.
+
 > 
-> (cc's added)
+>> See also the distinction between "user controlled visible cryptography"
+>> and "background cryptography" I introduced in a earlier mail on that
+>> topic. gpg can only get away with it because they rely on a high level
+>> of user education (so requiring banging on keys is ok), but that's
+>> not really an option for your normal "everyday background crypto",
+>> including longer term keys.
 > 
-> On Sat, 17 May 2008 12:50:24 +0000 (UTC) Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
+> No, this distinction is a specious one, I think.  It's really more a
+> level of paranoia.  
+
+If people don't realize cryptography is used they can't really
+have any paranoia. And you can only get away with paranoia requiring
+significant user action (like banging on keys) if they realize that.
+
+> People tend to be much more paranoid about their
+> own personal keys, 
+
+In this case I would say it's more the program authors because the users
+don't really have any choice.
+
+> That says
+> something about how much they care about security right there. 
+
+It's more a question on how practical security is. If security
+gets too complicated nobody will use it.
+
+[classical example of that is to force users to use unrememberable
+"strong" passwords -- result is that they are just written down on
+postit notes and pinned to monitors. Same effect here]
+
+>> Instead I think just both urandom and random should try to rely
+>> on TPMs and other hardware rngs and always get high quality bit noise.
 > 
-> > Sometimes when booting next-20080516 on Ubuntu Gutsy an oops then a panic 
-> > will occur. At first I thought it might be provoked by vga=0x164 but this 
-> > does not appear to be the case and the issue is seemingly random. I've 
-> > hand transcribed the oops so there may be errors in it but hopefully it 
-> > will still help:
-> > 
-> > BUG: unable to handle kernel paging request at e6f17fac
-> > IP: [<c02604d6>] scsi_bus_uevent+0x1/0x17
-> > *pde = 2714b163 *pte = 26f17160
-> > Oops: 0000 [#1] DEBUG_PAGEALLOC
-> > last sysfs file:
-> > 
-> > Pid:  1, comm: swapper Not tainted (2.6.26-rc2-next-20080516skw #30)
-> > EIP: 0060:[<c02604d6>] EFLAGS: 00010282 CPU: 0
-> > EIP is at scsi_bus_uevent+0x1/0x17
-> > EAX: e6f18014 EBX: e6f18014 ECX: c02604d5 EDX: e7173000
-> > ESI: e7173000 EDI: e7173000 EBP: e7851ca0 ESP: e7851c90
-> >  DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
-> > Process swapper (pid: 1, ti=e7850000 task=e7848000 task.ti=e7850000)
-> > Stack: e7851ca0 c0237f3a c0237eac 00000000 e7851ce4 c01da36d 00000000 e6f180fc
-> >        e7835000 c03ebf42 e7163240 c03af631 c040b050 c040b598 00000000 e6f18014
-> >        00000000 e7851cdc 00000000 e6f18014 00000000 e7851cec c01da52a e7851d2c
-> > Call Trace:
-> >  [<c0237f3a>] ? dev_uevent+0x8e/0xca
-> >  [<c0237eac>] ? dev_uevent+0x0/0xca
-> >  [<c01da36d>] ? kobject_uevent_env+0x14c/0x2ff
-> >  [<c01da52a>] ? kobject_uevent_env+0xa/0xc
-> >  [<c023884b>] ? device_add+0x2bf/0x3f0
-> >  [<c0321905>] ? mutex_unlock+0x8/0xa
-> >  [<c02607b4>] ? scsi_sysfs_add_sdev+0x39/0x1d3
-> >  [<c025f037>] ? scsi_probe_and_add_lun+0x714/0x08
-> >  [<c025f9ef>] ? __scsi_add_device+0x85/0xab
-> >  [<c026a70c>] ? ata_scsi_scan_host+0x7f/0x15e
-> >  [<c0267ec8>] ? ata_host_register+0x1c8/0x1e5
-> >  [<c026ec75>] ? ata_pci_sff_activate_host+0x179/0x19f
-> >  [<c0270b61>] ? ata_sff_interupt+0x0/0x1d7
-> >  [<c026f076>] ? ata_pci_sff_init_one+0x97/0xe1
-> >  [<c027219c>] ? via_init_one+0x1da/0x1e3
-> >  [<c01e5670>] ? pci_device_probe+0x39/0x59
-> >  [<c023a0a1>] ? driver_probe_device+0x9f/0x119
-> >  [<c023a158>] ? __driver_attach+0x3d/0x5f
-> >  [<c023990a>] ? bus_for_each_dev+0x3e/0x60
-> >  [<c0239f39>] ? driver_attach+0x14/0x16
-> >  [<c023a11b>] ? __driver_attach+0x0/0x5f
-> >  [<c0239c9d>] ? bus_add_driver+0x99/0x1a0
-> >  [<c023a2d6>] ? driver_register+0x71/0xcd
-> >  [<c01e5852>] ? __pci_register_driver+0x53/0x81
-> >  [<c04205b1>] ? kernel_init+0x0/0xc4
-> >  [<c04378fc>] ? via_init+0x14/0x16
-> >  [<c0132800>] ? trace_softirqs_on+0x78/0x7e
-> >  [<c01dd90c>] ? trace_hardirqs_on_thunk+0xc/0x10
-> >  [<c0102c3a>] ? restore_nocheck_notrace+0x0/0xe
-> >  [<c04205b1>] ? kernel_init+0x0/0x1c4
-> >  [<c04205b1>] ? kernel_init+0x0/0x1c4
-> >  [<c010373f>] ? kernel_thread_helper+0x7/0x10
-> >  =======================
-> > 
-> 
-> I thought we'd already fixed this?
+> Sure, if you can get access to a TPM or a hardware rng, that's
+> *always* a better choice. 
 
-I have a patch for it, posted to lkml on Friday (or was it thursday...)
-Then on Friday I went and audited all users of device_create and found 5
-other places where this same problem will occur (or something almost
-like it) and fixed them up and Cc:ed the subsystem maintainers that were
-affected.
+Yes definitely, but the trouble is /dev/random does not use it by
+default. So even if you have a working hardware RNG there's no
+improvement on what comes out of /dev/u?random
 
-I wanted a round of tests in linux-next to happen before sending them
-all to Linus.  I'll do that on Monday as they missed the last linux-next
-release.
+ But the reason for /dev/random and
+> /dev/urandom's existence is that hardware manufacturers have either
+> not included a real hardware RNG, or made it impossible to get to it.
+> (I *still* haven't figured out how to access my TPM on my Lenovo
+> laptops.  Anyone who can send me turn-key instructions, let me know
+> off-line.)  Intel used to provide a true hardware RNG in their
+> chipsets a few years ago (props to them), but then stopped after one
+> generation (boo, hiss).
 
-If you want to test them out yourself, the patches are this one first:
-  http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-01-driver-core.current/driver-core-add-device_create_vargs-and-device_create_drvdata.patch
-and then add any one of the rest of the patches in the directory at:
-  http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-01-driver-core.current/
-depending on the subsystem you are having problems with.  There are 12
-different ones in there.
+Yes, but we don't use it either by default. So even if you have
+such a chipset your /dev/random output isn't improved in any ways.
 
-hope this helps,
+> If there is a way that we can at least seed /dev/random from the TPM
+> (without needing any magic enabling keys, etc.) once at boot time, and
+> then rely on what we can get from the environment, maybe we can do it
+> in the kernel without needing to move all of the TPM access/contention
+> control logic from userspace into the kernel.
 
-greg k-h
+Jeff's patch looked like a good start. I'll try to come up with
+a complete patch series that auto feeds. The only system I have with a
+TPM is a T61, let's see if trousers works on that.
+
+There's also a couple of other problems here I believe, in particular
+some of the kernel subsystems who get random numbers for their purpose
+get it too early before there's any chance of seeing.
+
+Also for a lot of kernel purposes (like the networking hash tables) it's
+really wasteful to use the  precious entropy pool entropy.  It should
+rather just seed some cryptographic PRNG once and then use output
+from that for kernel purposes (or alternatively at least not
+remove entropy credit from the random pool)
+
+-Andi
+
