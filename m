@@ -1,128 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757523AbYERL2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757389AbYERLbv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757523AbYERL2f (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 07:28:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753139AbYERL20
+	id S1757389AbYERLbv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 07:31:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbYERLbn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 07:28:26 -0400
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:40638 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751352AbYERL2Z (ORCPT
+	Sun, 18 May 2008 07:31:43 -0400
+Received: from rv-out-0506.google.com ([209.85.198.228]:25290 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753139AbYERLbn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 07:28:25 -0400
-Date: Sun, 18 May 2008 07:26:57 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Chris Peterson <cpeterso@cpeterso.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       tpmdd-devel@lists.sourceforge.net, tpm@selhorst.net
-Subject: Re: [PATCH] Re: [PATCH] drivers/net: remove network drivers' last
-	few uses of IRQF_SAMPLE_RANDOM
-Message-ID: <20080518112657.GK16496@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Andi Kleen <andi@firstfloor.org>,
-	Arjan van de Ven <arjan@infradead.org>,
-	Chris Peterson <cpeterso@cpeterso.com>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
-	netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	"Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-	tpmdd-devel@lists.sourceforge.net, tpm@selhorst.net
-References: <87abirytxj.fsf@basil.nowhere.org> <20080516105635.6cb1f505@core> <482D5FC5.2070103@firstfloor.org> <20080516121239.GA9627@gondor.apana.org.au> <482DB568.1040704@firstfloor.org> <20080517010136.GA15102@gondor.apana.org.au> <482EBAA8.3040506@firstfloor.org> <a24804730805171254i2a37da61mb47280db7b330ed5@mail.gmail.com> <20080517130535.02d45372@infradead.org> <4830014F.9040800@firstfloor.org>
+	Sun, 18 May 2008 07:31:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=lG+laFRom3kg0K7wr8oGqtTgNmvqc8fSiq74SIIr3biTbRZmaxwsuQADMlWJEQW8V/4HH9QKTxn0UKk9Ajs1/twtcDwJCKtMXRjQkySDDrIsOcUFKrfwmIn1G3bqantHSreDd2ZMk2/HFS+X8jHSWn138RxoyGtcyZ45uPLPDvc=
+Message-ID: <19f34abd0805180431r15ed93bbk68f5313bdeaa255a@mail.gmail.com>
+Date: Sun, 18 May 2008 13:31:41 +0200
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: [PATCH] kmemcheck: support for x86_64
+Cc: "Pekka Enberg" <penberg@cs.helsinki.fi>, "Ingo Molnar" <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org,
+       "Arjan van de Ven" <arjan@linux.intel.com>
+In-Reply-To: <48300248.7050701@firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4830014F.9040800@firstfloor.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+References: <20080517230458.GA18588@damson.getinternet.no>
+	 <48300248.7050701@firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 18, 2008 at 12:13:35PM +0200, Andi Kleen wrote:
-> We don't use it for most long term keys, e.g. ssh host keys. That is
-> because even on high entropy systems /dev/random usually doesn't work
-> during distribution installation because the system has not run long
-> enough to collect significant entropy yet.
+On Sun, May 18, 2008 at 12:17 PM, Andi Kleen <andi@firstfloor.org> wrote:
+>
+>> Most of them look something like this:
+>>
+>> kmemcheck: Caught 8-bit read from freed memory (ffff81000780a904)
+>> ifffffffifffffffifffffffifffffffifffffffifffffffifffffffifffffff
+>>     ^
+>>
+>> and my theory so far is that X86_64 uses some currently unhandled
+>> instruction set extensions like MMX, SSE, etc. (Not 3DNow! because we
+>> have a dependency for that), for a fairly common operation
+>
+> No it shouldn't. Only SSE users are in the (broken) MD RAID code
+>
+> Most likely you don't decode REX correctly in some cases.
 
-One thing which I'm not sure most people understand is that there
-isn't that much difference between /dev/random and /dev/urandom.  They
-are fed by the same sources, at the high level.  There is a single
-large entropy pool which gets fed by whatever entropy sources the
-kernel can get its hands on, which periodically catastrophically seeds
-separate smaller pools used by /dev/random and /dev/urandom.  The only
-difference is that /dev/random does entropy tracking; /dev/urandom
-doesn't.
+Thanks. You are right, but you are wrong.
 
-Hence, if you don't think the system hasn't run long enough to collect
-significant entropy, you need to distinguish between "has run long
-enough to collect entropy which is causes the entropy credits using a
-somewhat estimation system where we try to be conservative such that
-/dev/random will let you extract the number of bits you need", and
-"has run long enough to collect entropy which is unpredictable by an
-outside attacker such that host keys generated by /dev/urandom really
-are secure".
+All those #ifdef X86_64 should of course be CONFIG_X86_64... So none
+of the 64-bit code was being compiled in. Good spotting, Vegard! :-(
 
-See why the qualifying statements is so important?  If you really
-believe that there isn't enough entropy after installing a
-distribution, THEN YOU SHOULDN'T BE GENERATING SSH HOST KEYS.  The
-problem is that the server scenario with no keyboard case is a really
-nasty one.
 
-> See also the distinction between "user controlled visible cryptography"
-> and "background cryptography" I introduced in a earlier mail on that
-> topic. gpg can only get away with it because they rely on a high level
-> of user education (so requiring banging on keys is ok), but that's
-> not really an option for your normal "everyday background crypto",
-> including longer term keys.
+Vegard
 
-No, this distinction is a specious one, I think.  It's really more a
-level of paranoia.  People tend to be much more paranoid about their
-own personal keys, at leasts if they are well trained.  Most people
-don't bother verifying ssh host keys the first time they contact a
-host, making them subject to a man-in-the-middle attack.  But most
-people don't mind, by which we can deduce that most folks aren't as
-careful about their ssh key.
-
-If distributions really cared, they could very well introduce keyboard
-banging as part of the install process; but no, being able to do an
-unmanned, "turnkey" install is considered more important.  That says
-something about how much they care about security right there.  (By
-the way, if you are at least forcing the user to type in a root
-password, having the distribution installer mix in the root password
-into /dev/random would be a Really Good Idea; also, mixing in whatever
-randomness it can get from the mouse during the install is also a
-Really Good Idea.)
-
-> Instead I think just both urandom and random should try to rely
-> on TPMs and other hardware rngs and always get high quality bit noise.
-
-Sure, if you can get access to a TPM or a hardware rng, that's
-*always* a better choice.  But the reason for /dev/random and
-/dev/urandom's existence is that hardware manufacturers have either
-not included a real hardware RNG, or made it impossible to get to it.
-(I *still* haven't figured out how to access my TPM on my Lenovo
-laptops.  Anyone who can send me turn-key instructions, let me know
-off-line.)  Intel used to provide a true hardware RNG in their
-chipsets a few years ago (props to them), but then stopped after one
-generation (boo, hiss).
-
-If there is a way that we can at least seed /dev/random from the TPM
-(without needing any magic enabling keys, etc.) once at boot time, and
-then rely on what we can get from the environment, maybe we can do it
-in the kernel without needing to move all of the TPM access/contention
-control logic from userspace into the kernel.
-
-Of course, even if we did this, it wouldn't solve the distro problem
-(at least for distro's who truly care about the security of ssh host
-keys), since not all systems have TPM's.
-
-						- Ted
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
