@@ -1,105 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755037AbYERKKT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756681AbYERKKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755037AbYERKKT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 06:10:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbYERKKH
+	id S1756681AbYERKKr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 06:10:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbYERKKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 06:10:07 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:47048 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751073AbYERKKF (ORCPT
+	Sun, 18 May 2008 06:10:37 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37241 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752589AbYERKKg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 06:10:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=HFVfXA7hZQqIR8Jxpoc2a+H+bhB96QhOYg7ZZnO4Vty5MgYu9fa1T9mKyP9Xtbfhu+coZjOJHpKS7BpZYbDsmMBlfiOFaMPwU+SC8qvfJ2vgOQNeZMFBIB3RwJsvJXM01AxoEJJKR/gyr633n/R6gX09nj+GKe/QXPDaNURASko=
-Date: Sun, 18 May 2008 14:09:55 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Mikael Pettersson <mikpe@it.uu.se>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Tom Spink <tspink@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Jiri Slaby <jirislaby@gmail.com>, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [RFC] x86: merge nmi_32-64 to nmi.c
-Message-ID: <20080518100955.GG6948@cvg>
-References: <20080517192200.GA6914@cvg> <7b9198260805171328u555eec17t3597f3378edbda88@mail.gmail.com> <Pine.LNX.4.55.0805172148380.10067@cliff.in.clinika.pl> <18479.21161.437325.251769@harpo.it.uu.se> <alpine.LFD.1.10.0805180023100.18798@apollo.tec.linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805180023100.18798@apollo.tec.linutronix.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Sun, 18 May 2008 06:10:36 -0400
+Date: Sun, 18 May 2008 10:54:44 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Gilles Espinasse" <g.esp@free.fr>
+Cc: "Adrian Bunk" <bunk@kernel.org>, <netdev@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] drivers/net: remove network drivers' last few uses
+ ofIRQF_SAMPLE_RANDOM
+Message-ID: <20080518105444.5ac3ebf4@core>
+In-Reply-To: <10a001c8b8b2$28afd2c0$f9b5a8c0@pii350>
+References: <Pine.LNX.4.62.0805150009060.18303@ikari.dreamhost.com>
+	<20080515142154.0595e475@core>
+	<36D9DB17C6DE9E40B059440DB8D95F52052D71BB@orsmsx418.amr.corp.intel.com>
+	<482C7B18.6060003@garzik.org>
+	<482C7E53.3050300@hp.com>
+	<482C8184.2030906@garzik.org>
+	<20080516161029.44ded734@core>
+	<0f7201c8b790$9c2a2340$f9b5a8c0@pii350>
+	<20080517220258.GC8140@cs181133002.pp.htv.fi>
+	<10a001c8b8b2$28afd2c0$f9b5a8c0@pii350>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Thomas Gleixner - Sun, May 18, 2008 at 12:34:15AM +0200]
-| On Sat, 17 May 2008, Mikael Pettersson wrote:
-| > Maciej W. Rozycki writes:
-| >  > On Sat, 17 May 2008, Tom Spink wrote:
-| >  > 
-| >  > > static inline unsigned int get_nmi_count(int cpu)
-| >  > > {
-| >  > > #ifdef CONFIG_X86_64
-| >  > >         return cpu_pda(cpu)->__nmi_count;
-| >  > > #else
-| >  > >         return nmi_count(cpu);
-| >  > > #endif
-| >  > > }
-| >  > > 
-| >  > > I know it introduces a lot of these conditionals, but at least there
-| >  > > is one place to look for the get_nmi_count function, instead of
-| >  > > searching for all variants of the function.
-| >  > 
-| >  >  Well, I suppose some header should provide a definition like:
-| >  > 
-| >  > #ifdef CONFIG_X86_64
-| >  > #define cpu_x86_64 1
-| >  > #else
-| >  > #define cpu_x86_64 0
-| >  > #endif
-| >  > 
-| >  > and the you can remove the horrible #ifdef clutter and make the quoted 
-| >  > function look like:
-| >  > 
-| >  > static inline unsigned int get_nmi_count(int cpu)
-| >  > {
-| >  > 	return cpu_x86_64 ? cpu_pda(cpu)->__nmi_count : nmi_count(cpu);
-| >  > }
-| >  > 
-| >  > Much better -- isn't it?
-| > 
-| > IMO, no, the #ifdef is preferable.
-| > 
-| > Why? Because the #ifdef is a very visible signal to the platform
-| > people that there are (in this case) subarch differences that force
-| > "clients" to behave differently on different subarchs. By removing
-| > the #ifdef you're IMO making it less likely for the platform people
-| > to take notice and work towards eliminating those differences.
-| 
-| The #ifdef is a poor choice. Maciej is damned right, that the single
-| function with a clear distinction of the return value is better in
-| terms of readability and maintenance.
-| 
-| As I said before, We can make this more visible with an uppercase
-| CONFIG_WHATEVER instaed of the innocent cpu_x86_64 one, but both
-| solutions are better than #ifdefs and provide simple grepable
-| patterns.
-| 
-| The awareness of those differences does not depend at all on an
-| #ifdef. Developers who are aware of the platform differences prefer a
-| readable not ifdef poluted code base. People who need to be poked into
-| the difference via an #ifdef are probably not those who can actually
-| clean it up.
-| 
-| Thanks,
-| 
-| 	tglx
-| 
+> Why remove IRQF_SAMPLE_RANDOM if "it cannot make the RNG output worse."
+> We should not care if network traffic can be sniffed in some configurations
+> (plus sniffing could be very unlikely in some others).
 
-Btw Thomas, is there any reason why can't we add do_panic in die_nmi
-on 32bit? And that would help us to add "panic" boot option on 32bits
-as well.
+It makes it much worse - it lies about entropy.
 
-		- Cyrill -
+> My understanding of openssl developper answer is same as yours :
+> "it cannot make the RNG output worse."
+
+If you don't care about the quality of your "random" numbers then
+use /dev/urandom. It's very simple.
