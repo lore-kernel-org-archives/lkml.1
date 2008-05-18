@@ -1,71 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756781AbYERT2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757096AbYERTb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756781AbYERT2W (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 15:28:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754934AbYERT2K
+	id S1757096AbYERTb1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 15:31:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754830AbYERTbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 15:28:10 -0400
-Received: from www.tglx.de ([62.245.132.106]:38072 "EHLO www.tglx.de"
+	Sun, 18 May 2008 15:31:19 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:46117 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754890AbYERT2J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 15:28:09 -0400
-Date: Sun, 18 May 2008 21:27:28 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <andi@firstfloor.org>
-cc: Vegard Nossum <vegard.nossum@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Bug #10710] [BISECTED] Lots of "rescheduling IPIs" in
- powertop
-In-Reply-To: <48306E8D.5050109@firstfloor.org>
-Message-ID: <alpine.LFD.1.10.0805182017070.18798@apollo.tec.linutronix.de>
-References: <oKKSi1w1qaF.A.mEG.JrBMIB@albercik>  <7wuznNhcUqC.A.xiH.EsBMIB@albercik> <19f34abd0805180523o12732812k87b8ddd832843af4@mail.gmail.com> <48306E8D.5050109@firstfloor.org>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+	id S1753993AbYERTbS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 15:31:18 -0400
+Date: Sun, 18 May 2008 22:29:19 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Tom Spink <tspink@gmail.com>, Cyrill Gorcunov <gorcunov@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>, Jiri Slaby <jirislaby@gmail.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Andi Kleen <andi@firstfloor.org>
+Subject: Re: [RFC] x86: merge nmi_32-64 to nmi.c
+Message-ID: <20080518192918.GJ8140@cs181133002.pp.htv.fi>
+References: <20080517192200.GA6914@cvg> <7b9198260805171328u555eec17t3597f3378edbda88@mail.gmail.com> <Pine.LNX.4.55.0805172148380.10067@cliff.in.clinika.pl> <alpine.LFD.1.10.0805172331030.18798@apollo.tec.linutronix.de> <482FD9F2.8080204@goop.org> <20080518180811.GI8140@cs181133002.pp.htv.fi> <4830768B.1090902@goop.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <4830768B.1090902@goop.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 18 May 2008, Andi Kleen wrote:
-> > Ingo Molnar provided the patch that solved the problem (the referenced
-> > link) but he wanted to wait for Andreas Herrmann to provide an
-> > additional patch that would solve some implication on AMD CPUs. So
-> > this is in theory fixed, but the fix has not yet been applied anywhere
-> > as far as I know.
-> 
-> There's a CPUID way to distingush the cases I found out now (with help
-> from Venki, thanks) so it would be possible to solve it properly, but
-> once even a bad Ingo patch is in it's nearly impossible to replace it
-> with something better so I bail out at this point.
+On Sun, May 18, 2008 at 07:33:47PM +0100, Jeremy Fitzhardinge wrote:
+> Adrian Bunk wrote:
+>> Even more important:
+>> How do you want to handle kconfig variables set to "m"?
+>>
+>> Expand them to 0.5 ?  ;-)
+>>   
+>
+> Doesn't much matter.  We can't do "#ifdef CONFIG_FOO == m" anyway.
 
-Andi,
+Yes, we can:
 
-stop these pointless ad hominem attacks!
+  #ifdef CONFIG_FOO_MODULE
 
-When a better solution is available then it _is_ applied regardless of
-the persons involved.
+>    J
 
-Right now we had the choice to wait until the CPUID solution becomes
-eventually correct or just revert to the state which was working
-before. There was no sign of a solution so I went back to the old
-known to work state which excludes AMD family 0x10/11 from mwait.
+cu
+Adrian
 
-Where is the problem ?
+-- 
 
-> [In case someone is interested it's CPUID 5 ECX bit 0 which enumerates
-> if the MWAIT enumeration is there. So the correct mwait_usable() that
-> would have avoided your problem would be something like (untested):
-> 
-> return c->cpuid_level >= 5 &&
->            ((cpuid_ecx(5) & 1) == 0 || (cpuid_edx(5) >> 4) & 0xf) > 0);
-> ]
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-I'm interested, but I'd be even more interested in some useful pointer
-to the magic bitnumbers in that check, but don't exert yourself in
-providing the information, I'm going to figure it out myself.
-
-Thanks,
-
-	tglx
