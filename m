@@ -1,74 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754451AbYEREp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754716AbYEREzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754451AbYEREp0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 00:45:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbYEREpQ
+	id S1754716AbYEREzq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 00:55:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbYEREzg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 00:45:16 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:61317 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750875AbYEREpO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 00:45:14 -0400
-Date: Sun, 18 May 2008 05:39:47 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: john stultz <johnstul@us.ibm.com>
-cc: Alessandro Zummo <a.zummo@towertech.it>, Jean Delvare <khali@linux-fr.org>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, rtc-linux@googlegroups.com,
-       i2c@lm-sensors.org, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH 1/4] RTC: Class device support for persistent clock
-In-Reply-To: <1f1b08da0805071418q365680bexafb1996dcc77ebb0@mail.gmail.com>
-Message-ID: <Pine.LNX.4.55.0805160356570.519@cliff.in.clinika.pl>
-References: <Pine.LNX.4.55.0805070015360.16173@cliff.in.clinika.pl>
- <1f1b08da0805071418q365680bexafb1996dcc77ebb0@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 18 May 2008 00:55:36 -0400
+Received: from outbound.icp-qv1-irony-out4.iinet.net.au ([203.59.1.150]:13523
+	"EHLO outbound.icp-qv1-irony-out4.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751411AbYEREzg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 00:55:36 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AjcBABhTL0h8qN2q/2dsb2JhbAAIq3A
+X-IronPort-AV: E=Sophos;i="4.27,503,1204470000"; 
+   d="scan'208";a="222177683"
+Subject: Re: [patch/rfc 2.6.25-git] gpio: sysfs interface
+From: Ben Nizette <bn@niasdigital.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Trent Piepho <tpiepho@freescale.com>,
+       hartleys <hartleys@visionengravers.com>,
+       Mike Frysinger <vapier.adi@gmail.com>, Bryan Wu <cooloney@kernel.org>
+In-Reply-To: <200805171514.07619.david-b@pacbell.net>
+References: <200804281239.51729.david-b@pacbell.net>
+	 <20080428134649.44cf239c.akpm@linux-foundation.org>
+	 <20080502203637.GG3956@ucw.cz>  <200805171514.07619.david-b@pacbell.net>
+Content-Type: text/plain
+Organization: Nias Digital
+Date: Sun, 18 May 2008 14:55:36 +1000
+Message-Id: <1211086536.3892.26.camel@moss.renham>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi John,
 
- Sorry about the delay -- I have missed your comment in the flood.
-
-On Wed, 7 May 2008, john stultz wrote:
-
-> >   As rtc_read_persistent_clock() is not available at the time
-> >  timekeeping_init() is called, it will now be disabled if the class device
-> >  is to be used as a reference.  In this case rtc_hctosys(), already
-> >  present, will be used to set up the system time at the late initcall time.
-> >  This call has now been rewritten to make use of
-> >  rtc_read_persistent_clock().
+On Sat, 2008-05-17 at 15:14 -0700, David Brownell wrote:
+> On Friday 02 May 2008, Pavel Machek wrote:
+> > What about mkdir gpio-N to export it?
 > 
-> Hrmm. So how is this going to work with suspend and resume?
+> Ugh.  That would create way more complication than I want
+> to see here.  I thought about that early on, and decided
+> that was Not The Way To Go.
 
- Hmm, I have never used suspend/resume, so I cannot really comment.  Here
-is what I gathered by glancing over the code and some bits of
-documentation.
+I have a userspace gpio interface which uses /dev and configfs.  The
+configfs side was really nice (and used mkdir, as configfs does) but I
+wasn't a fan of needing udev..  On balance, I like the all-in-one sysfs
+way more.
 
-> Ideally, on resume we want to update the clock before interrupts are
-> reenabled so we don't get stale time values post-resume.  For systems
-> that sleep on reading the persistent clock, I'm open to having them
-> fix it up as best they can later (partly why the code can handle
-> read_persistent_clock() not returning anything), but unless I'm
-> misreading this, it seems you're proposing to make systems that do
-> have a safe persistent clock have to have the window where code may
-> see the pre-suspend time after resume.
-
- Right now it looks the time is restored in two places, 
-timekeeping_resume() and rtc_resume().  Of course once the transition to 
-the new RTC infrastructure has been done, one is going to be redundant.  
-For the time being I think it is harmless to have them both.
-
- That written, both are called from the relevant driver's ->resume()  
-method.  My set of patches does not change it and as far as I can tell if
-it worked before, it will work afterwards.  As I understand ->resume()  
-methods may sleep and are called with interrupts already enabled.
- 
-> Am I missing something here?
-
- No idea -- anyone?
-
-  Maciej
+> 
+> - Dave
+> 
