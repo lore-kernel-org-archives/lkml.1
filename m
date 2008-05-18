@@ -1,92 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756375AbYFADj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1755106AbYERQur@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756375AbYFADj4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 May 2008 23:39:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754127AbYFADjr
+	id S1755106AbYERQur (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Sun, 18 May 2008 12:50:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755006AbYERQuD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 May 2008 23:39:47 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:55415 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754855AbYFADjq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 May 2008 23:39:46 -0400
-Date: Sat, 31 May 2008 20:39:40 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: airlied@linux.ie
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] drm: fix crash due to /proc registration race
-Message-ID: <20080531203940.40536c9a@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 18 May 2008 12:50:03 -0400
+Received: from yumi.tdiedrich.de ([85.10.210.183]:58850 "EHLO mx.tdiedrich.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753429AbYERQuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 12:50:00 -0400
+Date: Sun, 18 May 2008 18:49:25 +0200
+From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+To: Herbert Xu <herbert@gondor.apana.org.au>, linux-net@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: IPv6 slab leak (was: Re: dst cache overflow)
+Message-ID: <20080518164924.GA4960@yamamaya.is-a-geek.org>
+Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
+	Herbert Xu <herbert@gondor.apana.org.au>, linux-net@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Eric Dumazet <dada1@cosmosbay.com>
+References: <20071214172945.GA10809@yamamaya.is-a-geek.org> <E1J3QWn-0006sJ-00@gondolin.me.apana.org.au> <20071215100857.GA29839@yamamaya.is-a-geek.org> <20071216073533.GA2706@gondor.apana.org.au> <20071216083828.GA512@yamamaya.is-a-geek.org> <20080317012513.GA3139@yamamaya.is-a-geek.org> <20080318185914.GA9275@yamamaya.is-a-geek.org> <20080323092125.GB2950@yamamaya.is-a-geek.org> <20080516194625.GA21570@yamamaya.is-a-geek.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080516194625.GA21570@yamamaya.is-a-geek.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Tobias Diedrich wrote:
+> Tobias Diedrich wrote:
+> > Tobias Diedrich wrote:
+> > > Tobias Diedrich wrote:
+> > > 
+> > > > just a reminder, the server is now running 2.6.24 and the leak is
+> > > > still there.  I noticed there is a slab leak debug option and turned
+> > > > it on, results should be visible in a few days I guess.
+> 
+> I'm upgrading to 2.6.25.4 now and I hope that "sit: Add missing
+> kfree_skb() on pskb_may_pull() failure." finally fixes the bug. :)
+> There also was some IPv6 related leak-fix in 2.6.24.something IIRC,
+> but that one did not help unfortunately.
 
+Ok, it's only been running for ~2 days now, but it very much looks
+fixed now:
+http://www.tdiedrich.de/~ranma/oni_20080518_route-year.png
+http://www.tdiedrich.de/~ranma/oni_20080518_route-week.png
+http://www.tdiedrich.de/~ranma/oni_20080518_route-day.png
 
-From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: [PATCH] drm: fix crash due to /proc registration race
-
-The DRM layer creates proc entries like this:
-
-                ent = create_proc_entry(drm_proc_list[i].name,
-                                        S_IFREG | S_IRUGO, minor->dev_root);
-                if (!ent) {
-			... stuff ...
-                }
-                ent->read_proc = drm_proc_list[i].f;
-                ent->data = minor;
-
-however that leaves a short window where the /proc file is visible,
-but where ->data is not initialized yet.
-It appears that this race is actually hit in practice:
-http://www.kerneloops.org/search.php?search=drm_name_info
-
-(of course it could be some other race.. but this race appears
-to be there at least)
-
-Reported-by: www.kerneloops.org
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- drivers/char/drm/drm_proc.c |   13 ++++++++++++-
- 1 files changed, 12 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/char/drm/drm_proc.c b/drivers/char/drm/drm_proc.c
-index 93b1e04..19e61ad 100644
---- a/drivers/char/drm/drm_proc.c
-+++ b/drivers/char/drm/drm_proc.c
-@@ -164,9 +164,20 @@ static int drm_name_info(char *buf, char **start, off_t offset, int request,
- 			 int *eof, void *data)
- {
- 	struct drm_minor *minor = (struct drm_minor *) data;
--	struct drm_device *dev = minor->dev;
-+	struct drm_device *dev;
- 	int len = 0;
- 
-+	/*
-+	 * When creating the /proc files, there is a tiny race window
-+	 * where "data" isn't assigned yet... error out rather than dereference
-+	 */
-+	if (!data) {
-+		*eof = 1;
-+		return 0;
-+	}
-+
-+	dev = minor->dev;
-+
- 	if (offset > DRM_PROC_LIMIT) {
- 		*eof = 1;
- 		return 0;
--- 
-1.5.5.1
-
+Cheers,
 
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Tobias						PGP: http://9ac7e0bc.uguu.de
+このメールは十割再利用されたビットで作られています。
