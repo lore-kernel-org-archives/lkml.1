@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762326AbYERTCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760966AbYERTCm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762326AbYERTCT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 15:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758864AbYERSyM
+	id S1760966AbYERTCm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 15:02:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761357AbYERSyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 14:54:12 -0400
-Received: from harold.telenet-ops.be ([195.130.133.65]:57601 "EHLO
-	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759730AbYERSyB (ORCPT
+	Sun, 18 May 2008 14:54:14 -0400
+Received: from nelson.telenet-ops.be ([195.130.133.66]:57713 "EHLO
+	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760890AbYERSyD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 14:54:01 -0400
-Message-Id: <20080518185152.907430063@mail.of.borg>
-References: <20080518184706.631023070@mail.of.borg>
+	Sun, 18 May 2008 14:54:03 -0400
+Message-Id: <20080518184706.631023070@mail.of.borg>
 User-Agent: quilt/0.46-1
-Date: Sun, 18 May 2008 20:47:19 +0200
+Date: Sun, 18 May 2008 20:47:06 +0200
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 13/18] m68k: Q40/Q60 floppy support is broken
-Content-Disposition: inline; filename=m68k-q40-floppy-is-broken.diff
+Subject: [patch 00/18] Updated m68k patches for 2.6.26
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+	Hi Linus, Andrew,
 
-Mark Q40/Q60 floppy support broken:
+Here is the updated set of m68k patches for 2.6.26:
+  [01] [PATCH] m68k: Convert access_ok() to an inline function
+  [02] [PATCH] m68k: Kill CONFIG_FB_DAFB
+  [03] [PATCH] m68k: FB_HP300 depends on DIO and doesn't need FB_CFB_FILLRECT
+  [04] [PATCH] m68k: Kill CONFIG_WHIPPET_SERIAL
+  [05] [PATCH] m68k vme_scc: avoid global namespace pollution
+  [06] [PATCH] m68k: Make gcc aware that BUG() does not return
+  [07] [PATCH] m68k: Correct jump if not running on HP300
+  [08] [PATCH] m68k: macide doesn't check for Mac
+  [09] [PATCH] m68k: dnfb doesn't check for Apollo
+  [10] [PATCH] m68k: Some network drivers do not check the platform
+  [11] [PATCH] m68k: Some input drivers do not check the platform
+  [12] [PATCH] m68k: Return -ENODEV if no device is found
+  [13] [PATCH] m68k: Q40/Q60 floppy support is broken
+  [14] [PATCH] m68k: export m68k_mmutype
+  [15] [PATCH] m68k: Prefix ISA type with ISA_TYPE_
+  [16] [PATCH] m68k: Correctly handle multi-ISA at runtime
+  [17] [PATCH] m68k: Update defconfigs
+  [18] [PATCH] m68k: Add multi_defconfig
 
-    arch/m68k/q40/q40ints.c: In function 'q40_irq_handler':
-    arch/m68k/q40/q40ints.c:214: error: implicit declaration of function 'floppy_hardint'
+Changes since last submission:
+  [11] Added hunk for drivers/input/keyboard/hilkbd.c
+  [14-16] New
+  [17-18] Updated
 
-Including <asm/floppy.h> doesn't help, as it causes a lot of additional error
-messages (cfr. Sun 3x).
+Please apply, thanks!
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- arch/m68k/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- a/arch/m68k/Kconfig
-+++ b/arch/m68k/Kconfig
-@@ -44,7 +44,7 @@ config GENERIC_IOMAP
- 
- config ARCH_MAY_HAVE_PC_FDC
- 	bool
--	depends on Q40 || (BROKEN && SUN3X)
-+	depends on BROKEN && (Q40 || SUN3X)
- 	default y
- 
- config NO_IOPORT
-
--- 
 Gr{oetje,eeting}s,
 
 						Geert
