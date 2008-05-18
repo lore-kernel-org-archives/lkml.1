@@ -1,129 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759613AbYERAbe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760736AbYERAgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759613AbYERAbe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 17 May 2008 20:31:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755617AbYERAbX
+	id S1760736AbYERAgo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 17 May 2008 20:36:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756126AbYERAge
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 17 May 2008 20:31:23 -0400
-Received: from 82-69-137-158.dsl.in-addr.zen.co.uk ([82.69.137.158]:56259 "EHLO
-	uklogin.uk.level5networks.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751348AbYERAbW (ORCPT
+	Sat, 17 May 2008 20:36:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49950 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756107AbYERAgd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 17 May 2008 20:31:22 -0400
-Date: Sun, 18 May 2008 01:31:05 +0100
-From: Ben Hutchings <bhutchings@solarflare.com>
-To: James Cammarata <jimi@sngx.net>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: [PATCH updated] net: add ability to clear per-interface network statistics via procfs
-Message-ID: <20080518003104.GK28241@solarflare.com>
-References: <482DA5B6.1020606@sngx.net> <482DB46A.8020103@cosmosbay.com> <482EF192.4070707@sngx.net> <482F5113.5090703@cosmosbay.com> <482F610D.2080108@sngx.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <482F610D.2080108@sngx.net>
-User-Agent: Mutt/1.4.1i
+	Sat, 17 May 2008 20:36:33 -0400
+Date: Sat, 17 May 2008 17:35:44 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+cc: Theodore Tso <tytso@mit.edu>, Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [GIT pull] x86 fixes for 2.6.26
+In-Reply-To: <9a8748490805171545j1811edc9ja0cd5f84105b71c4@mail.gmail.com>
+Message-ID: <alpine.LFD.1.10.0805171715540.3020@woody.linux-foundation.org>
+References: <alpine.LFD.1.10.0805170037180.3255@apollo.tec.linutronix.de>  <alpine.LFD.1.10.0805161544080.3020@woody.linux-foundation.org>  <20080517015705.GA20375@mit.edu>  <alpine.LFD.1.10.0805161933240.3020@woody.linux-foundation.org>
+ <9a8748490805171545j1811edc9ja0cd5f84105b71c4@mail.gmail.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Cammarata wrote:
-> >This version has a bug, please check again.
+
+
+On Sun, 18 May 2008, Jesper Juhl wrote:
 > 
-> Gah, you're right, fixed below.
+> What I did for my first merge-window was simply clone your tree,
+> create a for-linus branch, add all the patches to that branch and ask
+> you to pull. That worked nicely that once, but I guess that wiping the
+> tree and starting from a fresh clone every merge window wouldn't be a
+> good idea - especially since I'd like Trivial to also get pulled into
+> linux-next.
+
+Well, I actually suspect that especially for the trivial tree, that may 
+not actually be a horribly bad workflow. 
+
+The whole "fresh clone + a bunch of patches" is yet another different way 
+of using git, but it's a totally valid one: it uses git as just another 
+way to send a patch-series, with the added advantage that the base of that 
+patch-series is explicit in the result.
+
+(You can do that with quilt too, I think. Or at least with the scripts 
+Andrew does - I think you can tell him what the base point for a series 
+is. But when merging to me, git is obviously the way to go).
+
+So for something that pretty fundamentally is literally just a series of 
+random patches, I don't think the workflow of just staging them as a 
+series on top of some known-good git tree is the wrong one. It's not like 
+the Trivial tree is likely to be something that would have much use of git 
+as a distributed model (iow - I think the trivial patches are actually 
+better off seen as a patch-queue than having merges and other things in 
+it).
+
+That said, re-cloning every time is obviously pretty wasteful. There are 
+better ways to track a git tree, notably it's likely best to just clone 
+once and then just keep that one up-to-date. But the difference between 
+that and just re-cloning is really not that huge - technically you'd end 
+up doing the exact same thing and have the exact same tree, just two 
+different ways to do it.
+
+So your alternate approach:
+
+> Start off with a clone of your tree (master branch).
 > 
-> ---
-> 
-> --- linux-2.6.25.4/net/core/dev.c       2008-05-15 10:00:12.000000000 -0500
-> +++ linux-2.6.25.4-jcammara/net/core/dev.c      2008-05-17 
-> 17:45:57.000000000 -0500
-> @@ -2455,2 +2455,80 @@
-> 
-> +/**
-> + * proc_net_dev_write - handle writes to /proc/net/dev
-> + * @file: not used
-> + * @buf: buffer to write
-> + * @length: length of buf, at most PAGE_SIZE
-> + * @ppos: not used
-> + *
-> + * Description: this provides a mechanism to clear statistics on a
-> + * per-interface basis
-> + * "echo 'net clear-stats ifdev' >/proc/net/dev"
-> + * with  "ifdev" replaced by the device name you wish to clear.
-> + *
-> + */
-> +static ssize_t proc_net_dev_write(struct file *file, const char __user 
-> *buf,
+> Pull your tree into 'master' daily (or at least often).
 
-You need to stop your mail client word-wrapping patches.  It looks like
-something has converted tabs to spaces, too.
+So doing daily pull's is what I generally do *not* want people to do, but 
+if you have a pristine tree and haven't done any development of your own, 
+then the "pull" is obviously not going to do anything but keep the tree 
+fresh, so in this special case it's fine.
 
-[...]
-> +        /*
-> +         * Usage: echo "net clear-stats ifdev" >/proc/net/dev
-> +         * with  "ifdev" replaced by the device name you wish to clear.
-> +         */
+So you'd not be merging, you'd be just refreshing your clone - and in that 
+sense this is 100% equivalent to just re-cloning all the time.
 
-This is redundant with the kernel-doc comment.
+> Create a for-linux-2.6.27 branch or the upcomming 2.6.27 merge window
+> and apply all the patches I currently have pendng in a mailbox to that
+> branch. Keep the branch reasonably up-to-date by doing a weekly git
+> fetch + merge from my 'master' branch that tracks your tree.
 
-> +        if (!strncmp("net clear-stats",buffer,15)) {
+So generally, I'd suggest against this "keep it fresh". In many ways it 
+just makes things harder (if only because bisection of your series will no 
+longer be a nice linear run, but also because the history will actually be 
+harder to read), and if the merges are just weekly regular merges, then 
+the purpose of them isn't even very clear.
 
-This doesn't check for a space after, which you rely on later on.  (What if
-length == 15?)  Also, explicitly writing the length of a literal string is
-error-prone.  Seems like it would be better to do something like:
+So I'd literally suggest doing merges primarily only
 
-	static const char command[] = "net clear-stats ";
-        ...
-        if (!strncmp(command, buffer, sizeof(command) - 1)) {
+ - at release points (now the purpose is clear; you're merging a very 
+   specific state, not just some random point).
 
-> +                p = buffer + 16;
-> +                if(sscanf(p,"%16s",devname)>0) {
-> +                        dev = dev_get_by_name(net,devname);
-> +                        if (dev) {
-> +                                if (dev->get_stats) {
-> +                                        struct net_device_stats *stats =
-> +                                               dev->get_stats(dev);
-> +                                        memset(stats,0,
-> +                                               sizeof(struct 
-> net_device_stats));
-> +                                }
-> +                                dev_put(dev);
-> +                        }
+   But even this one should generally be done only if there is some real 
+   reason for it (ie you're really quite far behind), and 
 
-Shouldn't this return an error if the device doesn't exist?
+ - or if you actually see a merge conflict, and you want to handle the 
+   conflict so that I won't have to.
 
-> +                }
-> +        }
-> +
-> +        /*
-> +         * convert success returns so that we return the
-> +         * number of bytes consumed.
-> +         */
-> +        if (!err)
-> +                err = length;
+   But I'll actually happily handle trivial merges too, so this is by no 
+   means even a requirement - if the merge ends up being non-trivial, I'll 
+   let people know anyway and either say "ok, that's so complicated, and I 
+   don't know the area well enough, so can you please do it for me", or 
+   say "ok, I merged it, but can you please double-check the result".
 
-This won't work; the function updates err unconditionally further up!
+Quite frankly, if you actually do your patch-series pretty late in the -rc 
+series (say, you decide to apply things at -rc6 or so), I suspect you'll 
+never have any real reason to do a "git pull" at all, although it's also 
+certainly not wrong to do test branches to check that everything is ok, 
+for example.
 
-> +
-> +        put_net(net);
-> +
-> + out:
-> +        free_page((unsigned long)buffer);
-> +        return err;
-> +}
-> +
-> static void *softnet_seq_start(struct seq_file *seq, loff_t *pos)
-> @@ -2498,2 +2576,3 @@
->        .read    = seq_read,
-> +        .write   = proc_net_dev_write,
->        .llseek  = seq_lseek,
+> Once the 2.6.27 merge window opens, ask you to pull the
+> 'for-linux-2.6.27' branch and once you have done so, leave that branch
+> alone forever.
+>
+> Branch off a new 'for-linux-2.6.28' branch and repeat.
 
-The context for this chunk seems to be too short.
+Yes. That's a good model.
 
-There are a few formatting oddities; checkpatch.pl will point them out.
-
-Ben.
-
--- 
-Ben Hutchings, Senior Software Engineer, Solarflare Communications
-Not speaking for my employer; that's the marketing department's job.
+			Linus
