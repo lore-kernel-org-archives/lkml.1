@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765778AbYESWPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765713AbYESWQV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765778AbYESWPx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 18:15:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764654AbYESWJw
+	id S1765713AbYESWQV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 18:16:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765231AbYESWKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 18:09:52 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:45228 "EHLO smtp5.pp.htv.fi"
+	Mon, 19 May 2008 18:10:08 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:40326 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764482AbYESWJv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 18:09:51 -0400
-Date: Tue, 20 May 2008 01:07:45 +0300
+	id S1765507AbYESWKG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 18:10:06 -0400
+Date: Tue, 20 May 2008 01:08:00 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: ysato@users.sourceforge.jp
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] asm-h8300/md.h: remove CVS keyword
-Message-ID: <20080519220745.GP17716@cs181133002.pp.htv.fi>
+To: Trond.Myklebust@netapp.com
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] fs/nfs/nfsroot.c: remove CVS keyword
+Message-ID: <20080519220800.GQ17716@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -29,14 +29,15 @@ from a comment.
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-0bda44fc75018619bac248acd44c04c41b96fee9 diff --git a/include/asm-h8300/md.h b/include/asm-h8300/md.h
-index 1a47dc6..1b7300e 100644
---- a/include/asm-h8300/md.h
-+++ b/include/asm-h8300/md.h
-@@ -1,4 +1,4 @@
--/* $Id: md.h,v 1.1 2002/11/19 02:09:26 gerg Exp $
-+/*
-  * md.h: High speed xor_block operation for RAID4/5 
+b1b2f95e28139a739561c0f4257d9d36bee2d603 diff --git a/fs/nfs/nfsroot.c b/fs/nfs/nfsroot.c
+index 531379d..15afe3a 100644
+--- a/fs/nfs/nfsroot.c
++++ b/fs/nfs/nfsroot.c
+@@ -1,6 +1,4 @@
+ /*
+- *  $Id: nfsroot.c,v 1.45 1998/03/07 10:44:46 mj Exp $
+- *
+  *  Copyright (C) 1995, 1996  Gero Kuhlmann <gero@gkminix.han.de>
   *
-  */
+  *  Allow an NFS filesystem to be mounted as root. The way this works is:
 
