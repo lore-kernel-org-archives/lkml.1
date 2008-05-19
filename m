@@ -1,53 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759253AbYESPWn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760883AbYESP0n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759253AbYESPWn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 11:22:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbYESPWf
+	id S1760883AbYESP0n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 11:26:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbYESP0c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 11:22:35 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43890 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753318AbYESPWe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 11:22:34 -0400
-Date: Mon, 19 May 2008 17:21:59 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: David Miller <davem@davemloft.net>, sam@ravnborg.org, acme@redhat.com,
-       srostedt@redhat.com, LKML <linux-kernel@vger.kernel.org>,
-       Pekka Paalanen <pq@iki.fi>, proski@gnu.org,
-       Soeren Sandmann Pedersen <sandmann@redhat.com>, a.p.zijlstra@chello.nl,
-       paulus@samba.org, Sebastian Siewior <bigeasy@linutronix.de>
-Subject: Re: [PATCH] ftrace: add have dynamic ftrace config for archs
-Message-ID: <20080519152159.GA2000@elte.hu>
-References: <20080514063055.GA21369@elte.hu> <20080514065156.GA3159@uranus.ravnborg.org> <20080514070148.GA10549@elte.hu> <20080514.001150.119391237.davem@davemloft.net> <Pine.LNX.4.58.0805162349570.13829@gandalf.stny.rr.com>
+	Mon, 19 May 2008 11:26:32 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:11536 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753136AbYESP0a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 11:26:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:organization:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding;
+        b=RSg7s5YemKbJ0xeWIyhlY6p5xb89Jugeb2IR4x+EwtifxhiYxeaZiPIctH9K3igtUJcc2T9oL9GkW8OWU9aohiBkFVznx8oE5CN8jOsbdFySMnh+9dPgL4Dule+fRdoit8UfIPYjrgOeh9fsW9FlhByNjehLDUahgtiGgGe5GTM=
+Message-ID: <48319C1F.6030005@gmail.com>
+Date: Mon, 19 May 2008 17:26:23 +0200
+From: Patrizio Bassi <patrizio.bassi@gmail.com>
+Reply-To: patrizio.bassi@gmail.com
+Organization: patrizio.bassi@gmail.com
+User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0805162349570.13829@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: "Kernel, " <linux-kernel@vger.kernel.org>
+Subject: 2.6.25: usb-storage unknown partition table issue
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+i have a 8GB usb pen with several problem due to partition table.
 
-> Now that ftrace is being ported to other architectures, it has become 
-> apparent that DYNAMIC_FTRACE is dependent on whether or not that 
-> architecture implements dynamic ftrace. FTRACE itself may be ported to 
-> an architecture without porting dynamic ftrace.
-> 
-> This patch adds HAVE_DYNAMIC_FTRACE to allow architectures to port 
-> ftrace without having to also port the dynamic aspect as well.
+if i create a primary one with fdisk, then format it works ok.
+then i umount it, unplug, replug, no more partition detected.
 
-applied, thanks Steven.
+I formatted it on Windows (same machine) and this some stress test, but 
+it's brand new and it works.
+The partition and the free space is correctly seen by qtparted and 
+parted, but in the dmesg i see:
 
-	Ingo
+Initializing USB Mass Storage driver...
+scsi10 : SCSI emulation for USB Mass Storage devices
+usb-storage: device found at 2
+usb-storage: waiting for device to settle before scanning
+usbcore: registered new interface driver usb-storage
+USB Mass Storage support registered.
+usb-storage: device scan complete
+scsi 10:0:0:0: Direct-Access     Ut165    USB2FlashStorage 0.00 PQ: 0 
+ANSI: 2
+sd 10:0:0:0: [sdc] 15794176 512-byte hardware sectors (8087 MB)
+sd 10:0:0:0: [sdc] Write Protect is off
+sd 10:0:0:0: [sdc] Mode Sense: 00 00 00 00
+sd 10:0:0:0: [sdc] Assuming drive cache: write through
+sd 10:0:0:0: [sdc] 15794176 512-byte hardware sectors (8087 MB)
+sd 10:0:0:0: [sdc] Write Protect is off
+sd 10:0:0:0: [sdc] Mode Sense: 00 00 00 00
+sd 10:0:0:0: [sdc] Assuming drive cache: write through
+ sdc: unknown partition table
+sd 10:0:0:0: [sdc] Attached SCSI removable disk
+
+This makes the partition unasable in my linux 2.6.25 (vanilla) system.
+Another 1gb usbpen works perfectly.
+
+Bus 004 Device 001: ID 1d6b:0001
+Bus 005 Device 001: ID 1d6b:0001
+Bus 002 Device 001: ID 1d6b:0001
+Bus 003 Device 001: ID 1d6b:0001
+Bus 001 Device 002: ID 1307:0165 Transcend Information, Inc.
+Bus 001 Device 001: ID 1d6b:0002
+
+Anything i can try?
+It looks a scsi issue. And it's the first time i see the Mode Sense set 
+to 0 for any usb storage device.
+
+Please CC me i'm not subscribed
+
+--
+Patrizio Bassi
+www.patriziobassi.it
