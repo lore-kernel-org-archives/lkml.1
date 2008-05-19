@@ -1,89 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762146AbYESPsL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762357AbYESPs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762146AbYESPsL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 11:48:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760885AbYESPrN
+	id S1762357AbYESPs2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 11:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758093AbYESPrO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 11:47:13 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:41314 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760189AbYESPrM (ORCPT
+	Mon, 19 May 2008 11:47:14 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:36577 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1760909AbYESPrM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 19 May 2008 11:47:12 -0400
-From: Alexey Starikovskiy <astarikovskiy@suse.de>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 4/5] x86: move mp_bus_not_pci from mpparse.c
-Date: Mon, 19 May 2008 19:47:16 +0400
-Message-ID: <20080519154715.15071.44328.stgit@thinkpad>
-In-Reply-To: <20080519154656.15071.96979.stgit@thinkpad>
-References: <20080519154656.15071.96979.stgit@thinkpad>
-User-Agent: StGIT/0.14.2
+Date: Mon, 19 May 2008 11:47:11 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+cc: Greg KH <greg@kroah.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: 2.6.26-rc1 regression since 2.6.25
+In-Reply-To: <20080519104948.GA4557@ics.muni.cz>
+Message-ID: <Pine.LNX.4.44L0.0805191126260.15266-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
----
+On Mon, 19 May 2008, Lukas Hejtmanek wrote:
 
- arch/x86/kernel/io_apic_32.c |    6 ++++++
- arch/x86/kernel/io_apic_64.c |    2 ++
- arch/x86/kernel/mpparse.c    |   10 ----------
- 3 files changed, 8 insertions(+), 10 deletions(-)
+> On Tue, May 13, 2008 at 04:06:20PM -0400, Alan Stern wrote:
+> > > I did. The dmesg is attached to the bug:
+> > > http://bugzilla.kernel.org/show_bug.cgi?id=10630
+> > 
+> > It looks as though the dock's USB hub may not be working right.
+> 
+> Maybe, Lenovo HW is a piece of crap.
 
+That's certainly possible.
 
-diff --git a/arch/x86/kernel/io_apic_32.c b/arch/x86/kernel/io_apic_32.c
-index 01dfe7c..f848ec0 100644
---- a/arch/x86/kernel/io_apic_32.c
-+++ b/arch/x86/kernel/io_apic_32.c
-@@ -81,6 +81,12 @@ struct mp_config_intsrc mp_irqs[MAX_IRQ_SOURCES];
- /* # of MP IRQ source entries */
- int mp_irq_entries;
- 
-+#if defined (CONFIG_MCA) || defined (CONFIG_EISA)
-+int mp_bus_id_to_type[MAX_MP_BUSSES];
-+#endif
-+
-+DECLARE_BITMAP(mp_bus_not_pci, MAX_MP_BUSSES);
-+
- static int disable_timer_pin_1 __initdata;
- 
- /*
-diff --git a/arch/x86/kernel/io_apic_64.c b/arch/x86/kernel/io_apic_64.c
-index e7f7ea7..27842b0 100644
---- a/arch/x86/kernel/io_apic_64.c
-+++ b/arch/x86/kernel/io_apic_64.c
-@@ -117,6 +117,8 @@ struct mp_config_intsrc mp_irqs[MAX_IRQ_SOURCES];
- /* # of MP IRQ source entries */
- int mp_irq_entries;
- 
-+DECLARE_BITMAP(mp_bus_not_pci, MAX_MP_BUSSES);
-+
- /*
-  * Rough estimation of how many shared IRQs there are, can
-  * be changed anytime.
-diff --git a/arch/x86/kernel/mpparse.c b/arch/x86/kernel/mpparse.c
-index 83dfd66..e8e041e 100644
---- a/arch/x86/kernel/mpparse.c
-+++ b/arch/x86/kernel/mpparse.c
-@@ -33,16 +33,6 @@
- #endif
- 
- /*
-- * Various Linux-internal data structures created from the
-- * MP-table.
-- */
--#if defined (CONFIG_MCA) || defined (CONFIG_EISA)
--int mp_bus_id_to_type[MAX_MP_BUSSES];
--#endif
--
--DECLARE_BITMAP(mp_bus_not_pci, MAX_MP_BUSSES);
--
--/*
-  * Checksum an MP configuration block.
-  */
- 
+>  Anyway, it worked up to 2.6.25
+> (including).
+
+Can you attach an equivalent dmesg log for 2.6.25 (with
+CONFIG_USB_DEBUG enabled, of course)?
+
+> > Just as a test, can you try applying gregkh-04-usb-2.6.26-rc2.patch 
+> > (it applies to 2.6.26-rc2, obviously) from
+> > 
+> > 	http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
+> > 
+> > and attaching the dmesg log from that?  It contains extra debugging not 
+> > present in the vanilla kernel -- make sure that you keep 
+> > CONFIG_USB_DEBUG enabled.
+> 
+> I did another attachement of the dmesg to the bugzilla.
+
+Let me get this straight.  You booted without the dock, and then at 
+this line:
+
+> [14315425.975807] ACPI: \_SB_.GDCK - docking
+
+you plugged the computer into the dock, right?
+
+Then apparently here:
+
+> [14315508.451197] ehci_hcd 0000:00:1a.7: port 4 remote wakeup
+
+you plugged the USB drive into the dock, but it wasn't detected.  Or
+maybe I've got it backward, the drive was already plugged in when you
+docked the computer, and 14315508.451197 is when you unplugged the
+drive.  Which was it?
+
+AFAICS, the dock never reported the existence of the USB drive.
+
+Okay, let's see some more debugging information on this.  Get a usbmon
+trace (see Documentation/usb/usbmon.txt) for bus 3, starting just 
+before you dock the computer.  That will tell us exactly what the 
+dock's USB hub is reporting.
+
+By the way, are you entirely certain that 2.6.25 works correctly in
+both cases: drive already attached when you dock the computer, and
+drive plugged in after the computer is docked?  I guess it would be
+good to see equivalent usbmon traces for both 2.6.25 and 2.6.26-rc2.
+
+Alan Stern
 
