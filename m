@@ -1,51 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760999AbYESPv2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759342AbYESP5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760999AbYESPv2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 11:51:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755472AbYESPvU
+	id S1759342AbYESP5f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 11:57:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbYESP5Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 11:51:20 -0400
-Received: from py-out-1112.google.com ([64.233.166.176]:58144 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754621AbYESPvT (ORCPT
+	Mon, 19 May 2008 11:57:24 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:58687 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751805AbYESP5X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 11:51:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=Bw1NQ1zfDFt3L1USd0BNBOXbCL/uGtz29zzb1hw8KVgo2ANOvmAuxMlBe2fG5ofsKIRbT7VN7eT+s46ZDYZDBguCB5adIXJ611Vq/lEzUcOnY9z9jfPGaMwRX1+vm4wYBYkYLYk1IZeMILwXMTCjJHvsCYVhCzgbOXZaJyYV/jI=
-Date: Mon, 19 May 2008 11:50:47 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Bruno Pr?mont <bonbons@linux-vserver.org>
-Cc: Linux Input <linux-input@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "R. J. Wysocki" <Rafal.Wysocki@fuw.edu.pl>
-Subject: Re: Input+S3: extra keycodes forgotten after suspend
-Message-ID: <20080519114827.ZZRA012@mailhub.coreip.homeip.net>
-References: <200805162225.44284.bonbons@linux-vserver.org> <20080516163318.ZZRA012@mailhub.coreip.homeip.net> <200805162300.06027.bonbons@linux-vserver.org>
+	Mon, 19 May 2008 11:57:23 -0400
+Message-ID: <fa686aa40805190857u317d3304ie75d11870e109fc5@mail.gmail.com>
+Date: Mon, 19 May 2008 09:57:21 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH 3/4] spi: Add OF binding support for SPI busses
+Cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
+       fabrizio.garetto@gmail.com, jonsmirl@gmail.com
+In-Reply-To: <Pine.LNX.4.64.0805191446530.27140@axis700.grange>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200805162300.06027.bonbons@linux-vserver.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
+	 <20080516193613.28030.13950.stgit@trillian.secretlab.ca>
+	 <Pine.LNX.4.64.0805191446530.27140@axis700.grange>
+X-Google-Sender-Auth: 7e73346d0ff4218d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Bruno,
+On Mon, May 19, 2008 at 7:17 AM, Guennadi Liakhovetski
+<g.liakhovetski@gmx.de> wrote:
+> On Fri, 16 May 2008, Grant Likely wrote:
+>
+>> +    However, the binding does not attempt to define the specific method for
+>> +    assigning chip select numbers.  Since SPI chip select configuration is
+>> +    flexible and non-standardized, it is left out of this binding with the
+>> +    assumption that board specific platform code will be used to manage
+>> +    chip selects.  Individual drivers can define additional properties to
+>> +    support describing the chip select layout.
+>
+> Yes, this looks like a problem to me. This means, SPI devices will need
+> two bindings - OF and platform?... Maybe define an spi_chipselect
+> OF-binding?
 
-On Fri, May 16, 2008 at 11:00:04PM +0200, Bruno Pr?mont wrote:
-> [  252.668456] PM: Finishing wakeup.
-> [  252.668456] Restarting tasks ... done.
-> [  252.745418] input: AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input/input7
+Actually, spi devices have *neither*.  :-)  They bind to the SPI bus.
+Not the platform bus or of_platform bus.  But that is Linux internal
+details; this discussion is about device tree bindings.
 
-Ok, so for some reason it could not resume and here it re-detected the
-keyboard creating the new input device thus resetting the keymap. The
-question is why it had to re-detect. Could you please do
+Note that I did say that drivers can define additional properties for
+supporting chip select changes as needed.  I'm just not attempting to
+encode them into the formal binding.  There is simply just too many
+different ways to manipulate chip select signals and so I don't feel
+confident trying to define a *common* binding at this moment in time.
+At some point in the future when we have a number of examples to
+choose from then we can extend this binding with chip select related
+properties.
 
-	echo 1 > /sys/modules/i8042/parameters/debug
+As for the Linux internals, the 5200 SPI bus driver that I posted
+exports a function that allows another driver to call in and
+manipulated the CS lines before the transfer.  It isn't the prettiest
+solution, but I'm not locked into the approach and that gives some
+time to consider cleaner interfaces.
 
-before suspending and send me full dmesg please?
+Cheers,
+g.
 
 -- 
-Dmitry
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
