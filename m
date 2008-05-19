@@ -1,48 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759342AbYESQDI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760001AbYESQEa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759342AbYESQDI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 12:03:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbYESQC4
+	id S1760001AbYESQEa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 12:04:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754301AbYESQEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 12:02:56 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45976 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752735AbYESQCz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 12:02:55 -0400
-Date: Mon, 19 May 2008 12:01:55 -0400
-From: Rik van Riel <riel@redhat.com>
-To: MinChan Kim <minchan.kim@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [patch 04/14] free swap space on swap-in/activation
-Message-ID: <20080519120155.6c88812f@bree.surriel.com>
-In-Reply-To: <4831741A.7090206@gmail.com>
-References: <20080516183207.361608893@redhat.com>
-	<20080516183224.259161900@redhat.com>
-	<4831741A.7090206@gmail.com>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 19 May 2008 12:04:20 -0400
+Received: from ti-out-0910.google.com ([209.85.142.186]:7555 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752322AbYESQET (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 12:04:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=FIg8BsYY98dMGMeQ7NjlR3szbroT5H1wHXenYCEqY4kbujaGLzVHynAs/Bkyl/vnaLUD6e18kjkw0ANrl7lI53m8d8yfIoeLHLV7fQ+W68B3V1/QobJ0g2mDuYh32gB506MIODebBLxPgDl+F5WsWDNVn0SWCfDnbXnW9yNDWQc=
+Message-ID: <438397970805190904i2656337dh26a3257fe52aa29d@mail.gmail.com>
+Date: Mon, 19 May 2008 09:04:15 -0700
+From: "Kallol Biswas" <nucleodyne@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: HDMI Audio Support in ALSA
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 May 2008 21:35:38 +0900
-MinChan Kim <minchan.kim@gmail.com> wrote:
+Hi,
+   We are building a HDMI capture card that has a HDMI audio device.
 
-> I don't know where to send this patch. you or mm ?
-> I guess VM pageout patches didn't send mm-commits yet.
+The audio device needs to be integrated with ALSA framework.
+Unfortunately the audio is not supported in ALSA.
 
-If Andrew merges the patches, this could go in as an additional
-fix.  If Andrew does not merge the patches, I will queue it up
-in my tree for the next submission :)
- 
-> It made compile error in my system that didn't have swap device. 
+I understand that work is being done at this moment to support the audio format.
 
-Good catch.  Thank you for this compile fix with CONFIG_SWAP=n
+Any information on when the support will be available is helpful.
 
--- 
-All rights reversed.
+Kallol
+
+Senior Software Engineer
+NucleoDyne System, Inc.
+19925 Stevens Creek Blvd
+Cupertino, CA 95014
