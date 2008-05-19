@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761284AbYESNVE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760589AbYESNVk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761284AbYESNVE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 09:21:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759710AbYESNRc
+	id S1760589AbYESNVk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 09:21:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759963AbYESNRm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 09:17:32 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45814 "EHLO
+	Mon, 19 May 2008 09:17:42 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45822 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759681AbYESNRa (ORCPT
+	with ESMTP id S1759934AbYESNRl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 09:17:30 -0400
+	Mon, 19 May 2008 09:17:41 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 10/57] eurotechwdt: unlocked_ioctl, code lock check and tidy
+Subject: [PATCH 12/57] ib700wdt: clean up and switch to unlocked_ioctl
 To: akpm@osdl.org, linux-kernel@vger.kernel.org, wim@iguana.be
-Date: Mon, 19 May 2008 14:05:41 +0100
-Message-ID: <20080519130541.31722.15804.stgit@core>
+Date: Mon, 19 May 2008 14:05:52 +0100
+Message-ID: <20080519130552.31722.62910.stgit@core>
 In-Reply-To: <20080519124659.31722.51847.stgit@core>
 References: <20080519124659.31722.51847.stgit@core>
 User-Agent: StGIT/0.14.1
@@ -30,33 +30,26 @@ From: Alan Cox <alan@redhat.com>
 
 ---
 
- drivers/watchdog/eurotechwdt.c |   57 +++++++++++++++++++++++++---------------
- 1 files changed, 36 insertions(+), 21 deletions(-)
+ drivers/watchdog/ib700wdt.c |  103 ++++++++++++++++++++++---------------------
+ 1 files changed, 52 insertions(+), 51 deletions(-)
 
 
-diff --git a/drivers/watchdog/eurotechwdt.c b/drivers/watchdog/eurotechwdt.c
-index b14e9d1..b94e6ef 100644
---- a/drivers/watchdog/eurotechwdt.c
-+++ b/drivers/watchdog/eurotechwdt.c
-@@ -56,14 +56,15 @@
- #include <linux/notifier.h>
- #include <linux/reboot.h>
- #include <linux/init.h>
-+#include <linux/io.h>
-+#include <linux/uaccess.h>
+diff --git a/drivers/watchdog/ib700wdt.c b/drivers/watchdog/ib700wdt.c
+index 4b89f40..805a54b 100644
+--- a/drivers/watchdog/ib700wdt.c
++++ b/drivers/watchdog/ib700wdt.c
+@@ -42,8 +42,8 @@
+ #include <linux/moduleparam.h>
+ #include <linux/platform_device.h>
  
 -#include <asm/io.h>
 -#include <asm/uaccess.h>
++#include <linux/io.h>
++#include <linux/uaccess.h>
  #include <asm/system.h>
  
- static unsigned long eurwdt_is_open;
- static int eurwdt_timeout;
- static char eur_expect_close;
-+static spinlock_t eurwdt_lock;
- 
- /*
-  * You must set these - there is no sane way to probe for this board.
-@@ -78,7 +79,9 @@ static char *ev = "int";
+ static struct platform_device *ibwdt_platform_device;
+@@ -120,7 +120,9 @@ static int wd_margin = WD_TIMO;
  
  static int nowayout = WATCHDOG_NOWAYOUT;
  module_param(nowayout, int, 0);
@@ -65,161 +58,202 @@ index b14e9d1..b94e6ef 100644
 +		"Watchdog cannot be stopped once started (default="
 +				__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
  
+ 
  /*
-  * Some symbolic names
-@@ -137,7 +140,8 @@ static void eurwdt_activate_timer(void)
+@@ -165,8 +167,8 @@ ibwdt_set_heartbeat(int t)
+  *	/dev/watchdog handling
+  */
+ 
+-static ssize_t
+-ibwdt_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
++static ssize_t ibwdt_write(struct file *file, const char __user *buf,
++						size_t count, loff_t *ppos)
  {
- 	eurwdt_disable_timer();
- 	eurwdt_write_reg(WDT_CTRL_REG, 0x01);	/* activate the WDT */
--	eurwdt_write_reg(WDT_OUTPIN_CFG, !strcmp("int", ev) ? WDT_EVENT_INT : WDT_EVENT_REBOOT);
-+	eurwdt_write_reg(WDT_OUTPIN_CFG,
-+		!strcmp("int", ev) ? WDT_EVENT_INT : WDT_EVENT_REBOOT);
- 
- 	/* Setting interrupt line */
- 	if (irq == 2 || irq > 15 || irq < 0) {
-@@ -206,21 +210,21 @@ size_t count, loff_t *ppos)
- 
- 			for (i = 0; i != count; i++) {
- 				char c;
--				if(get_user(c, buf+i))
-+				if (get_user(c, buf+i))
- 					return -EFAULT;
- 				if (c == 'V')
- 					eur_expect_close = 42;
- 			}
- 		}
-+		spin_lock(&eurwdt_lock);
- 		eurwdt_ping();	/* the default timeout */
-+		spin_unlock(&eurwdt_lock);
- 	}
--
+ 	if (count) {
+ 		if (!nowayout) {
+@@ -188,77 +190,71 @@ ibwdt_write(struct file *file, const char __user *buf, size_t count, loff_t *ppo
  	return count;
  }
  
- /**
-  * eurwdt_ioctl:
-- * @inode: inode of the device
-  * @file: file handle to the device
-  * @cmd: watchdog command
-  * @arg: argument pointer
-@@ -229,13 +233,14 @@ size_t count, loff_t *ppos)
-  * according to their available features.
-  */
- 
--static int eurwdt_ioctl(struct inode *inode, struct file *file,
--	unsigned int cmd, unsigned long arg)
-+static long eurwdt_ioctl(struct file *file,
-+					unsigned int cmd, unsigned long arg)
+-static int
+-ibwdt_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+-	  unsigned long arg)
++static long ibwdt_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
  {
+ 	int new_margin;
  	void __user *argp = (void __user *)arg;
  	int __user *p = argp;
+ 
  	static struct watchdog_info ident = {
--		.options	  = WDIOF_KEEPALIVEPING | WDIOF_SETTIMEOUT | WDIOF_MAGICCLOSE,
-+		.options	  = WDIOF_KEEPALIVEPING | WDIOF_SETTIMEOUT
+-		.options = WDIOF_KEEPALIVEPING | WDIOF_SETTIMEOUT | WDIOF_MAGICCLOSE,
++		.options = WDIOF_KEEPALIVEPING | WDIOF_SETTIMEOUT
 +							| WDIOF_MAGICCLOSE,
  		.firmware_version = 1,
- 		.identity	  = "WDT Eurotech CPU-1220/1410",
+ 		.identity = "IB700 WDT",
  	};
-@@ -243,7 +248,7 @@ static int eurwdt_ioctl(struct inode *inode, struct file *file,
- 	int time;
- 	int options, retval = -EINVAL;
  
--	switch(cmd) {
-+	switch (cmd) {
- 	default:
- 		return -ENOTTY;
+ 	switch (cmd) {
+ 	case WDIOC_GETSUPPORT:
+-	  if (copy_to_user(argp, &ident, sizeof(ident)))
+-	    return -EFAULT;
+-	  break;
++		if (copy_to_user(argp, &ident, sizeof(ident)))
++			return -EFAULT;
++		break;
  
-@@ -255,7 +260,9 @@ static int eurwdt_ioctl(struct inode *inode, struct file *file,
- 		return put_user(0, p);
+ 	case WDIOC_GETSTATUS:
+ 	case WDIOC_GETBOOTSTATUS:
+-	  return put_user(0, p);
++		return put_user(0, p);
  
  	case WDIOC_KEEPALIVE:
-+		spin_lock(&eurwdt_lock);
- 		eurwdt_ping();
-+		spin_unlock(&eurwdt_lock);
- 		return 0;
+-	  ibwdt_ping();
+-	  break;
++		ibwdt_ping();
++		break;
  
  	case WDIOC_SETTIMEOUT:
-@@ -266,8 +273,10 @@ static int eurwdt_ioctl(struct inode *inode, struct file *file,
- 		if (time < 0 || time > 255)
- 			return -EINVAL;
- 
-+		spin_lock(&eurwdt_lock);
- 		eurwdt_timeout = time;
- 		eurwdt_set_timeout(time);
-+		spin_unlock(&eurwdt_lock);
- 		/* Fall */
+-	  if (get_user(new_margin, p))
+-		  return -EFAULT;
+-	  if (ibwdt_set_heartbeat(new_margin))
+-		  return -EINVAL;
+-	  ibwdt_ping();
+-	  /* Fall */
++		if (get_user(new_margin, p))
++			return -EFAULT;
++		if (ibwdt_set_heartbeat(new_margin))
++			return -EINVAL;
++		ibwdt_ping();
++		/* Fall */
  
  	case WDIOC_GETTIMEOUT:
-@@ -276,6 +285,7 @@ static int eurwdt_ioctl(struct inode *inode, struct file *file,
+-	  return put_user(wd_times[wd_margin], p);
++		return put_user(wd_times[wd_margin], p);
+ 
  	case WDIOC_SETOPTIONS:
- 		if (get_user(options, p))
- 			return -EFAULT;
-+		spin_lock(&eurwdt_lock);
- 		if (options & WDIOS_DISABLECARD) {
- 			eurwdt_disable_timer();
- 			retval = 0;
-@@ -285,6 +295,7 @@ static int eurwdt_ioctl(struct inode *inode, struct file *file,
- 			eurwdt_ping();
- 			retval = 0;
- 		}
-+		spin_unlock(&eurwdt_lock);
- 		return retval;
+ 	{
+-	  int options, retval = -EINVAL;
++		int options, retval = -EINVAL;
+ 
+-	  if (get_user(options, p))
+-	    return -EFAULT;
++		if (get_user(options, p))
++			return -EFAULT;
+ 
+-	  if (options & WDIOS_DISABLECARD) {
+-	    ibwdt_disable();
+-	    retval = 0;
+-	  }
+-
+-	  if (options & WDIOS_ENABLECARD) {
+-	    ibwdt_ping();
+-	    retval = 0;
+-	  }
+-
+-	  return retval;
++		if (options & WDIOS_DISABLECARD) {
++			ibwdt_disable();
++			retval = 0;
++		}
++		if (options & WDIOS_ENABLECARD) {
++			ibwdt_ping();
++			retval = 0;
++		}
++		return retval;
  	}
+-
+ 	default:
+-	  return -ENOTTY;
++		return -ENOTTY;
+ 	}
+ 	return 0;
  }
-@@ -322,10 +333,11 @@ static int eurwdt_open(struct inode *inode, struct file *file)
  
- static int eurwdt_release(struct inode *inode, struct file *file)
+-static int
+-ibwdt_open(struct inode *inode, struct file *file)
++static int ibwdt_open(struct inode *inode, struct file *file)
  {
--	if (eur_expect_close == 42) {
-+	if (eur_expect_close == 42)
- 		eurwdt_disable_timer();
--	} else {
--		printk(KERN_CRIT "eurwdt: Unexpected close, not stopping watchdog!\n");
-+	else {
-+		printk(KERN_CRIT
-+			"eurwdt: Unexpected close, not stopping watchdog!\n");
- 		eurwdt_ping();
+-	if (test_and_set_bit(0, &ibwdt_is_open)) {
++	if (test_and_set_bit(0, &ibwdt_is_open))
+ 		return -EBUSY;
+-	}
+ 	if (nowayout)
+ 		__module_get(THIS_MODULE);
+ 
+@@ -273,7 +269,8 @@ ibwdt_close(struct inode *inode, struct file *file)
+ 	if (expect_close == 42) {
+ 		ibwdt_disable();
+ 	} else {
+-		printk(KERN_CRIT PFX "WDT device closed unexpectedly.  WDT will not stop!\n");
++		printk(KERN_CRIT PFX
++		     "WDT device closed unexpectedly.  WDT will not stop!\n");
+ 		ibwdt_ping();
  	}
- 	clear_bit(0, &eurwdt_is_open);
-@@ -362,11 +374,11 @@ static int eurwdt_notify_sys(struct notifier_block *this, unsigned long code,
- 
- 
- static const struct file_operations eurwdt_fops = {
--	.owner	= THIS_MODULE,
--	.llseek	= no_llseek,
--	.write	= eurwdt_write,
--	.ioctl	= eurwdt_ioctl,
--	.open	= eurwdt_open,
-+	.owner		= THIS_MODULE,
-+	.llseek		= no_llseek,
-+	.write		= eurwdt_write,
-+	.unlocked_ioctl	= eurwdt_ioctl,
-+	.open		= eurwdt_open,
- 	.release	= eurwdt_release,
+ 	clear_bit(0, &ibwdt_is_open);
+@@ -289,7 +286,7 @@ static const struct file_operations ibwdt_fops = {
+ 	.owner		= THIS_MODULE,
+ 	.llseek		= no_llseek,
+ 	.write		= ibwdt_write,
+-	.ioctl		= ibwdt_ioctl,
++	.unlocked_ioctl	= ibwdt_ioctl,
+ 	.open		= ibwdt_open,
+ 	.release	= ibwdt_close,
  };
+@@ -310,21 +307,23 @@ static int __devinit ibwdt_probe(struct platform_device *dev)
  
-@@ -419,7 +431,7 @@ static int __init eurwdt_init(void)
- 	int ret;
- 
- 	ret = request_irq(irq, eurwdt_interrupt, IRQF_DISABLED, "eurwdt", NULL);
--	if(ret) {
-+	if (ret) {
- 		printk(KERN_ERR "eurwdt: IRQ %d is not free.\n", irq);
- 		goto out;
+ #if WDT_START != WDT_STOP
+ 	if (!request_region(WDT_STOP, 1, "IB700 WDT")) {
+-		printk (KERN_ERR PFX "STOP method I/O %X is not available.\n", WDT_STOP);
++		printk(KERN_ERR PFX "STOP method I/O %X is not available.\n",
++								WDT_STOP);
+ 		res = -EIO;
+ 		goto out_nostopreg;
  	}
-@@ -432,10 +444,13 @@ static int __init eurwdt_init(void)
+ #endif
  
- 	ret = register_reboot_notifier(&eurwdt_notifier);
- 	if (ret) {
--		printk(KERN_ERR "eurwdt: can't register reboot notifier (err=%d)\n", ret);
-+		printk(KERN_ERR
-+		    "eurwdt: can't register reboot notifier (err=%d)\n", ret);
- 		goto outreg;
+ 	if (!request_region(WDT_START, 1, "IB700 WDT")) {
+-		printk (KERN_ERR PFX "START method I/O %X is not available.\n", WDT_START);
++		printk(KERN_ERR PFX "START method I/O %X is not available.\n",
++								WDT_START);
+ 		res = -EIO;
+ 		goto out_nostartreg;
  	}
  
-+	spin_lock_init(&eurwdt_lock);
-+
- 	ret = misc_register(&eurwdt_miscdev);
- 	if (ret) {
- 		printk(KERN_ERR "eurwdt: can't misc_register on minor=%d\n",
+ 	res = misc_register(&ibwdt_miscdev);
+ 	if (res) {
+-		printk (KERN_ERR PFX "failed to register misc device\n");
++		printk(KERN_ERR PFX "failed to register misc device\n");
+ 		goto out_nomisc;
+ 	}
+ 	return 0;
+@@ -342,9 +341,9 @@ out_nostopreg:
+ static int __devexit ibwdt_remove(struct platform_device *dev)
+ {
+ 	misc_deregister(&ibwdt_miscdev);
+-	release_region(WDT_START,1);
++	release_region(WDT_START, 1);
+ #if WDT_START != WDT_STOP
+-	release_region(WDT_STOP,1);
++	release_region(WDT_STOP, 1);
+ #endif
+ 	return 0;
+ }
+@@ -369,13 +368,15 @@ static int __init ibwdt_init(void)
+ {
+ 	int err;
+ 
+-	printk(KERN_INFO PFX "WDT driver for IB700 single board computer initialising.\n");
++	printk(KERN_INFO PFX
++		"WDT driver for IB700 single board computer initialising.\n");
+ 
+ 	err = platform_driver_register(&ibwdt_driver);
+ 	if (err)
+ 		return err;
+ 
+-	ibwdt_platform_device = platform_device_register_simple(DRV_NAME, -1, NULL, 0);
++	ibwdt_platform_device = platform_device_register_simple(DRV_NAME,
++								-1, NULL, 0);
+ 	if (IS_ERR(ibwdt_platform_device)) {
+ 		err = PTR_ERR(ibwdt_platform_device);
+ 		goto unreg_platform_driver;
 
