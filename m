@@ -1,40 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758625AbYESLmt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757971AbYESMJA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758625AbYESLmt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 07:42:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756682AbYESLmi
+	id S1757971AbYESMJA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 08:09:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751768AbYESMIw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 07:42:38 -0400
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:23489 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756115AbYESLmi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 07:42:38 -0400
-To: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, ltp-coverage@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Peter Oberparleiter <oberparleiter@googlemail.com>
-Subject: Re: [PATCH 0/7] gcov kernel support
-From: Andi Kleen <andi@firstfloor.org>
-References: <48313D8E.7020109@de.ibm.com>
-Date: Mon, 19 May 2008 13:42:16 +0200
-In-Reply-To: <48313D8E.7020109@de.ibm.com> (Peter Oberparleiter's message of "Mon, 19 May 2008 10:42:54 +0200")
-Message-ID: <87tzgubjvr.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 19 May 2008 11:35:13.0960 (UTC) FILETIME=[67572A80:01C8B9A4]
+	Mon, 19 May 2008 08:08:52 -0400
+Received: from mummy.ncsc.mil ([144.51.88.129]:57776 "EHLO mummy.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751071AbYESMIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 08:08:51 -0400
+Subject: Re: [PATCH] selinux: reorder inode_security_struct to increase
+	objs/slab on 64bit
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Richard Kennedy <richard@rsk.demon.co.uk>
+Cc: jmorris@namei.org, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1211110377.3021.8.camel@castor.localdomain>
+References: <1211110377.3021.8.camel@castor.localdomain>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Mon, 19 May 2008 07:39:45 -0400
+Message-Id: <1211197185.7486.0.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Oberparleiter <peter.oberparleiter@de.ibm.com> writes:
 
-> This is version #2 of the gcov kernel support patch set (see further
-> below for an in-depth explanation). Patch base is 2.6.26-rc3.
+On Sun, 2008-05-18 at 12:32 +0100, Richard Kennedy wrote:
+> reorder inode_security_struct to remove padding on 64 bit builds
+>     
+> size reduced from 72 to 64 bytes increasing objects per slab to 64.
+>         
+> Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+> 
+> ---
+> This patch is against 2.6.26-r2 & boots successfully on my AMD64
+> desktop.
+> 
+> 
+> Richard
+> 
+> 
+> 
+> diff --git a/security/selinux/include/objsec.h b/security/selinux/include/objsec.h
+> index 032c235..5f0be19 100644
+> --- a/security/selinux/include/objsec.h
+> +++ b/security/selinux/include/objsec.h
+> @@ -43,8 +43,8 @@ struct inode_security_struct {
+>  	u32 sid;		/* SID of this object */
+>  	u16 sclass;		/* security class of this object */
+>  	unsigned char initialized;	/* initialization flag */
+> -	struct mutex lock;
+>  	unsigned char inherit;	/* inherit SID from parent entry */
 
-I reviewed the patches and they look good to me (except for
-some minor nits, probably not worth fixing)
+Let's just drop inherit altogether - dead field.
 
--Andi
+> +	struct mutex lock;
+>  };
+>  
+>  struct file_security_struct {
+> 
+-- 
+Stephen Smalley
+National Security Agency
+
