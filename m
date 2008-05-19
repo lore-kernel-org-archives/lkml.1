@@ -1,37 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760016AbYESOnp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759734AbYESOt1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760016AbYESOnp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 10:43:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758178AbYESOni
+	id S1759734AbYESOt1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 10:49:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756752AbYESOtR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 10:43:38 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:46671 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758138AbYESOnh (ORCPT
+	Mon, 19 May 2008 10:49:17 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:3858 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756520AbYESOtQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 10:43:37 -0400
-Message-ID: <483191F9.3010706@firstfloor.org>
-Date: Mon, 19 May 2008 16:43:05 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: corbet@lwn.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [2/11] Add unlocked_fasync
-References: <20080519231.561421028@firstfloor.org> <20080519123111.97C0C1B41FF@basil.firstfloor.org> <20080519140339.GB24267@infradead.org>
-In-Reply-To: <20080519140339.GB24267@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 19 May 2008 10:49:16 -0400
+Subject: Re: [BUG] 2.6.26-rc2-mm1 - kernel bug while bootup at
+	__alloc_pages_internal () on x86_64
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, apw@shadowen.org,
+       balbir@linux.vnet.ibm.com, linux-mm@kvack.org, mingo@elte.hu,
+       kosaki.motohiro@gmail.com
+In-Reply-To: <2f11576a0805181007n14592bd0r1cf8aec915894ed5@mail.gmail.com>
+References: <20080514010129.4f672378.akpm@linux-foundation.org>
+	 <482ACBFE.9010606@linux.vnet.ibm.com>
+	 <20080514103601.32d20889.akpm@linux-foundation.org>
+	 <482B2DB0.9030102@linux.vnet.ibm.com>
+	 <20080514124455.cf7c3097.akpm@linux-foundation.org>
+	 <20080518080013.GA17458@linux.vnet.ibm.com>
+	 <2f11576a0805181007n14592bd0r1cf8aec915894ed5@mail.gmail.com>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Mon, 19 May 2008 10:49:12 -0400
+Message-Id: <1211208552.6322.5.camel@lts-notebook>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2008-05-19 at 02:07 +0900, KOSAKI Motohiro wrote:
+> > After bisecting, the acpi-acpi_numa_init-build-fix.patch patch seems
+> > to be causing the kernel panic during the bootup. Reverting the patch helps
+> > in booting up the machine without the panic.
+> >
+> > commit 5dc90c0b2d4bd0127624bab67cec159b2c6c4daf
+> > Author: Ingo Molnar <mingo@elte.hu>
+> > Date:   Thu May 1 09:51:47 2008 +0000
+> >
+> >    acpi-acpi_numa_init-build-fix
+> 
+> this patch break Fujitsu ia64 numa box too.
+> after revert, my test environment works well.
 
-> I'd rather do a properly flag day and move lock_kernel into the
-> instances instead of adding this _unlocked gunk.
+On HP ia64 numa, that patch causes all memory to show up on node 0, but
+otherwise the platform boots and runs.  Didn't notice it until I tried
+to run some numa tests.
 
-I've considered that, but it's a bit too many fasync instances
-all over the tree, so I chose this method.
+Reverting the patch restores numaness.
 
--Andi
+Lee
 
