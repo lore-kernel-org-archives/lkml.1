@@ -1,81 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760845AbYESQjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760015AbYESQkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760845AbYESQjm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 12:39:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759631AbYESQjO
+	id S1760015AbYESQkb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 12:40:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753102AbYESQkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 12:39:14 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:37181 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756670AbYESQjM (ORCPT
+	Mon, 19 May 2008 12:40:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40977 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752213AbYESQkL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 12:39:12 -0400
-Message-ID: <4831AACD.8030607@zytor.com>
-Date: Mon, 19 May 2008 09:29:01 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 19 May 2008 12:40:11 -0400
+Date: Mon, 19 May 2008 09:36:56 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+cc: Alan Stern <stern@rowland.harvard.edu>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>,
+       USB Storage list <usb-storage@lists.one-eyed-alien.net>,
+       SCSI development list <linux-scsi@vger.kernel.org>
+Subject: Re: [Re: Linux 2.6.26-rc2] Write protect on on
+In-Reply-To: <4831A60A.5010308@panasas.com>
+Message-ID: <alpine.LFD.1.10.0805190929170.32253@woody.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0805191106270.15266-100000@iolanthe.rowland.org> <4831A60A.5010308@panasas.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-To: Mikael Pettersson <mikpe@it.uu.se>
-CC: Suresh Siddha <suresh.b.siddha@intel.com>, mingo@elte.hu,
-       tglx@linutronix.de, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, andi@firstfloor.org, roland@redhat.com,
-       drepper@redhat.com, Hongjiu.lu@intel.com, linux-kernel@vger.kernel.org,
-       arjan@linux.intel.com, rmk+lkml@arm.linux.org.uk, dan@debian.org,
-       asit.k.mallick@intel.com
-Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
-References: <20080513011030.GA31448@linux-os.sc.intel.com>	<18477.35703.679574.760417@harpo.it.uu.se>	<20080518013416.GB30034@linux-os.sc.intel.com> <18481.37905.297556.288317@harpo.it.uu.se>
-In-Reply-To: <18481.37905.297556.288317@harpo.it.uu.se>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikael Pettersson wrote:
+
+
+On Mon, 19 May 2008, Boaz Harrosh wrote:
+
+> Alan Stern wrote:
+> > 
+> > Yes, it never worked properly.  But now it fails in a bad way whereas 
+> > before it failed in a benign way.
 > 
-> My problem with the OSXAVE flag is that it's a very indirect way of
-> communicating the layout of sigframes and sigcontexts. These structures
-> should, if at all possible, be self-describing. A single flag bit in
-> the sigcontext could handle both structures (since a sigframe always
-> includes a sigcontext).
-> 
+> You do realize that, that was pure lock to have a zero'ed buffer.
 
-It's also wrong, since OSXSAVE indicates that the CPU can do it, not 
-that the kernel can.
+Umm. Maybe it SHOULD NOT HAVE BEEN!
 
-> 
->>> struct _fpstate has a 'magic' field which distinguishes x87-only
->>> from x87+FXSR structs. Could that field also be used to indicate XSAVE?
->> I don't think we can use the existing 'magic' field.
-> 
-> Hmm, right now it seems this field has a de-facto ABI of being
-> either 0xffff (plain) or 0x0000 (fxsr). Using other values would
-> confuse at least one application I know of. Sad.
-> 
+The thing is, if we can get partial results back, we really *should* 
+either error out, or we should have at least cleared the buffer (either 
+beforehand or when seeing the partial result). Returning a buffer with the 
+old random contents is a bug.
 
-Well, arguably it is the right thing to use since we're talking about a 
-new format.  The difference is that the new format *does* extend 
-backwards to match the old format.
+And if clearing the buffer not only avoids any security holes and possible 
+undefined behavior, but _also_ ends up fixing the write protect sense 
+issue, all the better!
 
->> But we can
->> use some what similar magic, if the fxsave/fxrstor give away
->> some of the fields at the end of fxsave image (today it is reserved
->> and ignored during fxsave/fxrstor) for software use.
->> We can then use these fields at the end of fpstate, to indicate the presence of
->> xstate. But this requires some architecture changes like giving
->> away this space for SW use. We can take this to architects and
->> see what they think.
-> 
-> If the HW doesn't store anything valuable there, we could store
-> SW flags/cookies there on signal delivery, and clear them before
-> fxrstor (unless the HW is known to ignore those fields).
-> But it depends on how forgiving the HW is.
-
-All we need is a single field -- a single byte -- reserved indefinitely 
-for software use.  Existing FXSAVE kernels will have set it to zero.
-
-There might be fields the existing FXSAVE format which can be equally 
-abused, even.  I will do some looking.
-
-	-hpa
-
+		Linus
