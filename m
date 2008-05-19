@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759044AbYESIYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757641AbYESIa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759044AbYESIYx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 04:24:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755516AbYESIYc
+	id S1757641AbYESIa0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 04:30:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbYESIaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 04:24:32 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:59339 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755346AbYESIYa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 04:24:30 -0400
-Message-ID: <483138AC.9080504@cn.fujitsu.com>
-Date: Mon, 19 May 2008 16:22:04 +0800
-From: Wang Chen <wangchen@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.26-rc3
-References: <alpine.LFD.1.10.0805181440310.32253@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0805181440310.32253@woody.linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 19 May 2008 04:30:18 -0400
+Received: from anchor-post-36.mail.demon.net ([194.217.242.86]:1374 "EHLO
+	anchor-post-36.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751441AbYESIaR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 04:30:17 -0400
+Subject: Re: [PATCH] selinux: reorder inode_security_struct to increase
+	objs/slab on 64bit
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: James Morris <jmorris@namei.org>
+Cc: sds@tycho.nsa.gov, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <Xine.LNX.4.64.0805190916290.12130@us.intercode.com.au>
+References: <1211110377.3021.8.camel@castor.localdomain>
+	 <Xine.LNX.4.64.0805190916290.12130@us.intercode.com.au>
+Content-Type: text/plain
+Date: Mon, 19 May 2008 09:21:18 +0100
+Message-Id: <1211185278.2986.8.camel@castor.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds said the following on 2008-5-19 6:12:
-> So because of that event, I looked at some of the statistics of the BK 
-> timeframe and the git timeframe. The most striking difference has nothing 
-> to do with git or BK (the switch-over timing was just the reason I decided 
-> to take a look), but with the fact that we're not just continuing to 
-> develop, but we're developing faster and with more people.
-> 
-> So during the three years 2002->2005, we had 63428 commits, attributed to 
-> 1560 different authors (caveat: misspellings etc will mean that some 
-> people get counted more than ones). During the last three years, we've had 
-> 96885 attributed to 4068 distinct authors (with the same caveat, 
-> obviously).
-> 
-> I didn't do a lot of per-commit statistics yet, but from the little I've 
-> done it also seems like we've gotten increasingly better at doing small 
-> commits (which is probably one of the reasons we have a larger number of 
-> them, but also why we have more authors - small commits is how people get 
-> into doing kernel development).
-> 
-> [ But part of it is also because we're better at authorship tracking: the 
->   BK history has 6000+ patches attributed to Andrew, and a number of them
->   have a "From: xyz" in them, but my statistics only looked at who got
->   attributed in the SCM logs.  Our patch extraction tools have also gotten 
->   better over the years.. ]
-> 
-> I'll see if I can make some interesting statistics about just how 
-> development has changed over the last three years, but no promises. The 
-> actual exact "same amount of time" time is coming up in another month or 
-> so.
-> 
 
-Linus, I've made an analysis from raw data of git-log. Very similar to what
-Jonathan Corbet has done. But hope it can give us some useful information.
-http://remword.com/kps_result/
+On Mon, 2008-05-19 at 09:18 +1000, James Morris wrote: 
+> On Sun, 18 May 2008, Richard Kennedy wrote:
+> 
+> > reorder inode_security_struct to remove padding on 64 bit builds
+> >     
+> > size reduced from 72 to 64 bytes increasing objects per slab to 64.
+> >         
+> > Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+> 
+> Thanks, applied to 
+> git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/selinux-2.6.git#for-akpm
+> 
+> (Although I see a reduction from 164 to 160 bytes).
+> 
+> 
+> - James
 
---WCN
+In that case I think you've got all the lock & mutex debugging turned
+on :)
+CONFIG_DEBUG_MUTEXES & CONFIG_DEBUG_LOCK_ALLOC will add a lot to the
+mutex directly.
+
+CONFIG_GENERIC_LOCKBREAK, CONFIG_DEBUG_SPINLOCK &
+CONFIG_DEBUG_LOCK_ALLOC will each grow the spinlock contained in the
+mutex.
+
+However, I'm seeing all structures packed to size of 8n -- so I'd never
+get a sizeof 164. Maybe that's just a platform/compiler difference ?
+I'm running on AMD 64 & gcc 4.1.2
+
+
+Richard
+
+
 
