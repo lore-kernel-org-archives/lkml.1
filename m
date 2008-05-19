@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761941AbYESNWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762048AbYESNWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761941AbYESNWh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 09:22:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759656AbYESNR7
+	id S1762048AbYESNWu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 09:22:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760076AbYESNSA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 09:17:59 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45834 "EHLO
+	Mon, 19 May 2008 09:18:00 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45831 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760038AbYESNR5 (ORCPT
+	with ESMTP id S1760046AbYESNR6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 09:17:57 -0400
+	Mon, 19 May 2008 09:17:58 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 15/57] indydog: Clean up and tidy
+Subject: [PATCH 14/57] ibmasr: coding style, locking verify
 To: akpm@osdl.org, linux-kernel@vger.kernel.org, wim@iguana.be
-Date: Mon, 19 May 2008 14:06:08 +0100
-Message-ID: <20080519130608.31722.82375.stgit@core>
+Date: Mon, 19 May 2008 14:06:03 +0100
+Message-ID: <20080519130603.31722.28573.stgit@core>
 In-Reply-To: <20080519124659.31722.51847.stgit@core>
 References: <20080519124659.31722.51847.stgit@core>
 User-Agent: StGIT/0.14.1
@@ -27,172 +27,231 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@redhat.com>
 
-Switch to unlocked_ioctl as well
+There is a new #if 0 section here which is a suggested fix for the horrible
+PCI hack in the existing code. Would be good if someone with a box that uses
+this device could test it.
 ---
 
- drivers/watchdog/indydog.c |  114 ++++++++++++++++++++++++--------------------
- 1 files changed, 62 insertions(+), 52 deletions(-)
+ drivers/watchdog/ibmasr.c |  149 ++++++++++++++++++++++++++-------------------
+ 1 files changed, 87 insertions(+), 62 deletions(-)
 
 
-diff --git a/drivers/watchdog/indydog.c b/drivers/watchdog/indydog.c
-index 788245b..0bffea3 100644
---- a/drivers/watchdog/indydog.c
-+++ b/drivers/watchdog/indydog.c
-@@ -1,7 +1,8 @@
- /*
-  *	IndyDog	0.3	A Hardware Watchdog Device for SGI IP22
-  *
-- *	(c) Copyright 2002 Guido Guenther <agx@sigxcpu.org>, All Rights Reserved.
-+ *	(c) Copyright 2002 Guido Guenther <agx@sigxcpu.org>,
-+ *						All Rights Reserved.
-  *
-  *	This program is free software; you can redistribute it and/or
-  *	modify it under the terms of the GNU General Public License
-@@ -22,32 +23,42 @@
- #include <linux/notifier.h>
- #include <linux/reboot.h>
- #include <linux/init.h>
+diff --git a/drivers/watchdog/ibmasr.c b/drivers/watchdog/ibmasr.c
+index 94155f6..6824bf8 100644
+--- a/drivers/watchdog/ibmasr.c
++++ b/drivers/watchdog/ibmasr.c
+@@ -19,9 +19,8 @@
+ #include <linux/miscdevice.h>
+ #include <linux/watchdog.h>
+ #include <linux/dmi.h>
+-
+-#include <asm/io.h>
 -#include <asm/uaccess.h>
++#include <linux/io.h>
 +#include <linux/uaccess.h>
- #include <asm/sgi/mc.h>
  
- #define PFX "indydog: "
--static int indydog_alive;
-+static unsigned long indydog_alive;
-+static spinlock_t indydog_lock;
  
- #define WATCHDOG_TIMEOUT 30		/* 30 sec default timeout */
+ enum {
+@@ -70,10 +69,13 @@ static char asr_expect_close;
+ static unsigned int asr_type, asr_base, asr_length;
+ static unsigned int asr_read_addr, asr_write_addr;
+ static unsigned char asr_toggle_mask, asr_disable_mask;
++static spinlock_t asr_lock;
  
- static int nowayout = WATCHDOG_NOWAYOUT;
- module_param(nowayout, int, 0);
--MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default=" __MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
-+MODULE_PARM_DESC(nowayout,
-+		"Watchdog cannot be stopped once started (default="
-+				__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
- 
- static void indydog_start(void)
+-static void asr_toggle(void)
++static void __asr_toggle(void)
  {
--	u32 mc_ctrl0 = sgimc->cpuctrl0;
-+	u32 mc_ctrl0;
- 
-+	spin_lock(&indydog_lock);
-+	mc_ctrl0 = sgimc->cpuctrl0;
- 	mc_ctrl0 = sgimc->cpuctrl0 | SGIMC_CCTRL0_WDOG;
- 	sgimc->cpuctrl0 = mc_ctrl0;
-+	spin_unlock(&indydog_lock);
- }
- 
- static void indydog_stop(void)
- {
--	u32 mc_ctrl0 = sgimc->cpuctrl0;
-+	u32 mc_ctrl0;
- 
-+	spin_lock(&indydog_lock);
+-	unsigned char reg = inb(asr_read_addr);
++	unsigned char reg;
 +
-+	mc_ctrl0 = sgimc->cpuctrl0;
- 	mc_ctrl0 &= ~SGIMC_CCTRL0_WDOG;
- 	sgimc->cpuctrl0 = mc_ctrl0;
-+	spin_unlock(&indydog_lock);
++	reg = inb(asr_read_addr);
  
- 	printk(KERN_INFO PFX "Stopped watchdog timer.\n");
+ 	outb(reg & ~asr_toggle_mask, asr_write_addr);
+ 	reg = inb(asr_read_addr);
+@@ -83,12 +85,21 @@ static void asr_toggle(void)
+ 
+ 	outb(reg & ~asr_toggle_mask, asr_write_addr);
+ 	reg = inb(asr_read_addr);
++	spin_unlock(&asr_lock);
++}
++
++static void asr_toggle(void)
++{
++	spin_lock(&asr_lock);
++	__asr_toggle();
++	spin_unlock(&asr_lock);
  }
-@@ -62,7 +73,7 @@ static void indydog_ping(void)
-  */
- static int indydog_open(struct inode *inode, struct file *file)
- {
--	if (indydog_alive)
-+	if (test_and_set_bit(0, &indydog_alive))
- 		return -EBUSY;
  
- 	if (nowayout)
-@@ -84,23 +95,21 @@ static int indydog_release(struct inode *inode, struct file *file)
- 	 * Lock it in if it's a module and we defined ...NOWAYOUT */
- 	if (!nowayout)
- 		indydog_stop();		/* Turn the WDT off */
+ static void asr_enable(void)
+ {
+ 	unsigned char reg;
+ 
++	spin_lock(&asr_lock);
+ 	if (asr_type == ASMTYPE_TOPAZ) {
+ 		/* asr_write_addr == asr_read_addr */
+ 		reg = inb(asr_read_addr);
+@@ -99,17 +110,21 @@ static void asr_enable(void)
+ 		 * First make sure the hardware timer is reset by toggling
+ 		 * ASR hardware timer line.
+ 		 */
+-		asr_toggle();
++		__asr_toggle();
+ 
+ 		reg = inb(asr_read_addr);
+ 		outb(reg & ~asr_disable_mask, asr_write_addr);
+ 	}
+ 	reg = inb(asr_read_addr);
++	spin_unlock(&asr_lock);
+ }
+ 
+ static void asr_disable(void)
+ {
+-	unsigned char reg = inb(asr_read_addr);
++	unsigned char reg;
++
++	spin_lock(&asr_lock);
++	reg = inb(asr_read_addr);
+ 
+ 	if (asr_type == ASMTYPE_TOPAZ)
+ 		/* asr_write_addr == asr_read_addr */
+@@ -122,6 +137,7 @@ static void asr_disable(void)
+ 		outb(reg | asr_disable_mask, asr_write_addr);
+ 	}
+ 	reg = inb(asr_read_addr);
++	spin_unlock(&asr_lock);
+ }
+ 
+ static int __init asr_get_base_address(void)
+@@ -133,7 +149,8 @@ static int __init asr_get_base_address(void)
+ 
+ 	switch (asr_type) {
+ 	case ASMTYPE_TOPAZ:
+-		/* SELECT SuperIO CHIP FOR QUERYING (WRITE 0x07 TO BOTH 0x2E and 0x2F) */
++		/* SELECT SuperIO CHIP FOR QUERYING
++		   (WRITE 0x07 TO BOTH 0x2E and 0x2F) */
+ 		outb(0x07, 0x2e);
+ 		outb(0x07, 0x2f);
+ 
+@@ -154,14 +171,26 @@ static int __init asr_get_base_address(void)
+ 
+ 	case ASMTYPE_JASPER:
+ 		type = "Jaspers ";
 -
--	indydog_alive = 0;
+-		/* FIXME: need to use pci_config_lock here, but it's not exported */
++#if 0
++		u32 r;
++		/* Suggested fix */
++		pdev = pci_get_bus_and_slot(0, DEVFN(0x1f, 0));
++		if (pdev == NULL)
++			return -ENODEV;
++		pci_read_config_dword(pdev, 0x58, &r);
++		asr_base = r & 0xFFFE;
++		pci_dev_put(pdev);
++#else
++		/* FIXME: need to use pci_config_lock here,
++		   but it's not exported */
+ 
+ /*		spin_lock_irqsave(&pci_config_lock, flags);*/
+ 
+ 		/* Select the SuperIO chip in the PCI I/O port register */
+ 		outl(0x8000f858, 0xcf8);
+ 
++		/* BUS 0, Slot 1F, fnc 0, offset 58 */
++
+ 		/*
+ 		 * Read the base address for the SuperIO chip.
+ 		 * Only the lower 16 bits are valid, but the address is word
+@@ -170,7 +199,7 @@ static int __init asr_get_base_address(void)
+ 		asr_base = inl(0xcfc) & 0xfffe;
+ 
+ /*		spin_unlock_irqrestore(&pci_config_lock, flags);*/
 -
-+	clear_bit(0, &indydog_alive);
- 	return 0;
++#endif
+ 		asr_read_addr = asr_write_addr =
+ 			asr_base + JASPER_ASR_REG_OFFSET;
+ 		asr_toggle_mask = JASPER_ASR_TOGGLE_MASK;
+@@ -241,11 +270,10 @@ static ssize_t asr_write(struct file *file, const char __user *buf,
+ 	return count;
  }
  
--static ssize_t indydog_write(struct file *file, const char *data, size_t len, loff_t *ppos)
-+static ssize_t indydog_write(struct file *file, const char *data,
-+						size_t len, loff_t *ppos)
+-static int asr_ioctl(struct inode *inode, struct file *file,
+-		     unsigned int cmd, unsigned long arg)
++static long asr_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
  {
- 	/* Refresh the timer. */
--	if (len) {
-+	if (len)
- 		indydog_ping();
--	}
- 	return len;
- }
- 
--static int indydog_ioctl(struct inode *inode, struct file *file,
--	unsigned int cmd, unsigned long arg)
-+static long indydog_ioctl(struct file *file, unsigned int cmd,
-+							unsigned long arg)
- {
- 	int options, retval = -EINVAL;
- 	static struct watchdog_info ident = {
-@@ -111,42 +120,40 @@ static int indydog_ioctl(struct inode *inode, struct file *file,
+ 	static const struct watchdog_info ident = {
+-		.options =	WDIOF_KEEPALIVEPING | 
++		.options =	WDIOF_KEEPALIVEPING |
+ 				WDIOF_MAGICCLOSE,
+ 		.identity =	"IBM ASR"
  	};
+@@ -254,53 +282,45 @@ static int asr_ioctl(struct inode *inode, struct file *file,
+ 	int heartbeat;
  
  	switch (cmd) {
--		default:
--			return -ENOTTY;
 -		case WDIOC_GETSUPPORT:
--			if (copy_to_user((struct watchdog_info *)arg,
--					 &ident, sizeof(ident)))
--				return -EFAULT;
--			return 0;
+-			return copy_to_user(argp, &ident, sizeof(ident)) ?
+-				-EFAULT : 0;
+-
 -		case WDIOC_GETSTATUS:
 -		case WDIOC_GETBOOTSTATUS:
--			return put_user(0,(int *)arg);
+-			return put_user(0, p);
+-
 -		case WDIOC_KEEPALIVE:
--			indydog_ping();
++	case WDIOC_GETSUPPORT:
++		return copy_to_user(argp, &ident, sizeof(ident)) ? -EFAULT : 0;
++	case WDIOC_GETSTATUS:
++	case WDIOC_GETBOOTSTATUS:
++		return put_user(0, p);
++	case WDIOC_KEEPALIVE:
++		asr_toggle();
++		return 0;
++	/*
++	 * The hardware has a fixed timeout value, so no WDIOC_SETTIMEOUT
++	 * and WDIOC_GETTIMEOUT always returns 256.
++	 */
++	case WDIOC_GETTIMEOUT:
++		heartbeat = 256;
++		return put_user(heartbeat, p);
++	case WDIOC_SETOPTIONS:
++	{
++		int new_options, retval = -EINVAL;
++		if (get_user(new_options, p))
++			return -EFAULT;
++		if (new_options & WDIOS_DISABLECARD) {
++			asr_disable();
++			retval = 0;
++		}
++		if (new_options & WDIOS_ENABLECARD) {
++			asr_enable();
+ 			asr_toggle();
 -			return 0;
+-
+-		/*
+-		 * The hardware has a fixed timeout value, so no WDIOC_SETTIMEOUT
+-		 * and WDIOC_GETTIMEOUT always returns 256.
+-		 */
 -		case WDIOC_GETTIMEOUT:
--			return put_user(WATCHDOG_TIMEOUT,(int *)arg);
--		case WDIOC_SETOPTIONS:
--		{
--			if (get_user(options, (int *)arg))
+-			heartbeat = 256;
+-			return put_user(heartbeat, p);
+-
+-		case WDIOC_SETOPTIONS: {
+-			int new_options, retval = -EINVAL;
+-
+-			if (get_user(new_options, p))
 -				return -EFAULT;
 -
--			if (options & WDIOS_DISABLECARD) {
--				indydog_stop();
+-			if (new_options & WDIOS_DISABLECARD) {
+-				asr_disable();
 -				retval = 0;
 -			}
 -
--			if (options & WDIOS_ENABLECARD) {
--				indydog_start();
+-			if (new_options & WDIOS_ENABLECARD) {
+-				asr_enable();
+-				asr_toggle();
 -				retval = 0;
 -			}
 -
 -			return retval;
-+	case WDIOC_GETSUPPORT:
-+		if (copy_to_user((struct watchdog_info *)arg,
-+				 &ident, sizeof(ident)))
-+			return -EFAULT;
-+		return 0;
-+	case WDIOC_GETSTATUS:
-+	case WDIOC_GETBOOTSTATUS:
-+		return put_user(0, (int *)arg);
-+	case WDIOC_KEEPALIVE:
-+		indydog_ping();
-+		return 0;
-+	case WDIOC_GETTIMEOUT:
-+		return put_user(WATCHDOG_TIMEOUT, (int *)arg);
-+	case WDIOC_SETOPTIONS:
-+	{
-+		if (get_user(options, (int *)arg))
-+			return -EFAULT;
-+		if (options & WDIOS_DISABLECARD) {
-+			indydog_stop();
-+			retval = 0;
-+		}
-+		if (options & WDIOS_ENABLECARD) {
-+			indydog_start();
 +			retval = 0;
  		}
 +		return retval;
@@ -200,46 +259,64 @@ index 788245b..0bffea3 100644
 +	default:
 +		return -ENOTTY;
  	}
+-
+-	return -ENOTTY;
  }
  
--static int indydog_notify_sys(struct notifier_block *this, unsigned long code, void *unused)
-+static int indydog_notify_sys(struct notifier_block *this,
-+					unsigned long code, void *unused)
+ static int asr_open(struct inode *inode, struct file *file)
  {
- 	if (code == SYS_DOWN || code == SYS_HALT)
- 		indydog_stop();		/* Turn the WDT off */
-@@ -158,7 +165,7 @@ static const struct file_operations indydog_fops = {
- 	.owner		= THIS_MODULE,
- 	.llseek		= no_llseek,
- 	.write		= indydog_write,
--	.ioctl		= indydog_ioctl,
-+	.unlocked_ioctl	= indydog_ioctl,
- 	.open		= indydog_open,
- 	.release	= indydog_release,
+-	if(test_and_set_bit(0, &asr_is_open))
++	if (test_and_set_bit(0, &asr_is_open))
+ 		return -EBUSY;
+ 
+ 	asr_toggle();
+@@ -314,7 +334,8 @@ static int asr_release(struct inode *inode, struct file *file)
+ 	if (asr_expect_close == 42)
+ 		asr_disable();
+ 	else {
+-		printk(KERN_CRIT PFX "unexpected close, not stopping watchdog!\n");
++		printk(KERN_CRIT PFX
++				"unexpected close, not stopping watchdog!\n");
+ 		asr_toggle();
+ 	}
+ 	clear_bit(0, &asr_is_open);
+@@ -323,12 +344,12 @@ static int asr_release(struct inode *inode, struct file *file)
+ }
+ 
+ static const struct file_operations asr_fops = {
+-	.owner =	THIS_MODULE,
+-	.llseek	=	no_llseek,
+-	.write =	asr_write,
+-	.ioctl =	asr_ioctl,
+-	.open =		asr_open,
+-	.release =	asr_release,
++	.owner =		THIS_MODULE,
++	.llseek	=		no_llseek,
++	.write =		asr_write,
++	.unlocked_ioctl =	asr_ioctl,
++	.open =			asr_open,
++	.release =		asr_release,
  };
-@@ -180,17 +187,20 @@ static int __init watchdog_init(void)
- {
- 	int ret;
  
-+	spin_lock_init(&indydog_lock);
+ static struct miscdevice asr_miscdev = {
+@@ -367,6 +388,8 @@ static int __init ibmasr_init(void)
+ 	if (!asr_type)
+ 		return -ENODEV;
+ 
++	spin_lock_init(&asr_lock);
 +
- 	ret = register_reboot_notifier(&indydog_notifier);
- 	if (ret) {
--		printk(KERN_ERR PFX "cannot register reboot notifier (err=%d)\n",
--			ret);
-+		printk(KERN_ERR PFX
-+			"cannot register reboot notifier (err=%d)\n", ret);
- 		return ret;
- 	}
+ 	rc = asr_get_base_address();
+ 	if (rc)
+ 		return rc;
+@@ -395,7 +418,9 @@ module_init(ibmasr_init);
+ module_exit(ibmasr_exit);
  
- 	ret = misc_register(&indydog_miscdev);
- 	if (ret) {
--		printk(KERN_ERR PFX "cannot register miscdev on minor=%d (err=%d)\n",
--			WATCHDOG_MINOR, ret);
-+		printk(KERN_ERR PFX
-+			"cannot register miscdev on minor=%d (err=%d)\n",
-+							WATCHDOG_MINOR, ret);
- 		unregister_reboot_notifier(&indydog_notifier);
- 		return ret;
- 	}
+ module_param(nowayout, int, 0);
+-MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default=" __MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
++MODULE_PARM_DESC(nowayout,
++	"Watchdog cannot be stopped once started (default="
++				__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
+ 
+ MODULE_DESCRIPTION("IBM Automatic Server Restart driver");
+ MODULE_AUTHOR("Andrey Panin");
 
