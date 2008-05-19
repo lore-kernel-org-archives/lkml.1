@@ -1,103 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762676AbYESPso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762867AbYESPtA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762676AbYESPso (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 11:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760987AbYESPrT
+	id S1762867AbYESPtA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 11:49:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759641AbYESPrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 11:47:19 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:41329 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760966AbYESPrR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 11:47:17 -0400
-From: Alexey Starikovskiy <astarikovskiy@suse.de>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 5/5] x86: allow MPPARSE to be deselected in SMP configs
-Date: Mon, 19 May 2008 19:47:22 +0400
-Message-ID: <20080519154722.15071.91358.stgit@thinkpad>
-In-Reply-To: <20080519154656.15071.96979.stgit@thinkpad>
-References: <20080519154656.15071.96979.stgit@thinkpad>
-User-Agent: StGIT/0.14.2
+	Mon, 19 May 2008 11:47:24 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38096 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760998AbYESPrU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 11:47:20 -0400
+Date: Mon, 19 May 2008 17:46:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: update mptable v3
+Message-ID: <20080519154658.GA11375@elte.hu>
+References: <200805041823.57198.yhlu.kernel@gmail.com> <200805061038.58023.yhlu.kernel@gmail.com> <200805070048.46957.yhlu.kernel@gmail.com> <200805161932.05732.yhlu.kernel@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200805161932.05732.yhlu.kernel@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
----
 
- arch/x86/Kconfig.debug     |    2 +-
- arch/x86/kernel/setup.c    |    2 +-
- arch/x86/kernel/setup_32.c |    2 +-
- arch/x86/kernel/setup_64.c |    4 ++++
- 4 files changed, 7 insertions(+), 3 deletions(-)
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
+> make mptable to be consistent to acpi routing, so we could
+> 1. kexec kernel with acpi=off
+> 2. workaround BIOS that acpi routing is working, but mptable is not right.
+>    so can use kernel/kexec to start other os that doesn't have good acpi support
+> 
+> command line: update_mptable
+> 
+> v2: add alloc_mptable for mptable that can not be changed.
+>     new command line: alloc_mptable
+> v3: adjust for patch that move some mp_xxx to acpi..., and mpc_ to mp_
 
-diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
-index 5eb480e..f27de28 100644
---- a/arch/x86/Kconfig.debug
-+++ b/arch/x86/Kconfig.debug
-@@ -128,7 +128,7 @@ config 4KSTACKS
- 
- config X86_FIND_SMP_CONFIG
- 	def_bool y
--	depends on X86_LOCAL_APIC || X86_VOYAGER
-+	depends on X86_MPPARSE || X86_VOYAGER || X86_VISWS
- 	depends on X86_32
- 
- config X86_MPPARSE
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 089ddfa..c86bda7 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -12,7 +12,7 @@
- #include <asm/mpspec.h>
- #include <asm/apicdef.h>
- 
--#ifdef CONFIG_X86_MPPARSE
-+#ifdef CONFIG_X86_LOCAL_APIC
- unsigned int num_processors;
- unsigned disabled_cpus __cpuinitdata;
- 
-diff --git a/arch/x86/kernel/setup_32.c b/arch/x86/kernel/setup_32.c
-index 12a31de..9af0d5f 100644
---- a/arch/x86/kernel/setup_32.c
-+++ b/arch/x86/kernel/setup_32.c
-@@ -846,7 +846,7 @@ void __init setup_arch(char **cmdline_p)
- 			"CONFIG_X86_GENERICARCH or CONFIG_X86_BIGSMP.\n");
- #endif
- #endif
--#ifdef CONFIG_X86_LOCAL_APIC
-+#if defined(CONFIG_X86_MPPARSE) || defined(CONFIG_X86_VISWS)
- 	if (smp_found_config)
- 		get_smp_config();
- #endif
-diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
-index 9234675..8047db9 100644
---- a/arch/x86/kernel/setup_64.c
-+++ b/arch/x86/kernel/setup_64.c
-@@ -439,7 +439,9 @@ void __init setup_arch(char **cmdline_p)
-        /*
- 	* Find and reserve possible boot-time SMP configuration:
- 	*/
-+#ifdef CONFIG_X86_MPPARSE
- 	find_smp_config();
-+#endif
- #ifdef CONFIG_BLK_DEV_INITRD
- 	if (boot_params.hdr.type_of_loader && boot_params.hdr.ramdisk_image) {
- 		unsigned long ramdisk_image = boot_params.hdr.ramdisk_image;
-@@ -485,8 +487,10 @@ void __init setup_arch(char **cmdline_p)
- 	/*
- 	 * get boot-time SMP configuration:
- 	 */
-+#ifdef CONFIG_X86_MPPARSE
- 	if (smp_found_config)
- 		get_smp_config();
-+#endif
- 	init_apic_mappings();
- 	ioapic_init_mappings();
- 
+-tip testing found a build failure with this patch:
 
+ arch/x86/kernel/mpparse.c: In function 'get_MP_intsrc_index':
+ arch/x86/kernel/mpparse.c:891: error: 'mp_irq_entries' undeclared (first use inthis function)
+ arch/x86/kernel/mpparse.c:891: error: (Each undeclared identifier is reported only once
+ [...]
+
+config at:
+
+ http://redhat.com/~mingo/misc/config-Mon_May_19_17_38_13_CEST_2008.bad
+
+	Ingo
