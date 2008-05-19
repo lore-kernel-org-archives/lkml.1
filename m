@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762559AbYESRqF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762743AbYESRrQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762559AbYESRqF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 13:46:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758617AbYESRpu
+	id S1762743AbYESRrQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 13:47:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758080AbYESRrD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 13:45:50 -0400
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:19731 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756075AbYESRpt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 13:45:49 -0400
-Message-ID: <4831BCAA.8040509@panasas.com>
-Date: Mon, 19 May 2008 20:45:14 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Alan Stern <stern@rowland.harvard.edu>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>,
-       USB Storage list <usb-storage@lists.one-eyed-alien.net>,
-       SCSI development list <linux-scsi@vger.kernel.org>
-Subject: Re: [Re: Linux 2.6.26-rc2] Write protect on on
-References: <Pine.LNX.4.44L0.0805191106270.15266-100000@iolanthe.rowland.org> <4831A60A.5010308@panasas.com> <alpine.LFD.1.10.0805190929170.32253@woody.linux-foundation.org> <4831B2E2.8030700@panasas.com> <alpine.LFD.1.10.0805191026120.32253@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0805191026120.32253@woody.linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 May 2008 17:45:18.0212 (UTC) FILETIME=[1A1B2440:01C8B9D8]
+	Mon, 19 May 2008 13:47:03 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:39958 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756215AbYESRrC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 13:47:02 -0400
+Date: Mon, 19 May 2008 19:47:39 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, greg@kroah.com
+Subject: Re: [PATCH 01/20] tty: Introduce a tty_port common structure
+Message-ID: <20080519174738.GA20961@uranus.ravnborg.org>
+References: <20080519144557.19326.74313.stgit@core> <20080519145013.19326.38344.stgit@core>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080519145013.19326.38344.stgit@core>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Mon, 19 May 2008, Boaz Harrosh wrote:
->> Sure, inspecting other places that emulate MODE_SENSE, (And inspecting the scsi
->> spec) all zeros is a very good scsi response. Alan do you want to send a fix for all
->> places that initiate a MODE_SENSE command, specifically at
->> scsi_scan.c::scsi_unlock_floptical() ? (Some other places do)
-> 
-> I was actualyl more thinking that the safest thing to do would be to just 
-> pre-clear the sense buffer. Then, if some driver doesn't fill it 
-> correctly, big deal..
+Hi Alan.
 
-The sense buffer *is* always cleared and it is mandated by scsi spec.
-But the problem above is that the actual data buffer for read, had 
-garbage data, and *no* read was actually preformed do to none-standard 
-device response.
-
+On Mon, May 19, 2008 at 03:50:13PM +0100, Alan Cox wrote:
+> From: Alan Cox <alan@redhat.com>
 > 
-> It's not like pre-clearing the bugger is a performance issue.
+> Every tty driver has its own concept of a port structure and because they all
+> differ we cannot extract commonality. Begin fixing this by creating a structure
+> drivers can elect to use so that over time we can push fields into this and
+> create commonality and then introduce common methods.
+> ---
 > 
-> 		Linus
-> --
+>  drivers/char/tty_io.c |   37 +++++++++++++++++++++++++++++++++++++
+>  include/linux/tty.h   |   29 +++++++++++++++++++++++++++++
+>  2 files changed, 66 insertions(+), 0 deletions(-)
+> 
+> 
+> diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+> index 49c1a22..fb17b18 100644
+> --- a/drivers/char/tty_io.c
+> +++ b/drivers/char/tty_io.c
+> @@ -2004,6 +2004,43 @@ ssize_t redirected_tty_write(struct file *file, const char __user *buf,
+>  	return tty_write(file, buf, count, ppos);
+>  }
+>  
+> +void tty_port_init(struct tty_port *port)
+> +{
+> +	memset(port, 0, sizeof(*port));
+> +	init_waitqueue_head(&port->open_wait);
+> +	init_waitqueue_head(&port->close_wait);
+> +	mutex_init(&port->mutex);
+> +}
+> +
+> +EXPORT_SYMBOL(tty_port_init);
+A small nitpick...
+The typical style is to let the EXPORT_SYMBOL follow the closing
+brace with no extra empty line.
 
-Boaz
+	Sam
