@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760803AbYESPDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761092AbYESPDw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760803AbYESPDf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 11:03:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759539AbYESPCz
+	id S1761092AbYESPDw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 11:03:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760142AbYESPDE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 11:02:55 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39698 "EHLO
+	Mon, 19 May 2008 11:03:04 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39705 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759400AbYESPCx (ORCPT
+	with ESMTP id S1760028AbYESPDB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 11:02:53 -0400
+	Mon, 19 May 2008 11:03:01 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 03/20] epca: use tty_port
+Subject: [PATCH 04/20] isicom: use tty_port
 To: linux-kernel@vger.kernel.org, akpm@osdl.org, greg@kroah.com
-Date: Mon, 19 May 2008 15:50:24 +0100
-Message-ID: <20080519145024.19326.22506.stgit@core>
+Date: Mon, 19 May 2008 15:50:29 +0100
+Message-ID: <20080519145029.19326.68127.stgit@core>
 In-Reply-To: <20080519144557.19326.74313.stgit@core>
 References: <20080519144557.19326.74313.stgit@core>
 User-Agent: StGIT/0.14.1
@@ -27,378 +27,519 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@redhat.com>
 
-Switch the EPCA driver to include and begin using a tty_port structure
+Switch isicom to use a tty_port structure for some fields
 ---
 
- drivers/char/epca.c |  106 ++++++++++++++++++++++++++-------------------------
- drivers/char/epca.h |    7 ---
- 2 files changed, 54 insertions(+), 59 deletions(-)
+ drivers/char/isicom.c |  181 +++++++++++++++++++++----------------------------
+ 1 files changed, 79 insertions(+), 102 deletions(-)
 
 
-diff --git a/drivers/char/epca.c b/drivers/char/epca.c
-index 60a4df7..d26752b 100644
---- a/drivers/char/epca.c
-+++ b/drivers/char/epca.c
-@@ -432,7 +432,7 @@ static void pc_close(struct tty_struct *tty, struct file *filp)
- 			spin_unlock_irqrestore(&epca_lock, flags);
- 			return;
- 		}
--		if (ch->count-- > 1)  {
-+		if (ch->port.count-- > 1)  {
- 			/* Begin channel is open more than once */
- 			/*
- 			 * Return without doing anything. Someone might still
-@@ -442,19 +442,19 @@ static void pc_close(struct tty_struct *tty, struct file *filp)
- 			return;
- 		}
- 		/* Port open only once go ahead with shutdown & reset */
--		BUG_ON(ch->count < 0);
-+		BUG_ON(ch->port.count < 0);
+diff --git a/drivers/char/isicom.c b/drivers/char/isicom.c
+index 4f3cefa..20be56f 100644
+--- a/drivers/char/isicom.c
++++ b/drivers/char/isicom.c
+@@ -198,17 +198,12 @@ struct	isi_board {
  
- 		/*
- 		 * Let the rest of the driver know the channel is being closed.
- 		 * This becomes important if an open is attempted before close
- 		 * is finished.
- 		 */
--		ch->asyncflags |= ASYNC_CLOSING;
-+		ch->port.flags |= ASYNC_CLOSING;
- 		tty->closing = 1;
+ struct	isi_port {
+ 	unsigned short		magic;
+-	unsigned int		flags;
+-	int			count;
+-	int			blocked_open;
++	struct tty_port		port;
+ 	int			close_delay;
+ 	u16			channel;
+ 	u16			status;
+ 	u16			closing_wait;
+ 	struct isi_board	*card;
+-	struct tty_struct 	*tty;
+-	wait_queue_head_t	close_wait;
+-	wait_queue_head_t	open_wait;
+ 	unsigned char		*xmit_buf;
+ 	int			xmit_head;
+ 	int			xmit_tail;
+@@ -430,11 +425,11 @@ static void isicom_tx(unsigned long _data)
  
- 		spin_unlock_irqrestore(&epca_lock, flags);
+ 	for (; count > 0; count--, port++) {
+ 		/* port not active or tx disabled to force flow control */
+-		if (!(port->flags & ASYNC_INITIALIZED) ||
++		if (!(port->port.flags & ASYNC_INITIALIZED) ||
+ 				!(port->status & ISI_TXOK))
+ 			continue;
  
--		if (ch->asyncflags & ASYNC_INITIALIZED)  {
-+		if (ch->port.flags & ASYNC_INITIALIZED)  {
- 			/* Setup an event to indicate when the
- 			   transmit buffer empties */
- 			setup_empty_event(tty, ch);
-@@ -469,17 +469,17 @@ static void pc_close(struct tty_struct *tty, struct file *filp)
- 		spin_lock_irqsave(&epca_lock, flags);
- 		tty->closing = 0;
- 		ch->event = 0;
--		ch->tty = NULL;
-+		ch->port.tty = NULL;
- 		spin_unlock_irqrestore(&epca_lock, flags);
+-		tty = port->tty;
++		tty = port->port.tty;
  
--		if (ch->blocked_open) {
-+		if (ch->port.blocked_open) {
- 			if (ch->close_delay)
- 				msleep_interruptible(jiffies_to_msecs(ch->close_delay));
--			wake_up_interruptible(&ch->open_wait);
-+			wake_up_interruptible(&ch->port.open_wait);
- 		}
--		ch->asyncflags &= ~(ASYNC_NORMAL_ACTIVE | ASYNC_INITIALIZED |
-+		ch->port.flags &= ~(ASYNC_NORMAL_ACTIVE | ASYNC_INITIALIZED |
- 					ASYNC_CLOSING);
--		wake_up_interruptible(&ch->close_wait);
-+		wake_up_interruptible(&ch->port.close_wait);
+ 		if (tty == NULL)
+ 			continue;
+@@ -458,7 +453,7 @@ static void isicom_tx(unsigned long _data)
+ 			if (residue == YES) {
+ 				residue = NO;
+ 				if (cnt > 0) {
+-					wrd |= (port->xmit_buf[port->xmit_tail]
++					wrd |= (port->port.xmit_buf[port->xmit_tail]
+ 									<< 8);
+ 					port->xmit_tail = (port->xmit_tail + 1)
+ 						& (SERIAL_XMIT_SIZE - 1);
+@@ -474,14 +469,14 @@ static void isicom_tx(unsigned long _data)
+ 			if (cnt <= 0)
+ 				break;
+ 			word_count = cnt >> 1;
+-			outsw(base, port->xmit_buf+port->xmit_tail, word_count);
++			outsw(base, port->port.xmit_buf+port->xmit_tail, word_count);
+ 			port->xmit_tail = (port->xmit_tail
+ 				+ (word_count << 1)) & (SERIAL_XMIT_SIZE - 1);
+ 			txcount -= (word_count << 1);
+ 			port->xmit_cnt -= (word_count << 1);
+ 			if (cnt & 0x0001) {
+ 				residue = YES;
+-				wrd = port->xmit_buf[port->xmit_tail];
++				wrd = port->port.xmit_buf[port->xmit_tail];
+ 				port->xmit_tail = (port->xmit_tail + 1)
+ 					& (SERIAL_XMIT_SIZE - 1);
+ 				port->xmit_cnt--;
+@@ -548,13 +543,13 @@ static irqreturn_t isicom_interrupt(int irq, void *dev_id)
+ 		return IRQ_HANDLED;
  	}
- }
+ 	port = card->ports + channel;
+-	if (!(port->flags & ASYNC_INITIALIZED)) {
++	if (!(port->port.flags & ASYNC_INITIALIZED)) {
+ 		outw(0x0000, base+0x04); /* enable interrupts */
+ 		spin_unlock(&card->card_lock);
+ 		return IRQ_HANDLED;
+ 	}
  
-@@ -489,7 +489,7 @@ static void shutdown(struct channel *ch)
- 	struct tty_struct *tty;
- 	struct board_chan __iomem *bc;
+-	tty = port->tty;
++	tty = port->port.tty;
+ 	if (tty == NULL) {
+ 		word_count = byte_count >> 1;
+ 		while (byte_count > 1) {
+@@ -572,7 +567,7 @@ static irqreturn_t isicom_interrupt(int irq, void *dev_id)
+ 		header = inw(base);
+ 		switch (header & 0xff) {
+ 		case 0:	/* Change in EIA signals */
+-			if (port->flags & ASYNC_CHECK_CD) {
++			if (port->port.flags & ASYNC_CHECK_CD) {
+ 				if (port->status & ISI_DCD) {
+ 					if (!(header & ISI_DCD)) {
+ 					/* Carrier has been lost  */
+@@ -585,7 +580,7 @@ static irqreturn_t isicom_interrupt(int irq, void *dev_id)
+ 				/* Carrier has been detected */
+ 					pr_dbg("interrupt: DCD->high.\n");
+ 					port->status |= ISI_DCD;
+-					wake_up_interruptible(&port->open_wait);
++					wake_up_interruptible(&port->port.open_wait);
+ 				}
+ 			} else {
+ 				if (header & ISI_DCD)
+@@ -594,17 +589,17 @@ static irqreturn_t isicom_interrupt(int irq, void *dev_id)
+ 					port->status &= ~ISI_DCD;
+ 			}
  
--	if (!(ch->asyncflags & ASYNC_INITIALIZED))
-+	if (!(ch->port.flags & ASYNC_INITIALIZED))
+-			if (port->flags & ASYNC_CTS_FLOW) {
+-				if (port->tty->hw_stopped) {
++			if (port->port.flags & ASYNC_CTS_FLOW) {
++				if (port->port.tty->hw_stopped) {
+ 					if (header & ISI_CTS) {
+-						port->tty->hw_stopped = 0;
++						port->port.tty->hw_stopped = 0;
+ 						/* start tx ing */
+ 						port->status |= (ISI_TXOK
+ 							| ISI_CTS);
+ 						tty_wakeup(tty);
+ 					}
+ 				} else if (!(header & ISI_CTS)) {
+-					port->tty->hw_stopped = 1;
++					port->port.tty->hw_stopped = 1;
+ 					/* stop tx ing */
+ 					port->status &= ~(ISI_TXOK | ISI_CTS);
+ 				}
+@@ -629,7 +624,7 @@ static irqreturn_t isicom_interrupt(int irq, void *dev_id)
+ 
+ 		case 1:	/* Received Break !!! */
+ 			tty_insert_flip_char(tty, 0, TTY_BREAK);
+-			if (port->flags & ASYNC_SAK)
++			if (port->port.flags & ASYNC_SAK)
+ 				do_SAK(tty);
+ 			tty_flip_buffer_push(tty);
+ 			break;
+@@ -681,7 +676,7 @@ static void isicom_config_port(struct isi_port *port)
+ 		shift_count = card->shift_count;
+ 	unsigned char flow_ctrl;
+ 
+-	tty = port->tty;
++	tty = port->port.tty;
+ 
+ 	if (tty == NULL)
  		return;
+@@ -697,7 +692,7 @@ static void isicom_config_port(struct isi_port *port)
  
- 	spin_lock_irqsave(&epca_lock, flags);
-@@ -504,7 +504,7 @@ static void shutdown(struct channel *ch)
- 	 */
- 	if (bc)
- 		writeb(0, &bc->idata);
--	tty = ch->tty;
-+	tty = ch->port.tty;
- 
- 	/* If we're a modem control device and HUPCL is on, drop RTS & DTR. */
- 	if (tty->termios->c_cflag & HUPCL)  {
-@@ -518,7 +518,7 @@ static void shutdown(struct channel *ch)
- 	 * will have to reinitialized. Set a flag to indicate this.
- 	 */
- 	/* Prevent future Digi programmed interrupts from coming active */
--	ch->asyncflags &= ~ASYNC_INITIALIZED;
-+	ch->port.flags &= ~ASYNC_INITIALIZED;
- 	spin_unlock_irqrestore(&epca_lock, flags);
- }
- 
-@@ -538,12 +538,12 @@ static void pc_hangup(struct tty_struct *tty)
- 		shutdown(ch);
- 
- 		spin_lock_irqsave(&epca_lock, flags);
--		ch->tty   = NULL;
-+		ch->port.tty   = NULL;
- 		ch->event = 0;
--		ch->count = 0;
--		ch->asyncflags &= ~(ASYNC_NORMAL_ACTIVE | ASYNC_INITIALIZED);
-+		ch->port.count = 0;
-+		ch->port.flags &= ~(ASYNC_NORMAL_ACTIVE | ASYNC_INITIALIZED);
- 		spin_unlock_irqrestore(&epca_lock, flags);
--		wake_up_interruptible(&ch->open_wait);
-+		wake_up_interruptible(&ch->port.open_wait);
+ 		/* 1,2,3,4 => 57.6, 115.2, 230, 460 kbps resp. */
+ 		if (baud < 1 || baud > 4)
+-			port->tty->termios->c_cflag &= ~CBAUDEX;
++			port->port.tty->termios->c_cflag &= ~CBAUDEX;
+ 		else
+ 			baud += 15;
  	}
- }
+@@ -708,13 +703,13 @@ static void isicom_config_port(struct isi_port *port)
+ 		 *  the 'setserial' utility.
+ 		 */
  
-@@ -795,7 +795,7 @@ static int block_til_ready(struct tty_struct *tty,
+-		if ((port->flags & ASYNC_SPD_MASK) == ASYNC_SPD_HI)
++		if ((port->port.flags & ASYNC_SPD_MASK) == ASYNC_SPD_HI)
+ 			baud++; /*  57.6 Kbps */
+-		if ((port->flags & ASYNC_SPD_MASK) == ASYNC_SPD_VHI)
++		if ((port->port.flags & ASYNC_SPD_MASK) == ASYNC_SPD_VHI)
+ 			baud += 2; /*  115  Kbps */
+-		if ((port->flags & ASYNC_SPD_MASK) == ASYNC_SPD_SHI)
++		if ((port->port.flags & ASYNC_SPD_MASK) == ASYNC_SPD_SHI)
+ 			baud += 3; /* 230 kbps*/
+-		if ((port->flags & ASYNC_SPD_MASK) == ASYNC_SPD_WARP)
++		if ((port->port.flags & ASYNC_SPD_MASK) == ASYNC_SPD_WARP)
+ 			baud += 4; /* 460 kbps*/
+ 	}
+ 	if (linuxb_to_isib[baud] == -1) {
+@@ -754,15 +749,15 @@ static void isicom_config_port(struct isi_port *port)
+ 		InterruptTheCard(base);
+ 	}
+ 	if (C_CLOCAL(tty))
+-		port->flags &= ~ASYNC_CHECK_CD;
++		port->port.flags &= ~ASYNC_CHECK_CD;
+ 	else
+-		port->flags |= ASYNC_CHECK_CD;
++		port->port.flags |= ASYNC_CHECK_CD;
+ 
+ 	/* flow control settings ...*/
+ 	flow_ctrl = 0;
+-	port->flags &= ~ASYNC_CTS_FLOW;
++	port->port.flags &= ~ASYNC_CTS_FLOW;
+ 	if (C_CRTSCTS(tty)) {
+-		port->flags |= ASYNC_CTS_FLOW;
++		port->port.flags |= ASYNC_CTS_FLOW;
+ 		flow_ctrl |= ISICOM_CTSRTS;
+ 	}
+ 	if (I_IXON(tty))
+@@ -809,23 +804,15 @@ static int isicom_setup_port(struct isi_port *port)
+ 	struct isi_board *card = port->card;
  	unsigned long flags;
  
- 	if (tty_hung_up_p(filp)) {
--		if (ch->asyncflags & ASYNC_HUP_NOTIFY)
-+		if (ch->port.flags & ASYNC_HUP_NOTIFY)
- 			retval = -EAGAIN;
- 		else
- 			retval = -ERESTARTSYS;
-@@ -806,10 +806,10 @@ static int block_til_ready(struct tty_struct *tty,
- 	 * If the device is in the middle of being closed, then block until
- 	 * it's done, and then try again.
- 	 */
--	if (ch->asyncflags & ASYNC_CLOSING) {
--		interruptible_sleep_on(&ch->close_wait);
-+	if (ch->port.flags & ASYNC_CLOSING) {
-+		interruptible_sleep_on(&ch->port.close_wait);
+-	if (port->flags & ASYNC_INITIALIZED)
++	if (port->port.flags & ASYNC_INITIALIZED)
+ 		return 0;
+-	if (!port->xmit_buf) {
+-		/* Relies on BKL */
+-		unsigned long page  = get_zeroed_page(GFP_KERNEL);
+-		if (page == 0)
+-			return -ENOMEM;
+-		if (port->xmit_buf)
+-			free_page(page);
+-		else
+-			port->xmit_buf = (unsigned char *) page;
+-	}
++	if (tty_port_alloc_xmit_buf(&port->port) < 0)
++		return -ENOMEM;
  
--		if (ch->asyncflags & ASYNC_HUP_NOTIFY)
-+		if (ch->port.flags & ASYNC_HUP_NOTIFY)
+ 	spin_lock_irqsave(&card->card_lock, flags);
+-	if (port->tty)
+-		clear_bit(TTY_IO_ERROR, &port->tty->flags);
+-	if (port->count == 1)
++	if (port->port.tty)
++		clear_bit(TTY_IO_ERROR, &port->port.tty->flags);
++	if (port->port.count == 1)
+ 		card->count++;
+ 
+ 	port->xmit_cnt = port->xmit_head = port->xmit_tail = 0;
+@@ -839,7 +826,7 @@ static int isicom_setup_port(struct isi_port *port)
+ 	}
+ 
+ 	isicom_config_port(port);
+-	port->flags |= ASYNC_INITIALIZED;
++	port->port.flags |= ASYNC_INITIALIZED;
+ 	spin_unlock_irqrestore(&card->card_lock, flags);
+ 
+ 	return 0;
+@@ -855,10 +842,10 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
+ 
+ 	/* block if port is in the process of being closed */
+ 
+-	if (tty_hung_up_p(filp) || port->flags & ASYNC_CLOSING) {
++	if (tty_hung_up_p(filp) || port->port.flags & ASYNC_CLOSING) {
+ 		pr_dbg("block_til_ready: close in progress.\n");
+-		interruptible_sleep_on(&port->close_wait);
+-		if (port->flags & ASYNC_HUP_NOTIFY)
++		interruptible_sleep_on(&port->port.close_wait);
++		if (port->port.flags & ASYNC_HUP_NOTIFY)
  			return -EAGAIN;
  		else
  			return -ERESTARTSYS;
-@@ -820,7 +820,7 @@ static int block_til_ready(struct tty_struct *tty,
- 		 * If non-blocking mode is set, then make the check up front
- 		 * and then exit.
- 		 */
--		ch->asyncflags |= ASYNC_NORMAL_ACTIVE;
-+		ch->port.flags |= ASYNC_NORMAL_ACTIVE;
+@@ -869,7 +856,7 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
+ 	if ((filp->f_flags & O_NONBLOCK) ||
+ 			(tty->flags & (1 << TTY_IO_ERROR))) {
+ 		pr_dbg("block_til_ready: non-block mode.\n");
+-		port->flags |= ASYNC_NORMAL_ACTIVE;
++		port->port.flags |= ASYNC_NORMAL_ACTIVE;
  		return 0;
  	}
- 	if (tty->termios->c_cflag & CLOCAL)
-@@ -828,24 +828,24 @@ static int block_til_ready(struct tty_struct *tty,
- 	/* Block waiting for the carrier detect and the line to become free */
  
+@@ -879,26 +866,26 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
+ 	/* block waiting for DCD to be asserted, and while
+ 						callout dev is busy */
  	retval = 0;
--	add_wait_queue(&ch->open_wait, &wait);
-+	add_wait_queue(&ch->port.open_wait, &wait);
+-	add_wait_queue(&port->open_wait, &wait);
++	add_wait_queue(&port->port.open_wait, &wait);
  
- 	spin_lock_irqsave(&epca_lock, flags);
- 	/* We dec count so that pc_close will know when to free things */
+ 	spin_lock_irqsave(&card->card_lock, flags);
  	if (!tty_hung_up_p(filp))
--		ch->count--;
--	ch->blocked_open++;
-+		ch->port.count--;
-+	ch->port.blocked_open++;
+-		port->count--;
+-	port->blocked_open++;
++		port->port.count--;
++	port->port.blocked_open++;
+ 	spin_unlock_irqrestore(&card->card_lock, flags);
+ 
  	while (1) {
+ 		raise_dtr_rts(port);
+ 
  		set_current_state(TASK_INTERRUPTIBLE);
- 		if (tty_hung_up_p(filp) ||
--				!(ch->asyncflags & ASYNC_INITIALIZED)) {
--			if (ch->asyncflags & ASYNC_HUP_NOTIFY)
-+				!(ch->port.flags & ASYNC_INITIALIZED)) {
-+			if (ch->port.flags & ASYNC_HUP_NOTIFY)
+-		if (tty_hung_up_p(filp) || !(port->flags & ASYNC_INITIALIZED)) {
+-			if (port->flags & ASYNC_HUP_NOTIFY)
++		if (tty_hung_up_p(filp) || !(port->port.flags & ASYNC_INITIALIZED)) {
++			if (port->port.flags & ASYNC_HUP_NOTIFY)
  				retval = -EAGAIN;
  			else
  				retval = -ERESTARTSYS;
  			break;
  		}
--		if (!(ch->asyncflags & ASYNC_CLOSING) &&
-+		if (!(ch->port.flags & ASYNC_CLOSING) &&
- 			  (do_clocal || (ch->imodem & ch->dcd)))
+-		if (!(port->flags & ASYNC_CLOSING) &&
++		if (!(port->port.flags & ASYNC_CLOSING) &&
+ 				(do_clocal || (port->status & ISI_DCD))) {
  			break;
- 		if (signal_pending(current)) {
-@@ -864,17 +864,17 @@ static int block_til_ready(struct tty_struct *tty,
+ 		}
+@@ -909,15 +896,15 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
+ 		schedule();
  	}
- 
- 	__set_current_state(TASK_RUNNING);
--	remove_wait_queue(&ch->open_wait, &wait);
-+	remove_wait_queue(&ch->port.open_wait, &wait);
+ 	set_current_state(TASK_RUNNING);
+-	remove_wait_queue(&port->open_wait, &wait);
++	remove_wait_queue(&port->port.open_wait, &wait);
+ 	spin_lock_irqsave(&card->card_lock, flags);
  	if (!tty_hung_up_p(filp))
--		ch->count++;
--	ch->blocked_open--;
-+		ch->port.count++;
-+	ch->port.blocked_open--;
- 
- 	spin_unlock_irqrestore(&epca_lock, flags);
- 
+-		port->count++;
+-	port->blocked_open--;
++		port->port.count++;
++	port->port.blocked_open--;
+ 	spin_unlock_irqrestore(&card->card_lock, flags);
  	if (retval)
  		return retval;
- 
--	ch->asyncflags |= ASYNC_NORMAL_ACTIVE;
-+	ch->port.flags |= ASYNC_NORMAL_ACTIVE;
+-	port->flags |= ASYNC_NORMAL_ACTIVE;
++	port->port.flags |= ASYNC_NORMAL_ACTIVE;
  	return 0;
  }
  
-@@ -933,7 +933,7 @@ static int pc_open(struct tty_struct *tty, struct file *filp)
- 	 * necessary because we do not wish to flush and shutdown the channel
- 	 * until the last app holding the channel open, closes it.
- 	 */
--	ch->count++;
-+	ch->port.count++;
- 	/*
- 	 * Set a kernel structures pointer to our local channel structure. This
- 	 * way we can get to it when passed only a tty struct.
-@@ -957,14 +957,14 @@ static int pc_open(struct tty_struct *tty, struct file *filp)
- 	writew(head, &bc->rout);
+@@ -947,9 +934,9 @@ static int isicom_open(struct tty_struct *tty, struct file *filp)
  
- 	/* Set the channels associated tty structure */
--	ch->tty = tty;
-+	ch->port.tty = tty;
+ 	isicom_setup_board(card);
  
- 	/*
- 	 * The below routine generally sets up parity, baud, flow control
- 	 * issues, etc.... It effect both control flags and input flags.
- 	 */
- 	epcaparam(tty, ch);
--	ch->asyncflags |= ASYNC_INITIALIZED;
-+	ch->port.flags |= ASYNC_INITIALIZED;
- 	memoff(ch);
- 	spin_unlock_irqrestore(&epca_lock, flags);
+-	port->count++;
++	port->port.count++;
+ 	tty->driver_data = port;
+-	port->tty = tty;
++	port->port.tty = tty;
+ 	error = isicom_setup_port(port);
+ 	if (error == 0)
+ 		error = block_til_ready(tty, filp, port);
+@@ -970,18 +957,15 @@ static void isicom_shutdown_port(struct isi_port *port)
+ 	struct isi_board *card = port->card;
+ 	struct tty_struct *tty;
  
-@@ -976,7 +976,7 @@ static int pc_open(struct tty_struct *tty, struct file *filp)
- 	 * waiting for the line...
- 	 */
- 	spin_lock_irqsave(&epca_lock, flags);
--	ch->tty = tty;
-+	ch->port.tty = tty;
- 	globalwinon(ch);
- 	/* Enable Digi Data events */
- 	writeb(1, &bc->idata);
-@@ -1017,8 +1017,8 @@ static void __exit epca_module_exit(void)
- 		}
- 		ch = card_ptr[crd];
- 		for (count = 0; count < bd->numports; count++, ch++) {
--			if (ch && ch->tty)
--				tty_hangup(ch->tty);
-+			if (ch && ch->port.tty)
-+				tty_hangup(ch->port.tty);
- 		}
- 	}
- 	pci_unregister_driver(&epca_driver);
-@@ -1427,7 +1427,7 @@ static void post_fep_init(unsigned int crd)
- 		ch->boardnum   = crd;
- 		ch->channelnum = i;
- 		ch->magic      = EPCA_MAGIC;
--		ch->tty        = NULL;
-+		ch->port.tty        = NULL;
+-	tty = port->tty;
++	tty = port->port.tty;
  
- 		if (shrinkmem) {
- 			fepcmd(ch, SETBUFFER, 32, 0, 0, 0);
-@@ -1510,10 +1510,10 @@ static void post_fep_init(unsigned int crd)
- 		ch->fepstopca = 0;
- 
- 		ch->close_delay = 50;
--		ch->count = 0;
--		ch->blocked_open = 0;
--		init_waitqueue_head(&ch->open_wait);
--		init_waitqueue_head(&ch->close_wait);
-+		ch->port.count = 0;
-+		ch->port.blocked_open = 0;
-+		init_waitqueue_head(&ch->port.open_wait);
-+		init_waitqueue_head(&ch->port.close_wait);
- 
- 		spin_unlock_irqrestore(&epca_lock, flags);
- 	}
-@@ -1633,15 +1633,15 @@ static void doevent(int crd)
- 		if (event & MODEMCHG_IND) {
- 			/* A modem signal change has been indicated */
- 			ch->imodem = mstat;
--			if (ch->asyncflags & ASYNC_CHECK_CD) {
-+			if (ch->port.flags & ASYNC_CHECK_CD) {
- 				/* We are now receiving dcd */
- 				if (mstat & ch->dcd)
--					wake_up_interruptible(&ch->open_wait);
-+					wake_up_interruptible(&ch->port.open_wait);
- 				else	/* No dcd; hangup */
- 					pc_sched_event(ch, EPCA_EVENT_HANGUP);
- 			}
- 		}
--		tty = ch->tty;
-+		tty = ch->port.tty;
- 		if (tty) {
- 			if (event & BREAK_IND) {
- 				/* A break has been indicated */
-@@ -1880,9 +1880,9 @@ static void epcaparam(struct tty_struct *tty, struct channel *ch)
- 		 * that the driver will wait on carrier detect.
- 		 */
- 		if (ts->c_cflag & CLOCAL)
--			ch->asyncflags &= ~ASYNC_CHECK_CD;
-+			ch->port.flags &= ~ASYNC_CHECK_CD;
- 		else
--			ch->asyncflags |= ASYNC_CHECK_CD;
-+			ch->port.flags |= ASYNC_CHECK_CD;
- 		mval = ch->m_dtr | ch->m_rts;
- 	} /* End CBAUD not detected */
- 	iflag = termios2digi_i(ch, ts->c_iflag);
-@@ -1972,7 +1972,7 @@ static void receive_data(struct channel *ch)
- 	globalwinon(ch);
- 	if (ch->statusflags & RXSTOPPED)
+-	if (!(port->flags & ASYNC_INITIALIZED))
++	if (!(port->port.flags & ASYNC_INITIALIZED))
  		return;
--	tty = ch->tty;
-+	tty = ch->port.tty;
- 	if (tty)
- 		ts = tty->termios;
- 	bc = ch->brdchan;
-@@ -2032,7 +2032,7 @@ static void receive_data(struct channel *ch)
- 	globalwinon(ch);
- 	writew(tail, &bc->rout);
- 	/* Must be called with global data */
--	tty_schedule_flip(ch->tty);
-+	tty_schedule_flip(ch->port.tty);
- }
  
- static int info_ioctl(struct tty_struct *tty, struct file *file,
-@@ -2376,7 +2376,7 @@ static void pc_set_termios(struct tty_struct *tty, struct ktermios *old_termios)
+-	if (port->xmit_buf) {
+-		free_page((unsigned long) port->xmit_buf);
+-		port->xmit_buf = NULL;
+-	}
+-	port->flags &= ~ASYNC_INITIALIZED;
++	tty_port_free_xmit_buf(&port->port);
++	port->port.flags &= ~ASYNC_INITIALIZED;
+ 	/* 3rd October 2000 : Vinayak P Risbud */
+-	port->tty = NULL;
++	port->port.tty = NULL;
  
- 		if (!(old_termios->c_cflag & CLOCAL) &&
- 			 (tty->termios->c_cflag & CLOCAL))
--			wake_up_interruptible(&ch->open_wait);
-+			wake_up_interruptible(&ch->port.open_wait);
- 
- 	} /* End if channel valid */
- }
-@@ -2386,13 +2386,13 @@ static void do_softint(struct work_struct *work)
- 	struct channel *ch = container_of(work, struct channel, tqueue);
- 	/* Called in response to a modem change event */
- 	if (ch && ch->magic == EPCA_MAGIC) {
--		struct tty_struct *tty = ch->tty;
-+		struct tty_struct *tty = ch->port.tty;
- 
- 		if (tty && tty->driver_data) {
- 			if (test_and_clear_bit(EPCA_EVENT_HANGUP, &ch->event)) {
- 				tty_hangup(tty);
--				wake_up_interruptible(&ch->open_wait);
--				ch->asyncflags &= ~ASYNC_NORMAL_ACTIVE;
-+				wake_up_interruptible(&ch->port.open_wait);
-+				ch->port.flags &= ~ASYNC_NORMAL_ACTIVE;
- 			}
- 		}
+ 	/*Fix done by Anil .S on 30-04-2001
+ 	remote login through isi port has dtr toggle problem
+@@ -1046,24 +1030,24 @@ static void isicom_close(struct tty_struct *tty, struct file *filp)
+ 		return;
  	}
-diff --git a/drivers/char/epca.h b/drivers/char/epca.h
-index 3c77c02..d414bf2 100644
---- a/drivers/char/epca.h
-+++ b/drivers/char/epca.h
-@@ -84,6 +84,7 @@ static char *board_desc[] =
- struct channel 
- {
- 	long   magic;
-+	struct tty_port port;
- 	unsigned char boardnum;
- 	unsigned char channelnum;
- 	unsigned char omodem;         /* FEP output modem status     */
-@@ -117,10 +118,7 @@ struct channel
- 	unsigned short rxbufhead;
- 	unsigned short rxbufsize;
- 	int    close_delay;
--	int    count;
--	int    blocked_open;
- 	unsigned long  event;
--	int    asyncflags;
- 	uint   dev;
- 	unsigned long  statusflags;
- 	unsigned long  c_iflag;
-@@ -132,9 +130,6 @@ struct channel
- 	struct board_info           *board;
- 	struct board_chan	    __iomem *brdchan;
- 	struct digi_struct          digiext;
--	struct tty_struct           *tty;
--	wait_queue_head_t           open_wait;
--	wait_queue_head_t           close_wait;
- 	struct work_struct          tqueue;
- 	struct global_data 	    __iomem *mailbox;
- };
+ 
+-	if (tty->count == 1 && port->count != 1) {
++	if (tty->count == 1 && port->port.count != 1) {
+ 		printk(KERN_WARNING "ISICOM:(0x%lx) isicom_close: bad port "
+ 			"count tty->count = 1 port count = %d.\n",
+-			card->base, port->count);
+-		port->count = 1;
++			card->base, port->port.count);
++		port->port.count = 1;
+ 	}
+-	if (--port->count < 0) {
++	if (--port->port.count < 0) {
+ 		printk(KERN_WARNING "ISICOM:(0x%lx) isicom_close: bad port "
+ 			"count for channel%d = %d", card->base, port->channel,
+-			port->count);
+-		port->count = 0;
++			port->port.count);
++		port->port.count = 0;
+ 	}
+ 
+-	if (port->count) {
++	if (port->port.count) {
+ 		spin_unlock_irqrestore(&card->card_lock, flags);
+ 		return;
+ 	}
+-	port->flags |= ASYNC_CLOSING;
++	port->port.flags |= ASYNC_CLOSING;
+ 	tty->closing = 1;
+ 	spin_unlock_irqrestore(&card->card_lock, flags);
+ 
+@@ -1072,7 +1056,7 @@ static void isicom_close(struct tty_struct *tty, struct file *filp)
+ 	/* indicate to the card that no more data can be received
+ 	   on this port */
+ 	spin_lock_irqsave(&card->card_lock, flags);
+-	if (port->flags & ASYNC_INITIALIZED) {
++	if (port->port.flags & ASYNC_INITIALIZED) {
+ 		card->port_status &= ~(1 << port->channel);
+ 		outw(card->port_status, card->base + 0x02);
+ 	}
+@@ -1085,7 +1069,7 @@ static void isicom_close(struct tty_struct *tty, struct file *filp)
+ 	spin_lock_irqsave(&card->card_lock, flags);
+ 	tty->closing = 0;
+ 
+-	if (port->blocked_open) {
++	if (port->port.blocked_open) {
+ 		spin_unlock_irqrestore(&card->card_lock, flags);
+ 		if (port->close_delay) {
+ 			pr_dbg("scheduling until time out.\n");
+@@ -1093,10 +1077,10 @@ static void isicom_close(struct tty_struct *tty, struct file *filp)
+ 				jiffies_to_msecs(port->close_delay));
+ 		}
+ 		spin_lock_irqsave(&card->card_lock, flags);
+-		wake_up_interruptible(&port->open_wait);
++		wake_up_interruptible(&port->port.open_wait);
+ 	}
+-	port->flags &= ~(ASYNC_NORMAL_ACTIVE | ASYNC_CLOSING);
+-	wake_up_interruptible(&port->close_wait);
++	port->port.flags &= ~(ASYNC_NORMAL_ACTIVE | ASYNC_CLOSING);
++	wake_up_interruptible(&port->port.close_wait);
+ 	spin_unlock_irqrestore(&card->card_lock, flags);
+ }
+ 
+@@ -1112,9 +1096,6 @@ static int isicom_write(struct tty_struct *tty,	const unsigned char *buf,
+ 	if (isicom_paranoia_check(port, tty->name, "isicom_write"))
+ 		return 0;
+ 
+-	if (!port->xmit_buf)
+-		return 0;
+-
+ 	spin_lock_irqsave(&card->card_lock, flags);
+ 
+ 	while (1) {
+@@ -1123,7 +1104,7 @@ static int isicom_write(struct tty_struct *tty,	const unsigned char *buf,
+ 		if (cnt <= 0)
+ 			break;
+ 
+-		memcpy(port->xmit_buf + port->xmit_head, buf, cnt);
++		memcpy(port->port.xmit_buf + port->xmit_head, buf, cnt);
+ 		port->xmit_head = (port->xmit_head + cnt) & (SERIAL_XMIT_SIZE
+ 			- 1);
+ 		port->xmit_cnt += cnt;
+@@ -1147,16 +1128,13 @@ static int isicom_put_char(struct tty_struct *tty, unsigned char ch)
+ 	if (isicom_paranoia_check(port, tty->name, "isicom_put_char"))
+ 		return 0;
+ 
+-	if (!port->xmit_buf)
+-		return 0;
+-
+ 	spin_lock_irqsave(&card->card_lock, flags);
+ 	if (port->xmit_cnt >= SERIAL_XMIT_SIZE - 1) {
+ 		spin_unlock_irqrestore(&card->card_lock, flags);
+ 		return 0;
+ 	}
+ 
+-	port->xmit_buf[port->xmit_head++] = ch;
++	port->port.xmit_buf[port->xmit_head++] = ch;
+ 	port->xmit_head &= (SERIAL_XMIT_SIZE - 1);
+ 	port->xmit_cnt++;
+ 	spin_unlock_irqrestore(&card->card_lock, flags);
+@@ -1172,7 +1150,7 @@ static void isicom_flush_chars(struct tty_struct *tty)
+ 		return;
+ 
+ 	if (port->xmit_cnt <= 0 || tty->stopped || tty->hw_stopped ||
+-			!port->xmit_buf)
++			!port->port.xmit_buf)
+ 		return;
+ 
+ 	/* this tells the transmitter to consider this port for
+@@ -1274,23 +1252,23 @@ static int isicom_set_serial_info(struct isi_port *port,
+ 
+ 	lock_kernel();
+ 
+-	reconfig_port = ((port->flags & ASYNC_SPD_MASK) !=
++	reconfig_port = ((port->port.flags & ASYNC_SPD_MASK) !=
+ 		(newinfo.flags & ASYNC_SPD_MASK));
+ 
+ 	if (!capable(CAP_SYS_ADMIN)) {
+ 		if ((newinfo.close_delay != port->close_delay) ||
+ 				(newinfo.closing_wait != port->closing_wait) ||
+ 				((newinfo.flags & ~ASYNC_USR_MASK) !=
+-				(port->flags & ~ASYNC_USR_MASK))) {
++				(port->port.flags & ~ASYNC_USR_MASK))) {
+ 			unlock_kernel();
+ 			return -EPERM;
+ 		}
+-		port->flags = ((port->flags & ~ASYNC_USR_MASK) |
++		port->port.flags = ((port->port.flags & ~ASYNC_USR_MASK) |
+ 				(newinfo.flags & ASYNC_USR_MASK));
+ 	} else {
+ 		port->close_delay = newinfo.close_delay;
+ 		port->closing_wait = newinfo.closing_wait;
+-		port->flags = ((port->flags & ~ASYNC_FLAGS) |
++		port->port.flags = ((port->port.flags & ~ASYNC_FLAGS) |
+ 				(newinfo.flags & ASYNC_FLAGS));
+ 	}
+ 	if (reconfig_port) {
+@@ -1314,7 +1292,7 @@ static int isicom_get_serial_info(struct isi_port *port,
+ 	out_info.line = port - isi_ports;
+ 	out_info.port = port->card->base;
+ 	out_info.irq = port->card->irq;
+-	out_info.flags = port->flags;
++	out_info.flags = port->port.flags;
+ /*	out_info.baud_base = ? */
+ 	out_info.close_delay = port->close_delay;
+ 	out_info.closing_wait = port->closing_wait;
+@@ -1454,10 +1432,10 @@ static void isicom_hangup(struct tty_struct *tty)
+ 	isicom_shutdown_port(port);
+ 	spin_unlock_irqrestore(&port->card->card_lock, flags);
+ 
+-	port->count = 0;
+-	port->flags &= ~ASYNC_NORMAL_ACTIVE;
+-	port->tty = NULL;
+-	wake_up_interruptible(&port->open_wait);
++	port->port.count = 0;
++	port->port.flags &= ~ASYNC_NORMAL_ACTIVE;
++	port->port.tty = NULL;
++	wake_up_interruptible(&port->port.open_wait);
+ }
+ 
+ 
+@@ -1824,8 +1802,7 @@ static int __init isicom_init(void)
+ 			port->close_delay = 50 * HZ/100;
+ 			port->closing_wait = 3000 * HZ/100;
+ 			port->status = 0;
+-			init_waitqueue_head(&port->open_wait);
+-			init_waitqueue_head(&port->close_wait);
++			tty_port_init(&port->port);
+ 			/*  . . .  */
+ 		}
+ 		isi_card[idx].base = 0;
 
