@@ -1,68 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758730AbYESO2F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759508AbYESObQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758730AbYESO2F (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 10:28:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757036AbYESO1y
+	id S1759508AbYESObQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 10:31:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757918AbYESObD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 10:27:54 -0400
-Received: from fk-out-0910.google.com ([209.85.128.185]:56805 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757348AbYESO1y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 10:27:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=TtcqenPwCOQJKlnGmgw7Guju5CAtZDoDUmJ5s7oOWvpSUJuxBU6c/CmAL8xUpYX1iJBGmysG1kEQUTfb7mQajzoAQOZWkptplcgSCoUhcqe0lGyzVCxih0T58xsU3K7HFaFFmMviGlMTorkR65yE7ARuwKwMitbUY9Bhj/8BHy8=
-Date: Mon, 19 May 2008 18:27:39 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Adrian Bunk <bunk@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Tom Spink <tspink@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Jiri Slaby <jirislaby@gmail.com>, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [RFC] x86: merge nmi_32-64 to nmi.c
-Message-ID: <20080519142739.GA7773@cvg>
-References: <20080517192200.GA6914@cvg> <7b9198260805171328u555eec17t3597f3378edbda88@mail.gmail.com> <Pine.LNX.4.55.0805172148380.10067@cliff.in.clinika.pl> <alpine.LFD.1.10.0805172331030.18798@apollo.tec.linutronix.de> <482FD9F2.8080204@goop.org> <20080518180811.GI8140@cs181133002.pp.htv.fi> <483071DE.6010404@firstfloor.org> <483076FA.9040605@goop.org> <48307FC0.8010704@firstfloor.org>
+	Mon, 19 May 2008 10:31:03 -0400
+Received: from mail.atlantis.sk ([80.94.52.35]:56788 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757330AbYESObA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 10:31:00 -0400
+From: Ondrej Zary <linux@rainbow-software.org>
+To: linux-kernel@vger.kernel.org
+Subject: unable to access BIOS of Radeon X1650Pro cards (kernel bug?)
+Date: Mon, 19 May 2008 16:30:53 +0200
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48307FC0.8010704@firstfloor.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200805191630.54375.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Andi Kleen - Sun, May 18, 2008 at 09:13:04PM +0200]
-| Jeremy Fitzhardinge wrote:
-| > Andi Kleen wrote:
-| >> The whole idea was pretty bad. Ifdefs are not ugly because the syntax
-| >> looks ugly, but because it's a semantically ugly construct with bad
-| >> maintainability impact.
-| >>
-| >> Trying to put syntactical sugar around that is a doomed exercise. It
-| >> will be still ugly, no matter what you do.
-| > 
-| > Not true.  Using C rather than CPP to control the compilation of config
-| > options has the big win that all code paths are still visible to the
-| > compiler. 
-| 
-| A small win. Still lots of other problems, including testing.
-| 
-|  In some cases that's not what you want, but it often is, and
-| > it would avoid some degree if inadvertent breakage of options.  It can
-| > also be syntactically a lot more pleasant.
-| 
-| Well it's still an unnecessary different code path and making
-| it look nicer is just an excuse from properly cleaning it up.
-| 
-| -Andi
-| 
+Hello,
+I'm debugging a weird problem - it started as inability to use xorg radeon driver on X1650Pro cards. The machine (Asus P5K-V board with latest BIOS and 
+64-bit, kernel 2.6.25) has 3 VGA cards - one Radeon 7000 PCI card (primary) and two Radeon X1650Pro PCI-E cards. The radeon driver is unable to initialize 
+X1650Pro cards because it's unable to access the BIOS:
 
-ok, thanks to all reviewers for the look being taken. I will try to
-eliminate as much #ifdefs as possible, make them straight and understandable
-and will send the next patch as only get it done. Thanks to all!
+(II) RADEON(0): initializing int10
+(II) Attempted to read BIOS 128KB from /sys/bus/pci/devices/0000:01:00.0/rom: got 0KB
+Requesting insufficient memory window!: start: 0xfe700000 end: 0xfe7fffff size 0x10000000
+(EE) Cannot find empty range to map base to
+(EE) RADEON(0): Cannot read V_BIOS (3)
 
-		- Cyrill -
+I tried to read the BIOS using sysfs and it really does not work:
+# cd /sys/bus/pci/devices/0000:04:00.0
+# cat rom
+#
+
+The card seems to be setup correctly:
+# lspci -vv -s 04:00.0
+04:00.0 VGA compatible controller: ATI Technologies Inc Radeon X1650 Pro (rev 9e)
+        Subsystem: PC Partner Limited Device c880
+        Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Interrupt: pin A routed to IRQ 11
+        Region 0: Memory at d0000000 (64-bit, prefetchable) [disabled] [size=256M]
+        Region 2: Memory at feae0000 (64-bit, non-prefetchable) [disabled] [size=64K]
+        Region 4: I/O ports at d000 [disabled] [size=256]
+        Expansion ROM at feac0000 [disabled] [size=128K]
+        Capabilities: [50] Power Management version 2
+                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+        Capabilities: [58] Express (v1) Endpoint, MSI 00
+                DevCap: MaxPayload 128 bytes, PhantFunc 0, Latency L0s <4us, L1 unlimited
+                        ExtTag+ AttnBtn- AttnInd- PwrInd- RBE- FLReset-
+                DevCtl: Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
+                        RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
+                        MaxPayload 128 bytes, MaxReadReq 128 bytes
+                DevSta: CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr- TransPend-
+                LnkCap: Port #0, Speed 2.5GT/s, Width x16, ASPM L0s L1, Latency L0 <64ns, L1 <1us
+                        ClockPM- Suprise- LLActRep- BwNot-
+                LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- Retrain- CommClk+
+                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+                LnkSta: Speed 2.5GT/s, Width x4, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
+        Capabilities: [80] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable-
+                Address: 0000000000000000  Data: 0000
+
+
+Then I tried it manually and it does work:
+# cat rom_enable.sh
+#! /bin/sh
+setpci -s 04:00.0 ROM_ADDRESS=feac0001
+setpci -s 04:00.0 COMMAND=3
+
+# ./rom_enable.sh
+
+# cat biosdump.c
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+int main(void) {
+    int mem_fd;
+    char *mem;
+    FILE *f;
+        /* open /dev/mem */
+    if ((mem_fd = open("/dev/mem", O_RDWR) ) < 0) {
+        printf("can't open /dev/mem \n");
+        exit (-1);
+    }
+
+    /* mmap memory */
+    mem = mmap(NULL, 131072, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_FIXED, mem_fd, 0xfeac0000);
+    if ((long)mem < 0) {
+        printf("mmap error \n");
+        exit (-1);
+    }
+    f = fopen("dump.bin","w");
+    fwrite(mem, 1, 131072, f);
+    fclose(f);
+    close(mem_fd);
+}
+
+# cc biosdump.c -o biosdump
+
+# ./biosdump
+
+# hexdump dump.bin
+0000000 aa55 e97e 0277 0000 0000 0000 0000 0000
+[...]
+
+
+And now, sysfs magically works!
+# cd /sys/bus/pci/devices/0000:04:00.0
+# hexdump rom
+0000000 aa55 e97e 0277 0000 0000 0000 0000 0000
+
+
+Does anyone know what's going on here?
+
+-- 
+Ondrej Zary
