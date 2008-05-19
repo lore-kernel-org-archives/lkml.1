@@ -1,80 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762674AbYESVXZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763395AbYESV1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762674AbYESVXZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 17:23:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758726AbYESVXP
+	id S1763395AbYESV1q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 17:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760540AbYESV1i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 17:23:15 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:63559 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756963AbYESVXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 17:23:14 -0400
-Date: Mon, 19 May 2008 22:21:59 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Clemens Ladisch <clemens@ladisch.de>
-cc: Kevin Hao <kexin.hao@windriver.com>, venkatesh.pallipadi@intel.com,
-       bob.picco@hp.com, mingo@redhat.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: Get irq for hpet timer
-In-Reply-To: <4831A678.5070208@ladisch.de>
-Message-ID: <Pine.LNX.4.55.0805192156070.19879@cliff.in.clinika.pl>
-References: <1210917912.10881.1.camel@kevin-desktop>  <482D49CF.4030902@ladisch.de>
- <1210929270.11912.3.camel@kevin-desktop> <4831A678.5070208@ladisch.de>
+	Mon, 19 May 2008 17:27:38 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:43061 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756963AbYESV1h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 17:27:37 -0400
+Date: Mon, 19 May 2008 22:25:51 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Theodore Tso <tytso@mit.edu>
+cc: Gabriel C <nix.or.die@googlemail.com>, Keith Packard <keithp@keithp.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Eric Anholt <eric@anholt.net>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       bugme-daemon@bugzilla.kernel.org, airlied@linux.ie,
+       "Barnes, Jesse" <jesse.barnes@intel.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug 10732] REGRESSION: 2.6.26-rc2-git4: X server failed start
+ onX61s laptop
+In-Reply-To: <20080517184626.GA16496@mit.edu>
+Message-ID: <Pine.LNX.4.64.0805192217430.15410@blonde.site>
+References: <E1JxGth-0001te-S4@closure.thunk.org>
+ <924EFEDD5F540B4284297C4DC59F3DEE01119AFE@orsmsx423.amr.corp.intel.com>
+ <20080517154131.GA7651@mit.edu> <924EFEDD5F540B4284297C4DC59F3DEE01119B07@orsmsx423.amr.corp.intel.com>
+ <1211047916.27447.314.camel@koto.keithp.com> <482F24C6.2050705@frugalware.org>
+ <20080517184626.GA16496@mit.edu>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 May 2008, Clemens Ladisch wrote:
+On Sat, 17 May 2008, Theodore Tso wrote:
+> On Sat, May 17, 2008 at 08:32:38PM +0200, Gabriel C wrote:
+> > > 
+> > > Which repository is commit 1c12c4cf in?
+> > 
+> > It is in linus-git tree , http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=1c12c4cf9411eb130b245fa8d0fbbaf989477c7b
+> 
+> ...post 2.6.26-rc2-git3.  For Linux kernels 2.6.26-rc2-git4 and
+> newer, you need to revert this commit or the X Server shipped with
+> Ubuntu Gutsy will die horribly when run on an X61s laptop with the
+> Intel 965GM video chipset.
+> 
+> So the question is what's the right fix to keep the kernel compatible
+> with the X server, besides just reverting the commit entirely?
 
-> Another problem: the interrupt controller doesn't get correctly
-> initialized for some interrupt line that didn't already have some
-> routing:
-> | $ cat /proc/interrupts
-> |            CPU0
-> |   0:         63   IO-APIC-edge      timer
-> |   1:         96   IO-APIC-edge      i8042
-> |   2:          0    XT-PIC-XT        hpet2
-> |   6:          3   IO-APIC-edge      floppy
-> |   7:          0   IO-APIC-edge      parport0
-> |   8:          3   IO-APIC-edge      rtc
-> |   9:          0   IO-APIC-fasteoi   acpi
-> | ...
+[PATCH] x86: fix mprotect's NX handling on PAE
 
- IRQ2 cannot be wired to the legacy 8259A chips, because this line is
-taken for the cascade from the slave to the master.  If you know for sure
-that the HPET2 can be routed to the an otherwise unused input of the I/O
-APIC, then you can use add_pin_to_irq() to route the entry manually.
+2.6.26-rc3 with CONFIG_X86_PAE may leave the NX bit set when PROT_EXEC
+is intending to clear it, causing irqbalance and others to segfault,
+and X startup to fail.
 
-> Additionally, I vaguely remember that on X86, there is some funny stuff
-> going on with interrupt lines 0, 2 and 8 which means that the interrupt
-> number passed to request_irq() is not necessarily identical to the
-> hardware interrupt line.
+This comes from an assumption in 1c12c4cf9411eb130b245fa8d0fbbaf989477c7b
+mprotect: prevent alteration of the PAT bits, that PTE_MASK is what it's
+supposed to be: whereas it's been wrong forever with PAE, staying 32-bit
+where 64-bit is needed.
 
- You are correct as far as input lines INT0 and INT2 of the I/O APIC are
-concerned.  INT8 is not generally a problem except from some systems where
-the polarity used to be recorded incorrectly in the BIOS tables (hardware
-can be configured for either).  With INT0 and INT2 the following is
-usually the case.
+Jeremy Fitzhardinge already has patches to fix that in Ingo's tree;
+but if they're not considered 2.6.26 material, or people want a quick
+two-liner to get working, here's a shorter hack to fix up pte_modify.
 
- INT0 is wired to the output of the master 8259A legacy controller.  It is
-either configured as an ExtINTA interrupt or disabled by default
-altogether (and the LINT0 input of the local APIC of the bootstrap
-processor used instead).  Even if some additional logic is present in the
-system so that another source can be routed to this line and the 8259A is
-quiesced, sharing is probably impossible, because the output of the 8259A
-is traditionally active high.
+I apologize to those we've broken, and to Venki Pallipadi: it was I who
+persuaded him to change his working patch to make that false assumption.
 
- INT2 is wired to the output of the 8254 timer (and in some more recent
-systems shared with the HPET0).  This is the line that is referred to as
-IRQ0 above.  This is because in an ACPI-based system the IRQ numbers refer
-to lines as defined in ACPI tables, which may not necessarily identity-map
-to I/O APIC input lines.
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
 
- Then the reasons for routing INT0 and INT2 like this are generally
-historical and date back to the old Multi-Processor Specification.  There
-may be systems that differ, but care must be taken and the correct
-configuration table consulted.
+ include/asm-x86/pgtable.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-  Maciej
+--- 2.6.26-rc3/include/asm-x86/pgtable.h	2008-05-19 11:19:03.000000000 +0100
++++ linux/include/asm-x86/pgtable.h	2008-05-19 21:51:08.000000000 +0100
+@@ -57,8 +57,8 @@
+ #define _KERNPG_TABLE	(_PAGE_PRESENT | _PAGE_RW | _PAGE_ACCESSED |	\
+ 			 _PAGE_DIRTY)
+ 
+-#define _PAGE_CHG_MASK	(PTE_MASK | _PAGE_PCD | _PAGE_PWT |		\
+-			 _PAGE_ACCESSED | _PAGE_DIRTY)
++#define _PAGE_CHG_MASK	(((pteval_t) PTE_MASK & ~_PAGE_NX) | 		\
++			 _PAGE_PCD | _PAGE_PWT | _PAGE_ACCESSED | _PAGE_DIRTY)
+ 
+ #define _PAGE_CACHE_MASK	(_PAGE_PCD | _PAGE_PWT)
+ #define _PAGE_CACHE_WB		(0)
