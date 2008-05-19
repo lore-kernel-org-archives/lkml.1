@@ -1,84 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765144AbYESWGQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765029AbYESWGd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765144AbYESWGQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 18:06:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763645AbYESWE2
+	id S1765029AbYESWGd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 18:06:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755634AbYESWEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 18:04:28 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:40105 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764522AbYESWE0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 18:04:26 -0400
-Date: Tue, 20 May 2008 01:02:21 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: samuel@sortiz.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] irda: remove CVS keywords
-Message-ID: <20080519220221.GC17716@cs181133002.pp.htv.fi>
+	Mon, 19 May 2008 18:04:37 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:60086 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758852AbYESWE3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 18:04:29 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: Weird Xorg stretching (setfont)
+To: Sitsofe Wheeler <sitsofe@yahoo.com>, linux-kernel@vger.kernel.org,
+       Dave Airlie <airlied@gmail.com>, Chris Snook <csnook@redhat.com>
+Reply-To: 7eggert@gmx.de
+Date: Tue, 20 May 2008 00:03:40 +0200
+References: <atMjN-4Qh-19@gated-at.bofh.it> <atPB7-2Ai-23@gated-at.bofh.it> <atTlj-1SF-3@gated-at.bofh.it> <atUU6-4Xh-15@gated-at.bofh.it> <auaw7-1tZ-9@gated-at.bofh.it>
+User-Agent: KNode/0.10.4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+Message-Id: <E1JyDSG-0003g7-Kd@be1.7eggert.dyndns.org>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1/kjBF/bUYeO8kapcSz+oOyZTc12zvDhxiX3/V
+ MYCK8ryj7c5hg2fF+DccaI2jD26kIG84jvoan/phTD40DwG7FR
+ t2ZcNMRb4xGVO9z63pcNg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes CVS keyword that weren't updated for a long time.
+Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
+> Dave Airlie wrote:
 
-One of them was printed as part of a printk, which also doesn't make 
-much sense for a 5 year old and no longer updated keyword.
+>> wierd got any fglrx or anything installed on you're system.. the
+>> radeon drm hasn't seen any changes that should affect this sorta
+>> thing, do you run radeonfb or vesafb?
+> 
+> Just in case you didn't see my reply I'm not an fglrx user and I don't run
+> radeonfb or vesafb.
+> 
+> After testing far too many kernels it turns out that this is not a
+> conventional regression. During startup openSUSE runs the following
+> command:
+> 
+> /bin/setfont -C /dev/tty1 lat9w-16.psfu -m trivial
+> 
+> in /etc/init.d/kbd
+> 
+> Now on the openSUSE provided 2.6.22.17-0.1-default #1 SMP kernel if X has
+> started and your run that command (e.g.
+> chvt 7; sleep 5s && /bin/setfont -C /dev/tty1 lat9w-16.psfu -m trivial
+> ) the command will fail with error output similar to the following:
+> setfont: putfont: 256,8x16: failed: -1
+> putfont: KDFONTOP: Invalid Argument
+> 
+> If you are using a stock kernel (e.g. 2.6.24/2.6.25 etc) the command will
+> not fail and will instead corrupt X causing the lower part of the screen to
+> be drawn using the same line (creating a stretch/mirror effect).
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+I see a similar effect on my "GeForce2 MX/MX 400" using the "nv" driver.
+The difference is: I see both the screen corruption and (from ssh):
+be10:/etc/init.d # ./kbd start
+Loading keymap qwertz/de-latin1-nodeadkeys.map.gz                    done
+Keyboard: Typematic Rate set to 30.0 cps (delay = 250 ms)            done
+Loading compose table latin1.add                                     done
+Stop Unicode mode
+kbd_mode not called for /dev/pts/1                                   done
+Loading console font lat9w-16.psfu  -m trivial (K
+putfont: PIO_FONT: Invalid argument                                  failed
+be10:/etc/init.d #
 
----
-
- drivers/net/irda/donauboe.c   |    6 +-----
- drivers/net/irda/smsc-ircc2.c |    1 -
- drivers/net/irda/smsc-ircc2.h |    1 -
- 3 files changed, 1 insertion(+), 7 deletions(-)
-
-4898fd57aec7b22ced1a1472aa1736d43d587cc1 diff --git a/drivers/net/irda/donauboe.c b/drivers/net/irda/donauboe.c
-index 1257e1a..34ad189 100644
---- a/drivers/net/irda/donauboe.c
-+++ b/drivers/net/irda/donauboe.c
-@@ -49,10 +49,6 @@
- /* Look at toshoboe.h (currently in include/net/irda) for details of */
- /* Where to get documentation on the chip         */
- 
--
--static char *rcsid =
--  "$Id: donauboe.c V2.18 ven jan 10 03:14:16 2003$";
--
- /* See below for a description of the logic in this driver */
- 
- /* User servicable parts */
-@@ -1677,7 +1673,7 @@ toshoboe_open (struct pci_dev *pci_dev, const struct pci_device_id *pdid)
- 
-   pci_set_drvdata(pci_dev,self);
- 
--  printk (KERN_INFO DRIVER_NAME ": Using multiple tasks, version %s\n", rcsid);
-+  printk (KERN_INFO DRIVER_NAME ": Using multiple tasks\n");
- 
-   return 0;
- 
-diff --git a/drivers/net/irda/smsc-ircc2.c b/drivers/net/irda/smsc-ircc2.c
-index cfe0194..78dc8e7 100644
---- a/drivers/net/irda/smsc-ircc2.c
-+++ b/drivers/net/irda/smsc-ircc2.c
-@@ -1,5 +1,4 @@
- /*********************************************************************
-- * $Id: smsc-ircc2.c,v 1.19.2.5 2002/10/27 11:34:26 dip Exp $
-  *
-  * Description:   Driver for the SMC Infrared Communications Controller
-  * Status:        Experimental.
-diff --git a/drivers/net/irda/smsc-ircc2.h b/drivers/net/irda/smsc-ircc2.h
-index 0c36286..317b7fd 100644
---- a/drivers/net/irda/smsc-ircc2.h
-+++ b/drivers/net/irda/smsc-ircc2.h
-@@ -1,5 +1,4 @@
- /*********************************************************************
-- * $Id: smsc-ircc2.h,v 1.12.2.1 2002/10/27 10:52:37 dip Exp $
-  *
-  * Description:   Definitions for the SMC IrCC chipset
-  * Status:        Experimental.
 
