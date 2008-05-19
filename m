@@ -1,104 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759510AbYESMjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758774AbYESMtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759510AbYESMjQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 08:39:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756775AbYESMjA
+	id S1758774AbYESMtY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 08:49:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754908AbYESMtO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 08:39:00 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:56179 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756403AbYESMjA (ORCPT
+	Mon, 19 May 2008 08:49:14 -0400
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:60161 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754605AbYESMtO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 08:39:00 -0400
-Date: Mon, 19 May 2008 14:39:52 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Ingo Molnar <mingo@elte.hu>, kernel list <linux-kernel@vger.kernel.org>
-Subject: aperture_64: use symbolic constants
-Message-ID: <20080519123952.GA23118@elf.ucw.cz>
+	Mon, 19 May 2008 08:49:14 -0400
+To: hjk@linutronix.de
+Cc: corbet@lwn.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [11/11] Convert uio to fasync_unlocked
+From: Andi Kleen <andi@firstfloor.org>
+References: <20080519231.561421028@firstfloor.org>
+	<20080519123120.C7BBD1B41FF@basil.firstfloor.org>
+Date: Mon, 19 May 2008 14:48:32 +0200
+In-Reply-To: <20080519123120.C7BBD1B41FF@basil.firstfloor.org> (Andi Kleen's message of "Mon, 19 May 2008 14:31:20 +0200 (CEST)")
+Message-ID: <87lk26bgtb.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-OriginalArrivalTime: 19 May 2008 12:41:30.0033 (UTC) FILETIME=[A943C210:01C8B9AD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use symbolic constants in aperture_64.c where possible (and make a
-comment slightly more helpful).
+Andi Kleen <andi@firstfloor.org> writes:
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
+> Just calls fasync_helper
+>
+> Cc: hjk@linutronix.de
+
+Sorry that one was missing a quilt refresh. Here's the real patch.
+Not very exciting.
+
+-Andi
 
 ---
-commit 4cc4fa2a3ff78277430201c74580e99bbaf7a1d0
-tree 6ceafd1f7c4d020f084e9b96d30619680d393274
-parent 033a68acc1817ba2bd9f25c2384e4b0c22ff4288
-author Pavel <pavel@amd.ucw.cz> Mon, 19 May 2008 14:38:59 +0200
-committer Pavel <pavel@amd.ucw.cz> Mon, 19 May 2008 14:38:59 +0200
 
- arch/x86/kernel/aperture_64.c |   20 +++++++++++---------
- 1 files changed, 11 insertions(+), 9 deletions(-)
+Convert uio to fasync_unlocked
 
-diff --git a/arch/x86/kernel/aperture_64.c b/arch/x86/kernel/aperture_64.c
-index 479926d..6b3757e 100644
---- a/arch/x86/kernel/aperture_64.c
-+++ b/arch/x86/kernel/aperture_64.c
-@@ -263,11 +263,11 @@ void __init early_gart_iommu_check(void)
- 		if (!early_is_k8_nb(read_pci_config(0, num, 3, 0x00)))
- 			continue;
- 
--		ctl = read_pci_config(0, num, 3, 0x90);
-+		ctl = read_pci_config(0, num, 3, AMD64_GARTAPERTURECTL);
- 		aper_enabled = ctl & 1;
- 		aper_order = (ctl >> 1) & 7;
- 		aper_size = (32 * 1024 * 1024) << aper_order;
--		aper_base = read_pci_config(0, num, 3, 0x94) & 0x7fff;
-+		aper_base = read_pci_config(0, num, 3, AMD64_GARTAPERTUREBASE) & 0x7fff;
- 		aper_base <<= 25;
- 
- 		if ((last_aper_order && aper_order != last_aper_order) ||
-@@ -303,9 +303,9 @@ void __init early_gart_iommu_check(void)
- 		if (!early_is_k8_nb(read_pci_config(0, num, 3, 0x00)))
- 			continue;
- 
--		ctl = read_pci_config(0, num, 3, 0x90);
-+		ctl = read_pci_config(0, num, 3, AMD64_GARTAPERTURECTL);
- 		ctl &= ~1;
--		write_pci_config(0, num, 3, 0x90, ctl);
-+		write_pci_config(0, num, 3, AMD64_GARTAPERTURECTL, ctl);
- 	}
- 
- }
-@@ -332,9 +332,9 @@ void __init gart_iommu_hole_init(void)
- 		iommu_detected = 1;
- 		gart_iommu_aperture = 1;
- 
--		aper_order = (read_pci_config(0, num, 3, 0x90) >> 1) & 7;
-+		aper_order = (read_pci_config(0, num, 3, AMD64_GARTAPERTURECTL) >> 1) & 7;
- 		aper_size = (32 * 1024 * 1024) << aper_order;
--		aper_base = read_pci_config(0, num, 3, 0x94) & 0x7fff;
-+		aper_base = read_pci_config(0, num, 3, AMD64_GARTAPERTUREBASE) & 0x7fff;
- 		aper_base <<= 25;
- 
- 		printk(KERN_INFO "Node %d: aperture @ %Lx size %u MB\n",
-@@ -406,11 +406,13 @@ void __init gart_iommu_hole_init(void)
- 			continue;
- 
- 		/*
--		 * Don't enable translation yet. That is done later.
-+		 * Don't enable translation yet. That is done later
-+		 * by enable_gart_translation.
-+		 *
- 		 * Assume this BIOS didn't initialise the GART so
- 		 * just overwrite all previous bits
- 		 */
--		write_pci_config(0, num, 3, 0x90, aper_order<<1);
--		write_pci_config(0, num, 3, 0x94, aper_alloc>>25);
-+		write_pci_config(0, num, 3, AMD64_GARTAPERTURECTL, aper_order<<1);
-+		write_pci_config(0, num, 3, AMD64_GARTAPERTUREBASE, aper_alloc>>25);
- 	}
- }
+Just calls fasync_helper
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Cc: hjk@linutronix.de
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+
+Index: linux/drivers/uio/uio.c
+===================================================================
+--- linux.orig/drivers/uio/uio.c
++++ linux/drivers/uio/uio.c
+@@ -541,7 +541,7 @@ static const struct file_operations uio_
+ 	.read		= uio_read,
+ 	.mmap		= uio_mmap,
+ 	.poll		= uio_poll,
+-	.fasync		= uio_fasync,
++	.unlocked_fasync = uio_fasync,
+ };
+ 
+ static int uio_major_init(void)
