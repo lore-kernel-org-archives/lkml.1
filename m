@@ -1,76 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765029AbYESWGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758547AbYESWGu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765029AbYESWGd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 18:06:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755634AbYESWEh
+	id S1758547AbYESWGu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 18:06:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756056AbYESWEr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 18:04:37 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:60086 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758852AbYESWE3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 18:04:29 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: Weird Xorg stretching (setfont)
-To: Sitsofe Wheeler <sitsofe@yahoo.com>, linux-kernel@vger.kernel.org,
-       Dave Airlie <airlied@gmail.com>, Chris Snook <csnook@redhat.com>
-Reply-To: 7eggert@gmx.de
-Date: Tue, 20 May 2008 00:03:40 +0200
-References: <atMjN-4Qh-19@gated-at.bofh.it> <atPB7-2Ai-23@gated-at.bofh.it> <atTlj-1SF-3@gated-at.bofh.it> <atUU6-4Xh-15@gated-at.bofh.it> <auaw7-1tZ-9@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
+	Mon, 19 May 2008 18:04:47 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:45020 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761210AbYESWEp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 18:04:45 -0400
+Date: Tue, 20 May 2008 01:02:40 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: linux-pcmcia@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] pcmcia: remove CVS keywords
+Message-ID: <20080519220240.GD17716@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1JyDSG-0003g7-Kd@be1.7eggert.dyndns.org>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1/kjBF/bUYeO8kapcSz+oOyZTc12zvDhxiX3/V
- MYCK8ryj7c5hg2fF+DccaI2jD26kIG84jvoan/phTD40DwG7FR
- t2ZcNMRb4xGVO9z63pcNg==
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
-> Dave Airlie wrote:
+This patch removes CVS keywords that weren't updated for a long time 
+from comments.
 
->> wierd got any fglrx or anything installed on you're system.. the
->> radeon drm hasn't seen any changes that should affect this sorta
->> thing, do you run radeonfb or vesafb?
-> 
-> Just in case you didn't see my reply I'm not an fglrx user and I don't run
-> radeonfb or vesafb.
-> 
-> After testing far too many kernels it turns out that this is not a
-> conventional regression. During startup openSUSE runs the following
-> command:
-> 
-> /bin/setfont -C /dev/tty1 lat9w-16.psfu -m trivial
-> 
-> in /etc/init.d/kbd
-> 
-> Now on the openSUSE provided 2.6.22.17-0.1-default #1 SMP kernel if X has
-> started and your run that command (e.g.
-> chvt 7; sleep 5s && /bin/setfont -C /dev/tty1 lat9w-16.psfu -m trivial
-> ) the command will fail with error output similar to the following:
-> setfont: putfont: 256,8x16: failed: -1
-> putfont: KDFONTOP: Invalid Argument
-> 
-> If you are using a stock kernel (e.g. 2.6.24/2.6.25 etc) the command will
-> not fail and will instead corrupt X causing the lower part of the screen to
-> be drawn using the same line (creating a stretch/mirror effect).
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-I see a similar effect on my "GeForce2 MX/MX 400" using the "nv" driver.
-The difference is: I see both the screen corruption and (from ssh):
-be10:/etc/init.d # ./kbd start
-Loading keymap qwertz/de-latin1-nodeadkeys.map.gz                    done
-Keyboard: Typematic Rate set to 30.0 cps (delay = 250 ms)            done
-Loading compose table latin1.add                                     done
-Stop Unicode mode
-kbd_mode not called for /dev/pts/1                                   done
-Loading console font lat9w-16.psfu  -m trivial (K
-putfont: PIO_FONT: Invalid argument                                  failed
-be10:/etc/init.d #
+---
+
+ drivers/pcmcia/hd64465_ss.c |    2 --
+ drivers/pcmcia/i82092.c     |    2 --
+ drivers/pcmcia/i82092aa.h   |    2 --
+ 3 files changed, 6 deletions(-)
+
+c13f3943a1ca0edb90019a5e003e56664043fcb8 diff --git a/drivers/pcmcia/hd64465_ss.c b/drivers/pcmcia/hd64465_ss.c
+index f2e810f..6045e4b 100644
+--- a/drivers/pcmcia/hd64465_ss.c
++++ b/drivers/pcmcia/hd64465_ss.c
+@@ -1,6 +1,4 @@
+ /*
+- * $Id: hd64465_ss.c,v 1.7 2003/07/06 14:42:50 lethal Exp $
+- *
+  * Device driver for the PCMCIA controller module of the
+  * Hitachi HD64465 handheld companion chip.
+  *
+diff --git a/drivers/pcmcia/i82092.c b/drivers/pcmcia/i82092.c
+index e136186..46561fa 100644
+--- a/drivers/pcmcia/i82092.c
++++ b/drivers/pcmcia/i82092.c
+@@ -5,8 +5,6 @@
+  *
+  * Author: Arjan Van De Ven <arjanv@redhat.com>
+  * Loosly based on i82365.c from the pcmcia-cs package
+- *
+- * $Id: i82092aa.c,v 1.2 2001/10/23 14:43:34 arjanv Exp $
+  */
+ 
+ #include <linux/kernel.h>
+diff --git a/drivers/pcmcia/i82092aa.h b/drivers/pcmcia/i82092aa.h
+index b0d4533..8836d39 100644
+--- a/drivers/pcmcia/i82092aa.h
++++ b/drivers/pcmcia/i82092aa.h
+@@ -3,8 +3,6 @@
+ 
+ #include <linux/interrupt.h>
+ 
+-/* $Id: i82092aa.h,v 1.1.1.1 2001/09/19 14:53:15 dwmw2 Exp $ */
+-
+ /* Debuging defines */
+ #ifdef NOTRACE
+ #define enter(x)   printk("Enter: %s, %s line %i\n",x,__FILE__,__LINE__)
 
 
