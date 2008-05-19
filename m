@@ -1,76 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbYESFsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755573AbYESFx6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755435AbYESFsS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 01:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752698AbYESFsK
+	id S1755573AbYESFx6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 01:53:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbYESFxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 01:48:10 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:63255 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752686AbYESFsJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 01:48:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=Nu6VcdKkooe5H4o53aIdnv/9bqsyFsc7CfD1mb+t5zfxcf/hxHw5sdGGmkVRRDseSNe1Wd4CpMGbVFJNNbJwnZx7SL/+Zphh1I0ynnonVAiLZeof8rIEneBPzNTXd3MObU488rAuO9ok9wKhPrIyhXOFhgOuWmOaq5NMU9CnJ5U=
-Date: Mon, 19 May 2008 10:43:45 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Johannes Weiner <hannes@saeurebad.de>
-Cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
+	Mon, 19 May 2008 01:53:49 -0400
+Received: from verein.lst.de ([213.95.11.210]:60040 "EHLO verein.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752857AbYESFxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 01:53:48 -0400
+Date: Mon, 19 May 2008 07:53:34 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Al Viro <viro@ZenIV.linux.org.uk>, Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 6/6] ERR_PTR: warn when ERR_PTR parameter is not errno
-	value
-Message-ID: <20080519064345.GB4707@martell.zuzino.mipt.ru>
-References: <20080513201813.GA5869@joi> <1211148273-16226-1-git-send-email-marcin.slusarz@gmail.com> <87hccvurxr.fsf@saeurebad.de>
-MIME-Version: 1.0
+Subject: Re: [PATCH 3/6] vfs: open_exec cleanup
+Message-ID: <20080519055334.GA14902@lst.de>
+References: <20080513201813.GA5869@joi> <1211148109-16149-1-git-send-email-marcin.slusarz@gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <87hccvurxr.fsf@saeurebad.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <1211148109-16149-1-git-send-email-marcin.slusarz@gmail.com>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: -0.001 () BAYES_44
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 19, 2008 at 01:13:20AM +0200, Johannes Weiner wrote:
-> Marcin Slusarz <marcin.slusarz@gmail.com> writes:
-> 
-> > Check at runtime whether error argument of ERR_PTR and ERR_OR_0_PTR
-> > is valid. It can catch bugs which possibly lead to oops or panic earlier.
-> >
-> > Currently there are > 600 calls of ERR_PTR with non-constant argument
-> > in Linux kernel sources.
+On Mon, May 19, 2008 at 12:01:49AM +0200, Marcin Slusarz wrote:
+> open_exec is needlessly indented, calls ERR_PTR with 0 argument
+> (which is not valid errno) and jumps into middle of function
+> just to return value.
+> So clean it up a bit.
 
-> > --- a/include/linux/err.h
-> > +++ b/include/linux/err.h
-> > @@ -3,6 +3,7 @@
-> >  
-> >  #include <linux/compiler.h>
-> >  
-> > +#include <asm/bug.h>
-> >  #include <asm/errno.h>
-> >  
-> >  /*
-> > @@ -21,6 +22,7 @@
-> >  
-> >  static inline void *__ERR_PTR(long error)
-> >  {
-> > +	WARN_ON(!IS_ERR_VALUE(error));
-> >  	return (void *) error;
-> >  }
-> >  
-> > @@ -28,6 +30,7 @@ static inline void *__ERR_PTR(long error)
-> >  
-> >  static inline void *__ERR_OR_0_PTR(long error)
-> >  {
-> > +	WARN_ON(!IS_ERR_VALUE(error) && error);
-> >  	return (void *) error;
-> >  }
-> 
-> How about WARN_ON_ONCE() instead?  That would warn once for each erroneous user
-> which should be enough.
+Still looks rather messy.  See below for a better version.
 
-And blow up .bss ?
+
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+
+Index: linux-2.6/fs/exec.c
+===================================================================
+--- linux-2.6.orig/fs/exec.c	2008-05-19 07:45:18.000000000 +0200
++++ linux-2.6/fs/exec.c	2008-05-19 07:53:17.000000000 +0200
+@@ -654,38 +654,40 @@ EXPORT_SYMBOL(setup_arg_pages);
+ struct file *open_exec(const char *name)
+ {
+ 	struct nameidata nd;
+-	int err;
+ 	struct file *file;
++	int err;
+ 
+-	err = path_lookup_open(AT_FDCWD, name, LOOKUP_FOLLOW, &nd, FMODE_READ|FMODE_EXEC);
+-	file = ERR_PTR(err);
++	err = path_lookup_open(AT_FDCWD, name, LOOKUP_FOLLOW, &nd,
++				FMODE_READ|FMODE_EXEC);
++	if (err)
++		goto out;
+ 
+-	if (!err) {
+-		struct inode *inode = nd.path.dentry->d_inode;
+-		file = ERR_PTR(-EACCES);
+-		if (S_ISREG(inode->i_mode)) {
+-			int err = vfs_permission(&nd, MAY_EXEC);
+-			file = ERR_PTR(err);
+-			if (!err) {
+-				file = nameidata_to_filp(&nd,
+-							O_RDONLY|O_LARGEFILE);
+-				if (!IS_ERR(file)) {
+-					err = deny_write_access(file);
+-					if (err) {
+-						fput(file);
+-						file = ERR_PTR(err);
+-					}
+-				}
+-out:
+-				return file;
+-			}
+-		}
+-		release_open_intent(&nd);
+-		path_put(&nd.path);
++	err = -EACCES;
++	if (!S_ISREG(nd.path.dentry->d_inode->i_mode))
++		goto out_path_put;
++
++	err = vfs_permission(&nd, MAY_EXEC);
++	if (err)
++		goto out_path_put;
++
++	file = nameidata_to_filp(&nd, O_RDONLY|O_LARGEFILE);
++	if (IS_ERR(file))
++		return file;
++
++	err = deny_write_access(file);
++	if (err) {
++		fput(file);
++		goto out;
+ 	}
+-	goto out;
+-}
+ 
++	return file;
++
++ out_path_put:
++	release_open_intent(&nd);
++	path_put(&nd.path);
++ out:
++	return ERR_PTR(err);
++}
+ EXPORT_SYMBOL(open_exec);
+ 
+ int kernel_read(struct file *file, unsigned long offset,
 
