@@ -1,69 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763111AbYESUFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763734AbYESUIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763111AbYESUFu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 16:05:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760725AbYESUFm
+	id S1763734AbYESUIT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 16:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757431AbYESUIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 16:05:42 -0400
-Received: from smtp105.rog.mail.re2.yahoo.com ([206.190.36.83]:35314 "HELO
-	smtp105.rog.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1760564AbYESUFl (ORCPT
+	Mon, 19 May 2008 16:08:10 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:13683 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758900AbYESUII (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 16:05:41 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=rogers.com;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:Organization:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
-  b=p6n/CH0FAa8aDCcpC3r5ovuOW3LSETQrlMZrfrf1ClCE3HyfOuOXbGaqWMvJt0VoSLv9ZoRDWMtH9q4VTPMFMoNWdTCrCTO2QenL/7XedgF4wrFgoxdzNsogMJpJJ0+NrLWTVXjVCrS8ZWIiXQRSiidoXMrKlMSGnsqoRtVi8So=  ;
-X-YMail-OSG: ptzLi_oVM1mlHsu2yLQ_8pPn14mH1SlbeIViMrh_x9G4rJ61ofEKe_dOisC8yvHiiw--
-X-Yahoo-Newman-Property: ymail-3
-From: Shawn Starr <shawn.starr@rogers.com>
-Organization: sh0n.net
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: Modern 2.6 kernels - Notification for changing hostname from proc/sys/kernel/hostname ?
-Date: Mon, 19 May 2008 16:05:31 -0400
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <200805191316.12424.shawn.starr@rogers.com> <20080519204535.GA23629@martell.zuzino.mipt.ru>
-In-Reply-To: <20080519204535.GA23629@martell.zuzino.mipt.ru>
+	Mon, 19 May 2008 16:08:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ibGQ8MZVlIDV8p45nnMMJBtvSyax6iH3YFAY7DrfL5cwNeyzeZqSnerUxPRXM3PXBt2LfWBAUNGwH4lp3ZjY0IeK6NkB0c+KN+3M6rHyjQFqWMyMmCA8lb/MbH5ySoTcpjBp8snuaFk/HoBfMd77h2/0yC9L1VtSvvjZyxYG93w=
+Message-ID: <86802c440805191308k5700fbb9x5ed76f7f58d11c69@mail.gmail.com>
+Date: Mon, 19 May 2008 13:08:07 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Alexey Starikovskiy" <astarikovskiy@suse.de>
+Subject: Re: [PATCH 5/5] x86: allow MPPARSE to be deselected in SMP configs
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+In-Reply-To: <20080519154722.15071.91358.stgit@thinkpad>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200805191605.32484.shawn.starr@rogers.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080519154656.15071.96979.stgit@thinkpad>
+	 <20080519154722.15071.91358.stgit@thinkpad>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 19 May 2008 04:45:35 pm Alexey Dobriyan wrote:
-> On Mon, May 19, 2008 at 01:16:12PM -0400, Shawn Starr wrote:
-> > I was looking at utsname_sysctl.c (if this is the right place) and
-> > noticed there doesn't seem to be any notification via the connector bus
-> > to tell userspace the hostname has changed? Is this correct?
+On Mon, May 19, 2008 at 8:47 AM, Alexey Starikovskiy
+<astarikovskiy@suse.de> wrote:
+> Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+> ---
 >
-> Yes. No notifications.
+>  arch/x86/Kconfig.debug     |    2 +-
+>  arch/x86/kernel/setup.c    |    2 +-
+>  arch/x86/kernel/setup_32.c |    2 +-
+>  arch/x86/kernel/setup_64.c |    4 ++++
+>  4 files changed, 7 insertions(+), 3 deletions(-)
 >
-> > if so, would not not make sense to add such event triggers so that things
-> > like KDE would not have to poll to determine if the hostname changes and
-> > instead had D-BUS tell userspace the hostname changed?
 >
-> Why does it want to know if and when hostname changes?
+> diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
+> index 5eb480e..f27de28 100644
+> --- a/arch/x86/Kconfig.debug
+> +++ b/arch/x86/Kconfig.debug
+> @@ -128,7 +128,7 @@ config 4KSTACKS
 >
-Well, It's for keeping track of the X session, if the hostname changes things 
-go bad.
+>  config X86_FIND_SMP_CONFIG
+>        def_bool y
+> -       depends on X86_LOCAL_APIC || X86_VOYAGER
+> +       depends on X86_MPPARSE || X86_VOYAGER || X86_VISWS
+>        depends on X86_32
+>
+>  config X86_MPPARSE
+> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+> index 089ddfa..c86bda7 100644
+> --- a/arch/x86/kernel/setup.c
+> +++ b/arch/x86/kernel/setup.c
+> @@ -12,7 +12,7 @@
+>  #include <asm/mpspec.h>
+>  #include <asm/apicdef.h>
+>
+> -#ifdef CONFIG_X86_MPPARSE
+> +#ifdef CONFIG_X86_LOCAL_APIC
+>  unsigned int num_processors;
+>  unsigned disabled_cpus __cpuinitdata;
+>
+> diff --git a/arch/x86/kernel/setup_32.c b/arch/x86/kernel/setup_32.c
+> index 12a31de..9af0d5f 100644
+> --- a/arch/x86/kernel/setup_32.c
+> +++ b/arch/x86/kernel/setup_32.c
+> @@ -846,7 +846,7 @@ void __init setup_arch(char **cmdline_p)
+>                        "CONFIG_X86_GENERICARCH or CONFIG_X86_BIGSMP.\n");
+>  #endif
+>  #endif
+> -#ifdef CONFIG_X86_LOCAL_APIC
+> +#if defined(CONFIG_X86_MPPARSE) || defined(CONFIG_X86_VISWS)
+>        if (smp_found_config)
+>                get_smp_config();
+>  #endif
+> diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
+> index 9234675..8047db9 100644
+> --- a/arch/x86/kernel/setup_64.c
+> +++ b/arch/x86/kernel/setup_64.c
+> @@ -439,7 +439,9 @@ void __init setup_arch(char **cmdline_p)
+>        /*
+>        * Find and reserve possible boot-time SMP configuration:
+>        */
+> +#ifdef CONFIG_X86_MPPARSE
+>        find_smp_config();
+> +#endif
 
-> > Perhaps this could be applied to other values (where applicable)
-> > in /proc/sys/kernel?
->
-> Probably, what other stuff desktop crowd wants?
+put the ifdef before the comments?
 
-No idea on the other values, but maybe others can jump in on this discussion?
+also if the mptable is not reserved in e820 table (buggy bios), we may
+still need to call find_smp_config to reserved the mptable.
+otherwise kexec to kernel without acpi support or acpi=off could fail,
+because mptable could be damaged already.
 
->
-> > Or is this all going to go into sysfs eventually (where some of this
-> > really might belong)
->
-> Hopefully, not. There is already uname(2), sysctls -- proc and binary,
+>  #ifdef CONFIG_BLK_DEV_INITRD
+>        if (boot_params.hdr.type_of_loader && boot_params.hdr.ramdisk_image) {
+>                unsigned long ramdisk_image = boot_params.hdr.ramdisk_image;
+> @@ -485,8 +487,10 @@ void __init setup_arch(char **cmdline_p)
+>        /*
+>         * get boot-time SMP configuration:
+>         */
+> +#ifdef CONFIG_X86_MPPARSE
+>        if (smp_found_config)
+>                get_smp_config();
+> +#endif
 
-Hopefully this can all be cleaned up, we really should have one unified place 
-for kernel tweaking/settings either /proc or /sys.
+put the ifdef before coments please.
+
+>        init_apic_mappings();
+>        ioapic_init_mappings();
+
+YH
