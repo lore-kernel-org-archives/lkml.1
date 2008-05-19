@@ -1,85 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759066AbYESO03@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758730AbYESO2F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759066AbYESO03 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 10:26:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757196AbYESO0T
+	id S1758730AbYESO2F (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 10:28:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757036AbYESO1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 10:26:19 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:61556 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756403AbYESO0S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 10:26:18 -0400
-Date: Mon, 19 May 2008 15:25:47 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
+	Mon, 19 May 2008 10:27:54 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:56805 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757348AbYESO1y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 10:27:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=TtcqenPwCOQJKlnGmgw7Guju5CAtZDoDUmJ5s7oOWvpSUJuxBU6c/CmAL8xUpYX1iJBGmysG1kEQUTfb7mQajzoAQOZWkptplcgSCoUhcqe0lGyzVCxih0T58xsU3K7HFaFFmMviGlMTorkR65yE7ARuwKwMitbUY9Bhj/8BHy8=
+Date: Mon, 19 May 2008 18:27:39 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
 To: Andi Kleen <andi@firstfloor.org>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] I/O APIC: Timer through 8259A revamp
-In-Reply-To: <87hccubgni.fsf@basil.nowhere.org>
-Message-ID: <Pine.LNX.4.55.0805191459220.19879@cliff.in.clinika.pl>
-References: <Pine.LNX.4.55.0805180237350.10067@cliff.in.clinika.pl>
- <87hccubgni.fsf@basil.nowhere.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Adrian Bunk <bunk@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Tom Spink <tspink@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+       Jiri Slaby <jirislaby@gmail.com>, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [RFC] x86: merge nmi_32-64 to nmi.c
+Message-ID: <20080519142739.GA7773@cvg>
+References: <20080517192200.GA6914@cvg> <7b9198260805171328u555eec17t3597f3378edbda88@mail.gmail.com> <Pine.LNX.4.55.0805172148380.10067@cliff.in.clinika.pl> <alpine.LFD.1.10.0805172331030.18798@apollo.tec.linutronix.de> <482FD9F2.8080204@goop.org> <20080518180811.GI8140@cs181133002.pp.htv.fi> <483071DE.6010404@firstfloor.org> <483076FA.9040605@goop.org> <48307FC0.8010704@firstfloor.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48307FC0.8010704@firstfloor.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 May 2008, Andi Kleen wrote:
+[Andi Kleen - Sun, May 18, 2008 at 09:13:04PM +0200]
+| Jeremy Fitzhardinge wrote:
+| > Andi Kleen wrote:
+| >> The whole idea was pretty bad. Ifdefs are not ugly because the syntax
+| >> looks ugly, but because it's a semantically ugly construct with bad
+| >> maintainability impact.
+| >>
+| >> Trying to put syntactical sugar around that is a doomed exercise. It
+| >> will be still ugly, no matter what you do.
+| > 
+| > Not true.  Using C rather than CPP to control the compilation of config
+| > options has the big win that all code paths are still visible to the
+| > compiler. 
+| 
+| A small win. Still lots of other problems, including testing.
+| 
+|  In some cases that's not what you want, but it often is, and
+| > it would avoid some degree if inadvertent breakage of options.  It can
+| > also be syntactically a lot more pleasant.
+| 
+| Well it's still an unnecessary different code path and making
+| it look nicer is just an excuse from properly cleaning it up.
+| 
+| -Andi
+| 
 
-> I tried to clean up this code in the past too, but one experience I got
-> was that even a lot of relatively modern systems (<5 years old) fall into the fallback
-> paths unfortunately and it's quite difficult to find out why.
+ok, thanks to all reviewers for the look being taken. I will try to
+eliminate as much #ifdefs as possible, make them straight and understandable
+and will send the next patch as only get it done. Thanks to all!
 
- The new burst of breakage came with the invention of ACPI and its tables 
-for interrupt routing for the APIC.
-
- Old MP tables coming from the MP spec used to get the timer interrupt
-setup right almost always if not in all the cases.  The code we had got up
-to that point was meant to handle hardware variations the best we could.  
-The most common problem was some integrated chipset components predated
-the existence of the APIC and had the output of the timer #0 of their
-embedded 8254 core routed directly to the IRQ0 input of their embedded
-8259A component only.  The I/O APIC was external and there was no way to
-route IRQ0 there directly.
-
- With the ACPI tables, hardware is modern enough the timer interrupt 
-should be directly available, but is usually wired in the way recommended 
-by the MP spec.  That is the output of the master 8259A goes to INT0 of 
-the I/O APIC (or is only connected to local APICs) and the timer is routed 
-to INT2.  However the default for ACPI tables is to map 8259A one-to-one 
-to the I/O APIC.  Perhaps the intention of the authors of the spec was 
-that hardware will gradually get designed this way or perhaps there was no 
-clear reason at all.  Anyway the reality is most systems out there need 
-an override for the timer interrupt and practice has shown it is sometimes 
-missing.  As a result the pin that our code assumes is for the timer 
-interrupt in fact is the 8259A ExtINTA interrupt, which as it happens, can 
-be used for the timer, but we have to be careful
-
- The end result is we are trying to reuse the same logic in the code for 
-a different purpose and while it is a reasonable approach, care has to be 
-taken to take the slightly different circumstances into account.
-
- Of course if there is no INT2 override in the ACPI table, we might 
-consider blindly checking whether it actually is a timer interrupt, 
-because for systems which have the legacy 8259A chips IRQ2 makes no sense.
-
-> Also Windows uses a different timer set up so this configuration is often
-> not well tested.
-
- Well, they must have figured out the setup of the 8254 timer is
-unreliable as well. ;-)  Actually the original i82489DX documents
-explicitly discouraged SMP operating systems from using the 8254 because
-of the missing wiring to the I/O APIC in some, especially early, systems
-mentioned above.  The use of the mixed interrupt mode was implied if the
-use of timer was found inevitable, which was recognised as not fully in
-the spirit of an SMP system.  Later on the mixed mode proved problematic
-too, because of various APIC errata.  Still we arrange for such a set-up
-as the last resort in check_timer().
-
- The use of the local APIC timer as a replacement was recommended back
-then, but I think IRQ8 from the RTC was also a good solution, as it was
-still before the time the functionality started getting integrated into
-chipsets and the line was always available to the I/O APIC.
-
-  Maciej
+		- Cyrill -
