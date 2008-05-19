@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761395AbYESPre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761950AbYESPrr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761395AbYESPre (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 11:47:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759912AbYESPq7
+	id S1761950AbYESPrr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 11:47:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760539AbYESPrG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 11:46:59 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:41273 "EHLO
+	Mon, 19 May 2008 11:47:06 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:41287 "EHLO
 	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759803AbYESPq6 (ORCPT
+	with ESMTP id S1760221AbYESPrE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 11:46:58 -0400
+	Mon, 19 May 2008 11:47:04 -0400
 From: Alexey Starikovskiy <astarikovskiy@suse.de>
 To: mingo@elte.hu
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/5] x86: move smp_found_config
-Date: Mon, 19 May 2008 19:47:03 +0400
-Message-ID: <20080519154703.15071.4948.stgit@thinkpad>
+Subject: [PATCH 3/5] x86: mp_bus_id_to_pci_bus is not needed
+Date: Mon, 19 May 2008 19:47:09 +0400
+Message-ID: <20080519154709.15071.79793.stgit@thinkpad>
 In-Reply-To: <20080519154656.15071.96979.stgit@thinkpad>
 References: <20080519154656.15071.96979.stgit@thinkpad>
 User-Agent: StGIT/0.14.2
@@ -29,115 +29,85 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
 ---
 
- arch/x86/kernel/apic_32.c           |    3 +++
- arch/x86/kernel/apic_64.c           |    3 +++
- arch/x86/kernel/mpparse.c           |    8 ++++----
- arch/x86/mach-visws/mpparse.c       |    5 ++---
- arch/x86/mach-voyager/voyager_smp.c |    5 -----
- 5 files changed, 12 insertions(+), 12 deletions(-)
+ arch/x86/kernel/io_apic_32.c |    2 +-
+ arch/x86/kernel/io_apic_64.c |    2 +-
+ arch/x86/kernel/mpparse.c    |   10 ----------
+ include/asm-x86/mpspec.h     |    2 --
+ 4 files changed, 2 insertions(+), 14 deletions(-)
 
 
-diff --git a/arch/x86/kernel/apic_32.c b/arch/x86/kernel/apic_32.c
-index c0dd696..4ed4a2b 100644
---- a/arch/x86/kernel/apic_32.c
-+++ b/arch/x86/kernel/apic_32.c
-@@ -79,6 +79,9 @@ int apic_verbosity;
+diff --git a/arch/x86/kernel/io_apic_32.c b/arch/x86/kernel/io_apic_32.c
+index 3037aa4..01dfe7c 100644
+--- a/arch/x86/kernel/io_apic_32.c
++++ b/arch/x86/kernel/io_apic_32.c
+@@ -864,7 +864,7 @@ int IO_APIC_get_PCI_irq_vector(int bus, int slot, int pin)
  
- int pic_mode;
+ 	apic_printk(APIC_DEBUG, "querying PCI -> IRQ mapping bus:%d, "
+ 		"slot:%d, pin:%d.\n", bus, slot, pin);
+-	if (mp_bus_id_to_pci_bus[bus] == -1) {
++	if (test_bit(bus, mp_bus_not_pci)) {
+ 		printk(KERN_WARNING "PCI BIOS passed nonexistent PCI bus %d!\n", bus);
+ 		return -1;
+ 	}
+diff --git a/arch/x86/kernel/io_apic_64.c b/arch/x86/kernel/io_apic_64.c
+index 416154d..e7f7ea7 100644
+--- a/arch/x86/kernel/io_apic_64.c
++++ b/arch/x86/kernel/io_apic_64.c
+@@ -520,7 +520,7 @@ int IO_APIC_get_PCI_irq_vector(int bus, int slot, int pin)
  
-+/* Have we found an MP table */
-+int smp_found_config;
-+
- static unsigned int calibration_result;
- 
- static int lapic_next_event(unsigned long delta,
-diff --git a/arch/x86/kernel/apic_64.c b/arch/x86/kernel/apic_64.c
-index 30f3f6a..10fde03 100644
---- a/arch/x86/kernel/apic_64.c
-+++ b/arch/x86/kernel/apic_64.c
-@@ -56,6 +56,9 @@ EXPORT_SYMBOL_GPL(local_apic_timer_c2_ok);
-  */
- int apic_verbosity;
- 
-+/* Have we found an MP table */
-+int smp_found_config;
-+
- static struct resource lapic_resource = {
- 	.name = "Local APIC",
- 	.flags = IORESOURCE_MEM | IORESOURCE_BUSY,
+ 	apic_printk(APIC_DEBUG, "querying PCI -> IRQ mapping bus:%d, slot:%d, pin:%d.\n",
+ 		bus, slot, pin);
+-	if (mp_bus_id_to_pci_bus[bus] == -1) {
++	if (test_bit(bus, mp_bus_not_pci)) {
+ 		apic_printk(APIC_VERBOSE, "PCI BIOS passed nonexistent PCI bus %d!\n", bus);
+ 		return -1;
+ 	}
 diff --git a/arch/x86/kernel/mpparse.c b/arch/x86/kernel/mpparse.c
-index b72c046..d67cd76 100644
+index d67cd76..83dfd66 100644
 --- a/arch/x86/kernel/mpparse.c
 +++ b/arch/x86/kernel/mpparse.c
-@@ -32,9 +32,6 @@
- #include <mach_mpparse.h>
+@@ -41,13 +41,6 @@ int mp_bus_id_to_type[MAX_MP_BUSSES];
  #endif
  
--/* Have we found an MP table */
--int smp_found_config;
+ DECLARE_BITMAP(mp_bus_not_pci, MAX_MP_BUSSES);
+-int mp_bus_id_to_pci_bus[MAX_MP_BUSSES] = {[0 ... MAX_MP_BUSSES - 1] = -1 };
 -
- /*
-  * Various Linux-internal data structures created from the
-  * MP-table.
-@@ -639,7 +636,9 @@ static void __init __get_smp_config(unsigned early)
- 		 * override the defaults.
- 		 */
- 		if (!smp_read_mpc(phys_to_virt(mpf->mpf_physptr), early)) {
-+#ifdef CONFIG_X86_LOCAL_APIC
- 			smp_found_config = 0;
-+#endif
- 			printk(KERN_ERR
- 			       "BIOS bug, MP table errors detected!...\n");
- 			printk(KERN_ERR "... disabling SMP support. "
-@@ -706,8 +705,9 @@ static int __init smp_scan_config(unsigned long base, unsigned long length,
- 		    !mpf_checksum((unsigned char *)bp, 16) &&
- 		    ((mpf->mpf_specification == 1)
- 		     || (mpf->mpf_specification == 4))) {
+-static int mp_current_pci_id;
 -
-+#ifdef CONFIG_X86_LOCAL_APIC
- 			smp_found_config = 1;
-+#endif
- 			mpf_found = mpf;
- #ifdef CONFIG_X86_32
- 			printk(KERN_INFO "found SMP MP-table at [%p] %08lx\n",
-diff --git a/arch/x86/mach-visws/mpparse.c b/arch/x86/mach-visws/mpparse.c
-index b7d063e..a2fb78c 100644
---- a/arch/x86/mach-visws/mpparse.c
-+++ b/arch/x86/mach-visws/mpparse.c
-@@ -8,9 +8,6 @@
- #include "cobalt.h"
- #include "mach_apic.h"
- 
--/* Have we found an MP table */
--int smp_found_config;
--
- extern unsigned int __cpuinitdata maxcpus;
+-/*
+- * Intel MP BIOS table parsing routines:
+- */
  
  /*
-@@ -74,7 +71,9 @@ void __init find_smp_config(void)
- 	if (ncpus > maxcpus)
- 		ncpus = maxcpus;
- 
-+#ifdef CONFIG_X86_LOCAL_APIC
- 	smp_found_config = 1;
-+#endif
- 	while (ncpus--)
- 		MP_processor_info(mp++);
- 
-diff --git a/arch/x86/mach-voyager/voyager_smp.c b/arch/x86/mach-voyager/voyager_smp.c
-index 8acbf0c..6d33541 100644
---- a/arch/x86/mach-voyager/voyager_smp.c
-+++ b/arch/x86/mach-voyager/voyager_smp.c
-@@ -59,11 +59,6 @@ __u32 voyager_quad_processors = 0;
-  * activity count.  Finally exported by i386_ksyms.c */
- static int voyager_extended_cpus = 1;
- 
--/* Have we found an SMP box - used by time.c to do the profiling
--   interrupt for timeslicing; do not set to 1 until the per CPU timer
--   interrupt is active */
--int smp_found_config = 0;
+  * Checksum an MP configuration block.
+@@ -101,7 +94,6 @@ static void __cpuinit MP_processor_info(struct mpc_config_processor *m)
+ static void __init MP_bus_info(struct mpc_config_bus *m)
+ {
+ 	char str[7];
 -
- /* Used for the invalidate map that's also checked in the spinlock */
- static volatile unsigned long smp_invalidate_needed;
+ 	memcpy(str, m->mpc_bustype, 6);
+ 	str[6] = 0;
  
+@@ -130,8 +122,6 @@ static void __init MP_bus_info(struct mpc_config_bus *m)
+ 		mpc_oem_pci_bus(m, translation_table[mpc_record]);
+ #endif
+ 		clear_bit(m->mpc_busid, mp_bus_not_pci);
+-		mp_bus_id_to_pci_bus[m->mpc_busid] = mp_current_pci_id;
+-		mp_current_pci_id++;
+ #if defined(CONFIG_EISA) || defined (CONFIG_MCA)
+ 		mp_bus_id_to_type[m->mpc_busid] = MP_BUS_PCI;
+ 	} else if (strncmp(str, BUSTYPE_EISA, sizeof(BUSTYPE_EISA) - 1) == 0) {
+diff --git a/include/asm-x86/mpspec.h b/include/asm-x86/mpspec.h
+index 57a991b..b785ddd 100644
+--- a/include/asm-x86/mpspec.h
++++ b/include/asm-x86/mpspec.h
+@@ -32,8 +32,6 @@ extern int mp_bus_id_to_type[MAX_MP_BUSSES];
+ 
+ extern DECLARE_BITMAP(mp_bus_not_pci, MAX_MP_BUSSES);
+ 
+-extern int mp_bus_id_to_pci_bus[MAX_MP_BUSSES];
+-
+ extern unsigned int boot_cpu_physical_apicid;
+ extern int smp_found_config;
+ extern int mpc_default_type;
 
