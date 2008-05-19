@@ -1,69 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757880AbYESNSt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760517AbYESNTP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757880AbYESNSt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 09:18:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759433AbYESNRE
+	id S1760517AbYESNTP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 09:19:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754671AbYESNRJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 09:17:04 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57958 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754768AbYESNRD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 09:17:03 -0400
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 05/57] atp watchdog
-To: akpm@osdl.org, linux-kernel@vger.kernel.org, wim@iguana.be
-Date: Mon, 19 May 2008 14:05:13 +0100
-Message-ID: <20080519130513.31722.56326.stgit@core>
-In-Reply-To: <20080519124659.31722.51847.stgit@core>
-References: <20080519124659.31722.51847.stgit@core>
-User-Agent: StGIT/0.14.1
+	Mon, 19 May 2008 09:17:09 -0400
+Received: from mail.gmx.net ([213.165.64.20]:49345 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1759443AbYESNRH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 09:17:07 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1/23I0E79v2ePDrFsyAgmEqUvhcQOadreXMWD8K+Q
+	txmvgd1vZ1b7M7
+Date: Mon, 19 May 2008 15:17:22 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
+       fabrizio.garetto@gmail.com, jonsmirl@gmail.com
+Subject: Re: [PATCH 3/4] spi: Add OF binding support for SPI busses
+In-Reply-To: <20080516193613.28030.13950.stgit@trillian.secretlab.ca>
+Message-ID: <Pine.LNX.4.64.0805191446530.27140@axis700.grange>
+References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
+ <20080516193613.28030.13950.stgit@trillian.secretlab.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Cox <alan@redhat.com>
+On Fri, 16 May 2008, Grant Likely wrote:
 
-Switch to unlocked_ioctl
+> +    However, the binding does not attempt to define the specific method for
+> +    assigning chip select numbers.  Since SPI chip select configuration is
+> +    flexible and non-standardized, it is left out of this binding with the
+> +    assumption that board specific platform code will be used to manage
+> +    chip selects.  Individual drivers can define additional properties to
+> +    support describing the chip select layout.
+
+Yes, this looks like a problem to me. This means, SPI devices will need 
+two bindings - OF and platform?... Maybe define an spi_chipselect 
+OF-binding?
+
+Thanks
+Guennadi
 ---
-
- drivers/watchdog/at32ap700x_wdt.c |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
-
-
-diff --git a/drivers/watchdog/at32ap700x_wdt.c b/drivers/watchdog/at32ap700x_wdt.c
-index ae0fca5..c5dc5e9 100644
---- a/drivers/watchdog/at32ap700x_wdt.c
-+++ b/drivers/watchdog/at32ap700x_wdt.c
-@@ -212,8 +212,8 @@ static struct watchdog_info at32_wdt_info = {
- /*
-  * Handle commands from user-space.
-  */
--static int at32_wdt_ioctl(struct inode *inode, struct file *file,
--		unsigned int cmd, unsigned long arg)
-+static long at32_wdt_ioctl(struct file *file,
-+				unsigned int cmd, unsigned long arg)
- {
- 	int ret = -ENOTTY;
- 	int time;
-@@ -298,7 +298,7 @@ static ssize_t at32_wdt_write(struct file *file, const char __user *data,
- static const struct file_operations at32_wdt_fops = {
- 	.owner		= THIS_MODULE,
- 	.llseek		= no_llseek,
--	.ioctl		= at32_wdt_ioctl,
-+	.unlocked_ioctl	= at32_wdt_ioctl,
- 	.open		= at32_wdt_open,
- 	.release	= at32_wdt_close,
- 	.write		= at32_wdt_write,
-@@ -391,7 +391,6 @@ static int __exit at32_wdt_remove(struct platform_device *pdev)
- 		wdt = NULL;
- 		platform_set_drvdata(pdev, NULL);
- 	}
--
- 	return 0;
- }
- 
-
+Guennadi Liakhovetski
