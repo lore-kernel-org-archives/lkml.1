@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762308AbYESNXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762400AbYESNYO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762308AbYESNXv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 09:23:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757837AbYESNS0
+	id S1762400AbYESNYO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 09:24:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758928AbYESNSb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 09:18:26 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45852 "EHLO
+	Mon, 19 May 2008 09:18:31 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45858 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760158AbYESNSV (ORCPT
+	with ESMTP id S1759571AbYESNS3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 09:18:21 -0400
+	Mon, 19 May 2008 09:18:29 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 19/57] bfin: watchdog cleanup and unlocked_ioctl
+Subject: [PATCH 20/57] booke watchdog: clean up and unlocked_ioctl
 To: akpm@osdl.org, linux-kernel@vger.kernel.org, wim@iguana.be
-Date: Mon, 19 May 2008 14:06:30 +0100
-Message-ID: <20080519130630.31722.22996.stgit@core>
+Date: Mon, 19 May 2008 14:06:36 +0100
+Message-ID: <20080519130636.31722.55578.stgit@core>
 In-Reply-To: <20080519124659.31722.51847.stgit@core>
 References: <20080519124659.31722.51847.stgit@core>
 User-Agent: StGIT/0.14.1
@@ -27,258 +27,175 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@redhat.com>
 
-Scan, tidy and check for unlocked_ioctl
+
 ---
 
- drivers/watchdog/bfin_wdt.c |  147 +++++++++++++++++++++----------------------
- 1 files changed, 71 insertions(+), 76 deletions(-)
+ drivers/watchdog/booke_wdt.c |   57 ++++++++++++++++++++++--------------------
+ 1 files changed, 30 insertions(+), 27 deletions(-)
 
 
-diff --git a/drivers/watchdog/bfin_wdt.c b/drivers/watchdog/bfin_wdt.c
-index 1237113..cd34652 100644
---- a/drivers/watchdog/bfin_wdt.c
-+++ b/drivers/watchdog/bfin_wdt.c
-@@ -25,7 +25,7 @@
- #include <linux/init.h>
- #include <linux/interrupt.h>
- #include <asm/blackfin.h>
--#include <asm/uaccess.h>
+diff --git a/drivers/watchdog/booke_wdt.c b/drivers/watchdog/booke_wdt.c
+index d362f5b..5d52d35 100644
+--- a/drivers/watchdog/booke_wdt.c
++++ b/drivers/watchdog/booke_wdt.c
+@@ -19,9 +19,9 @@
+ #include <linux/miscdevice.h>
+ #include <linux/notifier.h>
+ #include <linux/watchdog.h>
 +#include <linux/uaccess.h>
  
- #define stamp(fmt, args...) pr_debug("%s:%i: " fmt "\n", __func__, __LINE__, ## args)
- #define stampit() stamp("here i am")
-@@ -147,7 +147,8 @@ static int bfin_wdt_set_timeout(unsigned long t)
- 		int run = bfin_wdt_running();
- 		bfin_wdt_stop();
- 		bfin_write_WDOG_CNT(cnt);
--		if (run) bfin_wdt_start();
-+		if (run)
-+			bfin_wdt_start();
- 	}
- 	spin_unlock_irqrestore(&bfin_wdt_spinlock, flags);
+ #include <asm/reg_booke.h>
+-#include <asm/uaccess.h>
+ #include <asm/system.h>
  
-@@ -190,16 +191,15 @@ static int bfin_wdt_release(struct inode *inode, struct file *file)
+ /* If the kernel parameter wdt=1, the watchdog will be enabled at boot.
+@@ -33,12 +33,12 @@
+  */
+ 
+ #ifdef	CONFIG_FSL_BOOKE
+-#define WDT_PERIOD_DEFAULT 63	/* Ex. wdt_period=28 bus=333Mhz , reset=~40sec */
++#define WDT_PERIOD_DEFAULT 63	/* Ex. wdt_period=28 bus=333Mhz,reset=~40sec */
+ #else
+ #define WDT_PERIOD_DEFAULT 3	/* Refer to the PPC40x and PPC4xx manuals */
+ #endif				/* for timing information */
+ 
+-u32 booke_wdt_enabled = 0;
++u32 booke_wdt_enabled;
+ u32 booke_wdt_period = WDT_PERIOD_DEFAULT;
+ 
+ #ifdef	CONFIG_FSL_BOOKE
+@@ -50,7 +50,7 @@ u32 booke_wdt_period = WDT_PERIOD_DEFAULT;
+ /*
+  * booke_wdt_ping:
+  */
+-static __inline__ void booke_wdt_ping(void)
++static inline void booke_wdt_ping(void)
  {
- 	stampit();
+ 	mtspr(SPRN_TSR, TSR_ENW|TSR_WIS);
+ }
+@@ -58,7 +58,7 @@ static __inline__ void booke_wdt_ping(void)
+ /*
+  * booke_wdt_enable:
+  */
+-static __inline__ void booke_wdt_enable(void)
++static inline void booke_wdt_enable(void)
+ {
+ 	u32 val;
  
--	if (expect_close == 42) {
-+	if (expect_close == 42)
- 		bfin_wdt_stop();
--	} else {
--		printk(KERN_CRIT PFX "Unexpected close, not stopping watchdog!\n");
-+	else {
-+		printk(KERN_CRIT PFX
-+			"Unexpected close, not stopping watchdog!\n");
- 		bfin_wdt_keepalive();
- 	}
--
- 	expect_close = 0;
- 	clear_bit(0, &open_check);
--
- 	return 0;
+@@ -73,7 +73,7 @@ static __inline__ void booke_wdt_enable(void)
+ /*
+  * booke_wdt_write:
+  */
+-static ssize_t booke_wdt_write (struct file *file, const char __user *buf,
++static ssize_t booke_wdt_write(struct file *file, const char __user *buf,
+ 				size_t count, loff_t *ppos)
+ {
+ 	booke_wdt_ping();
+@@ -81,24 +81,23 @@ static ssize_t booke_wdt_write (struct file *file, const char __user *buf,
  }
  
-@@ -213,7 +213,7 @@ static int bfin_wdt_release(struct inode *inode, struct file *file)
-  *	Pings the watchdog on write.
-  */
- static ssize_t bfin_wdt_write(struct file *file, const char __user *data,
--                              size_t len, loff_t *ppos)
-+						size_t len, loff_t *ppos)
- {
- 	stampit();
+ static struct watchdog_info ident = {
+-  .options = WDIOF_SETTIMEOUT | WDIOF_KEEPALIVEPING,
+-  .firmware_version = 0,
+-  .identity = "PowerPC Book-E Watchdog",
++	.options = WDIOF_SETTIMEOUT | WDIOF_KEEPALIVEPING,
++	.firmware_version = 0,
++	.identity = "PowerPC Book-E Watchdog",
+ };
  
-@@ -240,7 +240,6 @@ static ssize_t bfin_wdt_write(struct file *file, const char __user *data,
- 
- /**
-  *	bfin_wdt_ioctl - Query Device
-- *	@inode: inode of device
-  *	@file: file handle of device
-  *	@cmd: watchdog command
-  *	@arg: argument
-@@ -248,8 +247,8 @@ static ssize_t bfin_wdt_write(struct file *file, const char __user *data,
-  *	Query basic information from the device or ping it, as outlined by the
-  *	watchdog API.
+ /*
+  * booke_wdt_ioctl:
   */
--static int bfin_wdt_ioctl(struct inode *inode, struct file *file,
--                          unsigned int cmd, unsigned long arg)
-+static long bfin_wdt_ioctl(struct file *file,
-+				unsigned int cmd, unsigned long arg)
+-static int booke_wdt_ioctl (struct inode *inode, struct file *file,
+-			    unsigned int cmd, unsigned long arg)
++static long booke_wdt_ioctl(struct file *file,
++					unsigned int cmd, unsigned long arg)
  {
- 	void __user *argp = (void __user *)arg;
- 	int __user *p = argp;
-@@ -257,59 +256,49 @@ static int bfin_wdt_ioctl(struct inode *inode, struct file *file,
- 	stampit();
+ 	u32 tmp = 0;
+ 	u32 __user *p = (u32 __user *)arg;
  
  	switch (cmd) {
--		default:
--			return -ENOTTY;
--
--		case WDIOC_GETSUPPORT:
--			if (copy_to_user(argp, &bfin_wdt_info, sizeof(bfin_wdt_info)))
--				return -EFAULT;
--			else
--				return 0;
--
--		case WDIOC_GETSTATUS:
--		case WDIOC_GETBOOTSTATUS:
--			return put_user(!!(_bfin_swrst & SWRST_RESET_WDOG), p);
--
--		case WDIOC_KEEPALIVE:
--			bfin_wdt_keepalive();
-+	case WDIOC_GETSUPPORT:
-+		if (copy_to_user(argp, &bfin_wdt_info, sizeof(bfin_wdt_info)))
-+			return -EFAULT;
-+		else
- 			return 0;
--
--		case WDIOC_SETTIMEOUT: {
--			int new_timeout;
--
--			if (get_user(new_timeout, p))
--				return -EFAULT;
--
--			if (bfin_wdt_set_timeout(new_timeout))
--				return -EINVAL;
-+	case WDIOC_GETSTATUS:
-+	case WDIOC_GETBOOTSTATUS:
-+		return put_user(!!(_bfin_swrst & SWRST_RESET_WDOG), p);
-+	case WDIOC_KEEPALIVE:
-+		bfin_wdt_keepalive();
-+		return 0;
-+	case WDIOC_SETTIMEOUT: {
-+		int new_timeout;
-+
-+		if (get_user(new_timeout, p))
-+			return -EFAULT;
-+		if (bfin_wdt_set_timeout(new_timeout))
-+			return -EINVAL;
-+	}
-+	/* Fall */
-+	case WDIOC_GETTIMEOUT:
-+		return put_user(timeout, p);
-+	case WDIOC_SETOPTIONS: {
-+		unsigned long flags;
-+		int options, ret = -EINVAL;
-+
-+		if (get_user(options, p))
-+			return -EFAULT;
-+
-+		spin_lock_irqsave(&bfin_wdt_spinlock, flags);
-+		if (options & WDIOS_DISABLECARD) {
-+			bfin_wdt_stop();
-+			ret = 0;
- 		}
--			/* Fall */
--		case WDIOC_GETTIMEOUT:
--			return put_user(timeout, p);
--
--		case WDIOC_SETOPTIONS: {
--			unsigned long flags;
--			int options, ret = -EINVAL;
--
--			if (get_user(options, p))
--				return -EFAULT;
--
--			spin_lock_irqsave(&bfin_wdt_spinlock, flags);
--
--			if (options & WDIOS_DISABLECARD) {
--				bfin_wdt_stop();
--				ret = 0;
--			}
--
--			if (options & WDIOS_ENABLECARD) {
--				bfin_wdt_start();
--				ret = 0;
--			}
--
--			spin_unlock_irqrestore(&bfin_wdt_spinlock, flags);
--
--			return ret;
-+		if (options & WDIOS_ENABLECARD) {
-+			bfin_wdt_start();
-+			ret = 0;
- 		}
-+		spin_unlock_irqrestore(&bfin_wdt_spinlock, flags);
-+		return ret;
-+	}
-+	default:
-+		return -ENOTTY;
+ 	case WDIOC_GETSUPPORT:
+-		if (copy_to_user ((struct watchdog_info __user *) arg, &ident,
+-				sizeof(struct watchdog_info)))
++		if (copy_to_user(arg, &ident, sizeof(struct watchdog_info)))
+ 			return -EFAULT;
+ 	case WDIOC_GETSTATUS:
+ 		return put_user(ident.options, p);
+@@ -113,7 +112,8 @@ static int booke_wdt_ioctl (struct inode *inode, struct file *file,
+ 	case WDIOC_SETTIMEOUT:
+ 		if (get_user(booke_wdt_period, p))
+ 			return -EFAULT;
+-		mtspr(SPRN_TCR, (mfspr(SPRN_TCR)&~WDTP(0))|WDTP(booke_wdt_period));
++		mtspr(SPRN_TCR, (mfspr(SPRN_TCR) & ~WDTP(0)) |
++						WDTP(booke_wdt_period));
+ 		return 0;
+ 	case WDIOC_GETTIMEOUT:
+ 		return put_user(booke_wdt_period, p);
+@@ -135,12 +135,13 @@ static int booke_wdt_ioctl (struct inode *inode, struct file *file,
+ /*
+  * booke_wdt_open:
+  */
+-static int booke_wdt_open (struct inode *inode, struct file *file)
++static int booke_wdt_open(struct inode *inode, struct file *file)
+ {
+ 	if (booke_wdt_enabled == 0) {
+ 		booke_wdt_enabled = 1;
+ 		booke_wdt_enable();
+-		printk (KERN_INFO "PowerPC Book-E Watchdog Timer Enabled (wdt_period=%d)\n",
++		printk(KERN_INFO
++		     "PowerPC Book-E Watchdog Timer Enabled (wdt_period=%d)\n",
+ 				booke_wdt_period);
  	}
+ 
+@@ -148,17 +149,17 @@ static int booke_wdt_open (struct inode *inode, struct file *file)
  }
  
-@@ -322,8 +311,8 @@ static int bfin_wdt_ioctl(struct inode *inode, struct file *file,
-  *	Handles specific events, such as turning off the watchdog during a
-  *	shutdown event.
-  */
--static int bfin_wdt_notify_sys(struct notifier_block *this, unsigned long code,
--                               void *unused)
-+static int bfin_wdt_notify_sys(struct notifier_block *this,
-+					unsigned long code, void *unused)
+ static const struct file_operations booke_wdt_fops = {
+-  .owner = THIS_MODULE,
+-  .llseek = no_llseek,
+-  .write = booke_wdt_write,
+-  .ioctl = booke_wdt_ioctl,
+-  .open = booke_wdt_open,
++	.owner = THIS_MODULE,
++	.llseek = no_llseek,
++	.write = booke_wdt_write,
++	.unlocked_ioctl = booke_wdt_ioctl,
++	.open = booke_wdt_open,
+ };
+ 
+ static struct miscdevice booke_wdt_miscdev = {
+-  .minor = WATCHDOG_MINOR,
+-  .name = "watchdog",
+-  .fops = &booke_wdt_fops,
++	.minor = WATCHDOG_MINOR,
++	.name = "watchdog",
++	.fops = &booke_wdt_fops,
+ };
+ 
+ static void __exit booke_wdt_exit(void)
+@@ -173,18 +174,20 @@ static int __init booke_wdt_init(void)
  {
- 	stampit();
+ 	int ret = 0;
  
-@@ -392,12 +381,12 @@ static struct platform_driver bfin_wdt_driver = {
- };
+-	printk (KERN_INFO "PowerPC Book-E Watchdog Timer Loaded\n");
++	printk(KERN_INFO "PowerPC Book-E Watchdog Timer Loaded\n");
+ 	ident.firmware_version = cur_cpu_spec->pvr_value;
  
- static const struct file_operations bfin_wdt_fops = {
--	.owner    = THIS_MODULE,
--	.llseek   = no_llseek,
--	.write    = bfin_wdt_write,
--	.ioctl    = bfin_wdt_ioctl,
--	.open     = bfin_wdt_open,
--	.release  = bfin_wdt_release,
-+	.owner		= THIS_MODULE,
-+	.llseek		= no_llseek,
-+	.write    	= bfin_wdt_write,
-+	.unlocked_ioctl	= bfin_wdt_ioctl,
-+	.open		= bfin_wdt_open,
-+	.release	= bfin_wdt_release,
- };
- 
- static struct miscdevice bfin_wdt_miscdev = {
-@@ -409,8 +398,8 @@ static struct miscdevice bfin_wdt_miscdev = {
- static struct watchdog_info bfin_wdt_info = {
- 	.identity = "Blackfin Watchdog",
- 	.options  = WDIOF_SETTIMEOUT |
--	            WDIOF_KEEPALIVEPING |
--	            WDIOF_MAGICCLOSE,
-+		    WDIOF_KEEPALIVEPING |
-+		    WDIOF_MAGICCLOSE,
- };
- 
- static struct notifier_block bfin_wdt_notifier = {
-@@ -446,14 +435,16 @@ static int __init bfin_wdt_init(void)
- 
- 	ret = register_reboot_notifier(&bfin_wdt_notifier);
+ 	ret = misc_register(&booke_wdt_miscdev);
  	if (ret) {
--		pr_init(KERN_ERR PFX "cannot register reboot notifier (err=%d)\n", ret);
-+		pr_init(KERN_ERR PFX
-+			"cannot register reboot notifier (err=%d)\n", ret);
+-		printk (KERN_CRIT "Cannot register miscdev on minor=%d (err=%d)\n",
++		printk(KERN_CRIT
++			"Cannot register miscdev on minor=%d (err=%d)\n",
+ 				WATCHDOG_MINOR, ret);
  		return ret;
  	}
  
- 	ret = misc_register(&bfin_wdt_miscdev);
- 	if (ret) {
--		pr_init(KERN_ERR PFX "cannot register miscdev on minor=%d (err=%d)\n",
--		       WATCHDOG_MINOR, ret);
-+		pr_init(KERN_ERR PFX
-+			"cannot register miscdev on minor=%d (err=%d)\n",
-+					WATCHDOG_MINOR, ret);
- 		unregister_reboot_notifier(&bfin_wdt_notifier);
- 		return ret;
+ 	if (booke_wdt_enabled == 1) {
+-		printk (KERN_INFO "PowerPC Book-E Watchdog Timer Enabled (wdt_period=%d)\n",
++		printk(KERN_INFO
++		    "PowerPC Book-E Watchdog Timer Enabled (wdt_period=%d)\n",
+ 				booke_wdt_period);
+ 		booke_wdt_enable();
  	}
-@@ -485,7 +476,11 @@ MODULE_LICENSE("GPL");
- MODULE_ALIAS_MISCDEV(WATCHDOG_MINOR);
- 
- module_param(timeout, uint, 0);
--MODULE_PARM_DESC(timeout, "Watchdog timeout in seconds. (1<=timeout<=((2^32)/SCLK), default=" __MODULE_STRING(WATCHDOG_TIMEOUT) ")");
-+MODULE_PARM_DESC(timeout,
-+	"Watchdog timeout in seconds. (1<=timeout<=((2^32)/SCLK), default="
-+		__MODULE_STRING(WATCHDOG_TIMEOUT) ")");
- 
- module_param(nowayout, int, 0);
--MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default=" __MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
-+MODULE_PARM_DESC(nowayout,
-+	"Watchdog cannot be stopped once started (default="
-+		__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
 
