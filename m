@@ -1,41 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756696AbYESHsE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757338AbYESHsg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756696AbYESHsE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 03:48:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754088AbYESHrw
+	id S1757338AbYESHsg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 03:48:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755039AbYESHs2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 03:47:52 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:38458 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751625AbYESHrw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 03:47:52 -0400
-To: flar@allandria.com
-CC: miklos@szeredi.hu, hirofumi@mail.parknet.co.jp, akpm@linux-foundation.org,
-       hch@infradead.org, viro@ZenIV.linux.org.uk, ezk@cs.sunysb.edu,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-reply-to: <20080517130132.GB25261@cynthia.pants.nu> (message from Brad
-	Boyer on Sat, 17 May 2008 06:01:32 -0700)
-Subject: Re: [patch 07/22] fat: dont call notify_change
-References: <20080516163136.560107038@szeredi.hu> <20080516163222.235825996@szeredi.hu> <87prrl7rxg.fsf@duaron.myhome.or.jp> <E1JxGLP-000406-Eo@pomaz-ex.szeredi.hu> <20080517130132.GB25261@cynthia.pants.nu>
-Message-Id: <E1Jy05W-0007cv-UK@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 19 May 2008 09:47:18 +0200
+	Mon, 19 May 2008 03:48:28 -0400
+Received: from sacred.ru ([62.205.161.221]:37003 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754088AbYESHs1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 03:48:27 -0400
+Message-ID: <48313025.2060103@openvz.org>
+Date: Mon, 19 May 2008 11:45:41 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Randy Dunlap <randy.dunlap@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH (resend)] Bsdacct: stir up comments around acct_process
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 19 May 2008 11:48:02 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > +EXPORT_SYMBOL_GPL(security_inode_setattr);
-> 
-> Is there any particular reason you made it EXPORT_SYMBOL_GPL? It seems
-> like this is replacing functionality that was previously exported
-> without a GPL tag. I won't argue forcefully for changing it, but I
-> did want to mention it on the list. I understand people wanting to
-> make new functionality tagged that way (even though I disagree), but
-> this doesn't seem to fit either the notion of an internal thing that
-> shouldn't be touched or new functionality.
+Fix the one describing what this function is and add one
+more - about locking absence around pid namespaces loop.
 
-It's an internal thing: no other filesystem should do this (and IMO
-even FAT should not, but some people seem to feel otherwise).
+Changes from v1: fixed misprints pointed out by Randy.
 
-Miklos
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
+
+---
+
+diff --git a/kernel/acct.c b/kernel/acct.c
+index 0feba97..d7b670c 100644
+--- a/kernel/acct.c
++++ b/kernel/acct.c
+@@ -657,7 +657,8 @@ static void acct_process_in_ns(struct pid_namespace *ns)
+ }
+ 
+ /**
+- * acct_process - now just a wrapper around do_acct_process
++ * acct_process - now just a wrapper around acct_process_in_ns,
++ * which in turn is a wrapper around do_acct_process.
+  *
+  * handles process accounting for an exiting task
+  */
+@@ -665,6 +666,11 @@ void acct_process(void)
+ {
+ 	struct pid_namespace *ns;
+ 
++	/*
++	 * This loop is safe lockless, since current is still
++	 * alive and holds its namespace, which in turn holds
++	 * its parent.
++	 */
+ 	for (ns = task_active_pid_ns(current); ns != NULL; ns = ns->parent)
+ 		acct_process_in_ns(ns);
+ }
