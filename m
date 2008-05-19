@@ -1,59 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762269AbYESNpw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763291AbYESNqs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762269AbYESNpw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 09:45:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755029AbYESNpl
+	id S1763291AbYESNqs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 09:46:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755029AbYESNqj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 09:45:41 -0400
-Received: from main.gmane.org ([80.91.229.2]:43149 "EHLO ciao.gmane.org"
+	Mon, 19 May 2008 09:46:39 -0400
+Received: from vena.lwn.net ([206.168.112.25]:60390 "EHLO vena.lwn.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756857AbYESNpi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 09:45:38 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Jan Blunck <jblunck@suse.de>
-Subject: Re: [PATCH 6/7] kbuild: make source and include paths absolute
-Date: Mon, 19 May 2008 13:45:29 +0000 (UTC)
-Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG
-	Nuernberg)
-Message-ID: <g0s09p$o7h$1@ger.gmane.org>
-References: <48313E08.8070904@de.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: charybdis-ext.suse.de
-User-Agent: Pan/0.132 (Waxed in Black)
+	id S1754841AbYESNqi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 09:46:38 -0400
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Alexander Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, RFC] Char dev BKL pushdown v2 
+From: corbet@lwn.net (Jonathan Corbet)
+In-reply-to: Your message of "Mon, 19 May 2008 14:03:01 +1000."
+             <20080519140301.ae7d4de6.sfr@canb.auug.org.au> 
+Date: Mon, 19 May 2008 07:46:38 -0600
+Message-ID: <12693.1211204798@vena.lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 May 2008 10:44:56 +0200, Peter Oberparleiter wrote:
+Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-> From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-> 
-> Change all source and include paths to absolute form when
-> CONFIG_GCOV_PROFILE is enabled.
-> 
-> Example:
-> 
->   gcc -Idir1 -c a.c -o a.o
-> 
-> will become
-> 
->   gcc -I/path/to/dir1 -c /path/to/a.c -o a.o
-> 
-> Required by the gcov profiling infrastructure: when compiling with
-> option -fprofile-arcs, gcc stores file names inside object files.
-> Relative paths prevent the gcov tool from finding corresponding source
-> files.
+> I haven't been following this too closely, so how much of this stuff has
+> been posted/review/tested?
 
-I think it would be good to fix this in the gcov tool. When I think
-of distribution kernels the source usually ends up in a different
-place in the packages than the kernel was originally compiled. So
-it would be good to extend gcov here or let it search in well known
-locations first (/usr/src/linux, /usr/src/debug/...).
+This is the second posting (some of the changesets are new this time
+around).  It all builds and runs for me, but a lot of this work affects
+some of the oldest, most cobweb-filled code around, and I sure don't
+have that hardware.  Some others have looked at, but I'm not sure how
+deeply.
 
-Cheers,
-Jan
+The basic concept of this work is straightforward, so I have good reason
+to hope I've not done anything really stupid.
 
+jon
