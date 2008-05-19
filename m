@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759734AbYESOt1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760246AbYESOuW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759734AbYESOt1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 10:49:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756752AbYESOtR
+	id S1760246AbYESOuW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 10:50:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758273AbYESOuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 10:49:17 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:3858 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756520AbYESOtQ (ORCPT
+	Mon, 19 May 2008 10:50:07 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:40495 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758214AbYESOuF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 10:49:16 -0400
-Subject: Re: [BUG] 2.6.26-rc2-mm1 - kernel bug while bootup at
-	__alloc_pages_internal () on x86_64
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+	Mon, 19 May 2008 10:50:05 -0400
+Date: Mon, 19 May 2008 10:46:54 -0400
+From: Theodore Tso <tytso@MIT.EDU>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, apw@shadowen.org,
-       balbir@linux.vnet.ibm.com, linux-mm@kvack.org, mingo@elte.hu,
-       kosaki.motohiro@gmail.com
-In-Reply-To: <2f11576a0805181007n14592bd0r1cf8aec915894ed5@mail.gmail.com>
-References: <20080514010129.4f672378.akpm@linux-foundation.org>
-	 <482ACBFE.9010606@linux.vnet.ibm.com>
-	 <20080514103601.32d20889.akpm@linux-foundation.org>
-	 <482B2DB0.9030102@linux.vnet.ibm.com>
-	 <20080514124455.cf7c3097.akpm@linux-foundation.org>
-	 <20080518080013.GA17458@linux.vnet.ibm.com>
-	 <2f11576a0805181007n14592bd0r1cf8aec915894ed5@mail.gmail.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Mon, 19 May 2008 10:49:12 -0400
-Message-Id: <1211208552.6322.5.camel@lts-notebook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
+       Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       jamie@shareable.org
+Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
+Message-ID: <20080519144654.GC15035@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Chris Mason <chris.mason@oracle.com>,
+	Andi Kleen <andi@firstfloor.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+	jamie@shareable.org
+References: <482DDA56.6000301@redhat.com> <20080516130545.845a3be9.akpm@linux-foundation.org> <87ej7zcrqv.fsf@basil.nowhere.org> <200805190926.41970.chris.mason@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200805190926.41970.chris.mason@oracle.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-05-19 at 02:07 +0900, KOSAKI Motohiro wrote:
-> > After bisecting, the acpi-acpi_numa_init-build-fix.patch patch seems
-> > to be causing the kernel panic during the bootup. Reverting the patch helps
-> > in booting up the machine without the panic.
+On Mon, May 19, 2008 at 09:26:41AM -0400, Chris Mason wrote:
 > >
-> > commit 5dc90c0b2d4bd0127624bab67cec159b2c6c4daf
-> > Author: Ingo Molnar <mingo@elte.hu>
-> > Date:   Thu May 1 09:51:47 2008 +0000
-> >
-> >    acpi-acpi_numa_init-build-fix
+> > Didn't ext4 have some new checksum trick to avoid them?
 > 
-> this patch break Fujitsu ia64 numa box too.
-> after revert, my test environment works well.
+> I didn't think checksumming avoided barriers completely.  Just the barrier 
+> before the commit block, not the barrier after.
 
-On HP ia64 numa, that patch causes all memory to show up on node 0, but
-otherwise the platform boots and runs.  Didn't notice it until I tried
-to run some numa tests.
+Funny thing, I was looking in this over the weekend.  It currently
+avoids barriers entirely if journal_async_commit is enabled (which is
+not the default); if enabled, it effectively forces barrier=0.  This
+is IMHO a bug.
 
-Reverting the patch restores numaness.
+I'm working on a patch where "barrier=1" will use a barrier before and
+after, and "barrier=1,journal_async_commit" will use a barrier after.
 
-Lee
-
+       	   				    	     - Ted
