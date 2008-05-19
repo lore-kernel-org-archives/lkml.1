@@ -1,362 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758420AbYESKct@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757769AbYESKjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758420AbYESKct (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 06:32:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756914AbYESKcb
+	id S1757769AbYESKjU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 06:39:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755123AbYESKjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 06:32:31 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:41156 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756307AbYESKc3 (ORCPT
+	Mon, 19 May 2008 06:39:09 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:11765 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755101AbYESKjI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 06:32:29 -0400
-Message-ID: <48315718.6080700@bull.net>
-Date: Mon, 19 May 2008 12:31:52 +0200
-From: Nadia Derbey <Nadia.Derbey@bull.net>
-Organization: BULL/DT/OSwR&D/Linux
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
-X-Accept-Language: en-us, en
+	Mon, 19 May 2008 06:39:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NZEIl/XqO60gAZhDsmkHr+3VpZBWcF2ZUd+kARsp6WH0NwXufCAQj8xOqgFCAhUCLOuJpE5mYXkK7Xm4G1uHWvwWEfzydHxjJTDStnBZDHT2B1nDNbIAmRtWYy5A2ZZTNXoQZOWdOL9aNV7U8YmseZcFm336ZauYR6NMleL0MA0=
+Message-ID: <e85b9d30805190339w7466dc2eqb1920bf2672eb54b@mail.gmail.com>
+Date: Mon, 19 May 2008 12:39:07 +0200
+From: Matthew <jackdachef@gmail.com>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Subject: Re: performance "regression" in cfq compared to anticipatory, deadline and noop
+Cc: fchecconi@gmail.com, "Daniel J Blueman" <daniel.blueman@gmail.com>,
+       "Kasper Sandberg" <lkml@metanurb.dk>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "Aaron Carroll" <aaronc@cse.unsw.edu.au>
+In-Reply-To: <e85b9d30805161549o7c8f065do24b6567e2ade0afa@mail.gmail.com>
 MIME-Version: 1.0
-To: Nadia Derbey <Nadia.Derbey@bull.net>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Adrian Bunk <bunk@kernel.org>,
-       kernel list <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-       Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [BUG] 2.6.26-rc1-git4 - task blocked on powerpc for more than
- 120 seconds
-References: <4821AD2D.8020001@linux.vnet.ibm.com> <20080507134057.GA30637@cs181133002.pp.htv.fi> <48227AAB.9000309@linux.vnet.ibm.com> <482C1ED8.3030508@bull.net> <482D999D.5090408@linux.vnet.ibm.com> <483138EC.6090600@bull.net>
-In-Reply-To: <483138EC.6090600@bull.net>
-Content-Type: multipart/mixed;
- boundary="------------040400090705090803040100"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080513122021.GP16217@kernel.dk>
+	 <20080513180334.GS16217@kernel.dk> <20080513184057.GU16217@kernel.dk>
+	 <6278d2220805140105x27292033u6a97dcf13ab54263@mail.gmail.com>
+	 <20080514082622.GA16217@kernel.dk>
+	 <e85b9d30805140332r3311b2d6r6831d37421ced757@mail.gmail.com>
+	 <e85b9d30805140334q69cb5eacued9a719414e73d53@mail.gmail.com>
+	 <20080514103956.GD16217@kernel.dk>
+	 <e85b9d30805141239g5df9abc6i666b1f621d632b44@mail.gmail.com>
+	 <e85b9d30805161549o7c8f065do24b6567e2ade0afa@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040400090705090803040100
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi,
 
-Nadia Derbey wrote:
-> Kamalesh Babulal wrote:
-> 
->> Nadia Derbey wrote:
->>
->>> Kamalesh Babulal wrote:
->>>
->>>> Adrian Bunk wrote:
->>>>
->>>>
->>>>> On Wed, May 07, 2008 at 06:52:53PM +0530, Kamalesh Babulal wrote:
->>>>>
->>>>>
->>>>>> While running the ltp over the powerpc with the 2.6.26-rc1-git4 
->>>>>> kernel,
->>>>>> task get blocked for more 120 seconds and does not proceeds future.
->>>>>>
->>>>>> The task msgctl08 is a ipc testcase, which test the msgget(2) 
->>>>>> msgctl(2)
->>>>>> syscalls.
->>>>>
->>>>>
->>>>> Thanks for your report.
->>>>>
->>>>> I assume this is reproducible?
->>>>>
->>>>> If yes, what was the last kernel that worked for you?
->>>>
->>>>
->>>> This is reproducible on 2.6.26-rc1 and 2.6.26-rc1-git(s). 2.6.25 is 
->>>> the last know kernel
->>>> to work.
->>>>
->>>>
->>>>
->>>>> I've also added Pierre Peiffer and Nadia Derbey to the Cc since 
->>>>> their recent ipc commits are my first suspects.
->>>>>
->>>>>
->>>>>
->>>>>> Machine is stuck in the task, printing the following call trace
->>>>>> more than 5000 times. The oom-killer invoked once in-between.
->>>>>>
->>>>>> INFO: task msgctl08:16248 blocked for more than 120 seconds.
->>>>>> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this 
->>>>>> message.
->>>>>> Call Trace:
->>>>>> [c0000000762435a0] [0000000000000001] 0x1 (unreliable)
->>>>>> [c000000076243770] [c000000000010acc] .__switch_to+0x128/0x16c
->>>>>> [c000000076243800] [c0000000004b07a4] .schedule+0x7ac/0x890
->>>>>> [c0000000762438f0] [c0000000004b2ba4] 
->>>>>> .rwsem_down_failed_common+0x260/0x2b0
->>>>>> [c0000000762439b0] [c0000000004b2c60] 
->>>>>> .rwsem_down_read_failed+0x2c/0x44
->>>>>> [c000000076243a60] [c0000000004b1b84] .down_read+0x44/0x5c
->>>>>> [c000000076243af0] [c000000000295e10] .ipc_lock+0x34/0xe0
->>>>>> [c000000076243b90] [c00000000029690c] .ipc_lock_check+0x24/0x78
->>>>>> [c000000076243c20] [c0000000002972c0] .do_msgsnd+0xb0/0x3f8
->>>>>> [c000000076243d10] [c000000000293ce8] .compat_sys_msgsnd+0x94/0xc0
->>>>>> [c000000076243db0] [c000000000014418] .compat_sys_ipc+0x130/0x1f4
->>>>>> [c000000076243e30] [c000000000008734] syscall_exit+0x0/0x40
->>>>>> msgctl08 invoked oom-killer: gfp_mask=0x1200d2, order=0, oomkilladj=0
->>>>>> Call Trace:
->>>>>> [c00000001e1c7640] [c0000000000101bc] .show_stack+0x70/0x1bc 
->>>>>> (unreliable)
->>>>>> [c00000001e1c76f0] [c0000000000c2c78] .oom_kill_process+0x78/0x230
->>>>>> [c00000001e1c77a0] [c0000000000c3390] .out_of_memory+0x28c/0x320
->>>>>> [c00000001e1c7870] [c0000000000c70ac] 
->>>>>> .__alloc_pages_internal+0x364/0x468
->>>>>> [c00000001e1c7980] [c0000000000e83cc] .alloc_page_vma+0x120/0x14c
->>>>>> [c00000001e1c7a20] [c0000000000e0224] 
->>>>>> .read_swap_cache_async+0x7c/0x160
->>>>>> [c00000001e1c7ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
->>>>>> [c00000001e1c7ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
->>>>>> [c00000001e1c7c80] [c0000000004b5054] .do_page_fault+0x440/0x624
->>>>>> [c00000001e1c7e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
->>>>>> Mem-info:
->>>>>> Node 0 DMA per-cpu:
->>>>>> CPU    0: hi:    6, btch:   1 usd:   1
->>>>>> CPU    1: hi:    6, btch:   1 usd:   1
->>>>>> Node 1 DMA per-cpu:
->>>>>> CPU    0: hi:    6, btch:   1 usd:   5
->>>>>> CPU    1: hi:    6, btch:   1 usd:   5
->>>>>> Active:31 inactive:2628 dirty:1 writeback:6 unstable:0
->>>>>> free:156 slab:13071 mapped:548 pagetables:41109 bounce:0
->>>>>> Node 0 DMA free:5312kB min:5760kB low:7168kB high:8640kB 
->>>>>> active:1024kB inactive:768kB present:3928832kB pages_scanned:3912 
->>>>>> all_unreclaimable? no
->>>>>> lowmem_reserve[]: 0 0 0
->>>>>> Node 1 DMA free:4672kB min:4992kB low:6208kB high:7488kB 
->>>>>> active:960kB inactive:169792kB present:3404992kB 
->>>>>> pages_scanned:140140 all_unreclaimable? no
->>>>>> lowmem_reserve[]: 0 0 0
->>>>>> Node 0 DMA: 5*64kB 15*128kB 2*256kB 1*512kB 0*1024kB 1*2048kB 
->>>>>> 0*4096kB 0*8192kB 0*16384kB = 5312kB
->>>>>> Node 1 DMA: 8*64kB 5*128kB 6*256kB 0*512kB 0*1024kB 1*2048kB 
->>>>>> 0*4096kB 0*8192kB 0*16384kB = 4736kB
->>>>>> 8185 total pagecache pages
->>>>>> Swap cache: add 29545, delete 21888, find 5602/10373
->>>>>> Free swap  = 803712kB
->>>>>> Total swap = 2048128kB
->>>>>> 114688 pages of RAM
->>>>>> 766 reserved pages
->>>>>> 231218 pages shared
->>>>>> 7657 pages swap cached
->>>>>> Out of memory: kill process 15371 (msgctl08) score 39223 or a child
->>>>>> Killed process 15373 (msgctl08)
->>>>>> INFO: task msgctl08:15385 blocked for more than 120 seconds.
->>>>>> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this 
->>>>>> message.
->>>>>> Call Trace:
->>>>>> [c0000000e9a43290] [0000000000000001] 0x1 (unreliable)
->>>>>> [c0000000e9a43460] [c000000000010acc] .__switch_to+0x128/0x16c
->>>>>> [c0000000e9a434f0] [c0000000004b07a4] .schedule+0x7ac/0x890
->>>>>> [c0000000e9a435e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
->>>>>> [c0000000e9a43670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
->>>>>> [c0000000e9a43750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
->>>>>> [c0000000e9a43800] [c0000000002d6624] 
->>>>>> .generic_make_request+0x35c/0x3b0
->>>>>> [c0000000e9a438e0] [c0000000002d81b0] .submit_bio+0x118/0x140
->>>>>> [c0000000e9a439a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
->>>>>> [c0000000e9a43a20] [c0000000000e02b8] 
->>>>>> .read_swap_cache_async+0x110/0x160
->>>>>> [c0000000e9a43ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
->>>>>> [c0000000e9a43ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
->>>>>> [c0000000e9a43c80] [c0000000004b5054] .do_page_fault+0x440/0x624
->>>>>> [c0000000e9a43e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
->>>>>> INFO: task msgctl08:15405 blocked for more than 120 seconds.
->>>>>> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this 
->>>>>> message.
->>>>>> Call Trace:
->>>>>> [c0000000b1757290] [0000000000000001] 0x1 (unreliable)
->>>>>> [c0000000b1757460] [c000000000010acc] .__switch_to+0x128/0x16c
->>>>>> [c0000000b17574f0] [c0000000004b07a4] .schedule+0x7ac/0x890
->>>>>> [c0000000b17575e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
->>>>>> [c0000000b1757670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
->>>>>> [c0000000b1757750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
->>>>>> [c0000000b1757800] [c0000000002d6624] 
->>>>>> .generic_make_request+0x35c/0x3b0
->>>>>> [c0000000b17578e0] [c0000000002d81b0] .submit_bio+0x118/0x140
->>>>>> [c0000000b17579a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
->>>>>> [c0000000b1757a20] [c0000000000e02b8] 
->>>>>> .read_swap_cache_async+0x110/0x160
->>>>>> [c0000000b1757ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
->>>>>> [c0000000b1757ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
->>>>>> [c0000000b1757c80] [c0000000004b5054] .do_page_fault+0x440/0x624
->>>>>> [c0000000b1757e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
->>>>>> INFO: task msgctl08:15406 blocked for more than 120 seconds.
->>>>>> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this 
->>>>>> message.
->>>>>> Call Trace:
->>>>>> [c0000000eec53290] [0000000000000001] 0x1 (unreliable)
->>>>>> [c0000000eec53460] [c000000000010acc] .__switch_to+0x128/0x16c
->>>>>> [c0000000eec534f0] [c0000000004b07a4] .schedule+0x7ac/0x890
->>>>>> [c0000000eec535e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
->>>>>> [c0000000eec53670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
->>>>>> [c0000000eec53750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
->>>>>> [c0000000eec53800] [c0000000002d6624] 
->>>>>> .generic_make_request+0x35c/0x3b0
->>>>>> [c0000000eec538e0] [c0000000002d81b0] .submit_bio+0x118/0x140
->>>>>> [c0000000eec539a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
->>>>>> [c0000000eec53a20] [c0000000000e02b8] 
->>>>>> .read_swap_cache_async+0x110/0x160
->>>>>> [c0000000eec53ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
->>>>>> [c0000000eec53ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
->>>>>> [c0000000eec53c80] [c0000000004b5054] .do_page_fault+0x440/0x624
->>>>>> [c0000000eec53e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
->>>
->>>
->>> Kamalesh,
->>>
->>> I'm wondering whether this is not related to a problem found in LTP 
->>> after msgmni had been changed from 16 to a computed value.
->>>
->>> Does your ltp test suite contain the patch I had sent in thread 
->>> http://lkml.org/lkml/2008/2/21/123?
->>>
->>> If you want to have a look at it, discussion started in thread 
->>> http://lkml.org/lkml/2008/2/16/6
->>>
->>> Regards,
->>> Nadia
->>>
->>
->> Hi Nadia,
->> Thanks, I am using the LTP-20080430 and tried it with the 
->> 2.6.26-rc2-git4 kernel.
->> but the call trace remains the same.
->>
-> 
-> Ok, I'll try to find a ppc machine: could not reproduce it on my Xeon 
-> machine (but actually it was with a 2.6.26-rc1 kernel).
-> 
-> Regards,
-> Nadia
-> 
+I just wrote a bug-report as a reminder for this problem:
 
-Kamalesh,
+http://bugzilla.kernel.org/show_bug.cgi?id=10746
 
-I could find a ppc victim, and ... could not reproduce the problem.
+I hope it's classified in the right subsystem & has enough information
+(2 links to this discussion)
 
-Attached is the output I got.
+Jens, I just looked a little through lkml while searching for the
+above mentioned 2 links and found the following post:
+http://lkml.org/lkml/2006/12/7/319 is it anyhow related to this issue
+?
 
-Regards,
-Nadia
+Thanks
 
-
-
---------------040400090705090803040100
-Content-Type: text/plain;
- name="msgctl08.output"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="msgctl08.output"
-
-[root@machette ltp-full-20080430]# cat runtest/ipc.fail 
-msgctl08 msgctl08
-
-[root@machette ltp-full-20080430]# ./runltp -p -l result.03.log -f ipc.fail
-INFO: creating /home/lkernel/src/ltp-full-20080430/output directory
-INFO: creating /home/lkernel/src/ltp-full-20080430/results directory
-If some fields are empty or look unusual you may have an old version.
-Compare to the current minimal requirements in Documentation/Changes.
- 
-Red Hat Enterprise Linux Server release 5.1 (Tikanga)
-Linux machette 2.6.26-rc1 #1 SMP PREEMPT Mon May 19 12:00:48 CEST 2008 ppc64 ppc
-64 ppc64 GNU/Linux
- 
-Gnu C                  gcc (GCC) 4.1.2 20070626 (Red Hat 4.1.2-14)
-Gnu make               3.81
-util-linux             pre7)
-mount                  pre7)
-modutils               3.3-pre2
-e2fsprogs              1.39
-PPP                    2.4.4
-isdn4k-utils           3.9
-Linux C Library        > libc.2.5
-Dynamic linker (ldd)   2.5
-Procps                 3.2.7
-Net-tools              1.60
-Kbd                    1.12
-Sh-utils               5.97
-Modules Loaded         nfsd exportfs lockd sunrpc ehea sg ipr libata sd_mod scsi
-_mod ext3 jbd
-
-free reports:
-             total       used       free     shared    buffers     cached
-Mem:       7717720     202796    7514924          0      16236      83800
--/+ buffers/cache:     102760    7614960
-Swap:            0          0          0
-
-/proc/cpuinfo
-processor       : 0
-cpu             : POWER6 (raw), altivec supported
-clock           : 4005.000000MHz
-revision        : 3.1 (pvr 003e 0301)
-
-processor       : 1
-cpu             : POWER6 (raw), altivec supported
-clock           : 4005.000000MHz
-revision        : 3.1 (pvr 003e 0301)
-
-processor       : 2
-cpu             : POWER6 (raw), altivec supported
-clock           : 4005.000000MHz
-revision        : 3.1 (pvr 003e 0301)
-
-processor       : 3
-cpu             : POWER6 (raw), altivec supported
-clock           : 4005.000000MHz
-revision        : 3.1 (pvr 003e 0301)
-
-processor       : 4
-cpu             : POWER6 (raw), altivec supported
-clock           : 4005.000000MHz
-revision        : 3.1 (pvr 003e 0301)
-
-processor       : 5
-cpu             : POWER6 (raw), altivec supported
-clock           : 4005.000000MHz
-revision        : 3.1 (pvr 003e 0301)
-
-processor       : 6
-cpu             : POWER6 (raw), altivec supported
-clock           : 4005.000000MHz
-revision        : 3.1 (pvr 003e 0301)
-
-processor       : 7
-cpu             : POWER6 (raw), altivec supported
-clock           : 4005.000000MHz
-revision        : 3.1 (pvr 003e 0301)
-
-timebase        : 512000000
-platform        : pSeries
-model           : IBM,7998-61X
-machine         : CHRP IBM,7998-61X
-<<<test_start>>>
-tag=msgctl08 stime=1211192505
-cmdline="msgctl08"
-contacts=""
-analysis=exit
-initiation_status="ok"
-<<<test_output>>>
-incrementing stop
-msgctl08    1  PASS  :  msgctl08 ran successfully!
-<<<execution_status>>>
-duration=2 termination_type=exited termination_id=0 corefile=no
-cutime=148 cstime=357
-<<<test_end>>>
-INFO: pan reported all tests PASS
-LTP Version: LTP-20080430
-        
-       ###############################################################"
-        
-            Done executing testcases."
-            log result(s) is in /home/lkernel/src/ltp-full-20080430/results directory"
-            output/failed result(s) in /home/lkernel/src/ltp-full-20080430/output directory [If you did not provide Absolute Path]
-            LTP Version:  LTP-20080430
-       ###############################################################"
-
-
---------------040400090705090803040100--
+Mat
