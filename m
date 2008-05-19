@@ -1,142 +1,237 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759979AbYESQKK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761194AbYESQKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759979AbYESQKK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 12:10:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756075AbYESQJz
+	id S1761194AbYESQKi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 12:10:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759205AbYESQKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 12:09:55 -0400
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:5240 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755811AbYESQJy (ORCPT
+	Mon, 19 May 2008 12:10:04 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:43465 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757809AbYESQKB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 12:09:54 -0400
-Message-ID: <4831A60A.5010308@panasas.com>
-Date: Mon, 19 May 2008 19:08:42 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 19 May 2008 12:10:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JZlNFK/GXsl1dfIXTIbV5H9RD6cb6oofyYKEiSf4ngou6wfOX5wolmKaPWBshftUxqo70Zi30RZ4XSaR+gJ/ZkLayuMjwrUcAZ6rjz1DB/2ZfKgN0qHCTjxXME9GLA09JC8PlerPyKPrJOpaZZA6/p6rQC1ZBJmkYmVNEzCxbDE=
+Message-ID: <524f69650805190909w47adeea6i4e89f4e423be0821@mail.gmail.com>
+Date: Mon, 19 May 2008 11:09:57 -0500
+From: "Steve French" <smfrench@gmail.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: [PATCH] [1/11] Remove BKL from remote_llseek
+Cc: Trond.Myklebust@netapp.com, swhiteho@redhat.com, sfrench@samba.org,
+       vandrove@vc.cvut.cz, corbet@lwn.net, linux-kernel@vger.kernel.org
+In-Reply-To: <20080519123110.930491B41FF@basil.firstfloor.org>
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>,
-       USB Storage list <usb-storage@lists.one-eyed-alien.net>,
-       SCSI development list <linux-scsi@vger.kernel.org>
-Subject: Re: [Re: Linux 2.6.26-rc2] Write protect on on
-References: <Pine.LNX.4.44L0.0805191106270.15266-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0805191106270.15266-100000@iolanthe.rowland.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 May 2008 16:08:53.0998 (UTC) FILETIME=[A27220E0:01C8B9CA]
+Content-Disposition: inline
+References: <20080519231.561421028@firstfloor.org>
+	 <20080519123110.930491B41FF@basil.firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Stern wrote:
-> On Sun, 18 May 2008, Boaz Harrosh wrote:
-> 
->> Do you mean this diff below:
->>
->> @@ -796,133 +789,133 @@ kernel: usb-storage: *** thread awakened
->>  kernel: usb-storage: Command MODE_SENSE (6 bytes)
->>  kernel: usb-storage:  1a 00 3f 00 c0 00
->>  kernel: usb-storage: Bulk Command S 0x43425355 T 0x4 L 192 F 128 Trg 0 LUN 0 CL 6
->>  kernel: usb-storage: usb_stor_bulk_transfer_buf: xfer 31 bytes
->>  kernel: usb-storage: Status code 0; transferred 31/31
->>  kernel: usb-storage: -- transfer complete
->>  kernel: usb-storage: Bulk command transfer result=0
->>  kernel: usb-storage: usb_stor_bulk_transfer_sglist: xfer 192 bytes, 1 entries
->>  kernel: usb-storage: Status code -32; transferred 0/192
->>  kernel: usb-storage: clearing endpoint halt for pipe 0xc0008480
->>  kernel: usb-storage: usb_stor_control_msg: rq=01 rqtype=02 value=0000 index=81 len=0
->>  kernel: usb-storage: usb_stor_clear_halt: result = 0
->>  kernel: usb-storage: Bulk data transfer result 0x2
->>  kernel: usb-storage: Attempting to get CSW...
->>  kernel: usb-storage: usb_stor_bulk_transfer_buf: xfer 13 bytes
->>  kernel: usb-storage: Status code 0; transferred 13/13
->>  kernel: usb-storage: -- transfer complete
->>  kernel: usb-storage: Bulk status result = 0
->>  kernel: usb-storage: Bulk Status S 0x53425355 T 0x4 R 192 Stat 0x0
->>  kernel: usb-storage: scsi cmd done, result=0x0
->>  kernel: usb-storage: *** thread sleeping.
->> -kernel: sd 2:0:0:0: [sda] Write Protect is off
->> -kernel: sd 2:0:0:0: [sda] Mode Sense: 00 00 00 00
->> +kernel: sd 2:0:0:0: [sda] Write Protect is on
->> +kernel: sd 2:0:0:0: [sda] Mode Sense: 09 50 f8 af
->>  kernel: sd 2:0:0:0: [sda] Assuming drive cache: write through
->>  kernel: usb-storage: queuecommand called
->>
->> ("+" is the new kernel and "-" the older one)
-> 
-> That's right.
-> 
->> It looks like it used to be the same exact return and everything only that at
->> old kernel the 4 bytes used to be zero and now they are not.
->>
->> So It looks to me that it never used to work (Data was never actually read
->> from device) but by luck, the garbage data used to be a better default 
->> "Write Protect is off"
-> 
-> Yes, it never worked properly.  But now it fails in a bad way whereas 
-> before it failed in a benign way.
-> 
+Acked.   The cifs change looks fine to me.
 
-You do realize that, that was pure lock to have a zero'ed buffer.
+On Mon, May 19, 2008 at 7:31 AM, Andi Kleen <andi@firstfloor.org> wrote:
+>
+> - Replace remote_llseek with remote_llseek_unlocked (to force compilation
+> failures in all users)
+> - Change all users to either use remote_llseek directly or take the
+> BKL around. I changed the file systems who don't use the BKL
+> for anything (CIFS, GFS) to call it directly. NCPFS and SMBFS and NFS
+> take the BKL, but explicitely in their own source now.
+>
+> I moved them all over in a single patch to avoid unbisectable sections.
+>
+> Open problem: 32bit kernels can corrupt fpos because its modification
+> is not atomic, but they can do that anyways because there's other paths who
+> modify it without BKL.
+>
+> Cc: Trond.Myklebust@netapp.com
+> Cc: swhiteho@redhat.com
+> Cc: sfrench@samba.org
+> Cc: vandrove@vc.cvut.cz
+>
+> Signed-off-by: Andi Kleen <ak@suse.de>
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
+>
+> ---
+>  fs/cifs/cifsfs.c   |    2 +-
+>  fs/gfs2/ops_file.c |    4 ++--
+>  fs/ncpfs/file.c    |   12 +++++++++++-
+>  fs/nfs/file.c      |    6 +++++-
+>  fs/read_write.c    |    7 +++----
+>  fs/smbfs/file.c    |   11 ++++++++++-
+>  include/linux/fs.h |    3 ++-
+>  7 files changed, 34 insertions(+), 11 deletions(-)
+>
+> Index: linux/fs/cifs/cifsfs.c
+> ===================================================================
+> --- linux.orig/fs/cifs/cifsfs.c
+> +++ linux/fs/cifs/cifsfs.c
+> @@ -581,7 +581,7 @@ static loff_t cifs_llseek(struct file *f
+>                if (retval < 0)
+>                        return (loff_t)retval;
+>        }
+> -       return remote_llseek(file, offset, origin);
+> +       return remote_llseek_unlocked(file, offset, origin);
+>  }
+>
+>  struct file_system_type cifs_fs_type = {
+> Index: linux/fs/gfs2/ops_file.c
+> ===================================================================
+> --- linux.orig/fs/gfs2/ops_file.c
+> +++ linux/fs/gfs2/ops_file.c
+> @@ -62,11 +62,11 @@ static loff_t gfs2_llseek(struct file *f
+>                error = gfs2_glock_nq_init(ip->i_gl, LM_ST_SHARED, LM_FLAG_ANY,
+>                                           &i_gh);
+>                if (!error) {
+> -                       error = remote_llseek(file, offset, origin);
+> +                       error = remote_llseek_unlocked(file, offset, origin);
+>                        gfs2_glock_dq_uninit(&i_gh);
+>                }
+>        } else
+> -               error = remote_llseek(file, offset, origin);
+> +               error = remote_llseek_unlocked(file, offset, origin);
+>
+>        return error;
+>  }
+> Index: linux/fs/ncpfs/file.c
+> ===================================================================
+> --- linux.orig/fs/ncpfs/file.c
+> +++ linux/fs/ncpfs/file.c
+> @@ -18,6 +18,7 @@
+>  #include <linux/slab.h>
+>  #include <linux/vmalloc.h>
+>  #include <linux/sched.h>
+> +#include <linux/smp_lock.h>
+>
+>  #include <linux/ncp_fs.h>
+>  #include "ncplib_kernel.h"
+> @@ -281,9 +282,18 @@ static int ncp_release(struct inode *ino
+>        return 0;
+>  }
+>
+> +static loff_t ncp_remote_llseek(struct file *file, loff_t offset, int origin)
+> +{
+> +       loff_t ret;
+> +       lock_kernel();
+> +       ret = remote_llseek_unlocked(file, offset, origin);
+> +       unlock_kernel();
+> +       return ret;
+> +}
+> +
+>  const struct file_operations ncp_file_operations =
+>  {
+> -       .llseek         = remote_llseek,
+> +       .llseek         = ncp_remote_llseek,
+>        .read           = ncp_file_read,
+>        .write          = ncp_file_write,
+>        .ioctl          = ncp_ioctl,
+> Index: linux/fs/read_write.c
+> ===================================================================
+> --- linux.orig/fs/read_write.c
+> +++ linux/fs/read_write.c
+> @@ -58,11 +58,10 @@ loff_t generic_file_llseek(struct file *
+>
+>  EXPORT_SYMBOL(generic_file_llseek);
+>
+> -loff_t remote_llseek(struct file *file, loff_t offset, int origin)
+> +loff_t remote_llseek_unlocked(struct file *file, loff_t offset, int origin)
+>  {
+>        loff_t retval;
+>
+> -       lock_kernel();
+>        switch (origin) {
+>                case SEEK_END:
+>                        offset += i_size_read(file->f_path.dentry->d_inode);
+> @@ -73,15 +72,15 @@ loff_t remote_llseek(struct file *file,
+>        retval = -EINVAL;
+>        if (offset>=0 && offset<=file->f_path.dentry->d_inode->i_sb->s_maxbytes) {
+>                if (offset != file->f_pos) {
+> +                       /* AK: do we need a lock for those? */
+>                        file->f_pos = offset;
+>                        file->f_version = 0;
+>                }
+>                retval = offset;
+>        }
+> -       unlock_kernel();
+>        return retval;
+>  }
+> -EXPORT_SYMBOL(remote_llseek);
+> +EXPORT_SYMBOL(remote_llseek_unlocked);
+>
+>  loff_t no_llseek(struct file *file, loff_t offset, int origin)
+>  {
+> Index: linux/fs/smbfs/file.c
+> ===================================================================
+> --- linux.orig/fs/smbfs/file.c
+> +++ linux/fs/smbfs/file.c
+> @@ -422,9 +422,18 @@ smb_file_permission(struct inode *inode,
+>        return error;
+>  }
+>
+> +static loff_t smb_remote_llseek(struct file *file, loff_t offset, int origin)
+> +{
+> +       loff_t ret;
+> +       lock_kernel();
+> +       ret = remote_llseek_unlocked(file, offset, origin);
+> +       unlock_kernel();
+> +       return ret;
+> +}
+> +
+>  const struct file_operations smb_file_operations =
+>  {
+> -       .llseek         = remote_llseek,
+> +       .llseek         = smb_remote_llseek,
+>        .read           = do_sync_read,
+>        .aio_read       = smb_file_aio_read,
+>        .write          = do_sync_write,
+> Index: linux/include/linux/fs.h
+> ===================================================================
+> --- linux.orig/include/linux/fs.h
+> +++ linux/include/linux/fs.h
+> @@ -1871,7 +1871,8 @@ extern void
+>  file_ra_state_init(struct file_ra_state *ra, struct address_space *mapping);
+>  extern loff_t no_llseek(struct file *file, loff_t offset, int origin);
+>  extern loff_t generic_file_llseek(struct file *file, loff_t offset, int origin);
+> -extern loff_t remote_llseek(struct file *file, loff_t offset, int origin);
+> +extern loff_t remote_llseek_unlocked(struct file *file, loff_t offset,
+> +                       int origin);
+>  extern int generic_file_open(struct inode * inode, struct file * filp);
+>  extern int nonseekable_open(struct inode * inode, struct file * filp);
+>
+> Index: linux/fs/nfs/file.c
+> ===================================================================
+> --- linux.orig/fs/nfs/file.c
+> +++ linux/fs/nfs/file.c
+> @@ -170,6 +170,7 @@ force_reval:
+>
+>  static loff_t nfs_file_llseek(struct file *filp, loff_t offset, int origin)
+>  {
+> +       loff_t loff;
+>        /* origin == SEEK_END => we must revalidate the cached file length */
+>        if (origin == SEEK_END) {
+>                struct inode *inode = filp->f_mapping->host;
+> @@ -177,7 +178,10 @@ static loff_t nfs_file_llseek(struct fil
+>                if (retval < 0)
+>                        return (loff_t)retval;
+>        }
+> -       return remote_llseek(filp, offset, origin);
+> +       lock_kernel();  /* BKL needed? */
+> +       loff = remote_llseek_unlocked(filp, offset, origin);
+> +       unlock_kernel();
+> +       return loff;
+>  }
+>
+>  /*
+>
 
->> I do not think it is legal in scsi to return "Nothing was read" with no
->> error condition.
-> 
-> I'm not aware of any part of the spec where it says that.  In any case 
-> it doesn't matter what the spec says; we ought to be able to drive this 
-> device even if it isn't compliant with the spec.
-> 
 
-Yes it is so. In read_x command a short read is an error status (or short
-writes for write_x). The only commands that are allowed short reads 
-(with no error) are those commands that have optional sizes like inquiry
-and stuff, so if the device does not have the extra info it will return
-a short read, of exact number of bytes as permitted by the shorter version
-of the command. The initiator will understand that the command return is of
-the shorter version. And also REQUEST_SENSE can be short. But all other 
-commands must return the number of bytes requested or set a status. Here
-the device does not return a shorter MODE_SENSE, it does not return it
-at all. A status must be set/emulated.
 
->> You are probably right that we do not at all check resid
->> if status is 0, even though short reads are allowed with out error status
->> in some cases, as per command. But this is not the case here here nothing
->> was read at all, status must be returned. Or even worse if this command 
->> is mandatory by scsi but not supported by some USB devices then it will
->> have to be emulated by usb_storage.
-> 
-> The real question is how should we fix the problem.  For the sake of 
-> argument, let's say that we fix it by changing scsi_mode_sense() -- 
-> make the routine return 0 if the residue is so large that there isn't 
-> even a valid header.
-> 
-> But how can this be done?  Should we modify struct scsi_sense_hdr, by 
-> adding a "residue" field?
-> 
+-- 
+Thanks,
 
-I would not do that, because:
-- This is a per command filter and will not be easy to do right.
-- All other drivers will need to be inspected, because mid-layer
-  behavior change. Where before the gate was status, then if set
-  look at resid. What you propose enables another gate for errors.
-  I'm much more lazy then you, and for my peace of mine will not do
-  such a subtle change, that I can never fully test for.
-
-If I where you I would fix it at the usb level, where if *no* data
-was read/written I would atleast set the DID_NOT_CONNECT status.
-(OK I'm not sure what to do here it should be carefully considered)
-
-Also be ware that I think the MODE_SENSE command is mandatory and
-you must emulate it if the device does not supports it. (That is
-filter for MODE_SENSE command and if returns error, set a sensible
-returned buffer with info gathered by other means. Like good'ol 
-isd200 does it)
-
-> Alan Stern
-> 
-
-Boaz
+Steve
