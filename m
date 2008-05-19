@@ -1,139 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758206AbYESBNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758189AbYESBOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758206AbYESBNn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 21:13:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757184AbYESBLQ
+	id S1758189AbYESBOj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 21:14:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757501AbYESBLg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 21:11:16 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:50332 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757360AbYESBLM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 21:11:12 -0400
-From: NeilBrown <neilb@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Date: Mon, 19 May 2008 11:11:04 +1000
-Message-Id: <1080519011104.7767@suse.de>
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Bernd Schubert <bs@q-leap.de>
-Subject: [PATCH 009 of 10] md: Allow parallel resync of md-devices.
-References: <20080519110910.7473.patches@notabene>
+	Sun, 18 May 2008 21:11:36 -0400
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:22513 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751417AbYESBLD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 21:11:03 -0400
+Date: Mon, 19 May 2008 10:09:28 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-sh <linux-sh@vger.kernel.org>, linux-input@vger.kernel.org
+Subject: Re: [PATCH] input: add support for SEGA Dreamcast controller as joystick
+Message-ID: <20080519010928.GA8797@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Adrian McMenamin <adrian@newgolddream.dyndns.info>,
+	LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	linux-sh <linux-sh@vger.kernel.org>, linux-input@vger.kernel.org
+References: <1211138322.6354.5.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1211138322.6354.5.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, May 18, 2008 at 08:18:42PM +0100, Adrian McMenamin wrote:
+> +MODULE_AUTHOR("YAEGASHI Takeshi <t@keshi.org>");
+> +MODULE_DESCRIPTION("SEGA Dreamcast controller driver");
+> +MODULE_LICENSE("GPL");
+> +
+MODULE_AUTHOR() is a bit ambiguous here. As this is user-visible by way
+of modinfo, it really doesn't make any sense to list someone who has
+nothing to do with the driver in its present form here. Especially since
+it's been 7 years since their last contribution or even basic list
+activity, I think it's safe to say that you are going to be the only one
+that users wish to contact about this.
 
-From: Bernd Schubert <bs@q-leap.de>
+In this case, the copyright should suffice. You may wish to add a bit of
+a note there indicating where the driver came from, but there's not much
+point in going beyond that.
 
-In some configurations, a raid6 resync can be limited by CPU speed
-(Calculating P and Q and moving data) rather than by device speed.
-In these cases there is nothing to be gained byt serialising resync
-of arrays that share a device, and doing the resync in parallel can
-provide benefit.
-So add a sysfs tunable to flag an array as being allowed to
-resync in parallel with other arrays that use (a different part of)
-the same device.
+Note that if you aren't comfortable with being in MODULE_AUTHOR(), you
+can also make this more generic and attribute it to the LinuxDC or
+Linux/SH teams respectively, as that's a bit more true to form as far as
+all copyright holders are concerned, and gives people a pointer to a list
+to go to with problems.
 
+It's probably more reasonable to treat MODULE_AUTHOR() as
+MODULE_MAINTAINER() rather than the literal original author, as the
+latter is of zero interest or relevance to users that are looking at
+this information on the other side of the fence.
 
-Signed-off-by: Bernd Schubert <bs@q-leap.de>
-Signed-off-by: Neil Brown <neilb@suse.de>
+> +struct dc_pad {
+> +	struct input_dev *dev;
+> +	struct maple_device *mdev;
+> +};
+> +
+This is pretty ugly, you should really fix up your private device
+pointer layering to get around having to use this structure at all.
 
-### Diffstat output
- ./drivers/md/md.c           |   40 ++++++++++++++++++++++++++++++++++++----
- ./include/linux/raid/md_k.h |    3 +++
- 2 files changed, 39 insertions(+), 4 deletions(-)
+> +static struct maple_driver dc_pad_driver = {
+> +	.function =	MAPLE_FUNC_CONTROLLER,
+> +	.connect =	dc_pad_connect,
+> +	.disconnect =	dc_pad_disconnect,
+> +	.drv = {
+> +		.name = "Dreamcast_controller",
 
-diff .prev/drivers/md/md.c ./drivers/md/md.c
---- .prev/drivers/md/md.c	2008-05-19 11:03:47.000000000 +1000
-+++ ./drivers/md/md.c	2008-05-19 11:04:07.000000000 +1000
-@@ -74,6 +74,8 @@ static DEFINE_SPINLOCK(pers_lock);
- 
- static void md_print_devices(void);
- 
-+static DECLARE_WAIT_QUEUE_HEAD(resync_wait);
-+
- #define MD_BUG(x...) { printk("md: bug in file %s, line %d\n", __FILE__, __LINE__); md_print_devices(); }
- 
- /*
-@@ -3013,6 +3015,36 @@ degraded_show(mddev_t *mddev, char *page
- static struct md_sysfs_entry md_degraded = __ATTR_RO(degraded);
- 
- static ssize_t
-+sync_force_parallel_show(mddev_t *mddev, char *page)
-+{
-+	return sprintf(page, "%d\n", mddev->parallel_resync);
-+}
-+
-+static ssize_t
-+sync_force_parallel_store(mddev_t *mddev, const char *buf, size_t len)
-+{
-+	long n;
-+
-+	if (strict_strtol(buf, 10, &n))
-+		return -EINVAL;
-+
-+	if (n != 0 && n != 1)
-+		return -EINVAL;
-+
-+	mddev->parallel_resync = n;
-+
-+	if (mddev->sync_thread)
-+		wake_up(&resync_wait);
-+
-+	return len;
-+}
-+
-+/* force parallel resync, even with shared block devices */
-+static struct md_sysfs_entry md_sync_force_parallel =
-+__ATTR(sync_force_parallel, S_IRUGO|S_IWUSR,
-+       sync_force_parallel_show, sync_force_parallel_store);
-+
-+static ssize_t
- sync_speed_show(mddev_t *mddev, char *page)
- {
- 	unsigned long resync, dt, db;
-@@ -3187,6 +3219,7 @@ static struct attribute *md_redundancy_a
- 	&md_sync_min.attr,
- 	&md_sync_max.attr,
- 	&md_sync_speed.attr,
-+	&md_sync_force_parallel.attr,
- 	&md_sync_completed.attr,
- 	&md_max_sync.attr,
- 	&md_suspend_lo.attr,
-@@ -5487,8 +5520,6 @@ void md_allow_write(mddev_t *mddev)
- }
- EXPORT_SYMBOL_GPL(md_allow_write);
- 
--static DECLARE_WAIT_QUEUE_HEAD(resync_wait);
--
- #define SYNC_MARKS	10
- #define	SYNC_MARK_STEP	(3*HZ)
- void md_do_sync(mddev_t *mddev)
-@@ -5552,8 +5583,9 @@ void md_do_sync(mddev_t *mddev)
- 		for_each_mddev(mddev2, tmp) {
- 			if (mddev2 == mddev)
- 				continue;
--			if (mddev2->curr_resync && 
--			    match_mddev_units(mddev,mddev2)) {
-+			if (!mddev->parallel_resync
-+			&&  mddev2->curr_resync
-+			&&  match_mddev_units(mddev, mddev2)) {
- 				DEFINE_WAIT(wq);
- 				if (mddev < mddev2 && mddev->curr_resync == 2) {
- 					/* arbitrarily yield */
+Is there some particular reason why the driver name can't reflect the
+module name? There's no reason to have such sickeningly verbose driver
+names.
 
-diff .prev/include/linux/raid/md_k.h ./include/linux/raid/md_k.h
---- .prev/include/linux/raid/md_k.h	2008-05-19 11:02:06.000000000 +1000
-+++ ./include/linux/raid/md_k.h	2008-05-19 11:04:07.000000000 +1000
-@@ -180,6 +180,9 @@ struct mddev_s
- 	int				sync_speed_min;
- 	int				sync_speed_max;
- 
-+	/* resync even though the same disks are shared among md-devices */
-+	int				parallel_resync;
-+
- 	int				ok_start_degraded;
- 	/* recovery/resync flags 
- 	 * NEEDED:   we might need to start a resync/recover
+> +		.probe = probe_maple_controller,
+> +		.remove = remove_maple_controller,
+> +	},
+> +};
+> +
+These should be __devinit/__devexit at least, with the latter being
+__devexit_p() wrapped..
+
+> +static int __init dc_pad_init(void)
+> +{
+> +	return 	maple_driver_register(&dc_pad_driver.drv);
+> +}
+> +
+> +static void __exit dc_pad_exit(void)
+> +{
+> +	driver_unregister(&dc_pad_driver.drv);
+> +}
+> +
+If you don't have a maple_driver_unregister(), stub one in, even if it's
+just a wrapper.
