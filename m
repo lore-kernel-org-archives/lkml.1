@@ -1,106 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762208AbYESU01@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763169AbYESU05@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762208AbYESU01 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 16:26:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755093AbYESU0R
+	id S1763169AbYESU05 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 16:26:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752360AbYESU0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 16:26:17 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47433 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754839AbYESU0P (ORCPT
+	Mon, 19 May 2008 16:26:49 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:31598 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752148AbYESU0s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 16:26:15 -0400
-Date: Mon, 19 May 2008 13:25:53 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: cmm@us.ibm.com
-Cc: jack@suse.cz, pbadari@us.ibm.com, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH] JBD: Fix DIO EIO error caused by race between free
- buffer and commit trasanction
-Message-Id: <20080519132553.de9b78b0.akpm@linux-foundation.org>
-In-Reply-To: <1211227158.3663.25.camel@localhost.localdomain>
-References: <20080512155419.GD15856@duck.suse.cz>
-	<1210639184.3661.43.camel@localhost.localdomain>
-	<20080513145449.GC20806@duck.suse.cz>
-	<1210717389.3638.24.camel@localhost.localdomain>
-	<20080514170856.GH24363@duck.suse.cz>
-	<1210786872.3657.48.camel@localhost.localdomain>
-	<20080514181444.GI24363@duck.suse.cz>
-	<1210947250.3608.18.camel@localhost.localdomain>
-	<1210957976.4231.31.camel@badari-desktop>
-	<1210971693.3608.46.camel@localhost.localdomain>
-	<20080518223739.GB11006@atrey.karlin.mff.cuni.cz>
-	<1211227158.3663.25.camel@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 19 May 2008 16:26:48 -0400
+Message-ID: <8779236.1211228793416.JavaMail.oracle@acsmt301.oracle.com>
+Date: Mon, 19 May 2008 15:26:33 -0500 (CDT)
+From: Randy Dunlap <RANDY.DUNLAP@ORACLE.COM>
+To: Randy Dunlap <randy.dunlap@ORACLE.COM>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: -mm merge plans for 2.6.26
+Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org
+In-Reply-To: <482E5F80.7040206@oracle.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="ISO-8859-1"
 Content-Transfer-Encoding: 7bit
+References: <20080420072053.6bcb7884.akpm@linux-foundation.org>	<20080516170310.35d7b407.randy.dunlap@oracle.com> <20080516172816.9d98c0f2.akpm@linux-foundation.org> <482E3DDA.7050708@oracle.com> <482E5F80.7040206@oracle.com>
+X-Priority: 3
+X-Mailer: Oracle Webmail Client(UIX)
+Content-Language: en-US
+Accept-Language: en-US
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 May 2008 12:59:18 -0700
-Mingming Cao <cmm@us.ibm.com> wrote:
 
-> On Mon, 2008-05-19 at 00:37 +0200, Jan Kara wrote:
-> >   Hi,
+> Randy Dunlap wrote:
+> > Andrew Morton wrote:
+> >> On Fri, 16 May 2008 17:03:10 -0700 Randy Dunlap 
+> >> <randy.dunlap@oracle.com> wrote:
+> >>
+> >>> On Sun, 20 Apr 2008 07:20:53 -0700 Andrew Morton wrote:
+> >>>
+> >>>> These can be found at
+> >>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25/2.6.25-mm1 
+> >>>>
+> >>>>
+> >>>>
+> >>>>
+> >>>>  #
+> >>>>  # documentation
+> >>>>  #
+> >>>>  documentation-build-source-files-in-documentation-sub-dir.patch
+> >>>>  documentation-build-source-files-in-documentation-sub-dir-update.patch
+> >>>>  documentation-build-source-files-in-documentation-sub-dir-disable.patch 
+> >>>>
+> >>>>
+> >>>> Merge
+> >>> Hi,
+> >>> What happened to/with these?
+> >>
+> >> I was going to ask you that.  Last I heard,
+> >>
+> >> a) stuff broke and
+> >>
+> >> b) you had an updated version somewhere.
 > > 
-> > > This patch fixed a few races between direct IO and kjournald commit
-> > > transaction.  An unexpected EIO error gets returned to direct IO
-> > > caller when it failed to free those data buffers. This could be
-> > > reproduced easily with parallel direct write and buffered write to the
-> > > same file
-> > > 
-> > > More specific, those races could cause journal_try_to_free_buffers()
-> > > fail to free the data buffers, when jbd is committing the transaction
-> > > that has those data buffers on its t_syncdata_list or t_locked_list.
-> > > journal_commit_transaction() still holds the reference to those
-> > > buffers before data reach to disk and buffers are removed from the
-> > > t_syncdata_list of t_locked_list. This prevent the concurrent
-> > > journal_try_to_free_buffers() to free those buffers at the same time,
-> > > but cause EIO error returns back to direct IO.
-> > > 
-> > > With this patch, in case of direct IO and when try_to_free_buffers() failed,
-> > > let's waiting for journal_commit_transaction() to finish
-> > > flushing the current committing transaction's data buffers to disk, 
-> > > then try to free those buffers again.
-> >   If Andrew or Christoph wouldn't beat you for "inventive use" of
-> > gfp_mask, I'm fine with the patch as well ;). You can add
-> >   Acked-by: Jan Kara <jack@suse.cz>
+> > Oh yeah.  I think that this was fixed by
+> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=b11caa7c7063ea92a0a58115d3fc6d038ed89510 
+> > 
+> > but I'll check/verify/confirm that.
 > > 
 > 
-> This is less intrusive way to fix this problem. The gfp_mask was marked
-> as unused in try_to_free_page(). I looked at filesystems in the kernel,
-> there is only a few defined releasepage() callback, and only xfs checks
-> the flag(but not used). btrfs is actually using it though. I thought
-> about the way you have suggested, i.e.clean up this gfp_mask and and
-> replace with a flag.  I am not entirely sure if it we need to change the
-> address_space_operations and fix all the filesystems for this matter.
+> Yes, it builds fine now (built against 2.6.26-rc2-git5).
+
+Andrew,
+Will you merge this now?  or do you want me to see about Sam merging it?
+or something else?
+
+
+> >> On Thu, 10 Apr 2008 17:56:30 -0700 Randy Dunlap 
+> >> <randy.dunlap@oracle.com> wrote:
+> >>
+> >>> On Wed, 9 Apr 2008 14:54:09 -0700 Andrew Morton wrote:
+> >>>
+> >>>> make allmodconfig
+> >>>> gcc -I$(/bin/pwd)/include Documentation/accounting/getdelays.c -o 
+> >>>> getdelays
+> >>>>
+> >>>> In file included from /usr/src/devel/include/linux/netlink.h:5,
+> >>>>                  from /usr/src/devel/include/linux/genetlink.h:4,
+> >>>>                  from Documentation/accounting/getdelays.c:26:
+> >>>> /usr/src/devel/include/linux/types.h:203: error: expected 
+> >>>> specifier-qualifier-list before '__kernel_daddr_t'
+> >>>
+> >>> Those __kernel_* types shouldn't be used outside of the #ifdef 
+> >>> __KERNEL__
+> >>> block, should they?
+> >>>
+> >>> Patch below fixes kernel side for me.  Don't have any idea what it
+> >>> may do to userspace users of the header file.
+> >>>
+> >>> ---
+> >>>  include/linux/types.h |    4 ++--
+> >>>  1 file changed, 2 insertions(+), 2 deletions(-)
+> >>>
+> >>> --- mmotm-2008-0410-0157.orig/include/linux/types.h
+> >>> +++ mmotm-2008-0410-0157/include/linux/types.h
+> >>> @@ -200,8 +200,8 @@ typedef u32 resource_size_t;
+> >>>  #endif    /* __KERNEL__ */
+> >>>  
+> >>>  struct ustat {
+> >>> -    __kernel_daddr_t    f_tfree;
+> >>> -    __kernel_ino_t        f_tinode;
+> >>> +    daddr_t            f_tfree;
+> >>> +    ino_t            f_tinode;
+> >>>      char            f_fname[6];
+> >>>      char            f_fpack[6];
+> >>>  };
+> >>
+> >> I didn't apply that.  I guess the "Don't have any idea" bit was scary.
+> > 
+> > 
 > 
-> Andrew, what do you think? Is this approach acceptable? 
 > 
+> -- 
+> ~Randy
 
-<wakes up>
-
-Please ensure that the final patch is sufficiently well changelogged to
-permit me to remain asleep ;)
-
-The ->releasepage semantics are fairly ad-hoc and have grown over time.
-It'd be nice to prevent them from becoming vaguer than they are.
-
-It has been (approximately?) the case that code paths which really care
-about having the page released will set __GFP_WAIT (via GFP_KERNEL)
-whereas code paths which are happy with best-effort will clear
-__GFP_WAIT (with a "0').  And that's reasonsable - __GFP_WAIT here
-means "be synchronous" whereas !__GFP_WAIT means "be non-blocking".
-
-Is that old convention not sufficient here as well?  Two problem areas
-I see are mm/vmscan.c and fs/splice.c (there may be others).
-
-In mm/vmscan.c we probably don't want your new synchronous behaviour
-and it might well be deadlockable anyway.  No probs, that's what
-__GFP_FS is for.
-
-In fs/splice.c, reading the comment there I have a feeling that you've
-found another bug, and that splice _does_ want your new synchronous
-behaviour?
