@@ -1,48 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759653AbYESNoC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760818AbYESNpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759653AbYESNoC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 09:44:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756070AbYESNnu
+	id S1760818AbYESNpX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 09:45:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbYESNpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 09:43:50 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:59387 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755593AbYESNnt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 09:43:49 -0400
-Date: Mon, 19 May 2008 15:44:27 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [Bug #10717] crossbuild fails in modpost
-Message-ID: <20080519134427.GB20394@uranus.ravnborg.org>
-References: <oKKSi1w1qaF.A.mEG.JrBMIB@albercik> <7wuznNhcUqC.A.-CH.zrBMIB@albercik>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7wuznNhcUqC.A.-CH.zrBMIB@albercik>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 19 May 2008 09:45:06 -0400
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:15063
+	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752350AbYESNpF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 09:45:05 -0400
+Message-ID: <4831845F.6030904@qumranet.com>
+Date: Mon, 19 May 2008 16:45:03 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] Make LIST_POISON less deadly
+References: <1211125094-32167-1-git-send-email-avi@qumranet.com> <20080519130151.GE13546@elte.hu>
+In-Reply-To: <20080519130151.GE13546@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 18, 2008 at 01:13:56PM +0200, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.25.  Please verify if it still should be listed.
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10717
-> Subject		: crossbuild fails in modpost
-> Submitter	: Jiri Slaby <jirislaby@gmail.com>
-> Date		: 2008-05-15 13:44 (4 days old)
-> References	: http://marc.info/?l=linux-kernel&amp;m=121085909512097&amp;w=4
-> Handled-By	: Sam Ravnborg <sam@ravnborg.org>
+Ingo Molnar wrote:
+> i'd suggest to add an ARCH_ILLEGAL_POINTER define instead, which 
+> defaults to zero and gets added to pointer-ish poison values. That makes 
+> it both simpler and also it does not need any include/asm changes 
+> because ARCH_ILLEGAL_POINTER can be set from the Kconfig space.
+>   
 
-This turns out to be a valid check which detected a bug.
-So it is not a kbuild regression - and Jiri handles the issue from now on.
-[He have just sent a patch: http://lkml.org/lkml/2008/5/19/203]
+Any idea how to override a value in Kconfig?  We can do it for bool 
+values but not strings.
 
-	Sam
+e.g.
+
+lib/Kconfig:
+  config ILLEGAL_POINTER_VALUE
+      hex
+      default 0
+
+arch/x86/Kconfig:
+  config X86
+    select ILLEGAL_POINTER_VALUE=0x80000000000000000000000000 if X86_64
+
+?
+
+I could do it with a boolean signifying existence and a hex for the 
+value, but I'd rather not.
+
+-- 
+error compiling committee.c: too many arguments to function
+
