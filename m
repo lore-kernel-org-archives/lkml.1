@@ -1,73 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759342AbYESP5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760297AbYESP6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759342AbYESP5f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 11:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbYESP5Y
+	id S1760297AbYESP6R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 11:58:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbYESP54
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 11:57:24 -0400
-Received: from an-out-0708.google.com ([209.85.132.248]:58687 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751805AbYESP5X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 11:57:23 -0400
-Message-ID: <fa686aa40805190857u317d3304ie75d11870e109fc5@mail.gmail.com>
-Date: Mon, 19 May 2008 09:57:21 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>
-Subject: Re: [PATCH 3/4] spi: Add OF binding support for SPI busses
-Cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
-       fabrizio.garetto@gmail.com, jonsmirl@gmail.com
-In-Reply-To: <Pine.LNX.4.64.0805191446530.27140@axis700.grange>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 19 May 2008 11:57:56 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57042 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751805AbYESP5y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 11:57:54 -0400
+Subject: Re: [RFC] make wext wireless bits optional and deprecate them
+From: Dan Williams <dcbw@redhat.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Marcel Holtmann <marcel@holtmann.org>, netdev <netdev@vger.kernel.org>,
+       Jean Tourrilhes <jt@hpl.hp.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <1211211547.6252.54.camel@johannes.berg>
+References: <1211026337.3827.25.camel@johannes.berg>
+	 <CD993362-B1DE-4E4D-8A5B-E9E2AD7DA04C@holtmann.org>
+	 (sfid-20080517_154639_384202_6D3479C2)  <1211032475.6252.2.camel@johannes.berg>
+	 <1211117795.686.15.camel@localhost.localdomain>
+	 <1211199368.6252.19.camel@johannes.berg>
+	 <1211210686.12187.6.camel@localhost.localdomain>
+	 <1211211547.6252.54.camel@johannes.berg>
+Content-Type: text/plain
+Date: Mon, 19 May 2008 11:53:58 -0400
+Message-Id: <1211212438.12187.13.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
-	 <20080516193613.28030.13950.stgit@trillian.secretlab.ca>
-	 <Pine.LNX.4.64.0805191446530.27140@axis700.grange>
-X-Google-Sender-Auth: 7e73346d0ff4218d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 19, 2008 at 7:17 AM, Guennadi Liakhovetski
-<g.liakhovetski@gmx.de> wrote:
-> On Fri, 16 May 2008, Grant Likely wrote:
->
->> +    However, the binding does not attempt to define the specific method for
->> +    assigning chip select numbers.  Since SPI chip select configuration is
->> +    flexible and non-standardized, it is left out of this binding with the
->> +    assumption that board specific platform code will be used to manage
->> +    chip selects.  Individual drivers can define additional properties to
->> +    support describing the chip select layout.
->
-> Yes, this looks like a problem to me. This means, SPI devices will need
-> two bindings - OF and platform?... Maybe define an spi_chipselect
-> OF-binding?
+On Mon, 2008-05-19 at 17:39 +0200, Johannes Berg wrote:
+> On Mon, 2008-05-19 at 11:24 -0400, Dan Williams wrote:
+> > On Mon, 2008-05-19 at 14:16 +0200, Johannes Berg wrote:
+> > > > Instead of testing for wireless/, best thing would probably be to call
+> > > > SIOCGIWRANGE on the device and if it returns EOPNOTSUP then it's not
+> > > > wireless.  Some drivers may have to load firmware to figure out
+> > > > supported rates and encryption capabilities, but to be honest, NM does
+> > > > this to detect wireless devices and I haven't run into any issues in 4
+> > > > years using it.  If there are issues with drivers, then we need to fix
+> > > > the driver too.
+> > > 
+> > > I was about to propose calling SIOCGIWNAME since that is what
+> > > wireless-tools do and that linux/wireless.h indicates.
+> > 
+> > Hmm; NAME is pretty useless.  That's fine to do, I guess WEXT requires
+> > that NAME return _something_ at least.  NAME should never ever be used
+> > for anything more, but since wireless-tools appears to do this that's
+> > fine.
+> 
+> Yes, I realise it is completely useless, but wext seems to require that
+> it be implemented. RANGE would work as well but typically has much more
+> complexity in the kernel.
 
-Actually, spi devices have *neither*.  :-)  They bind to the SPI bus.
-Not the platform bus or of_platform bus.  But that is Linux internal
-details; this discussion is about device tree bindings.
+Yup; NAME's better for this even though it's useless.
 
-Note that I did say that drivers can define additional properties for
-supporting chip select changes as needed.  I'm just not attempting to
-encode them into the formal binding.  There is simply just too many
-different ways to manipulate chip select signals and so I don't feel
-confident trying to define a *common* binding at this moment in time.
-At some point in the future when we have a number of examples to
-choose from then we can extend this binding with chip select related
-properties.
+Dan
 
-As for the Linux internals, the 5200 SPI bus driver that I posted
-exports a function that allows another driver to call in and
-manipulated the CS lines before the transfer.  It isn't the prettiest
-solution, but I'm not locked into the approach and that gives some
-time to consider cleaner interfaces.
-
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
