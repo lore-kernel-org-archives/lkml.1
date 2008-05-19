@@ -1,62 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760725AbYESTRc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761537AbYESTUj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760725AbYESTRc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 15:17:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757666AbYESTRU
+	id S1761537AbYESTUj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 15:20:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755239AbYESTUa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 15:17:20 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:34394 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754235AbYESTRT (ORCPT
+	Mon, 19 May 2008 15:20:30 -0400
+Received: from wr-out-0506.google.com ([64.233.184.239]:11223 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755079AbYESTU3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 15:17:19 -0400
-Date: Mon, 19 May 2008 15:17:18 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Boaz Harrosh <bharrosh@panasas.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>,
-       USB Storage list <usb-storage@lists.one-eyed-alien.net>,
-       SCSI development list <linux-scsi@vger.kernel.org>
-Subject: Re: [Re: Linux 2.6.26-rc2] Write protect on on
-In-Reply-To: <4831B2E2.8030700@panasas.com>
-Message-ID: <Pine.LNX.4.44L0.0805191514300.2111-100000@iolanthe.rowland.org>
+	Mon, 19 May 2008 15:20:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=VWiFV5/eIEVZPr9AJPYI5Ub4xQGkOYEb98FePxu6e1LAK+EbBR80Vk77H0Ed1jx5H99Pf6Atco6omyzuur7UJZC9K2TAMxTz60MY7pf46agr8I70PAKKuxB4wDtm5NDQ2IGbROQW3cReIgDaWf6NpEkRLFoN/7WrG78QfrNm38k=
+Message-ID: <15577be70805191220h4413a9c1n11d7240a2906e056@mail.gmail.com>
+Date: Mon, 19 May 2008 21:20:26 +0200
+From: "Abel Bernabeu" <abel.bernabeu@gmail.com>
+To: patrizio.bassi@gmail.com
+Subject: Re: 2.6.25: usb-storage unknown partition table issue
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <48319C1F.6030005@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <48319C1F.6030005@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 May 2008, Boaz Harrosh wrote:
+Looks like you did not enable the partition type "PC BIOS".
 
-> Sure, inspecting other places that emulate MODE_SENSE, (And inspecting the scsi
-> spec) all zeros is a very good scsi response. Alan do you want to send a fix for all
-> places that initiate a MODE_SENSE command, specifically at
-> scsi_scan.c::scsi_unlock_floptical() ? (Some other places do)
+Type "make menuconfig" and make sure you enabled it on:
 
-I can't send such a fix because at these places the residue information 
-has already been lost.  The fix needs to be made lower down.
+Partition types / Advanced partition / pc bios (ms dos partition tables)
+
+Discard any SCSI issue, indeed I am almost sure you can do a "cp
+/dev/sda /dev/null" with no problem (showing that your SCSI driver is
+working properly).
+
+Yours, Abel.
 
 
-Besides, everybody seems to be missing an important point.
 
-MODE SENSE is just one example of a command for which a device might
-return less data than the host expected.  In principle the same thing
-could happen with _any_ command.  The host should be prepared for this
-and should be able to handle it correctly.  And the host shouldn't
-blindly assume that devices will slavishly follow the letter of the
-SCSI spec.
-
-We need something much more thorough than just fiddling with
-scsi_mode_sense().  One possibility would be to pass a
-minimum-response-length argument to scsi_execute_req().  But even that
-wouldn't catch all the code paths where this sort of thing could  
-happen (although it probably would catch most of them).
-
-This needs someone who is more familiar than I am with the operation of
-the SCSI core.
-  
-Alan Stern
-
+2008/5/19 Patrizio Bassi <patrizio.bassi@gmail.com>:
+> Hi,
+>
+> i have a 8GB usb pen with several problem due to partition table.
+>
+> if i create a primary one with fdisk, then format it works ok.
+> then i umount it, unplug, replug, no more partition detected.
+>
+> I formatted it on Windows (same machine) and this some stress test, but it's
+> brand new and it works.
+> The partition and the free space is correctly seen by qtparted and parted,
+> but in the dmesg i see:
+>
+> Initializing USB Mass Storage driver...
+> scsi10 : SCSI emulation for USB Mass Storage devices
+> usb-storage: device found at 2
+> usb-storage: waiting for device to settle before scanning
+> usbcore: registered new interface driver usb-storage
+> USB Mass Storage support registered.
+> usb-storage: device scan complete
+> scsi 10:0:0:0: Direct-Access     Ut165    USB2FlashStorage 0.00 PQ: 0 ANSI:
+> 2
+> sd 10:0:0:0: [sdc] 15794176 512-byte hardware sectors (8087 MB)
+> sd 10:0:0:0: [sdc] Write Protect is off
+> sd 10:0:0:0: [sdc] Mode Sense: 00 00 00 00
+> sd 10:0:0:0: [sdc] Assuming drive cache: write through
+> sd 10:0:0:0: [sdc] 15794176 512-byte hardware sectors (8087 MB)
+> sd 10:0:0:0: [sdc] Write Protect is off
+> sd 10:0:0:0: [sdc] Mode Sense: 00 00 00 00
+> sd 10:0:0:0: [sdc] Assuming drive cache: write through
+> sdc: unknown partition table
+> sd 10:0:0:0: [sdc] Attached SCSI removable disk
+>
+> This makes the partition unasable in my linux 2.6.25 (vanilla) system.
+> Another 1gb usbpen works perfectly.
+>
+> Bus 004 Device 001: ID 1d6b:0001
+> Bus 005 Device 001: ID 1d6b:0001
+> Bus 002 Device 001: ID 1d6b:0001
+> Bus 003 Device 001: ID 1d6b:0001
+> Bus 001 Device 002: ID 1307:0165 Transcend Information, Inc.
+> Bus 001 Device 001: ID 1d6b:0002
+>
+> Anything i can try?
+> It looks a scsi issue. And it's the first time i see the Mode Sense set to 0
+> for any usb storage device.
+>
+> Please CC me i'm not subscribed
+>
+> --
+> Patrizio Bassi
+> www.patriziobassi.it
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
