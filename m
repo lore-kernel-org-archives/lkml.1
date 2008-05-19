@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759427AbYESIp6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758942AbYESIqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759427AbYESIp6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 04:45:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759219AbYESIpB
+	id S1758942AbYESIqV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 04:46:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758672AbYESIpM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 04:45:01 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:30185 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759199AbYESIpA (ORCPT
+	Mon, 19 May 2008 04:45:12 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:64448 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759247AbYESIpJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 04:45:00 -0400
-Message-ID: <48313E08.8070904@de.ibm.com>
-Date: Mon, 19 May 2008 10:44:56 +0200
+	Mon, 19 May 2008 04:45:09 -0400
+Message-ID: <48313E12.4060002@de.ibm.com>
+Date: Mon, 19 May 2008 10:45:06 +0200
 From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
 User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org
 CC: ltp-coverage@lists.sourceforge.net,
        Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
        Peter Oberparleiter <oberparleiter@googlemail.com>
-Subject: [PATCH 6/7] kbuild: make source and include paths absolute
+Subject: [PATCH 7/7] gcov: architecture specific compile flag adjustments
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -29,83 +28,105 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
 
-Change all source and include paths to absolute form when
-CONFIG_GCOV_PROFILE is enabled.
-
-Example:
-
-  gcc -Idir1 -c a.c -o a.o
-
-will become
-
-  gcc -I/path/to/dir1 -c /path/to/a.c -o a.o
-
-Required by the gcov profiling infrastructure: when compiling with
-option -fprofile-arcs, gcc stores file names inside object files.
-Relative paths prevent the gcov tool from finding corresponding source
-files.
+Exclude code from profiling which is not linked to the main kernel or
+which is running in a context not compatible with the assumptions made
+by gcc's profiling code.
 
 Signed-off-by: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
 ---
- scripts/Kbuild.include |    7 +++++++
- scripts/Makefile.build |    3 ++-
- scripts/Makefile.lib   |    8 +++++++-
- 3 files changed, 16 insertions(+), 2 deletions(-)
+ arch/arm/boot/compressed/Makefile      |    1 +
+ arch/ppc/boot/Makefile                 |    1 +
+ arch/ppc/boot/common/Makefile          |    1 +
+ arch/ppc/boot/simple/Makefile          |    1 +
+ arch/x86/boot/Makefile                 |    1 +
+ arch/x86/boot/compressed/Makefile      |    1 +
+ arch/x86/kernel/acpi/realmode/Makefile |    1 +
+ 7 files changed, 7 insertions(+)
 
-Index: linux-2.6.26-rc3/scripts/Makefile.lib
+Index: linux-2.6.26-rc3/arch/arm/boot/compressed/Makefile
 ===================================================================
---- linux-2.6.26-rc3.orig/scripts/Makefile.lib
-+++ linux-2.6.26-rc3/scripts/Makefile.lib
-@@ -126,10 +126,16 @@ __a_flags	=                          $(c
- __cpp_flags     =                          $(call flags,_cpp_flags)
- endif
+--- linux-2.6.26-rc3.orig/arch/arm/boot/compressed/Makefile
++++ linux-2.6.26-rc3/arch/arm/boot/compressed/Makefile
+@@ -7,6 +7,7 @@
+ HEAD	= head.o
+ OBJS	= misc.o
+ FONTC	= $(srctree)/drivers/video/console/font_acorn_8x8.c
++GCOV	:= n
  
--c_flags        = -Wp,-MD,$(depfile) $(NOSTDINC_FLAGS) $(KBUILD_CPPFLAGS) \
-+___c_flags        = -Wp,-MD,$(depfile) $(NOSTDINC_FLAGS) $(KBUILD_CPPFLAGS) \
- 		 $(__c_flags) $(modkern_cflags) \
- 		 -D"KBUILD_STR(s)=\#s" $(basename_flags) $(modname_flags)
- 
-+ifeq ($(CONFIG_GCOV_PROFILE),)
-+c_flags = $(___c_flags)
-+else
-+c_flags = $(call flags_addpath,___c_flags,$(objtree))
-+endif
-+
- a_flags        = -Wp,-MD,$(depfile) $(NOSTDINC_FLAGS) $(KBUILD_CPPFLAGS) \
- 		 $(__a_flags) $(modkern_aflags)
- 
-Index: linux-2.6.26-rc3/scripts/Makefile.build
+ #
+ # Architecture dependencies
+Index: linux-2.6.26-rc3/arch/x86/boot/compressed/Makefile
 ===================================================================
---- linux-2.6.26-rc3.orig/scripts/Makefile.build
-+++ linux-2.6.26-rc3/scripts/Makefile.build
-@@ -165,7 +165,8 @@ $(obj)/%.symtypes : $(src)/%.c FORCE
- # (See cmd_cc_o_c + relevant part of rule_cc_o_c)
+--- linux-2.6.26-rc3.orig/arch/x86/boot/compressed/Makefile
++++ linux-2.6.26-rc3/arch/x86/boot/compressed/Makefile
+@@ -12,6 +12,7 @@ cflags-$(CONFIG_X86_64) := -mcmodel=smal
+ KBUILD_CFLAGS += $(cflags-y)
+ KBUILD_CFLAGS += $(call cc-option,-ffreestanding)
+ KBUILD_CFLAGS += $(call cc-option,-fno-stack-protector)
++GCOV := n
  
- quiet_cmd_cc_o_c = CC $(quiet_modtag)  $@
--cmd_cc_o_c = $(CC) $(c_flags) -c -o $@ $<
-+cmd_cc_o_c = $(CC) $(c_flags) -c -o $@ \
-+		$(if $(CONFIG_GCOV_PROFILE),$(call addpath,$<,$(objtree)),$<)
+ KBUILD_AFLAGS  := $(KBUILD_CFLAGS) -D__ASSEMBLY__
  
- ifdef CONFIG_MODVERSIONS
- # When module versioning is enabled the following steps are executed
-Index: linux-2.6.26-rc3/scripts/Kbuild.include
+Index: linux-2.6.26-rc3/arch/ppc/boot/Makefile
 ===================================================================
---- linux-2.6.26-rc3.orig/scripts/Kbuild.include
-+++ linux-2.6.26-rc3/scripts/Kbuild.include
-@@ -149,6 +149,13 @@ addtree = $(if $(filter-out -I/%,$(1)),$
- # Find all -I options and call addtree
- flags = $(foreach o,$($(1)),$(if $(filter -I%,$(o)),$(call addtree,$(o)),$(o)))
+--- linux-2.6.26-rc3.orig/arch/ppc/boot/Makefile
++++ linux-2.6.26-rc3/arch/ppc/boot/Makefile
+@@ -16,6 +16,7 @@
+ # KBUILD_CFLAGS used when building rest of boot (takes effect recursively)
+ KBUILD_CFLAGS 	+= -fno-builtin -D__BOOTER__ -Iarch/$(ARCH)/boot/include
+ HOSTCFLAGS	+= -Iarch/$(ARCH)/boot/include
++GCOV		:= n
  
-+# Prefix $(1) with $(2)/ if $(1) does not start with /
-+addpath = $(if $(filter-out /%,$(1)),$(2)/$(1),$(1))
-+
-+# Find all -I options and call addpath
-+flags_addpath = $(foreach o,$($(1)),\
-+		$(if $(filter -I%,$(o)),-I$(call addpath,$(o:-I%=%),$(2)),$(o)))
-+
- # echo command.
- # Short version is used, if $(quiet) equals `quiet_', otherwise full one.
- echo-cmd = $(if $($(quiet)cmd_$(1)),\
+ BOOT_TARGETS	= zImage zImage.initrd znetboot znetboot.initrd
+ 
+Index: linux-2.6.26-rc3/arch/ppc/boot/common/Makefile
+===================================================================
+--- linux-2.6.26-rc3.orig/arch/ppc/boot/common/Makefile
++++ linux-2.6.26-rc3/arch/ppc/boot/common/Makefile
+@@ -5,6 +5,7 @@
+ # Tom Rini	January 2001
+ #
+ 
++GCOV := n
+ lib-y					:= string.o util.o misc-common.o \
+ 						serial_stub.o bootinfo.o
+ lib-$(CONFIG_SERIAL_8250_CONSOLE)	+= ns16550.o
+Index: linux-2.6.26-rc3/arch/ppc/boot/simple/Makefile
+===================================================================
+--- linux-2.6.26-rc3.orig/arch/ppc/boot/simple/Makefile
++++ linux-2.6.26-rc3/arch/ppc/boot/simple/Makefile
+@@ -21,6 +21,7 @@
+ # XXX_memory.o file for this to work, as well as editing the
+ # misc-$(CONFIG_MACHINE) variable.
+ 
++GCOV				:= n
+ boot				:= arch/ppc/boot
+ common				:= $(boot)/common
+ utils				:= $(boot)/utils
+Index: linux-2.6.26-rc3/arch/x86/boot/Makefile
+===================================================================
+--- linux-2.6.26-rc3.orig/arch/x86/boot/Makefile
++++ linux-2.6.26-rc3/arch/x86/boot/Makefile
+@@ -71,6 +71,7 @@ KBUILD_CFLAGS	:= $(LINUXINCLUDE) -g -Os 
+ 		   $(call cc-option, -mpreferred-stack-boundary=2)
+ KBUILD_CFLAGS +=   $(call cc-option,-m32)
+ KBUILD_AFLAGS	:= $(KBUILD_CFLAGS) -D__ASSEMBLY__
++GCOV		:= n
+ 
+ $(obj)/zImage:  IMAGE_OFFSET := 0x1000
+ $(obj)/zImage:  asflags-y := $(SVGA_MODE) $(RAMDISK)
+Index: linux-2.6.26-rc3/arch/x86/kernel/acpi/realmode/Makefile
+===================================================================
+--- linux-2.6.26-rc3.orig/arch/x86/kernel/acpi/realmode/Makefile
++++ linux-2.6.26-rc3/arch/x86/kernel/acpi/realmode/Makefile
+@@ -42,6 +42,7 @@ KBUILD_CFLAGS	:= $(LINUXINCLUDE) -g -Os 
+ 		   $(call cc-option, -mpreferred-stack-boundary=2)
+ KBUILD_CFLAGS	+= $(call cc-option, -m32)
+ KBUILD_AFLAGS	:= $(KBUILD_CFLAGS) -D__ASSEMBLY__
++GCOV		:= n
+ 
+ WAKEUP_OBJS = $(addprefix $(obj)/,$(wakeup-y))
+ 
 
 
 
