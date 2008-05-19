@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761770AbYESNWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762152AbYESNXI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761770AbYESNWW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 09:22:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759256AbYESNRx
+	id S1762152AbYESNXI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 09:23:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759213AbYESNST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 09:17:53 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45828 "EHLO
+	Mon, 19 May 2008 09:18:19 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45838 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759974AbYESNRs (ORCPT
+	with ESMTP id S1760158AbYESNSI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 09:17:48 -0400
+	Mon, 19 May 2008 09:18:08 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 13/57] i6300esb: Style, unlocked_ioctl, cleanup
+Subject: [PATCH 16/57] iop: watchdog switch to unlocked_ioctl
 To: akpm@osdl.org, linux-kernel@vger.kernel.org, wim@iguana.be
-Date: Mon, 19 May 2008 14:05:57 +0100
-Message-ID: <20080519130557.31722.34852.stgit@core>
+Date: Mon, 19 May 2008 14:06:14 +0100
+Message-ID: <20080519130614.31722.84805.stgit@core>
 In-Reply-To: <20080519124659.31722.51847.stgit@core>
 References: <20080519124659.31722.51847.stgit@core>
 User-Agent: StGIT/0.14.1
@@ -30,551 +30,162 @@ From: Alan Cox <alan@redhat.com>
 
 ---
 
- drivers/watchdog/i6300esb.c |  342 +++++++++++++++++++++----------------------
- 1 files changed, 167 insertions(+), 175 deletions(-)
+ drivers/watchdog/iop_wdt.c |   46 +++++++++++++++++++++++---------------------
+ 1 files changed, 24 insertions(+), 22 deletions(-)
 
 
-diff --git a/drivers/watchdog/i6300esb.c b/drivers/watchdog/i6300esb.c
-index ca44fd9..b7e1419 100644
---- a/drivers/watchdog/i6300esb.c
-+++ b/drivers/watchdog/i6300esb.c
-@@ -38,9 +38,8 @@
- #include <linux/init.h>
- #include <linux/pci.h>
- #include <linux/ioport.h>
--
--#include <asm/uaccess.h>
--#include <asm/io.h>
-+#include <linux/uaccess.h>
-+#include <linux/io.h>
- 
- /* Module and version information */
- #define ESB_VERSION "0.03"
-@@ -59,17 +58,17 @@
- #define ESB_RELOAD_REG  BASEADDR + 0x0c /* Reload register                   */
- 
- /* Lock register bits */
--#define ESB_WDT_FUNC    ( 0x01 << 2 )   /* Watchdog functionality            */
--#define ESB_WDT_ENABLE  ( 0x01 << 1 )   /* Enable WDT                        */
--#define ESB_WDT_LOCK    ( 0x01 << 0 )   /* Lock (nowayout)                   */
-+#define ESB_WDT_FUNC    (0x01 << 2)   /* Watchdog functionality            */
-+#define ESB_WDT_ENABLE  (0x01 << 1)   /* Enable WDT                        */
-+#define ESB_WDT_LOCK    (0x01 << 0)   /* Lock (nowayout)                   */
- 
- /* Config register bits */
--#define ESB_WDT_REBOOT  ( 0x01 << 5 )   /* Enable reboot on timeout          */
--#define ESB_WDT_FREQ    ( 0x01 << 2 )   /* Decrement frequency               */
--#define ESB_WDT_INTTYPE ( 0x11 << 0 )   /* Interrupt type on timer1 timeout  */
-+#define ESB_WDT_REBOOT  (0x01 << 5)   /* Enable reboot on timeout          */
-+#define ESB_WDT_FREQ    (0x01 << 2)   /* Decrement frequency               */
-+#define ESB_WDT_INTTYPE (0x11 << 0)   /* Interrupt type on timer1 timeout  */
- 
- /* Reload register bits */
--#define ESB_WDT_RELOAD ( 0x01 << 8 )    /* prevent timeout                   */
-+#define ESB_WDT_RELOAD  (0x01 << 8)    /* prevent timeout                   */
- 
- /* Magic constants */
- #define ESB_UNLOCK1     0x80            /* Step 1 to unlock reset registers  */
-@@ -84,14 +83,20 @@ static unsigned short triggered; /* The status of the watchdog upon boot */
- static char esb_expect_close;
- 
- /* module parameters */
--#define WATCHDOG_HEARTBEAT 30   /* 30 sec default heartbeat (1<heartbeat<2*1023) */
-+/* 30 sec default heartbeat (1 < heartbeat < 2*1023) */
-+#define WATCHDOG_HEARTBEAT 30
- static int heartbeat = WATCHDOG_HEARTBEAT;  /* in seconds */
-+
- module_param(heartbeat, int, 0);
--MODULE_PARM_DESC(heartbeat, "Watchdog heartbeat in seconds. (1<heartbeat<2046, default=" __MODULE_STRING(WATCHDOG_HEARTBEAT) ")");
-+MODULE_PARM_DESC(heartbeat,
-+		"Watchdog heartbeat in seconds. (1<heartbeat<2046, default="
-+				__MODULE_STRING(WATCHDOG_HEARTBEAT) ")");
- 
+diff --git a/drivers/watchdog/iop_wdt.c b/drivers/watchdog/iop_wdt.c
+index bbbd91a..e54c888 100644
+--- a/drivers/watchdog/iop_wdt.c
++++ b/drivers/watchdog/iop_wdt.c
+@@ -37,6 +37,7 @@
  static int nowayout = WATCHDOG_NOWAYOUT;
- module_param(nowayout, int, 0);
--MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default=" __MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
-+MODULE_PARM_DESC(nowayout,
-+		"Watchdog cannot be stopped once started (default="
-+				__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
+ static unsigned long wdt_status;
+ static unsigned long boot_status;
++static spinlock_t wdt_lock;
  
- /*
-  * Some i6300ESB specific functions
-@@ -104,8 +109,8 @@ MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default=" _
-  * to once before they need to be unlocked again.
-  */
- static inline void esb_unlock_registers(void) {
--        writeb(ESB_UNLOCK1, ESB_RELOAD_REG);
--        writeb(ESB_UNLOCK2, ESB_RELOAD_REG);
-+	writeb(ESB_UNLOCK1, ESB_RELOAD_REG);
-+	writeb(ESB_UNLOCK2, ESB_RELOAD_REG);
+ #define WDT_IN_USE		0
+ #define WDT_OK_TO_CLOSE		1
+@@ -68,8 +69,10 @@ static void wdt_enable(void)
+ 	/* Arm and enable the Timer to starting counting down from 0xFFFF.FFFF
+ 	 * Takes approx. 10.7s to timeout
+ 	 */
++	spin_lock(&wdt_lock);
+ 	write_wdtcr(IOP_WDTCR_EN_ARM);
+ 	write_wdtcr(IOP_WDTCR_EN);
++	spin_unlock(&wdt_lock);
  }
  
- static void esb_timer_start(void)
-@@ -114,8 +119,7 @@ static void esb_timer_start(void)
+ /* returns 0 if the timer was successfully disabled */
+@@ -77,9 +80,11 @@ static int wdt_disable(void)
+ {
+ 	/* Stop Counting */
+ 	if (wdt_supports_disable()) {
++		spin_lock(&wdt_lock);
+ 		write_wdtcr(IOP_WDTCR_DIS_ARM);
+ 		write_wdtcr(IOP_WDTCR_DIS);
+ 		clear_bit(WDT_ENABLED, &wdt_status);
++		spin_unlock(&wdt_lock);
+ 		printk(KERN_INFO "WATCHDOG: Disabled\n");
+ 		return 0;
+ 	} else
+@@ -92,16 +97,12 @@ static int iop_wdt_open(struct inode *inode, struct file *file)
+ 		return -EBUSY;
  
- 	/* Enable or Enable + Lock? */
- 	val = 0x02 | (nowayout ? 0x01 : 0x00);
+ 	clear_bit(WDT_OK_TO_CLOSE, &wdt_status);
 -
--        pci_write_config_byte(esb_pci, ESB_LOCK_REG, val);
-+	pci_write_config_byte(esb_pci, ESB_LOCK_REG, val);
- }
- 
- static int esb_timer_stop(void)
-@@ -140,7 +144,7 @@ static void esb_timer_keepalive(void)
- 	spin_lock(&esb_lock);
- 	esb_unlock_registers();
- 	writew(ESB_WDT_RELOAD, ESB_RELOAD_REG);
--        /* FIXME: Do we need to flush anything here? */
-+	/* FIXME: Do we need to flush anything here? */
- 	spin_unlock(&esb_lock);
- }
- 
-@@ -167,7 +171,7 @@ static int esb_timer_set_heartbeat(int time)
- 	esb_unlock_registers();
-         writel(val, ESB_TIMER2_REG);
- 
--        /* Reload */
-+	/* Reload */
- 	esb_unlock_registers();
- 	writew(ESB_WDT_RELOAD, ESB_RELOAD_REG);
- 
-@@ -179,54 +183,55 @@ static int esb_timer_set_heartbeat(int time)
- 	return 0;
- }
- 
--static int esb_timer_read (void)
-+static int esb_timer_read(void)
- {
--       	u32 count;
-+	u32 count;
- 
- 	/* This isn't documented, and doesn't take into
--         * acount which stage is running, but it looks
--         * like a 20 bit count down, so we might as well report it.
--         */
--        pci_read_config_dword(esb_pci, 0x64, &count);
--        return (int)count;
-+	 * acount which stage is running, but it looks
-+	 * like a 20 bit count down, so we might as well report it.
-+	 */
-+	pci_read_config_dword(esb_pci, 0x64, &count);
-+	return (int)count;
- }
- 
- /*
-  * 	/dev/watchdog handling
-  */
- 
--static int esb_open (struct inode *inode, struct file *file)
-+static int esb_open(struct inode *inode, struct file *file)
- {
--        /* /dev/watchdog can only be opened once */
--        if (test_and_set_bit(0, &timer_alive))
--                return -EBUSY;
-+	/* /dev/watchdog can only be opened once */
-+	if (test_and_set_bit(0, &timer_alive))
-+		return -EBUSY;
- 
--        /* Reload and activate timer */
--        esb_timer_keepalive ();
--        esb_timer_start ();
-+	/* Reload and activate timer */
-+	esb_timer_keepalive();
-+	esb_timer_start();
- 
+ 	wdt_enable();
+-
+ 	set_bit(WDT_ENABLED, &wdt_status);
+-
  	return nonseekable_open(inode, file);
  }
  
--static int esb_release (struct inode *inode, struct file *file)
-+static int esb_release(struct inode *inode, struct file *file)
+-static ssize_t
+-iop_wdt_write(struct file *file, const char *data, size_t len,
++static ssize_t iop_wdt_write(struct file *file, const char *data, size_t len,
+ 		  loff_t *ppos)
  {
--        /* Shut off the timer. */
--        if (esb_expect_close == 42) {
--                esb_timer_stop ();
--        } else {
--                printk(KERN_CRIT PFX "Unexpected close, not stopping watchdog!\n");
--                esb_timer_keepalive ();
--        }
--        clear_bit(0, &timer_alive);
--        esb_expect_close = 0;
--        return 0;
-+	/* Shut off the timer. */
-+	if (esb_expect_close == 42)
-+		esb_timer_stop();
-+	else {
-+		printk(KERN_CRIT PFX
-+				"Unexpected close, not stopping watchdog!\n");
-+		esb_timer_keepalive();
-+	}
-+	clear_bit(0, &timer_alive);
-+	esb_expect_close = 0;
-+	return 0;
- }
- 
--static ssize_t esb_write (struct file *file, const char __user *data,
--			  size_t len, loff_t * ppos)
-+static ssize_t esb_write(struct file *file, const char __user *data,
-+			  size_t len, loff_t *ppos)
- {
- 	/* See if we got the magic character 'V' and reload the timer */
--        if (len) {
-+	if (len) {
- 		if (!nowayout) {
- 			size_t i;
- 
-@@ -237,7 +242,7 @@ static ssize_t esb_write (struct file *file, const char __user *data,
- 			/* scan to see whether or not we got the magic character */
- 			for (i = 0; i != len; i++) {
- 				char c;
--				if(get_user(c, data+i))
-+				if (get_user(c, data+i))
- 					return -EFAULT;
- 				if (c == 'V')
- 					esb_expect_close = 42;
-@@ -245,13 +250,12 @@ static ssize_t esb_write (struct file *file, const char __user *data,
+ 	if (len) {
+@@ -121,41 +122,39 @@ iop_wdt_write(struct file *file, const char *data, size_t len,
  		}
- 
- 		/* someone wrote to us, we should reload the timer */
--		esb_timer_keepalive ();
-+		esb_timer_keepalive();
+ 		wdt_enable();
  	}
+-
  	return len;
  }
  
--static int esb_ioctl (struct inode *inode, struct file *file,
--		      unsigned int cmd, unsigned long arg)
-+static long esb_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+-static struct watchdog_info ident = {
++static const struct watchdog_info ident = {
+ 	.options = WDIOF_CARDRESET | WDIOF_MAGICCLOSE | WDIOF_KEEPALIVEPING,
+ 	.identity = "iop watchdog",
+ };
+ 
+-static int
+-iop_wdt_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+-		  unsigned long arg)
++static long iop_wdt_ioctl(struct file *file,
++				unsigned int cmd, unsigned long arg)
  {
- 	int new_options, retval = -EINVAL;
- 	int new_heartbeat;
-@@ -266,71 +270,65 @@ static int esb_ioctl (struct inode *inode, struct file *file,
- 	};
+ 	int options;
+ 	int ret = -ENOTTY;
++	int __user *argp = (int __user *)arg;
  
  	switch (cmd) {
--		case WDIOC_GETSUPPORT:
--			return copy_to_user(argp, &ident,
--					    sizeof (ident)) ? -EFAULT : 0;
--
--		case WDIOC_GETSTATUS:
--			return put_user (esb_timer_read(), p);
--
--		case WDIOC_GETBOOTSTATUS:
--			return put_user (triggered, p);
--
--                case WDIOC_KEEPALIVE:
--                        esb_timer_keepalive ();
--                        return 0;
-+	case WDIOC_GETSUPPORT:
-+		return copy_to_user(argp, &ident,
-+					sizeof(ident)) ? -EFAULT : 0;
+ 	case WDIOC_GETSUPPORT:
+-		if (copy_to_user
+-		    ((struct watchdog_info *)arg, &ident, sizeof ident))
++		if (copy_to_user(argp, &ident, sizeof ident))
+ 			ret = -EFAULT;
+ 		else
+ 			ret = 0;
+ 		break;
  
--                case WDIOC_SETOPTIONS:
--                {
--                        if (get_user (new_options, p))
--                                return -EFAULT;
-+	case WDIOC_GETSTATUS:
-+		return put_user(esb_timer_read(), p);
+ 	case WDIOC_GETSTATUS:
+-		ret = put_user(0, (int *)arg);
++		ret = put_user(0, argp);
+ 		break;
  
--                        if (new_options & WDIOS_DISABLECARD) {
--                                esb_timer_stop ();
--                                retval = 0;
--                        }
-+	case WDIOC_GETBOOTSTATUS:
-+		return put_user(triggered, p);
+ 	case WDIOC_GETBOOTSTATUS:
+-		ret = put_user(boot_status, (int *)arg);
++		ret = put_user(boot_status, argp);
+ 		break;
  
--                        if (new_options & WDIOS_ENABLECARD) {
--                                esb_timer_keepalive ();
--                                esb_timer_start ();
--                                retval = 0;
--                        }
-+	case WDIOC_KEEPALIVE:
-+		esb_timer_keepalive();
-+		return 0;
+ 	case WDIOC_GETTIMEOUT:
+-		ret = put_user(iop_watchdog_timeout(), (int *)arg);
++		ret = put_user(iop_watchdog_timeout(), argp);
+ 		break;
  
--                        return retval;
--                }
-+	case WDIOC_SETOPTIONS:
-+	{
-+		if (get_user(new_options, p))
-+			return -EFAULT;
- 
--                case WDIOC_SETTIMEOUT:
--                {
--                        if (get_user(new_heartbeat, p))
--                                return -EFAULT;
--
--                        if (esb_timer_set_heartbeat(new_heartbeat))
--                            return -EINVAL;
--
--                        esb_timer_keepalive ();
--                        /* Fall */
--                }
--
--                case WDIOC_GETTIMEOUT:
--                        return put_user(heartbeat, p);
-+		if (new_options & WDIOS_DISABLECARD) {
-+			esb_timer_stop();
-+			retval = 0;
-+		}
- 
--                default:
--                        return -ENOTTY;
--        }
-+		if (new_options & WDIOS_ENABLECARD) {
-+			esb_timer_keepalive();
-+			esb_timer_start();
-+			retval = 0;
-+		}
-+		return retval;
-+	}
-+	case WDIOC_SETTIMEOUT:
-+	{
-+		if (get_user(new_heartbeat, p))
-+			return -EFAULT;
-+		if (esb_timer_set_heartbeat(new_heartbeat))
-+			return -EINVAL;
-+		esb_timer_keepalive();
-+		/* Fall */
-+	}
-+	case WDIOC_GETTIMEOUT:
-+		return put_user(heartbeat, p);
-+	default:
-+		return -ENOTTY;
-+	}
- }
- 
- /*
-  *      Notify system
-  */
- 
--static int esb_notify_sys (struct notifier_block *this, unsigned long code, void *unused)
-+static int esb_notify_sys(struct notifier_block *this,
-+					unsigned long code, void *unused)
- {
--        if (code==SYS_DOWN || code==SYS_HALT) {
--                /* Turn the WDT off */
--                esb_timer_stop ();
--        }
--
--        return NOTIFY_DONE;
-+	if (code == SYS_DOWN || code == SYS_HALT) {
-+		/* Turn the WDT off */
-+		esb_timer_stop();
-+	}
-+	return NOTIFY_DONE;
- }
- 
- /*
-@@ -338,22 +336,22 @@ static int esb_notify_sys (struct notifier_block *this, unsigned long code, void
-  */
- 
- static const struct file_operations esb_fops = {
--        .owner =        THIS_MODULE,
--        .llseek =       no_llseek,
--        .write =        esb_write,
--        .ioctl =        esb_ioctl,
--        .open =         esb_open,
--        .release =      esb_release,
-+	.owner = THIS_MODULE,
-+	.llseek = no_llseek,
-+	.write = esb_write,
-+	.unlocked_ioctl = esb_ioctl,
-+	.open = esb_open,
-+	.release = esb_release,
- };
- 
- static struct miscdevice esb_miscdev = {
--        .minor =        WATCHDOG_MINOR,
--        .name =         "watchdog",
--        .fops =         &esb_fops,
-+	.minor = WATCHDOG_MINOR,
-+	.name = "watchdog",
-+	.fops = &esb_fops,
- };
- 
- static struct notifier_block esb_notifier = {
--        .notifier_call =        esb_notify_sys,
-+	.notifier_call = esb_notify_sys,
- };
- 
- /*
-@@ -365,50 +363,44 @@ static struct notifier_block esb_notifier = {
-  * want to register another driver on the same PCI id.
-  */
- static struct pci_device_id esb_pci_tbl[] = {
--        { PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ESB_9), },
--        { 0, },                 /* End of list */
-+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ESB_9), },
-+	{ 0, },                 /* End of list */
- };
--MODULE_DEVICE_TABLE (pci, esb_pci_tbl);
-+MODULE_DEVICE_TABLE(pci, esb_pci_tbl);
- 
- /*
-  *      Init & exit routines
-  */
- 
--static unsigned char __init esb_getdevice (void)
-+static unsigned char __init esb_getdevice(void)
- {
- 	u8 val1;
- 	unsigned short val2;
-+	/*
-+	 *      Find the PCI device
-+	 */
- 
--        struct pci_dev *dev = NULL;
--        /*
--         *      Find the PCI device
--         */
--
--        for_each_pci_dev(dev) {
--                if (pci_match_id(esb_pci_tbl, dev)) {
--                        esb_pci = dev;
--                        break;
--                }
--	}
-+	esb_pci = pci_get_device(PCI_VENDOR_ID_INTEL,
-+					PCI_DEVICE_ID_INTEL_ESB_9, NULL);
- 
--        if (esb_pci) {
--        	if (pci_enable_device(esb_pci)) {
--			printk (KERN_ERR PFX "failed to enable device\n");
-+	if (esb_pci) {
-+		if (pci_enable_device(esb_pci)) {
-+			printk(KERN_ERR PFX "failed to enable device\n");
- 			goto err_devput;
+ 	case WDIOC_KEEPALIVE:
+@@ -177,14 +176,12 @@ iop_wdt_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+ 			} else
+ 				ret = 0;
  		}
- 
- 		if (pci_request_region(esb_pci, 0, ESB_MODULE_NAME)) {
--			printk (KERN_ERR PFX "failed to request region\n");
-+			printk(KERN_ERR PFX "failed to request region\n");
- 			goto err_disable;
+-
+ 		if (options & WDIOS_ENABLECARD) {
+ 			wdt_enable();
+ 			ret = 0;
  		}
- 
- 		BASEADDR = ioremap(pci_resource_start(esb_pci, 0),
- 				   pci_resource_len(esb_pci, 0));
- 		if (BASEADDR == NULL) {
--                	/* Something's wrong here, BASEADDR has to be set */
--			printk (KERN_ERR PFX "failed to get BASEADDR\n");
--                        goto err_release;
--                }
-+			/* Something's wrong here, BASEADDR has to be set */
-+			printk(KERN_ERR PFX "failed to get BASEADDR\n");
-+			goto err_release;
-+		}
- 
- 		/*
- 		 * The watchdog has two timers, it can be setup so that the
-@@ -425,7 +417,7 @@ static unsigned char __init esb_getdevice (void)
- 		/* Check that the WDT isn't already locked */
- 		pci_read_config_byte(esb_pci, ESB_LOCK_REG, &val1);
- 		if (val1 & ESB_WDT_LOCK)
--			printk (KERN_WARNING PFX "nowayout already set\n");
-+			printk(KERN_WARNING PFX "nowayout already set\n");
- 
- 		/* Set the timer to watchdog mode and disable it for now */
- 		pci_write_config_byte(esb_pci, ESB_LOCK_REG, 0x00);
-@@ -452,44 +444,44 @@ err_devput:
- 	return 0;
+ 		break;
+ 	}
+-
+ 	return ret;
  }
  
--static int __init watchdog_init (void)
-+static int __init watchdog_init(void)
+@@ -214,7 +211,7 @@ static const struct file_operations iop_wdt_fops = {
+ 	.owner = THIS_MODULE,
+ 	.llseek = no_llseek,
+ 	.write = iop_wdt_write,
+-	.ioctl = iop_wdt_ioctl,
++	.unlocked_ioctl = iop_wdt_ioctl,
+ 	.open = iop_wdt_open,
+ 	.release = iop_wdt_release,
+ };
+@@ -229,10 +226,8 @@ static int __init iop_wdt_init(void)
  {
--        int ret;
--
--        /* Check whether or not the hardware watchdog is there */
--        if (!esb_getdevice () || esb_pci == NULL)
--                return -ENODEV;
--
--        /* Check that the heartbeat value is within it's range ; if not reset to the default */
--        if (esb_timer_set_heartbeat (heartbeat)) {
--                esb_timer_set_heartbeat (WATCHDOG_HEARTBEAT);
--                printk(KERN_INFO PFX "heartbeat value must be 1<heartbeat<2046, using %d\n",
--		       heartbeat);
--        }
--
--        ret = register_reboot_notifier(&esb_notifier);
--        if (ret != 0) {
--                printk(KERN_ERR PFX "cannot register reboot notifier (err=%d)\n",
--                        ret);
--                goto err_unmap;
--        }
--
--        ret = misc_register(&esb_miscdev);
--        if (ret != 0) {
--                printk(KERN_ERR PFX "cannot register miscdev on minor=%d (err=%d)\n",
--                        WATCHDOG_MINOR, ret);
--                goto err_notifier;
--        }
--
--        esb_timer_stop ();
--
--        printk (KERN_INFO PFX "initialized (0x%p). heartbeat=%d sec (nowayout=%d)\n",
--                BASEADDR, heartbeat, nowayout);
-+	int ret;
-+
-+	/* Check whether or not the hardware watchdog is there */
-+	if (!esb_getdevice() || esb_pci == NULL)
-+		return -ENODEV;
-+
-+	/* Check that the heartbeat value is within it's range;
-+	   if not reset to the default */
-+	if (esb_timer_set_heartbeat(heartbeat)) {
-+        	esb_timer_set_heartbeat(WATCHDOG_HEARTBEAT);
-+		printk(KERN_INFO PFX
-+			"heartbeat value must be 1<heartbeat<2046, using %d\n",
-+								heartbeat);
-+	}
-+	ret = register_reboot_notifier(&esb_notifier);
-+	if (ret != 0) {
-+		printk(KERN_ERR PFX
-+			"cannot register reboot notifier (err=%d)\n", ret);
-+		goto err_unmap;
-+	}
+ 	int ret;
  
--        return 0;
-+	ret = misc_register(&esb_miscdev);
-+	if (ret != 0) {
-+		printk(KERN_ERR PFX
-+			"cannot register miscdev on minor=%d (err=%d)\n",
-+							WATCHDOG_MINOR, ret);
-+		goto err_notifier;
-+	}
-+	esb_timer_stop();
-+	printk(KERN_INFO PFX
-+		"initialized (0x%p). heartbeat=%d sec (nowayout=%d)\n",
-+						BASEADDR, heartbeat, nowayout);
-+	return 0;
+-	ret = misc_register(&iop_wdt_miscdev);
+-	if (ret == 0)
+-		printk("iop watchdog timer: timeout %lu sec\n",
+-		       iop_watchdog_timeout());
++	spin_lock_init(&wdt_lock);
++
  
- err_notifier:
--        unregister_reboot_notifier(&esb_notifier);
-+	unregister_reboot_notifier(&esb_notifier);
- err_unmap:
- 	iounmap(BASEADDR);
- /* err_release: */
-@@ -498,18 +490,18 @@ err_unmap:
- 	pci_disable_device(esb_pci);
- /* err_devput: */
- 	pci_dev_put(esb_pci);
--        return ret;
-+	return ret;
+ 	/* check if the reset was caused by the watchdog timer */
+ 	boot_status = (read_rcsr() & IOP_RCSR_WDT) ? WDIOF_CARDRESET : 0;
+@@ -242,6 +237,13 @@ static int __init iop_wdt_init(void)
+ 	 */
+ 	write_wdtsr(IOP13XX_WDTCR_IB_RESET);
+ 
++	/* Register after we have the device set up so we cannot race
++	   with an open */
++	ret = misc_register(&iop_wdt_miscdev);
++	if (ret == 0)
++		printk("iop watchdog timer: timeout %lu sec\n",
++		       iop_watchdog_timeout());
++
+ 	return ret;
  }
  
--static void __exit watchdog_cleanup (void)
-+static void __exit watchdog_cleanup(void)
- {
- 	/* Stop the timer before we leave */
- 	if (!nowayout)
--		esb_timer_stop ();
-+		esb_timer_stop();
- 
- 	/* Deregister */
- 	misc_deregister(&esb_miscdev);
--        unregister_reboot_notifier(&esb_notifier);
-+	unregister_reboot_notifier(&esb_notifier);
- 	iounmap(BASEADDR);
- 	pci_release_region(esb_pci, 0);
- 	pci_disable_device(esb_pci);
 
