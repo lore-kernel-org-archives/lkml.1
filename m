@@ -1,45 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765698AbYESWO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765454AbYESWPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765698AbYESWO6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 18:14:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760066AbYESWJa
+	id S1765454AbYESWPa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 18:15:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765100AbYESWJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 18:09:30 -0400
-Received: from xenotime.net ([66.160.160.81]:58087 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1765100AbYESWJ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 18:09:26 -0400
-Date: Mon, 19 May 2008 15:09:21 -0700 (PDT)
-From: "Randy.Dunlap" <rdunlap@xenotime.net>
-X-X-Sender: rddunlap@shark.he.net
-To: linux-kernel@vger.kernel.org
-cc: viro@zeniv.linux.org.uk, eparis@redhat.com, akpm@linux-foundation.org
-Subject: [PATCH] audit: fix kernel-doc parameter notation
-Message-ID: <Pine.LNX.4.64.0805191508090.20279@shark.he.net>
+	Mon, 19 May 2008 18:09:32 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:45214 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763367AbYESWJb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 18:09:31 -0400
+Date: Tue, 20 May 2008 01:07:25 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] powerpc/mm/hash_low_32.S: remove CVS keyword
+Message-ID: <20080519220725.GO17716@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+This patch removes a CVS keyword that wasn't updated for a long time 
+from a comment.
 
-Fix auditfilter kernel-doc misssing parameter description:
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-Warning(lin2626-rc3//kernel/auditfilter.c:1551): No description found for parameter 'sessionid'
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- kernel/auditfilter.c |    1 +
- 1 file changed, 1 insertion(+)
+92f17f771c22fa93afe058210ddf51920aca1451 diff --git a/arch/powerpc/mm/hash_low_32.S b/arch/powerpc/mm/hash_low_32.S
+index ddeaf9e..b9ba7d9 100644
+--- a/arch/powerpc/mm/hash_low_32.S
++++ b/arch/powerpc/mm/hash_low_32.S
+@@ -1,6 +1,4 @@
+ /*
+- *  $Id: hashtable.S,v 1.6 1999/10/08 01:56:15 paulus Exp $
+- *
+  *  PowerPC version
+  *    Copyright (C) 1995-1996 Gary Thomas (gdt@linuxppc.org)
+  *  Rewritten by Cort Dougan (cort@cs.nmt.edu) for PReP
 
---- lin2626-rc3.orig/kernel/auditfilter.c
-+++ lin2626-rc3/kernel/auditfilter.c
-@@ -1544,6 +1544,7 @@ static void audit_log_rule_change(uid_t 
-  * @data: payload data
-  * @datasz: size of payload data
-  * @loginuid: loginuid of sender
-+ * @sessionid: sessionid for netlink audit message
-  * @sid: SE Linux Security ID of sender
-  */
- int audit_receive_filter(int type, int pid, int uid, int seq, void *data,
