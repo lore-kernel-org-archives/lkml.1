@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755211AbYESGyI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756230AbYESHKR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755211AbYESGyI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 02:54:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753551AbYESGxy
+	id S1756230AbYESHKR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 03:10:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753599AbYESHKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 02:53:54 -0400
-Received: from ms14.Sony.CO.JP ([211.125.136.233]:33354 "EHLO ms14.sony.co.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753984AbYESGxw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 02:53:52 -0400
-X-Greylist: delayed 2229 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 May 2008 02:53:52 EDT
-Date: Mon, 19 May 2008 15:14:40 +0900
-From: Akira Tsukamoto <akirat@rd.scei.sony.co.jp>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Subject: Re: [PATCH] usb-serial: pl2303: add support for RATOC REX-USB60F
-Cc: gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080517.001356.72708524.anemo@mba.ocn.ne.jp>
-References: <20080516.171345.01918000.nemoto@toshiba-tops.co.jp> <20080517.001356.72708524.anemo@mba.ocn.ne.jp>
-Message-Id: <20080519150539.0DBB.4D252088@rd.scei.sony.co.jp>
+	Mon, 19 May 2008 03:10:04 -0400
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:46160 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753282AbYESHKD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 03:10:03 -0400
+Message-ID: <483127B9.3010205@linux.vnet.ibm.com>
+Date: Mon, 19 May 2008 12:39:45 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Nadia.Derbey@bull.net, bunk@kernel.org
+Subject: Re: [Bug #10641] [BUG] 2.6.26-rc1-git4 - task blocked on powerpc
+ for more than 120 seconds
+References: <oKKSi1w1qaF.A.mEG.JrBMIB@albercik> <7wuznNhcUqC.A.FEB.MtBMIB@albercik>
+In-Reply-To: <7wuznNhcUqC.A.FEB.MtBMIB@albercik>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.46 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 17 May 2008 00:13:56 +0900 (JST), 
-Atsushi Nemoto <anemo@mba.ocn.ne.jp> mentioned: 
+Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> Tsukamoto-san, does your REX-USB60F work with pl2303 driver?  If so,
-> we have to do some trick to support this strange device (different
-> driver for same USB ID), though I'm not sure that is possible.
-> Otherwise, this patch can be used to support the device correctly.
+> The following bug entry is on the current list of known regressions
+> from 2.6.25.  Please verify if it still should be listed.
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10641
+> Subject		: [BUG] 2.6.26-rc1-git4 - task blocked on powerpc for more than 120 seconds
+> Submitter	: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> Date		: 2008-05-07 13:34 (12 days old)
+> References	: http://marc.info/?l=linux-kernel&amp;m=121016673607188&amp;w=2
+> 
 
-I do not think REX-USB60F will work on pl2303 driver either based on 
-your lsusb info.
-I saw your patch going into gregkh-2.6 tree and thank you for your fix.
+This bug seems to be because of the LTP version used, as pointed by Nadia. Using the
+latest LTP (2008-04-30), does not produces the calltraces mentioned in the bug. 
 
-I will reexamine the REX-USB60F and I will reply to you only if the 
-REX-USB60F requires some trick to support different driver for same USB ID.
-
-Thanks,
-
-Akira
 
 -- 
-Akira Tsukamoto
-Sony Computer Entertainment Inc. 
-Distributed OS Development Dept. 
-Japan
-
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
