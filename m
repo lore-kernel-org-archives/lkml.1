@@ -1,105 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761364AbYESRJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758949AbYESRJd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761364AbYESRJU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 13:09:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755020AbYESRJJ
+	id S1758949AbYESRJd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 13:09:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761352AbYESRJU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 13:09:09 -0400
-Received: from mout1.freenet.de ([195.4.92.91]:41429 "EHLO mout1.freenet.de"
+	Mon, 19 May 2008 13:09:20 -0400
+Received: from visualserver.org ([84.242.66.126]:39793 "EHLO visualserver.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754222AbYESRJH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 13:09:07 -0400
-Date: Mon, 19 May 2008 19:09:00 +0200
-From: Gary Jennejohn <garyj@denx.de>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Cc: "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>,
-       fabrizio.garetto@gmail.com, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, dbrownell@users.sourceforge.net,
-       spi-devel-general@lists.sourceforge.net
-Subject: Re: [PATCH 3/4] spi: Add OF binding support for SPI busses
-Message-ID: <20080519190900.01ec3b2a@peedub.jennejohn.org>
-In-Reply-To: <fa686aa40805190857u317d3304ie75d11870e109fc5@mail.gmail.com>
-References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
-	<20080516193613.28030.13950.stgit@trillian.secretlab.ca>
-	<Pine.LNX.4.64.0805191446530.27140@axis700.grange>
-	<fa686aa40805190857u317d3304ie75d11870e109fc5@mail.gmail.com>
-Reply-To: gary.jennejohn@freenet.de
-Organization: DENX Softwre Engineering GmbH
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.14; amd64-portbld-freebsd8.0)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1761111AbYESRJR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 13:09:17 -0400
+Date: Mon, 19 May 2008 19:09:13 +0200 (CEST)
+From: Soumyadip Das Mahapatra <kernelhacker@visualserver.org>
+To: linux-kernel@vger.kernel.org
+cc: akinobu.mita@gmail.com
+Subject: [PATCH 2/2] bitreversal program
+Message-ID: <Pine.LNX.4.64.0805191904580.18461@visualserver.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-visualserver.org-MailScanner-Information: Please contact the ISP for more information
+X-MailScanner-ID: A1E752FB43.0880C
+X-visualserver.org-MailScanner: Found to be clean
+X-visualserver.org-MailScanner-From: kernelhacker@visualserver.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 May 2008 09:57:21 -0600
-"Grant Likely" <grant.likely@secretlab.ca> wrote:
+Signed-off-by: Soumyadip das Mahapatra <kernelhacker@visualserver.org>
+--- patch2 ---
 
-> On Mon, May 19, 2008 at 7:17 AM, Guennadi Liakhovetski
-> <g.liakhovetski@gmx.de> wrote:
-> > On Fri, 16 May 2008, Grant Likely wrote:
-> >
-> >> +    However, the binding does not attempt to define the specific method for
-> >> +    assigning chip select numbers.  Since SPI chip select configuration is
-> >> +    flexible and non-standardized, it is left out of this binding with the
-> >> +    assumption that board specific platform code will be used to manage
-> >> +    chip selects.  Individual drivers can define additional properties to
-> >> +    support describing the chip select layout.
-> >
-> > Yes, this looks like a problem to me. This means, SPI devices will need
-> > two bindings - OF and platform?... Maybe define an spi_chipselect
-> > OF-binding?
-> 
-> Actually, spi devices have *neither*.  :-)  They bind to the SPI bus.
-> Not the platform bus or of_platform bus.  But that is Linux internal
-> details; this discussion is about device tree bindings.
-> 
-> Note that I did say that drivers can define additional properties for
-> supporting chip select changes as needed.  I'm just not attempting to
-> encode them into the formal binding.  There is simply just too many
-> different ways to manipulate chip select signals and so I don't feel
-> confident trying to define a *common* binding at this moment in time.
-> At some point in the future when we have a number of examples to
-> choose from then we can extend this binding with chip select related
-> properties.
-> 
-> As for the Linux internals, the 5200 SPI bus driver that I posted
-> exports a function that allows another driver to call in and
-> manipulated the CS lines before the transfer.  It isn't the prettiest
-> solution, but I'm not locked into the approach and that gives some
-> time to consider cleaner interfaces.
-> 
+--- a/lib/bitrev.c	2008-04-17 08:19:44.000000000 +0530
++++ b/lib/bitrev.c	2008-05-19 21:50:02.000000000 +0530
+@@ -2,57 +2,17 @@
+  #include <linux/module.h>
+  #include <linux/bitrev.h>
 
-I sort of hesitate to hijack this thread, but since we're discussing SPI
-and chip selects...
+-MODULE_AUTHOR("Akinobu Mita <akinobu.mita@gmail.com>");
++MODULE_AUTHOR("Akinobu Mita <akinobu.mita@gmail.com>
++	       Soumyadip Das Mahapatra <kernelhacker@visualserver.org>");
+  MODULE_DESCRIPTION("Bit ordering reversal functions");
+  MODULE_LICENSE("GPL");
 
-I have a driver for the SPI controller in the 440EPx.  This controller
-is very simple and does not have any internal support for a chip select.
-The controller seems to also be in the 440GR and 440EP, and may be in
-other AMCC CPUs too.
+-const u8 byte_rev_table[256] = {
+-	0x00, 0x80, 0x40, 0xc0, 0x20, 0xa0, 0x60, 0xe0,
+-	0x10, 0x90, 0x50, 0xd0, 0x30, 0xb0, 0x70, 0xf0,
+-	0x08, 0x88, 0x48, 0xc8, 0x28, 0xa8, 0x68, 0xe8,
+-	0x18, 0x98, 0x58, 0xd8, 0x38, 0xb8, 0x78, 0xf8,
+-	0x04, 0x84, 0x44, 0xc4, 0x24, 0xa4, 0x64, 0xe4,
+-	0x14, 0x94, 0x54, 0xd4, 0x34, 0xb4, 0x74, 0xf4,
+-	0x0c, 0x8c, 0x4c, 0xcc, 0x2c, 0xac, 0x6c, 0xec,
+-	0x1c, 0x9c, 0x5c, 0xdc, 0x3c, 0xbc, 0x7c, 0xfc,
+-	0x02, 0x82, 0x42, 0xc2, 0x22, 0xa2, 0x62, 0xe2,
+-	0x12, 0x92, 0x52, 0xd2, 0x32, 0xb2, 0x72, 0xf2,
+-	0x0a, 0x8a, 0x4a, 0xca, 0x2a, 0xaa, 0x6a, 0xea,
+-	0x1a, 0x9a, 0x5a, 0xda, 0x3a, 0xba, 0x7a, 0xfa,
+-	0x06, 0x86, 0x46, 0xc6, 0x26, 0xa6, 0x66, 0xe6,
+-	0x16, 0x96, 0x56, 0xd6, 0x36, 0xb6, 0x76, 0xf6,
+-	0x0e, 0x8e, 0x4e, 0xce, 0x2e, 0xae, 0x6e, 0xee,
+-	0x1e, 0x9e, 0x5e, 0xde, 0x3e, 0xbe, 0x7e, 0xfe,
+-	0x01, 0x81, 0x41, 0xc1, 0x21, 0xa1, 0x61, 0xe1,
+-	0x11, 0x91, 0x51, 0xd1, 0x31, 0xb1, 0x71, 0xf1,
+-	0x09, 0x89, 0x49, 0xc9, 0x29, 0xa9, 0x69, 0xe9,
+-	0x19, 0x99, 0x59, 0xd9, 0x39, 0xb9, 0x79, 0xf9,
+-	0x05, 0x85, 0x45, 0xc5, 0x25, 0xa5, 0x65, 0xe5,
+-	0x15, 0x95, 0x55, 0xd5, 0x35, 0xb5, 0x75, 0xf5,
+-	0x0d, 0x8d, 0x4d, 0xcd, 0x2d, 0xad, 0x6d, 0xed,
+-	0x1d, 0x9d, 0x5d, 0xdd, 0x3d, 0xbd, 0x7d, 0xfd,
+-	0x03, 0x83, 0x43, 0xc3, 0x23, 0xa3, 0x63, 0xe3,
+-	0x13, 0x93, 0x53, 0xd3, 0x33, 0xb3, 0x73, 0xf3,
+-	0x0b, 0x8b, 0x4b, 0xcb, 0x2b, 0xab, 0x6b, 0xeb,
+-	0x1b, 0x9b, 0x5b, 0xdb, 0x3b, 0xbb, 0x7b, 0xfb,
+-	0x07, 0x87, 0x47, 0xc7, 0x27, 0xa7, 0x67, 0xe7,
+-	0x17, 0x97, 0x57, 0xd7, 0x37, 0xb7, 0x77, 0xf7,
+-	0x0f, 0x8f, 0x4f, 0xcf, 0x2f, 0xaf, 0x6f, 0xef,
+-	0x1f, 0x9f, 0x5f, 0xdf, 0x3f, 0xbf, 0x7f, 0xff,
+-};
+-EXPORT_SYMBOL_GPL(byte_rev_table);
+-
+-static __always_inline u16 bitrev16(u16 x)
+-{
+-	return (bitrev8(x & 0xff) << 8) | bitrev8(x >> 8);
+-}
+-
+  /**
+   * bitrev32 - reverse the order of bits in a u32 value
+   * @x: value to be bit-reversed
+   */
+  u32 bitrev32(u32 x)
+  {
+-	return (bitrev16(x & 0xffff) << 16) | bitrev16(x >> 16);
++	return gen_bit_rev(x, 31);
+  }
+  EXPORT_SYMBOL(bitrev32);
 
-All chip selects must be done using GPIO.  In fact, the board for which
-I developed this driver, a modified sequoia, actually uses 2 chip selects.
+-- 
+This message has been scanned for viruses and
+dangerous content by MailScanner, and is
+believed to be clean.
 
-My problem was, and is, that there's no generic GPIO support for powerpc.
-At least, not that I'm aware of.  Please tell me if I'm wrong.
-
-So the driver has great gobs of GPIO code in it, most of which I took
-from u-boot.  The code is pretty generic, but some 440EPx-specific
-stuff may have crept in without my being aware of it.
-
-My real question is - should this code be in a platform-specific file
-such as sequoia.c, which could result in lots of duplicated code, or is
-it better to leave it in the driver for now until some day we hopefully
-get generic GPIO support for powerpc?
-
-I want to get this driver upstream ASAP.
-
----
-Gary Jennejohn
-*********************************************************************
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-0 Fax: +49-8142-66989-80  Email: office@denx.de
-*********************************************************************
