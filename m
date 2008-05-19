@@ -1,117 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbYESPhc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759342AbYESPk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754013AbYESPhc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 11:37:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755629AbYESPhU
+	id S1759342AbYESPk3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 11:40:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679AbYESPkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 11:37:20 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:43563 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752322AbYESPhR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 11:37:17 -0400
-Subject: Re: Hello and a question about high cpu usage on jfsCommit (kernel
-	2.6.25.1)
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: David Fix <davidf@mrxfx.com>
-Cc: linux-kernel@vger.kernel.org,
-       JFS Discussion <jfs-discussion@lists.sourceforge.net>
-In-Reply-To: <482C9090.5040901@mrxfx.com>
-References: <482C9090.5040901@mrxfx.com>
-Content-Type: text/plain
-Date: Mon, 19 May 2008 10:37:13 -0500
-Message-Id: <1211211433.6283.14.camel@norville.austin.ibm.com>
+	Mon, 19 May 2008 11:40:17 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:59291 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751391AbYESPkP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 11:40:15 -0400
+Subject: Re: [RFC] make wext wireless bits optional and deprecate them
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Dan Williams <dcbw@redhat.com>
+Cc: Marcel Holtmann <marcel@holtmann.org>, netdev <netdev@vger.kernel.org>,
+       Jean Tourrilhes <jt@hpl.hp.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <1211210686.12187.6.camel@localhost.localdomain>
+References: <1211026337.3827.25.camel@johannes.berg>
+	 <CD993362-B1DE-4E4D-8A5B-E9E2AD7DA04C@holtmann.org>
+	 (sfid-20080517_154639_384202_6D3479C2)  <1211032475.6252.2.camel@johannes.berg>
+	 <1211117795.686.15.camel@localhost.localdomain>
+	 <1211199368.6252.19.camel@johannes.berg>
+	 <1211210686.12187.6.camel@localhost.localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-VVMPMxkZnK+h4toNjr8S"
+Date: Mon, 19 May 2008 17:39:07 +0200
+Message-Id: <1211211547.6252.54.camel@johannes.berg>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.1.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm copying this to jfs-discussion to see if anyone has seen anything
-like this.
 
-On Thu, 2008-05-15 at 15:35 -0400, David Fix wrote:
-> Hey guys,
-> 
-> I'm new to the list, but I've been using Linux and fooling around with 
-> the kernel for ages.  :)
-> 
-> I've been experiencing high CPU usage for jfsCommit on kernel 2.6.25.1 
-> (haven't had a chance to go to 2.6.25.4, but I didn't see any 
-> JFS-specific changes between the versions yet).
+--=-VVMPMxkZnK+h4toNjr8S
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-In fact, there haven't been a whole lot of non-cosmetic changes to jfs
-at all recently.  Nothing I see that suspicious.
+On Mon, 2008-05-19 at 11:24 -0400, Dan Williams wrote:
+> On Mon, 2008-05-19 at 14:16 +0200, Johannes Berg wrote:
+> > > Instead of testing for wireless/, best thing would probably be to cal=
+l
+> > > SIOCGIWRANGE on the device and if it returns EOPNOTSUP then it's not
+> > > wireless.  Some drivers may have to load firmware to figure out
+> > > supported rates and encryption capabilities, but to be honest, NM doe=
+s
+> > > this to detect wireless devices and I haven't run into any issues in =
+4
+> > > years using it.  If there are issues with drivers, then we need to fi=
+x
+> > > the driver too.
+> >=20
+> > I was about to propose calling SIOCGIWNAME since that is what
+> > wireless-tools do and that linux/wireless.h indicates.
+>=20
+> Hmm; NAME is pretty useless.  That's fine to do, I guess WEXT requires
+> that NAME return _something_ at least.  NAME should never ever be used
+> for anything more, but since wireless-tools appears to do this that's
+> fine.
 
-What was the previous kernel you were running before moving to 2.6.25.1?
+Yes, I realise it is completely useless, but wext seems to require that
+it be implemented. RANGE would work as well but typically has much more
+complexity in the kernel.
 
-> Here's my hardware 
-> config, as well:
-> 
-> 
-> CPUs: 2x Intel Xeon E5420 2.5GHz Quad-core
-> RAM: 8GB
-> RAID Controller: 3Ware 9650SE-24M8
+johannes
 
-For anyone seeing this for the first time on jfs-discussion, Dave
-followed up stating that this was an x86_64 build.
+--=-VVMPMxkZnK+h4toNjr8S
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-> I can't find a mention of what motherboard I have in here, so I'll give 
-> a bit of lspci:
-> 
-> 00:00.0 Host bridge: Intel Corporation 5000P Chipset Memory Controller 
-> Hub (rev b1)
-> 00:1d.0 USB Controller: Intel Corporation 631xESB/632xESB/3100 Chipset 
-> UHCI USB Controller #1 (rev 09)
-> 00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev d9)
-> 01:00.0 PCI bridge: Intel Corporation 6311ESB/6321ESB PCI Express 
-> Upstream Port (rev 01)
-> 03:00.0 PCI bridge: Integrated Device Technology, Inc. Unknown device 
-> 8018 (rev 04) (prog-if 00 [Normal decode])
-> 05:00.0 Ethernet controller: Intel Corporation 82571EB Gigabit Ethernet 
-> Controller (rev 06)
-> 07:00.0 Ethernet controller: Intel Corporation 80003ES2LAN Gigabit 
-> Ethernet Controller (Copper) (rev 01)
-> 0c:00.0 RAID bus controller: 3ware Inc 9650SE SATA-II RAID (rev 01)
-> 0f:0c.0 VGA compatible controller: ATI Technologies Inc ES1000 (rev 02)
-> 
-> There's the salient points there.  The NIC is a quad, which is trunked 
-> to the switch using LAPC.
-> 
-> I've got a RAID-6 on the 3Ware controller of 20 TB, and when I'm running 
-> "top", I see this:
-> 
-> ---
-> top - 15:33:27 up  5:40,  3 users,  load average: 4.33, 3.59, 3.98
-> Tasks: 315 total,   2 running, 313 sleeping,   0 stopped,   0 zombie
-> Cpu(s):  0.2%us, 13.2%sy,  0.0%ni, 61.3%id, 24.9%wa,  0.1%hi,  0.2%si,  
-> 0.0%st
-> Mem:   8194264k total,  8144500k used,    49764k free,     3884k buffers
-> Swap: 16779884k total,      148k used, 16779736k free,  7667400k cached
-> 
->   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
->  2669 root      15  -5     0    0    0 R   99  0.0  19:45.71 jfsCommit
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-This is highly unusual.  Is this thread continually eating cpu at this
-rate, or does it happen in spurts?
+iQIVAwUASDGfGqVg1VMiehFYAQKFrQ//VJSZe8MOCXjybVqM8xZNrPJJjx+kaT/m
+rytyEgVBFsj5ef9VeMruP3cPN/79jzJbWxeeG12TPbCNorsoRKvNk60eVrZw6/3a
+AAySbees2kodn7C1OfGgrbe2arQ1mrNsC0Y41CCtL+fkcV0D8tcmx8CBLtxerxqG
+yIGFygdxPVFTE8FAO540QInHNGK+6LS7BEPAgs5st7EbmymCDvfvrvJZXZWpgeAW
+Svx6ue0gv/GN48R8v/wxyhwY7jK7EDXYV4HCjIz7gstnB8DLq4RuzHYz1uaAInXs
+1l4iaqSP2HK891rIiDdMxr33NvWTdmRXjADYCiA8UR2a+iERPBC86XL+5avrh6e5
+eSDhi+Q/7v+R+gAYR4uZm6PszLpvIPmPav6XqIn4J+qTzxYrVA0Nr76s51XEqzNY
+MMGAyI0F04aCmJQ3xoSQjqVOFUpEnN1gOk53gVNm6Tx7zsww2IQUZWtBPot7lJqh
+Gx6tF/vuizl9R2NZ/ELnq5y/m2OfjlXAIyPbkROK3+j1ADjJCZsMbZ2/dahNFpOY
+HrddAkztuH3el82LnL8nqC49Fps9yc574RsdtJ7JaFRxppM8VLSEEzxyk7h5GI8d
+BkhXH2/HDi5yQbFkhs77Zhr+OdldV5zQOxpcEu+MNtfemyIkO94X7XVNCL9mVxtx
+2q9x99ypsgs=
+=lRSF
+-----END PGP SIGNATURE-----
 
-> And people are complaining (and I'm seeing) very slow writes to the drives.
-> 
-> Just wondering if anyone has any ideas.  :)  If you need any 
-> information, I'll provide whatever you need.
-
-Has this happened more than once (have you rebooted and still seen the
-problem)?  I'm not sure if some rare bug has caused some kind of linked
-list corruption that puts the thread into an infinite loop, or if this
-is a real regression.
-
-> Thanks in advance!
-> 
->     Dave
-
-Thanks,
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
+--=-VVMPMxkZnK+h4toNjr8S--
 
