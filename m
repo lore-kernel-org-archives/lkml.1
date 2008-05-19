@@ -1,64 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762418AbYESTHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762097AbYESTJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762418AbYESTHv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 15:07:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761211AbYESTHk
+	id S1762097AbYESTJt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 15:09:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755079AbYESTJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 15:07:40 -0400
-Received: from ns.suse.de ([195.135.220.2]:43204 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758017AbYESTHk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 15:07:40 -0400
-Date: Mon, 19 May 2008 12:07:38 -0700
-From: Mark Fasheh <mfasheh@suse.com>
-To: Meelis Roos <mroos@linux.ee>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>, joel.becker@oracle.com,
-       Sunil Mushran <Sunil.Mushran@oracle.com>
-Subject: Re: OCFS2 printf format warnings
-Message-ID: <20080519190738.GA8325@wotan.suse.de>
-Reply-To: Mark Fasheh <mfasheh@suse.com>
-References: <Pine.SOC.4.64.0805181658030.22653@math.ut.ee>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 19 May 2008 15:09:41 -0400
+Received: from outbound-mail-154.bluehost.com ([67.222.39.34]:33485 "HELO
+	outbound-mail-154.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754571AbYESTJk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 15:09:40 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Greg KH <greg@kroah.com>
+Subject: Re: Suspend/Resume bug in PCI layer wrt quirks
+Date: Mon, 19 May 2008 12:09:19 -0700
+User-Agent: KMail/1.9.9
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Arjan van de Ven <arjan@infradead.org>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       len.brown@intel.com, Shaohua Li <shaohua.li@intel.com>
+References: <20080515070546.6ea9c681@infradead.org> <200805162216.31463.rjw@sisk.pl> <20080516213721.GA13492@kroah.com>
+In-Reply-To: <20080516213721.GA13492@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.SOC.4.64.0805181658030.22653@math.ut.ee>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Mutt/1.5.9i
+Message-Id: <200805191209.20253.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 18, 2008 at 04:59:26PM +0300, Meelis Roos wrote:
-> Just noticed these on sparc64:
-> 
->   CC [M]  fs/ocfs2/cluster/netdebug.o
-> fs/ocfs2/cluster/netdebug.c: In function 'nst_seq_show':
-> fs/ocfs2/cluster/netdebug.c:152: warning: format '%lu' expects type 'long unsigned int', but argument 13 has type 'suseconds_t'
-> fs/ocfs2/cluster/netdebug.c:152: warning: format '%lu' expects type 'long unsigned int', but argument 15 has type 'suseconds_t'
-> fs/ocfs2/cluster/netdebug.c:152: warning: format '%lu' expects type 'long unsigned int', but argument 17 has type 'suseconds_t'
-> fs/ocfs2/cluster/netdebug.c: In function 'sc_seq_show':
-> fs/ocfs2/cluster/netdebug.c:332: warning: format '%lu' expects type 'long unsigned int', but argument 19 has type 'suseconds_t'
-> fs/ocfs2/cluster/netdebug.c:332: warning: format '%lu' expects type 'long unsigned int', but argument 21 has type 'suseconds_t'
-> fs/ocfs2/cluster/netdebug.c:332: warning: format '%lu' expects type 'long unsigned int', but argument 23 has type 'suseconds_t'
-> fs/ocfs2/cluster/netdebug.c:332: warning: format '%lu' expects type 'long unsigned int', but argument 25 has type 'suseconds_t'
-> fs/ocfs2/cluster/netdebug.c:332: warning: format '%lu' expects type 'long unsigned int', but argument 27 has type 'suseconds_t'
-> fs/ocfs2/cluster/netdebug.c:332: warning: format '%lu' expects type 'long unsigned int', but argument 29 has type 'suseconds_t'
+On Friday, May 16, 2008 2:37 pm Greg KH wrote:
+> On Fri, May 16, 2008 at 10:16:30PM +0200, Rafael J. Wysocki wrote:
+> > On Friday, 16 of May 2008, Jesse Barnes wrote:
+> > > On Thursday, May 15, 2008 12:51 pm Rafael J. Wysocki wrote:
+> > > > Some quirks should be called with interrupt disabled, we can't
+> > > > directly call them in .resume_early. Also the patch introduces
+> > > > pci_fixup_resume_early and pci_fixup_suspend, which matches current
+> > > > device core callbacks (.suspend/.resume_early).
+> > > >
+> > > > TBD: Somebody knows why we need quirk resume should double check if a
+> > > > quirk should be called in resume or resume_early. I changed some per
+> > > > my understanding, but can't make sure I fixed all.
+> > > >
+> > > > Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+> > >
+> > > I applied this one to linux-next, it should fix some of the problems
+> > > people have been seeing at least...
+> >
+> > Well, that will collide with
+> > pm-new-suspend-and-hibernation-callbacks-for-pci-bus-type.patch
+> > in the Greg's tree.
+> >
+> > Greg, perhaps it's better if you drop it and I'll send an updated version
+> > to Jesse?  That will make his tree dependent on yours, but that will be
+> > okay, won't it?
+>
+> That's up to Jesse.  I don't know if he can handle a depancy on an
+> external tree.
+>
+> Jesse?
 
+It would be easiest for me to just carry Rafael's patch, but that assumes 
+you're ok with the changes.  Have you looked at it enough to feel good about 
+it, Greg?
 
-Ok, these were introduced by:
+Thanks,
+Jesse
 
-commit 2309e9e040fe29469fb85a384636c455b62fe525
-Author: Sunil Mushran <sunil.mushran@oracle.com>
-Date:   Mon Apr 14 10:46:19 2008 -0700
-
-ocfs2/net: Add debug interface to o2net
-
-...
-
-
-
-It looks like we need some casts... Sunil, care to fix this up?
-	--Mark
-
---
-Mark Fasheh
