@@ -1,55 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbYESGpU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756184AbYESGxV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756061AbYESGpU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 02:45:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753589AbYESGpF
+	id S1756184AbYESGxV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 02:53:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753984AbYESGxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 02:45:05 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:28268 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753483AbYESGpE (ORCPT
+	Mon, 19 May 2008 02:53:12 -0400
+Received: from mga06.intel.com ([134.134.136.21]:6991 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753687AbYESGxL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 02:45:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=bEZEvxKH9dpf5vcHwIvbzatrhdZb0F9Kwy5UxgJ0jvAEd/eyEymecQEVhLIQA0Vv97zBuYcF934abpK1zZZ/jUq/kl2BW4apYpIHFsW3kDV27vgmCyAsf3yBAGKU4gzwtiKixPl/2o8y/p74cRikFfV6YjdV954dhar6coQtHiQ=
-Date: Mon, 19 May 2008 14:44:57 +0800
-From: "peerchen" <peerchen@gmail.com>
-To: "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-ide" <linux-ide@vger.kernel.org>
-Cc: "akpm" <akpm@linux-foundation.org>, "jeff" <jeff@garzik.org>
-Subject: [PATCH] ahci: change the Device IDs of nvidia MCP7B AHCI controller in ahci.c
-Message-ID: <200805191444539981741@gmail.com>
-X-mailer: Foxmail 6, 10, 201, 20 [cn]
+	Mon, 19 May 2008 02:53:11 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,507,1204531200"; 
+   d="scan'208";a="384989247"
+Subject: Re: [Bug #10638] sysbench+mysql(oltp, readonly) 30% regression
+	with 2.6.26-rc1
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1211176540.8292.3.camel@twins>
+References: <oKKSi1w1qaF.A.mEG.JrBMIB@albercik>
+	 <7wuznNhcUqC.A.IMB.TtBMIB@albercik>
+	 <1211131278.6463.7.camel@lappy.programming.kicks-ass.net>
+	 <1211135856.6463.22.camel@lappy.programming.kicks-ass.net>
+	 <1211160283.3177.134.camel@ymzhang>  <1211176540.8292.3.camel@twins>
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 19 May 2008 14:49:27 +0800
+Message-Id: <1211179767.3177.166.camel@ymzhang>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="big5"
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.21.5 (2.21.5-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change the partial Device IDs of nvidia MCP7B AHCI controller in ahci.c
 
-Signed-off-by: Peer Chen <peerchen@gmail.com>
----
---- linux-2.6.26-rc3/drivers/ata/ahci.c.orig	2008-05-07 13:24:19.000000000 -0400
-+++ linux-2.6.26-rc3/drivers/ata/ahci.c	2008-05-07 13:25:17.000000000 -0400
-@@ -502,10 +502,10 @@ static const struct pci_device_id ahci_p
- 	{ PCI_VDEVICE(NVIDIA, 0x0bcd), board_ahci },		/* MCP7B */
- 	{ PCI_VDEVICE(NVIDIA, 0x0bce), board_ahci },		/* MCP7B */
- 	{ PCI_VDEVICE(NVIDIA, 0x0bcf), board_ahci },		/* MCP7B */
--	{ PCI_VDEVICE(NVIDIA, 0x0bd0), board_ahci },		/* MCP7B */
--	{ PCI_VDEVICE(NVIDIA, 0x0bd1), board_ahci },		/* MCP7B */
--	{ PCI_VDEVICE(NVIDIA, 0x0bd2), board_ahci },		/* MCP7B */
--	{ PCI_VDEVICE(NVIDIA, 0x0bd3), board_ahci },		/* MCP7B */
-+	{ PCI_VDEVICE(NVIDIA, 0x0bc4), board_ahci },		/* MCP7B */
-+	{ PCI_VDEVICE(NVIDIA, 0x0bc5), board_ahci },		/* MCP7B */
-+	{ PCI_VDEVICE(NVIDIA, 0x0bc6), board_ahci },		/* MCP7B */
-+	{ PCI_VDEVICE(NVIDIA, 0x0bc7), board_ahci },		/* MCP7B */
- 
- 	/* SiS */
- 	{ PCI_VDEVICE(SI, 0x1184), board_ahci }, /* SiS 966 */
--
+On Mon, 2008-05-19 at 07:55 +0200, Peter Zijlstra wrote:
+> On Mon, 2008-05-19 at 09:24 +0800, Zhang, Yanmin wrote:
+> > On Sun, 2008-05-18 at 20:37 +0200, Peter Zijlstra wrote:
+> > > On Sun, 2008-05-18 at 19:21 +0200, Peter Zijlstra wrote:
+> > > > On Sun, 2008-05-18 at 13:13 +0200, Rafael J. Wysocki wrote:
+> > > > > This message has been generated automatically as a part of a report
+> > > > > of recent regressions.
+> > > > > 
+> > > > > The following bug entry is on the current list of known regressions
+> > > > > from 2.6.25.  Please verify if it still should be listed.
+> > > > > 
+> > > > > 
+> > > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10638
+> > > > > Subject		: sysbench+mysql(oltp, readonly) 30% regression with 2.6.26-rc1
+> > > > > Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+> > > > > Date		: 2008-05-07 4:55 (12 days old)
+> > > > > References	: http://marc.info/?l=linux-kernel&m=121013681527052&w=2
+> > > > > Handled-By	: Ingo Molnar <mingo@elte.hu>
+> > > > > Patch		: http://marc.info/?l=linux-kernel&m=121015292616802&w=2
+> > > > > 
+> > > > > 
+> > > > 
+> > > > Could people test this:
+> > > > 
+> > > > git://git.kernel.org/home/peterz/git/linux-2.6-sched.git/ v2.6.26-rc2-group-load-balance
+> > > 
+> > > Seems I got my own url wrong - the right one is:
+> > > 
+> > > git://git.kernel.org/pub/scm/linux/kernel/git/peterz/linux-2.6-sched.git v2.6.26-rc2-group-load-balance
+> > I used below command to clone your tree:
+> > RSYNC_PROXY=proxy.sc.intel.com:911 git clone rsync://rsync.kernel.org/pub/scm/linux/kernel/git/peterz/linux-2.6-sched.git linux-2.6-sched
+> > 
+> > Got below errors:
+> > @ERROR: Unknown module 'home'
+> > rsync: connection unexpectedly closed (0 bytes received so far) [receiver]
+> > rsync error: error in rsync protocol data stream (code 12) at io.c(359)
+> > fatal: failed to unpack tree object HEAD
+> > 
+> > 
+> > Would you like to create a patch against 2.6.26-rc3?
+> 
+> Index: linux-2.6/kernel/sched_clock.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/sched_clock.c
+> +++ linux-2.6/kernel/sched_clock.c
+I tested it on 8-core stoakley.
+
+1) volanoMark
+Comparing with 2.6.26-rc1, 2.6.26-rc3+peter_sched_git_patch result has about 30% improvement, but it still has
+about 27% regression than the one of 2.6.25.
+
+2) sysbench+mysql(readonly oltp)
+﻿Comparing with 2.6.26-rc2, 2.6.26-rc3+peter_sched_git_patch result has about 15% improvement, but it still has
+about 15% regression than the one of 2.6.25.
+
+-yanmin
+
 
