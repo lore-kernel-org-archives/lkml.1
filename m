@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758547AbYESWGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765038AbYESWHR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758547AbYESWGu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 18:06:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756056AbYESWEr
+	id S1765038AbYESWHR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 18:07:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765068AbYESWFA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 18:04:47 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:45020 "EHLO smtp5.pp.htv.fi"
+	Mon, 19 May 2008 18:05:00 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:45038 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761210AbYESWEp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 18:04:45 -0400
-Date: Tue, 20 May 2008 01:02:40 +0300
+	id S1765043AbYESWE5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 18:04:57 -0400
+Date: Tue, 20 May 2008 01:02:52 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: linux-pcmcia@lists.infradead.org
+To: jack@suse.cz
 Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] pcmcia: remove CVS keywords
-Message-ID: <20080519220240.GD17716@cs181133002.pp.htv.fi>
+Subject: [2.6 patch] quota: remove CVS keywords
+Message-ID: <20080519220251.GE17716@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -30,47 +30,49 @@ Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- drivers/pcmcia/hd64465_ss.c |    2 --
- drivers/pcmcia/i82092.c     |    2 --
- drivers/pcmcia/i82092aa.h   |    2 --
- 3 files changed, 6 deletions(-)
+ fs/dquot.c               |    2 --
+ include/linux/quota.h    |    2 --
+ include/linux/quotaops.h |    3 ---
+ 3 files changed, 7 deletions(-)
 
-c13f3943a1ca0edb90019a5e003e56664043fcb8 diff --git a/drivers/pcmcia/hd64465_ss.c b/drivers/pcmcia/hd64465_ss.c
-index f2e810f..6045e4b 100644
---- a/drivers/pcmcia/hd64465_ss.c
-+++ b/drivers/pcmcia/hd64465_ss.c
-@@ -1,6 +1,4 @@
- /*
-- * $Id: hd64465_ss.c,v 1.7 2003/07/06 14:42:50 lethal Exp $
-- *
-  * Device driver for the PCMCIA controller module of the
-  * Hitachi HD64465 handheld companion chip.
+f2096053eb97000dbd556a4a2465c879bdf38670 diff --git a/fs/dquot.c b/fs/dquot.c
+index 5ac77da..920e430 100644
+--- a/fs/dquot.c
++++ b/fs/dquot.c
+@@ -9,8 +9,6 @@
+  * implementation is based on one of the several variants of the LINUX
+  * inode-subsystem with added complexity of the diskquota system.
+  * 
+- * Version: $Id: dquot.c,v 6.3 1996/11/17 18:35:34 mvw Exp mvw $
+- * 
+  * Author:	Marco van Wieringen <mvw@planets.elm.net>
   *
-diff --git a/drivers/pcmcia/i82092.c b/drivers/pcmcia/i82092.c
-index e136186..46561fa 100644
---- a/drivers/pcmcia/i82092.c
-+++ b/drivers/pcmcia/i82092.c
-@@ -5,8 +5,6 @@
-  *
-  * Author: Arjan Van De Ven <arjanv@redhat.com>
-  * Loosly based on i82365.c from the pcmcia-cs package
+  * Fixes:   Dmitry Gorodchanin <pgmdsg@ibi.com>, 11 Feb 96
+diff --git a/include/linux/quota.h b/include/linux/quota.h
+index dcddfb2..17eadfd 100644
+--- a/include/linux/quota.h
++++ b/include/linux/quota.h
+@@ -28,8 +28,6 @@
+  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+  * SUCH DAMAGE.
 - *
-- * $Id: i82092aa.c,v 1.2 2001/10/23 14:43:34 arjanv Exp $
+- * Version: $Id: quota.h,v 2.0 1996/11/17 16:48:14 mvw Exp mvw $
   */
  
- #include <linux/kernel.h>
-diff --git a/drivers/pcmcia/i82092aa.h b/drivers/pcmcia/i82092aa.h
-index b0d4533..8836d39 100644
---- a/drivers/pcmcia/i82092aa.h
-+++ b/drivers/pcmcia/i82092aa.h
-@@ -3,8 +3,6 @@
- 
- #include <linux/interrupt.h>
- 
--/* $Id: i82092aa.h,v 1.1.1.1 2001/09/19 14:53:15 dwmw2 Exp $ */
--
- /* Debuging defines */
- #ifdef NOTRACE
- #define enter(x)   printk("Enter: %s, %s line %i\n",x,__FILE__,__LINE__)
-
+ #ifndef _LINUX_QUOTA_
+diff --git a/include/linux/quotaops.h b/include/linux/quotaops.h
+index f867020..48e02fc 100644
+--- a/include/linux/quotaops.h
++++ b/include/linux/quotaops.h
+@@ -3,9 +3,6 @@
+  * macros expand to the right source-code.
+  *
+  * Author:  Marco van Wieringen <mvw@planets.elm.net>
+- *
+- * Version: $Id: quotaops.h,v 1.2 1998/01/15 16:22:26 ecd Exp $
+- *
+  */
+ #ifndef _LINUX_QUOTAOPS_
+ #define _LINUX_QUOTAOPS_
 
