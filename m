@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762278AbYESXDW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759230AbYESXGL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762278AbYESXDW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 19:03:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755365AbYESXDO
+	id S1759230AbYESXGL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 19:06:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754833AbYESXF5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 19:03:14 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:41676 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753672AbYESXDN (ORCPT
+	Mon, 19 May 2008 19:05:57 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:38092 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756042AbYESXF5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 19:03:13 -0400
-In-Reply-To: <20080519153249.ea80e683.akpm@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
+	Mon, 19 May 2008 19:05:57 -0400
+Date: Mon, 19 May 2008 19:05:11 -0400
+From: Theodore Tso <tytso@MIT.EDU>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [2.6.26-rc2-mm1] sync to speed up?
+Message-ID: <20080519230511.GL15035@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Dave Young <hidave.darkstar@gmail.com>,
+	kernel list <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>
+References: <a8e1da0805190015t2044c33ar4b7320d0a37d7e09@mail.gmail.com>
 MIME-Version: 1.0
-Subject: Re: [2.6.27 patch] the scheduled smbfs removal
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-Message-ID: <OF86D6B4D3.18C3673E-ON8725744E.007E5B54-8625744E.007EBB19@us.ibm.com>
-From: Steven French <sfrench@us.ibm.com>
-Date: Mon, 19 May 2008 18:03:10 -0500
-X-MIMETrack: Serialize by Router on D03NM123/03/M/IBM(Release 7.0.2FP2HF300 | September
- 14, 2007) at 05/19/2008 17:03:11,
-	Serialize complete at 05/19/2008 17:03:11
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a8e1da0805190015t2044c33ar4b7320d0a37d7e09@mail.gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-FYI - last week at connectathon I added one patch relating to backlevel 
-support and mapping of open flags on legacy smb open calls (although 
-perhaps some longtime smbfs users would not notice since smbfs did not 
-have this support either).
-
-The utimes support for backlevel servers is one obvious thing that I have 
-not added (but smbfs had some limited support for) but was considring 
-adding.
-
-
-Steve French
-Senior Software Engineer
-Linux Technology Center - IBM Austin
-phone: 512-838-2294
-email: sfrench at-sign us dot ibm dot com
-
-Andrew Morton <akpm@linux-foundation.org> wrote on 05/19/2008 05:32:49 PM:
-
-> On Tue, 20 May 2008 00:53:11 +0300
-> Adrian Bunk <bunk@kernel.org> wrote:
+On Mon, May 19, 2008 at 03:15:09PM +0800, Dave Young wrote:
+> Hi,
 > 
-> > This patch contains the scheduled smbfs removal.
+> With 2.6.26-rc2-mm1 I need to sync frequently. It's not normal as my
+> understanding.
 > 
-> I don't know how popular this will be right now - quite a few
-> people needed to be dragged over to cifs up to a month or two
-> ago.
+> 1. scp a big file from a lan server. Firstly the speed is about 8M/s,
+> but the speed will slow down to 100K/s at last. After I exec "sync",
+> the speed will restore.
 > 
-> I'd suggest that we first use CONFIG_BROKEN or
-> CONFIG_DIFFICULT_TO_GET_AT and see what the effect of that is.
-> 
+> Is this a known issue?
 
+Dave, what filesystem are you using?  Jiri's patch on this thread was
+to fix a problem in ext4, which means that's fixing a problem which is
+unrelated to the slow mkfs.ext2 problem (which is writing to a block
+device, not a file in a ext4 filesystem), and so it's likely unrelated
+to your problem (unless you're using ext4 and didn't tell us :-).
+
+Andrew's probably right that it may be related to the slow mkfs
+problem.  Can you confirm that you are seeing this on 2.6.26-rc2-mm1,
+but not on stock 2.6.26.rc2?
+
+       	       	       	      	      	    - Ted
