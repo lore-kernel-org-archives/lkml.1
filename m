@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757773AbYESIwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756903AbYESI54@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757773AbYESIwV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 04:52:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbYESIwK
+	id S1756903AbYESI54 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 04:57:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbYESI5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 04:52:10 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:57442 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751441AbYESIwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 04:52:08 -0400
-Date: Mon, 19 May 2008 12:51:50 +0200
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-usb@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Bug #10630] USB devices plugged into dock are not discoverred
-	until reload of ehci-hcd
-Message-ID: <20080519105150.GB4557@ics.muni.cz>
-References: <oKKSi1w1qaF.A.mEG.JrBMIB@albercik> <7wuznNhcUqC.A.OcB.itBMIB@albercik> <200805191002.43734.oliver@neukum.org>
+	Mon, 19 May 2008 04:57:46 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:57273 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751433AbYESI5o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 04:57:44 -0400
+Date: Mon, 19 May 2008 10:58:42 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: ext4 development <linux-ext4@vger.kernel.org>,
+       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jamie Lokier <jamie@shareable.org>
+Subject: Re: [PATCH 1/4] ext3: enable barriers by default
+Message-ID: <20080519085842.GA2013@elf.ucw.cz>
+References: <482DDA56.6000301@redhat.com> <482DDB13.1050708@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200805191002.43734.oliver@neukum.org>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Muni-Spam-TestIP: 147.251.3.109
-X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Mon, 19 May 2008 10:51:51 +0200 (CEST)
+In-Reply-To: <482DDB13.1050708@redhat.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 19, 2008 at 10:02:43AM +0200, Oliver Neukum wrote:
-> Can you compile with USB_DEBUG and attach the "register" file from
-> /sys/modules/ehci_hcd to see whether an interrupt is pending?
+On Fri 2008-05-16 14:05:55, Eric Sandeen wrote:
+> I can't think of any valid reason for ext3 to not use barriers when
+> they are available;  I believe this is necessary for filesystem
+> integrity in the face of a volatile write cache on storage.
+> 
+> An administrator who trusts that the cache is sufficiently battery-
+> backed (and power supplies are sufficiently redundant, etc...)
+> can always turn it back off again.
+> 
+> SuSE has carried such a patch for quite some time now.
+> 
+> Also document the mount option while we're at it.
+> 
+> Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+> Acked-by: Jan Kara <jack@suse.cz>
 
-# gzip -dc /proc/config.gz | grep DEBUG | grep USB
-CONFIG_USB_DEBUG=y
-# CONFIG_USB_STORAGE_DEBUG is not set
-# CONFIG_USB_SERIAL_DEBUG is not set
-
-which one is the file you want?
-
-ls -F /sys/module/ehci_hcd/
-drivers/  holders/  initstate  notes/  parameters/  refcnt  sections/
-
+Yes please. Safe defaults are the way to go.
+								Pavel
 -- 
-Luká¹ Hejtmánek
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
