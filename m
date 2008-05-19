@@ -1,63 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757338AbYESHsg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756906AbYESHwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757338AbYESHsg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 03:48:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755039AbYESHs2
+	id S1756906AbYESHwQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 03:52:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbYESHwD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 03:48:28 -0400
-Received: from sacred.ru ([62.205.161.221]:37003 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754088AbYESHs1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 03:48:27 -0400
-Message-ID: <48313025.2060103@openvz.org>
-Date: Mon, 19 May 2008 11:45:41 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Mon, 19 May 2008 03:52:03 -0400
+Received: from bay0-omc2-s36.bay0.hotmail.com ([65.54.246.172]:46369 "EHLO
+	bay0-omc2-s36.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751904AbYESHwA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 03:52:00 -0400
+X-Greylist: delayed 369 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 May 2008 03:52:00 EDT
+Message-ID: <BLU106-DAV712A0DEE5E9D2A71739BBCCC50@phx.gbl>
+X-Originating-IP: [65.55.161.9]
+X-Originating-Email: [hdvlzjldwaoz@live.hk]
+thread-index: Aci5hFojKGnmWv8TRumeUQrUkazqGg==
+Thread-Topic: =?big5?B?pOnB+rTWVKV1rW44MKS4Lqx2uMsxMjCkuC63c7TapFesW6FFMTCl86dZpWmp3CEh?=
+From: "hdvlzjldwaoz" <hdvlzjldwaoz@live.hk>
+To: <uyiey.bbs@bbs.cs.nthu.edu.tw>, <taijy@tdais.gov.tw>,
+       <linux-kernel@vger.kernel.org>, <chandelier@ms2.hinet.net>,
+       <coining@ms65.hinet.net>, <m0857449@yahoo.com>, <clubcycu@ccu.edu.tw>,
+       <well_prepare@hotmail.com>, <demo3@ms22.hinet.net>,
+       <webmaster@go-withtheflow.info>, <water06168@yahoo.com.tw>,
+       <sgi0520@yahoo.com.tw>, <bulrush@ms59.hinet.net>,
+       <clairehsieh1220@hotmail.com>, <hi024761@ms32.hinet.net>,
+       <wangjc@wellsfargo.com>, <user_chifen.su@gmail.com>,
+       <jeningts@csmu.edu.tw>
+Subject: =?big5?B?pOnB+rTWVKV1rW44MKS4Lqx2uMsxMjCkuC63c7TapFesW6FFMTCl86dZpWmp3CEh?=
+Date: Mon, 19 May 2008 03:45:48 -0400
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Randy Dunlap <randy.dunlap@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH (resend)] Bsdacct: stir up comments around acct_process
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 19 May 2008 11:48:02 +0400 (MSD)
+Content-Type: text/plain;
+	charset="big5"
+Content-Transfer-Encoding: 8bit
+Content-Class: urn:content-classes:message
+Importance: normal
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.3959
+X-OriginalArrivalTime: 19 May 2008 07:45:50.0487 (UTC) FILETIME=[5BABDA70:01C8B984]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix the one describing what this function is and add one
-more - about locking absence around pid namespaces loop.
+O 莓莓服飾批發中心O%
+ 別再跟較貴的假批發網站批貨啦!!! trunk
+  我們洋裝批發價120元~~~別家洋.裝.批.您..2.9.0.元.?您能賺幾元??
+ 歡迎比價! 同款洋裝別家批 295元。我們批120元!!
+http://0rz.tw/f441E   
+ 【我 賣 場 商 品 最多 ! ! 別 家 沒 有的   我有 】
+我們價錢最低廉~~!!別人不敢賣您的價錢~我賣!!!
+搜尋 →  莓莓批發 下單 全 省 貨 到 付 款 
 
-Changes from v1: fixed misprints pointed out by Randy.
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
 
----
 
-diff --git a/kernel/acct.c b/kernel/acct.c
-index 0feba97..d7b670c 100644
---- a/kernel/acct.c
-+++ b/kernel/acct.c
-@@ -657,7 +657,8 @@ static void acct_process_in_ns(struct pid_namespace *ns)
- }
- 
- /**
-- * acct_process - now just a wrapper around do_acct_process
-+ * acct_process - now just a wrapper around acct_process_in_ns,
-+ * which in turn is a wrapper around do_acct_process.
-  *
-  * handles process accounting for an exiting task
-  */
-@@ -665,6 +666,11 @@ void acct_process(void)
- {
- 	struct pid_namespace *ns;
- 
-+	/*
-+	 * This loop is safe lockless, since current is still
-+	 * alive and holds its namespace, which in turn holds
-+	 * its parent.
-+	 */
- 	for (ns = task_active_pid_ns(current); ns != NULL; ns = ns->parent)
- 		acct_process_in_ns(ns);
- }
