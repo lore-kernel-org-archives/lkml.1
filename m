@@ -1,42 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761644AbYESP2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762028AbYESP2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761644AbYESP2e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 11:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755849AbYESP2Z
+	id S1762028AbYESP2u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 11:28:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761771AbYESP2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 11:28:25 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:14402 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753936AbYESP2Y (ORCPT
+	Mon, 19 May 2008 11:28:38 -0400
+Received: from rn-out-0910.google.com ([64.233.170.185]:3753 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761759AbYESP2g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 11:28:24 -0400
+	Mon, 19 May 2008 11:28:36 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=jkh6s2fBbEmNYA8CpRqZ1ph+xAnq0+1N/qUlUEAaJaOhxKrj+pTnkIZVaYySfT0snqiUdfNHCjTPeFO0y+YLobtgccFqh/BvkKtUaylz7y8yb85FAByRghANtz0aO/Q4gA4EmUF8zhBpFjXmYZuHRZjHUfxvFwaT1F2Pprr+s9w=
-Message-ID: <48319C70.9000207@gmail.com>
-Date: Mon, 19 May 2008 17:27:44 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=K8kwAml7Gt5pqARBlyMN4YKBRcLhShZ6UZ9xHeCQHX0LN5+yeGOjEKyhii3VHXbid0uKJm4oIsEeqdX9yfLHHttMtySEjS8ZbPBl5ZH7fgxDHEzUR65PfZr/nrb/tKBkgpitbokjEDfyDi++aNOnaCopZ8zBrk2sMGJK6l9QCKA=
+Message-ID: <8bd0f97a0805190828k2c3a3521m8a962e20995008dc@mail.gmail.com>
+Date: Mon, 19 May 2008 11:28:34 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Gadiyar, Anand" <gadiyar@ti.com>
+Subject: Re: [PATCH 2/2] MUSB: Real fix bug 4 usb bugs found on Blackfin
+Cc: "Bryan Wu" <cooloney@kernel.org>,
+       "me@felipebalbi.com" <me@felipebalbi.com>,
+       "david-b@pacbell.net" <david-b@pacbell.net>,
+       "tony@atomide.com" <tony@atomide.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Sonic Zhang" <sonic.zhang@analog.com>
+In-Reply-To: <5A47E75E594F054BAF48C5E4FC4B92AB02225E79C1@dbde02.ent.ti.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: Re: [PATCH] ip2: Fix crashes on load/unload
-References: <20080519132053.578.45185.stgit@core>
-In-Reply-To: <20080519132053.578.45185.stgit@core>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1211022081-27298-1-git-send-email-cooloney@kernel.org>
+	 <1211022081-27298-3-git-send-email-cooloney@kernel.org>
+	 <5A47E75E594F054BAF48C5E4FC4B92AB02225E79C1@dbde02.ent.ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/19/2008 03:20 PM, Alan Cox wrote:
-> From: Alan Cox <alan@redhat.com>
-> 
-> This doesn't need to be two modules, and making it one cleans up the
-> problem
-> ---
-> 
+On Mon, May 19, 2008 at 11:16 AM, Gadiyar, Anand <gadiyar@ti.com> wrote:
+> I am unable to visit any of these links. I get the following error "Unknown or invalid plugin: 'tracker'".
 
-Seems OK, but all your patches misses S-O-F line...
+change "linux-kernel" in the url to "uclinux-dist"
+-mike
