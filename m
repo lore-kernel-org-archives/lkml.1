@@ -1,132 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763239AbYESSWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762403AbYESSZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763239AbYESSWi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 14:22:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759844AbYESSW2
+	id S1762403AbYESSZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 14:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755016AbYESSZR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 14:22:28 -0400
-Received: from gv-out-0910.google.com ([216.239.58.190]:30991 "EHLO
-	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760818AbYESSW1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 14:22:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=W42AMO+TmmVY8dPudQt+cjLDril3G6uXV7eMnH399CAf6C87ETwyEWkFI1B2dk/A65MdeNx3ZFxQ5l9mRrj5cUefyNojmprMq/4FgbwQTX/KHuSrXIPISyQ6+9wpYfEpc89GqWO7G9gMiyRS1wNFGIvOSmVhgAmd7T8R32xbHGo=
-Date: Mon, 19 May 2008 22:22:14 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Paulo Marques <pmarques@grupopie.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: /proc/kallsyms broken in 2.6.26-rc1-git6
-Message-ID: <20080519182214.GD7773@cvg>
-References: <4824A7B6.70306@firstfloor.org> <4824AD3C.3070506@grupopie.com> <20080509233742.GA22265@martell.zuzino.mipt.ru> <48281540.9020207@grupopie.com> <20080512155052.GB6913@cvg> <20080512172323.GA9236@uranus.ravnborg.org> <20080513095437.GJ31954@one.firstfloor.org> <20080519181118.GA22931@uranus.ravnborg.org> <20080519181543.GC7773@cvg> <20080519182115.GA24285@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 19 May 2008 14:25:17 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:42955 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752047AbYESSZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 14:25:15 -0400
+Date: Mon, 19 May 2008 20:25:52 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>
+Cc: Jan Blunck <jblunck@suse.de>,
+       Christophe Jaillet <christophe.jaillet@wanadoo.fr>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Paulo Marques <pmarques@grupopie.com>,
+       =?utf-8?B?Uy4gw4dhxJ9sYXI=?= Onur <caglar@pardus.org.tr>,
+       Andi Kleen <ak@linux.intel.com>, Masatake YAMATO <yamato@redhat.com>
+Subject: [GIT PATCH] kbuild fixes
+Message-ID: <20080519182552.GB24285@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080519182115.GA24285@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Sam Ravnborg - Mon, May 19, 2008 at 08:21:15PM +0200]
-| On Mon, May 19, 2008 at 10:15:43PM +0400, Cyrill Gorcunov wrote:
-| > [Sam Ravnborg - Mon, May 19, 2008 at 08:11:18PM +0200]
-| > | On Tue, May 13, 2008 at 11:54:37AM +0200, Andi Kleen wrote:
-| > | > > I expect it to be a toolchain issue. Andi is often running with gcc versions
-| > | > > that are very new (fresh from svn maybe). I dunno about binutils.
-| > | > 
-| > | > No actually that's a pretty old version from SUSE 10.2
-| > | > 
-| > | > gcc-4.1.3-29
-| > | > binutils-2.17.50.0.5-21
-| > | > 
-| > | > This means i've been recently trying to get the x86-64 kernel to work
-| > | > with the new gold linker from binutils mainline, but it's far from
-| > | > booting yet and was not used here.
-| > | > 
-| > | > > To reproduce I would expect that a very recent gcc/binutils is needed.
-| > | > > Andi?
-| > | > 
-| > | > Just a SUSE 10.2 toolchain. You can probably rpm2cpio it from any 
-| > | > SUSE mirror.
-| > | 
-| > | I have just commit the following that should fix it.
-| > | 
-| > | 	Sam
-| > | 
-| > | commit aab34ac8582303ef57b792710fc5dd5991477475
-| > | Author: Sam Ravnborg <sam@ravnborg.org>
-| > | Date:   Mon May 19 20:07:58 2008 +0200
-| > | 
-| > |     kbuild: filter away debug symbols from kernel symbols
-| > |     
-| > |     Andi Kleen <andi@firstfloor.org>
-| > |     reported that he saw a lot of symbols like this:
-| > |     
-| > |     0000000000000b24 N DW.aio.h.903a6d92.2
-| > |     0000000000000bce N DW.task_io_accounting.h.8d8de327.0
-| > |     0000000000000bec N DW.hrtimer.h.c23659c6.0
-| > |     
-| > |     in his System.map / kallsyms output.
-| > |     
-| > |     Simple solution is to skip all debugging
-| > |     symbols (they are marked 'N').
-| > |     
-| > |     Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-| > |     Cc: Paulo Marques <pmarques@grupopie.com>
-| > | 
-| > | diff --git a/scripts/kallsyms.c b/scripts/kallsyms.c
-| > | index 5d20a2e..ad2434b 100644
-| > | --- a/scripts/kallsyms.c
-| > | +++ b/scripts/kallsyms.c
-| > | @@ -108,6 +108,9 @@ static int read_symbol(FILE *in, struct sym_entry *s)
-| > |  	/* exclude also MIPS ELF local symbols ($L123 instead of .L123) */
-| > |  	else if (str[0] == '$')
-| > |  		return -1;
-| > | +	/* exclude debugging symbols */
-| > | +	else if (stype == 'N')
-| > | +		return -1;
-| > |  
-| > |  	/* include the type field in the symbol name, so that it gets
-| > |  	 * compressed together */
-| > | diff --git a/scripts/mksysmap b/scripts/mksysmap
-| > | index 4390fab..6e133a0 100644
-| > | --- a/scripts/mksysmap
-| > | +++ b/scripts/mksysmap
-| > | @@ -32,6 +32,7 @@
-| > |  # For System.map filter away:
-| > |  #   a - local absolute symbols
-| > |  #   U - undefined global symbols
-| > | +#   N - debugging symbols
-| > |  #   w - local weak symbols
-| > |  
-| > |  # readprofile starts reading symbols when _stext is found, and
-| > | @@ -40,5 +41,5 @@
-| > |  # so we just ignore them to let readprofile continue to work.
-| > |  # (At least sparc64 has __crc_ in the middle).
-| > |  
-| > | -$NM -n $1 | grep -v '\( [aUw] \)\|\(__crc_\)\|\( \$[adt]\)' > $2
-| > | +$NM -n $1 | grep -v '\( [aNUw] \)\|\(__crc_\)\|\( \$[adt]\)' > $2
-| > |  
-| > | 
-| > 
-| > Hi Sam,
-| > 
-| > should not there be
-| > 
-| > 	toupper(stype) == 'N'
-| > 
-| > (just a guess)
-| 
-| I conisered this. But decided that we could do so if we needed it later.
-| In the nm output I got they were all 'N'.
-| 
-| 	Sam
-| 
+Hi Linus.
 
-ok, thanks
+Please pull from:
 
-		- Cyrill -
+    ssh://master.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-fixes.git
+
+Following fixes has been collected:
+
+Andi Kleen (1):
+      kbuild: disable modpost warnings for linkonce sections
+
+Christophe Jaillet (1):
+      kconfig: incorrect 'len' field initialisation ?
+
+Jan Blunck (1):
+      Don't clean bounds.h and asm-offsets.h
+
+Masatake YAMATO (1):
+      kbuild: escape meta characters in regular expression in make TAGS
+
+Randy Dunlap (1):
+      kernel-doc: allow unnamed bit-fields
+
+S.Çağlar Onur (1):
+      Remove *.rej pattern from .gitignore
+
+Sam Ravnborg (2):
+      MAINTAINERS: document names of new kbuild trees
+      kbuild: filter away debug symbols from kernel symbols
+
+
+The kernel-doc patch is not a real 'fix' as such.
+But as the patch most likely does not prevent your systems from
+booting I took it here too.
+
+	Sam
+
+
+ .gitignore             |    1 -
+ Kbuild                 |    3 +--
+ MAINTAINERS            |    3 ++-
+ Makefile               |    3 ++-
+ scripts/kallsyms.c     |    3 +++
+ scripts/kconfig/util.c |    2 +-
+ scripts/kernel-doc     |    4 +++-
+ scripts/mksysmap       |    3 ++-
+ scripts/mod/modpost.c  |    2 +-
+ 9 files changed, 15 insertions(+), 9 deletions(-)
+
+
+diff --git a/.gitignore b/.gitignore
+index 090b293..9c0d650 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -54,6 +54,5 @@ series
+ cscope.*
+ 
+ *.orig
+-*.rej
+ *~
+ \#*#
+diff --git a/Kbuild b/Kbuild
+index 32f19c5..e750e9c 100644
+--- a/Kbuild
++++ b/Kbuild
+@@ -96,5 +96,4 @@ missing-syscalls: scripts/checksyscalls.sh FORCE
+ 	$(call cmd,syscalls)
+ 
+ # Delete all targets during make clean
+-clean-files := $(addprefix $(objtree)/,$(targets))
+-
++clean-files := $(addprefix $(objtree)/,$(filter-out $(bounds-file) $(offsets-file),$(targets)))
+diff --git a/MAINTAINERS b/MAINTAINERS
+index f5583dc..74b1c55 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2318,7 +2318,8 @@ S:	Maintained
+ KERNEL BUILD (kbuild: Makefile, scripts/Makefile.*)
+ P:	Sam Ravnborg
+ M:	sam@ravnborg.org
+-T:	git kernel.org:/pub/scm/linux/kernel/git/sam/kbuild.git
++T:	git kernel.org:/pub/scm/linux/kernel/git/sam/kbuild-next.git
++T:	git kernel.org:/pub/scm/linux/kernel/git/sam/kbuild-fixes.git
+ L:	linux-kbuild@vger.kernel.org
+ S:	Maintained
+ 
+diff --git a/Makefile b/Makefile
+index 4492984..f18631f 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1114,6 +1114,7 @@ MRPROPER_DIRS  += include/config include2 usr/include
+ MRPROPER_FILES += .config .config.old include/asm .version .old_version \
+                   include/linux/autoconf.h include/linux/version.h      \
+                   include/linux/utsrelease.h                            \
++                  include/linux/bounds.h include/asm*/asm-offsets.h     \
+ 		  Module.symvers tags TAGS cscope*
+ 
+ # clean - Delete most, but leave enough to build external modules
+@@ -1431,7 +1432,7 @@ define xtags
+ 	elif $1 --version 2>&1 | grep -iq emacs; then \
+ 	    $(all-sources) | xargs $1 -a; \
+ 	    $(all-kconfigs) | xargs $1 -a \
+-		--regex='/^[ \t]*(menu|)config[ \t]+\([a-zA-Z0-9_]+\)/\2/'; \
++		--regex='/^[ \t]*\(\(menu\)*config\)[ \t]+\([a-zA-Z0-9_]+\)/\3/'; \
+ 	    $(all-defconfigs) | xargs -r $1 -a \
+ 		--regex='/^#?[ \t]?\(CONFIG_[a-zA-Z0-9_]+\)/\1/'; \
+ 	else \
+diff --git a/scripts/kallsyms.c b/scripts/kallsyms.c
+index 5d20a2e..ad2434b 100644
+--- a/scripts/kallsyms.c
++++ b/scripts/kallsyms.c
+@@ -108,6 +108,9 @@ static int read_symbol(FILE *in, struct sym_entry *s)
+ 	/* exclude also MIPS ELF local symbols ($L123 instead of .L123) */
+ 	else if (str[0] == '$')
+ 		return -1;
++	/* exclude debugging symbols */
++	else if (stype == 'N')
++		return -1;
+ 
+ 	/* include the type field in the symbol name, so that it gets
+ 	 * compressed together */
+diff --git a/scripts/kconfig/util.c b/scripts/kconfig/util.c
+index f8e73c0..3cc9f93 100644
+--- a/scripts/kconfig/util.c
++++ b/scripts/kconfig/util.c
+@@ -77,7 +77,7 @@ struct gstr str_new(void)
+ {
+ 	struct gstr gs;
+ 	gs.s = malloc(sizeof(char) * 64);
+-	gs.len = 16;
++	gs.len = 64;
+ 	strcpy(gs.s, "\0");
+ 	return gs;
+ }
+diff --git a/scripts/kernel-doc b/scripts/kernel-doc
+index 83cee18..88e3934 100755
+--- a/scripts/kernel-doc
++++ b/scripts/kernel-doc
+@@ -1556,7 +1556,9 @@ sub create_parameterlist($$$) {
+ 		    push_parameter($2, "$type $1", $file);
+ 		}
+ 		elsif ($param =~ m/(.*?):(\d+)/) {
+-		    push_parameter($1, "$type:$2", $file)
++		    if ($type ne "") { # skip unnamed bit-fields
++			push_parameter($1, "$type:$2", $file)
++		    }
+ 		}
+ 		else {
+ 		    push_parameter($param, $type, $file);
+diff --git a/scripts/mksysmap b/scripts/mksysmap
+index 4390fab..6e133a0 100644
+--- a/scripts/mksysmap
++++ b/scripts/mksysmap
+@@ -32,6 +32,7 @@
+ # For System.map filter away:
+ #   a - local absolute symbols
+ #   U - undefined global symbols
++#   N - debugging symbols
+ #   w - local weak symbols
+ 
+ # readprofile starts reading symbols when _stext is found, and
+@@ -40,5 +41,5 @@
+ # so we just ignore them to let readprofile continue to work.
+ # (At least sparc64 has __crc_ in the middle).
+ 
+-$NM -n $1 | grep -v '\( [aUw] \)\|\(__crc_\)\|\( \$[adt]\)' > $2
++$NM -n $1 | grep -v '\( [aNUw] \)\|\(__crc_\)\|\( \$[adt]\)' > $2
+ 
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index 757294b..508c589 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -721,7 +721,7 @@ static int check_section(const char *modname, const char *sec)
+ 		/* consume all digits */
+ 		while (*e && e != sec && isdigit(*e))
+ 			e--;
+-		if (*e == '.') {
++		if (*e == '.' && !strstr(sec, ".linkonce")) {
+ 			warn("%s (%s): unexpected section name.\n"
+ 			     "The (.[number]+) following section name are "
+ 			     "ld generated and not expected.\n"
