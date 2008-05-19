@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762798AbYESSmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763160AbYESSme@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762798AbYESSmU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 14:42:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751430AbYESSmJ
+	id S1763160AbYESSme (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 14:42:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759274AbYESSmP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 14:42:09 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:22798 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751074AbYESSmI (ORCPT
+	Mon, 19 May 2008 14:42:15 -0400
+Received: from www17.your-server.de ([213.133.104.17]:51439 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758093AbYESSmO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 14:42:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=hCVy1QI/egaJjVkt3X4Y7lwtqROfK4kmhE2ZdnxfSG1BFra9PaOxqChnJfLm3w0v8Pgb/w7eWbR9CFB894EZbW6+gwzDgVYTqBYikcFmmV+HMYAI6TbTkaSjJ9D/zZqLYH+3YldLoUzpNwHqO71xCAAGd+F5jByYZkgAq+vLzhY=
-Date: Mon, 19 May 2008 22:41:53 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>, Mikael Pettersson <mikpe@it.uu.se>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Tom Spink <tspink@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Jiri Slaby <jirislaby@gmail.com>, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [RFC] x86: merge nmi_32-64 to nmi.c
-Message-ID: <20080519184153.GE7773@cvg>
-References: <20080517192200.GA6914@cvg> <7b9198260805171328u555eec17t3597f3378edbda88@mail.gmail.com> <Pine.LNX.4.55.0805172148380.10067@cliff.in.clinika.pl> <18479.21161.437325.251769@harpo.it.uu.se> <alpine.LFD.1.10.0805180023100.18798@apollo.tec.linutronix.de> <20080519180753.GB7773@cvg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080519180753.GB7773@cvg>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 19 May 2008 14:42:14 -0400
+Subject: Re: linux-next: Tree for May 19
+From: Thomas Meyer <thomas@m3y3r.de>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080519174120.2083ea57.sfr@canb.auug.org.au>
+References: <20080519174120.2083ea57.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=utf8
+Date: Mon, 19 May 2008 20:42:00 +0200
+Message-Id: <1211222520.30161.3.camel@dhcppc1>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8BIT
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Mon, May 19, 2008 at 10:07:53PM +0400]
-| Btw, if someone is still watching this thread - I've found a bit strange
-| behaviour of nmi on 32bit platform. Look, we have 
-| 
-| 	nmi_watchdog = NMI_DEFAULT
-| 
-| by default which is the alias to NMI_DISABLED. Then lets assume that
-| user put some option on command line, say for example he passes something
-| like that
-| 
-| 	nmi_watchdog=2
-| 
-| which set it to
-| 
-| 	nmi_watchdog = NMI_LOCAL_APIC
-| 
-| with only that option passed we have sysfs entry created
-| but I can't figure out why in proc_nmi_enabled() we have this
-| code
-| 
-| 	if (nmi_watchdog == NMI_DEFAULT) {
-| 		if (lapic_watchdog_ok())
-| 			nmi_watchdog = NMI_LOCAL_APIC;
-| 		else
-| 			nmi_watchdog = NMI_IO_APIC;
-| 	}
-| 
-| it seems it just _dont need_ at and could be safetly removed.
-| Did I miss something?
-| 
-| 		- Cyrill -
+Am Montag, den 19.05.2008, 17:41 +1000 schrieb Stephen Rothwell:
+> News:
+> 	I will stop making full tar balls tomorrow unless someone screams.
+> 	The LATEST file now contains the name of the version that the
+> patches are based on i.e. today, LATEST-IS-next-20080519 contains "v2.6.26-rc3".
+> 
+> Changes since next-20080516:
+> 
+> New tree: bkl-removal  (this is Jonathan Corbet's tree)
+> 
+> Removed trees: x86-fixes, sched-fixes (I don't know where they are
+> currently).
+> 
+> Changed trees: x86 and sched are now the new auto merged trees.
+> 
 
-Ah, I found... sorry for noise, I'm shutting up ;)
+Is it intentional that kernel.release is:
 
-		- Cyrill -
+$ cat include/config/kernel.release 
+2.6.26-rc3-next-20080519-sched-devel.git
+
+all predecessors have had names like:
+﻿2.6.26-rc2-next-20080516
+
+greetz
+
+
+
+
