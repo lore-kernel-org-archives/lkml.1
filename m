@@ -1,81 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759937AbYESOJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759066AbYESO03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759937AbYESOJg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 10:09:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbYESOJ0
+	id S1759066AbYESO03 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 10:26:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757196AbYESO0T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 10:09:26 -0400
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:37770 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751011AbYESOJZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 10:09:25 -0400
-Message-ID: <483189C2.7050207@linux.vnet.ibm.com>
-Date: Mon, 19 May 2008 19:38:02 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080505)
+	Mon, 19 May 2008 10:26:19 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:61556 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756403AbYESO0S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 10:26:18 -0400
+Date: Mon, 19 May 2008 15:25:47 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Andi Kleen <andi@firstfloor.org>
+cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] I/O APIC: Timer through 8259A revamp
+In-Reply-To: <87hccubgni.fsf@basil.nowhere.org>
+Message-ID: <Pine.LNX.4.55.0805191459220.19879@cliff.in.clinika.pl>
+References: <Pine.LNX.4.55.0805180237350.10067@cliff.in.clinika.pl>
+ <87hccubgni.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-To: Steven Rostedt <srostedt@redhat.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: 2.6.26-rc2-mm1 - machine stuck while booting up with CONFIG_FTRACE_STARTUP_TEST
- enabled
-References: <20080514010129.4f672378.akpm@linux-foundation.org> <4831658F.2020306@linux.vnet.ibm.com> <48317A72.701@redhat.com>
-In-Reply-To: <48317A72.701@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> Kamalesh Babulal wrote:
->> Hi Andrew,
->>
->> The 2.6.26-rc2-mm1 kernel gets stuck, while booting up on x86_64 machine,
->> with the CONFIG_FTRACE_STARTUP_TEST enabled. The following .config
->> options related to FTRACE are enabled. 
->>
->> CONFIG_FTRACE_SELFTEST=y
->> CONFIG_FTRACE_STARTUP_TEST=y
->> CONFIG_FTRACE=y
->> CONFIG_HAVE_FTRACE=y
->> CONFIG_DYNAMIC_FTRACE=y
->>
-> 
-> [...]
-> 
->> Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 1805035
->> Policy zone: Normal
->> Kernel command line: root=/dev/sda1 ro console=tty0 console=ttyS0,38400n1 noapci IDENT=1211176695
-> 
-> Hi, could you do nmi_watchdog=1 and see if that gives you a stack dump?
-> 
-> Thanks.
-> 
-> -- Steve
+On Mon, 19 May 2008, Andi Kleen wrote:
 
-Hi Steven,
+> I tried to clean up this code in the past too, but one experience I got
+> was that even a lot of relatively modern systems (<5 years old) fall into the fallback
+> paths unfortunately and it's quite difficult to find out why.
 
-Passing nmi_watchdog=1 did not help in getting any extra information, over the previous
-console log. The boot up message is stuck exactly at the same place.
+ The new burst of breakage came with the invention of ACPI and its tables 
+for interrupt routing for the APIC.
 
-> 
-> [...]
-> 
->> checking if image is initramfs... it is
->> Freeing initrd memory: 1466k freed
->> audit: initializing netlink socket (disabled)
->> type=2000 audit(1211176950.517:1): initialized
->> Testing tracer sched_switch: PASSED
->> Testing tracer sysprof: PASSED
->> Testing tracer ftrace: 
->>
-> 
+ Old MP tables coming from the MP spec used to get the timer interrupt
+setup right almost always if not in all the cases.  The code we had got up
+to that point was meant to handle hardware variations the best we could.  
+The most common problem was some integrated chipset components predated
+the existence of the APIC and had the output of the timer #0 of their
+embedded 8254 core routed directly to the IRQ0 input of their embedded
+8259A component only.  The I/O APIC was external and there was no way to
+route IRQ0 there directly.
 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+ With the ACPI tables, hardware is modern enough the timer interrupt 
+should be directly available, but is usually wired in the way recommended 
+by the MP spec.  That is the output of the master 8259A goes to INT0 of 
+the I/O APIC (or is only connected to local APICs) and the timer is routed 
+to INT2.  However the default for ACPI tables is to map 8259A one-to-one 
+to the I/O APIC.  Perhaps the intention of the authors of the spec was 
+that hardware will gradually get designed this way or perhaps there was no 
+clear reason at all.  Anyway the reality is most systems out there need 
+an override for the timer interrupt and practice has shown it is sometimes 
+missing.  As a result the pin that our code assumes is for the timer 
+interrupt in fact is the 8259A ExtINTA interrupt, which as it happens, can 
+be used for the timer, but we have to be careful
+
+ The end result is we are trying to reuse the same logic in the code for 
+a different purpose and while it is a reasonable approach, care has to be 
+taken to take the slightly different circumstances into account.
+
+ Of course if there is no INT2 override in the ACPI table, we might 
+consider blindly checking whether it actually is a timer interrupt, 
+because for systems which have the legacy 8259A chips IRQ2 makes no sense.
+
+> Also Windows uses a different timer set up so this configuration is often
+> not well tested.
+
+ Well, they must have figured out the setup of the 8254 timer is
+unreliable as well. ;-)  Actually the original i82489DX documents
+explicitly discouraged SMP operating systems from using the 8254 because
+of the missing wiring to the I/O APIC in some, especially early, systems
+mentioned above.  The use of the mixed interrupt mode was implied if the
+use of timer was found inevitable, which was recognised as not fully in
+the spirit of an SMP system.  Later on the mixed mode proved problematic
+too, because of various APIC errata.  Still we arrange for such a set-up
+as the last resort in check_timer().
+
+ The use of the local APIC timer as a replacement was recommended back
+then, but I think IRQ8 from the RTC was also a good solution, as it was
+still before the time the functionality started getting integrated into
+chipsets and the line was always available to the I/O APIC.
+
+  Maciej
