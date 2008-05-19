@@ -1,71 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760880AbYESMgZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759510AbYESMjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760880AbYESMgZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 08:36:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760312AbYESMfq
+	id S1759510AbYESMjQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 08:39:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756775AbYESMjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 08:35:46 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:53734 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758490AbYESMfp (ORCPT
+	Mon, 19 May 2008 08:39:00 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:56179 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756403AbYESMjA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 08:35:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=ujVYTiT8fNCMbsF843/YC59lEV/cZ9UujieH9Dcny88S7429NlYXHv/FO5GsDCAdVLIm8bOy4WZjD/ld89RGTwUnUSPKr7brqiXtynBRyh3INWdHdP6UyKBZG6j+WdjoSVy1dw/L5KAI3iBJycHbfjUncM4sO/cH2bU13BW95dM=
-Message-ID: <4831741A.7090206@gmail.com>
-Date: Mon, 19 May 2008 21:35:38 +0900
-From: MinChan Kim <minchan.kim@gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
+	Mon, 19 May 2008 08:39:00 -0400
+Date: Mon, 19 May 2008 14:39:52 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Ingo Molnar <mingo@elte.hu>, kernel list <linux-kernel@vger.kernel.org>
+Subject: aperture_64: use symbolic constants
+Message-ID: <20080519123952.GA23118@elf.ucw.cz>
 MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Kosaki Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [patch 04/14] free swap space on swap-in/activation
-References: <20080516183207.361608893@redhat.com> <20080516183224.259161900@redhat.com>
-In-Reply-To: <20080516183224.259161900@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Rik.
+Use symbolic constants in aperture_64.c where possible (and make a
+comment slightly more helpful).
 
-I don't know where to send this patch. you or mm ?
-I guess VM pageout patches didn't send mm-commits yet.
+Signed-off-by: Pavel Machek <pavel@suse.cz>
 
-It made compile error in my system that didn't have swap device. 
-
-----
-
-Subject: [PATCH] Fix compile error about remove_exclusive_swap_page_ref
-
-It happened compiled error when I removed CONFIG_SWAP in config file
-It caused by new API that is 'remove_exclusive_swap_page_ref'.
-
-Signed-off-by: MinChan Kim <minchan.kim@gmail.com>
 ---
- include/linux/swap.h |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+commit 4cc4fa2a3ff78277430201c74580e99bbaf7a1d0
+tree 6ceafd1f7c4d020f084e9b96d30619680d393274
+parent 033a68acc1817ba2bd9f25c2384e4b0c22ff4288
+author Pavel <pavel@amd.ucw.cz> Mon, 19 May 2008 14:38:59 +0200
+committer Pavel <pavel@amd.ucw.cz> Mon, 19 May 2008 14:38:59 +0200
 
-diff --git a/include/linux/swap.h b/include/linux/swap.h
-index 4c3a2ef..f34fdb6 100644
---- a/include/linux/swap.h
-+++ b/include/linux/swap.h
-@@ -390,6 +390,11 @@ static inline int remove_exclusive_swap_page(struct page *p)
- 	return 0;
- }
+ arch/x86/kernel/aperture_64.c |   20 +++++++++++---------
+ 1 files changed, 11 insertions(+), 9 deletions(-)
+
+diff --git a/arch/x86/kernel/aperture_64.c b/arch/x86/kernel/aperture_64.c
+index 479926d..6b3757e 100644
+--- a/arch/x86/kernel/aperture_64.c
++++ b/arch/x86/kernel/aperture_64.c
+@@ -263,11 +263,11 @@ void __init early_gart_iommu_check(void)
+ 		if (!early_is_k8_nb(read_pci_config(0, num, 3, 0x00)))
+ 			continue;
  
-+static inline int remove_exclusive_swap_page_ref(struct page *page)
-+{
-+	return 0;
-+}
-+
- static inline swp_entry_t get_swap_page(void)
- {
- 	swp_entry_t entry;
+-		ctl = read_pci_config(0, num, 3, 0x90);
++		ctl = read_pci_config(0, num, 3, AMD64_GARTAPERTURECTL);
+ 		aper_enabled = ctl & 1;
+ 		aper_order = (ctl >> 1) & 7;
+ 		aper_size = (32 * 1024 * 1024) << aper_order;
+-		aper_base = read_pci_config(0, num, 3, 0x94) & 0x7fff;
++		aper_base = read_pci_config(0, num, 3, AMD64_GARTAPERTUREBASE) & 0x7fff;
+ 		aper_base <<= 25;
+ 
+ 		if ((last_aper_order && aper_order != last_aper_order) ||
+@@ -303,9 +303,9 @@ void __init early_gart_iommu_check(void)
+ 		if (!early_is_k8_nb(read_pci_config(0, num, 3, 0x00)))
+ 			continue;
+ 
+-		ctl = read_pci_config(0, num, 3, 0x90);
++		ctl = read_pci_config(0, num, 3, AMD64_GARTAPERTURECTL);
+ 		ctl &= ~1;
+-		write_pci_config(0, num, 3, 0x90, ctl);
++		write_pci_config(0, num, 3, AMD64_GARTAPERTURECTL, ctl);
+ 	}
+ 
+ }
+@@ -332,9 +332,9 @@ void __init gart_iommu_hole_init(void)
+ 		iommu_detected = 1;
+ 		gart_iommu_aperture = 1;
+ 
+-		aper_order = (read_pci_config(0, num, 3, 0x90) >> 1) & 7;
++		aper_order = (read_pci_config(0, num, 3, AMD64_GARTAPERTURECTL) >> 1) & 7;
+ 		aper_size = (32 * 1024 * 1024) << aper_order;
+-		aper_base = read_pci_config(0, num, 3, 0x94) & 0x7fff;
++		aper_base = read_pci_config(0, num, 3, AMD64_GARTAPERTUREBASE) & 0x7fff;
+ 		aper_base <<= 25;
+ 
+ 		printk(KERN_INFO "Node %d: aperture @ %Lx size %u MB\n",
+@@ -406,11 +406,13 @@ void __init gart_iommu_hole_init(void)
+ 			continue;
+ 
+ 		/*
+-		 * Don't enable translation yet. That is done later.
++		 * Don't enable translation yet. That is done later
++		 * by enable_gart_translation.
++		 *
+ 		 * Assume this BIOS didn't initialise the GART so
+ 		 * just overwrite all previous bits
+ 		 */
+-		write_pci_config(0, num, 3, 0x90, aper_order<<1);
+-		write_pci_config(0, num, 3, 0x94, aper_alloc>>25);
++		write_pci_config(0, num, 3, AMD64_GARTAPERTURECTL, aper_order<<1);
++		write_pci_config(0, num, 3, AMD64_GARTAPERTUREBASE, aper_alloc>>25);
+ 	}
+ }
+
 -- 
-1.5.4.3
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
