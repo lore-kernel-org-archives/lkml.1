@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765012AbYESWEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764995AbYESWDl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765012AbYESWEy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 18:04:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932104AbYESWD7
+	id S1764995AbYESWDl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 18:03:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764827AbYESWCd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 18:03:59 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:42309 "EHLO smtp4.pp.htv.fi"
+	Mon, 19 May 2008 18:02:33 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:42254 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764349AbYESWD6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 18:03:58 -0400
-Date: Tue, 20 May 2008 01:01:52 +0300
+	id S1764821AbYESWCa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 18:02:30 -0400
+Date: Tue, 20 May 2008 01:00:24 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] parport: remove CVS keywords
-Message-ID: <20080519220152.GA17716@cs181133002.pp.htv.fi>
+To: greg@kroah.com
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] remove Documentation/usb/uhci.txt
+Message-ID: <20080519220024.GX17716@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -22,57 +23,184 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes CVS keywords that weren't updated for a long time
-from comments.
+The driver was removed before kernel 2.6.0
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- drivers/parport/ieee1284.c |    2 +-
- drivers/parport/probe.c    |    2 +-
- drivers/parport/share.c    |    2 +-
- include/linux/parport.h    |    2 --
- 4 files changed, 3 insertions(+), 5 deletions(-)
+ Documentation/usb/uhci.txt |  165 -------------------------------------
+ 1 file changed, 165 deletions(-)
 
-e6a73a87211cdfd9ffc9dbb55ba7b5d0ef4f37c2 diff --git a/drivers/parport/ieee1284.c b/drivers/parport/ieee1284.c
-index 0338b09..c42d345 100644
---- a/drivers/parport/ieee1284.c
-+++ b/drivers/parport/ieee1284.c
-@@ -1,4 +1,4 @@
--/* $Id: parport_ieee1284.c,v 1.4 1997/10/19 21:37:21 philip Exp $
-+/*
-  * IEEE-1284 implementation for parport.
-  *
-  * Authors: Phil Blundell <philb@gnu.org>
-diff --git a/drivers/parport/probe.c b/drivers/parport/probe.c
-index cd565bb..0f65507 100644
---- a/drivers/parport/probe.c
-+++ b/drivers/parport/probe.c
-@@ -1,4 +1,4 @@
--/* $Id: parport_probe.c,v 1.1 1999/07/03 08:56:17 davem Exp $
-+/*
-  * Parallel port device probing code
-  *
-  * Authors:    Carsten Gross, carsten@sol.wohnheim.uni-ulm.de
-diff --git a/drivers/parport/share.c b/drivers/parport/share.c
-index a8a62bb..0ebca45 100644
---- a/drivers/parport/share.c
-+++ b/drivers/parport/share.c
-@@ -1,4 +1,4 @@
--/* $Id: parport_share.c,v 1.15 1998/01/11 12:06:17 philip Exp $
-+/*
-  * Parallel-port resource manager code.
-  * 
-  * Authors: David Campbell <campbell@tirian.che.curtin.edu.au>
-diff --git a/include/linux/parport.h b/include/linux/parport.h
-index dcb9e01..15538c6 100644
---- a/include/linux/parport.h
-+++ b/include/linux/parport.h
-@@ -1,5 +1,3 @@
--/* $Id: parport.h,v 1.1 1998/05/17 10:57:52 andrea Exp andrea $ */
+94333efe59af0e1c7fe5c0f36cbbda7899e89d17 diff --git a/Documentation/usb/uhci.txt b/Documentation/usb/uhci.txt
+deleted file mode 100644
+index 2f25952..0000000
+--- a/Documentation/usb/uhci.txt
++++ /dev/null
+@@ -1,165 +0,0 @@
+-Specification and Internals for the New UHCI Driver (Whitepaper...)
 -
- /*
-  * Any part of this program may be used in documents licensed under
-  * the GNU Free Documentation License, Version 1.1 or any later version
+-	brought to you by
+-
+-	Georg Acher, acher@in.tum.de (executive slave) (base guitar)
+-	Deti Fliegl, deti@fliegl.de (executive slave) (lead voice)
+-	Thomas Sailer, sailer@ife.ee.ethz.ch (chief consultant) (cheer leader)
+- 
+-	$Id: README.uhci,v 1.1 1999/12/14 14:03:02 fliegl Exp $
+-
+-This document and the new uhci sources can be found on
+-		http://hotswap.in.tum.de/usb
+-
+-1. General issues
+-
+-1.1 Why a new UHCI driver, we already have one?!?
+-
+-Correct, but its internal structure got more and more mixed up by the (still
+-ongoing) efforts to get isochronous transfers (ISO) to work.
+-Since there is an increasing need for reliable ISO-transfers (especially 
+-for USB-audio needed by TS and for a DAB-USB-Receiver build by GA and DF), 
+-this state was a bit unsatisfying in our opinion, so we've decided (based
+-on knowledge and experiences with the old UHCI driver) to start 
+-from scratch with a new approach, much simpler but at the same time more 
+-powerful.
+-It is inspired by the way Win98/Win2000 handles USB requests via URBs,
+-but it's definitely 100% free of MS-code and doesn't crash while 
+-unplugging an used ISO-device like Win98 ;-)
+-Some code for HW setup and root hub management was taken from the 
+-original UHCI driver, but heavily modified to fit into the new code.
+-The invention of the basic concept, and major coding were completed in two 
+-days (and nights) on the 16th and 17th of October 1999, now known as the
+-great USB-October-Revolution started by GA, DF, and TS ;-)
+-
+-Since the concept is in no way UHCI dependent, we hope that it will also be 
+-transferred to the OHCI-driver, so both drivers share a common API.
+-
+-1.2. Advantages and disadvantages
+-
+-+ All USB transfer types work now!
+-+ Asynchronous operation
+-+ Simple, but powerful interface (only two calls for start and cancel)
+-+ Easy migration to the new API, simplified by a compatibility API
+-+ Simple usage of ISO transfers
+-+ Automatic linking of requests
+-+ ISO transfers allow variable length for each frame and striping
+-+ No CPU dependent and non-portable atomic memory access, no asm()-inlines
+-+ Tested on x86 and Alpha
+-
+-- Rewriting for ISO transfers needed
+-
+-1.3. Is there some compatibility to the old API?
+-
+-Yes, but only for control, bulk and interrupt transfers. We've implemented 
+-some wrapper calls for these transfer types. The usbcore works fine with 
+-these wrappers. For ISO there's no compatibility, because the old ISO-API 
+-and its semantics were unnecessary complicated in our opinion.
+-
+-1.4. What's really working?
+-
+-As said above, CTRL and BULK already work fine even with the wrappers,
+-so legacy code wouldn't notice the change.
+-Regarding to Thomas, ISO transfers now run stable with USB audio.
+-INT transfers (e.g. mouse driver) work fine, too.
+-
+-1.5. Are there any bugs?
+-
+-No ;-)
+-Hm...
+-Well, of course this implementation needs extensive testing on all available
+-hardware, but we believe that any fixes shouldn't harm the overall concept.
+-
+-1.6. What should be done next?
+-
+-A large part of the request handling seems to be identical for UHCI and 
+-OHCI, so it would be a good idea to extract the common parts and have only 
+-the HW specific stuff in uhci.c. Furthermore, all other USB device drivers
+-should need URBification, if they use isochronous or interrupt transfers.
+-One thing missing in the current implementation (and the old UHCI driver) 
+-is fair queueing for BULK transfers. Since this would need (in principle) 
+-the alteration of already constructed TD chains (to switch from depth to 
+-breadth execution), another way has to be found. Maybe some simple 
+-heuristics work with the same effect.
+-
+----------------------------------------------------------------------------
+-
+-2. Internal structure and mechanisms
+-
+-To get quickly familiar with the internal structures, here's a short
+-description how the new UHCI driver works. However, the ultimate source of
+-truth is only uhci.c!
+-
+-2.1. Descriptor structure (QHs and TDs)
+-
+-During initialization, the following skeleton is allocated in init_skel:
+-
+-	 framespecific           |           common chain     
+-
+-framelist[]
+-[  0 ]-----> TD --> TD -------\
+-[  1 ]-----> TD --> TD --------> TD ----> QH -------> QH -------> QH ---> NULL
+-  ...        TD --> TD -------/
+-[1023]-----> TD --> TD ------/
+-	     
+-	     ^^     ^^           ^^       ^^          ^^          ^^
+-   1024 TDs for   7 TDs for    1 TD for   Start of    Start of    End Chain
+-	    ISO  INT (2-128ms) 1ms-INT    CTRL Chain  BULK Chain
+-
+-For each CTRL or BULK transfer a new QH is allocated and the containing data
+-transfers are appended as (vertical) TDs. After building the whole QH with its
+-dangling TDs, the QH is inserted before the BULK Chain QH (for CTRL) or
+-before the End Chain QH (for BULK). Since only the QH->next pointers are
+-affected, no atomic memory operation is required. The three QHs in the
+-common chain are never equipped with TDs!
+-
+-For ISO or INT, the TD for each frame is simply inserted into the appropriate
+-ISO/INT-TD-chain for the desired frame. The 7 skeleton INT-TDs are scattered
+-among the 1024 frames similar to the old UHCI driver.
+-
+-For CTRL/BULK/ISO, the last TD in the transfer has the IOC-bit set. For INT,
+-every TD (there is only one...) has the IOC-bit set.
+-
+-Besides the data for the UHCI controller (2 or 4 32bit words), the descriptors
+-are double-linked through the .vertical and .horizontal elements in the 
+-SW data of the descriptor (using the double-linked list structures and 
+-operations), but SW-linking occurs only in closed domains, i.e. for each of
+-the 1024 ISO-chains and the 8 INT-chains there is a closed cycle. This 
+-simplifies all insertions and unlinking operations and avoids costly 
+-bus_to_virt()-calls.
+-
+-2.2. URB structure and linking to QH/TDs
+-
+-During assembly of the QH and TDs of the requested action, these descriptors
+-are stored in urb->urb_list, so the allocated QH/TD descriptors are bound to
+-this URB.
+-If the assembly was successful and the descriptors were added to the HW chain,
+-the corresponding URB is inserted into a global URB list for this controller.
+-This list stores all pending URBs.
+-
+-2.3. Interrupt processing
+-
+-Since UHCI provides no means to directly detect completed transactions, the
+-following is done in each UHCI interrupt (uhci_interrupt()):
+-
+-For each URB in the pending queue (process_urb()), the ACTIVE-flag of the 
+-associated TDs are processed (depending on the transfer type 
+-process_{transfer|interrupt|iso}()). If the TDs are not active anymore, 
+-they indicate the completion of the transaction and the status is calculated. 
+-Inactive QH/TDs are removed from the HW chain (since the host controller
+-already removed the TDs from the QH, no atomic access is needed) and 
+-eventually the URB is marked as completed (OK or errors) and removed from the 
+-pending queue. Then the next linked URB is submitted. After (or immediately 
+-before) that, the completion handler is called.
+-
+-2.4. Unlinking URBs
+-
+-First, all QH/TDs stored in the URB are unlinked from the HW chain. 
+-To ensure that the host controller really left a vertical TD chain, we 
+-wait for one frame. After that, the TDs are physically destroyed.
+-
+-2.5. URB linking and the consequences
+-
+-Since URBs can be linked and the corresponding submit_urb is called in
+-the UHCI-interrupt, all work associated with URB/QH/TD assembly has to be
+-interrupt save. This forces kmalloc to use GFP_ATOMIC in the interrupt.
 
