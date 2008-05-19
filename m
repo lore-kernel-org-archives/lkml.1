@@ -1,63 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757256AbYESDCf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757281AbYESDMF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757256AbYESDCf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 23:02:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750968AbYESDCZ
+	id S1757281AbYESDMF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 23:12:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbYESDLy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 23:02:25 -0400
-Received: from de01egw02.freescale.net ([192.88.165.103]:34770 "EHLO
-	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751403AbYESDCY convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 23:02:24 -0400
-Content-class: urn:content-classes:message
+	Sun, 18 May 2008 23:11:54 -0400
+Received: from styx.suse.cz ([82.119.242.94]:41074 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752772AbYESDLx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 23:11:53 -0400
+Date: Mon, 19 May 2008 05:11:51 +0200
+From: Jan Kara <jack@suse.cz>
+To: Hidehiro Kawai <hidehiro.kawai.ez@hitachi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, sct@redhat.com,
+       adilger@clusterfs.com, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, Josef Bacik <jbacik@redhat.com>,
+       Mingming Cao <cmm@us.ibm.com>,
+       Satoshi OSHIMA <satoshi.oshima.fk@hitachi.com>,
+       sugita <yumiko.sugita.yf@hitachi.com>
+Subject: Re: [PATCH 2/4] jbd: ordered data integrity fix (rebased)
+Message-ID: <20080519031151.GB10233@duck.suse.cz>
+References: <482A6E00.6080303@hitachi.com> <482A6F2B.3020605@hitachi.com> <20080514131007.GD24363@duck.suse.cz> <482D6128.6060200@hitachi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 3/4] [MMC] mmc_spi: add polling support for the card detectline
-Date: Mon, 19 May 2008 11:02:13 +0800
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Message-ID: <58A20A281BAF1047B4EAE68DE5C0BDC2F16E6A@zch01exm21.fsl.freescale.net>
-In-Reply-To: <20080516165057.GC24196@polina.dev.rtsoft.ru>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 3/4] [MMC] mmc_spi: add polling support for the card detectline
-Thread-Index: Aci3dUvcirSGxDHdRIewGRtsHsrJcgB5rykw
-References: <20080516165057.GC24196@polina.dev.rtsoft.ru>
-From: "Chen Gong" <G.Chen@freescale.com>
-To: "Anton Vorontsov" <avorontsov@ru.mvista.com>,
-       "Kumar Gala" <galak@kernel.crashing.org>,
-       "David Brownell" <dbrownell@users.sourceforge.net>,
-       "Pierre Ossman" <drzeus-mmc@drzeus.cx>
-Cc: <linuxppc-dev@ozlabs.org>, <spi-devel-general@lists.sourceforge.net>,
-       <linux-kernel@vger.kernel.org>, "Tabi Timur" <timur@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <482D6128.6060200@hitachi.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  Hello,
 
-> -----Original Message-----
-> From: linuxppc-dev-bounces+b11801=freescale.com@ozlabs.org 
-> [mailto:linuxppc-dev-bounces+b11801=freescale.com@ozlabs.org] 
-> On Behalf Of Anton Vorontsov
-> Sent: 2008?5?17? 0:51
-> To: Kumar Gala; David Brownell; Pierre Ossman
-> Cc: linuxppc-dev@ozlabs.org; 
-> spi-devel-general@lists.sourceforge.net; 
-> linux-kernel@vger.kernel.org; Tabi Timur
-> Subject: [PATCH 3/4] [MMC] mmc_spi: add polling support for 
-> the card detectline
+On Fri 16-05-08 19:25:44, Hidehiro Kawai wrote:
+> Jan Kara wrote:
 > 
-> Some boards do not use interrupts on the CD line, so we want 
-> to poll the CD and see if there was a change. 1 second poll 
-> interval seems resonable.
+> > On Wed 14-05-08 13:48:43, Hidehiro Kawai wrote:
+> > 
+> >>Subject: [PATCH 2/4] jbd: ordered data integrity fix
+> >>
+> >>In ordered mode, if a buffer being dirtied exists in the committing
+> >>transaction, we write the buffer to the disk, move it from the
+> >>committing transaction to the running transaction, then dirty it.
+> >>But we don't have to remove the buffer from the committing
+> >>transaction when the buffer couldn't be written out, otherwise it
+> >>breaks the ordered mode rule.
+> > 
+> >   Hmm, could you elaborate a bit more what exactly is broken and how does
+> > this help to fix it? Because even if we find EIO happened on data buffer,
+> > we currently don't do anything else than just remove the buffer from the
+> > transaction and abort the journal. And even if we later managed to write
+> > the data buffer from other process before the journal is aborted, ordered
+> > mode guarantees are satisfied - we only guarantee that too old data cannot
+> > be seen, newer can be seen easily... Thanks.
 > 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
->  drivers/mmc/host/mmc_spi.c  |   51 
+> In the case where I stated the above, error checking is postponed to
+> the next (currently running) transaction because the buffer is removed
+> from the committing transaction before checked for an error.  This can
+> happen repeatedly, then the error won't be detected "for a long time".
+> However, finally the error is detected by, for example,
+> journal_commit_transaction(), we can abort the journal.  So this
+> problem is not so serious than the other patches which I sent.
+  OK, I see. So I agree with the change but please add this explanation
+(like: cannot remove buffer with io error from the committing transaction
+because otherwise it would miss the error and commit would not abort) to
+the comment in journal_dirty_data(). Thanks.
 
-I want to know whether every card working well ? Because I'm working
-For 83xx MMC-over-SPI support, the presented concrete methods I used as
-you do,
-but only 256M card seems good, 512M or 1G/2G card all have some problems
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
