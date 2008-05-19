@@ -1,75 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763784AbYESNki@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765664AbYESNk6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763784AbYESNki (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 09:40:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763423AbYESNaj
+	id S1765664AbYESNk6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 09:40:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762509AbYESNcu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 09:30:39 -0400
-Received: from www.tglx.de ([62.245.132.106]:44184 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764173AbYESNah (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 09:30:37 -0400
-Date: Mon, 19 May 2008 15:30:24 +0200
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: hjk@linutronix.de, corbet@lwn.net, linux-kernel@vger.kernel.org,
-       gregkh@suse.de
-Subject: Re: [PATCH] [11/11] Convert uio to fasync_unlocked
-Message-ID: <20080519133023.GB3188@local>
-References: <20080519231.561421028@firstfloor.org> <20080519123120.C7BBD1B41FF@basil.firstfloor.org> <87lk26bgtb.fsf@basil.nowhere.org>
+	Mon, 19 May 2008 09:32:50 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50468 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932188AbYESNcs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 09:32:48 -0400
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH] ip2: Fix crashes on load/unload
+To: linux-kernel@vger.kernel.org, akpm@osdl.org
+Date: Mon, 19 May 2008 14:20:53 +0100
+Message-ID: <20080519132053.578.45185.stgit@core>
+User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87lk26bgtb.fsf@basil.nowhere.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 19, 2008 at 02:48:32PM +0200, Andi Kleen wrote:
-> Andi Kleen <andi@firstfloor.org> writes:
-> 
-> > Just calls fasync_helper
-> >
-> > Cc: hjk@linutronix.de
-> 
-> Sorry that one was missing a quilt refresh. Here's the real patch.
-> Not very exciting.
+From: Alan Cox <alan@redhat.com>
 
-Patch looks alright to me, but Greg KH should be cc'ed for UIO patches
-as well.
+This doesn't need to be two modules, and making it one cleans up the
+problem
+---
 
-> 
-> -Andi
-> 
-> ---
-> 
-> Convert uio to fasync_unlocked
-> 
-> Just calls fasync_helper
-> 
-> Cc: hjk@linutronix.de
-  Cc: gregkh@suse.de
-> Signed-off-by: Andi Kleen <ak@linux.intel.com>
+ drivers/char/ip2/Makefile  |    4 ++--
+ drivers/char/ip2/ip2main.c |   23 -----------------------
+ 2 files changed, 2 insertions(+), 25 deletions(-)
 
- Acked-by: Hans J. Koch <hjk@linutronix.de>
 
-> 
-> Index: linux/drivers/uio/uio.c
-> ===================================================================
-> --- linux.orig/drivers/uio/uio.c
-> +++ linux/drivers/uio/uio.c
-> @@ -541,7 +541,7 @@ static const struct file_operations uio_
->  	.read		= uio_read,
->  	.mmap		= uio_mmap,
->  	.poll		= uio_poll,
-> -	.fasync		= uio_fasync,
-> +	.unlocked_fasync = uio_fasync,
->  };
->  
->  static int uio_major_init(void)
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+diff --git a/drivers/char/ip2/Makefile b/drivers/char/ip2/Makefile
+index 6bfe254..939618f 100644
+--- a/drivers/char/ip2/Makefile
++++ b/drivers/char/ip2/Makefile
+@@ -2,7 +2,7 @@
+ # Makefile for the Computone IntelliPort Plus Driver
+ #
+ 
+-obj-$(CONFIG_COMPUTONE)         += ip2.o ip2main.o
++obj-$(CONFIG_COMPUTONE)         += ip2.o
+ 
+-ip2-objs			:= ip2base.o
++ip2-objs			:= ip2base.o ip2main.o
+ 
+diff --git a/drivers/char/ip2/ip2main.c b/drivers/char/ip2/ip2main.c
+index 70957ac..c12cf8f 100644
+--- a/drivers/char/ip2/ip2main.c
++++ b/drivers/char/ip2/ip2main.c
+@@ -346,27 +346,6 @@ have_requested_irq( char irq )
+ }
+ 
+ /******************************************************************************/
+-/* Function:   init_module()                                                  */
+-/* Parameters: None                                                           */
+-/* Returns:    Success (0)                                                    */
+-/*                                                                            */
+-/* Description:                                                               */
+-/* This is a required entry point for an installable module. It simply calls  */
+-/* the driver initialisation function and returns what it returns.            */
+-/******************************************************************************/
+-#ifdef MODULE
+-static int __init
+-ip2_init_module(void)
+-{
+-#ifdef IP2DEBUG_INIT
+-	printk (KERN_DEBUG "Loading module ...\n" );
+-#endif
+-    return 0;
+-}
+-module_init(ip2_init_module);
+-#endif /* MODULE */
+-
+-/******************************************************************************/
+ /* Function:   cleanup_module()                                               */
+ /* Parameters: None                                                           */
+ /* Returns:    Nothing                                                        */
+@@ -779,8 +758,6 @@ out:
+ 	return err;
+ }
+ 
+-EXPORT_SYMBOL(ip2_loadmain);
+-
+ /******************************************************************************/
+ /* Function:   ip2_init_board()                                               */
+ /* Parameters: Index of board in configuration structure                      */
+
