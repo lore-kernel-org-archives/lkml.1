@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765320AbYESWH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763787AbYESWIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765320AbYESWH6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 18:07:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764773AbYESWFX
+	id S1763787AbYESWIb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 18:08:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756322AbYESWFk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 18:05:23 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:42359 "EHLO smtp4.pp.htv.fi"
+	Mon, 19 May 2008 18:05:40 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:40172 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763608AbYESWFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 18:05:21 -0400
-Date: Tue, 20 May 2008 01:03:16 +0300
+	id S1755817AbYESWFi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 18:05:38 -0400
+Date: Tue, 20 May 2008 01:03:32 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: davej@codemonkey.org.uk
-Cc: cpufreq@lists.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] cpufreq: remove CVS keywords
-Message-ID: <20080519220315.GG17716@cs181133002.pp.htv.fi>
+To: rth@twiddle.net, ink@jurassic.park.msu.ru
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] alpha: remove CVS keywords
+Message-ID: <20080519220332.GH17716@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -30,32 +30,42 @@ Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- arch/x86/kernel/cpu/cpufreq/powernow-k7.h |    1 -
- include/linux/cpufreq.h                   |    3 ---
- 2 files changed, 4 deletions(-)
+ include/asm-alpha/dma.h   |    2 +-
+ include/asm-alpha/md.h    |    2 +-
+ include/asm-alpha/namei.h |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-e557db8138882bb0961d6e4b940cd9b59e4dd721 diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k7.h b/arch/x86/kernel/cpu/cpufreq/powernow-k7.h
-index f8a63b3..35fb4ea 100644
---- a/arch/x86/kernel/cpu/cpufreq/powernow-k7.h
-+++ b/arch/x86/kernel/cpu/cpufreq/powernow-k7.h
-@@ -1,5 +1,4 @@
- /*
-- *  $Id: powernow-k7.h,v 1.2 2003/02/10 18:26:01 davej Exp $
-  *  (C) 2003 Dave Jones.
+3c0a3ce6f7e45ae28adab81d6cd25fa8f0b8b8f8 diff --git a/include/asm-alpha/dma.h b/include/asm-alpha/dma.h
+index 87cfdbd..ee9ff3b 100644
+--- a/include/asm-alpha/dma.h
++++ b/include/asm-alpha/dma.h
+@@ -8,7 +8,7 @@
+  * as this will also enable DMA across 64 KB boundaries.
+  */
+ 
+-/* $Id: dma.h,v 1.7 1992/12/14 00:29:34 root Exp root $
++/*
+  * linux/include/asm/dma.h: Defines for using and allocating dma channels.
+  * Written by Hennus Bergman, 1992.
+  * High DMA channel support & info by Hannu Savolainen
+diff --git a/include/asm-alpha/md.h b/include/asm-alpha/md.h
+index 6c9b822..1b7300e 100644
+--- a/include/asm-alpha/md.h
++++ b/include/asm-alpha/md.h
+@@ -1,4 +1,4 @@
+-/* $Id: md.h,v 1.1 1997/12/15 15:11:48 jj Exp $
++/*
+  * md.h: High speed xor_block operation for RAID4/5 
   *
-  *  Licensed under the terms of the GNU GPL License version 2.
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index e7e91db..2270ca5 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -4,9 +4,6 @@
-  *  Copyright (C) 2001 Russell King
-  *            (C) 2002 - 2003 Dominik Brodowski <linux@brodo.de>
-  *            
-- *
-- * $Id: cpufreq.h,v 1.36 2003/01/20 17:31:48 db Exp $
-- *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License version 2 as
-  * published by the Free Software Foundation.
+  */
+diff --git a/include/asm-alpha/namei.h b/include/asm-alpha/namei.h
+index 5cc9bb3..6704a76 100644
+--- a/include/asm-alpha/namei.h
++++ b/include/asm-alpha/namei.h
+@@ -1,4 +1,4 @@
+-/* $Id: namei.h,v 1.1 1996/12/13 14:48:21 jj Exp $
++/*
+  * linux/include/asm-alpha/namei.h
+  *
+  * Included from linux/fs/namei.c
 
