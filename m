@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762660AbYESRkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762803AbYESRk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762660AbYESRkm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 13:40:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760741AbYESRjy
+	id S1762803AbYESRk4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 13:40:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760967AbYESRkB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 13:39:54 -0400
-Received: from 66-189-124-104.dhcp.oxfr.ma.charter.com ([66.189.124.104]:45698
+	Mon, 19 May 2008 13:40:01 -0400
+Received: from 66-189-124-104.dhcp.oxfr.ma.charter.com ([66.189.124.104]:45715
 	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1760458AbYESRjx (ORCPT
+	by vger.kernel.org with ESMTP id S1761774AbYESRj7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 13:39:53 -0400
+	Mon, 19 May 2008 13:39:59 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 2/8] rearrange rt_spin_lock_slowlock sleeping code
+Subject: [PATCH 3/8] sched: make task->oncpu available in all configurations
 To: mingo@elte.hu, peterz@infradead.org, tglx@linutronix.de,
        rostedt@goodmis.org, linux-rt-users@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, bill.huey@gmail.com, dsingleton@mvista.com,
        dwalker@mvista.com, npiggin@suse.de, pavel@ucw.cz, acme@redhat.com,
        sdietrich@novell.com, pmorreale@novell.com, mkohari@novell.com,
        ghaskins@novell.com
-Date: Mon, 19 May 2008 13:07:22 -0400
-Message-ID: <20080519170721.6820.47680.stgit@novell1.haskins.net>
+Date: Mon, 19 May 2008 13:07:28 -0400
+Message-ID: <20080519170727.6820.45060.stgit@novell1.haskins.net>
 In-Reply-To: <20080519170356.6820.5274.stgit@novell1.haskins.net>
 References: <20080519170356.6820.5274.stgit@novell1.haskins.net>
 User-Agent: StGIT/0.12.1
@@ -30,68 +30,107 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current logic makes rather coarse adjustments to current->state since
-it is planning on sleeping anyway.  We want to eventually move to an
-adaptive (e.g. optional sleep) algorithm, so we tighten the scope of the
-adjustments to bracket the schedule().  This should yield correct behavior
-with or without the adaptive features that are added later in the series.
-We add it here as a separate patch for greater review clarity on smaller
-changes.
-
-Thanks to Steven Rostedt for suggesting a cleanup to remove an extra
-update_current(RUNNING_MUTEX) left over from the early days of
-instrumentation.
+We will use this later in the series to eliminate the need for a function
+call.
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- kernel/rtmutex.c |   17 ++++++++++++-----
- 1 files changed, 12 insertions(+), 5 deletions(-)
+ include/linux/sched.h |    2 --
+ kernel/sched.c        |   35 ++++++++++++++++++++++++-----------
+ 2 files changed, 24 insertions(+), 13 deletions(-)
 
-diff --git a/kernel/rtmutex.c b/kernel/rtmutex.c
-index 0d3f76f..223557f 100644
---- a/kernel/rtmutex.c
-+++ b/kernel/rtmutex.c
-@@ -666,6 +666,14 @@ rt_spin_lock_fastunlock(struct rt_mutex *lock,
- 		slowfn(lock);
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 2d38d9e..76a76fd 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1080,10 +1080,8 @@ struct task_struct {
+ 	int lock_depth;		/* BKL lock depth */
+ 
+ #ifdef CONFIG_SMP
+-#ifdef __ARCH_WANT_UNLOCKED_CTXSW
+ 	int oncpu;
+ #endif
+-#endif
+ 
+ 	int prio, static_prio, normal_prio;
+ #ifdef CONFIG_PREEMPT_RCU_BOOST
+diff --git a/kernel/sched.c b/kernel/sched.c
+index f3e36ee..78e7e8e 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -694,18 +694,39 @@ static inline int task_current(struct rq *rq, struct task_struct *p)
+ 	return rq->curr == p;
  }
  
-+static inline void
-+update_current(unsigned long new_state, unsigned long *saved_state)
-+{
-+	unsigned long state = xchg(&current->state, new_state);
-+	if (unlikely(state == TASK_RUNNING))
-+		*saved_state = TASK_RUNNING;
-+}
-+
- /*
-  * Slow path lock function spin_lock style: this variant is very
-  * careful not to miss any non-lock wakeups.
-@@ -705,7 +713,7 @@ rt_spin_lock_slowlock(struct rt_mutex *lock)
- 	 * saved_state accordingly. If we did not get a real wakeup
- 	 * then we return with the saved state.
- 	 */
--	saved_state = xchg(&current->state, TASK_UNINTERRUPTIBLE);
-+	saved_state = current->state;
+-#ifndef __ARCH_WANT_UNLOCKED_CTXSW
+ static inline int task_running(struct rq *rq, struct task_struct *p)
+ {
++#ifdef CONFIG_SMP
++	return p->oncpu;
++#else
+ 	return task_current(rq, p);
++#endif
+ }
  
- 	for (;;) {
- 		unsigned long saved_flags;
-@@ -737,14 +745,13 @@ rt_spin_lock_slowlock(struct rt_mutex *lock)
++#ifndef __ARCH_WANT_UNLOCKED_CTXSW
+ static inline void prepare_lock_switch(struct rq *rq, struct task_struct *next)
+ {
++#ifdef CONFIG_SMP
++	/*
++	 * We can optimise this out completely for !SMP, because the
++	 * SMP rebalancing from interrupt is the only thing that cares
++	 * here.
++	 */
++	next->oncpu = 1;
++#endif
+ }
  
- 		debug_rt_mutex_print_deadlock(&waiter);
+ static inline void finish_lock_switch(struct rq *rq, struct task_struct *prev)
+ {
++#ifdef CONFIG_SMP
++	/*
++	 * After ->oncpu is cleared, the task can be moved to a different CPU.
++	 * We must ensure this doesn't happen until the switch is completely
++	 * finished.
++	 */
++	smp_wmb();
++	prev->oncpu = 0;
++#endif
+ #ifdef CONFIG_DEBUG_SPINLOCK
+ 	/* this is a valid case when another task releases the spinlock */
+ 	rq->lock.owner = current;
+@@ -721,14 +742,6 @@ static inline void finish_lock_switch(struct rq *rq, struct task_struct *prev)
+ }
  
--		schedule_rt_mutex(lock);
-+		update_current(TASK_UNINTERRUPTIBLE, &saved_state);
-+		if (waiter.task)
-+			schedule_rt_mutex(lock);
+ #else /* __ARCH_WANT_UNLOCKED_CTXSW */
+-static inline int task_running(struct rq *rq, struct task_struct *p)
+-{
+-#ifdef CONFIG_SMP
+-	return p->oncpu;
+-#else
+-	return task_current(rq, p);
+-#endif
+-}
  
- 		spin_lock_irqsave(&lock->wait_lock, flags);
- 		current->flags |= saved_flags;
- 		current->lock_depth = saved_lock_depth;
--		state = xchg(&current->state, TASK_UNINTERRUPTIBLE);
--		if (unlikely(state == TASK_RUNNING))
--			saved_state = TASK_RUNNING;
- 	}
+ static inline void prepare_lock_switch(struct rq *rq, struct task_struct *next)
+ {
+@@ -2077,7 +2090,7 @@ void sched_fork(struct task_struct *p, int clone_flags)
+ 	if (likely(sched_info_on()))
+ 		memset(&p->sched_info, 0, sizeof(p->sched_info));
+ #endif
+-#if defined(CONFIG_SMP) && defined(__ARCH_WANT_UNLOCKED_CTXSW)
++#if defined(CONFIG_SMP)
+ 	p->oncpu = 0;
+ #endif
+ #ifdef CONFIG_PREEMPT
+@@ -5679,7 +5692,7 @@ void __cpuinit init_idle(struct task_struct *idle, int cpu)
  
- 	state = xchg(&current->state, saved_state);
+ 	spin_lock_irqsave(&rq->lock, flags);
+ 	rq->curr = rq->idle = idle;
+-#if defined(CONFIG_SMP) && defined(__ARCH_WANT_UNLOCKED_CTXSW)
++#if defined(CONFIG_SMP)
+ 	idle->oncpu = 1;
+ #endif
+ 	spin_unlock_irqrestore(&rq->lock, flags);
 
