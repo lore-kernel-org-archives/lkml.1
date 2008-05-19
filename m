@@ -1,66 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762027AbYESWiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764646AbYESWit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762027AbYESWiS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 18:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756020AbYESWiE
+	id S1764646AbYESWit (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 18:38:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756020AbYESWik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 18:38:04 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:46144 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755634AbYESWiD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 18:38:03 -0400
-Date: Tue, 20 May 2008 01:35:56 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: bzolnier@gmail.com
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC: 2.6 patch] MAINTAINERS: remove SIS 5513 IDE entry
-Message-ID: <20080519223556.GC17716@cs181133002.pp.htv.fi>
-References: <20080519220942.GX17716@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080519220942.GX17716@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Mon, 19 May 2008 18:38:40 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48529 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756676AbYESWij (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 18:38:39 -0400
+Date: Mon, 19 May 2008 15:32:49 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Steven French <sfrench@us.ibm.com>
+Subject: Re: [2.6.27 patch] the scheduled smbfs removal
+Message-Id: <20080519153249.ea80e683.akpm@linux-foundation.org>
+In-Reply-To: <20080519215311.GE17716@cs181133002.pp.htv.fi>
+References: <20080519215311.GE17716@cs181133002.pp.htv.fi>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 01:09:42AM +0300, Adrian Bunk wrote:
-> - maintainer has not been active for years
-> - URLs no longer exist
-> - covered by the IDE SUBSYSTEM entry
+On Tue, 20 May 2008 00:53:11 +0300
+Adrian Bunk <bunk@kernel.org> wrote:
 
-- maintainer email bounces
+> This patch contains the scheduled smbfs removal.
 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> ---
-> 277a244cfa665db347cc0c2ec27b19d73fd0ee2a diff --git a/MAINTAINERS b/MAINTAINERS
-> index af69cab..0220ce9 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -3623,13 +3623,6 @@ M:	romieu@fr.zoreil.com
->  L:	netdev@vger.kernel.org
->  S:	Maintained
->  
-> -SIS 5513 IDE CONTROLLER DRIVER
-> -P:	Lionel Bouton
-> -M:	Lionel.Bouton@inet6.fr
-> -W:	http://inet6.dyn.dhs.org/sponsoring/sis5513/index.html
-> -W:	http://gyver.homeip.net/sis5513/index.html
-> -S:	Maintained
-> -
->  SIS 900/7016 FAST ETHERNET DRIVER
->  P:	Daniele Venzano
->  M:	venza@brownhat.org
+I don't know how popular this will be right now - quite a few
+people needed to be dragged over to cifs up to a month or two
+ago.
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+I'd suggest that we first use CONFIG_BROKEN or
+CONFIG_DIFFICULT_TO_GET_AT and see what the effect of that is.
 
