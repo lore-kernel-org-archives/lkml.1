@@ -1,100 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758189AbYESBOj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757985AbYESBM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758189AbYESBOj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 21:14:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757501AbYESBLg
+	id S1757985AbYESBM7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 21:12:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757377AbYESBLM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 21:11:36 -0400
-Received: from mta23.gyao.ne.jp ([125.63.38.249]:22513 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751417AbYESBLD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 21:11:03 -0400
-Date: Mon, 19 May 2008 10:09:28 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-sh <linux-sh@vger.kernel.org>, linux-input@vger.kernel.org
-Subject: Re: [PATCH] input: add support for SEGA Dreamcast controller as joystick
-Message-ID: <20080519010928.GA8797@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Adrian McMenamin <adrian@newgolddream.dyndns.info>,
-	LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-	Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-	linux-sh <linux-sh@vger.kernel.org>, linux-input@vger.kernel.org
-References: <1211138322.6354.5.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1211138322.6354.5.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 18 May 2008 21:11:12 -0400
+Received: from mx2.suse.de ([195.135.220.15]:50298 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757205AbYESBK5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 21:10:57 -0400
+From: NeilBrown <neilb@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Date: Mon, 19 May 2008 11:10:50 +1000
+Message-Id: <1080519011050.7741@suse.de>
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Dan Williams <dan.j.williams@intel.com>
+Subject: [PATCH 007 of 10] md: notify userspace on 'stop' events
+References: <20080519110910.7473.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 18, 2008 at 08:18:42PM +0100, Adrian McMenamin wrote:
-> +MODULE_AUTHOR("YAEGASHI Takeshi <t@keshi.org>");
-> +MODULE_DESCRIPTION("SEGA Dreamcast controller driver");
-> +MODULE_LICENSE("GPL");
-> +
-MODULE_AUTHOR() is a bit ambiguous here. As this is user-visible by way
-of modinfo, it really doesn't make any sense to list someone who has
-nothing to do with the driver in its present form here. Especially since
-it's been 7 years since their last contribution or even basic list
-activity, I think it's safe to say that you are going to be the only one
-that users wish to contact about this.
 
-In this case, the copyright should suffice. You may wish to add a bit of
-a note there indicating where the driver came from, but there's not much
-point in going beyond that.
+From: Dan Williams <dan.j.williams@intel.com>
 
-Note that if you aren't comfortable with being in MODULE_AUTHOR(), you
-can also make this more generic and attribute it to the LinuxDC or
-Linux/SH teams respectively, as that's a bit more true to form as far as
-all copyright holders are concerned, and gives people a pointer to a list
-to go to with problems.
+This additional notification to 'array_state' is needed to allow the monitor
+application to learn about stop events via sysfs.  The
+sysfs_notify("sync_action") call that comes at the end of do_md_stop() (via
+md_new_event) is insufficient since the 'sync_action' attribute has been
+removed by this point.
 
-It's probably more reasonable to treat MODULE_AUTHOR() as
-MODULE_MAINTAINER() rather than the literal original author, as the
-latter is of zero interest or relevance to users that are looking at
-this information on the other side of the fence.
+(Seems like a sysfs-notify-on-removal patch is a better fix.  Currently removal
+ updates the event count but does not wake up waiters)
 
-> +struct dc_pad {
-> +	struct input_dev *dev;
-> +	struct maple_device *mdev;
-> +};
-> +
-This is pretty ugly, you should really fix up your private device
-pointer layering to get around having to use this structure at all.
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+Signed-off-by: Neil Brown <neilb@suse.de>
 
-> +static struct maple_driver dc_pad_driver = {
-> +	.function =	MAPLE_FUNC_CONTROLLER,
-> +	.connect =	dc_pad_connect,
-> +	.disconnect =	dc_pad_disconnect,
-> +	.drv = {
-> +		.name = "Dreamcast_controller",
+### Diffstat output
+ ./drivers/md/md.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-Is there some particular reason why the driver name can't reflect the
-module name? There's no reason to have such sickeningly verbose driver
-names.
-
-> +		.probe = probe_maple_controller,
-> +		.remove = remove_maple_controller,
-> +	},
-> +};
-> +
-These should be __devinit/__devexit at least, with the latter being
-__devexit_p() wrapped..
-
-> +static int __init dc_pad_init(void)
-> +{
-> +	return 	maple_driver_register(&dc_pad_driver.drv);
-> +}
-> +
-> +static void __exit dc_pad_exit(void)
-> +{
-> +	driver_unregister(&dc_pad_driver.drv);
-> +}
-> +
-If you don't have a maple_driver_unregister(), stub one in, even if it's
-just a wrapper.
+diff .prev/drivers/md/md.c ./drivers/md/md.c
+--- .prev/drivers/md/md.c	2008-05-19 11:03:43.000000000 +1000
++++ ./drivers/md/md.c	2008-05-19 11:03:47.000000000 +1000
+@@ -3691,6 +3691,8 @@ static int do_md_stop(mddev_t * mddev, i
+ 
+ 			module_put(mddev->pers->owner);
+ 			mddev->pers = NULL;
++			/* tell userspace to handle 'inactive' */
++			sysfs_notify(&mddev->kobj, NULL, "array_state");
+ 
+ 			set_capacity(disk, 0);
+ 			mddev->changed = 1;
