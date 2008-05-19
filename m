@@ -1,87 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762357AbYESPs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762676AbYESPso@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762357AbYESPs2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 11:48:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758093AbYESPrO
+	id S1762676AbYESPso (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 11:48:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760987AbYESPrT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 11:47:14 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:36577 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1760909AbYESPrM (ORCPT
+	Mon, 19 May 2008 11:47:19 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:41329 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760966AbYESPrR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 11:47:12 -0400
-Date: Mon, 19 May 2008 11:47:11 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-cc: Greg KH <greg@kroah.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: 2.6.26-rc1 regression since 2.6.25
-In-Reply-To: <20080519104948.GA4557@ics.muni.cz>
-Message-ID: <Pine.LNX.4.44L0.0805191126260.15266-100000@iolanthe.rowland.org>
+	Mon, 19 May 2008 11:47:17 -0400
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 5/5] x86: allow MPPARSE to be deselected in SMP configs
+Date: Mon, 19 May 2008 19:47:22 +0400
+Message-ID: <20080519154722.15071.91358.stgit@thinkpad>
+In-Reply-To: <20080519154656.15071.96979.stgit@thinkpad>
+References: <20080519154656.15071.96979.stgit@thinkpad>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 May 2008, Lukas Hejtmanek wrote:
+Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+---
 
-> On Tue, May 13, 2008 at 04:06:20PM -0400, Alan Stern wrote:
-> > > I did. The dmesg is attached to the bug:
-> > > http://bugzilla.kernel.org/show_bug.cgi?id=10630
-> > 
-> > It looks as though the dock's USB hub may not be working right.
-> 
-> Maybe, Lenovo HW is a piece of crap.
+ arch/x86/Kconfig.debug     |    2 +-
+ arch/x86/kernel/setup.c    |    2 +-
+ arch/x86/kernel/setup_32.c |    2 +-
+ arch/x86/kernel/setup_64.c |    4 ++++
+ 4 files changed, 7 insertions(+), 3 deletions(-)
 
-That's certainly possible.
 
->  Anyway, it worked up to 2.6.25
-> (including).
-
-Can you attach an equivalent dmesg log for 2.6.25 (with
-CONFIG_USB_DEBUG enabled, of course)?
-
-> > Just as a test, can you try applying gregkh-04-usb-2.6.26-rc2.patch 
-> > (it applies to 2.6.26-rc2, obviously) from
-> > 
-> > 	http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
-> > 
-> > and attaching the dmesg log from that?  It contains extra debugging not 
-> > present in the vanilla kernel -- make sure that you keep 
-> > CONFIG_USB_DEBUG enabled.
-> 
-> I did another attachement of the dmesg to the bugzilla.
-
-Let me get this straight.  You booted without the dock, and then at 
-this line:
-
-> [14315425.975807] ACPI: \_SB_.GDCK - docking
-
-you plugged the computer into the dock, right?
-
-Then apparently here:
-
-> [14315508.451197] ehci_hcd 0000:00:1a.7: port 4 remote wakeup
-
-you plugged the USB drive into the dock, but it wasn't detected.  Or
-maybe I've got it backward, the drive was already plugged in when you
-docked the computer, and 14315508.451197 is when you unplugged the
-drive.  Which was it?
-
-AFAICS, the dock never reported the existence of the USB drive.
-
-Okay, let's see some more debugging information on this.  Get a usbmon
-trace (see Documentation/usb/usbmon.txt) for bus 3, starting just 
-before you dock the computer.  That will tell us exactly what the 
-dock's USB hub is reporting.
-
-By the way, are you entirely certain that 2.6.25 works correctly in
-both cases: drive already attached when you dock the computer, and
-drive plugged in after the computer is docked?  I guess it would be
-good to see equivalent usbmon traces for both 2.6.25 and 2.6.26-rc2.
-
-Alan Stern
+diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
+index 5eb480e..f27de28 100644
+--- a/arch/x86/Kconfig.debug
++++ b/arch/x86/Kconfig.debug
+@@ -128,7 +128,7 @@ config 4KSTACKS
+ 
+ config X86_FIND_SMP_CONFIG
+ 	def_bool y
+-	depends on X86_LOCAL_APIC || X86_VOYAGER
++	depends on X86_MPPARSE || X86_VOYAGER || X86_VISWS
+ 	depends on X86_32
+ 
+ config X86_MPPARSE
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index 089ddfa..c86bda7 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -12,7 +12,7 @@
+ #include <asm/mpspec.h>
+ #include <asm/apicdef.h>
+ 
+-#ifdef CONFIG_X86_MPPARSE
++#ifdef CONFIG_X86_LOCAL_APIC
+ unsigned int num_processors;
+ unsigned disabled_cpus __cpuinitdata;
+ 
+diff --git a/arch/x86/kernel/setup_32.c b/arch/x86/kernel/setup_32.c
+index 12a31de..9af0d5f 100644
+--- a/arch/x86/kernel/setup_32.c
++++ b/arch/x86/kernel/setup_32.c
+@@ -846,7 +846,7 @@ void __init setup_arch(char **cmdline_p)
+ 			"CONFIG_X86_GENERICARCH or CONFIG_X86_BIGSMP.\n");
+ #endif
+ #endif
+-#ifdef CONFIG_X86_LOCAL_APIC
++#if defined(CONFIG_X86_MPPARSE) || defined(CONFIG_X86_VISWS)
+ 	if (smp_found_config)
+ 		get_smp_config();
+ #endif
+diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
+index 9234675..8047db9 100644
+--- a/arch/x86/kernel/setup_64.c
++++ b/arch/x86/kernel/setup_64.c
+@@ -439,7 +439,9 @@ void __init setup_arch(char **cmdline_p)
+        /*
+ 	* Find and reserve possible boot-time SMP configuration:
+ 	*/
++#ifdef CONFIG_X86_MPPARSE
+ 	find_smp_config();
++#endif
+ #ifdef CONFIG_BLK_DEV_INITRD
+ 	if (boot_params.hdr.type_of_loader && boot_params.hdr.ramdisk_image) {
+ 		unsigned long ramdisk_image = boot_params.hdr.ramdisk_image;
+@@ -485,8 +487,10 @@ void __init setup_arch(char **cmdline_p)
+ 	/*
+ 	 * get boot-time SMP configuration:
+ 	 */
++#ifdef CONFIG_X86_MPPARSE
+ 	if (smp_found_config)
+ 		get_smp_config();
++#endif
+ 	init_apic_mappings();
+ 	ioapic_init_mappings();
+ 
 
