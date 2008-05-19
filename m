@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760651AbYESTA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761296AbYESTC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760651AbYESTA2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 15:00:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755239AbYESTAO
+	id S1761296AbYESTC1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 15:02:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755041AbYESTCS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 15:00:14 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:32103 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754758AbYESTAN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 15:00:13 -0400
-Date: Mon, 19 May 2008 21:00:03 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: i2c@lm-sensors.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] i2c: align i2c_device_id
-Message-ID: <20080519210003.65b65d14@hyperion.delvare>
-In-Reply-To: <1211203124-3096-1-git-send-email-jirislaby@gmail.com>
-References: <1211203124-3096-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Mon, 19 May 2008 15:02:18 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:55412 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751921AbYESTCS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 15:02:18 -0400
+Date: Mon, 19 May 2008 21:02:56 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] decodecode: use cross-compiler/toolchain if defined
+Message-ID: <20080519190256.GA24599@uranus.ravnborg.org>
+References: <20080512135242.GA5014@damson.getinternet.no>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080512135242.GA5014@damson.getinternet.no>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jiri,
-
-On Mon, 19 May 2008 15:18:44 +0200, Jiri Slaby wrote:
-> Align i2c_device_id.driver_data to 8 bytes to not fail on crossbuilds.
+On Mon, May 12, 2008 at 03:52:42PM +0200, Vegard Nossum wrote:
+> Hi Sam,
 > 
-> (Added in d2653e92732bd3911feff6bee5e23dbf959381db.)
-> 
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-> Cc: Jean Delvare <khali@linux-fr.org>
-> ---
->  include/linux/mod_devicetable.h |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/include/linux/mod_devicetable.h b/include/linux/mod_devicetable.h
-> index a37db57..1fd03e7 100644
-> --- a/include/linux/mod_devicetable.h
-> +++ b/include/linux/mod_devicetable.h
-> @@ -384,7 +384,8 @@ struct virtio_device_id {
->  
->  struct i2c_device_id {
->  	char name[I2C_NAME_SIZE];
-> -	kernel_ulong_t driver_data;	/* Data private to the driver */
-> +	kernel_ulong_t driver_data	/* Data private to the driver */
-> +			__attribute__((aligned(sizeof(kernel_ulong_t))));
->  };
->  
+> Not sure if this is really in the kbuild domain, but I see you've taken
+> patches to this script before, so I'll make an attempt too :-)
 
-Thanks for this patch, it's in my i2c tree now and will be sent to
-Linus by the end of the week. I wasn't aware of this possible alignment
-issue, sorry.
+Fine - and thanks for the reminder (in private mail).
 
--- 
-Jean Delvare
+> 
+> Vegard
+> 
+> 
+> From 75166add6121dbda4fad2e197d4fe6525dee580c Mon Sep 17 00:00:00 2001
+> From: Vegard Nossum <vegard.nossum@gmail.com>
+> Date: Mon, 12 May 2008 15:36:38 +0200
+> Subject: [PATCH] decodecode: use cross-compiler/toolchain if defined
+> 
+> From the Makefile: "CROSS_COMPILE specify [sic] the prefix used for all
+> executables used".
+> 
+> This is also very useful for decoding oopses on other archs than the
+> native one, so it seems natural to have it in the decodecode script as
+> well.
+
+I agree with the intent of this patch.
+But as it is my experience that most people use
+CROSS_COMPILE on the commandline and not as an
+environmnet variable most will not benefit from this patch.
+
+We should as a minimum document this use of decodecode where we
+document its usage today (oops-tracing.txt).
+
+We could also make it a Makefile target thus it is a bit
+more natural to supply the typical Makefile parameters?
+
+Please rework one way or the other.
+
+	Sam
