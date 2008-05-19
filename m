@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764342AbYESWAQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763514AbYESWAm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764342AbYESWAQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 18:00:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759401AbYESV7y
+	id S1763514AbYESWAm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 18:00:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764312AbYESWAS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 17:59:54 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:44775 "EHLO smtp5.pp.htv.fi"
+	Mon, 19 May 2008 18:00:18 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:39941 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761363AbYESV7v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 17:59:51 -0400
-Date: Tue, 20 May 2008 00:57:44 +0300
+	id S1764504AbYESWAQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 18:00:16 -0400
+Date: Tue, 20 May 2008 00:58:10 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: video4linux-list@redhat.com, linux-kernel@vger.kernel.org, isely@pobox.com
-Subject: [2.6 patch] drivers/media/: remove CVS keywords
-Message-ID: <20080519215744.GQ17716@cs181133002.pp.htv.fi>
+To: adaplas@gmail.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] drivers/video/: remove CVS keywords
+Message-ID: <20080519215810.GR17716@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -26,798 +26,153 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 This patch removes CVS keywords that weren't updated for a long time 
 from comments.
 
-The pvrusb2 ones were unusual since they weren't expanded at all.
-
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- Documentation/video4linux/README.cpia2               |    2 --
- Documentation/video4linux/README.pvrusb2             |    2 --
- drivers/media/video/dabusb.c                         |    5 -----
- drivers/media/video/planb.c                          |    2 --
- drivers/media/video/planb.h                          |    2 --
- drivers/media/video/pvrusb2/pvrusb2-audio.c          |    2 --
- drivers/media/video/pvrusb2/pvrusb2-audio.h          |    2 --
- drivers/media/video/pvrusb2/pvrusb2-context.c        |    1 -
- drivers/media/video/pvrusb2/pvrusb2-context.h        |    1 -
- drivers/media/video/pvrusb2/pvrusb2-ctrl.c           |    2 --
- drivers/media/video/pvrusb2/pvrusb2-ctrl.h           |    2 --
- drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.c    |    2 --
- drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.h    |    2 --
- drivers/media/video/pvrusb2/pvrusb2-debug.h          |    1 -
- drivers/media/video/pvrusb2/pvrusb2-debugifc.c       |    2 --
- drivers/media/video/pvrusb2/pvrusb2-debugifc.h       |    2 --
- drivers/media/video/pvrusb2/pvrusb2-devattr.c        |    2 --
- drivers/media/video/pvrusb2/pvrusb2-devattr.h        |    2 --
- drivers/media/video/pvrusb2/pvrusb2-eeprom.c         |    2 --
- drivers/media/video/pvrusb2/pvrusb2-eeprom.h         |    2 --
- drivers/media/video/pvrusb2/pvrusb2-encoder.c        |    2 --
- drivers/media/video/pvrusb2/pvrusb2-encoder.h        |    2 --
- drivers/media/video/pvrusb2/pvrusb2-fx2-cmd.h        |    2 --
- drivers/media/video/pvrusb2/pvrusb2-hdw-internal.h   |    2 --
- drivers/media/video/pvrusb2/pvrusb2-hdw.c            |    2 --
- drivers/media/video/pvrusb2/pvrusb2-hdw.h            |    2 --
- drivers/media/video/pvrusb2/pvrusb2-i2c-chips-v4l2.c |    2 --
- drivers/media/video/pvrusb2/pvrusb2-i2c-cmd-v4l2.c   |    2 --
- drivers/media/video/pvrusb2/pvrusb2-i2c-cmd-v4l2.h   |    2 --
- drivers/media/video/pvrusb2/pvrusb2-i2c-core.c       |    2 --
- drivers/media/video/pvrusb2/pvrusb2-i2c-core.h       |    2 --
- drivers/media/video/pvrusb2/pvrusb2-io.c             |    2 --
- drivers/media/video/pvrusb2/pvrusb2-io.h             |    2 --
- drivers/media/video/pvrusb2/pvrusb2-ioread.c         |    2 --
- drivers/media/video/pvrusb2/pvrusb2-ioread.h         |    2 --
- drivers/media/video/pvrusb2/pvrusb2-main.c           |    2 --
- drivers/media/video/pvrusb2/pvrusb2-std.c            |    2 --
- drivers/media/video/pvrusb2/pvrusb2-std.h            |    2 --
- drivers/media/video/pvrusb2/pvrusb2-sysfs.c          |    2 --
- drivers/media/video/pvrusb2/pvrusb2-sysfs.h          |    2 --
- drivers/media/video/pvrusb2/pvrusb2-tuner.c          |    2 --
- drivers/media/video/pvrusb2/pvrusb2-tuner.h          |    2 --
- drivers/media/video/pvrusb2/pvrusb2-util.h           |    2 --
- drivers/media/video/pvrusb2/pvrusb2-v4l2.c           |    2 --
- drivers/media/video/pvrusb2/pvrusb2-v4l2.h           |    2 --
- drivers/media/video/pvrusb2/pvrusb2-video-v4l.c      |    2 --
- drivers/media/video/pvrusb2/pvrusb2-video-v4l.h      |    2 --
- drivers/media/video/pvrusb2/pvrusb2-wm8775.c         |    2 --
- drivers/media/video/pvrusb2/pvrusb2-wm8775.h         |    2 --
- drivers/media/video/pvrusb2/pvrusb2.h                |    2 --
- drivers/media/video/saa5249.c                        |    2 --
- drivers/media/video/saa7196.h                        |    2 --
- drivers/media/video/videocodec.c                     |    2 --
- drivers/media/video/videocodec.h                     |    2 --
- drivers/media/video/zr36016.c                        |    2 --
- drivers/media/video/zr36016.h                        |    2 --
- drivers/media/video/zr36050.c                        |    2 --
- drivers/media/video/zr36050.h                        |    2 --
- drivers/media/video/zr36060.c                        |    2 --
- drivers/media/video/zr36060.h                        |    2 --
- 60 files changed, 120 deletions(-)
+ Documentation/fb/pvr2fb.txt     |    2 --
+ Documentation/fb/sstfb.txt      |    1 -
+ Documentation/fb/tgafb.txt      |    2 --
+ drivers/video/aty/aty128fb.c    |    2 +-
+ drivers/video/console/promcon.c |    2 +-
+ drivers/video/g364fb.c          |    3 +--
+ include/video/aty128.h          |    2 +-
+ include/video/cvisionppc.h      |    2 --
+ include/video/iga.h             |    2 +-
+ include/video/newport.h         |    3 +--
+ include/video/permedia2.h       |    2 --
+ include/video/tgafb.h           |    2 --
+ 12 files changed, 6 insertions(+), 19 deletions(-)
 
-58b60bf25cb6143266922771f0953a5a5f109c84 diff --git a/Documentation/video4linux/README.cpia2 b/Documentation/video4linux/README.cpia2
-index ce8213d..26159e1 100644
---- a/Documentation/video4linux/README.cpia2
-+++ b/Documentation/video4linux/README.cpia2
+7cb6ba00c2e5bea14d61650d12e16b8c931c224a diff --git a/Documentation/fb/pvr2fb.txt b/Documentation/fb/pvr2fb.txt
+index 36bdeff..f983079 100644
+--- a/Documentation/fb/pvr2fb.txt
++++ b/Documentation/fb/pvr2fb.txt
 @@ -1,5 +1,3 @@
--$Id: README,v 1.7 2005/08/29 23:39:57 sbertin Exp $
+-$Id: pvr2fb.txt,v 1.1 2001/05/24 05:09:16 mrbrown Exp $
 -
- 1. Introduction
+ What is pvr2fb?
+ ===============
  
- 	This is a driver for STMicroelectronics's CPiA2 (second generation
-diff --git a/Documentation/video4linux/README.pvrusb2 b/Documentation/video4linux/README.pvrusb2
-index a747200..e3d0bbe 100644
---- a/Documentation/video4linux/README.pvrusb2
-+++ b/Documentation/video4linux/README.pvrusb2
+diff --git a/Documentation/fb/sstfb.txt b/Documentation/fb/sstfb.txt
+index 550ca77..1e33864 100644
+--- a/Documentation/fb/sstfb.txt
++++ b/Documentation/fb/sstfb.txt
+@@ -170,5 +170,4 @@ ghoz.
+ Ghozlane Toumi <gtoumi@laposte.net>
+ 
+ 
+-$Date: 2002/05/09 20:11:45 $
+ http://sstfb.sourceforge.net/README
+diff --git a/Documentation/fb/tgafb.txt b/Documentation/fb/tgafb.txt
+index 250083a..cdd435a 100644
+--- a/Documentation/fb/tgafb.txt
++++ b/Documentation/fb/tgafb.txt
 @@ -1,5 +1,3 @@
+-$Id: tgafb.txt,v 1.1.2.2 2000/04/04 06:50:18 mato Exp $
 -
--$Id$
- Mike Isely <isely@pobox.com>
+ What is tgafb?
+ ===============
  
- 			    pvrusb2 driver
-diff --git a/drivers/media/video/dabusb.c b/drivers/media/video/dabusb.c
-index 8d1f8ee..4a44608 100644
---- a/drivers/media/video/dabusb.c
-+++ b/drivers/media/video/dabusb.c
-@@ -18,11 +18,6 @@
-  *      You should have received a copy of the GNU General Public License
-  *      along with this program; if not, write to the Free Software
-  *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-- *
-- *
-- *
-- *  $Id: dabusb.c,v 1.54 2000/07/24 21:39:39 deti Exp $
-- *
-  */
- 
- /*****************************************************************************/
-diff --git a/drivers/media/video/planb.c b/drivers/media/video/planb.c
-index 36047d4..5c8fa68 100644
---- a/drivers/media/video/planb.c
-+++ b/drivers/media/video/planb.c
-@@ -25,8 +25,6 @@
-     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- */
- 
--/* $Id: planb.c,v 1.18 1999/05/02 17:36:34 mlan Exp $ */
--
- #include <linux/init.h>
- #include <linux/errno.h>
- #include <linux/module.h>
-diff --git a/drivers/media/video/planb.h b/drivers/media/video/planb.h
-index e21b573..79713a3 100644
---- a/drivers/media/video/planb.h
-+++ b/drivers/media/video/planb.h
-@@ -26,8 +26,6 @@
-     Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- */
- 
--/* $Id: planb.h,v 1.13 1999/05/03 19:28:56 mlan Exp $ */
--
- #ifndef _PLANB_H_
- #define _PLANB_H_
- 
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-audio.c b/drivers/media/video/pvrusb2/pvrusb2-audio.c
-index 8d859cc..2e93834 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-audio.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-audio.c
-@@ -1,7 +1,5 @@
- /*
+diff --git a/drivers/video/aty/aty128fb.c b/drivers/video/aty/aty128fb.c
+index 24ee96c..e21c92d 100644
+--- a/drivers/video/aty/aty128fb.c
++++ b/drivers/video/aty/aty128fb.c
+@@ -1,4 +1,4 @@
+-/* $Id: aty128fb.c,v 1.1.1.1.36.1 1999/12/11 09:03:05 Exp $
++/*
+  *  linux/drivers/video/aty128fb.c -- Frame buffer device for ATI Rage128
   *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
+  *  Copyright (C) 1999-2003, Brad Douglas <brad@neruo.com>
+diff --git a/drivers/video/console/promcon.c b/drivers/video/console/promcon.c
+index ae02e4e..597c0bc 100644
+--- a/drivers/video/console/promcon.c
++++ b/drivers/video/console/promcon.c
+@@ -1,4 +1,4 @@
+-/* $Id: promcon.c,v 1.17 2000/07/26 23:02:52 davem Exp $
++/*
+  * Console driver utilizing PROM sun terminal emulation
   *
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-audio.h b/drivers/media/video/pvrusb2/pvrusb2-audio.h
-index 536339b..b1ba39f 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-audio.h
-+++ b/drivers/media/video/pvrusb2/pvrusb2-audio.h
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
-  *
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-context.c b/drivers/media/video/pvrusb2/pvrusb2-context.c
-index 73dcb1c..7c19ff7 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-context.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-context.c
+  * Copyright (C) 1998  Eddie C. Dost  (ecd@skynet.be)
+diff --git a/drivers/video/g364fb.c b/drivers/video/g364fb.c
+index b7655c0..cb16361 100644
+--- a/drivers/video/g364fb.c
++++ b/drivers/video/g364fb.c
 @@ -1,5 +1,4 @@
- /*
-- *  $Id$
+-/* $Id: g364fb.c,v 1.3 1998/08/28 22:43:00 tsbogend Exp $
+- *
++/*
+  * linux/drivers/video/g364fb.c -- Mips Magnum frame buffer device
   *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
+  * (C) 1998 Thomas Bogendoerfer
+diff --git a/include/video/aty128.h b/include/video/aty128.h
+index 7079beb..122d121 100644
+--- a/include/video/aty128.h
++++ b/include/video/aty128.h
+@@ -1,4 +1,4 @@
+-/*  $Id: aty128.h,v 1.1 1999/10/12 11:00:40 geert Exp $
++/*
+  *  linux/drivers/video/aty128.h
+  *  Register definitions for ATI Rage128 boards
   *
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-context.h b/drivers/media/video/pvrusb2/pvrusb2-context.h
-index 745e270..6180129 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-context.h
-+++ b/drivers/media/video/pvrusb2/pvrusb2-context.h
+diff --git a/include/video/cvisionppc.h b/include/video/cvisionppc.h
+index 11250ee..84c6cc9 100644
+--- a/include/video/cvisionppc.h
++++ b/include/video/cvisionppc.h
+@@ -4,8 +4,6 @@
+  *
+  * Copyright (c) 1998-1999 Ilario Nardinocchi (nardinoc@CS.UniBO.IT)
+  * --------------------------------------------------------------------------
+- * $Id: cvisionppc.h,v 1.8 1999/01/28 13:18:07 illo Exp $
+- * --------------------------------------------------------------------------
+  * This file is subject to the terms and conditions of the GNU General Public
+  * License.  See the file COPYING in the main directory of this archive
+  * for more details.
+diff --git a/include/video/iga.h b/include/video/iga.h
+index 5a48f16..12c7e27 100644
+--- a/include/video/iga.h
++++ b/include/video/iga.h
+@@ -1,4 +1,4 @@
+-/* $Id: iga.h,v 1.2 1999/09/11 22:56:31 zaitcev Exp $
++/*
+  * iga1682.h: Sparc/PCI iga1682 driver constants etc.
+  *
+  * Copyleft 1998 V. Roganov and G. Raiko
+diff --git a/include/video/newport.h b/include/video/newport.h
+index 1f5ebea..457cc09 100644
+--- a/include/video/newport.h
++++ b/include/video/newport.h
 @@ -1,5 +1,4 @@
- /*
-- *  $Id$
-  *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-ctrl.c b/drivers/media/video/pvrusb2/pvrusb2-ctrl.c
-index 91a42f2..9a8ce4e 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-ctrl.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-ctrl.c
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
+-/* $Id: newport.h,v 1.5 1999/08/04 06:01:51 ulfc Exp $
 - *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *
-  *  This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-ctrl.h b/drivers/media/video/pvrusb2/pvrusb2-ctrl.h
-index c168005..c1d7c20 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-ctrl.h
-+++ b/drivers/media/video/pvrusb2/pvrusb2-ctrl.h
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *
-  *  This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.c b/drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.c
-index 29d5059..d5c5318 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.c
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
-  *
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.h b/drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.h
-index 54b2844..abe885b 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.h
-+++ b/drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.h
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
-  *
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-debug.h b/drivers/media/video/pvrusb2/pvrusb2-debug.h
-index 707d2d9..be79249 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-debug.h
-+++ b/drivers/media/video/pvrusb2/pvrusb2-debug.h
-@@ -1,5 +1,4 @@
- /*
-- *  $Id$
-  *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-debugifc.c b/drivers/media/video/pvrusb2/pvrusb2-debugifc.c
-index b53121c..53737dc 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-debugifc.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-debugifc.c
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *
-  *  This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-debugifc.h b/drivers/media/video/pvrusb2/pvrusb2-debugifc.h
-index 990b02d..f683f11 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-debugifc.h
-+++ b/drivers/media/video/pvrusb2/pvrusb2-debugifc.h
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *
-  *  This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-devattr.c b/drivers/media/video/pvrusb2/pvrusb2-devattr.c
-index 5bf6d8f..a5f358d 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-devattr.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-devattr.c
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2007 Mike Isely <isely@pobox.com>
-  *
-  *  This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-devattr.h b/drivers/media/video/pvrusb2/pvrusb2-devattr.h
-index d016f8b..47e68e5 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-devattr.h
-+++ b/drivers/media/video/pvrusb2/pvrusb2-devattr.h
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *
-  *  This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-eeprom.c b/drivers/media/video/pvrusb2/pvrusb2-eeprom.c
-index 5ef0059..c5fb7f4 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-eeprom.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-eeprom.c
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
-  *
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-eeprom.h b/drivers/media/video/pvrusb2/pvrusb2-eeprom.h
-index 8424297..a6d2ec2 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-eeprom.h
-+++ b/drivers/media/video/pvrusb2/pvrusb2-eeprom.h
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
-  *
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-encoder.c b/drivers/media/video/pvrusb2/pvrusb2-encoder.c
-index c46d367..9c7b990 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-encoder.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-encoder.c
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
-  *
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-encoder.h b/drivers/media/video/pvrusb2/pvrusb2-encoder.h
-index 54caf2e..8bdb75e 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-encoder.h
-+++ b/drivers/media/video/pvrusb2/pvrusb2-encoder.h
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
-  *
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-fx2-cmd.h b/drivers/media/video/pvrusb2/pvrusb2-fx2-cmd.h
-index abaada3..a3a1619 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-fx2-cmd.h
-+++ b/drivers/media/video/pvrusb2/pvrusb2-fx2-cmd.h
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2007 Michael Krufky <mkrufky@linuxtv.org>
-  *
-  *  This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-hdw-internal.h b/drivers/media/video/pvrusb2/pvrusb2-hdw-internal.h
-index a3fe251..484fac6 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-hdw-internal.h
-+++ b/drivers/media/video/pvrusb2/pvrusb2-hdw-internal.h
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *
-  *  This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-hdw.c b/drivers/media/video/pvrusb2/pvrusb2-hdw.c
-index 0a86888..0721d75 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-hdw.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-hdw.c
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *
-  *  This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-hdw.h b/drivers/media/video/pvrusb2/pvrusb2-hdw.h
-index 20295e0..7f7d625 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-hdw.h
-+++ b/drivers/media/video/pvrusb2/pvrusb2-hdw.h
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *
-  *  This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-i2c-chips-v4l2.c b/drivers/media/video/pvrusb2/pvrusb2-i2c-chips-v4l2.c
-index 4977376..9f4fcb1 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-i2c-chips-v4l2.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-i2c-chips-v4l2.c
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *
-  *  This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-i2c-cmd-v4l2.c b/drivers/media/video/pvrusb2/pvrusb2-i2c-cmd-v4l2.c
-index c650e02..4bfc388 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-i2c-cmd-v4l2.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-i2c-cmd-v4l2.c
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
-  *
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-i2c-cmd-v4l2.h b/drivers/media/video/pvrusb2/pvrusb2-i2c-cmd-v4l2.h
-index c838df6..6b65bd7 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-i2c-cmd-v4l2.h
-+++ b/drivers/media/video/pvrusb2/pvrusb2-i2c-cmd-v4l2.h
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
-  *
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-i2c-core.c b/drivers/media/video/pvrusb2/pvrusb2-i2c-core.c
-index 793c89a..0e59ffb 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-i2c-core.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-i2c-core.c
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *
-  *  This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-i2c-core.h b/drivers/media/video/pvrusb2/pvrusb2-i2c-core.h
-index bd0807b..f935a17 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-i2c-core.h
-+++ b/drivers/media/video/pvrusb2/pvrusb2-i2c-core.h
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *
-  *  This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-io.c b/drivers/media/video/pvrusb2/pvrusb2-io.c
-index 7aff8b7..3b5104b 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-io.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-io.c
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *
-  *  This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-io.h b/drivers/media/video/pvrusb2/pvrusb2-io.h
-index 42fcf82..b3c560e 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-io.h
-+++ b/drivers/media/video/pvrusb2/pvrusb2-io.h
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *
-  *  This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-ioread.c b/drivers/media/video/pvrusb2/pvrusb2-ioread.c
-index c572212..66d6d5f 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-ioread.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-ioread.c
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *
-  *  This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-ioread.h b/drivers/media/video/pvrusb2/pvrusb2-ioread.h
-index 1d362f8..09b4b86 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-ioread.h
-+++ b/drivers/media/video/pvrusb2/pvrusb2-ioread.h
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *
-  *  This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-main.c b/drivers/media/video/pvrusb2/pvrusb2-main.c
-index 332aced..dc98268 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-main.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-main.c
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
-  *
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-std.c b/drivers/media/video/pvrusb2/pvrusb2-std.c
-index fdc5a2b..d3d9122 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-std.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-std.c
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *
-  *  This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-std.h b/drivers/media/video/pvrusb2/pvrusb2-std.h
-index 07c3993..a235e17 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-std.h
-+++ b/drivers/media/video/pvrusb2/pvrusb2-std.h
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *
-  *  This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-sysfs.c b/drivers/media/video/pvrusb2/pvrusb2-sysfs.c
-index 0ff7a83..0af86bb 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-sysfs.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-sysfs.c
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *
-  *  This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-sysfs.h b/drivers/media/video/pvrusb2/pvrusb2-sysfs.h
-index ff9373b..8de9769 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-sysfs.h
-+++ b/drivers/media/video/pvrusb2/pvrusb2-sysfs.h
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *
-  *  This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-tuner.c b/drivers/media/video/pvrusb2/pvrusb2-tuner.c
-index 05e65ce..73a58d8 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-tuner.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-tuner.c
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
-  *
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-tuner.h b/drivers/media/video/pvrusb2/pvrusb2-tuner.h
-index 556f12a..97bfc4c 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-tuner.h
-+++ b/drivers/media/video/pvrusb2/pvrusb2-tuner.h
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *
-  *  This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-util.h b/drivers/media/video/pvrusb2/pvrusb2-util.h
-index e53aee4..ee23128 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-util.h
-+++ b/drivers/media/video/pvrusb2/pvrusb2-util.h
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *
-  *  This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-v4l2.c b/drivers/media/video/pvrusb2/pvrusb2-v4l2.c
-index e9b5d4e..3ae6a02 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-v4l2.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-v4l2.c
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
-  *
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-v4l2.h b/drivers/media/video/pvrusb2/pvrusb2-v4l2.h
-index 9a995e2..8266f9d 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-v4l2.h
-+++ b/drivers/media/video/pvrusb2/pvrusb2-v4l2.h
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *
-  *  This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-video-v4l.c b/drivers/media/video/pvrusb2/pvrusb2-video-v4l.c
-index 2433a31..ebe08c5 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-video-v4l.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-video-v4l.c
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
-  *
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-video-v4l.h b/drivers/media/video/pvrusb2/pvrusb2-video-v4l.h
-index 2b917fd..358b474 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-video-v4l.h
-+++ b/drivers/media/video/pvrusb2/pvrusb2-video-v4l.h
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
-  *
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-wm8775.c b/drivers/media/video/pvrusb2/pvrusb2-wm8775.c
-index 66b4d36..0134e00 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-wm8775.c
-+++ b/drivers/media/video/pvrusb2/pvrusb2-wm8775.c
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
-  *
-diff --git a/drivers/media/video/pvrusb2/pvrusb2-wm8775.h b/drivers/media/video/pvrusb2/pvrusb2-wm8775.h
-index 8aaeff4..05c4bc1 100644
---- a/drivers/media/video/pvrusb2/pvrusb2-wm8775.h
-+++ b/drivers/media/video/pvrusb2/pvrusb2-wm8775.h
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
-  *
-diff --git a/drivers/media/video/pvrusb2/pvrusb2.h b/drivers/media/video/pvrusb2/pvrusb2.h
-index 1a9a4ba..b8a8caf 100644
---- a/drivers/media/video/pvrusb2/pvrusb2.h
-+++ b/drivers/media/video/pvrusb2/pvrusb2.h
-@@ -1,7 +1,5 @@
- /*
-  *
-- *  $Id$
-- *
-  *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
-  *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
-  *
-diff --git a/drivers/media/video/saa5249.c b/drivers/media/video/saa5249.c
-index ec8c65d..2205142 100644
---- a/drivers/media/video/saa5249.c
-+++ b/drivers/media/video/saa5249.c
-@@ -15,8 +15,6 @@
-  *
-  *	Copyright (c) 1998 Richard Guenther <richard.guenther@student.uni-tuebingen.de>
-  *
-- * $Id: saa5249.c,v 1.1 1998/03/30 22:23:23 alan Exp $
-- *
-  *	Derived From
-  *
-  * vtx.c:
-diff --git a/drivers/media/video/saa7196.h b/drivers/media/video/saa7196.h
-index cd4b635..59338ea 100644
---- a/drivers/media/video/saa7196.h
-+++ b/drivers/media/video/saa7196.h
-@@ -15,8 +15,6 @@
-     The default values used for PlanB are my mistakes.
- */
- 
--/* $Id: saa7196.h,v 1.5 1999/03/26 23:28:47 mlan Exp $ */
--
- #ifndef _SAA7196_H_
- #define _SAA7196_H_
- 
-diff --git a/drivers/media/video/videocodec.c b/drivers/media/video/videocodec.c
-index cf24956..9a778e2 100644
---- a/drivers/media/video/videocodec.c
-+++ b/drivers/media/video/videocodec.c
-@@ -6,8 +6,6 @@
-  *
-  * (c) 2002 Wolfgang Scherr <scherr@net4you.at>
-  *
-- * $Id: videocodec.c,v 1.1.2.8 2003/03/29 07:16:04 rbultje Exp $
-- *
-  * ------------------------------------------------------------------------
-  *
-  * This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/videocodec.h b/drivers/media/video/videocodec.h
-index 97a3bbe..77f72cd 100644
---- a/drivers/media/video/videocodec.h
-+++ b/drivers/media/video/videocodec.h
-@@ -6,8 +6,6 @@
-  *
-  * (c) 2002 Wolfgang Scherr <scherr@net4you.at>
-  *
-- * $Id: videocodec.h,v 1.1.2.4 2003/01/14 21:15:03 rbultje Exp $
-- *
-  * ------------------------------------------------------------------------
-  *
-  * This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/zr36016.c b/drivers/media/video/zr36016.c
-index 00d132b..4ca27db 100644
---- a/drivers/media/video/zr36016.c
-+++ b/drivers/media/video/zr36016.c
++/*
+  * newport.h: Defines and register layout for NEWPORT graphics
+  *            hardware.
+  *
+diff --git a/include/video/permedia2.h b/include/video/permedia2.h
+index 9ce9adb..6bce040 100644
+--- a/include/video/permedia2.h
++++ b/include/video/permedia2.h
+@@ -2,8 +2,6 @@
+  * Permedia2 framebuffer driver definitions.
+  * Copyright (c) 1998-2000 Ilario Nardinocchi (nardinoc@CS.UniBO.IT)
+  * --------------------------------------------------------------------------
+- * $Id: pm2fb.h,v 1.26 2000/09/19 00:11:53 illo Exp $
+- * --------------------------------------------------------------------------
+  * This file is subject to the terms and conditions of the GNU General Public
+  * License.  See the file COPYING in the main directory of this archive
+  * for more details.
+diff --git a/include/video/tgafb.h b/include/video/tgafb.h
+index 7bc5e2c..d530a96 100644
+--- a/include/video/tgafb.h
++++ b/include/video/tgafb.h
 @@ -3,8 +3,6 @@
   *
-  * Copyright (C) 2001 Wolfgang Scherr <scherr@net4you.at>
-  *
-- * $Id: zr36016.c,v 1.1.2.14 2003/08/20 19:46:55 rbultje Exp $
+  *  	Copyright (C) 1999,2000 Martin Lucina, Tom Zerucha
+  *  
+- *  $Id: tgafb.h,v 1.4.2.3 2000/04/04 06:44:56 mato Exp $
 - *
-  * ------------------------------------------------------------------------
-  *
-  * This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/zr36016.h b/drivers/media/video/zr36016.h
-index 8c79229..03d0684 100644
---- a/drivers/media/video/zr36016.h
-+++ b/drivers/media/video/zr36016.h
-@@ -3,8 +3,6 @@
-  *
-  * Copyright (C) 2001 Wolfgang Scherr <scherr@net4you.at>
-  *
-- * $Id: zr36016.h,v 1.1.2.3 2003/01/14 21:18:07 rbultje Exp $
-- *
-  * ------------------------------------------------------------------------
-  *
-  * This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/zr36050.c b/drivers/media/video/zr36050.c
-index cf8b271..5b6981e 100644
---- a/drivers/media/video/zr36050.c
-+++ b/drivers/media/video/zr36050.c
-@@ -3,8 +3,6 @@
-  *
-  * Copyright (C) 2001 Wolfgang Scherr <scherr@net4you.at>
-  *
-- * $Id: zr36050.c,v 1.1.2.11 2003/08/03 14:54:53 rbultje Exp $
-- *
-  * ------------------------------------------------------------------------
-  *
-  * This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/zr36050.h b/drivers/media/video/zr36050.h
-index 9f52f0c..9453640 100644
---- a/drivers/media/video/zr36050.h
-+++ b/drivers/media/video/zr36050.h
-@@ -3,8 +3,6 @@
-  *
-  * Copyright (C) 2001 Wolfgang Scherr <scherr@net4you.at>
-  *
-- * $Id: zr36050.h,v 1.1.2.2 2003/01/14 21:18:22 rbultje Exp $
-- *
-  * ------------------------------------------------------------------------
-  *
-  * This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/zr36060.c b/drivers/media/video/zr36060.c
-index 8e74054..19fed7d 100644
---- a/drivers/media/video/zr36060.c
-+++ b/drivers/media/video/zr36060.c
-@@ -3,8 +3,6 @@
-  *
-  * Copyright (C) 2002 Laurent Pinchart <laurent.pinchart@skynet.be>
-  *
-- * $Id: zr36060.c,v 1.1.2.22 2003/05/06 09:35:36 rbultje Exp $
-- *
-  * ------------------------------------------------------------------------
-  *
-  * This program is free software; you can redistribute it and/or modify
-diff --git a/drivers/media/video/zr36060.h b/drivers/media/video/zr36060.h
-index 914ffa4..16be7b4 100644
---- a/drivers/media/video/zr36060.h
-+++ b/drivers/media/video/zr36060.h
-@@ -3,8 +3,6 @@
-  *
-  * Copyright (C) 2002 Laurent Pinchart <laurent.pinchart@skynet.be>
-  *
-- * $Id: zr36060.h,v 1.1.1.1.2.3 2003/01/14 21:18:47 rbultje Exp $
-- *
-  * ------------------------------------------------------------------------
-  *
-  * This program is free software; you can redistribute it and/or modify
+  *  This file is subject to the terms and conditions of the GNU General Public
+  *  License. See the file COPYING in the main directory of this archive for
+  *  more details.
 
