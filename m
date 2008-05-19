@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932267AbYESNdF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932177AbYESNcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932267AbYESNdF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 09:33:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759293AbYESNUr
+	id S932177AbYESNcq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 09:32:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761015AbYESNUl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 09:20:47 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45977 "EHLO
+	Mon, 19 May 2008 09:20:41 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45972 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761098AbYESNUq (ORCPT
+	with ESMTP id S1760999AbYESNUk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 09:20:46 -0400
+	Mon, 19 May 2008 09:20:40 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 45/57] shwdt: coding style, cleanup, switch to unlocked_ioctl
+Subject: [PATCH 44/57] scx200_wdt: clean up and switch to unlocked_ioctl
 To: akpm@osdl.org, linux-kernel@vger.kernel.org, wim@iguana.be
-Date: Mon, 19 May 2008 14:08:55 +0100
-Message-ID: <20080519130855.31722.43696.stgit@core>
+Date: Mon, 19 May 2008 14:08:49 +0100
+Message-ID: <20080519130849.31722.38282.stgit@core>
 In-Reply-To: <20080519124659.31722.51847.stgit@core>
 References: <20080519124659.31722.51847.stgit@core>
 User-Agent: StGIT/0.14.1
@@ -30,289 +30,210 @@ From: Alan Cox <alan@redhat.com>
 
 ---
 
- drivers/watchdog/shwdt.c |  139 +++++++++++++++++++++++++++-------------------
- 1 files changed, 82 insertions(+), 57 deletions(-)
+ drivers/watchdog/sc520_wdt.c  |    4 +--
+ drivers/watchdog/scx200_wdt.c |   59 +++++++++++++++++++++--------------------
+ 2 files changed, 32 insertions(+), 31 deletions(-)
 
 
-diff --git a/drivers/watchdog/shwdt.c b/drivers/watchdog/shwdt.c
-index 1277f7e..60f0036 100644
---- a/drivers/watchdog/shwdt.c
-+++ b/drivers/watchdog/shwdt.c
-@@ -28,9 +28,9 @@
- #include <linux/ioport.h>
- #include <linux/fs.h>
- #include <linux/mm.h>
--#include <asm/io.h>
--#include <asm/uaccess.h>
--#include <asm/watchdog.h>
-+#include <linux/io.h>
-+#include <linux/uaccess.h>
-+#include <linux/watchdog.h>
- 
- #define PFX "shwdt: "
- 
-@@ -72,6 +72,7 @@ static struct watchdog_info sh_wdt_info;
- static char shwdt_expect_close;
- static DEFINE_TIMER(timer, sh_wdt_ping, 0, 0);
- static unsigned long next_heartbeat;
-+static DEFINE_SPINLOCK(shwdt_lock);
- 
- #define WATCHDOG_HEARTBEAT 30			/* 30 sec default heartbeat */
- static int heartbeat = WATCHDOG_HEARTBEAT;	/* in seconds */
-@@ -86,6 +87,9 @@ static int nowayout = WATCHDOG_NOWAYOUT;
- static void sh_wdt_start(void)
- {
- 	__u8 csr;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&wdt_lock, flags);
- 
- 	next_heartbeat = jiffies + (heartbeat * HZ);
- 	mod_timer(&timer, next_ping_period(clock_division_ratio));
-@@ -123,6 +127,7 @@ static void sh_wdt_start(void)
- 	csr &= ~RSTCSR_RSTS;
- 	sh_wdt_write_rstcsr(csr);
- #endif
-+	spin_unlock_irqrestore(&wdt_lock, flags);
- }
- 
- /**
-@@ -132,12 +137,16 @@ static void sh_wdt_start(void)
- static void sh_wdt_stop(void)
- {
- 	__u8 csr;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&wdt_lock, flags);
- 
- 	del_timer(&timer);
- 
- 	csr = sh_wdt_read_csr();
- 	csr &= ~WTCSR_TME;
- 	sh_wdt_write_csr(csr);
-+	spin_unlock_irqrestore(&wdt_lock, flags);
- }
- 
- /**
-@@ -146,7 +155,11 @@ static void sh_wdt_stop(void)
-  */
- static inline void sh_wdt_keepalive(void)
- {
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&wdt_lock, flags);
- 	next_heartbeat = jiffies + (heartbeat * HZ);
-+	spin_unlock_irqrestore(&wdt_lock, flags);
- }
- 
- /**
-@@ -155,10 +168,14 @@ static inline void sh_wdt_keepalive(void)
-  */
- static int sh_wdt_set_heartbeat(int t)
- {
--	if (unlikely((t < 1) || (t > 3600))) /* arbitrary upper limit */
-+	unsigned long flags;
-+
-+	if (unlikely(t < 1 || t > 3600)) /* arbitrary upper limit */
- 		return -EINVAL;
- 
-+	spin_lock_irqsave(&wdt_lock, flags);
- 	heartbeat = t;
-+	spin_unlock_irqrestore(&wdt_lock, flags);
+diff --git a/drivers/watchdog/sc520_wdt.c b/drivers/watchdog/sc520_wdt.c
+index 525555a..01de239 100644
+--- a/drivers/watchdog/sc520_wdt.c
++++ b/drivers/watchdog/sc520_wdt.c
+@@ -279,7 +279,7 @@ static int fop_close(struct inode *inode, struct file *file)
  	return 0;
  }
  
-@@ -170,6 +187,9 @@ static int sh_wdt_set_heartbeat(int t)
-  */
- static void sh_wdt_ping(unsigned long data)
+-static int fop_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
++static long fop_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
  {
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&wdt_lock, flags);
- 	if (time_before(jiffies, next_heartbeat)) {
- 		__u8 csr;
- 
-@@ -183,6 +203,7 @@ static void sh_wdt_ping(unsigned long data)
- 	} else
- 		printk(KERN_WARNING PFX "Heartbeat lost! Will not ping "
- 		       "the watchdog\n");
-+	spin_unlock_irqrestore(&wdt_lock, flags);
- }
- 
- /**
-@@ -310,7 +331,6 @@ static int sh_wdt_mmap(struct file *file, struct vm_area_struct *vma)
- 
- /**
-  * 	sh_wdt_ioctl - Query Device
-- * 	@inode: inode of device
-  * 	@file: file handle of device
-  * 	@cmd: watchdog command
-  * 	@arg: argument
-@@ -318,53 +338,51 @@ static int sh_wdt_mmap(struct file *file, struct vm_area_struct *vma)
-  * 	Query basic information from the device or ping it, as outlined by the
-  * 	watchdog API.
-  */
--static int sh_wdt_ioctl(struct inode *inode, struct file *file,
--			unsigned int cmd, unsigned long arg)
-+static long sh_wdt_ioctl(struct file *file, unsigned int cmd,
-+							unsigned long arg)
- {
- 	int new_heartbeat;
- 	int options, retval = -EINVAL;
- 
- 	switch (cmd) {
--		case WDIOC_GETSUPPORT:
--			return copy_to_user((struct watchdog_info *)arg,
--					  &sh_wdt_info,
--					  sizeof(sh_wdt_info)) ? -EFAULT : 0;
--		case WDIOC_GETSTATUS:
--		case WDIOC_GETBOOTSTATUS:
--			return put_user(0, (int *)arg);
--		case WDIOC_KEEPALIVE:
--			sh_wdt_keepalive();
--			return 0;
--		case WDIOC_SETTIMEOUT:
--			if (get_user(new_heartbeat, (int *)arg))
--				return -EFAULT;
--
--			if (sh_wdt_set_heartbeat(new_heartbeat))
--				return -EINVAL;
--
--			sh_wdt_keepalive();
--			/* Fall */
--		case WDIOC_GETTIMEOUT:
--			return put_user(heartbeat, (int *)arg);
--		case WDIOC_SETOPTIONS:
--			if (get_user(options, (int *)arg))
--				return -EFAULT;
--
--			if (options & WDIOS_DISABLECARD) {
--				sh_wdt_stop();
--				retval = 0;
--			}
-+	case WDIOC_GETSUPPORT:
-+		return copy_to_user((struct watchdog_info *)arg,
-+			  &sh_wdt_info, sizeof(sh_wdt_info)) ? -EFAULT : 0;
-+	case WDIOC_GETSTATUS:
-+	case WDIOC_GETBOOTSTATUS:
-+		return put_user(0, (int *)arg);
-+	case WDIOC_KEEPALIVE:
-+		sh_wdt_keepalive();
-+		return 0;
-+	case WDIOC_SETTIMEOUT:
-+		if (get_user(new_heartbeat, (int *)arg))
-+			return -EFAULT;
- 
--			if (options & WDIOS_ENABLECARD) {
--				sh_wdt_start();
--				retval = 0;
--			}
-+		if (sh_wdt_set_heartbeat(new_heartbeat))
-+			return -EINVAL;
- 
--			return retval;
--		default:
--			return -ENOTTY;
--	}
-+		sh_wdt_keepalive();
-+		/* Fall */
-+	case WDIOC_GETTIMEOUT:
-+		return put_user(heartbeat, (int *)arg);
-+	case WDIOC_SETOPTIONS:
-+		if (get_user(options, (int *)arg))
-+			return -EFAULT;
-+
-+		if (options & WDIOS_DISABLECARD) {
-+			sh_wdt_stop();
-+			retval = 0;
-+		}
-+
-+		if (options & WDIOS_ENABLECARD) {
-+			sh_wdt_start();
-+			retval = 0;
-+		}
- 
-+		return retval;
-+	default:
-+		return -ENOTTY;
-+	}
- 	return 0;
- }
- 
-@@ -390,13 +408,13 @@ static const struct file_operations sh_wdt_fops = {
- 	.owner		= THIS_MODULE,
- 	.llseek		= no_llseek,
- 	.write		= sh_wdt_write,
--	.ioctl		= sh_wdt_ioctl,
-+	.unlocked_ioctl	= sh_wdt_ioctl,
- 	.open		= sh_wdt_open,
- 	.release	= sh_wdt_close,
- 	.mmap		= sh_wdt_mmap,
+ 	void __user *argp = (void __user *)arg;
+ 	int __user *p = argp;
+@@ -345,7 +345,7 @@ static const struct file_operations wdt_fops = {
+ 	.write		= fop_write,
+ 	.open		= fop_open,
+ 	.release	= fop_close,
+-	.ioctl		= fop_ioctl,
++	.unlocked_ioctl	= fop_ioctl,
  };
  
--static struct watchdog_info sh_wdt_info = {
-+static const struct watchdog_info sh_wdt_info = {
- 	.options		= WDIOF_KEEPALIVEPING | WDIOF_SETTIMEOUT |
- 				  WDIOF_MAGICCLOSE,
- 	.firmware_version	= 1,
-@@ -422,30 +440,33 @@ static int __init sh_wdt_init(void)
+ static struct miscdevice wdt_miscdev = {
+diff --git a/drivers/watchdog/scx200_wdt.c b/drivers/watchdog/scx200_wdt.c
+index d55882b..7c1de94 100644
+--- a/drivers/watchdog/scx200_wdt.c
++++ b/drivers/watchdog/scx200_wdt.c
+@@ -27,9 +27,8 @@
+ #include <linux/fs.h>
+ #include <linux/ioport.h>
+ #include <linux/scx200.h>
+-
+-#include <asm/uaccess.h>
+-#include <asm/io.h>
++#include <linux/uaccess.h>
++#include <linux/io.h>
+ 
+ #define NAME "scx200_wdt"
+ 
+@@ -47,8 +46,9 @@ module_param(nowayout, int, 0);
+ MODULE_PARM_DESC(nowayout, "Disable watchdog shutdown on close");
+ 
+ static u16 wdto_restart;
+-static struct semaphore open_semaphore;
+ static char expect_close;
++static unsigned long open_lock;
++static DEFINE_SPINLOCK(scx_lock);
+ 
+ /* Bits of the WDCNFG register */
+ #define W_ENABLE 0x00fa		/* Enable watchdog */
+@@ -59,7 +59,9 @@ static char expect_close;
+ 
+ static void scx200_wdt_ping(void)
  {
- 	int rc;
++	spin_lock(&scx_lock);
+ 	outw(wdto_restart, scx200_cb_base + SCx200_WDT_WDTO);
++	spin_unlock(&scx_lock);
+ }
  
--	if ((clock_division_ratio < 0x5) || (clock_division_ratio > 0x7)) {
-+	if (clock_division_ratio < 0x5 || clock_division_ratio > 0x7) {
- 		clock_division_ratio = WTCSR_CKS_4096;
--		printk(KERN_INFO PFX "clock_division_ratio value must "
--		       "be 0x5<=x<=0x7, using %d\n", clock_division_ratio);
-+		printk(KERN_INFO PFX
-+		  "clock_division_ratio value must be 0x5<=x<=0x7, using %d\n",
-+				clock_division_ratio);
- 	}
+ static void scx200_wdt_update_margin(void)
+@@ -73,9 +75,11 @@ static void scx200_wdt_enable(void)
+ 	printk(KERN_DEBUG NAME ": enabling watchdog timer, wdto_restart = %d\n",
+ 	       wdto_restart);
  
- 	rc = sh_wdt_set_heartbeat(heartbeat);
- 	if (unlikely(rc)) {
- 		heartbeat = WATCHDOG_HEARTBEAT;
--		printk(KERN_INFO PFX "heartbeat value must "
--		       "be 1<=x<=3600, using %d\n", heartbeat);
-+		printk(KERN_INFO PFX
-+			"heartbeat value must be 1<=x<=3600, using %d\n",
-+								heartbeat);
- 	}
++	spin_lock(&scx_lock);
+ 	outw(0, scx200_cb_base + SCx200_WDT_WDTO);
+ 	outb(SCx200_WDT_WDSTS_WDOVF, scx200_cb_base + SCx200_WDT_WDSTS);
+ 	outw(W_ENABLE, scx200_cb_base + SCx200_WDT_WDCNFG);
++	spin_unlock(&scx_lock);
  
- 	rc = register_reboot_notifier(&sh_wdt_notifier);
- 	if (unlikely(rc)) {
--		printk(KERN_ERR PFX "Can't register reboot notifier (err=%d)\n",
--		       rc);
-+		printk(KERN_ERR PFX
-+			"Can't register reboot notifier (err=%d)\n", rc);
- 		return rc;
- 	}
+ 	scx200_wdt_ping();
+ }
+@@ -84,15 +88,17 @@ static void scx200_wdt_disable(void)
+ {
+ 	printk(KERN_DEBUG NAME ": disabling watchdog timer\n");
  
- 	rc = misc_register(&sh_wdt_miscdev);
- 	if (unlikely(rc)) {
--		printk(KERN_ERR PFX "Can't register miscdev on "
--		       "minor=%d (err=%d)\n", sh_wdt_miscdev.minor, rc);
-+		printk(KERN_ERR PFX
-+			"Can't register miscdev on minor=%d (err=%d)\n",
-+						sh_wdt_miscdev.minor, rc);
- 		unregister_reboot_notifier(&sh_wdt_notifier);
- 		return rc;
- 	}
-@@ -476,10 +497,14 @@ module_param(clock_division_ratio, int, 0);
- MODULE_PARM_DESC(clock_division_ratio, "Clock division ratio. Valid ranges are from 0x5 (1.31ms) to 0x7 (5.25ms). (default=" __MODULE_STRING(clock_division_ratio) ")");
++	spin_lock(&scx_lock);
+ 	outw(0, scx200_cb_base + SCx200_WDT_WDTO);
+ 	outb(SCx200_WDT_WDSTS_WDOVF, scx200_cb_base + SCx200_WDT_WDSTS);
+ 	outw(W_DISABLE, scx200_cb_base + SCx200_WDT_WDCNFG);
++	spin_unlock(&scx_lock);
+ }
  
- module_param(heartbeat, int, 0);
--MODULE_PARM_DESC(heartbeat, "Watchdog heartbeat in seconds. (1<=heartbeat<=3600, default=" __MODULE_STRING(WATCHDOG_HEARTBEAT) ")");
-+MODULE_PARM_DESC(heartbeat,
-+	"Watchdog heartbeat in seconds. (1 <= heartbeat <= 3600, default="
-+				__MODULE_STRING(WATCHDOG_HEARTBEAT) ")");
+ static int scx200_wdt_open(struct inode *inode, struct file *file)
+ {
+ 	/* only allow one at a time */
+-	if (down_trylock(&open_semaphore))
++	if (test_and_set_bit(0, &open_lock))
+ 		return -EBUSY;
+ 	scx200_wdt_enable();
  
- module_param(nowayout, int, 0);
--MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default=" __MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
-+MODULE_PARM_DESC(nowayout,
-+	"Watchdog cannot be stopped once started (default="
-+				__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
+@@ -101,13 +107,12 @@ static int scx200_wdt_open(struct inode *inode, struct file *file)
  
- module_init(sh_wdt_init);
- module_exit(sh_wdt_exit);
+ static int scx200_wdt_release(struct inode *inode, struct file *file)
+ {
+-	if (expect_close != 42) {
++	if (expect_close != 42)
+ 		printk(KERN_WARNING NAME ": watchdog device closed unexpectedly, will not disable the watchdog timer\n");
+-	} else if (!nowayout) {
++	else if (!nowayout)
+ 		scx200_wdt_disable();
+-	}
+ 	expect_close = 0;
+-	up(&open_semaphore);
++	clear_bit(0, &open_lock);
+ 
+ 	return 0;
+ }
+@@ -122,8 +127,7 @@ static int scx200_wdt_notify_sys(struct notifier_block *this,
+ 	return NOTIFY_DONE;
+ }
+ 
+-static struct notifier_block scx200_wdt_notifier =
+-{
++static struct notifier_block scx200_wdt_notifier = {
+ 	.notifier_call = scx200_wdt_notify_sys,
+ };
+ 
+@@ -131,8 +135,7 @@ static ssize_t scx200_wdt_write(struct file *file, const char __user *data,
+ 				     size_t len, loff_t *ppos)
+ {
+ 	/* check for a magic close character */
+-	if (len)
+-	{
++	if (len) {
+ 		size_t i;
+ 
+ 		scx200_wdt_ping();
+@@ -152,15 +155,15 @@ static ssize_t scx200_wdt_write(struct file *file, const char __user *data,
+ 	return 0;
+ }
+ 
+-static int scx200_wdt_ioctl(struct inode *inode, struct file *file,
+-	unsigned int cmd, unsigned long arg)
++static long scx200_wdt_ioctl(struct file *file, unsigned int cmd,
++							unsigned long arg)
+ {
+ 	void __user *argp = (void __user *)arg;
+ 	int __user *p = argp;
+-	static struct watchdog_info ident = {
++	static const struct watchdog_info ident = {
+ 		.identity = "NatSemi SCx200 Watchdog",
+ 		.firmware_version = 1,
+-		.options = (WDIOF_SETTIMEOUT | WDIOF_KEEPALIVEPING),
++		.options = WDIOF_SETTIMEOUT | WDIOF_KEEPALIVEPING,
+ 	};
+ 	int new_margin;
+ 
+@@ -168,7 +171,7 @@ static int scx200_wdt_ioctl(struct inode *inode, struct file *file,
+ 	default:
+ 		return -ENOTTY;
+ 	case WDIOC_GETSUPPORT:
+-		if(copy_to_user(argp, &ident, sizeof(ident)))
++		if (copy_to_user(argp, &ident, sizeof(ident)))
+ 			return -EFAULT;
+ 		return 0;
+ 	case WDIOC_GETSTATUS:
+@@ -195,18 +198,18 @@ static int scx200_wdt_ioctl(struct inode *inode, struct file *file,
+ }
+ 
+ static const struct file_operations scx200_wdt_fops = {
+-	.owner	 = THIS_MODULE,
+-	.llseek	 = no_llseek,
+-	.write   = scx200_wdt_write,
+-	.ioctl   = scx200_wdt_ioctl,
+-	.open    = scx200_wdt_open,
++	.owner = THIS_MODULE,
++	.llseek = no_llseek,
++	.write = scx200_wdt_write,
++	.unlocked_ioctl = scx200_wdt_ioctl,
++	.open = scx200_wdt_open,
+ 	.release = scx200_wdt_release,
+ };
+ 
+ static struct miscdevice scx200_wdt_miscdev = {
+ 	.minor = WATCHDOG_MINOR,
+-	.name  = "watchdog",
+-	.fops  = &scx200_wdt_fops,
++	.name = "watchdog",
++	.fops = &scx200_wdt_fops,
+ };
+ 
+ static int __init scx200_wdt_init(void)
+@@ -229,8 +232,6 @@ static int __init scx200_wdt_init(void)
+ 	scx200_wdt_update_margin();
+ 	scx200_wdt_disable();
+ 
+-	sema_init(&open_semaphore, 1);
+-
+ 	r = register_reboot_notifier(&scx200_wdt_notifier);
+ 	if (r) {
+ 		printk(KERN_ERR NAME ": unable to register reboot notifier");
+@@ -263,7 +264,7 @@ module_exit(scx200_wdt_cleanup);
+ 
+ /*
+     Local variables:
+-        compile-command: "make -k -C ../.. SUBDIRS=drivers/char modules"
+-        c-basic-offset: 8
++	compile-command: "make -k -C ../.. SUBDIRS=drivers/char modules"
++	c-basic-offset: 8
+     End:
+ */
 
