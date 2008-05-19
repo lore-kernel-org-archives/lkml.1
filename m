@@ -1,49 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756133AbYESA3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756596AbYESAau@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756133AbYESA3i (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 20:29:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbYESA31
+	id S1756596AbYESAau (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 20:30:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbYESAam
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 20:29:27 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:59396 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753368AbYESA30 (ORCPT
+	Sun, 18 May 2008 20:30:42 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:44671 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753368AbYESAam (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 20:29:26 -0400
-Date: Sun, 18 May 2008 20:28:38 -0400
-From: Theodore Tso <tytso@MIT.EDU>
-To: Eric Sandeen <sandeen@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
-Message-ID: <20080519002838.GB8335@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Eric Sandeen <sandeen@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org
-References: <482DDA56.6000301@redhat.com> <20080516130545.845a3be9.akpm@linux-foundation.org> <482DF44B.50204@redhat.com> <20080516220315.GB15334@shareable.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080516220315.GB15334@shareable.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Sun, 18 May 2008 20:30:42 -0400
+Date: Mon, 19 May 2008 09:35:25 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Johannes Weiner <hannes@saeurebad.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux MM Mailing List <linux-mm@kvack.org>
+Subject: Re: bootmem: Double freeing a PFN on nodes spanning other nodes
+Message-Id: <20080519093525.4867bfb4.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <87skwhyj8g.fsf@saeurebad.de>
+References: <87skwhyj8g.fsf@saeurebad.de>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16, 2008 at 11:03:15PM +0100, Jamie Lokier wrote:
-> The MacOS X folks decided that speed is most important for fsync().
-> fsync() does not guarantee commit to platter.  *But* they added an
-> fcntl() for applications to request a commit to platter, which SQLite
-> at least uses.  I don't know if MacOS X uses barriers for filesystem
-> operations.
+On Sat, 17 May 2008 00:30:55 +0200
+Johannes Weiner <hannes@saeurebad.de> wrote:
 
-Out of curiosity, exactly *what* semantics did MacOS X give fsync(),
-then?  Did it simply start the process of staging writes to disk, but
-not wait for the writes to hit the platter before returning?  That's
-basically the equivalent of ext3's barrier=0.
+> Hi,
+> 
+> When memory nodes overlap each other, the bootmem allocator is not aware
+> of this and might pass the same page twice to __free_pages_bootmem().
+> 
 
-							- Ted
+1. init_bootmem_node() is called against a node, [start, end). After this,
+   all pages are 'allocated'.
+2. free_bootmem_node() is called against available memory in a node.
+3. bootmem allocator is ready.
+
+memory overlap seems not to be trouble while an arch's code calls
+free_bootmem_node() correctly.
+
+Thanks,
+-Kame
+
+
+
+
+
+> As I traced the code, this should result in bad_page() calls on every
+> boot but noone has yet reported something like this and I am wondering
+> why.
+> 
+> __free_pages_bootmem() boils down to either free_hot_cold_page() or
+> __free_one_page().  Either path should lead to setting the page private
+> or buddy:
+> 
+> free_hot_cold_page() sets ->private to the page block's migratetype (and
+> sets PG_private).
+> 
+> __free_one_page sets ->private to the page's order (and sets PG_private
+> and PG_buddy).
+> 
+> If a page is passed in twice, free_pages_check() should now warn (via
+> bad_page()) on the flags set above.
+> 
+> Am I missing something?  Thanks in advance.
+> 
+> 	Hannes
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
