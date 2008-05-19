@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765038AbYESWHR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763712AbYESWHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765038AbYESWHR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 18:07:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765068AbYESWFA
+	id S1763712AbYESWHp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 18:07:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765013AbYESWFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 18:05:00 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:45038 "EHLO smtp5.pp.htv.fi"
+	Mon, 19 May 2008 18:05:12 -0400
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:40139 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765043AbYESWE5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 18:04:57 -0400
-Date: Tue, 20 May 2008 01:02:52 +0300
+	id S1758733AbYESWFJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 18:05:09 -0400
+Date: Tue, 20 May 2008 01:03:03 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: jack@suse.cz
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] quota: remove CVS keywords
-Message-ID: <20080519220251.GE17716@cs181133002.pp.htv.fi>
+To: jkosina@suse.cz
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] HID: remove CVS keywords
+Message-ID: <20080519220303.GF17716@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -30,49 +30,82 @@ Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- fs/dquot.c               |    2 --
- include/linux/quota.h    |    2 --
- include/linux/quotaops.h |    3 ---
- 3 files changed, 7 deletions(-)
+ drivers/hid/hid-debug.c       |    2 --
+ drivers/hid/hid-input.c       |    2 --
+ drivers/hid/usbhid/usbkbd.c   |    2 --
+ drivers/hid/usbhid/usbmouse.c |    2 --
+ include/linux/hid.h           |    2 --
+ include/linux/hiddev.h        |    2 --
+ 6 files changed, 12 deletions(-)
 
-f2096053eb97000dbd556a4a2465c879bdf38670 diff --git a/fs/dquot.c b/fs/dquot.c
-index 5ac77da..920e430 100644
---- a/fs/dquot.c
-+++ b/fs/dquot.c
-@@ -9,8 +9,6 @@
-  * implementation is based on one of the several variants of the LINUX
-  * inode-subsystem with added complexity of the diskquota system.
-  * 
-- * Version: $Id: dquot.c,v 6.3 1996/11/17 18:35:34 mvw Exp mvw $
-- * 
-  * Author:	Marco van Wieringen <mvw@planets.elm.net>
-  *
-  * Fixes:   Dmitry Gorodchanin <pgmdsg@ibi.com>, 11 Feb 96
-diff --git a/include/linux/quota.h b/include/linux/quota.h
-index dcddfb2..17eadfd 100644
---- a/include/linux/quota.h
-+++ b/include/linux/quota.h
-@@ -28,8 +28,6 @@
-  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
-  * SUCH DAMAGE.
+92263a976df55d0025a2a1e224582d3478c4d8ab diff --git a/drivers/hid/hid-debug.c b/drivers/hid/hid-debug.c
+index f88714b..47ac1a7 100644
+--- a/drivers/hid/hid-debug.c
++++ b/drivers/hid/hid-debug.c
+@@ -1,6 +1,4 @@
+ /*
+- * $Id: hid-debug.h,v 1.8 2001/09/25 09:37:57 vojtech Exp $
 - *
-- * Version: $Id: quota.h,v 2.0 1996/11/17 16:48:14 mvw Exp mvw $
-  */
+  *  (c) 1999 Andreas Gal		<gal@cs.uni-magdeburg.de>
+  *  (c) 2000-2001 Vojtech Pavlik	<vojtech@ucw.cz>
+  *  (c) 2007 Jiri Kosina
+diff --git a/drivers/hid/hid-input.c b/drivers/hid/hid-input.c
+index c3eb3f1..cbf2947 100644
+--- a/drivers/hid/hid-input.c
++++ b/drivers/hid/hid-input.c
+@@ -1,6 +1,4 @@
+ /*
+- * $Id: hid-input.c,v 1.2 2002/04/23 00:59:25 rdamazio Exp $
+- *
+  *  Copyright (c) 2000-2001 Vojtech Pavlik
+  *  Copyright (c) 2006-2007 Jiri Kosina
+  *
+diff --git a/drivers/hid/usbhid/usbkbd.c b/drivers/hid/usbhid/usbkbd.c
+index 5d9dbb4..3cd46d2 100644
+--- a/drivers/hid/usbhid/usbkbd.c
++++ b/drivers/hid/usbhid/usbkbd.c
+@@ -1,6 +1,4 @@
+ /*
+- * $Id: usbkbd.c,v 1.27 2001/12/27 10:37:41 vojtech Exp $
+- *
+  *  Copyright (c) 1999-2001 Vojtech Pavlik
+  *
+  *  USB HIDBP Keyboard support
+diff --git a/drivers/hid/usbhid/usbmouse.c b/drivers/hid/usbhid/usbmouse.c
+index df0d96d..703e9d0 100644
+--- a/drivers/hid/usbhid/usbmouse.c
++++ b/drivers/hid/usbhid/usbmouse.c
+@@ -1,6 +1,4 @@
+ /*
+- * $Id: usbmouse.c,v 1.15 2001/12/27 10:37:41 vojtech Exp $
+- *
+  *  Copyright (c) 1999-2001 Vojtech Pavlik
+  *
+  *  USB HIDBP Mouse support
+diff --git a/include/linux/hid.h b/include/linux/hid.h
+index 4ce3b7a..4de7806 100644
+--- a/include/linux/hid.h
++++ b/include/linux/hid.h
+@@ -2,8 +2,6 @@
+ #define __HID_H
  
- #ifndef _LINUX_QUOTA_
-diff --git a/include/linux/quotaops.h b/include/linux/quotaops.h
-index f867020..48e02fc 100644
---- a/include/linux/quotaops.h
-+++ b/include/linux/quotaops.h
-@@ -3,9 +3,6 @@
-  * macros expand to the right source-code.
+ /*
+- * $Id: hid.h,v 1.24 2001/12/27 10:37:41 vojtech Exp $
+- *
+  *  Copyright (c) 1999 Andreas Gal
+  *  Copyright (c) 2000-2001 Vojtech Pavlik
+  *  Copyright (c) 2006-2007 Jiri Kosina
+diff --git a/include/linux/hiddev.h b/include/linux/hiddev.h
+index acbdae6..a416b90 100644
+--- a/include/linux/hiddev.h
++++ b/include/linux/hiddev.h
+@@ -2,8 +2,6 @@
+ #define _HIDDEV_H
+ 
+ /*
+- * $Id: hiddev.h,v 1.2 2001/04/26 11:26:09 vojtech Exp $
+- *
+  *  Copyright (c) 1999-2000 Vojtech Pavlik
   *
-  * Author:  Marco van Wieringen <mvw@planets.elm.net>
-- *
-- * Version: $Id: quotaops.h,v 1.2 1998/01/15 16:22:26 ecd Exp $
-- *
-  */
- #ifndef _LINUX_QUOTAOPS_
- #define _LINUX_QUOTAOPS_
+  *  Sponsored by SuSE
 
