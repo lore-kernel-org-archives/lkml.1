@@ -1,63 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759779AbYESBOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756556AbYESB2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759779AbYESBOW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 21:14:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757221AbYESBLE
+	id S1756556AbYESB2f (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 21:28:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbYESB2Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 21:11:04 -0400
-Received: from ns.suse.de ([195.135.220.2]:35878 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756470AbYESBKY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 21:10:24 -0400
-From: NeilBrown <neilb@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Date: Mon, 19 May 2008 11:10:17 +1000
-Message-Id: <1080519011017.7639@suse.de>
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Adrian Bunk <bunk@kernel.org>
-Subject: [PATCH 002 of 10] md: proper extern for mdp_major
-References: <20080519110910.7473.patches@notabene>
+	Sun, 18 May 2008 21:28:25 -0400
+Received: from mga07.intel.com ([143.182.124.22]:2476 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752688AbYESB2Y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 21:28:24 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,506,1204531200"; 
+   d="scan'208";a="248651818"
+Subject: Re: [Bug #10638] sysbench+mysql(oltp, readonly) 30% regression
+	with 2.6.26-rc1
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1211135856.6463.22.camel@lappy.programming.kicks-ass.net>
+References: <oKKSi1w1qaF.A.mEG.JrBMIB@albercik>
+	 <7wuznNhcUqC.A.IMB.TtBMIB@albercik>
+	 <1211131278.6463.7.camel@lappy.programming.kicks-ass.net>
+	 <1211135856.6463.22.camel@lappy.programming.kicks-ass.net>
+Content-Type: text/plain
+Date: Mon, 19 May 2008 09:24:43 +0800
+Message-Id: <1211160283.3177.134.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.5 (2.21.5-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Adrian Bunk <bunk@kernel.org>
+On Sun, 2008-05-18 at 20:37 +0200, Peter Zijlstra wrote:
+> On Sun, 2008-05-18 at 19:21 +0200, Peter Zijlstra wrote:
+> > On Sun, 2008-05-18 at 13:13 +0200, Rafael J. Wysocki wrote:
+> > > This message has been generated automatically as a part of a report
+> > > of recent regressions.
+> > > 
+> > > The following bug entry is on the current list of known regressions
+> > > from 2.6.25.  Please verify if it still should be listed.
+> > > 
+> > > 
+> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10638
+> > > Subject		: sysbench+mysql(oltp, readonly) 30% regression with 2.6.26-rc1
+> > > Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+> > > Date		: 2008-05-07 4:55 (12 days old)
+> > > References	: http://marc.info/?l=linux-kernel&m=121013681527052&w=2
+> > > Handled-By	: Ingo Molnar <mingo@elte.hu>
+> > > Patch		: http://marc.info/?l=linux-kernel&m=121015292616802&w=2
+> > > 
+> > > 
+> > 
+> > Could people test this:
+> > 
+> > git://git.kernel.org/home/peterz/git/linux-2.6-sched.git/ v2.6.26-rc2-group-load-balance
+> 
+> Seems I got my own url wrong - the right one is:
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/peterz/linux-2.6-sched.git v2.6.26-rc2-group-load-balance
+I used below command to clone your tree:
+RSYNC_PROXY=proxy.sc.intel.com:911 git clone rsync://rsync.kernel.org/pub/scm/linux/kernel/git/peterz/linux-2.6-sched.git linux-2.6-sched
 
-This patch adds a proper extern for mdp_major in include/linux/raid/md.h
+Got below errors:
+@ERROR: Unknown module 'home'
+rsync: connection unexpectedly closed (0 bytes received so far) [receiver]
+rsync error: error in rsync protocol data stream (code 12) at io.c(359)
+fatal: failed to unpack tree object HEAD
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-Signed-off-by: Neil Brown <neilb@suse.de>
 
-### Diffstat output
- ./include/linux/raid/md.h |    2 ++
- ./init/do_mounts_md.c     |    1 -
- 2 files changed, 2 insertions(+), 1 deletion(-)
+Would you like to create a patch against 2.6.26-rc3?
 
-diff .prev/include/linux/raid/md.h ./include/linux/raid/md.h
---- .prev/include/linux/raid/md.h	2008-05-19 11:02:06.000000000 +1000
-+++ ./include/linux/raid/md.h	2008-05-19 11:02:24.000000000 +1000
-@@ -72,6 +72,8 @@
-  */
- #define MD_PATCHLEVEL_VERSION           3
- 
-+extern int mdp_major;
-+
- extern int register_md_personality (struct mdk_personality *p);
- extern int unregister_md_personality (struct mdk_personality *p);
- extern mdk_thread_t * md_register_thread (void (*run) (mddev_t *mddev),
+Yanmin
 
-diff .prev/init/do_mounts_md.c ./init/do_mounts_md.c
---- .prev/init/do_mounts_md.c	2008-05-19 11:02:06.000000000 +1000
-+++ ./init/do_mounts_md.c	2008-05-19 11:02:24.000000000 +1000
-@@ -24,7 +24,6 @@ static struct {
- 
- static int md_setup_ents __initdata;
- 
--extern int mdp_major;
- /*
-  * Parse the command-line parameters given our kernel, but do not
-  * actually try to invoke the MD device now; that is handled by
+
