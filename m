@@ -1,100 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757010AbYESA65@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756631AbYESBKZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757010AbYESA65 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 20:58:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbYESA6t
+	id S1756631AbYESBKZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 21:10:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751417AbYESBKN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 20:58:49 -0400
-Received: from ns1.codewiz.org ([89.97.188.34]:54224 "EHLO trinity.develer.com"
+	Sun, 18 May 2008 21:10:13 -0400
+Received: from mail.suse.de ([195.135.220.2]:35861 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751373AbYESA6r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 20:58:47 -0400
-Message-ID: <4830D0C4.50300@codewiz.org>
-Date: Mon, 19 May 2008 02:58:44 +0200
-From: Bernie Innocenti <bernie@codewiz.org>
-Organization: Codewiz - http://www.codewiz.org/
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, bernie@codewiz.org,
-       lkml <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>, ext3-users@redhat.com,
-       ext2-devel@lists.sourceforge.net, Stefano Fedrigo <aleph@develer.com>
-Subject: Re: ext3_dx_add_entry: Directory index full!
-References: <48304CE2.1090808@codewiz.org> <48304D92.1080306@develer.com> <20080518210435.GA8335@mit.edu>
-In-Reply-To: <20080518210435.GA8335@mit.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1751373AbYESBKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 21:10:12 -0400
+From: NeilBrown <neilb@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Date: Mon, 19 May 2008 11:10:00 +1000
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Adrian Bunk <bunk@kernel.org>
+Cc: Bernd Schubert <bernd-schubert@gmx.de>
+Cc: Bernd Schubert <bs@q-leap.de>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: "Eivind Sarto" <ivan@kasenna.com>
+Cc: "Fairbanks, David" <David.Fairbanks@stratus.com>
+Cc: "Mike Snitzer" <snitzer@gmail.com>
+Subject: [PATCH 000 of 10] md: Various bug fixes and small improvements for md in 2.6.26-rc
+Message-ID: <20080519110910.7473.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
+Following are a collection of 10 patches for md/raid that are suitable
+for 2.6.26-rc.  They are ordered roughly from simple to more complex with 
+serious bugfixes possibly getting elevated in the sort order.
 
-> P.S.  Past a certain point, you really don't want to have that many
-> files in a Maildir directory; if the user is never going to be
-> deleting his SPAM, then you should seriously think about using a Unix
-> mbox style storage scheme.  Even with a 1k block filesystem, at 12
-> million files you'll be wasting 6 gigabytes of disk space of slack
-> space that is totally being wasted since the whole point of using
-> Maildir is to make it easy to delete or replace individual mail
-> messages.
+Thanks,
+NeilBrown
 
-Yes.  I'm proposing my users a cron job that will prune everything
-but the most recent 2000 messages in their spamtraps.
-
-This particular user likes to do "spam forensics" with sophisticated
-Perl scripts and shell one liners, and publish pretty cool results
-like this one:
-
-simone@haring:~/Maildir$ grep -rhIos "Be [^.]*\." .Junk .junk/ | sort | uniq
-Be a bunch of bastards.
-Be a fool for five minutes.
-Be a good person than a famous person.
-Be an attraction by showing off our white gold with diamond brim.
-Be attention grabbing with this watch.
-Be attractive with genuine replica timepiece.
-Be a very positive thing.
-Be a vogue magician.
-Be aware of an inherent conflict of interest resulting from such compensation.
-Be aware of an inherent conflict of interest resulting from such compensation due to the fact that this is a paid advertisement and is not without bias.
-Be aware of an inherent conflict of interest resulting from such holdings due to our intent to profit from the liquidation of these shares.
-Be bold.
-Be chic with our reasonably priced watch.
-Be civil to all; sociable to many; familiar with few.
-Be confidence with set of diamonds on pure gold masterpiece.
-Be fashionable with our low priced watch.
-Be free to choose, and not to be chosen for, is an inalienable.
-Be gentle with yourself, learn to lvoe yourself, to forgive.
-Be having it.
-Be lying.
-Be made dependent on myth nor tied to any authority lest doubt about.
-Be silent, and be thought a fool, than to speak and remove all doubt.
-Be Used for Any Commercial Purposes of Any Kind.
-
-
-What bastard operator would deny an innocent user such an
-irresistible pleasure for a few GBs of disk? :-)
-
-
-> If you want to archive all of your SPAM, why use a Maildir format
-> mbox at all?
-
-You're right, but we'd have to teach all the tools that mess into
-the Maildir about both formats.  I find it incredibly easier
-to process email if it's in one simple format.  As in my cleanup
-script:
-
-  for i in /mail/*/.Junk.Both/cur /mail/*/.Junk.Both/new; do
-      ls -t $i | tail -n +2000 | xargs rm;
-  done
-
-Easy as pie ;-)
-
-For a while, we considered reiser3 for mail storage, but seeing
-it's being marginally maintained and phased out by all distributors,
-we've opted for wasting some cheap disk space instead.
-
--- 
-   \___/
-  _| X |  Bernie Innocenti - http://www.codewiz.org/
-  \|_O_|  "It's an education project, not a laptop project!"
+ [PATCH 000 of 10] md: Introduction EXPLAIN PATCH SET HERE
+ [PATCH 001 of 10] md: Fix possible oops when removing a bitmap from an active array
+ [PATCH 002 of 10] md: proper extern for mdp_major
+ [PATCH 003 of 10] md: kill file_path wrapper
+ [PATCH 004 of 10] md: md: raid5 rate limit error printk
+ [PATCH 005 of 10] md: raid1: Fix restoration of bio between failed read and write.
+ [PATCH 006 of 10] md: Notify userspace on 'write-pending' changes to array_state
+ [PATCH 007 of 10] md: notify userspace on 'stop' events
+ [PATCH 008 of 10] md: Improve setting of "events_cleared" for write-intent bitmaps.
+ [PATCH 009 of 10] md: Allow parallel resync of md-devices.
+ [PATCH 010 of 10] md: Restart recovery cleanly after device failure.
