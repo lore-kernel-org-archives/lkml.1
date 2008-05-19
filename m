@@ -1,315 +1,362 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754966AbYESKce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758420AbYESKct@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754966AbYESKce (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 06:32:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755101AbYESKcZ
+	id S1758420AbYESKct (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 06:32:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756914AbYESKcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 06:32:25 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:28426 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755082AbYESKcX (ORCPT
+	Mon, 19 May 2008 06:32:31 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:41156 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756307AbYESKc3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 06:32:23 -0400
-X-IronPort-AV: E=Sophos;i="4.27,503,1204520400"; 
-   d="scan'208";a="53751374"
-From: Bryan Wu <cooloney@kernel.org>
-To: joern@logfs.org, dwmw2@infradead.org
-Cc: linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Mike Frysinger <vapier.adi@gmail.com>, Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 1/1] mtd maps - Blackfin Async Flash Maps (try #4): Handle the case where flash memory and ethernet mac/phy are mapped onto the same async bank
-Date: Mon, 19 May 2008 18:32:24 +0800
-Message-Id: <1211193144-7731-1-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.5
+	Mon, 19 May 2008 06:32:29 -0400
+Message-ID: <48315718.6080700@bull.net>
+Date: Mon, 19 May 2008 12:31:52 +0200
+From: Nadia Derbey <Nadia.Derbey@bull.net>
+Organization: BULL/DT/OSwR&D/Linux
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Nadia Derbey <Nadia.Derbey@bull.net>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Adrian Bunk <bunk@kernel.org>,
+       kernel list <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [BUG] 2.6.26-rc1-git4 - task blocked on powerpc for more than
+ 120 seconds
+References: <4821AD2D.8020001@linux.vnet.ibm.com> <20080507134057.GA30637@cs181133002.pp.htv.fi> <48227AAB.9000309@linux.vnet.ibm.com> <482C1ED8.3030508@bull.net> <482D999D.5090408@linux.vnet.ibm.com> <483138EC.6090600@bull.net>
+In-Reply-To: <483138EC.6090600@bull.net>
+Content-Type: multipart/mixed;
+ boundary="------------040400090705090803040100"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mike Frysinger <vapier.adi@gmail.com>
+This is a multi-part message in MIME format.
+--------------040400090705090803040100
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-[try #4]
- - drop superfluous casts
- - drop SSYNC() when reading from the flash and rewrite
-   bfin_copy_from() to be like bfin_copy_to() so that
-   we dont have to handle all the aligned/unaligned cases
+Nadia Derbey wrote:
+> Kamalesh Babulal wrote:
+> 
+>> Nadia Derbey wrote:
+>>
+>>> Kamalesh Babulal wrote:
+>>>
+>>>> Adrian Bunk wrote:
+>>>>
+>>>>
+>>>>> On Wed, May 07, 2008 at 06:52:53PM +0530, Kamalesh Babulal wrote:
+>>>>>
+>>>>>
+>>>>>> While running the ltp over the powerpc with the 2.6.26-rc1-git4 
+>>>>>> kernel,
+>>>>>> task get blocked for more 120 seconds and does not proceeds future.
+>>>>>>
+>>>>>> The task msgctl08 is a ipc testcase, which test the msgget(2) 
+>>>>>> msgctl(2)
+>>>>>> syscalls.
+>>>>>
+>>>>>
+>>>>> Thanks for your report.
+>>>>>
+>>>>> I assume this is reproducible?
+>>>>>
+>>>>> If yes, what was the last kernel that worked for you?
+>>>>
+>>>>
+>>>> This is reproducible on 2.6.26-rc1 and 2.6.26-rc1-git(s). 2.6.25 is 
+>>>> the last know kernel
+>>>> to work.
+>>>>
+>>>>
+>>>>
+>>>>> I've also added Pierre Peiffer and Nadia Derbey to the Cc since 
+>>>>> their recent ipc commits are my first suspects.
+>>>>>
+>>>>>
+>>>>>
+>>>>>> Machine is stuck in the task, printing the following call trace
+>>>>>> more than 5000 times. The oom-killer invoked once in-between.
+>>>>>>
+>>>>>> INFO: task msgctl08:16248 blocked for more than 120 seconds.
+>>>>>> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this 
+>>>>>> message.
+>>>>>> Call Trace:
+>>>>>> [c0000000762435a0] [0000000000000001] 0x1 (unreliable)
+>>>>>> [c000000076243770] [c000000000010acc] .__switch_to+0x128/0x16c
+>>>>>> [c000000076243800] [c0000000004b07a4] .schedule+0x7ac/0x890
+>>>>>> [c0000000762438f0] [c0000000004b2ba4] 
+>>>>>> .rwsem_down_failed_common+0x260/0x2b0
+>>>>>> [c0000000762439b0] [c0000000004b2c60] 
+>>>>>> .rwsem_down_read_failed+0x2c/0x44
+>>>>>> [c000000076243a60] [c0000000004b1b84] .down_read+0x44/0x5c
+>>>>>> [c000000076243af0] [c000000000295e10] .ipc_lock+0x34/0xe0
+>>>>>> [c000000076243b90] [c00000000029690c] .ipc_lock_check+0x24/0x78
+>>>>>> [c000000076243c20] [c0000000002972c0] .do_msgsnd+0xb0/0x3f8
+>>>>>> [c000000076243d10] [c000000000293ce8] .compat_sys_msgsnd+0x94/0xc0
+>>>>>> [c000000076243db0] [c000000000014418] .compat_sys_ipc+0x130/0x1f4
+>>>>>> [c000000076243e30] [c000000000008734] syscall_exit+0x0/0x40
+>>>>>> msgctl08 invoked oom-killer: gfp_mask=0x1200d2, order=0, oomkilladj=0
+>>>>>> Call Trace:
+>>>>>> [c00000001e1c7640] [c0000000000101bc] .show_stack+0x70/0x1bc 
+>>>>>> (unreliable)
+>>>>>> [c00000001e1c76f0] [c0000000000c2c78] .oom_kill_process+0x78/0x230
+>>>>>> [c00000001e1c77a0] [c0000000000c3390] .out_of_memory+0x28c/0x320
+>>>>>> [c00000001e1c7870] [c0000000000c70ac] 
+>>>>>> .__alloc_pages_internal+0x364/0x468
+>>>>>> [c00000001e1c7980] [c0000000000e83cc] .alloc_page_vma+0x120/0x14c
+>>>>>> [c00000001e1c7a20] [c0000000000e0224] 
+>>>>>> .read_swap_cache_async+0x7c/0x160
+>>>>>> [c00000001e1c7ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
+>>>>>> [c00000001e1c7ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
+>>>>>> [c00000001e1c7c80] [c0000000004b5054] .do_page_fault+0x440/0x624
+>>>>>> [c00000001e1c7e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
+>>>>>> Mem-info:
+>>>>>> Node 0 DMA per-cpu:
+>>>>>> CPU    0: hi:    6, btch:   1 usd:   1
+>>>>>> CPU    1: hi:    6, btch:   1 usd:   1
+>>>>>> Node 1 DMA per-cpu:
+>>>>>> CPU    0: hi:    6, btch:   1 usd:   5
+>>>>>> CPU    1: hi:    6, btch:   1 usd:   5
+>>>>>> Active:31 inactive:2628 dirty:1 writeback:6 unstable:0
+>>>>>> free:156 slab:13071 mapped:548 pagetables:41109 bounce:0
+>>>>>> Node 0 DMA free:5312kB min:5760kB low:7168kB high:8640kB 
+>>>>>> active:1024kB inactive:768kB present:3928832kB pages_scanned:3912 
+>>>>>> all_unreclaimable? no
+>>>>>> lowmem_reserve[]: 0 0 0
+>>>>>> Node 1 DMA free:4672kB min:4992kB low:6208kB high:7488kB 
+>>>>>> active:960kB inactive:169792kB present:3404992kB 
+>>>>>> pages_scanned:140140 all_unreclaimable? no
+>>>>>> lowmem_reserve[]: 0 0 0
+>>>>>> Node 0 DMA: 5*64kB 15*128kB 2*256kB 1*512kB 0*1024kB 1*2048kB 
+>>>>>> 0*4096kB 0*8192kB 0*16384kB = 5312kB
+>>>>>> Node 1 DMA: 8*64kB 5*128kB 6*256kB 0*512kB 0*1024kB 1*2048kB 
+>>>>>> 0*4096kB 0*8192kB 0*16384kB = 4736kB
+>>>>>> 8185 total pagecache pages
+>>>>>> Swap cache: add 29545, delete 21888, find 5602/10373
+>>>>>> Free swap  = 803712kB
+>>>>>> Total swap = 2048128kB
+>>>>>> 114688 pages of RAM
+>>>>>> 766 reserved pages
+>>>>>> 231218 pages shared
+>>>>>> 7657 pages swap cached
+>>>>>> Out of memory: kill process 15371 (msgctl08) score 39223 or a child
+>>>>>> Killed process 15373 (msgctl08)
+>>>>>> INFO: task msgctl08:15385 blocked for more than 120 seconds.
+>>>>>> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this 
+>>>>>> message.
+>>>>>> Call Trace:
+>>>>>> [c0000000e9a43290] [0000000000000001] 0x1 (unreliable)
+>>>>>> [c0000000e9a43460] [c000000000010acc] .__switch_to+0x128/0x16c
+>>>>>> [c0000000e9a434f0] [c0000000004b07a4] .schedule+0x7ac/0x890
+>>>>>> [c0000000e9a435e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
+>>>>>> [c0000000e9a43670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
+>>>>>> [c0000000e9a43750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
+>>>>>> [c0000000e9a43800] [c0000000002d6624] 
+>>>>>> .generic_make_request+0x35c/0x3b0
+>>>>>> [c0000000e9a438e0] [c0000000002d81b0] .submit_bio+0x118/0x140
+>>>>>> [c0000000e9a439a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
+>>>>>> [c0000000e9a43a20] [c0000000000e02b8] 
+>>>>>> .read_swap_cache_async+0x110/0x160
+>>>>>> [c0000000e9a43ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
+>>>>>> [c0000000e9a43ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
+>>>>>> [c0000000e9a43c80] [c0000000004b5054] .do_page_fault+0x440/0x624
+>>>>>> [c0000000e9a43e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
+>>>>>> INFO: task msgctl08:15405 blocked for more than 120 seconds.
+>>>>>> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this 
+>>>>>> message.
+>>>>>> Call Trace:
+>>>>>> [c0000000b1757290] [0000000000000001] 0x1 (unreliable)
+>>>>>> [c0000000b1757460] [c000000000010acc] .__switch_to+0x128/0x16c
+>>>>>> [c0000000b17574f0] [c0000000004b07a4] .schedule+0x7ac/0x890
+>>>>>> [c0000000b17575e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
+>>>>>> [c0000000b1757670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
+>>>>>> [c0000000b1757750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
+>>>>>> [c0000000b1757800] [c0000000002d6624] 
+>>>>>> .generic_make_request+0x35c/0x3b0
+>>>>>> [c0000000b17578e0] [c0000000002d81b0] .submit_bio+0x118/0x140
+>>>>>> [c0000000b17579a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
+>>>>>> [c0000000b1757a20] [c0000000000e02b8] 
+>>>>>> .read_swap_cache_async+0x110/0x160
+>>>>>> [c0000000b1757ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
+>>>>>> [c0000000b1757ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
+>>>>>> [c0000000b1757c80] [c0000000004b5054] .do_page_fault+0x440/0x624
+>>>>>> [c0000000b1757e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
+>>>>>> INFO: task msgctl08:15406 blocked for more than 120 seconds.
+>>>>>> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this 
+>>>>>> message.
+>>>>>> Call Trace:
+>>>>>> [c0000000eec53290] [0000000000000001] 0x1 (unreliable)
+>>>>>> [c0000000eec53460] [c000000000010acc] .__switch_to+0x128/0x16c
+>>>>>> [c0000000eec534f0] [c0000000004b07a4] .schedule+0x7ac/0x890
+>>>>>> [c0000000eec535e0] [c0000000004b0d90] .io_schedule+0x7c/0xe8
+>>>>>> [c0000000eec53670] [c0000000002d7f44] .get_request_wait+0x15c/0x1e0
+>>>>>> [c0000000eec53750] [c0000000002d8950] .__make_request+0x3ec/0x4d8
+>>>>>> [c0000000eec53800] [c0000000002d6624] 
+>>>>>> .generic_make_request+0x35c/0x3b0
+>>>>>> [c0000000eec538e0] [c0000000002d81b0] .submit_bio+0x118/0x140
+>>>>>> [c0000000eec539a0] [c0000000000dfa88] .swap_readpage+0x94/0xb4
+>>>>>> [c0000000eec53a20] [c0000000000e02b8] 
+>>>>>> .read_swap_cache_async+0x110/0x160
+>>>>>> [c0000000eec53ae0] [c0000000000e035c] .swapin_readahead+0x54/0xd4
+>>>>>> [c0000000eec53ba0] [c0000000000d47e8] .handle_mm_fault+0x520/0x9d8
+>>>>>> [c0000000eec53c80] [c0000000004b5054] .do_page_fault+0x440/0x624
+>>>>>> [c0000000eec53e30] [c0000000000053fc] handle_page_fault+0x20/0x5c
+>>>
+>>>
+>>> Kamalesh,
+>>>
+>>> I'm wondering whether this is not related to a problem found in LTP 
+>>> after msgmni had been changed from 16 to a computed value.
+>>>
+>>> Does your ltp test suite contain the patch I had sent in thread 
+>>> http://lkml.org/lkml/2008/2/21/123?
+>>>
+>>> If you want to have a look at it, discussion started in thread 
+>>> http://lkml.org/lkml/2008/2/16/6
+>>>
+>>> Regards,
+>>> Nadia
+>>>
+>>
+>> Hi Nadia,
+>> Thanks, I am using the LTP-20080430 and tried it with the 
+>> 2.6.26-rc2-git4 kernel.
+>> but the call trace remains the same.
+>>
+> 
+> Ok, I'll try to find a ppc machine: could not reproduce it on my Xeon 
+> machine (but actually it was with a 2.6.26-rc1 kernel).
+> 
+> Regards,
+> Nadia
+> 
 
-[try #3] rename bf5xx-flash to bfin-async-flash
- - move all kconfig board settings into board resources
- - fixup casting style according to lkml feedback
- - rewrite driver so that it can handle arbitrary of
-   instances according to the declared platform resources
+Kamalesh,
 
-[try #2]
-Remove useless SSYNC() as Will said
+I could find a ppc victim, and ... could not reproduce the problem.
 
-[try #1]
-The BF533-STAMP does this for example.
-All board-specific configuration goes in your board resources file.
+Attached is the output I got.
 
-Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Joern Engel <joern@logfs.org>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- drivers/mtd/maps/Kconfig            |   11 ++
- drivers/mtd/maps/Makefile           |    1 +
- drivers/mtd/maps/bfin-async-flash.c |  219 +++++++++++++++++++++++++++++++++++
- 3 files changed, 231 insertions(+), 0 deletions(-)
- create mode 100644 drivers/mtd/maps/bfin-async-flash.c
+Regards,
+Nadia
 
-diff --git a/drivers/mtd/maps/Kconfig b/drivers/mtd/maps/Kconfig
-index 17bc87a..d4878eb 100644
---- a/drivers/mtd/maps/Kconfig
-+++ b/drivers/mtd/maps/Kconfig
-@@ -517,6 +517,17 @@ config MTD_PCMCIA_ANONYMOUS
+
+
+--------------040400090705090803040100
+Content-Type: text/plain;
+ name="msgctl08.output"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="msgctl08.output"
+
+[root@machette ltp-full-20080430]# cat runtest/ipc.fail 
+msgctl08 msgctl08
+
+[root@machette ltp-full-20080430]# ./runltp -p -l result.03.log -f ipc.fail
+INFO: creating /home/lkernel/src/ltp-full-20080430/output directory
+INFO: creating /home/lkernel/src/ltp-full-20080430/results directory
+If some fields are empty or look unusual you may have an old version.
+Compare to the current minimal requirements in Documentation/Changes.
  
- 	  If unsure, say N.
+Red Hat Enterprise Linux Server release 5.1 (Tikanga)
+Linux machette 2.6.26-rc1 #1 SMP PREEMPT Mon May 19 12:00:48 CEST 2008 ppc64 ppc
+64 ppc64 GNU/Linux
  
-+config MTD_BFIN_ASYNC
-+	tristate "Blackfin BF533-STAMP Flash Chip Support"
-+	depends on BFIN533_STAMP && MTD_CFI
-+	select MTD_PARTITIONS
-+	default y
-+	help
-+	  Map driver which allows for simultaneous utilization of
-+	  ethernet and CFI parallel flash.
-+
-+	  If compiled as a module, it will be called bfin-async-flash.
-+
- config MTD_UCLINUX
- 	tristate "Generic uClinux RAM/ROM filesystem support"
- 	depends on MTD_PARTITIONS && !MMU
-diff --git a/drivers/mtd/maps/Makefile b/drivers/mtd/maps/Makefile
-index 957fb5f..4ed1672 100644
---- a/drivers/mtd/maps/Makefile
-+++ b/drivers/mtd/maps/Makefile
-@@ -67,3 +67,4 @@ obj-$(CONFIG_MTD_PLATRAM)	+= plat-ram.o
- obj-$(CONFIG_MTD_OMAP_NOR)	+= omap_nor.o
- obj-$(CONFIG_MTD_MTX1)		+= mtx-1_flash.o
- obj-$(CONFIG_MTD_INTEL_VR_NOR)	+= intel_vr_nor.o
-+obj-$(CONFIG_MTD_BFIN_ASYNC)	+= bfin-async-flash.o
-diff --git a/drivers/mtd/maps/bfin-async-flash.c b/drivers/mtd/maps/bfin-async-flash.c
-new file mode 100644
-index 0000000..0d3f6e8
---- /dev/null
-+++ b/drivers/mtd/maps/bfin-async-flash.c
-@@ -0,0 +1,219 @@
-+/*
-+ * drivers/mtd/maps/bfin-async-flash.c
-+ *
-+ * Handle the case where flash memory and ethernet mac/phy are
-+ * mapped onto the same async bank.  The BF533-STAMP does this
-+ * for example.  All board-specific configuration goes in your
-+ * board resources file.
-+ *
-+ * Copyright 2000 Nicolas Pitre <nico@cam.org>
-+ * Copyright 2005-2008 Analog Devices Inc.
-+ *
-+ * Enter bugs at http://blackfin.uclinux.org/
-+ *
-+ * Licensed under the GPL-2 or later.
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/mtd/mtd.h>
-+#include <linux/mtd/map.h>
-+#include <linux/mtd/partitions.h>
-+#include <linux/mtd/physmap.h>
-+#include <linux/platform_device.h>
-+#include <linux/types.h>
-+
-+#include <asm/blackfin.h>
-+#include <asm/gpio.h>
-+#include <asm/io.h>
-+#include <asm/unaligned.h>
-+
-+#define pr_devinit(fmt, args...) ({ static const __devinitconst char __fmt[] = fmt; printk(__fmt, ## args); })
-+
-+#define DRIVER_NAME "bfin-async-flash"
-+
-+struct async_state {
-+	struct mtd_info *mtd;
-+	struct map_info map;
-+	int enet_flash_pin;
-+	u32 flash_ambctl0, flash_ambctl1;
-+	u32 save_ambctl0, save_ambctl1;
-+	unsigned long irq_flags;
-+};
-+
-+static void switch_to_flash(struct async_state *state)
-+{
-+	local_irq_save(state->irq_flags);
-+
-+	gpio_set_value(state->enet_flash_pin, 0);
-+
-+	state->save_ambctl0 = bfin_read_EBIU_AMBCTL0();
-+	state->save_ambctl1 = bfin_read_EBIU_AMBCTL1();
-+	bfin_write_EBIU_AMBCTL0(state->flash_ambctl0);
-+	bfin_write_EBIU_AMBCTL1(state->flash_ambctl1);
-+	SSYNC();
-+}
-+
-+static void switch_back(struct async_state *state)
-+{
-+	bfin_write_EBIU_AMBCTL0(state->save_ambctl0);
-+	bfin_write_EBIU_AMBCTL1(state->save_ambctl1);
-+	SSYNC();
-+
-+	gpio_set_value(state->enet_flash_pin, 1);
-+
-+	local_irq_restore(state->irq_flags);
-+}
-+
-+static map_word bfin_read(struct map_info *map, unsigned long ofs)
-+{
-+	struct async_state *state = (struct async_state *)map->map_priv_1;
-+	u16 word;
-+	map_word test;
-+
-+	switch_to_flash(state);
-+
-+	word = readw(map->virt + ofs);
-+
-+	switch_back(state);
-+
-+	test.x[0] = word;
-+	return test;
-+}
-+
-+static void bfin_copy_from(struct map_info *map, void *to, unsigned long from, ssize_t len)
-+{
-+	struct async_state *state = (struct async_state *)map->map_priv_1;
-+
-+	switch_to_flash(state);
-+
-+	memcpy(to, map->virt + from, len);
-+
-+	switch_back(state);
-+}
-+
-+static void bfin_write(struct map_info *map, map_word d1, unsigned long ofs)
-+{
-+	struct async_state *state = (struct async_state *)map->map_priv_1;
-+	u16 d;
-+
-+	d = d1.x[0];
-+
-+	switch_to_flash(state);
-+
-+	writew(d, map->virt + ofs);
-+	SSYNC();
-+
-+	switch_back(state);
-+}
-+
-+static void bfin_copy_to(struct map_info *map, unsigned long to, const void *from, ssize_t len)
-+{
-+	struct async_state *state = (struct async_state *)map->map_priv_1;
-+
-+	switch_to_flash(state);
-+
-+	memcpy(map->virt + to, from, len);
-+	SSYNC();
-+
-+	switch_back(state);
-+}
-+
-+#ifdef CONFIG_MTD_PARTITIONS
-+static const char *part_probe_types[] = { "cmdlinepart", "RedBoot", NULL };
-+#endif
-+
-+static int __devinit bfin_flash_probe(struct platform_device *pdev)
-+{
-+	int ret;
-+	struct physmap_flash_data *pdata = pdev->dev.platform_data;
-+	struct resource *memory = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	struct resource *flash_ambctl = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-+	struct async_state *state;
-+
-+	state = kzalloc(sizeof(*state), GFP_KERNEL);
-+	if (!state)
-+		return -ENOMEM;
-+
-+	state->map.name       = DRIVER_NAME;
-+	state->map.read       = bfin_read;
-+	state->map.copy_from  = bfin_copy_from;
-+	state->map.write      = bfin_write;
-+	state->map.copy_to    = bfin_copy_to;
-+	state->map.bankwidth  = pdata->width;
-+	state->map.size       = memory->end - memory->start + 1;
-+	state->map.virt       = (void __iomem *)memory->start;
-+	state->map.phys       = memory->start;
-+	state->map.map_priv_1 = (unsigned long)state;
-+	state->enet_flash_pin = platform_get_irq(pdev, 0);
-+	state->flash_ambctl0  = flash_ambctl->start;
-+	state->flash_ambctl1  = flash_ambctl->end;
-+
-+	if (gpio_request(state->enet_flash_pin, DRIVER_NAME)) {
-+		pr_devinit(KERN_ERR DRIVER_NAME ": Failed to request gpio %d\n", state->enet_flash_pin);
-+		return -EBUSY;
-+	}
-+	gpio_direction_output(state->enet_flash_pin, 1);
-+
-+	pr_devinit(KERN_NOTICE DRIVER_NAME ": probing %d-bit flash bus\n", state->map.bankwidth * 8);
-+	state->mtd = do_map_probe(memory->name, &state->map);
-+	if (!state->mtd)
-+		return -ENXIO;
-+
-+#ifdef CONFIG_MTD_PARTITIONS
-+	ret = parse_mtd_partitions(state->mtd, part_probe_types, &pdata->parts, 0);
-+	if (ret > 0) {
-+		pr_devinit(KERN_NOTICE DRIVER_NAME ": Using commandline partition definition\n");
-+		add_mtd_partitions(state->mtd, pdata->parts, ret);
-+
-+	} else if (pdata->nr_parts) {
-+		pr_devinit(KERN_NOTICE DRIVER_NAME ": Using board partition definition\n");
-+		add_mtd_partitions(state->mtd, pdata->parts, pdata->nr_parts);
-+
-+	} else
-+#endif
-+	{
-+		pr_devinit(KERN_NOTICE DRIVER_NAME ": no partition info available, registering whole flash at once\n");
-+		add_mtd_device(state->mtd);
-+	}
-+
-+	platform_set_drvdata(pdev, state);
-+
-+	return 0;
-+}
-+
-+static int __devexit bfin_flash_remove(struct platform_device *pdev)
-+{
-+	struct async_state *state = platform_get_drvdata(pdev);
-+	gpio_free(state->enet_flash_pin);
-+#ifdef CONFIG_MTD_PARTITIONS
-+	del_mtd_partitions(state->mtd);
-+#endif
-+	map_destroy(state->mtd);
-+	kfree(state);
-+	return 0;
-+}
-+
-+static struct platform_driver bfin_flash_driver = {
-+	.probe		= bfin_flash_probe,
-+	.remove		= __devexit_p(bfin_flash_remove),
-+	.driver		= {
-+		.name	= DRIVER_NAME,
-+	},
-+};
-+
-+static int __init bfin_flash_init(void)
-+{
-+	return platform_driver_register(&bfin_flash_driver);
-+}
-+module_init(bfin_flash_init);
-+
-+static void __exit bfin_flash_exit(void)
-+{
-+	platform_driver_unregister(&bfin_flash_driver);
-+}
-+module_exit(bfin_flash_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_DESCRIPTION("MTD map driver for Blackfins with flash/ethernet on same async bank");
--- 
-1.5.5
+Gnu C                  gcc (GCC) 4.1.2 20070626 (Red Hat 4.1.2-14)
+Gnu make               3.81
+util-linux             pre7)
+mount                  pre7)
+modutils               3.3-pre2
+e2fsprogs              1.39
+PPP                    2.4.4
+isdn4k-utils           3.9
+Linux C Library        > libc.2.5
+Dynamic linker (ldd)   2.5
+Procps                 3.2.7
+Net-tools              1.60
+Kbd                    1.12
+Sh-utils               5.97
+Modules Loaded         nfsd exportfs lockd sunrpc ehea sg ipr libata sd_mod scsi
+_mod ext3 jbd
+
+free reports:
+             total       used       free     shared    buffers     cached
+Mem:       7717720     202796    7514924          0      16236      83800
+-/+ buffers/cache:     102760    7614960
+Swap:            0          0          0
+
+/proc/cpuinfo
+processor       : 0
+cpu             : POWER6 (raw), altivec supported
+clock           : 4005.000000MHz
+revision        : 3.1 (pvr 003e 0301)
+
+processor       : 1
+cpu             : POWER6 (raw), altivec supported
+clock           : 4005.000000MHz
+revision        : 3.1 (pvr 003e 0301)
+
+processor       : 2
+cpu             : POWER6 (raw), altivec supported
+clock           : 4005.000000MHz
+revision        : 3.1 (pvr 003e 0301)
+
+processor       : 3
+cpu             : POWER6 (raw), altivec supported
+clock           : 4005.000000MHz
+revision        : 3.1 (pvr 003e 0301)
+
+processor       : 4
+cpu             : POWER6 (raw), altivec supported
+clock           : 4005.000000MHz
+revision        : 3.1 (pvr 003e 0301)
+
+processor       : 5
+cpu             : POWER6 (raw), altivec supported
+clock           : 4005.000000MHz
+revision        : 3.1 (pvr 003e 0301)
+
+processor       : 6
+cpu             : POWER6 (raw), altivec supported
+clock           : 4005.000000MHz
+revision        : 3.1 (pvr 003e 0301)
+
+processor       : 7
+cpu             : POWER6 (raw), altivec supported
+clock           : 4005.000000MHz
+revision        : 3.1 (pvr 003e 0301)
+
+timebase        : 512000000
+platform        : pSeries
+model           : IBM,7998-61X
+machine         : CHRP IBM,7998-61X
+<<<test_start>>>
+tag=msgctl08 stime=1211192505
+cmdline="msgctl08"
+contacts=""
+analysis=exit
+initiation_status="ok"
+<<<test_output>>>
+incrementing stop
+msgctl08    1  PASS  :  msgctl08 ran successfully!
+<<<execution_status>>>
+duration=2 termination_type=exited termination_id=0 corefile=no
+cutime=148 cstime=357
+<<<test_end>>>
+INFO: pan reported all tests PASS
+LTP Version: LTP-20080430
+        
+       ###############################################################"
+        
+            Done executing testcases."
+            log result(s) is in /home/lkernel/src/ltp-full-20080430/results directory"
+            output/failed result(s) in /home/lkernel/src/ltp-full-20080430/output directory [If you did not provide Absolute Path]
+            LTP Version:  LTP-20080430
+       ###############################################################"
+
+
+--------------040400090705090803040100--
