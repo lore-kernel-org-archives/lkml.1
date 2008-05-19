@@ -1,56 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761712AbYESNi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765411AbYESNjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761712AbYESNi4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 09:38:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762169AbYESNXN
+	id S1765411AbYESNjY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 09:39:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763090AbYESN0S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 09:23:13 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33315 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762162AbYESNXM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 09:23:12 -0400
-Date: Mon, 19 May 2008 15:22:50 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Avi Kivity <avi@qumranet.com>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Make LIST_POISON less deadly
-Message-ID: <20080519132250.GA20793@elte.hu>
-References: <1211125094-32167-1-git-send-email-avi@qumranet.com> <20080519130151.GE13546@elte.hu> <48317E2B.2030304@qumranet.com>
+	Mon, 19 May 2008 09:26:18 -0400
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:11499
+	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763066AbYESN0R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 09:26:17 -0400
+Message-ID: <48317FF7.1020707@qumranet.com>
+Date: Mon, 19 May 2008 16:26:15 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48317E2B.2030304@qumranet.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Mark McLoughlin <markmc@redhat.com>, Anthony Liguori <aliguori@us.ibm.com>,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org
+Subject: Re: [PATCH] virtio_net: free transmit skbs in a timer
+References: <1209565906-9019-1-git-send-email-markmc@redhat.com> <200805191152.28409.rusty@rustcorp.com.au> <483155D4.2090700@qumranet.com> <200805192221.52072.rusty@rustcorp.com.au>
+In-Reply-To: <200805192221.52072.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Avi Kivity <avi@qumranet.com> wrote:
-
->> i'd suggest to add an ARCH_ILLEGAL_POINTER define instead, which 
->> defaults to zero and gets added to pointer-ish poison values. That 
->> makes it both simpler and also it does not need any include/asm 
->> changes because ARCH_ILLEGAL_POINTER can be set from the Kconfig 
->> space.
+Rusty Russell wrote:
+>>>
+>>> Well, we do have such a thing, in the ring suppression flags.
+>>>       
+>> Can you point me at this?
+>>     
 >
-> Right.
+> Ah, sorry, I misunderstood.  No, we don't have a threshold like this, we
+> have an all-or-nothing flag in each direction.
 >
-> How much unmapped space do we have on i386 or other archs?  The deltas 
-> added to ARCH_ILLEGAL_POINTER will have to be limited to that.
+>   
 
-can we get away with having the offset default to zero, and all poison 
-values remain unchanged if that? Then 64-bit x86 could just set the 
-offset to 2^63 and we wont have to worry about 32-bit x86 at all ...
+Please point me anyway?
 
-i.e. start small with this and only have an effect on 64-bit x86.
+> We have the ability to add new fields to the rings.  I've put it on my
+> TODO to benchmark what this does.  It may or may not help.  In this case,
+> notification when there are no more packets in xmit ring would be
+> sufficient.  We already kick the host when we fill a ring even if
+> it says it doesn't need it, perhaps this would be symmetry.
+>   
 
-	Ingo
+Notification on ring full is too late with smp.  You need to warn the 
+other side in advance.
+
+The reason I'm interested in adjustable thresholds is that you can then 
+to tx mitigation without (usually) suffering the worst-case latency when 
+you aren't streaming or streaming slower than what you tuned for.
+
+>   
+>>>   Note that DaveM
+>>> is talking about moving network tx queue into the net drivers themselves,
+>>> which will make them much more efficient (ie. drain entire queue before
+>>> kick), which may again change the balance of what the Right Thing is.
+>>>       
+>> That depends on whether Linux knows whether more packets are coming.
+>>     
+>
+> The current problem is that hard_start_xmit gets called with a packet, and 
+> has no idea if there are more in the tx queue.  By having the driver control
+> the queue, it can at least tell that.
+>   
+
+Yes, definitely an improvement, esp. for sendfile().
+
+> The question remains whether this will be sufficient for tx mitigation.  A
+> program may be about to write more to the socket, and we can't know that.
+> But it can hardly hurt.
+>
+>   
+
+Right.
+
+-- 
+error compiling committee.c: too many arguments to function
+
