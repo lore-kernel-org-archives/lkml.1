@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932177AbYESNcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761317AbYESNdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932177AbYESNcq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 09:32:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761015AbYESNUl
+	id S1761317AbYESNdt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 09:33:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759790AbYESNU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 09:20:41 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45972 "EHLO
+	Mon, 19 May 2008 09:20:58 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:45987 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760999AbYESNUk (ORCPT
+	with ESMTP id S1760517AbYESNU5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 09:20:40 -0400
+	Mon, 19 May 2008 09:20:57 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 44/57] scx200_wdt: clean up and switch to unlocked_ioctl
+Subject: [PATCH 47/57] softdog: clean up,
+	coding style and switch to unlocked_ioctl
 To: akpm@osdl.org, linux-kernel@vger.kernel.org, wim@iguana.be
-Date: Mon, 19 May 2008 14:08:49 +0100
-Message-ID: <20080519130849.31722.38282.stgit@core>
+Date: Mon, 19 May 2008 14:09:06 +0100
+Message-ID: <20080519130906.31722.25125.stgit@core>
 In-Reply-To: <20080519124659.31722.51847.stgit@core>
 References: <20080519124659.31722.51847.stgit@core>
 User-Agent: StGIT/0.14.1
@@ -30,210 +31,193 @@ From: Alan Cox <alan@redhat.com>
 
 ---
 
- drivers/watchdog/sc520_wdt.c  |    4 +--
- drivers/watchdog/scx200_wdt.c |   59 +++++++++++++++++++++--------------------
- 2 files changed, 32 insertions(+), 31 deletions(-)
+ drivers/watchdog/softdog.c |   87 +++++++++++++++++++++++---------------------
+ 1 files changed, 46 insertions(+), 41 deletions(-)
 
 
-diff --git a/drivers/watchdog/sc520_wdt.c b/drivers/watchdog/sc520_wdt.c
-index 525555a..01de239 100644
---- a/drivers/watchdog/sc520_wdt.c
-+++ b/drivers/watchdog/sc520_wdt.c
-@@ -279,7 +279,7 @@ static int fop_close(struct inode *inode, struct file *file)
- 	return 0;
- }
- 
--static int fop_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
-+static long fop_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- {
- 	void __user *argp = (void __user *)arg;
- 	int __user *p = argp;
-@@ -345,7 +345,7 @@ static const struct file_operations wdt_fops = {
- 	.write		= fop_write,
- 	.open		= fop_open,
- 	.release	= fop_close,
--	.ioctl		= fop_ioctl,
-+	.unlocked_ioctl	= fop_ioctl,
- };
- 
- static struct miscdevice wdt_miscdev = {
-diff --git a/drivers/watchdog/scx200_wdt.c b/drivers/watchdog/scx200_wdt.c
-index d55882b..7c1de94 100644
---- a/drivers/watchdog/scx200_wdt.c
-+++ b/drivers/watchdog/scx200_wdt.c
-@@ -27,9 +27,8 @@
- #include <linux/fs.h>
- #include <linux/ioport.h>
- #include <linux/scx200.h>
+diff --git a/drivers/watchdog/softdog.c b/drivers/watchdog/softdog.c
+index 9c36949..bb3c75e 100644
+--- a/drivers/watchdog/softdog.c
++++ b/drivers/watchdog/softdog.c
+@@ -47,19 +47,22 @@
+ #include <linux/reboot.h>
+ #include <linux/init.h>
+ #include <linux/jiffies.h>
 -
 -#include <asm/uaccess.h>
--#include <asm/io.h>
 +#include <linux/uaccess.h>
-+#include <linux/io.h>
  
- #define NAME "scx200_wdt"
+ #define PFX "SoftDog: "
  
-@@ -47,8 +46,9 @@ module_param(nowayout, int, 0);
- MODULE_PARM_DESC(nowayout, "Disable watchdog shutdown on close");
+ #define TIMER_MARGIN	60		/* Default is 60 seconds */
+ static int soft_margin = TIMER_MARGIN;	/* in seconds */
+ module_param(soft_margin, int, 0);
+-MODULE_PARM_DESC(soft_margin, "Watchdog soft_margin in seconds. (0<soft_margin<65536, default=" __MODULE_STRING(TIMER_MARGIN) ")");
++MODULE_PARM_DESC(soft_margin,
++	"Watchdog soft_margin in seconds. (0 < soft_margin < 65536, default="
++					__MODULE_STRING(TIMER_MARGIN) ")");
  
- static u16 wdto_restart;
--static struct semaphore open_semaphore;
- static char expect_close;
-+static unsigned long open_lock;
-+static DEFINE_SPINLOCK(scx_lock);
+ static int nowayout = WATCHDOG_NOWAYOUT;
+ module_param(nowayout, int, 0);
+-MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default=" __MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
++MODULE_PARM_DESC(nowayout,
++		"Watchdog cannot be stopped once started (default="
++				__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
  
- /* Bits of the WDCNFG register */
- #define W_ENABLE 0x00fa		/* Enable watchdog */
-@@ -59,7 +59,9 @@ static char expect_close;
+ #ifdef ONLY_TESTING
+ static int soft_noboot = 1;
+@@ -93,8 +96,7 @@ static void watchdog_fire(unsigned long data)
  
- static void scx200_wdt_ping(void)
- {
-+	spin_lock(&scx_lock);
- 	outw(wdto_restart, scx200_cb_base + SCx200_WDT_WDTO);
-+	spin_unlock(&scx_lock);
- }
- 
- static void scx200_wdt_update_margin(void)
-@@ -73,9 +75,11 @@ static void scx200_wdt_enable(void)
- 	printk(KERN_DEBUG NAME ": enabling watchdog timer, wdto_restart = %d\n",
- 	       wdto_restart);
- 
-+	spin_lock(&scx_lock);
- 	outw(0, scx200_cb_base + SCx200_WDT_WDTO);
- 	outb(SCx200_WDT_WDSTS_WDOVF, scx200_cb_base + SCx200_WDT_WDSTS);
- 	outw(W_ENABLE, scx200_cb_base + SCx200_WDT_WDCNFG);
-+	spin_unlock(&scx_lock);
- 
- 	scx200_wdt_ping();
- }
-@@ -84,15 +88,17 @@ static void scx200_wdt_disable(void)
- {
- 	printk(KERN_DEBUG NAME ": disabling watchdog timer\n");
- 
-+	spin_lock(&scx_lock);
- 	outw(0, scx200_cb_base + SCx200_WDT_WDTO);
- 	outb(SCx200_WDT_WDSTS_WDOVF, scx200_cb_base + SCx200_WDT_WDSTS);
- 	outw(W_DISABLE, scx200_cb_base + SCx200_WDT_WDCNFG);
-+	spin_unlock(&scx_lock);
- }
- 
- static int scx200_wdt_open(struct inode *inode, struct file *file)
- {
- 	/* only allow one at a time */
--	if (down_trylock(&open_semaphore))
-+	if (test_and_set_bit(0, &open_lock))
- 		return -EBUSY;
- 	scx200_wdt_enable();
- 
-@@ -101,13 +107,12 @@ static int scx200_wdt_open(struct inode *inode, struct file *file)
- 
- static int scx200_wdt_release(struct inode *inode, struct file *file)
- {
--	if (expect_close != 42) {
-+	if (expect_close != 42)
- 		printk(KERN_WARNING NAME ": watchdog device closed unexpectedly, will not disable the watchdog timer\n");
--	} else if (!nowayout) {
-+	else if (!nowayout)
- 		scx200_wdt_disable();
--	}
- 	expect_close = 0;
--	up(&open_semaphore);
-+	clear_bit(0, &open_lock);
- 
- 	return 0;
- }
-@@ -122,8 +127,7 @@ static int scx200_wdt_notify_sys(struct notifier_block *this,
- 	return NOTIFY_DONE;
- }
- 
--static struct notifier_block scx200_wdt_notifier =
--{
-+static struct notifier_block scx200_wdt_notifier = {
- 	.notifier_call = scx200_wdt_notify_sys,
- };
- 
-@@ -131,8 +135,7 @@ static ssize_t scx200_wdt_write(struct file *file, const char __user *data,
- 				     size_t len, loff_t *ppos)
- {
- 	/* check for a magic close character */
--	if (len)
+ 	if (soft_noboot)
+ 		printk(KERN_CRIT PFX "Triggered - Reboot ignored.\n");
+-	else
 -	{
-+	if (len) {
- 		size_t i;
- 
- 		scx200_wdt_ping();
-@@ -152,15 +155,15 @@ static ssize_t scx200_wdt_write(struct file *file, const char __user *data,
++	else {
+ 		printk(KERN_CRIT PFX "Initiating system reboot.\n");
+ 		emergency_restart();
+ 		printk(KERN_CRIT PFX "Reboot didn't ?????\n");
+@@ -153,7 +155,8 @@ static int softdog_release(struct inode *inode, struct file *file)
+ 		softdog_stop();
+ 		module_put(THIS_MODULE);
+ 	} else {
+-		printk(KERN_CRIT PFX "Unexpected close, not stopping watchdog!\n");
++		printk(KERN_CRIT PFX
++			"Unexpected close, not stopping watchdog!\n");
+ 		set_bit(0, &orphan_timer);
+ 		softdog_keepalive();
+ 	}
+@@ -162,12 +165,13 @@ static int softdog_release(struct inode *inode, struct file *file)
  	return 0;
  }
  
--static int scx200_wdt_ioctl(struct inode *inode, struct file *file,
+-static ssize_t softdog_write(struct file *file, const char __user *data, size_t len, loff_t *ppos)
++static ssize_t softdog_write(struct file *file, const char __user *data,
++						size_t len, loff_t *ppos)
+ {
+ 	/*
+ 	 *	Refresh the timer.
+ 	 */
+-	if(len) {
++	if (len) {
+ 		if (!nowayout) {
+ 			size_t i;
+ 
+@@ -188,13 +192,13 @@ static ssize_t softdog_write(struct file *file, const char __user *data, size_t
+ 	return len;
+ }
+ 
+-static int softdog_ioctl(struct inode *inode, struct file *file,
 -	unsigned int cmd, unsigned long arg)
-+static long scx200_wdt_ioctl(struct file *file, unsigned int cmd,
++static long softdog_ioctl(struct file *file, unsigned int cmd,
 +							unsigned long arg)
  {
  	void __user *argp = (void __user *)arg;
  	int __user *p = argp;
+ 	int new_margin;
 -	static struct watchdog_info ident = {
 +	static const struct watchdog_info ident = {
- 		.identity = "NatSemi SCx200 Watchdog",
- 		.firmware_version = 1,
--		.options = (WDIOF_SETTIMEOUT | WDIOF_KEEPALIVEPING),
-+		.options = WDIOF_SETTIMEOUT | WDIOF_KEEPALIVEPING,
+ 		.options =		WDIOF_SETTIMEOUT |
+ 					WDIOF_KEEPALIVEPING |
+ 					WDIOF_MAGICCLOSE,
+@@ -202,26 +206,25 @@ static int softdog_ioctl(struct inode *inode, struct file *file,
+ 		.identity =		"Software Watchdog",
  	};
- 	int new_margin;
- 
-@@ -168,7 +171,7 @@ static int scx200_wdt_ioctl(struct inode *inode, struct file *file,
- 	default:
- 		return -ENOTTY;
- 	case WDIOC_GETSUPPORT:
--		if(copy_to_user(argp, &ident, sizeof(ident)))
-+		if (copy_to_user(argp, &ident, sizeof(ident)))
- 			return -EFAULT;
- 		return 0;
- 	case WDIOC_GETSTATUS:
-@@ -195,18 +198,18 @@ static int scx200_wdt_ioctl(struct inode *inode, struct file *file,
+ 	switch (cmd) {
+-		default:
+-			return -ENOTTY;
+-		case WDIOC_GETSUPPORT:
+-			return copy_to_user(argp, &ident,
+-				sizeof(ident)) ? -EFAULT : 0;
+-		case WDIOC_GETSTATUS:
+-		case WDIOC_GETBOOTSTATUS:
+-			return put_user(0, p);
+-		case WDIOC_KEEPALIVE:
+-			softdog_keepalive();
+-			return 0;
+-		case WDIOC_SETTIMEOUT:
+-			if (get_user(new_margin, p))
+-				return -EFAULT;
+-			if (softdog_set_heartbeat(new_margin))
+-				return -EINVAL;
+-			softdog_keepalive();
+-			/* Fall */
+-		case WDIOC_GETTIMEOUT:
+-			return put_user(soft_margin, p);
++	default:
++		return -ENOTTY;
++	case WDIOC_GETSUPPORT:
++		return copy_to_user(argp, &ident, sizeof(ident)) ? -EFAULT : 0;
++	case WDIOC_GETSTATUS:
++	case WDIOC_GETBOOTSTATUS:
++		return put_user(0, p);
++	case WDIOC_KEEPALIVE:
++		softdog_keepalive();
++		return 0;
++	case WDIOC_SETTIMEOUT:
++		if (get_user(new_margin, p))
++			return -EFAULT;
++		if (softdog_set_heartbeat(new_margin))
++			return -EINVAL;
++		softdog_keepalive();
++		/* Fall */
++	case WDIOC_GETTIMEOUT:
++		return put_user(soft_margin, p);
+ 	}
  }
  
- static const struct file_operations scx200_wdt_fops = {
--	.owner	 = THIS_MODULE,
--	.llseek	 = no_llseek,
--	.write   = scx200_wdt_write,
--	.ioctl   = scx200_wdt_ioctl,
--	.open    = scx200_wdt_open,
-+	.owner = THIS_MODULE,
-+	.llseek = no_llseek,
-+	.write = scx200_wdt_write,
-+	.unlocked_ioctl = scx200_wdt_ioctl,
-+	.open = scx200_wdt_open,
- 	.release = scx200_wdt_release,
+@@ -232,10 +235,9 @@ static int softdog_ioctl(struct inode *inode, struct file *file,
+ static int softdog_notify_sys(struct notifier_block *this, unsigned long code,
+ 	void *unused)
+ {
+-	if(code==SYS_DOWN || code==SYS_HALT) {
++	if (code == SYS_DOWN || code == SYS_HALT)
+ 		/* Turn the WDT off */
+ 		softdog_stop();
+-	}
+ 	return NOTIFY_DONE;
+ }
+ 
+@@ -247,7 +249,7 @@ static const struct file_operations softdog_fops = {
+ 	.owner		= THIS_MODULE,
+ 	.llseek		= no_llseek,
+ 	.write		= softdog_write,
+-	.ioctl		= softdog_ioctl,
++	.unlocked_ioctl	= softdog_ioctl,
+ 	.open		= softdog_open,
+ 	.release	= softdog_release,
  };
+@@ -268,24 +270,27 @@ static int __init watchdog_init(void)
+ {
+ 	int ret;
  
- static struct miscdevice scx200_wdt_miscdev = {
- 	.minor = WATCHDOG_MINOR,
--	.name  = "watchdog",
--	.fops  = &scx200_wdt_fops,
-+	.name = "watchdog",
-+	.fops = &scx200_wdt_fops,
- };
+-	/* Check that the soft_margin value is within it's range ; if not reset to the default */
++	/* Check that the soft_margin value is within it's range;
++	   if not reset to the default */
+ 	if (softdog_set_heartbeat(soft_margin)) {
+ 		softdog_set_heartbeat(TIMER_MARGIN);
+-		printk(KERN_INFO PFX "soft_margin value must be 0<soft_margin<65536, using %d\n",
++		printk(KERN_INFO PFX
++		    "soft_margin must be 0 < soft_margin < 65536, using %d\n",
+ 			TIMER_MARGIN);
+ 	}
  
- static int __init scx200_wdt_init(void)
-@@ -229,8 +232,6 @@ static int __init scx200_wdt_init(void)
- 	scx200_wdt_update_margin();
- 	scx200_wdt_disable();
+ 	ret = register_reboot_notifier(&softdog_notifier);
+ 	if (ret) {
+-		printk (KERN_ERR PFX "cannot register reboot notifier (err=%d)\n",
+-			ret);
++		printk(KERN_ERR PFX
++			"cannot register reboot notifier (err=%d)\n", ret);
+ 		return ret;
+ 	}
  
--	sema_init(&open_semaphore, 1);
--
- 	r = register_reboot_notifier(&scx200_wdt_notifier);
- 	if (r) {
- 		printk(KERN_ERR NAME ": unable to register reboot notifier");
-@@ -263,7 +264,7 @@ module_exit(scx200_wdt_cleanup);
- 
- /*
-     Local variables:
--        compile-command: "make -k -C ../.. SUBDIRS=drivers/char modules"
--        c-basic-offset: 8
-+	compile-command: "make -k -C ../.. SUBDIRS=drivers/char modules"
-+	c-basic-offset: 8
-     End:
- */
+ 	ret = misc_register(&softdog_miscdev);
+ 	if (ret) {
+-		printk (KERN_ERR PFX "cannot register miscdev on minor=%d (err=%d)\n",
+-			WATCHDOG_MINOR, ret);
++		printk(KERN_ERR PFX
++			"cannot register miscdev on minor=%d (err=%d)\n",
++						WATCHDOG_MINOR, ret);
+ 		unregister_reboot_notifier(&softdog_notifier);
+ 		return ret;
+ 	}
 
