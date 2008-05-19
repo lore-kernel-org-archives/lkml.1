@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932691AbYESNnB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759653AbYESNoC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932691AbYESNnB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 09:43:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763749AbYESNkK
+	id S1759653AbYESNoC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 09:44:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756070AbYESNnu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 09:40:10 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:38944 "EHLO pasmtpB.tele.dk"
+	Mon, 19 May 2008 09:43:50 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:59387 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763533AbYESNkI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 09:40:08 -0400
-Date: Mon, 19 May 2008 15:40:45 +0200
+	id S1755593AbYESNnt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 09:43:49 -0400
+Date: Mon, 19 May 2008 15:44:27 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: khali@linux-fr.org, i2c@lm-sensors.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] i2c: align i2c_device_id
-Message-ID: <20080519134045.GA20394@uranus.ravnborg.org>
-References: <1211203124-3096-1-git-send-email-jirislaby@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: [Bug #10717] crossbuild fails in modpost
+Message-ID: <20080519134427.GB20394@uranus.ravnborg.org>
+References: <oKKSi1w1qaF.A.mEG.JrBMIB@albercik> <7wuznNhcUqC.A.-CH.zrBMIB@albercik>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1211203124-3096-1-git-send-email-jirislaby@gmail.com>
+In-Reply-To: <7wuznNhcUqC.A.-CH.zrBMIB@albercik>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 19, 2008 at 03:18:44PM +0200, Jiri Slaby wrote:
-> Align i2c_device_id.driver_data to 8 bytes to not fail on crossbuilds.
+On Sun, May 18, 2008 at 01:13:56PM +0200, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> (Added in d2653e92732bd3911feff6bee5e23dbf959381db.)
+> The following bug entry is on the current list of known regressions
+> from 2.6.25.  Please verify if it still should be listed.
 > 
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-> Cc: Jean Delvare <khali@linux-fr.org>
-> ---
->  include/linux/mod_devicetable.h |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
 > 
-> diff --git a/include/linux/mod_devicetable.h b/include/linux/mod_devicetable.h
-> index a37db57..1fd03e7 100644
-> --- a/include/linux/mod_devicetable.h
-> +++ b/include/linux/mod_devicetable.h
-> @@ -384,7 +384,8 @@ struct virtio_device_id {
->  
->  struct i2c_device_id {
->  	char name[I2C_NAME_SIZE];
-> -	kernel_ulong_t driver_data;	/* Data private to the driver */
-> +	kernel_ulong_t driver_data	/* Data private to the driver */
-> +			__attribute__((aligned(sizeof(kernel_ulong_t))));
->  };
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10717
+> Subject		: crossbuild fails in modpost
+> Submitter	: Jiri Slaby <jirislaby@gmail.com>
+> Date		: 2008-05-15 13:44 (4 days old)
+> References	: http://marc.info/?l=linux-kernel&amp;m=121085909512097&amp;w=4
+> Handled-By	: Sam Ravnborg <sam@ravnborg.org>
 
-Thanks Jiri.
+This turns out to be a valid check which detected a bug.
+So it is not a kbuild regression - and Jiri handles the issue from now on.
+[He have just sent a patch: http://lkml.org/lkml/2008/5/19/203]
 
 	Sam
