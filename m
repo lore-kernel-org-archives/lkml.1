@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765867AbYESNlm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762115AbYESNmE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765867AbYESNlm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 09:41:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762973AbYESNfK
+	id S1762115AbYESNmE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 09:42:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765059AbYESNgG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 09:35:10 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:12602
-	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764934AbYESNfI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 09:35:08 -0400
-Message-ID: <48318209.9060101@qumranet.com>
-Date: Mon, 19 May 2008 16:35:05 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 19 May 2008 09:36:06 -0400
+Received: from styx.suse.cz ([82.119.242.94]:34055 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1763070AbYESNgD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 09:36:03 -0400
+Date: Mon, 19 May 2008 15:36:00 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Jiri Slaby <jirislaby@gmail.com>
+cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
+       marcel@holtmann.org, linux-kernel@vger.kernel.org,
+       anssi.hannula@gmail.com
+Subject: Re: [PATCH 01/10] modpost: add support for hid
+In-Reply-To: <1210931362-18422-1-git-send-email-jirislaby@gmail.com>
+Message-ID: <Pine.LNX.4.64.0805191535071.6718@jikos.suse.cz>
+References: <1210931362-18422-1-git-send-email-jirislaby@gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Make LIST_POISON less deadly
-References: <1211125094-32167-1-git-send-email-avi@qumranet.com> <20080519130151.GE13546@elte.hu> <48317E2B.2030304@qumranet.com> <20080519132250.GA20793@elte.hu>
-In-Reply-To: <20080519132250.GA20793@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Avi Kivity <avi@qumranet.com> wrote:
->
->   
->>> i'd suggest to add an ARCH_ILLEGAL_POINTER define instead, which 
->>> defaults to zero and gets added to pointer-ish poison values. That 
->>> makes it both simpler and also it does not need any include/asm 
->>> changes because ARCH_ILLEGAL_POINTER can be set from the Kconfig 
->>> space.
->>>       
->> Right.
->>
->> How much unmapped space do we have on i386 or other archs?  The deltas 
->> added to ARCH_ILLEGAL_POINTER will have to be limited to that.
->>     
->
-> can we get away with having the offset default to zero, and all poison 
-> values remain unchanged if that? Then 64-bit x86 could just set the 
-> offset to 2^63 and we wont have to worry about 32-bit x86 at all ...
->
-> i.e. start small with this and only have an effect on 64-bit x86.
->   
+On Fri, 16 May 2008, Jiri Slaby wrote:
 
-Sure, will post an updated patch.
+> Generate aliases for hid device modules to support autoloading.
+> 
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+
+Hi Jiri,
+
+thanks for rebasing the series and fixing the comments raised during 
+review.
+
+However, I seem to miss the 10/10 patch from this series, and it doesn't 
+seem to be even in my lkml/linux-input folder.
+
+Thanks,
 
 -- 
-error compiling committee.c: too many arguments to function
-
+Jiri Kosina
+SUSE Labs
