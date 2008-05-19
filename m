@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763160AbYESSme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760651AbYESTA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763160AbYESSme (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 14:42:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759274AbYESSmP
+	id S1760651AbYESTA2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 15:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755239AbYESTAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 14:42:15 -0400
-Received: from www17.your-server.de ([213.133.104.17]:51439 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758093AbYESSmO convert rfc822-to-8bit (ORCPT
+	Mon, 19 May 2008 15:00:14 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:32103 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754758AbYESTAN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 14:42:14 -0400
-Subject: Re: linux-next: Tree for May 19
-From: Thomas Meyer <thomas@m3y3r.de>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080519174120.2083ea57.sfr@canb.auug.org.au>
-References: <20080519174120.2083ea57.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=utf8
-Date: Mon, 19 May 2008 20:42:00 +0200
-Message-Id: <1211222520.30161.3.camel@dhcppc1>
+	Mon, 19 May 2008 15:00:13 -0400
+Date: Mon, 19 May 2008 21:00:03 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: i2c@lm-sensors.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] i2c: align i2c_device_id
+Message-ID: <20080519210003.65b65d14@hyperion.delvare>
+In-Reply-To: <1211203124-3096-1-git-send-email-jirislaby@gmail.com>
+References: <1211203124-3096-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8BIT
-X-Authenticated-Sender: thomas@m3y3r.de
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, den 19.05.2008, 17:41 +1000 schrieb Stephen Rothwell:
-> News:
-> 	I will stop making full tar balls tomorrow unless someone screams.
-> 	The LATEST file now contains the name of the version that the
-> patches are based on i.e. today, LATEST-IS-next-20080519 contains "v2.6.26-rc3".
+Hi Jiri,
+
+On Mon, 19 May 2008 15:18:44 +0200, Jiri Slaby wrote:
+> Align i2c_device_id.driver_data to 8 bytes to not fail on crossbuilds.
 > 
-> Changes since next-20080516:
+> (Added in d2653e92732bd3911feff6bee5e23dbf959381db.)
 > 
-> New tree: bkl-removal  (this is Jonathan Corbet's tree)
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> Cc: Jean Delvare <khali@linux-fr.org>
+> ---
+>  include/linux/mod_devicetable.h |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
 > 
-> Removed trees: x86-fixes, sched-fixes (I don't know where they are
-> currently).
-> 
-> Changed trees: x86 and sched are now the new auto merged trees.
-> 
+> diff --git a/include/linux/mod_devicetable.h b/include/linux/mod_devicetable.h
+> index a37db57..1fd03e7 100644
+> --- a/include/linux/mod_devicetable.h
+> +++ b/include/linux/mod_devicetable.h
+> @@ -384,7 +384,8 @@ struct virtio_device_id {
+>  
+>  struct i2c_device_id {
+>  	char name[I2C_NAME_SIZE];
+> -	kernel_ulong_t driver_data;	/* Data private to the driver */
+> +	kernel_ulong_t driver_data	/* Data private to the driver */
+> +			__attribute__((aligned(sizeof(kernel_ulong_t))));
+>  };
+>  
 
-Is it intentional that kernel.release is:
+Thanks for this patch, it's in my i2c tree now and will be sent to
+Linus by the end of the week. I wasn't aware of this possible alignment
+issue, sorry.
 
-$ cat include/config/kernel.release 
-2.6.26-rc3-next-20080519-sched-devel.git
-
-all predecessors have had names like:
-﻿2.6.26-rc2-next-20080516
-
-greetz
-
-
-
-
+-- 
+Jean Delvare
