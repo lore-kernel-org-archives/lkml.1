@@ -1,102 +1,300 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759383AbYESPSs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760257AbYESPTw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759383AbYESPSs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 11:18:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbYESPSi
+	id S1760257AbYESPTw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 11:19:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752044AbYESPTn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 11:18:38 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:52769 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751817AbYESPSg (ORCPT
+	Mon, 19 May 2008 11:19:43 -0400
+Received: from correo10.acens.net ([217.116.0.37]:50193 "EHLO
+	correo10.acens.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750812AbYESPTm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 11:18:36 -0400
-Date: Mon, 19 May 2008 11:18:35 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Boaz Harrosh <bharrosh@panasas.com>
-cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>,
-       USB Storage list <usb-storage@lists.one-eyed-alien.net>,
-       SCSI development list <linux-scsi@vger.kernel.org>
-Subject: Re: [Re: Linux 2.6.26-rc2] Write protect on on
-In-Reply-To: <483058F1.4020601@panasas.com>
-Message-ID: <Pine.LNX.4.44L0.0805191106270.15266-100000@iolanthe.rowland.org>
+	Mon, 19 May 2008 11:19:42 -0400
+X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 May 2008 11:19:41 EDT
+Message-ID: <483198F8.3000201@eslack.org>
+Date: Mon, 19 May 2008 17:12:56 +0200
+From: Pau Oliva Fora <pau@eslack.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: akpm@linux-foundation.org
+CC: dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org, penberg@cs.helsinki.fi
+Subject: Re: [PATCH] Add support for HTC Shift Touchscreen
+References: <482ED31E.2000009@eslack.org>
+In-Reply-To: <482ED31E.2000009@eslack.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 18 May 2008, Boaz Harrosh wrote:
+From: Pau Oliva Fora <pau@eslack.org>
 
-> Do you mean this diff below:
-> 
-> @@ -796,133 +789,133 @@ kernel: usb-storage: *** thread awakened
->  kernel: usb-storage: Command MODE_SENSE (6 bytes)
->  kernel: usb-storage:  1a 00 3f 00 c0 00
->  kernel: usb-storage: Bulk Command S 0x43425355 T 0x4 L 192 F 128 Trg 0 LUN 0 CL 6
->  kernel: usb-storage: usb_stor_bulk_transfer_buf: xfer 31 bytes
->  kernel: usb-storage: Status code 0; transferred 31/31
->  kernel: usb-storage: -- transfer complete
->  kernel: usb-storage: Bulk command transfer result=0
->  kernel: usb-storage: usb_stor_bulk_transfer_sglist: xfer 192 bytes, 1 entries
->  kernel: usb-storage: Status code -32; transferred 0/192
->  kernel: usb-storage: clearing endpoint halt for pipe 0xc0008480
->  kernel: usb-storage: usb_stor_control_msg: rq=01 rqtype=02 value=0000 index=81 len=0
->  kernel: usb-storage: usb_stor_clear_halt: result = 0
->  kernel: usb-storage: Bulk data transfer result 0x2
->  kernel: usb-storage: Attempting to get CSW...
->  kernel: usb-storage: usb_stor_bulk_transfer_buf: xfer 13 bytes
->  kernel: usb-storage: Status code 0; transferred 13/13
->  kernel: usb-storage: -- transfer complete
->  kernel: usb-storage: Bulk status result = 0
->  kernel: usb-storage: Bulk Status S 0x53425355 T 0x4 R 192 Stat 0x0
->  kernel: usb-storage: scsi cmd done, result=0x0
->  kernel: usb-storage: *** thread sleeping.
-> -kernel: sd 2:0:0:0: [sda] Write Protect is off
-> -kernel: sd 2:0:0:0: [sda] Mode Sense: 00 00 00 00
-> +kernel: sd 2:0:0:0: [sda] Write Protect is on
-> +kernel: sd 2:0:0:0: [sda] Mode Sense: 09 50 f8 af
->  kernel: sd 2:0:0:0: [sda] Assuming drive cache: write through
->  kernel: usb-storage: queuecommand called
-> 
-> ("+" is the new kernel and "-" the older one)
+The patch below adds support for HTC Shift UMPC touchscreen.
 
-That's right.
+Signed-off-by: Pau Oliva Fora <pau@eslack.org>
 
-> It looks like it used to be the same exact return and everything only that at
-> old kernel the 4 bytes used to be zero and now they are not.
-> 
-> So It looks to me that it never used to work (Data was never actually read
-> from device) but by luck, the garbage data used to be a better default 
-> "Write Protect is off"
+---
 
-Yes, it never worked properly.  But now it fails in a bad way whereas 
-before it failed in a benign way.
+Patch against linux-2.6.25.4, should apply clean on other versions too.
+Includes all the suggestions from Sam Ravnborg, Pekka Enberg and Marcin Slusarz.
+Thank you all for your help, hopefully everything is ok now.
 
-> I do not think it is legal in scsi to return "Nothing was read" with no
-> error condition.
+diff -uprN linux-2.6.25.4/drivers/input/touchscreen/htcpen.c linux/drivers/input/touchscreen/htcpen.c
+--- linux-2.6.25.4/drivers/input/touchscreen/htcpen.c	1970-01-01 01:00:00.000000000 +0100
++++ linux/drivers/input/touchscreen/htcpen.c	2008-05-19 15:23:25.000000000 +0200
+@@ -0,0 +1,205 @@
++/*
++ * HTC Shift touchscreen driver
++ *
++ * Copyright (C) 2008 Pau Oliva Fora <pof@eslack.org>
++ *
++ * Thanks to:
++ * 	Heikki Linnakangas - Penmount LPC touchscreen driver
++ * 	Wacom / Ping Cheng - Help on linuxwacom-devel
++ * 	Esteve Espuna      - Ideas, tips, moral support :)
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ */
++
++#include <linux/errno.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/input.h>
++#include <linux/interrupt.h>
++#include <linux/io.h>
++#include <linux/init.h>
++#include <linux/irq.h>
++#include <linux/isa.h>
++
++#define DRIVER_VERSION	"0.8"
++#define DRIVER_DESC	"HTC Shift touchscreen driver v" DRIVER_VERSION
++
++MODULE_AUTHOR("Pau Oliva Fora <pau@eslack.org>");
++MODULE_DESCRIPTION(DRIVER_DESC);
++MODULE_VERSION(DRIVER_VERSION);
++MODULE_LICENSE("GPL");
++
++#define HTCPEN_PORT_IRQ_CLEAR 0x068
++#define HTCPEN_PORT_INIT 0x06c
++#define HTCPEN_PORT_INDEX 0x0250
++#define HTCPEN_PORT_DATA 0x0251
++#define HTCPEN_IRQ 3
++
++#define X_INDEX 3
++#define Y_INDEX 5
++#define LSB_XY_INDEX 0xc
++#define X_AXIS_MAX 2040
++#define Y_AXIS_MAX 2040
++#define DEVICE_ENABLE 0xa2
++
++static int inverse_x;
++module_param(inverse_x, bool, 0644);
++MODULE_PARM_DESC(inverse_x, "If set X axis is inversed");
++static int inverse_y;
++module_param(inverse_y, bool, 0644);
++MODULE_PARM_DESC(inverse_y, "If set Y axis is inversed");
++
++static void poll_htcpen(struct input_dev *htcpen_dev)
++{
++	unsigned short x, y, xy;
++	unsigned short touch;
++
++	/* 0=press ; 1=release */
++	outb_p(0xb, HTCPEN_PORT_INDEX);
++	touch = inb_p(HTCPEN_PORT_DATA);
++	if (touch)
++		touch = 0;
++	else
++		touch = 1;
++
++	input_report_key(htcpen_dev, BTN_TOUCH, touch);
++
++	/* only update X/Y when screen is being touched */
++	if (touch) {
++		outb_p(X_INDEX, HTCPEN_PORT_INDEX);
++		x = inb_p(HTCPEN_PORT_DATA);
++
++		outb_p(Y_INDEX, HTCPEN_PORT_INDEX);
++		y = inb_p(HTCPEN_PORT_DATA);
++
++		outb_p(LSB_XY_INDEX, HTCPEN_PORT_INDEX);
++		xy = inb_p(HTCPEN_PORT_DATA);
++
++		/* get high resolution value of X and Y using LSB */
++		x = X_AXIS_MAX - ((x * 8) + ((xy >> 4) & 0xf));
++		y = (y * 8) + (xy & 0xf);
++		if (inverse_x)
++			x = X_AXIS_MAX - x;
++		if (inverse_y)
++			y = Y_AXIS_MAX - y;
++
++		input_report_abs(htcpen_dev, ABS_X, x);
++		input_report_abs(htcpen_dev, ABS_Y, y);
++	}
++
++	input_sync(htcpen_dev);
++
++	inb_p(HTCPEN_PORT_IRQ_CLEAR);
++}
++
++static irqreturn_t htcpen_interrupt(int irq, void *handle)
++{
++	struct input_dev *htcpen_dev = handle;
++
++	poll_htcpen(htcpen_dev);
++	return IRQ_HANDLED;
++}
++
++static int __devinit htcpen_isa_probe(struct device *dev, unsigned int id)
++{
++	int err;
++	struct input_dev *htcpen_dev;
++
++	printk(KERN_INFO "htcpen: %s\n", DRIVER_DESC);
++
++	inb_p(HTCPEN_PORT_IRQ_CLEAR);
++
++	htcpen_dev = input_allocate_device();
++	if (!htcpen_dev) {
++		printk(KERN_ERR "htcpen: can't allocate device\n");
++		err = -ENOMEM;
++		goto input_alloc_failed;
++	}
++
++	htcpen_dev->name = "HTC Pen TouchScreen";
++	htcpen_dev->id.bustype = BUS_ISA;
++	htcpen_dev->id.vendor = 0;
++	htcpen_dev->id.product = 0;
++	htcpen_dev->id.version = 0;
++
++	input_set_abs_params(htcpen_dev, ABS_X, 0, X_AXIS_MAX, 0, 0);
++	input_set_abs_params(htcpen_dev, ABS_Y, 0, Y_AXIS_MAX, 0, 0);
++
++	htcpen_dev->evbit[0] = BIT_MASK(EV_ABS) | BIT_MASK(EV_KEY);
++	htcpen_dev->absbit[0] = BIT_MASK(ABS_X) | BIT_MASK(ABS_Y);
++	htcpen_dev->keybit[BIT_WORD(BTN_TOUCH)] = BIT_MASK(BTN_TOUCH);
++
++	err = request_irq(HTCPEN_IRQ, htcpen_interrupt, 0, "htcpen",
++		htcpen_dev);
++	if (err) {
++		printk(KERN_ERR "htcpen: irq busy\n");
++		err = -EBUSY;
++		goto request_irq_failed;
++	}
++
++	err = input_register_device(htcpen_dev);
++	if (err)
++		goto input_register_failed;
++
++	outb_p(DEVICE_ENABLE, HTCPEN_PORT_INIT);
++
++	dev_set_drvdata(dev, htcpen_dev);
++	return 0;
++
++ input_register_failed:
++	free_irq(HTCPEN_IRQ, htcpen_dev);
++ request_irq_failed:
++	input_free_device(htcpen_dev);
++ input_alloc_failed:
++	return err;
++}
++
++static int __devinit htcpen_isa_match(struct device *dev, unsigned int id)
++{
++	unsigned short val1, val2;
++
++	/* device detection */
++	outb_p(0x8, HTCPEN_PORT_INIT);
++	val1 = inb_p(HTCPEN_PORT_INIT);
++	val2 = inb_p(HTCPEN_PORT_IRQ_CLEAR);
++	if ((val1 > 0xa) || (val2 != 0x55)) {
++		printk(KERN_ERR "htcpen: no such device (%x|%x)\n", val1, val2);
++		return 0;
++	}
++	return 1;
++}
++
++static int __devexit htcpen_isa_remove(struct device *dev, unsigned int id)
++{
++	input_unregister_device(dev_get_drvdata(dev));
++	free_irq(HTCPEN_IRQ, dev_get_drvdata(dev));
++	input_free_device(dev_get_drvdata(dev));
++	dev_set_drvdata(dev, NULL);
++	printk(KERN_INFO "htcpen: module removed\n");
++	return 0;
++}
++
++static struct isa_driver htcpen_isa_driver = {
++	.match		= htcpen_isa_match,
++	.probe		= htcpen_isa_probe,
++	.remove		= __devexit_p(htcpen_isa_remove),
++	.driver = {
++		.owner	= THIS_MODULE,
++		.name	= "htcpen",
++	}
++};
++
++static int __init htcpen_isa_init(void)
++{
++	return isa_register_driver(&htcpen_isa_driver, 1);
++}
++
++static void __exit htcpen_isa_exit(void)
++{
++	isa_unregister_driver(&htcpen_isa_driver);
++}
++
++module_init(htcpen_isa_init);
++module_exit(htcpen_isa_exit);
+diff -uprN linux-2.6.25.4/drivers/input/touchscreen/Kconfig linux/drivers/input/touchscreen/Kconfig
+--- linux-2.6.25.4/drivers/input/touchscreen/Kconfig	2008-05-15 17:00:12.000000000 +0200
++++ linux/drivers/input/touchscreen/Kconfig	2008-05-19 15:48:52.000000000 +0200
+@@ -134,6 +134,18 @@ config TOUCHSCREEN_HP7XX
+  	  To compile this driver as a module, choose M here: the
+  	  module will be called jornada720_ts.
 
-I'm not aware of any part of the spec where it says that.  In any case 
-it doesn't matter what the spec says; we ought to be able to drive this 
-device even if it isn't compliant with the spec.
++config TOUCHSCREEN_HTCPEN
++	tristate "HTC Shift X9500 touchscreen"
++	depends on ISA
++	help
++	  Say Y here if you have an HTC Shift UMPC also known as HTC X9500
++	  Clio / Shangrila and want to support the built-in touchscreen.
++
++	  If unsure, say N.
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called htcpen.
++
+  config TOUCHSCREEN_PENMOUNT
+  	tristate "Penmount serial touchscreen"
+  	select SERIO
+diff -uprN linux-2.6.25.4/drivers/input/touchscreen/Makefile linux/drivers/input/touchscreen/Makefile
+--- linux-2.6.25.4/drivers/input/touchscreen/Makefile	2008-05-15 17:00:12.000000000 +0200
++++ linux/drivers/input/touchscreen/Makefile	2008-05-17 03:10:12.000000000 +0200
+@@ -14,6 +14,7 @@ obj-$(CONFIG_TOUCHSCREEN_MTOUCH)	+= mtou
+  obj-$(CONFIG_TOUCHSCREEN_MK712)		+= mk712.o
+  obj-$(CONFIG_TOUCHSCREEN_HP600)		+= hp680_ts_input.o
+  obj-$(CONFIG_TOUCHSCREEN_HP7XX)		+= jornada720_ts.o
++obj-$(CONFIG_TOUCHSCREEN_HTCPEN)	+= htcpen.o
+  obj-$(CONFIG_TOUCHSCREEN_USB_COMPOSITE)	+= usbtouchscreen.o
+  obj-$(CONFIG_TOUCHSCREEN_PENMOUNT)	+= penmount.o
+  obj-$(CONFIG_TOUCHSCREEN_TOUCHRIGHT)	+= touchright.o
+--- linux-2.6.25.4/MAINTAINERS	2008-05-15 17:00:12.000000000 +0200
++++ linux/MAINTAINERS	2008-05-19 15:40:11.000000000 +0200
+@@ -1875,6 +1875,12 @@ M:	mikulas@artax.karlin.mff.cuni.cz
+  W:	http://artax.karlin.mff.cuni.cz/~mikulas/vyplody/hpfs/index-e.cgi
+  S:	Maintained
 
-> You are probably right that we do not at all check resid
-> if status is 0, even though short reads are allowed with out error status
-> in some cases, as per command. But this is not the case here here nothing
-> was read at all, status must be returned. Or even worse if this command 
-> is mandatory by scsi but not supported by some USB devices then it will
-> have to be emulated by usb_storage.
-
-The real question is how should we fix the problem.  For the sake of 
-argument, let's say that we fix it by changing scsi_mode_sense() -- 
-make the routine return 0 if the residue is so large that there isn't 
-even a valid header.
-
-But how can this be done?  Should we modify struct scsi_sense_hdr, by 
-adding a "residue" field?
-
-Alan Stern
++HTCPEN TOUCHSCREEN DRIVER
++P:	Pau Oliva Fora
++M:	pof@eslack.org
++L:	linux-input@vger.kernel.org
++S:	Maintained
++
+  HUGETLB FILESYSTEM
+  P:	William Irwin
+  M:	wli@holomorphy.com
 
