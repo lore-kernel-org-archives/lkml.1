@@ -1,55 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763208AbYESVQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763628AbYESVRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763208AbYESVQe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 17:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758227AbYESVQZ
+	id S1763628AbYESVRS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 17:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758227AbYESVRH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 17:16:25 -0400
-Received: from smtp.innovsys.com ([66.115.232.196]:19490 "EHLO
-	mail.innovsys.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753429AbYESVQY convert rfc822-to-8bit (ORCPT
+	Mon, 19 May 2008 17:17:07 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:33201 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759889AbYESVRG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 17:16:24 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 19 May 2008 17:17:06 -0400
+Message-ID: <4831EE48.5050908@firstfloor.org>
+Date: Mon, 19 May 2008 23:16:56 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Oops with PREEMPT-RT on 2.6.25.4
-Date: Mon, 19 May 2008 16:16:34 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B04690239@ismail.innsys.innovsys.com>
-In-Reply-To: <4831ECF0.5090101@freescale.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Oops with PREEMPT-RT on 2.6.25.4
-Thread-Index: Aci59MQ2pEcc2XMxS0WeXyHm575XFQAAEO7Q
-References: <DCEAAC0833DD314AB0B58112AD99B93B0469010C@ismail.innsys.innovsys.com>	<4831D527.2020907@freescale.com> <DCEAAC0833DD314AB0B58112AD99B93B04690162@ismail.innsys.innovsys.com> <4831ECF0.5090101@freescale.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Scott Wood" <scottwood@freescale.com>
-Cc: <linuxppc-dev@ozlabs.org>, <linux-kernel@vger.kernel.org>,
-       <linux-ide@vger.kernel.org>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@linux.intel.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] x86: don't destroy %rbp on kernel-mode faults
+References: <20080519200230.GA12210@damson.getinternet.no>
+In-Reply-To: <20080519200230.GA12210@damson.getinternet.no>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Scott Wood wrote:
-> Almost certainly the latter.  Is the disk interrupt shared with any
-> other interrupts, that are marked IRQF_NODELAY?  The -rt
-> patch doesn't seem to handle mixing the two well.
+Vegard Nossum wrote:
+> Hi,
+> 
+> The RFC part of this patch is: Does anybody see why touching %rcx would
+> be bad? It certainly looks like %ecx is free. This fixes the stacktrace
+> problem I was seeing, and Pekka tested a bootup to userspace. (Pekka also
+> did half of the debugging. When will git allow multiple authors for a
+> patch? :-))
 
-Disk is on a muxed PCI interrupt. None of the other interrupts on the
-mux is fireing at the time.
-Is is possible that the demuxer is not set up right? It is based loosely
-on pq2-pci-pic.c
+The patch is ok, but I'm sure there's lots of other assembler code that
+destroys %rbp when it was saved elsewhere.
 
- 
-> Oh, and just to be sure: you do have CONFIG_PREEMPT_RT turned on, and
-> not just CONFIG_PREEMPT, right?  The non-preempt-rt versions in the
--rt
-> patch don't look like they disable interrupts, though I may just be
-> getting lost in a sea of underscores and ifdefs.
+When I wrote all the assembler the assumption was always that a real
+unwinder would be used for backtraces, not frame pointer.
 
-Full CONFIG_PREEMPT_RT. I was actually going to try CONFIG_PREEMPT to
-see if anything helped.
-
+-Andi
