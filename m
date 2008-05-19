@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756886AbYESGfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756509AbYESGiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756886AbYESGfn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 02:35:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbYESGfO
+	id S1756509AbYESGiu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 02:38:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753580AbYESGim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 02:35:14 -0400
-Received: from ozlabs.org ([203.10.76.45]:56688 "EHLO ozlabs.org"
+	Mon, 19 May 2008 02:38:42 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:34050 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753647AbYESGfM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 02:35:12 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Avi Kivity <avi@qumranet.com>
-Subject: Re: [PATCH] virtio_net: free transmit skbs in a timer
-Date: Mon, 19 May 2008 11:52:27 +1000
-User-Agent: KMail/1.9.9
-Cc: Mark McLoughlin <markmc@redhat.com>, Anthony Liguori <aliguori@us.ibm.com>,
-       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org
-References: <1209565906-9019-1-git-send-email-markmc@redhat.com> <200805190016.10823.rusty@rustcorp.com.au> <48303CB9.7070406@qumranet.com>
-In-Reply-To: <48303CB9.7070406@qumranet.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	id S1753483AbYESGil (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 02:38:41 -0400
+Date: Mon, 19 May 2008 08:39:19 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Christophe Jaillet <christophe.jaillet@wanadoo.fr>
+Cc: linux <linux-kernel@vger.kernel.org>, zippel@linux-m68k.org,
+       linux-kbuild@vger.kernel.org
+Subject: Re: [PATCH 1/1] kconfig: incorrect 'len' field initialisation ?
+Message-ID: <20080519063919.GA17698@uranus.ravnborg.org>
+References: <20080518211024.D1B751C00086@mwinf2714.orange.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200805191152.28409.rusty@rustcorp.com.au>
+In-Reply-To: <20080518211024.D1B751C00086@mwinf2714.orange.fr>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 19 May 2008 00:27:05 Avi Kivity wrote:
-> Rusty Russell wrote:
-> > OK.  And since the current situation is that the host doesn't throttle,
-> > the feature bit should be "don't throttle, host is doing it for you", and
-> > Mark's patch should go in...
->
-> Yes.
->
-> We should have thought of this before, though, especially as Xen does
->
-> this or something very similar:
-> > /* Shared ring page */                            \
-> > struct __name##_sring {                            \
-> >     RING_IDX req_prod, req_event;                    \
-> >     RING_IDX rsp_prod, rsp_event;                    \
-> >     uint8_t  pad[48];                            \
-> >     union __name##_sring_entry ring[1]; /* variable-length */        \
-> > };                                    \
->
-> req_event and rsp_event allow the other side to indicate when it wants a
-> notification.
+On Sun, May 18, 2008 at 11:10:24PM +0200, Christophe Jaillet wrote:
+> From: Christophe Jaillet <christophe.jaillet@wanadoo.fr>
+> 
+> Hi, here is a patch against /scripts/kconfig/util.c :
+> 	
+> 1) The field 'len' of the 'gstr' structure seems to track the size of the memory 
+> already allocated for the "growable string". So the value of this field should be
+> the same as the 'malloc()' just above, shouldn't it ?
+> 
+> 
+> 
+> Note: this patch is based on 'linux-2.6.25.tar.bz2'
+> 
+> Signed-off-by: Christophe Jaillet <christophe.jaillet@wanadoo.fr>
+> 
+> ---
+> 
+> --- linux 2.6.25/scripts/kconfig/util.c	2008-04-17 04:49:44.000000000 +0200
+> +++ linux 2.6.25/scripts/kconfig/util.c.cj	2008-05-18 22:56:14.000000000 +0200
+> @@ -77,7 +77,7 @@ struct gstr str_new(void)
+>  {
+>  	struct gstr gs;
+>  	gs.s = malloc(sizeof(char) * 64);
+> -	gs.len = 16;
+> +	gs.len = 64;
+>  	strcpy(gs.s, "\0");
+>  	return gs;
+>  }
 
-Well, we do have such a thing, in the ring suppression flags.  Note that DaveM 
-is talking about moving network tx queue into the net drivers themselves, 
-which will make them much more efficient (ie. drain entire queue before 
-kick), which may again change the balance of what the Right Thing is.
+Thanks Christophe.
+Obviously correct - I will apply to kbuild-fixes.git.
 
-I'll merge Mark's patch, and look at hacking up a feature to change behaviour 
-to never suppress tx-done interrupts.
-
-Thanks,
-Rusty.
+	Sam
