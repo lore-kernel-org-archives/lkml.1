@@ -1,122 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762666AbYESSQN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763144AbYESSQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762666AbYESSQN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 14:16:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757033AbYESSP7
+	id S1763144AbYESSQy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 14:16:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759700AbYESSQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 14:15:59 -0400
-Received: from fk-out-0910.google.com ([209.85.128.188]:60780 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753951AbYESSP6 (ORCPT
+	Mon, 19 May 2008 14:16:44 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:50416 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753951AbYESSQn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 14:15:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=wX8orN27L5xk2mp86sFzTEN26rm/tdxEgovuFRNFbxr2mo/a/QLHx+sKMdA4+wM1yr0lxc923IoziguTGpMTcJ0PEf1HdVNJBtcZjiNWfhzlRVu6JBhcbXQ7Zl+eysVY/IJOJ+rtQvwsZ4U4z8SiL8mWUIuau77k0vCDfnMKfgU=
-Date: Mon, 19 May 2008 22:15:43 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Paulo Marques <pmarques@grupopie.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: /proc/kallsyms broken in 2.6.26-rc1-git6
-Message-ID: <20080519181543.GC7773@cvg>
-References: <20080509174148.GA22246@basil.nowhere.org> <482491D6.9030205@grupopie.com> <4824A7B6.70306@firstfloor.org> <4824AD3C.3070506@grupopie.com> <20080509233742.GA22265@martell.zuzino.mipt.ru> <48281540.9020207@grupopie.com> <20080512155052.GB6913@cvg> <20080512172323.GA9236@uranus.ravnborg.org> <20080513095437.GJ31954@one.firstfloor.org> <20080519181118.GA22931@uranus.ravnborg.org>
+	Mon, 19 May 2008 14:16:43 -0400
+Date: Mon, 19 May 2008 12:16:41 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Boaz Harrosh <bharrosh@panasas.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>,
+       USB Storage list <usb-storage@lists.one-eyed-alien.net>,
+       SCSI development list <linux-scsi@vger.kernel.org>
+Subject: Re: [Re: Linux 2.6.26-rc2] Write protect on on
+Message-ID: <20080519181641.GE2638@parisc-linux.org>
+References: <Pine.LNX.4.44L0.0805191106270.15266-100000@iolanthe.rowland.org> <4831A60A.5010308@panasas.com> <alpine.LFD.1.10.0805190929170.32253@woody.linux-foundation.org> <4831B2E2.8030700@panasas.com> <alpine.LFD.1.10.0805191026120.32253@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080519181118.GA22931@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <alpine.LFD.1.10.0805191026120.32253@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Sam Ravnborg - Mon, May 19, 2008 at 08:11:18PM +0200]
-| On Tue, May 13, 2008 at 11:54:37AM +0200, Andi Kleen wrote:
-| > > I expect it to be a toolchain issue. Andi is often running with gcc versions
-| > > that are very new (fresh from svn maybe). I dunno about binutils.
-| > 
-| > No actually that's a pretty old version from SUSE 10.2
-| > 
-| > gcc-4.1.3-29
-| > binutils-2.17.50.0.5-21
-| > 
-| > This means i've been recently trying to get the x86-64 kernel to work
-| > with the new gold linker from binutils mainline, but it's far from
-| > booting yet and was not used here.
-| > 
-| > > To reproduce I would expect that a very recent gcc/binutils is needed.
-| > > Andi?
-| > 
-| > Just a SUSE 10.2 toolchain. You can probably rpm2cpio it from any 
-| > SUSE mirror.
-| 
-| I have just commit the following that should fix it.
-| 
-| 	Sam
-| 
-| commit aab34ac8582303ef57b792710fc5dd5991477475
-| Author: Sam Ravnborg <sam@ravnborg.org>
-| Date:   Mon May 19 20:07:58 2008 +0200
-| 
-|     kbuild: filter away debug symbols from kernel symbols
-|     
-|     Andi Kleen <andi@firstfloor.org>
-|     reported that he saw a lot of symbols like this:
-|     
-|     0000000000000b24 N DW.aio.h.903a6d92.2
-|     0000000000000bce N DW.task_io_accounting.h.8d8de327.0
-|     0000000000000bec N DW.hrtimer.h.c23659c6.0
-|     
-|     in his System.map / kallsyms output.
-|     
-|     Simple solution is to skip all debugging
-|     symbols (they are marked 'N').
-|     
-|     Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-|     Cc: Paulo Marques <pmarques@grupopie.com>
-| 
-| diff --git a/scripts/kallsyms.c b/scripts/kallsyms.c
-| index 5d20a2e..ad2434b 100644
-| --- a/scripts/kallsyms.c
-| +++ b/scripts/kallsyms.c
-| @@ -108,6 +108,9 @@ static int read_symbol(FILE *in, struct sym_entry *s)
-|  	/* exclude also MIPS ELF local symbols ($L123 instead of .L123) */
-|  	else if (str[0] == '$')
-|  		return -1;
-| +	/* exclude debugging symbols */
-| +	else if (stype == 'N')
-| +		return -1;
-|  
-|  	/* include the type field in the symbol name, so that it gets
-|  	 * compressed together */
-| diff --git a/scripts/mksysmap b/scripts/mksysmap
-| index 4390fab..6e133a0 100644
-| --- a/scripts/mksysmap
-| +++ b/scripts/mksysmap
-| @@ -32,6 +32,7 @@
-|  # For System.map filter away:
-|  #   a - local absolute symbols
-|  #   U - undefined global symbols
-| +#   N - debugging symbols
-|  #   w - local weak symbols
-|  
-|  # readprofile starts reading symbols when _stext is found, and
-| @@ -40,5 +41,5 @@
-|  # so we just ignore them to let readprofile continue to work.
-|  # (At least sparc64 has __crc_ in the middle).
-|  
-| -$NM -n $1 | grep -v '\( [aUw] \)\|\(__crc_\)\|\( \$[adt]\)' > $2
-| +$NM -n $1 | grep -v '\( [aNUw] \)\|\(__crc_\)\|\( \$[adt]\)' > $2
-|  
-| 
+On Mon, May 19, 2008 at 10:27:17AM -0700, Linus Torvalds wrote:
+> On Mon, 19 May 2008, Boaz Harrosh wrote:
+> > 
+> > Sure, inspecting other places that emulate MODE_SENSE, (And inspecting the scsi
+> > spec) all zeros is a very good scsi response. Alan do you want to send a fix for all
+> > places that initiate a MODE_SENSE command, specifically at
+> > scsi_scan.c::scsi_unlock_floptical() ? (Some other places do)
+> 
+> I was actualyl more thinking that the safest thing to do would be to just 
+> pre-clear the sense buffer. Then, if some driver doesn't fill it 
+> correctly, big deal..
+> 
+> It's not like pre-clearing the bugger is a performance issue.
 
-Hi Sam,
+Actually, I think it might be.  I don't have any hard evidence for this
+right now, but I'll let you know if I do.  There's certainly a lot of L2
+cache misses in the scsi command submission path.
 
-should not there be
+I'm not arguing that speed should trump performance, just we might
+want to not clear the sense buffer if we know we have a non-USB device.
 
-	toupper(stype) == 'N'
-
-(just a guess)
-
-		- Cyrill -
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
