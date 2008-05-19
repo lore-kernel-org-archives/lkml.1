@@ -1,21 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760626AbYESPrG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761395AbYESPre@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760626AbYESPrG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 11:47:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751805AbYESPqx
+	id S1761395AbYESPre (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 11:47:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759912AbYESPq7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 11:46:53 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:41266 "EHLO
+	Mon, 19 May 2008 11:46:59 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:41273 "EHLO
 	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751391AbYESPqx (ORCPT
+	with ESMTP id S1759803AbYESPq6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 11:46:53 -0400
+	Mon, 19 May 2008 11:46:58 -0400
 From: Alexey Starikovskiy <astarikovskiy@suse.de>
 To: mingo@elte.hu
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/5] x86: move pic_mode to apic_32.c
-Date: Mon, 19 May 2008 19:46:57 +0400
-Message-ID: <20080519154656.15071.96979.stgit@thinkpad>
+Subject: [PATCH 2/5] x86: move smp_found_config
+Date: Mon, 19 May 2008 19:47:03 +0400
+Message-ID: <20080519154703.15071.4948.stgit@thinkpad>
+In-Reply-To: <20080519154656.15071.96979.stgit@thinkpad>
+References: <20080519154656.15071.96979.stgit@thinkpad>
 User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -27,58 +29,115 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
 ---
 
- arch/x86/kernel/apic_32.c     |    2 ++
- arch/x86/kernel/mpparse.c     |    4 +---
- arch/x86/mach-visws/mpparse.c |    2 --
- 3 files changed, 3 insertions(+), 5 deletions(-)
+ arch/x86/kernel/apic_32.c           |    3 +++
+ arch/x86/kernel/apic_64.c           |    3 +++
+ arch/x86/kernel/mpparse.c           |    8 ++++----
+ arch/x86/mach-visws/mpparse.c       |    5 ++---
+ arch/x86/mach-voyager/voyager_smp.c |    5 -----
+ 5 files changed, 12 insertions(+), 12 deletions(-)
 
 
 diff --git a/arch/x86/kernel/apic_32.c b/arch/x86/kernel/apic_32.c
-index 6b2c2cf..c0dd696 100644
+index c0dd696..4ed4a2b 100644
 --- a/arch/x86/kernel/apic_32.c
 +++ b/arch/x86/kernel/apic_32.c
-@@ -77,6 +77,8 @@ char system_vectors[NR_VECTORS] = { [0 ... NR_VECTORS-1] = SYS_VECTOR_FREE};
-  */
- int apic_verbosity;
+@@ -79,6 +79,9 @@ int apic_verbosity;
  
-+int pic_mode;
+ int pic_mode;
+ 
++/* Have we found an MP table */
++int smp_found_config;
 +
  static unsigned int calibration_result;
  
  static int lapic_next_event(unsigned long delta,
+diff --git a/arch/x86/kernel/apic_64.c b/arch/x86/kernel/apic_64.c
+index 30f3f6a..10fde03 100644
+--- a/arch/x86/kernel/apic_64.c
++++ b/arch/x86/kernel/apic_64.c
+@@ -56,6 +56,9 @@ EXPORT_SYMBOL_GPL(local_apic_timer_c2_ok);
+  */
+ int apic_verbosity;
+ 
++/* Have we found an MP table */
++int smp_found_config;
++
+ static struct resource lapic_resource = {
+ 	.name = "Local APIC",
+ 	.flags = IORESOURCE_MEM | IORESOURCE_BUSY,
 diff --git a/arch/x86/kernel/mpparse.c b/arch/x86/kernel/mpparse.c
-index 59f051d..b72c046 100644
+index b72c046..d67cd76 100644
 --- a/arch/x86/kernel/mpparse.c
 +++ b/arch/x86/kernel/mpparse.c
-@@ -48,8 +48,6 @@ int mp_bus_id_to_pci_bus[MAX_MP_BUSSES] = {[0 ... MAX_MP_BUSSES - 1] = -1 };
+@@ -32,9 +32,6 @@
+ #include <mach_mpparse.h>
+ #endif
  
- static int mp_current_pci_id;
- 
--int pic_mode;
+-/* Have we found an MP table */
+-int smp_found_config;
 -
  /*
-  * Intel MP BIOS table parsing routines:
-  */
-@@ -609,7 +607,7 @@ static void __init __get_smp_config(unsigned early)
- 
- 	printk(KERN_INFO "Intel MultiProcessor Specification v1.%d\n",
- 	       mpf->mpf_specification);
--#ifdef CONFIG_X86_32
-+#if defined(CONFIG_X86_LOCAL_APIC) && defined(CONFIG_X86_32)
- 	if (mpf->mpf_feature2 & (1 << 7)) {
- 		printk(KERN_INFO "    IMCR and PIC compatibility mode.\n");
- 		pic_mode = 1;
+  * Various Linux-internal data structures created from the
+  * MP-table.
+@@ -639,7 +636,9 @@ static void __init __get_smp_config(unsigned early)
+ 		 * override the defaults.
+ 		 */
+ 		if (!smp_read_mpc(phys_to_virt(mpf->mpf_physptr), early)) {
++#ifdef CONFIG_X86_LOCAL_APIC
+ 			smp_found_config = 0;
++#endif
+ 			printk(KERN_ERR
+ 			       "BIOS bug, MP table errors detected!...\n");
+ 			printk(KERN_ERR "... disabling SMP support. "
+@@ -706,8 +705,9 @@ static int __init smp_scan_config(unsigned long base, unsigned long length,
+ 		    !mpf_checksum((unsigned char *)bp, 16) &&
+ 		    ((mpf->mpf_specification == 1)
+ 		     || (mpf->mpf_specification == 4))) {
+-
++#ifdef CONFIG_X86_LOCAL_APIC
+ 			smp_found_config = 1;
++#endif
+ 			mpf_found = mpf;
+ #ifdef CONFIG_X86_32
+ 			printk(KERN_INFO "found SMP MP-table at [%p] %08lx\n",
 diff --git a/arch/x86/mach-visws/mpparse.c b/arch/x86/mach-visws/mpparse.c
-index 57484e9..b7d063e 100644
+index b7d063e..a2fb78c 100644
 --- a/arch/x86/mach-visws/mpparse.c
 +++ b/arch/x86/mach-visws/mpparse.c
-@@ -11,8 +11,6 @@
- /* Have we found an MP table */
- int smp_found_config;
+@@ -8,9 +8,6 @@
+ #include "cobalt.h"
+ #include "mach_apic.h"
  
--int pic_mode;
+-/* Have we found an MP table */
+-int smp_found_config;
 -
  extern unsigned int __cpuinitdata maxcpus;
  
  /*
+@@ -74,7 +71,9 @@ void __init find_smp_config(void)
+ 	if (ncpus > maxcpus)
+ 		ncpus = maxcpus;
+ 
++#ifdef CONFIG_X86_LOCAL_APIC
+ 	smp_found_config = 1;
++#endif
+ 	while (ncpus--)
+ 		MP_processor_info(mp++);
+ 
+diff --git a/arch/x86/mach-voyager/voyager_smp.c b/arch/x86/mach-voyager/voyager_smp.c
+index 8acbf0c..6d33541 100644
+--- a/arch/x86/mach-voyager/voyager_smp.c
++++ b/arch/x86/mach-voyager/voyager_smp.c
+@@ -59,11 +59,6 @@ __u32 voyager_quad_processors = 0;
+  * activity count.  Finally exported by i386_ksyms.c */
+ static int voyager_extended_cpus = 1;
+ 
+-/* Have we found an SMP box - used by time.c to do the profiling
+-   interrupt for timeslicing; do not set to 1 until the per CPU timer
+-   interrupt is active */
+-int smp_found_config = 0;
+-
+ /* Used for the invalidate map that's also checked in the spinlock */
+ static volatile unsigned long smp_invalidate_needed;
+ 
 
