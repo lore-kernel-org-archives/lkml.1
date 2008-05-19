@@ -1,64 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761274AbYESRE2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761451AbYESRFT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761274AbYESRE2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 13:04:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760163AbYESREI
+	id S1761451AbYESRFT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 13:05:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754062AbYESRFF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 13:04:08 -0400
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:5592 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759523AbYESREG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 13:04:06 -0400
-Message-ID: <4831B2E2.8030700@panasas.com>
-Date: Mon, 19 May 2008 20:03:30 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Mon, 19 May 2008 13:05:05 -0400
+Received: from visualserver.org ([84.242.66.126]:39789 "EHLO visualserver.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754039AbYESRFD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 13:05:03 -0400
+X-Greylist: delayed 321 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 May 2008 13:05:03 EDT
+Date: Mon, 19 May 2008 19:04:55 +0200 (CEST)
+From: Soumyadip Das Mahapatra <kernelhacker@visualserver.org>
+To: linux-kernel@vger.kernel.org
+cc: akinobu.mita@gmail.com
+Subject: [PATCH 1/2] bitreversal program
+Message-ID: <Pine.LNX.4.64.0805191859411.18461@visualserver.org>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Alan Stern <stern@rowland.harvard.edu>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>,
-       USB Storage list <usb-storage@lists.one-eyed-alien.net>,
-       SCSI development list <linux-scsi@vger.kernel.org>
-Subject: Re: [Re: Linux 2.6.26-rc2] Write protect on on
-References: <Pine.LNX.4.44L0.0805191106270.15266-100000@iolanthe.rowland.org> <4831A60A.5010308@panasas.com> <alpine.LFD.1.10.0805190929170.32253@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0805190929170.32253@woody.linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 19 May 2008 17:03:34.0696 (UTC) FILETIME=[45E4EA80:01C8B9D2]
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-visualserver.org-MailScanner-Information: Please contact the ISP for more information
+X-MailScanner-ID: C57A82FB42.3C4F8
+X-visualserver.org-MailScanner: Found to be clean
+X-visualserver.org-MailScanner-From: kernelhacker@visualserver.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Mon, 19 May 2008, Boaz Harrosh wrote:
-> 
->> Alan Stern wrote:
->>> Yes, it never worked properly.  But now it fails in a bad way whereas 
->>> before it failed in a benign way.
->> You do realize that, that was pure lock to have a zero'ed buffer.
-> 
-> Umm. Maybe it SHOULD NOT HAVE BEEN!
-> 
-> The thing is, if we can get partial results back, we really *should* 
-> either error out, or we should have at least cleared the buffer (either 
-> beforehand or when seeing the partial result). Returning a buffer with the 
-> old random contents is a bug.
-> 
-> And if clearing the buffer not only avoids any security holes and possible 
-> undefined behavior, but _also_ ends up fixing the write protect sense 
-> issue, all the better!
-> 
-> 		Linus
-> --
+--- a/include/linux/bitrev.h    2008-04-17 08:19:44.000000000 +0530
++++ b/include/linux/bitrev.h    2008-05-19 21:49:46.000000000 +0530
+@@ -3,11 +3,32 @@
 
-Sure, inspecting other places that emulate MODE_SENSE, (And inspecting the scsi
-spec) all zeros is a very good scsi response. Alan do you want to send a fix for all
-places that initiate a MODE_SENSE command, specifically at
-scsi_scan.c::scsi_unlock_floptical() ? (Some other places do)
+  #include <linux/types.h>
 
-Boaz
+-extern u8 const byte_rev_table[256];
++/**
++ * Here is a generalised bit reversal program
++ * @x: word to get bits reversed
++ * @k: key, explained below
++ * for k = 31, it reverses the bits of word(32 bit)
++ * for k = 24, it reverses the bytes in word
++ * for k = 7, it reverses the bits in every byte without
++ * changing the positions of bytes in a word
++ * and for k = 16 it swaps the left and right halves of a
++ * word
++ */
+
+-static inline u8 bitrev8(u8 byte)
++static inline u32 gen_bit_rev(u32 x, u32 k)
+  {
+-       return byte_rev_table[byte];
++       if(k & 1)
++               x = (x & 0x55555555) << 1 | (x & 0xaaaaaaaa) >> 1;
++       if(k & 2)
++               x = (x & 0x33333333) << 2 | (x & 0xcccccccc) >> 2;
++       if(k & 4)
++               x = (x & 0x0f0f0f0f) << 4 | (x & 0xf0f0f0f0) >> 4;
++       if(k & 8)
++               x = (x & 0x00ff00ff) << 8 | (x & 0xff00ff00) >> 8;
++       if(k & 16)
++               x = (x & 0x0000ffff) << 16 | (x & 0xffff0000) >> 16;
++
++       return x;
+  }
+
+  extern u32 bitrev32(u32 in);
+
+-- 
+This message has been scanned for viruses and
+dangerous content by MailScanner, and is
+believed to be clean.
 
