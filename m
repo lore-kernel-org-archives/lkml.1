@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763877AbYESWZI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764351AbYESWZj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763877AbYESWZI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 18:25:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755990AbYESWY5
+	id S1764351AbYESWZj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 18:25:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760858AbYESWZE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 18:24:57 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:45743 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755157AbYESWY4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 18:24:56 -0400
-Date: Tue, 20 May 2008 01:22:51 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Rene Herman <rene.herman@gmail.com>, linux-kernel@vger.kernel.org,
-       Adam M Belay <abelay@mit.edu>, Adam Belay <ambx1@neo.rr.com>
-Subject: Re: [2.6 patch] pnp: remove printk() with outdated version
-Message-ID: <20080519222250.GA17716@cs181133002.pp.htv.fi>
-References: <20080519215419.GI17716@cs181133002.pp.htv.fi> <200805191602.46460.bjorn.helgaas@hp.com>
+	Mon, 19 May 2008 18:25:04 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:42923 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760471AbYESWZC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 18:25:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=c7x786x2KnGR6ZZg5EXA3RVlTR/CqriDBxyAKEZhlwwusm5jTRVJrdKPl1txq640uNnpOCtjSHaG8frGTRiX7k0T+D5F7sXfu+8Y3BolF4lZKAf+qWohiehwaSibARPPgA3YqIoDapfADCyzqWG/kPv9zdCWz8Bl13mu6rzvLbs=
+Message-ID: <b6a2187b0805191525m5854c35aof52f40a337e67510@mail.gmail.com>
+Date: Tue, 20 May 2008 06:25:01 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Len Brown" <lenb@kernel.org>
+Subject: Re: recent 2.6.26 kernel hangs at suspend
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
+       "Arjan van de Ven" <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, len.brown@intel.com,
+       "Shaohua Li" <shaohua.li@intel.com>, "Greg KH" <greg@kroah.com>
+In-Reply-To: <200805191438.53323.lenb@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200805191602.46460.bjorn.helgaas@hp.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <b6a2187b0805190807o7f6e87e1nd883607d603c893b@mail.gmail.com>
+	 <200805191438.53323.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 19, 2008 at 04:02:46PM -0600, Bjorn Helgaas wrote:
-> On Monday 19 May 2008 03:54:19 pm Adrian Bunk wrote:
-> > There's no point in printing some ancient version number forever.
-> > 
-> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> Adam's the maintainer, so you really should ask him (cc'd).
+On Tue, May 20, 2008 at 2:38 AM, Len Brown <lenb@kernel.org> wrote:
+> On Monday 19 May 2008, Jeff Chua wrote:
 
-Sorry, I thought there was a patch pending listing you as the new 
-maintainer, but that could be an error on my side.
+> Does this notebook have intel graphics?
 
-> Personally, I agree that it isn't really useful anymore.
-> 
-> > ---
-> > acef517cfbe3cd741f8884311ef6fc2dfbeb1a4d diff --git a/drivers/pnp/core.c b/drivers/pnp/core.c
-> > index 20771b7..d924798 100644
-> > --- a/drivers/pnp/core.c
-> > +++ b/drivers/pnp/core.c
-> > @@ -209,7 +209,6 @@ void __pnp_remove_device(struct pnp_dev *dev)
-> >  
-> >  static int __init pnp_init(void)
-> >  {
-> > -	printk(KERN_INFO "Linux Plug and Play Support v0.97 (c) Adam Belay\n");
-> >  	return bus_register(&pnp_bus_type);
-> >  }
+Yes.
 
-cu
-Adrian
+(II) intel(0): Integrated Graphics Chipset: Intel(R) 945GM
 
--- 
+> If yes, does anything change with the i915 driver loaded vs not loaded?
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+I'll try that. Currently, everything compliled into kernel.
 
+Thanks,
+Jeff.
