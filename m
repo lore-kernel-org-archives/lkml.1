@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761299AbYESPES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761443AbYESPEi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761299AbYESPES (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 11:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760552AbYESPDT
+	id S1761443AbYESPEi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 11:04:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760701AbYESPDa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 11:03:19 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39711 "EHLO
+	Mon, 19 May 2008 11:03:30 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39718 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760469AbYESPDS (ORCPT
+	with ESMTP id S1760645AbYESPD2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 11:03:18 -0400
+	Mon, 19 May 2008 11:03:28 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 05/20] moxa: use tty_port
+Subject: [PATCH 07/20] riscom8: use tty_port
 To: linux-kernel@vger.kernel.org, akpm@osdl.org, greg@kroah.com
-Date: Mon, 19 May 2008 15:50:35 +0100
-Message-ID: <20080519145035.19326.72810.stgit@core>
+Date: Mon, 19 May 2008 15:50:46 +0100
+Message-ID: <20080519145046.19326.82430.stgit@core>
 In-Reply-To: <20080519144557.19326.74313.stgit@core>
 References: <20080519144557.19326.74313.stgit@core>
 User-Agent: StGIT/0.14.1
@@ -27,280 +27,452 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@redhat.com>
 
-Switch MOXA to use the new tty_port structure
+Switch riscom8 to use the new tty_port structure
 ---
 
- drivers/char/moxa.c |   87 +++++++++++++++++++++++++--------------------------
- 1 files changed, 42 insertions(+), 45 deletions(-)
+ drivers/char/riscom8.c |  145 ++++++++++++++++++++++--------------------------
+ drivers/char/riscom8.h |    8 ---
+ 2 files changed, 68 insertions(+), 85 deletions(-)
 
 
-diff --git a/drivers/char/moxa.c b/drivers/char/moxa.c
-index d57d3a6..bb9bcff 100644
---- a/drivers/char/moxa.c
-+++ b/drivers/char/moxa.c
-@@ -130,17 +130,14 @@ struct moxaq_str {
- };
- 
- struct moxa_port {
-+	struct tty_port port;
- 	struct moxa_board_conf *board;
--	struct tty_struct *tty;
- 	void __iomem *tableAddr;
- 
- 	int type;
- 	int close_delay;
--	unsigned int count;
--	int asyncflags;
- 	int cflag;
- 	unsigned long statusflags;
--	wait_queue_head_t open_wait;
- 
- 	u8 DCDState;
- 	u8 lineCtrl;
-@@ -348,10 +345,10 @@ static int moxa_ioctl(struct tty_struct *tty, struct file *file,
- 				if (status & 4)
- 					tmp.dcd = 1;
- 
--				if (!p->tty || !p->tty->termios)
-+				if (!p->port.tty || !p->port.tty->termios)
- 					tmp.cflag = p->cflag;
- 				else
--					tmp.cflag = p->tty->termios->c_cflag;
-+					tmp.cflag = p->port.tty->termios->c_cflag;
- copy:
- 				if (copy_to_user(argm, &tmp, sizeof(tmp))) {
- 					mutex_unlock(&moxa_openlock);
-@@ -828,7 +825,7 @@ static int moxa_init_board(struct moxa_board_conf *brd, struct device *dev)
- 		p->type = PORT_16550A;
- 		p->close_delay = 5 * HZ / 10;
- 		p->cflag = B9600 | CS8 | CREAD | CLOCAL | HUPCL;
--		init_waitqueue_head(&p->open_wait);
-+		tty_port_init(&p->port);
+diff --git a/drivers/char/riscom8.c b/drivers/char/riscom8.c
+index f073c71..b0ba241 100644
+--- a/drivers/char/riscom8.c
++++ b/drivers/char/riscom8.c
+@@ -322,7 +322,7 @@ static struct riscom_port *rc_get_port(struct riscom_board const *bp,
+ 	channel = rc_in(bp, CD180_GICR) >> GICR_CHAN_OFF;
+ 	if (channel < CD180_NCH)  {
+ 		port = &rc_port[board_No(bp) * RC_NPORT + channel];
+-		if (port->flags & ASYNC_INITIALIZED)
++		if (port->port.flags & ASYNC_INITIALIZED)
+ 			return port;
  	}
- 
- 	switch (brd->boardType) {
-@@ -884,12 +881,12 @@ static void moxa_board_deinit(struct moxa_board_conf *brd)
- 
- 	/* pci hot-un-plug support */
- 	for (a = 0; a < brd->numPorts; a++)
--		if (brd->ports[a].asyncflags & ASYNC_INITIALIZED)
--			tty_hangup(brd->ports[a].tty);
-+		if (brd->ports[a].port.flags & ASYNC_INITIALIZED)
-+			tty_hangup(brd->ports[a].port.tty);
- 	while (1) {
- 		opened = 0;
- 		for (a = 0; a < brd->numPorts; a++)
--			if (brd->ports[a].asyncflags & ASYNC_INITIALIZED)
-+			if (brd->ports[a].port.flags & ASYNC_INITIALIZED)
- 				opened++;
- 		mutex_unlock(&moxa_openlock);
- 		if (!opened)
-@@ -1104,9 +1101,9 @@ static void moxa_close_port(struct moxa_port *ch)
- {
- 	moxa_shut_down(ch);
- 	MoxaPortFlushData(ch, 2);
--	ch->asyncflags &= ~ASYNC_NORMAL_ACTIVE;
--	ch->tty->driver_data = NULL;
--	ch->tty = NULL;
-+	ch->port.flags &= ~ASYNC_NORMAL_ACTIVE;
-+	ch->port.tty->driver_data = NULL;
-+	ch->port.tty = NULL;
- }
- 
- static int moxa_block_till_ready(struct tty_struct *tty, struct file *filp,
-@@ -1117,7 +1114,7 @@ static int moxa_block_till_ready(struct tty_struct *tty, struct file *filp,
- 	u8 dcd;
- 
- 	while (1) {
--		prepare_to_wait(&ch->open_wait, &wait, TASK_INTERRUPTIBLE);
-+		prepare_to_wait(&ch->port.open_wait, &wait, TASK_INTERRUPTIBLE);
- 		if (tty_hung_up_p(filp)) {
- #ifdef SERIAL_DO_RESTART
- 			retval = -ERESTARTSYS;
-@@ -1138,7 +1135,7 @@ static int moxa_block_till_ready(struct tty_struct *tty, struct file *filp,
- 		}
- 		schedule();
- 	}
--	finish_wait(&ch->open_wait, &wait);
-+	finish_wait(&ch->port.open_wait, &wait);
- 
- 	return retval;
- }
-@@ -1163,16 +1160,16 @@ static int moxa_open(struct tty_struct *tty, struct file *filp)
- 	}
- 
- 	ch = &brd->ports[port % MAX_PORTS_PER_BOARD];
--	ch->count++;
-+	ch->port.count++;
- 	tty->driver_data = ch;
--	ch->tty = tty;
--	if (!(ch->asyncflags & ASYNC_INITIALIZED)) {
-+	ch->port.tty = tty;
-+	if (!(ch->port.flags & ASYNC_INITIALIZED)) {
- 		ch->statusflags = 0;
- 		moxa_set_tty_param(tty, tty->termios);
- 		MoxaPortLineCtrl(ch, 1, 1);
- 		MoxaPortEnable(ch);
- 		MoxaSetFifo(ch, ch->type == PORT_16550A);
--		ch->asyncflags |= ASYNC_INITIALIZED;
-+		ch->port.flags |= ASYNC_INITIALIZED;
- 	}
- 	mutex_unlock(&moxa_openlock);
- 
-@@ -1181,11 +1178,11 @@ static int moxa_open(struct tty_struct *tty, struct file *filp)
- 		retval = moxa_block_till_ready(tty, filp, ch);
- 	mutex_lock(&moxa_openlock);
- 	if (retval) {
--		if (ch->count) /* 0 means already hung up... */
--			if (--ch->count == 0)
-+		if (ch->port.count) /* 0 means already hung up... */
-+			if (--ch->port.count == 0)
- 				moxa_close_port(ch);
- 	} else
--		ch->asyncflags |= ASYNC_NORMAL_ACTIVE;
-+		ch->port.flags |= ASYNC_NORMAL_ACTIVE;
- 	mutex_unlock(&moxa_openlock);
- 
- 	return retval;
-@@ -1204,21 +1201,21 @@ static void moxa_close(struct tty_struct *tty, struct file *filp)
- 	ch = tty->driver_data;
- 	if (ch == NULL)
- 		goto unlock;
--	if (tty->count == 1 && ch->count != 1) {
-+	if (tty->count == 1 && ch->port.count != 1) {
- 		printk(KERN_WARNING "moxa_close: bad serial port count; "
--			"tty->count is 1, ch->count is %d\n", ch->count);
--		ch->count = 1;
-+			"tty->count is 1, ch->port.count is %d\n", ch->port.count);
-+		ch->port.count = 1;
- 	}
--	if (--ch->count < 0) {
-+	if (--ch->port.count < 0) {
- 		printk(KERN_WARNING "moxa_close: bad serial port count, "
- 			"device=%s\n", tty->name);
--		ch->count = 0;
-+		ch->port.count = 0;
- 	}
--	if (ch->count)
-+	if (ch->port.count)
- 		goto unlock;
- 
- 	ch->cflag = tty->termios->c_cflag;
--	if (ch->asyncflags & ASYNC_INITIALIZED) {
-+	if (ch->port.flags & ASYNC_INITIALIZED) {
- 		moxa_setup_empty_event(tty);
- 		tty_wait_until_sent(tty, 30 * HZ);	/* 30 seconds timeout */
- 	}
-@@ -1374,7 +1371,7 @@ static void moxa_set_termios(struct tty_struct *tty,
- 		return;
- 	moxa_set_tty_param(tty, old_termios);
- 	if (!(old_termios->c_cflag & CLOCAL) && C_CLOCAL(tty))
--		wake_up_interruptible(&ch->open_wait);
-+		wake_up_interruptible(&ch->port.open_wait);
- }
- 
- static void moxa_stop(struct tty_struct *tty)
-@@ -1412,20 +1409,20 @@ static void moxa_hangup(struct tty_struct *tty)
- 		mutex_unlock(&moxa_openlock);
- 		return;
- 	}
--	ch->count = 0;
-+	ch->port.count = 0;
- 	moxa_close_port(ch);
- 	mutex_unlock(&moxa_openlock);
- 
--	wake_up_interruptible(&ch->open_wait);
-+	wake_up_interruptible(&ch->port.open_wait);
- }
- 
- static void moxa_new_dcdstate(struct moxa_port *p, u8 dcd)
- {
- 	dcd = !!dcd;
- 
--	if (dcd != p->DCDState && p->tty && C_CLOCAL(p->tty)) {
-+	if (dcd != p->DCDState && p->port.tty && C_CLOCAL(p->port.tty)) {
- 		if (!dcd)
--			tty_hangup(p->tty);
-+			tty_hangup(p->port.tty);
- 	}
- 	p->DCDState = dcd;
- }
-@@ -1433,9 +1430,9 @@ static void moxa_new_dcdstate(struct moxa_port *p, u8 dcd)
- static int moxa_poll_port(struct moxa_port *p, unsigned int handle,
- 		u16 __iomem *ip)
- {
--	struct tty_struct *tty = p->tty;
-+	struct tty_struct *tty = p->port.tty;
- 	void __iomem *ofsAddr;
--	unsigned int inited = p->asyncflags & ASYNC_INITIALIZED;
-+	unsigned int inited = p->port.flags & ASYNC_INITIALIZED;
- 	u16 intr;
- 
- 	if (tty) {
-@@ -1566,9 +1563,9 @@ static void moxa_setup_empty_event(struct tty_struct *tty)
- 
- static void moxa_shut_down(struct moxa_port *ch)
- {
--	struct tty_struct *tp = ch->tty;
-+	struct tty_struct *tp = ch->port.tty;
- 
--	if (!(ch->asyncflags & ASYNC_INITIALIZED))
-+	if (!(ch->port.flags & ASYNC_INITIALIZED))
+ 	printk(KERN_ERR "rc%d: %s interrupt from invalid port %d\n",
+@@ -341,7 +341,7 @@ static void rc_receive_exc(struct riscom_board const *bp)
+ 	if (port == NULL)
  		return;
  
- 	MoxaPortDisable(ch);
-@@ -1580,7 +1577,7 @@ static void moxa_shut_down(struct moxa_port *ch)
- 		MoxaPortLineCtrl(ch, 0, 0);
+-	tty = port->tty;
++	tty = port->port.tty;
  
- 	spin_lock_bh(&moxa_lock);
--	ch->asyncflags &= ~ASYNC_INITIALIZED;
-+	ch->port.flags &= ~ASYNC_INITIALIZED;
- 	spin_unlock_bh(&moxa_lock);
- }
+ #ifdef RC_REPORT_OVERRUN
+ 	status = rc_in(bp, CD180_RCSR);
+@@ -364,7 +364,7 @@ static void rc_receive_exc(struct riscom_board const *bp)
+ 		printk(KERN_INFO "rc%d: port %d: Handling break...\n",
+ 		       board_No(bp), port_No(port));
+ 		flag = TTY_BREAK;
+-		if (port->flags & ASYNC_SAK)
++		if (port->port.flags & ASYNC_SAK)
+ 			do_SAK(tty);
  
-@@ -1975,7 +1972,7 @@ static int MoxaPortWriteData(struct moxa_port *port,
- 	c = (head > tail) ? (head - tail - 1) : (head - tail + tx_mask);
- 	if (c > len)
- 		c = len;
--	moxaLog.txcnt[port->tty->index] += c;
-+	moxaLog.txcnt[port->port.tty->index] += c;
- 	total = c;
- 	if (spage == epage) {
- 		bufhead = readw(ofsAddr + Ofs_txb);
-@@ -2017,7 +2014,7 @@ static int MoxaPortWriteData(struct moxa_port *port,
+ 	} else if (status & RCSR_PE)
+@@ -392,7 +392,7 @@ static void rc_receive(struct riscom_board const *bp)
+ 	if (port == NULL)
+ 		return;
  
- static int MoxaPortReadData(struct moxa_port *port)
+-	tty = port->tty;
++	tty = port->port.tty;
+ 
+ 	count = rc_in(bp, CD180_RDCR);
+ 
+@@ -422,7 +422,7 @@ static void rc_transmit(struct riscom_board const *bp)
+ 	if (port == NULL)
+ 		return;
+ 
+-	tty = port->tty;
++	tty = port->port.tty;
+ 
+ 	if (port->IER & IER_TXEMPTY) {
+ 		/* FIFO drained */
+@@ -467,7 +467,7 @@ static void rc_transmit(struct riscom_board const *bp)
+ 
+ 	count = CD180_NFIFO;
+ 	do {
+-		rc_out(bp, CD180_TDR, port->xmit_buf[port->xmit_tail++]);
++		rc_out(bp, CD180_TDR, port->port.xmit_buf[port->xmit_tail++]);
+ 		port->xmit_tail = port->xmit_tail & (SERIAL_XMIT_SIZE-1);
+ 		if (--port->xmit_cnt <= 0)
+ 			break;
+@@ -492,12 +492,12 @@ static void rc_check_modem(struct riscom_board const *bp)
+ 	if (port == NULL)
+ 		return;
+ 
+-	tty = port->tty;
++	tty = port->port.tty;
+ 
+ 	mcr = rc_in(bp, CD180_MCR);
+ 	if (mcr & MCR_CDCHG) {
+ 		if (rc_in(bp, CD180_MSVR) & MSVR_CD)
+-			wake_up_interruptible(&port->open_wait);
++			wake_up_interruptible(&port->port.open_wait);
+ 		else
+ 			tty_hangup(tty);
+ 	}
+@@ -632,7 +632,7 @@ static void rc_shutdown_board(struct riscom_board *bp)
+  */
+ static void rc_change_speed(struct riscom_board *bp, struct riscom_port *port)
  {
 -	struct tty_struct *tty = port->tty;
 +	struct tty_struct *tty = port->port.tty;
- 	unsigned char *dst;
- 	void __iomem *baseAddr, *ofsAddr, *ofs;
- 	unsigned int count, len, total;
-@@ -2124,8 +2121,8 @@ static int moxa_get_serial_info(struct moxa_port *info,
+ 	unsigned long baud;
+ 	long tmp;
+ 	unsigned char cor1 = 0, cor3 = 0;
+@@ -786,28 +786,21 @@ static int rc_setup_port(struct riscom_board *bp, struct riscom_port *port)
  {
- 	struct serial_struct tmp = {
- 		.type = info->type,
--		.line = info->tty->index,
--		.flags = info->asyncflags,
-+		.line = info->port.tty->index,
-+		.flags = info->port.flags,
- 		.baud_base = 921600,
- 		.close_delay = info->close_delay
- 	};
-@@ -2148,13 +2145,13 @@ static int moxa_set_serial_info(struct moxa_port *info,
+ 	unsigned long flags;
+ 
+-	if (port->flags & ASYNC_INITIALIZED)
++	if (port->port.flags & ASYNC_INITIALIZED)
+ 		return 0;
+ 
+-	if (!port->xmit_buf) {
+-		/* We may sleep in get_zeroed_page() */
+-		unsigned long tmp = get_zeroed_page(GFP_KERNEL);
+-		if (tmp == 0)
+-			return -ENOMEM;
+-		if (port->xmit_buf)
+-			free_page(tmp);
+-		else
+-			port->xmit_buf = (unsigned char *) tmp;
+-	}
++	if (tty_port_alloc_xmit_buf(&port->port) < 0)
++		return -ENOMEM;
++
+ 	spin_lock_irqsave(&riscom_lock, flags);
+ 
+-	if (port->tty)
+-		clear_bit(TTY_IO_ERROR, &port->tty->flags);
+-	if (port->count == 1)
++	if (port->port.tty)
++		clear_bit(TTY_IO_ERROR, &port->port.tty->flags);
++	if (port->port.count == 1)
+ 		bp->count++;
+ 	port->xmit_cnt = port->xmit_head = port->xmit_tail = 0;
+ 	rc_change_speed(bp, port);
+-	port->flags |= ASYNC_INITIALIZED;
++	port->port.flags |= ASYNC_INITIALIZED;
+ 
+ 	spin_unlock_irqrestore(&riscom_lock, flags);
+ 	return 0;
+@@ -818,7 +811,7 @@ static void rc_shutdown_port(struct riscom_board *bp, struct riscom_port *port)
+ {
+ 	struct tty_struct *tty;
+ 
+-	if (!(port->flags & ASYNC_INITIALIZED))
++	if (!(port->port.flags & ASYNC_INITIALIZED))
+ 		return;
+ 
+ #ifdef RC_REPORT_OVERRUN
+@@ -836,12 +829,9 @@ static void rc_shutdown_port(struct riscom_board *bp, struct riscom_port *port)
+ 		printk("].\n");
+ 	}
+ #endif
+-	if (port->xmit_buf)  {
+-		free_page((unsigned long) port->xmit_buf);
+-		port->xmit_buf = NULL;
+-	}
++	tty_port_free_xmit_buf(&port->port);
+ 
+-	tty = port->tty;
++	tty = port->port.tty;
+ 
+ 	if (tty == NULL || C_HUPCL(tty)) {
+ 		/* Drop DTR */
+@@ -860,7 +850,7 @@ static void rc_shutdown_port(struct riscom_board *bp, struct riscom_port *port)
+ 
+ 	if (tty)
+ 		set_bit(TTY_IO_ERROR, &tty->flags);
+-	port->flags &= ~ASYNC_INITIALIZED;
++	port->port.flags &= ~ASYNC_INITIALIZED;
+ 
+ 	if (--bp->count < 0)  {
+ 		printk(KERN_INFO "rc%d: rc_shutdown_port: "
+@@ -890,9 +880,9 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
+ 	 * If the device is in the middle of being closed, then block
+ 	 * until it's done, and then try again.
+ 	 */
+-	if (tty_hung_up_p(filp) || port->flags & ASYNC_CLOSING) {
+-		interruptible_sleep_on(&port->close_wait);
+-		if (port->flags & ASYNC_HUP_NOTIFY)
++	if (tty_hung_up_p(filp) || port->port.flags & ASYNC_CLOSING) {
++		interruptible_sleep_on(&port->port.close_wait);
++		if (port->port.flags & ASYNC_HUP_NOTIFY)
+ 			return -EAGAIN;
+ 		else
+ 			return -ERESTARTSYS;
+@@ -904,7 +894,7 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
+ 	 */
+ 	if ((filp->f_flags & O_NONBLOCK) ||
+ 	    (tty->flags & (1 << TTY_IO_ERROR))) {
+-		port->flags |= ASYNC_NORMAL_ACTIVE;
++		port->port.flags |= ASYNC_NORMAL_ACTIVE;
+ 		return 0;
+ 	}
+ 
+@@ -919,16 +909,16 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
+ 	 * exit, either normal or abnormal.
+ 	 */
+ 	retval = 0;
+-	add_wait_queue(&port->open_wait, &wait);
++	add_wait_queue(&port->port.open_wait, &wait);
+ 
+ 	spin_lock_irqsave(&riscom_lock, flags);
+ 
+ 	if (!tty_hung_up_p(filp))
+-		port->count--;
++		port->port.count--;
+ 
+ 	spin_unlock_irqrestore(&riscom_lock, flags);
+ 
+-	port->blocked_open++;
++	port->port.blocked_open++;
+ 	while (1) {
+ 		spin_lock_irqsave(&riscom_lock, flags);
+ 
+@@ -942,14 +932,14 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
+ 
+ 		set_current_state(TASK_INTERRUPTIBLE);
+ 		if (tty_hung_up_p(filp) ||
+-		    !(port->flags & ASYNC_INITIALIZED)) {
+-			if (port->flags & ASYNC_HUP_NOTIFY)
++		    !(port->port.flags & ASYNC_INITIALIZED)) {
++			if (port->port.flags & ASYNC_HUP_NOTIFY)
+ 				retval = -EAGAIN;
+ 			else
+ 				retval = -ERESTARTSYS;
+ 			break;
+ 		}
+-		if (!(port->flags & ASYNC_CLOSING) &&
++		if (!(port->port.flags & ASYNC_CLOSING) &&
+ 		    (do_clocal || CD))
+ 			break;
+ 		if (signal_pending(current)) {
+@@ -959,14 +949,14 @@ static int block_til_ready(struct tty_struct *tty, struct file *filp,
+ 		schedule();
+ 	}
+ 	__set_current_state(TASK_RUNNING);
+-	remove_wait_queue(&port->open_wait, &wait);
++	remove_wait_queue(&port->port.open_wait, &wait);
+ 	if (!tty_hung_up_p(filp))
+-		port->count++;
+-	port->blocked_open--;
++		port->port.count++;
++	port->port.blocked_open--;
+ 	if (retval)
+ 		return retval;
+ 
+-	port->flags |= ASYNC_NORMAL_ACTIVE;
++	port->port.flags |= ASYNC_NORMAL_ACTIVE;
+ 	return 0;
+ }
+ 
+@@ -990,9 +980,9 @@ static int rc_open(struct tty_struct *tty, struct file *filp)
+ 	if (error)
+ 		return error;
+ 
+-	port->count++;
++	port->port.count++;
+ 	tty->driver_data = port;
+-	port->tty = tty;
++	port->port.tty = tty;
+ 
+ 	error = rc_setup_port(bp, port);
+ 	if (error == 0)
+@@ -1031,21 +1021,21 @@ static void rc_close(struct tty_struct *tty, struct file *filp)
+ 		goto out;
+ 
+ 	bp = port_Board(port);
+-	if ((tty->count == 1) && (port->count != 1))  {
++	if ((tty->count == 1) && (port->port.count != 1))  {
+ 		printk(KERN_INFO "rc%d: rc_close: bad port count;"
+ 		       " tty->count is 1, port count is %d\n",
+-		       board_No(bp), port->count);
+-		port->count = 1;
++		       board_No(bp), port->port.count);
++		port->port.count = 1;
+ 	}
+-	if (--port->count < 0)  {
++	if (--port->port.count < 0)  {
+ 		printk(KERN_INFO "rc%d: rc_close: bad port count "
+ 				 "for tty%d: %d\n",
+-		       board_No(bp), port_No(port), port->count);
+-		port->count = 0;
++		       board_No(bp), port_No(port), port->port.count);
++		port->port.count = 0;
+ 	}
+-	if (port->count)
++	if (port->port.count)
+ 		goto out;
+-	port->flags |= ASYNC_CLOSING;
++	port->port.flags |= ASYNC_CLOSING;
+ 	/*
+ 	 * Now we wait for the transmit buffer to clear; and we notify
+ 	 * the line discipline to only process XON/XOFF characters.
+@@ -1060,7 +1050,7 @@ static void rc_close(struct tty_struct *tty, struct file *filp)
+ 	 * line status register.
+ 	 */
+ 	port->IER &= ~IER_RXD;
+-	if (port->flags & ASYNC_INITIALIZED) {
++	if (port->port.flags & ASYNC_INITIALIZED) {
+ 		port->IER &= ~IER_TXRDY;
+ 		port->IER |= IER_TXEMPTY;
+ 		rc_out(bp, CD180_CAR, port_No(port));
+@@ -1082,14 +1072,14 @@ static void rc_close(struct tty_struct *tty, struct file *filp)
+ 	tty_ldisc_flush(tty);
+ 
+ 	tty->closing = 0;
+-	port->tty = NULL;
+-	if (port->blocked_open) {
++	port->port.tty = NULL;
++	if (port->port.blocked_open) {
+ 		if (port->close_delay)
+ 			msleep_interruptible(jiffies_to_msecs(port->close_delay));
+-		wake_up_interruptible(&port->open_wait);
++		wake_up_interruptible(&port->port.open_wait);
+ 	}
+-	port->flags &= ~(ASYNC_NORMAL_ACTIVE|ASYNC_CLOSING);
+-	wake_up_interruptible(&port->close_wait);
++	port->port.flags &= ~(ASYNC_NORMAL_ACTIVE|ASYNC_CLOSING);
++	wake_up_interruptible(&port->port.close_wait);
+ 
+ out:
+ 	spin_unlock_irqrestore(&riscom_lock, flags);
+@@ -1108,7 +1098,7 @@ static int rc_write(struct tty_struct *tty,
+ 
+ 	bp = port_Board(port);
+ 
+-	if (!tty || !port->xmit_buf)
++	if (!tty || !port->port.xmit_buf)
+ 		return 0;
+ 
+ 	while (1) {
+@@ -1119,7 +1109,7 @@ static int rc_write(struct tty_struct *tty,
+ 		if (c <= 0)
+ 			break;	/* lock continues to be held */
+ 
+-		memcpy(port->xmit_buf + port->xmit_head, buf, c);
++		memcpy(port->port.xmit_buf + port->xmit_head, buf, c);
+ 		port->xmit_head = (port->xmit_head + c) & (SERIAL_XMIT_SIZE-1);
+ 		port->xmit_cnt += c;
+ 
+@@ -1151,7 +1141,7 @@ static int rc_put_char(struct tty_struct *tty, unsigned char ch)
+ 	if (rc_paranoia_check(port, tty->name, "rc_put_char"))
+ 		return 0;
+ 
+-	if (!tty || !port->xmit_buf)
++	if (!tty || !port->port.xmit_buf)
+ 		return 0;
+ 
+ 	spin_lock_irqsave(&riscom_lock, flags);
+@@ -1159,7 +1149,7 @@ static int rc_put_char(struct tty_struct *tty, unsigned char ch)
+ 	if (port->xmit_cnt >= SERIAL_XMIT_SIZE - 1)
+ 		goto out;
+ 
+-	port->xmit_buf[port->xmit_head++] = ch;
++	port->port.xmit_buf[port->xmit_head++] = ch;
+ 	port->xmit_head &= SERIAL_XMIT_SIZE - 1;
+ 	port->xmit_cnt++;
+ 	ret = 1;
+@@ -1178,7 +1168,7 @@ static void rc_flush_chars(struct tty_struct *tty)
+ 		return;
+ 
+ 	if (port->xmit_cnt <= 0 || tty->stopped || tty->hw_stopped ||
+-	    !port->xmit_buf)
++	    !port->port.xmit_buf)
+ 		return;
+ 
+ 	spin_lock_irqsave(&riscom_lock, flags);
+@@ -1317,19 +1307,19 @@ static int rc_set_serial_info(struct riscom_port *port,
+ 		return -EINVAL;
+ #endif
+ 
+-	change_speed = ((port->flags & ASYNC_SPD_MASK) !=
++	change_speed = ((port->port.flags & ASYNC_SPD_MASK) !=
+ 			(tmp.flags & ASYNC_SPD_MASK));
  
  	if (!capable(CAP_SYS_ADMIN)) {
- 		if (((new_serial.flags & ~ASYNC_USR_MASK) !=
--		     (info->asyncflags & ~ASYNC_USR_MASK)))
-+		     (info->port.flags & ~ASYNC_USR_MASK)))
+ 		if ((tmp.close_delay != port->close_delay) ||
+ 		    (tmp.closing_wait != port->closing_wait) ||
+ 		    ((tmp.flags & ~ASYNC_USR_MASK) !=
+-		     (port->flags & ~ASYNC_USR_MASK)))
++		     (port->port.flags & ~ASYNC_USR_MASK)))
  			return -EPERM;
- 	} else
- 		info->close_delay = new_serial.close_delay * HZ / 100;
+-		port->flags = ((port->flags & ~ASYNC_USR_MASK) |
++		port->port.flags = ((port->port.flags & ~ASYNC_USR_MASK) |
+ 			       (tmp.flags & ASYNC_USR_MASK));
+ 	} else  {
+-		port->flags = ((port->flags & ~ASYNC_FLAGS) |
++		port->port.flags = ((port->port.flags & ~ASYNC_FLAGS) |
+ 			       (tmp.flags & ASYNC_FLAGS));
+ 		port->close_delay = tmp.close_delay;
+ 		port->closing_wait = tmp.closing_wait;
+@@ -1355,7 +1345,7 @@ static int rc_get_serial_info(struct riscom_port *port,
+ 	tmp.line = port - rc_port;
+ 	tmp.port = bp->base;
+ 	tmp.irq  = bp->irq;
+-	tmp.flags = port->flags;
++	tmp.flags = port->port.flags;
+ 	tmp.baud_base = (RC_OSCFREQ + CD180_TPC/2) / CD180_TPC;
+ 	tmp.close_delay = port->close_delay * HZ/100;
+ 	tmp.closing_wait = port->closing_wait * HZ/100;
+@@ -1480,7 +1470,7 @@ static void rc_start(struct tty_struct *tty)
  
- 	new_serial.flags = (new_serial.flags & ~ASYNC_FLAGS);
--	new_serial.flags |= (info->asyncflags & ASYNC_FLAGS);
-+	new_serial.flags |= (info->port.flags & ASYNC_FLAGS);
+ 	spin_lock_irqsave(&riscom_lock, flags);
  
- 	MoxaSetFifo(info, new_serial.type == PORT_16550A);
+-	if (port->xmit_cnt && port->xmit_buf && !(port->IER & IER_TXRDY)) {
++	if (port->xmit_cnt && port->port.xmit_buf && !(port->IER & IER_TXRDY)) {
+ 		port->IER |= IER_TXRDY;
+ 		rc_out(bp, CD180_CAR, port_No(port));
+ 		rc_out(bp, CD180_IER, port->IER);
+@@ -1499,10 +1489,10 @@ static void rc_hangup(struct tty_struct *tty)
+ 	bp = port_Board(port);
  
+ 	rc_shutdown_port(bp, port);
+-	port->count = 0;
+-	port->flags &= ~ASYNC_NORMAL_ACTIVE;
+-	port->tty = NULL;
+-	wake_up_interruptible(&port->open_wait);
++	port->port.count = 0;
++	port->port.flags &= ~ASYNC_NORMAL_ACTIVE;
++	port->port.tty = NULL;
++	wake_up_interruptible(&port->port.open_wait);
+ }
+ 
+ static void rc_set_termios(struct tty_struct *tty,
+@@ -1578,8 +1568,7 @@ static int __init rc_init_drivers(void)
+ 		rc_port[i].magic = RISCOM8_MAGIC;
+ 		rc_port[i].close_delay = 50 * HZ / 100;
+ 		rc_port[i].closing_wait = 3000 * HZ / 100;
+-		init_waitqueue_head(&rc_port[i].open_wait);
+-		init_waitqueue_head(&rc_port[i].close_wait);
++		tty_port_init(&rc_port[i].port);
+ 	}
+ 	return 0;
+ }
+diff --git a/drivers/char/riscom8.h b/drivers/char/riscom8.h
+index cdfdf43..29ddbab 100644
+--- a/drivers/char/riscom8.h
++++ b/drivers/char/riscom8.h
+@@ -66,20 +66,14 @@ struct riscom_board {
+ 	
+ struct riscom_port {
+ 	int			magic;
++	struct			tty_port port;
+ 	int			baud_base;
+-	int			flags;
+-	struct tty_struct 	* tty;
+-	int			count;
+-	int			blocked_open;
+ 	int			timeout;
+ 	int			close_delay;
+-	unsigned char 		* xmit_buf;
+ 	int			custom_divisor;
+ 	int			xmit_head;
+ 	int			xmit_tail;
+ 	int			xmit_cnt;
+-	wait_queue_head_t	open_wait;
+-	wait_queue_head_t	close_wait;
+ 	short			wakeup_chars;
+ 	short			break_length;
+ 	unsigned short		closing_wait;
 
