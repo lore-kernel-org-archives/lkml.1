@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762145AbYESRc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762289AbYESReS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762145AbYESRc6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 13:32:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754891AbYESRcs
+	id S1762289AbYESReS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 13:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759142AbYESReA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 13:32:48 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38543 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752322AbYESRcr (ORCPT
+	Mon, 19 May 2008 13:34:00 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:13510 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758402AbYESRd6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 13:32:47 -0400
-Date: Mon, 19 May 2008 10:27:17 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Boaz Harrosh <bharrosh@panasas.com>
-cc: Alan Stern <stern@rowland.harvard.edu>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>,
-       USB Storage list <usb-storage@lists.one-eyed-alien.net>,
-       SCSI development list <linux-scsi@vger.kernel.org>
-Subject: Re: [Re: Linux 2.6.26-rc2] Write protect on on
-In-Reply-To: <4831B2E2.8030700@panasas.com>
-Message-ID: <alpine.LFD.1.10.0805191026120.32253@woody.linux-foundation.org>
-References: <Pine.LNX.4.44L0.0805191106270.15266-100000@iolanthe.rowland.org> <4831A60A.5010308@panasas.com> <alpine.LFD.1.10.0805190929170.32253@woody.linux-foundation.org> <4831B2E2.8030700@panasas.com>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 19 May 2008 13:33:58 -0400
+Date: Mon, 19 May 2008 10:26:27 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-crypto@vger.kernel.org,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [BUILD_FAILURE] linux-next: Tree for May 19 - build fails on
+ cryptd_alloc_hash ()
+Message-Id: <20080519102627.997d61ef.randy.dunlap@oracle.com>
+In-Reply-To: <4831B3F6.5080101@linux.vnet.ibm.com>
+References: <20080519174120.2083ea57.sfr@canb.auug.org.au>
+	<4831B3F6.5080101@linux.vnet.ibm.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 19 May 2008 22:38:06 +0530 Kamalesh Babulal wrote:
 
-
-On Mon, 19 May 2008, Boaz Harrosh wrote:
+> Hi,
 > 
-> Sure, inspecting other places that emulate MODE_SENSE, (And inspecting the scsi
-> spec) all zeros is a very good scsi response. Alan do you want to send a fix for all
-> places that initiate a MODE_SENSE command, specifically at
-> scsi_scan.c::scsi_unlock_floptical() ? (Some other places do)
+> The next-20080519 kernel build fails on the x86_64 machine, when compiled 
+> with the randconfig.
+> 
+>   LD      .tmp_vmlinux1
+> crypto/built-in.o: In function `cryptd_alloc_hash':
+> /root/kernels/linux-2.6.26-rc3/crypto/cryptd.c:485: undefined reference to `crypto_ahash_type'
+> make: *** [.tmp_vmlinux1] Error 1
 
-I was actualyl more thinking that the safest thing to do would be to just 
-pre-clear the sense buffer. Then, if some driver doesn't fill it 
-correctly, big deal..
+Fixed on Thu May 15:  http://lkml.org/lkml/2008/5/15/433
+and Herbert says that he merged it on Fri May 16,
+so why did it miss being in linux-next on Mon May 19?
 
-It's not like pre-clearing the bugger is a performance issue.
+Wrong tree/branch/whatever?
 
-		Linus
+---
+~Randy
