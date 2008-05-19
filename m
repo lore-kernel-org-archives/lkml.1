@@ -1,233 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756428AbYESHlj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756857AbYESHmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756428AbYESHlj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 03:41:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbYESHl3
+	id S1756857AbYESHmc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 03:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754657AbYESHmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 03:41:29 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:47043 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753282AbYESHl1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 03:41:27 -0400
-Date: Mon, 19 May 2008 17:41:20 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for May 19
-Message-Id: <20080519174120.2083ea57.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
+	Mon, 19 May 2008 03:42:24 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:18272 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753471AbYESHmX convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 03:42:23 -0400
+Message-Id: <48314B95.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.3 
+Date: Mon, 19 May 2008 08:42:45 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Cc: "linux-kbuild" <linux-kbuild@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH] move link of vmlinux from Makefile to a script
+References: <482DCD89.76E4.0078.0@novell.com>
+ <20080517125204.GA19741@uranus.ravnborg.org>
+ <20080518185219.GA777@uranus.ravnborg.org>
+In-Reply-To: <20080518185219.GA777@uranus.ravnborg.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__19_May_2008_17_41_20_+1000_fZ5vmwOrwxAXLbb."
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__19_May_2008_17_41_20_+1000_fZ5vmwOrwxAXLbb.
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+>>> Sam Ravnborg <sam@ravnborg.org> 18.05.08 20:52 >>>
+>> 
+>> I have several times been tempted to move it all to a shell script.
+>> What has prevented me to do so has only been:
+>> 1) that um has some subtle requirement and therefore redefine the
+>>    vmlinux link
+>> 2) that last time I reworked this stuff Andrew could not boot one
+>>    of his systems and I never figured out why
+>> 3) lack of time..
+>> 
+>> But if someone comes up with a patch that moves all this stuff out
+>> of the top-level Makefile I am all open for it.
+>
+>I gave it a quick try. This is first try and comments are welcome.
+>It does not address the um issue - but I think that is doable
+>with an additional enviroment variable.
+>
+>The conditionals around KALLSYMS may be simplified - I just did
+>not try to do so.
 
-Hi all,
+What I fail to see is how the multi-stage (necessary even without
+CONFIG_KALLSYMS_EXTRA_PASS) kallsyms linking is now happening.
 
-News:
-	I will stop making full tar balls tomorrow unless someone screams.
-	The LATEST file now contains the name of the version that the
-patches are based on i.e. today, LATEST-IS-next-20080519 contains "v2.6.26-=
-rc3".
+>What I like with the patch below is that it is 100 times more
+>readable than the Makefile stuff.
 
-Changes since next-20080516:
+Fully agree, and hence I'd favor this for .27 over the simple version
+handling fix (which I'd hope to see in .26, and maybe even .25.x).
 
-New tree: bkl-removal  (this is Jonathan Corbet's tree)
+>The drawback are that we either link or not - we cannot restart
+>from the middle of the link. But that it not a real issue.
+>
+>This patch futhermore remove a debug target to assist in
+>kallysms issues - I have not seen it used for a long time
+>now.
 
-Removed trees: x86-fixes, sched-fixes (I don't know where they are
-currently).
+Is this what I referred to above? If so, I don't think these are just
+debug targets...
 
-Changed trees: x86 and sched are now the new auto merged trees.
+>And I was also considering removing the extra kallsyms
+>pass as I dunnot how usefull it is and for an allyesconfig
+>build it take too much time.
 
-The i2c trivial conflict has moved to the driver-core tree.
+I'd vote for it, but would of course think that whoever introduced it
+should voice his opinion.
 
-The x86, pci and i2c trees gained a conflict each.
+>This patch includes your version simplifactions too allthough
+>that is not obvious.
 
-The cpufreq tree gained three conflicts.
+Thanks, Jan
 
-The rr tree gained a couple of conflicts with the x86 tree.
-
-The semaphore-removal tree still needed three patches reverted because simi=
-lar
-patches were merged into upstream and the scsi-rc-fixes trees.
-
-The bkl-removal tree needed a build fixup patch for viotape.
-
-I have applied the following temporary patches for known build problems:
-
-	"Fix various 8390 builds" - the net tree broke builds on various
-architectures - hopefully this patch will go into the net tree shortly.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(tar balls and patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups, it is also built with powerpc allnoconfig,
-44x_defconfig and allyesconfig and i386, sparc and sparc64 defconfig.
-
-Below is a summary of the state of the merge.
-
-We are up to 73 trees (counting Linus' and 11 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging powerpc-merge/merge
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sparc-current/master
-Merging sound-current/for-linus
-Merging arm-current/master
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging quilt/driver-core
-CONFLICT (content): Merge conflict in arch/powerpc/platforms/pasemi/misc.c
-CONFLICT (content): Merge conflict in include/linux/i2c.h
-Merging quilt/usb
-Merging x86/auto-x86-next
-CONFLICT (content): Merge conflict in kernel/power/main.c
-Merging sched/auto-sched-next
-Merging pci/linux-next
-CONFLICT (content): Merge conflict in drivers/pci/pci-driver.c
-Merging quilt/device-mapper
-Merging hid/mm
-Merging quilt/i2c
-CONFLICT (content): Merge conflict in drivers/i2c/busses/i2c-nforce2.c
-Merging quilt/kernel-doc
-Merging avr32/avr32-arch
-Merging v4l-dvb/stable
-Merging s390/features
-Merging sh/master
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-Merging infiniband/for-next
-Merging acpi/test
-Merging blackfin/for-linus
-Merging nfsd/nfsd-next
-Merging ieee1394/for-next
-Merging hwmon/testing
-Merging ubi/master
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Merging ia64/test
-Merging tests/master
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-Merging ocfs2/linux-next
-Merging selinux/for-akpm
-Merging quilt/m68k
-Merging powerpc/powerpc-next
-Merging hrt/mm
-Merging lblnet/master
-Merging ext4/next
-Merging 4xx/next
-Merging async_tx/next
-Merging udf/for_next
-Merging security-testing/next
-Merging net/master
-Merging sparc/master
-Merging galak/powerpc-next
-Merging mtd/master
-Merging wireless/master
-Merging crypto/master
-Merging vfs/vfs-2.6.25
-Merging sound/master
-Merging arm/devel
-Merging cpufreq/master
-CONFLICT (delete/modify): arch/x86/kernel/cpu/cpufreq/p4-clockmod.c deleted=
- in cpufreq/master and modified in HEAD. Version HEAD of arch/x86/kernel/cp=
-u/cpufreq/p4-clockmod.c left in tree.
-CONFLICT (delete/modify): arch/x86/kernel/cpu/cpufreq/speedstep-centrino.c =
-deleted in cpufreq/master and modified in HEAD. Version HEAD of arch/x86/ke=
-rnel/cpu/cpufreq/speedstep-centrino.c left in tree.
-CONFLICT (content): Merge conflict in drivers/cpufreq/cpufreq.c
-$ git rm arch/x86/kernel/cpu/cpufreq/p4-clockmod.c arch/x86/kernel/cpu/cpuf=
-req/speedstep-centrino.c
-Merging v9fs/for-next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in include/linux/stop_machine.h
-CONFLICT (content): Merge conflict in kernel/stop_machine.c
-Merging cifs/master
-Merging mmc/next
-Merging gfs2/master
-Merging semaphore/semaphore
-Merging semaphore-removal/semaphore-removal
-CONFLICT (content): Merge conflict in drivers/atm/ambassador.c
-CONFLICT (content): Merge conflict in drivers/net/bonding/bond_main.c
-CONFLICT (content): Merge conflict in drivers/net/bonding/bond_sysfs.c
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_attr.c
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_def.h
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_mbx.c
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_mid.c
-CONFLICT (content): Merge conflict in drivers/scsi/qla2xxx/qla_os.c
-CONFLICT (content): Merge conflict in net/9p/trans_virtio.c
-$ git reset --hard
-$ git checkout -b tmp semaphore-removal/semaphore-removal
-Created commit d1a82dd: Revert "Convert qla_os to use mutex instead of sema=
-phore"
-Created commit 028419e: Revert "9p: Convert from semaphore to spinlock"
-Created commit 68e79ef: Revert "qla2xxx: Turn vport_sem into vport_mutex"
-$ git checkout master
-CONFLICT (content): Merge conflict in drivers/atm/ambassador.c
-CONFLICT (content): Merge conflict in drivers/net/bonding/bond_main.c
-CONFLICT (content): Merge conflict in drivers/net/bonding/bond_sysfs.c
-Merging quilt/ldp.next
-Merging bkl-removal/bkl-removal
-Applying bkl-removal viotape fixup
-Applying Fix various 8390 builds
-
---Signature=_Mon__19_May_2008_17_41_20_+1000_fZ5vmwOrwxAXLbb.
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIMS8lTgG2atn1QN8RAuvYAJ46e5CtLT0On6u2SomR+dOc9P1khwCfdrrz
-dRK26ouewhZsBTU48srOrhU=
-=Nku0
------END PGP SIGNATURE-----
-
---Signature=_Mon__19_May_2008_17_41_20_+1000_fZ5vmwOrwxAXLbb.--
