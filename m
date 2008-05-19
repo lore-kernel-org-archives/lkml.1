@@ -1,121 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763734AbYESUIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764181AbYESUIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763734AbYESUIT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 16:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757431AbYESUIK
+	id S1764181AbYESUIw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 16:08:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762812AbYESUIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 16:08:10 -0400
-Received: from rv-out-0506.google.com ([209.85.198.224]:13683 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758900AbYESUII (ORCPT
+	Mon, 19 May 2008 16:08:41 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:56555 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762872AbYESUIk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 16:08:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ibGQ8MZVlIDV8p45nnMMJBtvSyax6iH3YFAY7DrfL5cwNeyzeZqSnerUxPRXM3PXBt2LfWBAUNGwH4lp3ZjY0IeK6NkB0c+KN+3M6rHyjQFqWMyMmCA8lb/MbH5ySoTcpjBp8snuaFk/HoBfMd77h2/0yC9L1VtSvvjZyxYG93w=
-Message-ID: <86802c440805191308k5700fbb9x5ed76f7f58d11c69@mail.gmail.com>
-Date: Mon, 19 May 2008 13:08:07 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Alexey Starikovskiy" <astarikovskiy@suse.de>
-Subject: Re: [PATCH 5/5] x86: allow MPPARSE to be deselected in SMP configs
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-In-Reply-To: <20080519154722.15071.91358.stgit@thinkpad>
+	Mon, 19 May 2008 16:08:40 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Mon, 19 May 2008 22:07:28 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH, RFC] Char dev BKL pushdown v2
+To: Jonathan Corbet <corbet@lwn.net>, linux1394-devel@lists.sourceforge.net
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Alexander Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <4831D484.10505@s5r6.in-berlin.de>
+Message-ID: <tkrat.4b36f75b3b22c54c@s5r6.in-berlin.de>
+References: <19845.1211148908@vena.lwn.net>
+ <4831BD08.6030600@s5r6.in-berlin.de> <4831D484.10505@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080519154656.15071.96979.stgit@thinkpad>
-	 <20080519154722.15071.91358.stgit@thinkpad>
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 19, 2008 at 8:47 AM, Alexey Starikovskiy
-<astarikovskiy@suse.de> wrote:
-> Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
-> ---
->
->  arch/x86/Kconfig.debug     |    2 +-
->  arch/x86/kernel/setup.c    |    2 +-
->  arch/x86/kernel/setup_32.c |    2 +-
->  arch/x86/kernel/setup_64.c |    4 ++++
->  4 files changed, 7 insertions(+), 3 deletions(-)
->
->
-> diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
-> index 5eb480e..f27de28 100644
-> --- a/arch/x86/Kconfig.debug
-> +++ b/arch/x86/Kconfig.debug
-> @@ -128,7 +128,7 @@ config 4KSTACKS
->
->  config X86_FIND_SMP_CONFIG
->        def_bool y
-> -       depends on X86_LOCAL_APIC || X86_VOYAGER
-> +       depends on X86_MPPARSE || X86_VOYAGER || X86_VISWS
->        depends on X86_32
->
->  config X86_MPPARSE
-> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-> index 089ddfa..c86bda7 100644
-> --- a/arch/x86/kernel/setup.c
-> +++ b/arch/x86/kernel/setup.c
-> @@ -12,7 +12,7 @@
->  #include <asm/mpspec.h>
->  #include <asm/apicdef.h>
->
-> -#ifdef CONFIG_X86_MPPARSE
-> +#ifdef CONFIG_X86_LOCAL_APIC
->  unsigned int num_processors;
->  unsigned disabled_cpus __cpuinitdata;
->
-> diff --git a/arch/x86/kernel/setup_32.c b/arch/x86/kernel/setup_32.c
-> index 12a31de..9af0d5f 100644
-> --- a/arch/x86/kernel/setup_32.c
-> +++ b/arch/x86/kernel/setup_32.c
-> @@ -846,7 +846,7 @@ void __init setup_arch(char **cmdline_p)
->                        "CONFIG_X86_GENERICARCH or CONFIG_X86_BIGSMP.\n");
->  #endif
->  #endif
-> -#ifdef CONFIG_X86_LOCAL_APIC
-> +#if defined(CONFIG_X86_MPPARSE) || defined(CONFIG_X86_VISWS)
->        if (smp_found_config)
->                get_smp_config();
->  #endif
-> diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
-> index 9234675..8047db9 100644
-> --- a/arch/x86/kernel/setup_64.c
-> +++ b/arch/x86/kernel/setup_64.c
-> @@ -439,7 +439,9 @@ void __init setup_arch(char **cmdline_p)
->        /*
->        * Find and reserve possible boot-time SMP configuration:
->        */
-> +#ifdef CONFIG_X86_MPPARSE
->        find_smp_config();
-> +#endif
+On 19 May, Stefan Richter wrote at LKML:
+> I wrote:
+>> Jonathan Corbet wrote:
+>>>  drivers/ieee1394/dv1394.c                    |    6 +++-
+>>>  drivers/ieee1394/raw1394.c                   |    3 ++
+>>>  drivers/ieee1394/video1394.c                 |   18 +++++++++---
+>> ...
+>>>       ieee1394: cdev lock_kernel() pushdown
+>> 
+>> I have yet to look at these drivers in detail whether they need BKL or 
+>> not.  They likely don't.
+> 
+> video1394 needs it to serialize module init vs. open.  The race 
+> condition there can be prevented by splitting hpsb_register_highlevel() 
+> into an _init and a _register function.  I will follow up with a patch.
+> 
+> dv1394 and raw1394 do not need the BKL in their open() methods AFAICS.
 
-put the ifdef before the comments?
 
-also if the mptable is not reserved in e820 table (buggy bios), we may
-still need to call find_smp_config to reserved the mptable.
-otherwise kexec to kernel without acpi support or acpi=off could fail,
-because mptable could be damaged already.
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: ieee1394: video1394: reorder module init, prepare BKL removal
 
->  #ifdef CONFIG_BLK_DEV_INITRD
->        if (boot_params.hdr.type_of_loader && boot_params.hdr.ramdisk_image) {
->                unsigned long ramdisk_image = boot_params.hdr.ramdisk_image;
-> @@ -485,8 +487,10 @@ void __init setup_arch(char **cmdline_p)
->        /*
->         * get boot-time SMP configuration:
->         */
-> +#ifdef CONFIG_X86_MPPARSE
->        if (smp_found_config)
->                get_smp_config();
-> +#endif
+This prepares video1394 for removal of the BKL (big kernel lock):
+It allows video1394_open() to be called while video1394_init_module()
+is still in progress.
 
-put the ifdef before coments please.
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/ieee1394/highlevel.c |    4 +---
+ drivers/ieee1394/highlevel.h |   13 ++++++++++++-
+ drivers/ieee1394/video1394.c |    2 ++
+ 3 files changed, 15 insertions(+), 4 deletions(-)
 
->        init_apic_mappings();
->        ioapic_init_mappings();
+Index: linux/drivers/ieee1394/highlevel.c
+===================================================================
+--- linux.orig/drivers/ieee1394/highlevel.c
++++ linux/drivers/ieee1394/highlevel.c
+@@ -228,10 +228,8 @@ void hpsb_register_highlevel(struct hpsb
+ {
+ 	unsigned long flags;
+ 
++	hpsb_init_highlevel(hl);
+ 	INIT_LIST_HEAD(&hl->addr_list);
+-	INIT_LIST_HEAD(&hl->host_info_list);
+-
+-	rwlock_init(&hl->host_info_lock);
+ 
+ 	down_write(&hl_drivers_sem);
+ 	list_add_tail(&hl->hl_list, &hl_drivers);
+Index: linux/drivers/ieee1394/highlevel.h
+===================================================================
+--- linux.orig/drivers/ieee1394/highlevel.h
++++ linux/drivers/ieee1394/highlevel.h
+@@ -2,7 +2,7 @@
+ #define IEEE1394_HIGHLEVEL_H
+ 
+ #include <linux/list.h>
+-#include <linux/spinlock_types.h>
++#include <linux/spinlock.h>
+ #include <linux/types.h>
+ 
+ struct module;
+@@ -103,6 +103,17 @@ int highlevel_lock64(struct hpsb_host *h
+ void highlevel_fcp_request(struct hpsb_host *host, int nodeid, int direction,
+ 			   void *data, size_t length);
+ 
++/**
++ * hpsb_init_highlevel - initialize a struct hpsb_highlevel
++ *
++ * This is only necessary if hpsb_get_hostinfo_bykey can be called
++ * before hpsb_register_highlevel.
++ */
++static inline void hpsb_init_highlevel(struct hpsb_highlevel *hl)
++{
++	rwlock_init(&hl->host_info_lock);
++	INIT_LIST_HEAD(&hl->host_info_list);
++}
+ void hpsb_register_highlevel(struct hpsb_highlevel *hl);
+ void hpsb_unregister_highlevel(struct hpsb_highlevel *hl);
+ 
+Index: linux/drivers/ieee1394/video1394.c
+===================================================================
+--- linux.orig/drivers/ieee1394/video1394.c
++++ linux/drivers/ieee1394/video1394.c
+@@ -1503,6 +1503,8 @@ static int __init video1394_init_module 
+ {
+ 	int ret;
+ 
++	hpsb_init_highlevel(&video1394_highlevel);
++
+ 	cdev_init(&video1394_cdev, &video1394_fops);
+ 	video1394_cdev.owner = THIS_MODULE;
+ 	ret = cdev_add(&video1394_cdev, IEEE1394_VIDEO1394_DEV, 16);
 
-YH
+-- 
+Stefan Richter
+-=====-==--- -=-= =--==
+http://arcgraph.de/sr/
+
