@@ -1,115 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759668AbYESXL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764742AbYESXLr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759668AbYESXL1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 19:11:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755417AbYESXLS
+	id S1764742AbYESXLr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 19:11:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755365AbYESXLg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 19:11:18 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39657 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752989AbYESXLR (ORCPT
+	Mon, 19 May 2008 19:11:36 -0400
+Received: from xi.wantstofly.org ([83.160.184.112]:42339 "EHLO
+	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755417AbYESXLf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 19:11:17 -0400
-Date: Mon, 19 May 2008 16:10:02 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Hugh Dickins <hugh@veritas.com>
-cc: Theodore Tso <tytso@mit.edu>, Gabriel C <nix.or.die@googlemail.com>,
-       Keith Packard <keithp@keithp.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Eric Anholt <eric@anholt.net>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       bugme-daemon@bugzilla.kernel.org, airlied@linux.ie,
-       "Barnes, Jesse" <jesse.barnes@intel.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug 10732] REGRESSION: 2.6.26-rc2-git4: X server failed start
- onX61s laptop
-In-Reply-To: <Pine.LNX.4.64.0805192217430.15410@blonde.site>
-Message-ID: <alpine.LFD.1.10.0805191528550.32253@woody.linux-foundation.org>
-References: <E1JxGth-0001te-S4@closure.thunk.org> <924EFEDD5F540B4284297C4DC59F3DEE01119AFE@orsmsx423.amr.corp.intel.com> <20080517154131.GA7651@mit.edu> <924EFEDD5F540B4284297C4DC59F3DEE01119B07@orsmsx423.amr.corp.intel.com> <1211047916.27447.314.camel@koto.keithp.com>
- <482F24C6.2050705@frugalware.org> <20080517184626.GA16496@mit.edu> <Pine.LNX.4.64.0805192217430.15410@blonde.site>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 19 May 2008 19:11:35 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
+	d=wantstofly.org;
+	h=date:from:to:cc:subject:message-id:mime-version:content-type:
+	content-disposition:in-reply-to:user-agent;
+	b=FXL4z/8hSfcy23z7uZWPKjeTri9bDzuLEU6QLgR/zmPPWdK/QPxLrselVZKKs
+	GLDVm7qqhUrS3isfRd2rcLawQ==
+Date: Tue, 20 May 2008 01:11:26 +0200
+From: Lennert Buytenhek <buytenh@wantstofly.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, David Brownell <david-b@pacbell.net>,
+       Nicolas Pitre <nico@cam.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Bug #10713] ehci splatter in 2.6.26-rc2
+Message-ID: <20080519231126.GA15099@xi.wantstofly.org>
+References: <oKKSi1w1qaF.A.mEG.JrBMIB@albercik> <7wuznNhcUqC.A.nUH.-rBMIB@albercik>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <7wuznNhcUqC.A.nUH.-rBMIB@albercik>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, May 18, 2008 at 01:13:56PM +0200, Rafael J. Wysocki wrote:
 
-
-On Mon, 19 May 2008, Hugh Dickins wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> This comes from an assumption in 1c12c4cf9411eb130b245fa8d0fbbaf989477c7b
-> mprotect: prevent alteration of the PAT bits, that PTE_MASK is what it's
-> supposed to be: whereas it's been wrong forever with PAE, staying 32-bit
-> where 64-bit is needed.
+> The following bug entry is on the current list of known regressions
+> from 2.6.25.  Please verify if it still should be listed.
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10713
+> Subject		: ehci splatter in 2.6.26-rc2
+> Submitter	: Lennert Buytenhek <buytenh@wantstofly.org>
+> Date		: 2008-05-14 11:24 (5 days old)
+> References	: http://marc.info/?l=linux-kernel&amp;m=121076435420129&amp;w=4
+> Handled-By	: David Brownell <david-b@pacbell.net>
 
-Can we *please* just fix PTE_MASK?
+Just re-checked, and this device (a USB to dual PS/2 cable) works
+fine on 2.6.25 on this hardware:
 
-And can we agree to never EVER use that PAGE_MASK thing (which was only 
-ever meant to work on *addresses*) for any pte operations (including the 
-definition of PTE_MASK)? Because PAGE_MASK is very much the word-size, and 
-in 32-bit PAE, the page table entry is bigger.
+	usb 1-1: new low speed USB device using orion-ehci and address 2
+	usb 1-1: configuration #1 chosen from 1 choice
+	input: PS2 to USB AdapterA3 as /class/input/input0
+	input: USB HID v1.10 Keyboard [PS2 to USB AdapterA3] on usb-orion-ehci.0-1
+	input: PS2 to USB AdapterA3 as /class/input/input1
+	input: USB HID v1.10 Mouse [PS2 to USB AdapterA3] on usb-orion-ehci.0-1
 
-IOE, PTE_MASK should be a "pteval_t". And it should have absolutely 
-*nothing* to do with PAGE_MASK. EVER.
+But on 2.6.26-rc3 it just gives me:
 
-IOW, maybe something like this?
+	usb 1-1: new low speed USB device using orion-ehci and address 2
+	Unable to handle kernel NULL pointer dereference at virtual address 00000000
+	pgd = c0004000
+	[00000000] *pgd=00000000
+	Internal error: Oops: 5 [#1] PREEMPT
+	Modules linked in:
+	CPU: 0    Not tainted  (2.6.26-rc3 #347)
+	PC is at qh_append_tds+0x24c/0x47c
+	LR is at ehci_qtd_alloc+0x30/0x5c
+	pc : [<c0242374>]    lr : [<c0241d48>]    psr: 00000093
+	sp : c7cfdcb0  ip : c7e3c4c0  fp : c7cfdcfc
+	r10: ffc83080  r9 : 00000008  r8 : c7d12240
+	r7 : 80000080  r6 : 00000080  r5 : 00000000  r4 : 00000002
+	r3 : c7d3f000  r2 : 00000000  r1 : 40800000  r0 : 08085000
+	Flags: nzcv  IRQs off  FIQs on  Mode SVC_32  ISA ARM  Segment kernel
+	Control: 0005317f  Table: 00004000  DAC: 00000017
+	Process khubd (pid: 79, stack limit = 0xc7cfc268)
+	Stack: (0xc7cfdcb0 to 0xc7cfe000)
+	[...]
+	Backtrace:
+	[<c0242128>] (qh_append_tds+0x0/0x47c) from [<c0243ca0>] (ehci_urb_enqueue+0x100/0xff4)
+	[<c0243ba0>] (ehci_urb_enqueue+0x0/0xff4) from [<c0234c30>] (usb_hcd_submit_urb+0x824/0x91c)
+	[<c023440c>] (usb_hcd_submit_urb+0x0/0x91c) from [<c0235098>] (usb_submit_urb+0x224/0x260)
+	[<c0234e74>] (usb_submit_urb+0x0/0x260) from [<c0235b5c>] (usb_start_wait_urb+0x44/0xac)
+	 r6:c7d12240 r5:c7cfde80 r4:00000000
+	[<c0235b18>] (usb_start_wait_urb+0x0/0xac) from [<c0235dac>] (usb_control_msg+0xc8/0xec)
+	 r8:00000000 r7:00000100 r6:fffffff4 r5:00000040 r4:c7e3dc20
+	[<c0235ce4>] (usb_control_msg+0x0/0xec) from [<c0230854>] (hub_port_init+0x274/0x5e4)
+	[<c02305e0>] (hub_port_init+0x0/0x5e4) from [<c0231bec>] (hub_thread+0x608/0xc10)
+	[<c02315e4>] (hub_thread+0x0/0xc10) from [<c0059e20>] (kthread+0x5c/0x94)
+	[<c0059dc4>] (kthread+0x0/0x94) from [<c0047908>] (do_exit+0x0/0x67c)
+	 r6:00000000 r5:00000000 r4:00000000
+	Code: e51bc040 e5932000 e51c309c e1520003 (15923000)
+	---[ end trace ce1992535f2e8e4d ]---
+	note: khubd[79] exited with preempt_count 1
 
-And no, I haven't tested this at all. But it should make PTE_MASK have
- (a) the right type ("pteval_t", not "long" - the latter is pure and utter 
-     crap)
- (b) the right value (proper mask, not a sign-extended long - again, the 
-     latter is pure and utter crap)
-
-but for all I know there might be some broken code that depends on the 
-current incorrect and totally broken #defines, so this needs testing and 
-thinking about.
-
-It also causes these warnings on 32-bit PAE:
-
-	  AS      arch/x86/kernel/head_32.o
-	arch/x86/kernel/head_32.S: Assembler messages:
-	arch/x86/kernel/head_32.S:225: Warning: left operand is a bignum; integer 0 assumed
-	arch/x86/kernel/head_32.S:609: Warning: left operand is a bignum; integer 0 assumed
-
-and I do not see why (the end result seems to be identical).
-
-Ingo, comments?
-
-Oh, and those #define's should be moved from <asm/page.h> to 
-<asm/pgtable.h>, I think. They have nothing to do with pages (despite the 
-name of "physical_page_mask", and really are meaningful only in the 
-context of some kind of page table entry.
-
-		Linus
-
----
- include/asm-x86/page.h |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/include/asm-x86/page.h b/include/asm-x86/page.h
-index b381f4a..34b4845 100644
---- a/include/asm-x86/page.h
-+++ b/include/asm-x86/page.h
-@@ -10,8 +10,8 @@
- 
- #ifdef __KERNEL__
- 
--#define PHYSICAL_PAGE_MASK	(PAGE_MASK & __PHYSICAL_MASK)
--#define PTE_MASK		(_AT(long, PHYSICAL_PAGE_MASK))
-+#define PHYSICAL_PAGE_MASK	(__PHYSICAL_MASK & ~__PHYSICAL_LOW_BITS)
-+#define PTE_MASK		(_AT(pteval_t, PHYSICAL_PAGE_MASK))
- 
- #define PMD_PAGE_SIZE		(_AC(1, UL) << PMD_SHIFT)
- #define PMD_PAGE_MASK		(~(PMD_PAGE_SIZE-1))
-@@ -24,6 +24,7 @@
- /* to align the pointer to the (next) page boundary */
- #define PAGE_ALIGN(addr)	(((addr)+PAGE_SIZE-1)&PAGE_MASK)
- 
-+#define __PHYSICAL_LOW_BITS	_AT(phys_addr_t, (PAGE_SIZE-1))
- #define __PHYSICAL_MASK		_AT(phys_addr_t, (_AC(1,ULL) << __PHYSICAL_MASK_SHIFT) - 1)
- #define __VIRTUAL_MASK		((_AC(1,UL) << __VIRTUAL_MASK_SHIFT) - 1)
- 
+If you have no idea what might have caused this to creep in, I guess
+I'll have to bisect it?
