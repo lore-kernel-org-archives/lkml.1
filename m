@@ -1,57 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763555AbYESU3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763631AbYESUaJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763555AbYESU3A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 16:29:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752360AbYESU2w
+	id S1763631AbYESUaJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 16:30:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756717AbYESU35
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 16:28:52 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:53075 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752148AbYESU2v (ORCPT
+	Mon, 19 May 2008 16:29:57 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:46509 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752360AbYESU35 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 16:28:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=QCBLskp1AO+Rb+WehEPtEpYMPk9qJZaTWTlje2ywzr/wWEseGx+kjdshuyqMaN1Q/wjOli9963SpIumURlFFbcULhd4/CmNfSS86u6VjvMH61nW2jhiK67EU/L4W60B55C/rzmY/Tk+k0lxPA3bi9BV2lfa+5DT+yO6itpDxGIQ=
-Message-ID: <df47b87a0805191328u664363c8la79831595a0fd1df@mail.gmail.com>
-Date: Mon, 19 May 2008 23:28:50 +0300
-From: "Ioan Ionita" <opslynx@gmail.com>
-To: "Miklos Szeredi" <miklos@szeredi.hu>
-Subject: Re: BISECTED REGRESSION: 2.6.26-rc2: FUSE changes break mount of ntfs-3g
-Cc: linux-kernel@vger.kernel.org, mszeredi@suse.cz, a.p.zijlstra@chello.nl,
-       akpm@linux-foundation.org
-In-Reply-To: <E1JyB6E-0000Ya-6v@pomaz-ex.szeredi.hu>
+	Mon, 19 May 2008 16:29:57 -0400
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: allow MPPARSE to be deselected in SMP configs
+Date: Tue, 20 May 2008 00:29:59 +0400
+Message-ID: <20080519202959.1467.7919.stgit@thinkpad>
+In-Reply-To: <86802c440805191308k5700fbb9x5ed76f7f58d11c69@mail.gmail.com>
+References: <86802c440805191308k5700fbb9x5ed76f7f58d11c69@mail.gmail.com>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <df47b87a0805171337h5da01cc4pd9df7d318afc47c2@mail.gmail.com>
-	 <E1Jxza1-0007YO-KM@pomaz-ex.szeredi.hu>
-	 <df47b87a0805191117m278580d2n2e23c48452ee4a19@mail.gmail.com>
-	 <E1JyB6E-0000Ya-6v@pomaz-ex.szeredi.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 19, 2008 at 10:32 PM, Miklos Szeredi <miklos@szeredi.hu> wrote:
+Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+---
 
-> Thanks!
->
-> The problem seems to be that if a device isn't partitioned (and the
-> raid-0 device isn't), then fuse will register its own BDI with the
-> same name as the one belonging to the underlying device.
->
-> Here's a patch that should fix it.  Can you please confirm?
+ arch/x86/Kconfig.debug     |    2 +-
+ arch/x86/kernel/setup.c    |    2 +-
+ arch/x86/kernel/setup_32.c |    2 +-
+ arch/x86/kernel/setup_64.c |    4 ++++
+ 4 files changed, 7 insertions(+), 3 deletions(-)
 
-Confirmed. Patch fixed the issue for me! RAID NTFS mounts just fine
-and behaves as expected.
 
-> Thanks,
-> Miklos
+diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
+index 5eb480e..f27de28 100644
+--- a/arch/x86/Kconfig.debug
++++ b/arch/x86/Kconfig.debug
+@@ -128,7 +128,7 @@ config 4KSTACKS
+ 
+ config X86_FIND_SMP_CONFIG
+ 	def_bool y
+-	depends on X86_LOCAL_APIC || X86_VOYAGER
++	depends on X86_MPPARSE || X86_VOYAGER || X86_VISWS
+ 	depends on X86_32
+ 
+ config X86_MPPARSE
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index 089ddfa..c86bda7 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -12,7 +12,7 @@
+ #include <asm/mpspec.h>
+ #include <asm/apicdef.h>
+ 
+-#ifdef CONFIG_X86_MPPARSE
++#ifdef CONFIG_X86_LOCAL_APIC
+ unsigned int num_processors;
+ unsigned disabled_cpus __cpuinitdata;
+ 
+diff --git a/arch/x86/kernel/setup_32.c b/arch/x86/kernel/setup_32.c
+index 12a31de..9af0d5f 100644
+--- a/arch/x86/kernel/setup_32.c
++++ b/arch/x86/kernel/setup_32.c
+@@ -846,7 +846,7 @@ void __init setup_arch(char **cmdline_p)
+ 			"CONFIG_X86_GENERICARCH or CONFIG_X86_BIGSMP.\n");
+ #endif
+ #endif
+-#ifdef CONFIG_X86_LOCAL_APIC
++#if defined(CONFIG_X86_MPPARSE) || defined(CONFIG_X86_VISWS)
+ 	if (smp_found_config)
+ 		get_smp_config();
+ #endif
+diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
+index 9234675..88f0ac2 100644
+--- a/arch/x86/kernel/setup_64.c
++++ b/arch/x86/kernel/setup_64.c
+@@ -436,10 +436,12 @@ void __init setup_arch(char **cmdline_p)
+ 	if (efi_enabled)
+ 		efi_reserve_bootmem();
+ 
++#ifdef CONFIG_X86_MPPARSE
+        /*
+ 	* Find and reserve possible boot-time SMP configuration:
+ 	*/
+ 	find_smp_config();
++#endif
+ #ifdef CONFIG_BLK_DEV_INITRD
+ 	if (boot_params.hdr.type_of_loader && boot_params.hdr.ramdisk_image) {
+ 		unsigned long ramdisk_image = boot_params.hdr.ramdisk_image;
+@@ -482,11 +484,13 @@ void __init setup_arch(char **cmdline_p)
+ 
+ 	init_cpu_to_node();
+ 
++#ifdef CONFIG_X86_MPPARSE
+ 	/*
+ 	 * get boot-time SMP configuration:
+ 	 */
+ 	if (smp_found_config)
+ 		get_smp_config();
++#endif
+ 	init_apic_mappings();
+ 	ioapic_init_mappings();
+ 
 
-No, thank you!
-
-Cheers,
-
-Ioan
