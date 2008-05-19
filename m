@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763177AbYESVdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762936AbYESViT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763177AbYESVdV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 17:33:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753487AbYESVdL
+	id S1762936AbYESViT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 17:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756273AbYESViJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 17:33:11 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:43897 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752507AbYESVdK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 17:33:10 -0400
-Date: Tue, 20 May 2008 00:31:04 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: megaraidlinux@lsi.com
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: MAINTAINERS points to no longer existing megaraid URL
-Message-ID: <20080519213104.GA17716@cs181133002.pp.htv.fi>
+	Mon, 19 May 2008 17:38:09 -0400
+Received: from az33egw01.freescale.net ([192.88.158.102]:36894 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755440AbYESViI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 17:38:08 -0400
+Message-ID: <4831F364.8020702@freescale.com>
+Date: Mon, 19 May 2008 16:38:44 -0500
+From: Scott Wood <scottwood@freescale.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Rune Torgersen <runet@innovsys.com>
+CC: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: Oops with PREEMPT-RT on 2.6.25.4
+References: <DCEAAC0833DD314AB0B58112AD99B93B0469010C@ismail.innsys.innovsys.com>	<4831D527.2020907@freescale.com> <DCEAAC0833DD314AB0B58112AD99B93B04690162@ismail.innsys.innovsys.com> <4831ECF0.5090101@freescale.com> <DCEAAC0833DD314AB0B58112AD99B93B04690239@ismail.innsys.innovsys.com>
+In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B04690239@ismail.innsys.innovsys.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-MAINTAINERS says:
+Rune Torgersen wrote:
+> Scott Wood wrote:
+>> Almost certainly the latter.  Is the disk interrupt shared with any
+>> other interrupts, that are marked IRQF_NODELAY?  The -rt
+>> patch doesn't seem to handle mixing the two well.
+> 
+> Disk is on a muxed PCI interrupt. None of the other interrupts on the
+> mux is fireing at the time.
 
-MEGARAID SCSI DRIVERS
-P:      Neela Syam Kolli
-M:      megaraidlinux@lsi.com
-S:      linux-scsi@vger.kernel.org
-W:      http://megaraid.lsilogic.com
-S:      Maintained
+Regardless of whether they're firing, any request_irq with IRQF_NODELAY 
+will turn off threading for all handlers.
 
-But http://megaraid.lsilogic.com no longer exists.
+> Is is possible that the demuxer is not set up right? It is based loosely
+> on pq2-pci-pic.c
 
-cu
-Adrian
+Try calling irq_set_chip_and_handler() with handle_level_irq, rather 
+than irq_set_chip().  The -rt patch doesn't seem to have threadified the 
+  __do_IRQ() path.
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+-Scott
