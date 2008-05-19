@@ -1,45 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752213AbYESWKQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764475AbYESWKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752213AbYESWKQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 18:10:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765225AbYESWG2
+	id S1764475AbYESWKs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 18:10:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765314AbYESWGo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 18:06:28 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54422 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1765207AbYESWG1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 18:06:27 -0400
-Date: Mon, 19 May 2008 22:49:15 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [2.6 patch] drivers/char/rio/: remove VCS tags
-Message-ID: <20080519224915.22811d1f@core>
-In-Reply-To: <20080519215348.GG17716@cs181133002.pp.htv.fi>
-References: <20080519215348.GG17716@cs181133002.pp.htv.fi>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 19 May 2008 18:06:44 -0400
+Received: from xenotime.net ([66.160.160.81]:44452 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1764824AbYESWGn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 18:06:43 -0400
+Date: Mon, 19 May 2008 15:06:41 -0700 (PDT)
+From: "Randy.Dunlap" <rdunlap@xenotime.net>
+X-X-Sender: rddunlap@shark.he.net
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+cc: Adrian Bunk <bunk@kernel.org>, Rene Herman <rene.herman@gmail.com>,
+       linux-kernel@vger.kernel.org, Adam M Belay <abelay@mit.edu>,
+       Adam Belay <ambx1@neo.rr.com>
+Subject: Re: [2.6 patch] pnp: remove printk() with outdated version
+In-Reply-To: <200805191602.46460.bjorn.helgaas@hp.com>
+Message-ID: <Pine.LNX.4.64.0805191506300.20279@shark.he.net>
+References: <20080519215419.GI17716@cs181133002.pp.htv.fi>
+ <200805191602.46460.bjorn.helgaas@hp.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 May 2008 00:53:48 +0300
-Adrian Bunk <bunk@kernel.org> wrote:
+On Mon, 19 May 2008, Bjorn Helgaas wrote:
 
-> This patch removes ancient VCS tags (either protected
-> by #ifdef SCCS_LABELS or commented out).
+> On Monday 19 May 2008 03:54:19 pm Adrian Bunk wrote:
+> > There's no point in printing some ancient version number forever.
+> > 
+> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
 > 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> Adam's the maintainer, so you really should ask him (cc'd).
+> Personally, I agree that it isn't really useful anymore.
 
-Acked-by: Alan Cox <alan@redhat.com>
+Ditto.  Thanks.
 
-Let me take this one via my tty patches however.
+> > ---
+> > acef517cfbe3cd741f8884311ef6fc2dfbeb1a4d diff --git a/drivers/pnp/core.c b/drivers/pnp/core.c
+> > index 20771b7..d924798 100644
+> > --- a/drivers/pnp/core.c
+> > +++ b/drivers/pnp/core.c
+> > @@ -209,7 +209,6 @@ void __pnp_remove_device(struct pnp_dev *dev)
+> >  
+> >  static int __init pnp_init(void)
+> >  {
+> > -	printk(KERN_INFO "Linux Plug and Play Support v0.97 (c) Adam Belay\n");
+> >  	return bus_register(&pnp_bus_type);
+> >  }
+> >  
+> > 
+> > 
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-Alan
+-- 
+~Randy
