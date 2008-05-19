@@ -1,123 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762595AbYESSWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763239AbYESSWi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762595AbYESSWR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 14:22:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758625AbYESSWE
+	id S1763239AbYESSWi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 14:22:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759844AbYESSW2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 14:22:04 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50683 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756128AbYESSWB (ORCPT
+	Mon, 19 May 2008 14:22:28 -0400
+Received: from gv-out-0910.google.com ([216.239.58.190]:30991 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760818AbYESSW1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 14:22:01 -0400
-Date: Mon, 19 May 2008 11:21:48 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, wim@iguana.be
-Subject: Re: [PATCH 00/57] watchdog: Giant scrub
-Message-Id: <20080519112148.4d078ad4.akpm@linux-foundation.org>
-In-Reply-To: <20080519124659.31722.51847.stgit@core>
-References: <20080519124659.31722.51847.stgit@core>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 19 May 2008 14:22:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=W42AMO+TmmVY8dPudQt+cjLDril3G6uXV7eMnH399CAf6C87ETwyEWkFI1B2dk/A65MdeNx3ZFxQ5l9mRrj5cUefyNojmprMq/4FgbwQTX/KHuSrXIPISyQ6+9wpYfEpc89GqWO7G9gMiyRS1wNFGIvOSmVhgAmd7T8R32xbHGo=
+Date: Mon, 19 May 2008 22:22:14 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Paulo Marques <pmarques@grupopie.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: /proc/kallsyms broken in 2.6.26-rc1-git6
+Message-ID: <20080519182214.GD7773@cvg>
+References: <4824A7B6.70306@firstfloor.org> <4824AD3C.3070506@grupopie.com> <20080509233742.GA22265@martell.zuzino.mipt.ru> <48281540.9020207@grupopie.com> <20080512155052.GB6913@cvg> <20080512172323.GA9236@uranus.ravnborg.org> <20080513095437.GJ31954@one.firstfloor.org> <20080519181118.GA22931@uranus.ravnborg.org> <20080519181543.GC7773@cvg> <20080519182115.GA24285@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080519182115.GA24285@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 May 2008 14:04:40 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+[Sam Ravnborg - Mon, May 19, 2008 at 08:21:15PM +0200]
+| On Mon, May 19, 2008 at 10:15:43PM +0400, Cyrill Gorcunov wrote:
+| > [Sam Ravnborg - Mon, May 19, 2008 at 08:11:18PM +0200]
+| > | On Tue, May 13, 2008 at 11:54:37AM +0200, Andi Kleen wrote:
+| > | > > I expect it to be a toolchain issue. Andi is often running with gcc versions
+| > | > > that are very new (fresh from svn maybe). I dunno about binutils.
+| > | > 
+| > | > No actually that's a pretty old version from SUSE 10.2
+| > | > 
+| > | > gcc-4.1.3-29
+| > | > binutils-2.17.50.0.5-21
+| > | > 
+| > | > This means i've been recently trying to get the x86-64 kernel to work
+| > | > with the new gold linker from binutils mainline, but it's far from
+| > | > booting yet and was not used here.
+| > | > 
+| > | > > To reproduce I would expect that a very recent gcc/binutils is needed.
+| > | > > Andi?
+| > | > 
+| > | > Just a SUSE 10.2 toolchain. You can probably rpm2cpio it from any 
+| > | > SUSE mirror.
+| > | 
+| > | I have just commit the following that should fix it.
+| > | 
+| > | 	Sam
+| > | 
+| > | commit aab34ac8582303ef57b792710fc5dd5991477475
+| > | Author: Sam Ravnborg <sam@ravnborg.org>
+| > | Date:   Mon May 19 20:07:58 2008 +0200
+| > | 
+| > |     kbuild: filter away debug symbols from kernel symbols
+| > |     
+| > |     Andi Kleen <andi@firstfloor.org>
+| > |     reported that he saw a lot of symbols like this:
+| > |     
+| > |     0000000000000b24 N DW.aio.h.903a6d92.2
+| > |     0000000000000bce N DW.task_io_accounting.h.8d8de327.0
+| > |     0000000000000bec N DW.hrtimer.h.c23659c6.0
+| > |     
+| > |     in his System.map / kallsyms output.
+| > |     
+| > |     Simple solution is to skip all debugging
+| > |     symbols (they are marked 'N').
+| > |     
+| > |     Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+| > |     Cc: Paulo Marques <pmarques@grupopie.com>
+| > | 
+| > | diff --git a/scripts/kallsyms.c b/scripts/kallsyms.c
+| > | index 5d20a2e..ad2434b 100644
+| > | --- a/scripts/kallsyms.c
+| > | +++ b/scripts/kallsyms.c
+| > | @@ -108,6 +108,9 @@ static int read_symbol(FILE *in, struct sym_entry *s)
+| > |  	/* exclude also MIPS ELF local symbols ($L123 instead of .L123) */
+| > |  	else if (str[0] == '$')
+| > |  		return -1;
+| > | +	/* exclude debugging symbols */
+| > | +	else if (stype == 'N')
+| > | +		return -1;
+| > |  
+| > |  	/* include the type field in the symbol name, so that it gets
+| > |  	 * compressed together */
+| > | diff --git a/scripts/mksysmap b/scripts/mksysmap
+| > | index 4390fab..6e133a0 100644
+| > | --- a/scripts/mksysmap
+| > | +++ b/scripts/mksysmap
+| > | @@ -32,6 +32,7 @@
+| > |  # For System.map filter away:
+| > |  #   a - local absolute symbols
+| > |  #   U - undefined global symbols
+| > | +#   N - debugging symbols
+| > |  #   w - local weak symbols
+| > |  
+| > |  # readprofile starts reading symbols when _stext is found, and
+| > | @@ -40,5 +41,5 @@
+| > |  # so we just ignore them to let readprofile continue to work.
+| > |  # (At least sparc64 has __crc_ in the middle).
+| > |  
+| > | -$NM -n $1 | grep -v '\( [aUw] \)\|\(__crc_\)\|\( \$[adt]\)' > $2
+| > | +$NM -n $1 | grep -v '\( [aNUw] \)\|\(__crc_\)\|\( \$[adt]\)' > $2
+| > |  
+| > | 
+| > 
+| > Hi Sam,
+| > 
+| > should not there be
+| > 
+| > 	toupper(stype) == 'N'
+| > 
+| > (just a guess)
+| 
+| I conisered this. But decided that we could do so if we needed it later.
+| In the nm output I got they were all 'N'.
+| 
+| 	Sam
+| 
 
->  drivers/watchdog/acquirewdt.c          |  119 ++++-----
->  drivers/watchdog/advantechwdt.c        |  133 ++++------
->  drivers/watchdog/alim1535_wdt.c        |  186 +++++++------
->  drivers/watchdog/alim7101_wdt.c        |  224 +++++++++-------
->  drivers/watchdog/ar7_wdt.c             |   29 +-
->  drivers/watchdog/at32ap700x_wdt.c      |    7 -
->  drivers/watchdog/at91rm9200_wdt.c      |  108 ++++----
->  drivers/watchdog/bfin_wdt.c            |  147 +++++------
->  drivers/watchdog/booke_wdt.c           |   57 ++--
->  drivers/watchdog/cpu5wdt.c             |  144 +++++-----
->  drivers/watchdog/davinci_wdt.c         |   11 -
->  drivers/watchdog/ep93xx_wdt.c          |   17 +
->  drivers/watchdog/eurotechwdt.c         |   57 +++-
->  drivers/watchdog/hpwdt.c               |    4 
->  drivers/watchdog/i6300esb.c            |  342 ++++++++++++-------------
->  drivers/watchdog/iTCO_vendor.h         |   15 +
->  drivers/watchdog/iTCO_vendor_support.c |   53 ++--
->  drivers/watchdog/iTCO_wdt.c            |  294 ++++++++++-----------
->  drivers/watchdog/ib700wdt.c            |  103 ++++---
->  drivers/watchdog/ibmasr.c              |  149 ++++++-----
->  drivers/watchdog/indydog.c             |  114 ++++----
->  drivers/watchdog/iop_wdt.c             |   46 ++-
->  drivers/watchdog/it8712f_wdt.c         |   77 ++----
->  drivers/watchdog/ixp2000_wdt.c         |   50 ++--
->  drivers/watchdog/ixp4xx_wdt.c          |   41 +--
->  drivers/watchdog/ks8695_wdt.c          |  119 ++++-----
->  drivers/watchdog/machzwd.c             |  108 +++-----
->  drivers/watchdog/mixcomwd.c            |  133 +++++-----
->  drivers/watchdog/mpc5200_wdt.c         |   20 +
->  drivers/watchdog/mpc83xx_wdt.c         |   19 +
->  drivers/watchdog/mpc8xx_wdt.c          |   37 +--
->  drivers/watchdog/mpcore_wdt.c          |   53 ++--
->  drivers/watchdog/mtx-1_wdt.c           |  107 ++++----
->  drivers/watchdog/mv64x60_wdt.c         |   20 +
->  drivers/watchdog/omap_wdt.c            |   35 ++-
->  drivers/watchdog/pc87413_wdt.c         |  211 ++++++---------
->  drivers/watchdog/pcwd.c                |  179 +++++++------
->  drivers/watchdog/pnx4008_wdt.c         |   18 +
->  drivers/watchdog/rm9k_wdt.c            |   21 +-
->  drivers/watchdog/s3c2410_wdt.c         |  148 ++++++-----
->  drivers/watchdog/sa1100_wdt.c          |   32 +-
->  drivers/watchdog/sb_wdog.c             |   78 +++---
->  drivers/watchdog/sbc60xxwdt.c          |  223 ++++++++--------
->  drivers/watchdog/sbc7240_wdt.c         |   16 +
->  drivers/watchdog/sbc8360.c             |   30 +-
->  drivers/watchdog/sbc_epx_c3.c          |   12 -
->  drivers/watchdog/sc1200wdt.c           |  203 ++++++++-------
->  drivers/watchdog/sc520_wdt.c           |  163 ++++++------
->  drivers/watchdog/scx200_wdt.c          |   59 ++--
->  drivers/watchdog/shwdt.c               |  139 ++++++----
->  drivers/watchdog/smsc37b787_wdt.c      |  442 ++++++++++++++++----------------
->  drivers/watchdog/softdog.c             |   87 +++---
->  drivers/watchdog/txx9wdt.c             |   31 +-
->  drivers/watchdog/w83627hf_wdt.c        |  175 ++++++-------
->  drivers/watchdog/w83697hf_wdt.c        |  141 +++++-----
->  drivers/watchdog/w83877f_wdt.c         |  199 +++++++-------
->  drivers/watchdog/w83977f_wdt.c         |  225 ++++++++--------
->  drivers/watchdog/wafer5823wdt.c        |   80 +++---
->  drivers/watchdog/wdrtas.c              |  103 +++----
->  drivers/watchdog/wdt.c                 |  176 +++++++------
->  drivers/watchdog/wdt285.c              |   31 +-
->  drivers/watchdog/wdt977.c              |  148 +++++------
->  drivers/watchdog/wdt_pci.c             |  300 ++++++++++++----------
->  65 files changed, 3479 insertions(+), 3396 deletions(-)
+ok, thanks
 
-eek.
-
-This comes at a time when git-watchdog has
-
- drivers/watchdog/Kconfig              |   38 +++-
- drivers/watchdog/Makefile             |    5 +
- drivers/watchdog/bfin_wdt.c           |  111 +++++---
- drivers/watchdog/core/Kconfig         |   33 +++
- drivers/watchdog/core/Makefile        |    7 +
- drivers/watchdog/core/watchdog_core.c |  200 ++++++++++++++
- drivers/watchdog/core/watchdog_dev.c  |  465 +++++++++++++++++++++++++++++++++
- drivers/watchdog/geodewdt.c           |  309 ++++++++++++++++++++++
- drivers/watchdog/hpwdt.c              |   27 +-
- drivers/watchdog/iTCO_wdt.c           |  247 +++++-------------
- drivers/watchdog/it8712f_wdt.c        |   21 ++
- drivers/watchdog/rc32434_wdt.c        |  344 ++++++++++++++++++++++++
- drivers/watchdog/rdc321x_wdt.c        |  285 ++++++++++++++++++++
- drivers/watchdog/w83697hf_wdt.c       |   38 +++-
- include/linux/watchdog.h              |   49 ++++
- 15 files changed, 1934 insertions(+), 245 deletions(-)
-
-and hasn't had a commit in six weeks, missed the merge window and the
-most recent commit is titled "[WATCHDOG] rc32434_wdt: critical
-bugfixes".
-
-Wim, come back!
-
-(Happily there appears to be little overlap between the two diffstats there)
+		- Cyrill -
