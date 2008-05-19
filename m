@@ -1,170 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759692AbYESMdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760250AbYESMd4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759692AbYESMdj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 08:33:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758501AbYESMbu
+	id S1760250AbYESMd4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 08:33:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758814AbYESMbv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 08:31:50 -0400
-Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:11599 "EHLO
-	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756975AbYESMbs (ORCPT
+	Mon, 19 May 2008 08:31:51 -0400
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:58576 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756991AbYESMbs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 19 May 2008 08:31:48 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <20080519231.561421028@firstfloor.org>
 In-Reply-To: <20080519231.561421028@firstfloor.org>
 To: corbet@lwn.net, linux-kernel@vger.kernel.org
-Subject: [PATCH] [2/11] Add unlocked_fasync
-Message-Id: <20080519123111.97C0C1B41FF@basil.firstfloor.org>
-Date: Mon, 19 May 2008 14:31:11 +0200 (CEST)
-X-OriginalArrivalTime: 19 May 2008 12:24:09.0594 (UTC) FILETIME=[3D1D5DA0:01C8B9AB]
+Subject: [PATCH] [6/11] Convert bad_inode to unlocked_fasync
+Message-Id: <20080519123115.AC72E1B41FF@basil.firstfloor.org>
+Date: Mon, 19 May 2008 14:31:15 +0200 (CEST)
+X-OriginalArrivalTime: 19 May 2008 12:24:13.0547 (UTC) FILETIME=[3F788BB0:01C8B9AB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Add a new fops entry point to allow fasync without BKL. While it's arguably
-unclear this entry point is called often enough for it really matters
-it was still relatively easy to do. And there are far less async users
-in the tree than ioctls so it's likely they can be all converted 
-eventually and then the non unlocked async entry point could be dropped.
-
-There was still the problem of the actual flags change being
-protected against other setters of flags. Instead of using BKL
-for this use the i_mutex now.
-
-I also added a mutex_lock against one other flags change
-that was lockless and could potentially lose updates.
-
-There are a couple of potential problems I added comments about on.
+Not that it matters much, but it was easy.
 
 Signed-off-by: Andi Kleen <ak@suse.de>
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- Documentation/filesystems/vfs.txt |    5 ++++-
- fs/fcntl.c                        |    6 +++++-
- fs/ioctl.c                        |    5 ++++-
- include/linux/fs.h                |    1 +
- 4 files changed, 14 insertions(+), 3 deletions(-)
+ fs/bad_inode.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux/fs/fcntl.c
+Index: linux/fs/bad_inode.c
 ===================================================================
---- linux.orig/fs/fcntl.c
-+++ linux/fs/fcntl.c
-@@ -227,18 +227,26 @@ static int setfl(int fd, struct file * f
- 	if (error)
- 		return error;
- 
--	lock_kernel();
-+	/* AK: potential race here. Since test is unlocked fasync could
-+	   be called several times in a row with on. We hope the drivers
-+	   deal with it. */
- 	if ((arg ^ filp->f_flags) & FASYNC) {
--		if (filp->f_op && filp->f_op->fasync) {
--			error = filp->f_op->fasync(fd, filp, (arg & FASYNC) != 0);
--			if (error < 0)
--				goto out;
-+		int on = !!(arg & FASYNC);
-+		if (filp->f_op && filp->f_op->unlocked_fasync)
-+			error = filp->f_op->unlocked_fasync(fd, filp, on);
-+		else if (filp->f_op && filp->f_op->fasync) {
-+			lock_kernel();
-+			error = filp->f_op->fasync(fd, filp, on);
-+			unlock_kernel();
- 		}
-+		/* AK: no else error = -EINVAL here? */
-+		if (error < 0)
-+			return error;
- 	}
- 
-+	mutex_lock(&filp->f_dentry->d_inode->i_mutex);
- 	filp->f_flags = (arg & SETFL_MASK) | (filp->f_flags & ~SETFL_MASK);
-- out:
--	unlock_kernel();
-+	mutex_unlock(&filp->f_dentry->d_inode->i_mutex);
- 	return error;
- }
- 
-Index: linux/fs/ioctl.c
-===================================================================
---- linux.orig/fs/ioctl.c
-+++ linux/fs/ioctl.c
-@@ -103,10 +103,13 @@ static int ioctl_fionbio(struct file *fi
- 	if (O_NONBLOCK != O_NDELAY)
- 		flag |= O_NDELAY;
- #endif
-+	/* Protect f_flags */
-+	mutex_lock(&filp->f_dentry->d_inode->i_mutex);
- 	if (on)
- 		filp->f_flags |= flag;
- 	else
- 		filp->f_flags &= ~flag;
-+	mutex_unlock(&filp->f_dentry->d_inode->i_mutex);
- 	return error;
- }
- 
-@@ -122,8 +125,13 @@ static int ioctl_fioasync(unsigned int f
- 	flag = on ? FASYNC : 0;
- 
- 	/* Did FASYNC state change ? */
-+	/* AK: potential race here: ->fasync could be called with on two times
-+	   in a row. We hope the drivers deal with it. */
- 	if ((flag ^ filp->f_flags) & FASYNC) {
--		if (filp->f_op && filp->f_op->fasync) {
-+		if (filp->f_op && filp->f_op->unlocked_fasync) {
-+			error = filp->f_op->unlocked_fasync(fd,
-+							    filp, on);
-+		} else if (filp->f_op && filp->f_op->fasync) {
- 			lock_kernel();
- 			error = filp->f_op->fasync(fd, filp, on);
- 			unlock_kernel();
-@@ -133,10 +141,13 @@ static int ioctl_fioasync(unsigned int f
- 	if (error)
- 		return error;
- 
-+	/* Protect f_flags */
-+	mutex_lock(&filp->f_dentry->d_inode->i_mutex);
- 	if (on)
- 		filp->f_flags |= FASYNC;
- 	else
- 		filp->f_flags &= ~FASYNC;
-+	mutex_unlock(&filp->f_dentry->d_inode->i_mutex);
- 	return error;
- }
- 
-Index: linux/include/linux/fs.h
-===================================================================
---- linux.orig/include/linux/fs.h
-+++ linux/include/linux/fs.h
-@@ -1237,6 +1237,7 @@ struct file_operations {
- 	int (*fsync) (struct file *, struct dentry *, int datasync);
- 	int (*aio_fsync) (struct kiocb *, int datasync);
- 	int (*fasync) (int, struct file *, int);
-+	int (*unlocked_fasync) (int, struct file *, int);
- 	int (*lock) (struct file *, int, struct file_lock *);
- 	ssize_t (*sendpage) (struct file *, struct page *, int, size_t, loff_t *, int);
- 	unsigned long (*get_unmapped_area)(struct file *, unsigned long, unsigned long, unsigned long, unsigned long);
-Index: linux/Documentation/filesystems/vfs.txt
-===================================================================
---- linux.orig/Documentation/filesystems/vfs.txt
-+++ linux/Documentation/filesystems/vfs.txt
-@@ -755,6 +755,7 @@ struct file_operations {
- 	int (*fsync) (struct file *, struct dentry *, int datasync);
- 	int (*aio_fsync) (struct kiocb *, int datasync);
- 	int (*fasync) (int, struct file *, int);
-+	int (*unlocked_fasync) (int, struct file *, int);
- 	int (*lock) (struct file *, int, struct file_lock *);
- 	ssize_t (*readv) (struct file *, const struct iovec *, unsigned long, loff_t *);
- 	ssize_t (*writev) (struct file *, const struct iovec *, unsigned long, loff_t *);
-@@ -814,7 +815,9 @@ otherwise noted.
-   fsync: called by the fsync(2) system call
- 
-   fasync: called by the fcntl(2) system call when asynchronous
--	(non-blocking) mode is enabled for a file
-+	(non-blocking) mode is enabled for a file. BKL hold
-+
-+  unlocked_fasync: like fasync, but without BKL
- 
-   lock: called by the fcntl(2) system call for F_GETLK, F_SETLK, and F_SETLKW
-   	commands
+--- linux.orig/fs/bad_inode.c
++++ linux/fs/bad_inode.c
+@@ -174,7 +174,7 @@ static const struct file_operations bad_
+ 	.release	= bad_file_release,
+ 	.fsync		= bad_file_fsync,
+ 	.aio_fsync	= bad_file_aio_fsync,
+-	.fasync		= bad_file_fasync,
++	.unlocked_fasync = bad_file_fasync,
+ 	.lock		= bad_file_lock,
+ 	.sendpage	= bad_file_sendpage,
+ 	.get_unmapped_area = bad_file_get_unmapped_area,
