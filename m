@@ -1,111 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754808AbYESFKz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbYESFWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754808AbYESFKz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 01:10:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbYESFKi
+	id S1754205AbYESFWS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 01:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbYESFWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 01:10:38 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:4814 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751748AbYESFKh (ORCPT
+	Mon, 19 May 2008 01:22:10 -0400
+Received: from rv-out-0506.google.com ([209.85.198.237]:38918 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751365AbYESFWI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 01:10:37 -0400
+	Mon, 19 May 2008 01:22:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent:from;
-        b=Btoppuxy6iCTPkFM50WlMhlUvg3OwPOTQo15KVIY9v2Ni5E1vDI3EYlJ64wYkQNO57fyuwTKJTYe2gC1z4wazrlRA3UzwFdy6qKPznQwRwpl1/dRoS3QsUsrHctgznZYSjKca8iNf0Q3gnDQ9H0VhsRLXoCa9W+NtXk+66nJGr4=
-Date: Mon, 19 May 2008 07:10:32 +0200
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 04/40] ide-scsi: fix Interrupt Reason checking in
-	idescsi_pc_intr()
-Message-ID: <20080519051032.GB31130@gollum.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20080518185428.5636.77234.sendpatchset@localhost.localdomain> <20080518185503.5636.98141.sendpatchset@localhost.localdomain>
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=SlaIFsAuapr+R7SKPCYdpYy5itXgRyOp1dODtOtpvhedJRErwEZsUqPyzCZc6a/5BjmhMvNRzC19urqLEup1YEoSxWLh0i9gSBcfdvZUC1QIQnAqW710AuKORIHt0YYyYhw/xKqL5ZZWelBj0leGSCLeCYacEKrdAyQW4PYQuAs=
+Message-ID: <84144f020805182222h41b9bffx463eef7e502c87f2@mail.gmail.com>
+Date: Mon, 19 May 2008 08:22:07 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Pau Oliva Fora" <pau@eslack.org>
+Subject: Re: [PATCH] Add support for HTC Shift Touchscreen
+Cc: dmitry.torokhov@gmail.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, sam@ravnborg.org,
+       marcin.slusarz@gmail.com
+In-Reply-To: <4830F10B.5070303@eslack.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080518185503.5636.98141.sendpatchset@localhost.localdomain>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: Borislav Petkov <petkovbb@googlemail.com>
+References: <482ED31E.2000009@eslack.org> <4830F10B.5070303@eslack.org>
+X-Google-Sender-Auth: a218dc62756c37a3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 18, 2008 at 08:55:03PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> Set PC_FLAG_WRITING pc flag in idescsi_queue() (if needed)
-> and then fix Interrupt Reason checking in idescsi_pc_intr().
-> 
-> Cc: Borislav Petkov <petkovbb@gmail.com>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+On Mon, May 19, 2008 at 6:16 AM, Pau Oliva Fora <pau@eslack.org> wrote:
+> The patch below adds support for HTC Shift UMPC touchscreen.
+>
+> Signed-off-by: Pau Oliva Fora <pau@eslack.org>
+>
 > ---
->  drivers/scsi/ide-scsi.c |   17 +++++++++++------
->  1 file changed, 11 insertions(+), 6 deletions(-)
-> 
-> Index: b/drivers/scsi/ide-scsi.c
-> ===================================================================
-> --- a/drivers/scsi/ide-scsi.c
-> +++ b/drivers/scsi/ide-scsi.c
-> @@ -427,7 +427,15 @@ static ide_startstop_t idescsi_pc_intr (
->  		printk(KERN_ERR "ide-scsi: CoD != 0 in idescsi_pc_intr\n");
->  		return ide_do_reset (drive);
->  	}
-> -	if (ireason & IO) {
-> +	if (((ireason & IO) == IO) == !!(pc->flags & PC_FLAG_WRITING)) {
-> +		/* Hopefully, we will never get here */
-> +		printk(KERN_ERR "%s: We wanted to %s, but the device wants us "
-> +				"to %s!\n", drive->name,
-> +				(ireason & IO) ? "Write" : "Read",
-> +				(ireason & IO) ? "Read" : "Write");
-> +		return ide_do_reset(drive);
-> +	}
-> +	if (!(pc->flags & PC_FLAG_WRITING)) {
->  		temp = pc->xferred + bcount;
->  		if (temp > pc->req_xfer) {
->  			if (temp > pc->buf_size) {
-> @@ -436,7 +444,6 @@ static ide_startstop_t idescsi_pc_intr (
->  					"- discarding data\n");
->  				temp = pc->buf_size - pc->xferred;
->  				if (temp) {
-> -					pc->flags &= ~PC_FLAG_WRITING;
->  					if (pc->sg)
->  						idescsi_input_buffers(drive, pc,
->  									temp);
-> @@ -457,15 +464,11 @@ static ide_startstop_t idescsi_pc_intr (
->  			printk (KERN_NOTICE "ide-scsi: The scsi wants to send us more data than expected - allowing transfer\n");
->  #endif /* IDESCSI_DEBUG_LOG */
->  		}
-> -	}
-> -	if (ireason & IO) {
-> -		pc->flags &= ~PC_FLAG_WRITING;
->  		if (pc->sg)
->  			idescsi_input_buffers(drive, pc, bcount);
->  		else
->  			hwif->input_data(drive, NULL, pc->cur_pos, bcount);
->  	} else {
-> -		pc->flags |= PC_FLAG_WRITING;
+>
+> Patch against linux-2.6.25.4, should apply clean on other versions too.
+> Includes all the suggestions by Sam Ravnborg, Pekka Enberg and Marcin
+> Slusarz.
+>
+>
+> diff -uprN linux-2.6.25.4/drivers/input/touchscreen/htcpen.c
+> linux/drivers/input/touchscreen/htcpen.c
+> --- linux-2.6.25.4/drivers/input/touchscreen/htcpen.c   1970-01-01
+> 01:00:00.000000000 +0100
+> +++ linux/drivers/input/touchscreen/htcpen.c    2008-05-19
+> 04:44:16.000000000 +0200
+> @@ -0,0 +1,199 @@
+> +/*
+> + * HTC Shift touchscreen driver
+> + *
+> + * Copyright (C) 2008 Pau Oliva Fora <pof@eslack.org>
+> + *
+> + * Thanks to:
+> + *     Heikki Linnakangas - Penmount LPC touchscreen driver
+> + *     Wacom / Ping Cheng - Help on linuxwacom-devel
+> + *     Esteve Espuna      - Ideas, tips, moral support :)
+> + *
+> + * This program is free software; you can redistribute it and/or modify it
+> + * under the terms of the GNU General Public License version 2 as published
+> + * by the Free Software Foundation.
+> + */
+> +
+> +#include <linux/errno.h>
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/input.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/io.h>
+> +#include <linux/init.h>
+> +#include <linux/irq.h>
+> +#include <linux/isa.h>
+> +
+> +#define DRIVER_VERSION "0.7"
+> +#define DRIVER_DESC    "HTC Shift touchscreen driver v" DRIVER_VERSION
+> +
+> +MODULE_AUTHOR("Pau Oliva Fora <pau@eslack.org>");
+> +MODULE_DESCRIPTION(DRIVER_DESC);
+> +MODULE_VERSION(DRIVER_VERSION);
+> +MODULE_LICENSE("GPL");
+> +
+> +#define HTCPEN_PORT_IRQ_CLEAR 0x068
+> +#define HTCPEN_PORT_INIT 0x06c
+> +#define HTCPEN_PORT_INDEX 0x0250
+> +#define HTCPEN_PORT_DATA 0x0251
+> +#define HTCPEN_IRQ 3
+> +
+> +#define X_INDEX 3
+> +#define Y_INDEX 5
+> +#define LSB_XY_INDEX 0xc
+> +#define X_AXIS_MAX 2040
+> +#define Y_AXIS_MAX 2040
+> +#define DEVICE_ENABLE 0xa2
+> +
+> +static int inverse_x;
+> +module_param(inverse_x, bool, 0644);
+> +MODULE_PARM_DESC(inverse_x, "If set X axis is inversed");
+> +static int inverse_y;
+> +module_param(inverse_y, bool, 0644);
+> +MODULE_PARM_DESC(inverse_y, "If set Y axis is inversed");
+> +
+> +struct input_dev *htcpen_dev;
 
-Yeah, what was the driver doing turning on/off that flag in the irq handler? Are
-those pc's getting reused in ide-scsi... I guess this is one of the bugs you
-were talking about :).
-
->  		if (pc->sg)
->  			idescsi_output_buffers(drive, pc, bcount);
->  		else
-> @@ -777,6 +780,8 @@ static int idescsi_queue (struct scsi_cm
->  
->  	memset (pc->c, 0, 12);
->  	pc->flags = 0;
-> +	if (cmd->sc_data_direction == DMA_TO_DEVICE)
-> +		pc->flags |= PC_FLAG_WRITING;
->  	pc->rq = rq;
->  	memcpy (pc->c, cmd->cmnd, cmd->cmd_len);
->  	pc->buf = NULL;
-
--- 
-Regards/Gruﬂ,
-    Boris.
+The point of converting to isa_register_driver() is to use
+dev_set_drvdata()/dev_get_drvdata() instead of having a global
+variable like this.
