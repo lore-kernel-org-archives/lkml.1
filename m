@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756631AbYESBKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755318AbYESBLc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756631AbYESBKZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 18 May 2008 21:10:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751417AbYESBKN
+	id S1755318AbYESBLc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 18 May 2008 21:11:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757214AbYESBLC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 18 May 2008 21:10:13 -0400
-Received: from mail.suse.de ([195.135.220.2]:35861 "EHLO mx1.suse.de"
+	Sun, 18 May 2008 21:11:02 -0400
+Received: from mx1.suse.de ([195.135.220.2]:35873 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751373AbYESBKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 18 May 2008 21:10:12 -0400
+	id S1754881AbYESBKS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 18 May 2008 21:10:18 -0400
 From: NeilBrown <neilb@suse.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-Date: Mon, 19 May 2008 11:10:00 +1000
+Date: Mon, 19 May 2008 11:10:11 +1000
+Message-Id: <1080519011011.7627@suse.de>
 X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
 	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
 	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Adrian Bunk <bunk@kernel.org>
-Cc: Bernd Schubert <bernd-schubert@gmx.de>
-Cc: Bernd Schubert <bs@q-leap.de>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Dan Williams <dan.j.williams@intel.com>
-Cc: "Eivind Sarto" <ivan@kasenna.com>
-Cc: "Fairbanks, David" <David.Fairbanks@stratus.com>
-Cc: "Mike Snitzer" <snitzer@gmail.com>
-Subject: [PATCH 000 of 10] md: Various bug fixes and small improvements for md in 2.6.26-rc
-Message-ID: <20080519110910.7473.patches@notabene>
+Subject: [PATCH 001 of 10] md: Fix possible oops when removing a bitmap from an active array
+References: <20080519110910.7473.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Following are a collection of 10 patches for md/raid that are suitable
-for 2.6.26-rc.  They are ordered roughly from simple to more complex with 
-serious bugfixes possibly getting elevated in the sort order.
 
-Thanks,
-NeilBrown
+It is possible to add a write-intent bitmap to an active array, or remove
+the bitmap that is there.
+When we do with the 'quiesce' the array, which causes make_request to
+block in "wait_barrier()".
+However we are sampling the value of "mddev->bitmap" before the
+wait_barrier call, and using it afterwards.  This can result in
+using a bitmap structure that has been freed.
 
- [PATCH 000 of 10] md: Introduction EXPLAIN PATCH SET HERE
- [PATCH 001 of 10] md: Fix possible oops when removing a bitmap from an active array
- [PATCH 002 of 10] md: proper extern for mdp_major
- [PATCH 003 of 10] md: kill file_path wrapper
- [PATCH 004 of 10] md: md: raid5 rate limit error printk
- [PATCH 005 of 10] md: raid1: Fix restoration of bio between failed read and write.
- [PATCH 006 of 10] md: Notify userspace on 'write-pending' changes to array_state
- [PATCH 007 of 10] md: notify userspace on 'stop' events
- [PATCH 008 of 10] md: Improve setting of "events_cleared" for write-intent bitmaps.
- [PATCH 009 of 10] md: Allow parallel resync of md-devices.
- [PATCH 010 of 10] md: Restart recovery cleanly after device failure.
+Signed-off-by: Neil Brown <neilb@suse.de>
+
+### Diffstat output
+ ./drivers/md/raid1.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff .prev/drivers/md/raid1.c ./drivers/md/raid1.c
+--- .prev/drivers/md/raid1.c	2008-05-19 11:02:04.000000000 +1000
++++ ./drivers/md/raid1.c	2008-05-19 11:02:15.000000000 +1000
+@@ -773,7 +773,7 @@ static int make_request(struct request_q
+ 	r1bio_t *r1_bio;
+ 	struct bio *read_bio;
+ 	int i, targets = 0, disks;
+-	struct bitmap *bitmap = mddev->bitmap;
++	struct bitmap *bitmap;
+ 	unsigned long flags;
+ 	struct bio_list bl;
+ 	struct page **behind_pages = NULL;
+@@ -802,6 +802,8 @@ static int make_request(struct request_q
+ 
+ 	wait_barrier(conf);
+ 
++	bitmap = mddev->bitmap;
++
+ 	disk_stat_inc(mddev->gendisk, ios[rw]);
+ 	disk_stat_add(mddev->gendisk, sectors[rw], bio_sectors(bio));
+ 
