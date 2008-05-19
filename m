@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759065AbYESIox@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758518AbYESIpN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759065AbYESIox (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 04:44:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756159AbYESIoM
+	id S1758518AbYESIpN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 04:45:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756538AbYESIoQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 04:44:12 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:30142 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758525AbYESIoL (ORCPT
+	Mon, 19 May 2008 04:44:16 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:19424 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755575AbYESIoN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 04:44:11 -0400
-Message-ID: <48313DD8.5020103@de.ibm.com>
-Date: Mon, 19 May 2008 10:44:08 +0200
+	Mon, 19 May 2008 04:44:13 -0400
+Message-ID: <48313DA2.2090108@de.ibm.com>
+Date: Mon, 19 May 2008 10:43:14 +0200
 From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
 User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org
 CC: ltp-coverage@lists.sourceforge.net,
        Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@zeniv.linux.org.uk>,
+       Sam Ravnborg <sam@ravnborg.org>, Rusty Russell <rusty@rustcorp.com.au>,
        Peter Oberparleiter <oberparleiter@googlemail.com>
-Subject: [PATCH 4/7] seq_file: add function to write binary data
+Subject: [PATCH 1/7] kernel: call constructors
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -29,59 +29,168 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
 
-seq_write() can be used to construct seq_files containing arbitrary
-data. Required by the gcov-profiling interface to synthesize binary
-profiling data files.
+Call constructors during kernel init and module load. Required by the
+gcov profiling infrastructure: gcc's profiling code uses constructors
+to register profiling data structures.
 
 Signed-off-by: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
 ---
- fs/seq_file.c            |   20 ++++++++++++++++++++
- include/linux/seq_file.h |    1 +
- 2 files changed, 21 insertions(+)
+ arch/powerpc/kernel/vmlinux.lds.S |    3 +++
+ include/asm-generic/sections.h    |    1 +
+ include/asm-generic/vmlinux.lds.h |    5 +++++
+ include/linux/init.h              |    2 ++
+ include/linux/module.h            |    3 +++
+ init/main.c                       |   10 ++++++++++
+ kernel/module.c                   |   13 +++++++++++++
+ 7 files changed, 37 insertions(+)
 
-Index: linux-2.6.26-rc3/fs/seq_file.c
+Index: linux-2.6.26-rc3/include/asm-generic/vmlinux.lds.h
 ===================================================================
---- linux-2.6.26-rc3.orig/fs/seq_file.c
-+++ linux-2.6.26-rc3/fs/seq_file.c
-@@ -554,6 +554,26 @@ int seq_puts(struct seq_file *m, const c
- }
- EXPORT_SYMBOL(seq_puts);
- 
-+/**
-+ * seq_write - write arbitrary data to buffer
-+ * @seq: seq_file identifying the buffer to which data should be written
-+ * @data: data address
-+ * @len: number of bytes
-+ *
-+ * Return 0 on success, non-zero otherwise.
-+ */
-+int seq_write(struct seq_file *seq, const void *data, size_t len)
-+{
-+	if (seq->count + len < seq->size) {
-+		memcpy(seq->buf + seq->count, data, len);
-+		seq->count += len;
-+		return 0;
-+	}
-+	seq->count = seq->size;
-+	return -1;
-+}
-+EXPORT_SYMBOL(seq_write);
+--- linux-2.6.26-rc3.orig/include/asm-generic/vmlinux.lds.h
++++ linux-2.6.26-rc3/include/asm-generic/vmlinux.lds.h
+@@ -352,3 +352,8 @@
+ 		*(.data.percpu.shared_aligned)				\
+ 	}								\
+ 	__per_cpu_end = .;
 +
- struct list_head *seq_list_start(struct list_head *head, loff_t pos)
- {
- 	struct list_head *lh;
-Index: linux-2.6.26-rc3/include/linux/seq_file.h
++#define CONSTRUCTORS							\
++		VMLINUX_SYMBOL(__ctor_start) = .;			\
++		*(.ctors)						\
++		VMLINUX_SYMBOL(__ctor_end) = .;
+Index: linux-2.6.26-rc3/arch/powerpc/kernel/vmlinux.lds.S
 ===================================================================
---- linux-2.6.26-rc3.orig/include/linux/seq_file.h
-+++ linux-2.6.26-rc3/include/linux/seq_file.h
-@@ -39,6 +39,7 @@ int seq_release(struct inode *, struct f
- int seq_escape(struct seq_file *, const char *, const char *);
- int seq_putc(struct seq_file *m, char c);
- int seq_puts(struct seq_file *m, const char *s);
-+int seq_write(struct seq_file *seq, const void *data, size_t len);
+--- linux-2.6.26-rc3.orig/arch/powerpc/kernel/vmlinux.lds.S
++++ linux-2.6.26-rc3/arch/powerpc/kernel/vmlinux.lds.S
+@@ -193,6 +193,9 @@ SECTIONS
+ 		*(.toc)
+ 	}
+ #endif
++	.data.gcov : {
++		CONSTRUCTORS
++	}
  
- int seq_printf(struct seq_file *, const char *, ...)
- 	__attribute__ ((format (printf,2,3)));
+ 	. = ALIGN(PAGE_SIZE);
+ 	_edata  =  .;
+Index: linux-2.6.26-rc3/include/asm-generic/sections.h
+===================================================================
+--- linux-2.6.26-rc3.orig/include/asm-generic/sections.h
++++ linux-2.6.26-rc3/include/asm-generic/sections.h
+@@ -13,5 +13,6 @@ extern char __per_cpu_start[], __per_cpu
+ extern char __kprobes_text_start[], __kprobes_text_end[];
+ extern char __initdata_begin[], __initdata_end[];
+ extern char __start_rodata[], __end_rodata[];
++extern char __ctor_start[], __ctor_end[];
+ 
+ #endif /* _ASM_GENERIC_SECTIONS_H_ */
+Index: linux-2.6.26-rc3/include/linux/module.h
+===================================================================
+--- linux-2.6.26-rc3.orig/include/linux/module.h
++++ linux-2.6.26-rc3/include/linux/module.h
+@@ -342,6 +342,9 @@ struct module
+ 	struct marker *markers;
+ 	unsigned int num_markers;
+ #endif
++	/* Constructor calls. */
++	ctorcall_t *ctors;
++	unsigned long num_ctors;
+ };
+ #ifndef MODULE_ARCH_INIT
+ #define MODULE_ARCH_INIT {}
+Index: linux-2.6.26-rc3/kernel/module.c
+===================================================================
+--- linux-2.6.26-rc3.orig/kernel/module.c
++++ linux-2.6.26-rc3/kernel/module.c
+@@ -1758,6 +1758,7 @@ static struct module *load_module(void _
+ 	unsigned int unusedgplcrcindex;
+ 	unsigned int markersindex;
+ 	unsigned int markersstringsindex;
++	unsigned int ctorsindex;
+ 	struct module *mod;
+ 	long err = 0;
+ 	void *percpu = NULL, *ptr = NULL; /* Stops spurious gcc warning */
+@@ -1854,6 +1855,7 @@ static struct module *load_module(void _
+ #ifdef ARCH_UNWIND_SECTION_NAME
+ 	unwindex = find_sec(hdr, sechdrs, secstrings, ARCH_UNWIND_SECTION_NAME);
+ #endif
++	ctorsindex = find_sec(hdr, sechdrs, secstrings, ".ctors");
+ 
+ 	/* Don't keep modinfo and version sections. */
+ 	sechdrs[infoindex].sh_flags &= ~(unsigned long)SHF_ALLOC;
+@@ -2064,6 +2066,8 @@ static struct module *load_module(void _
+ 	mod->num_markers =
+ 		sechdrs[markersindex].sh_size / sizeof(*mod->markers);
+ #endif
++	mod->ctors = (void *) sechdrs[ctorsindex].sh_addr;
++	mod->num_ctors = sechdrs[ctorsindex].sh_size / sizeof(*mod->ctors);
+ 
+         /* Find duplicate symbols */
+ 	err = verify_export_symbols(mod);
+@@ -2176,6 +2180,14 @@ static struct module *load_module(void _
+ 	goto free_hdr;
+ }
+ 
++static void do_mod_ctors(struct module *mod)
++{
++	unsigned long i;
++
++	for (i = 0; i < mod->num_ctors; i++)
++		mod->ctors[i]();
++}
++
+ /* This is where the real work happens */
+ asmlinkage long
+ sys_init_module(void __user *umod,
+@@ -2206,6 +2218,7 @@ sys_init_module(void __user *umod,
+ 	blocking_notifier_call_chain(&module_notify_list,
+ 			MODULE_STATE_COMING, mod);
+ 
++	do_mod_ctors(mod);
+ 	/* Start the module */
+ 	if (mod->init != NULL)
+ 		ret = mod->init();
+Index: linux-2.6.26-rc3/init/main.c
+===================================================================
+--- linux-2.6.26-rc3.orig/init/main.c
++++ linux-2.6.26-rc3/init/main.c
+@@ -684,6 +684,15 @@ asmlinkage void __init start_kernel(void
+ 	rest_init();
+ }
+ 
++static void __init do_ctors(void)
++{
++	ctorcall_t *call;
++
++	for (call = (ctorcall_t *) __ctor_start;
++	     call < (ctorcall_t *) __ctor_end; call++)
++		(*call)();
++}
++
+ static int __initdata initcall_debug;
+ 
+ static int __init initcall_debug_setup(char *str)
+@@ -763,6 +772,7 @@ static void __init do_basic_setup(void)
+ 	usermodehelper_init();
+ 	driver_init();
+ 	init_irq_proc();
++	do_ctors();
+ 	do_initcalls();
+ }
+ 
+Index: linux-2.6.26-rc3/include/linux/init.h
+===================================================================
+--- linux-2.6.26-rc3.orig/include/linux/init.h
++++ linux-2.6.26-rc3/include/linux/init.h
+@@ -138,6 +138,8 @@ typedef void (*exitcall_t)(void);
+ extern initcall_t __con_initcall_start[], __con_initcall_end[];
+ extern initcall_t __security_initcall_start[], __security_initcall_end[];
+ 
++typedef void (*ctorcall_t)(void);
++
+ /* Defined in init/main.c */
+ extern char __initdata boot_command_line[];
+ extern char *saved_command_line;
+
+
 
 
 
