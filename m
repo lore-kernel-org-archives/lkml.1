@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765454AbYESWPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765778AbYESWPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765454AbYESWPa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 18:15:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765100AbYESWJc
+	id S1765778AbYESWPx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 18:15:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764654AbYESWJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 18:09:32 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:45214 "EHLO smtp5.pp.htv.fi"
+	Mon, 19 May 2008 18:09:52 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:45228 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763367AbYESWJb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 18:09:31 -0400
-Date: Tue, 20 May 2008 01:07:25 +0300
+	id S1764482AbYESWJv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 18:09:51 -0400
+Date: Tue, 20 May 2008 01:07:45 +0300
 From: Adrian Bunk <bunk@kernel.org>
-To: paulus@samba.org
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] powerpc/mm/hash_low_32.S: remove CVS keyword
-Message-ID: <20080519220725.GO17716@cs181133002.pp.htv.fi>
+To: ysato@users.sourceforge.jp
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] asm-h8300/md.h: remove CVS keyword
+Message-ID: <20080519220745.GP17716@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -29,15 +29,14 @@ from a comment.
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-92f17f771c22fa93afe058210ddf51920aca1451 diff --git a/arch/powerpc/mm/hash_low_32.S b/arch/powerpc/mm/hash_low_32.S
-index ddeaf9e..b9ba7d9 100644
---- a/arch/powerpc/mm/hash_low_32.S
-+++ b/arch/powerpc/mm/hash_low_32.S
-@@ -1,6 +1,4 @@
- /*
-- *  $Id: hashtable.S,v 1.6 1999/10/08 01:56:15 paulus Exp $
-- *
-  *  PowerPC version
-  *    Copyright (C) 1995-1996 Gary Thomas (gdt@linuxppc.org)
-  *  Rewritten by Cort Dougan (cort@cs.nmt.edu) for PReP
+0bda44fc75018619bac248acd44c04c41b96fee9 diff --git a/include/asm-h8300/md.h b/include/asm-h8300/md.h
+index 1a47dc6..1b7300e 100644
+--- a/include/asm-h8300/md.h
++++ b/include/asm-h8300/md.h
+@@ -1,4 +1,4 @@
+-/* $Id: md.h,v 1.1 2002/11/19 02:09:26 gerg Exp $
++/*
+  * md.h: High speed xor_block operation for RAID4/5 
+  *
+  */
 
