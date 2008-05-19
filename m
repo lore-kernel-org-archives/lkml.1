@@ -1,84 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761962AbYESRYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762272AbYESRYf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761962AbYESRYS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 13:24:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbYESRYD
+	id S1762272AbYESRYf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 13:24:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759616AbYESRYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 13:24:03 -0400
-Received: from rv-out-0506.google.com ([209.85.198.226]:17302 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751196AbYESRYB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 13:24:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=Mzvy1qEPL4ITYYrh7ktDD1+MmcAyMuJs5ysEFPKX4yWawhGjlikez0TaXHjCWTlygPwZw227evRhL9bbNOsjehSI2/GAJCpyxtBeMItSkNoTpSSVZD0KTTc5o7nscb5T2zkHuPjGLAmYvVA0CwKkEwD/CkvoVkJLR0cCA1wVNxY=
-Date: Tue, 20 May 2008 01:24:04 +0800
-From: Jianjun Kong <kongjianjun@gmail.com>
-To: Russell King <rmk@arm.linux.org.uk>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] delete unuseful note
-Message-ID: <20080519172404.GA11030@ubuntu>
-References: <1211214730811-git-send-email-kongjianjun@gmail.com> <20080519165006.GA17605@flint.arm.linux.org.uk>
+	Mon, 19 May 2008 13:24:22 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:52594 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751211AbYESRYV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 13:24:21 -0400
+Date: Mon, 19 May 2008 13:24:12 -0400
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: "P.V.Anthony" <pvantony@singnet.com.sg>, linux-kernel@vger.kernel.org
+Subject: Re: Solved - How to change the FSINFO for nfsd?
+Message-ID: <20080519172412.GL7622@fieldses.org>
+References: <482332CD.4010706@singnet.com.sg> <20080509042238.GC21408@fieldses.org> <20080518015733.o7n8cvhomvgos8ow@mail.mindmedia.com.sg> <alpine.LNX.1.10.0805172024440.15590@fbirervta.pbzchgretzou.qr> <1211049402.7498.4.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080519165006.GA17605@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <1211049402.7498.4.camel@localhost>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 19, 2008 at 05:50:07PM +0100, Russell King wrote:
-> On Tue, May 20, 2008 at 12:32:10AM +0800, Jianjun Kong wrote:
-> > Change of initials.
-> > "rmk" -> "RMK"
-> > "linus" -> "Linus".
-> > 
-> > ---
-> >  drivers/serial/mux.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/drivers/serial/mux.c b/drivers/serial/mux.c
-> > index e940317..b259b07 100644
-> > --- a/drivers/serial/mux.c
-> > +++ b/drivers/serial/mux.c
-> > @@ -356,7 +356,7 @@ static int mux_request_port(struct uart_port *port)
-> >   * Perform any autoconfiguration steps for the port.  This function is
-> >   * called if the UPF_BOOT_AUTOCONF flag is specified for the port.
+On Sat, May 17, 2008 at 02:36:42PM -0400, Trond Myklebust wrote:
+> On Sat, 2008-05-17 at 20:25 +0200, Jan Engelhardt wrote:
+> > On Saturday 2008-05-17 19:57, P.V.Anthony wrote:
+> > > resp->f_properties = NFS3_FSF_DEFAULT;
+> > >
+> > > nfserr = fh_verify(rqstp, &argp->fh, 0, MAY_NOP);
+> > > @@ -570,7 +570,7 @@
+> > > if (sb->s_magic == 0x4d44 /* MSDOS_SUPER_MAGIC */) {
+> > > resp->f_properties = NFS3_FSF_BILLYBOY;
+> > > }
+> > > - resp->f_maxfilesize = sb->s_maxbytes;
+> > > + resp->f_maxfilesize = 0xffffffffffffffff;
 > 
-> The part of the comment below should be deleted.
-> 
-> >   * [Note: This is required for now because of a bug in the Serial core.
-> > - *  rmk has already submitted a patch to linus, should be available for
-> > + *  RMK has already submitted a patch to Linus, should be available for
-> >   *  2.5.47.]
-> >   */
-> >  static void mux_config_port(struct uart_port *port, int type)
+>    This is plain wrong! Pretending that your filesystem supports 64-bit
+> files won't magically make it so.
 
-Another new one.
-Delete the unuseful note.
+Yes.  Could you tell us what filesystem you're using?
 
-Signed-off-by: Jianjun Kong <kongjianjun@gmail.com>
----
- drivers/serial/mux.c |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+It's a bit bizarre that this would fix anything; I'd think the more
+likely result would be errors on write and/or some kind of file
+corruption.
 
-diff --git a/drivers/serial/mux.c b/drivers/serial/mux.c
-index e940317..551c469 100644
---- a/drivers/serial/mux.c
-+++ b/drivers/serial/mux.c
-@@ -355,9 +355,6 @@ static int mux_request_port(struct uart_port *port)
-  *
-  * Perform any autoconfiguration steps for the port.  This function is
-  * called if the UPF_BOOT_AUTOCONF flag is specified for the port.
-- * [Note: This is required for now because of a bug in the Serial core.
-- *  rmk has already submitted a patch to linus, should be available for
-- *  2.5.47.]
-  */
- static void mux_config_port(struct uart_port *port, int type)
- {
--- 
-1.5.2.5
-
+--b.
