@@ -1,99 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756184AbYESIoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758531AbYESIoh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756184AbYESIoT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 04:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757873AbYESInw
+	id S1758531AbYESIoh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 04:44:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758479AbYESIoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 04:43:52 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:30122 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757684AbYESInu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 04:43:50 -0400
-Message-ID: <48313DC3.4070904@de.ibm.com>
-Date: Mon, 19 May 2008 10:43:47 +0200
-From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: ltp-coverage@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Peter Oberparleiter <oberparleiter@googlemail.com>
-Subject: [PATCH 3/7] kbuild: delay object file renaming during module versioning
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 19 May 2008 04:44:08 -0400
+Received: from mail.suse.de ([195.135.220.2]:45035 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758398AbYESIoF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 04:44:05 -0400
+Subject: Re: [PATCH 11/15] rfkill: add notifier chains support
+From: Thomas Renninger <trenn@suse.de>
+Reply-To: trenn@suse.de
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: linux-kernel@vger.kernel.org, Ivo van Doorn <IvDoorn@gmail.com>
+In-Reply-To: <1211136485-19878-12-git-send-email-hmh@hmh.eng.br>
+References: <1211136485-19878-1-git-send-email-hmh@hmh.eng.br>
+	 <1211136485-19878-12-git-send-email-hmh@hmh.eng.br>
+Content-Type: text/plain
+Organization: Novell/SUSE
+Date: Mon, 19 May 2008 10:44:03 +0200
+Message-Id: <1211186644.21269.274.camel@queen.suse.de>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
+On Sun, 2008-05-18 at 15:48 -0300, Henrique de Moraes Holschuh wrote:
+> Add a notifier chain for use by the rfkill class.  This notifier chain
+> signals the following events (more to be added when needed):
+> 
+>   1. rfkill: rfkill device state has changed
+> 
+> A pointer to the rfkill struct will be passed as a parameter.
+> 
+> The notifier message types have been added to include/linux/rfkill.h
+> instead of to include/linux/notifier.h in order to avoid the madness of
+> modifying a header used globally (and that triggers an almost full tree
+> rebuild every time it is touched) with information that is of interest only
+> to code that includes the rfkill.h header.
+> 
+> Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+> Cc: Ivo van Doorn <IvDoorn@gmail.com>
+> ---
+>  include/linux/rfkill.h |    7 +++++
+>  net/rfkill/rfkill.c    |   70 +++++++++++++++++++++++++++++++++++++++++++++--
+>  2 files changed, 74 insertions(+), 3 deletions(-)
+> 
+> diff --git a/include/linux/rfkill.h b/include/linux/rfkill.h
+> index c0cab7d..98667be 100644
+> --- a/include/linux/rfkill.h
+> +++ b/include/linux/rfkill.h
+> @@ -117,4 +117,11 @@ static inline char *rfkill_get_led_name(struct rfkill *rfkill)
+>  #endif
+>  }
+>  
+> +/* rfkill notification chain */
+> +#define RFKILL_STATE_CHANGED		0x0001	/* state of a normal rfkill
+> +						   switch has changed */
+> +
+> +int register_rfkill_notifier(struct notifier_block *nb);
+> +int unregister_rfkill_notifier(struct notifier_block *nb);
+> +
+>  #endif /* RFKILL_H */
+> diff --git a/net/rfkill/rfkill.c b/net/rfkill/rfkill.c
+> index f11220b..251defe 100644
+> --- a/net/rfkill/rfkill.c
+> +++ b/net/rfkill/rfkill.c
+> @@ -46,6 +46,49 @@ MODULE_PARM_DESC(default_state,
+>  
+>  static enum rfkill_state rfkill_states[RFKILL_TYPE_MAX];
+>  
+> +static BLOCKING_NOTIFIER_HEAD(rfkill_notifier_list);
+> +
+> +
+> +/**
+> + * register_rfkill_notifier - Add notifier to rfkill notifier chain
+> + * @nb: pointer to the new entry to add to the chain
+> + *
+> + * See blocking_notifier_chain_register() for return value and further
+> + * observations.
+> + *
+> + * Adds a notifier to the rfkill notifier chain.  The chain will be
+> + * called with a pointer to the relevant rfkill structure as a parameter,
+> + * refer to include/linux/rfkill.h for the possible events.
+> + *
+> + * Notifiers added to this chain are to always return NOTIFY_DONE.  This
+> + * chain is a blocking notifier chain: notifiers can sleep.
+> + *
+> + * Calls to this chain may have been done through a workqueue.  One must
+> + * one must assume unordered assynchronous behaviour, there is no way to
+One must, one must...,         asynchronous
+...
 
-Change module versioning to alter object file names only after
-compiling.
-
-Required by the gcov profiling infrastructure: when compiling with
-option -fprofile-arcs, gcc stores file names inside object files.
-A name change before compilation would prevent the gcov tool from
-finding the corresponding source files.
-
-Signed-off-by: Peter Oberparleiter <peter.oberparleiter@de.ibm.com>
----
- scripts/Makefile.build |   25 ++++++++++---------------
- 1 file changed, 10 insertions(+), 15 deletions(-)
-
-Index: linux-2.6.26-rc3/scripts/Makefile.build
-===================================================================
---- linux-2.6.26-rc3.orig/scripts/Makefile.build
-+++ linux-2.6.26-rc3/scripts/Makefile.build
-@@ -165,26 +165,23 @@ $(obj)/%.symtypes : $(src)/%.c FORCE
- # (See cmd_cc_o_c + relevant part of rule_cc_o_c)
- 
- quiet_cmd_cc_o_c = CC $(quiet_modtag)  $@
--
--ifndef CONFIG_MODVERSIONS
- cmd_cc_o_c = $(CC) $(c_flags) -c -o $@ $<
- 
--else
--# When module versioning is enabled the following steps are executed:
--# o compile a .tmp_<file>.o from <file>.c
--# o if .tmp_<file>.o doesn't contain a __ksymtab version, i.e. does
--#   not export symbols, we just rename .tmp_<file>.o to <file>.o and
--#   are done.
--# o otherwise, we calculate symbol versions using the good old
--#   genksyms on the preprocessed source and postprocess them in a way
--#   that they are usable as a linker script
-+ifdef CONFIG_MODVERSIONS
-+# When module versioning is enabled the following steps are executed
-+# in addition to compiling:
-+# o if <file>.o doesn't contain a __ksymtab version, i.e. does
-+#   not export symbols, we are done
-+# o otherwise, we rename <file>.o into .tmp_<file.o> and calculate symbol
-+#   versions using the good old genksyms on the preprocessed source and
-+#   postprocess them in a way that they are usable as a linker script
- # o generate <file>.o from .tmp_<file>.o using the linker to
- #   replace the unresolved symbols __crc_exported_symbol with
- #   the actual value of the checksum generated by genksyms
- 
--cmd_cc_o_c = $(CC) $(c_flags) -c -o $(@D)/.tmp_$(@F) $<
- cmd_modversions =							\
--	if $(OBJDUMP) -h $(@D)/.tmp_$(@F) | grep -q __ksymtab; then	\
-+	if $(OBJDUMP) -h $@ | grep -q __ksymtab; then			\
-+		mv -f $@ $(@D)/.tmp_$(@F);				\
- 		$(CPP) -D__GENKSYMS__ $(c_flags) $<			\
- 		| $(GENKSYMS) $(if $(KBUILD_SYMTYPES),			\
- 			      -T $(@D)/$(@F:.o=.symtypes)) -a $(ARCH)	\
-@@ -193,8 +190,6 @@ cmd_modversions =							\
- 		$(LD) $(LDFLAGS) -r -o $@ $(@D)/.tmp_$(@F) 		\
- 			-T $(@D)/.tmp_$(@F:.o=.ver);			\
- 		rm -f $(@D)/.tmp_$(@F) $(@D)/.tmp_$(@F:.o=.ver);	\
--	else								\
--		mv -f $(@D)/.tmp_$(@F) $@;				\
- 	fi;
- endif
- 
-
-
+   Thomas
 
 
 
