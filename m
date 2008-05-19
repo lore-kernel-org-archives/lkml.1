@@ -1,112 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbYESFWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754626AbYESF1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754205AbYESFWS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 01:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbYESFWK
+	id S1754626AbYESF1Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 01:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbYESF1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 01:22:10 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:38918 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751365AbYESFWI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 01:22:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=SlaIFsAuapr+R7SKPCYdpYy5itXgRyOp1dODtOtpvhedJRErwEZsUqPyzCZc6a/5BjmhMvNRzC19urqLEup1YEoSxWLh0i9gSBcfdvZUC1QIQnAqW710AuKORIHt0YYyYhw/xKqL5ZZWelBj0leGSCLeCYacEKrdAyQW4PYQuAs=
-Message-ID: <84144f020805182222h41b9bffx463eef7e502c87f2@mail.gmail.com>
-Date: Mon, 19 May 2008 08:22:07 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Pau Oliva Fora" <pau@eslack.org>
-Subject: Re: [PATCH] Add support for HTC Shift Touchscreen
-Cc: dmitry.torokhov@gmail.com, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, sam@ravnborg.org,
-       marcin.slusarz@gmail.com
-In-Reply-To: <4830F10B.5070303@eslack.org>
+	Mon, 19 May 2008 01:27:13 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:59409 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751655AbYESF1M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 01:27:12 -0400
+From: Neil Brown <neilb@suse.de>
+To: "Mike Snitzer" <snitzer@gmail.com>
+Date: Mon, 19 May 2008 15:27:01 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <482ED31E.2000009@eslack.org> <4830F10B.5070303@eslack.org>
-X-Google-Sender-Auth: a218dc62756c37a3
+Message-ID: <18481.4005.570022.160686@notabene.brown>
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
+       paul.clements@steeleye.com
+Subject: Re: [RFC][PATCH] md: avoid fullsync if a faulty member missed a dirty transition
+In-Reply-To: message from Mike Snitzer on Monday May 19
+References: <1207174155-20090-1-git-send-email-snitzer@gmail.com>
+	<18464.134.236488.251879@notabene.brown>
+	<170fa0d20805060458i43c9a4a7r1e30147bdcd40f20@mail.gmail.com>
+	<18466.39418.578722.92979@notabene.brown>
+	<170fa0d20805081311r6b726762ndc83c5f626f0956c@mail.gmail.com>
+	<18467.43895.220708.254814@notabene.brown>
+	<170fa0d20805082142o61462a7dnce7852a6b7c0d21d@mail.gmail.com>
+	<18467.59565.676987.926988@notabene.brown>
+	<170fa0d20805090800p45654901p36eea51e1ea7e9c7@mail.gmail.com>
+	<18477.30199.992302.271647@notabene.brown>
+	<170fa0d20805182133o46501cc4va81b087fb6b417bf@mail.gmail.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 19, 2008 at 6:16 AM, Pau Oliva Fora <pau@eslack.org> wrote:
-> The patch below adds support for HTC Shift UMPC touchscreen.
->
-> Signed-off-by: Pau Oliva Fora <pau@eslack.org>
->
-> ---
->
-> Patch against linux-2.6.25.4, should apply clean on other versions too.
-> Includes all the suggestions by Sam Ravnborg, Pekka Enberg and Marcin
-> Slusarz.
->
->
-> diff -uprN linux-2.6.25.4/drivers/input/touchscreen/htcpen.c
-> linux/drivers/input/touchscreen/htcpen.c
-> --- linux-2.6.25.4/drivers/input/touchscreen/htcpen.c   1970-01-01
-> 01:00:00.000000000 +0100
-> +++ linux/drivers/input/touchscreen/htcpen.c    2008-05-19
-> 04:44:16.000000000 +0200
-> @@ -0,0 +1,199 @@
-> +/*
-> + * HTC Shift touchscreen driver
-> + *
-> + * Copyright (C) 2008 Pau Oliva Fora <pof@eslack.org>
-> + *
-> + * Thanks to:
-> + *     Heikki Linnakangas - Penmount LPC touchscreen driver
-> + *     Wacom / Ping Cheng - Help on linuxwacom-devel
-> + *     Esteve Espuna      - Ideas, tips, moral support :)
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms of the GNU General Public License version 2 as published
-> + * by the Free Software Foundation.
-> + */
-> +
-> +#include <linux/errno.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/input.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/io.h>
-> +#include <linux/init.h>
-> +#include <linux/irq.h>
-> +#include <linux/isa.h>
-> +
-> +#define DRIVER_VERSION "0.7"
-> +#define DRIVER_DESC    "HTC Shift touchscreen driver v" DRIVER_VERSION
-> +
-> +MODULE_AUTHOR("Pau Oliva Fora <pau@eslack.org>");
-> +MODULE_DESCRIPTION(DRIVER_DESC);
-> +MODULE_VERSION(DRIVER_VERSION);
-> +MODULE_LICENSE("GPL");
-> +
-> +#define HTCPEN_PORT_IRQ_CLEAR 0x068
-> +#define HTCPEN_PORT_INIT 0x06c
-> +#define HTCPEN_PORT_INDEX 0x0250
-> +#define HTCPEN_PORT_DATA 0x0251
-> +#define HTCPEN_IRQ 3
-> +
-> +#define X_INDEX 3
-> +#define Y_INDEX 5
-> +#define LSB_XY_INDEX 0xc
-> +#define X_AXIS_MAX 2040
-> +#define Y_AXIS_MAX 2040
-> +#define DEVICE_ENABLE 0xa2
-> +
-> +static int inverse_x;
-> +module_param(inverse_x, bool, 0644);
-> +MODULE_PARM_DESC(inverse_x, "If set X axis is inversed");
-> +static int inverse_y;
-> +module_param(inverse_y, bool, 0644);
-> +MODULE_PARM_DESC(inverse_y, "If set Y axis is inversed");
-> +
-> +struct input_dev *htcpen_dev;
+On Monday May 19, snitzer@gmail.com wrote:
+> 
+> Hi Neil,
+> 
+> Sorry about not getting back with you sooner.  Thanks for putting
+> significant time to chasing this problem.
+> 
+> I tested your most recent patch and unfortunately still hit the case
+> where the nbd member becomes degraded yet the array continues to clear
+> bits (events_cleared of the non-degraded member is higher than the
+> degraded member).  Is this behavior somehow expected/correct?
 
-The point of converting to isa_register_driver() is to use
-dev_set_drvdata()/dev_get_drvdata() instead of having a global
-variable like this.
+It shouldn't be..... ahhh.
+There is a delay between noting that the bit can be cleared, and
+actually writing the zero to disk.  This is obviously intentional
+in case the bit gets set again quickly.
+I'm sampling the event count at the latter point instead of the
+former, and there is time for it to change.
+
+Maybe this patch on top of what I recently sent out?
+
+Thanks,
+NeilBrown
+
+
+Signed-off-by: Neil Brown <neilb@suse.de>
+
+### Diffstat output
+ ./drivers/md/bitmap.c         |   10 ++++++++--
+ ./include/linux/raid/bitmap.h |    1 +
+ 2 files changed, 9 insertions(+), 2 deletions(-)
+
+diff .prev/drivers/md/bitmap.c ./drivers/md/bitmap.c
+--- .prev/drivers/md/bitmap.c	2008-05-19 15:23:42.000000000 +1000
++++ ./drivers/md/bitmap.c	2008-05-19 15:24:56.000000000 +1000
+@@ -1092,9 +1092,9 @@ void bitmap_daemon_work(struct bitmap *b
+ 			/* We are possibly going to clear some bits, so make
+ 			 * sure that events_cleared is up-to-date.
+ 			 */
+-			if (bitmap->events_cleared < bitmap->mddev->events) {
++			if (bitmap->need_sync) {
+ 				bitmap_super_t *sb;
+-				bitmap->events_cleared = bitmap->mddev->events;
++				bitmap->need_sync = 0;
+ 				wait_event(bitmap->mddev->sb_wait,
+ 				    !test_bit(MD_CHANGE_CLEAN,
+ 					      &bitmap->mddev->flags));
+@@ -1273,6 +1273,12 @@ void bitmap_endwrite(struct bitmap *bitm
+ 			return;
+ 		}
+ 
++		if (success &&
++		    bitmap->events_cleared < bitmap->mddev->events) {
++			bitmap->events_cleared = bitmap->mddev->events;
++			bitmap->need_sync = 1;
++		}
++
+ 		if (!success && ! (*bmc & NEEDED_MASK))
+ 			*bmc |= NEEDED_MASK;
+ 
+
+diff .prev/include/linux/raid/bitmap.h ./include/linux/raid/bitmap.h
+--- .prev/include/linux/raid/bitmap.h	2008-05-19 15:23:50.000000000 +1000
++++ ./include/linux/raid/bitmap.h	2008-05-19 15:24:56.000000000 +1000
+@@ -221,6 +221,7 @@ struct bitmap {
+ 	unsigned long syncchunk;
+ 
+ 	__u64	events_cleared;
++	int need_sync;
+ 
+ 	/* bitmap spinlock */
+ 	spinlock_t lock;
