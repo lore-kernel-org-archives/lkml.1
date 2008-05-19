@@ -1,43 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762535AbYESRrp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762012AbYESRsO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762535AbYESRrp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 13:47:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759973AbYESRrg
+	id S1762012AbYESRsO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 13:48:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759973AbYESRr4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 13:47:36 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:35370 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758080AbYESRrf (ORCPT
+	Mon, 19 May 2008 13:47:56 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:54691 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756049AbYESRrz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 13:47:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=W0Aff6+wT35lx/f0Kq7O/6d6mVY5AfZI6KuRoRP0s1HZMUb+EzMYh1qLsPxg0m0kbn30EQWoJ+AkIcI87jkMWsFqctfQedPmXQ2MWSCd2BFLD5W6NL4OukM18vTa+jRQqMhCsFMIHvMcmwXqJfGteHtusXmgJ92/lzmDMWdqqCU=
-Message-ID: <48f7fe350805191047rc5f6f01t2d786380a7dbe199@mail.gmail.com>
-Date: Mon, 19 May 2008 13:47:35 -0400
-From: "Ryan Hope" <rmh3093@gmail.com>
-To: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz
-Subject: PCIEHP breakage in 2.6.26-rc1,2.6.26-rc2,2.6.26-rc3
+	Mon, 19 May 2008 13:47:55 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4831BD08.6030600@s5r6.in-berlin.de>
+Date: Mon, 19 May 2008 19:46:48 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080419 SeaMonkey/1.1.9
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Jonathan Corbet <corbet@lwn.net>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Alexander Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH, RFC] Char dev BKL pushdown v2
+References: <19845.1211148908@vena.lwn.net>
+In-Reply-To: <19845.1211148908@vena.lwn.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My kernel, and numerous other people have reported to me that their
-kernels hang at boot if CONFIG_HOTPLUG_PCI_PCIE=Y
+Jonathan Corbet wrote:
+>  drivers/firewire/fw-cdev.c                   |   16 ++++++++---
+...
+>  drivers/ieee1394/dv1394.c                    |    6 +++-
+>  drivers/ieee1394/raw1394.c                   |    3 ++
+>  drivers/ieee1394/video1394.c                 |   18 +++++++++---
+...
+>       ieee1394: cdev lock_kernel() pushdown
 
-If this is set to M or N. The kernel boots fine.
+I have yet to look at these drivers in detail whether they need BKL or 
+not.  They likely don't.
 
-When I build pciehp as a module, and try to modprobe it after the
-kernel boots, modprobe never returns. I can cancel the operation with
-ctrl+c and then when i run dmesg there are messages that look like the
-module did get inserted.
-Further more, lsmod shows that the module was loaded.
+>       firewire: cdev lock_kernel() pushdown
 
-Seems like there is a small bug in here somehwhere.
-
--Ryan Hope
+drivers/firewire/fw-cdev.c::fw_device_op_open() does not need the BKL.
+-- 
+Stefan Richter
+-=====-==--- -=-= =--==
+http://arcgraph.de/sr/
