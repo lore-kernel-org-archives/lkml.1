@@ -1,74 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761810AbYESSAF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760639AbYESSEe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761810AbYESSAF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 14:00:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756049AbYESR7z
+	id S1760639AbYESSEe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 14:04:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753624AbYESSE0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 13:59:55 -0400
-Received: from mail.mindmedia.com.sg ([210.193.7.34]:56392 "EHLO
-	mail.mindmedia.com.sg" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751011AbYESR7y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 13:59:54 -0400
-Message-ID: <4831C016.8000207@singnet.com.sg>
-Date: Tue, 20 May 2008 01:59:50 +0800
-From: "P.V.Anthony" <pvantony@singnet.com.sg>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Mon, 19 May 2008 14:04:26 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:60635 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753398AbYESSE0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 14:04:26 -0400
+Message-ID: <4831C124.2060905@sgi.com>
+Date: Mon, 19 May 2008 11:04:20 -0700
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: "J. Bruce Fields" <bfields@fieldses.org>
-CC: Trond Myklebust <trond.myklebust@fys.uio.no>, linux-kernel@vger.kernel.org
-Subject: Re: Solved - How to change the FSINFO for nfsd?
-References: <482332CD.4010706@singnet.com.sg> <20080509042238.GC21408@fieldses.org> <20080518015733.o7n8cvhomvgos8ow@mail.mindmedia.com.sg> <alpine.LNX.1.10.0805172024440.15590@fbirervta.pbzchgretzou.qr> <1211049402.7498.4.camel@localhost> <20080519172412.GL7622@fieldses.org>
-In-Reply-To: <20080519172412.GL7622@fieldses.org>
-X-Enigmail-Version: 0.95.6
+To: Christoph Lameter <clameter@sgi.com>
+CC: Eric Dumazet <dada1@cosmosbay.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] modules: Use a better scheme for refcounting
+References: <482C9FC5.2070508@cosmosbay.com> <482D1BCE.3060501@cosmosbay.com> <482D8EFC.8040109@sgi.com> <200805171533.46295.rusty@rustcorp.com.au> <482E8AF5.9050804@cosmosbay.com> <Pine.LNX.4.64.0805190940440.18431@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0805190940440.18431@schroedinger.engr.sgi.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-J. Bruce Fields wrote:
-> On Sat, May 17, 2008 at 02:36:42PM -0400, Trond Myklebust wrote:
->> On Sat, 2008-05-17 at 20:25 +0200, Jan Engelhardt wrote:
->>> On Saturday 2008-05-17 19:57, P.V.Anthony wrote:
->>>> resp->f_properties = NFS3_FSF_DEFAULT;
->>>>
->>>> nfserr = fh_verify(rqstp, &argp->fh, 0, MAY_NOP);
->>>> @@ -570,7 +570,7 @@
->>>> if (sb->s_magic == 0x4d44 /* MSDOS_SUPER_MAGIC */) {
->>>> resp->f_properties = NFS3_FSF_BILLYBOY;
->>>> }
->>>> - resp->f_maxfilesize = sb->s_maxbytes;
->>>> + resp->f_maxfilesize = 0xffffffffffffffff;
->>    This is plain wrong! Pretending that your filesystem supports 64-bit
->> files won't magically make it so.
+Christoph Lameter wrote:
+> On Sat, 17 May 2008, Eric Dumazet wrote:
 > 
-> Yes.  Could you tell us what filesystem you're using?
+>> Thats a lot of work and apparently Mike and Christoph are doing it.
 > 
-> It's a bit bizarre that this would fix anything; I'd think the more
-> likely result would be errors on write and/or some kind of file
-> corruption.
+> Indeed. Thanks for the support. I hope Mike gets the stuff out soon. I 
+> know he was working on one issue that cause the zero based stuff to break. 
+> Maybe it would help if he would post what he has so far?
 
-The filesystem used is ext3. So far no file corruption. The os is 64bit
-gentoo.
+I'm re-basing it on the x86/latest tree as sched/latest was failing my tests
+last week on both the AMD and Intel boxes.  As soon as I re-verify everything
+I'll send it in.
 
-Will be trying xfs without the patch and will report back. I think XFS
-is 64bit and will see if Mac OS X with Final Cut Pro works with it.
-
-Please not that the problem only happens when using the video editing
-application Final Cut Pro. Without the patch, when capturing video to
-the mounted NFS, the captured video is broken into 2Gb size files. This
-is even when the server and client is set to version 3.
-
-The old version of FCP does not have this behaviour.
-
-I am guessing that Apple is some way forcing people to buy their Xserve
-servers. To use their servers for NFS.
-
-If a file is dragged on to the NFS mount then it will work fine. It only
-does not work through the FCP application. Like when capturing or
-exporting to a NFS mount.
-
-P.V.Anthony
-
-
+Thanks,
+Mike
