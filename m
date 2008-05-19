@@ -1,67 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764171AbYESX1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762309AbYESXci@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764171AbYESX1U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 19:27:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754689AbYESX1E
+	id S1762309AbYESXci (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 19:32:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756863AbYESXc0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 19:27:04 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:12537 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754741AbYESX1D (ORCPT
+	Mon, 19 May 2008 19:32:26 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50679
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752902AbYESXcZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 19:27:03 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: [patch 3/8] PNP: remove pnp_resource.index
-Date: Mon, 19 May 2008 17:27:00 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Adam Belay <ambx1@neo.rr.com>,
-       Adam M Belay <abelay@mit.edu>, Li Shaohua <shaohua.li@intel.com>,
-       Matthieu Castet <castet.matthieu@free.fr>,
-       Thomas Renninger <trenn@suse.de>, Jaroslav Kysela <perex@perex.cz>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <20080505223630.682082986@ldl.fc.hp.com> <20080505223959.374741576@ldl.fc.hp.com> <4831F8BC.3080405@keyaccess.nl>
-In-Reply-To: <4831F8BC.3080405@keyaccess.nl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Mon, 19 May 2008 19:32:25 -0400
+Date: Mon, 19 May 2008 16:32:21 -0700 (PDT)
+Message-Id: <20080519.163221.236551963.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2008-05-16
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080516213137.GA16638@tuxdriver.com>
+References: <20080515195341.GB25905@tuxdriver.com>
+	<20080516213137.GA16638@tuxdriver.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805191727.01487.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 19 May 2008 04:01:32 pm Rene Herman wrote:
-> On 06-05-08 00:36, Bjorn Helgaas wrote:
-> 
-> > We used pnp_resource.index to keep track of which ISAPNP configuration
-> > register a resource should be written to.  We needed this only to
-> > handle the case where a register is disabled but a subsequent register
-> > in the same set is enabled.
-> > 
-> > Rather than explicitly maintaining the pnp_resource.index, this patch
-> > adds a resource every time we read an ISAPNP configuration register
-> > and marks the resource as IORESOURCE_DISABLED when appropriate.  This
-> > makes the position in the pnp_resource_table always correspond to the
-> > config register index.
-> > 
-> > Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-> 
-> > -			pnp_res = pnp_add_io_resource(dev, start, end,
-> > -						      0);
-> > -			if (pnp_res)
-> > -				pnp_res->index = nport++;
-> > +			pnp_add_io_resource(dev, start, end, 0);
-> 
-> In the tree after your v2 series, pnp_add_foo_resource() are called as 
-> void functions yet still return a struct pnp_resource *. You might have 
-> other plans but if not, I guess they can _be_ void functions?
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Fri, 16 May 2008 17:31:37 -0400
 
-You're right, I still don't do anything with the return value.  It
-could be used to check for success/failure, but we currently don't
-do that.  Possibly a future cleanup since there's no functional
-problem here.
+> Another quick round of fixes intended for 2.6.26 (including the
+> corrected version of the "11n hidden ssid" patch)...
 
-Bjorn
+Pulled, thanks a lot John.
