@@ -1,67 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764475AbYESWKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765513AbYESWLI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764475AbYESWKs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 18:10:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765314AbYESWGo
+	id S1765513AbYESWLI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 18:11:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765278AbYESWHd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 18:06:44 -0400
-Received: from xenotime.net ([66.160.160.81]:44452 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1764824AbYESWGn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 18:06:43 -0400
-Date: Mon, 19 May 2008 15:06:41 -0700 (PDT)
-From: "Randy.Dunlap" <rdunlap@xenotime.net>
-X-X-Sender: rddunlap@shark.he.net
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-cc: Adrian Bunk <bunk@kernel.org>, Rene Herman <rene.herman@gmail.com>,
-       linux-kernel@vger.kernel.org, Adam M Belay <abelay@mit.edu>,
-       Adam Belay <ambx1@neo.rr.com>
-Subject: Re: [2.6 patch] pnp: remove printk() with outdated version
-In-Reply-To: <200805191602.46460.bjorn.helgaas@hp.com>
-Message-ID: <Pine.LNX.4.64.0805191506300.20279@shark.he.net>
-References: <20080519215419.GI17716@cs181133002.pp.htv.fi>
- <200805191602.46460.bjorn.helgaas@hp.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 19 May 2008 18:07:33 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:42462 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763895AbYESWH2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 18:07:28 -0400
+Subject: Re: [PATCH] JBD: Fix DIO EIO error caused by race between free
+	buffer and commit trasanction
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: jack@suse.cz, pbadari@us.ibm.com, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
+In-Reply-To: <20080519132553.de9b78b0.akpm@linux-foundation.org>
+References: <20080512155419.GD15856@duck.suse.cz>
+	 <1210639184.3661.43.camel@localhost.localdomain>
+	 <20080513145449.GC20806@duck.suse.cz>
+	 <1210717389.3638.24.camel@localhost.localdomain>
+	 <20080514170856.GH24363@duck.suse.cz>
+	 <1210786872.3657.48.camel@localhost.localdomain>
+	 <20080514181444.GI24363@duck.suse.cz>
+	 <1210947250.3608.18.camel@localhost.localdomain>
+	 <1210957976.4231.31.camel@badari-desktop>
+	 <1210971693.3608.46.camel@localhost.localdomain>
+	 <20080518223739.GB11006@atrey.karlin.mff.cuni.cz>
+	 <1211227158.3663.25.camel@localhost.localdomain>
+	 <20080519132553.de9b78b0.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Mon, 19 May 2008 15:07:09 -0700
+Message-Id: <1211234829.3663.39.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 May 2008, Bjorn Helgaas wrote:
-
-> On Monday 19 May 2008 03:54:19 pm Adrian Bunk wrote:
-> > There's no point in printing some ancient version number forever.
-> > 
-> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+On Mon, 2008-05-19 at 13:25 -0700, Andrew Morton wrote:
+> On Mon, 19 May 2008 12:59:18 -0700
+> Mingming Cao <cmm@us.ibm.com> wrote:
 > 
-> Adam's the maintainer, so you really should ask him (cc'd).
-> Personally, I agree that it isn't really useful anymore.
-
-Ditto.  Thanks.
-
-> > ---
-> > acef517cfbe3cd741f8884311ef6fc2dfbeb1a4d diff --git a/drivers/pnp/core.c b/drivers/pnp/core.c
-> > index 20771b7..d924798 100644
-> > --- a/drivers/pnp/core.c
-> > +++ b/drivers/pnp/core.c
-> > @@ -209,7 +209,6 @@ void __pnp_remove_device(struct pnp_dev *dev)
-> >  
-> >  static int __init pnp_init(void)
-> >  {
-> > -	printk(KERN_INFO "Linux Plug and Play Support v0.97 (c) Adam Belay\n");
-> >  	return bus_register(&pnp_bus_type);
-> >  }
-> >  
+> > On Mon, 2008-05-19 at 00:37 +0200, Jan Kara wrote:
+> > >   Hi,
+> > > 
+> > > > This patch fixed a few races between direct IO and kjournald commit
+> > > > transaction.  An unexpected EIO error gets returned to direct IO
+> > > > caller when it failed to free those data buffers. This could be
+> > > > reproduced easily with parallel direct write and buffered write to the
+> > > > same file
+> > > > 
+> > > > More specific, those races could cause journal_try_to_free_buffers()
+> > > > fail to free the data buffers, when jbd is committing the transaction
+> > > > that has those data buffers on its t_syncdata_list or t_locked_list.
+> > > > journal_commit_transaction() still holds the reference to those
+> > > > buffers before data reach to disk and buffers are removed from the
+> > > > t_syncdata_list of t_locked_list. This prevent the concurrent
+> > > > journal_try_to_free_buffers() to free those buffers at the same time,
+> > > > but cause EIO error returns back to direct IO.
+> > > > 
+> > > > With this patch, in case of direct IO and when try_to_free_buffers() failed,
+> > > > let's waiting for journal_commit_transaction() to finish
+> > > > flushing the current committing transaction's data buffers to disk, 
+> > > > then try to free those buffers again.
+> > >   If Andrew or Christoph wouldn't beat you for "inventive use" of
+> > > gfp_mask, I'm fine with the patch as well ;). You can add
+> > >   Acked-by: Jan Kara <jack@suse.cz>
+> > > 
 > > 
+> > This is less intrusive way to fix this problem. The gfp_mask was marked
+> > as unused in try_to_free_page(). I looked at filesystems in the kernel,
+> > there is only a few defined releasepage() callback, and only xfs checks
+> > the flag(but not used). btrfs is actually using it though. I thought
+> > about the way you have suggested, i.e.clean up this gfp_mask and and
+> > replace with a flag.  I am not entirely sure if it we need to change the
+> > address_space_operations and fix all the filesystems for this matter.
+> > 
+> > Andrew, what do you think? Is this approach acceptable? 
 > > 
 > 
+> <wakes up>
 > 
+> Please ensure that the final patch is sufficiently well changelogged to
+> permit me to remain asleep ;)
+:-)
+> The ->releasepage semantics are fairly ad-hoc and have grown over time.
+> It'd be nice to prevent them from becoming vaguer than they are.
+> 
+> It has been (approximately?) the case that code paths which really care
+> about having the page released will set __GFP_WAIT (via GFP_KERNEL)
+> whereas code paths which are happy with best-effort will clear
+> __GFP_WAIT (with a "0').  And that's reasonsable - __GFP_WAIT here
+> means "be synchronous" whereas !__GFP_WAIT means "be non-blocking".
+> 
+
+This make sense to me.
+
+> Is that old convention not sufficient here as well?  Two problem areas
+> I see are mm/vmscan.c and fs/splice.c (there may be others).
+> 
+
+> In mm/vmscan.c we probably don't want your new synchronous behaviour
+> and it might well be deadlockable anyway.  No probs, that's what
+> __GFP_FS is for.
+> 
+Sure. We could check __GFP_FS and __GFP_WAIT, and that make sense.
+
+> In fs/splice.c, reading the comment there I have a feeling that you've
+> found another bug, and that splice _does_ want your new synchronous
+> behaviour?
+
+Yes, it looks like page_cache_pipe_buf_steal() expects page is free
+before removeing it by passing the GFP_KERNEL flag, but currently ext3
+could fails to releasepage when it called. In fact try_to_release_page()
+return value is ignored in page_cache_pipe_buf_steal(), should probably
+checked the failure case.
+
+
+The other caller of try_to_release_page() in mm/splice.c is
+fallback_migrate_page(), which does want the synchronous behaviour to
+make sure buffers are dropped.
+
+
+I will reuse the GFP_WAIT and GFP_FS flag in the updated patch.
+
+Thanks for your feedback.
+
+Mingming
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
 > the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
 
--- 
-~Randy
