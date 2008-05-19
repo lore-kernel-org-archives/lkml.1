@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763889AbYESUvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762595AbYESU61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763889AbYESUvd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 16:51:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbYESUus
+	id S1762595AbYESU61 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 16:58:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757186AbYESU6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 16:50:48 -0400
-Received: from mx1.riseup.net ([204.13.164.18]:47526 "EHLO mx1.riseup.net"
+	Mon, 19 May 2008 16:58:20 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60094 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762146AbYESUud (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 16:50:33 -0400
-Message-Id: <20080519204839.641691973@kaehlcke.net>
-References: <20080519204838.612046856@kaehlcke.net>
-User-Agent: quilt/0.46-1
-Date: Mon, 19 May 2008 22:48:40 +0200
-From: matthias@kaehlcke.net
-To: khali@linux-fr.org, i2c@lm-sensors.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Matthias Kaehlcke <matthias@kaehlcke.net>
-Subject: [patch 2/2] i2c_del_driver(): use list_for_each_entry_safe()
-Content-Disposition: inline; filename=i2c_del_driver-list_for_each_entry_safe.diff
+	id S1756979AbYESU6T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 16:58:19 -0400
+Date: Mon, 19 May 2008 15:57:09 -0500
+From: David Teigland <teigland@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [GIT PULL] dlm fixes for 2.6.26-rc3
+Message-ID: <20080519205709.GB3635@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-i2c-core.c: use list_for_each_entry_safe() in i2c_del_driver()
+Linus,
 
-Signed-off-by: Matthias Kaehlcke <matthias@kaehlcke.net>
+Please pull a handful of trivial dlm cleanups/fixes from:
 
-Index: linux-2.6/drivers/i2c/i2c-core.c
-===================================================================
---- linux-2.6.orig/drivers/i2c/i2c-core.c	2008-05-19 22:33:04.000000000 +0200
-+++ linux-2.6/drivers/i2c/i2c-core.c	2008-05-19 22:33:51.000000000 +0200
-@@ -707,8 +707,7 @@
-  */
- void i2c_del_driver(struct i2c_driver *driver)
- {
--	struct list_head   *item2, *_n;
--	struct i2c_client  *client;
-+	struct i2c_client  *client, *_n;
- 	struct i2c_adapter *adap;
- 
- 	mutex_lock(&core_lock);
-@@ -730,8 +729,7 @@
- 					driver->driver.name);
- 			}
- 		} else {
--			list_for_each_safe(item2, _n, &adap->clients) {
--				client = list_entry(item2, struct i2c_client, list);
-+			list_for_each_entry_safe(client, _n, &adap->clients, list) {
- 				if (client->driver != driver)
- 					continue;
- 				dev_dbg(&adap->dev, "detaching client [%s] "
+  git://git.kernel.org/pub/scm/linux/kernel/git/teigland/dlm.git for-linus
 
--- 
-Matthias Kaehlcke
-Embedded Linux Engineer
-Barcelona
+Thanks,
+Dave
 
-              We build too many walls and not enough bridges
-                             (Isaac Newton)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+
+David Teigland (1):
+      dlm: fix plock dev_write return value
+
+Leonardo Potenza (1):
+      dlm: section mismatch warning fix
+
+Marcin Slusarz (1):
+      dlm: tcp_connect_to_sock should check for -EINVAL, not EINVAL
+
+Matthias Kaehlcke (1):
+      dlm: convert connections_lock in a mutex
+
+Robert P. J. Day (1):
+      dlm: <linux/dlm_plock.h> should be "unifdef"ed.
+
+
+ fs/dlm/lowcomms.c    |   27 ++++++++++++++-------------
+ fs/dlm/netlink.c     |    2 +-
+ fs/dlm/plock.c       |    2 +-
+ include/linux/Kbuild |    2 +-
+ 4 files changed, 17 insertions(+), 16 deletions(-)
+
