@@ -1,65 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761701AbYESQKv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759342AbYESQLK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761701AbYESQKv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 12:10:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760910AbYESQKg
+	id S1759342AbYESQLK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 12:11:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759445AbYESQKp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 12:10:36 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:37790 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757526AbYESQKf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 12:10:35 -0400
-X-Sasl-enc: YYsoG0nl8VltkXhaWQXIR3jOiRSFZC68wR8V1gAOCz/7 1211213432
-Message-ID: <4831A678.5070208@ladisch.de>
-Date: Mon, 19 May 2008 18:10:32 +0200
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Mon, 19 May 2008 12:10:45 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37092 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761445AbYESQKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 12:10:44 -0400
+Date: Mon, 19 May 2008 18:10:20 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Paul Jackson <pj@sgi.com>
+Cc: ying.huang@intel.com, hpa@zytor.com, andi@firstfloor.org,
+       akpm@linux-foundation.org, tglx@linutronix.de, steiner@sgi.com,
+       travis@sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 10/10] x86 boot: add code to add BIOS provided EFI
+	memory entries to kernel
+Message-ID: <20080519161020.GB16164@elte.hu>
+References: <20080514151504.148486.32236.sendpatchset@jackhammer.engr.sgi.com> <20080514151558.148486.91282.sendpatchset@jackhammer.engr.sgi.com> <20080515190340.b232ca7d.pj@sgi.com> <20080516123820.GA16520@elte.hu> <20080518014926.917ca9a7.pj@sgi.com>
 MIME-Version: 1.0
-To: Kevin Hao <kexin.hao@windriver.com>
-CC: venkatesh.pallipadi@intel.com, bob.picco@hp.com, mingo@redhat.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: Get irq for hpet timer
-References: <1210917912.10881.1.camel@kevin-desktop>	 <482D49CF.4030902@ladisch.de> <1210929270.11912.3.camel@kevin-desktop>
-In-Reply-To: <1210929270.11912.3.camel@kevin-desktop>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080518014926.917ca9a7.pj@sgi.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kevin Hao wrote:
-> +	for (irq = find_first_bit(&cap, HPET_MAX_IRQ); irq < HPET_MAX_IRQ;
-> +		irq = find_next_bit(&cap, HPET_MAX_IRQ, 1 + irq)) {
-> +		if (request_irq(irq, hpet_interrupt, irq_flags,
-> +				devp->hd_name, (void *)devp))
 
-This spams my log with interrupt sharing violations.  As long as we do
-not know that the interrupt slot is empty, we need IRQF_PROBE_SHARED
-here.
+* Paul Jackson <pj@sgi.com> wrote:
 
-Another problem: the interrupt controller doesn't get correctly
-initialized for some interrupt line that didn't already have some
-routing:
-| $ cat /proc/interrupts
-|            CPU0
-|   0:         63   IO-APIC-edge      timer
-|   1:         96   IO-APIC-edge      i8042
-|   2:          0    XT-PIC-XT        hpet2
-|   6:          3   IO-APIC-edge      floppy
-|   7:          0   IO-APIC-edge      parport0
-|   8:          3   IO-APIC-edge      rtc
-|   9:          0   IO-APIC-fasteoi   acpi
-| ...
+> Ingo wrote:
+> > so double-checking [the merge of my x86 boot patches] would be nice.
+> 
+> I only see one detail worth mentioning on reading the resulting merge 
+> in ingo.tip.
+> 
+> Shouldn't the static array declarations in arch/x86/kernel/e820.c be 
+> indented?  It looks like the -file- static declarations from 
+> arch/x86/kernel/e820_32.c (which were not indented) took precedence in 
+> the merge over the -function- static declarations from 
+> arch/x86/kernel/e820_64.c.  The code, from the perspective of what 
+> ends up in the compiled kernel, seems fine -- just the indentation 
+> off.
+> 
+> int __init sanitize_e820_map(struct e820entry *biosmap, int max_nr_map,
+> 				int *pnr_map)
+> {
+> 	struct change_member {
+> 		struct e820entry *pbios; /* pointer to original bios entry */
+> 		unsigned long long addr; /* address for this change point */
+> 	};
+> static struct change_member change_point_list[2*E820_X_MAX] __initdata;
+> static struct change_member *change_point[2*E820_X_MAX] __initdata;
+> static struct e820entry *overlap_list[E820_X_MAX] __initdata;
+> static struct e820entry new_bios[E820_X_MAX] __initdata;
+> 	struct change_member *change_tmp;
+> 	unsigned long current_type, last_type;
+> 	unsigned long long last_addr;
 
-Additionally, I vaguely remember that on X86, there is some funny stuff
-going on with interrupt lines 0, 2 and 8 which means that the interrupt
-number passed to request_irq() is not necessarily identical to the
-hardware interrupt line.
+indeed that's quite off.
 
-I don't know which of these problems is responsible, or if I'm totally
-wrong, but on my machine, interrupts from hpet2 do not arrive.
-
-
-Regards,
-Clemens
+	Ingo
