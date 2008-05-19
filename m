@@ -1,38 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760296AbYESQln@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760788AbYESQmy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760296AbYESQln (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 12:41:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbYESQlf
+	id S1760788AbYESQmy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 12:42:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754265AbYESQmq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 12:41:35 -0400
-Received: from relay2.sgi.com ([192.48.171.30]:36517 "EHLO relay.sgi.com"
+	Mon, 19 May 2008 12:42:46 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:36168 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751196AbYESQle (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 12:41:34 -0400
-Date: Mon, 19 May 2008 09:41:33 -0700 (PDT)
+	id S1752925AbYESQmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 12:42:46 -0400
+Date: Mon, 19 May 2008 09:42:45 -0700 (PDT)
 From: Christoph Lameter <clameter@sgi.com>
 X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>,
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Eric Dumazet <dada1@cosmosbay.com>, Mike Travis <travis@sgi.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        linux kernel <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH] modules: Use a better scheme for refcounting
-In-Reply-To: <482E8AF5.9050804@cosmosbay.com>
-Message-ID: <Pine.LNX.4.64.0805190940440.18431@schroedinger.engr.sgi.com>
-References: <482C9FC5.2070508@cosmosbay.com> <482D1BCE.3060501@cosmosbay.com>
- <482D8EFC.8040109@sgi.com> <200805171533.46295.rusty@rustcorp.com.au>
- <482E8AF5.9050804@cosmosbay.com>
+In-Reply-To: <200805190031.45136.rusty@rustcorp.com.au>
+Message-ID: <Pine.LNX.4.64.0805190941560.18431@schroedinger.engr.sgi.com>
+References: <482C9FC5.2070508@cosmosbay.com> <200805171533.46295.rusty@rustcorp.com.au>
+ <482E8AF5.9050804@cosmosbay.com> <200805190031.45136.rusty@rustcorp.com.au>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 17 May 2008, Eric Dumazet wrote:
+On Mon, 19 May 2008, Rusty Russell wrote:
 
-> Thats a lot of work and apparently Mike and Christoph are doing it.
+> Thanks for the prod Eric.  ISTR acking those patches; Christoph, what happened 
+> to them?
 
-Indeed. Thanks for the support. I hope Mike gets the stuff out soon. I 
-know he was working on one issue that cause the zero based stuff to break. 
-Maybe it would help if he would post what he has so far?
+Mike is handling them.
 
