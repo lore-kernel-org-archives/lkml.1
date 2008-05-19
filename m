@@ -1,43 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753951AbYESPMs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761627AbYESPNt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753951AbYESPMs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 11:12:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750957AbYESPMk
+	id S1761627AbYESPNt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 11:13:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbYESPNk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 11:12:40 -0400
-Received: from smtp4.int-evry.fr ([157.159.10.71]:51688 "EHLO
-	smtp4.int-evry.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750937AbYESPMj convert rfc822-to-8bit (ORCPT
+	Mon, 19 May 2008 11:13:40 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:32861 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750937AbYESPNj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 11:12:39 -0400
-From: Florian Fainelli <florian.fainelli@telecomint.eu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 28/57] mtx-1_wdt: clean up, coding style, unlocked ioctl
-Date: Tue, 20 May 2008 17:08:18 +0200
-User-Agent: KMail/1.9.9
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, wim@iguana.be
-References: <20080519124659.31722.51847.stgit@core> <20080519130720.31722.92503.stgit@core>
-In-Reply-To: <20080519130720.31722.92503.stgit@core>
+	Mon, 19 May 2008 11:13:39 -0400
+Message-ID: <48319901.2080809@firstfloor.org>
+Date: Mon, 19 May 2008 17:13:05 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200805201708.18435.florian.fainelli@telecomint.eu>
-X-INT-MailScanner-Information: Please contact the ISP for more information
-X-MailScanner-ID: 433373EE5A2.1A2B0
-X-INT-MailScanner: Found to be clean
-X-INT-MailScanner-SpamCheck: 
-X-INT-MailScanner-From: florian.fainelli@telecomint.eu
+To: Christoph Hellwig <hch@infradead.org>
+CC: Trond.Myklebust@netapp.com, swhiteho@redhat.com, sfrench@samba.org,
+       vandrove@vc.cvut.cz, corbet@lwn.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [1/11] Remove BKL from remote_llseek
+References: <20080519231.561421028@firstfloor.org> <20080519123110.930491B41FF@basil.firstfloor.org> <20080519140235.GA24267@infradead.org>
+In-Reply-To: <20080519140235.GA24267@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan,
 
-Le Monday 19 May 2008 15:07:21 Alan Cox, vous avez écrit :
-> From: Alan Cox <alan@redhat.com>
+> Your new remote_llseek_unlocked is the same as generic_file_llseek
+> except for the fact that it doesn't take i_mutex.  So I'd rather
+> call it generic_file_llseek_nolock and make generic_file_llseek call
+> it.  
 
-Thanks for doing this.
+Done. There's also default_llseek btw which is nearly similar, 
+but i didn't touch that one.
 
-Acked-by: Florian Fainelli <florian.fainelli@telecomint.eu>
+> While you're at it you could also add some kerneldoc documents
+> describing them.
+
+Off topic for the series, left that to someone else.
+
+-Andi
+
+
