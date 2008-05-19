@@ -1,81 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758752AbYESMWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758919AbYESMXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758752AbYESMWw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 08:22:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754957AbYESMWo
+	id S1758919AbYESMXm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 08:23:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754957AbYESMXf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 08:22:44 -0400
-Received: from ozlabs.org ([203.10.76.45]:55429 "EHLO ozlabs.org"
+	Mon, 19 May 2008 08:23:35 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52558 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754870AbYESMWo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 08:22:44 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Avi Kivity <avi@qumranet.com>
-Subject: Re: [PATCH] virtio_net: free transmit skbs in a timer
-Date: Mon, 19 May 2008 22:21:51 +1000
-User-Agent: KMail/1.9.9
-Cc: Mark McLoughlin <markmc@redhat.com>, Anthony Liguori <aliguori@us.ibm.com>,
-       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org
-References: <1209565906-9019-1-git-send-email-markmc@redhat.com> <200805191152.28409.rusty@rustcorp.com.au> <483155D4.2090700@qumranet.com>
-In-Reply-To: <483155D4.2090700@qumranet.com>
+	id S1754285AbYESMXe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 08:23:34 -0400
+Date: Mon, 19 May 2008 14:23:22 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alexey Starikovskiy <astarikovskiy@suse.de>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 1/5] x86: Move es7000_plat out of mpparse.c
+Message-ID: <20080519122322.GB6700@elte.hu>
+References: <20080514150251.24443.5516.stgit@thinkpad> <20080516124319.GB16520@elte.hu> <20080516130342.GA22993@elte.hu> <20080516130422.GA24607@elte.hu> <482E1955.8080506@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200805192221.52072.rusty@rustcorp.com.au>
+In-Reply-To: <482E1955.8080506@suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 19 May 2008 20:26:28 Avi Kivity wrote:
-> Rusty Russell wrote:
-> >> We should have thought of this before, though, especially as Xen does
-> >>
-> >> this or something very similar:
-> >>> /* Shared ring page */                            \
-> >>> struct __name##_sring {                            \
-> >>>     RING_IDX req_prod, req_event;                    \
-> >>>     RING_IDX rsp_prod, rsp_event;                    \
-> >>>     uint8_t  pad[48];                            \
-> >>>     union __name##_sring_entry ring[1]; /* variable-length */        \
-> >>> };                                    \
-> >>
-> >> req_event and rsp_event allow the other side to indicate when it wants a
-> >> notification.
-> >
-> > Well, we do have such a thing, in the ring suppression flags.
+
+* Alexey Starikovskiy <astarikovskiy@suse.de> wrote:
+
+> Ingo,
+> I seem to have lost the track of changes... Why the ifdef LOCAL_APIC was 
+> switched to MPPARSE?
 >
-> Can you point me at this?
+> Reverting it back makes the error to go away...
 
-Ah, sorry, I misunderstood.  No, we don't have a threshold like this, we
-have an all-or-nothing flag in each direction.
+ok - this is indeed merge damage - fixed it up in latest -tip.
 
-We have the ability to add new fields to the rings.  I've put it on my
-TODO to benchmark what this does.  It may or may not help.  In this case,
-notification when there are no more packets in xmit ring would be
-sufficient.  We already kick the host when we fill a ring even if
-it says it doesn't need it, perhaps this would be symmetry.
-
-> >   Note that DaveM
-> > is talking about moving network tx queue into the net drivers themselves,
-> > which will make them much more efficient (ie. drain entire queue before
-> > kick), which may again change the balance of what the Right Thing is.
->
-> That depends on whether Linux knows whether more packets are coming.
-
-The current problem is that hard_start_xmit gets called with a packet, and 
-has no idea if there are more in the tx queue.  By having the driver control
-the queue, it can at least tell that.
-
-The question remains whether this will be sufficient for tx mitigation.  A
-program may be about to write more to the socket, and we can't know that.
-But it can hardly hurt.
-
-In turn, sending out such packet bursts will have an effect on packet reuse.  
-
-Cheers,
-Rusty.
-
-
-
+	Ingo
