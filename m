@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759622AbYESNR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759336AbYESNRn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759622AbYESNR1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 09:17:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757918AbYESNQm
+	id S1759336AbYESNRn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 09:17:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756914AbYESNQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 09:16:42 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57947 "EHLO
+	Mon, 19 May 2008 09:16:56 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57952 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756991AbYESNQl (ORCPT
+	with ESMTP id S1759242AbYESNQx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 09:16:41 -0400
+	Mon, 19 May 2008 09:16:53 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 02/57] clean up and check advantech watchdog
+Subject: [PATCH 03/57] ali: watchdog locking and style
 To: akpm@osdl.org, linux-kernel@vger.kernel.org, wim@iguana.be
-Date: Mon, 19 May 2008 14:04:51 +0100
-Message-ID: <20080519130451.31722.45007.stgit@core>
+Date: Mon, 19 May 2008 14:04:57 +0100
+Message-ID: <20080519130457.31722.23132.stgit@core>
 In-Reply-To: <20080519124659.31722.51847.stgit@core>
 References: <20080519124659.31722.51847.stgit@core>
 User-Agent: StGIT/0.14.1
@@ -27,294 +27,717 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Cox <alan@redhat.com>
 
-Clean up the advantech watchdog code and inspect for BKL problems
+Clean up and check locking
 ---
 
- drivers/watchdog/advantechwdt.c |  133 ++++++++++++++++++---------------------
- 1 files changed, 61 insertions(+), 72 deletions(-)
+ drivers/watchdog/alim1535_wdt.c |  186 ++++++++++++++++----------------
+ drivers/watchdog/alim7101_wdt.c |  224 +++++++++++++++++++++------------------
+ 2 files changed, 209 insertions(+), 201 deletions(-)
 
 
-diff --git a/drivers/watchdog/advantechwdt.c b/drivers/watchdog/advantechwdt.c
-index 8121cc2..7597571 100644
---- a/drivers/watchdog/advantechwdt.c
-+++ b/drivers/watchdog/advantechwdt.c
-@@ -72,35 +72,35 @@ MODULE_PARM_DESC(wdt_start, "Advantech WDT 'start' io port (default 0x443)");
+diff --git a/drivers/watchdog/alim1535_wdt.c b/drivers/watchdog/alim1535_wdt.c
+index 2b1fbdb..88760cb 100644
+--- a/drivers/watchdog/alim1535_wdt.c
++++ b/drivers/watchdog/alim1535_wdt.c
+@@ -19,8 +19,8 @@
+ #include <linux/fs.h>
+ #include <linux/pci.h>
  
- static int timeout = WATCHDOG_TIMEOUT;	/* in seconds */
+-#include <asm/uaccess.h>
+-#include <asm/io.h>
++#include <linux/uaccess.h>
++#include <linux/io.h>
+ 
+ #define WATCHDOG_NAME "ALi_M1535"
+ #define PFX WATCHDOG_NAME ": "
+@@ -30,17 +30,21 @@
+ static unsigned long ali_is_open;
+ static char ali_expect_release;
+ static struct pci_dev *ali_pci;
+-static u32 ali_timeout_bits;	/* stores the computed timeout */
++static u32 ali_timeout_bits;		/* stores the computed timeout */
+ static DEFINE_SPINLOCK(ali_lock);	/* Guards the hardware */
+ 
+ /* module parameters */
+ static int timeout = WATCHDOG_TIMEOUT;
  module_param(timeout, int, 0);
--MODULE_PARM_DESC(timeout, "Watchdog timeout in seconds. 1<= timeout <=63, default=" __MODULE_STRING(WATCHDOG_TIMEOUT) ".");
+-MODULE_PARM_DESC(timeout, "Watchdog timeout in seconds. (0<timeout<18000, default=" __MODULE_STRING(WATCHDOG_TIMEOUT) ")");
 +MODULE_PARM_DESC(timeout,
-+	"Watchdog timeout in seconds. 1<= timeout <=63, default="
-+		__MODULE_STRING(WATCHDOG_TIMEOUT) ".");
++		"Watchdog timeout in seconds. (0 < timeout < 18000, default="
++				__MODULE_STRING(WATCHDOG_TIMEOUT) ")");
  
  static int nowayout = WATCHDOG_NOWAYOUT;
  module_param(nowayout, int, 0);
 -MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default=" __MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
 +MODULE_PARM_DESC(nowayout,
-+	"Watchdog cannot be stopped once started (default="
-+		__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
++		"Watchdog cannot be stopped once started (default="
++				__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
  
  /*
-  *	Watchdog Operations
-  */
+  *	ali_start	-	start watchdog countdown
+@@ -103,15 +107,16 @@ static void ali_keepalive(void)
  
--static void
--advwdt_ping(void)
-+static void advwdt_ping(void)
+ static int ali_settimer(int t)
  {
- 	/* Write a watchdog value */
- 	outb_p(timeout, wdt_start);
- }
- 
--static void
--advwdt_disable(void)
-+static void advwdt_disable(void)
- {
- 	inb_p(wdt_stop);
- }
- 
--static int
--advwdt_set_heartbeat(int t)
-+static int advwdt_set_heartbeat(int t)
- {
--	if ((t < 1) || (t > 63))
-+	if (t < 1 || t > 63)
+-	if(t < 0)
++	if (t < 0)
  		return -EINVAL;
--
+-	else if(t < 60)
++	else if (t < 60)
+ 		ali_timeout_bits = t|(1<<6);
+-	else if(t < 3600)
++	else if (t < 3600)
+ 		ali_timeout_bits = (t/60)|(1<<7);
+-	else if(t < 18000)
++	else if (t < 18000)
+ 		ali_timeout_bits = (t/300)|(1<<6)|(1<<7);
+-	else return -EINVAL;
++	else
++		return -EINVAL;
+ 
  	timeout = t;
  	return 0;
- }
-@@ -109,8 +109,8 @@ advwdt_set_heartbeat(int t)
-  *	/dev/watchdog handling
+@@ -134,21 +139,22 @@ static int ali_settimer(int t)
   */
  
--static ssize_t
--advwdt_write(struct file *file, const char __user *buf, size_t count, loff_t *ppos)
-+static ssize_t advwdt_write(struct file *file, const char __user *buf,
+ static ssize_t ali_write(struct file *file, const char __user *data,
+-			      size_t len, loff_t * ppos)
++			      size_t len, loff_t *ppos)
+ {
+ 	/* See if we got the magic character 'V' and reload the timer */
+ 	if (len) {
+ 		if (!nowayout) {
+ 			size_t i;
+ 
+-			/* note: just in case someone wrote the magic character
+-			 * five months ago... */
++			/* note: just in case someone wrote the
++			   magic character five months ago... */
+ 			ali_expect_release = 0;
+ 
+-			/* scan to see whether or not we got the magic character */
++			/* scan to see whether or not we got
++			   the magic character */
+ 			for (i = 0; i != len; i++) {
+ 				char c;
+-				if(get_user(c, data+i))
++				if (get_user(c, data+i))
+ 					return -EFAULT;
+ 				if (c == 'V')
+ 					ali_expect_release = 42;
+@@ -163,7 +169,6 @@ static ssize_t ali_write(struct file *file, const char __user *data,
+ 
+ /*
+  *	ali_ioctl	-	handle watchdog ioctls
+- *	@inode: VFS inode
+  *	@file: VFS file pointer
+  *	@cmd: ioctl number
+  *	@arg: arguments to the ioctl
+@@ -172,8 +177,7 @@ static ssize_t ali_write(struct file *file, const char __user *data,
+  *	we want an extension to enable irq ack monitoring and the like
+  */
+ 
+-static int ali_ioctl(struct inode *inode, struct file *file,
+-			  unsigned int cmd, unsigned long arg)
++static long ali_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ {
+ 	void __user *argp = (void __user *)arg;
+ 	int __user *p = argp;
+@@ -186,57 +190,45 @@ static int ali_ioctl(struct inode *inode, struct file *file,
+ 	};
+ 
+ 	switch (cmd) {
+-		case WDIOC_GETSUPPORT:
+-			return copy_to_user(argp, &ident,
+-				sizeof (ident)) ? -EFAULT : 0;
+-
+-		case WDIOC_GETSTATUS:
+-		case WDIOC_GETBOOTSTATUS:
+-			return put_user(0, p);
+-
+-		case WDIOC_KEEPALIVE:
+-			ali_keepalive();
+-			return 0;
+-
+-		case WDIOC_SETOPTIONS:
+-		{
+-			int new_options, retval = -EINVAL;
+-
+-			if (get_user (new_options, p))
+-				return -EFAULT;
+-
+-			if (new_options & WDIOS_DISABLECARD) {
+-				ali_stop();
+-				retval = 0;
+-			}
+-
+-			if (new_options & WDIOS_ENABLECARD) {
+-				ali_start();
+-				retval = 0;
+-			}
++	case WDIOC_GETSUPPORT:
++		return copy_to_user(argp, &ident, sizeof(ident)) ? -EFAULT : 0;
+ 
+-			return retval;
++	case WDIOC_GETSTATUS:
++	case WDIOC_GETBOOTSTATUS:
++		return put_user(0, p);
++	case WDIOC_KEEPALIVE:
++		ali_keepalive();
++		return 0;
++	case WDIOC_SETOPTIONS:
++	{
++		int new_options, retval = -EINVAL;
++
++		if (get_user(new_options, p))
++			return -EFAULT;
++		if (new_options & WDIOS_DISABLECARD) {
++			ali_stop();
++			retval = 0;
+ 		}
+-
+-		case WDIOC_SETTIMEOUT:
+-		{
+-			int new_timeout;
+-
+-			if (get_user(new_timeout, p))
+-				return -EFAULT;
+-
+-			if (ali_settimer(new_timeout))
+-			    return -EINVAL;
+-
+-			ali_keepalive();
+-			/* Fall */
++		if (new_options & WDIOS_ENABLECARD) {
++			ali_start();
++			retval = 0;
+ 		}
+-
+-		case WDIOC_GETTIMEOUT:
+-			return put_user(timeout, p);
+-
+-		default:
+-			return -ENOTTY;
++		return retval;
++	}
++	case WDIOC_SETTIMEOUT:
++	{
++		int new_timeout;
++		if (get_user(new_timeout, p))
++			return -EFAULT;
++		if (ali_settimer(new_timeout))
++			return -EINVAL;
++		ali_keepalive();
++		/* Fall */
++	}
++	case WDIOC_GETTIMEOUT:
++		return put_user(timeout, p);
++	default:
++		return -ENOTTY;
+ 	}
+ }
+ 
+@@ -274,10 +266,11 @@ static int ali_release(struct inode *inode, struct file *file)
+ 	/*
+ 	 *      Shut off the timer.
+ 	 */
+-	if (ali_expect_release == 42) {
++	if (ali_expect_release == 42)
+ 		ali_stop();
+-	} else {
+-		printk(KERN_CRIT PFX "Unexpected close, not stopping watchdog!\n");
++	else {
++		printk(KERN_CRIT PFX
++				"Unexpected close, not stopping watchdog!\n");
+ 		ali_keepalive();
+ 	}
+ 	clear_bit(0, &ali_is_open);
+@@ -292,13 +285,11 @@ static int ali_release(struct inode *inode, struct file *file)
+  */
+ 
+ 
+-static int ali_notify_sys(struct notifier_block *this, unsigned long code, void *unused)
++static int ali_notify_sys(struct notifier_block *this,
++					unsigned long code, void *unused)
+ {
+-	if (code==SYS_DOWN || code==SYS_HALT) {
+-		/* Turn the WDT off */
+-		ali_stop();
+-	}
+-
++	if (code == SYS_DOWN || code == SYS_HALT)
++		ali_stop();		/* Turn the WDT off */
+ 	return NOTIFY_DONE;
+ }
+ 
+@@ -340,10 +331,10 @@ static int __init ali_find_watchdog(void)
+ 
+ 	/* Check for the a 7101 PMU */
+ 	pdev = pci_get_device(PCI_VENDOR_ID_AL, 0x7101, NULL);
+-	if(pdev == NULL)
++	if (pdev == NULL)
+ 		return -ENODEV;
+ 
+-	if(pci_enable_device(pdev)) {
++	if (pci_enable_device(pdev)) {
+ 		pci_dev_put(pdev);
+ 		return -EIO;
+ 	}
+@@ -355,9 +346,12 @@ static int __init ali_find_watchdog(void)
+ 	 */
+ 	pci_read_config_dword(pdev, 0xCC, &wdog);
+ 
+-	wdog &= ~0x3F;		/* Timer bits */
+-	wdog &= ~((1<<27)|(1<<26)|(1<<25)|(1<<24));	/* Issued events */
+-	wdog &= ~((1<<16)|(1<<13)|(1<<12)|(1<<11)|(1<<10)|(1<<9));	/* No monitor bits */
++	/* Timer bits */
++	wdog &= ~0x3F;
++	/* Issued events */
++	wdog &= ~((1<<27)|(1<<26)|(1<<25)|(1<<24));
++	/* No monitor bits */
++	wdog &= ~((1<<16)|(1<<13)|(1<<12)|(1<<11)|(1<<10)|(1<<9));
+ 
+ 	pci_write_config_dword(pdev, 0xCC, wdog);
+ 
+@@ -369,12 +363,12 @@ static int __init ali_find_watchdog(void)
+  */
+ 
+ static const struct file_operations ali_fops = {
+-	.owner =	THIS_MODULE,
+-	.llseek =	no_llseek,
+-	.write =	ali_write,
+-	.ioctl =	ali_ioctl,
+-	.open =		ali_open,
+-	.release =	ali_release,
++	.owner 		=	THIS_MODULE,
++	.llseek 	=	no_llseek,
++	.write		=	ali_write,
++	.unlocked_ioctl =	ali_ioctl,
++	.open 		=	ali_open,
++	.release 	=	ali_release,
+ };
+ 
+ static struct miscdevice ali_miscdev = {
+@@ -399,15 +393,16 @@ static int __init watchdog_init(void)
+ 	int ret;
+ 
+ 	/* Check whether or not the hardware watchdog is there */
+-	if (ali_find_watchdog() != 0) {
++	if (ali_find_watchdog() != 0)
+ 		return -ENODEV;
+-	}
+ 
+-	/* Check that the timeout value is within it's range ; if not reset to the default */
++	/* Check that the timeout value is within it's range;
++	   if not reset to the default */
+ 	if (timeout < 1 || timeout >= 18000) {
+ 		timeout = WATCHDOG_TIMEOUT;
+-		printk(KERN_INFO PFX "timeout value must be 0<timeout<18000, using %d\n",
+-			timeout);
++		printk(KERN_INFO PFX
++		     "timeout value must be 0 < timeout < 18000, using %d\n",
++							timeout);
+ 	}
+ 
+ 	/* Calculate the watchdog's timeout */
+@@ -415,15 +410,16 @@ static int __init watchdog_init(void)
+ 
+ 	ret = register_reboot_notifier(&ali_notifier);
+ 	if (ret != 0) {
+-		printk(KERN_ERR PFX "cannot register reboot notifier (err=%d)\n",
+-			ret);
++		printk(KERN_ERR PFX
++			"cannot register reboot notifier (err=%d)\n", ret);
+ 		goto out;
+ 	}
+ 
+ 	ret = misc_register(&ali_miscdev);
+ 	if (ret != 0) {
+-		printk(KERN_ERR PFX "cannot register miscdev on minor=%d (err=%d)\n",
+-			WATCHDOG_MINOR, ret);
++		printk(KERN_ERR PFX
++			"cannot register miscdev on minor=%d (err=%d)\n",
++						WATCHDOG_MINOR, ret);
+ 		goto unreg_reboot;
+ 	}
+ 
+diff --git a/drivers/watchdog/alim7101_wdt.c b/drivers/watchdog/alim7101_wdt.c
+index 238273c..c495f36 100644
+--- a/drivers/watchdog/alim7101_wdt.c
++++ b/drivers/watchdog/alim7101_wdt.c
+@@ -32,8 +32,8 @@
+ #include <linux/fs.h>
+ #include <linux/pci.h>
+ 
+-#include <asm/io.h>
+-#include <asm/uaccess.h>
++#include <linux/io.h>
++#include <linux/uaccess.h>
+ #include <asm/system.h>
+ 
+ #define OUR_NAME "alim7101_wdt"
+@@ -60,13 +60,17 @@
+  */
+ 
+ #define WATCHDOG_TIMEOUT 30            /* 30 sec default timeout */
+-static int timeout = WATCHDOG_TIMEOUT; /* in seconds, will be multiplied by HZ to get seconds to wait for a ping */
++/* in seconds, will be multiplied by HZ to get seconds to wait for a ping */
++static int timeout = WATCHDOG_TIMEOUT;
+ module_param(timeout, int, 0);
+-MODULE_PARM_DESC(timeout, "Watchdog timeout in seconds. (1<=timeout<=3600, default=" __MODULE_STRING(WATCHDOG_TIMEOUT) ")");
++MODULE_PARM_DESC(timeout,
++		"Watchdog timeout in seconds. (1<=timeout<=3600, default="
++				__MODULE_STRING(WATCHDOG_TIMEOUT) ")");
+ 
+-static int use_gpio = 0; /* Use the pic (for a1d revision alim7101) */
++static int use_gpio; /* Use the pic (for a1d revision alim7101) */
+ module_param(use_gpio, int, 0);
+-MODULE_PARM_DESC(use_gpio, "Use the gpio watchdog.  (required by old cobalt boards)");
++MODULE_PARM_DESC(use_gpio,
++		"Use the gpio watchdog (required by old cobalt boards).");
+ 
+ static void wdt_timer_ping(unsigned long);
+ static DEFINE_TIMER(timer, wdt_timer_ping, 0, 1);
+@@ -77,8 +81,9 @@ static struct pci_dev *alim7101_pmu;
+ 
+ static int nowayout = WATCHDOG_NOWAYOUT;
+ module_param(nowayout, int, 0);
+-MODULE_PARM_DESC(nowayout, "Watchdog cannot be stopped once started (default="
+-		 __MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
++MODULE_PARM_DESC(nowayout,
++		"Watchdog cannot be stopped once started (default="
++				__MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
+ 
+ /*
+  *	Whack the dog
+@@ -89,23 +94,26 @@ static void wdt_timer_ping(unsigned long data)
+ 	/* If we got a heartbeat pulse within the WDT_US_INTERVAL
+ 	 * we agree to ping the WDT
+ 	 */
+-	char	tmp;
++	char tmp;
+ 
+-	if(time_before(jiffies, next_heartbeat))
+-	{
++	if (time_before(jiffies, next_heartbeat)) {
+ 		/* Ping the WDT (this is actually a disarm/arm sequence) */
+ 		pci_read_config_byte(alim7101_pmu, 0x92, &tmp);
+-		pci_write_config_byte(alim7101_pmu, ALI_7101_WDT, (tmp & ~ALI_WDT_ARM));
+-		pci_write_config_byte(alim7101_pmu, ALI_7101_WDT, (tmp | ALI_WDT_ARM));
++		pci_write_config_byte(alim7101_pmu,
++					ALI_7101_WDT, (tmp & ~ALI_WDT_ARM));
++		pci_write_config_byte(alim7101_pmu,
++					ALI_7101_WDT, (tmp | ALI_WDT_ARM));
+ 		if (use_gpio) {
+-			pci_read_config_byte(alim7101_pmu, ALI_7101_GPIO_O, &tmp);
+-			pci_write_config_byte(alim7101_pmu, ALI_7101_GPIO_O, tmp
+-					| 0x20);
+-			pci_write_config_byte(alim7101_pmu, ALI_7101_GPIO_O, tmp
+-					& ~0x20);
++			pci_read_config_byte(alim7101_pmu,
++					ALI_7101_GPIO_O, &tmp);
++			pci_write_config_byte(alim7101_pmu,
++					ALI_7101_GPIO_O, tmp | 0x20);
++			pci_write_config_byte(alim7101_pmu,
++					ALI_7101_GPIO_O, tmp & ~0x20);
+ 		}
+ 	} else {
+-		printk(KERN_WARNING PFX "Heartbeat lost! Will not ping the watchdog\n");
++		printk(KERN_WARNING PFX
++			"Heartbeat lost! Will not ping the watchdog\n");
+ 	}
+ 	/* Re-set the timer interval */
+ 	mod_timer(&timer, jiffies + WDT_INTERVAL);
+@@ -121,17 +129,23 @@ static void wdt_change(int writeval)
+ 
+ 	pci_read_config_byte(alim7101_pmu, ALI_7101_WDT, &tmp);
+ 	if (writeval == WDT_ENABLE) {
+-		pci_write_config_byte(alim7101_pmu, ALI_7101_WDT, (tmp | ALI_WDT_ARM));
++		pci_write_config_byte(alim7101_pmu,
++					ALI_7101_WDT, (tmp | ALI_WDT_ARM));
+ 		if (use_gpio) {
+-			pci_read_config_byte(alim7101_pmu, ALI_7101_GPIO_O, &tmp);
+-			pci_write_config_byte(alim7101_pmu, ALI_7101_GPIO_O, tmp & ~0x20);
++			pci_read_config_byte(alim7101_pmu,
++					ALI_7101_GPIO_O, &tmp);
++			pci_write_config_byte(alim7101_pmu,
++					ALI_7101_GPIO_O, tmp & ~0x20);
+ 		}
+ 
+ 	} else {
+-		pci_write_config_byte(alim7101_pmu, ALI_7101_WDT, (tmp & ~ALI_WDT_ARM));
++		pci_write_config_byte(alim7101_pmu,
++					ALI_7101_WDT, (tmp & ~ALI_WDT_ARM));
+ 		if (use_gpio) {
+-			pci_read_config_byte(alim7101_pmu, ALI_7101_GPIO_O, &tmp);
+-			pci_write_config_byte(alim7101_pmu, ALI_7101_GPIO_O, tmp | 0x20);
++			pci_read_config_byte(alim7101_pmu,
++					ALI_7101_GPIO_O, &tmp);
++			pci_write_config_byte(alim7101_pmu,
++					ALI_7101_GPIO_O, tmp | 0x20);
+ 		}
+ 	}
+ }
+@@ -169,10 +183,11 @@ static void wdt_keepalive(void)
+  * /dev/watchdog handling
+  */
+ 
+-static ssize_t fop_write(struct file * file, const char __user * buf, size_t count, loff_t * ppos)
++static ssize_t fop_write(struct file *file, const char __user *buf,
 +						size_t count, loff_t *ppos)
  {
- 	if (count) {
+ 	/* See if we got the magic character 'V' and reload the timer */
+-	if(count) {
++	if (count) {
  		if (!nowayout) {
-@@ -131,9 +131,7 @@ advwdt_write(struct file *file, const char __user *buf, size_t count, loff_t *pp
+ 			size_t ofs;
+ 
+@@ -195,119 +210,116 @@ static ssize_t fop_write(struct file * file, const char __user * buf, size_t cou
  	return count;
  }
  
--static int
--advwdt_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
--	  unsigned long arg)
-+static long advwdt_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+-static int fop_open(struct inode * inode, struct file * file)
++static int fop_open(struct inode *inode, struct file *file)
  {
- 	int new_timeout;
+ 	/* Just in case we're already talking to someone... */
+-	if(test_and_set_bit(0, &wdt_is_open))
++	if (test_and_set_bit(0, &wdt_is_open))
+ 		return -EBUSY;
+ 	/* Good, fire up the show */
+ 	wdt_startup();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+-static int fop_close(struct inode * inode, struct file * file)
++static int fop_close(struct inode *inode, struct file *file)
+ {
+-	if(wdt_expect_close == 42)
++	if (wdt_expect_close == 42)
+ 		wdt_turnoff();
+ 	else {
+ 		/* wim: shouldn't there be a: del_timer(&timer); */
+-		printk(KERN_CRIT PFX "device file closed unexpectedly. Will not stop the WDT!\n");
++		printk(KERN_CRIT PFX
++		  "device file closed unexpectedly. Will not stop the WDT!\n");
+ 	}
+ 	clear_bit(0, &wdt_is_open);
+ 	wdt_expect_close = 0;
+ 	return 0;
+ }
+ 
+-static int fop_ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg)
++static long fop_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ {
  	void __user *argp = (void __user *)arg;
-@@ -146,57 +144,50 @@ advwdt_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+ 	int __user *p = argp;
+-	static struct watchdog_info ident =
+-	{
+-		.options = WDIOF_KEEPALIVEPING | WDIOF_SETTIMEOUT | WDIOF_MAGICCLOSE,
++	static struct watchdog_info ident = {
++		.options = WDIOF_KEEPALIVEPING | WDIOF_SETTIMEOUT
++							| WDIOF_MAGICCLOSE,
+ 		.firmware_version = 1,
+ 		.identity = "ALiM7101",
+ 	};
  
- 	switch (cmd) {
- 	case WDIOC_GETSUPPORT:
--	  if (copy_to_user(argp, &ident, sizeof(ident)))
--	    return -EFAULT;
--	  break;
-+	if (copy_to_user(argp, &ident, sizeof(ident)))
-+		return -EFAULT;
-+		break;
- 
- 	case WDIOC_GETSTATUS:
- 	case WDIOC_GETBOOTSTATUS:
--	  return put_user(0, p);
+-	switch(cmd)
++	switch (cmd) {
++	case WDIOC_GETSUPPORT:
++		return copy_to_user(argp, &ident, sizeof(ident)) ? -EFAULT : 0;
++	case WDIOC_GETSTATUS:
++	case WDIOC_GETBOOTSTATUS:
 +		return put_user(0, p);
- 
- 	case WDIOC_KEEPALIVE:
--	  advwdt_ping();
--	  break;
-+		advwdt_ping();
-+		break;
- 
- 	case WDIOC_SETTIMEOUT:
--	  if (get_user(new_timeout, p))
--		  return -EFAULT;
--	  if (advwdt_set_heartbeat(new_timeout))
--		  return -EINVAL;
--	  advwdt_ping();
--	  /* Fall */
++	case WDIOC_KEEPALIVE:
++		wdt_keepalive();
++		return 0;
++	case WDIOC_SETOPTIONS:
+ 	{
+-		case WDIOC_GETSUPPORT:
+-			return copy_to_user(argp, &ident, sizeof(ident))?-EFAULT:0;
+-		case WDIOC_GETSTATUS:
+-		case WDIOC_GETBOOTSTATUS:
+-			return put_user(0, p);
+-		case WDIOC_KEEPALIVE:
+-			wdt_keepalive();
+-			return 0;
+-		case WDIOC_SETOPTIONS:
+-		{
+-			int new_options, retval = -EINVAL;
 -
+-			if(get_user(new_options, p))
+-				return -EFAULT;
+-
+-			if(new_options & WDIOS_DISABLECARD) {
+-				wdt_turnoff();
+-				retval = 0;
+-			}
+-
+-			if(new_options & WDIOS_ENABLECARD) {
+-				wdt_startup();
+-				retval = 0;
+-			}
++		int new_options, retval = -EINVAL;
+ 
+-			return retval;
++		if (get_user(new_options, p))
++			return -EFAULT;
++		if (new_options & WDIOS_DISABLECARD) {
++			wdt_turnoff();
++			retval = 0;
+ 		}
+-		case WDIOC_SETTIMEOUT:
+-		{
+-			int new_timeout;
+-
+-			if(get_user(new_timeout, p))
+-				return -EFAULT;
+-
+-			if(new_timeout < 1 || new_timeout > 3600) /* arbitrary upper limit */
+-				return -EINVAL;
+-
+-			timeout = new_timeout;
+-			wdt_keepalive();
+-			/* Fall through */
++		if (new_options & WDIOS_ENABLECARD) {
++			wdt_startup();
++			retval = 0;
+ 		}
+-		case WDIOC_GETTIMEOUT:
+-			return put_user(timeout, p);
+-		default:
+-			return -ENOTTY;
++		return retval;
++	}
++	case WDIOC_SETTIMEOUT:
++	{
++		int new_timeout;
++
 +		if (get_user(new_timeout, p))
 +			return -EFAULT;
-+		if (advwdt_set_heartbeat(new_timeout))
++		/* arbitrary upper limit */
++		if (new_timeout < 1 || new_timeout > 3600)
 +			return -EINVAL;
-+		advwdt_ping();
-+		/* Fall */
- 	case WDIOC_GETTIMEOUT:
--	  return put_user(timeout, p);
--
++		timeout = new_timeout;
++		wdt_keepalive();
++		/* Fall through */
++	}
++	case WDIOC_GETTIMEOUT:
 +		return put_user(timeout, p);
- 	case WDIOC_SETOPTIONS:
- 	{
--	  int options, retval = -EINVAL;
--
--	  if (get_user(options, p))
--	    return -EFAULT;
-+		int options, retval = -EINVAL;
- 
--	  if (options & WDIOS_DISABLECARD) {
--	    advwdt_disable();
--	    retval = 0;
--	  }
--
--	  if (options & WDIOS_ENABLECARD) {
--	    advwdt_ping();
--	    retval = 0;
--	  }
--
--	  return retval;
-+		if (get_user(options, p))
-+			return -EFAULT;
-+		if (options & WDIOS_DISABLECARD) {
-+			advwdt_disable();
-+			retval = 0;
-+		}
-+		if (options & WDIOS_ENABLECARD) {
-+			advwdt_ping();
-+			retval = 0;
-+		}
-+		return retval;
- 	}
--
- 	default:
--	  return -ENOTTY;
++	default:
 +		return -ENOTTY;
  	}
- 	return 0;
  }
  
--static int
--advwdt_open(struct inode *inode, struct file *file)
-+static int advwdt_open(struct inode *inode, struct file *file)
- {
- 	if (test_and_set_bit(0, &advwdt_is_open))
- 		return -EBUSY;
-@@ -214,7 +205,8 @@ advwdt_close(struct inode *inode, struct file *file)
- 	if (adv_expect_close == 42) {
- 		advwdt_disable();
- 	} else {
--		printk(KERN_CRIT PFX "Unexpected close, not stopping watchdog!\n");
-+		printk(KERN_CRIT PFX
-+				"Unexpected close, not stopping watchdog!\n");
- 		advwdt_ping();
- 	}
- 	clear_bit(0, &advwdt_is_open);
-@@ -230,7 +222,7 @@ static const struct file_operations advwdt_fops = {
- 	.owner		= THIS_MODULE,
- 	.llseek		= no_llseek,
- 	.write		= advwdt_write,
--	.ioctl		= advwdt_ioctl,
-+	.unlocked_ioctl	= advwdt_ioctl,
- 	.open		= advwdt_open,
- 	.release	= advwdt_close,
+ static const struct file_operations wdt_fops = {
+-	.owner=		THIS_MODULE,
+-	.llseek=	no_llseek,
+-	.write=		fop_write,
+-	.open=		fop_open,
+-	.release=	fop_close,
+-	.ioctl=		fop_ioctl,
++	.owner		=	THIS_MODULE,
++	.llseek		=	no_llseek,
++	.write		=	fop_write,
++	.open		=	fop_open,
++	.release	=	fop_close,
++	.unlocked_ioctl	=	fop_ioctl,
  };
-@@ -245,23 +237,24 @@ static struct miscdevice advwdt_miscdev = {
-  *	Init & exit routines
+ 
+ static struct miscdevice wdt_miscdev = {
+-	.minor=WATCHDOG_MINOR,
+-	.name="watchdog",
+-	.fops=&wdt_fops,
++	.minor	=	WATCHDOG_MINOR,
++	.name	=	"watchdog",
++	.fops	=	&wdt_fops,
+ };
+ 
+ /*
+  *	Notifier for system down
   */
  
--static int __devinit
--advwdt_probe(struct platform_device *dev)
-+static int __devinit advwdt_probe(struct platform_device *dev)
+-static int wdt_notify_sys(struct notifier_block *this, unsigned long code, void *unused)
++static int wdt_notify_sys(struct notifier_block *this,
++					unsigned long code, void *unused)
  {
- 	int ret;
+-	if (code==SYS_DOWN || code==SYS_HALT)
++	if (code == SYS_DOWN || code == SYS_HALT)
+ 		wdt_turnoff();
  
- 	if (wdt_stop != wdt_start) {
- 		if (!request_region(wdt_stop, 1, WATCHDOG_NAME)) {
--			printk (KERN_ERR PFX "I/O address 0x%04x already in use\n",
--				wdt_stop);
-+			printk (KERN_ERR PFX
-+				"I/O address 0x%04x already in use\n",
-+								wdt_stop);
- 			ret = -EIO;
- 			goto out;
- 		}
- 	}
+-	if (code==SYS_RESTART) {
++	if (code == SYS_RESTART) {
+ 		/*
+-		 * Cobalt devices have no way of rebooting themselves other than
+-		 * getting the watchdog to pull reset, so we restart the watchdog on
+-		 * reboot with no heartbeat
++		 * Cobalt devices have no way of rebooting themselves other
++		 * than getting the watchdog to pull reset, so we restart the
++		 * watchdog on reboot with no heartbeat
+ 		 */
+ 		wdt_change(WDT_ENABLE);
+ 		printk(KERN_INFO PFX "Watchdog timer is now enabled with no heartbeat - should reboot in ~1 second.\n");
+@@ -320,8 +332,7 @@ static int wdt_notify_sys(struct notifier_block *this, unsigned long code, void
+  *	turn the timebomb registers off.
+  */
  
- 	if (!request_region(wdt_start, 1, WATCHDOG_NAME)) {
--		printk (KERN_ERR PFX "I/O address 0x%04x already in use\n",
--			wdt_start);
-+		printk (KERN_ERR PFX
-+				"I/O address 0x%04x already in use\n",
-+								wdt_start);
- 		ret = -EIO;
- 		goto unreg_stop;
- 	}
-@@ -269,20 +262,19 @@ advwdt_probe(struct platform_device *dev)
- 	/* Check that the heartbeat value is within it's range ; if not reset to the default */
- 	if (advwdt_set_heartbeat(timeout)) {
- 		advwdt_set_heartbeat(WATCHDOG_TIMEOUT);
--		printk (KERN_INFO PFX "timeout value must be 1<=x<=63, using %d\n",
--			timeout);
-+		printk (KERN_INFO PFX
-+			"timeout value must be 1<=x<=63, using %d\n", timeout);
- 	}
- 
- 	ret = misc_register(&advwdt_miscdev);
- 	if (ret != 0) {
--		printk (KERN_ERR PFX "cannot register miscdev on minor=%d (err=%d)\n",
--			WATCHDOG_MINOR, ret);
-+		printk (KERN_ERR PFX
-+			"cannot register miscdev on minor=%d (err=%d)\n",
-+							WATCHDOG_MINOR, ret);
- 		goto unreg_regions;
- 	}
--
- 	printk (KERN_INFO PFX "initialized. timeout=%d sec (nowayout=%d)\n",
- 		timeout, nowayout);
--
- out:
- 	return ret;
- unreg_regions:
-@@ -293,8 +285,7 @@ unreg_stop:
- 	goto out;
- }
- 
--static int __devexit
--advwdt_remove(struct platform_device *dev)
-+static int __devexit advwdt_remove(struct platform_device *dev)
- {
- 	misc_deregister(&advwdt_miscdev);
- 	release_region(wdt_start,1);
-@@ -304,8 +295,7 @@ advwdt_remove(struct platform_device *dev)
- 	return 0;
- }
- 
--static void
--advwdt_shutdown(struct platform_device *dev)
-+static void advwdt_shutdown(struct platform_device *dev)
- {
- 	/* Turn the WDT off if we have a soft shutdown */
- 	advwdt_disable();
-@@ -321,8 +311,7 @@ static struct platform_driver advwdt_driver = {
- 	},
+-static struct notifier_block wdt_notifier=
+-{
++static struct notifier_block wdt_notifier = {
+ 	.notifier_call = wdt_notify_sys,
  };
  
--static int __init
--advwdt_init(void)
-+static int __init advwdt_init(void)
- {
- 	int err;
+@@ -354,7 +365,8 @@ static int __init alim7101_wdt_init(void)
+ 	ali1543_south = pci_get_device(PCI_VENDOR_ID_AL, PCI_DEVICE_ID_AL_M1533,
+ 		NULL);
+ 	if (!ali1543_south) {
+-		printk(KERN_INFO PFX "ALi 1543 South-Bridge not present - WDT not set\n");
++		printk(KERN_INFO PFX
++			"ALi 1543 South-Bridge not present - WDT not set\n");
+ 		goto err_out;
+ 	}
+ 	pci_read_config_byte(ali1543_south, 0x5e, &tmp);
+@@ -363,24 +375,25 @@ static int __init alim7101_wdt_init(void)
+ 		if (!use_gpio) {
+ 			printk(KERN_INFO PFX "Detected old alim7101 revision 'a1d'.  If this is a cobalt board, set the 'use_gpio' module parameter.\n");
+ 			goto err_out;
+-		} 
++		}
+ 		nowayout = 1;
+ 	} else if ((tmp & 0x1e) != 0x12 && (tmp & 0x1e) != 0x00) {
+ 		printk(KERN_INFO PFX "ALi 1543 South-Bridge does not have the correct revision number (???1001?) - WDT not set\n");
+ 		goto err_out;
+ 	}
  
-@@ -332,7 +321,8 @@ advwdt_init(void)
- 	if (err)
- 		return err;
+-	if(timeout < 1 || timeout > 3600) /* arbitrary upper limit */
+-	{
++	if (timeout < 1 || timeout > 3600) {
++		/* arbitrary upper limit */
+ 		timeout = WATCHDOG_TIMEOUT;
+-		printk(KERN_INFO PFX "timeout value must be 1<=x<=3600, using %d\n",
+-			timeout);
++		printk(KERN_INFO PFX
++			"timeout value must be 1 <= x <= 3600, using %d\n",
++								timeout);
+ 	}
  
--	advwdt_platform_device = platform_device_register_simple(DRV_NAME, -1, NULL, 0);
-+	advwdt_platform_device = platform_device_register_simple(DRV_NAME,
-+								-1, NULL, 0);
- 	if (IS_ERR(advwdt_platform_device)) {
- 		err = PTR_ERR(advwdt_platform_device);
- 		goto unreg_platform_driver;
-@@ -345,8 +335,7 @@ unreg_platform_driver:
- 	return err;
- }
+ 	rc = register_reboot_notifier(&wdt_notifier);
+ 	if (rc) {
+-		printk(KERN_ERR PFX "cannot register reboot notifier (err=%d)\n",
+-			rc);
++		printk(KERN_ERR PFX
++			"cannot register reboot notifier (err=%d)\n", rc);
+ 		goto err_out;
+ 	}
  
--static void __exit
--advwdt_exit(void)
-+static void __exit advwdt_exit(void)
- {
- 	platform_device_unregister(advwdt_platform_device);
- 	platform_driver_unregister(&advwdt_driver);
+@@ -391,9 +404,8 @@ static int __init alim7101_wdt_init(void)
+ 		goto err_out_reboot;
+ 	}
+ 
+-	if (nowayout) {
++	if (nowayout)
+ 		__module_get(THIS_MODULE);
+-	}
+ 
+ 	printk(KERN_INFO PFX "WDT driver for ALi M7101 initialised. timeout=%d sec (nowayout=%d)\n",
+ 		timeout, nowayout);
 
