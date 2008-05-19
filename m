@@ -1,2003 +1,2002 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764718AbYESXqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763917AbYESXqa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764718AbYESXqA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 19:46:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763943AbYESXpj
+	id S1763917AbYESXqa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 19:46:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763067AbYESXpm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 19:45:39 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:64463 "EHLO
+	Mon, 19 May 2008 19:45:42 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:55464 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763433AbYESXpd (ORCPT
+	with ESMTP id S1759115AbYESXpi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 19:45:33 -0400
+	Mon, 19 May 2008 19:45:38 -0400
 From: Arnd Bergmann <arnd@arndb.de>
 To: Jonathan Corbet <corbet@lwn.net>
-Subject: [PATCH 1/3, RFC] misc char dev BKL pushdown
-Date: Tue, 20 May 2008 01:26:28 +0200
+Subject: [PATCH 2/3, RFC] watchdog dev BKL pushdown
+Date: Tue, 20 May 2008 01:14:23 +0200
 User-Agent: KMail/1.9.9
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Thomas Gleixner <tglx@linutronix.de>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Alexander Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org
-References: <13762.1211142411@vena.lwn.net> <200805200107.51659.arnd@arndb.de>
-In-Reply-To: <200805200107.51659.arnd@arndb.de>
+       Alexander Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org,
+       Wim Van Sebroeck <wim@iguana.be>
+References: <13762.1211142411@vena.lwn.net> <200805200107.51659.arnd@arndb.de> <200805200111.47275.arnd@arndb.de>
+In-Reply-To: <200805200111.47275.arnd@arndb.de>
 X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?iso-8859-15?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60?=
  =?iso-8859-15?q?Y=2Ea=5E3zb?=)
  =?iso-8859-15?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5C?=
  =?iso-8859-15?q?wg=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
 Content-Disposition: inline
-Message-Id: <200805200126.29738.arnd@arndb.de>
+Message-Id: <200805200114.24819.arnd@arndb.de>
 Content-Type: text/plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX186QBoeshTD09WHTJPxZzqqDlyDmK7CWvpsBgJ
- spOPskuHk1iqHnpO69W7Fwil4nOZ9S5Yqs0R6hE6MRDtiox3Qy
- hekQCDHqtxc8jS7nT2h7g==
+X-Provags-ID: V01U2FsdGVkX1+0D1RF2uZCV5aA1E5AJA91s351AHu3Cmimvuw
+ F80xR08/QMMxTXNyZedRb1lDzuTFQct9jUy7LIokTZB0vVCLgJ
+ 3agSy17/Tb2usqYnSDikQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 The Big Kernel Lock has been pushed down from chardev_open
-to misc_open, this change moves it to the individual misc
+to misc_open, this change moves it to the individual watchdog
 driver open functions.
 
 As before, the change was purely mechanical, most drivers
-should actually not need the BKL. In particular, we still
-hold the misc_mtx() while calling the open() function
-The patch should probably be split into one changeset
-per driver.
+should actually not need the BKL.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
----
-Index: linux-2.6/arch/arm/common/rtctime.c
+Index: linux-2.6/drivers/watchdog/acquirewdt.c
 ===================================================================
---- linux-2.6.orig/arch/arm/common/rtctime.c
-+++ linux-2.6/arch/arm/common/rtctime.c
-@@ -16,6 +16,7 @@
- #include <linux/poll.h>
- #include <linux/proc_fs.h>
+--- linux-2.6.orig/drivers/watchdog/acquirewdt.c
++++ linux-2.6/drivers/watchdog/acquirewdt.c
+@@ -64,6 +64,7 @@
+ #include <linux/ioport.h>		/* For io-port access */
+ #include <linux/platform_device.h>	/* For platform_driver framework */
+ #include <linux/init.h>			/* For __init/__exit/... */
++#include <linux/smp_lock.h>		/* For lock_kernel() */
+ 
+ #include <asm/uaccess.h>		/* For copy_to_user/put_user/... */
+ #include <asm/io.h>			/* For inb/outb/... */
+@@ -195,14 +196,18 @@ static int acq_ioctl(struct inode *inode
+ 
+ static int acq_open(struct inode *inode, struct file *file)
+ {
+-	if (test_and_set_bit(0, &acq_is_open))
++	lock_kernel();
++	if (test_and_set_bit(0, &acq_is_open)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	if (nowayout)
+ 		__module_get(THIS_MODULE);
+ 
+ 	/* Activate */
+ 	acq_keepalive();
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+Index: linux-2.6/drivers/watchdog/advantechwdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/advantechwdt.c
++++ linux-2.6/drivers/watchdog/advantechwdt.c
+@@ -30,6 +30,7 @@
+ 
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
++#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/miscdevice.h>
+ #include <linux/watchdog.h>
+@@ -198,13 +199,17 @@ advwdt_ioctl(struct inode *inode, struct
+ static int
+ advwdt_open(struct inode *inode, struct file *file)
+ {
+-	if (test_and_set_bit(0, &advwdt_is_open))
++	lock_kernel();
++	if (test_and_set_bit(0, &advwdt_is_open)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 	/*
+ 	 *	Activate
+ 	 */
+ 
+ 	advwdt_ping();
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+Index: linux-2.6/drivers/watchdog/alim1535_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/alim1535_wdt.c
++++ linux-2.6/drivers/watchdog/alim1535_wdt.c
+@@ -9,6 +9,7 @@
+ 
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
++#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/miscdevice.h>
+ #include <linux/watchdog.h>
+@@ -252,11 +253,15 @@ static int ali_ioctl(struct inode *inode
+ static int ali_open(struct inode *inode, struct file *file)
+ {
+ 	/* /dev/watchdog can only be opened once */
+-	if (test_and_set_bit(0, &ali_is_open))
++	lock_kernel();
++	if (test_and_set_bit(0, &ali_is_open)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	/* Activate */
+ 	ali_start();
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+Index: linux-2.6/drivers/watchdog/alim7101_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/alim7101_wdt.c
++++ linux-2.6/drivers/watchdog/alim7101_wdt.c
+@@ -21,6 +21,7 @@
+ 
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
++#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/timer.h>
+ #include <linux/miscdevice.h>
+@@ -198,10 +199,14 @@ static ssize_t fop_write(struct file * f
+ static int fop_open(struct inode * inode, struct file * file)
+ {
+ 	/* Just in case we're already talking to someone... */
+-	if(test_and_set_bit(0, &wdt_is_open))
++	lock_kernel();
++	if(test_and_set_bit(0, &wdt_is_open)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 	/* Good, fire up the show */
+ 	wdt_startup();
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+Index: linux-2.6/drivers/watchdog/ar7_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/ar7_wdt.c
++++ linux-2.6/drivers/watchdog/ar7_wdt.c
+@@ -28,6 +28,7 @@
+ #include <linux/errno.h>
+ #include <linux/init.h>
  #include <linux/miscdevice.h>
 +#include <linux/smp_lock.h>
- #include <linux/spinlock.h>
- #include <linux/capability.h>
- #include <linux/device.h>
-@@ -282,6 +283,7 @@ static int rtc_open(struct inode *inode,
+ #include <linux/watchdog.h>
+ #include <linux/notifier.h>
+ #include <linux/reboot.h>
+@@ -179,11 +180,15 @@ static void ar7_wdt_disable_wdt(void)
+ static int ar7_wdt_open(struct inode *inode, struct file *file)
  {
- 	int ret;
- 
+ 	/* only allow one at a time */
+-	if (down_trylock(&open_semaphore))
 +	lock_kernel();
- 	mutex_lock(&rtc_mutex);
++	if (down_trylock(&open_semaphore)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 	ar7_wdt_enable_wdt();
+ 	expect_close = 0;
  
- 	if (rtc_inuse) {
-@@ -301,6 +303,7 @@ static int rtc_open(struct inode *inode,
- 		}
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+Index: linux-2.6/drivers/watchdog/at32ap700x_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/at32ap700x_wdt.c
++++ linux-2.6/drivers/watchdog/at32ap700x_wdt.c
+@@ -32,6 +32,7 @@
+ #include <linux/uaccess.h>
+ #include <linux/io.h>
+ #include <linux/spinlock.h>
++#include <linux/smp_lock.h>
+ 
+ #define TIMEOUT_MIN		1
+ #define TIMEOUT_MAX		2
+@@ -131,10 +132,14 @@ static inline void at32_wdt_pat(void)
+  */
+ static int at32_wdt_open(struct inode *inode, struct file *file)
+ {
+-	if (test_and_set_bit(1, &wdt->users))
++	lock_kernel();
++	if (test_and_set_bit(1, &wdt->users)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	at32_wdt_start();
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+Index: linux-2.6/drivers/watchdog/at91rm9200_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/at91rm9200_wdt.c
++++ linux-2.6/drivers/watchdog/at91rm9200_wdt.c
+@@ -18,6 +18,7 @@
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
+ #include <linux/platform_device.h>
++#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/watchdog.h>
+ #include <asm/uaccess.h>
+@@ -75,10 +76,14 @@ static void inline at91_wdt_reload(void)
+  */
+ static int at91_wdt_open(struct inode *inode, struct file *file)
+ {
+-	if (test_and_set_bit(0, &at91wdt_busy))
++	lock_kernel();
++	if (test_and_set_bit(0, &at91wdt_busy)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	at91_wdt_start();
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+Index: linux-2.6/drivers/watchdog/bfin_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/bfin_wdt.c
++++ linux-2.6/drivers/watchdog/bfin_wdt.c
+@@ -15,6 +15,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
++#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/timer.h>
+ #include <linux/miscdevice.h>
+@@ -165,10 +166,13 @@ static int bfin_wdt_set_timeout(unsigned
+  */
+ static int bfin_wdt_open(struct inode *inode, struct file *file)
+ {
++	lock_kernel();
+ 	stampit();
+ 
+-	if (test_and_set_bit(0, &open_check))
++	if (test_and_set_bit(0, &open_check)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	if (nowayout)
+ 		__module_get(THIS_MODULE);
+@@ -176,6 +180,7 @@ static int bfin_wdt_open(struct inode *i
+ 	bfin_wdt_keepalive();
+ 	bfin_wdt_start();
+ 
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+Index: linux-2.6/drivers/watchdog/booke_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/booke_wdt.c
++++ linux-2.6/drivers/watchdog/booke_wdt.c
+@@ -18,6 +18,7 @@
+ #include <linux/fs.h>
+ #include <linux/miscdevice.h>
+ #include <linux/notifier.h>
++#include <linux/smp_lock.h>
+ #include <linux/watchdog.h>
+ 
+ #include <asm/reg_booke.h>
+@@ -137,12 +138,14 @@ static int booke_wdt_ioctl (struct inode
+  */
+ static int booke_wdt_open (struct inode *inode, struct file *file)
+ {
++	lock_kernel();
+ 	if (booke_wdt_enabled == 0) {
+ 		booke_wdt_enabled = 1;
+ 		booke_wdt_enable();
+ 		printk (KERN_INFO "PowerPC Book-E Watchdog Timer Enabled (wdt_period=%d)\n",
+ 				booke_wdt_period);
  	}
- 	mutex_unlock(&rtc_mutex);
 +	unlock_kernel();
  
- 	return ret;
+ 	return nonseekable_open(inode, file);
  }
-Index: linux-2.6/arch/blackfin/mach-bf561/coreb.c
+Index: linux-2.6/drivers/watchdog/cpu5wdt.c
 ===================================================================
---- linux-2.6.orig/arch/blackfin/mach-bf561/coreb.c
-+++ linux-2.6/arch/blackfin/mach-bf561/coreb.c
-@@ -32,6 +32,7 @@
- #include <linux/device.h>
- #include <linux/ioport.h>
+--- linux-2.6.orig/drivers/watchdog/cpu5wdt.c
++++ linux-2.6/drivers/watchdog/cpu5wdt.c
+@@ -21,6 +21,7 @@
+ 
  #include <linux/module.h>
+ #include <linux/moduleparam.h>
++#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/errno.h>
+ #include <linux/miscdevice.h>
+@@ -130,9 +131,13 @@ static int cpu5wdt_stop(void)
+ 
+ static int cpu5wdt_open(struct inode *inode, struct file *file)
+ {
+-	if ( test_and_set_bit(0, &cpu5wdt_device.inuse) )
++	lock_kernel();
++	if ( test_and_set_bit(0, &cpu5wdt_device.inuse) ) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+Index: linux-2.6/drivers/watchdog/davinci_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/davinci_wdt.c
++++ linux-2.6/drivers/watchdog/davinci_wdt.c
+@@ -13,6 +13,7 @@
+ 
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
++#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/kernel.h>
+ #include <linux/fs.h>
+@@ -120,10 +121,14 @@ static void wdt_enable(void)
+ 
+ static int davinci_wdt_open(struct inode *inode, struct file *file)
+ {
+-	if (test_and_set_bit(WDT_IN_USE, &wdt_status))
++	lock_kernel();
++	if (test_and_set_bit(WDT_IN_USE, &wdt_status)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	wdt_enable();
++	unlock_kernel();
+ 
+ 	return nonseekable_open(inode, file);
+ }
+Index: linux-2.6/drivers/watchdog/ep93xx_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/ep93xx_wdt.c
++++ linux-2.6/drivers/watchdog/ep93xx_wdt.c
+@@ -26,6 +26,7 @@
+ #include <linux/module.h>
+ #include <linux/fs.h>
+ #include <linux/miscdevice.h>
++#include <linux/smp_lock.h>
+ #include <linux/watchdog.h>
+ #include <linux/timer.h>
+ 
+@@ -93,13 +94,17 @@ static void wdt_keepalive(void)
+ 
+ static int ep93xx_wdt_open(struct inode *inode, struct file *file)
+ {
+-	if (test_and_set_bit(WDT_IN_USE, &wdt_status))
++	lock_kernel();
++	if (test_and_set_bit(WDT_IN_USE, &wdt_status)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	clear_bit(WDT_OK_TO_CLOSE, &wdt_status);
+ 
+ 	wdt_startup();
+ 
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+Index: linux-2.6/drivers/watchdog/eurotechwdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/eurotechwdt.c
++++ linux-2.6/drivers/watchdog/eurotechwdt.c
+@@ -48,6 +48,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
++#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/miscdevice.h>
+ #include <linux/watchdog.h>
+@@ -300,11 +301,15 @@ static int eurwdt_ioctl(struct inode *in
+ 
+ static int eurwdt_open(struct inode *inode, struct file *file)
+ {
+-	if (test_and_set_bit(0, &eurwdt_is_open))
++	lock_kernel();
++	if (test_and_set_bit(0, &eurwdt_is_open)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 	eurwdt_timeout = WDT_TIMEOUT;	/* initial timeout */
+ 	/* Activate the WDT */
+ 	eurwdt_activate_timer();
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+Index: linux-2.6/drivers/watchdog/hpwdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/hpwdt.c
++++ linux-2.6/drivers/watchdog/hpwdt.c
+@@ -30,6 +30,7 @@
+ #include <linux/pci_ids.h>
+ #include <linux/reboot.h>
+ #include <linux/sched.h>
++#include <linux/smp_lock.h>
+ #include <linux/timer.h>
+ #include <linux/types.h>
+ #include <linux/uaccess.h>
+@@ -486,12 +487,16 @@ static int hpwdt_change_timer(int new_ma
+ static int hpwdt_open(struct inode *inode, struct file *file)
+ {
+ 	/* /dev/watchdog can only be opened once */
+-	if (test_and_set_bit(0, &hpwdt_is_open))
++	lock_kernel();
++	if (test_and_set_bit(0, &hpwdt_is_open)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	/* Start the watchdog */
+ 	hpwdt_start();
+ 	hpwdt_ping();
++	unlock_kernel();
+ 
+ 	return nonseekable_open(inode, file);
+ }
+Index: linux-2.6/drivers/watchdog/i6300esb.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/i6300esb.c
++++ linux-2.6/drivers/watchdog/i6300esb.c
+@@ -28,6 +28,7 @@
+  */
+ 
+ #include <linux/module.h>
++#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/kernel.h>
+ #include <linux/fs.h>
+@@ -198,12 +199,16 @@ static int esb_timer_read (void)
+ static int esb_open (struct inode *inode, struct file *file)
+ {
+         /* /dev/watchdog can only be opened once */
+-        if (test_and_set_bit(0, &timer_alive))
++	lock_kernel();
++        if (test_and_set_bit(0, &timer_alive)) {
++		unlock_kernel();
+                 return -EBUSY;
++	}
+ 
+         /* Reload and activate timer */
+         esb_timer_keepalive ();
+         esb_timer_start ();
++	unlock_kernel();
+ 
+ 	return nonseekable_open(inode, file);
+ }
+Index: linux-2.6/drivers/watchdog/iTCO_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/iTCO_wdt.c
++++ linux-2.6/drivers/watchdog/iTCO_wdt.c
+@@ -62,6 +62,7 @@
+ /* Includes */
+ #include <linux/module.h>		/* For module specific items */
+ #include <linux/moduleparam.h>		/* For new moduleparam's */
++#include <linux/smp_lock.h>		/* For lock_kernel */
+ #include <linux/types.h>		/* For standard types (like size_t) */
+ #include <linux/errno.h>		/* For the -ENODEV/... values */
+ #include <linux/kernel.h>		/* For printk/panic/... */
+@@ -453,14 +454,18 @@ static int iTCO_wdt_get_timeleft (int *t
+ static int iTCO_wdt_open (struct inode *inode, struct file *file)
+ {
+ 	/* /dev/watchdog can only be opened once */
+-	if (test_and_set_bit(0, &is_active))
++	lock_kernel();
++	if (test_and_set_bit(0, &is_active)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	/*
+ 	 *      Reload and activate timer
+ 	 */
+ 	iTCO_wdt_keepalive();
+ 	iTCO_wdt_start();
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+Index: linux-2.6/drivers/watchdog/ib700wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/ib700wdt.c
++++ linux-2.6/drivers/watchdog/ib700wdt.c
+@@ -32,6 +32,7 @@
+  */
+ 
+ #include <linux/module.h>
++#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/miscdevice.h>
+ #include <linux/watchdog.h>
+@@ -256,7 +257,9 @@ ibwdt_ioctl(struct inode *inode, struct 
+ static int
+ ibwdt_open(struct inode *inode, struct file *file)
+ {
++	lock_kernel();
+ 	if (test_and_set_bit(0, &ibwdt_is_open)) {
++		unlock_kernel();
+ 		return -EBUSY;
+ 	}
+ 	if (nowayout)
+@@ -264,6 +267,7 @@ ibwdt_open(struct inode *inode, struct f
+ 
+ 	/* Activate */
+ 	ibwdt_ping();
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+Index: linux-2.6/drivers/watchdog/ibmasr.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/ibmasr.c
++++ linux-2.6/drivers/watchdog/ibmasr.c
+@@ -13,6 +13,7 @@
+ #include <linux/fs.h>
+ #include <linux/kernel.h>
+ #include <linux/slab.h>
++#include <linux/smp_lock.h>
+ #include <linux/module.h>
+ #include <linux/pci.h>
+ #include <linux/timer.h>
+@@ -300,11 +301,15 @@ static int asr_ioctl(struct inode *inode
+ 
+ static int asr_open(struct inode *inode, struct file *file)
+ {
+-	if(test_and_set_bit(0, &asr_is_open))
++	lock_kernel();
++	if(test_and_set_bit(0, &asr_is_open)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	asr_toggle();
+ 	asr_enable();
++	unlock_kernel();
+ 
+ 	return nonseekable_open(inode, file);
+ }
+Index: linux-2.6/drivers/watchdog/indydog.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/indydog.c
++++ linux-2.6/drivers/watchdog/indydog.c
+@@ -13,6 +13,7 @@
+ 
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
++#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/kernel.h>
+ #include <linux/fs.h>
+@@ -62,8 +63,11 @@ static void indydog_ping(void)
+  */
+ static int indydog_open(struct inode *inode, struct file *file)
+ {
+-	if (indydog_alive)
++	lock_kernel();
++	if (indydog_alive) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	if (nowayout)
+ 		__module_get(THIS_MODULE);
+@@ -74,6 +78,7 @@ static int indydog_open(struct inode *in
+ 
+ 	indydog_alive = 1;
+ 	printk(KERN_INFO "Started watchdog timer.\n");
++	unlock_kernel();
+ 
+ 	return nonseekable_open(inode, file);
+ }
+Index: linux-2.6/drivers/watchdog/iop_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/iop_wdt.c
++++ linux-2.6/drivers/watchdog/iop_wdt.c
+@@ -30,6 +30,7 @@
+ #include <linux/init.h>
+ #include <linux/device.h>
+ #include <linux/miscdevice.h>
++#include <linux/smp_lock.h>
+ #include <linux/watchdog.h>
+ #include <linux/uaccess.h>
+ #include <asm/hardware.h>
+@@ -88,14 +89,18 @@ static int wdt_disable(void)
+ 
+ static int iop_wdt_open(struct inode *inode, struct file *file)
+ {
+-	if (test_and_set_bit(WDT_IN_USE, &wdt_status))
++	lock_kernel();
++	if (test_and_set_bit(WDT_IN_USE, &wdt_status)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	clear_bit(WDT_OK_TO_CLOSE, &wdt_status);
+ 
+ 	wdt_enable();
+ 
+ 	set_bit(WDT_ENABLED, &wdt_status);
++	unlock_kernel();
+ 
+ 	return nonseekable_open(inode, file);
+ }
+Index: linux-2.6/drivers/watchdog/it8712f_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/it8712f_wdt.c
++++ linux-2.6/drivers/watchdog/it8712f_wdt.c
+@@ -30,6 +30,7 @@
+ #include <linux/fs.h>
+ #include <linux/pci.h>
+ #include <linux/spinlock.h>
++#include <linux/smp_lock.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/io.h>
+@@ -305,10 +306,14 @@ it8712f_wdt_ioctl(struct inode *inode, s
+ static int
+ it8712f_wdt_open(struct inode *inode, struct file *file)
+ {
++	lock_kernel();
+ 	/* only allow one at a time */
+-	if (down_trylock(&it8712f_wdt_sem))
++	if (down_trylock(&it8712f_wdt_sem)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 	it8712f_wdt_enable();
++	unlock_kernel();
+ 
+ 	return nonseekable_open(inode, file);
+ }
+Index: linux-2.6/drivers/watchdog/ixp2000_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/ixp2000_wdt.c
++++ linux-2.6/drivers/watchdog/ixp2000_wdt.c
+@@ -18,6 +18,7 @@
+ 
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
++#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/kernel.h>
+ #include <linux/fs.h>
+@@ -62,12 +63,16 @@ wdt_keepalive(void)
+ static int
+ ixp2000_wdt_open(struct inode *inode, struct file *file)
+ {
+-	if (test_and_set_bit(WDT_IN_USE, &wdt_status))
++	lock_kernel();
++	if (test_and_set_bit(WDT_IN_USE, &wdt_status)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	clear_bit(WDT_OK_TO_CLOSE, &wdt_status);
+ 
+ 	wdt_enable();
++	unlock_kernel();
+ 
+ 	return nonseekable_open(inode, file);
+ }
+Index: linux-2.6/drivers/watchdog/ixp4xx_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/ixp4xx_wdt.c
++++ linux-2.6/drivers/watchdog/ixp4xx_wdt.c
+@@ -15,6 +15,7 @@
+ 
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
++#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/kernel.h>
+ #include <linux/fs.h>
+@@ -57,12 +58,16 @@ wdt_disable(void)
+ static int
+ ixp4xx_wdt_open(struct inode *inode, struct file *file)
+ {
+-	if (test_and_set_bit(WDT_IN_USE, &wdt_status))
++	lock_kernel();
++	if (test_and_set_bit(WDT_IN_USE, &wdt_status)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	clear_bit(WDT_OK_TO_CLOSE, &wdt_status);
+ 
+ 	wdt_enable();
++	unlock_kernel();
+ 
+ 	return nonseekable_open(inode, file);
+ }
+Index: linux-2.6/drivers/watchdog/ks8695_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/ks8695_wdt.c
++++ linux-2.6/drivers/watchdog/ks8695_wdt.c
+@@ -17,6 +17,7 @@
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
+ #include <linux/platform_device.h>
++#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/watchdog.h>
+ #include <asm/io.h>
+@@ -114,10 +115,14 @@ static int ks8695_wdt_settimeout(int new
+  */
+ static int ks8695_wdt_open(struct inode *inode, struct file *file)
+ {
+-	if (test_and_set_bit(0, &ks8695wdt_busy))
++	lock_kernel();
++	if (test_and_set_bit(0, &ks8695wdt_busy)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	ks8695_wdt_start();
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+Index: linux-2.6/drivers/watchdog/machzwd.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/machzwd.c
++++ linux-2.6/drivers/watchdog/machzwd.c
+@@ -30,6 +30,7 @@
+ 
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
++#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/timer.h>
+ #include <linux/jiffies.h>
+@@ -337,9 +338,11 @@ static int zf_ioctl(struct inode *inode,
+ 
+ static int zf_open(struct inode *inode, struct file *file)
+ {
++	lock_kernel();
+ 	spin_lock(&zf_lock);
+ 	if(test_and_set_bit(0, &zf_is_open)) {
+ 		spin_unlock(&zf_lock);
++		unlock_kernel();
+ 		return -EBUSY;
+ 	}
+ 
+@@ -349,6 +352,7 @@ static int zf_open(struct inode *inode, 
+ 	spin_unlock(&zf_lock);
+ 
+ 	zf_timer_on();
++	unlock_kernel();
+ 
+ 	return nonseekable_open(inode, file);
+ }
+Index: linux-2.6/drivers/watchdog/mixcomwd.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/mixcomwd.c
++++ linux-2.6/drivers/watchdog/mixcomwd.c
+@@ -44,6 +44,7 @@
+ 
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
++#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/miscdevice.h>
+ #include <linux/ioport.h>
+@@ -129,7 +130,9 @@ static void mixcomwd_timerfun(unsigned l
+ 
+ static int mixcomwd_open(struct inode *inode, struct file *file)
+ {
++	lock_kernel();
+ 	if(test_and_set_bit(0,&mixcomwd_opened)) {
++		unlock_kernel();
+ 		return -EBUSY;
+ 	}
+ 	mixcomwd_ping();
+@@ -147,6 +150,7 @@ static int mixcomwd_open(struct inode *i
+ 			mixcomwd_timer_alive=0;
+ 		}
+ 	}
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+Index: linux-2.6/drivers/watchdog/mpc5200_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/mpc5200_wdt.c
++++ linux-2.6/drivers/watchdog/mpc5200_wdt.c
+@@ -1,6 +1,7 @@
+ #include <linux/init.h>
+ #include <linux/module.h>
+ #include <linux/miscdevice.h>
++#include <linux/smp_lock.h>
+ #include <linux/watchdog.h>
+ #include <linux/io.h>
+ #include <linux/spinlock.h>
+@@ -137,14 +138,18 @@ static int mpc5200_wdt_ioctl(struct inod
+ }
+ static int mpc5200_wdt_open(struct inode *inode, struct file *file)
+ {
++	lock_kernel();
+ 	/* /dev/watchdog can only be opened once */
+-	if (test_and_set_bit(0, &is_active))
++	if (test_and_set_bit(0, &is_active)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	/* Set and activate the watchdog */
+ 	mpc5200_wdt_set_timeout(wdt_global, 30);
+ 	mpc5200_wdt_start(wdt_global);
+ 	file->private_data = wdt_global;
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
+ static int mpc5200_wdt_release(struct inode *inode, struct file *file)
+Index: linux-2.6/drivers/watchdog/mpc83xx_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/mpc83xx_wdt.c
++++ linux-2.6/drivers/watchdog/mpc83xx_wdt.c
+@@ -21,6 +21,7 @@
+ #include <linux/miscdevice.h>
+ #include <linux/platform_device.h>
+ #include <linux/module.h>
++#include <linux/smp_lock.h>
+ #include <linux/watchdog.h>
+ #include <asm/io.h>
+ #include <asm/uaccess.h>
+@@ -78,8 +79,11 @@ static ssize_t mpc83xx_wdt_write(struct 
+ static int mpc83xx_wdt_open(struct inode *inode, struct file *file)
+ {
+ 	u32 tmp = SWCRR_SWEN;
+-	if (test_and_set_bit(0, &wdt_is_open))
++	lock_kernel();
++	if (test_and_set_bit(0, &wdt_is_open)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	/* Once we start the watchdog we can't stop it */
+ 	__module_get(THIS_MODULE);
+@@ -93,6 +97,7 @@ static int mpc83xx_wdt_open(struct inode
+ 	tmp |= timeout << 16;
+ 
+ 	out_be32(&wd_base->swcrr, tmp);
++	unlock_kernel();
+ 
+ 	return nonseekable_open(inode, file);
+ }
+Index: linux-2.6/drivers/watchdog/mpc8xx_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/mpc8xx_wdt.c
++++ linux-2.6/drivers/watchdog/mpc8xx_wdt.c
+@@ -14,6 +14,7 @@
+ #include <linux/kernel.h>
+ #include <linux/miscdevice.h>
+ #include <linux/module.h>
++#include <linux/smp_lock.h>
+ #include <linux/watchdog.h>
+ #include <asm/8xx_immap.h>
+ #include <asm/uaccess.h>
+@@ -51,11 +52,15 @@ static void mpc8xx_wdt_handler_enable(vo
+ 
+ static int mpc8xx_wdt_open(struct inode *inode, struct file *file)
+ {
+-	if (test_and_set_bit(0, &wdt_opened))
++	lock_kernel();
++	if (test_and_set_bit(0, &wdt_opened)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	m8xx_wdt_reset();
+ 	mpc8xx_wdt_handler_disable();
++	unlock_kernel();
+ 
+ 	return nonseekable_open(inode, file);
+ }
+Index: linux-2.6/drivers/watchdog/mpcore_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/mpcore_wdt.c
++++ linux-2.6/drivers/watchdog/mpcore_wdt.c
+@@ -21,6 +21,7 @@
+  */
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
++#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/miscdevice.h>
+ #include <linux/watchdog.h>
+@@ -140,8 +141,11 @@ static int mpcore_wdt_open(struct inode 
+ {
+ 	struct mpcore_wdt *wdt = platform_get_drvdata(mpcore_wdt_dev);
+ 
+-	if (test_and_set_bit(0, &wdt->timer_alive))
++	lock_kernel();
++	if (test_and_set_bit(0, &wdt->timer_alive)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	if (nowayout)
+ 		__module_get(THIS_MODULE);
+@@ -152,6 +156,7 @@ static int mpcore_wdt_open(struct inode 
+ 	 *	Activate timer
+ 	 */
+ 	mpcore_wdt_start(wdt);
++	unlock_kernel();
+ 
+ 	return nonseekable_open(inode, file);
+ }
+Index: linux-2.6/drivers/watchdog/mtx-1_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/mtx-1_wdt.c
++++ linux-2.6/drivers/watchdog/mtx-1_wdt.c
+@@ -35,6 +35,7 @@
+ 
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
++#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/errno.h>
+ #include <linux/miscdevice.h>
+@@ -120,8 +121,12 @@ static int mtx1_wdt_stop(void)
+ 
+ static int mtx1_wdt_open(struct inode *inode, struct file *file)
+ {
+-	if (test_and_set_bit(0, &mtx1_wdt_device.inuse))
++	lock_kernel();
++	if (test_and_set_bit(0, &mtx1_wdt_device.inuse)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
++	unlock_kernel();
+ 
+ 	return nonseekable_open(inode, file);
+ }
+Index: linux-2.6/drivers/watchdog/mv64x60_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/mv64x60_wdt.c
++++ linux-2.6/drivers/watchdog/mv64x60_wdt.c
+@@ -20,6 +20,7 @@
+ #include <linux/kernel.h>
+ #include <linux/miscdevice.h>
+ #include <linux/module.h>
++#include <linux/smp_lock.h>
+ #include <linux/watchdog.h>
+ #include <linux/platform_device.h>
+ 
+@@ -122,13 +123,17 @@ static void mv64x60_wdt_set_timeout(unsi
+ 
+ static int mv64x60_wdt_open(struct inode *inode, struct file *file)
+ {
+-	if (test_and_set_bit(MV64x60_WDOG_FLAG_OPENED, &wdt_flags))
++	lock_kernel();
++	if (test_and_set_bit(MV64x60_WDOG_FLAG_OPENED, &wdt_flags)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	if (nowayout)
+ 		__module_get(THIS_MODULE);
+ 
+ 	mv64x60_wdt_handler_enable();
++	unlock_kernel();
+ 
+ 	return nonseekable_open(inode, file);
+ }
+Index: linux-2.6/drivers/watchdog/omap_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/omap_wdt.c
++++ linux-2.6/drivers/watchdog/omap_wdt.c
+@@ -27,6 +27,7 @@
+  */
+ 
+ #include <linux/module.h>
++#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/kernel.h>
+ #include <linux/fs.h>
+@@ -122,8 +123,11 @@ static void omap_wdt_set_timeout(void)
+ 
+ static int omap_wdt_open(struct inode *inode, struct file *file)
+ {
+-	if (test_and_set_bit(1, (unsigned long *)&omap_wdt_users))
++	lock_kernel();
++	if (test_and_set_bit(1, (unsigned long *)&omap_wdt_users)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	if (cpu_is_omap16xx())
+ 		clk_enable(armwdt_ck);	/* Enable the clock */
+@@ -142,6 +146,7 @@ static int omap_wdt_open(struct inode *i
+ 
+ 	omap_wdt_set_timeout();
+ 	omap_wdt_enable();
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+Index: linux-2.6/drivers/watchdog/pc87413_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/pc87413_wdt.c
++++ linux-2.6/drivers/watchdog/pc87413_wdt.c
+@@ -19,6 +19,7 @@
+  */
+ 
+ #include <linux/module.h>
++#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/miscdevice.h>
+ #include <linux/watchdog.h>
+@@ -305,8 +306,11 @@ static int pc87413_open(struct inode *in
+ {
+ 	/* /dev/watchdog can only be opened once */
+ 
+-	if (test_and_set_bit(0, &timer_enabled))
++	lock_kernel();
++	if (test_and_set_bit(0, &timer_enabled)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	if (nowayout)
+ 		__module_get(THIS_MODULE);
+@@ -316,6 +320,7 @@ static int pc87413_open(struct inode *in
+ 
+ 	printk(KERN_INFO MODNAME "Watchdog enabled. Timeout set to"
+ 	                         " %d minute(s).\n", timeout);
++	unlock_kernel();
+ 
+ 	return nonseekable_open(inode, file);
+ }
+Index: linux-2.6/drivers/watchdog/pcwd.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/pcwd.c
++++ linux-2.6/drivers/watchdog/pcwd.c
+@@ -51,6 +51,7 @@
+ 
+ #include <linux/module.h>	/* For module specific items */
+ #include <linux/moduleparam.h>	/* For new moduleparam's */
++#include <linux/smp_lock.h>	/* For lock_kernel */
+ #include <linux/types.h>	/* For standard types (like size_t) */
+ #include <linux/errno.h>	/* For the -ENODEV/... values */
+ #include <linux/kernel.h>	/* For printk/panic/... */
+@@ -682,10 +683,12 @@ static ssize_t pcwd_write(struct file *f
+ 
+ static int pcwd_open(struct inode *inode, struct file *file)
+ {
++	lock_kernel();
+ 	if (!atomic_dec_and_test(&open_allowed) ) {
+ 		if (debug >= VERBOSE)
+ 			printk(KERN_ERR PFX "Attempt to open already opened device.\n");
+ 		atomic_inc( &open_allowed );
++		unlock_kernel();
+ 		return -EBUSY;
+ 	}
+ 
+@@ -695,6 +698,7 @@ static int pcwd_open(struct inode *inode
+ 	/* Activate */
+ 	pcwd_start();
+ 	pcwd_keepalive();
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+Index: linux-2.6/drivers/watchdog/pcwd_pci.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/pcwd_pci.c
++++ linux-2.6/drivers/watchdog/pcwd_pci.c
+@@ -33,6 +33,7 @@
+ 
+ #include <linux/module.h>	/* For module specific items */
+ #include <linux/moduleparam.h>	/* For new moduleparam's */
++#include <linux/smp_lock.h>	/* For lock_kernel */
+ #include <linux/types.h>	/* For standard types (like size_t) */
+ #include <linux/errno.h>	/* For the -ENODEV/... values */
+ #include <linux/kernel.h>	/* For printk/panic/... */
+@@ -563,15 +564,18 @@ static int pcipcwd_ioctl(struct inode *i
+ static int pcipcwd_open(struct inode *inode, struct file *file)
+ {
+ 	/* /dev/watchdog can only be opened once */
++	lock_kernel();
+ 	if (test_and_set_bit(0, &is_active)) {
+ 		if (debug >= VERBOSE)
+ 			printk(KERN_ERR PFX "Attempt to open already opened device.\n");
++		unlock_kernel();
+ 		return -EBUSY;
+ 	}
+ 
+ 	/* Activate */
+ 	pcipcwd_start();
+ 	pcipcwd_keepalive();
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+Index: linux-2.6/drivers/watchdog/pcwd_usb.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/pcwd_usb.c
++++ linux-2.6/drivers/watchdog/pcwd_usb.c
+@@ -26,6 +26,7 @@
+ 
+ #include <linux/module.h>	/* For module specific items */
+ #include <linux/moduleparam.h>	/* For new moduleparam's */
++#include <linux/smp_lock.h>	/* For lock_kernel */
+ #include <linux/types.h>	/* For standard types (like size_t) */
+ #include <linux/errno.h>	/* For the -ENODEV/... values */
+ #include <linux/kernel.h>	/* For printk/panic/... */
+@@ -460,12 +461,16 @@ static int usb_pcwd_ioctl(struct inode *
+ static int usb_pcwd_open(struct inode *inode, struct file *file)
+ {
+ 	/* /dev/watchdog can only be opened once */
+-	if (test_and_set_bit(0, &is_active))
++	lock_kernel();
++	if (test_and_set_bit(0, &is_active)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	/* Activate */
+ 	usb_pcwd_start(usb_pcwd_device);
+ 	usb_pcwd_keepalive(usb_pcwd_device);
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+Index: linux-2.6/drivers/watchdog/pnx4008_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/pnx4008_wdt.c
++++ linux-2.6/drivers/watchdog/pnx4008_wdt.c
+@@ -16,6 +16,7 @@
+ 
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
++#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/kernel.h>
+ #include <linux/fs.h>
+@@ -134,12 +135,16 @@ static void wdt_disable(void)
+ 
+ static int pnx4008_wdt_open(struct inode *inode, struct file *file)
+ {
+-	if (test_and_set_bit(WDT_IN_USE, &wdt_status))
++	lock_kernel();
++	if (test_and_set_bit(WDT_IN_USE, &wdt_status)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	clear_bit(WDT_OK_TO_CLOSE, &wdt_status);
+ 
+ 	wdt_enable();
++	unlock_kernel();
+ 
+ 	return nonseekable_open(inode, file);
+ }
+Index: linux-2.6/drivers/watchdog/rm9k_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/rm9k_wdt.c
++++ linux-2.6/drivers/watchdog/rm9k_wdt.c
+@@ -28,6 +28,7 @@
+ #include <linux/reboot.h>
+ #include <linux/notifier.h>
+ #include <linux/miscdevice.h>
++#include <linux/smp_lock.h>
+ #include <linux/watchdog.h>
+ #include <asm/io.h>
+ #include <asm/atomic.h>
+@@ -182,8 +183,11 @@ static int wdt_gpi_open(struct inode *in
+ {
+ 	int res;
+ 
+-	if (unlikely(atomic_dec_if_positive(&opencnt) < 0))
++	lock_kernel();
++	if (unlikely(atomic_dec_if_positive(&opencnt) < 0)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	expect_close = 0;
+ 	if (locked) {
+@@ -194,14 +198,17 @@ static int wdt_gpi_open(struct inode *in
+ 
+ 	res = request_irq(wd_irq, wdt_gpi_irqhdl, IRQF_SHARED | IRQF_DISABLED,
+ 			  wdt_gpi_name, &miscdev);
+-	if (unlikely(res))
++	if (unlikely(res)) {
++		unlock_kernel();
+ 		return res;
++	}
+ 
+ 	wdt_gpi_set_timeout(timeout);
+ 	wdt_gpi_start();
+ 
+ 	printk(KERN_INFO "%s: watchdog started, timeout = %u seconds\n",
+ 		wdt_gpi_name, timeout);
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+Index: linux-2.6/drivers/watchdog/s3c2410_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/s3c2410_wdt.c
++++ linux-2.6/drivers/watchdog/s3c2410_wdt.c
+@@ -37,6 +37,7 @@
+ 
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
++#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/timer.h>
+ #include <linux/miscdevice.h>
+@@ -211,8 +212,11 @@ static int s3c2410wdt_set_heartbeat(int 
+ 
+ static int s3c2410wdt_open(struct inode *inode, struct file *file)
+ {
+-	if(down_trylock(&open_lock))
++	lock_kernel();
++	if(down_trylock(&open_lock)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	if (nowayout)
+ 		__module_get(THIS_MODULE);
+@@ -221,6 +225,7 @@ static int s3c2410wdt_open(struct inode 
+ 
+ 	/* start the timer */
+ 	s3c2410wdt_start();
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+Index: linux-2.6/drivers/watchdog/sa1100_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/sa1100_wdt.c
++++ linux-2.6/drivers/watchdog/sa1100_wdt.c
+@@ -19,6 +19,7 @@
+  */
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
++#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/kernel.h>
+ #include <linux/fs.h>
+@@ -45,14 +46,18 @@ static int boot_status;
+  */
+ static int sa1100dog_open(struct inode *inode, struct file *file)
+ {
+-	if (test_and_set_bit(1,&sa1100wdt_users))
++	lock_kernel();
++	if (test_and_set_bit(1,&sa1100wdt_users)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	/* Activate SA1100 Watchdog timer */
+ 	OSMR3 = OSCR + pre_margin;
+ 	OSSR = OSSR_M3;
+ 	OWER = OWER_WME;
+ 	OIER |= OIER_E3;
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+Index: linux-2.6/drivers/watchdog/sb_wdog.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/sb_wdog.c
++++ linux-2.6/drivers/watchdog/sb_wdog.c
+@@ -45,6 +45,7 @@
+  */
+ #include <linux/module.h>
+ #include <linux/io.h>
 +#include <linux/smp_lock.h>
  #include <linux/uaccess.h>
  #include <linux/fs.h>
- #include <asm/dma.h>
-@@ -196,6 +197,7 @@ static loff_t coreb_lseek(struct file *f
- 
- static int coreb_open(struct inode *inode, struct file *file)
- {
-+	lock_kernel();
- 	spin_lock_irq(&coreb_lock);
- 
- 	if (coreb_status & COREB_IS_OPEN)
-@@ -204,10 +206,12 @@ static int coreb_open(struct inode *inod
- 	coreb_status |= COREB_IS_OPEN;
- 
- 	spin_unlock_irq(&coreb_lock);
-+	unlock_kernel();
- 	return 0;
- 
-  out_busy:
- 	spin_unlock_irq(&coreb_lock);
-+	unlock_kernel();
- 	return -EBUSY;
- }
- 
-Index: linux-2.6/arch/m68k/bvme6000/rtc.c
-===================================================================
---- linux-2.6.orig/arch/m68k/bvme6000/rtc.c
-+++ linux-2.6/arch/m68k/bvme6000/rtc.c
-@@ -10,6 +10,7 @@
- #include <linux/errno.h>
- #include <linux/miscdevice.h>
- #include <linux/slab.h>
-+#include <linux/smp_lock.h>
- #include <linux/ioport.h>
- #include <linux/capability.h>
- #include <linux/fcntl.h>
-@@ -140,10 +141,14 @@ static int rtc_ioctl(struct inode *inode
- 
- static int rtc_open(struct inode *inode, struct file *file)
- {
--	if(rtc_status)
-+	lock_kernel();
-+	if(rtc_status) {
-+		unlock_kernel();
- 		return -EBUSY;
-+	}
- 
- 	rtc_status = 1;
-+	unlock_kernel();
- 	return 0;
- }
- 
-Index: linux-2.6/arch/m68k/mvme16x/rtc.c
-===================================================================
---- linux-2.6.orig/arch/m68k/mvme16x/rtc.c
-+++ linux-2.6/arch/m68k/mvme16x/rtc.c
-@@ -10,6 +10,7 @@
- #include <linux/errno.h>
- #include <linux/miscdevice.h>
- #include <linux/slab.h>
-+#include <linux/smp_lock.h>
- #include <linux/ioport.h>
- #include <linux/capability.h>
- #include <linux/fcntl.h>
-@@ -127,11 +128,14 @@ static int rtc_ioctl(struct inode *inode
- 
- static int rtc_open(struct inode *inode, struct file *file)
- {
-+	lock_kernel();
- 	if( !atomic_dec_and_test(&rtc_ready) )
- 	{
- 		atomic_inc( &rtc_ready );
-+		unlock_kernel();
- 		return -EBUSY;
- 	}
-+	unlock_kernel();
- 
- 	return 0;
- }
-Index: linux-2.6/arch/mips/basler/excite/excite_iodev.c
-===================================================================
---- linux-2.6.orig/arch/mips/basler/excite/excite_iodev.c
-+++ linux-2.6/arch/mips/basler/excite/excite_iodev.c
-@@ -26,6 +26,7 @@
- #include <linux/interrupt.h>
- #include <linux/platform_device.h>
- #include <linux/miscdevice.h>
-+#include <linux/smp_lock.h>
- 
- #include "excite_iodev.h"
- 
-@@ -110,8 +111,14 @@ static int __exit iodev_remove(struct de
- 
- static int iodev_open(struct inode *i, struct file *f)
- {
--	return request_irq(iodev_irq, iodev_irqhdl, IRQF_DISABLED,
-+	int ret;
-+
-+	lock_kernel();
-+	ret = request_irq(iodev_irq, iodev_irqhdl, IRQF_DISABLED,
- 			   iodev_name, &miscdev);
-+	unlock_kernel();
-+
-+	return ret;
- }
- 
- static int iodev_release(struct inode *i, struct file *f)
-Index: linux-2.6/arch/parisc/kernel/perf.c
-===================================================================
---- linux-2.6.orig/arch/parisc/kernel/perf.c
-+++ linux-2.6/arch/parisc/kernel/perf.c
-@@ -46,6 +46,7 @@
- #include <linux/init.h>
- #include <linux/proc_fs.h>
- #include <linux/miscdevice.h>
-+#include <linux/smp_lock.h>
- #include <linux/spinlock.h>
- 
- #include <asm/uaccess.h>
-@@ -260,13 +261,16 @@ printk("Preparing to start counters\n");
+ #include <linux/reboot.h>
+@@ -96,8 +97,10 @@ static struct watchdog_info ident = {
   */
- static int perf_open(struct inode *inode, struct file *file)
+ static int sbwdog_open(struct inode *inode, struct file *file)
  {
 +	lock_kernel();
- 	spin_lock(&perf_lock);
- 	if (perf_enabled) {
- 		spin_unlock(&perf_lock);
+ 	nonseekable_open(inode, file);
+ 	if (test_and_set_bit(0, &sbwdog_gate)) {
 +		unlock_kernel();
  		return -EBUSY;
  	}
- 	perf_enabled = 1;
-  	spin_unlock(&perf_lock);
-+	unlock_kernel();
- 
- 	return 0;
- }
-Index: linux-2.6/arch/s390/crypto/prng.c
-===================================================================
---- linux-2.6.orig/arch/s390/crypto/prng.c
-+++ linux-2.6/arch/s390/crypto/prng.c
-@@ -6,6 +6,7 @@
- #include <linux/fs.h>
- #include <linux/init.h>
- #include <linux/kernel.h>
-+#include <linux/smp_lock.h>
- #include <linux/miscdevice.h>
- #include <linux/module.h>
- #include <linux/moduleparam.h>
-@@ -48,6 +49,7 @@ static unsigned char parm_block[32] = {
- 
- static int prng_open(struct inode *inode, struct file *file)
- {
-+	cycle_kernel_lock();
- 	return nonseekable_open(inode, file);
- }
- 
-Index: linux-2.6/arch/sparc/kernel/apc.c
-===================================================================
---- linux-2.6.orig/arch/sparc/kernel/apc.c
-+++ linux-2.6/arch/sparc/kernel/apc.c
-@@ -10,6 +10,7 @@
- #include <linux/errno.h>
- #include <linux/init.h>
- #include <linux/miscdevice.h>
-+#include <linux/smp_lock.h>
- #include <linux/pm.h>
- 
- #include <asm/io.h>
-@@ -75,6 +76,7 @@ static inline void apc_free(void)
- 
- static int apc_open(struct inode *inode, struct file *f)
- {
-+	cycle_kernel_lock();
- 	return 0;
- }
- 
-Index: linux-2.6/arch/sparc64/kernel/time.c
-===================================================================
---- linux-2.6.orig/arch/sparc64/kernel/time.c
-+++ linux-2.6/arch/sparc64/kernel/time.c
-@@ -11,6 +11,7 @@
- #include <linux/errno.h>
- #include <linux/module.h>
- #include <linux/sched.h>
-+#include <linux/smp_lock.h>
- #include <linux/kernel.h>
- #include <linux/param.h>
- #include <linux/string.h>
-@@ -1659,10 +1660,14 @@ static int mini_rtc_ioctl(struct inode *
- 
- static int mini_rtc_open(struct inode *inode, struct file *file)
- {
--	if (mini_rtc_status & RTC_IS_OPEN)
-+	lock_kernel();
-+	if (mini_rtc_status & RTC_IS_OPEN) {
-+		unlock_kernel();
- 		return -EBUSY;
-+	}
- 
- 	mini_rtc_status |= RTC_IS_OPEN;
-+	unlock_kernel();
- 
- 	return 0;
- }
-Index: linux-2.6/arch/um/drivers/harddog_kern.c
-===================================================================
---- linux-2.6.orig/arch/um/drivers/harddog_kern.c
-+++ linux-2.6/arch/um/drivers/harddog_kern.c
-@@ -66,6 +66,7 @@ static int harddog_open(struct inode *in
- 	int err = -EBUSY;
- 	char *sock = NULL;
- 
-+	lock_kernel();
- 	spin_lock(&lock);
- 	if(timer_alive)
- 		goto err;
-@@ -82,9 +83,11 @@ static int harddog_open(struct inode *in
- 
- 	timer_alive = 1;
- 	spin_unlock(&lock);
-+	unlock_kernel();
- 	return nonseekable_open(inode, file);
- err:
- 	spin_unlock(&lock);
-+	unlock_kernel();
- 	return err;
- }
- 
-Index: linux-2.6/arch/um/drivers/mmapper_kern.c
-===================================================================
---- linux-2.6.orig/arch/um/drivers/mmapper_kern.c
-+++ linux-2.6/arch/um/drivers/mmapper_kern.c
-@@ -16,6 +16,7 @@
- #include <linux/miscdevice.h>
- #include <linux/module.h>
- #include <linux/mm.h>
-+#include <linux/smp_lock.h>
- #include <asm/uaccess.h>
- #include "mem_user.h"
- 
-@@ -77,6 +78,7 @@ out:
- 
- static int mmapper_open(struct inode *inode, struct file *file)
- {
-+	cycle_kernel_lock();
- 	return 0;
- }
- 
-Index: linux-2.6/arch/um/drivers/random.c
-===================================================================
---- linux-2.6.orig/arch/um/drivers/random.c
-+++ linux-2.6/arch/um/drivers/random.c
-@@ -7,6 +7,7 @@
-  * of the GNU General Public License, incorporated herein by reference.
-  */
- #include <linux/sched.h>
-+#include <linux/smp_lock.h>
- #include <linux/module.h>
- #include <linux/fs.h>
- #include <linux/interrupt.h>
-@@ -33,6 +34,8 @@ static DECLARE_WAIT_QUEUE_HEAD(host_read
- 
- static int rng_dev_open (struct inode *inode, struct file *filp)
- {
-+	cycle_kernel_lock();
-+
- 	/* enforce read-only access to this chrdev */
- 	if ((filp->f_mode & FMODE_READ) == 0)
- 		return -EINVAL;
-Index: linux-2.6/arch/x86/kernel/apm_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/apm_32.c
-+++ linux-2.6/arch/x86/kernel/apm_32.c
-@@ -204,6 +204,7 @@
- #include <linux/module.h>
- 
- #include <linux/poll.h>
-+#include <linux/smp_lock.h>
- #include <linux/types.h>
- #include <linux/stddef.h>
- #include <linux/timer.h>
-@@ -1544,10 +1545,12 @@ static int do_open(struct inode *inode, 
- {
- 	struct apm_user *as;
- 
-+	lock_kernel();
- 	as = kmalloc(sizeof(*as), GFP_KERNEL);
- 	if (as == NULL) {
- 		printk(KERN_ERR "apm: cannot allocate struct of size %d bytes\n",
- 		       sizeof(*as));
-+		       unlock_kernel();
- 		return -ENOMEM;
- 	}
- 	as->magic = APM_BIOS_MAGIC;
-@@ -1569,6 +1572,7 @@ static int do_open(struct inode *inode, 
- 	user_list = as;
- 	spin_unlock(&user_list_lock);
- 	filp->private_data = as;
-+	unlock_kernel();
- 	return 0;
- }
- 
-Index: linux-2.6/arch/x86/kernel/cpu/mcheck/mce_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/mcheck/mce_64.c
-+++ linux-2.6/arch/x86/kernel/cpu/mcheck/mce_64.c
-@@ -9,6 +9,7 @@
- #include <linux/types.h>
- #include <linux/kernel.h>
- #include <linux/sched.h>
-+#include <linux/smp_lock.h>
- #include <linux/string.h>
- #include <linux/rcupdate.h>
- #include <linux/kallsyms.h>
-@@ -527,10 +528,12 @@ static int open_exclu;	/* already open e
- 
- static int mce_open(struct inode *inode, struct file *file)
- {
-+	lock_kernel();
- 	spin_lock(&mce_state_lock);
- 
- 	if (open_exclu || (open_count && (file->f_flags & O_EXCL))) {
- 		spin_unlock(&mce_state_lock);
-+		unlock_kernel();
- 		return -EBUSY;
- 	}
- 
-@@ -539,6 +542,7 @@ static int mce_open(struct inode *inode,
- 	open_count++;
- 
- 	spin_unlock(&mce_state_lock);
-+	unlock_kernel();
- 
- 	return nonseekable_open(inode, file);
- }
-Index: linux-2.6/arch/x86/kernel/microcode.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/microcode.c
-+++ linux-2.6/arch/x86/kernel/microcode.c
-@@ -75,6 +75,7 @@
- #include <linux/kernel.h>
- #include <linux/init.h>
- #include <linux/sched.h>
-+#include <linux/smp_lock.h>
- #include <linux/cpumask.h>
- #include <linux/module.h>
- #include <linux/slab.h>
-@@ -422,6 +423,7 @@ out:
- 
- static int microcode_open (struct inode *unused1, struct file *unused2)
- {
-+	cycle_kernel_lock();
- 	return capable(CAP_SYS_RAWIO) ? 0 : -EPERM;
- }
- 
-Index: linux-2.6/drivers/bluetooth/hci_vhci.c
-===================================================================
---- linux-2.6.orig/drivers/bluetooth/hci_vhci.c
-+++ linux-2.6/drivers/bluetooth/hci_vhci.c
-@@ -28,6 +28,7 @@
- #include <linux/kernel.h>
- #include <linux/init.h>
- #include <linux/slab.h>
-+#include <linux/smp_lock.h>
- #include <linux/types.h>
- #include <linux/errno.h>
- #include <linux/sched.h>
-@@ -263,9 +264,11 @@ static int vhci_open(struct inode *inode
- 	skb_queue_head_init(&data->readq);
- 	init_waitqueue_head(&data->read_wait);
- 
-+	lock_kernel();
- 	hdev = hci_alloc_dev();
- 	if (!hdev) {
- 		kfree(data);
-+		unlock_kernel();
- 		return -ENOMEM;
- 	}
- 
-@@ -286,10 +289,12 @@ static int vhci_open(struct inode *inode
- 		BT_ERR("Can't register HCI device");
- 		kfree(data);
- 		hci_free_dev(hdev);
-+		unlock_kernel();
- 		return -EBUSY;
- 	}
- 
- 	file->private_data = data;
-+	unlock_kernel();
- 
- 	return nonseekable_open(inode, file);
- }
-Index: linux-2.6/drivers/char/agp/frontend.c
-===================================================================
---- linux-2.6.orig/drivers/char/agp/frontend.c
-+++ linux-2.6/drivers/char/agp/frontend.c
-@@ -39,6 +39,7 @@
- #include <linux/mm.h>
- #include <linux/fs.h>
- #include <linux/sched.h>
-+#include <linux/smp_lock.h>
- #include <asm/uaccess.h>
- #include <asm/pgtable.h>
- #include "agp.h"
-@@ -677,6 +678,7 @@ static int agp_open(struct inode *inode,
- 	struct agp_client *client;
- 	int rc = -ENXIO;
- 
-+	lock_kernel();
- 	mutex_lock(&(agp_fe.agp_mutex));
- 
- 	if (minor != AGPGART_MINOR)
-@@ -703,12 +705,14 @@ static int agp_open(struct inode *inode,
- 	agp_insert_file_private(priv);
- 	DBG("private=%p, client=%p", priv, client);
- 	mutex_unlock(&(agp_fe.agp_mutex));
-+	unlock_kernel();
- 	return 0;
- 
- err_out_nomem:
- 	rc = -ENOMEM;
- err_out:
- 	mutex_unlock(&(agp_fe.agp_mutex));
-+	unlock_kernel();
- 	return rc;
- }
- 
-Index: linux-2.6/drivers/char/apm-emulation.c
-===================================================================
---- linux-2.6.orig/drivers/char/apm-emulation.c
-+++ linux-2.6/drivers/char/apm-emulation.c
-@@ -13,6 +13,7 @@
- #include <linux/module.h>
- #include <linux/poll.h>
- #include <linux/slab.h>
-+#include <linux/smp_lock.h>
- #include <linux/proc_fs.h>
- #include <linux/seq_file.h>
- #include <linux/miscdevice.h>
-@@ -416,6 +417,7 @@ static int apm_open(struct inode * inode
- {
- 	struct apm_user *as;
- 
-+	lock_kernel();
- 	as = kzalloc(sizeof(*as), GFP_KERNEL);
- 	if (as) {
- 		/*
-@@ -435,6 +437,7 @@ static int apm_open(struct inode * inode
- 
- 		filp->private_data = as;
- 	}
-+	unlock_kernel();
- 
- 	return as ? 0 : -ENOMEM;
- }
-Index: linux-2.6/drivers/char/briq_panel.c
-===================================================================
---- linux-2.6.orig/drivers/char/briq_panel.c
-+++ linux-2.6/drivers/char/briq_panel.c
-@@ -6,6 +6,7 @@
- 
- #include <linux/module.h>
- 
-+#include <linux/smp_lock.h>
- #include <linux/types.h>
- #include <linux/errno.h>
- #include <linux/tty.h>
-@@ -67,11 +68,15 @@ static void set_led(char state)
- 
- static int briq_panel_open(struct inode *ino, struct file *filep)
- {
--	/* enforce single access */
--	if (vfd_is_open)
-+	lock_kernel();
-+	/* enforce single access, vfd_is_open is protected by BKL */
-+	if (vfd_is_open) {
-+		unlock_kernel();
- 		return -EBUSY;
-+	}
- 	vfd_is_open = 1;
- 
-+	unlock_kernel();
- 	return 0;
- }
- 
-Index: linux-2.6/drivers/char/ds1286.c
-===================================================================
---- linux-2.6.orig/drivers/char/ds1286.c
-+++ linux-2.6/drivers/char/ds1286.c
-@@ -27,6 +27,7 @@
-  * option) any later version.
-  */
- #include <linux/ds1286.h>
-+#include <linux/smp_lock.h>
- #include <linux/types.h>
- #include <linux/errno.h>
- #include <linux/miscdevice.h>
-@@ -252,6 +253,7 @@ static int ds1286_ioctl(struct inode *in
- 
- static int ds1286_open(struct inode *inode, struct file *file)
- {
-+	lock_kernel();
- 	spin_lock_irq(&ds1286_lock);
- 
- 	if (ds1286_status & RTC_IS_OPEN)
-@@ -260,10 +262,12 @@ static int ds1286_open(struct inode *ino
- 	ds1286_status |= RTC_IS_OPEN;
- 
- 	spin_unlock_irq(&ds1286_lock);
-+	unlock_kernel();
- 	return 0;
- 
- out_busy:
- 	spin_lock_irq(&ds1286_lock);
-+	unlock_kernel();
- 	return -EBUSY;
- }
- 
-Index: linux-2.6/drivers/char/ds1620.c
-===================================================================
---- linux-2.6.orig/drivers/char/ds1620.c
-+++ linux-2.6/drivers/char/ds1620.c
-@@ -8,6 +8,7 @@
- #include <linux/proc_fs.h>
- #include <linux/capability.h>
- #include <linux/init.h>
-+#include <linux/smp_lock.h>
- 
- #include <asm/hardware.h>
- #include <asm/mach-types.h>
-@@ -208,6 +209,12 @@ static void ds1620_read_state(struct the
- 	therm->hi = cvt_9_to_int(ds1620_in(THERM_READ_TH, 9));
- }
- 
-+static int ds1620_open(struct inode *inode, struct file *file)
-+{
-+	cycle_kernel_lock();
-+	return nonseekable_open(inode, file);
-+}
-+
- static ssize_t
- ds1620_read(struct file *file, char __user *buf, size_t count, loff_t *ptr)
- {
-@@ -336,7 +343,7 @@ static struct proc_dir_entry *proc_therm
- 
- static const struct file_operations ds1620_fops = {
- 	.owner		= THIS_MODULE,
--	.open		= nonseekable_open,
-+	.open		= ds1620_open,
- 	.read		= ds1620_read,
- 	.ioctl		= ds1620_ioctl,
- };
-Index: linux-2.6/drivers/char/efirtc.c
-===================================================================
---- linux-2.6.orig/drivers/char/efirtc.c
-+++ linux-2.6/drivers/char/efirtc.c
-@@ -28,6 +28,7 @@
-  */
- 
- 
-+#include <linux/smp_lock.h>
- #include <linux/types.h>
- #include <linux/errno.h>
- #include <linux/miscdevice.h>
-@@ -272,6 +273,7 @@ efi_rtc_open(struct inode *inode, struct
- 	 * We do accept multiple open files at the same time as we
- 	 * synchronize on the per call operation.
+ 	__module_get(THIS_MODULE);
+@@ -107,6 +110,7 @@ static int sbwdog_open(struct inode *ino
  	 */
-+	cycle_kernel_lock();
+ 	sbwdog_set(user_dog, timeout);
+ 	__raw_writeb(1, user_dog);
++	unlock_kernel();
+ 
  	return 0;
  }
- 
-Index: linux-2.6/drivers/char/genrtc.c
+Index: linux-2.6/drivers/watchdog/sbc60xxwdt.c
 ===================================================================
---- linux-2.6.orig/drivers/char/genrtc.c
-+++ linux-2.6/drivers/char/genrtc.c
-@@ -51,6 +51,7 @@
- #include <linux/init.h>
- #include <linux/poll.h>
- #include <linux/proc_fs.h>
+--- linux-2.6.orig/drivers/watchdog/sbc60xxwdt.c
++++ linux-2.6/drivers/watchdog/sbc60xxwdt.c
+@@ -46,6 +46,7 @@
+ 
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
 +#include <linux/smp_lock.h>
- #include <linux/workqueue.h>
+ #include <linux/types.h>
+ #include <linux/timer.h>
+ #include <linux/jiffies.h>
+@@ -191,15 +192,19 @@ static ssize_t fop_write(struct file * f
  
- #include <asm/uaccess.h>
-@@ -338,12 +339,16 @@ static int gen_rtc_ioctl(struct inode *i
- 
- static int gen_rtc_open(struct inode *inode, struct file *file)
+ static int fop_open(struct inode * inode, struct file * file)
  {
--	if (gen_rtc_status & RTC_IS_OPEN)
 +	lock_kernel();
-+	if (gen_rtc_status & RTC_IS_OPEN) {
+ 	/* Just in case we're already talking to someone... */
+-	if(test_and_set_bit(0, &wdt_is_open))
++	if(test_and_set_bit(0, &wdt_is_open)) {
 +		unlock_kernel();
  		return -EBUSY;
 +	}
  
- 	gen_rtc_status |= RTC_IS_OPEN;
- 	gen_rtc_irq_data = 0;
- 	irq_active = 0;
-+	unlock_kernel();
+ 	if (nowayout)
+ 		__module_get(THIS_MODULE);
  
- 	return 0;
+ 	/* Good, fire up the show */
+ 	wdt_startup();
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
  }
-Index: linux-2.6/drivers/char/hpet.c
+ 
+Index: linux-2.6/drivers/watchdog/sbc7240_wdt.c
 ===================================================================
---- linux-2.6.orig/drivers/char/hpet.c
-+++ linux-2.6/drivers/char/hpet.c
-@@ -14,6 +14,7 @@
- #include <linux/interrupt.h>
- #include <linux/module.h>
- #include <linux/kernel.h>
+--- linux-2.6.orig/drivers/watchdog/sbc7240_wdt.c
++++ linux-2.6/drivers/watchdog/sbc7240_wdt.c
+@@ -25,6 +25,7 @@
+ #include <linux/miscdevice.h>
+ #include <linux/notifier.h>
+ #include <linux/reboot.h>
 +#include <linux/smp_lock.h>
  #include <linux/types.h>
- #include <linux/miscdevice.h>
- #include <linux/major.h>
-@@ -193,6 +194,7 @@ static int hpet_open(struct inode *inode
- 	if (file->f_mode & FMODE_WRITE)
- 		return -EINVAL;
+ #include <linux/watchdog.h>
+ #include <asm/atomic.h>
+@@ -136,10 +137,14 @@ static ssize_t fop_write(struct file *fi
  
+ static int fop_open(struct inode *inode, struct file *file)
+ {
+-	if (test_and_set_bit(SBC7240_OPEN_STATUS_BIT, &wdt_status))
 +	lock_kernel();
- 	spin_lock_irq(&hpet_lock);
- 
- 	for (devp = NULL, hpetp = hpets; hpetp && !devp; hpetp = hpetp->hp_next)
-@@ -207,6 +209,7 @@ static int hpet_open(struct inode *inode
- 
- 	if (!devp) {
- 		spin_unlock_irq(&hpet_lock);
++	if (test_and_set_bit(SBC7240_OPEN_STATUS_BIT, &wdt_status)) {
 +		unlock_kernel();
  		return -EBUSY;
- 	}
++	}
  
-@@ -214,6 +217,7 @@ static int hpet_open(struct inode *inode
- 	devp->hd_irqdata = 0;
- 	devp->hd_flags |= HPET_OPEN;
- 	spin_unlock_irq(&hpet_lock);
+ 	wdt_enable();
 +	unlock_kernel();
  
- 	return 0;
+ 	return nonseekable_open(inode, file);
  }
-Index: linux-2.6/drivers/char/hw_random/core.c
+Index: linux-2.6/drivers/watchdog/sbc8360.c
 ===================================================================
---- linux-2.6.orig/drivers/char/hw_random/core.c
-+++ linux-2.6/drivers/char/hw_random/core.c
+--- linux-2.6.orig/drivers/watchdog/sbc8360.c
++++ linux-2.6/drivers/watchdog/sbc8360.c
 @@ -37,6 +37,7 @@
- #include <linux/kernel.h>
- #include <linux/fs.h>
- #include <linux/sched.h>
-+#include <linux/smp_lock.h>
- #include <linux/init.h>
- #include <linux/miscdevice.h>
- #include <linux/delay.h>
-@@ -86,6 +87,7 @@ static int rng_dev_open(struct inode *in
- 		return -EINVAL;
- 	if (filp->f_mode & FMODE_WRITE)
- 		return -EINVAL;
-+	cycle_kernel_lock();
- 	return 0;
- }
+  */
  
-Index: linux-2.6/drivers/char/ip27-rtc.c
-===================================================================
---- linux-2.6.orig/drivers/char/ip27-rtc.c
-+++ linux-2.6/drivers/char/ip27-rtc.c
-@@ -27,6 +27,7 @@
- #include <linux/bcd.h>
  #include <linux/module.h>
- #include <linux/kernel.h>
 +#include <linux/smp_lock.h>
  #include <linux/types.h>
  #include <linux/miscdevice.h>
- #include <linux/ioport.h>
-@@ -163,15 +164,18 @@ static long rtc_ioctl(struct file *filp,
+ #include <linux/watchdog.h>
+@@ -257,9 +258,11 @@ static ssize_t sbc8360_write(struct file
  
- static int rtc_open(struct inode *inode, struct file *file)
+ static int sbc8360_open(struct inode *inode, struct file *file)
  {
 +	lock_kernel();
- 	spin_lock_irq(&rtc_lock);
- 
- 	if (rtc_status & RTC_IS_OPEN) {
- 		spin_unlock_irq(&rtc_lock);
+ 	spin_lock(&sbc8360_lock);
+ 	if (test_and_set_bit(0, &sbc8360_is_open)) {
+ 		spin_unlock(&sbc8360_lock);
 +		unlock_kernel();
  		return -EBUSY;
  	}
+ 	if (nowayout)
+@@ -269,6 +272,7 @@ static int sbc8360_open(struct inode *in
+ 	spin_unlock(&sbc8360_lock);
+ 	sbc8360_activate();
+ 	sbc8360_ping();
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
  
- 	rtc_status |= RTC_IS_OPEN;
- 	spin_unlock_irq(&rtc_lock);
+Index: linux-2.6/drivers/watchdog/sbc_epx_c3.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/sbc_epx_c3.c
++++ linux-2.6/drivers/watchdog/sbc_epx_c3.c
+@@ -15,6 +15,7 @@
+ 
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
++#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/kernel.h>
+ #include <linux/fs.h>
+@@ -63,8 +64,11 @@ static void epx_c3_pet(void)
+  */
+ static int epx_c3_open(struct inode *inode, struct file *file)
+ {
+-	if (epx_c3_alive)
++	lock_kernel();
++	if (epx_c3_alive) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	if (nowayout)
+ 		__module_get(THIS_MODULE);
+@@ -75,6 +79,7 @@ static int epx_c3_open(struct inode *ino
+ 
+ 	epx_c3_alive = 1;
+ 	printk(KERN_INFO "Started watchdog timer.\n");
 +	unlock_kernel();
  
- 	return 0;
+ 	return nonseekable_open(inode, file);
  }
-Index: linux-2.6/drivers/char/ipmi/ipmi_watchdog.c
+Index: linux-2.6/drivers/watchdog/sc1200wdt.c
 ===================================================================
---- linux-2.6.orig/drivers/char/ipmi/ipmi_watchdog.c
-+++ linux-2.6/drivers/char/ipmi/ipmi_watchdog.c
-@@ -35,6 +35,7 @@
+--- linux-2.6.orig/drivers/watchdog/sc1200wdt.c
++++ linux-2.6/drivers/watchdog/sc1200wdt.c
+@@ -33,6 +33,7 @@
+ #include <linux/watchdog.h>
+ #include <linux/ioport.h>
+ #include <linux/spinlock.h>
++#include <linux/smp_lock.h>
+ #include <linux/notifier.h>
+ #include <linux/reboot.h>
+ #include <linux/init.h>
+@@ -151,14 +152,18 @@ static inline int sc1200wdt_status(void)
+ static int sc1200wdt_open(struct inode *inode, struct file *file)
+ {
+ 	/* allow one at a time */
+-	if (down_trylock(&open_sem))
++	lock_kernel();
++	if (down_trylock(&open_sem)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	if (timeout > MAX_TIMEOUT)
+ 		timeout = MAX_TIMEOUT;
+ 
+ 	sc1200wdt_start();
+ 	printk(KERN_INFO PFX "Watchdog enabled, timeout = %d min(s)", timeout);
++	unlock_kernel();
+ 
+ 	return nonseekable_open(inode, file);
+ }
+Index: linux-2.6/drivers/watchdog/sc520_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/sc520_wdt.c
++++ linux-2.6/drivers/watchdog/sc520_wdt.c
+@@ -55,6 +55,7 @@
+ #include <linux/module.h>
  #include <linux/moduleparam.h>
- #include <linux/ipmi.h>
- #include <linux/ipmi_smi.h>
+ #include <linux/types.h>
++#include <linux/smp_lock.h>
+ #include <linux/timer.h>
+ #include <linux/miscdevice.h>
+ #include <linux/watchdog.h>
+@@ -249,13 +250,17 @@ static ssize_t fop_write(struct file * f
+ static int fop_open(struct inode * inode, struct file * file)
+ {
+ 	/* Just in case we're already talking to someone... */
+-	if(test_and_set_bit(0, &wdt_is_open))
++	lock_kernel();
++	if(test_and_set_bit(0, &wdt_is_open)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 	if (nowayout)
+ 		__module_get(THIS_MODULE);
+ 
+ 	/* Good, fire up the show */
+ 	wdt_startup();
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+Index: linux-2.6/drivers/watchdog/scx200_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/scx200_wdt.c
++++ linux-2.6/drivers/watchdog/scx200_wdt.c
+@@ -21,6 +21,7 @@
+ #include <linux/moduleparam.h>
+ #include <linux/init.h>
+ #include <linux/miscdevice.h>
 +#include <linux/smp_lock.h>
  #include <linux/watchdog.h>
- #include <linux/miscdevice.h>
- #include <linux/init.h>
-@@ -819,6 +820,8 @@ static int ipmi_open(struct inode *ino, 
- 		if (test_and_set_bit(0, &ipmi_wdog_open))
- 			return -EBUSY;
- 
-+		cycle_kernel_lock();
-+
- 		/*
- 		 * Don't start the timer now, let it start on the
- 		 * first heartbeat.
-Index: linux-2.6/drivers/char/lcd.c
-===================================================================
---- linux-2.6.orig/drivers/char/lcd.c
-+++ linux-2.6/drivers/char/lcd.c
-@@ -20,6 +20,7 @@
- #include <linux/mc146818rtc.h>
- #include <linux/netdevice.h>
- #include <linux/sched.h>
-+#include <linux/smp_lock.h>
- #include <linux/delay.h>
- 
- #include <asm/io.h>
-@@ -414,6 +415,8 @@ static int lcd_ioctl(struct inode *inode
- 
- static int lcd_open(struct inode *inode, struct file *file)
+ #include <linux/notifier.h>
+ #include <linux/reboot.h>
+@@ -92,9 +93,13 @@ static void scx200_wdt_disable(void)
+ static int scx200_wdt_open(struct inode *inode, struct file *file)
  {
-+	cycle_kernel_lock();
-+
- 	if (!lcd_present)
- 		return -ENXIO;
- 	else
-Index: linux-2.6/drivers/char/mwave/mwavedd.c
-===================================================================
---- linux-2.6.orig/drivers/char/mwave/mwavedd.c
-+++ linux-2.6/drivers/char/mwave/mwavedd.c
-@@ -56,6 +56,7 @@
- #include <linux/serial.h>
- #include <linux/sched.h>
- #include <linux/spinlock.h>
-+#include <linux/smp_lock.h>
- #include <linux/delay.h>
- #include <linux/serial_8250.h>
- #include "smapi.h"
-@@ -100,6 +101,7 @@ static int mwave_open(struct inode *inod
- 	PRINTK_2(TRACE_MWAVE,
- 		"mwavedd::mwave_open, exit return retval %x\n", retval);
- 
-+	cycle_kernel_lock();
- 	return retval;
- }
- 
-Index: linux-2.6/drivers/char/nvram.c
-===================================================================
---- linux-2.6.orig/drivers/char/nvram.c
-+++ linux-2.6/drivers/char/nvram.c
-@@ -107,6 +107,7 @@
- #include <linux/init.h>
- #include <linux/proc_fs.h>
- #include <linux/spinlock.h>
-+#include <linux/smp_lock.h>
- 
- #include <asm/io.h>
- #include <asm/uaccess.h>
-@@ -333,12 +334,14 @@ nvram_ioctl(struct inode *inode, struct 
- static int
- nvram_open(struct inode *inode, struct file *file)
- {
+ 	/* only allow one at a time */
+-	if (down_trylock(&open_semaphore))
 +	lock_kernel();
- 	spin_lock(&nvram_state_lock);
- 
- 	if ((nvram_open_cnt && (file->f_flags & O_EXCL)) ||
- 	    (nvram_open_mode & NVRAM_EXCL) ||
- 	    ((file->f_mode & 2) && (nvram_open_mode & NVRAM_WRITE))) {
- 		spin_unlock(&nvram_state_lock);
++	if (down_trylock(&open_semaphore)) {
 +		unlock_kernel();
  		return -EBUSY;
- 	}
- 
-@@ -349,6 +352,7 @@ nvram_open(struct inode *inode, struct f
- 	nvram_open_cnt++;
- 
- 	spin_unlock(&nvram_state_lock);
-+	unlock_kernel();
- 
- 	return 0;
- }
-Index: linux-2.6/drivers/char/rtc.c
-===================================================================
---- linux-2.6.orig/drivers/char/rtc.c
-+++ linux-2.6/drivers/char/rtc.c
-@@ -73,6 +73,7 @@
- #include <linux/proc_fs.h>
- #include <linux/seq_file.h>
- #include <linux/spinlock.h>
-+#include <linux/smp_lock.h>
- #include <linux/sysctl.h>
- #include <linux/wait.h>
- #include <linux/bcd.h>
-@@ -733,6 +734,7 @@ static int rtc_ioctl(struct inode *inode
-  * needed here. Or anywhere else in this driver. */
- static int rtc_open(struct inode *inode, struct file *file)
- {
-+	lock_kernel();
- 	spin_lock_irq(&rtc_lock);
- 
- 	if (rtc_status & RTC_IS_OPEN)
-@@ -742,10 +744,12 @@ static int rtc_open(struct inode *inode,
- 
- 	rtc_irq_data = 0;
- 	spin_unlock_irq(&rtc_lock);
-+	unlock_kernel();
- 	return 0;
- 
- out_busy:
- 	spin_unlock_irq(&rtc_lock);
-+	unlock_kernel();
- 	return -EBUSY;
- }
- 
-Index: linux-2.6/drivers/char/sonypi.c
-===================================================================
---- linux-2.6.orig/drivers/char/sonypi.c
-+++ linux-2.6/drivers/char/sonypi.c
-@@ -49,6 +49,7 @@
- #include <linux/err.h>
- #include <linux/kfifo.h>
- #include <linux/platform_device.h>
-+#include <linux/smp_lock.h>
- 
- #include <asm/uaccess.h>
- #include <asm/io.h>
-@@ -906,12 +907,14 @@ static int sonypi_misc_release(struct in
- 
- static int sonypi_misc_open(struct inode *inode, struct file *file)
- {
-+	lock_kernel();
- 	mutex_lock(&sonypi_device.lock);
- 	/* Flush input queue on first open */
- 	if (!sonypi_device.open_count)
- 		kfifo_reset(sonypi_device.fifo);
- 	sonypi_device.open_count++;
- 	mutex_unlock(&sonypi_device.lock);
-+	unlock_kernel();
- 	return 0;
- }
- 
-Index: linux-2.6/drivers/char/tpm/tpm.c
-===================================================================
---- linux-2.6.orig/drivers/char/tpm/tpm.c
-+++ linux-2.6/drivers/char/tpm/tpm.c
-@@ -26,6 +26,7 @@
- #include <linux/poll.h>
- #include <linux/mutex.h>
- #include <linux/spinlock.h>
-+#include <linux/smp_lock.h>
- 
- #include "tpm.h"
- 
-@@ -897,6 +898,7 @@ int tpm_open(struct inode *inode, struct
- 	int rc = 0, minor = iminor(inode);
- 	struct tpm_chip *chip = NULL, *pos;
- 
-+	lock_kernel();
- 	spin_lock(&driver_lock);
- 
- 	list_for_each_entry(pos, &tpm_chip_list, list) {
-@@ -926,16 +928,19 @@ int tpm_open(struct inode *inode, struct
- 	if (chip->data_buffer == NULL) {
- 		chip->num_opens--;
- 		put_device(chip->dev);
-+		unlock_kernel();
- 		return -ENOMEM;
- 	}
- 
- 	atomic_set(&chip->data_pending, 0);
- 
- 	file->private_data = chip;
-+	unlock_kernel();
- 	return 0;
- 
- err_out:
- 	spin_unlock(&driver_lock);
-+	unlock_kernel();
- 	return rc;
- }
- EXPORT_SYMBOL_GPL(tpm_open);
-Index: linux-2.6/drivers/infiniband/core/ucma.c
-===================================================================
---- linux-2.6.orig/drivers/infiniband/core/ucma.c
-+++ linux-2.6/drivers/infiniband/core/ucma.c
-@@ -38,6 +38,7 @@
- #include <linux/in.h>
- #include <linux/in6.h>
- #include <linux/miscdevice.h>
-+#include <linux/smp_lock.h>
- 
- #include <rdma/rdma_user_cm.h>
- #include <rdma/ib_marshall.h>
-@@ -1156,6 +1157,7 @@ static int ucma_open(struct inode *inode
- 	if (!file)
- 		return -ENOMEM;
- 
-+	lock_kernel();
- 	INIT_LIST_HEAD(&file->event_list);
- 	INIT_LIST_HEAD(&file->ctx_list);
- 	init_waitqueue_head(&file->poll_wait);
-@@ -1163,6 +1165,7 @@ static int ucma_open(struct inode *inode
- 
- 	filp->private_data = file;
- 	file->filp = filp;
-+	unlock_kernel();
- 	return 0;
- }
- 
-Index: linux-2.6/drivers/input/misc/hp_sdc_rtc.c
-===================================================================
---- linux-2.6.orig/drivers/input/misc/hp_sdc_rtc.c
-+++ linux-2.6/drivers/input/misc/hp_sdc_rtc.c
-@@ -35,6 +35,7 @@
- 
- #include <linux/hp_sdc.h>
- #include <linux/errno.h>
-+#include <linux/smp_lock.h>
- #include <linux/types.h>
- #include <linux/init.h>
- #include <linux/module.h>
-@@ -408,6 +409,7 @@ static unsigned int hp_sdc_rtc_poll(stru
- 
- static int hp_sdc_rtc_open(struct inode *inode, struct file *file)
- {
-+	cycle_kernel_lock();
-         return 0;
- }
- 
-Index: linux-2.6/drivers/input/misc/uinput.c
-===================================================================
---- linux-2.6.orig/drivers/input/misc/uinput.c
-+++ linux-2.6/drivers/input/misc/uinput.c
-@@ -37,6 +37,7 @@
- #include <linux/fs.h>
- #include <linux/miscdevice.h>
- #include <linux/uinput.h>
-+#include <linux/smp_lock.h>
- 
- static int uinput_dev_event(struct input_dev *dev, unsigned int type, unsigned int code, int value)
- {
-@@ -222,6 +223,7 @@ static int uinput_open(struct inode *ino
- 	if (!newdev)
- 		return -ENOMEM;
- 
-+	lock_kernel();
- 	mutex_init(&newdev->mutex);
- 	spin_lock_init(&newdev->requests_lock);
- 	init_waitqueue_head(&newdev->requests_waitq);
-@@ -229,6 +231,7 @@ static int uinput_open(struct inode *ino
- 	newdev->state = UIST_NEW_DEVICE;
- 
- 	file->private_data = newdev;
-+	unlock_kernel();
- 
- 	return 0;
- }
-Index: linux-2.6/drivers/input/mousedev.c
-===================================================================
---- linux-2.6.orig/drivers/input/mousedev.c
-+++ linux-2.6/drivers/input/mousedev.c
-@@ -14,6 +14,7 @@
- #define MOUSEDEV_MIX		31
- 
- #include <linux/slab.h>
-+#include <linux/smp_lock.h>
- #include <linux/poll.h>
- #include <linux/module.h>
- #include <linux/init.h>
-@@ -545,16 +546,21 @@ static int mousedev_open(struct inode *i
- 	if (i >= MOUSEDEV_MINORS)
- 		return -ENODEV;
- 
-+	lock_kernel();
- 	error = mutex_lock_interruptible(&mousedev_table_mutex);
--	if (error)
-+	if (error) {
-+		unlock_kernel();
- 		return error;
 +	}
- 	mousedev = mousedev_table[i];
- 	if (mousedev)
- 		get_device(&mousedev->dev);
- 	mutex_unlock(&mousedev_table_mutex);
- 
--	if (!mousedev)
-+	if (!mousedev) {
-+		unlock_kernel();
- 		return -ENODEV;
-+	}
- 
- 	client = kzalloc(sizeof(struct mousedev_client), GFP_KERNEL);
- 	if (!client) {
-@@ -573,6 +579,7 @@ static int mousedev_open(struct inode *i
- 		goto err_free_client;
- 
- 	file->private_data = client;
-+	unlock_kernel();
- 	return 0;
- 
-  err_free_client:
-@@ -580,6 +587,7 @@ static int mousedev_open(struct inode *i
- 	kfree(client);
-  err_put_mousedev:
- 	put_device(&mousedev->dev);
-+	unlock_kernel();
- 	return error;
- }
- 
-Index: linux-2.6/drivers/input/serio/serio_raw.c
-===================================================================
---- linux-2.6.orig/drivers/input/serio/serio_raw.c
-+++ linux-2.6/drivers/input/serio/serio_raw.c
-@@ -10,6 +10,7 @@
-  */
- 
- #include <linux/slab.h>
-+#include <linux/smp_lock.h>
- #include <linux/poll.h>
- #include <linux/module.h>
- #include <linux/serio.h>
-@@ -81,9 +82,10 @@ static int serio_raw_open(struct inode *
- 	struct serio_raw_list *list;
- 	int retval = 0;
- 
-+	lock_kernel();
- 	retval = mutex_lock_interruptible(&serio_raw_mutex);
- 	if (retval)
--		return retval;
-+		goto out_bkl;
- 
- 	if (!(serio_raw = serio_raw_locate(iminor(inode)))) {
- 		retval = -ENODEV;
-@@ -108,6 +110,8 @@ static int serio_raw_open(struct inode *
- 
- out:
- 	mutex_unlock(&serio_raw_mutex);
-+out_bkl:
-+	unlock_kernel();
- 	return retval;
- }
- 
-Index: linux-2.6/drivers/macintosh/ans-lcd.c
-===================================================================
---- linux-2.6.orig/drivers/macintosh/ans-lcd.c
-+++ linux-2.6/drivers/macintosh/ans-lcd.c
-@@ -3,6 +3,7 @@
-  */
- 
- #include <linux/types.h>
-+#include <linux/smp_lock.h>
- #include <linux/errno.h>
- #include <linux/kernel.h>
- #include <linux/miscdevice.h>
-@@ -119,6 +120,7 @@ anslcd_ioctl( struct inode * inode, stru
- static int
- anslcd_open( struct inode * inode, struct file * file )
- {
-+	cycle_kernel_lock();
- 	return 0;
- }
- 
-Index: linux-2.6/drivers/macintosh/smu.c
-===================================================================
---- linux-2.6.orig/drivers/macintosh/smu.c
-+++ linux-2.6/drivers/macintosh/smu.c
-@@ -19,6 +19,7 @@
-  *    the userland interface
-  */
- 
-+#include <linux/smp_lock.h>
- #include <linux/types.h>
- #include <linux/kernel.h>
- #include <linux/device.h>
-@@ -1083,10 +1084,12 @@ static int smu_open(struct inode *inode,
- 	pp->mode = smu_file_commands;
- 	init_waitqueue_head(&pp->wait);
- 
-+	lock_kernel();
- 	spin_lock_irqsave(&smu_clist_lock, flags);
- 	list_add(&pp->list, &smu_clist);
- 	spin_unlock_irqrestore(&smu_clist_lock, flags);
- 	file->private_data = pp;
+ 	scx200_wdt_enable();
 +	unlock_kernel();
  
- 	return 0;
+ 	return nonseekable_open(inode, file);
  }
-Index: linux-2.6/drivers/macintosh/via-pmu.c
+Index: linux-2.6/drivers/watchdog/shwdt.c
 ===================================================================
---- linux-2.6.orig/drivers/macintosh/via-pmu.c
-+++ linux-2.6/drivers/macintosh/via-pmu.c
-@@ -18,6 +18,7 @@
-  *
-  */
- #include <stdarg.h>
-+#include <linux/smp_lock.h>
- #include <linux/types.h>
- #include <linux/errno.h>
- #include <linux/kernel.h>
-@@ -2047,6 +2048,7 @@ pmu_open(struct inode *inode, struct fil
- 	pp->rb_get = pp->rb_put = 0;
- 	spin_lock_init(&pp->lock);
- 	init_waitqueue_head(&pp->wait);
-+	lock_kernel();
- 	spin_lock_irqsave(&all_pvt_lock, flags);
- #if defined(CONFIG_INPUT_ADBHID) && defined(CONFIG_PMAC_BACKLIGHT)
- 	pp->backlight_locker = 0;
-@@ -2054,6 +2056,7 @@ pmu_open(struct inode *inode, struct fil
- 	list_add(&pp->list, &all_pmu_pvt);
- 	spin_unlock_irqrestore(&all_pvt_lock, flags);
- 	file->private_data = pp;
-+	unlock_kernel();
- 	return 0;
- }
- 
-Index: linux-2.6/drivers/media/radio/miropcm20-rds.c
-===================================================================
---- linux-2.6.orig/drivers/media/radio/miropcm20-rds.c
-+++ linux-2.6/drivers/media/radio/miropcm20-rds.c
-@@ -12,6 +12,7 @@
- #include <linux/module.h>
+--- linux-2.6.orig/drivers/watchdog/shwdt.c
++++ linux-2.6/drivers/watchdog/shwdt.c
+@@ -22,6 +22,7 @@
  #include <linux/init.h>
- #include <linux/slab.h>
-+#include <linux/smp_lock.h>
- #include <linux/fs.h>
+ #include <linux/types.h>
  #include <linux/miscdevice.h>
- #include <linux/delay.h>
-@@ -27,13 +28,16 @@ static int rds_f_open(struct inode *in, 
- 	if (rds_users)
++#include <linux/smp_lock.h>
+ #include <linux/watchdog.h>
+ #include <linux/reboot.h>
+ #include <linux/notifier.h>
+@@ -194,12 +195,16 @@ static void sh_wdt_ping(unsigned long da
+  */
+ static int sh_wdt_open(struct inode *inode, struct file *file)
+ {
+-	if (test_and_set_bit(0, &shwdt_is_open))
++	lock_kernel();
++	if (test_and_set_bit(0, &shwdt_is_open)) {
++		unlock_kernel();
  		return -EBUSY;
++	}
+ 	if (nowayout)
+ 		__module_get(THIS_MODULE);
  
-+	lock_kernel();
- 	rds_users++;
- 	if ((text_buffer=kmalloc(66, GFP_KERNEL)) == 0) {
- 		rds_users--;
- 		printk(KERN_NOTICE "aci-rds: Out of memory by open()...\n");
-+		unlock_kernel();
- 		return -ENOMEM;
- 	}
- 
-+	unlock_kernel();
- 	return 0;
- }
- 
-Index: linux-2.6/drivers/message/i2o/i2o_config.c
-===================================================================
---- linux-2.6.orig/drivers/message/i2o/i2o_config.c
-+++ linux-2.6/drivers/message/i2o/i2o_config.c
-@@ -1061,6 +1061,7 @@ static int cfg_open(struct inode *inode,
- 	if (!tmp)
- 		return -ENOMEM;
- 
-+	lock_kernel();
- 	file->private_data = (void *)(i2o_cfg_info_id++);
- 	tmp->fp = file;
- 	tmp->fasync = NULL;
-@@ -1074,6 +1075,7 @@ static int cfg_open(struct inode *inode,
- 	spin_lock_irqsave(&i2o_config_lock, flags);
- 	open_files = tmp;
- 	spin_unlock_irqrestore(&i2o_config_lock, flags);
+ 	sh_wdt_start();
 +	unlock_kernel();
  
- 	return 0;
+ 	return nonseekable_open(inode, file);
  }
-Index: linux-2.6/drivers/misc/hdpuftrs/hdpu_cpustate.c
+Index: linux-2.6/drivers/watchdog/smsc37b787_wdt.c
 ===================================================================
---- linux-2.6.orig/drivers/misc/hdpuftrs/hdpu_cpustate.c
-+++ linux-2.6/drivers/misc/hdpuftrs/hdpu_cpustate.c
-@@ -17,6 +17,7 @@
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/spinlock.h>
-+#include <linux/smp_lock.h>
- #include <linux/miscdevice.h>
- #include <linux/proc_fs.h>
- #include <linux/hdpu_features.h>
-@@ -151,7 +152,13 @@ static ssize_t cpustate_write(struct fil
+--- linux-2.6.orig/drivers/watchdog/smsc37b787_wdt.c
++++ linux-2.6/drivers/watchdog/smsc37b787_wdt.c
+@@ -45,6 +45,7 @@
  
- static int cpustate_open(struct inode *inode, struct file *file)
- {
--	return cpustate_get_ref((file->f_flags & O_EXCL));
-+	int ret;
-+
-+	lock_kernel();
-+	ret = cpustate_get_ref((file->f_flags & O_EXCL));
-+	unlock_kernel();
-+
-+	return ret;
- }
- 
- static int cpustate_release(struct inode *inode, struct file *file)
-Index: linux-2.6/drivers/misc/sony-laptop.c
-===================================================================
---- linux-2.6.orig/drivers/misc/sony-laptop.c
-+++ linux-2.6/drivers/misc/sony-laptop.c
-@@ -46,6 +46,7 @@
  #include <linux/module.h>
  #include <linux/moduleparam.h>
- #include <linux/init.h>
 +#include <linux/smp_lock.h>
  #include <linux/types.h>
- #include <linux/backlight.h>
- #include <linux/platform_device.h>
-@@ -1927,8 +1928,10 @@ static int sonypi_misc_release(struct in
- static int sonypi_misc_open(struct inode *inode, struct file *file)
+ #include <linux/miscdevice.h>
+ #include <linux/watchdog.h>
+@@ -346,8 +347,11 @@ static int wb_smsc_wdt_open(struct inode
  {
- 	/* Flush input queue on first open */
+ 	/* /dev/watchdog can only be opened once */
+ 
+-	if (test_and_set_bit(0, &timer_enabled))
 +	lock_kernel();
- 	if (atomic_inc_return(&sonypi_compat.open_count) == 1)
- 		kfifo_reset(sonypi_compat.fifo);
++	if (test_and_set_bit(0, &timer_enabled)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	if (nowayout)
+ 		__module_get(THIS_MODULE);
+@@ -356,6 +360,7 @@ static int wb_smsc_wdt_open(struct inode
+ 	wb_smsc_wdt_enable();
+ 
+ 	printk(KERN_INFO MODNAME "Watchdog enabled. Timeout set to %d %s.\n", timeout, (unit == UNIT_SECOND) ? "second(s)" : "minute(s)");
 +	unlock_kernel();
- 	return 0;
+ 
+ 	return nonseekable_open(inode, file);
+ }
+Index: linux-2.6/drivers/watchdog/softdog.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/softdog.c
++++ linux-2.6/drivers/watchdog/softdog.c
+@@ -38,6 +38,7 @@
+ 
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
++#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/timer.h>
+ #include <linux/miscdevice.h>
+@@ -132,14 +133,18 @@ static int softdog_set_heartbeat(int t)
+ 
+ static int softdog_open(struct inode *inode, struct file *file)
+ {
+-	if (test_and_set_bit(0, &driver_open))
++	lock_kernel();
++	if (test_and_set_bit(0, &driver_open)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 	if (!test_and_clear_bit(0, &orphan_timer))
+ 		__module_get(THIS_MODULE);
+ 	/*
+ 	 *	Activate timer
+ 	 */
+ 	softdog_keepalive();
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
  }
  
-Index: linux-2.6/drivers/net/tun.c
+Index: linux-2.6/drivers/watchdog/txx9wdt.c
 ===================================================================
---- linux-2.6.orig/drivers/net/tun.c
-+++ linux-2.6/drivers/net/tun.c
-@@ -48,6 +48,7 @@
- #include <linux/kernel.h>
- #include <linux/major.h>
- #include <linux/slab.h>
+--- linux-2.6.orig/drivers/watchdog/txx9wdt.c
++++ linux-2.6/drivers/watchdog/txx9wdt.c
+@@ -9,6 +9,7 @@
+  */
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
 +#include <linux/smp_lock.h>
- #include <linux/poll.h>
- #include <linux/fcntl.h>
- #include <linux/init.h>
-@@ -797,6 +798,7 @@ static int tun_chr_fasync(int fd, struct
- 
- static int tun_chr_open(struct inode *inode, struct file * file)
- {
-+	cycle_kernel_lock();
- 	DBG1(KERN_INFO "tunX: tun_chr_open\n");
- 	file->private_data = NULL;
- 	return 0;
-Index: linux-2.6/drivers/parisc/eisa_eeprom.c
-===================================================================
---- linux-2.6.orig/drivers/parisc/eisa_eeprom.c
-+++ linux-2.6/drivers/parisc/eisa_eeprom.c
-@@ -24,6 +24,7 @@
- #include <linux/kernel.h>
+ #include <linux/types.h>
  #include <linux/miscdevice.h>
- #include <linux/slab.h>
-+#include <linux/smp_lock.h>
- #include <linux/fs.h>
- #include <asm/io.h>
- #include <asm/uaccess.h>
-@@ -83,6 +84,8 @@ static int eisa_eeprom_ioctl(struct inod
+ #include <linux/watchdog.h>
+@@ -70,8 +71,11 @@ static void txx9wdt_stop(void)
  
- static int eisa_eeprom_open(struct inode *inode, struct file *file)
+ static int txx9wdt_open(struct inode *inode, struct file *file)
  {
-+	cycle_kernel_lock();
-+
- 	if (file->f_mode & 2)
- 		return -EINVAL;
-    
-Index: linux-2.6/drivers/rtc/rtc-m41t80.c
+-	if (test_and_set_bit(0, &txx9wdt_alive))
++	lock_kernel();
++	if (test_and_set_bit(0, &txx9wdt_alive)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	if (__raw_readl(&txx9wdt_reg->tcr) & TXx9_TMTCR_TCE) {
+ 		clear_bit(0, &txx9wdt_alive);
+@@ -82,6 +86,7 @@ static int txx9wdt_open(struct inode *in
+ 		__module_get(THIS_MODULE);
+ 
+ 	txx9wdt_start();
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+Index: linux-2.6/drivers/watchdog/w83627hf_wdt.c
 ===================================================================
---- linux-2.6.orig/drivers/rtc/rtc-m41t80.c
-+++ linux-2.6/drivers/rtc/rtc-m41t80.c
-@@ -17,6 +17,7 @@
- #include <linux/init.h>
- #include <linux/kernel.h>
- #include <linux/slab.h>
+--- linux-2.6.orig/drivers/watchdog/w83627hf_wdt.c
++++ linux-2.6/drivers/watchdog/w83627hf_wdt.c
+@@ -28,6 +28,7 @@
+ 
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
 +#include <linux/smp_lock.h>
- #include <linux/string.h>
- #include <linux/i2c.h>
- #include <linux/rtc.h>
-@@ -655,12 +656,16 @@ static int wdt_ioctl(struct inode *inode
+ #include <linux/types.h>
+ #include <linux/miscdevice.h>
+ #include <linux/watchdog.h>
+@@ -256,13 +257,17 @@ wdt_ioctl(struct inode *inode, struct fi
+ static int
+ wdt_open(struct inode *inode, struct file *file)
+ {
+-	if (test_and_set_bit(0, &wdt_is_open))
++	lock_kernel();
++	if (test_and_set_bit(0, &wdt_is_open)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 	/*
+ 	 *	Activate
+ 	 */
+ 
+ 	wdt_ping();
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+Index: linux-2.6/drivers/watchdog/w83697hf_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/w83697hf_wdt.c
++++ linux-2.6/drivers/watchdog/w83697hf_wdt.c
+@@ -27,6 +27,7 @@
+ 
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
++#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/miscdevice.h>
+ #include <linux/watchdog.h>
+@@ -280,13 +281,17 @@ wdt_ioctl(struct inode *inode, struct fi
+ static int
+ wdt_open(struct inode *inode, struct file *file)
+ {
+-	if (test_and_set_bit(0, &wdt_is_open))
++	lock_kernel();
++	if (test_and_set_bit(0, &wdt_is_open)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 	/*
+ 	 *	Activate
+ 	 */
+ 
+ 	wdt_enable();
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+Index: linux-2.6/drivers/watchdog/w83877f_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/w83877f_wdt.c
++++ linux-2.6/drivers/watchdog/w83877f_wdt.c
+@@ -41,6 +41,7 @@
+ 
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
++#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/timer.h>
+ #include <linux/jiffies.h>
+@@ -214,11 +215,15 @@ static ssize_t fop_write(struct file * f
+ static int fop_open(struct inode * inode, struct file * file)
+ {
+ 	/* Just in case we're already talking to someone... */
+-	if(test_and_set_bit(0, &wdt_is_open))
++	lock_kernel();
++	if(test_and_set_bit(0, &wdt_is_open)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	/* Good, fire up the show */
+ 	wdt_startup();
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+Index: linux-2.6/drivers/watchdog/w83977f_wdt.c
+===================================================================
+--- linux-2.6.orig/drivers/watchdog/w83977f_wdt.c
++++ linux-2.6/drivers/watchdog/w83977f_wdt.c
+@@ -17,6 +17,7 @@
+ 
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
++#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/kernel.h>
+ #include <linux/fs.h>
+@@ -290,13 +291,17 @@ static int wdt_get_status(int *status)
  static int wdt_open(struct inode *inode, struct file *file)
  {
- 	if (MINOR(inode->i_rdev) == WATCHDOG_MINOR) {
--		if (test_and_set_bit(0, &wdt_is_open))
-+		lock_kernel();
-+		if (test_and_set_bit(0, &wdt_is_open)) {
-+			unlock_kernel();
- 			return -EBUSY;
-+		}
- 		/*
- 		 *	Activate
- 		 */
- 		wdt_is_open = 1;
-+		unlock_kernel();
- 		return 0;
- 	}
- 	return -ENODEV;
-Index: linux-2.6/drivers/s390/block/dasd_eer.c
-===================================================================
---- linux-2.6.orig/drivers/s390/block/dasd_eer.c
-+++ linux-2.6/drivers/s390/block/dasd_eer.c
-@@ -15,6 +15,7 @@
- #include <linux/device.h>
- #include <linux/poll.h>
- #include <linux/mutex.h>
-+#include <linux/smp_lock.h>
- 
- #include <asm/uaccess.h>
- #include <asm/atomic.h>
-@@ -525,6 +526,7 @@ static int dasd_eer_open(struct inode *i
- 	eerb = kzalloc(sizeof(struct eerbuffer), GFP_KERNEL);
- 	if (!eerb)
- 		return -ENOMEM;
+ 	/* If the watchdog is alive we don't need to start it again */
+-	if( test_and_set_bit(0, &timer_alive) )
 +	lock_kernel();
- 	eerb->buffer_page_count = eer_pages;
- 	if (eerb->buffer_page_count < 1 ||
- 	    eerb->buffer_page_count > INT_MAX / PAGE_SIZE) {
-@@ -532,6 +534,7 @@ static int dasd_eer_open(struct inode *i
- 		MESSAGE(KERN_WARNING, "can't open device since module "
- 			"parameter eer_pages is smaller then 1 or"
- 			" bigger then %d", (int)(INT_MAX / PAGE_SIZE));
++	if( test_and_set_bit(0, &timer_alive) ) {
 +		unlock_kernel();
- 		return -EINVAL;
- 	}
- 	eerb->buffersize = eerb->buffer_page_count * PAGE_SIZE;
-@@ -539,12 +542,14 @@ static int dasd_eer_open(struct inode *i
- 			       GFP_KERNEL);
-         if (!eerb->buffer) {
- 		kfree(eerb);
-+		unlock_kernel();
-                 return -ENOMEM;
- 	}
- 	if (dasd_eer_allocate_buffer_pages(eerb->buffer,
- 					   eerb->buffer_page_count)) {
- 		kfree(eerb->buffer);
- 		kfree(eerb);
-+		unlock_kernel();
- 		return -ENOMEM;
- 	}
- 	filp->private_data = eerb;
-@@ -552,6 +557,7 @@ static int dasd_eer_open(struct inode *i
- 	list_add(&eerb->list, &bufferlist);
- 	spin_unlock_irqrestore(&bufferlock, flags);
+ 		return -EBUSY;
++	}
  
-+	unlock_kernel();
- 	return nonseekable_open(inp,filp);
- }
+ 	if (nowayout)
+ 		__module_get(THIS_MODULE);
  
-Index: linux-2.6/drivers/s390/char/monreader.c
-===================================================================
---- linux-2.6.orig/drivers/s390/char/monreader.c
-+++ linux-2.6/drivers/s390/char/monreader.c
-@@ -340,6 +340,7 @@ static int mon_open(struct inode *inode,
- 	/*
- 	 * only one user allowed
- 	 */
-+	lock_kernel();
- 	rc = -EBUSY;
- 	if (test_and_set_bit(MON_IN_USE, &mon_in_use))
- 		goto out;
-@@ -377,6 +378,7 @@ static int mon_open(struct inode *inode,
- 	}
- 	P_INFO("open, established connection to *MONITOR service\n\n");
- 	filp->private_data = monpriv;
-+	unlock_kernel();
- 	return nonseekable_open(inode, filp);
- 
- out_path:
-@@ -386,6 +388,7 @@ out_priv:
- out_use:
- 	clear_bit(MON_IN_USE, &mon_in_use);
- out:
-+	unlock_kernel();
- 	return rc;
- }
- 
-Index: linux-2.6/drivers/s390/char/monwriter.c
-===================================================================
---- linux-2.6.orig/drivers/s390/char/monwriter.c
-+++ linux-2.6/drivers/s390/char/monwriter.c
-@@ -12,6 +12,7 @@
- #include <linux/moduleparam.h>
- #include <linux/init.h>
- #include <linux/errno.h>
-+#include <linux/smp_lock.h>
- #include <linux/types.h>
- #include <linux/kernel.h>
- #include <linux/miscdevice.h>
-@@ -179,10 +180,12 @@ static int monwrite_open(struct inode *i
- 	monpriv = kzalloc(sizeof(struct mon_private), GFP_KERNEL);
- 	if (!monpriv)
- 		return -ENOMEM;
-+	lock_kernel();
- 	INIT_LIST_HEAD(&monpriv->list);
- 	monpriv->hdr_to_read = sizeof(monpriv->hdr);
- 	mutex_init(&monpriv->thread_mutex);
- 	filp->private_data = monpriv;
-+	unlock_kernel();
- 	return nonseekable_open(inode, filp);
- }
- 
-Index: linux-2.6/drivers/s390/char/vmcp.c
-===================================================================
---- linux-2.6.orig/drivers/s390/char/vmcp.c
-+++ linux-2.6/drivers/s390/char/vmcp.c
-@@ -16,6 +16,7 @@
- #include <linux/kernel.h>
- #include <linux/miscdevice.h>
- #include <linux/module.h>
-+#include <linux/smp_lock.h>
- #include <asm/cpcmd.h>
- #include <asm/debug.h>
- #include <asm/uaccess.h>
-@@ -39,11 +40,14 @@ static int vmcp_open(struct inode *inode
- 	session = kmalloc(sizeof(*session), GFP_KERNEL);
- 	if (!session)
- 		return -ENOMEM;
-+
-+	lock_kernel();
- 	session->bufsize = PAGE_SIZE;
- 	session->response = NULL;
- 	session->resp_size = 0;
- 	mutex_init(&session->mutex);
- 	file->private_data = session;
+ 	wdt_start();
 +	unlock_kernel();
  	return nonseekable_open(inode, file);
  }
  
-Index: linux-2.6/drivers/s390/char/vmwatchdog.c
+Index: linux-2.6/drivers/watchdog/wafer5823wdt.c
 ===================================================================
---- linux-2.6.orig/drivers/s390/char/vmwatchdog.c
-+++ linux-2.6/drivers/s390/char/vmwatchdog.c
-@@ -13,6 +13,7 @@
+--- linux-2.6.orig/drivers/watchdog/wafer5823wdt.c
++++ linux-2.6/drivers/watchdog/wafer5823wdt.c
+@@ -29,6 +29,7 @@
  #include <linux/module.h>
  #include <linux/moduleparam.h>
- #include <linux/watchdog.h>
+ #include <linux/miscdevice.h>
 +#include <linux/smp_lock.h>
+ #include <linux/watchdog.h>
+ #include <linux/fs.h>
+ #include <linux/ioport.h>
+@@ -181,13 +182,17 @@ static int wafwdt_ioctl(struct inode *in
  
- #include <asm/ebcdic.h>
- #include <asm/io.h>
-@@ -131,11 +132,15 @@ static int __init vmwdt_probe(void)
- static int vmwdt_open(struct inode *i, struct file *f)
+ static int wafwdt_open(struct inode *inode, struct file *file)
  {
- 	int ret;
--	if (test_and_set_bit(0, &vmwdt_is_open))
+-	if (test_and_set_bit(0, &wafwdt_is_open))
 +	lock_kernel();
-+	if (test_and_set_bit(0, &vmwdt_is_open)) {
++	if (test_and_set_bit(0, &wafwdt_is_open)) {
 +		unlock_kernel();
  		return -EBUSY;
 +	}
- 	ret = vmwdt_keepalive();
- 	if (ret)
- 		clear_bit(0, &vmwdt_is_open);
+ 
+ 	/*
+ 	 *      Activate
+ 	 */
+ 	wafwdt_start();
 +	unlock_kernel();
- 	return ret ? ret : nonseekable_open(i, f);
+ 	return nonseekable_open(inode, file);
  }
  
-Index: linux-2.6/drivers/s390/crypto/zcrypt_api.c
+Index: linux-2.6/drivers/watchdog/wdrtas.c
 ===================================================================
---- linux-2.6.orig/drivers/s390/crypto/zcrypt_api.c
-+++ linux-2.6/drivers/s390/crypto/zcrypt_api.c
-@@ -34,6 +34,7 @@
- #include <linux/fs.h>
- #include <linux/proc_fs.h>
- #include <linux/compat.h>
-+#include <linux/smp_lock.h>
- #include <asm/atomic.h>
- #include <asm/uaccess.h>
- #include <linux/hw_random.h>
-@@ -300,7 +301,9 @@ static ssize_t zcrypt_write(struct file 
-  */
- static int zcrypt_open(struct inode *inode, struct file *filp)
- {
-+	lock_kernel();
- 	atomic_inc(&zcrypt_open_count);
-+	unlock_kernel();
- 	return 0;
- }
- 
-Index: linux-2.6/drivers/sbus/char/cpwatchdog.c
-===================================================================
---- linux-2.6.orig/drivers/sbus/char/cpwatchdog.c
-+++ linux-2.6/drivers/sbus/char/cpwatchdog.c
-@@ -279,6 +279,7 @@ static inline int wd_opt_timeout(void)
- 
- static int wd_open(struct inode *inode, struct file *f)
- {
-+	lock_kernel();
- 	switch(iminor(inode))
- 	{
- 		case WD0_MINOR:
-@@ -291,6 +292,7 @@ static int wd_open(struct inode *inode, 
- 			f->private_data = &wd_dev.watchdog[WD2_ID];
- 			break;
- 		default:
-+			unlock_kernel();
- 			return(-ENODEV);
- 	}
- 
-@@ -304,11 +306,13 @@ static int wd_open(struct inode *inode, 
- 						(void *)wd_dev.regs)) {
- 			printk("%s: Cannot register IRQ %d\n", 
- 				WD_OBPNAME, wd_dev.irq);
-+			unlock_kernel();
- 			return(-EBUSY);
- 		}
- 		wd_dev.initialized = 1;
- 	}
- 
-+	unlock_kernel();
- 	return(nonseekable_open(inode, f));
- }
- 
-Index: linux-2.6/drivers/sbus/char/display7seg.c
-===================================================================
---- linux-2.6.orig/drivers/sbus/char/display7seg.c
-+++ linux-2.6/drivers/sbus/char/display7seg.c
-@@ -94,6 +94,7 @@ static int d7s_open(struct inode *inode,
- {
- 	if (D7S_MINOR != iminor(inode))
- 		return -ENODEV;
-+	cycle_kernel_lock();
- 	atomic_inc(&d7s_users);
- 	return 0;
- }
-Index: linux-2.6/drivers/sbus/char/envctrl.c
-===================================================================
---- linux-2.6.orig/drivers/sbus/char/envctrl.c
-+++ linux-2.6/drivers/sbus/char/envctrl.c
-@@ -27,6 +27,7 @@
- #include <linux/miscdevice.h>
- #include <linux/kmod.h>
+--- linux-2.6.orig/drivers/watchdog/wdrtas.c
++++ linux-2.6/drivers/watchdog/wdrtas.c
+@@ -33,6 +33,7 @@
+ #include <linux/module.h>
+ #include <linux/notifier.h>
  #include <linux/reboot.h>
 +#include <linux/smp_lock.h>
+ #include <linux/types.h>
+ #include <linux/watchdog.h>
  
- #include <asm/ebus.h>
- #include <asm/uaccess.h>
-@@ -694,6 +695,7 @@ envctrl_ioctl(struct file *file, unsigne
- static int
- envctrl_open(struct inode *inode, struct file *file)
+@@ -403,13 +404,16 @@ static int
+ wdrtas_open(struct inode *inode, struct file *file)
  {
-+	cycle_kernel_lock();
- 	file->private_data = NULL;
- 	return 0;
- }
-Index: linux-2.6/drivers/sbus/char/flash.c
-===================================================================
---- linux-2.6.orig/drivers/sbus/char/flash.c
-+++ linux-2.6/drivers/sbus/char/flash.c
-@@ -127,9 +127,13 @@ flash_read(struct file * file, char __us
- static int
- flash_open(struct inode *inode, struct file *file)
- {
--	if (test_and_set_bit(0, (void *)&flash.busy) != 0)
+ 	/* only open once */
 +	lock_kernel();
-+	if (test_and_set_bit(0, (void *)&flash.busy) != 0) {
+ 	if (atomic_inc_return(&wdrtas_miscdev_open) > 1) {
+ 		atomic_dec(&wdrtas_miscdev_open);
 +		unlock_kernel();
  		return -EBUSY;
-+	}
+ 	}
  
+ 	wdrtas_timer_start();
+ 	wdrtas_timer_keepalive();
 +	unlock_kernel();
- 	return 0;
+ 
+ 	return nonseekable_open(inode, file);
  }
- 
-Index: linux-2.6/drivers/sbus/char/jsflash.c
+Index: linux-2.6/drivers/watchdog/wdt.c
 ===================================================================
---- linux-2.6.orig/drivers/sbus/char/jsflash.c
-+++ linux-2.6/drivers/sbus/char/jsflash.c
-@@ -27,6 +27,7 @@
-  */
- 
+--- linux-2.6.orig/drivers/watchdog/wdt.c
++++ linux-2.6/drivers/watchdog/wdt.c
+@@ -34,6 +34,7 @@
+ #include <linux/interrupt.h>
  #include <linux/module.h>
+ #include <linux/moduleparam.h>
 +#include <linux/smp_lock.h>
  #include <linux/types.h>
- #include <linux/errno.h>
  #include <linux/miscdevice.h>
-@@ -417,11 +418,17 @@ static int jsf_mmap(struct file * file, 
+ #include <linux/watchdog.h>
+@@ -405,12 +406,16 @@ static int wdt_ioctl(struct inode *inode
  
- static int jsf_open(struct inode * inode, struct file * filp)
+ static int wdt_open(struct inode *inode, struct file *file)
  {
--
--	if (jsf0.base == 0) return -ENXIO;
--	if (test_and_set_bit(0, (void *)&jsf0.busy) != 0)
+-	if(test_and_set_bit(0, &wdt_is_open))
 +	lock_kernel();
-+	if (jsf0.base == 0) {
-+		unlock_kernel();
-+		return -ENXIO;
-+	}
-+	if (test_and_set_bit(0, (void *)&jsf0.busy) != 0) {
++	if(test_and_set_bit(0, &wdt_is_open)) {
 +		unlock_kernel();
  		return -EBUSY;
 +	}
- 
+ 	/*
+ 	 *	Activate
+ 	 */
+ 	wdt_start();
 +	unlock_kernel();
- 	return 0;	/* XXX What security? */
+ 	return nonseekable_open(inode, file);
  }
  
-Index: linux-2.6/drivers/sbus/char/openprom.c
+Index: linux-2.6/drivers/watchdog/wdt285.c
 ===================================================================
---- linux-2.6.orig/drivers/sbus/char/openprom.c
-+++ linux-2.6/drivers/sbus/char/openprom.c
-@@ -33,6 +33,7 @@
+--- linux-2.6.orig/drivers/watchdog/wdt285.c
++++ linux-2.6/drivers/watchdog/wdt285.c
+@@ -18,6 +18,7 @@
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
+ #include <linux/types.h>
++#include <linux/smp_lock.h>
  #include <linux/kernel.h>
- #include <linux/errno.h>
- #include <linux/slab.h>
-+#include <linux/smp_lock.h>
- #include <linux/string.h>
- #include <linux/miscdevice.h>
- #include <linux/init.h>
-@@ -689,9 +690,11 @@ static int openprom_open(struct inode * 
- 	if (!data)
- 		return -ENOMEM;
- 
-+	lock_kernel();
- 	data->current_node = of_find_node_by_path("/");
- 	data->lastnode = data->current_node;
- 	file->private_data = (void *) data;
-+	unlock_kernel();
- 
- 	return 0;
- }
-Index: linux-2.6/drivers/sbus/char/riowatchdog.c
-===================================================================
---- linux-2.6.orig/drivers/sbus/char/riowatchdog.c
-+++ linux-2.6/drivers/sbus/char/riowatchdog.c
-@@ -11,6 +11,7 @@
- #include <linux/errno.h>
- #include <linux/init.h>
- #include <linux/miscdevice.h>
-+#include <linux/smp_lock.h>
- 
- #include <asm/io.h>
- #include <asm/ebus.h>
-@@ -116,6 +117,7 @@ static void riowd_starttimer(void)
- 
- static int riowd_open(struct inode *inode, struct file *filp)
- {
-+	cycle_kernel_lock();
- 	nonseekable_open(inode, filp);
- 	return 0;
- }
-Index: linux-2.6/drivers/sbus/char/rtc.c
-===================================================================
---- linux-2.6.orig/drivers/sbus/char/rtc.c
-+++ linux-2.6/drivers/sbus/char/rtc.c
-@@ -12,6 +12,7 @@
-  */
- 
- #include <linux/module.h>
-+#include <linux/smp_lock.h>
- #include <linux/types.h>
- #include <linux/errno.h>
- #include <linux/miscdevice.h>
-@@ -213,6 +214,7 @@ static int rtc_open(struct inode *inode,
+ #include <linux/fs.h>
+ #include <linux/mm.h>
+@@ -69,11 +70,16 @@ static int watchdog_open(struct inode *i
  {
  	int ret;
  
+-	if (*CSR_SA110_CNTL & (1 << 13))
 +	lock_kernel();
- 	spin_lock_irq(&mostek_lock);
- 	if (rtc_busy) {
- 		ret = -EBUSY;
-@@ -221,6 +223,7 @@ static int rtc_open(struct inode *inode,
- 		ret = 0;
- 	}
- 	spin_unlock_irq(&mostek_lock);
-+	unlock_kernel();
++	if (*CSR_SA110_CNTL & (1 << 13)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
  
+-	if (test_and_set_bit(1, &timer_alive))
++	if (test_and_set_bit(1, &timer_alive)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
+ 
+ 	reload = soft_margin * (mem_fclk_21285 / 256);
+ 
+@@ -98,6 +104,7 @@ static int watchdog_open(struct inode *i
+ 	ret = 0;
+ #endif
+ 	nonseekable_open(inode, file);
++	unlock_kernel();
  	return ret;
  }
-Index: linux-2.6/drivers/sbus/char/uctrl.c
+ 
+Index: linux-2.6/drivers/watchdog/wdt977.c
 ===================================================================
---- linux-2.6.orig/drivers/sbus/char/uctrl.c
-+++ linux-2.6/drivers/sbus/char/uctrl.c
-@@ -9,6 +9,7 @@
- #include <linux/delay.h>
- #include <linux/interrupt.h>
- #include <linux/slab.h>
+--- linux-2.6.orig/drivers/watchdog/wdt977.c
++++ linux-2.6/drivers/watchdog/wdt977.c
+@@ -24,6 +24,7 @@
+ 
+ #include <linux/module.h>
+ #include <linux/moduleparam.h>
 +#include <linux/smp_lock.h>
- #include <linux/ioport.h>
- #include <linux/init.h>
- #include <linux/miscdevice.h>
-@@ -211,8 +212,10 @@ uctrl_ioctl(struct inode *inode, struct 
- static int
- uctrl_open(struct inode *inode, struct file *file)
- {
-+	lock_kernel();
- 	uctrl_get_event_status();
- 	uctrl_get_external_status();
-+	unlock_kernel();
- 	return 0;
- }
- 
-Index: linux-2.6/drivers/scsi/megaraid/megaraid_mm.c
-===================================================================
---- linux-2.6.orig/drivers/scsi/megaraid/megaraid_mm.c
-+++ linux-2.6/drivers/scsi/megaraid/megaraid_mm.c
-@@ -15,6 +15,7 @@
-  * Common management module
-  */
- #include <linux/sched.h>
-+#include <linux/smp_lock.h>
- #include "megaraid_mm.h"
- 
- 
-@@ -96,6 +97,7 @@ mraid_mm_open(struct inode *inode, struc
- 	 */
- 	if (!capable(CAP_SYS_ADMIN)) return (-EACCES);
- 
-+	cycle_kernel_lock();
- 	return 0;
- }
- 
-Index: linux-2.6/drivers/scsi/scsi_tgt_if.c
-===================================================================
---- linux-2.6.orig/drivers/scsi/scsi_tgt_if.c
-+++ linux-2.6/drivers/scsi/scsi_tgt_if.c
-@@ -21,6 +21,7 @@
-  */
- #include <linux/miscdevice.h>
- #include <linux/file.h>
-+#include <linux/smp_lock.h>
- #include <net/tcp.h>
- #include <scsi/scsi.h>
- #include <scsi/scsi_cmnd.h>
-@@ -321,6 +322,7 @@ static int tgt_open(struct inode *inode,
- {
- 	tx_ring.tr_idx = rx_ring.tr_idx = 0;
- 
-+	cycle_kernel_lock();
- 	return 0;
- }
- 
-Index: linux-2.6/fs/dlm/user.c
-===================================================================
---- linux-2.6.orig/fs/dlm/user.c
-+++ linux-2.6/fs/dlm/user.c
-@@ -15,6 +15,7 @@
- #include <linux/poll.h>
- #include <linux/signal.h>
- #include <linux/spinlock.h>
-+#include <linux/smp_lock.h>
- #include <linux/dlm.h>
- #include <linux/dlm_device.h>
- 
-@@ -618,13 +619,17 @@ static int device_open(struct inode *ino
- 	struct dlm_user_proc *proc;
- 	struct dlm_ls *ls;
- 
-+	lock_kernel();
- 	ls = dlm_find_lockspace_device(iminor(inode));
--	if (!ls)
-+	if (!ls) {
-+		unlock_kernel();
- 		return -ENOENT;
-+	}
- 
- 	proc = kzalloc(sizeof(struct dlm_user_proc), GFP_KERNEL);
- 	if (!proc) {
- 		dlm_put_lockspace(ls);
-+		unlock_kernel();
- 		return -ENOMEM;
- 	}
- 
-@@ -636,6 +641,7 @@ static int device_open(struct inode *ino
- 	spin_lock_init(&proc->locks_spin);
- 	init_waitqueue_head(&proc->wait);
- 	file->private_data = proc;
-+	unlock_kernel();
- 
- 	return 0;
- }
-@@ -870,6 +876,7 @@ static unsigned int device_poll(struct f
- 
- static int ctl_device_open(struct inode *inode, struct file *file)
- {
-+	cycle_kernel_lock();
- 	file->private_data = NULL;
- 	return 0;
- }
-Index: linux-2.6/fs/ocfs2/stack_user.c
-===================================================================
---- linux-2.6.orig/fs/ocfs2/stack_user.c
-+++ linux-2.6/fs/ocfs2/stack_user.c
-@@ -21,6 +21,7 @@
+ #include <linux/types.h>
+ #include <linux/kernel.h>
  #include <linux/fs.h>
- #include <linux/miscdevice.h>
- #include <linux/mutex.h>
-+#include <linux/smp_lock.h>
- #include <linux/reboot.h>
- #include <asm/uaccess.h>
- 
-@@ -619,10 +620,12 @@ static int ocfs2_control_open(struct ino
- 		return -ENOMEM;
- 	p->op_this_node = -1;
- 
+@@ -258,13 +259,17 @@ static int wdt977_get_status(int *status
+ static int wdt977_open(struct inode *inode, struct file *file)
+ {
+ 	/* If the watchdog is alive we don't need to start it again */
+-	if( test_and_set_bit(0,&timer_alive) )
 +	lock_kernel();
- 	mutex_lock(&ocfs2_control_lock);
- 	file->private_data = p;
- 	list_add(&p->op_list, &ocfs2_control_private_list);
- 	mutex_unlock(&ocfs2_control_lock);
-+	unlock_kernel();
- 
- 	return 0;
- }
-Index: linux-2.6/kernel/pm_qos_params.c
-===================================================================
---- linux-2.6.orig/kernel/pm_qos_params.c
-+++ linux-2.6/kernel/pm_qos_params.c
-@@ -358,15 +358,19 @@ static int pm_qos_power_open(struct inod
- 	int ret;
- 	long pm_qos_class;
- 
-+	lock_kernel();
- 	pm_qos_class = find_pm_qos_object_by_minor(iminor(inode));
- 	if (pm_qos_class >= 0) {
- 		filp->private_data = (void *)pm_qos_class;
- 		sprintf(name, "process_%d", current->pid);
- 		ret = pm_qos_add_requirement(pm_qos_class, name,
- 					PM_QOS_DEFAULT_VALUE);
--		if (ret >= 0)
-+		if (ret >= 0) {
-+			unlock_kernel();
- 			return 0;
-+		}
- 	}
-+	unlock_kernel();
- 
- 	return -EPERM;
- }
-Index: linux-2.6/kernel/power/user.c
-===================================================================
---- linux-2.6.orig/kernel/power/user.c
-+++ linux-2.6/kernel/power/user.c
-@@ -9,6 +9,7 @@
-  *
-  */
- 
-+#include <linux/smp_lock.h>
- #include <linux/suspend.h>
- #include <linux/syscalls.h>
- #include <linux/reboot.h>
-@@ -69,15 +70,20 @@ static int snapshot_open(struct inode *i
- 	struct snapshot_data *data;
- 	int error;
- 
--	if (!atomic_add_unless(&snapshot_device_available, -1, 0))
-+	lock_kernel();
-+	if (!atomic_add_unless(&snapshot_device_available, -1, 0)) {
++	if (test_and_set_bit(0,&timer_alive)) {
 +		unlock_kernel();
  		return -EBUSY;
 +	}
  
- 	if ((filp->f_flags & O_ACCMODE) == O_RDWR) {
- 		atomic_inc(&snapshot_device_available);
-+		unlock_kernel();
- 		return -ENOSYS;
- 	}
- 	if(create_basic_memory_bitmaps()) {
- 		atomic_inc(&snapshot_device_available);
-+		unlock_kernel();
- 		return -ENOMEM;
- 	}
- 	nonseekable_open(inode, filp);
-@@ -100,11 +106,13 @@ static int snapshot_open(struct inode *i
- 	}
- 	if (error) {
- 		atomic_inc(&snapshot_device_available);
-+		unlock_kernel();
- 		return error;
- 	}
- 	data->frozen = 0;
- 	data->ready = 0;
- 	data->platform_support = 0;
+ 	if (nowayout)
+ 		__module_get(THIS_MODULE);
+ 
+ 	wdt977_start();
 +	unlock_kernel();
- 
- 	return 0;
+ 	return nonseekable_open(inode, file);
  }
-Index: linux-2.6/net/irda/irnet/irnet.h
+ 
+Index: linux-2.6/drivers/watchdog/wdt_pci.c
 ===================================================================
---- linux-2.6.orig/net/irda/irnet/irnet.h
-+++ linux-2.6/net/irda/irnet/irnet.h
-@@ -241,6 +241,7 @@
+--- linux-2.6.orig/drivers/watchdog/wdt_pci.c
++++ linux-2.6/drivers/watchdog/wdt_pci.c
+@@ -38,6 +38,7 @@
+ #include <linux/interrupt.h>
  #include <linux/module.h>
- 
- #include <linux/kernel.h>
+ #include <linux/moduleparam.h>
 +#include <linux/smp_lock.h>
- #include <linux/skbuff.h>
- #include <linux/tty.h>
- #include <linux/proc_fs.h>
-Index: linux-2.6/net/irda/irnet/irnet_ppp.c
-===================================================================
---- linux-2.6.orig/net/irda/irnet/irnet_ppp.c
-+++ linux-2.6/net/irda/irnet/irnet_ppp.c
-@@ -479,6 +479,7 @@ dev_irnet_open(struct inode *	inode,
-   ap = kzalloc(sizeof(*ap), GFP_KERNEL);
-   DABORT(ap == NULL, -ENOMEM, FS_ERROR, "Can't allocate struct irnet...\n");
+ #include <linux/types.h>
+ #include <linux/miscdevice.h>
+ #include <linux/watchdog.h>
+@@ -426,8 +427,11 @@ static int wdtpci_ioctl(struct inode *in
  
-+  lock_kernel();
-   /* initialize the irnet structure */
-   ap->file = file;
+ static int wdtpci_open(struct inode *inode, struct file *file)
+ {
+-	if (down_trylock(&open_sem))
++	lock_kernel();
++	if (down_trylock(&open_sem)) {
++		unlock_kernel();
+ 		return -EBUSY;
++	}
  
-@@ -500,6 +501,7 @@ dev_irnet_open(struct inode *	inode,
-     {
-       DERROR(FS_ERROR, "Can't setup IrDA link...\n");
-       kfree(ap);
-+      unlock_kernel();
-       return err;
-     }
- 
-@@ -510,6 +512,7 @@ dev_irnet_open(struct inode *	inode,
-   file->private_data = ap;
- 
-   DEXIT(FS_TRACE, " - ap=0x%p\n", ap);
-+  unlock_kernel();
-   return 0;
+ 	if (nowayout) {
+ 		__module_get(THIS_MODULE);
+@@ -436,6 +440,7 @@ static int wdtpci_open(struct inode *ino
+ 	 *	Activate
+ 	 */
+ 	wdtpci_start();
++	unlock_kernel();
+ 	return nonseekable_open(inode, file);
  }
  
 
