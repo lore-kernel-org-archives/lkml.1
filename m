@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762493AbYESP3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762689AbYESP3v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762493AbYESP3d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 11:29:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762151AbYESP3B
+	id S1762689AbYESP3v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 11:29:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758068AbYESP3k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 11:29:01 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37087 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762130AbYESP27 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 11:28:59 -0400
-Subject: Re: [RFC] make wext wireless bits optional and deprecate them
-From: Dan Williams <dcbw@redhat.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Marcel Holtmann <marcel@holtmann.org>, netdev <netdev@vger.kernel.org>,
-       Jean Tourrilhes <jt@hpl.hp.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-In-Reply-To: <1211199368.6252.19.camel@johannes.berg>
-References: <1211026337.3827.25.camel@johannes.berg>
-	 <CD993362-B1DE-4E4D-8A5B-E9E2AD7DA04C@holtmann.org>
-	 (sfid-20080517_154639_384202_6D3479C2)  <1211032475.6252.2.camel@johannes.berg>
-	 <1211117795.686.15.camel@localhost.localdomain>
-	 <1211199368.6252.19.camel@johannes.berg>
-Content-Type: text/plain
-Date: Mon, 19 May 2008 11:24:46 -0400
-Message-Id: <1211210686.12187.6.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	Mon, 19 May 2008 11:29:40 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:53019 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762544AbYESP3j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 11:29:39 -0400
+Message-ID: <48319CC2.705@firstfloor.org>
+Date: Mon, 19 May 2008 17:29:06 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Christoph Hellwig <hch@infradead.org>, corbet@lwn.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [2/11] Add unlocked_fasync
+References: <20080519231.561421028@firstfloor.org>	<20080519123111.97C0C1B41FF@basil.firstfloor.org>	<20080519140339.GB24267@infradead.org>	<483191F9.3010706@firstfloor.org> <20080519161224.030b82c3@core>
+In-Reply-To: <20080519161224.030b82c3@core>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-05-19 at 14:16 +0200, Johannes Berg wrote:
-> > Instead of testing for wireless/, best thing would probably be to call
-> > SIOCGIWRANGE on the device and if it returns EOPNOTSUP then it's not
-> > wireless.  Some drivers may have to load firmware to figure out
-> > supported rates and encryption capabilities, but to be honest, NM does
-> > this to detect wireless devices and I haven't run into any issues in 4
-> > years using it.  If there are issues with drivers, then we need to fix
-> > the driver too.
+Alan Cox wrote:
+> On Mon, 19 May 2008 16:43:05 +0200
+> Andi Kleen <andi@firstfloor.org> wrote:
 > 
-> I was about to propose calling SIOCGIWNAME since that is what
-> wireless-tools do and that linux/wireless.h indicates.
+>>> I'd rather do a properly flag day and move lock_kernel into the
+>>> instances instead of adding this _unlocked gunk.
+>> I've considered that, but it's a bit too many fasync instances
+>> all over the tree, so I chose this method.
+> 
+> If I can do all the watchdog drivers in one go then we can do all the
+> fasync interfaces in one go. It isn't that hard other than making sure
+> people didn't hide them in odd places on platforms not usually built.
 
-Hmm; NAME is pretty useless.  That's fine to do, I guess WEXT requires
-that NAME return _something_ at least.  NAME should never ever be used
-for anything more, but since wireless-tools appears to do this that's
-fine.
+If it's that easy for you please audit the ones then I didn't cover yet and send 
+me a list.
 
-Dan
+The good news is that none of them I looked at actually needed BKL
+(or perhaps I just missed it)
 
+-Andi
 
