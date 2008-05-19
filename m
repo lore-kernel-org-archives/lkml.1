@@ -1,29 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762877AbYESTVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761537AbYEST2G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762877AbYESTVW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 15:21:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762550AbYESTU5
+	id S1761537AbYEST2G (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 15:28:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757779AbYEST1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 15:20:57 -0400
-Received: from fk-out-0910.google.com ([209.85.128.188]:60907 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762465AbYESTU4 (ORCPT
+	Mon, 19 May 2008 15:27:54 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:55919 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757246AbYEST1x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 15:20:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=QCwTmSO2rMA/IZlWgX0JP23jnHJXEj4qDFLicx64NIggXg5elrijRZluTALGwgFbGhp5zjRwsNpYzCpB1BlGi3kcyJUgPl/yoDTjrh0jwXS6z9a4TXv3X8e55wdVyGZXuBaEn664YC9gV3RhpYeKjFw9VqlW4Pu5FOjhCNI+HHU=
-Message-ID: <4831D2F3.6020506@gmail.com>
-Date: Mon, 19 May 2008 21:20:19 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.12 (X11/20071114)
+	Mon, 19 May 2008 15:27:53 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4831D484.10505@s5r6.in-berlin.de>
+Date: Mon, 19 May 2008 21:27:00 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080419 SeaMonkey/1.1.9
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: i2c@lm-sensors.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] i2c: align i2c_device_id
-References: <1211203124-3096-1-git-send-email-jirislaby@gmail.com> <20080519210003.65b65d14@hyperion.delvare>
-In-Reply-To: <20080519210003.65b65d14@hyperion.delvare>
+To: Jonathan Corbet <corbet@lwn.net>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Alexander Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH, RFC] Char dev BKL pushdown v2
+References: <19845.1211148908@vena.lwn.net> <4831BD08.6030600@s5r6.in-berlin.de>
+In-Reply-To: <4831BD08.6030600@s5r6.in-berlin.de>
 X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
@@ -31,14 +34,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/19/2008 09:00 PM, Jean Delvare wrote:
-> Hi Jiri,
+I wrote:
+> Jonathan Corbet wrote:
+>>  drivers/ieee1394/dv1394.c                    |    6 +++-
+>>  drivers/ieee1394/raw1394.c                   |    3 ++
+>>  drivers/ieee1394/video1394.c                 |   18 +++++++++---
+> ...
+>>       ieee1394: cdev lock_kernel() pushdown
+> 
+> I have yet to look at these drivers in detail whether they need BKL or 
+> not.  They likely don't.
 
-Hi.
+video1394 needs it to serialize module init vs. open.  The race 
+condition there can be prevented by splitting hpsb_register_highlevel() 
+into an _init and a _register function.  I will follow up with a patch.
 
-> Thanks for this patch, it's in my i2c tree now and will be sent to
-> Linus by the end of the week. I wasn't aware of this possible alignment
-> issue, sorry.
-
-To be honest, neither I was until I hit it while testing hid bus (where I did 
-the same mistake). Thanks.
+dv1394 and raw1394 do not need the BKL in their open() methods AFAICS.
+-- 
+Stefan Richter
+-=====-==--- -=-= =--==
+http://arcgraph.de/sr/
