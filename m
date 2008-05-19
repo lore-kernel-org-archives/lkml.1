@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759989AbYESREH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761274AbYESRE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759989AbYESREH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 13:04:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbYESRDw
+	id S1761274AbYESRE2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 13:04:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760163AbYESREI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 13:03:52 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:14711 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752765AbYESRDv (ORCPT
+	Mon, 19 May 2008 13:04:08 -0400
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:5592 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759523AbYESREG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 13:03:51 -0400
-Date: Mon, 19 May 2008 10:01:45 -0700
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Dan Williams <dcbw@redhat.com>, Marcel Holtmann <marcel@holtmann.org>,
-       netdev <netdev@vger.kernel.org>, Jean Tourrilhes <jt@hpl.hp.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] make wext wireless bits optional and deprecate them
-Message-ID: <20080519170145.GA21500@bougret.hpl.hp.com>
-Reply-To: jt@hpl.hp.com
-References: <1211026337.3827.25.camel@johannes.berg> <CD993362-B1DE-4E4D-8A5B-E9E2AD7DA04C@holtmann.org> <1211032475.6252.2.camel@johannes.berg> <1211117795.686.15.camel@localhost.localdomain> <1211199368.6252.19.camel@johannes.berg>
+	Mon, 19 May 2008 13:04:06 -0400
+Message-ID: <4831B2E2.8030700@panasas.com>
+Date: Mon, 19 May 2008 20:03:30 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1211199368.6252.19.camel@johannes.berg>
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: jt@hpl.hp.com
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Jean Tourrilhes <jt@hpl.hp.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Alan Stern <stern@rowland.harvard.edu>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>,
+       USB Storage list <usb-storage@lists.one-eyed-alien.net>,
+       SCSI development list <linux-scsi@vger.kernel.org>
+Subject: Re: [Re: Linux 2.6.26-rc2] Write protect on on
+References: <Pine.LNX.4.44L0.0805191106270.15266-100000@iolanthe.rowland.org> <4831A60A.5010308@panasas.com> <alpine.LFD.1.10.0805190929170.32253@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.10.0805190929170.32253@woody.linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 May 2008 17:03:34.0696 (UTC) FILETIME=[45E4EA80:01C8B9D2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 19, 2008 at 02:16:08PM +0200, Johannes Berg wrote:
+Linus Torvalds wrote:
 > 
-> > Instead of testing for wireless/, best thing would probably be to call
-> > SIOCGIWRANGE on the device and if it returns EOPNOTSUP then it's not
-> > wireless.  Some drivers may have to load firmware to figure out
-> > supported rates and encryption capabilities, but to be honest, NM does
-> > this to detect wireless devices and I haven't run into any issues in 4
-> > years using it.  If there are issues with drivers, then we need to fix
-> > the driver too.
+> On Mon, 19 May 2008, Boaz Harrosh wrote:
 > 
-> I was about to propose calling SIOCGIWNAME since that is what
-> wireless-tools do and that linux/wireless.h indicates.
+>> Alan Stern wrote:
+>>> Yes, it never worked properly.  But now it fails in a bad way whereas 
+>>> before it failed in a benign way.
+>> You do realize that, that was pure lock to have a zero'ed buffer.
 > 
-> johannes
+> Umm. Maybe it SHOULD NOT HAVE BEEN!
+> 
+> The thing is, if we can get partial results back, we really *should* 
+> either error out, or we should have at least cleared the buffer (either 
+> beforehand or when seeing the partial result). Returning a buffer with the 
+> old random contents is a bug.
+> 
+> And if clearing the buffer not only avoids any security holes and possible 
+> undefined behavior, but _also_ ends up fixing the write protect sense 
+> issue, all the better!
+> 
+> 		Linus
+> --
 
-	Yes, using SIOCGIWNAME is the right way to do it, it's the
-only ioctl that is guarantee to always be present and require minimal
-processing from the driver (it should be a static string). If you look
-at iwconfig, this is how it does it.
-	(Sorry for the delay replying, I was chasing kids and
-electrical faults this week end).
+Sure, inspecting other places that emulate MODE_SENSE, (And inspecting the scsi
+spec) all zeros is a very good scsi response. Alan do you want to send a fix for all
+places that initiate a MODE_SENSE command, specifically at
+scsi_scan.c::scsi_unlock_floptical() ? (Some other places do)
 
-	Have fun...
-
-	Jean
+Boaz
 
