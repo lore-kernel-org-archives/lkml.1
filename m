@@ -1,66 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761711AbYESR3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762145AbYESRc6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761711AbYESR3y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 13:29:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756727AbYESR3q
+	id S1762145AbYESRc6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 13:32:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754891AbYESRcs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 13:29:46 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:14563 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756670AbYESR3p (ORCPT
+	Mon, 19 May 2008 13:32:48 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38543 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752322AbYESRcr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 13:29:45 -0400
-Date: Mon, 19 May 2008 10:29:20 -0700
-From: Randy Dunlap <randy.dunlap@ORACLE.COM>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: corbet@lwn.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [2/11] Add unlocked_fasync
-Message-Id: <20080519102920.fe46d7b5.randy.dunlap@oracle.com>
-In-Reply-To: <20080519123111.97C0C1B41FF@basil.firstfloor.org>
-References: <20080519231.561421028@firstfloor.org>
-	<20080519123111.97C0C1B41FF@basil.firstfloor.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 19 May 2008 13:32:47 -0400
+Date: Mon, 19 May 2008 10:27:17 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+cc: Alan Stern <stern@rowland.harvard.edu>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>,
+       USB Storage list <usb-storage@lists.one-eyed-alien.net>,
+       SCSI development list <linux-scsi@vger.kernel.org>
+Subject: Re: [Re: Linux 2.6.26-rc2] Write protect on on
+In-Reply-To: <4831B2E2.8030700@panasas.com>
+Message-ID: <alpine.LFD.1.10.0805191026120.32253@woody.linux-foundation.org>
+References: <Pine.LNX.4.44L0.0805191106270.15266-100000@iolanthe.rowland.org> <4831A60A.5010308@panasas.com> <alpine.LFD.1.10.0805190929170.32253@woody.linux-foundation.org> <4831B2E2.8030700@panasas.com>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 May 2008 14:31:11 +0200 (CEST) Andi Kleen wrote:
-
-> Index: linux/Documentation/filesystems/vfs.txt
-> ===================================================================
-> --- linux.orig/Documentation/filesystems/vfs.txt
-> +++ linux/Documentation/filesystems/vfs.txt
-> @@ -755,6 +755,7 @@ struct file_operations {
->  	int (*fsync) (struct file *, struct dentry *, int datasync);
->  	int (*aio_fsync) (struct kiocb *, int datasync);
->  	int (*fasync) (int, struct file *, int);
-> +	int (*unlocked_fasync) (int, struct file *, int);
->  	int (*lock) (struct file *, int, struct file_lock *);
->  	ssize_t (*readv) (struct file *, const struct iovec *, unsigned long, loff_t *);
->  	ssize_t (*writev) (struct file *, const struct iovec *, unsigned long, loff_t *);
-> @@ -814,7 +815,9 @@ otherwise noted.
->    fsync: called by the fsync(2) system call
->  
->    fasync: called by the fcntl(2) system call when asynchronous
-> -	(non-blocking) mode is enabled for a file
-> +	(non-blocking) mode is enabled for a file. BKL hold
-
-?                                                  BKL is held.
-
-> +
-> +  unlocked_fasync: like fasync, but without BKL
->  
->    lock: called by the fcntl(2) system call for F_GETLK, F_SETLK, and F_SETLKW
->    	commands
 
 
----
-~Randy
+On Mon, 19 May 2008, Boaz Harrosh wrote:
+> 
+> Sure, inspecting other places that emulate MODE_SENSE, (And inspecting the scsi
+> spec) all zeros is a very good scsi response. Alan do you want to send a fix for all
+> places that initiate a MODE_SENSE command, specifically at
+> scsi_scan.c::scsi_unlock_floptical() ? (Some other places do)
+
+I was actualyl more thinking that the safest thing to do would be to just 
+pre-clear the sense buffer. Then, if some driver doesn't fill it 
+correctly, big deal..
+
+It's not like pre-clearing the bugger is a performance issue.
+
+		Linus
