@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757341AbYESII3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758770AbYESIIx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757341AbYESII3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 04:08:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758473AbYESIII
+	id S1758770AbYESIIx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 04:08:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753808AbYESIIa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 04:08:08 -0400
-Received: from fnoeppeil48.netpark.at ([217.175.205.176]:40572 "EHLO
-	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758232AbYESIIG (ORCPT
+	Mon, 19 May 2008 04:08:30 -0400
+Received: from ns1.siteground211.com ([209.62.36.12]:44711 "EHLO
+	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758766AbYESII1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 04:08:06 -0400
-Date: Mon, 19 May 2008 10:08:04 +0200
-From: Manuel Lauss <mano@roarinelk.homelinux.net>
-To: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org, drzeus@drzeus.cx,
-       sshtylyov@ru.mvista.com
-Subject: [PATCH 8/9] au1xmmc: abort requests early if no card is present
-Message-ID: <20080519080804.GI21985@roarinelk.homelinux.net>
-References: <20080519080339.GA21985@roarinelk.homelinux.net>
+	Mon, 19 May 2008 04:08:27 -0400
+X-Greylist: delayed 1104 seconds by postgrey-1.27 at vger.kernel.org; Mon, 19 May 2008 04:08:27 EDT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080519080339.GA21985@roarinelk.homelinux.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Date: Mon, 19 May 2008 02:49:54 -0500
+From: Felipe Balbi <me@felipebalbi.com>
+To: Bryan Wu <cooloney@kernel.org>
+Cc: David Brownell <david-b@pacbell.net>, tony@atomide.com,
+       linux-omap@vger.kernel.org, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] MUSB: 2 patches to fix some bug found on Blackfin
+In-Reply-To: <386072610805182339n2e141b83q4b8f9804194088e4@mail.gmail.com>
+References: <1211022081-27298-1-git-send-email-cooloney@kernel.org> <200805170737.37806.david-b@pacbell.net> <386072610805182339n2e141b83q4b8f9804194088e4@mail.gmail.com>
+Message-ID: <71636ee466dd53c366eb11d8fc981e8b@felipebalbi.com>
+User-Agent: FelipeBalbi.com Webmail
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - serv01.siteground211.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - felipebalbi.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From ec41439903048bf98e301dbd03426c63156ebc0e Mon Sep 17 00:00:00 2001
-From: Manuel Lauss <mlau@msc-ge.com>
-Date: Sun, 18 May 2008 15:52:43 +0200
-Subject: [PATCH] au1xmmc: abort requests early if no card is present
 
-Don't process a request if no card is present.
 
-Signed-off-by: Manuel Lauss <mano@roarinelk.homelinux.net>
----
- drivers/mmc/host/au1xmmc.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+On Mon, 19 May 2008 14:39:10 +0800, "Bryan Wu" <cooloney@kernel.org> wrote:
+> On Sat, May 17, 2008 at 10:37 PM, David Brownell <david-b@pacbell.net>
+> wrote:
+>> On Saturday 17 May 2008, Bryan Wu wrote:
+>>>
+>>> We discussed these 4 bugs before. Now we fixed them.
+>>> Please review following 2 patches.
+>>
+>> They looked plausible to me ... though the urb->status
+>> one is a bit of a band-aid, and when that field finally
+>> vanishes a better fix will be needed.
+>>
+> 
+> OK, so is there any plan for merge the MUSB to mainline and finally to
+> remove the urb->status?
 
-diff --git a/drivers/mmc/host/au1xmmc.c b/drivers/mmc/host/au1xmmc.c
-index be09a14..0b30582 100644
---- a/drivers/mmc/host/au1xmmc.c
-+++ b/drivers/mmc/host/au1xmmc.c
-@@ -689,6 +689,13 @@ static void au1xmmc_request(struct mmc_host *mmc, struct mmc_request *mrq)
- 	host->mrq = mrq;
- 	host->status = HOST_S_CMD;
- 
-+	/* fail request immediately if no card is present */
-+	if (0 == au1xmmc_card_inserted(host)) {
-+		mrq->cmd->error = -ETIMEDOUT;
-+		au1xmmc_finish_request(host);
-+		return;
-+	}
-+
- 	if (mrq->data) {
- 		FLUSH_FIFO(host);
- 		ret = au1xmmc_prepare_data(host, mrq->data);
+I was planing to do this by the end of this year or as soon as I make all
+usb if tests pass again. I'm out of tools for that right now :-s
+
+But of course we can check this with more caution since we have this bug
+to solve before sending it to mainline.
+
 -- 
-1.5.5.1
+Best Regards,
+
+Felipe Balbi
+http://felipebalbi.com
+me@felipebalbi.com
 
