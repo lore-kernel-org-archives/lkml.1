@@ -1,76 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758672AbYESMSy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758752AbYESMWw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758672AbYESMSy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 08:18:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756239AbYESMSl
+	id S1758752AbYESMWw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 08:22:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754957AbYESMWo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 08:18:41 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:58772 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755571AbYESMSk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 08:18:40 -0400
-Subject: Re: [RFC] make wext wireless bits optional and deprecate them
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Dan Williams <dcbw@redhat.com>
-Cc: Marcel Holtmann <marcel@holtmann.org>, netdev <netdev@vger.kernel.org>,
-       Jean Tourrilhes <jt@hpl.hp.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-In-Reply-To: <1211117795.686.15.camel@localhost.localdomain>
-References: <1211026337.3827.25.camel@johannes.berg>
-	 <CD993362-B1DE-4E4D-8A5B-E9E2AD7DA04C@holtmann.org>
-	 (sfid-20080517_154639_384202_6D3479C2)  <1211032475.6252.2.camel@johannes.berg>
-	 <1211117795.686.15.camel@localhost.localdomain>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-2UPt4qKi1GJIRJ0lv493"
-Date: Mon, 19 May 2008 14:16:08 +0200
-Message-Id: <1211199368.6252.19.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Mon, 19 May 2008 08:22:44 -0400
+Received: from ozlabs.org ([203.10.76.45]:55429 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754870AbYESMWo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 08:22:44 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Avi Kivity <avi@qumranet.com>
+Subject: Re: [PATCH] virtio_net: free transmit skbs in a timer
+Date: Mon, 19 May 2008 22:21:51 +1000
+User-Agent: KMail/1.9.9
+Cc: Mark McLoughlin <markmc@redhat.com>, Anthony Liguori <aliguori@us.ibm.com>,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org
+References: <1209565906-9019-1-git-send-email-markmc@redhat.com> <200805191152.28409.rusty@rustcorp.com.au> <483155D4.2090700@qumranet.com>
+In-Reply-To: <483155D4.2090700@qumranet.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805192221.52072.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 19 May 2008 20:26:28 Avi Kivity wrote:
+> Rusty Russell wrote:
+> >> We should have thought of this before, though, especially as Xen does
+> >>
+> >> this or something very similar:
+> >>> /* Shared ring page */                            \
+> >>> struct __name##_sring {                            \
+> >>>     RING_IDX req_prod, req_event;                    \
+> >>>     RING_IDX rsp_prod, rsp_event;                    \
+> >>>     uint8_t  pad[48];                            \
+> >>>     union __name##_sring_entry ring[1]; /* variable-length */        \
+> >>> };                                    \
+> >>
+> >> req_event and rsp_event allow the other side to indicate when it wants a
+> >> notification.
+> >
+> > Well, we do have such a thing, in the ring suppression flags.
+>
+> Can you point me at this?
 
---=-2UPt4qKi1GJIRJ0lv493
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Ah, sorry, I misunderstood.  No, we don't have a threshold like this, we
+have an all-or-nothing flag in each direction.
+
+We have the ability to add new fields to the rings.  I've put it on my
+TODO to benchmark what this does.  It may or may not help.  In this case,
+notification when there are no more packets in xmit ring would be
+sufficient.  We already kick the host when we fill a ring even if
+it says it doesn't need it, perhaps this would be symmetry.
+
+> >   Note that DaveM
+> > is talking about moving network tx queue into the net drivers themselves,
+> > which will make them much more efficient (ie. drain entire queue before
+> > kick), which may again change the balance of what the Right Thing is.
+>
+> That depends on whether Linux knows whether more packets are coming.
+
+The current problem is that hard_start_xmit gets called with a packet, and 
+has no idea if there are more in the tx queue.  By having the driver control
+the queue, it can at least tell that.
+
+The question remains whether this will be sufficient for tx mitigation.  A
+program may be about to write more to the socket, and we can't know that.
+But it can hardly hurt.
+
+In turn, sending out such packet bursts will have an effect on packet reuse.  
+
+Cheers,
+Rusty.
 
 
-> Instead of testing for wireless/, best thing would probably be to call
-> SIOCGIWRANGE on the device and if it returns EOPNOTSUP then it's not
-> wireless.  Some drivers may have to load firmware to figure out
-> supported rates and encryption capabilities, but to be honest, NM does
-> this to detect wireless devices and I haven't run into any issues in 4
-> years using it.  If there are issues with drivers, then we need to fix
-> the driver too.
-
-I was about to propose calling SIOCGIWNAME since that is what
-wireless-tools do and that linux/wireless.h indicates.
-
-johannes
-
---=-2UPt4qKi1GJIRJ0lv493
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIVAwUASDFvh6Vg1VMiehFYAQJKwxAAxJfeWZ6v5iO3NVKN7OZjWGU/2UeLhwUI
-r603e7JOqfCIfBVBvmtHeOOmdSfon4KPAHg/MJPv7dVZEtuWN6iRGfeAHfYWHeee
-MUj/jQl1uvj9Pya2MGsBB9MM5te85bvha2bCNEOsTPfcggIkDInzvQ89P1+8CdUy
-o/1dk3b56Os4L4jWVyLpttm0QSZ5tKgXfqnKoDSf7KFMfBTktWu9icQaLddwkwSr
-lGE+HJyx6a6SMycPO5H2oH3rtCv7hv5CLig7vL1mMruPLdelHd7jgUwAi2qSRJG3
-MP8DwS5V8JkzEaSqvPGEqCcU9JcMr71nvWdG0+JhTdQIFzg3mjD7BOI0yD4oUdYQ
-otCkmulKr0tEpKiOC13FidNd/J8MHfW+v5TWOJk1n7TVWDJPobCVy9i0EE3NLWlb
-ItyZ8beEhq02ZK58F3S+GDIG0q7zxuwDvQGbSpExv35UA325hU8EyhZbSZ57rpro
-IkiGYz28OFhvSgbjh4KyMj1MRskrh/s+UEq2OzamwhrLU8Qi2OHY/7HbLNxhthLo
-hnmod+3SAuYIwn7y3nq2YO9nMJ84HkSM9I3LRf4mM8y8r56LwN9IbmHFgttLGvY7
-LznGs0HPgIMReV2cDBXxqgGayNb47oPmkTNxYZFUGArk2/EDbHS9dJfepzrry+rA
-XnZILSbWi1w=
-=2st1
------END PGP SIGNATURE-----
-
---=-2UPt4qKi1GJIRJ0lv493--
 
