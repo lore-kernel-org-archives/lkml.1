@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762915AbYESUi7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763407AbYESUjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762915AbYESUi7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 16:38:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756868AbYESUiv
+	id S1763407AbYESUjU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 16:39:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761231AbYESUjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 16:38:51 -0400
-Received: from sj-iport-3.cisco.com ([171.71.176.72]:58779 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757935AbYESUit (ORCPT
+	Mon, 19 May 2008 16:39:05 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45869 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756868AbYESUjC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 16:38:49 -0400
-X-IronPort-AV: E=Sophos;i="4.27,511,1204531200"; 
-   d="scan'208";a="69825828"
-From: Roland Dreier <rdreier@cisco.com>
-To: corbet@lwn.net (Jonathan Corbet)
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Alexander Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH, RFC] Char dev BKL pushdown v2
-References: <12244.1211204278@vena.lwn.net>
-X-Message-Flag: Warning: May contain useful information
-Date: Mon, 19 May 2008 13:38:48 -0700
-In-Reply-To: <12244.1211204278@vena.lwn.net> (Jonathan Corbet's message of
-	"Mon, 19 May 2008 07:37:58 -0600")
-Message-ID: <adahccu6nc7.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 19 May 2008 20:38:49.0045 (UTC) FILETIME=[57723050:01C8B9F0]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+	Mon, 19 May 2008 16:39:02 -0400
+Date: Mon, 19 May 2008 13:38:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <RANDY.DUNLAP@ORACLE.COM>
+Cc: randy.dunlap@ORACLE.COM, linux-kernel@vger.kernel.org, sam@ravnborg.org
+Subject: Re: -mm merge plans for 2.6.26
+Message-Id: <20080519133841.92de7f90.akpm@linux-foundation.org>
+In-Reply-To: <8779236.1211228793416.JavaMail.oracle@acsmt301.oracle.com>
+References: <20080420072053.6bcb7884.akpm@linux-foundation.org>
+	<20080516170310.35d7b407.randy.dunlap@oracle.com>
+	<20080516172816.9d98c0f2.akpm@linux-foundation.org>
+	<482E3DDA.7050708@oracle.com>
+	<482E5F80.7040206@oracle.com>
+	<8779236.1211228793416.JavaMail.oracle@acsmt301.oracle.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > If you're sure that this code doesn't need the BKL (and it kind of
- > looked that way to me), the preferred approach seems to be to put in a
- > comment to that effect so that it's clear that the code has been looked
- > at.  So sending me a patch which does this would be great.
+On Mon, 19 May 2008 15:26:33 -0500 (CDT)
+Randy Dunlap <RANDY.DUNLAP@ORACLE.COM> wrote:
 
-OK, will send such a patch after auditing more carefully.  Just to be
-very clear, the issue is to make sure the locking is sufficient to
-protect against multiple racing open calls to the same character device?
+> > > Oh yeah.  I think that this was fixed by
+> > > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=b11caa7c7063ea92a0a58115d3fc6d038ed89510 
+> > > 
+> > > but I'll check/verify/confirm that.
+> > > 
+> > 
+> > Yes, it builds fine now (built against 2.6.26-rc2-git5).
+> 
+> Andrew,
+> Will you merge this now?
 
- - R.
+It's had no public testing because I disabled it in config, so it looks
+like a 2.6.27 thing to me.
+
+>  or do you want me to see about Sam merging it?
+> or something else?
+
+I'll move it into my send-to-Sam queue.
