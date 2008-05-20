@@ -1,90 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764256AbYETBEj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763542AbYETBMo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764256AbYETBEj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 21:04:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760890AbYETBE3
+	id S1763542AbYETBMo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 21:12:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbYETBMf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 21:04:29 -0400
-Received: from mail.gmx.net ([213.165.64.20]:51973 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1760799AbYETBE2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 21:04:28 -0400
-X-Authenticated: #31440617
-X-Provags-ID: V01U2FsdGVkX19QonpYDK9QZl7N9IL6sYGezimslzUh5KzdxALTyn
-	Qc4WrsZYa6EVNA
-Message-ID: <48322370.4060704@gmx.net>
-Date: Tue, 20 May 2008 03:03:44 +0200
-From: Dragan Noveski <perodog@gmx.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.12 (X11/20080420)
+	Mon, 19 May 2008 21:12:35 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:64240 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751085AbYETBMe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 21:12:34 -0400
+Message-ID: <4832259E.8070105@cn.fujitsu.com>
+Date: Tue, 20 May 2008 09:13:02 +0800
+From: Peng Haitao <penght@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: problems compiling alsa-drivers-1.0.16 into 2.6.25.4 kernel
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: sgrubb@redhat.com
+CC: linux-audit@redhat.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] remove useless argument type in audit_filter_user()
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hallo list,
-steven rostedt asked me to pass this problem to this list, so here it goes.
+The second argument "type" is not used in audit_filter_user(), so I think that type can be removed. If I'm wrong, please tell me.
 
-when running make in the alsa-driver source  i get this error:
+Signed-off-by: Peng Haitao <penght@cn.fujitsu.com>
+---
+ include/linux/audit.h |    2 +-
+ kernel/audit.c        |    2 +-
+ kernel/auditfilter.c  |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-.....
-make[1]: Entering directory `/usr/src/linux-2.6.25'
-  CC [M]  
-/home/nowhiskey/software/nove/alsa/alsa-driver-1.0.16/acore/hwdep.o
-  CC [M]  
-/home/nowhiskey/software/nove/alsa/alsa-driver-1.0.16/acore/memory_wrapper.o
-  CC [M]  
-/home/nowhiskey/software/nove/alsa/alsa-driver-1.0.16/acore/memalloc.o
-  CC [M]  
-/home/nowhiskey/software/nove/alsa/alsa-driver-1.0.16/acore/sgbuf.o
-  CC [M]  /home/nowhiskey/software/nove/alsa/alsa-driver-1.0.16/acore/pcm.o
-  CC [M]  
-/home/nowhiskey/software/nove/alsa/alsa-driver-1.0.16/acore/pcm_native.o
-  CC [M]  
-/home/nowhiskey/software/nove/alsa/alsa-driver-1.0.16/acore/pcm_lib.o
-  CC [M]  
-/home/nowhiskey/software/nove/alsa/alsa-driver-1.0.16/acore/pcm_timer.o
-  CC [M]  
-/home/nowhiskey/software/nove/alsa/alsa-driver-1.0.16/acore/pcm_misc.o
-  CC [M]  
-/home/nowhiskey/software/nove/alsa/alsa-driver-1.0.16/acore/pcm_memory.o
-  CC [M]  
-/home/nowhiskey/software/nove/alsa/alsa-driver-1.0.16/acore/rawmidi.o
-  CC [M]  
-/home/nowhiskey/software/nove/alsa/alsa-driver-1.0.16/acore/rtctimer.o
-  CC [M]  
-/home/nowhiskey/software/nove/alsa/alsa-driver-1.0.16/acore/timer.o
-/home/nowhiskey/software/nove/alsa/alsa-driver-1.0.16/acore/timer.c: In 
-function 'snd_timer_request':
-/home/nowhiskey/software/nove/alsa/alsa-driver-1.0.16/acore/timer.c:155: 
-error: wrong type argument to unary exclamation mark
-make[3]: *** 
-[/home/nowhiskey/software/nove/alsa/alsa-driver-1.0.16/acore/timer.o] 
-Fehler 1
-make[2]: *** 
-[/home/nowhiskey/software/nove/alsa/alsa-driver-1.0.16/acore] Fehler 2
-make[1]: *** 
-[_module_/home/nowhiskey/software/nove/alsa/alsa-driver-1.0.16] Fehler 2
-make[1]: Leaving directory `/usr/src/linux-2.6.25'
-make: *** [compile] Fehler 2
-......
+diff --git a/include/linux/audit.h b/include/linux/audit.h
+index 2af9ec0..018f143 100644
+--- a/include/linux/audit.h
++++ b/include/linux/audit.h
+@@ -537,7 +537,7 @@ extern void		    audit_log_d_path(struct audit_buffer *ab,
+ 					     struct path *path);
+ extern void		    audit_log_lost(const char *message);
+ 				/* Private API (for audit.c only) */
+-extern int audit_filter_user(struct netlink_skb_parms *cb, int type);
++extern int audit_filter_user(struct netlink_skb_parms *cb);
+ extern int audit_filter_type(int type);
+ extern int  audit_receive_filter(int type, int pid, int uid, int seq,
+ 			 void *data, size_t datasz, uid_t loginuid, u32 sid);
+diff --git a/kernel/audit.c b/kernel/audit.c
+index b782b04..136e559 100644
+--- a/kernel/audit.c
++++ b/kernel/audit.c
+@@ -645,7 +645,7 @@ static int audit_receive_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
+ 		if (!audit_enabled && msg_type != AUDIT_USER_AVC)
+ 			return 0;
+ 
+-		err = audit_filter_user(&NETLINK_CB(skb), msg_type);
++		err = audit_filter_user(&NETLINK_CB(skb));
+ 		if (err == 1) {
+ 			err = 0;
+ 			if (msg_type == AUDIT_USER_TTY) {
+diff --git a/kernel/auditfilter.c b/kernel/auditfilter.c
+index 2f2914b..46337f2 100644
+--- a/kernel/auditfilter.c
++++ b/kernel/auditfilter.c
+@@ -1714,7 +1714,7 @@ static int audit_filter_user_rules(struct netlink_skb_parms *cb,
+ 	return 1;
+ }
+ 
+-int audit_filter_user(struct netlink_skb_parms *cb, int type)
++int audit_filter_user(struct netlink_skb_parms *cb)
+ {
+ 	enum audit_state state = AUDIT_DISABLED;
+ 	struct audit_entry *e;
+-- 
+1.5.3
 
-the configure line i am using is:
+-- 
+Regards
+Peng Haitao
 
-./configure --with-isapnp=no --with-sequencer=yes --with-oss=yes 
---with-pcm-oss-plugins=yes 
---with-cards=virmidi,seq-dummy,hdsp,intel8x0,usb-audio 
---with-card-options=seq-rtctimer-default,support-old-api
-
-it works on 2.6.24.7-rt7 kernel, but it don't with the 2.6.25.4 vanilla.
-
-if you need any additional information on my system, please let me know.
-since i am not subscribed to this list, it would be good you CC the 
-messages of this thread to my email.
-
-cheers,
-doc
