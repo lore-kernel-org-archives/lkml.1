@@ -1,86 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760059AbYETBuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759048AbYETB5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760059AbYETBuV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 21:50:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755779AbYETBtw
+	id S1759048AbYETB5g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 21:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753945AbYETB5Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 21:49:52 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:10212 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753945AbYETBtv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 21:49:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NBuWlRoidnWO4moIHDkosFanmZNDtqe/548zt9yPyK5HuzrHuT5PXIMAD73Lwewe43VPEosOsOo0M1rjRwLDZOcdKyCw5UDQHJUgajVCMLMG5K3B4AAe8Y2txRG0f3Q+IbnAS9LcOD7PHWMipF+xxcoxJUTyWYoE8pJt8fEVT2k=
-Message-ID: <524f69650805191849ld32d627k3c2eff110dcf7f1a@mail.gmail.com>
-Date: Mon, 19 May 2008 20:49:49 -0500
-From: "Steve French" <smfrench@gmail.com>
-To: "Harvey Harrison" <harvey.harrison@gmail.com>
-Subject: Re: [2.6.27 patch] the scheduled smbfs removal
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Adrian Bunk" <bunk@kernel.org>, linux-kernel@vger.kernel.org,
-       "=?ISO-8859-1?Q?G=FCnter_Kukkukk?=" <linux@kukkukk.com>,
-       samba-technical@lists.samba.org, linux-cifs-client@lists.samba.org
-In-Reply-To: <1211244549.5915.111.camel@brick>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 19 May 2008 21:57:25 -0400
+Received: from mga11.intel.com ([192.55.52.93]:16530 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750741AbYETB5Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 21:57:25 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,513,1204531200"; 
+   d="scan'208";a="330124820"
+Date: Mon, 19 May 2008 18:57:24 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>, mingo@elte.hu, hpa@zytor.com,
+       tglx@linutronix.de, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, andi@firstfloor.org, roland@redhat.com,
+       drepper@redhat.com, Hongjiu.lu@intel.com, linux-kernel@vger.kernel.org,
+       arjan@linux.intel.com, rmk+lkml@arm.linux.org.uk, dan@debian.org,
+       asit.k.mallick@intel.com
+Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
+Message-ID: <20080520015723.GD30034@linux-os.sc.intel.com>
+References: <20080513011030.GA31448@linux-os.sc.intel.com> <18477.35703.679574.760417@harpo.it.uu.se> <20080518013416.GB30034@linux-os.sc.intel.com> <18481.37905.297556.288317@harpo.it.uu.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <524f69650805191700g3e875e86gcb966033e9be60c1@mail.gmail.com>
-	 <1211244549.5915.111.camel@brick>
+In-Reply-To: <18481.37905.297556.288317@harpo.it.uu.se>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 19, 2008 at 7:49 PM, Harvey Harrison
-<harvey.harrison@gmail.com> wrote:
-> On Mon, 2008-05-19 at 19:00 -0500, Steve French wrote:
->> Harvey Harrison <harvey.harrison@gmail.com> wrote on 05/19/2008
->> Note that some of the backlevel server support issues aren't handled
->> by smbfs either (and are hard due to protocol limitations). Guenter
->> Kukkukk had been tracking some of the issues with better backlevel
->> support (mostly for OS/2 and Win9x servers) so he might have more
->> information, but the obvious holes that come to mind are:
->>
->> a) utimes to backlevel (lanman) servers
->> b) For some pre-Unicode servers it would help to be able to change the
->> code page used when translating readdir responses - so that we can
->> convert the server's readdir results from the old DBCS code pages to
->> UTF-8.
->> c) optionally zeroing pages on the client to work around the few buggy
->> old servers which don't zero on expanding file size remotely.
->> d) support for ancient dos ("core smb") servers
->>
->> There are also a few places where Jeff Layton noticed the cifs code
->> would always try the more recent smb command (which fails) and only
->> then issue the backlevel SMB command (in a few of the places, it would
->> be safe to "remember" the "operation not supported" answer or
->> equivalent so we don't have to first try a command which will always
->> fail).
->
-> So it's generally people talking to older (or very old) servers that
-> would be affected by this?  What options would they have if smbfs were
-> removed?  Is there an alternative to smbfs that would work?  FUSE client?
+On Mon, May 19, 2008 at 04:52:01PM +0200, Mikael Pettersson wrote:
+> > But we can
+> >use some what similar magic, if the fxsave/fxrstor give away
+> >some of the fields at the end of fxsave image (today it is reserved
+> >and ignored during fxsave/fxrstor) for software use.
+> >We can then use these fields at the end of fpstate, to indicate the presence of
+> >xstate. But this requires some architecture changes like giving
+> >away this space for SW use. We can take this to architects and
+> >see what they think.
+> 
+> If the HW doesn't store anything valuable there, we could store
+> SW flags/cookies there on signal delivery, and clear them before
+> fxrstor (unless the HW is known to ignore those fields).
+> But it depends on how forgiving the HW is.
 
-They could use smbclient (an ftp like tool in the samba suite), but
-there are no obvious reasons for another file system.
+Ok. CPU folks are planning to make some of the bytes at the end of fxsave
+image, SW usable.
 
-There are some usability improvements that could be made in mount.cifs
-that might be all that is needed for 99% of the users of these very
-old servers.  Currently mounting to old servers such as os/2 and win95
-requires specifying a server "netbios name" (mount option
-"servernetbiosname" is needed since netbiosnames are often different
-than the server's tcp name) and also requires overriding the default
-security settings (since the lanamn mechanism is much weaker than the
-NTLMv2 and Kerberos mechanisms).   If we had an easier way of passing
-information back across the mount sys call back to a mount helper this
-would be easier to address (since we could send information on the
-server's offered dialects and security mechanisms back to user space
-so we could prompt the user).
+We can use some of these fields, to represent the extended state
+presence with a cookie, save area size, mask of the state
+stored. If needed, we can include the start address of the fpstate pointer
+(also as part of the cookie), so that we can detect the situation,
+where apps are just memcopying sizeof(struct _fpstate) from the fpstate
+pointer (but not aware of the extended state).
 
--- 
-Thanks,
+we don't need any ucontext_t extensions any more and just
+use the fpstate pointer to indicate the extended state aswell, right?
 
-Steve
+In addition, we need to make sure that for 32bit non-rt sigframes, we
+don't modify the extramask[] offset.
+
+thanks,
+suresh
