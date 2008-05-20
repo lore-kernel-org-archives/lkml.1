@@ -1,68 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933955AbYETVMk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933909AbYETVQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933955AbYETVMk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 17:12:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761698AbYETVMa
+	id S933909AbYETVQU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 17:16:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760714AbYETVQM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 17:12:30 -0400
-Received: from www.tglx.de ([62.245.132.106]:35149 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760760AbYETVM3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 17:12:29 -0400
-Date: Tue, 20 May 2008 23:12:21 +0200
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <Uwe.Kleine-Koenig@digi.com>
-Cc: "Hans J. Koch" <hjk@linutronix.de>, Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] UIO: don't let UIO_CIF and UIO_SMX depend twice on UIO
-Message-ID: <20080520211219.GG3220@local>
-References: <20080520092312.GA10745@digi.com> <1211275482-11249-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1211275482-11249-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 20 May 2008 17:16:12 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41729
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1759997AbYETVQL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 17:16:11 -0400
+Date: Tue, 20 May 2008 14:16:07 -0700 (PDT)
+Message-Id: <20080520.141607.147404741.davem@davemloft.net>
+To: harvey.harrison@gmail.com
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] Remove all users of cpu_to_{le|be}{16|32|64}p
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1211311449.5915.193.camel@brick>
+References: <1211311449.5915.193.camel@brick>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 11:24:41AM +0200, Uwe Kleine-König wrote:
-> ae210f188614bb3d1ee3f19c64e28e3cdd44877c introduced a big "if UIO"/"endif"
-> where all uio drivers are defined.  So know there is no need for them to
-> depend explicitly on UIO.
+From: Harvey Harrison <harvey.harrison@gmail.com>
+Date: Tue, 20 May 2008 12:24:08 -0700
 
-Ahem, of course. Thanks!
-
-> 
-> Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
-
-Signed-off-by: Hans J. Koch <hjk@linutronix.de>
-
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 > ---
->  drivers/uio/Kconfig |    3 +--
->  1 files changed, 1 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
-> index a4aaab9..78e139c 100644
-> --- a/drivers/uio/Kconfig
-> +++ b/drivers/uio/Kconfig
-> @@ -15,7 +15,7 @@ if UIO
->  
->  config UIO_CIF
->  	tristate "generic Hilscher CIF Card driver"
-> -	depends on UIO && PCI
-> +	depends on PCI
->  	default n
->  	help
->  	  Driver for Hilscher CIF DeviceNet and Profibus cards.  This
-> @@ -28,7 +28,6 @@ config UIO_CIF
->  
->  config UIO_SMX
->  	tristate "SMX cryptengine UIO interface"
-> -	depends on UIO
->  	default n
->  	help
->  	  Userspace IO interface to the Cryptography engine found on the
-> -- 
-> 1.5.5.1
+> akpm: applies on top of the 21-patch aligned get/put helpers series.
+
+Can you provide some contextual information in the changelog
+message?
+
+Why are the cpu_to_*p() uses going away?  Do the normal cpu_to_*() now
+transparently emit the special other-endian loads and stores some
+cpus?
+
+You should always describe such things in your changelog message so
+people don't need to ask these kinds of questions.
