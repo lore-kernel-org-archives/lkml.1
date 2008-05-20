@@ -1,42 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760697AbYETG5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756813AbYETG5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760697AbYETG5V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 02:57:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754076AbYETG5L
+	id S1756813AbYETG5j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 02:57:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757278AbYETG51
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 02:57:11 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:41087 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754006AbYETG5J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 02:57:09 -0400
-Date: Tue, 20 May 2008 10:56:23 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: David Chinner <dgc@sgi.com>
-Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, andi@firstfloor.org,
-       Rik van Riel <riel@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       mpm@selenic.com
-Subject: Re: [patch 10/21] buffer heads: Support slab defrag
-Message-ID: <20080520065622.GA13968@2ka.mipt.ru>
-References: <20080510030831.796641881@sgi.com> <20080510030916.935905242@sgi.com> <20080512002403.GP103491721@sgi.com> <Pine.LNX.4.64.0805151041230.18708@schroedinger.engr.sgi.com> <20080515231045.GY155679365@sgi.com> <Pine.LNX.4.64.0805161000390.29603@schroedinger.engr.sgi.com> <20080519054554.GY103491721@sgi.com> <Pine.LNX.4.64.0805190942530.18431@schroedinger.engr.sgi.com> <20080520002503.GC173056135@sgi.com>
+	Tue, 20 May 2008 02:57:27 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:45939 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754076AbYETG50 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 02:57:26 -0400
+Date: Tue, 20 May 2008 16:02:42 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Johannes Weiner <hannes@saeurebad.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org
+Subject: Re: Possible partial miss in pages needed for zone's memory map?
+Message-Id: <20080520160242.9533c2ee.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080519231937.5fee7cf7.akpm@linux-foundation.org>
+References: <87y769f7i4.fsf@saeurebad.de>
+	<20080519231937.5fee7cf7.akpm@linux-foundation.org>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080520002503.GC173056135@sgi.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 10:25:03AM +1000, David Chinner (dgc@sgi.com) wrote:
-> +	filemap_fdatawrite_range(mapping, start, end);
+On Mon, 19 May 2008 23:19:37 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Sat, 17 May 2008 14:19:15 +0200 Johannes Weiner <hannes@saeurebad.de> wrote:
 > 
-> Where [start,end] span page->index and are is large enough
-> to get a substantial sized I/O to disk (say at least SWAP_CLUSTER_MAX
-> pages, preferrably larger for 4k page size machines).
+> > Hi,
+> > 
+> > I stumbled over the following in the zone initialization code.  Please
+> > let me know if I overlooked something here.
+> > 
+> 
+> hm, no takers.  Let's add linux-mm.
+> 
+> > 
+> > From: Johannes Weiner <hannes@saeurebad.de>
+> > Subject: [PATCH] Don't drop a partial page in a zone's memory map size
+> > 
+> > In a zone's present pages number, account for all pages occupied by the
+> > memory map, including a partial.
+> > 
+> > Signed-off-by: Johannes Weiner <hannes@saeurebad.de>
+> > ---
+> > 
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -3378,7 +3378,8 @@ static void __paginginit free_area_init_
+> >  		 * is used by this zone for memmap. This affects the watermark
+> >  		 * and per-cpu initialisations
+> >  		 */
+> > -		memmap_pages = (size * sizeof(struct page)) >> PAGE_SHIFT;
+> > +		memmap_pages =
+> > +			PAGE_ALIGN(size * sizeof(struct page)) >> PAGE_SHIFT;
+> >  		if (realsize >= memmap_pages) {
+> >  			realsize -= memmap_pages;
+> >  			printk(KERN_DEBUG
+> 
+> I looked in there for 30 seconds and collapsed in confusion over which
+> variables are in which units.
+> 
+Hmm, size * sizeof(struct page) is  multiple of PAGE_SIZE in many case.
+Becasue "size" is always alinged to (1 << MAX_ORDER -1) (I believe...).
 
-Or just sync_inode().
+ex.) In x86 case,
+   (1 << (MAX_ORDER(11) - 1)) * 4 (sizeof(long)) = (1 << 12) = PAGE_SIZE.
 
--- 
-	Evgeniy Polyakov
+But not sure on other archs with various params.
+I think above fix is correct.
+
+Thanks,
+-Kame
+
