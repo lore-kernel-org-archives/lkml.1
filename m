@@ -1,70 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766005AbYETUzT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933012AbYETU4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766005AbYETUzT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 16:55:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759539AbYETUzE
+	id S933012AbYETU4i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 16:56:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759421AbYETU42
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 16:55:04 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:44197 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758437AbYETUzD (ORCPT
+	Tue, 20 May 2008 16:56:28 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:30899 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756397AbYETU41 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 16:55:03 -0400
-Date: Tue, 20 May 2008 16:55:01 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Remy Bohmer <linux@bohmer.net>
-cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>
-Subject: Re: Compile bug in 2.6.24.8-rt7 on ARM
-In-Reply-To: <3efb10970805201337g2212835bl9ca26a3031141ce2@mail.gmail.com>
-Message-ID: <Pine.LNX.4.58.0805201650290.20236@gandalf.stny.rr.com>
-References: <3efb10970805201337g2212835bl9ca26a3031141ce2@mail.gmail.com>
+	Tue, 20 May 2008 16:56:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=mBbE25pUVgDXNo1vKrzTIMZbPR2V7Ouz8QKb7ziP9qENBmsHcJIKaxXXh+okSqbh6VtwH07H+sNt/HFOKuiB6jpuQGktGeYpgknZ4Ox8vyLUdA/hHhv6wK5ZPX7rkOD4aCQ+tR5p5ybZD5Msr0cs+ahXsl2US9SclFtsi2Ch6oM=
+Message-ID: <3efb10970805201356x4552859bof5f3f4f56f2ba676@mail.gmail.com>
+Date: Tue, 20 May 2008 22:56:12 +0200
+From: "Remy Bohmer" <linux@bohmer.net>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Subject: Compile warning rtmutex code on 2.6.24.7-rt8 (CC:LKML added)
+Cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Google-Sender-Auth: f8c2c3749bc3b305
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello Steven,
 
-On Tue, 20 May 2008, Remy Bohmer wrote:
+ Do you recognise these warnings? I do not know (yet) if these are ARM
+ specific...
 
-> Hello Steven,
->
-> Now I started looking at compiling 2.6.24.7-rt8 for ARM, and I found
-> another compile problem... ;-))
->
-> This one:
->  CC      arch/arm/kernel/process.o
-> arch/arm/kernel/process.c: In function 'cpu_idle':
-> arch/arm/kernel/process.c:175: error: implicit declaration of function
-> 'trace_preempt_exit_idle'
-> arch/arm/kernel/process.c:180: error: implicit declaration of function
-> 'trace_preempt_enter_idle'
->
-> These function do not appear to exist _anywhere_ in the kernel.
-> So these calls can safely be removed, I guess.
->
-> The offending patch can be found in the broken-out set under the name
-> arm-trace-preempt-idle.patch.
-> Attached you can find a fix for it (I expect that you will not need it)
+  CC      kernel/rtmutex.o
+ kernel/rtmutex.c: In function 'rt_write_fastlock':
+ kernel/rtmutex.c:1582: warning: initialization makes pointer from
+ integer without a cast
+ kernel/rtmutex.c: In function 'rt_write_fasttrylock':
+ kernel/rtmutex.c:1622: warning: initialization makes pointer from
+ integer without a cast
 
-Thanks Remy,
+ If so, do you have a fix for it?
 
-Yes that was left over from the latency_trace conversion to ftrace. Note,
-I have yet (nor anyone else) ported the new ftrace to arm. That is going
-to be needed soon.
+ Regards,
 
-If you want to do it (hint hint) don't waste your time on the -rt ftrace.
-That will soon be revamped to get back in line with upstream ftrace, which
-can be found here:
 
-git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
-
-Look for the ftrace branch. Any work on ftrace should be done against
-that. I will be working on getting -rt up to that version, but first I'll
-need to send over a few fixes to ftrace there too.
-
-Thanks,
-
--- Steve
-
+ Remy
