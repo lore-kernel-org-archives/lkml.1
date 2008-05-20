@@ -1,64 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932187AbYETTZv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760760AbYETT0N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932187AbYETTZv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 15:25:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756736AbYETTYr
+	id S1760760AbYETT0N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 15:26:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763515AbYETTYs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 15:24:47 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47930 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763096AbYETTYk (ORCPT
+	Tue, 20 May 2008 15:24:48 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:42193 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763255AbYETTYl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 15:24:40 -0400
-Date: Tue, 20 May 2008 12:23:56 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: hidave.darkstar@gmail.com, greg@kroah.com, kay.sievers@vrfy.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 1/3][-mm] add class_reclassify macro
-Message-Id: <20080520122356.63bd0000.akpm@linux-foundation.org>
-In-Reply-To: <20080520173640.GP2638@parisc-linux.org>
-References: <20080520095553.GA3201@darkstar.te-china.tietoenator.com>
-	<20080520030232.fc91b64e.akpm@linux-foundation.org>
-	<a8e1da0805200405t10fae448w589449e75a5abec6@mail.gmail.com>
-	<20080520103045.2bb0a033.akpm@linux-foundation.org>
-	<20080520173640.GP2638@parisc-linux.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 20 May 2008 15:24:41 -0400
+Date: Tue, 20 May 2008 15:24:36 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Tom Spink <tspink@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: UML fails to locate address space
+Message-ID: <20080520192436.GA12102@c2.user-mode-linux.org>
+References: <7b9198260805200408k1d6b70a8xc7e4c24106e5020f@mail.gmail.com> <20080520135238.GB6990@c2.user-mode-linux.org> <7b9198260805200659p6ed28403t9b0b0ea995f158d5@mail.gmail.com> <20080520161047.GA9598@c2.user-mode-linux.org> <7b9198260805200943x6fb15512o7ba35a40d006b215@mail.gmail.com> <20080520175624.GA10889@c2.user-mode-linux.org> <7b9198260805201101x5b0fabf8h4944a29c6a4cae96@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <7b9198260805201101x5b0fabf8h4944a29c6a4cae96@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 May 2008 11:36:41 -0600
-Matthew Wilcox <matthew@wil.cx> wrote:
-
-> On Tue, May 20, 2008 at 10:30:45AM -0700, Andrew Morton wrote:
-> > Well what are these lockdep warnings?  Normally such a warning means that
-> > we have a locking bug. I _assume_ that you've determined that the warnings
-> > are false-positives?
+On Tue, May 20, 2008 at 07:01:02PM +0100, Tom Spink wrote:
+> I'm a hardy.  I bet it's 893f802872c3.
 > 
-> Andrew, we already discussed this on the thread you started that you
-> then ignored ...
+> http://kernel.ubuntu.com/git?p=ubuntu/ubuntu-hardy.git;a=commitdiff;h=893f802872c3e3c6e4bb40c3be4845784b81b934
 
-rofl.
+Looks right, and mmap_min_addr is in mainline, just with a value of
+zero.  So, it looks like the right thing to do is read the value of
+/proc/sys/vm/mmap_min_addr and start bottom there.
 
-All pertinent information should be in a patch's changelog.  Then this
-sort of confusion will not occur.
+			Jeff
 
-> > The warning which Mariusz Kozlowski discovered ("Subject: Re:
-> > 2.6.26-rc2-mm1: possible circular locking dependency detected") was
-> > triggered by the "class semaphore to mutex" conversion and it looks
-> > like a real bug to me.  Would your patch prevent warnings such as that
-> > one from being available to us?
-> 
-> The problem is that you add one type of class which then adds devices
-> that are of another class.  This is not a bug.  My proposal is to give
-> each sysfs class its own lock class; Dave's is to only do it for the
-> two classes he knows about that do this.
-
-Well that sounds reasonable.  I'm not sure that we should introduce
-generic-looking helper infrastructure to do it, however.
-
-Anyway I'll happily sit back and let you guys and Greg sort this one out ;)
+-- 
+Work email - jdike at linux dot intel dot com
