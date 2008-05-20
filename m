@@ -1,76 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760760AbYETRJM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763442AbYETRJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760760AbYETRJM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 13:09:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754869AbYETRI7
+	id S1763442AbYETRJs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 13:09:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755278AbYETRJe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 13:08:59 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:57223 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754834AbYETRI6 (ORCPT
+	Tue, 20 May 2008 13:09:34 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:19730 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754869AbYETRJc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 13:08:58 -0400
-Message-ID: <483305A6.3040906@kerlabs.com>
-Date: Tue, 20 May 2008 19:08:54 +0200
-From: Louis Rilling <Louis.Rilling@kerlabs.com>
-Organization: Kerlabs
-User-Agent: IceDove 1.5.0.14pre (X11/20071018)
+	Tue, 20 May 2008 13:09:32 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Jamie Lokier <jamie@shareable.org>
+Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
+Date: Tue, 20 May 2008 13:08:03 -0400
+User-Agent: KMail/1.9.9
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <482DDA56.6000301@redhat.com> <200805201202.54420.chris.mason@oracle.com> <20080520162710.GM16676@shareable.org>
+In-Reply-To: <20080520162710.GM16676@shareable.org>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Joel.Becker@oracle.com, linux-kernel@vger.kernel.org,
-       ocfs2-devel@oss.oracle.com
-Subject: Re: [RFC][PATCH 0/3] configfs: Make nested default groups lockdep-friendly
-References: <20080520163320.025971210@kerlabs.com> <20080520095810.1d50d247@infradead.org>
-In-Reply-To: <20080520095810.1d50d247@infradead.org>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805201308.03956.chris.mason@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven a écrit :
-> On Tue, 20 May 2008 18:33:20 +0200
-> Louis Rilling <Louis.Rilling@kerlabs.com> wrote:
-> 
->> Hi all,
->>
->> The following patches fix lockdep warnings resulting from (correct)
->> recursive locking in configfs.
->>
->> Current lockdep annotations for inode mutexes in configfs are
->> lockdep-friendly provided that:
->> 1/ config_groups have at most one level of default groups (see
->>    configfs_attach_group()),
->> 2/ config_groups having default groups are never removed (see
->>    configfs_detach_prep()).
->>
->> Since lockdep does not handle such correct recursion, the idea is to
->> insert lockdep_off()/lockdep_on() for inode mutexes as soon as the
->> level of recursion of the I_MUTEX_PARENT -> I_MUTEX_CHILD dependency
->> pattern increases.
-> 
-> I'm... not entirely happy with such a solution ;(
-> 
-> there must be a better one.
+On Tuesday 20 May 2008, Jamie Lokier wrote:
+> Chris Mason wrote:
+> > > You don't need the barrier after in some cases, or it can be deferred
+> > > until a better time.  E.g. when the disk write cache is probably empty
+> > > (some time after write-idle), barrier flushes may take the same time
+> > > as NOPs.
+> >
+> > I hesitate to get too fancy here, if the disk is idle we probably
+> > won't notice the performance gain.
+>
+> I think you're right, but it's hard to be sure.  One of the problems
+> with barrier-implemented-as-flush-all is that it flushes data=ordered
+> data, even when that's not wanted, and there can be a lot of data in
+> the disk's write cache, spread over many seeks.
 
-Hmm, to me there are three solutions:
+Jens and I talked about tossing the barriers completely and just doing FUA for 
+all metadata writes.  For drives with NCQ, we'll get something close to 
+optimal because the higher layer elevators are already doing most of the hard 
+work.
 
-1/ keep lockdep and configfs like they are, and use this patchset
+Either way, you do want the flush to cover all the data=ordered writes, at 
+least all the ordered writes from the transaction you're about to commit.  
+Telling the difference between data=ordered from an old transaction or from 
+the running transaction gets into pushing ordering down to the lower levels 
+(see below)
 
-2/ enhance lockdep to handle wariable-depth but correct recursion:
-seems uncertain...
+>
+> Then it's good to delay barrier-flushes to batch metadata commits, but
+> good to issue the barrier-flushes prior to large batches of
+> data=ordered data, so the latter can be survive in the disk write
+> cache for seek optimisations with later requests which aren't yet
+> known.
+>
+> All this sounds complicated at the JBD layer, and IMHO much simpler at
+> the request elevator layer.
+>
+> > But, it complicates the decision about when you're allowed to dirty
+> > a metadata block for writeback.  It used to be dirty-after-commit
+> > and it would change to dirty-after-barrier.  I suspect that is some
+> > significant surgery into jbd.
+>
+> Rather than tracking when it's "allowed" to dirty a metadata block, it
+> will be simpler to keep a flag saying "barrier needed", and just issue
+> the barrier prior to writing a metadata block, if the flag is set.
+>
 
+Adding explicit ordering into the IO path is really interesting.  We toss a 
+bunch of IO down to the lower layers with information about dependencies and 
+let the lower layers figure it out.  James had a bunch of ideas here, but I'm 
+afraid the only people that understood it were James and the whiteboard he 
+was scribbling on.
 
-3/ remove this recursive locking from configfs:
-unfortunately, it seems that there are a good reasons for doing
-recursive inode locking, at least when removing a config_group with
-default groups. So, seems uncertain too...
+The trick is to code the ordering in such a way that an IO failure breaks the 
+chain, and that the filesystem has some sensible chance to deal with all 
+these requests that have failed because an earlier write failed.
 
-Other ideas?
+Also, once we go down the ordering road, it is really tempting to forget that 
+ordering does ensure consistency but doesn't tell us the write actually 
+happened.  fsync and friends need to hook into the dependency chain to wait 
+for the barrier instead of waiting for the commit.
 
--- 
-Dr Louis Rilling			Kerlabs
-Skype: louis.rilling			Batiment Germanium
-Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
-http://www.kerlabs.com/			35700 Rennes
+But, back to the short term for a second, what we need are some benchmarks for 
+barriers on and off and some guidance from the ext34 maintainers about 
+turning them on by default.  We shouldn't be pushing this FS integrity 
+decision off on the distros.
+
+My test prog is definitely a worst case, but I'm pretty confident that most 
+mail server workloads end up doing similar IO.
+
+A 16MB or 32MB disk cache is common these days, and that is a very sizable 
+percentage of the jbd log size.  I think the potential for corruptions on 
+power failure is only growing over time.
+
+-chris
