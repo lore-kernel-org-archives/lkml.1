@@ -1,93 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932747AbYETPNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933058AbYETPN6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932747AbYETPNe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 11:13:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756666AbYETPNW
+	id S933058AbYETPN6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 11:13:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763950AbYETPNp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 11:13:22 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:54865 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753903AbYETPNU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 11:13:20 -0400
-Date: Tue, 20 May 2008 16:13:06 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
-Message-ID: <20080520151306.GF16676@shareable.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Eric Sandeen <sandeen@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org
-References: <482DDA56.6000301@redhat.com> <20080516130545.845a3be9.akpm@linux-foundation.org> <482DF44B.50204@redhat.com> <20080516220315.GB15334@shareable.org> <20080519002838.GB8335@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080519002838.GB8335@mit.edu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 20 May 2008 11:13:45 -0400
+Received: from vena.lwn.net ([206.168.112.25]:36070 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756666AbYETPNo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 11:13:44 -0400
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Alexander Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org,
+       Wim Van Sebroeck <wim@iguana.be>
+Subject: Re: [PATCH, RFC] char dev BKL pushdown 
+From: corbet@lwn.net (Jonathan Corbet)
+In-reply-to: Your message of "Tue, 20 May 2008 01:07:49 +0200."
+             <200805200107.51659.arnd@arndb.de> 
+Date: Tue, 20 May 2008 09:13:43 -0600
+Message-ID: <25447.1211296423@vena.lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> On Fri, May 16, 2008 at 11:03:15PM +0100, Jamie Lokier wrote:
-> > The MacOS X folks decided that speed is most important for fsync().
-> > fsync() does not guarantee commit to platter.  *But* they added an
-> > fcntl() for applications to request a commit to platter, which SQLite
-> > at least uses.  I don't know if MacOS X uses barriers for filesystem
-> > operations.
-> 
-> Out of curiosity, exactly *what* semantics did MacOS X give fsync(),
-> then?  Did it simply start the process of staging writes to disk, but
-> not wait for the writes to hit the platter before returning?  That's
-> basically the equivalent of ext3's barrier=0.
+Arnd Bergmann <arnd@arndb.de> wrote:
 
-I haven't read the code and don't use MacOS myself.
+> I've given it a try for all the misc drivers that have an open() function.
+> The vast majority of them are actually watchdog drivers, all of which
+> register as a misc device by themselves. 
 
->From its fcntl() man page:
+OK, it looks like the "misc" misc drivers patch can go into the
+bkl-removal tree, while the watchdog patches should not.  What that
+means, I guess, is that the final misc_open() patch cannot go in at this
+point; Alan's watchdog stuff needs to find its way in first.  Make
+sense? 
 
-    Note that while fsync() will flush all data from the host to the
-    drive (i.e. the "permanent storage device"), the drive itself may
-    not physically write the data to the platters for quite some time
-    and it may be written in an out-of-order sequence.
+> You seem to already have a script to turn per-file changes into a
+> patch each, so I'm sending you two patches: one for all the watchdog
+> drivers (maybe Wim can take care of that as well) and one for all the
+> other misc drivers (this one needs to be split).
 
-    Specifically, if the drive loses power or the OS crashes, the
-    application may find that only some or none of their data was
-    written. The disk drive may also re-order the data so that later
-    writes may be present while earlier writes are not.
+Alas, I have no such script.  I just committed each change as I made it
+- each one required individual attention anyway.  The misc changes look
+pretty straightforward, so I could probably hack up such a thing pretty
+quickly if you don't have a tree with broken out patches.
 
-    This is not a theoretical edge case. This scenario is easily
-    reproduced with real world workloads and drive power failures.
+Thanks,
 
-    For applications that require tighter guarantess about the
-    integrity of their data, MacOS X provides the F_FULLFSYNC
-    fcntl. The F_FULLFSYNC fcntl asks the drive to flush all buffered
-    data to permanent storage.  Applications such as databases that
-    require a strict ordering of writes should use F_FULLFSYNC to
-    ensure their data is written in the order they expect. Please see
-    fcntl(2) for more detail.
-
-Some notable things:
-
-   1. Para 2 says "if the drive loses power __or the OS crashes__".
-      Does this mean some drives will abandon cached writes when reset
-      despite retaining power?
-
-   2. Para 3 to be re-read by the skeptical.
-
-   3. Para 4 perpetuates the confused idea that write ordering is what
-      it's all about, for things like databases.  In fact, sometimes
-      ordering barriers are all that's needed and flush is unnecessary
-      performance baggage.  But sometimes an fsync() which only
-      guarantees ordering is insufficient.  An "ideal"
-      database-friendly block layer would offer both.
-
-I doubt if common unix mail transports use F_FULLSYNC on Darwin
-instead of fsync(), before reporting a mail received safely, but they
-probably should.  I recall SQLite does use it (unless I'm confusing
-it with some other database).
-
--- Jamie
+jon
