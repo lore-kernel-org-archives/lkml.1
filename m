@@ -1,85 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765041AbYETMTY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765509AbYETMUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765041AbYETMTY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 08:19:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760011AbYETMTO
+	id S1765509AbYETMUd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 08:20:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754103AbYETMUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 08:19:14 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:33926 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758559AbYETMTM (ORCPT
+	Tue, 20 May 2008 08:20:23 -0400
+Received: from 1-1-12-13a.han.sth.bostream.se ([82.182.30.168]:41765 "EHLO
+	palpatine.hardeman.nu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751844AbYETMUX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 08:19:12 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
-Date: Tue, 20 May 2008 08:17:16 -0400
-User-Agent: KMail/1.9.9
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Eric Sandeen <sandeen@redhat.com>, Theodore Tso <tytso@mit.edu>,
-       Andi Kleen <andi@firstfloor.org>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-References: <482DDA56.6000301@redhat.com> <200805191439.36577.chris.mason@oracle.com> <20080520082517.GH22369@kernel.dk>
-In-Reply-To: <20080520082517.GH22369@kernel.dk>
+	Tue, 20 May 2008 08:20:23 -0400
+Message-ID: <54484.145.64.134.222.1211286021.squirrel@www.hardeman.nu>
+In-Reply-To: <12bd24d7-17d4-4df8-abca-42740ec309fe@x35g2000hsb.googlegroups.com>
+References: <avxTs-570-21@gated-at.bofh.it>
+    <12bd24d7-17d4-4df8-abca-42740ec309fe@x35g2000hsb.googlegroups.com>
+Date: Tue, 20 May 2008 14:20:21 +0200 (CEST)
+Subject: Re: Loading DSDT from initrd, can it be done from grub instead?
+From: David =?iso-8859-1?Q?H=E4rdeman?= <david@hardeman.nu>
+To: "Alan Jenkins" <aj504@cs.york.ac.uk>
+Cc: linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.9a
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805200817.17059.chris.mason@oracle.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 20 May 2008, Jens Axboe wrote:
-> On Mon, May 19 2008, Chris Mason wrote:
-> > On Monday 19 May 2008, Chris Mason wrote:
-> > > Here's a test workload that corrupts ext3 50% of the time on power fail
-> > > testing for me.  The machine in this test is my poor dell desktop
-> > > (3ghz, dual core, 2GB of ram), and the power controller is me walking
-> > > over and ripping the plug out the back.
-> >
-> > Here's a new version that still gets about corruptions 50% of the
-> > time, but does it with fewer files by using longer file names (240
-> > chars instead of 160 chars).
-> >
-> > I tested this one with a larger FS (40GB instead of 2GB) and larger
-> > log (128MB instead of 32MB).  barrier-test -s 32 -p 1500 was still
-> > able to get a 50% corruption rate on the larger FS.
+On Tue, May 20, 2008 13:58, Alan Jenkins wrote:
+> David Härdeman wrote:
+>> In commit 9a9e0d685553af76cb6ae2af93cca4913e7fcd47 the
+>> ACPI_CUSTOM_DSDT_INITRD option was removed.
+>>
+>> I was wondering if it'd be feasible to hack grub to load a custom DSDT
+>> instead (since grub can read filesystems) and then pass a pointer to a
+>> memory location containing the DSDT to the kernel?
 >
-> I ran this twice, killing power after 'renames ready'. The first time it
-> was fine, the second time I got:
+> Um, why?  What stops you from reverting the offending commit?
 
-Great, thanks Jens.
+Because doing it from grub (if possible) would allow custom DSDT's to be
+loaded without patching the kernel (e.g. allows distro kernels to be used)
+and without introducing code that opens files from kernel space and mucks
+with both the VFS and ACPI in ugly ways?
 
-So, one compromise may be to change the barriers on ext3 to look like the 
-patch Ted just sent out for ext4.  It should be mostly safe to skip the 
-barrier between the log blocks and the commit block since the drive is likely 
-to do those sequentially anyway.  A little extra logic could be added to 
-detect log wrapping and force an extra barrier in that case.
+> Without further info, I'd assume the feature was removed on policy
+> grounds.  I.e. it's not nice to be effectively patching the BIOS
+> yourself, and vendors have fixed most of their BIOS's / linux is
+> slightly more tolerant to broken ones. I don't know whats wrong with
+> reading files from the initrd.
 
-Reiserfs saw some significant performance gains when I changed the code from:
+If you do not understand the issue at hand, why comment?
 
-write log blocks
-barrier
-wait on log blocks
-write commit
-barrier
-wait on commit
+-- 
+David Härdeman
 
-to
-
-write log blocks
-barrier
-write commit
-barrier
-wait on all of them
-
-Both were tested with the great big emc power failure machine and both passed.  
-In the event of an IO error on log blocks, we should zero out the commit.
-
--chris
