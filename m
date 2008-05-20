@@ -1,80 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932348AbYETNyj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761869AbYETNy4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932348AbYETNyj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 09:54:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766010AbYETNyX
+	id S1761869AbYETNy4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 09:54:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932152AbYETNy1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 09:54:23 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:25867 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765943AbYETNyV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 09:54:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=gGdVoi0c0cgXF4imNBdgV7KHI0h/kNUOcLcxzG+LZdCq1lo88sjNuTmke+mHWr65tgodxvrH0CL/pgIVrskkgE5PMbYyE94fak2BHpWzA0G250h8pTQsSBWkA8Dfu46Xf2hMSbMSKE+Iu8gnCsKsxQjn76Y0tBBscl2wIMGwLAQ=
-Date: Tue, 20 May 2008 09:54:16 -0400
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Pau Oliva Fora <pau@eslack.org>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-Subject: Re: [PATCH] Add support for HTC Shift Touchscreen
-Message-ID: <20080520094647.ZZRA012@mailhub.coreip.homeip.net>
-References: <482ED31E.2000009@eslack.org> <483198F8.3000201@eslack.org> <20080519112104.ZZRA012@mailhub.coreip.homeip.net> <4832087C.6060009@eslack.org> <20080520014937.GA23247@anvil.corenet.prv> <4832AFCA.30701@eslack.org>
+	Tue, 20 May 2008 09:54:27 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:36664 "EHLO atmel-es2.atmel.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758437AbYETNyZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 09:54:25 -0400
+Message-ID: <4832D807.7000703@atmel.com>
+Date: Tue, 20 May 2008 15:54:15 +0200
+From: Nicolas Ferre <nicolas.ferre@atmel.com>
+Organization: atmel
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4832AFCA.30701@eslack.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Andrew Morton <akpm@linux-foundation.org>,
+       linux-fbdev-devel@lists.sourceforge.net
+CC: adaplas@gmail.com, hskinnemoen@atmel.com, linux@maxim.org.za,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] atmel_lcdfb: FIFO underflow management rework
+References: <482D7F44.7040404@atmel.com> <20080519160006.12a30e71.akpm@linux-foundation.org>
+In-Reply-To: <20080519160006.12a30e71.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 01:02:34PM +0200, Pau Oliva Fora wrote:
-> Dmitry Torokhov wrote:
->> On Tue, May 20, 2008 at 01:08:44AM +0200, Pau Oliva Fora wrote:
->>> +
->>> +static int htcpen_open(struct input_dev *dev)
->>> +{
->>> +	outb_p(DEVICE_ENABLE, HTCPEN_PORT_INIT);
->>> +	return 0;
->>> +}
->>> +
->>> +static void htcpen_close(struct input_dev *dev)
->>> +{
->>> +	free_irq(HTCPEN_IRQ, dev);
->>> +}
->>> +
+Manage atmel_lcdfb FIFO underflow rework
+
+Resetting the LCD and DMA allows to fix screen shifting after 
+a FIFO underflow. It follows reset sequence from errata
+"LCD Screen Shifting After a Reset".
+
+Reworked following Andrew Morton comments.
+
+Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+---
+
+Andrew Morton :
+> On Fri, 16 May 2008 14:34:12 +0200
+> Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
+> 
+>> Manage atmel_lcdfb FIFO underflow
 >>
->> No, this will not work.. next time you open the device you won't have
->> IRQ anymore. You need the opposite of outb_p(DEVICE_ENABLE,
->> HTCPEN_PORT_INIT); here.
+>> Resetting the LCD and DMA allows to fix screen shifting after a 
+>> FIFO underflow. It follows reset sequence from errata 
+>> "LCD Screen Shifting After a Reset".
 >>
->
-> It is actually working; it also works after suspend/resume without any
-> issues.
->
+> 
+> This looks like 2.6.26-worthy bugfix to me?  But as commonly happens,
+> that isn't terribly clear.
 
-You need to close the device. Making evdev a module and unloading it
-should do the trick (you don't use tsdev, do you?).
+This error may append in latency sensitive cases : slow clock, 
+matrix slot cycle bad configuration, too high pixel clock...
 
-> I currently do not know a safe way of disabling the device, as HTC did
-> not offer any specifications or datasheet when I requested, so everything
-> in the driver has been reverse engineered.
->
-> Let me know if you think it's ok to leave it as is, otherwise I'll try
-> to find the proper way to disable the device (it should not be much
-> different than the way of enabling it).
+>> +	if (status & ATMEL_LCDC_UFLWI) {
+>> +		dev_warn(info->device, "FIFO underflow %#x\n", status);
+>> +		/* reset DMA and FIFO to avoid screen shifting */
+>> +		schedule_work(&sinfo->task);
+>> +	}
+>> +	lcdc_writel(sinfo, ATMEL_LCDC_ICR, status);
+>>  	return IRQ_HANDLED;
+>>  }
+> 
+> Shouldn't there be a cancel_work_sync() in atmel_lcdfb_exit()?
 
-If you can't find the way to disable device then you need to revert to
-the old way, with enabling it in _probe() and freein irq in _remove(),
-you just need to make sure that you free_irq() first and then call
-input_unregister_device().
+Ok incremental patch follows. Tell me if you prefer that I send 
+a reworked one.
 
-Also, like Andrey said, we might consider using DMI table so we dont
-poke IO ports on random boxes. Oh, and one more thing, you need to
-reserve the IO ports your driver is using with request_region.
+I also added  might_sleep() annotation functions.
 
--- 
-Dmitry
+>> +	/* Initialize bottom half workqueue */
+> 
+> Well.  "bottom half" is an ancient term for softirqs, not for the
+> new-fangled process-context callbacks.
+
+Ok, I try to adapt this comment in the reworked patch.
+
+
+Index: drivers/video/atmel_lcdfb.c
+===================================================================
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -361,6 +361,8 @@ static int atmel_lcdfb_check_var(struct 
+  */
+ static void atmel_lcdfb_reset(struct atmel_lcdfb_info *sinfo)
+ {
++	might_sleep();
++
+ 	/* LCD power off */
+ 	lcdc_writel(sinfo, ATMEL_LCDC_PWRCON, sinfo->guard_time << ATMEL_LCDC_GUARDT_OFFSET);
+ 
+@@ -405,6 +407,8 @@ static int atmel_lcdfb_set_par(struct fb
+ 	unsigned long clk_value_khz;
+ 	unsigned long bits_per_line;
+ 
++	might_sleep();
++
+ 	dev_dbg(info->device, "%s:\n", __func__);
+ 	dev_dbg(info->device, "  * resolution: %ux%u (%ux%u virtual)\n",
+ 		 info->var.xres, info->var.yres,
+@@ -840,7 +844,8 @@ static int __init atmel_lcdfb_probe(stru
+ 		goto unmap_mmio;
+ 	}
+ 
+-	/* Initialize bottom half workqueue */
++	/* Some operations on the LCDC might sleep and 
++	 * require a preemptible task context */
+ 	INIT_WORK(&sinfo->task, atmel_lcdfb_task);
+ 
+ 	ret = atmel_lcdfb_init_fbinfo(sinfo);
+@@ -885,6 +890,7 @@ static int __init atmel_lcdfb_probe(stru
+ free_cmap:
+ 	fb_dealloc_cmap(&info->cmap);
+ unregister_irqs:
++	cancel_work_sync(&sinfo->task);
+ 	free_irq(sinfo->irq_base, info);
+ unmap_mmio:
+ 	exit_backlight(sinfo);
+@@ -922,6 +928,7 @@ static int __exit atmel_lcdfb_remove(str
+ 	if (!sinfo)
+ 		return 0;
+ 
++	cancel_work_sync(&sinfo->task);
+ 	exit_backlight(sinfo);
+ 	if (sinfo->atmel_lcdfb_power_control)
+ 		sinfo->atmel_lcdfb_power_control(0);
+
+
+
