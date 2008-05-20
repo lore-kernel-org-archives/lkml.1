@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764028AbYETSB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761286AbYETSDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764028AbYETSB7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 14:01:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755869AbYETSBv
+	id S1761286AbYETSDT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 14:03:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755869AbYETSDF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 14:01:51 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:35709 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755943AbYETSBu (ORCPT
+	Tue, 20 May 2008 14:03:05 -0400
+Received: from mail8.sea5.speakeasy.net ([69.17.117.10]:41611 "EHLO
+	mail8.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755549AbYETSDE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 14:01:50 -0400
-Message-ID: <483310F0.5030902@zytor.com>
-Date: Tue, 20 May 2008 10:57:04 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Mikael Pettersson <mikpe@it.uu.se>
-CC: Andi Kleen <andi@firstfloor.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>, mingo@elte.hu,
-       tglx@linutronix.de, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, roland@redhat.com, drepper@redhat.com,
-       Hongjiu.lu@intel.com, linux-kernel@vger.kernel.org,
-       arjan@linux.intel.com, rmk+lkml@arm.linux.org.uk, dan@debian.org,
-       asit.k.mallick@intel.com
-Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
-References: <20080513011030.GA31448@linux-os.sc.intel.com>	<18477.35703.679574.760417@harpo.it.uu.se>	<20080518013416.GB30034@linux-os.sc.intel.com>	<18481.37905.297556.288317@harpo.it.uu.se>	<20080520015723.GD30034@linux-os.sc.intel.com>	<4832A173.6020203@firstfloor.org>	<18482.53246.642835.894623@harpo.it.uu.se>	<4832E705.2010900@zytor.com> <18482.60491.764019.292031@harpo.it.uu.se>
-In-Reply-To: <18482.60491.764019.292031@harpo.it.uu.se>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 20 May 2008 14:03:04 -0400
+From: Trent Piepho <xyzzy@speakeasy.org>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Brownell <david-b@pacbell.net>,
+       Trent Piepho <xyzzy@speakeasy.org>
+Subject: [PATCH] gpiolib: Fix off by one errors
+Date: Tue, 20 May 2008 10:58:04 -0700
+Message-Id: <1211306284-22469-1-git-send-email-xyzzy@speakeasy.org>
+X-Mailer: git-send-email 1.5.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikael Pettersson wrote:
-> 
-> An ugly workaround could be to start clearing one of these fields,
-> and say that the data there is only valid for kernels >= 2.6.26.
-> (I said it was ugly...)
-> 
-> Or we go back to stashing a flag in uc_flags (which is kosher),
-> and try to figure out how to mark non-rt sigframes.
-> 
+The last gpio belonging to a chip is chip->base + chip->ngpios - 1.  Some
+places in the code, but not all, forgot the critical minus one.
 
-Or use the OSXSAVE hack.  Let me think about this for some time.
+Signed-off-by: Trent Piepho <xyzzy@speakeasy.org>
+---
+ drivers/gpio/gpiolib.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-There is also the option of simply using a field guarded by a 64- or 
-128-bit magic number.  It's a bit ugly, but it works.
+diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+index 7f138c6..beaf6b3 100644
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -127,7 +127,7 @@ int __init gpiochip_reserve(int start, int ngpio)
+ 	unsigned long flags;
+ 	int i;
+ 
+-	if (!gpio_is_valid(start) || !gpio_is_valid(start + ngpio))
++	if (!gpio_is_valid(start) || !gpio_is_valid(start + ngpio - 1))
+ 		return -EINVAL;
+ 
+ 	spin_lock_irqsave(&gpio_lock, flags);
+@@ -170,7 +170,7 @@ int gpiochip_add(struct gpio_chip *chip)
+ 	unsigned	id;
+ 	int		base = chip->base;
+ 
+-	if ((!gpio_is_valid(base) || !gpio_is_valid(base + chip->ngpio))
++	if ((!gpio_is_valid(base) || !gpio_is_valid(base + chip->ngpio - 1))
+ 			&& base >= 0) {
+ 		status = -EINVAL;
+ 		goto fail;
+@@ -207,7 +207,7 @@ fail:
+ 	/* failures here can mean systems won't boot... */
+ 	if (status)
+ 		pr_err("gpiochip_add: gpios %d..%d (%s) not registered\n",
+-			chip->base, chip->base + chip->ngpio,
++			chip->base, chip->base + chip->ngpio - 1,
+ 			chip->label ? : "generic");
+ 	return status;
+ }
+-- 
+1.5.4.1
 
-	-hpa
