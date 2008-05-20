@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935067AbYETWje@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935373AbYETWjv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935067AbYETWje (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 18:39:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933410AbYETWgD
+	id S935373AbYETWjv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 18:39:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934957AbYETWgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 18:36:03 -0400
-Received: from mail.suse.de ([195.135.220.2]:53346 "EHLO mx1.suse.de"
+	Tue, 20 May 2008 18:36:10 -0400
+Received: from ns2.suse.de ([195.135.220.15]:39873 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934949AbYETWgB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 18:36:01 -0400
+	id S935046AbYETWgI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 18:36:08 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>
-Subject: [PATCH 07/13] Power Supply: fix race in device_create
-Date: Tue, 20 May 2008 15:34:54 -0700
-Message-Id: <1211322900-12705-7-git-send-email-gregkh@suse.de>
+       "Hans J. Koch" <hjk@linutronix.de>
+Subject: [PATCH 08/13] UIO: fix race in device_create
+Date: Tue, 20 May 2008 15:34:55 -0700
+Message-Id: <1211322900-12705-8-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.5.1
 In-Reply-To: <20080520223237.GA12383@suse.de>
 References: <20080520223237.GA12383@suse.de>
@@ -32,35 +32,35 @@ This patch fixes the problem by using the new function,
 device_create_drvdata().
 
 Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Anton Vorontsov <cbou@mail.ru>
-Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: Hans J. Koch <hjk@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/power/power_supply_core.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+ drivers/uio/uio.c |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
-index 138dd76..af1633e 100644
---- a/drivers/power/power_supply_core.c
-+++ b/drivers/power/power_supply_core.c
-@@ -91,15 +91,13 @@ int power_supply_register(struct device *parent, struct power_supply *psy)
- {
- 	int rc = 0;
+diff --git a/drivers/uio/uio.c b/drivers/uio/uio.c
+index 55cc7b8..0a12e90 100644
+--- a/drivers/uio/uio.c
++++ b/drivers/uio/uio.c
+@@ -649,15 +649,14 @@ int __uio_register_device(struct module *owner,
+ 	if (ret)
+ 		goto err_get_minor;
  
--	psy->dev = device_create(power_supply_class, parent, 0,
--				 "%s", psy->name);
-+	psy->dev = device_create_drvdata(power_supply_class, parent, 0,
-+					 psy, "%s", psy->name);
- 	if (IS_ERR(psy->dev)) {
- 		rc = PTR_ERR(psy->dev);
- 		goto dev_create_failed;
+-	idev->dev = device_create(uio_class->class, parent,
+-				  MKDEV(uio_major, idev->minor),
+-				  "uio%d", idev->minor);
++	idev->dev = device_create_drvdata(uio_class->class, parent,
++					  MKDEV(uio_major, idev->minor), idev,
++					  "uio%d", idev->minor);
+ 	if (IS_ERR(idev->dev)) {
+ 		printk(KERN_ERR "UIO: device register failed\n");
+ 		ret = PTR_ERR(idev->dev);
+ 		goto err_device_create;
  	}
+-	dev_set_drvdata(idev->dev, idev);
  
--	dev_set_drvdata(psy->dev, psy);
--
- 	INIT_WORK(&psy->changed_work, power_supply_changed_work);
- 
- 	rc = power_supply_create_attrs(psy);
+ 	ret = uio_dev_add_attributes(idev);
+ 	if (ret)
 -- 
 1.5.5.1
 
