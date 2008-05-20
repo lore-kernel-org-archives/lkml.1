@@ -1,69 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932635AbYETVln@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933221AbYETVmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932635AbYETVln (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 17:41:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761717AbYETVlf
+	id S933221AbYETVmj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 17:42:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761717AbYETVma
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 17:41:35 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:17110 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759703AbYETVle (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 17:41:34 -0400
-Date: Tue, 20 May 2008 14:41:15 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Louis Rilling <Louis.Rilling@kerlabs.com>
-Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-Subject: Re: [Ocfs2-devel] [RFC][PATCH 0/3] configfs: Make nested default
-	groups lockdep-friendly
-Message-ID: <20080520214115.GF26609@mail.oracle.com>
-Mail-Followup-To: Louis Rilling <Louis.Rilling@kerlabs.com>,
-	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-References: <20080520163320.025971210@kerlabs.com>
+	Tue, 20 May 2008 17:42:30 -0400
+Received: from www.tglx.de ([62.245.132.106]:53746 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761451AbYETVm3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 17:42:29 -0400
+Date: Tue, 20 May 2008 23:40:06 +0200
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Jonathan Cameron <Jonathan.Cameron@gmail.com>,
+       linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net,
+       LM Sensors <lm-sensors@lm-sensors.org>, Dmitry Torokhov <dtor@mail.ru>
+Subject: Re: Accelerometer, Gyros and ADC's etc within the kernel.
+Message-ID: <20080520214005.GH3220@local>
+References: <4832A211.4040206@gmail.com> <20080520132817.03fb74ea@hyperion.delvare>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080520163320.025971210@kerlabs.com>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
+In-Reply-To: <20080520132817.03fb74ea@hyperion.delvare>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 06:33:20PM +0200, Louis Rilling wrote:
-> The following patches fix lockdep warnings resulting from (correct) recursive
-> locking in configfs.
+On Tue, May 20, 2008 at 01:28:17PM +0200, Jean Delvare wrote:
+> Hi Jonathan,
 > 
-> Current lockdep annotations for inode mutexes in configfs are lockdep-friendly
-> provided that:
-> 1/ config_groups have at most one level of default groups (see
->    configfs_attach_group()),
-> 2/ config_groups having default groups are never removed (see
->    configfs_detach_prep()).
+> On Tue, 20 May 2008 11:04:01 +0100, Jonathan Cameron wrote:
+> > This email is basically a request for opinions on how and where such sensors
+> > should be integrated into the kernel.
+> > 
+> > To set the scene...
+> > 
+> > Increasing numbers of embedded devices are being supplied attached MEMS
+> > devices (www.xbow.com imote2 etc). Along with more traditional sensors such
+> > as ADC's not being used for hardware monitoring, these do not really 
+> > seem to
+> > fit with in an particular subsystem of the kernel.  A previous 
+> > discussion on
+> > lkml in 2006 considered the accelerometers to be found within some laptop
+> > hard drives, but I haven't been able to track down any more general 
+> > discussions
+> > of such non hardware monitoring sensors.
+> > 
+> > The obvious possibilities are:
+> > 
+> > * To place the various drivers within the spi / i2c etc subsystems as 
+> > relevant.
 > 
-> Since lockdep does not handle such correct recursion, the idea is to insert
-> lockdep_off()/lockdep_on() for inode mutexes as soon as the level of recursion
-> of the I_MUTEX_PARENT -> I_MUTEX_CHILD dependency pattern increases.
+> Bad idea. Grouping drivers by connectivity is almost always the wrong
+> thing to do, as it means that different persons will maintain them and
+> they have all chances to diverge. You really want to group drivers by
+> functionality. On top of that, I am busy enough maintaining the i2c
+> core and bus drivers without having more i2c device drivers added to my
+> plate. These days I am trying to _empty_ drivers/i2c/chips, if anything.
 
-	Hmm, this is definitely a more readable solution than the
-previous, but I'm also with Arjan that it's scary :-)
+100% ACK. And the functionality here is something like "industrial
+control" or "automation I/O". If this sort of hardware appears as device
+with mappable memory, we can handle it with UIO, but for SPI, I2C, USB,
+serial, we should have a new subsystem. It should handle not only input,
+but also similar output devices. It doesn't make sense to have ADCs in
+one subsystem, and DACs in a different one.
 
-Joel
+> 
+> > * To place within the hwmon subsystem as this is probably closest.
+> > (there is already at least one straight ADC driver in hwmon)
+> 
+> Probably not the wisest choice, if nothing else, because the hwmon
+> maintainer is already overloaded. And I don't think that these devices
+> have much in common with the traditional hardware monitoring components
+> anyway.
 
--- 
+Agreed, hwmon devices are not really tuned for maximum performance, for
+example. Performance is often critical in automation control
+applications.
 
-"Ninety feet between bases is perhaps as close as man has ever come
- to perfection."
-	- Red Smith
+> 
+> I'm not sure what "straight ADC driver" you are referring to, but
+> anything which measures a voltage and exports the reading to user-space
+> is, well, a voltage sensor, and thus fix within hwmon. If the same chip
+> is used for a higher-level, dedicated function then we would probably
+> have a separate driver for it, outside of hwmon.
+> 
+> > * To create a new subsystem, or perhaps merely sysfs class to contain these
+> >   elements.
+> 
+> Would be OK.
 
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+Definitely.
+
+> Or:
+> 
+> * Place these within the input subsystem. You might want to discuss
+> this with the input subsystem maintainer Dmitry Torokhov (Cc'd). The
+> Wii remote is essentially a joystick, and joysticks belong to the input
+> subsystem.
+
+This might apply to some devices, but not all. And the requirements are
+quite different, I think.
+
+> 
+> This all sounds quite different from our hwmon drivers. Our hwmon
+> drivers read all the sensor values at once and cache the readings for a
+> couple seconds, so you can't get an instant reading at any time, and
+> they also don't support interrupts in general.
+
+Exactly.
+
+Thanks,
+Hans
+
