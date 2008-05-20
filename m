@@ -1,51 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932543AbYETULa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933221AbYETUNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932543AbYETULa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 16:11:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758693AbYETULW
+	id S933221AbYETUNW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 16:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759421AbYETUNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 16:11:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41416 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757297AbYETULU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 16:11:20 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 20 May 2008 16:13:14 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39962 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759516AbYETUNN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 16:13:13 -0400
+Date: Tue, 20 May 2008 13:12:25 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: prasad@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, dwilder@us.ibm.com, hch@infradead.org
+Subject: Re: [RFC Patch 1/1] trace_printk and trace_dump interface - v2
+Message-Id: <20080520131225.46175b3b.akpm@linux-foundation.org>
+In-Reply-To: <op.ubgxivbq03j166@prasadkr_t60p.in.ibm.com>
+References: <op.ua9axd2a03j166@prasadkr_t60p.in.ibm.com>
+	<op.ua9a1r0y03j166@prasadkr_t60p.in.ibm.com>
+	<op.ua90vfwv03j166@prasadkr_t60p.in.ibm.com>
+	<20080519162149.50f58b80.akpm@linux-foundation.org>
+	<op.ubgxivbq03j166@prasadkr_t60p.in.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Andi Kleen <andi@firstfloor.org>
-X-Fcc: ~/Mail/linus
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Mikael Pettersson <mikpe@it.uu.se>, mingo@elte.hu, tglx@linutronix.de,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       drepper@redhat.com, Hongjiu.lu@intel.com, linux-kernel@vger.kernel.org,
-       arjan@linux.intel.com, rmk+lkml@arm.linux.org.uk, dan@debian.org,
-       asit.k.mallick@intel.com
-Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
-In-Reply-To: Andi Kleen's message of  Tuesday, 20 May 2008 17:03:55 +0200 <4832E85B.4080303@firstfloor.org>
-References: <20080513011030.GA31448@linux-os.sc.intel.com>
-	<18477.35703.679574.760417@harpo.it.uu.se>
-	<20080518013416.GB30034@linux-os.sc.intel.com>
-	<18481.37905.297556.288317@harpo.it.uu.se>
-	<20080520015723.GD30034@linux-os.sc.intel.com>
-	<4832A173.6020203@firstfloor.org>
-	<4832E672.3090702@zytor.com>
-	<4832E85B.4080303@firstfloor.org>
-Emacs: the prosecution rests its case.
-Message-Id: <20080520201044.ED62B26FA1C@magilla.localdomain>
-Date: Tue, 20 May 2008 13:10:44 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I don't think there is one. We never copy fxsave completely out of the
-> kernel. x86-64 does FXSAVE directly in/out user space, but the
-> only leak is what there was before.
+On Wed, 21 May 2008 01:23:09 +0530
+"K.Prasad" <prasad@linux.vnet.ibm.com> wrote:
 
-ptrace/user_regset copies out and in the whole fxsave block from the ptrace
-caller.  (Only the mxcsr word is constrained after copy-in.)
+> 
+> The name 'trace' (previously GTSC), I gather that it was the chosen after
+> much deliberation (http://tinyurl.com/6odoh4), however I'm open to the
+> idea of changing the name (say dbg_printk/dbg_dump?).
+> 
+> Kindly let me know of your suggestions for this, and I will change them
+> during the next version.
 
+Well I was just putting it out there for consideration.  Yes, I think
+the whole idea of consuming the "trace_*" namespace in this patchset
+was ill-advised.
 
-Thanks,
-Roland
+Also, I don't know how to move forward with the whole feature - I
+haven't seen a lot of interest from others and I haven't seen much
+discussion of how this feature differs from all the other tracing
+things which have been floating about.
+
+And even if the proposed patches presently offer unique and useful
+features, will one of the other tracing implementations (eg: ltt) later
+grow to close that gap?
+
+I'm also a bit dubious about the whole thing based on past experience
+with kernel-developer-only in-kernel tools.  People just don't use them
+much.  One example: fault injection.
+
+> Will something like this look better?
+
+If it addresses the comment I raised, sure.  Please satisfy yourself
+that it does.
+
