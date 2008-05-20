@@ -1,256 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766010AbYETNQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764266AbYETNWH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766010AbYETNQU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 09:16:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752383AbYETNQF
+	id S1764266AbYETNWH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 09:22:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754735AbYETNVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 09:16:05 -0400
-Received: from mx2.suse.de ([195.135.220.15]:50854 "EHLO mx2.suse.de"
+	Tue, 20 May 2008 09:21:55 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:64821 "EHLO aun.it.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751020AbYETNQD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 09:16:03 -0400
-Date: Tue, 20 May 2008 15:18:32 +0200
-From: Holger Macht <hmacht@suse.de>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fixups to ATA ACPI hotplug
-Message-ID: <20080520131831.GA568@homac>
-Mail-Followup-To: Matthew Garrett <mjg59@srcf.ucam.org>,
-	Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
-	Jeff Garzik <jeff@garzik.org>, linux-acpi@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20080505223357.GA2839@srcf.ucam.org> <20080506081347.GA8688@homac> <20080506082110.GA10355@srcf.ucam.org> <48201987.4020009@gmail.com> <20080506092653.GB4378@homac> <20080506093628.GA12469@srcf.ucam.org> <20080519162934.GA15623@srcf.ucam.org> <20080520074442.GA14417@homac> <20080520102038.GA2441@srcf.ucam.org>
+	id S1754572AbYETNVy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 09:21:54 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080520102038.GA2441@srcf.ucam.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18482.53246.642835.894623@harpo.it.uu.se>
+Date: Tue, 20 May 2008 15:19:58 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
+       Mikael Pettersson <mikpe@it.uu.se>, mingo@elte.hu, hpa@zytor.com,
+       tglx@linutronix.de, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, roland@redhat.com, drepper@redhat.com,
+       Hongjiu.lu@intel.com, linux-kernel@vger.kernel.org,
+       arjan@linux.intel.com, rmk+lkml@arm.linux.org.uk, dan@debian.org,
+       asit.k.mallick@intel.com
+Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
+In-Reply-To: <4832A173.6020203@firstfloor.org>
+References: <20080513011030.GA31448@linux-os.sc.intel.com>
+	<18477.35703.679574.760417@harpo.it.uu.se>
+	<20080518013416.GB30034@linux-os.sc.intel.com>
+	<18481.37905.297556.288317@harpo.it.uu.se>
+	<20080520015723.GD30034@linux-os.sc.intel.com>
+	<4832A173.6020203@firstfloor.org>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 20. May - 11:20:38, Matthew Garrett wrote:
-> On Tue, May 20, 2008 at 09:44:42AM +0200, Holger Macht wrote:
-> 
-> > * In case of an ACPI_NOTIFY_DEVICE/BUS_CHECK, evaluate _STA to check if
-> >   the device has been plugged or unplugged. If plugged, hotplug it, if
-> >   unplugged, just signal event to userspace
-> >   (initial patch by Matthew Garrett <mjg59@srcf.ucam.org>)
-> 
-> The only issue I can see is that this one doesn't check _EJ0. Unless 
-> that's done, you'll (on some hardware) evaluate _STA on the bay itself 
-> rather than the device within the bay, which leads to confusion as to 
-> whether the device has been inserted. Other than that, looks good. 
-> Jeff's sent my patch to Linus, so can you redo this on top and I'll sign 
-> it off?
+Andi Kleen writes:
+ > Suresh Siddha wrote:
+ > > On Mon, May 19, 2008 at 04:52:01PM +0200, Mikael Pettersson wrote:
+ > >>> But we can
+ > >>> use some what similar magic, if the fxsave/fxrstor give away
+ > >>> some of the fields at the end of fxsave image (today it is reserved
+ > >>> and ignored during fxsave/fxrstor) for software use.
+ > >>> We can then use these fields at the end of fpstate, to indicate the presence of
+ > >>> xstate. But this requires some architecture changes like giving
+ > >>> away this space for SW use. We can take this to architects and
+ > >>> see what they think.
+ > >> If the HW doesn't store anything valuable there, we could store
+ > >> SW flags/cookies there on signal delivery, and clear them before
+ > >> fxrstor (unless the HW is known to ignore those fields).
+ > >> But it depends on how forgiving the HW is.
+ > > 
+ > > Ok. CPU folks are planning to make some of the bytes at the end of fxsave
+ > > image, SW usable.
+ > 
+ > Are they always zeroed in earlier CPUs though?  If not that wouldn't
+ > work 100% reliably because whatever cookie you put in could have been
+ > there before by chance.
 
-Handle bay devices in dock stations
+I wrote a test program (fill an area with zeroes, fxsave, inspect
+reserved fields, then fill it with ones, fxsave, inspect again),
+and all processors appear to just not write anything to the reserved
+fields after the last xmm register. (Tested on an old Mobile Athlon64,
+Opteron 280, P4 Xeon, Pentium-D, and C2 Xeon E5345.)
 
-* Differentiate between bay devices in dock stations and others:
+So the question now is what if anything has the Linux kernel written
+to those reserved fields. (Looking..) Hmm, signal delivery on x86-64
+seems to do fxsave directly to the fxsave area in the user's sigframe,
+which would imply that the reserved fields have unpredictable values.
 
- - When an ACPI_NOTIFY_EJECT_REQUEST appears, just signal uevent to
-   userspace (that is when the optional eject button on a bay device is
-   pressed/pulled) giving the possibility to unmount file systems and to
-   clean up. Also, only send uevent in case we get an EJECT_REQUEST
-   without doing anything else. In other cases, you'll get an add/remove
-   event because libata attaches/detaches the device.
-
- - In case of a dock event, which in turn signals an
-   ACPI_NOTIFY_EJECT_REQUEST, immediately detach the device, because it
-   may already have been gone
-
-* In case of an ACPI_NOTIFY_DEVICE/BUS_CHECK, evaluate _STA to check if
-  the device has been plugged or unplugged. If plugged, hotplug it, if
-  unplugged, just signal event to userspace
-  (initial patch by Matthew Garrett <mjg59@srcf.ucam.org>)
-
-Signed-off-by: Holger Macht <hmacht@suse.de>
----
-
---- linux-2.6.25/drivers/ata/libata-acpi.c.orig	2008-05-20 13:25:50.000000000 +0200
-+++ linux-2.6.25/drivers/ata/libata-acpi.c	2008-05-20 15:12:03.000000000 +0200
-@@ -118,8 +118,25 @@ static void ata_acpi_associate_ide_port(
- 		ap->pflags |= ATA_PFLAG_INIT_GTM_VALID;
- }
- 
-+static void ata_acpi_detach_device(struct ata_port *ap, struct ata_device *dev)
-+{
-+	if (dev)
-+		dev->flags |= ATA_DFLAG_DETACH;
-+	else {
-+		struct ata_link *tlink;
-+		struct ata_device *tdev;
-+
-+		ata_port_for_each_link(tlink, ap)
-+			ata_link_for_each_dev(tdev, tlink)
-+			tdev->flags |= ATA_DFLAG_DETACH;
-+	}
-+
-+	ata_port_freeze(ap);
-+	ata_port_schedule_eh(ap);
-+}
-+
- static void ata_acpi_handle_hotplug(struct ata_port *ap, struct ata_device
--				    *dev, u32 event)
-+				    *dev, u32 event, int is_dock_event)
- {
- 	char event_string[12];
- 	char *envp[] = { event_string, NULL };
-@@ -135,83 +152,92 @@ static void ata_acpi_handle_hotplug(stru
- 		ap = dev->link->ap;
- 	ehi = &ap->link.eh_info;
- 
--	spin_lock_irqsave(ap->lock, flags);
--
--	if (dev)
-+	if (dev) {
-+		if (dev->sdev)
-+			kobj = &dev->sdev->sdev_gendev.kobj;
- 		handle = dev->acpi_handle;
--	else
-+	} else {
-+		kobj = &ap->dev->kobj;
- 		handle = ap->acpi_handle;
--
--	status = acpi_get_handle(handle, "_EJ0", &tmphandle);
--	if (ACPI_FAILURE(status)) {
--		/* This device is not ejectable */
--		spin_unlock_irqrestore(ap->lock, flags);
--		return;
- 	}
- 
--	status = acpi_evaluate_integer(handle, "_STA", NULL, &sta);
--	if (ACPI_FAILURE(status)) {
--		printk ("Unable to determine bay status\n");
--		spin_unlock_irqrestore(ap->lock, flags);
--		return;
-+	if (kobj && !is_dock_event) {
-+		sprintf(event_string, "BAY_EVENT=%d", event);
-+		kobject_uevent_env(kobj, KOBJ_CHANGE, envp);
- 	}
- 
-+	spin_lock_irqsave(ap->lock, flags);
-+
- 	switch (event) {
- 	case ACPI_NOTIFY_BUS_CHECK:
- 	case ACPI_NOTIFY_DEVICE_CHECK:
- 		ata_ehi_push_desc(ehi, "ACPI event");
--		if (!sta) {
--                /* Device has been unplugged */
--			if (dev)
--				dev->flags |= ATA_DFLAG_DETACH;
--			else {
--				struct ata_link *tlink;
--				struct ata_device *tdev;
--
--				ata_port_for_each_link(tlink, ap) {
--					ata_link_for_each_dev(tdev, tlink) {
--						tdev->flags |=
--							ATA_DFLAG_DETACH;
--					}
--				}
--			}
--			ata_port_schedule_eh(ap);
--			wait = 1;
--		} else {
-+
-+		status = acpi_get_handle(handle, "_EJ0", &tmphandle);
-+		if (ACPI_FAILURE(status)) {
-+			/* This device is not ejectable */
-+			break;
-+		}
-+
-+		status = acpi_evaluate_integer(handle, "_STA", NULL, &sta);
-+		if (ACPI_FAILURE(status)) {
-+			printk(KERN_ERR "Unable to determine bay status\n");
-+			break;
-+		}
-+
-+		if (sta) {
- 			ata_ehi_hotplugged(ehi);
- 			ata_port_freeze(ap);
-+		} else {
-+			/* The device has gone - unplug it */
-+			ata_acpi_detach_device(ap, dev);
-+			wait = 1;
- 		}
-+		break;
-+	case ACPI_NOTIFY_EJECT_REQUEST:
-+		ata_ehi_push_desc(ehi, "ACPI event");
-+
-+		if (!is_dock_event)
-+			break;
-+
-+		/* undock event - immediate unplug */
-+		ata_acpi_detach_device(ap, dev);
-+		wait = 1;
-+		break;
- 	}
- 
- 	spin_unlock_irqrestore(ap->lock, flags);
- 
- 	if (wait)
- 		ata_port_wait_eh(ap);
-+}
- 
--	if (dev) {
--		if (dev->sdev)
--			kobj = &dev->sdev->sdev_gendev.kobj;
--	} else
--		kobj = &ap->dev->kobj;
-+static void ata_acpi_dev_notify_dock(acpi_handle handle, u32 event, void *data)
-+{
-+	struct ata_device *dev = data;
- 
--	if (kobj) {
--		sprintf(event_string, "BAY_EVENT=%d", event);
--		kobject_uevent_env(kobj, KOBJ_CHANGE, envp);
--	}
-+	ata_acpi_handle_hotplug(NULL, dev, event, 1);
-+}
-+
-+static void ata_acpi_ap_notify_dock(acpi_handle handle, u32 event, void *data)
-+{
-+	struct ata_port *ap = data;
-+
-+	ata_acpi_handle_hotplug(ap, NULL, event, 1);
- }
- 
- static void ata_acpi_dev_notify(acpi_handle handle, u32 event, void *data)
- {
- 	struct ata_device *dev = data;
- 
--	ata_acpi_handle_hotplug(NULL, dev, event);
-+	ata_acpi_handle_hotplug(NULL, dev, event, 0);
- }
- 
- static void ata_acpi_ap_notify(acpi_handle handle, u32 event, void *data)
- {
- 	struct ata_port *ap = data;
- 
--	ata_acpi_handle_hotplug(ap, NULL, event);
-+	ata_acpi_handle_hotplug(ap, NULL, event, 0);
- }
- 
- /**
-@@ -252,7 +278,7 @@ void ata_acpi_associate(struct ata_host
- 						    ata_acpi_ap_notify, ap);
- 			/* we might be on a docking station */
- 			register_hotplug_dock_device(ap->acpi_handle,
--						     ata_acpi_ap_notify, ap);
-+					     ata_acpi_ap_notify_dock, ap);
- 		}
- 
- 		for (j = 0; j < ata_link_max_devices(&ap->link); j++) {
-@@ -264,7 +290,7 @@ void ata_acpi_associate(struct ata_host
- 						ata_acpi_dev_notify, dev);
- 				/* we might be on a docking station */
- 				register_hotplug_dock_device(dev->acpi_handle,
--						ata_acpi_dev_notify, dev);
-+					     ata_acpi_dev_notify_dock, dev);
- 			}
- 		}
- 	}
-
+/Mikael
