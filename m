@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933712AbYETPWX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933788AbYETPWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933712AbYETPWX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 11:22:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932883AbYETPVr
+	id S933788AbYETPWj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 11:22:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933665AbYETPVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 11:21:47 -0400
-Received: from 66-189-124-104.dhcp.oxfr.ma.charter.com ([66.189.124.104]:57727
+	Tue, 20 May 2008 11:21:52 -0400
+Received: from 66-189-124-104.dhcp.oxfr.ma.charter.com ([66.189.124.104]:57736
 	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932620AbYETPVp (ORCPT
+	by vger.kernel.org with ESMTP id S933404AbYETPVu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 11:21:45 -0400
+	Tue, 20 May 2008 11:21:50 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 1/5] optimize rt lock wakeup
+Subject: [PATCH 2/5] sched: make task->oncpu available in all configurations
 To: mingo@elte.hu, tglx@linutronix.de, rostedt@goodmis.org,
        linux-rt-users@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, sdietrich@novell.com, pmorreale@novell.com,
        mkohari@novell.com, ghaskins@novell.com
-Date: Tue, 20 May 2008 10:49:15 -0400
-Message-ID: <20080520144915.15992.57013.stgit@novell1.haskins.net>
+Date: Tue, 20 May 2008 10:49:20 -0400
+Message-ID: <20080520144920.15992.40920.stgit@novell1.haskins.net>
 In-Reply-To: <20080520143954.15992.85900.stgit@novell1.haskins.net>
 References: <20080520143954.15992.85900.stgit@novell1.haskins.net>
 User-Agent: StGIT/0.12.1
@@ -28,87 +28,107 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It is redundant to wake the grantee task if it is already running, and 
-the call to wake_up_process is relatively expensive.  If we can safely
-skip it we can measurably improve the performance of the adaptive-locks.
-
-Credit goes to Peter Morreale for the general idea.
+We will use this later in the series to eliminate the need for a function
+call.
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-Signed-off-by: Peter Morreale <pmorreale@novell.com>
 ---
 
- kernel/rtmutex.c |   45 ++++++++++++++++++++++++++++++++++++++++-----
- 1 files changed, 40 insertions(+), 5 deletions(-)
+ include/linux/sched.h |    2 --
+ kernel/sched.c        |   35 ++++++++++++++++++++++++-----------
+ 2 files changed, 24 insertions(+), 13 deletions(-)
 
-diff --git a/kernel/rtmutex.c b/kernel/rtmutex.c
-index 6c1debb..8ae9de3 100644
---- a/kernel/rtmutex.c
-+++ b/kernel/rtmutex.c
-@@ -522,6 +522,41 @@ static void wakeup_next_waiter(struct rt_mutex *lock, int savestate)
- 	pendowner = waiter->task;
- 	waiter->task = NULL;
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index ec94970..70175e0 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1080,10 +1080,8 @@ struct task_struct {
+ 	int lock_depth;		/* BKL lock depth */
  
-+	/*
-+	 * Do the wakeup before the ownership change to give any spinning
-+	 * waiter grantees a headstart over the other threads that will
-+	 * trigger once owner changes.
-+	 */
-+	if (!savestate)
-+		wake_up_process(pendowner);
-+	else {
-+		/*
-+		 * We can skip the actual (expensive) wakeup if the
-+		 * waiter is already running, but we have to be careful
-+		 * of race conditions because they may be about to sleep.
-+		 *
-+		 * The waiter-side protocol has the following pattern:
-+		 * 1: Set state != RUNNING
-+		 * 2: Conditionally sleep if waiter->task != NULL;
-+		 *
-+		 * And the owner-side has the following:
-+		 * A: Set waiter->task = NULL
-+		 * B: Conditionally wake if the state != RUNNING
-+		 *
-+		 * As long as we ensure 1->2 order, and A->B order, we
-+		 * will never miss a wakeup.
-+		 *
-+		 * Therefore, this barrier ensures that waiter->task = NULL
-+		 * is visible before we test the pendowner->state.  The
-+		 * corresponding barrier is in the sleep logic.
-+		 */
-+		smp_mb();
-+
-+		/* If !RUNNING && !RUNNING_MUTEX */
-+		if (pendowner->state & ~TASK_RUNNING_MUTEX)
-+			wake_up_process_mutex(pendowner);
-+	}
-+
- 	rt_mutex_set_owner(lock, pendowner, RT_MUTEX_OWNER_PENDING);
+ #ifdef CONFIG_SMP
+-#ifdef __ARCH_WANT_UNLOCKED_CTXSW
+ 	int oncpu;
+ #endif
+-#endif
  
- 	spin_unlock(&current->pi_lock);
-@@ -548,11 +583,6 @@ static void wakeup_next_waiter(struct rt_mutex *lock, int savestate)
- 		plist_add(&next->pi_list_entry, &pendowner->pi_waiters);
- 	}
- 	spin_unlock(&pendowner->pi_lock);
--
--	if (savestate)
--		wake_up_process_mutex(pendowner);
--	else
--		wake_up_process(pendowner);
+ 	int prio, static_prio, normal_prio;
+ #ifdef CONFIG_PREEMPT_RCU_BOOST
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 4428916..03cb222 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -699,18 +699,39 @@ static inline int task_current(struct rq *rq, struct task_struct *p)
+ 	return rq->curr == p;
  }
  
- /*
-@@ -803,6 +833,11 @@ rt_spin_lock_slowlock(struct rt_mutex *lock)
+-#ifndef __ARCH_WANT_UNLOCKED_CTXSW
+ static inline int task_running(struct rq *rq, struct task_struct *p)
+ {
++#ifdef CONFIG_SMP
++	return p->oncpu;
++#else
+ 	return task_current(rq, p);
++#endif
+ }
  
- 		if (adaptive_wait(&waiter, orig_owner)) {
- 			update_current(TASK_UNINTERRUPTIBLE, &saved_state);
-+			/*
-+			 * The xchg() in update_current() is an implicit
-+			 * barrier which we rely upon to ensure current->state
-+			 * is visible before we test waiter.task.
-+			 */
- 			if (waiter.task)
- 				schedule_rt_mutex(lock);
- 		}
++#ifndef __ARCH_WANT_UNLOCKED_CTXSW
+ static inline void prepare_lock_switch(struct rq *rq, struct task_struct *next)
+ {
++#ifdef CONFIG_SMP
++	/*
++	 * We can optimise this out completely for !SMP, because the
++	 * SMP rebalancing from interrupt is the only thing that cares
++	 * here.
++	 */
++	next->oncpu = 1;
++#endif
+ }
+ 
+ static inline void finish_lock_switch(struct rq *rq, struct task_struct *prev)
+ {
++#ifdef CONFIG_SMP
++	/*
++	 * After ->oncpu is cleared, the task can be moved to a different CPU.
++	 * We must ensure this doesn't happen until the switch is completely
++	 * finished.
++	 */
++	smp_wmb();
++	prev->oncpu = 0;
++#endif
+ #ifdef CONFIG_DEBUG_SPINLOCK
+ 	/* this is a valid case when another task releases the spinlock */
+ 	rq->lock.owner = current;
+@@ -726,14 +747,6 @@ static inline void finish_lock_switch(struct rq *rq, struct task_struct *prev)
+ }
+ 
+ #else /* __ARCH_WANT_UNLOCKED_CTXSW */
+-static inline int task_running(struct rq *rq, struct task_struct *p)
+-{
+-#ifdef CONFIG_SMP
+-	return p->oncpu;
+-#else
+-	return task_current(rq, p);
+-#endif
+-}
+ 
+ static inline void prepare_lock_switch(struct rq *rq, struct task_struct *next)
+ {
+@@ -2082,7 +2095,7 @@ void sched_fork(struct task_struct *p, int clone_flags)
+ 	if (likely(sched_info_on()))
+ 		memset(&p->sched_info, 0, sizeof(p->sched_info));
+ #endif
+-#if defined(CONFIG_SMP) && defined(__ARCH_WANT_UNLOCKED_CTXSW)
++#if defined(CONFIG_SMP)
+ 	p->oncpu = 0;
+ #endif
+ #ifdef CONFIG_PREEMPT
+@@ -5684,7 +5697,7 @@ void __cpuinit init_idle(struct task_struct *idle, int cpu)
+ 
+ 	spin_lock_irqsave(&rq->lock, flags);
+ 	rq->curr = rq->idle = idle;
+-#if defined(CONFIG_SMP) && defined(__ARCH_WANT_UNLOCKED_CTXSW)
++#if defined(CONFIG_SMP)
+ 	idle->oncpu = 1;
+ #endif
+ 	spin_unlock_irqrestore(&rq->lock, flags);
 
