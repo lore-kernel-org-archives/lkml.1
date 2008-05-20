@@ -1,74 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934720AbYETW7R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934493AbYETXBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934720AbYETW7R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 18:59:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762022AbYETW66
+	id S934493AbYETXBZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 19:01:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760425AbYETXBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 18:58:58 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48740 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758427AbYETW65 (ORCPT
+	Tue, 20 May 2008 19:01:15 -0400
+Received: from az33egw01.freescale.net ([192.88.158.102]:41868 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760135AbYETXBO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 18:58:57 -0400
-Date: Tue, 20 May 2008 15:58:47 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: <linux-ide@vger.kernel.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] ata: fix sleep-while-holding-spinlock in sata_nv
-Message-ID: <20080520155847.12a22dfb@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 20 May 2008 19:01:14 -0400
+Date: Tue, 20 May 2008 15:55:46 -0700 (PDT)
+From: Trent Piepho <tpiepho@freescale.com>
+X-X-Sender: xyzzy@t2.domain.actdsltmp
+To: Scott Wood <scottwood@freescale.com>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, benh@kernel.crashing.org,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [POWERPC] Improve (in|out)_beXX() asm code
+In-Reply-To: <4833524C.3040207@freescale.com>
+Message-ID: <Pine.LNX.4.64.0805201535290.7453@t2.domain.actdsltmp>
+References: <1211316025-29069-1-git-send-email-tpiepho@freescale.com>
+ <1211318219.8297.177.camel@pasglop> <483344C0.3020703@freescale.com>
+ <20080520231516.76b924a2@core> <4833524C.3040207@freescale.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 20 May 2008, Scott Wood wrote:
+> Alan Cox wrote:
+>> >  It looks like we rely on -fno-strict-aliasing to prevent reordering 
+>> >  ordinary memory accesses (such as to DMA descriptors) past the I/O
+>>
+>>  DMA descriptors in main memory are dependant on cache behaviour anyway
+>>  and the dma_* operators should be the ones enforcing the needed behaviour.
+>
+> What about memory obtained from dma_alloc_coherent()?  We still need a sync 
+> and a compiler barrier.  The current I/O accessors have the former, but not 
+> the latter.
 
-From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: [PATCH] ata: fix sleep-while-holding-spinlock in sata_nv
+There doesn't appear to be any barriers to use for coherent dma other than
+mb() and wmb().
 
-blk_queue_bounce_limit() is a sleeping function, so reorganize
-the code a little to not call it while holding a spinlock.
+Correct me if I'm wrong, but I think the sync isn't actually _required_ (by
+memory-barriers.txt's definitions), and it would be enough to use eieio,
+except there is code that doesn't use mmiowb() between I/O access and
+unlocking.
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- drivers/ata/sata_nv.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+So, as I understand it, the minimum needed is eieio.  To provide strict
+ordering w.r.t. spin locks without using mmiowb(), you need sync.  To provide
+strict ordering w.r.t. normal memory, you need sync and a compiler barrier.
 
-diff --git a/drivers/ata/sata_nv.c b/drivers/ata/sata_nv.c
-index 858f706..a7bc56d 100644
---- a/drivers/ata/sata_nv.c
-+++ b/drivers/ata/sata_nv.c
-@@ -671,6 +671,11 @@ static int nv_adma_slave_config(struct scsi_device *sdev)
- 	port1 = ap->host->ports[1]->private_data;
- 	sdev0 = ap->host->ports[0]->link.device[0].sdev;
- 	sdev1 = ap->host->ports[1]->link.device[0].sdev;
-+
-+	blk_queue_segment_boundary(sdev->request_queue, segment_boundary);
-+	blk_queue_max_hw_segments(sdev->request_queue, sg_tablesize);
-+	spin_unlock_irqrestore(ap->lock, flags);
-+
- 	if ((port0->flags & NV_ADMA_ATAPI_SETUP_COMPLETE) ||
- 	    (port1->flags & NV_ADMA_ATAPI_SETUP_COMPLETE)) {
- 		/** We have to set the DMA mask to 32-bit if either port is in
-@@ -701,14 +706,11 @@ static int nv_adma_slave_config(struct scsi_device *sdev)
- 					       pp->adma_dma_mask);
- 	}
- 
--	blk_queue_segment_boundary(sdev->request_queue, segment_boundary);
--	blk_queue_max_hw_segments(sdev->request_queue, sg_tablesize);
- 	ata_port_printk(ap, KERN_INFO,
- 		"DMA mask 0x%llX, segment boundary 0x%lX, hw segs %hu\n",
- 		(unsigned long long)*ap->host->dev->dma_mask,
- 		segment_boundary, sg_tablesize);
- 
--	spin_unlock_irqrestore(ap->lock, flags);
- 
- 	return rc;
- }
--- 
-1.5.4.5
-
+Right now no archs provide the last option.  powerpc is currently the middle
+option.  I don't know if anything uses the first option, maybe alpha?  I'm
+almost certain x86 is the middle option (the first isn't possible, the arch
+already has more ordering than that), which is probably why powerpc used that
+option and not the first.
