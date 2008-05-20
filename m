@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932493AbYETR3I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765431AbYETRa7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932493AbYETR3I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 13:29:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757873AbYETR2x
+	id S1765431AbYETRa7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 13:30:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756832AbYETRau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 13:28:53 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:33801 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757588AbYETR2u (ORCPT
+	Tue, 20 May 2008 13:30:50 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41933 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756780AbYETRat (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 13:28:50 -0400
-Cc: netdev <netdev@vger.kernel.org>, Jean Tourrilhes <jt@hpl.hp.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Message-Id: <57793EAF-9BDF-43DE-8E59-4ADE7AFDC64D@holtmann.org>
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <1211303731.6252.105.camel@johannes.berg>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+	Tue, 20 May 2008 13:30:49 -0400
+Date: Tue, 20 May 2008 10:30:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Dave Young" <hidave.darkstar@gmail.com>
+Cc: greg@kroah.com, matthew@wil.cx, kay.sievers@vrfy.org,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 1/3][-mm] add class_reclassify macro
+Message-Id: <20080520103045.2bb0a033.akpm@linux-foundation.org>
+In-Reply-To: <a8e1da0805200405t10fae448w589449e75a5abec6@mail.gmail.com>
+References: <20080520095553.GA3201@darkstar.te-china.tietoenator.com>
+	<20080520030232.fc91b64e.akpm@linux-foundation.org>
+	<a8e1da0805200405t10fae448w589449e75a5abec6@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [RFC] make wext wireless bits optional and deprecate them
-Date: Tue, 20 May 2008 19:28:41 +0200
-References: <1211026337.3827.25.camel@johannes.berg> <CD993362-B1DE-4E4D-8A5B-E9E2AD7DA04C@holtmann.org> (sfid-20080517_154639_384202_6D3479C2) <1211303731.6252.105.camel@johannes.berg>
-X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Johannes,
+On Tue, 20 May 2008 19:05:21 +0800 "Dave Young" <hidave.darkstar@gmail.com> wrote:
 
->>> The /sys/class/net/*/wireless/ direcory is, as far as I know, not
->>> used by anyone. Additionally, the same data is available via wext
->>> ioctls. Hence the sysfs files are pretty much useless. This patch
->>> makes them optional and schedules them for removal.
->>
->> it is used by HAL to classify WiFi network cards as net.80211 instead
->> of net.80203 and so we do have an actual user. However HAL only tests
->> for the existence of the directory wireless/.
->>
->> Please fix HAL first before submitting such a patch.
->
-> I have filed a patch to fix HAL to use the canonical SIOCGIWNAME at
-> https://bugs.freedesktop.org/show_bug.cgi?id=16037. Any further
-> objections to this patch?
+> On Tue, May 20, 2008 at 6:02 PM, Andrew Morton
+> <akpm@linux-foundation.org> wrote:
+> > On Tue, 20 May 2008 17:55:54 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
+> >
+> >> Converting class semaphore to mutex cause lockdep warnings due to
+> >> class_interface_register/unregister will possible call device_add/del
+> >
+> > Shouldn't we just fix that?
+> 
+> Andrew, could you tell more?
 
-patch looks good to me.
+Well what are these lockdep warnings?  Normally such a warning means that
+we have a locking bug. I _assume_ that you've determined that the warnings
+are false-positives?
 
-Regards
-
-Marcel
+The warning which Mariusz Kozlowski discovered ("Subject: Re:
+2.6.26-rc2-mm1: possible circular locking dependency detected") was
+triggered by the "class semaphore to mutex" conversion and it looks
+like a real bug to me.  Would your patch prevent warnings such as that
+one from being available to us?
 
