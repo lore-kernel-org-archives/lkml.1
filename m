@@ -1,98 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765035AbYETKVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932282AbYETKXf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765035AbYETKVc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 06:21:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763243AbYETKVG
+	id S932282AbYETKXf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 06:23:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758122AbYETKX0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 06:21:06 -0400
-Received: from bay0-omc2-s14.bay0.hotmail.com ([65.54.246.150]:54861 "EHLO
-	bay0-omc2-s14.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762352AbYETKVE (ORCPT
+	Tue, 20 May 2008 06:23:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42301 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753550AbYETKXZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 06:21:04 -0400
-Message-ID: <BAY103-DAV10610255819F634BC984ABB2C40@phx.gbl>
-X-Originating-IP: [85.32.103.134]
-X-Originating-Email: [pupilla@hotmail.com]
-From: "Marco Berizzi" <pupilla@hotmail.com>
-To: "Herbert Xu" <herbert@gondor.apana.org.au>,
-       "David S. Miller" <davem@davemloft.net>
-Cc: <linux-kernel@vger.kernel.org>, <netdev@vger.kernel.org>
-References: <BAY103-DAV594320AC93E33D7335927B2DA0@phx.gbl> <BAY103-DAV122A113843FE9574256A0AB2D60@phx.gbl> <BAY103-DAV6446AEC1CBB678E5D0E52B2D30@phx.gbl> <20080509102509.GA11710@gondor.apana.org.au> <BAY103-DAV5B5CD83FC6A95A5DD48C9B2CC0@phx.gbl> <20080512074642.GA1416@gondor.apana.org.au> <BAY103-DAV521435E26209347B7646FB2CC0@phx.gbl> <BAY103-DAV2A04E519F35401C98403FB2CC0@phx.gbl> <BAY103-DAV20B0EEFFB30A41A8020C8B2CC0@phx.gbl> <BAY103-DAV88950FC99CDE9EAAE27B2B2CE0@phx.gbl> <20080520092511.GA9005@gondor.apana.org.au>
-Subject: Re: [IPSEC]: Use the correct ip_local_out function
-Date: Tue, 20 May 2008 12:18:16 +0200
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2800.1123
-x-mimeole: Produced By Microsoft MimeOLE V6.00.2800.1123
-X-OriginalArrivalTime: 20 May 2008 10:21:00.0997 (UTC) FILETIME=[3394AF50:01C8BA63]
+	Tue, 20 May 2008 06:23:25 -0400
+Date: Tue, 20 May 2008 03:22:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.26-rc2-mm1: possible circular locking dependency detected
+Message-Id: <20080520032248.a4374951.akpm@linux-foundation.org>
+In-Reply-To: <200805201201.34688.m.kozlowski@tuxland.pl>
+References: <20080514010129.4f672378.akpm@linux-foundation.org>
+	<200805201201.34688.m.kozlowski@tuxland.pl>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu wrote:
+On Tue, 20 May 2008 12:01:34 +0200 Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
 
-> On Wed, May 14, 2008 at 10:19:57AM +0200, Marco Berizzi wrote:
-> >
-> > I hope this helps.
->
-> OK found the problem, it was my fault after all :)
->
-> Dave, this patch needs to go into stable too.
->
-> [IPSEC]: Use the correct ip_local_out function
->
-> Because the IPsec output function xfrm_output_resume does its
-> own dst_output call it should always call __ip_local_output
-> instead of ip_local_output as the latter may invoke dst_output
-> directly.  Otherwise the return values from nf_hook and dst_output
-> may clash as they both use the value 1 but for different purposes.
->
-> When that clash occurs this can cause a packet to be used after
-> it has been freed which usually leads to a crash.  Because the
-> offending value is only returned from dst_output with qdiscs
-> such as HTB, this bug is normally not visible.
->
-> Thanks to Marco Berizzi for his perseverance in tracking this
-> down.
+> Hello,
+> 
+> 	This lockdep warning is seen when I remove pcmcia wifi card
+> from the slot. Doesn't happen every time. It's x86_32.
+> 
+> =======================================================
+> [ INFO: possible circular locking dependency detected ]
+> 2.6.26-rc2-mm1 #2
+> -------------------------------------------------------
+> pccardd/1037 is trying to acquire lock:
+>  (rtnl_mutex){--..}, at: [<c02870f1>] rtnl_lock+0x14/0x16
+> 
+> but task is already holding lock:
+>  (&socket->skt_mutex){--..}, at: [<c02608ba>] pccardd+0x161/0x28c
+> 
+> which lock already depends on the new lock.
+> 
+> 
+> the existing dependency chain (in reverse order) is:
 
-Herbert,
-many many thanks to you for fixing this bug.
-I was going on with git bisect, but I was not
-able anymore to reproduce the bug after four
-git bisect step.
-I'm going to apply immediately your patch to
-2.6.25.4
-Just for record, this is my last git bisect log:
-root@Venus:/tmp/GIT/my2.6.25.y# git bisect log
-git-bisect start
-# good: [49914084e797530d9baaf51df9eda77babc98fa8] Linux 2.6.24
-git-bisect good 49914084e797530d9baaf51df9eda77babc98fa8
-# bad: [4b119e21d0c66c22e8ca03df05d9de623d0eb50f] Linux 2.6.25
-git-bisect bad 4b119e21d0c66c22e8ca03df05d9de623d0eb50f
-# bad: [dd5f5fed6c9458a7aa81eeef3732cc3a9891cfdf] Merge branch
-'audit.b46' of
-git://git.kernel.org/pub/scm/linux/kernel/git/viro/audit-current
-git-bisect bad dd5f5fed6c9458a7aa81eeef3732cc3a9891cfdf
-# bad: [fde3571fd8613483f1203d11394ae316c6b79a03] iwlwifi: avoid
-firmware command sending if rfkill is enabled
-git-bisect bad fde3571fd8613483f1203d11394ae316c6b79a03
-# good: [1c7c2cdec3a6b2873439096983794a550d7ff65b] Merge
-git://git.kernel.org/pub/scm/linux/kernel/git/bart/ide-2.6
-git-bisect good 1c7c2cdec3a6b2873439096983794a550d7ff65b
-# bad: [4c37799ccf6c722e0dad6a0677af22d1c23fb897] [NETFILTER]: Use
-lowercase names for matches in Kconfig
-git-bisect bad 4c37799ccf6c722e0dad6a0677af22d1c23fb897
-# good: [f4798748dee00c807a63f5518f08b3df161e0f6d] Merge branch
-'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/jikos/hid
-git-bisect good f4798748dee00c807a63f5518f08b3df161e0f6d
-# good: [9c55e01c0cc835818475a6ce8c4d684df9949ac8] [TCP]: Splice receive
-support.
-git-bisect good 9c55e01c0cc835818475a6ce8c4d684df9949ac8
-# good: [8e8c71f1ab0ca1c4e74efad14533b991524dcb6c] [DCCP]: Honour and
-make use of shutdown option set by user
-git-bisect good 8e8c71f1ab0ca1c4e74efad14533b991524dcb6c
-# good: [dd88590995de7c7ce108718a9ad52b3832e77814] [DECNET]: Remove
-extra memset from dn_fib_check_nh
-git-bisect good dd88590995de7c7ce108718a9ad52b3832e77814
+OK, three locks are involved here.
 
+> -> #2 (&socket->skt_mutex){--..}:
+>        [<c013fff0>] __lock_acquire+0xf3b/0x103b
+>        [<c0140169>] lock_acquire+0x79/0x92
+>        [<c02cfcd5>] mutex_lock_nested+0x90/0x290
+>        [<c02600a6>] pccard_register_pcmcia+0x22/0x78
+>        [<ded5af02>] pcmcia_bus_add_socket+0x9f/0xe0 [pcmcia]
+>        [<c0251c02>] class_interface_register+0x83/0xb2
+>        [<ded6003a>] 0xded6003a
+>        [<c0146115>] sys_init_module+0x11e/0x18e4
+>        [<c0103001>] sysenter_past_esp+0x6a/0xa5
+>        [<ffffffff>] 0xffffffff
 
+	cls->mutex
+	  socket->skt_mutex
+
+> -> #1 (&cls->mutex){--..}:
+>        [<c013fff0>] __lock_acquire+0xf3b/0x103b
+>        [<c0140169>] lock_acquire+0x79/0x92
+>        [<c02cfcd5>] mutex_lock_nested+0x90/0x290
+>        [<c024f4a0>] device_add+0x42f/0x557
+>        [<c02895a1>] netdev_register_kobject+0x76/0x7b
+>        [<c027e3f6>] register_netdevice+0x22e/0x39a
+>        [<c027e599>] register_netdev+0x37/0x44
+>        [<c03ce7fb>] loopback_net_init+0x38/0x7d
+>        [<c027bb59>] register_pernet_operations+0x18/0x1a
+>        [<c027bbd3>] register_pernet_device+0x24/0x51
+>        [<c03ce7c1>] loopback_init+0x12/0x14
+>        [<c03b9721>] kernel_init+0x80/0x227
+>        [<c0103c13>] kernel_thread_helper+0x7/0x10
+>        [<ffffffff>] 0xffffffff
+
+	rtnl_lock
+	  cls->mutex
+
+> -> #0 (rtnl_mutex){--..}:
+>        [<c013fb8e>] __lock_acquire+0xad9/0x103b
+>        [<c0140169>] lock_acquire+0x79/0x92
+>        [<c02cfcd5>] mutex_lock_nested+0x90/0x290
+>        [<c02870f1>] rtnl_lock+0x14/0x16
+>        [<c027e04d>] unregister_netdev+0x10/0x1f
+>        [<ded9d11f>] orinoco_cs_detach+0x20/0x32 [orinoco_cs]
+>        [<ded5775a>] pcmcia_device_remove+0x3c/0xcf [pcmcia]
+>        [<c0250efe>] __device_release_driver+0x5e/0x84
+>        [<c0250fe2>] device_release_driver+0x20/0x2b
+>        [<c0250434>] bus_remove_device+0x73/0x8b
+>        [<c024ef95>] device_del+0xdb/0x14b
+>        [<c024f015>] device_unregister+0x10/0x1a
+>        [<ded5768e>] pcmcia_card_remove+0x76/0x8c [pcmcia]
+>        [<ded5825d>] ds_event+0x59/0x9e [pcmcia]
+>        [<c025ffa6>] send_event+0x7c/0xa8
+>        [<c02601da>] socket_remove_drivers+0x17/0x19
+>        [<c02601ef>] socket_shutdown+0x13/0xcc
+>        [<c02602d3>] socket_remove+0x2b/0x31
+>        [<c026098f>] pccardd+0x236/0x28c
+>        [<c01318bb>] kthread+0x3b/0x5d
+>        [<c0103c13>] kernel_thread_helper+0x7/0x10
+>        [<ffffffff>] 0xffffffff
+
+	cls->mutex
+	  rtnl_lock
+
+> other info that might help us debug this:
+> 
+> 1 lock held by pccardd/1037:
+>  #0:  (&socket->skt_mutex){--..}, at: [<c02608ba>] pccardd+0x161/0x28c
+> 
+> stack backtrace:
+> Pid: 1037, comm: pccardd Not tainted 2.6.26-rc2-mm1 #2
+>  [<c013d8d6>] print_circular_bug_tail+0x68/0x71
+>  [<c013cfd5>] ? print_circular_bug_entry+0x43/0x4b
+>  [<c013fb8e>] __lock_acquire+0xad9/0x103b
+>  [<c013f42f>] ? __lock_acquire+0x37a/0x103b
+>  [<c013f42f>] ? __lock_acquire+0x37a/0x103b
+>  [<c0108587>] ? native_sched_clock+0x66/0xaf
+>  [<c0140169>] lock_acquire+0x79/0x92
+>  [<c02870f1>] ? rtnl_lock+0x14/0x16
+>  [<c02cfcd5>] mutex_lock_nested+0x90/0x290
+>  [<c02870f1>] ? rtnl_lock+0x14/0x16
+>  [<c02870f1>] ? rtnl_lock+0x14/0x16
+>  [<c02870f1>] rtnl_lock+0x14/0x16
+>  [<c027e04d>] unregister_netdev+0x10/0x1f
+>  [<ded9d11f>] orinoco_cs_detach+0x20/0x32 [orinoco_cs]
+>  [<ded5775a>] pcmcia_device_remove+0x3c/0xcf [pcmcia]
+>  [<c0250efe>] __device_release_driver+0x5e/0x84
+>  [<c0250fe2>] device_release_driver+0x20/0x2b
+>  [<c0250434>] bus_remove_device+0x73/0x8b
+>  [<c024ef95>] device_del+0xdb/0x14b
+>  [<c024f015>] device_unregister+0x10/0x1a
+>  [<ded5768e>] pcmcia_card_remove+0x76/0x8c [pcmcia]
+>  [<ded5825d>] ds_event+0x59/0x9e [pcmcia]
+>  [<c02601da>] ? socket_remove_drivers+0x17/0x19
+>  [<c025ffa6>] send_event+0x7c/0xa8
+>  [<c02601da>] socket_remove_drivers+0x17/0x19
+>  [<c02601ef>] socket_shutdown+0x13/0xcc
+>  [<c0120d15>] ? printk+0x20/0x22
+>  [<c02602d3>] socket_remove+0x2b/0x31
+>  [<c026098f>] pccardd+0x236/0x28c
+>  [<c02cf0e8>] ? schedule+0x2c4/0x46f
+>  [<c011b3eb>] ? sub_preempt_count+0x76/0xbd
+>  [<c011b15f>] ? default_wake_function+0x0/0x12
+>  [<c0260759>] ? pccardd+0x0/0x28c
+>  [<c01318bb>] kthread+0x3b/0x5d
+>  [<c0131880>] ? kthread+0x0/0x5d
+>  [<c0103c13>] kernel_thread_helper+0x7/0x10
+
+This bug has always been there, and is now exposed by the conversion
+of cls->mutex from a semaphore to a mutex.  Because lockdep doesn't
+check semaphores.
+
+I don't know how to get this fixed, sorry.  I'll just push
+struct-class-sem-to-mutex-converting.patch at Greg until it sticks,
+then it will go into mainline, then we'll get a shower of bug reports,
+including this one, then someone someday will do soemthing about it.
+
+Fun.
