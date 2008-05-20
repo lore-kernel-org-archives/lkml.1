@@ -1,94 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934921AbYETWd5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934879AbYETWfB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934921AbYETWd5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 18:33:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764123AbYETWdh
+	id S934879AbYETWfB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 18:35:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757635AbYETWew
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 18:33:37 -0400
-Received: from ns2.suse.de ([195.135.220.15]:38926 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933767AbYETWdf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 18:33:35 -0400
-Date: Tue, 20 May 2008 15:32:48 -0700
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: [GIT PATCH] USB fixes for 2.6.26-rc3
-Message-ID: <20080520223248.GB12383@suse.de>
+	Tue, 20 May 2008 18:34:52 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:47624 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758899AbYETWev (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 18:34:51 -0400
+Date: Wed, 21 May 2008 00:35:43 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       macro@ds2.pg.gda.pl
+Subject: Re: Unify common parts of i8259.c
+Message-ID: <20080520223543.GA4705@elf.ucw.cz>
+References: <20080520151528.GA1596@elf.ucw.cz> <20080520204750.GA31409@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080520204750.GA31409@elte.hu>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are some USB patches for your 2.6.25-git tree.
+Hi!
 
-They include:
-	- bugfixes
-	- new device ids
-	- removing a device id from one driver and putting it in the
-	  correct one.
-	- a new driver, cdc-wdm, for wireless USB modems and phones.
-	  This driver is self-contained and should cause no new
-	  problems.  This is the majority of the diffstat below.
+> * Pavel Machek <pavel@suse.cz> wrote:
+> 
+> > Merge common parts of i8259_{32,64} into i8259.c.
+> 
+> hm, did you intend this to be a 'mechanic' (i.e. no functionality 
+> changes expected) unification?
 
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
+Yes, it should have been mechanic, but I guess I was not careful
+enough.
 
-All of these patches have been in the -mm tree for a while, as well as
--next.
+> We'd prefer to have 10 or 20 small commits instead one large commit - 
+> because in -tip we can bisect any problems to the exact change that 
+> caused it - while now we are left to guess about a rather large
+> change:
 
-The full patches will be sent to the linux-usb mailing list, if anyone
-wants to see them.
+I don't think I can split it into 20 changes, but I should be able to
+split it into 3 or so, and make them trivial enough to be bug
+free. (In fact, there were only about 20 lines of "real" changes in
+this, but it is impossible to see
 
-thanks,
+>    6 files changed, 347 insertions(+), 609 deletions(-)
 
-greg k-h
+in this huge changelog). I'll produce better patches.
 
-------------
+								Pavel
 
- drivers/net/usb/cdc_subset.c    |    2 +-
- drivers/usb/class/Kconfig       |   11 +
- drivers/usb/class/Makefile      |    1 +
- drivers/usb/class/cdc-wdm.c     |  740 +++++++++++++++++++++++++++++++++++++++
- drivers/usb/gadget/pxa27x_udc.c |    3 +-
- drivers/usb/host/ehci-orion.c   |    2 +
- drivers/usb/serial/ch341.c      |    1 +
- drivers/usb/serial/ftdi_sio.c   |    1 +
- drivers/usb/serial/ftdi_sio.h   |    6 +
- drivers/usb/serial/option.c     |    7 +-
- drivers/usb/serial/pl2303.c     |    1 -
- drivers/usb/serial/pl2303.h     |    1 -
- include/linux/usb/cdc.h         |    9 +
- 13 files changed, 780 insertions(+), 5 deletions(-)
- create mode 100644 drivers/usb/class/cdc-wdm.c
-
----------------
-
-Arnaldo Carvalho de Melo (1):
-      USB: OPTION: fix name of Onda MSA501HS HSDPA modem
-
-Atsushi Nemoto (1):
-      usb-serial: Use ftdi_sio driver for RATOC REX-USB60F
-
-Greg Kroah-Hartman (1):
-      USB: add TELIT HDSPA UC864-E modem to option driver
-
-Ingo Molnar (1):
-      USB: build fix
-
-Lennert Buytenhek (1):
-      USB: ehci-orion: the Orion EHCI root hub does have a Transaction Translator
-
-Michael F. Robbins (1):
-      USB: serial: ch341: New VID/PID for CH341 USB-serial
-
-Oliver Neukum (1):
-      USB: CDC WDM driver
-
-karl beldan (1):
-      USB: pxa27x_udc - Fix Oops
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
