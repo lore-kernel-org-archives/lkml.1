@@ -1,28 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761784AbYETJAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763384AbYETJBp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761784AbYETJAk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 05:00:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757635AbYETJAc
+	id S1763384AbYETJBp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 05:01:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760317AbYETJBh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 05:00:32 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:39747 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753543AbYETJAb (ORCPT
+	Tue, 20 May 2008 05:01:37 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59153 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757635AbYETJBg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 05:00:31 -0400
-Date: Tue, 20 May 2008 18:05:52 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "menage@google.com" <menage@google.com>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>
-Subject: [RFC][PATCH 1/3] memcg: documentation for controll file
-Message-Id: <20080520180552.601da567.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+	Tue, 20 May 2008 05:01:36 -0400
+Date: Tue, 20 May 2008 02:01:21 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [RFC: 2.6 patch] build kernel/profile.o only when requested
+Message-Id: <20080520020121.c443d562.akpm@linux-foundation.org>
+In-Reply-To: <20080519215306.GD17716@cs181133002.pp.htv.fi>
+References: <20080519215306.GD17716@cs181133002.pp.htv.fi>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -30,91 +26,54 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 20 May 2008 00:53:06 +0300 Adrian Bunk <bunk@kernel.org> wrote:
 
-Add a documentation for memory resource controller's files.
+> Build kernel/profile.o only if CONFIG_PROFILING is enabled.
+> 
+> This makes CONFIG_PROFILING=n kernels smaller.
+> 
+> As a bonus, some profile_tick() calls and one branch from schedule() are 
+> now eliminated with CONFIG_PROFILING=n (but I doubt these are
+> measurable effects).
+> 
+> This patch changes the effects of CONFIG_PROFILING=n, but I don't think 
+> having more than two choices would be the better choice.
+> 
+> This patch also adds the name of the first parameter to the prototypes 
+> of profile_{hits,tick}() since I anyway had to add them for the dummy 
+> functions.
+> 
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Little nits:
 
+> index 05c1cc7..4081fa3 100644
+> --- a/include/linux/profile.h
+> +++ b/include/linux/profile.h
+> @@ -8,8 +8,6 @@
+>  
+>  #include <asm/errno.h>
+>  
+> -extern int prof_on __read_mostly;
+> -
+>  #define CPU_PROFILING	1
+>  #define SCHED_PROFILING	2
+>  #define SLEEP_PROFILING	3
+> @@ -19,14 +17,29 @@ struct proc_dir_entry;
+>  struct pt_regs;
+>  struct notifier_block;
+>  
+> +#if defined(CONFIG_PROFILING) && defined(CONFIG_PROC_FS)
+> +void create_prof_cpu_mask(struct proc_dir_entry *);
 
-Index: mm-2.6.26-rc2-mm1/Documentation/controllers/memory_files.txt
-===================================================================
---- /dev/null
-+++ mm-2.6.26-rc2-mm1/Documentation/controllers/memory_files.txt
-@@ -0,0 +1,76 @@
-+Files under memory resource controller and its resource counter.
-+(See controllers/memory.txt about memory resource controller)
-+
-+* memory.usage_in_bytes
-+  (read)
-+  Currently accounted memory usage under memory controller in bytes.
-+  multiple of PAGE_SIZE.
-+
-+  Even if there is no tasks under controller, some page caches and
-+  swap caches are still accounted. (See memory.force_empty below.)
-+
-+  (write)
-+  no write operation
-+
-+* memory.limit_in_bytes
-+  (read)
-+  Current limit of usage to this memory resource controller in bytes.
-+  (write)
-+  Set limit to this memory resource controller.
-+  A user can use "K', 'M', 'G' to specify the limit.
-+
-+  (Example) You can set limit of 400M by following.
-+  % echo 400M > /path to cgroup/memory.limit_in_bytes
-+
-+* memory.max_usage_in_bytes
-+  (read)
-+  Recorded maximum memory usage under this memory controller.
-+
-+  (write)
-+  Reset the record to 0.
-+
-+  (example usage)
-+  1. create a cgroup
-+  % mkdir /path_to_cgroup/my_cgroup.
-+
-+  2. enter the cgroup
-+  % echo $$ > /path_to_cgroup/my_cgroup/tasks.
-+
-+  3. Run your program
-+  % Run......
-+
-+  4. See how much you used.
-+  % cat /path_to_cgroup/my_cgroup/memory.max_usage_in_bytes.
-+
-+  Now you know how much your application will use. Maybe this
-+  can be a good to set  limits_in_bytes to some proper value.
-+
-+* memory.force_empty
-+  (read)
-+  not allowed.
-+  (write)
-+  Drop all charges under cgroup. This can be called only when
-+  there is no task under this cgroup. This is here for debug purpose.
-+
-+* memory.stat
-+  (read)
-+  show 6 values. (will change in future)
-+  cache          .... usage accounted as File-Cache.
-+  anon/swapcache .... usage accounted as anonymous memory or swapcache.
-+  pgpgin         .... # of page-in under this cgroup.
-+  pgpgout        .... # of page-out under this cgroup
-+  active         .... amounts of memory which is treated as 'active' 
-+  inactive       .... amounts of memory which is treated as 'inactive'
-+  (write)
-+  not allowed 
-+
-+* memory.failcnt
-+  (read)
-+  The number of blocked memory allocation.
-+  Until the usage reaches the limit, memory allocation is not blocked.
-+  When it reaches, memory allocation is blocked and try to reclaim memory
-+  from LRU.
-+
-+  (write)
-+  Reset to 0.
-+
+This omits the argument's name, whereas elsewhere you have taken care
+to introduce the name where it was missing.
+
+> +#else
+> +#define create_prof_cpu_mask(x)			do { (void)(x); } while (0)
+
+I think this could be a static inline, which is neater.
+
+I wonder why create_prof_cpu_mask() is called only by s390.  I suppose
+I should I should get the historical-git tree onto this machine and
+find out.
 
