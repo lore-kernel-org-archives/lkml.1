@@ -1,45 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934304AbYETWCi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934394AbYETWDT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934304AbYETWCi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 18:02:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761443AbYETWCa
+	id S934394AbYETWDT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 18:03:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764186AbYETWDA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 18:02:30 -0400
-Received: from gate.crashing.org ([63.228.1.57]:41849 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761100AbYETWC3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 18:02:29 -0400
-Subject: Re: [PATCH] [POWERPC] Improve (in|out)_beXX() asm code
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Scott Wood <scottwood@freescale.com>
-Cc: Trent Piepho <tpiepho@freescale.com>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <483344C0.3020703@freescale.com>
-References: <1211316025-29069-1-git-send-email-tpiepho@freescale.com>
-	 <1211318219.8297.177.camel@pasglop>  <483344C0.3020703@freescale.com>
-Content-Type: text/plain
-Date: Tue, 20 May 2008 18:02:18 -0400
-Message-Id: <1211320938.8297.179.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 20 May 2008 18:03:00 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:55904 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757457AbYETWC6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 18:02:58 -0400
+Date: Tue, 20 May 2008 23:02:42 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
+       ext4 development <linux-ext4@vger.kernel.org>,
+       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 4/4] ext4: call blkdev_issue_flush on fsync
+Message-ID: <20080520220242.GB27853@shareable.org>
+References: <482DDA56.6000301@redhat.com> <482DDC04.7020706@redhat.com> <20080520023454.GM15035@mit.edu> <20080520154313.GI16676@shareable.org> <20080520195437.GZ22369@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080520195437.GZ22369@kernel.dk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jens Axboe wrote:
+> On Tue, May 20 2008, Jamie Lokier wrote:
+> > Does WRITE_BARRIER always cause a flush?  It does not have to
+> > according to Documentation/block/barrier.txt.  There are caveats about
+> > tagged queuing "not yet implemented" in the text, but can we rely on
+> > that?  The documentation is older than the current implementation;
+> > those caveats might no longer apply.
+> 
+> It does, if you use ordered tags then that assumes write through
+> caching (or ordered tag + drain + flush after completion).
 
-On Tue, 2008-05-20 at 16:38 -0500, Scott Wood wrote:
-> It looks like we rely on -fno-strict-aliasing to prevent reordering 
-> ordinary memory accesses (such as to DMA descriptors) past the I/O 
-> access.  It won't prevent reordering of memory reads around an I/O
-> read, 
-> though, which could be a problem if the I/O read result determines
-> the 
-> validity of the DMA buffer.  IMHO, a memory clobber would be better.
+Oh.  That's really unclear from the opening paragraph of barrier.txt,
+which _defines_ what I/O barriers are for, and does not mention flushing:
 
-We probably want a full "memory" clobber then...
+   I/O barrier requests are used to guarantee ordering around the barrier
+   requests.  Unless you're crazy enough to use disk drives for
+   implementing synchronization constructs (wow, sounds interesting...),
+   the ordering is meaningful only for write requests for things like
+   journal checkpoints.  All requests queued before a barrier request
+   must be finished (made it to the physical medium) before the barrier
+   request is started, and all requests queued after the barrier request
+   must be started only after the barrier request is finished (again,
+   made it to the physical medium).
 
-Ben.
+So I assumed the reason flush is talked about later was only because
+most devices don't offer an alternative.
 
+Later in barrier.txt, in the section about flushing, it says:
 
+   the reason you use I/O barriers is mainly to protect filesystem
+   integrity when power failure or some other events abruptly stop the
+   drive from operating and possibly make the drive lose data in its
+   cache.  So, I/O barriers need to guarantee that requests actually
+   get written to non-volatile medium in order
+
+Woa!  Nothing about flushing being important, just "to guarantee
+... in order".
+
+Thus flushing looks like an implementation detail - all we could do at
+the time.  It does not seem to be the _point_ of WRITE_BARRIER
+(according to the text), which is to ensure journalling integrity by
+ordering writes.
+
+Really, the main reason I was confused was that I imagine some
+SCSI-like devices letting you do partially ordered writes to
+write-back cache - with their cache preserving ordering constraints
+the same way as some CPU or database caches.  (Perhaps I've been
+thinking about CPUs too long!)
+
+Anyway, moving on....  Let's admit I am wrong about that :-)
+
+And get back to my idea.  Ignoring actual disks for a moment ( ;-) ),
+there are some I/O scheduling optimisations possible in the kernel
+itself by distinguishing between barriers (for journalling) and
+flushes (for fsync).
+
+Basically, barriers can be moved around between ordered writes,
+including postponing indefinitely (i.e. a "needs barrier" flag).
+Unordered writes (in-place data?) can be reordered somewhat around
+barriers and other writes.  Nobody should wait for a barrier to complete.
+
+On the other hand, flushes must be issued soon, and fdatasync/fsync
+wait for the result.  Reordering possibilities are different: all
+writes can be moved before a flush (unless it's a barrier too), and
+in-place data writes cannot be moved after one.
+
+Both barriers and flushes can be merged if there are no intervening
+writes except unordered writes.  Double flushing, e.g. calling fsync
+twice, or calling blkdev_issue_flush just to be sure somewhere,
+shouldn't have any overhead.
+
+The request elevator seems a good place to apply those heuristics.
+I've written earlier about how to remove some barriers from ext3/4
+journalling.  This stuff seems to suggest even more I/O scheduling
+optimisations with tree-like journalling (as in BTRFS?).
+
+-- Jamie
