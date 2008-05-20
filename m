@@ -1,101 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760216AbYETCnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760216AbYETCsB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760216AbYETCnc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 22:43:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756420AbYETCnW
+	id S1760216AbYETCsB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 22:48:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755622AbYETCrx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 22:43:22 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:60587 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755758AbYETCnV convert rfc822-to-8bit (ORCPT
+	Mon, 19 May 2008 22:47:53 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:51576 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755186AbYETCrx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 22:43:21 -0400
-From: =?utf-8?q?G=C3=BCnter_Kukkukk?= <linux@kukkukk.com>
-Organization: =?utf-8?q?Entwicklungsb=C3=BCro_f=C3=BCr?= Informationstechnologien
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: [2.6.27 patch] the scheduled smbfs removal
-Date: Tue, 20 May 2008 04:40:58 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Steve French <smfrench@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
-       samba-technical@lists.samba.org, linux-cifs-client@lists.samba.org
-References: <524f69650805191700g3e875e86gcb966033e9be60c1@mail.gmail.com> <1211244549.5915.111.camel@brick>
-In-Reply-To: <1211244549.5915.111.camel@brick>
+	Mon, 19 May 2008 22:47:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=iH+7gp/c+cs9PhqkzKYLJLxTH4sK+Zksr7+8ymSMUMAn5HWsi/qmV06ih651i+xwlrLojacktRSES00TO9mhPOKioviZe6hp/c3n8CVe7BLj9VsYINs8zetaQIA5kOzNxtopfqisfiiAFzFf0Lzl9swHEQ0Eq1kGJbTeZR25e3I=
+Message-ID: <3b279e3f0805191947i150ea675pc411adecef6a3446@mail.gmail.com>
+Date: Mon, 19 May 2008 19:47:52 -0700
+From: "Reeve Yang" <reeve.yang@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: kernel 2.6.22 CPU shoot up with same amount of file I/O
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200805200441.00236.linux@kukkukk.com>
-X-Provags-ID: V01U2FsdGVkX1/BuQkZd1rtVjr6DpHSP+1DTzy5FKvF1+ZhxWQ
- oJey3uhyZ6I/LskPEhflDk8WFXgZjGziZBiL+pHg2hXRl/yvST
- Id3QBgmJ9ILrHmZXvZfil9b2GFuWGZy
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 20. Mai 2008 schrieb Harvey Harrison:
-> On Mon, 2008-05-19 at 19:00 -0500, Steve French wrote:
-> > Harvey Harrison <harvey.harrison@gmail.com> wrote on 05/19/2008 
-> > Note that some of the backlevel server support issues aren't handled
-> > by smbfs either (and are hard due to protocol limitations). Guenter
-> > Kukkukk had been tracking some of the issues with better backlevel
-> > support (mostly for OS/2 and Win9x servers) so he might have more
-> > information, but the obvious holes that come to mind are:
-> > 
-> > a) utimes to backlevel (lanman) servers
-> > b) For some pre-Unicode servers it would help to be able to change the
-> > code page used when translating readdir responses - so that we can
-> > convert the server's readdir results from the old DBCS code pages to
-> > UTF-8.
-> > c) optionally zeroing pages on the client to work around the few buggy
-> > old servers which don't zero on expanding file size remotely.
-> > d) support for ancient dos ("core smb") servers
-> > 
-> > There are also a few places where Jeff Layton noticed the cifs code
-> > would always try the more recent smb command (which fails) and only
-> > then issue the backlevel SMB command (in a few of the places, it would
-> > be safe to "remember" the "operation not supported" answer or
-> > equivalent so we don't have to first try a command which will always
-> > fail).
-> 
-> So it's generally people talking to older (or very old) servers that
-> would be affected by this?  What options would they have if smbfs were
-> removed?  Is there an alternative to smbfs that would work?  FUSE client?
-> 
-> (Not affected personally, just curious what the alternatives are where
-> cifs won't do it)
-> 
-> Harvey
-> 
-> 
-> 
+Hi all,
 
-dropping smbfs in 2.6.27 will conflict with
-  - legacy servers like
-       - win9x/me
-       - OS/2
-       - even todays sold "samba NAS boxes (2.x.x)" (!!!)
-       - other old legacy servers like MSDOS/IBMDOS
+We recently upgrade kernel from 2.6.17.4 to 2.6.22.15 on our products.
+In our some test, the disk I/O shot as well as CPU utilization, which
+starving our some other critical process. For the sake of curiosity, I
+ran bonnie++ on both kernels, following are the result:
 
-Cifs vfs - the successor of smbfs - was _initially_
-designed to only support the "NT LM 0.12" and "POSIX 2"
-SMB/CIFS network dialects - NO legacy support at all.
+## ###############Linux 2.6.17 #1 SMP Tue May 6
+##################################
 
-I really can't talk about "FUSE client" - the burden
-is on cifs vfs ... to also support legacy servers.
+Version 1.03c       ------Sequential Output------ --Sequential Input- --Random-
+                    -Per Chr- --Block-- -Rewrite- -Per Chr- --Block-- --Seeks--
+Machine        Size       K/sec %CP K/sec %CP K/sec %CP K/sec %CP
+K/sec %CP  /sec %CP
+ib-10-34-68-2 2016M 23989  35 44123   6 16360   1 21823  28 43090   1 172.7   0
+                    ------Sequential Create------ --------Random Create--------
+                    -Create-- --Read--- -Delete-- -Create-- --Read--- -Delete--
+              files  /sec %CP  /sec %CP  /sec %CP  /sec %CP  /sec %CP  /sec %CP
+                 16 +++++ +++ +++++ +++ +++++ +++ +++++ +++ +++++ +++ +++++ +++
+ib-10-34-68-2.infoblox.com,2016M,23989,35,44123,6,16360,1,21823,28,43090,1,172.7,0,16,+++++,+++,+++++,+++,+++++,+++,+++++,+++,+++++,+++,+++++,+++
 
-Steve French has already mentioned "some 
-not implemented legacy features".
 
-What is not working today in cifs vfs (regarding legacy servers):
-  - stat()
-  - utimes()
-  - ....
+## ###############Linux 2.6.22.15 #1 SMP Tue May 6
+##################################
 
-There might be more glitches ...
+bonnie++ -d /storage -s 2016M -u root
+                    -Per Chr- --Block-- -Rewrite- -Per Chr- --Block-- --Seeks--
+Machine        Size       K/sec %CP K/sec %CP K/sec %CP K/sec %CP
+K/sec %CP  /sec %CP
+ib-10-34-68-2 2016M 26078  94 52117  17 23596   5 27172  86 56402   4 160.2   0
+                    ------Sequential Create------ --------Random Create--------
+                    -Create-- --Read--- -Delete-- -Create-- --Read--- -Delete--
+              files  /sec %CP  /sec %CP  /sec %CP  /sec %CP  /sec %CP  /sec %CP
+                 16 +++++ +++ +++++ +++ +++++ +++ +++++ +++ +++++ +++ +++++ +++
+ib-10-34-68-2.infoblox.com,2016M,26078,94,52117,17,23596,5,27172,86,56402,4,160.2,0,16,+++++,+++,+++++,+++,+++++,+++,+++++,+++,+++++,+++,+++++,+++
+###################################################################################
 
-Cheers, Günter
+As you can see, the I/O throughput improves about 10%, but CPU
+utilization is up to 94% from 35% in new and old kernel respectively
+for the exact the same test on the exact same hardware system. My
+mother board is Tyan S5102 and the CPU is IPentium(R) 4 CPU 3.40GHz. I
+searched on the web, some guys suggest to use "highres=off nohz=off
+clocksource=acpi-pm" etc., but no help. Has anyone here had similar
+problem on  your system? Is this a problem/bug on 2.6.22 kernel?
 
-Btw - work is done to solve the outstanding problems
+I saw a patch from Fengguang Wu on this
+board(http://lkml.org/lkml/2008/1/15/132). Is this the patch targeting
+the above issue? I'd appreciate if anyone could help me out.
+
+Thanks.
+- Reeve
