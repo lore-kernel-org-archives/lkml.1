@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757951AbYETBoK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758714AbYETBuA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757951AbYETBoK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 21:44:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753945AbYETBn6
+	id S1758714AbYETBuA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 21:50:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754374AbYETBtv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 21:43:58 -0400
-Received: from mga11.intel.com ([192.55.52.93]:20980 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752507AbYETBn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 21:43:58 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,513,1204531200"; 
-   d="scan'208";a="330120212"
-Subject: Re: [BISECTED] pata_jmicron: no drives found on post 2.6.25 kernels
-From: Shaohua Li <shaohua.li@intel.com>
-To: Plamen Petrov <pvp-lsts@fs.ru.acad.bg>
-Cc: linux-kernel@vger.kernel.org, Luca Tettamanti <kronos.it@gmail.com>
-In-Reply-To: <courier.4832011A.000041C2@fs.ru.acad.bg>
-References: <courier.4832011A.000041C2@fs.ru.acad.bg>
-Content-Type: text/plain
-Date: Tue, 20 May 2008 09:48:28 +0800
-Message-Id: <1211248108.19834.2.camel@sli10-desk.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 19 May 2008 21:49:51 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:8400 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750741AbYETBtu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 21:49:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=jtvl5HNEXKWAsnAlzqYSIDScK9dW1/ciRv2T4XdvLFdzoLmw5YPjC/C0z9Mgcz/eg5G+o5MX11Q8WcnxNpftXHt/tINQEmJkUFYT29vhrAplN2KX9b70cQQ4FQUOuRlQ6V5M437uakmKuyM7k8XWYBzOen/7s0HNQelhdmwdhHY=
+Date: Mon, 19 May 2008 21:49:37 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Pau Oliva Fora <pau@eslack.org>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org
+Subject: Re: [PATCH] Add support for HTC Shift Touchscreen
+Message-ID: <20080520014937.GA23247@anvil.corenet.prv>
+References: <482ED31E.2000009@eslack.org> <483198F8.3000201@eslack.org> <20080519112104.ZZRA012@mailhub.coreip.homeip.net> <4832087C.6060009@eslack.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4832087C.6060009@eslack.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-05-20 at 01:37 +0300, Plamen Petrov wrote:
-> Hello, folks! 
-> 
-> After 2.6.26 merge window opened, the optical drives in my
-> computer, hanging off a JMicron controler were not detected
-> by linux any more. 
-> 
-> Luca Tettamanti reported similar troubles:
-> http://marc.info/?l=linux-kernel&m=120958791323911&w=2 
-> 
-> Its been 20 days, so I decided to bisect.
-> git bisect revealed that commit
-> 7d715a6c1ae5785d00fb9a876b5abdfc43abc44b
-> is the one causing pata_jmicron to fail to detect drives,
-> connected to the JMicron controler on my motherboard.
-> At least in my case, anyway...
-> Changing kernel config to CONFIG_PCIEASPM=n makes the drives
-> attached to the JMicron SATA/PATA controller usable again. 
-When you enable this option, did you change any ASPM policy? By default,
-we are using the BIOS setting, so it shouldn't change any thing.
+On Tue, May 20, 2008 at 01:08:44AM +0200, Pau Oliva Fora wrote:
+> +
+> +static int htcpen_open(struct input_dev *dev)
+> +{
+> +	outb_p(DEVICE_ENABLE, HTCPEN_PORT_INIT);
+> +	return 0;
+> +}
+> +
+> +static void htcpen_close(struct input_dev *dev)
+> +{
+> +	free_irq(HTCPEN_IRQ, dev);
+> +}
+> +
 
-Also can you please send me the 'lspci -vvvxxxx' output with/without the
-ASPM enabled?
+No, this will not work.. next time you open the device you won't have
+IRQ anymore. You need the opposite of outb_p(DEVICE_ENABLE,
+HTCPEN_PORT_INIT); here.
 
-Thanks,
-Shaohua
 
+-- 
+Dmitry
