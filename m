@@ -1,128 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935304AbYETPhV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935449AbYETPiH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935304AbYETPhV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 11:37:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933265AbYETPdQ
+	id S935449AbYETPiH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 11:38:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934930AbYETPfB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 11:33:16 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:37374 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753984AbYETPdO (ORCPT
+	Tue, 20 May 2008 11:35:01 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:56357 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934926AbYETPe6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 11:33:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VDleMyk2xr0CetvQvJ5Kpmnku0r05zNrSjgAA3ScCQb8BHUYzi4Flj+dyxcR1Ysv/Ps7f179TiQ7KR02ewhGWTGwxTeX9HIe/aIjxrKoGmI8u/cMDkVdXIuXQRHRh4zPqPQoayrSGJql2Dw7dNzYkoDM62DefeyZUogfmqBLXqM=
-Message-ID: <170fa0d20805200833s30c0a856p5f08250879a182b9@mail.gmail.com>
-Date: Tue, 20 May 2008 11:33:13 -0400
-From: "Mike Snitzer" <snitzer@gmail.com>
-To: "Neil Brown" <neilb@suse.de>
-Subject: Re: [RFC][PATCH] md: avoid fullsync if a faulty member missed a dirty transition
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
-       paul.clements@steeleye.com
-In-Reply-To: <170fa0d20805200830w184709dch221f8b9636f3bc0e@mail.gmail.com>
+	Tue, 20 May 2008 11:34:58 -0400
+Date: Tue, 20 May 2008 09:34:57 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Tom Spink <tspink@gmail.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Al Viro <viro@zeniv.linux.org.uk>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC PATCH] Introduce filesystem type tracking
+Message-ID: <20080520153456.GN2638@parisc-linux.org>
+References: <1211196126-7442-1-git-send-email-tspink@gmail.com> <7b9198260805200606u6ebc2681o8af7a8eebc1cb96@mail.gmail.com> <20080520134306.GA28946@ZenIV.linux.org.uk> <20080520135732.GA30349@infradead.org> <7b9198260805200818v687fc495nb7db5ffd6c8b6ba1@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1207174155-20090-1-git-send-email-snitzer@gmail.com>
-	 <170fa0d20805081311r6b726762ndc83c5f626f0956c@mail.gmail.com>
-	 <18467.43895.220708.254814@notabene.brown>
-	 <170fa0d20805082142o61462a7dnce7852a6b7c0d21d@mail.gmail.com>
-	 <18467.59565.676987.926988@notabene.brown>
-	 <170fa0d20805090800p45654901p36eea51e1ea7e9c7@mail.gmail.com>
-	 <18477.30199.992302.271647@notabene.brown>
-	 <170fa0d20805182133o46501cc4va81b087fb6b417bf@mail.gmail.com>
-	 <18481.4005.570022.160686@notabene.brown>
-	 <170fa0d20805200830w184709dch221f8b9636f3bc0e@mail.gmail.com>
+In-Reply-To: <7b9198260805200818v687fc495nb7db5ffd6c8b6ba1@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 11:30 AM, Mike Snitzer <snitzer@gmail.com> wrote:
-> On Mon, May 19, 2008 at 1:27 AM, Neil Brown <neilb@suse.de> wrote:
->  > On Monday May 19, snitzer@gmail.com wrote:
->  >  >
->  >  > Hi Neil,
->  >  >
->  >  > Sorry about not getting back with you sooner.  Thanks for putting
->  >  > significant time to chasing this problem.
->  >  >
->  >  > I tested your most recent patch and unfortunately still hit the case
->  >  > where the nbd member becomes degraded yet the array continues to clear
->  >  > bits (events_cleared of the non-degraded member is higher than the
->  >  > degraded member).  Is this behavior somehow expected/correct?
->  >
->  >  It shouldn't be..... ahhh.
->  >  There is a delay between noting that the bit can be cleared, and
->  >  actually writing the zero to disk.  This is obviously intentional
->  >  in case the bit gets set again quickly.
->  >  I'm sampling the event count at the latter point instead of the
->  >  former, and there is time for it to change.
->  >
->  >  Maybe this patch on top of what I recently sent out?
->
->  Hi Neil,
->
->  We're much closer.  The events_cleared is symmetric on both the failed
->  and active member of the raid1.  But there have been some instances
->  where the md thread hits a deadlock during my testing.  What follows
->  is the backtrace and live crash info:
->
->  md0_raid1     D 000002c4b6483a7f     0 11249      2 (L-TLB)
->   ffff81005747dce0 0000000000000046 0000000000000000 ffff8100454c53c0
->   000000000000000a ffff810048fbd0c0 000000000000000a ffff810048fbd0c0
->   ffff81007f853840 000000000000148e ffff810048fbd2b0 0000000362c10780
->  Call Trace:
->   [<ffffffff88ba8503>] :md_mod:bitmap_daemon_work+0x249/0x4d3
->   [<ffffffff802457a5>] autoremove_wake_function+0x0/0x2e
->   [<ffffffff88ba53b3>] :md_mod:md_check_recovery+0x20/0x4a5
->   [<ffffffff8044cb5c>] thread_return+0x0/0xf1
->   [<ffffffff88bbe0eb>] :raid1:raid1d+0x25/0xd09
->   [<ffffffff8023bcd7>] lock_timer_base+0x26/0x4b
->   [<ffffffff8023bd4d>] try_to_del_timer_sync+0x51/0x5a
->   [<ffffffff8023bd62>] del_timer_sync+0xc/0x16
->   [<ffffffff8044d38a>] schedule_timeout+0x92/0xad
->   [<ffffffff88ba6c6c>] :md_mod:md_thread+0xeb/0x101
->   [<ffffffff802457a5>] autoremove_wake_function+0x0/0x2e
->   [<ffffffff88ba6b81>] :md_mod:md_thread+0x0/0x101
->   [<ffffffff8024564d>] kthread+0x47/0x76
->   [<ffffffff8020aa38>] child_rip+0xa/0x12
->   [<ffffffff80245606>] kthread+0x0/0x76
->   [<ffffffff8020aa2e>] child_rip+0x0/0x12
->
->  crash> bt 11249
->  PID: 11249  TASK: ffff810048fbd0c0  CPU: 3   COMMAND: "md0_raid1"
->   #0 [ffff81005747dbf0] schedule at ffffffff8044cb5c
->   #1 [ffff81005747dce8] bitmap_daemon_work at ffffffff88ba8503
->   #2 [ffff81005747dd68] md_check_recovery at ffffffff88ba53b3
->   #3 [ffff81005747ddb8] raid1d at ffffffff88bbe0eb
->   #4 [ffff81005747ded8] md_thread at ffffffff88ba6c6c
->   #5 [ffff81005747df28] kthread at ffffffff8024564d
->   #6 [ffff81005747df48] kernel_thread at ffffffff8020aa38
->
->  0xffffffff88ba84ee <bitmap_daemon_work+0x234>:  callq
->  0xffffffff802458ec <prepare_to_wait>
->  0xffffffff88ba84f3 <bitmap_daemon_work+0x239>:  mov    0x18(%rbx),%rax
->  0xffffffff88ba84f7 <bitmap_daemon_work+0x23d>:  mov    0x28(%rax),%eax
->  0xffffffff88ba84fa <bitmap_daemon_work+0x240>:  test   $0x2,%al
->  0xffffffff88ba84fc <bitmap_daemon_work+0x242>:  je
->  0xffffffff88ba8505 <bitmap_daemon_work+0x24b>
->  0xffffffff88ba84fe <bitmap_daemon_work+0x244>:  callq
->  0xffffffff8044c200 <__sched_text_start>
->  0xffffffff88ba8503 <bitmap_daemon_work+0x249>:  jmp
->  0xffffffff88ba84d6 <bitmap_daemon_work+0x21c>
->  0xffffffff88ba8505 <bitmap_daemon_work+0x24b>:  mov    0x18(%rbx),%rdi
->  0xffffffff88ba8509 <bitmap_daemon_work+0x24f>:  mov    %rbp,%rsi
->  0xffffffff88ba850c <bitmap_daemon_work+0x252>:  add    $0x200,%rdi
->  0xffffffff88ba8513 <bitmap_daemon_work+0x259>:  callq
->  0xffffffff802457f6 <finish_wait>
->
->  So running with your latest patches seems to introduce a race in
->  bitmap_daemon_work's if (unlikely((*bmc & COUNTER_MAX) ==
->  COUNTER_MAX)) { } block.
+On Tue, May 20, 2008 at 04:18:14PM +0100, Tom Spink wrote:
+> +	
+> +	mutex_lock(&type->fs_supers_lock);
+> +	if (list_empty(&type->fs_supers) && type->init) {
+> +		err = type->init();
+> +		if (err) {
+> +			mutex_unlock(&type->fs_supers_lock);
+> +			spin_unlock(&sb_lock);
+> +			destroy_super(s);
+> +			return ERR_PTR(err);
+> +		}
+> +	}
+> +	
+> +	list_add(&s->s_instances, &type->fs_supers);
+> +	mutex_unlock(&type->fs_supers_lock);
+> +
+>  	s->s_type = type;
+>  	strlcpy(s->s_id, type->name, sizeof(s->s_id));
+>  	list_add_tail(&s->s_list, &super_blocks);
+> -	list_add(&s->s_instances, &type->fs_supers);
+> +	
+>  	spin_unlock(&sb_lock);
 
-Err, that block is in bitmap_startwrite()...
+You can't take a mutex while holding a spinlock -- what if you had to
+sleep to acquire the mutex?
 
-Mike
+I imagine you also don't want to hold a spinlock while calling the
+->init or ->exit -- what if the fs wants to sleep in there (eg allocate
+memory with GFP_KERNEL).
+
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
