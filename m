@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765756AbYETVh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932635AbYETVln@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765756AbYETVh1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 17:37:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761264AbYETVhQ
+	id S932635AbYETVln (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 17:41:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761717AbYETVlf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 17:37:16 -0400
-Received: from az33egw01.freescale.net ([192.88.158.102]:64910 "EHLO
-	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759761AbYETVhO (ORCPT
+	Tue, 20 May 2008 17:41:35 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:17110 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759703AbYETVle (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 17:37:14 -0400
-Message-ID: <483344C0.3020703@freescale.com>
-Date: Tue, 20 May 2008 16:38:08 -0500
-From: Scott Wood <scottwood@freescale.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
+	Tue, 20 May 2008 17:41:34 -0400
+Date: Tue, 20 May 2008 14:41:15 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Louis Rilling <Louis.Rilling@kerlabs.com>
+Cc: linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+Subject: Re: [Ocfs2-devel] [RFC][PATCH 0/3] configfs: Make nested default
+	groups lockdep-friendly
+Message-ID: <20080520214115.GF26609@mail.oracle.com>
+Mail-Followup-To: Louis Rilling <Louis.Rilling@kerlabs.com>,
+	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+References: <20080520163320.025971210@kerlabs.com>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org
-CC: Trent Piepho <tpiepho@freescale.com>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [POWERPC] Improve (in|out)_beXX() asm code
-References: <1211316025-29069-1-git-send-email-tpiepho@freescale.com> <1211318219.8297.177.camel@pasglop>
-In-Reply-To: <1211318219.8297.177.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080520163320.025971210@kerlabs.com>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt wrote:
-> On Tue, 2008-05-20 at 13:40 -0700, Trent Piepho wrote:
->> There was some discussion on a Freescale list if the powerpc I/O accessors
->> should be strictly ordered w.r.t.  normal memory.  Currently they are not.  It
->> does not appear as if any other architecture's I/O accessors are strictly
->> ordered in this manner.  memory-barriers.txt explicitly states that the I/O
->> space (inb, outw, etc.) are NOT strictly ordered w.r.t. normal memory
->> accesses and it's implied the other I/O accessors (e.g., writel) are the same.
->>
->> However, it is somewhat harder to program for this model, and there are almost
->> certainly a number of drivers using coherent DMA which have subtle bugs because
->> the do not include the necessary barriers.
->>
->> But clearly and change to this would be a subject for a different patch.
+On Tue, May 20, 2008 at 06:33:20PM +0200, Louis Rilling wrote:
+> The following patches fix lockdep warnings resulting from (correct) recursive
+> locking in configfs.
 > 
-> The current accessors should provide all the necessary ordering
-> guarantees...
+> Current lockdep annotations for inode mutexes in configfs are lockdep-friendly
+> provided that:
+> 1/ config_groups have at most one level of default groups (see
+>    configfs_attach_group()),
+> 2/ config_groups having default groups are never removed (see
+>    configfs_detach_prep()).
+> 
+> Since lockdep does not handle such correct recursion, the idea is to insert
+> lockdep_off()/lockdep_on() for inode mutexes as soon as the level of recursion
+> of the I_MUTEX_PARENT -> I_MUTEX_CHILD dependency pattern increases.
 
-It looks like we rely on -fno-strict-aliasing to prevent reordering 
-ordinary memory accesses (such as to DMA descriptors) past the I/O 
-access.  It won't prevent reordering of memory reads around an I/O read, 
-though, which could be a problem if the I/O read result determines the 
-validity of the DMA buffer.  IMHO, a memory clobber would be better.
+	Hmm, this is definitely a more readable solution than the
+previous, but I'm also with Arjan that it's scary :-)
 
--Scott
+Joel
+
+-- 
+
+"Ninety feet between bases is perhaps as close as man has ever come
+ to perfection."
+	- Red Smith
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
