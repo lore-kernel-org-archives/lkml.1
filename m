@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935791AbYETWqq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935762AbYETWrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935791AbYETWqq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 18:46:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935734AbYETWp5
+	id S935762AbYETWrS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 18:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935728AbYETWqi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 18:45:57 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54429
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S935729AbYETWp4 (ORCPT
+	Tue, 20 May 2008 18:46:38 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:44147 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935683AbYETWqh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 18:45:56 -0400
-Date: Tue, 20 May 2008 15:45:51 -0700 (PDT)
-Message-Id: <20080520.154551.54365414.davem@davemloft.net>
-To: harvey.harrison@gmail.com
-Cc: crquan@gmail.com, herbert@gondor.apana.org.au, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] net/ipv4/arp.c: Use the exported hex_asc from
- lib/hexdump.c instead
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1211323212.5915.220.camel@brick>
-References: <1211135864-8235-1-git-send-email-crquan@gmail.com>
-	<20080520.153611.204837174.davem@davemloft.net>
-	<1211323212.5915.220.camel@brick>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 20 May 2008 18:46:37 -0400
+Message-ID: <483353E9.7090001@zytor.com>
+Date: Tue, 20 May 2008 15:42:49 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Rene Herman <rene.herman@keyaccess.nl>
+CC: Dave Jones <davej@redhat.com>, Mikael Pettersson <mikpe@it.uu.se>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [X86] Add a boot parameter to force-enable PAT
+References: <200805200409.m4K49Ybn024338@gelk.kernelslacker.org> <86802c440805192253s34b3acb2r63c657db86676792@mail.gmail.com> <20080520132306.GB4843@redhat.com> <18482.58121.130009.555407@harpo.it.uu.se> <20080520195846.GA29806@redhat.com> <48334766.1020701@keyaccess.nl> <48334EFA.3070109@zytor.com> <483353DB.7010708@keyaccess.nl>
+In-Reply-To: <483353DB.7010708@keyaccess.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Harvey Harrison <harvey.harrison@gmail.com>
-Date: Tue, 20 May 2008 15:40:12 -0700
-
-> On Tue, 2008-05-20 at 15:36 -0700, David Miller wrote:
-> > From: Denis Cheng <crquan@gmail.com>
-> > Date: Mon, 19 May 2008 02:37:44 +0800
-> > 
-> > > Here the local hexbuf is a duplicate of global const char hex_asc from
-> > > lib/hexdump.c, except the hex letters' cases:
-> > > 
-> > > const char hexbuf[] = "0123456789ABCDEF";
-> > > 
-> > > const char hex_asc[] = "0123456789abcdef";
-> > > 
-> > > and here to print HW addresses, the hex cases are not significant.
-> > > 
-> > > Signed-off-by: Denis Cheng <crquan@gmail.com>
-> > 
-> > Applied, thanks.
+Rene Herman wrote:
+> On 21-05-08 00:21, H. Peter Anvin wrote:
 > 
-> You may want to use the hex_asc_hi, hex_asc_lo helpers to do the
-> mask/shifts for you.
+>> Rene Herman wrote:
+>>>> +}
+>>>> +__setup("enablepat", x86_forcepat_setup);
+>>>
+>>> This should probably be called plain "pat" to mirror 
+>>> arch/x86/mm/pat.c "nopat" force off parameter. That by the way is an 
+>>> early_param which I guess this should then also be?
+>>>
+>>
+>> Either that or "pat={off,on,force}" to give space for other options... 
+>> would mean keeping "nopat" around as an alias for now, though...
+> 
+> Yes, that would be nicer. As to the alias; "nopat" hasn't been in a 
+> released kernel yet so should be okay to do away with? It's not like 
+> it's in Documentation/kernel-parameters.txt or anything... ;-/
+> 
 
-Good idea, I'll revert, Denis can you generate a new patch?
+OK, just double-checked... since it's not in Linus we can still change 
+it, and as so I'd suggest the pat= option.
 
-Thanks.
+	-hpa
