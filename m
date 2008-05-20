@@ -1,117 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932268AbYETQ1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932765AbYETQ3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932268AbYETQ1q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 12:27:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756386AbYETQ1c
+	id S932765AbYETQ3U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 12:29:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755990AbYETQ3D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 12:27:32 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:48997 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754381AbYETQ1b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 12:27:31 -0400
-Date: Tue, 20 May 2008 17:27:10 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
-Message-ID: <20080520162710.GM16676@shareable.org>
-Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
-	Andi Kleen <andi@firstfloor.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-References: <482DDA56.6000301@redhat.com> <200805190926.41970.chris.mason@oracle.com> <20080520153658.GH16676@shareable.org> <200805201202.54420.chris.mason@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200805201202.54420.chris.mason@oracle.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 20 May 2008 12:29:03 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:43919 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755162AbYETQ3B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 12:29:01 -0400
+From: Mel Gorman <mel@csn.ul.ie>
+To: linux-mm@kvack.org
+Cc: Mel Gorman <mel@csn.ul.ie>, dean@arctic.org, apw@shadowen.org,
+       linux-kernel@vger.kernel.org, wli@holomorphy.com, dwg@au1.ibm.com,
+       andi@firstfloor.org, kenchen@google.com, agl@us.ibm.com, abh@cray.com
+Message-Id: <20080520162858.8338.22460.sendpatchset@skynet.skynet.ie>
+Subject: [PATCH 0/3] Guarantee faults for processes that call mmap(MAP_PRIVATE) on hugetlbfs v3
+Date: Tue, 20 May 2008 17:28:58 +0100 (IST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Mason wrote:
-> > You don't need the barrier after in some cases, or it can be deferred
-> > until a better time.  E.g. when the disk write cache is probably empty
-> > (some time after write-idle), barrier flushes may take the same time
-> > as NOPs.
-> 
-> I hesitate to get too fancy here, if the disk is idle we probably
-> won't notice the performance gain.
+This release is mainly a rebase. Ideally, this would be reviewed from
+the perspective of "is this desirable and useful behaviour for hugepage
+applications" as well as general correctness. If reactions are positive
+or there are no objections, I'll attempt a push towards -mm for wider
+testing. As it is, they are passing basic tests as well as a slightly-modified
+libhugetlbfs regression test.
 
-I think you're right, but it's hard to be sure.  One of the problems
-with barrier-implemented-as-flush-all is that it flushes data=ordered
-data, even when that's not wanted, and there can be a lot of data in
-the disk's write cache, spread over many seeks.
+Changelog since V2
+ o Rebase to 2.6.26-rc2-mm1
+ o Document when hugetlb_lock is held for reserve counter updates
+ o Add vma_has_private_reserves() helper for clarity
 
-Then it's good to delay barrier-flushes to batch metadata commits, but
-good to issue the barrier-flushes prior to large batches of
-data=ordered data, so the latter can be survive in the disk write
-cache for seek optimisations with later requests which aren't yet
-known.
+MAP_SHARED mappings on hugetlbfs reserve huge pages at mmap() time.
+This guarantees all future faults against the mapping will succeed.
+This allows local allocations at first use improving NUMA locality whilst
+retaining reliability.
 
-All this sounds complicated at the JBD layer, and IMHO much simpler at
-the request elevator layer.
+MAP_PRIVATE mappings do not reserve pages. This can result in an application
+being SIGKILLed later if a huge page is not available at fault time. This
+makes huge pages usage very ill-advised in some cases as the unexpected
+application failure cannot be detected and handled as it is immediately fatal.
+Although an application may force instantiation of the pages using mlock(),
+this may lead to poor memory placement and the process may still be killed
+when performing COW.
 
-> But, it complicates the decision about when you're allowed to dirty
-> a metadata block for writeback.  It used to be dirty-after-commit
-> and it would change to dirty-after-barrier.  I suspect that is some
-> significant surgery into jbd.
+This patchset introduces a reliability guarantee for the process which creates
+a private mapping, i.e. the process that calls mmap() on a hugetlbfs file
+successfully.  The first patch of the set is purely mechanical code move to
+make later diffs easier to read. The second patch will guarantee faults up
+until the process calls fork(). After patch two, as long as the child keeps
+the mappings, the parent is no longer guaranteed to be reliable. Patch
+3 guarantees that the parent will always successfully COW by unmapping
+the pages from the child in the event there are insufficient pages in the
+hugepage pool in allocate a new page, be it via a static or dynamic pool.
 
-Rather than tracking when it's "allowed" to dirty a metadata block, it
-will be simpler to keep a flag saying "barrier needed", and just issue
-the barrier prior to writing a metadata block, if the flag is set.
+Existing hugepage-aware applications are unlikely to be affected by this
+change. For much of hugetlbfs's history, pages were pre-faulted at mmap()
+time or mmap() failed which acts in a reserve-like manner. If the pool
+is sized correctly already so that parent and child can fault reliably,
+the application will not even notice the reserves. It's only when the pool
+is too small for the application to function perfectly reliably that the
+reserves come into play.
 
-So metadata write scheduling doesn't need to be changed at all.  That
-will be quite simple.
-
-You might still change the scheduling, but only as a performance
-heuristic in any way which turns out to be easy.
-
-Really, that flag should live in the request elevator instead, where
-it could do more good.  I.e. WRITE_BARRIER wouldn't actually issue a
-barrier op to disk after writing.  It would just set a request
-elevator flag, so a barrier op is issued prior to the next WRITE.
-That road opens some nice optimisations on software RAID, which aren't
-possible if it's done at the JBD layer.
-
-> Also, since a commit isn't really done until the barrier is done, you can't 
-> reuse blocks freed by the committing transaction until after the barrier, 
-> which means changes in the deletion handling code.  
-
-Good point.
-
-In this case, re-allocating time isn't the problem: actually writing
-to them is.  Writes to recycled block require to be ordered after
-commits which recycled them.
-
-As above, just issue the barrier prior to the next write which needs
-to be ordered - effectively it's glued on the front of the write op.
-
-This comes for free with no change to deletion code (wow :-) if the
-only operations are WRITE_BARRIER (= flush before and after or
-equivalent) and WRITE (ordered by WRITE_BARRIER).
-
-> > What's more, barriers can be deferred past data=ordered in-place data
-> > writes, although that's not always an optimisation.
-> >
-> 
-> It might be really interesting to have a 
-> i'm-about-to-barrier-find-some-io-to-run call.  Something along the lines of 
-> draining the dirty pages when the drive is woken up in laptop mode.  There's 
-> lots of fun with page lock vs journal lock ordering, but Jan has a handle on 
-> that I think.
-
-I'm suspecting the opposite might be better.
-
-I'm-about-to-barrier-please-move-the-barrier-in-front-of-unordered-writes.
-The more writes you _don't_ flush synchronously, the more
-opportunities you give the disk's cache to reduce seeking.
-
-It's only a hunch though.
-
--- Jamie
+Credit goes to Andy Whitcroft for cleaning up a number of mistakes during
+review before the patches were released.
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
