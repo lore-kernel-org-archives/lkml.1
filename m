@@ -1,73 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761534AbYETAYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761276AbYETAZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761534AbYETAYj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 20:24:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756020AbYETAY3
+	id S1761276AbYETAZv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 20:25:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755942AbYETAZk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 20:24:29 -0400
-Received: from smtp-vbr10.xs4all.nl ([194.109.24.30]:2816 "EHLO
-	smtp-vbr10.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755060AbYETAY2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 20:24:28 -0400
-Subject: dma_alloc_coherent() sets __GFP_NORETRY ? [was: Re: [PATCH 1/2]
-	dpt_i2o: 64 bit support (take 4)]
-From: Miquel van Smoorenburg <miquels@cistron.nl>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1209144552.3087.43.camel@localhost.localdomain>
-References: <20080424213355.GA21682@xs4all.net>
-	 <1209144552.3087.43.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 20 May 2008 02:24:22 +0200
-Message-Id: <1211243062.16898.37.camel@localhost.localdomain>
+	Mon, 19 May 2008 20:25:40 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:59955 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752213AbYETAZj (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 20:25:39 -0400
+Date: Tue, 20 May 2008 10:25:03 +1000
+From: David Chinner <dgc@sgi.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: David Chinner <dgc@sgi.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, andi@firstfloor.org,
+       Rik van Riel <riel@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       mpm@selenic.com
+Subject: Re: [patch 10/21] buffer heads: Support slab defrag
+Message-ID: <20080520002503.GC173056135@sgi.com>
+References: <20080510030831.796641881@sgi.com> <20080510030916.935905242@sgi.com> <20080512002403.GP103491721@sgi.com> <Pine.LNX.4.64.0805151041230.18708@schroedinger.engr.sgi.com> <20080515231045.GY155679365@sgi.com> <Pine.LNX.4.64.0805161000390.29603@schroedinger.engr.sgi.com> <20080519054554.GY103491721@sgi.com> <Pine.LNX.4.64.0805190942530.18431@schroedinger.engr.sgi.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0805190942530.18431@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-04-25 at 12:29 -0500, James Bottomley wrote:
-> On Thu, 2008-04-24 at 23:33 +0200, Miquel van Smoorenburg wrote:
->
-> >  
-> >  	memset(msg, 0, sizeof(msg));
-> > -	buf = kmalloc(80,GFP_KERNEL|ADDR32);
-> > +	buf = pci_alloc_consistent(pHba->pDev, 80, &addr);
+On Mon, May 19, 2008 at 09:44:11AM -0700, Christoph Lameter wrote:
+> On Mon, 19 May 2008, David Chinner wrote:
 > 
-> You probably want to use dma_alloc_coherent here ... it's identical to
-> pci_alloc_consistent in almost every way, except that it allows you to
-> pass in the GFP_KERNEL flag (pci_alloc_consistent has to assume
-> GFP_ATOMIC and thus you can get unexpected failures if SLUB is having a
-> bad day) and you have to call it on &pHba->pDev->dev and use the
-> corresponding dma_free_coherent().
+> > Defragmentation is triggered as part of the usual memory reclaim
+> > process. Which implies we've run out of free memory, correct?
+> 
+> Yes but we have already reclaimed some memory.
+> 
+> > > How do you trigger such a special writeout?
+> > 
+> > filemap_fdatawrite_range() perhaps?
+> 
+> Could you provide me such a patch? I would not know how much to writeout. 
+> If we had such a method then we could also use that for the swap case 
+> where we also write out single pages?
 
-I actually did that in the next patch, but I have been looking a bit
-deeper into this and it might not be such a good idea. That, or there is
-a bug in pci-dma_64.c.
+How hard is it? I don't have time right now to do this, but it's essentially:
 
-In arch/x86/kernel/pci-dma_64.c , dma_alloc_coherent() adds
-__GFP_NORETRY to the gfp flags before it calls __get_free_pages (through
-dma_alloc_pages).
+	mapping = page->mapping;
+	......
+-	mapping->aops->writepage();
++	filemap_fdatawrite_range(mapping, start, end);
 
-That means dma_alloc_coherent() -> __get_free_pages() can fail quite
-easily on x86_64 with GFP_KERNEL.
+Where [start,end] span page->index and are is large enough
+to get a substantial sized I/O to disk (say at least SWAP_CLUSTER_MAX
+pages, preferrably larger for 4k page size machines).
 
-If in __get_free_pages() try_to_free_pages() fails once, and
-__GFP_NORETRY is set, there is .. well .. no retry :)
+Cheers,
 
-But why does dma_alloc_coherent() on x86_64 set __GFP_NORETRY ? It says
-"don't invoke OOM killer" but I think it has more side affects than
-that: easier failure.
-
-Now I think I know why the 3ware management utility tw_cli crashes a lot
-on my 64-bit boxes with a large diskwrite load ... I've fixed that now
-by commenting out  gfp |= __GFP_NORETRY .
-
-Note that pci-dma_32.c in 2.6.25 does not do this, but in 2.6.26-rc3 the
-two have been merged and __GFP_NORETRY is set for x86_32 as well now. Is
-that a good idea ? Perhaps a __GFP_NO_OOMKILL ?
-
-Mike.
-
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
