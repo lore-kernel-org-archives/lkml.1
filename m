@@ -1,261 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933534AbYETPcD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758048AbYETPcs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933534AbYETPcD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 11:32:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932408AbYETPa3
+	id S1758048AbYETPcs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 11:32:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932609AbYETPaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 11:30:29 -0400
+	Tue, 20 May 2008 11:30:30 -0400
 Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:2881 "EHLO
 	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764381AbYETPa1 (ORCPT
+	with ESMTP id S1758371AbYETPa3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 11:30:27 -0400
+	Tue, 20 May 2008 11:30:29 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <20080520528.793382059@firstfloor.org>
 In-Reply-To: <20080520528.793382059@firstfloor.org>
-To: Trond.Myklebust@netapp.com, swhiteho@redhat.com, sfrench@samba.org,
-       vandrove@vc.cvut.cz, corbet@lwn.net, linux-kernel@vger.kernel.org
-Subject: [PATCH] [1/11] Remove BKL from remote_llseek v2
-Message-Id: <20080520152842.CA4481B4204@basil.firstfloor.org>
-Date: Tue, 20 May 2008 17:28:42 +0200 (CEST)
-X-OriginalArrivalTime: 20 May 2008 15:21:41.0965 (UTC) FILETIME=[34D5EFD0:01C8BA8D]
+To: corbet@lwn.net, linux-kernel@vger.kernel.org
+Subject: [PATCH] [3/11] Convert pipe over to unlocked_fasync
+Message-Id: <20080520152844.D401E1B4203@basil.firstfloor.org>
+Date: Tue, 20 May 2008 17:28:44 +0200 (CEST)
+X-OriginalArrivalTime: 20 May 2008 15:21:44.0215 (UTC) FILETIME=[362D4270:01C8BA8D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-- Replace remote_llseek with generic_file_llseek_unlocked (to force compilation 
-failures in all users)
-- Change all users to either use generic_file_llseek_unlocked directly or 
-take the BKL around. I changed the file systems who don't use the BKL
-for anything (CIFS, GFS) to call it directly. NCPFS and SMBFS and NFS
-take the BKL, but explicitely in their own source now.
-
-I moved them all over in a single patch to avoid unbisectable sections.
-
-Open problem: 32bit kernels can corrupt fpos because its modification
-is not atomic, but they can do that anyways because there's other paths who 
-modify it without BKL.
-
-Do we need a special lock for the pos/f_version = 0 checks? 
-
-Trond says the NFS BKL is likely not needed, but keep it for now
-until his full audit.
-
-v2: Use generic_file_llseek_unlocked instead of remote_llseek_unlocked
-    and factor duplicated code (suggested by hch)
-
-Cc: Trond.Myklebust@netapp.com
-Cc: swhiteho@redhat.com
-Cc: sfrench@samba.org
-Cc: vandrove@vc.cvut.cz
-
 Signed-off-by: Andi Kleen <ak@suse.de>
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- fs/cifs/cifsfs.c   |    2 +-
- fs/gfs2/ops_file.c |    4 ++--
- fs/ncpfs/file.c    |   12 +++++++++++-
- fs/nfs/file.c      |    6 +++++-
- fs/read_write.c    |   38 +++++++++++---------------------------
- fs/smbfs/file.c    |   11 ++++++++++-
- include/linux/fs.h |    3 ++-
- 7 files changed, 42 insertions(+), 34 deletions(-)
+ fs/pipe.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-Index: linux/fs/cifs/cifsfs.c
+Index: linux/fs/pipe.c
 ===================================================================
---- linux.orig/fs/cifs/cifsfs.c
-+++ linux/fs/cifs/cifsfs.c
-@@ -581,7 +581,7 @@ static loff_t cifs_llseek(struct file *f
- 		if (retval < 0)
- 			return (loff_t)retval;
- 	}
--	return remote_llseek(file, offset, origin);
-+	return generic_file_llseek_unlocked(file, offset, origin);
- }
+--- linux.orig/fs/pipe.c
++++ linux/fs/pipe.c
+@@ -787,7 +787,7 @@ const struct file_operations read_fifo_f
+ 	.unlocked_ioctl	= pipe_ioctl,
+ 	.open		= pipe_read_open,
+ 	.release	= pipe_read_release,
+-	.fasync		= pipe_read_fasync,
++	.unlocked_fasync = pipe_read_fasync,
+ };
  
- struct file_system_type cifs_fs_type = {
-Index: linux/fs/gfs2/ops_file.c
-===================================================================
---- linux.orig/fs/gfs2/ops_file.c
-+++ linux/fs/gfs2/ops_file.c
-@@ -62,11 +62,11 @@ static loff_t gfs2_llseek(struct file *f
- 		error = gfs2_glock_nq_init(ip->i_gl, LM_ST_SHARED, LM_FLAG_ANY,
- 					   &i_gh);
- 		if (!error) {
--			error = remote_llseek(file, offset, origin);
-+			error = generic_file_llseek_unlocked(file, offset, origin);
- 			gfs2_glock_dq_uninit(&i_gh);
- 		}
- 	} else
--		error = remote_llseek(file, offset, origin);
-+		error = generic_file_llseek_unlocked(file, offset, origin);
+ const struct file_operations write_fifo_fops = {
+@@ -799,7 +799,7 @@ const struct file_operations write_fifo_
+ 	.unlocked_ioctl	= pipe_ioctl,
+ 	.open		= pipe_write_open,
+ 	.release	= pipe_write_release,
+-	.fasync		= pipe_write_fasync,
++	.unlocked_fasync = pipe_write_fasync,
+ };
  
- 	return error;
- }
-Index: linux/fs/ncpfs/file.c
-===================================================================
---- linux.orig/fs/ncpfs/file.c
-+++ linux/fs/ncpfs/file.c
-@@ -18,6 +18,7 @@
- #include <linux/slab.h>
- #include <linux/vmalloc.h>
- #include <linux/sched.h>
-+#include <linux/smp_lock.h>
+ const struct file_operations rdwr_fifo_fops = {
+@@ -812,7 +812,7 @@ const struct file_operations rdwr_fifo_f
+ 	.unlocked_ioctl	= pipe_ioctl,
+ 	.open		= pipe_rdwr_open,
+ 	.release	= pipe_rdwr_release,
+-	.fasync		= pipe_rdwr_fasync,
++	.unlocked_fasync = pipe_rdwr_fasync,
+ };
  
- #include <linux/ncp_fs.h>
- #include "ncplib_kernel.h"
-@@ -281,9 +282,18 @@ static int ncp_release(struct inode *ino
- 	return 0;
- }
+ static const struct file_operations read_pipe_fops = {
+@@ -824,7 +824,7 @@ static const struct file_operations read
+ 	.unlocked_ioctl	= pipe_ioctl,
+ 	.open		= pipe_read_open,
+ 	.release	= pipe_read_release,
+-	.fasync		= pipe_read_fasync,
++	.unlocked_fasync = pipe_read_fasync,
+ };
  
-+static loff_t ncp_remote_llseek(struct file *file, loff_t offset, int origin)
-+{
-+	loff_t ret;
-+	lock_kernel();
-+	ret = generic_file_llseek_unlocked(file, offset, origin);
-+	unlock_kernel();
-+	return ret;
-+}
-+
- const struct file_operations ncp_file_operations =
- {
--	.llseek		= remote_llseek,
-+	.llseek 	= ncp_remote_llseek,
- 	.read		= ncp_file_read,
- 	.write		= ncp_file_write,
- 	.ioctl		= ncp_ioctl,
-Index: linux/fs/read_write.c
-===================================================================
---- linux.orig/fs/read_write.c
-+++ linux/fs/read_write.c
-@@ -31,12 +31,12 @@ const struct file_operations generic_ro_
+ static const struct file_operations write_pipe_fops = {
+@@ -836,7 +836,7 @@ static const struct file_operations writ
+ 	.unlocked_ioctl	= pipe_ioctl,
+ 	.open		= pipe_write_open,
+ 	.release	= pipe_write_release,
+-	.fasync		= pipe_write_fasync,
++	.unlocked_fasync = pipe_write_fasync,
+ };
  
- EXPORT_SYMBOL(generic_ro_fops);
+ static const struct file_operations rdwr_pipe_fops = {
+@@ -849,7 +849,7 @@ static const struct file_operations rdwr
+ 	.unlocked_ioctl	= pipe_ioctl,
+ 	.open		= pipe_rdwr_open,
+ 	.release	= pipe_rdwr_release,
+-	.fasync		= pipe_rdwr_fasync,
++	.unlocked_fasync = pipe_rdwr_fasync,
+ };
  
--loff_t generic_file_llseek(struct file *file, loff_t offset, int origin)
-+loff_t
-+generic_file_llseek_unlocked(struct file *file, loff_t offset, int origin)
- {
- 	loff_t retval;
- 	struct inode *inode = file->f_mapping->host;
- 
--	mutex_lock(&inode->i_mutex);
- 	switch (origin) {
- 		case SEEK_END:
- 			offset += inode->i_size;
-@@ -46,42 +46,26 @@ loff_t generic_file_llseek(struct file *
- 	}
- 	retval = -EINVAL;
- 	if (offset>=0 && offset<=inode->i_sb->s_maxbytes) {
-+		/* Special lock needed here? */
- 		if (offset != file->f_pos) {
- 			file->f_pos = offset;
- 			file->f_version = 0;
- 		}
- 		retval = offset;
- 	}
--	mutex_unlock(&inode->i_mutex);
- 	return retval;
- }
-+EXPORT_SYMBOL(generic_file_llseek_unlocked);
- 
--EXPORT_SYMBOL(generic_file_llseek);
--
--loff_t remote_llseek(struct file *file, loff_t offset, int origin)
-+loff_t generic_file_llseek(struct file *file, loff_t offset, int origin)
- {
--	loff_t retval;
--
--	lock_kernel();
--	switch (origin) {
--		case SEEK_END:
--			offset += i_size_read(file->f_path.dentry->d_inode);
--			break;
--		case SEEK_CUR:
--			offset += file->f_pos;
--	}
--	retval = -EINVAL;
--	if (offset>=0 && offset<=file->f_path.dentry->d_inode->i_sb->s_maxbytes) {
--		if (offset != file->f_pos) {
--			file->f_pos = offset;
--			file->f_version = 0;
--		}
--		retval = offset;
--	}
--	unlock_kernel();
--	return retval;
-+	loff_t n;
-+	mutex_lock(&file->f_dentry->d_inode->i_mutex);
-+	n = generic_file_llseek_unlocked(file, offset, origin);
-+	mutex_unlock(&file->f_dentry->d_inode->i_mutex);
-+	return n;
- }
--EXPORT_SYMBOL(remote_llseek);
-+EXPORT_SYMBOL(generic_file_llseek);
- 
- loff_t no_llseek(struct file *file, loff_t offset, int origin)
- {
-Index: linux/fs/smbfs/file.c
-===================================================================
---- linux.orig/fs/smbfs/file.c
-+++ linux/fs/smbfs/file.c
-@@ -422,9 +422,18 @@ smb_file_permission(struct inode *inode,
- 	return error;
- }
- 
-+static loff_t smb_remote_llseek(struct file *file, loff_t offset, int origin)
-+{
-+	loff_t ret;
-+	lock_kernel();
-+	ret = generic_file_llseek_unlocked(file, offset, origin);
-+	unlock_kernel();
-+	return ret;
-+}
-+
- const struct file_operations smb_file_operations =
- {
--	.llseek		= remote_llseek,
-+	.llseek 	= smb_remote_llseek,
- 	.read		= do_sync_read,
- 	.aio_read	= smb_file_aio_read,
- 	.write		= do_sync_write,
-Index: linux/include/linux/fs.h
-===================================================================
---- linux.orig/include/linux/fs.h
-+++ linux/include/linux/fs.h
-@@ -1871,7 +1871,8 @@ extern void
- file_ra_state_init(struct file_ra_state *ra, struct address_space *mapping);
- extern loff_t no_llseek(struct file *file, loff_t offset, int origin);
- extern loff_t generic_file_llseek(struct file *file, loff_t offset, int origin);
--extern loff_t remote_llseek(struct file *file, loff_t offset, int origin);
-+extern loff_t generic_file_llseek_unlocked(struct file *file, loff_t offset,
-+			int origin);
- extern int generic_file_open(struct inode * inode, struct file * filp);
- extern int nonseekable_open(struct inode * inode, struct file * filp);
- 
-Index: linux/fs/nfs/file.c
-===================================================================
---- linux.orig/fs/nfs/file.c
-+++ linux/fs/nfs/file.c
-@@ -170,6 +170,7 @@ force_reval:
- 
- static loff_t nfs_file_llseek(struct file *filp, loff_t offset, int origin)
- {
-+	loff_t loff;
- 	/* origin == SEEK_END => we must revalidate the cached file length */
- 	if (origin == SEEK_END) {
- 		struct inode *inode = filp->f_mapping->host;
-@@ -177,7 +178,10 @@ static loff_t nfs_file_llseek(struct fil
- 		if (retval < 0)
- 			return (loff_t)retval;
- 	}
--	return remote_llseek(filp, offset, origin);
-+	lock_kernel();	/* BKL needed? */
-+	loff = generic_file_llseek_unlocked(filp, offset, origin);
-+	unlock_kernel();
-+	return loff;
- }
- 
- /*
+ struct pipe_inode_info * alloc_pipe_info(struct inode *inode)
