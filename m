@@ -1,158 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764907AbYETSET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764172AbYETSFf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764907AbYETSET (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 14:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755732AbYETSD7
+	id S1764172AbYETSFf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 14:05:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757085AbYETSF0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 14:03:59 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:35529 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755222AbYETSD6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 14:03:58 -0400
-Subject: [PATCH -v2] JBD2: Fix race between journal free buffer and commit
-	trasanction
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
+	Tue, 20 May 2008 14:05:26 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:3341 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755732AbYETSFZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 14:05:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=IjsEEjxHhE2GyJ/9WLHKHgQ+Bj9ZcNfc+zttb6DHzLe5cNw6/vbmU3Y15Juphn5WzcW/CWMpMKHiyBymKVzn8RQ1ruGe6oACpsFlt6wkRBhwjYdekZKJ8AcwuOUfFaMutJV9xJ5xXTf4XfLfY8CyhnZg2WVVBcR91i4TsBM5zRQ=
+Subject: [PATCH 01/21] lib: add byteorder helpers for the aligned case
+From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: jack@suse.cz, pbadari@us.ibm.com, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-In-Reply-To: <1211234829.3663.39.camel@localhost.localdomain>
-References: <20080512155419.GD15856@duck.suse.cz>
-	 <1210639184.3661.43.camel@localhost.localdomain>
-	 <20080513145449.GC20806@duck.suse.cz>
-	 <1210717389.3638.24.camel@localhost.localdomain>
-	 <20080514170856.GH24363@duck.suse.cz>
-	 <1210786872.3657.48.camel@localhost.localdomain>
-	 <20080514181444.GI24363@duck.suse.cz>
-	 <1210947250.3608.18.camel@localhost.localdomain>
-	 <1210957976.4231.31.camel@badari-desktop>
-	 <1210971693.3608.46.camel@localhost.localdomain>
-	 <20080518223739.GB11006@atrey.karlin.mff.cuni.cz>
-	 <1211227158.3663.25.camel@localhost.localdomain>
-	 <20080519132553.de9b78b0.akpm@linux-foundation.org>
-	 <1211234829.3663.39.camel@localhost.localdomain>
+Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Tue, 20 May 2008 11:03:51 -0700
-Message-Id: <1211306631.3664.21.camel@localhost.localdomain>
+Date: Tue, 20 May 2008 11:05:21 -0700
+Message-Id: <1211306721.5915.167.camel@brick>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-JBD2: fix race between jbd2_journal_try_to_free_buffers() and jbd2 commit transaction
+Some users know the pointer they are writeing to are aligned,
+rather than doing *(__le16 *)ptr = cpu_to_le16(val) add helpers
+wrapping this up that have the same convention as put_unaligned_le/be.
 
-From: Mingming Cao <cmm@us.ibm.com>
+Although the get_be/le versions duplicate the le16_to_cpup functionality
+add them anyway as it makes this a complete api and start work to
+eliminate {le|be}{16|32|64}_to_cpup uses (not many).
 
-journal_try_to_free_buffers() could race with jbd commit transaction when
-the later is holding the buffer reference while waiting for the data buffer
-to flush to disk. If the caller of journal_try_to_free_buffers() request
-tries hard to release the buffers, it will treat the failure as error and return
-back to the caller. We have seen the directo IO failed due to this race. 
-Some of the caller of releasepage() also expecting the buffer to be dropped
-when passed with GFP_KERNEL mask to the releasepage()->journal_try_to_free_buffers().
+This makes the api look like:
 
-With this patch, if the caller is passing the GFP_KERNEL to indicating this
-call could wait, in case of try_to_free_buffers() failed, let's waiting for
-journal_commit_transaction() to finish commit the current committing transaction
-, then try to free those buffers again with journal locked.
+get_unaligned_le16
+put_unaligned_le16
 
-Signed-off-by: Mingming Cao <cmm@us.ibm.com>
-Reviewed-by: Badari Pulavarty <pbadari@us.ibm.com> 
+get_le16
+put_le16
+
+With explicit alignment constraints.
+
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- fs/jbd2/transaction.c |   56 ++++++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 54 insertions(+), 2 deletions(-)
+ include/linux/byteorder/generic.h |   60 +++++++++++++++++++++++++++++++++++++
+ 1 files changed, 60 insertions(+), 0 deletions(-)
 
-Index: linux-2.6.26-rc2/fs/jbd2/transaction.c
-===================================================================
---- linux-2.6.26-rc2.orig/fs/jbd2/transaction.c	2008-05-11 17:09:41.000000000 -0700
-+++ linux-2.6.26-rc2/fs/jbd2/transaction.c	2008-05-19 17:20:01.000000000 -0700
-@@ -1656,12 +1656,39 @@ out:
- 	return;
- }
+diff --git a/include/linux/byteorder/generic.h b/include/linux/byteorder/generic.h
+index 0846e6b..1f0c07e 100644
+--- a/include/linux/byteorder/generic.h
++++ b/include/linux/byteorder/generic.h
+@@ -119,6 +119,66 @@
+ #define cpu_to_be16s __cpu_to_be16s
+ #define be16_to_cpus __be16_to_cpus
  
-+/*
-+ * jbd2_journal_try_to_free_buffers() could race with jbd2_journal_commit_transaction()
-+ * The later might still hold the reference count to the buffers when inspecting
-+ * them on t_syncdata_list or t_locked_list.
-+ *
-+ * jbd2_journal_try_to_free_buffers() will call this function to
-+ * wait for the current transaction to finish syncing data buffers, before
-+ * try to free that buffer.
-+ *
-+ * Called with journal->j_state_lock hold.
-+ */
-+static void jbd2_journal_wait_for_transaction_sync_data(journal_t *journal)
++static inline u16 get_le16(void *ptr)
 +{
-+	transaction_t *transaction = NULL;
-+	tid_t tid;
-+
-+	transaction = journal->j_committing_transaction;
-+
-+	if (!transaction)
-+		return;
-+
-+	tid = transaction->t_tid;
-+	spin_unlock(&journal->j_state_lock);
-+	jbd2_log_wait_commit(journal, tid);
-+	spin_lock(&journal->j_state_lock);
++	return le16_to_cpu(*(__le16 *)ptr);
 +}
- 
- /**
-  * int jbd2_journal_try_to_free_buffers() - try to free page buffers.
-  * @journal: journal for operation
-  * @page: to try and free
-- * @unused_gfp_mask: unused
-+ * @gfp_mask: specifies whether the call may block
-+ * 		(__GFP_WAIT & __GFP_FS via GFP_KERNEL)
-  *
-  *
-  * For all the buffers on this page,
-@@ -1690,9 +1717,11 @@ out:
-  * journal_try_to_free_buffer() is changing its state.  But that
-  * cannot happen because we never reallocate freed data as metadata
-  * while the data is part of a transaction.  Yes?
-+ *
-+ * Return 0 on failure, 1 on success
-  */
- int jbd2_journal_try_to_free_buffers(journal_t *journal,
--				struct page *page, gfp_t unused_gfp_mask)
-+				struct page *page, gfp_t gfp_mask)
- {
- 	struct buffer_head *head;
- 	struct buffer_head *bh;
-@@ -1721,7 +1750,30 @@ int jbd2_journal_try_to_free_buffers(jou
- 		if (buffer_jbd(bh))
- 			goto busy;
- 	} while ((bh = bh->b_this_page) != head);
 +
- 	ret = try_to_free_buffers(page);
++static inline u32 get_le32(void *ptr)
++{
++	return le32_to_cpu(*(__le32 *)ptr);
++}
 +
-+ 	/*
-+	 * There are a number of places where jbd2_journal_try_to_free_buffers()
-+	 * could race with jbd2_journal_commit_transaction(), the later still
-+	 * holds the reference to the buffers to free while processing them.
-+	 * try_to_free_buffers() failed to free those buffers. Some of the
-+	 * caller of releasepage() request page buffers to be dropped, otherwise
-+	 * treat the fail-to-free as errors (such as generic_file_direct_IO())
-+	 *
-+	 * So, if the caller of try_to_release_page() wants the synchronous
-+	 * behaviour(i.e make sure buffers are dropped upon return),
-+	 * let's wait for the current transaction to finish flush of
-+	 * dirty data buffers, then try to free those buffers again,
-+	 * with the journal locked.
-+	 */
-+	if (ret == 0 && gfp_mask & GFP_KERNEL) {
-+        	spin_lock(&journal->j_state_lock);
-+		jbd2_journal_wait_for_transaction_sync_data(journal);
-+		ret = try_to_free_buffers(page);
-+		spin_unlock(&journal->j_state_lock);
-+	}
++static inline u64 get_le64(void *ptr)
++{
++	return le64_to_cpu(*(__le64 *)ptr);
++}
 +
- busy:
- 	return ret;
- }
++static inline u16 get_be16(void *ptr)
++{
++	return be16_to_cpu(*(__be16 *)ptr);
++}
++
++static inline u32 get_be32(void *ptr)
++{
++	return be32_to_cpu(*(__be32 *)ptr);
++}
++
++static inline u64 get_be64(void *ptr)
++{
++	return be64_to_cpu(*(__be64 *)ptr);
++}
++
++static inline void put_le16(u16 val, void *ptr)
++{
++	*(__le16 *)ptr = cpu_to_le16(val);
++}
++
++static inline void put_le32(u32 val, void *ptr)
++{
++	*(__le32 *)ptr = cpu_to_le32(val);
++}
++
++static inline void put_le64(u64 val, void *ptr)
++{
++	*(__le64 *)ptr = cpu_to_le64(val);
++}
++
++static inline void put_be16(u16 val, void *ptr)
++{
++	*(__be16 *)ptr = cpu_to_be16(val);
++}
++
++static inline void put_be32(u32 val, void *ptr)
++{
++	*(__be32 *)ptr = cpu_to_be32(val);
++}
++
++static inline void put_be64(u64 val, void *ptr)
++{
++	*(__be64 *)ptr = cpu_to_be64(val);
++}
++
+ /*
+  * They have to be macros in order to do the constant folding
+  * correctly - if the argument passed into a inline function
+-- 
+1.5.5.1.570.g26b5e
 
 
