@@ -1,46 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933759AbYETWxo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934591AbYETWy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933759AbYETWxo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 18:53:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756997AbYETWxc
+	id S934591AbYETWy2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 18:54:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934164AbYETWxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 18:53:32 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42043
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753656AbYETWxb (ORCPT
+	Tue, 20 May 2008 18:53:49 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50558 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933747AbYETWxo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 18:53:31 -0400
-Date: Tue, 20 May 2008 15:53:26 -0700 (PDT)
-Message-Id: <20080520.155326.195407196.davem@davemloft.net>
-To: scottwood@freescale.com
-Cc: alan@lxorguk.ukuu.org.uk, tpiepho@freescale.com,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] [POWERPC] Improve (in|out)_beXX() asm code
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4833542E.3040608@freescale.com>
-References: <4833524C.3040207@freescale.com>
-	<20080520.153947.84346222.davem@davemloft.net>
-	<4833542E.3040608@freescale.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 20 May 2008 18:53:44 -0400
+Date: Tue, 20 May 2008 15:52:07 -0700
+From: Greg KH <greg@kroah.com>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       David Miller <davem@davemloft.net>, fubar@us.ibm.com,
+       netdev@vger.kernel.org, bonding-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] driver core: Suppress sysfs warnings for
+	device_rename().
+Message-ID: <20080520225207.GF15912@kroah.com>
+References: <20080515095246.3b6a0d1d@gondolin.boeblingen.de.ibm.com> <20080515.010139.219194657.davem@davemloft.net> <20080515113131.2cea2bce@gondolin.boeblingen.de.ibm.com> <20080515.030054.247673168.davem@davemloft.net> <20080515120619.6c867bfb@gondolin.boeblingen.de.ibm.com> <20080520125913.777ed67d@gondolin.boeblingen.de.ibm.com> <20080520144508.410ed857@extreme>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080520144508.410ed857@extreme>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Scott Wood <scottwood@freescale.com>
-Date: Tue, 20 May 2008 17:43:58 -0500
-
-> David Miller wrote:
-> > The __volatile__ in the asm construct disallows movement of the
-> > inline asm relative to statements surrounding it.
-> > 
-> > The only reason barrier() in kernel.h needs a memory clobber is
-> > because of a bug in ancient versions of gcc.  In fact, I think
-> > that memory clobber might even be removable.
+On Tue, May 20, 2008 at 02:45:08PM -0700, Stephen Hemminger wrote:
+> On Tue, 20 May 2008 12:59:13 +0200
+> Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
 > 
-> Current versions of GCC seem quite happy to move non-asm memory accesses 
-> around a volatile asm without a memory clobber; see the test Trent posted.
+> > OK, here is an actually-compiled patch with proper description and
+> > s-o-b. Comments?
+> > 
+> > -----
+> > 
+> > driver core: Suppress sysfs warnings for device_rename().
+> > 
+> > Renaming network devices to an already existing name is not
+> > something we want sysfs to print a scary warning for, since the
+> > callers can deal with this correctly. So let's introduce
+> > sysfs_create_link_nowarn() which gets rid of the common warning.
+> > 
+> > Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+> >
+> 
+> This is still getting to be overkill. I prefer that the warnings
+> always are removed.
 
-Indeed, and even the GCC manual is clear about this.
+No, I do not.  They have found a lot of real bugs that have been going
+unnoticed for quite some time, and some new ones (like the current mess
+in the pci hotplug subsystem where two different drivers are controlling
+the same pci hotplug slots and not realizing it at all.)
+
+So having the warning gone for rename() is fine, but I still want it
+there for new files that are being added to the system.
+
+thanks,
+
+greg k-h
