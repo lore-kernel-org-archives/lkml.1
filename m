@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933094AbYETQ6i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762468AbYETRDl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933094AbYETQ6i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 12:58:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756678AbYETQ61
+	id S1762468AbYETRDl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 13:03:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755173AbYETRDd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 12:58:27 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51675 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751309AbYETQ60 (ORCPT
+	Tue, 20 May 2008 13:03:33 -0400
+Received: from mu-out-0910.google.com ([209.85.134.191]:41835 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755042AbYETRDd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 12:58:26 -0400
-Date: Tue, 20 May 2008 09:58:10 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Louis Rilling <Louis.Rilling@kerlabs.com>
-Cc: Joel.Becker@oracle.com, Louis.Rilling@kerlabs.com,
-       linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-Subject: Re: [RFC][PATCH 0/3] configfs: Make nested default groups
- lockdep-friendly
-Message-ID: <20080520095810.1d50d247@infradead.org>
-In-Reply-To: <20080520163320.025971210@kerlabs.com>
-References: <20080520163320.025971210@kerlabs.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 20 May 2008 13:03:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=eJj2JRXLuKBh4I0xUAwQBXdqH+Bkg1XuHm6aNOQyDy5puw5OpMLUnxYUtI0LKEySVM+hEsyiilOVpgyQHSjJjqdVp6w6mOqGPiRdRuspgo/R/H0/9h6ZJlXtrdj/ASFrWk4bQgjh8lcLYeXnqB3mh02E8/ixalncgk2AUNhFqq8=
+Date: Tue, 20 May 2008 21:03:21 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "Michael A. Halcrow" <mhalcrow@us.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [Q] eCryptFS race window?
+Message-ID: <20080520170321.GC6926@cvg>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 May 2008 18:33:20 +0200
-Louis Rilling <Louis.Rilling@kerlabs.com> wrote:
+Hi Michael,
 
-> Hi all,
-> 
-> The following patches fix lockdep warnings resulting from (correct)
-> recursive locking in configfs.
-> 
-> Current lockdep annotations for inode mutexes in configfs are
-> lockdep-friendly provided that:
-> 1/ config_groups have at most one level of default groups (see
->    configfs_attach_group()),
-> 2/ config_groups having default groups are never removed (see
->    configfs_detach_prep()).
-> 
-> Since lockdep does not handle such correct recursion, the idea is to
-> insert lockdep_off()/lockdep_on() for inode mutexes as soon as the
-> level of recursion of the I_MUTEX_PARENT -> I_MUTEX_CHILD dependency
-> pattern increases.
+it seems there is a few potential race window in eCryptFS which I was trying
+to fix but it requires more deeper eCrypFS knowledge that have (at least only
+by understanding eCryptFS in big picture it is possible to fix this problem
+by elegant path). So what is the problem - the procedures
 
-I'm... not entirely happy with such a solution ;(
+	ecryptfs_miscdev_poll
+	ecryptfs_miscdev_read
 
-there must be a better one.
+does take ecryptfs_daemon_hash_mux mutex and then daemon->mux _but_ releases
+them not in exactly backward order as it should. My patches (not in mainline
+but you saw them) was screwed up 'cause mutex_is_locked could release mutex
+acquired by another process and that is wrong. But I've a hope that I'm simply
+*wrong* about this possible races ;) Take a look please.
+
+		- Cyrill -
