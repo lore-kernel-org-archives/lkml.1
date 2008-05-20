@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933716AbYETSLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811AbYETSL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933716AbYETSLA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 14:11:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765300AbYETSGp
+	id S1755811AbYETSL0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 14:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932693AbYETSGt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 14:06:45 -0400
+	Tue, 20 May 2008 14:06:49 -0400
 Received: from el-out-1112.google.com ([209.85.162.176]:3485 "EHLO
 	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758482AbYETSGo (ORCPT
+	with ESMTP id S932670AbYETSGs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 14:06:44 -0400
+	Tue, 20 May 2008 14:06:48 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=bWhMTlg8ealvgUeBjfNersNrUEicXaERlm26yhNOcW3IuDnRQPxzqjR2VRE5lI0qGAaA2kP0z/Mp4oBXZX49jW0cN5dXPrgRlzoVQOgYKAqQ7fBUTuuPEFQX2OC0XJi1jbKeuwc/DeZUn1aRUSdGSNTD9hyyF3f/edARj8jLL9Y=
-Subject: [PATCH 16/21] gfs2: use aligned-endian get/put helpers
+        b=uM0fEDT7asMC12k1cNZp39qml6+1Q1QyzKEWf3iQdSziqAVQlsO2JMBC24Ld2z9Vouv5ah31A/YGe98GGCVTDDp2lp36j8igHCVM9IC4G22uHvgrohedmOXfMnhWBu46V4DQJFMTJZHcqIHrYo8RbQYvII0lTBt5kCbJasMit3s=
+Subject: [PATCH 21/21] arch: use aligned-endian get/put helpers
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Tue, 20 May 2008 11:06:17 -0700
-Message-Id: <1211306777.5915.179.camel@brick>
+Date: Tue, 20 May 2008 11:06:18 -0700
+Message-Id: <1211306778.5915.180.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
@@ -30,46 +30,97 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- fs/gfs2/bmap.c |    2 +-
- fs/gfs2/lops.c |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ arch/parisc/lib/iomap.c         |    4 ++--
+ arch/powerpc/sysdev/qe_lib/qe.c |    2 +-
+ arch/sparc64/kernel/unaligned.c |    8 ++++----
+ arch/sparc64/lib/PeeCeeI.c      |    6 +++---
+ 4 files changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/fs/gfs2/bmap.c b/fs/gfs2/bmap.c
-index c19184f..42473ee 100644
---- a/fs/gfs2/bmap.c
-+++ b/fs/gfs2/bmap.c
-@@ -160,7 +160,7 @@ int gfs2_unstuff_dinode(struct gfs2_inode *ip, struct page *page)
- 	gfs2_buffer_clear_tail(dibh, sizeof(struct gfs2_dinode));
+diff --git a/arch/parisc/lib/iomap.c b/arch/parisc/lib/iomap.c
+index 9abed07..ac2f0eb 100644
+--- a/arch/parisc/lib/iomap.c
++++ b/arch/parisc/lib/iomap.c
+@@ -278,7 +278,7 @@ unsigned int ioread16(void __iomem *addr)
+ {
+ 	if (unlikely(INDIRECT_ADDR(addr)))
+ 		return iomap_ops[ADDR_TO_REGION(addr)]->read16(addr);
+-	return le16_to_cpup((u16 *)addr);
++	return get_le16(addr);
+ }
  
- 	if (ip->i_di.di_size) {
--		*(__be64 *)(di + 1) = cpu_to_be64(block);
-+		put_be64(block, di + 1);;
- 		gfs2_add_inode_blocks(&ip->i_inode, 1);
- 		di->di_blocks = cpu_to_be64(gfs2_get_inode_blocks(&ip->i_inode));
+ unsigned int ioread16be(void __iomem *addr)
+@@ -292,7 +292,7 @@ unsigned int ioread32(void __iomem *addr)
+ {
+ 	if (unlikely(INDIRECT_ADDR(addr)))
+ 		return iomap_ops[ADDR_TO_REGION(addr)]->read32(addr);
+-	return le32_to_cpup((u32 *)addr);
++	return get_le32(addr);
+ }
+ 
+ unsigned int ioread32be(void __iomem *addr)
+diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
+index cff550e..9f09707 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe.c
++++ b/arch/powerpc/sysdev/qe_lib/qe.c
+@@ -528,7 +528,7 @@ int qe_upload_firmware(const struct qe_firmware *firmware)
  	}
-diff --git a/fs/gfs2/lops.c b/fs/gfs2/lops.c
-index 4390f6f..3e7cac3 100644
---- a/fs/gfs2/lops.c
-+++ b/fs/gfs2/lops.c
-@@ -352,7 +352,7 @@ static void revoke_lo_before_commit(struct gfs2_sbd *sdp)
- 			offset = sizeof(struct gfs2_meta_header);
+ 
+ 	/* Validate the CRC */
+-	crc = be32_to_cpu(*(__be32 *)((void *)firmware + calc_size));
++	crc = get_be32((void *)firmware + calc_size);
+ 	if (crc != crc32(0, firmware, calc_size)) {
+ 		printk(KERN_ERR "qe-firmware: firmware CRC is invalid\n");
+ 		return -EIO;
+diff --git a/arch/sparc64/kernel/unaligned.c b/arch/sparc64/kernel/unaligned.c
+index 1a511e9..fe5b7fb 100644
+--- a/arch/sparc64/kernel/unaligned.c
++++ b/arch/sparc64/kernel/unaligned.c
+@@ -535,11 +535,11 @@ int handle_ldf_stq(u32 insn, struct pt_regs *regs)
+ 			u64 tmp;
+ 
+ 			switch (size) {
+-			case 1: data[0] = le32_to_cpup(data + 0); break;
+-			default:*(u64 *)(data + 0) = le64_to_cpup((u64 *)(data + 0));
++			case 1: data[0] = get_le32(data + 0); break;
++			default:*(u64 *)(data + 0) = get_le64(data + 0));
+ 				break;
+-			case 4: tmp = le64_to_cpup((u64 *)(data + 0));
+-				*(u64 *)(data + 0) = le64_to_cpup((u64 *)(data + 2));
++			case 4: tmp = get_le64(data + 0);
++				*(u64 *)(data + 0) = get_le64(data + 2);
+ 				*(u64 *)(data + 2) = tmp;
+ 				break;
+ 			}
+diff --git a/arch/sparc64/lib/PeeCeeI.c b/arch/sparc64/lib/PeeCeeI.c
+index 3c6cfbb..f85a50f 100644
+--- a/arch/sparc64/lib/PeeCeeI.c
++++ b/arch/sparc64/lib/PeeCeeI.c
+@@ -25,14 +25,14 @@ void outsw(unsigned long __addr, const void *src, unsigned long count)
+ 		u32 *pi;
+ 
+ 		if (((u64)src) & 0x2) {
+-			u16 val = le16_to_cpup(ps);
++			u16 val = get_le16(ps);
+ 			outw(val, addr);
+ 			ps++;
+ 			count--;
  		}
+ 		pi = (u32 *)ps;
+ 		while (count >= 2) {
+-			u32 w = le32_to_cpup(pi);
++			u32 w = get_le32(pi);
  
--		*(__be64 *)(bh->b_data + offset) = cpu_to_be64(bd->bd_blkno);
-+		put_be64(bd->bd_blkno, bh->b_data + offset);
- 		kmem_cache_free(gfs2_bufdata_cachep, bd);
- 
- 		offset += sizeof(u64);
-@@ -401,7 +401,7 @@ static int revoke_lo_scan_elements(struct gfs2_jdesc *jd, unsigned int start,
- 			gfs2_metatype_check(sdp, bh, GFS2_METATYPE_LB);
- 
- 		while (offset + sizeof(u64) <= sdp->sd_sb.sb_bsize) {
--			blkno = be64_to_cpu(*(__be64 *)(bh->b_data + offset));
-+			blkno = get_be64(bh->b_data + offset);
- 
- 			error = gfs2_revoke_add(sdp, blkno, start);
- 			if (error < 0) {
+ 			pi++;
+ 			outw(w >> 0, addr);
+@@ -41,7 +41,7 @@ void outsw(unsigned long __addr, const void *src, unsigned long count)
+ 		}
+ 		ps = (u16 *)pi;
+ 		if (count) {
+-			u16 val = le16_to_cpup(ps);
++			u16 val = get_le16(ps);
+ 			outw(val, addr);
+ 		}
+ 	}
 -- 
 1.5.5.1.570.g26b5e
-
 
