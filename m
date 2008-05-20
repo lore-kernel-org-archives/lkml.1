@@ -1,79 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765693AbYETMos@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765968AbYETMp5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765693AbYETMos (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 08:44:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756974AbYETMok
+	id S1765968AbYETMp5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 08:45:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999AbYETMpu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 08:44:40 -0400
-Received: from ozlabs.org ([203.10.76.45]:52572 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756136AbYETMok (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 08:44:40 -0400
-Subject: Re: [BUILD_FAILURE] linux-next: Tree for May 20 - build failure on
-	powerpc
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linuxppc-dev@ozlabs.org,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Paul Mackerras <paulus@samba.org>
-In-Reply-To: <4832AE2B.2060208@linux.vnet.ibm.com>
-References: <20080520202706.58791923.sfr@canb.auug.org.au>
-	 <4832AE2B.2060208@linux.vnet.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-LLFHNlZaP4xOX1zKXEa+"
-Date: Tue, 20 May 2008 22:44:37 +1000
-Message-Id: <1211287477.7960.3.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
+	Tue, 20 May 2008 08:45:50 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:51196 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751372AbYETMpt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 08:45:49 -0400
+Message-ID: <4832C7FF.2090904@yandex.ru>
+Date: Tue, 20 May 2008 15:45:51 +0300
+From: Artem Bityutskiy <dedekind@yandex.ru>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH take 2 01/28] VFS: introduce writeback_inodes_sb()
+References: <1210070159-22794-1-git-send-email-Artem.Bityutskiy@nokia.com>	<1210070159-22794-2-git-send-email-Artem.Bityutskiy@nokia.com>	<20080507002345.831bc379.akpm@linux-foundation.org>	<48218F21.4090304@yandex.ru> <20080507083835.6ba126e6.akpm@linux-foundation.org>
+In-Reply-To: <20080507083835.6ba126e6.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 20 May 2008 12:45:24.0899 (UTC) FILETIME=[5FAB3730:01C8BA77]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew,
 
---=-LLFHNlZaP4xOX1zKXEa+
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Andrew Morton wrote:
+> I already added gti-ubifs.patch to the -mm lineup.  I haven't yet tried
+> pulling, merging or compiling it.
 
-On Tue, 2008-05-20 at 16:25 +0530, Kamalesh Babulal wrote:
-> Hi Stephen,
->=20
-> The next-20080520 kernel build fails on powerpc, when build the randconfi=
-g with
-> build error message
+is it OK for you if ubifs-2.6.git will have some patches which ubi-2.6.git
+also contains. Will your -mm system handle this?
 
->   CC      arch/powerpc/kernel/prom_init.o
->   CALL    arch/powerpc/kernel/prom_init_check.sh
-> Error: External symbol 'kernstart_addr' referenced from prom_init.c
-> make[1]: *** [prom_init_check] Error 1
-> make: *** [arch/powerpc/kernel] Error 2
-
-It's broken in upstream actually, for RELOCATABLE && FLATMEM.
-
-Patch on the way.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-LLFHNlZaP4xOX1zKXEa+
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBIMse1dSjSd0sB4dIRAsJJAJ0bhuE4VKu6SoIC/KnVad/0DrzUIwCcCw8d
-uHZwZIlAg6VikNCmCg1jWdo=
-=gDK1
------END PGP SIGNATURE-----
-
---=-LLFHNlZaP4xOX1zKXEa+--
-
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
