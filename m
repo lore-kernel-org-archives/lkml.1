@@ -1,118 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934215AbYETSOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933930AbYETSOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934215AbYETSOY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 14:14:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761799AbYETSHO
+	id S933930AbYETSOp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 14:14:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932159AbYETSHP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 14:07:14 -0400
-Received: from el-out-1112.google.com ([209.85.162.176]:3485 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932159AbYETSHK (ORCPT
+	Tue, 20 May 2008 14:07:15 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:57785 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762644AbYETSHN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 14:07:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=uZyxwFU27fmENci+Mh8cj18stRTtT+wsdKm2iOl9lkkYXn3P3geHHfZ3BmvTOxUe4ZEX8pvADM+dswxGZOJCq3YVGvZ0qRPBFe3xu/iBjyTooSDck6q3AkBxemjxfYuJDLLUKoVMxikAQrbw0FU2Y/SfaOiKx9vxd2TSe89+hYk=
-Subject: [PATCH 08/21] ata: use aligned-endian get/put helpers
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 20 May 2008 11:06:21 -0700
-Message-Id: <1211306782.5915.187.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Tue, 20 May 2008 14:07:13 -0400
+Message-ID: <4833118D.5050001@zytor.com>
+Date: Tue, 20 May 2008 10:59:41 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+CC: Mikael Pettersson <mikpe@it.uu.se>, Andi Kleen <andi@firstfloor.org>,
+       mingo@elte.hu, tglx@linutronix.de, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, roland@redhat.com, drepper@redhat.com,
+       Hongjiu.lu@intel.com, linux-kernel@vger.kernel.org,
+       arjan@linux.intel.com, rmk+lkml@arm.linux.org.uk, dan@debian.org,
+       asit.k.mallick@intel.com
+Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
+References: <20080513011030.GA31448@linux-os.sc.intel.com> <18477.35703.679574.760417@harpo.it.uu.se> <20080518013416.GB30034@linux-os.sc.intel.com> <18481.37905.297556.288317@harpo.it.uu.se> <20080520015723.GD30034@linux-os.sc.intel.com> <4832A173.6020203@firstfloor.org> <18482.53246.642835.894623@harpo.it.uu.se> <4832E705.2010900@zytor.com> <18482.60491.764019.292031@harpo.it.uu.se> <20080520175325.GE30034@linux-os.sc.intel.com>
+In-Reply-To: <20080520175325.GE30034@linux-os.sc.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- drivers/ata/pdc_adma.c   |   11 +++++------
- drivers/ata/sata_qstor.c |   10 +++++-----
- 2 files changed, 10 insertions(+), 11 deletions(-)
+Suresh Siddha wrote:
+> 
+> This issue of not-zeroing, is present in only 64bit kernels and for 64bit apps,
+> right?
+> 
+> 64bit app signal handling uses only rt_frame, so we can add an uc_flag for
+> them and for 32bit apps, kernel was always zero'ing the reserved bits
+> at the end of _fpstate.
+> 
+> In short, for non-rt frames, they can check the reserved bits at the end
+> of fpstate frame and for rt-frames (perhaps even for 32bit rt frame handling)
+> apps can check for uc_flag aswell, for extended state presence. Is this
+> good enough?
+> 
 
-diff --git a/drivers/ata/pdc_adma.c b/drivers/ata/pdc_adma.c
-index be53545..12675f3 100644
---- a/drivers/ata/pdc_adma.c
-+++ b/drivers/ata/pdc_adma.c
-@@ -284,11 +284,11 @@ static int adma_fill_sg(struct ata_queued_cmd *qc)
- 		u32 len;
- 
- 		addr = (u32)sg_dma_address(sg);
--		*(__le32 *)(buf + i) = cpu_to_le32(addr);
-+		put_le32(addr, buf + i);
- 		i += 4;
- 
- 		len = sg_dma_len(sg) >> 3;
--		*(__le32 *)(buf + i) = cpu_to_le32(len);
-+		put_le32(len, buf + i);
- 		i += 4;
- 
- 		last_buf = &buf[i];
-@@ -297,8 +297,7 @@ static int adma_fill_sg(struct ata_queued_cmd *qc)
- 		buf[i++] = 0;	/* pPKLW */
- 		buf[i++] = 0;	/* reserved */
- 
--		*(__le32 *)(buf + i) =
--			(pFLAGS & pEND) ? 0 : cpu_to_le32(pp->pkt_dma + i + 4);
-+		put_le32((pFLAGS & pEND) ? 0 : (pp->pkt_dma + i + 4), buf + i);
- 		i += 4;
- 
- 		VPRINTK("PRD[%u] = (0x%lX, 0x%X)\n", i/4,
-@@ -331,7 +330,7 @@ static void adma_qc_prep(struct ata_queued_cmd *qc)
- 	buf[i++] = cVLD | cDAT | cIEN;
- 	i++;		/* cLEN, gets filled in below */
- 
--	*(__le32 *)(buf+i) = cpu_to_le32(pkt_dma);	/* cNCPB */
-+	put_le32(pkt_dma, buf + i);	/* cNCPB */
- 	i += 4;		/* cNCPB */
- 	i += 4;		/* cPRD, gets filled in below */
- 
-@@ -369,7 +368,7 @@ static void adma_qc_prep(struct ata_queued_cmd *qc)
- 	buf[i++] = ADMA_REGS_COMMAND | rEND;
- 
- 	buf[3] = (i >> 3) - 2;				/* cLEN */
--	*(__le32 *)(buf+8) = cpu_to_le32(pkt_dma + i);	/* cPRD */
-+	put_le32(pkt_dma + i, buf + 8);	/* cPRD */
- 
- 	i = adma_fill_sg(qc);
- 	wmb();	/* flush PRDs and pkt to memory */
-diff --git a/drivers/ata/sata_qstor.c b/drivers/ata/sata_qstor.c
-index 1600107..b7f9d4f 100644
---- a/drivers/ata/sata_qstor.c
-+++ b/drivers/ata/sata_qstor.c
-@@ -277,11 +277,11 @@ static unsigned int qs_fill_sg(struct ata_queued_cmd *qc)
- 		u32 len;
- 
- 		addr = sg_dma_address(sg);
--		*(__le64 *)prd = cpu_to_le64(addr);
-+		put_le64(addr, prd);
- 		prd += sizeof(u64);
- 
- 		len = sg_dma_len(sg);
--		*(__le32 *)prd = cpu_to_le32(len);
-+		put_le32(len, prd);
- 		prd += sizeof(u64);
- 
- 		VPRINTK("PRD[%u] = (0x%llX, 0x%X)\n", si,
-@@ -317,10 +317,10 @@ static void qs_qc_prep(struct ata_queued_cmd *qc)
- 	/* host control block (HCB) */
- 	buf[ 0] = QS_HCB_HDR;
- 	buf[ 1] = hflags;
--	*(__le32 *)(&buf[ 4]) = cpu_to_le32(qc->nbytes);
--	*(__le32 *)(&buf[ 8]) = cpu_to_le32(nelem);
-+	put_le32(qc->nbytes, &buf[4]);
-+	put_le32(nelem, &buf[8]);
- 	addr = ((u64)pp->pkt_dma) + QS_CPB_BYTES;
--	*(__le64 *)(&buf[16]) = cpu_to_le64(addr);
-+	put_le64(addr, &buf[16]);
- 
- 	/* device control block (DCB) */
- 	buf[24] = QS_DCB_HDR;
--- 
-1.5.5.1.570.g26b5e
+Are we sure about the "always" bit here (I suspect yes, but we may want 
+to double-check at least back to 2.2 or 2.4.)
 
+Anyway, seems reasonable enough to me.
 
+	-hpa
