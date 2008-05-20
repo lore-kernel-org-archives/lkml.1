@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765076AbYETM76@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765826AbYETNCJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765076AbYETM76 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 08:59:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754421AbYETM7u
+	id S1765826AbYETNCJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 09:02:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754320AbYETNB4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 08:59:50 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:59444 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753913AbYETM7u (ORCPT
+	Tue, 20 May 2008 09:01:56 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:54258 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753913AbYETNBz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 08:59:50 -0400
-Date: Tue, 20 May 2008 13:57:20 +0100 (BST)
+	Tue, 20 May 2008 09:01:55 -0400
+Date: Tue, 20 May 2008 13:59:47 +0100 (BST)
 From: Hugh Dickins <hugh@veritas.com>
 X-X-Sender: hugh@blonde.site
 To: Jeremy Fitzhardinge <jeremy@goop.org>
@@ -25,45 +25,59 @@ cc: Linus Torvalds <torvalds@linux-foundation.org>,
        "Siddha, Suresh B" <suresh.b.siddha@intel.com>, airlied@linux.ie,
        "Barnes, Jesse" <jesse.barnes@intel.com>,
        "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0 of 8] x86: use PTE_MASK consistently
-In-Reply-To: <patchbomb.1211268376@localhost>
-Message-ID: <Pine.LNX.4.64.0805201346120.24102@blonde.site>
-References: <patchbomb.1211268376@localhost>
+Subject: [PATCH] x86: strengthen 64-bit p?d_bad()
+In-Reply-To: <Pine.LNX.4.64.0805201346120.24102@blonde.site>
+Message-ID: <Pine.LNX.4.64.0805201357360.24102@blonde.site>
+References: <patchbomb.1211268376@localhost> <Pine.LNX.4.64.0805201346120.24102@blonde.site>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 May 2008, Jeremy Fitzhardinge wrote:
-> 
-> Here's a series to rationalize the use of PTE_MASK and remove some
-> amount of ad-hocery.
-> 
-> This gist of the series is:
->  1. Fix the definition of PTE_MASK so that its equally applicable in
->     all pagetable modes
->  2. Use it consistently
-> 
-> I haven't tried to address the *_bad() stuff, other than to convert
-> pmd_bad_* to use PTE_MASK.
-> 
-> This series has had some testing in the x86.git tree, and hasn't shown
-> any problems.  Each patch is more or less absolutely trivial and the
-> series is very bisectable, to help track down any problems which might
-> arise (this area has always been a source of subtle problems).
+The x86_64 pgd_bad(), pud_bad(), pmd_bad() inlines have differed from
+their x86_32 counterparts in a couple of ways: they've been unnecessarily
+weak (e.g. letting 0 or 1 count as good), and were typed as unsigned long.
+Strengthen them and return int.
 
-Yes, thanks Jeremy: I've checked that each stage builds and runs X on my
-boxes here, x86_32 and x86_32+PAE and x86_64.  (So even 1/8 is enough to
-fix the PAT pte_modify issue, though 2/8 then fixes compiler warnings.)
+The PAE pmd_bad was too weak before, allowing any junk in the upper half;
+but got strengthened by the patch correcting its ~PAGE_MASK to ~PTE_MASK.
+The PAE pud_bad already said ~PTE_MASK; and since it folds into pgd_bad,
+and we don't set the protection bits at that level, it'll do as is.
 
-I'll leave it to you and Linus whether your way of defining PTE_MASK is
-satisfactory as is, or needs to be improved to his way.  I've not tried
-his suggestion of doing the _PAGE_BIT definitions: certainly it's
-seemed odd to me that they were defined with L, but I've little
-appetite to mess around with them now myself.
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
+This could either go in along with Jeremy's PTE_MASK patches, or be
+held back for next release - it's independent of them, and not vital.
 
-One thing I did do a few days ago, but not got around to posting,
-was the *_bad() stuff.  I've retested and will post that now...
+ include/asm-x86/pgtable_64.h |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-Hugh
+--- a/include/asm-x86/pgtable_64.h
++++ b/include/asm-x86/pgtable_64.h
+@@ -151,19 +151,19 @@ static inline void native_pgd_clear(pgd_
+ 
+ #ifndef __ASSEMBLY__
+ 
+-static inline unsigned long pgd_bad(pgd_t pgd)
++static inline int pgd_bad(pgd_t pgd)
+ {
+-	return pgd_val(pgd) & ~(PTE_MASK | _KERNPG_TABLE | _PAGE_USER);
++	return (pgd_val(pgd) & ~(PTE_MASK | _PAGE_USER)) != _KERNPG_TABLE;
+ }
+ 
+-static inline unsigned long pud_bad(pud_t pud)
++static inline int pud_bad(pud_t pud)
+ {
+-	return pud_val(pud) & ~(PTE_MASK | _KERNPG_TABLE | _PAGE_USER);
++	return (pud_val(pud) & ~(PTE_MASK | _PAGE_USER)) != _KERNPG_TABLE;
+ }
+ 
+-static inline unsigned long pmd_bad(pmd_t pmd)
++static inline int pmd_bad(pmd_t pmd)
+ {
+-	return pmd_val(pmd) & ~(PTE_MASK | _KERNPG_TABLE | _PAGE_USER);
++	return (pmd_val(pmd) & ~(PTE_MASK | _PAGE_USER)) != _KERNPG_TABLE;
+ }
+ 
+ #define pte_none(x)	(!pte_val((x)))
