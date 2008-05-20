@@ -1,23 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934247AbYETWgb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935153AbYETWgv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934247AbYETWgb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 18:36:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934420AbYETWfo
+	id S935153AbYETWgv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 18:36:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934985AbYETWfr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 18:35:44 -0400
-Received: from ns2.suse.de ([195.135.220.15]:39660 "EHLO mx2.suse.de"
+	Tue, 20 May 2008 18:35:47 -0400
+Received: from mx2.suse.de ([195.135.220.15]:39696 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934411AbYETWfm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 18:35:42 -0400
+	id S1763870AbYETWfq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 18:35:46 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Arthur Jones <ajones@riverbed.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Miklos Szeredi <mszeredi@suse.cz>
-Subject: [PATCH 02/13] mm: bdi: fix race in bdi_class device creation
-Date: Tue, 20 May 2008 15:34:49 -0700
-Message-Id: <1211322900-12705-2-git-send-email-gregkh@suse.de>
+       James Simmons <jsimmons@infradead.org>
+Subject: [PATCH 03/13] fbdev: fix race in device_create
+Date: Tue, 20 May 2008 15:34:50 -0700
+Message-Id: <1211322900-12705-3-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.5.1
 In-Reply-To: <20080520223237.GA12383@suse.de>
 References: <20080520223237.GA12383@suse.de>
@@ -31,57 +29,44 @@ sysfs file could be open, yet the drvdata will be NULL, causing all
 sorts of bad things to happen.
 
 This patch fixes the problem by using the new function,
-device_create_vargs().
-
-Many thanks to Arthur Jones <ajones@riverbed.com> for reporting the bug,
-and testing patches out.
+device_create_drvdata().
 
 Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Arthur Jones <ajones@riverbed.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Miklos Szeredi <mszeredi@suse.cz>
+Cc: James Simmons <jsimmons@infradead.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- mm/backing-dev.c |   12 ++----------
- 1 files changed, 2 insertions(+), 10 deletions(-)
+ drivers/video/display/display-sysfs.c |   10 +++++++---
+ 1 files changed, 7 insertions(+), 3 deletions(-)
 
-diff --git a/mm/backing-dev.c b/mm/backing-dev.c
-index 7c4f9e0..f2e574d 100644
---- a/mm/backing-dev.c
-+++ b/mm/backing-dev.c
-@@ -172,30 +172,22 @@ postcore_initcall(bdi_class_init);
- int bdi_register(struct backing_dev_info *bdi, struct device *parent,
- 		const char *fmt, ...)
- {
--	char *name;
- 	va_list args;
- 	int ret = 0;
- 	struct device *dev;
+diff --git a/drivers/video/display/display-sysfs.c b/drivers/video/display/display-sysfs.c
+index 3547717..6ef800b 100644
+--- a/drivers/video/display/display-sysfs.c
++++ b/drivers/video/display/display-sysfs.c
+@@ -26,6 +26,7 @@
+ #include <linux/ctype.h>
+ #include <linux/idr.h>
+ #include <linux/err.h>
++#include <linux/kdev_t.h>
  
- 	va_start(args, fmt);
--	name = kvasprintf(GFP_KERNEL, fmt, args);
-+	dev = device_create_vargs(bdi_class, parent, MKDEV(0, 0), bdi, fmt, args);
- 	va_end(args);
--
--	if (!name)
--		return -ENOMEM;
--
--	dev = device_create(bdi_class, parent, MKDEV(0, 0), name);
- 	if (IS_ERR(dev)) {
- 		ret = PTR_ERR(dev);
- 		goto exit;
- 	}
+ static ssize_t display_show_name(struct device *dev,
+ 				struct device_attribute *attr, char *buf)
+@@ -152,10 +153,13 @@ struct display_device *display_device_register(struct display_driver *driver,
+ 		mutex_unlock(&allocated_dsp_lock);
  
- 	bdi->dev = dev;
--	dev_set_drvdata(bdi->dev, bdi);
--	bdi_debug_register(bdi, name);
-+	bdi_debug_register(bdi, dev_name(dev));
- 
- exit:
--	kfree(name);
- 	return ret;
- }
- EXPORT_SYMBOL(bdi_register);
+ 		if (!ret) {
+-			new_dev->dev = device_create(display_class, parent, 0,
+-						"display%d", new_dev->idx);
++			new_dev->dev = device_create_drvdata(display_class,
++							     parent,
++							     MKDEV(0,0),
++							     new_dev,
++							     "display%d",
++							     new_dev->idx);
+ 			if (!IS_ERR(new_dev->dev)) {
+-				dev_set_drvdata(new_dev->dev, new_dev);
+ 				new_dev->parent = parent;
+ 				new_dev->driver = driver;
+ 				mutex_init(&new_dev->lock);
 -- 
 1.5.5.1
 
