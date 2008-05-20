@@ -1,41 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934972AbYETWfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934881AbYETWgB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934972AbYETWfb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 18:35:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757635AbYETWfI
+	id S934881AbYETWgB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 18:36:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758899AbYETWfk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 18:35:08 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:44060 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934775AbYETWfH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 18:35:07 -0400
-Message-ID: <4833524C.3040207@freescale.com>
-Date: Tue, 20 May 2008 17:35:56 -0500
-From: Scott Wood <scottwood@freescale.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: benh@kernel.crashing.org, Trent Piepho <tpiepho@freescale.com>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [POWERPC] Improve (in|out)_beXX() asm code
-References: <1211316025-29069-1-git-send-email-tpiepho@freescale.com>	<1211318219.8297.177.camel@pasglop>	<483344C0.3020703@freescale.com> <20080520231516.76b924a2@core>
-In-Reply-To: <20080520231516.76b924a2@core>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 20 May 2008 18:35:40 -0400
+Received: from ns1.suse.de ([195.135.220.2]:53175 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934811AbYETWfi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 18:35:38 -0400
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
+Subject: [PATCH 01/13] Driver core: add device_create_vargs and device_create_drvdata
+Date: Tue, 20 May 2008 15:34:48 -0700
+Message-Id: <1211322900-12705-1-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.5.5.1
+In-Reply-To: <20080520223237.GA12383@suse.de>
+References: <20080520223237.GA12383@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> It looks like we rely on -fno-strict-aliasing to prevent reordering 
->> ordinary memory accesses (such as to DMA descriptors) past the I/O 
-> 
-> DMA descriptors in main memory are dependant on cache behaviour anyway
-> and the dma_* operators should be the ones enforcing the needed behaviour.
+We want to have the drvdata field set properly when creating the device
+as sysfs callbacks can assume it is present and it can race the later
+setting of this field.
 
-What about memory obtained from dma_alloc_coherent()?  We still need a 
-sync and a compiler barrier.  The current I/O accessors have the former, 
-but not the latter.
+So, create two new functions, deviec_create_vargs() and
+device_create_drvdata() that take this new field.
 
--Scott
+device_create_drvdata() will go away in 2.6.27 as the drvdata field will
+just be moved to the device_create() call as it should be.
+
+Cc: Kay Sievers <kay.sievers@vrfy.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/base/core.c    |   85 ++++++++++++++++++++++++++++++++++++++++++++---
+ include/linux/device.h |   12 +++++++
+ 2 files changed, 91 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index be288b5..f861c2b 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -1084,11 +1084,13 @@ static void device_create_release(struct device *dev)
+ }
+ 
+ /**
+- * device_create - creates a device and registers it with sysfs
++ * device_create_vargs - creates a device and registers it with sysfs
+  * @class: pointer to the struct class that this device should be registered to
+  * @parent: pointer to the parent struct device of this new device, if any
+  * @devt: the dev_t for the char device to be added
++ * @drvdata: the data to be added to the device for callbacks
+  * @fmt: string for the device's name
++ * @args: va_list for the device's name
+  *
+  * This function can be used by char device classes.  A struct device
+  * will be created in sysfs, registered to the specified class.
+@@ -1104,10 +1106,10 @@ static void device_create_release(struct device *dev)
+  * Note: the struct class passed to this function must have previously
+  * been created with a call to class_create().
+  */
+-struct device *device_create(struct class *class, struct device *parent,
+-			     dev_t devt, const char *fmt, ...)
++struct device *device_create_vargs(struct class *class, struct device *parent,
++				   dev_t devt, void *drvdata, const char *fmt,
++				   va_list args)
+ {
+-	va_list args;
+ 	struct device *dev = NULL;
+ 	int retval = -ENODEV;
+ 
+@@ -1124,10 +1126,9 @@ struct device *device_create(struct class *class, struct device *parent,
+ 	dev->class = class;
+ 	dev->parent = parent;
+ 	dev->release = device_create_release;
++	dev_set_drvdata(dev, drvdata);
+ 
+-	va_start(args, fmt);
+ 	vsnprintf(dev->bus_id, BUS_ID_SIZE, fmt, args);
+-	va_end(args);
+ 	retval = device_register(dev);
+ 	if (retval)
+ 		goto error;
+@@ -1138,6 +1139,78 @@ error:
+ 	kfree(dev);
+ 	return ERR_PTR(retval);
+ }
++EXPORT_SYMBOL_GPL(device_create_vargs);
++
++/**
++ * device_create_drvdata - creates a device and registers it with sysfs
++ * @class: pointer to the struct class that this device should be registered to
++ * @parent: pointer to the parent struct device of this new device, if any
++ * @devt: the dev_t for the char device to be added
++ * @drvdata: the data to be added to the device for callbacks
++ * @fmt: string for the device's name
++ *
++ * This function can be used by char device classes.  A struct device
++ * will be created in sysfs, registered to the specified class.
++ *
++ * A "dev" file will be created, showing the dev_t for the device, if
++ * the dev_t is not 0,0.
++ * If a pointer to a parent struct device is passed in, the newly created
++ * struct device will be a child of that device in sysfs.
++ * The pointer to the struct device will be returned from the call.
++ * Any further sysfs files that might be required can be created using this
++ * pointer.
++ *
++ * Note: the struct class passed to this function must have previously
++ * been created with a call to class_create().
++ */
++struct device *device_create_drvdata(struct class *class,
++				     struct device *parent,
++				     dev_t devt,
++				     void *drvdata,
++				     const char *fmt, ...)
++{
++	va_list vargs;
++	struct device *dev;
++
++	va_start(vargs, fmt);
++	dev = device_create_vargs(class, parent, devt, drvdata, fmt, vargs);
++	va_end(vargs);
++	return dev;
++}
++EXPORT_SYMBOL_GPL(device_create_drvdata);
++
++/**
++ * device_create - creates a device and registers it with sysfs
++ * @class: pointer to the struct class that this device should be registered to
++ * @parent: pointer to the parent struct device of this new device, if any
++ * @devt: the dev_t for the char device to be added
++ * @fmt: string for the device's name
++ *
++ * This function can be used by char device classes.  A struct device
++ * will be created in sysfs, registered to the specified class.
++ *
++ * A "dev" file will be created, showing the dev_t for the device, if
++ * the dev_t is not 0,0.
++ * If a pointer to a parent struct device is passed in, the newly created
++ * struct device will be a child of that device in sysfs.
++ * The pointer to the struct device will be returned from the call.
++ * Any further sysfs files that might be required can be created using this
++ * pointer.
++ *
++ * Note: the struct class passed to this function must have previously
++ * been created with a call to class_create().
++ */
++struct device *device_create(struct class *class, struct device *parent,
++			     dev_t devt, const char *fmt, ...)
++{
++	va_list vargs;
++	struct device *dev;
++
++	va_start(vargs, fmt);
++	dev = device_create_vargs(class, parent, devt, NULL, fmt, vargs);
++	va_end(vargs);
++	return dev;
++}
+ EXPORT_SYMBOL_GPL(device_create);
+ 
+ static int __match_devt(struct device *dev, void *data)
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 15e9fa3..14616e8 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -449,9 +449,21 @@ extern int __must_check device_reprobe(struct device *dev);
+ /*
+  * Easy functions for dynamically creating devices on the fly
+  */
++extern struct device *device_create_vargs(struct class *cls,
++					  struct device *parent,
++					  dev_t devt,
++					  void *drvdata,
++					  const char *fmt,
++					  va_list vargs);
+ extern struct device *device_create(struct class *cls, struct device *parent,
+ 				    dev_t devt, const char *fmt, ...)
+ 				    __attribute__((format(printf, 4, 5)));
++extern struct device *device_create_drvdata(struct class *cls,
++					    struct device *parent,
++					    dev_t devt,
++					    void *drvdata,
++					    const char *fmt, ...)
++				    __attribute__((format(printf, 5, 6)));
+ extern void device_destroy(struct class *cls, dev_t devt);
+ 
+ /*
+-- 
+1.5.5.1
+
