@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764429AbYETAqX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763585AbYETAsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764429AbYETAqX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 20:46:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755356AbYETAqO
+	id S1763585AbYETAsV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 20:48:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbYETAsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 20:46:14 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:39323 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754960AbYETAqN (ORCPT
+	Mon, 19 May 2008 20:48:12 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:54877 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751478AbYETAsM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 20:46:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=G1jifw6uKGubHwVzMxaj78nMvicpuQY8vGn8N3iWAwsAVdOn6+oelV+ezbS0zz2p2zKg8RSpYdMpF10aIEUJFvYljXhYQrSBn/7onNyLlRZjOxC8Oibb8R5VT6zwEGHSAkLQta4ylaPWrKOzqTFPfDCTR1XIxqsi1kWPUQY8LZw=
-Message-ID: <8bd0f97a0805191746n12f4ef4by9dbb675b4d289ae1@mail.gmail.com>
-Date: Mon, 19 May 2008 20:46:11 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Jonathan Corbet" <corbet@lwn.net>
-Subject: Re: [PATCH 1/3, RFC] misc char dev BKL pushdown
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Alexander Viro" <viro@ftp.linux.org.uk>,
-       "Arnd Bergmann" <arnd@arndb.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <30821.1211242876@vena.lwn.net>
+	Mon, 19 May 2008 20:48:12 -0400
+Date: Mon, 19 May 2008 20:48:07 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Kasper Sandberg <lkml@metanurb.dk>
+cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.25.4-rt2
+In-Reply-To: <1211242757.19845.48.camel@localhost>
+Message-ID: <Pine.LNX.4.58.0805192047060.4125@gandalf.stny.rr.com>
+References: <1211237032.14697.76.camel@localhost.localdomain>
+ <1211242757.19845.48.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <8bd0f97a0805191707k597e4f48i9c54488777fdd91b@mail.gmail.com>
-	 <30821.1211242876@vena.lwn.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 19, 2008 at 8:21 PM, Jonathan Corbet wrote:
-> Mike Frysinger wrote:
->> this open func already has a spinlock protecting it.  doesnt that mean
->> we dont need the bkl in it ?
+
+On Tue, 20 May 2008, Kasper Sandberg wrote:
+
+> On Mon, 2008-05-19 at 18:43 -0400, Steven Rostedt wrote:
+> > We are pleased to announce the 2.6.25.4-rt2 tree, which can be
+> <snip>
 >
-> The existence of a spinlock is a good sign.  But, until somebody has
-> looked at the code and verified that said lock is really protecting
-> everything, it's best to leave the BKL protection (which has always been
-> there, just at a higher level) in place.
+> I have just tested this, and it breaks jackd horribly, no matter the
+> settings, jack ALWAYS underruns.
+>
+> What information do you need me to provide?
+>
 
-if the spinlock doesnt do what it's advertising (preventing mutual
-access), then the BKL is needed.  if there's some UP behavior i'm not
-aware of, then the BKL is needed.  otherwise, the BKL is not needed in
-this driver.
+Did it work with 2.6.25.4-rt1?
 
-i should prob rewrite this driver anyways ... the open code could
-easily be replaced with some atomic funcs.
--mike
+Also could you try this:
+
+ # sysctl kernel.sched_nr_migrate = 4
+
+or try 2.
+
+Thanks,
+
+-- Steve
+
