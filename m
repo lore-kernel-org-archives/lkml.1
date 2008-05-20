@@ -1,29 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935044AbYETQAN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934063AbYETQEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935044AbYETQAN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 12:00:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934916AbYETP71
+	id S934063AbYETQEc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 12:04:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755630AbYETQEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 11:59:27 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:36003 "EHLO
+	Tue, 20 May 2008 12:04:20 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:39241 "EHLO
 	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934907AbYETP7X (ORCPT
+	with ESMTP id S1751696AbYETQES (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 11:59:23 -0400
-Date: Tue, 20 May 2008 08:58:31 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: corbet@lwn.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [2/11] Add unlocked_fasync
-Message-Id: <20080520085831.53a85f90.randy.dunlap@oracle.com>
-In-Reply-To: <20080520152843.CF4181B4205@basil.firstfloor.org>
-References: <20080520528.793382059@firstfloor.org>
-	<20080520152843.CF4181B4205@basil.firstfloor.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 20 May 2008 12:04:18 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Jamie Lokier <jamie@shareable.org>
+Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
+Date: Tue, 20 May 2008 12:02:53 -0400
+User-Agent: KMail/1.9.9
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <482DDA56.6000301@redhat.com> <200805190926.41970.chris.mason@oracle.com> <20080520153658.GH16676@shareable.org>
+In-Reply-To: <20080520153658.GH16676@shareable.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805201202.54420.chris.mason@oracle.com>
 X-Brightmail-Tracker: AAAAAQAAAAI=
 X-Brightmail-Tracker: AAAAAQAAAAI=
 X-Whitelist: TRUE
@@ -32,63 +35,96 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 May 2008 17:28:43 +0200 (CEST) Andi Kleen wrote:
+On Tuesday 20 May 2008, Jamie Lokier wrote:
+> Chris Mason wrote:
+> > On Sunday 18 May 2008, Andi Kleen wrote:
+> > > Andrew Morton <akpm@linux-foundation.org> writes:
+> > > > On Fri, 16 May 2008 14:02:46 -0500
+> > > >
+> > > > Eric Sandeen <sandeen@redhat.com> wrote:
+> > > >> A collection of patches to make ext3 & 4 use barriers by
+> > > >> default, and to call blkdev_issue_flush on fsync if they
+> > > >> are enabled.
+> > > >
+> > > > Last time this came up lots of workloads slowed down by 30% so I
+> > > > dropped the patches in horror.
+> > >
+> > > Didn't ext4 have some new checksum trick to avoid them?
+> >
+> > I didn't think checksumming avoided barriers completely.  Just the
+> > barrier before the commit block, not the barrier after.
+>
+> A little optimisation note.
+>
+> You don't need the barrier after in some cases, or it can be deferred
+> until a better time.  E.g. when the disk write cache is probably empty
+> (some time after write-idle), barrier flushes may take the same time
+> as NOPs.
 
-> 
-> Add a new fops entry point to allow fasync without BKL. While it's arguably
-> unclear this entry point is called often enough for it really matters
-> it was still relatively easy to do. And there are far less async users
-> in the tree than ioctls so it's likely they can be all converted 
-> eventually and then the non unlocked async entry point could be dropped.
-> 
-> There was still the problem of the actual flags change being
-> protected against other setters of flags. Instead of using BKL
-> for this use the i_mutex now.
-> 
-> I also added a mutex_lock against one other flags change
-> that was lockless and could potentially lose updates.
-> 
-> There are a couple of potential problems I added comments about on.
-> 
-> Signed-off-by: Andi Kleen <ak@suse.de>
-> Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> 
-> ---
->  Documentation/filesystems/vfs.txt |    5 ++++-
->  fs/fcntl.c                        |   22 +++++++++++++++-------
->  fs/ioctl.c                        |   13 ++++++++++++-
->  include/linux/fs.h                |    1 +
->  4 files changed, 32 insertions(+), 9 deletions(-)
+I hesitate to get too fancy here, if the disk is idle we probably won't notice 
+the performance gain.
 
-> Index: linux/Documentation/filesystems/vfs.txt
-> ===================================================================
-> --- linux.orig/Documentation/filesystems/vfs.txt
-> +++ linux/Documentation/filesystems/vfs.txt
-> @@ -755,6 +755,7 @@ struct file_operations {
->  	int (*fsync) (struct file *, struct dentry *, int datasync);
->  	int (*aio_fsync) (struct kiocb *, int datasync);
->  	int (*fasync) (int, struct file *, int);
-> +	int (*unlocked_fasync) (int, struct file *, int);
->  	int (*lock) (struct file *, int, struct file_lock *);
->  	ssize_t (*readv) (struct file *, const struct iovec *, unsigned long, loff_t *);
->  	ssize_t (*writev) (struct file *, const struct iovec *, unsigned long, loff_t *);
-> @@ -814,7 +815,9 @@ otherwise noted.
->    fsync: called by the fsync(2) system call
->  
->    fasync: called by the fcntl(2) system call when asynchronous
-> -	(non-blocking) mode is enabled for a file
-> +	(non-blocking) mode is enabled for a file. BKL hold
+>
+> This sequence:
+>
+>     #1 write metadata to journal
+>     #1 write commit block (checksummed)
+>   BARRIER
+>     #1 write metadata in place
+>   ... time passes ...
+>     #2 write metadata to journal
+>     #2 write commit block (checksummed)
+>   BARRIER
+>     #2 write metadata in place
+>   ... time passes ...
+>     #3 write metadata to journal
+>     #3 write commit block (checksummed)
+>   BARRIER
+>     #3 write metadata in place
+>
+> Can be rewritten as:
+>
+>     #1 write metadata to journal
+>     #1 write commit block (checksummed)
+>   ... time passes ...
+>     #2 write metadata to journal
+>     #2 write commit block (checksummed)
+>   ... time passes ...
+>     #3 write metadata to journal
+>     #3 write commit block (checksummed)
+>   ... time passes ...
+>   BARRIER (probably instant).
+>     #1 write metadata in place
+>     #2 write metadata in place
+>     #3 write metadata in place
+>
+> Provided some conditions hold.  All the metadata and all the journal
+> writes being non-overlapping I/O ranges would be sufficient.
 
-	                                           BKL held.
-so is that BKL must be held by the caller or this function
-holds the BKL?
+This is true, and would be a fairly good performance boost.  It fits nicely 
+with the jbd trick of avoiding writes of a metadata block if a later 
+transaction has logged it.
 
-> +
-> +  unlocked_fasync: like fasync, but without BKL
->  
->    lock: called by the fcntl(2) system call for F_GETLK, F_SETLK, and F_SETLKW
->    	commands
+But, it complicates the decision about when you're allowed to dirty a metadata 
+block for writeback.  It used to be dirty-after-commit and it would change to 
+dirty-after-barrier.  I suspect that is some significant surgery into jbd.
 
+Also, since a commit isn't really done until the barrier is done, you can't 
+reuse blocks freed by the committing transaction until after the barrier, 
+which means changes in the deletion handling code.  
 
----
-~Randy
+Maybe I'm a wimp, but these are the two parts of write ahead logging I always 
+found the most difficult.
+
+>
+> What's more, barriers can be deferred past data=ordered in-place data
+> writes, although that's not always an optimisation.
+>
+
+It might be really interesting to have a 
+i'm-about-to-barrier-find-some-io-to-run call.  Something along the lines of 
+draining the dirty pages when the drive is woken up in laptop mode.  There's 
+lots of fun with page lock vs journal lock ordering, but Jan has a handle on 
+that I think.
+
+-chris
