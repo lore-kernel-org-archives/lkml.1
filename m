@@ -1,55 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765954AbYETNMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766004AbYETNNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765954AbYETNMZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 09:12:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755059AbYETNMR
+	id S1766004AbYETNNd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 09:13:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762778AbYETNN0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 09:12:17 -0400
-Received: from pat.uio.no ([129.240.10.15]:35789 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754974AbYETNMQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 09:12:16 -0400
-Subject: Re: Solved - How to change the FSINFO for nfsd?
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: "P.V.Anthony" <pvantony@singnet.com.sg>
-Cc: "J. Bruce Fields" <bfields@fieldses.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <483288B1.3060102@singnet.com.sg>
-References: <482332CD.4010706@singnet.com.sg>
-	 <20080509042238.GC21408@fieldses.org>
-	 <20080518015733.o7n8cvhomvgos8ow@mail.mindmedia.com.sg>
-	 <alpine.LNX.1.10.0805172024440.15590@fbirervta.pbzchgretzou.qr>
-	 <1211049402.7498.4.camel@localhost> <20080519172412.GL7622@fieldses.org>
-	 <483288B1.3060102@singnet.com.sg>
-Content-Type: text/plain
-Date: Tue, 20 May 2008 09:12:08 -0400
-Message-Id: <1211289128.13163.19.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5)
-X-UiO-Scanned: ABC18F035D87D7D9C0B23AEBCF65534F3D508A03
-X-UiO-SR-test: 7181F8C3FC50B8DF91EB5FF900460FBDD60F2D69
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 448 total 8491235 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+	Tue, 20 May 2008 09:13:26 -0400
+Received: from ihemail3.lucent.com ([135.245.0.37]:43781 "EHLO
+	ihemail3.lucent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762644AbYETNNZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 09:13:25 -0400
+X-Greylist: delayed 510 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 May 2008 09:13:25 EDT
+Message-ID: <003b01c8ba7a$19f01500$01fca8c0@microsof60b8d6>
+From: "Gavin Shan" <gshan@alcatel-lucent.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: PIIX4 DMA Timeout
+Date: Tue, 20 May 2008 21:04:54 +0800
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="gb2312"
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3138
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m4KDDdHl025502
 
-On Tue, 2008-05-20 at 16:15 +0800, P.V.Anthony wrote:
-> Using xfs filesystem on a gentoo 64bit linux with 2.6.22 kernel,
-> when mounting the FSINFO return got was 7f ff ff ff ff ff ff ff.
-> 
-> Assuming that xfs is 64bit,
-> the FSINFO returned is still not ff ff ff ff ff ff ff ff.
-> 
-> Used wireshark to see the FSINFO return.
-> 
-> P.V.Anthony
+Hi All,
 
-XFS is 64-bit, but file sizes are of type off_t or loff_t, and are
-therefore _signed_.
-0x7fffffffffffffff is therefore indeed the maximum allowed file size for
-a 64-bit filesystem.
+There has one MV64460 on my board, which includes 2 PCI bridges. PIIX4 is on slot 3 of PCI1.
+But now, IDE driver reported it's timeouted on DMA operation. Thanks in advance for your
+suggestions.
 
-Trond
+Resources of PIIX4 function 1
+=====================
+0001:00:03.1: idx=0 flags=0x20000110 start=0x00000000 end=0x00000007
+0001:00:03.1: idx=1 flags=0x20000110 start=0x00000000 end=0x00000000
+0001:00:03.1: idx=2 flags=0x20000110 start=0x00000000 end=0x00000007
+0001:00:03.1: idx=3 flags=0x20000110 start=0x00000000 end=0x00000000
+0001:00:03.1: idx=4 flags=0x00000101 start=0xd8000000 end=0xd800000f
 
+Console Output
+============
+Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
+ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+PIIX4: IDE controller at PCI slot 0001:00:03.1
+0001:00:03.1: idx=0 flags=0x20000110 start=0x00000000 end=0x00000007
+0001:00:03.1: idx=1 flags=0x20000110 start=0x00000000 end=0x00000000
+0001:00:03.1: idx=2 flags=0x20000110 start=0x00000000 end=0x00000007
+0001:00:03.1: idx=3 flags=0x20000110 start=0x00000000 end=0x00000000
+0001:00:03.1: idx=4 flags=0x00000101 start=0xd8000000 end=0xd800000f
+PIIX4: chipset revision 1
+PIIX4: not 100% native mode: will probe irqs later
+    ide0: BM-DMA at 0xd8000000-0xd8000007, BIOS settings: hda:pio, hdb:pio
+    ide1: BM-DMA at 0xd8000008-0xd800000f, BIOS settings: hdc:pio, hdd:pio
+hdc: HTE721010G9AT00, ATA DISK drive
+hdc: max request size: 512KiB
+hdc: 195371568 sectors (100030 MB) w/7539KiB Cache, CHS=16383/255/63, UDMA(33)
+hdc: cache flushes supported
+ hdc:<4>hdc: dma_timer_expiry: dma status == 0x26
+hdc: DMA interrupt recovery
+hdc: lost interrupt
+hdc: dma_intr: status=0x58 { DriveReady SeekComplete DataRequest }
+ide: failed opcode was: unknown
+hdc: DMA disabled
+ide1: reset: success
+ hdc2 hdc3 hdc4
+
+Thanks in advance,
+GavinˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
