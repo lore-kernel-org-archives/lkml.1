@@ -1,42 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932398AbYETOrs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932795AbYETOwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932398AbYETOrs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 10:47:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765911AbYETOrk
+	id S932795AbYETOwQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 10:52:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764337AbYETOwA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 10:47:40 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:36648 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765725AbYETOrk (ORCPT
+	Tue, 20 May 2008 10:52:00 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:40063 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756027AbYETOwA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 10:47:40 -0400
-Message-ID: <4832E461.2070503@zytor.com>
-Date: Tue, 20 May 2008 07:46:57 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 20 May 2008 10:52:00 -0400
+Date: Tue, 20 May 2008 10:51:58 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: michael@ellerman.id.au, proski@gnu.org, a.p.zijlstra@chello.nl,
+       sandmann@redhat.com, pq@iki.fi, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>,
+       paulus@samba.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 2/2] ftrace: support for PowerPC
+In-Reply-To: <1211293059.8297.166.camel@pasglop>
+Message-ID: <Pine.LNX.4.58.0805201051210.2210@gandalf.stny.rr.com>
+References: <20080515034942.109223655@goodmis.org>  <20080515035918.896765954@goodmis.org>
+  <1211292277.7960.8.camel@localhost> <1211293059.8297.166.camel@pasglop>
 MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [X86] Remove unnecessary code in 64bit CPU identification.
-References: <200805200409.m4K49ZuE024343@gelk.kernelslacker.org>
-In-Reply-To: <200805200409.m4K49ZuE024343@gelk.kernelslacker.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
-> There were no 64bit Transmeta CPUs made (and it'd be something of
-> a surprise if they started any time soon).   To the best of my knowledge,
-> no CPU vendor cloned the 80860000 cpuid space claimed by Transmeta.
-> By removing this code, we can also eliminate calling cpuid 0x80000007 twice.
-> 
-> Signed-off-by: Dave Jones <davej@redhat.com>
 
-I'd really like to avoid divergences between the 32-bit and 64-bit code 
-if they can be avoided at this point.  These codes need to be unified, 
-not further split.
+On Tue, 20 May 2008, Benjamin Herrenschmidt wrote:
 
-	-hpa
+> > Why do we not want to trace early boot? Just because it's not useful?
+>
+> Not running at the linked address... might be causing trouble.
+
+I figured it was something like that, so I didn't look too deep into it,
+and decided that it was best just not to trace it.
+
+-- Steve
+
