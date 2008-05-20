@@ -1,106 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762859AbYETKpT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761654AbYETKuj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762859AbYETKpT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 06:45:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbYETKpG
+	id S1761654AbYETKuj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 06:50:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751643AbYETKua
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 06:45:06 -0400
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:50447 "EHLO smtp5.pp.htv.fi"
+	Tue, 20 May 2008 06:50:30 -0400
+Received: from mx2.suse.de ([195.135.220.15]:40274 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751643AbYETKpF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 06:45:05 -0400
-Date: Tue, 20 May 2008 13:42:57 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC: 2.6 patch] build kernel/profile.o only when requested
-Message-ID: <20080520104257.GK17716@cs181133002.pp.htv.fi>
-References: <20080519215306.GD17716@cs181133002.pp.htv.fi> <20080520020121.c443d562.akpm@linux-foundation.org> <20080520102150.GJ17716@cs181133002.pp.htv.fi> <20080520033444.de4282f8.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	id S1751616AbYETKu3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 06:50:29 -0400
+Date: Tue, 20 May 2008 12:50:25 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Robin Holt <holt@sgi.com>
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrea Arcangeli <andrea@qumranet.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
+       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>
+Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
+Message-ID: <20080520105025.GA25791@wotan.suse.de>
+References: <20080513153238.GL19717@sgi.com> <20080514041122.GE24516@wotan.suse.de> <20080514112625.GY9878@sgi.com> <20080515075747.GA7177@wotan.suse.de> <Pine.LNX.4.64.0805151031250.18708@schroedinger.engr.sgi.com> <20080515235203.GB25305@wotan.suse.de> <20080516112306.GA4287@sgi.com> <20080516115005.GC4287@sgi.com> <20080520053145.GA19502@wotan.suse.de> <20080520100111.GC30341@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080520033444.de4282f8.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080520100111.GC30341@sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 03:34:44AM -0700, Andrew Morton wrote:
-> On Tue, 20 May 2008 13:21:50 +0300 Adrian Bunk <bunk@kernel.org> wrote:
-> 
-> > On Tue, May 20, 2008 at 02:01:21AM -0700, Andrew Morton wrote:
-> > > On Tue, 20 May 2008 00:53:06 +0300 Adrian Bunk <bunk@kernel.org> wrote:
-> > > 
-> > > > Build kernel/profile.o only if CONFIG_PROFILING is enabled.
-> > > > 
-> > > > This makes CONFIG_PROFILING=n kernels smaller.
-> > > > 
-> > > > As a bonus, some profile_tick() calls and one branch from schedule() are 
-> > > > now eliminated with CONFIG_PROFILING=n (but I doubt these are
-> > > > measurable effects).
-> > > > 
-> > > > This patch changes the effects of CONFIG_PROFILING=n, but I don't think 
-> > > > having more than two choices would be the better choice.
-> > > > 
-> > > > This patch also adds the name of the first parameter to the prototypes 
-> > > > of profile_{hits,tick}() since I anyway had to add them for the dummy 
-> > > > functions.
-> > > > 
-> > > 
-> > > Little nits:
-> > > 
-> > > > index 05c1cc7..4081fa3 100644
-> > > > --- a/include/linux/profile.h
-> > > > +++ b/include/linux/profile.h
-> > > > @@ -8,8 +8,6 @@
-> > > >  
-> > > >  #include <asm/errno.h>
-> > > >  
-> > > > -extern int prof_on __read_mostly;
-> > > > -
-> > > >  #define CPU_PROFILING	1
-> > > >  #define SCHED_PROFILING	2
-> > > >  #define SLEEP_PROFILING	3
-> > > > @@ -19,14 +17,29 @@ struct proc_dir_entry;
-> > > >  struct pt_regs;
-> > > >  struct notifier_block;
-> > > >  
-> > > > +#if defined(CONFIG_PROFILING) && defined(CONFIG_PROC_FS)
-> > > > +void create_prof_cpu_mask(struct proc_dir_entry *);
-> > > 
-> > > This omits the argument's name, whereas elsewhere you have taken care
-> > > to introduce the name where it was missing.
-> > > 
-> > > > +#else
-> > > > +#define create_prof_cpu_mask(x)			do { (void)(x); } while (0)
-> > > 
-> > > I think this could be a static inline, which is neater.
-> > >...
+On Tue, May 20, 2008 at 05:01:11AM -0500, Robin Holt wrote:
+> On Tue, May 20, 2008 at 07:31:46AM +0200, Nick Piggin wrote:
 > > 
-> > In these two cases I only moved code.
-> > 
-> > And I actually moved the other code and git just decided to move the 
-> > code that stayed instead since it creates less changed lines...
+> > Really? You can get the information through via a sleeping messaging API,
+> > but not a non-sleeping one? What is the difference from the hardware POV?
 > 
-> umm, you also changed the declarations of profile_tick() and
-> profile_hits() but not of create_prof_cpu_mask().
->...
+> That was covered in the early very long discussion about 28 seconds.
+> The read timeout for the BTE is 28 seconds and it automatically retried
+> for certain failures.  In interrupt context, that is 56 seconds without
+> any subsequent interrupts of that or lower priority.
 
-For profile_{hits,tick}() I added dummies.
-
-But I didn't touch create_prof_cpu_mask() at all.
-
-I'm very unsure how many cleanups I should stuff into such patches, and 
-I'd actually rather expected someone telling I shouldn't have touched 
-the existing profile_{hits,tick}() prototypes...
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+I thought you said it would be possible to get the required invalidate
+information without using the BTE. Couldn't you use XPMEM pages in
+the kernel to read the data out of, if nothing else?
