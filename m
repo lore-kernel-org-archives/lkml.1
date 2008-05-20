@@ -1,107 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934096AbYETWNV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933172AbYETWNl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934096AbYETWNV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 18:13:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759703AbYETWNA
+	id S933172AbYETWNl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 18:13:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764293AbYETWNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 18:13:00 -0400
-Received: from mail01d.mail.t-online.hu ([84.2.42.6]:50591 "EHLO
-	mail01d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757546AbYETWM7 (ORCPT
+	Tue, 20 May 2008 18:13:05 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49359
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1763773AbYETWNC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 18:12:59 -0400
-X-Greylist: delayed 432 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 May 2008 18:12:59 EDT
-Message-ID: <48334B37.8090201@freemail.hu>
-Date: Wed, 21 May 2008 00:05:43 +0200
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: Paul Gortmaker <p_gortmaker@yahoo.com>
-CC: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] smc-ultra: get rid of "eth%d" message
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Tue, 20 May 2008 18:13:02 -0400
+Date: Tue, 20 May 2008 15:12:57 -0700 (PDT)
+Message-Id: <20080520.151257.87901660.davem@davemloft.net>
+To: den@openvz.org
+Cc: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kaber@trash.net, robert.olsson@its.uu.se,
+       greearb@candelatech.com
+Subject: Re: [PATCH 2/4] pktgen: make sure that pktgen_thread_worker has
+ been executed
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1211277589-8565-2-git-send-email-den@openvz.org>
+References: <1211277589-8565-1-git-send-email-den@openvz.org>
+	<1211277589-8565-2-git-send-email-den@openvz.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Print out the dev->name only after register_netdev(). If the
-dev->name is printk()ed out before calling register_netdev()
-the result will be "eth%d" in the dmesg instead of "eth0".
+From: "Denis V. Lunev" <den@openvz.org>
+Date: Tue, 20 May 2008 13:59:47 +0400
 
-Signed-off-by: Márton Németh <nm127@freemail.hu>
+> The following courruption can happen during pktgen stop:
+> list_del corruption. prev->next should be ffff81007e8a5e70, but was 6b6b6b6b6b6b6b6b
+> kernel BUG at lib/list_debug.c:67!
+>       :pktgen:pktgen_thread_worker+0x374/0x10b0
+>       ? autoremove_wake_function+0x0/0x40
+>       ? _spin_unlock_irqrestore+0x42/0x80
+>       ? :pktgen:pktgen_thread_worker+0x0/0x10b0
+>       kthread+0x4d/0x80
+>       child_rip+0xa/0x12
+>       ? restore_args+0x0/0x30
+>       ? kthread+0x0/0x80
+>       ? child_rip+0x0/0x12
+> RIP  list_del+0x48/0x70
+> 
+> The problem is that pktgen_thread_worker can not be executed if kthread_stop
+> has been called too early. Insert a completion on the normal initialization
+> path to make sure that pktgen_thread_worker will gain the control for sure.
+> 
+> Signed-off-by: Denis V. Lunev <den@openvz.org>
+> Cc: Patrick McHardy <kaber@trash.net>
+> Cc: Robert Olsson <robert.olsson@its.uu.se>
+> Cc: Ben Greear <greearb@candelatech.com>
+> Acked-by: Alexey Dobriyan <adobriyan@openvz.org>
 
----
---- linux-2.6.26-rc3/drivers/net/smc-ultra.c.orig	2008-04-17 04:49:44.000000000 +0200
-+++ linux-2.6.26-rc3/drivers/net/smc-ultra.c	2008-05-20 22:04:15.000000000 +0200
-@@ -228,9 +228,6 @@ static int __init ultra_probe1(struct ne
- 	for (i = 0; i < 6; i++)
- 		dev->dev_addr[i] = inb(ioaddr + 8 + i);
-
--	printk("%s: %s at %#3x, %s", dev->name, model_name,
--	       ioaddr, print_mac(mac, dev->dev_addr));
--
- 	/* Switch from the station address to the alternate register set and
- 	   read the useful registers there. */
- 	outb(0x80 | reg4, ioaddr + 4);
-@@ -253,8 +250,10 @@ static int __init ultra_probe1(struct ne
- 		irq = irqmap[((irqreg & 0x40) >> 4) + ((irqreg & 0x0c) >> 2)];
-
- 		if (irq == 0) {
--			printk(", failed to detect IRQ line.\n");
--			retval =  -EAGAIN;
-+			printk(KERN_ERR "%s at %#3x, %s, "
-+			       "failed to detect IRQ line.\n", model_name,
-+			       ioaddr, print_mac(mac, dev->dev_addr));
-+			retval = -EAGAIN;
- 			goto out;
- 		}
- 		dev->irq = irq;
-@@ -280,22 +279,19 @@ static int __init ultra_probe1(struct ne
-
- 	ei_status.mem = ioremap(dev->mem_start, (ei_status.stop_page - START_PG)*256);
- 	if (!ei_status.mem) {
--		printk(", failed to ioremap.\n");
--		retval =  -ENOMEM;
-+		printk(KERN_ERR "%s at %#3x, %s, failed to ioremap.\n",
-+		       model_name, ioaddr, print_mac(mac, dev->dev_addr));
-+		retval = -ENOMEM;
- 		goto out;
- 	}
-
- 	dev->mem_end = dev->mem_start + (ei_status.stop_page - START_PG)*256;
-
- 	if (piomode) {
--		printk(",%s IRQ %d programmed-I/O mode.\n",
--			   eeprom_irq ? "EEPROM" : "assigned ", dev->irq);
- 		ei_status.block_input = &ultra_pio_input;
- 		ei_status.block_output = &ultra_pio_output;
- 		ei_status.get_8390_hdr = &ultra_pio_get_hdr;
- 	} else {
--		printk(",%s IRQ %d memory %#lx-%#lx.\n", eeprom_irq ? "" : "assigned ",
--			   dev->irq, dev->mem_start, dev->mem_end-1);
- 		ei_status.block_input = &ultra_block_input;
- 		ei_status.block_output = &ultra_block_output;
- 		ei_status.get_8390_hdr = &ultra_get_8390_hdr;
-@@ -311,6 +307,21 @@ static int __init ultra_probe1(struct ne
- 	retval = register_netdev(dev);
- 	if (retval)
- 		goto out;
-+
-+	if (piomode) {
-+		printk(KERN_INFO "%s: %s at %#3x, %s,"
-+			"%s IRQ %d programmed-I/O mode.\n",
-+			dev->name, model_name, ioaddr,
-+			print_mac(mac, dev->dev_addr),
-+			eeprom_irq ? " EEPROM" : " assigned", dev->irq);
-+	} else {
-+		printk(KERN_INFO "%s: %s at %#3x, %s,"
-+			"%s IRQ %d memory %#lx-%#lx.\n",
-+			dev->name, model_name, ioaddr,
-+			print_mac(mac, dev->dev_addr),
-+			eeprom_irq ? "" : " assigned",
-+			dev->irq, dev->mem_start, dev->mem_end-1);
-+	}
- 	return 0;
- out:
- 	release_region(ioaddr, ULTRA_IO_EXTENT);
+Patch applied, thanks a lot Denis!
