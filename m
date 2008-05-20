@@ -1,94 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764999AbYETTBx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932299AbYETTCo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764999AbYETTBx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 15:01:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757629AbYETTBp
+	id S932299AbYETTCo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 15:02:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757443AbYETTCe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 15:01:45 -0400
-Received: from mailout01.t-online.de ([194.25.134.80]:41735 "EHLO
-	mailout01.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756170AbYETTBo (ORCPT
+	Tue, 20 May 2008 15:02:34 -0400
+Received: from gv-out-0910.google.com ([216.239.58.190]:50084 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757209AbYETTCd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 15:01:44 -0400
-Message-ID: <48331FFF.5070300@t-online.de>
-Date: Tue, 20 May 2008 21:01:19 +0200
-From: Harald Dunkel <harald.dunkel@t-online.de>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080503)
+	Tue, 20 May 2008 15:02:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=uBayXXC4JRGVBGh2/kg3mVl3r6S+04CFIPEw33k1uUCkZn71zASLNKRfiHJ9pQYmjQ505+spiPnI7QyBIXcGnETiOtUftgjJi2OSdGc3/nkFdenbKJg9Lrk7At1S6/LmLinkjTGk71aXciZXSM/Up10YzCSChNDuCKiK6iDHi2Q=
+Message-ID: <48332039.7060305@googlemail.com>
+Date: Tue, 20 May 2008 21:02:17 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25.3: su gets stuck for root
-References: <4829326A.6060808@t-online.de>	<19f34abd0805122347x4d9c5d03m16679d724189790e@mail.gmail.com>	<4829D345.7020909@t-online.de>	<19f34abd0805140034j75d97ecbw5a03c200645768cb@mail.gmail.com>	<482B1BD2.8040400@t-online.de>	<19f34abd0805141017g26c13e96t2e7edc23bec263d0@mail.gmail.com>	<20080514183558.40178fe5@core>	<48306DCA.9070108@t-online.de> <20080518185104.0a539f25@core>
-In-Reply-To: <20080518185104.0a539f25@core>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Anas Nashif <nashif@linux.intel.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Intel Management Engine Interface
+References: <4832174A.20905@linux.intel.com> <20080519172821.023fb28f.akpm@linux-foundation.org>
+In-Reply-To: <20080519172821.023fb28f.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-ID: ZY+HOEZfZhKxjBL6A3XCqr6ym32r3YSKtkWcz6DSUCwKYN-HGMeK7RbCzQUaqRxZwx
-X-TOI-MSGID: f1809f45-7535-42b1-9cc6-50c513d4ccf5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> This GDB was configured as "x86_64-linux-gnu"...
->> Attaching to program: /var/tmp/coreutils-6.10/coreutils-6.10/src/stty, process 26465
->> /tmp/buildd/gdb-6.8/gdb/linux-nat.c:988: internal-error: linux_nat_attach: Assertion `pid == GET_PID (inferior_ptid) && WIFSTOPPED (status) && WSTOPSIG (status) == SIGSTOP' failed.
->> A problem internal to GDB has been detected,
+Andrew Morton wrote:
+
+> On Mon, 19 May 2008 20:11:54 -0400
+> Anas Nashif <nashif@linux.intel.com> wrote:
 > 
-> So your gdb is broken, your stty is doign stuff nobody else seems to be
-> seeing ? My first thought is to suspect the distro/source as I've still
-> had no other equivalent reports and given the gdb spew.
+>> We have addressed more issues raised on lkml after initial submission,
+>> especially the legacy device support issue which was removed in this
+>> patch.
+>>
+>> The Intel Management Engine Interface (aka HECI: Host Embedded
+>> Controller Interface ) enables communication between the host OS and
+>> the Management Engine firmware. MEI is bi-directional, and either the
+>> host or Intel AMT firmware can initiate transactions.
+>>
+>> The core hardware architecture of Intel Active Management Technology
+>> (Intel AMT) is resident in firmware. The micro-controller within the
+>> chipset's graphics and memory controller (GMCH) hub houses the
+>> Management Engine (ME) firmware, which implements various services
+>> on behalf of management applications.
+>>
+>> Some of the ME subsystems that can be access via MEI driver:
+>>
+>> - Intel(R) Quiet System Technology (QST) is implemented as a firmware
+>> subsystem  that  runs in the ME.  Programs that wish to expose the
+>> health monitoring and fan speed control capabilities of Intel(R) QST
+>> will need to use the MEI driver to communicate with the ME sub-system.
+>> - ASF is the "Alert Standard Format" which is an DMTF manageability
+>> standard. It is implemented in the PC's hardware and firmware, and is
+>> managed from a remote console.
+>>
+>> Most recent Intel desktop chipsets have one or more of the above ME
+>> services. The MEI driver will make it possible to support the above
+>> features on Linux and provides applications access to the ME and it's
+>> features.
 > 
-
-I doubt that Debian is to blame here. I get the same with native
-gdb-6.8 and native coreutils-6.10:
-
-# /usr/local/stow/gdb-6.8/bin/gdb ./stty 11944
-GNU gdb 6.8
-Copyright (C) 2008 Free Software Foundation, Inc.
-License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
-This is free software: you are free to change and redistribute it.
-There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
-and "show warranty" for details.
-This GDB was configured as "x86_64-unknown-linux-gnu"...
-Attaching to program: /var/tmp/coreutils-6.10/coreutils-6.10/src/stty, process 11944
-../../gdb/linux-nat.c:988: internal-error: linux_nat_attach: Assertion `pid == GET_PID (inferior_ptid) && WIFSTOPPED (status) && WSTOPSIG (status) == SIGSTOP' failed.
-A problem internal to GDB has been detected,
-further debugging may prove unreliable.
-Quit this debugging session? (y or n) y
-
-../../gdb/linux-nat.c:988: internal-error: linux_nat_attach: Assertion `pid == GET_PID (inferior_ptid) && WIFSTOPPED (status) && WSTOPSIG (status) == SIGSTOP' failed.
-A problem internal to GDB has been detected,
-further debugging may prove unreliable.
-Create a core file of GDB? (y or n) n
-
-
-> I'll have a dig further however as the GDB spew itself might actually be
-> a useful clue. Not sure I can do much without a proper trace however (if
-> gdb is borked on your box is strace giving sane reports ?)
+> What a lot of code.
 > 
+> It'd be nice if the changelog were to describe the proposed and
+> all-important kernel<->userspace interface, please.  From a five-second
+> peek it looks like a miscdev with ioctls?  Ah, and there's read and
+> write too.
+> 
+> What is the payload for those system calls, and the meanings of their
+> return values, etc, etc?
+> 
+> Does it make sense for this driver to be available on all
+> architectures?
 
-As written earlier in this thread I can attach strace to the running
-stty. It prints a continuous flow of
+This patch is against what tree / kernel version ? 
 
-:
-ioctl(0, SNDCTL_TMR_START or TCSETS, {B38400 opost isig icanon echo ...}) = ? ERESTARTSYS (To be restarted)
---- SIGTTOU (Stopped (tty output)) @ 0 (0) ---
---- SIGTTOU (Stopped (tty output)) @ 0 (0) ---
-:
+Won't compile on current kernels cause it still uses class_device_*  so I guess it is based on 2.6.22/23 ?
 
-Using strace -v I get
-
-:
-ioctl(0, SNDCTL_TMR_START or TCSETS, {c_iflags=0x500, c_oflags=0x5, c_cflags=0xbf, c_lflags=0x8a3b, c_line=0, c_cc="\x03\x1c\x7f\x15\x04\x00\x01\x00\x11\x13\x1a\x00\x12\x0f\x17\x16\x00\x00\x00"}) = ? ERESTARTSYS (To be restarted)
---- SIGTTOU (Stopped (tty output)) @ 0 (0) ---
---- SIGTTOU (Stopped (tty output)) @ 0 (0) ---
-:
-
-
-Surely I am no specialist for termio. Please mail if I can help.
-BTW, I am on 2.6.25.4 now.
+Also in drivers/char/Makefile $(CONFIG_HECI) should be $(CONFIG_INTEL_MEI)
 
 
-Regards
-
-Harri
+Gabriel
