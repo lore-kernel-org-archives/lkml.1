@@ -1,105 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764639AbYETQla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765702AbYETQmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764639AbYETQla (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 12:41:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765552AbYETQkz
+	id S1765702AbYETQmj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 12:42:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758165AbYETQmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 12:40:55 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46182 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765469AbYETQky (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 12:40:54 -0400
-Date: Tue, 20 May 2008 11:20:26 -0400
-From: Dave Jones <davej@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, Matthew Wilcox <matthew@wil.cx>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Make
-Message-ID: <20080520152026.GB542@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Arjan van de Ven <arjan@infradead.org>,
-	Matthew Wilcox <matthew@wil.cx>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
-References: <20080502182745.GL14976@parisc-linux.org> <20080501133209.2c04dad0@infradead.org> <20080502184922.GM14976@parisc-linux.org> <20080520032448.GA19348@redhat.com> <20080520071458.707d6e90@infradead.org> <20080520142727.GC4843@redhat.com> <alpine.LFD.1.10.0805200752580.32253@woody.linux-foundation.org>
+	Tue, 20 May 2008 12:42:31 -0400
+Received: from gv-out-0910.google.com ([216.239.58.189]:35060 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757829AbYETQma (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 12:42:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=ddBtiHSMEcOpeYNAdmyMnvgSPEcaKJ+gCASiLODIBVFvcL2I9eDeRtGvcSS29Yr2FPtM67KyGLNIzKTn5QzzZUqcx859HodHRepMb7vgX65sVzOBD2Ve4ZcAUkvS8YPF6c1jo3PcO8ESWCKHl/NiokWNpjQqZVVPyTNiPA5LS14=
+Date: Tue, 20 May 2008 20:42:17 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "Michael A. Halcrow" <mhalcrow@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] eCryptFS: mutex lock-unlock ordering fix
+Message-ID: <20080520164217.GB6926@cvg>
+References: <20080520163928.GA6926@cvg>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.10.0805200752580.32253@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080520163928.GA6926@cvg>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 07:54:10AM -0700, Linus Torvalds wrote:
+[Cyrill Gorcunov - Tue, May 20, 2008 at 08:39:28PM +0400]
+| We should lock/unlock mutexes by a proper way which means
+| there should not be chains like ABAB but ABBA otherwise the
+| race window is opened.
+| 
+| Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+| CC: Michael A. Halcrow <mhalcrow@us.ibm.com>
+| ---
+| 
+|  check_list:
+[...]
+|  	if (list_empty(&daemon->msg_ctx_out_queue)) {
+NIT ---> | +		if (mutex_is_locked(&ecryptfs_daemon_hash_mux))
+| +			mutex_unlock(&ecryptfs_daemon_hash_mux);
+|  		mutex_unlock(&daemon->mux);
+| -		rc = wait_event_interruptible(
+| -			daemon->wait, !list_empty(&daemon->msg_ctx_out_queue));
+| +		rc = wait_event_interruptible(daemon->wait,
+| +			!list_empty(&daemon->msg_ctx_out_queue));
+|  		mutex_lock(&daemon->mux);
+|  		if (rc < 0) {
+|  			rc = 0;
+| @@ -357,6 +358,8 @@ out_unlock_msg_ctx:
+|  out_unlock_daemon:
+|  	daemon->flags &= ~ECRYPTFS_DAEMON_IN_READ;
+|  	mutex_unlock(&daemon->mux);
+| +	if (mutex_is_locked(&ecryptfs_daemon_hash_mux))
+| +		mutex_unlock(&ecryptfs_daemon_hash_mux);
+|  	return rc;
+|  }
+|  
 
- > I think Arjan meant like
- > 
- > 	WARN(next->prev != prev,
- > 		"list_add corruption. next->prev should be "
- > 		"prev (%p), but was %p. (next=%p).\n",
- > 		prev, next->prev, next);
- > 
- > without any "if()" statement at all.
+It's a bit wrong (could release mutex being ack'ed by another thread)
+will fix - please DROP this patch. Sorry!
 
-Nice. I like that.
-
-
-diff --git a/lib/list_debug.c b/lib/list_debug.c
-index 4350ba9..311ffab 100644
---- a/lib/list_debug.c
-+++ b/lib/list_debug.c
-@@ -20,18 +20,14 @@ void __list_add(struct list_head *new,
- 			      struct list_head *prev,
- 			      struct list_head *next)
- {
--	if (unlikely(next->prev != prev)) {
--		printk(KERN_ERR "list_add corruption. next->prev should be "
--			"prev (%p), but was %p. (next=%p).\n",
--			prev, next->prev, next);
--		BUG();
--	}
--	if (unlikely(prev->next != next)) {
--		printk(KERN_ERR "list_add corruption. prev->next should be "
--			"next (%p), but was %p. (prev=%p).\n",
--			next, prev->next, prev);
--		BUG();
--	}
-+	WARN(next->prev != prev,
-+		"list_add corruption. next->prev should be "
-+		"prev (%p), but was %p. (next=%p).\n",
-+		prev, next->prev, next);
-+	WARN(prev->next != next,
-+		"list_add corruption. prev->next should be "
-+		"next (%p), but was %p. (prev=%p).\n",
-+		next, prev->next, prev);
- 	next->prev = new;
- 	new->next = next;
- 	new->prev = prev;
-@@ -61,16 +57,12 @@ EXPORT_SYMBOL(list_add);
-  */
- void list_del(struct list_head *entry)
- {
--	if (unlikely(entry->prev->next != entry)) {
--		printk(KERN_ERR "list_del corruption. prev->next should be %p, "
--				"but was %p\n", entry, entry->prev->next);
--		BUG();
--	}
--	if (unlikely(entry->next->prev != entry)) {
--		printk(KERN_ERR "list_del corruption. next->prev should be %p, "
--				"but was %p\n", entry, entry->next->prev);
--		BUG();
--	}
-+	WARN(entry->prev->next != entry,
-+		"list_del corruption. prev->next should be %p, "
-+		"but was %p\n", entry, entry->prev->next);
-+	WARN(entry->next->prev != entry,
-+		"list_del corruption. next->prev should be %p, "
-+		"but was %p\n", entry, entry->next->prev);
- 	__list_del(entry->prev, entry->next);
- 	entry->next = LIST_POISON1;
- 	entry->prev = LIST_POISON2;
-
--- 
-http://www.codemonkey.org.uk
+		- Cyrill -
