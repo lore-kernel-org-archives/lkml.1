@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763585AbYETAsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764481AbYETAtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763585AbYETAsV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 20:48:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbYETAsM
+	id S1764481AbYETAtS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 20:49:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758182AbYETAtE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 20:48:12 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:54877 "EHLO
+	Mon, 19 May 2008 20:49:04 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:41931 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751478AbYETAsM (ORCPT
+	with ESMTP id S1754916AbYETAtC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 20:48:12 -0400
-Date: Mon, 19 May 2008 20:48:07 -0400 (EDT)
+	Mon, 19 May 2008 20:49:02 -0400
+Date: Mon, 19 May 2008 20:49:00 -0400 (EDT)
 From: Steven Rostedt <rostedt@goodmis.org>
 X-X-Sender: rostedt@gandalf.stny.rr.com
 To: Kasper Sandberg <lkml@metanurb.dk>
@@ -18,7 +18,7 @@ cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
        Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
 Subject: Re: 2.6.25.4-rt2
 In-Reply-To: <1211242757.19845.48.camel@localhost>
-Message-ID: <Pine.LNX.4.58.0805192047060.4125@gandalf.stny.rr.com>
+Message-ID: <Pine.LNX.4.58.0805192048330.4125@gandalf.stny.rr.com>
 References: <1211237032.14697.76.camel@localhost.localdomain>
  <1211242757.19845.48.camel@localhost>
 MIME-Version: 1.0
@@ -38,15 +38,8 @@ On Tue, 20 May 2008, Kasper Sandberg wrote:
 > settings, jack ALWAYS underruns.
 >
 > What information do you need me to provide?
->
 
-Did it work with 2.6.25.4-rt1?
-
-Also could you try this:
-
- # sysctl kernel.sched_nr_migrate = 4
-
-or try 2.
+Also, could you try 2.6.24.7-rt7.
 
 Thanks,
 
