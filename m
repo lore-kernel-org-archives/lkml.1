@@ -1,48 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759839AbYETReq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933014AbYETRfd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759839AbYETReq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 13:34:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755931AbYETReg
+	id S933014AbYETRfd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 13:35:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756022AbYETRfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 13:34:36 -0400
-Received: from gate.crashing.org ([63.228.1.57]:41132 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754583AbYETRef (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 13:34:35 -0400
-Cc: "Scott Wood" <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Message-Id: <998DABA0-38B6-43C3-A788-307AA8D52F17@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: "Rune Torgersen" <runet@innovsys.com>
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B046E73EC@ismail.innsys.innovsys.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: Oops in fs_enet driver with preempt-rt
-Date: Tue, 20 May 2008 12:33:31 -0500
-References: <DCEAAC0833DD314AB0B58112AD99B93B046E728C@ismail.innsys.innovsys.com> <DCEAAC0833DD314AB0B58112AD99B93B046E72C3@ismail.innsys.innovsys.com> <4832F139.1020502@freescale.com> <DCEAAC0833DD314AB0B58112AD99B93B046E73C6@ismail.innsys.innovsys.com> <4832FA80.7060807@freescale.com> <DCEAAC0833DD314AB0B58112AD99B93B046E73EC@ismail.innsys.innovsys.com>
-X-Mailer: Apple Mail (2.919.2)
+	Tue, 20 May 2008 13:35:20 -0400
+Received: from [198.99.130.12] ([198.99.130.12]:41457 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1755981AbYETRfS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 13:35:18 -0400
+Date: Tue, 20 May 2008 13:35:03 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+Cc: Tom Spink <tspink@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: UML fails to locate address space
+Message-ID: <20080520173503.GA10811@c2.user-mode-linux.org>
+References: <7b9198260805200408k1d6b70a8xc7e4c24106e5020f@mail.gmail.com> <20080520135238.GB6990@c2.user-mode-linux.org> <Pine.LNX.4.61.0805201117540.12360@chaos.analogic.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.61.0805201117540.12360@chaos.analogic.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, May 20, 2008 at 11:22:08AM -0400, linux-os (Dick Johnson) wrote:
+> Does this mean that I cannot mmap() address zero in the kernel
+> anymore? I should be able (in the kernel) read anything, and
+> then mmap() it to something usable in user-space. If address
+> zero is now artifically trapped there are problems being created
+> for no good reason at all.
 
-On May 20, 2008, at 11:31 AM, Rune Torgersen wrote:
+We're operating from userspace here.
 
-> Scott Wood wrote:
->> Rune Torgersen wrote:
->>> Hmm.... ttyCPM1 output seems to be kinda garbled... Any ideas?
->>> Incomplete locking between printk and userland use of ttyCPM1 as
->>> console?
->>
->> s/incomplete/nonexistent/ :-P
->>
->> Try acquiring port->lock in cpm_uart_console_write.
->>
->> -Scott
->
-> That worked. Console output is sane again.
+In any case, this hasn't happened with any kernel I've seen, but I'm
+suspicious that Ubuntu has started treating page zero specially.
 
-I'm hoping to see some patches related to these fixes :)
+	   	       	   Jeff
 
-- k
+-- 
+Work email - jdike at linux dot intel dot com
