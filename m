@@ -1,153 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763666AbYETJF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763732AbYETJHA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763666AbYETJF3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 05:05:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760839AbYETJFM
+	id S1763732AbYETJHA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 05:07:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760638AbYETJGu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 05:05:12 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51964 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760354AbYETJFK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 05:05:10 -0400
-Date: Tue, 20 May 2008 18:09:55 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "menage@google.com" <menage@google.com>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>
-Subject: [RFC][PATCH 3/3] memcg: per node information
-Message-Id: <20080520180955.70aa5459.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080520180552.601da567.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080520180552.601da567.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 20 May 2008 05:06:50 -0400
+Received: from gw.goop.org ([64.81.55.164]:44020 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757635AbYETJGu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 05:06:50 -0400
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
+Subject: [PATCH 0 of 8] x86: use PTE_MASK consistently
+Message-Id: <patchbomb.1211268376@localhost>
+Date: Tue, 20 May 2008 08:26:16 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Hugh Dickins <hugh@veritas.com>,
+       Theodore Tso <tytso@mit.edu>, Gabriel C <nix.or.die@googlemail.com>,
+       Keith Packard <keithp@keithp.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Eric Anholt <eric@anholt.net>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>, airlied@linux.ie,
+       "Barnes, Jesse" <jesse.barnes@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[ Repost due to screwed up mail headers. ]
 
-Show per-node statistics in following format.
+Hi all,
 
- node-id total acitve inactive
+Here's a series to rationalize the use of PTE_MASK and remove some
+amount of ad-hocery.
 
-[root@iridium bench]# cat /opt/cgroup/memory.numa_stat
-0 417611776 99586048 318025728
-1 655360000 0 655360000
+This gist of the series is:
+ 1. Fix the definition of PTE_MASK so that its equally applicable in
+    all pagetable modes
+ 2. Use it consistently
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+I haven't tried to address the *_bad() stuff, other than to convert
+pmd_bad_* to use PTE_MASK.
 
----
- mm/memcontrol.c |   66 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 66 insertions(+)
+This series has had some testing in the x86.git tree, and hasn't shown
+any problems.  Each patch is more or less absolutely trivial and the
+series is very bisectable, to help track down any problems which might
+arise (this area has always been a source of subtle problems).
 
-Index: mm-2.6.26-rc2-mm1/mm/memcontrol.c
-===================================================================
---- mm-2.6.26-rc2-mm1.orig/mm/memcontrol.c
-+++ mm-2.6.26-rc2-mm1/mm/memcontrol.c
-@@ -960,6 +960,66 @@ static int mem_control_stat_show(struct 
- 	return 0;
- }
- 
-+#ifdef CONFIG_NUMA
-+static void *memcg_numastat_start(struct seq_file *m, loff_t *pos)
-+{
-+	loff_t node = *pos;
-+	struct pglist_data *pgdat = first_online_pgdat();
-+
-+	while (pgdat != NULL) {
-+		if (!node)
-+			break;
-+		pgdat = next_online_pgdat(pgdat);
-+		node--;
-+	}
-+	return pgdat;
-+}
-+
-+static void *memcg_numastat_next(struct seq_file *m, void *arg, loff_t *pos)
-+{
-+	struct pglist_data *pgdat = (struct pglist_data *)arg;
-+
-+	(*pos)++;
-+	return next_online_pgdat(pgdat);
-+}
-+
-+static void memcg_numastat_stop(struct seq_file *m, void *arg)
-+{
-+}
-+
-+static int memcg_numastat_show(struct seq_file *m, void *arg)
-+{
-+	struct pglist_data *pgdat = (struct pglist_data *)arg;
-+	int nid = pgdat->node_id;
-+	struct cgroup *cgrp = cgroup_of_seqfile(m);
-+	struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
-+	struct mem_cgroup_per_zone *mz;
-+	long active, inactive, total;
-+	int zid;
-+
-+	active = 0;
-+	inactive = 0;
-+
-+	for (zid = 0; zid < MAX_NR_ZONES; zid++) {
-+		mz = mem_cgroup_zoneinfo(memcg, nid, zid);
-+		active += MEM_CGROUP_ZSTAT(mz, MEM_CGROUP_ZSTAT_ACTIVE);
-+		inactive += MEM_CGROUP_ZSTAT(mz, MEM_CGROUP_ZSTAT_INACTIVE);
-+	}
-+	active *= PAGE_SIZE;
-+	inactive *= PAGE_SIZE;
-+	total = active + inactive;
-+	/* Node Total Active Inactive (Total = Active + Inactive) */
-+	return seq_printf(m, "%d %ld %ld %ld\n", nid, total, active, inactive);
-+}
-+
-+struct seq_operations memcg_numastat_op = {
-+	.start = memcg_numastat_start,
-+	.next  = memcg_numastat_next,
-+	.stop  = memcg_numastat_stop,
-+	.show  = memcg_numastat_show,
-+};
-+#endif
-+
- static struct cftype mem_cgroup_files[] = {
- 	{
- 		.name = "usage_in_bytes",
-@@ -992,6 +1052,12 @@ static struct cftype mem_cgroup_files[] 
- 		.name = "stat",
- 		.read_map = mem_control_stat_show,
- 	},
-+#ifdef CONFIG_NUMA
-+	{
-+		.name = "numa_stat",
-+		.seq_ops = &memcg_numastat_op,
-+	},
-+#endif
- };
- 
- static int alloc_mem_cgroup_per_zone_info(struct mem_cgroup *mem, int node)
-Index: mm-2.6.26-rc2-mm1/Documentation/controllers/memory_files.txt
-===================================================================
---- mm-2.6.26-rc2-mm1.orig/Documentation/controllers/memory_files.txt
-+++ mm-2.6.26-rc2-mm1/Documentation/controllers/memory_files.txt
-@@ -74,3 +74,13 @@ Files under memory resource controller a
-   (write)
-   Reset to 0.
- 
-+* memory.numa_stat
-+
-+  This file appears only when the kernel is configured as NUMA.
-+
-+  (read)
-+  Show per-node accounting information of acitve/inactive pages.
-+  formated as following.
-+  nodeid  total active inactive
-+
-+  total = active + inactive.
+      J
 
