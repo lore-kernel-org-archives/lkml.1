@@ -1,76 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935297AbYETWnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935582AbYETWnn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935297AbYETWnR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 18:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935107AbYETWjX
+	id S935582AbYETWnn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 18:43:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935282AbYETWjy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 18:39:23 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46814 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765980AbYETWjU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 18:39:20 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>
-Subject: Re: [PATCH 0/4] Fix forcedeth hibernate/wake-on-lan problems
-Date: Wed, 21 May 2008 00:39:36 +0200
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ayaz Abdulla <aabdulla@nvidia.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>
-References: <20080518125715.GA19229@yamamaya.is-a-geek.org> <20080518150908.GA4606@yamamaya.is-a-geek.org>
-In-Reply-To: <20080518150908.GA4606@yamamaya.is-a-geek.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Tue, 20 May 2008 18:39:54 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56207
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S935163AbYETWjw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 18:39:52 -0400
+Date: Tue, 20 May 2008 15:39:47 -0700 (PDT)
+Message-Id: <20080520.153947.84346222.davem@davemloft.net>
+To: scottwood@freescale.com
+Cc: alan@lxorguk.ukuu.org.uk, tpiepho@freescale.com,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] [POWERPC] Improve (in|out)_beXX() asm code
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4833524C.3040207@freescale.com>
+References: <483344C0.3020703@freescale.com>
+	<20080520231516.76b924a2@core>
+	<4833524C.3040207@freescale.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805210039.37248.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 18 of May 2008, Tobias Diedrich wrote:
-> Tobias Diedrich wrote:
-> > Note that so far this is only tested on my system with hibernate
-> > using the 'shutdown' method.
+From: Scott Wood <scottwood@freescale.com>
+Date: Tue, 20 May 2008 17:35:56 -0500
+
+> Alan Cox wrote:
+> >> It looks like we rely on -fno-strict-aliasing to prevent reordering 
+> >> ordinary memory accesses (such as to DMA descriptors) past the I/O 
+> > 
+> > DMA descriptors in main memory are dependant on cache behaviour anyway
+> > and the dma_* operators should be the ones enforcing the needed behaviour.
 > 
-> Ok, I've run tests now:
-> 
-> First Windoze:
-> Windoze, Standby (equiv. to Linux 'mem' state):  WOL borked, resumes fine
-> Windoze, Hibernate: WOL borked, resumes fine
-> 
-> Linux, unpatched:
-> Hibernate, shutdown method: Works with known caveats
-> Hibernate, platform method: WOL borked,
+> What about memory obtained from dma_alloc_coherent()?  We still need a 
+> sync and a compiler barrier.  The current I/O accessors have the former, 
+> but not the latter.
 
-That may be worth some investigation.  However, since that doesn't work on
-Windows too, I suspect the platform is slightly broken.
+The __volatile__ in the asm construct disallows movement of the
+inline asm relative to statements surrounding it.
 
-> resumes fine 
-> 
-> Linux, patched:
-> Hibernate, shutdown method: Works
-> Hibernate, platform method: WOL borked, resumes fine
-> Suspend ('standby' state):
->    WOL borked, USB borked after resume, kernel freeze
-> Suspend ('mem' state, text console):
->    WOL borked, VGA stays dark, otherwise working
+The only reason barrier() in kernel.h needs a memory clobber is
+because of a bug in ancient versions of gcc.  In fact, I think
+that memory clobber might even be removable.
 
-You can try s2ram to bring the VGA to life, I think
-(http://suspend.sf.net/s2ram-support.html).
-
-> Suspend ('mem' state, radeonfb):
->    WOL borked, VGA stays dark, userspace dead after resume (but pingable)
-> 
-> Summary: I suspect my BIOS sucks
-
-That's possible ...
-
->         Version: ASUS M2N-SLI DELUXE ACPI BIOS Revision 0903
->         Release Date: 02/13/2007
-> 
-> 1 point for Linux, 0 points for Windows, Linux wins ;)
-
-Thanks,
-Rafael
