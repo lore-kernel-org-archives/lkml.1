@@ -1,51 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935657AbYETWoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935672AbYETWpG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935657AbYETWoi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 18:44:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935299AbYETWk1
+	id S935672AbYETWpG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 18:45:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760865AbYETWmE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 18:40:27 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:57883 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935295AbYETWk0 (ORCPT
+	Tue, 20 May 2008 18:42:04 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:42250 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935481AbYETWmB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 18:40:26 -0400
-Message-ID: <483353DB.7010708@keyaccess.nl>
-Date: Wed, 21 May 2008 00:42:35 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Dave Jones <davej@redhat.com>, Mikael Pettersson <mikpe@it.uu.se>,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [X86] Add a boot parameter to force-enable PAT
-References: <200805200409.m4K49Ybn024338@gelk.kernelslacker.org> <86802c440805192253s34b3acb2r63c657db86676792@mail.gmail.com> <20080520132306.GB4843@redhat.com> <18482.58121.130009.555407@harpo.it.uu.se> <20080520195846.GA29806@redhat.com> <48334766.1020701@keyaccess.nl> <48334EFA.3070109@zytor.com>
-In-Reply-To: <48334EFA.3070109@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Tue, 20 May 2008 18:42:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=m9mwP/7GGNqPLg9Wp3ywXt/NqPRFhCzPbQXB6eNoOKvRFhwS76RO/ex6WYTAGvPgAneHulj5UOIUJ6ohSKw27iROpkgMwNCT12mlOlynpnGjny/k/d7NWGq16czlVd2m6f24D8QBLu/rsm8SOBfupTR8oFXIApX4yYvgSUGkPv4=
+Subject: Re: [PATCH] net/ipv4/arp.c: Use the exported hex_asc from
+	lib/hexdump.c instead
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: crquan@gmail.com, herbert@gondor.apana.org.au, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080520.153611.204837174.davem@davemloft.net>
+References: <1211135864-8235-1-git-send-email-crquan@gmail.com>
+	 <20080520.153611.204837174.davem@davemloft.net>
+Content-Type: text/plain
+Date: Tue, 20 May 2008 15:41:59 -0700
+Message-Id: <1211323319.5915.223.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 21-05-08 00:21, H. Peter Anvin wrote:
+From: Harvey Harrison <harvey.harrison@gmail.com>
+Subject: [PATCH] net: use common hex_asc helpers
 
-> Rene Herman wrote:
->>> +}
->>> +__setup("enablepat", x86_forcepat_setup);
->>
->> This should probably be called plain "pat" to mirror arch/x86/mm/pat.c 
->> "nopat" force off parameter. That by the way is an early_param which I 
->> guess this should then also be?
->>
-> 
-> Either that or "pat={off,on,force}" to give space for other options... 
-> would mean keeping "nopat" around as an alias for now, though...
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+Something like this.
 
-Yes, that would be nicer. As to the alias; "nopat" hasn't been in a 
-released kernel yet so should be okay to do away with? It's not like 
-it's in Documentation/kernel-parameters.txt or anything... ;-/
+ net/ipv4/arp.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-Rene.
+diff --git a/net/ipv4/arp.c b/net/ipv4/arp.c
+index 418862f..9b539fa 100644
+--- a/net/ipv4/arp.c
++++ b/net/ipv4/arp.c
+@@ -1288,7 +1288,6 @@ static void arp_format_neigh_entry(struct seq_file *seq,
+ 				   struct neighbour *n)
+ {
+ 	char hbuffer[HBUFFERLEN];
+-	const char hexbuf[] = "0123456789ABCDEF";
+ 	int k, j;
+ 	char tbuf[16];
+ 	struct net_device *dev = n->dev;
+@@ -1302,8 +1301,8 @@ static void arp_format_neigh_entry(struct seq_file *seq,
+ 	else {
+ #endif
+ 	for (k = 0, j = 0; k < HBUFFERLEN - 3 && j < dev->addr_len; j++) {
+-		hbuffer[k++] = hexbuf[(n->ha[j] >> 4) & 15];
+-		hbuffer[k++] = hexbuf[n->ha[j] & 15];
++		hbuffer[k++] = hex_asc_hi(n->ha[j]);
++		hbuffer[k++] = hex_asc_lo(n->ha[j]);
+ 		hbuffer[k++] = ':';
+ 	}
+ 	hbuffer[--k] = 0;
+-- 
+1.5.5.1.570.g26b5e
+
+
+
