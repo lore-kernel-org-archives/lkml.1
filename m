@@ -1,55 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933155AbYETPET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932747AbYETPNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933155AbYETPET (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 11:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763640AbYETPEF
+	id S932747AbYETPNe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 11:13:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756666AbYETPNW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 11:04:05 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:59376 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756386AbYETPEE (ORCPT
+	Tue, 20 May 2008 11:13:22 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:54865 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753903AbYETPNU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 11:04:04 -0400
-Message-ID: <4832E85B.4080303@firstfloor.org>
-Date: Tue, 20 May 2008 17:03:55 +0200
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Tue, 20 May 2008 11:13:20 -0400
+Date: Tue, 20 May 2008 16:13:06 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
+Message-ID: <20080520151306.GF16676@shareable.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Eric Sandeen <sandeen@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org
+References: <482DDA56.6000301@redhat.com> <20080516130545.845a3be9.akpm@linux-foundation.org> <482DF44B.50204@redhat.com> <20080516220315.GB15334@shareable.org> <20080519002838.GB8335@mit.edu>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Suresh Siddha <suresh.b.siddha@intel.com>,
-       Mikael Pettersson <mikpe@it.uu.se>, mingo@elte.hu, tglx@linutronix.de,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       roland@redhat.com, drepper@redhat.com, Hongjiu.lu@intel.com,
-       linux-kernel@vger.kernel.org, arjan@linux.intel.com,
-       rmk+lkml@arm.linux.org.uk, dan@debian.org, asit.k.mallick@intel.com
-Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
-References: <20080513011030.GA31448@linux-os.sc.intel.com> <18477.35703.679574.760417@harpo.it.uu.se> <20080518013416.GB30034@linux-os.sc.intel.com> <18481.37905.297556.288317@harpo.it.uu.se> <20080520015723.GD30034@linux-os.sc.intel.com> <4832A173.6020203@firstfloor.org> <4832E672.3090702@zytor.com>
-In-Reply-To: <4832E672.3090702@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080519002838.GB8335@mit.edu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Andi Kleen wrote:
->>> Ok. CPU folks are planning to make some of the bytes at the end of
->>> fxsave
->>> image, SW usable.
->>
->> Are they always zeroed in earlier CPUs though?  If not that wouldn't
->> work 100% reliably because whatever cookie you put in could have been
->> there before by chance.
->>
->> I don't see anything in the SDM guaranteeing zeroing.
->>
+Theodore Tso wrote:
+> On Fri, May 16, 2008 at 11:03:15PM +0100, Jamie Lokier wrote:
+> > The MacOS X folks decided that speed is most important for fsync().
+> > fsync() does not guarantee commit to platter.  *But* they added an
+> > fcntl() for applications to request a commit to platter, which SQLite
+> > at least uses.  I don't know if MacOS X uses barriers for filesystem
+> > operations.
 > 
-> I'm pretty sure they weren't zeroed by the CPUs.  If they weren't zeroed
-> *by the kernel*, there might have been an information leak.
+> Out of curiosity, exactly *what* semantics did MacOS X give fsync(),
+> then?  Did it simply start the process of staging writes to disk, but
+> not wait for the writes to hit the platter before returning?  That's
+> basically the equivalent of ext3's barrier=0.
 
-I don't think there is one. We never copy fxsave completely out of the
-kernel. x86-64 does FXSAVE directly in/out user space, but the
-only leak is what there was before.
+I haven't read the code and don't use MacOS myself.
 
--Andi
+>From its fcntl() man page:
 
+    Note that while fsync() will flush all data from the host to the
+    drive (i.e. the "permanent storage device"), the drive itself may
+    not physically write the data to the platters for quite some time
+    and it may be written in an out-of-order sequence.
+
+    Specifically, if the drive loses power or the OS crashes, the
+    application may find that only some or none of their data was
+    written. The disk drive may also re-order the data so that later
+    writes may be present while earlier writes are not.
+
+    This is not a theoretical edge case. This scenario is easily
+    reproduced with real world workloads and drive power failures.
+
+    For applications that require tighter guarantess about the
+    integrity of their data, MacOS X provides the F_FULLFSYNC
+    fcntl. The F_FULLFSYNC fcntl asks the drive to flush all buffered
+    data to permanent storage.  Applications such as databases that
+    require a strict ordering of writes should use F_FULLFSYNC to
+    ensure their data is written in the order they expect. Please see
+    fcntl(2) for more detail.
+
+Some notable things:
+
+   1. Para 2 says "if the drive loses power __or the OS crashes__".
+      Does this mean some drives will abandon cached writes when reset
+      despite retaining power?
+
+   2. Para 3 to be re-read by the skeptical.
+
+   3. Para 4 perpetuates the confused idea that write ordering is what
+      it's all about, for things like databases.  In fact, sometimes
+      ordering barriers are all that's needed and flush is unnecessary
+      performance baggage.  But sometimes an fsync() which only
+      guarantees ordering is insufficient.  An "ideal"
+      database-friendly block layer would offer both.
+
+I doubt if common unix mail transports use F_FULLSYNC on Darwin
+instead of fsync(), before reporting a mail received safely, but they
+probably should.  I recall SQLite does use it (unless I'm confusing
+it with some other database).
+
+-- Jamie
