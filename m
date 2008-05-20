@@ -1,145 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763289AbYETJD1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763543AbYETJEa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763289AbYETJD1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 05:03:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757655AbYETJDT
+	id S1763543AbYETJEa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 05:04:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757164AbYETJEW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 05:03:19 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:58327 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757164AbYETJDS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 05:03:18 -0400
-Date: Tue, 20 May 2008 18:08:41 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "menage@google.com" <menage@google.com>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>
-Subject: [RFC][PATCH 2/3] memcg:: seq_ops support for cgroup
-Message-Id: <20080520180841.f292beef.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080520180552.601da567.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20080520180552.601da567.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 20 May 2008 05:04:22 -0400
+Received: from mail.windriver.com ([147.11.1.11]:52995 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753543AbYETJEV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 05:04:21 -0400
+Subject: Re: [PATCH] x86: Get irq for hpet timer
+From: Kevin Hao <kexin.hao@windriver.com>
+To: Clemens Ladisch <clemens@ladisch.de>
+Cc: venkatesh.pallipadi@intel.com, bob.picco@hp.com, mingo@redhat.com,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org
+In-Reply-To: <4831A678.5070208@ladisch.de>
+References: <1210917912.10881.1.camel@kevin-desktop>
+	 <482D49CF.4030902@ladisch.de> <1210929270.11912.3.camel@kevin-desktop>
+	 <4831A678.5070208@ladisch.de>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Tue, 20 May 2008 17:03:39 +0800
+Message-Id: <1211274219.8718.7.camel@kevin-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 
+X-OriginalArrivalTime: 20 May 2008 09:03:23.0418 (UTC) FILETIME=[5B7287A0:01C8BA58]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Does anyone have a better idea ?
-==
+On Mon, 2008-05-19 at 18:10 +0200, Clemens Ladisch wrote:
+> Kevin Hao wrote:
+> > +	for (irq = find_first_bit(&cap, HPET_MAX_IRQ); irq < HPET_MAX_IRQ;
+> > +		irq = find_next_bit(&cap, HPET_MAX_IRQ, 1 + irq)) {
+> > +		if (request_irq(irq, hpet_interrupt, irq_flags,
+> > +				devp->hd_name, (void *)devp))
+> 
+> This spams my log with interrupt sharing violations.  As long as we do
+> not know that the interrupt slot is empty, we need IRQF_PROBE_SHARED
+> here.
+
+Ok, added.
+
+> 
+> Another problem: the interrupt controller doesn't get correctly
+> initialized for some interrupt line that didn't already have some
+> routing:
+> | $ cat /proc/interrupts
+> |            CPU0
+> |   0:         63   IO-APIC-edge      timer
+> |   1:         96   IO-APIC-edge      i8042
+> |   2:          0    XT-PIC-XT        hpet2
+> |   6:          3   IO-APIC-edge      floppy
+> |   7:          0   IO-APIC-edge      parport0
+> |   8:          3   IO-APIC-edge      rtc
+> |   9:          0   IO-APIC-fasteoi   acpi
+> | ...
+> 
+> Additionally, I vaguely remember that on X86, there is some funny stuff
+> going on with interrupt lines 0, 2 and 8 which means that the interrupt
+> number passed to request_irq() is not necessarily identical to the
+> hardware interrupt line.
+> 
+> I don't know which of these problems is responsible, or if I'm totally
+> wrong, but on my machine, interrupts from hpet2 do not arrive.
+> 
+
+We can simply skip these special IRQ. :-)
+Does anyone has a better solution?
+
+----
+diff --git a/drivers/char/hpet.c b/drivers/char/hpet.c
+index 0fdc627..b04a15d 100644
+--- a/drivers/char/hpet.c
++++ b/drivers/char/hpet.c
+@@ -390,6 +390,11 @@ static int hpet_timer_get_irq(struct hpet_dev *devp)
+ 	struct hpets *hpetp;
+ 	unsigned long cap, irq_flags;
+ 	int irq;
++	/*
++	 * skip IRQ0, IRQ2, IRQ8 because which is always used by some
++	 * legacy device
++	 */
++	unsigned long skip_irq = (1 << 0) | (1 << 2) | (1 << 8);
  
-Currently, cgroup's seq_file interface just supports single_open.
-This patch allows arbitrary seq_ops if passed.
-
-For example, "status per cpu, status per node" can be very big
-in general and they tend to use its own start/next/stop ops.
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
+ 	timer = devp->hd_timer;
+ 	hpet = devp->hd_hpet;
+@@ -411,6 +416,9 @@ static int hpet_timer_get_irq(struct hpet_dev *devp)
+ 
+ 	cap = (readq(&timer->hpet_config) & Tn_INT_ROUTE_CAP_MASK)
+ 				 >> Tn_INT_ROUTE_CAP_SHIFT;
++	cap &= ~skip_irq;
++
++	irq_flags |= IRQF_PROBE_SHARED;
+ 
+ 	for (irq = find_first_bit(&cap, HPET_MAX_IRQ); irq < HPET_MAX_IRQ;
+ 		irq = find_next_bit(&cap, HPET_MAX_IRQ, 1 + irq)) {
 
 ---
- include/linux/cgroup.h |    9 +++++++++
- kernel/cgroup.c        |   32 +++++++++++++++++++++++++++++---
- 2 files changed, 38 insertions(+), 3 deletions(-)
+Best Regards,
+Kevin
 
-Index: mm-2.6.26-rc2-mm1/include/linux/cgroup.h
-===================================================================
---- mm-2.6.26-rc2-mm1.orig/include/linux/cgroup.h
-+++ mm-2.6.26-rc2-mm1/include/linux/cgroup.h
-@@ -232,6 +232,11 @@ struct cftype {
- 	 */
- 	int (*read_seq_string) (struct cgroup *cont, struct cftype *cft,
- 			 struct seq_file *m);
-+	/*
-+	 * If this is not NULL, read ops will use this instead of
-+	 * single_open(). Useful for showing very large data.
-+	 */
-+	struct seq_operations *seq_ops;
- 
- 	ssize_t (*write) (struct cgroup *cgrp, struct cftype *cft,
- 			  struct file *file,
-@@ -285,6 +290,10 @@ int cgroup_path(const struct cgroup *cgr
- 
- int cgroup_task_count(const struct cgroup *cgrp);
- 
-+
-+struct cgroup *cgroup_of_seqfile(struct seq_file *m);
-+struct cftype *cftype_of_seqfile(struct seq_file *m);
-+
- /* Return true if the cgroup is a descendant of the current cgroup */
- int cgroup_is_descendant(const struct cgroup *cgrp);
- 
-Index: mm-2.6.26-rc2-mm1/kernel/cgroup.c
-===================================================================
---- mm-2.6.26-rc2-mm1.orig/kernel/cgroup.c
-+++ mm-2.6.26-rc2-mm1/kernel/cgroup.c
-@@ -1540,6 +1540,16 @@ struct cgroup_seqfile_state {
- 	struct cgroup *cgroup;
- };
- 
-+struct cgroup *cgroup_of_seqfile(struct seq_file *m)
-+{
-+	return ((struct cgroup_seqfile_state *)m->private)->cgroup;
-+}
-+
-+struct cftype *cftype_of_seqfile(struct seq_file *m)
-+{
-+	return  ((struct cgroup_seqfile_state *)m->private)->cft;
-+}
-+
- static int cgroup_map_add(struct cgroup_map_cb *cb, const char *key, u64 value)
- {
- 	struct seq_file *sf = cb->state;
-@@ -1563,8 +1573,14 @@ static int cgroup_seqfile_show(struct se
- static int cgroup_seqfile_release(struct inode *inode, struct file *file)
- {
- 	struct seq_file *seq = file->private_data;
-+	struct cgroup_seqfile_state *state = seq->private;
-+	struct cftype *cft = state->cft;
-+
- 	kfree(seq->private);
--	return single_release(inode, file);
-+	if (!cft->seq_ops)
-+		return single_release(inode, file);
-+	else
-+		return seq_release(inode, file);
- }
- 
- static struct file_operations cgroup_seqfile_operations = {
-@@ -1585,7 +1601,7 @@ static int cgroup_file_open(struct inode
- 	cft = __d_cft(file->f_dentry);
- 	if (!cft)
- 		return -ENODEV;
--	if (cft->read_map || cft->read_seq_string) {
-+	if (cft->read_map || cft->read_seq_string || cft->seq_ops) {
- 		struct cgroup_seqfile_state *state =
- 			kzalloc(sizeof(*state), GFP_USER);
- 		if (!state)
-@@ -1593,7 +1609,17 @@ static int cgroup_file_open(struct inode
- 		state->cft = cft;
- 		state->cgroup = __d_cgrp(file->f_dentry->d_parent);
- 		file->f_op = &cgroup_seqfile_operations;
--		err = single_open(file, cgroup_seqfile_show, state);
-+
-+		if (!cft->seq_ops)
-+			err = single_open(file, cgroup_seqfile_show, state);
-+		else {
-+			err = seq_open(file, cft->seq_ops);
-+			if (!err) {
-+				struct seq_file *sf;
-+				sf = ((struct seq_file *)file->private_data);
-+				sf->private = state;
-+			}
-+		}
- 		if (err < 0)
- 			kfree(state);
- 	} else if (cft->open)
-
+> 
+> Regards,
+> Clemens
