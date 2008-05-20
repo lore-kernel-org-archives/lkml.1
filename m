@@ -1,79 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765840AbYETNZT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764956AbYETNgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765840AbYETNZT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 09:25:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752383AbYETNZH
+	id S1764956AbYETNgU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 09:36:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755559AbYETNgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 09:25:07 -0400
-Received: from mailgw.cs.york.ac.uk ([144.32.40.3]:57354 "EHLO
-	mailgw.cs.york.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755331AbYETNZF (ORCPT
+	Tue, 20 May 2008 09:36:07 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:39127 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755122AbYETNgG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 09:25:05 -0400
-X-Greylist: delayed 1744 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 May 2008 09:25:05 EDT
-Message-ID: <4832C957.8040004@student.cs.york.ac.uk>
-Date: Tue, 20 May 2008 13:51:35 +0100
-From: Alan Jenkins <aj504@student.cs.york.ac.uk>
-Reply-To: alan-jenkins@tuffmail.co.uk
-User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
-MIME-Version: 1.0
-To: =?ISO-8859-1?Q?David_H=E4rdeman?= <david@hardeman.nu>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Loading DSDT from initrd, can it be done from grub instead?
-References: <avxTs-570-21@gated-at.bofh.it>    <12bd24d7-17d4-4df8-abca-42740ec309fe@x35g2000hsb.googlegroups.com> <54484.145.64.134.222.1211286021.squirrel@www.hardeman.nu>
-In-Reply-To: <54484.145.64.134.222.1211286021.squirrel@www.hardeman.nu>
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+	Tue, 20 May 2008 09:36:06 -0400
+Date: Mon, 19 May 2008 20:11:41 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [PATCH] serial: fix enable_irq_wake/disable_irq_wake imbalance in
+ serial_core.c
+Message-ID: <20080519201141.1dbe6cc1@linux.intel.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Härdeman wrote:
-> On Tue, May 20, 2008 13:58, Alan Jenkins wrote:
->   
->> David Härdeman wrote:
->>     
->>> In commit 9a9e0d685553af76cb6ae2af93cca4913e7fcd47 the
->>> ACPI_CUSTOM_DSDT_INITRD option was removed.
->>>
->>> I was wondering if it'd be feasible to hack grub to load a custom DSDT
->>> instead (since grub can read filesystems) and then pass a pointer to a
->>> memory location containing the DSDT to the kernel?
->>>       
->> Um, why?  What stops you from reverting the offending commit?
->>     
->
-> Because doing it from grub (if possible) would allow custom DSDT's to be
-> loaded without patching the kernel (e.g. allows distro kernels to be used)
-> and without introducing code that opens files from kernel space and mucks
-> with both the VFS and ACPI in ugly ways?
->
->   
->> Without further info, I'd assume the feature was removed on policy
->> grounds.  I.e. it's not nice to be effectively patching the BIOS
->> yourself, and vendors have fixed most of their BIOS's / linux is
->> slightly more tolerant to broken ones. I don't know whats wrong with
->> reading files from the initrd.
->>     
->
-> If you do not understand the issue at hand, why comment?
->   
-Mea cupla.  Apologies if my tone was also inappropriate.
+From: Arjan van de Ven <arjan@linux.intel.com>
+Subject: [PATCH] serial: fix enable_irq_wake/disable_irq_wake imbalance in serial_core.c
 
-I saw a short question on an interesting subject, without a context to 
-suggest an ongoing
-conversation.  I would have saved myself some embarassment if I 
-remembered that linux really doesn't like in-kernel filesystem access; I 
-just didn't make the connection.
+enable_irq_wake() and disable_irq_wake() need to be balanced.
+However, serial_core.c calls these for different conditions during
+the suspend and resume functions...
 
-I guessed wrong, didn't see where you were coming from, and didn't take 
-the effort to resolve the SHA commit id.  I literally don't have the 
-space for a checkout on my main PC and I feel slightly guilty when I hit 
-on the gitweb host.
+This is causing a regular WARN_ON() as found at
+http://www.kerneloops.org/search.php?search=set_irq_wake
 
-Ironically, I just looked it up and Google knew what the SHA ID was.  
-You might be interested to know that another DH (Dave Hansen) made the 
-same suggestion, but using kexec instead of grub to load the DSDT and 
-boot kernel.
+This patch makes the conditions for triggering the _wake
+enable/disable sequence identical.
 
-Alan
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ drivers/serial/serial_core.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
+index eab0327..4df9ee1 100644
+--- a/drivers/serial/serial_core.c
++++ b/drivers/serial/serial_core.c
+@@ -2054,6 +2054,8 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *port)
+ int uart_resume_port(struct uart_driver *drv, struct uart_port *port)
+ {
+ 	struct uart_state *state = drv->state + port->line;
++	struct device *tty_dev;
++	struct uart_match match = {port, drv};
+ 
+ 	mutex_lock(&state->mutex);
+ 
+@@ -2063,7 +2065,8 @@ int uart_resume_port(struct uart_driver *drv, struct uart_port *port)
+ 		return 0;
+ 	}
+ 
+-	if (!port->suspended) {
++	tty_dev = device_find_child(port->dev, &match, serial_match_port);
++	if (!port->suspended && device_may_wakeup(tty_dev)) {
+ 		disable_irq_wake(port->irq);
+ 		mutex_unlock(&state->mutex);
+ 		return 0;
+-- 
+1.5.4.5
+
