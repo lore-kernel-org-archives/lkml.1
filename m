@@ -1,93 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765837AbYETLFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765728AbYETLHD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765837AbYETLFm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 07:05:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765625AbYETLFZ
+	id S1765728AbYETLHD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 07:07:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758071AbYETLGw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 07:05:25 -0400
-Received: from ti-out-0910.google.com ([209.85.142.184]:43460 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765598AbYETLFX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 07:05:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=GqkChPsBOSZtQkQpYIH3PyHqGF0isw5DJOZ/nRz50gtrqGZR2W13ZHwcksnzjTomvx7IxE3J59NA8P0rHSQvHgaagDyINaJies2r9IHC9mDKRNT++W8cNpO8uFIZkSK3PApUdIiGcUurzAyrMt4w/ZnS7KZhrFksxMEAyn3lPz8=
-Message-ID: <a8e1da0805200405t10fae448w589449e75a5abec6@mail.gmail.com>
-Date: Tue, 20 May 2008 19:05:21 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/3][-mm] add class_reclassify macro
-Cc: greg@kroah.com, matthew@wil.cx, kay.sievers@vrfy.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <20080520030232.fc91b64e.akpm@linux-foundation.org>
+	Tue, 20 May 2008 07:06:52 -0400
+Received: from ozlabs.org ([203.10.76.45]:51597 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755511AbYETLGv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 07:06:51 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080520095553.GA3201@darkstar.te-china.tietoenator.com>
-	 <20080520030232.fc91b64e.akpm@linux-foundation.org>
+Message-ID: <18482.45251.452257.145098@cargo.ozlabs.ibm.com>
+Date: Tue, 20 May 2008 21:06:43 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: [git pull] Please pull powerpc.git merge branch
+X-Mailer: VM 7.19 under Emacs 22.1.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 6:02 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Tue, 20 May 2008 17:55:54 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
->
->> Converting class semaphore to mutex cause lockdep warnings due to
->> class_interface_register/unregister will possible call device_add/del
->
-> Shouldn't we just fix that?
+Linus,
 
-Andrew, could you tell more?
+Please pull from the 'merge' branch of
 
->
->> For the class_interface users here add a class_reclassify macro to
->> reclassify the lock class of their struct class.
->>
->> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
->>
->> ---
->> include/linux/device.h |    7 +++++++
->> 1 file changed, 7 insertions(+)
->>
->> --- linux/include/linux/device.h      2008-05-19 12:29:54.000000000 +0800
->> +++ linux.new/include/linux/device.h  2008-05-19 14:42:25.000000000 +0800
->> @@ -529,4 +529,11 @@ extern const char *dev_driver_string(str
->>       MODULE_ALIAS("char-major-" __stringify(major) "-" __stringify(minor))
->>  #define MODULE_ALIAS_CHARDEV_MAJOR(major) \
->>       MODULE_ALIAS("char-major-" __stringify(major) "-*")
->> +
->> +#define class_reclassify(class)                                              \
->> +do {                                                                 \
->> +     static struct lock_class_key    class_key;                      \
->> +     lockdep_set_class_and_name(&(class)->mutex, &class_key,         \
->> +                              (class)->name);                        \
->> +} while (0)
->>  #endif /* _DEVICE_H_ */
->
-> I think it would need a lavish comment explaining what it is for, and
-> the reasons for its existence.
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-Yes, will do.
+to get a collection of small fixes and a defconfig update for
+powerpc, plus an update to MAINTAINERS for the Cell port.
 
->
-> Perhaps this should be a kernel-wide thing in lockdep.h.  But then that
-> would invite people to use it, and it looks like a bad thing.
+Thanks,
+Paul.
 
-I agree.
-There's wellmeant lockdep warnings for some safe code logic every some time.
-Yes, this macro violates the lockdep class-based rules, but it can act
-as just supplementary. And it could help some users.
+ MAINTAINERS                            |   23 ++-
+ arch/powerpc/boot/.gitignore           |    8 -
+ arch/powerpc/boot/Makefile             |    6 +
+ arch/powerpc/boot/dts/mpc8377_mds.dts  |   18 ++
+ arch/powerpc/configs/chrp32_defconfig  |  164 +++++++++++++---------
+ arch/powerpc/configs/g5_defconfig      |  226 +++++++++++++++----------------
+ arch/powerpc/configs/iseries_defconfig |  146 +++++++++++++-------
+ arch/powerpc/configs/pmac32_defconfig  |  174 +++++++++++++++---------
+ arch/powerpc/configs/ppc64_defconfig   |  236 +++++++++++++++-----------------
+ arch/powerpc/configs/pseries_defconfig |  224 +++++++++++++++---------------
+ arch/powerpc/mm/hash_low_32.S          |    2 
+ lib/lmb.c                              |    3 
+ 12 files changed, 675 insertions(+), 555 deletions(-)
 
->
-> device.h does not include lockdep.h, so putting this here assumes that
-> callees have already included lockdep.h.  This is the sort of
-> assumption which leads to compilation errors.
->
-My wrong, thanks.
+Adrian Bunk (1):
+      [POWERPC] powerpc/mm/hash_low_32.S: Remove CVS keyword
 
-Regards
-dave
+Arnd Bergmann (1):
+      [POWERPC] Update Cell MAINTAINERS entry, add spufs entry
+
+Kumar Gala (4):
+      lmb: Fix compile warning
+      [POWERPC] Remove generated files on make clean
+      [POWERPC] Update arch/powerpc/boot/.gitignore
+      [POWERPC] Fix mpc8377_mds.dts DMA nodes to match spec
+
+Paul Mackerras (1):
+      [POWERPC] Update defconfigs for desktop/server systems
+
