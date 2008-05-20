@@ -1,263 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932202AbYETLAV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764531AbYETLBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932202AbYETLAV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 07:00:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756822AbYETLAG
+	id S1764531AbYETLBT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 07:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759438AbYETLBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 07:00:06 -0400
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:56343 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753314AbYETLAD (ORCPT
+	Tue, 20 May 2008 07:01:07 -0400
+Received: from homer.mvista.com ([63.81.120.155]:56519 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756822AbYETLBG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 07:00:03 -0400
-Date: Tue, 20 May 2008 12:59:13 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: David Miller <davem@davemloft.net>
-Cc: shemminger@vyatta.com, greg@kroah.com, fubar@us.ibm.com,
-       netdev@vger.kernel.org, bonding-devel@lists.sourceforge.net,
+	Tue, 20 May 2008 07:01:06 -0400
+Message-ID: <4832AF59.1020808@ru.mvista.com>
+Date: Tue, 20 May 2008 15:00:41 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, Borislav Petkov <petkovbb@gmail.com>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH] driver core: Suppress sysfs warnings for device_rename().
-Message-ID: <20080520125913.777ed67d@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20080515120619.6c867bfb@gondolin.boeblingen.de.ibm.com>
-References: <20080515095246.3b6a0d1d@gondolin.boeblingen.de.ibm.com>
-	<20080515.010139.219194657.davem@davemloft.net>
-	<20080515113131.2cea2bce@gondolin.boeblingen.de.ibm.com>
-	<20080515.030054.247673168.davem@davemloft.net>
-	<20080515120619.6c867bfb@gondolin.boeblingen.de.ibm.com>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: Re: [PATCH 22/40] ide-floppy: start DMA engine in idefloppy_transfer_pc1()
+References: <20080518185428.5636.77234.sendpatchset@localhost.localdomain> <20080518185745.5636.55162.sendpatchset@localhost.localdomain>
+In-Reply-To: <20080518185745.5636.55162.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OK, here is an actually-compiled patch with proper description and
-s-o-b. Comments?
+Hello.
 
------
+Bartlomiej Zolnierkiewicz wrote:
 
-driver core: Suppress sysfs warnings for device_rename().
+> Start DMA engine and set PC_FLAG_DMA_IN_PROGRESS flag in
+> idefloppy_transfer_pc1() instead of idefloppy_issue_pc()
 
-Renaming network devices to an already existing name is not
-something we want sysfs to print a scary warning for, since the
-callers can deal with this correctly. So let's introduce
-sysfs_create_link_nowarn() which gets rid of the common warning.
+    Good. I have long ago noticed that DMA is started too early in ide-floppy 
+which is known to cobfuse some chips (like PDC20246) and was going to do a 
+patch at first but the lack of hardware (and time) stopped me...
 
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+> so the Status Register and the Interrupt Reason Register
+> are checked first.
 
----
- drivers/base/core.c   |   17 ++++++++---------
- fs/sysfs/dir.c        |   37 +++++++++++++++++++++++++++++++++++--
- fs/sysfs/symlink.c    |   41 +++++++++++++++++++++++++++++++++--------
- fs/sysfs/sysfs.h      |    1 +
- include/linux/sysfs.h |   10 ++++++++++
- 5 files changed, 87 insertions(+), 19 deletions(-)
+> Cc: Borislav Petkov <petkovbb@gmail.com>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-Index: linux-2.6/drivers/base/core.c
-===================================================================
---- linux-2.6.orig/drivers/base/core.c
-+++ linux-2.6/drivers/base/core.c
-@@ -1287,8 +1287,9 @@ int device_rename(struct device *dev, ch
- 	if (old_class_name) {
- 		new_class_name = make_class_name(dev->class->name, &dev->kobj);
- 		if (new_class_name) {
--			error = sysfs_create_link(&dev->parent->kobj,
--						  &dev->kobj, new_class_name);
-+			error = sysfs_create_link_nowarn(&dev->parent->kobj,
-+							 &dev->kobj,
-+							 new_class_name);
- 			if (error)
- 				goto out;
- 			sysfs_remove_link(&dev->parent->kobj, old_class_name);
-@@ -1296,13 +1297,11 @@ int device_rename(struct device *dev, ch
- 	}
- #else
- 	if (dev->class) {
--		sysfs_remove_link(&dev->class->subsys.kobj, old_device_name);
--		error = sysfs_create_link(&dev->class->subsys.kobj, &dev->kobj,
--					  dev->bus_id);
--		if (error) {
--			dev_err(dev, "%s: sysfs_create_symlink failed (%d)\n",
--				__func__, error);
--		}
-+		error = sysfs_create_link_nowarn(&dev->class->subsys.kobj,
-+						 &dev->kobj, dev->bus_id);
-+		if (!error)
-+			sysfs_remove_link(&dev->class->subsys.kobj,
-+					  old_device_name);
- 	}
- #endif
- 
-Index: linux-2.6/fs/sysfs/dir.c
-===================================================================
---- linux-2.6.orig/fs/sysfs/dir.c
-+++ linux-2.6/fs/sysfs/dir.c
-@@ -398,7 +398,7 @@ void sysfs_addrm_start(struct sysfs_addr
- }
- 
- /**
-- *	sysfs_add_one - add sysfs_dirent to parent
-+ *	__sysfs_add_one - add sysfs_dirent to parent without warning
-  *	@acxt: addrm context to use
-  *	@sd: sysfs_dirent to be added
-  *
-@@ -417,7 +417,7 @@ void sysfs_addrm_start(struct sysfs_addr
-  *	0 on success, -EEXIST if entry with the given name already
-  *	exists.
-  */
--int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
-+int __sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
- {
- 	if (sysfs_find_dirent(acxt->parent_sd, sd->s_name)) {
- 		printk(KERN_WARNING "sysfs: duplicate filename '%s' "
-@@ -439,6 +439,39 @@ int sysfs_add_one(struct sysfs_addrm_cxt
- }
- 
- /**
-+ *	sysfs_add_one - add sysfs_dirent to parent
-+ *	@acxt: addrm context to use
-+ *	@sd: sysfs_dirent to be added
-+ *
-+ *	Get @acxt->parent_sd and set sd->s_parent to it and increment
-+ *	nlink of parent inode if @sd is a directory and link into the
-+ *	children list of the parent.
-+ *
-+ *	This function should be called between calls to
-+ *	sysfs_addrm_start() and sysfs_addrm_finish() and should be
-+ *	passed the same @acxt as passed to sysfs_addrm_start().
-+ *
-+ *	LOCKING:
-+ *	Determined by sysfs_addrm_start().
-+ *
-+ *	RETURNS:
-+ *	0 on success, -EEXIST if entry with the given name already
-+ *	exists.
-+ */
-+int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
-+{
-+	int ret;
-+
-+	ret = __sysfs_add_one(acxt, sd);
-+	if (ret == -EEXIST) {
-+		printk(KERN_WARNING "sysfs: duplicate filename '%s' "
-+		       "can not be created\n", sd->s_name);
-+		WARN_ON(1);
-+	}
-+	return ret;
-+}
-+
-+/**
-  *	sysfs_remove_one - remove sysfs_dirent from parent
-  *	@acxt: addrm context to use
-  *	@sd: sysfs_dirent to be removed
-Index: linux-2.6/fs/sysfs/symlink.c
-===================================================================
---- linux-2.6.orig/fs/sysfs/symlink.c
-+++ linux-2.6/fs/sysfs/symlink.c
-@@ -19,13 +19,8 @@
- 
- #include "sysfs.h"
- 
--/**
-- *	sysfs_create_link - create symlink between two objects.
-- *	@kobj:	object whose directory we're creating the link in.
-- *	@target:	object we're pointing to.
-- *	@name:		name of the symlink.
-- */
--int sysfs_create_link(struct kobject * kobj, struct kobject * target, const char * name)
-+static int sysfs_do_create_link(struct kobject *kobj, struct kobject *target,
-+				const char *name, int warn)
- {
- 	struct sysfs_dirent *parent_sd = NULL;
- 	struct sysfs_dirent *target_sd = NULL;
-@@ -65,7 +60,10 @@ int sysfs_create_link(struct kobject * k
- 	target_sd = NULL;	/* reference is now owned by the symlink */
- 
- 	sysfs_addrm_start(&acxt, parent_sd);
--	error = sysfs_add_one(&acxt, sd);
-+	if (warn)
-+		error = sysfs_add_one(&acxt, sd);
-+	else
-+		error = __sysfs_add_one(&acxt, sd);
- 	sysfs_addrm_finish(&acxt);
- 
- 	if (error)
-@@ -80,6 +78,33 @@ int sysfs_create_link(struct kobject * k
- }
- 
- /**
-+ *	sysfs_create_link - create symlink between two objects.
-+ *	@kobj:	object whose directory we're creating the link in.
-+ *	@target:	object we're pointing to.
-+ *	@name:		name of the symlink.
-+ */
-+int sysfs_create_link(struct kobject *kobj, struct kobject *target,
-+		      const char *name)
-+{
-+	return sysfs_do_create_link(kobj, target, name, 1);
-+}
-+
-+/**
-+ *	sysfs_create_link_nowarn - create symlink between two objects.
-+ *	@kobj:	object whose directory we're creating the link in.
-+ *	@target:	object we're pointing to.
-+ *	@name:		name of the symlink.
-+ *
-+ *	This function does the same as sysf_create_link(), but it
-+ *	doesn't warn if the link already exists.
-+ */
-+int sysfs_create_link_nowarn(struct kobject *kobj, struct kobject *target,
-+			     const char *name)
-+{
-+	return sysfs_do_create_link(kobj, target, name, 0);
-+}
-+
-+/**
-  *	sysfs_remove_link - remove symlink in object's directory.
-  *	@kobj:	object we're acting for.
-  *	@name:	name of the symlink to remove.
-Index: linux-2.6/fs/sysfs/sysfs.h
-===================================================================
---- linux-2.6.orig/fs/sysfs/sysfs.h
-+++ linux-2.6/fs/sysfs/sysfs.h
-@@ -107,6 +107,7 @@ struct sysfs_dirent *sysfs_get_active_tw
- void sysfs_put_active_two(struct sysfs_dirent *sd);
- void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
- 		       struct sysfs_dirent *parent_sd);
-+int __sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd);
- int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd);
- void sysfs_remove_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd);
- void sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt);
-Index: linux-2.6/include/linux/sysfs.h
-===================================================================
---- linux-2.6.orig/include/linux/sysfs.h
-+++ linux-2.6/include/linux/sysfs.h
-@@ -103,6 +103,9 @@ void sysfs_remove_bin_file(struct kobjec
- 
- int __must_check sysfs_create_link(struct kobject *kobj, struct kobject *target,
- 				   const char *name);
-+int __must_check sysfs_create_link_nowarn(struct kobject *kobj,
-+					  struct kobject *target,
-+					  const char *name);
- void sysfs_remove_link(struct kobject *kobj, const char *name);
- 
- int __must_check sysfs_create_group(struct kobject *kobj,
-@@ -182,6 +185,13 @@ static inline int sysfs_create_link(stru
- 	return 0;
- }
- 
-+static inline int sysfs_create_link_nowarn(struct kobject *kobj,
-+					   struct kobject *target,
-+					   const char *name)
-+{
-+	return 0;
-+}
-+
- static inline void sysfs_remove_link(struct kobject *kobj, const char *name)
- {
- }
+> Index: b/drivers/ide/ide-floppy.c
+> ===================================================================
+> --- a/drivers/ide/ide-floppy.c
+> +++ b/drivers/ide/ide-floppy.c
+[...]
+> @@ -568,6 +569,12 @@ static ide_startstop_t idefloppy_transfe
+>  
+>  	ide_set_handler(drive, &idefloppy_pc_intr, timeout, expiry);
+>  
+> +	/* Begin DMA, if necessary */
+> +	if (pc->flags & PC_FLAG_DMA_OK) {
+> +		pc->flags |= PC_FLAG_DMA_IN_PROGRESS;
+> +		hwif->dma_ops->dma_start(drive);
+> +	}
+> +
+
+    May be too early still... ide-cd does this after writing the command packet.
+
+WBR, Sergei
