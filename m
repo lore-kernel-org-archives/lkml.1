@@ -1,129 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762551AbYETJ0n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764388AbYETJ1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762551AbYETJ0n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 05:26:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761121AbYETJ0f
+	id S1764388AbYETJ1T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 05:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759742AbYETJ1H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 05:26:35 -0400
-Received: from sacred.ru ([62.205.161.221]:39933 "EHLO sacred.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752466AbYETJ0e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 05:26:34 -0400
-Message-ID: <48329421.8080904@openvz.org>
-Date: Tue, 20 May 2008 13:04:33 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "menage@google.com" <menage@google.com>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>
-Subject: Re: [RFC][PATCH 1/3] memcg: documentation for controll file
-References: <20080520180552.601da567.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20080520180552.601da567.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 20 May 2008 05:27:07 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38105 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752466AbYETJ1D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 05:27:03 -0400
+Date: Tue, 20 May 2008 10:08:15 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Jonathan Corbet <corbet@lwn.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alexander Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org,
+       Wim Van Sebroeck <wim@iguana.be>
+Subject: Re: [PATCH 2/3, RFC] watchdog dev BKL pushdown
+Message-ID: <20080520100815.3010688b@core>
+In-Reply-To: <20080520062056.GA5292@infradead.org>
+References: <13762.1211142411@vena.lwn.net>
+	<200805200107.51659.arnd@arndb.de>
+	<200805200111.47275.arnd@arndb.de>
+	<200805200114.24819.arnd@arndb.de>
+	<20080520062056.GA5292@infradead.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Tue, 20 May 2008 13:06:56 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> Add a documentation for memory resource controller's files.
+On Tue, 20 May 2008 02:20:56 -0400
+Christoph Hellwig <hch@infradead.org> wrote:
+
+> On Tue, May 20, 2008 at 01:14:23AM +0200, Arnd Bergmann wrote:
+> > The Big Kernel Lock has been pushed down from chardev_open
+> > to misc_open, this change moves it to the individual watchdog
+> > driver open functions.
+> > 
+> > As before, the change was purely mechanical, most drivers
+> > should actually not need the BKL.
 > 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Actually I'd prefer to fix this for real.  This single open stuff aswell
+> as same set of ioctls are duplicated all over the watchdog drivers.  We'd
+> be much better off introducing a simple watchdog layer that handles this
+> plus proper locking and convert drivers over to it gradually.
 
-I have described some files, that should be created by a control group,
-which uses a res_counter in Documentation/controllers/resource_counter.txt
-section 4.
+In progress in two ways
 
-Maybe it's worth adding a reference to this file, or even rework this
-text? How do you think?
+- Wim was (is ?) working on a proper device layer
 
-> Index: mm-2.6.26-rc2-mm1/Documentation/controllers/memory_files.txt
-> ===================================================================
-> --- /dev/null
-> +++ mm-2.6.26-rc2-mm1/Documentation/controllers/memory_files.txt
-> @@ -0,0 +1,76 @@
-> +Files under memory resource controller and its resource counter.
-> +(See controllers/memory.txt about memory resource controller)
-> +
-> +* memory.usage_in_bytes
-> +  (read)
-> +  Currently accounted memory usage under memory controller in bytes.
-> +  multiple of PAGE_SIZE.
-> +
-> +  Even if there is no tasks under controller, some page caches and
-> +  swap caches are still accounted. (See memory.force_empty below.)
-> +
-> +  (write)
-> +  no write operation
-> +
-> +* memory.limit_in_bytes
-> +  (read)
-> +  Current limit of usage to this memory resource controller in bytes.
-> +  (write)
-> +  Set limit to this memory resource controller.
-> +  A user can use "K', 'M', 'G' to specify the limit.
-> +
-> +  (Example) You can set limit of 400M by following.
-> +  % echo 400M > /path to cgroup/memory.limit_in_bytes
-> +
-> +* memory.max_usage_in_bytes
-> +  (read)
-> +  Recorded maximum memory usage under this memory controller.
-> +
-> +  (write)
-> +  Reset the record to 0.
-> +
-> +  (example usage)
-> +  1. create a cgroup
-> +  % mkdir /path_to_cgroup/my_cgroup.
-> +
-> +  2. enter the cgroup
-> +  % echo $$ > /path_to_cgroup/my_cgroup/tasks.
-> +
-> +  3. Run your program
-> +  % Run......
-> +
-> +  4. See how much you used.
-> +  % cat /path_to_cgroup/my_cgroup/memory.max_usage_in_bytes.
-> +
-> +  Now you know how much your application will use. Maybe this
-> +  can be a good to set  limits_in_bytes to some proper value.
-> +
-> +* memory.force_empty
-> +  (read)
-> +  not allowed.
-> +  (write)
-> +  Drop all charges under cgroup. This can be called only when
-> +  there is no task under this cgroup. This is here for debug purpose.
-> +
-> +* memory.stat
-> +  (read)
-> +  show 6 values. (will change in future)
-> +  cache          .... usage accounted as File-Cache.
-> +  anon/swapcache .... usage accounted as anonymous memory or swapcache.
-> +  pgpgin         .... # of page-in under this cgroup.
-> +  pgpgout        .... # of page-out under this cgroup
-> +  active         .... amounts of memory which is treated as 'active' 
-> +  inactive       .... amounts of memory which is treated as 'inactive'
-> +  (write)
-> +  not allowed 
-> +
-> +* memory.failcnt
-> +  (read)
-> +  The number of blocked memory allocation.
-> +  Until the usage reaches the limit, memory allocation is not blocked.
-> +  When it reaches, memory allocation is blocked and try to reclaim memory
-> +  from LRU.
-> +
-> +  (write)
-> +  Reset to 0.
-> +
-> 
-> 
+- I've cleaned up all the drivers and am now testing a watchdog
+driver supporting library which is taking about 50% of the code out of
+each driver I convert.
 
+Alan
