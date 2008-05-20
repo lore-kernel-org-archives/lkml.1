@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935153AbYETWgv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934868AbYETWhf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935153AbYETWgv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 18:36:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934985AbYETWfr
+	id S934868AbYETWhf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 18:37:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934997AbYETWfu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 18:35:47 -0400
-Received: from mx2.suse.de ([195.135.220.15]:39696 "EHLO mx2.suse.de"
+	Tue, 20 May 2008 18:35:50 -0400
+Received: from mx2.suse.de ([195.135.220.15]:39727 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763870AbYETWfq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 18:35:46 -0400
+	id S934721AbYETWft (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 18:35:49 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       James Simmons <jsimmons@infradead.org>
-Subject: [PATCH 03/13] fbdev: fix race in device_create
-Date: Tue, 20 May 2008 15:34:50 -0700
-Message-Id: <1211322900-12705-3-git-send-email-gregkh@suse.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
+Subject: [PATCH 04/13] ide: fix race in device_create
+Date: Tue, 20 May 2008 15:34:51 -0700
+Message-Id: <1211322900-12705-4-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.5.1
 In-Reply-To: <20080520223237.GA12383@suse.de>
 References: <20080520223237.GA12383@suse.de>
@@ -32,41 +31,32 @@ This patch fixes the problem by using the new function,
 device_create_drvdata().
 
 Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: James Simmons <jsimmons@infradead.org>
+Acked-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/video/display/display-sysfs.c |   10 +++++++---
- 1 files changed, 7 insertions(+), 3 deletions(-)
+ drivers/ide/ide-probe.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/display/display-sysfs.c b/drivers/video/display/display-sysfs.c
-index 3547717..6ef800b 100644
---- a/drivers/video/display/display-sysfs.c
-+++ b/drivers/video/display/display-sysfs.c
-@@ -26,6 +26,7 @@
- #include <linux/ctype.h>
- #include <linux/idr.h>
- #include <linux/err.h>
-+#include <linux/kdev_t.h>
+diff --git a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
+index 34b0d4f..655ec7e 100644
+--- a/drivers/ide/ide-probe.c
++++ b/drivers/ide/ide-probe.c
+@@ -648,13 +648,12 @@ static int ide_register_port(ide_hwif_t *hwif)
  
- static ssize_t display_show_name(struct device *dev,
- 				struct device_attribute *attr, char *buf)
-@@ -152,10 +153,13 @@ struct display_device *display_device_register(struct display_driver *driver,
- 		mutex_unlock(&allocated_dsp_lock);
+ 	get_device(&hwif->gendev);
  
- 		if (!ret) {
--			new_dev->dev = device_create(display_class, parent, 0,
--						"display%d", new_dev->idx);
-+			new_dev->dev = device_create_drvdata(display_class,
-+							     parent,
-+							     MKDEV(0,0),
-+							     new_dev,
-+							     "display%d",
-+							     new_dev->idx);
- 			if (!IS_ERR(new_dev->dev)) {
--				dev_set_drvdata(new_dev->dev, new_dev);
- 				new_dev->parent = parent;
- 				new_dev->driver = driver;
- 				mutex_init(&new_dev->lock);
+-	hwif->portdev = device_create(ide_port_class, &hwif->gendev,
+-				      MKDEV(0, 0), hwif->name);
++	hwif->portdev = device_create_drvdata(ide_port_class, &hwif->gendev,
++					      MKDEV(0, 0), hwif, hwif->name);
+ 	if (IS_ERR(hwif->portdev)) {
+ 		ret = PTR_ERR(hwif->portdev);
+ 		device_unregister(&hwif->gendev);
+ 	}
+-	dev_set_drvdata(hwif->portdev, hwif);
+ out:
+ 	return ret;
+ }
 -- 
 1.5.5.1
 
