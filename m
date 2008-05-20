@@ -1,54 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933125AbYETRgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762011AbYETRn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933125AbYETRgw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 13:36:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756508AbYETRgn
+	id S1762011AbYETRn0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 13:43:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756539AbYETRnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 13:36:43 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:45432 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756296AbYETRgm (ORCPT
+	Tue, 20 May 2008 13:43:16 -0400
+Received: from mga10.intel.com ([192.55.52.92]:50152 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756535AbYETRnP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 13:36:42 -0400
-Date: Tue, 20 May 2008 11:36:41 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Dave Young <hidave.darkstar@gmail.com>, greg@kroah.com,
-       kay.sievers@vrfy.org, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 1/3][-mm] add class_reclassify macro
-Message-ID: <20080520173640.GP2638@parisc-linux.org>
-References: <20080520095553.GA3201@darkstar.te-china.tietoenator.com> <20080520030232.fc91b64e.akpm@linux-foundation.org> <a8e1da0805200405t10fae448w589449e75a5abec6@mail.gmail.com> <20080520103045.2bb0a033.akpm@linux-foundation.org>
+	Tue, 20 May 2008 13:43:15 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.27,516,1204531200"; 
+   d="scan'208";a="566713999"
+Date: Tue, 20 May 2008 10:50:41 -0700
+From: mark gross <mgross@linux.intel.com>
+To: Jonathan Cameron <Jonathan.Cameron@gmail.com>
+Cc: linux-kernel@vger.kernel.org, LM Sensors <lm-sensors@lm-sensors.org>,
+       spi-devel-general@lists.sourceforge.net
+Subject: Re: Accelerometer, Gyros and ADC's etc within the kernel.
+Message-ID: <20080520175041.GA30909@linux.intel.com>
+Reply-To: mgross@linux.intel.com
+References: <4832A211.4040206@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080520103045.2bb0a033.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <4832A211.4040206@gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-OriginalArrivalTime: 20 May 2008 17:42:59.0088 (UTC) FILETIME=[F1984100:01C8BAA0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 10:30:45AM -0700, Andrew Morton wrote:
-> Well what are these lockdep warnings?  Normally such a warning means that
-> we have a locking bug. I _assume_ that you've determined that the warnings
-> are false-positives?
+On Tue, May 20, 2008 at 11:04:01AM +0100, Jonathan Cameron wrote:
+> This email is basically a request for opinions on how and where such 
+> sensors
+> should be integrated into the kernel.
+>
+> To set the scene...
+>
+> Increasing numbers of embedded devices are being supplied attached MEMS
+> devices (www.xbow.com imote2 etc). Along with more traditional sensors such
+> as ADC's not being used for hardware monitoring, these do not really seem 
+> to
+> fit with in an particular subsystem of the kernel.  A previous discussion 
+> on
+> lkml in 2006 considered the accelerometers to be found within some laptop
+> hard drives, but I haven't been able to track down any more general 
+> discussions
+> of such non hardware monitoring sensors.
+>
+> The obvious possibilities are:
+>
+> * To place the various drivers within the spi / i2c etc subsystems as 
+> relevant.
+>
+> * To place within the hwmon subsystem as this is probably closest.
+> (there is already at least one straight ADC driver in hwmon)
+>
+> * To create a new subsystem, or perhaps merely sysfs class to contain these
+>  elements.
+>
+> Typical requirements within an application include simply polling for 
+> current
+> readings, and using device triggered interrupts to grab data continuously 
+> to a
+> ring buffer, for collection by suitable userspace code.  Obviously it would 
+> be
+> desirable to standardize sysfs controls for various calibration parameters 
+> as
+> much as possible across the various devices.
+>
+> Any other suggestions welcome!
+>
+> To illustrate the sort of devices here are a few I have drivers written for 
+> or will
+> shortly be writing  (some submitted to hwmon and spi mailing lists, some 
+> not
+> finished as of yet)
+>
+> ST Micro LIS3L02DQ 3D accelerometer.  SPI device, no buffering, interrupt 
+> pin
+> raised high on new data being available. Currently the driver assumes, if
+> interrupts are enabled, that this is connected to a specified gpio.
+> (http://www.st.com/stonline/books/pdf/docs/10175.pdf)
 
-Andrew, we already discussed this on the thread you started that you
-then ignored ...
+FWIW: I have this device talking to a PIC-18 and pushing the results
+over the serial port.
 
-> The warning which Mariusz Kozlowski discovered ("Subject: Re:
-> 2.6.26-rc2-mm1: possible circular locking dependency detected") was
-> triggered by the "class semaphore to mutex" conversion and it looks
-> like a real bug to me.  Would your patch prevent warnings such as that
-> one from being available to us?
+WRT linux support, I can't think of a generalized way to create a driver
+that would be able to be used with this device in Linux.  You need to
+know witch IRQ line the DR line is connected too, and if you are
+bit-banging the SPI data off the thing, then you need to know which
+GPIO's of the host CPU you'll be using.  If you have SPI hardware then
+you need to know where to pull the data from.  The problem doesn't seem to
+generalize well.
 
-The problem is that you add one type of class which then adds devices
-that are of another class.  This is not a bug.  My proposal is to give
-each sysfs class its own lock class; Dave's is to only do it for the
-two classes he knows about that do this.
+Also, If you are playing with accelerometer data, you likely need some
+real time support or at lest a reliable time stamping of the data to do
+anything interesting.
 
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Another problem area is around SPI itself.  There are variations of
+device implementations around chip select polarity, clock biasing
+(rising,falling, or midpoint) sampling from one SPI part to the next.
+
+> VTI SCA3000 E05 3D accelerometer equiped with substantial ring buffer. SPI
+> device.  Can operate either in buffered or direct mode.  In buffered mode, 
+> interrupts
+> can be used to indicate when the ring buffer is 3/4 full triggering a 
+> download to
+> a larger ring buffer in the kernel if necessary.
+> (http://www.vti.fi/en/products-solutions/products/accelerometers/sca3000-accelerometers/)
+>
+
+ring buffered data can make RT applications harder...
+
+> Analog Devices ADIS16350 combined 3D accelerometer and gyro unit.  SPI 
+> device.
+> (http://www.analog.com/en/prod/0,,764_801_ADIS16350%2C00.html)
+>
+> Maxim MAX1363, MAX1238 ADC's.  I2C devices. Some SPI ADC's (www.analog.com 
+> for
+> examples)
+>
+> Would be nice if practical to allow the framework to include RS232 devices 
+> such
+> as those from www.xsens.com, www.isense.com and others.
+
+
+I'm not sure what you are asking for, you started off with SPI driver
+for interfacing a handful of accelerometer devices.  Now your talking
+about the serial port.
+
+Besides the consumer of accelerometer data is user space applications
+(mine attempt to be somewhat RT applications) 
+
+--mgross
+
