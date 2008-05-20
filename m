@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760972AbYETNhD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765378AbYETNnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760972AbYETNhD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 09:37:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763256AbYETNgm
+	id S1765378AbYETNnU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 09:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755948AbYETNnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 09:36:42 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39138 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932235AbYETNgl (ORCPT
+	Tue, 20 May 2008 09:43:10 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:44977 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755700AbYETNnJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 09:36:41 -0400
-Date: Mon, 19 May 2008 20:41:02 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Subject: PATCH] Replace a printk + WARN_ON() to a WARN()
-Message-ID: <20080519204102.33e7c476@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 20 May 2008 09:43:09 -0400
+Date: Tue, 20 May 2008 14:43:06 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Tom Spink <tspink@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC PATCH] Introduce filesystem type tracking
+Message-ID: <20080520134306.GA28946@ZenIV.linux.org.uk>
+References: <1211196126-7442-1-git-send-email-tspink@gmail.com> <7b9198260805200606u6ebc2681o8af7a8eebc1cb96@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <7b9198260805200606u6ebc2681o8af7a8eebc1cb96@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, May 20, 2008 at 02:06:42PM +0100, Tom Spink wrote:
+[snip]
 
-From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: [PATCH] Replace a printk + WARN_ON() to a WARN()
+> I'm just adding people to CC here, but also I had a couple of thoughts
+> after reviewing my own code.
+> 
+> I see that do_kern_mount is encapsulated with the BKL, but would it be
+> wise to introduce a lock (e.g. a mutex) now for reading and updating
+> nr_mounts (and hence calling ->init), rather than wait for the BKL
+> removal to come round here?
+> 
+> Also, have I got all the cases where a filesystem is unmounted,
+> because I now see umount_tree, and am wondering if decrementing the
+> nr_mounts field should be done in here, in the loop of vfsmounts... or
+> is it sufficient to leave it at the end of do_umount?
 
-Replace a printk+WARN_ON() by a WARN(); this increases the
-chance of the string making it into the bugreport
-(eg it goes inside the ---[ cute here ]--- section)
+No, you have not and no, doing that anywhere near that layer is hopeless.
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- kernel/irq/manage.c |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
-
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index 46d6611..e296f67 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -224,9 +224,7 @@ int set_irq_wake(unsigned int irq, unsigned int on)
- 			set_wake = NULL;
- 	} else {
- 		if (desc->wake_depth == 0) {
--			printk(KERN_WARNING "Unbalanced IRQ %d "
--					"wake disable\n", irq);
--			WARN_ON(1);
-+			WARN(1, "Unbalanced IRQ %d wake disable\n", irq);
- 		} else if (--desc->wake_depth == 0)
- 			desc->status &= ~IRQ_WAKEUP;
- 		else
--- 
-1.5.4.5
-
+	a) Instances of filesystem can easily outlive all vfsmounts,
+let alone their attachment to namespaces.
+	b) What should happen if init is done in the middle of exit?
+	c) Why do we need to bother, anyway?  
