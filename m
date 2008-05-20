@@ -1,46 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757902AbYETBVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758821AbYETBWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757902AbYETBVh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 21:21:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753945AbYETBV2
+	id S1758821AbYETBWS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 21:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754766AbYETBWE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 21:21:28 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:33477 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752507AbYETBV2 (ORCPT
+	Mon, 19 May 2008 21:22:04 -0400
+Received: from rv-out-0506.google.com ([209.85.198.237]:38573 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753945AbYETBWB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 21:21:28 -0400
-Date: Mon, 19 May 2008 21:21:26 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Kasper Sandberg <lkml@metanurb.dk>
-cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.25.4-rt2
-In-Reply-To: <1211244545.19845.51.camel@localhost>
-Message-ID: <Pine.LNX.4.58.0805192116390.4125@gandalf.stny.rr.com>
-References: <1211237032.14697.76.camel@localhost.localdomain> 
- <1211242757.19845.48.camel@localhost>  <Pine.LNX.4.58.0805192047060.4125@gandalf.stny.rr.com>
- <1211244545.19845.51.camel@localhost>
+	Mon, 19 May 2008 21:22:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PPt41yHuuP3IQzKNKh7Twu1ooXrB8GjPNm4eoKzF0XxeiXilO6tWMHsEJnNYUN5znaPnfdyFvEe1FLptxPo2QWYHhnKNbyPiSPiTaguYxM7UQAV6eRh7divWr82qNAd7V88tNgV7HEvPZvj7tikoSdPn07VlpU0eGw8gs98jMtQ=
+Message-ID: <86802c440805191822v5b572d03t1568b27eb2defa4a@mail.gmail.com>
+Date: Mon, 19 May 2008 18:22:00 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ciaran McCreesh" <ciaran.mccreesh@googlemail.com>
+Subject: Re: kernel boot hangs after x86: insert_resorce for lapic addr after e820_reserve_resources
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+In-Reply-To: <20080520014405.5eb150cd@googlemail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080518014111.4f32298b@googlemail.com>
+	 <86802c440805172055x30c2c6feg441e16f5fb24f64f@mail.gmail.com>
+	 <20080518164127.2236d82a@googlemail.com>
+	 <86802c440805181400m5a3b4e28oeab6245e9a2ffd00@mail.gmail.com>
+	 <20080518232347.7964835c@snowcone>
+	 <86802c440805182043n2a4855bcw6924f6df2fbdc9f4@mail.gmail.com>
+	 <20080520014405.5eb150cd@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 20 May 2008, Kasper Sandberg wrote:
-> >
-> > Also could you try this:
-> >
-> >  # sysctl kernel.sched_nr_migrate = 4
-> >
-> > or try 2.
-> I am afraid i do not have this proc entry.
+On Mon, May 19, 2008 at 5:44 PM, Ciaran McCreesh
+<ciaran.mccreesh@googlemail.com> wrote:
+> On Sun, 18 May 2008 20:43:09 -0700
+> "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
+>> > ide_scan_pcibus doesn't return. I tried shoving some printks in
+>> > there, but as soon as I did it instead locked up in pci_init. Is it
+>> > worth continuing this approach or will doing so not give useful
+>> > results anyway?
+>>
+>> could be pci iomem conflicts...
+>> please enable CONFIG_PCI_DEBUG=y
+>> and apply the following two debug patches
 >
-> my .config is as follows:
+> dmesg with debugging attached.
+>
 
-You need to set SCHED_DEBUG which is dependent on DEBUG_KERNEL.
+the iomem allocation seems good...
 
--- Steve
+can you send out /proc/iomem?
 
+Thanks
+
+YH
