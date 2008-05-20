@@ -1,92 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760291AbYETDRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759643AbYETDWz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760291AbYETDRT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 23:17:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756322AbYETDRK
+	id S1759643AbYETDWz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 23:22:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755633AbYETDWr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 23:17:10 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:59164 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756490AbYETDRI (ORCPT
+	Mon, 19 May 2008 23:22:47 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:58949 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755365AbYETDWq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 23:17:08 -0400
+	Mon, 19 May 2008 23:22:46 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type;
-        b=kfKmkodf8IrD/g6tjryCvQC5ZYDckUzGnA4mqdUHAFl1m8IU+wnV98eekljj/HU7UClN8uj6X8l3wYhsAoy+0acbfjMH3/p6MwJE6rhcZhMExB1jD0JFDVaTiarcg+td/O1BwX6Dpr6iWkzKG+5olFQz8T3BzRH6U7o6qQ0vN3Y=
-Date: Tue, 20 May 2008 04:16:55 +0100
-From: Ciaran McCreesh <ciaran.mccreesh@googlemail.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=HneLu1ZwRrNPMQ9Ok20I0QmKNo6HMxmIyuEIsi0Kf+qPgr4B+mOyVQMxOFmdyJtG6iLLe0lvUlwHtcURXbB736F6wmNheksD2/53gzVL2KqjU4xlVpsCxlT8bOXJI9/xCJT48r+3j3W+6oBUktQe5KocxiUCw36/ZVUdtyLcdY0=
+Message-ID: <86802c440805192022n29e191dfped3ee5afa7894288@mail.gmail.com>
+Date: Mon, 19 May 2008 20:22:45 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ciaran McCreesh" <ciaran.mccreesh@googlemail.com>,
+       "Bjorn Helgaas" <bjorn.helgaas@hp.com>
+Subject: Re: kernel boot hangs after x86: insert_resorce for lapic addr after e820_reserve_resources
 Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: kernel boot hangs after x86: insert_resorce for lapic addr
- after e820_reserve_resources
-Message-ID: <20080520041655.0552236d@googlemail.com>
-In-Reply-To: <86802c440805191948h29769798qecc93b7aa5c9cd91@mail.gmail.com>
+In-Reply-To: <20080520041655.0552236d@googlemail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 References: <20080518014111.4f32298b@googlemail.com>
-	<86802c440805172055x30c2c6feg441e16f5fb24f64f@mail.gmail.com>
-	<20080518164127.2236d82a@googlemail.com>
-	<86802c440805181400m5a3b4e28oeab6245e9a2ffd00@mail.gmail.com>
-	<20080518232347.7964835c@snowcone>
-	<86802c440805182043n2a4855bcw6924f6df2fbdc9f4@mail.gmail.com>
-	<20080520014405.5eb150cd@googlemail.com>
-	<86802c440805191822v5b572d03t1568b27eb2defa4a@mail.gmail.com>
-	<20080520022446.3b9c335a@googlemail.com>
-	<86802c440805191948h29769798qecc93b7aa5c9cd91@mail.gmail.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/nOEaZA=6REKPfMOjbUd3Wjo";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+	 <20080518164127.2236d82a@googlemail.com>
+	 <86802c440805181400m5a3b4e28oeab6245e9a2ffd00@mail.gmail.com>
+	 <20080518232347.7964835c@snowcone>
+	 <86802c440805182043n2a4855bcw6924f6df2fbdc9f4@mail.gmail.com>
+	 <20080520014405.5eb150cd@googlemail.com>
+	 <86802c440805191822v5b572d03t1568b27eb2defa4a@mail.gmail.com>
+	 <20080520022446.3b9c335a@googlemail.com>
+	 <86802c440805191948h29769798qecc93b7aa5c9cd91@mail.gmail.com>
+	 <20080520041655.0552236d@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/nOEaZA=6REKPfMOjbUd3Wjo
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Mon, May 19, 2008 at 8:16 PM, Ciaran McCreesh
+<ciaran.mccreesh@googlemail.com> wrote:
+> On Mon, 19 May 2008 19:48:38 -0700
+> "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
+>> >> >> could be pci iomem conflicts...
+>> >> >> please enable CONFIG_PCI_DEBUG=y
+>> >> >> and apply the following two debug patches
+>> >> >
+>> >> > dmesg with debugging attached.
+>> >>
+>> >> the iomem allocation seems good...
+>> >>
+>> >> can you send out /proc/iomem?
+>> >
+>> > 00000000-0009ffff : pnp 00:09
+>> > <snip>
+>>
+>> seems acpi pnp resource cause some problem....
+>>
+>> please try attached patch and send out /proc/mtrr
+>
+> The patch doesn't help I'm afraid.
 
-On Mon, 19 May 2008 19:48:38 -0700
-"Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
-> >> >> could be pci iomem conflicts...
-> >> >> please enable CONFIG_PCI_DEBUG=3Dy
-> >> >> and apply the following two debug patches
-> >> >
-> >> > dmesg with debugging attached.
-> >>
-> >> the iomem allocation seems good...
-> >>
-> >> can you send out /proc/iomem?
-> >
-> > 00000000-0009ffff : pnp 00:09
-> > <snip>
->=20
-> seems acpi pnp resource cause some problem....
->=20
-> please try attached patch and send out /proc/mtrr
+sorry, please send /proc/iomem
 
-The patch doesn't help I'm afraid.
+after check request_resource and insert resource...
 
-/proc/mtrr is:
+it seems if you insert or request one small one, and request big one,
+then only have big one, but if you insert the big one, the small one
+will because big one's child...
 
-reg00: base=3D0x100000000 (4096MB), size=3D 512MB: write-back, count=3D1
-reg01: base=3D0x00000000 (   0MB), size=3D2048MB: write-back, count=3D1
-reg02: base=3D0x80000000 (2048MB), size=3D1024MB: write-back, count=3D1
-reg03: base=3D0xc0000000 (3072MB), size=3D 256MB: write-back, count=3D1
-reg04: base=3D0xd0000000 (3328MB), size=3D 128MB: write-back, count=3D1
+so at that case, could be pnp res return from acpi (dsdt) is bigger
+than e820 region...
 
-Thanks,
---=20
-Ciaran McCreesh
+so it seems the offending patch just reveal problem cause by pnp code.
 
---Sig_/nOEaZA=6REKPfMOjbUd3Wjo
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkgyQqsACgkQ96zL6DUtXhGw/wCfTpVnbknUO+MLXeAYVggXkNi/
-g3IAoM11/ftjON1MnvMgssgOyM7OMJmJ
-=Jjx7
------END PGP SIGNATURE-----
-
---Sig_/nOEaZA=6REKPfMOjbUd3Wjo--
+YH
