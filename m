@@ -1,55 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933406AbYETQyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933099AbYETQz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933406AbYETQyt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 12:54:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbYETQyj
+	id S933099AbYETQz6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 12:55:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756612AbYETQzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 12:54:39 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:64716 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760286AbYETQyi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 12:54:38 -0400
-Date: Tue, 20 May 2008 17:53:59 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Gavin Shan <gshan@alcatel-lucent.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: PIIX4 DMA Timeout
-In-Reply-To: <003b01c8ba7a$19f01500$01fca8c0@microsof60b8d6>
-Message-ID: <Pine.LNX.4.55.0805201746130.31790@cliff.in.clinika.pl>
-References: <003b01c8ba7a$19f01500$01fca8c0@microsof60b8d6>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 20 May 2008 12:55:50 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:2036 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754007AbYETQzs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 12:55:48 -0400
+From: Andy Whitcroft <apw@shadowen.org>
+To: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org, agl@us.ibm.com, wli@holomorphy.com,
+       kenchen@google.com, dwg@au1.ibm.com, andi@firstfloor.org,
+       Mel Gorman <mel@csn.ul.ie>, dean@arctic.org, abh@cray.com,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: [PATCH 1/3] record MAP_NORESERVE status on vmas and fix small page mprotect reservations
+References: <exportbomb.1211302309@pinky>
+InReply-To: <exportbomb.1211302309@pinky>
+Date: Tue, 20 May 2008 17:55:36 +0100
+Message-Id: <1211302536.0@pinky>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 May 2008, Gavin Shan wrote:
 
-> There has one MV64460 on my board, which includes 2 PCI bridges. PIIX4 is on slot 3 of PCI1.
-> But now, IDE driver reported it's timeouted on DMA operation. Thanks in advance for your
-> suggestions.
-[...]
-> PIIX4: chipset revision 1
-> PIIX4: not 100% native mode: will probe irqs later
->     ide0: BM-DMA at 0xd8000000-0xd8000007, BIOS settings: hda:pio, hdb:pio
->     ide1: BM-DMA at 0xd8000008-0xd800000f, BIOS settings: hdc:pio, hdd:pio
-> hdc: HTE721010G9AT00, ATA DISK drive
-> hdc: max request size: 512KiB
-> hdc: 195371568 sectors (100030 MB) w/7539KiB Cache, CHS=16383/255/63, UDMA(33)
-> hdc: cache flushes supported
->  hdc:<4>hdc: dma_timer_expiry: dma status == 0x26
-> hdc: DMA interrupt recovery
-> hdc: lost interrupt
-> hdc: dma_intr: status=0x58 { DriveReady SeekComplete DataRequest }
-> ide: failed opcode was: unknown
-> hdc: DMA disabled
-> ide1: reset: success
->  hdc2 hdc3 hdc4
+When a small page mapping is created with mmap() reservations are created
+by default for any memory pages required.  When the region is read/write
+the reservation is increased for every page, no reservation is needed for
+read-only regions (as they implicitly share the zero page).  Reservations
+are tracked via the VM_ACCOUNT vma flag which is present when the region
+has reservation backing it.  When we convert a region from read-only to
+read-write new reservations are aquired and VM_ACCOUNT is set.  However,
+when a read-only map is created with MAP_NORESERVE it is indistinguishable
+from a normal mapping.  When we then convert that to read/write we are
+forced to incorrectly create reservations for it as we have no record of
+the original MAP_NORESERVE.
 
- It looks like some problem with interrupt routing.  At least with some of
-the PIIX chips I recall there was some limitation about how the IDE
-interrupts had to be used for DMA to be operational.  For PIO modes there
-were no restrictions.  Do you have chip-level documentation for your
-board?
+This patch introduces a new vma flag VM_NORESERVE which records the
+presence of the original MAP_NORESERVE flag.  This allows us to distinguish
+these two circumstances and correctly account the reserve.
 
-  Maciej
+As well as fixing this FIXME in the code, this makes it much easier to
+introduce MAP_NORESERVE support for huge pages as this flag is available
+consistantly for the life of the mapping.  VM_ACCOUNT on the other hand
+is heavily used at the generic level in association with small pages.
+
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+---
+ include/linux/mm.h |    1 +
+ mm/mmap.c          |    3 +++
+ mm/mprotect.c      |    6 ++----
+ 3 files changed, 6 insertions(+), 4 deletions(-)
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 0ffed95..c2be4c3 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -100,6 +100,7 @@ extern unsigned int kobjsize(const void *objp);
+ #define VM_DONTEXPAND	0x00040000	/* Cannot expand with mremap() */
+ #define VM_RESERVED	0x00080000	/* Count as reserved_vm like IO */
+ #define VM_ACCOUNT	0x00100000	/* Is a VM accounted object */
++#define VM_NORESERVE	0x00200000	/* should the VM suppress accounting */
+ #define VM_HUGETLB	0x00400000	/* Huge TLB Page VM */
+ #define VM_NONLINEAR	0x00800000	/* Is non-linear (remap_file_pages) */
+ #define VM_MAPPED_COPY	0x01000000	/* T if mapped copy of data (nommu mmap) */
+diff --git a/mm/mmap.c b/mm/mmap.c
+index fac6633..98ab014 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -1101,6 +1101,9 @@ munmap_back:
+ 	if (!may_expand_vm(mm, len >> PAGE_SHIFT))
+ 		return -ENOMEM;
+ 
++	if (flags & MAP_NORESERVE)
++		vm_flags |= VM_NORESERVE;
++
+ 	if (accountable && (!(flags & MAP_NORESERVE) ||
+ 			    sysctl_overcommit_memory == OVERCOMMIT_NEVER)) {
+ 		if (vm_flags & VM_SHARED) {
+diff --git a/mm/mprotect.c b/mm/mprotect.c
+index a5bf31c..e0d0a6d 100644
+--- a/mm/mprotect.c
++++ b/mm/mprotect.c
+@@ -155,12 +155,10 @@ mprotect_fixup(struct vm_area_struct *vma, struct vm_area_struct **pprev,
+ 	 * If we make a private mapping writable we increase our commit;
+ 	 * but (without finer accounting) cannot reduce our commit if we
+ 	 * make it unwritable again.
+-	 *
+-	 * FIXME? We haven't defined a VM_NORESERVE flag, so mprotecting
+-	 * a MAP_NORESERVE private mapping to writable will now reserve.
+ 	 */
+ 	if (newflags & VM_WRITE) {
+-		if (!(oldflags & (VM_ACCOUNT|VM_WRITE|VM_SHARED))) {
++		if (!(oldflags & (VM_ACCOUNT|VM_WRITE|
++						VM_SHARED|VM_NORESERVE))) {
+ 			charged = nrpages;
+ 			if (security_vm_enough_memory(charged))
+ 				return -ENOMEM;
