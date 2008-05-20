@@ -1,84 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935582AbYETPi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933527AbYETPjn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935582AbYETPi4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 11:38:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935218AbYETPgw
+	id S933527AbYETPjn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 11:39:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934135AbYETPiN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 11:36:52 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:37996 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935216AbYETPgv (ORCPT
+	Tue, 20 May 2008 11:38:13 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:51572 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935453AbYETPiK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 11:36:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=U9y4AdCM94nz1L6V1Dbws1uSlbQHmd+/JUlXZyhNA4Sa+U8yIvi+xB+G4QviscqdBk8vEFDXwj25uM0FXviUVgk/+EsnHl/eNO7rZNs/JbX8VZpEdoaA53dWKqIRbyJ5PPrdW56v+ugPPxZwrzVkBlkMoEFNMacUw95ZBeMm1tQ=
-Message-ID: <7b9198260805200836q6b9ad5f0x3b42c8f6c933fa21@mail.gmail.com>
-Date: Tue, 20 May 2008 16:36:50 +0100
-From: "Tom Spink" <tspink@gmail.com>
-To: "Matthew Wilcox" <matthew@wil.cx>
-Subject: Re: [RFC PATCH] Introduce filesystem type tracking
-Cc: "Christoph Hellwig" <hch@infradead.org>,
-       "Al Viro" <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <20080520153456.GN2638@parisc-linux.org>
+	Tue, 20 May 2008 11:38:10 -0400
+Date: Tue, 20 May 2008 16:36:58 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
+Message-ID: <20080520153658.GH16676@shareable.org>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	Andi Kleen <andi@firstfloor.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <482DDA56.6000301@redhat.com> <20080516130545.845a3be9.akpm@linux-foundation.org> <87ej7zcrqv.fsf@basil.nowhere.org> <200805190926.41970.chris.mason@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1211196126-7442-1-git-send-email-tspink@gmail.com>
-	 <7b9198260805200606u6ebc2681o8af7a8eebc1cb96@mail.gmail.com>
-	 <20080520134306.GA28946@ZenIV.linux.org.uk>
-	 <20080520135732.GA30349@infradead.org>
-	 <7b9198260805200818v687fc495nb7db5ffd6c8b6ba1@mail.gmail.com>
-	 <20080520153456.GN2638@parisc-linux.org>
+In-Reply-To: <200805190926.41970.chris.mason@oracle.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/5/20 Matthew Wilcox <matthew@wil.cx>:
-> On Tue, May 20, 2008 at 04:18:14PM +0100, Tom Spink wrote:
->> +
->> +     mutex_lock(&type->fs_supers_lock);
->> +     if (list_empty(&type->fs_supers) && type->init) {
->> +             err = type->init();
->> +             if (err) {
->> +                     mutex_unlock(&type->fs_supers_lock);
->> +                     spin_unlock(&sb_lock);
->> +                     destroy_super(s);
->> +                     return ERR_PTR(err);
->> +             }
->> +     }
->> +
->> +     list_add(&s->s_instances, &type->fs_supers);
->> +     mutex_unlock(&type->fs_supers_lock);
->> +
->>       s->s_type = type;
->>       strlcpy(s->s_id, type->name, sizeof(s->s_id));
->>       list_add_tail(&s->s_list, &super_blocks);
->> -     list_add(&s->s_instances, &type->fs_supers);
->> +
->>       spin_unlock(&sb_lock);
->
-> You can't take a mutex while holding a spinlock -- what if you had to
-> sleep to acquire the mutex?
->
-> I imagine you also don't want to hold a spinlock while calling the
-> ->init or ->exit -- what if the fs wants to sleep in there (eg allocate
-> memory with GFP_KERNEL).
->
-> --
-> Intel are signing my paycheques ... these opinions are still mine
-> "Bill, look, we understand that you're interested in selling us this
-> operating system, but compare it to ours.  We can't possibly take such
-> a retrograde step."
->
+Chris Mason wrote:
+> On Sunday 18 May 2008, Andi Kleen wrote:
+> > Andrew Morton <akpm@linux-foundation.org> writes:
+> > > On Fri, 16 May 2008 14:02:46 -0500
+> > >
+> > > Eric Sandeen <sandeen@redhat.com> wrote:
+> > >> A collection of patches to make ext3 & 4 use barriers by
+> > >> default, and to call blkdev_issue_flush on fsync if they
+> > >> are enabled.
+> > >
+> > > Last time this came up lots of workloads slowed down by 30% so I
+> > > dropped the patches in horror.
+> >
+> > Didn't ext4 have some new checksum trick to avoid them?
+> 
+> I didn't think checksumming avoided barriers completely.  Just the barrier 
+> before the commit block, not the barrier after.
 
-Oh no!  This is bad.  I really need to devise some script to stress
-test my code - and also make myself pay attention to what I'm doing.
-Sorry for the noise, guys.
+A little optimisation note.
 
--- 
-Tom Spink
+You don't need the barrier after in some cases, or it can be deferred
+until a better time.  E.g. when the disk write cache is probably empty
+(some time after write-idle), barrier flushes may take the same time
+as NOPs.
+
+This sequence:
+
+    #1 write metadata to journal
+    #1 write commit block (checksummed)
+  BARRIER
+    #1 write metadata in place
+  ... time passes ...
+    #2 write metadata to journal
+    #2 write commit block (checksummed)
+  BARRIER
+    #2 write metadata in place
+  ... time passes ...
+    #3 write metadata to journal
+    #3 write commit block (checksummed)
+  BARRIER
+    #3 write metadata in place
+
+Can be rewritten as:
+
+    #1 write metadata to journal
+    #1 write commit block (checksummed)
+  ... time passes ...
+    #2 write metadata to journal
+    #2 write commit block (checksummed)
+  ... time passes ...
+    #3 write metadata to journal
+    #3 write commit block (checksummed)
+  ... time passes ...
+  BARRIER (probably instant).
+    #1 write metadata in place
+    #2 write metadata in place
+    #3 write metadata in place
+
+Provided some conditions hold.  All the metadata and all the journal
+writes being non-overlapping I/O ranges would be sufficient.
+
+What's more, barriers can be deferred past data=ordered in-place data
+writes, although that's not always an optimisation.
+
+-- Jamie
