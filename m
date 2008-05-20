@@ -1,76 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934521AbYETWOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934436AbYETWPh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934521AbYETWOV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 18:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765828AbYETWN6
+	id S934436AbYETWPh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 18:15:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761059AbYETWP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 18:13:58 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51523 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763773AbYETWN5 (ORCPT
+	Tue, 20 May 2008 18:15:28 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:9752 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757635AbYETWP1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 18:13:57 -0400
-Date: Tue, 20 May 2008 15:13:41 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Joel Becker <Joel.Becker@oracle.com>
-Cc: Louis Rilling <Louis.Rilling@kerlabs.com>, linux-kernel@vger.kernel.org,
-       ocfs2-devel@oss.oracle.com
-Subject: Re: [RFC][PATCH 0/3] configfs: Make nested default groups
- lockdep-friendly
-Message-ID: <20080520151341.058f2df4@infradead.org>
-In-Reply-To: <20080520215639.GG26609@mail.oracle.com>
-References: <20080520163320.025971210@kerlabs.com>
-	<20080520095810.1d50d247@infradead.org>
-	<20080520215639.GG26609@mail.oracle.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+	Tue, 20 May 2008 18:15:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=miRZyzzY12Xh8hFV1YzTlwmQUISWXjow5/2VF3mVcAh2z8N/2Z4FOGF1bJjFhjRv8UC5wAM/kU9PT1shVMDD87cMLHWBWYfMC9uShsWKolDjZ5f/LxWKLjguo2GESjH3gzubUzuT8FjE1UUr7zft8Zz210BSBzLuRiypB+Uq7lo=
+Subject: Re: [PATCH 2/2] byteorder: eliminate pointer bytorder api
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080520.141731.99514303.davem@davemloft.net>
+References: <1211311449.5915.195.camel@brick>
+	 <20080520.141731.99514303.davem@davemloft.net>
+Content-Type: text/plain
+Date: Tue, 20 May 2008 15:15:25 -0700
+Message-Id: <1211321725.5915.208.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 May 2008 14:56:39 -0700
-Joel Becker <Joel.Becker@oracle.com> wrote:
-
-> On Tue, May 20, 2008 at 09:58:10AM -0700, Arjan van de Ven wrote:
-> > On Tue, 20 May 2008 18:33:20 +0200
-> > Louis Rilling <Louis.Rilling@kerlabs.com> wrote:
-> > 
-> > > The following patches fix lockdep warnings resulting from
-> > > (correct) recursive locking in configfs.
-> > >
-> > > ...
-> > >
-> > > Since lockdep does not handle such correct recursion, the idea is
-> > > to insert lockdep_off()/lockdep_on() for inode mutexes as soon as
-> > > the level of recursion of the I_MUTEX_PARENT -> I_MUTEX_CHILD
-> > > dependency pattern increases.
-> > 
-> > I'm... not entirely happy with such a solution ;(
-> > 
-> > there must be a better one.
+On Tue, 2008-05-20 at 14:17 -0700, David Miller wrote:
+> From: Harvey Harrison <harvey.harrison@gmail.com>
+> Date: Tue, 20 May 2008 12:24:09 -0700
 > 
-> 	We're trying to find it.  I really appreciate Louis taking the
-> time to approach the issue.  His first pass was to add 1 to
-> MUTEX_CHILD for each level of recursion.  This has a very tight limit
-> (4 or 5 levels), but probably covers all users that exist and perhaps
-> all that ever will exist.  However, it means passing the lockdep
-> annotation level throughout the entire call chain across multiple
-> files.  It was definitely less readable.
-> 	This approach takes a different tack - it's very readable, but
-> it assumes that the currently correct locking will always remain so -
-> a particular invariant that lockdep exists to verify :-)
-> 	Louis, what about sticking the recursion level on
-> configfs_dirent?  That is, you could add sd->s_level and then use it
-> when needed.  THis would hopefully avoid having to pass the level as
-> an argument to every function.  Then we can go back to your original
-> scheme.  If they recurse too much and hit the lockdep limit, just
-> rewind everything and return -ELOOP.
+> > Not a great api, should be using cpu_to_etc and deref the pointer yourself.
+> > cpu_to_le16p
+> > cpu_to_le32p
+> > cpu_to_le64p
+> > cpu_to_be16p
+> > cpu_to_be32p
+> > cpu_to_be64p
+> > 
+> > Replaced by the aligned get_/put_ helpers
+> > le16_to_cpup
+> > le32_to_cpup
+> > le64_to_cpup
+> > be16_to_cpup
+> > be32_to_cpup
+> > be64_to_cpup
+> > 
+> > Also add const to the get/put helpers and use them in the access_ok case for
+> > unaligned access.
+> > 
+> > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> 
+> But what you're doing in the first patch is killing performance for some
+> cases.
+> 
+> The reason we use the cpu_to_*p() interfaces is to get the other-endian
+> load and store instructions some processors have.
+> 
+> What you're doing is undoing all of that work we've done to take
+> advantage of such things.
 
-you can also make a new lockdep key for each level... not pretty but it
-works
+Obviously I missed that part, my apologies.  Would it be acceptable if,
+taking the possibly arch-specific parts, moved the [endian]_to_cpup
+name over to get_[endian]
+
+ie:
+
+le16_to_cpup -> get_le16
+
+I'd leave cpu_to_le16p alone (it's not used that much anyway).
+
+To make it similar to the get_unaligned_le16 helpers?
+
+Thanks for having a look,
+
+Harvey
 
