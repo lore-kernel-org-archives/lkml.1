@@ -1,66 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932927AbYETSq2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932947AbYETSrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932927AbYETSq2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 14:46:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933084AbYETSqB
+	id S932947AbYETSrS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 14:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758064AbYETSrA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 14:46:01 -0400
-Received: from rn-out-0910.google.com ([64.233.170.191]:17568 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933045AbYETSqA (ORCPT
+	Tue, 20 May 2008 14:47:00 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:46531 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757902AbYETSq6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 14:46:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=mo/T1wCDomip/7xj53tTobqfBp+Axv0hKzk8/vomdUt73oC3g92gOltIDzyVPRO5mi7CI8Ca6VX41QfxeFI/2Sr1yPRPwcs+qusXzgBaqRPRcThWbZrjtG9yOTPxMxaxp+RBnalDcdUn66+pIwHBVl0lg22am+PgPu2oWJsJAcs=
-Subject: Re: [PATCH 05/21] drivers/usb: use aligned-endian get/put helpers
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1211306772.5915.173.camel@brick>
-References: <1211306772.5915.173.camel@brick>
-Content-Type: text/plain
-Date: Tue, 20 May 2008 11:45:53 -0700
-Message-Id: <1211309154.5915.189.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Tue, 20 May 2008 14:46:58 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=VEpeXZnbDbkoc69uze/V8K2MzPlhE50b9IoLjR4tf25YkTCzLxrxi/Uxco00pf915
+	CKslZKagjt7HAiE94uzqw==
+Message-ID: <6599ad830805201146g5a2a8928l6a2f5adc51b15f15@mail.gmail.com>
+Date: Tue, 20 May 2008 11:46:46 -0700
+From: "Paul Menage" <menage@google.com>
+To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [RFC][PATCH 2/3] memcg:: seq_ops support for cgroup
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>
+In-Reply-To: <20080520180841.f292beef.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080520180552.601da567.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20080520180841.f292beef.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-05-20 at 11:06 -0700, Harvey Harrison wrote:
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+On Tue, May 20, 2008 at 2:08 AM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> Does anyone have a better idea ?
+
+As a way of printing plain text files, it seems fine.
+
+My concern is that it means that cgroups no longer has any idea about
+the typing of the data being returned, which will make it harder to
+integrate with a binary stats API. You'd end up having to have a
+separate reporting method for the same data to use it. That's why the
+"read_map" function specifically doesn't take a seq_file, but instead
+takes a key/value callback abstraction, which currently maps into a
+seq_file. For the binary stats API, we can use the same reporting
+functions, and just map into the binary API output.
+
+Maybe we can somehow combine the read_map() abstraction with the
+seq_file's start/stop/next operations.
+
+Paul
+
+> ==
+>
+> Currently, cgroup's seq_file interface just supports single_open.
+> This patch allows arbitrary seq_ops if passed.
+>
+> For example, "status per cpu, status per node" can be very big
+> in general and they tend to use its own start/next/stop ops.
+>
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>
+>
 > ---
-
-After all that I compiled with the wrong config to make sure
-it all compiled after splitting, extra bracket in devio.c
-
->  drivers/usb/c67x00/c67x00-hcd.c |    4 ++--
->  drivers/usb/core/devio.c        |   12 ++++++------
->  drivers/usb/gadget/net2280.c    |    2 +-
->  drivers/usb/host/ehci.h         |    6 ++----
->  drivers/usb/host/isp116x-hcd.c  |    4 ++--
->  drivers/usb/host/ohci.h         |   16 ++++++----------
->  drivers/usb/host/uhci-hub.c     |    6 +++---
->  drivers/usb/misc/auerswald.c    |    2 +-
->  drivers/usb/serial/garmin_gps.c |    9 ++++-----
->  drivers/usb/storage/isd200.c    |    4 ++--
->  10 files changed, 29 insertions(+), 36 deletions(-)
->  
-> diff --git a/drivers/usb/core/devio.c b/drivers/usb/core/devio.c
-> index de17738..b44a061 100644
-> --- a/drivers/usb/core/devio.c
-> +++ b/drivers/usb/core/devio.c
-> @@ -993,18 +993,18 @@ static int proc_do_submiturb(struct dev_state *ps, struct usbdevfs_urb *uurb,
->  			kfree(dr);
->  			return -EFAULT;
->  		}
-> -		if (uurb->buffer_length < (le16_to_cpup(&dr->wLength) + 8)) {
-> +		if (uurb->buffer_length < get_le16(&dr->wLength) + 8)) {
-								      ^
-Sorry.
-
-Harvey
-
+>  include/linux/cgroup.h |    9 +++++++++
+>  kernel/cgroup.c        |   32 +++++++++++++++++++++++++++++---
+>  2 files changed, 38 insertions(+), 3 deletions(-)
+>
+> Index: mm-2.6.26-rc2-mm1/include/linux/cgroup.h
+> ===================================================================
+> --- mm-2.6.26-rc2-mm1.orig/include/linux/cgroup.h
+> +++ mm-2.6.26-rc2-mm1/include/linux/cgroup.h
+> @@ -232,6 +232,11 @@ struct cftype {
+>         */
+>        int (*read_seq_string) (struct cgroup *cont, struct cftype *cft,
+>                         struct seq_file *m);
+> +       /*
+> +        * If this is not NULL, read ops will use this instead of
+> +        * single_open(). Useful for showing very large data.
+> +        */
+> +       struct seq_operations *seq_ops;
+>
+>        ssize_t (*write) (struct cgroup *cgrp, struct cftype *cft,
+>                          struct file *file,
+> @@ -285,6 +290,10 @@ int cgroup_path(const struct cgroup *cgr
+>
+>  int cgroup_task_count(const struct cgroup *cgrp);
+>
+> +
+> +struct cgroup *cgroup_of_seqfile(struct seq_file *m);
+> +struct cftype *cftype_of_seqfile(struct seq_file *m);
+> +
+>  /* Return true if the cgroup is a descendant of the current cgroup */
+>  int cgroup_is_descendant(const struct cgroup *cgrp);
+>
+> Index: mm-2.6.26-rc2-mm1/kernel/cgroup.c
+> ===================================================================
+> --- mm-2.6.26-rc2-mm1.orig/kernel/cgroup.c
+> +++ mm-2.6.26-rc2-mm1/kernel/cgroup.c
+> @@ -1540,6 +1540,16 @@ struct cgroup_seqfile_state {
+>        struct cgroup *cgroup;
+>  };
+>
+> +struct cgroup *cgroup_of_seqfile(struct seq_file *m)
+> +{
+> +       return ((struct cgroup_seqfile_state *)m->private)->cgroup;
+> +}
+> +
+> +struct cftype *cftype_of_seqfile(struct seq_file *m)
+> +{
+> +       return  ((struct cgroup_seqfile_state *)m->private)->cft;
+> +}
+> +
+>  static int cgroup_map_add(struct cgroup_map_cb *cb, const char *key, u64 value)
+>  {
+>        struct seq_file *sf = cb->state;
+> @@ -1563,8 +1573,14 @@ static int cgroup_seqfile_show(struct se
+>  static int cgroup_seqfile_release(struct inode *inode, struct file *file)
+>  {
+>        struct seq_file *seq = file->private_data;
+> +       struct cgroup_seqfile_state *state = seq->private;
+> +       struct cftype *cft = state->cft;
+> +
+>        kfree(seq->private);
+> -       return single_release(inode, file);
+> +       if (!cft->seq_ops)
+> +               return single_release(inode, file);
+> +       else
+> +               return seq_release(inode, file);
+>  }
+>
+>  static struct file_operations cgroup_seqfile_operations = {
+> @@ -1585,7 +1601,7 @@ static int cgroup_file_open(struct inode
+>        cft = __d_cft(file->f_dentry);
+>        if (!cft)
+>                return -ENODEV;
+> -       if (cft->read_map || cft->read_seq_string) {
+> +       if (cft->read_map || cft->read_seq_string || cft->seq_ops) {
+>                struct cgroup_seqfile_state *state =
+>                        kzalloc(sizeof(*state), GFP_USER);
+>                if (!state)
+> @@ -1593,7 +1609,17 @@ static int cgroup_file_open(struct inode
+>                state->cft = cft;
+>                state->cgroup = __d_cgrp(file->f_dentry->d_parent);
+>                file->f_op = &cgroup_seqfile_operations;
+> -               err = single_open(file, cgroup_seqfile_show, state);
+> +
+> +               if (!cft->seq_ops)
+> +                       err = single_open(file, cgroup_seqfile_show, state);
+> +               else {
+> +                       err = seq_open(file, cft->seq_ops);
+> +                       if (!err) {
+> +                               struct seq_file *sf;
+> +                               sf = ((struct seq_file *)file->private_data);
+> +                               sf->private = state;
+> +                       }
+> +               }
+>                if (err < 0)
+>                        kfree(state);
+>        } else if (cft->open)
+>
+>
