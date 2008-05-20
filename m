@@ -1,54 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933865AbYETP0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934381AbYETP1L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933865AbYETP0t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 11:26:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758784AbYETP0i
+	id S934381AbYETP1L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 11:27:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933311AbYETP0o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 11:26:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43090 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765291AbYETP0h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 11:26:37 -0400
-Date: Tue, 20 May 2008 11:16:55 -0400
-From: Dave Jones <davej@redhat.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [X86] Remove unnecessary code in 64bit CPU identification.
-Message-ID: <20080520151655.GA542@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-References: <200805200409.m4K49ZuE024343@gelk.kernelslacker.org> <4832E461.2070503@zytor.com>
+	Tue, 20 May 2008 11:26:44 -0400
+Received: from mail.gmx.net ([213.165.64.20]:57212 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S933136AbYETP0n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 11:26:43 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX18F4ElnmrgFqOTvIUh4jCoMgrPP0kTJjohpDvXqGv
+	ZXKumTBIHuzQeG
+Date: Tue, 20 May 2008 17:26:46 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
+       fabrizio.garetto@gmail.com, jonsmirl@gmail.com
+Subject: Re: [PATCH 3/4] spi: Add OF binding support for SPI busses
+In-Reply-To: <fa686aa40805192213y485c4ba2u750748f8201e0377@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0805201650280.5283@axis700.grange>
+References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca> 
+ <20080516193613.28030.13950.stgit@trillian.secretlab.ca> 
+ <Pine.LNX.4.64.0805191446530.27140@axis700.grange> 
+ <fa686aa40805190857u317d3304ie75d11870e109fc5@mail.gmail.com> 
+ <Pine.LNX.4.64.0805191811510.29559@axis700.grange>
+ <fa686aa40805192213y485c4ba2u750748f8201e0377@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4832E461.2070503@zytor.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 07:46:57AM -0700, H. Peter Anvin wrote:
- > Dave Jones wrote:
- > > There were no 64bit Transmeta CPUs made (and it'd be something of
- > > a surprise if they started any time soon).   To the best of my knowledge,
- > > no CPU vendor cloned the 80860000 cpuid space claimed by Transmeta.
- > > By removing this code, we can also eliminate calling cpuid 0x80000007 twice.
- > > 
- > > Signed-off-by: Dave Jones <davej@redhat.com>
- > 
- > I'd really like to avoid divergences between the 32-bit and 64-bit code 
- > if they can be avoided at this point.  These codes need to be unified, 
- > not further split.
+On Mon, 19 May 2008, Grant Likely wrote:
 
-Umm, the 32 bit code has the per-vendor stuff removed from setup.c, and factored
-out into per-vendor files in arch/x86/kernel/cpu/  Because the 64bit version
-doesn't do that (yet), my removal of this code actually gets us closer to unification.
-After my patch, neither of the setup.c files have the Transmeta bits :)
+> I'm not so fond of this approach.  cs-parent doesn't seem to make much
+> sense to me.  It might be better to have a cs-handler property on the
+> SPI bus node instead of on the SPI slave nodes, but even then it
+> leaves a number of questions about what it really means.  In some
+> cases it would be overkill.  For example, if the SPI node simply had
+> multiple GPIO lines then an extra cs-parent node wouldn't be needed at
+> all.
 
-	Dave
+Right, it is optional.
 
--- 
-http://www.codemonkey.org.uk
+> Then there are the complex arrangements.  When setting CS
+> requires inserting a special 'set cs' SPI message at the right time.
+> Or worse; when setting CS requires /modifying/ the sent SPI message.
+
+Hm, are there actually such SPI _controllers_ that use SPI data to toggle 
+chipselects? I.e., you would have to send your SPI client data (for the 
+RTC or whatever) plus some extra bytes or with some modifications, and 
+this extra information would then be intercepted by the SPI _controller_ 
+itself and only client data would be sent out? Isn't what you're 
+describing really a case of an SPI bridge, as you also call it below? In 
+which case, I think, it might make sense to cleanly differentiate these 
+two cases:
+
+1. SPI chipselect. Either controlled by an external (typically a GPIO) 
+signal or by the controller itself, in the latter case the controller has 
+to be configured with the required address
+
+2. SPI bridge. I don't know such configurations, so, I can only guess: the 
+SPI controller has a single SPI client, which acts like a bridge. It 
+receives data from the primary host, and in this data the target client 
+data and its address are encoded.
+
+Now, I can also imagine case 2 where the bridge is actually a part of the 
+host controller... Even though this doesn't make any sense to me.
+
+> Essentially, the binding would need to describe the ability to
+> completely intercept and rewrite all SPI messages going through the CS
+> scheme.
+> 
+> I'm not saying it's not possible to do, but I am saying that I'd like
+> to have a better feel for all the use cases before it is defined.  I'm
+> not convinced that adding a cs-parent phandle will do that
+> appropriately.  That being said, my gut feel is that the solution will
+> be to support spi-bridge nodes that handle the complex CS
+> configuration settings; the spi-bridge would be a child of the
+> spi-master and the parent of the spi devices; and simple CS settings
+> being handled with regular old GPIO bindings.  (Much like the last
+> suggestion you make; except that I think that it *does* looks
+> elegant.)  :-)
+
+Ok, elegance apart:-) You can use the SPI-bridge construct to also 
+describe simple SPI-chipselect configurations. But is it really a good 
+idea? Wouldn't it be better to handle these two cases separately? Using 
+"bridge" to describe CS's seems also confusing - imagine someone 
+implementing a new DTS, having to describe a bridge not having one doesn't 
+seem very intuitive:-)
+
+> example; here's an SPI bus that has 2 GPIOs for two bus CS lines and
+> an SPI bridge that uses both CSes; one address for accessing the
+> bridge's CS register and one CS to access the downstream devices.
+> 
+> +    SPI example for an MPC5200 SPI bus:
+> +               spi@f00 {
+> +                   #address-cells = <1>;
+> +                   #size-cells = <0>;
+> +                   compatible = "fsl,mpc5200b-spi","fsl,mpc5200-spi";
+> +                   reg = <0xf00 0x20>;
+> +                   interrupts = <2 13 0 2 14 0>;
+> +                   interrupt-parent = <&mpc5200_pic>;
+> +                   gpios = <&gpio1 0 0 &gpio1 1 0>;
+> +                   spi-bridge@0 {
+> +                       compatible = "oem,spi-bridge-type";
+> +                       reg = < 0 1 >;  // note: 2 SPI CS addresses; first one to access bridge registers
+> +
+> +                       ethernet-switch@0 {
+> +                           compatible = "micrel,ks8995m";
+> +                           linux,modalias = "ks8995";
+> +                           max-speed = <1000000>;
+> +                           reg = <0>;
+> +                       };
+> ...                     // and more SPI child nodes here...
+> +                   };
+> +               };
+> 
+> But even this doesn't reflect the hardware layout well.  What if the
+> SS lines are on SPI GPIO expanders on the same bus?  Then does it make
+> sense for them to be layed out as spi bridges?
+
+Well, in this case - yes, because addressing clients "behind" the expander 
+and the expander itself is done differently.
+
+On the whole, I think, it begins to look good - I think, it is better to 
+implement an imperfect but complete and consistent scheme and modify or 
+extend it in the future, than a perfect, but incomplete, and have to use 
+auxiliary means (platform bindings) to fill in the gaps.
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
