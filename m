@@ -1,68 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758830AbYETKvl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764960AbYETKv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758830AbYETKvl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 06:51:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760361AbYETKvT
+	id S1764960AbYETKv6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 06:51:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761006AbYETKvV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 06:51:19 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56137 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762405AbYETKvR (ORCPT
+	Tue, 20 May 2008 06:51:21 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:14151 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762739AbYETKvT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 06:51:17 -0400
-Date: Tue, 20 May 2008 19:56:40 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "menage@google.com" <menage@google.com>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "xemul@openvz.org" <xemul@openvz.org>,
-       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>
-Subject: Re: [RFC][PATCH 3/3] memcg: per node information
-Message-Id: <20080520195640.6e1c1da9.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <48329AE0.2010505@cn.fujitsu.com>
-References: <20080520180552.601da567.kamezawa.hiroyu@jp.fujitsu.com>
-	<20080520180955.70aa5459.kamezawa.hiroyu@jp.fujitsu.com>
-	<48329AE0.2010505@cn.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 20 May 2008 06:51:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:subject;
+        b=Wn4nYfbx5Xc3vaKYVo0SDhYsWkDKxEyOI15M3umW5ZUgHw9WcIJEi8VwR7EiMriekGc/tiI+xSHzRFIII5GXzMAlsh/F2PMdGaZe0mbR9uKfXkcXc8fZb4gjZAoSdIPfqRD0hoOKNnf+HzjyrrqmEK1cgIsdng/+dL/+y7cDeFs=
+From: Magnus Damm <magnus.damm@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: lethal@linux-sh.org, Magnus Damm <magnus.damm@gmail.com>,
+       hjk@linutronix.de, gregkh@suse.de, linux-sh@vger.kernel.org
+Date: Tue, 20 May 2008 19:51:32 +0900
+Message-Id: <20080520105132.1474.73941.sendpatchset@rx1.opensource.se>
+Subject: [PATCH 00/03][RFC] Reusable UIO Platform Driver
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 May 2008 17:33:20 +0800
-Li Zefan <lizf@cn.fujitsu.com> wrote:
+These patches implement a reusable UIO platform driver. This driver
+can be used to export hardware to user space, as long as the device
+is a) memory mapped and b) equipped with an unique IRQ.
 
-> KAMEZAWA Hiroyuki wrote:
-> >  static int alloc_mem_cgroup_per_zone_info(struct mem_cgroup *mem, int node)
-> > Index: mm-2.6.26-rc2-mm1/Documentation/controllers/memory_files.txt
-> > ===================================================================
-> > --- mm-2.6.26-rc2-mm1.orig/Documentation/controllers/memory_files.txt
-> > +++ mm-2.6.26-rc2-mm1/Documentation/controllers/memory_files.txt
-> > @@ -74,3 +74,13 @@ Files under memory resource controller a
-> >    (write)
-> >    Reset to 0.
-> >  
-> > +* memory.numa_stat
-> > +
-> > +  This file appears only when the kernel is configured as NUMA.
-> > +
-> > +  (read)
-> > +  Show per-node accounting information of acitve/inactive pages.
-> > +  formated as following.
-> 
-> formatted
-> 
-> > +  nodeid  total active inactive
-> 
-> 2 spaces?  ^^
-> 
+The uio_platform driver gets all information through platform data,
+including address window information and IRQ number. The driver also
+supports assigning a contiguous piece of memory to each instance.
+This may be useful when the exported hardware blocks can bus master
+but requires physically contiguous memory.
 
-Thanks, will fix.
+There are not many surprises in the code if you are familiar with UIO,
+except for the interrupt handling. All UIO kernel drivers that I've
+seen so far have hardware specific interrupt acknowledge code in the
+interrupt handler. The uio_platform driver is different.
 
--Kame
+The interrupt handling code in uio_platform assumes the device is the
+only user of the assigned interrupt. This may be rare in the PC world
+but for SuperH almost all interrupt sources are unique. Having an
+unique interrupt for the device allows the code to use disable_irq()
+and enable_irq() in kernel space and leave actual interrupt acknowledge
+to user space. That way we have no hardware specific code in the kernel.
 
+Interrupts are of course serviced in kernel space by the uio_platform
+driver, but the uio_platform interrupt handler will simply disable the
+IRQ until next read() or poll() syscall. The uio_platform kernel driver
+assumes that the user space driver has taken care of acknowledging
+the interrupt before doing read() and waiting for events again. If no
+acknowledge has happened then an interrupt will occur again (since it's
+still pending) and the kernel interrupt handler will disable the IRQ
+again and unblock the user space process.
+
+The last patch contains SuperH specific code that exports various
+multimedia acceleration blocks to userspace. The following processors
+and hardware blocks are exported for now:
+
+sh7343: VPU
+sh7722: VPU, VEU
+sh7723: VPU, VEU, VEU
+
+If anyone is interested then I have a proof of concept vidix driver
+for mplayer that is interfacing using UIO to the VEU on a sh7722 to
+provide accelerated color space conversion and stretching.
+
+[PATCH 01/03] uio: Add enable_irq() callback
+[PATCH 02/03] uio: Add uio_platform driver
+[PATCH 03/03] sh: Export sh7343/sh7722/sh7723 VPU/VEU blocks
+
+Signed-off-by: Magnus Damm <damm@igel.co.jp>
+---
+
+ arch/sh/kernel/cpu/sh4a/setup-sh7343.c |   32 ++++++
+ arch/sh/kernel/cpu/sh4a/setup-sh7722.c |   63 ++++++++++++
+ arch/sh/kernel/cpu/sh4a/setup-sh7723.c |   94 ++++++++++++++++++
+ drivers/uio/Kconfig                    |   10 +
+ drivers/uio/Makefile                   |    1 
+ drivers/uio/uio.c                      |    6 +
+ drivers/uio/uio_platform.c             |  161 ++++++++++++++++++++++++++++++++
+ include/linux/uio_driver.h             |    1 
+ include/linux/uio_platform.h           |   10 +
+ 9 files changed, 378 insertions(+)
