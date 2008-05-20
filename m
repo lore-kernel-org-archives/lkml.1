@@ -1,38 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933606AbYETVdk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765756AbYETVh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933606AbYETVdk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 17:33:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760790AbYETVd1
+	id S1765756AbYETVh1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 17:37:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761264AbYETVhQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 17:33:27 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43362
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1760397AbYETVd0 (ORCPT
+	Tue, 20 May 2008 17:37:16 -0400
+Received: from az33egw01.freescale.net ([192.88.158.102]:64910 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759761AbYETVhO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 17:33:26 -0400
-Date: Tue, 20 May 2008 14:33:21 -0700 (PDT)
-Message-Id: <20080520.143321.97817925.davem@davemloft.net>
-To: ramirose@gmail.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH net-2.6] [NET] The world is not perfect patch.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <eb3ff54b0805200229r6fb2daa1w50aaffa9b130f89f@mail.gmail.com>
-References: <eb3ff54b0805200229r6fb2daa1w50aaffa9b130f89f@mail.gmail.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 20 May 2008 17:37:14 -0400
+Message-ID: <483344C0.3020703@freescale.com>
+Date: Tue, 20 May 2008 16:38:08 -0500
+From: Scott Wood <scottwood@freescale.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
+MIME-Version: 1.0
+To: benh@kernel.crashing.org
+CC: Trent Piepho <tpiepho@freescale.com>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [POWERPC] Improve (in|out)_beXX() asm code
+References: <1211316025-29069-1-git-send-email-tpiepho@freescale.com> <1211318219.8297.177.camel@pasglop>
+In-Reply-To: <1211318219.8297.177.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Rami Rosen" <ramirose@gmail.com>
-Date: Tue, 20 May 2008 12:29:26 +0300
+Benjamin Herrenschmidt wrote:
+> On Tue, 2008-05-20 at 13:40 -0700, Trent Piepho wrote:
+>> There was some discussion on a Freescale list if the powerpc I/O accessors
+>> should be strictly ordered w.r.t.  normal memory.  Currently they are not.  It
+>> does not appear as if any other architecture's I/O accessors are strictly
+>> ordered in this manner.  memory-barriers.txt explicitly states that the I/O
+>> space (inb, outw, etc.) are NOT strictly ordered w.r.t. normal memory
+>> accesses and it's implied the other I/O accessors (e.g., writel) are the same.
+>>
+>> However, it is somewhat harder to program for this model, and there are almost
+>> certainly a number of drivers using coherent DMA which have subtle bugs because
+>> the do not include the necessary barriers.
+>>
+>> But clearly and change to this would be a subject for a different patch.
+> 
+> The current accessors should provide all the necessary ordering
+> guarantees...
 
-> There are three methods in the network stack which start with
-> #ifndef I_WISH_WORLD_WERE_PERFECT.
+It looks like we rely on -fno-strict-aliasing to prevent reordering 
+ordinary memory accesses (such as to DMA descriptors) past the I/O 
+access.  It won't prevent reordering of memory reads around an I/O read, 
+though, which could be a problem if the I/O read result determines the 
+validity of the DMA buffer.  IMHO, a memory clobber would be better.
 
-I think it is better to delete this code.  It is impossible
-for anyone to build test it without making source modifications,
-therefore it will continute to break over and over again over
-time.
+-Scott
