@@ -1,45 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932659AbYETONS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932443AbYETOPP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932659AbYETONS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 10:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758626AbYETONJ
+	id S932443AbYETOPP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 10:15:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757267AbYETOPB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 10:13:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57297 "EHLO mx1.redhat.com"
+	Tue, 20 May 2008 10:15:01 -0400
+Received: from mail.macqel.be ([194.78.208.39]:24003 "EHLO mail.macqel.be"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757854AbYETONI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 10:13:08 -0400
-Date: Tue, 20 May 2008 10:13:02 -0400
-From: Alan Cox <alan@redhat.com>
-To: Plamen Petrov <pvp-lsts@fs.ru.acad.bg>
-Cc: linux-kernel@vger.kernel.org,
-       "Luca Tettamanti <kronos.it@gmail.com>; Tejun Heo <htejun@gmail.com>;
-	Jeff Garzik <jeff@garzik.org>; Alan Cox <alan@redhat.com>; Shaohua Li
-	<shaohua.li@intel.com>; Greg Kroah-Hartman" <gregkh@suse.de>
-Subject: Re: [BISECTED] pata_jmicron: no drives found on post 2.6.25 kernels
-Message-ID: <20080520141302.GB20794@devserv.devel.redhat.com>
-References: <courier.4832011A.000041C2@fs.ru.acad.bg>
-Mime-Version: 1.0
+	id S1756655AbYETOPA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 10:15:00 -0400
+X-Greylist: delayed 427 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 May 2008 10:14:59 EDT
+Date: Tue, 20 May 2008 16:07:44 +0200
+From: Philippe De Muyter <phdm@macqel.be>
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: powerpc + i2c/rtc : where is the 11 min update ?
+Message-ID: <20080520140744.GA6427@frolo.macqel>
+References: <20080520105844.GA694@frolo.macqel> <18482.45473.866954.385654@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <courier.4832011A.000041C2@fs.ru.acad.bg>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a Lloegr o'r rhif cofrestru 3798903
+In-Reply-To: <18482.45473.866954.385654@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 01:37:14AM +0300, Plamen Petrov wrote:
-> git bisect revealed that commit
-> 7d715a6c1ae5785d00fb9a876b5abdfc43abc44b
-> is the one causing pata_jmicron to fail to detect drives,
-> connected to the JMicron controler on my motherboard.
-> At least in my case, anyway...
-> Changing kernel config to CONFIG_PCIEASPM=n makes the drives
-> attached to the JMicron SATA/PATA controller usable again. 
+CCing lkml
 
-The PCIE ASM stuff is experimental and for good reason it appears.
+On Tue, May 20, 2008 at 09:10:25PM +1000, Paul Mackerras wrote:
+> Philippe De Muyter writes:
+> 
+> > I have a ARCH=powerpc linux-2.6.25-rc6 linux running with an i2c rtc chip,
+> > and synchronized to a ntp server.
+> > 
+> > I noticed that my rtc chip does not get updated by the kernel, just like
+> > it would be on all other architectures (included ppc).
+> 
+> That is now supposed to be done by the code inside #ifdef
+> CONFIG_GENERIC_CMOS_UPDATE in kernel/time/ntp.c.
+> 
+> Paul.
 
-Not an ATA layer bug - a PCIE one so once the PCIE folks fix their stuff
-hopefully it'll magically start working.
+Thanks.  I agree that is a good place.
 
+But, here CONFIG_GENERIC_CMOS_UPDATE is defined and an i2c clock also,
+and my rtc clock is not updated.  I see kernel/time/ntp.c::sync_cmos_clock
+calling arch/powerpc/kernel/time.c::update_persistent_clock, where
+ppc_md.set_rtc_time is NULL.
+
+Who is supposed to initialize ppc_md.set_rtc_time to use an i2c clock and
+when in the boot process may that happen ?
+
+Or alternatively, should update_persistent_clock not be part of the rtc
+subsystem ?
+
+Philippe
