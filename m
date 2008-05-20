@@ -1,99 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758936AbYETFAQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758387AbYETFOA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758936AbYETFAQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 01:00:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbYETFAB
+	id S1758387AbYETFOA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 01:14:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbYETFNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 01:00:01 -0400
-Received: from cnrelay03.alcatel-sbell.com.cn ([211.144.215.19]:45871 "EHLO
-	mail.alcatel-sbell.com.cn" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751423AbYETFAA convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 01:00:00 -0400
-Content-class: urn:content-classes:message
+	Tue, 20 May 2008 01:13:50 -0400
+Received: from an-out-0708.google.com ([209.85.132.250]:50905 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751505AbYETFNt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 01:13:49 -0400
+Message-ID: <fa686aa40805192213y485c4ba2u750748f8201e0377@mail.gmail.com>
+Date: Mon, 19 May 2008 23:13:48 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH 3/4] spi: Add OF binding support for SPI busses
+Cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
+       fabrizio.garetto@gmail.com, jonsmirl@gmail.com
+In-Reply-To: <Pine.LNX.4.64.0805191811510.29559@axis700.grange>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=gb2312
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Subject: RE: 2.6.25.4-rt2
-Date: Tue, 20 May 2008 12:59:19 +0800
-Message-ID: <630E9048ECEBBB4798CE33255209FE7306483561@CNSHGSMBS02.ad4.ad.alcatel.com>
-In-Reply-To: <Pine.LNX.4.58.0805200030120.9319@gandalf.stny.rr.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: 2.6.25.4-rt2
-Thread-Index: Aci6M9dIu9AJQlrxQK+wIWqGRhA6CgAALc3Q
-References: <1211237032.14697.76.camel@localhost.localdomain><1211239147.198
-	45.42.camel@localhost>  
-	<Pine.LNX.4.58.0805191936120.4125@gandalf.stny.rr.com><630E9048ECEBBB4798CE
-	33255209FE730648317D@CNSHGSMBS02.ad4.ad.alcatel.com> 
-	<Pine.LNX.4.58.0805200030120.9319@gandalf.stny.rr.com>
-From: "MA QING A" <Qing.a.Ma@alcatel-sbell.com.cn>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Cc: "Kasper Sandberg" <lkml@metanurb.dk>,
-       "LKML" <linux-kernel@vger.kernel.org>,
-       "RT" <linux-rt-users@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-X-OriginalArrivalTime: 20 May 2008 04:59:17.0373 (UTC) 
-	FILETIME=[41B96AD0:01C8BA36]
-X-imss-version: 2.050
-X-imss-result: Passed
-X-imss-approveListMatch: *@alcatel-sbell.com.cn
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
+	 <20080516193613.28030.13950.stgit@trillian.secretlab.ca>
+	 <Pine.LNX.4.64.0805191446530.27140@axis700.grange>
+	 <fa686aa40805190857u317d3304ie75d11870e109fc5@mail.gmail.com>
+	 <Pine.LNX.4.64.0805191811510.29559@axis700.grange>
+X-Google-Sender-Auth: dd73e642f5941c1f
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks very much for your explanation
-At the very beginning I thought the Hackbench was a latency tools, so I was very surprised to see such result.
-
-But there's another question. When I choose the Complete Preemption -Real Time  configuration, it's recommended to choose Timer Frequency ---> 1000Mhz to improve the cpu performance, does it mean cpu will cost much more during the thread context switch? Or I should choose 100Mhz in order to decrease the thread context switch and get a better performance? 
-Which one should I choose? Or any useful tools can tell me the differences.
-
-Any opinion appreciated
-Thanks
-
-
-Really Thanks again
-
------Original Message-----
-From: Steven Rostedt [mailto:rostedt@goodmis.org] 
-Sent: 2008Äê5ÔÂ20ÈÕ 12:37
-To: MA QING A
-Cc: Kasper Sandberg; LKML; RT; Ingo Molnar; Thomas Gleixner
-Subject: RE: 2.6.25.4-rt2
-
-
-
-
-On Tue, 20 May 2008, MA QING A wrote:
-
-> Forgive me to ask a stupid question.
-> Why using the 24 mainline kernel, the time is less than using the
-> rt-patched kernel?
+On Mon, May 19, 2008 at 10:30 AM, Guennadi Liakhovetski
+<g.liakhovetski@gmx.de> wrote:
+> On Mon, 19 May 2008, Grant Likely wrote:
+>> But that is Linux internal
+>> details; this discussion is about device tree bindings.
+>>
+>> Note that I did say that drivers can define additional properties for
+>> supporting chip select changes as needed.  I'm just not attempting to
+>> encode them into the formal binding.  There is simply just too many
+>> different ways to manipulate chip select signals and so I don't feel
+>> confident trying to define a *common* binding at this moment in time.
 >
+> Yes, I understand, that physically there can be many ways SPI chipselects
+> can be controlled. But I thought there could be a generic way to cover
+> them all by defining a separate entry on your SPI bus. Like
+>
+> +    SPI example for an MPC5200 SPI bus:
+> +               spi@f00 {
+> +                       #address-cells = <1>;
+> +                       #size-cells = <0>;
+> +                       compatible = "fsl,mpc5200b-spi","fsl,mpc5200-spi";
+> +                       reg = <0xf00 0x20>;
+> +                       interrupts = <2 13 0 2 14 0>;
+> +                       interrupt-parent = <&mpc5200_pic>;
+> +                       eth-switch-cs@0 {
+> +                               compatible = "oem,cs-type";
+> +                       };
+> +
+> +                       ethernet-switch@0 {
+> +                               compatible = "micrel,ks8995m";
+> +                               linux,modalias = "ks8995";
+> +                               max-speed = <1000000>;
+> +                               reg = <0>;
+> +                               cs-parent = <&/.../spi@f00/eth-switch-cs@0>;
+> +                       };
+> ...
+> +               };
+>
+> Then whatever method is used to actually switch the CS, a driver should be
+> registered to handle eth-switch-cs@0, providing the required calls.
+> Without such a driver ethernet-switch@0 will not probe successfully.
+> Wouldn't this cover all possible cases? One could even consider actually
+> putting SPI devices on SPI chipselect busses, but that won't look very
+> elegant:-)
 
-The test I used is a performance test, not a latency test. An RTOS
-(Real-time Operating System) will sacrifice performance to achieve
-determinism (low latencies). Several key features to an RT system usually
-come with a performance cost.
+Hurrmmmm...
 
-A non RT system will perform 99% of the time faster than an RTOS. But all
-it takes is that one time to miss a deadline to make an RT system crash.
-An RTOS may be slightly slower, but it will not have those outliers that a
-normal desktop system would have.
+I'm not so fond of this approach.  cs-parent doesn't seem to make much
+sense to me.  It might be better to have a cs-handler property on the
+SPI bus node instead of on the SPI slave nodes, but even then it
+leaves a number of questions about what it really means.  In some
+cases it would be overkill.  For example, if the SPI node simply had
+multiple GPIO lines then an extra cs-parent node wouldn't be needed at
+all.  Then there are the complex arrangements.  When setting CS
+requires inserting a special 'set cs' SPI message at the right time.
+Or worse; when setting CS requires /modifying/ the sent SPI message.
+Essentially, the binding would need to describe the ability to
+completely intercept and rewrite all SPI messages going through the CS
+scheme.
 
-So getting back to your question.  Hackbench runs a bunch of stuff and
-times how long it took to do so. It stresses the system quite a bit. The
-lower the number the better. Given that hackbench is not checking for
-latency, but only shear perforance, it is expected that hackbench will run
-better on a non RT system.
+I'm not saying it's not possible to do, but I am saying that I'd like
+to have a better feel for all the use cases before it is defined.  I'm
+not convinced that adding a cs-parent phandle will do that
+appropriately.  That being said, my gut feel is that the solution will
+be to support spi-bridge nodes that handle the complex CS
+configuration settings; the spi-bridge would be a child of the
+spi-master and the parent of the spi devices; and simple CS settings
+being handled with regular old GPIO bindings.  (Much like the last
+suggestion you make; except that I think that it *does* looks
+elegant.)  :-)
 
-Now, a test like cyclictest that measures latencies will show the benefits
-of realtime.  The kernel with the RT patch can measure 65 microsecond
-latencies for response times even while running hackbench. The vanilla
-kernel would measure a few milliseconds response times running the same
-test.
+example; here's an SPI bus that has 2 GPIOs for two bus CS lines and
+an SPI bridge that uses both CSes; one address for accessing the
+bridge's CS register and one CS to access the downstream devices.
 
--- Steve
++    SPI example for an MPC5200 SPI bus:
++               spi@f00 {
++                   #address-cells = <1>;
++                   #size-cells = <0>;
++                   compatible = "fsl,mpc5200b-spi","fsl,mpc5200-spi";
++                   reg = <0xf00 0x20>;
++                   interrupts = <2 13 0 2 14 0>;
++                   interrupt-parent = <&mpc5200_pic>;
++                   gpios = <&gpio1 0 0 &gpio1 1 0>;
++                   spi-bridge@0 {
++                       compatible = "oem,spi-bridge-type";
++                       reg = < 0 1 >;  // note: 2 SPI CS addresses;
+first one to access bridge registers
++
++                       ethernet-switch@0 {
++                           compatible = "micrel,ks8995m";
++                           linux,modalias = "ks8995";
++                           max-speed = <1000000>;
++                           reg = <0>;
++                       };
+...                     // and more SPI child nodes here...
++                   };
++               };
 
+But even this doesn't reflect the hardware layout well.  What if the
+SS lines are on SPI GPIO expanders on the same bus?  Then does it make
+sense for them to be layed out as spi bridges?
+
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
