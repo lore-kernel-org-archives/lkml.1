@@ -1,111 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763442AbYETRJs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759138AbYETRQs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763442AbYETRJs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 13:09:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755278AbYETRJe
+	id S1759138AbYETRQs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 13:16:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751331AbYETRQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 13:09:34 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:19730 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754869AbYETRJc (ORCPT
+	Tue, 20 May 2008 13:16:36 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:41928 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751286AbYETRQf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 13:09:32 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Jamie Lokier <jamie@shareable.org>
-Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
-Date: Tue, 20 May 2008 13:08:03 -0400
-User-Agent: KMail/1.9.9
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-References: <482DDA56.6000301@redhat.com> <200805201202.54420.chris.mason@oracle.com> <20080520162710.GM16676@shareable.org>
-In-Reply-To: <20080520162710.GM16676@shareable.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805201308.03956.chris.mason@oracle.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 20 May 2008 13:16:35 -0400
+Subject: Re: [RFC] make wext wireless bits optional and deprecate them
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: netdev <netdev@vger.kernel.org>, Jean Tourrilhes <jt@hpl.hp.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <CD993362-B1DE-4E4D-8A5B-E9E2AD7DA04C@holtmann.org> (sfid-20080517_154639_384202_6D3479C2)
+References: <1211026337.3827.25.camel@johannes.berg>
+	 <CD993362-B1DE-4E4D-8A5B-E9E2AD7DA04C@holtmann.org>
+	 (sfid-20080517_154639_384202_6D3479C2)
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-5JHaC54Ie6AKHA8YnikR"
+Date: Tue, 20 May 2008 19:15:31 +0200
+Message-Id: <1211303731.6252.105.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 20 May 2008, Jamie Lokier wrote:
-> Chris Mason wrote:
-> > > You don't need the barrier after in some cases, or it can be deferred
-> > > until a better time.  E.g. when the disk write cache is probably empty
-> > > (some time after write-idle), barrier flushes may take the same time
-> > > as NOPs.
-> >
-> > I hesitate to get too fancy here, if the disk is idle we probably
-> > won't notice the performance gain.
->
-> I think you're right, but it's hard to be sure.  One of the problems
-> with barrier-implemented-as-flush-all is that it flushes data=ordered
-> data, even when that's not wanted, and there can be a lot of data in
-> the disk's write cache, spread over many seeks.
 
-Jens and I talked about tossing the barriers completely and just doing FUA for 
-all metadata writes.  For drives with NCQ, we'll get something close to 
-optimal because the higher layer elevators are already doing most of the hard 
-work.
+--=-5JHaC54Ie6AKHA8YnikR
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Either way, you do want the flush to cover all the data=ordered writes, at 
-least all the ordered writes from the transaction you're about to commit.  
-Telling the difference between data=ordered from an old transaction or from 
-the running transaction gets into pushing ordering down to the lower levels 
-(see below)
+On Sat, 2008-05-17 at 15:45 +0200, Marcel Holtmann wrote:
+> Hi Johannes,
+>=20
+> > The /sys/class/net/*/wireless/ direcory is, as far as I know, not
+> > used by anyone. Additionally, the same data is available via wext
+> > ioctls. Hence the sysfs files are pretty much useless. This patch
+> > makes them optional and schedules them for removal.
+>=20
+> it is used by HAL to classify WiFi network cards as net.80211 instead =20
+> of net.80203 and so we do have an actual user. However HAL only tests =20
+> for the existence of the directory wireless/.
+>=20
+> Please fix HAL first before submitting such a patch.
 
->
-> Then it's good to delay barrier-flushes to batch metadata commits, but
-> good to issue the barrier-flushes prior to large batches of
-> data=ordered data, so the latter can be survive in the disk write
-> cache for seek optimisations with later requests which aren't yet
-> known.
->
-> All this sounds complicated at the JBD layer, and IMHO much simpler at
-> the request elevator layer.
->
-> > But, it complicates the decision about when you're allowed to dirty
-> > a metadata block for writeback.  It used to be dirty-after-commit
-> > and it would change to dirty-after-barrier.  I suspect that is some
-> > significant surgery into jbd.
->
-> Rather than tracking when it's "allowed" to dirty a metadata block, it
-> will be simpler to keep a flag saying "barrier needed", and just issue
-> the barrier prior to writing a metadata block, if the flag is set.
->
+I have filed a patch to fix HAL to use the canonical SIOCGIWNAME at
+https://bugs.freedesktop.org/show_bug.cgi?id=3D16037. Any further
+objections to this patch?
 
-Adding explicit ordering into the IO path is really interesting.  We toss a 
-bunch of IO down to the lower layers with information about dependencies and 
-let the lower layers figure it out.  James had a bunch of ideas here, but I'm 
-afraid the only people that understood it were James and the whiteboard he 
-was scribbling on.
+johannes
 
-The trick is to code the ordering in such a way that an IO failure breaks the 
-chain, and that the filesystem has some sensible chance to deal with all 
-these requests that have failed because an earlier write failed.
+--=-5JHaC54Ie6AKHA8YnikR
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-Also, once we go down the ordering road, it is really tempting to forget that 
-ordering does ensure consistency but doesn't tell us the write actually 
-happened.  fsync and friends need to hook into the dependency chain to wait 
-for the barrier instead of waiting for the commit.
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-But, back to the short term for a second, what we need are some benchmarks for 
-barriers on and off and some guidance from the ext34 maintainers about 
-turning them on by default.  We shouldn't be pushing this FS integrity 
-decision off on the distros.
+iQIVAwUASDMHMqVg1VMiehFYAQIRCRAAha1B0TCHwCXxxe0Is+3Ld007hKV2n8kk
+0VF3N4Q2bLxKemj4rlyIBltc7fNy0qkNMwybjv0L+Qr8MievBdog31t+nSs5+UnA
+twu2OcjYPdDqYwEq/Umfhlsv775z7+E/qdQ1YUVJUrCKHL2M2WKVuNhXJJXX2OJL
+PjO3xio5r6A0KiIZpbTgUsIK0rKbM0ATvlswNFnuG0efuydWfnNoLjoMQifWtrfJ
+LgR/XziOdO/nmmAaygARjt7uSW9/uI384L8Y6ar4C1eoYmgZXzk4PRak4X8GcSaj
+rpVTzdH9SKGQ6J+oBot2YPKAFitivpEGlF2IVxje6suQlYZ0CMdGC2NyPDiW/MTv
+VjMtQH33unXxzz0WXaAJBARjbGVqdhVaadJWNRmws3iF+3uHe2aW3l92IpsFPYjy
+4b47xAcZisvL8mvDTqaCKqOQRKBbj1fKiYE6p1CwHomzdm/9MGmNOjmu2Vjrohc1
+nKHiMQfqbUwFqeYweU1MW4hv03M+jDv2GjFGJYSEjByL3AB9cI2GeqB2mKA6W34H
+WgG8UrTBIWqupkjGxPb2Q7U3JcoOF/R2ikMr4vCmQLY1m3se2Bni42d+0jYjIn+J
+NAnMJ1nzUMpzs0YLUFti62xzI7HQuOonjezxTVA76m0oe/2UaJotlytAhmaH5dMK
+kWNWwyhmyOg=
+=r45u
+-----END PGP SIGNATURE-----
 
-My test prog is definitely a worst case, but I'm pretty confident that most 
-mail server workloads end up doing similar IO.
+--=-5JHaC54Ie6AKHA8YnikR--
 
-A 16MB or 32MB disk cache is common these days, and that is a very sizable 
-percentage of the jbd log size.  I think the potential for corruptions on 
-power failure is only growing over time.
-
--chris
