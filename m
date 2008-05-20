@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932784AbYETSIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763153AbYETSJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932784AbYETSIu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 14:08:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757629AbYETSG2
+	id S1763153AbYETSJT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 14:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932472AbYETSGb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 14:06:28 -0400
-Received: from rn-out-0910.google.com ([64.233.170.188]:36158 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932451AbYETSG0 (ORCPT
+	Tue, 20 May 2008 14:06:31 -0400
+Received: from el-out-1112.google.com ([209.85.162.176]:3485 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765592AbYETSG2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 14:06:26 -0400
+	Tue, 20 May 2008 14:06:28 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=hwyiet4EjUNCA/jOhxGkgCF/vFkCY0LgwmESV5k9ldYHWjJeSs6ehUzTDUrWVrt2jBdcX+FyI8YAmdV+d06jGuaivBQP67GBdYydNYjFNAVhtuP6QykCYDhdYJTSDi6ZXpVLOxZRgwYXM9fadQKLQNivmsiRPqRs8bOf5hQ3o4M=
-Subject: [PATCH 17/21] fs: remaining users of aligned-endian get/put helpers
+        b=jGlTaojdQSydN7wCuP3W6LmtW9geNdLdEzocANiErDNdunVlEfaKPpSV2+MwGVjgtjhooraw87IUxADkOclJGoVrA5rx5ypmgKvh1JNC9KgKCG6rI4R9SOAvenL83vZC93VAcsdOBAAieh3sVZjraPckvaQ+9kM+HYKLn3Q2DdY=
+Subject: [PATCH 06/21] net: use aligned-endian get/put helpers
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Tue, 20 May 2008 11:06:13 -0700
-Message-Id: <1211306773.5915.174.camel@brick>
+Date: Tue, 20 May 2008 11:06:14 -0700
+Message-Id: <1211306774.5915.175.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
@@ -30,99 +30,120 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- fs/hfsplus/wrapper.c  |    6 +++---
- fs/isofs/compress.c   |    4 ++--
- fs/partitions/acorn.c |    2 +-
- fs/qnx4/inode.c       |    2 +-
- fs/reiserfs/super.c   |    2 +-
- 5 files changed, 8 insertions(+), 8 deletions(-)
+ net/9p/conv.c          |   14 +++++++-------
+ net/9p/trans_fd.c      |    2 +-
+ net/9p/trans_virtio.c  |    2 +-
+ net/decnet/af_decnet.c |    4 ++--
+ 4 files changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/fs/hfsplus/wrapper.c b/fs/hfsplus/wrapper.c
-index 175d08e..0e2fd86 100644
---- a/fs/hfsplus/wrapper.c
-+++ b/fs/hfsplus/wrapper.c
-@@ -35,17 +35,17 @@ static int hfsplus_read_mdb(void *bufptr, struct hfsplus_wd *wd)
- 	    sig != cpu_to_be16(HFSPLUS_VOLHEAD_SIGX))
- 		return 0;
- 
--	attrib = be16_to_cpu(*(__be16 *)(bufptr + HFSP_WRAPOFF_ATTRIB));
-+	attrib = get_be16(bufptr + HFSP_WRAPOFF_ATTRIB);
- 	if (!(attrib & HFSP_WRAP_ATTRIB_SLOCK) ||
- 	   !(attrib & HFSP_WRAP_ATTRIB_SPARED))
- 		return 0;
- 
--	wd->ablk_size = be32_to_cpu(*(__be32 *)(bufptr + HFSP_WRAPOFF_ABLKSIZE));
-+	wd->ablk_size = get_be32(bufptr + HFSP_WRAPOFF_ABLKSIZE);
- 	if (wd->ablk_size < HFSPLUS_SECTOR_SIZE)
- 		return 0;
- 	if (wd->ablk_size % HFSPLUS_SECTOR_SIZE)
- 		return 0;
--	wd->ablk_start = be16_to_cpu(*(__be16 *)(bufptr + HFSP_WRAPOFF_ABLKSTART));
-+	wd->ablk_start = get_be16(bufptr + HFSP_WRAPOFF_ABLKSTART);
- 
- 	extent = get_unaligned_be32(bufptr + HFSP_WRAPOFF_EMBEDEXT);
- 	wd->embed_start = (extent >> 16) & 0xFFFF;
-diff --git a/fs/isofs/compress.c b/fs/isofs/compress.c
-index defb932..d6b9f47 100644
---- a/fs/isofs/compress.c
-+++ b/fs/isofs/compress.c
-@@ -124,7 +124,7 @@ static int zisofs_readpage(struct file *file, struct page *page)
- 			brelse(ptrbh[1]);
- 		goto eio;
+diff --git a/net/9p/conv.c b/net/9p/conv.c
+index 4454720..e1dfb73 100644
+--- a/net/9p/conv.c
++++ b/net/9p/conv.c
+@@ -92,7 +92,7 @@ static void buf_put_int8(struct cbuf *buf, u8 val)
+ static void buf_put_int16(struct cbuf *buf, u16 val)
+ {
+ 	if (buf_check_size(buf, 2)) {
+-		*(__le16 *) buf->p = cpu_to_le16(val);
++		put_le16(val, buf->p);
+ 		buf->p += 2;
  	}
--	cstart = le32_to_cpu(*(__le32 *)(bh->b_data + (blockptr & bufmask)));
-+	cstart = get_le32(bh->b_data + (blockptr & bufmask));
- 
- 	if ( indexblocks == 2 ) {
- 		/* We just crossed a block boundary.  Switch to the next block */
-@@ -136,7 +136,7 @@ static int zisofs_readpage(struct file *file, struct page *page)
- 			goto eio;
- 		}
- 	}
--	cend = le32_to_cpu(*(__le32 *)(bh->b_data + (blockendptr & bufmask)));
-+	cend = get_le32(bh->b_data + (blockendptr & bufmask));
- 	brelse(bh);
- 
- 	if (cstart > cend)
-diff --git a/fs/partitions/acorn.c b/fs/partitions/acorn.c
-index 3d3e166..45cbb3a 100644
---- a/fs/partitions/acorn.c
-+++ b/fs/partitions/acorn.c
-@@ -344,7 +344,7 @@ static inline int valid_ics_sector(const unsigned char *data)
- 	for (i = 0, sum = 0x50617274; i < 508; i++)
- 		sum += data[i];
- 
--	sum -= le32_to_cpu(*(__le32 *)(&data[508]));
-+	sum -= get_le32(&data[508]);
- 
- 	return sum == 0;
  }
-diff --git a/fs/qnx4/inode.c b/fs/qnx4/inode.c
-index b31ab78..80872f5 100644
---- a/fs/qnx4/inode.c
-+++ b/fs/qnx4/inode.c
-@@ -372,7 +372,7 @@ static int qnx4_fill_super(struct super_block *s, void *data, int silent)
- 		printk("qnx4: unable to read the superblock\n");
- 		goto outnobh;
+@@ -100,7 +100,7 @@ static void buf_put_int16(struct cbuf *buf, u16 val)
+ static void buf_put_int32(struct cbuf *buf, u32 val)
+ {
+ 	if (buf_check_size(buf, 4)) {
+-		*(__le32 *)buf->p = cpu_to_le32(val);
++		put_le32(val, buf->p);
+ 		buf->p += 4;
  	}
--	if ( le32_to_cpup((__le32*) bh->b_data) != QNX4_SUPER_MAGIC ) {
-+	if (get_le32(bh->b_data) != QNX4_SUPER_MAGIC) {
- 		if (!silent)
- 			printk("qnx4: wrong fsid in superblock.\n");
- 		goto out;
-diff --git a/fs/reiserfs/super.c b/fs/reiserfs/super.c
-index ed424d7..d7b0215 100644
---- a/fs/reiserfs/super.c
-+++ b/fs/reiserfs/super.c
-@@ -221,7 +221,7 @@ static int finish_unfinished(struct super_block *s)
+ }
+@@ -108,7 +108,7 @@ static void buf_put_int32(struct cbuf *buf, u32 val)
+ static void buf_put_int64(struct cbuf *buf, u64 val)
+ {
+ 	if (buf_check_size(buf, 8)) {
+-		*(__le64 *)buf->p = cpu_to_le64(val);
++		put_le64(val, buf->p);
+ 		buf->p += 8;
+ 	}
+ }
+@@ -145,7 +145,7 @@ static u16 buf_get_int16(struct cbuf *buf)
+ 	u16 ret = 0;
  
- 		/* reiserfs_iget needs k_dirid and k_objectid only */
- 		item = B_I_PITEM(bh, ih);
--		obj_key.on_disk_key.k_dir_id = le32_to_cpu(*(__le32 *) item);
-+		obj_key.on_disk_key.k_dir_id = get_le32(item);
- 		obj_key.on_disk_key.k_objectid =
- 		    le32_to_cpu(ih->ih_key.k_objectid);
- 		obj_key.on_disk_key.k_offset = 0;
+ 	if (buf_check_size(buf, 2)) {
+-		ret = le16_to_cpu(*(__le16 *)buf->p);
++		ret = get_le16(buf->p);
+ 		buf->p += 2;
+ 	}
+ 
+@@ -157,7 +157,7 @@ static u32 buf_get_int32(struct cbuf *buf)
+ 	u32 ret = 0;
+ 
+ 	if (buf_check_size(buf, 4)) {
+-		ret = le32_to_cpu(*(__le32 *)buf->p);
++		ret = get_le32(buf->p);
+ 		buf->p += 4;
+ 	}
+ 
+@@ -169,7 +169,7 @@ static u64 buf_get_int64(struct cbuf *buf)
+ 	u64 ret = 0;
+ 
+ 	if (buf_check_size(buf, 8)) {
+-		ret = le64_to_cpu(*(__le64 *)buf->p);
++		ret = get_le64(buf->p);
+ 		buf->p += 8;
+ 	}
+ 
+@@ -520,7 +520,7 @@ p9_create_common(struct cbuf *bufp, u32 size, u8 id)
+ void p9_set_tag(struct p9_fcall *fc, u16 tag)
+ {
+ 	fc->tag = tag;
+-	*(__le16 *) (fc->sdata + 5) = cpu_to_le16(tag);
++	put_le16(tag, fc->sdata + 5);
+ }
+ EXPORT_SYMBOL(p9_set_tag);
+ 
+diff --git a/net/9p/trans_fd.c b/net/9p/trans_fd.c
+index 4507f74..a805edb 100644
+--- a/net/9p/trans_fd.c
++++ b/net/9p/trans_fd.c
+@@ -771,7 +771,7 @@ static void p9_read_work(struct work_struct *work)
+ 
+ 	m->rpos += err;
+ 	while (m->rpos > 4) {
+-		n = le32_to_cpu(*(__le32 *) m->rbuf);
++		n = get_le32(m->rbuf);
+ 		if (n >= m->msize) {
+ 			P9_DPRINTK(P9_DEBUG_ERROR,
+ 				"requested packet size too big: %d\n", n);
+diff --git a/net/9p/trans_virtio.c b/net/9p/trans_virtio.c
+index 42adc05..8968039 100644
+--- a/net/9p/trans_virtio.c
++++ b/net/9p/trans_virtio.c
+@@ -339,7 +339,7 @@ p9_virtio_rpc(struct p9_trans *t, struct p9_fcall *tc, struct p9_fcall **rc)
+ 
+ 	wait_event(*req->wq, req->status == REQ_STATUS_RCVD);
+ 
+-	size = le32_to_cpu(*(__le32 *) rdata);
++	size = get_le32(rdata);
+ 
+ 	err = p9_deserialize_fcall(rdata, size, *rc, t->extended);
+ 	if (err < 0) {
+diff --git a/net/decnet/af_decnet.c b/net/decnet/af_decnet.c
+index fc2efe8..be2f3d0 100644
+--- a/net/decnet/af_decnet.c
++++ b/net/decnet/af_decnet.c
+@@ -1129,8 +1129,8 @@ static int dn_accept(struct socket *sock, struct socket *newsock, int flags)
+ 
+ 	skb_pull(skb, dn_username2sockaddr(skb->data, skb->len, &(DN_SK(newsk)->addr), &type));
+ 	skb_pull(skb, dn_username2sockaddr(skb->data, skb->len, &(DN_SK(newsk)->peer), &type));
+-	*(__le16 *)(DN_SK(newsk)->peer.sdn_add.a_addr) = cb->src;
+-	*(__le16 *)(DN_SK(newsk)->addr.sdn_add.a_addr) = cb->dst;
++	put_le16(cb->src, DN_SK(newsk)->peer.sdn_add.a_addr);
++	put_le16(cb->dst, DN_SK(newsk)->addr.sdn_add.a_addr);
+ 
+ 	menuver = *skb->data;
+ 	skb_pull(skb, 1);
 -- 
 1.5.5.1.570.g26b5e
 
