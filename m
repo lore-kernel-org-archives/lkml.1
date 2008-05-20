@@ -1,51 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763572AbYETNrs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757461AbYETNui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763572AbYETNrs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 09:47:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754472AbYETNrk
+	id S1757461AbYETNui (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 09:50:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbYETNu2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 09:47:40 -0400
-Received: from gw.goop.org ([64.81.55.164]:39570 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754159AbYETNrk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 09:47:40 -0400
-Message-ID: <4832D65C.2030108@goop.org>
-Date: Tue, 20 May 2008 14:47:08 +0100
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 20 May 2008 09:50:28 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:18933 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753716AbYETNu2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 09:50:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=dH+sfPmX6PFqonYDD8fHBb7uBd8ecNMEf5HqyoqlGnSR07sexe6CejUaICBtb2K2k9r9fkrRjIIU4ex2GeQQl8dkQledANU809rz6UWQdMnuK0OXfBGqZ6GKvvNMt+EcTHK4m2XilzNlICNtOyQmGxuABb4XnzLRlvujHpKfbI8=
+Message-ID: <7b9198260805200650g70ffbcd2p21e10a6b600cadd1@mail.gmail.com>
+Date: Tue, 20 May 2008 14:50:26 +0100
+From: "Tom Spink" <tspink@gmail.com>
+To: "Al Viro" <viro@zeniv.linux.org.uk>
+Subject: Re: [RFC PATCH] Introduce filesystem type tracking
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20080520134306.GA28946@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Theodore Tso <tytso@mit.edu>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       Keith Packard <keithp@keithp.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Eric Anholt <eric@anholt.net>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>, airlied@linux.ie,
-       "Barnes, Jesse" <jesse.barnes@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0 of 8] x86: use PTE_MASK consistently
-References: <patchbomb.1211268376@localhost> <Pine.LNX.4.64.0805201346120.24102@blonde.site>
-In-Reply-To: <Pine.LNX.4.64.0805201346120.24102@blonde.site>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1211196126-7442-1-git-send-email-tspink@gmail.com>
+	 <7b9198260805200606u6ebc2681o8af7a8eebc1cb96@mail.gmail.com>
+	 <20080520134306.GA28946@ZenIV.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> I'll leave it to you and Linus whether your way of defining PTE_MASK is
-> satisfactory as is, or needs to be improved to his way.  I've not tried
-> his suggestion of doing the _PAGE_BIT definitions: certainly it's
-> seemed odd to me that they were defined with L, but I've little
-> appetite to mess around with them now myself.
->   
+2008/5/20 Al Viro <viro@zeniv.linux.org.uk>:
+> On Tue, May 20, 2008 at 02:06:42PM +0100, Tom Spink wrote:
+> [snip]
+>
+>> I'm just adding people to CC here, but also I had a couple of thoughts
+>> after reviewing my own code.
+>>
+>> I see that do_kern_mount is encapsulated with the BKL, but would it be
+>> wise to introduce a lock (e.g. a mutex) now for reading and updating
+>> nr_mounts (and hence calling ->init), rather than wait for the BKL
+>> removal to come round here?
+>>
+>> Also, have I got all the cases where a filesystem is unmounted,
+>> because I now see umount_tree, and am wondering if decrementing the
+>> nr_mounts field should be done in here, in the loop of vfsmounts... or
+>> is it sufficient to leave it at the end of do_umount?
 
-Yes, well, that was me too, with the intention of making ~_PAGE_FOO 
-generate an appropriately sized mask.  I guess it would be better to use 
-pteval_t these days.
+Hi Al,
 
-    J
+> No, you have not and no, doing that anywhere near that layer is hopeless.
+>
+>        a) Instances of filesystem can easily outlive all vfsmounts,
+> let alone their attachment to namespaces.
+
+I see!  Whoops...
+
+>        b) What should happen if init is done in the middle of exit?
+
+Okay, I guess *some* sort of locking is in order. :)
+
+>        c) Why do we need to bother, anyway?
+
+Well, just for the reason I mentioned, I saw the posting about XFS
+starting threads (when compiled into the kernel), but there's no use
+of an XFS filesystem at all - there was a suggestion that something
+like this be tried, so I thought I'd give it a go.
+
+Thanks for replying!
+
+-- 
+Regards,
+Tom Spink
