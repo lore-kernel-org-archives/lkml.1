@@ -1,24 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763384AbYETJBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763289AbYETJD1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763384AbYETJBp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 05:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760317AbYETJBh
+	id S1763289AbYETJD1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 05:03:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757655AbYETJDT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 05:01:37 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59153 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757635AbYETJBg (ORCPT
+	Tue, 20 May 2008 05:03:19 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:58327 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757164AbYETJDS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 05:01:36 -0400
-Date: Tue, 20 May 2008 02:01:21 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [RFC: 2.6 patch] build kernel/profile.o only when requested
-Message-Id: <20080520020121.c443d562.akpm@linux-foundation.org>
-In-Reply-To: <20080519215306.GD17716@cs181133002.pp.htv.fi>
-References: <20080519215306.GD17716@cs181133002.pp.htv.fi>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Tue, 20 May 2008 05:03:18 -0400
+Date: Tue, 20 May 2008 18:08:41 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "menage@google.com" <menage@google.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>
+Subject: [RFC][PATCH 2/3] memcg:: seq_ops support for cgroup
+Message-Id: <20080520180841.f292beef.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080520180552.601da567.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080520180552.601da567.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -26,54 +33,113 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 May 2008 00:53:06 +0300 Adrian Bunk <bunk@kernel.org> wrote:
+Does anyone have a better idea ?
+==
+ 
+Currently, cgroup's seq_file interface just supports single_open.
+This patch allows arbitrary seq_ops if passed.
 
-> Build kernel/profile.o only if CONFIG_PROFILING is enabled.
-> 
-> This makes CONFIG_PROFILING=n kernels smaller.
-> 
-> As a bonus, some profile_tick() calls and one branch from schedule() are 
-> now eliminated with CONFIG_PROFILING=n (but I doubt these are
-> measurable effects).
-> 
-> This patch changes the effects of CONFIG_PROFILING=n, but I don't think 
-> having more than two choices would be the better choice.
-> 
-> This patch also adds the name of the first parameter to the prototypes 
-> of profile_{hits,tick}() since I anyway had to add them for the dummy 
-> functions.
-> 
+For example, "status per cpu, status per node" can be very big
+in general and they tend to use its own start/next/stop ops.
 
-Little nits:
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-> index 05c1cc7..4081fa3 100644
-> --- a/include/linux/profile.h
-> +++ b/include/linux/profile.h
-> @@ -8,8 +8,6 @@
->  
->  #include <asm/errno.h>
->  
-> -extern int prof_on __read_mostly;
-> -
->  #define CPU_PROFILING	1
->  #define SCHED_PROFILING	2
->  #define SLEEP_PROFILING	3
-> @@ -19,14 +17,29 @@ struct proc_dir_entry;
->  struct pt_regs;
->  struct notifier_block;
->  
-> +#if defined(CONFIG_PROFILING) && defined(CONFIG_PROC_FS)
-> +void create_prof_cpu_mask(struct proc_dir_entry *);
 
-This omits the argument's name, whereas elsewhere you have taken care
-to introduce the name where it was missing.
+---
+ include/linux/cgroup.h |    9 +++++++++
+ kernel/cgroup.c        |   32 +++++++++++++++++++++++++++++---
+ 2 files changed, 38 insertions(+), 3 deletions(-)
 
-> +#else
-> +#define create_prof_cpu_mask(x)			do { (void)(x); } while (0)
-
-I think this could be a static inline, which is neater.
-
-I wonder why create_prof_cpu_mask() is called only by s390.  I suppose
-I should I should get the historical-git tree onto this machine and
-find out.
+Index: mm-2.6.26-rc2-mm1/include/linux/cgroup.h
+===================================================================
+--- mm-2.6.26-rc2-mm1.orig/include/linux/cgroup.h
++++ mm-2.6.26-rc2-mm1/include/linux/cgroup.h
+@@ -232,6 +232,11 @@ struct cftype {
+ 	 */
+ 	int (*read_seq_string) (struct cgroup *cont, struct cftype *cft,
+ 			 struct seq_file *m);
++	/*
++	 * If this is not NULL, read ops will use this instead of
++	 * single_open(). Useful for showing very large data.
++	 */
++	struct seq_operations *seq_ops;
+ 
+ 	ssize_t (*write) (struct cgroup *cgrp, struct cftype *cft,
+ 			  struct file *file,
+@@ -285,6 +290,10 @@ int cgroup_path(const struct cgroup *cgr
+ 
+ int cgroup_task_count(const struct cgroup *cgrp);
+ 
++
++struct cgroup *cgroup_of_seqfile(struct seq_file *m);
++struct cftype *cftype_of_seqfile(struct seq_file *m);
++
+ /* Return true if the cgroup is a descendant of the current cgroup */
+ int cgroup_is_descendant(const struct cgroup *cgrp);
+ 
+Index: mm-2.6.26-rc2-mm1/kernel/cgroup.c
+===================================================================
+--- mm-2.6.26-rc2-mm1.orig/kernel/cgroup.c
++++ mm-2.6.26-rc2-mm1/kernel/cgroup.c
+@@ -1540,6 +1540,16 @@ struct cgroup_seqfile_state {
+ 	struct cgroup *cgroup;
+ };
+ 
++struct cgroup *cgroup_of_seqfile(struct seq_file *m)
++{
++	return ((struct cgroup_seqfile_state *)m->private)->cgroup;
++}
++
++struct cftype *cftype_of_seqfile(struct seq_file *m)
++{
++	return  ((struct cgroup_seqfile_state *)m->private)->cft;
++}
++
+ static int cgroup_map_add(struct cgroup_map_cb *cb, const char *key, u64 value)
+ {
+ 	struct seq_file *sf = cb->state;
+@@ -1563,8 +1573,14 @@ static int cgroup_seqfile_show(struct se
+ static int cgroup_seqfile_release(struct inode *inode, struct file *file)
+ {
+ 	struct seq_file *seq = file->private_data;
++	struct cgroup_seqfile_state *state = seq->private;
++	struct cftype *cft = state->cft;
++
+ 	kfree(seq->private);
+-	return single_release(inode, file);
++	if (!cft->seq_ops)
++		return single_release(inode, file);
++	else
++		return seq_release(inode, file);
+ }
+ 
+ static struct file_operations cgroup_seqfile_operations = {
+@@ -1585,7 +1601,7 @@ static int cgroup_file_open(struct inode
+ 	cft = __d_cft(file->f_dentry);
+ 	if (!cft)
+ 		return -ENODEV;
+-	if (cft->read_map || cft->read_seq_string) {
++	if (cft->read_map || cft->read_seq_string || cft->seq_ops) {
+ 		struct cgroup_seqfile_state *state =
+ 			kzalloc(sizeof(*state), GFP_USER);
+ 		if (!state)
+@@ -1593,7 +1609,17 @@ static int cgroup_file_open(struct inode
+ 		state->cft = cft;
+ 		state->cgroup = __d_cgrp(file->f_dentry->d_parent);
+ 		file->f_op = &cgroup_seqfile_operations;
+-		err = single_open(file, cgroup_seqfile_show, state);
++
++		if (!cft->seq_ops)
++			err = single_open(file, cgroup_seqfile_show, state);
++		else {
++			err = seq_open(file, cft->seq_ops);
++			if (!err) {
++				struct seq_file *sf;
++				sf = ((struct seq_file *)file->private_data);
++				sf->private = state;
++			}
++		}
+ 		if (err < 0)
+ 			kfree(state);
+ 	} else if (cft->open)
 
