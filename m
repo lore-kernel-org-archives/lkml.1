@@ -1,67 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760918AbYETHGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760533AbYETHK4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760918AbYETHGu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 03:06:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755853AbYETHGn
+	id S1760533AbYETHK4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 03:10:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756799AbYETHKs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 03:06:43 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:23275
+	Tue, 20 May 2008 03:10:48 -0400
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:23697
 	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754737AbYETHGm (ORCPT
+	with ESMTP id S1756633AbYETHKr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 03:06:42 -0400
-Message-ID: <48327880.70104@qumranet.com>
-Date: Tue, 20 May 2008 10:06:40 +0300
+	Tue, 20 May 2008 03:10:47 -0400
 From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@osdl.org>,
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@osdl.org>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Make LIST_POISON less deadly
-References: <1211125094-32167-1-git-send-email-avi@qumranet.com> <20080519130151.GE13546@elte.hu> <4831845F.6030904@qumranet.com> <20080519190438.GB24599@uranus.ravnborg.org>
-In-Reply-To: <20080519190438.GB24599@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: [PATCH] Make LIST_POISON less deadly (v2)
+Date: Tue, 20 May 2008 10:10:46 +0300
+Message-Id: <1211267446-32456-1-git-send-email-avi@qumranet.com>
+X-Mailer: git-send-email 1.5.5.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
->> Any idea how to override a value in Kconfig?  We can do it for bool 
->> values but not strings.
->>
->> e.g.
->>
->> lib/Kconfig:
->>  config ILLEGAL_POINTER_VALUE
->>      hex
->>      default 0
->>
->> arch/x86/Kconfig:
->>  config X86
->>    select ILLEGAL_POINTER_VALUE=0x80000000000000000000000000 if X86_64
->>
->> ?
->>
->> I could do it with a boolean signifying existence and a hex for the 
->> value, but I'd rather not.
->>     
->
-> Sorry - no help here. I have not tried to work that much with int in
-> Kconfig.
->
->   
+The list macros use LIST_POISON1 and LIST_POISON2 as undereferencable
+pointers in order to trap erronous use of freed list_heads.  Unfortunately
+userspace can arrange for those pointers to actually be dereferencable,
+potentially turning an oops to an expolit.
 
-I found some workaround (define the variable only on archs that want it, 
-use #ifdef to check).
+To avoid this allow architectures (currently x86_64 only) to override
+the default values for these pointers with truly-undereferncable values.
+This is easy on x86_64 as the virtual address space is smaller than
+the range spanned by pointer values.
 
-> That said I really think stuff like this belongs in a header file.
-> I do not agree to hide this as part of the configuration.
->   
+Signed-off-by: Avi Kivity <avi@qumranet.com>
+---
 
-While I agree with you, I defer to Ingo on this.
+Changes since v1:
+- add CONFIG_ILLEGAL_POINTER_VALUE instead of new header <asm/poison.h>
 
+ arch/x86/Kconfig       |    5 +++++
+ include/linux/poison.h |   10 ++++++++--
+ 2 files changed, 13 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index fe361ae..54d4e36 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -1021,6 +1021,11 @@ config ARCH_MEMORY_PROBE
+ 	def_bool X86_64
+ 	depends on MEMORY_HOTPLUG
+ 
++config ILLEGAL_POINTER_VALUE
++       hex
++       default 0 if X86_32
++       default 0x8888888800000000 if X86_64
++
+ source "mm/Kconfig"
+ 
+ config HIGHPTE
+diff --git a/include/linux/poison.h b/include/linux/poison.h
+index 9f31683..0d105a5 100644
+--- a/include/linux/poison.h
++++ b/include/linux/poison.h
+@@ -1,14 +1,20 @@
+ #ifndef _LINUX_POISON_H
+ #define _LINUX_POISON_H
+ 
++#ifdef CONFIG_ILLEGAL_POINTER_VALUE
++#define POISON_POINTER_DELTA CONFIG_ILLEGAL_POINTER_VALUE
++#else
++#define POISON_POINTER_DELTA 0L
++#endif
++
+ /********** include/linux/list.h **********/
+ /*
+  * These are non-NULL pointers that will result in page faults
+  * under normal circumstances, used to verify that nobody uses
+  * non-initialized list entries.
+  */
+-#define LIST_POISON1  ((void *) 0x00100100)
+-#define LIST_POISON2  ((void *) 0x00200200)
++#define LIST_POISON1  ((void *) 0x00100100 + POISON_POINTER_DELTA)
++#define LIST_POISON2  ((void *) 0x00200200 + POISON_POINTER_DELTA)
+ 
+ /********** include/linux/timer.h **********/
+ /*
 -- 
-error compiling committee.c: too many arguments to function
+1.5.5.1
 
