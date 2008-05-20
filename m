@@ -1,70 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758156AbYETI0k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762568AbYETI1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758156AbYETI0k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 04:26:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753386AbYETI0T
+	id S1762568AbYETI1d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 04:27:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758525AbYETI1T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 04:26:19 -0400
-Received: from xi.wantstofly.org ([83.160.184.112]:50961 "EHLO
-	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759539AbYETIZb (ORCPT
+	Tue, 20 May 2008 04:27:19 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52661 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753386AbYETI1Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 04:25:31 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
-	d=wantstofly.org;
-	h=date:from:to:cc:subject:message-id:mime-version:content-type:
-	content-disposition:content-transfer-encoding:in-reply-to:user-
-	agent;
-	b=vjTZgj2bQhzSRZhC+AZU1Z8yrdTJskUgm5jqyoyBgJFu1J0CDqZV9JnmF1fpk
-	KjG3tKkHisOd9V+hMF2CQEpsw==
-Date: Tue, 20 May 2008 10:25:21 +0200
-From: Lennert Buytenhek <buytenh@wantstofly.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       akpm@linux-foundation.org, nico@cam.org
-Subject: Re: [Bug #10713] ehci splatter in 2.6.26-rc2
-Message-ID: <20080520082521.GA19889@xi.wantstofly.org>
-References: <oKKSi1w1qaF.A.mEG.JrBMIB@albercik> <20080519231126.GA15099@xi.wantstofly.org> <20080520001824.GA15878@xi.wantstofly.org> <200805192313.11600.david-b@pacbell.net>
+	Tue, 20 May 2008 04:27:16 -0400
+Date: Tue, 20 May 2008 01:26:58 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, wim@iguana.be,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 18/57] iTCO: unlocked_ioctl, coding style and cleanup
+Message-Id: <20080520012658.274b0c1e.akpm@linux-foundation.org>
+In-Reply-To: <20080519130625.31722.68489.stgit@core>
+References: <20080519124659.31722.51847.stgit@core>
+	<20080519130625.31722.68489.stgit@core>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200805192313.11600.david-b@pacbell.net>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 19, 2008 at 11:13:11PM -0700, David Brownell wrote:
+On Mon, 19 May 2008 14:06:25 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-> > A bisect turns up this:
-> > 
-> >         7329e211b987a493cbcfca0e98c60eb108ab42df is first bad commit
-> >         commit 7329e211b987a493cbcfca0e98c60eb108ab42df
-> >         Author: Alan Stern <stern@rowland.harvard.edu>
-> >         Date:   Thu Apr 3 18:02:56 2008 -0400
-> > 
-> >             USB: root hubs don't lie about their number of TTs
-> >             
-> >             Currently EHCI root hubs enumerate with a bDeviceProtocol code
-> >             indicating that they possess a Transaction Translator.  However the
-> >             vast majority of controllers do not...
-> > 
-> > And indeed, reverting this commit from 2.6.26-rc3 makes my system
-> > stop oopsing when I plug in the USB-PS/2 adapter (a low speed device),
-> > and makes it work again as it did in 2.6.25.
-> > 
-> > Any other info I can provide or tests I can run?
-> 
-> I'm guessing that this has a version of the ARC/TDI/whoever-now-owns-it
-> IP, on a PCI bus?  But without the integrated TT option?
-> 
-> If this is on a PCI bus, then try removing the ehci-pci.c line added
-> by that patch, see if that helps.
+>  drivers/watchdog/iTCO_vendor.h         |   15 ++
+>  drivers/watchdog/iTCO_vendor_support.c |   53 +++---
+>  drivers/watchdog/iTCO_wdt.c            |  294 ++++++++++++++++----------------
 
-No, this is not on a PCI bus -- this is the on-chip EHCI controller
-of the Marvell Orion ARM SoC (ehci-orion.c.)
+This runs afoul of git-watchdog and/or itco_wdt-ich9do-support.patch
 
-I have honestly no idea whether the IP is in-house or third-party.
+Hunk #1 succeeded at 66 (offset 1 line).
+Hunk #3 FAILED at 139.
+Hunk #4 FAILED at 158.
+Hunk #5 FAILED at 201.
+Hunk #6 FAILED at 222.
+Hunk #7 FAILED at 246.
+Hunk #8 succeeded at 374 (offset 12 lines).
+Hunk #9 FAILED at 429.
+Hunk #10 FAILED at 458.
+Hunk #11 FAILED at 472.
+Hunk #12 FAILED at 480.
+Hunk #13 FAILED at 489.
+Hunk #14 FAILED at 518.
+Hunk #15 FAILED at 534.
+Hunk #16 FAILED at 588.
+Hunk #17 succeeded at 454 (offset -140 lines).
+Hunk #18 FAILED at 475.
+Hunk #19 succeeded at 669 (offset 27 lines).
+Hunk #20 succeeded at 512 (offset -140 lines).
+Hunk #21 FAILED at 534.
+Hunk #22 succeeded at 814 (offset 29 lines).
+15 out of 22 hunks FAILED -- saving rejects to file drivers/watchdog/iTCO_wdt.c.rej
+
+so I ducked this one.
+
+booke-watchdog-clean-up-and-unlocked_ioctl gets 8-out-of-ten against
+watchdog-fix-booke_wdtc-on-mpc85xx-smp-system.patch so I ducked that one too.
+
+w83697hf_wdt-cleanup-coding-style-and-switch-to-unlocked_ioctl gets
+4-of-17 against git-watchdog - also ducked.
+
+
+The rest applied, although about half of them needed fixes because
+Rusty has been running around fiddling with other peoples stuff
+renaming down_trylock to down_nowait all over the tree.
+
+This means that the watchdog patches now have a Rusty dependency so I
+NEED TO KNOW if those patches aren't for 2.6.27 or if they get nacked
+or something.
+
+It also means that the patches which I queued cannot go into Wim's tree
+as-is.  If Wim queues the originals then it means that Stephen and/or
+myself get to fix all the rejects again, and there'll be a
+decent-sized smashup during the merge window.  There are lessons
+here...
+
+And if Wim decides to merge these patches prior to merging
+
+itco_wdt-ich9do-support.patch
+watchdog-fix-booke_wdtc-on-mpc85xx-smp-system.patch
+
+then those two patches will get wrecked.
