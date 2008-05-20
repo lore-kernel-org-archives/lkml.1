@@ -1,82 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932516AbYETPYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934255AbYETPZB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932516AbYETPYm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 11:24:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933182AbYETPW0
+	id S934255AbYETPZB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 11:25:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934067AbYETPYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 11:22:26 -0400
-Received: from odyssey.analogic.com ([204.178.40.5]:1443 "EHLO
-	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933038AbYETPWX convert rfc822-to-8bit (ORCPT
+	Tue, 20 May 2008 11:24:11 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:38139 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934059AbYETPYJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 11:22:23 -0400
+	Tue, 20 May 2008 11:24:09 -0400
+Date: Tue, 20 May 2008 16:23:10 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Theodore Tso <tytso@mit.edu>, Chris Mason <chris.mason@oracle.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH, RFC] ext4: Fix use of write barrier in commit logic
+Message-ID: <20080520152310.GG16676@shareable.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Chris Mason <chris.mason@oracle.com>,
+	Andi Kleen <andi@firstfloor.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <482DDA56.6000301@redhat.com> <20080516130545.845a3be9.akpm@linux-foundation.org> <87ej7zcrqv.fsf@basil.nowhere.org> <200805190926.41970.chris.mason@oracle.com> <20080519144654.GC15035@mit.edu> <20080520025112.GN15035@mit.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 20 May 2008 15:22:20.0756 (UTC) FILETIME=[4BF4F940:01C8BA8D]
-Content-class: urn:content-classes:message
-Subject: Re: UML fails to locate address space
-Date: Tue, 20 May 2008 11:22:08 -0400
-Message-ID: <Pine.LNX.4.61.0805201117540.12360@chaos.analogic.com>
-In-Reply-To: <20080520135238.GB6990@c2.user-mode-linux.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: UML fails to locate address space
-thread-index: Aci6jUwRuglfMfRYRBKya6QM4qvNjw==
-References: <7b9198260805200408k1d6b70a8xc7e4c24106e5020f@mail.gmail.com> <20080520135238.GB6990@c2.user-mode-linux.org>
-From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-To: "Jeff Dike" <jdike@addtoit.com>
-Cc: "Tom Spink" <tspink@gmail.com>, "LKML" <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-X-TM-AS-Product-Ver: SMEX-8.0.0.1259-5.500.1026-15922.000
-X-TM-AS-Result: No--17.884400-8.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080520025112.GN15035@mit.edu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Theodore Tso wrote:
+> As I mentioned earlier, adding blkdev_issue_flush() to ext[34]/fsync.c
+> is I believe not necessary.  We should be doing the right thing in the
+> commit.c file.  In the future, if we want some extra bonus points, in
+> the case where writes have taken place to the inode, but no metadata
+> operations have taken place (the common case when a database is
+> writing to a pre-existing tablespace), it would be nice if fsync()
+> could notice this case, force out the datablocks the old-fashioned way
+> without forcing an journal commit, and then calling
+> blkdev_issue_flush().  That should give us some nice performance wins
+> for database workloads; unfortunately it probably won't do us any good
+> on mailserver workloads.
 
-On Tue, 20 May 2008, Jeff Dike wrote:
+Last time I looked, the database write + fsync case did not result in
+a journal commit in some cases, and therefore no blkdev_issue_flush().
+The problem was one of correctness.  Has this been fixed?
 
-> On Tue, May 20, 2008 at 12:08:24PM +0100, Tom Spink wrote:
->> I've just recently pulled the latest GIT and compiled UML, however,
->> when I run it a message appears saying "Locating the top of the
->> address space... Address 0x0 no good?" and the program exits.
->
-> Can you strace it and send me the output?
->
->> After some digging, it appears that page_ok is returning false when
->> checking 'bottom', in os_get_task_size
->> (arch/um/os-Linux/sys-i386/task_size.c:96).  After running through
->> GDB, it seems that in line 31 of that file is where the segfault
->> occurs:
->>
->> n = *address;
->>
->> i.e. when trying to read from the address space (at address zero).
->
-> The segfaults are on purpose - it will trap SIGSEGV and longjmp out of
-> the handler and mark the affected address as not-usable.
->
->    	       	  Jeff
+A database had no way to issue a hard disk barrier in these cases
+without doing weird stuff like forcing metadata changes prior to fsync
+(e.g. toggling permissions bits), which causes an intolerable two disk
+seeks per fsync.  That is _way_ expensive.
 
-Does this mean that I cannot mmap() address zero in the kernel
-anymore? I should be able (in the kernel) read anything, and
-then mmap() it to something usable in user-space. If address
-zero is now artifically trapped there are problems being created
-for no good reason at all.
+There is also no way in ext3 to _just_ fdatasync() (no metadata even
+if it has changed), with disk barrier/flush.
 
+Imho a good place to call blkdev_issue_flush() is in the VFS, after
+it's written all the data blocks, unless the filesystem has a better
+override.  That would work with most filesystems automatically.
+Request queue optimisations may trivially remove redundant flushes.
 
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.22.1 on an i686 machine (5588.29 BogoMips).
-My book : http://www.AbominableFirebug.com/
-_
-
-
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
-
-Thank you.
+-- Jamie
