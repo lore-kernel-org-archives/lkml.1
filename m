@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932592AbYETOoD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932902AbYETOpu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932592AbYETOoD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 10:44:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763519AbYETOnu
+	id S932902AbYETOpu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 10:45:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756666AbYETOpm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 10:43:50 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:45267 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760722AbYETOnt (ORCPT
+	Tue, 20 May 2008 10:45:42 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:39179 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755559AbYETOpl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 10:43:49 -0400
-Date: Tue, 20 May 2008 15:42:34 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Ric Wheeler <ricwheeler@gmail.com>
-Cc: Theodore Tso <tytso@mit.edu>, Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
-Message-ID: <20080520144233.GA16676@shareable.org>
-Mail-Followup-To: Ric Wheeler <ricwheeler@gmail.com>,
-	Theodore Tso <tytso@mit.edu>, Chris Mason <chris.mason@oracle.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-References: <482DDA56.6000301@redhat.com> <20080517002030.GA7374@mit.edu> <20080516173552.e88183d9.akpm@linux-foundation.org> <200805172048.34455.chris.mason@oracle.com> <20080518013641.GH16496@mit.edu> <4830420D.4080608@gmail.com>
+	Tue, 20 May 2008 10:45:41 -0400
+Message-ID: <4832E423.5040708@bull.net>
+Date: Tue, 20 May 2008 16:45:55 +0200
+From: Nadia Derbey <Nadia.Derbey@bull.net>
+Organization: BULL/DT/OSwR&D/Linux
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4830420D.4080608@gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Michael Kerrisk <mtk.manpages@googlemail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mm@vger.kernel.org
+Subject: Re: [PATCH 1/8] Scaling msgmni to the amount of lowmem
+References: <cfd18e0f0805200728j1f38d90s1f6355b71e2d76@mail.gmail.com>
+In-Reply-To: <cfd18e0f0805200728j1f38d90s1f6355b71e2d76@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ric Wheeler wrote:
-> I will have to figure out to get this kind of test going without all
-> of my big EMC toys ;-)
+Michael Kerrisk wrote:
+> Hello Nadia,
+> 
+> Regarding your:
+> 
+> [PATCH 1/8] Scaling msgmni to the amount of lowmem
+> http://article.gmane.org/gmane.linux.kernel/637849/
+> which I see has made its way in 2.6.26-rc
+> 
+> Your patch has the following change:
+> 
+> -#define MSGPOOL (MSGMNI*MSGMNB/1024)  /* size in kilobytes of message pool */
+> +#define MSGPOOL (MSGMNI * MSGMNB) /* size in bytes of message pool */
+> 
+> Since this constitutes a kernel-userland interface change, so please
+> do CC me, so that I can change the man pages if needed.
 
-Fwiw, you can test correctness by running a nested VM-in-VM guest
-which simulates disk write cache and flush operations (which flush to
-the host kernel).  I believe recent QEMU/KVM has this as an option.
-Data written by the innermost guest will reside in the middle kernel's
-write cache.
+Oops, sorry for not doing it: I misunderstood the "unused"
 
-Disk cache flush commands from the innermost kernel will cause the
-middle kernel to write dirty sectors to the outer kernel.  Killing the
-outermost host process is roughly equivalent to pulling the plug on a
-real machine, but faster and without hurting real hardware.
+> 
+> The man page (http://www.kernel.org/doc/man-pages/online/pages/man2/msgctl.2.html)
+> does indeed say that msgpool is "unused".  But that meant "unused by
+> the kernel" (sorry -- I probably should have worded that text better).
+>  And, as you spotted, the page also wrongly said the value is in
+> bytes.
+> 
+> However, making this change affects the ABI.  A userspace application
+> that was previously using msgctl(IPC_INFO) to retrieve the msgpool
+> field will be affected by the factor-of-1024 change.  I strongly
+> suspect that there no such applications, or certainly none that care
+> (since this value is unused by the kernel).  But was there a reason
+> for making this change, aside from the fact that the code and the man
+> page didn't agree?
+> 
 
-This might not tell you much about performance, but you should be able
-to run a lot of repeatable filesystem barrier tests this way.
+No, that was the only reason.
+Should I repost a patch to set it back as it used to be?
 
--- Jamie
+Regards
+Nadia
