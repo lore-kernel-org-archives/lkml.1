@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761825AbYETQrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764271AbYETQsh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761825AbYETQrU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 12:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756152AbYETQrB
+	id S1764271AbYETQsh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 12:48:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756609AbYETQs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 12:47:01 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:43169 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754583AbYETQrA (ORCPT
+	Tue, 20 May 2008 12:48:29 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:55068 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756152AbYETQs2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 12:47:00 -0400
-Date: Tue, 20 May 2008 18:47:58 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Avi Kivity <avi@qumranet.com>
-Cc: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Make LIST_POISON less deadly
-Message-ID: <20080520164758.GA8531@elf.ucw.cz>
-References: <1211125094-32167-1-git-send-email-avi@qumranet.com>
+	Tue, 20 May 2008 12:48:28 -0400
+Date: Tue, 20 May 2008 12:48:27 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Lennert Buytenhek <buytenh@wantstofly.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, David Brownell <david-b@pacbell.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       <akpm@linux-foundation.org>, <nico@cam.org>
+Subject: Re: [PATCH] Re: [Bug #10713] ehci splatter in 2.6.26-rc2
+In-Reply-To: <20080520105054.GA23368@xi.wantstofly.org>
+Message-ID: <Pine.LNX.4.44L0.0805201247180.2114-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1211125094-32167-1-git-send-email-avi@qumranet.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2008-05-18 18:38:14, Avi Kivity wrote:
-> The list macros use LIST_POISON1 and LIST_POISON2 as undereferencable
-> pointers in order to trap erronous use of freed list_heads.  Unfortunately
-> userspace can arrange for those pointers to actually be dereferencable,
-> potentially turning an oops to an expolit.
+On Tue, 20 May 2008, Lennert Buytenhek wrote:
+
+> This patch appears to fix it:
 > 
-> To avoid this allow architectures (currently x86_64 only) to override
-> the default values for these pointers with truly-undereferncable values.
-> This is easy on x86_64 as the virtual address space is smaller than
-> the range spanned by pointer values.
+> 
+> The Orion EHCI root hub does have a built-in Transaction Translator.
+> 
+> Signed-off-by: Lennert Buytenhek <buytenh@marvell.com>
+> 
+> Index: linux-2.6.26-rc3/drivers/usb/host/ehci-orion.c
+> ===================================================================
+> --- linux-2.6.26-rc3.orig/drivers/usb/host/ehci-orion.c
+> +++ linux-2.6.26-rc3/drivers/usb/host/ehci-orion.c
+> @@ -115,6 +115,8 @@ static int ehci_orion_setup(struct usb_h
+>  	if (retval)
+>  		return retval;
+>  
+> +	hcd->has_tt = 1;
+> +
+>  	ehci_reset(ehci);
+>  	ehci_port_power(ehci, 0);
 
-"Security hole unless arch maintainer does _foo_" sounds
-scary. Especially when i386 is hard to fix...
+A similar change is needed in other bus-glue files.  I have put 
+together a patch to take care of them all; it will be posted later 
+today.
 
-(And very nice catch, btw).
-								Pavel
+Alan Stern
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
