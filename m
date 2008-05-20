@@ -1,168 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932282AbYETKXf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764875AbYETKYF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932282AbYETKXf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 06:23:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758122AbYETKX0
+	id S1764875AbYETKYF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 06:24:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758122AbYETKXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 06:23:26 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42301 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753550AbYETKXZ (ORCPT
+	Tue, 20 May 2008 06:23:52 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:3141 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760795AbYETKXv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 06:23:25 -0400
-Date: Tue, 20 May 2008 03:22:48 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.26-rc2-mm1: possible circular locking dependency detected
-Message-Id: <20080520032248.a4374951.akpm@linux-foundation.org>
-In-Reply-To: <200805201201.34688.m.kozlowski@tuxland.pl>
-References: <20080514010129.4f672378.akpm@linux-foundation.org>
-	<200805201201.34688.m.kozlowski@tuxland.pl>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 20 May 2008 06:23:51 -0400
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andy Whitcroft <apw@shadowen.org>, Mel Gorman <mel@csn.ul.ie>,
+       Christoph Lameter <clameter@sgi.com>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] zonelists: handle a node zonelist with no applicable entries
+Date: Tue, 20 May 2008 11:23:49 +0100
+Message-Id: <1211279029.0@pinky>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 May 2008 12:01:34 +0200 Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
 
-> Hello,
-> 
-> 	This lockdep warning is seen when I remove pcmcia wifi card
-> from the slot. Doesn't happen every time. It's x86_32.
-> 
-> =======================================================
-> [ INFO: possible circular locking dependency detected ]
-> 2.6.26-rc2-mm1 #2
-> -------------------------------------------------------
-> pccardd/1037 is trying to acquire lock:
->  (rtnl_mutex){--..}, at: [<c02870f1>] rtnl_lock+0x14/0x16
-> 
-> but task is already holding lock:
->  (&socket->skt_mutex){--..}, at: [<c02608ba>] pccardd+0x161/0x28c
-> 
-> which lock already depends on the new lock.
-> 
-> 
-> the existing dependency chain (in reverse order) is:
+When booting 2.6.26-rc3 on a multi-node x86_32 numa system we are seeing
+panics when trying node local allocations:
 
-OK, three locks are involved here.
+ BUG: unable to handle kernel NULL pointer dereference at 0000034c
+ IP: [<c1042507>] get_page_from_freelist+0x4a/0x18e
+ *pdpt = 00000000013a7001 *pde = 0000000000000000
+ Oops: 0000 [#1] SMP
+ Modules linked in:
 
-> -> #2 (&socket->skt_mutex){--..}:
->        [<c013fff0>] __lock_acquire+0xf3b/0x103b
->        [<c0140169>] lock_acquire+0x79/0x92
->        [<c02cfcd5>] mutex_lock_nested+0x90/0x290
->        [<c02600a6>] pccard_register_pcmcia+0x22/0x78
->        [<ded5af02>] pcmcia_bus_add_socket+0x9f/0xe0 [pcmcia]
->        [<c0251c02>] class_interface_register+0x83/0xb2
->        [<ded6003a>] 0xded6003a
->        [<c0146115>] sys_init_module+0x11e/0x18e4
->        [<c0103001>] sysenter_past_esp+0x6a/0xa5
->        [<ffffffff>] 0xffffffff
+ Pid: 0, comm: swapper Not tainted (2.6.26-rc3-00003-g5abc28d #82)
+ EIP: 0060:[<c1042507>] EFLAGS: 00010282 CPU: 0
+ EIP is at get_page_from_freelist+0x4a/0x18e
+ EAX: c1371ed8 EBX: 00000000 ECX: 00000000 EDX: 00000000
+ ESI: f7801180 EDI: 00000000 EBP: 00000000 ESP: c1371ec0
+  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+ Process swapper (pid: 0, ti=c1370000 task=c12f5b40 task.ti=c1370000)
+ Stack: 00000000 00000000 00000000 00000000 000612d0 000412d0 00000000 000412d0
+        f7801180 f7c0101c f7c01018 c10426e4 f7c01018 00000001 00000044 00000000
+        00000001 c12f5b40 00000001 00000010 00000000 000412d0 00000286 000412d0
+ Call Trace:
+  [<c10426e4>] __alloc_pages_internal+0x99/0x378
+  [<c10429ca>] __alloc_pages+0x7/0x9
+  [<c105e0e8>] kmem_getpages+0x66/0xef
+  [<c105ec55>] cache_grow+0x8f/0x123
+  [<c105f117>] ____cache_alloc_node+0xb9/0xe4
+  [<c105f427>] kmem_cache_alloc_node+0x92/0xd2
+  [<c122118c>] setup_cpu_cache+0xaf/0x177
+  [<c105e6ca>] kmem_cache_create+0x2c8/0x353
+  [<c13853af>] kmem_cache_init+0x1ce/0x3ad
+  [<c13755c5>] start_kernel+0x178/0x1ee
 
-	cls->mutex
-	  socket->skt_mutex
+This occurs when we are scanning the zonelists looking for a ZONE_NORMAL
+page.  In this system there is only ZONE_DMA and ZONE_NORMAL memory on
+node 0, all other nodes are mapped above 4GB physical.  Here is a dump
+of the zonelists from this system:
 
-> -> #1 (&cls->mutex){--..}:
->        [<c013fff0>] __lock_acquire+0xf3b/0x103b
->        [<c0140169>] lock_acquire+0x79/0x92
->        [<c02cfcd5>] mutex_lock_nested+0x90/0x290
->        [<c024f4a0>] device_add+0x42f/0x557
->        [<c02895a1>] netdev_register_kobject+0x76/0x7b
->        [<c027e3f6>] register_netdevice+0x22e/0x39a
->        [<c027e599>] register_netdev+0x37/0x44
->        [<c03ce7fb>] loopback_net_init+0x38/0x7d
->        [<c027bb59>] register_pernet_operations+0x18/0x1a
->        [<c027bbd3>] register_pernet_device+0x24/0x51
->        [<c03ce7c1>] loopback_init+0x12/0x14
->        [<c03b9721>] kernel_init+0x80/0x227
->        [<c0103c13>] kernel_thread_helper+0x7/0x10
->        [<ffffffff>] 0xffffffff
+    zonelists pgdat=c1400000
+     0: c14006c0:2 f7c006c0:2 f7e006c0:2 c1400360:1 c1400000:0
+     1: c14006c0:2 c1400360:1 c1400000:0
+    zonelists pgdat=f7c00000
+     0: f7c006c0:2 f7e006c0:2 c14006c0:2 c1400360:1 c1400000:0
+     1: f7c006c0:2
+    zonelists pgdat=f7e00000
+     0: f7e006c0:2 c14006c0:2 f7c006c0:2 c1400360:1 c1400000:0
+     1: f7e006c0:2
 
-	rtnl_lock
-	  cls->mutex
+When performing a node local allocation we call get_page_from_freelist()
+looking for a page.  It in turn calls first_zones_zonelist() which returns
+a preferred_zone.  Where there are no applicable zones this will be NULL.
+However we use this unconditionally, leading to this panic.
 
-> -> #0 (rtnl_mutex){--..}:
->        [<c013fb8e>] __lock_acquire+0xad9/0x103b
->        [<c0140169>] lock_acquire+0x79/0x92
->        [<c02cfcd5>] mutex_lock_nested+0x90/0x290
->        [<c02870f1>] rtnl_lock+0x14/0x16
->        [<c027e04d>] unregister_netdev+0x10/0x1f
->        [<ded9d11f>] orinoco_cs_detach+0x20/0x32 [orinoco_cs]
->        [<ded5775a>] pcmcia_device_remove+0x3c/0xcf [pcmcia]
->        [<c0250efe>] __device_release_driver+0x5e/0x84
->        [<c0250fe2>] device_release_driver+0x20/0x2b
->        [<c0250434>] bus_remove_device+0x73/0x8b
->        [<c024ef95>] device_del+0xdb/0x14b
->        [<c024f015>] device_unregister+0x10/0x1a
->        [<ded5768e>] pcmcia_card_remove+0x76/0x8c [pcmcia]
->        [<ded5825d>] ds_event+0x59/0x9e [pcmcia]
->        [<c025ffa6>] send_event+0x7c/0xa8
->        [<c02601da>] socket_remove_drivers+0x17/0x19
->        [<c02601ef>] socket_shutdown+0x13/0xcc
->        [<c02602d3>] socket_remove+0x2b/0x31
->        [<c026098f>] pccardd+0x236/0x28c
->        [<c01318bb>] kthread+0x3b/0x5d
->        [<c0103c13>] kernel_thread_helper+0x7/0x10
->        [<ffffffff>] 0xffffffff
+Where there are no applicable zones there is no possibility of a successful
+allocation, so simply fail the allocation.
 
-	cls->mutex
-	  rtnl_lock
-
-> other info that might help us debug this:
-> 
-> 1 lock held by pccardd/1037:
->  #0:  (&socket->skt_mutex){--..}, at: [<c02608ba>] pccardd+0x161/0x28c
-> 
-> stack backtrace:
-> Pid: 1037, comm: pccardd Not tainted 2.6.26-rc2-mm1 #2
->  [<c013d8d6>] print_circular_bug_tail+0x68/0x71
->  [<c013cfd5>] ? print_circular_bug_entry+0x43/0x4b
->  [<c013fb8e>] __lock_acquire+0xad9/0x103b
->  [<c013f42f>] ? __lock_acquire+0x37a/0x103b
->  [<c013f42f>] ? __lock_acquire+0x37a/0x103b
->  [<c0108587>] ? native_sched_clock+0x66/0xaf
->  [<c0140169>] lock_acquire+0x79/0x92
->  [<c02870f1>] ? rtnl_lock+0x14/0x16
->  [<c02cfcd5>] mutex_lock_nested+0x90/0x290
->  [<c02870f1>] ? rtnl_lock+0x14/0x16
->  [<c02870f1>] ? rtnl_lock+0x14/0x16
->  [<c02870f1>] rtnl_lock+0x14/0x16
->  [<c027e04d>] unregister_netdev+0x10/0x1f
->  [<ded9d11f>] orinoco_cs_detach+0x20/0x32 [orinoco_cs]
->  [<ded5775a>] pcmcia_device_remove+0x3c/0xcf [pcmcia]
->  [<c0250efe>] __device_release_driver+0x5e/0x84
->  [<c0250fe2>] device_release_driver+0x20/0x2b
->  [<c0250434>] bus_remove_device+0x73/0x8b
->  [<c024ef95>] device_del+0xdb/0x14b
->  [<c024f015>] device_unregister+0x10/0x1a
->  [<ded5768e>] pcmcia_card_remove+0x76/0x8c [pcmcia]
->  [<ded5825d>] ds_event+0x59/0x9e [pcmcia]
->  [<c02601da>] ? socket_remove_drivers+0x17/0x19
->  [<c025ffa6>] send_event+0x7c/0xa8
->  [<c02601da>] socket_remove_drivers+0x17/0x19
->  [<c02601ef>] socket_shutdown+0x13/0xcc
->  [<c0120d15>] ? printk+0x20/0x22
->  [<c02602d3>] socket_remove+0x2b/0x31
->  [<c026098f>] pccardd+0x236/0x28c
->  [<c02cf0e8>] ? schedule+0x2c4/0x46f
->  [<c011b3eb>] ? sub_preempt_count+0x76/0xbd
->  [<c011b15f>] ? default_wake_function+0x0/0x12
->  [<c0260759>] ? pccardd+0x0/0x28c
->  [<c01318bb>] kthread+0x3b/0x5d
->  [<c0131880>] ? kthread+0x0/0x5d
->  [<c0103c13>] kernel_thread_helper+0x7/0x10
-
-This bug has always been there, and is now exposed by the conversion
-of cls->mutex from a semaphore to a mutex.  Because lockdep doesn't
-check semaphores.
-
-I don't know how to get this fixed, sorry.  I'll just push
-struct-class-sem-to-mutex-converting.patch at Greg until it sticks,
-then it will go into mainline, then we'll get a shower of bug reports,
-including this one, then someone someday will do soemthing about it.
-
-Fun.
+Signed-off-by: Andy Whitcroft <apw@shadowen.org>
+Acked-by: Mel Gorman <mel@csn.ul.ie>
+---
+ mm/page_alloc.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 6383557..30484bb 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1396,6 +1396,9 @@ get_page_from_freelist(gfp_t gfp_mask, nodemask_t *nodemask, unsigned int order,
+ 
+ 	(void)first_zones_zonelist(zonelist, high_zoneidx, nodemask,
+ 							&preferred_zone);
++	if (!preferred_zone)
++		return NULL;
++
+ 	classzone_idx = zone_idx(preferred_zone);
+ 
+ zonelist_scan:
