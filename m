@@ -1,104 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933634AbYETPU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933645AbYETPVv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933634AbYETPU3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 11:20:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759263AbYETPUO
+	id S933645AbYETPVv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 11:21:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761944AbYETPVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 11:20:14 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:47111 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932524AbYETPUM (ORCPT
+	Tue, 20 May 2008 11:21:41 -0400
+Received: from 66-189-124-104.dhcp.oxfr.ma.charter.com ([66.189.124.104]:57718
+	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757154AbYETPVk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 11:20:12 -0400
-Date: Tue, 20 May 2008 11:20:10 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-cc: Oliver Neukum <oliver@neukum.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       <greg@kroah.com>, <linux-usb@vger.kernel.org>
-Subject: Re: your mail
-In-Reply-To: <20080520123423.GA4764@ics.muni.cz>
-Message-ID: <Pine.LNX.4.44L0.0805201117430.2114-100000@iolanthe.rowland.org>
+	Tue, 20 May 2008 11:21:40 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH 0/5] RT: adaptive-lock enhancements
+To: mingo@elte.hu, tglx@linutronix.de, rostedt@goodmis.org,
+       linux-rt-users@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, sdietrich@novell.com, pmorreale@novell.com,
+       mkohari@novell.com, ghaskins@novell.com
+Date: Tue, 20 May 2008 10:49:10 -0400
+Message-ID: <20080520143954.15992.85900.stgit@novell1.haskins.net>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 May 2008, Lukas Hejtmanek wrote:
+Hi Ingo, Steven, Thomas,
+  The following series are the scraps from adaptive-locks-v3 that have not yet
+  been pulled into RT.  This series applies to 25.4-rt2.
 
-> <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>
-> Bcc: 
-> Subject: Re: [Bug #10630] USB devices plugged into dock are not discoverred
-> 	until reload of ehci-hcd
-> Reply-To: 
-> In-Reply-To: <200805201327.34678.oliver@neukum.org>
-> X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-> 
-> On Tue, May 20, 2008 at 01:27:34PM +0200, Oliver Neukum wrote:
-> > > done.
-> > > http://bugzilla.kernel.org/show_bug.cgi?id=10630
-> > 
-> > Aha. Thanks.
-> > Please recompile without CONFIG_USB_SUSPEND
-> 
-> Hm, without USB_SUSPEND it works. So what next, considered fixed or any
-> further investigation is needed?
+  For the most part, this is the difference between adaptive-v3 and whats in
+  the upstream tree, with the following exceptions:
 
-No further investigation is needed.  I tried doing essentially the same 
-thing on my system and the same problem occurred.
+  1) I have fixed an issue in the "optimize-wakeup" patch that went out in v3.
+     There was a hunk left-over from when we applied adaptive to both spinlocks
+     and mutexes.  We have since dropped mutexes, so that patch needed to be
+     refactored to be correct.
 
-It is caused by the way ehci-hcd "auto-clears" the port
-change-suspend feature.  This patch should fix the problem.  Please 
-try it out and let us know if it works.
+  2) I have (for now) dropped the timeout feature.  It needs to be re-worked to
+     apply to the current version of adaptive-locks that are in the tree.
 
-Alan Stern
+  I also moved what was patch 6/8 in v3 to be first, because I believe it has
+  the most potential of all the other patches to improve performance.
 
+  I have performed some baseline analysis of these patches compared to
+  25.4-rt2, which you can find here:
 
+    ftp://ftp.novell.com/dev/ghaskins/25.4-rt2-adaptive-enhancements.pdf
 
-Index: usb-2.6/drivers/usb/host/ehci.h
-===================================================================
---- usb-2.6.orig/drivers/usb/host/ehci.h
-+++ usb-2.6/drivers/usb/host/ehci.h
-@@ -97,6 +97,8 @@ struct ehci_hcd {			/* one per controlle
- 			dedicated to the companion controller */
- 	unsigned long		owned_ports;		/* which ports are
- 			owned by the companion during a bus suspend */
-+	unsigned long		port_c_suspend;		/* which ports have
-+			the change-suspend feature turned on */
- 
- 	/* per-HC memory pools (could be per-bus, but ...) */
- 	struct dma_pool		*qh_pool;	/* qh per active urb */
-Index: usb-2.6/drivers/usb/host/ehci-hub.c
-===================================================================
---- usb-2.6.orig/drivers/usb/host/ehci-hub.c
-+++ usb-2.6/drivers/usb/host/ehci-hub.c
-@@ -609,7 +609,7 @@ static int ehci_hub_control (
- 			}
- 			break;
- 		case USB_PORT_FEAT_C_SUSPEND:
--			/* we auto-clear this feature */
-+			clear_bit(wIndex, &ehci->port_c_suspend);
- 			break;
- 		case USB_PORT_FEAT_POWER:
- 			if (HCS_PPC (ehci->hcs_params))
-@@ -688,7 +688,7 @@ static int ehci_hub_control (
- 			/* resume completed? */
- 			else if (time_after_eq(jiffies,
- 					ehci->reset_done[wIndex])) {
--				status |= 1 << USB_PORT_FEAT_C_SUSPEND;
-+				set_bit(wIndex, &ehci->port_c_suspend);
- 				ehci->reset_done[wIndex] = 0;
- 
- 				/* stop resume signaling */
-@@ -765,6 +765,8 @@ static int ehci_hub_control (
- 			status |= 1 << USB_PORT_FEAT_RESET;
- 		if (temp & PORT_POWER)
- 			status |= 1 << USB_PORT_FEAT_POWER;
-+		if (test_bit(wIndex, &ehci->port_c_suspend))
-+			status |= 1 << USB_PORT_FEAT_C_SUSPEND;
- 
- #ifndef	VERBOSE_DEBUG
- 	if (status & ~0xffff)	/* only if wPortChange is interesting */
+  I only did hackbench runs for this round of testing, but you can see there is
+  a small, but net-positive gain in the results.  I think the results are more
+  profound for other benchmarks, but I didnt have the time to re-run them all
+  yet.
 
+  As always, comments/questions welcome.
+
+  Regards,
+   -Greg
