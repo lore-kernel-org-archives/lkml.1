@@ -1,49 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758719AbYETIKw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762034AbYETING@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758719AbYETIKw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 04:10:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756426AbYETIKf
+	id S1762034AbYETING (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 04:13:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756426AbYETIMx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 04:10:35 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:48744 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758136AbYETIKa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 04:10:30 -0400
-X-Sasl-enc: XYQpQ/mugL0OIYTY5nTF3H62YyiOT6xBMVFvWhyOCLsJ 1211271028
-Message-ID: <48328771.4030804@ladisch.de>
-Date: Tue, 20 May 2008 10:10:25 +0200
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Tue, 20 May 2008 04:12:53 -0400
+Received: from lucidpixels.com ([75.144.35.66]:45198 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754528AbYETIMv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 04:12:51 -0400
+Date: Tue, 20 May 2008 04:12:50 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org
+Subject: Kernel 2.6.25.4 crashed upon bootup [BUG: NMI Watchdog detected
+ LOCKUP]
+Message-ID: <alpine.DEB.1.10.0805200406200.9677@p34.internal.lan>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Kallol Biswas <nucleodyne@gmail.com>
-CC: Lee Revell <rlrevell@joe-job.com>, linux-kernel@vger.kernel.org
-Subject: Re: HDMI Audio Support in ALSA
-References: <438397970805190904i2656337dh26a3257fe52aa29d@mail.gmail.com>	 <75b66ecd0805190916r7ce21667laf19783dfa47cdd7@mail.gmail.com> <438397970805190938t195d9a8ejfd5b0ca1409714ab@mail.gmail.com>
-In-Reply-To: <438397970805190938t195d9a8ejfd5b0ca1409714ab@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(please don't top-post)
+This is the first time my machine has ever crashed while booting up.
 
-Kallol Biswas wrote:
-> Can ALSA handle HDMI audio frames? It does not look so.
+Kernel = 2.6.25.4
 
-Why do you think so?
+May 20 03:57:23 box1 [   13.917884] BUG: NMI Watchdog detected LOCKUP
+May 20 03:57:23 box1  on CPU1, ip c010146e, registers:
+May 20 03:57:23 box1 [   13.917884] Modules linked in:
+May 20 03:57:23 box1  snd_hda_intel
+May 20 03:57:23 box1  snd_hwdep
+May 20 03:57:23 box1
+May 20 03:57:23 box1 [   13.917884]
+May 20 03:57:23 box1 [   13.917884] Pid: 0, comm: swapper Not tainted (2.6.25.4 #1)
+May 20 03:57:23 box1 [   13.917884] EIP: 0060:[<c010146e>] EFLAGS: 00000246 CPU: 1
+May 20 03:57:23 box1 [   13.917884] EIP is at mwait_idle_with_hints+0x3e/0x50
+May 20 03:57:23 box1 [   13.917884] EAX: 00000000 EBX: 00000000 ECX: 00000000 EDX: 00000000
+May 20 03:57:23 box1 [   13.917884] ESI: 00000000 EDI: c055a6c0 EBP: 00000000 ESP: f7c45fa0
+May 20 03:57:23 box1 [   13.917884]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+May 20 03:57:23 box1 [   13.917884] Process swapper (pid: 0, ti=f7c44000 task=f7c3eaf0 task.ti=f7c44000)
+May 20 03:57:23 box1
+May 20 03:57:23 box1 [   13.917884] Stack:
+May 20 03:57:23 box1 c0101480
+May 20 03:57:23 box1 00000001
+May 20 03:57:23 box1 c01019a5
+May 20 03:57:23 box1 01020800
+May 20 03:57:23 box1 00000000
+May 20 03:57:23 box1 last message repeated 3 times
+May 20 03:57:23 box1
+May 20 03:57:23 box1 [   13.917884]
+May 20 03:57:23 box1 00000000
+May 20 03:57:23 box1 last message repeated 6 times
+May 20 03:57:23 box1 000000d8
+May 20 03:57:23 box1
+May 20 03:57:23 box1 [   13.917884]
+May 20 03:57:23 box1 00000000
+May 20 03:57:23 box1 last message repeated 7 times
+May 20 03:57:23 box1
+May 20 03:57:23 box1 [   13.917884] Call Trace:
+May 20 03:57:23 box1 [   13.917884]  [<c0101480>]
+May 20 03:57:23 box1 mwait_idle+0x0/0x10
+May 20 03:57:23 box1 [   13.917884]  [<c01019a5>]
+May 20 03:57:23 box1 cpu_idle+0x45/0xa0
+May 20 03:57:23 box1 [   13.917884]  =======================
+May 20 03:57:23 box1 [   13.917884] Code:
+May 20 03:57:23 box1 89
 
-> Do you need a pointer to HDMI audio spec (L-PCM, IEC 60958 IEC 61937 etc.)?
+My boot parameters are as follows:
 
-L-PCM is linear PCM, which is the sample format used by practically
-_every_ sound card.  IEC 60958 is AES/EBU, which is essentially S/PDIF,
-which uses linear PCM samples.  IEC 61937 specifies how to transport
-compressed streams over S/PDIF, by pretending the data stream is a
-sequence of linear PCM samples.
+append="netconsole=4444@xxx.xxx.x.xx/eth0,514@xxx.xxx.x.xx/xx:xx:xx:xx:xx:xx nmi_watchdog=1"
 
-All of this is supported by ALSA.
+The full dmesg (from netconsole) is attached.
 
+Should I not be using nmi_watchdog, is there a bug/problem with that code?
 
-Regards,
-Clemens
+Originally I wanted to use it so if the kernel ever crashed, it would reboot
+the host automatically, but that did not happen either.
+
+After power cycling, the host came up OK the second time?
+
+Any idea what happened here?
+
+Justin.
+
