@@ -1,59 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759312AbYETQ1F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932268AbYETQ1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759312AbYETQ1F (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 12:27:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754381AbYETQ0y
+	id S932268AbYETQ1q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 12:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756386AbYETQ1c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 12:26:54 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:43207 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751998AbYETQ0x (ORCPT
+	Tue, 20 May 2008 12:27:32 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:48997 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754381AbYETQ1b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 12:26:53 -0400
-Date: Tue, 20 May 2008 09:26:46 -0700
-From: Tim Pepper <lnxninja@linux.vnet.ibm.com>
-To: Nadia Derbey <Nadia.Derbey@bull.net>
-Cc: Tim Pepper <lnxninja@linux.vnet.ibm.com>, manfred@colorfullife.com,
-       paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, efault@gmx.de,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH 7/9] Make idr_remove rcu-safe
-Message-ID: <20080520162646.GA14707@tpepper-t42p.dolavim.us>
-References: <20080507113553.395937000@bull.net> <20080507113737.562143000@bull.net> <20080514195925.GA8994@tpepper-t42p.dolavim.us> <482BE8DD.2020101@bull.net> <20080520052904.GA11326@tpepper-t42p.dolavim.us> <483277BE.6060207@bull.net>
+	Tue, 20 May 2008 12:27:31 -0400
+Date: Tue, 20 May 2008 17:27:10 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
+Message-ID: <20080520162710.GM16676@shareable.org>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	Andi Kleen <andi@firstfloor.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <482DDA56.6000301@redhat.com> <200805190926.41970.chris.mason@oracle.com> <20080520153658.GH16676@shareable.org> <200805201202.54420.chris.mason@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <483277BE.6060207@bull.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <200805201202.54420.chris.mason@oracle.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 20 May at 09:03:26 +0200 Nadia.Derbey@bull.net said:
->> 60	 91581.07	158207.08	 797796.94	2970977.25
->> 61	 89209.40	160529.38	1202135.38	2538114.50
->> 62	 89008.45	167843.78	1305666.75	2274845.00
->> 63	 97753.17	177470.12	 733957.31	 363952.62
->> 64	102556.05	175923.56	1356988.88	 199527.83
->>
-> Actually there are 2 numbers that bother me: those for the contended loops 
-> on the patched kernel (63 and 64 threads) - the last 2 numbers in the 
-> rightmost column.
+Chris Mason wrote:
+> > You don't need the barrier after in some cases, or it can be deferred
+> > until a better time.  E.g. when the disk write cache is probably empty
+> > (some time after write-idle), barrier flushes may take the same time
+> > as NOPs.
+> 
+> I hesitate to get too fancy here, if the disk is idle we probably
+> won't notice the performance gain.
 
-> Did you have the opportunity to run that same test for 128 threads: this is 
-> just for me to check whether 64 is not the #of threads we are starting to 
-> slow down from.
+I think you're right, but it's hard to be sure.  One of the problems
+with barrier-implemented-as-flush-all is that it flushes data=ordered
+data, even when that's not wanted, and there can be a lot of data in
+the disk's write cache, spread over many seeks.
 
-I don't have results from a run handy with over 64 threads with the
-patched kernel for the contended case.  But from what I've seen, the
-closer the number of test threads is to the number of actual cores,
-not SMT threads, the more noisy the test gets.  I think this is
-reasonable/expected and that there's nothing magic about 63 or 64
-threads.
+Then it's good to delay barrier-flushes to batch metadata commits, but
+good to issue the barrier-flushes prior to large batches of
+data=ordered data, so the latter can be survive in the disk write
+cache for seek optimisations with later requests which aren't yet
+known.
 
-We've been having network issues in the lab where this big box is.
-If/when I can get access long enough, I'll do a series of runs including
-past 64threads give averaged results and deviations.
+All this sounds complicated at the JBD layer, and IMHO much simpler at
+the request elevator layer.
 
--- 
-Tim Pepper  <lnxninja@linux.vnet.ibm.com>
-IBM Linux Technology Center
+> But, it complicates the decision about when you're allowed to dirty
+> a metadata block for writeback.  It used to be dirty-after-commit
+> and it would change to dirty-after-barrier.  I suspect that is some
+> significant surgery into jbd.
+
+Rather than tracking when it's "allowed" to dirty a metadata block, it
+will be simpler to keep a flag saying "barrier needed", and just issue
+the barrier prior to writing a metadata block, if the flag is set.
+
+So metadata write scheduling doesn't need to be changed at all.  That
+will be quite simple.
+
+You might still change the scheduling, but only as a performance
+heuristic in any way which turns out to be easy.
+
+Really, that flag should live in the request elevator instead, where
+it could do more good.  I.e. WRITE_BARRIER wouldn't actually issue a
+barrier op to disk after writing.  It would just set a request
+elevator flag, so a barrier op is issued prior to the next WRITE.
+That road opens some nice optimisations on software RAID, which aren't
+possible if it's done at the JBD layer.
+
+> Also, since a commit isn't really done until the barrier is done, you can't 
+> reuse blocks freed by the committing transaction until after the barrier, 
+> which means changes in the deletion handling code.  
+
+Good point.
+
+In this case, re-allocating time isn't the problem: actually writing
+to them is.  Writes to recycled block require to be ordered after
+commits which recycled them.
+
+As above, just issue the barrier prior to the next write which needs
+to be ordered - effectively it's glued on the front of the write op.
+
+This comes for free with no change to deletion code (wow :-) if the
+only operations are WRITE_BARRIER (= flush before and after or
+equivalent) and WRITE (ordered by WRITE_BARRIER).
+
+> > What's more, barriers can be deferred past data=ordered in-place data
+> > writes, although that's not always an optimisation.
+> >
+> 
+> It might be really interesting to have a 
+> i'm-about-to-barrier-find-some-io-to-run call.  Something along the lines of 
+> draining the dirty pages when the drive is woken up in laptop mode.  There's 
+> lots of fun with page lock vs journal lock ordering, but Jan has a handle on 
+> that I think.
+
+I'm suspecting the opposite might be better.
+
+I'm-about-to-barrier-please-move-the-barrier-in-front-of-unordered-writes.
+The more writes you _don't_ flush synchronously, the more
+opportunities you give the disk's cache to reduce seeking.
+
+It's only a hunch though.
+
+-- Jamie
