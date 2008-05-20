@@ -1,41 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761378AbYETRYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764046AbYETRZC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761378AbYETRYp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 13:24:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756022AbYETRYh
+	id S1764046AbYETRZC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 13:25:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756612AbYETRYi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 20 May 2008 13:24:38 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:60435 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755592AbYETRYh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 20 May 2008 13:24:37 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47140 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755592AbYETRYg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 13:24:36 -0400
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linux-kernel@vger.kernel.org,
-       "David S. Miller" <davem@sunset.davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>, systemtap@sources.redhat.com
-Subject: Re: [2.6 patch] unexport uts_sem
-References: <20080505182937.GZ17139@cs181133002.pp.htv.fi>
-From: fche@redhat.com (Frank Ch. Eigler)
-Date: Tue, 20 May 2008 13:16:19 -0400
-In-Reply-To: <20080505182937.GZ17139@cs181133002.pp.htv.fi> (Adrian Bunk's message of "Mon, 5 May 2008 21:29:37 +0300")
-Message-ID: <y0mwsloq4kc.fsf@ton.toronto.redhat.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=IaFznkpjJabQXazlwze0K9nK3BPCiJUBH1sXEDwRX2fTpv4QWOfcnN5P8PP7d8sXeR6/ZijpY+SCS+7jj7Lk7BwNkCpTHY9yxDOzTfokHHKcehVGY9ebRVdMu7El/sNkCj5FCJZ3do3fA2ort97olS7n5B3OrrpHfSEXmOwPK10=
+Message-ID: <86802c440805201024g27c99de3m721dd157242dad70@mail.gmail.com>
+Date: Tue, 20 May 2008 10:24:36 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Pavel Machek" <pavel@ucw.cz>
+Subject: Re: [PATCH] x86: process fam 10h like k8 with fixed mtrr setting
+Cc: "Ingo Molnar" <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080520125443.GA4052@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200805051557.38556.yhlu.kernel@gmail.com>
+	 <20080520125443.GA4052@ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk <bunk@kernel.org> writes:
-
-> With the removal of the Solaris binary emulation the export of 
-> uts_sem became unused. [...]
+On Tue, May 20, 2008 at 5:54 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> On Mon 2008-05-05 15:57:38, Yinghai Lu wrote:
+>>
+>> otherwise fixed MTRR for family 10h may not be changed
+>>
+>> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+>>
+>> Index: linux-2.6/arch/x86/kernel/cpu/mtrr/generic.c
+>> ===================================================================
+>> --- linux-2.6.orig/arch/x86/kernel/cpu/mtrr/generic.c
+>> +++ linux-2.6/arch/x86/kernel/cpu/mtrr/generic.c
+>> @@ -342,7 +342,7 @@ static void set_fixed_range(int msr, boo
+>>
+>>       if (lo != msrwords[0] || hi != msrwords[1]) {
+>>               if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD &&
+>> -                 boot_cpu_data.x86 == 15 &&
+>> +                 (boot_cpu_data.x86 >= 0x0f && boot_cpu_data.x86 <= 0x11) &&
+>>                   ((msrwords[0] | msrwords[1]) & K8_MTRR_RDMEM_WRMEM_MASK))
+>>                       k8_enable_fixed_iorrs();
+>>               mtrr_wrmsr(msr, msrwords[0], msrwords[1]);
 >
-> -EXPORT_SYMBOL(uts_sem);
+> This also changes family 0x11. Is that ok?
 
-Am I correct that this would makes it invalid for modules to call
-utsname() (since the protective semaphore is now hidden)?  Systemtap
-has been using them in order to validate the modules it builds against
-possible kernel vs. kernel-devel differences.
+Yes.
 
-- FChE
+YH
