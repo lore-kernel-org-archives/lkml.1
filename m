@@ -1,45 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932620AbYETUEY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933733AbYETUEo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932620AbYETUEY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 16:04:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759024AbYETUEQ
+	id S933733AbYETUEo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 16:04:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762223AbYETUE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 16:04:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49659 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758613AbYETUEP (ORCPT
+	Tue, 20 May 2008 16:04:27 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:37974 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933190AbYETUE0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 16:04:15 -0400
-Date: Tue, 20 May 2008 13:03:11 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: anemo@mba.ocn.ne.jp, a.zummo@towertech.it, hvr@gnu.org,
-       rtc-linux@googlegroups.com, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] RTC: M41T80: Century Bit support
-Message-Id: <20080520130311.58a8e5ac.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.55.0805202045320.31790@cliff.in.clinika.pl>
-References: <Pine.LNX.4.55.0805170057370.4049@cliff.in.clinika.pl>
-	<20080518.000242.41199304.anemo@mba.ocn.ne.jp>
-	<Pine.LNX.4.55.0805171959030.10067@cliff.in.clinika.pl>
-	<20080519.011034.25909336.anemo@mba.ocn.ne.jp>
-	<Pine.LNX.4.55.0805202045320.31790@cliff.in.clinika.pl>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 20 May 2008 16:04:26 -0400
+Date: Tue, 20 May 2008 13:03:57 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] block: blk_queue_bounce_limits can actually sleep
+Message-ID: <20080520130357.1324875e@infradead.org>
+In-Reply-To: <20080520124556.ad0c3fca.akpm@linux-foundation.org>
+References: <20080519202409.6d1055be@infradead.org>
+	<20080520192958.GW22369@kernel.dk>
+	<20080520124556.ad0c3fca.akpm@linux-foundation.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 May 2008 20:51:56 +0100 (BST)
-"Maciej W. Rozycki" <macro@linux-mips.org> wrote:
+On Tue, 20 May 2008 12:45:56 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
->  Andrew, could you please hold the patch in -mm till the flags have been 
-> added?
+> On Tue, 20 May 2008 21:29:59 +0200
+> Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> > On Mon, May 19 2008, Arjan van de Ven wrote:
+> > > From: Arjan van de Ven <arjan@linux.intel.com>
+> > > Subject: [PATCH] block: blk_queue_bounce_limits can actually sleep
+> > > 
+> > > blk_queue_bounce_limit can call init_emergency_isa_pool, which
+> > > does sleeping allocations... document it as such by adding
+> > > might_sleep() to the driver
+> > 
+> > Isn't that superflous, as mempool_create() -> kmalloc(...,
+> > __GFP_WAIT) ends up spewing that warning anyway?
+> 
+> It's largely superfluous given the way in which Arjan implemented it.
+> 
+> One situation which we regularly hit is:
+> 
+> foo()
+> {
+> 	...
+> 	if (some_unlikely_condition())
+> 		do_something_which_sleeps();
+> 	...
+> }
+> 
+> and then we go and call that code under spinlock and ship it out, when
+> of course a handful of testers hit the unlikely condition.
+> 
+> The solution to that is to add a might_sleep() _outside_ the test of
+> some_unlikely_condition().  ie:
+> 
+> --- a/block/blk-settings.c~a
+> +++ a/block/blk-settings.c
+> @@ -140,6 +140,8 @@ void blk_queue_bounce_limit(struct reque
+>  	unsigned long b_pfn = dma_addr >> PAGE_SHIFT;
+>  	int dma = 0;
+>  
+> +	might_sleep();
+> +
+>  	q->bounce_gfp = GFP_NOIO;
+>  #if BITS_PER_LONG == 64
+>  	/* Assume anything <= 4GB can be handled by IOMMU.
+> _
+> 
+> but it's all vague and waffly because Arjan forgot to tell us why he's
+> bothering to patch this code at all???
 
-It's be saner for me to drop it and have you resend when appropriate. 
-The chances of me being able to succesfully correlate this patch and
-something called "the flags" at some time in the future are less than
-100% ;)
+the sata_nv driver calls this from an invalid context ... and spews a
+ton of warnings as a result... made me think this is a common mistake
+to make.
+
+I'd love to make it do your version instead, but I was afraid it would
+trigger too often....
 
