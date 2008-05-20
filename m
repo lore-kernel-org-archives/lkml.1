@@ -1,49 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764384AbYETXsx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763566AbYETXwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764384AbYETXsx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 19:48:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754375AbYETXsn
+	id S1763566AbYETXwT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 19:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754642AbYETXwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 19:48:43 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:36553 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753561AbYETXsm (ORCPT
+	Tue, 20 May 2008 19:52:11 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:51467 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753575AbYETXwK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 19:48:42 -0400
-Date: Wed, 21 May 2008 00:48:20 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Ric Wheeler <ricwheeler@gmail.com>
-Cc: Theodore Tso <tytso@mit.edu>, Chris Mason <chris.mason@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
-Message-ID: <20080520234820.GM27853@shareable.org>
-References: <482DDA56.6000301@redhat.com> <20080517002030.GA7374@mit.edu> <20080516173552.e88183d9.akpm@linux-foundation.org> <200805172048.34455.chris.mason@oracle.com> <20080518013641.GH16496@mit.edu> <4830420D.4080608@gmail.com>
+	Tue, 20 May 2008 19:52:10 -0400
+Date: Tue, 20 May 2008 16:51:38 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Louis Rilling <Louis.Rilling@kerlabs.com>, linux-kernel@vger.kernel.org,
+       ocfs2-devel@oss.oracle.com
+Subject: Re: [RFC][PATCH 0/3] configfs: Make nested default groups
+	lockdep-friendly
+Message-ID: <20080520235138.GL26609@mail.oracle.com>
+Mail-Followup-To: Arjan van de Ven <arjan@infradead.org>,
+	Louis Rilling <Louis.Rilling@kerlabs.com>,
+	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+References: <20080520163320.025971210@kerlabs.com> <20080520095810.1d50d247@infradead.org> <20080520215639.GG26609@mail.oracle.com> <20080520151341.058f2df4@infradead.org> <20080520222702.GJ26609@mail.oracle.com> <20080520153543.4bafcac9@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4830420D.4080608@gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080520153543.4bafcac9@infradead.org>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, May 20, 2008 at 03:35:43PM -0700, Arjan van de Ven wrote:
+> not quite what I meant; what I meant is more like how sched.c deals
+> with per cpu queues:
+> 
+> (from sched.c)
+> 
+>                 spin_lock_init(&rq->lock);
+>                 lockdep_set_class(&rq->lock, &rq->rq_lock_key); 
 
-Ric Wheeler wrote:
-> The hard thing is to figure out how to test this kind of scenario 
-> without dropping power.
+	Looking at this, it's taking the address of the struct
+lock_class_key as the actual key.  Thus, if we tie one of these guys to
+the structure we're representing, we get lock safety...except that we're
+talking about i_mutex here, and we want to interact with the VFS's use
+thereof.
 
-Apart from using virtual machines, you mean?
+Joel
 
-> To expose the failure mode, it might be 
-> sufficient to drop power to a drive with smartctl (or, if you have hot 
-> swap bays, just pull them).
+-- 
 
-I wonder, does sending any kind of reset commands to drives cause them
-to discard their write cache?
+"There is no sincerer love than the love of food."  
+         - George Bernard Shaw 
 
-If the hot swap power switch is accessible from software, that would
-be a nice trick :-)
-
--- Jamie
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
