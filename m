@@ -1,150 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934729AbYETWmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935297AbYETWnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934729AbYETWmp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 18:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934962AbYETWhS
+	id S935297AbYETWnR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 18:43:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935107AbYETWjX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 18:37:18 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:40220 "EHLO mx2.suse.de"
+	Tue, 20 May 2008 18:39:23 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:46814 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934994AbYETWhQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 18:37:16 -0400
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Doug Gilbert <dgilbert@interlog.com>,
-       "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
-Subject: [PATCH 13/13] SCSI: fix race in device_create
-Date: Tue, 20 May 2008 15:35:00 -0700
-Message-Id: <1211322900-12705-13-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <20080520223237.GA12383@suse.de>
-References: <20080520223237.GA12383@suse.de>
+	id S1765980AbYETWjU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 18:39:20 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+Subject: Re: [PATCH 0/4] Fix forcedeth hibernate/wake-on-lan problems
+Date: Wed, 21 May 2008 00:39:36 +0200
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ayaz Abdulla <aabdulla@nvidia.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>
+References: <20080518125715.GA19229@yamamaya.is-a-geek.org> <20080518150908.GA4606@yamamaya.is-a-geek.org>
+In-Reply-To: <20080518150908.GA4606@yamamaya.is-a-geek.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805210039.37248.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is a race from when a device is created with device_create() and
-then the drvdata is set with a call to dev_set_drvdata() in which a
-sysfs file could be open, yet the drvdata will be NULL, causing all
-sorts of bad things to happen.
+On Sunday, 18 of May 2008, Tobias Diedrich wrote:
+> Tobias Diedrich wrote:
+> > Note that so far this is only tested on my system with hibernate
+> > using the 'shutdown' method.
+> 
+> Ok, I've run tests now:
+> 
+> First Windoze:
+> Windoze, Standby (equiv. to Linux 'mem' state):  WOL borked, resumes fine
+> Windoze, Hibernate: WOL borked, resumes fine
+> 
+> Linux, unpatched:
+> Hibernate, shutdown method: Works with known caveats
+> Hibernate, platform method: WOL borked,
 
-This patch fixes the problem by using the new function,
-device_create_drvdata().  It fixes the problem in all of the scsi
-drivers that need it.
+That may be worth some investigation.  However, since that doesn't work on
+Windows too, I suspect the platform is slightly broken.
 
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Doug Gilbert <dgilbert@interlog.com>
-Cc: James E.J. Bottomley <James.Bottomley@HansenPartnership.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/scsi/ch.c   |    7 +++----
- drivers/scsi/osst.c |    3 +--
- drivers/scsi/sg.c   |   11 ++++++-----
- drivers/scsi/st.c   |   12 +++++++-----
- 4 files changed, 17 insertions(+), 16 deletions(-)
+> resumes fine 
+> 
+> Linux, patched:
+> Hibernate, shutdown method: Works
+> Hibernate, platform method: WOL borked, resumes fine
+> Suspend ('standby' state):
+>    WOL borked, USB borked after resume, kernel freeze
+> Suspend ('mem' state, text console):
+>    WOL borked, VGA stays dark, otherwise working
 
-diff --git a/drivers/scsi/ch.c b/drivers/scsi/ch.c
-index 75c84d7..c4b938b 100644
---- a/drivers/scsi/ch.c
-+++ b/drivers/scsi/ch.c
-@@ -910,9 +910,9 @@ static int ch_probe(struct device *dev)
- 	ch->minor = minor;
- 	sprintf(ch->name,"ch%d",ch->minor);
- 
--	class_dev = device_create(ch_sysfs_class, dev,
--				  MKDEV(SCSI_CHANGER_MAJOR,ch->minor),
--				  "s%s", ch->name);
-+	class_dev = device_create_drvdata(ch_sysfs_class, dev,
-+					  MKDEV(SCSI_CHANGER_MAJOR, ch->minor),
-+					  ch, "s%s", ch->name);
- 	if (IS_ERR(class_dev)) {
- 		printk(KERN_WARNING "ch%d: device_create failed\n",
- 		       ch->minor);
-@@ -926,7 +926,6 @@ static int ch_probe(struct device *dev)
- 	if (init)
- 		ch_init_elem(ch);
- 
--	dev_set_drvdata(dev, ch);
- 	sdev_printk(KERN_INFO, sd, "Attached scsi changer %s\n", ch->name);
- 
- 	return 0;
-diff --git a/drivers/scsi/osst.c b/drivers/scsi/osst.c
-index 31f7aec..243d8be 100644
---- a/drivers/scsi/osst.c
-+++ b/drivers/scsi/osst.c
-@@ -5695,13 +5695,12 @@ static int osst_sysfs_add(dev_t dev, struct device *device, struct osst_tape * S
- 	struct device *osst_member;
- 	int err;
- 
--	osst_member = device_create(osst_sysfs_class, device, dev, "%s", name);
-+	osst_member = device_create_drvdata(osst_sysfs_class, device, dev, STp, "%s", name);
- 	if (IS_ERR(osst_member)) {
- 		printk(KERN_WARNING "osst :W: Unable to add sysfs class member %s\n", name);
- 		return PTR_ERR(osst_member);
- 	}
- 
--	dev_set_drvdata(osst_member, STp);
- 	err = device_create_file(osst_member, &dev_attr_ADR_rev);
- 	if (err)
- 		goto err_out;
-diff --git a/drivers/scsi/sg.c b/drivers/scsi/sg.c
-index c9d7f72..ea0edd1 100644
---- a/drivers/scsi/sg.c
-+++ b/drivers/scsi/sg.c
-@@ -1441,17 +1441,18 @@ sg_add(struct device *cl_dev, struct class_interface *cl_intf)
- 	if (sg_sysfs_valid) {
- 		struct device *sg_class_member;
- 
--		sg_class_member = device_create(sg_sysfs_class, cl_dev->parent,
--						MKDEV(SCSI_GENERIC_MAJOR,
--						      sdp->index),
--						"%s", disk->disk_name);
-+		sg_class_member = device_create_drvdata(sg_sysfs_class,
-+							cl_dev->parent,
-+							MKDEV(SCSI_GENERIC_MAJOR,
-+							      sdp->index),
-+							sdp,
-+							"%s", disk->disk_name);
- 		if (IS_ERR(sg_class_member)) {
- 			printk(KERN_ERR "sg_add: "
- 			       "device_create failed\n");
- 			error = PTR_ERR(sg_class_member);
- 			goto cdev_add_err;
- 		}
--		dev_set_drvdata(sg_class_member, sdp);
- 		error = sysfs_create_link(&scsidp->sdev_gendev.kobj,
- 					  &sg_class_member->kobj, "generic");
- 		if (error)
-diff --git a/drivers/scsi/st.c b/drivers/scsi/st.c
-index e8db66a..6e5a5bb 100644
---- a/drivers/scsi/st.c
-+++ b/drivers/scsi/st.c
-@@ -4424,17 +4424,19 @@ static int do_create_class_files(struct scsi_tape *STp, int dev_num, int mode)
- 		snprintf(name, 10, "%s%s%s", rew ? "n" : "",
- 			 STp->disk->disk_name, st_formats[i]);
- 		st_class_member =
--			device_create(st_sysfs_class, &STp->device->sdev_gendev,
--				      MKDEV(SCSI_TAPE_MAJOR,
--						TAPE_MINOR(dev_num, mode, rew)),
--				      "%s", name);
-+			device_create_drvdata(st_sysfs_class,
-+					      &STp->device->sdev_gendev,
-+					      MKDEV(SCSI_TAPE_MAJOR,
-+						    TAPE_MINOR(dev_num,
-+							      mode, rew)),
-+					      &STp->modes[mode],
-+					      "%s", name);
- 		if (IS_ERR(st_class_member)) {
- 			printk(KERN_WARNING "st%d: device_create failed\n",
- 			       dev_num);
- 			error = PTR_ERR(st_class_member);
- 			goto out;
- 		}
--		dev_set_drvdata(st_class_member, &STp->modes[mode]);
- 
- 		error = device_create_file(st_class_member,
- 					   &dev_attr_defined);
--- 
-1.5.5.1
+You can try s2ram to bring the VGA to life, I think
+(http://suspend.sf.net/s2ram-support.html).
 
+> Suspend ('mem' state, radeonfb):
+>    WOL borked, VGA stays dark, userspace dead after resume (but pingable)
+> 
+> Summary: I suspect my BIOS sucks
+
+That's possible ...
+
+>         Version: ASUS M2N-SLI DELUXE ACPI BIOS Revision 0903
+>         Release Date: 02/13/2007
+> 
+> 1 point for Linux, 0 points for Windows, Linux wins ;)
+
+Thanks,
+Rafael
