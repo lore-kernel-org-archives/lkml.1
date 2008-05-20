@@ -1,36 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765666AbYETLD0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765603AbYETLFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765666AbYETLD0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 07:03:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbYETLCz
+	id S1765603AbYETLFW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 07:05:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754745AbYETLFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 07:02:55 -0400
-Received: from 1-1-12-13a.han.sth.bostream.se ([82.182.30.168]:46502 "EHLO
-	palpatine.hardeman.nu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763540AbYETLCy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 07:02:54 -0400
-X-Greylist: delayed 3151 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 May 2008 07:02:53 EDT
-Message-ID: <48003.145.64.134.222.1211278220.squirrel@www.hardeman.nu>
-Date: Tue, 20 May 2008 12:10:20 +0200 (CEST)
-Subject: Loading DSDT from initrd, can it be done from grub instead?
-From: David =?iso-8859-1?Q?H=E4rdeman?= <david@hardeman.nu>
-To: linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.9a
+	Tue, 20 May 2008 07:05:09 -0400
+Received: from visualserver.org ([84.242.66.126]:40540 "EHLO visualserver.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751616AbYETLFI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 07:05:08 -0400
+Date: Tue, 20 May 2008 13:05:01 +0200 (CEST)
+From: Soumyadip Das Mahapatra <kernelhacker@visualserver.org>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+cc: linux-kernel@vger.kernel.org, akinobu.mita@gmail.com
+Subject: Re: significance of using 2kb long byte_rev_table in lib/bitrev.c
+In-Reply-To: <1211244839.5915.114.camel@brick>
+Message-ID: <Pine.LNX.4.64.0805201302440.18899@visualserver.org>
+References: <Pine.LNX.4.64.0805191850410.18461@visualserver.org>
+ <1211244839.5915.114.camel@brick>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-visualserver.org-MailScanner-Information: Please contact the ISP for more information
+X-MailScanner-ID: DB2E72FB42.BEF01
+X-visualserver.org-MailScanner: Found to be clean
+X-visualserver.org-MailScanner-From: kernelhacker@visualserver.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In commit 9a9e0d685553af76cb6ae2af93cca4913e7fcd47 the
-ACPI_CUSTOM_DSDT_INITRD option was removed.
 
-I was wondering if it'd be feasible to hack grub to load a custom DSDT
-instead (since grub can read filesystems) and then pass a pointer to a
-memory location containing the DSDT to the kernel?
+
+On Mon, 19 May 2008, Harvey Harrison wrote:
+
+> On Mon, 2008-05-19 at 18:59 +0200, Soumyadip Das Mahapatra wrote:
+>> Hi,
+>>  	i cant understand the significance of using 2kb size of
+>> bit_rev_table array in lib/bitrev.c
+>
+> It's used in reversing the bits in a byte value as well, which your
+> patch breaks (see the bitrev8 users)
+>
+> Harvey
+
+Well you can do that modifying the value of k. I commented these in the
+program.
+
+Soumya
 
 -- 
-David Härdeman
+This message has been scanned for viruses and
+dangerous content by MailScanner, and is
+believed to be clean.
 
