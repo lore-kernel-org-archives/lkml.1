@@ -1,106 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763543AbYETJEa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763666AbYETJF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763543AbYETJEa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 05:04:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757164AbYETJEW
+	id S1763666AbYETJF3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 05:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760839AbYETJFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 05:04:22 -0400
-Received: from mail.windriver.com ([147.11.1.11]:52995 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753543AbYETJEV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 05:04:21 -0400
-Subject: Re: [PATCH] x86: Get irq for hpet timer
-From: Kevin Hao <kexin.hao@windriver.com>
-To: Clemens Ladisch <clemens@ladisch.de>
-Cc: venkatesh.pallipadi@intel.com, bob.picco@hp.com, mingo@redhat.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-In-Reply-To: <4831A678.5070208@ladisch.de>
-References: <1210917912.10881.1.camel@kevin-desktop>
-	 <482D49CF.4030902@ladisch.de> <1210929270.11912.3.camel@kevin-desktop>
-	 <4831A678.5070208@ladisch.de>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 20 May 2008 17:03:39 +0800
-Message-Id: <1211274219.8718.7.camel@kevin-desktop>
+	Tue, 20 May 2008 05:05:12 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51964 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760354AbYETJFK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 05:05:10 -0400
+Date: Tue, 20 May 2008 18:09:55 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "menage@google.com" <menage@google.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>
+Subject: [RFC][PATCH 3/3] memcg: per node information
+Message-Id: <20080520180955.70aa5459.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080520180552.601da567.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20080520180552.601da567.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-X-OriginalArrivalTime: 20 May 2008 09:03:23.0418 (UTC) FILETIME=[5B7287A0:01C8BA58]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-05-19 at 18:10 +0200, Clemens Ladisch wrote:
-> Kevin Hao wrote:
-> > +	for (irq = find_first_bit(&cap, HPET_MAX_IRQ); irq < HPET_MAX_IRQ;
-> > +		irq = find_next_bit(&cap, HPET_MAX_IRQ, 1 + irq)) {
-> > +		if (request_irq(irq, hpet_interrupt, irq_flags,
-> > +				devp->hd_name, (void *)devp))
-> 
-> This spams my log with interrupt sharing violations.  As long as we do
-> not know that the interrupt slot is empty, we need IRQF_PROBE_SHARED
-> here.
 
-Ok, added.
+Show per-node statistics in following format.
 
-> 
-> Another problem: the interrupt controller doesn't get correctly
-> initialized for some interrupt line that didn't already have some
-> routing:
-> | $ cat /proc/interrupts
-> |            CPU0
-> |   0:         63   IO-APIC-edge      timer
-> |   1:         96   IO-APIC-edge      i8042
-> |   2:          0    XT-PIC-XT        hpet2
-> |   6:          3   IO-APIC-edge      floppy
-> |   7:          0   IO-APIC-edge      parport0
-> |   8:          3   IO-APIC-edge      rtc
-> |   9:          0   IO-APIC-fasteoi   acpi
-> | ...
-> 
-> Additionally, I vaguely remember that on X86, there is some funny stuff
-> going on with interrupt lines 0, 2 and 8 which means that the interrupt
-> number passed to request_irq() is not necessarily identical to the
-> hardware interrupt line.
-> 
-> I don't know which of these problems is responsible, or if I'm totally
-> wrong, but on my machine, interrupts from hpet2 do not arrive.
-> 
+ node-id total acitve inactive
 
-We can simply skip these special IRQ. :-)
-Does anyone has a better solution?
+[root@iridium bench]# cat /opt/cgroup/memory.numa_stat
+0 417611776 99586048 318025728
+1 655360000 0 655360000
 
-----
-diff --git a/drivers/char/hpet.c b/drivers/char/hpet.c
-index 0fdc627..b04a15d 100644
---- a/drivers/char/hpet.c
-+++ b/drivers/char/hpet.c
-@@ -390,6 +390,11 @@ static int hpet_timer_get_irq(struct hpet_dev *devp)
- 	struct hpets *hpetp;
- 	unsigned long cap, irq_flags;
- 	int irq;
-+	/*
-+	 * skip IRQ0, IRQ2, IRQ8 because which is always used by some
-+	 * legacy device
-+	 */
-+	unsigned long skip_irq = (1 << 0) | (1 << 2) | (1 << 8);
- 
- 	timer = devp->hd_timer;
- 	hpet = devp->hd_hpet;
-@@ -411,6 +416,9 @@ static int hpet_timer_get_irq(struct hpet_dev *devp)
- 
- 	cap = (readq(&timer->hpet_config) & Tn_INT_ROUTE_CAP_MASK)
- 				 >> Tn_INT_ROUTE_CAP_SHIFT;
-+	cap &= ~skip_irq;
-+
-+	irq_flags |= IRQF_PROBE_SHARED;
- 
- 	for (irq = find_first_bit(&cap, HPET_MAX_IRQ); irq < HPET_MAX_IRQ;
- 		irq = find_next_bit(&cap, HPET_MAX_IRQ, 1 + irq)) {
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
 ---
-Best Regards,
-Kevin
+ mm/memcontrol.c |   66 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 66 insertions(+)
 
-> 
-> Regards,
-> Clemens
+Index: mm-2.6.26-rc2-mm1/mm/memcontrol.c
+===================================================================
+--- mm-2.6.26-rc2-mm1.orig/mm/memcontrol.c
++++ mm-2.6.26-rc2-mm1/mm/memcontrol.c
+@@ -960,6 +960,66 @@ static int mem_control_stat_show(struct 
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_NUMA
++static void *memcg_numastat_start(struct seq_file *m, loff_t *pos)
++{
++	loff_t node = *pos;
++	struct pglist_data *pgdat = first_online_pgdat();
++
++	while (pgdat != NULL) {
++		if (!node)
++			break;
++		pgdat = next_online_pgdat(pgdat);
++		node--;
++	}
++	return pgdat;
++}
++
++static void *memcg_numastat_next(struct seq_file *m, void *arg, loff_t *pos)
++{
++	struct pglist_data *pgdat = (struct pglist_data *)arg;
++
++	(*pos)++;
++	return next_online_pgdat(pgdat);
++}
++
++static void memcg_numastat_stop(struct seq_file *m, void *arg)
++{
++}
++
++static int memcg_numastat_show(struct seq_file *m, void *arg)
++{
++	struct pglist_data *pgdat = (struct pglist_data *)arg;
++	int nid = pgdat->node_id;
++	struct cgroup *cgrp = cgroup_of_seqfile(m);
++	struct mem_cgroup *memcg = mem_cgroup_from_cont(cgrp);
++	struct mem_cgroup_per_zone *mz;
++	long active, inactive, total;
++	int zid;
++
++	active = 0;
++	inactive = 0;
++
++	for (zid = 0; zid < MAX_NR_ZONES; zid++) {
++		mz = mem_cgroup_zoneinfo(memcg, nid, zid);
++		active += MEM_CGROUP_ZSTAT(mz, MEM_CGROUP_ZSTAT_ACTIVE);
++		inactive += MEM_CGROUP_ZSTAT(mz, MEM_CGROUP_ZSTAT_INACTIVE);
++	}
++	active *= PAGE_SIZE;
++	inactive *= PAGE_SIZE;
++	total = active + inactive;
++	/* Node Total Active Inactive (Total = Active + Inactive) */
++	return seq_printf(m, "%d %ld %ld %ld\n", nid, total, active, inactive);
++}
++
++struct seq_operations memcg_numastat_op = {
++	.start = memcg_numastat_start,
++	.next  = memcg_numastat_next,
++	.stop  = memcg_numastat_stop,
++	.show  = memcg_numastat_show,
++};
++#endif
++
+ static struct cftype mem_cgroup_files[] = {
+ 	{
+ 		.name = "usage_in_bytes",
+@@ -992,6 +1052,12 @@ static struct cftype mem_cgroup_files[] 
+ 		.name = "stat",
+ 		.read_map = mem_control_stat_show,
+ 	},
++#ifdef CONFIG_NUMA
++	{
++		.name = "numa_stat",
++		.seq_ops = &memcg_numastat_op,
++	},
++#endif
+ };
+ 
+ static int alloc_mem_cgroup_per_zone_info(struct mem_cgroup *mem, int node)
+Index: mm-2.6.26-rc2-mm1/Documentation/controllers/memory_files.txt
+===================================================================
+--- mm-2.6.26-rc2-mm1.orig/Documentation/controllers/memory_files.txt
++++ mm-2.6.26-rc2-mm1/Documentation/controllers/memory_files.txt
+@@ -74,3 +74,13 @@ Files under memory resource controller a
+   (write)
+   Reset to 0.
+ 
++* memory.numa_stat
++
++  This file appears only when the kernel is configured as NUMA.
++
++  (read)
++  Show per-node accounting information of acitve/inactive pages.
++  formated as following.
++  nodeid  total active inactive
++
++  total = active + inactive.
+
