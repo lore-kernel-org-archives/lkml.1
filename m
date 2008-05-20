@@ -1,105 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1772085AbYETKGP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765964AbYETKGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1772085AbYETKGP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 06:06:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766000AbYETKDz
+	id S1765964AbYETKGi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 06:06:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932117AbYETKEN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 06:03:55 -0400
-Received: from ppsw-9.csi.cam.ac.uk ([131.111.8.139]:36993 "EHLO
-	ppsw-9.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932164AbYETKDx (ORCPT
+	Tue, 20 May 2008 06:04:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37733 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1765904AbYETKEK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 06:03:53 -0400
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-Message-ID: <4832A211.4040206@gmail.com>
-Date: Tue, 20 May 2008 11:04:01 +0100
-From: Jonathan Cameron <Jonathan.Cameron@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070423)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: LM Sensors <lm-sensors@lm-sensors.org>,
-       spi-devel-general@lists.sourceforge.net
-Subject: Accelerometer, Gyros and ADC's etc within the kernel.
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 20 May 2008 06:04:10 -0400
+Date: Tue, 20 May 2008 03:02:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: greg@kroah.com, matthew@wil.cx, kay.sievers@vrfy.org,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 1/3][-mm] add class_reclassify macro
+Message-Id: <20080520030232.fc91b64e.akpm@linux-foundation.org>
+In-Reply-To: <20080520095553.GA3201@darkstar.te-china.tietoenator.com>
+References: <20080520095553.GA3201@darkstar.te-china.tietoenator.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This email is basically a request for opinions on how and where such sensors
-should be integrated into the kernel.
+On Tue, 20 May 2008 17:55:54 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
 
-To set the scene...
+> Converting class semaphore to mutex cause lockdep warnings due to
+> class_interface_register/unregister will possible call device_add/del
 
-Increasing numbers of embedded devices are being supplied attached MEMS
-devices (www.xbow.com imote2 etc). Along with more traditional sensors such
-as ADC's not being used for hardware monitoring, these do not really 
-seem to
-fit with in an particular subsystem of the kernel.  A previous 
-discussion on
-lkml in 2006 considered the accelerometers to be found within some laptop
-hard drives, but I haven't been able to track down any more general 
-discussions
-of such non hardware monitoring sensors.
+Shouldn't we just fix that?
 
-The obvious possibilities are:
+> For the class_interface users here add a class_reclassify macro to
+> reclassify the lock class of their struct class.
+> 
+> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+> 
+> ---
+> include/linux/device.h |    7 +++++++
+> 1 file changed, 7 insertions(+)
+> 
+> --- linux/include/linux/device.h	2008-05-19 12:29:54.000000000 +0800
+> +++ linux.new/include/linux/device.h	2008-05-19 14:42:25.000000000 +0800
+> @@ -529,4 +529,11 @@ extern const char *dev_driver_string(str
+>  	MODULE_ALIAS("char-major-" __stringify(major) "-" __stringify(minor))
+>  #define MODULE_ALIAS_CHARDEV_MAJOR(major) \
+>  	MODULE_ALIAS("char-major-" __stringify(major) "-*")
+> +
+> +#define class_reclassify(class)						\
+> +do {									\
+> +	static struct lock_class_key	class_key;			\
+> +	lockdep_set_class_and_name(&(class)->mutex, &class_key,		\
+> +				 (class)->name);			\
+> +} while (0)
+>  #endif /* _DEVICE_H_ */
 
-* To place the various drivers within the spi / i2c etc subsystems as 
-relevant.
+I think it would need a lavish comment explaining what it is for, and
+the reasons for its existence.
 
-* To place within the hwmon subsystem as this is probably closest.
-(there is already at least one straight ADC driver in hwmon)
+Perhaps this should be a kernel-wide thing in lockdep.h.  But then that
+would invite people to use it, and it looks like a bad thing.
 
-* To create a new subsystem, or perhaps merely sysfs class to contain these
-  elements.
-
-Typical requirements within an application include simply polling for 
-current
-readings, and using device triggered interrupts to grab data 
-continuously to a
-ring buffer, for collection by suitable userspace code.  Obviously it 
-would be
-desirable to standardize sysfs controls for various calibration 
-parameters as
-much as possible across the various devices.
-
-Any other suggestions welcome!
-
-To illustrate the sort of devices here are a few I have drivers written 
-for or will
-shortly be writing  (some submitted to hwmon and spi mailing lists, some 
-not
-finished as of yet)
-
-ST Micro LIS3L02DQ 3D accelerometer.  SPI device, no buffering, 
-interrupt pin
-raised high on new data being available. Currently the driver assumes, if
-interrupts are enabled, that this is connected to a specified gpio.
-(http://www.st.com/stonline/books/pdf/docs/10175.pdf)
-
-VTI SCA3000 E05 3D accelerometer equiped with substantial ring buffer. SPI
-device.  Can operate either in buffered or direct mode.  In buffered 
-mode, interrupts
-can be used to indicate when the ring buffer is 3/4 full triggering a 
-download to
-a larger ring buffer in the kernel if necessary.
-(http://www.vti.fi/en/products-solutions/products/accelerometers/sca3000-accelerometers/)
-
-Analog Devices ADIS16350 combined 3D accelerometer and gyro unit.  SPI 
-device.
-(http://www.analog.com/en/prod/0,,764_801_ADIS16350%2C00.html)
-
-Maxim MAX1363, MAX1238 ADC's.  I2C devices. Some SPI ADC's 
-(www.analog.com for
-examples)
-
-Would be nice if practical to allow the framework to include RS232 
-devices such
-as those from www.xsens.com, www.isense.com and others.
-
---
-Jonathan Cameron
-
+device.h does not include lockdep.h, so putting this here assumes that
+callees have already included lockdep.h.  This is the sort of
+assumption which leads to compilation errors.
 
