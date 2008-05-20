@@ -1,856 +1,1019 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758599AbYETFTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758916AbYETF3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758599AbYETFTy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 01:19:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753173AbYETFTp
+	id S1758916AbYETF3o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 01:29:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933AbYETF3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 01:19:45 -0400
-Received: from cnc.isely.net ([64.81.146.143]:43593 "EHLO cnc.isely.net"
+	Tue, 20 May 2008 01:29:33 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:51550 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753139AbYETFTo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 01:19:44 -0400
-Date: Tue, 20 May 2008 00:19:40 -0500 (CDT)
-From: Mike Isely <isely@isely.net>
-Reply-To: Mike Isely <isely@pobox.com>
-To: Adrian Bunk <bunk@kernel.org>
-cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Video4Linux list <video4linux-list@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mike Isely at pobox <isely@pobox.com>
-Subject: Re: [2.6 patch] drivers/media/: remove CVS keywords
-In-Reply-To: <20080519215744.GQ17716@cs181133002.pp.htv.fi>
-Message-ID: <Pine.LNX.4.64.0805200012490.20553@cnc.isely.net>
-References: <20080519215744.GQ17716@cs181133002.pp.htv.fi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	id S1753876AbYETF3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 01:29:31 -0400
+Date: Mon, 19 May 2008 22:29:05 -0700
+From: Tim Pepper <lnxninja@linux.vnet.ibm.com>
+To: Nadia Derbey <Nadia.Derbey@bull.net>
+Cc: Tim Pepper <lnxninja@linux.vnet.ibm.com>, manfred@colorfullife.com,
+       paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, efault@gmx.de,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 7/9] Make idr_remove rcu-safe
+Message-ID: <20080520052904.GA11326@tpepper-t42p.dolavim.us>
+References: <20080507113553.395937000@bull.net> <20080507113737.562143000@bull.net> <20080514195925.GA8994@tpepper-t42p.dolavim.us> <482BE8DD.2020101@bull.net>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="d6Gm4EdcadzBjdND"
+Content-Disposition: inline
+In-Reply-To: <482BE8DD.2020101@bull.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 May 2008, Adrian Bunk wrote:
 
-> This patch removes CVS keywords that weren't updated for a long time 
-> from comments.
-> 
-> The pvrusb2 ones were unusual since they weren't expanded at all.
+--d6Gm4EdcadzBjdND
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-They weren't expanded in the pvrusb2 case because when the driver 
-sources move from my standalone / dev area into the v4l-dvb repository, 
-I process them with a script which does various manipulations to make 
-the sources suitable for the v4l-dvb repository.  Among these 
-manipulations include unexpanding any expanded CVS (actually Subversion 
-in this case) keywords.  So the keywords actually are used and are 
-accurate in the standalone context, but the processed result leaves them 
-unexpanded since that would otherwise be a source for constant merge 
-thrashing and misleading version info in other environments (e.g. in 
-v4l-dvb or the kernel).
+On Thu 15 May at 09:40:13 +0200 Nadia.Derbey@bull.net said:
+> Tim Pepper wrote:
+>> On Wed 07 May at 13:36:00 +0200 Nadia.Derbey@bull.net said:
+>>
+>>> [PATCH 07/09]
+>>>
+>>> This patch introduces the free_layer() routine: it is the one that actually
+>>> frees memory after a grace period has elapsed.
+>>>
+>>> Index: linux-2.6.25-mm1/lib/idr.c
+>>> ===================================================================
+>>> --- linux-2.6.25-mm1.orig/lib/idr.c	2008-05-06 18:06:43.000000000 +0200
+>>> +++ linux-2.6.25-mm1/lib/idr.c	2008-05-07 09:07:31.000000000 +0200
+>>> @@ -424,15 +455,13 @@ void idr_remove_all(struct idr *idp)
+>>>
+>>> 		id += 1 << n;
+>>> 		while (n < fls(id)) {
+>>> -			if (p) {
+>>> -				memset(p, 0, sizeof *p);
+>>> -				move_to_free_list(idp, p);
+>>> -			}
+>>> +			if (p)
+>>> +				free_layer(p);
+>>> 			n += IDR_BITS;
+>>> 			p = *--paa;
+>>> 		}
+>>> 	}
+>>> -	idp->top = NULL;
+>>> +	rcu_assign_pointer(idp->top, NULL);
+>>> 	idp->layers = 0;
+>>> }
+>>> EXPORT_SYMBOL(idr_remove_all);
+>>
+>>
+>> Does idr_remove_all() need an rcu_dereference() in the loop preceeding the
+>> above, where it does:
+>>
+>>                 while (n > IDR_BITS && p) {
+>>                         n -= IDR_BITS;
+>>                         *paa++ = p;
+>>      ---->              p = p->ary[(id >> n) & IDR_MASK];
+>>                 }
+>
+> I assumed here that idr_remove_all() was called in the "typical cleanup 
+> sequence" mentioned in the comment describing the routine.
+> And actually, that's how it is called in drivers/char/drm.
 
-I had originally left the $id$ keyword there (unexpanded) thinking it 
-might possibly have application in other contexts.  But I will adjust my 
-processing script to ensure that the keyword is removed entirely.
+Sure.  I guess I was thinking out loud that it's maybe somewhat implicit
+that things must be serial at that point and I wasn't sure if it was meant
+to be required or enforced, if it should be clarified with comments or
+by explicitly adding the rcu calls in these couple additional places.
 
-  -Mike
+>> I've been having some machine issues, but hope to give this patch set a run
+>> still on a 128way machine and mainline to provide some additional
+>> datapoints.
+>>
+>
+> That would be kind, indeed (hope I didn't break anything).
 
+I've had a bunch of machine issues, but I did manage to do some testing.
 
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> ---
-> 
->  Documentation/video4linux/README.cpia2               |    2 --
->  Documentation/video4linux/README.pvrusb2             |    2 --
->  drivers/media/video/dabusb.c                         |    5 -----
->  drivers/media/video/planb.c                          |    2 --
->  drivers/media/video/planb.h                          |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-audio.c          |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-audio.h          |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-context.c        |    1 -
->  drivers/media/video/pvrusb2/pvrusb2-context.h        |    1 -
->  drivers/media/video/pvrusb2/pvrusb2-ctrl.c           |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-ctrl.h           |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.c    |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.h    |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-debug.h          |    1 -
->  drivers/media/video/pvrusb2/pvrusb2-debugifc.c       |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-debugifc.h       |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-devattr.c        |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-devattr.h        |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-eeprom.c         |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-eeprom.h         |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-encoder.c        |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-encoder.h        |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-fx2-cmd.h        |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-hdw-internal.h   |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-hdw.c            |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-hdw.h            |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-i2c-chips-v4l2.c |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-i2c-cmd-v4l2.c   |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-i2c-cmd-v4l2.h   |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-i2c-core.c       |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-i2c-core.h       |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-io.c             |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-io.h             |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-ioread.c         |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-ioread.h         |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-main.c           |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-std.c            |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-std.h            |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-sysfs.c          |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-sysfs.h          |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-tuner.c          |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-tuner.h          |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-util.h           |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-v4l2.c           |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-v4l2.h           |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-video-v4l.c      |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-video-v4l.h      |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-wm8775.c         |    2 --
->  drivers/media/video/pvrusb2/pvrusb2-wm8775.h         |    2 --
->  drivers/media/video/pvrusb2/pvrusb2.h                |    2 --
->  drivers/media/video/saa5249.c                        |    2 --
->  drivers/media/video/saa7196.h                        |    2 --
->  drivers/media/video/videocodec.c                     |    2 --
->  drivers/media/video/videocodec.h                     |    2 --
->  drivers/media/video/zr36016.c                        |    2 --
->  drivers/media/video/zr36016.h                        |    2 --
->  drivers/media/video/zr36050.c                        |    2 --
->  drivers/media/video/zr36050.h                        |    2 --
->  drivers/media/video/zr36060.c                        |    2 --
->  drivers/media/video/zr36060.h                        |    2 --
->  60 files changed, 120 deletions(-)
-> 
-> 58b60bf25cb6143266922771f0953a5a5f109c84 diff --git a/Documentation/video4linux/README.cpia2 b/Documentation/video4linux/README.cpia2
-> index ce8213d..26159e1 100644
-> --- a/Documentation/video4linux/README.cpia2
-> +++ b/Documentation/video4linux/README.cpia2
-> @@ -1,5 +1,3 @@
-> -$Id: README,v 1.7 2005/08/29 23:39:57 sbertin Exp $
-> -
->  1. Introduction
->  
->  	This is a driver for STMicroelectronics's CPiA2 (second generation
-> diff --git a/Documentation/video4linux/README.pvrusb2 b/Documentation/video4linux/README.pvrusb2
-> index a747200..e3d0bbe 100644
-> --- a/Documentation/video4linux/README.pvrusb2
-> +++ b/Documentation/video4linux/README.pvrusb2
-> @@ -1,5 +1,3 @@
-> -
-> -$Id$
->  Mike Isely <isely@pobox.com>
->  
->  			    pvrusb2 driver
-> diff --git a/drivers/media/video/dabusb.c b/drivers/media/video/dabusb.c
-> index 8d1f8ee..4a44608 100644
-> --- a/drivers/media/video/dabusb.c
-> +++ b/drivers/media/video/dabusb.c
-> @@ -18,11 +18,6 @@
->   *      You should have received a copy of the GNU General Public License
->   *      along with this program; if not, write to the Free Software
->   *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-> - *
-> - *
-> - *
-> - *  $Id: dabusb.c,v 1.54 2000/07/24 21:39:39 deti Exp $
-> - *
->   */
->  
->  /*****************************************************************************/
-> diff --git a/drivers/media/video/planb.c b/drivers/media/video/planb.c
-> index 36047d4..5c8fa68 100644
-> --- a/drivers/media/video/planb.c
-> +++ b/drivers/media/video/planb.c
-> @@ -25,8 +25,6 @@
->      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
->  */
->  
-> -/* $Id: planb.c,v 1.18 1999/05/02 17:36:34 mlan Exp $ */
-> -
->  #include <linux/init.h>
->  #include <linux/errno.h>
->  #include <linux/module.h>
-> diff --git a/drivers/media/video/planb.h b/drivers/media/video/planb.h
-> index e21b573..79713a3 100644
-> --- a/drivers/media/video/planb.h
-> +++ b/drivers/media/video/planb.h
-> @@ -26,8 +26,6 @@
->      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
->  */
->  
-> -/* $Id: planb.h,v 1.13 1999/05/03 19:28:56 mlan Exp $ */
-> -
->  #ifndef _PLANB_H_
->  #define _PLANB_H_
->  
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-audio.c b/drivers/media/video/pvrusb2/pvrusb2-audio.c
-> index 8d859cc..2e93834 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-audio.c
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-audio.c
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
->   *
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-audio.h b/drivers/media/video/pvrusb2/pvrusb2-audio.h
-> index 536339b..b1ba39f 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-audio.h
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-audio.h
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
->   *
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-context.c b/drivers/media/video/pvrusb2/pvrusb2-context.c
-> index 73dcb1c..7c19ff7 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-context.c
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-context.c
-> @@ -1,5 +1,4 @@
->  /*
-> - *  $Id$
->   *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-context.h b/drivers/media/video/pvrusb2/pvrusb2-context.h
-> index 745e270..6180129 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-context.h
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-context.h
-> @@ -1,5 +1,4 @@
->  /*
-> - *  $Id$
->   *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-ctrl.c b/drivers/media/video/pvrusb2/pvrusb2-ctrl.c
-> index 91a42f2..9a8ce4e 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-ctrl.c
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-ctrl.c
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *
->   *  This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-ctrl.h b/drivers/media/video/pvrusb2/pvrusb2-ctrl.h
-> index c168005..c1d7c20 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-ctrl.h
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-ctrl.h
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *
->   *  This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.c b/drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.c
-> index 29d5059..d5c5318 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.c
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.c
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
->   *
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.h b/drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.h
-> index 54b2844..abe885b 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.h
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-cx2584x-v4l.h
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
->   *
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-debug.h b/drivers/media/video/pvrusb2/pvrusb2-debug.h
-> index 707d2d9..be79249 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-debug.h
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-debug.h
-> @@ -1,5 +1,4 @@
->  /*
-> - *  $Id$
->   *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-debugifc.c b/drivers/media/video/pvrusb2/pvrusb2-debugifc.c
-> index b53121c..53737dc 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-debugifc.c
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-debugifc.c
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *
->   *  This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-debugifc.h b/drivers/media/video/pvrusb2/pvrusb2-debugifc.h
-> index 990b02d..f683f11 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-debugifc.h
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-debugifc.h
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *
->   *  This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-devattr.c b/drivers/media/video/pvrusb2/pvrusb2-devattr.c
-> index 5bf6d8f..a5f358d 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-devattr.c
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-devattr.c
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2007 Mike Isely <isely@pobox.com>
->   *
->   *  This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-devattr.h b/drivers/media/video/pvrusb2/pvrusb2-devattr.h
-> index d016f8b..47e68e5 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-devattr.h
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-devattr.h
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *
->   *  This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-eeprom.c b/drivers/media/video/pvrusb2/pvrusb2-eeprom.c
-> index 5ef0059..c5fb7f4 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-eeprom.c
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-eeprom.c
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
->   *
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-eeprom.h b/drivers/media/video/pvrusb2/pvrusb2-eeprom.h
-> index 8424297..a6d2ec2 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-eeprom.h
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-eeprom.h
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
->   *
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-encoder.c b/drivers/media/video/pvrusb2/pvrusb2-encoder.c
-> index c46d367..9c7b990 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-encoder.c
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-encoder.c
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
->   *
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-encoder.h b/drivers/media/video/pvrusb2/pvrusb2-encoder.h
-> index 54caf2e..8bdb75e 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-encoder.h
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-encoder.h
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
->   *
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-fx2-cmd.h b/drivers/media/video/pvrusb2/pvrusb2-fx2-cmd.h
-> index abaada3..a3a1619 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-fx2-cmd.h
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-fx2-cmd.h
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2007 Michael Krufky <mkrufky@linuxtv.org>
->   *
->   *  This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-hdw-internal.h b/drivers/media/video/pvrusb2/pvrusb2-hdw-internal.h
-> index a3fe251..484fac6 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-hdw-internal.h
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-hdw-internal.h
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *
->   *  This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-hdw.c b/drivers/media/video/pvrusb2/pvrusb2-hdw.c
-> index 0a86888..0721d75 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-hdw.c
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-hdw.c
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *
->   *  This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-hdw.h b/drivers/media/video/pvrusb2/pvrusb2-hdw.h
-> index 20295e0..7f7d625 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-hdw.h
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-hdw.h
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *
->   *  This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-i2c-chips-v4l2.c b/drivers/media/video/pvrusb2/pvrusb2-i2c-chips-v4l2.c
-> index 4977376..9f4fcb1 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-i2c-chips-v4l2.c
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-i2c-chips-v4l2.c
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *
->   *  This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-i2c-cmd-v4l2.c b/drivers/media/video/pvrusb2/pvrusb2-i2c-cmd-v4l2.c
-> index c650e02..4bfc388 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-i2c-cmd-v4l2.c
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-i2c-cmd-v4l2.c
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
->   *
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-i2c-cmd-v4l2.h b/drivers/media/video/pvrusb2/pvrusb2-i2c-cmd-v4l2.h
-> index c838df6..6b65bd7 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-i2c-cmd-v4l2.h
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-i2c-cmd-v4l2.h
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
->   *
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-i2c-core.c b/drivers/media/video/pvrusb2/pvrusb2-i2c-core.c
-> index 793c89a..0e59ffb 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-i2c-core.c
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-i2c-core.c
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *
->   *  This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-i2c-core.h b/drivers/media/video/pvrusb2/pvrusb2-i2c-core.h
-> index bd0807b..f935a17 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-i2c-core.h
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-i2c-core.h
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *
->   *  This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-io.c b/drivers/media/video/pvrusb2/pvrusb2-io.c
-> index 7aff8b7..3b5104b 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-io.c
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-io.c
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *
->   *  This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-io.h b/drivers/media/video/pvrusb2/pvrusb2-io.h
-> index 42fcf82..b3c560e 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-io.h
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-io.h
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *
->   *  This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-ioread.c b/drivers/media/video/pvrusb2/pvrusb2-ioread.c
-> index c572212..66d6d5f 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-ioread.c
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-ioread.c
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *
->   *  This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-ioread.h b/drivers/media/video/pvrusb2/pvrusb2-ioread.h
-> index 1d362f8..09b4b86 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-ioread.h
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-ioread.h
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *
->   *  This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-main.c b/drivers/media/video/pvrusb2/pvrusb2-main.c
-> index 332aced..dc98268 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-main.c
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-main.c
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
->   *
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-std.c b/drivers/media/video/pvrusb2/pvrusb2-std.c
-> index fdc5a2b..d3d9122 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-std.c
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-std.c
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *
->   *  This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-std.h b/drivers/media/video/pvrusb2/pvrusb2-std.h
-> index 07c3993..a235e17 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-std.h
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-std.h
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *
->   *  This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-sysfs.c b/drivers/media/video/pvrusb2/pvrusb2-sysfs.c
-> index 0ff7a83..0af86bb 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-sysfs.c
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-sysfs.c
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *
->   *  This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-sysfs.h b/drivers/media/video/pvrusb2/pvrusb2-sysfs.h
-> index ff9373b..8de9769 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-sysfs.h
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-sysfs.h
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *
->   *  This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-tuner.c b/drivers/media/video/pvrusb2/pvrusb2-tuner.c
-> index 05e65ce..73a58d8 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-tuner.c
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-tuner.c
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
->   *
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-tuner.h b/drivers/media/video/pvrusb2/pvrusb2-tuner.h
-> index 556f12a..97bfc4c 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-tuner.h
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-tuner.h
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *
->   *  This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-util.h b/drivers/media/video/pvrusb2/pvrusb2-util.h
-> index e53aee4..ee23128 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-util.h
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-util.h
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *
->   *  This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-v4l2.c b/drivers/media/video/pvrusb2/pvrusb2-v4l2.c
-> index e9b5d4e..3ae6a02 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-v4l2.c
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-v4l2.c
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
->   *
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-v4l2.h b/drivers/media/video/pvrusb2/pvrusb2-v4l2.h
-> index 9a995e2..8266f9d 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-v4l2.h
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-v4l2.h
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *
->   *  This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-video-v4l.c b/drivers/media/video/pvrusb2/pvrusb2-video-v4l.c
-> index 2433a31..ebe08c5 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-video-v4l.c
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-video-v4l.c
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
->   *
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-video-v4l.h b/drivers/media/video/pvrusb2/pvrusb2-video-v4l.h
-> index 2b917fd..358b474 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-video-v4l.h
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-video-v4l.h
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
->   *
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-wm8775.c b/drivers/media/video/pvrusb2/pvrusb2-wm8775.c
-> index 66b4d36..0134e00 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-wm8775.c
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-wm8775.c
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
->   *
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2-wm8775.h b/drivers/media/video/pvrusb2/pvrusb2-wm8775.h
-> index 8aaeff4..05c4bc1 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2-wm8775.h
-> +++ b/drivers/media/video/pvrusb2/pvrusb2-wm8775.h
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
->   *
-> diff --git a/drivers/media/video/pvrusb2/pvrusb2.h b/drivers/media/video/pvrusb2/pvrusb2.h
-> index 1a9a4ba..b8a8caf 100644
-> --- a/drivers/media/video/pvrusb2/pvrusb2.h
-> +++ b/drivers/media/video/pvrusb2/pvrusb2.h
-> @@ -1,7 +1,5 @@
->  /*
->   *
-> - *  $Id$
-> - *
->   *  Copyright (C) 2005 Mike Isely <isely@pobox.com>
->   *  Copyright (C) 2004 Aurelien Alleaume <slts@free.fr>
->   *
-> diff --git a/drivers/media/video/saa5249.c b/drivers/media/video/saa5249.c
-> index ec8c65d..2205142 100644
-> --- a/drivers/media/video/saa5249.c
-> +++ b/drivers/media/video/saa5249.c
-> @@ -15,8 +15,6 @@
->   *
->   *	Copyright (c) 1998 Richard Guenther <richard.guenther@student.uni-tuebingen.de>
->   *
-> - * $Id: saa5249.c,v 1.1 1998/03/30 22:23:23 alan Exp $
-> - *
->   *	Derived From
->   *
->   * vtx.c:
-> diff --git a/drivers/media/video/saa7196.h b/drivers/media/video/saa7196.h
-> index cd4b635..59338ea 100644
-> --- a/drivers/media/video/saa7196.h
-> +++ b/drivers/media/video/saa7196.h
-> @@ -15,8 +15,6 @@
->      The default values used for PlanB are my mistakes.
->  */
->  
-> -/* $Id: saa7196.h,v 1.5 1999/03/26 23:28:47 mlan Exp $ */
-> -
->  #ifndef _SAA7196_H_
->  #define _SAA7196_H_
->  
-> diff --git a/drivers/media/video/videocodec.c b/drivers/media/video/videocodec.c
-> index cf24956..9a778e2 100644
-> --- a/drivers/media/video/videocodec.c
-> +++ b/drivers/media/video/videocodec.c
-> @@ -6,8 +6,6 @@
->   *
->   * (c) 2002 Wolfgang Scherr <scherr@net4you.at>
->   *
-> - * $Id: videocodec.c,v 1.1.2.8 2003/03/29 07:16:04 rbultje Exp $
-> - *
->   * ------------------------------------------------------------------------
->   *
->   * This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/videocodec.h b/drivers/media/video/videocodec.h
-> index 97a3bbe..77f72cd 100644
-> --- a/drivers/media/video/videocodec.h
-> +++ b/drivers/media/video/videocodec.h
-> @@ -6,8 +6,6 @@
->   *
->   * (c) 2002 Wolfgang Scherr <scherr@net4you.at>
->   *
-> - * $Id: videocodec.h,v 1.1.2.4 2003/01/14 21:15:03 rbultje Exp $
-> - *
->   * ------------------------------------------------------------------------
->   *
->   * This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/zr36016.c b/drivers/media/video/zr36016.c
-> index 00d132b..4ca27db 100644
-> --- a/drivers/media/video/zr36016.c
-> +++ b/drivers/media/video/zr36016.c
-> @@ -3,8 +3,6 @@
->   *
->   * Copyright (C) 2001 Wolfgang Scherr <scherr@net4you.at>
->   *
-> - * $Id: zr36016.c,v 1.1.2.14 2003/08/20 19:46:55 rbultje Exp $
-> - *
->   * ------------------------------------------------------------------------
->   *
->   * This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/zr36016.h b/drivers/media/video/zr36016.h
-> index 8c79229..03d0684 100644
-> --- a/drivers/media/video/zr36016.h
-> +++ b/drivers/media/video/zr36016.h
-> @@ -3,8 +3,6 @@
->   *
->   * Copyright (C) 2001 Wolfgang Scherr <scherr@net4you.at>
->   *
-> - * $Id: zr36016.h,v 1.1.2.3 2003/01/14 21:18:07 rbultje Exp $
-> - *
->   * ------------------------------------------------------------------------
->   *
->   * This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/zr36050.c b/drivers/media/video/zr36050.c
-> index cf8b271..5b6981e 100644
-> --- a/drivers/media/video/zr36050.c
-> +++ b/drivers/media/video/zr36050.c
-> @@ -3,8 +3,6 @@
->   *
->   * Copyright (C) 2001 Wolfgang Scherr <scherr@net4you.at>
->   *
-> - * $Id: zr36050.c,v 1.1.2.11 2003/08/03 14:54:53 rbultje Exp $
-> - *
->   * ------------------------------------------------------------------------
->   *
->   * This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/zr36050.h b/drivers/media/video/zr36050.h
-> index 9f52f0c..9453640 100644
-> --- a/drivers/media/video/zr36050.h
-> +++ b/drivers/media/video/zr36050.h
-> @@ -3,8 +3,6 @@
->   *
->   * Copyright (C) 2001 Wolfgang Scherr <scherr@net4you.at>
->   *
-> - * $Id: zr36050.h,v 1.1.2.2 2003/01/14 21:18:22 rbultje Exp $
-> - *
->   * ------------------------------------------------------------------------
->   *
->   * This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/zr36060.c b/drivers/media/video/zr36060.c
-> index 8e74054..19fed7d 100644
-> --- a/drivers/media/video/zr36060.c
-> +++ b/drivers/media/video/zr36060.c
-> @@ -3,8 +3,6 @@
->   *
->   * Copyright (C) 2002 Laurent Pinchart <laurent.pinchart@skynet.be>
->   *
-> - * $Id: zr36060.c,v 1.1.2.22 2003/05/06 09:35:36 rbultje Exp $
-> - *
->   * ------------------------------------------------------------------------
->   *
->   * This program is free software; you can redistribute it and/or modify
-> diff --git a/drivers/media/video/zr36060.h b/drivers/media/video/zr36060.h
-> index 914ffa4..16be7b4 100644
-> --- a/drivers/media/video/zr36060.h
-> +++ b/drivers/media/video/zr36060.h
-> @@ -3,8 +3,6 @@
->   *
->   * Copyright (C) 2002 Laurent Pinchart <laurent.pinchart@skynet.be>
->   *
-> - * $Id: zr36060.h,v 1.1.1.1.2.3 2003/01/14 21:18:47 rbultje Exp $
-> - *
->   * ------------------------------------------------------------------------
->   *
->   * This program is free software; you can redistribute it and/or modify
-> 
-> 
+I'd started looking at the regression after Anton Blanchard mentioned
+seeing it via this simple bit of code:
+    http://ozlabs.org/~anton/junkcode/lock_comparison.c
+It essentially spawns a number of threads to match the cpu count, each
+thread looping 10000 times, where each loop does some trivial semop()'s.
+Each thread has its own semaphore it is semop()'ing so there's no
+contention.
+
+To get a little more detail I hacked Anton's code minimally to record
+results for thread counts 1..n and also to optionally have just a single
+semaphore on which all of these threads are contending.  I ran this on
+a 64cpu machine (128 given SMT), but didn't make any effort to force
+clean thread/cpu affinity.
+
+The contended numbers don't look quite as consistent as they could at
+the high end, but I think this is more quick/dirty test than patch.
+Nevertheless the patch clearly outperforms mainline and despite the
+noise actually looks to perform a more consistently than mainline
+(see graphs).
+
+Summary numbers from a run (with a bit more detail at the high thread
+side as the numbers had more variation there and just showing the power
+of two numbers for this run incorrectly implies a knee...I can do more
+runs with averages/stats if people need more convincing):
+
+threads          uncontended                     contended
+                 semop loops                    semop loops
+
+        2.6.26-rc2      +patchset        2.6.26-rc2      +patchset
+
+1	  2243.94	  4436.25	   2063.18	   4386.78
+2	  2954.11	  5445.12	  67885.16	   5906.72
+4	  4367.45	  8125.67	  72820.32	  44263.86
+8	  7440.00	  9842.66	  60184.17	  95677.58
+16	 12959.44	 20323.97	 136482.42	 248143.80
+32	 35252.71	 56334.28	 363884.09	 599773.31
+48	 62811.15	102684.67	 515886.12	1714530.12
+...
+57	 81064.99	141434.33	 564874.69	2518078.75
+58	 79486.08	145685.84	 693038.06	1868813.12
+59	 83634.19	153087.80	1237576.25	2828301.25
+60	 91581.07	158207.08	 797796.94	2970977.25
+61	 89209.40	160529.38	1202135.38	2538114.50
+62	 89008.45	167843.78	1305666.75	2274845.00
+63	 97753.17	177470.12	 733957.31	 363952.62
+64	102556.05	175923.56	1356988.88	 199527.83
+
+(detail plots from this same run attached...)
+
+Nadia, you're welcome to add either or both of these to the series if
+you'd like:
+
+Reviewed-by: Tim Pepper <lnxninja@linux.vnet.ibm.com>
+Tested-by: Tim Pepper <lnxninja@linux.vnet.ibm.com>
 
 -- 
+Tim Pepper  <lnxninja@linux.vnet.ibm.com>
+IBM Linux Technology Center
 
-Mike Isely
-isely @ pobox (dot) com
-PGP: 03 54 43 4D 75 E5 CC 92 71 16 01 E2 B5 F5 C1 E8
+--d6Gm4EdcadzBjdND
+Content-Type: image/png
+Content-Disposition: attachment; filename="2.6.26-rc2.contended.128_semops.png"
+Content-Transfer-Encoding: base64
+
+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
+PvXUU0uWLHn99df7+/s7Ojqm3+8X6At7vd5A792wYcM//MM/2Gy29vb2JUuWPPfcc76PLi4u
+/uijj06dOlVUVHTrrbdK4//Xf/2XEOKzzz774osvfNFVW1u7cuXKt99+e2BgoK2tLTMz02w2
+B5/O3Xfffe2119pstvfee2/FihW+mR9oUkHecqEB7JtFY2NjmZmZtbW1LpfL4XD89Kc//fGP
+fxxoCZ45cyYxMfHZZ5/9v//7v48//vgPf/jDbOpuMBg+/PDD7u7um2++uaCg4Ac/+MGxY8c+
+/fTTm2+++bbbbptxEdx0000nT548cuSITqd75plngnyNIKtNc3NzW1tbf3//+++/v2bNms2b
+N3u93sHBQSHE559/7vV6H3jggcsuu6y6utrr9VosloULF46Pj4cjgMO1AyeACWDEHofDcdVV
+V/3yl7+cUn5BjwyZMp3Zv1faA7777rvSoNPpTElJ+c1vfjOHLxzovd98801SUpLU9PF6vb/+
+9a9zcnJ8H/3hhx9K5W+++aZKpQqUbUGeyBJoOlM+97nnnpOmGWRSgd5yoQE8ZRb5fcaMX//9
+3/8thOju7p5cOGPd//SnP0nlf/jDH4QQH330kW9w4cKFMy6Cd955x1dfqdzv1wiy2kzx1ltv
+paWlSa+vvvrq/fv3e73e7Oxss9lcXFzs9Xq3b99+8803h20PTgATwIAfLpfrn//5n3/4wx+6
+XK4p/zpx4oQQ4uOPP5YG9+7du2TJkllOJ8h7L5nEtyc9d+6c9N+TJ08KIb788ss5fOFA7+3s
+7BRCDA0NSYPvvvtuQkLCxMSE9NEjIyOT9+lSOE3Ptq6uLiHE5C+/cOFCIYTL5Qo0nSmf297e
+Lk0zyKQCveWCAnj6LFq3bt26detOnDhx9OjRa6+99vHHHw80e8+fP3/jjTcuXrx448aNv//9
+76WO4gut+1/+8pfgs2LKIhgeHvbVVyr3+zWm19232kiN2pKSEp1Op1arfV/P6/WWl5dv2bLl
+7NmzGo1meHg4JSVlfHz8xz/+8ZNPPkkAB5LEWXAg1CYmJjZs2GC32//4xz8mJydP+e/sHxky
+fTpB3ut7eMlk0z99Dl94jhd8JiRMOd3rd7TgT2QJMp3pz6iZcVIX81ib6bMo0DNm/H5KYmLi
+0aNHW1tb3377baPReODAgd/85jcXWvdZztIg/H6NIKvNX/7yl1tvvbWsrMxsNl922WVWq/Xu
+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
+
+--d6Gm4EdcadzBjdND
+Content-Type: image/png
+Content-Disposition: attachment; filename="2.6.26-rc2-patched.contended_semops.png"
+Content-Transfer-Encoding: base64
+
+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
+Trdlyxbppdra2sbGxq6urg8++GDRokVr166Vpv/+978XQnz++edffvnll19+KU10Wwxp4Tk5
+OadOnTp//nx2dvYjjzwizb958+bk5OSjR492d3c3NjYuWLDAaDRKL61cufKBBx4wm80nTpyI
+j493uwk81To/P//+++83m81NTU2RkZGvvvqq92K4rYunsnlZjqcy32U1JZcvXw4KCnrllVf+
+7//+75NPPnn33XfHU86srKyPP/74woULDz30UHp6+ve///2TJ09evHjxoYce+qd/+qcxV9fo
+XcJTMbzsnG53oZ6eHiHEn/70J6fT+eSTT86dO7e0tNTpdJpMptmzZw8MDExFAE/VAZwAJoAx
+kaxW67333vviiy+OmH5bD/MYsZzxv1c6Nh0/flwatdlswcHBv/71r++gwCO+akijr776amJi
+4ujZ3nvvvYiIiOFvGX5k9FQMac6PP/5YGn3nnXfUarXT65NUrl+/rlAopCaRVJ7RR2FPHzfi
+vS+//LJUF0/FcFsXL2XztBxPZb7Larp8+umnQogLFy4MnzhmOT/66CNp+rvvviuEOHXqlGt0
+9uzZY66u0buE22J42Tm97EL33XffwYMHnU5nQkKC0WjMyclxOp2VlZUPPfSQDy9KJoAJYExr
+drv9H//xH6UnUo946cyZM0KITz75xNV/GxkZOc7leHlvyDCuY9yVK1ekV8+dOyeE+POf/zz+
+ArtdYF9fn/RqU1OTXC6XuiJNJtOyZct0Op1Go5k9e7YQQlrI6NDyVAxpzmvXrg0f7e/vb2tr
+E0IML4lr+WfPnhVC9Pb2usozOpk8fdyI9x4/flyqi6diuK2Ll7J5Wo6nMt9lNV1u3rz54IMP
+zpkzZ/Xq1W+//ba0dW63nH/5y1+8F3vE6hq9S7gtxujN7do5vexCBQUF69at++qrr0JDQ/v6
++oKDgwcGBn70ox9t3LiRAPZEwa/gCGRDQ0P5+fkWi+X999+Xnkg93Pgf5jF6OV7e63qsyHCj
+P338BXa7wNH+8pe/PPLII3l5eUajce7cua2trStXrhwaGhrnR99y9qZcPuJ3Vu9PUhET+gwZ
+L8VwO9uYZfO0nNFlnqhqBgUFffjhhw0NDUePHi0sLDx8+PCvf/3r2y3nOKt/u8XwsnN62YWy
+s7O3bNnywQcfZGVlzZ07V6/Xnzp16g9/+MPTTz89uf/DM/m+mJwFjcDlcDjWrFlz/vz59957
+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
+RU5ErkJggg==
+
+--d6Gm4EdcadzBjdND
+Content-Type: image/png
+Content-Disposition: attachment; filename="2.6.26-rc2.uncontended_semops.png"
+Content-Transfer-Encoding: base64
+
+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
+nCwvX3PNNTt37nS73Tk5ORaLpaCgwO12b9my5ZZbbgnZJzsBTAADk+R0Or/3ve/deuutTqfT
+658+/vhjIcRHH30kr27btm327Nnj3E6A504fwfNp293dLf/ryZMnhRAXLlyYxA4HDuCenp6R
+5QMDA/5eq7GxUQjR2dkprx4+fFij0QwPD/vbjs8Abm5uFkKMrOy0adOEEE6n0992vF63rq5O
+3maATfl7is+37tKlSzfddNOVV1553333vfnmm3JH8UT389tvvw28215vV1dXl2ff5HKfuzH6
+OHpOCblRW1hYaDAYkpKSPLvndrtLSkoefPDB8+fP63S6rq6uxMTEwcHBH/7wh7/5zW8IYH+0
+XAUHIoHnViV/+9vf5FuVjGQwGIQQOTk58mp2dnZXV9fw8HBMTMyY2wnwXPmHY72MfvVJ7LDX
+HWO8Bu943SjFPdm5K+PcjvzqdXV1V1555chyrVYbeDuj73sz5qbGeaucmJiYo0ePHjx48MCB
+AyaTaffu3a+//vpE9/Py30afuxHglPj2229Xrly5evVqi8Uya9Ysu91+9913Dw8Px8bGrlix
+YvPmzUeOHDEajbNmzcrOzj5x4sSHH34o33k2iEa+4Z7lKTIbilHQQPj5vFXJSOnp6Wlpaa2t
+rfLqmTNn9Hr96PT1uZ0Az80eYfSLzps3LzEx8fDhw5PYYZ1OJ0bcoEzu6gzA32tlZWVptVq5
+F10I0dDQMG/evMA3OpOrNjLy58+fn5SU1NbWlv2/AoSl1+vKLcvAm/L3FH+0Wu2qVauee+65
+bdu27dq1y+VyTWI/J/R2eb5vNTY25uTkyOWjdyPA9ltaWr755punn376pptuysnJ8Rxf+RrH
+P//5z7fffrugoEBerays/Oabb/Lz84M9kPg/f17LjIKmCxoYj5KSktTUVLvdfu6/5PKmpqb5
+8+fLPY0Wi2XFihWffPKJzWbLysp69NFHRz/G33b8PTdwv7Hb7S4rK9Pr9bt37/YaGDXmDl+6
+dCktLe3ee+89c+bMX//6V7n97emCHt01HeC1iouLr7/++pMnT77//vteo4p8buf8+fOSJO3c
+ubOjo8PTGVtRUTF79uyampovvvji008/feONNzZu3Bh4O3fdddfixYtPnjx55MiRrKwsT7m/
+TQV4ymgfffTRc889969//euzzz67//77PUOIJ7GfXqsB3q6CgoLm5uajR4+mpqb+7ne/C7Ab
+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
+4fF/Y6A2BsKhNegAAAAASUVORK5CYII=
+
+--d6Gm4EdcadzBjdND
+Content-Type: image/png
+Content-Disposition: attachment; filename="2.6.26-rc2-patched.uncontended_semops.png"
+Content-Transfer-Encoding: base64
+
+iVBORw0KGgoAAAANSUhEUgAAAoAAAAGnCAIAAACo7nFnAAAAAXNSR0IArs4c6QAAAAlwSFlz
+AAALEwAACxMBAJqcGAAAAAd0SU1FB9gFDhQVIXp1MUcAAAAZdEVYdENvbW1lbnQAQ3JlYXRl
+ZCB3aXRoIEdJTVBXgQ4XAAAgAElEQVR42u3df1Cc9YHH8e+zLD9C1k0keZbgQGzCYhRSw0hi
+ZCdJvY500ni9ab1FbTJqrg3rOjiTaSynNXd22IwcmpqrzmllBo2ESWpNjU2bkjNuQzFVNmdc
+CDfeJaYSD9oYgUUJtMACz94fT7tF2F2S8OwPnn2/hj+e58vDs8/32Yfns9/vfp/nkQKBgAAA
+ALFlYBcAAEAAAwBAAAMAAAIYAAACGAAAEMAAABDAAACAAAYAgAAGAAAEMAAABDAAAATw1XI4
+HDabzWw2S5I0MjISLH/nnXdsNltGRsY111xz5513dnZ2quV+v9/pdJrN5uzs7Nra2uDyWpUD
+AJCAjJqvcXx8vLy8vLy8fMeOHcHCS5cubdq06Z577nnllVeGh4cfe+yxu+66q729XQjhcrnc
+bndLS0tfX5/dbrdarXa7XcNyAAASUSA6WltbhRDDw8PqrNfrFUJ88skn6mxzc7MkSRMTE4qi
+WCyWhoYGtbyqqqqsrCwQCGhVDgBAYorRd8CFhYX5+fkvv/zy2NjY0NDQvn37vvGNbxgMhu7u
+7p6eHpvNpi5WWlqqRrVW5QAAJEsXdEjp6eknTpzYuHHjE088oSjK17/+9UOHDgkhent7hRCy
+LKuLybLs8/kURdGq3GAI8QlDkiTeeADAVfccz6UAFkJs27YtNzd37969f/7znysrK6urq2tq
+aub67ktkkiTpvprUkTpSTeoY+zpqtaoYdUGfPXu2qanp+eefv+WWW9atW/fkk08+++yzgUBA
+bbOq7Vd1Iisry2AwaFXOJzUASNgoS/IdEKOI8vv9QoiUlBR1NiUlZWxsTAiRl5dnsVg8Ho9a
+7vF4SkpKNCwHACAxad8FrV5cdO7cOSFER0dHWlpacXHxTTfdlJub+73vfa+mpubPf/7zD3/4
+w7KyMrUhX1FR4XK5ioqK+vv76+rq6uvr1Ta+JuUAACQozcdVh3uJtra29evXp6enm0ymu+66
+6+LFi2r56Oiow+EwmUyyLNfU1ATXo1V5yC1MhgHuyVBN6kgdqebcq6MQIX6S8n1MirEPUzDi
+gzpSR+pINeNfR0kSIRcOV66795FhSgAAxAEBrFvJ0KSgjrPn8XgkSRoaGprlGibf+F1/7+NV
+1HH6n3C4ggCGTqgnOLfbHTzNVVVVFRYWpqWlybK8bdu2gYGBkH946NChlStXpqWlLV269MiR
+I9MXiLCeGf/2ilzmBsclFOf6gZGcdZ9D/61qXH9hIUn6y8+UaQIYSHwdHR27du368MMPjxw5
+curUqa1bt05f5tixY5WVlbt27froo48OHjx4/fXXX/56LudvpxgfH1cUZTYbDCSIyAezJs3n
+v/xMmdZ3j0GySc5a64/6wI+33npLTHrsR1BTU5PRaJyYmJhSvnr16sbGxst/lcnrucy/VTfs
+V7/61cqVK1NSUi5cuKAoyjPPPGO1WlNTU5csWbJz587ILxRyha+//vry5cszMzOdTuf4+Lj6
+q7179958881paWkLFy68//77L126FPJiBLUw5GaoK3e73atWrUpLS7vttts++uij4Ev/x3/8
+x4oVK9LS0nJzc6urq4Ob19/f//d///fp6em33HLLyy+/PP0tUFc7ODg4eXZ4eDjCy4XbSwMD
+A5s3b54/f/6iRYsee+wxdRsirCfcKS5kXSKsJ0Idr3q3TPbSSy8tXbo0JSXluuuu27Nnz+Vs
+51tvvVVcXJyRkWGz2To7O999992SkpL09PS1a9d2dnbOuLtCHkLhNiPcwRzykDt06NCyZcvU
+P3nllVeEEG+++WYgEPD7/ZmZme+++27k/9YQw6STI0EIYOgzgPfv379o0aIphX19fUKI+vr6
+m266yWKxPPjggzOeC4Lrufy/VTestLT05MmTZ8+eHR4efuKJJxYvXvzaa691dXWdOnXqpZde
+ivBC4Va4bt2606dPt7S0WCyWp556Sv3Vvn373G53V1fX22+/XVxcvG3bNrX817/+tRDi448/
+/uSTT4JPIQu5GerKN2zYcPLkyTNnzqxfv37jxo3q8k8++WRRUdGbb77Z3d3tdrvz8/NdLpf6
+q3vvvffmm29ub2//7W9/u3z58isN4JAvF24vbd68+ctf/nJ7e3tzc/PixYufeeaZyJsdsu7h
+6hJhPeHqOJvdEnThwoWUlJQf/ehH//d///fee+/98pe/vJzttNls77777tmzZ2+//fY1a9Z8
+5StfaW1t/fDDD2+//fY777xzxt01/RAKtxkRDuaQh1xPT48Q4g9/+EMgEPjud7+7aNGif/mX
+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
+GRm/+tWvNKlm0nVBd3d39/T02Gw2dba0tNTr9VLfueizzz5bsGCBwWDQcR0///zzV155ZdOm
+TampqTqrZldX1yOPPNLY2Gg0GvV9uK5cuTIrK+vWW2/dt2+fzqrp8/lOnTo1OjpaWFiYnZ3t
+dDrVL790/C/5+uuvm0wmtdtm9tVMugBWH1moPr5QnfD5fIqiUN+5ZWhoqLq6+uGHH9ZrHb/1
+rW/Nnz//2muvHRoaeuONN3RWTUVR7rvvvscff3zFihU6PlwtFktdXd0vfvGLlpaWe++91+l0
+Pv/883qqZldXlxCioaFh7969+/fvb2pqeuyxx/R9mt2/f/8999yjfmqcfTUZBY25Z2xs7O67
+787Nzd25c6de6/jCCy+8//77r732Wnt7u3pS05Pdu3dnZGRUVlbq+0Bdvny5w+EoLi7+8pe/
+vGPHjl27dj311FN6qqD6KIE9e/asXbv2jjvucLlc+/fv1/EbeuHChebm5i1btmi1wqQLYPXT
+ivrJRZ3IysoyGAzUd66YmJjYvHmzz+c7fPhwamqqXt/TnJycG2+8sby8fM+ePc8///zExISe
+qtnc3Ox2u1NTU41G47p164QQCxcufO655/T977lmzZru7m5FUXRTTYvFIoQoKChQZ61Wa19f
+n86O1ckOHDiwbNmy0tJSrc6uSRfAeXl5FovF4/Gosx6Pp6SkhPrOFYqibN269cyZM0ePHjWZ
+TMnznkqSpKdq1tXVnT59ur29vb29Xf1mtLW1dcuWLfp+K9va2nJycgwGg26qmZubm5OT09nZ
+qc6eP39eluWUlBS9vo/79++f3PzVoJrJeRlSQUGB1+t1u90LFizQzWVIbW1tbW1t6uns5MmT
+bW1t+qtvRUXFkiVLvF5v8JIA/dXx+PHj+/bt+/DDD7u7u3/9618XFBTcd999Oj50pwwV1lMd
+//3f//3IkSOdnZ2dnZ0/+clP5s+f//TTT+usmi6Xa/369R988IHH48nPz//+97+v12P1gw8+
+EEJ8+OGHGqZJMgbw6Oiow+EwmUyyLNfU1OimXuE+XempvtPrqF5wpac6/u53v1u7du38+fON
+RuOyZcseffTR4EVlujx0pwSwnupYXV29bNmy1NTU9PT0VatWvfjii/o7C42NjW3fvn3hwoVm
+s9nhcIyMjOj1WP3BD35w6623apsmUsiTGgAAiCpGQQMAQAADAEAAAwAAAhgAAAIYAAAQwAAA
+EMAAAIAABgCAAAYAAAQwAADx8f+rvU39QzzC1wAAAABJRU5ErkJggg==
+
+--d6Gm4EdcadzBjdND--
