@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933841AbYETVpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934015AbYETVqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933841AbYETVpa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 17:45:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760857AbYETVpM
+	id S934015AbYETVqz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 17:46:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760811AbYETVqo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 17:45:12 -0400
-Received: from mail.vyatta.com ([216.93.170.194]:51040 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762265AbYETVpK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 17:45:10 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -1.169
-Date: Tue, 20 May 2008 14:45:08 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: David Miller <davem@davemloft.net>, greg@kroah.com, fubar@us.ibm.com,
-       netdev@vger.kernel.org, bonding-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] driver core: Suppress sysfs warnings for
- device_rename().
-Message-ID: <20080520144508.410ed857@extreme>
-In-Reply-To: <20080520125913.777ed67d@gondolin.boeblingen.de.ibm.com>
-References: <20080515095246.3b6a0d1d@gondolin.boeblingen.de.ibm.com>
-	<20080515.010139.219194657.davem@davemloft.net>
-	<20080515113131.2cea2bce@gondolin.boeblingen.de.ibm.com>
-	<20080515.030054.247673168.davem@davemloft.net>
-	<20080515120619.6c867bfb@gondolin.boeblingen.de.ibm.com>
-	<20080520125913.777ed67d@gondolin.boeblingen.de.ibm.com>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-pc-linux-gnu)
+	Tue, 20 May 2008 17:46:44 -0400
+Received: from relay1.sgi.com ([192.48.171.29]:42844 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755858AbYETVqm (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 17:46:42 -0400
+Date: Wed, 21 May 2008 07:46:17 +1000
+From: David Chinner <dgc@sgi.com>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: David Chinner <dgc@sgi.com>, Christoph Lameter <clameter@sgi.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       andi@firstfloor.org, Rik van Riel <riel@redhat.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, mpm@selenic.com
+Subject: Re: [patch 10/21] buffer heads: Support slab defrag
+Message-ID: <20080520214617.GU103491721@sgi.com>
+References: <20080510030831.796641881@sgi.com> <20080510030916.935905242@sgi.com> <20080512002403.GP103491721@sgi.com> <Pine.LNX.4.64.0805151041230.18708@schroedinger.engr.sgi.com> <20080515231045.GY155679365@sgi.com> <Pine.LNX.4.64.0805161000390.29603@schroedinger.engr.sgi.com> <20080519054554.GY103491721@sgi.com> <Pine.LNX.4.64.0805190942530.18431@schroedinger.engr.sgi.com> <20080520002503.GC173056135@sgi.com> <20080520065622.GA13968@2ka.mipt.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080520065622.GA13968@2ka.mipt.ru>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 May 2008 12:59:13 +0200
-Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
+On Tue, May 20, 2008 at 10:56:23AM +0400, Evgeniy Polyakov wrote:
+> On Tue, May 20, 2008 at 10:25:03AM +1000, David Chinner (dgc@sgi.com) wrote:
+> > +	filemap_fdatawrite_range(mapping, start, end);
+> > 
+> > Where [start,end] span page->index and are is large enough
+> > to get a substantial sized I/O to disk (say at least SWAP_CLUSTER_MAX
+> > pages, preferrably larger for 4k page size machines).
+> 
+> Or just sync_inode().
 
-> OK, here is an actually-compiled patch with proper description and
-> s-o-b. Comments?
-> 
-> -----
-> 
-> driver core: Suppress sysfs warnings for device_rename().
-> 
-> Renaming network devices to an already existing name is not
-> something we want sysfs to print a scary warning for, since the
-> callers can deal with this correctly. So let's introduce
-> sysfs_create_link_nowarn() which gets rid of the common warning.
-> 
-> Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
->
+Oh, god no. Let's not put the inode_lock right at the top of
+the VM page cleaning path. We don't need to modify inode state,
+the superblock dirty lists, etc - all we need to do is write
+dirty pages on a given mapping in a more efficient manner.
 
-This is still getting to be overkill. I prefer that the warnings
-always are removed.
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
