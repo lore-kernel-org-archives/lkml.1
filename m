@@ -1,86 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764058AbYETAEj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760780AbYETAIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764058AbYETAEj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 20:04:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754571AbYETAEb
+	id S1760780AbYETAIS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 20:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755026AbYETAIE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 20:04:31 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:50956 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756145AbYETAEa convert rfc822-to-8bit (ORCPT
+	Mon, 19 May 2008 20:08:04 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:60687 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754896AbYETAIB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 20:04:30 -0400
+	Mon, 19 May 2008 20:08:01 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PGmwO7+A7yJRlOOs4+cAhzGy6P9ukYKPu42R76QWhTrzKg8K/cAZsm1a8/iW/kLMfGP9LeEZTCnaY1vnIKYNCa2JgmZh141Pn7ITXw4QlBP5rfYu3L8B96Z331EwJPcODhzYAiS5zfkWcmgKG7riCve/PLC5K9sp4xGB5x0wHuo=
-Message-ID: <9a8748490805191704n45a738a2l40af576b132945ec@mail.gmail.com>
-Date: Tue, 20 May 2008 02:04:29 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Jike Song" <albcamus@gmail.com>
-Subject: Re: [PATCH] fix typo "kernal" -> "kernel"
-Cc: "=?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?=" <Uwe.Kleine-Koenig@digi.com>,
-       linux-kernel@vger.kernel.org, trivial@kernel.org
-In-Reply-To: <df9815e70804240156x70e7b548ydfedf496db9442e8@mail.gmail.com>
+        b=Q1fzDsLGvAiZtl2aQ0uNTZhPMvMs5gPn6MyNv7vRv013tmmDYYKzNuvk5sk6TvDJ84gNUZ8kTMJnGZJBK+roA7PZ1LgS7SjsPqgskzUPZOIjbkdsU2nfrVgGTBpq+HjSvHz8Wzkx16xqWnCDP0MHA1oLJmYXt207KLoxEyGgOp0=
+Message-ID: <8bd0f97a0805191707k597e4f48i9c54488777fdd91b@mail.gmail.com>
+Date: Mon, 19 May 2008 20:07:59 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Arnd Bergmann" <arnd@arndb.de>
+Subject: Re: [PATCH 1/3, RFC] misc char dev BKL pushdown
+Cc: "Jonathan Corbet" <corbet@lwn.net>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Alexander Viro" <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org
+In-Reply-To: <200805200126.29738.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1209026537-30611-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
-	 <df9815e70804240156x70e7b548ydfedf496db9442e8@mail.gmail.com>
+References: <13762.1211142411@vena.lwn.net> <200805200107.51659.arnd@arndb.de>
+	 <200805200126.29738.arnd@arndb.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/4/24 Jike Song <albcamus@gmail.com>:
-> seems to be the same. To be pedantic,
+On Mon, May 19, 2008 at 7:26 PM, Arnd Bergmann wrote:
+> The Big Kernel Lock has been pushed down from chardev_open
+> to misc_open, this change moves it to the individual misc
+> driver open functions.
 >
-> http://en.wikipedia.org/wiki/KERNAL
+> As before, the change was purely mechanical, most drivers
+> should actually not need the BKL. In particular, we still
+> hold the misc_mtx() while calling the open() function
+> The patch should probably be split into one changeset
+> per driver.
 >
-<snip>
-
-None the less I've added the patch to Trivial. It's the Linux *kernel*
-after all, not the Linux kernal.
-
-/Jesper
-
+> --- linux-2.6.orig/arch/blackfin/mach-bf561/coreb.c
+> +++ linux-2.6/arch/blackfin/mach-bf561/coreb.c
+> @@ -32,6 +32,7 @@
+>  #include <linux/device.h>
+>  #include <linux/ioport.h>
+>  #include <linux/module.h>
+> +#include <linux/smp_lock.h>
+>  #include <linux/uaccess.h>
+>  #include <linux/fs.h>
+>  #include <asm/dma.h>
+> @@ -196,6 +197,7 @@ static loff_t coreb_lseek(struct file *f
 >
+>  static int coreb_open(struct inode *inode, struct file *file)
+>  {
+> +       lock_kernel();
+>        spin_lock_irq(&coreb_lock);
 >
-> On Thu, Apr 24, 2008 at 4:42 PM, Uwe Kleine-König
-> <Uwe.Kleine-Koenig@digi.com> wrote:
->> Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
->>  Cc: trivial@kernel.org
->>  ---
->>   fs/proc/nommu.c |    2 +-
->>   1 files changed, 1 insertions(+), 1 deletions(-)
->>
->>  diff --git a/fs/proc/nommu.c b/fs/proc/nommu.c
->>  index 941e951..618a732 100644
->>  --- a/fs/proc/nommu.c
->>  +++ b/fs/proc/nommu.c
->>  @@ -76,7 +76,7 @@ int nommu_vma_show(struct seq_file *m, struct vm_area_struct *vma)
->>
->>   /*
->>   * display a list of all the VMAs the kernel knows about
->>  - * - nommu kernals have a single flat list
->>  + * - nommu kernels have a single flat list
->>   */
->>   static int nommu_vma_list_show(struct seq_file *m, void *v)
->>   {
->>  --
->>  1.5.5.1
->>
->>  --
->>  To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->>  the body of a message to majordomo@vger.kernel.org
->>  More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>  Please read the FAQ at  http://www.tux.org/lkml/
->>
+>        if (coreb_status & COREB_IS_OPEN)
+> @@ -204,10 +206,12 @@ static int coreb_open(struct inode *inod
+>        coreb_status |= COREB_IS_OPEN;
 >
+>        spin_unlock_irq(&coreb_lock);
+> +       unlock_kernel();
+>        return 0;
+>
+>  out_busy:
+>        spin_unlock_irq(&coreb_lock);
+> +       unlock_kernel();
+>        return -EBUSY;
+>  }
 
-
-
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please http://www.expita.com/nomime.html
+this open func already has a spinlock protecting it.  doesnt that mean
+we dont need the bkl in it ?
+-mike
