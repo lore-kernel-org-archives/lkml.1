@@ -1,91 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933733AbYETUEo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761053AbYETUFJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933733AbYETUEo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 16:04:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762223AbYETUE1
+	id S1761053AbYETUFJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 16:05:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759084AbYETUE3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 16:04:27 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37974 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933190AbYETUE0 (ORCPT
+	Tue, 20 May 2008 16:04:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37655 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933358AbYETUE1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 16:04:26 -0400
-Date: Tue, 20 May 2008 13:03:57 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] block: blk_queue_bounce_limits can actually sleep
-Message-ID: <20080520130357.1324875e@infradead.org>
-In-Reply-To: <20080520124556.ad0c3fca.akpm@linux-foundation.org>
-References: <20080519202409.6d1055be@infradead.org>
-	<20080520192958.GW22369@kernel.dk>
-	<20080520124556.ad0c3fca.akpm@linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 20 May 2008 16:04:27 -0400
+Date: Tue, 20 May 2008 13:02:39 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Hugh Dickins <hugh@veritas.com>,
+       Theodore Tso <tytso@mit.edu>, Gabriel C <nix.or.die@googlemail.com>,
+       Keith Packard <keithp@keithp.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Eric Anholt <eric@anholt.net>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>, airlied@linux.ie,
+       "Barnes, Jesse" <jesse.barnes@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0 of 8] x86: use PTE_MASK consistently
+In-Reply-To: <20080520195147.GA17648@elte.hu>
+Message-ID: <alpine.LFD.1.10.0805201300010.3081@woody.linux-foundation.org>
+References: <patchbomb.1211268376@localhost> <20080520195147.GA17648@elte.hu>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 May 2008 12:45:56 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> On Tue, 20 May 2008 21:29:59 +0200
-> Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > On Mon, May 19 2008, Arjan van de Ven wrote:
-> > > From: Arjan van de Ven <arjan@linux.intel.com>
-> > > Subject: [PATCH] block: blk_queue_bounce_limits can actually sleep
-> > > 
-> > > blk_queue_bounce_limit can call init_emergency_isa_pool, which
-> > > does sleeping allocations... document it as such by adding
-> > > might_sleep() to the driver
-> > 
-> > Isn't that superflous, as mempool_create() -> kmalloc(...,
-> > __GFP_WAIT) ends up spewing that warning anyway?
-> 
-> It's largely superfluous given the way in which Arjan implemented it.
-> 
-> One situation which we regularly hit is:
-> 
-> foo()
-> {
-> 	...
-> 	if (some_unlikely_condition())
-> 		do_something_which_sleeps();
-> 	...
-> }
-> 
-> and then we go and call that code under spinlock and ship it out, when
-> of course a handful of testers hit the unlikely condition.
-> 
-> The solution to that is to add a might_sleep() _outside_ the test of
-> some_unlikely_condition().  ie:
-> 
-> --- a/block/blk-settings.c~a
-> +++ a/block/blk-settings.c
-> @@ -140,6 +140,8 @@ void blk_queue_bounce_limit(struct reque
->  	unsigned long b_pfn = dma_addr >> PAGE_SHIFT;
->  	int dma = 0;
->  
-> +	might_sleep();
-> +
->  	q->bounce_gfp = GFP_NOIO;
->  #if BITS_PER_LONG == 64
->  	/* Assume anything <= 4GB can be handled by IOMMU.
-> _
-> 
-> but it's all vague and waffly because Arjan forgot to tell us why he's
-> bothering to patch this code at all???
 
-the sata_nv driver calls this from an invalid context ... and spews a
-ton of warnings as a result... made me think this is a common mistake
-to make.
+On Tue, 20 May 2008, Ingo Molnar wrote:
+> 
+> yep, this has been problem-free in x86.git and then in -tip, we had a 
+> separate x86/ptemask topic for it that we originally intended for 
+> v2.6.27, and we dont mind to see it upstream now ;-)
 
-I'd love to make it do your version instead, but I was afraid it would
-trigger too often....
+Well, since we actually had a regression, I had to do something before 
+actually doing 2.6.26.
 
+So to fix the X crash problem with PAE, the choice was between either 
+applying this series that cleans things up or alternatively add yet 
+another hack to work around the problem.
+
+And I'm much happier taking the proper fix, even if it was slightly 
+bigger. It's not like it was a huge and complicated and scary fix ;)
+
+		Linus
