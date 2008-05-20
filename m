@@ -1,67 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764531AbYETLBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765544AbYETLBp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764531AbYETLBT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 07:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759438AbYETLBH
+	id S1765544AbYETLBp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 07:01:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764715AbYETLBd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 07:01:07 -0400
-Received: from homer.mvista.com ([63.81.120.155]:56519 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756822AbYETLBG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 07:01:06 -0400
-Message-ID: <4832AF59.1020808@ru.mvista.com>
-Date: Tue, 20 May 2008 15:00:41 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Tue, 20 May 2008 07:01:33 -0400
+Received: from visualserver.org ([84.242.66.126]:40536 "EHLO visualserver.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759438AbYETLBc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 07:01:32 -0400
+Date: Tue, 20 May 2008 13:01:27 +0200 (CEST)
+From: Soumyadip Das Mahapatra <kernelhacker@visualserver.org>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+cc: linux-kernel@vger.kernel.org, akinobu.mita@gmail.com
+Subject: Re: [PATCH 1/2] bitreversal program
+In-Reply-To: <1211229736.5915.86.camel@brick>
+Message-ID: <Pine.LNX.4.64.0805201254240.18899@visualserver.org>
+References: <Pine.LNX.4.64.0805191859411.18461@visualserver.org>
+ <1211229736.5915.86.camel@brick>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, Borislav Petkov <petkovbb@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 22/40] ide-floppy: start DMA engine in idefloppy_transfer_pc1()
-References: <20080518185428.5636.77234.sendpatchset@localhost.localdomain> <20080518185745.5636.55162.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080518185745.5636.55162.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+X-visualserver.org-MailScanner-Information: Please contact the ISP for more information
+X-MailScanner-ID: CBE542FB42.929E7
+X-visualserver.org-MailScanner: Found to be clean
+X-visualserver.org-MailScanner-From: kernelhacker@visualserver.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
 
-Bartlomiej Zolnierkiewicz wrote:
 
-> Start DMA engine and set PC_FLAG_DMA_IN_PROGRESS flag in
-> idefloppy_transfer_pc1() instead of idefloppy_issue_pc()
+On Mon, 19 May 2008, Harvey Harrison wrote:
 
-    Good. I have long ago noticed that DMA is started too early in ide-floppy 
-which is known to cobfuse some chips (like PDC20246) and was going to do a 
-patch at first but the lack of hardware (and time) stopped me...
+> On Mon, 2008-05-19 at 19:04 +0200, Soumyadip Das Mahapatra wrote:
+>> --- a/include/linux/bitrev.h    2008-04-17 08:19:44.000000000 +0530
+>> +++ b/include/linux/bitrev.h    2008-05-19 21:49:46.000000000 +0530
+>> @@ -3,11 +3,32 @@
+>>
+>>   #include <linux/types.h>
+>>
+>> -extern u8 const byte_rev_table[256];
+>> +/**
+>> + * Here is a generalised bit reversal program
+>> + * @x: word to get bits reversed
+>> + * @k: key, explained below
+>> + * for k = 31, it reverses the bits of word(32 bit)
+>> + * for k = 24, it reverses the bytes in word
+>> + * for k = 7, it reverses the bits in every byte without
+>> + * changing the positions of bytes in a word
+>> + * and for k = 16 it swaps the left and right halves of a
+>> + * word
+>> + */
+>>
+>> -static inline u8 bitrev8(u8 byte)
+>
+> What about anybody who currently uses bitrev8?
+>
+>> +static inline u32 gen_bit_rev(u32 x, u32 k)
+>>   {
+>> -       return byte_rev_table[byte];
+>> +       if(k & 1)
+>> +               x = (x & 0x55555555) << 1 | (x & 0xaaaaaaaa) >> 1;
+>> +       if(k & 2)
+>> +               x = (x & 0x33333333) << 2 | (x & 0xcccccccc) >> 2;
+>> +       if(k & 4)
+>> +               x = (x & 0x0f0f0f0f) << 4 | (x & 0xf0f0f0f0) >> 4;
+>> +       if(k & 8)
+>> +               x = (x & 0x00ff00ff) << 8 | (x & 0xff00ff00) >> 8;
+>> +       if(k & 16)
+>> +               x = (x & 0x0000ffff) << 16 | (x & 0xffff0000) >> 16;
+>> +
+>> +       return x;
+>>   }
+>
+> Why is this better than a single 256 byte table?
+>
+> Harvey
+>
+>
+> -- 
+> This message has been scanned for viruses and
+> dangerous content by MailScanner, and is
+> believed to be clean.
+>
+>
 
-> so the Status Register and the Interrupt Reason Register
-> are checked first.
+Thanks for reviewing Harvey :-)
+please look at the line below
+>> -static inline u8 bitrev8(u8 byte)
+It is a static function, so you cant use it from outside of this
+file. So there should not be anyone using this function.
 
-> Cc: Borislav Petkov <petkovbb@gmail.com>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>Why is this better than a single 256 byte table?
 
-> Index: b/drivers/ide/ide-floppy.c
-> ===================================================================
-> --- a/drivers/ide/ide-floppy.c
-> +++ b/drivers/ide/ide-floppy.c
-[...]
-> @@ -568,6 +569,12 @@ static ide_startstop_t idefloppy_transfe
->  
->  	ide_set_handler(drive, &idefloppy_pc_intr, timeout, expiry);
->  
-> +	/* Begin DMA, if necessary */
-> +	if (pc->flags & PC_FLAG_DMA_OK) {
-> +		pc->flags |= PC_FLAG_DMA_IN_PROGRESS;
-> +		hwif->dma_ops->dma_start(drive);
-> +	}
-> +
+Why store those things if stuffs can be done in smoother and cleaner
+(using less memeory ofcourse) way!
 
-    May be too early still... ide-cd does this after writing the command packet.
+-- 
+This message has been scanned for viruses and
+dangerous content by MailScanner, and is
+believed to be clean.
 
-WBR, Sergei
