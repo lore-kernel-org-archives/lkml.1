@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764960AbYETQko@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759002AbYETQlF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764960AbYETQko (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 12:40:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755622AbYETQke
+	id S1759002AbYETQlF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 12:41:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765233AbYETQkv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 12:40:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46167 "EHLO mx1.redhat.com"
+	Tue, 20 May 2008 12:40:51 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46180 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754758AbYETQkd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 12:40:33 -0400
-Date: Tue, 20 May 2008 11:42:09 -0400
+	id S1756420AbYETQkt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 12:40:49 -0400
+Date: Tue, 20 May 2008 11:22:27 -0400
 From: Dave Jones <davej@redhat.com>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Ingo Molnar <mingo@elte.hu>, kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: aperture_64: use symbolic constants
-Message-ID: <20080520154209.GD542@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>, Matthew Wilcox <matthew@wil.cx>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Make
+Message-ID: <20080520152227.GC542@redhat.com>
 Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Pavel Machek <pavel@suse.cz>, Ingo Molnar <mingo@elte.hu>,
-	kernel list <linux-kernel@vger.kernel.org>
-References: <20080519123952.GA23118@elf.ucw.cz> <20080519125425.GD13546@elte.hu> <20080520142717.GA22794@elf.ucw.cz> <20080520150604.GD4843@redhat.com> <20080520153215.GA5368@elf.ucw.cz>
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Alexey Dobriyan <adobriyan@gmail.com>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Matthew Wilcox <matthew@wil.cx>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+References: <20080502182745.GL14976@parisc-linux.org> <20080501133209.2c04dad0@infradead.org> <20080502184922.GM14976@parisc-linux.org> <20080520032448.GA19348@redhat.com> <20080520071458.707d6e90@infradead.org> <20080520142727.GC4843@redhat.com> <b6fcc0a0805200800k10264445n59bb56d24b80cd2f@mail.gmail.com> <alpine.LFD.1.10.0805200806340.32253@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080520153215.GA5368@elf.ucw.cz>
+In-Reply-To: <alpine.LFD.1.10.0805200806340.32253@woody.linux-foundation.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 05:32:15PM +0200, Pavel Machek wrote:
+On Tue, May 20, 2008 at 08:12:41AM -0700, Linus Torvalds wrote:
 
- > > Instead of making this an inline, we could add it to the agpgart code
- > > and export it, and have the gart-iommu code call it.
- > > You can't build the IOMMU code without agpgart anyway, and having this inlined
- > > in both places seems a bit wasteful.
- > > Additionally, it would mean not having a function in a header file,
- > > which always strikes me as a wrong thing to do.
- > 
- > Can you elaborate? Yes, it would be nicer if this went to .c
- > somewhere, but aperture_64.c seems unsuitable (we need it on 32-bit,
- > too, right?)... plus it was __init in one place, and __devinit in the
- > other, so I figured out "inline it so that it works automagically".
- > 
- > Plus, I don't think it should go into drivers/agp, as iommu code in
- > arch/x86/kernel seems to be able to work without that...?
+ > So no, lists aren't "special" in any inherent way, they are just special 
+ > in these kinds of "incidentally, a lot of random data structure corruption 
+ > has traditionally shown up in lists, because there are so many of them".
 
-If you enable IOMMU, you _have_ to enable AGP.  (well, you don't have to,
-it does a 'select AGP' for you when you enable it :-)
+It's also been _really_ useful for showing up random bit flips in bad hardware.
 
-It does this because the agpgart driver needs to know how much of the
-aperture has been stolen for IOMMU use, and I think it already uses some
-functions from that driver already.
+"hey, if that bit had been a 1, this pointer would have looked valid and we
+ wouldn't have oopsed" has led to quite a few cases where the reporter then
+found a session with memtest86 enlightening.
 
 	Dave
 
