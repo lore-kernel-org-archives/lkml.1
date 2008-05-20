@@ -1,73 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933540AbYETQLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933845AbYETQMJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933540AbYETQLW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 12:11:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754039AbYETQLO
+	id S933845AbYETQMJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 12:12:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760534AbYETQLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 12:11:14 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:34291 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753936AbYETQLN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 12:11:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=o2aoMuGxy18deQENQyTXc5HN3t8e6ldrq/MLcKiFHNLoXziiQRcdzlmka9wRD2wGCXPM5sC47URGLMoEl6sPwYLF7+Mxn1BPxAMFP7jxCvv39UiteXecwR72Q1LUoh/CsozKbwtYM2m7uuaif9V32iu8PAzpY2ZueyMTWEr2ZfE=
-Message-ID: <b6a2187b0805200911x4cccd060v5644c87b51d7db9b@mail.gmail.com>
-Date: Wed, 21 May 2008 00:11:10 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Pavel Machek" <pavel@suse.cz>
-Subject: Re: recent 2.6.26 kernel hangs at suspend
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>,
-       "Arjan van de Ven" <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, len.brown@intel.com,
-       "Shaohua Li" <shaohua.li@intel.com>, "Greg KH" <greg@kroah.com>,
-       "Len Brown" <lenb@kernel.org>
-In-Reply-To: <20080520074819.GA15659@elf.ucw.cz>
+	Tue, 20 May 2008 12:11:55 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:42031 "EHLO minas.ics.muni.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757045AbYETQLx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 12:11:53 -0400
+Date: Tue, 20 May 2008 18:11:42 +0200
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Oliver Neukum <oliver@neukum.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       greg@kroah.com, linux-usb@vger.kernel.org
+Subject: Re: [Bug #10630] USB devices plugged into dock are not discoverred
+	until reload of ehci-hcd
+Message-ID: <20080520161142.GA4655@ics.muni.cz>
+References: <20080520123423.GA4764@ics.muni.cz> <Pine.LNX.4.44L0.0805201117430.2114-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-2
 Content-Disposition: inline
-References: <b6a2187b0805190807o7f6e87e1nd883607d603c893b@mail.gmail.com>
-	 <20080520074819.GA15659@elf.ucw.cz>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.44L0.0805201117430.2114-100000@iolanthe.rowland.org>
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Muni-Spam-TestIP: 147.251.3.109
+X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Tue, 20 May 2008 18:11:43 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 3:48 PM, Pavel Machek <pavel@suse.cz> wrote:
+On Tue, May 20, 2008 at 11:20:10AM -0400, Alan Stern wrote:
+> > On Tue, May 20, 2008 at 01:27:34PM +0200, Oliver Neukum wrote:
+> > > > done.
+> > > > http://bugzilla.kernel.org/show_bug.cgi?id=10630
+> > > 
+> > > Aha. Thanks.
+> > > Please recompile without CONFIG_USB_SUSPEND
+> > 
+> > Hm, without USB_SUSPEND it works. So what next, considered fixed or any
+> > further investigation is needed?
+> 
+> No further investigation is needed.  I tried doing essentially the same 
+> thing on my system and the same problem occurred.
+> 
+> It is caused by the way ehci-hcd "auto-clears" the port
+> change-suspend feature.  This patch should fix the problem.  Please 
+> try it out and let us know if it works.
 
->> If I don't enter X, it'll not hang on suspend to ram.
->
-> Ok, so we have X in the mix.
->
-> Can you try if it happens if you disable Intel framebuffer driver?
+seems to be working, device is detected. Thanks. Please, push the patch.
 
-The whole problem went away after the latest git pull.
-
-Looks like the commit below fixes the problem of failing on 2nd suspense.
-
-I've tested whole day and it's suspending-resuming after many cycles.
-
-Sorry, couldn't get to email whole day. Traveling. Slow train.
-
-Thank you all for your help!!!
-Jeff.
-
-
-commit 860da5e578c25d1ab4528c0d1ad13f9969e3490f
-Merge: 1bf9947... e948e99...
-Author: Linus Torvalds <torvalds@linux-foundation.org>
-Date:   Mon May 19 13:30:40 2008 -0700
-
-    Merge branch 'drm-patches' of git://git.kernel.org/pub/scm/linux/kernel/git/
-airlied/drm-2.6
-
-    * 'drm-patches' of git://git.kernel.org/pub/scm/linux/kernel/git/airlied/drm
--2.6:
-      drm/i915: save and restore dsparb and d_state registers.
-      drm/i915: fix off by one in VGA save/restore of AR & CR regs.
-      drm: disable tasklets not IRQs when taking the drm lock spinlock
-      Revert "drm/vbl rework: rework how the drm deals with vblank."
+-- 
+Luká¹ Hejtmánek
