@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764352AbYETJIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764576AbYETJIk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764352AbYETJIV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 05:08:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761728AbYETJGy
+	id S1764576AbYETJIk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 05:08:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762763AbYETJG4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 05:06:54 -0400
-Received: from gw.goop.org ([64.81.55.164]:44045 "EHLO mail.goop.org"
+	Tue, 20 May 2008 05:06:56 -0400
+Received: from gw.goop.org ([64.81.55.164]:44066 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761314AbYETJGx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 05:06:53 -0400
+	id S1762191AbYETJGz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 05:06:55 -0400
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 4 of 8] x86: use PTE_MASK in 32-bit PAE
-X-Mercurial-Node: d2cfb4dc7c7d28ddde78d79a08adb442e6a47734
-Message-Id: <d2cfb4dc7c7d28ddde78.1211268380@localhost>
+Subject: [PATCH 5 of 8] x86: use PTE_MASK in pgtable_32.h
+X-Mercurial-Node: def260e5d02e2fc6604a0855a535c5a6ed36cbb8
+Message-Id: <def260e5d02e2fc6604a.1211268381@localhost>
 In-Reply-To: <patchbomb.1211268376@localhost>
-Date: Tue, 20 May 2008 08:26:20 +0100
+Date: Tue, 20 May 2008 08:26:21 +0100
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
@@ -33,36 +33,30 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use PTE_MASK in 3-level pagetables (ie, 32-bit PAE).
-
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- include/asm-x86/pgtable-3level.h |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ include/asm-x86/pgtable_32.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/include/asm-x86/pgtable-3level.h b/include/asm-x86/pgtable-3level.h
---- a/include/asm-x86/pgtable-3level.h
-+++ b/include/asm-x86/pgtable-3level.h
-@@ -120,9 +120,9 @@
- 		write_cr3(pgd);
- }
+diff --git a/include/asm-x86/pgtable_32.h b/include/asm-x86/pgtable_32.h
+--- a/include/asm-x86/pgtable_32.h
++++ b/include/asm-x86/pgtable_32.h
+@@ -88,7 +88,7 @@
+ /* To avoid harmful races, pmd_none(x) should check only the lower when PAE */
+ #define pmd_none(x)	(!(unsigned long)pmd_val((x)))
+ #define pmd_present(x)	(pmd_val((x)) & _PAGE_PRESENT)
+-#define pmd_bad(x) ((pmd_val(x) & (~PAGE_MASK & ~_PAGE_USER)) != _KERNPG_TABLE)
++#define pmd_bad(x) ((pmd_val(x) & (~PTE_MASK & ~_PAGE_USER)) != _KERNPG_TABLE)
  
--#define pud_page(pud) ((struct page *) __va(pud_val(pud) & PAGE_MASK))
-+#define pud_page(pud) ((struct page *) __va(pud_val(pud) & PTE_MASK))
+ #define pages_to_mb(x) ((x) >> (20-PAGE_SHIFT))
  
--#define pud_page_vaddr(pud) ((unsigned long) __va(pud_val(pud) & PAGE_MASK))
-+#define pud_page_vaddr(pud) ((unsigned long) __va(pud_val(pud) & PTE_MASK))
+@@ -159,7 +159,7 @@
+ #define pmd_page(pmd) (pfn_to_page(pmd_val((pmd)) >> PAGE_SHIFT))
  
+ #define pmd_page_vaddr(pmd)					\
+-	((unsigned long)__va(pmd_val((pmd)) & PAGE_MASK))
++	((unsigned long)__va(pmd_val((pmd)) & PTE_MASK))
  
- /* Find an entry in the second-level page table.. */
-@@ -160,7 +160,7 @@
- 
- static inline unsigned long pte_pfn(pte_t pte)
- {
--	return (pte_val(pte) & ~_PAGE_NX) >> PAGE_SHIFT;
-+	return (pte_val(pte) & PTE_MASK) >> PAGE_SHIFT;
- }
- 
- /*
+ #if defined(CONFIG_HIGHPTE)
+ #define pte_offset_map(dir, address)					\
 
 
