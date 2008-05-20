@@ -1,75 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762764AbYETSBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764028AbYETSB7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762764AbYETSBR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 14:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756706AbYETSBE
+	id S1764028AbYETSB7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 14:01:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755869AbYETSBv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 14:01:04 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:23167 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755981AbYETSBD (ORCPT
+	Tue, 20 May 2008 14:01:51 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:35709 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755943AbYETSBu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 14:01:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WeYIV9/+3qZDcTdCjfXa7Vh8+gGWcbdWM6w6WRQVqQCVc87GYlqTaSOirnxu1tu/N+cuHtGew6749ik9aydTZefmKw67cBkmScijpaX7jnjpfW0gY7lhkJRaXpIqXq/87cnTTBjs21tD/3+8dKr2G1GXS3wM7XMeKt9AD29YGfo=
-Message-ID: <7b9198260805201101x5b0fabf8h4944a29c6a4cae96@mail.gmail.com>
-Date: Tue, 20 May 2008 19:01:02 +0100
-From: "Tom Spink" <tspink@gmail.com>
-To: "Jeff Dike" <jdike@addtoit.com>
-Subject: Re: UML fails to locate address space
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080520175624.GA10889@c2.user-mode-linux.org>
+	Tue, 20 May 2008 14:01:50 -0400
+Message-ID: <483310F0.5030902@zytor.com>
+Date: Tue, 20 May 2008 10:57:04 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Mikael Pettersson <mikpe@it.uu.se>
+CC: Andi Kleen <andi@firstfloor.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>, mingo@elte.hu,
+       tglx@linutronix.de, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, roland@redhat.com, drepper@redhat.com,
+       Hongjiu.lu@intel.com, linux-kernel@vger.kernel.org,
+       arjan@linux.intel.com, rmk+lkml@arm.linux.org.uk, dan@debian.org,
+       asit.k.mallick@intel.com
+Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
+References: <20080513011030.GA31448@linux-os.sc.intel.com>	<18477.35703.679574.760417@harpo.it.uu.se>	<20080518013416.GB30034@linux-os.sc.intel.com>	<18481.37905.297556.288317@harpo.it.uu.se>	<20080520015723.GD30034@linux-os.sc.intel.com>	<4832A173.6020203@firstfloor.org>	<18482.53246.642835.894623@harpo.it.uu.se>	<4832E705.2010900@zytor.com> <18482.60491.764019.292031@harpo.it.uu.se>
+In-Reply-To: <18482.60491.764019.292031@harpo.it.uu.se>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <7b9198260805200408k1d6b70a8xc7e4c24106e5020f@mail.gmail.com>
-	 <20080520135238.GB6990@c2.user-mode-linux.org>
-	 <7b9198260805200659p6ed28403t9b0b0ea995f158d5@mail.gmail.com>
-	 <20080520161047.GA9598@c2.user-mode-linux.org>
-	 <7b9198260805200943x6fb15512o7ba35a40d006b215@mail.gmail.com>
-	 <20080520175624.GA10889@c2.user-mode-linux.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/5/20 Jeff Dike <jdike@addtoit.com>:
-> On Tue, May 20, 2008 at 05:43:17PM +0100, Tom Spink wrote:
->> I suspected this type of foul-play, and tried altering bottom to 1,
->> but this didn't work.  So, I took out the page_ok test, and it
->> continued booting.  So I went back, put the test back in and
->> incremented bottom until I got to 16.  It worked at 16. :-)
->
-> Heh, I guess they were also worried about up to 64K offsets off a NULL
-> pointer too.
+Mikael Pettersson wrote:
+> 
+> An ugly workaround could be to start clearing one of these fields,
+> and say that the data there is only valid for kernels >= 2.6.26.
+> (I said it was ugly...)
+> 
+> Or we go back to stashing a flag in uc_flags (which is kosher),
+> and try to figure out how to mark non-rt sigframes.
+> 
 
-<g>
+Or use the OSXSAVE hack.  Let me think about this for some time.
 
->
->> Is this something that can be fixed, or would a config option be
->> appropriate?
->
-> This was done in order to remove config options.  It might be
-> reasonable to effectively do what you did, and search for the lowest
-> address at which mmap works and start from there.
+There is also the option of simply using a field guarded by a 64- or 
+128-bit magic number.  It's a bit ugly, but it works.
 
-Cool, and nice work BTW.  I just for-looped up the way, from 0.
-
->
->> I am willing to blame Ubuntu, but unfortunately, I can't find an
->> online resource of their patches.
->
-> https://wiki.ubuntu.com/KernelGitGuide lists a bunch of git repos.
-> Tell me which one applies to you and I'll take a look.
->
-
-I'm a hardy.  I bet it's 893f802872c3.
-
-http://kernel.ubuntu.com/git?p=ubuntu/ubuntu-hardy.git;a=commitdiff;h=893f802872c3e3c6e4bb40c3be4845784b81b934
-
->                  Jeff
-
--- 
-Tom Spink
+	-hpa
