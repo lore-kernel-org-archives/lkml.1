@@ -1,141 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765603AbYETNGY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932192AbYETNGy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765603AbYETNGY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 09:06:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755134AbYETNGQ
+	id S932192AbYETNGy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 09:06:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762350AbYETNGn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 09:06:16 -0400
-Received: from mail.mrxfx.com ([209.82.53.180]:48695 "EHLO mrxfx.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754645AbYETNGP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 09:06:15 -0400
-Message-ID: <4832CCC2.7040800@mrxfx.com>
-Date: Tue, 20 May 2008 09:06:10 -0400
-From: David Fix <davidf@mrxfx.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Tue, 20 May 2008 09:06:43 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:50008 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754421AbYETNGm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 09:06:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=n0Q1VGwxdxsQA6jK8QQvboEbdY6PPD7xnYIblTF6PEaTGTroc3htfZ/cqv6tfu11QLKEH5Bkim92rV2anuK7y1cKN9hZuZ9OFJG4qg+0Y6BNSB4W92udVc5dCP0gidbuB92NHQiRTqMgRvDLJYF48eCYbgDXEpGYRbCbBmXsr0A=
+Message-ID: <7b9198260805200606u6ebc2681o8af7a8eebc1cb96@mail.gmail.com>
+Date: Tue, 20 May 2008 14:06:42 +0100
+From: "Tom Spink" <tspink@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] Introduce filesystem type tracking
+Cc: linux-fsdevel@vger.kernel.org, "Alexander Viro" <viro@zeniv.linux.org.uk>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <1211196126-7442-1-git-send-email-tspink@gmail.com>
 MIME-Version: 1.0
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-CC: linux-kernel@vger.kernel.org,
-       JFS Discussion <jfs-discussion@lists.sourceforge.net>
-Subject: Re: Hello and a question about high cpu usage on jfsCommit (kernel
- 2.6.25.1)
-References: <482C9090.5040901@mrxfx.com> <1211211433.6283.14.camel@norville.austin.ibm.com>
-In-Reply-To: <1211211433.6283.14.camel@norville.austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <> <1211196126-7442-1-git-send-email-tspink@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey Dave,
+2008/5/19 Tom Spink <tspink@gmail.com>:
+> Hi,
+>
+> This email contains an RFC patch that introduces init and exit routines to
+> the file_system_type structure.  These routines were mentioned in
+> an email I saw about XFS starting threads that aren't needed when no
+> XFS filesystems are mounted.
+>
+> So I decided to try and implement the infrastructure to do this.
+>
+> Please let me know what you think, I'm pretty sure I'll be missing
+> something I won't know about (like a lock, or a refcount), but feedback
+> would be appreciated.
+>
+> --
+>
+> This patch adds tracking to filesystem types, whereby the number of mounts
+> of a particular filesystem type can be determined.  This has the added
+> benefit of introducing init and exit routines for filesystem types, which
+> are called on the first mount and last unmount of the filesystem type,
+> respectively.
+>
+> This is useful for filesystems which share global resources between all
+> mounts, but only need these resources when at least one filesystem is
+> mounted.  For example, XFS creates a number of kernel threads which aren't
+> required when there are no XFS filesystems mounted.  This patch will allow
+> XFS to start those threads just before the first filesystem is mounted, and
+> to shut them down when the last filesystem has been unmounted.
+>
+> Signed-off-by: Tom Spink <tspink@gmail.com>
+> ---
+>  fs/namespace.c     |    9 +++++++++
+>  fs/super.c         |   25 +++++++++++++++++++++++++
+>  include/linux/fs.h |    3 +++
+>  3 files changed, 37 insertions(+), 0 deletions(-)
+>
+> diff --git a/fs/namespace.c b/fs/namespace.c
+> index 4fc302c..bfa2f39 100644
+> --- a/fs/namespace.c
+> +++ b/fs/namespace.c
+> @@ -1025,6 +1025,7 @@ static void shrink_submounts(struct vfsmount *mnt, struct list_head *umounts);
+>  static int do_umount(struct vfsmount *mnt, int flags)
+>  {
+>        struct super_block *sb = mnt->mnt_sb;
+> +       struct file_system_type *type = sb->s_type;
+>        int retval;
+>        LIST_HEAD(umount_list);
+>
+> @@ -1108,6 +1109,14 @@ static int do_umount(struct vfsmount *mnt, int flags)
+>                security_sb_umount_busy(mnt);
+>        up_write(&namespace_sem);
+>        release_mounts(&umount_list);
+> +
+> +       /* Check to see if the unmount is successful, and we're unmounting the
+> +        * last filesystem of this type.  If we are, run the exit routine of
+> +        * the filesystem type.
+> +        */
+> +       if (retval == 0 && ((--type->nr_mounts == 0) && type->exit))
+> +               type->exit();
+> +
+>        return retval;
+>  }
+>
+> diff --git a/fs/super.c b/fs/super.c
+> index 453877c..e1dba4b 100644
+> --- a/fs/super.c
+> +++ b/fs/super.c
+> @@ -961,14 +961,39 @@ static struct vfsmount *fs_set_subtype(struct vfsmount *mnt, const char *fstype)
+>  struct vfsmount *
+>  do_kern_mount(const char *fstype, int flags, const char *name, void *data)
+>  {
+> +       int rc;
+>        struct file_system_type *type = get_fs_type(fstype);
+>        struct vfsmount *mnt;
+>        if (!type)
+>                return ERR_PTR(-ENODEV);
+> +
+> +       /* If this is the first mount, then initialise the filesystem type. */
+> +       if (type->nr_mounts == 0 && type->init) {
+> +               rc = type->init();
+> +
+> +               /* If initialisation failed, pass the error back down the chain. */
+> +               if (rc) {
+> +                       put_filesystem(type);
+> +                       return ERR_PTR(rc);
+> +               }
+> +       }
+> +
+>        mnt = vfs_kern_mount(type, flags, name, data);
+>        if (!IS_ERR(mnt) && (type->fs_flags & FS_HAS_SUBTYPE) &&
+>            !mnt->mnt_sb->s_subtype)
+>                mnt = fs_set_subtype(mnt, fstype);
+> +
+> +       /* Check to see if the mount was successful, and if so, increment
+> +        * the mount counter.  Otherwise, if we initialised the filesystem
+> +        * type already (and the mount just failed), we need to shut it
+> +        * back down.
+> +        */
+> +       if (!IS_ERR(mnt)) {
+> +               type->nr_mounts++;
+> +       } else if (type->nr_mounts == 0 && type->exit) {
+> +               type->exit();
+> +       }
+> +
+>        put_filesystem(type);
+>        return mnt;
+>  }
+> diff --git a/include/linux/fs.h b/include/linux/fs.h
+> index f413085..ba92056 100644
+> --- a/include/linux/fs.h
+> +++ b/include/linux/fs.h
+> @@ -1474,9 +1474,12 @@ int sync_inode(struct inode *inode, struct writeback_control *wbc);
+>  struct file_system_type {
+>        const char *name;
+>        int fs_flags;
+> +       int nr_mounts;
+>        int (*get_sb) (struct file_system_type *, int,
+>                       const char *, void *, struct vfsmount *);
+>        void (*kill_sb) (struct super_block *);
+> +       int (*init) (void);
+> +       void (*exit) (void);
+>        struct module *owner;
+>        struct file_system_type * next;
+>        struct list_head fs_supers;
+> --
+> 1.5.4.3
+>
+>
 
-Thanks for following up on this...  The previous kernel that I was 
-running was 2.6.18.1...  From CentOS 5.1.
+Hi,
 
-It appears that the thread eating up that much CPU isn't a continuous 
-happening, only when there's a fair amount of activity going on.  It's 
-hard to nail down exactly when it happens, but the next time it does, 
-I'll definitely let you all know!
+I'm just adding people to CC here, but also I had a couple of thoughts
+after reviewing my own code.
 
-I haven't been able to reboot this machine, as it's a production unit, 
-but if I do get the chance, I'll do so.  It seems to have leveled out 
-now, with there being no high usage at all on there right now.
+I see that do_kern_mount is encapsulated with the BKL, but would it be
+wise to introduce a lock (e.g. a mutex) now for reading and updating
+nr_mounts (and hence calling ->init), rather than wait for the BKL
+removal to come round here?
 
-    Dave
+Also, have I got all the cases where a filesystem is unmounted,
+because I now see umount_tree, and am wondering if decrementing the
+nr_mounts field should be done in here, in the loop of vfsmounts... or
+is it sufficient to leave it at the end of do_umount?
 
-Dave Kleikamp wrote:
-> I'm copying this to jfs-discussion to see if anyone has seen anything
-> like this.
->
-> On Thu, 2008-05-15 at 15:35 -0400, David Fix wrote:
->   
->> Hey guys,
->>
->> I'm new to the list, but I've been using Linux and fooling around with 
->> the kernel for ages.  :)
->>
->> I've been experiencing high CPU usage for jfsCommit on kernel 2.6.25.1 
->> (haven't had a chance to go to 2.6.25.4, but I didn't see any 
->> JFS-specific changes between the versions yet).
->>     
->
-> In fact, there haven't been a whole lot of non-cosmetic changes to jfs
-> at all recently.  Nothing I see that suspicious.
->
-> What was the previous kernel you were running before moving to 2.6.25.1?
->
->   
->> Here's my hardware 
->> config, as well:
->>
->>
->> CPUs: 2x Intel Xeon E5420 2.5GHz Quad-core
->> RAM: 8GB
->> RAID Controller: 3Ware 9650SE-24M8
->>     
->
-> For anyone seeing this for the first time on jfs-discussion, Dave
-> followed up stating that this was an x86_64 build.
->
->   
->> I can't find a mention of what motherboard I have in here, so I'll give 
->> a bit of lspci:
->>
->> 00:00.0 Host bridge: Intel Corporation 5000P Chipset Memory Controller 
->> Hub (rev b1)
->> 00:1d.0 USB Controller: Intel Corporation 631xESB/632xESB/3100 Chipset 
->> UHCI USB Controller #1 (rev 09)
->> 00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev d9)
->> 01:00.0 PCI bridge: Intel Corporation 6311ESB/6321ESB PCI Express 
->> Upstream Port (rev 01)
->> 03:00.0 PCI bridge: Integrated Device Technology, Inc. Unknown device 
->> 8018 (rev 04) (prog-if 00 [Normal decode])
->> 05:00.0 Ethernet controller: Intel Corporation 82571EB Gigabit Ethernet 
->> Controller (rev 06)
->> 07:00.0 Ethernet controller: Intel Corporation 80003ES2LAN Gigabit 
->> Ethernet Controller (Copper) (rev 01)
->> 0c:00.0 RAID bus controller: 3ware Inc 9650SE SATA-II RAID (rev 01)
->> 0f:0c.0 VGA compatible controller: ATI Technologies Inc ES1000 (rev 02)
->>
->> There's the salient points there.  The NIC is a quad, which is trunked 
->> to the switch using LAPC.
->>
->> I've got a RAID-6 on the 3Ware controller of 20 TB, and when I'm running 
->> "top", I see this:
->>
->> ---
->> top - 15:33:27 up  5:40,  3 users,  load average: 4.33, 3.59, 3.98
->> Tasks: 315 total,   2 running, 313 sleeping,   0 stopped,   0 zombie
->> Cpu(s):  0.2%us, 13.2%sy,  0.0%ni, 61.3%id, 24.9%wa,  0.1%hi,  0.2%si,  
->> 0.0%st
->> Mem:   8194264k total,  8144500k used,    49764k free,     3884k buffers
->> Swap: 16779884k total,      148k used, 16779736k free,  7667400k cached
->>
->>   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
->>  2669 root      15  -5     0    0    0 R   99  0.0  19:45.71 jfsCommit
->>     
->
-> This is highly unusual.  Is this thread continually eating cpu at this
-> rate, or does it happen in spurts?
->
->   
->> And people are complaining (and I'm seeing) very slow writes to the drives.
->>
->> Just wondering if anyone has any ideas.  :)  If you need any 
->> information, I'll provide whatever you need.
->>     
->
-> Has this happened more than once (have you rebooted and still seen the
-> problem)?  I'm not sure if some rare bug has caused some kind of linked
-> list corruption that puts the thread into an infinite loop, or if this
-> is a real regression.
->
->   
->> Thanks in advance!
->>
->>     Dave
->>     
->
-> Thanks,
-> Shaggy
-
+-- 
+Regards,
+Tom Spink
