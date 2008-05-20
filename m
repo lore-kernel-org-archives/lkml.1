@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765964AbYETKGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765904AbYETKHH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765964AbYETKGi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 06:06:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932117AbYETKEN
+	id S1765904AbYETKHH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 06:07:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932201AbYETKEd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 06:04:13 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37733 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765904AbYETKEK (ORCPT
+	Tue, 20 May 2008 06:04:33 -0400
+Received: from antispam.upcomillas.es ([130.206.70.245]:49179 "EHLO
+	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932210AbYETKEc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 06:04:10 -0400
-Date: Tue, 20 May 2008 03:02:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: greg@kroah.com, matthew@wil.cx, kay.sievers@vrfy.org,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 1/3][-mm] add class_reclassify macro
-Message-Id: <20080520030232.fc91b64e.akpm@linux-foundation.org>
-In-Reply-To: <20080520095553.GA3201@darkstar.te-china.tietoenator.com>
-References: <20080520095553.GA3201@darkstar.te-china.tietoenator.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Tue, 20 May 2008 06:04:32 -0400
+Subject: Re: 2.6.26-rc2 hosed X?
+From: Romano Giannetti <romanol@upcomillas.es>
+To: Norbert Preining <preining@logic.at>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080520081617.GA14141@gamma.logic.tuwien.ac.at>
+References: <20080513103828.GA8288@gamma.logic.tuwien.ac.at>
+	 <1211269474.8773.10.camel@localhost>
+	 <20080520081617.GA14141@gamma.logic.tuwien.ac.at>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: Tue, 20 May 2008 11:54:42 +0200
+Message-Id: <1211277282.10197.1.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 May 2008 17:55:54 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
 
-> Converting class semaphore to mutex cause lockdep warnings due to
-> class_interface_register/unregister will possible call device_add/del
+On Tue, 2008-05-20 at 10:16 +0200, Norbert Preining wrote:
+> On Di, 20 Mai 2008, Romano Giannetti wrote:
 
-Shouldn't we just fix that?
-
-> For the class_interface users here add a class_reclassify macro to
-> reclassify the lock class of their struct class.
+> > 
+> > Maybe related to: http://bugzilla.kernel.org/show_bug.cgi?id=10620 ?
 > 
-> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+> I had the very same problems like you and I had to apply two patches:
+> (see http://bugzilla.kernel.org/show_bug.cgi?id=10709)
 > 
-> ---
-> include/linux/device.h |    7 +++++++
-> 1 file changed, 7 insertions(+)
+> The one is included in -rc3, that was solved by applying 
+> 	http://lkml.org/lkml/2008/5/13/188
 > 
-> --- linux/include/linux/device.h	2008-05-19 12:29:54.000000000 +0800
-> +++ linux.new/include/linux/device.h	2008-05-19 14:42:25.000000000 +0800
-> @@ -529,4 +529,11 @@ extern const char *dev_driver_string(str
->  	MODULE_ALIAS("char-major-" __stringify(major) "-" __stringify(minor))
->  #define MODULE_ALIAS_CHARDEV_MAJOR(major) \
->  	MODULE_ALIAS("char-major-" __stringify(major) "-*")
-> +
-> +#define class_reclassify(class)						\
-> +do {									\
-> +	static struct lock_class_key	class_key;			\
-> +	lockdep_set_class_and_name(&(class)->mutex, &class_key,		\
-> +				 (class)->name);			\
-> +} while (0)
->  #endif /* _DEVICE_H_ */
+> the former was solved by using the vblank reverse patch given in the
+> above bug, or directly here:
+> 	http://marc.info/?l=linux-kernel&m=121074889124387&w=4
+> 
 
-I think it would need a lavish comment explaining what it is for, and
-the reasons for its existence.
+OK: fixed in v2.6.26-rc3-119-g8033c6e, which includes the above
+patches. 
 
-Perhaps this should be a kernel-wide thing in lockdep.h.  But then that
-would invite people to use it, and it looks like a bad thing.
+Thanks to all. 
 
-device.h does not include lockdep.h, so putting this here assumes that
-callees have already included lockdep.h.  This is the sort of
-assumption which leads to compilation errors.
+Romano
 
+-- 
+Sorry for the disclaimer --- ¡I cannot stop it!
+
+
+
+--
+La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
+
+This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
