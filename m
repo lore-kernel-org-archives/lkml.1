@@ -1,92 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764718AbYETJ2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762293AbYETJ3l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764718AbYETJ2Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 05:28:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755414AbYETJ2L
+	id S1762293AbYETJ3l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 05:29:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761534AbYETJ33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 05:28:11 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:22339 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758971AbYETJ2K (ORCPT
+	Tue, 20 May 2008 05:29:29 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:53910 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760934AbYETJ32 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 05:28:10 -0400
+	Tue, 20 May 2008 05:29:28 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
-        b=GrHqC3/tALb0fh3zaJ6QwA9upCcjdGPhDG8FcNRsUiPBXO/bO8bY7XRaTjcvvRigeQTuulXESYMt2Btp4lHMv8rcW+9iGVE6ynzxLpVpAOvjztbzxp97SepY7w37/CcqLwXszARAT1EgAcgXPHrWtj/8T9UWZvs8G4Xt7dAogYI=
-Date: Tue, 20 May 2008 11:28:03 +0200
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: add save_stack_trace_bp() for tracing from a specific
-	stack frame
-Message-ID: <20080520092803.GA6893@damson.getinternet.no>
+        h=message-id:date:from:to:subject:cc:mime-version:content-type;
+        b=FChuUmTuEw6y2s7uooltOJ+O+2CyXBPkK1XIgJiNUR4H9FoC9kp/QKknLP9d2vge73ETRXO1y35WmLC9JDO2x/7g6oYmi5h/ZGiXW3EB87E5G3C7qgpM3EYWcpqZ3rSi6l25A9lU79ejR3HXtLE7wjY1E43N3RLZkwLfUDr+bus=
+Message-ID: <eb3ff54b0805200229r6fb2daa1w50aaffa9b130f89f@mail.gmail.com>
+Date: Tue, 20 May 2008 12:29:26 +0300
+From: "Rami Rosen" <ramirose@gmail.com>
+To: "David Miller" <davem@davemloft.net>, netdev@vger.kernel.org
+Subject: [PATCH net-2.6] [NET] The world is not perfect patch.
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: Vegard Nossum <vegard.nossum@gmail.com>
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_14800_29058380.1211275766611"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+------=_Part_14800_29058380.1211275766611
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-I'll put this at the front of the kmemcheck queue. Looks ok?
+Hi,
 
-Vegard
+There are three methods in the network stack which start with
+#ifndef I_WISH_WORLD_WERE_PERFECT.
+
+These methods are:
+ipip_err() in net/ipv4/ipip.c
+ipgre_err() in net/ipv4/ip_gre.c
+ipip6_err() in net/ipv6/sit.c
+
+When building the kernel with -DI_WISH_WORLD_WERE_PERFECT we have
+various compilation
+errors, mostly due to the fact that the corresponding code was not
+updated recently.
+
+(As we all know, indeed the world is not perfect, unluckily...)
+
+This patch fixes these errors and enables building the kernel
+successfully with -DI_WISH_WORLD_WERE_PERFECT.
+
+(Note : I am not fully sure about correctness of len = skb->len, which I added;
+feedback on this point is welcomed).
 
 
->From 03c790cd13efc34c26b9866db46e501dc645faf8 Mon Sep 17 00:00:00 2001
-From: Vegard Nossum <vegard.nossum@gmail.com>
-Date: Tue, 20 May 2008 11:15:43 +0200
-Subject: [PATCH] x86: add save_stack_trace_bp() for tracing from a specific stack frame
+Regards,
+Rami Rosen
 
-This will help kmemcheck (and possibly other debugging tools) since we
-can now simply pass regs->bp to the stack tracer instead of specifying
-the number of stack frames to skip, which is unreliable if gcc decides
-to inline functions, etc.
 
-Note that this makes the API incomplete for other architectures, but I
-expect that those can be updated lazily, e.g. when they need it.
+Signed-off-by: Rami Rosen <ramirose@gmail.com>
 
-Cc: Arjan van de Ven <arjan@linux.intel.com>
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
----
- arch/x86/kernel/stacktrace.c |    7 +++++++
- include/linux/stacktrace.h   |    1 +
- 2 files changed, 8 insertions(+), 0 deletions(-)
+------=_Part_14800_29058380.1211275766611
+Content-Type: text/plain; name=patch.txt
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fgga9j6t0
+Content-Disposition: attachment; filename=patch.txt
 
-diff --git a/arch/x86/kernel/stacktrace.c b/arch/x86/kernel/stacktrace.c
-index c28c342..97202ad 100644
---- a/arch/x86/kernel/stacktrace.c
-+++ b/arch/x86/kernel/stacktrace.c
-@@ -75,6 +75,13 @@ void save_stack_trace(struct stack_trace *trace)
- 		trace->entries[trace->nr_entries++] = ULONG_MAX;
- }
- 
-+void save_stack_trace_bp(struct stack_trace *trace, unsigned long bp)
-+{
-+	dump_trace(current, NULL, NULL, bp, &save_stack_ops, trace);
-+	if (trace->nr_entries < trace->max_entries)
-+		trace->entries[trace->nr_entries++] = ULONG_MAX;
-+}
-+
- void save_stack_trace_tsk(struct task_struct *tsk, struct stack_trace *trace)
- {
- 	dump_trace(tsk, NULL, NULL, 0, &save_stack_ops_nosched, trace);
-diff --git a/include/linux/stacktrace.h b/include/linux/stacktrace.h
-index 5da9794..2a3cbe8 100644
---- a/include/linux/stacktrace.h
-+++ b/include/linux/stacktrace.h
-@@ -9,6 +9,7 @@ struct stack_trace {
- };
- 
- extern void save_stack_trace(struct stack_trace *trace);
-+extern void save_stack_trace_bp(struct stack_trace *trace, unsigned long bp);
- extern void save_stack_trace_tsk(struct task_struct *tsk,
- 				struct stack_trace *trace);
- 
--- 
-1.5.4.1
-
+ZGlmZiAtLWdpdCBhL25ldC9pcHY0L2lwX2dyZS5jIGIvbmV0L2lwdjQvaXBfZ3JlLmMKaW5kZXgg
+MmFkYTAzMy4uMjdjMzkzOCAxMDA2NDQKLS0tIGEvbmV0L2lwdjQvaXBfZ3JlLmMKKysrIGIvbmV0
+L2lwdjQvaXBfZ3JlLmMKQEAgLTM5OSw5ICszOTksOSBAQCBvdXQ6CiAJcmVhZF91bmxvY2soJmlw
+Z3JlX2xvY2spOwogCXJldHVybjsKICNlbHNlCi0Jc3RydWN0IGlwaGRyICppcGggPSAoc3RydWN0
+IGlwaGRyKilkcDsKKwlzdHJ1Y3QgaXBoZHIgKmlwaCA9IChzdHJ1Y3QgaXBoZHIqKXNrYi0+ZGF0
+YTsKIAlzdHJ1Y3QgaXBoZHIgKmVpcGg7Ci0JX19iZTE2CSAgICAgKnAgPSAoX19iZTE2KikoZHAr
+KGlwaC0+aWhsPDwyKSk7CisJX19iZTE2CSAgICAgKnAgPSAoX19iZTE2Kikoc2tiLT5kYXRhICsg
+KGlwaC0+aWhsPDwyKSk7CiAJY29uc3QgaW50IHR5cGUgPSBpY21wX2hkcihza2IpLT50eXBlOwog
+CWNvbnN0IGludCBjb2RlID0gaWNtcF9oZHIoc2tiKS0+Y29kZTsKIAlpbnQgcmVsX3R5cGUgPSAw
+OwpAQCAtNDEzLDcgKzQxMyw5IEBAIG91dDoKIAlzdHJ1Y3Qgc2tfYnVmZiAqc2tiMjsKIAlzdHJ1
+Y3QgZmxvd2kgZmw7CiAJc3RydWN0IHJ0YWJsZSAqcnQ7Ci0KKwkKKwlpbnQgbGVuID0gc2tiLT5s
+ZW47CisJCiAJaWYgKHBbMV0gIT0gaHRvbnMoRVRIX1BfSVApKQogCQlyZXR1cm47CiAKQEAgLTQz
+MCw3ICs0MzIsNyBAQCBvdXQ6CiAJfQogCWlmIChsZW4gPCBncmVobGVuICsgc2l6ZW9mKHN0cnVj
+dCBpcGhkcikpCiAJCXJldHVybjsKLQllaXBoID0gKHN0cnVjdCBpcGhkciopKGRwICsgZ3JlaGxl
+bik7CisJZWlwaCA9IChzdHJ1Y3QgaXBoZHIqKShza2ItPmRhdGEgKyBncmVobGVuKTsKIAogCXN3
+aXRjaCAodHlwZSkgewogCWRlZmF1bHQ6CmRpZmYgLS1naXQgYS9uZXQvaXB2NC9pcGlwLmMgYi9u
+ZXQvaXB2NC9pcGlwLmMKaW5kZXggMTQ5MTExZi4uNDQ3NGY0MSAxMDA2NDQKLS0tIGEvbmV0L2lw
+djQvaXBpcC5jCisrKyBiL25ldC9pcHY0L2lwaXAuYwpAQCAtMzM4LDcgKzMzOCw3IEBAIG91dDoK
+IAlyZWFkX3VubG9jaygmaXBpcF9sb2NrKTsKIAlyZXR1cm4gZXJyOwogI2Vsc2UKLQlzdHJ1Y3Qg
+aXBoZHIgKmlwaCA9IChzdHJ1Y3QgaXBoZHIqKWRwOworCXN0cnVjdCBpcGhkciAqaXBoID0gKHN0
+cnVjdCBpcGhkciopc2tiLT5kYXRhOwogCWludCBobGVuID0gaXBoLT5paGw8PDI7CiAJc3RydWN0
+IGlwaGRyICplaXBoOwogCWNvbnN0IGludCB0eXBlID0gaWNtcF9oZHIoc2tiKS0+dHlwZTsKQEAg
+LTM1MSw5ICszNTEsMTEgQEAgb3V0OgogCXN0cnVjdCBmbG93aSBmbDsKIAlzdHJ1Y3QgcnRhYmxl
+ICpydDsKIAorCWludCBsZW4gPSBza2ItPmxlbjsKKwogCWlmIChsZW4gPCBobGVuICsgc2l6ZW9m
+KHN0cnVjdCBpcGhkcikpCiAJCXJldHVybiAwOwotCWVpcGggPSAoc3RydWN0IGlwaGRyKikoZHAg
+KyBobGVuKTsKKwllaXBoID0gKHN0cnVjdCBpcGhkciopKHNrYi0+ZGF0YSArIGhsZW4pOwogCiAJ
+c3dpdGNoICh0eXBlKSB7CiAJZGVmYXVsdDoKQEAgLTQxNCwxMCArNDE2LDEwIEBAIG91dDoKIAog
+CS8qIFRyeSB0byBndWVzcyBpbmNvbWluZyBpbnRlcmZhY2UgKi8KIAltZW1zZXQoJmZsLCAwLCBz
+aXplb2YoZmwpKTsKLQlmbC5mbDRfZGFkZHIgPSBlaXBoLT5zYWRkcjsKKwlmbC5mbDRfZHN0ID0g
+ZWlwaC0+c2FkZHI7CiAJZmwuZmw0X3RvcyA9IFJUX1RPUyhlaXBoLT50b3MpOwogCWZsLnByb3Rv
+ID0gSVBQUk9UT19JUElQOwotCWlmIChpcF9yb3V0ZV9vdXRwdXRfa2V5KGRldl9uZXQoc2tiLT5k
+ZXYpLCAmcnQsICZrZXkpKSB7CisJaWYgKGlwX3JvdXRlX291dHB1dF9rZXkoZGV2X25ldChza2It
+PmRldiksICZydCwgJmZsKSkgewogCQlrZnJlZV9za2Ioc2tiMik7CiAJCXJldHVybiAwOwogCX0K
+QEAgLTQyNyw3ICs0MjksNyBAQCBvdXQ6CiAJaWYgKHJ0LT5ydF9mbGFncyZSVENGX0xPQ0FMKSB7
+CiAJCWlwX3J0X3B1dChydCk7CiAJCXJ0ID0gTlVMTDsKLQkJZmwuZmw0X2RhZGRyID0gZWlwaC0+
+ZGFkZHI7CisJCWZsLmZsNF9kc3QgPSBlaXBoLT5kYWRkcjsKIAkJZmwuZmw0X3NyYyA9IGVpcGgt
+PnNhZGRyOwogCQlmbC5mbDRfdG9zID0gZWlwaC0+dG9zOwogCQlpZiAoaXBfcm91dGVfb3V0cHV0
+X2tleShkZXZfbmV0KHNrYi0+ZGV2KSwgJnJ0LCAmZmwpIHx8CmRpZmYgLS1naXQgYS9uZXQvaXB2
+Ni9zaXQuYyBiL25ldC9pcHY2L3NpdC5jCmluZGV4IDVhNmZhYjkuLmMzNDdjNjcgMTAwNjQ0Ci0t
+LSBhL25ldC9pcHY2L3NpdC5jCisrKyBiL25ldC9pcHY2L3NpdC5jCkBAIC00NjMsNyArNDYzLDcg
+QEAgb3V0OgogCXJlYWRfdW5sb2NrKCZpcGlwNl9sb2NrKTsKIAlyZXR1cm4gZXJyOwogI2Vsc2UK
+LQlzdHJ1Y3QgaXBoZHIgKmlwaCA9IChzdHJ1Y3QgaXBoZHIqKWRwOworCXN0cnVjdCBpcGhkciAq
+aXBoID0gKHN0cnVjdCBpcGhkciopc2tiLT5kYXRhOwogCWludCBobGVuID0gaXBoLT5paGw8PDI7
+CiAJc3RydWN0IGlwdjZoZHIgKmlwaDY7CiAJY29uc3QgaW50IHR5cGUgPSBpY21wX2hkcihza2Ip
+LT50eXBlOwpAQCAtNDczLDE3ICs0NzMsMTkgQEAgb3V0OgogCWludCByZWxfaW5mbyA9IDA7CiAJ
+c3RydWN0IHNrX2J1ZmYgKnNrYjI7CiAJc3RydWN0IHJ0Nl9pbmZvICpydDZpOwotCisJCisJaW50
+IGxlbiA9IHNrYi0+bGVuOworCQogCWlmIChsZW4gPCBobGVuICsgc2l6ZW9mKHN0cnVjdCBpcHY2
+aGRyKSkKLQkJcmV0dXJuOwotCWlwaDYgPSAoc3RydWN0IGlwdjZoZHIqKShkcCArIGhsZW4pOwor
+CQlyZXR1cm4gMDsKKwlpcGg2ID0gKHN0cnVjdCBpcHY2aGRyKikoc2tiLT5kYXRhICsgaGxlbik7
+CiAKIAlzd2l0Y2ggKHR5cGUpIHsKIAlkZWZhdWx0OgotCQlyZXR1cm47CisJCXJldHVybiAwOwog
+CWNhc2UgSUNNUF9QQVJBTUVURVJQUk9COgogCQlpZiAoaWNtcF9oZHIoc2tiKS0+dW4uZ2F0ZXdh
+eSA8IGhsZW4pCi0JCQlyZXR1cm47CisJCQlyZXR1cm4gMDsKIAogCQkvKiBTby4uLiBUaGlzIGd1
+eSBmb3VuZCBzb21ldGhpbmcgc3RyYW5nZSBJTlNJREUgZW5jYXBzdWxhdGVkCiAJCSAgIHBhY2tl
+dC4gV2VsbCwgaGUgaXMgZm9vbCwgYnV0IHdoYXQgY2FuIHdlIGRvID8KQEAgLTQ5NywxMCArNDk5
+LDEwIEBAIG91dDoKIAkJY2FzZSBJQ01QX1NSX0ZBSUxFRDoKIAkJY2FzZSBJQ01QX1BPUlRfVU5S
+RUFDSDoKIAkJCS8qIEltcG9zc2libGUgZXZlbnQuICovCi0JCQlyZXR1cm47CisJCQlyZXR1cm4g
+MDsKIAkJY2FzZSBJQ01QX0ZSQUdfTkVFREVEOgogCQkJLyogVG9vIGNvbXBsaWNhdGVkIGNhc2Ug
+Li4uICovCi0JCQlyZXR1cm47CisJCQlyZXR1cm4gMDsKIAkJZGVmYXVsdDoKIAkJCS8qIEFsbCBv
+dGhlcnMgYXJlIHRyYW5zbGF0ZWQgdG8gSE9TVF9VTlJFQUNILgogCQkJICAgcmZjMjAwMyBjb250
+YWlucyAiZGVlcCB0aG91Z2h0cyIgYWJvdXQgTkVUX1VOUkVBQ0gsCkBAIC01MTMsNyArNTE1LDcg
+QEAgb3V0OgogCQlicmVhazsKIAljYXNlIElDTVBfVElNRV9FWENFRURFRDoKIAkJaWYgKGNvZGUg
+IT0gSUNNUF9FWENfVFRMKQotCQkJcmV0dXJuOworCQkJcmV0dXJuIDA7CiAJCXJlbF90eXBlID0g
+SUNNUFY2X1RJTUVfRVhDRUVEOwogCQlyZWxfY29kZSA9IElDTVBWNl9FWENfSE9QTElNSVQ7CiAJ
+CWJyZWFrOwo=
+------=_Part_14800_29058380.1211275766611--
