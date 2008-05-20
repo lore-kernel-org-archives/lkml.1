@@ -1,197 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764259AbYETJZg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764070AbYETJZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764259AbYETJZg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 05:25:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761610AbYETJZA
+	id S1764070AbYETJZy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 05:25:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761121AbYETJZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 05:25:00 -0400
-Received: from mail28.messagelabs.com ([216.82.249.131]:20812 "EHLO
-	mail28.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758779AbYETJY6 (ORCPT
+	Tue, 20 May 2008 05:25:19 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:51471 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764053AbYETJZQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 05:24:58 -0400
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-13.tower-28.messagelabs.com!1211275497!15554163!2
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.14]
-From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: "Hans J. Koch" <hjk@linutronix.de>
-CC: Greg Kroah-Hartman <gregkh@suse.de>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH] UIO: generic platform driver
-Date: Tue, 20 May 2008 11:24:42 +0200
-Message-ID: <1211275482-11249-2-git-send-email-Uwe.Kleine-Koenig@digi.com>
-X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <1211275482-11249-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
-References: <20080520092312.GA10745@digi.com>
- <1211275482-11249-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
+	Tue, 20 May 2008 05:25:16 -0400
+Date: Tue, 20 May 2008 17:25:11 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: "David S. Miller" <davem@davemloft.net>,
+       Marco Berizzi <pupilla@hotmail.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [IPSEC]: Use the correct ip_local_out function
+Message-ID: <20080520092511.GA9005@gondor.apana.org.au>
+References: <BAY103-DAV594320AC93E33D7335927B2DA0@phx.gbl> <BAY103-DAV122A113843FE9574256A0AB2D60@phx.gbl> <BAY103-DAV6446AEC1CBB678E5D0E52B2D30@phx.gbl> <20080509102509.GA11710@gondor.apana.org.au> <BAY103-DAV5B5CD83FC6A95A5DD48C9B2CC0@phx.gbl> <20080512074642.GA1416@gondor.apana.org.au> <BAY103-DAV521435E26209347B7646FB2CC0@phx.gbl> <BAY103-DAV2A04E519F35401C98403FB2CC0@phx.gbl> <BAY103-DAV20B0EEFFB30A41A8020C8B2CC0@phx.gbl> <BAY103-DAV88950FC99CDE9EAAE27B2B2CE0@phx.gbl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 20 May 2008 09:24:42.0337 (UTC) FILETIME=[55BE1510:01C8BA5B]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <BAY103-DAV88950FC99CDE9EAAE27B2B2CE0@phx.gbl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
----
- drivers/uio/Kconfig    |    7 +++
- drivers/uio/Makefile   |    1 +
- drivers/uio/uio_pdrv.c |  118 ++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 126 insertions(+), 0 deletions(-)
- create mode 100644 drivers/uio/uio_pdrv.c
+On Wed, May 14, 2008 at 10:19:57AM +0200, Marco Berizzi wrote:
+> 
+> I hope this helps.
 
-diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
-index 78e139c..2e9079d 100644
---- a/drivers/uio/Kconfig
-+++ b/drivers/uio/Kconfig
-@@ -26,6 +26,13 @@ config UIO_CIF
- 	  To compile this driver as a module, choose M here: the module
- 	  will be called uio_cif.
- 
-+config UIO_PDRV
-+	tristate "Userspace I/O platform driver"
-+	help
-+	  Generic platform driver for Userspace I/O devices.
-+
-+	  If you don't know what to do here, say N.
-+
- config UIO_SMX
- 	tristate "SMX cryptengine UIO interface"
- 	default n
-diff --git a/drivers/uio/Makefile b/drivers/uio/Makefile
-index 18c4566..e00ce0d 100644
---- a/drivers/uio/Makefile
-+++ b/drivers/uio/Makefile
-@@ -1,3 +1,4 @@
- obj-$(CONFIG_UIO)	+= uio.o
- obj-$(CONFIG_UIO_CIF)	+= uio_cif.o
-+obj-$(CONFIG_UIO_PDRV)	+= uio_pdrv.o
- obj-$(CONFIG_UIO_SMX)	+= uio_smx.o
-diff --git a/drivers/uio/uio_pdrv.c b/drivers/uio/uio_pdrv.c
-new file mode 100644
-index 0000000..5d0d2e8
---- /dev/null
-+++ b/drivers/uio/uio_pdrv.c
-@@ -0,0 +1,118 @@
-+/*
-+ * drivers/uio/uio_pdrv.c
-+ *
-+ * Copyright (C) 2008 by Digi International Inc.
-+ * All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published by
-+ * the Free Software Foundation.
-+ */
-+#include <linux/platform_device.h>
-+#include <linux/uio_driver.h>
-+#include <linux/stringify.h>
-+
-+#define DRIVER_NAME "uio"
-+
-+struct uio_platdata {
-+	struct uio_info *uioinfo;
-+};
-+
-+static int uio_pdrv_probe(struct platform_device *pdev)
-+{
-+	struct uio_info *uioinfo = pdev->dev.platform_data;
-+	struct uio_platdata *pdata;
-+	struct uio_mem *uiomem;
-+	int ret = -ENODEV;
-+	int i;
-+
-+	if (!uioinfo || !uioinfo->name || !uioinfo->version) {
-+		dev_dbg(&pdev->dev, "%s: err_uioinfo\n", __func__);
-+		goto err_uioinfo;
-+	}
-+
-+	pdata = kzalloc(sizeof(*pdata), GFP_KERNEL);
-+	if (!pdata) {
-+		ret = -ENOMEM;
-+		dev_dbg(&pdev->dev, "%s: err_alloc_pdata\n", __func__);
-+		goto err_alloc_pdata;
-+	}
-+
-+	pdata->uioinfo = uioinfo;
-+
-+	uiomem = &uioinfo->mem[0];
-+
-+	for (i = 0; i < pdev->num_resources; ++i) {
-+		struct resource *r = &pdev->resource[i];
-+
-+		if (r->flags != IORESOURCE_MEM)
-+			continue;
-+
-+		if (uiomem >= &uioinfo->mem[MAX_UIO_MAPS]) {
-+			dev_warn(&pdev->dev, "device has more than "
-+					__stringify(MAX_UIO_MAPS)
-+					" I/O memory resources.\n");
-+			break;
-+		}
-+
-+		uiomem->memtype = UIO_MEM_PHYS;
-+		uiomem->addr = r->start;
-+		uiomem->size = r->end - r->start + 1;
-+		++uiomem;
-+	}
-+
-+	while (uiomem < &uioinfo->mem[MAX_UIO_MAPS]) {
-+		uiomem->size = 0;
-+		++uiomem;
-+	}
-+
-+	pdata->uioinfo->priv = pdata;
-+
-+	ret = uio_register_device(&pdev->dev, pdata->uioinfo);
-+
-+	if (ret) {
-+		kfree(pdata);
-+err_alloc_pdata:
-+err_uioinfo:
-+		return ret;
-+	}
-+
-+	platform_set_drvdata(pdev, pdata);
-+
-+	return 0;
-+}
-+
-+static int uio_pdrv_remove(struct platform_device *pdev)
-+{
-+	struct uio_platdata *pdata = platform_get_drvdata(pdev);
-+
-+	uio_unregister_device(pdata->uioinfo);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver uio_pdrv = {
-+	.probe = uio_pdrv_probe,
-+	.remove = uio_pdrv_remove,
-+	.driver = {
-+		.name = DRIVER_NAME,
-+		.owner = THIS_MODULE,
-+	},
-+};
-+
-+static int __init uio_pdrv_init(void)
-+{
-+	return platform_driver_register(&uio_pdrv);
-+}
-+
-+static void __exit uio_pdrv_exit(void)
-+{
-+	platform_driver_unregister(&uio_pdrv);
-+}
-+module_init(uio_pdrv_init);
-+module_exit(uio_pdrv_exit);
-+
-+MODULE_AUTHOR("Uwe Kleine-Koenig");
-+MODULE_DESCRIPTION("Userspace I/O platform driver");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:" DRIVER_NAME);
+OK found the problem, it was my fault after all :)
+
+Dave, this patch needs to go into stable too.
+
+[IPSEC]: Use the correct ip_local_out function
+
+Because the IPsec output function xfrm_output_resume does its
+own dst_output call it should always call __ip_local_output
+instead of ip_local_output as the latter may invoke dst_output
+directly.  Otherwise the return values from nf_hook and dst_output
+may clash as they both use the value 1 but for different purposes.
+
+When that clash occurs this can cause a packet to be used after
+it has been freed which usually leads to a crash.  Because the
+offending value is only returned from dst_output with qdiscs
+such as HTB, this bug is normally not visible.
+
+Thanks to Marco Berizzi for his perseverance in tracking this
+down.
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+
+Cheers,
 -- 
-1.5.5.1
-
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--
+diff --git a/net/ipv4/route.c b/net/ipv4/route.c
+index 92f90ae..df41026 100644
+--- a/net/ipv4/route.c
++++ b/net/ipv4/route.c
+@@ -160,7 +160,7 @@ static struct dst_ops ipv4_dst_ops = {
+ 	.negative_advice =	ipv4_negative_advice,
+ 	.link_failure =		ipv4_link_failure,
+ 	.update_pmtu =		ip_rt_update_pmtu,
+-	.local_out =		ip_local_out,
++	.local_out =		__ip_local_out,
+ 	.entry_size =		sizeof(struct rtable),
+ 	.entries =		ATOMIC_INIT(0),
+ };
+diff --git a/net/ipv6/route.c b/net/ipv6/route.c
+index 12bba08..849b78a 100644
+--- a/net/ipv6/route.c
++++ b/net/ipv6/route.c
+@@ -109,7 +109,7 @@ static struct dst_ops ip6_dst_ops_template = {
+ 	.negative_advice	=	ip6_negative_advice,
+ 	.link_failure		=	ip6_link_failure,
+ 	.update_pmtu		=	ip6_rt_update_pmtu,
+-	.local_out		=	ip6_local_out,
++	.local_out		=	__ip6_local_out,
+ 	.entry_size		=	sizeof(struct rt6_info),
+ 	.entries		=	ATOMIC_INIT(0),
+ };
