@@ -1,65 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934591AbYETWy2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934889AbYETWyy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934591AbYETWy2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 18:54:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934164AbYETWxt
+	id S934889AbYETWyy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 18:54:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764341AbYETWxw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 18:53:49 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:50558 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933747AbYETWxo (ORCPT
+	Tue, 20 May 2008 18:53:52 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:51724 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933963AbYETWxq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 18:53:44 -0400
-Date: Tue, 20 May 2008 15:52:07 -0700
-From: Greg KH <greg@kroah.com>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       David Miller <davem@davemloft.net>, fubar@us.ibm.com,
-       netdev@vger.kernel.org, bonding-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] driver core: Suppress sysfs warnings for
-	device_rename().
-Message-ID: <20080520225207.GF15912@kroah.com>
-References: <20080515095246.3b6a0d1d@gondolin.boeblingen.de.ibm.com> <20080515.010139.219194657.davem@davemloft.net> <20080515113131.2cea2bce@gondolin.boeblingen.de.ibm.com> <20080515.030054.247673168.davem@davemloft.net> <20080515120619.6c867bfb@gondolin.boeblingen.de.ibm.com> <20080520125913.777ed67d@gondolin.boeblingen.de.ibm.com> <20080520144508.410ed857@extreme>
+	Tue, 20 May 2008 18:53:46 -0400
+Date: Tue, 20 May 2008 23:53:41 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: David Chinner <dgc@sgi.com>
+Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, andi@firstfloor.org,
+       Rik van Riel <riel@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       mpm@selenic.com
+Subject: Re: [patch 10/21] buffer heads: Support slab defrag
+Message-ID: <20080520225341.GH27853@shareable.org>
+References: <20080510030831.796641881@sgi.com> <20080510030916.935905242@sgi.com> <20080512002403.GP103491721@sgi.com> <Pine.LNX.4.64.0805151041230.18708@schroedinger.engr.sgi.com> <20080515231045.GY155679365@sgi.com> <Pine.LNX.4.64.0805161000390.29603@schroedinger.engr.sgi.com> <20080519054554.GY103491721@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080520144508.410ed857@extreme>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080519054554.GY103491721@sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 02:45:08PM -0700, Stephen Hemminger wrote:
-> On Tue, 20 May 2008 12:59:13 +0200
-> Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
+David Chinner wrote:
+> > Why are we out of memory?
 > 
-> > OK, here is an actually-compiled patch with proper description and
-> > s-o-b. Comments?
-> > 
-> > -----
-> > 
-> > driver core: Suppress sysfs warnings for device_rename().
-> > 
-> > Renaming network devices to an already existing name is not
-> > something we want sysfs to print a scary warning for, since the
-> > callers can deal with this correctly. So let's introduce
-> > sysfs_create_link_nowarn() which gets rid of the common warning.
-> > 
-> > Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
-> >
-> 
-> This is still getting to be overkill. I prefer that the warnings
-> always are removed.
+> Defragmentation is triggered as part of the usual memory reclaim
+> process. Which implies we've run out of free memory, correct?
 
-No, I do not.  They have found a lot of real bugs that have been going
-unnoticed for quite some time, and some new ones (like the current mess
-in the pci hotplug subsystem where two different drivers are controlling
-the same pci hotplug slots and not realizing it at all.)
+I don't think that's true on no-MMU.  Defragmentation can be needed
+often on no-MMU when there's lots of free memory, just in the wrong
+places.
 
-So having the warning gone for rename() is fine, but I still want it
-there for new files that are being added to the system.
-
-thanks,
-
-greg k-h
+-- Jamie
