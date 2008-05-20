@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762304AbYETIK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758719AbYETIKw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762304AbYETIK2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 04:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757733AbYETIKO
+	id S1758719AbYETIKw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 04:10:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756426AbYETIKf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 04:10:14 -0400
-Received: from mga10.intel.com ([192.55.52.92]:37300 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756426AbYETIKM (ORCPT
+	Tue, 20 May 2008 04:10:35 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:48744 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758136AbYETIKa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 04:10:12 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.27,514,1204531200"; 
-   d="scan'208";a="330218816"
-Subject: hackbench regression with 2.6.26-rc2 on tulsa machine
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Tue, 20 May 2008 16:09:06 +0800
-Message-Id: <1211270946.3177.236.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.5 (2.21.5-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Tue, 20 May 2008 04:10:30 -0400
+X-Sasl-enc: XYQpQ/mugL0OIYTY5nTF3H62YyiOT6xBMVFvWhyOCLsJ 1211271028
+Message-ID: <48328771.4030804@ladisch.de>
+Date: Tue, 20 May 2008 10:10:25 +0200
+From: Clemens Ladisch <clemens@ladisch.de>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Kallol Biswas <nucleodyne@gmail.com>
+CC: Lee Revell <rlrevell@joe-job.com>, linux-kernel@vger.kernel.org
+Subject: Re: HDMI Audio Support in ALSA
+References: <438397970805190904i2656337dh26a3257fe52aa29d@mail.gmail.com>	 <75b66ecd0805190916r7ce21667laf19783dfa47cdd7@mail.gmail.com> <438397970805190938t195d9a8ejfd5b0ca1409714ab@mail.gmail.com>
+In-Reply-To: <438397970805190938t195d9a8ejfd5b0ca1409714ab@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Comparing with 2.6.26-rc1, hackbench has about 30% regression with 2.6.26-rc2 on my tulsa machine
-which is a netburst architecure hyper-threading x86_64.
+(please don't top-post)
 
-Command line to test: #hackbench 100 process 2000
+Kallol Biswas wrote:
+> Can ALSA handle HDMI audio frames? It does not look so.
 
-With ﻿2.6.26-rc1, it takes 30 seconds. But with 2.6.26-rc2/rc3, it takes 40 seconds.
+Why do you think so?
 
-Bisect located below patch:
-46151122e0a2e80e5a6b2889f595e371fe2b600d is first bad commit
-commit 46151122e0a2e80e5a6b2889f595e371fe2b600d
-Author: Mike Galbraith <efault@gmx.de>
-Date:   Thu May 8 17:00:42 2008 +0200
+> Do you need a pointer to HDMI audio spec (L-PCM, IEC 60958 IEC 61937 etc.)?
 
-    sched: fix weight calculations
-    
-    The conversion between virtual and real time is as follows:
-    
-      dvt = rw/w * dt <=> dt = w/rw * dvt
-    
-    Since we want the fair sleeper granularity to be in real time, we actually
-    need to do:
-    
-      dvt = - rw/w * l
+L-PCM is linear PCM, which is the sample format used by practically
+_every_ sound card.  IEC 60958 is AES/EBU, which is essentially S/PDIF,
+which uses linear PCM samples.  IEC 61937 specifies how to transport
+compressed streams over S/PDIF, by pretending the data stream is a
+sequence of linear PCM samples.
+
+All of this is supported by ALSA.
 
 
-
-The bisect steps look stable.
-
-On my core architecure machines(stoakley and tigerton), I do see improvement instead of regression,
-like result from 31 seconds down to 28 seconds.
-
-I'm not sure if hyper-threading need more cares in this situation.
-
--yanmin
-
-
+Regards,
+Clemens
