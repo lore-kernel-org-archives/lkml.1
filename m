@@ -1,58 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933845AbYETQMJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933946AbYETQNq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933845AbYETQMJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 12:12:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760534AbYETQLz
+	id S933946AbYETQNq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 12:13:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753991AbYETQNe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 12:11:55 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:42031 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757045AbYETQLx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 12:11:53 -0400
-Date: Tue, 20 May 2008 18:11:42 +0200
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Oliver Neukum <oliver@neukum.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       greg@kroah.com, linux-usb@vger.kernel.org
-Subject: Re: [Bug #10630] USB devices plugged into dock are not discoverred
-	until reload of ehci-hcd
-Message-ID: <20080520161142.GA4655@ics.muni.cz>
-References: <20080520123423.GA4764@ics.muni.cz> <Pine.LNX.4.44L0.0805201117430.2114-100000@iolanthe.rowland.org>
+	Tue, 20 May 2008 12:13:34 -0400
+Received: from smtp.innovsys.com ([66.115.232.196]:14885 "EHLO
+	mail.innovsys.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751998AbYETQNd convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 12:13:33 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.44L0.0805201117430.2114-100000@iolanthe.rowland.org>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Muni-Spam-TestIP: 147.251.3.109
-X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Tue, 20 May 2008 18:11:43 +0200 (CEST)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Oops in fs_enet driver with preempt-rt
+Date: Tue, 20 May 2008 11:14:01 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B046E73C6@ismail.innsys.innovsys.com>
+In-Reply-To: <4832F139.1020502@freescale.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Oops in fs_enet driver with preempt-rt
+Thread-Index: Aci6j+qGmUR9lQ+MRHqlsVv3mYJHBgABDoyw
+References: <DCEAAC0833DD314AB0B58112AD99B93B046E728C@ismail.innsys.innovsys.com> <DCEAAC0833DD314AB0B58112AD99B93B046E72C3@ismail.innsys.innovsys.com> <4832F139.1020502@freescale.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Scott Wood" <scottwood@freescale.com>
+Cc: <linux-kernel@vger.kernel.org>, <linuxppc-dev@ozlabs.org>,
+       <netdev@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 11:20:10AM -0400, Alan Stern wrote:
-> > On Tue, May 20, 2008 at 01:27:34PM +0200, Oliver Neukum wrote:
-> > > > done.
-> > > > http://bugzilla.kernel.org/show_bug.cgi?id=10630
-> > > 
-> > > Aha. Thanks.
-> > > Please recompile without CONFIG_USB_SUSPEND
-> > 
-> > Hm, without USB_SUSPEND it works. So what next, considered fixed or any
-> > further investigation is needed?
+Scott Wood wrote:
+> Rune Torgersen wrote:
+>> 0xc0196d84 is in fs_enet_interrupt
+>> (drivers/net/fs_enet/fs_enet-main.c:473).
+>> 468                     if (fpi->use_napi)
+>> 469                             int_clr_events &= ~fep->ev_napi_rx;
+>> 470 471                     (*fep->ops->clear_int_events)(dev,
+>> int_clr_events); 472
+>> 473                     if (int_events & fep->ev_err)
+>> 474                             (*fep->ops->ev_error)(dev,
+>> int_events); 475 476                     if (int_events &
+>> fep->ev_rx) { 477                             if (!fpi->use_napi)
+>> (gdb)
 > 
-> No further investigation is needed.  I tried doing essentially the same 
-> thing on my system and the same problem occurred.
+> Do you have shared interrupt debugging turned on?  That breaks this
+> driver, and a patch to remove the shared flag was nacked in favor of
+> actually fixing the driver, which I haven't gotten around to.
 > 
-> It is caused by the way ehci-hcd "auto-clears" the port
-> change-suspend feature.  This patch should fix the problem.  Please 
-> try it out and let us know if it works.
+> -Scott
 
-seems to be working, device is detected. Thanks. Please, push the patch.
+Hmm.... ttyCPM1 output seems to be kinda garbled... Any ideas?
+Incomplete locking between printk and userland use of ttyCPM1 as
+console?
 
--- 
-Luká¹ Hejtmánek
+kjour[  OK  ]   nal
+ stdrtiag. nCom it mnteivalr5 s cones
+dXT3EFS  n soa7,dint rnae jolrnau
+ElT3-Xs: founmed tilefystsm weth irdeoed ratadmod .
+ek/*    [  Removing /var/run/* and /var/locp... [  OK  ]
+Creating new /var/run/utmlogin /fastboot and /forcefsck...      OK  ]
+Removing possible /etc/noBringing up the loopback interface...  [  OK  ]
+OK  ]
+OK  ] Entering runlevel: 3 hostname to 9919_unit1_c
+Starting the i2c_8266 driver: i2
+_82c6: 6odume llcenie 'snspucifeed'itai ts nernkl.
+                                                  e[ OK ]
+
+
