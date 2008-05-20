@@ -1,221 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760397AbYETTHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757653AbYETTMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760397AbYETTHa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 15:07:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933544AbYETTGs
+	id S1757653AbYETTMd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 15:12:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757083AbYETTMX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 15:06:48 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:60708 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933529AbYETTGq (ORCPT
+	Tue, 20 May 2008 15:12:23 -0400
+Received: from metis.extern.pengutronix.de ([83.236.181.26]:40515 "EHLO
+	metis.extern.pengutronix.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754594AbYETTMW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 15:06:46 -0400
-Date: Tue, 20 May 2008 20:06:28 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: gregkh@suse.de, bersace03@laposte.net, johannes@sipsolutions.de
-Message-ID: <20080520190628.GA14580@srcf.ucam.org>
+	Tue, 20 May 2008 15:12:22 -0400
+Date: Tue, 20 May 2008 21:11:59 +0200
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Remy Bohmer <linux@bohmer.net>, LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>, lvcargnini@gmail.com,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.25.4-rt2 compile errors on ARM due to cmpxchg() problems.
+Message-ID: <20080520191159.GL13814@pengutronix.de>
+References: <3efb10970805200721u6a837a2ap94ead54f7eb7bf89@mail.gmail.com> <Pine.LNX.4.58.0805201034130.1838@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: [PATCH] Firmware loader driver for USB Apple iSight camera
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+In-Reply-To: <Pine.LNX.4.58.0805201034130.1838@gandalf.stny.rr.com>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Hannoversche
+	Str. 2, 31134 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-9 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 21:09:37 up 81 days, 11 min, 18 users,  load average: 0.04, 0.01,
+	0.00
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: 10.1.1.3
+X-SA-Exim-Mail-From: rsc@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.extern.pengutronix.de); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Uninitialised Apple iSight drivers present with a distinctive USB ID. 
-Once firmware has been uploaded, they disconnect and reconnect with a 
-new ID. At this point they can be driven by the uvcvideo driver. As this 
-is unique to the Apple cameras and not functionality shared by any other 
-UVC devices, it makes sense to provide the firmware loading 
-functionality in a separate driver. This driver will read an isight.fw 
-file extracted from the Apple driver using the tools at 
-http://bersace03.free.fr/ift/ and upload it to the camera. It will also 
-handle the case where the device loses its firmware during hibernation 
-and must have it reloaded.
+Hi Steven,
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
+On Tue, May 20, 2008 at 10:34:54AM -0400, Steven Rostedt wrote:
+> No idea right off the bat. But I may be needing to set up a ARM
+> crosscompiler. Unless Thomas would like to take a look into this.
 
----
+If you need an ARM cross compiler, you can for example use ptxdist to
+setup an OSELAS.Toolchain:
 
-I think this is a cleaner solution than adding support for the firmware 
-loading directly to the uvcvideo driver, and doing it as a driver rather 
-than a set of userspace callouts simplifies the suspend/resume case. The 
-required firmware is, sadly, non-free and undistributable.
+http://www.pengutronix.de/oselas/toolchain/index_en.html
 
-diff --git a/drivers/usb/misc/Kconfig b/drivers/usb/misc/Kconfig
-index a53db1d..0629e7a 100644
---- a/drivers/usb/misc/Kconfig
-+++ b/drivers/usb/misc/Kconfig
-@@ -269,3 +269,14 @@ config USB_TEST
- 	  See <http://www.linux-usb.org/usbtest/> for more information,
- 	  including sample test device firmware and "how to use it".
- 
-+config USB_ISIGHTFW
-+       tristate "iSight firmware loading support"
-+       depends on USB
-+       help
-+         This driver loads firmware for USB Apple iSight cameras, allowing
-+	 them to be driven by the USB video class driver available at
-+	 http://linux-uvc.berlios.de
-+
-+	 The firmware for this driver must be extracted from the MacOS driver
-+	 beforehand. Tools for doing so are available at 
-+	 http://bersace03.free.fr
-diff --git a/drivers/usb/misc/Makefile b/drivers/usb/misc/Makefile
-index b68e6b7..aba091c 100644
---- a/drivers/usb/misc/Makefile
-+++ b/drivers/usb/misc/Makefile
-@@ -14,6 +14,7 @@ obj-$(CONFIG_USB_EMI62)		+= emi62.o
- obj-$(CONFIG_USB_FTDI_ELAN)	+= ftdi-elan.o
- obj-$(CONFIG_USB_IDMOUSE)	+= idmouse.o
- obj-$(CONFIG_USB_IOWARRIOR)	+= iowarrior.o
-+obj-$(CONFIG_USB_ISIGHTFW)	+= isight_firmware.o
- obj-$(CONFIG_USB_LCD)		+= usblcd.o
- obj-$(CONFIG_USB_LD)		+= ldusb.o
- obj-$(CONFIG_USB_LED)		+= usbled.o
-diff --git a/drivers/usb/misc/isight_firmware.c b/drivers/usb/misc/isight_firmware.c
-new file mode 100644
-index 0000000..c76da4a
---- /dev/null
-+++ b/drivers/usb/misc/isight_firmware.c
-@@ -0,0 +1,131 @@
-+/*
-+ * Driver for loading USB isight firmware
-+ *
-+ * Copyright (C) 2008 Matthew Garrett <mjg@redhat.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the Free
-+ * Software Foundation, version 2.
-+ *
-+ * The USB isight cameras in recent Apples are roughly compatible with the USB
-+ * video class specification, and can be driven by uvcvideo. However, they
-+ * need firmware to be loaded beforehand. After firmware loading, the device
-+ * detaches from the USB bus and reattaches with a new device ID. It can then
-+ * be claimed by the uvc driver.
-+ *
-+ * The firmware is non-free and must be extracted by the user. Tools to do this
-+ * are available at http://bersace03.free.fr/ift/
-+ *
-+ * The isight firmware loading was reverse engineered by Johannes Berg
-+ * <johannes@sipsolutions.de>, and this driver is based on code by Ronald
-+ * Bultje <rbultje@ronald.bitfreak.net>
-+ */
-+
-+#include <linux/usb.h>
-+#include <linux/firmware.h>
-+#include <linux/errno.h>
-+#include <linux/module.h>
-+
-+static struct usb_device_id id_table[] = {
-+	{USB_DEVICE(0x05ac, 0x8300)},
-+	{},
-+};
-+
-+MODULE_DEVICE_TABLE(usb, id_table);
-+
-+static int isight_firmware_load(struct usb_interface *intf,
-+				const struct usb_device_id *id)
-+{
-+	struct usb_device *dev = interface_to_usbdev(intf);
-+	int llen, len, req, ret = 0;
-+	const struct firmware *firmware;
-+	unsigned char *buf;
-+	unsigned char data[4];
-+	char *ptr;
-+
-+	if (request_firmware(&firmware, "isight.fw", &dev->dev) != 0) {
-+		printk(KERN_ERR "Unable to load isight firmware\n");
-+		return -ENODEV;
-+	}
-+
-+	ptr = firmware->data;
-+
-+	if (usb_control_msg
-+	    (dev, usb_sndctrlpipe(dev, 0), 0xa0, 0x40, 0xe600, 0, "\1", 1,
-+	     300) != 1) {
-+		printk(KERN_ERR
-+		       "Failed to initialise isight firmware loader\n");
-+		ret = -ENODEV;
-+		goto out;
-+	}
-+
-+	while (1) {
-+		memcpy(data, ptr, 4);
-+		len = (data[0] << 8 | data[1]);
-+		req = (data[2] << 8 | data[3]);
-+		ptr += 4;
-+
-+		if (len == 0x8001)
-+			break;	/* success */
-+		else if (len == 0)
-+			continue;
-+
-+		for (; len > 0; req += 50) {
-+			llen = len > 50 ? 50 : len;
-+			len -= llen;
-+
-+			buf = kmalloc(llen, GFP_KERNEL);
-+			memcpy(buf, ptr, llen);
-+
-+			ptr += llen;
-+
-+			if (usb_control_msg
-+			    (dev, usb_sndctrlpipe(dev, 0), 0xa0, 0x40, req, 0,
-+			     buf, llen, 300) != llen) {
-+				printk(KERN_ERR
-+				       "Failed to load isight firmware\n");
-+				kfree(buf);
-+				ret = -ENODEV;
-+				goto out;
-+			}
-+
-+			kfree(buf);
-+		}
-+	}
-+	if (usb_control_msg
-+	    (dev, usb_sndctrlpipe(dev, 0), 0xa0, 0x40, 0xe600, 0, "\0", 1,
-+	     300) != 1) {
-+		printk(KERN_ERR "isight firmware loading completion failed\n");
-+		ret = -ENODEV;
-+	}
-+out:
-+	release_firmware(firmware);
-+	return ret;
-+}
-+
-+static void isight_firmware_disconnect(struct usb_interface *intf)
-+{
-+}
-+
-+static struct usb_driver isight_firmware_driver = {
-+	.name = "isight_firmware",
-+	.probe = isight_firmware_load,
-+	.disconnect = isight_firmware_disconnect,
-+	.id_table = id_table,
-+};
-+
-+static int __init isight_firmware_init(void)
-+{
-+	return usb_register(&isight_firmware_driver);
-+}
-+
-+static void __exit isight_firmware_exit(void)
-+{
-+	usb_deregister(&isight_firmware_driver);
-+}
-+
-+module_init(isight_firmware_init);
-+module_exit(isight_firmware_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Matthew Garrett <mjg@redhat.com>");
+The current well tested revisions are based on 4.1.2, but -trunk does
+also contain (work-in-progress) top-of-tree versions.
 
+rsc
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+ Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
+   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
+     Hannoversche Str. 2, 31134 Hildesheim, Germany
+   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
+
