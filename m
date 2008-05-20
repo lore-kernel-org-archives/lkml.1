@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934047AbYETPyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934546AbYETP4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934047AbYETPyY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 11:54:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755505AbYETPyJ
+	id S934546AbYETP4W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 11:56:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756468AbYETP4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 11:54:09 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:49631 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756750AbYETPyH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 11:54:07 -0400
-Message-Id: <1211298846.8328.1254165905@webmail.messagingengine.com>
-X-Sasl-Enc: vMkD4itlAS1Gc8sQQpTMHopHbUOTKk8RzyXd7TItshXy 1211298846
-From: "Henrique de Moraes Holschuh" <hmh@hmh.eng.br>
-To: "Ivo van Doorn" <ivdoorn@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "Thomas Renninger" <trenn@suse.de>,
-       "Dmitry Torokhov" <dtor@mail.ru>
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="ISO-8859-1"
+	Tue, 20 May 2008 11:56:13 -0400
+Received: from sous-sol.org ([216.99.217.87]:50831 "EHLO sous-sol.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755959AbYETP4M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 11:56:12 -0400
+Date: Tue, 20 May 2008 08:55:57 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: Chris Wright <chrisw@sous-sol.org>, Adrian Bunk <bunk@kernel.org>,
+       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       James Morris <jmorris@namei.org>
+Subject: Re: LSM: MAINTAINERS points to no longer existing URL
+Message-ID: <20080520155557.GN30402@sequoia.sous-sol.org>
+References: <20080519214201.GB17716@cs181133002.pp.htv.fi> <20080519215843.GJ30402@sequoia.sous-sol.org> <1211286579.7486.75.camel@moss-spartans.epoch.ncsc.mil>
 MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-References: <1211136485-19878-1-git-send-email-hmh@hmh.eng.br>
-   <1211136485-19878-16-git-send-email-hmh@hmh.eng.br>
-   <200805201209.08986.IvDoorn@gmail.com>
-Subject: Re: [PATCH 15/15] rfkill: document rw rfkill switches and clarify input
-   subsystem interactions
-In-Reply-To: <200805201209.08986.IvDoorn@gmail.com>
-Date: Tue, 20 May 2008 12:54:06 -0300
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1211286579.7486.75.camel@moss-spartans.epoch.ncsc.mil>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 20 May 2008 12:09:08 +0200, "Ivo van Doorn" <ivdoorn@gmail.com> said:
-> > +You should:
-> >  	- rfkill_allocate()
-> > -	- input_allocate_polled_device()
-> > +	- modify rfkill fields (flags, name)
-> > +	- modify state to the current hardware state (THIS IS THE ONLY TIME
-> > +	  YOU CAN ACCESS state DIRECTLY)
-> >  	- rfkill_register()
-> > -	- input_register_polled_device()
+* Stephen Smalley (sds@tycho.nsa.gov) wrote:
+> On Mon, 2008-05-19 at 14:58 -0700, Chris Wright wrote:
+> > * Adrian Bunk (bunk@kernel.org) wrote:
+> > > MAINTAINERS says:
+> > > 
+> > > LINUX SECURITY MODULE (LSM) FRAMEWORK
+> > > P:      Chris Wright
+> > > M:      chrisw@sous-sol.org
+> > > L:      linux-security-module@vger.kernel.org
+> > > W:      http://lsm.immunix.org
+> > > T:      git kernel.org:/pub/scm/linux/kernel/git/chrisw/lsm-2.6.git
+> > > S:      Supported
+> > > 
+> > > But http://lsm.immunix.org no longer exists.
+> > 
+> > Indeed, queueing this.
 > 
-> Wasn't it the plan to send the current hardware state as rfkill
-> registration argument,
-> so we can force drivers to send a valid state to rfkill?
+> What about the git tree listed above?  Is it still being maintained?
+> James Morris set up a security-testing git tree that was used e.g. for
+> the audit conversion from direct selinux calls to using LSM hooks and
+> for the security= boot parameter (i.e. for changes that went beyond just
+> one LSM).
 
-Yes, but IMHO we should do that in a future patch.  That patch will touch
-every rfkill driver, so I'd rather we do that later.  IMHO it is best to get
-the most important stuff merged, first...
+Yeah, I updated it last night to add this patch, a couple of other
+trivial patches (Lindent-type) that were sent to me, and I would put
+the proc ptrace one there as well, since it's touching core/smack/etc...
+That needs coordination w/ any follow-on.
 
-Then, in that future patch, we change the API, fix all in-tree drivers using
-that API, and update the documentation to match the new API.  For now, we
-update the documentation to match the current API.
-
-What do you think?
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
-
+thanks,
+-chris
