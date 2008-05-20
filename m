@@ -1,92 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932408AbYETUrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760983AbYETUrp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932408AbYETUrX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 16:47:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759287AbYETUrP
+	id S1760983AbYETUrp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 16:47:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932955AbYETUrc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 16:47:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49253 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758437AbYETUrO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 16:47:14 -0400
-Date: Tue, 20 May 2008 15:58:46 -0400
-From: Dave Jones <davej@redhat.com>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       hpa@zytor.com
-Subject: Re: [X86] Add a boot parameter to force-enable PAT
-Message-ID: <20080520195846.GA29806@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Mikael Pettersson <mikpe@it.uu.se>,
-	Yinghai Lu <yhlu.kernel@gmail.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-	hpa@zytor.com
-References: <200805200409.m4K49Ybn024338@gelk.kernelslacker.org> <86802c440805192253s34b3acb2r63c657db86676792@mail.gmail.com> <20080520132306.GB4843@redhat.com> <18482.58121.130009.555407@harpo.it.uu.se>
+	Tue, 20 May 2008 16:47:32 -0400
+Received: from frodo.howardsilvan.com ([66.119.206.113]:39571 "EHLO
+	mail.howardsilvan.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932940AbYETUrb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 16:47:31 -0400
+Message-ID: <483338DE.8090904@howardsilvan.com>
+Date: Tue, 20 May 2008 13:47:26 -0700
+From: Lee Howard <faxguy@howardsilvan.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18482.58121.130009.555407@harpo.it.uu.se>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Zan Lynx <zlynx@acm.org>
+CC: Ray Lee <ray-lk@madrabbit.org>, linux-kernel@vger.kernel.org
+Subject: Re: troubleshooting/debugging hard locks
+References: <482B3D21.5020903@howardsilvan.com>	 <2c0942db0805141543n20e6eb6eq5fe13fe1cb50d67e@mail.gmail.com> <1210808578.3784.7.camel@localhost> <482BB151.4010109@howardsilvan.com>
+In-Reply-To: <482BB151.4010109@howardsilvan.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Add an enablepat boot parameter, useful for testing CPUs not yet
-  added to the whitelist.
-* Don't try to enable PAT if it was never enabled in the first place.
+Lee Howard wrote:
+> Zan Lynx wrote:
+>> On Wed, 2008-05-14 at 15:43 -0700, Ray Lee wrote:
+>>  
+>>> On Wed, May 14, 2008 at 12:27 PM, Lee Howard 
+>>> <faxguy@howardsilvan.com> wrote:
+>>>     
+>>
+>>  
+>>>>  But, without kernel messages indicating where to look to debug... 
+>>>> what is
+>>>> the best approach to start troubleshooting and debugging this 
+>>>> condition?  Is
+>>>> there some general debug feature that can be enabled in the kernel 
+>>>> that
+>>>> would help hone in on the culprit?
+>>>>       
+>>> There's something called the NMI watchdog, that will print debugging
+>>> messages out if it finds the system has hard locked. The short version
+>>> is that you should add "nmi_watchdog=1" (no quotes) to the line in
+>>> GRUB that has the kernel options. That assumes you have an APIC on the
+>>> system. If that's not the case (you're on Uniprocessor, and no APIC)
+>>> then you can try nmi_watchdog=2 instead. That'll only work on some
+>>> systems, though.
+>>>
+>>> Better docs (than my cheesy writeup) are in
+>>> Documentation/nmi_watchdog.txt in the kernel source distribution.
+>>>     
+>>
+>> I was once told to add these to the kernel command line as well when
+>> using NMI watchdog and they do seem to help it trigger more reliably:
+>> "idle=poll nohz=off"
+>
+> Thank you to both Ray and Zan.  This was very helpful, and I think 
+> that it has gotten me what I needed.
+>
+> "serial8250: too much work for irq16"
+>
+> Interestingly, now CTRL-SysRq-H will wake it back up... things get 
+> running normally afterwards - the hard lock never occurs. 
 
-Signed-off-by: Dave Jones <davej@redhat.com>
+After further troubleshooting it turns out that the message above was a 
+bit of a red herring.  I moved the PCIe modem card from one PCIe slot to 
+another so that it would be on a different IRQ (one that wasn't shared 
+with the network, ATA, and USB).  The message above does not occur now, 
+however, the hard lock is back... and this time with no kernel messages 
+at all.
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 72c07a0..e179c22 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -236,6 +236,10 @@ and is between 256 and 4096 characters. It is defined in the file
- 			try_unsupported: try to drive unsupported chipsets
- 				(may crash computer or cause data corruption)
- 
-+	enablepat	[i386,x86-64]
-+			Force the CPU's PAT feature to be used even if it
-+			isn't in the kernel's whitelist.
-+
- 	enable_timer_pin_1 [i386,x86-64]
- 			Enable PIN 1 of APIC timer
- 			Can be useful to work around chipset bugs
+So, I'm back to square one again... I've got:
 
-diff --git a/arch/x86/kernel/cpu/addon_cpuid_features.c b/arch/x86/kernel/cpu/addon_cpuid_features.c
-index c2e1ce3..e22e809 100644
---- a/arch/x86/kernel/cpu/addon_cpuid_features.c
-+++ b/arch/x86/kernel/cpu/addon_cpuid_features.c
-@@ -50,9 +50,27 @@ void __cpuinit init_scattered_cpuid_features(struct cpuinfo_x86 *c)
- 	}
- }
- 
-+static int forcepat;
-+
-+static int __init x86_forcepat_setup(char *s)
-+{
-+	forcepat = 1;
-+	return 1;
-+}
-+__setup("enablepat", x86_forcepat_setup);
-+
-+
- #ifdef CONFIG_X86_PAT
- void __cpuinit validate_pat_support(struct cpuinfo_x86 *c)
- {
-+	if (!test_cpu_cap(c, X86_FEATURE_PAT))
-+		return;
-+
-+	if (forcepat == 1) {
-+		printk(KERN_INFO "Force enabling PAT\n");
-+		return;
-+	}
-+
- 	switch (c->x86_vendor) {
- 	case X86_VENDOR_AMD:
- 		if (c->x86 >= 0xf && c->x86 <= 0x11)
--- 
-http://www.codemonkey.org.uk
+  nmi_watchdog=1 idle=poll nohz=off
+
+... and still I get the hard lockup and no kernel messages.  How do I 
+troubleshoot/debug this?  How do I know where to look?
+
+Thanks,
+
+Lee.
