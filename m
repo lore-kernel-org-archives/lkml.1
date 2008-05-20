@@ -1,68 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932592AbYETOKx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932643AbYETOL4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932592AbYETOKx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 10:10:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755931AbYETOKn
+	id S932643AbYETOL4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 10:11:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756592AbYETOLr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 10:10:43 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:58704 "EHLO e1.ny.us.ibm.com"
+	Tue, 20 May 2008 10:11:47 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:51897 "EHLO minas.ics.muni.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753903AbYETOKm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 10:10:42 -0400
-Subject: Re: Hello and a question about high cpu usage on jfsCommit (kernel
-	2.6.25.1)
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: David Fix <davidf@mrxfx.com>
-Cc: linux-kernel@vger.kernel.org,
-       JFS Discussion <jfs-discussion@lists.sourceforge.net>,
-       Christian Kujau <lists@nerdbynature.de>
-In-Reply-To: <4832CCC2.7040800@mrxfx.com>
-References: <482C9090.5040901@mrxfx.com>
-	 <1211211433.6283.14.camel@norville.austin.ibm.com>
-	 <4832CCC2.7040800@mrxfx.com>
-Content-Type: text/plain
-Date: Tue, 20 May 2008 09:10:39 -0500
-Message-Id: <1211292639.7870.20.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-Content-Transfer-Encoding: 7bit
+	id S1755931AbYETOLq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 10:11:46 -0400
+Date: Tue, 20 May 2008 16:11:32 +0200
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stern@rowland.harvard.edu, greg@kroah.com, linux-usb@vger.kernel.org
+Subject: Re: [Bug #10630] USB devices plugged into dock are not discoverred
+	until reload of ehci-hcd
+Message-ID: <20080520141132.GG4764@ics.muni.cz>
+References: <20080520123423.GA4764@ics.muni.cz> <200805201440.47217.oliver@neukum.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200805201440.47217.oliver@neukum.org>
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Muni-Spam-TestIP: 147.251.3.109
+X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Tue, 20 May 2008 16:11:34 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-05-20 at 09:06 -0400, David Fix wrote:
-> Hey Dave,
+On Tue, May 20, 2008 at 02:40:46PM +0200, Oliver Neukum wrote:
+> > > > http://bugzilla.kernel.org/show_bug.cgi?id=10630
+> > Hm, without USB_SUSPEND it works. So what next, considered fixed or any
+> > further investigation is needed?
 > 
-> Thanks for following up on this...  The previous kernel that I was 
-> running was 2.6.18.1...  From CentOS 5.1.
+> It is by no means fixed!
 > 
-> It appears that the thread eating up that much CPU isn't a continuous 
-> happening, only when there's a fair amount of activity going on.  It's 
-> hard to nail down exactly when it happens, but the next time it does, 
-> I'll definitely let you all know!
+> Now we find out what exactly doesn't work. Please apply this patch
+> and provide "dmesg -c" before you plug in the device and after that.
 
-Since it's only happening during periods of high activity, it doesn't
-seem as serious a problem as I suspected it may be.  Several threads
-operating on a lot of files and/or directories at one time could put a
-lot on the jfsCommit thread's queue, even though 99% cpu utilization
-still seems high.
-
-> I haven't been able to reboot this machine, as it's a production unit, 
-> but if I do get the chance, I'll do so.
-
-Since the thread isn't stuck in some kind of infinite loop, I don't
-really think a reboot will make any difference.  When I asked I wasn't
-sure if the thread was continuously munching cpu.
-
-> It seems to have leveled out 
-> now, with there being no high usage at all on there right now.
-
-If you see it again, Christian's suggesting of running oprofile to see
-where the the cpu is spending most of its time might be helpful.
-
-Thanks,
-Shaggy
+Should I use USB_SUSPEND or not?
+ 
 -- 
-David Kleikamp
-IBM Linux Technology Center
-
+Luká¹ Hejtmánek
