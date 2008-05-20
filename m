@@ -1,53 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933623AbYETTG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760397AbYETTHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933623AbYETTG4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 15:06:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933477AbYETTGg
+	id S1760397AbYETTHa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 15:07:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933544AbYETTGs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 15:06:36 -0400
-Received: from mail.lang.hm ([64.81.33.126]:35994 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932779AbYETTGe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 15:06:34 -0400
-Date: Tue, 20 May 2008 12:12:58 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Harald Dunkel <harald.dunkel@t-online.de>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25.3: su gets stuck for root
-In-Reply-To: <48331FFF.5070300@t-online.de>
-Message-ID: <alpine.DEB.1.10.0805201211390.4804@asgard.lang.hm>
-References: <4829326A.6060808@t-online.de> <19f34abd0805122347x4d9c5d03m16679d724189790e@mail.gmail.com> <4829D345.7020909@t-online.de> <19f34abd0805140034j75d97ecbw5a03c200645768cb@mail.gmail.com> <482B1BD2.8040400@t-online.de>
- <19f34abd0805141017g26c13e96t2e7edc23bec263d0@mail.gmail.com> <20080514183558.40178fe5@core> <48306DCA.9070108@t-online.de> <20080518185104.0a539f25@core> <48331FFF.5070300@t-online.de>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 20 May 2008 15:06:48 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:60708 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933529AbYETTGq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 15:06:46 -0400
+Date: Tue, 20 May 2008 20:06:28 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: gregkh@suse.de, bersace03@laposte.net, johannes@sipsolutions.de
+Message-ID: <20080520190628.GA14580@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: [PATCH] Firmware loader driver for USB Apple iSight camera
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 May 2008, Harald Dunkel wrote:
+Uninitialised Apple iSight drivers present with a distinctive USB ID. 
+Once firmware has been uploaded, they disconnect and reconnect with a 
+new ID. At this point they can be driven by the uvcvideo driver. As this 
+is unique to the Apple cameras and not functionality shared by any other 
+UVC devices, it makes sense to provide the firmware loading 
+functionality in a separate driver. This driver will read an isight.fw 
+file extracted from the Apple driver using the tools at 
+http://bersace03.free.fr/ift/ and upload it to the camera. It will also 
+handle the case where the device loses its firmware during hibernation 
+and must have it reloaded.
 
-> Alan Cox wrote:
->>> This GDB was configured as "x86_64-linux-gnu"...
->>> Attaching to program: /var/tmp/coreutils-6.10/coreutils-6.10/src/stty, 
->>> process 26465
->>> /tmp/buildd/gdb-6.8/gdb/linux-nat.c:988: internal-error: linux_nat_attach: 
->>> Assertion `pid == GET_PID (inferior_ptid) && WIFSTOPPED (status) && 
->>> WSTOPSIG (status) == SIGSTOP' failed.
->>> A problem internal to GDB has been detected,
->> 
->> So your gdb is broken, your stty is doign stuff nobody else seems to be
->> seeing ? My first thought is to suspect the distro/source as I've still
->> had no other equivalent reports and given the gdb spew.
->> 
->
-> I doubt that Debian is to blame here. I get the same with native
-> gdb-6.8 and native coreutils-6.10:
+Signed-off-by: Matthew Garrett <mjg@redhat.com>
 
-try killing syslog and then see if you continue to have the problem. It's 
-possible that what's happening is syslog is getting stuck and su is 
-sitting waiting for syslog to process the log entry.
+---
 
-David Lang
+I think this is a cleaner solution than adding support for the firmware 
+loading directly to the uvcvideo driver, and doing it as a driver rather 
+than a set of userspace callouts simplifies the suspend/resume case. The 
+required firmware is, sadly, non-free and undistributable.
+
+diff --git a/drivers/usb/misc/Kconfig b/drivers/usb/misc/Kconfig
+index a53db1d..0629e7a 100644
+--- a/drivers/usb/misc/Kconfig
++++ b/drivers/usb/misc/Kconfig
+@@ -269,3 +269,14 @@ config USB_TEST
+ 	  See <http://www.linux-usb.org/usbtest/> for more information,
+ 	  including sample test device firmware and "how to use it".
+ 
++config USB_ISIGHTFW
++       tristate "iSight firmware loading support"
++       depends on USB
++       help
++         This driver loads firmware for USB Apple iSight cameras, allowing
++	 them to be driven by the USB video class driver available at
++	 http://linux-uvc.berlios.de
++
++	 The firmware for this driver must be extracted from the MacOS driver
++	 beforehand. Tools for doing so are available at 
++	 http://bersace03.free.fr
+diff --git a/drivers/usb/misc/Makefile b/drivers/usb/misc/Makefile
+index b68e6b7..aba091c 100644
+--- a/drivers/usb/misc/Makefile
++++ b/drivers/usb/misc/Makefile
+@@ -14,6 +14,7 @@ obj-$(CONFIG_USB_EMI62)		+= emi62.o
+ obj-$(CONFIG_USB_FTDI_ELAN)	+= ftdi-elan.o
+ obj-$(CONFIG_USB_IDMOUSE)	+= idmouse.o
+ obj-$(CONFIG_USB_IOWARRIOR)	+= iowarrior.o
++obj-$(CONFIG_USB_ISIGHTFW)	+= isight_firmware.o
+ obj-$(CONFIG_USB_LCD)		+= usblcd.o
+ obj-$(CONFIG_USB_LD)		+= ldusb.o
+ obj-$(CONFIG_USB_LED)		+= usbled.o
+diff --git a/drivers/usb/misc/isight_firmware.c b/drivers/usb/misc/isight_firmware.c
+new file mode 100644
+index 0000000..c76da4a
+--- /dev/null
++++ b/drivers/usb/misc/isight_firmware.c
+@@ -0,0 +1,131 @@
++/*
++ * Driver for loading USB isight firmware
++ *
++ * Copyright (C) 2008 Matthew Garrett <mjg@redhat.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the Free
++ * Software Foundation, version 2.
++ *
++ * The USB isight cameras in recent Apples are roughly compatible with the USB
++ * video class specification, and can be driven by uvcvideo. However, they
++ * need firmware to be loaded beforehand. After firmware loading, the device
++ * detaches from the USB bus and reattaches with a new device ID. It can then
++ * be claimed by the uvc driver.
++ *
++ * The firmware is non-free and must be extracted by the user. Tools to do this
++ * are available at http://bersace03.free.fr/ift/
++ *
++ * The isight firmware loading was reverse engineered by Johannes Berg
++ * <johannes@sipsolutions.de>, and this driver is based on code by Ronald
++ * Bultje <rbultje@ronald.bitfreak.net>
++ */
++
++#include <linux/usb.h>
++#include <linux/firmware.h>
++#include <linux/errno.h>
++#include <linux/module.h>
++
++static struct usb_device_id id_table[] = {
++	{USB_DEVICE(0x05ac, 0x8300)},
++	{},
++};
++
++MODULE_DEVICE_TABLE(usb, id_table);
++
++static int isight_firmware_load(struct usb_interface *intf,
++				const struct usb_device_id *id)
++{
++	struct usb_device *dev = interface_to_usbdev(intf);
++	int llen, len, req, ret = 0;
++	const struct firmware *firmware;
++	unsigned char *buf;
++	unsigned char data[4];
++	char *ptr;
++
++	if (request_firmware(&firmware, "isight.fw", &dev->dev) != 0) {
++		printk(KERN_ERR "Unable to load isight firmware\n");
++		return -ENODEV;
++	}
++
++	ptr = firmware->data;
++
++	if (usb_control_msg
++	    (dev, usb_sndctrlpipe(dev, 0), 0xa0, 0x40, 0xe600, 0, "\1", 1,
++	     300) != 1) {
++		printk(KERN_ERR
++		       "Failed to initialise isight firmware loader\n");
++		ret = -ENODEV;
++		goto out;
++	}
++
++	while (1) {
++		memcpy(data, ptr, 4);
++		len = (data[0] << 8 | data[1]);
++		req = (data[2] << 8 | data[3]);
++		ptr += 4;
++
++		if (len == 0x8001)
++			break;	/* success */
++		else if (len == 0)
++			continue;
++
++		for (; len > 0; req += 50) {
++			llen = len > 50 ? 50 : len;
++			len -= llen;
++
++			buf = kmalloc(llen, GFP_KERNEL);
++			memcpy(buf, ptr, llen);
++
++			ptr += llen;
++
++			if (usb_control_msg
++			    (dev, usb_sndctrlpipe(dev, 0), 0xa0, 0x40, req, 0,
++			     buf, llen, 300) != llen) {
++				printk(KERN_ERR
++				       "Failed to load isight firmware\n");
++				kfree(buf);
++				ret = -ENODEV;
++				goto out;
++			}
++
++			kfree(buf);
++		}
++	}
++	if (usb_control_msg
++	    (dev, usb_sndctrlpipe(dev, 0), 0xa0, 0x40, 0xe600, 0, "\0", 1,
++	     300) != 1) {
++		printk(KERN_ERR "isight firmware loading completion failed\n");
++		ret = -ENODEV;
++	}
++out:
++	release_firmware(firmware);
++	return ret;
++}
++
++static void isight_firmware_disconnect(struct usb_interface *intf)
++{
++}
++
++static struct usb_driver isight_firmware_driver = {
++	.name = "isight_firmware",
++	.probe = isight_firmware_load,
++	.disconnect = isight_firmware_disconnect,
++	.id_table = id_table,
++};
++
++static int __init isight_firmware_init(void)
++{
++	return usb_register(&isight_firmware_driver);
++}
++
++static void __exit isight_firmware_exit(void)
++{
++	usb_deregister(&isight_firmware_driver);
++}
++
++module_init(isight_firmware_init);
++module_exit(isight_firmware_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Matthew Garrett <mjg@redhat.com>");
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
