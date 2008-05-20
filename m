@@ -1,55 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759313AbYETIBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761728AbYETIBv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759313AbYETIBZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 04:01:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753707AbYETIBP
+	id S1761728AbYETIBv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 04:01:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753707AbYETIBm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 04:01:15 -0400
-Received: from mailrelay006.isp.belgacom.be ([195.238.6.172]:25730 "EHLO
-	mailrelay006.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753433AbYETIBO (ORCPT
+	Tue, 20 May 2008 04:01:42 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:36173 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753433AbYETIBl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 04:01:14 -0400
-X-Belgacom-Dynamic: yes
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AuYEACwhMkhR8DYR/2dsb2JhbACBVawf
-Date: Tue, 20 May 2008 10:01:10 +0200
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/57] watchdog: Giant scrub
-Message-ID: <20080520080110.GA2724@infomag.infomag.iguana.be>
-References: <20080519124659.31722.51847.stgit@core> <20080519112148.4d078ad4.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 20 May 2008 04:01:41 -0400
+Date: Tue, 20 May 2008 10:02:37 +0200
+From: Pavel Machek <pavel@suse.cz>
+To: David Brownell <david-b@pacbell.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Trent Piepho <tpiepho@freescale.com>,
+       hartleys <hartleys@visionengravers.com>,
+       Ben Nizette <bn@niasdigital.com>, Mike Frysinger <vapier.adi@gmail.com>,
+       Bryan Wu <cooloney@kernel.org>
+Subject: Re: [patch/rfc 2.6.25-git] gpio: sysfs interface
+Message-ID: <20080520080236.GA10856@elf.ucw.cz>
+References: <200804281239.51729.david-b@pacbell.net> <200805171514.07619.david-b@pacbell.net> <20080519223933.GA2315@elf.ucw.cz> <200805191826.18516.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20080519112148.4d078ad4.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200805191826.18516.david-b@pacbell.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+Hi!
 
-> eek.
+> > > > What about mkdir gpio-N to export it?
+> > > 
+> > > Ugh.  That would create way more complication than I want
+> > > to see here.  I thought about that early on, and decided
+> > > that was Not The Way To Go.
+> > 
+> > ...but it would be consistent with configfs... and face it... doing
+> > echo > file to make a directory is seriously ugly.
 > 
-> This comes at a time when git-watchdog has
+> This isn't configfs, and I didn't happen to notice any polite
+> way for sysfs users to intercept "mkdir", parse the relevant
+> directory name, reject illegal names, and pre-populate the
+> just-created directory with relevant contents.
 > 
-> and hasn't had a commit in six weeks, missed the merge window and the
-> most recent commit is titled "[WATCHDOG] rc32434_wdt: critical
-> bugfixes".
 > 
-> Wim, come back!
-> 
-> (Happily there appears to be little overlap between the two diffstats there)
+> Were you implying it should go into configfs?  If so, do you
+> maybe have an update to the patch I sent a day or so ago?
 
-Sorry guys, I had to do electricity, ... for the new house. I have to finish
-still one thing tonight and then things should be normal again for a few weeks.
-I indeed have some backlog, but Alan's patches seems rather straight forward.
-I'll merge them in the linux-watchdog-mm tree as soon as possible (but i'll first
-sent some watchdog patches over to linus because I seemed to have missed allready
-2 rc releases :-( ).
+No, sorry.
 
-Greetings,
-Wim.
-
+I'm not sure if it should go to configfs, or if sysfs should be
+improved. But "something" should be done, because we will be stuck
+with this interface for a long while.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
