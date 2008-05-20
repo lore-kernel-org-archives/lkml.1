@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762391AbYETR6G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763494AbYETR6z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762391AbYETR6G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 13:58:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755328AbYETR5z
+	id S1763494AbYETR6z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 13:58:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756338AbYETR6r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 13:57:55 -0400
-Received: from outbound-mail-146.bluehost.com ([67.222.38.36]:53115 "HELO
-	outbound-mail-146.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754581AbYETR5y (ORCPT
+	Tue, 20 May 2008 13:58:47 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:35683 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755328AbYETR6q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 13:57:54 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Gary Hade <garyhade@us.ibm.com>
-Subject: Re: [PATCH] PCI: boot parameter to avoid expansion ROM memory allocation
-Date: Tue, 20 May 2008 10:57:49 -0700
-User-Agent: KMail/1.9.9
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-References: <20080512205746.GB7401@us.ibm.com> <20080514000702.GA12546@us.ibm.com> <20080514162015.GA6713@us.ibm.com>
-In-Reply-To: <20080514162015.GA6713@us.ibm.com>
+	Tue, 20 May 2008 13:58:46 -0400
+Message-ID: <4833112F.7020402@zytor.com>
+Date: Tue, 20 May 2008 10:58:07 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Dave Jones <davej@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [X86] Remove unnecessary code in 64bit CPU identification.
+References: <200805200409.m4K49ZuE024343@gelk.kernelslacker.org> <4832E461.2070503@zytor.com> <20080520151655.GA542@redhat.com>
+In-Reply-To: <20080520151655.GA542@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805201057.49679.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, May 14, 2008 9:20 am Gary Hade wrote:
-> > Correct, not a perfect solution but better than we have right now.
->
-> ...but don't let this comment make you think that I am not in
-> favor of something like you are suggesting.  I am interested
-> in getting the 'pci=norom' change into mainline quickly but it
-> is obviously less than ideal for the long term.
->
-> Jesse, any idea how many different devices absolutely need
-> memory allocated for their expansion ROMs?
+Dave Jones wrote:
+> On Tue, May 20, 2008 at 07:46:57AM -0700, H. Peter Anvin wrote:
+>  > Dave Jones wrote:
+>  > > There were no 64bit Transmeta CPUs made (and it'd be something of
+>  > > a surprise if they started any time soon).   To the best of my knowledge,
+>  > > no CPU vendor cloned the 80860000 cpuid space claimed by Transmeta.
+>  > > By removing this code, we can also eliminate calling cpuid 0x80000007 twice.
+>  > > 
+>  > > Signed-off-by: Dave Jones <davej@redhat.com>
+>  > 
+>  > I'd really like to avoid divergences between the 32-bit and 64-bit code 
+>  > if they can be avoided at this point.  These codes need to be unified, 
+>  > not further split.
+> 
+> Umm, the 32 bit code has the per-vendor stuff removed from setup.c, and factored
+> out into per-vendor files in arch/x86/kernel/cpu/  Because the 64bit version
+> doesn't do that (yet), my removal of this code actually gets us closer to unification.
+> After my patch, neither of the setup.c files have the Transmeta bits :)
+> 
 
-Unless there's a ton of demand, I'd rather go with the norom option, but 
-either way, I'd like to push the fix early in the 2.6.27 cycle rather than 
-trying to get it into 2.6.26 at the last minute...
+*Shrug* ... it seems like pointless churn to code that really needs to 
+die to me.
 
-So assuming you're ok with your last patch, I'll stuff it into linux-next.
-
-Thanks,
-Jesse
-
+	-hpa
