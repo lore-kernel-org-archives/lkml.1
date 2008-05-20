@@ -1,55 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932973AbYETQuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933261AbYETQur@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932973AbYETQuZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 12:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759537AbYETQuI
+	id S933261AbYETQur (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 12:50:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762136AbYETQuO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 12:50:08 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:42035
-	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756077AbYETQuH (ORCPT
+	Tue, 20 May 2008 12:50:14 -0400
+Received: from bohort.kerlabs.com ([62.160.40.57]:60685 "EHLO
+	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760764AbYETQuL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 12:50:07 -0400
-Message-ID: <4833013D.8020506@qumranet.com>
-Date: Tue, 20 May 2008 19:50:05 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Pavel Machek <pavel@suse.cz>
-CC: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Make LIST_POISON less deadly
-References: <1211125094-32167-1-git-send-email-avi@qumranet.com> <20080520164758.GA8531@elf.ucw.cz>
-In-Reply-To: <20080520164758.GA8531@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 20 May 2008 12:50:11 -0400
+X-Greylist: delayed 338 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 May 2008 12:50:11 EDT
+Message-Id: <20080520164318.369365434@kerlabs.com>
+References: <20080520163320.025971210@kerlabs.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 20 May 2008 18:33:21 +0200
+From: Louis Rilling <Louis.Rilling@kerlabs.com>
+To: Joel.Becker@oracle.com
+Cc: Louis.Rilling@kerlabs.com, linux-kernel@vger.kernel.org,
+       ocfs2-devel@oss.oracle.com
+Subject: [RFC][PATCH 1/3] configfs: set CONFIGFS_USET_DEFAULT earlier in configfs_attach_group()
+Content-Disposition: inline; filename=configfs-tell-configfs_attach_group-if-default-group.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> On Sun 2008-05-18 18:38:14, Avi Kivity wrote:
->   
->> The list macros use LIST_POISON1 and LIST_POISON2 as undereferencable
->> pointers in order to trap erronous use of freed list_heads.  Unfortunately
->> userspace can arrange for those pointers to actually be dereferencable,
->> potentially turning an oops to an expolit.
->>
->> To avoid this allow architectures (currently x86_64 only) to override
->> the default values for these pointers with truly-undereferncable values.
->> This is easy on x86_64 as the virtual address space is smaller than
->> the range spanned by pointer values.
->>     
->
-> "Security hole unless arch maintainer does _foo_" sounds
-> scary. Especially when i386 is hard to fix...
->   
+When creating a config_group, the CONFIGFS_USET_DEFAULT flag of default
+sub-groups is only known after create_default_group() finishes its work, that is
+after having creating the whole sub-hierarchy. In order to track which lock to
+hide from lockdep, we need to known whether a config_group is default earlier,
+that is before creating the sub-hierarchy.
 
-It's a potential security hole.  You need to find a list corruption 
-first.  The patch prevents escalation of the oops into a code injection.
+This patch adds a def_group flag to configfs_attach_group(), which allows
+configfs_attach_group to set the CONFIGFS_USET_DEFAULT flag before calling
+populate_groups().
 
-i386 is fixable, though it will take more work than x86_64.
+Signed-off-by: Louis Rilling <Louis.Rilling@kerlabs.com>
+---
+ fs/configfs/dir.c |   22 ++++++++++++----------
+ 1 file changed, 12 insertions(+), 10 deletions(-)
+
+
+Index: b/fs/configfs/dir.c
+===================================================================
+--- a/fs/configfs/dir.c	2008-05-20 17:13:18.000000000 +0200
++++ b/fs/configfs/dir.c	2008-05-20 18:19:35.000000000 +0200
+@@ -445,7 +445,8 @@ static int populate_attrs(struct config_
+ 
+ static int configfs_attach_group(struct config_item *parent_item,
+ 				 struct config_item *item,
+-				 struct dentry *dentry);
++				 struct dentry *dentry,
++				 int def_group);
+ static void configfs_detach_group(struct config_item *item);
+ 
+ static void detach_groups(struct config_group *group)
+@@ -500,7 +501,6 @@ static int create_default_group(struct c
+ {
+ 	int ret;
+ 	struct qstr name;
+-	struct configfs_dirent *sd;
+ 	/* We trust the caller holds a reference to parent */
+ 	struct dentry *child, *parent = parent_group->cg_item.ci_dentry;
+ 
+@@ -516,11 +516,9 @@ static int create_default_group(struct c
+ 		d_add(child, NULL);
+ 
+ 		ret = configfs_attach_group(&parent_group->cg_item,
+-					    &group->cg_item, child);
+-		if (!ret) {
+-			sd = child->d_fsdata;
+-			sd->s_type |= CONFIGFS_USET_DEFAULT;
+-		} else {
++					    &group->cg_item, child,
++					    1);
++		if (ret) {
+ 			d_delete(child);
+ 			dput(child);
+ 		}
+@@ -692,7 +690,8 @@ static void configfs_detach_item(struct 
+ 
+ static int configfs_attach_group(struct config_item *parent_item,
+ 				 struct config_item *item,
+-				 struct dentry *dentry)
++				 struct dentry *dentry,
++				 int def_group)
+ {
+ 	int ret;
+ 	struct configfs_dirent *sd;
+@@ -701,6 +700,8 @@ static int configfs_attach_group(struct 
+ 	if (!ret) {
+ 		sd = dentry->d_fsdata;
+ 		sd->s_type |= CONFIGFS_USET_DIR;
++		if (def_group)
++			sd->s_type |= CONFIGFS_USET_DEFAULT;
+ 
+ 		ret = populate_groups(to_config_group(item));
+ 		if (ret) {
+@@ -1094,7 +1095,7 @@ static int configfs_mkdir(struct inode *
+ 	module_got = 1;
+ 
+ 	if (group)
+-		ret = configfs_attach_group(parent_item, item, dentry);
++		ret = configfs_attach_group(parent_item, item, dentry, 0);
+ 	else
+ 		ret = configfs_attach_item(parent_item, item, dentry);
+ 
+@@ -1418,7 +1419,8 @@ int configfs_register_subsystem(struct c
+ 		d_add(dentry, NULL);
+ 
+ 		err = configfs_attach_group(sd->s_element, &group->cg_item,
+-					    dentry);
++					    dentry,
++					    0);
+ 		if (err) {
+ 			d_delete(dentry);
+ 			dput(dentry);
 
 -- 
-error compiling committee.c: too many arguments to function
+Dr Louis Rilling			Kerlabs
+Skype: louis.rilling			Batiment Germanium
+Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
+http://www.kerlabs.com/			35700 Rennes
 
