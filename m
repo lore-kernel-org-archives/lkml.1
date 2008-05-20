@@ -1,58 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933856AbYETUO0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933098AbYETUQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933856AbYETUO0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 16:14:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759262AbYETUOP
+	id S933098AbYETUQr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 16:16:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759627AbYETUQj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 16:14:15 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:29467 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758436AbYETUOO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 16:14:14 -0400
-Date: Tue, 20 May 2008 22:14:06 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: Theodore Tso <tytso@mit.edu>,
-       ext4 development <linux-ext4@vger.kernel.org>,
-       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 4/4] ext4: call blkdev_issue_flush on fsync
-Message-ID: <20080520201406.GB2512@kernel.dk>
-References: <482DDA56.6000301@redhat.com> <482DDC04.7020706@redhat.com> <20080520023454.GM15035@mit.edu> <20080520154313.GI16676@shareable.org> <4832F3C6.1050601@redhat.com>
+	Tue, 20 May 2008 16:16:39 -0400
+Received: from outbound-mail-129.bluehost.com ([67.222.38.29]:43570 "HELO
+	outbound-mail-129.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758843AbYETUQj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 16:16:39 -0400
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Gary Hade <garyhade@us.ibm.com>
+Subject: Re: [PATCH] PCI: boot parameter to avoid expansion ROM memory allocation
+Date: Tue, 20 May 2008 13:16:33 -0700
+User-Agent: KMail/1.9.9
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+References: <20080512205746.GB7401@us.ibm.com> <200805201057.49679.jbarnes@virtuousgeek.org> <20080520200049.GA7334@us.ibm.com>
+In-Reply-To: <20080520200049.GA7334@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4832F3C6.1050601@redhat.com>
+Message-Id: <200805201316.33882.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20 2008, Eric Sandeen wrote:
-> Jamie Lokier wrote:
-> > Theodore Tso wrote:
-> >> On Fri, May 16, 2008 at 02:09:56PM -0500, Eric Sandeen wrote:
-> >>> To ensure that bits are truly on-disk after an fsync,
-> >>> we should call blkdev_issue_flush if barriers are supported.
-> >> This patch isn't necessary, and in fact will cause a double flush.
-> >> When you call fsync(), it calls ext4_force_commit(), and we do a the
-> >> equivalent of a blkdev_issue_flush() today (which is what happenes
-> >> when you do a submit_bh(WRITE_BARRIER, bh), which is what setting
-> >> set_ordered_mode(bh) ends up causing.
-> > 
-> > ISTR fsync() on ext3 did not always force a commit, if in-place data
-> > writes did not change any metadata.
-> 
-> I think that might still be true, but I'm still looking through it (in
-> the background...)
-> 
-> I tried blktrace to see what was going on but I'm not sure what an "NB"
-> in the RWBS field means, anyone know?
+On Tuesday, May 20, 2008 1:00 pm Gary Hade wrote:
+> On Tue, May 20, 2008 at 10:57:49AM -0700, Jesse Barnes wrote:
+> > On Wednesday, May 14, 2008 9:20 am Gary Hade wrote:
+> > > > Correct, not a perfect solution but better than we have right now.
+> > >
+> > > ...but don't let this comment make you think that I am not in
+> > > favor of something like you are suggesting.  I am interested
+> > > in getting the 'pci=norom' change into mainline quickly but it
+> > > is obviously less than ideal for the long term.
+> > >
+> > > Jesse, any idea how many different devices absolutely need
+> > > memory allocated for their expansion ROMs?
+> >
+> > Unless there's a ton of demand, I'd rather go with the norom option, but
+> > either way, I'd like to push the fix early in the 2.6.27 cycle rather
+> > than trying to get it into 2.6.26 at the last minute...
+>
+> This is fine.  I would also like to see the pci=norom option
+> added as-is with the thought that we may improve later by either
+> modifying pci=norom to exclude devices that need memory mapped
+> to their expansion ROMs or by adding another option (pci=minrom ?)
+> that would do the same thing.
+>
+> > So assuming you're ok with your last patch, I'll stuff it into
+> > linux-next.
+>
+> Works for me.  Thanks.
 
-Eric already knows this now, but for the benefit of anyone else that may
-be curious - it's an empty (data-less) barrier. 'N' is basically 'no
-data' (eg not a read nor a write) and 'B' is barrier.
+Ok, just pushed the norom patch to linux-next.  I'll test it out, but it would 
+be good if you could try the tree out out on one of the problem machines too.
 
--- 
-Jens Axboe
-
+Thanks,
+Jesse
