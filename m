@@ -1,66 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759131AbYETETT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758305AbYETEZR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759131AbYETETT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 00:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752310AbYETETK
+	id S1758305AbYETEZR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 00:25:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751069AbYETEZF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 00:19:10 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:33705 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750899AbYETETJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 00:19:09 -0400
-Date: Tue, 20 May 2008 14:19:01 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Thomas Meyer <thomas@m3y3r.de>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for May 19
-Message-Id: <20080520141901.6395a2a1.sfr@canb.auug.org.au>
-In-Reply-To: <1211222520.30161.3.camel@dhcppc1>
-References: <20080519174120.2083ea57.sfr@canb.auug.org.au>
-	<1211222520.30161.3.camel@dhcppc1>
-X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__20_May_2008_14_19_01_+1000_EvQ5ZPP63iJl/jjc"
+	Tue, 20 May 2008 00:25:05 -0400
+Received: from mail8.sea5.speakeasy.net ([69.17.117.10]:58514 "EHLO
+	mail8.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750976AbYETEZE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 00:25:04 -0400
+Date: Mon, 19 May 2008 21:25:01 -0700 (PDT)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell4.speakeasy.net
+To: Jiri Slaby <jirislaby@gmail.com>
+cc: Jean Delvare <khali@linux-fr.org>, i2c@lm-sensors.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [i2c] [PATCH 1/1] i2c: align i2c_device_id
+In-Reply-To: <4831D2F3.6020506@gmail.com>
+Message-ID: <Pine.LNX.4.58.0805192105470.6129@shell4.speakeasy.net>
+References: <1211203124-3096-1-git-send-email-jirislaby@gmail.com>
+ <20080519210003.65b65d14@hyperion.delvare> <4831D2F3.6020506@gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__20_May_2008_14_19_01_+1000_EvQ5ZPP63iJl/jjc
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Thomas,
-
-On Mon, 19 May 2008 20:42:00 +0200 Thomas Meyer <thomas@m3y3r.de> wrote:
+On Mon, 19 May 2008, Jiri Slaby wrote:
+> On 05/19/2008 09:00 PM, Jean Delvare wrote:
+> > Thanks for this patch, it's in my i2c tree now and will be sent to
+> > Linus by the end of the week. I wasn't aware of this possible alignment
+> > issue, sorry.
 >
-> Is it intentional that kernel.release is:
->=20
-> $ cat include/config/kernel.release=20
-> 2.6.26-rc3-next-20080519-sched-devel.git
->=20
-> all predecessors have had names like:
-> =EF=BB=BF2.6.26-rc2-next-20080516
+> To be honest, neither I was until I hit it while testing hid bus (where I did
+> the same mistake). Thanks.
 
-It was not intentional, I missed it sneaking in.  It seems to be gone
-again today.
+Is there any more information about this?  Items in a structure should be
+aligned to the alignment required by their type.  Usually sizeof(x) ==
+alignof(x), but not always.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+I guess in this case the structures are used as a cross-platform binary on
+disk representation, and so the alignment of the build host must match the
+alignment of the target?
 
---Signature=_Tue__20_May_2008_14_19_01_+1000_EvQ5ZPP63iJl/jjc
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFIMlE5TgG2atn1QN8RAtrKAJ0eozOwI60iRtYIGMcm6kz9ptBjrwCeOHK9
-NRPBTe0eATOS4G+GVQa3/zI=
-=rfqt
------END PGP SIGNATURE-----
-
---Signature=_Tue__20_May_2008_14_19_01_+1000_EvQ5ZPP63iJl/jjc--
+Maybe it would be better to include the alignment attribute in the
+definition of kernel_ulong_t?
