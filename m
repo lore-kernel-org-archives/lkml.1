@@ -1,39 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764657AbYETR1w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932493AbYETR3I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764657AbYETR1w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 13:27:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756152AbYETR1n
+	id S932493AbYETR3I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 13:29:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757873AbYETR2x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 13:27:43 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:35572 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755981AbYETR1m (ORCPT
+	Tue, 20 May 2008 13:28:53 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:33801 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757588AbYETR2u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 13:27:42 -0400
-Date: Tue, 20 May 2008 13:27:30 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
-       "David S. Miller" <davem@sunset.davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>, systemtap@sources.redhat.com
-Subject: Re: [2.6 patch] unexport uts_sem
-Message-ID: <20080520172730.GA2361@infradead.org>
-References: <20080505182937.GZ17139@cs181133002.pp.htv.fi> <y0mwsloq4kc.fsf@ton.toronto.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <y0mwsloq4kc.fsf@ton.toronto.redhat.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 20 May 2008 13:28:50 -0400
+Cc: netdev <netdev@vger.kernel.org>, Jean Tourrilhes <jt@hpl.hp.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Message-Id: <57793EAF-9BDF-43DE-8E59-4ADE7AFDC64D@holtmann.org>
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <1211303731.6252.105.camel@johannes.berg>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [RFC] make wext wireless bits optional and deprecate them
+Date: Tue, 20 May 2008 19:28:41 +0200
+References: <1211026337.3827.25.camel@johannes.berg> <CD993362-B1DE-4E4D-8A5B-E9E2AD7DA04C@holtmann.org> (sfid-20080517_154639_384202_6D3479C2) <1211303731.6252.105.camel@johannes.berg>
+X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 01:16:19PM -0400, Frank Ch. Eigler wrote:
-> Am I correct that this would makes it invalid for modules to call
-> utsname() (since the protective semaphore is now hidden)?
+Hi Johannes,
 
-Yesm they should never had done that anyway.  The module support
-does it's own version checking already.
+>>> The /sys/class/net/*/wireless/ direcory is, as far as I know, not
+>>> used by anyone. Additionally, the same data is available via wext
+>>> ioctls. Hence the sysfs files are pretty much useless. This patch
+>>> makes them optional and schedules them for removal.
+>>
+>> it is used by HAL to classify WiFi network cards as net.80211 instead
+>> of net.80203 and so we do have an actual user. However HAL only tests
+>> for the existence of the directory wireless/.
+>>
+>> Please fix HAL first before submitting such a patch.
+>
+> I have filed a patch to fix HAL to use the canonical SIOCGIWNAME at
+> https://bugs.freedesktop.org/show_bug.cgi?id=16037. Any further
+> objections to this patch?
+
+patch looks good to me.
+
+Regards
+
+Marcel
 
