@@ -1,26 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762199AbYETIxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762690AbYETI4f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762199AbYETIxb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 04:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbYETIxV
+	id S1762690AbYETI4f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 04:56:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753386AbYETI42
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 04:53:21 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45117 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752466AbYETIxU (ORCPT
+	Tue, 20 May 2008 04:56:28 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33429 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752853AbYETI41 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 04:53:20 -0400
-Date: Tue, 20 May 2008 01:52:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Greg KH <greg@kroah.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/20] Implment a tty port structure and supporting
- logic
-Message-Id: <20080520015241.bd66fff0.akpm@linux-foundation.org>
-In-Reply-To: <20080519165049.GA19896@kroah.com>
-References: <20080519144557.19326.74313.stgit@core>
-	<20080519165049.GA19896@kroah.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Tue, 20 May 2008 04:56:27 -0400
+Date: Tue, 20 May 2008 09:42:53 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Jonathan Corbet <corbet@lwn.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alexander Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org,
+       Wim Van Sebroeck <wim@iguana.be>
+Subject: Re: [PATCH 2/3, RFC] watchdog dev BKL pushdown
+Message-ID: <20080520094253.646c7198@core>
+In-Reply-To: <200805200114.24819.arnd@arndb.de>
+References: <13762.1211142411@vena.lwn.net>
+	<200805200107.51659.arnd@arndb.de>
+	<200805200111.47275.arnd@arndb.de>
+	<200805200114.24819.arnd@arndb.de>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -28,33 +38,16 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 May 2008 09:50:49 -0700 Greg KH <greg@kroah.com> wrote:
+On Tue, 20 May 2008 01:14:23 +0200
+Arnd Bergmann <arnd@arndb.de> wrote:
 
-> On Mon, May 19, 2008 at 03:50:07PM +0100, Alan Cox wrote:
-> > Right now each tty has its own port level structure which means we can share
-> > no code between ports. Introduce a structure and some initial minor helper
-> > routines so that we can move towards commonality. In doing this the USB serial
-> > code gets a bit of shake up as it kept using port->tty unsafely. Fixing that
-> > means changing the API of all the USB serial drivers. On the bright side the
-> > API now looks far more like the tty layer API which will become useful later
-> > on.
-> 
-> Very nice.
-> 
-> If you don't mind, I'll be glad to take this through my tree as you are
-> touching the usb-serial drivers so much.  Andrew, any objection to this?
+> The Big Kernel Lock has been pushed down from chardev_open
+> to misc_open, this change moves it to the individual watchdog
+> driver open functions.
 
-A lot depends on what else Alan is brewing up.  I only have a single
-tty-related patch at present (remove-is_tty.patch) and a handful of
-possibly-related char driver patches
-(proper-extern-for-mwave_s_mdd.patch, if-0-hpet_unregister.patch and
-riscom8-remove-redundant-null-pointer-test.patch).
+NAK. I've posted set of bigger patches which actually fix up all the
+watchdog locking code - and simply adding lock/unlock kernel isn't enough
+because of all the bugs in the code (it won't make it worse but it won't
+fix it either).
 
-But if a great mountain of tty- and/or char-related patches is
-forthcoming, that mountain will probably have a depencency upon your
-tree.  And that's OK too, as long as you don't go and bugger up your
-tree and get it dropped from linux-next!  Because if that happens I'll
-need to temporarily drop all the dependent patches and remember to
-restore them, which is always a bit sad.
-
-
+Alan
