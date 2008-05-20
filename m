@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934029AbYETVLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933955AbYETVMk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934029AbYETVLW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 17:11:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760397AbYETVLK
+	id S933955AbYETVMk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 17:12:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761698AbYETVMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 17:11:10 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:44863 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759593AbYETVLJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 17:11:09 -0400
-Date: Tue, 20 May 2008 17:11:07 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Remy Bohmer <linux@bohmer.net>
-cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>
-Subject: Re: Compile warning rtmutex code on 2.6.24.7-rt8 (CC:LKML added)
-In-Reply-To: <3efb10970805201356x4552859bof5f3f4f56f2ba676@mail.gmail.com>
-Message-ID: <Pine.LNX.4.58.0805201707210.20474@gandalf.stny.rr.com>
-References: <3efb10970805201356x4552859bof5f3f4f56f2ba676@mail.gmail.com>
+	Tue, 20 May 2008 17:12:30 -0400
+Received: from www.tglx.de ([62.245.132.106]:35149 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760760AbYETVM3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 17:12:29 -0400
+Date: Tue, 20 May 2008 23:12:21 +0200
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <Uwe.Kleine-Koenig@digi.com>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] UIO: don't let UIO_CIF and UIO_SMX depend twice on UIO
+Message-ID: <20080520211219.GG3220@local>
+References: <20080520092312.GA10745@digi.com> <1211275482-11249-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1211275482-11249-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, May 20, 2008 at 11:24:41AM +0200, Uwe Kleine-König wrote:
+> ae210f188614bb3d1ee3f19c64e28e3cdd44877c introduced a big "if UIO"/"endif"
+> where all uio drivers are defined.  So know there is no need for them to
+> depend explicitly on UIO.
 
-On Tue, 20 May 2008, Remy Bohmer wrote:
+Ahem, of course. Thanks!
 
-> Hello Steven,
->
->  Do you recognise these warnings? I do not know (yet) if these are ARM
->  specific...
->
->   CC      kernel/rtmutex.o
->  kernel/rtmutex.c: In function 'rt_write_fastlock':
->  kernel/rtmutex.c:1582: warning: initialization makes pointer from
->  integer without a cast
->  kernel/rtmutex.c: In function 'rt_write_fasttrylock':
->  kernel/rtmutex.c:1622: warning: initialization makes pointer from
->  integer without a cast
->
->  If so, do you have a fix for it?
+> 
+> Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
 
-Ah, I guess ARM is a bit more critical of chpxchg than x86 is.
+Signed-off-by: Hans J. Koch <hjk@linutronix.de>
 
-I'll add a patch for 2.6.24.7-rt9 (which I plan on releasing soon). It
-will have some minor clean ups.
-
--- Steve
-
+> ---
+>  drivers/uio/Kconfig |    3 +--
+>  1 files changed, 1 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
+> index a4aaab9..78e139c 100644
+> --- a/drivers/uio/Kconfig
+> +++ b/drivers/uio/Kconfig
+> @@ -15,7 +15,7 @@ if UIO
+>  
+>  config UIO_CIF
+>  	tristate "generic Hilscher CIF Card driver"
+> -	depends on UIO && PCI
+> +	depends on PCI
+>  	default n
+>  	help
+>  	  Driver for Hilscher CIF DeviceNet and Profibus cards.  This
+> @@ -28,7 +28,6 @@ config UIO_CIF
+>  
+>  config UIO_SMX
+>  	tristate "SMX cryptengine UIO interface"
+> -	depends on UIO
+>  	default n
+>  	help
+>  	  Userspace IO interface to the Cryptography engine found on the
+> -- 
+> 1.5.5.1
