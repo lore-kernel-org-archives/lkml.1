@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763134AbYETSLt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933675AbYETSMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763134AbYETSLt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 14:11:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932771AbYETSG4
+	id S933675AbYETSMT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 14:12:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765244AbYETSG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 14:06:56 -0400
-Received: from el-out-1112.google.com ([209.85.162.176]:3485 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765574AbYETSGy (ORCPT
+	Tue, 20 May 2008 14:06:59 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:3977 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932784AbYETSG5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 14:06:54 -0400
+	Tue, 20 May 2008 14:06:57 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=aY2qzkoFGyqPbzvnWfAs1MjkvJQgqci1E50lqlQEU5Eqi7vMzoQocJNuEV6IiZVnN+uS936NtXynhfqR7gTV+yL7+WyYhWuTrAvY5gcorqHPAGgtTejbkDOC1XHKAuZODCBp54ywLnn/1JB1NFDsEYOiXTUvfXDQYvzXbQEz3N4=
-Subject: [PATCH 18/21] media: use aligned-endian get/put helpers
+        b=fp+G63pDYzutQFXD+lR1noHTr0rb/AjK7u2me+AWyms8cCcTlT7fTXySGFLc+MExzoO1vIVmhie0Q5/dOxrshScwTRMaVfDwuY/fxp1RO/m6tcCxeyTn0pe4ktammlkocRIV7MITZ8od9zzDLkPD70+FlK7X+wAJKny8jtpUEVE=
+Subject: [PATCH 10/21] ntfs: use aligned-endian get/put helpers
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Tue, 20 May 2008 11:06:18 -0700
-Message-Id: <1211306778.5915.181.camel@brick>
+Date: Tue, 20 May 2008 11:06:19 -0700
+Message-Id: <1211306779.5915.182.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
@@ -30,73 +30,120 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- drivers/media/dvb/frontends/or51132.c             |    2 +-
- drivers/media/dvb/ttusb-budget/dvb-ttusb-budget.c |    2 +-
- drivers/media/video/bt8xx/bttv-cards.c            |    4 ++--
- drivers/video/aty/mach64_accel.c                  |    2 +-
- 4 files changed, 5 insertions(+), 5 deletions(-)
+ fs/ntfs/collate.c  |    4 ++--
+ fs/ntfs/compress.c |    9 ++++-----
+ fs/ntfs/endian.h   |    6 +++---
+ fs/ntfs/mst.c      |    2 +-
+ fs/ntfs/super.c    |    2 +-
+ 5 files changed, 11 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/media/dvb/frontends/or51132.c b/drivers/media/dvb/frontends/or51132.c
-index c7b5785..b2af1de 100644
---- a/drivers/media/dvb/frontends/or51132.c
-+++ b/drivers/media/dvb/frontends/or51132.c
-@@ -126,7 +126,7 @@ static int or51132_readreg(struct or51132_state *state, u8 reg)
- 		       reg, err);
- 		return -EREMOTEIO;
- 	}
--	return le16_to_cpup((u16*)buf);
-+	return get_le16(buf);
+diff --git a/fs/ntfs/collate.c b/fs/ntfs/collate.c
+index 4a28ab3..d370931 100644
+--- a/fs/ntfs/collate.c
++++ b/fs/ntfs/collate.c
+@@ -52,8 +52,8 @@ static int ntfs_collate_ntofs_ulong(ntfs_volume *vol,
+ 	// FIXME:  We don't really want to bug here.
+ 	BUG_ON(data1_len != data2_len);
+ 	BUG_ON(data1_len != 4);
+-	d1 = le32_to_cpup(data1);
+-	d2 = le32_to_cpup(data2);
++	d1 = get_le32(data1);
++	d2 = get_le32(data2);
+ 	if (d1 < d2)
+ 		rc = -1;
+ 	else {
+diff --git a/fs/ntfs/compress.c b/fs/ntfs/compress.c
+index 33ff314..11ae29b 100644
+--- a/fs/ntfs/compress.c
++++ b/fs/ntfs/compress.c
+@@ -211,7 +211,7 @@ do_next_sb:
+ 	 * position in the compression block is one byte before its end so the
+ 	 * first two checks do not detect it.
+ 	 */
+-	if (cb == cb_end || !le16_to_cpup((le16*)cb) ||
++	if (cb == cb_end || !get_le16(cb) ||
+ 			(*dest_index == dest_max_index &&
+ 			*dest_ofs == dest_max_ofs)) {
+ 		int i;
+@@ -261,8 +261,7 @@ return_error:
+ 
+ 	/* Setup the current sub-block source pointers and validate range. */
+ 	cb_sb_start = cb;
+-	cb_sb_end = cb_sb_start + (le16_to_cpup((le16*)cb) & NTFS_SB_SIZE_MASK)
+-			+ 3;
++	cb_sb_end = cb_sb_start + (get_le16(cb) & NTFS_SB_SIZE_MASK) + 3;
+ 	if (cb_sb_end > cb_end)
+ 		goto return_overflow;
+ 
+@@ -283,7 +282,7 @@ return_error:
+ 	dp_addr = (u8*)page_address(dp) + do_sb_start;
+ 
+ 	/* Now, we are ready to process the current sub-block (sb). */
+-	if (!(le16_to_cpup((le16*)cb) & NTFS_SB_IS_COMPRESSED)) {
++	if (!(get_le16(cb) & NTFS_SB_IS_COMPRESSED)) {
+ 		ntfs_debug("Found uncompressed sub-block.");
+ 		/* This sb is not compressed, just copy it into destination. */
+ 
+@@ -388,7 +387,7 @@ do_next_tag:
+ 			lg++;
+ 
+ 		/* Get the phrase token into i. */
+-		pt = le16_to_cpup((le16*)cb);
++		pt = get_le16(cb);
+ 
+ 		/*
+ 		 * Calculate starting position of the byte sequence in
+diff --git a/fs/ntfs/endian.h b/fs/ntfs/endian.h
+index 927b5bf..7c0eafe 100644
+--- a/fs/ntfs/endian.h
++++ b/fs/ntfs/endian.h
+@@ -47,17 +47,17 @@ static inline s64 sle64_to_cpu(sle64 x)
+ 
+ static inline s16 sle16_to_cpup(sle16 *x)
+ {
+-	return le16_to_cpu(*(__force le16*)x);
++	return get_le16(x);
  }
  
- static int or51132_load_firmware (struct dvb_frontend* fe, const struct firmware *fw)
-diff --git a/drivers/media/dvb/ttusb-budget/dvb-ttusb-budget.c b/drivers/media/dvb/ttusb-budget/dvb-ttusb-budget.c
-index 732ce4d..ad3a099 100644
---- a/drivers/media/dvb/ttusb-budget/dvb-ttusb-budget.c
-+++ b/drivers/media/dvb/ttusb-budget/dvb-ttusb-budget.c
-@@ -552,7 +552,7 @@ static void ttusb_process_muxpack(struct ttusb *ttusb, const u8 * muxpack,
- 	u16 csum = 0, cc;
- 	int i;
- 	for (i = 0; i < len; i += 2)
--		csum ^= le16_to_cpup((u16 *) (muxpack + i));
-+		csum ^= get_le16(muxpack + i);
- 	if (csum) {
- 		printk("%s: muxpack with incorrect checksum, ignoring\n",
- 		       __func__);
-diff --git a/drivers/media/video/bt8xx/bttv-cards.c b/drivers/media/video/bt8xx/bttv-cards.c
-index f20a01c..726db9b 100644
---- a/drivers/media/video/bt8xx/bttv-cards.c
-+++ b/drivers/media/video/bt8xx/bttv-cards.c
-@@ -3858,7 +3858,7 @@ static void __devinit osprey_eeprom(struct bttv *btv, const u8 ee[256])
- 		ee += i;
+ static inline s32 sle32_to_cpup(sle32 *x)
+ {
+-	return le32_to_cpu(*(__force le32*)x);
++	return get_le32(x);
+ }
  
- 		/* found a valid descriptor */
--		type = be16_to_cpup((u16*)(ee+4));
-+		type = get_be16(ee + 4);
+ static inline s64 sle64_to_cpup(sle64 *x)
+ {
+-	return le64_to_cpu(*(__force le64*)x);
++	return get_le64(x);
+ }
  
- 		switch(type) {
- 		/* 848 based */
-@@ -3918,7 +3918,7 @@ static void __devinit osprey_eeprom(struct bttv *btv, const u8 ee[256])
- 			       btv->c.nr, type);
- 			break;
- 		}
--		serial = be32_to_cpup((u32*)(ee+6));
-+		serial = get_be32(ee + 6);
+ static inline sle16 cpu_to_sle16(s16 x)
+diff --git a/fs/ntfs/mst.c b/fs/ntfs/mst.c
+index 5a858d8..c565d82 100644
+--- a/fs/ntfs/mst.c
++++ b/fs/ntfs/mst.c
+@@ -146,7 +146,7 @@ int pre_write_mst_fixup(NTFS_RECORD *b, const u32 size)
+ 	 * Cyclically increment the update sequence number
+ 	 * (skipping 0 and -1, i.e. 0xffff).
+ 	 */
+-	usn = le16_to_cpup(usa_pos) + 1;
++	usn = get_le16(usa_pos) + 1;
+ 	if (usn == 0xffff || !usn)
+ 		usn = 1;
+ 	le_usn = cpu_to_le16(usn);
+diff --git a/fs/ntfs/super.c b/fs/ntfs/super.c
+index 3e76f3b..21680bc 100644
+--- a/fs/ntfs/super.c
++++ b/fs/ntfs/super.c
+@@ -566,7 +566,7 @@ static bool is_boot_sector_ntfs(const struct super_block *sb,
+ 		u32 i;
+ 
+ 		for (i = 0, u = (le32*)b; u < (le32*)(&b->checksum); ++u)
+-			i += le32_to_cpup(u);
++			i += get_le32(u);
+ 		if (le32_to_cpu(b->checksum) != i)
+ 			ntfs_warning(sb, "Invalid boot sector checksum.");
  	}
- 
- 	printk(KERN_INFO "bttv%d: osprey eeprom: card=%d '%s' serial=%u\n",
-diff --git a/drivers/video/aty/mach64_accel.c b/drivers/video/aty/mach64_accel.c
-index a8f60c3..4e8b77c 100644
---- a/drivers/video/aty/mach64_accel.c
-+++ b/drivers/video/aty/mach64_accel.c
-@@ -412,7 +412,7 @@ void atyfb_imageblit(struct fb_info *info, const struct fb_image *image)
- 		u32 *pbitmap, dwords = (src_bytes + 3) / 4;
- 		for (pbitmap = (u32*)(image->data); dwords; dwords--, pbitmap++) {
- 			wait_for_fifo(1, par);
--			aty_st_le32(HOST_DATA0, le32_to_cpup(pbitmap), par);
-+			aty_st_le32(HOST_DATA0, get_le32(pbitmap), par);
- 		}
- 	}
- 
 -- 
 1.5.5.1.570.g26b5e
 
