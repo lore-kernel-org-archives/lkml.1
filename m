@@ -1,104 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934469AbYETWDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934537AbYETWD5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934469AbYETWDi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 18:03:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934297AbYETWDM
+	id S934537AbYETWD5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 18:03:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934408AbYETWDV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 18:03:12 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:58923 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933170AbYETWDK (ORCPT
+	Tue, 20 May 2008 18:03:21 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:44404 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934397AbYETWDT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 18:03:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=gb2Mn2Rotk/EuV1O+UqZd33mTJT5ERVdHepj7jCQ8+6uSsINUOk0Htp+eRWa7KNFKk4YG3o4jfQR2ZrpcsC9L7vWk9brlOK0jPpuSh01c4gFkjsXBQwd0IWmn/Y+DRkAyLGR2zzdVK8ow94B5tLaXVZCCY2KyAH5SFDbAXk5qiU=
-Message-ID: <7b9198260805201503j333963c4ya19b84f16b31d0fd@mail.gmail.com>
-Date: Tue, 20 May 2008 23:03:10 +0100
-From: "Tom Spink" <tspink@gmail.com>
-To: "Jeff Dike" <jdike@addtoit.com>
-Subject: Re: UML fails to locate address space
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080520212735.GA13319@c2.user-mode-linux.org>
+	Tue, 20 May 2008 18:03:19 -0400
+Date: Tue, 20 May 2008 23:03:04 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, gregkh@suse.de,
+       bersace03@laposte.net, johannes@sipsolutions.de
+Message-ID: <20080520220304.GA19116@srcf.ucam.org>
+References: <20080520190628.GA14580@srcf.ucam.org> <200805202359.06873.oliver@neukum.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <7b9198260805200408k1d6b70a8xc7e4c24106e5020f@mail.gmail.com>
-	 <20080520135238.GB6990@c2.user-mode-linux.org>
-	 <7b9198260805200659p6ed28403t9b0b0ea995f158d5@mail.gmail.com>
-	 <20080520161047.GA9598@c2.user-mode-linux.org>
-	 <7b9198260805200943x6fb15512o7ba35a40d006b215@mail.gmail.com>
-	 <20080520175624.GA10889@c2.user-mode-linux.org>
-	 <7b9198260805201101x5b0fabf8h4944a29c6a4cae96@mail.gmail.com>
-	 <20080520192436.GA12102@c2.user-mode-linux.org>
-	 <7b9198260805201242p1adf4651kb4c434d73884b6c1@mail.gmail.com>
-	 <20080520212735.GA13319@c2.user-mode-linux.org>
+In-Reply-To: <200805202359.06873.oliver@neukum.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [PATCH] Firmware loader driver for USB Apple iSight camera
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/5/20 Jeff Dike <jdike@addtoit.com>:
-> On Tue, May 20, 2008 at 08:42:54PM +0100, Tom Spink wrote:
->> And this is what I did:
->
-> Looks OK, but I need a Signed-off-by.
->
-> Some style comments, which I can take care of if you don't feel like it:
->        there's only one use of PROC_MMAP_MIN_ADDR, so you might as
-> well inline the filename
->        the stat is unnecessary - open failing will tell you what you
-> need to know
->        the strtoul needs some error checking
->        I'd change the mmap_min_addr[8] to [sizeof("12345678")] to
-> make it clear what's expected to fit into it
->
-> On a less-stylistic note, this thing does have to work in the absence
-> of /proc since UML is commonly run inside chroot.  So, I'm thinking we
-> still need the loop looking for the bottom of the address space in
-> this case.  And, if you have it, you might as well use it, as that's
-> less code, and it makes sure the loop is exercised.  That grieves me a
-> little, as I'd like to just read mmap_min_addr and be done with it in
-> the normal case.
->
->                        Jeff
->
-> --
-> Work email - jdike at linux dot intel dot com
->
+On Tue, May 20, 2008 at 11:59:05PM +0200, Oliver Neukum wrote:
 
-I was re-writing the patch, but after reading over the function, is
-the return value correct? I did a quick run through on paper about
-what would happen if the (real) bottom = 5 and the (real) top = 15,
-and the (initial) top = 20.  So this is a size of 10 pages, which is
-what the function should return... but:
+> How does that simplify suspend/resume?
+> If the device looses its firmware due to suspend you must implement
+> this support in uvc, or a user space driver will be as good as this solution.
 
-top = 20, bottom = 5
-test = 12
-bottom = 12
-(top - bottom) = 8
-
-top = 20, bottom = 12
-test = 16
-top = 16
-(top - bottom) = 4
-
-top = 16, bottom = 12
-test = 14
-bottom = 14
-(top - bottom) = 2
-
-top = 16, bottom = 14
-test = 15
-bottom = 15
-(top - bottom) = 1
-
-<loop exits>
-
-return 16 << UM_KERN_PAGE_SHIFT;
-
-Hmm.  Are my calculations wrong?
+If it loses its firmwrare, it'll reattach with the old ID.
 
 -- 
-Tom Spink
+Matthew Garrett | mjg59@srcf.ucam.org
