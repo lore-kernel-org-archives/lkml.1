@@ -1,130 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934063AbYETQEc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933041AbYETQH7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934063AbYETQEc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 12:04:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755630AbYETQEU
+	id S933041AbYETQH7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 12:07:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbYETQHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 12:04:20 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:39241 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751696AbYETQES (ORCPT
+	Tue, 20 May 2008 12:07:47 -0400
+Received: from smtp.innovsys.com ([66.115.232.196]:11491 "EHLO
+	mail.innovsys.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754656AbYETQHq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 12:04:18 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Jamie Lokier <jamie@shareable.org>
-Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
-Date: Tue, 20 May 2008 12:02:53 -0400
-User-Agent: KMail/1.9.9
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eric Sandeen <sandeen@redhat.com>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-References: <482DDA56.6000301@redhat.com> <200805190926.41970.chris.mason@oracle.com> <20080520153658.GH16676@shareable.org>
-In-Reply-To: <20080520153658.GH16676@shareable.org>
+	Tue, 20 May 2008 12:07:46 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805201202.54420.chris.mason@oracle.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Oops in fs_enet driver with preempt-rt
+Date: Tue, 20 May 2008 11:08:11 -0500
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B046E73B2@ismail.innsys.innovsys.com>
+In-Reply-To: <4832F139.1020502@freescale.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Oops in fs_enet driver with preempt-rt
+Thread-Index: Aci6j+qGmUR9lQ+MRHqlsVv3mYJHBgAA4ivw
+References: <DCEAAC0833DD314AB0B58112AD99B93B046E728C@ismail.innsys.innovsys.com> <DCEAAC0833DD314AB0B58112AD99B93B046E72C3@ismail.innsys.innovsys.com> <4832F139.1020502@freescale.com>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Scott Wood" <scottwood@freescale.com>
+Cc: <linux-kernel@vger.kernel.org>, <linuxppc-dev@ozlabs.org>,
+       <netdev@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 20 May 2008, Jamie Lokier wrote:
-> Chris Mason wrote:
-> > On Sunday 18 May 2008, Andi Kleen wrote:
-> > > Andrew Morton <akpm@linux-foundation.org> writes:
-> > > > On Fri, 16 May 2008 14:02:46 -0500
-> > > >
-> > > > Eric Sandeen <sandeen@redhat.com> wrote:
-> > > >> A collection of patches to make ext3 & 4 use barriers by
-> > > >> default, and to call blkdev_issue_flush on fsync if they
-> > > >> are enabled.
-> > > >
-> > > > Last time this came up lots of workloads slowed down by 30% so I
-> > > > dropped the patches in horror.
-> > >
-> > > Didn't ext4 have some new checksum trick to avoid them?
-> >
-> > I didn't think checksumming avoided barriers completely.  Just the
-> > barrier before the commit block, not the barrier after.
->
-> A little optimisation note.
->
-> You don't need the barrier after in some cases, or it can be deferred
-> until a better time.  E.g. when the disk write cache is probably empty
-> (some time after write-idle), barrier flushes may take the same time
-> as NOPs.
+Scott Wood wrote:
+> Rune Torgersen wrote:
+>> 0xc0196d84 is in fs_enet_interrupt
+>> (drivers/net/fs_enet/fs_enet-main.c:473).
+>> 468                     if (fpi->use_napi)
+>> 469                             int_clr_events &= ~fep->ev_napi_rx;
+>> 470 471                     (*fep->ops->clear_int_events)(dev,
+>> int_clr_events); 472
+>> 473                     if (int_events & fep->ev_err)
+>> 474                             (*fep->ops->ev_error)(dev,
+>> int_events); 475 476                     if (int_events &
+>> fep->ev_rx) { 477                             if (!fpi->use_napi)
+>> (gdb)
+> 
+> Do you have shared interrupt debugging turned on?  That breaks this
+> driver, and a patch to remove the shared flag was nacked in favor of
+> actually fixing the driver, which I haven't gotten around to.
+> 
+> -Scott
 
-I hesitate to get too fancy here, if the disk is idle we probably won't notice 
-the performance gain.
-
->
-> This sequence:
->
->     #1 write metadata to journal
->     #1 write commit block (checksummed)
->   BARRIER
->     #1 write metadata in place
->   ... time passes ...
->     #2 write metadata to journal
->     #2 write commit block (checksummed)
->   BARRIER
->     #2 write metadata in place
->   ... time passes ...
->     #3 write metadata to journal
->     #3 write commit block (checksummed)
->   BARRIER
->     #3 write metadata in place
->
-> Can be rewritten as:
->
->     #1 write metadata to journal
->     #1 write commit block (checksummed)
->   ... time passes ...
->     #2 write metadata to journal
->     #2 write commit block (checksummed)
->   ... time passes ...
->     #3 write metadata to journal
->     #3 write commit block (checksummed)
->   ... time passes ...
->   BARRIER (probably instant).
->     #1 write metadata in place
->     #2 write metadata in place
->     #3 write metadata in place
->
-> Provided some conditions hold.  All the metadata and all the journal
-> writes being non-overlapping I/O ranges would be sufficient.
-
-This is true, and would be a fairly good performance boost.  It fits nicely 
-with the jbd trick of avoiding writes of a metadata block if a later 
-transaction has logged it.
-
-But, it complicates the decision about when you're allowed to dirty a metadata 
-block for writeback.  It used to be dirty-after-commit and it would change to 
-dirty-after-barrier.  I suspect that is some significant surgery into jbd.
-
-Also, since a commit isn't really done until the barrier is done, you can't 
-reuse blocks freed by the committing transaction until after the barrier, 
-which means changes in the deletion handling code.  
-
-Maybe I'm a wimp, but these are the two parts of write ahead logging I always 
-found the most difficult.
-
->
-> What's more, barriers can be deferred past data=ordered in-place data
-> writes, although that's not always an optimisation.
->
-
-It might be really interesting to have a 
-i'm-about-to-barrier-find-some-io-to-run call.  Something along the lines of 
-draining the dirty pages when the drive is woken up in laptop mode.  There's 
-lots of fun with page lock vs journal lock ordering, but Jan has a handle on 
-that I think.
-
--chris
+Thanks!!
+That worked. Now I just have to get highmem support...
