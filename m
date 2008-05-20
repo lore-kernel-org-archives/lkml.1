@@ -1,76 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933582AbYETPTk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933634AbYETPU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933582AbYETPTk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 11:19:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932576AbYETPTa
+	id S933634AbYETPU3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 11:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759263AbYETPUO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 11:19:30 -0400
-Received: from mail.windriver.com ([147.11.1.11]:52617 "EHLO mail.wrs.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760189AbYETPT3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 11:19:29 -0400
-Message-ID: <4832EBCF.2000407@windriver.com>
-Date: Tue, 20 May 2008 10:18:39 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
+	Tue, 20 May 2008 11:20:14 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:47111 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932524AbYETPUM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 11:20:12 -0400
+Date: Tue, 20 May 2008 11:20:10 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+cc: Oliver Neukum <oliver@neukum.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       <greg@kroah.com>, <linux-usb@vger.kernel.org>
+Subject: Re: your mail
+In-Reply-To: <20080520123423.GA4764@ics.muni.cz>
+Message-ID: <Pine.LNX.4.44L0.0805201117430.2114-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Alexander Beregalov <a.beregalov@gmail.com>
-CC: kgdb-bugreport@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: kgdb test suite failure
-References: <a4423d670805090714iaae7d4fj2883889ede15a4be@mail.gmail.com>
-In-Reply-To: <a4423d670805090714iaae7d4fj2883889ede15a4be@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 20 May 2008 15:18:32.0494 (UTC) FILETIME=[C3E6F4E0:01C8BA8C]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexander Beregalov wrote:
-> Hi
-> I tried to run the latest git kernel and got the following error.
->
-> See an attachment for full dmesg.
->
-> kgdbts: ERROR PUT: end of test buffer on 'do_fork_test' line 5
-> expected OK got $E02#a7
-> ------------[ cut here ]------------
-> WARNING: at drivers/misc/kgdbts.c:721 run_simple_test+0x1de/0x20e()
-> Modules linked in:
-> Pid: 6, comm: khelper Not tainted 2.6.26-rc1-00279-g28a4acb #12
-> [<c011a00a>] warn_on_slowpath+0x41/0x6c
-> [<c011aa77>] ? vprintk+0x3e7/0x407
-> [<c0254cf4>] ? number+0x10d/0x1cf
-> [<c012d3da>] ? sched_clock_cpu+0x70/0x88
-> [<c011aaac>] ? printk+0x15/0x17
->   
-Is this a problem you can reproduce every time?  Basically what line 5
-of the test does is to write a value into the register struct to rewind
-the PC after hitting a breakpoint such that the instruction will be
-executed again.   This is stored in memory which will be used for a
-context switch back to the process.   The test also replaces the
-original instruction in memory.  In this case the memory write failed. 
-This will certainly be fatal to the operation of the kernel and
-stability would be called into question if the kernel doesn't just crash
-and oops in strange ways immediately.
+On Tue, 20 May 2008, Lukas Hejtmanek wrote:
 
-I looked in your dmesg log and noticed:
-[   21.027632] Testing CPA: undo c035d000-c044e000
-[   21.083029] Testing CPA: write protecting again
-[   21.297278] kgdbts: ERROR PUT: end of test buffer on 'do_fork_test'
-line 5 expected OK got $E02#a7
+> <stern@rowland.harvard.edu>, Greg KH <greg@kroah.com>
+> Bcc: 
+> Subject: Re: [Bug #10630] USB devices plugged into dock are not discoverred
+> 	until reload of ehci-hcd
+> Reply-To: 
+> In-Reply-To: <200805201327.34678.oliver@neukum.org>
+> X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+> 
+> On Tue, May 20, 2008 at 01:27:34PM +0200, Oliver Neukum wrote:
+> > > done.
+> > > http://bugzilla.kernel.org/show_bug.cgi?id=10630
+> > 
+> > Aha. Thanks.
+> > Please recompile without CONFIG_USB_SUSPEND
+> 
+> Hm, without USB_SUSPEND it works. So what next, considered fixed or any
+> further investigation is needed?
+
+No further investigation is needed.  I tried doing essentially the same 
+thing on my system and the same problem occurred.
+
+It is caused by the way ehci-hcd "auto-clears" the port
+change-suspend feature.  This patch should fix the problem.  Please 
+try it out and let us know if it works.
+
+Alan Stern
 
 
-I looked through the kernel source in the tip of the tree for the
-"Testing CPA: write protecting again".  It seems this code is only used
-when CONFIG_DEBUG_RODATA is set.  Perhaps this option is mutually
-exclusive of the use of kgdb?  Today kgdb assumes it can write anywhere
-without any kind of special concession for page protection bits.
 
-Certainly kgdb's memory write function could be changed based on the
-conditional CONFIG_DEBUG_RODATA if there is an api to
-check/change/revert the protection bits on the memory pages.  This of
-course is assuming that this is the root cause of the problem.
-
-Jason.
+Index: usb-2.6/drivers/usb/host/ehci.h
+===================================================================
+--- usb-2.6.orig/drivers/usb/host/ehci.h
++++ usb-2.6/drivers/usb/host/ehci.h
+@@ -97,6 +97,8 @@ struct ehci_hcd {			/* one per controlle
+ 			dedicated to the companion controller */
+ 	unsigned long		owned_ports;		/* which ports are
+ 			owned by the companion during a bus suspend */
++	unsigned long		port_c_suspend;		/* which ports have
++			the change-suspend feature turned on */
+ 
+ 	/* per-HC memory pools (could be per-bus, but ...) */
+ 	struct dma_pool		*qh_pool;	/* qh per active urb */
+Index: usb-2.6/drivers/usb/host/ehci-hub.c
+===================================================================
+--- usb-2.6.orig/drivers/usb/host/ehci-hub.c
++++ usb-2.6/drivers/usb/host/ehci-hub.c
+@@ -609,7 +609,7 @@ static int ehci_hub_control (
+ 			}
+ 			break;
+ 		case USB_PORT_FEAT_C_SUSPEND:
+-			/* we auto-clear this feature */
++			clear_bit(wIndex, &ehci->port_c_suspend);
+ 			break;
+ 		case USB_PORT_FEAT_POWER:
+ 			if (HCS_PPC (ehci->hcs_params))
+@@ -688,7 +688,7 @@ static int ehci_hub_control (
+ 			/* resume completed? */
+ 			else if (time_after_eq(jiffies,
+ 					ehci->reset_done[wIndex])) {
+-				status |= 1 << USB_PORT_FEAT_C_SUSPEND;
++				set_bit(wIndex, &ehci->port_c_suspend);
+ 				ehci->reset_done[wIndex] = 0;
+ 
+ 				/* stop resume signaling */
+@@ -765,6 +765,8 @@ static int ehci_hub_control (
+ 			status |= 1 << USB_PORT_FEAT_RESET;
+ 		if (temp & PORT_POWER)
+ 			status |= 1 << USB_PORT_FEAT_POWER;
++		if (test_bit(wIndex, &ehci->port_c_suspend))
++			status |= 1 << USB_PORT_FEAT_C_SUSPEND;
+ 
+ #ifndef	VERBOSE_DEBUG
+ 	if (status & ~0xffff)	/* only if wPortChange is interesting */
 
