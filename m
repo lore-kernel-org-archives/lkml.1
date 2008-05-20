@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932327AbYETKEt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765389AbYETKFS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932327AbYETKEt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 06:04:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764931AbYETKBW
+	id S1765389AbYETKFS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 06:05:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765531AbYETKBa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 06:01:22 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:2895 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764714AbYETKBU (ORCPT
+	Tue, 20 May 2008 06:01:30 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:35980 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765648AbYETKB2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 06:01:20 -0400
-From: Andy Whitcroft <apw@shadowen.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andy Whitcroft <apw@shadowen.org>, Mel Gorman <mel@csn.ul.ie>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] x86: cope with no remap space being allocated for a numa node
-References: <exportbomb.1211277639@pinky>
-InReply-To: <exportbomb.1211277639@pinky>
-Date: Tue, 20 May 2008 11:01:19 +0100
-Message-Id: <1211277679.0@pinky>
+	Tue, 20 May 2008 06:01:28 -0400
+Message-ID: <4832A173.6020203@firstfloor.org>
+Date: Tue, 20 May 2008 12:01:23 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+CC: Mikael Pettersson <mikpe@it.uu.se>, mingo@elte.hu, hpa@zytor.com,
+       tglx@linutronix.de, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, roland@redhat.com, drepper@redhat.com,
+       Hongjiu.lu@intel.com, linux-kernel@vger.kernel.org,
+       arjan@linux.intel.com, rmk+lkml@arm.linux.org.uk, dan@debian.org,
+       asit.k.mallick@intel.com
+Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
+References: <20080513011030.GA31448@linux-os.sc.intel.com> <18477.35703.679574.760417@harpo.it.uu.se> <20080518013416.GB30034@linux-os.sc.intel.com> <18481.37905.297556.288317@harpo.it.uu.se> <20080520015723.GD30034@linux-os.sc.intel.com>
+In-Reply-To: <20080520015723.GD30034@linux-os.sc.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Suresh Siddha wrote:
+> On Mon, May 19, 2008 at 04:52:01PM +0200, Mikael Pettersson wrote:
+>>> But we can
+>>> use some what similar magic, if the fxsave/fxrstor give away
+>>> some of the fields at the end of fxsave image (today it is reserved
+>>> and ignored during fxsave/fxrstor) for software use.
+>>> We can then use these fields at the end of fpstate, to indicate the presence of
+>>> xstate. But this requires some architecture changes like giving
+>>> away this space for SW use. We can take this to architects and
+>>> see what they think.
+>> If the HW doesn't store anything valuable there, we could store
+>> SW flags/cookies there on signal delivery, and clear them before
+>> fxrstor (unless the HW is known to ignore those fields).
+>> But it depends on how forgiving the HW is.
+> 
+> Ok. CPU folks are planning to make some of the bytes at the end of fxsave
+> image, SW usable.
 
-When allocating the pgdat's for numa nodes on x86_32 we attempt to
-place them in the numa remap space for that node.  However should
-the node not have any remap space allocated (such as due to having
-non-ram pages in the remap location in the node) then we will
-incorrectly place the pgdat at zero.  Check we have remap available,
-falling back to node 0 memory where we do not.
+Are they always zeroed in earlier CPUs though?  If not that wouldn't
+work 100% reliably because whatever cookie you put in could have been
+there before by chance.
 
-Signed-off-by: Andy Whitcroft <apw@shadowen.org>
-Acked-by: Mel Gorman <mel@csn.ul.ie>
----
- arch/x86/mm/discontig_32.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-diff --git a/arch/x86/mm/discontig_32.c b/arch/x86/mm/discontig_32.c
-index 026201f..435c343 100644
---- a/arch/x86/mm/discontig_32.c
-+++ b/arch/x86/mm/discontig_32.c
-@@ -156,7 +156,7 @@ static void __init propagate_e820_map_node(int nid)
-  */
- static void __init allocate_pgdat(int nid)
- {
--	if (nid && node_has_online_mem(nid))
-+	if (nid && node_has_online_mem(nid) && node_remap_start_vaddr[nid])
- 		NODE_DATA(nid) = (pg_data_t *)node_remap_start_vaddr[nid];
- 	else {
- 		NODE_DATA(nid) = (pg_data_t *)(pfn_to_kaddr(min_low_pfn));
+I don't see anything in the SDM guaranteeing zeroing.
+
+-Andi
