@@ -1,94 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761972AbYETIZg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758156AbYETI0k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761972AbYETIZg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 04:25:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753386AbYETIZZ
+	id S1758156AbYETI0k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 04:26:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753386AbYETI0T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 04:25:25 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:27209 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752044AbYETIZX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 04:25:23 -0400
-Date: Tue, 20 May 2008 10:25:18 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Eric Sandeen <sandeen@redhat.com>, Theodore Tso <tytso@mit.edu>,
-       Andi Kleen <andi@firstfloor.org>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
-Message-ID: <20080520082517.GH22369@kernel.dk>
-References: <482DDA56.6000301@redhat.com> <20080518211140.b29bee30.akpm@linux-foundation.org> <200805191316.27551.chris.mason@oracle.com> <200805191439.36577.chris.mason@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 20 May 2008 04:26:19 -0400
+Received: from xi.wantstofly.org ([83.160.184.112]:50961 "EHLO
+	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759539AbYETIZb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 04:25:31 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
+	d=wantstofly.org;
+	h=date:from:to:cc:subject:message-id:mime-version:content-type:
+	content-disposition:content-transfer-encoding:in-reply-to:user-
+	agent;
+	b=vjTZgj2bQhzSRZhC+AZU1Z8yrdTJskUgm5jqyoyBgJFu1J0CDqZV9JnmF1fpk
+	KjG3tKkHisOd9V+hMF2CQEpsw==
+Date: Tue, 20 May 2008 10:25:21 +0200
+From: Lennert Buytenhek <buytenh@wantstofly.org>
+To: David Brownell <david-b@pacbell.net>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       akpm@linux-foundation.org, nico@cam.org
+Subject: Re: [Bug #10713] ehci splatter in 2.6.26-rc2
+Message-ID: <20080520082521.GA19889@xi.wantstofly.org>
+References: <oKKSi1w1qaF.A.mEG.JrBMIB@albercik> <20080519231126.GA15099@xi.wantstofly.org> <20080520001824.GA15878@xi.wantstofly.org> <200805192313.11600.david-b@pacbell.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <200805191439.36577.chris.mason@oracle.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200805192313.11600.david-b@pacbell.net>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 19 2008, Chris Mason wrote:
-> On Monday 19 May 2008, Chris Mason wrote:
-> >
-> > Here's a test workload that corrupts ext3 50% of the time on power fail
-> > testing for me.  The machine in this test is my poor dell desktop (3ghz,
-> > dual core, 2GB of ram), and the power controller is me walking over and
-> > ripping the plug out the back.
+On Mon, May 19, 2008 at 11:13:11PM -0700, David Brownell wrote:
+
+> > A bisect turns up this:
+> > 
+> >         7329e211b987a493cbcfca0e98c60eb108ab42df is first bad commit
+> >         commit 7329e211b987a493cbcfca0e98c60eb108ab42df
+> >         Author: Alan Stern <stern@rowland.harvard.edu>
+> >         Date:   Thu Apr 3 18:02:56 2008 -0400
+> > 
+> >             USB: root hubs don't lie about their number of TTs
+> >             
+> >             Currently EHCI root hubs enumerate with a bDeviceProtocol code
+> >             indicating that they possess a Transaction Translator.  However the
+> >             vast majority of controllers do not...
+> > 
+> > And indeed, reverting this commit from 2.6.26-rc3 makes my system
+> > stop oopsing when I plug in the USB-PS/2 adapter (a low speed device),
+> > and makes it work again as it did in 2.6.25.
+> > 
+> > Any other info I can provide or tests I can run?
 > 
-> Here's a new version that still gets about corruptions 50% of the
-> time, but does it with fewer files by using longer file names (240
-> chars instead of 160 chars).
+> I'm guessing that this has a version of the ARC/TDI/whoever-now-owns-it
+> IP, on a PCI bus?  But without the integrated TT option?
 > 
-> I tested this one with a larger FS (40GB instead of 2GB) and larger
-> log (128MB instead of 32MB).  barrier-test -s 32 -p 1500 was still
-> able to get a 50% corruption rate on the larger FS.
+> If this is on a PCI bus, then try removing the ehci-pci.c line added
+> by that patch, see if that helps.
 
-I ran this twice, killing power after 'renames ready'. The first time it
-was fine, the second time I got:
+No, this is not on a PCI bus -- this is the on-chip EHCI controller
+of the Marvell Orion ARM SoC (ehci-orion.c.)
 
-centera:~/e2fsprogs-1.40.9/e2fsck # ./e2fsck -f /dev/sdb1
-e2fsck 1.40.9 (27-Apr-2008)
-/dev/sdb1: recovering journal
-Pass 1: Checking inodes, blocks, and sizes
-Pass 2: Checking directory structure
-Problem in HTREE directory inode 2395569: node (281) has bad max hash
-Problem in HTREE directory inode 2395569: node (849) has bad max hash
-Problem in HTREE directory inode 2395569: node (1077) has bad max hash
-Problem in HTREE directory inode 2395569: node (1718) has bad max hash
-Problem in HTREE directory inode 2395569: node (4609) has bad max hash
-Problem in HTREE directory inode 2395569: node (4864) has bad max hash
-Problem in HTREE directory inode 2395569: node (5092) has bad max hash
-Problem in HTREE directory inode 2395569: node (5148) has bad max hash
-Problem in HTREE directory inode 2395569: node (5853) has bad max hash
-Problem in HTREE directory inode 2395569: node (7588) has bad max hash
-Problem in HTREE directory inode 2395569: node (8663) has bad max hash
-Invalid HTREE directory inode 2395569 (/barrier-test).  Clear HTree
-index<y>? yes
-
-Pass 3: Checking directory connectivity
-Pass 3A: Optimizing directories
-Duplicate entry
-'0650419c70f3beadaa9a2c2f4999745a9c02066a0650419c70f3beadaa9a2c2f4999745a9c02066a0650419c70f3beadaa9a2c2f4999745a9c02066a0650419c70f3beadaa9a2c2f4999745a9c02066a0650419c70f3beadaa9a2c2f4999745a9c02066a0650419c70f3beadaa9a2c2f4999745a9c02066a.0'
-in /barrier-test (2395569) found.  Clear? yes
-
-and tons of 'duplicate entry' errors after that. And then
-
-Pass 4: Checking reference counts
-Inode 168 ref count is 0, should be 1.  Fix? yes
-
-Unattached zero-length inode 255.  Clear? yes
-
-Inode 1221 ref count is 0, should be 1.  Fix? yes
-
-Inode 1253 ref count is 1, should be 2.  Fix? yes
-
-Inode 2692 ref count is 0, should be 1.  Fix? yes
-
-Inode 3465 ref count is 0, should be 1.  Fix? yes
-
-and lots of those too. So definitely easy to trigger. Test fs was ext3
-of 40gb on a 320gb maxtor drive.
-
--- 
-Jens Axboe
-
+I have honestly no idea whether the IP is in-house or third-party.
