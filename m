@@ -1,130 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765383AbYETJ4w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765161AbYETJ5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765383AbYETJ4w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 05:56:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764301AbYETJxw
+	id S1765161AbYETJ5V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 05:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764374AbYETJxx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 05:53:52 -0400
-Received: from fk-out-0910.google.com ([209.85.128.191]:21013 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764259AbYETJxl (ORCPT
+	Tue, 20 May 2008 05:53:53 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:50638 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764290AbYETJxp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 05:53:41 -0400
+	Tue, 20 May 2008 05:53:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=EX4sMoz1Ro2jqdn9jwh1uqr+7ROwi/lH30WzVY3UgD13l5k1fpjrZiYmP9Zk8mHAUQh8pa3HY14F+zSGp7AXfyXB9gPvm5WPiz8MzHVntBZNAZYxm6x2DOtc2cMyxkK2u8ZJNgkI0Rxa9p5ZCWdI6RI+HzJGj/ySCSysJKclrfM=
+        b=Lxiqlh+ysitS+sBcLTe1v4UQ8FB335LxZ3/ddV4TwnCx27V2l/CwHOEBlRSRDXJ8roqp/2ESh71lsgx2g+qG5+loqLW+m8RU3j//b2NqiRIl6RKAwHB1k8tuGOLDSCQPZgSge2n77epaQxwIxnPKDT4BdbXh0TB9RaOz1izo9SE=
 To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: [PATCH 13/15] rfkill: add uevent notifications
-Date: Tue, 20 May 2008 12:09:04 +0200
+Subject: Re: [PATCH 14/15] rfkill: do not allow userspace to override ALL RADIOS OFF
+Date: Tue, 20 May 2008 12:09:06 +0200
 User-Agent: KMail/1.9.9
 Cc: linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.de>,
        Dmitry Torokhov <dtor@mail.ru>
-References: <1211136485-19878-1-git-send-email-hmh@hmh.eng.br> <1211136485-19878-14-git-send-email-hmh@hmh.eng.br>
-In-Reply-To: <1211136485-19878-14-git-send-email-hmh@hmh.eng.br>
+References: <1211136485-19878-1-git-send-email-hmh@hmh.eng.br> <1211136485-19878-15-git-send-email-hmh@hmh.eng.br>
+In-Reply-To: <1211136485-19878-15-git-send-email-hmh@hmh.eng.br>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200805201209.05080.IvDoorn@gmail.com>
+Message-Id: <200805201209.06902.IvDoorn@gmail.com>
 From: Ivo van Doorn <ivdoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Sunday 18 May 2008, Henrique de Moraes Holschuh wrote:
-> Use the notification chains to also send uevents, so that userspace can be
-> notified of state changes of every rfkill switch.
-> 
-> Userspace should use these events for OSD/status report applications and
-> rfkill GUI frontends.  HAL might want to broadcast them over DBUS, for
-> example.  It might be also useful for userspace implementations of
-> rfkill-input, or to use HAL as the platform driver which promotes rfkill
-> switch change events into input events (to synchronize all other switches)
-> when necessary for platforms that lack a convenient platform-specific
-> kernel module to do it.
+> SW_RFKILL_ALL is the "emergency power-off all radios" input event.  It must
+> be handled, and must always do the same thing as far as the rfkill system
+> is concerned: all transmitters are to go *immediately* offline.
+
+I don't quite agree here. The SW_RFKILL_ALL key is the one send by thinkpad-acpi,
+what makes that key so special that is has to be handled differently then a key
+that only controls a single radio type?
+
+All keys should have the same rules when it is pressed, so either all keys should
+force the change, or none of them should.
+
+> For safety, do NOT allow userspace to override EV_SW SW_RFKILL_ALL OFF.  As
+> long as rfkill-input is loaded, that event will *always* be processed, and
+> it will *always* force all rfkill switches to disable all wireless
+> transmitters, regardless of user_claim attribute or anything else.
 > 
 > Signed-off-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-
-Acked-by: Ivo van Doorn <IvDoorn@gmail.com>
-
 > Cc: Ivo van Doorn <IvDoorn@gmail.com>
 > Cc: Dmitry Torokhov <dtor@mail.ru>
 > ---
->  net/rfkill/rfkill.c |   42 ++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 42 insertions(+), 0 deletions(-)
+>  net/rfkill/rfkill-input.c |   29 ++++++++++++++---------------
+>  net/rfkill/rfkill-input.h |    1 +
+>  net/rfkill/rfkill.c       |   18 ++++++++++++++++++
+>  3 files changed, 33 insertions(+), 15 deletions(-)
 > 
+> diff --git a/net/rfkill/rfkill-input.c b/net/rfkill/rfkill-input.c
+> index 29c13d3..0fadeed 100644
+> --- a/net/rfkill/rfkill-input.c
+> +++ b/net/rfkill/rfkill-input.c
+> @@ -127,21 +127,20 @@ static void rfkill_event(struct input_handle *handle, unsigned int type,
+>  		switch (code) {
+>  		case SW_RFKILL_ALL:
+>  			/* EVERY radio type. data != 0 means radios ON */
+> -			rfkill_schedule_set(&rfkill_wwan,
+> -					    (data)? RFKILL_STATE_ON:
+> -						    RFKILL_STATE_OFF);
+> -			rfkill_schedule_set(&rfkill_wimax,
+> -					    (data)? RFKILL_STATE_ON:
+> -						    RFKILL_STATE_OFF);
+> -			rfkill_schedule_set(&rfkill_uwb,
+> -					    (data)? RFKILL_STATE_ON:
+> -						    RFKILL_STATE_OFF);
+> -			rfkill_schedule_set(&rfkill_bt,
+> -					    (data)? RFKILL_STATE_ON:
+> -						    RFKILL_STATE_OFF);
+> -			rfkill_schedule_set(&rfkill_wlan,
+> -					    (data)? RFKILL_STATE_ON:
+> -						    RFKILL_STATE_OFF);
+> +			/* handle EPO (emergency power off) through shortcut */
+> +			if (data) {
+> +				rfkill_schedule_set(&rfkill_wwan,
+> +						    RFKILL_STATE_ON);
+> +				rfkill_schedule_set(&rfkill_wimax,
+> +						    RFKILL_STATE_ON);
+> +				rfkill_schedule_set(&rfkill_uwb,
+> +						    RFKILL_STATE_ON);
+> +				rfkill_schedule_set(&rfkill_bt,
+> +						    RFKILL_STATE_ON);
+> +				rfkill_schedule_set(&rfkill_wlan,
+> +						    RFKILL_STATE_ON);
+> +			} else
+> +				rfkill_epo();
+>  			break;
+>  		default:
+>  			break;
+> diff --git a/net/rfkill/rfkill-input.h b/net/rfkill/rfkill-input.h
+> index 4dae500..f63d050 100644
+> --- a/net/rfkill/rfkill-input.h
+> +++ b/net/rfkill/rfkill-input.h
+> @@ -12,5 +12,6 @@
+>  #define __RFKILL_INPUT_H
+>  
+>  void rfkill_switch_all(enum rfkill_type type, enum rfkill_state state);
+> +void rfkill_epo(void);
+>  
+>  #endif /* __RFKILL_INPUT_H */
 > diff --git a/net/rfkill/rfkill.c b/net/rfkill/rfkill.c
-> index 4ed8d19..ba25bde 100644
+> index ba25bde..fdde692 100644
 > --- a/net/rfkill/rfkill.c
 > +++ b/net/rfkill/rfkill.c
-> @@ -382,12 +382,51 @@ static int rfkill_resume(struct device *dev)
->  #define rfkill_resume NULL
->  #endif
+> @@ -182,6 +182,24 @@ void rfkill_switch_all(enum rfkill_type type, enum rfkill_state state)
+>  EXPORT_SYMBOL(rfkill_switch_all);
 >  
-> +static int rfkill_blocking_uevent_notifier(struct notifier_block *nb,
-> +					unsigned long eventid,
-> +					void *data)
+>  /**
+> + * rfkill_epo - emergency power off all transmitters
+> + *
+> + * This kicks all rfkill devices to RFKILL_STATE_OFF, ignoring
+> + * everything in its path but rfkill_mutex.
+> + */
+> +void rfkill_epo(void)
 > +{
-> +	struct rfkill *rfkill = (struct rfkill *)data;
+> +	struct rfkill *rfkill;
 > +
-> +	switch (eventid) {
-> +	case RFKILL_STATE_CHANGED:
-> +		kobject_uevent(&rfkill->dev.kobj, KOBJ_CHANGE);
-> +		break;
-> +	default:
-> +		break;
+> +	mutex_lock(&rfkill_mutex);
+> +	list_for_each_entry(rfkill, &rfkill_list, node) {
+> +		rfkill_toggle_radio(rfkill, RFKILL_STATE_OFF, 1);
 > +	}
-> +
-> +	return NOTIFY_DONE;
+> +	mutex_unlock(&rfkill_mutex);
 > +}
+> +EXPORT_SYMBOL_GPL(rfkill_epo);
 > +
-> +static struct notifier_block rfkill_blocking_uevent_nb = {
-> +	.notifier_call	= rfkill_blocking_uevent_notifier,
-> +	.priority	= 0,
-> +};
-> +
-> +static int rfkill_dev_uevent(struct device *dev, struct kobj_uevent_env *env)
-> +{
-> +	struct rfkill *rfkill = to_rfkill(dev);
-> +	int error;
-> +
-> +	error = add_uevent_var(env, "RFKILL_NAME=%s", rfkill->name);
-> +	if (error)
-> +		return error;
-> +	error = add_uevent_var(env, "RFKILL_TYPE=%s",
-> +				rfkill_get_type_str(rfkill->type));
-> +	if (error)
-> +		return error;
-> +	error = add_uevent_var(env, "RFKILL_STATE=%u", rfkill->state);
-> +	return error;
-> +}
-> +
->  static struct class rfkill_class = {
->  	.name		= "rfkill",
->  	.dev_release	= rfkill_release,
->  	.dev_attrs	= rfkill_dev_attrs,
->  	.suspend	= rfkill_suspend,
->  	.resume		= rfkill_resume,
-> +	.dev_uevent	= rfkill_dev_uevent,
->  };
->  
->  static int rfkill_add_switch(struct rfkill *rfkill)
-> @@ -562,11 +601,14 @@ static int __init rfkill_init(void)
->  		return error;
->  	}
->  
-> +	register_rfkill_notifier(&rfkill_blocking_uevent_nb);
-> +
->  	return 0;
->  }
->  
->  static void __exit rfkill_exit(void)
->  {
-> +	unregister_rfkill_notifier(&rfkill_blocking_uevent_nb);
->  	class_unregister(&rfkill_class);
->  }
->  
+> +/**
+>   * rfkill_force_state - Force the internal rfkill radio state
+>   * @rfkill: pointer to the rfkill class to modify.
+>   * @state: the current radio state the class should be forced to.
 
 
