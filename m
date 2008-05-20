@@ -1,123 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933329AbYETSrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932593AbYETStx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933329AbYETSrm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 14:47:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932969AbYETSrT
+	id S932593AbYETStx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 14:49:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756541AbYETStn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 14:47:19 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:56793 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932925AbYETSrS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 14:47:18 -0400
-Date: Tue, 20 May 2008 14:47:10 -0400
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, hch@infradead.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Trond Myklebust <trond.myklebust@fys.uio.no>
-Subject: Re: [patch 1/9] lockd: dont return EAGAIN for a permanent error
-Message-ID: <20080520184710.GA8177@fieldses.org>
-References: <20080515195019.754545421@szeredi.hu> <20080515195103.521911468@szeredi.hu>
-MIME-Version: 1.0
+	Tue, 20 May 2008 14:49:43 -0400
+Received: from mu-out-0910.google.com ([209.85.134.184]:28038 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755711AbYETStm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 14:49:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=NK2oa0i/bsxKWoYflkgMnu/UFRZKHfi7ZX8th7NOAdfpuRacxJTeiJ8S91bZ36cppz5pfET5hf76H+CnhydkR9c1EDVlx7GFhiqO6gMq+wTg/CJgkA79jMrLWs3jwlyUJJXNcOejEvTXFy8TSPoMErH4ynODZcE522vti4N24sQ=
+Date: Tue, 20 May 2008 21:49:30 +0300
+From: m.s.tsirkin@gmail.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>, yi.zhu@intel.com,
+       reinette.chatre@intel.com, linux-wireless@vger.kernel.org,
+       ipw3945-devel@lists.sourceforge.net, johannes@sipsolutions.net,
+       flamingice@sourmilk.net
+Subject: regression iwl3945/mac80211: association times out since 2.6.26-rc1
+Message-ID: <20080520184859.GA8168@robinhood.home>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080515195103.521911468@szeredi.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 15, 2008 at 09:50:20PM +0200, Miklos Szeredi wrote:
-> From: Miklos Szeredi <mszeredi@suse.cz>
-> 
-> Fix nlm_fopen() to return NLM_FAILED (or NLM_LCK_DENIED_NOLOCKS)
-> instead of NLM_LCK_DENIED.  The latter means the lock request failed
-> because of a conflicting lock (i.e. a temporary error), which is wrong
-> in this case.
-> 
-> Also fix the client to return ENOLCK instead of EAGAIN if a blocking
-> lock request returns with NLM_LOCK_DENIED.
-> 
-> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-> CC: Trond Myklebust <trond.myklebust@fys.uio.no>
-> CC: "J. Bruce Fields" <bfields@fieldses.org>
-> ---
->  fs/lockd/clntproc.c |   10 +++++++++-
->  fs/nfsd/lockd.c     |   13 +++++++++----
->  2 files changed, 18 insertions(+), 5 deletions(-)
-> 
-> Index: linux-2.6/fs/lockd/clntproc.c
-> ===================================================================
-> --- linux-2.6.orig/fs/lockd/clntproc.c	2008-05-15 17:54:30.000000000 +0200
-> +++ linux-2.6/fs/lockd/clntproc.c	2008-05-15 17:59:41.000000000 +0200
-> @@ -580,7 +580,15 @@ again:
->  	}
->  	if (status < 0)
->  		goto out_unlock;
-> -	status = nlm_stat_to_errno(resp->status);
-> +	/*
-> +	 * EAGAIN doesn't make sense for sleeping locks, and in some
-> +	 * cases NLM_LCK_DENIED is returned for a permanent error.  So
+Hi!
+In all  of 2.6.26-rc1, rc2 and rc3, my iwl3945 wifi card can't associate with my access point.
+It does associate in 2.6.25.
 
-Just for the sake of future readers, I might go ahead and give
-specifics: "and older versions of the linux server sometimes returned
-NLM_LCK_DENIED for permanent errors", or something.
+under 2.6.-26-rc[1,2,3] wpa_supplicant reports:
 
-> +	 * turn it into an ENOLCK.
-> +	 */
-> +	if (resp->status == nlm_lck_denied && (fl_flags & FL_SLEEP))
-> +		status = -ENOLCK;
-> +	else
-> +		status = nlm_stat_to_errno(resp->status);
+	Trying to associate with 00:16:e3:ef:5d:f0 (SSID='' freq=0 MHz)
+	Authentication with 00:00:00:00:00:00 timed out.
 
-Might be a bit clearer (or at least make the comment and code more
-obviously agree) to do:
+where under 2.6.25 I was associating with 
+	Trying to associate with 00:16:e3:ef:5d:f0 (SSID='SIEMENS-EF5DF0' freq=2437 MHz)
+	Associated with 00:16:e3:ef:5d:f0
+	WPA: Key negotiation completed with 00:16:e3:ef:5d:f0 [PTK=CCMP GTK=CCMP]
 
-	status = nlm_stat_to_errno(resp->status);
-	if (status == -EAGAIN && (fl_flags & FL_SLEEP))
-		status = -ENOLCK;
+I tried bisecting, and I got as far as
+git-bisect good 4b119e21d0c66c22e8ca03df05d9de623d0eb50f
+git-bisect bad 96d510566e4908f77f03ff1436c78ae7162a17d0
 
-This might make more sense as separate client and server-side patches.
+but a point between these 2 commits gets me iwl driver that hangs kernel
+when it's loaded, so I gave up on bisecting at this point.
+Still this leaves us with 91 candidates that might be introducing the regression
+(get their list with git log
+ 4b119e21d0c66c22e8ca03df05d9de623d0eb50f..96d510566e4908f77f03ff1436c78ae7162a17d0)
 
-Seems reasonable to me otherwise.
+Additional info:
 
---b.
+I get this in dmesg
 
->  out_unblock:
->  	nlmclnt_finish_block(block);
->  out:
-> Index: linux-2.6/fs/nfsd/lockd.c
-> ===================================================================
-> --- linux-2.6.orig/fs/nfsd/lockd.c	2008-05-15 17:54:30.000000000 +0200
-> +++ linux-2.6/fs/nfsd/lockd.c	2008-05-15 17:57:45.000000000 +0200
-> @@ -19,6 +19,13 @@
->  
->  #define NFSDDBG_FACILITY		NFSDDBG_LOCKD
->  
-> +#ifdef CONFIG_LOCKD_V4
-> +#define nlm_stale_fh	nlm4_stale_fh
-> +#define nlm_failed	nlm4_failed
-> +#else
-> +#define nlm_stale_fh	nlm_lck_denied_nolocks
-> +#define nlm_failed	nlm_lck_denied_nolocks
-> +#endif
->  /*
->   * Note: we hold the dentry use count while the file is open.
->   */
-> @@ -47,12 +54,10 @@ nlm_fopen(struct svc_rqst *rqstp, struct
->  		return 0;
->  	case nfserr_dropit:
->  		return nlm_drop_reply;
-> -#ifdef CONFIG_LOCKD_V4
->  	case nfserr_stale:
-> -		return nlm4_stale_fh;
-> -#endif
-> +		return nlm_stale_fh;
->  	default:
-> -		return nlm_lck_denied;
-> +		return nlm_failed;
->  	}
->  }
->  
-> 
-> --
+[   99.153033] ACPI: PCI Interrupt 0000:03:00.0[A] -> GSI 17 (level, low) -> IRQ 17
+[   99.204031] PM: Adding info for No Bus:iwl-phy1:radio
+[   99.204031] Registered led device: iwl-phy1:radio
+[   99.204031] PM: Adding info for No Bus:iwl-phy1:assoc
+[   99.204031] Registered led device: iwl-phy1:assoc
+[   99.204031] PM: Adding info for No Bus:iwl-phy1:RX
+[   99.204031] Registered led device: iwl-phy1:RX
+[   99.204031] PM: Adding info for No Bus:iwl-phy1:TX
+[   99.204031] Registered led device: iwl-phy1:TX
+[   99.220405] ADDRCONF(NETDEV_UP): wlan0: link is not ready
+
+and even though the led now lights up, there's no association.
+
+portions of .config: 2.6.26-rc3:
+
+CONFIG_IWLWIFI=m
+CONFIG_IWLCORE=m
+# CONFIG_IWLWIFI_LEDS is not set
+CONFIG_IWLWIFI_RFKILL=y
+# CONFIG_IWL4965 is not set
+CONFIG_IWL3945=m
+CONFIG_IWL3945_SPECTRUM_MEASUREMENT=y
+CONFIG_IWL3945_LEDS=y
+CONFIG_IWL3945_DEBUG=y
+
+2.6.25:
+# CONFIG_IWL4965 is not set
+CONFIG_IWL3945=m
+CONFIG_IWL3945_QOS=y
+CONFIG_IWL3945_SPECTRUM_MEASUREMENT=y
+CONFIG_IWL3945_DEBUG=y
+
+
+What kind of additional information would be useful for debugging this regression?
+
+Thanks!
+
+-- 
+MST
