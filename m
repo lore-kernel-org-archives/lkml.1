@@ -1,104 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933166AbYETOyp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933236AbYETOz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933166AbYETOyp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 10:54:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932325AbYETOyR
+	id S933236AbYETOz0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 10:55:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765148AbYETOzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 10:54:17 -0400
-Received: from smtp.innovsys.com ([66.115.232.196]:40400 "EHLO
-	mail.innovsys.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756892AbYETOyP convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 10:54:15 -0400
-X-Greylist: delayed 851 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 May 2008 10:54:15 EDT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 20 May 2008 10:55:09 -0400
+Received: from gw.goop.org ([64.81.55.164]:33391 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932168AbYETOzH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 10:55:07 -0400
+Message-ID: <4832E62F.9030901@goop.org>
+Date: Tue, 20 May 2008 15:54:39 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Oops in fs_enet driver with preempt-rt
-Date: Tue, 20 May 2008 09:53:14 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B046E72C3@ismail.innsys.innovsys.com>
-In-Reply-To: <DCEAAC0833DD314AB0B58112AD99B93B046E728C@ismail.innsys.innovsys.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Oops in fs_enet driver with preempt-rt
-Thread-Index: Aci6h3OGhRkBaFRJS1aUcSwgWuuDOQAAZonw
-References: <DCEAAC0833DD314AB0B58112AD99B93B046E728C@ismail.innsys.innovsys.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: <linux-kernel@vger.kernel.org>, <linuxppc-dev@ozlabs.org>,
-       <netdev@vger.kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Rusty Russell <rusty@rustcorp.com.au>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Getting WARN_ON in hres_timers_resume after Xen resume
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rune Torgersen wrote:
-> Hi
-> I am trying to get preempt-rt (v2.6.25.4-rt1) to work on a Freescale
-> 8280 CPU (arch/powerpc) 
-> 
-> I get the follwing oops when trying to enable ethernet:
-> (looks like a null pointer dereference in
-> drivers/net/fs_enet/fs_enet-main.c:106)
+I'm implementing suspend/resume for Xen at the moment.  It's all going 
+well, but I'm getting this WARN_ON:
 
-And if I disable NAPI I get this one instead:
-
-Bringing up the eth1 interface...Unable to handle kernel paging request
-for data at address 0x00000000
-Faulting instruction address: 0xc019706c
-Oops: Kernel access of bad area, sig: 11 [#1]
-PREEMPT Innovative Systems ApMax
+------------[ cut here ]------------
+WARNING: at /home/jeremy/hg/xen/paravirt/linux/kernel/hrtimer.c:635 hres_timers_resume+0x33/0x56()
 Modules linked in:
-NIP: c019706c LR: c0196d84 CTR: c0198790
-REGS: ef2c3cb0 TRAP: 0300   Not tainted  (2.6.25.4-rt1)
-MSR: 00009032 <EE,ME,IR,DR>  CR: 42004222  XER: 00000000
-DAR: 00000000, DSISR: 20000000
-TASK = ef2ac590[114] 'ifconfig' THREAD: ef2c2000
-GPR00: 00000000 ef2c3d60 ef2ac590 ef37f000 00000008 00000000 ef2c3d5c
-0000008c
-GPR08: ef2c3d38 00000008 ef2c3d40 00000001 22000222 10021454 00000000
-100a37b0
-GPR16: 10090000 ef3e71e0 ef3e71e0 00000000 10070000 00000008 100192c0
-00008914
-GPR24: ef37f000 ef37f5a0 00000000 c0196d34 00000000 ef37f5a0 fffffff4
-ef2973a0
-NIP [c019706c] fs_enet_interrupt+0x338/0x5f4
-LR [c0196d84] fs_enet_interrupt+0x50/0x5f4
-Call Trace:
-[ef2c3d60] [c024a270] __spin_unlock_irqrestore+0x20/0x4c (unreliable)
-[ef2c3db0] [c0049a04] request_irq+0xb8/0xfc
-[ef2c3de0] [c0198044] fs_enet_open+0x8c/0x210
-[ef2c3e00] [c01d9b4c] dev_open+0x80/0xe8
-[ef2c3e10] [c01d89ac] dev_change_flags+0xc8/0x19c
-[ef2c3e30] [c021bfb0] devinet_ioctl+0x284/0x6f0
-[ef2c3e90] [c021c8fc] inet_ioctl+0xc0/0xf4
-[ef2c3ea0] [c01cbec4] sock_ioctl+0x200/0x23c
-[ef2c3ec0] [c00810c0] vfs_ioctl+0x44/0xa8
-[ef2c3ee0] [c0081520] do_vfs_ioctl+0x3fc/0x440
-[ef2c3f10] [c00815a4] sys_ioctl+0x40/0x70
-[ef2c3f40] [c000fcf0] ret_from_syscall+0x0/0x38
---- Exception: c01 at 0xff6a37c
-    LR = 0xffecd58
-Instruction dump:
-7c0004ac b01c0000 72e02000 3b9c0008 41820008 839d00bc 813d00a0 7f03c378
-81290034 7d2903a6 4e800421 7c0004ac <a01c0000> 0c000000 4c00012c
-5417043e
----[ end trace 61ff5e5c97ddf707 ]---
+Pid: 1397, comm: kstopmachine Tainted: G        W 2.6.26-rc2-sched-devel.git #94
+ [<c102e87d>] warn_on_slowpath+0x41/0x5d
+ [<c10477a1>] ? clockevents_program_event+0x105/0x10d
+ [<c1047dd3>] ? tick_resume+0x5c/0x61
+ [<c100145d>] ? xen_restore_fl+0x2e/0x52
+ [<c100145d>] ? xen_restore_fl+0x2e/0x52
+ [<c104b8da>] ? trace_hardirqs_off+0xb/0xd
+ [<c139b67e>] ? _spin_unlock_irqrestore+0x56/0x6c
+ [<c1047dd3>] ? tick_resume+0x5c/0x61
+ [<c1047e2d>] ? tick_notify+0x55/0x60
+ [<c139db0a>] ? notifier_call_chain+0x32/0x64
+ [<c1047960>] ? clockevents_notify+0x42/0x46
+ [<c100145d>] ? xen_restore_fl+0x2e/0x52
+ [<c104cc50>] ? lock_release+0x71/0x77
+ [<c1047960>] ? clockevents_notify+0x42/0x46
+ [<c1042192>] hres_timers_resume+0x33/0x56
+ [<c1045255>] timekeeping_resume+0x14e/0x157
+ [<c11b6ecc>] __sysdev_resume+0x14/0x38
+ [<c11b7091>] sysdev_resume+0x36/0x69
+ [<c11ba59e>] device_power_up+0x8/0xf
+ [<c1183476>] xen_suspend+0x9a/0xb2
+ [<c105fd3d>] do_stop+0x17/0x61
+ [<c105fd26>] ? do_stop+0x0/0x61
+ [<c103f806>] kthread+0x37/0x59
+ [<c103f7cf>] ? kthread+0x0/0x59
+ [<c100782b>] kernel_thread_helper+0x7/0x10
 
-Seems to be caused by line 471 in fs_enet_main:
+The WARN_ON is correct, because I do have other CPUs online.  However, 
+I'm in the middle of stop_machine, so they're effectively off-line as 
+far as the rest of the system is concerned. (Xen suspend doesn't require 
+all the CPUs to be offlined, and not doing so makes things a fair bit 
+faster and cleaner.)
 
-0xc0196d84 is in fs_enet_interrupt
-(drivers/net/fs_enet/fs_enet-main.c:473).
-468                     if (fpi->use_napi)
-469                             int_clr_events &= ~fep->ev_napi_rx;
-470
-471                     (*fep->ops->clear_int_events)(dev,
-int_clr_events);
-472
-473                     if (int_events & fep->ev_err)
-474                             (*fep->ops->ev_error)(dev, int_events);
-475
-476                     if (int_events & fep->ev_rx) {
-477                             if (!fpi->use_napi)
-(gdb)     
+It seems to me that either:
+
+   1. stop_machine is enough like offlining that we can remove stopped
+      cpus from the online map, or
+   2. the check in hres_timers_resume is too strong, and can be either
+      weakened or removed, or
+   3. hres_timers_resume needn't be called here at all, or
+   4. I'm missing something, and I'm introducing a bug
+
+BTW, once everything is out of stop_machine, I call clock_was_set() to 
+make sure that timers are retriggered on all CPUs.
+
+Thoughts?
+
+Thanks,
+    J
