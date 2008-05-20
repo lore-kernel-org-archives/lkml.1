@@ -1,60 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762703AbYETIQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761972AbYETIZg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762703AbYETIQf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 04:16:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758188AbYETIQV
+	id S1761972AbYETIZg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 04:25:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753386AbYETIZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 04:16:21 -0400
-Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:40438 "EHLO
-	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758172AbYETIQS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 04:16:18 -0400
-Date: Tue, 20 May 2008 10:16:17 +0200
-To: Romano Giannetti <romanol@upcomillas.es>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.26-rc2 hosed X?
-Message-ID: <20080520081617.GA14141@gamma.logic.tuwien.ac.at>
-References: <20080513103828.GA8288@gamma.logic.tuwien.ac.at> <1211269474.8773.10.camel@localhost>
+	Tue, 20 May 2008 04:25:25 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:27209 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752044AbYETIZX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 04:25:23 -0400
+Date: Tue, 20 May 2008 10:25:18 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Eric Sandeen <sandeen@redhat.com>, Theodore Tso <tytso@mit.edu>,
+       Andi Kleen <andi@firstfloor.org>, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
+Message-ID: <20080520082517.GH22369@kernel.dk>
+References: <482DDA56.6000301@redhat.com> <20080518211140.b29bee30.akpm@linux-foundation.org> <200805191316.27551.chris.mason@oracle.com> <200805191439.36577.chris.mason@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1211269474.8773.10.camel@localhost>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Norbert Preining <preining@logic.at>
+In-Reply-To: <200805191439.36577.chris.mason@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Di, 20 Mai 2008, Romano Giannetti wrote:
-> > Is that something known, are is there some patch to revert/test?
-> > 
+On Mon, May 19 2008, Chris Mason wrote:
+> On Monday 19 May 2008, Chris Mason wrote:
+> >
+> > Here's a test workload that corrupts ext3 50% of the time on power fail
+> > testing for me.  The machine in this test is my poor dell desktop (3ghz,
+> > dual core, 2GB of ram), and the power controller is me walking over and
+> > ripping the plug out the back.
 > 
-> Maybe related to: http://bugzilla.kernel.org/show_bug.cgi?id=10620 ?
+> Here's a new version that still gets about corruptions 50% of the
+> time, but does it with fewer files by using longer file names (240
+> chars instead of 160 chars).
+> 
+> I tested this one with a larger FS (40GB instead of 2GB) and larger
+> log (128MB instead of 32MB).  barrier-test -s 32 -p 1500 was still
+> able to get a 50% corruption rate on the larger FS.
 
-I had the very same problems like you and I had to apply two patches:
-(see http://bugzilla.kernel.org/show_bug.cgi?id=10709)
+I ran this twice, killing power after 'renames ready'. The first time it
+was fine, the second time I got:
 
-The one is included in -rc3, that was solved by applying 
-	http://lkml.org/lkml/2008/5/13/188
+centera:~/e2fsprogs-1.40.9/e2fsck # ./e2fsck -f /dev/sdb1
+e2fsck 1.40.9 (27-Apr-2008)
+/dev/sdb1: recovering journal
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Problem in HTREE directory inode 2395569: node (281) has bad max hash
+Problem in HTREE directory inode 2395569: node (849) has bad max hash
+Problem in HTREE directory inode 2395569: node (1077) has bad max hash
+Problem in HTREE directory inode 2395569: node (1718) has bad max hash
+Problem in HTREE directory inode 2395569: node (4609) has bad max hash
+Problem in HTREE directory inode 2395569: node (4864) has bad max hash
+Problem in HTREE directory inode 2395569: node (5092) has bad max hash
+Problem in HTREE directory inode 2395569: node (5148) has bad max hash
+Problem in HTREE directory inode 2395569: node (5853) has bad max hash
+Problem in HTREE directory inode 2395569: node (7588) has bad max hash
+Problem in HTREE directory inode 2395569: node (8663) has bad max hash
+Invalid HTREE directory inode 2395569 (/barrier-test).  Clear HTree
+index<y>? yes
 
-the former was solved by using the vblank reverse patch given in the
-above bug, or directly here:
-	http://marc.info/?l=linux-kernel&m=121074889124387&w=4
+Pass 3: Checking directory connectivity
+Pass 3A: Optimizing directories
+Duplicate entry
+'0650419c70f3beadaa9a2c2f4999745a9c02066a0650419c70f3beadaa9a2c2f4999745a9c02066a0650419c70f3beadaa9a2c2f4999745a9c02066a0650419c70f3beadaa9a2c2f4999745a9c02066a0650419c70f3beadaa9a2c2f4999745a9c02066a0650419c70f3beadaa9a2c2f4999745a9c02066a.0'
+in /barrier-test (2395569) found.  Clear? yes
 
-Try -rc3 plus this patch, it is now working here.  In bocca al lupo!
+and tons of 'duplicate entry' errors after that. And then
 
-Best wishes
+Pass 4: Checking reference counts
+Inode 168 ref count is 0, should be 1.  Fix? yes
 
-Norbert
+Unattached zero-length inode 255.  Clear? yes
 
--------------------------------------------------------------------------------
-Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
-Debian Developer <preining@debian.org>                         Debian TeX Group
-gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
--------------------------------------------------------------------------------
-LUBCROY (n.)
-The telltale little lump in the top of your swimming trunks which
-tells you you are going to have to spend half an hour with a safety
-pin trying to pull the drawstring out again.
-			--- Douglas Adams, The Meaning of Liff
+Inode 1221 ref count is 0, should be 1.  Fix? yes
+
+Inode 1253 ref count is 1, should be 2.  Fix? yes
+
+Inode 2692 ref count is 0, should be 1.  Fix? yes
+
+Inode 3465 ref count is 0, should be 1.  Fix? yes
+
+and lots of those too. So definitely easy to trigger. Test fs was ext3
+of 40gb on a 320gb maxtor drive.
+
+-- 
+Jens Axboe
+
