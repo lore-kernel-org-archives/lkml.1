@@ -1,107 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935041AbYETWiA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935256AbYETWi3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935041AbYETWiA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 18:38:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935001AbYETWf4
+	id S935256AbYETWi3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 18:38:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935022AbYETWf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 18:35:56 -0400
-Received: from ns2.suse.de ([195.135.220.15]:39756 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935010AbYETWfx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 18:35:53 -0400
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Sean Hefty <sean.hefty@intel.com>,
-       Hal Rosenstock <hal.rosenstock@gmail.com>
-Subject: [PATCH 05/13] IB: fix race in device_create
-Date: Tue, 20 May 2008 15:34:52 -0700
-Message-Id: <1211322900-12705-5-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.5.5.1
-In-Reply-To: <20080520223237.GA12383@suse.de>
-References: <20080520223237.GA12383@suse.de>
+	Tue, 20 May 2008 18:35:59 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:40949 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935019AbYETWf5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 18:35:57 -0400
+Date: Tue, 20 May 2008 15:35:43 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Joel Becker <Joel.Becker@oracle.com>
+Cc: Louis Rilling <Louis.Rilling@kerlabs.com>, linux-kernel@vger.kernel.org,
+       ocfs2-devel@oss.oracle.com
+Subject: Re: [RFC][PATCH 0/3] configfs: Make nested default groups
+ lockdep-friendly
+Message-ID: <20080520153543.4bafcac9@infradead.org>
+In-Reply-To: <20080520222702.GJ26609@mail.oracle.com>
+References: <20080520163320.025971210@kerlabs.com>
+	<20080520095810.1d50d247@infradead.org>
+	<20080520215639.GG26609@mail.oracle.com>
+	<20080520151341.058f2df4@infradead.org>
+	<20080520222702.GJ26609@mail.oracle.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is a race from when a device is created with device_create() and
-then the drvdata is set with a call to dev_set_drvdata() in which a
-sysfs file could be open, yet the drvdata will be NULL, causing all
-sorts of bad things to happen.
+On Tue, 20 May 2008 15:27:02 -0700
+Joel Becker <Joel.Becker@oracle.com> wrote:
 
-This patch fixes the problem by using the new function,
-device_create_drvdata().
+> On Tue, May 20, 2008 at 03:13:41PM -0700, Arjan van de Ven wrote:
+> > > 	Louis, what about sticking the recursion level on
+> > > configfs_dirent?  That is, you could add sd->s_level and then use
+> > > it when needed.  THis would hopefully avoid having to pass the
+> > > level as an argument to every function.  Then we can go back to
+> > > your original scheme.  If they recurse too much and hit the
+> > > lockdep limit, just rewind everything and return -ELOOP.
+> > 
+> > you can also make a new lockdep key for each level... not pretty
+> > but it works
+> 
+> 	I think that's what we're talking about here.  The toplevel is
+> I_MUTEX_PARENT, then each child has a class of (I_MUTEX_CHILD +
+> depth), where depth is the value of s_level.  His original try passed
+> depth everywhere.  I'm asking him to attach it to the configfs_dirent
+> so that the code stays readable.  We run into a depth limit at
+> (MAX_LOCKDEP_SUBCLASS - I_MUTEX_PARENT - 1 == 5), which I think is
+> probably sane.
+> 	Do you mean something else?  Perhaps not starting from
+> I_MUTEX_PARENT/CHILD and instead creating CONFIGFS_MUTEX_XXX?
 
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Reviewed-by: Roland Dreier <rolandd@cisco.com>
-Cc: Sean Hefty <sean.hefty@intel.com>
-Cc: Hal Rosenstock <hal.rosenstock@gmail.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/infiniband/core/user_mad.c    |   14 ++++++--------
- drivers/infiniband/core/uverbs_main.c |   11 ++++++-----
- 2 files changed, 12 insertions(+), 13 deletions(-)
+not quite what I meant; what I meant is more like how sched.c deals
+with per cpu queues:
 
-diff --git a/drivers/infiniband/core/user_mad.c b/drivers/infiniband/core/user_mad.c
-index 3aa2db5..840ede9 100644
---- a/drivers/infiniband/core/user_mad.c
-+++ b/drivers/infiniband/core/user_mad.c
-@@ -1005,8 +1005,9 @@ static int ib_umad_init_port(struct ib_device *device, int port_num,
- 	if (cdev_add(port->cdev, base_dev + port->dev_num, 1))
- 		goto err_cdev;
- 
--	port->dev = device_create(umad_class, device->dma_device,
--				  port->cdev->dev, "umad%d", port->dev_num);
-+	port->dev = device_create_drvdata(umad_class, device->dma_device,
-+					  port->cdev->dev, port,
-+					  "umad%d", port->dev_num);
- 	if (IS_ERR(port->dev))
- 		goto err_cdev;
- 
-@@ -1024,15 +1025,12 @@ static int ib_umad_init_port(struct ib_device *device, int port_num,
- 	if (cdev_add(port->sm_cdev, base_dev + port->dev_num + IB_UMAD_MAX_PORTS, 1))
- 		goto err_sm_cdev;
- 
--	port->sm_dev = device_create(umad_class, device->dma_device,
--				     port->sm_cdev->dev,
--				     "issm%d", port->dev_num);
-+	port->sm_dev = device_create_drvdata(umad_class, device->dma_device,
-+					     port->sm_cdev->dev, port,
-+					     "issm%d", port->dev_num);
- 	if (IS_ERR(port->sm_dev))
- 		goto err_sm_cdev;
- 
--	dev_set_drvdata(port->dev,    port);
--	dev_set_drvdata(port->sm_dev, port);
--
- 	if (device_create_file(port->sm_dev, &dev_attr_ibdev))
- 		goto err_sm_dev;
- 	if (device_create_file(port->sm_dev, &dev_attr_port))
-diff --git a/drivers/infiniband/core/uverbs_main.c b/drivers/infiniband/core/uverbs_main.c
-index cc1afa2..f806da1 100644
---- a/drivers/infiniband/core/uverbs_main.c
-+++ b/drivers/infiniband/core/uverbs_main.c
-@@ -755,14 +755,15 @@ static void ib_uverbs_add_one(struct ib_device *device)
- 	if (cdev_add(uverbs_dev->cdev, IB_UVERBS_BASE_DEV + uverbs_dev->devnum, 1))
- 		goto err_cdev;
- 
--	uverbs_dev->dev = device_create(uverbs_class, device->dma_device,
--					uverbs_dev->cdev->dev,
--					"uverbs%d", uverbs_dev->devnum);
-+	uverbs_dev->dev = device_create_drvdata(uverbs_class,
-+						device->dma_device,
-+						uverbs_dev->cdev->dev,
-+						uverbs_dev,
-+						"uverbs%d",
-+						uverbs_dev->devnum);
- 	if (IS_ERR(uverbs_dev->dev))
- 		goto err_cdev;
- 
--	dev_set_drvdata(uverbs_dev->dev, uverbs_dev);
--
- 	if (device_create_file(uverbs_dev->dev, &dev_attr_ibdev))
- 		goto err_class;
- 	if (device_create_file(uverbs_dev->dev, &dev_attr_abi_version))
--- 
-1.5.5.1
+(from sched.c)
 
+                spin_lock_init(&rq->lock);
+                lockdep_set_class(&rq->lock, &rq->rq_lock_key); 
+
+
+eg you can override the class (not just add a subclass) for a lock
+based on a "key"..
