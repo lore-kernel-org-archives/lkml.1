@@ -1,51 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933107AbYETSqE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932927AbYETSq2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933107AbYETSqE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 14:46:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758057AbYETSpw
+	id S932927AbYETSq2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 14:46:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933084AbYETSqB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 14:45:52 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:42681 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758367AbYETSpq (ORCPT
+	Tue, 20 May 2008 14:46:01 -0400
+Received: from rn-out-0910.google.com ([64.233.170.191]:17568 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933045AbYETSqA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 14:45:46 -0400
-Date: Tue, 20 May 2008 19:33:14 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Andi Kleen <andi@firstfloor.org>, corbet@lwn.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [2/11] Add unlocked_fasync
-Message-ID: <20080520193314.061f0c24@core>
-In-Reply-To: <20080520085830.22c99115@infradead.org>
-References: <20080520528.793382059@firstfloor.org>
-	<20080520152843.CF4181B4205@basil.firstfloor.org>
-	<20080520085830.22c99115@infradead.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 20 May 2008 14:46:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=mo/T1wCDomip/7xj53tTobqfBp+Axv0hKzk8/vomdUt73oC3g92gOltIDzyVPRO5mi7CI8Ca6VX41QfxeFI/2Sr1yPRPwcs+qusXzgBaqRPRcThWbZrjtG9yOTPxMxaxp+RBnalDcdUn66+pIwHBVl0lg22am+PgPu2oWJsJAcs=
+Subject: Re: [PATCH 05/21] drivers/usb: use aligned-endian get/put helpers
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1211306772.5915.173.camel@brick>
+References: <1211306772.5915.173.camel@brick>
+Content-Type: text/plain
+Date: Tue, 20 May 2008 11:45:53 -0700
+Message-Id: <1211309154.5915.189.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 May 2008 08:58:30 -0700
-Arjan van de Ven <arjan@infradead.org> wrote:
+On Tue, 2008-05-20 at 11:06 -0700, Harvey Harrison wrote:
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
 
-> On Tue, 20 May 2008 17:28:43 +0200 (CEST)
-> Andi Kleen <andi@firstfloor.org> wrote:
-> 
-> > 
-> > Add a new fops entry point to allow fasync without BKL. 
-> 
-> I (again) really don't like having another entry point for this...
-> it'll stay around forever rather than doing this as one step and 
-> move on.
+After all that I compiled with the wrong config to make sure
+it all compiled after splitting, extra bracket in devio.c
 
-Agreed entirely - all our unlocked_foo methods we got stuck with, all our
-push down everyone cases we got most cases promptly fixed and the other
-lock/unlocks show up clearly in grep and help embarass the
-maintainer/author 8)
+>  drivers/usb/c67x00/c67x00-hcd.c |    4 ++--
+>  drivers/usb/core/devio.c        |   12 ++++++------
+>  drivers/usb/gadget/net2280.c    |    2 +-
+>  drivers/usb/host/ehci.h         |    6 ++----
+>  drivers/usb/host/isp116x-hcd.c  |    4 ++--
+>  drivers/usb/host/ohci.h         |   16 ++++++----------
+>  drivers/usb/host/uhci-hub.c     |    6 +++---
+>  drivers/usb/misc/auerswald.c    |    2 +-
+>  drivers/usb/serial/garmin_gps.c |    9 ++++-----
+>  drivers/usb/storage/isd200.c    |    4 ++--
+>  10 files changed, 29 insertions(+), 36 deletions(-)
+>  
+> diff --git a/drivers/usb/core/devio.c b/drivers/usb/core/devio.c
+> index de17738..b44a061 100644
+> --- a/drivers/usb/core/devio.c
+> +++ b/drivers/usb/core/devio.c
+> @@ -993,18 +993,18 @@ static int proc_do_submiturb(struct dev_state *ps, struct usbdevfs_urb *uurb,
+>  			kfree(dr);
+>  			return -EFAULT;
+>  		}
+> -		if (uurb->buffer_length < (le16_to_cpup(&dr->wLength) + 8)) {
+> +		if (uurb->buffer_length < get_le16(&dr->wLength) + 8)) {
+								      ^
+Sorry.
+
+Harvey
+
