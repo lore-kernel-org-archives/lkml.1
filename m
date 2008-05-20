@@ -1,42 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759848AbYETAV0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760536AbYETAX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759848AbYETAV0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 20:21:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbYETAVR
+	id S1760536AbYETAX7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 20:23:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755060AbYETAXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 20:21:17 -0400
-Received: from vena.lwn.net ([206.168.112.25]:54792 "EHLO vena.lwn.net"
+	Mon, 19 May 2008 20:23:51 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:45648 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751478AbYETAVR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 20:21:17 -0400
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Cc: "Jonathan Corbet" <corbet@lwn.net>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Alexander Viro" <viro@ftp.linux.org.uk>,
-       "Arnd Bergmann" <arnd@arndb.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3, RFC] misc char dev BKL pushdown 
-From: corbet@lwn.net (Jonathan Corbet)
-In-reply-to: Your message of "Mon, 19 May 2008 20:07:59 EDT."
-             <8bd0f97a0805191707k597e4f48i9c54488777fdd91b@mail.gmail.com> 
-Date: Mon, 19 May 2008 18:21:16 -0600
-Message-ID: <30821.1211242876@vena.lwn.net>
+	id S1754068AbYETAXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 20:23:50 -0400
+Subject: Re: 2.6.25.4-rt2
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1211237032.14697.76.camel@localhost.localdomain>
+References: <1211237032.14697.76.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 20 May 2008 02:19:17 +0200
+Message-Id: <1211242757.19845.48.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Frysinger <vapier.adi@gmail.com> wrote:
+On Mon, 2008-05-19 at 18:43 -0400, Steven Rostedt wrote:
+> We are pleased to announce the 2.6.25.4-rt2 tree, which can be
+<snip>
 
-> this open func already has a spinlock protecting it.  doesnt that mean
-> we dont need the bkl in it ?
+I have just tested this, and it breaks jackd horribly, no matter the
+settings, jack ALWAYS underruns.
 
-The existence of a spinlock is a good sign.  But, until somebody has
-looked at the code and verified that said lock is really protecting
-everything, it's best to leave the BKL protection (which has always been
-there, just at a higher level) in place.
+What information do you need me to provide?
 
-jon
+> 
+> 
+> 
+> -- Steve
+> 
+> 	
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
