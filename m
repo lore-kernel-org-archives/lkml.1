@@ -1,60 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762314AbYEUAGO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759177AbYEUAG7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762314AbYEUAGO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 20:06:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755888AbYEUAGD
+	id S1759177AbYEUAG7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 20:06:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755888AbYEUAGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 20:06:03 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:23830 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755779AbYEUAGB (ORCPT
+	Tue, 20 May 2008 20:06:41 -0400
+Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:45879 "HELO
+	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1764160AbYEUAG3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 20:06:01 -0400
-Date: Tue, 20 May 2008 16:53:01 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Mark Fasheh <mfasheh@suse.com>, ocfs2-devel@oss.oracle.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] ocfs2: rename user_stack{,_ops}
-Message-ID: <20080520235301.GM26609@mail.oracle.com>
-Mail-Followup-To: Adrian Bunk <bunk@kernel.org>,
-	Mark Fasheh <mfasheh@suse.com>, ocfs2-devel@oss.oracle.com,
-	linux-kernel@vger.kernel.org
-References: <20080520225509.GD16264@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 20 May 2008 20:06:29 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:To:Subject:Cc:Content-Disposition:From:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=BPsiIIxDDg6Ztqaj7XTtmOk8fGK+/gnOQtBauH3dvFU8LegGpabMKA4cuhrjvzkmSa1IWe1Nds8yDL5Ao/YMx3xvqd+vtzZpU26LqWyL+sutNKEA8sJYGG2UjZgOucx9hKn1+BZXezJmXk/Rj7UJJd/25fUa1oRcAcjgCmktKJY=  ;
+X-YMail-OSG: JyPqUQ8VM1kFCsgc3YR4CUeisUe35q7ROY7lU0BTcwf4dhq9G2XEm.94dkqb1_Flx2sLdTPNDi8jeBrN3WQWv3970xlN4YeriIwPnp9XTuns7A4QcGrHEA1TdpFYuLWKfKQ-
+X-Yahoo-Newman-Property: ymail-3
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch 2.6.26-rc3] gpio: build fixes (mostly potential)
+Cc: Uwe =?iso-8859-1?q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>,
+       Russell King <rmk@arm.linux.org.uk>,
+       lkml <linux-kernel@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20080520225509.GD16264@cs181133002.pp.htv.fi>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+From: David Brownell <david-b@pacbell.net>
+Date: Tue, 20 May 2008 16:17:57 -0700
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Message-Id: <200805201617.57191.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 21, 2008 at 01:55:09AM +0300, Adrian Bunk wrote:
-> This patch therefore prefixes the user_stack{,_ops} names with ocfs2_
+This fixes various gpio-related build errors (mostly potential)
+reported in part by Russell King and Uwe Kleine-König.
 
-	Thanks for reporting this.  Al already reported it and a fix is
-in ocfs2.git.  We change the name entirely so that grep of user_stack
-doesn't match it at all.
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+---
+Refreshed version -- should apply OK on top of the gpio sysfs support
 
-Joel
+ include/asm-generic/gpio.h |    6 +++++-
+ include/linux/gpio.h       |    3 +++
+ 2 files changed, 8 insertions(+), 1 deletion(-)
 
--- 
-
-"Nobody loves me,
- Nobody seems to care.
- Troubles and worries, people,
- You know I've had my share."
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+--- a/include/asm-generic/gpio.h	2008-05-20 11:46:13.000000000 -0700
++++ b/include/asm-generic/gpio.h	2008-05-20 11:47:46.000000000 -0700
+@@ -1,8 +1,12 @@
+ #ifndef _ASM_GENERIC_GPIO_H
+ #define _ASM_GENERIC_GPIO_H
+ 
++#include <linux/types.h>
++
+ #ifdef CONFIG_HAVE_GPIO_LIB
+ 
++#include <linux/compiler.h>
++
+ /* Platforms may implement their GPIO interface with library code,
+  * at a small performance cost for non-inlined operations and some
+  * extra memory (for code and for per-GPIO table entries).
+@@ -78,7 +82,7 @@ struct gpio_chip {
+ 
+ extern const char *gpiochip_is_requested(struct gpio_chip *chip,
+ 			unsigned offset);
+-extern int __init __must_check gpiochip_reserve(int start, int ngpio);
++extern int __must_check gpiochip_reserve(int start, int ngpio);
+ 
+ /* add/remove chips */
+ extern int gpiochip_add(struct gpio_chip *chip);
+--- a/include/linux/gpio.h	2008-05-20 11:46:13.000000000 -0700
++++ b/include/linux/gpio.h	2008-05-20 11:47:09.000000000 -0700
+@@ -8,6 +8,9 @@
+ 
+ #else
+ 
++#include <linux/types.h>
++#include <linux/errno.h>
++
+ /*
+  * Some platforms don't support the GPIO programming interface.
+  *
