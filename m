@@ -1,68 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765624AbYETMFi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765545AbYETMHH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765624AbYETMFi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 08:05:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761118AbYETMFS
+	id S1765545AbYETMHH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 08:07:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755950AbYETMGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 08:05:18 -0400
-Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:63025 "EHLO
-	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760501AbYETMFQ (ORCPT
+	Tue, 20 May 2008 08:06:53 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:28078 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750759AbYETMGw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 08:05:16 -0400
-From: hooanon05@yahoo.co.jp
-Subject: Re: [git pull] VFS patches 
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+	Tue, 20 May 2008 08:06:52 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Timothy Shimmin <tes@sgi.com>
+Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
+Date: Tue, 20 May 2008 08:04:48 -0400
+User-Agent: KMail/1.9.9
+Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Eric Sandeen <sandeen@redhat.com>, Theodore Tso <tytso@mit.edu>,
+       Andi Kleen <andi@firstfloor.org>, linux-ext4@vger.kernel.org,
        linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-Reply-To: <20080426020221.GF5882@ZenIV.linux.org.uk>
-References: <20080426020221.GF5882@ZenIV.linux.org.uk>
-Date: Tue, 20 May 2008 21:04:38 +0900
-Message-ID: <13375.1211285078@jrobl>
+References: <482DDA56.6000301@redhat.com> <200805192029.21688.chris.mason@oracle.com> <48324598.4060803@sgi.com>
+In-Reply-To: <48324598.4060803@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200805200804.49389.chris.mason@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 19 May 2008, Timothy Shimmin wrote:
 
-Hello Al,
+[ power fail testing with write back cache on ]
 
-I have a question about the commit you made last month.
-When an application issues sys_oldumount(), ->umount_begin() will not be
-called because the flag is 0. Is this behaviour intended?
-And it it better to put the paranthesis around (flags & MNT_FORCE).
+> > I was also able to trigger corruptions on XFS (one run out of two), so it
+> > is unlikely I'm seeing bugs in the ext3 replay or logging code.
+>
+> Just to clarify,
+> was this test with barriers on or off for XFS?
+> I'm wondering if it was with barriers on, then we have a reproducible
+> bug in log replay.
+> Or whether you were just confirming the problems with barriers off on
+> another filesystem.
 
+Barriers were off on xfs, the corruptions were not xfs' fault.
 
-Junjiro Okajima
-
-
-Al Viro:
-> 	Tonight's pile: getting ->umount_begin() back to sanity, race fixes
-> around execve(), general cleanups.  Please, pull from
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git/ for-linus
-> 
-> Shortlog:
-> 
-> Al Viro (5):
->       restore sane ->umount_begin() API
-	:::
-> diff --git a/fs/namespace.c b/fs/namespace.c
-> index 0505fb6..f48f981 100644
-> --- a/fs/namespace.c
-> +++ b/fs/namespace.c
-> @@ -1061,10 +1061,11 @@ static int do_umount(struct vfsmount *mnt, int flags)
->  	 * about for the moment.
->  	 */
->  
-> -	lock_kernel();
-> -	if (sb->s_op->umount_begin)
-> -		sb->s_op->umount_begin(mnt, flags);
-> -	unlock_kernel();
-> +	if (flags & MNT_FORCE && sb->s_op->umount_begin) {
-> +		lock_kernel();
-> +		sb->s_op->umount_begin(sb);
-> +		unlock_kernel();
-> +	}
->  
->  	/*
->  	 * No sense to grab the lock for this test, but test itself looks
+-chris
