@@ -1,45 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760775AbYETTm7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765329AbYETTnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760775AbYETTm7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 15:42:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757458AbYETTmr
+	id S1765329AbYETTnZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 15:43:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759844AbYETTm5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 15:42:47 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:43949 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757567AbYETTmq (ORCPT
+	Tue, 20 May 2008 15:42:57 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:34860 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759537AbYETTmz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 15:42:46 -0400
-Message-ID: <48332990.9030609@zytor.com>
-Date: Tue, 20 May 2008 12:42:08 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 20 May 2008 15:42:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=lzAb+7n7p3hcljGJSVhjBTNtel7FjpRJIPHOYWPfpQg19jVIUGCki+W4u25IGkF4CNXBpoHI2pZjjDYU6sVH358UutyIq1aEjLp1ArOkHEgJaQBtxdAi4i332hvmOmwajRN9nI0tOIaaibmz0NsDNf646zpStcN/aONuy91KhSA=
+Message-ID: <7b9198260805201242p1adf4651kb4c434d73884b6c1@mail.gmail.com>
+Date: Tue, 20 May 2008 20:42:54 +0100
+From: "Tom Spink" <tspink@gmail.com>
+To: "Jeff Dike" <jdike@addtoit.com>
+Subject: Re: UML fails to locate address space
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080520192436.GA12102@c2.user-mode-linux.org>
 MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [X86] Remove unnecessary code in 64bit CPU identification.
-References: <200805200409.m4K49ZuE024343@gelk.kernelslacker.org> <4832E461.2070503@zytor.com> <20080520151655.GA542@redhat.com> <4833112F.7020402@zytor.com> <20080520191812.GB31805@redhat.com>
-In-Reply-To: <20080520191812.GB31805@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <7b9198260805200408k1d6b70a8xc7e4c24106e5020f@mail.gmail.com>
+	 <20080520135238.GB6990@c2.user-mode-linux.org>
+	 <7b9198260805200659p6ed28403t9b0b0ea995f158d5@mail.gmail.com>
+	 <20080520161047.GA9598@c2.user-mode-linux.org>
+	 <7b9198260805200943x6fb15512o7ba35a40d006b215@mail.gmail.com>
+	 <20080520175624.GA10889@c2.user-mode-linux.org>
+	 <7b9198260805201101x5b0fabf8h4944a29c6a4cae96@mail.gmail.com>
+	 <20080520192436.GA12102@c2.user-mode-linux.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
-> 
-> Moving along the same direction..  Moving the vendor specific bits out of setup_64.c
-> into cpu/ would go a long way towards killing of setup64.c.  I took a first pass at doing this
-> in the diff below. So far I only looked at the AMD specific bits, and haven't done
-> a complete conversion to cpu_dev style initialisation as done on 32bit, but that
-> can easily be performed later after moving all the code out into its respective places.
-> (downside: a bunch of externs in the interim).
-> 
-> comments on this before I go any further?
-> 
+2008/5/20 Jeff Dike <jdike@addtoit.com>:
+> On Tue, May 20, 2008 at 07:01:02PM +0100, Tom Spink wrote:
+>> I'm a hardy.  I bet it's 893f802872c3.
+>>
+>> http://kernel.ubuntu.com/git?p=ubuntu/ubuntu-hardy.git;a=commitdiff;h=893f802872c3e3c6e4bb40c3be4845784b81b934
+>
+> Looks right, and mmap_min_addr is in mainline, just with a value of
+> zero.  So, it looks like the right thing to do is read the value of
+> /proc/sys/vm/mmap_min_addr and start bottom there.
+>
+>                        Jeff
+>
+> --
+> Work email - jdike at linux dot intel dot com
+>
 
-Looks good to me at first glance, and would definitely be a good step on 
-the way.
+Wuhoo.
 
-	-hpa
+tom@holly:~$ cat /proc/sys/vm/mmap_min_addr
+65536
+
+And this is what I did:
+
+diff --git a/arch/um/os-Linux/sys-i386/task_size.c
+b/arch/um/os-Linux/sys-i386/task_size.c
+index ccb49b0..f5ece4b 100644
+--- a/arch/um/os-Linux/sys-i386/task_size.c
++++ b/arch/um/os-Linux/sys-i386/task_size.c
+@@ -1,10 +1,14 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <signal.h>
++#include <fcntl.h>
++#include <unistd.h>
+ #include <sys/mman.h>
+ #include "longjmp.h"
+ #include "kern_constants.h"
+
++#define PROC_MMAP_MIN_ADDR "/proc/sys/vm/mmap_min_addr"
++
+ static jmp_buf buf;
+
+ static void segfault(int sig)
+@@ -63,10 +67,34 @@ static int page_ok(unsigned long page)
+ 	return ok;
+ }
+
++static unsigned long get_mmap_min_addr(void)
++{
++	unsigned long ret = 0;
++	char mmap_min_addr[8];
++	int fd;
++	struct stat s;
++	
++	/* Determine the minimum mmap address. */
++	if (stat(PROC_MMAP_MIN_ADDR, &s) == 0) {
++		/* Open the proc file, and read in the value. */
++		fd = open(PROC_MMAP_MIN_ADDR, O_RDONLY);
++		if (fd < 0)
++			return ret;
++			
++		read(fd, mmap_min_addr, sizeof(mmap_min_addr));
++		close(fd);
++
++		/* Determine the address. */
++		ret = strtoul(mmap_min_addr, NULL, 0) >> UM_KERN_PAGE_SHIFT;
++	}
++
++	return ret;
++}
++
+ unsigned long os_get_task_size(void)
+ {
+ 	struct sigaction sa, old;
+-	unsigned long bottom = 0;
++	unsigned long bottom;
+ 	/*
+ 	 * A 32-bit UML on a 64-bit host gets confused about the VDSO at
+ 	 * 0xffffe000.  It is mapped, is readable, can be reprotected writeable
+@@ -78,6 +106,10 @@ unsigned long os_get_task_size(void)
+ 	unsigned long top = 0xffffd000 >> UM_KERN_PAGE_SHIFT;
+ 	unsigned long test;
+
++	printf("Determining the bottom of the address space ... ");
++	bottom = get_mmap_min_addr();
++	printf("0x%x\n", bottom);
++
+ 	printf("Locating the top of the address space ... ");
+ 	fflush(stdout);
