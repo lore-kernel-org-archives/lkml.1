@@ -1,89 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934085AbYETV5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934215AbYETV6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934085AbYETV5n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 17:57:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757768AbYETV5d
+	id S934215AbYETV6V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 17:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757768AbYETV6K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 17:57:33 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:23532 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759416AbYETV5c (ORCPT
+	Tue, 20 May 2008 17:58:10 -0400
+Received: from spirit.analogic.com ([204.178.40.4]:4156 "EHLO
+	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751331AbYETV6I convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 17:57:32 -0400
-Date: Tue, 20 May 2008 14:56:39 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Louis Rilling <Louis.Rilling@kerlabs.com>, linux-kernel@vger.kernel.org,
-       ocfs2-devel@oss.oracle.com
-Subject: Re: [RFC][PATCH 0/3] configfs: Make nested default groups
-	lockdep-friendly
-Message-ID: <20080520215639.GG26609@mail.oracle.com>
-Mail-Followup-To: Arjan van de Ven <arjan@infradead.org>,
-	Louis Rilling <Louis.Rilling@kerlabs.com>,
-	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-References: <20080520163320.025971210@kerlabs.com> <20080520095810.1d50d247@infradead.org>
+	Tue, 20 May 2008 17:58:08 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080520095810.1d50d247@infradead.org>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+X-OriginalArrivalTime: 20 May 2008 21:58:04.0951 (UTC) FILETIME=[94999A70:01C8BAC4]
+Content-class: urn:content-classes:message
+Subject: Re: UML fails to locate address space
+Date: Tue, 20 May 2008 17:58:04 -0400
+Message-ID: <Pine.LNX.4.61.0805201757270.13545@chaos.analogic.com>
+In-Reply-To: <20080520173503.GA10811@c2.user-mode-linux.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: UML fails to locate address space
+thread-index: Aci6xJSgo7BIx8mnSZqLDo/IL/kEwA==
+References: <7b9198260805200408k1d6b70a8xc7e4c24106e5020f@mail.gmail.com> <20080520135238.GB6990@c2.user-mode-linux.org> <Pine.LNX.4.61.0805201117540.12360@chaos.analogic.com> <20080520173503.GA10811@c2.user-mode-linux.org>
+From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+To: "Jeff Dike" <jdike@addtoit.com>
+Cc: "Tom Spink" <tspink@gmail.com>, "LKML" <linux-kernel@vger.kernel.org>
+Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+X-TM-AS-Product-Ver: SMEX-8.0.0.1259-5.500.1026-15922.002
+X-TM-AS-Result: No--7.501000-8.000000-31
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 09:58:10AM -0700, Arjan van de Ven wrote:
-> On Tue, 20 May 2008 18:33:20 +0200
-> Louis Rilling <Louis.Rilling@kerlabs.com> wrote:
-> 
-> > The following patches fix lockdep warnings resulting from (correct)
-> > recursive locking in configfs.
-> >
-> > ...
-> >
-> > Since lockdep does not handle such correct recursion, the idea is to
-> > insert lockdep_off()/lockdep_on() for inode mutexes as soon as the
-> > level of recursion of the I_MUTEX_PARENT -> I_MUTEX_CHILD dependency
-> > pattern increases.
-> 
-> I'm... not entirely happy with such a solution ;(
-> 
-> there must be a better one.
 
-	We're trying to find it.  I really appreciate Louis taking the
-time to approach the issue.  His first pass was to add 1 to MUTEX_CHILD
-for each level of recursion.  This has a very tight limit (4 or 5
-levels), but probably covers all users that exist and perhaps all that
-ever will exist.  However, it means passing the lockdep annotation level
-throughout the entire call chain across multiple files.  It was
-definitely less readable.
-	This approach takes a different tack - it's very readable, but
-it assumes that the currently correct locking will always remain so - a
-particular invariant that lockdep exists to verify :-)
-	Louis, what about sticking the recursion level on
-configfs_dirent?  That is, you could add sd->s_level and then use it
-when needed.  THis would hopefully avoid having to pass the level as an
-argument to every function.  Then we can go back to your original
-scheme.  If they recurse too much and hit the lockdep limit, just rewind
-everything and return -ELOOP.
+On Tue, 20 May 2008, Jeff Dike wrote:
 
-Joel
+> On Tue, May 20, 2008 at 11:22:08AM -0400, linux-os (Dick Johnson) wrote:
+>> Does this mean that I cannot mmap() address zero in the kernel
+>> anymore? I should be able (in the kernel) read anything, and
+>> then mmap() it to something usable in user-space. If address
+>> zero is now artifically trapped there are problems being created
+>> for no good reason at all.
+>
+> We're operating from userspace here.
+>
+> In any case, this hasn't happened with any kernel I've seen, but I'm
+> suspicious that Ubuntu has started treating page zero specially.
+>
+> 	   	       	   Jeff
+>
 
--- 
+Yes, shouldn't be.
 
-Dort wo man Bücher verbrennt, verbrennt man am Ende auch Mensch.
-(Wherever they burn books, they will also end up burning people.)
-	- Heinrich Heine
 
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+Cheers,
+Dick Johnson
+Penguin : Linux version 2.6.22.1 on an i686 machine (5588.29 BogoMips).
+My book : http://www.AbominableFirebug.com/
+_
+
+
+****************************************************************
+The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+
+Thank you.
