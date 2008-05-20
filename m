@@ -1,43 +1,263 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764763AbYETK6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932202AbYETLAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764763AbYETK6S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 06:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbYETK6F
+	id S932202AbYETLAV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 07:00:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756822AbYETLAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 06:58:05 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:50954 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751616AbYETK6E (ORCPT
+	Tue, 20 May 2008 07:00:06 -0400
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:56343 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753314AbYETLAD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 06:58:04 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: NOvell
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #10630] USB devices plugged into dock are not discoverred until reload of ehci-hcd
-Date: Tue, 20 May 2008 12:57:59 +0200
-User-Agent: KMail/1.9.9
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Lukas Hejtmanek" <xhejtman@ics.muni.cz>
-References: <oKKSi1w1qaF.A.mEG.JrBMIB@albercik> <7wuznNhcUqC.A.OcB.itBMIB@albercik>
-In-Reply-To: <7wuznNhcUqC.A.OcB.itBMIB@albercik>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Tue, 20 May 2008 07:00:03 -0400
+Date: Tue, 20 May 2008 12:59:13 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: David Miller <davem@davemloft.net>
+Cc: shemminger@vyatta.com, greg@kroah.com, fubar@us.ibm.com,
+       netdev@vger.kernel.org, bonding-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] driver core: Suppress sysfs warnings for device_rename().
+Message-ID: <20080520125913.777ed67d@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20080515120619.6c867bfb@gondolin.boeblingen.de.ibm.com>
+References: <20080515095246.3b6a0d1d@gondolin.boeblingen.de.ibm.com>
+	<20080515.010139.219194657.davem@davemloft.net>
+	<20080515113131.2cea2bce@gondolin.boeblingen.de.ibm.com>
+	<20080515.030054.247673168.davem@davemloft.net>
+	<20080515120619.6c867bfb@gondolin.boeblingen.de.ibm.com>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805201258.00376.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Sonntag 18 Mai 2008 13:13:55 schrieb Rafael J. Wysocki:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.25.  Please verify if it still should be listed.
+OK, here is an actually-compiled patch with proper description and
+s-o-b. Comments?
 
-Can you please also post your .config with which this problem happens?
+-----
 
-	Regards
-		Oliver
+driver core: Suppress sysfs warnings for device_rename().
+
+Renaming network devices to an already existing name is not
+something we want sysfs to print a scary warning for, since the
+callers can deal with this correctly. So let's introduce
+sysfs_create_link_nowarn() which gets rid of the common warning.
+
+Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+
+---
+ drivers/base/core.c   |   17 ++++++++---------
+ fs/sysfs/dir.c        |   37 +++++++++++++++++++++++++++++++++++--
+ fs/sysfs/symlink.c    |   41 +++++++++++++++++++++++++++++++++--------
+ fs/sysfs/sysfs.h      |    1 +
+ include/linux/sysfs.h |   10 ++++++++++
+ 5 files changed, 87 insertions(+), 19 deletions(-)
+
+Index: linux-2.6/drivers/base/core.c
+===================================================================
+--- linux-2.6.orig/drivers/base/core.c
++++ linux-2.6/drivers/base/core.c
+@@ -1287,8 +1287,9 @@ int device_rename(struct device *dev, ch
+ 	if (old_class_name) {
+ 		new_class_name = make_class_name(dev->class->name, &dev->kobj);
+ 		if (new_class_name) {
+-			error = sysfs_create_link(&dev->parent->kobj,
+-						  &dev->kobj, new_class_name);
++			error = sysfs_create_link_nowarn(&dev->parent->kobj,
++							 &dev->kobj,
++							 new_class_name);
+ 			if (error)
+ 				goto out;
+ 			sysfs_remove_link(&dev->parent->kobj, old_class_name);
+@@ -1296,13 +1297,11 @@ int device_rename(struct device *dev, ch
+ 	}
+ #else
+ 	if (dev->class) {
+-		sysfs_remove_link(&dev->class->subsys.kobj, old_device_name);
+-		error = sysfs_create_link(&dev->class->subsys.kobj, &dev->kobj,
+-					  dev->bus_id);
+-		if (error) {
+-			dev_err(dev, "%s: sysfs_create_symlink failed (%d)\n",
+-				__func__, error);
+-		}
++		error = sysfs_create_link_nowarn(&dev->class->subsys.kobj,
++						 &dev->kobj, dev->bus_id);
++		if (!error)
++			sysfs_remove_link(&dev->class->subsys.kobj,
++					  old_device_name);
+ 	}
+ #endif
+ 
+Index: linux-2.6/fs/sysfs/dir.c
+===================================================================
+--- linux-2.6.orig/fs/sysfs/dir.c
++++ linux-2.6/fs/sysfs/dir.c
+@@ -398,7 +398,7 @@ void sysfs_addrm_start(struct sysfs_addr
+ }
+ 
+ /**
+- *	sysfs_add_one - add sysfs_dirent to parent
++ *	__sysfs_add_one - add sysfs_dirent to parent without warning
+  *	@acxt: addrm context to use
+  *	@sd: sysfs_dirent to be added
+  *
+@@ -417,7 +417,7 @@ void sysfs_addrm_start(struct sysfs_addr
+  *	0 on success, -EEXIST if entry with the given name already
+  *	exists.
+  */
+-int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
++int __sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+ {
+ 	if (sysfs_find_dirent(acxt->parent_sd, sd->s_name)) {
+ 		printk(KERN_WARNING "sysfs: duplicate filename '%s' "
+@@ -439,6 +439,39 @@ int sysfs_add_one(struct sysfs_addrm_cxt
+ }
+ 
+ /**
++ *	sysfs_add_one - add sysfs_dirent to parent
++ *	@acxt: addrm context to use
++ *	@sd: sysfs_dirent to be added
++ *
++ *	Get @acxt->parent_sd and set sd->s_parent to it and increment
++ *	nlink of parent inode if @sd is a directory and link into the
++ *	children list of the parent.
++ *
++ *	This function should be called between calls to
++ *	sysfs_addrm_start() and sysfs_addrm_finish() and should be
++ *	passed the same @acxt as passed to sysfs_addrm_start().
++ *
++ *	LOCKING:
++ *	Determined by sysfs_addrm_start().
++ *
++ *	RETURNS:
++ *	0 on success, -EEXIST if entry with the given name already
++ *	exists.
++ */
++int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
++{
++	int ret;
++
++	ret = __sysfs_add_one(acxt, sd);
++	if (ret == -EEXIST) {
++		printk(KERN_WARNING "sysfs: duplicate filename '%s' "
++		       "can not be created\n", sd->s_name);
++		WARN_ON(1);
++	}
++	return ret;
++}
++
++/**
+  *	sysfs_remove_one - remove sysfs_dirent from parent
+  *	@acxt: addrm context to use
+  *	@sd: sysfs_dirent to be removed
+Index: linux-2.6/fs/sysfs/symlink.c
+===================================================================
+--- linux-2.6.orig/fs/sysfs/symlink.c
++++ linux-2.6/fs/sysfs/symlink.c
+@@ -19,13 +19,8 @@
+ 
+ #include "sysfs.h"
+ 
+-/**
+- *	sysfs_create_link - create symlink between two objects.
+- *	@kobj:	object whose directory we're creating the link in.
+- *	@target:	object we're pointing to.
+- *	@name:		name of the symlink.
+- */
+-int sysfs_create_link(struct kobject * kobj, struct kobject * target, const char * name)
++static int sysfs_do_create_link(struct kobject *kobj, struct kobject *target,
++				const char *name, int warn)
+ {
+ 	struct sysfs_dirent *parent_sd = NULL;
+ 	struct sysfs_dirent *target_sd = NULL;
+@@ -65,7 +60,10 @@ int sysfs_create_link(struct kobject * k
+ 	target_sd = NULL;	/* reference is now owned by the symlink */
+ 
+ 	sysfs_addrm_start(&acxt, parent_sd);
+-	error = sysfs_add_one(&acxt, sd);
++	if (warn)
++		error = sysfs_add_one(&acxt, sd);
++	else
++		error = __sysfs_add_one(&acxt, sd);
+ 	sysfs_addrm_finish(&acxt);
+ 
+ 	if (error)
+@@ -80,6 +78,33 @@ int sysfs_create_link(struct kobject * k
+ }
+ 
+ /**
++ *	sysfs_create_link - create symlink between two objects.
++ *	@kobj:	object whose directory we're creating the link in.
++ *	@target:	object we're pointing to.
++ *	@name:		name of the symlink.
++ */
++int sysfs_create_link(struct kobject *kobj, struct kobject *target,
++		      const char *name)
++{
++	return sysfs_do_create_link(kobj, target, name, 1);
++}
++
++/**
++ *	sysfs_create_link_nowarn - create symlink between two objects.
++ *	@kobj:	object whose directory we're creating the link in.
++ *	@target:	object we're pointing to.
++ *	@name:		name of the symlink.
++ *
++ *	This function does the same as sysf_create_link(), but it
++ *	doesn't warn if the link already exists.
++ */
++int sysfs_create_link_nowarn(struct kobject *kobj, struct kobject *target,
++			     const char *name)
++{
++	return sysfs_do_create_link(kobj, target, name, 0);
++}
++
++/**
+  *	sysfs_remove_link - remove symlink in object's directory.
+  *	@kobj:	object we're acting for.
+  *	@name:	name of the symlink to remove.
+Index: linux-2.6/fs/sysfs/sysfs.h
+===================================================================
+--- linux-2.6.orig/fs/sysfs/sysfs.h
++++ linux-2.6/fs/sysfs/sysfs.h
+@@ -107,6 +107,7 @@ struct sysfs_dirent *sysfs_get_active_tw
+ void sysfs_put_active_two(struct sysfs_dirent *sd);
+ void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
+ 		       struct sysfs_dirent *parent_sd);
++int __sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd);
+ int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd);
+ void sysfs_remove_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd);
+ void sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt);
+Index: linux-2.6/include/linux/sysfs.h
+===================================================================
+--- linux-2.6.orig/include/linux/sysfs.h
++++ linux-2.6/include/linux/sysfs.h
+@@ -103,6 +103,9 @@ void sysfs_remove_bin_file(struct kobjec
+ 
+ int __must_check sysfs_create_link(struct kobject *kobj, struct kobject *target,
+ 				   const char *name);
++int __must_check sysfs_create_link_nowarn(struct kobject *kobj,
++					  struct kobject *target,
++					  const char *name);
+ void sysfs_remove_link(struct kobject *kobj, const char *name);
+ 
+ int __must_check sysfs_create_group(struct kobject *kobj,
+@@ -182,6 +185,13 @@ static inline int sysfs_create_link(stru
+ 	return 0;
+ }
+ 
++static inline int sysfs_create_link_nowarn(struct kobject *kobj,
++					   struct kobject *target,
++					   const char *name)
++{
++	return 0;
++}
++
+ static inline void sysfs_remove_link(struct kobject *kobj, const char *name)
+ {
+ }
