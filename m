@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765378AbYETNnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765983AbYETNpg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765378AbYETNnU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 09:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755948AbYETNnK
+	id S1765983AbYETNpg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 09:45:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755126AbYETNp2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 09:43:10 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:44977 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755700AbYETNnJ (ORCPT
+	Tue, 20 May 2008 09:45:28 -0400
+Received: from saraswathi.solana.com ([198.99.130.12]:39940 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754204AbYETNp1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 09:43:09 -0400
-Date: Tue, 20 May 2008 14:43:06 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Tom Spink <tspink@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC PATCH] Introduce filesystem type tracking
-Message-ID: <20080520134306.GA28946@ZenIV.linux.org.uk>
-References: <1211196126-7442-1-git-send-email-tspink@gmail.com> <7b9198260805200606u6ebc2681o8af7a8eebc1cb96@mail.gmail.com>
+	Tue, 20 May 2008 09:45:27 -0400
+Date: Tue, 20 May 2008 09:45:17 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: John R Moser <nigelenki@comcast.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: UML and VMI ... how does UML work?
+Message-ID: <20080520134517.GA6990@c2.user-mode-linux.org>
+References: <loom.20080519T235035-223@post.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <7b9198260805200606u6ebc2681o8af7a8eebc1cb96@mail.gmail.com>
+In-Reply-To: <loom.20080519T235035-223@post.gmane.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 02:06:42PM +0100, Tom Spink wrote:
-[snip]
+On Mon, May 19, 2008 at 11:58:40PM +0000, John R Moser wrote:
+> I've been googling around but can't find a good resource for
+> technically how UML works.  I'm thinking about specifically the task
+> of implementing a virtualization platform without kernel
+> hooks... this lead me to dancing around checking out existing
+> technology and noticing claims that UML can run on an unmodified
+> kernel without special needs.
 
-> I'm just adding people to CC here, but also I had a couple of thoughts
-> after reviewing my own code.
-> 
-> I see that do_kern_mount is encapsulated with the BKL, but would it be
-> wise to introduce a lock (e.g. a mutex) now for reading and updating
-> nr_mounts (and hence calling ->init), rather than wait for the BKL
-> removal to come round here?
-> 
-> Also, have I got all the cases where a filesystem is unmounted,
-> because I now see umount_tree, and am wondering if decrementing the
-> nr_mounts field should be done in here, in the loop of vfsmounts... or
-> is it sufficient to leave it at the end of do_umount?
+There's nothing magic.  It turns out that the system call interface is
+sufficient to virtualize an entire system, and UML is an existence
+proof of that.  The major mappings are:
+      system calls -> ptrace
+      memory -> mmap, munmap, mprotect
+      interrupts -> signals
+      timer -> interval timer
 
-No, you have not and no, doing that anywhere near that layer is hopeless.
+> In short, I'm curious about how UML works because I'm interested in knowing if
+> it's theoretically possible to remove the UML code (i.e. compile it out) and
+> then boot a kernel within an application that gives it a VMI structure to ...
+> act exactly as UML.
 
-	a) Instances of filesystem can easily outlive all vfsmounts,
-let alone their attachment to namespaces.
-	b) What should happen if init is done in the middle of exit?
-	c) Why do we need to bother, anyway?  
+This paragraph is very unclear to me...
+
+     	       	       Jeff
+
+-- 
+Work email - jdike at linux dot intel dot com
