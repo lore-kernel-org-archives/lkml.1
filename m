@@ -1,53 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763332AbYETLZQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764049AbYETL0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763332AbYETLZQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 07:25:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758118AbYETLZD
+	id S1764049AbYETL0q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 07:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758268AbYETL0i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 07:25:03 -0400
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:6756 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756864AbYETLZB (ORCPT
+	Tue, 20 May 2008 07:26:38 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49862 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752157AbYETL0h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 07:25:01 -0400
-To: Avi Kivity <avi@qumranet.com>
-Cc: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Make LIST_POISON less deadly
-From: Andi Kleen <andi@firstfloor.org>
-References: <1211125094-32167-1-git-send-email-avi@qumranet.com>
-Date: Tue, 20 May 2008 13:24:05 +0200
-In-Reply-To: <1211125094-32167-1-git-send-email-avi@qumranet.com> (Avi Kivity's message of "Sun, 18 May 2008 18:38:14 +0300")
-Message-ID: <87k5hpgqwa.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Tue, 20 May 2008 07:26:37 -0400
+Date: Tue, 20 May 2008 06:26:35 -0500
+From: Robin Holt <holt@sgi.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Robin Holt <holt@sgi.com>, Christoph Lameter <clameter@sgi.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrea Arcangeli <andrea@qumranet.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
+       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>
+Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
+Message-ID: <20080520112635.GE30341@sgi.com>
+References: <20080515075747.GA7177@wotan.suse.de> <Pine.LNX.4.64.0805151031250.18708@schroedinger.engr.sgi.com> <20080515235203.GB25305@wotan.suse.de> <20080516112306.GA4287@sgi.com> <20080516115005.GC4287@sgi.com> <20080520053145.GA19502@wotan.suse.de> <20080520100111.GC30341@sgi.com> <20080520105025.GA25791@wotan.suse.de> <20080520110528.GD30341@sgi.com> <20080520111424.GB25791@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 20 May 2008 11:17:03.0261 (UTC) FILETIME=[07A574D0:01C8BA6B]
+Content-Disposition: inline
+In-Reply-To: <20080520111424.GB25791@wotan.suse.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity <avi@qumranet.com> writes:
+On Tue, May 20, 2008 at 01:14:24PM +0200, Nick Piggin wrote:
+> On Tue, May 20, 2008 at 06:05:29AM -0500, Robin Holt wrote:
+> > On Tue, May 20, 2008 at 12:50:25PM +0200, Nick Piggin wrote:
+> > > On Tue, May 20, 2008 at 05:01:11AM -0500, Robin Holt wrote:
+> > > > On Tue, May 20, 2008 at 07:31:46AM +0200, Nick Piggin wrote:
+> > > > > 
+> > > > > Really? You can get the information through via a sleeping messaging API,
+> > > > > but not a non-sleeping one? What is the difference from the hardware POV?
+> > > > 
+> > > > That was covered in the early very long discussion about 28 seconds.
+> > > > The read timeout for the BTE is 28 seconds and it automatically retried
+> > > > for certain failures.  In interrupt context, that is 56 seconds without
+> > > > any subsequent interrupts of that or lower priority.
+> > > 
+> > > I thought you said it would be possible to get the required invalidate
+> > > information without using the BTE. Couldn't you use XPMEM pages in
+> > > the kernel to read the data out of, if nothing else?
+> > 
+> > I was wrong about that.  I thought it was safe to do an uncached write,
+> > but it turns out any processor write is uncontained and the MCA that
+> > surfaces would be fatal.  Likewise for the uncached read.
+> 
+> Oh, so the BTE transfer is purely for fault isolation. I was thinking
+> you guys might have sufficient control of the hardware to be able to
+> do it at the level of CPU memory operations, but if it is some
+> limitation of ia64, then I guess that's a problem.
+> 
+> How do you do fault isolation of userspace XPMEM accesses?
 
-> The list macros use LIST_POISON1 and LIST_POISON2 as undereferencable
-> pointers in order to trap erronous use of freed list_heads.  Unfortunately
-> userspace can arrange for those pointers to actually be dereferencable,
-> potentially turning an oops to an expolit.
->
-> To avoid this allow architectures (currently x86_64 only) to override
-> the default values for these pointers with truly-undereferncable values.
-> This is easy on x86_64 as the virtual address space is smaller than
-> the range spanned by pointer values.
-
-Hmm, thought I had sent a reply earlier, but don't see it so again.
-My apologies if you see it twice.
-
-The problem with your address values is that they're non canonical
-and will result in a #GP, not #PF and oops handler cannot display
-the address which will make them much less obvious.
-
-I would rather use a guaranteed to be unmapped but canonical
-address like in the ffffc10000000000 - ffffc1ffffffffff range
-so that you still get page faults.
-
--Andi
+The MCA handler can see the fault was either in userspace (processor
+priviledge level I believe) or in the early kernel entry where it is
+saving registers.  When it sees that condition, it kills the users
+process.  While in kernel space, there is no equivalent of the saving
+user state that forces the processor stall.
