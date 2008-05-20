@@ -1,48 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761627AbYETQbG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932067AbYETQj1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761627AbYETQbG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 12:31:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933324AbYETQam
+	id S932067AbYETQj1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 12:39:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755622AbYETQjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 12:30:42 -0400
-Received: from smtp.innovsys.com ([66.115.232.196]:21804 "EHLO
-	mail.innovsys.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758411AbYETQal convert rfc822-to-8bit (ORCPT
+	Tue, 20 May 2008 12:39:12 -0400
+Received: from pilet.ens-lyon.fr ([140.77.167.16]:46409 "EHLO
+	pilet.ens-lyon.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755278AbYETQjL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 12:30:41 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 20 May 2008 12:39:11 -0400
+Date: Tue, 20 May 2008 18:39:12 +0200
+From: Benoit Boissinot <bboissin@gmail.com>
+To: Soumyadip Das Mahapatra <kernelhacker@visualserver.org>
+Cc: Akinobu Mita <akinobu.mita@gmail.com>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] bitreversal program
+Message-ID: <20080520163912.GP7567@pirzuine>
+References: <Pine.LNX.4.64.0805191859411.18461@visualserver.org> <1211229736.5915.86.camel@brick> <Pine.LNX.4.64.0805201254240.18899@visualserver.org> <961aa3350805200513i4e02716eh79da76345718c3b2@mail.gmail.com> <Pine.LNX.4.64.0805201716160.25111@visualserver.org> <40f323d00805200847t77b2d875j451d0eb9758cf9ff@mail.gmail.com> <Pine.LNX.4.64.0805201753430.25485@visualserver.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Oops in fs_enet driver with preempt-rt
-Date: Tue, 20 May 2008 11:31:08 -0500
-Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B046E73EC@ismail.innsys.innovsys.com>
-In-Reply-To: <4832FA80.7060807@freescale.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Oops in fs_enet driver with preempt-rt
-Thread-Index: Aci6lW5AW7RiPnxXRY24USEpaj5ZVQAAVO7g
-References: <DCEAAC0833DD314AB0B58112AD99B93B046E728C@ismail.innsys.innovsys.com> <DCEAAC0833DD314AB0B58112AD99B93B046E72C3@ismail.innsys.innovsys.com> <4832F139.1020502@freescale.com> <DCEAAC0833DD314AB0B58112AD99B93B046E73C6@ismail.innsys.innovsys.com> <4832FA80.7060807@freescale.com>
-From: "Rune Torgersen" <runet@innovsys.com>
-To: "Scott Wood" <scottwood@freescale.com>
-Cc: <linux-kernel@vger.kernel.org>, <linuxppc-dev@ozlabs.org>,
-       <netdev@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0805201753430.25485@visualserver.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Scott Wood wrote:
-> Rune Torgersen wrote:
->> Hmm.... ttyCPM1 output seems to be kinda garbled... Any ideas?
->> Incomplete locking between printk and userland use of ttyCPM1 as
->> console?
-> 
-> s/incomplete/nonexistent/ :-P
-> 
-> Try acquiring port->lock in cpm_uart_console_write.
-> 
-> -Scott
+On Tue, May 20, 2008 at 05:57:37PM +0200, Soumyadip Das Mahapatra wrote:
+> On Tue, 20 May 2008, Benoit Boissinot wrote:
+>> On Tue, May 20, 2008 at 5:25 PM, Soumyadip Das Mahapatra
+>> <kernelhacker@visualserver.org> wrote:
+>>> I know that my bitrev8() takes more instructions than that
+>>> of yours. But we have to think about faster access of cpu cache over that
+>>> of memory cache(which your bit_rev_table uses).
+>>
+>> I didn't review your patch, sorry.
+>> But I'm pretty sure that your patch won't be considered unless you
+>> provide benchmarks
+>> with numbers for different CPU/architecture.
+>> Ideally you should provide a script to test the correctness and the
+>> performance of your
+>> change that anyone could run on his computer.
+>
+> Thanks Benoit for giving me such a precious advice. But sorry, I dont
+> have any benchmarking system in my hand(how can i have? i am just a
+> student, not a professional).
+> So if you do me a favour and kindly do it for me, please :-)
 
-That worked. Console output is sane again.
+A quick benchmarking (that you should have done at least one your
+computer gives for 100000000 iterations):
+old:
+real	0m1.631s
+user	0m1.628s
+sys	0m0.004s
+
+new:
+real	0m5.553s
+user	0m5.540s
+sys	0m0.004s
+
+So I guess there's no need to discuss this further.
+
+regards,
+
+Benoit
+
+-- 
+:wq
