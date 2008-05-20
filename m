@@ -1,77 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765040AbYETMXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764471AbYETMcQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765040AbYETMXW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 08:23:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755243AbYETMXO
+	id S1764471AbYETMcQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 08:32:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754583AbYETMb6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 08:23:14 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:60341 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754917AbYETMXN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 08:23:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:from:to:subject:date:mime-version:content-type:content-transfer-encoding:x-priority:x-msmail-priority:x-mailer:x-mimeole;
-        b=fp8Gk80Dx6euFbEg7q6HadoRYRWOYXGRC9crWI8ChlwD/+pyGSGGzgVf4Q30r73oVBB3FTN2w2qGRlexi/QRkcEiMB6G9lwZpKq+ZwsOxOkPaP8mxzoGy60d7W6Wc+UGfIiE1xS8P9yBNJXGAR9k+qcpgPjv7i6d+pp9HeBAEMg=
-Message-ID: <001901c8ba74$4662ec80$01fca8c0@microsof60b8d6>
-From: "Gavin Shan" <shan.gavin.cn@gmail.com>
-To: <linux-kernel@vger.kernel.org>
-Subject: PIIX4 DMA Timeout
-Date: Tue, 20 May 2008 20:23:11 +0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="gb2312"
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.3138
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+	Tue, 20 May 2008 08:31:58 -0400
+Received: from mummy.ncsc.mil ([144.51.88.129]:44308 "EHLO mummy.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752400AbYETMb5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 08:31:57 -0400
+Subject: Re: LSM: MAINTAINERS points to no longer existing URL
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: Adrian Bunk <bunk@kernel.org>, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>
+In-Reply-To: <20080519215843.GJ30402@sequoia.sous-sol.org>
+References: <20080519214201.GB17716@cs181133002.pp.htv.fi>
+	 <20080519215843.GJ30402@sequoia.sous-sol.org>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Tue, 20 May 2008 08:29:39 -0400
+Message-Id: <1211286579.7486.75.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-4.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id m4KCNPHl024328
 
-Hi All,
 
-There has one MV64460 on my board, which includes 2 PCI bridges. PIIX4 is on slot 3 of PCI1.
-But now, IDE driver reported it's timeouted on DMA operation. Thanks in advance for your
-suggestions.
+On Mon, 2008-05-19 at 14:58 -0700, Chris Wright wrote:
+> * Adrian Bunk (bunk@kernel.org) wrote:
+> > MAINTAINERS says:
+> > 
+> > LINUX SECURITY MODULE (LSM) FRAMEWORK
+> > P:      Chris Wright
+> > M:      chrisw@sous-sol.org
+> > L:      linux-security-module@vger.kernel.org
+> > W:      http://lsm.immunix.org
+> > T:      git kernel.org:/pub/scm/linux/kernel/git/chrisw/lsm-2.6.git
+> > S:      Supported
+> > 
+> > But http://lsm.immunix.org no longer exists.
+> 
+> Indeed, queueing this.
 
-Resources of PIIX4 function 1
-=====================
-0001:00:03.1: idx=0 flags=0x20000110 start=0x00000000 end=0x00000007
-0001:00:03.1: idx=1 flags=0x20000110 start=0x00000000 end=0x00000000
-0001:00:03.1: idx=2 flags=0x20000110 start=0x00000000 end=0x00000007
-0001:00:03.1: idx=3 flags=0x20000110 start=0x00000000 end=0x00000000
-0001:00:03.1: idx=4 flags=0x00000101 start=0xd8000000 end=0xd800000f
+What about the git tree listed above?  Is it still being maintained?
+James Morris set up a security-testing git tree that was used e.g. for
+the audit conversion from direct selinux calls to using LSM hooks and
+for the security= boot parameter (i.e. for changes that went beyond just
+one LSM).
 
-Console Output
-============
-Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
-ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
-PIIX4: IDE controller at PCI slot 0001:00:03.1
-0001:00:03.1: idx=0 flags=0x20000110 start=0x00000000 end=0x00000007
-0001:00:03.1: idx=1 flags=0x20000110 start=0x00000000 end=0x00000000
-0001:00:03.1: idx=2 flags=0x20000110 start=0x00000000 end=0x00000007
-0001:00:03.1: idx=3 flags=0x20000110 start=0x00000000 end=0x00000000
-0001:00:03.1: idx=4 flags=0x00000101 start=0xd8000000 end=0xd800000f
-PIIX4: chipset revision 1
-PIIX4: not 100% native mode: will probe irqs later
-    ide0: BM-DMA at 0xd8000000-0xd8000007, BIOS settings: hda:pio, hdb:pio
-    ide1: BM-DMA at 0xd8000008-0xd800000f, BIOS settings: hdc:pio, hdd:pio
-hdc: HTE721010G9AT00, ATA DISK drive
-hdc: max request size: 512KiB
-hdc: 195371568 sectors (100030 MB) w/7539KiB Cache, CHS=16383/255/63, UDMA(33)
-hdc: cache flushes supported
- hdc:<4>hdc: dma_timer_expiry: dma status == 0x26
-hdc: DMA interrupt recovery
-hdc: lost interrupt
-hdc: dma_intr: status=0x58 { DriveReady SeekComplete DataRequest }
-ide: failed opcode was: unknown
-hdc: DMA disabled
-ide1: reset: success
- hdc2 hdc3 hdc4
+> 
+> thanks,
+> -chris
+> --
+> 
+> From: Chris Wright <chrisw@sous-sol.org>
+> Subject: [PATCH] LSM: remove stale web site from MAINTAINERS
+> 
+> Pointed out by Adrian Bunk.
+> 
+> Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+> ---
+>  MAINTAINERS |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 915ad48..22ed22c 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -2548,7 +2548,6 @@ LINUX SECURITY MODULE (LSM) FRAMEWORK
+>  P:	Chris Wright
+>  M:	chrisw@sous-sol.org
+>  L:	linux-security-module@vger.kernel.org
+> -W:	http://lsm.immunix.org
+>  T:	git kernel.org:/pub/scm/linux/kernel/git/chrisw/lsm-2.6.git
+>  S:	Supported
+>  
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+Stephen Smalley
+National Security Agency
 
-Thanks in advance,
-GavinˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
