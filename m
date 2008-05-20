@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933818AbYETSNG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756706AbYETSNi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933818AbYETSNG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 14:13:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759571AbYETSHJ
+	id S1756706AbYETSNi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 14:13:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932337AbYETSHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 14:07:09 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:3977 "EHLO
+	Tue, 20 May 2008 14:07:10 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:6983 "EHLO
 	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932329AbYETSHB (ORCPT
+	with ESMTP id S1765279AbYETSHE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 14:07:01 -0400
+	Tue, 20 May 2008 14:07:04 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=CBBX9gDcPV3J43E4bwU2/8hq8rEEPjLRi/2GamG5cUTj1YnJY1AWOsJikWH2tGFSInDH3L+jMe+JTlHxZoCccr9wsqiAK7eRPKyZcg7TBmIdX6pQA53XJM6i7ZyrNSoW9a8dNanhOSb2sKKzBnN4sul0aAUbreyaxovO5t2XR98=
-Subject: [PATCH 11/21] affs: use aligned-endian get/put helpers
+        b=jXOdFH0QUCZcqw6nPxDuJkzNVdtkTT/bUbcvHY341G3ESscbYhR3Ao3V2C3TsFBDAVRMwPRNbePrOx4CddMKfhoGnmzo+r+yo1MNnPQyGE1fYuOpdCfCUD6F4GsIQsoSdF6Ba+0rZ21gnLffBsUa//WkhAWMiNMDP9ejH32vD40=
+Subject: [PATCH 12/21] cifs: use aligned-endian get/put helpers
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Tue, 20 May 2008 11:06:20 -0700
-Message-Id: <1211306780.5915.184.camel@brick>
+Date: Tue, 20 May 2008 11:06:21 -0700
+Message-Id: <1211306781.5915.185.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
@@ -30,74 +30,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- fs/affs/bitmap.c |   14 +++++++-------
- fs/affs/super.c  |    2 +-
- 2 files changed, 8 insertions(+), 8 deletions(-)
+ fs/cifs/inode.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/fs/affs/bitmap.c b/fs/affs/bitmap.c
-index c4a5ad0..3df7327 100644
---- a/fs/affs/bitmap.c
-+++ b/fs/affs/bitmap.c
-@@ -92,14 +92,14 @@ affs_free_block(struct super_block *sb, u32 block)
- 	data = (__be32 *)bh->b_data + bit / 32 + 1;
- 
- 	/* mark block free */
--	tmp = be32_to_cpu(*data);
-+	tmp = get_be32(*data);
- 	if (tmp & mask)
- 		goto err_free;
- 	*data = cpu_to_be32(tmp | mask);
- 
- 	/* fix checksum */
--	tmp = be32_to_cpu(*(__be32 *)bh->b_data);
--	*(__be32 *)bh->b_data = cpu_to_be32(tmp - mask);
-+	tmp = get_be32(bh->b_data);
-+	put_be32(tmp - mask, bh->b_data);
- 
- 	mark_buffer_dirty(bh);
- 	sb->s_dirt = 1;
-@@ -208,7 +208,7 @@ find_bmap_bit:
- 	mask = ~0UL << (bit & 31);
- 	blk &= ~31UL;
- 
--	tmp = be32_to_cpu(*data);
-+	tmp = get_be32(data);
- 	if (tmp & mask)
- 		goto find_bit;
- 
-@@ -221,7 +221,7 @@ find_bmap_bit:
- 			 */
- 			goto find_bmap;
- 	} while (!*data);
--	tmp = be32_to_cpu(*data);
-+	tmp = get_be32(data);
- 	mask = ~0;
- 
- find_bit:
-@@ -243,8 +243,8 @@ find_bit:
- 	*data = cpu_to_be32(tmp & ~mask);
- 
- 	/* fix checksum */
--	tmp = be32_to_cpu(*(__be32 *)bh->b_data);
--	*(__be32 *)bh->b_data = cpu_to_be32(tmp + mask);
-+	tmp = get_be32(bh->b_data);
-+	put_be32(tmp + mask, bh->b_data);
- 
- 	mark_buffer_dirty(bh);
- 	sb->s_dirt = 1;
-diff --git a/fs/affs/super.c b/fs/affs/super.c
-index d214837..cd7c1d4 100644
---- a/fs/affs/super.c
-+++ b/fs/affs/super.c
-@@ -379,7 +379,7 @@ got_root:
- 	}
- 	memcpy(sig, boot_bh->b_data, 4);
- 	brelse(boot_bh);
--	chksum = be32_to_cpu(*(__be32 *)sig);
-+	chksum = get_be32(sig);
- 
- 	/* Dircache filesystems are compatible with non-dircache ones
- 	 * when reading. As long as they aren't supported, writing is
+diff --git a/fs/cifs/inode.c b/fs/cifs/inode.c
+index fcbdbb6..6271e9f 100644
+--- a/fs/cifs/inode.c
++++ b/fs/cifs/inode.c
+@@ -317,8 +317,8 @@ static int decode_sfu_inode(struct inode *inode, __u64 size,
+ 					/* we have enough to decode dev num */
+ 					__u64 mjr; /* major */
+ 					__u64 mnr; /* minor */
+-					mjr = le64_to_cpu(*(__le64 *)(pbuf+8));
+-					mnr = le64_to_cpu(*(__le64 *)(pbuf+16));
++					mjr = get_le64(pbuf + 8);
++					mnr = get_le64(pbuf + 16);
+ 					inode->i_rdev = MKDEV(mjr, mnr);
+ 				}
+ 			} else if (memcmp("IntxCHR", pbuf, 8) == 0) {
+@@ -328,8 +328,8 @@ static int decode_sfu_inode(struct inode *inode, __u64 size,
+ 					/* we have enough to decode dev num */
+ 					__u64 mjr; /* major */
+ 					__u64 mnr; /* minor */
+-					mjr = le64_to_cpu(*(__le64 *)(pbuf+8));
+-					mnr = le64_to_cpu(*(__le64 *)(pbuf+16));
++					mjr = get_le64(pbuf + 8);
++					mnr = get_le64(pbuf + 16);
+ 					inode->i_rdev = MKDEV(mjr, mnr);
+ 				}
+ 			} else if (memcmp("IntxLNK", pbuf, 7) == 0) {
 -- 
 1.5.5.1.570.g26b5e
 
