@@ -1,50 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760319AbYETGVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759598AbYETGa5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760319AbYETGVZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 02:21:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754568AbYETGVR
+	id S1759598AbYETGa5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 02:30:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbYETGaq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 02:21:17 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:54193 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754065AbYETGVR (ORCPT
+	Tue, 20 May 2008 02:30:46 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:44669 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752735AbYETGap (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 02:21:17 -0400
-Date: Tue, 20 May 2008 02:20:56 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Jonathan Corbet <corbet@lwn.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Alexander Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org,
-       Wim Van Sebroeck <wim@iguana.be>
-Subject: Re: [PATCH 2/3, RFC] watchdog dev BKL pushdown
-Message-ID: <20080520062056.GA5292@infradead.org>
-References: <13762.1211142411@vena.lwn.net> <200805200107.51659.arnd@arndb.de> <200805200111.47275.arnd@arndb.de> <200805200114.24819.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200805200114.24819.arnd@arndb.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 20 May 2008 02:30:45 -0400
+Date: Tue, 20 May 2008 15:35:25 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, balbir@in.ibm.com, ebiederm@xmission.com,
+       hugh@veritas.com, lizf@cn.fujitsu.com, menage@google.com,
+       rientjes@google.com, xemul@openvz.org, yamamoto@valinux.co.jp
+Subject: Re: + memcg-remove-refcnt-from-page_cgroup.patch added to -mm tree
+Message-Id: <20080520153525.5b21b89c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <200805160253.m4G2rH4I023232@imap1.linux-foundation.org>
+References: <200805160253.m4G2rH4I023232@imap1.linux-foundation.org>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 01:14:23AM +0200, Arnd Bergmann wrote:
-> The Big Kernel Lock has been pushed down from chardev_open
-> to misc_open, this change moves it to the individual watchdog
-> driver open functions.
-> 
-> As before, the change was purely mechanical, most drivers
-> should actually not need the BKL.
+hi, I found a bug in this patch. (A fix is attached below.)
 
-Actually I'd prefer to fix this for real.  This single open stuff aswell
-as same set of ioctls are duplicated all over the watchdog drivers.  We'd
-be much better off introducing a simple watchdog layer that handles this
-plus proper locking and convert drivers over to it gradually.
+On Thu, 15 May 2008 19:53:17 -0700
+akpm@linux-foundation.org wrote:
+
+> +/* remove redundant charge if migration failed*/
+>  void mem_cgroup_end_migration(struct page *newpage)
+>  {
+> -	mem_cgroup_uncharge_page(newpage);
+> +	/* At success, page->mapping is not NULL */
+> +	if (newpage->mapping)
+> +		__mem_cgroup_uncharge_common(newpage,
+> +					 MEM_CGROUP_CHARGE_TYPE_FORCE);
+>  }
+>  
+
+Should be if (!newpage->mapping). Maybe a typo in restructuring...
+
+Sorry.
+-Kame
+==
+This rollback should be done at failure.
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+---
+ mm/memcontrol.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: mm-2.6.26-rc2-mm1/mm/memcontrol.c
+===================================================================
+--- mm-2.6.26-rc2-mm1.orig/mm/memcontrol.c
++++ mm-2.6.26-rc2-mm1/mm/memcontrol.c
+@@ -760,8 +760,8 @@ int mem_cgroup_prepare_migration(struct 
+ /* remove redundant charge if migration failed*/
+ void mem_cgroup_end_migration(struct page *newpage)
+ {
+-	/* At success, page->mapping is not NULL */
+-	if (newpage->mapping)
++	/* At success, page->mapping is not NULL and nothing to do. */
++	if (!newpage->mapping)
+ 		__mem_cgroup_uncharge_common(newpage,
+ 					 MEM_CGROUP_CHARGE_TYPE_FORCE);
+ }
 
