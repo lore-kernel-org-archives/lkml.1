@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765603AbYETLFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932149AbYETLF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765603AbYETLFW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 07:05:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754745AbYETLFJ
+	id S932149AbYETLF7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 07:05:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765760AbYETLFe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 07:05:09 -0400
-Received: from visualserver.org ([84.242.66.126]:40540 "EHLO visualserver.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751616AbYETLFI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 07:05:08 -0400
-Date: Tue, 20 May 2008 13:05:01 +0200 (CEST)
-From: Soumyadip Das Mahapatra <kernelhacker@visualserver.org>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-cc: linux-kernel@vger.kernel.org, akinobu.mita@gmail.com
-Subject: Re: significance of using 2kb long byte_rev_table in lib/bitrev.c
-In-Reply-To: <1211244839.5915.114.camel@brick>
-Message-ID: <Pine.LNX.4.64.0805201302440.18899@visualserver.org>
-References: <Pine.LNX.4.64.0805191850410.18461@visualserver.org>
- <1211244839.5915.114.camel@brick>
+	Tue, 20 May 2008 07:05:34 -0400
+Received: from relay2.sgi.com ([192.48.171.30]:34986 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1765731AbYETLFd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 07:05:33 -0400
+Date: Tue, 20 May 2008 06:05:29 -0500
+From: Robin Holt <holt@sgi.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Robin Holt <holt@sgi.com>, Christoph Lameter <clameter@sgi.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrea Arcangeli <andrea@qumranet.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jack Steiner <steiner@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       Roland Dreier <rdreier@cisco.com>,
+       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
+       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
+       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
+       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>
+Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
+Message-ID: <20080520110528.GD30341@sgi.com>
+References: <20080514041122.GE24516@wotan.suse.de> <20080514112625.GY9878@sgi.com> <20080515075747.GA7177@wotan.suse.de> <Pine.LNX.4.64.0805151031250.18708@schroedinger.engr.sgi.com> <20080515235203.GB25305@wotan.suse.de> <20080516112306.GA4287@sgi.com> <20080516115005.GC4287@sgi.com> <20080520053145.GA19502@wotan.suse.de> <20080520100111.GC30341@sgi.com> <20080520105025.GA25791@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-visualserver.org-MailScanner-Information: Please contact the ISP for more information
-X-MailScanner-ID: DB2E72FB42.BEF01
-X-visualserver.org-MailScanner: Found to be clean
-X-visualserver.org-MailScanner-From: kernelhacker@visualserver.org
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080520105025.GA25791@wotan.suse.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, May 20, 2008 at 12:50:25PM +0200, Nick Piggin wrote:
+> On Tue, May 20, 2008 at 05:01:11AM -0500, Robin Holt wrote:
+> > On Tue, May 20, 2008 at 07:31:46AM +0200, Nick Piggin wrote:
+> > > 
+> > > Really? You can get the information through via a sleeping messaging API,
+> > > but not a non-sleeping one? What is the difference from the hardware POV?
+> > 
+> > That was covered in the early very long discussion about 28 seconds.
+> > The read timeout for the BTE is 28 seconds and it automatically retried
+> > for certain failures.  In interrupt context, that is 56 seconds without
+> > any subsequent interrupts of that or lower priority.
+> 
+> I thought you said it would be possible to get the required invalidate
+> information without using the BTE. Couldn't you use XPMEM pages in
+> the kernel to read the data out of, if nothing else?
 
-
-On Mon, 19 May 2008, Harvey Harrison wrote:
-
-> On Mon, 2008-05-19 at 18:59 +0200, Soumyadip Das Mahapatra wrote:
->> Hi,
->>  	i cant understand the significance of using 2kb size of
->> bit_rev_table array in lib/bitrev.c
->
-> It's used in reversing the bits in a byte value as well, which your
-> patch breaks (see the bitrev8 users)
->
-> Harvey
-
-Well you can do that modifying the value of k. I commented these in the
-program.
-
-Soumya
-
--- 
-This message has been scanned for viruses and
-dangerous content by MailScanner, and is
-believed to be clean.
-
+I was wrong about that.  I thought it was safe to do an uncached write,
+but it turns out any processor write is uncontained and the MCA that
+surfaces would be fatal.  Likewise for the uncached read.
