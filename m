@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934021AbYETPXx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934098AbYETPYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934021AbYETPXx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 11:23:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932789AbYETPWH
+	id S934098AbYETPYW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 11:24:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933693AbYETPWY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 11:22:07 -0400
-Received: from 66-189-124-104.dhcp.oxfr.ma.charter.com ([66.189.124.104]:57763
-	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757461AbYETPWG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 11:22:06 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 5/5] remove the extra call to try_to_take_lock
-To: mingo@elte.hu, tglx@linutronix.de, rostedt@goodmis.org,
-       linux-rt-users@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, sdietrich@novell.com, pmorreale@novell.com,
-       mkohari@novell.com, ghaskins@novell.com
-Date: Tue, 20 May 2008 10:49:36 -0400
-Message-ID: <20080520144936.15992.48894.stgit@novell1.haskins.net>
-In-Reply-To: <20080520143954.15992.85900.stgit@novell1.haskins.net>
-References: <20080520143954.15992.85900.stgit@novell1.haskins.net>
-User-Agent: StGIT/0.12.1
+	Tue, 20 May 2008 11:22:24 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:33422 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933077AbYETPWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 11:22:22 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18482.60491.764019.292031@harpo.it.uu.se>
+Date: Tue, 20 May 2008 17:20:43 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, Andi Kleen <andi@firstfloor.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>, mingo@elte.hu,
+       tglx@linutronix.de, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, roland@redhat.com, drepper@redhat.com,
+       Hongjiu.lu@intel.com, linux-kernel@vger.kernel.org,
+       arjan@linux.intel.com, rmk+lkml@arm.linux.org.uk, dan@debian.org,
+       asit.k.mallick@intel.com
+Subject: Re: [RFC] x86: xsave/xrstor support, ucontext_t extensions
+In-Reply-To: <4832E705.2010900@zytor.com>
+References: <20080513011030.GA31448@linux-os.sc.intel.com>
+	<18477.35703.679574.760417@harpo.it.uu.se>
+	<20080518013416.GB30034@linux-os.sc.intel.com>
+	<18481.37905.297556.288317@harpo.it.uu.se>
+	<20080520015723.GD30034@linux-os.sc.intel.com>
+	<4832A173.6020203@firstfloor.org>
+	<18482.53246.642835.894623@harpo.it.uu.se>
+	<4832E705.2010900@zytor.com>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter W. Morreale <pmorreale@novell.com>
+H. Peter Anvin writes:
+ > Mikael Pettersson wrote:
+ > >  > 
+ > >  > Are they always zeroed in earlier CPUs though?  If not that wouldn't
+ > >  > work 100% reliably because whatever cookie you put in could have been
+ > >  > there before by chance.
+ > > 
+ > > I wrote a test program (fill an area with zeroes, fxsave, inspect
+ > > reserved fields, then fill it with ones, fxsave, inspect again),
+ > > and all processors appear to just not write anything to the reserved
+ > > fields after the last xmm register. (Tested on an old Mobile Athlon64,
+ > > Opteron 280, P4 Xeon, Pentium-D, and C2 Xeon E5345.)
+ > > 
+ > > So the question now is what if anything has the Linux kernel written
+ > > to those reserved fields. (Looking..) Hmm, signal delivery on x86-64
+ > > seems to do fxsave directly to the fxsave area in the user's sigframe,
+ > > which would imply that the reserved fields have unpredictable values.
+ > > 
+ > 
+ > OK, so that's not a usable path unless we can find some area in the 
+ > existing data set to put a flag.  Groan.
 
-Remove the redundant attempt to get the lock.  While it is true that the
-exit path with this patch adds an un-necessary xchg (in the event the
-lock is granted without further traversal in the loop) experimentation
-shows that we almost never encounter this situation.
+An ugly workaround could be to start clearing one of these fields,
+and say that the data there is only valid for kernels >= 2.6.26.
+(I said it was ugly...)
 
-Signed-off-by: Peter W. Morreale <pmorreale@novell.com>
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
----
+Or we go back to stashing a flag in uc_flags (which is kosher),
+and try to figure out how to mark non-rt sigframes.
 
- kernel/rtmutex.c |    6 ------
- 1 files changed, 0 insertions(+), 6 deletions(-)
-
-diff --git a/kernel/rtmutex.c b/kernel/rtmutex.c
-index ec1f7d4..1da7813 100644
---- a/kernel/rtmutex.c
-+++ b/kernel/rtmutex.c
-@@ -785,12 +785,6 @@ rt_spin_lock_slowlock(struct rt_mutex *lock)
- 	spin_lock_irqsave(&lock->wait_lock, flags);
- 	init_lists(lock);
- 
--	/* Try to acquire the lock again: */
--	if (do_try_to_take_rt_mutex(lock, STEAL_LATERAL)) {
--		spin_unlock_irqrestore(&lock->wait_lock, flags);
--		return;
--	}
--
- 	BUG_ON(rt_mutex_owner(lock) == current);
- 
- 	/*
-
+/Mikael
