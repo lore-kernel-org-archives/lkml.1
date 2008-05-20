@@ -1,295 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933605AbYETQ42@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933094AbYETQ6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933605AbYETQ42 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 12:56:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933131AbYETQz7
+	id S933094AbYETQ6i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 12:58:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756678AbYETQ61
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 12:55:59 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:4718 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933036AbYETQz6 (ORCPT
+	Tue, 20 May 2008 12:58:27 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51675 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751309AbYETQ60 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 12:55:58 -0400
-From: Andy Whitcroft <apw@shadowen.org>
-To: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org, agl@us.ibm.com, wli@holomorphy.com,
-       kenchen@google.com, dwg@au1.ibm.com, andi@firstfloor.org,
-       Mel Gorman <mel@csn.ul.ie>, dean@arctic.org, abh@cray.com,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: [PATCH 2/3] hugetlb-move-reservation-region-support-earlier
-References: <exportbomb.1211302309@pinky>
-InReply-To: <exportbomb.1211302309@pinky>
-Date: Tue, 20 May 2008 17:55:47 +0100
-Message-Id: <1211302547.0@pinky>
+	Tue, 20 May 2008 12:58:26 -0400
+Date: Tue, 20 May 2008 09:58:10 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Louis Rilling <Louis.Rilling@kerlabs.com>
+Cc: Joel.Becker@oracle.com, Louis.Rilling@kerlabs.com,
+       linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+Subject: Re: [RFC][PATCH 0/3] configfs: Make nested default groups
+ lockdep-friendly
+Message-ID: <20080520095810.1d50d247@infradead.org>
+In-Reply-To: <20080520163320.025971210@kerlabs.com>
+References: <20080520163320.025971210@kerlabs.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 20 May 2008 18:33:20 +0200
+Louis Rilling <Louis.Rilling@kerlabs.com> wrote:
 
-The following patch will require use of the reservation regions support.
-Move this earlier in the file.  No changes have been made to this code.
+> Hi all,
+> 
+> The following patches fix lockdep warnings resulting from (correct)
+> recursive locking in configfs.
+> 
+> Current lockdep annotations for inode mutexes in configfs are
+> lockdep-friendly provided that:
+> 1/ config_groups have at most one level of default groups (see
+>    configfs_attach_group()),
+> 2/ config_groups having default groups are never removed (see
+>    configfs_detach_prep()).
+> 
+> Since lockdep does not handle such correct recursion, the idea is to
+> insert lockdep_off()/lockdep_on() for inode mutexes as soon as the
+> level of recursion of the I_MUTEX_PARENT -> I_MUTEX_CHILD dependency
+> pattern increases.
 
-Signed-off-by: Andy Whitcroft <apw@shadowen.org>
----
- mm/hugetlb.c |  242 +++++++++++++++++++++++++++++-----------------------------
- 1 files changed, 121 insertions(+), 121 deletions(-)
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 3cae97d..9f060f1 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -561,6 +561,127 @@ static void return_unused_surplus_pages(unsigned long unused_resv_pages)
- 	}
- }
- 
-+struct file_region {
-+	struct list_head link;
-+	long from;
-+	long to;
-+};
-+
-+static long region_add(struct list_head *head, long f, long t)
-+{
-+	struct file_region *rg, *nrg, *trg;
-+
-+	/* Locate the region we are either in or before. */
-+	list_for_each_entry(rg, head, link)
-+		if (f <= rg->to)
-+			break;
-+
-+	/* Round our left edge to the current segment if it encloses us. */
-+	if (f > rg->from)
-+		f = rg->from;
-+
-+	/* Check for and consume any regions we now overlap with. */
-+	nrg = rg;
-+	list_for_each_entry_safe(rg, trg, rg->link.prev, link) {
-+		if (&rg->link == head)
-+			break;
-+		if (rg->from > t)
-+			break;
-+
-+		/* If this area reaches higher then extend our area to
-+		 * include it completely.  If this is not the first area
-+		 * which we intend to reuse, free it. */
-+		if (rg->to > t)
-+			t = rg->to;
-+		if (rg != nrg) {
-+			list_del(&rg->link);
-+			kfree(rg);
-+		}
-+	}
-+	nrg->from = f;
-+	nrg->to = t;
-+	return 0;
-+}
-+
-+static long region_chg(struct list_head *head, long f, long t)
-+{
-+	struct file_region *rg, *nrg;
-+	long chg = 0;
-+
-+	/* Locate the region we are before or in. */
-+	list_for_each_entry(rg, head, link)
-+		if (f <= rg->to)
-+			break;
-+
-+	/* If we are below the current region then a new region is required.
-+	 * Subtle, allocate a new region at the position but make it zero
-+	 * size such that we can guarantee to record the reservation. */
-+	if (&rg->link == head || t < rg->from) {
-+		nrg = kmalloc(sizeof(*nrg), GFP_KERNEL);
-+		if (!nrg)
-+			return -ENOMEM;
-+		nrg->from = f;
-+		nrg->to   = f;
-+		INIT_LIST_HEAD(&nrg->link);
-+		list_add(&nrg->link, rg->link.prev);
-+
-+		return t - f;
-+	}
-+
-+	/* Round our left edge to the current segment if it encloses us. */
-+	if (f > rg->from)
-+		f = rg->from;
-+	chg = t - f;
-+
-+	/* Check for and consume any regions we now overlap with. */
-+	list_for_each_entry(rg, rg->link.prev, link) {
-+		if (&rg->link == head)
-+			break;
-+		if (rg->from > t)
-+			return chg;
-+
-+		/* We overlap with this area, if it extends futher than
-+		 * us then we must extend ourselves.  Account for its
-+		 * existing reservation. */
-+		if (rg->to > t) {
-+			chg += rg->to - t;
-+			t = rg->to;
-+		}
-+		chg -= rg->to - rg->from;
-+	}
-+	return chg;
-+}
-+
-+static long region_truncate(struct list_head *head, long end)
-+{
-+	struct file_region *rg, *trg;
-+	long chg = 0;
-+
-+	/* Locate the region we are either in or before. */
-+	list_for_each_entry(rg, head, link)
-+		if (end <= rg->to)
-+			break;
-+	if (&rg->link == head)
-+		return 0;
-+
-+	/* If we are in the middle of a region then adjust it. */
-+	if (end > rg->from) {
-+		chg = rg->to - end;
-+		rg->to = end;
-+		rg = list_entry(rg->link.next, typeof(*rg), link);
-+	}
-+
-+	/* Drop any remaining regions. */
-+	list_for_each_entry_safe(rg, trg, rg->link.prev, link) {
-+		if (&rg->link == head)
-+			break;
-+		chg += rg->to - rg->from;
-+		list_del(&rg->link);
-+		kfree(rg);
-+	}
-+	return chg;
-+}
-+
- static struct page *alloc_huge_page(struct vm_area_struct *vma,
- 				    unsigned long addr, int avoid_reserve)
- {
-@@ -1370,127 +1491,6 @@ void hugetlb_change_protection(struct vm_area_struct *vma,
- 	flush_tlb_range(vma, start, end);
- }
- 
--struct file_region {
--	struct list_head link;
--	long from;
--	long to;
--};
--
--static long region_add(struct list_head *head, long f, long t)
--{
--	struct file_region *rg, *nrg, *trg;
--
--	/* Locate the region we are either in or before. */
--	list_for_each_entry(rg, head, link)
--		if (f <= rg->to)
--			break;
--
--	/* Round our left edge to the current segment if it encloses us. */
--	if (f > rg->from)
--		f = rg->from;
--
--	/* Check for and consume any regions we now overlap with. */
--	nrg = rg;
--	list_for_each_entry_safe(rg, trg, rg->link.prev, link) {
--		if (&rg->link == head)
--			break;
--		if (rg->from > t)
--			break;
--
--		/* If this area reaches higher then extend our area to
--		 * include it completely.  If this is not the first area
--		 * which we intend to reuse, free it. */
--		if (rg->to > t)
--			t = rg->to;
--		if (rg != nrg) {
--			list_del(&rg->link);
--			kfree(rg);
--		}
--	}
--	nrg->from = f;
--	nrg->to = t;
--	return 0;
--}
--
--static long region_chg(struct list_head *head, long f, long t)
--{
--	struct file_region *rg, *nrg;
--	long chg = 0;
--
--	/* Locate the region we are before or in. */
--	list_for_each_entry(rg, head, link)
--		if (f <= rg->to)
--			break;
--
--	/* If we are below the current region then a new region is required.
--	 * Subtle, allocate a new region at the position but make it zero
--	 * size such that we can guarantee to record the reservation. */
--	if (&rg->link == head || t < rg->from) {
--		nrg = kmalloc(sizeof(*nrg), GFP_KERNEL);
--		if (!nrg)
--			return -ENOMEM;
--		nrg->from = f;
--		nrg->to   = f;
--		INIT_LIST_HEAD(&nrg->link);
--		list_add(&nrg->link, rg->link.prev);
--
--		return t - f;
--	}
--
--	/* Round our left edge to the current segment if it encloses us. */
--	if (f > rg->from)
--		f = rg->from;
--	chg = t - f;
--
--	/* Check for and consume any regions we now overlap with. */
--	list_for_each_entry(rg, rg->link.prev, link) {
--		if (&rg->link == head)
--			break;
--		if (rg->from > t)
--			return chg;
--
--		/* We overlap with this area, if it extends futher than
--		 * us then we must extend ourselves.  Account for its
--		 * existing reservation. */
--		if (rg->to > t) {
--			chg += rg->to - t;
--			t = rg->to;
--		}
--		chg -= rg->to - rg->from;
--	}
--	return chg;
--}
--
--static long region_truncate(struct list_head *head, long end)
--{
--	struct file_region *rg, *trg;
--	long chg = 0;
--
--	/* Locate the region we are either in or before. */
--	list_for_each_entry(rg, head, link)
--		if (end <= rg->to)
--			break;
--	if (&rg->link == head)
--		return 0;
--
--	/* If we are in the middle of a region then adjust it. */
--	if (end > rg->from) {
--		chg = rg->to - end;
--		rg->to = end;
--		rg = list_entry(rg->link.next, typeof(*rg), link);
--	}
--
--	/* Drop any remaining regions. */
--	list_for_each_entry_safe(rg, trg, rg->link.prev, link) {
--		if (&rg->link == head)
--			break;
--		chg += rg->to - rg->from;
--		list_del(&rg->link);
--		kfree(rg);
--	}
--	return chg;
--}
--
- int hugetlb_reserve_pages(struct inode *inode,
- 					long from, long to,
- 					struct vm_area_struct *vma)
+I'm... not entirely happy with such a solution ;(
+
+there must be a better one.
