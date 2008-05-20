@@ -1,69 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758888AbYETXYJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763204AbYETXZr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758888AbYETXYJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 19:24:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbYETXXx
+	id S1763204AbYETXZr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 19:25:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbYETXZj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 19:23:53 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:34464 "EHLO 2ka.mipt.ru"
+	Tue, 20 May 2008 19:25:39 -0400
+Received: from vena.lwn.net ([206.168.112.25]:34348 "EHLO vena.lwn.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751169AbYETXXw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 19:23:52 -0400
-Date: Wed, 21 May 2008 03:22:56 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: David Chinner <dgc@sgi.com>
-Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, andi@firstfloor.org,
-       Rik van Riel <riel@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       mpm@selenic.com
-Subject: Re: [patch 10/21] buffer heads: Support slab defrag
-Message-ID: <20080520232256.GA16105@2ka.mipt.ru>
-References: <20080512002403.GP103491721@sgi.com> <Pine.LNX.4.64.0805151041230.18708@schroedinger.engr.sgi.com> <20080515231045.GY155679365@sgi.com> <Pine.LNX.4.64.0805161000390.29603@schroedinger.engr.sgi.com> <20080519054554.GY103491721@sgi.com> <Pine.LNX.4.64.0805190942530.18431@schroedinger.engr.sgi.com> <20080520002503.GC173056135@sgi.com> <20080520065622.GA13968@2ka.mipt.ru> <20080520214617.GU103491721@sgi.com> <20080520222505.GA23988@2ka.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080520222505.GA23988@2ka.mipt.ru>
-User-Agent: Mutt/1.5.9i
+	id S1751936AbYETXZj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 19:25:39 -0400
+To: "Mike Frysinger" <vapier.adi@gmail.com>
+Cc: "Arnd Bergmann" <arnd@arndb.de>, "Wu, Bryan" <Bryan.Wu@analog.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Alexander Viro" <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3, RFC] misc char dev BKL pushdown 
+From: corbet@lwn.net (Jonathan Corbet)
+In-reply-to: Your message of "Tue, 20 May 2008 19:01:24 EDT."
+             <8bd0f97a0805201601h1b08df6fw3fbf6c58759b07b4@mail.gmail.com> 
+Date: Tue, 20 May 2008 17:25:38 -0600
+Message-ID: <9968.1211325938@vena.lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 21, 2008 at 02:25:05AM +0400, Evgeniy Polyakov (johnpol@2ka.mipt.ru) wrote:
-> > Oh, god no. Let's not put the inode_lock right at the top of
-> > the VM page cleaning path. We don't need to modify inode state,
-> > the superblock dirty lists, etc - all we need to do is write
-> > dirty pages on a given mapping in a more efficient manner.
-> 
-> I'm not advocating that, but having swap on reclaim does not hurt
-> anyone, this is essentially the same, but with different underlying
-> storage. System will do that anyway sooner or later during usual
-> writeback, which in turn can be a result of the same reclaim...
+Mike Frysinger <vapier.adi@gmail.com> wrote:
 
-And actually having tiny operations under inode_lock is the last thing
-to worry about when we are about to start writing pages to disk because
-memory is so fragmented that we need to move things around.
+> please drop the coreb.c changes from your patch
 
-That is the simplest from the typing viewpoint, one can also do
-something like that:
+At a minimum, I would hope such a request would say something like "I've
+looked at the driver's locking and am convinced that the BKL is not
+needed."  Have you done that?  There is a certain leap of faith involved
+in removing that protection from a driver.
 
-struct address_space *mapping = page->mapping;
-struct backing_dev_info *bdi = mapping->backing_dev_info;
-struct writeback_control wbc = {
-	.bdi = bdi,
-	.sync_mode = WB_SYNC_ALL, /* likly we want to wait... */
-	.older_than_this = NULL,
-	.nr_to_write = 13,
-	.range_cyclic = 0,
-	.range_start = start_index,
-	.range_end = end_index
-};
+I decided to take a quick look...
 
-do_writepages(mapping, &wbc);
+- You use spin_lock_irq(&coreb_lock) in a number of places, but you do
+  not take the lock in the interrupt handler.  You also do not take the
+  lock in coreb_write() or coreb_read(), so those can race with the
+  interrupt handler, with ioctl(), and with each other.
 
-Cristoph, is this example you wnated to check out? It will only try to
-write .nr_to_write pages between .range_start and .range_end without
-syncing inode info itself.
+- coreb_write() and coreb_read() do interruptible waits, but do not
+  check to see whether they were interrupted.  They will, in fact,
+  continue in their I/O loops after a signal.
 
--- 
-	Evgeniy Polyakov
+- In both functions you have:
+
+	unsigned long p = *ppos;
+
+	if (p + count > coreb_size)
+		return -EFAULT;
+
+  that calculation can overflow.
+
+- You also do this:
+
+  static ssize_t coreb_write(struct file *file, const char *buf, size_t count,
+	 		     loff_t * ppos)
+  /* ... */
+  		set_dma_start_addr(CH_MEM_STREAM2_SRC, (unsigned long)buf);
+
+  In other words, the DMA is done directly to/from a user-space
+  address.  Maybe that's safe on Blackfin, I don't know...
+
+- I have no idea why some of your functions are using d_inode->i_mutex.
+
+- In coreb_ioctl():
+
+		spin_lock_irq(&coreb_lock);
+		if (coreb_status & COREB_IS_RUNNING) {
+			retval = -EBUSY;
+			break;
+		}
+
+  this will exit the function with the spinlock still held and
+  interrupts disabled.
+
+	case CMD_COREB_RESET:
+		printk(KERN_INFO "Resetting Core B\n");
+		bfin_write_SICB_SYSCR(bfin_read_SICB_SYSCR() | 0x0080);
+		break;
+
+  You do not acquire the lock here, so this can race against other
+  ioctl() calls.  And ioctl() can race against read() and write().
+
+Registration and such seem reasonable, so I can't come up with a
+scenario where loss of BKL protection will create trouble.  Given the
+other problems there, though, I'll confess to being a bit nervous about
+it.
+
+jon
