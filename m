@@ -1,45 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932192AbYETNWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765840AbYETNZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932192AbYETNWt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 09:22:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755910AbYETNWh
+	id S1765840AbYETNZT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 09:25:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752383AbYETNZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 09:22:37 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:46648 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754735AbYETNWg (ORCPT
+	Tue, 20 May 2008 09:25:07 -0400
+Received: from mailgw.cs.york.ac.uk ([144.32.40.3]:57354 "EHLO
+	mailgw.cs.york.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755331AbYETNZF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 09:22:36 -0400
-Date: Tue, 20 May 2008 14:22:17 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Message-ID: <20080520132217.GA5633@srcf.ucam.org>
-References: <20080505223357.GA2839@srcf.ucam.org> <20080506081347.GA8688@homac> <20080506082110.GA10355@srcf.ucam.org> <48201987.4020009@gmail.com> <20080506092653.GB4378@homac> <20080506093628.GA12469@srcf.ucam.org> <20080519162934.GA15623@srcf.ucam.org> <20080520074442.GA14417@homac> <20080520102038.GA2441@srcf.ucam.org> <20080520131831.GA568@homac>
+	Tue, 20 May 2008 09:25:05 -0400
+X-Greylist: delayed 1744 seconds by postgrey-1.27 at vger.kernel.org; Tue, 20 May 2008 09:25:05 EDT
+Message-ID: <4832C957.8040004@student.cs.york.ac.uk>
+Date: Tue, 20 May 2008 13:51:35 +0100
+From: Alan Jenkins <aj504@student.cs.york.ac.uk>
+Reply-To: alan-jenkins@tuffmail.co.uk
+User-Agent: Thunderbird 2.0.0.14 (X11/20080505)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080520131831.GA568@homac>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [PATCH] Fixups to ATA ACPI hotplug
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+To: =?ISO-8859-1?Q?David_H=E4rdeman?= <david@hardeman.nu>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Loading DSDT from initrd, can it be done from grub instead?
+References: <avxTs-570-21@gated-at.bofh.it>    <12bd24d7-17d4-4df8-abca-42740ec309fe@x35g2000hsb.googlegroups.com> <54484.145.64.134.222.1211286021.squirrel@www.hardeman.nu>
+In-Reply-To: <54484.145.64.134.222.1211286021.squirrel@www.hardeman.nu>
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 03:18:32PM +0200, Holger Macht wrote:
+David Härdeman wrote:
+> On Tue, May 20, 2008 13:58, Alan Jenkins wrote:
+>   
+>> David Härdeman wrote:
+>>     
+>>> In commit 9a9e0d685553af76cb6ae2af93cca4913e7fcd47 the
+>>> ACPI_CUSTOM_DSDT_INITRD option was removed.
+>>>
+>>> I was wondering if it'd be feasible to hack grub to load a custom DSDT
+>>> instead (since grub can read filesystems) and then pass a pointer to a
+>>> memory location containing the DSDT to the kernel?
+>>>       
+>> Um, why?  What stops you from reverting the offending commit?
+>>     
+>
+> Because doing it from grub (if possible) would allow custom DSDT's to be
+> loaded without patching the kernel (e.g. allows distro kernels to be used)
+> and without introducing code that opens files from kernel space and mucks
+> with both the VFS and ACPI in ugly ways?
+>
+>   
+>> Without further info, I'd assume the feature was removed on policy
+>> grounds.  I.e. it's not nice to be effectively patching the BIOS
+>> yourself, and vendors have fixed most of their BIOS's / linux is
+>> slightly more tolerant to broken ones. I don't know whats wrong with
+>> reading files from the initrd.
+>>     
+>
+> If you do not understand the issue at hand, why comment?
+>   
+Mea cupla.  Apologies if my tone was also inappropriate.
 
-> +	if (kobj && !is_dock_event) {
-> +		sprintf(event_string, "BAY_EVENT=%d", event);
-> +		kobject_uevent_env(kobj, KOBJ_CHANGE, envp);
+I saw a short question on an interesting subject, without a context to 
+suggest an ongoing
+conversation.  I would have saved myself some embarassment if I 
+remembered that linux really doesn't like in-kernel filesystem access; I 
+just didn't make the connection.
 
-I think we want to do the _EJ0 checking before this, otherwise we'll 
-generate two uevents for the same removal on some hardware. Otherwise, 
-looks good.
+I guessed wrong, didn't see where you were coming from, and didn't take 
+the effort to resolve the SHA commit id.  I literally don't have the 
+space for a checkout on my main PC and I feel slightly guilty when I hit 
+on the gitweb host.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Ironically, I just looked it up and Google knew what the SHA ID was.  
+You might be interested to know that another DH (Dave Hansen) made the 
+same suggestion, but using kexec instead of grub to load the DSDT and 
+boot kernel.
+
+Alan
