@@ -1,21 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935183AbYETWkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934782AbYETWl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935183AbYETWkz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 18:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934996AbYETWgT
+	id S934782AbYETWl2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 18:41:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934991AbYETWgh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 18:36:19 -0400
-Received: from ns2.suse.de ([195.135.220.15]:39909 "EHLO mx2.suse.de"
+	Tue, 20 May 2008 18:36:37 -0400
+Received: from mx2.suse.de ([195.135.220.15]:40022 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933290AbYETWgR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 18:36:17 -0400
+	id S933934AbYETWgg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 18:36:36 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Jaroslav Kysela <perex@perex.cz>
-Subject: [PATCH 09/13] SOUND: fix race in device_create
-Date: Tue, 20 May 2008 15:34:56 -0700
-Message-Id: <1211322900-12705-9-git-send-email-gregkh@suse.de>
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>
+Subject: [PATCH 10/13] s390: fix race in device_create
+Date: Tue, 20 May 2008 15:34:57 -0700
+Message-Id: <1211322900-12705-10-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.5.1
 In-Reply-To: <20080520223237.GA12383@suse.de>
 References: <20080520223237.GA12383@suse.de>
@@ -32,36 +34,39 @@ This patch fixes the problem by using the new function,
 device_create_drvdata().
 
 Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Jaroslav Kysela <perex@perex.cz>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- sound/core/sound.c |    8 +++-----
- 1 files changed, 3 insertions(+), 5 deletions(-)
+ drivers/s390/char/vmlogrdr.c |    9 ++++-----
+ 1 files changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/sound/core/sound.c b/sound/core/sound.c
-index 812f91b..6c8ab48 100644
---- a/sound/core/sound.c
-+++ b/sound/core/sound.c
-@@ -259,8 +259,9 @@ int snd_register_device_for_dev(int type, struct snd_card *card, int dev,
- 		return minor;
+diff --git a/drivers/s390/char/vmlogrdr.c b/drivers/s390/char/vmlogrdr.c
+index e848734..2c2428c 100644
+--- a/drivers/s390/char/vmlogrdr.c
++++ b/drivers/s390/char/vmlogrdr.c
+@@ -762,10 +762,10 @@ static int vmlogrdr_register_device(struct vmlogrdr_priv_t *priv)
+ 		device_unregister(dev);
+ 		return ret;
  	}
- 	snd_minors[minor] = preg;
--	preg->dev = device_create(sound_class, device, MKDEV(major, minor),
--				  "%s", name);
-+	preg->dev = device_create_drvdata(sound_class, device,
-+					  MKDEV(major, minor),
-+					  private_data, "%s", name);
- 	if (IS_ERR(preg->dev)) {
- 		snd_minors[minor] = NULL;
- 		mutex_unlock(&sound_mutex);
-@@ -269,9 +270,6 @@ int snd_register_device_for_dev(int type, struct snd_card *card, int dev,
- 		return minor;
+-	priv->class_device = device_create(vmlogrdr_class, dev,
+-					   MKDEV(vmlogrdr_major,
+-						 priv->minor_num),
+-					   "%s", dev->bus_id);
++	priv->class_device = device_create_drvdata(vmlogrdr_class, dev,
++						   MKDEV(vmlogrdr_major,
++							 priv->minor_num),
++						   priv, "%s", dev->bus_id);
+ 	if (IS_ERR(priv->class_device)) {
+ 		ret = PTR_ERR(priv->class_device);
+ 		priv->class_device=NULL;
+@@ -773,7 +773,6 @@ static int vmlogrdr_register_device(struct vmlogrdr_priv_t *priv)
+ 		device_unregister(dev);
+ 		return ret;
  	}
- 
--	if (preg->dev)
--		dev_set_drvdata(preg->dev, private_data);
--
- 	mutex_unlock(&sound_mutex);
+-	dev->driver_data = priv;
+ 	priv->device = dev;
  	return 0;
  }
 -- 
