@@ -1,135 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762293AbYETJ3l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763872AbYETJah@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762293AbYETJ3l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 05:29:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761534AbYETJ33
+	id S1763872AbYETJah (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 05:30:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761534AbYETJa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 05:29:29 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:53910 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760934AbYETJ32 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 05:29:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=FChuUmTuEw6y2s7uooltOJ+O+2CyXBPkK1XIgJiNUR4H9FoC9kp/QKknLP9d2vge73ETRXO1y35WmLC9JDO2x/7g6oYmi5h/ZGiXW3EB87E5G3C7qgpM3EYWcpqZ3rSi6l25A9lU79ejR3HXtLE7wjY1E43N3RLZkwLfUDr+bus=
-Message-ID: <eb3ff54b0805200229r6fb2daa1w50aaffa9b130f89f@mail.gmail.com>
-Date: Tue, 20 May 2008 12:29:26 +0300
-From: "Rami Rosen" <ramirose@gmail.com>
-To: "David Miller" <davem@davemloft.net>, netdev@vger.kernel.org
-Subject: [PATCH net-2.6] [NET] The world is not perfect patch.
-Cc: linux-kernel@vger.kernel.org
+	Tue, 20 May 2008 05:30:27 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:5054 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752746AbYETJaZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 05:30:25 -0400
+Date: Tue, 20 May 2008 11:30:21 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Mingming Cao <cmm@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, jack@suse.cz,
+       pbadari@us.ibm.com, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] JBD: Fix DIO EIO error caused by race between free  buffer and commit trasanction
+Message-ID: <20080520093020.GL22369@kernel.dk>
+References: <20080514170856.GH24363@duck.suse.cz> <1210786872.3657.48.camel@localhost.localdomain> <20080514181444.GI24363@duck.suse.cz> <1210947250.3608.18.camel@localhost.localdomain> <1210957976.4231.31.camel@badari-desktop> <1210971693.3608.46.camel@localhost.localdomain> <20080518223739.GB11006@atrey.karlin.mff.cuni.cz> <1211227158.3663.25.camel@localhost.localdomain> <20080519132553.de9b78b0.akpm@linux-foundation.org> <1211234829.3663.39.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_14800_29058380.1211275766611"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1211234829.3663.39.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_14800_29058380.1211275766611
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Mon, May 19 2008, Mingming Cao wrote:
+> On Mon, 2008-05-19 at 13:25 -0700, Andrew Morton wrote:
+> > On Mon, 19 May 2008 12:59:18 -0700
+> > Mingming Cao <cmm@us.ibm.com> wrote:
+> > 
+> > > On Mon, 2008-05-19 at 00:37 +0200, Jan Kara wrote:
+> > > >   Hi,
+> > > > 
+> > > > > This patch fixed a few races between direct IO and kjournald commit
+> > > > > transaction.  An unexpected EIO error gets returned to direct IO
+> > > > > caller when it failed to free those data buffers. This could be
+> > > > > reproduced easily with parallel direct write and buffered write to the
+> > > > > same file
+> > > > > 
+> > > > > More specific, those races could cause journal_try_to_free_buffers()
+> > > > > fail to free the data buffers, when jbd is committing the transaction
+> > > > > that has those data buffers on its t_syncdata_list or t_locked_list.
+> > > > > journal_commit_transaction() still holds the reference to those
+> > > > > buffers before data reach to disk and buffers are removed from the
+> > > > > t_syncdata_list of t_locked_list. This prevent the concurrent
+> > > > > journal_try_to_free_buffers() to free those buffers at the same time,
+> > > > > but cause EIO error returns back to direct IO.
+> > > > > 
+> > > > > With this patch, in case of direct IO and when try_to_free_buffers() failed,
+> > > > > let's waiting for journal_commit_transaction() to finish
+> > > > > flushing the current committing transaction's data buffers to disk, 
+> > > > > then try to free those buffers again.
+> > > >   If Andrew or Christoph wouldn't beat you for "inventive use" of
+> > > > gfp_mask, I'm fine with the patch as well ;). You can add
+> > > >   Acked-by: Jan Kara <jack@suse.cz>
+> > > > 
+> > > 
+> > > This is less intrusive way to fix this problem. The gfp_mask was marked
+> > > as unused in try_to_free_page(). I looked at filesystems in the kernel,
+> > > there is only a few defined releasepage() callback, and only xfs checks
+> > > the flag(but not used). btrfs is actually using it though. I thought
+> > > about the way you have suggested, i.e.clean up this gfp_mask and and
+> > > replace with a flag.  I am not entirely sure if it we need to change the
+> > > address_space_operations and fix all the filesystems for this matter.
+> > > 
+> > > Andrew, what do you think? Is this approach acceptable? 
+> > > 
+> > 
+> > <wakes up>
+> > 
+> > Please ensure that the final patch is sufficiently well changelogged to
+> > permit me to remain asleep ;)
+> :-)
+> > The ->releasepage semantics are fairly ad-hoc and have grown over time.
+> > It'd be nice to prevent them from becoming vaguer than they are.
+> > 
+> > It has been (approximately?) the case that code paths which really care
+> > about having the page released will set __GFP_WAIT (via GFP_KERNEL)
+> > whereas code paths which are happy with best-effort will clear
+> > __GFP_WAIT (with a "0').  And that's reasonsable - __GFP_WAIT here
+> > means "be synchronous" whereas !__GFP_WAIT means "be non-blocking".
+> > 
+> 
+> This make sense to me.
+> 
+> > Is that old convention not sufficient here as well?  Two problem areas
+> > I see are mm/vmscan.c and fs/splice.c (there may be others).
+> > 
+> 
+> > In mm/vmscan.c we probably don't want your new synchronous behaviour
+> > and it might well be deadlockable anyway.  No probs, that's what
+> > __GFP_FS is for.
+> > 
+> Sure. We could check __GFP_FS and __GFP_WAIT, and that make sense.
+> 
+> > In fs/splice.c, reading the comment there I have a feeling that you've
+> > found another bug, and that splice _does_ want your new synchronous
+> > behaviour?
+> 
+> Yes, it looks like page_cache_pipe_buf_steal() expects page is free
+> before removeing it by passing the GFP_KERNEL flag, but currently ext3
+> could fails to releasepage when it called. In fact
+> try_to_release_page() return value is ignored in
+> page_cache_pipe_buf_steal(), should probably checked the failure case.
+> 
+> 
+> The other caller of try_to_release_page() in mm/splice.c is
+> fallback_migrate_page(), which does want the synchronous behaviour to
+> make sure buffers are dropped.
 
-Hi,
+So something like this, then?
 
-There are three methods in the network stack which start with
-#ifndef I_WISH_WORLD_WERE_PERFECT.
+diff --git a/fs/splice.c b/fs/splice.c
+index 7815003..e08a2f5 100644
+--- a/fs/splice.c
++++ b/fs/splice.c
+@@ -58,8 +58,8 @@ static int page_cache_pipe_buf_steal(struct pipe_inode_info *pipe,
+ 		 */
+ 		wait_on_page_writeback(page);
+ 
+-		if (PagePrivate(page))
+-			try_to_release_page(page, GFP_KERNEL);
++		if (PagePrivate(page) && !try_to_release_page(page, GFP_KERNEL))
++			goto out_unlock;
+ 
+ 		/*
+ 		 * If we succeeded in removing the mapping, set LRU flag
+@@ -75,6 +75,7 @@ static int page_cache_pipe_buf_steal(struct pipe_inode_info *pipe,
+ 	 * Raced with truncate or failed to remove page from current
+ 	 * address space, unlock and return failure.
+ 	 */
++out_unlock:
+ 	unlock_page(page);
+ 	return 1;
+ }
 
-These methods are:
-ipip_err() in net/ipv4/ipip.c
-ipgre_err() in net/ipv4/ip_gre.c
-ipip6_err() in net/ipv6/sit.c
+-- 
+Jens Axboe
 
-When building the kernel with -DI_WISH_WORLD_WERE_PERFECT we have
-various compilation
-errors, mostly due to the fact that the corresponding code was not
-updated recently.
-
-(As we all know, indeed the world is not perfect, unluckily...)
-
-This patch fixes these errors and enables building the kernel
-successfully with -DI_WISH_WORLD_WERE_PERFECT.
-
-(Note : I am not fully sure about correctness of len = skb->len, which I added;
-feedback on this point is welcomed).
-
-
-Regards,
-Rami Rosen
-
-
-Signed-off-by: Rami Rosen <ramirose@gmail.com>
-
-------=_Part_14800_29058380.1211275766611
-Content-Type: text/plain; name=patch.txt
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fgga9j6t0
-Content-Disposition: attachment; filename=patch.txt
-
-ZGlmZiAtLWdpdCBhL25ldC9pcHY0L2lwX2dyZS5jIGIvbmV0L2lwdjQvaXBfZ3JlLmMKaW5kZXgg
-MmFkYTAzMy4uMjdjMzkzOCAxMDA2NDQKLS0tIGEvbmV0L2lwdjQvaXBfZ3JlLmMKKysrIGIvbmV0
-L2lwdjQvaXBfZ3JlLmMKQEAgLTM5OSw5ICszOTksOSBAQCBvdXQ6CiAJcmVhZF91bmxvY2soJmlw
-Z3JlX2xvY2spOwogCXJldHVybjsKICNlbHNlCi0Jc3RydWN0IGlwaGRyICppcGggPSAoc3RydWN0
-IGlwaGRyKilkcDsKKwlzdHJ1Y3QgaXBoZHIgKmlwaCA9IChzdHJ1Y3QgaXBoZHIqKXNrYi0+ZGF0
-YTsKIAlzdHJ1Y3QgaXBoZHIgKmVpcGg7Ci0JX19iZTE2CSAgICAgKnAgPSAoX19iZTE2KikoZHAr
-KGlwaC0+aWhsPDwyKSk7CisJX19iZTE2CSAgICAgKnAgPSAoX19iZTE2Kikoc2tiLT5kYXRhICsg
-KGlwaC0+aWhsPDwyKSk7CiAJY29uc3QgaW50IHR5cGUgPSBpY21wX2hkcihza2IpLT50eXBlOwog
-CWNvbnN0IGludCBjb2RlID0gaWNtcF9oZHIoc2tiKS0+Y29kZTsKIAlpbnQgcmVsX3R5cGUgPSAw
-OwpAQCAtNDEzLDcgKzQxMyw5IEBAIG91dDoKIAlzdHJ1Y3Qgc2tfYnVmZiAqc2tiMjsKIAlzdHJ1
-Y3QgZmxvd2kgZmw7CiAJc3RydWN0IHJ0YWJsZSAqcnQ7Ci0KKwkKKwlpbnQgbGVuID0gc2tiLT5s
-ZW47CisJCiAJaWYgKHBbMV0gIT0gaHRvbnMoRVRIX1BfSVApKQogCQlyZXR1cm47CiAKQEAgLTQz
-MCw3ICs0MzIsNyBAQCBvdXQ6CiAJfQogCWlmIChsZW4gPCBncmVobGVuICsgc2l6ZW9mKHN0cnVj
-dCBpcGhkcikpCiAJCXJldHVybjsKLQllaXBoID0gKHN0cnVjdCBpcGhkciopKGRwICsgZ3JlaGxl
-bik7CisJZWlwaCA9IChzdHJ1Y3QgaXBoZHIqKShza2ItPmRhdGEgKyBncmVobGVuKTsKIAogCXN3
-aXRjaCAodHlwZSkgewogCWRlZmF1bHQ6CmRpZmYgLS1naXQgYS9uZXQvaXB2NC9pcGlwLmMgYi9u
-ZXQvaXB2NC9pcGlwLmMKaW5kZXggMTQ5MTExZi4uNDQ3NGY0MSAxMDA2NDQKLS0tIGEvbmV0L2lw
-djQvaXBpcC5jCisrKyBiL25ldC9pcHY0L2lwaXAuYwpAQCAtMzM4LDcgKzMzOCw3IEBAIG91dDoK
-IAlyZWFkX3VubG9jaygmaXBpcF9sb2NrKTsKIAlyZXR1cm4gZXJyOwogI2Vsc2UKLQlzdHJ1Y3Qg
-aXBoZHIgKmlwaCA9IChzdHJ1Y3QgaXBoZHIqKWRwOworCXN0cnVjdCBpcGhkciAqaXBoID0gKHN0
-cnVjdCBpcGhkciopc2tiLT5kYXRhOwogCWludCBobGVuID0gaXBoLT5paGw8PDI7CiAJc3RydWN0
-IGlwaGRyICplaXBoOwogCWNvbnN0IGludCB0eXBlID0gaWNtcF9oZHIoc2tiKS0+dHlwZTsKQEAg
-LTM1MSw5ICszNTEsMTEgQEAgb3V0OgogCXN0cnVjdCBmbG93aSBmbDsKIAlzdHJ1Y3QgcnRhYmxl
-ICpydDsKIAorCWludCBsZW4gPSBza2ItPmxlbjsKKwogCWlmIChsZW4gPCBobGVuICsgc2l6ZW9m
-KHN0cnVjdCBpcGhkcikpCiAJCXJldHVybiAwOwotCWVpcGggPSAoc3RydWN0IGlwaGRyKikoZHAg
-KyBobGVuKTsKKwllaXBoID0gKHN0cnVjdCBpcGhkciopKHNrYi0+ZGF0YSArIGhsZW4pOwogCiAJ
-c3dpdGNoICh0eXBlKSB7CiAJZGVmYXVsdDoKQEAgLTQxNCwxMCArNDE2LDEwIEBAIG91dDoKIAog
-CS8qIFRyeSB0byBndWVzcyBpbmNvbWluZyBpbnRlcmZhY2UgKi8KIAltZW1zZXQoJmZsLCAwLCBz
-aXplb2YoZmwpKTsKLQlmbC5mbDRfZGFkZHIgPSBlaXBoLT5zYWRkcjsKKwlmbC5mbDRfZHN0ID0g
-ZWlwaC0+c2FkZHI7CiAJZmwuZmw0X3RvcyA9IFJUX1RPUyhlaXBoLT50b3MpOwogCWZsLnByb3Rv
-ID0gSVBQUk9UT19JUElQOwotCWlmIChpcF9yb3V0ZV9vdXRwdXRfa2V5KGRldl9uZXQoc2tiLT5k
-ZXYpLCAmcnQsICZrZXkpKSB7CisJaWYgKGlwX3JvdXRlX291dHB1dF9rZXkoZGV2X25ldChza2It
-PmRldiksICZydCwgJmZsKSkgewogCQlrZnJlZV9za2Ioc2tiMik7CiAJCXJldHVybiAwOwogCX0K
-QEAgLTQyNyw3ICs0MjksNyBAQCBvdXQ6CiAJaWYgKHJ0LT5ydF9mbGFncyZSVENGX0xPQ0FMKSB7
-CiAJCWlwX3J0X3B1dChydCk7CiAJCXJ0ID0gTlVMTDsKLQkJZmwuZmw0X2RhZGRyID0gZWlwaC0+
-ZGFkZHI7CisJCWZsLmZsNF9kc3QgPSBlaXBoLT5kYWRkcjsKIAkJZmwuZmw0X3NyYyA9IGVpcGgt
-PnNhZGRyOwogCQlmbC5mbDRfdG9zID0gZWlwaC0+dG9zOwogCQlpZiAoaXBfcm91dGVfb3V0cHV0
-X2tleShkZXZfbmV0KHNrYi0+ZGV2KSwgJnJ0LCAmZmwpIHx8CmRpZmYgLS1naXQgYS9uZXQvaXB2
-Ni9zaXQuYyBiL25ldC9pcHY2L3NpdC5jCmluZGV4IDVhNmZhYjkuLmMzNDdjNjcgMTAwNjQ0Ci0t
-LSBhL25ldC9pcHY2L3NpdC5jCisrKyBiL25ldC9pcHY2L3NpdC5jCkBAIC00NjMsNyArNDYzLDcg
-QEAgb3V0OgogCXJlYWRfdW5sb2NrKCZpcGlwNl9sb2NrKTsKIAlyZXR1cm4gZXJyOwogI2Vsc2UK
-LQlzdHJ1Y3QgaXBoZHIgKmlwaCA9IChzdHJ1Y3QgaXBoZHIqKWRwOworCXN0cnVjdCBpcGhkciAq
-aXBoID0gKHN0cnVjdCBpcGhkciopc2tiLT5kYXRhOwogCWludCBobGVuID0gaXBoLT5paGw8PDI7
-CiAJc3RydWN0IGlwdjZoZHIgKmlwaDY7CiAJY29uc3QgaW50IHR5cGUgPSBpY21wX2hkcihza2Ip
-LT50eXBlOwpAQCAtNDczLDE3ICs0NzMsMTkgQEAgb3V0OgogCWludCByZWxfaW5mbyA9IDA7CiAJ
-c3RydWN0IHNrX2J1ZmYgKnNrYjI7CiAJc3RydWN0IHJ0Nl9pbmZvICpydDZpOwotCisJCisJaW50
-IGxlbiA9IHNrYi0+bGVuOworCQogCWlmIChsZW4gPCBobGVuICsgc2l6ZW9mKHN0cnVjdCBpcHY2
-aGRyKSkKLQkJcmV0dXJuOwotCWlwaDYgPSAoc3RydWN0IGlwdjZoZHIqKShkcCArIGhsZW4pOwor
-CQlyZXR1cm4gMDsKKwlpcGg2ID0gKHN0cnVjdCBpcHY2aGRyKikoc2tiLT5kYXRhICsgaGxlbik7
-CiAKIAlzd2l0Y2ggKHR5cGUpIHsKIAlkZWZhdWx0OgotCQlyZXR1cm47CisJCXJldHVybiAwOwog
-CWNhc2UgSUNNUF9QQVJBTUVURVJQUk9COgogCQlpZiAoaWNtcF9oZHIoc2tiKS0+dW4uZ2F0ZXdh
-eSA8IGhsZW4pCi0JCQlyZXR1cm47CisJCQlyZXR1cm4gMDsKIAogCQkvKiBTby4uLiBUaGlzIGd1
-eSBmb3VuZCBzb21ldGhpbmcgc3RyYW5nZSBJTlNJREUgZW5jYXBzdWxhdGVkCiAJCSAgIHBhY2tl
-dC4gV2VsbCwgaGUgaXMgZm9vbCwgYnV0IHdoYXQgY2FuIHdlIGRvID8KQEAgLTQ5NywxMCArNDk5
-LDEwIEBAIG91dDoKIAkJY2FzZSBJQ01QX1NSX0ZBSUxFRDoKIAkJY2FzZSBJQ01QX1BPUlRfVU5S
-RUFDSDoKIAkJCS8qIEltcG9zc2libGUgZXZlbnQuICovCi0JCQlyZXR1cm47CisJCQlyZXR1cm4g
-MDsKIAkJY2FzZSBJQ01QX0ZSQUdfTkVFREVEOgogCQkJLyogVG9vIGNvbXBsaWNhdGVkIGNhc2Ug
-Li4uICovCi0JCQlyZXR1cm47CisJCQlyZXR1cm4gMDsKIAkJZGVmYXVsdDoKIAkJCS8qIEFsbCBv
-dGhlcnMgYXJlIHRyYW5zbGF0ZWQgdG8gSE9TVF9VTlJFQUNILgogCQkJICAgcmZjMjAwMyBjb250
-YWlucyAiZGVlcCB0aG91Z2h0cyIgYWJvdXQgTkVUX1VOUkVBQ0gsCkBAIC01MTMsNyArNTE1LDcg
-QEAgb3V0OgogCQlicmVhazsKIAljYXNlIElDTVBfVElNRV9FWENFRURFRDoKIAkJaWYgKGNvZGUg
-IT0gSUNNUF9FWENfVFRMKQotCQkJcmV0dXJuOworCQkJcmV0dXJuIDA7CiAJCXJlbF90eXBlID0g
-SUNNUFY2X1RJTUVfRVhDRUVEOwogCQlyZWxfY29kZSA9IElDTVBWNl9FWENfSE9QTElNSVQ7CiAJ
-CWJyZWFrOwo=
-------=_Part_14800_29058380.1211275766611--
