@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765852AbYETMK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765148AbYETMOR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765852AbYETMK1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 08:10:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760427AbYETMKQ
+	id S1765148AbYETMOR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 08:14:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbYETMOD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 08:10:16 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:14933 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752790AbYETMKP convert rfc822-to-8bit (ORCPT
+	Tue, 20 May 2008 08:14:03 -0400
+Received: from rv-out-0506.google.com ([209.85.198.225]:10591 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754780AbYETMOB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 08:10:15 -0400
+	Tue, 20 May 2008 08:14:01 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=VWyISeKWd4V+9UejXqhfaFDgawsatG3XEyfd5xNHQgafcC+TBXJ6rjr1Zs4jZu3XDqXKtTAVgJmwlSPmDl6eM7mXiLTzxz7nGyz2w1kvqe17a8+LnCGFCxQOUEuXuUMuJscro2nmmazSNyNlOUOqrzs8Rdxh0TAKwYJTpewNkCE=
-Message-ID: <4832BF97.2070405@googlemail.com>
-Date: Tue, 20 May 2008 14:09:59 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
-MIME-Version: 1.0
-To: Alan Jenkins <aj504@cs.york.ac.uk>
-CC: =?ISO-8859-1?Q?David_H=E4rdeman?= <david@hardeman.nu>,
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JCsn9G9PWOzD4/2QdIUmAKuFppTGgZeo3lVNlF+/QWxWGZ09gKf69mb2uxd5YdqWvqEbjm+CxolY/Tk5s5CiG73ap2j6TaI3ez4/gUjptKv6echud/7Ty1kX7M+PaIT0Vwc5U7vdJLuo/jw3wpU8KZRJ9NG1vzlnb7U+eGB73zU=
+Message-ID: <961aa3350805200513i4e02716eh79da76345718c3b2@mail.gmail.com>
+Date: Tue, 20 May 2008 21:13:59 +0900
+From: "Akinobu Mita" <akinobu.mita@gmail.com>
+To: "Soumyadip Das Mahapatra" <kernelhacker@visualserver.org>
+Subject: Re: [PATCH 1/2] bitreversal program
+Cc: "Harvey Harrison" <harvey.harrison@gmail.com>,
        linux-kernel@vger.kernel.org
-Subject: Re: Loading DSDT from initrd, can it be done from grub instead?
-References: <avxTs-570-21@gated-at.bofh.it> <12bd24d7-17d4-4df8-abca-42740ec309fe@x35g2000hsb.googlegroups.com>
-In-Reply-To: <12bd24d7-17d4-4df8-abca-42740ec309fe@x35g2000hsb.googlegroups.com>
+In-Reply-To: <Pine.LNX.4.64.0805201254240.18899@visualserver.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0805191859411.18461@visualserver.org>
+	 <1211229736.5915.86.camel@brick>
+	 <Pine.LNX.4.64.0805201254240.18899@visualserver.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Jenkins wrote:
+>>> -static inline u8 bitrev8(u8 byte)
+>
+> It is a static function, so you cant use it from outside of this
+> file. So there should not be anyone using this function.
+>
 
-> David Härdeman wrote:
->> In commit 9a9e0d685553af76cb6ae2af93cca4913e7fcd47 the
->> ACPI_CUSTOM_DSDT_INITRD option was removed.
->>
->> I was wondering if it'd be feasible to hack grub to load a custom DSDT
->> instead (since grub can read filesystems) and then pass a pointer to a
->> memory location containing the DSDT to the kernel?
-> 
-> Um, why?  What stops you from reverting the offending commit?
-> 
-> Without further info, I'd assume the feature was removed on policy
-> grounds.  I.e. it's not nice to be effectively patching the BIOS
-> yourself, and vendors have fixed most of their BIOS's / linux is
-> slightly more tolerant to broken ones.  I don't know whats wrong with
-> reading files from the initrd.
+bitrev8() is static inline function in header file.
+There are several users:
 
-
-It was reverted because the code was not really ready and caused some problems.
-
-> 
-> Alan
-
-Gabriel
-
+./drivers/isdn/gigaset/asyncdata.c
+./drivers/isdn/gigaset/isocdata.c
+./drivers/isdn/hisax/st5481_b.c
+./drivers/rtc/rtc-s35390a.c
+...
