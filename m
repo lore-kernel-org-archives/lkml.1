@@ -1,67 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763566AbYETXwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764965AbYETXxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763566AbYETXwT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 19:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754642AbYETXwL
+	id S1764965AbYETXxU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 19:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754989AbYETXxH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 19:52:11 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:51467 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753575AbYETXwK (ORCPT
+	Tue, 20 May 2008 19:53:07 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:41776 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754642AbYETXxF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 19:52:10 -0400
-Date: Tue, 20 May 2008 16:51:38 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Louis Rilling <Louis.Rilling@kerlabs.com>, linux-kernel@vger.kernel.org,
-       ocfs2-devel@oss.oracle.com
-Subject: Re: [RFC][PATCH 0/3] configfs: Make nested default groups
-	lockdep-friendly
-Message-ID: <20080520235138.GL26609@mail.oracle.com>
-Mail-Followup-To: Arjan van de Ven <arjan@infradead.org>,
-	Louis Rilling <Louis.Rilling@kerlabs.com>,
-	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-References: <20080520163320.025971210@kerlabs.com> <20080520095810.1d50d247@infradead.org> <20080520215639.GG26609@mail.oracle.com> <20080520151341.058f2df4@infradead.org> <20080520222702.GJ26609@mail.oracle.com> <20080520153543.4bafcac9@infradead.org>
+	Tue, 20 May 2008 19:53:05 -0400
+Date: Wed, 21 May 2008 01:53:03 +0200
+From: Jan Kara <jack@suse.cz>
+To: Mingming Cao <cmm@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, jack@suse.cz,
+       pbadari@us.ibm.com, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [PATCH-v2] JBD: Fix race between free buffer and commit trasanction
+Message-ID: <20080520235303.GB23521@atrey.karlin.mff.cuni.cz>
+References: <1210786872.3657.48.camel@localhost.localdomain> <20080514181444.GI24363@duck.suse.cz> <1210947250.3608.18.camel@localhost.localdomain> <1210957976.4231.31.camel@badari-desktop> <1210971693.3608.46.camel@localhost.localdomain> <20080518223739.GB11006@atrey.karlin.mff.cuni.cz> <1211227158.3663.25.camel@localhost.localdomain> <20080519132553.de9b78b0.akpm@linux-foundation.org> <1211234829.3663.39.camel@localhost.localdomain> <1211306575.3664.19.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080520153543.4bafcac9@infradead.org>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+In-Reply-To: <1211306575.3664.19.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 03:35:43PM -0700, Arjan van de Ven wrote:
-> not quite what I meant; what I meant is more like how sched.c deals
-> with per cpu queues:
+> JBD: fix race between journal_try_to_free_buffers() and jbd commit transaction
 > 
-> (from sched.c)
+> From: Mingming Cao <cmm@us.ibm.com>
 > 
->                 spin_lock_init(&rq->lock);
->                 lockdep_set_class(&rq->lock, &rq->rq_lock_key); 
+> journal_try_to_free_buffers() could race with jbd commit transaction when
+> the later is holding the buffer reference while waiting for the data buffer
+> to flush to disk. If the caller of journal_try_to_free_buffers() request
+> tries hard to release the buffers, it will treat the failure as error and return
+> back to the caller. We have seen the directo IO failed due to this race. 
+> Some of the caller of releasepage() also expecting the buffer to be dropped
+> when passed with GFP_KERNEL mask to the releasepage()->journal_try_to_free_buffers().
+> 
+> With this patch, if the caller is passing the GFP_KERNEL to indicating this
+> call could wait, in case of try_to_free_buffers() failed, let's waiting for
+> journal_commit_transaction() to finish commit the current committing transaction
+> , then try to free those buffers again with journal locked.
+> 
+> Signed-off-by: Mingming Cao <cmm@us.ibm.com>
+> Reviewed-by: Badari Pulavarty <pbadari@us.ibm.com> 
+> ---
+>  fs/jbd/transaction.c |   55 +++++++++++++++++++++++++++++++++++++++++++++++++--
+>  mm/filemap.c         |    3 --
+>  2 files changed, 54 insertions(+), 4 deletions(-)
+> 
+> Index: linux-2.6.26-rc2/fs/jbd/transaction.c
+> ===================================================================
+> --- linux-2.6.26-rc2.orig/fs/jbd/transaction.c	2008-05-11 17:09:41.000000000 -0700
+> +++ linux-2.6.26-rc2/fs/jbd/transaction.c	2008-05-19 16:16:41.000000000 -0700
+> @@ -1648,12 +1648,39 @@ out:
+>  	return;
+>  }
+>  
+> +/*
+> + * journal_try_to_free_buffers() could race with journal_commit_transaction()
+> + * The later might still hold the reference count to the buffers when inspecting
+> + * them on t_syncdata_list or t_locked_list.
+> + *
+> + * Journal_try_to_free_buffers() will call this function to
+> + * wait for the current transaction to finish syncing data buffers, before
+> + * try to free that buffer.
+> + *
+> + * Called with journal->j_state_lock hold.
+> + */
+> +static void journal_wait_for_transaction_sync_data(journal_t *journal)
+> +{
+> +	transaction_t *transaction = NULL;
+> +	tid_t tid;
+> +
+> +	transaction = journal->j_committing_transaction;
+> +
+> +	if (!transaction)
+> +		return;
+> +
+> +	tid = transaction->t_tid;
+> +	spin_unlock(&journal->j_state_lock);
+> +	log_wait_commit(journal, tid);
+> +	spin_lock(&journal->j_state_lock);
+> +}
+  What is actually the point of entering the function with j_state_lock
+held and also keeping it after return? It should be enough to take it
+and release it just inside this function, shouldn't it?
 
-	Looking at this, it's taking the address of the struct
-lock_class_key as the actual key.  Thus, if we tie one of these guys to
-the structure we're representing, we get lock safety...except that we're
-talking about i_mutex here, and we want to interact with the VFS's use
-thereof.
+>  /**
+>   * int journal_try_to_free_buffers() - try to free page buffers.
+>   * @journal: journal for operation
+>   * @page: to try and free
+> - * @unused_gfp_mask: unused
+> + * @gfp_mask: specifies whether the call may block
+> + * 		(__GFP_WAIT & __GFP_FS via GFP_KERNEL)
+  This comment seems a bit misleading to me - I'd rather write there:
 
-Joel
+@gfp_mask: we use the mask to detect how hard should we try to release
+buffers. If __GFP_WAIT and __GFP_FS is set, we wait for commit code to
+release the buffers.
 
+>   *
+>   *
+>   * For all the buffers on this page,
+> @@ -1682,9 +1709,11 @@ out:
+>   * journal_try_to_free_buffer() is changing its state.  But that
+>   * cannot happen because we never reallocate freed data as metadata
+>   * while the data is part of a transaction.  Yes?
+> + *
+> + * Return 0 on failure, 1 on success
+>   */
+>  int journal_try_to_free_buffers(journal_t *journal,
+> -				struct page *page, gfp_t unused_gfp_mask)
+> +				struct page *page, gfp_t gfp_mask)
+>  {
+>  	struct buffer_head *head;
+>  	struct buffer_head *bh;
+> @@ -1713,7 +1742,30 @@ int journal_try_to_free_buffers(journal_
+>  		if (buffer_jbd(bh))
+>  			goto busy;
+>  	} while ((bh = bh->b_this_page) != head);
+> +
+>  	ret = try_to_free_buffers(page);
+> +
+> + 	/*
+> +	 * There are a number of places where journal_try_to_free_buffers()
+> +	 * could race with journal_commit_transaction(), the later still
+> +	 * holds the reference to the buffers to free while processing them.
+> +	 * try_to_free_buffers() failed to free those buffers. Some of the
+> +	 * caller of releasepage() request page buffers to be dropped, otherwise
+> +	 * treat the fail-to-free as errors (such as generic_file_direct_IO())
+> +	 *
+> +	 * So, if the caller of try_to_release_page() wants the synchronous
+> +	 * behaviour(i.e make sure buffers are dropped upon return),
+> +	 * let's wait for the current transaction to finish flush of
+> +	 * dirty data buffers, then try to free those buffers again,
+> +	 * with the journal locked.
+> +	 */
+> +	if (ret == 0 && gfp_mask & GFP_KERNEL) {
+  I think this test is wrong - it should rather be something like
+(ret == 0 && (gfp_mask & GFP_KERNEL == GFP_KERNEL)) - or even expand the
+test to gfp_mask & __GFP_WAIT && gfp_mask & __GFP_FS && gfp_mask &
+__GFP_IO.
+
+> +        	spin_lock(&journal->j_state_lock);
+> +		journal_wait_for_transaction_sync_data(journal);
+> +		ret = try_to_free_buffers(page);
+> +		spin_unlock(&journal->j_state_lock);
+> +	}
+> +
+>  busy:
+>  	return ret;
+>  }
+> Index: linux-2.6.26-rc2/mm/filemap.c
+> ===================================================================
+> --- linux-2.6.26-rc2.orig/mm/filemap.c	2008-05-19 16:00:01.000000000 -0700
+> +++ linux-2.6.26-rc2/mm/filemap.c	2008-05-19 16:01:34.000000000 -0700
+> @@ -2581,9 +2581,8 @@ out:
+>   * Otherwise return zero.
+>   *
+>   * The @gfp_mask argument specifies whether I/O may be performed to release
+> - * this page (__GFP_IO), and whether the call may block (__GFP_WAIT).
+> + * this page (__GFP_IO), and whether the call may block (__GFP_WAIT & __GFP_FS).
+  Probably __GFP_WAIT | __GFP_IO here... But I'm not sure why do we
+really change this...
+
+>   *
+> - * NOTE: @gfp_mask may go away, and this function may become non-blocking.
+>   */
+>  int try_to_release_page(struct page *page, gfp_t gfp_mask)
+>  {
+> 
+
+								Honza
 -- 
-
-"There is no sincerer love than the love of food."  
-         - George Bernard Shaw 
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
