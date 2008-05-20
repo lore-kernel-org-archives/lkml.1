@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758268AbYETCOb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759432AbYETCQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758268AbYETCOb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 22:14:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbYETCOW
+	id S1759432AbYETCQf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 22:16:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbYETCQ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 22:14:22 -0400
-Received: from ti-out-0910.google.com ([209.85.142.189]:40368 "EHLO
+	Mon, 19 May 2008 22:16:27 -0400
+Received: from ti-out-0910.google.com ([209.85.142.186]:41411 "EHLO
 	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754406AbYETCOV (ORCPT
+	with ESMTP id S1755622AbYETCQ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 22:14:21 -0400
+	Mon, 19 May 2008 22:16:26 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=IwLuXAwbggbwgNn4VuQx0X8CSfHnveyr+MwuUe2fzUDAsGQu3rVe9qZ1EwSNlx2wYJCKzU2v/1qvWUHgdK90FyTqHbzGFqfmVdPtzEw0bl/Jc5irtEo2WSwgZ3ePIOkWFymnTitF9GepWIxBrCYmRNnvtH8uDU1dA+8VtqdA67c=
-Message-ID: <a8e1da0805191914v3ef4740qd99a5c2cc449444@mail.gmail.com>
-Date: Tue, 20 May 2008 10:14:19 +0800
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ESga107iU6WhqfKlyCF5yT0uB1K1TcYAy/nfz6X9+VPAEyH6Rz9KxQe144s2I/iex4wxJCb25LrYQSgEv8sod0iwMeiRK1CIYUXvHejwNya6ggGwNn+v09THdLr5U3fRKcnm/y/AUWLdrhLxHn507OBXPJuchm+7cuEUQalfmFo=
+Message-ID: <a8e1da0805191916o4b040e26p7c71a5302422256c@mail.gmail.com>
+Date: Tue, 20 May 2008 10:16:23 +0800
 From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Theodore Tso" <tytso@mit.edu>, "Dave Young" <hidave.darkstar@gmail.com>,
-       "kernel list" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [2.6.26-rc2-mm1] sync to speed up?
-In-Reply-To: <20080519230511.GL15035@mit.edu>
+To: "Alexey Dobriyan" <adobriyan@gmail.com>
+Subject: Re: ext4-mm-delalloc-ext4-lock-reverse-fix
+Cc: "Jiri Slaby" <jirislaby@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "Mingming Cao" <cmm@us.ibm.com>
+In-Reply-To: <20080519203752.GA4967@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <a8e1da0805190015t2044c33ar4b7320d0a37d7e09@mail.gmail.com>
-	 <20080519230511.GL15035@mit.edu>
+References: <20080519002919.1f8f21f6.akpm@linux-foundation.org>
+	 <1211210687-4212-1-git-send-email-jirislaby@gmail.com>
+	 <20080519203752.GA4967@martell.zuzino.mipt.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 7:05 AM, Theodore Tso <tytso@mit.edu> wrote:
-> On Mon, May 19, 2008 at 03:15:09PM +0800, Dave Young wrote:
->> Hi,
+On Tue, May 20, 2008 at 4:37 AM, Alexey Dobriyan <adobriyan@gmail.com> wrote:
+> On Mon, May 19, 2008 at 05:24:47PM +0200, Jiri Slaby wrote:
+>> Andrew Morton <akpm@linux-foundation.org> wrote:
+>> > On Mon, 19 May 2008 15:15:09 +0800 "Dave Young" <hidave.darkstar@gmail.com> wrote:
+>> >
+>> > > With 2.6.26-rc2-mm1 I need to sync frequently. It's not normal as my
+>> > > understanding.
+>> > >
+>> > > 1. scp a big file from a lan server. Firstly the speed is about 8M/s,
+>> > > but the speed will slow down to 100K/s at last. After I exec "sync",
+>> > > the speed will restore.
+>> > >
+>> > > Is this a known issue?
+>> > >
+>> >
+>> > Yes, probably related to the "mkfs takes forever" problem.  I haven't
+>> > looked into it yet.  Nor has anyone else afaik.
 >>
->> With 2.6.26-rc2-mm1 I need to sync frequently. It's not normal as my
->> understanding.
->>
->> 1. scp a big file from a lan server. Firstly the speed is about 8M/s,
->> but the speed will slow down to 100K/s at last. After I exec "sync",
->> the speed will restore.
->>
->> Is this a known issue?
+>> Absolutely not sure what this breaks in ext4, but fixes the problem for me:
+
+Jiri, it fixes my scp-slow-down problem as well. Thanks.
+
 >
-> Dave, what filesystem are you using?  Jiri's patch on this thread was
-> to fix a problem in ext4, which means that's fixing a problem which is
-> unrelated to the slow mkfs.ext2 problem (which is writing to a block
-> device, not a file in a ext4 filesystem), and so it's likely unrelated
-> to your problem (unless you're using ext4 and didn't tell us :-).
-
-I'm using ext3. Jiri's patch fixes the my problem.  Seems the problem
-is not related to filesystem.
-
+> This helps, thank you!
 >
-> Andrew's probably right that it may be related to the slow mkfs
-> problem.  Can you confirm that you are seeing this on 2.6.26-rc2-mm1,
-> but not on stock 2.6.26.rc2?
-
-I didn't notice same thing on 2.6.26-rc2, is it necessary for me to test on it?
-
-Regards
-dave
+>> --- a/mm/page-writeback.c
+>> +++ b/mm/page-writeback.c
+>> @@ -881,7 +881,7 @@ int write_cache_pages(struct address_space *mapping,
+>>       pagevec_init(&pvec, 0);
+>>       if (wbc->range_cyclic) {
+>>               index = mapping->writeback_index; /* Start from prev offset */
+>> -             end = wbc->range_end >> PAGE_CACHE_SHIFT;
+>> +             end = -1;
+>>       } else {
+>>               index = wbc->range_start >> PAGE_CACHE_SHIFT;
+>>               end = wbc->range_end >> PAGE_CACHE_SHIFT;
+>
+>
