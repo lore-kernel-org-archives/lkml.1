@@ -1,88 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765070AbYETS1n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764368AbYETSaZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765070AbYETS1n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 14:27:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761776AbYETS11
+	id S1764368AbYETSaZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 14:30:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757457AbYETSaM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 14:27:27 -0400
-Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:40124 "HELO
-	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757533AbYETS10 (ORCPT
+	Tue, 20 May 2008 14:30:12 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:46051 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757356AbYETSaL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 14:27:26 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=rOqAbHfCSXs6imzZyQGUHvl3x7849xCfrG2Km0EBwLtqHSV3UlxKmUaZ3aqApHKnScRR1IdZxloOKmZvLD5PPN3MhAwQJF3A3x5Cdcpqlcj+IKsm3R/2XsEGr2mn5UmT5ONoszbdsAHXQa+Pabrs6/3dMLej++Ryw9rAGhpjTHQ=  ;
-X-YMail-OSG: mJpWvDYVM1lm.4JwBzjgoSqzOrRQJJR3W8r3iCKxcaC6PndkkL50kQBmjmushK7Jc5XgmMhmj7xZ8Q13XUB64Ea74jW8SnSUa_TQ7Bqu48mMrrqCw8N450OrcNHFUxk6h4LWUdtSLTc6KOlWLU0nQaPOD19HDqKCSxz19iI3oU.pau2IzII-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Trent Piepho <xyzzy@speakeasy.org>
-Subject: Re: [PATCH] gpiolib: Fix off by one errors
-Date: Tue, 20 May 2008 11:23:59 -0700
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-References: <1211306284-22469-1-git-send-email-xyzzy@speakeasy.org>
-In-Reply-To: <1211306284-22469-1-git-send-email-xyzzy@speakeasy.org>
+	Tue, 20 May 2008 14:30:11 -0400
+Message-ID: <483318AE.2090306@firstfloor.org>
+Date: Tue, 20 May 2008 20:30:06 +0200
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Arjan van de Ven <arjan@infradead.org>
+CC: corbet@lwn.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [2/11] Add unlocked_fasync
+References: <20080520528.793382059@firstfloor.org>	<20080520152843.CF4181B4205@basil.firstfloor.org> <20080520085830.22c99115@infradead.org>
+In-Reply-To: <20080520085830.22c99115@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805201124.00092.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 20 May 2008, Trent Piepho wrote:
-> The last gpio belonging to a chip is chip->base + chip->ngpios - 1.  Some
-> places in the code, but not all, forgot the critical minus one.
+Arjan van de Ven wrote:
+> On Tue, 20 May 2008 17:28:43 +0200 (CEST)
+> Andi Kleen <andi@firstfloor.org> wrote:
 > 
-> Signed-off-by: Trent Piepho <xyzzy@speakeasy.org>
-
-Acked-by: David Brownell <dbrownell@users.sourceforge.net>
-
-... should make it into 2.6.26-final, but this is evidently
-not critical at this point or we'd have had complaints already!
-
-
-> ---
->  drivers/gpio/gpiolib.c |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
+>> Add a new fops entry point to allow fasync without BKL. 
 > 
-> diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
-> index 7f138c6..beaf6b3 100644
-> --- a/drivers/gpio/gpiolib.c
-> +++ b/drivers/gpio/gpiolib.c
-> @@ -127,7 +127,7 @@ int __init gpiochip_reserve(int start, int ngpio)
->  	unsigned long flags;
->  	int i;
->  
-> -	if (!gpio_is_valid(start) || !gpio_is_valid(start + ngpio))
-> +	if (!gpio_is_valid(start) || !gpio_is_valid(start + ngpio - 1))
->  		return -EINVAL;
->  
->  	spin_lock_irqsave(&gpio_lock, flags);
-> @@ -170,7 +170,7 @@ int gpiochip_add(struct gpio_chip *chip)
->  	unsigned	id;
->  	int		base = chip->base;
->  
-> -	if ((!gpio_is_valid(base) || !gpio_is_valid(base + chip->ngpio))
-> +	if ((!gpio_is_valid(base) || !gpio_is_valid(base + chip->ngpio - 1))
->  			&& base >= 0) {
->  		status = -EINVAL;
->  		goto fail;
-> @@ -207,7 +207,7 @@ fail:
->  	/* failures here can mean systems won't boot... */
->  	if (status)
->  		pr_err("gpiochip_add: gpios %d..%d (%s) not registered\n",
-> -			chip->base, chip->base + chip->ngpio,
-> +			chip->base, chip->base + chip->ngpio - 1,
->  			chip->label ? : "generic");
->  	return status;
->  }
-> -- 
-> 1.5.4.1
-> 
+> I (again) really don't like having another entry point for this...
+> it'll stay around forever rather than doing this as one step and 
+> move on.
+
+Yes the goal is for it staying around forever, correct. And ->fasync()
+will go instead.
+
+Advantage is that out of tree drivers will be compile broken which I
+consider an advantage. Yes I know Linus said earlier that's not
+important to him, but in this case my standards are higher than his.
+
+Also BTW if you're that worried about the audit not getting
+finished then the result would be just that lots of lock_kernel()s
+would stay around. Hardly better.
+
+But cannot do that many drivers in one step.
+
+My goal is to just audit the remaining ones and then remove ->fasync()
+and unlocked_fasync stays. Will be hopefully not that far away, since
+fasync is relatively easy. The conversions are mostly for me to keep
+track which ones I audited.
+
+-Andi
+
+
 
 
