@@ -1,88 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764070AbYETJZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762551AbYETJ0n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764070AbYETJZy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 05:25:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761121AbYETJZT
+	id S1762551AbYETJ0n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 05:26:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761121AbYETJ0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 05:25:19 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:51471 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1764053AbYETJZQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 05:25:16 -0400
-Date: Tue, 20 May 2008 17:25:11 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: "David S. Miller" <davem@davemloft.net>,
-       Marco Berizzi <pupilla@hotmail.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [IPSEC]: Use the correct ip_local_out function
-Message-ID: <20080520092511.GA9005@gondor.apana.org.au>
-References: <BAY103-DAV594320AC93E33D7335927B2DA0@phx.gbl> <BAY103-DAV122A113843FE9574256A0AB2D60@phx.gbl> <BAY103-DAV6446AEC1CBB678E5D0E52B2D30@phx.gbl> <20080509102509.GA11710@gondor.apana.org.au> <BAY103-DAV5B5CD83FC6A95A5DD48C9B2CC0@phx.gbl> <20080512074642.GA1416@gondor.apana.org.au> <BAY103-DAV521435E26209347B7646FB2CC0@phx.gbl> <BAY103-DAV2A04E519F35401C98403FB2CC0@phx.gbl> <BAY103-DAV20B0EEFFB30A41A8020C8B2CC0@phx.gbl> <BAY103-DAV88950FC99CDE9EAAE27B2B2CE0@phx.gbl>
+	Tue, 20 May 2008 05:26:35 -0400
+Received: from sacred.ru ([62.205.161.221]:39933 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752466AbYETJ0e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 05:26:34 -0400
+Message-ID: <48329421.8080904@openvz.org>
+Date: Tue, 20 May 2008 13:04:33 +0400
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <BAY103-DAV88950FC99CDE9EAAE27B2B2CE0@phx.gbl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "menage@google.com" <menage@google.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>
+Subject: Re: [RFC][PATCH 1/3] memcg: documentation for controll file
+References: <20080520180552.601da567.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080520180552.601da567.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Tue, 20 May 2008 13:06:56 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 14, 2008 at 10:19:57AM +0200, Marco Berizzi wrote:
+KAMEZAWA Hiroyuki wrote:
+> Add a documentation for memory resource controller's files.
 > 
-> I hope this helps.
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-OK found the problem, it was my fault after all :)
+I have described some files, that should be created by a control group,
+which uses a res_counter in Documentation/controllers/resource_counter.txt
+section 4.
 
-Dave, this patch needs to go into stable too.
+Maybe it's worth adding a reference to this file, or even rework this
+text? How do you think?
 
-[IPSEC]: Use the correct ip_local_out function
+> Index: mm-2.6.26-rc2-mm1/Documentation/controllers/memory_files.txt
+> ===================================================================
+> --- /dev/null
+> +++ mm-2.6.26-rc2-mm1/Documentation/controllers/memory_files.txt
+> @@ -0,0 +1,76 @@
+> +Files under memory resource controller and its resource counter.
+> +(See controllers/memory.txt about memory resource controller)
+> +
+> +* memory.usage_in_bytes
+> +  (read)
+> +  Currently accounted memory usage under memory controller in bytes.
+> +  multiple of PAGE_SIZE.
+> +
+> +  Even if there is no tasks under controller, some page caches and
+> +  swap caches are still accounted. (See memory.force_empty below.)
+> +
+> +  (write)
+> +  no write operation
+> +
+> +* memory.limit_in_bytes
+> +  (read)
+> +  Current limit of usage to this memory resource controller in bytes.
+> +  (write)
+> +  Set limit to this memory resource controller.
+> +  A user can use "K', 'M', 'G' to specify the limit.
+> +
+> +  (Example) You can set limit of 400M by following.
+> +  % echo 400M > /path to cgroup/memory.limit_in_bytes
+> +
+> +* memory.max_usage_in_bytes
+> +  (read)
+> +  Recorded maximum memory usage under this memory controller.
+> +
+> +  (write)
+> +  Reset the record to 0.
+> +
+> +  (example usage)
+> +  1. create a cgroup
+> +  % mkdir /path_to_cgroup/my_cgroup.
+> +
+> +  2. enter the cgroup
+> +  % echo $$ > /path_to_cgroup/my_cgroup/tasks.
+> +
+> +  3. Run your program
+> +  % Run......
+> +
+> +  4. See how much you used.
+> +  % cat /path_to_cgroup/my_cgroup/memory.max_usage_in_bytes.
+> +
+> +  Now you know how much your application will use. Maybe this
+> +  can be a good to set  limits_in_bytes to some proper value.
+> +
+> +* memory.force_empty
+> +  (read)
+> +  not allowed.
+> +  (write)
+> +  Drop all charges under cgroup. This can be called only when
+> +  there is no task under this cgroup. This is here for debug purpose.
+> +
+> +* memory.stat
+> +  (read)
+> +  show 6 values. (will change in future)
+> +  cache          .... usage accounted as File-Cache.
+> +  anon/swapcache .... usage accounted as anonymous memory or swapcache.
+> +  pgpgin         .... # of page-in under this cgroup.
+> +  pgpgout        .... # of page-out under this cgroup
+> +  active         .... amounts of memory which is treated as 'active' 
+> +  inactive       .... amounts of memory which is treated as 'inactive'
+> +  (write)
+> +  not allowed 
+> +
+> +* memory.failcnt
+> +  (read)
+> +  The number of blocked memory allocation.
+> +  Until the usage reaches the limit, memory allocation is not blocked.
+> +  When it reaches, memory allocation is blocked and try to reclaim memory
+> +  from LRU.
+> +
+> +  (write)
+> +  Reset to 0.
+> +
+> 
+> 
 
-Because the IPsec output function xfrm_output_resume does its
-own dst_output call it should always call __ip_local_output
-instead of ip_local_output as the latter may invoke dst_output
-directly.  Otherwise the return values from nf_hook and dst_output
-may clash as they both use the value 1 but for different purposes.
-
-When that clash occurs this can cause a packet to be used after
-it has been freed which usually leads to a crash.  Because the
-offending value is only returned from dst_output with qdiscs
-such as HTB, this bug is normally not visible.
-
-Thanks to Marco Berizzi for his perseverance in tracking this
-down.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
---
-diff --git a/net/ipv4/route.c b/net/ipv4/route.c
-index 92f90ae..df41026 100644
---- a/net/ipv4/route.c
-+++ b/net/ipv4/route.c
-@@ -160,7 +160,7 @@ static struct dst_ops ipv4_dst_ops = {
- 	.negative_advice =	ipv4_negative_advice,
- 	.link_failure =		ipv4_link_failure,
- 	.update_pmtu =		ip_rt_update_pmtu,
--	.local_out =		ip_local_out,
-+	.local_out =		__ip_local_out,
- 	.entry_size =		sizeof(struct rtable),
- 	.entries =		ATOMIC_INIT(0),
- };
-diff --git a/net/ipv6/route.c b/net/ipv6/route.c
-index 12bba08..849b78a 100644
---- a/net/ipv6/route.c
-+++ b/net/ipv6/route.c
-@@ -109,7 +109,7 @@ static struct dst_ops ip6_dst_ops_template = {
- 	.negative_advice	=	ip6_negative_advice,
- 	.link_failure		=	ip6_link_failure,
- 	.update_pmtu		=	ip6_rt_update_pmtu,
--	.local_out		=	ip6_local_out,
-+	.local_out		=	__ip6_local_out,
- 	.entry_size		=	sizeof(struct rt6_info),
- 	.entries		=	ATOMIC_INIT(0),
- };
