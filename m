@@ -1,79 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760997AbYETS1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765070AbYETS1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760997AbYETS1A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 14:27:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758283AbYETS0u
+	id S1765070AbYETS1n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 14:27:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761776AbYETS11
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 14:26:50 -0400
-Received: from wr-out-0506.google.com ([64.233.184.232]:6326 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757477AbYETS0t (ORCPT
+	Tue, 20 May 2008 14:27:27 -0400
+Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:40124 "HELO
+	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757533AbYETS10 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 14:26:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=Tyr1ihQJc4VaUQc/oBKSmgaHsPtofqEwN7yMTWq3783KKzhls3U/8LxLlOZXqYoRgwQmfuATqGQSWpNlYvqQupp2QVKo26iU5qBwzmnbJNyAALF2tEeAOUOwvMZAqpCYcSDkvu6STeijTl3aYa3rdqFedcF9fRJLl1sfE7/OsXo=
-Message-ID: <82fa9e310805201126q45e869bdub74a947068fe612a@mail.gmail.com>
-Date: Tue, 20 May 2008 11:26:47 -0700
-From: mark <markkicks@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: fork: Resource temporarily unavailable / cant start new threads
+	Tue, 20 May 2008 14:27:26 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=rOqAbHfCSXs6imzZyQGUHvl3x7849xCfrG2Km0EBwLtqHSV3UlxKmUaZ3aqApHKnScRR1IdZxloOKmZvLD5PPN3MhAwQJF3A3x5Cdcpqlcj+IKsm3R/2XsEGr2mn5UmT5ONoszbdsAHXQa+Pabrs6/3dMLej++Ryw9rAGhpjTHQ=  ;
+X-YMail-OSG: mJpWvDYVM1lm.4JwBzjgoSqzOrRQJJR3W8r3iCKxcaC6PndkkL50kQBmjmushK7Jc5XgmMhmj7xZ8Q13XUB64Ea74jW8SnSUa_TQ7Bqu48mMrrqCw8N450OrcNHFUxk6h4LWUdtSLTc6KOlWLU0nQaPOD19HDqKCSxz19iI3oU.pau2IzII-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Trent Piepho <xyzzy@speakeasy.org>
+Subject: Re: [PATCH] gpiolib: Fix off by one errors
+Date: Tue, 20 May 2008 11:23:59 -0700
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+References: <1211306284-22469-1-git-send-email-xyzzy@speakeasy.org>
+In-Reply-To: <1211306284-22469-1-git-send-email-xyzzy@speakeasy.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+Message-Id: <200805201124.00092.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I upgraded to 2.6.25.3-18.fc9.x86_64 fedora core 9, now I get this
-error when I try to login to the box, kill a pr start a python app, or
-do anything on a regular basis.
+On Tuesday 20 May 2008, Trent Piepho wrote:
+> The last gpio belonging to a chip is chip->base + chip->ngpios - 1.  Some
+> places in the code, but not all, forgot the critical minus one.
+> 
+> Signed-off-by: Trent Piepho <xyzzy@speakeasy.org>
 
-fork: Resource temporarily unavailable
+Acked-by: David Brownell <dbrownell@users.sourceforge.net>
 
-I have over 10GB RAM free, and zero swap spaced used. The box is a
-dual quad core Intel Xeon 5405 with 16GB RAM.
-
-There is no error message in /var/log/messages or dmesg ...
-how do I identify the problem?
-thanks!
-
-uname -a
-Linux XXX 2.6.25.3-18.fc9.x86_64 #1 SMP Tue May 13 04:54:47 EDT 2008
-x86_64 x86_64 x86_64 GNU/Linux
+... should make it into 2.6.26-final, but this is evidently
+not critical at this point or we'd have had complaints already!
 
 
-free -m
-            total       used       free     shared    buffers     cached
-Mem:         16086       3189      12896          0         42        666
--/+ buffers/cache:       2481      13605
-Swap:         1983          0       1983
+> ---
+>  drivers/gpio/gpiolib.c |    6 +++---
+>  1 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+> index 7f138c6..beaf6b3 100644
+> --- a/drivers/gpio/gpiolib.c
+> +++ b/drivers/gpio/gpiolib.c
+> @@ -127,7 +127,7 @@ int __init gpiochip_reserve(int start, int ngpio)
+>  	unsigned long flags;
+>  	int i;
+>  
+> -	if (!gpio_is_valid(start) || !gpio_is_valid(start + ngpio))
+> +	if (!gpio_is_valid(start) || !gpio_is_valid(start + ngpio - 1))
+>  		return -EINVAL;
+>  
+>  	spin_lock_irqsave(&gpio_lock, flags);
+> @@ -170,7 +170,7 @@ int gpiochip_add(struct gpio_chip *chip)
+>  	unsigned	id;
+>  	int		base = chip->base;
+>  
+> -	if ((!gpio_is_valid(base) || !gpio_is_valid(base + chip->ngpio))
+> +	if ((!gpio_is_valid(base) || !gpio_is_valid(base + chip->ngpio - 1))
+>  			&& base >= 0) {
+>  		status = -EINVAL;
+>  		goto fail;
+> @@ -207,7 +207,7 @@ fail:
+>  	/* failures here can mean systems won't boot... */
+>  	if (status)
+>  		pr_err("gpiochip_add: gpios %d..%d (%s) not registered\n",
+> -			chip->base, chip->base + chip->ngpio,
+> +			chip->base, chip->base + chip->ngpio - 1,
+>  			chip->label ? : "generic");
+>  	return status;
+>  }
+> -- 
+> 1.5.4.1
+> 
 
 
-have only 505 processes running
-ps aux | wc -l
-505
-
-
-uptime
- 11:24:15 up 39 min,  1 user,  load average: 3.54, 3.47, 2.87
-
-ulimit -a
-core file size          (blocks, -c) 0
-data seg size           (kbytes, -d) unlimited
-scheduling priority             (-e) 0
-file size               (blocks, -f) unlimited
-pending signals                 (-i) 137216
-max locked memory       (kbytes, -l) 32
-max memory size         (kbytes, -m) unlimited
-open files                      (-n) 32768
-pipe size            (512 bytes, -p) 8
-POSIX message queues     (bytes, -q) 819200
-real-time priority              (-r) 0
-stack size              (kbytes, -s) 10240
-cpu time               (seconds, -t) unlimited
-max user processes              (-u) 1024
-virtual memory          (kbytes, -v) unlimited
-file locks                      (-x) unlimited
