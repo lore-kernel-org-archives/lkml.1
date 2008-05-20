@@ -1,52 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763917AbYETNw5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765725AbYETNyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763917AbYETNw5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 09:52:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754739AbYETNwu
+	id S1765725AbYETNyU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 09:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755203AbYETNyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 09:52:50 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:39992 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1754354AbYETNwu (ORCPT
+	Tue, 20 May 2008 09:54:09 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:57416 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754159AbYETNyI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 09:52:50 -0400
-Date: Tue, 20 May 2008 09:52:38 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Tom Spink <tspink@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: UML fails to locate address space
-Message-ID: <20080520135238.GB6990@c2.user-mode-linux.org>
-References: <7b9198260805200408k1d6b70a8xc7e4c24106e5020f@mail.gmail.com>
+	Tue, 20 May 2008 09:54:08 -0400
+Date: Tue, 20 May 2008 09:54:06 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: MA QING A <Qing.a.Ma@alcatel-sbell.com.cn>
+cc: Kasper Sandberg <lkml@metanurb.dk>, LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: RE: 2.6.25.4-rt2
+In-Reply-To: <630E9048ECEBBB4798CE33255209FE7306483561@CNSHGSMBS02.ad4.ad.alcatel.com>
+Message-ID: <Pine.LNX.4.58.0805200945120.12041@gandalf.stny.rr.com>
+References: <1211237032.14697.76.camel@localhost.localdomain><1211239147.198
+ 45.42.camel@localhost>   <Pine.LNX.4.58.0805191936120.4125@gandalf.stny.rr.com><630E9048ECEBBB4798CE
+ 33255209FE730648317D@CNSHGSMBS02.ad4.ad.alcatel.com> 
+ <Pine.LNX.4.58.0805200030120.9319@gandalf.stny.rr.com>
+ <630E9048ECEBBB4798CE33255209FE7306483561@CNSHGSMBS02.ad4.ad.alcatel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7b9198260805200408k1d6b70a8xc7e4c24106e5020f@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 12:08:24PM +0100, Tom Spink wrote:
-> I've just recently pulled the latest GIT and compiled UML, however,
-> when I run it a message appears saying "Locating the top of the
-> address space... Address 0x0 no good?" and the program exits.
 
-Can you strace it and send me the output?
+Hi,
 
-> After some digging, it appears that page_ok is returning false when
-> checking 'bottom', in os_get_task_size
-> (arch/um/os-Linux/sys-i386/task_size.c:96).  After running through
-> GDB, it seems that in line 31 of that file is where the segfault
-> occurs:
-> 
-> n = *address;
-> 
-> i.e. when trying to read from the address space (at address zero).
+[
+  It seems that you may be new to the lists, so I will let you know,
+  please do not top post. It is appropriate to either bottom post or
+  better yet, inline reply. See http://en.wikipedia.org/wiki/Posting_style
+]
 
-The segfaults are on purpose - it will trap SIGSEGV and longjmp out of
-the handler and mark the affected address as not-usable.
 
-    	       	  Jeff
+On Tue, 20 May 2008, MA QING A wrote:
 
--- 
-Work email - jdike at linux dot intel dot com
+> Thanks very much for your explanation
+> At the very beginning I thought the Hackbench was a latency tools, so
+> I was very surprised to see such result.
+>
+> But there's another question. When I choose the Complete Preemption
+> -Real Time  configuration, it's recommended to choose Timer Frequency
+> ---> 1000Mhz to improve the cpu performance, does it mean cpu will cost
+> much more during the thread context switch? Or I should choose 100Mhz in
+> order to decrease the thread context switch and get a better
+> performance?
+>
+> Which one should I choose? Or any useful tools can tell me the differences.
+>
+
+I'm not sure where you read that. With the introduction of high-resolution
+timers, the HZ value isn't that important anymore. Things that might use
+select or poll as timeouts will still be at the HZ frequency, but other
+code that uses proper timer API will still react well.
+
+Matters what you are doing. Try out different values yourself and see what
+you find is the best. You can also report your findings if you want.
+
+Cheers,
+
+-- Steve
+
