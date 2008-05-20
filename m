@@ -1,83 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934436AbYETWPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934280AbYETWQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934436AbYETWPh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 18:15:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761059AbYETWP2
+	id S934280AbYETWQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 18:16:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761059AbYETWQR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 18:15:28 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:9752 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757635AbYETWP1 (ORCPT
+	Tue, 20 May 2008 18:16:17 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:35688 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760823AbYETWQQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 18:15:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=miRZyzzY12Xh8hFV1YzTlwmQUISWXjow5/2VF3mVcAh2z8N/2Z4FOGF1bJjFhjRv8UC5wAM/kU9PT1shVMDD87cMLHWBWYfMC9uShsWKolDjZ5f/LxWKLjguo2GESjH3gzubUzuT8FjE1UUr7zft8Zz210BSBzLuRiypB+Uq7lo=
-Subject: Re: [PATCH 2/2] byteorder: eliminate pointer bytorder api
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080520.141731.99514303.davem@davemloft.net>
-References: <1211311449.5915.195.camel@brick>
-	 <20080520.141731.99514303.davem@davemloft.net>
-Content-Type: text/plain
-Date: Tue, 20 May 2008 15:15:25 -0700
-Message-Id: <1211321725.5915.208.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 20 May 2008 18:16:16 -0400
+Date: Tue, 20 May 2008 15:11:02 -0700 (PDT)
+From: Trent Piepho <tpiepho@freescale.com>
+X-X-Sender: xyzzy@t2.domain.actdsltmp
+To: Andreas Schwab <schwab@suse.de>
+cc: linuxppc-dev@ozlabs.org, Scott Wood <scottwood@freescale.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [POWERPC] Improve (in|out)_beXX() asm code
+In-Reply-To: <jeiqx83ab0.fsf@sykes.suse.de>
+Message-ID: <Pine.LNX.4.64.0805201502000.7453@t2.domain.actdsltmp>
+References: <1211316025-29069-1-git-send-email-tpiepho@freescale.com>
+ <jeiqx83ab0.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-05-20 at 14:17 -0700, David Miller wrote:
-> From: Harvey Harrison <harvey.harrison@gmail.com>
-> Date: Tue, 20 May 2008 12:24:09 -0700
-> 
-> > Not a great api, should be using cpu_to_etc and deref the pointer yourself.
-> > cpu_to_le16p
-> > cpu_to_le32p
-> > cpu_to_le64p
-> > cpu_to_be16p
-> > cpu_to_be32p
-> > cpu_to_be64p
-> > 
-> > Replaced by the aligned get_/put_ helpers
-> > le16_to_cpup
-> > le32_to_cpup
-> > le64_to_cpup
-> > be16_to_cpup
-> > be32_to_cpup
-> > be64_to_cpup
-> > 
-> > Also add const to the get/put helpers and use them in the access_ok case for
-> > unaligned access.
-> > 
-> > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> 
-> But what you're doing in the first patch is killing performance for some
-> cases.
-> 
-> The reason we use the cpu_to_*p() interfaces is to get the other-endian
-> load and store instructions some processors have.
-> 
-> What you're doing is undoing all of that work we've done to take
-> advantage of such things.
+On Wed, 21 May 2008, Andreas Schwab wrote:
+> Trent Piepho <tpiepho@freescale.com> writes:
+>
+>> For the LE versions, eventually they boil down to an asm that will look
+>> something like this:
+>> asm("sync; stwbrx %1,0,%2" : "=m" (*addr) : "r" (val), "r" (addr));
+>>
+>> While not perfect, this appears to be the best one can do.  The issue is
+>> that the "stwbrx" instruction only comes in an indexed, or 'x', version, in
+>> which the address is represented by the sum of two registers (the "0,%2").
+>> Unfortunately, gcc doesn't have a constraint for an indexed memory
+>> reference.
+>
+> There is the "Z" constraint, which matches either an indirect or an
+> indexed memory address.  That should fit here.
 
-Obviously I missed that part, my apologies.  Would it be acceptable if,
-taking the possibly arch-specific parts, moved the [endian]_to_cpup
-name over to get_[endian]
+This came up on the Freescale list.  I should have put what I wrote there into
+my patch descrition:
 
-ie:
-
-le16_to_cpup -> get_le16
-
-I'd leave cpu_to_le16p alone (it's not used that much anyway).
-
-To make it similar to the get_unaligned_le16 helpers?
-
-Thanks for having a look,
-
-Harvey
-
+It's the _le versions that have a problem, since we can't get gcc to just use
+the register indexed mode.  It seems like an obvious thing to have a
+constraint for, but I guess there weren't enough instructions that only come
+in 'x' versions to bother with it.  There is a 'Z' constraint, "Memory operand
+that is an indexed or indirect from a register", but I tried it and it can use
+both "rb,ri" and "disp(rb)" forms.  Actually, I'm not sure how 'Z' is any
+different than "m"?
