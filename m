@@ -1,87 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764662AbYETUhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933281AbYETUjD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764662AbYETUhu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 16:37:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759107AbYETUhl
+	id S933281AbYETUjD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 16:39:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759277AbYETUiw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 16:37:41 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:50185 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758754AbYETUhj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 16:37:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:mime-version:content-type:x-google-sender-auth;
-        b=ceQktVKHpAw98zQnJOKosN7wQk/aawhws6dc+Myu4EvxJ/+PN/5TScNiDG4IOSr0pxRHsbfjefyTHMViAviabrkJXSEH+ApdPsNUyeeU+P2PR36J8VBn1U3BC15ieanLG6jNCBhGstkCONIH8yXg/UyjJIgBC5l93kVyGkRG9q0=
-Message-ID: <3efb10970805201337g2212835bl9ca26a3031141ce2@mail.gmail.com>
-Date: Tue, 20 May 2008 22:37:34 +0200
-From: "Remy Bohmer" <linux@bohmer.net>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Compile bug in 2.6.24.8-rt7 on ARM
-Cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_2645_8624103.1211315854875"
-X-Google-Sender-Auth: c07c8707521c95a6
+	Tue, 20 May 2008 16:38:52 -0400
+Received: from 1wt.eu ([62.212.114.60]:4631 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759084AbYETUiv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 16:38:51 -0400
+Date: Tue, 20 May 2008 22:38:33 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Harald Dunkel <harald.dunkel@t-online.de>
+Cc: david@lang.hm, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25.3: su gets stuck for root
+Message-ID: <20080520203833.GA6749@1wt.eu>
+References: <4829D345.7020909@t-online.de> <19f34abd0805140034j75d97ecbw5a03c200645768cb@mail.gmail.com> <482B1BD2.8040400@t-online.de> <19f34abd0805141017g26c13e96t2e7edc23bec263d0@mail.gmail.com> <20080514183558.40178fe5@core> <48306DCA.9070108@t-online.de> <20080518185104.0a539f25@core> <48331FFF.5070300@t-online.de> <alpine.DEB.1.10.0805201211390.4804@asgard.lang.hm> <483333E8.1090200@t-online.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <483333E8.1090200@t-online.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_2645_8624103.1211315854875
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Tue, May 20, 2008 at 10:26:16PM +0200, Harald Dunkel wrote:
+> david@lang.hm wrote:
+> >
+> >try killing syslog and then see if you continue to have the problem. 
+> >It's possible that what's happening is syslog is getting stuck and su is 
+> >sitting waiting for syslog to process the log entry.
+> >
+> 
+> No improvement: I killed syslogd, and yet stty gets stuck.
+> 
+> But surely it was a smart idea.
 
-Hello Steven,
+have you checked in /proc/$(pidof stty)/fd/ to see if stty is bound to
+any particular file descriptor ? Maybe you'll find the source of the
+blocking operation here. You can find a unix socket attached to
+another process, it may be a tty, a pipe, or even a device (eg:
+/dev/random when there is no entropy left). Same for "su" BTW.
 
-Now I started looking at compiling 2.6.24.7-rt8 for ARM, and I found
-another compile problem... ;-))
+Regards,
+willy
 
-This one:
- CC      arch/arm/kernel/process.o
-arch/arm/kernel/process.c: In function 'cpu_idle':
-arch/arm/kernel/process.c:175: error: implicit declaration of function
-'trace_preempt_exit_idle'
-arch/arm/kernel/process.c:180: error: implicit declaration of function
-'trace_preempt_enter_idle'
-
-These function do not appear to exist _anywhere_ in the kernel.
-So these calls can safely be removed, I guess.
-
-The offending patch can be found in the broken-out set under the name
-arm-trace-preempt-idle.patch.
-Attached you can find a fix for it (I expect that you will not need it)
-
-
-Kind Regards,
-
-Remy
-
-------=_Part_2645_8624103.1211315854875
-Content-Type: text/x-patch; name=fix-compile-error-trace-preempt.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fggy4u4u
-Content-Disposition: attachment;
- filename=fix-compile-error-trace-preempt.patch
-
-VGhpcyBwYXRjaCBmaXhlcyB0aGlzIGNvbXBpbGUgZXJyb3IgaW4gMi42LjI0LjctcnQ4OgogQ0Mg
-ICAgICBhcmNoL2FybS9rZXJuZWwvcHJvY2Vzcy5vCmFyY2gvYXJtL2tlcm5lbC9wcm9jZXNzLmM6
-IEluIGZ1bmN0aW9uICdjcHVfaWRsZSc6CmFyY2gvYXJtL2tlcm5lbC9wcm9jZXNzLmM6MTc1OiBl
-cnJvcjogaW1wbGljaXQgZGVjbGFyYXRpb24gb2YgZnVuY3Rpb24gJ3RyYWNlX3ByZWVtcHRfZXhp
-dF9pZGxlJwphcmNoL2FybS9rZXJuZWwvcHJvY2Vzcy5jOjE4MDogZXJyb3I6IGltcGxpY2l0IGRl
-Y2xhcmF0aW9uIG9mIGZ1bmN0aW9uICd0cmFjZV9wcmVlbXB0X2VudGVyX2lkbGUnCgpTaWduZWQt
-b2ZmLWJ5OiBSZW15IEJvaG1lciA8bGludXhAYm9obWVyLm5ldD4KLS0tCiBhcmNoL2FybS9rZXJu
-ZWwvcHJvY2Vzcy5jIHwgICAgMiAtLQogMSBmaWxlIGNoYW5nZWQsIDIgZGVsZXRpb25zKC0pCgpJ
-bmRleDogbGludXgtMi42LjI0L2FyY2gvYXJtL2tlcm5lbC9wcm9jZXNzLmMKPT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQot
-LS0gbGludXgtMi42LjI0Lm9yaWcvYXJjaC9hcm0va2VybmVsL3Byb2Nlc3MuYwkyMDA4LTA1LTIw
-IDIyOjA2OjMzLjAwMDAwMDAwMCArMDIwMAorKysgbGludXgtMi42LjI0L2FyY2gvYXJtL2tlcm5l
-bC9wcm9jZXNzLmMJMjAwOC0wNS0yMCAyMjozMDozNy4wMDAwMDAwMDAgKzAyMDAKQEAgLTE3Miwx
-MiArMTcyLDEwIEBAIHZvaWQgY3B1X2lkbGUodm9pZCkKIAkJCWlkbGUoKTsKIAkJbGVkc19ldmVu
-dChsZWRfaWRsZV9lbmQpOwogCQlsb2NhbF9pcnFfZGlzYWJsZSgpOwotCQl0cmFjZV9wcmVlbXB0
-X2V4aXRfaWRsZSgpOwogCQl0aWNrX25vaHpfcmVzdGFydF9zY2hlZF90aWNrKCk7CiAJCV9fcHJl
-ZW1wdF9lbmFibGVfbm9fcmVzY2hlZCgpOwogCQlfX3NjaGVkdWxlKCk7CiAJCXByZWVtcHRfZGlz
-YWJsZSgpOwotCQl0cmFjZV9wcmVlbXB0X2VudGVyX2lkbGUoKTsKIAkJbG9jYWxfaXJxX2VuYWJs
-ZSgpOwogCX0KIH0K
-------=_Part_2645_8624103.1211315854875--
