@@ -1,42 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765968AbYETMp5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765041AbYETMzR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765968AbYETMp5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 08:45:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999AbYETMpu
+	id S1765041AbYETMzR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 08:55:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754421AbYETMzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 08:45:50 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:51196 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751372AbYETMpt (ORCPT
+	Tue, 20 May 2008 08:55:04 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:41231 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753913AbYETMzC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 08:45:49 -0400
-Message-ID: <4832C7FF.2090904@yandex.ru>
-Date: Tue, 20 May 2008 15:45:51 +0300
-From: Artem Bityutskiy <dedekind@yandex.ru>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH take 2 01/28] VFS: introduce writeback_inodes_sb()
-References: <1210070159-22794-1-git-send-email-Artem.Bityutskiy@nokia.com>	<1210070159-22794-2-git-send-email-Artem.Bityutskiy@nokia.com>	<20080507002345.831bc379.akpm@linux-foundation.org>	<48218F21.4090304@yandex.ru> <20080507083835.6ba126e6.akpm@linux-foundation.org>
-In-Reply-To: <20080507083835.6ba126e6.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 20 May 2008 12:45:24.0899 (UTC) FILETIME=[5FAB3730:01C8BA77]
-X-Nokia-AV: Clean
+	Tue, 20 May 2008 08:55:02 -0400
+Date: Tue, 20 May 2008 14:54:44 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: yhlu.kernel@gmail.com
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: process fam 10h like k8 with fixed mtrr setting
+Message-ID: <20080520125443.GA4052@ucw.cz>
+References: <200805051557.38556.yhlu.kernel@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200805051557.38556.yhlu.kernel@gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew,
+On Mon 2008-05-05 15:57:38, Yinghai Lu wrote:
+> 
+> otherwise fixed MTRR for family 10h may not be changed
+> 
+> Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+> 
+> Index: linux-2.6/arch/x86/kernel/cpu/mtrr/generic.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/cpu/mtrr/generic.c
+> +++ linux-2.6/arch/x86/kernel/cpu/mtrr/generic.c
+> @@ -342,7 +342,7 @@ static void set_fixed_range(int msr, boo
+>  
+>  	if (lo != msrwords[0] || hi != msrwords[1]) {
+>  		if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD &&
+> -		    boot_cpu_data.x86 == 15 &&
+> +		    (boot_cpu_data.x86 >= 0x0f && boot_cpu_data.x86 <= 0x11) &&
+>  		    ((msrwords[0] | msrwords[1]) & K8_MTRR_RDMEM_WRMEM_MASK))
+>  			k8_enable_fixed_iorrs();
+>  		mtrr_wrmsr(msr, msrwords[0], msrwords[1]);
 
-Andrew Morton wrote:
-> I already added gti-ubifs.patch to the -mm lineup.  I haven't yet tried
-> pulling, merging or compiling it.
-
-is it OK for you if ubifs-2.6.git will have some patches which ubi-2.6.git
-also contains. Will your -mm system handle this?
+This also changes family 0x11. Is that ok?
 
 -- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
