@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765983AbYETNpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763572AbYETNrs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765983AbYETNpg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 09:45:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755126AbYETNp2
+	id S1763572AbYETNrs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 09:47:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754472AbYETNrk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 09:45:28 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:39940 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754204AbYETNp1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 09:45:27 -0400
-Date: Tue, 20 May 2008 09:45:17 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: John R Moser <nigelenki@comcast.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: UML and VMI ... how does UML work?
-Message-ID: <20080520134517.GA6990@c2.user-mode-linux.org>
-References: <loom.20080519T235035-223@post.gmane.org>
+	Tue, 20 May 2008 09:47:40 -0400
+Received: from gw.goop.org ([64.81.55.164]:39570 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754159AbYETNrk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 09:47:40 -0400
+Message-ID: <4832D65C.2030108@goop.org>
+Date: Tue, 20 May 2008 14:47:08 +0100
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <loom.20080519T235035-223@post.gmane.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Hugh Dickins <hugh@veritas.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Theodore Tso <tytso@mit.edu>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       Keith Packard <keithp@keithp.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Eric Anholt <eric@anholt.net>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>, airlied@linux.ie,
+       "Barnes, Jesse" <jesse.barnes@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0 of 8] x86: use PTE_MASK consistently
+References: <patchbomb.1211268376@localhost> <Pine.LNX.4.64.0805201346120.24102@blonde.site>
+In-Reply-To: <Pine.LNX.4.64.0805201346120.24102@blonde.site>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 19, 2008 at 11:58:40PM +0000, John R Moser wrote:
-> I've been googling around but can't find a good resource for
-> technically how UML works.  I'm thinking about specifically the task
-> of implementing a virtualization platform without kernel
-> hooks... this lead me to dancing around checking out existing
-> technology and noticing claims that UML can run on an unmodified
-> kernel without special needs.
+Hugh Dickins wrote:
+> I'll leave it to you and Linus whether your way of defining PTE_MASK is
+> satisfactory as is, or needs to be improved to his way.  I've not tried
+> his suggestion of doing the _PAGE_BIT definitions: certainly it's
+> seemed odd to me that they were defined with L, but I've little
+> appetite to mess around with them now myself.
+>   
 
-There's nothing magic.  It turns out that the system call interface is
-sufficient to virtualize an entire system, and UML is an existence
-proof of that.  The major mappings are:
-      system calls -> ptrace
-      memory -> mmap, munmap, mprotect
-      interrupts -> signals
-      timer -> interval timer
+Yes, well, that was me too, with the intention of making ~_PAGE_FOO 
+generate an appropriately sized mask.  I guess it would be better to use 
+pteval_t these days.
 
-> In short, I'm curious about how UML works because I'm interested in knowing if
-> it's theoretically possible to remove the UML code (i.e. compile it out) and
-> then boot a kernel within an application that gives it a VMI structure to ...
-> act exactly as UML.
-
-This paragraph is very unclear to me...
-
-     	       	       Jeff
-
--- 
-Work email - jdike at linux dot intel dot com
+    J
