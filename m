@@ -1,61 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759281AbYETGxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760697AbYETG5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759281AbYETGxl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 02:53:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755182AbYETGxc
+	id S1760697AbYETG5V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 02:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754076AbYETG5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 02:53:32 -0400
-Received: from elasmtp-kukur.atl.sa.earthlink.net ([209.86.89.65]:58945 "EHLO
-	elasmtp-kukur.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753588AbYETGxc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 02:53:32 -0400
-Message-ID: <48327569.9070306@gmail.com>
-Date: Mon, 19 May 2008 23:53:29 -0700
-From: John Hubbard <john.hubbard@gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-MIME-Version: 1.0
-To: Harvey Harrison <harvey.harrison@gmail.com>
-CC: Soumyadip Das Mahapatra <kernelhacker@visualserver.org>,
-       linux-kernel@vger.kernel.org, akinobu.mita@gmail.com
-Subject: Re: [PATCH 1/2] bitreversal program
-References: <Pine.LNX.4.64.0805191859411.18461@visualserver.org> <1211229736.5915.86.camel@brick>
-In-Reply-To: <1211229736.5915.86.camel@brick>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ELNK-Trace: a340b2e653f5c7e365dae0426e8fce169ef193a6bfc3dd48c1abc0394cd169fc15f9fa569e8f3b6a85709c4405726f5b350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 70.231.148.90
+	Tue, 20 May 2008 02:57:11 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:41087 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754006AbYETG5J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 02:57:09 -0400
+Date: Tue, 20 May 2008 10:56:23 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: David Chinner <dgc@sgi.com>
+Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, andi@firstfloor.org,
+       Rik van Riel <riel@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       mpm@selenic.com
+Subject: Re: [patch 10/21] buffer heads: Support slab defrag
+Message-ID: <20080520065622.GA13968@2ka.mipt.ru>
+References: <20080510030831.796641881@sgi.com> <20080510030916.935905242@sgi.com> <20080512002403.GP103491721@sgi.com> <Pine.LNX.4.64.0805151041230.18708@schroedinger.engr.sgi.com> <20080515231045.GY155679365@sgi.com> <Pine.LNX.4.64.0805161000390.29603@schroedinger.engr.sgi.com> <20080519054554.GY103491721@sgi.com> <Pine.LNX.4.64.0805190942530.18431@schroedinger.engr.sgi.com> <20080520002503.GC173056135@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080520002503.GC173056135@sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Harvey Harrison wrote:
-
->> +static inline u32 gen_bit_rev(u32 x, u32 k)
->>   {
->> -       return byte_rev_table[byte];
->> +       if(k & 1)
->> +               x = (x & 0x55555555) << 1 | (x & 0xaaaaaaaa) >> 1;
->> +       if(k & 2)
->> +               x = (x & 0x33333333) << 2 | (x & 0xcccccccc) >> 2;
->> +       if(k & 4)
->> +               x = (x & 0x0f0f0f0f) << 4 | (x & 0xf0f0f0f0) >> 4;
->> +       if(k & 8)
->> +               x = (x & 0x00ff00ff) << 8 | (x & 0xff00ff00) >> 8;
->> +       if(k & 16)
->> +               x = (x & 0x0000ffff) << 16 | (x & 0xffff0000) >> 16;
->> +
->> +       return x;
->>   }
+On Tue, May 20, 2008 at 10:25:03AM +1000, David Chinner (dgc@sgi.com) wrote:
+> +	filemap_fdatawrite_range(mapping, start, end);
 > 
-> Why is this better than a single 256 byte table?
-> 
-> Harvey
-> 
+> Where [start,end] span page->index and are is large enough
+> to get a substantial sized I/O to disk (say at least SWAP_CLUSTER_MAX
+> pages, preferrably larger for 4k page size machines).
 
-One reason it could be better, at least in some situations, is that the 
-above is more likely to execute directly from the CPU's instruction 
-cache. The table lookup appears more efficient at first, until you 
-consider the memory caching hierarchy.
+Or just sync_inode().
 
---John Hubbard
+-- 
+	Evgeniy Polyakov
