@@ -1,50 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760536AbYETAX7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761534AbYETAYj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760536AbYETAX7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 19 May 2008 20:23:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755060AbYETAXv
+	id S1761534AbYETAYj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 19 May 2008 20:24:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756020AbYETAY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 19 May 2008 20:23:51 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:45648 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754068AbYETAXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 19 May 2008 20:23:50 -0400
-Subject: Re: 2.6.25.4-rt2
-From: Kasper Sandberg <lkml@metanurb.dk>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1211237032.14697.76.camel@localhost.localdomain>
-References: <1211237032.14697.76.camel@localhost.localdomain>
+	Mon, 19 May 2008 20:24:29 -0400
+Received: from smtp-vbr10.xs4all.nl ([194.109.24.30]:2816 "EHLO
+	smtp-vbr10.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755060AbYETAY2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 19 May 2008 20:24:28 -0400
+Subject: dma_alloc_coherent() sets __GFP_NORETRY ? [was: Re: [PATCH 1/2]
+	dpt_i2o: 64 bit support (take 4)]
+From: Miquel van Smoorenburg <miquels@cistron.nl>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1209144552.3087.43.camel@localhost.localdomain>
+References: <20080424213355.GA21682@xs4all.net>
+	 <1209144552.3087.43.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Tue, 20 May 2008 02:19:17 +0200
-Message-Id: <1211242757.19845.48.camel@localhost>
+Date: Tue, 20 May 2008 02:24:22 +0200
+Message-Id: <1211243062.16898.37.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-05-19 at 18:43 -0400, Steven Rostedt wrote:
-> We are pleased to announce the 2.6.25.4-rt2 tree, which can be
-<snip>
+On Fri, 2008-04-25 at 12:29 -0500, James Bottomley wrote:
+> On Thu, 2008-04-24 at 23:33 +0200, Miquel van Smoorenburg wrote:
+>
+> >  
+> >  	memset(msg, 0, sizeof(msg));
+> > -	buf = kmalloc(80,GFP_KERNEL|ADDR32);
+> > +	buf = pci_alloc_consistent(pHba->pDev, 80, &addr);
+> 
+> You probably want to use dma_alloc_coherent here ... it's identical to
+> pci_alloc_consistent in almost every way, except that it allows you to
+> pass in the GFP_KERNEL flag (pci_alloc_consistent has to assume
+> GFP_ATOMIC and thus you can get unexpected failures if SLUB is having a
+> bad day) and you have to call it on &pHba->pDev->dev and use the
+> corresponding dma_free_coherent().
 
-I have just tested this, and it breaks jackd horribly, no matter the
-settings, jack ALWAYS underruns.
+I actually did that in the next patch, but I have been looking a bit
+deeper into this and it might not be such a good idea. That, or there is
+a bug in pci-dma_64.c.
 
-What information do you need me to provide?
+In arch/x86/kernel/pci-dma_64.c , dma_alloc_coherent() adds
+__GFP_NORETRY to the gfp flags before it calls __get_free_pages (through
+dma_alloc_pages).
 
-> 
-> 
-> 
-> -- Steve
-> 
-> 	
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+That means dma_alloc_coherent() -> __get_free_pages() can fail quite
+easily on x86_64 with GFP_KERNEL.
+
+If in __get_free_pages() try_to_free_pages() fails once, and
+__GFP_NORETRY is set, there is .. well .. no retry :)
+
+But why does dma_alloc_coherent() on x86_64 set __GFP_NORETRY ? It says
+"don't invoke OOM killer" but I think it has more side affects than
+that: easier failure.
+
+Now I think I know why the 3ware management utility tw_cli crashes a lot
+on my 64-bit boxes with a large diskwrite load ... I've fixed that now
+by commenting out  gfp |= __GFP_NORETRY .
+
+Note that pci-dma_32.c in 2.6.25 does not do this, but in 2.6.26-rc3 the
+two have been merged and __GFP_NORETRY is set for x86_32 as well now. Is
+that a good idea ? Perhaps a __GFP_NO_OOMKILL ?
+
+Mike.
 
