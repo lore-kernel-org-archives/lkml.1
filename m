@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764271AbYETQsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932973AbYETQuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764271AbYETQsh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 12:48:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756609AbYETQs3
+	id S932973AbYETQuZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 12:50:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759537AbYETQuI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 12:48:29 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:55068 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756152AbYETQs2 (ORCPT
+	Tue, 20 May 2008 12:50:08 -0400
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:42035
+	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756077AbYETQuH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 12:48:28 -0400
-Date: Tue, 20 May 2008 12:48:27 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Lennert Buytenhek <buytenh@wantstofly.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, David Brownell <david-b@pacbell.net>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       <akpm@linux-foundation.org>, <nico@cam.org>
-Subject: Re: [PATCH] Re: [Bug #10713] ehci splatter in 2.6.26-rc2
-In-Reply-To: <20080520105054.GA23368@xi.wantstofly.org>
-Message-ID: <Pine.LNX.4.44L0.0805201247180.2114-100000@iolanthe.rowland.org>
+	Tue, 20 May 2008 12:50:07 -0400
+Message-ID: <4833013D.8020506@qumranet.com>
+Date: Tue, 20 May 2008 19:50:05 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Pavel Machek <pavel@suse.cz>
+CC: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Make LIST_POISON less deadly
+References: <1211125094-32167-1-git-send-email-avi@qumranet.com> <20080520164758.GA8531@elf.ucw.cz>
+In-Reply-To: <20080520164758.GA8531@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 May 2008, Lennert Buytenhek wrote:
+Pavel Machek wrote:
+> On Sun 2008-05-18 18:38:14, Avi Kivity wrote:
+>   
+>> The list macros use LIST_POISON1 and LIST_POISON2 as undereferencable
+>> pointers in order to trap erronous use of freed list_heads.  Unfortunately
+>> userspace can arrange for those pointers to actually be dereferencable,
+>> potentially turning an oops to an expolit.
+>>
+>> To avoid this allow architectures (currently x86_64 only) to override
+>> the default values for these pointers with truly-undereferncable values.
+>> This is easy on x86_64 as the virtual address space is smaller than
+>> the range spanned by pointer values.
+>>     
+>
+> "Security hole unless arch maintainer does _foo_" sounds
+> scary. Especially when i386 is hard to fix...
+>   
 
-> This patch appears to fix it:
-> 
-> 
-> The Orion EHCI root hub does have a built-in Transaction Translator.
-> 
-> Signed-off-by: Lennert Buytenhek <buytenh@marvell.com>
-> 
-> Index: linux-2.6.26-rc3/drivers/usb/host/ehci-orion.c
-> ===================================================================
-> --- linux-2.6.26-rc3.orig/drivers/usb/host/ehci-orion.c
-> +++ linux-2.6.26-rc3/drivers/usb/host/ehci-orion.c
-> @@ -115,6 +115,8 @@ static int ehci_orion_setup(struct usb_h
->  	if (retval)
->  		return retval;
->  
-> +	hcd->has_tt = 1;
-> +
->  	ehci_reset(ehci);
->  	ehci_port_power(ehci, 0);
+It's a potential security hole.  You need to find a list corruption 
+first.  The patch prevents escalation of the oops into a code injection.
 
-A similar change is needed in other bus-glue files.  I have put 
-together a patch to take care of them all; it will be posted later 
-today.
+i386 is fixable, though it will take more work than x86_64.
 
-Alan Stern
+-- 
+error compiling committee.c: too many arguments to function
 
