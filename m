@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934189AbYETPr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935031AbYETPsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934189AbYETPr6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 11:47:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764885AbYETPrr
+	id S935031AbYETPsX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 11:48:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933762AbYETPru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 11:47:47 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:58701 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761944AbYETPrq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 11:47:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Az3mRkan4PbJ5wolpSG+ZD29Ki0RGEanYXgy7dwRvYU4j+lv6T6R2Kh/CKDLLr4I2Fhvpd3oAHa4jAmfSb542ukJM/iRcac8N5aEwDRScX9z4OmLff2GKPC7PAQ57fS2n6JIaolj/vyyyd+ds7Z5QEozmPhXDmcCxCEzIMtLL/s=
-Message-ID: <40f323d00805200847t77b2d875j451d0eb9758cf9ff@mail.gmail.com>
-Date: Tue, 20 May 2008 17:47:44 +0200
-From: "Benoit Boissinot" <bboissin@gmail.com>
-To: "Soumyadip Das Mahapatra" <kernelhacker@visualserver.org>
-Subject: Re: [PATCH 1/2] bitreversal program
-Cc: "Akinobu Mita" <akinobu.mita@gmail.com>,
-       "Harvey Harrison" <harvey.harrison@gmail.com>,
+	Tue, 20 May 2008 11:47:50 -0400
+Received: from kirk.serum.com.pl ([213.77.9.205]:64031 "EHLO serum.com.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933695AbYETPrt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 11:47:49 -0400
+Date: Tue, 20 May 2008 16:46:44 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Kevin Hao <kexin.hao@windriver.com>
+cc: Clemens Ladisch <clemens@ladisch.de>, venkatesh.pallipadi@intel.com,
+       bob.picco@hp.com, mingo@redhat.com, tglx@linutronix.de,
        linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0805201716160.25111@visualserver.org>
+Subject: Re: [PATCH] x86: Get irq for hpet timer
+In-Reply-To: <1211274219.8718.7.camel@kevin-desktop>
+Message-ID: <Pine.LNX.4.55.0805201631010.31790@cliff.in.clinika.pl>
+References: <1210917912.10881.1.camel@kevin-desktop>  <482D49CF.4030902@ladisch.de>
+ <1210929270.11912.3.camel@kevin-desktop>  <4831A678.5070208@ladisch.de>
+ <1211274219.8718.7.camel@kevin-desktop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0805191859411.18461@visualserver.org>
-	 <1211229736.5915.86.camel@brick>
-	 <Pine.LNX.4.64.0805201254240.18899@visualserver.org>
-	 <961aa3350805200513i4e02716eh79da76345718c3b2@mail.gmail.com>
-	 <Pine.LNX.4.64.0805201716160.25111@visualserver.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 5:25 PM, Soumyadip Das Mahapatra
-<kernelhacker@visualserver.org> wrote:
-> Thanks for giving a reply Akinobu :-)
-> I forgot that bitrev8() is static in header file. Sorry for that.
->
-> Below is my new patch considering this. Cant it be applicable?
-> Please review it.
->
-> I know that my bitrev8() takes more instructions than that
-> of yours. But we have to think about faster access of cpu cache over that
-> of memory cache(which your bit_rev_table uses).
+On Tue, 20 May 2008, Kevin Hao wrote:
 
-I didn't review your patch, sorry.
-But I'm pretty sure that your patch won't be considered unless you
-provide benchmarks
-with numbers for different CPU/architecture.
-Ideally you should provide a script to test the correctness and the
-performance of your
-change that anyone could run on his computer.
+> We can simply skip these special IRQ. :-)
+> Does anyone has a better solution?
 
-regards,
+ Hmm, you probably want to skip all lines that are edge-triggered.  
+Otherwise you may have problems with sharing.  Drivers for devices used
+with these edge-triggered lines may have special provisions to permit
+sharing in a crafted way in special arrangements (cf. the 8250 serial or
+the IDE driver), but that may not work in a generic way with a different
+driver in the scenario.  And the polarity may be wrong too --
+edge-triggered lines are often active-high, because it's fine with them.
 
-Benoit
+ This driver is quite platform-specific -- how about instead of blindly
+probing for interrupt lines, you actually allocate one somehow in platform
+code?  For example the x86 platform could select an otherwise unused
+interrupt line for you -- having routed all the legacy and PCI devices,
+these systems quite frequently are left with a couple of otherwise unused
+I/O APIC inputs.  If not, sharing with a PCI interrupt line would be a
+good choice.  AFAIK, except from 8254 and RTC emulation the HPET cannot be
+used with the legacy 8259A interrupt controllers, so that is a non issue
+(but platform will know to disable your driver then).
+
+  Maciej
