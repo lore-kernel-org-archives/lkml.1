@@ -1,37 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761963AbYETIQF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762703AbYETIQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761963AbYETIQF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 04:16:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756799AbYETIPz
+	id S1762703AbYETIQf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 04:16:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758188AbYETIQV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 04:15:55 -0400
-Received: from mail.mindmedia.com.sg ([210.193.7.34]:40158 "EHLO
-	mail.mindmedia.com.sg" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755736AbYETIPx (ORCPT
+	Tue, 20 May 2008 04:16:21 -0400
+Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:40438 "EHLO
+	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758172AbYETIQS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 04:15:53 -0400
-Message-ID: <483288B1.3060102@singnet.com.sg>
-Date: Tue, 20 May 2008 16:15:45 +0800
-From: "P.V.Anthony" <pvantony@singnet.com.sg>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080509)
+	Tue, 20 May 2008 04:16:18 -0400
+Date: Tue, 20 May 2008 10:16:17 +0200
+To: Romano Giannetti <romanol@upcomillas.es>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.26-rc2 hosed X?
+Message-ID: <20080520081617.GA14141@gamma.logic.tuwien.ac.at>
+References: <20080513103828.GA8288@gamma.logic.tuwien.ac.at> <1211269474.8773.10.camel@localhost>
 MIME-Version: 1.0
-To: "J. Bruce Fields" <bfields@fieldses.org>
-CC: Trond Myklebust <trond.myklebust@fys.uio.no>, linux-kernel@vger.kernel.org
-Subject: Re: Solved - How to change the FSINFO for nfsd?
-References: <482332CD.4010706@singnet.com.sg> <20080509042238.GC21408@fieldses.org> <20080518015733.o7n8cvhomvgos8ow@mail.mindmedia.com.sg> <alpine.LNX.1.10.0805172024440.15590@fbirervta.pbzchgretzou.qr> <1211049402.7498.4.camel@localhost> <20080519172412.GL7622@fieldses.org>
-In-Reply-To: <20080519172412.GL7622@fieldses.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1211269474.8773.10.camel@localhost>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Using xfs filesystem on a gentoo 64bit linux with 2.6.22 kernel,
-when mounting the FSINFO return got was 7f ff ff ff ff ff ff ff.
+On Di, 20 Mai 2008, Romano Giannetti wrote:
+> > Is that something known, are is there some patch to revert/test?
+> > 
+> 
+> Maybe related to: http://bugzilla.kernel.org/show_bug.cgi?id=10620 ?
 
-Assuming that xfs is 64bit,
-the FSINFO returned is still not ff ff ff ff ff ff ff ff.
+I had the very same problems like you and I had to apply two patches:
+(see http://bugzilla.kernel.org/show_bug.cgi?id=10709)
 
-Used wireshark to see the FSINFO return.
+The one is included in -rc3, that was solved by applying 
+	http://lkml.org/lkml/2008/5/13/188
 
-P.V.Anthony
+the former was solved by using the vblank reverse patch given in the
+above bug, or directly here:
+	http://marc.info/?l=linux-kernel&m=121074889124387&w=4
+
+Try -rc3 plus this patch, it is now working here.  In bocca al lupo!
+
+Best wishes
+
+Norbert
+
+-------------------------------------------------------------------------------
+Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
+Debian Developer <preining@debian.org>                         Debian TeX Group
+gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+-------------------------------------------------------------------------------
+LUBCROY (n.)
+The telltale little lump in the top of your swimming trunks which
+tells you you are going to have to spend half an hour with a safety
+pin trying to pull the drawstring out again.
+			--- Douglas Adams, The Meaning of Liff
