@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764065AbYETKSL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932164AbYETKVN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764065AbYETKSL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 06:18:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbYETKRx
+	id S932164AbYETKVN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 06:21:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752424AbYETKUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 06:17:53 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:44313 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756363AbYETKRu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 06:17:50 -0400
-Date: Tue, 20 May 2008 13:17:32 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Roland McGrath <roland@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+	Tue, 20 May 2008 06:20:55 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:54405 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751289AbYETKUx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 06:20:53 -0400
+Date: Tue, 20 May 2008 11:20:38 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>, linux-acpi@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] signals: fix sigqueue_free() vs __exit_signal() race
-Message-ID: <20080520091732.GB101@tv-sign.ru>
-References: <20080517151418.GA9487@tv-sign.ru> <20080519233330.b594783a.akpm@linux-foundation.org>
-Mime-Version: 1.0
+Message-ID: <20080520102038.GA2441@srcf.ucam.org>
+References: <20080505223357.GA2839@srcf.ucam.org> <20080506081347.GA8688@homac> <20080506082110.GA10355@srcf.ucam.org> <48201987.4020009@gmail.com> <20080506092653.GB4378@homac> <20080506093628.GA12469@srcf.ucam.org> <20080519162934.GA15623@srcf.ucam.org> <20080520074442.GA14417@homac>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080519233330.b594783a.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20080520074442.GA14417@homac>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [PATCH] Fixups to ATA ACPI hotplug
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/19, Andrew Morton wrote:
->
-> On Sat, 17 May 2008 19:14:18 +0400 Oleg Nesterov <oleg@tv-sign.ru> wrote:
-> 
-> > __exit_signal() does flush_sigqueue(tsk->pending) outside of ->siglock.
-> > This can race with another thread doing sigqueue_free(), we can free
-> > the same SIGQUEUE_PREALLOC sigqueue twice or corrupt the pending->list.
-> > 
-> > Note that even sys_exit_group() can trigger this race, not only
-> > sys_timer_delete().
-> > 
-> > Move the callsite of flush_sigqueue(tsk->pending) under ->siglock.
-> > 
-> > This patch doesn't touch flush_sigqueue(->shared_pending) below, it is
-> > called when there are no other threads which can play with signals,
-> > and sigqueue_free() can't be used outside of our thread group.
-> 
-> afacit this is the only needed-in-2.6.26 patch from these two
-> three-patch series, yes?
+On Tue, May 20, 2008 at 09:44:42AM +0200, Holger Macht wrote:
 
-Yes, other patches are not bugfixes.
+> * In case of an ACPI_NOTIFY_DEVICE/BUS_CHECK, evaluate _STA to check if
+>   the device has been plugged or unplugged. If plugged, hotplug it, if
+>   unplugged, just signal event to userspace
+>   (initial patch by Matthew Garrett <mjg59@srcf.ucam.org>)
 
-Probably this fix is not "urgent" too, the race is very old and nobody
-complained.
+The only issue I can see is that this one doesn't check _EJ0. Unless 
+that's done, you'll (on some hardware) evaluate _STA on the bay itself 
+rather than the device within the bay, which leads to confusion as to 
+whether the device has been inserted. Other than that, looks good. 
+Jeff's sent my patch to Linus, so can you redo this on top and I'll sign 
+it off?
 
-Oleg.
-
+Thanks,
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
