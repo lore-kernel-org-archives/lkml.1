@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761053AbYETUFJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933605AbYETUGs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761053AbYETUFJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 16:05:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759084AbYETUE3
+	id S933605AbYETUGs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 16:06:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758437AbYETUGk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 16:04:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37655 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933358AbYETUE1 (ORCPT
+	Tue, 20 May 2008 16:06:40 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:37998 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752396AbYETUGj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 16:04:27 -0400
-Date: Tue, 20 May 2008 13:02:39 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Hugh Dickins <hugh@veritas.com>,
-       Theodore Tso <tytso@mit.edu>, Gabriel C <nix.or.die@googlemail.com>,
-       Keith Packard <keithp@keithp.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Eric Anholt <eric@anholt.net>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>, airlied@linux.ie,
-       "Barnes, Jesse" <jesse.barnes@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 0 of 8] x86: use PTE_MASK consistently
-In-Reply-To: <20080520195147.GA17648@elte.hu>
-Message-ID: <alpine.LFD.1.10.0805201300010.3081@woody.linux-foundation.org>
-References: <patchbomb.1211268376@localhost> <20080520195147.GA17648@elte.hu>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 20 May 2008 16:06:39 -0400
+Date: Tue, 20 May 2008 13:06:24 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: corbet@lwn.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [2/11] Add unlocked_fasync
+Message-ID: <20080520130624.089ebf19@infradead.org>
+In-Reply-To: <483318AE.2090306@firstfloor.org>
+References: <20080520528.793382059@firstfloor.org>
+	<20080520152843.CF4181B4205@basil.firstfloor.org>
+	<20080520085830.22c99115@infradead.org>
+	<483318AE.2090306@firstfloor.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 20 May 2008 20:30:06 +0200
+Andi Kleen <andi@firstfloor.org> wrote:
 
-
-On Tue, 20 May 2008, Ingo Molnar wrote:
+> Arjan van de Ven wrote:
+> > On Tue, 20 May 2008 17:28:43 +0200 (CEST)
+> > Andi Kleen <andi@firstfloor.org> wrote:
+> > 
+> >> Add a new fops entry point to allow fasync without BKL. 
+> > 
+> > I (again) really don't like having another entry point for this...
+> > it'll stay around forever rather than doing this as one step and 
+> > move on.
 > 
-> yep, this has been problem-free in x86.git and then in -tip, we had a 
-> separate x86/ptemask topic for it that we originally intended for 
-> v2.6.27, and we dont mind to see it upstream now ;-)
+> Yes the goal is for it staying around forever, correct. And ->fasync()
+> will go instead.
+> 
+> Advantage is that out of tree drivers will be compile broken which I
+> consider an advantage. Yes I know Linus said earlier that's not
+> important to him, but in this case my standards are higher than his.
 
-Well, since we actually had a regression, I had to do something before 
-actually doing 2.6.26.
-
-So to fix the X crash problem with PAE, the choice was between either 
-applying this series that cleans things up or alternatively add yet 
-another hack to work around the problem.
-
-And I'm much happier taking the proper fix, even if it was slightly 
-bigger. It's not like it was a huge and complicated and scary fix ;)
-
-		Linus
+I'd say it's just different standards.
+My concern is that the new API as long lived is ugly and not the right
+thing. I assume Linus and others have similar concerns, and weigh that
+over the "some obscure out of tree driver might break".
