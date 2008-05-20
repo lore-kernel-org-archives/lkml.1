@@ -1,80 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759138AbYETRQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760463AbYETRWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759138AbYETRQs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 13:16:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751331AbYETRQg
+	id S1760463AbYETRWa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 13:22:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755959AbYETRWV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 13:16:36 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:41928 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751286AbYETRQf (ORCPT
+	Tue, 20 May 2008 13:22:21 -0400
+Received: from moutng.kundenserver.de ([212.227.126.183]:63455 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755636AbYETRWT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 13:16:35 -0400
-Subject: Re: [RFC] make wext wireless bits optional and deprecate them
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: netdev <netdev@vger.kernel.org>, Jean Tourrilhes <jt@hpl.hp.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-In-Reply-To: <CD993362-B1DE-4E4D-8A5B-E9E2AD7DA04C@holtmann.org> (sfid-20080517_154639_384202_6D3479C2)
-References: <1211026337.3827.25.camel@johannes.berg>
-	 <CD993362-B1DE-4E4D-8A5B-E9E2AD7DA04C@holtmann.org>
-	 (sfid-20080517_154639_384202_6D3479C2)
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-5JHaC54Ie6AKHA8YnikR"
-Date: Tue, 20 May 2008 19:15:31 +0200
-Message-Id: <1211303731.6252.105.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Tue, 20 May 2008 13:22:19 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [PATCH, RFC] char dev BKL pushdown
+Date: Tue, 20 May 2008 19:21:51 +0200
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Alexander Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org,
+       Wim Van Sebroeck <wim@iguana.be>
+References: <25447.1211296423@vena.lwn.net>
+In-Reply-To: <25447.1211296423@vena.lwn.net>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200805201921.53530.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+K6vKarVSwIC2Go5bm5jcPcC+6ZYQ9gIHVeZk
+ 79G750gv/9FL/sgNMtnSWHvGjv97r2kXlOqkN/aewN4j9dSCxT
+ jcZHMVBtwVM8Hdjy7Si2w==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 20 May 2008, Jonathan Corbet wrote:
+> Arnd Bergmann <arnd@arndb.de> wrote:
+> 
+> > I've given it a try for all the misc drivers that have an open() function.
+> > The vast majority of them are actually watchdog drivers, all of which
+> > register as a misc device by themselves. 
+> 
+> OK, it looks like the "misc" misc drivers patch can go into the
+> bkl-removal tree, while the watchdog patches should not.  What that
+> means, I guess, is that the final misc_open() patch cannot go in at this
+> point; Alan's watchdog stuff needs to find its way in first.  Make
+> sense? 
 
---=-5JHaC54Ie6AKHA8YnikR
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Right, unless Alan or Wim are confident enough that removing the
+BKL won't break the drivers (more than they are today).
+Almost all of the open functions go along the lines of
 
-On Sat, 2008-05-17 at 15:45 +0200, Marcel Holtmann wrote:
-> Hi Johannes,
->=20
-> > The /sys/class/net/*/wireless/ direcory is, as far as I know, not
-> > used by anyone. Additionally, the same data is available via wext
-> > ioctls. Hence the sysfs files are pretty much useless. This patch
-> > makes them optional and schedules them for removal.
->=20
-> it is used by HAL to classify WiFi network cards as net.80211 instead =20
-> of net.80203 and so we do have an actual user. However HAL only tests =20
-> for the existence of the directory wireless/.
->=20
-> Please fix HAL first before submitting such a patch.
+int open(struct file *f, struct inode *i)
+{
+	if (wd_is_open)
+		return -EBUSY;
+	wd_is_open = 1;
+	
+	start_wd();
 
-I have filed a patch to fix HAL to use the canonical SIOCGIWNAME at
-https://bugs.freedesktop.org/show_bug.cgi?id=3D16037. Any further
-objections to this patch?
+	return nonseekable_open(f, i);
+}
 
-johannes
+nonseekable_open doesn't need the BKL by itself, and the wd_is_open
+variable is protected by the misc_mtx mutex.
+I can't see any scenario in which start_wd() would need the BKL, or
+where a watchdog driver needs cycle_kernel_lock(), but I was't confident
+enough about that assessment, because I'm not really familiar with
+the drivers.
 
---=-5JHaC54Ie6AKHA8YnikR
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+> > You seem to already have a script to turn per-file changes into a
+> > patch each, so I'm sending you two patches: one for all the watchdog
+> > drivers (maybe Wim can take care of that as well) and one for all the
+> > other misc drivers (this one needs to be split).
+> 
+> Alas, I have no such script.  I just committed each change as I made it
+> - each one required individual attention anyway.  The misc changes look
+> pretty straightforward, so I could probably hack up such a thing pretty
+> quickly if you don't have a tree with broken out patches.
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+I've done a semi-automated split and applied the patches on top of your
+tree. You can pull these from
 
-iQIVAwUASDMHMqVg1VMiehFYAQIRCRAAha1B0TCHwCXxxe0Is+3Ld007hKV2n8kk
-0VF3N4Q2bLxKemj4rlyIBltc7fNy0qkNMwybjv0L+Qr8MievBdog31t+nSs5+UnA
-twu2OcjYPdDqYwEq/Umfhlsv775z7+E/qdQ1YUVJUrCKHL2M2WKVuNhXJJXX2OJL
-PjO3xio5r6A0KiIZpbTgUsIK0rKbM0ATvlswNFnuG0efuydWfnNoLjoMQifWtrfJ
-LgR/XziOdO/nmmAaygARjt7uSW9/uI384L8Y6ar4C1eoYmgZXzk4PRak4X8GcSaj
-rpVTzdH9SKGQ6J+oBot2YPKAFitivpEGlF2IVxje6suQlYZ0CMdGC2NyPDiW/MTv
-VjMtQH33unXxzz0WXaAJBARjbGVqdhVaadJWNRmws3iF+3uHe2aW3l92IpsFPYjy
-4b47xAcZisvL8mvDTqaCKqOQRKBbj1fKiYE6p1CwHomzdm/9MGmNOjmu2Vjrohc1
-nKHiMQfqbUwFqeYweU1MW4hv03M+jDv2GjFGJYSEjByL3AB9cI2GeqB2mKA6W34H
-WgG8UrTBIWqupkjGxPb2Q7U3JcoOF/R2ikMr4vCmQLY1m3se2Bni42d+0jYjIn+J
-NAnMJ1nzUMpzs0YLUFti62xzI7HQuOonjezxTVA76m0oe/2UaJotlytAhmaH5dMK
-kWNWwyhmyOg=
-=r45u
------END PGP SIGNATURE-----
+git://git.kernel.org/pub/scm/linux/kernel/git/arnd/cell-2.6 bkl-removal
 
---=-5JHaC54Ie6AKHA8YnikR--
+(I guess I should do a separate tree for it, will do that if more stuff
+comes up.)
 
+	Arnd <><
