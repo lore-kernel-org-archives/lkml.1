@@ -1,109 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934394AbYETWDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934469AbYETWDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934394AbYETWDT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 18:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764186AbYETWDA
+	id S934469AbYETWDi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 18:03:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934297AbYETWDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 18:03:00 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:55904 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757457AbYETWC6 (ORCPT
+	Tue, 20 May 2008 18:03:12 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:58923 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933170AbYETWDK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 18:02:58 -0400
-Date: Tue, 20 May 2008 23:02:42 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
-       ext4 development <linux-ext4@vger.kernel.org>,
-       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 4/4] ext4: call blkdev_issue_flush on fsync
-Message-ID: <20080520220242.GB27853@shareable.org>
-References: <482DDA56.6000301@redhat.com> <482DDC04.7020706@redhat.com> <20080520023454.GM15035@mit.edu> <20080520154313.GI16676@shareable.org> <20080520195437.GZ22369@kernel.dk>
+	Tue, 20 May 2008 18:03:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=gb2Mn2Rotk/EuV1O+UqZd33mTJT5ERVdHepj7jCQ8+6uSsINUOk0Htp+eRWa7KNFKk4YG3o4jfQR2ZrpcsC9L7vWk9brlOK0jPpuSh01c4gFkjsXBQwd0IWmn/Y+DRkAyLGR2zzdVK8ow94B5tLaXVZCCY2KyAH5SFDbAXk5qiU=
+Message-ID: <7b9198260805201503j333963c4ya19b84f16b31d0fd@mail.gmail.com>
+Date: Tue, 20 May 2008 23:03:10 +0100
+From: "Tom Spink" <tspink@gmail.com>
+To: "Jeff Dike" <jdike@addtoit.com>
+Subject: Re: UML fails to locate address space
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080520212735.GA13319@c2.user-mode-linux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080520195437.GZ22369@kernel.dk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <7b9198260805200408k1d6b70a8xc7e4c24106e5020f@mail.gmail.com>
+	 <20080520135238.GB6990@c2.user-mode-linux.org>
+	 <7b9198260805200659p6ed28403t9b0b0ea995f158d5@mail.gmail.com>
+	 <20080520161047.GA9598@c2.user-mode-linux.org>
+	 <7b9198260805200943x6fb15512o7ba35a40d006b215@mail.gmail.com>
+	 <20080520175624.GA10889@c2.user-mode-linux.org>
+	 <7b9198260805201101x5b0fabf8h4944a29c6a4cae96@mail.gmail.com>
+	 <20080520192436.GA12102@c2.user-mode-linux.org>
+	 <7b9198260805201242p1adf4651kb4c434d73884b6c1@mail.gmail.com>
+	 <20080520212735.GA13319@c2.user-mode-linux.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Tue, May 20 2008, Jamie Lokier wrote:
-> > Does WRITE_BARRIER always cause a flush?  It does not have to
-> > according to Documentation/block/barrier.txt.  There are caveats about
-> > tagged queuing "not yet implemented" in the text, but can we rely on
-> > that?  The documentation is older than the current implementation;
-> > those caveats might no longer apply.
-> 
-> It does, if you use ordered tags then that assumes write through
-> caching (or ordered tag + drain + flush after completion).
+2008/5/20 Jeff Dike <jdike@addtoit.com>:
+> On Tue, May 20, 2008 at 08:42:54PM +0100, Tom Spink wrote:
+>> And this is what I did:
+>
+> Looks OK, but I need a Signed-off-by.
+>
+> Some style comments, which I can take care of if you don't feel like it:
+>        there's only one use of PROC_MMAP_MIN_ADDR, so you might as
+> well inline the filename
+>        the stat is unnecessary - open failing will tell you what you
+> need to know
+>        the strtoul needs some error checking
+>        I'd change the mmap_min_addr[8] to [sizeof("12345678")] to
+> make it clear what's expected to fit into it
+>
+> On a less-stylistic note, this thing does have to work in the absence
+> of /proc since UML is commonly run inside chroot.  So, I'm thinking we
+> still need the loop looking for the bottom of the address space in
+> this case.  And, if you have it, you might as well use it, as that's
+> less code, and it makes sure the loop is exercised.  That grieves me a
+> little, as I'd like to just read mmap_min_addr and be done with it in
+> the normal case.
+>
+>                        Jeff
+>
+> --
+> Work email - jdike at linux dot intel dot com
+>
 
-Oh.  That's really unclear from the opening paragraph of barrier.txt,
-which _defines_ what I/O barriers are for, and does not mention flushing:
+I was re-writing the patch, but after reading over the function, is
+the return value correct? I did a quick run through on paper about
+what would happen if the (real) bottom = 5 and the (real) top = 15,
+and the (initial) top = 20.  So this is a size of 10 pages, which is
+what the function should return... but:
 
-   I/O barrier requests are used to guarantee ordering around the barrier
-   requests.  Unless you're crazy enough to use disk drives for
-   implementing synchronization constructs (wow, sounds interesting...),
-   the ordering is meaningful only for write requests for things like
-   journal checkpoints.  All requests queued before a barrier request
-   must be finished (made it to the physical medium) before the barrier
-   request is started, and all requests queued after the barrier request
-   must be started only after the barrier request is finished (again,
-   made it to the physical medium).
+top = 20, bottom = 5
+test = 12
+bottom = 12
+(top - bottom) = 8
 
-So I assumed the reason flush is talked about later was only because
-most devices don't offer an alternative.
+top = 20, bottom = 12
+test = 16
+top = 16
+(top - bottom) = 4
 
-Later in barrier.txt, in the section about flushing, it says:
+top = 16, bottom = 12
+test = 14
+bottom = 14
+(top - bottom) = 2
 
-   the reason you use I/O barriers is mainly to protect filesystem
-   integrity when power failure or some other events abruptly stop the
-   drive from operating and possibly make the drive lose data in its
-   cache.  So, I/O barriers need to guarantee that requests actually
-   get written to non-volatile medium in order
+top = 16, bottom = 14
+test = 15
+bottom = 15
+(top - bottom) = 1
 
-Woa!  Nothing about flushing being important, just "to guarantee
-... in order".
+<loop exits>
 
-Thus flushing looks like an implementation detail - all we could do at
-the time.  It does not seem to be the _point_ of WRITE_BARRIER
-(according to the text), which is to ensure journalling integrity by
-ordering writes.
+return 16 << UM_KERN_PAGE_SHIFT;
 
-Really, the main reason I was confused was that I imagine some
-SCSI-like devices letting you do partially ordered writes to
-write-back cache - with their cache preserving ordering constraints
-the same way as some CPU or database caches.  (Perhaps I've been
-thinking about CPUs too long!)
+Hmm.  Are my calculations wrong?
 
-Anyway, moving on....  Let's admit I am wrong about that :-)
-
-And get back to my idea.  Ignoring actual disks for a moment ( ;-) ),
-there are some I/O scheduling optimisations possible in the kernel
-itself by distinguishing between barriers (for journalling) and
-flushes (for fsync).
-
-Basically, barriers can be moved around between ordered writes,
-including postponing indefinitely (i.e. a "needs barrier" flag).
-Unordered writes (in-place data?) can be reordered somewhat around
-barriers and other writes.  Nobody should wait for a barrier to complete.
-
-On the other hand, flushes must be issued soon, and fdatasync/fsync
-wait for the result.  Reordering possibilities are different: all
-writes can be moved before a flush (unless it's a barrier too), and
-in-place data writes cannot be moved after one.
-
-Both barriers and flushes can be merged if there are no intervening
-writes except unordered writes.  Double flushing, e.g. calling fsync
-twice, or calling blkdev_issue_flush just to be sure somewhere,
-shouldn't have any overhead.
-
-The request elevator seems a good place to apply those heuristics.
-I've written earlier about how to remove some barriers from ext3/4
-journalling.  This stuff seems to suggest even more I/O scheduling
-optimisations with tree-like journalling (as in BTRFS?).
-
--- Jamie
+-- 
+Tom Spink
