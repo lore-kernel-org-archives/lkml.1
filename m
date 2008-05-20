@@ -1,74 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763735AbYETJWo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763874AbYETJXl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763735AbYETJWo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 05:22:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761121AbYETJWg
+	id S1763874AbYETJXl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 05:23:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761121AbYETJXc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 05:22:36 -0400
-Received: from mail.gmx.net ([213.165.64.20]:42288 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1761023AbYETJWf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 05:22:35 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18gUspczDogvnJIN7qRkqk/++j1aYjL87PoIkVTGA
-	OiuSBAiL61zO8a
-Subject: Re: hackbench regression with 2.6.26-rc2 on tulsa machine
-From: Mike Galbraith <efault@gmx.de>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1211270946.3177.236.camel@ymzhang>
-References: <1211270946.3177.236.camel@ymzhang>
-Content-Type: text/plain; charset=utf-8
-Date: Tue, 20 May 2008 11:22:32 +0200
-Message-Id: <1211275352.24305.6.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Tue, 20 May 2008 05:23:32 -0400
+Received: from mail51.messagelabs.com ([216.82.244.179]:40246 "EHLO
+	mail51.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760934AbYETJXb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 05:23:31 -0400
+X-VirusChecked: Checked
+X-Env-Sender: Uwe.Kleine-Koenig@digi.com
+X-Msg-Ref: server-15.tower-51.messagelabs.com!1211275410!1051411!1
+X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
+X-Originating-IP: [66.77.174.13]
+Date: Tue, 20 May 2008 11:23:12 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
+To: "Hans J. Koch" <hjk@linutronix.de>
+CC: Greg Kroah-Hartman <gregkh@suse.de>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] UIO: generic platform driver
+Message-ID: <20080520092312.GA10745@digi.com>
+References: <20080422094708.GB27126@digi.com> <1208857977-29493-1-git-send-email-Uwe.Kleine-Koenig@digi.com> <1208857977-29493-2-git-send-email-Uwe.Kleine-Koenig@digi.com> <1208857977-29493-3-git-send-email-Uwe.Kleine-Koenig@digi.com> <20080423085629.GA16776@digi.com> <20080427171201.GA3181@local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Y-GMX-Trusted: 0
+In-Reply-To: <20080427171201.GA3181@local>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 20 May 2008 09:23:12.0633 (UTC) FILETIME=[20465690:01C8BA5B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello Hans,
 
-On Tue, 2008-05-20 at 16:09 +0800, Zhang, Yanmin wrote:
-> Comparing with 2.6.26-rc1, hackbench has about 30% regression with 2.6.26-rc2 on my tulsa machine
-> which is a netburst architecure hyper-threading x86_64.
+Hans J. Koch wrote:
+> On Wed, Apr 23, 2008 at 10:56:29AM +0200, Uwe Kleine-König wrote:
+> > Hello,
+> > 
+> > Uwe Kleine-König wrote:
+> > > Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
+> > > ---
+> > > Hello,
+> > > 
+> > > This is the former patch 4/4 after some discussion.
+> > > 
+> > > Open issues:
+> > >   - clock name "uio" isn't considered good by Russell King
+> > >     I don't have a better suggestion
+> > I added another branch[1] on my repo that doesn't have the dummy clk
+> > patch and variant of this one that doesn't use the clk API.
+> > 
+> > This way the clk API isn't needed anymore for my patch and the issue
+> > about the clock name disappeard, too.
 > 
-> Command line to test: #hackbench 100 process 2000
+> Hi Uwe,
+> sorry for the delay, I was away for a few days and had an awful lot of
+> work when I came back.
 > 
-> With ï»¿2.6.26-rc1, it takes 30 seconds. But with 2.6.26-rc2/rc3, it takes 40 seconds.
+> About your generic platform driver: I think we've got two choices, both
+> of them are acceptable as far as I'm concerned:
 > 
-> Bisect located below patch:
-> 46151122e0a2e80e5a6b2889f595e371fe2b600d is first bad commit
-> commit 46151122e0a2e80e5a6b2889f595e371fe2b600d
-> Author: Mike Galbraith <efault@gmx.de>
-> Date:   Thu May 8 17:00:42 2008 +0200
+> 1.) Use the clk API and make your driver depend on it. AFAICS, only ARM
+> and PPC implement it right now. On some platforms, it will probably
+> never be implemented. E.g. x86 doesn't have any clocks that could be
+> controlled that way. It's probably only useful for SoCs.
+> Advantages: People who need it get clk support for free, without having
+> to write much code.
+> Disadvantages: The generic platform driver is not available for all
+> platforms. It might not be easy to implement the dependency in Kconfig
+> in a way acceptable to all maintainers ;-)
 > 
->     sched: fix weight calculations
->     
->     The conversion between virtual and real time is as follows:
->     
->       dvt = rw/w * dt <=> dt = w/rw * dvt
->     
->     Since we want the fair sleeper granularity to be in real time, we actually
->     need to do:
->     
->       dvt = - rw/w * l
+> 2.) Don't use the clk API. I don't think we would lose much. Drivers
+> could implement clk stuff in their board support. You could add some
+> generic function pointers in struct uio_platdata that are called in
+> open/release/probe/remove. That way, any platform specific stuff,
+> including clk, could be handled.
+> Advantages: The generic platform driver is available for all
+> platforms, no need for dependencies in Kconfig.
+> Disadvantages: People who need clk_* must write a lot of code within
+> their board support file. Not nice and clean...
 > 
-> 
-> 
-> The bisect steps look stable.
-> 
-> On my core architecure machines(stoakley and tigerton), I do see improvement instead of regression,
-> like result from 31 seconds down to 28 seconds.
-> 
-> I'm not sure if hyper-threading need more cares in this situation.
+> I'm ready to accept 1.) or 2.), or even both of them (why can't we have
+> two generic platform drivers?)
+For now I suggest 2).  Using the clk API might be implemented by a
+generic open/release routine.  Maybe I will look into that at a later
+time.  For now I'm happy without clk support, too.
 
-Oh joy.  I'll update my poor old P4 and see what I can duplicate this.
+For now you can find two patches in my uio branch at
+git://www.modarm9.com/gitsrc/pub/people/ukleinek/linux-2.6.git uio
 
-Do you still have group scheduling enabled?  If so, can you turn it off
-and try again?  (when in doubt, grasp at any straw within reach;)
+I rebased them to current Linus' master; otherwise they are unmodified
+since the last posts.  For completeness I'll resend them as a reply to
+this mail.
 
-	-Mike
+For shortlog and diffstat see below.
 
+Best regards
+Uwe
+
+Uwe Kleine-König (2):
+      UIO: don't let UIO_CIF and UIO_SMX depend twice on UIO
+      UIO: generic platform driver
+
+ drivers/uio/Kconfig    |   10 +++-
+ drivers/uio/Makefile   |    1 +
+ drivers/uio/uio_pdrv.c |  118 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 127 insertions(+), 2 deletions(-)
+
+-- 
+Uwe Kleine-König, Software Engineer
+Digi International GmbH Branch Breisach, Küferstrasse 8, 79206 Breisach, Germany
+Tax: 315/5781/0242 / VAT: DE153662976 / Reg. Amtsgericht Dortmund HRB 13962
