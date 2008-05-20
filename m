@@ -1,68 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763848AbYETLOh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764429AbYETLRr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763848AbYETLOh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 07:14:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754291AbYETLO1
+	id S1764429AbYETLRr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 07:17:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756864AbYETLRj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 07:14:27 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:48469 "EHLO mx2.suse.de"
+	Tue, 20 May 2008 07:17:39 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:38069 "EHLO minas.ics.muni.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752971AbYETLO0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 07:14:26 -0400
-Date: Tue, 20 May 2008 13:14:24 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Robin Holt <holt@sgi.com>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrea Arcangeli <andrea@qumranet.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       kvm-devel@lists.sourceforge.net, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>, linux-kernel@vger.kernel.org,
-       Avi Kivity <avi@qumranet.com>, linux-mm@kvack.org,
-       general@lists.openfabrics.org, Hugh Dickins <hugh@veritas.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Anthony Liguori <aliguori@us.ibm.com>, Chris Wright <chrisw@redhat.com>,
-       Marcelo Tosatti <marcelo@kvack.org>, Eric Dumazet <dada1@cosmosbay.com>,
-       "Paul E. McKenney" <paulmck@us.ibm.com>
-Subject: Re: [PATCH 08 of 11] anon-vma-rwsem
-Message-ID: <20080520111424.GB25791@wotan.suse.de>
-References: <20080514112625.GY9878@sgi.com> <20080515075747.GA7177@wotan.suse.de> <Pine.LNX.4.64.0805151031250.18708@schroedinger.engr.sgi.com> <20080515235203.GB25305@wotan.suse.de> <20080516112306.GA4287@sgi.com> <20080516115005.GC4287@sgi.com> <20080520053145.GA19502@wotan.suse.de> <20080520100111.GC30341@sgi.com> <20080520105025.GA25791@wotan.suse.de> <20080520110528.GD30341@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1754525AbYETLRi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 07:17:38 -0400
+Date: Tue, 20 May 2008 13:17:01 +0200
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Bug #10630] USB devices plugged into dock are not discoverred
+	until reload of ehci-hcd
+Message-ID: <20080520111700.GE5025@ics.muni.cz>
+References: <oKKSi1w1qaF.A.mEG.JrBMIB@albercik> <7wuznNhcUqC.A.OcB.itBMIB@albercik> <200805201258.00376.oliver@neukum.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-2
 Content-Disposition: inline
-In-Reply-To: <20080520110528.GD30341@sgi.com>
-User-Agent: Mutt/1.5.9i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200805201258.00376.oliver@neukum.org>
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Muni-Spam-TestIP: 147.251.54.96
+X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Tue, 20 May 2008 13:17:02 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 06:05:29AM -0500, Robin Holt wrote:
-> On Tue, May 20, 2008 at 12:50:25PM +0200, Nick Piggin wrote:
-> > On Tue, May 20, 2008 at 05:01:11AM -0500, Robin Holt wrote:
-> > > On Tue, May 20, 2008 at 07:31:46AM +0200, Nick Piggin wrote:
-> > > > 
-> > > > Really? You can get the information through via a sleeping messaging API,
-> > > > but not a non-sleeping one? What is the difference from the hardware POV?
-> > > 
-> > > That was covered in the early very long discussion about 28 seconds.
-> > > The read timeout for the BTE is 28 seconds and it automatically retried
-> > > for certain failures.  In interrupt context, that is 56 seconds without
-> > > any subsequent interrupts of that or lower priority.
-> > 
-> > I thought you said it would be possible to get the required invalidate
-> > information without using the BTE. Couldn't you use XPMEM pages in
-> > the kernel to read the data out of, if nothing else?
+On Tue, May 20, 2008 at 12:57:59PM +0200, Oliver Neukum wrote:
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.25.  Please verify if it still should be listed.
 > 
-> I was wrong about that.  I thought it was safe to do an uncached write,
-> but it turns out any processor write is uncontained and the MCA that
-> surfaces would be fatal.  Likewise for the uncached read.
+> Can you please also post your .config with which this problem happens?
 
-Oh, so the BTE transfer is purely for fault isolation. I was thinking
-you guys might have sufficient control of the hardware to be able to
-do it at the level of CPU memory operations, but if it is some
-limitation of ia64, then I guess that's a problem.
+done.
+http://bugzilla.kernel.org/show_bug.cgi?id=10630
 
-How do you do fault isolation of userspace XPMEM accesses?
+-- 
+Luká¹ Hejtmánek
