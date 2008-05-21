@@ -1,73 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761912AbYEUE7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760399AbYEUFHH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761912AbYEUE7Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 00:59:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbYEUE7P
+	id S1760399AbYEUFHH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 01:07:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbYEUFGz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 00:59:15 -0400
-Received: from ozlabs.org ([203.10.76.45]:53500 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751169AbYEUE7O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 00:59:14 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 18/57] iTCO: unlocked_ioctl, coding style and cleanup
-Date: Wed, 21 May 2008 14:58:57 +1000
-User-Agent: KMail/1.9.9
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       wim@iguana.be, Stephen Rothwell <sfr@canb.auug.org.au>
-References: <20080519124659.31722.51847.stgit@core> <200805211426.16234.rusty@rustcorp.com.au> <20080520213654.a25d286e.akpm@linux-foundation.org>
-In-Reply-To: <20080520213654.a25d286e.akpm@linux-foundation.org>
+	Wed, 21 May 2008 01:06:55 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:58630 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751169AbYEUFGy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 01:06:54 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=nqt5yB0s3bqkIzHOhcVdM4EGKPXUmQyMDsNt+pxA/ZsJOspJXA40b5Lg9cPCgQ54Y
+	TJqA1xI5C1/1hhEFf7ogA==
+Message-ID: <6599ad830805202206v334cb933t5b493988e01b3b21@mail.gmail.com>
+Date: Tue, 20 May 2008 22:06:48 -0700
+From: "Paul Menage" <menage@google.com>
+To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [RFC][PATCH 2/3] memcg:: seq_ops support for cgroup
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>
+In-Reply-To: <20080521092849.c2f0b7e1.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200805211458.58020.rusty@rustcorp.com.au>
+References: <20080520180552.601da567.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20080520180841.f292beef.kamezawa.hiroyu@jp.fujitsu.com>
+	 <6599ad830805201146g5a2a8928l6a2f5adc51b15f15@mail.gmail.com>
+	 <20080521092849.c2f0b7e1.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 21 May 2008 14:36:54 Andrew Morton wrote:
-> On Wed, 21 May 2008 14:26:15 +1000 Rusty Russell <rusty@rustcorp.com.au> 
-wrote:
-> > > decent-sized smashup during the merge window.  There are lessons
-> > > here...
-> >
-> > I've been pulling out s/down_trylock/down_nowait/ patches which effect
-> > others' changes.  Those patches get moved to the end of my queue, and
-> > I'll revisit them before an actual merge with Linus.
-> >
-> > As down_trylock still works (but marked deprecated) with my patches,
-> > they're fine to drop.  Just tell me which ones...
+On Tue, May 20, 2008 at 5:28 PM, KAMEZAWA Hiroyuki
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> With current interface, my concern is hotplug.
 >
-> Well, a simple patch which does
+> File-per-node method requires delete/add files at hotplug.
+> A file for all nodes with _maps_ method cannot be used because
+> maps file says
+> ==
+> The key/value pairs (and their ordering) should not
+>         * change between reboots.
+> ==
+
+OK, so we may need to extend the interface ...
+
+The main reason for that restriction (not allowing the set of keys to
+change) was to simplify and speed up userspace parsing and make any
+future binary API simpler. But if it's not going to work, we can maybe
+make that optional instead.
+
 >
-> /*
->  * comment goes here
->  */
-> static inline int __must_check down_nowait(struct semaphore *sem)
-> {
-> 	return !down_trylock(sem);
-> }
+> And (*read) method isn't useful ;)
 >
-> and which does not deprecate down_trylock() could go into mainline
-> right now
+> Can we add new stat file dynamically ?
 
-Sure, in this case it's probably worth it.
+Yes, there's no reason we can't do that. Right now it's not possible
+to remove a control file without deleting the cgroup, but I have a
+patch that supports removal.
 
-> , (assuming that the overall concept doesn't get shot down in 
-> review - did it get reviewed?)
+The question is whether it's better to have one file per CPU/node or
+one large complex file.
 
-Well, it got some commentry on lkml, mainly from Christoph H.  He was the one 
-who came up with "down_nowait" vs the original "down_try".
-
-> Then you can start trickling stuff out to people straight away.
-
-OK, I'll send a patch now.
-
-Thanks,
-Rusty.
-
-
-
+Paul
