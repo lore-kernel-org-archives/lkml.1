@@ -1,183 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765531AbYEUHTQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758927AbYEUHTt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765531AbYEUHTQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 03:19:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756134AbYEUHTF
+	id S1758927AbYEUHTt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 03:19:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764313AbYEUHTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 03:19:05 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:34708 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755829AbYEUHTD (ORCPT
+	Wed, 21 May 2008 03:19:35 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45277 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756134AbYEUHTe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 03:19:03 -0400
-X-Greylist: delayed 1540 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 May 2008 03:19:03 EDT
-Message-Id: <6.0.0.20.2.20080513205758.03a7a6b0@172.19.0.2>
-X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
-Date: Wed, 21 May 2008 15:52:04 +0900
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Subject: [PATCH] VFS: Pagecache usage optimization on pagesize !=
-  blocksize environment
+	Wed, 21 May 2008 03:19:34 -0400
+Date: Wed, 21 May 2008 00:19:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] VFS: Pagecache usage optimization on pagesize !=
+ blocksize environment
+Message-Id: <20080521001930.202446eb.akpm@linux-foundation.org>
+In-Reply-To: <6.0.0.20.2.20080513205758.03a7a6b0@172.19.0.2>
+References: <6.0.0.20.2.20080513205758.03a7a6b0@172.19.0.2>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Wed, 21 May 2008 15:52:04 +0900 Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp> wrote:
 
-When we read some part of a file through pagecache, if there is a pagecache 
-of corresponding index but this page is not uptodate, read IO is issued and
-this page will be uptodate.
-I think this is good for pagesize == blocksize environment but there is room
-for improvement on pagesize != blocksize environment. Because in this case
-a page can have multiple buffers and even if a page is not uptodate, some buffers 
-can be uptodate. So I suggest that when all buffers which correspond to a part
-of a file that we want to read are uptodate, use this pagecache and copy data
-from this pagecache to user buffer even if a page is not uptodate. This can
-reduce read IO and improve system throughput.
+> Hi.
+> 
+> When we read some part of a file through pagecache, if there is a pagecache 
+> of corresponding index but this page is not uptodate, read IO is issued and
+> this page will be uptodate.
+> I think this is good for pagesize == blocksize environment but there is room
+> for improvement on pagesize != blocksize environment. Because in this case
+> a page can have multiple buffers and even if a page is not uptodate, some buffers 
+> can be uptodate. So I suggest that when all buffers which correspond to a part
+> of a file that we want to read are uptodate, use this pagecache and copy data
+> from this pagecache to user buffer even if a page is not uptodate. This can
+> reduce read IO and improve system throughput.
 
-I did a performance test using the sysbench.
+I suppose that makes sense.
 
-#sysbench --num-threads=4 --max-requests=120000 --test=fileio --file-num=1 --file-block-size=1K --file-total-size=100M --file-test-mode=rndrw --file-fsync-freq=0 --file-rw-ratio=0.5 run
+> I did a performance test using the sysbench.
 
-The result was:
+That's not a terribly good benchmark, IMO.  It's too complex.
 
-	-- 2.6.26-rc3
-	Operations performed:  40002 Read, 79998 Write, 1 Other = 120001 Total
-	Read 39.064Mb  Written 78.123Mb  Total transferred 117.19Mb  (375Kb/sec)
-	  375.00 Requests/sec executed
+To work out the best-case for a change like this I'd suggest a
+microbenchmark which does something such as seeking all around a file
+doing single-byte reads.
 
-	Test execution summary:
-	    total time:                          320.0027s
-	    total number of events:              120000
-	    total time taken by event execution: 1231.5564
-	    per-request statistics:
-	         min:                            0.0000s
-	         avg:                            0.0103s
-	         max:                            2.7605s
-	         approx.  95 percentile:         0.0381s
+Then one should think up a benchmark which demonstrates the worst-case,
+such as reading one-byte-quantities from a file at offsets 0, 0x2000,
+0x4000, 0x6000, ...  and then read more one-byte-quantities at offsets
+0x1000, 0x3000, 0x5000, etc.  That would be a pretty cruel comparison,
+but as one tosses in more such artificial worklaods, one is in a better
+position to work out whether the change is an aggregate benefit.
 
+The results from a great big lumped-together benchmark such as sysbench 
+aren't a lot of use to us in predicting how effective this change will
+be across all the workloads which the kernel implements.
 
-	-- 2.6.26-rc3-patched
-	Operations performed:  40002 Read, 79998 Write, 1 Other = 120001 Total
-	Read 39.064Mb  Written 78.123Mb  Total transferred 117.19Mb  (409.78Kb/sec)
-	  409.78 Requests/sec executed
+> @@ -932,8 +932,16 @@ find_page:
+>  					ra, filp, page,
+>  					index, last_index - index);
+>  		}
+> -		if (!PageUptodate(page))
+> -			goto page_not_up_to_date;
+> +		if (!PageUptodate(page)) {
+> +			if (inode->i_blkbits == PAGE_CACHE_SHIFT)
+> +				goto page_not_up_to_date;
+> +			if (TestSetPageLocked(page))
+> +				goto page_not_up_to_date;
+> +			if (!page_has_buffers(page) ||
+> +			      !check_buffers_uptodate(offset, desc, page))
 
-	Test execution summary:
-	    total time:                          292.8406s
-	    total number of events:              120000
-	    total time taken by event execution: 1106.3995
-	    per-request statistics:
-	         min:                            0.0000s
-	         avg:                            0.0092s
-	         max:                            3.7366s
-	         approx.  95 percentile:         0.0327s
+We shouldn't do this.
 
- 
-	arch:i386 
-	filesystem:ext3
-	blocksize:1024 bytes
-	Memory: 1GB
+> +				goto page_not_up_to_date_locked;
+> +			unlock_page(page);
+> +		}
 
-Random read/write throughput was somewhat improved with following patch.
-Thanks.
+See, the code which you have here is assuming that if PagePrivate is
+set, then the thing which is at page.private is a ring of buffer_heads.
 
-Signed-off-by :Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+But this code (do_generic_file_read) doesn't know that!  Take a look at
+afs, nfs, perhaps other filesystems, grep for set_page_private().
 
-diff -Nrup linux-2.6.26-rc3.org/fs/buffer.c linux-2.6.26-rc3/fs/buffer.c
---- linux-2.6.26-rc3.org/fs/buffer.c	2008-05-19 11:35:10.000000000 +0900
-+++ linux-2.6.26-rc3/fs/buffer.c	2008-05-19 14:29:25.000000000 +0900
-@@ -2084,6 +2084,48 @@ int generic_write_end(struct file *file,
- EXPORT_SYMBOL(generic_write_end);
- 
- /*
-+ * check_buffers_uptodate checks whether buffers within a page are
-+ * uptodate or not.
-+ *
-+ * Returns true if all buffers which correspond to a file portion
-+ * we want to read are uptodate.
-+ */
-+int check_buffers_uptodate(unsigned long from,
-+			read_descriptor_t *desc, struct page *page)
-+{
-+	struct inode *inode = page->mapping->host;
-+	unsigned long block_start, block_end, blocksize;
-+	unsigned long to;
-+	struct buffer_head *bh, *head;
-+	int ret = 1;
-+
-+	blocksize = 1 << inode->i_blkbits;
-+	to = from + desc->count;
-+	if (to > PAGE_CACHE_SIZE)
-+		to = PAGE_CACHE_SIZE;
-+	if (from < blocksize && to > PAGE_CACHE_SIZE - blocksize)
-+		return 0;
-+
-+	head = page_buffers(page);
-+
-+	for (bh = head, block_start = 0; bh != head || !block_start;
-+	     block_start = block_end, bh = bh->b_this_page) {
-+		block_end = block_start + blocksize;
-+		if (block_end <= from || block_start >= to)
-+			continue;
-+		else {
-+			if (!buffer_uptodate(bh)) {
-+				ret = 0;
-+				break;
-+			}
-+			if (block_end >= to)
-+				break;
-+		}
-+	}
-+	return ret;
-+}
-+
-+/*
-  * Generic "read page" function for block devices that have the normal
-  * get_block functionality. This is most of the block device filesystems.
-  * Reads the page asynchronously --- the unlock_buffer() and
-diff -Nrup linux-2.6.26-rc3.org/include/linux/buffer_head.h linux-2.6.26-rc3/include/linux/buffer_head.h
---- linux-2.6.26-rc3.org/include/linux/buffer_head.h	2008-05-19 11:35:11.000000000 +0900
-+++ linux-2.6.26-rc3/include/linux/buffer_head.h	2008-05-19 12:13:46.000000000 +0900
-@@ -205,6 +205,8 @@ void block_invalidatepage(struct page *p
- int block_write_full_page(struct page *page, get_block_t *get_block,
- 				struct writeback_control *wbc);
- int block_read_full_page(struct page*, get_block_t*);
-+int check_buffers_uptodate(unsigned long from,
-+			read_descriptor_t *desc, struct page *page);
- int block_write_begin(struct file *, struct address_space *,
- 				loff_t, unsigned, unsigned,
- 				struct page **, void **, get_block_t*);
-diff -Nrup linux-2.6.26-rc3.org/mm/filemap.c linux-2.6.26-rc3/mm/filemap.c
---- linux-2.6.26-rc3.org/mm/filemap.c	2008-05-19 11:35:11.000000000 +0900
-+++ linux-2.6.26-rc3/mm/filemap.c	2008-05-19 14:29:23.000000000 +0900
-@@ -932,8 +932,16 @@ find_page:
- 					ra, filp, page,
- 					index, last_index - index);
- 		}
--		if (!PageUptodate(page))
--			goto page_not_up_to_date;
-+		if (!PageUptodate(page)) {
-+			if (inode->i_blkbits == PAGE_CACHE_SHIFT)
-+				goto page_not_up_to_date;
-+			if (TestSetPageLocked(page))
-+				goto page_not_up_to_date;
-+			if (!page_has_buffers(page) ||
-+			      !check_buffers_uptodate(offset, desc, page))
-+				goto page_not_up_to_date_locked;
-+			unlock_page(page);
-+		}
- page_ok:
- 		/*
- 		* i_size must be checked after we know the page is Uptodate.
-@@ -1003,6 +1011,7 @@ page_not_up_to_date:
- 		if (lock_page_killable(page))
- 			goto readpage_eio;
- 
-+page_not_up_to_date_locked:
- 		/* Did it get truncated before we got the lock? */
- 		if (!page->mapping) {
- 			unlock_page(page);
+Only the address_space implementation (ie: the filesystem) knows
+whether page.private holds buffer_heads and only the
+address_space_operations functions are allowed to call into library
+functions which treat page.private as a buffer_head ring.
 
+Now, your code _may_ not crash, because perhaps there is no filesystem
+which puts something else into page.private which also uses
+do_generic_file_read().  But it's still wrong.
+
+I guess a suitable fix might be to implement the above using a new
+address_space_operations callback:
+
+	if (PagePrivate(page) && aops->is_partially_uptodate) {
+		if (aops->is_partially_uptodate(page, desc, offset))
+			<OK, we can copy the data>
+
+then implement a generic_file_is_partially_uptodate() in fs/buffer.c
+and wire that up in the filesystems.
+
+Note that things like network filesystems can then implement this also.
