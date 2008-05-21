@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764756AbYEUOpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932704AbYEUOq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764756AbYEUOpz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 10:45:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755285AbYEUOpp
+	id S932704AbYEUOq4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 10:46:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756077AbYEUOqq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 10:45:45 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41618 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754114AbYEUOpp (ORCPT
+	Wed, 21 May 2008 10:46:46 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:34573 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755285AbYEUOqp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 10:45:45 -0400
-Date: Wed, 21 May 2008 09:48:40 -0500
-From: Cliff Wickman <cpw@sgi.com>
-To: dmitry.adamushko@gmail.com, avi@qumranet.com, mingo@elte.hu,
-       heiko.carstens@de.ibm.com, a.p.zijlstra@chello.nl,
-       vatsa@linux.vnet.ibm.com
-Cc: Avi Kivity <avi@qumranet.com>, linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       PeterZijlst@sgi.com
-Subject: [BUG] hotplug cpus on ia64
-Message-ID: <20080521144840.GA32628@sgi.com>
-References: <4829A6A0.5040208@qumranet.com> <b647ffbd0805140113i4296076cna3f371c86c479653@mail.gmail.com>
+	Wed, 21 May 2008 10:46:45 -0400
+Date: Wed, 21 May 2008 10:46:45 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Jiri Kosina <jkosina@suse.cz>
+cc: Oliver Neukum <oliver@neukum.org>, Greg KH <greg@kroah.com>,
+       <linux-usb@vger.kernel.org>, <lchiquitto@novell.com>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] USB: fix deadlock in HCD code
+In-Reply-To: <Pine.LNX.4.64.0805211620270.6718@jikos.suse.cz>
+Message-ID: <Pine.LNX.4.44L0.0805211042070.2490-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b647ffbd0805140113i4296076cna3f371c86c479653@mail.gmail.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gentlemen,
+On Wed, 21 May 2008, Jiri Kosina wrote:
 
-  I built an ia64 kernel from Andrew's tree (2.6.26-rc2-mm1)
-and get a very predictable hotplug cpu problem.
+> On Wed, 21 May 2008, Alan Stern wrote:
+> 
+> > > Used in the suspend code. Your patch is indeed correct, but I fear 
+> > > there might be a second bug caused by wrong calling conditions.
+> > The problem in the Novell bugzilla entry was caused by the fact that the 
+> > OHCI irq routine was invoked with interrupts enabled, owing to a missing 
+> > IRQF_DISABLED flag.  That bug has already been fixed in 2.6.25.
+> 
+> That indeed is 2.6.25 kernel. I guess you are talking about commit 
+> 442258e2ff69 here.
 
-billberry1:/tmp/cpw # ./dis
-disabled cpu 17
-enabled cpu 17
-billberry1:/tmp/cpw # ./dis
-disabled cpu 17
-enabled cpu 17
-billberry1:/tmp/cpw # ./dis
+Yes.
 
-The script that disables the cpu always hangs (unkillable)
-on the 3rd attempt.
-I haven't spent any debugging time on it yet.
+> If so, the reporter is definitely using the kernel 
+> containing this commit, and the lockups still trigger.
+> 
+> Seems that my patch is papering over the real bug (someone enabling 
+> interrupts somewhere) indeed, but I can't seem to be able to find such 
+> codepath.
 
-Just wondering if you've seen it?   It doesn't seem to happen x86_64.
+You could try testing the interrupt-enable flag at various places 
+in ohci-hcd (start with finish_urb) and printing an error message if 
+interrupts are enabled.
 
--Cliff Wickman
-cpw@sgi.com
+One possibility is that in an earlier call to finish_urb,
+usb_hcd_giveback_urb was called with interrupts disabled and returned 
+with interrupts enabled.  In other words, some driver's callback 
+routine may have enabled interrupts incorrectly.
+
+Alan Stern
+
