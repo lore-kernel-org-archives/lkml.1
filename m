@@ -1,61 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936648AbYEUSBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936354AbYEUSEL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936648AbYEUSBU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 14:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765791AbYEUSBL
+	id S936354AbYEUSEL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 14:04:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933759AbYEUSDy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 14:01:11 -0400
-Received: from rv-out-0506.google.com ([209.85.198.228]:28139 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757560AbYEUSBK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 14:01:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=sMQu0DAmVOOZab+KMzoYC8TuUBXAF3N3F5JGEOFzsQcNqgAmD48N7v3m/wlEF5XEKNlIMUH95WyIEvQcGFyay8L/t/s4ldnN14Q9TLb4iRAZ8++SfF5ggm0XEnETj0XP5H/bRz2Zl35j0rR1fjbPSlnDgzuce2Zugqd9V0yY+rc=
-Message-ID: <7b9198260805211101s1fb96533tc86a614008833741@mail.gmail.com>
-Date: Wed, 21 May 2008 19:01:10 +0100
-From: "Tom Spink" <tspink@gmail.com>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Subject: Re: 2.6.24 not recognizing 2G MMC card?
-Cc: drzeus-mmc@drzeus.cx, linux-kernel@vger.kernel.org
-In-Reply-To: <20080521172104.GC2592@fieldses.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 21 May 2008 14:03:54 -0400
+Received: from gate.crashing.org ([63.228.1.57]:34514 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757987AbYEUSDx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 14:03:53 -0400
+Subject: Re: [PATCH 1/2] Add thread_info_cache_init() to all archs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux-Arch <linux-arch@vger.kernel.org>, linux-m32r@ml.linux-m32r.org,
+       takata@linux-m32r.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+       Luke Browning <LukeBrowning@us.ibm.com>
+In-Reply-To: <1208501061.6958.394.camel@pasglop>
+References: <20080410032354.90CB1DDF0F@ozlabs.org>
+	 <20080413171953.bde5e9ac.akpm@linux-foundation.org>
+	 <1208133506.6958.82.camel@pasglop>
+	 <20080413191338.9776ebd0.akpm@linux-foundation.org>
+	 <1208491086.6958.381.camel@pasglop>
+	 <20080417211905.8ff769fa.akpm@linux-foundation.org>
+	 <1208501061.6958.394.camel@pasglop>
+Content-Type: text/plain
+Date: Wed, 21 May 2008 13:56:25 -0400
+Message-Id: <1211392585.8297.218.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080521172104.GC2592@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/5/21 J. Bruce Fields <bfields@fieldses.org>:
-> Please forgive a somewhat naive question--I'm not sure how to go about
-> debugging this kind of thing:
->
-> I have a Dell 1420n with card readers reported by lspci as:
->
-> 03:01.1 SD Host controller: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter (rev 22)
-> 03:01.2 System peripheral: Ricoh Co Ltd R5C843 MMC Host Controller (rev 12)
->
-> I have a 512MB MicroSD card which seems to be recognized fine, but a 2GB
-> MMC card is not.
->
-> I'm using a stock Ubuntu 8.04 kernel, which reports itself as
-> 2.6.24-16-generic.
->
-> Skimming through commits to drivers/mmc,
-> 5ae70296c85f96a9969891d9de3410ebdf210b71 "mmc: Disabler for Ricoh MMC
-> controller", looks relevant, but seems to be included in 2.6.24.
->
-> Anything I should try?  Thanks in advance for any suggestions.
->
-> --b.
 
-Hi,
+On Fri, 2008-04-18 at 16:44 +1000, Benjamin Herrenschmidt wrote:
+> > > so what
+> > > about the patch below ?
+> > 
+> > I like it, but the compiler won't ;)
+> > 
+> > > If you're ok, I'll re-send with appropriate sob
+> > > & adapted powerpc part.
+> > 
+> > Sure.
+> > 
+> > > +void __init __attribute__((weak) thread_info_cache_init(void)
+> >
 
-What does: lsmod | grep ricoh, give you?  Anything?
+Back to this old subject...
 
--- 
-Tom Spink
+I'm having reports that this is not working...
+
+gcc is seeing the empty weak function and is optimizing it out
+before it gets a chance to link to the arch provided one.
+
+This would affect that and the other one next to it..
+
+That seems pretty bad... it causes nasty crashes as we end up having no
+idea what the compiler decided to generate... I suppose we could keep
+the weak stubs out of the file where they are called but that sucks.
+
+ie. This is some form of gcc 4.1.1
+
+Is that a known problem ? A gcc issue ? Not sure what is expected from
+those weak functions.
+
+Ben.
+
+
