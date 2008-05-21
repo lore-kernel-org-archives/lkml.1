@@ -1,44 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933741AbYEUKcx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933181AbYEUKeG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933741AbYEUKcx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 06:32:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760360AbYEUKcS
+	id S933181AbYEUKeG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 06:34:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757829AbYEUKdz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 06:32:18 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:55131 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932477AbYEUKcL (ORCPT
+	Wed, 21 May 2008 06:33:55 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:64209 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757463AbYEUKdy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 06:32:11 -0400
-Date: Wed, 21 May 2008 06:32:06 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org,
-       davem@davemloft.net
-Subject: Re: CFD: linux-wanking@vger.kernel.org (was [PATCH] Standard
-	indentation of arguments)
-Message-ID: <20080521103206.GA24545@infradead.org>
-References: <12113495282137-git-send-email-kongjianjun@gmail.com> <20080521083413.GM28946@ZenIV.linux.org.uk> <20080521015037.add0b78e.akpm@linux-foundation.org>
+	Wed, 21 May 2008 06:33:54 -0400
+In-Reply-To: <1211364266.6463.76.camel@lappy.programming.kicks-ass.net>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080521015037.add0b78e.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Subject: Re: [PATCH] consolidate all within() implementations
+X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
+Message-ID: <OFC011E4F1.61EF5440-ONC1257450.0038CB52-C1257450.003A0375@de.ibm.com>
+From: Peter 1 Oberparleiter <Peter.Oberparleiter@de.ibm.com>
+Date: Wed, 21 May 2008 12:33:40 +0200
+X-MIMETrack: Serialize by Router on D12ML066/12/M/IBM(Release 7.0.2FP2HF322 | September
+ 26, 2007) at 21/05/2008 12:33:51,
+	Serialize complete at 21/05/2008 12:33:51
+Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 21, 2008 at 01:50:37AM -0700, Andrew Morton wrote:
-> Oh, what a marvellous way to encourage new contributors that was. Thank
-> you so much.
+Peter Zijlstra <a.p.zijlstra@chello.nl> wrote on 21.05.2008 12:04:26:
+> > +static inline int addr_within_len(const void *addr, const void 
+*start,
+> > +              size_t len)
+> > +{
+> > +   return ((unsigned long) addr >= (unsigned long) start) &&
+> > +          ((unsigned long) addr < ((unsigned long) start + len));
+> > +}
 > 
-> For the record: Al speaks only for himself and a lack of expressed
-> disagrement from others should not be taken as agreement.
+> might be my braindamage, but I'd have written it like:
+> 
+> static inline int 
+> addr_within_len(const void *addr, const void *start, size_t len)
+> {
+>    return (unsigned long)addr - (unsigned long)start < len;
+> }
 
-But I'd like to second the opinion.  This is getting a little too far.
-We should rather try to at least enforce very basic standards a lot of
-the crap shoved in doesn't follow instead of wanking around about exact
-placement of whitespaces.
+Definitely another way to put it. In my opinion the intention of the
+implementation is more easily understood though when spelling it out
+as (a>=b) && (a<c).
 
+> static inline int
+> addr_within(const void *add, const void *start, const void *end)
+> {
+>    return addr_within_len(addr, start, 
+>          (unsigned long)end - (unsigned long)start);
+> }
+
+For empty ranges (start > end), this produces different (less expected)
+results than the previous version.
+
+
+Regards,
+  Peter
