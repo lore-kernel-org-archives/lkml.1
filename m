@@ -1,159 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763086AbYEUAiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933220AbYEUAi4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763086AbYEUAiQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 20:38:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765981AbYEUAef
+	id S933220AbYEUAi4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 20:38:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756377AbYEUAiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 20:34:35 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:45371 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932212AbYEUAed (ORCPT
+	Tue, 20 May 2008 20:38:46 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:56888 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753559AbYEUAip (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 20:34:33 -0400
-Date: Wed, 21 May 2008 01:34:30 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: jgarzik@pobox.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] misc drivers/net endianness noise
-Message-ID: <20080521003430.GB28946@ZenIV.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 20 May 2008 20:38:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=h0CGNW9DRcwiHjDeTUl/0li6vJ0uWGZ7R8MK1e/5fBy3i9AmfAtq7FsbjqqSK7hOhF7m1qs+93gbqHcz+nqIJtT/bGW5iKQ/26ItG/HAkHYrR40Ows5gzIpzoyEWPrZIWrJ9dDfip0RuWtXYgxugM9/JnY6DE8QoHwJa4bbgCqo=
+Subject: Re: [PATCH] bt8xx: unaligned access
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: mchehab@infradead.org, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+In-Reply-To: <E1JycFh-0004sc-Re@ZenIV.linux.org.uk>
+References: <E1JycFh-0004sc-Re@ZenIV.linux.org.uk>
+Content-Type: text/plain
+Date: Tue, 20 May 2008 17:38:43 -0700
+Message-Id: <1211330323.5915.226.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
- drivers/net/3c509.c                    |   15 +++++++--------
- drivers/net/atlx/atl1.c                |    2 +-
- drivers/net/usb/catc.c                 |    5 ++++-
- drivers/net/usb/rndis_host.c           |    4 ++--
- drivers/net/wireless/zd1211rw/zd_mac.c |    2 +-
- drivers/net/wireless/zd1211rw/zd_usb.c |    2 +-
- 6 files changed, 16 insertions(+), 14 deletions(-)
+On Wed, 2008-05-21 at 01:32 +0100, Al Viro wrote:
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> ---
+>  drivers/media/video/bt8xx/bttv-cards.c |    5 +++--
+>  1 files changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/media/video/bt8xx/bttv-cards.c b/drivers/media/video/bt8xx/bttv-cards.c
+> index f20a01c..8ef0424 100644
+> --- a/drivers/media/video/bt8xx/bttv-cards.c
+> +++ b/drivers/media/video/bt8xx/bttv-cards.c
+> @@ -34,6 +34,7 @@
+>  #include <linux/firmware.h>
+>  #include <net/checksum.h>
+>  
+> +#include <asm/unaligned.h>
+>  #include <asm/io.h>
+>  
+>  #include "bttvp.h"
+> @@ -3858,7 +3859,7 @@ static void __devinit osprey_eeprom(struct bttv *btv, const u8 ee[256])
+>  		ee += i;
+>  
+>  		/* found a valid descriptor */
+> -		type = be16_to_cpup((u16*)(ee+4));
+> +		type = get_unaligned_be16((__be16 *)(ee+4));
 
-diff --git a/drivers/net/3c509.c b/drivers/net/3c509.c
-index e6c545f..87d8795 100644
---- a/drivers/net/3c509.c
-+++ b/drivers/net/3c509.c
-@@ -413,7 +413,7 @@ static int __devinit el3_pnp_probe(struct pnp_dev *pdev,
- {
- 	short i;
- 	int ioaddr, irq, if_port;
--	u16 phys_addr[3];
-+	__be16 phys_addr[3];
- 	struct net_device *dev = NULL;
- 	int err;
- 
-@@ -605,7 +605,7 @@ static int __init el3_mca_probe(struct device *device)
- 
- 	short i;
- 	int ioaddr, irq, if_port;
--	u16 phys_addr[3];
-+	__be16 phys_addr[3];
- 	struct net_device *dev = NULL;
- 	u_char pos4, pos5;
- 	struct mca_device *mdev = to_mca_device(device);
-@@ -635,14 +635,13 @@ static int __init el3_mca_probe(struct device *device)
- 			printk(KERN_DEBUG "3c529: irq %d  ioaddr 0x%x  ifport %d\n", irq, ioaddr, if_port);
- 	}
- 	EL3WINDOW(0);
--	for (i = 0; i < 3; i++) {
--			phys_addr[i] = htons(read_eeprom(ioaddr, i));
--	}
-+	for (i = 0; i < 3; i++)
-+		phys_addr[i] = htons(read_eeprom(ioaddr, i));
- 
- 	dev = alloc_etherdev(sizeof (struct el3_private));
- 	if (dev == NULL) {
--			release_region(ioaddr, EL3_IO_EXTENT);
--			return -ENOMEM;
-+		release_region(ioaddr, EL3_IO_EXTENT);
-+		return -ENOMEM;
- 	}
- 
- 	netdev_boot_setup_check(dev);
-@@ -668,7 +667,7 @@ static int __init el3_eisa_probe (struct device *device)
- {
- 	short i;
- 	int ioaddr, irq, if_port;
--	u16 phys_addr[3];
-+	__be16 phys_addr[3];
- 	struct net_device *dev = NULL;
- 	struct eisa_device *edev;
- 	int err;
-diff --git a/drivers/net/atlx/atl1.c b/drivers/net/atlx/atl1.c
-index 9c2394d..6e4c80d 100644
---- a/drivers/net/atlx/atl1.c
-+++ b/drivers/net/atlx/atl1.c
-@@ -2135,7 +2135,7 @@ static int atl1_tso(struct atl1_adapter *adapter, struct sk_buff *skb,
- 				return -1;
- 		}
- 
--		if (skb->protocol == ntohs(ETH_P_IP)) {
-+		if (skb->protocol == htons(ETH_P_IP)) {
- 			struct iphdr *iph = ip_hdr(skb);
- 
- 			real_len = (((unsigned char *)iph - skb->data) +
-diff --git a/drivers/net/usb/catc.c b/drivers/net/usb/catc.c
-index 76752d8..22c17bb 100644
---- a/drivers/net/usb/catc.c
-+++ b/drivers/net/usb/catc.c
-@@ -423,7 +423,10 @@ static int catc_hard_start_xmit(struct sk_buff *skb, struct net_device *netdev)
- 
- 	catc->tx_ptr = (((catc->tx_ptr - 1) >> 6) + 1) << 6;
- 	tx_buf = catc->tx_buf[catc->tx_idx] + catc->tx_ptr;
--	*((u16*)tx_buf) = (catc->is_f5u011) ? cpu_to_be16((u16)skb->len) : cpu_to_le16((u16)skb->len);
-+	if (catc->is_f5u011)
-+		*(__be16 *)tx_buf = cpu_to_be16(skb->len);
-+	else
-+		*(__le16 *)tx_buf = cpu_to_le16(skb->len);
- 	skb_copy_from_linear_data(skb, tx_buf + 2, skb->len);
- 	catc->tx_ptr += skb->len + 2;
- 
-diff --git a/drivers/net/usb/rndis_host.c b/drivers/net/usb/rndis_host.c
-index 21a7785..3969b7a 100644
---- a/drivers/net/usb/rndis_host.c
-+++ b/drivers/net/usb/rndis_host.c
-@@ -283,8 +283,8 @@ generic_rndis_bind(struct usbnet *dev, struct usb_interface *intf, int flags)
- 		struct rndis_set_c	*set_c;
- 		struct rndis_halt	*halt;
- 	} u;
--	u32			tmp, phym_unspec;
--	__le32			*phym;
-+	u32			tmp;
-+	__le32			phym_unspec, *phym;
- 	int			reply_len;
- 	unsigned char		*bp;
- 
-diff --git a/drivers/net/wireless/zd1211rw/zd_mac.c b/drivers/net/wireless/zd1211rw/zd_mac.c
-index 69c45ca..6424e5a 100644
---- a/drivers/net/wireless/zd1211rw/zd_mac.c
-+++ b/drivers/net/wireless/zd1211rw/zd_mac.c
-@@ -805,7 +805,7 @@ void zd_process_intr(struct work_struct *work)
- 	u16 int_status;
- 	struct zd_mac *mac = container_of(work, struct zd_mac, process_intr);
- 
--	int_status = le16_to_cpu(*(u16 *)(mac->intr_buffer+4));
-+	int_status = le16_to_cpu(*(__le16 *)(mac->intr_buffer+4));
- 	if (int_status & INT_CFG_NEXT_BCN) {
- 		if (net_ratelimit())
- 			dev_dbg_f(zd_mac_dev(mac), "INT_CFG_NEXT_BCN\n");
-diff --git a/drivers/net/wireless/zd1211rw/zd_usb.c b/drivers/net/wireless/zd1211rw/zd_usb.c
-index 12e24f0..8941f5e 100644
---- a/drivers/net/wireless/zd1211rw/zd_usb.c
-+++ b/drivers/net/wireless/zd1211rw/zd_usb.c
-@@ -342,7 +342,7 @@ static inline void handle_regs_int(struct urb *urb)
- 	ZD_ASSERT(in_interrupt());
- 	spin_lock(&intr->lock);
- 
--	int_num = le16_to_cpu(*(u16 *)(urb->transfer_buffer+2));
-+	int_num = le16_to_cpu(*(__le16 *)(urb->transfer_buffer+2));
- 	if (int_num == CR_INTERRUPT) {
- 		struct zd_mac *mac = zd_hw_mac(zd_usb_to_hw(urb->context));
- 		memcpy(&mac->intr_buffer, urb->transfer_buffer,
--- 
-1.5.3.GIT
+The casts aren't strictly necessary here.  Any reason to keep it?
+
+>  
+>  		switch(type) {
+>  		/* 848 based */
+> @@ -3918,7 +3919,7 @@ static void __devinit osprey_eeprom(struct bttv *btv, const u8 ee[256])
+>  			       btv->c.nr, type);
+>  			break;
+>  		}
+> -		serial = be32_to_cpup((u32*)(ee+6));
+> +		serial = get_unaligned_be32((__be32 *)(ee+6));
+
+Ditto.
+
+Cheers,
+
+Harvey
 
