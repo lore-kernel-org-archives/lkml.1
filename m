@@ -1,67 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936917AbYEUVzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937398AbYEUV4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936917AbYEUVzv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 17:55:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759159AbYEUVzm
+	id S937398AbYEUV4g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 17:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760054AbYEUV4Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 17:55:42 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:56882 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758835AbYEUVzl (ORCPT
+	Wed, 21 May 2008 17:56:24 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:47239 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754480AbYEUV4X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 17:55:41 -0400
-Message-ID: <48349AF2.30009@keyaccess.nl>
-Date: Wed, 21 May 2008 23:58:10 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Takashi Iwai <tiwai@suse.de>, alsa-devel@alsa-project.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [alsa-devel] Moving sound/* to drivers/ ?
-References: <s5hzlqjz74d.wl%tiwai@suse.de> <alpine.LFD.1.10.0805211431370.3081@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.10.0805211431370.3081@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Wed, 21 May 2008 17:56:23 -0400
+Date: Wed, 21 May 2008 14:55:32 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: David Miller <davem@davemloft.net>, mingo <mingo@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: netdev@vger.kernel.org, akpm@linux-foundation.org,
+       netfilter-devel@vger.kernel.org, coreteam@netfilter.org
+Subject: [PATCH] netfilter: conntrack_helper needs to include rculist.h
+Message-Id: <20080521145532.8e779533.randy.dunlap@oracle.com>
+In-Reply-To: <20080521.144550.151762863.davem@davemloft.net>
+References: <20080521142139.f0bc5698.randy.dunlap@oracle.com>
+	<20080521.144550.151762863.davem@davemloft.net>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 21-05-08 23:44, Linus Torvalds wrote:
+On Wed, 21 May 2008 14:45:50 -0700 (PDT) David Miller wrote:
 
-> So I would personally certainly not mind somebody doing a 
-> 
-> 	git mv sound drivers/sound
-> 	.. edit makefiles and Kconfig files appropriately ..
-> 	git commit -a
-> 
-> and it wouldn't be a problem for git (ie the repository wouldn't grow or 
-> anything like that).
+> This needs to go in via whatever tree adds the linux/rculist.h header file,
+> which isn't net-next-2.6 as far as I can tell. :-)
 
-I'd personally like the net/ structure more. So subsystem code under 
-sound/ and drivers moved to drivers/sound/.
+Sure, makes sense.
 
->> Of course, the primary question is whether it's really worth.
->> The obvious drawback is that patches won't be applicable after the
->> move.
-> 
-> Well, git merging is actually pretty good at this, so you can apply the 
-> patches to the old release and then merge it, and it will do the right 
-> thing (perhaps not for newly created files, but that's pretty easy to fix 
-> up).
+Looks like it's some sched/auto-sched tree/branch if I'm reading
+correctly.
 
-And a few symlinks will do wonders as well. I do/did that when I "port" 
-patches developped against mainline to the alsa-kernel HG repo. Not a 
-problem that way. Apply and rediff to get the new paths.
+Ingo, is there a sched tree that add rculist.h file?
+If so, one of its users needs to #include it.  Patch below.
 
-> Me personally, I've been more irritated by include/asm-xyz vs arch/xyz. It 
-> would be so nice if all the arch-specific changes woudl always show up 
-> under arch/ (both from a statistics standpoint, and just because then a 
-> diffstat really shows arch-specific stuff really obviously, and sorts all 
-> the arch-specific stuff together).
+---
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-And one would not forget to add the include directory to a "git log" or 
-"git bisect" path specification...
+nf_conntrack_helper users rcu hlist functions so it needs to #include
+rculist.h.
 
-Rene.
+linux-next-20080521/net/netfilter/nf_conntrack_helper.c:58: error: implicit declaration of function 'hlist_for_each_entry_rcu'
+linux-next-20080521/net/netfilter/nf_conntrack_helper.c:58: error: 'hnode' undeclared (first use in this function)
+linux-next-20080521/net/netfilter/nf_conntrack_helper.c:58: error: (Each undeclared identifier is reported only once
+linux-next-20080521/net/netfilter/nf_conntrack_helper.c:58: error: for each function it appears in.)
+linux-next-20080521/net/netfilter/nf_conntrack_helper.c:58: error: expected ';' before '{' token
+linux-next-20080521/net/netfilter/nf_conntrack_helper.c:50: warning: unused variable 'mask'
+linux-next-20080521/net/netfilter/nf_conntrack_helper.c:74: error: 'hnode' undeclared (first use in this function)
+linux-next-20080521/net/netfilter/nf_conntrack_helper.c:74: error: expected ';' before '{' token
+linux-next-20080521/net/netfilter/nf_conntrack_helper.c:117: error: implicit declaration of function 'hlist_add_head_rcu'
+linux-next-20080521/net/netfilter/nf_conntrack_helper.c:133: error: implicit declaration of function 'hlist_del_rcu'
+filter/nf_conntrack_helper.o] Error 1
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ net/netfilter/nf_conntrack_helper.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+--- linux-next-20080521.orig/net/netfilter/nf_conntrack_helper.c
++++ linux-next-20080521/net/netfilter/nf_conntrack_helper.c
+@@ -10,6 +10,7 @@
+  */
+ 
+ #include <linux/types.h>
++#include <linux/rculist.h>
+ #include <linux/netfilter.h>
+ #include <linux/module.h>
+ #include <linux/skbuff.h>
+
