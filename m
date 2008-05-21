@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935475AbYEUDmn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935418AbYEUDnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935475AbYEUDmn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 23:42:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933963AbYEUDd5
+	id S935418AbYEUDnS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 23:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934019AbYEUDeB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 23:33:57 -0400
-Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:44167 "EHLO
+	Tue, 20 May 2008 23:34:01 -0400
+Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:44164 "EHLO
 	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932168AbYEUDdO (ORCPT
+	with ESMTP id S1765184AbYEUDdN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 23:33:14 -0400
+	Tue, 20 May 2008 23:33:13 -0400
 From: hooanon05@yahoo.co.jp
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Junjiro Okajima <hooanon05@yahoo.co.jp>
-Subject: [AUFS PATCH v2.6.26-rc2-mm1 37/39] aufs mount/umount helpers
-Date: Wed, 21 May 2008 12:23:07 +0900
-Message-Id: <1211340189-11813-38-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [AUFS PATCH v2.6.26-rc2-mm1 35/39] aufs misc functions
+Date: Wed, 21 May 2008 12:23:05 +0900
+Message-Id: <1211340189-11813-36-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.5.5.1.308.g1fbb5.dirty
 In-Reply-To: <1211340189-11813-1-git-send-email-hooanon05@yahoo.co.jp>
 References: <1211340189-11813-1-git-send-email-hooanon05@yahoo.co.jp>
@@ -26,478 +26,495 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Junjiro Okajima <hooanon05@yahoo.co.jp>
 
 initial commit
-they will be written all in C in the future.
-mount.aufs		mount helper script
-auplink			pseudo-link helper script
-aulchown.c		pseudo-link helper for symlink
-umount.aufs		umount helper script
+misc functions
 
 Signed-off-by: Junjiro Okajima <hooanon05@yahoo.co.jp>
 ---
- Documentation/filesystems/aufs/aulchown.c  |   28 ++++
- Documentation/filesystems/aufs/auplink     |  168 +++++++++++++++++++++++
- Documentation/filesystems/aufs/mount.aufs  |  203 ++++++++++++++++++++++++++++
- Documentation/filesystems/aufs/umount.aufs |   31 +++++
- 4 files changed, 430 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/filesystems/aufs/aulchown.c
- create mode 100644 Documentation/filesystems/aufs/auplink
- create mode 100644 Documentation/filesystems/aufs/mount.aufs
- create mode 100644 Documentation/filesystems/aufs/umount.aufs
+ fs/aufs/misc.c |  266 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/aufs/misc.h |  201 ++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 467 insertions(+), 0 deletions(-)
+ create mode 100644 fs/aufs/misc.c
+ create mode 100644 fs/aufs/misc.h
 
-diff --git a/Documentation/filesystems/aufs/aulchown.c b/Documentation/filesystems/aufs/aulchown.c
+diff --git a/fs/aufs/misc.c b/fs/aufs/misc.c
 new file mode 100644
-index 0000000..eb09270
+index 0000000..9c5694c
 --- /dev/null
-+++ b/Documentation/filesystems/aufs/aulchown.c
-@@ -0,0 +1,28 @@
-+
++++ b/fs/aufs/misc.c
+@@ -0,0 +1,266 @@
 +/*
-+ * While this tool should be atomic, I choose loose/rough way.
-+ * cf. auplink and aufs.5
++ * Copyright (C) 2005-2008 Junjiro Okajima
++ *
++ * This program, aufs is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 + */
 +
-+#include <sys/types.h>
-+#include <sys/stat.h>
-+#include <unistd.h>
-+#include <stdio.h>
++/*
++ *
++ */
 +
-+int main(int argc, char *argv[])
++#include "aufs.h"
++
++void *au_kzrealloc(void *p, unsigned int nused, unsigned int new_sz, gfp_t gfp)
 +{
-+	int err, nerr;
-+	struct stat st;
++	void *q;
 +
-+	nerr = 0;
-+	while (*++argv) {
-+		err = lstat(*argv, &st);
-+		if (!err && S_ISLNK(st.st_mode))
-+			err = lchown(*argv, st.st_uid, st.st_gid);
-+		if (!err)
-+			continue;
-+		perror(*argv);
-+		nerr++;
++	LKTRTrace("p %p, nused %d, sz %d\n", p, nused, new_sz);
++	AuDebugOn(new_sz <= 0);
++	if (new_sz <= nused)
++		return p;
++
++	q = krealloc(p, new_sz, gfp);
++	if (q)
++		memset(q + nused, 0, new_sz - nused);
++	return q;
++}
++
++/* ---------------------------------------------------------------------- */
++
++struct nameidata *au_dup_nd(struct au_sbinfo *sbinfo, struct nameidata *dst,
++			    struct nameidata *src)
++{
++	LKTRTrace("src %p\n", src);
++
++	if (src) {
++		*dst = *src;
++		dst->flags &= ~LOOKUP_PARENT;
++		if (sbinfo->si_wbr_create == AuWbrCreate_TDP) {
++			if ((dst->flags & LOOKUP_CREATE)
++			    && !(dst->intent.open.flags & O_CREAT))
++				dst->flags &= ~LOOKUP_CREATE;
++		} else {
++			dst->flags &= ~LOOKUP_CREATE;
++			dst->intent.open.flags &= ~O_CREAT;
++		}
++	} else
++		dst = NULL;
++
++	return dst;
++}
++
++struct nameidata *au_fake_dm(struct nameidata *fake_nd, struct nameidata *nd,
++			     struct super_block *sb, aufs_bindex_t bindex)
++{
++	LKTRTrace("nd %p, b%d\n", nd, bindex);
++
++	if (!nd)
++		return NULL;
++
++	DiMustAnyLock(nd->path.dentry);
++
++	fake_nd->path.dentry = NULL;
++	fake_nd->path.mnt = NULL;
++
++	if (bindex <= au_dbend(nd->path.dentry))
++		fake_nd->path.dentry = au_h_dptr(nd->path.dentry, bindex);
++	if (fake_nd->path.dentry) {
++		fake_nd->path.mnt = au_sbr_mnt(sb, bindex);
++		AuDebugOn(!fake_nd->path.mnt);
++		path_get(&fake_nd->path);
++	} else
++		fake_nd = ERR_PTR(-ENOENT);
++
++	AuTraceErrPtr(fake_nd);
++	return fake_nd;
++}
++
++void au_fake_dm_release(struct nameidata *fake_nd)
++{
++	if (fake_nd)
++		path_put(&fake_nd->path);
++}
++
++int au_h_create(struct inode *h_dir, struct dentry *h_dentry, int mode,
++		int dlgt, struct nameidata *nd, struct vfsmount *nfsmnt)
++{
++	int err;
++
++	LKTRTrace("hi%lu, %.*s, 0%o, nd %d, nfsmnt %d\n",
++		  h_dir->i_ino, AuDLNPair(h_dentry), mode, !!nd, !!nfsmnt);
++
++	err = -ENOSYS;
++	if (!nfsmnt)
++		err = vfsub_create(h_dir, h_dentry, mode, /*nd*/NULL, dlgt);
++	else {
++		struct nameidata fake_nd;
++
++		if (nd)
++			fake_nd = *nd;
++		else
++			memset(&fake_nd, 0, sizeof(fake_nd));
++		fake_nd.path.dentry = h_dentry;
++		fake_nd.path.mnt = nfsmnt;
++		path_get(&fake_nd.path);
++		fake_nd.flags = LOOKUP_CREATE;
++		fake_nd.intent.open.flags = O_CREAT | FMODE_READ;
++		fake_nd.intent.open.create_mode = mode;
++
++		err = vfsub_create(h_dir, h_dentry, mode, &fake_nd, dlgt);
++		path_put(&fake_nd.path);
 +	}
-+	return nerr;
++
++	AuTraceErr(err);
++	return err;
 +}
-diff --git a/Documentation/filesystems/aufs/auplink b/Documentation/filesystems/aufs/auplink
-new file mode 100644
-index 0000000..dec6ee9
---- /dev/null
-+++ b/Documentation/filesystems/aufs/auplink
-@@ -0,0 +1,168 @@
-+#!/bin/sh
 +
-+# Copyright (C) 2006, 2007, 2008 Junjiro Okajima
-+#
-+# This program, aufs is free software; you can redistribute it and/or modify
-+# it under the terms of the GNU General Public License as published by
-+# the Free Software Foundation; either version 2 of the License, or
-+# (at your option) any later version.
-+#
-+# This program is distributed in the hope that it will be useful,
-+# but WITHOUT ANY WARRANTY; without even the implied warranty of
-+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+# GNU General Public License for more details.
-+#
-+# You should have received a copy of the GNU General Public License
-+# along with this program; if not, write to the Free Software
-+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++/* ---------------------------------------------------------------------- */
 +
-+#set -x; echo $0 $@
-+tmp=/tmp/$$
-+set -e
-+
-+Usage()
++int au_copy_file(struct file *dst, struct file *src, loff_t len,
++		 struct super_block *sb)
 +{
-+	cat <<- EOF 1>&2
-+	usage: $0 aufs_mount_point list|cpup|flush
-+	'list' shows the pseudo-linked inode numbers and filenames.
-+	'cpup' copies-up all pseudo-link to the writeble branch.
-+	'flush' calls 'cpup', and then "mount -o remount,clean_plink=inum"
-+	and remove the whiteouted plink.
-+	EOF
-+	rm -f $tmp $tmp.*
-+	exit 1
-+}
++	int err, all_zero;
++	unsigned long blksize;
++	char *buf;
++	struct vfsub_args vargs;
++	/* reduce stack space */
++	struct iattr *ia;
 +
-+eecho() { echo "$@" 1>&2; }
-+
-+conv() # [escape]
-+{
-+	sed -r -e '
-+	s/\\/\\134/g
-+	s/$/\\012/
-+	' |
-+	tr -d '\n' |
-+	sed -r -e '
-+	s/ /\\040/g
-+	s/\t/\\011/g
-+	s/\r/\\015/g
-+	s/\\012$//
-+	' |
-+	{ test "$1" = "escape" && sed -r -e 's/\\/\\\\/g' || cat; }
-+	echo
-+}
-+
-+Find() # dir [ find_args ]
-+{
-+	dir="$1"
-+	shift
-+	find "$dir" -xdev -noleaf $@
-+}
-+
-+List()
-+{
-+	sed -e 's/^\([0-9]*\) .*$/-o -inum \1/' |
-+	cut -c3- |
-+	xargs -n 200 |
-+	while read args
-+	do Find "$mntpnt" \( $args \) $@
-+	done
-+}
-+
-+Cpup()
-+{
-+	List \( \( -type l -fprint $tmp.slink \) \
-+		-o ! -type l -fprint $tmp.other  \)
-+
-+	# do nothing but update something. it causes copyup.
-+	xargs -r touch -ac -r $tmp.other < $tmp.other
-+	xargs -r aulchown < $tmp.slink
-+}
-+
-+test $# -eq 2 || Usage
-+cd "$1"
-+mntpnt=`readlink -f "$PWD"`
-+e_mntpnt=`echo "$mntpnt" | conv escape`
-+cd "$OLDPWD"
-+
-+do_flush=0
-+f=${AUPLINK_CONFIG:-/etc/default/auplink}
-+if [ -r $f ]
-+then
-+	. $f
-+	for i in $FLUSH
-+	do
-+		test "$i" = "$mntpnt" -o "$i" = "ALL" || continue
-+		do_flush=1
-+		break
-+	done
-+fi
-+case $2 in
-+cpup|flush) test $do_flush -eq 0 && exit 0;;
-+esac
-+
-+ent=`grep " $e_mntpnt aufs .*,si=" /proc/mounts | tail -n 1`
-+test ! "$ent" && exit 0
-+eval `echo "$ent" | tr ',' '\n' | grep '^si='`
-+test ! "$si" && eecho no such mount-point $e_mntpnt && exit 1
-+
-+si_dir=/sys/fs/aufs/si_$si
-+if [ -r $si_dir/br0 ]
-+then
-+	cd $si_dir
-+	ls -1 br* |
-+	cut -c3- |
-+	sort -n |
-+	sed -e 's/^/br/' |
-+	xargs -rn 200 cat
-+	cd $OLDPWD
-+else
-+	echo "$ent" |
-+	tr ',' '\n' |
-+	sed -e 's/\\/\\\\/g' |
-+	egrep '^(dirs=|br:)' |
-+	tr ':' '\n'
-+fi |
-+grep '=rw$' |
-+sed -e 's/=rw$//' |
-+while read wbr
-+do
-+	d=`echo $wbr/.wh..wh.plink`
-+	# -printf '%n %p\n'
-+	test -d "$d" && Find "$d" -maxdepth 1 ! -type d -printf '%n\t%p\n'
-+done |
-+while read nlink pname
-+do
-+	inum=`basename "$pname" | cut -f1 -d.`
-+	echo $inum $nlink "$pname"
-+done > $tmp
-+test -s $tmp || { rm -f $tmp $tmp.*; exit 0; }
-+
-+# debug
-+#mount -o remount,list_plink "$mntpnt"
-+
-+case $2 in
-+list)
-+	cut -f1 -d' ' $tmp | tr '\n' ' '
-+	echo
-+	List < $tmp
-+	;;
-+cpup)
-+	Cpup < $tmp
-+	;;
-+flush)
-+	#echo -n Flushing pseudo-links on "$mntpnt"...
-+	Cpup < $tmp
-+
-+	# all are copied-up, and then remove all pseudo-links.
-+	mount -o remount,clean_plink "$mntpnt"
-+	cut -f3- -d' ' $tmp | xargs -r rm
-+	# debug
-+	#mount -o remount,list_plink "$mntpnt"
-+	#echo done.
-+	;;
-+*)
-+	Usage;;
-+esac
-+
-+rm -f $tmp $tmp.*
-diff --git a/Documentation/filesystems/aufs/mount.aufs b/Documentation/filesystems/aufs/mount.aufs
-new file mode 100644
-index 0000000..7458fc5
---- /dev/null
-+++ b/Documentation/filesystems/aufs/mount.aufs
-@@ -0,0 +1,203 @@
-+#!/bin/sh -
-+
-+# Copyright (C) 2005, 2006, 2007 Junjiro Okajima
-+#
-+# This program, aufs is free software; you can redistribute it and/or modify
-+# it under the terms of the GNU General Public License as published by
-+# the Free Software Foundation; either version 2 of the License, or
-+# (at your option) any later version.
-+#
-+# This program is distributed in the hope that it will be useful,
-+# but WITHOUT ANY WARRANTY; without even the implied warranty of
-+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+# GNU General Public License for more details.
-+#
-+# You should have received a copy of the GNU General Public License
-+# along with this program; if not, write to the Free Software
-+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+
-+#
-+# The main purpose of this script is updating /etc/mtab and calling auplilnk.
-+# This script is highly depending on mount(8) in util-linux-2.12p package.
-+# TODO: rewrite in C.
-+# TODO: updating mtab for bind-mount is not fully supportetd.
-+#
-+
-+PATH=/usr/bin:/usr/sbin:/bin:/sbin
-+export PATH
-+eecho() { echo "$@" 1>&2; }
-+
-+conv() # [escape]
-+{
-+	sed -r -e '
-+	s/\\/\\134/g
-+	s/$/\\012/
-+	' |
-+	tr -d '\n' |
-+	sed -r -e '
-+	s/ /\\040/g
-+	s/\t/\\011/g
-+	s/\r/\\015/g
-+	s/\\012$//
-+	' |
-+	{ test "$1" = "escape" && sed -r -e 's/\\/\\\\/g' || cat; }
-+	echo
-+}
-+
-+########################################
-+
-+set -e
-+#set -x; echo $0 $@
-+tmp=/tmp/$$
-+fstype=`basename "$0" | cut -f2 -d.`
-+
-+########################################
-+# mount(8) always passes the arguments in this order
-+
-+do_update=1
-+verbose=0
-+dev="$1"
-+e_dev=`echo "$dev" | conv escape`
-+cd "$2"
-+mntpnt=`readlink -f "$PWD"`
-+e_mntpnt=`echo "$mntpnt" | conv escape`
-+cd "$OLDPWD"
-+shift 2
-+test "$1" = "-n" && do_update=0 && shift
-+test "$1" = "-v" && verbose=1 && shift
-+test "$1" = "-o" || { eecho Bad arg. "$@"; exit 1; }
-+shift
-+remount=0
-+echo "$@" | grep -q ',remount[,$]' && remount=1
-+
-+f=/etc/mtab
-+test ! -r $f -o \( $do_update -eq 1 -a ! -w $f \) &&
-+eecho ${f}: Permission denied &&
-+exit 1
-+
-+f=/proc/mounts
-+test \( $do_update -eq 1 -o $verbose -eq 1 \) -a ! -r $f &&
-+eecho ${f}: Permission denied. &&
-+exit 1
-+
-+oldmtab=
-+> $tmp.old_opt
-+if [ $remount -eq 1 ]
-+then
-+oldmtab=`grep "^$e_dev $e_mntpnt $fstype .*,si=" $f | tail -n 1`
-+echo "$oldmtab" |
-+sed -e '
-+s:^'"$dev $mntpnt $fstype"' ::
-+s/\( [0-9]*\)\{2\}$//
-+' | tr ',' '\n' > $tmp.old_opt
-+#test -s $tmp.old_opt
-+eval `grep '^si=' $tmp.old_opt`
-+
-+# append brs from sysfs
-+si_dir=/sys/fs/aufs/si_$si
-+if [ -r $si_dir/br0 ]
-+then
-+	cd $si_dir
++	LKTRTrace("%.*s, %.*s\n",
++		  AuDLNPair(dst->f_dentry), AuDLNPair(src->f_dentry));
++	AuDebugOn(!(dst->f_mode & FMODE_WRITE));
++#ifdef CONFIG_AUFS_DEBUG
 +	{
-+	ls -1 br* |
-+	cut -c3- |
-+	sort -n |
-+	sed -e 's/^/br/' |
-+	xargs -n 200 sed -e 's/^/:/' |
-+	tr -d '\n' |
-+	sed -e 's/^/br/'
-+	echo # last newline
-+	} >> $tmp.old_opt
-+	cd $OLDPWD
-+	#cat $tmp.old_opt; #rm -f $tmp $tmp.*; exit
-+fi
-+fi
++		struct dentry *parent;
++		parent = dget_parent(dst->f_dentry);
++		IMustLock(parent->d_inode);
++		dput(parent);
++	}
++#endif
 +
-+echo "$@" | tr ',' '\n' > $tmp.new_opt
-+remount=
-+fgrep -v remount $tmp.new_opt > $tmp #|| :
-+diff -q $tmp.new_opt $tmp > /dev/null ||
-+{
-+	mv $tmp $tmp.new_opt
-+	remount="remount,"
++	err = -ENOMEM;
++	blksize = dst->f_dentry->d_sb->s_blocksize;
++	if (!blksize || PAGE_SIZE < blksize)
++		blksize = PAGE_SIZE;
++	LKTRTrace("blksize %lu\n", blksize);
++	buf = kmalloc(blksize, GFP_TEMPORARY);
++	if (unlikely(!buf))
++		goto out;
++	ia = kmalloc(sizeof(*ia), GFP_TEMPORARY);
++	if (unlikely(!ia))
++		goto out_buf;
++
++#ifdef CONFIG_AUFS_DEBUG
++	if (len > (1 << 22))
++		AuWarn("copying a large file %Ld\n", (long long)len);
++#endif
++	vfsub_args_init(&vargs, NULL, au_opt_test_dlgt(au_mntflags(sb)), 0);
++	err = 0;
++	all_zero = 0;
++	src->f_pos = 0;
++	dst->f_pos = 0;
++	while (len) {
++		size_t sz, rbytes, wbytes, i;
++		char *p;
++
++		LKTRTrace("len %lld\n", len);
++		sz = blksize;
++		if (len < blksize)
++			sz = len;
++
++		/* support LSM and notify */
++		rbytes = 0;
++		/* todo: signal_pending? */
++		while (!rbytes || err == -EAGAIN || err == -EINTR) {
++			rbytes = vfsub_read_k(src, buf, sz, &src->f_pos,
++					      vfsub_ftest(vargs.flags, DLGT));
++			err = rbytes;
++		}
++		if (unlikely(err < 0))
++			break;
++
++		all_zero = 0;
++		if (len >= rbytes && rbytes == blksize) {
++			/* todo: try bitmap or memcmp()/get_zeroed_page()? */
++			unsigned long *ulp;
++			size_t n;
++
++			all_zero = 1;
++			ulp = (void *)buf;
++			n = rbytes / sizeof(*ulp);
++			i = n;
++			while (n-- > 0 && all_zero)
++				all_zero = !*ulp++;
++			p = (void *)ulp;
++			i *= sizeof(*ulp);
++			for (; all_zero && i < rbytes; i++)
++				all_zero = !*p++;
++		}
++		if (!all_zero) {
++			wbytes = rbytes;
++			p = buf;
++			while (wbytes) {
++				size_t b;
++				/* support LSM and notify */
++				b = vfsub_write_k(dst, p, wbytes, &dst->f_pos,
++						  &vargs);
++				err = b;
++				/* todo: signal_pending? */
++				if (unlikely(err == -EAGAIN || err == -EINTR))
++					continue;
++				if (unlikely(err < 0))
++					break;
++				wbytes -= b;
++				p += b;
++			}
++		} else {
++			loff_t res;
++			LKTRLabel(hole);
++			res = vfsub_llseek(dst, rbytes, SEEK_CUR);
++			err = res;
++			if (unlikely(res < 0))
++				break;
++		}
++		len -= rbytes;
++		err = 0;
++	}
++
++	/* the last block may be a hole */
++	if (unlikely(!err && all_zero)) {
++		struct dentry *h_d = dst->f_dentry;
++		struct inode *h_i = h_d->d_inode;
++
++		LKTRLabel(last hole);
++		do {
++			/* todo: signal_pending? */
++			err = vfsub_write_k(dst, "\0", 1, &dst->f_pos, &vargs);
++		} while (err == -EAGAIN || err == -EINTR);
++		if (err == 1) {
++			ia->ia_size = dst->f_pos;
++			ia->ia_valid = ATTR_SIZE | ATTR_FILE;
++			ia->ia_file = dst;
++			mutex_lock_nested(&h_i->i_mutex, AuLsc_I_CHILD2);
++			err = vfsub_notify_change(h_d, ia, &vargs);
++			mutex_unlock(&h_i->i_mutex);
++		}
++	}
++
++	kfree(ia);
++ out_buf:
++	kfree(buf);
++ out:
++	AuTraceErr(err);
++	return err;
 +}
-+#cat $tmp.new_opt; rm -f $tmp $tmp.*; exit
-+
-+#more $tmp.old_opt $tmp.new_opt
-+real_opt=`comm -13 $tmp.old_opt $tmp.new_opt | tee $tmp | paste -s -d, -`
-+real_opt="${remount}${real_opt}"
-+test "$real_opt" = "" &&
-+eecho bad arg "$@" &&
-+rm -f $tmp $tmp.* &&
-+exit 1
-+#echo ${real_opt}; exit
-+
-+test "$remount" &&
-+egrep -q '^((add|ins|append|prepend|del)[:=]|(mod|imod)[:=][^,]*=ro|(noplink|ro)$)' $tmp &&
-+auplink "$mntpnt" flush
-+rm -f $tmp $tmp.*
-+
-+########################################
-+# actual mount operation
-+
-+set +e
-+mount -in -t $fstype -o "$real_opt" "$dev" "$mntpnt"
-+err=$?
-+set -e
-+
-+test $do_update -eq 0 -a $verbose -eq 0 && exit $err
-+
-+########################################
-+# in order to handle '-v' option, keep going even if we failed
-+
-+failure()
-+{
-+	eecho failure "$1" $?
-+	exit 1
-+}
-+
-+newmtab=`{ grep "^$e_dev $e_mntpnt $fstype" /proc/mounts ||
-+	failure "bad /proc/mounts"; } |
-+	tail -n 1 | sed -e 's:^'"$e_dev $e_mntpnt $fstype"' ::'`
-+digits=`echo "$newmtab" | rev | cut -f-2 -d' ' | rev`
-+newmtab=`echo "$newmtab" | rev | cut -f3- -d' ' | rev | conv escape`
-+newmtab="$e_dev $e_mntpnt $fstype $newmtab $digits"
-+
-+#if [ $do_update -eq 1 -a -w /etc -a -w /etc/mtab ]
-+if [ $do_update -eq 1 ]
-+then
-+lock_pid=/etc/mtab~$$
-+lock=/etc/mtab~
-+f=/etc/mtab.aufs.tmp
-+touch $lock_pid || failure "creating pid lockfile"
-+
-+# re-define
-+failure()
-+{
-+	eecho failure "$1" $?
-+	test $err -eq 0 && eecho failed updating /etc/mtab
-+	exit 1
-+}
-+#trap "rm -f $lock; failure" `seq 32`
-+
-+ln $lock_pid $lock || failure "linking lockfile"
-+rm $lock_pid || failure "removing pid lockfile"
-+
-+if [ "$oldmtab" = "" ]
-+then
-+	{ cat /etc/mtab; echo "$newmtab"; } |
-+	dd of=$f 2> /dev/null || failure "appending $f"
-+else
-+	tac /etc/mtab |
-+	awk -v new="$newmtab" -v mntpnt="$e_mntpnt" -v fstype="$fstype" '
-+	!done && $2 == mntpnt && $3 == fstype {print new; done = 1; next}
-+	{print}
-+	' | tac > $f || failure "creating $f"
-+fi
-+mv $f /etc/mtab || failure "renaming from $f"
-+rm $lock || failure "removing lockfile"
-+fi
-+
-+test $verbose -eq 1 &&
-+echo "$dev" on "$mntpnt" type "$fstype" \(`echo "$newmtab" | cut -f4 -d' '`\)
-+exit $err
-diff --git a/Documentation/filesystems/aufs/umount.aufs b/Documentation/filesystems/aufs/umount.aufs
+diff --git a/fs/aufs/misc.h b/fs/aufs/misc.h
 new file mode 100644
-index 0000000..7c38c5d
+index 0000000..3dcbf7e
 --- /dev/null
-+++ b/Documentation/filesystems/aufs/umount.aufs
-@@ -0,0 +1,31 @@
-+#!/bin/sh -
++++ b/fs/aufs/misc.h
+@@ -0,0 +1,201 @@
++/*
++ * Copyright (C) 2005-2008 Junjiro Okajima
++ *
++ * This program, aufs is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++ */
 +
-+# Copyright (C) 2007 Junjiro Okajima
-+#
-+# This program, aufs is free software; you can redistribute it and/or modify
-+# it under the terms of the GNU General Public License as published by
-+# the Free Software Foundation; either version 2 of the License, or
-+# (at your option) any later version.
-+#
-+# This program is distributed in the hope that it will be useful,
-+# but WITHOUT ANY WARRANTY; without even the implied warranty of
-+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+# GNU General Public License for more details.
-+#
-+# You should have received a copy of the GNU General Public License
-+# along with this program; if not, write to the Free Software
-+# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++/*
++ *
++ */
 +
-+#
-+# The main purpose of this script is calling auplink.
-+#
++#ifndef __AUFS_MISC_H__
++#define __AUFS_MISC_H__
 +
-+PATH=/usr/bin:/usr/sbin:/bin:/sbin
-+export PATH
++#ifdef __KERNEL__
 +
-+set -e
-+#set -x; echo $0 $@
-+dev="$1"
-+shift
-+auplink "$dev" flush
-+exec umount -i $@ "$dev"
++#include <linux/fs.h>
++#include <linux/namei.h>
++#include <linux/aufs_type.h>
++
++/* ---------------------------------------------------------------------- */
++
++typedef unsigned int au_gen_t;
++/* see linux/include/linux/jiffies.h */
++#define AuGenYounger(a, b)	((int)(b) - (int)(a) < 0)
++#define AuGenOlder(a, b)	AufsGenYounger(b, a)
++
++/* ---------------------------------------------------------------------- */
++
++struct au_rwsem {
++	struct rw_semaphore	rwsem;
++#ifdef CONFIG_AUFS_DEBUG
++	atomic_t		rcnt;
++#endif
++};
++
++#ifdef CONFIG_AUFS_DEBUG
++#define AuDbgRcntInit(rw) do { \
++	atomic_set(&(rw)->rcnt, 0); \
++	smp_mb(); /* atomic set */ \
++} while (0)
++
++#define AuDbgRcntInc(rw)	atomic_inc_return(&(rw)->rcnt)
++#define AuDbgRcntDec(rw)	WARN_ON(atomic_dec_return(&(rw)->rcnt) < 0)
++#else
++#define AuDbgRcntInit(rw)	do {} while (0)
++#define AuDbgRcntInc(rw)	do {} while (0)
++#define AuDbgRcntDec(rw)	do {} while (0)
++#endif /* CONFIG_AUFS_DEBUG */
++
++static inline void au_rw_init_nolock(struct au_rwsem *rw)
++{
++	AuDbgRcntInit(rw);
++	init_rwsem(&rw->rwsem);
++}
++
++static inline void au_rw_init_wlock(struct au_rwsem *rw)
++{
++	au_rw_init_nolock(rw);
++	down_write(&rw->rwsem);
++}
++
++static inline void au_rw_init_wlock_nested(struct au_rwsem *rw,
++					   unsigned int lsc)
++{
++	au_rw_init_nolock(rw);
++	down_write_nested(&rw->rwsem, lsc);
++}
++
++static inline void au_rw_read_lock(struct au_rwsem *rw)
++{
++	down_read(&rw->rwsem);
++	AuDbgRcntInc(rw);
++}
++
++static inline void au_rw_read_lock_nested(struct au_rwsem *rw, unsigned int lsc)
++{
++	down_read_nested(&rw->rwsem, lsc);
++	AuDbgRcntInc(rw);
++}
++
++static inline void au_rw_read_unlock(struct au_rwsem *rw)
++{
++	AuDbgRcntDec(rw);
++	up_read(&rw->rwsem);
++}
++
++static inline void au_rw_dgrade_lock(struct au_rwsem *rw)
++{
++	AuDbgRcntInc(rw);
++	downgrade_write(&rw->rwsem);
++}
++
++static inline void au_rw_write_lock(struct au_rwsem *rw)
++{
++	down_write(&rw->rwsem);
++}
++
++static inline void au_rw_write_lock_nested(struct au_rwsem *rw,
++					   unsigned int lsc)
++{
++	down_write_nested(&rw->rwsem, lsc);
++}
++
++static inline void au_rw_write_unlock(struct au_rwsem *rw)
++{
++	up_write(&rw->rwsem);
++}
++
++/* why is not _nested version defined */
++static inline int au_rw_read_trylock(struct au_rwsem *rw)
++{
++	int ret = down_read_trylock(&rw->rwsem);
++	if (ret)
++		AuDbgRcntInc(rw);
++	return ret;
++}
++
++static inline int au_rw_write_trylock(struct au_rwsem *rw)
++{
++	return down_write_trylock(&rw->rwsem);
++}
++
++#undef AuDbgRcntInit
++#undef AuDbgRcntInc
++#undef AuDbgRcntDec
++
++/* to debug easier, do not make them inlined functions */
++#define AuRwMustNoWaiters(rw)	AuDebugOn(!list_empty(&(rw)->rwsem.wait_list))
++#define AuRwMustAnyLock(rw)	AuDebugOn(down_write_trylock(&(rw)->rwsem))
++#ifdef CONFIG_AUFS_DEBUG
++#define AuRwMustReadLock(rw) do { \
++	AuRwMustAnyLock(rw); \
++	AuDebugOn(!atomic_read(&(rw)->rcnt)); \
++} while (0)
++
++#define AuRwMustWriteLock(rw) do { \
++	AuRwMustAnyLock(rw); \
++	AuDebugOn(atomic_read(&(rw)->rcnt)); \
++} while (0)
++#else
++#define AuRwMustReadLock(rw)	AuRwMustAnyLock(rw)
++#define AuRwMustWriteLock(rw)	AuRwMustAnyLock(rw)
++#endif /* CONFIG_AUFS_DEBUG */
++
++#define AuSimpleLockRwsemFuncs(prefix, param, rwsem) \
++static inline void prefix##_read_lock(param) \
++{ au_rw_read_lock(&(rwsem)); } \
++static inline void prefix##_write_lock(param) \
++{ au_rw_write_lock(&(rwsem)); } \
++static inline int prefix##_read_trylock(param) \
++{ return au_rw_read_trylock(&(rwsem)); } \
++static inline int prefix##_write_trylock(param) \
++{ return au_rw_write_trylock(&(rwsem)); }
++/* static inline void prefix##_read_trylock_nested(param, lsc)
++{au_rw_read_trylock_nested(&(rwsem, lsc));}
++static inline void prefix##_write_trylock_nestd(param, lsc)
++{au_rw_write_trylock_nested(&(rwsem), nested);} */
++
++#define AuSimpleUnlockRwsemFuncs(prefix, param, rwsem) \
++static inline void prefix##_read_unlock(param) \
++{ au_rw_read_unlock(&(rwsem)); } \
++static inline void prefix##_write_unlock(param) \
++{ au_rw_write_unlock(&(rwsem)); } \
++static inline void prefix##_downgrade_lock(param) \
++{ au_rw_dgrade_lock(&(rwsem)); }
++
++#define AuSimpleRwsemFuncs(prefix, param, rwsem) \
++	AuSimpleLockRwsemFuncs(prefix, param, rwsem) \
++	AuSimpleUnlockRwsemFuncs(prefix, param, rwsem)
++
++/* ---------------------------------------------------------------------- */
++
++void *au_kzrealloc(void *p, unsigned int nused, unsigned int new_sz, gfp_t gfp);
++
++struct au_sbinfo;
++struct nameidata *au_dup_nd(struct au_sbinfo *sbinfo, struct nameidata *dst,
++			    struct nameidata *src);
++
++struct nameidata *au_fake_dm(struct nameidata *fake_nd, struct nameidata *nd,
++			     struct super_block *sb, aufs_bindex_t bindex);
++void au_fake_dm_release(struct nameidata *fake_nd);
++int au_h_create(struct inode *h_dir, struct dentry *h_dentry, int mode,
++		int dlgt, struct nameidata *nd, struct vfsmount *nfsmnt);
++
++int au_copy_file(struct file *dst, struct file *src, loff_t len,
++		 struct super_block *sb);
++
++#endif /* __KERNEL__ */
++#endif /* __AUFS_MISC_H__ */
 -- 
 1.5.5.1.308.g1fbb5.dirty
 
