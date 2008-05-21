@@ -1,105 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935914AbYEUPTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934655AbYEUPZS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935914AbYEUPTm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 11:19:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758254AbYEUPTc
+	id S934655AbYEUPZS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 11:25:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763117AbYEUPZE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 11:19:32 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:4435 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757035AbYEUPTb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 11:19:31 -0400
-Date: Wed, 21 May 2008 19:19:29 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org, spi-devel-general@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
-       fabrizio.garetto@gmail.com
-Subject: Re: [PATCH 3/4] spi: Add OF binding support for SPI busses
-Message-ID: <20080521151928.GA28857@polina.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca> <20080516193613.28030.13950.stgit@trillian.secretlab.ca>
+	Wed, 21 May 2008 11:25:04 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:42110 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762275AbYEUPZD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 11:25:03 -0400
+Message-ID: <48343EBC.70703@garzik.org>
+Date: Wed, 21 May 2008 11:24:44 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20080516193613.28030.13950.stgit@trillian.secretlab.ca>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Pavel Machek <pavel@ucw.cz>
+CC: Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: better msleep for drivers
+References: <20080511110124.GA24187@basil.nowhere.org> <alpine.LFD.1.10.0805111408440.3197@apollo.tec.linutronix.de> <20080521104131.GA4948@ucw.cz>
+In-Reply-To: <20080521104131.GA4948@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.4 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16, 2008 at 01:36:13PM -0600, Grant Likely wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
+Pavel Machek wrote:
+> Hi!
 > 
-> This patch adds support for populating an SPI bus based on data in the
-> OF device tree.  This is useful for powerpc platforms which use the
-> device tree instead of discrete code for describing platform layout.
+>>> Still longer term I suppose there's really no way around having accurate
+>>> sleep functions and it's probably better to start testing earlier than later.
+>> No objections, but we should not do that with a stupid msleep
+>> replacement interface; instead we should expose a flexible in kernel
+>> variant of hrtimer_nanosleep() which lets the user utilize
+>> ABS/REL_TIME and the different clocks. A msleep helper can be built on
+>> top of this very easily.
 > 
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
-[...]
-> diff --git a/drivers/spi/spi_of.c b/drivers/spi/spi_of.c
-> new file mode 100644
-> index 0000000..b5ae434
-> --- /dev/null
-> +++ b/drivers/spi/spi_of.c
-> @@ -0,0 +1,86 @@
-> +/*
+> While you are at it... it would be cool to have
+> 
+> 'mdelay(2500 msec), but it is okay to wait 100msec more' -- type
+> interface, so we could use that for nohz benefit.
+> 
+> Currently, mdelay is 'it is okay to wait 10msec more' interface, and
+> it would be nice to have that explicit.
 
-I think better placement for this is drivers/of, no?
+eh, I think you transposed mdelay with msleep?
 
-> + * SPI OF support routines
-> + * Copyright (C) 2008 Secret Lab Technologies Ltd.
-> + *
-> + * Support routines for deriving SPI device attachments from the device
-> + * tree.
-> + */
-> +
-> +#include <linux/of.h>
-> +#include <linux/device.h>
-> +#include <linux/spi/spi.h>
-> +#include <linux/spi/spi_of.h>
-> +
-> +/**
-> + * spi_of_register_devices - Register child devices onto the SPI bus
-> + * @master:	Pointer to spi_master device
-> + * @np:		parent node of SPI device nodes
-> + *
-> + * Registers an spi_device for each child node of 'np' which has a 'reg'
-> + * property.
-> + */
-> +void spi_of_register_devices(struct spi_master *master, struct device_node *np)
-> +{
-> +	struct spi_device *spi;
-> +	struct device_node *nc;
-> +	const u32 *prop;
-> +	const char *sprop;
-> +	int rc;
-> +	int len;
-> +
-> +	for_each_child_of_node(np, nc) {
-> +		/* Alloc an spi_device */
-> +		spi = spi_alloc_device(master);
-> +		if (!spi) {
-> +			dev_err(&master->dev, "spi_device alloc error for %s\n",
-> +				np->full_name);
-> +			continue;
-> +		}
-> +
-> +		/* Device address */
-> +		prop = of_get_property(nc, "reg", &len);
-> +		if (!prop || len < sizeof(*prop)) {
-> +			dev_err(&master->dev, "%s has no 'reg' property\n",
-> +				np->full_name);
+msleep() is the "it is okay to wait longer than I said" interface, not 
+mdelay().  mdelay() has always been non-sleeping and exact (as much as 
+the delay loop allows)
 
-Should be nc->full_name.
+	Jeff
 
-> +			continue;
-> +		}
-[...]
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+
