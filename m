@@ -1,75 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932337AbYEUNCg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935118AbYEUNDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932337AbYEUNCg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 09:02:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756675AbYEUNC2
+	id S935118AbYEUNDf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 09:03:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757980AbYEUND1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 09:02:28 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:46143 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754594AbYEUNC1 (ORCPT
+	Wed, 21 May 2008 09:03:27 -0400
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:25966
+	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756675AbYEUND0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 09:02:27 -0400
-Message-ID: <48341DF5.4090307@keyaccess.nl>
-Date: Wed, 21 May 2008 15:04:53 +0200
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Wed, 21 May 2008 09:03:26 -0400
+Message-ID: <48341D9C.7010700@qumranet.com>
+Date: Wed, 21 May 2008 16:03:24 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-CC: Jaroslav Kysela <perex@perex.cz>, alsa-devel@alsa-project.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [alsa-devel] HG -> GIT migration
-References: <Pine.LNX.4.61.0805201314190.1798@tm8103-a.perex-int.cz>	<200805211430.06653.linux@audioscience.com>	<Pine.LNX.4.61.0805210805080.1798@tm8103-a.perex-int.cz>	<s5hve18vtml.wl%tiwai@suse.de>	<483415E7.5080402@keyaccess.nl> <s5hfxsbx27f.wl%tiwai@suse.de>
-In-Reply-To: <s5hfxsbx27f.wl%tiwai@suse.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+CC: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Subject: Re: [BUG] cpu hotplug vs scheduler
+References: <4829A6A0.5040208@qumranet.com> <b647ffbd0805140113i4296076cna3f371c86c479653@mail.gmail.com> <482ADB69.8010305@qumranet.com> <b647ffbd0805140605j5ed43b73t557983ece879c552@mail.gmail.com> <482C0E35.9000708@qumranet.com> <20080521123116.GC9441@osiris.boeblingen.de.ibm.com> <483418CB.7070602@qumranet.com> <20080521125546.GE9441@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <20080521125546.GE9441@osiris.boeblingen.de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 21-05-08 14:37, Takashi Iwai wrote:
-
-> At Wed, 21 May 2008 14:30:31 +0200,
-> Rene Herman wrote:
-
->> $ git remote show sound-2.6
->> * remote sound-2.6
->>    URL: git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6.git
->>    Tracked remote branches
->>      master
+Heiko Carstens wrote:
+> On Wed, May 21, 2008 at 03:42:51PM +0300, Avi Kivity wrote:
+>   
+>> Heiko Carstens wrote:
+>>     
+>>> I think you fixed this specific bug. Does cpu hotplug stresstest now work
+>>> for you?
+>>>       
+>> Which bug, the order-2 allocs?  I certainly didn't fix it.
 >>
->> What's the status of that one now? Should I continue pulling that one or 
->> should I switch to the new alsa-kernel GIT repo? I want to pull it into 
->> a Linus clone tree...
-> 
-> We are working on this right now.  alsa.git is far currently behind my
-> tree.
-> 
-> One problem we hit is about multiple committers and rebase.  If you do
-> git-rebase, the commiter information is touched although the sign-off
-> isn't updated.  git-rebase looks apparently designed for the
-> single-commiter model.
+>> Last I tried, cpu hotplug still failed, but it was some time ago as  
+>> patches flow.
+>>     
+>
+> Ah no. I thought "x86: fix crash on cpu hotplug on pat-incapable machines"
+> would have fixed the cpu hotplug bug for you.
+>
+>   
 
-It's "worse" than that; rebasing is designed for a _private_ development 
-model. git-rebase is a very handy tool for people like myself (people 
-without a downstream that is) and it basically enables the quilt model 
-of a stack of patches on top of git but public trees that have people 
-pulling from them should generally not rebase or everyone who _is_ 
-pulling finds a different tree each time.
+No, that only fixes an immediate oops when running in a virtual machine 
+(which doesn't have pat).
 
-Linus is vehement about this also. There have a few threads about it and 
-the most recent was:
+> I was actually talking of the pick_next_task_fair incarnation of one of
+> the cpu hotplug bugs.
+>
+>   
 
-http://lkml.org/lkml/2008/5/17/190
+That hasn't been addressed, AFAIK.
 
-I'm also not an experienced git user (not other than in my own leafnode 
-developer mode, certainly) but I expect Linus might not terribly mind 
-answering a few questions about the model -- ALSA is a significant 
-subsystem and it switching to GIT might even make for a nice "this is 
-how you do that as a subsystem" treatise...
+> s390 backtrace on 2.6.25 looks like this.
+>
+>     <1>Unable to handle kernel pointer dereference at virtual kernel address 00000200000db000
+>     <4>Oops: 003b [#1] PREEMPT SMP 
+>     <4>Modules linked in: dm_multipath sunrpc qeth_l2 dm_mod cu3088 qeth ccwgroup
+>     <4>CPU: 0 Not tainted 2.6.25-27.x.20080422-s390xdefault #1
+>     <4>Process migration/0 (pid: 5806, task: 00000000aac3a838, ksp: 000000017a2f3dd0)
+>     <4>Krnl PSW : 0400200180000000 0000000000125f48 (pick_next_task_fair+0x34/0xd4)
+>     <4>           R:0 T:1 IO:0 EX:0 Key:0 M:0 W:0 P:0 AS:0 CC:2 PM:0 EA:3
+>     <4>Krnl GPRS: 0000079e029c6ecb 0000000000000000 000000008548ea60 000000008548d700
+>     <4>           00000000004526f8 0000000000000597 0000000000000000 0000000000000000
+>     <4>           0000000000672a00 0000000000000000 00000000aac3a838 000000017a2f3d10
+>     <4>           00000200000db85a 00000000004672a0 000000017a2f3d50 000000017a2f3d10
+>     <4>Krnl Code: 0000000000125f38: e3e0f0980024        stg     %r14,152(%r15)
+>     <4>           0000000000125f3e: d507d000c010        clc     0(8,%r13),16(%r12)
+>     <4>           0000000000125f44: a784004e            brc     8,125fe0
+>     <4>          >0000000000125f48: d507d000c030        clc     0(8,%r13),48(%r12)
+>     <4>           0000000000125f4e: b904002c            lgr     %r2,%r12
+>     <4>           0000000000125f52: a7990000            lghi    %r9,0
+>     <4>           0000000000125f56: a7840033            brc     8,125fbc
+>     <4>           0000000000125f5a: c0e5ffffee23        brasl   %r14,123ba0
+>     <4>Call Trace:
+>     <4>([<00000000aac3a838>] 0xaac3a838)
+>     <4> [<000000000045270c>] schedule+0x178/0x978
+>     <4> [<000000000012fe86>] migration_thread+0x1aa/0x30c
+>     <4> [<0000000000152ad8>] kthread+0x68/0xa0
+>     <4> [<000000000010a0be>] kernel_thread_starter+0x6/0xc
+>     <4> [<000000000010a0b8>] kernel_thread_starter+0x0/0xc
+>     <4>Last Breaking-Event-Address:
+>     <4> [<0000000000125fc6>] pick_next_task_fair+0xb2/0xd4
+>   
 
-(ie, also added linux-kernel)
+Seems to be the same bug, yes.
 
-Rene.
+-- 
+error compiling committee.c: too many arguments to function
+
