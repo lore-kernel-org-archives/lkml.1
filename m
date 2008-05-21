@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936749AbYEUSTi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936670AbYEUSUa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936749AbYEUSTi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 14:19:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756902AbYEUST2
+	id S936670AbYEUSUa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 14:20:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932999AbYEUSUO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 14:19:28 -0400
-Received: from mail.lang.hm ([64.81.33.126]:33048 "EHLO bifrost.lang.hm"
+	Wed, 21 May 2008 14:20:14 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33621 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753904AbYEUST2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 14:19:28 -0400
-Date: Wed, 21 May 2008 11:25:25 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Takashi Iwai <tiwai@suse.de>, Rene Herman <rene.herman@keyaccess.nl>,
-       alsa-devel@alsa-project.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [alsa-devel] HG -> GIT migration
-In-Reply-To: <alpine.LFD.1.10.0805211043590.3081@woody.linux-foundation.org>
-Message-ID: <alpine.DEB.1.10.0805211121170.6420@asgard.lang.hm>
-References: <Pine.LNX.4.61.0805201314190.1798@tm8103-a.perex-int.cz> <200805211430.06653.linux@audioscience.com> <Pine.LNX.4.61.0805210805080.1798@tm8103-a.perex-int.cz> <s5hve18vtml.wl%tiwai@suse.de> <483415E7.5080402@keyaccess.nl> <s5hfxsbx27f.wl%tiwai@suse.de>
- <48341DF5.4090307@keyaccess.nl> <s5habijww7r.wl%tiwai@suse.de> <48344271.3090700@keyaccess.nl> <s5hy763ve5n.wl%tiwai@suse.de> <alpine.LFD.1.10.0805210908460.3081@woody.linux-foundation.org> <s5htzgrvbvo.wl%tiwai@suse.de> <alpine.LFD.1.10.0805211003170.3081@woody.linux-foundation.org>
- <alpine.LFD.1.10.0805211043590.3081@woody.linux-foundation.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	id S1756902AbYEUSUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 14:20:12 -0400
+Message-ID: <483466B0.6000606@redhat.com>
+Date: Wed, 21 May 2008 13:15:12 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Pavel Machek <pavel@suse.cz>, Chris Mason <chris.mason@oracle.com>,
+       Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
+References: <482DDA56.6000301@redhat.com>	<20080518211140.b29bee30.akpm@linux-foundation.org>	<200805191316.27551.chris.mason@oracle.com>	<200805191439.36577.chris.mason@oracle.com>	<20080521112224.GD5028@ucw.cz> <20080521110324.668048e0.akpm@linux-foundation.org>
+In-Reply-To: <20080521110324.668048e0.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 May 2008, Linus Torvalds wrote:
+Andrew Morton wrote:
+> On Wed, 21 May 2008 13:22:25 +0200 Pavel Machek <pavel@suse.cz> wrote:
 
-> [ The corrollary to this all is that when downstream does a merge, think
->  about what the merge message can say. How would you descibe the merge?
->
->  Can you give a good description of what you merged, and why? That's one
->  thing that merging with releases can give you: you can say "merge with
->  release 'xyz'", and people actually understand the *meaning* of it. Your
->  merge message makes sense - and that implies that the merge itself
->  likely made sense.
->
->  If you cannot explain what and why you merged, you probably shouldn't be
->  merging - that's a good rule of thumb right there! Maybe that rule in
->  itself should already be seen as sufficient ]
+>>> I tested this one with a larger FS (40GB instead of 2GB) and larger log (128MB 
+>>> instead of 32MB).  barrier-test -s 32 -p 1500 was still able to get a 50% 
+>>> corruption rate on the larger FS.
+>> Ok, Andrew, is this enough to get barrier patch applied and stop
+>> corrupting data in default config, or do you want some more testing?
+>>
+>> I guess 20% benchmark regression is bad, but seldom and impossible to
+>> debug data corruption is worse...
+> 
+> It is 20%?  I recall 30% from a few years ago, but that's vague and it
+> might have changed.  Has much quantitative testing been done recently? 
+> I might have missed it.
+> 
+> If we do make this change I think it should be accompanied by noisy
+> printks so that as many people as possible know about the decision
+> which we just made for them.
+> 
+> afaik there is no need to enable this feature if the machine (actually
+> the disks) are on a UPS, yes?
 
-one thing that you have missed in your explination in this thread 
-(although you have made the point in other threads) is that subsystem 
-maintainers have the fear that there are other changes that will interfere 
-with their stuff and want to catch it early.
+As long as your power supply (or your UPS) doesn't go boom, I suppose so.
 
-per your instructions in prior threads, what they should do is to have a 
-seperate branch on their system that they use as a throw-away branch to 
-pull from your tree, and from their tree to spot problems. As they find 
-problems they can then address them (cherry pick, or whatever)
+It is too bad that there is no way to determine no-barrier safety from
+software.  (maybe apcupsd could do something... ;)
 
-so it's not that the ALSA people should only look at your tree at the 
-merge points, it's that they shouldn't pollute their tree that they are 
-going to publish to you with this checking.
+I guess it's levels of confidence.  I agree that a user education
+campaign is probably in order... maybe if this thread is long enough to
+make LWN it'll raise some awareness.  :)
 
-David Lang
+-Eric
