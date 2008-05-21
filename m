@@ -1,344 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932077AbYEUXAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933079AbYEUXCg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932077AbYEUXAb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 19:00:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755238AbYEUXAW
+	id S933079AbYEUXCg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 19:02:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758372AbYEUXC2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 19:00:22 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38330 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754007AbYEUXAV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 19:00:21 -0400
-Date: Wed, 21 May 2008 15:59:59 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michael Halcrow <mhalcrow@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, prussell@au1.ibm.com, shaggy@us.ibm.com,
-       sergeh@us.ibm.com
-Subject: Re: [PATCH] eCryptfs: Privileged kthread for lower file opens
-Message-Id: <20080521160000.717fb1ef.akpm@linux-foundation.org>
-In-Reply-To: <20080520214610.GD32643@halcrowt61p.austin.ibm.com>
-References: <20080520214610.GD32643@halcrowt61p.austin.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 21 May 2008 19:02:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60830 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757360AbYEUXC1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 19:02:27 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
+       Austin Clements <amdragon+kernelbugzilla@mit.edu>,
+       Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] signals: sigqueue_free: don't free sigqueue if it
+ is queued
+In-Reply-To: Linus Torvalds's message of  Wednesday, 21 May 2008 13:07:50 -0700 <alpine.LFD.1.10.0805211245131.3081@woody.linux-foundation.org>
+References: <20080517151420.GA9496@tv-sign.ru>
+	<20080521022046.1501F26FA1C@magilla.localdomain>
+	<20080521115414.GA147@tv-sign.ru>
+	<20080521184245.5BABF26FA24@magilla.localdomain>
+	<alpine.LFD.1.10.0805211146350.3081@woody.linux-foundation.org>
+	<20080521193348.64E8C26FA24@magilla.localdomain>
+	<alpine.LFD.1.10.0805211245131.3081@woody.linux-foundation.org>
+X-Shopping-List: (1) Scrumptious benedictions
+   (2) Public reinforcements
+   (3) Synonymous self-propelled circumlocutions
+   (4) Elegant scorpions
+   (5) Quixotic temptations
+Message-Id: <20080521230135.BF65A26FA24@magilla.localdomain>
+Date: Wed, 21 May 2008 16:01:35 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 May 2008 16:46:10 -0500
-Michael Halcrow <mhalcrow@us.ibm.com> wrote:
+The timer_delete/sigqueue_free behavior predates my involvement with the
+code.  I think it is fine to leave pending signals queued.  (POSIX makes it
+unspecified for deleted timers.  A robust application cannot even assume
+that they will or won't be removed consistently on one running system.)
 
-> eCryptfs would really like to have read-write access to all files in
-> the lower filesystem. Right now, the persistent lower file may be
-> opened read-only if the attempt to open it read-write fails. One way
-> to keep from having to do that is to have a privileged kthread that
-> can open the lower persistent file on behalf of the user opening the
-> eCryptfs file; this patch implements this functionality.
-> 
-> This patch will properly allow a less-privileged user to open the
-> eCryptfs file, followed by a more-privileged user opening the eCryptfs
-> file, with the first user only being able to read and the second user
-> being able to both read and write. eCryptfs currently does this wrong;
-> it will wind up calling vfs_write() on a file that was opened
-> read-only.  This is fixed in this patch.
-> 
+What I think everyone agrees is wrong in the abstract is the status quo,
+where (effectively) signals stay queued but with zeroed siginfo_t values.
+(This violates POSIX.)  If there is a signal, its siginfo_t must be intact.
 
-hm, interesting.  A bit scary though.
+A robust application has to drain any pending timer signals by unblocking
+the signal or using sigwait.  This is true if signals might remain
+properly queued as POSIX permits.  It's also true of existing Linux
+kernels, where a bogus infoless signal remains pending.
 
->  fs/ecryptfs/main.c            |   42 ++++----
->  5 files changed, 271 insertions(+), 22 deletions(-)
->  create mode 100644 fs/ecryptfs/kthread.c
-> 
-> diff --git a/fs/ecryptfs/Makefile b/fs/ecryptfs/Makefile
-> index 1e34a7f..b4755a8 100644
-> --- a/fs/ecryptfs/Makefile
-> +++ b/fs/ecryptfs/Makefile
-> @@ -4,4 +4,4 @@
->  
->  obj-$(CONFIG_ECRYPT_FS) += ecryptfs.o
->  
-> -ecryptfs-objs := dentry.o file.o inode.o main.o super.o mmap.o read_write.o crypto.o keystore.o messaging.o netlink.o miscdev.o debug.o
-> +ecryptfs-objs := dentry.o file.o inode.o main.o super.o mmap.o read_write.o crypto.o keystore.o messaging.o netlink.o miscdev.o kthread.o debug.o
-> diff --git a/fs/ecryptfs/ecryptfs_kernel.h b/fs/ecryptfs/ecryptfs_kernel.h
-> index 951ee33..8ca910a 100644
-> --- a/fs/ecryptfs/ecryptfs_kernel.h
-> +++ b/fs/ecryptfs/ecryptfs_kernel.h
-> @@ -559,6 +559,32 @@ extern struct kmem_cache *ecryptfs_key_record_cache;
->  extern struct kmem_cache *ecryptfs_key_sig_cache;
->  extern struct kmem_cache *ecryptfs_global_auth_tok_cache;
->  extern struct kmem_cache *ecryptfs_key_tfm_cache;
-> +extern struct kmem_cache *ecryptfs_open_req_cache;
-> +
-> +extern struct task_struct *ecryptfs_kthread;
+There is also the caveat I mentioned before about RLIMIT_SIGPENDING.
+An existing dumb application might do many iterations of timer_create,
+timer_settime, (timer fires), timer_delete, all with the timer signal
+blocked, and not expect that it can hit its rlimit and not be able to
+create more timers until it drains those signals.  I don't mind breaking
+any such application.  It's dumb.
 
-This can be made static to fs/ecryptfs/kthread.c.
+As I read it, POSIX leaves it the same unspecified what is the
+disposition of pending timer signals at the time of the implicit timer
+deletion at exec.  But people sure find it surprising on exec.
 
-> +struct ecryptfs_open_req {
-> +#define ECRYPTFS_REQ_PROCESSED 0x00000001
-> +#define ECRYPTFS_REQ_DROPPED   0x00000002
-> +#define ECRYPTFS_REQ_ZOMBIE    0x00000004
-> +	u32 flags;
-> +	struct file **lower_file;
-> +	struct dentry *lower_dentry;
-> +	struct vfsmount *lower_mnt;
-> +	struct task_struct *requesting_task;
-> +	struct mutex mux;
-> +	struct list_head kthread_ctl_list;
-> +};
->
-> +struct ecryptfs_kthread_ctl {
-> +#define ECRYPTFS_KTHREAD_ZOMBIE 0x00000001
-> +	u32 flags;
-> +	struct mutex mux;
-> +	struct list_head req_list;
-> +	wait_queue_head_t wait;
-> +};
->
-> +extern struct ecryptfs_kthread_ctl ecryptfs_kthread_ctl;
+So maybe this (wholly untested)?
+The last hunk could go alone (just keep queued) before the rest (exec flush).
 
-I think this guy can be made static too.  As a result of which, entire
-data structure definitions could possibly be pushed down into
-kthread.c?
 
->  int ecryptfs_interpose(struct dentry *hidden_dentry,
->  		       struct dentry *this_dentry, struct super_block *sb,
-> @@ -692,5 +718,10 @@ void ecryptfs_msg_ctx_alloc_to_free(struct ecryptfs_msg_ctx *msg_ctx);
->  int
->  ecryptfs_spawn_daemon(struct ecryptfs_daemon **daemon, uid_t euid,
->  		      struct user_namespace *user_ns, struct pid *pid);
-> +int ecryptfs_init_kthread(void);
-> +void ecryptfs_destroy_kthread(void);
-> +int ecryptfs_privileged_open(struct file **lower_file,
-> +			     struct dentry *lower_dentry,
-> +			     struct vfsmount *lower_mnt);
->  
->  #endif /* #ifndef ECRYPTFS_KERNEL_H */
-> diff --git a/fs/ecryptfs/file.c b/fs/ecryptfs/file.c
-> index 2258b8f..aced6f9 100644
-> --- a/fs/ecryptfs/file.c
-> +++ b/fs/ecryptfs/file.c
-> @@ -191,6 +191,13 @@ static int ecryptfs_open(struct inode *inode, struct file *file)
->  				      | ECRYPTFS_ENCRYPTED);
->  	}
->  	mutex_unlock(&crypt_stat->cs_mutex);
-> +	if ((ecryptfs_inode_to_private(inode)->lower_file->f_flags & O_RDONLY)
-> +	    && !(file->f_flags & O_RDONLY)) {
-> +		rc = -EPERM;
-> +		printk(KERN_WARNING "%s: Lower persistent file is RO; eCryptfs "
-> +		       "file must thus be opened RO\n", __func__);
+Thanks,
+Roland
 
-"hence" ;)
 
-> +		goto out;
-> +	}
->  	ecryptfs_set_file_lower(
->  		file, ecryptfs_inode_to_private(inode)->lower_file);
->  	if (S_ISDIR(ecryptfs_dentry->d_inode->i_mode)) {
->
-> ...
->
-> +/**
-> + * ecryptfs_threadfn
-> + * @ignored: ignored
-> + *
-> + * The eCryptfs kernel thread that has the responsibility of getting
-> + * the lower persistent file with RW permissions.
-> + *
-> + * Returns zero on success; non-zero otherwise
-> + */
-> +static int ecryptfs_threadfn(void *ignored)
-> +{
-> +	set_freezable();
-> +	while (1)  {
-> +		struct ecryptfs_open_req *req;
-> +
-> +		wait_event_freezable(
-> +			ecryptfs_kthread_ctl.wait,
-> +			!list_empty(&ecryptfs_kthread_ctl.req_list));
-> +		mutex_lock(&ecryptfs_kthread_ctl.mux);
-> +		if (ecryptfs_kthread_ctl.flags & ECRYPTFS_KTHREAD_ZOMBIE) {
-> +			mutex_unlock(&ecryptfs_kthread_ctl.mux);
-> +			goto out;
-> +		}
-> +		while (!list_empty(&ecryptfs_kthread_ctl.req_list)) {
-> +			req = list_first_entry(&ecryptfs_kthread_ctl.req_list,
-> +					       struct ecryptfs_open_req,
-> +					       kthread_ctl_list);
-> +			BUG_ON(!req);
-> +			mutex_lock(&req->mux);
-> +			list_del(&req->kthread_ctl_list);
-> +			if (req->flags & ECRYPTFS_REQ_ZOMBIE)
-> +				mutex_unlock(&req->mux);
-> +			else {
-> +				dget(req->lower_dentry);
-> +				mntget(req->lower_mnt);
-> +				(*req->lower_file) = dentry_open(
-> +					req->lower_dentry, req->lower_mnt,
-> +					(O_RDWR | O_LARGEFILE));
-> +				req->flags |= ECRYPTFS_REQ_PROCESSED;
-> +				wake_up_process(req->requesting_task);
-> +				mutex_unlock(&req->mux);
-> +			}
-> +		}
-> +		mutex_unlock(&ecryptfs_kthread_ctl.mux);
-> +	}
-> +out:
-> +	do_exit(0);
-
-A plain old `return 0;' will suffice here, and is more typical.  I'm
-moderately surprised that do_exit() is exported to modules, actually.
-
-> +}
-> +
-> +int ecryptfs_init_kthread(void)
-> +{
-> +	int rc = 0;
-> +
-> +	mutex_init(&ecryptfs_kthread_ctl.mux);
-> +	init_waitqueue_head(&ecryptfs_kthread_ctl.wait);
-> +	INIT_LIST_HEAD(&ecryptfs_kthread_ctl.req_list);
-> +	ecryptfs_kthread = kthread_create(&ecryptfs_threadfn, NULL,
-> +					  "ecryptfs-kthread");
-> +	if (IS_ERR(ecryptfs_kthread)) {
-> +		rc = PTR_ERR(ecryptfs_kthread);
-> +		printk(KERN_ERR "%s: Failed to create kernel thread; rc = [%d]"
-> +		       "\n", __func__, rc);
-> +	}
-> +	wake_up_process(ecryptfs_kthread);
-> +	return rc;
-> +}
-
-kthread_run() does the kthread_create() and the wake_up_process() for you.
-
-> +void ecryptfs_destroy_kthread(void)
-> +{
-> +	struct ecryptfs_open_req tmp_req;
-> +	struct ecryptfs_open_req *req;
-> +
-> +	mutex_lock(&ecryptfs_kthread_ctl.mux);
-> +	ecryptfs_kthread_ctl.flags |= ECRYPTFS_KTHREAD_ZOMBIE;
-> +	list_for_each_entry(req, &ecryptfs_kthread_ctl.req_list,
-> +			    kthread_ctl_list) {
-> +		mutex_lock(&req->mux);
-> +		req->flags |= ECRYPTFS_REQ_ZOMBIE;
-> +		wake_up_process(req->requesting_task);
-> +		mutex_unlock(&req->mux);
-> +	}
-> +	memset(&tmp_req, 0, sizeof(tmp_req));
-> +	tmp_req.flags = ECRYPTFS_REQ_ZOMBIE;
-> +	list_add_tail(&tmp_req.kthread_ctl_list,
-> +		      &ecryptfs_kthread_ctl.req_list);
-> +	mutex_unlock(&ecryptfs_kthread_ctl.mux);
-> +	wake_up(&ecryptfs_kthread_ctl.wait);
-> +}
-
-eh?  We attach a local variable to a global list and then return?  That
-won't last very long.
-
-> +/**
-> + * ecryptfs_privileged_open
-> + * @lower_file: Result of dentry_open by root on lower dentry
-> + * @lower_dentry: Lower dentry for file to open
-> + * @lower_mnt: Lower vfsmount for file to open
-> + *
-> + * This function gets a r/w file opened againt the lower dentry.
-> + *
-> + * Returns zero on success; non-zero otherwise
-> + */
-> +int ecryptfs_privileged_open(struct file **lower_file,
-> +			     struct dentry *lower_dentry,
-> +			     struct vfsmount *lower_mnt)
-> +{
-> +	struct ecryptfs_open_req *req;
-> +	int rc = 0;
-> +
-> +	/* Corresponding dput() and mntput() are done when the
-> +	 * persistent file is fput() when the eCryptfs inode is
-> +	 * destroyed. */
-> +	dget(lower_dentry);
-> +	mntget(lower_mnt);
-> +	(*lower_file) = dentry_open(lower_dentry, lower_mnt,
-> +				    (O_RDWR | O_LARGEFILE));
-> +	if (!IS_ERR(*lower_file))
-> +		goto out;
-> +	req = kmem_cache_alloc(ecryptfs_open_req_cache, GFP_KERNEL);
-> +	if (!req) {
-> +		rc = -ENOMEM;
-> +		goto out;
-
-Did we just leak the dentry_open() result?
-
-> +	}
-> +	mutex_init(&req->mux);
-> +	req->lower_file = lower_file;
-> +	req->lower_dentry = lower_dentry;
-> +	req->lower_mnt = lower_mnt;
-> +	req->requesting_task = current;
-> +	req->flags = 0;
-> +	mutex_lock(&ecryptfs_kthread_ctl.mux);
-> +	mutex_lock(&req->mux);
-> +	if (ecryptfs_kthread_ctl.flags & ECRYPTFS_KTHREAD_ZOMBIE) {
-> +		rc = -EIO;
-> +		mutex_unlock(&ecryptfs_kthread_ctl.mux);
-> +		printk(KERN_ERR "%s: We are in the middle of shutting down; "
-> +		       "aborting privileged request to open lower file\n",
-> +			__func__);
-> +		goto out_free;
-
-ditto.
-
-> +	}
-> +	list_add_tail(&req->kthread_ctl_list, &ecryptfs_kthread_ctl.req_list);
-> +	mutex_unlock(&req->mux);
-> +	mutex_unlock(&ecryptfs_kthread_ctl.mux);
-> +	wake_up(&ecryptfs_kthread_ctl.wait);
-> +schedule:
-> +	set_current_state(TASK_INTERRUPTIBLE);
-> +	schedule();
-
-This looks racy to me.  I assume we're waiting for ecryptfs_kthread to
-wake us up.  But that thread could have sent us its wakeup _before_ we
-did the set_current_state+schedule.  In which case we lost the wakeup
-and we'll get stuck.
-
-> +	mutex_lock(&req->mux);
-> +	if (req->flags == 0) {
-> +		mutex_unlock(&req->mux);
-> +		goto schedule;
-> +	}
-> +	set_current_state(TASK_RUNNING);
-
-This is unneeded.  schedule() always returns in state TASK_RUNNING.
-
-> +	if (req->flags & ECRYPTFS_REQ_DROPPED
-> +	    || req->flags & ECRYPTFS_REQ_ZOMBIE) {
-> +		rc = -EIO;
-> +		printk(KERN_WARNING "%s: Privileged open request dropped\n",
-> +		       __func__);
-> +		goto out_unlock;
-> +	}
-> +	if (IS_ERR(*req->lower_file)) {
-> +		rc = PTR_ERR(*req->lower_file);
-> +		dget(lower_dentry);
-> +		mntget(lower_mnt);
-> +		(*lower_file) = dentry_open(lower_dentry, lower_mnt,
-> +					    (O_RDONLY | O_LARGEFILE));
-> +		if (IS_ERR(*lower_file)) {
-> +			rc = PTR_ERR(*req->lower_file);
-> +			(*lower_file) = NULL;
-> +			printk(KERN_WARNING "%s: Error attempting privileged "
-> +			       "open of lower file with either RW or RO "
-> +			       "perms; rc = [%d]. Giving up.\n",
-> +			       __func__, rc);
-> +		}
-> +	}
-> +out_unlock:
-> +	mutex_unlock(&req->mux);
-> +out_free:
-> +	kmem_cache_free(ecryptfs_open_req_cache, req);
-> +out:
-> +	return rc;
-> +}
-
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 72bb4f5..0000000 100644  
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -205,18 +205,25 @@ static void __sigqueue_free(struct sigqu
+ 	kmem_cache_free(sigqueue_cachep, q);
+ }
+ 
+-void flush_sigqueue(struct sigpending *queue)
++static void __flush_sigqueue(struct sigpending *queue, int timers)
+ {
+ 	struct sigqueue *q;
+ 
+ 	sigemptyset(&queue->signal);
+ 	while (!list_empty(&queue->list)) {
+ 		q = list_entry(queue->list.next, struct sigqueue , list);
++		if (timers && q->info.si_code != SI_TIMER)
++			continue;
+ 		list_del_init(&q->list);
+ 		__sigqueue_free(q);
+ 	}
+ }
+ 
++void flush_sigqueue(struct sigpending *queue)
++{
++	__flush_sigqueue(queue, 0);
++}
++
+ /*
+  * Flush all pending signals for a task.
+  */
+@@ -243,6 +250,7 @@ void ignore_signals(struct task_struct *
+ 
+ /*
+  * Flush all handlers for a task.
++ * Also flush all SI_TIMER signals from the queues.
+  */
+ 
+ void
+@@ -257,6 +265,9 @@ flush_signal_handlers(struct task_struct
+ 		sigemptyset(&ka->sa.sa_mask);
+ 		ka++;
+ 	}
++
++	__flush_sigqueue(&t->pending, 1);
++	__flush_sigqueue(&t->signal->shared_pending, 1);
+ }
+ 
+ int unhandled_signal(struct task_struct *tsk, int sig)
+@@ -1240,17 +1251,18 @@ void sigqueue_free(struct sigqueue *q)
+ 
+ 	BUG_ON(!(q->flags & SIGQUEUE_PREALLOC));
+ 	/*
+-	 * If the signal is still pending remove it from the
+-	 * pending queue. We must hold ->siglock while testing
++	 * If the signal is still pending, leave it to be dequeued.
++	 * We must hold ->siglock while testing
+ 	 * q->list to serialize with collect_signal().
+ 	 */
+ 	spin_lock_irqsave(lock, flags);
++	q->flags &= ~SIGQUEUE_PREALLOC;
+ 	if (!list_empty(&q->list))
+-		list_del_init(&q->list);
++		q = NULL;
+ 	spin_unlock_irqrestore(lock, flags);
+ 
+-	q->flags &= ~SIGQUEUE_PREALLOC;
+-	__sigqueue_free(q);
++	if (q)
++		__sigqueue_free(q);
+ }
+ 
+ int send_sigqueue(struct sigqueue *q, struct task_struct *t, int group)
