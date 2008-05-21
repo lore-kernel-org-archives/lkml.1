@@ -1,47 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932995AbYEUJ7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932174AbYEUKET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932995AbYEUJ7t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 05:59:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756147AbYEUJ7l
+	id S932174AbYEUKET (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 06:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755694AbYEUKEH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 05:59:41 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38891 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756600AbYEUJ7k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 05:59:40 -0400
-Date: Wed, 21 May 2008 10:46:43 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Li Yang <leoli@freescale.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Kong Wei <weikong@redflag-linux.com>
-Subject: Re: [PATCH] [mm] limit the min_free_kbytes
-Message-ID: <20080521104643.3c7165ce@core>
-In-Reply-To: <1211362481-2136-1-git-send-email-leoli@freescale.com>
-References: <1211362481-2136-1-git-send-email-leoli@freescale.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 21 May 2008 06:04:07 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:53463 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752004AbYEUKEG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 06:04:06 -0400
+Date: Wed, 21 May 2008 12:04:43 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Patrick McHardy <kaber@trash.net>
+Cc: David Miller <davem@davemloft.net>, greg@nest.cx,
+       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org
+Subject: Re: include/linux/netfilter.h after make headers_install is incomplete
+Message-ID: <20080521100443.GA7976@uranus.ravnborg.org>
+References: <a27c0c970805161521k332fba8cg808d52396b5cdce5@mail.gmail.com> <a27c0c970805201139i38e12d15ue807fc0239b1c10e@mail.gmail.com> <a27c0c970805201144j12189201g9567460d4d3d8361@mail.gmail.com> <20080520.142121.15017166.davem@davemloft.net> <4833F1E7.5050700@trash.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4833F1E7.5050700@trash.net>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 May 2008 17:34:41 +0800
-Li Yang <leoli@freescale.com> wrote:
-
-> From: Kong Wei <weikong@redflag-linux.com>
+On Wed, May 21, 2008 at 11:56:55AM +0200, Patrick McHardy wrote:
+> David Miller wrote:
+> >From: "Greg Steuck" <greg@nest.cx>
+> >Date: Tue, 20 May 2008 11:44:56 -0700
+> >
+> >>I ran make headers_install in 2.6.25 tree and the installed netfilter.h is
+> >>not complete. Namely, it declares
+> >>union nf_inet_addr {
+> >>      __u32           all[4];
+> >>      __be32          ip;
+> >>      __be32          ip6[4];
+> >>...
+> >>}
+> >>
+> >>The __u32, __be32 types are declared in <linux/types.h> and the #include
+> >>directive is removed by the installation process. This in turn makes some
+> >>applications unbuildable against such an exported tree, e.g.
+> >>
+> >>busybox-1.10.1/networking/tcpudp.c:#include <linux/netfilter_ipv4.h>
+> >>
+> >>If I correctly understand the purpose of make headers_install, it is
+> >>supposed to generate an API for applications. I could certainly
+> >>make tcpudp.c include linux/types.h, but given that the application
+> >>does not even use nf_inet_addr, this would be the wrong place for
+> >>the fix.
 > 
-> Unlimited of min_free_kbytes is dangerous,
-> An user of our company set this value bigger than 3584*1024*K,
-> cause the system OOM on DMA.
+> These types are used by countless header files. I don't know
+> why types.h is stripped, I guess this question can be best
+> answered by whoever maintains the header-install stuff (Sam?
+> I don't know).
 
-You need to be root to set this value, and as root you could equally just
-type "halt", run a real time process in a tight loop or reformat the hard
-disk.
+Everything inside
+#ifdef __KERNEL__
+...
+#endif
 
-NAK this patch
+are stripped.
 
+>From netfilter.h:
+#ifdef __KERNEL__
+#include <linux/init.h>
+#include <linux/types.h>
+#include <linux/skbuff.h>
+#include <linux/net.h>
+#include <linux/netdevice.h>
+#include <linux/if.h>
+#include <linux/in.h>
+#include <linux/in6.h>
+#include <linux/wait.h>
+#include <linux/list.h>
+#include <net/net_namespace.h>
+#endif
+
+Include of types.h should be outside the #ifdef block.
+
+	Sam
