@@ -1,45 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936601AbYEUUDu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936200AbYEUUE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936601AbYEUUDu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 16:03:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757257AbYEUUDT
+	id S936200AbYEUUE2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 16:04:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765152AbYEUUD7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 16:03:19 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:55796 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754490AbYEUUDS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 16:03:18 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: NOvell
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] USB: fix deadlock in HCD code
-Date: Wed, 21 May 2008 22:03:13 +0200
-User-Agent: KMail/1.9.9
-Cc: Jiri Kosina <jkosina@suse.cz>, Greg KH <greg@kroah.com>,
-       linux-usb@vger.kernel.org, lchiquitto@novell.com,
-       linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.44L0.0805211042070.2490-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0805211042070.2490-100000@iolanthe.rowland.org>
+	Wed, 21 May 2008 16:03:59 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:49171 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764990AbYEUUD6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 16:03:58 -0400
+Date: Wed, 21 May 2008 15:03:47 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Cedric Le Goater <clg@fr.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>, Paul Menage <menage@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCH -mm] remove node_ prefix_from ns subsystem
+Message-ID: <20080521200347.GA25307@sergelap.austin.ibm.com>
+References: <48344409.9090903@fr.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200805212203.14187.oliver@neukum.org>
+In-Reply-To: <48344409.9090903@fr.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch 21 Mai 2008 16:46:45 schrieb Alan Stern:
-> One possibility is that in an earlier call to finish_urb,
-> usb_hcd_giveback_urb was called with interrupts disabled and returned 
-> with interrupts enabled.  In other words, some driver's callback 
-> routine may have enabled interrupts incorrectly.
+Quoting Cedric Le Goater (clg@fr.ibm.com):
+> From: Cedric Le Goater <clg@fr.ibm.com>
+> 
+> This is a slight change in the namespace cgroup subsystem api.
+> 
+> Signed-off-by: Cedric Le Goater <clg@fr.ibm.com>
 
-Are we sure the interrupt line is not shared with another driver that calls
-spin_unlock_irq() in its interrupt handler?
+I agree that is preferable.
 
-	Regards
-		Oliver
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
+> ---
+>  kernel/cgroup.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: 2.6.26-rc2-mm1/kernel/cgroup.c
+> ===================================================================
+> --- 2.6.26-rc2-mm1.orig/kernel/cgroup.c
+> +++ 2.6.26-rc2-mm1/kernel/cgroup.c
+> @@ -2903,7 +2903,7 @@ int cgroup_clone(struct task_struct *tsk
+>  	cg = tsk->cgroups;
+>  	parent = task_cgroup(tsk, subsys->subsys_id);
+> 
+> -	snprintf(nodename, MAX_CGROUP_TYPE_NAMELEN, "node_%d", tsk->pid);
+> +	snprintf(nodename, MAX_CGROUP_TYPE_NAMELEN, "%d", tsk->pid);
+> 
+>  	/* Pin the hierarchy */
+>  	atomic_inc(&parent->root->sb->s_active);
