@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936822AbYEUTAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936020AbYEUTBx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936822AbYEUTAb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 15:00:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758908AbYEUTAQ
+	id S936020AbYEUTBx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 15:01:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754874AbYEUTBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 15:00:16 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:53986 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755683AbYEUTAP (ORCPT
+	Wed, 21 May 2008 15:01:45 -0400
+Received: from rv-out-0506.google.com ([209.85.198.237]:19754 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754715AbYEUTBo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 15:00:15 -0400
-Date: Wed, 21 May 2008 21:01:03 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: better msleep for drivers
-Message-ID: <20080521190103.GA19261@elf.ucw.cz>
-References: <20080511110124.GA24187@basil.nowhere.org> <alpine.LFD.1.10.0805111408440.3197@apollo.tec.linutronix.de> <20080521104131.GA4948@ucw.cz> <48343EBC.70703@garzik.org>
+	Wed, 21 May 2008 15:01:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=imRbQ8W4k6YbzgXvhgWQeuwKYgS3RPbTCXeEcCSqq2ASe1CcYBILZ1seRYbQa6ePF8qhYNTBwRZEps8DuRpTK/fT5BuBqtWlil8vYSeABCjQbq1/iVnW7wWpr+W7kMf9krSn1zK/x0GfEhFne0i/vpRE874ug2pS93Iuskpp3WI=
+Message-ID: <7b9198260805211201g60dd6a15ib4e27d017b292992@mail.gmail.com>
+Date: Wed, 21 May 2008 20:01:43 +0100
+From: "Tom Spink" <tspink@gmail.com>
+To: "Jeff Dike" <jdike@addtoit.com>
+Subject: Re: UML fails to locate address space
+Cc: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080521175829.GA10648@c2.user-mode-linux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <48343EBC.70703@garzik.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <7b9198260805200408k1d6b70a8xc7e4c24106e5020f@mail.gmail.com>
+	 <20080520135238.GB6990@c2.user-mode-linux.org>
+	 <Pine.LNX.4.61.0805201117540.12360@chaos.analogic.com>
+	 <20080520173503.GA10811@c2.user-mode-linux.org>
+	 <Pine.LNX.4.61.0805201751500.13532@chaos.analogic.com>
+	 <20080521021502.GB16212@c2.user-mode-linux.org>
+	 <7b9198260805210502i316c9e38lcc9b5561045dd5d@mail.gmail.com>
+	 <7b9198260805210504h278f014s5aba720360ac02ab@mail.gmail.com>
+	 <20080521175829.GA10648@c2.user-mode-linux.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
->>>> Still longer term I suppose there's really no way around having accurate
->>>> sleep functions and it's probably better to start testing earlier than later.
->>> No objections, but we should not do that with a stupid msleep
->>> replacement interface; instead we should expose a flexible in kernel
->>> variant of hrtimer_nanosleep() which lets the user utilize
->>> ABS/REL_TIME and the different clocks. A msleep helper can be built on
->>> top of this very easily.
->>
->> While you are at it... it would be cool to have
->>
->> 'mdelay(2500 msec), but it is okay to wait 100msec more' -- type
->> interface, so we could use that for nohz benefit.
->>
->> Currently, mdelay is 'it is okay to wait 10msec more' interface, and
->> it would be nice to have that explicit.
+2008/5/21 Jeff Dike <jdike@addtoit.com>:
+> On Wed, May 21, 2008 at 01:04:21PM +0100, Tom Spink wrote:
+>> Oh No! I forgot to get rid of those nasty includes.... Take 2....
 >
-> eh, I think you transposed mdelay with msleep?
+> This is actually supposed to return the address space top, not the
+> size, so I changed the name and return value accordingly.
 >
-> msleep() is the "it is okay to wait longer than I said" interface, not 
-> mdelay().  mdelay() has always been non-sleeping and exact (as much as the 
-> delay loop allows)
+> Other than that, this is fine.  The final result is below...
+>
+>                      Jeff
+>
 
-Okay, I was a bit confused.
+Awesome!  Thanks for your help, Jeff.
 
-Actually, both can delay for longer... msleep() in case of scheduling
-load, mdelay() in case of interrupt load...
-
-But the above was about hrtimer_nano*sleep*(), so that "how much
-latency we can tolarate" parameter would still be good.
-
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Tom Spink
