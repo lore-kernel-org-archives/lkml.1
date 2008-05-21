@@ -1,45 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936533AbYEUTfU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936833AbYEUTfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936533AbYEUTfU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 15:35:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936808AbYEUTeh
+	id S936833AbYEUTfs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 15:35:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936018AbYEUTf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 15:34:37 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:50272 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764336AbYEUTee (ORCPT
+	Wed, 21 May 2008 15:35:29 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:53691 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936948AbYEUTf1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 15:34:34 -0400
-To: trond.myklebust@fys.uio.no
-CC: miklos@szeredi.hu, linux-fsdevel@vger.kernel.org, hch@infradead.org,
-       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
-In-reply-to: <1211397984.7486.38.camel@localhost> (message from Trond
-	Myklebust on Wed, 21 May 2008 15:26:24 -0400)
-Subject: Re: [patch 11/14] vfs: move executable checking into ->permission()
-References: <20080521171458.077908538@szeredi.hu>
-	 <20080521171557.399850407@szeredi.hu> <1211393793.7486.15.camel@localhost>
-	 <E1Jytgu-00068N-Tp@pomaz-ex.szeredi.hu> <1211397984.7486.38.camel@localhost>
-Message-Id: <E1Jyu4x-0006C8-J0@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 21 May 2008 21:34:27 +0200
+	Wed, 21 May 2008 15:35:27 -0400
+Date: Wed, 21 May 2008 15:35:25 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>
+cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH RT] rwlocks fix for non PREEMPT_RT
+Message-ID: <Pine.LNX.4.58.0805211534170.19141@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > No, we don't want to deny read or write (that's up to the filesystem
-> > how it handles it), just want to deny execute if no x bits are set in
-> > the mode.
-> 
-> OK, but when I see something with the name 'exec_permission()', I assume
-> that it is going to check for whether or not I have execute permission.
-> 
-> If that is not the case, then can we please either change the function,
-> or change the name?
 
-Yeah, the name's not very good.  Especially that there's an
-exec_permission_lite() in the same file, which has nothing to do with
-this.
+Seems that the addition of RT_RW_READER broke the non PREEMPT_RT case.
+This patch fixes it.
 
-Will try to think of something better.
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ kernel/rtmutex.c |   16 +++++++++++-----
+ 1 file changed, 11 insertions(+), 5 deletions(-)
 
-Miklos
+Index: linux-2.6.24.7-rt9/kernel/rtmutex.c
+===================================================================
+--- linux-2.6.24.7-rt9.orig/kernel/rtmutex.c	2008-05-20 23:38:08.000000000 -0400
++++ linux-2.6.24.7-rt9/kernel/rtmutex.c	2008-05-21 15:16:18.000000000 -0400
+@@ -123,6 +123,12 @@ static inline void mark_rt_rwlock_check(
+ #endif /* CONFIG_PREEMPT_RT */
+ #endif
+
++#ifdef CONFIG_PREEMPT_RT
++#define task_is_reader(task) ((task) == RT_RW_READER)
++#else
++#define task_is_reader(task) (0)
++#endif
++
+ int pi_initialized;
+
+ /*
+@@ -315,7 +321,7 @@ static int rt_mutex_adjust_prio_chain(st
+ 	/*
+ 	 * Readers are special. We may need to boost more than one owner.
+ 	 */
+-	if (task == RT_RW_READER) {
++	if (task_is_reader(task)) {
+ 		ret = rt_mutex_adjust_readers(orig_lock, orig_waiter,
+ 					      top_task, lock,
+ 					      recursion_depth);
+@@ -376,7 +382,7 @@ static inline int try_to_steal_lock(stru
+ 	if (pendowner == current)
+ 		return 1;
+
+-	WARN_ON(rt_mutex_owner(lock) == RT_RW_READER);
++	WARN_ON(task_is_reader(rt_mutex_owner(lock)));
+
+ 	spin_lock(&pendowner->pi_lock);
+ 	if (!lock_is_stealable(pendowner, mode)) {
+@@ -506,7 +512,7 @@ static int task_blocks_on_rt_mutex(struc
+
+ 	if (waiter == rt_mutex_top_waiter(lock)) {
+ 		/* readers are handled differently */
+-		if (owner == RT_RW_READER) {
++		if (task_is_reader(owner)) {
+ 			res = rt_mutex_adjust_readers(lock, waiter,
+ 						      current, lock, 0);
+ 			return res;
+@@ -524,7 +530,7 @@ static int task_blocks_on_rt_mutex(struc
+ 	else if (debug_rt_mutex_detect_deadlock(waiter, detect_deadlock))
+ 		chain_walk = 1;
+
+-	if (!chain_walk || owner == RT_RW_READER)
++	if (!chain_walk || task_is_reader(owner))
+ 		return 0;
+
+ 	/*
+@@ -624,7 +630,7 @@ static void remove_waiter(struct rt_mute
+ 	current->pi_blocked_on = NULL;
+ 	spin_unlock(&current->pi_lock);
+
+-	if (first && owner != current && owner != RT_RW_READER) {
++	if (first && owner != current && !task_is_reader(owner)) {
+
+ 		spin_lock(&owner->pi_lock);
+
+
