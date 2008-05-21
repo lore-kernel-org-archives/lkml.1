@@ -1,99 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935457AbYEUPhK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935437AbYEUPiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935457AbYEUPhK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 11:37:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764676AbYEUPg6
+	id S935437AbYEUPiV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 11:38:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758149AbYEUPiJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 11:36:58 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:35704 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764359AbYEUPg5 (ORCPT
+	Wed, 21 May 2008 11:38:09 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:48996 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754401AbYEUPiI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 11:36:57 -0400
-Date: Wed, 21 May 2008 10:39:15 -0500
-From: Michael Halcrow <mhalcrow@us.ibm.com>
-To: Andrea Righi <righiandr@users.sourceforge.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <prussell@au1.ibm.com>,
-       "David J. Kleikamp" <shaggy@us.ibm.com>,
-       "SERGE E. HALLYN" <sergeh@us.ibm.com>
-Subject: [PATCH] eCryptfs: Remove useless lock
-Message-ID: <20080521153915.GA942@halcrowt61p.austin.ibm.com>
-Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
-References: <20080520214610.GD32643@halcrowt61p.austin.ibm.com> <48335BBF.2040901@users.sourceforge.net> <20080521151430.GG32643@halcrowt61p.austin.ibm.com>
+	Wed, 21 May 2008 11:38:08 -0400
+Message-ID: <48344271.3090700@keyaccess.nl>
+Date: Wed, 21 May 2008 17:40:33 +0200
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080521151430.GG32643@halcrowt61p.austin.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Takashi Iwai <tiwai@suse.de>
+CC: alsa-devel@alsa-project.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [alsa-devel] HG -> GIT migration
+References: <Pine.LNX.4.61.0805201314190.1798@tm8103-a.perex-int.cz>	<200805211430.06653.linux@audioscience.com>	<Pine.LNX.4.61.0805210805080.1798@tm8103-a.perex-int.cz>	<s5hve18vtml.wl%tiwai@suse.de>	<483415E7.5080402@keyaccess.nl>	<s5hfxsbx27f.wl%tiwai@suse.de>	<48341DF5.4090307@keyaccess.nl> <s5habijww7r.wl%tiwai@suse.de>
+In-Reply-To: <s5habijww7r.wl%tiwai@suse.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 21, 2008 at 10:14:30AM -0500, Michael Halcrow wrote:
-> On Wed, May 21, 2008 at 01:16:15AM +0200, Andrea Righi wrote:
-> > Michael Halcrow wrote:
-> >> +	req = kmem_cache_alloc(ecryptfs_open_req_cache, GFP_KERNEL);
-> >> +	if (!req) {
-> >> +		rc = -ENOMEM;
-> >> +		goto out;
-> >> +	}
-> >> +	mutex_init(&req->mux);
-> >> +	req->lower_file = lower_file;
-> >> +	req->lower_dentry = lower_dentry;
-> >> +	req->lower_mnt = lower_mnt;
-> >> +	req->requesting_task = current;
-> >> +	req->flags = 0;
-> >> +	mutex_lock(&ecryptfs_kthread_ctl.mux);
-> >> +	mutex_lock(&req->mux);
-> >> +	if (ecryptfs_kthread_ctl.flags & ECRYPTFS_KTHREAD_ZOMBIE) {
-> >> +		rc = -EIO;
-> >
-> > Isn't a mutex_unlock(&req->mux) missing here?
+On 21-05-08 16:47, Takashi Iwai wrote:
+
+> Theoretically we can work only using merges.  However, the resultant
+> tree will look too complex with lots of merge points at the time of
+> the next merge window.  This is also a nightmare for bisecting.  Thus,
+> most subsystem trees do rebase before the merge window in practice,
+> AFAIK.
 > 
-> Nobody else actually has a reference to req at this point, so the
-> unlock is not really necessary. It might not be a bad idea to jump to
-> out_unlock anyway just to avoid future bugs.
-> 
-> >> +		mutex_unlock(&ecryptfs_kthread_ctl.mux);
-> >> +		printk(KERN_ERR "%s: We are in the middle of shutting down; "
-> >> +		       "aborting privileged request to open lower file\n",
-> >> +			__func__);
-> >> +		goto out_free;
-> >> +	}
-> >> +	list_add_tail(&req->kthread_ctl_list, &ecryptfs_kthread_ctl.req_list);
-> >> +	mutex_unlock(&req->mux);
-> >> +	mutex_unlock(&ecryptfs_kthread_ctl.mux);
+> It'd be appreciated if someone can tell me any good workflow to keep a
+> good-shaped tree without rebasing...
 
-Nobody can get a reference to req so long as &ecryptfs_kthread_ctl.mux
-is held. Remove lock of req->mux for newly created req.
+Over here:
 
-Signed-off-by: Michael Halcrow <mhalcrow@us.ibm.com>
----
- fs/ecryptfs/kthread.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+http://lkml.org/lkml/2008/5/17/203
 
-diff --git a/fs/ecryptfs/kthread.c b/fs/ecryptfs/kthread.c
-index dba7c67..3d34327 100644
---- a/fs/ecryptfs/kthread.c
-+++ b/fs/ecryptfs/kthread.c
-@@ -158,7 +158,6 @@ int ecryptfs_privileged_open(struct file **lower_file,
- 	req->requesting_task = current;
- 	req->flags = 0;
- 	mutex_lock(&ecryptfs_kthread_ctl.mux);
--	mutex_lock(&req->mux);
- 	if (ecryptfs_kthread_ctl.flags & ECRYPTFS_KTHREAD_ZOMBIE) {
- 		rc = -EIO;
- 		mutex_unlock(&ecryptfs_kthread_ctl.mux);
-@@ -168,7 +167,6 @@ int ecryptfs_privileged_open(struct file **lower_file,
- 		goto out_free;
- 	}
- 	list_add_tail(&req->kthread_ctl_list, &ecryptfs_kthread_ctl.req_list);
--	mutex_unlock(&req->mux);
- 	mutex_unlock(&ecryptfs_kthread_ctl.mux);
- 	wake_up(&ecryptfs_kthread_ctl.wait);
- schedule:
--- 
-1.5.3.6
+Linus suggests to just not do many merges from upstream -- basically 
+only at releases.
 
+I'm only looking at and experiencing things from the limited viewpoint 
+of a leaf node though so I'll shut up for a bit first now as this might 
+not be helpful.
+
+Rene.
