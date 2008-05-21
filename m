@@ -1,86 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935101AbYEUBJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934048AbYEUBKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935101AbYEUBJd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 21:09:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933047AbYEUBIb
+	id S934048AbYEUBKi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 21:10:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758750AbYEUBK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 21:08:31 -0400
-Received: from cnrelay03.alcatel-sbell.com.cn ([211.144.215.19]:40362 "EHLO
-	mail.alcatel-sbell.com.cn" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S934243AbYEUBI3 (ORCPT
+	Tue, 20 May 2008 21:10:26 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:60169 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759465AbYEUBKZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 21:08:29 -0400
-Message-ID: <48337608.7010000@alcatel-lucent.com>
-Date: Wed, 21 May 2008 09:08:24 +0800
-From: gshan <gshan@alcatel-lucent.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Tue, 20 May 2008 21:10:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=X+WzJ8ud3G5YpYcOv6l2Q1x9gPtTJLefd3WX774ajrb4zD8t4ZY2FKhe8scMWaVGDf8/dMB3zZLvTDt+vL44AMNGR4Vf+f3L+yrcdT1CdvWy3oLlIf2YL2+7f/tdI4uJp4ZRmYENbQoLwV3MuAAoX3KMIcoYJJ9OUJdqXayqTyI=
+Message-ID: <48337671.1080807@googlemail.com>
+Date: Wed, 21 May 2008 03:10:09 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
 MIME-Version: 1.0
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: PIIX4 DMA Timeout
-References: <003b01c8ba7a$19f01500$01fca8c0@microsof60b8d6> 
-	<Pine.LNX.4.55.0805201746130.31790@cliff.in.clinika.pl>
-In-Reply-To: <Pine.LNX.4.55.0805201746130.31790@cliff.in.clinika.pl>
-Content-Type: text/plain;
-	charset=US-ASCII;
-	format=flowed
+To: Peter Zijlstra <peterz@infradead.org>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Bug #10648] CONFIG_PRINTK_TIME broken on git HEAD ?
+References: <oKKSi1w1qaF.A.mEG.JrBMIB@albercik>	 <7wuznNhcUqC.A.Xw.7sBMIB@albercik>	 <1211131275.6463.5.camel@lappy.programming.kicks-ass.net> <1211135855.6463.20.camel@lappy.programming.kicks-ass.net> <48336F0E.30006@googlemail.com>
+In-Reply-To: <48336F0E.30006@googlemail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 21 May 2008 01:07:57.0670 (UTC) 
-	FILETIME=[1B309060:01C8BADF]
-X-imss-version: 2.050
-X-imss-result: Passed
-X-imss-scores: Clean:96.46463 C:2 M:3 S:5 R:5
-X-imss-settings: Baseline:2 C:1 M:1 S:1 R:1 (0.1500 0.1500)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maciej W. Rozycki wrote:
-> On Tue, 20 May 2008, Gavin Shan wrote:
->
->   
->> There has one MV64460 on my board, which includes 2 PCI bridges. PIIX4 is on slot 3 of PCI1.
->> But now, IDE driver reported it's timeouted on DMA operation. Thanks in advance for your
->> suggestions.
->>     
-> [...]
->   
->> PIIX4: chipset revision 1
->> PIIX4: not 100% native mode: will probe irqs later
->>     ide0: BM-DMA at 0xd8000000-0xd8000007, BIOS settings: hda:pio, hdb:pio
->>     ide1: BM-DMA at 0xd8000008-0xd800000f, BIOS settings: hdc:pio, hdd:pio
->> hdc: HTE721010G9AT00, ATA DISK drive
->> hdc: max request size: 512KiB
->> hdc: 195371568 sectors (100030 MB) w/7539KiB Cache, CHS=16383/255/63, UDMA(33)
->> hdc: cache flushes supported
->>  hdc:<4>hdc: dma_timer_expiry: dma status == 0x26
->> hdc: DMA interrupt recovery
->> hdc: lost interrupt
->> hdc: dma_intr: status=0x58 { DriveReady SeekComplete DataRequest }
->> ide: failed opcode was: unknown
->> hdc: DMA disabled
->> ide1: reset: success
->>  hdc2 hdc3 hdc4
->>     
->
->  It looks like some problem with interrupt routing.  At least with some of
-> the PIIX chips I recall there was some limitation about how the IDE
-> interrupts had to be used for DMA to be operational.  For PIO modes there
-> were no restrictions.  Do you have chip-level documentation for your
-> board?
->
->   Maciej
->   
-Maciej, thank you very much for your reply. I don't think this was caused by
-interrupt routing. I added lots of "printk" before following output, and saw
-interrupts could be triggered correctly.
+Gabriel C wrote:
 
-hdc: 195371568 sectors (100030 MB) w/7539KiB Cache, CHS=16383/255/63, UDMA(33)
+> Peter Zijlstra wrote:
+> 
+>> On Sun, 2008-05-18 at 19:21 +0200, Peter Zijlstra wrote:
+>>> On Sun, 2008-05-18 at 13:13 +0200, Rafael J. Wysocki wrote:
+>>>> This message has been generated automatically as a part of a report
+>>>> of recent regressions.
+>>>>
+>>>> The following bug entry is on the current list of known regressions
+>>>> from 2.6.25.  Please verify if it still should be listed.
+>>>>
+>>>>
+>>>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10648
+>>>> Subject		: CONFIG_PRINTK_TIME broken on git HEAD ?
+>>>> Submitter	: Gabriel C <nix.or.die@googlemail.com>
+>>>> Date		: 2008-05-08 00:26 (11 days old)
+>>>> References	: http://lkml.org/lkml/2008/5/7/352
+>>>> Handled-By	: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>>>>
+>>>>
+>>> Could people test this:
+>>>
+>>> git://git.kernel.org/home/peterz/git/linux-2.6-sched.git/ v2.6.26-rc2-group-load-balance
+>>
+>> Seems I got my own url wrong - the right one is:
+>>
+>> git://git.kernel.org/pub/scm/linux/kernel/git/peterz/linux-2.6-sched.git v2.6.26-rc2-group-load-balance
+>>
+>>
+> 
+> 
+> Sorry for the lag , I'm gonna test this now and report back in a bit.
 
-LynxOS has been run successfully on this board, and we want port it to Linux recently.
 
-I'm not sure which resource (I/O or Memory space) should be used for DMA operation because
-all memory resources haven't been set (the flag is 0x2xxxxxxx). So my question is DMA operation
-could succeed with I/O resource?
+Peter thx , it fixes the problem for me.
+
+Gabriel
+
+
 
 
