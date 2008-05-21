@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764123AbYEUI3F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766003AbYEUIef@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764123AbYEUI3F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 04:29:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756074AbYEUI2q
+	id S1766003AbYEUIef (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 04:34:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756683AbYEUIeQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 04:28:46 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:51629 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754053AbYEUI2o (ORCPT
+	Wed, 21 May 2008 04:34:16 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:56769 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754053AbYEUIeO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 04:28:44 -0400
-X-Sasl-enc: ObKEptMW4yZ82QiX9VGXO8p23XhZQ3c7wVJUlt96Bnpk 1211358522
-Message-ID: <4833DD38.2010702@ladisch.de>
-Date: Wed, 21 May 2008 10:28:40 +0200
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+	Wed, 21 May 2008 04:34:14 -0400
+Date: Wed, 21 May 2008 09:34:13 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: linux-kernel@vger.kernel.org
+Cc: davem@davemloft.net
+Subject: CFD: linux-wanking@vger.kernel.org (was [PATCH] Standard
+	indentation of arguments)
+Message-ID: <20080521083413.GM28946@ZenIV.linux.org.uk>
+References: <12113495282137-git-send-email-kongjianjun@gmail.com>
 MIME-Version: 1.0
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-CC: Kevin Hao <kexin.hao@windriver.com>, venkatesh.pallipadi@intel.com,
-       bob.picco@hp.com, mingo@redhat.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@gmail.com>
-Subject: Re: [PATCH] x86: Get irq for hpet timer
-References: <1210917912.10881.1.camel@kevin-desktop>  <482D49CF.4030902@ladisch.de> <1210929270.11912.3.camel@kevin-desktop>  <4831A678.5070208@ladisch.de> <1211274219.8718.7.camel@kevin-desktop> <Pine.LNX.4.55.0805201631010.31790@cliff.in.clinika.pl>
-In-Reply-To: <Pine.LNX.4.55.0805201631010.31790@cliff.in.clinika.pl>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <12113495282137-git-send-email-kongjianjun@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maciej W. Rozycki wrote:
-> On Tue, 20 May 2008, Kevin Hao wrote:
-> > We can simply skip these special IRQ. :-)
-> > Does anyone has a better solution?
->
->  Hmm, you probably want to skip all lines that are edge-triggered.
-> Otherwise you may have problems with sharing.
+This is a call for discussion for new maillist on vger.
 
-HPET interrupts can be either edge or level triggered.  Probably we
-should modify it according to the type of the interrupt line we're
-trying to grab.
+List name: linux-wanking@vger.kernel.org
 
-> Drivers for devices used with these edge-triggered lines may have
-> special provisions to permit sharing ...
+Rationale: the need for such list has been demonstrated during the last few
+months by rapid increase in the amount of traffic topical for such list
+(and completely unrelated to any kind of kernel development) misposted on
+linux-kernel.  A separate list dedicated to this kind of self-gratification
+would hopefully
+	* reduce the gag reflex among the l-k readers
+	* provide a forum where such activity could be indulged in comfort
+and safety from mocking
+	* in cases inspiring Ingo's theory of spontaneous onset of sanity,
+shield the emerging sentients from the prejudice created by their previous
+output.
 
-An edge-triggered HPET interrupt line is not shared (we set IRQF_SHARED
-only if the register says that it's level triggered).
+Exhibit A:
 
->  This driver is quite platform-specific -- how about instead of blindly
-> probing for interrupt lines, you actually allocate one somehow in platform
-> code?
+On Wed, May 21, 2008 at 01:58:48PM +0800, Jianjun Kong wrote:
+> Standard indentation of arguments.
+> I use right blank space to displace the last table, in order to make the arguments alining. For example:
+> 
+> old:
+> extern void test_fun(struct list_head *new,
+> 			struct list_head *prev,
+> 			struct list_head *next);
+> new:
+> extern void test_fun(struct list_head *new,
+> 		     struct list_head *prev,
+> 		     struct list_head *next);
 
-I don't have much of a clue about that "somehow", but this sound like a
-good idea.  ;-)
-
-I think hpet_reserve_platform_timers() might be the place for this.
-
-It gets called from hpet_late_init(), which is a fs_initcall, so I think
-we should be careful not to grab some unsharable interrupt that might be
-needed by some ISA device whose driver is initialized later.
-(This was a bug in 2.6.25-rc5: <http://bugzilla.kernel.org/show_bug.cgi?id=10382>)
-
-
-Regards,
-Clemens
+Further examples can be trivially found in l-k archives and will be provided
+on demand.
