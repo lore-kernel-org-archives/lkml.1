@@ -1,113 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932446AbYEUWlQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764378AbYEUWwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932446AbYEUWlQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 18:41:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759003AbYEUWlB
+	id S1764378AbYEUWwg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 18:52:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757601AbYEUWwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 18:41:01 -0400
-Received: from rn-out-0910.google.com ([64.233.170.187]:6268 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756958AbYEUWlA (ORCPT
+	Wed, 21 May 2008 18:52:21 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:33679 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757008AbYEUWv4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 18:41:00 -0400
+	Wed, 21 May 2008 18:51:56 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
-        b=gevpaaiQXAU6SN4bizLXgPhh/LZQjV4l7uD1cKh8d/irx9z2Iz9BaP7alE8G0RsNwRyEcgfOUwXBpziTlVaXR9dCI4DUi93Bic+mZb5YtzCeRAtT8i73lkAQ9eWYbh5q/fL9E9Wek2oO+lIWaN7wwqZO82+WTQBiC/A0HihVlgc=
-Message-ID: <86802c440805211540m4ff68aeh827a1f823305742b@mail.gmail.com>
-Date: Wed, 21 May 2008 15:40:56 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>
-Subject: Re: Suspected regression in "x86: extend e820 ealy_res support 32bit"
-Cc: "Ingo Molnar" <mingo@elte.hu>,
-       "kernel list" <linux-kernel@vger.kernel.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <48349B9D.1000501@goop.org>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=i8XcV+/SRPBFDknsoVTXiPMtJJxXQeVpFkA0OuaQiRg4SSCPHltzYF3mf9Nr4aJD7Oo2MfAfrk20LRIP4ZZzqNLCsA0ddMm45s2YzWiUS9oNcVqJWo93c0gHfbEF2xkitF5ObB3kcOCkbXoPBNizYeB8Jp8T37NKCoqtOin7dj4=
+Message-ID: <82fa9e310805211551oea0dfd9mdb7dfaed2b2d98fc@mail.gmail.com>
+Date: Wed, 21 May 2008 15:51:55 -0700
+From: mark <markkicks@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: fork: Resource temporarily unavailable / cant start new threads
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080521143248.baee1391.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_9515_5778254.1211409657053"
-References: <483467CD.90401@goop.org>
-	 <86802c440805211335q27334ba1g32a43fb1c0498b9b@mail.gmail.com>
-	 <48349B9D.1000501@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <82fa9e310805201126q45e869bdub74a947068fe612a@mail.gmail.com>
+	 <20080521132845.72db5748.randy.dunlap@oracle.com>
+	 <82fa9e310805211339o3090e0d0le8503051d3e0aa38@mail.gmail.com>
+	 <48348AFA.1070900@oracle.com>
+	 <82fa9e310805211408o65b49923jd9bf4a6c89b97c30@mail.gmail.com>
+	 <20080521143248.baee1391.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_9515_5778254.1211409657053
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-On Wed, May 21, 2008 at 3:01 PM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> Yinghai Lu wrote:
->>
->> On Wed, May 21, 2008 at 11:19 AM, Jeremy Fitzhardinge <jeremy@goop.org>
->> wrote:
->>
->>>
->>> I'm seeing a crash in current x86.git tip/auto-latest when booting under
->>> Xen.  The crash is rather early, but it's in __alloc_bootmem_core() in
->>> the
->>> final memset clear.  Apparently the allocator is returning a bad page.
->>>
->>> This points to changes in the setup of the bootmem allocator, and the
->>> changes "x86: extend e820 ealy_res support 32bit" make to
->>> arch/x86/kernel/setup_32.c:setup_bootmem_allocator() looks like the most
->>> likely suspect.  Unfortunately its a rather large patch which is not easy
->>> to
->>> revert, so I haven't actually confirmed this yet.
->>>
->>
->>
->> thanks. please check the attached patch
->>
+On Wed, May 21, 2008 at 2:32 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> On Wed, 21 May 2008 14:08:53 -0700 mark wrote:
 >
-> Thanks for the quick response.  I definitely confirmed that "x86: extend
-> e820 ealy_res support 32bit" is the source of the regression, and reverting
-> the change makes the system bootable under Xen. (My previous reversion
-> failed because I didn't actually have the x86.git changes applied :-/)
+>> On Wed, May 21, 2008 at 1:50 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+>> > mark wrote:
+>> >>
+>> >> On Wed, May 21, 2008 at 1:28 PM, Randy Dunlap <randy.dunlap@oracle.com>
+>> >> wrote:
+>> >>>
+>> >>> On Tue, 20 May 2008 11:26:47 -0700 mark wrote:
+>> >>>>
+>> >>>> I upgraded to 2.6.25.3-18.fc9.x86_64 fedora core 9, now I get this
+>> >>>> error when I try to login to the box, kill a pr start a python app, or
+>> >>>> do anything on a regular basis.
+>> >>>>
+>> >>>> fork: Resource temporarily unavailable
+>> >>>>
+>> >>>> I have over 10GB RAM free, and zero swap spaced used. The box is a
+>> >>>> dual quad core Intel Xeon 5405 with 16GB RAM.
+>> >>>>
+>> >>>> There is no error message in /var/log/messages or dmesg ...
+>> >>>> how do I identify the problem?
+>> >>>> thanks!
+>> >>>>
+>> >>>> uname -a
+>> >>>> Linux XXX 2.6.25.3-18.fc9.x86_64 #1 SMP Tue May 13 04:54:47 EDT 2008
+>> >>>> x86_64 x86_64 x86_64 GNU/Linux
+>> >>>>
+>> >>>>
+>> >>>> free -m
+>> >>>>            total       used       free     shared    buffers     cached
+>> >>>> Mem:         16086       3189      12896          0         42
+>> >>>>  666
+>> >>>> -/+ buffers/cache:       2481      13605
+>> >>>> Swap:         1983          0       1983
+>> >>>>
+>> >>>>
+>> >>>> have only 505 processes running
+>> >>>> ps aux | wc -l
+>> >>>> 505
+>> >>>>
+>> >>>>
+>> >>>> uptime
+>> >>>>  11:24:15 up 39 min,  1 user,  load average: 3.54, 3.47, 2.87
+>> >>>>
+>> >>>> ulimit -a
+>> >>>> core file size          (blocks, -c) 0
+>> >>>> data seg size           (kbytes, -d) unlimited
+>> >>>> scheduling priority             (-e) 0
+>> >>>> file size               (blocks, -f) unlimited
+>> >>>> pending signals                 (-i) 137216
+>> >>>> max locked memory       (kbytes, -l) 32
+>> >>>> max memory size         (kbytes, -m) unlimited
+>> >>>> open files                      (-n) 32768
+>> >>>> pipe size            (512 bytes, -p) 8
+>> >>>> POSIX message queues     (bytes, -q) 819200
+>> >>>> real-time priority              (-r) 0
+>> >>>> stack size              (kbytes, -s) 10240
+>> >>>> cpu time               (seconds, -t) unlimited
+>> >>>> max user processes              (-u) 1024
+>> >>>> virtual memory          (kbytes, -v) unlimited
+>> >>>> file locks                      (-x) unlimited
+>> >>>
+>> >>> The only place that fork() returns EAGAIN is for number of
+>> >>> processes being >= its limit.  Does this user already have >= 1024
+>> >>> processes?
+>> >>
+>> >> No, it is around 400
+>> >
+>> > Well, my comment was wrong anyway.  There are several other tests just
+>> > below number of user processes that also return EAGAIN, like:
+>> >
+>> > - total number of threads being too large
 >
-> This patch generates the warning:
+> Total number of threads currently running is in /proc/loadavg:
 >
->     CC      arch/x86/kernel/setup_32.o
->   /home/jeremy/hg/xen/paravirt/linux/arch/x86/kernel/setup_32.c: In
->   function 'setup_arch':
->   /home/jeremy/hg/xen/paravirt/linux/arch/x86/kernel/setup_32.c:580:
->   warning: 'bootmap_size' is used uninitialized in this function
+>> cat /proc/loadavg
+> 1.56 0.58 0.27 2/203 28500
 >
-> but I think it's just that the panic() message still uses it before its
-> assigned.
+> It's the number following the '/', e.g., 203 on my desktop system.
 >
-> Hm, and it also fails to fix the problem.  I'm still seeing the virtual
-> machine crash in the same way.
+> max_threads allowed is a sysctl, so you can tune it if needed.
+> It's in /proc/sys/kernel/threads-max:
+>
+>> cat /proc/sys/kernel/threads-max
+> 32624
+> I sort of doubt that one is the problem, but you can tell us.
 
-noticed that bootmap_size is shifted already...
+cat /proc/loadavg
+0.39 0.45 0.57 1/1412 12032
+cat /proc/sys/kernel/threads-max
+274432
+you are right, i guess this is not the problem.
 
-please use attached patch to see if bootmap is right...
 
-YH
+>> > - error on grabbing a module reference count (?)
+>> > - error on grabbing a binfmt module reference
+>>
+>> as a user how do i identify what is wrong, and fix this? for total
+>> number of threads -> is there anyway i can find out if this is causing
+>> the problem? my system is running around 80 multi-threaded python web
+>> apps.
+>
+> I can send you some debug patches that will print out the specific
+> problem area.  Do you want to do that?  Can you rebuild and install
+> a new kernel?
+Is it possible to get this debug messages by turning on some flags?
+If not yes, pl. send debug patches. its a live box and  I will try to do it!
 
-------=_Part_9515_5778254.1211409657053
-Content-Type: text/x-patch; name=bootmap_32_fix.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fgihz44z0
-Content-Disposition: attachment; filename=bootmap_32_fix.patch
+This is my system / kernel info:
+uname -a
+Linux XXX 2.6.25.3-18.fc9.x86_64 #1 SMP Tue May 13 04:54:47 EDT 2008
+x86_64 x86_64 x86_64 GNU/Linux
 
-W1BBVENIXSB4ODY6IGJvb3RtYXAgc2l6ZSBmaXggZm9yIDMyIGJpdAoKSmVyZW15IEZpdHpoYXJk
-aW5nZSBmb3VuZAp4ODY6IGV4dGVuZCBlODIwIGVhbHlfcmVzIHN1cHBvcnQgMzJiaXQKY2F1c2Ug
-cmVncmVzc2lvbi4uLgoKaW4gc2V0dXBfYm9vdG1lbV9hbGxvY2F0b3IKClNpZ25lZC1vZmYtYnk6
-IFlpbmdoYWkgTHUgPHlobHUua2VybmVsQGdtYWlsLmNvbT4KCkluZGV4OiBsaW51eC0yLjYvYXJj
-aC94ODYva2VybmVsL3NldHVwXzMyLmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gbGludXgtMi42Lm9yaWcvYXJj
-aC94ODYva2VybmVsL3NldHVwXzMyLmMKKysrIGxpbnV4LTIuNi9hcmNoL3g4Ni9rZXJuZWwvc2V0
-dXBfMzIuYwpAQCAtNTc3LDYgKzU3Nyw4IEBAIHZvaWQgX19pbml0IHNldHVwX2Jvb3RtZW1fYWxs
-b2NhdG9yKHZvaWQKIAlpZiAoYm9vdG1hcCA9PSAtMUwpCiAJCXBhbmljKCJDYW5ub3QgZmluZCBi
-b290bWVtIG1hcCBvZiBzaXplICVsZFxuIiwgYm9vdG1hcF9zaXplKTsKIAlib290bWFwX3NpemUg
-PSBpbml0X2Jvb3RtZW0oYm9vdG1hcCA+PiBQQUdFX1NISUZULCBtYXhfbG93X3Bmbik7CisJcHJp
-bnRrKEtFUk5fSU5GTyAiICBib290bWFwIFslMDE2bHggLSAgJTAxNmx4XSBtaW5fbG93X3Bmbjog
-JTAxNnhcbiIsCisJCSBib290bWFwLCBib290bWFwICsgYm9vdG1hcF9zaXplIC0gMSwgbWluX2xv
-d19wZm4pOwogCXJlZ2lzdGVyX2Jvb3RtZW1fbG93X3BhZ2VzKG1heF9sb3dfcGZuKTsKIAllYXJs
-eV9yZXNfdG9fYm9vdG1lbSgwLCBtYXhfbG93X3Bmbjw8UEFHRV9TSElGVCk7CiAJcmVzZXJ2ZV9i
-b290bWVtKGJvb3RtYXAsIGJvb3RtYXBfc2l6ZSwgQk9PVE1FTV9ERUZBVUxUKTsK
-------=_Part_9515_5778254.1211409657053--
+thanks a lot!!!!
