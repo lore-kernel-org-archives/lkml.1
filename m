@@ -1,40 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764822AbYEUCI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932736AbYEUCO5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764822AbYEUCI6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 22:08:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757297AbYEUCIu
+	id S932736AbYEUCO5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 22:14:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757297AbYEUCOr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 22:08:50 -0400
-Received: from saraswathi.solana.com ([198.99.130.12]:44782 "EHLO
-	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754421AbYEUCIu (ORCPT
+	Tue, 20 May 2008 22:14:47 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60976 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757235AbYEUCOr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 22:08:50 -0400
-Date: Tue, 20 May 2008 21:58:37 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Tom Spink <tspink@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: UML fails to locate address space
-Message-ID: <20080521015837.GA16212@c2.user-mode-linux.org>
-References: <7b9198260805200659p6ed28403t9b0b0ea995f158d5@mail.gmail.com> <20080520161047.GA9598@c2.user-mode-linux.org> <7b9198260805200943x6fb15512o7ba35a40d006b215@mail.gmail.com> <20080520175624.GA10889@c2.user-mode-linux.org> <7b9198260805201101x5b0fabf8h4944a29c6a4cae96@mail.gmail.com> <20080520192436.GA12102@c2.user-mode-linux.org> <7b9198260805201242p1adf4651kb4c434d73884b6c1@mail.gmail.com> <20080520212735.GA13319@c2.user-mode-linux.org> <7b9198260805201503j333963c4ya19b84f16b31d0fd@mail.gmail.com> <7b9198260805201657m19e023a9kabb897acea0d57d4@mail.gmail.com>
+	Tue, 20 May 2008 22:14:47 -0400
+Date: Tue, 20 May 2008 19:14:15 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Roland McGrath <roland@redhat.com>
+cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] signals: collect_signal: remove the unneeded
+ sigismember() check
+In-Reply-To: <20080521005646.1BD5426FA1C@magilla.localdomain>
+Message-ID: <alpine.LFD.1.10.0805201903150.3081@woody.linux-foundation.org>
+References: <20080517151424.GA9505@tv-sign.ru> <20080521005646.1BD5426FA1C@magilla.localdomain>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7b9198260805201657m19e023a9kabb897acea0d57d4@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 21, 2008 at 12:57:21AM +0100, Tom Spink wrote:
-> Here's the new patch, with that size correction in.  Does this look okay?
 
-Actually, since the search for the lowest valid page needs to be there
-anyway, I think we should just always use it, and not bother with
-/proc/sys/vm/mmap_min_addr at all.  Less code, and the new code is
-more heavily exercised this way.
 
-     	     	       	    Jeff
+On Tue, 20 May 2008, Roland McGrath wrote:
+> 
+> drm_lock is using block_all_signals to catch all the stop signals
+> for a purpose that is not immediately clear to me.  
 
--- 
-Work email - jdike at linux dot intel dot com
+It's basically the equivalent of a "spin_lock_irq()" for DRM, where 
+signals are the "interrupts" that need to be blocked while holding the 
+lock.
+
+In order for the user-level direct-rendering code to be able to do a lock 
+that is safe in the presense of signals, the locking code needs to have 
+some way to basically disable signals. And it could disable/re-enable them 
+all the time, but that would be very expensive and defeat the whole 
+purpose (which is that you can get the lock cheaply in user space and only 
+take a system call on a lock conflict).
+
+So instead, when it gets the DRM lock, it also does that 
+"block_all_signals()" thing, which means that *if* a signal happens, it 
+can temporarily disable the signal so that the handler won't be invoced in 
+the critical region.
+
+Now, I have to admit that I do not know if the current user-level code 
+needs that any more, and even if it does, if it could possibly be replaced 
+by better models. It's a hack, no question about it. The whole DRI locking 
+is something really odd. Don't even ask me how it's supposed to work.
+
+			Linus
