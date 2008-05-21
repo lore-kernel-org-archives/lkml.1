@@ -1,136 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934366AbYEUBNw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935053AbYEUBPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934366AbYEUBNw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 21:13:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935121AbYEUBNW
+	id S935053AbYEUBPT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 21:15:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760988AbYEUBPD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 21:13:22 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:38249 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934846AbYEUBNU (ORCPT
+	Tue, 20 May 2008 21:15:03 -0400
+Received: from wolverine01.qualcomm.com ([199.106.114.254]:8451 "EHLO
+	wolverine01.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759368AbYEUBPA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 21:13:20 -0400
-To: torvalds@linux-foundation.org
-Subject: [PATCH] MODULE_LICENSE expects "GPL v2", not "GPLv2"
-Cc: linux-kernel@vger.kernel.org
-Message-Id: <E1JyctL-0000SA-TM@ZenIV.linux.org.uk>
-From: Al Viro <viro@ftp.linux.org.uk>
-Date: Wed, 21 May 2008 02:13:19 +0100
+	Tue, 20 May 2008 21:15:00 -0400
+X-IronPort-AV: E=McAfee;i="5200,2160,5299"; a="3281981"
+Message-ID: <48337792.20606@qualcomm.com>
+Date: Tue, 20 May 2008 18:14:58 -0700
+From: Max Krasnyanskiy <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Paul Jackson <pj@sgi.com>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, menage@google.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: IRQ affinities
+References: <47D73086.2030008@qualcomm.com>	<6599ad830803111827n1cb8e2c7i47c2ef3f3bb58995@mail.gmail.com>	<47D7411E.1000009@qualcomm.com>	<6599ad830803111936jd940deam8584bc971c3b6f41@mail.gmail.com>	<47D74595.4080100@qualcomm.com>	<6599ad830803112009y18d9e43ft8e3fc4a551d891da@mail.gmail.com>	<20080311235939.1ebee8e3.pj@sgi.com>	<47D81FE1.6030205@qualcomm.com>	<20080312135746.89456f2a.pj@sgi.com>	<47D82AD2.1070108@qualcomm.com>	<20080312143253.3dd72c7f.pj@sgi.com>	<47D83858.4030806@qualcomm.com>	<20080312153712.bc5df7a1.pj@sgi.com>	<47D8593A.6040503@qualcomm.com>	<20080312183059.6716d630.pj@sgi.com>	<47D87BE5.4010702@qualcomm.com>	<20080313020300.92244956.pj@sgi.com>	<47FE5655.10900@qualcomm.com>	<20080414133902.7878cfce.pj@sgi.com>	<1210329926.13978.224.camel@twins> <20080509061727.5057de1f.pj@sgi.com>
+In-Reply-To: <20080509061727.5057de1f.pj@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Content-Length: 4235
-Lines: 110
+Paul Jackson wrote:
+> Peter wrote:
+>> That's a new feature; and its quite common that new features require
+>> code changes.
+> 
+> It's common for new features to require code changes to take advantage
+> of the new features.
+> 
+> It's less desirable that taking advantage of such new features breaks
+> existing, basically unrelated, code.
+> 
+> My gut sense is that, in a misguided effort to find a "simple" answer
+> to irq distribution, we (well, y'all) are trying to attach this
+> feature to cpusets or cgroups.
+> 
+> Let me ask a different question:
+> 
+>   What solutions would you (Max, Peter, Ingo, lurkers, ...) be
+>   suggesting for this 'IRQ affinity' problem if cpusets and
+>   cgroups didn't exist in any form whatsoever?
 
-... and we have few enough places using the latter to make it
-simpler to do search and replace...
+As Peter explained I'm focusing on the "CPU isolation" aspect. ie Shielding a 
+CPU (or a set of CPUs) from various kernel activities (load balancing, soft 
+and hard irq handling, workqueues, etc).
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
- arch/sh/drivers/heartbeat.c               |    2 +-
- drivers/input/keyboard/aaed2000_kbd.c     |    2 +-
- drivers/input/keyboard/corgikbd.c         |    2 +-
- drivers/input/keyboard/jornada680_kbd.c   |    2 +-
- drivers/input/keyboard/jornada720_kbd.c   |    2 +-
- drivers/input/keyboard/spitzkbd.c         |    2 +-
- drivers/input/touchscreen/jornada720_ts.c |    2 +-
- drivers/scsi/mac_esp.c                    |    2 +-
- 8 files changed, 8 insertions(+), 8 deletions(-)
+For the IRQs specifically all I need is to be able to tell the kernel to not 
+route IRQs to certain CPUs. That's mostly works already via 
+/proc/irq/N/smp_affinity, the problem is dynamically allocated irqs because 
+/proc/irq/N directory does not exist until those IRQs are allocated/enabled.
 
-diff --git a/arch/sh/drivers/heartbeat.c b/arch/sh/drivers/heartbeat.c
-index ab77b0e..938817e 100644
---- a/arch/sh/drivers/heartbeat.c
-+++ b/arch/sh/drivers/heartbeat.c
-@@ -154,4 +154,4 @@ module_exit(heartbeat_exit);
- 
- MODULE_VERSION(DRV_VERSION);
- MODULE_AUTHOR("Paul Mundt");
--MODULE_LICENSE("GPLv2");
-+MODULE_LICENSE("GPL v2");
-diff --git a/drivers/input/keyboard/aaed2000_kbd.c b/drivers/input/keyboard/aaed2000_kbd.c
-index a293e8b..8a77bfc 100644
---- a/drivers/input/keyboard/aaed2000_kbd.c
-+++ b/drivers/input/keyboard/aaed2000_kbd.c
-@@ -183,4 +183,4 @@ module_exit(aaedkbd_exit);
- 
- MODULE_AUTHOR("Nicolas Bellido Y Ortega");
- MODULE_DESCRIPTION("AAED-2000 Keyboard Driver");
--MODULE_LICENSE("GPLv2");
-+MODULE_LICENSE("GPL v2");
-diff --git a/drivers/input/keyboard/corgikbd.c b/drivers/input/keyboard/corgikbd.c
-index 29fbec6..1aa46ae 100644
---- a/drivers/input/keyboard/corgikbd.c
-+++ b/drivers/input/keyboard/corgikbd.c
-@@ -412,5 +412,5 @@ module_exit(corgikbd_exit);
- 
- MODULE_AUTHOR("Richard Purdie <rpurdie@rpsys.net>");
- MODULE_DESCRIPTION("Corgi Keyboard Driver");
--MODULE_LICENSE("GPLv2");
-+MODULE_LICENSE("GPL v2");
- MODULE_ALIAS("platform:corgi-keyboard");
-diff --git a/drivers/input/keyboard/jornada680_kbd.c b/drivers/input/keyboard/jornada680_kbd.c
-index 9387da3..781fc61 100644
---- a/drivers/input/keyboard/jornada680_kbd.c
-+++ b/drivers/input/keyboard/jornada680_kbd.c
-@@ -275,5 +275,5 @@ module_exit(jornada680kbd_exit);
- 
- MODULE_AUTHOR("Kristoffer Ericson <kristoffer.ericson@gmail.com>");
- MODULE_DESCRIPTION("HP Jornada 620/660/680/690 Keyboard Driver");
--MODULE_LICENSE("GPLv2");
-+MODULE_LICENSE("GPL v2");
- MODULE_ALIAS("platform:jornada680_kbd");
-diff --git a/drivers/input/keyboard/jornada720_kbd.c b/drivers/input/keyboard/jornada720_kbd.c
-index a1164a0..ce650af 100644
---- a/drivers/input/keyboard/jornada720_kbd.c
-+++ b/drivers/input/keyboard/jornada720_kbd.c
-@@ -29,7 +29,7 @@
- 
- MODULE_AUTHOR("Kristoffer Ericson <Kristoffer.Ericson@gmail.com>");
- MODULE_DESCRIPTION("HP Jornada 710/720/728 keyboard driver");
--MODULE_LICENSE("GPLv2");
-+MODULE_LICENSE("GPL v2");
- 
- static unsigned short jornada_std_keymap[128] = {					/* ROW */
- 	0, KEY_ESC, KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6, KEY_F7,		/* #1  */
-diff --git a/drivers/input/keyboard/spitzkbd.c b/drivers/input/keyboard/spitzkbd.c
-index 61e401b..1aa3718 100644
---- a/drivers/input/keyboard/spitzkbd.c
-+++ b/drivers/input/keyboard/spitzkbd.c
-@@ -494,5 +494,5 @@ module_exit(spitzkbd_exit);
- 
- MODULE_AUTHOR("Richard Purdie <rpurdie@rpsys.net>");
- MODULE_DESCRIPTION("Spitz Keyboard Driver");
--MODULE_LICENSE("GPLv2");
-+MODULE_LICENSE("GPL v2");
- MODULE_ALIAS("platform:spitz-keyboard");
-diff --git a/drivers/input/touchscreen/jornada720_ts.c b/drivers/input/touchscreen/jornada720_ts.c
-index 7422421..1aca108 100644
---- a/drivers/input/touchscreen/jornada720_ts.c
-+++ b/drivers/input/touchscreen/jornada720_ts.c
-@@ -24,7 +24,7 @@
- 
- MODULE_AUTHOR("Kristoffer Ericson <kristoffer.ericson@gmail.com>");
- MODULE_DESCRIPTION("HP Jornada 710/720/728 touchscreen driver");
--MODULE_LICENSE("GPLv2");
-+MODULE_LICENSE("GPL v2");
- 
- struct jornada_ts {
- 	struct input_dev *dev;
-diff --git a/drivers/scsi/mac_esp.c b/drivers/scsi/mac_esp.c
-index cd37bd6..887682a 100644
---- a/drivers/scsi/mac_esp.c
-+++ b/drivers/scsi/mac_esp.c
-@@ -650,7 +650,7 @@ static void __exit mac_esp_exit(void)
- 
- MODULE_DESCRIPTION("Mac ESP SCSI driver");
- MODULE_AUTHOR("Finn Thain <fthain@telegraphics.com.au>");
--MODULE_LICENSE("GPLv2");
-+MODULE_LICENSE("GPL v2");
- MODULE_VERSION(DRV_VERSION);
- 
- module_init(mac_esp_init);
--- 
-1.5.3.GIT
+Originally I introduced global cpu_isolated_map. IRQ code was using that map 
+to exclude CPU(s) from IRQ routing. What I realized now is that all I need is
+/proc/irq/default_smp_affinity. In other words I just need to export default 
+mask used by the IRQ layer. I think this makes sense regardless of what cpuset 
+  based solution we'll come up with.
 
-
+Max
