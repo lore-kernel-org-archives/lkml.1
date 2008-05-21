@@ -1,86 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935292AbYEUNDy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934586AbYEUNH7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935292AbYEUNDy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 09:03:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935169AbYEUNDj
+	id S934586AbYEUNH7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 09:07:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757040AbYEUNHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 09:03:39 -0400
-Received: from gozo.interway.ch ([194.246.118.4]:44474 "EHLO gozo.interway.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935151AbYEUNDh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 09:03:37 -0400
-X-Greylist: delayed 407 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 May 2008 09:03:37 EDT
-Message-ID: <48341C0B.7010003@interway.ch>
-Date: Wed, 21 May 2008 14:56:43 +0200
-From: Matthias Cramer <matthias.cramer@interway.ch>
-User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
-MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Wired behaviour with IPv6 over PPP
-X-Enigmail-Version: 0.95.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigCF9A8F04F7F73537C01EDB67"
+	Wed, 21 May 2008 09:07:50 -0400
+Received: from smtp.ustc.edu.cn ([202.38.64.16]:49823 "HELO ustc.edu.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1755675AbYEUNHu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 09:07:50 -0400
+Message-ID: <411375292.14780@ustc.edu.cn>
+X-WebMAIL-MUA: [211.86.158.64]
+From: "" <jszhang3@mail.ustc.edu.cn>
+To: stefanr@s5r6.in-berlin.de
+Cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
+       krh@redhat.com
+Date: Wed, 21 May 2008 21:08:12 +0800
+Reply-To: "" <jszhang3@mail.ustc.edu.cn>
+X-Priority: 3
+Subject: [PATCH] firewire: fix some broken hardware NMI interrupt
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigCF9A8F04F7F73537C01EDB67
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+>From JiSheng Zhang <jszhang3@mail.ustc.edu.cn>
 
-Hi All
-
-I have a very wired behaviour when doing IPv6 over PPPoE.
-
-The situation:
-
-A linux box connected to a DSL Modem, on the other side is a Cisco LNS wh=
-ich terminates the PPP session (actually L2TP).
-I have control over both ends.
-
-When I have net.ipv6.conf.all.forwarding set to 0 then the ppp Interface =
-gets a IPv6 address from the Cisco via IP6CP.
-When I have net.ipv6.conf.all.forwarding set to 1 them the ppp Interface =
-does not get an address, it has only a normal link local address.
-
-When I start the ppp session with forwarding set to 0 I can ping out and =
-there exists a default route to ppp0 , then I switch forwarding to 1
-the default route disappears and therefore routing does not work any long=
-er.
-
-Is this a known behaviour ?
-
-Or am I doing something the wrong way ?
-
-Kernel version is 2.6.25
-
-Best regards
-
-  Matthias
-
---=20
-Matthias Cramer / mc322-ripe   System & Network Manager
-Interway Communication GmbH    Phone +41 43 500 1111
-Josefstrasse 225               Fax   +41 44 271 3535
-CH-8005 Z=C3=BCrich                 http://www.interway.ch/
-GnuPG 1024D/2D208250 =3D DBC6 65B6 7083 1029 781E  3959 B62F DF1C 2D20 82=
-50
+Some broken pci-1394 card does not clear completely on-chip memory during boot, it
+may cause pci parity error, then NMI interrupt. It will emit kernel message such
+as"Uhhuh. NMI received for unknown reason b1 on CPU 0. You have some hardware
+problem, likely on the PCI bus. Dazed and confused, but trying to continue" etc.
+If panic_on_unrecovered_nmi is set to 1, the system will panic. This patch will
+fix it
 
 
---------------enigCF9A8F04F7F73537C01EDB67
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+--- linux-2.6.25.4/drivers/firewire/fw-ohci.c.org	2008-05-21 20:44:26.901066202
++0800
++++ linux-2.6.25.4/drivers/firewire/fw-ohci.c	2008-05-21 20:55:15.290371532 +0800
+@@ -2051,6 +2051,7 @@
+ 	struct fw_ohci *ohci;
+ 	u32 bus_options, max_receive, link_speed;
+ 	u64 guid;
++	u16 reg;
+ 	int err;
+ 	size_t size;
+ 
+@@ -2082,6 +2083,10 @@
+ 
+ 	pci_set_master(dev);
+ 	pci_write_config_dword(dev, OHCI1394_PCI_HCI_Control, 0);
++	/* some broken hardware */
++	pci_read_config_word(dev, PCI_COMMAND, &reg);
++	reg &= ~(PCI_COMMAND_SERR | PCI_COMMAND_PARITY);
++	pci_write_config_word(dev, PCI_COMMAND, reg);
+ 	pci_set_drvdata(dev, ohci);
+ 
+ #if defined(CONFIG_PPC_PMAC) && defined(CONFIG_PPC32)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-iD8DBQFINBwRti/fHC0gglARAvbzAJ91A0C99YB0iw7aZqQR7BP/Ojdv1ACfbWQl
-ePndO9qdH+ecZu8K6lE5t68=
-=pLx9
------END PGP SIGNATURE-----
-
---------------enigCF9A8F04F7F73537C01EDB67--
