@@ -1,58 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936917AbYEUVe4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763524AbYEUViT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936917AbYEUVe4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 17:34:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755154AbYEUVen
+	id S1763524AbYEUViT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 17:38:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755154AbYEUViH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 17:34:43 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:2886 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753317AbYEUVel (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 17:34:41 -0400
-Date: Wed, 21 May 2008 17:03:52 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Marcel Holtmann <marcel@holtmann.org>, netdev <netdev@vger.kernel.org>,
-       Jean Tourrilhes <jt@hpl.hp.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] make wext wireless bits optional and deprecate them
-Message-ID: <20080521210352.GA11827@tuxdriver.com>
-References: <1211026337.3827.25.camel@johannes.berg> <CD993362-B1DE-4E4D-8A5B-E9E2AD7DA04C@holtmann.org> <1211303731.6252.105.camel@johannes.berg>
+	Wed, 21 May 2008 17:38:07 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:34621 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753011AbYEUViE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 17:38:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
+        b=WCjIE4Y4q5bMcLmCDaVab/MrSGMdQVOsffZMQ+FSciiRQjamNeYnEPlxh1VZVl3qjSQVG+hFF4ubPUmjU0JBxvTJWVC9fdADsdaParZLE1UXLUywRIWrKUg0w+9rFar3lLzI2OfTdWFuTnYCuf/cq/rK04/gLUSz/leKZxHHj+A=
+Date: Wed, 21 May 2008 23:37:58 +0200
+To: Ingo Molnar <mingo@elte.hu>, Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] kmemcheck: use tasklets instead of timers
+Message-ID: <20080521213758.GB11061@damson.getinternet.no>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1211303731.6252.105.camel@johannes.berg>
 User-Agent: Mutt/1.5.17 (2007-11-01)
+From: Vegard Nossum <vegard.nossum@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 07:15:31PM +0200, Johannes Berg wrote:
-> On Sat, 2008-05-17 at 15:45 +0200, Marcel Holtmann wrote:
-> > Hi Johannes,
-> > 
-> > > The /sys/class/net/*/wireless/ direcory is, as far as I know, not
-> > > used by anyone. Additionally, the same data is available via wext
-> > > ioctls. Hence the sysfs files are pretty much useless. This patch
-> > > makes them optional and schedules them for removal.
-> > 
-> > it is used by HAL to classify WiFi network cards as net.80211 instead  
-> > of net.80203 and so we do have an actual user. However HAL only tests  
-> > for the existence of the directory wireless/.
-> > 
-> > Please fix HAL first before submitting such a patch.
-> 
-> I have filed a patch to fix HAL to use the canonical SIOCGIWNAME at
-> https://bugs.freedesktop.org/show_bug.cgi?id=16037. Any further
-> objections to this patch?
+From: Vegard Nossum <vegard.nossum@gmail.com>
+Date: Wed, 21 May 2008 22:58:37 +0200
+Subject: [PATCH] kmemcheck: use tasklets instead of timers
 
-I think this is going to fall under the "userland ABI" category.
-We can make it a configurable option, but I don't think we are free
-to remove it completely since there is at least existing versions of
-HAL that use it.
+Instead of triggering a timer every HZ, we use the new tasklet function
+which guarantuees not to touch any other tasklets on the tasklet list,
+and is thus safe to use from the page fault handler.
 
-John
+Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+---
+ arch/x86/kernel/kmemcheck.c |   16 ++++++++--------
+ 1 files changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/arch/x86/kernel/kmemcheck.c b/arch/x86/kernel/kmemcheck.c
+index def1a08..c0045e8 100644
+--- a/arch/x86/kernel/kmemcheck.c
++++ b/arch/x86/kernel/kmemcheck.c
+@@ -9,6 +9,7 @@
+  */
+ 
+ #include <linux/init.h>
++#include <linux/interrupt.h>
+ #include <linux/kallsyms.h>
+ #include <linux/kdebug.h>
+ #include <linux/kernel.h>
+@@ -18,7 +19,6 @@
+ #include <linux/page-flags.h>
+ #include <linux/percpu.h>
+ #include <linux/stacktrace.h>
+-#include <linux/timer.h>
+ 
+ #include <asm/cacheflush.h>
+ #include <asm/kmemcheck.h>
+@@ -73,8 +73,6 @@ static unsigned int error_rd;
+ static unsigned int error_wr;
+ static unsigned int error_missed_count;
+ 
+-static struct timer_list kmemcheck_timer;
+-
+ static struct kmemcheck_error *error_next_wr(void)
+ {
+ 	struct kmemcheck_error *e;
+@@ -105,6 +103,9 @@ static struct kmemcheck_error *error_next_rd(void)
+ 	return e;
+ }
+ 
++static void do_wakeup(unsigned long);
++static DECLARE_TASKLET(kmemcheck_tasklet, &do_wakeup, 0);
++
+ static void *address_get_shadow(unsigned long address);
+ 
+ /*
+@@ -148,6 +149,8 @@ static void error_save(enum shadow state,
+ 	BUG_ON(!shadow_copy);
+ 
+ 	memcpy(e->shadow_copy, shadow_copy, SHADOW_COPY_SIZE);
++
++	tasklet_hi_schedule(&kmemcheck_tasklet);
+ }
+ 
+ /*
+@@ -170,6 +173,8 @@ static void error_save_bug(struct pt_regs *regs)
+ 	e->trace.max_entries = ARRAY_SIZE(e->trace_entries);
+ 	e->trace.skip = 1;
+ 	save_stack_trace(&e->trace);
++
++	tasklet_hi_schedule(&kmemcheck_tasklet);
+ }
+ 
+ static void error_recall(void)
+@@ -233,8 +238,6 @@ static void do_wakeup(unsigned long data)
+ 			"the queue was too small\n", error_missed_count);
+ 		error_missed_count = 0;
+ 	}
+-
+-	mod_timer(&kmemcheck_timer, kmemcheck_timer.expires + HZ);
+ }
+ 
+ void __init kmemcheck_init(void)
+@@ -250,9 +253,6 @@ void __init kmemcheck_init(void)
+ 		setup_max_cpus = 1;
+ 	}
+ #endif
+-
+-	setup_timer(&kmemcheck_timer, &do_wakeup, 0);
+-	mod_timer(&kmemcheck_timer, jiffies + HZ);
+ }
+ 
+ #ifdef CONFIG_KMEMCHECK_DISABLED_BY_DEFAULT
 -- 
-John W. Linville
-linville@tuxdriver.com
+1.5.4.1
+
