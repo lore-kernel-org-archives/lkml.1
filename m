@@ -1,94 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933658AbYEUM1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933642AbYEUMcA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933658AbYEUM1Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 08:27:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762174AbYEUM1P
+	id S933642AbYEUMcA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 08:32:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762174AbYEUMbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 08:27:15 -0400
-Received: from server.drzeus.cx ([85.8.24.28]:56134 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761867AbYEUM1O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 08:27:14 -0400
-X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 May 2008 08:27:13 EDT
-Date: Wed, 21 May 2008 14:21:24 +0200
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: "Kim Hansen" <kimhanse@gmail.com>
-Cc: "Alex Dubov" <oakad@yahoo.com>, linux-kernel@vger.kernel.org
-Subject: Re: tifm_7xx1: SD card is ignored
-Message-ID: <20080521142124.3e43eea4@mjolnir.drzeus.cx>
-In-Reply-To: <c878e2290805070950o260fbb77m27407a483af9dbc9@mail.gmail.com>
-References: <c878e2290805061056k4b97513boa924eae90d649391@mail.gmail.com>
-	<202777.76958.qm@web36706.mail.mud.yahoo.com>
-	<c878e2290805070950o260fbb77m27407a483af9dbc9@mail.gmail.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.13.0; i386-redhat-linux-gnu)
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAAXNSR0IArs4c6QAAADNQTFRFEgwFRSofeTwxZEI1h1lFl1ZHeGBetHZk24VzuZJ43p2GsbKw/Lmg2MTL/NO3/+/Q//fpWFujUwAAAk5JREFUSMeNlVcWnDAMRd0bLux/tVGxiAEzic7hZ+Zd1IU6NtbYdn8daic/cgj52CPqLQ8hOBdjzsD8G2hHsCiPBS2/nTyABi93zvsYUyql1v6KSz30AeUAJLAK1uuDUI94WA7GDsAePtRDfwFRgP7DA8vvwOgQ1R5oYQUKAwOsfwDHDcAcWH+e5xagiooey1SwSAy0L8C7BaDKdgKWoNQtIjYEfHQGzMcKwNgCpLdgBn14ZzXNSPkJWK201vjiHMkXZg7AuQWCA7G2DPTiMSIsLSZxbgEIwlqEjE+9WBu0yaWOHwDLLQE9WmMieCBgtG1IAFgBzo7tlojGtbI3wFljuU4JdL3ghPeO+tFr2QHG0DOBSuN0kofaU302zmKbcTrgAWDUywG0OvXELi6gZScAdq6WnhYgvYDGu0YQjYSZs3ROID0B4y+jjpWyAhjePWkAjKwD5o09xioNBoro/+YQZjzTg8ce1CJtwFvwAMDFBEjv6cgI0P/u0DqtGJOjNSAm4e0jABxsgDYXSADQw2wwsFyzdePCAviE48QexseKNiGcp4jgKNEVAGC7QEwY5+S6Qpf50NzujHrdYgEKH0o8ZJ/AQR8HAGiaugDjG2i4ddZx4wToPwB0gQsEfjyFRKf1M+kLQC8u5iuoX8BhxYCQJPZXQ7LQdDnQR87/BdCpQQSJpREh7EMSQOvpYwJaqbAHgrUXkWehxhmUUjpsQ+IDSHlzEvidywrtDYSpnHVioNbstBLi9o3Dn/WqZ3Nw1pUQy8bN3/QdiPiVUZfpP4cDVEKd2cXEAAAAAElFTkSuQmCC
-X-Face: @{|$W51qEixc&6}dq_38NM^&.vv|'{O)ae?DMZ1%VYxuhN2}5VpQ!'gx[{V+8Xw'+cV5*491_)-SU2YT8s@4`H;@:ELS'/P(@.JxxJi/C8mG0H#A^R<JfS_l?/%fD\D/mFJ8c2M?_kIL;:txa"s`0O*d+}p/4;$lAw@/e&h-nvQ)~q-a("De+&~-{5`:T{9d%0
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-21861-1211372424-0001-2"
+	Wed, 21 May 2008 08:31:52 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:46221 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757980AbYEUMbv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 08:31:51 -0400
+Date: Wed, 21 May 2008 14:31:16 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Avi Kivity <avi@qumranet.com>
+Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Subject: Re: [BUG] cpu hotplug vs scheduler
+Message-ID: <20080521123116.GC9441@osiris.boeblingen.de.ibm.com>
+References: <4829A6A0.5040208@qumranet.com> <b647ffbd0805140113i4296076cna3f371c86c479653@mail.gmail.com> <482ADB69.8010305@qumranet.com> <b647ffbd0805140605j5ed43b73t557983ece879c552@mail.gmail.com> <482C0E35.9000708@qumranet.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <482C0E35.9000708@qumranet.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+> Now it died when allocating the pda:
+>
+> [4301986.526627] Booting processor 1/6 ip 6000
+> [4301986.537195] swapper: page allocation failure. order:2, mode:0x20
+> [4301986.537195] Pid: 0, comm: swapper Not tainted 2.6.26-rc2 #728
+> [4301986.537195]
+> [4301986.537195] Call Trace:
+> [4301986.537195]  [<ffffffff802388ae>] ? __printk_ratelimit+0x9/0xb
+> [4301986.537195]  [<ffffffff80272e07>] __alloc_pages_internal+0x387/0x39f
+> [4301986.537195]  [<ffffffff80272e35>] __alloc_pages+0xb/0xd
+> [4301986.537195]  [<ffffffff80272e4c>] __get_free_pages+0x15/0x46
+> [4301986.537195]  [<ffffffff80210cdf>] pda_init+0x87/0xac
+> [4301986.537195]  [<ffffffff8042fed1>] cpu_init+0x5e/0x34a
+> [4301986.537195]  [<ffffffff8026b437>] ? rcu_needs_cpu+0x36/0x47
+> [4301986.537195]  [<ffffffff802311a7>] ? idle_task_exit+0x71/0xad
+> [4301986.537195]  [<ffffffff804331aa>] start_secondary+0xc/0x178
+> [4301986.537195]
+> [4301986.537195] Mem-info:
+> [4301986.537195] DMA per-cpu:
+> [4301986.537195] CPU    0: hi:    0, btch:   1 usd:   0
+> [4301986.537195] CPU    2: hi:    0, btch:   1 usd:   0
+> [4301986.537195] DMA32 per-cpu:
+> [4301986.537195] CPU    0: hi:  186, btch:  31 usd: 153
+> [4301986.537195] CPU    2: hi:  186, btch:  31 usd: 135
+> [4301986.537195] Active:347879 inactive:109278 dirty:107 writeback:0  
+> unstable:0
+> [4301986.537195]  free:5311 slab:10186 mapped:30496 pagetables:1587 bounce:0
+> [4301986.537195] DMA free:8012kB min:24kB low:28kB high:36kB active:60kB  
+> inactive:0kB present:8644kB pages_scanned:0 all_unreclaimable? no
+> [4301986.537195] lowmem_reserve[]: 0 1999 1999 1999
+> [4301986.537195] DMA32 free:13232kB min:5704kB low:7128kB high:8556kB  
+> active:1391456kB inactive:437112kB present:2047248kB pages_scanned:0  
+> all_unreclaimable? no
+> [4301986.537195] lowmem_reserve[]: 0 0 0 0
+> [4301986.537195] DMA: 19*4kB 16*8kB 10*16kB 11*32kB 6*64kB 4*128kB  
+> 1*256kB 2*512kB 3*1024kB 1*2048kB 0*4096kB = 8012kB
+> [4301986.537195] DMA32: 2034*4kB 570*8kB 1*16kB 0*32kB 0*64kB 0*128kB  
+> 0*256kB 1*512kB 0*1024kB 0*2048kB 0*4096kB = 13224kB
+> [4301986.537195] 212750 total pagecache pages
+> [4301986.537195] Swap cache: add 73, delete 18, find 0/0
+> [4301986.537195] Free swap  = 3210964kB
+> [4301986.537195] Total swap = 3211256kB
+>
+> There seem to be some order-2 allocations available, though.  And in any  
+> case, cpu hotplug should't crash on such failures, only fail.
 
---=_freyr.drzeus.cx-21861-1211372424-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Hi Avi,
 
-On Wed, 7 May 2008 18:50:54 +0200
-"Kim Hansen" <kimhanse@gmail.com> wrote:
-
-> Now it just looks like it sometimes work and other times don't, on
-> some kernels it works on 80% inserts and on other it only works on 5%.
-> This means that the problem most likely has not been fixed between
-> 2.6.24 and 2.6.25, it was just a coincidence that it worked on on and
-> not the other the first few times I tested it.
-
-I missed the start of this, but I assume it is just the one card that
-exhibits this craziness?
-
-> I have captured some logs now, there is logs of a successful insert
-> and remove, and of an unsuccessful.
->=20
-> Successful  insert: 16:18:50   remove:  16:20:26
-> Unsuccessful insert:  16:21:38  remove:  16:21:47
->=20
-> The log can be found at: http://i9.dk/~kim/mmc-log.txt.bz2
->=20
-> This is the part from the unsuccessful insert:
-
-*snip*
-
-> sdhci [sdhci_irq()]: *** sdhci:slot0 got interrupt: 0x00000001
-> mmc0: req done (CMD5): 0: ffffffff 00000000 00000000 00000000
-
-What can I say, the card thinks it's an SDIO card. :)
-
-The question is why. Might be some shoddy wiring between the card and
-the controller that causes some unlucky misinterpretations. Might also
-be that the card needs some increased delay to function correctly. Try
-adding:
-
-	msleep(500);
-
-to mmc_rescan() in drivers/mmc/core/core.c. Put it right after
-mmc_power_up().
-
-Rgds
-Pierre
-
---=_freyr.drzeus.cx-21861-1211372424-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkg0E8gACgkQ7b8eESbyJLiy/QCfRE3k6FC838+BbacIx/OH8QFK
-4h4An1Tk5GmKahip1PLVeTkKCxf54SCu
-=7e0k
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-21861-1211372424-0001-2--
+I think you fixed this specific bug. Does cpu hotplug stresstest now work
+for you?
