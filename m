@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936833AbYEUSyB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935185AbYEUS5p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936833AbYEUSyB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 14:54:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936687AbYEUSxL
+	id S935185AbYEUS5p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 14:57:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756438AbYEUS5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 14:53:11 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:40242 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936405AbYEUSxK (ORCPT
+	Wed, 21 May 2008 14:57:35 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:44443 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756030AbYEUS5e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 14:53:10 -0400
-Date: Wed, 21 May 2008 14:52:51 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Greg KH <greg@kroah.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Adrian Bunk <bunk@kernel.org>,
-       USB Storage list <usb-storage@lists.one-eyed-alien.net>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@sunset.davemloft.net>,
-       systemtap@sources.redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-cifs-client@lists.samba.org, linux-nfs@vger.kernel.org
-Subject: Re: [PATCH] usb-storage: don't call utsname()
-Message-ID: <20080521185251.GA783@infradead.org>
-References: <20080521123700.GA8770@infradead.org> <Pine.LNX.4.44L0.0805211349480.3409-100000@iolanthe.rowland.org> <20080521180957.GA17598@kroah.com>
+	Wed, 21 May 2008 14:57:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=kbiIbStosS13B+0giMCiH/7btHi3U1CEGxzAJQ13mMc4LxPwj2DItR3tAnKKuLdab0swwXgTOcXmEFJygDk9qrC3qmMD0TMUYDKDL1C4TQbb633SS0vx2eBoULWnY9CTL90m/x53QGUkIDqZGNVeCe8ONXZS0rXvjc9qM0I/UF8=
+Date: Wed, 21 May 2008 22:57:25 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org,
+       davem@davemloft.net
+Subject: Re: CFD: linux-wanking@vger.kernel.org (was [PATCH] Standard
+	indentation of arguments)
+Message-ID: <20080521185725.GD6932@cvg>
+References: <12113495282137-git-send-email-kongjianjun@gmail.com> <20080521083413.GM28946@ZenIV.linux.org.uk> <20080521015037.add0b78e.akpm@linux-foundation.org> <20080521103206.GA24545@infradead.org> <20080521120939.GF8581@mit.edu> <20080521104644.5b6f4e63.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080521180957.GA17598@kroah.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20080521104644.5b6f4e63.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 21, 2008 at 11:09:57AM -0700, Greg KH wrote:
-> Why?  With this change, if you change the version number, the file will
-> have to be rebuilt.  Without the change, the file will not need to be
-> rebuilt, right?
+[Andrew Morton - Wed, May 21, 2008 at 10:46:44AM -0700]
+| On Wed, 21 May 2008 08:09:39 -0400 Theodore Tso <tytso@mit.edu> wrote:
+| 
+| > On Wed, May 21, 2008 at 06:32:06AM -0400, Christoph Hellwig wrote:
+| > > On Wed, May 21, 2008 at 01:50:37AM -0700, Andrew Morton wrote:
+| > > > Oh, what a marvellous way to encourage new contributors that was. Thank
+| > > > you so much.
+| > > > 
+| > > > For the record: Al speaks only for himself and a lack of expressed
+| > > > disagrement from others should not be taken as agreement.
+| > > 
+| > > But I'd like to second the opinion.  This is getting a little too far.
+| > > We should rather try to at least enforce very basic standards a lot of
+| > > the crap shoved in doesn't follow instead of wanking around about exact
+| > > placement of whitespaces.
+| > 
+| > The real question is whether people who are wanking about whitespace
+| > and spelling fixes in comments will graduate to writing real, useful
+| > patches.  If they won't, there's no point to encouraging them.
+| > 
+| 
+| Guys, get a clue.  It doesn't matter what that person did.  It is the
+| effect upon *all* other potential developers which is so damaging here.
+| Not upon this individual.
+| 
 
-Because thanks to the container patches it utsname fields other than
-hostname can actually change at runtime now and you'll get races looking
-at them.  And probably not the output you want if someone in your
-container changes the kernel version to trick applications.
+Btw, we have CodingStyle, SubmittingPatches and other, but why don't
+we have something like KernelNewbieGuide? Don't get me wrong, but
+there could be written all rules about - what is good to do, what is bad.
+So a newbiew who wants to be usefull for kernel could read it and decide
+what should be done. /Don't beat me ;) / And of course I know about
+kernelnewbie.org but this (even quite short) document could help I think.
+
+		- Cyrill -
