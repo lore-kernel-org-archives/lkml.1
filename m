@@ -1,66 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932647AbYEUHjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933828AbYEUHjr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932647AbYEUHjT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 03:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758927AbYEUHjG
+	id S933828AbYEUHjr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 03:39:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757267AbYEUHjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 03:39:06 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51524 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758492AbYEUHjD (ORCPT
+	Wed, 21 May 2008 03:39:35 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44966 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754820AbYEUHje (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 03:39:03 -0400
-Date: Wed, 21 May 2008 00:38:49 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>,
+	Wed, 21 May 2008 03:39:34 -0400
+Date: Wed, 21 May 2008 16:29:14 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: [PATCH] memory hotplug: fix early allocation handling
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andy Whitcroft <apw@shadowen.org>, Dave Hansen <haveblue@us.ibm.com>,
+       Gerald Schaefer <gerald.schaefer@de.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, linux-mm@kvack.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] VFS: Pagecache usage optimization on pagesize !=
- blocksize environment
-Message-Id: <20080521003849.0aabac4b.akpm@linux-foundation.org>
-In-Reply-To: <20080521001930.202446eb.akpm@linux-foundation.org>
-References: <6.0.0.20.2.20080513205758.03a7a6b0@172.19.0.2>
-	<20080521001930.202446eb.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <20080520105145.GA24526@osiris.boeblingen.de.ibm.com>
+References: <20080520105145.GA24526@osiris.boeblingen.de.ibm.com>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20080521162657.587A.E1E9C6FF@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 May 2008 00:19:30 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
+Looks good to me.
 
+Thanks.
+
+Acked-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+
+
+
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
 > 
-> I guess a suitable fix might be to implement the above using a new
-> address_space_operations callback:
+> Trying to add memory via add_memory() from within an initcall function
+> results in
 > 
-> 	if (PagePrivate(page) && aops->is_partially_uptodate) {
-
-This is a bit presumptuous.  A filesytem could in theory be able to
-work out if a section of a page is uptodate without necessarily
-maintaining per-page metadata at page.private.
-
-So one really should just do
-
-	if (aops->is_partially_uptodate)
-
-however it's hard to conceive how a filesystem could sanely do this
-_without_ putting data at page.private, so the PagePrivate() test could
-perhaps be retained as a microoptimisation, as long as it is suitably
-commented.
-
-otoh, non-zero aops->is_partially_uptodate might well be less common
-than non-zero PagePrivate(), so perhaps these should be tested in the
-other order.  Not sure.
-
-> 		if (aops->is_partially_uptodate(page, desc, offset))
-> 			<OK, we can copy the data>
+> bootmem alloc of 163840 bytes failed!
+> Kernel panic - not syncing: Out of memory
 > 
-> then implement a generic_file_is_partially_uptodate() in fs/buffer.c
-
-Make that block_is_partially_uptodate().
-
-> and wire that up in the filesystems.
+> This is caused by zone_wait_table_init() which uses system_state to
+> decide if it should use the bootmem allocator or not.
+> When initcalls are handled the system_state is still SYSTEM_BOOTING
+> but the bootmem allocator doesn't work anymore. So the allocation
+> will fail.
 > 
-> Note that things like network filesystems can then implement this also.
+> To fix this use slab_is_available() instead as indicator like we do
+> it everywhere else.
+> 
+> Cc: Andy Whitcroft <apw@shadowen.org>
+> Cc: Dave Hansen <haveblue@us.ibm.com>
+> Cc: Gerald Schaefer <gerald.schaefer@de.ibm.com>
+> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Cc: Yasunori Goto <y-goto@jp.fujitsu.com>
+> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+> ---
+>  mm/page_alloc.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-2.6/mm/page_alloc.c
+> ===================================================================
+> --- linux-2.6.orig/mm/page_alloc.c
+> +++ linux-2.6/mm/page_alloc.c
+> @@ -2804,7 +2804,7 @@ int zone_wait_table_init(struct zone *zo
+>  	alloc_size = zone->wait_table_hash_nr_entries
+>  					* sizeof(wait_queue_head_t);
+>  
+> - 	if (system_state == SYSTEM_BOOTING) {
+> + 	if (!slab_is_available()) {
+>  		zone->wait_table = (wait_queue_head_t *)
+>  			alloc_bootmem_node(pgdat, alloc_size);
+>  	} else {
+
+-- 
+Yasunori Goto 
+
 
