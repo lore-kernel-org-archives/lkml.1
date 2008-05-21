@@ -1,55 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937567AbYEUVrH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764965AbYEUVxf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937567AbYEUVrH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 17:47:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937374AbYEUVqr
+	id S1764965AbYEUVxf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 17:53:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754558AbYEUVxZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 17:46:47 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:52158 "EHLO pasmtpA.tele.dk"
+	Wed, 21 May 2008 17:53:25 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:37010 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937413AbYEUVqq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 17:46:46 -0400
-Date: Wed, 21 May 2008 23:47:23 +0200
+	id S1753072AbYEUVxY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 17:53:24 -0400
+Date: Wed, 21 May 2008 23:54:03 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Andres Salomon <dilinger@queued.net>
-Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Dave Jones <davej@codemonkey.org.uk>,
-       Roland McGrath <roland@redhat.com>,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: Additional kconfig targets (cloneconfig, nonint_oldconfig etc)
-Message-ID: <20080521214723.GB15136@uranus.ravnborg.org>
-References: <20080429183531.GB19652@uranus.ravnborg.org> <20080502190949.GA30270@uranus.ravnborg.org> <20080521164703.61c7d715@ephemeral>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org,
+       alsa-devel@alsa-project.org, perex@perex.cz
+Subject: Re: Moving sound/* to drivers/ ?
+Message-ID: <20080521215403.GD15136@uranus.ravnborg.org>
+References: <s5hzlqjz74d.wl%tiwai@suse.de> <alpine.LFD.1.10.0805211431370.3081@woody.linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080521164703.61c7d715@ephemeral>
+In-Reply-To: <alpine.LFD.1.10.0805211431370.3081@woody.linux-foundation.org>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 21, 2008 at 04:47:03PM -0400, Andres Salomon wrote:
-> On Fri, 2 May 2008 21:09:49 +0200
-> Sam Ravnborg <sam@ravnborg.org> wrote:
 > 
-> > With the attached patch you can do:
-> > 
-> > make K=my_favourite_config defconfig
-> > 
-> > kconfig will read all config values form 'my_favourite_config'
-> > and set all other symbols to their default value.
-> > The output is now dense like this:
-> > # configuration is based on 'my_favourite_config'
-> > #
-> > # configuration written to .config
-> > #
-> > 
-> 
-> 
-> Is this slated for 2.6.27?
+> Me personally, I've been more irritated by include/asm-xyz vs arch/xyz. It 
+> would be so nice if all the arch-specific changes woudl always show up 
+> under arch/ (both from a statistics standpoint, and just because then a 
+> diffstat really shows arch-specific stuff really obviously, and sorts all 
+> the arch-specific stuff together).
 
-Been busy and got sidetracked after my first version proved broken.
-Will try to look at it in the weekend.
+Something like:
+include/asm-$ARCH/ => arch/$ARCH/include/asm/*
+?
+
+I can cook up something simple so kbuild will try both so we can
+move the archs that do symlinks later than the rest.
+
+I really like to keep the 'asm' directory so we can kill the asm symlink.
 
 	Sam
