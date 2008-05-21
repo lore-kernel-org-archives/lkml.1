@@ -1,71 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764368AbYEUJTc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932759AbYEUJUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764368AbYEUJTc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 05:19:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754008AbYEUJTY
+	id S932759AbYEUJUZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 05:20:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750963AbYEUJUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 05:19:24 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59049
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753795AbYEUJTX (ORCPT
+	Wed, 21 May 2008 05:20:16 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:57488 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754008AbYEUJUO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 05:19:23 -0400
-Date: Wed, 21 May 2008 02:19:19 -0700 (PDT)
-Message-Id: <20080521.021919.52247763.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: CFD: linux-wanking@vger.kernel.org
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080521015037.add0b78e.akpm@linux-foundation.org>
-References: <12113495282137-git-send-email-kongjianjun@gmail.com>
-	<20080521083413.GM28946@ZenIV.linux.org.uk>
-	<20080521015037.add0b78e.akpm@linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 21 May 2008 05:20:14 -0400
+Subject: Re: [RFC][PATCH 0/3] configfs: Make nested default groups
+	lockdep-friendly
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Joel Becker <Joel.Becker@oracle.com>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Louis Rilling <Louis.Rilling@kerlabs.com>, linux-kernel@vger.kernel.org,
+       ocfs2-devel@oss.oracle.com
+In-Reply-To: <20080520235138.GL26609@mail.oracle.com>
+References: <20080520163320.025971210@kerlabs.com>
+	 <20080520095810.1d50d247@infradead.org>
+	 <20080520215639.GG26609@mail.oracle.com>
+	 <20080520151341.058f2df4@infradead.org>
+	 <20080520222702.GJ26609@mail.oracle.com>
+	 <20080520153543.4bafcac9@infradead.org>
+	 <20080520235138.GL26609@mail.oracle.com>
+Content-Type: text/plain
+Date: Wed, 21 May 2008 11:20:00 +0200
+Message-Id: <1211361600.6463.65.camel@lappy.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.22.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Wed, 21 May 2008 01:50:37 -0700
-
-> On Wed, 21 May 2008 09:34:13 +0100 Al Viro <viro@ZenIV.linux.org.uk> wrote:
-> 
-> > This is a call for discussion for new maillist on vger.
+On Tue, 2008-05-20 at 16:51 -0700, Joel Becker wrote:
+> On Tue, May 20, 2008 at 03:35:43PM -0700, Arjan van de Ven wrote:
+> > not quite what I meant; what I meant is more like how sched.c deals
+> > with per cpu queues:
 > > 
-> > List name: linux-wanking@vger.kernel.org
+> > (from sched.c)
+> > 
+> >                 spin_lock_init(&rq->lock);
+> >                 lockdep_set_class(&rq->lock, &rq->rq_lock_key); 
 > 
-> Oh, what a marvellous way to encourage new contributors that was. Thank
-> you so much.
-> 
-> For the record: Al speaks only for himself and a lack of expressed
-> disagrement from others should not be taken as agreement.
-> 
-> Sheesh.
+> 	Looking at this, it's taking the address of the struct
+> lock_class_key as the actual key.  Thus, if we tie one of these guys to
+> the structure we're representing, we get lock safety...except that we're
+> talking about i_mutex here, and we want to interact with the VFS's use
+> thereof.
 
-Al may not have expressed himself the most pleasant way, but I
-do agree on some fundamental level with him.
+Also bear in mind that the lock_class_key structure must be in static
+storage.
 
-There is way to much useless crap being discussed on this list, and
-this is a list where the signal level is of an utmost importance for
-the lists usability.
-
-After deleting all of the noise posted here, I'm often too burnt out
-to do real work with what's left and just delete that too. :-/
-It's worse than the postmaster and list owner mail I process each
-day for vger.kernel.org
-
-Wouldn't you like me to instead have the energy left to review some
-useful patches?
-
-As one example, coding style is important and has it's place, but some
-of these threads get way out of hand.  I don't give a flying crap how
-people want to tab their code when I have some OOPS reports and bug
-fixes to process!
-
-The priorities are often all wrong, and this isn't the place for
-inversed prioriries.  In that sense Al is totally right on the money.
-
-At times you'd think there wasn't even a kernel newbies list.
