@@ -1,75 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932183AbYEUIUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933835AbYEUIXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932183AbYEUIUc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 04:20:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbYEUIUM
+	id S933835AbYEUIXZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 04:23:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754977AbYEUIXK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 04:20:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37321 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751020AbYEUIUJ (ORCPT
+	Wed, 21 May 2008 04:23:10 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:29592 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753559AbYEUIXF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 04:20:09 -0400
-Date: Wed, 21 May 2008 01:19:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [PATCH] Introduce down_nowait()
-Message-Id: <20080521011926.18bf8e81.akpm@linux-foundation.org>
-In-Reply-To: <20080521080452.GA1305@infradead.org>
-References: <200805211600.16415.rusty@rustcorp.com.au>
-	<20080520232903.6756b1c1.akpm@linux-foundation.org>
-	<20080521080452.GA1305@infradead.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 21 May 2008 04:23:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
+        b=CifM9butV3JOT9bJMs+BAY4SW5GRJmNNsY3PCMm+7XqeHncFj2Bul4BcXkAwByD8vDEJ4+0+hzL8hvHRrKuh6wpXHy61YIPRtBBVZPLLttLh5Jso09sbOMLhl1af3nsz1fVuSNj3p3Kb8oucIja7GSCgR+pnT/mrb08ndM5Ot9Q=
+Message-ID: <aec7e5c30805210122w5bdb8443r69bb7776e085276b@mail.gmail.com>
+Date: Wed, 21 May 2008 17:22:32 +0900
+From: "Magnus Damm" <magnus.damm@gmail.com>
+To: "=?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?=" <Uwe.Kleine-Koenig@digi.com>
+Subject: Re: [PATCH 00/03][RFC] Reusable UIO Platform Driver
+Cc: "Paul Mundt" <lethal@linux-sh.org>, "Hans J. Koch" <hjk@linutronix.de>,
+       linux-kernel@vger.kernel.org, gregkh@suse.de, linux-sh@vger.kernel.org,
+       "Katsuya MATSUBARA" <matsu@igel.co.jp>
+In-Reply-To: <20080521080503.GA28751@digi.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_3900_14000173.1211358153128"
+References: <20080520105132.1474.73941.sendpatchset@rx1.opensource.se>
+	 <20080520210713.GE3220@local>
+	 <aec7e5c30805202031x62b3b463lfde0b9e7eb32d35@mail.gmail.com>
+	 <20080521064938.GA11580@digi.com>
+	 <20080521074950.GA27310@linux-sh.org>
+	 <20080521080503.GA28751@digi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 May 2008 04:04:53 -0400 Christoph Hellwig <hch@infradead.org> wrote:
+------=_Part_3900_14000173.1211358153128
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> On Tue, May 20, 2008 at 11:29:03PM -0700, Andrew Morton wrote:
-> > Actually, I don't thing down_nowait() is a terribly good name, because it
-> > doesn't tell the reader anything about what to expect from the return
-> > value.  Does a non-zero return mean that down_wait() acquired the lock,
-> > or does it not?  Something like down_try() would be better, because if
-> > it returns 1 we can say "ah, the trying succeeded".
-> 
-> Actually, it does,
+On Wed, May 21, 2008 at 5:05 PM, Uwe Kleine-K=F6nig
+<Uwe.Kleine-Koenig@digi.com> wrote:
+> @Magnus: Maybe you can provide the userspace part of the driver?
+> How is that mapping used there?
 
-No it doesn't.  If anything, a "true" return from something called
-"down_nowait()" means "I didn't wait!".  Or something.
+[Added Matsubara-san as CC]
 
-> and the kerneldoc comment explains it in every detail
-> for those who need to read it up.
+Sure, here is a little test program. Have a look at "uio_mem". The
+"address" member contains the physical address that can be used for
+bus mastering DMA. Compare that to "iomem" which is the pointer to the
+virtual memory area in user space.
 
-Shouldn't be necessary to look it up.  By that argument we could
-call it eat_at_joes() and sell the advertising space.
+Hope this helps!
 
->  Then again semaphores and on their
-> way out, and I really hate the kind of churn this thing introduces at
-> this moment.  Please let all the semaphore to completion/mutex/other
-> construct change settle for a while, and with a little chance this gem
-> will just go away entirely.
+/ magnus
 
-Well, we can walk and chew gum at the same time.
+------=_Part_3900_14000173.1211358153128
+Content-Type: text/x-csrc; name=veu_lab.c
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fghn90ha0
+Content-Disposition: attachment; filename=veu_lab.c
 
-The number of down_trylocks in rc3 is 51 and the number of
-down_trylocks and down_nowaits in -mm is 47.  So progress is pretty
-glacial.
+LyoKICogc2g3NzIyIFZFVSBzY2FsaW5nIGV4YW1wbGUgdXNpbmcgVUlPIC0gMjAwODA1MjEgTWFn
+bnVzIERhbW0KICoKICogRGVyaXZlZCBmcm9tCiAqICJTaW1wbGUgdGljayB0aW1lciB0aHJvdWdo
+IFNreSBUTVUgVUlPIGRyaXZlciIgYnkgS2F0c3V5YSBNYXRzdWJhcmEKICovCiNpbmNsdWRlIDxz
+dGRpby5oPgojaW5jbHVkZSA8dW5pc3RkLmg+CiNpbmNsdWRlIDxzdHJpbmcuaD4KI2luY2x1ZGUg
+PHN0ZGxpYi5oPgojaW5jbHVkZSA8c3lzL21tYW4uaD4KI2luY2x1ZGUgPHN5cy90aW1lLmg+CiNp
+bmNsdWRlIDxzeXMvaW9jdGwuaD4KI2luY2x1ZGUgPGZjbnRsLmg+CiNpbmNsdWRlIDxsaW51eC9m
+Yi5oPgoKc3RhdGljIGludCBmZ2V0c193aXRoX29wZW5jbG9zZShjaGFyICpmbmFtZSwgY2hhciAq
+YnVmLCBzaXplX3QgbWF4bGVuKSB7CglGSUxFICpmcDsKCglpZiAoKGZwID0gZm9wZW4oZm5hbWUs
+ICJyIikpICE9IE5VTEwpIHsKCQlmZ2V0cyhidWYsIG1heGxlbiwgZnApOwoJCWZjbG9zZShmcCk7
+CgkJcmV0dXJuIHN0cmxlbihidWYpOwoJfSBlbHNlIHsKCQlyZXR1cm4gLTE7Cgl9Cn0KCnN0cnVj
+dCB1aW9fZGV2aWNlIHsKICBjaGFyICpuYW1lOwogIGNoYXIgKnBhdGg7CiAgaW50IGZkOwp9OwoK
+I2RlZmluZSBNQVhVSU9JRFMgIDEwMAojZGVmaW5lIE1BWE5BTUVMRU4gMjU2CgpzdGF0aWMgaW50
+IGxvY2F0ZV91aW9fZGV2aWNlKGNoYXIgKm5hbWUsIHN0cnVjdCB1aW9fZGV2aWNlICp1ZHApCnsK
+CWNoYXIgZm5hbWVbTUFYTkFNRUxFTl0sIGJ1ZltNQVhOQU1FTEVOXTsKCWludCB1aW9faWQ7CgoJ
+Zm9yICh1aW9faWQgPSAwOyB1aW9faWQgPCBNQVhVSU9JRFM7IHVpb19pZCsrKSB7CgkJc3ByaW50
+ZihmbmFtZSwgIi9zeXMvY2xhc3MvdWlvL3VpbyVkL25hbWUiLCB1aW9faWQpOwoJCWlmIChmZ2V0
+c193aXRoX29wZW5jbG9zZShmbmFtZSwgYnVmLCBNQVhOQU1FTEVOKSA8IDApCgkJCWNvbnRpbnVl
+OwoJCWlmIChzdHJuY21wKG5hbWUsIGJ1Ziwgc3RybGVuKG5hbWUpKSA9PSAwKQoJCQlicmVhazsK
+CX0KCglpZiAodWlvX2lkID49IE1BWFVJT0lEUykKCQlyZXR1cm4gLTE7CgoJdWRwLT5uYW1lID0g
+c3RyZHVwKGJ1Zik7Cgl1ZHAtPnBhdGggPSBzdHJkdXAoZm5hbWUpOwoJdWRwLT5wYXRoW3N0cmxl
+bih1ZHAtPnBhdGgpIC0gNF0gPSAnXDAnOwoKCXNwcmludGYoYnVmLCAiL2Rldi91aW8lZCIsIHVp
+b19pZCk7Cgl1ZHAtPmZkID0gb3BlbihidWYsIE9fUkRXUnxPX1NZTkMpOwoKCWlmICh1ZHAtPmZk
+IDwgMCkgewoJCXBlcnJvcigib3BlbiIpOwoJCXJldHVybiAtMTsKCX0KCglyZXR1cm4gMDsKfQoK
+c3RydWN0IHVpb19tYXAgewogIHVuc2lnbmVkIGxvbmcgYWRkcmVzczsKICB1bnNpZ25lZCBsb25n
+IHNpemU7CiAgdm9pZCAqaW9tZW07Cn07CgpzdGF0aWMgaW50IHNldHVwX3Vpb19tYXAoc3RydWN0
+IHVpb19kZXZpY2UgKnVkcCwgaW50IG5yLCBzdHJ1Y3QgdWlvX21hcCAqdW1wKQp7CgljaGFyIGZu
+YW1lW01BWE5BTUVMRU5dLCBidWZbTUFYTkFNRUxFTl07CiAKCXNwcmludGYoZm5hbWUsICIlcy9t
+YXBzL21hcCVkL2FkZHIiLCB1ZHAtPnBhdGgsIG5yKTsKCWlmIChmZ2V0c193aXRoX29wZW5jbG9z
+ZShmbmFtZSwgYnVmLCBNQVhOQU1FTEVOKSA8PSAwKQoJCXJldHVybiAtMTsKCgl1bXAtPmFkZHJl
+c3MgPSBzdHJ0b3VsKGJ1ZiwgTlVMTCwgMCk7CgoJc3ByaW50ZihmbmFtZSwgIiVzL21hcHMvbWFw
+JWQvc2l6ZSIsIHVkcC0+cGF0aCwgbnIpOwoJaWYgKGZnZXRzX3dpdGhfb3BlbmNsb3NlKGZuYW1l
+LCBidWYsIE1BWE5BTUVMRU4pIDw9IDApCgkJcmV0dXJuIC0xOwoKCXVtcC0+c2l6ZSA9IHN0cnRv
+dWwoYnVmLCBOVUxMLCAwKTsKCgl1bXAtPmlvbWVtID0gbW1hcCgwLCB1bXAtPnNpemUsCgkJCSAg
+UFJPVF9SRUFEfFBST1RfV1JJVEUsIE1BUF9TSEFSRUQsCgkJCSAgdWRwLT5mZCwgbnIgKiBnZXRw
+YWdlc2l6ZSgpKTsKCglpZiAodW1wLT5pb21lbSA9PSBNQVBfRkFJTEVEKQoJCXJldHVybiAtMTsK
+CglyZXR1cm4gMDsKfQoKc3RydWN0IGZiX2luZm8gewogIHVuc2lnbmVkIGxvbmcgd2lkdGg7CiAg
+dW5zaWduZWQgbG9uZyBoZWlnaHQ7CiAgdW5zaWduZWQgbG9uZyBicHA7CiAgdW5zaWduZWQgbG9u
+ZyBsaW5lX2xlbmd0aDsKCiAgdW5zaWduZWQgbG9uZyBhZGRyZXNzOwogIHVuc2lnbmVkIGxvbmcg
+c2l6ZTsKfTsKCnN0YXRpYyBpbnQgZ2V0X2ZiX2luZm8oY2hhciAqZGV2aWNlLCBzdHJ1Y3QgZmJf
+aW5mbyAqZmlwKQp7CglzdHJ1Y3QgZmJfdmFyX3NjcmVlbmluZm8gdmluZm87CglzdHJ1Y3QgZmJf
+Zml4X3NjcmVlbmluZm8gZmluZm87CglpbnQgZmQ7CgoJZmQgPSBvcGVuKGRldmljZSwgT19SRFdS
+KTsKCWlmIChmZCA8IDApIHsKCQlwZXJyb3IoIm9wZW4iKTsKCQlyZXR1cm4gLTE7Cgl9CgoJaWYg
+KGlvY3RsKGZkLCBGQklPR0VUX1ZTQ1JFRU5JTkZPLCAmdmluZm8pID09IC0xKSB7CgkJcGVycm9y
+KCJpb2N0bChGQklPR0VUX1ZTQ1JFRU5JTkZPKSIpOwoJCXJldHVybiAtMTsKCX0KCglmaXAtPndp
+ZHRoID0gdmluZm8ueHJlczsKCWZpcC0+aGVpZ2h0ID0gdmluZm8ueXJlczsKCWZpcC0+YnBwID0g
+dmluZm8uYml0c19wZXJfcGl4ZWw7CgoJaWYgKGlvY3RsKGZkLCBGQklPR0VUX0ZTQ1JFRU5JTkZP
+LCAmZmluZm8pID09IC0xKSB7CgkJcGVycm9yKCJpb2N0bChGQklPR0VUX0ZTQ1JFRU5JTkZPKSIp
+OwoJCXJldHVybiAtMTsKCX0KCglmaXAtPmFkZHJlc3MgPSBmaW5mby5zbWVtX3N0YXJ0OwoJZmlw
+LT5zaXplID0gZmluZm8uc21lbV9sZW47CglmaXAtPmxpbmVfbGVuZ3RoID0gZmluZm8ubGluZV9s
+ZW5ndGg7CgkKCWNsb3NlKGZkKTsKCXJldHVybiAwOwp9CgojZGVmaW5lIFZFU1RSIDB4MDAgLyog
+c3RhcnQgcmVnaXN0ZXIgKi8KI2RlZmluZSBWRVNXUiAweDEwIC8qIHNyYzogbGluZSBsZW5ndGgg
+Ki8KI2RlZmluZSBWRVNTUiAweDE0IC8qIHNyYzogaW1hZ2Ugc2l6ZSAqLwojZGVmaW5lIFZTQVlS
+IDB4MTggLyogc3JjOiB5L3JnYiBwbGFuZSBhZGRyZXNzICovCiNkZWZpbmUgVlNBQ1IgMHgxYyAv
+KiBzcmM6IGMgcGxhbmUgYWRkcmVzcyAqLwojZGVmaW5lIFZCU1NSIDB4MjAgLyogYnVuZGxlIG1v
+ZGUgcmVnaXN0ZXIgKi8KI2RlZmluZSBWRURXUiAweDMwIC8qIGRzdDogbGluZSBsZW5ndGggKi8K
+I2RlZmluZSBWREFZUiAweDM0IC8qIGRzdDogeS9yZ2IgcGxhbmUgYWRkcmVzcyAqLwojZGVmaW5l
+IFZEQUNSIDB4MzggLyogZHN0OiBjIHBsYW5lIGFkZHJlc3MgKi8KI2RlZmluZSBWVFJDUiAweDUw
+IC8qIHRyYW5zZm9ybSBjb250cm9sICovCiNkZWZpbmUgVlJGQ1IgMHg1NCAvKiByZXNpemUgc2Nh
+bGUgKi8KI2RlZmluZSBWUkZTUiAweDU4IC8qIHJlc2l6ZSBjbGlwICovCiNkZWZpbmUgVkVOSFIg
+MHg1YyAvKiBlbmhhbmNlICovCiNkZWZpbmUgVkZNQ1IgMHg3MCAvKiBmaWx0ZXIgbW9kZSAqLyAK
+I2RlZmluZSBWVlRDUiAweDc0IC8qIGxvd3Bhc3MgdmVydGljYWwgKi8KI2RlZmluZSBWSFRDUiAw
+eDc4IC8qIGxvd3Bhc3MgaG9yaXpvbnRhbCAqLwojZGVmaW5lIFZBUENSIDB4ODAgLyogY29sb3Ig
+bWF0Y2ggKi8KI2RlZmluZSBWRUNDUiAweDg0IC8qIGNvbG9yIHJlcGxhY2UgKi8KI2RlZmluZSBW
+QUZYUiAweDkwIC8qIGZpeGVkIG1vZGUgKi8KI2RlZmluZSBWU1dQUiAweDk0IC8qIHN3YXAgKi8K
+I2RlZmluZSBWRUlFUiAweGEwIC8qIGludGVycnVwdCBtYXNrICovCiNkZWZpbmUgVkVWVFIgMHhh
+NCAvKiBpbnRlcnJ1cHQgZXZlbnQgKi8KI2RlZmluZSBWU1RBUiAweGIwIC8qIHN0YXR1cyAqLwoj
+ZGVmaW5lIFZCU1JSIDB4YjQgLyogcmVzZXQgKi8KCnN0YXRpYyB1bnNpZ25lZCBsb25nIHJlYWRf
+cmVnKHN0cnVjdCB1aW9fbWFwICp1bXAsIGludCByZWdfbnIpCnsKCSAgdm9sYXRpbGUgdW5zaWdu
+ZWQgbG9uZyAqcmVnID0gdW1wLT5pb21lbSArIHJlZ19ucjsKCgkgIHJldHVybiAqcmVnOwp9Cgpz
+dGF0aWMgdm9pZCB3cml0ZV9yZWcoc3RydWN0IHVpb19tYXAgKnVtcCwgdW5zaWduZWQgbG9uZyB2
+YWx1ZSwgaW50IHJlZ19ucikKewoJICB2b2xhdGlsZSB1bnNpZ25lZCBsb25nICpyZWcgPSB1bXAt
+PmlvbWVtICsgcmVnX25yOwoKCSAgKnJlZyA9IHZhbHVlOwp9CgpzdGF0aWMgdm9pZCBzZXRfc2Nh
+bGUoc3RydWN0IHVpb19tYXAgKnVtcCwgaW50IHZlcnRpY2FsLAoJCSAgICAgIGludCBzaXplX2lu
+LCBpbnQgc2l6ZV9vdXQpCnsKCXVuc2lnbmVkIGxvbmcgZml4cG9pbnQsIG1hbnQsIGZyYWMsIHZh
+bHVlOwoKCS8qIGNhbGN1bGF0ZSBGUkFDIGFuZCBNQU5UICovCgoJZml4cG9pbnQgPSAoNDA5NiAq
+IChzaXplX2luIC0gMSkpIC8gKHNpemVfb3V0ICsgMSk7CgltYW50ID0gZml4cG9pbnQgLyA0MDk2
+OwoJZnJhYyA9IGZpeHBvaW50IC0gKG1hbnQgKiA0MDk2KTsKCglpZiAoZnJhYyAmIDB4MDcpIHsK
+CQlmcmFjICY9IH4weDA3OwoKCQlpZiAoc2l6ZV9vdXQgPiBzaXplX2luKQoJCQlmcmFjIC09IDg7
+IC8qIHJvdW5kIGRvd24gaWYgc2NhbGluZyB1cCAqLwoJCWVsc2UKCQkJZnJhYyArPSA4OyAvKiBy
+b3VuZCB1cCBpZiBzY2FsaW5nIGRvd24gKi8KCX0KCgkvKiBzZXQgc2NhbGUgKi8KCQoJdmFsdWUg
+PSByZWFkX3JlZyh1bXAsIFZSRkNSKTsKCQoJaWYgKHZlcnRpY2FsKSB7CgkJdmFsdWUgJj0gfjB4
+ZmZmZjAwMDA7CiAgCQl2YWx1ZSB8PSAoKG1hbnQgPDwgMTIpIHwgZnJhYykgPDwgMTY7Cgl9Cgll
+bHNlIHsKCQl2YWx1ZSAmPSB+MHhmZmZmOwogIAkJdmFsdWUgfD0gKG1hbnQgPDwgMTIpIHwgZnJh
+YzsKCX0KCQoJd3JpdGVfcmVnKHVtcCwgdmFsdWUsIFZSRkNSKTsKCgkvKiBzZXQgY2xpcCAqLwoK
+CXZhbHVlID0gcmVhZF9yZWcodW1wLCBWUkZTUik7CgoJaWYgKHZlcnRpY2FsKSB7CgkJdmFsdWUg
+Jj0gfjB4ZmZmZjAwMDA7CiAgCQl2YWx1ZSB8PSBzaXplX291dCA8PCAxNjsKCX0KCWVsc2UgewoJ
+CXZhbHVlICY9IH4weGZmZmY7CiAgCQl2YWx1ZSB8PSBzaXplX291dDsKCX0KCQoJd3JpdGVfcmVn
+KHVtcCwgdmFsdWUsIFZSRlNSKTsKfQoKc3RhdGljIGludCBmb28odm9pZCkKewoJc3RydWN0IGZi
+X2luZm8gZmJpOwoJc3RydWN0IHVpb19kZXZpY2UgdWlvX2RldjsKCXN0cnVjdCB1aW9fbWFwIHVp
+b19tbWlvLCB1aW9fbWVtOwoJdW5zaWduZWQgbG9uZyBhZGRyOwoJaW50IHNyY193LCBzcmNfaCwg
+c3JjX2JwcDsKCWludCBkc3RfdywgZHN0X2g7CglpbnQgcmV0OwoKCXJldCA9IGdldF9mYl9pbmZv
+KCIvZGV2L2ZiMCIsICZmYmkpOwoJaWYgKHJldCA8IDApCgkJcmV0dXJuIHJldDsKCglwcmludGYo
+InVzaW5nICVsdXglbHUgJWxkIGJwcCBmcmFtZWJ1ZmZlciBhdCAweCUwOGx4ICgweCUwOGx4KS5c
+biIsCgkgICAgICAgZmJpLndpZHRoLCBmYmkuaGVpZ2h0LCBmYmkuYnBwLCBmYmkuYWRkcmVzcywg
+ZmJpLnNpemUpOwoKCXJldCA9IGxvY2F0ZV91aW9fZGV2aWNlKCJWRVUiLCAmdWlvX2Rldik7Cglp
+ZiAocmV0IDwgMCkKCQlyZXR1cm4gcmV0OwoJCglwcmludGYoImZvdW5kIG1hdGNoaW5nIFVJTyBk
+ZXZpY2UgYXQgJXNcbiIsIHVpb19kZXYucGF0aCk7CgoJcmV0ID0gc2V0dXBfdWlvX21hcCgmdWlv
+X2RldiwgMCwgJnVpb19tbWlvKTsKCWlmIChyZXQgPCAwKQoJCXJldHVybiByZXQ7CgoJcmV0ID0g
+c2V0dXBfdWlvX21hcCgmdWlvX2RldiwgMSwgJnVpb19tZW0pOwoJaWYgKHJldCA8IDApCgkJcmV0
+dXJuIHJldDsKCglwcmludGYoIlZTVEFSID0gMHglbHhcbiIsIHJlYWRfcmVnKCZ1aW9fbW1pbywg
+VlNUQVIpKTsKCXByaW50ZigiVkVWVFIgPSAweCVseFxuIiwgcmVhZF9yZWcoJnVpb19tbWlvLCBW
+RVZUUikpOwoKCS8qIHJlc2V0IFZFVSAqLwoKCXByaW50ZigiVkJTUlIgPSAweCVseFxuIiwgcmVh
+ZF9yZWcoJnVpb19tbWlvLCBWQlNSUikpOwoJd3JpdGVfcmVnKCZ1aW9fbW1pbywgMHgxMDAsIFZC
+U1JSKTsKCXByaW50ZigiVkJTUlIoMikgPSAweCVseFxuIiwgcmVhZF9yZWcoJnVpb19tbWlvLCBW
+QlNSUikpOwoKCS8qIGRlc3RpbmF0aW9uOiBnZXQgZnJvbSBmYiAqLwoKCWRzdF93ID0gZmJpLndp
+ZHRoOwoJZHN0X2ggPSBmYmkuaGVpZ2h0OwoKCS8qIHNvdXJjZSBiaXRtYXAgKi8KCglzcmNfdyA9
+IDMyOwoJc3JjX2ggPSAzMjsKCXNyY19icHAgPSAxNjsKCiBuZXdfY29sb3I6CgoJewoJICBzdHJ1
+Y3QgdGltZXZhbCB0djsKCSAgaW50IGs7CgkgIHVuc2lnbmVkIGNoYXIgKmJ1ZiA9IHVpb19tZW0u
+aW9tZW07CgoJICBnZXR0aW1lb2ZkYXkoJnR2LCBOVUxMKTsKCgkgIGZvciAoayA9IDA7IGsgPCAo
+c3JjX3cgKiBzcmNfaCAqIChzcmNfYnBwIC8gOCkpOyBrKyspCgkJYnVmW2tdID0gayBeICh0di50
+dl9zZWMgKyB0di50dl91c2VjKTsKCX0KCglhZGRyID0gZmJpLmFkZHJlc3M7CglhZGRyICs9IChm
+YmkuYnBwIC8gOCkgKiAoKGZiaS53aWR0aCAtIGRzdF93KSAvIDIpOwoJYWRkciArPSBmYmkubGlu
+ZV9sZW5ndGggKiAoKGZiaS5oZWlnaHQgLSBkc3RfaCkgLyAyKTsKCiBhZ2FpbjoKCXdyaXRlX3Jl
+ZygmdWlvX21taW8sIHNyY193ICogKHNyY19icHAgLyA4KSwgVkVTV1IpOwoJd3JpdGVfcmVnKCZ1
+aW9fbW1pbywgc3JjX3cgfCAoc3JjX2ggPDwgMTYpLCBWRVNTUik7Cgl3cml0ZV9yZWcoJnVpb19t
+bWlvLCB1aW9fbWVtLmFkZHJlc3MsIFZTQVlSKTsKCXdyaXRlX3JlZygmdWlvX21taW8sIDAsIFZT
+QUNSKTsgLyogdW51c2VkIGluIGNhc2Ugb2YgUkdCICovCgl3cml0ZV9yZWcoJnVpb19tbWlvLCAw
+LCBWQlNTUik7IC8qIG5vdCB1c2luZyBidW5kbGUgbW9kZSAqLwoKCXdyaXRlX3JlZygmdWlvX21t
+aW8sIGZiaS5saW5lX2xlbmd0aCwgVkVEV1IpOwoJd3JpdGVfcmVnKCZ1aW9fbW1pbywgYWRkciwg
+VkRBWVIpOwoJd3JpdGVfcmVnKCZ1aW9fbW1pbywgMCwgVkRBQ1IpOyAvKiB1bnVzZWQgaW4gY2Fz
+ZSBvZiBSR0IgKi8KCgl3cml0ZV9yZWcoJnVpb19tbWlvLCAoNiA8PCAxNikgfCAoMyA8PCA4KSB8
+IDEsIFZUUkNSKTsKCglzZXRfc2NhbGUoJnVpb19tbWlvLCAwLCBzcmNfdywgZHN0X3cpOwoJc2V0
+X3NjYWxlKCZ1aW9fbW1pbywgMSwgc3JjX2gsIGRzdF9oKTsKCgl3cml0ZV9yZWcoJnVpb19tbWlv
+LCAxLCBWRUlFUik7IC8qIGVuYWJsZSBpbnRlcnJ1cHQgKi8KCXdyaXRlX3JlZygmdWlvX21taW8s
+IDEsIFZFU1RSKTsKCgkvKiBXYWl0IGZvciBhbiBpbnRlcnJ1cHQgKi8KCXsKCQl1bnNpZ25lZCBs
+b25nIG5fcGVuZGluZzsKCQlyZWFkKHVpb19kZXYuZmQsICZuX3BlbmRpbmcsIHNpemVvZih1X2xv
+bmcpKTsKCX0KCgl3cml0ZV9yZWcoJnVpb19tbWlvLCAweDEwMCwgVkVWVFIpOyAvKiBhY2sgaW50
+LCB3cml0ZSAwIHRvIGJpdCAwICovCgoJZ290byBhZ2FpbjsKCWdvdG8gbmV3X2NvbG9yOwp9IAoK
+aW50IG1haW4oaW50IGFyZ2MsIGNoYXIgKiogYXJndikKewoJZm9vKCk7CgoJcmV0dXJuIDA7Cn0K
 
-<wonders why -mm still has seven down_trlyocks>
-
-<oh>
-
-./kernel/semaphore.c
-./kernel/mutex.c
-./include/linux/semaphore.h
-
-Anyway, yes, I agree that the whole effort is a bit dubious and that
-the time could be better directed to semaphore eliminations.
+------=_Part_3900_14000173.1211358153128--
