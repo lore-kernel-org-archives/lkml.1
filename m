@@ -1,73 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936570AbYEURzU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936742AbYEURzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936570AbYEURzU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 13:55:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934846AbYEURzH
+	id S936742AbYEURzn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 13:55:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936616AbYEURzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 13:55:07 -0400
-Received: from mu-out-0910.google.com ([209.85.134.189]:5648 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933225AbYEURzF (ORCPT
+	Wed, 21 May 2008 13:55:24 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:48487 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936591AbYEURzV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 13:55:05 -0400
+	Wed, 21 May 2008 13:55:21 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:from;
-        b=V7umG3dI+Ivio94skNmCvzEXALXVcqg5bhksW/VgljxYLGtblfi0yWISoRDPmx+URKfwcfiVSwFJE/NSt528Y7CqA+srD9UPnzqygwsjvZLOUEtx2DV85tNgPHe1YSBnQ9tyLpO+0Pr1ms+HrOUWNmaoMA57Rchqh74URyqeN/Q=
-Message-ID: <483461DA.3060304@gmail.com>
-Date: Wed, 21 May 2008 19:54:34 +0200
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=IZu4p+qgZ1w0WR29uKe4YE1vTvGjjZKrMDwXNGjUc0P9sRDKoXljZK7oS8lDU6+dR4Uf3r/tTobTQ/dnkTJEWnbPNAK0gxVgXLkb/Xoe3cXOo3i3PqtHrihZ6znSJbonHykcvEMSIOyYD2OSbOjIWh0myTw0En3cTqG9sTVuxGM=
+Date: Wed, 21 May 2008 13:55:13 -0400
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Bruno Pr??mont <bonbons@linux-vserver.org>
+Cc: Linux Input <linux-input@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "R. J. Wysocki" <Rafal.Wysocki@fuw.edu.pl>
+Subject: Re: Input+S3: extra keycodes forgotten after suspend
+Message-ID: <20080521135345.ZZRA012@mailhub.coreip.homeip.net>
+References: <200805162225.44284.bonbons@linux-vserver.org> <20080516163318.ZZRA012@mailhub.coreip.homeip.net> <200805162300.06027.bonbons@linux-vserver.org> <20080519114827.ZZRA012@mailhub.coreip.homeip.net> <20080519184501.38647a94@neptune.home>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Alan Cox <alan@redhat.com>, Eric Paris <eparis@redhat.com>,
-       linux-kernel@vger.kernel.org, aviro@redhat.com, drepper@redhat.com,
-       sds@tycho.nsa.gov, jmorris@namei.org
-Subject: Re: [RFC] correct flags to f_mode conversion in __dentry_open
-References: <1205346327.5297.232.camel@localhost.localdomain> <20080315215952.GB18676@devserv.devel.redhat.com> <20080317104537.GA32546@infradead.org>
-In-Reply-To: <20080317104537.GA32546@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080519184501.38647a94@neptune.home>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Sat, Mar 15, 2008 at 05:59:52PM -0400, Alan Cox wrote:
->>> does 11 really mean and should it really always be mapped to (FMODE_READ
->>> | FMODE_WRITE) or should it continue to get mapped to 'no permission?'
->> We've always mapped 3 to "no permission" to read or write. It's a linuxism
+Hi Bruno,
+
+On Mon, May 19, 2008 at 06:45:01PM +0200, Bruno Pr??mont wrote:
+> Hi Dmitry,
 > 
-> I've tripped over this recently aswell.  It would for sure be useful
-> to add a sumbolic O_FOO constant for this magic value '3' and document
-> it in the manpage.
+> Please find attached dmesg output.
+> 
+> The suspend process looked somewhat like the following:
+> - quick test of 
+>     echo 1 > /sys/modules/i8042/parameters/debug
+>   and disabled it again
+>     echo 0 > /sys/modules/i8042/parameters/debug
+> - exit X and rmmod usb-storage and a few other modules
+>   (nfs, xfs and the like).
+> - checked the extra keys (showkey) and enabled debug again
+> - echo mem > /sys/power/state
+> 
+> Wait half a minute with laptop in S3
+> 
+> - hit enter to resume
+> - wait a bit, as it takes too long help out with short
+>   presses on power button (somehow it helps the HDD/CDROM
+>   to resume), also pressed caps-lock when graphics were
+>   resumed and cursor blinking (very slowly)
+> - once userspace was awake again check extra keys with
+>   showkeys
+> - disabled input debug
+> 
+> I hope this is detailed enough.
+> 
+> List of patches applied to linux-2.6.25.4:
+>   http://lkml.org/lkml/2008/5/16/430
+>   http://lkml.org/lkml/2008/5/16/429
+>   squashfs
+> 
 
-Late follow-up to this thread
-(http://thread.gmane.org/gmane.linux.kernel/653123):
-I propose to add the following text to the open(2) man page.
-
-       Unlike the other values that can be specified  in  flags,
-       the access mode values O_RDONLY, O_WRONLY, and O_RDWR, do
-       not specify individual bits.  Rather, they define the low
-       order  two bits of flags, and are defined respectively as
-       0, 1, and 2.  In other words, the combination O_RDONLY  |
-       O_WRONLY  is a logical error, and certainly does not have
-       the same meaning as O_RDWR.  Linux reserves the  special,
-       non-standard  access mode 3 (binary 11) in flags to mean:
-       check for read and  write  permission  on  the  file  and
-       return  a  descriptor  that  can't be used for reading or
-       writing.  This non-standard access mode is used  by  some
-       Linux  drivers  to return a descriptor that is only to be
-       used for device-specific ioctl(2) operations.
-
-Seem okay?
-
-Cheers,
-
-Michael
+Question - does the problem happen if you dont have dritek extension
+enabled (i.e. on unpatched kernel)?
 
 -- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
-
+Dmitry
