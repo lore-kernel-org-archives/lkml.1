@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936411AbYEUSuj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935836AbYEUSv4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936411AbYEUSuj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 14:50:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933786AbYEUSuT
+	id S935836AbYEUSv4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 14:51:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756394AbYEUSvr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 14:50:19 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53312 "EHLO
+	Wed, 21 May 2008 14:51:47 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59076 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933095AbYEUSuQ (ORCPT
+	by vger.kernel.org with ESMTP id S1755313AbYEUSvq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 14:50:16 -0400
-Date: Wed, 21 May 2008 11:49:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Pavel Machek <pavel@suse.cz>, Chris Mason <chris.mason@oracle.com>,
-       Eric Sandeen <sandeen@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
-Message-Id: <20080521114917.60bf42c7.akpm@linux-foundation.org>
-In-Reply-To: <20080521182949.GL8581@mit.edu>
-References: <482DDA56.6000301@redhat.com>
-	<20080518211140.b29bee30.akpm@linux-foundation.org>
-	<200805191316.27551.chris.mason@oracle.com>
-	<200805191439.36577.chris.mason@oracle.com>
-	<20080521112224.GD5028@ucw.cz>
-	<20080521110324.668048e0.akpm@linux-foundation.org>
-	<20080521182949.GL8581@mit.edu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 21 May 2008 14:51:46 -0400
+Date: Wed, 21 May 2008 11:49:57 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Roland McGrath <roland@redhat.com>
+cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
+       Austin Clements <amdragon+kernelbugzilla@mit.edu>,
+       Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] signals: sigqueue_free: don't free sigqueue if it
+ is queued
+In-Reply-To: <20080521184245.5BABF26FA24@magilla.localdomain>
+Message-ID: <alpine.LFD.1.10.0805211146350.3081@woody.linux-foundation.org>
+References: <20080517151420.GA9496@tv-sign.ru> <20080521022046.1501F26FA1C@magilla.localdomain> <20080521115414.GA147@tv-sign.ru> <20080521184245.5BABF26FA24@magilla.localdomain>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 May 2008 14:29:49 -0400 Theodore Tso <tytso@mit.edu> wrote:
 
-> On Wed, May 21, 2008 at 11:03:24AM -0700, Andrew Morton wrote:
-> > 
-> > afaik there is no need to enable this feature if the machine (actually
-> > the disks) are on a UPS, yes?
+
+On Wed, 21 May 2008, Roland McGrath wrote:
 > 
-> Yes, as long as you're confident that there won't be a kernel
-> bug/regression causing a lockup while the server is under severe
-> memory pressure while doing lots of fsync's, file creations, renames,
-> etc.
+> Just properly removing the sigqueue entry and fixing the pending set is
+> looking pretty good.  Why was it we didn't do that?
 
-That won't cause corruption, will it?  The problem is purely one of
-"data which the disk acked didn't make it to platter"?
+I thought we didn't even know which queue it was pending on if it was 
+already on a thread-local queue. So we could remove the entry, but I 
+always objected to the games with the pending bit.
 
->  And as long as your 100% confident that UPS's will never fail,
-> janitors will never accidentally hit the Emergency Power Office
-> switch, and so on.
+Just removing the entry I'm ok with, it was the (pointless and misleading) 
+use of recalc_sigpending() that started the whole discussion. The fact 
+that we then also have that "which signal is pending" bit in front of the 
+queue was something that came up later.
 
-Well.  The product of two very small numbers is...
+		Linus
