@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936595AbYEUSQw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936595AbYEUSSz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936595AbYEUSQw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 14:16:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935209AbYEUSQj
+	id S936595AbYEUSSz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 14:18:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934082AbYEUSSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 14:16:39 -0400
-Received: from pat.uio.no ([129.240.10.15]:55359 "EHLO pat.uio.no"
+	Wed, 21 May 2008 14:18:45 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:38951 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935045AbYEUSQi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 14:16:38 -0400
-Subject: Re: [patch 11/14] vfs: move executable checking into ->permission()
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-fsdevel@vger.kernel.org, hch@infradead.org, viro@ZenIV.linux.org.uk,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080521171557.399850407@szeredi.hu>
-References: <20080521171458.077908538@szeredi.hu>
-	 <20080521171557.399850407@szeredi.hu>
-Content-Type: text/plain
-Date: Wed, 21 May 2008 14:16:33 -0400
-Message-Id: <1211393793.7486.15.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	id S1755087AbYEUSSn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 14:18:43 -0400
+Message-ID: <483467B4.1060601@us.ibm.com>
+Date: Wed, 21 May 2008 13:19:32 -0500
+From: "Steve French (smfltc)" <smfltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: Alan Stern <stern@rowland.harvard.edu>,
+       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Adrian Bunk <bunk@kernel.org>,
+       USB Storage list <usb-storage@lists.one-eyed-alien.net>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@sunset.davemloft.net>,
+       systemtap@sources.redhat.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-cifs-client@lists.samba.org, linux-nfs@vger.kernel.org
+Subject: Re: Re: [PATCH] usb-storage: don't call utsname()
+References: <20080521123700.GA8770@infradead.org>	<Pine.LNX.4.44L0.0805211349480.3409-100000@iolanthe.rowland.org> <20080521180957.GA17598@kroah.com>
+In-Reply-To: <20080521180957.GA17598@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5)
-X-UiO-Scanned: 49438D10D1FED05E35F2DA7076253CBEBA2A30AB
-X-UiO-SR-test: B1DA4A30A031898DC7FBBA984E6FBC92E07CBA39
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 223 total 8520121 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-05-21 at 19:15 +0200, Miklos Szeredi wrote:
-
-> +/**
-> + * exec_permission - check for general execute permission on file
-> + * @inode:	inode to check access rights for
-> + * @mask:	right to check for
-> + *
-> + * Exec permission on a regular file is denied if none of the execute
-> + * bits are set.
-> + *
-> + * This needs to be called by filesystems which define a
-> + * ->permission() method, and don't call generic_permission().
-> + */
-> +int exec_permission(struct inode *inode, int mask)
-> +{
-> +	if ((mask & MAY_EXEC) && S_ISREG(inode->i_mode) &&
-> +	    !(inode->i_mode & S_IXUGO))
-> +		return -EACCES;
-> +
-> +	return 0;
-> +}
-
-Hmm... What if !(mask & MAY_EXEC)? AFAICS, the above will return 0.
-A better approach would be to use something like
-
-	if (!(mask & MAY_EXEC))
-		return -EACCES;
-	if (S_ISREG(inode->i_mode) && !(inode->i_mode & S_IXUGO))
-		return -EACCES;
-	return 0;
-
-
-
+Greg KH wrote:
+> On Wed, May 21, 2008 at 01:51:17PM -0400, Alan Stern wrote:
+>   
+>> This patch (as1100) replaces the core-kernel function call to utsname()
+>> in usb-storage with the UTS_RELEASE macro.  It's used only for warning
+>> about extra unusual_devs entries.
+>>
+>> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+>>     
+>
+> Why?  With this change, if you change the version number, the file will
+> have to be rebuilt.  Without the change, the file will not need to be
+> rebuilt, right?
+>
+> I thought that was why this change was made a while ago, to prevent
+> things from having to be rebuilt that didn't need to be
+>   
+I agree - what was wrong with utsname->release ... it seems odd to 
+statically build the kernel's version
+number into a module - it should be something we should be able to query 
+(and it shouldn't change without
+reboot so accessing it is not racy).  Access to other fields in the 
+structure (nodename, domainname etc.) might
+need to be included in a macro but I didn't see one in utsname.h for this.
