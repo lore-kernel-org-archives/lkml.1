@@ -1,76 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936453AbYEURv3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936298AbYEURyF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936453AbYEURv3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 13:51:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763664AbYEURvT
+	id S936298AbYEURyF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 13:54:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763664AbYEURxw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 13:51:19 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:60466 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755855AbYEURvS (ORCPT
+	Wed, 21 May 2008 13:53:52 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:33156 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934727AbYEURxv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 13:51:18 -0400
-Date: Wed, 21 May 2008 13:51:17 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Greg KH <greg@kroah.com>, Matthew Dharm <mdharm-usb@one-eyed-alien.net>
-cc: Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Adrian Bunk <bunk@kernel.org>,
-       USB Storage list <usb-storage@lists.one-eyed-alien.net>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@sunset.davemloft.net>,
-       <systemtap@sources.redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       <linux-cifs-client@lists.samba.org>, <linux-nfs@vger.kernel.org>
-Subject: [PATCH] usb-storage: don't call utsname()
-In-Reply-To: <20080521123700.GA8770@infradead.org>
-Message-ID: <Pine.LNX.4.44L0.0805211349480.3409-100000@iolanthe.rowland.org>
+	Wed, 21 May 2008 13:53:51 -0400
+Date: Wed, 21 May 2008 18:52:27 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: iput() in reclaim context
+In-Reply-To: <20080520232444.8bff5ccf.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0805211840200.13797@blonde.site>
+References: <20080515231045.GY155679365@sgi.com>
+ <Pine.LNX.4.64.0805161000390.29603@schroedinger.engr.sgi.com>
+ <20080519054554.GY103491721@sgi.com> <Pine.LNX.4.64.0805190942530.18431@schroedinger.engr.sgi.com>
+ <20080520002503.GC173056135@sgi.com> <20080520065622.GA13968@2ka.mipt.ru>
+ <20080520214617.GU103491721@sgi.com> <20080520222505.GA23988@2ka.mipt.ru>
+ <20080520231942.GX103491721@sgi.com> <20080520162816.e5dfeffa.akpm@linux-foundation.org>
+ <20080521061531.GA27362@2ka.mipt.ru> <20080520232444.8bff5ccf.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch (as1100) replaces the core-kernel function call to utsname()
-in usb-storage with the UTS_RELEASE macro.  It's used only for warning
-about extra unusual_devs entries.
+On Tue, 20 May 2008, Andrew Morton wrote:
+> On Wed, 21 May 2008 10:15:32 +0400 Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+> > On Tue, May 20, 2008 at 04:28:16PM -0700, Andrew Morton (akpm@linux-foundation.org) wrote:
+> > > It's more than efficiency.  There are lots and lots of things we cannot
+> > > do in direct-reclaim context.
+> > > 
+> > > ...
+> > > 
+> > > c) Cannot run iput().  Or at least, we couldn't five or six years
+> > >    ago.  afaik nobody has investigated whether the situation is now
+> > >    better or worse.
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+I happened to notice your remark in the buffer heads defrag thread.
+Do you remember what that limitation was about?
 
----
+Because just a few months ago I discovered a shmem race which I fixed
+by doing igrab+iput in shmem_writepage, in the reclaim context.  Feeling
+guilty now: I'd better investigate, but would welcome a starting pointer.
 
-Index: usb-2.6/drivers/usb/storage/usb.c
-===================================================================
---- usb-2.6.orig/drivers/usb/storage/usb.c
-+++ usb-2.6/drivers/usb/storage/usb.c
-@@ -53,7 +53,7 @@
- #include <linux/slab.h>
- #include <linux/kthread.h>
- #include <linux/mutex.h>
--#include <linux/utsname.h>
-+#include <linux/utsrelease.h>
- 
- #include <scsi/scsi.h>
- #include <scsi/scsi_cmnd.h>
-@@ -531,8 +531,8 @@ static int get_device_info(struct us_dat
- 		if (msg >= 0 && !(us->fflags & US_FL_NEED_OVERRIDE))
- 			printk(KERN_NOTICE USB_STORAGE "This device "
- 				"(%04x,%04x,%04x S %02x P %02x)"
--				" has %s in unusual_devs.h (kernel"
--				" %s)\n"
-+				" has %s in unusual_devs.h (kernel "
-+				UTS_RELEASE ")\n"
- 				"   Please send a copy of this message to "
- 				"<linux-usb@vger.kernel.org> and "
- 				"<usb-storage@lists.one-eyed-alien.net>\n",
-@@ -541,8 +541,7 @@ static int get_device_info(struct us_dat
- 				le16_to_cpu(ddesc->bcdDevice),
- 				idesc->bInterfaceSubClass,
- 				idesc->bInterfaceProtocol,
--				msgs[msg],
--				utsname()->release);
-+				msgs[msg]);
- 	}
- 
- 	return 0;
+(If I'm lucky, it'll be that the generic code in vmscan.c cannot
+use iput, but particular filesystems might themselves be safe to.)
 
+Thanks,
+Hugh
