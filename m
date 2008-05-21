@@ -1,249 +1,302 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936522AbYEURWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936583AbYEURXB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936522AbYEURWi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 13:22:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935980AbYEURQ0
+	id S936583AbYEURXB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 13:23:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936001AbYEURQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 13:16:26 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:33083 "EHLO
+	Wed, 21 May 2008 13:16:31 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:33088 "EHLO
 	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935630AbYEURQJ (ORCPT
+	with ESMTP id S935731AbYEURQP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 13:16:09 -0400
-Message-Id: <20080521171558.595584843@szeredi.hu>
+	Wed, 21 May 2008 13:16:15 -0400
+Message-Id: <20080521171600.082178318@szeredi.hu>
 References: <20080521171458.077908538@szeredi.hu>
 User-Agent: quilt/0.45-1
-Date: Wed, 21 May 2008 19:15:10 +0200
+Date: Wed, 21 May 2008 19:15:11 +0200
 From: Miklos Szeredi <miklos@szeredi.hu>
 To: linux-fsdevel@vger.kernel.org
 Cc: hch@infradead.org, viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: [patch 12/14] vfs: create path_permission()
-Content-Disposition: inline; filename=path_permission.patch
+Subject: [patch 13/14] vfs: dont use dentry_permission()
+Content-Disposition: inline; filename=path_permission_dentry.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <mszeredi@suse.cz>
 
-Push nameidata further up the call chain, completely removing it from
-the permission API.
+Move most calls of dentry_permission() to path_permission().  The
+remaining few uses are all in namei.c, so dentry_permission() can be
+made static, further simplifying the API.
 
-Switch calls of vfs_permission() to path_permission().  Instead of
-nameidata, pass the path and nameidata->flags to this function.
+This will have the side effect, that MNT_NOEXEC checking on the mount
+will be performed for these callers as well.  But this should not
+cause any problems.
 
-This is a trivially equivalent transformation.
+At this point file_permission() is just a helper for
+path_permission(), so remove comment about not being preferred.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 ---
- fs/exec.c          |    4 ++--
- fs/inotify_user.c  |    2 +-
- fs/namei.c         |   23 ++++++++++++-----------
- fs/open.c          |    8 ++++----
- fs/utimes.c        |    2 +-
- include/linux/fs.h |    2 +-
- net/unix/af_unix.c |    2 +-
- 7 files changed, 22 insertions(+), 21 deletions(-)
+ fs/ecryptfs/inode.c |    7 +++++--
+ fs/namei.c          |   12 +++---------
+ fs/nfsd/nfsfh.c     |   11 ++++++-----
+ fs/nfsd/vfs.c       |    8 ++++++--
+ fs/xattr.c          |   22 ++++++++++++----------
+ include/linux/fs.h  |    1 -
+ ipc/mqueue.c        |   15 +++++++++------
+ 7 files changed, 41 insertions(+), 35 deletions(-)
 
-Index: linux-2.6/fs/exec.c
+Index: linux-2.6/fs/ecryptfs/inode.c
 ===================================================================
---- linux-2.6.orig/fs/exec.c	2008-05-21 18:14:45.000000000 +0200
-+++ linux-2.6/fs/exec.c	2008-05-21 18:15:02.000000000 +0200
-@@ -116,7 +116,7 @@ asmlinkage long sys_uselib(const char __
- 	if (!S_ISREG(nd.path.dentry->d_inode->i_mode))
- 		goto exit;
+--- linux-2.6.orig/fs/ecryptfs/inode.c	2008-05-21 18:16:31.000000000 +0200
++++ linux-2.6/fs/ecryptfs/inode.c	2008-05-21 18:17:08.000000000 +0200
+@@ -810,9 +810,12 @@ out:
+ static int
+ ecryptfs_permission(struct dentry *dentry, int mask, int flags)
+ {
+-	struct dentry *lower_dentry = ecryptfs_dentry_to_lower(dentry);
++	struct path lower_path;
++
++	lower_path.mnt = ecryptfs_dentry_to_lower_mnt(dentry);
++	lower_path.dentry = ecryptfs_dentry_to_lower(dentry);
  
--	error = vfs_permission(&nd, MAY_READ | MAY_EXEC);
-+	error = path_permission(&nd.path, MAY_READ | MAY_EXEC, nd.flags);
- 	if (error)
- 		goto exit;
+-	return dentry_permission(lower_dentry, mask, flags);
++	return path_permission(&lower_path, mask, flags);
+ }
  
-@@ -664,7 +664,7 @@ struct file *open_exec(const char *name)
- 		struct inode *inode = nd.path.dentry->d_inode;
- 		file = ERR_PTR(-EACCES);
- 		if (S_ISREG(inode->i_mode)) {
--			int err = vfs_permission(&nd, MAY_EXEC);
-+			int err = path_permission(&nd.path, MAY_EXEC, nd.flags);
- 			file = ERR_PTR(err);
- 			if (!err) {
- 				file = nameidata_to_filp(&nd,
-Index: linux-2.6/fs/inotify_user.c
-===================================================================
---- linux-2.6.orig/fs/inotify_user.c	2008-05-21 18:14:45.000000000 +0200
-+++ linux-2.6/fs/inotify_user.c	2008-05-21 18:15:02.000000000 +0200
-@@ -365,7 +365,7 @@ static int find_inode(const char __user 
- 	if (error)
- 		return error;
- 	/* you can only watch an inode if you have read permissions on it */
--	error = vfs_permission(nd, MAY_READ);
-+	error = path_permission(&nd->path, MAY_READ, nd->flags);
- 	if (error)
- 		path_put(&nd->path);
- 	return error;
+ /**
 Index: linux-2.6/fs/namei.c
 ===================================================================
---- linux-2.6.orig/fs/namei.c	2008-05-21 18:14:45.000000000 +0200
-+++ linux-2.6/fs/namei.c	2008-05-21 18:15:02.000000000 +0200
-@@ -286,22 +286,23 @@ int dentry_permission(struct dentry *den
+--- linux-2.6.orig/fs/namei.c	2008-05-21 18:16:31.000000000 +0200
++++ linux-2.6/fs/namei.c	2008-05-21 18:17:08.000000000 +0200
+@@ -246,7 +246,7 @@ int exec_permission(struct inode *inode,
+ 	return 0;
  }
  
- /**
-- * vfs_permission  -  check for access rights to a given path
-- * @nd:		lookup result that describes the path
-+ * path_permission  -  check for access rights to a given path
-+ * @path:	lookup result that describes the path
-  * @mask:	right to check for (%MAY_READ, %MAY_WRITE, %MAY_EXEC)
-+ * @flags:	lookup flags
-  *
-  * Used to check for read/write/execute permissions on a path.
-  * We use "fsuid" for this, letting us set arbitrary permissions
-  * for filesystem access without changing the "normal" uids which
-  * are used for other things.
-  */
--int vfs_permission(struct nameidata *nd, int mask)
-+int path_permission(struct path *path, int mask, int flags)
+-int dentry_permission(struct dentry *dentry, int mask, int flags)
++static int dentry_permission(struct dentry *dentry, int mask, int flags)
  {
--	struct dentry *dentry = nd->path.dentry;
-+	struct dentry *dentry = path->dentry;
  	struct inode *inode = dentry->d_inode;
- 
- 	if ((mask & MAY_EXEC) && S_ISREG(inode->i_mode)) {
--		struct vfsmount *mnt = nd->path.mnt;
-+		struct vfsmount *mnt = path->mnt;
- 
- 		/*
- 		 * MAY_EXEC on regular files is denied if the fs is mounted
-@@ -311,7 +312,7 @@ int vfs_permission(struct nameidata *nd,
- 			return -EACCES;
- 	}
- 
--	return dentry_permission(dentry, mask, nd->flags);
-+	return dentry_permission(dentry, mask, flags);
- }
- 
- /**
-@@ -324,7 +325,7 @@ int vfs_permission(struct nameidata *nd,
+ 	int retval, submask;
+@@ -320,16 +320,11 @@ int path_permission(struct path *path, i
+  * @file:	file to check access rights for
+  * @mask:	right to check for (%MAY_READ, %MAY_WRITE, %MAY_EXEC)
   *
-  * Note:
-  *	Do not use this function in new code.  All access checks should
-- *	be done using vfs_permission().
-+ *	be done using path_permission().
+- * Used to check for read/write/execute permissions on an already opened
+- * file.
+- *
+- * Note:
+- *	Do not use this function in new code.  All access checks should
+- *	be done using path_permission().
++ * This is a helper for path_permission().
   */
  int file_permission(struct file *file, int mask)
  {
-@@ -903,7 +904,7 @@ static int __link_path_walk(const char *
- 		nd->flags |= LOOKUP_CONTINUE;
- 		err = exec_permission_lite(inode, nd);
- 		if (err == -EAGAIN)
--			err = vfs_permission(nd, MAY_EXEC);
-+			err = path_permission(&nd->path, MAY_EXEC, nd->flags);
-  		if (err)
- 			break;
+-	return dentry_permission(file->f_path.dentry, mask, 0);
++	return path_permission(&file->f_path, mask, 0);
+ }
  
-@@ -1351,7 +1352,7 @@ static struct dentry *lookup_hash(struct
- {
- 	int err;
- 
--	err = vfs_permission(nd, MAY_EXEC);
-+	err = path_permission(&nd->path, MAY_EXEC, nd->flags);
- 	if (err)
- 		return ERR_PTR(err);
- 	return __lookup_hash(&nd->last, nd->path.dentry, nd);
-@@ -1658,7 +1659,7 @@ int may_open(struct nameidata *nd, int a
- 		flag &= ~O_TRUNC;
- 	}
- 
--	error = vfs_permission(nd, acc_mode);
-+	error = path_permission(&nd->path, acc_mode, nd->flags);
- 	if (error)
- 		return error;
- 	/*
-@@ -3061,7 +3062,7 @@ EXPORT_SYMBOL(page_symlink_inode_operati
+ /*
+@@ -3061,7 +3056,6 @@ EXPORT_SYMBOL(page_symlink);
+ EXPORT_SYMBOL(page_symlink_inode_operations);
  EXPORT_SYMBOL(path_lookup);
  EXPORT_SYMBOL(vfs_path_lookup);
- EXPORT_SYMBOL(dentry_permission);
--EXPORT_SYMBOL(vfs_permission);
-+EXPORT_SYMBOL(path_permission);
+-EXPORT_SYMBOL(dentry_permission);
+ EXPORT_SYMBOL(path_permission);
  EXPORT_SYMBOL(file_permission);
  EXPORT_SYMBOL(unlock_rename);
- EXPORT_SYMBOL(vfs_follow_link);
-Index: linux-2.6/fs/open.c
+Index: linux-2.6/fs/nfsd/nfsfh.c
 ===================================================================
---- linux-2.6.orig/fs/open.c	2008-05-21 18:14:45.000000000 +0200
-+++ linux-2.6/fs/open.c	2008-05-21 18:15:02.000000000 +0200
-@@ -267,7 +267,7 @@ static long do_sys_truncate(const char _
- 	if (error)
- 		goto dput_and_out;
+--- linux-2.6.orig/fs/nfsd/nfsfh.c	2008-05-21 18:16:31.000000000 +0200
++++ linux-2.6/fs/nfsd/nfsfh.c	2008-05-21 18:17:08.000000000 +0200
+@@ -41,7 +41,7 @@ static int nfsd_acceptable(void *expv, s
+ 	struct svc_export *exp = expv;
+ 	int rv;
+ 	struct dentry *tdentry;
+-	struct dentry *parent;
++	struct path parent = { .mnt = exp->ex_path.mnt };
  
--	error = vfs_permission(&nd, MAY_WRITE);
-+	error = path_permission(&nd.path, MAY_WRITE, nd.flags);
- 	if (error)
- 		goto mnt_drop_write_and_out;
- 
-@@ -471,7 +471,7 @@ asmlinkage long sys_faccessat(int dfd, c
- 	if (res)
- 		goto out;
- 
--	res = vfs_permission(&nd, mode);
-+	res = path_permission(&nd.path, mode, nd.flags);
- 	/* SuS v2 requires we report a read only fs too */
- 	if(res || !(mode & S_IWOTH) ||
- 	   special_file(nd.path.dentry->d_inode->i_mode))
-@@ -514,7 +514,7 @@ asmlinkage long sys_chdir(const char __u
- 	if (error)
- 		goto out;
- 
--	error = vfs_permission(&nd, MAY_EXEC);
-+	error = path_permission(&nd.path, MAY_EXEC, nd.flags);
- 	if (error)
- 		goto dput_and_out;
- 
-@@ -561,7 +561,7 @@ asmlinkage long sys_chroot(const char __
- 	if (error)
- 		goto out;
- 
--	error = vfs_permission(&nd, MAY_EXEC);
-+	error = path_permission(&nd.path, MAY_EXEC, nd.flags);
- 	if (error)
- 		goto dput_and_out;
- 
-Index: linux-2.6/fs/utimes.c
-===================================================================
---- linux-2.6.orig/fs/utimes.c	2008-05-21 18:14:45.000000000 +0200
-+++ linux-2.6/fs/utimes.c	2008-05-21 18:15:02.000000000 +0200
-@@ -141,7 +141,7 @@ static int do_utimes_name(int dfd, char 
- 			goto out_path_put;
- 
- 		if (!is_owner_or_cap(inode)) {
--			error = vfs_permission(&nd, MAY_WRITE);
-+			error = path_permission(&nd.path, MAY_WRITE, nd.flags);
- 			if (error)
- 				goto out_path_put;
+ 	if (exp->ex_flags & NFSEXP_NOSUBTREECHECK)
+ 		return 1;
+@@ -50,14 +50,15 @@ static int nfsd_acceptable(void *expv, s
+ 	while (tdentry != exp->ex_path.dentry && !IS_ROOT(tdentry)) {
+ 		/* make sure parents give x permission to user */
+ 		int err;
+-		parent = dget_parent(tdentry);
+-		err = dentry_permission(parent, MAY_EXEC, 0);
++
++		parent.dentry = dget_parent(tdentry);
++		err = path_permission(&parent, MAY_EXEC, 0);
+ 		if (err < 0) {
+-			dput(parent);
++			dput(parent.dentry);
+ 			break;
  		}
+ 		dput(tdentry);
+-		tdentry = parent;
++		tdentry = parent.dentry;
+ 	}
+ 	if (tdentry != exp->ex_path.dentry)
+ 		dprintk("nfsd_acceptable failed at %p %s\n", tdentry, tdentry->d_name.name);
+Index: linux-2.6/fs/nfsd/vfs.c
+===================================================================
+--- linux-2.6.orig/fs/nfsd/vfs.c	2008-05-21 18:16:31.000000000 +0200
++++ linux-2.6/fs/nfsd/vfs.c	2008-05-21 18:17:08.000000000 +0200
+@@ -1878,6 +1878,10 @@ nfsd_permission(struct svc_rqst *rqstp, 
+ {
+ 	struct inode	*inode = dentry->d_inode;
+ 	int		err;
++	struct path	path = {
++		.mnt = exp->ex_path.mnt,
++		.dentry = dentry,
++	};
+ 
+ 	if (acc == MAY_NOP)
+ 		return 0;
+@@ -1942,12 +1946,12 @@ nfsd_permission(struct svc_rqst *rqstp, 
+ 	    inode->i_uid == current->fsuid)
+ 		return 0;
+ 
+-	err = dentry_permission(dentry, acc & (MAY_READ|MAY_WRITE|MAY_EXEC), 0);
++	err = path_permission(&path, acc & (MAY_READ|MAY_WRITE|MAY_EXEC), 0);
+ 
+ 	/* Allow read access to binaries even when mode 111 */
+ 	if (err == -EACCES && S_ISREG(inode->i_mode) &&
+ 	    acc == (MAY_READ | MAY_OWNER_OVERRIDE))
+-		err = dentry_permission(dentry, MAY_EXEC, 0);
++		err = path_permission(&path, MAY_EXEC, 0);
+ 
+ 	return err? nfserrno(err) : 0;
+ }
+Index: linux-2.6/ipc/mqueue.c
+===================================================================
+--- linux-2.6.orig/ipc/mqueue.c	2008-05-21 18:16:31.000000000 +0200
++++ linux-2.6/ipc/mqueue.c	2008-05-21 18:17:08.000000000 +0200
+@@ -647,19 +647,22 @@ static struct file *do_open(struct dentr
+ static int oflag2acc[O_ACCMODE] = { MAY_READ, MAY_WRITE,
+ 					MAY_READ | MAY_WRITE };
+ 
++	struct path path = {
++		.mnt = mqueue_mnt,
++		.dentry = dentry,
++	};
++
+ 	if ((oflag & O_ACCMODE) == (O_RDWR | O_WRONLY)) {
+-		dput(dentry);
+-		mntput(mqueue_mnt);
++		path_put(&path);
+ 		return ERR_PTR(-EINVAL);
+ 	}
+ 
+-	if (dentry_permission(dentry, oflag2acc[oflag & O_ACCMODE], 0)) {
+-		dput(dentry);
+-		mntput(mqueue_mnt);
++	if (path_permission(&path, oflag2acc[oflag & O_ACCMODE], 0)) {
++		path_put(&path);
+ 		return ERR_PTR(-EACCES);
+ 	}
+ 
+-	return dentry_open(dentry, mqueue_mnt, oflag);
++	return dentry_open(path.dentry, path.mnt, oflag);
+ }
+ 
+ asmlinkage long sys_mq_open(const char __user *u_name, int oflag, mode_t mode,
+Index: linux-2.6/fs/xattr.c
+===================================================================
+--- linux-2.6.orig/fs/xattr.c	2008-05-21 18:16:31.000000000 +0200
++++ linux-2.6/fs/xattr.c	2008-05-21 18:17:08.000000000 +0200
+@@ -26,9 +26,9 @@
+  * because different namespaces have very different rules.
+  */
+ static int
+-xattr_permission(struct dentry *dentry, const char *name, int mask)
++xattr_permission(struct path *path, const char *name, int mask)
+ {
+-	struct inode *inode = dentry->d_inode;
++	struct inode *inode = path->dentry->d_inode;
+ 
+ 	/*
+ 	 * We can never set or remove an extended attribute on a read-only
+@@ -65,17 +65,18 @@ xattr_permission(struct dentry *dentry, 
+ 			return -EPERM;
+ 	}
+ 
+-	return dentry_permission(dentry, mask, 0);
++	return path_permission(path, mask, 0);
+ }
+ 
+ static int
+-vfs_setxattr(struct dentry *dentry, const char *name, const void *value,
++vfs_setxattr(struct path *path, const char *name, const void *value,
+ 		size_t size, int flags)
+ {
++	struct dentry *dentry = path->dentry;
+ 	struct inode *inode = dentry->d_inode;
+ 	int error;
+ 
+-	error = xattr_permission(dentry, name, MAY_WRITE);
++	error = xattr_permission(path, name, MAY_WRITE);
+ 	if (error)
+ 		return error;
+ 
+@@ -110,7 +111,7 @@ int path_setxattr(struct path *path, con
+ 	int error = mnt_want_write(path->mnt);
+ 
+ 	if (!error) {
+-		error = vfs_setxattr(path->dentry, name, value, size, flags);
++		error = vfs_setxattr(path, name, value, size, flags);
+ 		mnt_drop_write(path->mnt);
+ 	}
+ 
+@@ -152,7 +153,7 @@ path_getxattr(struct path *path, const c
+ 	struct inode *inode = dentry->d_inode;
+ 	int error;
+ 
+-	error = xattr_permission(dentry, name, MAY_READ);
++	error = xattr_permission(path, name, MAY_READ);
+ 	if (error)
+ 		return error;
+ 
+@@ -204,15 +205,16 @@ path_listxattr(struct path *path, char *
+ EXPORT_SYMBOL_GPL(path_listxattr);
+ 
+ static int
+-vfs_removexattr(struct dentry *dentry, const char *name)
++vfs_removexattr(struct path *path, const char *name)
+ {
++	struct dentry *dentry = path->dentry;
+ 	struct inode *inode = dentry->d_inode;
+ 	int error;
+ 
+ 	if (!inode->i_op->removexattr)
+ 		return -EOPNOTSUPP;
+ 
+-	error = xattr_permission(dentry, name, MAY_WRITE);
++	error = xattr_permission(path, name, MAY_WRITE);
+ 	if (error)
+ 		return error;
+ 
+@@ -234,7 +236,7 @@ int path_removexattr(struct path *path, 
+ 	int error = mnt_want_write(path->mnt);
+ 
+ 	if (!error) {
+-		error = vfs_removexattr(path->dentry, name);
++		error = vfs_removexattr(path, name);
+ 		mnt_drop_write(path->mnt);
+ 	}
+ 
 Index: linux-2.6/include/linux/fs.h
 ===================================================================
---- linux-2.6.orig/include/linux/fs.h	2008-05-21 18:14:45.000000000 +0200
-+++ linux-2.6/include/linux/fs.h	2008-05-21 18:15:02.000000000 +0200
-@@ -1123,7 +1123,7 @@ extern void unlock_super(struct super_bl
- /*
-  * VFS helper functions..
-  */
--extern int vfs_permission(struct nameidata *, int);
-+extern int path_permission(struct path *, int, int);
- extern int path_create(struct path *, struct dentry *, int, struct nameidata *);
- extern int path_mkdir(struct path *, struct dentry *, int);
- extern int path_mknod(struct path *, struct dentry *, int, dev_t);
-Index: linux-2.6/net/unix/af_unix.c
-===================================================================
---- linux-2.6.orig/net/unix/af_unix.c	2008-05-21 18:14:45.000000000 +0200
-+++ linux-2.6/net/unix/af_unix.c	2008-05-21 18:15:02.000000000 +0200
-@@ -713,7 +713,7 @@ static struct sock *unix_find_other(stru
- 		err = path_lookup(sunname->sun_path, LOOKUP_FOLLOW, &nd);
- 		if (err)
- 			goto fail;
--		err = vfs_permission(&nd, MAY_WRITE);
-+		err = path_permission(&nd.path, MAY_WRITE, nd.flags);
- 		if (err)
- 			goto put_fail;
- 
+--- linux-2.6.orig/include/linux/fs.h	2008-05-21 18:15:02.000000000 +0200
++++ linux-2.6/include/linux/fs.h	2008-05-21 18:17:08.000000000 +0200
+@@ -1758,7 +1758,6 @@ extern sector_t bmap(struct inode *, sec
+ #endif
+ extern int notify_change(struct dentry *, struct iattr *);
+ extern int path_setattr(struct path *, struct iattr *);
+-extern int dentry_permission(struct dentry *, int, int);
+ extern int generic_permission(struct inode *, int,
+ 		int (*check_acl)(struct inode *, int));
+ extern int exec_permission(struct inode *, int);
 
 --
