@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936745AbYEUTgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936601AbYEUTia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936745AbYEUTgO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 15:36:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936968AbYEUTfn
+	id S936601AbYEUTia (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 15:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759308AbYEUTiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 15:35:43 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:55286 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936957AbYEUTfm (ORCPT
+	Wed, 21 May 2008 15:38:19 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:50178 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759063AbYEUTiS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 15:35:42 -0400
-Date: Wed, 21 May 2008 12:35:17 -0700
-From: Greg KH <greg@kroah.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Matthew Dharm <mdharm-usb@one-eyed-alien.net>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Adrian Bunk <bunk@kernel.org>,
-       USB Storage list <usb-storage@lists.one-eyed-alien.net>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@sunset.davemloft.net>,
-       systemtap@sources.redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-cifs-client@lists.samba.org, linux-nfs@vger.kernel.org
-Subject: Re: [PATCH] usb-storage: don't call utsname()
-Message-ID: <20080521193517.GA4905@kroah.com>
-References: <20080521123700.GA8770@infradead.org> <Pine.LNX.4.44L0.0805211349480.3409-100000@iolanthe.rowland.org> <20080521180957.GA17598@kroah.com> <20080521185251.GA783@infradead.org>
+	Wed, 21 May 2008 15:38:18 -0400
+Date: Wed, 21 May 2008 20:36:33 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Machek <pavel@suse.cz>, Chris Mason <chris.mason@oracle.com>,
+       Eric Sandeen <sandeen@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 0/4] (RESEND) ext3[34] barrier changes
+Message-ID: <20080521193633.GA26780@shareable.org>
+References: <482DDA56.6000301@redhat.com> <20080518211140.b29bee30.akpm@linux-foundation.org> <200805191316.27551.chris.mason@oracle.com> <200805191439.36577.chris.mason@oracle.com> <20080521112224.GD5028@ucw.cz> <20080521110324.668048e0.akpm@linux-foundation.org> <20080521182949.GL8581@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080521185251.GA783@infradead.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080521182949.GL8581@mit.edu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 21, 2008 at 02:52:51PM -0400, Christoph Hellwig wrote:
-> On Wed, May 21, 2008 at 11:09:57AM -0700, Greg KH wrote:
-> > Why?  With this change, if you change the version number, the file will
-> > have to be rebuilt.  Without the change, the file will not need to be
-> > rebuilt, right?
+Theodore Tso wrote:
+> On Wed, May 21, 2008 at 11:03:24AM -0700, Andrew Morton wrote:
+> > 
+> > afaik there is no need to enable this feature if the machine (actually
+> > the disks) are on a UPS, yes?
 > 
-> Because thanks to the container patches it utsname fields other than
-> hostname can actually change at runtime now and you'll get races looking
-> at them.  And probably not the output you want if someone in your
-> container changes the kernel version to trick applications.
+> Yes, as long as you're confident that there won't be a kernel
+> bug/regression causing a lockup while the server is under severe
+> memory pressure while doing lots of fsync's, file creations, renames,
+> etc.  And as long as your 100% confident that UPS's will never fail,
+> janitors will never accidentally hit the Emergency Power Office
 
-So, do we now go and rip out all usages of utsname()->release and put
-back the #define just because of the loonacy of containers?
+Can a kernel lockup cause this kind of corruption?
 
-No kernel should have to change it's version number to trick an
-application, why would an application care about the version number to
-start with?  In the "enterprise kernel" world, version numbers have
-little to no relevance on the functionality or features of the kernel,
-so any check of something like this is sure to be wrong to start with.
+Will a system reboot wipe the disk's write cache?
 
-thanks,
+I had imagined only power loss would prevent the disk from
+writing it's cache eventually; is that wrong?
 
-greg k-h
+-- Jamie
+
