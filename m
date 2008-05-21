@@ -1,43 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933278AbYEUJmb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933664AbYEUJmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933278AbYEUJmb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 05:42:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755220AbYEUJmO
+	id S933664AbYEUJmu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 05:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760584AbYEUJmW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 05:42:14 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60142 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932654AbYEUJmN (ORCPT
+	Wed, 21 May 2008 05:42:22 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:34017 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759533AbYEUJmU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 05:42:13 -0400
-Date: Wed, 21 May 2008 10:29:22 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       wim@iguana.be, Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 18/57] iTCO: unlocked_ioctl, coding style and cleanup
-Message-ID: <20080521102922.4f0c405d@core>
-In-Reply-To: <200805211426.16234.rusty@rustcorp.com.au>
-References: <20080519124659.31722.51847.stgit@core>
-	<20080519130625.31722.68489.stgit@core>
-	<20080520012658.274b0c1e.akpm@linux-foundation.org>
-	<200805211426.16234.rusty@rustcorp.com.au>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 21 May 2008 05:42:20 -0400
+Date: Wed, 21 May 2008 11:42:19 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Tom Spink <tspink@gmail.com>
+cc: Matthew Wilcox <matthew@wil.cx>, Christoph Hellwig <hch@infradead.org>,
+       Al Viro <viro@zeniv.linux.org.uk>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC PATCH] Introduce filesystem type tracking
+In-Reply-To: <7b9198260805201408q6089a600g458dcab80b87951a@mail.gmail.com>
+Message-ID: <alpine.LNX.1.10.0805211140500.15136@fbirervta.pbzchgretzou.qr>
+References: <1211196126-7442-1-git-send-email-tspink@gmail.com>  <7b9198260805200606u6ebc2681o8af7a8eebc1cb96@mail.gmail.com>  <20080520134306.GA28946@ZenIV.linux.org.uk>  <20080520135732.GA30349@infradead.org>  <7b9198260805200818v687fc495nb7db5ffd6c8b6ba1@mail.gmail.com>
+  <20080520153456.GN2638@parisc-linux.org>  <7b9198260805200836q6b9ad5f0x3b42c8f6c933fa21@mail.gmail.com> <7b9198260805201408q6089a600g458dcab80b87951a@mail.gmail.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I've been pulling out s/down_trylock/down_nowait/ patches which effect others' 
-> changes.  Those patches get moved to the end of my queue, and I'll revisit 
-> them before an actual merge with Linus.
 
-The watchdog drivers all got the semaphores removed in the patch set I
-did so you can dump that bit.
+On Tuesday 2008-05-20 23:08, Tom Spink wrote:
+>
+>I *think* I may have got it right, but please, let me know what you
+>think!  The only thing that I think may be wrong with this patch is
+>the
+>spin_lock/unlock at the end of sget, where the superblock is
+>list_add_tailed into the super_blocks list.  I believe this opens the
+>possibility for the same superblock being list_add_tailed twice... can
+>anyone else see this code-path, and is it a problem?
+>
+>+	mutex_lock(&type->fs_supers_lock);
+>+	if (list_empty(&type->fs_supers) && type->init) {
+>+		err = type->init();
+>+		if (err) {
 
-> 
+The filesystem may want to have the superblock passed.
+Well, will see once a filesystem has the need for it.
+
