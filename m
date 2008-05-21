@@ -1,85 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932875AbYEULQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932735AbYEULRY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932875AbYEULQz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 07:16:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757579AbYEULQp
+	id S932735AbYEULRY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 07:17:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761269AbYEULQt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 07:16:45 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:43891 "EHLO
+	Wed, 21 May 2008 07:16:49 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:43899 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757441AbYEULQo (ORCPT
+	with ESMTP id S1760847AbYEULQs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 07:16:44 -0400
-Date: Wed, 21 May 2008 13:16:37 +0200
+	Wed, 21 May 2008 07:16:48 -0400
+Date: Wed, 21 May 2008 13:16:43 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Oliver Hartkopp <oliver@hartkopp.net>,
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Hugh Dickins <hugh@veritas.com>, Glauber Costa <gcosta@redhat.com>,
+       Glauber Costa <glommer@gmail.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       akpm@linux-foundation.org, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Kernel naming convention in the merge phase
-Message-ID: <20080521111637.GA5416@ucw.cz>
-References: <4818F093.3070105@hartkopp.net> <4819050C.9060800@zytor.com>
+       Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, "Theodore Ts'o" <tytso@mit.edu>,
+       "Carlos R. Mafra" <crmafra2@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86: fix app crashes after SMP resume
+Message-ID: <20080521111642.GC5028@ucw.cz>
+References: <Pine.LNX.4.64.0805131420030.5781@blonde.site> <20080513140237.GA18798@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4819050C.9060800@zytor.com>
+In-Reply-To: <20080513140237.GA18798@elte.hu>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-04-30 16:47:24, H. Peter Anvin wrote:
-> Oliver Hartkopp wrote:
-> >Hi all,
-> >
-> >i wonder about the Kernel naming convention in the 
-> >merge phase before
-> >the -rc1 is officially tagged by Linus.
-> >
-> >Won't it be more precisely to name the current snapshot
-> >2.6.26-merge-git16 instead of 2.6.25-git16?
-> >
-> >It is not that i would suggest to have a new git tag in 
-> >this merge phase but only the Makefile should be 
-> >changed at the beginning of this phase to identify the 
-> >ongoing work for the 2.6.26:
-> >
-> >------
-> >diff --git a/Makefile b/Makefile
-> >index d3634cd..b8c85a4 100644
-> >--- a/Makefile
-> >+++ b/Makefile
-> >@@ -1,8 +1,8 @@
-> >VERSION = 2
-> >PATCHLEVEL = 6
-> >-SUBLEVEL = 25
-> >-EXTRAVERSION =
-> >-NAME = Funky Weasel is Jiggy wit it
-> >+SUBLEVEL = 26
-> >+EXTRAVERSION = -merge
-> >+NAME = unnamed
-> >
-> ># *DOCUMENTATION*
-> ># To see a list of typical targets execute "make help"
-> >------
-> >
-> >Introducing the new '-merge' version _that_ early helps 
-> >to avoid the version confusion in /lib/modules and also 
-> >allows people to work with kernel version depended 
-> >stuff in a very early phase.
-> >
-> 
-> And it'll break all the robotic stuff again.
-> 
-> Foo-gitX has always been a development snapshot which 
-> *follows* Foo.
+Hi!
 
-Well, unfortunately its not there in the makefile, so you can't tell
-2.6.25 from 2.6.26-rc0...
+> hehe :)
+> 
+> ob'note: would be nice to have the suspend+resume self-test/debug patch 
+> below upstream. It programs the RTC to a 5 second sleep and resumes the 
+> computer, which then self-wakeups afterwards.
 
-Would 'rc0' make robots happy?
-							Pavel
+The version with pony, yes! :-)
+
+> Subject: suspend+resume self-test
+> From: David Brownell <david-b@pacbell.net>
+> 
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+
+ACK. Perhaps you should send it to Andrew for a merge? Or maybe Rafael
+wants to add it to his patch queue?
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
