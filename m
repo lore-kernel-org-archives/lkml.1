@@ -1,261 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935059AbYEUIHI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934999AbYEUIKV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935059AbYEUIHI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 04:07:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762852AbYEUIGl
+	id S934999AbYEUIKV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 04:10:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762595AbYEUIKC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 04:06:41 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:30056 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763633AbYEUIGc (ORCPT
+	Wed, 21 May 2008 04:10:02 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:5912 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761485AbYEUIJ6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 04:06:32 -0400
-Date: Wed, 21 May 2008 10:05:56 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Greg KH <greg@kroah.com>
-Cc: David Miller <davem@davemloft.net>, shemminger@vyatta.com,
-       fubar@us.ibm.com, netdev@vger.kernel.org,
-       bonding-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] driver core: Suppress sysfs warnings for
- device_rename().
-Message-ID: <20080521100556.3352c5b7@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20080520225244.GG15912@kroah.com>
-References: <20080515095246.3b6a0d1d@gondolin.boeblingen.de.ibm.com>
-	<20080515.010139.219194657.davem@davemloft.net>
-	<20080515113131.2cea2bce@gondolin.boeblingen.de.ibm.com>
-	<20080515.030054.247673168.davem@davemloft.net>
-	<20080515120619.6c867bfb@gondolin.boeblingen.de.ibm.com>
-	<20080520125913.777ed67d@gondolin.boeblingen.de.ibm.com>
-	<20080520225244.GG15912@kroah.com>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 21 May 2008 04:09:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=fhJ/tLGFRtwAvz57c5whwmed47XbtXha8Leb5Bi/FXrsG0RsXPN6DVoInOPHHuL+y54LbpH2Vk8IOsJqcV/ZCRBHwcHyVurRTLiHeIC9otxjFOjVAxZiepCLmsiHUxjB0HP4zsMIjdvQGwgJW6/rsnAkOf1jS+PIePzxMNslaPA=
+Message-ID: <aec7e5c30805210109p664fd917r32f8dc6aa1c4c746@mail.gmail.com>
+Date: Wed, 21 May 2008 17:09:51 +0900
+From: "Magnus Damm" <magnus.damm@gmail.com>
+To: "=?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?=" <Uwe.Kleine-Koenig@digi.com>
+Subject: Re: [PATCH 00/03][RFC] Reusable UIO Platform Driver
+Cc: "Hans J. Koch" <hjk@linutronix.de>, linux-kernel@vger.kernel.org,
+       lethal@linux-sh.org, gregkh@suse.de, linux-sh@vger.kernel.org
+In-Reply-To: <20080521064938.GA11580@digi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <20080520105132.1474.73941.sendpatchset@rx1.opensource.se>
+	 <20080520210713.GE3220@local>
+	 <aec7e5c30805202031x62b3b463lfde0b9e7eb32d35@mail.gmail.com>
+	 <20080521064938.GA11580@digi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 20 May 2008 15:52:44 -0700,
-Greg KH <greg@kroah.com> wrote:
+Hi Uwe!
 
-> On Tue, May 20, 2008 at 12:59:13PM +0200, Cornelia Huck wrote:
-> > OK, here is an actually-compiled patch with proper description and
-> > s-o-b. Comments?
-> 
-> Looks good to me, feel free to add an:
-> 	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> to it.
-> 
-> David, are you going to take this through your tree?
+Thanks for your email.
 
-Here it is again, respun against today's git:
+On Wed, May 21, 2008 at 3:49 PM, Uwe Kleine-König
+<Uwe.Kleine-Koenig@digi.com> wrote:
+> Magnus Damm wrote:
+>> The uio_pdrv driver doesn't do what I need at this point, though I may
+>> be able to extend it with the following:
+>> - Interrupt enable/disable code
+>> - Physically contiguous memory support
+>>
+>> The interrupt code may be placed in the board/cpu code, but I need to
+>> share that code between multiple UIO driver instances. We want to use
+>> the same UIO driver for many different processor models and hardware
+>> blocks.
+> What about adding uio_platform_handler (with a different name) to
+> uio_pdrv.c?
 
+I'm not sure if it will help. What would such function do? Please explain.
 
-driver core: Suppress sysfs warnings for device_rename().
+> OTOH I don't see why you want to disable the irq.  Can you describe the
+> reason?
 
-Renaming network devices to an already existing name is not
-something we want sysfs to print a scary warning for, since the
-callers can deal with this correctly. So let's introduce
-sysfs_create_link_nowarn() which gets rid of the common warning.
+Most UIO kernel drivers today contain hardware device specific code to
+acknowledge interrupts. In other words, most UIO interrupt handlers
+touches some device specific bits so the interrupt gets deasserted.
 
-Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+My uio_platform driver handles interrupts in a different way. The
+kernel UIO driver is not aware of the hardware device specific method
+to acknowledge the interrupt, instead it simply disables the interrupt
+and notifies user space which instead will acknowledge the interrupt.
+Next time a read() or poll() call gets made, the interrupt is enabled
+again.
 
----
- drivers/base/core.c   |    9 +++++----
- fs/sysfs/dir.c        |   37 +++++++++++++++++++++++++++++++++++--
- fs/sysfs/symlink.c    |   41 +++++++++++++++++++++++++++++++++--------
- fs/sysfs/sysfs.h      |    1 +
- include/linux/sysfs.h |   10 ++++++++++
- 5 files changed, 84 insertions(+), 14 deletions(-)
+This allows us to export a hardware device to user space and allow
+user space to handle interrupts without knowing in kernel space how to
+acknowledge interrupts.
 
---- linux-2.6.orig/drivers/base/core.c
-+++ linux-2.6/drivers/base/core.c
-@@ -1282,8 +1282,9 @@ int device_rename(struct device *dev, ch
- 	if (old_class_name) {
- 		new_class_name = make_class_name(dev->class->name, &dev->kobj);
- 		if (new_class_name) {
--			error = sysfs_create_link(&dev->parent->kobj,
--						  &dev->kobj, new_class_name);
-+			error = sysfs_create_link_nowarn(&dev->parent->kobj,
-+							 &dev->kobj,
-+							 new_class_name);
- 			if (error)
- 				goto out;
- 			sysfs_remove_link(&dev->parent->kobj, old_class_name);
-@@ -1291,8 +1292,8 @@ int device_rename(struct device *dev, ch
- 	}
- #else
- 	if (dev->class) {
--		error = sysfs_create_link(&dev->class->subsys.kobj, &dev->kobj,
--					  dev->bus_id);
-+		error = sysfs_create_link_nowarn(&dev->class->subsys.kobj,
-+						 &dev->kobj, dev->bus_id);
- 		if (error)
- 			goto out;
- 		sysfs_remove_link(&dev->class->subsys.kobj, old_device_name);
---- linux-2.6.orig/fs/sysfs/dir.c
-+++ linux-2.6/fs/sysfs/dir.c
-@@ -398,7 +398,7 @@ void sysfs_addrm_start(struct sysfs_addr
- }
- 
- /**
-- *	sysfs_add_one - add sysfs_dirent to parent
-+ *	__sysfs_add_one - add sysfs_dirent to parent without warning
-  *	@acxt: addrm context to use
-  *	@sd: sysfs_dirent to be added
-  *
-@@ -417,7 +417,7 @@ void sysfs_addrm_start(struct sysfs_addr
-  *	0 on success, -EEXIST if entry with the given name already
-  *	exists.
-  */
--int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
-+int __sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
- {
- 	if (sysfs_find_dirent(acxt->parent_sd, sd->s_name))
- 		return -EEXIST;
-@@ -435,6 +435,39 @@ int sysfs_add_one(struct sysfs_addrm_cxt
- }
- 
- /**
-+ *	sysfs_add_one - add sysfs_dirent to parent
-+ *	@acxt: addrm context to use
-+ *	@sd: sysfs_dirent to be added
-+ *
-+ *	Get @acxt->parent_sd and set sd->s_parent to it and increment
-+ *	nlink of parent inode if @sd is a directory and link into the
-+ *	children list of the parent.
-+ *
-+ *	This function should be called between calls to
-+ *	sysfs_addrm_start() and sysfs_addrm_finish() and should be
-+ *	passed the same @acxt as passed to sysfs_addrm_start().
-+ *
-+ *	LOCKING:
-+ *	Determined by sysfs_addrm_start().
-+ *
-+ *	RETURNS:
-+ *	0 on success, -EEXIST if entry with the given name already
-+ *	exists.
-+ */
-+int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
-+{
-+	int ret;
-+
-+	ret = __sysfs_add_one(acxt, sd);
-+	if (ret == -EEXIST) {
-+		printk(KERN_WARNING "sysfs: duplicate filename '%s' "
-+		       "can not be created\n", sd->s_name);
-+		WARN_ON(1);
-+	}
-+	return ret;
-+}
-+
-+/**
-  *	sysfs_remove_one - remove sysfs_dirent from parent
-  *	@acxt: addrm context to use
-  *	@sd: sysfs_dirent to be removed
---- linux-2.6.orig/fs/sysfs/symlink.c
-+++ linux-2.6/fs/sysfs/symlink.c
-@@ -19,13 +19,8 @@
- 
- #include "sysfs.h"
- 
--/**
-- *	sysfs_create_link - create symlink between two objects.
-- *	@kobj:	object whose directory we're creating the link in.
-- *	@target:	object we're pointing to.
-- *	@name:		name of the symlink.
-- */
--int sysfs_create_link(struct kobject * kobj, struct kobject * target, const char * name)
-+static int sysfs_do_create_link(struct kobject *kobj, struct kobject *target,
-+				const char *name, int warn)
- {
- 	struct sysfs_dirent *parent_sd = NULL;
- 	struct sysfs_dirent *target_sd = NULL;
-@@ -65,7 +60,10 @@ int sysfs_create_link(struct kobject * k
- 	target_sd = NULL;	/* reference is now owned by the symlink */
- 
- 	sysfs_addrm_start(&acxt, parent_sd);
--	error = sysfs_add_one(&acxt, sd);
-+	if (warn)
-+		error = sysfs_add_one(&acxt, sd);
-+	else
-+		error = __sysfs_add_one(&acxt, sd);
- 	sysfs_addrm_finish(&acxt);
- 
- 	if (error)
-@@ -80,6 +78,33 @@ int sysfs_create_link(struct kobject * k
- }
- 
- /**
-+ *	sysfs_create_link - create symlink between two objects.
-+ *	@kobj:	object whose directory we're creating the link in.
-+ *	@target:	object we're pointing to.
-+ *	@name:		name of the symlink.
-+ */
-+int sysfs_create_link(struct kobject *kobj, struct kobject *target,
-+		      const char *name)
-+{
-+	return sysfs_do_create_link(kobj, target, name, 1);
-+}
-+
-+/**
-+ *	sysfs_create_link_nowarn - create symlink between two objects.
-+ *	@kobj:	object whose directory we're creating the link in.
-+ *	@target:	object we're pointing to.
-+ *	@name:		name of the symlink.
-+ *
-+ *	This function does the same as sysf_create_link(), but it
-+ *	doesn't warn if the link already exists.
-+ */
-+int sysfs_create_link_nowarn(struct kobject *kobj, struct kobject *target,
-+			     const char *name)
-+{
-+	return sysfs_do_create_link(kobj, target, name, 0);
-+}
-+
-+/**
-  *	sysfs_remove_link - remove symlink in object's directory.
-  *	@kobj:	object we're acting for.
-  *	@name:	name of the symlink to remove.
---- linux-2.6.orig/fs/sysfs/sysfs.h
-+++ linux-2.6/fs/sysfs/sysfs.h
-@@ -107,6 +107,7 @@ struct sysfs_dirent *sysfs_get_active_tw
- void sysfs_put_active_two(struct sysfs_dirent *sd);
- void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
- 		       struct sysfs_dirent *parent_sd);
-+int __sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd);
- int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd);
- void sysfs_remove_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd);
- void sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt);
---- linux-2.6.orig/include/linux/sysfs.h
-+++ linux-2.6/include/linux/sysfs.h
-@@ -101,6 +101,9 @@ void sysfs_remove_bin_file(struct kobjec
- 
- int __must_check sysfs_create_link(struct kobject *kobj, struct kobject *target,
- 				   const char *name);
-+int __must_check sysfs_create_link_nowarn(struct kobject *kobj,
-+					  struct kobject *target,
-+					  const char *name);
- void sysfs_remove_link(struct kobject *kobj, const char *name);
- 
- int __must_check sysfs_create_group(struct kobject *kobj,
-@@ -180,6 +183,13 @@ static inline int sysfs_create_link(stru
- 	return 0;
- }
- 
-+static inline int sysfs_create_link_nowarn(struct kobject *kobj,
-+					   struct kobject *target,
-+					   const char *name)
-+{
-+	return 0;
-+}
-+
- static inline void sysfs_remove_link(struct kobject *kobj, const char *name)
- {
- }
+>>         Extending uio_pdrv driver with a chunk of physically
+>> contiguous memory isn't a big deal though.
+> I wonder how you use that memory.  Isn't it just some kind of shared
+> memory?  If so, why not use normal shared memory?  Do you really need
+> that?
+
+Yes, I need that to give the exported hardware device some physically
+contiguous memory for DMA. At this point our hardware is missing IOMMU
+so physically contiguous memory is needed.
+
+>> To be frank, I have my doubts in adding an extra forwarding-only
+>> platform layer on top of UIO compared to using uio_register_device()
+>> directly from the board code. I like that the platform layer is using
+>> struct resource and handles resource ranges for us automatically, but
+>> wouldn't it make more sense to extend the UIO core to always use
+>> struct resource instead of struct uio_mem? I'd be happy to help out -
+>> just point me in the right direction.
+> That alone doesn't help.  You need a struct device to register a uio
+> device.  So a platform device is the straight forward approach.
+
+I don't mind that you are using platform devices. Actually, I think
+platform devices are great. We use them for all sorts of things on the
+SuperH architecture. I'm trying to suggest that maybe it's a good idea
+to change the UIO core code to use struct resource instead of struct
+uio_mem. Or maybe that's not a good idea, I'm not sure.
+
+>> >> The interrupt handling code in uio_platform assumes the device is the
+>> >> only user of the assigned interrupt.
+>> >
+>> > Uwe's approach doesn't have this limitation.
+>>
+>> True, but the uio_pdrv driver is choosing to not deal with interrupts
+>> at all. I'd like to have shared interrupt handling code. With my
+>> driver, you just feed it io memory window parameters and an interrupt
+>> number and off you go. No need for any callbacks.
+> In my eyes this isn't completly correct.  Just the way you specify your
+> handler is a bit different.  You can pass a handler via platform data
+> with my driver, too.
+
+I don't want to pass any handler. All devices share the same interrupt
+handler, the only thing that differs between multiple uio_platform
+devices on one system is memory window information and irq number.
+
+> BTW, you don't need "depends on UIO" (because it's in a if UIO/endif
+> block) and "default n" (as this is the default anyhow).  See also
+> http://thread.gmane.org/gmane.linux.kernel/663884/focus=683097
+
+Ah, thanks for pointing that out!
+
+Thank you for your feedback!
+
+/ magnus
