@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761870AbYEUWx2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765527AbYEUW5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761870AbYEUWx2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 18:53:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759532AbYEUWxT
+	id S1765527AbYEUW5Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 18:57:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756976AbYEUW5R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 18:53:19 -0400
-Received: from namei.org ([69.55.235.186]:40239 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757601AbYEUWxS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 18:53:18 -0400
-Date: Thu, 22 May 2008 08:52:22 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: Miklos Szeredi <miklos@szeredi.hu>
-cc: linux-fsdevel@vger.kernel.org, hch@infradead.org, viro@ZenIV.linux.org.uk,
-       linux-kernel@vger.kernel.org, Stephen Smalley <sds@tycho.nsa.gov>,
-       Eric Paris <eparis@redhat.com>,
-       Casey Schaufler <casey@schaufler-ca.com>
-Subject: Re: [patch 09/14] security: dont pass nameidata to security_inode_permission()
-In-Reply-To: <20080521171554.050962936@szeredi.hu>
-Message-ID: <Xine.LNX.4.64.0805220852020.8393@us.intercode.com.au>
-References: <20080521171458.077908538@szeredi.hu> <20080521171554.050962936@szeredi.hu>
+	Wed, 21 May 2008 18:57:17 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:53558 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755238AbYEUW5Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 18:57:16 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4834A896.3040702@s5r6.in-berlin.de>
+Date: Thu, 22 May 2008 00:56:22 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080419 SeaMonkey/1.1.9
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: jszhang3@mail.ustc.edu.cn
+CC: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
+       krh@redhat.com
+Subject: Re: [PATCH] firewire: fix some broken hardware NMI interrupt
+References: <411375292.14780@ustc.edu.cn> <48343F99.4030803@s5r6.in-berlin.de>
+In-Reply-To: <48343F99.4030803@s5r6.in-berlin.de>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 May 2008, Miklos Szeredi wrote:
-
-> From: Miklos Szeredi <mszeredi@suse.cz>
+Stefan Richter wrote:
+> jszhang3@mail.ustc.edu.cn wrote:
+>> Some broken pci-1394 card does not clear completely on-chip memory during boot, it
+>> may cause pci parity error, then NMI interrupt.
 > 
-> Only pass nameidata->flags instead of the nameidata to
-> security_inode_permission(), synchronizing it with i_op->permission().
+> Which card?
 > 
-> Currently no security module uses the nameidata parameter.
+> Is the problem still present in linux-2.6.26-rc3?
 > 
-> The other change in ->permission() is that a dentry is passed instead
-> of an inode.  Leave this till AppArmor integration, since that will
-> need a struct path instead of an inode.
-> 
-> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-> CC: James Morris <jmorris@namei.org>
-> CC: Stephen Smalley <sds@tycho.nsa.gov>
-> CC: Eric Paris <eparis@redhat.com>
-> CC: Casey Schaufler <casey@schaufler-ca.com>
+> Or if you don't want to test 2.6.26-rc yet, please test 2.6.25.4 with
+> the firewire patchkit from
+> http://me.in-berlin.de/~s5r6/linux1394/updates/.  There were changes to
+> fw-ohci which influence chip initialization.
 
-Acked-by: James Morris <jmorris@namei.org>
-
-
-
+PS:
+And does the parity error happen with the ohci1394 driver too?
 -- 
-James Morris
-<jmorris@namei.org>
+Stefan Richter
+-=====-==--- -=-= =-==-
+http://arcgraph.de/sr/
