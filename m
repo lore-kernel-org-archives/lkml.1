@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936911AbYEUTeu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936533AbYEUTfU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936911AbYEUTeu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 15:34:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759711AbYEUTeY
+	id S936533AbYEUTfU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 15:35:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936808AbYEUTeh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 15:34:24 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35055 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936606AbYEUTeX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 15:34:23 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
-       Austin Clements <amdragon+kernelbugzilla@mit.edu>,
-       Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] signals: sigqueue_free: don't free sigqueue if it
- is queued
-In-Reply-To: Linus Torvalds's message of  Wednesday, 21 May 2008 11:49:57 -0700 <alpine.LFD.1.10.0805211146350.3081@woody.linux-foundation.org>
-References: <20080517151420.GA9496@tv-sign.ru>
-	<20080521022046.1501F26FA1C@magilla.localdomain>
-	<20080521115414.GA147@tv-sign.ru>
-	<20080521184245.5BABF26FA24@magilla.localdomain>
-	<alpine.LFD.1.10.0805211146350.3081@woody.linux-foundation.org>
-X-Windows: the art of incompetence.
-Message-Id: <20080521193348.64E8C26FA24@magilla.localdomain>
-Date: Wed, 21 May 2008 12:33:48 -0700 (PDT)
+	Wed, 21 May 2008 15:34:37 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:50272 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764336AbYEUTee (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 15:34:34 -0400
+To: trond.myklebust@fys.uio.no
+CC: miklos@szeredi.hu, linux-fsdevel@vger.kernel.org, hch@infradead.org,
+       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
+In-reply-to: <1211397984.7486.38.camel@localhost> (message from Trond
+	Myklebust on Wed, 21 May 2008 15:26:24 -0400)
+Subject: Re: [patch 11/14] vfs: move executable checking into ->permission()
+References: <20080521171458.077908538@szeredi.hu>
+	 <20080521171557.399850407@szeredi.hu> <1211393793.7486.15.camel@localhost>
+	 <E1Jytgu-00068N-Tp@pomaz-ex.szeredi.hu> <1211397984.7486.38.camel@localhost>
+Message-Id: <E1Jyu4x-0006C8-J0@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 21 May 2008 21:34:27 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I thought we didn't even know which queue it was pending on if it was 
-> already on a thread-local queue. So we could remove the entry, but I 
-> always objected to the games with the pending bit.
+> > No, we don't want to deny read or write (that's up to the filesystem
+> > how it handles it), just want to deny execute if no x bits are set in
+> > the mode.
+> 
+> OK, but when I see something with the name 'exec_permission()', I assume
+> that it is going to check for whether or not I have execute permission.
+> 
+> If that is not the case, then can we please either change the function,
+> or change the name?
 
-Removing the entry without fixing the pending set is the bug we're trying
-to fix.  That's what it does now, and it's wrong.
+Yeah, the name's not very good.  Especially that there's an
+exec_permission_lite() in the same file, which has nothing to do with
+this.
 
-Oleg had a patch that marked the sigqueue entry with whether it was on the
-shared queue or not.  The caller in timer_delete knows which thread it is
-when it's on a thread queue, and whether it's on the shared queue.  So it
-could be the caller's responsibility to know, i.e. its sigqueue_free call
-matches its send_sigqueue call.
+Will try to think of something better.
 
-
-Thanks,
-Roland
+Miklos
