@@ -1,49 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937123AbYEUT4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937092AbYEUT51@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937123AbYEUT4g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 15:56:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760693AbYEUT41
+	id S937092AbYEUT51 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 15:57:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760130AbYEUT5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 15:56:27 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52605 "EHLO mx1.redhat.com"
+	Wed, 21 May 2008 15:57:11 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:34960 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759998AbYEUT40 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 15:56:26 -0400
-Date: Wed, 21 May 2008 15:55:59 -0400
-From: Rik van Riel <riel@redhat.com>
-To: Tarkan Erimer <tarkan@netone.net.tr>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Suggestion About Kernel Releases
-Message-ID: <20080521155559.11f880d1@bree.surriel.com>
-In-Reply-To: <48342ADC.3030509@netone.net.tr>
-References: <48341ED5.7060508@netone.net.tr>
-	<20080521063855.0bdb441c@infradead.org>
-	<48342ADC.3030509@netone.net.tr>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1755764AbYEUT5K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 15:57:10 -0400
+Date: Wed, 21 May 2008 22:54:54 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: David Howells <dhowells@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [2.6 patch] frv: export empty_zero_page
+Message-ID: <20080521195454.GJ15355@cs181133002.pp.htv.fi>
+References: <20080521191639.GI15355@cs181133002.pp.htv.fi> <20080521174203.GG15355@cs181133002.pp.htv.fi> <7195.1211396122@redhat.com> <7398.1211397885@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <7398.1211397885@redhat.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 May 2008 16:59:56 +0300
-Tarkan Erimer <tarkan@netone.net.tr> wrote:
+On Wed, May 21, 2008 at 08:24:45PM +0100, David Howells wrote:
+> Adrian Bunk <bunk@kernel.org> wrote:
+> 
+> > > > EXPORT_SYMBOL_GPL(empty_zero_page);
+> > > 
+> > > EXPORT_SYMBOL() as elsewhere please.
+> > 
+> > ia64 also has EXPORT_SYMBOL_GPL...
+> 
+> Okay, everywhere barring ia64 then.
 
-> Even, Linus can releases new kernels more quickly. Because, testing
-> purpose should be handled by someone else like Chris did for 2.6.x.y.
+Updated patch below.
 
-If Linus were to go straight from merge window to merge window,
-with stabilization happening in parallel, then there would be
-no stable basis at the start of each merge window and bugs can
-just pile up.
+> David
 
-Speeding things up could lead to the same kind of code quality
-issues we used to have in the 1.3, 2.1, 2.3 and 2.5 kernel series.
+cu
+Adrian
 
-Slowing down regularly is good, not bad.
 
--- 
-All rights reversed.
+<--  snip  -->
+
+
+This patch fixes the following build error:
+
+<--  snip  -->
+
+...
+  MODPOST 1845 modules
+ERROR: "empty_zero_page" [fs/ext4/ext4dev.ko] undefined!
+...
+make[2]: *** [__modpost] Error 1
+
+<--  snip  -->
+
+Reported-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
+---
+
+ arch/frv/mm/init.c |    3 +++
+ 1 file changed, 3 insertions(+)
+
+69b697b58fe1a9d7f871285768efdbec443ad2e8 diff --git a/arch/frv/mm/init.c b/arch/frv/mm/init.c
+index b841ecf..9af7740 100644
+--- a/arch/frv/mm/init.c
++++ b/arch/frv/mm/init.c
+@@ -26,6 +26,7 @@
+ #include <linux/types.h>
+ #include <linux/bootmem.h>
+ #include <linux/highmem.h>
++#include <linux/module.h>
+ 
+ #include <asm/setup.h>
+ #include <asm/segment.h>
+@@ -56,7 +57,9 @@ DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
+  */
+ static unsigned long empty_bad_page_table;
+ static unsigned long empty_bad_page;
++
+ unsigned long empty_zero_page;
++EXPORT_SYMBOL(empty_zero_page);
+ 
+ /*****************************************************************************/
+ /*
+
