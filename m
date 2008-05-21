@@ -1,176 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935197AbYEUNLK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934579AbYEUNOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935197AbYEUNLK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 09:11:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757040AbYEUNK4
+	id S934579AbYEUNOS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 09:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755027AbYEUNOF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 09:10:56 -0400
-Received: from fnoeppeil48.netpark.at ([217.175.205.176]:56194 "EHLO
-	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755888AbYEUNK4 (ORCPT
+	Wed, 21 May 2008 09:14:05 -0400
+Received: from smtp01.msg.oleane.net ([62.161.4.1]:37774 "EHLO
+	smtp01.msg.oleane.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750763AbYEUNOE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 09:10:56 -0400
-Date: Wed, 21 May 2008 15:10:53 +0200
-From: Manuel Lauss <mano@roarinelk.homelinux.net>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org, drzeus@drzeus.cx
-Subject: Re: [PATCH 4/9] Alchemy: register mmc platform device for
-	db1200/pb1200 boards
-Message-ID: <20080521131053.GA8459@roarinelk.homelinux.net>
-References: <20080519080339.GA21985@roarinelk.homelinux.net> <20080519080605.GE21985@roarinelk.homelinux.net> <4834166C.40901@ru.mvista.com>
+	Wed, 21 May 2008 09:14:04 -0400
+From: Thomas Nemeth <thomas.nemeth@betatech.fr>
+Organization: BETAtech
+To: linux-kernel@vger.kernel.org
+Subject: PCI driver architecture [repost]
+Date: Wed, 21 May 2008 15:14:11 +0200
+User-Agent: KMail/1.9.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4834166C.40901@ru.mvista.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: multipart/signed;
+  boundary="nextPart2111195.LnjuZB7qIq";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200805211514.11584.thomas.nemeth@betatech.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sergei,
+--nextPart2111195.LnjuZB7qIq
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> Manuel Lauss wrote:
->
->> Add au1xmmc platform data for PB1200/DB1200 boards, and wire up
->> the 2 SD controllers for them.
->
->> Signed-off-by: Manuel Lauss <mano@roarinelk.homelinux.net>
->
->    OK, this definitely looks better (and shorter :-).
+[sorry - bad previous post]
 
-Thanks ;-)
+    Hi!
 
+    I was going to ask a few questions to Greg KH when he told me that
+    my questions "look very reasonable for there, as long as I also
+    post my code".
 
->> +static struct resource au1200_mmc0_resources[] = {
->> +	[0] = {
->> +		.start          = SD0_PHYS_ADDR,
->> +		.end            = SD0_PHYS_ADDR + 0x7ffff,
->> +		.flags          = IORESOURCE_MEM,
->> +	},
->> +	[1] = {
->> +		.start		= AU1200_SD_INT,
->> +		.flags		= IORESOURCE_IRQ,
->> +	},
->> +	[2] = {
->> +		.start		= DSCR_CMD0_SDMS_TX0,
->> +		.flags		= IORESOURCE_DMA,
->> +	},
->> +	[3] = {
->> +		.start          = DSCR_CMD0_SDMS_RX0,
->> +		.flags          = IORESOURCE_DMA,
->> +	}
->> +};
->> +
->> +static struct resource au1200_mmc1_resources[] = {
->> +	[0] = {
->> +		.start          = SD1_PHYS_ADDR,
->> +		.end            = SD1_PHYS_ADDR + 0x7ffff,
->> +		.flags          = IORESOURCE_MEM,
->> +	},
->> +	[1] = {
->> +		.start		= AU1200_SD_INT,
->> +		.flags		= IORESOURCE_IRQ,
->> +	},
->> +	[2] = {
->> +		.start		= DSCR_CMD0_SDMS_TX1,
->> +		.flags		= IORESOURCE_DMA,
->> +	},
->> +	[3] = {
->> +		.start          = DSCR_CMD0_SDMS_RX1,
->> +		.flags          = IORESOURCE_DMA,
->> +	}
->> +};
->> +
->
->    Shouldn't the IRQ/DMA resources also have their 'end' field set?
+    So here is the context: we are developping 2 multi-IO boards at the
+    request of our customer and, unfortunately, they asked us to
+    develop their driver for Linux 2.4. As they are evaluating the
+    possibility to switch to 2.6 in some months I'm writing the driver
+    with 2.6 in mind.
+    I have already made some basic char drivers for our custom ARM
+    systems (GPIO/ADC/FPGA) and even begun a custom ARM-based
+    architecture support. I have read, of course, a lot of documentation
+    before: LDD2, LDD3 (of course), CodingStyle, How to NOT write a
+    device driver, writing portable device drivers, Device Drivers DOs
+    and DON'Ts and some other books, web sites and PDF about embedded
+    linux.
 
-Not sure, but I'll add them too.
+    These boards will present the user a bunch of IO lines a bit like
+    GPIO. Registers are to be mapped into memory. By now the design is
+    not complete and we still are discussing if registers will present
+    information for all lines (eg: a data register for all lines, an
+    interrupt register holding information for all lines...) or 1
+    register per line holding the all information related to that line
+    (data, interrupt type, interrupt occured...). Anyway, that's not
+    really important right now.
+
+    I have already written some code for this driver. As I saw, in the
+    FAQ, that I might be well advised to put my code on a website/ftp,
+    here it is: http://tnemeth.free.fr/projets/btmio.c
 
 
->> +static void pb1200mmc0_set_power(void *mmc_host, int state)
->> +{
->> +	if (state)
->> +		bcsr->board |= BCSR_BOARD_SD0PWR;
->> +	else
->> +		bcsr->board &= ~BCSR_BOARD_SD0PWR;
->> +
->> +	au_sync_delay(1);
->> +}
->> +
->> +static int pb1200mmc0_card_readonly(void *mmc_host)
->> +{
->> +	return (bcsr->status & BCSR_STATUS_SD0WP) ? 1 : 0;
->> +}
->> +
->> +static int pb1200mmc0_card_inserted(void *mmc_host)
->> +{
->> +	return (bcsr->sig_status & BCSR_INT_SD0INSERT) ? 1 : 0;
->> +}
->> +
->> +#ifndef CONFIG_MIPS_DB1200
->> +static void pb1200mmc1_set_power(void *mmc_host, int state)
->> +{
->> +	if (state)
->> +		bcsr->board |= BCSR_BOARD_SD1PWR;
->> +	else
->> +		bcsr->board &= ~BCSR_BOARD_SD1PWR;
->> +
->> +	au_sync_delay(1);
->> +}
->> +
->> +static int pb1200mmc1_card_readonly(void *mmc_host)
->> +{
->> +	return (bcsr->status & BCSR_STATUS_SD1WP) ? 1 : 0;
->> +}
->> +
->> +static int pb1200mmc1_card_inserted(void *mmc_host)
->> +{
->> +	return (bcsr->sig_status & BCSR_INT_SD1INSERT) ? 1 : 0;
->> +}
->> +#endif
->
->    These 2 separate versions could be converted into single one by using 
-> the data arrays holding info BCSR bits -- something like the MMC driver has 
-> currently.
+    My questions are the following ones:
 
-Well, that's what my initial submission did, but it required access to the
-mmc drivers host structure (moved from au1xmmc.h to au1100_mmc.h) to determine
-which controller wants the attention, and you weren't fond of that.
+    - I use a probe() function that calls request_region() in order to
+      have access to the boards' registers. I have called ioremap() on
+      the requested region. Is that the right thing to do?
+
+    - I think I should make a "char" driver to allow access to device
+      nodes and this driver is registered at loading time. Is that
+      right too?
+      For now I coded the following things:
+      - driver_init calls pci_register_driver and register_chrdev
+      - device_probe sets up the detected boards
+      - when a program opens a device node, if the board has not been
+        configured by the probe function, it returns an error.
+
+    - I have to use IOCTLs to manage configuration of (eg) interrupts
+      (set/get[/reset] interrupt type, read/write to only 1 line). As it
+      is something frowned upon, where could I get some IOCTLs to reuse?
 
 
->> +
->> +const struct au1xmmc_platform_data au1xmmc_platdata[2] = {
->> +	[0] = {
->> +		.set_power	= pb1200mmc0_set_power,
->> +		.card_inserted	= pb1200mmc0_card_inserted,
->> +		.card_readonly	= pb1200mmc0_card_readonly,
->> +		.cd_setup	= NULL,		/* use poll-timer in driver */
->> +	},
->> +#ifndef CONFIG_MIPS_DB1200
->> +	[1] = {
->> +		.set_power	= pb1200mmc1_set_power,
->> +		.card_inserted	= pb1200mmc1_card_inserted,
->> +		.card_readonly	= pb1200mmc1_card_readonly,
->> +		.cd_setup	= NULL,		/* use poll-timer in driver */
->> +	},
->> +#endif
->> +};
->
->    You don't have to explicitly set 'cd_setup' to NULL...
+    As I haven't subscribed to the list could I be CC'd for the reply ?
+    Thanks in advance.
 
-The comment explains what setting to NULL does, so I'd like to
-keep it (for people implementing this for other boards and wondering what
-to do with thse members...)
+Thomas
+=2D-=20
+Thomas Nemeth - Ing=E9nieur d'=C9tudes en Informatique Industrielle
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 Industrial Computing Software Designer
+BETAtech - 15, rue Apollo, Z.A. de Montredon, 31240, L'Union.
+05 34 30 40 00 (standard) =A0/ =A005 34 30 40 09 (ligne directe)
 
+--nextPart2111195.LnjuZB7qIq
+Content-Type: application/pgp-signature
 
-> PS: BTW, I've noticed that include/asm-mips/mach-db1x00/db1x00.h defines 
-> macros mmc_card_insterted() and mmc_power_on() which no code seems to be 
-> using (might have been intended for use by the MMC driver but why no such 
-> macros in other board headers?). Care to remove those while you're working 
-> on MMC?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
 
-Sure, I'll add another patch to the pile.
+iD8DBQBINCAjHPRSmTSubacRAhADAJ9IhR3hcocoX6eQ8gNDnwNwDlw3OACgkW3L
+zTJr243POtQ4cJJvoXwXoR0=
+=Ul5V
+-----END PGP SIGNATURE-----
 
-
-Thank you!
-	Manuel Lauss
+--nextPart2111195.LnjuZB7qIq--
