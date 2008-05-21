@@ -1,81 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933642AbYEUMcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934377AbYEUMdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933642AbYEUMcA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 08:32:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762174AbYEUMbw
+	id S934377AbYEUMdT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 08:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763453AbYEUMdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 08:31:52 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:46221 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757980AbYEUMbv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 08:31:51 -0400
-Date: Wed, 21 May 2008 14:31:16 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Avi Kivity <avi@qumranet.com>
-Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Subject: Re: [BUG] cpu hotplug vs scheduler
-Message-ID: <20080521123116.GC9441@osiris.boeblingen.de.ibm.com>
-References: <4829A6A0.5040208@qumranet.com> <b647ffbd0805140113i4296076cna3f371c86c479653@mail.gmail.com> <482ADB69.8010305@qumranet.com> <b647ffbd0805140605j5ed43b73t557983ece879c552@mail.gmail.com> <482C0E35.9000708@qumranet.com>
+	Wed, 21 May 2008 08:33:09 -0400
+Received: from h155.mvista.com ([63.81.120.155]:8658 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762174AbYEUMdI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 08:33:08 -0400
+Message-ID: <4834166C.40901@ru.mvista.com>
+Date: Wed, 21 May 2008 16:32:44 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <482C0E35.9000708@qumranet.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Manuel Lauss <mano@roarinelk.homelinux.net>
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org, drzeus@drzeus.cx
+Subject: Re: [PATCH 4/9] Alchemy: register mmc platform device for db1200/pb1200
+ boards
+References: <20080519080339.GA21985@roarinelk.homelinux.net> <20080519080605.GE21985@roarinelk.homelinux.net>
+In-Reply-To: <20080519080605.GE21985@roarinelk.homelinux.net>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Now it died when allocating the pda:
->
-> [4301986.526627] Booting processor 1/6 ip 6000
-> [4301986.537195] swapper: page allocation failure. order:2, mode:0x20
-> [4301986.537195] Pid: 0, comm: swapper Not tainted 2.6.26-rc2 #728
-> [4301986.537195]
-> [4301986.537195] Call Trace:
-> [4301986.537195]  [<ffffffff802388ae>] ? __printk_ratelimit+0x9/0xb
-> [4301986.537195]  [<ffffffff80272e07>] __alloc_pages_internal+0x387/0x39f
-> [4301986.537195]  [<ffffffff80272e35>] __alloc_pages+0xb/0xd
-> [4301986.537195]  [<ffffffff80272e4c>] __get_free_pages+0x15/0x46
-> [4301986.537195]  [<ffffffff80210cdf>] pda_init+0x87/0xac
-> [4301986.537195]  [<ffffffff8042fed1>] cpu_init+0x5e/0x34a
-> [4301986.537195]  [<ffffffff8026b437>] ? rcu_needs_cpu+0x36/0x47
-> [4301986.537195]  [<ffffffff802311a7>] ? idle_task_exit+0x71/0xad
-> [4301986.537195]  [<ffffffff804331aa>] start_secondary+0xc/0x178
-> [4301986.537195]
-> [4301986.537195] Mem-info:
-> [4301986.537195] DMA per-cpu:
-> [4301986.537195] CPU    0: hi:    0, btch:   1 usd:   0
-> [4301986.537195] CPU    2: hi:    0, btch:   1 usd:   0
-> [4301986.537195] DMA32 per-cpu:
-> [4301986.537195] CPU    0: hi:  186, btch:  31 usd: 153
-> [4301986.537195] CPU    2: hi:  186, btch:  31 usd: 135
-> [4301986.537195] Active:347879 inactive:109278 dirty:107 writeback:0  
-> unstable:0
-> [4301986.537195]  free:5311 slab:10186 mapped:30496 pagetables:1587 bounce:0
-> [4301986.537195] DMA free:8012kB min:24kB low:28kB high:36kB active:60kB  
-> inactive:0kB present:8644kB pages_scanned:0 all_unreclaimable? no
-> [4301986.537195] lowmem_reserve[]: 0 1999 1999 1999
-> [4301986.537195] DMA32 free:13232kB min:5704kB low:7128kB high:8556kB  
-> active:1391456kB inactive:437112kB present:2047248kB pages_scanned:0  
-> all_unreclaimable? no
-> [4301986.537195] lowmem_reserve[]: 0 0 0 0
-> [4301986.537195] DMA: 19*4kB 16*8kB 10*16kB 11*32kB 6*64kB 4*128kB  
-> 1*256kB 2*512kB 3*1024kB 1*2048kB 0*4096kB = 8012kB
-> [4301986.537195] DMA32: 2034*4kB 570*8kB 1*16kB 0*32kB 0*64kB 0*128kB  
-> 0*256kB 1*512kB 0*1024kB 0*2048kB 0*4096kB = 13224kB
-> [4301986.537195] 212750 total pagecache pages
-> [4301986.537195] Swap cache: add 73, delete 18, find 0/0
-> [4301986.537195] Free swap  = 3210964kB
-> [4301986.537195] Total swap = 3211256kB
->
-> There seem to be some order-2 allocations available, though.  And in any  
-> case, cpu hotplug should't crash on such failures, only fail.
+Hello.
 
-Hi Avi,
+Manuel Lauss wrote:
 
-I think you fixed this specific bug. Does cpu hotplug stresstest now work
-for you?
+> Add au1xmmc platform data for PB1200/DB1200 boards, and wire up
+> the 2 SD controllers for them.
+
+> Signed-off-by: Manuel Lauss <mano@roarinelk.homelinux.net>
+
+    OK, this definitely looks better (and shorter :-).
+
+> diff --git a/arch/mips/au1000/common/platform.c b/arch/mips/au1000/common/platform.c
+> index 8cae775..6225e95 100644
+> --- a/arch/mips/au1000/common/platform.c
+> +++ b/arch/mips/au1000/common/platform.c
+
+[...]
+
+> @@ -248,15 +232,70 @@ static struct platform_device au1200_lcd_device = {
+>  
+>  static u64 au1xxx_mmc_dmamask =  ~(u32)0;
+>  
+> -static struct platform_device au1xxx_mmc_device = {
+> +extern struct au1xmmc_platform_data au1xmmc_platdata[2];
+> +
+> +static struct resource au1200_mmc0_resources[] = {
+> +	[0] = {
+> +		.start          = SD0_PHYS_ADDR,
+> +		.end            = SD0_PHYS_ADDR + 0x7ffff,
+> +		.flags          = IORESOURCE_MEM,
+> +	},
+> +	[1] = {
+> +		.start		= AU1200_SD_INT,
+> +		.flags		= IORESOURCE_IRQ,
+> +	},
+> +	[2] = {
+> +		.start		= DSCR_CMD0_SDMS_TX0,
+> +		.flags		= IORESOURCE_DMA,
+> +	},
+> +	[3] = {
+> +		.start          = DSCR_CMD0_SDMS_RX0,
+> +		.flags          = IORESOURCE_DMA,
+> +	}
+> +};
+> +
+> +static struct resource au1200_mmc1_resources[] = {
+> +	[0] = {
+> +		.start          = SD1_PHYS_ADDR,
+> +		.end            = SD1_PHYS_ADDR + 0x7ffff,
+> +		.flags          = IORESOURCE_MEM,
+> +	},
+> +	[1] = {
+> +		.start		= AU1200_SD_INT,
+> +		.flags		= IORESOURCE_IRQ,
+> +	},
+> +	[2] = {
+> +		.start		= DSCR_CMD0_SDMS_TX1,
+> +		.flags		= IORESOURCE_DMA,
+> +	},
+> +	[3] = {
+> +		.start          = DSCR_CMD0_SDMS_RX1,
+> +		.flags          = IORESOURCE_DMA,
+> +	}
+> +};
+> +
+
+    Shouldn't the IRQ/DMA resources also have their 'end' field set?
+
+[...]
+
+> diff --git a/arch/mips/au1000/pb1200/platform.c b/arch/mips/au1000/pb1200/platform.c
+> index 5930110..f329a38 100644
+> --- a/arch/mips/au1000/pb1200/platform.c
+> +++ b/arch/mips/au1000/pb1200/platform.c
+> @@ -22,6 +22,66 @@
+>  #include <linux/platform_device.h>
+>  
+>  #include <asm/mach-au1x00/au1xxx.h>
+> +#include <asm/mach-au1x00/au1100_mmc.h>
+> +
+> +static void pb1200mmc0_set_power(void *mmc_host, int state)
+> +{
+> +	if (state)
+> +		bcsr->board |= BCSR_BOARD_SD0PWR;
+> +	else
+> +		bcsr->board &= ~BCSR_BOARD_SD0PWR;
+> +
+> +	au_sync_delay(1);
+> +}
+> +
+> +static int pb1200mmc0_card_readonly(void *mmc_host)
+> +{
+> +	return (bcsr->status & BCSR_STATUS_SD0WP) ? 1 : 0;
+> +}
+> +
+> +static int pb1200mmc0_card_inserted(void *mmc_host)
+> +{
+> +	return (bcsr->sig_status & BCSR_INT_SD0INSERT) ? 1 : 0;
+> +}
+> +
+> +#ifndef CONFIG_MIPS_DB1200
+> +static void pb1200mmc1_set_power(void *mmc_host, int state)
+> +{
+> +	if (state)
+> +		bcsr->board |= BCSR_BOARD_SD1PWR;
+> +	else
+> +		bcsr->board &= ~BCSR_BOARD_SD1PWR;
+> +
+> +	au_sync_delay(1);
+> +}
+> +
+> +static int pb1200mmc1_card_readonly(void *mmc_host)
+> +{
+> +	return (bcsr->status & BCSR_STATUS_SD1WP) ? 1 : 0;
+> +}
+> +
+> +static int pb1200mmc1_card_inserted(void *mmc_host)
+> +{
+> +	return (bcsr->sig_status & BCSR_INT_SD1INSERT) ? 1 : 0;
+> +}
+> +#endif
+
+    These 2 separate versions could be converted into single one by using the 
+data arrays holding info BCSR bits -- something like the MMC driver has currently.
+
+> +
+> +const struct au1xmmc_platform_data au1xmmc_platdata[2] = {
+> +	[0] = {
+> +		.set_power	= pb1200mmc0_set_power,
+> +		.card_inserted	= pb1200mmc0_card_inserted,
+> +		.card_readonly	= pb1200mmc0_card_readonly,
+> +		.cd_setup	= NULL,		/* use poll-timer in driver */
+> +	},
+> +#ifndef CONFIG_MIPS_DB1200
+> +	[1] = {
+> +		.set_power	= pb1200mmc1_set_power,
+> +		.card_inserted	= pb1200mmc1_card_inserted,
+> +		.card_readonly	= pb1200mmc1_card_readonly,
+> +		.cd_setup	= NULL,		/* use poll-timer in driver */
+> +	},
+> +#endif
+> +};
+
+    You don't have to explicitly set 'cd_setup' to NULL...
+
+PS: BTW, I've noticed that include/asm-mips/mach-db1x00/db1x00.h defines 
+macros mmc_card_insterted() and mmc_power_on() which no code seems to be using 
+(might have been intended for use by the MMC driver but why no such macros in 
+other board headers?). Care to remove those while you're working on MMC?
+
+WBR, Sergei
