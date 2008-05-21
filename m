@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935847AbYEUDrn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935891AbYEUDsL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935847AbYEUDrn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 23:47:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934272AbYEUDeo
+	id S935891AbYEUDsL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 23:48:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932269AbYEUDev
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 23:34:44 -0400
-Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:44143 "EHLO
+	Tue, 20 May 2008 23:34:51 -0400
+Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:44128 "EHLO
 	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764143AbYEUDdI (ORCPT
+	with ESMTP id S1765152AbYEUDdF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 23:33:08 -0400
+	Tue, 20 May 2008 23:33:05 -0400
 From: hooanon05@yahoo.co.jp
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Junjiro Okajima <hooanon05@yahoo.co.jp>
-Subject: [AUFS PATCH v2.6.26-rc2-mm1 11/39] aufs workqueue
-Date: Wed, 21 May 2008 12:22:41 +0900
-Message-Id: <1211340189-11813-12-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [AUFS PATCH v2.6.26-rc2-mm1 02/39] aufs manual
+Date: Wed, 21 May 2008 12:22:32 +0900
+Message-Id: <1211340189-11813-3-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.5.5.1.308.g1fbb5.dirty
 In-Reply-To: <1211340189-11813-1-git-send-email-hooanon05@yahoo.co.jp>
 References: <1211340189-11813-1-git-send-email-hooanon05@yahoo.co.jp>
@@ -25,486 +25,1630 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Junjiro Okajima <hooanon05@yahoo.co.jp>
 
-initial commit
-workqueue for asynchronous, super-io or delegated operations.
-they are used in various places such as,
-- handling 'opaque' directory and whiteout
-- lookup and copy-up/down with credential
-- create/remove files and file i/o by delegation
-- internal xino file i/o
+	initial commit
+	aufs manual
 
 Signed-off-by: Junjiro Okajima <hooanon05@yahoo.co.jp>
 ---
- fs/aufs/wkq.c |  294 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- fs/aufs/wkq.h |  158 +++++++++++++++++++++++++++++++
- 2 files changed, 452 insertions(+), 0 deletions(-)
- create mode 100644 fs/aufs/wkq.c
- create mode 100644 fs/aufs/wkq.h
+ Documentation/filesystems/aufs/aufs.5 | 1609 +++++++++++++++++++++++++++++++++
+ 1 files changed, 1609 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/filesystems/aufs/aufs.5
 
-diff --git a/fs/aufs/wkq.c b/fs/aufs/wkq.c
+diff --git a/Documentation/filesystems/aufs/aufs.5 b/Documentation/filesystems/aufs/aufs.5
 new file mode 100644
-index 0000000..4c7d1d3
+index 0000000..42aabc6
 --- /dev/null
-+++ b/fs/aufs/wkq.c
-@@ -0,0 +1,294 @@
-+/*
-+ * Copyright (C) 2005-2008 Junjiro Okajima
-+ *
-+ * This program, aufs is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
++++ b/Documentation/filesystems/aufs/aufs.5
+@@ -0,0 +1,1609 @@
++.ds AUFS_VERSION 20080521-mm
++.ds AUFS_XINO_FNAME .aufs.xino
++.ds AUFS_XINO_DEFPATH /tmp/.aufs.xino
++.ds AUFS_DIRWH_DEF 3
++.ds AUFS_WH_PFX .wh.
++.ds AUFS_WH_PFX_LEN 4
++.ds AUFS_WKQ_NAME aufsd
++.ds AUFS_NWKQ_DEF 4
++.ds AUFS_WH_DIROPQ .wh..wh..opq
++.ds AUFS_WH_BASENAME .wh.aufs
++.ds AUFS_WH_PLINKDIR .wh.plink
++.ds AUFS_BRANCH_MAX 127
++.ds AUFS_MFS_SECOND_DEF 30
++.\".so aufs.tmac
++.
++.eo
++.de TQ
++.br
++.ns
++.TP \$1
++..
++.de Bu
++.IP \(bu 4
++..
++.ec
++.\" end of macro definitions
++.
++.\" ----------------------------------------------------------------------
++.TH aufs 5 \*[AUFS_VERSION] Linux "Linux Aufs User\[aq]s Manual"
++.SH NAME
++aufs \- another unionfs. version \*[AUFS_VERSION]
 +
-+/*
-+ * workqueue for asynchronous/super-io/delegated operations
-+ */
++.\" ----------------------------------------------------------------------
++.SH DESCRIPTION
++Aufs is a stackable unification filesystem such as Unionfs, which unifies
++several directories and provides a merged single directory.
++In the early days, aufs was entirely re-designed and re-implemented
++Unionfs Version 1.x series. After
++many original ideas, approaches and improvements, it
++becomes totally different from Unionfs while keeping the basic features.
++See Unionfs Version 1.x series for the basic features.
++Recently, Unionfs Version 2.x series begin taking some of same
++approaches to aufs\[aq]s.
 +
-+#include <linux/module.h>
-+#include "aufs.h"
++.\" ----------------------------------------------------------------------
++.SH MOUNT OPTIONS
++At mount-time, the order of interpreting options is,
++.RS
++.Bu
++simple flags, except xino/noxino, udba=inotify and dlgt
++.Bu
++branches
++.Bu
++xino/noxino
++.Bu
++udba=inotify
++.Bu
++dlgt
++.RE
 +
-+struct au_wkq *au_wkq;
++At remount-time,
++the options are interpreted in the given order,
++e.g. left to right, except dlgt. The \[oq]dlgt\[cq] option is
++disabled in interpreting.
++.RS
++.Bu
++create or remove
++whiteout-base(\*[AUFS_WH_PFX]\*[AUFS_WH_BASENAME]) and
++whplink-dir(\*[AUFS_WH_PFX]\*[AUFS_WH_PLINKDIR]) if necessary
++.Bu
++re-enable dlgt if necessary
++.RE
++.
++.TP
++.B br:BRANCH[:BRANCH ...] (dirs=BRANCH[:BRANCH ...])
++Adds new branches.
++(cf. Branch Syntax).
 +
-+struct au_cred {
-+#ifdef CONFIG_AUFS_DLGT
-+	int umask;
-+	uid_t fsuid;
-+	gid_t fsgid;
-+	kernel_cap_t cap_effective, cap_inheritable, cap_permitted;
-+#if 0 /* reserved for future use */
-+	unsigned keep_capabilities:1;
-+	struct user_struct *user;
-+	struct fs_struct *fs;
-+	struct nsproxy *nsproxy;
-+#endif
-+#endif
-+};
++Aufs rejects the branch which is an ancestor or a descendant of anther
++branch. It is called overlapped. When the branch is loopback-mounted
++directory, aufs also checks the source fs-image file of loopback
++device. If the source file is a descendant of another branch, it will
++be rejected too.
 +
-+struct au_wkinfo {
-+	struct work_struct wk;
-+	struct vfsmount *mnt;
++After mounting aufs or adding a branch, if you move a branch under
++another branch and make it descendant of anther branch, aufs will not
++work correctly.
++.
++.TP
++.B [ add | ins ]:index:BRANCH
++Adds a new branch.
++The index begins with 0.
++Aufs creates
++whiteout-base(\*[AUFS_WH_PFX]\*[AUFS_WH_BASENAME]) and
++whplink-dir(\*[AUFS_WH_PFX]\*[AUFS_WH_PLINKDIR]) if necessary.
 +
-+	unsigned int flags;
-+	struct au_cred cred;
++If there is the same named file on the lower branch (larger index),
++aufs will hide the lower file.
++You can only see the highest file.
++You will be confused if the added branch has whiteouts (including
++diropq), they may or may not hide the lower entries.
++.\" It is recommended to make sure that the added branch has no whiteout.
 +
-+	au_wkq_func_t func;
-+	void *args;
++If a process have once mapped a file by mmap(2) with MAP_SHARED
++and the same named file exists on the lower branch,
++the process still refers the file on the lower(hidden)
++branch after adding the branch.
++If you want to update the contents of a process address space after
++adding, you need to restart your process or open/mmap the file again.
++.\" Usually, such files are executables or shared libraries.
++(cf. Branch Syntax).
++.
++.TP
++.B del:dir
++Removes a branch.
++Aufs does not remove
++whiteout-base(\*[AUFS_WH_PFX]\*[AUFS_WH_BASENAME]) and
++whplink-dir(\*[AUFS_WH_PFX]\*[AUFS_WH_PLINKDIR]) automatically.
++For example, when you add a RO branch which was unified as RW, you
++will see whiteout-base or whplink-dir on the added RO branch.
 +
-+	atomic_t *busyp;
-+	struct completion *comp;
-+};
++If a process is referencing the file/directory on the deleting branch
++(by open, mmap, current working directory, etc.), aufs will return an
++error EBUSY.
++.
++.TP
++.B mod:BRANCH
++Modifies the permission flags of the branch.
++Aufs creates or removes
++whiteout-base(\*[AUFS_WH_PFX]\*[AUFS_WH_BASENAME]) and/or
++whplink-dir(\*[AUFS_WH_PFX]\*[AUFS_WH_PLINKDIR]) if necessary.
 +
-+/* ---------------------------------------------------------------------- */
++If the branch permission is been changing \[oq]rw\[cq] to \[oq]ro\[cq], and a process
++is mapping a file by mmap(2)
++.\" with MAP_SHARED
++on the branch, the process may or may not
++be able to modify its mapped memory region after modifying branch
++permission flags.
++(cf. Branch Syntax).
++.
++.TP
++.B append:BRANCH
++equivalent to \[oq]add:(last index + 1):BRANCH\[cq].
++(cf. Branch Syntax).
++.
++.TP
++.B prepend:BRANCH
++equivalent to \[oq]add:0:BRANCH.\[cq]
++(cf. Branch Syntax).
++.
++.TP
++.B xino=filename
++Use external inode number bitmap and translation table. It is set to
++<FirstWritableBranch>/\*[AUFS_XINO_FNAME] by default, or
++\*[AUFS_XINO_DEFPATH].
++Comma character in filename is not allowed.
 +
-+#ifdef CONFIG_AUFS_DLGT
-+static void cred_store(struct au_cred *cred)
++The files are created per an aufs and per a branch filesystem, and
++unlinked. So you
++cannot find this file, but it exists and is read/written frequently by
++aufs.
++(cf. External Inode Number Bitmap and Translation Table).
++.
++.TP
++.B noxino
++Stop using external inode number bitmap and translation table.
++
++If you use this option,
++Some applications will not work correctly.
++.\" And pseudo link feature will not work after the inode cache is
++.\" shrunk.
++(cf. External Inode Number Bitmap and Translation Table).
++.
++.TP
++.B trunc_xib
++Truncate the external inode number bitmap file. The truncation is done
++automatically when you delete a branch unless you do not specify
++\[oq]notrunc_xib\[cq] option.
++(cf. External Inode Number Bitmap and Translation Table).
++.
++.TP
++.B notrunc_xib
++Stop truncating the external inode number bitmap file when you delete
++a branch.
++(cf. External Inode Number Bitmap and Translation Table).
++.
++.TP
++.B create_policy | create=CREATE_POLICY
++.TQ
++.B copyup_policy | copyup | cpup=COPYUP_POLICY
++Policies to select one among multiple writable branches. The default
++values are \[oq]create=tdp\[cq] and \[oq]cpup=tdp\[cq].
++link(2) and rename(2) systemcalls have an exception. In aufs, they
++try keeping their operations in the branch where the source exists.
++(cf. Policies to Select One among Multiple Writable Branches).
++.
++.TP
++.B verbose | v
++Print some information.
++Currently, it is only busy file (or inode) at deleting a branch.
++.
++.TP
++.B noverbose | quiet | q | silent
++Disable \[oq]verbose\[cq] option.
++This is default value.
++.
++.TP
++.B dirwh=N
++Watermark to remove a dir actually at rmdir(2) and rename(2).
++
++If the target dir which is being removed or renamed (destination dir)
++has a huge number of whiteouts, i.e. the dir is empty logically but
++physically, the cost to remove/rename the single
++dir may be very high.
++It is
++required to unlink all of whiteouts internally before issuing
++rmdir/rename to the branch.
++To reduce the cost of single systemcall,
++aufs renames the target dir to a whiteout-ed temporary name and
++invokes a pre-created
++kernel thread to remove whiteout-ed children and the target dir.
++The rmdir/rename systemcall returns just after kicking the thread.
++
++When the number of whiteout-ed children is less than the value of
++dirwh, aufs remove them in a single systemcall instead of passing
++another thread.
++This value is ignored when the branch is NFS.
++The default value is \*[AUFS_DIRWH_DEF].
++.
++.TP
++.B plink
++.TQ
++.B noplink
++Specifies to use \[oq]pseudo link\[cq] feature or not.
++The default is \[oq]plink\[cq] which means use this feature.
++(cf. Pseudo Link)
++.
++.TP
++.B clean_plink
++Removes all pseudo-links in memory.
++In order to make pseudo-link permanent, use
++\[oq]auplink\[cq] script just before one of these operations,
++unmounting aufs,
++using \[oq]ro\[cq] or \[oq]noplink\[cq] mount option,
++deleting a branch from aufs,
++adding a branch into aufs,
++or changing your writable branch as readonly.
++If you installed both of /sbin/mount.aufs and /sbin/umount.aufs, and your
++mount(8) and umount(8) support them, and /etc/default/auplink is configured,
++\[oq]auplink\[cq] script will be executed automatically and flush pseudo-links.
++(cf. Pseudo Link)
++.
++.TP
++.B udba=none | reval | inotify
++Specifies the level of UDBA (User\[aq]s Direct Branch Access) test.
++(cf. User\[aq]s Direct Branch Access and Inotify Limitation).
++.
++.TP
++.B diropq=whiteouted | w | always | a
++Specifies whether mkdir(2) and rename(2) dir case make the created directory
++\[oq]opaque\[cq] or not.
++In other words, to create \[oq]\*[AUFS_WH_DIROPQ]\[cq] under the created or renamed
++directory, or not to create.
++When you specify diropq=w or diropq=whiteouted, aufs will not create
++it if the
++directory was not whiteouted or opaqued. If the directory was whiteouted
++or opaqued, the created or renamed directory will be opaque.
++When you specify diropq=a or diropq==always, aufs will always create
++it regardless
++the directory was whiteouted/opaqued or not.
++The default value is diropq=w, it means not to create when it is unnecessary.
++If you define CONFIG_AUFS_COMPAT at aufs compiling time, the default will be
++diropq=a.
++You need to consider this option if you are planning to add a branch later
++since \[oq]diropq\[cq] affects the same named directory on the added branch.
++.
++.TP
++.B warn_perm
++.TQ
++.B nowarn_perm
++Adding a branch, aufs will issue a warning about uid/gid/permission of
++the adding branch directory,
++when they differ from the existing branch\[aq]s. This difference may or
++may not impose a security risk.
++If you are sure that there is no problem and want to stop the warning,
++use \[oq]nowarn_perm\[cq] option.
++The default is \[oq]warn_perm\[cq] (cf. DIAGNOSTICS).
++.
++.TP
++.B coo=none | leaf | all
++Specifies copyup-on-open level.
++When you open a file which is on readonly branch, aufs opens the file after
++copying-up it to the writable branch following this level.
++When the keyword \[oq]all\[cq] is specified, aufs copies-up the opening object even if
++it is a directory. In this case, simple \[oq]ls\[cq] or \[oq]find\[cq] cause the copyup and
++your writable branch will have a lot of empty directories.
++When the keyword \[oq]leaf\[cq] is specified, aufs copies-up the opening object except
++directory.
++The keyword \[oq]none\[cq] disables copyup-on-open.
++The default is \[oq]coo=none\[cq].
++.
++.TP
++.B dlgt
++.TQ
++.B nodlgt
++If you do not want your application to access branches though aufs or
++to be traced strictly by task I/O accounting, you can
++use the kernel threads in aufs. If you enable CONFIG_AUFS_DLGT and
++specify \[oq]dlgt\[cq] mount option, then
++aufs delegates its internal
++access to the branches to the kernel threads.
++
++When you define CONFIG_SECURITY and use any type of Linux Security Module
++(LSM), for example SUSE AppArmor, you may meet some errors or
++warnings from your security module. Because aufs access its branches
++internally, your security module may detect, report, or prohibit it.
++The behaviour is highly depending upon your security module and its
++configuration.
++In this case, you can use \[oq]dlgt\[cq] mount option, too.
++Your LSM will see the
++aufs kernel threads access to the branch, instead of your
++application.
++
++The delegation may have a negative impact to the performance since it
++includes
++task-switch (scheduling) and waits for the thread to complete the
++delegated access. You should consider increasing the number of the
++kernel thread specifying the aufs module parameter \[oq]nwkq.\[cq]
++
++Currently, aufs does NOT delegate it at mount and remount time.
++The default is nodlgt which means aufs does not delegate the internal
++access.
++.\" .
++.\" .TP
++.\" .B dirperm1
++.\" .TQ
++.\" .B nodirperm1
++.\" By default (nodirperm1), aufs checks the permission bits of target
++.\" directory on all branches. If any of them refused the requested
++.\" access, then aufs returns negative even if the topmost permission bits
++.\" of the directory allowed the access.
++.\" If you enable CONFIG_AUFS_DLGT and specify \[oq]dirperm1\[cq] option, aufs
++.\" doesn\[aq]t check the directories on all lower branches but the topmost
++.\" one.
++.
++.TP
++.B shwh
++.TQ
++.B noshwh
++By default (noshwh), aufs doesn\[aq]t show the whiteouts and
++they just hide the same named entries in the lower branches. The
++whiteout itself also never be appeared.
++If you enable CONFIG_AUFS_SHWH and specify \[oq]shwh\[cq] option, aufs
++will show you the name of whiteouts
++with keeping its feature to hide the lowers.
++Honestly speaking, I am rather confused with this \[oq]visible whiteouts.\[cq]
++But a user who originally requested this feature wrote a nice how-to
++document about this feature. See Tips file in the aufs CVS tree.
++
++.\" ----------------------------------------------------------------------
++.SH Module Parameters
++.TP
++.B nwkq=N
++The number of kernel thread named \*[AUFS_WKQ_NAME].
++
++Those threads stay in the system while the aufs module is loaded,
++and handle the special I/O requests from aufs.
++The default value is \*[AUFS_NWKQ_DEF].
++
++The special I/O requests from aufs include a part of copy-up, lookup,
++directory handling, pseudo-link, xino file operations and the
++delegated access to branches.
++For example, Unix filesystems allow you to rmdir(2) which has no write
++permission bit, if its parent directory has write permission bit. In aufs, the
++removing directory may or may not have whiteout or \[oq]dir opaque\[cq] mark as its
++child. And aufs needs to unlink(2) them before rmdir(2).
++Therefore aufs delegates the actual unlink(2) and rmdir(2) to another kernel
++thread which has been created already and has a superuser privilege.
++
++If you enable CONFIG_SYSFS, you can check this value through
++<sysfs>/module/aufs/parameters/nwkq.
++
++So how many threads is enough? You can check it by
++<sysfs>/fs/aufs/stat, if you enable CONFIG_AUFS_SYSAUFS (for
++linux\-2.6.24 and earlier) or CONFIG_AUFS_STAT (for linux\-2.6.25 and
++later) too.
++It shows the maximum number of the enqueued work
++at a time per a thread. Usually they are all small numbers or
++0. If your workload is heavy
++and you feel the response is low, then check these values. If there
++are no zero and any of them is larger than 2 or 3, you should set \[oq]nwkq\[cq]
++module parameter greater then the default value.
++But the reason of the bad response is in your branch filesystem, to
++increase the number of aufs thread will not help you.
++
++The last number in <sysfs>/fs/aufs/stat after comma is the maximum
++number of the \[oq]no-wait\[cq] enqueued work at a time. Aufs enqueues such
++work to the system global workqueue called \[oq]events\[cq], but does not wait
++for its completion. Usually they does no harm the time-performance of
++aufs.
++.
++.TP
++.B brs=1 | 0
++Specifies to use the branch path data file under sysfs or not.
++
++If the number of your branches is large or their path is long
++and you meet the limitation of mount(8) ro /etc/mtab, you need to
++enable CONFIG_SYSFS and set aufs module parameter brs=1.
++If your linux version is linux\-2.6.24 and earlier, you need to enable
++CONFIG_AUFS_SYSAUFS too.
++
++When this parameter is set as 1, aufs does not show \[oq]br:\[cq] (or dirs=)
++mount option through /proc/mounts, and /sbin/mount.aufs does not put it
++to /etc/mtab. So you can keep yourself from the page limitation of
++mount(8) or /etc/mtab.
++Aufs shows branch paths through <sysfs>/fs/aufs/si_XXX/brNNN.
++Actually the file under sysfs has also a size limitation, but I don\[aq]t
++think it is harmful.
++
++The default is brs=0, which means <sysfs>/fs/aufs/si_XXX/brNNN does not exist
++and \[oq]br:\[cq] option will appear in /proc/mounts, and /etc/mtab if you
++install /sbin/mount.aufs.
++If you did not enable CONFIG_AUFS_SYSAUFS (for
++linux\-2.6.24 and earlier), this parameter will be
++ignored.
++
++There is one more side effect in setting 1 to this parameter.
++If you rename your branch, the branch path written in /etc/mtab will be
++obsoleted and the future remount will meet some error due to the
++unmatched parameters (Remember that mount(8) may take the options from
++/etc/mtab and pass them to the systemcall).
++If you set 1, /etc/mtab will not hold the branch path and you will not
++meet such trouble. On the other hand, /proc/mounts which holds the
++branch path is updated dynamically. So it must not be obsoleted.
++.
++.TP
++.B sysrq=key
++Specifies MagicSysRq key for debugging aufs.
++You need to enable both of CONFIG_MAGIC_SYSRQ and CONFIG_AUFS_DEBUG.
++If your linux version is linux\-2.6.24 and earlier, you need to enable
++CONFIG_AUFS_SYSAUFS too.
++Currently this is for developers only.
++The default is \[oq]a\[cq].
++
++.\" ----------------------------------------------------------------------
++.SH Branch Syntax
++.TP
++.B dir_path[ =permission [ + attribute ] ]
++.TQ
++.B permission := rw | ro | rr
++.TQ
++.B attribute := wh | nolwh
++dir_path is a directory path.
++The keyword after \[oq]dir_path=\[cq] is a
++permission flags for that branch.
++Comma, colon and the permission flags string (including \[oq]=\[cq])in the path
++are not allowed.
++Any filesystem can be a branch, but aufs and unionfs.
++If you specify aufs or unionfs as a branch, aufs will return an error
++saying it is overlapped or nested.
++If you enable CONFIG_AUFS_ROBR, you can use aufs as a non-writable
++branch of another aufs.
++
++Cramfs in linux stable release has strange inodes and it makes aufs
++confused. For example,
++.nf
++$ mkdir -p w/d1 w/d2
++$ > w/z1
++$ > w/z2
++$ mkcramfs w cramfs
++$ sudo mount -t cramfs -o ro,loop cramfs /mnt
++$ find /mnt -ls
++    76    1 drwxr-xr-x   1 jro      232            64 Jan  1  1970 /mnt
++     1    1 drwxr-xr-x   1 jro      232             0 Jan  1  1970 /mnt/d1
++     1    1 drwxr-xr-x   1 jro      232             0 Jan  1  1970 /mnt/d2
++     1    1 -rw-r--r--   1 jro      232             0 Jan  1  1970 /mnt/z1
++     1    1 -rw-r--r--   1 jro      232             0 Jan  1  1970 /mnt/z2
++.fi
++
++All these two directories and two files have the same inode with one
++as their link count. Aufs cannot handle such inode correctly.
++Currently, aufs involves a tiny workaround for such inodes. But some
++applications may not work correctly since aufs inode number for such
++inode will change silently.
++If you do not have any empty files, empty directories or special files,
++inodes on cramfs will be all fine.
++
++A branch should not be shared as the writable branch between multiple
++aufs. A readonly branch can be shared.
++
++The maximum number of branches is configurable at compile time.
++The current value is \*[AUFS_BRANCH_MAX] which depends upon
++configuration.
++
++When an unknown permission or attribute is given, aufs sets ro to that
++branch silently.
++
++.SS Permission
++.
++.TP
++.B rw
++Readable and writable branch. Set as default for the first branch.
++If the branch filesystem is mounted as readonly, you cannot set it \[oq]rw.\[cq]
++.\" A filesystem which does not support link(2) and i_op\->setattr(), for
++.\" example FAT, will not be used as the writable branch.
++.
++.TP
++.B ro
++Readonly branch and it has no whiteouts on it.
++Set as default for all branches except the first one. Aufs never issue
++both of write operation and lookup operation for whiteout to this branch.
++.
++.TP
++.B rr
++Real readonly branch, special case of \[oq]ro\[cq], for natively readonly
++branch. Assuming the branch is natively readonly, aufs can optimize
++some internal operation. For example, if you specify \[oq]udba=inotify\[cq]
++option, aufs does not set inotify for the things on rr branch.
++Set by default for a branch whose fs-type is either \[oq]iso9660\[cq],
++\[oq]cramfs\[cq], \[oq]romfs\[cq] or \[oq]squashfs.\[cq]
++
++.SS Attribute
++.
++.TP
++.B wh
++Readonly branch and it has/might have whiteouts on it.
++Aufs never issue write operation to this branch, but lookup for whiteout.
++Use this as \[oq]<branch_dir>=ro+wh\[cq].
++.
++.TP
++.B nolwh
++Usually, aufs creates a whiteout as a hardlink on a writable
++branch. This attributes prohibits aufs to create the hardlinked
++whiteout, including the source file of all hardlinked whiteout
++(\*[AUFS_WH_PFX]\*[AUFS_WH_BASENAME].)
++If you do not like a hardlink, or your writable branch does not support
++link(2), then use this attribute.
++But I am afraid a filesystem which does not support link(2) natively
++will fail in other place such as copy-up.
++Use this as \[oq]<branch_dir>=rw+nolwh\[cq].
++Also you may want to try \[oq]noplink\[cq] mount option, while it is not recommended.
++
++.\" ----------------------------------------------------------------------
++.SH External Inode Number Bitmap and Translation Table (xino)
++Aufs uses one external bitmap file and one external inode number
++translation table files per an aufs and per a branch
++filesystem by
++default. The bitmap is for recycling aufs inode number and the others
++are a table for converting an inode number on a branch to
++an aufs inode number. The default path
++is \[oq]first writable branch\[cq]/\*[AUFS_XINO_FNAME].
++If there is no writable branch, the
++default path
++will be \*[AUFS_XINO_DEFPATH].
++.\" A user who executes mount(8) needs the privilege to create xino
++.\" file.
++
++Those files are always opened and read/write by aufs frequently.
++If your writable branch is on flash memory device, it is recommended
++to put xino files on other than flash memory by specifying \[oq]xino=\[cq]
++mount option.
++
++The
++maximum file size of the bitmap is, basically, the amount of the
++number of all the files on all branches divided by 8 (the number of
++bits in a byte).
++For example, on a 4KB page size system, if you have 32,768 (or
++2,599,968) files in aufs world,
++then the maximum file size of the bitmap is 4KB (or 320KB).
++
++The
++maximum file size of the table will
++be \[oq]max inode number on the branch x size of an inode number\[cq].
++For example in 32bit environment,
++
++.nf
++$ df -i /branch_fs
++/dev/hda14           2599968  203127 2396841    8% /branch_fs
++.fi
++
++and /branch_fs is an branch of the aufs. When the inode number is
++assigned contiguously (without \[oq]hole\[cq]), the maximum xino file size for
++/branch_fs will be 2,599,968 x 4 bytes = about 10 MB. But it might not be
++allocated all of disk blocks.
++When the inode number is assigned discontinuously, the maximum size of
++xino file will be the largest inode number on a branch x 4 bytes.
++Additionally, the file size is limited to LLONG_MAX or the s_maxbytes
++in filesystem\[aq]s superblock (s_maxbytes may be smaller than
++LLONG_MAX). So the
++support-able largest inode number on a branch is less than
++2305843009213693950 (LLONG_MAX/4\-1).
++This is the current limitation of aufs.
++On 64bit environment, this limitation becomes more strict and the
++supported largest inode number is less than LLONG_MAX/8\-1.
++
++The xino files are always hidden, i.e. removed. So you cannot
++do \[oq]ls \-l xino_file\[cq].
++If you enable CONFIG_SYSFS, you can check these information through
++<sysfs>/fs/aufs/<si_id>/xino (for linux\-2.6.24 and earlier, you
++need to enable CONFIG_AUFS_SYSAUFS too).
++The first line in <sysfs>/fs/aufs/<si_id>/xino shows the information
++of the bitmap file, in the format of,
++
++.nf
++<blocks>x<block size> <file size>
++.fi
++
++Note that a filesystem usually has a
++feature called pre-allocation, which means a number of
++blocks are allocated automatically, and then deallocated
++silently when the filesystem thinks they are unnecessary.
++You do not have to be surprised the sudden changes of the number of
++blocks, when your filesystem which xino files are placed supports the
++pre-allocation feature.
++
++The rests are hidden xino file information in the format of,
++
++.nf
++<branch index>: <file count>, <blocks>x<block size> <file size>
++.fi
++
++If the file count is larger than 1, it means some of your branches are
++on the same filesystem and the xino file is shared by them.
++Note that the file size may not be equal to the actual consuming blocks
++since xino file is a sparse file, i.e. a hole in a file which does not
++consume any disk blocks.
++
++Once you unmount aufs, the xino files for that aufs are totally gone.
++It means that the inode number is not permanent.
++
++The xino files should be created on the filesystem except NFS.
++If your first writable branch is NFS, you will need to specify xino
++file path other than NFS.
++Also if you are going to remove the branch where xino files exist or
++change the branch permission to readonly, you need to use xino option
++before del/mod the branch.
++
++The bitmap file can be truncated.
++For example, if you delete a branch which has huge number of files,
++many inode numbers will be recycled and the bitmap will be truncated
++to smaller size. Aufs does this automatically when a branch is
++deleted.
++You can truncate it anytime you like if you specify \[oq]trunc_xib\[cq] mount
++option. But when the accessed inode number was not deleted, nothing
++will be truncated.
++If you do not want to truncate it (it may be slow) when you delete a
++branch, specify \[oq]notrunc_xib\[cq] after \[oq]del\[cq] mount option.
++
++If you do not want to use xino, use noxino mount option. Use this
++option with care, since the inode number may be changed silently and
++unexpectedly anytime.
++For example,
++rmdir failure, recursive chmod/chown/etc to a large and deep directory
++or anything else.
++And some applications will not work correctly.
++.\" When the inode number has been changed, your system
++.\" can be crazy.
++If you want to change the xino default path, use xino mount option.
++
++After you add branches, the persistence of inode number may not be
++guaranteed.
++At remount time, cached but unused inodes are discarded.
++And the newly appeared inode may have different inode number at the
++next access time. The inodes in use have the persistent inode number.
++
++When aufs assigned an inode number to a file, and if you create the
++same named file on the upper branch directly, then the next time you
++access the file, aufs may assign another inode number to the file even
++if you use xino option.
++Some applications may treat the file whose inode number has been
++changed as totally different file.
++
++.\" ----------------------------------------------------------------------
++.SH Pseudo Link (hardlink over branches)
++Aufs supports \[oq]pseudo link\[cq] which is a logical hard-link over
++branches (cf. ln(1) and link(2)).
++In other words, a copied-up file by link(2) and a copied-up file which was
++hard-linked on a readonly branch filesystem.
++
++When you have files named fileA and fileB which are
++hardlinked on a readonly branch, if you write something into fileA,
++aufs copies-up fileA to a writable branch, and write(2) the originally
++requested thing to the copied-up fileA. On the writable branch,
++fileA is not hardlinked.
++But aufs remembers it was hardlinked, and handles fileB as if it existed
++on the writable branch, by referencing  fileA\[aq]s inode on the writable
++branch as fileB\[aq]s inode.
++
++Once you unmount aufs, the plink info for that aufs kept in memory are totally
++gone.
++It means that the pseudo-link is not permanent.
++If you want to make plink permanent, try \[oq]auplink\[cq] script just before
++one of these operations,
++unmounting your aufs,
++using \[oq]ro\[cq] or \[oq]noplink\[cq] mount option,
++deleting a branch from aufs,
++adding a branch into aufs,
++or changing your writable branch to readonly.
++
++This script will reproduces all real hardlinks on a writable branch by linking
++them, and removes pseudo-link info in memory and temporary link on the
++writable branch.
++Since this script access your branches directly, you cannot hide them by
++\[oq]mount \-\-bind /tmp /branch\[cq] or something.
++
++If you are willing to rebuild your aufs with the same branches later, you
++should use auplink script before you umount your aufs.
++If you installed both of /sbin/mount.aufs and /sbin/umount.aufs, and your
++mount(8) and umount(8) support them, and /etc/default/auplink is configured,
++\[oq]auplink\[cq] script will be executed automatically and flush pseudo-links.
++
++The /etc/default/auplink is a simple shell script which does nothing but defines
++$FLUSH. If your aufs mount point is set in $FLUSH, \[oq]auplink\[cq] flushes
++the pseudo-links on that mount point.
++If $FLUSH is set to \[oq]ALL\[cq], \[oq]auplink\[cq] will be executed for every aufs.
++
++The \[oq]auplink\[cq] script uses \[oq]aulchown\[cq] binary, you need to install it too.
++The \[oq]auplink\[cq] script executes \[oq]find\[cq] and \[oq]mount \-o remount\[cq], they may take a
++long time and impact the later system performance.
++If you did not install /sbin/mount.aufs, /sbin/umount.aufs or /sbin/auplink,
++but you want to flush pseudo-links, then you need to execute \[oq]auplink\[cq] manually.
++If you installed and configured them, but do not want to execute \[oq]auplink\[cq] at
++umount time, then use \[oq]\-i\[cq] option for umount(8).
++
++.nf
++# auplink /your/aufs/root flush
++# umount /your/aufs/root
++or
++# auplink /your/aufs/root flush
++# mount -o remount,mod:/your/writable/branch=ro /your/aufs/root
++or
++# auplink /your/aufs/root flush
++# mount -o remount,noplink /your/aufs/root
++or
++# auplink /your/aufs/root flush
++# mount -o remount,del:/your/aufs/branch /your/aufs/root
++or
++# auplink /your/aufs/root flush
++# mount -o remount,append:/your/aufs/branch /your/aufs/root
++.fi
++
++The plinks are kept both in memory and on disk. When they consumes too much
++resources on your system, you can use the \[oq]auplink\[cq] script at anytime and
++throw away the unnecessary pseudo-links in safe.
++
++Additionally, the \[oq]auplink\[cq] script is very useful for some security reasons.
++For example, when you have a directory whose permission flags
++are 0700, and a file who is 0644 under the 0700 directory. Usually,
++all files under the 0700 directory are private and no one else can see
++the file. But when the directory is 0711 and someone else knows the 0644
++filename, he can read the file.
++
++Basically, aufs pseudo-link feature creates a temporary link under the
++directory whose owner is root and the permission flags are 0700.
++But when the writable branch is NFS, aufs sets 0711 to the directory.
++When the 0644 file is pseudo-linked, the temporary link, of course the
++contents of the file is totally equivalent, will be created under the
++0711 directory. The filename will be generated by its inode number.
++While it is hard to know the generated filename, someone else may try peeping
++the temporary pseudo-linked file by his software tool which may try the name
++from one to MAX_INT or something.
++In this case, the 0644 file will be read unexpectedly.
++I am afraid that leaving the temporary pseudo-links can be a security hole.
++It makes sense to execute \[oq]auplink /your/aufs/root flush\[cq]
++periodically, when your writable branch is NFS.
++
++When your writable branch is not NFS, or all users are careful enough to set 0600
++to their private files, you do not have to worry about this issue.
++
++If you do not want this feature, use \[oq]noplink\[cq] mount option and you do
++not need
++to install \[oq]auplink\[cq] script and \[oq]aulchown\[cq] binary.
++
++.SS The behaviours of plink and noplink
++This sample shows that the \[oq]f_src_linked2\[cq] with \[oq]noplink\[cq] option cannot follow
++the link.
++
++.nf
++none on /dev/shm/u type aufs (rw,xino=/dev/shm/rw/.aufs.xino,br:/dev/shm/rw=rw:/dev/shm/ro=ro)
++$ ls -li ../r?/f_src_linked* ./f_src_linked* ./copied
++ls: ./copied: No such file or directory
++15 -rw-r--r--  2 jro jro 2 Dec 22 11:03 ../ro/f_src_linked
++15 -rw-r--r--  2 jro jro 2 Dec 22 11:03 ../ro/f_src_linked2
++22 -rw-r--r--  2 jro jro 2 Dec 22 11:03 ./f_src_linked
++22 -rw-r--r--  2 jro jro 2 Dec 22 11:03 ./f_src_linked2
++$ echo abc >> f_src_linked
++$ cp f_src_linked copied
++$ ls -li ../r?/f_src_linked* ./f_src_linked* ./copied
++15 -rw-r--r--  2 jro jro 2 Dec 22 11:03 ../ro/f_src_linked
++15 -rw-r--r--  2 jro jro 2 Dec 22 11:03 ../ro/f_src_linked2
++36 -rw-r--r--  2 jro jro 6 Dec 22 11:03 ../rw/f_src_linked
++53 -rw-r--r--  1 jro jro 6 Dec 22 11:03 ./copied
++22 -rw-r--r--  2 jro jro 6 Dec 22 11:03 ./f_src_linked
++22 -rw-r--r--  2 jro jro 6 Dec 22 11:03 ./f_src_linked2
++$ cmp copied f_src_linked2
++$
++
++none on /dev/shm/u type aufs (rw,xino=/dev/shm/rw/.aufs.xino,noplink,br:/dev/shm/rw=rw:/dev/shm/ro=ro)
++$ ls -li ../r?/f_src_linked* ./f_src_linked* ./copied
++ls: ./copied: No such file or directory
++17 -rw-r--r--  2 jro jro 2 Dec 22 11:03 ../ro/f_src_linked
++17 -rw-r--r--  2 jro jro 2 Dec 22 11:03 ../ro/f_src_linked2
++23 -rw-r--r--  2 jro jro 2 Dec 22 11:03 ./f_src_linked
++23 -rw-r--r--  2 jro jro 2 Dec 22 11:03 ./f_src_linked2
++$ echo abc >> f_src_linked
++$ cp f_src_linked copied
++$ ls -li ../r?/f_src_linked* ./f_src_linked* ./copied
++17 -rw-r--r--  2 jro jro 2 Dec 22 11:03 ../ro/f_src_linked
++17 -rw-r--r--  2 jro jro 2 Dec 22 11:03 ../ro/f_src_linked2
++36 -rw-r--r--  1 jro jro 6 Dec 22 11:03 ../rw/f_src_linked
++53 -rw-r--r--  1 jro jro 6 Dec 22 11:03 ./copied
++23 -rw-r--r--  2 jro jro 6 Dec 22 11:03 ./f_src_linked
++23 -rw-r--r--  2 jro jro 6 Dec 22 11:03 ./f_src_linked2
++$ cmp copied f_src_linked2
++cmp: EOF on f_src_linked2
++$
++.fi
++
++.\"
++.\" If you add/del a branch, or link/unlink the pseudo-linked
++.\" file on a branch
++.\" directly, aufs cannot keep the correct link count, but the status of
++.\" \[oq]pseudo-linked.\[cq]
++.\" Those files may or may not keep the file data after you unlink the
++.\" file on the branch directly, especially the case of your branch is
++.\" NFS.
++
++If you add a branch which has fileA or fileB, aufs does not follow the
++pseudo link. The file on the added branch has no relation to the same
++named file(s) on the lower branch(es).
++If you use noxino mount option, pseudo link will not work after the
++kernel shrinks the inode cache.
++
++This feature will not work for squashfs before version 3.2 since its
++inode is tricky.
++When the inode is hardlinked, squashfs inodes has the same inode
++number and correct link count, but the inode memory object is
++different. Squashfs inodes (before v3.2) are generated for each, even
++they are hardlinked.
++
++.\" ----------------------------------------------------------------------
++.SH User\[aq]s Direct Branch Access (UDBA)
++UDBA means a modification to a branch filesystem manually or directly,
++e.g. bypassing aufs.
++While aufs is designed and implemented to be safe after UDBA,
++it can make yourself and your aufs confused. And some information like
++aufs inode will be incorrect.
++For example, if you rename a file on a branch directly, the file on
++aufs may
++or may not be accessible through both of old and new name.
++Because aufs caches various information about the files on
++branches. And the cache still remains after UDBA.
++
++Aufs has a mount option named \[oq]udba\[cq] which specifies the test level at
++access time whether UDBA was happened or not.
++.
++.TP
++.B udba=none
++Aufs trusts the dentry and the inode cache on the system, and never
++test about UDBA. With this option, aufs runs fastest, but it may show
++you incorrect data.
++Additionally, if you often modify a branch
++directly, aufs will not be able to trace the changes of inodes on the
++branch. It can be a cause of wrong behaviour, deadlock or anything else.
++
++It is recommended to use this option only when you are sure that
++nobody access a file on a branch.
++It might be difficult for you to achieve real \[oq]no UDBA\[cq] world when you
++cannot stop your users doing \[oq]find / \-ls\[cq] or something.
++If you really want to forbid all of your users to UDBA, here is a trick
++for it.
++With this trick, users cannot see the
++branches directly and aufs runs with no problem, except \[oq]auplink\[cq] script.
++But if you are not familiar with aufs, this trick may make
++yourself confused.
++
++.nf
++# d=/tmp/.aufs.hide
++# mkdir $d
++# for i in $branches_you_want_to_hide
++> do
++>	mount -n --bind $d $i
++> done
++.fi
++
++When you unmount the aufs, delete/modify the branch by remount, or you
++want to show the hidden branches again, unmount the bound
++/tmp/.aufs.hide.
++
++.nf
++# umount -n $branches_you_want_to_unbound
++.fi
++
++If you use FUSE filesystem as an aufs branch which supports hardlink,
++you should not set this option, since FUSE makes inode objects for
++each hardlinks (at least in linux\-2.6.23). When your FUSE filesystem
++maintains them at link/unlinking, it is equivalent
++to \[oq]direct branch access\[cq] for aufs.
++
++.
++.TP
++.B udba=reval
++Aufs tests only the existence of the file which existed. If
++the existed file was removed on the branch directly, aufs
++discard the cache about the file and
++re-lookup it. So the data will be updated.
++This test is at minimum level to keep the performance and ensure the
++existence of a file.
++This is default and aufs runs still fast.
++
++This rule leads to some unexpected situation, but I hope it is
++harmless. Those are totally depends upon cache. Here are just a few
++examples.
++.
++.RS
++.Bu
++If the file is cached as negative or
++not-existed, aufs does not test it. And the file is still handled as
++negative after a user created the file on a branch directly. If the
++file is not cached, aufs will lookup normally and find the file.
++.
++.Bu
++When the file is cached as positive or existed, and a user created the
++same named file directly on the upper branch. Aufs detects the cached
++inode of the file is still existing and will show you the old (cached)
++file which is on the lower branch.
++.
++.Bu
++When the file is cached as positive or existed, and a user renamed the
++file by rename(2) directly. Aufs detects the inode of the file is
++still existing. You may or may not see both of the old and new files.
++Todo: If aufs also tests the name, we can detect this case.
++.RE
++
++If your outer modification (UDBA) is rare and you can ignore the
++temporary and minor differences between virtual aufs world and real
++branch filesystem, then try this mount option.
++.\" And when you modify a branch directly, set udba=inotify temporary
++.\" before the modification and set udba=reval again after that.
++.
++.TP
++.B udba=inotify
++Aufs sets \[oq]inotify\[cq] to all the accessed directories on its branches
++and receives the event about the dir and its children. It consumes
++resources, cpu and memory. And I am afraid that the performance will be
++hurt, but it is most strict test level.
++There are some limitations of linux inotify, see also Inotify
++Limitation.
++So it is recommended to leave udba default option usually, and set it
++to inotify by remount when you need it.
++
++When a user accesses the file which was notified UDBA before, the cached data
++about the file will be discarded and aufs re-lookup it. So the data will
++be updated.
++When an error condition occurs between UDBA and aufs operation, aufs
++will return an error, including EIO.
++To use this option, you need linux\-2.6.18 and later, and need to
++enable CONFIG_INOTIFY and CONFIG_AUFS_UDBA_INOTIFY.
++
++To rename/rmdir a directory on a branch directory may reveal the same named
++directory on the lower branch. Aufs tries re-lookuping the renamed
++directory and the revealed directory and assigning different inode
++number to them. But the inode number including their children can be a
++problem. The inode numbers will be changed silently, and
++aufs may produce a warning. If you rename a directory repeatedly and
++reveal/hide the lower directory, then aufs may confuse their inode
++numbers too. It depends upon the system cache.
++
++When you make a directory in aufs and mount other filesystem on it,
++the directory in aufs cannot be removed expectedly because it is a
++mount point. But the same named directory on the writable branch can
++be removed, if someone wants. It is just an empty directory, instead
++of a mount point.
++Aufs cannot stop such direct rmdir, but produces a warning about it.
++
++
++.\" ----------------------------------------------------------------------
++.SH Linux Inotify Limitation
++Unfortunately, current inotify (linux\-2.6.18) has some limitations,
++and aufs must derive it. I am going to address some harmful cases.
++
++.SS IN_ATTRIB, updating atime
++When a file/dir on a branch is accessed directly, the inode atime (access
++time, cf. stat(2)) may or may not be updated. In some cases, inotify
++does not fire this event. So the aufs inode atime may remain old.
++
++.SS IN_ATTRIB, updating nlink
++When the link count of a file on a branch is incremented by link(2)
++directly,
++inotify fires IN_CREATE to the parent
++directory, but IN_ATTRIB to the file. So the aufs inode nlink may
++remain old.
++
++.SS IN_DELETE, removing file on NFS
++When a file on a NFS branch is deleted directly, inotify may or may
++not fire
++IN_DELETE event. It depends upon the status of dentry
++(DCACHE_NFSFS_RENAMED flag).
++In this case, the file on aufs seems still exists. Aufs and any user can see
++the file.
++
++.SS IN_IGNORED, deleted rename target
++When a file/dir on a branch is unlinked by rename(2) directly, inotify
++fires IN_IGNORED which means the inode is deleted. Actually, in some
++cases, the inode survives. For example, the rename target is linked or
++opened. In this case, inotify watch set by aufs is removed by VFS and
++inotify.
++And aufs cannot receive the events anymore. So aufs may show you
++incorrect data about the file/dir.
++
++.\" ----------------------------------------------------------------------
++.SH Policies to Select One among Multiple Writable Branches
++Aufs has some policies to select one among multiple writable branches
++when you are going to write/modify something. There are two kinds of
++policies, one is for newly create something and the other is for
++internal copy-up.
++You can select them by specifying mount option \[oq]create=CREATE_POLICY\[cq]
++or \[oq]cpup=COPYUP_POLICY.\[cq]
++These policies have no meaning when you have only one writable
++branch. If there is some meaning, it must hurt the performance.
++
++.SS Exceptions for Policies
++In every cases below, even if the policy says that the branch where a
++new file should be created is /rw2, the file will be created on /rw1.
++.
++.Bu
++If there is a readonly branch with \[oq]wh\[cq] attribute above the
++policy-selected branch and the parent dir is marked as opaque,
++or the target (creating) file is whiteouted on the ro+wh branch, then
++the policy will be ignored and the target file will be created on the
++nearest upper writable branch than the ro+wh branch.
++.RS
++.nf
++/aufs = /rw1 + /ro+wh/diropq + /rw2
++/aufs = /rw1 + /ro+wh/wh.tgt + /rw2
++.fi
++.RE
++.
++.Bu
++If there is a writable branch above the policy-selected branch and the
++parent dir is marked as opaque or the target file is whiteouted on the
++branch, then the policy will be ignored and the target file will be
++created on the highest one among the upper writable branches who has
++diropq or whiteout. In case of whiteout, aufs removes it as usual.
++.RS
++.nf
++/aufs = /rw1/diropq + /rw2
++/aufs = /rw1/wh.tgt + /rw2
++.fi
++.RE
++.
++.Bu
++link(2) and rename(2) systemcalls are exceptions in every policy.
++They try selecting the branch where the source exists as possible since
++copyup a large file will take long time. If it can\[aq]t be, ie. the
++branch where the source exists is readonly, then they will follow the
++copyup policy.
++.
++.Bu
++There is an exception for rename(2) when the target exists.
++If the rename target exists, aufs compares the index of the branches
++where the source and the target are existing and selects the higher
++one. If the selected branch is readonly, then aufs follows the copyup
++policy.
++
++.SS Policies for Creating
++.
++.TP
++.B create=tdp | top\-down\-parent
++Selects the highest writable branch where the parent dir exists. If
++the parent dir does not exist on a writable branch, then the internal
++copyup will happen. The policy for this copyup is always \[oq]bottom-up.\[cq]
++This is the default policy.
++.
++.TP
++.B create=rr | round\-robin
++Selects a writable branch in round robin. When you have two writable
++branches and creates 10 new files, 5 files will be created for each
++branch.
++mkdir(2) systemcall is an exception. When you create 10 new directories,
++all are created on the same branch.
++.
++.TP
++.B create=mfs[:second] | most\-free\-space[:second]
++Selects a writable branch which has most free space. In order to keep
++the performance, you can specify the duration (\[oq]second\[cq]) which makes
++aufs hold the index of last selected writable branch until the
++specified seconds expires. The first time you create something in aufs
++after the specified seconds expired, aufs checks the amount of free
++space of all writable branches by internal statfs call
++and the held branch index will be updated.
++The default value is \*[AUFS_MFS_SECOND_DEF] seconds.
++
++In this mode, a FUSE branch needs special attention.
++The struct fuse_operations has a statfs operation. It is OK, but the
++parameter is struct statvfs* instead of struct statfs*. So almost
++all user\-space implementaion will call statvfs(3)/fstatvfs(3) instead of
++statfs(2)/fstatfs(2).
++In glibc, [f]statvfs(3) issues [f]statfs(2), open(2)/read(2) for
++/proc/mounts,
++and stat(2) for the mountpoint. With this situation, a FUSE branch will
++cause a deadlock in creating something in aufs. Here is a sample
++scenario,
++.\" .RS
++.\" .IN -10
++.Bu
++create a file just under the aufs root dir.
++.Bu
++aufs will aquire a write-lock for the parent directory.
++.Bu
++aufs may call statfs internally for each writable branches to decide the
++branch which has most free space.
++.Bu
++FUSE in kernel\-space converts and redirects the statfs request to the
++user\-space.
++.Bu
++the user-space statfs handler will call [f]statvfs(3).
++.Bu
++the [f]statvfs(3) in glibc will access /proc/mounts and issue
++stat(2) for the mountpoint. But those require a read-lock for the aufs
++root directory.
++.Bu
++Then a deadlock occurs.
++.\" .RE 1
++.\" .IN
++
++In order to avoid this deadlock, I would suggest not to call
++[f]statvfs(3). Here is a sample code to do this.
++.nf
++struct statvfs stvfs;
++
++main()
 +{
-+	cred->umask = current->fs->umask;
-+	cred->fsuid = current->fsuid;
-+	cred->fsgid = current->fsgid;
-+	cred->cap_effective = current->cap_effective;
-+	cred->cap_inheritable = current->cap_inheritable;
-+	cred->cap_permitted = current->cap_permitted;
++	[f]statvfs(..., &stvfs)
 +}
 +
-+static void cred_revert(struct au_cred *cred)
++statfs_handler(const char *path, struct statvfs *arg)
 +{
-+	AuDebugOn(!au_test_wkq(current));
-+	current->fs->umask = cred->umask;
-+	current->fsuid = cred->fsuid;
-+	current->fsgid = cred->fsgid;
-+	current->cap_effective = cred->cap_effective;
-+	current->cap_inheritable = cred->cap_inheritable;
-+	current->cap_permitted = cred->cap_permitted;
++	struct statfs stfs;
++	[f]statfs(..., &stfs);
++	memcpy(arg, &stvfs, sizeof(stvfs));
++	arg->f_bfree = stfs.f_bfree;
++	arg->f_bavail = stfs.f_bavail;
++	arg->f_ffree = stfs.f_ffree;
++	arg->f_favail = /* any value */;
 +}
++.fi
++.
++.TP
++.B create=mfsrr:low[:second]
++Selects a writable branch in most-free-space mode first, and then
++round-robin mode. If the selected branch has less free space than the
++specified value \[oq]low\[cq] in bytes, then aufs re-tries in round-robin mode.
++Try an arithmetic expansion of shell which is defined by POSIX.
++For example, $((10 * 1024 * 1024)) for 10M.
++You can also specify the duration (\[oq]second\[cq]) which is equivalent to
++the \[oq]mfs\[cq] mode.
++.
++.TP
++.B create=pmfs[:second]
++Selects a writable branch where the parent dir exists, such as tdp
++mode. When the parent dir exists on multiple writable branches, aufs
++selects the one which has most free space, such as mfs mode.
 +
-+static void cred_switch(struct au_cred *old, struct au_cred *new)
-+{
-+	cred_store(old);
-+	cred_revert(new);
-+}
++.SS Policies for Copy-Up
++.
++.TP
++.B cpup=tdp | top\-down\-parent
++Equivalent to the same named policy for create.
++This is the default policy.
++.
++.TP
++.B cpup=bup | bottom\-up\-parent
++Selects the writable branch where the parent dir exists and the branch
++is nearest upper one from the copyup-source.
++.
++.TP
++.B cpup=bu | bottom\-up
++Selects the nearest upper writable branch from the copyup-source,
++regardless the existence of the parent dir.
 +
-+static void dlgt_cred_store(unsigned int flags, struct au_wkinfo *wkinfo)
-+{
-+	if (unlikely(au_ftest_wkq(flags, DLGT)))
-+		cred_store(&wkinfo->cred);
-+}
++.\" ----------------------------------------------------------------------
++.SH Exporting Aufs via NFS
++Aufs is supporting NFS-exporting in linux\-2.6.18 and later.
++Since aufs has no actual block device, you need to add NFS \[oq]fsid\[cq] option at
++exporting. Refer to the manual of NFS about the detail of this option.
 +
-+static void dlgt_func(struct au_wkinfo *wkinfo)
-+{
-+	if (!au_ftest_wkq(wkinfo->flags, DLGT))
-+		wkinfo->func(wkinfo->args);
-+	else {
-+		struct au_cred cred;
-+		cred_switch(&cred, &wkinfo->cred);
-+		wkinfo->func(wkinfo->args);
-+		cred_revert(&cred);
-+	}
-+}
-+#else
-+static void dlgt_cred_store(unsigned int flags, struct au_wkinfo *wkinfo)
-+{
-+	/* empty */
-+}
++In linux\-2.6.23 and earlier,
++it is recommended to export your branch filesystems once before
++exporting aufs. By exporting once, the branch filesystem internal
++pointer named find_exported_dentry is initialized. After this
++initialization, you may unexport them.
++Additionally, this initialization should be done per the
++filesystem type. If your branches are all the same filesystem
++type, you need to export just one of them once.
++If you have never export a filesystem which is used in your
++branches, aufs will initialize the internal pointer by the default
++value, and produce a
++warning. While it will work correctly, I am afraid it will be unsafe
++in the future.
++In linux\-2.6.24 and later, this exporting is unnecessary.
 +
-+static void dlgt_func(struct au_wkinfo *wkinfo)
-+{
-+	wkinfo->func(wkinfo->args);
-+}
-+#endif /* CONFIG_AUFS_DLGT */
++Additionally, there are several limitations or requirements.
++.RS
++.Bu
++The version of linux kernel must be linux\-2.6.18 or later.
++.Bu
++You need to enable CONFIG_AUFS_EXPORT.
++.Bu
++The branch filesystem must support NFS-exporting. For example, tmpfs in
++linux\-2.6.18 (or earlier) does not support it.
++.Bu
++NFSv2 is not supported. When you mount the exported aufs from your NFS
++client, you will need to some NFS options like v3 or nfsvers=v3,
++especially if it is nfsroot.
++.Bu
++If the size of the NFS file handle on your branch filesystem is large,
++aufs will
++not be able to handle it. The maximum size of NFSv3 file
++handle for a filesystem is 64 bytes. Aufs uses 24 bytes for 32bit
++system, plus 12 bytes for 64bit system. The rest is a room for a file
++handle of a branch filesystem.
++.Bu
++The External Inode Number Bitmap and Translation Table (xino) is
++required since NFS file
++handle is based upon inode number. The mount option \[oq]xino\[cq] is enabled
++by default.
++.Bu
++The branch filesystems must be accessible, which means \[oq]not hidden.\[cq]
++It means you need to \[oq]mount \-\-move\[cq] when you use initramfs and
++switch_root(8), or chroot(8).
++.\" .Bu
++.\" The \[oq]noplink\[cq] option is recommended, currently.
++.\" .Bu
++.\" If you add/del branches many times between the accesses to the same file
++.\" from the same NFS client,
++.\" and the number of the add/del operation is greater than the maximum
++.\" number of branches, then aufs may not handle the request from the NFS
++.\" client correctly.
++.RE
 +
-+/* ---------------------------------------------------------------------- */
++.\" ----------------------------------------------------------------------
++.SH Dentry and Inode Caches
++If you want to clear caches on your system, there are several tricks
++for that. If your system ram is low,
++try \[oq]find /large/dir \-ls > /dev/null\[cq].
++It will read many inodes and dentries and cache them. Then old caches will be
++discarded.
++But when you have large ram or you do not have such large
++directory, it is not effective.
 +
-+static void update_busy(struct au_wkq *wkq, struct au_wkinfo *wkinfo)
-+{
-+#ifdef CONFIG_AUFS_STAT
-+	unsigned int new, old;
++If you want to discard cache within a certain filesystem,
++try \[oq]mount \-o remount /your/mntpnt\[cq]. Some filesystem may return an error of
++EINVAL or something, but VFS discards the unused dentry/inode caches on the
++specified filesystem.
 +
-+	do {
-+		new = atomic_read(wkinfo->busyp);
-+		old = wkq->max_busy;
-+		if (new <= old)
-+			break;
-+	} while (cmpxchg(&wkq->max_busy, old, new) == old);
-+#endif
-+}
++.\" ----------------------------------------------------------------------
++.SH Compatible/Incompatible with Unionfs Version 1.x Series
++If you compile aufs with \-DCONFIG_AUFS_COMPAT, dirs= option and =nfsro
++branch permission flag are available. They are interpreted as
++br: option and =ro flags respectively.
++ \[oq]debug\[cq], \[oq]delete\[cq], \[oq]imap\[cq] options are ignored silently. When you
++compile aufs without \-DCONFIG_AUFS_COMPAT, these three options are
++also ignored, but a warning message is issued.
 +
-+static int enqueue(struct au_wkq *wkq, struct au_wkinfo *wkinfo)
-+{
-+	AuTraceEnter();
-+	wkinfo->busyp = &wkq->busy;
-+	update_busy(wkq, wkinfo);
-+	if (au_ftest_wkq(wkinfo->flags, WAIT))
-+		return !queue_work(wkq->q, &wkinfo->wk);
-+	else
-+		return !schedule_work(&wkinfo->wk);
-+}
++Ignoring \[oq]delete\[cq] option, and to keep filesystem consistency, aufs tries
++writing something to only one branch in a single systemcall. It means
++aufs may copyup even if the copyup-src branch is specified as writable.
++For example, you have two writable branches and a large regular file
++on the lower writable branch. When you issue rename(2) to the file on aufs,
++aufs may copyup it to the upper writable branch.
++If this behaviour is not what you want, then you should rename(2) it
++on the lower branch directly.
 +
-+static void do_wkq(struct au_wkinfo *wkinfo)
-+{
-+	unsigned int idle, n;
-+	int i, idle_idx;
++And there is a simple shell
++script \[oq]unionctl\[cq] under sample subdirectory, which is compatible with
++unionctl(8) in
++Unionfs Version 1.x series, except \-\-query action.
++This script executes mount(8) with \[oq]remount\[cq] option and uses
++add/del/mod aufs mount options.
++If you are familiar with Unionfs Version 1.x series and want to use unionctl(8), you can
++try this script instead of using mount \-o remount,... directly.
++Aufs does not support ioctl(2) interface.
++This script is highly depending upon mount(8) in
++util\-linux\-2.12p package, and you need to mount /proc to use this script.
++If your mount(8) version differs, you can try modifying this
++script. It is very easy.
++The unionctl script is just for a sample usage of aufs remount
++interface.
 +
-+	AuTraceEnter();
++Aufs uses the external inode number bitmap and translation table by
++default.
 +
-+	while (1) {
-+		if (au_ftest_wkq(wkinfo->flags, WAIT)) {
-+			idle_idx = 0;
-+			idle = UINT_MAX;
-+			for (i = 0; i < aufs_nwkq; i++) {
-+				n = atomic_inc_return(&au_wkq[i].busy);
-+				if (n == 1 && !enqueue(au_wkq + i, wkinfo))
-+					return; /* success */
++The default branch permission for the first branch is \[oq]rw\[cq], and the
++rest is \[oq]ro.\[cq]
 +
-+				if (n < idle) {
-+					idle_idx = i;
-+					idle = n;
-+				}
-+				atomic_dec_return(&au_wkq[i].busy);
-+			}
-+		} else
-+			idle_idx = aufs_nwkq;
++The whiteout is for hiding files on lower branches. Also it is applied
++to stop readdir going lower branches.
++The latter case is called \[oq]opaque directory.\[cq] Any
++whiteout is an empty file, it means whiteout is just an mark.
++In the case of hiding lower files, the name of whiteout is
++\[oq]\*[AUFS_WH_PFX]<filename>.\[cq]
++And in the case of stopping readdir, the name is
++\[oq]\*[AUFS_WH_PFX]\*[AUFS_WH_PFX].opq\[cq] or
++\[oq]\*[AUFS_WH_PFX]__dir_opaque.\[cq] The name depends upon your compile
++configuration
++CONFIG_AUFS_COMPAT.
++.\" All of newly created or renamed directory will be opaque.
++All whiteouts are hardlinked,
++including \[oq]<writable branch top dir>/\*[AUFS_WH_PFX]\*[AUFS_WH_BASENAME].\[cq]
 +
-+		atomic_inc_return(&au_wkq[idle_idx].busy);
-+		if (!enqueue(au_wkq + idle_idx, wkinfo))
-+			return; /* success */
++The hardlink on an ordinary (disk based) filesystem does not
++consume inode resource newly. But in linux tmpfs, the number of free
++inodes will be decremented by link(2). It is recommended to specify
++nr_inodes option to your tmpfs if you meet ENOSPC. Use this option
++after checking by \[oq]df \-i.\[cq]
 +
-+		/* impossible? */
-+		AuWarn1("failed to queue_work()\n");
-+		yield();
-+	}
-+}
++When you rmdir or rename-to the dir who has a number of whiteouts,
++aufs rename the dir to the temporary whiteouted-name like
++\[oq]\*[AUFS_WH_PFX]<dir>.<random hex>.\[cq] Then remove it after actual operation.
++cf. mount option \[oq]dirwh.\[cq]
 +
-+static void wkq_func(struct work_struct *wk)
-+{
-+	struct au_wkinfo *wkinfo = container_of(wk, struct au_wkinfo, wk);
++.\" ----------------------------------------------------------------------
++.SH Incompatible with an Ordinary Filesystem
++stat(2) returns the inode info from the first existence inode among
++the branches, except the directory link count.
++Aufs computes the directory link count larger than the exact value usually, in
++order to keep UNIX filesystem semantics, or in order to shut find(1) mouth up.
++The size of a directory may be wrong too, but it has to do no harm.
++The timestamp of a directory will not be updated when a file is
++created or removed under it, and it was done on a lower branch.
 +
-+	LKTRTrace("wkinfo{0x%x, %p, %p, %p}\n",
-+		  wkinfo->flags, wkinfo->func, wkinfo->busyp, wkinfo->comp);
++The test for permission bits has two cases. One is for a directory,
++and the other is for a non-directory. In the case of a directory, aufs
++checks the permission bits of all existing directories. It means you
++need the correct privilege for the directories including the lower
++branches.
++.\" You can change this behaviour with \[oq]dirperm1\[cq] mount option.
++The test for a non-directory is more simple. It checks only the
++topmost inode.
 +
-+	dlgt_func(wkinfo);
-+	atomic_dec_return(wkinfo->busyp);
-+	if (au_ftest_wkq(wkinfo->flags, WAIT))
-+		complete(wkinfo->comp);
-+	else {
-+		mntput(wkinfo->mnt);
-+		module_put(THIS_MODULE);
-+		kfree(wkinfo);
-+	}
-+}
++statfs(2) returns the first branch info except namelen. The namelen is
++decreased by the whiteout prefix length.
 +
-+int au_wkq_run(au_wkq_func_t func, void *args, struct super_block *sb,
-+	       unsigned int flags)
-+{
-+	int err;
-+	DECLARE_COMPLETION_ONSTACK(comp);
-+	struct au_wkinfo _wkinfo = {
-+		.flags	= flags,
-+		.func	= func,
-+		.args	= args,
-+		.comp	= &comp
-+	}, *wkinfo = &_wkinfo;
++Remember, seekdir(3) and telldir(3) are not defined in POSIX. They may
++not work as you expect. Try rewinddir(3) or re-open the dir.
 +
-+	LKTRTrace("0x%x\n", flags);
-+	AuDebugOn(au_test_wkq(current));
++The whiteout prefix (\*[AUFS_WH_PFX]) is reserved on all branches. Users should
++not handle the filename begins with this prefix.
++In order to future whiteout, the maxmum filename length is limited by
++the longest value \- \*[AUFS_WH_PFX_LEN]. It may be a violation of POSIX.
 +
-+	err = 0;
-+	if (unlikely(!au_ftest_wkq(flags, WAIT))) {
-+		AuDebugOn(!sb);
-+		/*
-+		 * wkq_func() must free this wkinfo.
-+		 * it highly depends upon the implementation of workqueue.
-+		 */
-+		err = -ENOMEM;
-+		wkinfo = kmalloc(sizeof(*wkinfo), GFP_TEMPORARY);
-+		if (unlikely(!wkinfo))
-+			goto out;
-+		err = 0;
-+		/* prohibit umount */
-+		wkinfo->mnt = au_mntcache_get(sb);
-+		wkinfo->flags = flags;
-+		wkinfo->func = func;
-+		wkinfo->args = args;
-+		wkinfo->comp = NULL;
-+		__module_get(THIS_MODULE);
-+	}
++If you dislike the difference between the aufs entries in /etc/mtab
++and /proc/mounts, and if you are using mount(8) in util\-linux package,
++then try ./mount.aufs script. Copy the script to /sbin/mount.aufs.
++This simple script tries updating
++/etc/mtab. If you do not care about /etc/mtab, you can ignore this
++script.
++Remember this script is highly depending upon mount(8) in
++util\-linux\-2.12p package, and you need to mount /proc.
 +
-+	INIT_WORK(&wkinfo->wk, wkq_func);
-+	dlgt_cred_store(flags, wkinfo);
-+	do_wkq(wkinfo);
-+	if (au_ftest_wkq(flags, WAIT))
-+		/* no timeout, no interrupt */
-+		wait_for_completion(wkinfo->comp);
-+ out:
-+	AuTraceErr(err);
-+	return err;
-+}
++Since aufs uses its own inode and dentry, your system may cache huge
++number of inodes and dentries. It can be as twice as all of the files
++in your union.
++It means that unmounting or remounting readonly at shutdown time may
++take a long time, since mount(2) in VFS tries freeing all of the cache
++on the target filesystem.
++.\" In this case, you had better try \[oq]echo 2 > /proc/sys/vm/drop_caches\[cq]
++.\" just before unmounting in shutdown procedure.
++.\" It frees unused inodes and dentries quickly.
++.\" If your system cache is not so large, you do not need this trick.
 +
-+/* ---------------------------------------------------------------------- */
++When you open a directory, aufs will open several directories
++internally.
++It means you may reach the limit of the number of file descriptor.
++And when the lower directory cannot be opened, aufs will close all the
++opened upper directories and return an error.
 +
-+void au_wkq_fin(void)
-+{
-+	int i;
++The sub-mount under the branch
++of local filesystem
++is ignored.
++For example, if you have mount another filesystem on
++/branch/another/mntpnt, the files under \[oq]mntpnt\[cq] will be ignored by aufs.
++It is recommended to mount the sub-mount under the mounted aufs.
++For example,
 +
-+	AuTraceEnter();
++.nf
++# sudo mount /dev/sdaXX /ro_branch
++# d=another/mntpnt
++# sudo mount /dev/sdbXX /ro_branch/$d
++# mkdir -p /rw_branch/$d
++# sudo mount -t aufs -o br:/rw_branch:/ro_branch none /aufs
++# sudo mount -t aufs -o br:/rw_branch/${d}:/ro_branch/${d} none /aufs/another/$d
++.fi
 +
-+	for (i = 0; i < aufs_nwkq; i++)
-+		if (au_wkq[i].q && !IS_ERR(au_wkq[i].q))
-+			destroy_workqueue(au_wkq[i].q);
-+	kfree(au_wkq);
-+}
++There are several characters which are not allowed to use in a branch
++directory path and xino filename. See detail in Branch Syntax and Mount
++Option.
 +
-+int __init au_wkq_init(void)
-+{
-+	int err, i;
-+	struct au_wkq *nowaitq;
++The file-lock which means fcntl(2) with F_SETLK, F_SETLKW or F_GETLK, flock(2)
++and lockf(3), is applied to virtual aufs file only, not to the file on a
++branch. It means you can break the lock by accessing a branch directly.
++TODO: check \[oq]security\[cq] to hook locks, as inotify does.
 +
-+	LKTRTrace("%d\n", aufs_nwkq);
++The fsync(2) and fdatasync(2) systemcalls return 0 which means success, even
++if the given file descriptor is not opened for writing.
++I am afraid this behaviour may violate some standards. Checking the
++behaviour of fsync(2) on ext2, aufs decided to return success.
 +
-+	/* '+1' is for accounting  of nowait queue */
-+	err = -ENOMEM;
-+	au_wkq = kcalloc(aufs_nwkq + 1, sizeof(*au_wkq), GFP_KERNEL);
-+	if (unlikely(!au_wkq))
-+		goto out;
++If you want to use disk-quota, you should set it up to your writable
++branch since aufs does not have its own block device.
 +
-+	err = 0;
-+	for (i = 0; i < aufs_nwkq; i++) {
-+		au_wkq[i].q = create_singlethread_workqueue(AUFS_WKQ_NAME);
-+		if (au_wkq[i].q && !IS_ERR(au_wkq[i].q)) {
-+			atomic_set(&au_wkq[i].busy, 0);
-+			au_wkq[i].max_busy = 0;
-+			continue;
-+		}
++When your aufs is the root directory of your system, and your system
++tells you some of the filesystem were not unmounted cleanly, try these
++procedure when you shutdown your system.
++.nf
++# mount -no remount,ro /
++# for i in $writable_branches
++# do mount -no remount,ro $i
++# done
++.fi
++If your xino file is on a hard drive, you also need to specify
++\[oq]noxino\[cq] option or \[oq]xino=/your/tmpfs/xino\[cq] at remounting root
++directory.
 +
-+		err = PTR_ERR(au_wkq[i].q);
-+		au_wkq_fin();
-+		break;
-+	}
++To rename(2) directory may return EXDEV even if both of src and tgt
++are on the same aufs. When the rename-src dir exists on multiple
++branches and the lower dir has child(ren), aufs has to copyup all his
++children. It can be recursive copyup. Current aufs does not support
++such huge copyup operation at one time in kernel space, instead
++produces a warning and returns EXDEV.
++Generally, mv(1) detects this error and tries mkdir(2) and
++rename(2) or copy/unlink recursively. So the result is harmless.
++If your application which issues rename(2) for a directory does not
++support EXDEV, it will not work on aufs.
++Also this specification is applied to the case when the src directroy
++exists on the lower readonly branch and it has child(ren).
 +
-+	/* nowait accounting */
-+	nowaitq = au_wkq + aufs_nwkq;
-+	atomic_set(&nowaitq->busy, 0);
-+	nowaitq->max_busy = 0;
-+	nowaitq->q = NULL;
-+	/* smp_mb(); */ /* atomic_set */
++.\" ----------------------------------------------------------------------
++.SH EXAMPLES
++The mount options are interpreted from left to right at remount-time.
++These examples
++shows how the options are handled. (assuming /sbin/mount.aufs was
++installed)
 +
-+ out:
-+	AuTraceErr(err);
-+	return err;
-+}
-diff --git a/fs/aufs/wkq.h b/fs/aufs/wkq.h
-new file mode 100644
-index 0000000..2b9690a
---- /dev/null
-+++ b/fs/aufs/wkq.h
-@@ -0,0 +1,158 @@
-+/*
-+ * Copyright (C) 2005-2008 Junjiro Okajima
-+ *
-+ * This program, aufs is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
++.nf
++# mount -v -t aufs br:/day0:/base none /u
++none on /u type aufs (rw,xino=/day0/.aufs.xino,br:/day0=rw:/base=ro)
++# mount -v -o remount,\\
++	prepend:/day1,\\
++	xino=/day1/xino,\\
++	mod:/day0=ro,\\
++	del:/day0 \\
++	/u
++none on /u type aufs (rw,xino=/day1/xino,br:/day1=rw:/base=ro)
++.fi
 +
-+/*
-+ * workqueue for asynchronous/super-io/delegated operations
-+ */
++.nf
++# mount -t aufs br:/rw none /u
++# mount -o remount,append:/ro /u
++different uid/gid/permission, /ro
++# mount -o remount,del:/ro /u
++# mount -o remount,nowarn_perm,append:/ro /u
++#
++(there is no warning)
++.fi
 +
-+#ifndef __AUFS_WKQ_H__
-+#define __AUFS_WKQ_H__
++.\" If you want to expand your filesystem size, aufs may help you by
++.\" adding an writable branch. Since aufs supports multiple writable
++.\" branches, the old writable branch can be being writable, if you want.
++.\" In this example, any modifications to the files under /ro branch will
++.\" be copied-up to /new, but modifications to the files under /rw branch
++.\" will not.
++.\" And the next example shows the modifications to the files under /rw branch
++.\" will be copied-up to /new/a.
++.\"
++.\" Todo: test multiple writable branches policy. cpup=nearest, cpup=exist_parent.
++.\"
++.\" .nf
++.\" # mount -v -t aufs br:/rw:/ro none /u
++.\" none on /u type aufs (rw,xino=/rw/.aufs.xino,br:/rw=rw:/ro=ro)
++.\" # mkfs /new
++.\" # mount -v -o remount,add:1:/new=rw /u
++.\" none on /u type aufs (rw,xino=/rw/.aufs.xino,br:/rw=rw:/new=rw:/ro=ro)
++.\" .fi
++.\"
++.\" .nf
++.\" # mount -v -t aufs br:/rw:/ro none /u
++.\" none on /u type aufs (rw,xino=/rw/.aufs.xino,br:/rw=rw:/ro=ro)
++.\" # mkfs /new
++.\" # mkdir /new/a new/b
++.\" # mount -v -o remount,add:1:/new/b=rw,prepend:/new/a,mod:/rw=ro /u
++.\" none on /u type aufs (rw,xino=/rw/.aufs.xino,br:/new/a=rw:/rw=ro:/new/b=rw:/ro=ro)
++.\" .fi
 +
-+#ifdef __KERNEL__
++When you use aufs as root filesystem, it is recommended to consider to
++exclude some directories. For example, /tmp and /var/log are not need
++to stack in many cases. They do not usually need to copyup or to whiteout.
++Also the swapfile on aufs (a regular file, not a block device) is not
++supported.
 +
-+#include <linux/fs.h>
-+#include <linux/sched.h>
-+#include <linux/workqueue.h>
-+#include <linux/aufs_type.h>
++And there is a good sample which is for network booted diskless machines. See
++sample/ in detail.
 +
-+/* ---------------------------------------------------------------------- */
++.\" ----------------------------------------------------------------------
++.SH DIAGNOSTICS
++When you add an branch to your union, aufs may warn you about the
++privilege or security of the branch, which is the permission bits,
++owner and group of the top directory of the branch.
++For example, when your upper writable branch has a world writable top
++directory,
++a malicious user can create any files on the writable branch directly,
++like copyup and modify manually. I am afraid it can be a security
++issue.
 +
-+/* internal workqueue named AUFS_WKQ_NAME */
-+struct au_wkq {
-+	struct workqueue_struct	*q;
++When you mount or remount your union without \-o ro common mount option
++and without writable branch, aufs will warn you that the first branch
++should be writable.
 +
-+	/* accounting */
-+	atomic_t		busy;
-+	unsigned int		max_busy; /* todo: STAT only */
-+};
++.\" It is discouraged to set both of \[oq]udba\[cq] and \[oq]noxino\[cq] mount options. In
++.\" this case the inode number under aufs will always be changed and may
++.\" reach the end of inode number which is a maximum of unsigned long. If
++.\" the inode number reaches the end, aufs will return EIO repeatedly.
 +
-+/*
-+ * in the next operation, wait for the 'nowait' tasks in system-wide workqueue
-+ */
-+struct au_nowait_tasks {
-+#ifdef CONFIG_AUFS_HINOTIFY
-+	/*
-+	 * currently, the 'nowait' task which should be waited in the next
-+	 * operation is only hinotify.
-+	 */
-+	atomic_t		nw_len;
-+	wait_queue_head_t	nw_wq;
-+#endif
-+};
++When you set udba other than inotify and change something on your
++branch filesystem directly, later aufs may detect some mismatches to
++its cache. If it is a critical mismatch, aufs returns EIO and issues a
++warning saying \[oq]try udba=inotify.\[cq]
 +
-+/* ---------------------------------------------------------------------- */
++When an error occurs in aufs, aufs prints the kernel message with
++\[oq]errno.\[cq] The priority of the message (log level) is ERR or WARNING which
++depends upon the message itself.
++You can convert the \[oq]errno\[cq] into the error message by perror(3),
++strerror(3) or something.
++For example, the \[oq]errno\[cq] in the message \[oq]I/O Error, write failed (\-28)\[cq]
++is 28 which means ENOSPC or \[oq]No space left on device.\[cq]
 +
-+extern struct au_wkq *au_wkq;
-+typedef void (*au_wkq_func_t)(void *args);
++.\" .SH Current Limitation
++.
++.\" ----------------------------------------------------------------------
++.\" SYNOPSIS
++.\" briefly describes the command or function\[aq]s interface.  For  commands,  this
++.\" shows the syntax of the command and its arguments (including options); bold-
++.\" face is used for as-is text and italics are  used  to  indicate  replaceable
++.\" arguments. Brackets ([]) surround optional arguments, vertical bars (|) sep-
++.\" arate choices, and ellipses (...) can be repeated.  For functions, it  shows
++.\" any required data declarations or #include directives, followed by the func-
++.\" tion declaration.
++.
++.\" DESCRIPTION
++.\" gives an explanation of what the command, function, or format does.  Discuss
++.\" how  it  interacts  with  files  and standard input, and what it produces on
++.\" standard output  or  standard  error.   Omit  internals  and  implementation
++.\" details  unless  they\[aq]re critical for understanding the interface.  Describe
++.\" the usual case; for information on options  use  the  OPTIONS  section.   If
++.\" there  is some kind of input grammar or complex set of subcommands, consider
++.\" describing them in a separate USAGE section (and just place an  overview  in
++.\" the DESCRIPTION section).
++.
++.\" RETURN VALUE
++.\" gives a list of the values the library routine will return to the caller and
++.\" the conditions that cause these values to be returned.
++.
++.\" EXIT STATUS
++.\" lists the possible exit status values or a program and the  conditions  that
++.\" cause these values to be returned.
++.
++.\" USAGE
++.\" describes the grammar of any sublanguage this implements.
++.
++.\" FILES
++.\" lists  the  files the program or function uses, such as configuration files,
++.\" startup files, and files the program directly operates on.   Give  the  full
++.\" pathname  of  these  files,  and  use the installation process to modify the
++.\" directory part to match user preferences.  For many  programs,  the  default
++.\" installation  location is in /usr/local, so your base manual page should use
++.\" /usr/local as the base.
++.
++.\" ENVIRONMENT
++.\" lists all environment variables that affect your program or function and how
++.\" they affect it.
++.
++.\" SECURITY
++.\" discusses security issues and implications.  Warn  about  configurations  or
++.\" environments  that should be avoided, commands that may have security impli-
++.\" cations, and so on, especially if they aren\[aq]t obvious.  Discussing  security
++.\" in  a  separate section isn\[aq]t necessary; if it\[aq]s easier to understand, place
++.\" security information in the other sections (such as the DESCRIPTION or USAGE
++.\" section).  However, please include security information somewhere!
++.
++.\" CONFORMING TO
++.\" describes any standards or conventions this implements.
++.
++.\" NOTES
++.\" provides miscellaneous notes.
++.
++.\" BUGS
++.\" lists  limitations,  known defects or inconveniences, and other questionable
++.\" activities.
 +
-+/* wkq flags */
-+#define AuWkq_WAIT	1
-+#define AuWkq_DLGT	(1 << 1)
-+#define au_ftest_wkq(flags, name)	((flags) & AuWkq_##name)
-+#define au_fset_wkq(flags, name)	{ (flags) |= AuWkq_##name; }
-+#define au_fclr_wkq(flags, name)	{ (flags) &= ~AuWkq_##name; }
-+#ifndef CONFIG_AUFS_DLGT
-+#undef AuWkq_DLGT
-+#define AuWkq_DLGT	0
-+#endif
++.SH COPYRIGHT
++Copyright \(co 2005, 2006, 2007, 2008 Junjiro Okajima
 +
-+int au_wkq_run(au_wkq_func_t func, void *args, struct super_block *sb,
-+	       unsigned int flags);
-+int __init au_wkq_init(void);
-+void au_wkq_fin(void);
++.SH AUTHOR
++Junjiro Okajima
 +
-+/* ---------------------------------------------------------------------- */
-+
-+static inline int au_test_wkq(struct task_struct *tsk)
-+{
-+	return (!tsk->mm && !strcmp(tsk->comm, AUFS_WKQ_NAME));
-+#if 0 /* reserved for future use, per-cpu workqueue */
-+	return (!tsk->mm
-+		&& !memcmp(tsk->comm, AUFS_WKQ_NAME "/",
-+			   sizeof(AUFS_WKQ_NAME)));
-+#endif
-+}
-+
-+static inline int au_wkq_wait(au_wkq_func_t func, void *args, int dlgt)
-+{
-+	unsigned int flags = AuWkq_WAIT;
-+	if (unlikely(dlgt))
-+		au_fset_wkq(flags, DLGT);
-+	return au_wkq_run(func, args, /*sb*/NULL, flags);
-+}
-+
-+static inline int au_wkq_nowait(au_wkq_func_t func, void *args,
-+				struct super_block *sb, int dlgt)
-+{
-+	unsigned int flags = !AuWkq_WAIT;
-+	if (unlikely(dlgt))
-+		au_fset_wkq(flags, DLGT);
-+	return au_wkq_run(func, args, sb, flags);
-+}
-+
-+#ifdef CONFIG_AUFS_HINOTIFY
-+/* todo: memory barrier? */
-+static inline void au_nwt_init(struct au_nowait_tasks *nwt)
-+{
-+	atomic_set(&nwt->nw_len, 0);
-+	smp_mb(); /* atomic_set */
-+	init_waitqueue_head(&nwt->nw_wq);
-+}
-+
-+static inline int au_nwt_inc(struct au_nowait_tasks *nwt)
-+{
-+	return atomic_inc_return(&nwt->nw_len);
-+}
-+
-+static inline int au_nwt_dec(struct au_nowait_tasks *nwt)
-+{
-+	int ret = atomic_dec_return(&nwt->nw_len);
-+	if (!ret)
-+		wake_up_all(&nwt->nw_wq);
-+	return ret;
-+}
-+
-+static inline int au_nwt_flush(struct au_nowait_tasks *nwt)
-+{
-+	wait_event(nwt->nw_wq, !atomic_read(&nwt->nw_len));
-+	return 0;
-+}
-+#else
-+static inline void au_nwt_init(struct au_nowait_tasks *nwt)
-+{
-+	/* nothing */
-+}
-+
-+static inline int au_nwt_inc(struct au_nowait_tasks *nwt)
-+{
-+	return 0;
-+}
-+
-+static inline int au_nwt_dec(struct au_nowait_tasks *nwt)
-+{
-+	return 0;
-+}
-+
-+static inline int au_nwt_flush(struct au_nowait_tasks *nwt)
-+{
-+	return 0;
-+}
-+#endif /* CONFIG_AUFS_HINOTIFY */
-+
-+#endif /* __KERNEL__ */
-+#endif /* __AUFS_WKQ_H__ */
++.\" SEE ALSO
++.\" lists  related  man  pages in alphabetical order, possibly followed by other
++.\" related pages or documents.  Conventionally this is the last section.
 -- 
 1.5.5.1.308.g1fbb5.dirty
 
