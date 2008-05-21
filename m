@@ -1,105 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764782AbYEUWiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933167AbYEUWij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764782AbYEUWiS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 18:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757106AbYEUWiG
+	id S933167AbYEUWij (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 18:38:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932075AbYEUWiV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 18:38:06 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:50786 "EHLO pasmtpA.tele.dk"
+	Wed, 21 May 2008 18:38:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42852 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757063AbYEUWiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 18:38:04 -0400
-Date: Thu, 22 May 2008 00:38:42 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       David Miller <davem@davemloft.net>, PaulMackerraspaulus@samba.org
-Subject: Re: [PATCH] Fix Immediate Values x86_64 support old gcc (v2)
-Message-ID: <20080521223842.GE15136@uranus.ravnborg.org>
-References: <20080516124811.GC4226@Krystal> <482DFD65.10300@zytor.com> <20080521133122.GA18084@Krystal> <48344239.9070003@zytor.com> <20080521160217.GA26974@Krystal> <20080521170150.GA29428@Krystal> <20080521203743.GA12982@uranus.ravnborg.org> <20080521212809.GE6158@Krystal> <20080521214608.GA15136@uranus.ravnborg.org> <20080521215756.GA9869@Krystal>
+	id S1760740AbYEUWiT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 18:38:19 -0400
+Date: Wed, 21 May 2008 15:37:56 -0700
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: "P. Christeas" <p_christ@hol.gr>
+Cc: Oliver Neukum <oliver@neukum.org>, lkml <linux-kernel@vger.kernel.org>,
+       zaitcev@redhat.com, linux-usb@vger.kernel.org, twaugh@redhat.com
+Subject: Re: Patch: usblp quirk for zebra printers
+Message-Id: <20080521153756.cc701b14.zaitcev@redhat.com>
+In-Reply-To: <200805212057.52050.p_christ@hol.gr>
+References: <200805212057.52050.p_christ@hol.gr>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.5.0rc (GTK+ 2.13.0; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080521215756.GA9869@Krystal>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 21, 2008 at 05:57:56PM -0400, Mathieu Desnoyers wrote:
-> * Sam Ravnborg (sam@ravnborg.org) wrote:
-> 
-> > Same with USE_IMMEDIATE - as USE_IMMEDIATE is only used in a x86 Makefile.
-> > Or did I miss sothing?
-> > 
-> 
-> Given that I want to change every use of CONFIG_IMMEDIATE into
-> USE_IMMEDIATE, both in architecture specific and independant C files and
-> also in arch spec. and indep. Makefiles, I will have to define
-> USE_IMMEDIATE on other arch too.
-> 
-> Here is the updated patch. It applies on top of the sched-devel.git
-> tree.
-> 
-> Fix Immediate Values x86_64 support old gcc
-> 
-> GCC < 4, on x86_64, does not accept symbol+offset operands for "i" constraints
-> asm statements. Fallback on generic immediate values if this compiler is
-> detected.
-> 
-> Changelog :
-> - USE_IMMEDIATE must now be used in lieue of CONFIG_IMMEDIATE in Makefiles and
->   in C code.
-> - Every architecture implementing immediate values must declare USE_IMMEDIATE
->   in their Makefile.
-> 
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> CC: Sam Ravnborg <sam@ravnborg.org>
-> CC: "H. Peter Anvin" <hpa@zytor.com>
-> CC: Jeremy Fitzhardinge <jeremy@goop.org>
-> CC: Ingo Molnar <mingo@elte.hu>
-> CC: David Miller <davem@davemloft.net>
-> CC: Paul Mackerras paulus@samba.org
-> ---
->  Makefile                     |    5 +++++
->  arch/powerpc/Makefile        |    2 ++
->  arch/powerpc/kernel/Makefile |    2 +-
->  arch/x86/Makefile            |    5 +++++
->  arch/x86/kernel/Makefile     |    2 +-
->  arch/x86/kernel/traps_32.c   |    4 ++--
->  include/linux/immediate.h    |    2 +-
->  include/linux/module.h       |    4 ++--
->  kernel/Makefile              |    2 +-
->  kernel/module.c              |    8 ++++----
->  10 files changed, 24 insertions(+), 12 deletions(-)
-> 
-> Index: linux-2.6-sched-devel/arch/x86/Makefile
-> ===================================================================
-> --- linux-2.6-sched-devel.orig/arch/x86/Makefile	2008-05-21 09:04:52.000000000 -0400
-> +++ linux-2.6-sched-devel/arch/x86/Makefile	2008-05-21 14:18:16.000000000 -0400
-> @@ -43,6 +43,7 @@
->  
->          # temporary until string.h is fixed
->          KBUILD_CFLAGS += -ffreestanding
-> +	export USE_IMMEDIATE := $(CONFIG_IMMEDIATE)
-tabs has a special sematic purpose in makefiles so do not
-use tabs for indent.
+On Wed, 21 May 2008 20:57:49 +0300, "P. Christeas" <p_christ@hol.gr> wrote:
 
->  else
->          BITS := 64
->          UTS_MACHINE := x86_64
-> @@ -78,6 +79,10 @@
->                  "$(CC)" -fstack-protector-all )
->  
->          KBUILD_CFLAGS += $(stackp-y)
+> I guess such a quirk may be a little odd, but it has been a blocking point in 
+> my system not being able to support more than one printer.
+
+> @@ -1330,6 +1332,23 @@ static int usblp_cache_device_id_string(struct usblp *usblp)
+.....
+> +		strcpy(&usblp->device_id_string[length],"SN:");
+> +		length+=3;
+> +		strcat(&usblp->device_id_string[length],usblp->dev->serial);
+> +		length += strlen(usblp->dev->serial);
+> +		usblp->device_id_string[length++]= ';';
 > +
-> +	# x86_64 gcc 3.x has problems with passing symbol+offset in
-> +	# asm "i" constraint.
-> +	export USE_IMMEDIATE := $(call cc-ifversion, -ge, 0400, $(CONFIG_IMMEDIATE))
-tabs -> spaces again.
+> +		*((__be16 *)usblp->device_id_string) = cpu_to_be16(length);
 
-Other than that I like this patch much better.
+I see...
 
-Thanks,
-	Sam
+> Please comment. (and cc. me)
+
+Personally, I don't like this. In kernel, we typically try not to
+fake things in lower levels in order to fool upper levels. There are
+always knock-off effects. Sometimes we have to do it, but in my
+experience CUPS folks always were for doing the right thing.
+
+Let's ask them if extracting the S/N from sysfs is too onerous.
+I'm cc-ing this to Tim Waugh.
+
+BTW, Please try to tinker with the following udev ruleset:
+BUS="usb", KERNEL="lp[0-9]*", SYSFS{serial}=="XXXXXXX", SYMLINK+="mylp0"
+BUS="usb", KERNEL="lp[0-9]*", SYSFS{serial}=="YYYYYYY", SYMLINK+="mylp1"
+Encoding your serial numbers into udev rules is not pleasant, but
+the above should provide a stop-gap solution without patching kernels.
+
+-- Pete
