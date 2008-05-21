@@ -1,137 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934799AbYEURCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935560AbYEURFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934799AbYEURCa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 13:02:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751533AbYEURCU
+	id S935560AbYEURFA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 13:05:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755124AbYEUREv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 13:02:20 -0400
-Received: from tomts10.bellnexxia.net ([209.226.175.54]:46939 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751210AbYEURCT (ORCPT
+	Wed, 21 May 2008 13:04:51 -0400
+Received: from hs-out-0708.google.com ([64.233.178.249]:14535 "EHLO
+	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754146AbYEUREu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 13:02:19 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AroFAN/yM0hMQWqh/2dsb2JhbACBVa57
-Date: Wed, 21 May 2008 13:01:50 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] Fix Immediate Values x86_64 support old gcc
-Message-ID: <20080521170150.GA29428@Krystal>
-References: <482AB6C5.4060604@goop.org> <20080516124811.GC4226@Krystal> <482DFD65.10300@zytor.com> <20080521133122.GA18084@Krystal> <48344239.9070003@zytor.com> <20080521160217.GA26974@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 21 May 2008 13:04:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZxFqJgGeLnbfF+fHwY6+qPuS4S68u5nkRF6vRyU7xqvFZgabTKXixj6M7BMQTju/6sYEEooQh/WU02YpIuU8DVy/A2XMrJ9YWkjp36/7gzEwaTItnrM7u1wP/D3FvEgZ130Nx3cOuwyz5zqCyjl9ngkzGO8yXKzCBaBwzz+z8Hk=
+Message-ID: <dd18b0c30805211004m6106b65occ97eff00cdbf630@mail.gmail.com>
+Date: Wed, 21 May 2008 17:04:49 +0000
+From: "Justin Mattock" <justinmattock@gmail.com>
+To: "Oliver Pinter" <oliver.pntr@gmail.com>
+Subject: Re: completely lost as to what to do, or where to look.
+Cc: "Adrian Bunk" <bunk@kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <6101e8c40805210751y350e3513ndd48621ac9d2b5d3@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080521160217.GA26974@Krystal>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:58:27 up 82 days, 13:09,  5 users,  load average: 1.60, 1.37,
-	1.29
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <dd18b0c30805202110x7c412b3bq523f91d968072482@mail.gmail.com>
+	 <20080520223410.9a8f200d.akpm@linux-foundation.org>
+	 <dd18b0c30805202351h133147adg5bb526e3f74e3bd6@mail.gmail.com>
+	 <20080521075917.GB18352@cs181133002.pp.htv.fi>
+	 <dd18b0c30805210733m6d853709xf59331cfed3bfea@mail.gmail.com>
+	 <6101e8c40805210751y350e3513ndd48621ac9d2b5d3@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Does this fix make more sense ?
+On Wed, May 21, 2008 at 2:51 PM, Oliver Pinter <oliver.pntr@gmail.com> wrote:
+> you use ati or nvidia binary driver?
+>
+> On 5/21/08, Justin Mattock <justinmattock@gmail.com> wrote:
+>> On Wed, May 21, 2008 at 7:59 AM, Adrian Bunk <bunk@kernel.org> wrote:
+>>> On Wed, May 21, 2008 at 06:51:24AM +0000, Justin Mattock wrote:
+>>>> On Wed, May 21, 2008 at 5:34 AM, Andrew Morton
+>>>> <akpm@linux-foundation.org> wrote:
+>>>> > On Wed, 21 May 2008 04:10:16 +0000 "Justin Mattock"
+>>>> > <justinmattock@gmail.com> wrote:
+>>>> >
+>>>> >> Hello; I'm lost as to where to look in the kernel, as to why I'm
+>>>> >> receiving a black screen with startx
+>>>> >> DRI seems to be fine, I'm noticing a sema_init but am not sure if this
+>>>> >> is the cause of the blackness.
+>>>> >> any direction as to where I might look would be helpful.
+>>>> >
+>>>> > Kernel version?
+>>>> >
+>>>> > A git-bisect should get you down the the offending commit within an
+>>>> > hour or three.  http://www.kernel.org/doc/local/git-quick.html has some
+>>>> > instructions.
+>>>> >
+>>>> > But if you're on 2.6.26-rcX, be sure to use the very latest - a pile of
+>>>> > bad DRI code got reverted recently.  This morning, I think.
+>>>> >
+>>>>
+>>>> Thanks for the help, From what I can remember I noticed this around
+>>>> 2.6.26-rc1. It could be an issue with DRI, but then again it could be
+>>>> something else. With running some more tests I'm noticing  a conflict
+>>>> with libdri.so, not recognizing the module or the module not
+>>>> recognizing libdri.so.
+>>>>...
+>>>
+>>> Which X video driver are you using?
+>>>
+>>> What exactly is the error message?
+>>>
+>>>> regards;
+>>>> Justin P. Mattock
+>>>
+>>> cu
+>>> Adrian
+>>>
+>>> --
+>>>
+>>>       "Is there not promise of rain?" Ling Tan asked suddenly out
+>>>        of the darkness. There had been need of rain for many days.
+>>>       "Only a promise," Lao Er said.
+>>>                                       Pearl S. Buck - Dragon Seed
+>>>
+>>>
+>>
+>> Hello; thanks for the feedback, from previous posts, you know what
+>> module I'm talking about, So with that in mind I'm going to go
+>> to the next question: From error messages "there isn't"
+>> the only leeway or light at the end of the tunnel I see is with
+>> libdri.so i.g. If I boot the system up with out messing with anything
+>> I will receive
+>> a black screen after issueing startx, (from looking at what I see, the
+>> screen will flash one time then black, it should flash or blink two
+>> times
+>> before giving me my lovely picture(wallpaper) then if I remove
+>> libdri.so everything starts up as usual so with that in mind since I
+>> received
+>> a post about DRI being all F*&^ked up then maybee that is the culprit,
+>> I think All I really need right now is info on the xserver and the
+>> kernel.
+>> What mechanisms are used or files that are responsible for the two too
+>> coexist.
+>> regards;
+>>
+>> --
+>> Justin P. Mattock
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+>
+>
+> --
+> Thanks,
+> Oliver
+>
 
-GCC < 4, on x86_64, does not accept symbol+offset operands for "i" constraints
-asm statements. Fallback on generic immediate values if this compiler is
-detected.
+Alright: I'm using 2.6.26-rc3-00122-g748bf99, I pulled if I can
+remember Monday night and I did notice drmP.h and the rest of the drm
+files,
+but, will try and pull again to see if it makes a difference. As for
+the question about what video card nvidia or ati, I'm stuck with ati,
+went into apple yesterday to see if that would be easy to change out,
+but unfortunately I would have to get a new laptop.
+To bad apple didn't use an intel graphics card, that linux already has
+a module for.
+As for error messages looking at /var/log/Xorg.0.log it seems the
+Xserver can't finish completing  DRIScreenInit
+the /dev/dri/video0 is created, but then just stops after that, no
+conversation with the module and dri after /dev/dri/video0 is created.
+At this point, I'll try and pull and see if it makes a difference, and
+if not then I'll have to just keep trying.
+That's why right now I just need any kind of info about files or
+mechanisms that  are used in this situation so I can at least try and
+connect the dots with this issue.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
----
- arch/x86/Makefile           |    3 +++
- arch/x86/kernel/Makefile    |    4 +++-
- include/asm-x86/immediate.h |    5 +++++
- include/linux/immediate.h   |    4 +++-
- kernel/Makefile             |    4 +++-
- 5 files changed, 17 insertions(+), 3 deletions(-)
-
-Index: linux-2.6-sched-devel/arch/x86/Makefile
-===================================================================
---- linux-2.6-sched-devel.orig/arch/x86/Makefile	2008-05-21 09:04:52.000000000 -0400
-+++ linux-2.6-sched-devel/arch/x86/Makefile	2008-05-21 09:22:05.000000000 -0400
-@@ -78,6 +78,9 @@
-                 "$(CC)" -fstack-protector-all )
- 
-         KBUILD_CFLAGS += $(stackp-y)
-+
-+	export GCC_BROKEN_IMMEDIATE
-+	GCC_BROKEN_IMMEDIATE := $(shell if [ $(call cc-version) -lt 0400 ] ; then echo "y"; fi)
- endif
- 
- # Stackpointer is addressed different for 32 bit and 64 bit x86
-Index: linux-2.6-sched-devel/include/asm-x86/immediate.h
-===================================================================
---- linux-2.6-sched-devel.orig/include/asm-x86/immediate.h	2008-05-21 09:10:59.000000000 -0400
-+++ linux-2.6-sched-devel/include/asm-x86/immediate.h	2008-05-21 09:15:43.000000000 -0400
-@@ -12,6 +12,10 @@
- 
- #include <asm/asm.h>
- 
-+#if (defined(CONFIG_X86_64) && __GNUC__ < 4)	/* Detect broken x86_64 gcc */
-+#undef CONFIG_IMMEDIATE
-+#else
-+
- struct __imv {
- 	unsigned long var;	/* Pointer to the identifier variable of the
- 				 * immediate value
-@@ -166,4 +170,5 @@
- 
- extern int arch_imv_update(struct __imv *imv, int early);
- 
-+#endif
- #endif /* _ASM_X86_IMMEDIATE_H */
-Index: linux-2.6-sched-devel/include/linux/immediate.h
-===================================================================
---- linux-2.6-sched-devel.orig/include/linux/immediate.h	2008-05-21 09:12:22.000000000 -0400
-+++ linux-2.6-sched-devel/include/linux/immediate.h	2008-05-21 09:12:59.000000000 -0400
-@@ -11,8 +11,10 @@
-  */
- 
- #ifdef CONFIG_IMMEDIATE
-+#include <asm/immediate.h>	/* May undef CONFIG_IMMEDIATE */
-+#endif
- 
--#include <asm/immediate.h>
-+#ifdef CONFIG_IMMEDIATE
- 
- /**
-  * imv_set - set immediate variable (with locking)
-Index: linux-2.6-sched-devel/arch/x86/kernel/Makefile
-===================================================================
---- linux-2.6-sched-devel.orig/arch/x86/kernel/Makefile	2008-05-21 09:20:49.000000000 -0400
-+++ linux-2.6-sched-devel/arch/x86/kernel/Makefile	2008-05-21 09:21:22.000000000 -0400
-@@ -75,7 +75,9 @@
- obj-$(CONFIG_KPROBES)		+= kprobes.o
- obj-$(CONFIG_MODULES)		+= module_$(BITS).o
- obj-$(CONFIG_ACPI_SRAT) 	+= srat_32.o
--obj-$(CONFIG_IMMEDIATE)		+= immediate.o
-+ifneq ($(GCC_BROKEN_IMMEDIATE),y)
-+	obj-$(CONFIG_IMMEDIATE)	+= immediate.o
-+endif
- obj-$(CONFIG_EFI) 		+= efi.o efi_$(BITS).o efi_stub_$(BITS).o
- obj-$(CONFIG_DOUBLEFAULT) 	+= doublefault_32.o
- obj-$(CONFIG_KGDB)		+= kgdb.o
-Index: linux-2.6-sched-devel/kernel/Makefile
-===================================================================
---- linux-2.6-sched-devel.orig/kernel/Makefile	2008-05-21 09:21:28.000000000 -0400
-+++ linux-2.6-sched-devel/kernel/Makefile	2008-05-21 09:21:44.000000000 -0400
-@@ -75,7 +75,9 @@
- obj-$(CONFIG_SYSCTL) += utsname_sysctl.o
- obj-$(CONFIG_TASK_DELAY_ACCT) += delayacct.o
- obj-$(CONFIG_TASKSTATS) += taskstats.o tsacct.o
--obj-$(CONFIG_IMMEDIATE) += immediate.o
-+ifneq ($(GCC_BROKEN_IMMEDIATE),y)
-+	obj-$(CONFIG_IMMEDIATE) += immediate.o
-+endif
- obj-$(CONFIG_MARKERS) += marker.o
- obj-$(CONFIG_LATENCYTOP) += latencytop.o
- obj-$(CONFIG_FTRACE) += trace/
-
+regards;
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Justin P. Mattock
