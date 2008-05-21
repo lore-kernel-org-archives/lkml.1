@@ -1,27 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933529AbYEUGBB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933302AbYEUGBf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933529AbYEUGBB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 02:01:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758075AbYEUGAu
+	id S933302AbYEUGBf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 02:01:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757975AbYEUGBW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 02:00:50 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:32721 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757446AbYEUGAt (ORCPT
+	Wed, 21 May 2008 02:01:22 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59872 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757186AbYEUGBV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 02:00:49 -0400
-Date: Wed, 21 May 2008 08:00:39 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "Dave Young" <hidave.darkstar@gmail.com>
-Cc: gregkh@suse.de, i2c@lm-sensors.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] i2c : use class_for_each_device
-Message-ID: <20080521080039.49e6ea9f@hyperion.delvare>
-In-Reply-To: <a8e1da0805201830q88665afnf00e5f96f832f90@mail.gmail.com>
-References: <20080509072029.GA2740@darkstar.te-china.tietoenator.com>
-	<20080520193113.19ef0dc5@hyperion.delvare>
-	<a8e1da0805201829n439f251uef438bca0b1d006@mail.gmail.com>
-	<a8e1da0805201830q88665afnf00e5f96f832f90@mail.gmail.com>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Wed, 21 May 2008 02:01:21 -0400
+Date: Wed, 21 May 2008 15:06:29 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Paul Menage" <menage@google.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "xemul@openvz.org" <xemul@openvz.org>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "yamamoto@valinux.co.jp" <yamamoto@valinux.co.jp>
+Subject: Re: [RFC][PATCH 2/3] memcg:: seq_ops support for cgroup
+Message-Id: <20080521150629.c22cb81e.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <6599ad830805202206v334cb933t5b493988e01b3b21@mail.gmail.com>
+References: <20080520180552.601da567.kamezawa.hiroyu@jp.fujitsu.com>
+	<20080520180841.f292beef.kamezawa.hiroyu@jp.fujitsu.com>
+	<6599ad830805201146g5a2a8928l6a2f5adc51b15f15@mail.gmail.com>
+	<20080521092849.c2f0b7e1.kamezawa.hiroyu@jp.fujitsu.com>
+	<6599ad830805202206v334cb933t5b493988e01b3b21@mail.gmail.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -29,23 +36,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 May 2008 09:30:59 +0800, Dave Young wrote:
-> On Wed, May 21, 2008 at 9:29 AM, Dave Young <hidave.darkstar@gmail.com> wrote:
-> > On Wed, May 21, 2008 at 1:31 AM, Jean Delvare <khali@linux-fr.org> wrote:
-> >> ... but calling another one? Can't be correct. Which raises a question:
-> >> you didn't test your patch, did you? I'm also surprised how you managed
-> >> to mess this up, given that all you had to do was to move already
-> >> existing code around.
+On Tue, 20 May 2008 22:06:48 -0700
+"Paul Menage" <menage@google.com> wrote:
+
 > >
-> > Thanks for review, It's only boot-tested with i2c part as built-in by
-> > me because I have the i2c device to test.
+> > And (*read) method isn't useful ;)
+> >
+> > Can we add new stat file dynamically ?
 > 
-> should be "have no the i2c device to test" ;)
+> Yes, there's no reason we can't do that. Right now it's not possible
+> to remove a control file without deleting the cgroup, but I have a
+> patch that supports removal.
+> 
+Good news. I'll wait for.
 
-Too late for this time, but for next time, you can emulate an i2c
-device using the i2c-stub driver, that's very convenient when you want
-to test a change that affects i2c and don't have any physical device to
-test it.
+> The question is whether it's better to have one file per CPU/node or
+> one large complex file.
+> 
+For making the kernel simple, one-file-per-entity(cpu/node...) is better.
+For making the applications simple, one big file is better.
 
--- 
-Jean Delvare
+I think recent interfaces uses one-file-per-entity method. So I vote for it
+for this numastat. One concern is size of cpu/node. It can be 1024...4096 depends
+on environment.
+
+open/close 4096 files took some amount of cpu time.
+(And that's why 'ps' command is slow on big system.)
+
+Thanks,
+-Kame
+
