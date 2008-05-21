@@ -1,226 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937016AbYEUTpi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937084AbYEUTp4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937016AbYEUTpi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 15:45:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759225AbYEUTp1
+	id S937084AbYEUTp4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 15:45:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936907AbYEUTpd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 15:45:27 -0400
-Received: from rn-out-0910.google.com ([64.233.170.185]:26011 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760618AbYEUTp0 (ORCPT
+	Wed, 21 May 2008 15:45:33 -0400
+Received: from gv-out-0910.google.com ([216.239.58.187]:21182 "EHLO
+	gv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936915AbYEUTpc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 15:45:26 -0400
+	Wed, 21 May 2008 15:45:32 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
-        b=fRbGjY+kQ8cR0wHcPvxq59Oh6tvce/tPr4hQebaK6WcDozkYChCGZI1GwBrGChPW49/eVlK76OqqpEdX9r8Z5ED/1gvTgn3WAAqnv0mizB8PlTNGEXrs94El2BZHNLBqiBvi71nqhP+5XqqHGWfYVzAlhdlNCUY6LX886Qa5C1A=
-Message-ID: <68676e00805211245u1a1973e5g847bd7e8a6c9e5a7@mail.gmail.com>
-Date: Wed, 21 May 2008 21:45:23 +0200
-From: "Luca Tettamanti" <kronos.it@gmail.com>
-To: "Shaohua Li" <shaohua.li@intel.com>
-Subject: Re: [BISECTED] pata_jmicron: no drives found on post 2.6.25 kernels
-Cc: "Plamen Petrov" <pvp-lsts@fs.ru.acad.bg>, linux-kernel@vger.kernel.org,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>
-In-Reply-To: <1211360320.22210.5.camel@sli10-desk.sh.intel.com>
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=gBhFoBjTD+3C6B4DNHL69C19Mf0tD0YLnsv5Sl8TeZUEGG8BQZGRNsQOnoWgBZMCUj0SSDt7oL125D10un5x9srLlG8XV8dpNetio+dYC86YuCLUt3P4dWiYCvqwNjYCJ7BasIiaHVRKYLuoriMNmTnvWx7i7iOVMaoL3lkQp7U=
+Date: Wed, 21 May 2008 23:45:22 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
+       Christoph Hellwig <hch@infradead.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org,
+       davem@davemloft.net
+Subject: Re: CFD: linux-wanking@vger.kernel.org (was [PATCH] Standard
+	indentation of arguments)
+Message-ID: <20080521194522.GA13916@cvg>
+References: <12113495282137-git-send-email-kongjianjun@gmail.com> <20080521083413.GM28946@ZenIV.linux.org.uk> <20080521015037.add0b78e.akpm@linux-foundation.org> <20080521103206.GA24545@infradead.org> <20080521120939.GF8581@mit.edu> <20080521104644.5b6f4e63.akpm@linux-foundation.org> <20080521185725.GD6932@cvg> <20080521123355.b34f07ad.rdunlap@xenotime.net>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_8193_16276777.1211399123103"
-References: <courier.4832011A.000041C2@fs.ru.acad.bg>
-	 <1211248108.19834.2.camel@sli10-desk.sh.intel.com>
-	 <courier.4832F7AF.00000DCD@fs.ru.acad.bg>
-	 <1211360320.22210.5.camel@sli10-desk.sh.intel.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080521123355.b34f07ad.rdunlap@xenotime.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_8193_16276777.1211399123103
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
+[Randy Dunlap - Wed, May 21, 2008 at 12:33:55PM -0700]
+| On Wed, 21 May 2008 22:57:25 +0400 Cyrill Gorcunov wrote:
+| 
+| > [Andrew Morton - Wed, May 21, 2008 at 10:46:44AM -0700]
+| > | On Wed, 21 May 2008 08:09:39 -0400 Theodore Tso <tytso@mit.edu> wrote:
+| > | 
+| > | > On Wed, May 21, 2008 at 06:32:06AM -0400, Christoph Hellwig wrote:
+| > | > > On Wed, May 21, 2008 at 01:50:37AM -0700, Andrew Morton wrote:
+| > | > > > Oh, what a marvellous way to encourage new contributors that was. Thank
+| > | > > > you so much.
+| > | > > > 
+| > | > > > For the record: Al speaks only for himself and a lack of expressed
+| > | > > > disagrement from others should not be taken as agreement.
+| > | > > 
+| > | > > But I'd like to second the opinion.  This is getting a little too far.
+| > | > > We should rather try to at least enforce very basic standards a lot of
+| > | > > the crap shoved in doesn't follow instead of wanking around about exact
+| > | > > placement of whitespaces.
+| > | > 
+| > | > The real question is whether people who are wanking about whitespace
+| > | > and spelling fixes in comments will graduate to writing real, useful
+| > | > patches.  If they won't, there's no point to encouraging them.
+| > | > 
+| > | 
+| > | Guys, get a clue.  It doesn't matter what that person did.  It is the
+| > | effect upon *all* other potential developers which is so damaging here.
+| > | Not upon this individual.
+| > | 
+| > 
+| > Btw, we have CodingStyle, SubmittingPatches and other, but why don't
+| > we have something like KernelNewbieGuide? Don't get me wrong, but
+| > there could be written all rules about - what is good to do, what is bad.
+| > So a newbiew who wants to be usefull for kernel could read it and decide
+| > what should be done. /Don't beat me ;) / And of course I know about
+| > kernelnewbie.org but this (even quite short) document could help I think.
+| 
+| I did a talk on Linux "social engineering" at {OSCON, IEEE NW something,
+| and SCALE}.  All about what (not) to do, how to do it, etc.
+| Slides for it are available in http://www.xenotime.net/linux/mentor/ .
+| 
+| 
+| ---
+| ~Randy
+|
 
-T24gV2VkLCBNYXkgMjEsIDIwMDggYXQgMTA6NTggQU0sIFNoYW9odWEgTGkgPHNoYW9odWEubGlA
-aW50ZWwuY29tPiB3cm90ZToKPiBPbiBUdWUsIDIwMDgtMDUtMjAgYXQgMTk6MDkgKzAzMDAsIFBs
-YW1lbiBQZXRyb3Ygd3JvdGU6Cj4+IFNoYW9odWEgTGkg0L3QsNC/0LjRgdCwOgo+Pgo+PiA+IE9u
-IFR1ZSwgMjAwOC0wNS0yMCBhdCAwMTozNyArMDMwMCwgUGxhbWVuIFBldHJvdiB3cm90ZToKPj4g
-Pj4gSGVsbG8sIGZvbGtzIQo+PiA+Pgo+PiA+PiBBZnRlciAyLjYuMjYgbWVyZ2Ugd2luZG93IG9w
-ZW5lZCwgdGhlIG9wdGljYWwgZHJpdmVzIGluIG15Cj4+ID4+IGNvbXB1dGVyLCBoYW5naW5nIG9m
-ZiBhIEpNaWNyb24gY29udHJvbGVyIHdlcmUgbm90IGRldGVjdGVkCj4+ID4+IGJ5IGxpbnV4IGFu
-eSBtb3JlLgo+PiA+Pgo+PiA+PiBMdWNhIFRldHRhbWFudGkgcmVwb3J0ZWQgc2ltaWxhciB0cm91
-YmxlczoKPj4gPj4gaHR0cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjA5NTg3OTEz
-MjM5MTEmdz0yCj4+ID4+Cj4+ID4+IEl0cyBiZWVuIDIwIGRheXMsIHNvIEkgZGVjaWRlZCB0byBi
-aXNlY3QuCj4+ID4+IGdpdCBiaXNlY3QgcmV2ZWFsZWQgdGhhdCBjb21taXQKPj4gPj4gN2Q3MTVh
-NmMxYWU1Nzg1ZDAwZmI5YTg3NmI1YWJkZmM0M2FiYzQ0Ygo+PiA+PiBpcyB0aGUgb25lIGNhdXNp
-bmcgcGF0YV9qbWljcm9uIHRvIGZhaWwgdG8gZGV0ZWN0IGRyaXZlcywKPj4gPj4gY29ubmVjdGVk
-IHRvIHRoZSBKTWljcm9uIGNvbnRyb2xlciBvbiBteSBtb3RoZXJib2FyZC4KPj4gPj4gQXQgbGVh
-c3QgaW4gbXkgY2FzZSwgYW55d2F5Li4uCj4+ID4+IENoYW5naW5nIGtlcm5lbCBjb25maWcgdG8g
-Q09ORklHX1BDSUVBU1BNPW4gbWFrZXMgdGhlIGRyaXZlcwo+PiA+PiBhdHRhY2hlZCB0byB0aGUg
-Sk1pY3JvbiBTQVRBL1BBVEEgY29udHJvbGxlciB1c2FibGUgYWdhaW4uCj4+ID4gV2hlbiB5b3Ug
-ZW5hYmxlIHRoaXMgb3B0aW9uLCBkaWQgeW91IGNoYW5nZSBhbnkgQVNQTSBwb2xpY3k/IEJ5IGRl
-ZmF1bHQsCj4+ID4gd2UgYXJlIHVzaW5nIHRoZSBCSU9TIHNldHRpbmcsIHNvIGl0IHNob3VsZG4n
-dCBjaGFuZ2UgYW55IHRoaW5nLgo+PiA+Cj4+Cj4+IE5vLCBJIGRpZCBub3QgY2hhbmdlIGFueSBB
-U1BNIHBvbGljeSwgbWFpbmx5IGJlY2F1c2UgSSBkbyBub3QgaG93Lgo+Pgo+PiA+IEFsc28gY2Fu
-IHlvdSBwbGVhc2Ugc2VuZCBtZSB0aGUgJ2xzcGNpIC12dnZ4eHh4JyBvdXRwdXQgd2l0aC93aXRo
-b3V0IHRoZQo+PiA+IEFTUE0gZW5hYmxlZD8KPj4gPgo+IENhbiB5b3UgcGxlYXNlIHRyeSBiZWxv
-dyBwYXRjaD8KCkkgY29uZmlybSB0aGF0IHRoZSBwYXRjaCBmaXhlcyB0aGUgaXNzdWUgd2hlbiBD
-T05GSUdfQVNQTSBpcyBlbmFibGVkLgoKPiBUaGUgU2xvdCAwMzowMC4qIG9mIEpNaWNyb24gY29u
-dHJvbGxlciBoYXMgdHdvIGZ1bmN0aW9ucywgYnV0IG9uZSBpcwo+IFBDSUUgZW5kcG9pbnQgdGhl
-IG90aGVyIGlzbid0IFBDSUUgZGV2aWNlLCB2ZXJ5IHN0cmFuZ2UuCgpSaWdodCwgdGhhdCdzIHdo
-YXQgSSdtIHNlZWluZyBoZXJlIChtb3RoZXJib2FyZCBpcyBhbiBBU1VTIFA1Qi1FKS4gSSdtCmF0
-dGFjaGluZyB0aGUgb3V0cHV0IG9mIGxzcGNpLgoKdGhhbmtzLApMdWNhCg==
-------=_Part_8193_16276777.1211399123103
-Content-Type: application/octet-stream; name=aspm
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fgibqrwj0
-Content-Disposition: attachment; filename=aspm
+Anrew, Randy, you just wrote KernelNewbiesGuide I think ;) There are
+lot of internet sites which could help with what-to-do, and linux-mm.org
+and kernel.bugzilla.org and more BUT what I've tried to say is that we
+really have such document inside kernel tree (it could be really short)
+like:
 
-MDI6MDAuMCBTQVRBIGNvbnRyb2xsZXI6IEpNaWNyb24gVGVjaG5vbG9naWVzLCBJbmMuIEpNaWNy
-b24gMjAzNjAvMjAzNjMgQUhDSSBDb250cm9sbGVyIChyZXYgMDIpIChwcm9nLWlmIDAxIFtBSENJ
-IDEuMF0pCglTdWJzeXN0ZW06IEFTVVNUZUsgQ29tcHV0ZXIgSW5jLiBVbmtub3duIGRldmljZSA4
-MWU0CglDb250cm9sOiBJL08rIE1lbSsgQnVzTWFzdGVyKyBTcGVjQ3ljbGUtIE1lbVdJTlYtIFZH
-QVNub29wLSBQYXJFcnItIFN0ZXBwaW5nLSBTRVJSLSBGYXN0QjJCLSBEaXNJTlR4LQoJU3RhdHVz
-OiBDYXArIDY2TUh6LSBVREYtIEZhc3RCMkItIFBhckVyci0gREVWU0VMPWZhc3QgPlRBYm9ydC0g
-PFRBYm9ydC0gPE1BYm9ydC0gPlNFUlItIDxQRVJSLSBJTlR4LQoJTGF0ZW5jeTogMCwgQ2FjaGUg
-TGluZSBTaXplOiAzMiBieXRlcwoJSW50ZXJydXB0OiBwaW4gQSByb3V0ZWQgdG8gSVJRIDE2CglS
-ZWdpb24gNTogTWVtb3J5IGF0IGZmM2ZlMDAwICgzMi1iaXQsIG5vbi1wcmVmZXRjaGFibGUpIFtz
-aXplPThLXQoJRXhwYW5zaW9uIFJPTSBhdCBmZjNlMDAwMCBbZGlzYWJsZWRdIFtzaXplPTY0S10K
-CUNhcGFiaWxpdGllczogWzY4XSBQb3dlciBNYW5hZ2VtZW50IHZlcnNpb24gMgoJCUZsYWdzOiBQ
-TUVDbGstIERTSS0gRDEtIEQyLSBBdXhDdXJyZW50PTBtQSBQTUUoRDAtLEQxLSxEMi0sRDNob3Qr
-LEQzY29sZC0pCgkJU3RhdHVzOiBEMCBQTUUtRW5hYmxlLSBEU2VsPTAgRFNjYWxlPTAgUE1FLQoJ
-Q2FwYWJpbGl0aWVzOiBbNTBdIEV4cHJlc3MgKHYxKSBMZWdhY3kgRW5kcG9pbnQsIE1TSSAwMQoJ
-CURldkNhcDoJTWF4UGF5bG9hZCAxMjggYnl0ZXMsIFBoYW50RnVuYyAwLCBMYXRlbmN5IEwwcyA8
-NjRucywgTDEgPDF1cwoJCQlFeHRUYWctIEF0dG5CdG4tIEF0dG5JbmQtIFB3ckluZC0gUkJFLSBG
-TFJlc2V0LQoJCURldkN0bDoJUmVwb3J0IGVycm9yczogQ29ycmVjdGFibGUtIE5vbi1GYXRhbC0g
-RmF0YWwtIFVuc3VwcG9ydGVkLQoJCQlSbHhkT3JkLSBFeHRUYWctIFBoYW50RnVuYy0gQXV4UHdy
-LSBOb1Nub29wLQoJCQlNYXhQYXlsb2FkIDEyOCBieXRlcywgTWF4UmVhZFJlcSA1MTIgYnl0ZXMK
-CQlEZXZTdGE6CUNvcnJFcnItIFVuY29yckVyci0gRmF0YWxFcnItIFVuc3VwcFJlcSsgQXV4UHdy
-LSBUcmFuc1BlbmQtCgkJTG5rQ2FwOglQb3J0ICMxLCBTcGVlZCAyLjVHVC9zLCBXaWR0aCB4MSwg
-QVNQTSBMMHMsIExhdGVuY3kgTDAgPDF1cywgTDEgPDE2dXMKCQkJQ2xvY2tQTS0gU3VwcmlzZS0g
-TExBY3RSZXAtIEJ3Tm90LQoJCUxua0N0bDoJQVNQTSBEaXNhYmxlZDsgUkNCIDY0IGJ5dGVzIERp
-c2FibGVkLSBSZXRyYWluLSBDb21tQ2xrKwoJCQlFeHRTeW5jaC0gQ2xvY2tQTS0gQXV0V2lkRGlz
-LSBCV0ludC0gQXV0QldJbnQtCgkJTG5rU3RhOglTcGVlZCAyLjVHVC9zLCBXaWR0aCB4MSwgVHJF
-cnItIFRyYWluLSBTbG90Q2xrKyBETEFjdGl2ZS0gQldNZ210LSBBQldNZ210LQoJS2VybmVsIGRy
-aXZlciBpbiB1c2U6IGFoY2kKCUtlcm5lbCBtb2R1bGVzOiBhaGNpCjAwOiA3YiAxOSA2MyAyMyAw
-NyAwMCAxMCAwMCAwMiAwMSAwNiAwMSAwOCAwMCA4MCAwMAoxMDogMDAgMDAgMDAgMDAgMDAgMDAg
-MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKMjA6IDAwIDAwIDAwIDAwIDAwIGUwIDNmIGZm
-IDAwIDAwIDAwIDAwIDQzIDEwIGU0IDgxCjMwOiAwMCAwMCAzZSBmZiA2OCAwMCAwMCAwMCAwMCAw
-MCAwMCAwMCAwYiAwMSAwMCAwMAo0MDogYmYgYTEgYzIgODAgODggODggZmYgZjAgMjAgMDAgMDAg
-MjQgMDIgMDAgMDAgMDAKNTA6IDEwIDAwIDExIDAyIDAwIDAwIDAwIDAwIDAwIDIwIDA4IDAwIDEx
-IDQ0IDAyIDAxCjYwOiA0MCAwMCAxMSAxMCAwMCAwMCAwMCAwMCAwMSA1MCAwMiA0MCAwMCAwMCAw
-MCAwMAo3MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAK
-ODA6IDA4IDA4IDAwIDAwIGEwIDAxIDBhIDAwIDBmIGFhIDBmIGFhIDAwIDAwIDAwIDAwCjkwOiAw
-MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAphMDogMDAgMDAg
-MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKYjA6IDAwIDAwIDAwIDAw
-IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDgwCmMwOiBjMyA4YiAzOCAwMCAwMyA0
-NSAwMiAwMCA5YyAzNCAyNyBjMCA0OSBiZSAwMCAwMApkMDogMTggMDAgODAgODAgMDEgMDAgMDAg
-MDAgMDEgMDAgZWIgMDAgMDAgMDAgMDAgNTYKZTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDlj
-IDM0IDI3IGMwIDQ5IGJlIDAwIDg5CmYwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
-MCAwMCAwMCAwMCAwMCAwMAoKMDI6MDAuMSBJREUgaW50ZXJmYWNlOiBKTWljcm9uIFRlY2hub2xv
-Z2llcywgSW5jLiBKTWljcm9uIDIwMzYwLzIwMzYzIEFIQ0kgQ29udHJvbGxlciAocmV2IDAyKSAo
-cHJvZy1pZiA4NSBbTWFzdGVyIFNlY08gUHJpT10pCglTdWJzeXN0ZW06IEFTVVNUZUsgQ29tcHV0
-ZXIgSW5jLiBVbmtub3duIGRldmljZSA4MWU0CglDb250cm9sOiBJL08rIE1lbSsgQnVzTWFzdGVy
-KyBTcGVjQ3ljbGUtIE1lbVdJTlYtIFZHQVNub29wLSBQYXJFcnItIFN0ZXBwaW5nLSBTRVJSLSBG
-YXN0QjJCLSBEaXNJTlR4LQoJU3RhdHVzOiBDYXArIDY2TUh6LSBVREYtIEZhc3RCMkItIFBhckVy
-ci0gREVWU0VMPWZhc3QgPlRBYm9ydC0gPFRBYm9ydC0gPE1BYm9ydC0gPlNFUlItIDxQRVJSLSBJ
-TlR4LQoJTGF0ZW5jeTogMAoJSW50ZXJydXB0OiBwaW4gQiByb3V0ZWQgdG8gSVJRIDE3CglSZWdp
-b24gMDogSS9PIHBvcnRzIGF0IGFjMDAgW3NpemU9OF0KCVJlZ2lvbiAxOiBJL08gcG9ydHMgYXQg
-YTg4MCBbc2l6ZT00XQoJUmVnaW9uIDI6IEkvTyBwb3J0cyBhdCBhODAwIFtzaXplPThdCglSZWdp
-b24gMzogSS9PIHBvcnRzIGF0IGE0ODAgW3NpemU9NF0KCVJlZ2lvbiA0OiBJL08gcG9ydHMgYXQg
-YTQwMCBbc2l6ZT0xNl0KCUNhcGFiaWxpdGllczogWzY4XSBQb3dlciBNYW5hZ2VtZW50IHZlcnNp
-b24gMgoJCUZsYWdzOiBQTUVDbGstIERTSS0gRDEtIEQyLSBBdXhDdXJyZW50PTBtQSBQTUUoRDAt
-LEQxLSxEMi0sRDNob3QtLEQzY29sZC0pCgkJU3RhdHVzOiBEMCBQTUUtRW5hYmxlLSBEU2VsPTAg
-RFNjYWxlPTAgUE1FLQoJS2VybmVsIGRyaXZlciBpbiB1c2U6IHBhdGFfam1pY3JvbgoJS2VybmVs
-IG1vZHVsZXM6IHBhdGFfam1pY3JvbgowMDogN2IgMTkgNjMgMjMgMDcgMDAgMTAgMDAgMDIgODUg
-MDEgMDEgMDAgMDAgMDAgMDAKMTA6IDQxIGFjIDAwIDAwIDgxIGE4IDAwIDAwIDAxIGE4IDAwIDAw
-IDgxIGE0IDAwIDAwCjIwOiAwMSBhNCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCA0MyAx
-MCBlNCA4MQozMDogMDAgMDAgMDAgMDAgNjggMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDIgMDAg
-MDAKNDA6IGJmIGExIGMyIDgwIDg4IDg4IGZmIGYwIDIwIDAwIDAwIDI0IDAyIDAwIDAwIDAwCjUw
-OiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo2MDogMDAg
-MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDEgMDAgMDIgMDAgMDAgMDAgMDAgMDAKNzA6IDAwIDAwIDAw
-IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjgwOiAwOCAwOCAwMCAwMCBh
-MCAwMSAwYSAwMCAwZiBhYSAwZiBhYSAwMCAwMCAwMCAwMAo5MDogMDAgMDAgMDAgMDAgMDAgMDAg
-MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKYTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
-IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmIwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
-MCAwMCAwMCAwMCAwMCAwMCA4MApjMDogYzMgOGIgMzggMDAgMDMgNDUgMDIgMDAgOWMgMzQgMjcg
-YzAgNDkgYmUgMDAgMDAKZDA6IDE4IDAwIDgwIDgwIDAxIDAwIDAwIDAwIDAxIDAwIGViIDAwIDAw
-IDAwIDAwIDU2CmUwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCA5YyAzNCAyNyBjMCA0OSBiZSAw
-MCA4OQpmMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAK
-Cg==
-------=_Part_8193_16276777.1211399123103
-Content-Type: application/octet-stream; name=noaspm
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fgibr2am1
-Content-Disposition: attachment; filename=noaspm
+Which patches are not good for sending to LKML
+----------------------------------------------
 
-MDI6MDAuMCBTQVRBIGNvbnRyb2xsZXI6IEpNaWNyb24gVGVjaG5vbG9naWVzLCBJbmMuIEpNaWNy
-b24gMjAzNjAvMjAzNjMgQUhDSSBDb250cm9sbGVyIChyZXYgMDIpIChwcm9nLWlmIDAxIFtBSENJ
-IDEuMF0pCglTdWJzeXN0ZW06IEFTVVNUZUsgQ29tcHV0ZXIgSW5jLiBVbmtub3duIGRldmljZSA4
-MWU0CglDb250cm9sOiBJL08rIE1lbSsgQnVzTWFzdGVyKyBTcGVjQ3ljbGUtIE1lbVdJTlYtIFZH
-QVNub29wLSBQYXJFcnItIFN0ZXBwaW5nLSBTRVJSLSBGYXN0QjJCLSBEaXNJTlR4LQoJU3RhdHVz
-OiBDYXArIDY2TUh6LSBVREYtIEZhc3RCMkItIFBhckVyci0gREVWU0VMPWZhc3QgPlRBYm9ydC0g
-PFRBYm9ydC0gPE1BYm9ydC0gPlNFUlItIDxQRVJSLSBJTlR4LQoJTGF0ZW5jeTogMCwgQ2FjaGUg
-TGluZSBTaXplOiAzMiBieXRlcwoJSW50ZXJydXB0OiBwaW4gQSByb3V0ZWQgdG8gSVJRIDE2CglS
-ZWdpb24gNTogTWVtb3J5IGF0IGZmM2ZlMDAwICgzMi1iaXQsIG5vbi1wcmVmZXRjaGFibGUpIFtz
-aXplPThLXQoJRXhwYW5zaW9uIFJPTSBhdCBmZjNlMDAwMCBbZGlzYWJsZWRdIFtzaXplPTY0S10K
-CUNhcGFiaWxpdGllczogWzY4XSBQb3dlciBNYW5hZ2VtZW50IHZlcnNpb24gMgoJCUZsYWdzOiBQ
-TUVDbGstIERTSS0gRDEtIEQyLSBBdXhDdXJyZW50PTBtQSBQTUUoRDAtLEQxLSxEMi0sRDNob3Qr
-LEQzY29sZC0pCgkJU3RhdHVzOiBEMCBQTUUtRW5hYmxlLSBEU2VsPTAgRFNjYWxlPTAgUE1FLQoJ
-Q2FwYWJpbGl0aWVzOiBbNTBdIEV4cHJlc3MgKHYxKSBMZWdhY3kgRW5kcG9pbnQsIE1TSSAwMQoJ
-CURldkNhcDoJTWF4UGF5bG9hZCAxMjggYnl0ZXMsIFBoYW50RnVuYyAwLCBMYXRlbmN5IEwwcyA8
-NjRucywgTDEgPDF1cwoJCQlFeHRUYWctIEF0dG5CdG4tIEF0dG5JbmQtIFB3ckluZC0gUkJFLSBG
-TFJlc2V0LQoJCURldkN0bDoJUmVwb3J0IGVycm9yczogQ29ycmVjdGFibGUtIE5vbi1GYXRhbC0g
-RmF0YWwtIFVuc3VwcG9ydGVkLQoJCQlSbHhkT3JkLSBFeHRUYWctIFBoYW50RnVuYy0gQXV4UHdy
-LSBOb1Nub29wLQoJCQlNYXhQYXlsb2FkIDEyOCBieXRlcywgTWF4UmVhZFJlcSA1MTIgYnl0ZXMK
-CQlEZXZTdGE6CUNvcnJFcnItIFVuY29yckVyci0gRmF0YWxFcnItIFVuc3VwcFJlcSsgQXV4UHdy
-LSBUcmFuc1BlbmQtCgkJTG5rQ2FwOglQb3J0ICMxLCBTcGVlZCAyLjVHVC9zLCBXaWR0aCB4MSwg
-QVNQTSBMMHMsIExhdGVuY3kgTDAgPDF1cywgTDEgPDE2dXMKCQkJQ2xvY2tQTS0gU3VwcmlzZS0g
-TExBY3RSZXAtIEJ3Tm90LQoJCUxua0N0bDoJQVNQTSBEaXNhYmxlZDsgUkNCIDY0IGJ5dGVzIERp
-c2FibGVkLSBSZXRyYWluLSBDb21tQ2xrKwoJCQlFeHRTeW5jaC0gQ2xvY2tQTS0gQXV0V2lkRGlz
-LSBCV0ludC0gQXV0QldJbnQtCgkJTG5rU3RhOglTcGVlZCAyLjVHVC9zLCBXaWR0aCB4MSwgVHJF
-cnItIFRyYWluLSBTbG90Q2xrKyBETEFjdGl2ZS0gQldNZ210LSBBQldNZ210LQoJS2VybmVsIGRy
-aXZlciBpbiB1c2U6IGFoY2kKCUtlcm5lbCBtb2R1bGVzOiBhaGNpCjAwOiA3YiAxOSA2MyAyMyAw
-NyAwMCAxMCAwMCAwMiAwMSAwNiAwMSAwOCAwMCA4MCAwMAoxMDogMDAgMDAgMDAgMDAgMDAgMDAg
-MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKMjA6IDAwIDAwIDAwIDAwIDAwIGUwIDNmIGZm
-IDAwIDAwIDAwIDAwIDQzIDEwIGU0IDgxCjMwOiAwMCAwMCAzZSBmZiA2OCAwMCAwMCAwMCAwMCAw
-MCAwMCAwMCAwYiAwMSAwMCAwMAo0MDogYmYgYTEgYzIgODAgYTggYTggZmYgZjAgMjAgMDAgMDAg
-MjQgMDIgMDAgMDAgMDAKNTA6IDEwIDAwIDExIDAyIDAwIDAwIDAwIDAwIDAwIDIwIDA4IDAwIDEx
-IDQ0IDAyIDAxCjYwOiA0MCAwMCAxMSAxMCAwMCAwMCAwMCAwMCAwMSA1MCAwMiA0MCAwMCAwMCAw
-MCAwMAo3MDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAK
-ODA6IDA4IDA4IDAwIDAwIGEwIDAxIDBhIDAwIDBmIGFhIDBmIGFhIDAwIDAwIDAwIDAwCjkwOiAw
-MCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAphMDogMDAgMDAg
-MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKYjA6IDAwIDAwIDAwIDAw
-IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDgwCmMwOiBjMyA4YiAzOCAwMCAwMyA0
-NSAwMiAwMCA5YyAzNCAyNyBjMCA0OSBiZSAwMCAwMApkMDogMTggMDAgODAgODAgMDEgMDAgMDAg
-MDAgMDEgMDAgZWIgMDAgMDAgMDAgMDAgNTYKZTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDlj
-IDM0IDI3IGMwIDQ5IGJlIDAwIDg5CmYwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
-MCAwMCAwMCAwMCAwMCAwMAoKMDI6MDAuMSBJREUgaW50ZXJmYWNlOiBKTWljcm9uIFRlY2hub2xv
-Z2llcywgSW5jLiBKTWljcm9uIDIwMzYwLzIwMzYzIEFIQ0kgQ29udHJvbGxlciAocmV2IDAyKSAo
-cHJvZy1pZiA4NSBbTWFzdGVyIFNlY08gUHJpT10pCglTdWJzeXN0ZW06IEFTVVNUZUsgQ29tcHV0
-ZXIgSW5jLiBVbmtub3duIGRldmljZSA4MWU0CglDb250cm9sOiBJL08rIE1lbSsgQnVzTWFzdGVy
-KyBTcGVjQ3ljbGUtIE1lbVdJTlYtIFZHQVNub29wLSBQYXJFcnItIFN0ZXBwaW5nLSBTRVJSLSBG
-YXN0QjJCLSBEaXNJTlR4LQoJU3RhdHVzOiBDYXArIDY2TUh6LSBVREYtIEZhc3RCMkItIFBhckVy
-ci0gREVWU0VMPWZhc3QgPlRBYm9ydC0gPFRBYm9ydC0gPE1BYm9ydC0gPlNFUlItIDxQRVJSLSBJ
-TlR4LQoJTGF0ZW5jeTogMAoJSW50ZXJydXB0OiBwaW4gQiByb3V0ZWQgdG8gSVJRIDE3CglSZWdp
-b24gMDogSS9PIHBvcnRzIGF0IGFjMDAgW3NpemU9OF0KCVJlZ2lvbiAxOiBJL08gcG9ydHMgYXQg
-YTg4MCBbc2l6ZT00XQoJUmVnaW9uIDI6IEkvTyBwb3J0cyBhdCBhODAwIFtzaXplPThdCglSZWdp
-b24gMzogSS9PIHBvcnRzIGF0IGE0ODAgW3NpemU9NF0KCVJlZ2lvbiA0OiBJL08gcG9ydHMgYXQg
-YTQwMCBbc2l6ZT0xNl0KCUNhcGFiaWxpdGllczogWzY4XSBQb3dlciBNYW5hZ2VtZW50IHZlcnNp
-b24gMgoJCUZsYWdzOiBQTUVDbGstIERTSS0gRDEtIEQyLSBBdXhDdXJyZW50PTBtQSBQTUUoRDAt
-LEQxLSxEMi0sRDNob3QtLEQzY29sZC0pCgkJU3RhdHVzOiBEMCBQTUUtRW5hYmxlLSBEU2VsPTAg
-RFNjYWxlPTAgUE1FLQoJS2VybmVsIGRyaXZlciBpbiB1c2U6IHBhdGFfam1pY3JvbgoJS2VybmVs
-IG1vZHVsZXM6IHBhdGFfam1pY3JvbgowMDogN2IgMTkgNjMgMjMgMDcgMDAgMTAgMDAgMDIgODUg
-MDEgMDEgMDAgMDAgMDAgMDAKMTA6IDAxIGFjIDAwIDAwIDgxIGE4IDAwIDAwIDAxIGE4IDAwIDAw
-IDgxIGE0IDAwIDAwCjIwOiAwMSBhNCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCA0MyAx
-MCBlNCA4MQozMDogMDAgMDAgMDAgMDAgNjggMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDIgMDAg
-MDAKNDA6IGJmIGExIGMyIDgwIGE4IGE4IGZmIGYwIDIwIDAwIDAwIDI0IDAyIDAwIDAwIDAwCjUw
-OiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMAo2MDogMDAg
-MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDEgMDAgMDIgMDAgMDAgMDAgMDAgMDAKNzA6IDAwIDAwIDAw
-IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCjgwOiAwOCAwOCAwMCAwMCBh
-MCAwMSAwYSAwMCAwZiBhYSAwZiBhYSAwMCAwMCAwMCAwMAo5MDogMDAgMDAgMDAgMDAgMDAgMDAg
-MDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAKYTA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
-IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwCmIwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAw
-MCAwMCAwMCAwMCAwMCAwMCA4MApjMDogYzMgOGIgMzggMDAgMDMgNDUgMDIgMDAgOWMgMzQgMjcg
-YzAgNDkgYmUgMDAgMDAKZDA6IDE4IDAwIDgwIDgwIDAxIDAwIDAwIDAwIDAxIDAwIGViIDAwIDAw
-IDAwIDAwIDU2CmUwOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCA5YyAzNCAyNyBjMCA0OSBiZSAw
-MCA4OQpmMDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAK
-Cg==
-------=_Part_8193_16276777.1211399123103--
+ - Plain whitespace cleanup
+
+Some rules just *known* only if you have an experience in LKML mailing
+but if someone is sending _first_ patch he ever made he just doesn't know
+that. That is all. So we need not a link to some inet resource BUT written
+in file inside of kernel tree. But that is just my (personal) opinion.
+
+		- Cyrill -
