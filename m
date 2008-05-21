@@ -1,189 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937030AbYEUUJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937259AbYEUUJ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937030AbYEUUJh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 16:09:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763085AbYEUUJ2
+	id S937259AbYEUUJ7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 16:09:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936303AbYEUUJd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 16:09:28 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:8447 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753449AbYEUUJ1 (ORCPT
+	Wed, 21 May 2008 16:09:33 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41253 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S936154AbYEUUJc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 16:09:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=JvnvYbhd3Xg4oxdOyrrTXrWqubjIH+P7sZ0NgxvIQaMdLPYY9NLmNKzIJLvuHRnmYkzRa5BS/XLO79S/lQOuHR4vpXBwIJQbTKyK54P4u0RLMhm9B0//zMuouVrHxam6m60GvdUclNaI2Dhyd6ae94y+cbTMBcgeBIrcYf8hjU4=
-Message-ID: <2c0942db0805211309y2871009fv34669d384df820d4@mail.gmail.com>
-Date: Wed, 21 May 2008 13:09:26 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Justin Mattock" <justinmattock@gmail.com>
-Subject: Re: completely lost as to what to do, or where to look.
-Cc: "Oliver Pinter" <oliver.pntr@gmail.com>, "Adrian Bunk" <bunk@kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <dd18b0c30805211303k6e43d6d1l903da0c794521519@mail.gmail.com>
+	Wed, 21 May 2008 16:09:32 -0400
+Date: Wed, 21 May 2008 13:07:50 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Roland McGrath <roland@redhat.com>
+cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
+       Austin Clements <amdragon+kernelbugzilla@mit.edu>,
+       Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] signals: sigqueue_free: don't free sigqueue if it
+ is queued
+In-Reply-To: <20080521193348.64E8C26FA24@magilla.localdomain>
+Message-ID: <alpine.LFD.1.10.0805211245131.3081@woody.linux-foundation.org>
+References: <20080517151420.GA9496@tv-sign.ru> <20080521022046.1501F26FA1C@magilla.localdomain> <20080521115414.GA147@tv-sign.ru> <20080521184245.5BABF26FA24@magilla.localdomain> <alpine.LFD.1.10.0805211146350.3081@woody.linux-foundation.org>
+ <20080521193348.64E8C26FA24@magilla.localdomain>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <dd18b0c30805202110x7c412b3bq523f91d968072482@mail.gmail.com>
-	 <20080520223410.9a8f200d.akpm@linux-foundation.org>
-	 <dd18b0c30805202351h133147adg5bb526e3f74e3bd6@mail.gmail.com>
-	 <20080521075917.GB18352@cs181133002.pp.htv.fi>
-	 <dd18b0c30805210733m6d853709xf59331cfed3bfea@mail.gmail.com>
-	 <6101e8c40805210751y350e3513ndd48621ac9d2b5d3@mail.gmail.com>
-	 <dd18b0c30805211004m6106b65occ97eff00cdbf630@mail.gmail.com>
-	 <dd18b0c30805211303k6e43d6d1l903da0c794521519@mail.gmail.com>
-X-Google-Sender-Auth: ad57a33a4b506f77
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 21, 2008 at 1:03 PM, Justin Mattock <justinmattock@gmail.com> wrote:
-> On Wed, May 21, 2008 at 5:04 PM, Justin Mattock <justinmattock@gmail.com> wrote:
->> On Wed, May 21, 2008 at 2:51 PM, Oliver Pinter <oliver.pntr@gmail.com> wrote:
->>> you use ati or nvidia binary driver?
->>>
->>> On 5/21/08, Justin Mattock <justinmattock@gmail.com> wrote:
->>>> On Wed, May 21, 2008 at 7:59 AM, Adrian Bunk <bunk@kernel.org> wrote:
->>>>> On Wed, May 21, 2008 at 06:51:24AM +0000, Justin Mattock wrote:
->>>>>> On Wed, May 21, 2008 at 5:34 AM, Andrew Morton
->>>>>> <akpm@linux-foundation.org> wrote:
->>>>>> > On Wed, 21 May 2008 04:10:16 +0000 "Justin Mattock"
->>>>>> > <justinmattock@gmail.com> wrote:
->>>>>> >
->>>>>> >> Hello; I'm lost as to where to look in the kernel, as to why I'm
->>>>>> >> receiving a black screen with startx
->>>>>> >> DRI seems to be fine, I'm noticing a sema_init but am not sure if this
->>>>>> >> is the cause of the blackness.
->>>>>> >> any direction as to where I might look would be helpful.
->>>>>> >
->>>>>> > Kernel version?
->>>>>> >
->>>>>> > A git-bisect should get you down the the offending commit within an
->>>>>> > hour or three.  http://www.kernel.org/doc/local/git-quick.html has some
->>>>>> > instructions.
->>>>>> >
->>>>>> > But if you're on 2.6.26-rcX, be sure to use the very latest - a pile of
->>>>>> > bad DRI code got reverted recently.  This morning, I think.
->>>>>> >
->>>>>>
->>>>>> Thanks for the help, From what I can remember I noticed this around
->>>>>> 2.6.26-rc1. It could be an issue with DRI, but then again it could be
->>>>>> something else. With running some more tests I'm noticing  a conflict
->>>>>> with libdri.so, not recognizing the module or the module not
->>>>>> recognizing libdri.so.
->>>>>>...
->>>>>
->>>>> Which X video driver are you using?
->>>>>
->>>>> What exactly is the error message?
->>>>>
->>>>>> regards;
->>>>>> Justin P. Mattock
->>>>>
->>>>> cu
->>>>> Adrian
->>>>>
->>>>> --
->>>>>
->>>>>       "Is there not promise of rain?" Ling Tan asked suddenly out
->>>>>        of the darkness. There had been need of rain for many days.
->>>>>       "Only a promise," Lao Er said.
->>>>>                                       Pearl S. Buck - Dragon Seed
->>>>>
->>>>>
->>>>
->>>> Hello; thanks for the feedback, from previous posts, you know what
->>>> module I'm talking about, So with that in mind I'm going to go
->>>> to the next question: From error messages "there isn't"
->>>> the only leeway or light at the end of the tunnel I see is with
->>>> libdri.so i.g. If I boot the system up with out messing with anything
->>>> I will receive
->>>> a black screen after issueing startx, (from looking at what I see, the
->>>> screen will flash one time then black, it should flash or blink two
->>>> times
->>>> before giving me my lovely picture(wallpaper) then if I remove
->>>> libdri.so everything starts up as usual so with that in mind since I
->>>> received
->>>> a post about DRI being all F*&^ked up then maybee that is the culprit,
->>>> I think All I really need right now is info on the xserver and the
->>>> kernel.
->>>> What mechanisms are used or files that are responsible for the two too
->>>> coexist.
->>>> regards;
->>>>
->>>> --
->>>> Justin P. Mattock
->>>> --
->>>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->>>> the body of a message to majordomo@vger.kernel.org
->>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>>> Please read the FAQ at  http://www.tux.org/lkml/
->>>>
->>>
->>>
->>> --
->>> Thanks,
->>> Oliver
->>>
->>
->> Alright: I'm using 2.6.26-rc3-00122-g748bf99, I pulled if I can
->> remember Monday night and I did notice drmP.h and the rest of the drm
->> files,
->> but, will try and pull again to see if it makes a difference. As for
->> the question about what video card nvidia or ati, I'm stuck with ati,
->> went into apple yesterday to see if that would be easy to change out,
->> but unfortunately I would have to get a new laptop.
->> To bad apple didn't use an intel graphics card, that linux already has
->> a module for.
->> As for error messages looking at /var/log/Xorg.0.log it seems the
->> Xserver can't finish completing  DRIScreenInit
->> the /dev/dri/video0 is created, but then just stops after that, no
->> conversation with the module and dri after /dev/dri/video0 is created.
->> At this point, I'll try and pull and see if it makes a difference, and
->> if not then I'll have to just keep trying.
->> That's why right now I just need any kind of info about files or
->> mechanisms that  are used in this situation so I can at least try and
->> connect the dots with this issue.
->>
->> regards;
->> --
->> Justin P. Mattock
->>
->
-> O.K. I've got my 8-balls back, from what I could tell there was three
-> areas that needed attention to:
-> 1)  add nopage back into the kernel
-> 2) The DRI needed to be reverted back to it's original state, or
-> modified due to some issue.
-> 3) find_task_by_pid( pid) on the module side needed to be changed to
-> find_task_by_vpid( pid) or else you'll have an issue with init_pid_ns
->
-> I did have the latest DRI updates yesterday, but should have been
-> using nopage to build the module instead of fault.
-> so three weeks ago if the DRI wasn't adjusted, and if I would of found
-> find_task_by_(v)pid(pid) then I would of been O.K.(but am unsure at
-> the moment, still need to do some more tests) Now after up and running
-> I can confirm that suspend successfully wakes up, So I can go ahead
-> and look into appletouch surviving suspend, and the mighty mouse
-> scroll function surviving suspend as well(then play Myst).
-> Overall this was a good educational exercise for me since I suck at
-> reading and writing.
-> Again thank you guy's for helping me out with this,
 
-Well, I for one am still confused. Is there an issue with the latest
-kernel.org kernel and Xorg opensource drivers that need to be
-addressed? In other words, are other people going to hit the problem
-you had? If so, a patch, or more technical description of what's going
-on would benefit others that would otherwise have to do everything you
-just did.
 
-Or are you using the closed-source nvidia drivers? (No judgement from
-me if you are, but it would really help clear up what the heck is
-going on.)
+On Wed, 21 May 2008, Roland McGrath wrote:
+> 
+> Removing the entry without fixing the pending set is the bug we're trying
+> to fix.  That's what it does now, and it's wrong.
 
-Thanks,
+Well, I think we could/should look at the bigger picture.
 
-Ray
+The whole (and only!) reason for this problem in the first place is that 
+the generic signal-handling code is simply not designed for signals going 
+away. Because they simply don't. This whole sys_timer_delete() thing is 
+purely based on that problem.
+
+So we have a few options here, I think.
+
+One is the approach that Oleg has taken, which is to try to remove the 
+signals. Quite frankly, I don't much like it, because it's against all the 
+normal signal handler behaviour. And being against all the normal signal 
+handler behaviour, it violates the assumptions we have about signals being 
+sticky, which is why it then has problems with both the task sigpending 
+bit and the per-signal pending bits.
+
+We can continue with that approach, but judging by the issues, I suspect 
+it basically involves having to do back-pointers from the signal info to 
+the queues they are on, and even then we'd always have the issues with 
+code that simply assumes that signals are sticky. The simple fact is, we 
+have lots of system call code that does
+
+	if (signal_pending())
+		return -ERESTARTNOHAND;
+
+etc, so even if we don't actually *take* the signal, a cancelled signal 
+would still result in a spurious restart or worse - an EINTR.
+
+But there are other approaches. For example, afaik, this really is more 
+about execve() than about anything else. How about we just do a special 
+case in "flush_signal_handlers()" - rather than try to make it an issue of 
+releasing the POSIX timer.
+
+We know those posix timer things are special. We know they go away at 
+execve() time. There's this unlucky race condition that only happens at 
+execve time, and only because we must flush the pending signal handlers in 
+a way that we normally *don't* flush any other signals.
+
+So we could easily make the POSIX timer code just mark the signals it 
+sends, and then at execve() time (in "flush_signal_handlers()") we walk 
+the signal queues of that thread and get rid of those signal entries.
+
+And at *that* point it is trivial to clear re-calculate the pending bit 
+entirely for that thread, because we know there is nothing else going on.
+
+But doing it in general, when there may be multiple active threads, and 
+one of them does an "timer_delete()" system call, that's actually hard. 
+The other threads may be doing other things, and may validly have that 
+timer pending.
+
+Hmm?
+
+I bet there are other approaches to this. But I think "sigqueue_free()" is 
+fundamentally hard to fix to do what we want to do, without making signals 
+do something that they normally don't have to do.
+
+		Linus
