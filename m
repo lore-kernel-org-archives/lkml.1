@@ -1,73 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937107AbYEUUHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937030AbYEUUJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937107AbYEUUHS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 16:07:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757051AbYEUUHE
+	id S937030AbYEUUJh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 16:09:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763085AbYEUUJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 16:07:04 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:40620 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757083AbYEUUHD (ORCPT
+	Wed, 21 May 2008 16:09:28 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:8447 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753449AbYEUUJ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 16:07:03 -0400
+	Wed, 21 May 2008 16:09:27 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=nJ4tB0HFdRZU+3SrhondrBvBUOcBRfejs6fekdmnsaVC3Ps+iSMQ8wjqf+o0MIphnu83+8IfHiuj1HElAlWYjIuc0Tky0PmHV6qGNOKOkwBylA7blvNAXf3an2XiZlTLXynAiWSNx/pZVAuvnuGKsNi2xYQDSgvoe6AmppyxxKI=
-Message-ID: <9a8748490805211306l50b8411ax4462be18c94ca065@mail.gmail.com>
-Date: Wed, 21 May 2008 22:06:55 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: CFD: linux-wanking@vger.kernel.org (was [PATCH] Standard indentation of arguments)
-Cc: "Cyrill Gorcunov" <gorcunov@gmail.com>, rdunlap@xenotime.net,
-       tytso@mit.edu, hch@infradead.org, viro@zeniv.linux.org.uk,
-       linux-kernel@vger.kernel.org, davem@davemloft.net
-In-Reply-To: <20080521125449.344a445d.akpm@linux-foundation.org>
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=JvnvYbhd3Xg4oxdOyrrTXrWqubjIH+P7sZ0NgxvIQaMdLPYY9NLmNKzIJLvuHRnmYkzRa5BS/XLO79S/lQOuHR4vpXBwIJQbTKyK54P4u0RLMhm9B0//zMuouVrHxam6m60GvdUclNaI2Dhyd6ae94y+cbTMBcgeBIrcYf8hjU4=
+Message-ID: <2c0942db0805211309y2871009fv34669d384df820d4@mail.gmail.com>
+Date: Wed, 21 May 2008 13:09:26 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Justin Mattock" <justinmattock@gmail.com>
+Subject: Re: completely lost as to what to do, or where to look.
+Cc: "Oliver Pinter" <oliver.pntr@gmail.com>, "Adrian Bunk" <bunk@kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <dd18b0c30805211303k6e43d6d1l903da0c794521519@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <12113495282137-git-send-email-kongjianjun@gmail.com>
-	 <20080521083413.GM28946@ZenIV.linux.org.uk>
-	 <20080521015037.add0b78e.akpm@linux-foundation.org>
-	 <20080521103206.GA24545@infradead.org> <20080521120939.GF8581@mit.edu>
-	 <20080521104644.5b6f4e63.akpm@linux-foundation.org>
-	 <20080521185725.GD6932@cvg>
-	 <20080521123355.b34f07ad.rdunlap@xenotime.net>
-	 <20080521194522.GA13916@cvg>
-	 <20080521125449.344a445d.akpm@linux-foundation.org>
+References: <dd18b0c30805202110x7c412b3bq523f91d968072482@mail.gmail.com>
+	 <20080520223410.9a8f200d.akpm@linux-foundation.org>
+	 <dd18b0c30805202351h133147adg5bb526e3f74e3bd6@mail.gmail.com>
+	 <20080521075917.GB18352@cs181133002.pp.htv.fi>
+	 <dd18b0c30805210733m6d853709xf59331cfed3bfea@mail.gmail.com>
+	 <6101e8c40805210751y350e3513ndd48621ac9d2b5d3@mail.gmail.com>
+	 <dd18b0c30805211004m6106b65occ97eff00cdbf630@mail.gmail.com>
+	 <dd18b0c30805211303k6e43d6d1l903da0c794521519@mail.gmail.com>
+X-Google-Sender-Auth: ad57a33a4b506f77
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/5/21 Andrew Morton <akpm@linux-foundation.org>:
-> On Wed, 21 May 2008 23:45:22 +0400
-> Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+On Wed, May 21, 2008 at 1:03 PM, Justin Mattock <justinmattock@gmail.com> wrote:
+> On Wed, May 21, 2008 at 5:04 PM, Justin Mattock <justinmattock@gmail.com> wrote:
+>> On Wed, May 21, 2008 at 2:51 PM, Oliver Pinter <oliver.pntr@gmail.com> wrote:
+>>> you use ati or nvidia binary driver?
+>>>
+>>> On 5/21/08, Justin Mattock <justinmattock@gmail.com> wrote:
+>>>> On Wed, May 21, 2008 at 7:59 AM, Adrian Bunk <bunk@kernel.org> wrote:
+>>>>> On Wed, May 21, 2008 at 06:51:24AM +0000, Justin Mattock wrote:
+>>>>>> On Wed, May 21, 2008 at 5:34 AM, Andrew Morton
+>>>>>> <akpm@linux-foundation.org> wrote:
+>>>>>> > On Wed, 21 May 2008 04:10:16 +0000 "Justin Mattock"
+>>>>>> > <justinmattock@gmail.com> wrote:
+>>>>>> >
+>>>>>> >> Hello; I'm lost as to where to look in the kernel, as to why I'm
+>>>>>> >> receiving a black screen with startx
+>>>>>> >> DRI seems to be fine, I'm noticing a sema_init but am not sure if this
+>>>>>> >> is the cause of the blackness.
+>>>>>> >> any direction as to where I might look would be helpful.
+>>>>>> >
+>>>>>> > Kernel version?
+>>>>>> >
+>>>>>> > A git-bisect should get you down the the offending commit within an
+>>>>>> > hour or three.  http://www.kernel.org/doc/local/git-quick.html has some
+>>>>>> > instructions.
+>>>>>> >
+>>>>>> > But if you're on 2.6.26-rcX, be sure to use the very latest - a pile of
+>>>>>> > bad DRI code got reverted recently.  This morning, I think.
+>>>>>> >
+>>>>>>
+>>>>>> Thanks for the help, From what I can remember I noticed this around
+>>>>>> 2.6.26-rc1. It could be an issue with DRI, but then again it could be
+>>>>>> something else. With running some more tests I'm noticing  a conflict
+>>>>>> with libdri.so, not recognizing the module or the module not
+>>>>>> recognizing libdri.so.
+>>>>>>...
+>>>>>
+>>>>> Which X video driver are you using?
+>>>>>
+>>>>> What exactly is the error message?
+>>>>>
+>>>>>> regards;
+>>>>>> Justin P. Mattock
+>>>>>
+>>>>> cu
+>>>>> Adrian
+>>>>>
+>>>>> --
+>>>>>
+>>>>>       "Is there not promise of rain?" Ling Tan asked suddenly out
+>>>>>        of the darkness. There had been need of rain for many days.
+>>>>>       "Only a promise," Lao Er said.
+>>>>>                                       Pearl S. Buck - Dragon Seed
+>>>>>
+>>>>>
+>>>>
+>>>> Hello; thanks for the feedback, from previous posts, you know what
+>>>> module I'm talking about, So with that in mind I'm going to go
+>>>> to the next question: From error messages "there isn't"
+>>>> the only leeway or light at the end of the tunnel I see is with
+>>>> libdri.so i.g. If I boot the system up with out messing with anything
+>>>> I will receive
+>>>> a black screen after issueing startx, (from looking at what I see, the
+>>>> screen will flash one time then black, it should flash or blink two
+>>>> times
+>>>> before giving me my lovely picture(wallpaper) then if I remove
+>>>> libdri.so everything starts up as usual so with that in mind since I
+>>>> received
+>>>> a post about DRI being all F*&^ked up then maybee that is the culprit,
+>>>> I think All I really need right now is info on the xserver and the
+>>>> kernel.
+>>>> What mechanisms are used or files that are responsible for the two too
+>>>> coexist.
+>>>> regards;
+>>>>
+>>>> --
+>>>> Justin P. Mattock
+>>>> --
+>>>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>>>> the body of a message to majordomo@vger.kernel.org
+>>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>>> Please read the FAQ at  http://www.tux.org/lkml/
+>>>>
+>>>
+>>>
+>>> --
+>>> Thanks,
+>>> Oliver
+>>>
+>>
+>> Alright: I'm using 2.6.26-rc3-00122-g748bf99, I pulled if I can
+>> remember Monday night and I did notice drmP.h and the rest of the drm
+>> files,
+>> but, will try and pull again to see if it makes a difference. As for
+>> the question about what video card nvidia or ati, I'm stuck with ati,
+>> went into apple yesterday to see if that would be easy to change out,
+>> but unfortunately I would have to get a new laptop.
+>> To bad apple didn't use an intel graphics card, that linux already has
+>> a module for.
+>> As for error messages looking at /var/log/Xorg.0.log it seems the
+>> Xserver can't finish completing  DRIScreenInit
+>> the /dev/dri/video0 is created, but then just stops after that, no
+>> conversation with the module and dri after /dev/dri/video0 is created.
+>> At this point, I'll try and pull and see if it makes a difference, and
+>> if not then I'll have to just keep trying.
+>> That's why right now I just need any kind of info about files or
+>> mechanisms that  are used in this situation so I can at least try and
+>> connect the dots with this issue.
+>>
+>> regards;
+>> --
+>> Justin P. Mattock
+>>
 >
->> Anrew, Randy, you just wrote KernelNewbiesGuide I think ;) There are
->> lot of internet sites which could help with what-to-do, and linux-mm.org
->> and kernel.bugzilla.org and more BUT what I've tried to say is that we
->> really have such document inside kernel tree (it could be really short)
->> like:
->>
->> Which patches are not good for sending to LKML
->> ----------------------------------------------
->>
->>  - Plain whitespace cleanup
->>
->> Some rules just *known* only if you have an experience in LKML mailing
->> but if someone is sending _first_ patch he ever made he just doesn't know
->> that. That is all. So we need not a link to some inet resource BUT written
->> in file inside of kernel tree. But that is just my (personal) opinion.
+> O.K. I've got my 8-balls back, from what I could tell there was three
+> areas that needed attention to:
+> 1)  add nopage back into the kernel
+> 2) The DRI needed to be reverted back to it's original state, or
+> modified due to some issue.
+> 3) find_task_by_pid( pid) on the module side needed to be changed to
+> find_task_by_vpid( pid) or else you'll have an issue with init_pid_ns
 >
-> Yes, a general GettingStarted document would probably be useful.
-> It would hopefully have more what-to-do content than what-not-to-do.
+> I did have the latest DRI updates yesterday, but should have been
+> using nopage to build the module instead of fault.
+> so three weeks ago if the DRI wasn't adjusted, and if I would of found
+> find_task_by_(v)pid(pid) then I would of been O.K.(but am unsure at
+> the moment, still need to do some more tests) Now after up and running
+> I can confirm that suspend successfully wakes up, So I can go ahead
+> and look into appletouch surviving suspend, and the mighty mouse
+> scroll function surviving suspend as well(then play Myst).
+> Overall this was a good educational exercise for me since I suck at
+> reading and writing.
+> Again thank you guy's for helping me out with this,
 
-I'm in the process of trying to write an initial draft of just such a
-document right now. I'll post it once I'm a bit more done (gimme an
-hour or two).
+Well, I for one am still confused. Is there an issue with the latest
+kernel.org kernel and Xorg opensource drivers that need to be
+addressed? In other words, are other people going to hit the problem
+you had? If so, a patch, or more technical description of what's going
+on would benefit others that would otherwise have to do everything you
+just did.
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please http://www.expita.com/nomime.html
+Or are you using the closed-source nvidia drivers? (No judgement from
+me if you are, but it would really help clear up what the heck is
+going on.)
+
+Thanks,
+
+Ray
