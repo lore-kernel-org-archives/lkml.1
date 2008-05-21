@@ -1,94 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764662AbYEUJwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765107AbYEUJzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764662AbYEUJwQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 05:52:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753729AbYEUJwA
+	id S1765107AbYEUJzx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 05:55:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755308AbYEUJzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 05:52:00 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:58107 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750963AbYEUJwA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 05:52:00 -0400
-Date: Wed, 21 May 2008 11:52:52 +0200
-From: Pavel Machek <pavel@suse.cz>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       macro@ds2.pg.gda.pl
-Subject: i8259.c: remove trivial ifdefs
-Message-ID: <20080521095252.GD12763@elf.ucw.cz>
-References: <20080520151528.GA1596@elf.ucw.cz> <20080520204750.GA31409@elte.hu>
+	Wed, 21 May 2008 05:55:44 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35866 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753675AbYEUJzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 05:55:43 -0400
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, linux-fbdev-devel@lists.sourceforge.net,
+       adaplas@gmail.com, linux-input@vger.kernel.org,
+       dmitry.torokhov@gmail.com, mingo@redhat.com, akpm@linux-foundation.org,
+       Pat Campbell <plc@novell.com>
+Subject: Re: [PATCH 0/5] xen pvfb: Para-virtual framebuffer, keyboard and pointer driver updates
+References: <87d4ngm4s4.fsf@pike.pond.sub.org> <4833E6BA.3060408@goop.org>
+From: Markus Armbruster <armbru@redhat.com>
+Date: Wed, 21 May 2008 11:54:29 +0200
+In-Reply-To: <4833E6BA.3060408@goop.org> (Jeremy Fitzhardinge's message of "Wed\, 21 May 2008 10\:09\:14 +0100")
+Message-ID: <87lk24j82y.fsf@pike.pond.sub.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080520204750.GA31409@elte.hu>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove #ifdefs where the only difference is formatting of comments.
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
+> Markus Armbruster wrote:
+>> This is an update to the Linux part of the Xen PVFB.  Linux Xen PVFB
+>> is a pair of Xen para-virtual frontend device drivers:
+>> drivers/video/xen-fbfront.c provides a framebuffer, and
+>> drivers/input/xen-kbdfront provides keyboard and mouse.  Their
+>> backends run in dom0 user space.
+>>
+>> Parts in this patch series:
+>>
+>> 1. Enable Xen console by default in domU
+>> 2. Pointer z-axis (mouse wheel) support
+>> 3. Module aliases to support module autoloading
+>> 4. Zero unused bytes in events sent to backend
+>> 5. Dynamic mode support (screen resizing)
+>>
+>> To the best of my knowledge, these patches are independent.  The last
+>> one needs a bit of trivial merging to apply without the first one.  I
+>> tested only 1, 1+2, 1+2+3, 1+2+3+4, and the complete series.  I'm
+>> happy to split this into different parts if that helps.
+>>   
+>
+> Thanks Markus,
+>
+> This looks good.  I'll stick it into my queue and feed it via Ingo
+> when I've given it a bit of a test.
 
----
-commit 800e1add46a2686995af98432a7971150318676d
-tree 5daa71306ceb60b0fb7e5707ec4d9701c06197de
-parent 06f12eb6da33da70dbdccbee5a687d5353782e1d
-author Pavel <pavel@amd.ucw.cz> Wed, 21 May 2008 11:52:11 +0200
-committer Pavel <pavel@amd.ucw.cz> Wed, 21 May 2008 11:52:11 +0200
+Thanks!
 
- arch/x86/kernel/i8259.c |   20 +++-----------------
- 1 files changed, 3 insertions(+), 17 deletions(-)
+> Are we happy that the preferred console stuff is now the best
+> solution?  Does it solve your installer issues?
+>
+>    J
 
-diff --git a/arch/x86/kernel/i8259.c b/arch/x86/kernel/i8259.c
-index 8b7eb0c..433e49e 100644
---- a/arch/x86/kernel/i8259.c
-+++ b/arch/x86/kernel/i8259.c
-@@ -175,24 +175,14 @@ handle_real_irq:
- 	if (irq & 8) {
- 		inb(PIC_SLAVE_IMR);	/* DUMMY - (do we need this?) */
- 		outb(cached_slave_mask, PIC_SLAVE_IMR);
--#ifndef CONFIG_X86_64
--		outb(0x60+(irq&7),PIC_SLAVE_CMD);/* 'Specific EOI' to slave */
--		outb(0x60+PIC_CASCADE_IR,PIC_MASTER_CMD); /* 'Specific EOI' to master-IRQ2 */
--#else /* CONFIG_X86_64 */
- 		/* 'Specific EOI' to slave */
--		outb(0x60+(irq&7),PIC_SLAVE_CMD);
-+		outb(0x60+(irq&7), PIC_SLAVE_CMD);
- 		 /* 'Specific EOI' to master-IRQ2 */
--		outb(0x60+PIC_CASCADE_IR,PIC_MASTER_CMD);
--#endif /* CONFIG_X86_64 */
-+		outb(0x60+PIC_CASCADE_IR, PIC_MASTER_CMD);
- 	} else {
- 		inb(PIC_MASTER_IMR);	/* DUMMY - (do we need this?) */
- 		outb(cached_master_mask, PIC_MASTER_IMR);
--#ifndef CONFIG_X86_64
--		outb(0x60+irq,PIC_MASTER_CMD);	/* 'Specific EOI to master */
--#else /* CONFIG_X86_64 */
--		/* 'Specific EOI' to master */
--		outb(0x60+irq,PIC_MASTER_CMD);
--#endif /* CONFIG_X86_64 */
-+		outb(0x60+irq, PIC_MASTER_CMD);	/* 'Specific EOI to master */
- 	}
- 	spin_unlock_irqrestore(&i8259A_lock, flags);
- 	return;
-@@ -215,12 +205,8 @@ spurious_8259A_irq:
- 		 * lets ACK and report it. [once per IRQ]
- 		 */
- 		if (!(spurious_irq_mask & irqmask)) {
--#ifndef CONFIG_X86_64
--			printk(KERN_DEBUG "spurious 8259A interrupt: IRQ%d.\n", irq);
--#else /* CONFIG_X86_64 */
- 			printk(KERN_DEBUG
- 			       "spurious 8259A interrupt: IRQ%d.\n", irq);
--#endif /* CONFIG_X86_64 */
- 			spurious_irq_mask |= irqmask;
- 		}
- 		atomic_inc(&irq_err_count);
+Yes, the console stuff works nicely for me, and the installer is
+happy.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Note that I went with the stupidest solution that could possibly work
+there: have a global flag that gets set when the command line sets
+consoles, and don't mess with the console then.  Mark McLoughlin
+suggested a somewhat less stupid way, namely to mark consoles selected
+on the command line with a flag.  Critical review invited!
