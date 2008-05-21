@@ -1,43 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937020AbYEUVqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937567AbYEUVrH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937020AbYEUVqm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 17:46:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756396AbYEUVqc
+	id S937567AbYEUVrH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 17:47:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937374AbYEUVqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 17:46:32 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:52346 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755582AbYEUVqc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 17:46:32 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <483497CA.7080604@s5r6.in-berlin.de>
-Date: Wed, 21 May 2008 23:44:42 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.13) Gecko/20080419 SeaMonkey/1.1.9
-MIME-Version: 1.0
-To: Willy Tarreau <w@1wt.eu>
-CC: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       gorcunov@gmail.com, tytso@mit.edu, hch@infradead.org,
-       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: CFD: linux-wanking@vger.kernel.org
-References: <20080521104644.5b6f4e63.akpm@linux-foundation.org> <20080521185725.GD6932@cvg> <20080521123127.3b3b66af.akpm@linux-foundation.org> <20080521.131046.242739198.davem@davemloft.net> <20080521212547.GB6749@1wt.eu>
-In-Reply-To: <20080521212547.GB6749@1wt.eu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 21 May 2008 17:46:47 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:52158 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S937413AbYEUVqq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 17:46:46 -0400
+Date: Wed, 21 May 2008 23:47:23 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andres Salomon <dilinger@queued.net>
+Cc: linux-kbuild <linux-kbuild@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@codemonkey.org.uk>,
+       Roland McGrath <roland@redhat.com>,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: Additional kconfig targets (cloneconfig, nonint_oldconfig etc)
+Message-ID: <20080521214723.GB15136@uranus.ravnborg.org>
+References: <20080429183531.GB19652@uranus.ravnborg.org> <20080502190949.GA30270@uranus.ravnborg.org> <20080521164703.61c7d715@ephemeral>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080521164703.61c7d715@ephemeral>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Willy Tarreau wrote:
-> If we want to get more manpower on bug hunting, we should really
-> think about what type of work we need, and simply assign credit
-> to people.
+On Wed, May 21, 2008 at 04:47:03PM -0400, Andres Salomon wrote:
+> On Fri, 2 May 2008 21:09:49 +0200
+> Sam Ravnborg <sam@ravnborg.org> wrote:
+> 
+> > With the attached patch you can do:
+> > 
+> > make K=my_favourite_config defconfig
+> > 
+> > kconfig will read all config values form 'my_favourite_config'
+> > and set all other symbols to their default value.
+> > The output is now dense like this:
+> > # configuration is based on 'my_favourite_config'
+> > #
+> > # configuration written to .config
+> > #
+> > 
+> 
+> 
+> Is this slated for 2.6.27?
 
-People fix bugs when they realize that nobody else is going to do it for 
-them.
--- 
-Stefan Richter
--=====-==--- -=-= =-=-=
-http://arcgraph.de/sr/
+Been busy and got sidetracked after my first version proved broken.
+Will try to look at it in the weekend.
+
+	Sam
