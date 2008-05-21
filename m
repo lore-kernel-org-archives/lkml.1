@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935482AbYEUNdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935524AbYEUNfN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935482AbYEUNdW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 09:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933095AbYEUNdH
+	id S935524AbYEUNfN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 09:35:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933095AbYEUNfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 09:33:07 -0400
-Received: from smtp-out002.kontent.com ([81.88.40.216]:60451 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761986AbYEUNdE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 09:33:04 -0400
-From: Oliver Neukum <oliver@neukum.org>
-Organization: NOvell
-To: Jiri Kosina <jkosina@suse.cz>
-Subject: Re: [PATCH] USB: fix deadlock in HCD code
-Date: Wed, 21 May 2008 15:32:59 +0200
-User-Agent: KMail/1.9.9
-Cc: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
-       Alan Stern <stern@rowland.harvard.edu>, lchiquitto@novell.com,
-       linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.64.0805211405520.6718@jikos.suse.cz> <200805211521.01435.oliver@neukum.org> <Pine.LNX.4.64.0805211524130.6718@jikos.suse.cz>
-In-Reply-To: <Pine.LNX.4.64.0805211524130.6718@jikos.suse.cz>
+	Wed, 21 May 2008 09:35:00 -0400
+Received: from saeurebad.de ([85.214.36.134]:41312 "EHLO saeurebad.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761398AbYEUNe7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 09:34:59 -0400
+From: Johannes Weiner <hannes@saeurebad.de>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org
+Subject: Re: Tracking and crediting bug reporters
+References: <4388.1210613272@vena.lwn.net> <20080521104145.GB4948@ucw.cz>
+Date: Wed, 21 May 2008 15:34:35 +0200
+In-Reply-To: <20080521104145.GB4948@ucw.cz> (Pavel Machek's message of "Wed,
+	21 May 2008 12:41:45 +0200")
+Message-ID: <87r6bv4w7o.fsf@saeurebad.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200805211533.00221.oliver@neukum.org>
+Content-Type: text/plain; charset=us-ascii
+X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch 21 Mai 2008 15:27:50 schrieb Jiri Kosina:
-> On Wed, 21 May 2008, Oliver Neukum wrote:
-> 
-> > > hcd_urb_list_lock is used for synchronization between IRQ and non-IRQ 
-> > > contexts, so the non-IRQ context has to disable IRQs in order to prevent 
-> > > deadlocking with IRQ context.
-> > Which non-irq context is that?
-> 
-> One example -- assume usb_submit_urb() called from non-IRQ context. Then
-> 
-> usb_hcd_submit_urb() -> rh_urb_enqueue() -> rh_queue_status() -> 
-> usb_hcd_link_urb_to_ep().
-> 
+Hi,
 
-This turns out not to be the case. Interrupts are disabled.
+Pavel Machek <pavel@ucw.cz> writes:
 
-static int rh_queue_status (struct usb_hcd *hcd, struct urb *urb)
-{
-	int		retval;
-	unsigned long	flags;
-	int		len = 1 + (urb->dev->maxchild / 8);
+> Hi!
+>
+>> So here's what we would like to try instead.  Whenever somebody sends up a
+>> patch fixing a reported bug, the name of the person who reported the bug
+>> would be immortalized with this tag:
+>> 
+>> 	Reported-by: A. Bug Reporter <email@goes.here>
+>> 
+>> In particular, reporters who work with the developers toward the resolution
+>> of the bug should be thanked in this way.  If we wanted to take things
+>
+> I believe we have enough tags already. Plus, if the reporter really
+> works with the developer till the end, there's already accepter
+> Tested-by: flag, right?
 
-	spin_lock_irqsave (&hcd_root_hub_lock, flags);
-	if (hcd->status_urb || urb->transfer_buffer_length < len) {
-		dev_dbg (hcd->self.controller, "not queuing rh status urb\n");
-		retval = -EINVAL;
-		goto done;
-	}
+I would more argue to remove Tested-by completely because it does not
+tell much.  Code is not bugfree just because someone compiled and ran
+it.  And if it breaks on some other systems later on, what does it help
+if you know someone tested it?  It still breaks.  And you can not even
+blame the tester because of his luck of a working configuration.
 
-	retval = usb_hcd_link_urb_to_ep(hcd, urb);
+While a Reported-by in this case credits a person reporting a bug.  Just
+that.  And perhaps that the report was good enough to make a fix.
 
-I'll investigate.
-
-	Regards
-		Oliver
+	Hannes
