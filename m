@@ -1,361 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936524AbYEURmn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933578AbYEURoP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936524AbYEURmn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 13:42:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936151AbYEURl7
+	id S933578AbYEURoP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 13:44:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbYEURn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 13:41:59 -0400
-Received: from westnet.com ([216.187.52.2]:40534 "EHLO westnet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936174AbYEURlz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 13:41:55 -0400
-X-Greylist: delayed 416 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 May 2008 13:41:55 EDT
-Date: Wed, 21 May 2008 13:34:56 -0400 (EDT)
-From: Greg Smith <gsmith@gregsmith.com>
-X-X-Sender: gsmith@westnet.com
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: PostgreSQL pgbench performance regression in 2.6.23+
-Message-ID: <Pine.GSO.4.64.0805211115390.8451@westnet.com>
+	Wed, 21 May 2008 13:43:56 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57268 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751187AbYEURnz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 13:43:55 -0400
+Date: Wed, 21 May 2008 10:43:43 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Takashi Iwai <tiwai@suse.de>
+cc: Rene Herman <rene.herman@keyaccess.nl>, alsa-devel@alsa-project.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [alsa-devel] HG -> GIT migration
+In-Reply-To: <s5htzgrvbvo.wl%tiwai@suse.de>
+Message-ID: <alpine.LFD.1.10.0805211003170.3081@woody.linux-foundation.org>
+References: <Pine.LNX.4.61.0805201314190.1798@tm8103-a.perex-int.cz> <200805211430.06653.linux@audioscience.com> <Pine.LNX.4.61.0805210805080.1798@tm8103-a.perex-int.cz> <s5hve18vtml.wl%tiwai@suse.de> <483415E7.5080402@keyaccess.nl> <s5hfxsbx27f.wl%tiwai@suse.de>
+ <48341DF5.4090307@keyaccess.nl> <s5habijww7r.wl%tiwai@suse.de> <48344271.3090700@keyaccess.nl> <s5hy763ve5n.wl%tiwai@suse.de> <alpine.LFD.1.10.0805210908460.3081@woody.linux-foundation.org> <s5htzgrvbvo.wl%tiwai@suse.de>
+User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-559023410-1804928587-1211383827=:8451"
-Content-ID: <Pine.GSO.4.64.0805211131090.8451@westnet.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----559023410-1804928587-1211383827=:8451
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII; FORMAT=flowed
-Content-ID: <Pine.GSO.4.64.0805211131091.8451@westnet.com>
 
-PostgreSQL ships with a simple database benchmarking tool named pgbench, 
-in what's labeled the contrib section (in many distributions it's a 
-separate package from the main server/client ones).  I see there's been 
-some work done already improving how the PostgreSQL server works under the 
-new scheduler (the "Poor PostgreSQL scaling on Linux 2.6.25-rc5" thread). 
-I wanted to provide you a different test case using pgbench that has taken 
-a sharp dive starting with 2.6.23, and the server improvement changes in 
-2.6.25 actually made this problem worse.
+On Wed, 21 May 2008, Takashi Iwai wrote:
+> 
+> Well, what I meant is about the fixes to the subsystem (say, ALSA) by
+> people in the outside.  Not every ALSA-bugfix patch goes into the
+> upstream from ALSA tree.  You, Andrew and others pick individually
+> ALSA-fix patches.  They will be missing in the ALSA subsystem tree.
 
-I think it will be easy for someone else to replicate my results and I'll 
-go over the exact procedure below.  To start with a view of how bad the 
-regression is, here's a summary of the results on one system, an AMD X2 
-4600+ running at 2.4GHz, with a few interesting kernels.  I threw in 
-results from Solaris 10 on this system as a nice independant reference 
-point.  The numbers here are transactions/second (TPS) running a simple 
-read-only test over a 160MB data set, I took the median from 3 test runs:
+Well, that's actually fairly rare, but when it happens, either:
 
-Clients	2.6.9	2.6.22	2.6.24	2.6.25	Solaris
-1	11173	11052	10526	10700	9656
-2	18035	16352	14447	10370	14518
-3	19365	15414	17784	9403	14062
-4	18975	14290	16832	8882	14568
-5	18652	14211	16356	8527	15062
-6	17830	13291	16763	9473	15314
-8	15837	12374	15343	9093	15164
-10	14829	11218	10732	9057	14967
-15	14053	11116	7460	7113	13944
-20	13713	11412	7171	7017	13357
-30	13454	11191	7049	6896	12987
-40	13103	11062	7001	6820	12871
-50	12311	11255	6915	6797	12858
+ - if you didn't get the fix (ie you're are just seeing random patches go 
+   in that happen to touch alsa), why should you then merge the WHOLE TREE 
+   with all my experimental stuff anyway? You can largely ignore it, 
+   knowing it's fixed, and when you ask me to pull, we'll have a good 
+   end result.
 
-That's the CentOS 4 2.6.9 kernel there, while the rest are stock ones I 
-compiled with a minimum of fiddling from the defaults (just adding support 
-for my SATA RAID card).  You can see a major drop with the recent kernels 
-at high client loads, and the changes in 2.6.25 seem to have really hurt 
-even the low client count ones.
+ - if you got the same fix as a patch, just apply it to your tree (ie just 
+   ignore what happens upstream). This happens all the time - people 
+   duplicate patches simply because two people apply it.
 
-The other recent hardware I have here, an Intel Q6600 based system, gives 
-even more maddening results.  On successive benchmark runs, you can watch 
-it break down only sometimes once you get just above 8 clients.  At 10 and 
-15 clients, when I run it a few times, I'll sometimes get results in the 
-good 25-30K TPS range, while others will give the 10K slow case.  It's not 
-a smooth drop off like in the AMD case, the results from 10-15 are really 
-unstable.  I've attached some files with 5 quick runs at each client load 
-so you can see what I'm talking about.  On that system I was also able to 
-test 2.6.26-rc2 which doesn't look all that different from 2.6.25.
+But the real issue is here is that my tree sometimes gets ten THOUSAND 
+commits during the merge window. Do you really want to pull those 
+thousands of commits into your tree just for one or two possible ALSA 
+fixes? 
 
-All these results are running everything on the server using the default 
-local sockets-based interface, which is relevant in the real world because 
-that's how a web app hosted on the same system will talk to the database. 
-If I switch to connecting to the database over TCP/IP and run the pgbench 
-client on another system, the extra latency drops the single client case 
-to ~3100TPS.  But the high client load cases are great--about 26K TPS at 
-50 clients.  That result is attached as q6600-remote-2.6.25.txt, the 
-remote client was running 2.6.20.  Since recent PostgreSQL results were 
-also fine with sysbench as the benchmark driver, this suggests the problem 
-here is actually related to the pgbench client itself and how it gets 
-scheduled relative to the server backends, rather than being inherent to 
-the server.
+In _my_ tree, at least the people involved with asking me to pull end up 
+also having (a) people test it and (b) aware that it's in my tree, so they 
+work on trying to fix it. But if ALSA just merges at random times, neither 
+of those two cases are true. Nobody will know about or test some random 
+state that ALSA merged into its own tree.
 
-Replicating the test results
-----------------------------
+Ask yourself (and ignore the ALSA parts - think of some totally 
+*different* development area) which you think is better
 
-Onto replicating my results, which I hope works because I don't have too 
-much time to test potential fixed kernels myself (I was supposed to be 
-working on the PostgreSQL code until this sidetracked me).  I'll assume 
-you can get the basic database going, if anybody needs help with that let 
-me know.  There is one server tunable that needs to be adjusted before you 
-can get useful PostgreSQL benchmarks from this (and many other) tests. 
-In the root of the database directory, there will be a file named 
-postgresql.conf.  Edit that and changed the setting for the shared_buffers 
-parameter to 256MB to mimic my test setup.  You may need to bump up shmmax 
-(this is the one list where I'm happy I don't have to explain what that 
-means!).  Restart the server and check the logs to make sure it came back 
-up, if shmmax is too low it will just tell you how big it needs to be and 
-not start.
+ - developing in one area based on a stable base, with the people who do 
+   development in that area knowing about that area.
 
-Now the basic procedure to run this test is:
+ - or develop on top of a churning sea of thousands of changes to other
+   sub-areas that you don't know anything about?
 
--dropdb pgbench (if it's already there)
--createdb pgbench
--pgbench -i -s 10 pgbench       (makes about a 160MB database)
--pgbench -S -c <clients> -t 10000 pgbench
+In other words, the reason I ask people to not do lots of merges is more 
+than just "it looks confusing". It's literally a matter of "it's bad 
+development practice". It causes problems. The confusing history is 
+actually *real* - it's not just a "visual artifact" of looking at the 
+result in gitk. The confusing history is a real phenomenon, and implies 
+that people are doing development not based on some tested base.
 
-The idea is that you'll have a large enough data set to not fit in L2 
-cache, but small enough that it all fits in PostgreSQL's dedicated memory 
-(shared_buffers) so that it never has to ask the kernel to read a block. 
-The "pgbench -i" initialization step will populate the server's memory and 
-while that's all written to disk, it should stay in memory afterwards as 
-well.  That's why I use this as a general CPU/L2/memory test as viewed 
-from a PostgreSQL context, and as you can see from my results with this 
-problem it's pretty sensitive to whether your setup is optimal or not.
+> And, what if that you need a fix for the fix that isn't in ALSA
+> tree...?  IMO, either a rebase or a merge is better than
+> cherry-picks.
 
-To make this easier to run against a range of client loads, I've attached 
-a script (selecttest.sh) that does the last two steps in the above. 
-That's what I used to generate all the results I've attached.  If you've 
-got the database setup such that you can run the psql client and pgbench 
-is in your path, you should just be able to run that script and have it 
-give you a set of results in a couple of minutes.  You can adjust which 
-client loads and how many times it runs each by editing the script.
+First off, I don't see why you even need cherry-picks in the first place. 
+I think your argument is bogus, and you're making it because you want to 
+get the end result, not because the argument is valid on its own.
 
-Addendum:  how pgbench works
-----------------------------
+Here, let's see what I committed to the sound subsystem since 2.6.24 
+(ignoring merges):
 
-pgbench works off "command scripts", which are a series of SQL commands 
-with some extra benchmarking features implemented as a really simple 
-programming language.  For example, the SELECT-only test run above, what 
-you get when passing -S to pgbench, is implemented like this:
+	git log --no-merges v2.6.24.. --committer=torvalds sound/
 
-\\set naccounts 100000 * :scale
-\\setrandom aid 1 :naccounts
-SELECT abalance FROM accounts WHERE aid = :aid;
+and look over that list. Remember: this is not some short timeframe, this 
+is over TWO whole merge windows, ie this is way more commits than we would 
+normally _ever_ get out of sync over.
 
-Here :scale is detected automatically by doing a count of a table in the 
-database.
+Realistically, which of those commits aren't (a) either already from you 
+sent to me just as a way to get a quick fix into my tree without merging 
+the whole thing or (b) stuff that can't just be in my tree and doesn't 
+have to be in the ALSA tree until the next release?
 
-The pgbench client runs as a single process.  When pgbench starts, it 
-iterates over each client, parsing the script until it hits a line that 
-needs to be sent to the server.  At that point, it issues that command as 
-an asynchronous request, then returns to the main loop.  Once every client 
-is primed with a command, it enters a loop where it just waits for 
-responses from them.
+Honestly, now: does *any* of those commits look like "we should merge all 
+the other changes just because we need that commit _now_ in ALSA"?
 
-The main loop has all the open client connections in a fd_set.  Each time 
-a select() on that set says there's been a response to at least one of the 
-clients from the server, it sweeps through all the clients and feeds the 
-next script line to any that are ready for one.  This proceeds until the 
-target transaction count is reached.
+I really doubt it. 
 
-This design is recognized as being only useful for smallish client loads. 
-The results start dropping off very hard even on a fast machine with >100 
-simulated clients as the single pgbench process struggles to respond to 
-everyone who is ready on each pass through all the clients who got 
-responses.  This makes pgbench particularly unsuitable for testing on 
-systems with a large number of CPUs.  I find pgbench just can't keep up 
-with the useful number of clients possible somewhere between 8 and 16 
-cores.  I'm hoping the PostgreSQL community can rewrite it in a more 
-efficient way before the next release comes out now that such hardware is 
-starting to show up more running this database.  If that's the only way to 
-resolve the issue outlined in this message, that's not intolerable, but a 
-kernel fix would obviously be better.
+So I'd seriously suggest submaintainers merge *AT*MOST* once a week, and 
+preferably much much less often than that. There simply isn't any real 
+reason to do it more often. Because it can cause problems.
 
-I wanted to submit this here regardless because I'd really like for 
-current versions to not have a big regression just because they were using 
-a newer kernel, and it provides an interesting scheduler test case to add 
-to the mix.  The fact that earlier Linux kernels and alternate ones like 
-Solaris give pretty consistant results here says this programming approach 
-isn't impossible for a kernel to support well, I just don't think this 
-specific type of load has been considered in the test cases for the new 
-scheduler yet.
+That's why my suggested rule is:
 
---
-* Greg Smith gsmith@gregsmith.com http://www.gregsmith.com Baltimore, MD
----559023410-1804928587-1211383827=:8451
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII; NAME=selecttest.sh
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.GSO.4.64.0805211130270.8451@westnet.com>
-Content-Description: 
-Content-Disposition: ATTACHMENT; FILENAME=selecttest.sh
+ - merge with mainline at major releases
 
-IyEvYmluL2Jhc2gNCg0KdW5hbWUgLXByDQoNClNDQUxFPTEwDQpUT1RUUkFO
-Uz0xMDAwMDANCg0KU0VUVElNRVM9Mw0KU0VUQ0xJRU5UUz0iMSAyIDMgNCA1
-IDYgOCAxMCAxNSAyMCAzMCA0MCA1MCINCg0KVEVTVERCPSJwZ2JlbmNoIg0K
-DQpwZ2JlbmNoIC1pIC1zICRTQ0FMRSAkVEVTVERCID4gL2Rldi9udWxsIDI+
-JjENCg0KZm9yIEMgaW4gJFNFVENMSUVOVFM7IGRvDQogIFQ9MQ0KICB3aGls
-ZSBbICRUIC1sZSAiJFNFVFRJTUVTIiBdOyBkbw0KICAgIFRSQU5TPWBleHBy
-ICRUT1RUUkFOUyAvICRDYA0KICAgIHBnYmVuY2ggLVMgLW4gLWMgJEMgLXQg
-JFRSQU5TICRURVNUREIgPiByZXN1bHRzLnR4dA0KICAgIFRQUz1gZ3JlcCAi
-KGluY2x1ZGluZyBjb25uZWN0aW9ucyBlc3RhYmxpc2hpbmcpIiByZXN1bHRz
-LnR4dCB8IGN1dCAtZCAiICIgLWYgM2ANCiAgICBlY2hvICRDICRUUFMNCiAg
-ICBUPSQoKCAkVCArIDEpKQ0KICBkb25lDQpkb25lDQoNCnJtIC1mIHJlc3Vs
-dHMudHh0DQo=
+   This is "safe". Yes, releases still have bugs, but on the other hand, 
+   they have much fewer problems than random git trees of the day, so they 
+   are a lot safer targets to merge.
 
----559023410-1804928587-1211383827=:8451
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII; NAME=q6600-remote-2.6.25.txt
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.GSO.4.64.0805211204150.16929@westnet.com>
-Content-Description: 
-Content-Disposition: ATTACHMENT; FILENAME=q6600-remote-2.6.25.txt
+ - merge with mainline if you know there are real conflicts that need to 
+   be resolved.
 
-Mi42LjI1IHg4Nl82NCAob24gc2VydmVyOyBjbGllbnQgcnVuIG9uIHJlbW90
-ZSBob3N0IHdpdGgga2VybmVsIDIuNi4yMC0xNikNCjEgMzA1Ny44NDQxOTkN
-CjEgMzA5Mi40ODIxNjMNCjEgMzEyMS45NTMzNjQNCjIgNTcyNy4xNDI2NTkN
-CjIgNTkwOC4yOTczMTcNCjIgNTkyNi44ODg2MjgNCjMgOTM2My40Nzc1NDAN
-CjMgOTQzMy4wODQ4MDENCjMgOTQzMS4xOTA3MTINCjQgMTMwMDQuNTMzNjQx
-DQo0IDEyODk1LjM0Mzg0MA0KNCAxMjk0OS42MjU1NjgNCjUgMTU4NzQuNTM1
-MjkzDQo1IDE2MjE1Ljc3NjE5OQ0KNSAxNTkwOS40MjU3MzANCjYgMTg1Nzku
-MDc0OTYzDQo2IDE4NzEyLjU1ODE4Mg0KNiAxODQ1My4xNzc5ODYNCjggMjA4
-NjcuMTA3NjE2DQo4IDIwNjExLjk4MjExNg0KOCAyMDgwOC45MzkxODcNCjEw
-IDIyNjI5LjkwMjQyOQ0KMTAgMjI3MzkuMjk4NzE1DQoxMCAyMjIxMi41Nzcw
-MjgNCjE1IDI2NjUzLjAyNjA2MQ0KMTUgMjU2NzIuMDY1NjE0DQoxNSAyNjQ4
-My4yMjE5OTYNCjIwIDI3NTU3LjA0NTg0MQ0KMjAgMjYyMzcuODE0ODMxDQoy
-MCAyODk1Ni41NzU4NTANCjMwIDIzMTY2Ljc4NTMzMQ0KMzAgMjY3MDIuMjU4
-OTk3DQozMCAyODU4My45NzQxMDcNCjQwIDI3NTQxLjkwNDMxOQ0KNDAgMjU4
-OTEuMTY3NTEzDQo0MCAyNjQ3Ni41OTI5NzENCjUwIDI2NDM0LjA4MTk5MQ0K
-NTAgMjU2MzcuMTQwNjI4DQo1MCAyNjA5OS4wOTE0NjUNCg0K
+   This isn't "safe", but it's about trying to resolve conflicts early, so 
+   at some point the downside of merging with a "random point" is smaller 
+   than the downside of delaying the merge!
 
----559023410-1804928587-1211383827=:8451
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII; NAME=q6600-results-2.6.25.txt
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.GSO.4.64.0805211204151.16929@westnet.com>
-Content-Description: 
-Content-Disposition: ATTACHMENT; FILENAME=q6600-results-2.6.25.txt
+but perhaps the most important rule is that things should never be 
+*really* black-and-white, and in the end the really fundamental rule 
+should be:
 
-Mi42LjI1IHg4Nl82NA0KMSAxMDMzMC42NjA2ODgNCjEgMTEyNzEuNzU0OTEw
-DQoxIDExMjgyLjEyNTU3MQ0KMSAxMTI1Ni4zNDA0MTUNCjEgMTEzMjUuMDUx
-Mzk5DQoyIDEyNTA0LjczNzczMw0KMiAxMjU4OC4xMzQyNDgNCjIgMTI0NDEu
-ODMxMzI4DQoyIDEyNDQ3LjYyMDQxMw0KMiAxMjU5My44NDYxOTMNCjMgMTI2
-MjguNjY1Mjg2DQozIDEyNzY2LjgwMTY5NA0KMyAxMjc5Ny4wMjAyMTANCjMg
-MTI5NTkuNzAzMDg1DQozIDEyOTA1LjcwMjg5NA0KNCAxMzk1OC4yODQ4MjgN
-CjQgMTM5NzcuMzczNDI4DQo0IDE0MTA5LjE4NjE5NQ0KNCAxMzAzNC44Njk1
-ODANCjQgMTMwMDUuMzM4NjkyDQo1IDExOTk0Ljk2MTE1Nw0KNSAxNDc2Ni4w
-NDc0ODINCjUgMTQzNDQuMDE4NjIzDQo1IDEyNDA0LjA1MzA5OQ0KNSAxMjAw
-Ny44NTkzODQNCjYgMTA5MTYuMjg5OTk0DQo2IDEyMTQ1LjA2NzQ2MA0KNiAx
-MjEwOS44NDAxNTkNCjYgOTY5My41ODUxNDkNCjYgMTIxODAuMzQwMDcyDQo4
-IDEwODEwLjIzMTE0OQ0KOCAxMDgzNy4yMzM3NDQNCjggMTA3OTkuNzQ0ODY3
-DQo4IDEwODM5LjA5NDQwMg0KOCAxMDgxNi41ODk3OTMNCjEwIDEwNjU1Ljcx
-NjU2OA0KMTAgMTA2NDMuNTMyNDUyDQoxMCAxMDYwOS44NDU0MjcNCjEwIDEw
-NjE1LjgzNjM0NA0KMTAgMTA2NDUuOTQ1OTY1DQoxNSAxMDI3Ny40OTk2ODcN
-CjE1IDEwMjA3Ljg4ODA5Nw0KMTUgMTAxOTMuNDA5NzMwDQoxNSAxMDIxNy4w
-ODI2MDcNCjE1IDEwMjA3LjkwMDYwMw0KMjAgOTcxOS4xNjg1MTMNCjIwIDk3
-MTUuMTEzOTk3DQoyMCA5NzE4LjIwNTA5NA0KMjAgOTcwMS45MDYwMjcNCjIw
-IDk2OTAuMDE4MjU0DQozMCA4ODk5LjE3NzM2Nw0KMzAgODg0NC42NzIxMTMN
-CjMwIDg4NjguNTQ5ODkxDQozMCA4ODc5LjcxMzA1Nw0KMzAgODg4NC45MzY0
-NzQNCjQwIDgzNjEuMjE5Mzk0DQo0MCA4MzUwLjM2OTQ3OQ0KNDAgODM2My45
-MDg5OTcNCjQwIDgzNDguMTMzMTgyDQo0MCA4MzQ0LjgyMjA2Nw0KNTAgODA5
-NS4xODY0NDANCjUwIDgwOTUuMDQ5NDgxDQo1MCA4MTMxLjA3ODE4NA0KNTAg
-ODA5Ni4wMTgxMjcNCjUwIDgwOTAuODQwNzIzDQo=
+ - Use your own judicious good sense, and merge at other points as 
+   necessary, but just keep in mind that a merge is a big change.
 
----559023410-1804928587-1211383827=:8451
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII; NAME=q6600-results-2.6.24.txt
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.GSO.4.64.0805211204152.16929@westnet.com>
-Content-Description: 
-Content-Disposition: ATTACHMENT; FILENAME=q6600-results-2.6.24.txt
+Yes, merging with git may be technically really really trivial and take 
+all of two seconds of your time, but:
 
-Mi42LjI0LjQgeDg2XzY0DQoxIDExNDIxLjgyMDE1NA0KMSAxMTQzMS42NzAz
-OTENCjEgMTE0NDkuNTk0MTkyDQoxIDExNDI3Ljc5OTU2Mg0KMSAxMTQ2OC40
-NzY0ODQNCjIgMTQzMjUuODYzNTQyDQoyIDE0NDM3LjE3NDY4NQ0KMiAxNDQw
-Mi4zMzgyNDgNCjIgMTQ3OTkuNDM2NTU2DQoyIDE0NzcyLjMxNDMxOQ0KMyAx
-OTY2OC44MDU0NzQNCjMgMTk1MzUuMTc1Mzg5DQozIDE5MzU0LjY4NTExOQ0K
-MyAxOTI5NS40MjA2NjgNCjMgMTkzMzYuNzI0Mzg0DQo0IDIyMTAzLjU0NTgy
-OQ0KNCAyMjYwMi41Mzc1NDINCjQgMjE4NjUuMzMxNDI0DQo0IDIxMTc4LjM2
-ODY2OA0KNCAyMjQyNC42NDcwMTkNCjUgMjYyNzAuMzAwMzc1DQo1IDI2NjE0
-LjcyMTgyNw0KNSAyNjY3OC44ODkxNTUNCjUgMjcxOTcuODQ0MTkwDQo1IDI1
-Nzc0LjA1OTQ0MA0KNiAyNzIzOC4zNjg0MTENCjYgMjc3MzAuMjEwODYxDQo2
-IDI3NDg5LjU2ODY2Ng0KNiAyODM0Ny4wODg4MzYNCjYgMjcxMjIuNzM3NDY2
-DQo4IDI3NjMyLjI3ODQ4MA0KOCAyODc5Ni4wNzA4MzQNCjggMjkyMzIuODQy
-NTE0DQo4IDI4NjgxLjk1MjQyNg0KOCAyODU2Mi44NzYwMzANCjEwIDMxMTg5
-LjkxMDY4OA0KMTAgMzA0NTkuODYxNjcwDQoxMCAzMDMzMC4xODA0MTANCjEw
-IDMwNzI2LjY0ODM2Mg0KMTAgMTA5MDIuMjc5MTY1DQoxNSAxMDQ0Ny4zODcy
-MzQNCjE1IDI1Mjk1LjY1OTk0NA0KMTUgMTAzNzUuMzI0NDMwDQoxNSAxMDM1
-NS4yMjE2OTcNCjE1IDExMzE0Ljg2MDU4MA0KMjAgOTg5Ny4yOTg3MDENCjIw
-IDk4OTIuNDA0Mjc2DQoyMCA5ODY4LjY3NjUzNA0KMjAgODkxMS42NjMxMzkN
-CjIwIDk4NzkuNTMzOTAzDQozMCA5MDE4LjczOTY1OA0KMzAgOTA1Mi43NDYz
-MDMNCjMwIDkwMTguNzk0MTYwDQozMCA5MDA5LjMyNDc3Mw0KMzAgOTI3Mi44
-NTk5NTUNCjQwIDg1MDEuNzY2MDcyDQo0MCA4NTM4LjA5MTcxNA0KNDAgODQ3
-Ni44NDYzNDINCjQwIDg2NjQuMDU2OTk1DQo0MCA4NDkwLjI2NDU1Mw0KNTAg
-ODE5Mi44MjYzNjENCjUwIDgyMTguODgwNjI2DQo1MCA4MjI1LjA4NjM5OA0K
-NTAgODIyMS4yMjE5MDANCjUwIDgzNDMuNTczNjc5DQoNCg==
+ (a) you *do* potentially get thousands of new commits that aren't 
+     actually related to your work and that you probably don't know 
+     well.
+ (b) others, when they look at your history, will have a harder time 
+     following it.
 
----559023410-1804928587-1211383827=:8451
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII; NAME=q6600-results-2.6.22.txt
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.GSO.4.64.0805211204153.16929@westnet.com>
-Content-Description: 
-Content-Disposition: ATTACHMENT; FILENAME=q6600-results-2.6.22.txt
+so while I can give you a few guidelines, in the end those guidelines are 
+just _examples_ of when merges can make sense. You need to understand what 
+the impact of a merge is - and that while git makes merging technically 
+pretty damn trivial most of the time, a merge should still be a big deal, 
+and something you think about.
 
-Mi42LjIyLjE5IHg4Nl82NA0KMSA3NjIzLjQ4NDA1MQ0KMSA3NjI1LjkxNTMw
-MA0KMSA3NTg5LjQ2ODY0MQ0KMSA3NTcwLjU4NDkxNg0KMSA3NjUyLjMxNTUx
-NA0KMiAxNzcwMi44MjQ4MDQNCjIgMTczNjkuNjk5NDYzDQoyIDE3MjIyLjY0
-MjI2Mw0KMiAxNzU5My4zNDAxNDcNCjIgMTU2MzcuNTE3MzQ0DQozIDI2Mzc3
-LjMyNTYxMw0KMyAxOTI1Ni41MTM5NjYNCjMgMjY4MTMuMjA3Njc1DQozIDI4
-Nzc3LjIyODkyNw0KMyAyOTQzMi4wODE3MDINCjQgMjI2NDAuOTM4NzExDQo0
-IDI3NTg5LjM1Nzc5MQ0KNCAyMTYwMi4xMzA2NjENCjQgMjAyNzIuNDU3Nzc4
-DQo0IDI4OTQ5LjEyMzY1Mg0KNSAyNTgxNS41Mzg2ODMNCjUgMjQ4NzEuODQ3
-ODA0DQo1IDI2MjM4LjExNzc0MA0KNSAyNTU3MC40MjUwNDINCjUgMjQ1NTEu
-NjM3OTg3DQo2IDIzOTAxLjc4ODQwMw0KNiAyNTEwNS42OTkyMjINCjYgMjYy
-MjkuMDA5Mzk2DQo2IDI1NTE3LjYyMDExMQ0KNiAyMTkwOS44NTMxMjQNCjgg
-MjM2NzQuOTAzNzk3DQo4IDI1MjMxLjY0NTQyOQ0KOCAyNTI1NS43NDU5OTgN
-CjggMjM4NjkuNzgzNjQ3DQo4IDIzODE4LjgwNzQ3Mw0KMTAgMjE3MDMuMzcx
-NzcxDQoxMCAyMzgzOS40MDgyMTENCjEwIDIzMTg1LjkxMTEyNw0KMTAgMjM2
-NjUuMDkzNDkwDQoxMCAyNDcxNy45MDY4ODgNCjE1IDIzNDIxLjUwMjI0Ng0K
-MTUgMjM0MDMuMzQwNTA2DQoxNSAyMzMyOS4wMjU1ODcNCjE1IDIyNzMwLjc2
-NTM0OQ0KMTUgMjMyMDcuNzQ3NTIxDQoyMCAyMjQ4MC44ODczMTINCjIwIDIy
-NjM1LjE1NzkyMw0KMjAgMjI1MTEuODg1MTUwDQoyMCAyMjIyMy44MzIyMTUN
-CjIwIDE2NTUzLjU4MDg3OQ0KMzAgMTk0MDcuMDg5MDcxDQozMCAyMTcxOC4x
-MDg5ODANCjMwIDIwNjQ1Ljg4ODYzMQ0KMzAgMjE2NTAuNTM3OTI5DQozMCAy
-MTk5My45ODQ5MjMNCjQwIDIwMDk4LjIzMjExOQ0KNDAgMTk1NjIuNjMwNDQ2
-DQo0MCAyMDIzNi44ODA3ODQNCjQwIDE5MTgxLjcxMjAwMg0KNDAgMjA4MzUu
-NzgxNTM4DQo1MCAxOTA0My45NTE3MjcNCjUwIDE5ODU5LjkwMDMxOQ0KNTAg
-MTgxMjIuMjI4OTk4DQo1MCAxOTQ2Ny44ODA1MjgNCjUwIDE5OTIxLjcxNTYy
-Ng0KDQo=
+So the kinds of merges I *really* dislike are the ones that are basically 
+"let's do a regular merge every day to keep up-to-date". That's fine if 
+you don't do any development at all and "git pull" is just basically a 
+"track the current development kernel for testing", but if it involves a 
+merge, it means that there is something wrong in your development model.
 
----559023410-1804928587-1211383827=:8451
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII; NAME=q6600-results-2.6.26-rc2.txt
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.GSO.4.64.0805211326350.13270@westnet.com>
-Content-Description: 
-Content-Disposition: ATTACHMENT; FILENAME=q6600-results-2.6.26-rc2.txt
+> But, my question is about the divergence between the development and
+> for-linus branches: how to apply patches that exist only in for-linus
+> tree back.
 
-Mi42LjI2LXJjMiB4ODZfNjQNCjEgMTEwMjMuMTM5MTEyDQoxIDExMDM5LjE1
-MTc4Nw0KMSAxMDk2MS4yMzMyOTcNCjEgMTEwMDYuOTQzODQxDQoxIDExMDM0
-LjExNjI3NA0KMiAxMTU4OC4xODUxMDQNCjIgMTE0MTIuMDQ2Nzg1DQoyIDEx
-NjM2LjQ0MDgxOA0KMiAxMTUxOS45MTA0OTUNCjIgMTAxMTAuMzUwNDMxDQoz
-IDEyODEyLjAwNDI1MQ0KMyAxMzU4MC42MjI2NDgNCjMgMTMzNzkuNTI3MDU4
-DQozIDEzMzAzLjYxMjc2NQ0KMyAxMzI1MS45MTI3NjcNCjQgMTMyODEuNjA0
-MTQyDQo0IDEzODAwLjgxODU4Mg0KNCAxMjg0Ny42NTEwMTMNCjQgMTI1Nzku
-NzY5ODkzDQo0IDEyNjY5LjMxNzUxMA0KNSAxMzA3MC42MzI3ODUNCjUgMTI1
-MDMuNTI5MTIxDQo1IDEyNjUzLjUwNDQwNw0KNSAxMjQ0Mi4zODcwODINCjUg
-MTE4OTUuMzc4NzE3DQo2IDEyMjU2LjMyMjMwOQ0KNiAxMjIyOC43MDE1MTkN
-CjYgMTI2MjguOTU0Njc5DQo2IDEyMjAzLjExNTMxMQ0KNiAxMjYxMC42NDA3
-MjkNCjggMTE3NTQuNjg1MzU5DQo4IDExNDIxLjcxOTcwMg0KOCAxMDIzNy4x
-ODc0NDMNCjggMTE3MjkuMDQ5NTcyDQo4IDExNTc1LjkzMzcyNg0KMTAgMTE1
-ODIuNzYyNDg3DQoxMCAxMTU2Ny40MTYxMTYNCjEwIDExNjEyLjU0NjAwOQ0K
-MTAgMTE1ODAuMjk5ODI2DQoxMCAxMTUxMS40MDc1MTcNCjE1IDExMzAxLjAy
-NzU0Nw0KMTUgMTEyMTEuMjI4Njc1DQoxNSAxMTI3MC4wMDAxOTMNCjE1IDEx
-MTY0LjkwNjUyOQ0KMTUgMTExMjAuMzkwMTUxDQoyMCAxMTIyMi42NTMwNjAN
-CjIwIDEwODQ3Ljg4NzEzMA0KMjAgMTEzNDMuNDE5Mjk3DQoyMCAxMTE1OC42
-NDk0MzcNCjIwIDExMzA3LjI3MjE4Mg0KMzAgMTAzMDIuODcwODExDQozMCAx
-MDA5Mi44NDAyMDANCjMwIDEwNDA0LjgzNjQ4NQ0KMzAgMTAxNTMuMTcwODIy
-DQozMCAxMDYzMy4xOTM0MjkNCjQwIDEwMzY4LjI2NjMwNA0KNDAgMTAwMTcu
-MDA2ODc0DQo0MCA5NjgyLjAzMTQzNw0KNDAgMTAxNjYuNzcyNjg5DQo0MCAx
-MDQxMy42ODI0OTYNCjUwIDk5OTQuNjEwOTA2DQo1MCA5MzMzLjk5NTE3Ng0K
-NTAgOTQyNi4xNjA3ODINCjUwIDk4NDUuNzA4ODgxDQo1MCAxMDAxOC4wODE2
-MzYNCg==
+How often does it happen? And how big/important are those? I really think 
+it's probably a "maybe once or twice a release cycle".
 
----559023410-1804928587-1211383827=:8451--
+And then, the actual answer can be different depending on the details. For 
+example, there are really three things you can do:
+
+ - ignore it. Is it a cleanup patch (like the sparse patches) or just 
+   fairly trivial stuff that doesn't matter in real life ("remove 
+   duplicated unlikely()" patch or the /proc fixups)
+
+   This is often the right thing to do. You _will_ merge eventually 
+   anyway, we know that. I'd expect merges to happen at least once in the 
+   development cycle, maybe twice.
+
+   Yes, the patch may touch the sound system, but do you really _care_ 
+   about it happening rigth now, or can you just wait until the next merge 
+   you do?
+
+ - cherry-pick it. Is it a small, simple patch that you want, but that 
+   isn't really worth pulling in all the other stuff that you simply don't 
+   know?
+
+   This isn't wrong. It shouldn't be *common*, but it's not wrong to have 
+   the same patch in two different branches. It makes sense if it is 
+   something you really want, but it's still not important or complex 
+   enough to actually mege everything else!
+
+ - and finally: merge. It really can be the RightThing(tm). Is it a 
+   biggish infrastructure change? Is it a series of several related and 
+   dependent commits?
+
+   In other words: is it something big enough that you'd rather merge 
+   everything else too (which at least has gotten tested together)? If so, 
+   merging is absolutely the right thing to do!
+
+So merging on its own is not "wrong or evil" at all. Merging is a very 
+good operation to do, but *mindless* merging is bad. That's really all 
+that I'm really trying to argue against.
+
+If you thought it through, and decided that yes, you really want to merge, 
+then you should merge. I just think a lot of people merge without even 
+thinking about all the other things it involves, just because git made it 
+*so* easy to do.
+
+			Linus
