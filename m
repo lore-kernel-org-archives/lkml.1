@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934778AbYEUOmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764756AbYEUOpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934778AbYEUOmS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 10:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754401AbYEUOmF
+	id S1764756AbYEUOpz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 10:45:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755285AbYEUOpp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 10:42:05 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:54064 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752383AbYEUOmE (ORCPT
+	Wed, 21 May 2008 10:45:45 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41618 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754114AbYEUOpp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 10:42:04 -0400
-Date: Wed, 21 May 2008 10:42:02 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: David Vrabel <david.vrabel@csr.com>
-cc: Oliver Neukum <oliver@neukum.org>, Jiri Kosina <jkosina@suse.cz>,
-       Greg KH <greg@kroah.com>, <linux-usb@vger.kernel.org>,
-       <lchiquitto@novell.com>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] USB: fix deadlock in HCD code
-In-Reply-To: <483431BE.7090707@csr.com>
-Message-ID: <Pine.LNX.4.44L0.0805211040160.2490-100000@iolanthe.rowland.org>
+	Wed, 21 May 2008 10:45:45 -0400
+Date: Wed, 21 May 2008 09:48:40 -0500
+From: Cliff Wickman <cpw@sgi.com>
+To: dmitry.adamushko@gmail.com, avi@qumranet.com, mingo@elte.hu,
+       heiko.carstens@de.ibm.com, a.p.zijlstra@chello.nl,
+       vatsa@linux.vnet.ibm.com
+Cc: Avi Kivity <avi@qumranet.com>, linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Heiko Carstens <heiko.carstens@de.ibm.com>,
+       PeterZijlst@sgi.com
+Subject: [BUG] hotplug cpus on ia64
+Message-ID: <20080521144840.GA32628@sgi.com>
+References: <4829A6A0.5040208@qumranet.com> <b647ffbd0805140113i4296076cna3f371c86c479653@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b647ffbd0805140113i4296076cna3f371c86c479653@mail.gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 May 2008, David Vrabel wrote:
+Gentlemen,
 
-> Alan Stern wrote:
-> > 
-> > The functions you are worried about (usb_hcd_link_urb_to_ep and 
-> > usb_hcd_unlink_urb_from_ep) are documented as requiring that interrupts 
-> > be disabled by their callers.  This patch isn't needed.
-> 
-> This requirement is the only reason the whci-hcd driver disables
-> interrupts.  Removing this requirement would reduce the time that
-> interrupts are disabled in the whci-hcd driver.
+  I built an ia64 kernel from Andrew's tree (2.6.26-rc2-mm1)
+and get a very predictable hotplug cpu problem.
 
-That doesn't sound like a valid approach.  If you don't disable
-interrupts then you aren't protected against an interrupt handler
-submitting an URB and accessing your data structures while whci-hcd is
-in the middle of updating them.
+billberry1:/tmp/cpw # ./dis
+disabled cpu 17
+enabled cpu 17
+billberry1:/tmp/cpw # ./dis
+disabled cpu 17
+enabled cpu 17
+billberry1:/tmp/cpw # ./dis
 
-Alan Stern
+The script that disables the cpu always hangs (unkillable)
+on the 3rd attempt.
+I haven't spent any debugging time on it yet.
 
+Just wondering if you've seen it?   It doesn't seem to happen x86_64.
+
+-Cliff Wickman
+cpw@sgi.com
