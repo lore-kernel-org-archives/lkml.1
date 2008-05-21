@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937152AbYEUUbz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933382AbYEUUc2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937152AbYEUUbz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 16:31:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760955AbYEUUbq
+	id S933382AbYEUUc2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 16:32:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764481AbYEUUbs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 16:31:46 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:25476 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758504AbYEUUbp (ORCPT
+	Wed, 21 May 2008 16:31:48 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:52127 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761318AbYEUUbr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 16:31:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=g8vLOg2tQ+/iCRZutjkXEP8GiHuz1+yI5/vpx/A9OjwR//FOTyN+kNjBUTZ8DT/LnLbc4RWFN+3AzSNlvA1THBi7beyOnmEBarMwfW7kqnkRj8bfDhWGt9iWeEerqea35HN8iPwWq2/TSzB/Ec9n/qlNJvIb/AMZD+AJTaT/j0I=
-Message-ID: <75b66ecd0805211331r6b2e079wc4d028d368463e49@mail.gmail.com>
-Date: Wed, 21 May 2008 16:31:38 -0400
-From: "Lee Revell" <rlrevell@joe-job.com>
-To: "Ray Lee" <ray-lk@madrabbit.org>
-Subject: Re: completely lost as to what to do, or where to look.
-Cc: "Justin Mattock" <justinmattock@gmail.com>,
-       "Oliver Pinter" <oliver.pntr@gmail.com>,
-       "Adrian Bunk" <bunk@kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <2c0942db0805211309y2871009fv34669d384df820d4@mail.gmail.com>
+	Wed, 21 May 2008 16:31:47 -0400
+Date: Wed, 21 May 2008 13:25:52 -0700 (PDT)
+From: Trent Piepho <tpiepho@freescale.com>
+X-X-Sender: xyzzy@t2.domain.actdsltmp
+To: Andreas Schwab <schwab@suse.de>
+cc: linuxppc-dev@ozlabs.org, Scott Wood <scottwood@freescale.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [POWERPC] Improve (in|out)_beXX() asm code
+In-Reply-To: <je3aocdqxh.fsf@sykes.suse.de>
+Message-ID: <Pine.LNX.4.64.0805211300590.5706@t2.domain.actdsltmp>
+References: <1211316025-29069-1-git-send-email-tpiepho@freescale.com>
+ <jeiqx83ab0.fsf@sykes.suse.de> <Pine.LNX.4.64.0805201502000.7453@t2.domain.actdsltmp>
+ <jeabik385g.fsf@sykes.suse.de> <Pine.LNX.4.64.0805201612240.7453@t2.domain.actdsltmp>
+ <je3aocdqxh.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <dd18b0c30805202110x7c412b3bq523f91d968072482@mail.gmail.com>
-	 <20080520223410.9a8f200d.akpm@linux-foundation.org>
-	 <dd18b0c30805202351h133147adg5bb526e3f74e3bd6@mail.gmail.com>
-	 <20080521075917.GB18352@cs181133002.pp.htv.fi>
-	 <dd18b0c30805210733m6d853709xf59331cfed3bfea@mail.gmail.com>
-	 <6101e8c40805210751y350e3513ndd48621ac9d2b5d3@mail.gmail.com>
-	 <dd18b0c30805211004m6106b65occ97eff00cdbf630@mail.gmail.com>
-	 <dd18b0c30805211303k6e43d6d1l903da0c794521519@mail.gmail.com>
-	 <2c0942db0805211309y2871009fv34669d384df820d4@mail.gmail.com>
-X-Google-Sender-Auth: de59d5bbabd128b0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 21, 2008 at 4:09 PM, Ray Lee <ray-lk@madrabbit.org> wrote:
-> Or are you using the closed-source nvidia drivers? (No judgement from
-> me if you are, but it would really help clear up what the heck is
-> going on.)
+On Wed, 21 May 2008, Andreas Schwab wrote:
+> Trent Piepho <tpiepho@freescale.com> writes:
+>> On Wed, 21 May 2008, Andreas Schwab wrote:
+>>> Trent Piepho <tpiepho@freescale.com> writes:
+>>>> It's the _le versions that have a problem, since we can't get gcc to just use
+>>>> the register indexed mode.  It seems like an obvious thing to have a
+>>>> constraint for, but I guess there weren't enough instructions that only come
+>>>> in 'x' versions to bother with it.  There is a 'Z' constraint, "Memory operand
+>>>> that is an indexed or indirect from a register", but I tried it and it can use
+>>>> both "rb,ri" and "disp(rb)" forms.  Actually, I'm not sure how 'Z' is any
+>>>> different than "m"?
+>>>
+>>> 'Z' will never emit a non-zero constant displacement.
+>>
+>> It's too bad gas doesn't appear to be smart enough to turn:
+>>         stwbrx 0, 0(3)   -or-   stwbr 0, 0(3)
 >
+> Use the %y modifier when substituting the operand.
 
-Yes, the whole problem was that he was trying to use an incompatible
-kernel with the closed source ATI driver.
+Of course, the undocumented y modifier!  "Print AltiVec or SPE memory operand"
+Why didn't I think of that?
 
-Lee
+That appears to work.  I can get gcc to to emit 0,reg and reg,reg but not
+disp(reg).  It won't try to use an "update" address either, though it will
+with an "m" constraint.
+
+But, gcc 4.0.2 can't handle the 'Z' constraint.  It looks like it's not
+supported.  Other than this, I can build a kernel with 4.0.2 that appears to
+work.  Is it ok to break compatibility with 4.0.2, or should I put in a gcc
+version check?
