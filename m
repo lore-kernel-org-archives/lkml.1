@@ -1,97 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935118AbYEUNDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935292AbYEUNDy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935118AbYEUNDf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 09:03:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757980AbYEUND1
+	id S935292AbYEUNDy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 09:03:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935169AbYEUNDj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 09:03:27 -0400
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:25966
-	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756675AbYEUND0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 09:03:26 -0400
-Message-ID: <48341D9C.7010700@qumranet.com>
-Date: Wed, 21 May 2008 16:03:24 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 21 May 2008 09:03:39 -0400
+Received: from gozo.interway.ch ([194.246.118.4]:44474 "EHLO gozo.interway.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935151AbYEUNDh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 09:03:37 -0400
+X-Greylist: delayed 407 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 May 2008 09:03:37 EDT
+Message-ID: <48341C0B.7010003@interway.ch>
+Date: Wed, 21 May 2008 14:56:43 +0200
+From: Matthias Cramer <matthias.cramer@interway.ch>
+User-Agent: Mozilla-Thunderbird 2.0.0.14 (X11/20080509)
 MIME-Version: 1.0
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-CC: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Subject: Re: [BUG] cpu hotplug vs scheduler
-References: <4829A6A0.5040208@qumranet.com> <b647ffbd0805140113i4296076cna3f371c86c479653@mail.gmail.com> <482ADB69.8010305@qumranet.com> <b647ffbd0805140605j5ed43b73t557983ece879c552@mail.gmail.com> <482C0E35.9000708@qumranet.com> <20080521123116.GC9441@osiris.boeblingen.de.ibm.com> <483418CB.7070602@qumranet.com> <20080521125546.GE9441@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <20080521125546.GE9441@osiris.boeblingen.de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Wired behaviour with IPv6 over PPP
+X-Enigmail-Version: 0.95.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigCF9A8F04F7F73537C01EDB67"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Heiko Carstens wrote:
-> On Wed, May 21, 2008 at 03:42:51PM +0300, Avi Kivity wrote:
->   
->> Heiko Carstens wrote:
->>     
->>> I think you fixed this specific bug. Does cpu hotplug stresstest now work
->>> for you?
->>>       
->> Which bug, the order-2 allocs?  I certainly didn't fix it.
->>
->> Last I tried, cpu hotplug still failed, but it was some time ago as  
->> patches flow.
->>     
->
-> Ah no. I thought "x86: fix crash on cpu hotplug on pat-incapable machines"
-> would have fixed the cpu hotplug bug for you.
->
->   
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigCF9A8F04F7F73537C01EDB67
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-No, that only fixes an immediate oops when running in a virtual machine 
-(which doesn't have pat).
+Hi All
 
-> I was actually talking of the pick_next_task_fair incarnation of one of
-> the cpu hotplug bugs.
->
->   
+I have a very wired behaviour when doing IPv6 over PPPoE.
 
-That hasn't been addressed, AFAIK.
+The situation:
 
-> s390 backtrace on 2.6.25 looks like this.
->
->     <1>Unable to handle kernel pointer dereference at virtual kernel address 00000200000db000
->     <4>Oops: 003b [#1] PREEMPT SMP 
->     <4>Modules linked in: dm_multipath sunrpc qeth_l2 dm_mod cu3088 qeth ccwgroup
->     <4>CPU: 0 Not tainted 2.6.25-27.x.20080422-s390xdefault #1
->     <4>Process migration/0 (pid: 5806, task: 00000000aac3a838, ksp: 000000017a2f3dd0)
->     <4>Krnl PSW : 0400200180000000 0000000000125f48 (pick_next_task_fair+0x34/0xd4)
->     <4>           R:0 T:1 IO:0 EX:0 Key:0 M:0 W:0 P:0 AS:0 CC:2 PM:0 EA:3
->     <4>Krnl GPRS: 0000079e029c6ecb 0000000000000000 000000008548ea60 000000008548d700
->     <4>           00000000004526f8 0000000000000597 0000000000000000 0000000000000000
->     <4>           0000000000672a00 0000000000000000 00000000aac3a838 000000017a2f3d10
->     <4>           00000200000db85a 00000000004672a0 000000017a2f3d50 000000017a2f3d10
->     <4>Krnl Code: 0000000000125f38: e3e0f0980024        stg     %r14,152(%r15)
->     <4>           0000000000125f3e: d507d000c010        clc     0(8,%r13),16(%r12)
->     <4>           0000000000125f44: a784004e            brc     8,125fe0
->     <4>          >0000000000125f48: d507d000c030        clc     0(8,%r13),48(%r12)
->     <4>           0000000000125f4e: b904002c            lgr     %r2,%r12
->     <4>           0000000000125f52: a7990000            lghi    %r9,0
->     <4>           0000000000125f56: a7840033            brc     8,125fbc
->     <4>           0000000000125f5a: c0e5ffffee23        brasl   %r14,123ba0
->     <4>Call Trace:
->     <4>([<00000000aac3a838>] 0xaac3a838)
->     <4> [<000000000045270c>] schedule+0x178/0x978
->     <4> [<000000000012fe86>] migration_thread+0x1aa/0x30c
->     <4> [<0000000000152ad8>] kthread+0x68/0xa0
->     <4> [<000000000010a0be>] kernel_thread_starter+0x6/0xc
->     <4> [<000000000010a0b8>] kernel_thread_starter+0x0/0xc
->     <4>Last Breaking-Event-Address:
->     <4> [<0000000000125fc6>] pick_next_task_fair+0xb2/0xd4
->   
+A linux box connected to a DSL Modem, on the other side is a Cisco LNS wh=
+ich terminates the PPP session (actually L2TP).
+I have control over both ends.
 
-Seems to be the same bug, yes.
+When I have net.ipv6.conf.all.forwarding set to 0 then the ppp Interface =
+gets a IPv6 address from the Cisco via IP6CP.
+When I have net.ipv6.conf.all.forwarding set to 1 them the ppp Interface =
+does not get an address, it has only a normal link local address.
 
--- 
-error compiling committee.c: too many arguments to function
+When I start the ppp session with forwarding set to 0 I can ping out and =
+there exists a default route to ppp0 , then I switch forwarding to 1
+the default route disappears and therefore routing does not work any long=
+er.
 
+Is this a known behaviour ?
+
+Or am I doing something the wrong way ?
+
+Kernel version is 2.6.25
+
+Best regards
+
+  Matthias
+
+--=20
+Matthias Cramer / mc322-ripe   System & Network Manager
+Interway Communication GmbH    Phone +41 43 500 1111
+Josefstrasse 225               Fax   +41 44 271 3535
+CH-8005 Z=C3=BCrich                 http://www.interway.ch/
+GnuPG 1024D/2D208250 =3D DBC6 65B6 7083 1029 781E  3959 B62F DF1C 2D20 82=
+50
+
+
+--------------enigCF9A8F04F7F73537C01EDB67
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFINBwRti/fHC0gglARAvbzAJ91A0C99YB0iw7aZqQR7BP/Ojdv1ACfbWQl
+ePndO9qdH+ecZu8K6lE5t68=
+=pLx9
+-----END PGP SIGNATURE-----
+
+--------------enigCF9A8F04F7F73537C01EDB67--
