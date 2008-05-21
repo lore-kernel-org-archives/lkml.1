@@ -1,83 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937398AbYEUV4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764576AbYEUV44@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937398AbYEUV4g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 17:56:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760054AbYEUV4Y
+	id S1764576AbYEUV44 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 17:56:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761782AbYEUV4a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 17:56:24 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:47239 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754480AbYEUV4X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 17:56:23 -0400
-Date: Wed, 21 May 2008 14:55:32 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: David Miller <davem@davemloft.net>, mingo <mingo@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Cc: netdev@vger.kernel.org, akpm@linux-foundation.org,
-       netfilter-devel@vger.kernel.org, coreteam@netfilter.org
-Subject: [PATCH] netfilter: conntrack_helper needs to include rculist.h
-Message-Id: <20080521145532.8e779533.randy.dunlap@oracle.com>
-In-Reply-To: <20080521.144550.151762863.davem@davemloft.net>
-References: <20080521142139.f0bc5698.randy.dunlap@oracle.com>
-	<20080521.144550.151762863.davem@davemloft.net>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Wed, 21 May 2008 17:56:30 -0400
+Received: from 1wt.eu ([62.212.114.60]:4752 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762094AbYEUV43 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 17:56:29 -0400
+Date: Wed, 21 May 2008 23:56:06 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       gorcunov@gmail.com, tytso@mit.edu, hch@infradead.org,
+       viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: CFD: linux-wanking@vger.kernel.org
+Message-ID: <20080521215606.GA32552@1wt.eu>
+References: <20080521104644.5b6f4e63.akpm@linux-foundation.org> <20080521185725.GD6932@cvg> <20080521123127.3b3b66af.akpm@linux-foundation.org> <20080521.131046.242739198.davem@davemloft.net> <20080521212547.GB6749@1wt.eu> <483497CA.7080604@s5r6.in-berlin.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <483497CA.7080604@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 May 2008 14:45:50 -0700 (PDT) David Miller wrote:
+On Wed, May 21, 2008 at 11:44:42PM +0200, Stefan Richter wrote:
+> Willy Tarreau wrote:
+> >If we want to get more manpower on bug hunting, we should really
+> >think about what type of work we need, and simply assign credit
+> >to people.
+> 
+> People fix bugs when they realize that nobody else is going to do it for 
+> them.
 
-> This needs to go in via whatever tree adds the linux/rculist.h header file,
-> which isn't net-next-2.6 as far as I can tell. :-)
+That's partly true. But we don't need people to fix all bugs by themselves,
+otherwise we might take more time trying to fix their own fixes. We most of
+all need them to *work* on bugs, which is not the same. Actively
+participating to tests and bug hunting is a very important activity. Let's
+get the original code author propose a fix once the bug is pointed to.
 
-Sure, makes sense.
-
-Looks like it's some sched/auto-sched tree/branch if I'm reading
-correctly.
-
-Ingo, is there a sched tree that add rculist.h file?
-If so, one of its users needs to #include it.  Patch below.
-
----
-From: Randy Dunlap <randy.dunlap@oracle.com>
-
-nf_conntrack_helper users rcu hlist functions so it needs to #include
-rculist.h.
-
-linux-next-20080521/net/netfilter/nf_conntrack_helper.c:58: error: implicit declaration of function 'hlist_for_each_entry_rcu'
-linux-next-20080521/net/netfilter/nf_conntrack_helper.c:58: error: 'hnode' undeclared (first use in this function)
-linux-next-20080521/net/netfilter/nf_conntrack_helper.c:58: error: (Each undeclared identifier is reported only once
-linux-next-20080521/net/netfilter/nf_conntrack_helper.c:58: error: for each function it appears in.)
-linux-next-20080521/net/netfilter/nf_conntrack_helper.c:58: error: expected ';' before '{' token
-linux-next-20080521/net/netfilter/nf_conntrack_helper.c:50: warning: unused variable 'mask'
-linux-next-20080521/net/netfilter/nf_conntrack_helper.c:74: error: 'hnode' undeclared (first use in this function)
-linux-next-20080521/net/netfilter/nf_conntrack_helper.c:74: error: expected ';' before '{' token
-linux-next-20080521/net/netfilter/nf_conntrack_helper.c:117: error: implicit declaration of function 'hlist_add_head_rcu'
-linux-next-20080521/net/netfilter/nf_conntrack_helper.c:133: error: implicit declaration of function 'hlist_del_rcu'
-filter/nf_conntrack_helper.o] Error 1
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- net/netfilter/nf_conntrack_helper.c |    1 +
- 1 file changed, 1 insertion(+)
-
---- linux-next-20080521.orig/net/netfilter/nf_conntrack_helper.c
-+++ linux-next-20080521/net/netfilter/nf_conntrack_helper.c
-@@ -10,6 +10,7 @@
-  */
- 
- #include <linux/types.h>
-+#include <linux/rculist.h>
- #include <linux/netfilter.h>
- #include <linux/module.h>
- #include <linux/skbuff.h>
+Willy
 
