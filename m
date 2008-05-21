@@ -1,66 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936887AbYEUTG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936974AbYEUTHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936887AbYEUTG6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 15:06:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758540AbYEUTGl
+	id S936974AbYEUTHb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 15:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759477AbYEUTHM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 15:06:41 -0400
-Received: from ns1.siteground211.com ([209.62.36.12]:51785 "EHLO
-	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933139AbYEUTGk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 15:06:40 -0400
-MIME-Version: 1.0
-Date: Wed, 21 May 2008 14:06:33 -0500
-From: Felipe Balbi <me@felipebalbi.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Tony Lindgren <tony@atomide.com>, Bryan Wu <cooloney@kernel.org>,
-       linux-omap@vger.kernel.org, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] MUSB: 2 patches to fix some bug found on Blackfin
-In-Reply-To: <200805211014.45170.david-b@pacbell.net>
-References: <1211022081-27298-1-git-send-email-cooloney@kernel.org> <386072610805190105y6618dd9bwe32503c1ae11b865@mail.gmail.com> <20080521155003.GZ23002@atomide.com> <200805211014.45170.david-b@pacbell.net>
-Message-ID: <61cdb2dcc22913ddefddd7b4a6faede3@felipebalbi.com>
-User-Agent: FelipeBalbi.com Webmail
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - serv01.siteground211.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - felipebalbi.com
+	Wed, 21 May 2008 15:07:12 -0400
+Received: from waste.org ([66.93.16.53]:41324 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756483AbYEUTHL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 15:07:11 -0400
+Subject: Re: [RFC/PATCH 3/3] SLOB: make ksize() more strict for page
+	allocator pass-through
+From: Matt Mackall <mpm@selenic.com>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org, clameter@sgi.com, lethal@linux-sh.org,
+       dhowells@redhat.com
+In-Reply-To: <Pine.LNX.4.64.0805212125570.22291@sbz-30.cs.Helsinki.FI>
+References: <Pine.LNX.4.64.0805212125570.22291@sbz-30.cs.Helsinki.FI>
+Content-Type: text/plain
+Date: Wed, 21 May 2008 14:07:20 -0500
+Message-Id: <1211396840.18026.276.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-
-On Wed, 21 May 2008 10:14:44 -0700, David Brownell <david-b@pacbell.net>
-wrote:
-> On Wednesday 21 May 2008, Tony Lindgren wrote:
->>
->> > Great, after I enable the DMA mode 1 on Blackfin and cleanup the code,
->> > I will send
->> > out the code before you sent them to upstream
->>
->> Maybe we should get the musb code to USB tree before that? It's been out
->> of the scope for linux-omap tree for quite a while now.
+On Wed, 2008-05-21 at 21:26 +0300, Pekka J Enberg wrote:
+> From: Pekka Enberg <penberg@cs.helsinki.fi>
 > 
-> I'm all for getting the musb_hdrc driver into the 2.6.27 queue...
-> I presume there are still some infrastructure changes in usbcore
-> that block that merge?  It'd be nice if we could merge musb_hdrc
-> without those changes (OTG related) and then update that stuff
-> separately.
+> This patch re-uses the PG_slab flag for marking SLOB bigblock pages so we can
+> check that the pointer passed ksize() was really allocated by SLOB.
 
-Ok then, I'll prepare the patches during the next week and post
-here on l-o so people can comment.
+Ok, first, BUG_ON is wrong.
 
-Any otg related stuff will come later.
+We already know users (ie nommu memory usage reporting) are abusing this
+interface. Making them blow up is unnecessary. Just give them wrong
+answers. Issuing a warning might be a good idea for debugging.
+
+Second, I'd prefer to keep this sort of debugging code out of SLOB.
+SLUB is much better suited to debugging allocator abuse.
 
 -- 
-Best Regards,
-
-Felipe Balbi
-http://felipebalbi.com
-me@felipebalbi.com
+Mathematics is the supreme nostalgia of our time.
 
