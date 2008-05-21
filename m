@@ -1,131 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765775AbYEULbL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933694AbYEULcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765775AbYEULbL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 07:31:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758886AbYEULa5
+	id S933694AbYEULcq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 07:32:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760189AbYEULch
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 07:30:57 -0400
-Received: from smtp-vbr13.xs4all.nl ([194.109.24.33]:4336 "EHLO
-	smtp-vbr13.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757566AbYEULa4 (ORCPT
+	Wed, 21 May 2008 07:32:37 -0400
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:46745 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759660AbYEULcg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 07:30:56 -0400
-Date: Wed, 21 May 2008 13:30:32 +0200
-From: Miquel van Smoorenburg <miquels@cistron.nl>
-To: linux-kernel@vger.kernel.org
-Cc: linux-mm@kvack.org, Glauber Costa <gcosta@redhat.com>
-Subject: 2.6.26: x86/kernel/pci_dma.c: gfp |= __GFP_NORETRY ?
-Message-ID: <20080521113028.GA24632@xs4all.net>
+	Wed, 21 May 2008 07:32:36 -0400
+Date: Wed, 21 May 2008 17:02:30 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       netfilter-devel@vger.kernel.org, apw@shadowen.org
+Subject: [PATCH] linux-next: Tree for May 21 - build failure with netfilter on __nf_ct_helper_find()
+Message-ID: <20080521113230.GA10830@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <20080521155936.466bbe86.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-X-NCC-RegID: nl.xs4all
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080521155936.466bbe86.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've recently switched some of my boxes from a 32 to a
-64 bit kernel. These are usenet server boxes that do
-a lot of I/O. They are running 2.6.24 / 2.6.25
+Hi Stephen,
 
-Every 15 minutes a cronjob calls a management utility, tw_cli,
- to read the raid status of the 3ware disk arrays. That
-often fails with a segmentation violation .. 
+The next-20080521 kernel build fails, on x86_64 machine 
 
-tw_cli: page allocation failure. order:0, mode:0x10d0
-Pid: 9296, comm: tw_cli Not tainted 2.6.25.4 #2
+CC net/netfilter/nf_conntrack_helper.o
+net/netfilter/nf_conntrack_helper.c: In function ‘__nf_ct_helper_find’:
+net/netfilter/nf_conntrack_helper.c:58: error: implicit declaration of function ‘hlist_for_each_entry_rcu’
+net/netfilter/nf_conntrack_helper.c:58: error: ‘hnode’ undeclared (first use in this function)
+net/netfilter/nf_conntrack_helper.c:58: error: (Each undeclared identifier is reported only once
+net/netfilter/nf_conntrack_helper.c:58: error: for each function it appears in.)
+net/netfilter/nf_conntrack_helper.c:58: error: expected ‘;’ before ‘{’ token
+net/netfilter/nf_conntrack_helper.c:50: warning: unused variable ‘mask’
+net/netfilter/nf_conntrack_helper.c: In function ‘__nf_conntrack_helper_find_byname’:
+net/netfilter/nf_conntrack_helper.c:74: error: ‘hnode’ undeclared (first use in this function)
+net/netfilter/nf_conntrack_helper.c:74: error: expected ‘;’ before ‘{’ token
+net/netfilter/nf_conntrack_helper.c: In function ‘nf_conntrack_helper_register’:
+net/netfilter/nf_conntrack_helper.c:117: error: implicit declaration of function ‘hlist_add_head_rcu’
+net/netfilter/nf_conntrack_helper.c: In function ‘nf_conntrack_helper_unregister’:
+net/netfilter/nf_conntrack_helper.c:133: error: implicit declaration of function ‘hlist_del_rcu’
+make[2]: *** [net/netfilter/nf_conntrack_helper.o] Error 1
+make[1]: *** [net/netfilter] Error 2
+make: *** [net] Error 2
 
-Call Trace:
- [<ffffffff802604b6>] __alloc_pages+0x336/0x390
- [<ffffffff80210ff4>] dma_alloc_pages+0x24/0xa0
- [<ffffffff80211113>] dma_alloc_coherent+0xa3/0x2e0
- [<ffffffff8804a58f>] :3w_9xxx:twa_chrdev_ioctl+0x11f/0x810
- [<ffffffff802826c0>] chrdev_open+0x0/0x1c0
- [<ffffffff8027d997>] __dentry_open+0x197/0x210
- [<ffffffff8028c4ed>] vfs_ioctl+0x7d/0xa0
- [<ffffffff8028c584>] do_vfs_ioctl+0x74/0x2d0
- [<ffffffff8028c829>] sys_ioctl+0x49/0x80
- [<ffffffff8020b29b>] system_call_after_swapgs+0x7b/0x80
+This build error is because of the missing include file.I have tested
+the patch for the build failure only.
 
-Mem-info:
-DMA per-cpu:
-CPU    0: hi:    0, btch:   1 usd:   0
-CPU    1: hi:    0, btch:   1 usd:   0
-CPU    2: hi:    0, btch:   1 usd:   0
-CPU    3: hi:    0, btch:   1 usd:   0
-DMA32 per-cpu:
-CPU    0: hi:  186, btch:  31 usd:  60
-CPU    1: hi:  186, btch:  31 usd: 185
-CPU    2: hi:  186, btch:  31 usd: 176
-CPU    3: hi:  186, btch:  31 usd: 165
-Normal per-cpu:
-CPU    0: hi:  186, btch:  31 usd: 120
-CPU    1: hi:  186, btch:  31 usd: 164
-CPU    2: hi:  186, btch:  31 usd: 177
-CPU    3: hi:  186, btch:  31 usd: 182
-Active:265929 inactive:1657355 dirty:663189 writeback:62890 unstable:0
- free:49079 slab:65923 mapped:1238 pagetables:927 bounce:0
-DMA free:12308kB min:184kB low:228kB high:276kB active:0kB inactive:0kB present:11816kB pages_scanned:0 all_unreclaimable? yes
-lowmem_reserve[]: 0 3255 8053 8053
-DMA32 free:94200kB min:52912kB low:66140kB high:79368kB active:440616kB inactive:2505772kB present:3333792kB pages_scanned:0 all_unreclaimable? no
-lowmem_reserve[]: 0 0 4797 4797
-Normal free:86792kB min:77968kB low:97460kB high:116952kB active:623100kB inactive:4126872kB present:4912640kB pages_scanned:32 all_unreclaimable? no
-lowmem_reserve[]: 0 0 0 0
-DMA: 3*4kB 5*8kB 2*16kB 6*32kB 4*64kB 4*128kB 0*256kB 0*512kB 1*1024kB 1*2048kB 2*4096kB = 12308kB
-DMA32: 150*4kB 5*8kB 2299*16kB 120*32kB 0*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 13*4096kB = 94512kB
-Normal: 462*4kB 3803*8kB 123*16kB 24*32kB 2*64kB 1*128kB 1*256kB 1*512kB 0*1024kB 0*2048kB 18*4096kB = 109760kB
-1653409 total pagecache pages
-Swap cache: add 5748, delete 5411, find 4317/4852
-Free swap  = 4588488kB
-Total swap = 4594580kB
-Free swap:       4588488kB
-2293760 pages of RAM
-249225 reserved pages
-1658761 pages shared
-337 pages swap cached
-
-(this is easily reproducible by pinning a lot of memory with
- mmap/mlock, say 6 GB on an 8 GB box, while running
- cat /dev/zero > filename, then invoking tw_cli)
-
-Now this appears to happen because dma_alloc_coherent() in
-pci-dma_64.c does this:
-
-        /* Don't invoke OOM killer */
-        gfp |= __GFP_NORETRY;
-
-However, if you read mm/page_alloc.c you can see that this not only
-prevents invoking the OOM killer, it also does what it says:
-no retries when allocating memory.
-
-That means that dma_alloc_coherent(..., GFP_KERNEL) can become
-unreliable. Bad news.
-
-pci-dma_32 does not do this.
-
-And in 2.6.26-rc1, pci-dma_32.c and pci-dma_64.c were merged,
-so now the 32 bit kernel has the same problem.
-
-Does anyone know why this was added on x86_64 ?
-
-If not I think this patch should go into 2.6.26:
-
-diff -ruN linux-2.6.26-rc3.orig/arch/x86/kernel/pci-dma.c linux-2.6.26-rc3/arch/x86/kernel/pci-dma.c
---- linux-2.6.26-rc3.orig/arch/x86/kernel/pci-dma.c	2008-05-18 23:36:41.000000000 +0200
-+++ linux-2.6.26-rc3/arch/x86/kernel/pci-dma.c	2008-05-21 13:15:54.000000000 +0200
-@@ -397,9 +397,6 @@
- 	if (dev->dma_mask == NULL)
- 		return NULL;
+Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+--
+--- linux-2.6.26-rc3/net/netfilter/nf_conntrack_helper.c	2008-05-20 20:24:14.000000000 +0530
++++ linux-2.6.26-rc3/net/netfilter/~nf_conntrack_helper.c	2008-05-22 00:17:32.000000000 +0530
+@@ -20,6 +20,7 @@
+ #include <linux/err.h>
+ #include <linux/kernel.h>
+ #include <linux/netdevice.h>
++#include <linux/rculist.h>
  
--	/* Don't invoke OOM killer */
--	gfp |= __GFP_NORETRY;
--
- #ifdef CONFIG_X86_64
- 	/* Why <=? Even when the mask is smaller than 4GB it is often
- 	   larger than 16MB and in this case we have a chance of
-
-
-Ideas ? Maybe a __GFP_NO_OOMKILLER ? 
-
-Mike.
+ #include <net/netfilter/nf_conntrack.h>
+ #include <net/netfilter/nf_conntrack_l3proto.h>
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
