@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936140AbYEUDv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936112AbYEUDw1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936140AbYEUDv4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 23:51:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934209AbYEUDfV
+	id S936112AbYEUDw1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 23:52:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934528AbYEUDf0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 23:35:21 -0400
-Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:44099 "EHLO
+	Tue, 20 May 2008 23:35:26 -0400
+Received: from vsmtp02.dti.ne.jp ([202.216.231.137]:44096 "EHLO
 	vsmtp02.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759374AbYEUDc6 (ORCPT
+	with ESMTP id S1759269AbYEUDc6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 20 May 2008 23:32:58 -0400
 From: hooanon05@yahoo.co.jp
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Junjiro Okajima <hooanon05@yahoo.co.jp>
-Subject: [AUFS PATCH v2.6.26-rc2-mm1 17/39] aufs policies to select one among multiple writable branches
-Date: Wed, 21 May 2008 12:22:47 +0900
-Message-Id: <1211340189-11813-18-git-send-email-hooanon05@yahoo.co.jp>
+Subject: [AUFS PATCH v2.6.26-rc2-mm1 27/39] aufs inode rename operation
+Date: Wed, 21 May 2008 12:22:57 +0900
+Message-Id: <1211340189-11813-28-git-send-email-hooanon05@yahoo.co.jp>
 X-Mailer: git-send-email 1.5.5.1.308.g1fbb5.dirty
 In-Reply-To: <1211340189-11813-1-git-send-email-hooanon05@yahoo.co.jp>
 References: <1211340189-11813-1-git-send-email-hooanon05@yahoo.co.jp>
@@ -26,25 +26,22 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Junjiro Okajima <hooanon05@yahoo.co.jp>
 
 initial commit
-when creating/removing an entry and there are multiple writable branches
-specified in aufs, aufs has to decide which branch is the target.
-aufs has several policies for that such as, round-robin, most-free-space
-and so on.
+inode rename operation
 
 Signed-off-by: Junjiro Okajima <hooanon05@yahoo.co.jp>
 ---
- fs/aufs/wbr_policy.c |  685 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 685 insertions(+), 0 deletions(-)
- create mode 100644 fs/aufs/wbr_policy.c
+ fs/aufs/i_op_ren.c |  788 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 788 insertions(+), 0 deletions(-)
+ create mode 100644 fs/aufs/i_op_ren.c
 
-diff --git a/fs/aufs/wbr_policy.c b/fs/aufs/wbr_policy.c
+diff --git a/fs/aufs/i_op_ren.c b/fs/aufs/i_op_ren.c
 new file mode 100644
-index 0000000..6099325
+index 0000000..b61d4cb
 --- /dev/null
-+++ b/fs/aufs/wbr_policy.c
-@@ -0,0 +1,685 @@
++++ b/fs/aufs/i_op_ren.c
+@@ -0,0 +1,788 @@
 +/*
-+ * Copyright (C) 2007-2008 Junjiro Okajima
++ * Copyright (C) 2005-2008 Junjiro Okajima
 + *
 + * This program, aufs is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -62,672 +59,775 @@ index 0000000..6099325
 + */
 +
 +/*
-+ * policies for selecting one among multiple writable branches
++ * inode operation (rename entry)
++ * todo: this is monster
 + */
 +
-+#include <linux/statfs.h>
 +#include "aufs.h"
 +
-+static int au_cpdown_attr(struct dentry *h_dst, struct dentry *h_src, int dlgt)
-+{
-+	int err, sbits;
-+	struct iattr ia;
-+	struct inode *h_idst, *h_isrc;
-+	struct vfsub_args vargs;
++enum { SRC, DST };
 +
-+	LKTRTrace("%.*s\n", AuDLNPair(h_dst));
-+	h_idst = h_dst->d_inode;
-+	/* todo? IMustLock(h_idst); */
-+	h_isrc = h_src->d_inode;
-+	/* todo? IMustLock(h_isrc); */
++#define AuRen_ISDIR	1
++#define AuRen_ISSAMEDIR	(1 << 1)
++#define AuRen_WHSRC	(1 << 2)
++#define AuRen_WHDST	(1 << 3)
++#define AuRen_DLGT	(1 << 4)
++#define au_ftest_ren(flags, name)	((flags) & AuRen_##name)
++#define au_fset_ren(flags, name)	{ (flags) |= AuRen_##name; }
++#define au_fclr_ren(flags, name)	{ (flags) &= ~AuRen_##name; }
++#ifndef CONFIG_AUFS_DLGT
++#undef AuRen_DLGT
++#define AuRen_DLGT	0
++#endif
 +
-+	ia.ia_valid = ATTR_FORCE | ATTR_MODE | ATTR_UID | ATTR_GID;
-+	ia.ia_mode = h_isrc->i_mode;
-+	ia.ia_uid = h_isrc->i_uid;
-+	ia.ia_gid = h_isrc->i_gid;
-+	sbits = !!(ia.ia_mode & (S_ISUID | S_ISGID));
-+
-+	vfsub_args_init(&vargs, NULL, dlgt, /*force_unlink*/0);
-+	err = vfsub_notify_change(h_dst, &ia, &vargs);
-+
-+	/* is this nfs only? */
-+	if (!err && sbits && au_test_nfs(h_dst->d_sb)) {
-+		ia.ia_valid = ATTR_FORCE | ATTR_MODE;
-+		ia.ia_mode = h_isrc->i_mode;
-+		err = vfsub_notify_change(h_dst, &ia, &vargs);
-+	}
-+
-+	/* todo: necessary? */
-+	if (!err)
-+		h_idst->i_flags = h_isrc->i_flags;
-+
-+	AuTraceErr(err);
-+	return err;
-+}
-+
-+struct au_cpdown_dir_args {
-+	struct dentry *parent;
-+	unsigned int parent_opq; /* bit-flags */
++struct rename_args {
++	struct dentry *h_dentry[2], *parent[2], *h_parent[2], *h_trap;
++	struct au_nhash whlist;
++	aufs_bindex_t btgt, bstart[2];
++	struct super_block *sb;
++	unsigned int flags;
++	unsigned int mnt_flags;
 +};
 +
-+static int au_cpdown_dir(struct dentry *dentry, aufs_bindex_t bdst,
-+			 struct dentry *h_parent, void *arg)
++static noinline_for_stack int
++do_rename(struct inode *src_dir, struct dentry *src_dentry,
++	  struct inode *dir, struct dentry *dentry, struct rename_args *a)
 +{
-+	int err, parent_opq, whed, dlgt, do_opq, made_dir, diropq, rerr;
-+	struct au_cpdown_dir_args *args = arg;
-+	aufs_bindex_t bend, bopq, bstart;
-+	struct dentry *h_dentry, *opq_dentry, *wh_dentry;
-+	struct inode *h_dir, *h_inode, *inode;
-+
-+	LKTRTrace("%.*s, b%d\n", AuDLNPair(dentry), bdst);
-+	bstart = au_dbstart(dentry);
-+	AuDebugOn(bstart <= bdst
-+		  && bdst <= au_dbend(dentry)
-+		  && au_h_dptr(dentry, bdst));
-+	AuDebugOn(!h_parent);
-+	h_dir = h_parent->d_inode;
-+	AuDebugOn(!h_dir);
-+	IMustLock(h_dir);
-+
-+	err = au_lkup_neg(dentry, bdst);
-+	if (unlikely(err < 0))
-+		goto out;
-+	h_dentry = au_h_dptr(dentry, bdst);
-+	dlgt = !!au_opt_test_dlgt(au_mntflags(dentry->d_sb));
-+	err = vfsub_sio_mkdir(h_dir, h_dentry, S_IRWXU | S_IRUGO | S_IXUGO,
-+			      dlgt);
-+	if (unlikely(err))
-+		goto out_put;
-+
-+	made_dir = 1;
-+	bend = au_dbend(dentry);
-+	bopq = au_dbdiropq(dentry);
-+	whed = (au_dbwh(dentry) == bdst);
-+	if (!args->parent_opq)
-+		args->parent_opq |= (bopq <= bdst);
-+	parent_opq = (args->parent_opq && args->parent == dentry);
-+	do_opq = 0;
-+	diropq = 0;
-+	h_inode = h_dentry->d_inode;
-+	mutex_lock_nested(&h_inode->i_mutex, AuLsc_I_CHILD);
-+	if (whed || (parent_opq && do_opq)) {
-+		opq_dentry = au_diropq_create(dentry, bdst, dlgt);
-+		err = PTR_ERR(opq_dentry);
-+		if (IS_ERR(opq_dentry)) {
-+			mutex_unlock(&h_inode->i_mutex);
-+			goto out_dir;
-+		}
-+		dput(opq_dentry);
-+		diropq = 1;
-+	}
-+
-+	err = au_cpdown_attr(h_dentry, au_h_dptr(dentry, bstart), dlgt);
-+	mutex_unlock(&h_inode->i_mutex);
-+	if (unlikely(err))
-+		goto out_opq;
-+
-+	wh_dentry = NULL;
-+	if (whed) {
-+		wh_dentry = au_wh_lkup(h_parent, &dentry->d_name, /*ndx*/NULL);
-+		err = PTR_ERR(wh_dentry);
-+		if (IS_ERR(wh_dentry))
-+			goto out_opq;
-+		err = 0;
-+		if (wh_dentry->d_inode)
-+			err = au_wh_unlink_dentry(h_dir, wh_dentry, dentry,
-+						  NULL, dlgt);
-+		dput(wh_dentry);
-+		if (unlikely(err))
-+			goto out_opq;
-+	}
-+
-+	inode = dentry->d_inode;
-+	if (au_ibend(inode) < bdst)
-+		au_set_ibend(inode, bdst);
-+	au_set_h_iptr(inode, bdst, igrab(h_inode), au_hi_flags(inode, 1));
-+	goto out; /* success */
-+
-+	/* revert */
-+ out_opq:
-+	if (diropq) {
-+		mutex_lock_nested(&h_inode->i_mutex, AuLsc_I_CHILD);
-+		rerr = au_diropq_remove(dentry, bdst, dlgt);
-+		mutex_unlock(&h_inode->i_mutex);
-+		if (unlikely(rerr)) {
-+			AuIOErr("failed removing diropq for %.*s b%d (%d)\n",
-+				AuDLNPair(dentry), bdst, rerr);
-+			err = -EIO;
-+			goto out;
-+		}
-+	}
-+ out_dir:
-+	if (made_dir) {
-+		rerr = vfsub_sio_rmdir(h_dir, h_dentry, dlgt);
-+		if (unlikely(rerr)) {
-+			AuIOErr("failed removing %.*s b%d (%d)\n",
-+				AuDLNPair(dentry), bdst, rerr);
-+			err = -EIO;
-+		}
-+	}
-+ out_put:
-+	au_set_h_dptr(dentry, bdst, NULL);
-+	if (au_dbend(dentry) == bdst)
-+		au_update_dbend(dentry);
-+ out:
-+	AuTraceErr(err);
-+	return err;
-+}
-+
-+int au_cpdown_dirs(struct dentry *dentry, aufs_bindex_t bdst,
-+		   struct dentry *locked)
-+{
-+	int err;
-+	struct au_cpdown_dir_args args = {
-+		.parent		= dget_parent(dentry),
-+		.parent_opq	= 0
++	int err, need_diropq, bycpup, rerr;
++	struct au_whtmp_rmdir_args *thargs;
++	struct dentry *wh_dentry[2], *h_dst, *h_src;
++	struct inode *h_dir[2];
++	aufs_bindex_t bindex, bend;
++	struct au_hin_ignore ign;
++	struct vfsub_args vargs;
++	struct au_ndx ndx = {
++		.flags	= 0,
++		.nd	= NULL,
++		/* .br	= NULL */
 +	};
 +
-+	LKTRTrace("%.*s, b%d\n", AuDLNPair(dentry), bdst);
++	LKTRTrace("%.*s/%.*s, %.*s/%.*s, "
++		  "hd{%p, %p}, hp{%p, %p}, wh %p, btgt %d, bstart{%d, %d}, "
++		  "flags 0x%x\n",
++		  AuDLNPair(a->parent[SRC]), AuDLNPair(src_dentry),
++		  AuDLNPair(a->parent[DST]), AuDLNPair(dentry),
++		  a->h_dentry[SRC], a->h_dentry[DST],
++		  a->h_parent[SRC], a->h_parent[DST],
++		  &a->whlist, a->btgt,
++		  a->bstart[SRC], a->bstart[DST],
++		  a->flags);
 +
-+	err = au_cp_dirs(dentry, bdst, locked, au_cpdown_dir, &args);
-+	dput(args.parent);
++	h_dir[SRC] = a->h_parent[SRC]->d_inode;
++	h_dir[DST] = a->h_parent[DST]->d_inode;
 +
-+	AuTraceErr(err);
-+	return err;
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+
-+/* policies for create */
-+
-+static int au_wbr_bu(struct super_block *sb, aufs_bindex_t bindex)
-+{
-+	for (; bindex >= 0; bindex--)
-+		if (!au_br_rdonly(au_sbr(sb, bindex)))
-+			return bindex;
-+	return -EROFS;
-+}
-+
-+/* top down parent */
-+static int au_wbr_create_tdp(struct dentry *dentry, int isdir)
-+{
-+	int err, dirperm1;
-+	struct super_block *sb;
-+	aufs_bindex_t bstart, bindex;
-+	struct dentry *parent, *h_parent;
-+	struct inode *h_dir;
-+
-+	LKTRTrace("%.*s, dir %d\n", AuDLNPair(dentry), isdir);
-+
-+	sb = dentry->d_sb;
-+	dirperm1 = !!au_opt_test_dirperm1(au_mntflags(sb));
-+	bstart = au_dbstart(dentry);
-+	err = bstart;
-+	if (!au_br_rdonly(au_sbr(sb, bstart)))
-+		goto out;
-+
-+	err = -EROFS;
-+	parent = dget_parent(dentry);
-+	for (bindex = au_dbstart(parent); bindex < bstart; bindex++) {
-+		h_parent = au_h_dptr(parent, bindex);
-+		if (!h_parent)
-+			continue;
-+		h_dir = h_parent->d_inode;
-+		if (!h_dir)
-+			continue;
-+
-+		if (!au_br_rdonly(au_sbr(sb, bindex))
-+		    && (!dirperm1
-+			|| au_test_h_perm(h_dir, MAY_WRITE | MAY_EXEC,
-+					  /*dlgt*/0))) {
-+				err = bindex;
-+				break;
-+		}
++	/* prepare workqueue args */
++	h_dst = NULL;
++	thargs = NULL;
++	if (au_ftest_ren(a->flags, ISDIR) && a->h_dentry[DST]->d_inode) {
++		err = -ENOMEM;
++		thargs = kmalloc(sizeof(*thargs), GFP_TEMPORARY);
++		if (unlikely(!thargs))
++			goto out;
++		h_dst = dget(a->h_dentry[DST]);
 +	}
-+	dput(parent);
 +
-+	/* bottom up here */
-+	if (unlikely(err < 0))
-+		err = au_wbr_bu(sb, bstart - 1);
++	wh_dentry[SRC] = NULL;
++	wh_dentry[DST] = NULL;
++	ndx.nfsmnt = au_nfsmnt(a->sb, a->btgt);
++	if (unlikely(au_ftest_ren(a->flags, DLGT)))
++		au_fset_ndx(ndx.flags, DLGT);
 +
-+ out:
-+	LKTRTrace("b%d\n", err);
-+	return err;
-+}
++	/* create whiteout for src_dentry */
++	if (au_ftest_ren(a->flags, WHSRC)) {
++		wh_dentry[SRC] = au_wh_create(src_dir, src_dentry, a->btgt,
++					      a->h_parent[SRC], &ndx);
++		err = PTR_ERR(wh_dentry[SRC]);
++		if (IS_ERR(wh_dentry[SRC]))
++			goto out_thargs;
++	}
 +
-+/* ---------------------------------------------------------------------- */
++	/* lookup whiteout for dentry */
++	if (au_ftest_ren(a->flags, WHDST)) {
++		struct dentry *d;
 +
-+/* an exception for the policy other than tdp */
-+static int au_wbr_create_exp(struct dentry *dentry)
-+{
-+	int err;
-+	struct dentry *parent;
-+	aufs_bindex_t bwh, bdiropq;
-+
-+	LKTRTrace("%.*s\n", AuDLNPair(dentry));
-+
-+	err = -1;
-+	bwh = au_dbwh(dentry);
-+	parent = dget_parent(dentry);
-+	bdiropq = au_dbdiropq(parent);
-+	if (bwh >= 0) {
-+		if (bdiropq >= 0)
-+			err = min(bdiropq, bwh);
++		d = au_wh_lkup(a->h_parent[DST], &dentry->d_name, &ndx);
++		err = PTR_ERR(d);
++		if (IS_ERR(d))
++			goto out_whsrc;
++		if (!d->d_inode)
++			dput(d);
 +		else
-+			err = bwh;
-+		LKTRTrace("%d\n", err);
-+	} else if (bdiropq >= 0) {
-+		err = bdiropq;
-+		LKTRTrace("%d\n", err);
-+	}
-+	dput(parent);
-+
-+	if (err >= 0 && au_br_rdonly(au_sbr(dentry->d_sb, err)))
-+		err = -1;
-+
-+	LKTRTrace("%d\n", err);
-+	return err;
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+
-+/* round robin */
-+static int au_wbr_create_init_rr(struct super_block *sb)
-+{
-+	int err;
-+
-+	err = au_wbr_bu(sb, au_sbend(sb));
-+	atomic_set(&au_sbi(sb)->si_wbr_rr_next, -err); /* less important */
-+
-+	LKTRTrace("b%d\n", err);
-+	return err;
-+}
-+
-+static int au_wbr_create_rr(struct dentry *dentry, int isdir)
-+{
-+	int err, nbr;
-+	struct super_block *sb;
-+	atomic_t *next;
-+	unsigned int u;
-+	aufs_bindex_t bindex, bend;
-+
-+	LKTRTrace("%.*s, dir %d\n", AuDLNPair(dentry), isdir);
-+
-+	sb = dentry->d_sb;
-+	next = NULL;
-+	err = au_wbr_create_exp(dentry);
-+	if (err >= 0)
-+		goto out;
-+
-+	next = &au_sbi(sb)->si_wbr_rr_next;
-+	bend = au_sbend(sb);
-+	nbr = bend + 1;
-+	for (bindex = 0; bindex <= bend; bindex++) {
-+		if (!isdir) {
-+			err = atomic_dec_return(next) + 1;
-+			/* modulo for 0 is meaningless */
-+			if (unlikely(!err))
-+				err = atomic_dec_return(next) + 1;
-+		} else
-+			err = atomic_read(next);
-+		LKTRTrace("%d\n", err);
-+		u = err;
-+		err = u % nbr;
-+		LKTRTrace("%d\n", err);
-+		if (!au_br_rdonly(au_sbr(sb, err)))
-+			break;
-+		err = -EROFS;
++			wh_dentry[DST] = d;
 +	}
 +
-+ out:
-+	LKTRTrace("%d\n", err);
-+	return err;
-+}
++	/* rename dentry to tmpwh */
++	if (thargs) {
++		err = au_whtmp_ren(dir, dentry, a->btgt, /*noself*/0);
++		if (unlikely(err))
++			goto out_whdst;
++		au_set_h_dptr(dentry, a->btgt, NULL);
++		err = au_lkup_neg(dentry, a->btgt);
++		if (unlikely(err))
++			goto out_whtmp;
++		a->h_dentry[DST] = au_h_dptr(dentry, a->btgt);
++	}
 +
-+/* ---------------------------------------------------------------------- */
++	/* cpup src */
++	if (a->h_dentry[DST]->d_inode && a->bstart[SRC] != a->btgt) {
++		mutex_lock_nested(&a->h_dentry[SRC]->d_inode->i_mutex,
++				  AuLsc_I_CHILD);
++		err = au_sio_cpup_simple(src_dentry, a->btgt, -1,
++					 !AuCpup_DTIME);
++		mutex_unlock(&a->h_dentry[SRC]->d_inode->i_mutex);
++		if (unlikely(err))
++			goto out_whtmp;
++	}
 +
-+/* most free space */
-+static void *au_wbr_statfs_arg(struct au_branch *br, struct super_block *sb,
-+			       aufs_bindex_t bindex)
-+{
-+	struct super_block *h_sb;
-+
-+	h_sb = br->br_mnt->mnt_sb;
-+
-+	if (!au_test_nfs(h_sb))
-+		return h_sb->s_root;
-+
-+	/* sigh,,, why nfs s_root has wrong inode? */
-+	return au_di(sb->s_root)->di_hdentry[0 + bindex].hd_dentry;
-+}
-+
-+static void au_mfs(struct dentry *dentry)
-+{
-+	struct super_block *sb;
-+	aufs_bindex_t bindex, bend;
-+	int dlgt, err;
-+	struct kstatfs st;
-+	u64 b, bavail;
-+	void *arg;
-+	struct au_branch *br;
-+	struct au_wbr_mfs *mfs;
-+
-+	LKTRTrace("%.*s\n", AuDLNPair(dentry));
-+
-+	bavail = 0;
-+	sb = dentry->d_sb;
-+	mfs = &au_sbi(sb)->si_wbr_mfs;
-+	mfs->mfs_bindex = -EROFS;
-+	mfs->mfsrr_bytes = 0;
-+	dlgt = !!au_opt_test_dlgt(au_mntflags(sb));
-+	bend = au_sbend(sb);
-+	for (bindex = 0; bindex <= bend; bindex++) {
-+		br = au_sbr(sb, bindex);
-+		if (au_br_rdonly(br))
-+			continue;
-+		arg = au_wbr_statfs_arg(br, sb, bindex);
-+		if (!arg)
-+			continue;
-+
-+		err = vfsub_statfs(arg, &st, dlgt);
-+		LKTRTrace("b%d, %d, %Lu\n",
-+			  bindex, err, (unsigned long long)st.f_bavail);
++	/* rename by vfs_rename or cpup */
++	need_diropq = au_ftest_ren(a->flags, ISDIR)
++		&& (wh_dentry[DST]
++		    || au_dbdiropq(dentry) == a->btgt
++		    /* hide the lower to keep xino */
++		    || a->btgt < au_dbend(dentry)
++		    || au_opt_test(a->mnt_flags, ALWAYS_DIROPQ));
++	bycpup = 0;
++	if (au_dbstart(src_dentry) == a->btgt) {
++		if (need_diropq && au_dbdiropq(src_dentry) == a->btgt)
++			need_diropq = 0;
++		vfsub_args_init(&vargs, &ign, au_ftest_ren(a->flags, DLGT), 0);
++		if (unlikely(au_opt_test(a->mnt_flags, UDBA_INOTIFY)
++			     && au_ftest_ren(a->flags, ISDIR)))
++			vfsub_ign_hinode(&vargs, IN_MOVE_SELF,
++					 au_hi(src_dentry->d_inode, a->btgt));
++		AuDebugOn(au_dbstart(src_dentry) != a->btgt);
++		err = vfsub_rename(h_dir[SRC], au_h_dptr(src_dentry, a->btgt),
++				   h_dir[DST], a->h_dentry[DST], &vargs);
++	} else {
++		bycpup = 1;
++		mutex_lock_nested(&a->h_dentry[SRC]->d_inode->i_mutex,
++				  AuLsc_I_CHILD);
++		au_set_dbstart(src_dentry, a->btgt);
++		au_set_h_dptr(src_dentry, a->btgt, dget(a->h_dentry[DST]));
++		err = au_sio_cpup_single(src_dentry, a->btgt, a->bstart[SRC],
++					 -1, !AuCpup_DTIME);
 +		if (unlikely(err)) {
-+			AuWarn1("failed statfs, b%d, %d\n", bindex, err);
-+			continue;
++			au_set_h_dptr(src_dentry, a->btgt, NULL);
++			au_set_dbstart(src_dentry, a->bstart[SRC]);
 +		}
++		mutex_unlock(&a->h_dentry[SRC]->d_inode->i_mutex);
++	}
++	if (unlikely(err))
++		goto out_whtmp;
 +
-+		/* when the available size is equal, select lower one */
-+		b = st.f_bavail * st.f_bsize;
-+		br->br_bytes = b;
-+		if (b >= bavail) {
-+			bavail = b;
-+			mfs->mfs_bindex = bindex;
-+			mfs->mfs_jiffy = jiffies;
-+		}
++	/* make dir opaque */
++	if (need_diropq) {
++		struct dentry *diropq;
++		struct inode *h_inode;
++
++		h_inode = au_h_dptr(src_dentry, a->btgt)->d_inode;
++		au_hdir_lock(h_inode, src_dentry->d_inode, a->btgt);
++		diropq = au_diropq_create(src_dentry, a->btgt,
++					  au_ftest_ren(a->flags, DLGT));
++		au_hdir_unlock(h_inode, src_dentry->d_inode, a->btgt);
++		err = PTR_ERR(diropq);
++		if (IS_ERR(diropq))
++			goto out_rename;
++		dput(diropq);
 +	}
 +
-+	mfs->mfsrr_bytes = bavail;
-+	LKTRTrace("b%d\n", mfs->mfs_bindex);
-+}
++	/* update target timestamps */
++	AuDebugOn(au_dbstart(src_dentry) != a->btgt);
++	h_src = au_h_dptr(src_dentry, a->btgt);
++	au_update_fuse_h_inode(NULL, h_src); /*ignore*/
++	/* fsstack_copy_attr_atime(src_dentry->d_inode, h_src->d_inode); */
++	src_dentry->d_inode->i_ctime = h_src->d_inode->i_ctime;
 +
-+static int au_wbr_create_mfs(struct dentry *dentry, int isdir)
-+{
-+	int err;
-+	struct super_block *sb;
-+	struct au_wbr_mfs *mfs;
++	/* remove whiteout for dentry */
++	if (wh_dentry[DST]) {
++		err = au_wh_unlink_dentry(h_dir[DST], wh_dentry[DST],
++					  dentry, dir, /*dlgt*/0);
++		if (unlikely(err))
++			goto out_diropq;
++	}
 +
-+	LKTRTrace("%.*s\n", AuDLNPair(dentry));
++	/* remove whtmp */
++	if (thargs) {
++		if (au_test_nfs(h_dst->d_sb)
++		    || !au_nhash_test_longer_wh(&a->whlist, a->btgt,
++						au_sbi(a->sb)->si_dirwh)) {
++			err = au_whtmp_rmdir(h_dst, &a->whlist, a->btgt, dir,
++					     dentry->d_inode, /*noself*/0);
++			if (unlikely(err))
++				AuWarn("failed removing whtmp dir %.*s (%d), "
++				       "ignored.\n", AuDLNPair(h_dst), err);
++		} else {
++			au_whtmp_kick_rmdir(h_dst, &a->whlist, a->btgt, dir,
++					    dentry->d_inode, /*noself*/0,
++					    thargs);
++			dput(h_dst);
++			thargs = NULL;
++		}
++	}
++	err = 0;
++	goto out_success;
 +
-+	sb = dentry->d_sb;
-+	err = au_wbr_create_exp(dentry);
-+	if (err >= 0)
-+		goto out;
++#define RevertFailure(fmt, args...) do { \
++		AuIOErrWhck("revert failure: " fmt " (%d, %d)\n", \
++			    ##args, err, rerr); \
++		err = -EIO; \
++	} while (0)
 +
-+	mfs = &au_sbi(sb)->si_wbr_mfs;
-+	mutex_lock(&mfs->mfs_lock);
-+	if (unlikely(time_after(jiffies, mfs->mfs_jiffy + mfs->mfs_expire)
-+		     || mfs->mfs_bindex < 0
-+		     || au_br_rdonly(au_sbr(sb, mfs->mfs_bindex))))
-+		au_mfs(dentry);
-+	mutex_unlock(&mfs->mfs_lock);
-+	err = mfs->mfs_bindex;
++ out_diropq:
++	if (need_diropq) {
++		struct inode *h_inode;
 +
++		h_inode = au_h_dptr(src_dentry, a->btgt)->d_inode;
++		/* lock inode simply since inotify is not set to h_inode. */
++		mutex_lock_nested(&h_inode->i_mutex, AuLsc_I_PARENT);
++		rerr = au_diropq_remove(src_dentry, a->btgt,
++					au_ftest_ren(a->flags, DLGT));
++		mutex_unlock(&h_inode->i_mutex);
++		if (rerr)
++			RevertFailure("remove diropq %.*s",
++				      AuDLNPair(src_dentry));
++	}
++ out_rename:
++	if (!bycpup) {
++		struct dentry *d;
++		struct qstr *name = &src_dentry->d_name;
++
++		d = au_lkup_one(name->name, a->h_parent[SRC], name->len, &ndx);
++		rerr = PTR_ERR(d);
++		if (IS_ERR(d)) {
++			RevertFailure("au_lkup_one %.*s",
++				      AuDLNPair(src_dentry));
++			goto out_whtmp;
++		}
++		AuDebugOn(d->d_inode);
++		vfsub_args_init(&vargs, &ign, au_ftest_ren(a->flags, DLGT), 0);
++		if (unlikely(au_opt_test(a->mnt_flags, UDBA_INOTIFY)
++			     && au_ftest_ren(a->flags, ISDIR)))
++			vfsub_ign_hinode(&vargs, IN_MOVE_SELF,
++					 au_hi(src_dentry->d_inode, a->btgt));
++		rerr = vfsub_rename(h_dir[DST], au_h_dptr(src_dentry, a->btgt),
++				    h_dir[SRC], d, &vargs);
++		d_drop(d);
++		dput(d);
++		/* au_set_h_dptr(src_dentry, a->btgt, NULL); */
++		if (rerr)
++			RevertFailure("rename %.*s", AuDLNPair(src_dentry));
++	} else {
++		vfsub_args_init(&vargs, NULL, au_ftest_ren(a->flags, DLGT), 0);
++		rerr = vfsub_unlink(h_dir[DST], a->h_dentry[DST], &vargs);
++		au_set_h_dptr(src_dentry, a->btgt, NULL);
++		au_set_dbstart(src_dentry, a->bstart[SRC]);
++		if (rerr)
++			RevertFailure("unlink %.*s",
++				      AuDLNPair(a->h_dentry[DST]));
++	}
++ out_whtmp:
++	if (thargs) {
++		struct dentry *d;
++		struct qstr *name = &dentry->d_name;
++
++		d = au_lkup_one(name->name, a->h_parent[DST], name->len, &ndx);
++		rerr = PTR_ERR(d);
++		if (IS_ERR(d)) {
++			RevertFailure("lookup %.*s", AuLNPair(name));
++			goto out_whdst;
++		}
++		if (d->d_inode) {
++			d_drop(d);
++			dput(d);
++			goto out_whdst;
++		}
++		AuDebugOn(d->d_inode);
++		vfsub_args_init(&vargs, &ign, au_ftest_ren(a->flags, DLGT), 0);
++		if (unlikely(0 && au_opt_test(a->mnt_flags, UDBA_INOTIFY)
++			     && au_ftest_ren(a->flags, ISDIR)))
++			vfsub_ign_hinode(&vargs, IN_MOVE_SELF,
++					 au_hi(dentry->d_inode, a->btgt));
++		rerr = vfsub_rename(h_dir[DST], h_dst, h_dir[DST], d, &vargs);
++		d_drop(d);
++		dput(d);
++		if (rerr) {
++			RevertFailure("rename %.*s", AuDLNPair(h_dst));
++			goto out_whdst;
++		}
++		au_set_h_dptr(dentry, a->btgt, NULL);
++		au_set_h_dptr(dentry, a->btgt, dget(h_dst));
++	}
++ out_whdst:
++	dput(wh_dentry[DST]);
++	wh_dentry[DST] = NULL;
++ out_whsrc:
++	if (wh_dentry[SRC]) {
++		rerr = au_wh_unlink_dentry(h_dir[SRC], wh_dentry[SRC],
++					   src_dentry, src_dir, /*dlgt*/0);
++		if (rerr)
++			RevertFailure("unlink %.*s", AuDLNPair(wh_dentry[SRC]));
++	}
++#undef RevertFailure
++	d_drop(src_dentry);
++	bend = au_dbend(src_dentry);
++	for (bindex = au_dbstart(src_dentry); bindex <= bend; bindex++) {
++		struct dentry *hd;
++
++		hd = au_h_dptr(src_dentry, bindex);
++		if (hd)
++			d_drop(hd);
++	}
++	d_drop(dentry);
++	bend = au_dbend(dentry);
++	for (bindex = au_dbstart(dentry); bindex <= bend; bindex++) {
++		struct dentry *hd;
++
++		hd = au_h_dptr(dentry, bindex);
++		if (hd)
++			d_drop(hd);
++	}
++	au_update_dbstart(dentry);
++	if (thargs)
++		d_drop(h_dst);
++ out_success:
++	dput(wh_dentry[SRC]);
++	dput(wh_dentry[DST]);
++ out_thargs:
++	if (thargs) {
++		dput(h_dst);
++		kfree(thargs);
++	}
 + out:
-+	LKTRTrace("b%d\n", err);
-+	return err;
-+}
-+
-+static int au_wbr_create_init_mfs(struct super_block *sb)
-+{
-+	struct au_wbr_mfs *mfs;
-+
-+	mfs = &au_sbi(sb)->si_wbr_mfs;
-+	LKTRTrace("expire %lu\n", mfs->mfs_expire);
-+
-+	mutex_init(&mfs->mfs_lock);
-+	mfs->mfs_jiffy = 0;
-+	mfs->mfs_bindex = -EROFS;
-+
-+	return 0;
-+}
-+
-+static int au_wbr_create_fin_mfs(struct super_block *sb)
-+{
-+	AuTraceEnter();
-+	mutex_destroy(&au_sbi(sb)->si_wbr_mfs.mfs_lock);
-+	return 0;
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+
-+/* most free space and then round robin */
-+static int au_wbr_create_mfsrr(struct dentry *dentry, int isdir)
-+{
-+	int err;
-+	struct au_wbr_mfs *mfs;
-+
-+	LKTRTrace("%.*s, %d\n", AuDLNPair(dentry), isdir);
-+
-+	err = au_wbr_create_mfs(dentry, isdir);
-+	if (err >= 0) {
-+		mfs = &au_sbi(dentry->d_sb)->si_wbr_mfs;
-+		LKTRTrace("%Lu bytes, %Lu wmark\n",
-+			  mfs->mfsrr_bytes, mfs->mfsrr_watermark);
-+		if (unlikely(mfs->mfsrr_bytes < mfs->mfsrr_watermark))
-+			err = au_wbr_create_rr(dentry, isdir);
-+	}
-+
-+	LKTRTrace("b%d\n", err);
-+	return err;
-+}
-+
-+static int au_wbr_create_init_mfsrr(struct super_block *sb)
-+{
-+	int err;
-+
-+	au_wbr_create_init_mfs(sb); /* ignore */
-+	err = au_wbr_create_init_rr(sb);
-+
 +	AuTraceErr(err);
 +	return err;
 +}
 +
-+/* ---------------------------------------------------------------------- */
-+
-+/* top down parent and most free space */
-+static int au_wbr_create_pmfs(struct dentry *dentry, int isdir)
++/*
++ * test if @dentry dir can be rename destination or not.
++ * success means, it is a logically empty dir.
++ */
++static int may_rename_dstdir(struct dentry *dentry, aufs_bindex_t btgt,
++			     struct au_nhash *whlist)
 +{
-+	int err, e2, dirperm1;
-+	struct super_block *sb;
-+	struct dentry *parent, *h_parent;
-+	aufs_bindex_t bindex, bstart, bend;
-+	struct au_branch *br;
-+	u64 b;
-+	struct inode *h_dir;
-+
-+	LKTRTrace("%.*s, %d\n", AuDLNPair(dentry), isdir);
-+
-+	err = au_wbr_create_tdp(dentry, isdir);
-+	if (unlikely(err < 0))
-+		goto out;
-+	parent = dget_parent(dentry);
-+	bstart = au_dbstart(parent);
-+	bend = au_dbtaildir(parent);
-+	if (bstart == bend)
-+		goto out_parent; /* success */
-+
-+	e2 = au_wbr_create_mfs(dentry, isdir);
-+	if (e2 < 0)
-+		goto out_parent; /* success */
-+
-+	/* when the available size is equal, select upper one */
-+	sb = dentry->d_sb;
-+	br = au_sbr(sb, err);
-+	dirperm1 = !!au_opt_test_dirperm1(au_mntflags(sb));
-+	b = br->br_bytes;
-+	LKTRTrace("b%d, %Lu\n", err, b);
-+
-+	if (unlikely(dirperm1)) {
-+		for (bindex = bstart; bindex <= bend; bindex++) {
-+			h_parent = au_h_dptr(parent, bindex);
-+			if (!h_parent)
-+				continue;
-+			h_dir = h_parent->d_inode;
-+			if (!h_dir)
-+				continue;
-+
-+			br = au_sbr(sb, bindex);
-+			if (!au_br_rdonly(br)
-+			    && au_test_h_perm(h_dir, MAY_WRITE | MAY_EXEC,
-+					      /*dlgt*/0)
-+			    && br->br_bytes > b) {
-+				b = br->br_bytes;
-+				err = bindex;
-+				LKTRTrace("b%d, %Lu\n", err, b);
-+			}
-+		}
-+		if (err >= 0)
-+			goto out_parent;
-+	}
-+	for (bindex = bstart; bindex <= bend; bindex++) {
-+		h_parent = au_h_dptr(parent, bindex);
-+		if (!h_parent || !h_parent->d_inode)
-+			continue;
-+
-+		br = au_sbr(sb, bindex);
-+		if (!au_br_rdonly(br) && br->br_bytes > b) {
-+			b = br->br_bytes;
-+			err = bindex;
-+			LKTRTrace("b%d, %Lu\n", err, b);
-+		}
-+	}
-+
-+ out_parent:
-+	dput(parent);
-+ out:
-+	LKTRTrace("b%d\n", err);
-+	return err;
-+}
-+
-+/* ---------------------------------------------------------------------- */
-+
-+/* policies for copyup */
-+
-+/* top down parent */
-+static int au_wbr_copyup_tdp(struct dentry *dentry)
-+{
-+	return au_wbr_create_tdp(dentry, /*isdir, anything is ok*/0);
-+}
-+
-+/* bottom up parent */
-+static int au_wbr_copyup_bup(struct dentry *dentry)
-+{
-+	int err, dirperm1;
-+	struct dentry *parent, *h_parent;
-+	aufs_bindex_t bindex, bstart;
-+	struct super_block *sb;
-+	struct inode *h_dir;
-+
 +	LKTRTrace("%.*s\n", AuDLNPair(dentry));
 +
-+	err = -EROFS;
-+	sb = dentry->d_sb;
-+	dirperm1 = !!au_opt_test_dirperm1(au_mntflags(sb));
-+	parent = dget_parent(dentry);
-+	bstart = au_dbstart(parent);
-+	for (bindex = au_dbstart(dentry); bindex >= bstart; bindex--) {
-+		h_parent = au_h_dptr(parent, bindex);
-+		if (!h_parent)
-+			continue;
-+		h_dir = h_parent->d_inode;
-+		if (!h_dir)
-+			continue;
-+
-+		if (!au_br_rdonly(au_sbr(sb, bindex))
-+		    && (!dirperm1
-+			|| au_test_h_perm(h_dir, MAY_WRITE | MAY_EXEC,
-+					  /*dlgt*/0))) {
-+			err = bindex;
-+			break;
-+		}
-+	}
-+	dput(parent);
-+
-+	/* bottom up here */
-+	if (unlikely(err < 0))
-+		err = au_wbr_bu(sb, bstart - 1);
-+
-+	LKTRTrace("b%d\n", err);
-+	return err;
++	return au_test_empty(dentry, whlist);
 +}
 +
-+/* bottom up */
-+static int au_wbr_copyup_bu(struct dentry *dentry)
++/*
++ * test if @dentry dir can be rename source or not.
++ * if it can, return 0 and @children is filled.
++ * success means,
++ * - or, it is a logically empty dir.
++ * - or, it exists on writable branch and has no children including whiteouts
++ *       on the lower branch.
++ */
++static int may_rename_srcdir(struct dentry *dentry, aufs_bindex_t btgt)
 +{
 +	int err;
++	aufs_bindex_t bstart;
 +
 +	LKTRTrace("%.*s\n", AuDLNPair(dentry));
 +
-+	err = au_wbr_bu(dentry->d_sb, au_dbstart(dentry));
++	bstart = au_dbstart(dentry);
++	if (bstart != btgt) {
++		struct au_nhash *whlist;
 +
-+	LKTRTrace("b%d\n", err);
++		whlist = au_nhash_new(GFP_TEMPORARY);
++		err = PTR_ERR(whlist);
++		if (IS_ERR(whlist))
++			goto out;
++		err = au_test_empty(dentry, whlist);
++		au_nhash_del(whlist);
++		goto out;
++	}
++
++	if (bstart == au_dbtaildir(dentry))
++		return 0; /* success */
++
++	err = au_test_empty_lower(dentry);
++
++ out:
++	if (/* unlikely */(err == -ENOTEMPTY)) {
++		AuWarn1("renaming dir who has child(ren) on multiple branches,"
++		      " is not supported\n");
++		err = -EXDEV;
++	}
++	AuTraceErr(err);
 +	return err;
 +}
 +
-+/* ---------------------------------------------------------------------- */
++/* mainly for link(2) and rename(2) */
++int au_wbr(struct dentry *dentry, aufs_bindex_t btgt)
++{
++	aufs_bindex_t bdiropq, bwh;
++	struct dentry *parent;
 +
-+struct au_wbr_copyup_operations au_wbr_copyup_ops[] = {
-+	[AuWbrCopyup_TDP] = {
-+		.copyup	= au_wbr_copyup_tdp
-+	},
-+	[AuWbrCopyup_BUP] = {
-+		.copyup	= au_wbr_copyup_bup
-+	},
-+	[AuWbrCopyup_BU] = {
-+		.copyup	= au_wbr_copyup_bu
-+	}
-+};
++	LKTRTrace("%.*s, b%d\n", AuDLNPair(dentry), btgt);
++	parent = dentry->d_parent;
++	IMustLock(parent->d_inode); /* dir is locked */
 +
-+struct au_wbr_create_operations au_wbr_create_ops[] = {
-+	[AuWbrCreate_TDP] = {
-+		.create	= au_wbr_create_tdp
-+	},
-+	[AuWbrCreate_RR] = {
-+		.create	= au_wbr_create_rr,
-+		.init	= au_wbr_create_init_rr
-+	},
-+	[AuWbrCreate_MFS] = {
-+		.create	= au_wbr_create_mfs,
-+		.init	= au_wbr_create_init_mfs,
-+		.fin	= au_wbr_create_fin_mfs
-+	},
-+	[AuWbrCreate_MFSV] = {
-+		.create	= au_wbr_create_mfs,
-+		.init	= au_wbr_create_init_mfs,
-+		.fin	= au_wbr_create_fin_mfs
-+	},
-+	[AuWbrCreate_MFSRR] = {
-+		.create	= au_wbr_create_mfsrr,
-+		.init	= au_wbr_create_init_mfsrr,
-+		.fin	= au_wbr_create_fin_mfs
-+	},
-+	[AuWbrCreate_MFSRRV] = {
-+		.create	= au_wbr_create_mfsrr,
-+		.init	= au_wbr_create_init_mfsrr,
-+		.fin	= au_wbr_create_fin_mfs
-+	},
-+	[AuWbrCreate_PMFS] = {
-+		.create	= au_wbr_create_pmfs,
-+		.init	= au_wbr_create_init_mfs,
-+		.fin	= au_wbr_create_fin_mfs
-+	},
-+	[AuWbrCreate_PMFSV] = {
-+		.create	= au_wbr_create_pmfs,
-+		.init	= au_wbr_create_init_mfs,
-+		.fin	= au_wbr_create_fin_mfs
++	bdiropq = au_dbdiropq(parent);
++	bwh = au_dbwh(dentry);
++	if (au_br_rdonly(au_sbr(dentry->d_sb, btgt))
++		     || (0 <= bdiropq && bdiropq < btgt)
++		     || (0 <= bwh && bwh < btgt))
++		btgt = -1;
++
++	LKTRTrace("btgt %d\n", btgt);
++	return btgt;
++}
++
++/* todo: meaningless lock if CONFIG_AUFS_DEBUG is disabled. */
++static void au_hgdirs(struct au_hinode **hgdir, struct rename_args *a)
++{
++	struct dentry *gparent[2];
++	struct inode *gdir;
++
++	if (!au_opt_test(a->mnt_flags, UDBA_INOTIFY))
++		return;
++
++	gparent[SRC] = NULL;
++	if (!IS_ROOT(a->parent[SRC])) {
++		gparent[SRC] = dget_parent(a->parent[SRC]);
++		gdir = gparent[SRC]->d_inode;
++		if (gparent[SRC] != a->parent[DST]) {
++			ii_read_lock_parent3(gdir);
++			hgdir[SRC] = au_hi(gdir, a->btgt);
++			ii_read_unlock(gdir);
++		} else
++			hgdir[SRC] = au_hi(gdir, a->btgt);
++		dput(gparent[SRC]);
 +	}
-+};
++
++	if (!au_ftest_ren(a->flags, ISSAMEDIR)
++	    && !IS_ROOT(a->parent[DST])
++	    && a->parent[DST] != gparent[SRC]) {
++		gparent[DST] = dget_parent(a->parent[DST]);
++		gdir = gparent[DST]->d_inode;
++		if (gparent[DST] != a->parent[SRC]) {
++			ii_read_lock_parent3(gdir);
++			hgdir[DST] = au_hi(gdir, a->btgt);
++			ii_read_unlock(gdir);
++		} else
++			hgdir[DST] = au_hi(gdir, a->btgt);
++		dput(gparent[DST]);
++	}
++}
++
++/*
++ * simple tests for rename.
++ * following the checks in vfs, plus the parent-child relationship.
++ */
++static int au_may_ren(struct inode *src_dir, struct dentry *src_dentry,
++		      struct inode *dir, struct dentry *dentry,
++		      struct rename_args *a, struct au_ndx *ndx)
++{
++	int err;
++	struct inode *h_inode;
++
++	AuTraceEnter();
++
++	if (a->bstart[SRC] == a->btgt) {
++		err = au_may_del(src_dentry, a->btgt, a->h_parent[SRC],
++				 au_ftest_ren(a->flags, ISDIR), ndx);
++		if (unlikely(err))
++			goto out;
++		err = -EINVAL;
++		if (unlikely(a->h_dentry[SRC] == a->h_trap))
++			goto out;
++	}
++
++	err = 0;
++	if (a->bstart[DST] != a->btgt)
++		goto out;
++
++	err = -EIO;
++	h_inode = a->h_dentry[DST]->d_inode;
++	if (!dentry->d_inode) {
++		if (unlikely(h_inode))
++			goto out;
++		err = au_may_add(dentry, a->btgt, a->h_parent[DST],
++				 au_ftest_ren(a->flags, ISDIR), ndx);
++	} else {
++		if (unlikely(!h_inode || !h_inode->i_nlink))
++			goto out;
++		err = au_may_del(dentry, a->btgt, a->h_parent[DST],
++				 au_ftest_ren(a->flags, ISDIR), ndx);
++		if (unlikely(err))
++			goto out;
++		err = -ENOTEMPTY;
++		if (unlikely(a->h_dentry[DST] == a->h_trap))
++			goto out;
++		err = 0;
++	}
++
++ out:
++	if (unlikely(err == -ENOENT || err == -EEXIST))
++		err = -EIO;
++	AuTraceErr(err);
++	return err;
++}
++
++int aufs_rename(struct inode *src_dir, struct dentry *src_dentry,
++		struct inode *dir, struct dentry *dentry)
++{
++	int err, do_dt_dstdir, flags;
++	aufs_bindex_t bend, bindex;
++	struct inode *inode[2], *dirs[2];
++	struct au_hinode *hgdir[2], *hdir;
++	enum { PARENT, CHILD };
++	/* reduce stack space */
++	struct {
++		struct rename_args a;
++		struct au_dtime dt[2][2];
++	} *p;
++	struct au_wr_dir_args wr_dir_args = {
++		/* .force_btgt	= -1, */
++		.flags		= AuWrDir_ADD_ENTRY
++	};
++
++	LKTRTrace("i%lu, %.*s, i%lu, %.*s\n",
++		  src_dir->i_ino, AuDLNPair(src_dentry),
++		  dir->i_ino, AuDLNPair(dentry));
++	IMustLock(src_dir);
++	IMustLock(dir);
++	inode[DST] = dentry->d_inode;
++	if (inode[DST]) {
++		IMustLock(inode[DST]);
++		igrab(inode[DST]);
++	}
++
++	err = -ENOMEM;
++	BUILD_BUG_ON(sizeof(*p) > PAGE_SIZE);
++	p = kmalloc(sizeof(*p), GFP_TEMPORARY);
++	if (unlikely(!p))
++		goto out;
++
++	err = -ENOTDIR;
++	p->a.sb = src_dentry->d_sb;
++	inode[SRC] = src_dentry->d_inode;
++	flags = 0;
++	p->a.flags = 0;
++	if (S_ISDIR(inode[SRC]->i_mode)) {
++		flags = AuLock_DIR;
++		au_fset_ren(p->a.flags, ISDIR);
++		if (unlikely(inode[DST] && !S_ISDIR(inode[DST]->i_mode)))
++			goto out_free;
++	}
++
++	aufs_read_and_write_lock2(dentry, src_dentry, flags);
++	p->a.mnt_flags = au_mntflags(p->a.sb);
++	if (unlikely(au_opt_test_dlgt(p->a.mnt_flags)))
++		au_fset_ren(p->a.flags, DLGT);
++	p->a.parent[SRC] = src_dentry->d_parent; /* dir inode is locked */
++	p->a.parent[DST] = dentry->d_parent; /* dir inode is locked */
++	if (src_dir == dir) {
++		au_fset_ren(p->a.flags, ISSAMEDIR);
++		di_write_lock_parent(p->a.parent[DST]);
++	} else
++		di_write_lock2_parent(p->a.parent[SRC], p->a.parent[DST],
++				      /*isdir*/1);
++
++	/* which branch we process */
++	p->a.bstart[SRC] = au_dbstart(src_dentry);
++	p->a.bstart[DST] = au_dbstart(dentry);
++	if (au_ftest_ren(p->a.flags, ISDIR))
++		au_fset_wrdir(wr_dir_args.flags, ISDIR);
++	wr_dir_args.force_btgt = p->a.bstart[SRC];
++	if (dentry->d_inode && p->a.bstart[DST] < p->a.bstart[SRC])
++		wr_dir_args.force_btgt = p->a.bstart[DST];
++	wr_dir_args.force_btgt = au_wbr(dentry, wr_dir_args.force_btgt);
++	err = au_wr_dir(dentry, src_dentry, &wr_dir_args);
++	p->a.btgt = err;
++	if (unlikely(err < 0))
++		goto out_unlock;
++
++	/* are they available to be renamed */
++	err = 0;
++	au_nhash_init(&p->a.whlist);
++	if (au_ftest_ren(p->a.flags, ISDIR) && inode[DST]) {
++		au_set_dbstart(dentry, p->a.bstart[DST]);
++		err = may_rename_dstdir(dentry, p->a.btgt, &p->a.whlist);
++		au_set_dbstart(dentry, p->a.btgt);
++	}
++	p->a.h_dentry[DST] = au_h_dptr(dentry, au_dbstart(dentry));
++	if (unlikely(err))
++		goto out_unlock;
++	/* todo: minor optimize,
++	   their sb may be same while their bindex differs? */
++	p->a.h_dentry[SRC] = au_h_dptr(src_dentry, au_dbstart(src_dentry));
++	if (au_ftest_ren(p->a.flags, ISDIR)) {
++		err = may_rename_srcdir(src_dentry, p->a.btgt);
++		if (unlikely(err))
++			goto out_children;
++	}
++
++	/* prepare the writable parent dir on the same branch */
++	err = au_wr_dir_need_wh(src_dentry, au_ftest_ren(p->a.flags, ISDIR),
++				&p->a.btgt,
++				au_ftest_ren(p->a.flags, ISSAMEDIR)
++				? NULL : p->a.parent[DST]);
++	if (unlikely(err < 0))
++		goto out_children;
++	if (err)
++		au_fset_ren(p->a.flags, WHSRC);
++	if (p->a.bstart[DST] == p->a.btgt) {
++		au_fset_ren(p->a.flags, WHDST);
++	} else {
++		err = au_cpup_dirs(dentry, p->a.btgt,
++				   au_ftest_ren(p->a.flags, ISSAMEDIR)
++				   ? NULL : p->a.parent[SRC]);
++		if (unlikely(err))
++			goto out_children;
++	}
++
++	hgdir[SRC] = NULL;
++	hgdir[DST] = NULL;
++	au_hgdirs(hgdir, &p->a);
++	p->a.h_parent[SRC] = au_h_dptr(p->a.parent[SRC], p->a.btgt);
++	p->a.h_parent[DST] = au_h_dptr(p->a.parent[DST], p->a.btgt);
++	dirs[0] = src_dir;
++	dirs[1] = dir;
++
++	AuDbgSleep_UdbaRace();
++	p->a.h_trap = au_hdir_lock_rename(p->a.h_parent, dirs, p->a.btgt,
++					  au_ftest_ren(p->a.flags, ISSAMEDIR));
++	/* todo: revalidate the lower dentries? */
++
++	if (!au_opt_test(p->a.mnt_flags, UDBA_NONE)) {
++		struct au_ndx ndx = {
++			.nfsmnt	= au_nfsmnt(p->a.sb, p->a.btgt),
++			.flags	= 0,
++			.nd	= NULL,
++			/* .br	= NULL */
++		};
++		if (unlikely(au_ftest_ren(p->a.flags, DLGT)))
++			au_fset_ndx(ndx.flags, DLGT);
++		err = au_may_ren(src_dir, src_dentry, dir, dentry, &p->a, &ndx);
++		if (unlikely(err))
++			goto out_hdir;
++	}
++
++	/* store timestamps to be revertible */
++	au_dtime_store(p->dt[PARENT] + SRC, p->a.parent[SRC],
++		       p->a.h_parent[SRC], hgdir[SRC]);
++	if (!au_ftest_ren(p->a.flags, ISSAMEDIR))
++		au_dtime_store(p->dt[PARENT] + DST, p->a.parent[DST],
++			       p->a.h_parent[DST], hgdir[DST]);
++	do_dt_dstdir = 0;
++	if (au_ftest_ren(p->a.flags, ISDIR)) {
++		hdir = NULL;
++		if (unlikely(au_opt_test(p->a.mnt_flags, UDBA_INOTIFY)))
++			hdir = au_hi(p->a.parent[SRC]->d_inode, p->a.btgt);
++		au_dtime_store(p->dt[CHILD] + SRC, src_dentry,
++			       p->a.h_dentry[SRC], hdir);
++		if (p->a.h_dentry[DST]->d_inode) {
++			do_dt_dstdir = 1;
++			if (unlikely(au_opt_test(p->a.mnt_flags, UDBA_INOTIFY)))
++				hdir = au_hi(p->a.parent[DST]->d_inode,
++					     p->a.btgt);
++			au_dtime_store(p->dt[CHILD] + DST, dentry,
++				       p->a.h_dentry[DST], hdir);
++		}
++	}
++
++	err = do_rename(src_dir, src_dentry, dir, dentry, &p->a);
++	if (unlikely(err))
++		goto out_dt;
++	au_hdir_unlock_rename(p->a.h_parent, dirs, p->a.btgt,
++			      au_ftest_ren(p->a.flags, ISSAMEDIR));
++
++	/* update dir attributes */
++	dir->i_version++;
++	if (au_ftest_ren(p->a.flags, ISDIR)) {
++		/* is this updating defined in POSIX? */
++		/* mutex_lock(&inode[SRC]->i_mutex); */
++		au_cpup_attr_timesizes(inode[SRC]);
++		/* mutex_unlock(&inode[SRC]->i_mutex); */
++
++		au_cpup_attr_nlink(dir);
++		if (inode[DST]) {
++			clear_nlink(inode[DST]);
++			au_cpup_attr_timesizes(inode[DST]);
++		}
++	}
++	if (au_ibstart(dir) == p->a.btgt)
++		au_cpup_attr_timesizes(dir);
++
++	if (!au_ftest_ren(p->a.flags, ISSAMEDIR)) {
++		src_dir->i_version++;
++		if (au_ftest_ren(p->a.flags, ISDIR))
++			au_cpup_attr_nlink(src_dir);
++		if (au_ibstart(src_dir) == p->a.btgt)
++			au_cpup_attr_timesizes(src_dir);
++	}
++
++	/* todo: simple d_drop(src_dentry) is not enough? */
++	/* dput/iput all lower dentries */
++	au_set_dbwh(src_dentry, -1);
++	bend = au_dbend(src_dentry);
++	for (bindex = p->a.btgt + 1; bindex <= bend; bindex++) {
++		struct dentry *hd;
++		hd = au_h_dptr(src_dentry, bindex);
++		if (hd)
++			au_set_h_dptr(src_dentry, bindex, NULL);
++	}
++	au_set_dbend(src_dentry, p->a.btgt);
++
++	bend = au_ibend(inode[SRC]);
++	for (bindex = p->a.btgt + 1; bindex <= bend; bindex++) {
++		struct inode *hi;
++		hi = au_h_iptr(inode[SRC], bindex);
++		if (hi) {
++			au_xino_write0(p->a.sb, bindex, hi->i_ino, 0);
++			/* ignore this error */
++			au_set_h_iptr(inode[SRC], bindex, NULL, 0);
++		}
++	}
++	au_set_ibend(inode[SRC], p->a.btgt);
++	goto out_children; /* success */
++
++ out_dt:
++	au_dtime_revert(p->dt[PARENT] + SRC);
++	if (!au_ftest_ren(p->a.flags, ISSAMEDIR))
++		au_dtime_revert(p->dt[PARENT] + DST);
++	if (au_ftest_ren(p->a.flags, ISDIR) && err != -EIO) {
++		struct dentry *hd;
++
++		hd = p->dt[CHILD][SRC].dt_h_dentry;
++		mutex_lock_nested(&hd->d_inode->i_mutex, AuLsc_I_CHILD);
++		au_dtime_revert(p->dt[CHILD] + SRC);
++		mutex_unlock(&hd->d_inode->i_mutex);
++		if (do_dt_dstdir) {
++			hd = p->dt[CHILD][DST].dt_h_dentry;
++			mutex_lock_nested(&hd->d_inode->i_mutex, AuLsc_I_CHILD);
++			au_dtime_revert(p->dt[CHILD] + DST);
++			mutex_unlock(&hd->d_inode->i_mutex);
++		}
++	}
++ out_hdir:
++	au_hdir_unlock_rename(p->a.h_parent, dirs, p->a.btgt,
++			      au_ftest_ren(p->a.flags, ISSAMEDIR));
++ out_children:
++	au_nhash_fin(&p->a.whlist);
++ out_unlock:
++	if (unlikely(err && au_ftest_ren(p->a.flags, ISDIR))) {
++		au_update_dbstart(dentry);
++		d_drop(dentry);
++	}
++	if (au_ftest_ren(p->a.flags, ISSAMEDIR))
++		di_write_unlock(p->a.parent[DST]);
++	else
++		di_write_unlock2(p->a.parent[SRC], p->a.parent[DST]);
++	aufs_read_and_write_unlock2(dentry, src_dentry);
++ out_free:
++	kfree(p);
++ out:
++	iput(inode[DST]);
++	AuTraceErr(err);
++	return err;
++}
 -- 
 1.5.5.1.308.g1fbb5.dirty
 
