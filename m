@@ -1,43 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934616AbYEUA5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933928AbYEUA5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934616AbYEUA5T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 20:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762300AbYEUA5A
+	id S933928AbYEUA5m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 20:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932922AbYEUA5Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 20:57:00 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:54830 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755770AbYEUA47 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 20:56:59 -0400
-Date: Wed, 21 May 2008 01:56:57 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Al Viro <viro@ftp.linux.org.uk>, mchehab@infradead.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] or51132.c: unaligned
-Message-ID: <20080521005657.GG28946@ZenIV.linux.org.uk>
-References: <E1JycGV-0004yJ-SP@ZenIV.linux.org.uk> <1211330472.5915.228.camel@brick> <20080521004548.GD28946@ZenIV.linux.org.uk> <1211331088.5915.241.camel@brick>
+	Tue, 20 May 2008 20:57:24 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51858 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932305AbYEUA5W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 20 May 2008 20:57:22 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1211331088.5915.241.camel@brick>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] signals: collect_signal: remove the unneeded sigismember() check
+In-Reply-To: Oleg Nesterov's message of  Saturday, 17 May 2008 19:14:24 +0400 <20080517151424.GA9505@tv-sign.ru>
+References: <20080517151424.GA9505@tv-sign.ru>
+X-Shopping-List: (1) Impetuous congestion
+   (2) Precarious interlocking vagrant losers
+   (3) Surreptitious reinforcement commissions
+   (4) Pink ambition hiders
+   (5) Stoic vapor
+Message-Id: <20080521005646.1BD5426FA1C@magilla.localdomain>
+Date: Tue, 20 May 2008 17:56:46 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20, 2008 at 05:51:28PM -0700, Harvey Harrison wrote:
+> collect_signal() checks sigismember(&list->signal, sig), this is not needed.
+> This "sig" was just found by next_signal(), so it must be valid.
 
-> > ... and the point of that would be?  FWIW, I really don't like the ...p()
-> > forms - they are hard to distinguish from normal ones visually and any
-> > possible performance benefit is too small for most of the uses.  IOW,
-> > it's mostly redundant API.
-> 
-> I sent a patchset getting rid of the p variants earlier today, Dave
-> Miller made a good point that some arches have well optimized versions
-> of these as they have specific machine instructions they can use.
+Acked-by: Roland McGrath <roland@redhat.com>
 
-Thus the "mostly" part - on hot paths the microoptimization is worth the
-trouble.  None of the places in question is on such paths...
+> We have a (completely broken) call to ->notifier in between, but it must not
+> play with sigpending->signal bits or unlock ->siglock.
+
+The only use of ->notifier/notifier_mask is for block_all_signals.
+Its only user in the tree is drm_lock(), but it is exported too.
+
+drm_lock is using block_all_signals to catch all the stop signals
+for a purpose that is not immediately clear to me.  
+
+
+Thanks,
+Roland
