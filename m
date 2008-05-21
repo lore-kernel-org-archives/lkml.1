@@ -1,56 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932759AbYEUJUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932331AbYEUJXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932759AbYEUJUZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 05:20:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750963AbYEUJUQ
+	id S932331AbYEUJXS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 05:23:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754713AbYEUJXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 05:20:16 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:57488 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754008AbYEUJUO (ORCPT
+	Wed, 21 May 2008 05:23:08 -0400
+Received: from de01egw01.freescale.net ([192.88.165.102]:33447 "EHLO
+	de01egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754513AbYEUJXH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 05:20:14 -0400
-Subject: Re: [RFC][PATCH 0/3] configfs: Make nested default groups
-	lockdep-friendly
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Joel Becker <Joel.Becker@oracle.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Louis Rilling <Louis.Rilling@kerlabs.com>, linux-kernel@vger.kernel.org,
-       ocfs2-devel@oss.oracle.com
-In-Reply-To: <20080520235138.GL26609@mail.oracle.com>
-References: <20080520163320.025971210@kerlabs.com>
-	 <20080520095810.1d50d247@infradead.org>
-	 <20080520215639.GG26609@mail.oracle.com>
-	 <20080520151341.058f2df4@infradead.org>
-	 <20080520222702.GJ26609@mail.oracle.com>
-	 <20080520153543.4bafcac9@infradead.org>
-	 <20080520235138.GL26609@mail.oracle.com>
-Content-Type: text/plain
-Date: Wed, 21 May 2008 11:20:00 +0200
-Message-Id: <1211361600.6463.65.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 21 May 2008 05:23:07 -0400
+From: Li Yang <leoli@freescale.com>
+To: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org, Kong Wei <weikong@redflag-linux.com>
+Subject: [PATCH] [mm] limit the min_free_kbytes
+Date: Wed, 21 May 2008 17:34:41 +0800
+Message-Id: <1211362481-2136-1-git-send-email-leoli@freescale.com>
+X-Mailer: git-send-email 1.5.5.1.248.g4b17
+X-OriginalArrivalTime: 21 May 2008 09:23:01.0584 (UTC) FILETIME=[441A2500:01C8BB24]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-05-20 at 16:51 -0700, Joel Becker wrote:
-> On Tue, May 20, 2008 at 03:35:43PM -0700, Arjan van de Ven wrote:
-> > not quite what I meant; what I meant is more like how sched.c deals
-> > with per cpu queues:
-> > 
-> > (from sched.c)
-> > 
-> >                 spin_lock_init(&rq->lock);
-> >                 lockdep_set_class(&rq->lock, &rq->rq_lock_key); 
-> 
-> 	Looking at this, it's taking the address of the struct
-> lock_class_key as the actual key.  Thus, if we tie one of these guys to
-> the structure we're representing, we get lock safety...except that we're
-> talking about i_mutex here, and we want to interact with the VFS's use
-> thereof.
+From: Kong Wei <weikong@redflag-linux.com>
 
-Also bear in mind that the lock_class_key structure must be in static
-storage.
+Unlimited of min_free_kbytes is dangerous,
+An user of our company set this value bigger than 3584*1024*K,
+cause the system OOM on DMA.
+And I try a even more bigger number will cause the system hang immediately.
+Limited as 64M may not a good value, but as default in init_per_zone_pages_min.
+And this option may not need again?
+
+Signed-off-by: Kong Wei <weikong@redflag-linux.com>
+---
+ kernel/sysctl.c |    5 ++++-
+ mm/page_alloc.c |    2 +-
+ 2 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 8b7e954..d052522 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -103,6 +103,8 @@ static int minolduid;
+ static int min_percpu_pagelist_fract = 8;
+ 
+ static int ngroups_max = NGROUPS_MAX;
++static int min_min_free_kbytes = 128;
++static int max_min_free_kbytes = 65536;
+ 
+ #ifdef CONFIG_KMOD
+ extern char modprobe_path[];
+@@ -1010,7 +1012,8 @@ static struct ctl_table vm_table[] = {
+ 		.mode		= 0644,
+ 		.proc_handler	= &min_free_kbytes_sysctl_handler,
+ 		.strategy	= &sysctl_intvec,
+-		.extra1		= &zero,
++		.extra1		= &min_min_free_kbytes,
++		.extra2		= &max_min_free_kbytes,
+ 	},
+ 	{
+ 		.ctl_name	= VM_PERCPU_PAGELIST_FRACTION,
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 75b9793..52979e9 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -4179,7 +4179,7 @@ module_init(init_per_zone_pages_min)
+ int min_free_kbytes_sysctl_handler(ctl_table *table, int write, 
+ 	struct file *file, void __user *buffer, size_t *length, loff_t *ppos)
+ {
+-	proc_dointvec(table, write, file, buffer, length, ppos);
++	proc_dointvec_minmax(table, write, file, buffer, length, ppos);
+ 	if (write)
+ 		setup_per_zone_pages_min();
+ 	return 0;
+-- 
+1.5.0.3
 
