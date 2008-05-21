@@ -1,74 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932732AbYEUMyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934746AbYEUMzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932732AbYEUMyr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 08:54:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750821AbYEUMyj
+	id S934746AbYEUMzs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 08:55:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756675AbYEUMzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 08:54:39 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:60096 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754195AbYEUMyi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 08:54:38 -0400
-Message-ID: <48341B8A.1050000@kerlabs.com>
-Date: Wed, 21 May 2008 14:54:34 +0200
-From: Louis Rilling <Louis.Rilling@kerlabs.com>
-Organization: Kerlabs
-User-Agent: IceDove 1.5.0.14pre (X11/20071018)
-MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Arjan van de Ven <arjan@infradead.org>,
-       Joel Becker <Joel.Becker@oracle.com>, linux-kernel@vger.kernel.org,
-       ocfs2-devel@oss.oracle.com
-Subject: Re: [RFC][PATCH 0/3] configfs: Make nested default	groups	lockdep-friendly
-References: <20080520163320.025971210@kerlabs.com>	 <20080520095810.1d50d247@infradead.org>	 <20080520215639.GG26609@mail.oracle.com>	 <20080520151341.058f2df4@infradead.org>	 <1211361784.6463.68.camel@lappy.programming.kicks-ass.net>	 <4833F89F.7080707@kerlabs.com> <1211367577.6463.91.camel@lappy.programming.kicks-ass.net>
-In-Reply-To: <1211367577.6463.91.camel@lappy.programming.kicks-ass.net>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Wed, 21 May 2008 08:55:39 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:38959 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754594AbYEUMzi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 08:55:38 -0400
+Date: Wed, 21 May 2008 15:54:14 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Austin Clements <amdragon+kernelbugzilla@mit.edu>,
+       Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] signals: sigqueue_free: don't free sigqueue if it is queued
+Message-ID: <20080521115414.GA147@tv-sign.ru>
+References: <20080517151420.GA9496@tv-sign.ru> <20080521022046.1501F26FA1C@magilla.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080521022046.1501F26FA1C@magilla.localdomain>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra a écrit :
-> On Wed, 2008-05-21 at 12:25 +0200, Louis Rilling wrote:
-> 
->>> http://programming.kicks-ass.net/kernel-patches/concurrent-pagecache/23-rc1-rt/radix-concurrent-lockdep.patch
->> Thanks for pointing this out.
->>
->> Yes this could solve part of the issue, at the price of duplicating the
->> inode mutex class. However, this still does not solve the issue when
->> deleting config_groups, since in that case all nodes of the tree are
->> locked. Thinking about adding lockdep support for concurrent locking of
->> the direct children of a node in a tree...
-> 
-> Why doesn't sysfs have this problem? - the code says configfs was
-> derived from sysfs.
+On 05/20, Roland McGrath wrote:
+>
+> > This patch doesn't change the behaviour of sys_timer_delete() and friends,
+> > just makes it more correct and allows us to introduce other SIGQUEUE_ flags
+> > passed to the receiver.
+>
+> To clarify, this certainly does change the behavior.
+> There are two changes.
+>
+> Firstly, a pending timer-firing signal currently gets its siginfo_t
+> zeroed out synchronously by timer_delete and now will have its info
+> preserved.  That change alone is a potential problem for userland, so
+> it should not go in without the following changes to prevent userland
+> from seeing the signal at all.  (Currently userland may see a spurious
+> signal, but its si_code and si_value don't indicate a timer firing.
+> With the correct info, userland might try to use a pointer from
+> si_value that was freed around the time it called timer_delete.)
 
-Perhaps because sysfs is driven from the kernel, where behaviors can be
-controlled, while in configfs only userspace creates/removes directories.
+Yes, yes, I meant doesn't change the behaviour in a sense that the
+signal is still "visible" to the application.
 
-> 
-> Also, do you really need to hold all locks when removing something?
-> sound like a bit overdone. Also realise there is a maximum number of
-> held locks - various people have already requested it to be increased or
-> made dynamic. We're reluctant in doing so because we feel lock chains
-> should not be of unlimited length. The deeper the chains the bigger the
-> PI overhead etc..
+> Second, a pending timer-firing signal currently stops counting towards
+> the RLIMIT_SIGPENDING limit immediately upon a timer_delete call and
+> now will keep counting toward that limit until it gets dequeued and
+> discarded.  This change is not necessarily a problem.  (POSIX does not
+> specify how we decide when resources are too short to create a new
+> timer or queue a signal.)  But it deserves mention somewhere.
+> Applications can just get fixed to always unblock the signal number or
+> flush old signals out with sigwait, if they are averse to timer
+> signals with intact siginfo_t arriving after timer_delete.
 
-I did not write configfs, so I can only observe that a whole inode tree
-is locked when removing a directory hierarchy. I suspect that this is
-intended to provide userspace and client sub-systems with some atomic
-semantics...
+Yes, thanks, I didn't think about this.
 
-> 
-> As to modifying lockdep - it currently doesn't know about trees and
-> teaching it about them isn't easy.
+> For this reason, I don't think this set of changes should be
+> considered for any -stable branch.
 
-That was my guess.
+Yes sure.
 
--- 
-Dr Louis Rilling			Kerlabs
-Skype: louis.rilling			Batiment Germanium
-Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
-http://www.kerlabs.com/			35700 Rennes
+
+> > 	q->flags |= SIGQUEUE_CANCELLED;
+> > 	spin_lock_irqsave(lock, flags);
+> > 	q->flags &= ~SIGQUEUE_PREALLOC;
+>
+> Just make it:
+>
+> 	spin_lock_irqsave(lock, flags);
+> 	q->flags |= SIGQUEUE_CANCELLED;
+> 	q->flags &= ~SIGQUEUE_PREALLOC;
+>
+> and we needn't wax philosophical about the meaning of locking rules.  That
+> patch would have my ACK, but I concur with Linus about the undesireability
+> of the plain = version.
+
+OK, will do tomorrow, but...
+
+Oh well. I just realized SIGQUEUE_CANCELLED breaks sys_sigpending() ?
+
+Oleg.
+
