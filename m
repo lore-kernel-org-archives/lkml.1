@@ -1,92 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937837AbYEUVOK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759591AbYEUVOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937837AbYEUVOK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 17:14:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757328AbYEUVKs
+	id S1759591AbYEUVOd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 17:14:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761116AbYEUVLh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 17:10:48 -0400
-Received: from kirk.serum.com.pl ([213.77.9.205]:63955 "EHLO serum.com.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S937113AbYEUVKq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 17:10:46 -0400
-Date: Wed, 21 May 2008 22:10:32 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
+	Wed, 21 May 2008 17:11:37 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:9883 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937526AbYEUVLg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 17:11:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
+        b=iuF10JsouVN0N/ek4m+ADuzA2oFRATYYuI9AMVm9B6FevxDrcDWgqhZwZT4HRMzmiKFEuONuzVDMxAoCxsQZivFUTNGjFhGgUWnmhFZNcCEr3dH487JL2lGShJq9Uzx0qrQOEYHxcvShDrwu5hIns7nENAySeCXFTB7xMLK2sv8=
+Date: Wed, 21 May 2008 23:11:29 +0200
 To: Ingo Molnar <mingo@elte.hu>
-cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 8/8] x86: I/O APIC: Timer through 8259A second-chance
-Message-ID: <Pine.LNX.4.55.0805212036320.4894@cliff.in.clinika.pl>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] tasklets: new tasklet scheduling function
+Message-ID: <20080521211129.GA11061@damson.getinternet.no>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: Vegard Nossum <vegard.nossum@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Some systems incorrectly report the ExtINTA pin of the I/O APIC as the
-genuine target of the timer interrupt.  Here is a change that copies timer
-pin information found to the other pin if one has been found only.  This 
-way both a direct and a through-8259A route is tested with the pin letting 
-these problematic systems work well enough.
+Hi,
 
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+Does this seem like anything that has even a remote possibility of entering
+the Kernel? It's not a strict requirement for kmemcheck, but it's extremely
+nice compared to the 1 Hz timer I've been using till now.
+
+(Again, I can put it in my queue for now, but it would be nice to have the
+necessary Signed-off-bys for when it gets merged. I mean, _if_ it gets
+merged...)
+
+Vegard
+
+
+From: Vegard Nossum <vegard.nossum@gmail.com>
+Date: Wed, 21 May 2008 22:53:13 +0200
+Subject: [PATCH] tasklets: new tasklet scheduling function
+
+Rationale: kmemcheck needs to be able to schedule a tasklet without
+touching any dynamically allocated memory _at_ _all_ (since that would
+lead to a recursive page fault). This tasklet is used for writing the
+error reports to the kernel log.
+
+The new scheduling function avoids touching any other tasklets by
+inserting the new tasklist as the head of the "tasklet_hi" list instead
+of on the tail.
+
+Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
 ---
-patch-2.6.26-rc1-20080505-timer-pins-0
-diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/arch/x86/kernel/io_apic_32.c linux-2.6.26-rc1-20080505/arch/x86/kernel/io_apic_32.c
---- linux-2.6.26-rc1-20080505.macro/arch/x86/kernel/io_apic_32.c	2008-05-21 18:52:36.000000000 +0000
-+++ linux-2.6.26-rc1-20080505/arch/x86/kernel/io_apic_32.c	2008-05-21 18:52:36.000000000 +0000
-@@ -2166,6 +2166,21 @@ static inline void __init check_timer(vo
- 	printk(KERN_INFO "..TIMER: vector=0x%02X apic1=%d pin1=%d apic2=%d pin2=%d\n",
- 		vector, apic1, pin1, apic2, pin2);
+ include/linux/interrupt.h |   14 ++++++++++++++
+ kernel/softirq.c          |   13 +++++++++++++
+ 2 files changed, 27 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
+index f1fc747..ce0598b 100644
+--- a/include/linux/interrupt.h
++++ b/include/linux/interrupt.h
+@@ -377,6 +377,20 @@ static inline void tasklet_hi_schedule(struct tasklet_struct *t)
+ 		__tasklet_hi_schedule(t);
+ }
  
-+	/*
-+	 * Some BIOS writers are clueless and report the ExtINTA
-+	 * I/O APIC input from the cascaded 8259A as the timer
-+	 * interrupt input.  So just in case, if only one pin
-+	 * was found above, try it both directly and through the
-+	 * 8259A.  --macro
-+	 */
-+	if (pin1 == -1) {
-+		pin1 = pin2;
-+		apic1 = apic2;
-+	} else if (pin2 == -1) {
-+		pin2 = pin1;
-+		apic2 = apic1;
-+	}
++extern void __tasklet_hi_schedule_first(struct tasklet_struct *t);
 +
- 	if (pin1 != -1) {
- 		/*
- 		 * Ok, does IRQ0 through the IOAPIC work?
-@@ -2196,7 +2211,7 @@ static inline void __init check_timer(vo
- 		if (timer_irq_works()) {
- 			printk("works.\n");
- 			timer_through_8259 = 1;
--			if (pin1 != -1)
-+			if (pin2 != pin1 || apic2 != apic1)
- 				replace_pin_at_irq(0, apic1, pin1, apic2, pin2);
- 			else
- 				add_pin_to_irq(0, apic2, pin2);
-diff -up --recursive --new-file linux-2.6.26-rc1-20080505.macro/arch/x86/kernel/io_apic_64.c linux-2.6.26-rc1-20080505/arch/x86/kernel/io_apic_64.c
---- linux-2.6.26-rc1-20080505.macro/arch/x86/kernel/io_apic_64.c	2008-05-18 00:24:43.000000000 +0000
-+++ linux-2.6.26-rc1-20080505/arch/x86/kernel/io_apic_64.c	2008-05-18 00:24:43.000000000 +0000
-@@ -1669,6 +1669,21 @@ static inline void __init check_timer(vo
- 	apic_printk(APIC_VERBOSE,KERN_INFO "..TIMER: vector=0x%02X apic1=%d pin1=%d apic2=%d pin2=%d\n",
- 		cfg->vector, apic1, pin1, apic2, pin2);
++/*
++ * This version avoids touching any other tasklets. Needed for kmemcheck
++ * in order not to take any page faults while enqueueing this tasklet;
++ * consider VERY carefully whether you really need this or
++ * tasklet_hi_schedule()...
++ */
++static inline void tasklet_hi_schedule_first(struct tasklet_struct *t)
++{
++	if (!test_and_set_bit(TASKLET_STATE_SCHED, &t->state))
++		__tasklet_hi_schedule_first(t);
++}
++
  
-+	/*
-+	 * Some BIOS writers are clueless and report the ExtINTA
-+	 * I/O APIC input from the cascaded 8259A as the timer
-+	 * interrupt input.  So just in case, if only one pin
-+	 * was found above, try it both directly and through the
-+	 * 8259A.  --macro
-+	 */
-+	if (pin1 == -1) {
-+		pin1 = pin2;
-+		apic1 = apic2;
-+	} else if (pin2 == -1) {
-+		pin2 = pin1;
-+		apic2 = apic1;
-+	}
+ static inline void tasklet_disable_nosync(struct tasklet_struct *t)
+ {
+diff --git a/kernel/softirq.c b/kernel/softirq.c
+index 36e0617..b2edfbe 100644
+--- a/kernel/softirq.c
++++ b/kernel/softirq.c
+@@ -393,6 +393,19 @@ void __tasklet_hi_schedule(struct tasklet_struct *t)
+ 
+ EXPORT_SYMBOL(__tasklet_hi_schedule);
+ 
++void __tasklet_hi_schedule_first(struct tasklet_struct *t)
++{
++	unsigned long flags;
 +
- 	if (pin1 != -1) {
- 		/*
- 		 * Ok, does IRQ0 through the IOAPIC work?
++	local_irq_save(flags);
++	t->next = __get_cpu_var(tasklet_hi_vec).head;
++	__get_cpu_var(tasklet_hi_vec).head = t;
++	raise_softirq_irqoff(TASKLET_SOFTIRQ);
++	local_irq_restore(flags);
++}
++
++EXPORT_SYMBOL(__tasklet_hi_schedule_first);
++
+ static void tasklet_action(struct softirq_action *a)
+ {
+ 	struct tasklet_struct *list;
+-- 
+1.5.4.1
+
