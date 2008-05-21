@@ -1,76 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933220AbYEUAi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933540AbYEUAj3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933220AbYEUAi4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 20:38:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756377AbYEUAiq
+	id S933540AbYEUAj3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 20:39:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933441AbYEUAi7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 20:38:46 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:56888 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753559AbYEUAip (ORCPT
+	Tue, 20 May 2008 20:38:59 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:11357 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933384AbYEUAi6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 20:38:45 -0400
+	Tue, 20 May 2008 20:38:58 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=h0CGNW9DRcwiHjDeTUl/0li6vJ0uWGZ7R8MK1e/5fBy3i9AmfAtq7FsbjqqSK7hOhF7m1qs+93gbqHcz+nqIJtT/bGW5iKQ/26ItG/HAkHYrR40Ows5gzIpzoyEWPrZIWrJ9dDfip0RuWtXYgxugM9/JnY6DE8QoHwJa4bbgCqo=
-Subject: Re: [PATCH] bt8xx: unaligned access
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: mchehab@infradead.org, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-In-Reply-To: <E1JycFh-0004sc-Re@ZenIV.linux.org.uk>
-References: <E1JycFh-0004sc-Re@ZenIV.linux.org.uk>
-Content-Type: text/plain
-Date: Tue, 20 May 2008 17:38:43 -0700
-Message-Id: <1211330323.5915.226.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=s/RoWFZm5flQkQYdSNtCt/IU//xDMJfYXNzxtAFFY2UnfGBGBD9+uhw18CH4OhLvGq7HYat3aMrwXptBFCejaHjwq/h5klQKHz3STwHGbGQiYm+Ihbt4lsGgj6H4gpZmZDNAJtXu0p6qvwTRgNVGS5DiSLJVRke8FQ3UZblml9w=
+Message-ID: <48336F0E.30006@googlemail.com>
+Date: Wed, 21 May 2008 02:38:38 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080502)
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Bug #10648] CONFIG_PRINTK_TIME broken on git HEAD ?
+References: <oKKSi1w1qaF.A.mEG.JrBMIB@albercik>	 <7wuznNhcUqC.A.Xw.7sBMIB@albercik>	 <1211131275.6463.5.camel@lappy.programming.kicks-ass.net> <1211135855.6463.20.camel@lappy.programming.kicks-ass.net>
+In-Reply-To: <1211135855.6463.20.camel@lappy.programming.kicks-ass.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-05-21 at 01:32 +0100, Al Viro wrote:
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-> ---
->  drivers/media/video/bt8xx/bttv-cards.c |    5 +++--
->  1 files changed, 3 insertions(+), 2 deletions(-)
+Peter Zijlstra wrote:
+
+> On Sun, 2008-05-18 at 19:21 +0200, Peter Zijlstra wrote:
+>> On Sun, 2008-05-18 at 13:13 +0200, Rafael J. Wysocki wrote:
+>>> This message has been generated automatically as a part of a report
+>>> of recent regressions.
+>>>
+>>> The following bug entry is on the current list of known regressions
+>>> from 2.6.25.  Please verify if it still should be listed.
+>>>
+>>>
+>>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10648
+>>> Subject		: CONFIG_PRINTK_TIME broken on git HEAD ?
+>>> Submitter	: Gabriel C <nix.or.die@googlemail.com>
+>>> Date		: 2008-05-08 00:26 (11 days old)
+>>> References	: http://lkml.org/lkml/2008/5/7/352
+>>> Handled-By	: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>>>
+>>>
+>> Could people test this:
+>>
+>> git://git.kernel.org/home/peterz/git/linux-2.6-sched.git/ v2.6.26-rc2-group-load-balance
 > 
-> diff --git a/drivers/media/video/bt8xx/bttv-cards.c b/drivers/media/video/bt8xx/bttv-cards.c
-> index f20a01c..8ef0424 100644
-> --- a/drivers/media/video/bt8xx/bttv-cards.c
-> +++ b/drivers/media/video/bt8xx/bttv-cards.c
-> @@ -34,6 +34,7 @@
->  #include <linux/firmware.h>
->  #include <net/checksum.h>
->  
-> +#include <asm/unaligned.h>
->  #include <asm/io.h>
->  
->  #include "bttvp.h"
-> @@ -3858,7 +3859,7 @@ static void __devinit osprey_eeprom(struct bttv *btv, const u8 ee[256])
->  		ee += i;
->  
->  		/* found a valid descriptor */
-> -		type = be16_to_cpup((u16*)(ee+4));
-> +		type = get_unaligned_be16((__be16 *)(ee+4));
+> 
+> Seems I got my own url wrong - the right one is:
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/peterz/linux-2.6-sched.git v2.6.26-rc2-group-load-balance
+> 
+> 
 
-The casts aren't strictly necessary here.  Any reason to keep it?
 
->  
->  		switch(type) {
->  		/* 848 based */
-> @@ -3918,7 +3919,7 @@ static void __devinit osprey_eeprom(struct bttv *btv, const u8 ee[256])
->  			       btv->c.nr, type);
->  			break;
->  		}
-> -		serial = be32_to_cpup((u32*)(ee+6));
-> +		serial = get_unaligned_be32((__be32 *)(ee+6));
+Sorry for the lag , I'm gonna test this now and report back in a bit.
 
-Ditto.
-
-Cheers,
-
-Harvey
-
+Gabriel
