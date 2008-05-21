@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765881AbYEUAdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932293AbYEUAdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765881AbYEUAdZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 20:33:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764882AbYEUAbe
+	id S932293AbYEUAdp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 20:33:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757808AbYEUAbo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 20:31:34 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:45303 "EHLO
+	Tue, 20 May 2008 20:31:44 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:45308 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764827AbYEUAbc (ORCPT
+	with ESMTP id S1765071AbYEUAbm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 20:31:32 -0400
+	Tue, 20 May 2008 20:31:42 -0400
 To: mchehab@infradead.org
-Subject: [PATCH] ttusb endianness annotations and fixes
+Subject: [PATCH] ivtv: trivial annotations
 Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Message-Id: <E1JycEt-0004oE-Qm@ZenIV.linux.org.uk>
+Message-Id: <E1JycF3-0004p2-Qw@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Wed, 21 May 2008 01:31:31 +0100
+Date: Wed, 21 May 2008 01:31:41 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -23,137 +23,133 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/media/dvb/ttusb-budget/dvb-ttusb-budget.c |    2 +-
- drivers/media/dvb/ttusb-dec/ttusb_dec.c           |   25 +++++++++++----------
- drivers/media/dvb/ttusb-dec/ttusbdecfe.c          |   10 ++++----
- 3 files changed, 19 insertions(+), 18 deletions(-)
+ drivers/media/video/ivtv/ivtv-driver.h  |   10 ++++++++--
+ drivers/media/video/ivtv/ivtv-fileops.c |    2 +-
+ drivers/media/video/ivtv/ivtv-irq.c     |    8 ++++----
+ drivers/media/video/ivtv/ivtv-queue.c   |    2 +-
+ drivers/media/video/ivtv/ivtv-yuv.c     |    2 +-
+ drivers/media/video/ivtv/ivtv-yuv.h     |    2 +-
+ 6 files changed, 16 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/media/dvb/ttusb-budget/dvb-ttusb-budget.c b/drivers/media/dvb/ttusb-budget/dvb-ttusb-budget.c
-index 732ce4d..5d2d81a 100644
---- a/drivers/media/dvb/ttusb-budget/dvb-ttusb-budget.c
-+++ b/drivers/media/dvb/ttusb-budget/dvb-ttusb-budget.c
-@@ -552,7 +552,7 @@ static void ttusb_process_muxpack(struct ttusb *ttusb, const u8 * muxpack,
- 	u16 csum = 0, cc;
+diff --git a/drivers/media/video/ivtv/ivtv-driver.h b/drivers/media/video/ivtv/ivtv-driver.h
+index ba06e81..9d23b1e 100644
+--- a/drivers/media/video/ivtv/ivtv-driver.h
++++ b/drivers/media/video/ivtv/ivtv-driver.h
+@@ -259,6 +259,12 @@ struct ivtv_mailbox_data {
+ 
+ /* Scatter-Gather array element, used in DMA transfers */
+ struct ivtv_sg_element {
++	__le32 src;
++	__le32 dst;
++	__le32 size;
++};
++
++struct ivtv_sg_host_element {
+ 	u32 src;
+ 	u32 dst;
+ 	u32 size;
+@@ -349,8 +355,8 @@ struct ivtv_stream {
+ 	u16 dma_xfer_cnt;
+ 
+ 	/* Base Dev SG Array for cx23415/6 */
+-	struct ivtv_sg_element *sg_pending;
+-	struct ivtv_sg_element *sg_processing;
++	struct ivtv_sg_host_element *sg_pending;
++	struct ivtv_sg_host_element *sg_processing;
+ 	struct ivtv_sg_element *sg_dma;
+ 	dma_addr_t sg_handle;
+ 	int sg_pending_size;
+diff --git a/drivers/media/video/ivtv/ivtv-fileops.c b/drivers/media/video/ivtv/ivtv-fileops.c
+index f2fa434..db813e0 100644
+--- a/drivers/media/video/ivtv/ivtv-fileops.c
++++ b/drivers/media/video/ivtv/ivtv-fileops.c
+@@ -587,7 +587,7 @@ retry:
+ 	since we may get here before the stream has been fully set-up */
+ 	if (mode == OUT_YUV && s->q_full.length == 0 && itv->dma_data_req_size) {
+ 		while (count >= itv->dma_data_req_size) {
+-			if (!ivtv_yuv_udma_stream_frame (itv, (void *)user_buf)) {
++			if (!ivtv_yuv_udma_stream_frame (itv, (void __user *)user_buf)) {
+ 				bytes_written += itv->dma_data_req_size;
+ 				user_buf += itv->dma_data_req_size;
+ 				count -= itv->dma_data_req_size;
+diff --git a/drivers/media/video/ivtv/ivtv-irq.c b/drivers/media/video/ivtv/ivtv-irq.c
+index d8ba3a4..fba150a 100644
+--- a/drivers/media/video/ivtv/ivtv-irq.c
++++ b/drivers/media/video/ivtv/ivtv-irq.c
+@@ -231,14 +231,14 @@ static void dma_post(struct ivtv_stream *s)
+ 	struct ivtv_buffer *buf = NULL;
+ 	struct list_head *p;
+ 	u32 offset;
+-	u32 *u32buf;
++	__le32 *u32buf;
+ 	int x = 0;
+ 
+ 	IVTV_DEBUG_HI_DMA("%s %s completed (%x)\n", ivtv_use_pio(s) ? "PIO" : "DMA",
+ 			s->name, s->dma_offset);
+ 	list_for_each(p, &s->q_dma.list) {
+ 		buf = list_entry(p, struct ivtv_buffer, list);
+-		u32buf = (u32 *)buf->buf;
++		u32buf = (__le32 *)buf->buf;
+ 
+ 		/* Sync Buffer */
+ 		ivtv_buf_sync_for_cpu(s, buf);
+@@ -444,7 +444,7 @@ static void ivtv_dma_enc_start(struct ivtv_stream *s)
+ 	}
+ 
+ 	s->dma_xfer_cnt++;
+-	memcpy(s->sg_processing, s->sg_pending, sizeof(struct ivtv_sg_element) * s->sg_pending_size);
++	memcpy(s->sg_processing, s->sg_pending, sizeof(struct ivtv_sg_host_element) * s->sg_pending_size);
+ 	s->sg_processing_size = s->sg_pending_size;
+ 	s->sg_pending_size = 0;
+ 	s->sg_processed = 0;
+@@ -473,7 +473,7 @@ static void ivtv_dma_dec_start(struct ivtv_stream *s)
+ 	if (s->q_predma.bytesused)
+ 		ivtv_queue_move(s, &s->q_predma, NULL, &s->q_dma, s->q_predma.bytesused);
+ 	s->dma_xfer_cnt++;
+-	memcpy(s->sg_processing, s->sg_pending, sizeof(struct ivtv_sg_element) * s->sg_pending_size);
++	memcpy(s->sg_processing, s->sg_pending, sizeof(struct ivtv_sg_host_element) * s->sg_pending_size);
+ 	s->sg_processing_size = s->sg_pending_size;
+ 	s->sg_pending_size = 0;
+ 	s->sg_processed = 0;
+diff --git a/drivers/media/video/ivtv/ivtv-queue.c b/drivers/media/video/ivtv/ivtv-queue.c
+index fc8b1ea..71bd13e 100644
+--- a/drivers/media/video/ivtv/ivtv-queue.c
++++ b/drivers/media/video/ivtv/ivtv-queue.c
+@@ -193,7 +193,7 @@ void ivtv_flush_queues(struct ivtv_stream *s)
+ int ivtv_stream_alloc(struct ivtv_stream *s)
+ {
+ 	struct ivtv *itv = s->itv;
+-	int SGsize = sizeof(struct ivtv_sg_element) * s->buffers;
++	int SGsize = sizeof(struct ivtv_sg_host_element) * s->buffers;
  	int i;
- 	for (i = 0; i < len; i += 2)
--		csum ^= le16_to_cpup((u16 *) (muxpack + i));
-+		csum ^= le16_to_cpup((__le16 *) (muxpack + i));
- 	if (csum) {
- 		printk("%s: muxpack with incorrect checksum, ignoring\n",
- 		       __func__);
-diff --git a/drivers/media/dvb/ttusb-dec/ttusb_dec.c b/drivers/media/dvb/ttusb-dec/ttusb_dec.c
-index 42eee04..fefdc05 100644
---- a/drivers/media/dvb/ttusb-dec/ttusb_dec.c
-+++ b/drivers/media/dvb/ttusb-dec/ttusb_dec.c
-@@ -343,7 +343,7 @@ static int ttusb_dec_get_stb_state (struct ttusb_dec *dec, unsigned int *mode,
- 	u8 c[COMMAND_PACKET_SIZE];
- 	int c_length;
- 	int result;
--	unsigned int tmp;
-+	__be32 tmp;
  
- 	dprintk("%s\n", __func__);
+ 	if (s->buffers == 0)
+diff --git a/drivers/media/video/ivtv/ivtv-yuv.c b/drivers/media/video/ivtv/ivtv-yuv.c
+index a9417f6..3092ff1 100644
+--- a/drivers/media/video/ivtv/ivtv-yuv.c
++++ b/drivers/media/video/ivtv/ivtv-yuv.c
+@@ -1116,7 +1116,7 @@ void ivtv_yuv_setup_stream_frame(struct ivtv *itv)
+ }
  
-@@ -398,9 +398,9 @@ static void ttusb_dec_set_pids(struct ttusb_dec *dec)
- 		   0x00, 0x00, 0xff, 0xff,
- 		   0xff, 0xff, 0xff, 0xff };
+ /* Attempt to dma a frame from a user buffer */
+-int ivtv_yuv_udma_stream_frame(struct ivtv *itv, void *src)
++int ivtv_yuv_udma_stream_frame(struct ivtv *itv, void __user *src)
+ {
+ 	struct yuv_playback_info *yi = &itv->yuv_info;
+ 	struct ivtv_dma_frame dma_args;
+diff --git a/drivers/media/video/ivtv/ivtv-yuv.h b/drivers/media/video/ivtv/ivtv-yuv.h
+index 2fe5f12..ca5173f 100644
+--- a/drivers/media/video/ivtv/ivtv-yuv.h
++++ b/drivers/media/video/ivtv/ivtv-yuv.h
+@@ -35,7 +35,7 @@ extern const u32 yuv_offset[IVTV_YUV_BUFFERS];
  
--	u16 pcr = htons(dec->pid[DMX_PES_PCR]);
--	u16 audio = htons(dec->pid[DMX_PES_AUDIO]);
--	u16 video = htons(dec->pid[DMX_PES_VIDEO]);
-+	__be16 pcr = htons(dec->pid[DMX_PES_PCR]);
-+	__be16 audio = htons(dec->pid[DMX_PES_AUDIO]);
-+	__be16 video = htons(dec->pid[DMX_PES_VIDEO]);
- 
- 	dprintk("%s\n", __func__);
- 
-@@ -435,7 +435,7 @@ static void ttusb_dec_process_pva(struct ttusb_dec *dec, u8 *pva, int length)
- 	case 0x01: {		/* VideoStream */
- 		int prebytes = pva[5] & 0x03;
- 		int postbytes = (pva[5] & 0x0c) >> 2;
--		u16 v_pes_payload_length;
-+		__be16 v_pes_payload_length;
- 
- 		if (output_pva) {
- 			dec->video_filter->feed->cb.ts(pva, length, NULL, 0,
-@@ -1006,7 +1006,7 @@ static int ttusb_dec_start_sec_feed(struct dvb_demux_feed *dvbdmxfeed)
- 		    0x00, 0x00, 0x00, 0x00,
- 		    0x00, 0x00, 0x00, 0x00,
- 		    0x00 };
--	u16 pid;
-+	__be16 pid;
- 	u8 c[COMMAND_PACKET_SIZE];
- 	int c_length;
- 	int result;
-@@ -1278,9 +1278,10 @@ static int ttusb_dec_boot_dsp(struct ttusb_dec *dec)
- 	u8 *firmware = NULL;
- 	size_t firmware_size = 0;
- 	u16 firmware_csum = 0;
--	u16 firmware_csum_ns;
--	u32 firmware_size_nl;
--	u32 crc32_csum, crc32_check, tmp;
-+	__be16 firmware_csum_ns;
-+	__be32 firmware_size_nl;
-+	u32 crc32_csum, crc32_check;
-+	__be32 tmp;
- 	const struct firmware *fw_entry = NULL;
- 
- 	dprintk("%s\n", __func__);
-@@ -1306,7 +1307,7 @@ static int ttusb_dec_boot_dsp(struct ttusb_dec *dec)
- 	   valid. */
- 	crc32_csum = crc32(~0L, firmware, 56) ^ ~0L;
- 	memcpy(&tmp, &firmware[56], 4);
--	crc32_check = htonl(tmp);
-+	crc32_check = ntohl(tmp);
- 	if (crc32_csum != crc32_check) {
- 		printk("%s: crc32 check of DSP code failed (calculated "
- 		       "0x%08x != 0x%08x in file), file invalid.\n",
-@@ -1627,7 +1628,7 @@ static int ttusb_dec_probe(struct usb_interface *intf,
- 
- 	usb_set_intfdata(intf, (void *)dec);
- 
--	switch (le16_to_cpu(id->idProduct)) {
-+	switch (id->idProduct) {
- 	case 0x1006:
- 		ttusb_dec_set_model(dec, TTUSB_DEC3000S);
- 		break;
-@@ -1652,7 +1653,7 @@ static int ttusb_dec_probe(struct usb_interface *intf,
- 	ttusb_dec_init_dvb(dec);
- 
- 	dec->adapter.priv = dec;
--	switch (le16_to_cpu(id->idProduct)) {
-+	switch (id->idProduct) {
- 	case 0x1006:
- 		dec->fe = ttusbdecfe_dvbs_attach(&fe_config);
- 		break;
-diff --git a/drivers/media/dvb/ttusb-dec/ttusbdecfe.c b/drivers/media/dvb/ttusb-dec/ttusbdecfe.c
-index eb5eaec..443af24 100644
---- a/drivers/media/dvb/ttusb-dec/ttusbdecfe.c
-+++ b/drivers/media/dvb/ttusb-dec/ttusbdecfe.c
-@@ -86,7 +86,7 @@ static int ttusbdecfe_dvbt_set_frontend(struct dvb_frontend* fe, struct dvb_fron
- 		   0x00, 0x00, 0x00, 0xff,
- 		   0x00, 0x00, 0x00, 0xff };
- 
--	u32 freq = htonl(p->frequency / 1000);
-+	__be32 freq = htonl(p->frequency / 1000);
- 	memcpy(&b[4], &freq, sizeof (u32));
- 	state->config->send_command(fe, 0x71, sizeof(b), b, NULL, NULL);
- 
-@@ -117,10 +117,10 @@ static int ttusbdecfe_dvbs_set_frontend(struct dvb_frontend* fe, struct dvb_fron
- 		   0x00, 0x00, 0x00, 0x00,
- 		   0x00, 0x00, 0x00, 0x00,
- 		   0x00, 0x00, 0x00, 0x00 };
--	u32 freq;
--	u32 sym_rate;
--	u32 band;
--	u32 lnb_voltage;
-+	__be32 freq;
-+	__be32 sym_rate;
-+	__be32 band;
-+	__be32 lnb_voltage;
- 
- 	freq = htonl(p->frequency +
- 	       (state->hi_band ? LOF_HI : LOF_LO));
+ int ivtv_yuv_filter_check(struct ivtv *itv);
+ void ivtv_yuv_setup_stream_frame(struct ivtv *itv);
+-int ivtv_yuv_udma_stream_frame(struct ivtv *itv, void *src);
++int ivtv_yuv_udma_stream_frame(struct ivtv *itv, void __user *src);
+ void ivtv_yuv_frame_complete(struct ivtv *itv);
+ int ivtv_yuv_prep_frame(struct ivtv *itv, struct ivtv_dma_frame *args);
+ void ivtv_yuv_close(struct ivtv *itv);
 -- 
 1.5.3.GIT
 
