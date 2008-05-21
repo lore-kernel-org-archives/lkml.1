@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937271AbYEUUKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764033AbYEUULO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937271AbYEUUKj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 16:10:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937182AbYEUUKB
+	id S1764033AbYEUULO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 16:11:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936553AbYEUUKH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 21 May 2008 16:10:07 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:16062 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937262AbYEUUKB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 21 May 2008 16:10:01 -0400
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:52338 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937125AbYEUUJ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 16:09:59 -0400
-Date: Wed, 21 May 2008 23:07:43 +0300
-From: Adrian Bunk <bunk@kernel.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] scsi/advansys.c: fix compile errors
-Message-ID: <20080521200743.GK15355@cs181133002.pp.htv.fi>
-References: <20080521174152.GF15355@cs181133002.pp.htv.fi> <20080521195332.GV2638@parisc-linux.org>
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bC9zh34YlwYMj+QpRPk36ev4jBP+MjyY+eGNzDG0rBewMhNtB0FdYUdRuukqs2QOVVWmkhDmAi0QMyLEIZSmTsVcLK2v8KZyfMqa1PPqm3FcFb5Bwq5iNZ12J/n2Tahqzg/ueDuNWXB9wkFzdgZgBT5+w9h1KN6q49oCbfJJa1U=
+Message-ID: <8bd0f97a0805211310t650ccbb1u9a2ecf789ce74458@mail.gmail.com>
+Date: Wed, 21 May 2008 16:10:00 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "David Brownell" <david-b@pacbell.net>
+Subject: Re: [PATCH 0/2] MUSB: 2 patches to fix some bug found on Blackfin
+Cc: "Felipe Balbi" <me@felipebalbi.com>, "Tony Lindgren" <tony@atomide.com>,
+       "Bryan Wu" <cooloney@kernel.org>, linux-omap@vger.kernel.org,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200805211304.53082.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080521195332.GV2638@parisc-linux.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <1211022081-27298-1-git-send-email-cooloney@kernel.org>
+	 <200805211014.45170.david-b@pacbell.net>
+	 <61cdb2dcc22913ddefddd7b4a6faede3@felipebalbi.com>
+	 <200805211304.53082.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 21, 2008 at 01:53:33PM -0600, Matthew Wilcox wrote:
-> On Wed, May 21, 2008 at 08:41:52PM +0300, Adrian Bunk wrote:
-> > This patch fixes the following compile error on architectures not 
-> > providing free_dma():
-> 
-> Last time this came up, I think the consensus was that those
-> architectures should be providing a stub free_dma().
+On Wed, May 21, 2008 at 4:04 PM, David Brownell wrote:
+> That said, I'm looking forward to seeing the www.beagleboard.org
+> hardware [1] become more generally available.  That will make some
+> musb_hdrc hardware available in a more developer-friendly rig than,
+> say, an N810 tablet.  And it might well get more folk in a position
+> where they can use that driver!  (I think some Blackfin devboards
+> are available already, but they're more pricey.)
 
-I tried building as many modules as possible on frv, and this was the 
-only driver that failed this way.
-
-Another possibility would be to let this driver depend on ISA_DMA_API
-(similar to e.g. SCSI_EATA).
-
-Sorry for being lazy, but touching X architectures for fixing the 
-compiliation of a driver whose hardware will anyway most likely never
-be used on this architecture is IMHO not worth the effort...
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+unfortunately, that is the case.  the BF527 EZKit is ~$900 while the
+BF548 EZKit is ~$1000.  i'm hoping us software guys keep complaining
+enough for the hardware guys to put out a bare bone kit at a
+reasonable price (sub $300).
+-mike
