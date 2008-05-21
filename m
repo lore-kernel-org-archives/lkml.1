@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935524AbYEUNfN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935265AbYEUNhF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935524AbYEUNfN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 09:35:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933095AbYEUNfA
+	id S935265AbYEUNhF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 09:37:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764589AbYEUNgv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 09:35:00 -0400
-Received: from saeurebad.de ([85.214.36.134]:41312 "EHLO saeurebad.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761398AbYEUNe7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 09:34:59 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org
-Subject: Re: Tracking and crediting bug reporters
-References: <4388.1210613272@vena.lwn.net> <20080521104145.GB4948@ucw.cz>
-Date: Wed, 21 May 2008 15:34:35 +0200
-In-Reply-To: <20080521104145.GB4948@ucw.cz> (Pavel Machek's message of "Wed,
-	21 May 2008 12:41:45 +0200")
-Message-ID: <87r6bv4w7o.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Wed, 21 May 2008 09:36:51 -0400
+Received: from styx.suse.cz ([82.119.242.94]:42082 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1763016AbYEUNgu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 09:36:50 -0400
+Date: Wed, 21 May 2008 15:36:49 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Oliver Neukum <oliver@neukum.org>
+cc: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
+       Alan Stern <stern@rowland.harvard.edu>, lchiquitto@novell.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: fix deadlock in HCD code
+In-Reply-To: <200805211533.00221.oliver@neukum.org>
+Message-ID: <Pine.LNX.4.64.0805211533500.6718@jikos.suse.cz>
+References: <Pine.LNX.4.64.0805211405520.6718@jikos.suse.cz>
+ <200805211521.01435.oliver@neukum.org> <Pine.LNX.4.64.0805211524130.6718@jikos.suse.cz>
+ <200805211533.00221.oliver@neukum.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 21 May 2008, Oliver Neukum wrote:
 
-Pavel Machek <pavel@ucw.cz> writes:
+> This turns out not to be the case. Interrupts are disabled.
 
-> Hi!
->
->> So here's what we would like to try instead.  Whenever somebody sends up a
->> patch fixing a reported bug, the name of the person who reported the bug
->> would be immortalized with this tag:
->> 
->> 	Reported-by: A. Bug Reporter <email@goes.here>
->> 
->> In particular, reporters who work with the developers toward the resolution
->> of the bug should be thanked in this way.  If we wanted to take things
->
-> I believe we have enough tags already. Plus, if the reporter really
-> works with the developer till the end, there's already accepter
-> Tested-by: flag, right?
+You're right, this callchain can't cause the deadlock indeed. I'll go 
+through the other possibilities.
 
-I would more argue to remove Tested-by completely because it does not
-tell much.  Code is not bugfree just because someone compiled and ran
-it.  And if it breaks on some other systems later on, what does it help
-if you know someone tested it?  It still breaks.  And you can not even
-blame the tester because of his luck of a working configuration.
+To give some background to others reading this thread -- Leonardo (in CC) 
+reported [1] that this patch fixes hard kernel hangs he has been seeing 
+when using USB CDMA modem.
 
-While a Reported-by in this case credits a person reporting a bug.  Just
-that.  And perhaps that the report was good enough to make a fix.
+Still, we don't currently seem to see the place where the interrupts get 
+enabled that makes the deadlock to trigger.
 
-	Hannes
+[1] https://bugzilla.novell.com/show_bug.cgi?id=378509
+
+-- 
+Jiri Kosina
+SUSE Labs
