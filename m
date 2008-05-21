@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936024AbYEURka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935480AbYEURlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936024AbYEURka (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 13:40:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756596AbYEURkS
+	id S935480AbYEURlR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 13:41:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932733AbYEURky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 13:40:18 -0400
-Received: from outbound-mail-140.bluehost.com ([67.222.39.30]:50752 "HELO
-	outbound-mail-140.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754713AbYEURkR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 13:40:17 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Gary Hade <garyhade@us.ibm.com>
-Subject: Re: [PATCH] PCI: boot parameter to avoid expansion ROM memory allocation
-Date: Wed, 21 May 2008 10:40:03 -0700
-User-Agent: KMail/1.9.9
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-References: <20080512205746.GB7401@us.ibm.com> <200805201316.33882.jbarnes@virtuousgeek.org> <20080521172956.GA8024@us.ibm.com>
-In-Reply-To: <20080521172956.GA8024@us.ibm.com>
+	Wed, 21 May 2008 13:40:54 -0400
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:53431 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S936115AbYEURko (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 13:40:44 -0400
+Date: Wed, 21 May 2008 20:38:28 +0300
+From: Adrian Bunk <bunk@kernel.org>
+To: Grant Likely <grant.likely@secretlab.ca>,
+       Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, "Robert P. J. Day" <rpjday@crashcourse.ca>,
+       linux-kernel@vger.kernel.org
+Subject: [2.6 patch] powerpc/boot/Makefile CONFIG_ variable fixes
+Message-ID: <20080521173828.GA15355@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200805211040.03152.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
-DomainKey-Status: no signature
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, May 21, 2008 10:29 am Gary Hade wrote:
-> > > > So assuming you're ok with your last patch, I'll stuff it into
-> > > > linux-next.
-> > >
-> > > Works for me.  Thanks.
-> >
-> > Ok, just pushed the norom patch to linux-next.  I'll test it out, but it
-> > would be good if you could try the tree out out on one of the problem
-> > machines too.
->
-> Jesse, I just tried 2.6.26-rc3-next-20080521 on one of
-> those systems and the pci=norom option worked as expected.
+This patch corrects the names of two CONFIG_ variables.
 
-Great, thanks.  I'll push it to Linus in the next merge window.
+Note that the CONFIG_MPC86XADS fix uncovers another bug
+(with mpc866_ads_defconfig) that will require fixing:
 
-Jesse
+<--  snip  -->
+
+...
+arch/powerpc/boot/dtc -O dtb -o arch/powerpc/boot/mpc866ads.dtb -b 0  /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/powerpc/boot/dts/mpc866ads.dts
+DTC: dts->dtb  on file "/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/powerpc/boot/dts/mpc866ads.dts"
+  WRAP    arch/powerpc/boot/cuImage.mpc866ads
+powerpc64-linux-ld: arch/powerpc/boot/cuboot-mpc866ads.o: No such file: No such file or directory
+make[2]: *** [arch/powerpc/boot/cuImage.mpc866ads] Error 1
+
+<--  snip  -->
+
+Reported-by: Robert P. J. Day <rpjday@crashcourse.ca>
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
+---
+9a0137fa7d60e7ee62ae4e08e3e5b7d94b66debf diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 7822d25..cfb6983 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -221,8 +221,8 @@ image-$(CONFIG_WARP)			+= cuImage.warp
+ image-$(CONFIG_YOSEMITE)		+= cuImage.yosemite
+ 
+ # Board ports in arch/powerpc/platform/8xx/Kconfig
+-image-$(CONFIG_PPC_MPC86XADS)		+= cuImage.mpc866ads
+-image-$(CONFIG_PPC_MPC885ADS)		+= cuImage.mpc885ads
++image-$(CONFIG_MPC86XADS)		+= cuImage.mpc866ads
++image-$(CONFIG_MPC885ADS)		+= cuImage.mpc885ads
+ image-$(CONFIG_PPC_EP88XC)		+= dtbImage.ep88xc
+ image-$(CONFIG_PPC_ADDER875)		+= cuImage.adder875-uboot \
+ 					   dtbImage.adder875-redboot
+
