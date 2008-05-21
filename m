@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935468AbYEUPKt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935666AbYEUPM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935468AbYEUPKt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 11:10:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764845AbYEUPKK
+	id S935666AbYEUPM7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 11:12:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763117AbYEUPMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 11:10:10 -0400
-Received: from de01egw02.freescale.net ([192.88.165.103]:65225 "EHLO
-	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763117AbYEUPKJ (ORCPT
+	Wed, 21 May 2008 11:12:50 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33521 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762376AbYEUPMu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 11:10:09 -0400
-Date: Wed, 21 May 2008 10:10:03 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Jochen Friedrich <jochen@scram.de>
-Cc: Anton Vorontsov <avorontsov@ru.mvista.com>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       "Kernel, Linux" <linux-kernel@vger.kernel.org>,
-       Kumar Gala <galak@kernel.crashing.org>, Linux I2C <i2c@lm-sensors.org>,
-       Jean Delvare <khali@linux-fr.org>, Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] [POWERPC] Add i2c pins to dts and board setup
-Message-ID: <20080521151003.GA13858@ld0162-tx32.am.freescale.net>
-References: <4833FA0C.5090800@scram.de>
+	Wed, 21 May 2008 11:12:50 -0400
+Date: Wed, 21 May 2008 08:12:29 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Tarkan Erimer <tarkan@netone.net.tr>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Suggestion About Kernel Releases
+Message-ID: <20080521081229.1e8f8647@infradead.org>
+In-Reply-To: <48343698.3030003@netone.net.tr>
+References: <48341ED5.7060508@netone.net.tr>
+	<20080521063855.0bdb441c@infradead.org>
+	<48342ADC.3030509@netone.net.tr>
+	<20080521072813.69ae2b0e@infradead.org>
+	<48343698.3030003@netone.net.tr>
+Organization: Intel
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4833FA0C.5090800@scram.de>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 21, 2008 at 12:31:40PM +0200, Jochen Friedrich wrote:
-> +   - linux,i2c-index : Can be used to hard code an i2c bus nummer.
+On Wed, 21 May 2008 17:50:00 +0300
+Tarkan Erimer <tarkan@netone.net.tr> wrote:
 
-s/nummer/number/
+> Arjan van de Ven wrote:
+> > sorry but you're wrong ;(
+> > calling something -test won't change anything. It just means it'll
+> > get tested less, not more.
+> >
+> >   
+> It's just a suggestion. Of course, I may be wrong ;-)
+> Why do you think that calling something test means that less testing ?
 
-Why do we need this?
+because fewer people will use it compared to a final release.
 
-> +   - linux,i2c-class : Can be used to override the i2c class. The class is used
-> +     by old style i2c device drivers to find a bus in a specific context like
-> +     system management, video or sound. By default, I2C_CLASS_HWMON (1) is
-> +     being used. The definition of the classes can be found in
-> +     include/i2c/i2c.h
+> 
+> > Also the "Slow DOWN please" had NOTHING to do with releases, but
+> > only with what happens during the actual merge window.
+> >   
+> Yes, I know. That's what I'm talking about :-)
 
-It'd be better to just convert any needed old-style drivers than add this
-to the device tree.
+no you're not. You're talking about the tail of a cycle, while the Slow
+Down thing was ONLY about the first 2 weeks merge window.
 
-> +   - bus-frequency : Can be used to set the i2c bus frequency. If unspecified,
-> +     a default frequency of 60kHz is being used.
-
-clock-frequency is the standard name for such things.
-
--Scott
+Since this discussion has all the signs of a derailing thread.. I would
+strongly suggest we end it here. Not trying to just cut you off, but
+this has been discussed a lot, and your posts aren't adding something
+new to that.
