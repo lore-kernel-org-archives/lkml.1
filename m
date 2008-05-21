@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757441AbYEUSnL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932427AbYEUSnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757441AbYEUSnL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 14:43:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764004AbYEUSmy
+	id S932427AbYEUSnw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 14:43:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756541AbYEUSnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 14:42:54 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59538 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759384AbYEUSmx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 14:42:53 -0400
+	Wed, 21 May 2008 14:43:42 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:38450 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756416AbYEUSnl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 14:43:41 -0400
+Date: Wed, 21 May 2008 19:41:47 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.site
+To: werner <werner@sys-linux.yi.org>
+cc: Chas Williams <chas@cmf.nrl.navy.mil>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.26-rcX: Problem with mem config > 4GB ; fore2000 atm driver
+ options
+In-Reply-To: <1211312990.4898@sys-linux.yi.org>
+Message-ID: <Pine.LNX.4.64.0805211930520.20306@blonde.site>
+References: <1211312990.4898@sys-linux.yi.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Austin Clements <amdragon+kernelbugzilla@mit.edu>,
-       Ingo Molnar <mingo@elte.hu>, john stultz <johnstul@us.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] signals: sigqueue_free: don't free sigqueue if it is queued
-In-Reply-To: Oleg Nesterov's message of  Wednesday, 21 May 2008 15:54:14 +0400 <20080521115414.GA147@tv-sign.ru>
-References: <20080517151420.GA9496@tv-sign.ru>
-	<20080521022046.1501F26FA1C@magilla.localdomain>
-	<20080521115414.GA147@tv-sign.ru>
-Emacs: freely redistributable; void where prohibited by law.
-Message-Id: <20080521184245.5BABF26FA24@magilla.localdomain>
-Date: Wed, 21 May 2008 11:42:45 -0700 (PDT)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Oh well. I just realized SIGQUEUE_CANCELLED breaks sys_sigpending() ?
+On Tue, 20 May 2008, werner wrote:
+> I observed the following problems with 2.6.26-rcX-gitY:
+> 
+> Steady-steady I got segmentation faults. On 2.6.25.4 no problems.  I compiled plenty times the newer kernels to find out the reason.   I thing the problem is the memory configuration as > 4 GB.  In my config file, since earlier kernels, i configured >4 GB. When I use  config files with that, then occure the problems, with <4 GB not. It seems that the menuconfig of the new kernels accept only until 4 GB.
 
-Yes, it does.  Well, POSIX says after timer_delete "the disposition of
-pending signals for the deleted timer is unspecified".  So perhaps one can
-say that "unspecified" here can include sigpending() says it's pending but
-it will disappear when delivered or accepted (means sigwait()).  But it's a
-bit of a stretch.
+It's worth now trying 2.6.26-rc3-git2 or later: there was indeed a
+problem introduced in 2.6.26-rc2-git<I-haven't-looked-which> which
+caused segfaults in various things when CONFIG_HIGHMEM64G.
 
-Just properly removing the sigqueue entry and fixing the pending set is
-looking pretty good.  Why was it we didn't do that?
+(See http://lkml.org/lkml/2008/5/19/446 for what I'm talking about;
+but Linus put in Jeremy's proper fixes instead of that brief hack.)
 
+> 
+> Another problem with the fore2000 atm configuration. When one affirms the default config of menuconfig, then the compilation crashs because it wouldn't find the path of these drivers. When one explicitely click  x  , affirming the default path (what would be default anyway) then the compilation works.   This seems to be an error of the menuconfig and should be corrected
 
-Thanks,
-Roland
+Sorry, I've not looked into that at all: Cc'ed ATM maintainer.
+
+Hugh
