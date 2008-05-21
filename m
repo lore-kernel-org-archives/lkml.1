@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937480AbYEUUkc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937301AbYEUUk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937480AbYEUUkc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 16:40:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764337AbYEUUkT
+	id S937301AbYEUUk4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 16:40:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936020AbYEUUkm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 16:40:19 -0400
-Received: from saeurebad.de ([85.214.36.134]:47059 "EHLO saeurebad.de"
+	Wed, 21 May 2008 16:40:42 -0400
+Received: from gate.crashing.org ([63.228.1.57]:47663 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755876AbYEUUkS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 16:40:18 -0400
-From: Johannes Weiner <hannes@saeurebad.de>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: mark <markkicks@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: fork: Resource temporarily unavailable / cant start new threads
-References: <82fa9e310805201126q45e869bdub74a947068fe612a@mail.gmail.com>
-	<20080521132845.72db5748.randy.dunlap@oracle.com>
-Date: Wed, 21 May 2008 22:39:52 +0200
-In-Reply-To: <20080521132845.72db5748.randy.dunlap@oracle.com> (Randy Dunlap's
-	message of "Wed, 21 May 2008 13:28:45 -0700")
-Message-ID: <873aob4civ.fsf@saeurebad.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Bogosity: Ham, tests=bogofilter, spamicity=0.000000, version=1.1.3
+	id S936905AbYEUUkl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 16:40:41 -0400
+Subject: Re: [PATCH 1/2] Add thread_info_cache_init() to all archs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux-Arch <linux-arch@vger.kernel.org>, linux-m32r@ml.linux-m32r.org,
+       takata@linux-m32r.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+       Luke Browning <LukeBrowning@us.ibm.com>
+In-Reply-To: <20080521114147.59ca3551.akpm@linux-foundation.org>
+References: <20080410032354.90CB1DDF0F@ozlabs.org>
+	 <20080413171953.bde5e9ac.akpm@linux-foundation.org>
+	 <1208133506.6958.82.camel@pasglop>
+	 <20080413191338.9776ebd0.akpm@linux-foundation.org>
+	 <1208491086.6958.381.camel@pasglop>
+	 <20080417211905.8ff769fa.akpm@linux-foundation.org>
+	 <1208501061.6958.394.camel@pasglop> <1211392585.8297.218.camel@pasglop>
+	 <20080521114147.59ca3551.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 21 May 2008 15:44:41 -0400
+Message-Id: <1211399081.8297.234.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-Randy Dunlap <randy.dunlap@oracle.com> writes:
+On Wed, 2008-05-21 at 11:41 -0700, Andrew Morton wrote:
+> 
+> yup, gcc bug.  Discussed recently on lkml, "Subject: Re: huge gcc
+> 4.1.{0,1} __weak problem".  I don't think anything ended up happening
+> about it though.
 
-> On Tue, 20 May 2008 11:26:47 -0700 mark wrote:
->> have only 505 processes running
->> ps aux | wc -l
->> 505
+Hrm... do you think we should work around ? ie. move the stubs to a
+separate .c file ?
 
-[ quoting deleted for clarification ]
+Ben.
 
->> max user processes              (-u) 1024
 
-> The only place that fork() returns EAGAIN is for number of
-> processes being >= its limit.  Does this user already have >= 1024
-> processes?
-
-	Hannes
