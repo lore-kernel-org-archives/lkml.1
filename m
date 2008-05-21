@@ -1,71 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935822AbYEUPRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935947AbYEUPRo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935822AbYEUPRR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 11:17:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759421AbYEUPRB
+	id S935947AbYEUPRo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 11:17:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763362AbYEUPR3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 11:17:01 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:59049 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759239AbYEUPRA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 11:17:00 -0400
-Date: Wed, 21 May 2008 08:16:44 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ata: fix sleep-while-holding-spinlock in sata_nv
-Message-ID: <20080521081644.3944cc46@infradead.org>
-In-Reply-To: <4834323E.1060608@shaw.ca>
-References: <fa.m+kShlzXY/wmFlvZXsE0W7wQIxU@ifi.uio.no>
-	<48338624.3000304@shaw.ca>
-	<20080520214311.2d2aa8d3@infradead.org>
-	<4834323E.1060608@shaw.ca>
-Organization: Intel
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 21 May 2008 11:17:29 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:56171 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759421AbYEUPR2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 11:17:28 -0400
+Date: Wed, 21 May 2008 10:14:30 -0500
+From: Michael Halcrow <mhalcrow@us.ibm.com>
+To: Andrea Righi <righiandr@users.sourceforge.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <prussell@au1.ibm.com>,
+       "David J. Kleikamp" <shaggy@us.ibm.com>,
+       "SERGE E. HALLYN" <sergeh@us.ibm.com>
+Subject: Re: [PATCH] eCryptfs: Privileged kthread for lower file opens
+Message-ID: <20080521151430.GG32643@halcrowt61p.austin.ibm.com>
+Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
+References: <20080520214610.GD32643@halcrowt61p.austin.ibm.com> <48335BBF.2040901@users.sourceforge.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <48335BBF.2040901@users.sourceforge.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 May 2008 08:31:26 -0600
-Robert Hancock <hancockr@shaw.ca> wrote:
+On Wed, May 21, 2008 at 01:16:15AM +0200, Andrea Righi wrote:
+> Michael Halcrow wrote:
+>> +	req = kmem_cache_alloc(ecryptfs_open_req_cache, GFP_KERNEL);
+>> +	if (!req) {
+>> +		rc = -ENOMEM;
+>> +		goto out;
+>> +	}
+>> +	mutex_init(&req->mux);
+>> +	req->lower_file = lower_file;
+>> +	req->lower_dentry = lower_dentry;
+>> +	req->lower_mnt = lower_mnt;
+>> +	req->requesting_task = current;
+>> +	req->flags = 0;
+>> +	mutex_lock(&ecryptfs_kthread_ctl.mux);
+>> +	mutex_lock(&req->mux);
+>> +	if (ecryptfs_kthread_ctl.flags & ECRYPTFS_KTHREAD_ZOMBIE) {
+>> +		rc = -EIO;
+>
+> Isn't a mutex_unlock(&req->mux) missing here?
 
-> rjan van de Ven wrote:
-> >> I'm not certain this is safe to do it quite this way. It would be
-> >> better to keep that spinlock held so that no operations could be in
-> >> progress on either port while these operations are happening.
-> > 
-> > blk_bounce_limit can sleep. that's just a fact of life ;(
-> 
-> Now it can, for no reason. Under the conditions it was used before,
-> it never could.
+Nobody else actually has a reference to req at this point, so the
+unlock is not really necessary. It might not be a bad idea to jump to
+out_unlock anyway just to avoid future bugs.
 
-"never" is.. a dangerous assumption. It depends on the details of what
-GFP_DMA exactly means and how the exact zoning in the system is set up.
-All of that is undergoing flux (Andi Kleen has been hacking on that for
-example)
-
-But yes, on the existing VM layout on a 32 bit X86 system it wouldn't
-sleep if you set the mask to exactly 32 bit (except for the bug)
-
-> > the condition under which it sleeps might be slightly buggy on your
-> > exact x86 machine... but that doesn't mean that that is guaranteed
-> > to be so forever going forward.... it's still a sleeping function.
-> 
-> More than slightly buggy, I think.. It seems like it is going to be 
-> bouncing block layer accesses to devices with 32-bit DMA masks
-> through the 16MB ZONE_DMA. If that's what's actually going on, I'm
-> surprised there haven't been more regression reports. The fact that
-> the function now sleeps when it didn't before is the least of the
-> problems here..
-
-you're absolutely right that the current implementation has a bug.
-But the sleepy-ness part isn't really part of that bug. When we get
-pools to fill for other masks we'll need to sleep as well. Heck,
-it's not unthinkable that swiotlb on 64 bit will go do the same...
-
+>> +		mutex_unlock(&ecryptfs_kthread_ctl.mux);
+>> +		printk(KERN_ERR "%s: We are in the middle of shutting down; "
+>> +		       "aborting privileged request to open lower file\n",
+>> +			__func__);
+>> +		goto out_free;
+>> +	}
+>> +	list_add_tail(&req->kthread_ctl_list, &ecryptfs_kthread_ctl.req_list);
+>> +	mutex_unlock(&req->mux);
+>> +	mutex_unlock(&ecryptfs_kthread_ctl.mux);
+>> +	wake_up(&ecryptfs_kthread_ctl.wait);
+>> +schedule:
+>> +	set_current_state(TASK_INTERRUPTIBLE);
+>> +	schedule();
+>> +	mutex_lock(&req->mux);
+>> +	if (req->flags == 0) {
+>> +		mutex_unlock(&req->mux);
+>> +		goto schedule;
+>> +	}
+>> +	set_current_state(TASK_RUNNING);
+>> +	if (req->flags & ECRYPTFS_REQ_DROPPED
+>> +	    || req->flags & ECRYPTFS_REQ_ZOMBIE) {
+>> +		rc = -EIO;
+>> +		printk(KERN_WARNING "%s: Privileged open request dropped\n",
+>> +		       __func__);
+>> +		goto out_unlock;
+>> +	}
+>> +	if (IS_ERR(*req->lower_file)) {
+>> +		rc = PTR_ERR(*req->lower_file);
+>> +		dget(lower_dentry);
+>> +		mntget(lower_mnt);
+>> +		(*lower_file) = dentry_open(lower_dentry, lower_mnt,
+>> +					    (O_RDONLY | O_LARGEFILE));
+>> +		if (IS_ERR(*lower_file)) {
+>> +			rc = PTR_ERR(*req->lower_file);
+>> +			(*lower_file) = NULL;
+>> +			printk(KERN_WARNING "%s: Error attempting privileged "
+>> +			       "open of lower file with either RW or RO "
+>> +			       "perms; rc = [%d]. Giving up.\n",
+>> +			       __func__, rc);
+>> +		}
+>> +	}
+>> +out_unlock:
+>> +	mutex_unlock(&req->mux);
+>> +out_free:
+>> +	kmem_cache_free(ecryptfs_open_req_cache, req);
+>> +out:
+>> +	return rc;
+>> +}
