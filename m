@@ -1,53 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937618AbYEUVPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937778AbYEUVQI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937618AbYEUVPs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 17:15:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937811AbYEUVOs
+	id S937778AbYEUVQI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 17:16:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937879AbYEUVPM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 17:14:48 -0400
-Received: from relay1.sgi.com ([192.48.171.29]:51698 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S937777AbYEUVOq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 17:14:46 -0400
-Date: Wed, 21 May 2008 14:14:45 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: linux-kernel@vger.kernel.org, mpm@selenic.com, lethal@linux-sh.org,
-       dhowells@redhat.com
-Subject: Re: [RFC/PATCH 2/3] SLUB: make ksize() more strict for page allocator
- pass-through
-In-Reply-To: <4834704D.6020809@cs.helsinki.fi>
-Message-ID: <Pine.LNX.4.64.0805211412340.17915@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0805212125310.22291@sbz-30.cs.Helsinki.FI>
- <Pine.LNX.4.64.0805211149210.16064@schroedinger.engr.sgi.com>
- <4834704D.6020809@cs.helsinki.fi>
+	Wed, 21 May 2008 17:15:12 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:51076 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937789AbYEUVPL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 17:15:11 -0400
+Message-ID: <4834905E.9010802@cs.helsinki.fi>
+Date: Thu, 22 May 2008 00:13:02 +0300
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.14 (Macintosh/20080421)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Christoph Lameter <clameter@sgi.com>
+CC: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       lethal@linux-sh.org, dhowells@redhat.com
+Subject: Re: [RFC/PATCH 3/3] SLOB: make ksize() more strict for page allocator
+ pass-through
+References: <Pine.LNX.4.64.0805212125570.22291@sbz-30.cs.Helsinki.FI> <1211396840.18026.276.camel@calx> <483473EA.40901@cs.helsinki.fi> <Pine.LNX.4.64.0805211411050.17853@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0805211411050.17853@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 May 2008, Pekka Enberg wrote:
+Christoph Lameter wrote:
+> I also would prefer to keep this out of SLUB. Set/Clear PageSlab dirties 
+> the cacheline and it forces the unlining of kmalloc_large.
 
-> Christoph Lameter wrote:
-> > Why is it too big? Without your additions it is converting kmallocs inline
-> > to get_free_pages(). That results in a simple function call with two
-> > constant parameters.
-> 
-> Well, it's a PITA because of #include dependencies in any case. Is moving it
-> out-of-line a problem?
-> 
-> Christoph Lameter wrote:
-> > The patch touches the page struct uselessly. I think the PageSlab marking is
-> > useful for debugging but not for a production kernel.
-> 
-> Hmm, where? page_address() already references ->virtual. I suppose
-> CONFIG_SLUB_DEBUG is a no no as well then so do we want to add a
-> CONFIG_KSIZE_DEBUG config option...? (Btw, I removed the BUG_ON() from kfree()
-> as spotted by Vegard Nossum.)
-
-If it has to be then add CONFIG_KSIZE_DEBUG. There are a number of 
-debugging techniques (kmem_check?) that should not be compiled in. Maybe 
-add a new config option for those. CONFIG_SLUB_ENABLE_EXPENSIVE_DEBUG?
-
+Hmm, well, that leaves ksize() open for more abuse. I guess we'll just 
+have to live with that then.
