@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933815AbYEUAlo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932597AbYEUAm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933815AbYEUAlo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 20:41:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756550AbYEUAlP
+	id S932597AbYEUAm6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 20:42:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756656AbYEUAmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 20:41:15 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:20952 "EHLO
+	Tue, 20 May 2008 20:42:49 -0400
+Received: from py-out-1112.google.com ([64.233.166.176]:22917 "EHLO
 	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754006AbYEUAlO (ORCPT
+	with ESMTP id S1754109AbYEUAms (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 20:41:14 -0400
+	Tue, 20 May 2008 20:42:48 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Dq0XcChzDOGUFhT2ZQku0AJWFBdSRiGa3g14j+PUFaMQUgHxpCZioZAAtTgsfaWBKsC6gyxkgepysEhB4WdWrQPuR89dIRIJIbX/joAkj8HP6JoSBVqIPildJLr7dete7kvPOy/42ypBr+VfqgAeXem9E52UtHFMtIIQRjmrO1I=
-Subject: Re: [PATCH] or51132.c: unaligned
+        b=p95IcYCcSEx/I1GO0olBlvHIlomiKeVCchszQbqCxRC2qRYtuOrzhPxwj1u4fwNTf+H3r1iCGnBPxC2XLSu+kIKnueS1SfokoXrQzY3ALkhl3hO8x1lLP5J0Ng28OYEZAp4N3RirnqQnF6WT7v29n35IrPP5AYG2o4RO2JTjT/0=
+Subject: Re: [PATCH] dvb-usb: unaligned
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Al Viro <viro@ftp.linux.org.uk>
 Cc: mchehab@infradead.org, linux-kernel@vger.kernel.org,
        torvalds@linux-foundation.org
-In-Reply-To: <E1JycGV-0004yJ-SP@ZenIV.linux.org.uk>
-References: <E1JycGV-0004yJ-SP@ZenIV.linux.org.uk>
+In-Reply-To: <E1JycGL-0004x6-SF@ZenIV.linux.org.uk>
+References: <E1JycGL-0004x6-SF@ZenIV.linux.org.uk>
 Content-Type: text/plain; charset=utf-8
-Date: Tue, 20 May 2008 17:41:12 -0700
-Message-Id: <1211330472.5915.228.camel@brick>
+Date: Tue, 20 May 2008 17:42:46 -0700
+Message-Id: <1211330566.5915.230.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 8bit
@@ -34,39 +34,21 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 On Wed, 2008-05-21 at 01:33 +0100, Al Viro wrote:
 > Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 > ---
->  drivers/media/dvb/frontends/or51132.c |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
+>  drivers/media/dvb/dvb-usb/dvb-usb-firmware.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> diff --git a/drivers/media/dvb/frontends/or51132.c b/drivers/media/dvb/frontends/or51132.c
-> index c7b5785..5ed3254 100644
-> --- a/drivers/media/dvb/frontends/or51132.c
-> +++ b/drivers/media/dvb/frontends/or51132.c
-> @@ -126,7 +126,7 @@ static int or51132_readreg(struct or51132_state *state, u8 reg)
->  		       reg, err);
->  		return -EREMOTEIO;
->  	}
-> -	return le16_to_cpup((u16*)buf);
-> +	return buf[0] | (buf[1] << 8);
-
-return get_unaligned_le16(buf);
-
->  }
+> diff --git a/drivers/media/dvb/dvb-usb/dvb-usb-firmware.c b/drivers/media/dvb/dvb-usb/dvb-usb-firmware.c
+> index e1112e3..733a7ff 100644
+> --- a/drivers/media/dvb/dvb-usb/dvb-usb-firmware.c
+> +++ b/drivers/media/dvb/dvb-usb/dvb-usb-firmware.c
+> @@ -127,7 +127,7 @@ int dvb_usb_get_hexline(const struct firmware *fw, struct hexline *hx,
+>  	if ((*pos + hx->len + 4) >= fw->size)
+>  		return -EINVAL;
 >  
->  static int or51132_load_firmware (struct dvb_frontend* fe, const struct firmware *fw)
-> @@ -140,9 +140,9 @@ static int or51132_load_firmware (struct dvb_frontend* fe, const struct firmware
->  	dprintk("Firmware is %Zd bytes\n",fw->size);
->  
->  	/* Get size of firmware A and B */
-> -	firmwareAsize = le32_to_cpu(*((u32*)fw->data));
-> +	firmwareAsize = le32_to_cpu(*((__le32*)fw->data));
+> -	hx->addr = le16_to_cpu( *((u16 *) &b[1]) );
+> +	hx->addr = b[1] | (b[2] << 8);
 
-﻿firmwareAsize = le32_to_cpup((__le32 *)fw->data);
-
->  	dprintk("FirmwareA is %i bytes\n",firmwareAsize);
-> -	firmwareBsize = le32_to_cpu(*((u32*)(fw->data+4)));
-> +	firmwareBsize = le32_to_cpu(*((__le32*)(fw->data+4)));
-
-﻿firmwareBsize = le32_to_cpup((__le32 *)(fw->data + 4));
+﻿hx->addr = get_unaligned_le16(&b[1]);
 
 Cheers,
 
