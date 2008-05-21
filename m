@@ -1,144 +1,268 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765426AbYEUHaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764215AbYEUHdu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765426AbYEUHaz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 03:30:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757267AbYEUHam
+	id S1764215AbYEUHdu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 03:33:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756577AbYEUHdj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 03:30:42 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:24337 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756556AbYEUHal (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 03:30:41 -0400
-Date: Wed, 21 May 2008 09:30:36 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Theodore Tso <tytso@mit.edu>, Eric Sandeen <sandeen@redhat.com>,
-       ext4 development <linux-ext4@vger.kernel.org>,
-       linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 4/4] ext4: call blkdev_issue_flush on fsync
-Message-ID: <20080521073036.GF2512@kernel.dk>
-References: <482DDA56.6000301@redhat.com> <482DDC04.7020706@redhat.com> <20080520023454.GM15035@mit.edu> <20080520154313.GI16676@shareable.org> <20080520195437.GZ22369@kernel.dk> <20080520220242.GB27853@shareable.org>
+	Wed, 21 May 2008 03:33:39 -0400
+Received: from fk-out-0910.google.com ([209.85.128.189]:6686 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754642AbYEUHdi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 03:33:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
+        b=jqcgW2ObpEJgWAwFzQ/AkMYjPeqSva2dPbN115kcG7y/FkZNEZrLESgIu+FW2ovVDoXs5oyiRI196gx/Di69DoF1XPFb6vIWMjZ57ZWF8ewOlLCWhsoV5piyp+mDASkPlXoZm4wsetCE4/iUAj1YumvImFDw4oOBLcDjOOmPc0Y=
+Message-ID: <eb3ff54b0805210033m41e667dev6f7684b5495bdd6e@mail.gmail.com>
+Date: Wed, 21 May 2008 10:33:35 +0300
+From: "Rami Rosen" <ramirose@gmail.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: [PATCH net-2.6] [NET] The world is not perfect patch.
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080520.143321.97817925.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080520220242.GB27853@shareable.org>
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_999_447389.1211355215582"
+References: <eb3ff54b0805200229r6fb2daa1w50aaffa9b130f89f@mail.gmail.com>
+	 <20080520.143321.97817925.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 20 2008, Jamie Lokier wrote:
-> Jens Axboe wrote:
-> > On Tue, May 20 2008, Jamie Lokier wrote:
-> > > Does WRITE_BARRIER always cause a flush?  It does not have to
-> > > according to Documentation/block/barrier.txt.  There are caveats about
-> > > tagged queuing "not yet implemented" in the text, but can we rely on
-> > > that?  The documentation is older than the current implementation;
-> > > those caveats might no longer apply.
-> > 
-> > It does, if you use ordered tags then that assumes write through
-> > caching (or ordered tag + drain + flush after completion).
-> 
-> Oh.  That's really unclear from the opening paragraph of barrier.txt,
-> which _defines_ what I/O barriers are for, and does not mention flushing:
-> 
->    I/O barrier requests are used to guarantee ordering around the barrier
->    requests.  Unless you're crazy enough to use disk drives for
->    implementing synchronization constructs (wow, sounds interesting...),
->    the ordering is meaningful only for write requests for things like
->    journal checkpoints.  All requests queued before a barrier request
->    must be finished (made it to the physical medium) before the barrier
->    request is started, and all requests queued after the barrier request
->    must be started only after the barrier request is finished (again,
->    made it to the physical medium).
-> 
-> So I assumed the reason flush is talked about later was only because
-> most devices don't offer an alternative.
+------=_Part_999_447389.1211355215582
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-It may not mention flushing explicitly, but it does not have to since
-the flushing is one way to implement what the above describes. Note how
-it says that request must have made it to physical medium before
-allowing others to continue? That means you have to either write through
-or flush caches, otherwise you cannot make that guarentee.
+Hi,
+  Unless there will be any objection here, I suggest consider the
+following patch which simply removes the code for the
+-DI_WISH_WORLD_WERE_PERFECT in the three methods which use it.
 
-> Later in barrier.txt, in the section about flushing, it says:
-> 
->    the reason you use I/O barriers is mainly to protect filesystem
->    integrity when power failure or some other events abruptly stop the
->    drive from operating and possibly make the drive lose data in its
->    cache.  So, I/O barriers need to guarantee that requests actually
->    get written to non-volatile medium in order
-> 
-> Woa!  Nothing about flushing being important, just "to guarantee
-> ... in order".
-> 
-> Thus flushing looks like an implementation detail - all we could do at
-> the time.  It does not seem to be the _point_ of WRITE_BARRIER
-> (according to the text), which is to ensure journalling integrity by
-> ordering writes.
+The compilation errors we get when using -DI_WISH_WORLD_WERE_PERFECT
+show that this code was not built and not used for really a long time.
 
-Yeah, that is precisely what it is and why it does not mention flushing
-explicitly!
+Regards,
+Rami Rosen
 
-> Really, the main reason I was confused was that I imagine some
-> SCSI-like devices letting you do partially ordered writes to
-> write-back cache - with their cache preserving ordering constraints
-> the same way as some CPU or database caches.  (Perhaps I've been
-> thinking about CPUs too long!)
 
-Right, that is what ordered tags give you. But if you have write back
-caching enabled, then you get a completion event before the data is
-actually on disk. Perhaps that is OK for some cases, perhaps not. The
-Linux barrier implementation has always guarenteed that the data is
-actually on platter before considering a barrier write done, as
-described in the text you quote.
+Signed-off-by: Rami Rosen <ramirose@gmail.com>
 
-> Anyway, moving on....  Let's admit I am wrong about that :-)
-> 
-> And get back to my idea.  Ignoring actual disks for a moment ( ;-) ),
-> there are some I/O scheduling optimisations possible in the kernel
-> itself by distinguishing between barriers (for journalling) and
-> flushes (for fsync).
-> 
-> Basically, barriers can be moved around between ordered writes,
-> including postponing indefinitely (i.e. a "needs barrier" flag).
-> Unordered writes (in-place data?) can be reordered somewhat around
-> barriers and other writes.  Nobody should wait for a barrier to complete.
-> 
-> On the other hand, flushes must be issued soon, and fdatasync/fsync
-> wait for the result.  Reordering possibilities are different: all
-> writes can be moved before a flush (unless it's a barrier too), and
-> in-place data writes cannot be moved after one.
-> 
-> Both barriers and flushes can be merged if there are no intervening
-> writes except unordered writes.  Double flushing, e.g. calling fsync
-> twice, or calling blkdev_issue_flush just to be sure somewhere,
-> shouldn't have any overhead.
-> 
-> The request elevator seems a good place to apply those heuristics.
-> I've written earlier about how to remove some barriers from ext3/4
-> journalling.  This stuff seems to suggest even more I/O scheduling
-> optimisations with tree-like journalling (as in BTRFS?).
 
-There are some good ideas in there, I'll punt that to the fs people.
-Ignoring actual disk drives makes things easier :-). While SCSI has
-ordered IO with write back caching, SATA does not. You basically have to
-drain and flush there, or use one of the other variants for getting data
-in disk - see blkdev.h:
+On Wed, May 21, 2008 at 12:33 AM, David Miller <davem@davemloft.net> wrote:
+> From: "Rami Rosen" <ramirose@gmail.com>
+> Date: Tue, 20 May 2008 12:29:26 +0300
+>
+>> There are three methods in the network stack which start with
+>> #ifndef I_WISH_WORLD_WERE_PERFECT.
+>
+> I think it is better to delete this code.  It is impossible
+> for anyone to build test it without making source modifications,
+> therefore it will continute to break over and over again over
+> time.
+>
 
-        /*
-         * Hardbarrier is supported with one of the following methods.
-         *
-         * NONE         : hardbarrier unsupported
-         * DRAIN        : ordering by draining is enough
-         * DRAIN_FLUSH  : ordering by draining w/ pre and post flushes
-         * DRAIN_FUA    : ordering by draining w/ pre flush and FUA
-         * write
-         * TAG          : ordering by tag is enough
-         * TAG_FLUSH    : ordering by tag w/ pre and post flushes
-         * TAG_FUA      : ordering by tag w/ pre flush and FUA write
+------=_Part_999_447389.1211355215582
+Content-Type: text/plain; name=patch.txt
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fghljkyf0
+Content-Disposition: attachment; filename=patch.txt
 
--- 
-Jens Axboe
-
+ZGlmZiAtLWdpdCBhL25ldC9pcHY0L2lwX2dyZS5jIGIvbmV0L2lwdjQvaXBfZ3JlLmMKaW5kZXgg
+MmFkYTAzMy4uNDM0MmNiYSAxMDA2NDQKLS0tIGEvbmV0L2lwdjQvaXBfZ3JlLmMKKysrIGIvbmV0
+L2lwdjQvaXBfZ3JlLmMKQEAgLTMxMyw5ICszMTMsOCBAQCBzdGF0aWMgdm9pZCBpcGdyZV90dW5u
+ZWxfdW5pbml0KHN0cnVjdCBuZXRfZGV2aWNlICpkZXYpCiAKIHN0YXRpYyB2b2lkIGlwZ3JlX2Vy
+cihzdHJ1Y3Qgc2tfYnVmZiAqc2tiLCB1MzIgaW5mbykKIHsKLSNpZm5kZWYgSV9XSVNIX1dPUkxE
+X1dFUkVfUEVSRkVDVAogCi0vKiBJdCBpcyBub3QgOi0oIEFsbCB0aGUgcm91dGVycyAoZXhjZXB0
+IGZvciBMaW51eCkgcmV0dXJuIG9ubHkKKy8qIEFsbCB0aGUgcm91dGVycyAoZXhjZXB0IGZvciBM
+aW51eCkgcmV0dXJuIG9ubHkKICAgIDggYnl0ZXMgb2YgcGFja2V0IHBheWxvYWQuIEl0IG1lYW5z
+LCB0aGF0IHByZWNpc2UgcmVsYXlpbmcgb2YKICAgIElDTVAgaW4gdGhlIHJlYWwgSW50ZXJuZXQg
+aXMgYWJzb2x1dGVseSBpbmZlYXNpYmxlLgogCkBAIC0zOTgsMTQ5ICszOTcsNiBAQCBzdGF0aWMg
+dm9pZCBpcGdyZV9lcnIoc3RydWN0IHNrX2J1ZmYgKnNrYiwgdTMyIGluZm8pCiBvdXQ6CiAJcmVh
+ZF91bmxvY2soJmlwZ3JlX2xvY2spOwogCXJldHVybjsKLSNlbHNlCi0Jc3RydWN0IGlwaGRyICpp
+cGggPSAoc3RydWN0IGlwaGRyKilkcDsKLQlzdHJ1Y3QgaXBoZHIgKmVpcGg7Ci0JX19iZTE2CSAg
+ICAgKnAgPSAoX19iZTE2KikoZHArKGlwaC0+aWhsPDwyKSk7Ci0JY29uc3QgaW50IHR5cGUgPSBp
+Y21wX2hkcihza2IpLT50eXBlOwotCWNvbnN0IGludCBjb2RlID0gaWNtcF9oZHIoc2tiKS0+Y29k
+ZTsKLQlpbnQgcmVsX3R5cGUgPSAwOwotCWludCByZWxfY29kZSA9IDA7Ci0JX19iZTMyIHJlbF9p
+bmZvID0gMDsKLQlfX3UzMiBuID0gMDsKLQlfX2JlMTYgZmxhZ3M7Ci0JaW50IGdyZWhsZW4gPSAo
+aXBoLT5paGw8PDIpICsgNDsKLQlzdHJ1Y3Qgc2tfYnVmZiAqc2tiMjsKLQlzdHJ1Y3QgZmxvd2kg
+Zmw7Ci0Jc3RydWN0IHJ0YWJsZSAqcnQ7Ci0KLQlpZiAocFsxXSAhPSBodG9ucyhFVEhfUF9JUCkp
+Ci0JCXJldHVybjsKLQotCWZsYWdzID0gcFswXTsKLQlpZiAoZmxhZ3MmKEdSRV9DU1VNfEdSRV9L
+RVl8R1JFX1NFUXxHUkVfUk9VVElOR3xHUkVfVkVSU0lPTikpIHsKLQkJaWYgKGZsYWdzJihHUkVf
+VkVSU0lPTnxHUkVfUk9VVElORykpCi0JCQlyZXR1cm47Ci0JCWlmIChmbGFncyZHUkVfQ1NVTSkK
+LQkJCWdyZWhsZW4gKz0gNDsKLQkJaWYgKGZsYWdzJkdSRV9LRVkpCi0JCQlncmVobGVuICs9IDQ7
+Ci0JCWlmIChmbGFncyZHUkVfU0VRKQotCQkJZ3JlaGxlbiArPSA0OwotCX0KLQlpZiAobGVuIDwg
+Z3JlaGxlbiArIHNpemVvZihzdHJ1Y3QgaXBoZHIpKQotCQlyZXR1cm47Ci0JZWlwaCA9IChzdHJ1
+Y3QgaXBoZHIqKShkcCArIGdyZWhsZW4pOwotCi0Jc3dpdGNoICh0eXBlKSB7Ci0JZGVmYXVsdDoK
+LQkJcmV0dXJuOwotCWNhc2UgSUNNUF9QQVJBTUVURVJQUk9COgotCQluID0gbnRvaGwoaWNtcF9o
+ZHIoc2tiKS0+dW4uZ2F0ZXdheSkgPj4gMjQ7Ci0JCWlmIChuIDwgKGlwaC0+aWhsPDwyKSkKLQkJ
+CXJldHVybjsKLQotCQkvKiBTby4uLiBUaGlzIGd1eSBmb3VuZCBzb21ldGhpbmcgc3RyYW5nZSBJ
+TlNJREUgZW5jYXBzdWxhdGVkCi0JCSAgIHBhY2tldC4gV2VsbCwgaGUgaXMgZm9vbCwgYnV0IHdo
+YXQgY2FuIHdlIGRvID8KLQkJICovCi0JCXJlbF90eXBlID0gSUNNUF9QQVJBTUVURVJQUk9COwot
+CQluIC09IGdyZWhsZW47Ci0JCXJlbF9pbmZvID0gaHRvbmwobiA8PCAyNCk7Ci0JCWJyZWFrOwot
+Ci0JY2FzZSBJQ01QX0RFU1RfVU5SRUFDSDoKLQkJc3dpdGNoIChjb2RlKSB7Ci0JCWNhc2UgSUNN
+UF9TUl9GQUlMRUQ6Ci0JCWNhc2UgSUNNUF9QT1JUX1VOUkVBQ0g6Ci0JCQkvKiBJbXBvc3NpYmxl
+IGV2ZW50LiAqLwotCQkJcmV0dXJuOwotCQljYXNlIElDTVBfRlJBR19ORUVERUQ6Ci0JCQkvKiBB
+bmQgaXQgaXMgdGhlIG9ubHkgcmVhbGx5IG5lY2Vzc2FyeSB0aGluZyA6LSkgKi8KLQkJCW4gPSBu
+dG9ocyhpY21wX2hkcihza2IpLT51bi5mcmFnLm10dSk7Ci0JCQlpZiAobiA8IGdyZWhsZW4rNjgp
+Ci0JCQkJcmV0dXJuOwotCQkJbiAtPSBncmVobGVuOwotCQkJLyogQlNEIDQuMiBNT1JFIERPRVMg
+Tk9UIEVYSVNUIElOIE5BVFVSRS4gKi8KLQkJCWlmIChuID4gbnRvaHMoZWlwaC0+dG90X2xlbikp
+Ci0JCQkJcmV0dXJuOwotCQkJcmVsX2luZm8gPSBodG9ubChuKTsKLQkJCWJyZWFrOwotCQlkZWZh
+dWx0OgotCQkJLyogQWxsIG90aGVycyBhcmUgdHJhbnNsYXRlZCB0byBIT1NUX1VOUkVBQ0guCi0J
+CQkgICByZmMyMDAzIGNvbnRhaW5zICJkZWVwIHRob3VnaHRzIiBhYm91dCBORVRfVU5SRUFDSCwK
+LQkJCSAgIEkgYmVsaWV2ZSwgaXQgaXMganVzdCBldGhlciBwb2xsdXRpb24uIC0tQU5LCi0JCQkg
+Ki8KLQkJCXJlbF90eXBlID0gSUNNUF9ERVNUX1VOUkVBQ0g7Ci0JCQlyZWxfY29kZSA9IElDTVBf
+SE9TVF9VTlJFQUNIOwotCQkJYnJlYWs7Ci0JCX0KLQkJYnJlYWs7Ci0JY2FzZSBJQ01QX1RJTUVf
+RVhDRUVERUQ6Ci0JCWlmIChjb2RlICE9IElDTVBfRVhDX1RUTCkKLQkJCXJldHVybjsKLQkJYnJl
+YWs7Ci0JfQotCi0JLyogUHJlcGFyZSBmYWtlIHNrYiB0byBmZWVkIGl0IHRvIGljbXBfc2VuZCAq
+LwotCXNrYjIgPSBza2JfY2xvbmUoc2tiLCBHRlBfQVRPTUlDKTsKLQlpZiAoc2tiMiA9PSBOVUxM
+KQotCQlyZXR1cm47Ci0JZHN0X3JlbGVhc2Uoc2tiMi0+ZHN0KTsKLQlza2IyLT5kc3QgPSBOVUxM
+OwotCXNrYl9wdWxsKHNrYjIsIHNrYi0+ZGF0YSAtICh1OCopZWlwaCk7Ci0Jc2tiX3Jlc2V0X25l
+dHdvcmtfaGVhZGVyKHNrYjIpOwotCi0JLyogVHJ5IHRvIGd1ZXNzIGluY29taW5nIGludGVyZmFj
+ZSAqLwotCW1lbXNldCgmZmwsIDAsIHNpemVvZihmbCkpOwotCWZsLmZsNF9kc3QgPSBlaXBoLT5z
+YWRkcjsKLQlmbC5mbDRfdG9zID0gUlRfVE9TKGVpcGgtPnRvcyk7Ci0JZmwucHJvdG8gPSBJUFBS
+T1RPX0dSRTsKLQlpZiAoaXBfcm91dGVfb3V0cHV0X2tleShkZXZfbmV0KHNrYi0+ZGV2KSwgJnJ0
+LCAmZmwpKSB7Ci0JCWtmcmVlX3NrYihza2IyKTsKLQkJcmV0dXJuOwotCX0KLQlza2IyLT5kZXYg
+PSBydC0+dS5kc3QuZGV2OwotCi0JLyogcm91dGUgImluY29taW5nIiBwYWNrZXQgKi8KLQlpZiAo
+cnQtPnJ0X2ZsYWdzJlJUQ0ZfTE9DQUwpIHsKLQkJaXBfcnRfcHV0KHJ0KTsKLQkJcnQgPSBOVUxM
+OwotCQlmbC5mbDRfZHN0ID0gZWlwaC0+ZGFkZHI7Ci0JCWZsLmZsNF9zcmMgPSBlaXBoLT5zYWRk
+cjsKLQkJZmwuZmw0X3RvcyA9IGVpcGgtPnRvczsKLQkJaWYgKGlwX3JvdXRlX291dHB1dF9rZXko
+ZGV2X25ldChza2ItPmRldiksICZydCwgJmZsKSB8fAotCQkgICAgcnQtPnUuZHN0LmRldi0+dHlw
+ZSAhPSBBUlBIUkRfSVBHUkUpIHsKLQkJCWlwX3J0X3B1dChydCk7Ci0JCQlrZnJlZV9za2Ioc2ti
+Mik7Ci0JCQlyZXR1cm47Ci0JCX0KLQl9IGVsc2UgewotCQlpcF9ydF9wdXQocnQpOwotCQlpZiAo
+aXBfcm91dGVfaW5wdXQoc2tiMiwgZWlwaC0+ZGFkZHIsIGVpcGgtPnNhZGRyLCBlaXBoLT50b3Ms
+IHNrYjItPmRldikgfHwKLQkJICAgIHNrYjItPmRzdC0+ZGV2LT50eXBlICE9IEFSUEhSRF9JUEdS
+RSkgewotCQkJa2ZyZWVfc2tiKHNrYjIpOwotCQkJcmV0dXJuOwotCQl9Ci0JfQotCi0JLyogY2hh
+bmdlIG10dSBvbiB0aGlzIHJvdXRlICovCi0JaWYgKHR5cGUgPT0gSUNNUF9ERVNUX1VOUkVBQ0gg
+JiYgY29kZSA9PSBJQ01QX0ZSQUdfTkVFREVEKSB7Ci0JCWlmIChuID4gZHN0X210dShza2IyLT5k
+c3QpKSB7Ci0JCQlrZnJlZV9za2Ioc2tiMik7Ci0JCQlyZXR1cm47Ci0JCX0KLQkJc2tiMi0+ZHN0
+LT5vcHMtPnVwZGF0ZV9wbXR1KHNrYjItPmRzdCwgbik7Ci0JfSBlbHNlIGlmICh0eXBlID09IElD
+TVBfVElNRV9FWENFRURFRCkgewotCQlzdHJ1Y3QgaXBfdHVubmVsICp0ID0gbmV0ZGV2X3ByaXYo
+c2tiMi0+ZGV2KTsKLQkJaWYgKHQtPnBhcm1zLmlwaC50dGwpIHsKLQkJCXJlbF90eXBlID0gSUNN
+UF9ERVNUX1VOUkVBQ0g7Ci0JCQlyZWxfY29kZSA9IElDTVBfSE9TVF9VTlJFQUNIOwotCQl9Ci0J
+fQotCi0JaWNtcF9zZW5kKHNrYjIsIHJlbF90eXBlLCByZWxfY29kZSwgcmVsX2luZm8pOwotCWtm
+cmVlX3NrYihza2IyKTsKLSNlbmRpZgogfQogCiBzdGF0aWMgaW5saW5lIHZvaWQgaXBncmVfZWNu
+X2RlY2Fwc3VsYXRlKHN0cnVjdCBpcGhkciAqaXBoLCBzdHJ1Y3Qgc2tfYnVmZiAqc2tiKQpkaWZm
+IC0tZ2l0IGEvbmV0L2lwdjQvaXBpcC5jIGIvbmV0L2lwdjQvaXBpcC5jCmluZGV4IDE0OTExMWYu
+LmFmNWNiNTMgMTAwNjQ0Ci0tLSBhL25ldC9pcHY0L2lwaXAuYworKysgYi9uZXQvaXB2NC9pcGlw
+LmMKQEAgLTI3OCw5ICsyNzgsOCBAQCBzdGF0aWMgdm9pZCBpcGlwX3R1bm5lbF91bmluaXQoc3Ry
+dWN0IG5ldF9kZXZpY2UgKmRldikKIAogc3RhdGljIGludCBpcGlwX2VycihzdHJ1Y3Qgc2tfYnVm
+ZiAqc2tiLCB1MzIgaW5mbykKIHsKLSNpZm5kZWYgSV9XSVNIX1dPUkxEX1dFUkVfUEVSRkVDVAog
+Ci0vKiBJdCBpcyBub3QgOi0oIEFsbCB0aGUgcm91dGVycyAoZXhjZXB0IGZvciBMaW51eCkgcmV0
+dXJuIG9ubHkKKy8qIEFsbCB0aGUgcm91dGVycyAoZXhjZXB0IGZvciBMaW51eCkgcmV0dXJuIG9u
+bHkKICAgIDggYnl0ZXMgb2YgcGFja2V0IHBheWxvYWQuIEl0IG1lYW5zLCB0aGF0IHByZWNpc2Ug
+cmVsYXlpbmcgb2YKICAgIElDTVAgaW4gdGhlIHJlYWwgSW50ZXJuZXQgaXMgYWJzb2x1dGVseSBp
+bmZlYXNpYmxlLgogICovCkBAIC0zMzcsMTMzICszMzYsNiBAQCBzdGF0aWMgaW50IGlwaXBfZXJy
+KHN0cnVjdCBza19idWZmICpza2IsIHUzMiBpbmZvKQogb3V0OgogCXJlYWRfdW5sb2NrKCZpcGlw
+X2xvY2spOwogCXJldHVybiBlcnI7Ci0jZWxzZQotCXN0cnVjdCBpcGhkciAqaXBoID0gKHN0cnVj
+dCBpcGhkciopZHA7Ci0JaW50IGhsZW4gPSBpcGgtPmlobDw8MjsKLQlzdHJ1Y3QgaXBoZHIgKmVp
+cGg7Ci0JY29uc3QgaW50IHR5cGUgPSBpY21wX2hkcihza2IpLT50eXBlOwotCWNvbnN0IGludCBj
+b2RlID0gaWNtcF9oZHIoc2tiKS0+Y29kZTsKLQlpbnQgcmVsX3R5cGUgPSAwOwotCWludCByZWxf
+Y29kZSA9IDA7Ci0JX19iZTMyIHJlbF9pbmZvID0gMDsKLQlfX3UzMiBuID0gMDsKLQlzdHJ1Y3Qg
+c2tfYnVmZiAqc2tiMjsKLQlzdHJ1Y3QgZmxvd2kgZmw7Ci0Jc3RydWN0IHJ0YWJsZSAqcnQ7Ci0K
+LQlpZiAobGVuIDwgaGxlbiArIHNpemVvZihzdHJ1Y3QgaXBoZHIpKQotCQlyZXR1cm4gMDsKLQll
+aXBoID0gKHN0cnVjdCBpcGhkciopKGRwICsgaGxlbik7Ci0KLQlzd2l0Y2ggKHR5cGUpIHsKLQlk
+ZWZhdWx0OgotCQlyZXR1cm4gMDsKLQljYXNlIElDTVBfUEFSQU1FVEVSUFJPQjoKLQkJbiA9IG50
+b2hsKGljbXBfaGRyKHNrYiktPnVuLmdhdGV3YXkpID4+IDI0OwotCQlpZiAobiA8IGhsZW4pCi0J
+CQlyZXR1cm4gMDsKLQotCQkvKiBTby4uLiBUaGlzIGd1eSBmb3VuZCBzb21ldGhpbmcgc3RyYW5n
+ZSBJTlNJREUgZW5jYXBzdWxhdGVkCi0JCSAgIHBhY2tldC4gV2VsbCwgaGUgaXMgZm9vbCwgYnV0
+IHdoYXQgY2FuIHdlIGRvID8KLQkJICovCi0JCXJlbF90eXBlID0gSUNNUF9QQVJBTUVURVJQUk9C
+OwotCQlyZWxfaW5mbyA9IGh0b25sKChuIC0gaGxlbikgPDwgMjQpOwotCQlicmVhazsKLQotCWNh
+c2UgSUNNUF9ERVNUX1VOUkVBQ0g6Ci0JCXN3aXRjaCAoY29kZSkgewotCQljYXNlIElDTVBfU1Jf
+RkFJTEVEOgotCQljYXNlIElDTVBfUE9SVF9VTlJFQUNIOgotCQkJLyogSW1wb3NzaWJsZSBldmVu
+dC4gKi8KLQkJCXJldHVybiAwOwotCQljYXNlIElDTVBfRlJBR19ORUVERUQ6Ci0JCQkvKiBBbmQg
+aXQgaXMgdGhlIG9ubHkgcmVhbGx5IG5lY2Vzc2FyeSB0aGluZyA6LSkgKi8KLQkJCW4gPSBudG9o
+cyhpY21wX2hkcihza2IpLT51bi5mcmFnLm10dSk7Ci0JCQlpZiAobiA8IGhsZW4rNjgpCi0JCQkJ
+cmV0dXJuIDA7Ci0JCQluIC09IGhsZW47Ci0JCQkvKiBCU0QgNC4yIE1PUkUgRE9FUyBOT1QgRVhJ
+U1QgSU4gTkFUVVJFLiAqLwotCQkJaWYgKG4gPiBudG9ocyhlaXBoLT50b3RfbGVuKSkKLQkJCQly
+ZXR1cm4gMDsKLQkJCXJlbF9pbmZvID0gaHRvbmwobik7Ci0JCQlicmVhazsKLQkJZGVmYXVsdDoK
+LQkJCS8qIEFsbCBvdGhlcnMgYXJlIHRyYW5zbGF0ZWQgdG8gSE9TVF9VTlJFQUNILgotCQkJICAg
+cmZjMjAwMyBjb250YWlucyAiZGVlcCB0aG91Z2h0cyIgYWJvdXQgTkVUX1VOUkVBQ0gsCi0JCQkg
+ICBJIGJlbGlldmUsIGl0IGlzIGp1c3QgZXRoZXIgcG9sbHV0aW9uLiAtLUFOSwotCQkJICovCi0J
+CQlyZWxfdHlwZSA9IElDTVBfREVTVF9VTlJFQUNIOwotCQkJcmVsX2NvZGUgPSBJQ01QX0hPU1Rf
+VU5SRUFDSDsKLQkJCWJyZWFrOwotCQl9Ci0JCWJyZWFrOwotCWNhc2UgSUNNUF9USU1FX0VYQ0VF
+REVEOgotCQlpZiAoY29kZSAhPSBJQ01QX0VYQ19UVEwpCi0JCQlyZXR1cm4gMDsKLQkJYnJlYWs7
+Ci0JfQotCi0JLyogUHJlcGFyZSBmYWtlIHNrYiB0byBmZWVkIGl0IHRvIGljbXBfc2VuZCAqLwot
+CXNrYjIgPSBza2JfY2xvbmUoc2tiLCBHRlBfQVRPTUlDKTsKLQlpZiAoc2tiMiA9PSBOVUxMKQot
+CQlyZXR1cm4gMDsKLQlkc3RfcmVsZWFzZShza2IyLT5kc3QpOwotCXNrYjItPmRzdCA9IE5VTEw7
+Ci0Jc2tiX3B1bGwoc2tiMiwgc2tiLT5kYXRhIC0gKHU4KillaXBoKTsKLQlza2JfcmVzZXRfbmV0
+d29ya19oZWFkZXIoc2tiMik7Ci0KLQkvKiBUcnkgdG8gZ3Vlc3MgaW5jb21pbmcgaW50ZXJmYWNl
+ICovCi0JbWVtc2V0KCZmbCwgMCwgc2l6ZW9mKGZsKSk7Ci0JZmwuZmw0X2RhZGRyID0gZWlwaC0+
+c2FkZHI7Ci0JZmwuZmw0X3RvcyA9IFJUX1RPUyhlaXBoLT50b3MpOwotCWZsLnByb3RvID0gSVBQ
+Uk9UT19JUElQOwotCWlmIChpcF9yb3V0ZV9vdXRwdXRfa2V5KGRldl9uZXQoc2tiLT5kZXYpLCAm
+cnQsICZrZXkpKSB7Ci0JCWtmcmVlX3NrYihza2IyKTsKLQkJcmV0dXJuIDA7Ci0JfQotCXNrYjIt
+PmRldiA9IHJ0LT51LmRzdC5kZXY7Ci0KLQkvKiByb3V0ZSAiaW5jb21pbmciIHBhY2tldCAqLwot
+CWlmIChydC0+cnRfZmxhZ3MmUlRDRl9MT0NBTCkgewotCQlpcF9ydF9wdXQocnQpOwotCQlydCA9
+IE5VTEw7Ci0JCWZsLmZsNF9kYWRkciA9IGVpcGgtPmRhZGRyOwotCQlmbC5mbDRfc3JjID0gZWlw
+aC0+c2FkZHI7Ci0JCWZsLmZsNF90b3MgPSBlaXBoLT50b3M7Ci0JCWlmIChpcF9yb3V0ZV9vdXRw
+dXRfa2V5KGRldl9uZXQoc2tiLT5kZXYpLCAmcnQsICZmbCkgfHwKLQkJICAgIHJ0LT51LmRzdC5k
+ZXYtPnR5cGUgIT0gQVJQSFJEX1RVTk5FTCkgewotCQkJaXBfcnRfcHV0KHJ0KTsKLQkJCWtmcmVl
+X3NrYihza2IyKTsKLQkJCXJldHVybiAwOwotCQl9Ci0JfSBlbHNlIHsKLQkJaXBfcnRfcHV0KHJ0
+KTsKLQkJaWYgKGlwX3JvdXRlX2lucHV0KHNrYjIsIGVpcGgtPmRhZGRyLCBlaXBoLT5zYWRkciwg
+ZWlwaC0+dG9zLCBza2IyLT5kZXYpIHx8Ci0JCSAgICBza2IyLT5kc3QtPmRldi0+dHlwZSAhPSBB
+UlBIUkRfVFVOTkVMKSB7Ci0JCQlrZnJlZV9za2Ioc2tiMik7Ci0JCQlyZXR1cm4gMDsKLQkJfQot
+CX0KLQotCS8qIGNoYW5nZSBtdHUgb24gdGhpcyByb3V0ZSAqLwotCWlmICh0eXBlID09IElDTVBf
+REVTVF9VTlJFQUNIICYmIGNvZGUgPT0gSUNNUF9GUkFHX05FRURFRCkgewotCQlpZiAobiA+IGRz
+dF9tdHUoc2tiMi0+ZHN0KSkgewotCQkJa2ZyZWVfc2tiKHNrYjIpOwotCQkJcmV0dXJuIDA7Ci0J
+CX0KLQkJc2tiMi0+ZHN0LT5vcHMtPnVwZGF0ZV9wbXR1KHNrYjItPmRzdCwgbik7Ci0JfSBlbHNl
+IGlmICh0eXBlID09IElDTVBfVElNRV9FWENFRURFRCkgewotCQlzdHJ1Y3QgaXBfdHVubmVsICp0
+ID0gbmV0ZGV2X3ByaXYoc2tiMi0+ZGV2KTsKLQkJaWYgKHQtPnBhcm1zLmlwaC50dGwpIHsKLQkJ
+CXJlbF90eXBlID0gSUNNUF9ERVNUX1VOUkVBQ0g7Ci0JCQlyZWxfY29kZSA9IElDTVBfSE9TVF9V
+TlJFQUNIOwotCQl9Ci0JfQotCi0JaWNtcF9zZW5kKHNrYjIsIHJlbF90eXBlLCByZWxfY29kZSwg
+cmVsX2luZm8pOwotCWtmcmVlX3NrYihza2IyKTsKLQlyZXR1cm4gMDsKLSNlbmRpZgogfQogCiBz
+dGF0aWMgaW5saW5lIHZvaWQgaXBpcF9lY25fZGVjYXBzdWxhdGUoY29uc3Qgc3RydWN0IGlwaGRy
+ICpvdXRlcl9pcGgsCmRpZmYgLS1naXQgYS9uZXQvaXB2Ni9zaXQuYyBiL25ldC9pcHY2L3NpdC5j
+CmluZGV4IDVhNmZhYjkuLjNkZTZmZmQgMTAwNjQ0Ci0tLSBhL25ldC9pcHY2L3NpdC5jCisrKyBi
+L25ldC9pcHY2L3NpdC5jCkBAIC00MDMsOSArNDAzLDggQEAgc3RhdGljIHZvaWQgaXBpcDZfdHVu
+bmVsX3VuaW5pdChzdHJ1Y3QgbmV0X2RldmljZSAqZGV2KQogCiBzdGF0aWMgaW50IGlwaXA2X2Vy
+cihzdHJ1Y3Qgc2tfYnVmZiAqc2tiLCB1MzIgaW5mbykKIHsKLSNpZm5kZWYgSV9XSVNIX1dPUkxE
+X1dFUkVfUEVSRkVDVAogCi0vKiBJdCBpcyBub3QgOi0oIEFsbCB0aGUgcm91dGVycyAoZXhjZXB0
+IGZvciBMaW51eCkgcmV0dXJuIG9ubHkKKy8qIEFsbCB0aGUgcm91dGVycyAoZXhjZXB0IGZvciBM
+aW51eCkgcmV0dXJuIG9ubHkKICAgIDggYnl0ZXMgb2YgcGFja2V0IHBheWxvYWQuIEl0IG1lYW5z
+LCB0aGF0IHByZWNpc2UgcmVsYXlpbmcgb2YKICAgIElDTVAgaW4gdGhlIHJlYWwgSW50ZXJuZXQg
+aXMgYWJzb2x1dGVseSBpbmZlYXNpYmxlLgogICovCkBAIC00NjIsOTIgKzQ2MSw2IEBAIHN0YXRp
+YyBpbnQgaXBpcDZfZXJyKHN0cnVjdCBza19idWZmICpza2IsIHUzMiBpbmZvKQogb3V0OgogCXJl
+YWRfdW5sb2NrKCZpcGlwNl9sb2NrKTsKIAlyZXR1cm4gZXJyOwotI2Vsc2UKLQlzdHJ1Y3QgaXBo
+ZHIgKmlwaCA9IChzdHJ1Y3QgaXBoZHIqKWRwOwotCWludCBobGVuID0gaXBoLT5paGw8PDI7Ci0J
+c3RydWN0IGlwdjZoZHIgKmlwaDY7Ci0JY29uc3QgaW50IHR5cGUgPSBpY21wX2hkcihza2IpLT50
+eXBlOwotCWNvbnN0IGludCBjb2RlID0gaWNtcF9oZHIoc2tiKS0+Y29kZTsKLQlpbnQgcmVsX3R5
+cGUgPSAwOwotCWludCByZWxfY29kZSA9IDA7Ci0JaW50IHJlbF9pbmZvID0gMDsKLQlzdHJ1Y3Qg
+c2tfYnVmZiAqc2tiMjsKLQlzdHJ1Y3QgcnQ2X2luZm8gKnJ0Nmk7Ci0KLQlpZiAobGVuIDwgaGxl
+biArIHNpemVvZihzdHJ1Y3QgaXB2NmhkcikpCi0JCXJldHVybjsKLQlpcGg2ID0gKHN0cnVjdCBp
+cHY2aGRyKikoZHAgKyBobGVuKTsKLQotCXN3aXRjaCAodHlwZSkgewotCWRlZmF1bHQ6Ci0JCXJl
+dHVybjsKLQljYXNlIElDTVBfUEFSQU1FVEVSUFJPQjoKLQkJaWYgKGljbXBfaGRyKHNrYiktPnVu
+LmdhdGV3YXkgPCBobGVuKQotCQkJcmV0dXJuOwotCi0JCS8qIFNvLi4uIFRoaXMgZ3V5IGZvdW5k
+IHNvbWV0aGluZyBzdHJhbmdlIElOU0lERSBlbmNhcHN1bGF0ZWQKLQkJICAgcGFja2V0LiBXZWxs
+LCBoZSBpcyBmb29sLCBidXQgd2hhdCBjYW4gd2UgZG8gPwotCQkgKi8KLQkJcmVsX3R5cGUgPSBJ
+Q01QVjZfUEFSQU1QUk9COwotCQlyZWxfaW5mbyA9IGljbXBfaGRyKHNrYiktPnVuLmdhdGV3YXkg
+LSBobGVuOwotCQlicmVhazsKLQotCWNhc2UgSUNNUF9ERVNUX1VOUkVBQ0g6Ci0JCXN3aXRjaCAo
+Y29kZSkgewotCQljYXNlIElDTVBfU1JfRkFJTEVEOgotCQljYXNlIElDTVBfUE9SVF9VTlJFQUNI
+OgotCQkJLyogSW1wb3NzaWJsZSBldmVudC4gKi8KLQkJCXJldHVybjsKLQkJY2FzZSBJQ01QX0ZS
+QUdfTkVFREVEOgotCQkJLyogVG9vIGNvbXBsaWNhdGVkIGNhc2UgLi4uICovCi0JCQlyZXR1cm47
+Ci0JCWRlZmF1bHQ6Ci0JCQkvKiBBbGwgb3RoZXJzIGFyZSB0cmFuc2xhdGVkIHRvIEhPU1RfVU5S
+RUFDSC4KLQkJCSAgIHJmYzIwMDMgY29udGFpbnMgImRlZXAgdGhvdWdodHMiIGFib3V0IE5FVF9V
+TlJFQUNILAotCQkJICAgSSBiZWxpZXZlLCBpdCBpcyBqdXN0IGV0aGVyIHBvbGx1dGlvbi4gLS1B
+TksKLQkJCSAqLwotCQkJcmVsX3R5cGUgPSBJQ01QVjZfREVTVF9VTlJFQUNIOwotCQkJcmVsX2Nv
+ZGUgPSBJQ01QVjZfQUREUl9VTlJFQUNIOwotCQkJYnJlYWs7Ci0JCX0KLQkJYnJlYWs7Ci0JY2Fz
+ZSBJQ01QX1RJTUVfRVhDRUVERUQ6Ci0JCWlmIChjb2RlICE9IElDTVBfRVhDX1RUTCkKLQkJCXJl
+dHVybjsKLQkJcmVsX3R5cGUgPSBJQ01QVjZfVElNRV9FWENFRUQ7Ci0JCXJlbF9jb2RlID0gSUNN
+UFY2X0VYQ19IT1BMSU1JVDsKLQkJYnJlYWs7Ci0JfQotCi0JLyogUHJlcGFyZSBmYWtlIHNrYiB0
+byBmZWVkIGl0IHRvIGljbXB2Nl9zZW5kICovCi0Jc2tiMiA9IHNrYl9jbG9uZShza2IsIEdGUF9B
+VE9NSUMpOwotCWlmIChza2IyID09IE5VTEwpCi0JCXJldHVybiAwOwotCWRzdF9yZWxlYXNlKHNr
+YjItPmRzdCk7Ci0Jc2tiMi0+ZHN0ID0gTlVMTDsKLQlza2JfcHVsbChza2IyLCBza2ItPmRhdGEg
+LSAodTgqKWlwaDYpOwotCXNrYl9yZXNldF9uZXR3b3JrX2hlYWRlcihza2IyKTsKLQotCS8qIFRy
+eSB0byBndWVzcyBpbmNvbWluZyBpbnRlcmZhY2UgKi8KLQlydDZpID0gcnQ2X2xvb2t1cChkZXZf
+bmV0KHNrYi0+ZGV2KSwgJmlwaDYtPnNhZGRyLCBOVUxMLCBOVUxMLCAwKTsKLQlpZiAocnQ2aSAm
+JiBydDZpLT5ydDZpX2RldikgewotCQlza2IyLT5kZXYgPSBydDZpLT5ydDZpX2RldjsKLQotCQly
+dDZpID0gcnQ2X2xvb2t1cChkZXZfbmV0KHNrYi0+ZGV2KSwKLQkJCQkmaXBoNi0+ZGFkZHIsICZp
+cGg2LT5zYWRkciwgTlVMTCwgMCk7Ci0KLQkJaWYgKHJ0NmkgJiYgcnQ2aS0+cnQ2aV9kZXYgJiYg
+cnQ2aS0+cnQ2aV9kZXYtPnR5cGUgPT0gQVJQSFJEX1NJVCkgewotCQkJc3RydWN0IGlwX3R1bm5l
+bCAqdCA9IG5ldGRldl9wcml2KHJ0NmktPnJ0NmlfZGV2KTsKLQkJCWlmIChyZWxfdHlwZSA9PSBJ
+Q01QVjZfVElNRV9FWENFRUQgJiYgdC0+cGFybXMuaXBoLnR0bCkgewotCQkJCXJlbF90eXBlID0g
+SUNNUFY2X0RFU1RfVU5SRUFDSDsKLQkJCQlyZWxfY29kZSA9IElDTVBWNl9BRERSX1VOUkVBQ0g7
+Ci0JCQl9Ci0JCQlpY21wdjZfc2VuZChza2IyLCByZWxfdHlwZSwgcmVsX2NvZGUsIHJlbF9pbmZv
+LCBza2IyLT5kZXYpOwotCQl9Ci0JfQotCWtmcmVlX3NrYihza2IyKTsKLQlyZXR1cm4gMDsKLSNl
+bmRpZgogfQogCiBzdGF0aWMgaW5saW5lIHZvaWQgaXBpcDZfZWNuX2RlY2Fwc3VsYXRlKHN0cnVj
+dCBpcGhkciAqaXBoLCBzdHJ1Y3Qgc2tfYnVmZiAqc2tiKQo=
+------=_Part_999_447389.1211355215582--
