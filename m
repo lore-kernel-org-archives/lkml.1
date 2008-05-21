@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934106AbYEUMCg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932939AbYEUMEa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934106AbYEUMCg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 08:02:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760339AbYEUMC2
+	id S932939AbYEUMEa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 08:04:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756602AbYEUMEW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 08:02:28 -0400
-Received: from py-out-1112.google.com ([64.233.166.183]:43198 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751169AbYEUMC0 (ORCPT
+	Wed, 21 May 2008 08:04:22 -0400
+Received: from rv-out-0506.google.com ([209.85.198.237]:40923 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750821AbYEUMEV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 08:02:26 -0400
+	Wed, 21 May 2008 08:04:21 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=HW5Y+fTxZWXBf+Q4ssR/nXCAP+f/5dC2MCby5+5bVFUhfbxiw2zNoFf6PsjFcHN8QsbHclcJfAAluxFl1CIyK1PQzHgOGqS7hzSREubyTgfhqqrfPJRtCalByVL7B71+E9AclJElowAWKmT2wT/4cV6YW3uTchRq00Yo+uZ4LIs=
-Message-ID: <7b9198260805210502i316c9e38lcc9b5561045dd5d@mail.gmail.com>
-Date: Wed, 21 May 2008 13:02:24 +0100
+        b=rxJMY7Xc4wH8p46a2u/YGQEq3xf+fIlSwlz7P2hwowNa9oZK+O20iNPwmMkYOB38F3oNJIZ2ZogTuDhKmO2Qh3L9Ko4VXMcCQp5bNSDV+cENduDuKdDTX1+RW/eXOP+yClahBKIusD+B2BahJDmgPAJevvDtp48pQWNcvi3XBxU=
+Message-ID: <7b9198260805210504h278f014s5aba720360ac02ab@mail.gmail.com>
+Date: Wed, 21 May 2008 13:04:21 +0100
 From: "Tom Spink" <tspink@gmail.com>
 To: "Jeff Dike" <jdike@addtoit.com>
 Subject: Re: UML fails to locate address space
 Cc: "linux-os (Dick Johnson)" <linux-os@analogic.com>,
        LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080521021502.GB16212@c2.user-mode-linux.org>
+In-Reply-To: <7b9198260805210502i316c9e38lcc9b5561045dd5d@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
@@ -32,27 +32,34 @@ References: <7b9198260805200408k1d6b70a8xc7e4c24106e5020f@mail.gmail.com>
 	 <20080520173503.GA10811@c2.user-mode-linux.org>
 	 <Pine.LNX.4.61.0805201751500.13532@chaos.analogic.com>
 	 <20080521021502.GB16212@c2.user-mode-linux.org>
+	 <7b9198260805210502i316c9e38lcc9b5561045dd5d@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/5/21 Jeff Dike <jdike@addtoit.com>:
-> On Tue, May 20, 2008 at 05:54:34PM -0400, linux-os (Dick Johnson) wrote:
->> Okay, then instead of putting a NULL in the "hint" to mmap() try
->> something else (0x1000?). That may help.
+2008/5/21 Tom Spink <tspink@gmail.com>:
+> 2008/5/21 Jeff Dike <jdike@addtoit.com>:
+>> On Tue, May 20, 2008 at 05:54:34PM -0400, linux-os (Dick Johnson) wrote:
+>>> Okay, then instead of putting a NULL in the "hint" to mmap() try
+>>> something else (0x1000?). That may help.
+>>
+>> You don't seem to have followed the thread.  For UML, the address
+>> isn't a hint - it's a requirement.  Tossing random numbers into your
+>> code until a particular test works isn't really the way to go.  In
+>> this case, we are looking at mmap_min_addr being set at 0x10000, but
+>> which may be set to 0x20000 someplace else.
+>>
+>>                    Jeff
+>>
 >
-> You don't seem to have followed the thread.  For UML, the address
-> isn't a hint - it's a requirement.  Tossing random numbers into your
-> code until a particular test works isn't really the way to go.  In
-> this case, we are looking at mmap_min_addr being set at 0x10000, but
-> which may be set to 0x20000 someplace else.
+> Hi Jeff,
 >
->                    Jeff
+> Here is the revised version - I cheered Dijkstra up by getting rid of that goto.
+>
+> -- Tom
 >
 
-Hi Jeff,
-
-Here is the revised version - I cheered Dijkstra up by getting rid of that goto.
+Oh No! I forgot to get rid of those nasty includes.... Take 2....
 
 -- Tom
 
@@ -73,24 +80,15 @@ size is the difference between the top address and bottom address.
 
 Signed-off-by: Tom Spink <tspink@gmail.com>
 ---
- arch/um/os-Linux/sys-i386/task_size.c |   30 ++++++++++++++++++++++--------
- 1 files changed, 22 insertions(+), 8 deletions(-)
+ arch/um/os-Linux/sys-i386/task_size.c |   28 ++++++++++++++++++++--------
+ 1 files changed, 20 insertions(+), 8 deletions(-)
 
 diff --git a/arch/um/os-Linux/sys-i386/task_size.c
 b/arch/um/os-Linux/sys-i386/task_size.c
-index ccb49b0..d1e3604 100644
+index ccb49b0..13db95a 100644
 --- a/arch/um/os-Linux/sys-i386/task_size.c
 +++ b/arch/um/os-Linux/sys-i386/task_size.c
-@@ -1,6 +1,8 @@
- #include <stdio.h>
- #include <stdlib.h>
- #include <signal.h>
-+#include <fcntl.h>
-+#include <unistd.h>
- #include <sys/mman.h>
- #include "longjmp.h"
- #include "kern_constants.h"
-@@ -76,9 +78,9 @@ unsigned long os_get_task_size(void)
+@@ -76,9 +76,9 @@ unsigned long os_get_task_size(void)
  	 * hosts, but shouldn't hurt otherwise.
  	 */
  	unsigned long top = 0xffffd000 >> UM_KERN_PAGE_SHIFT;
@@ -102,7 +100,7 @@ index ccb49b0..d1e3604 100644
  	fflush(stdout);
 
  	/*
-@@ -93,13 +95,26 @@ unsigned long os_get_task_size(void)
+@@ -93,13 +93,26 @@ unsigned long os_get_task_size(void)
  		exit(1);
  	}
 
@@ -132,7 +130,7 @@ index ccb49b0..d1e3604 100644
  	if (page_ok(top))
  		goto out;
 
-@@ -117,8 +132,7 @@ out:
+@@ -117,8 +130,7 @@ out:
  		perror("os_get_task_size");
  		exit(1);
  	}
