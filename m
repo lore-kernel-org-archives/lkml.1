@@ -1,100 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932225AbYEUVpW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937255AbYEUVpr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932225AbYEUVpW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 17:45:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755582AbYEUVpI
+	id S937255AbYEUVpr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 17:45:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759361AbYEUVpc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 17:45:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55976 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753539AbYEUVpG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 17:45:06 -0400
-Date: Wed, 21 May 2008 14:44:56 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Takashi Iwai <tiwai@suse.de>
-cc: linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org, perex@perex.cz
-Subject: Re: Moving sound/* to drivers/ ?
-In-Reply-To: <s5hzlqjz74d.wl%tiwai@suse.de>
-Message-ID: <alpine.LFD.1.10.0805211431370.3081@woody.linux-foundation.org>
-References: <s5hzlqjz74d.wl%tiwai@suse.de>
-User-Agent: Alpine 1.10 (LFD 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 21 May 2008 17:45:32 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:60573 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756116AbYEUVpb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 17:45:31 -0400
+Date: Wed, 21 May 2008 23:46:08 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] Fix Immediate Values x86_64 support old gcc
+Message-ID: <20080521214608.GA15136@uranus.ravnborg.org>
+References: <482AB6C5.4060604@goop.org> <20080516124811.GC4226@Krystal> <482DFD65.10300@zytor.com> <20080521133122.GA18084@Krystal> <48344239.9070003@zytor.com> <20080521160217.GA26974@Krystal> <20080521170150.GA29428@Krystal> <20080521203743.GA12982@uranus.ravnborg.org> <20080521212809.GE6158@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080521212809.GE6158@Krystal>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 21 May 2008, Takashi Iwai wrote:
+On Wed, May 21, 2008 at 05:28:09PM -0400, Mathieu Desnoyers wrote:
+> * Sam Ravnborg (sam@ravnborg.org) wrote:
+> > Hi Mathieu
+> > > Does this fix make more sense ?
+> > > 
+> > > GCC < 4, on x86_64, does not accept symbol+offset operands for "i" constraints
+> > > asm statements. Fallback on generic immediate values if this compiler is
+> > > detected.
+> > > 
+> > > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> > > ---
+> > >  arch/x86/Makefile           |    3 +++
+> > >  arch/x86/kernel/Makefile    |    4 +++-
+> > >  include/asm-x86/immediate.h |    5 +++++
+> > >  include/linux/immediate.h   |    4 +++-
+> > >  kernel/Makefile             |    4 +++-
+> > >  5 files changed, 17 insertions(+), 3 deletions(-)
+> > > 
+> > > Index: linux-2.6-sched-devel/arch/x86/Makefile
+> > > ===================================================================
+> > > --- linux-2.6-sched-devel.orig/arch/x86/Makefile	2008-05-21 09:04:52.000000000 -0400
+> > > +++ linux-2.6-sched-devel/arch/x86/Makefile	2008-05-21 09:22:05.000000000 -0400
+> > > @@ -78,6 +78,9 @@
+> > >                  "$(CC)" -fstack-protector-all )
+> > >  
+> > >          KBUILD_CFLAGS += $(stackp-y)
+> > > +
+> > > +	export GCC_BROKEN_IMMEDIATE
+> > > +	GCC_BROKEN_IMMEDIATE := $(shell if [ $(call cc-version) -lt 0400 ] ; then echo "y"; fi)
+> > 
+> > So here we introduce a global environment variable that tells
+> > us that gcc has "BROKEN_IMMEDIATE".
+> > I have absolutely no clue what "BROKEN_IMMEDIATE" is so I guess others
+> > are in the same boat. Comment please!
+> > 
 > 
-> One thing that annoys me sometimes is that the sound driver codes are
-> on a different subdirectory than other normal drivers, namely under
-> /sound. 
+> Yes, I guess this worth being commented, you are right. I'll write
+> something along the lines written in the patch header.
+> 
+> > Consider something like this (note: no negative logic involved):
+> > export USE_IMMEDIATE := $(call cc-ifversion, -ge, 0400, $(CONFIG_IMMEDIATE))
+> > 
+> 
+> Hrm, if I do that, I would have to add USE_IMMEDIATE to each
+> architecture's makefiles for which immediate values are supported, e.g.:
+> 
+> export USE_IMMEDIATE := $(CONFIG_IMMEDIATE)
+> 
+> The "BROKEN_IMMEDIATE" (negative) approach only needs to be defined on
+> x86_64 where gcc 3.x does not support symbol+offset correctly.
+Same with USE_IMMEDIATE - as USE_IMMEDIATE is only used in a x86 Makefile.
+Or did I miss sothing?
 
-I would certainly personally like drivers/sound more, and the placement at 
-the top level is actually because the sound maintainers wanted it that 
-way, probably to avoid the confusion with the old OSS drivers that used to 
-live in drivers/sound.
-
-I forget the exact details. It's been many many years, and there may have 
-been some real technical issues too. But basically sound/ was created when 
-ALSA was first merged, and we had a lot of renames from drivers/sound/xyz 
-to sound/oss/xyz.
-
-(It may have been that it was simply easier to have a new subdirectory 
-than it was to re-use the old one. In fact, with BK and patches, that 
-was generally the best way to guarantee that the rename-tool did the 
-right thing, so details like that may have been part of it. I forget).
-
-So I would personally certainly not mind somebody doing a 
-
-	git mv sound drivers/sound
-	.. edit makefiles and Kconfig files appropriately ..
-	git commit -a
-
-and it wouldn't be a problem for git (ie the repository wouldn't grow or 
-anything like that).
-
-And doing pure renames (and not editing up a lot of actual files) would 
-make rename detection easy for subsequent merges. The only real pain of 
-renames is the efficiency of detection when you have lots and lots of 
-files, but if the SHA1 of the file stays the same for the big bulk of 
-them, that makes the problem basically go away (it becomes a much more 
-interesting problem when you move hundreds of files around and _also_ edit 
-the bulk of them - even if the edits are trivial, now you need to 
-actually look at the contents to figure out the renames).
-
-> If I understand correctly, with git, we can move the files in
-> relatively little costs.  So, what about moving sound/* back to
-> drivers/sound/* or drivers/media/sound/*?
-
-I'd personally prefer just drivers/sound - no point in making it any 
-deeper than that. 
-
-But I'd not be much affected myself, so I don't much care. I do agree that 
-it would fit better under drivers/, but it's really mostly up to you guys.
-
-> Of course, the primary question is whether it's really worth.
-> The obvious drawback is that patches won't be applicable after the
-> move.
-
-Well, git merging is actually pretty good at this, so you can apply the 
-patches to the old release and then merge it, and it will do the right 
-thing (perhaps not for newly created files, but that's pretty easy to fix 
-up). 
-
-Also, even if you keep it as patches, as long as you move the whole 
-subdirectory, then fixing up the patch is just a trivial 
-search-and-replace, so I doubt it would be a big issue.
-
-But it's really up to you guys.
-
-Me personally, I've been more irritated by include/asm-xyz vs arch/xyz. It 
-would be so nice if all the arch-specific changes woudl always show up 
-under arch/ (both from a statistics standpoint, and just because then a 
-diffstat really shows arch-specific stuff really obviously, and sorts all 
-the arch-specific stuff together).
-
-		Linus
+	Sam
