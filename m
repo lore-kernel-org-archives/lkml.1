@@ -1,61 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764368AbYEULAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932936AbYEULAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764368AbYEULAA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 07:00:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755251AbYEUK7v
+	id S932936AbYEULAd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 07:00:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756726AbYEULAR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 06:59:51 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:44389 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755027AbYEUK7u (ORCPT
+	Wed, 21 May 2008 07:00:17 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:50256 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755251AbYEULAP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 06:59:50 -0400
-Subject: Re: [RFC][PATCH 0/3] configfs: Make nested default
-	groups	lockdep-friendly
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Louis Rilling <Louis.Rilling@kerlabs.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Joel Becker <Joel.Becker@oracle.com>, linux-kernel@vger.kernel.org,
-       ocfs2-devel@oss.oracle.com
-In-Reply-To: <4833F89F.7080707@kerlabs.com>
-References: <20080520163320.025971210@kerlabs.com>
-	 <20080520095810.1d50d247@infradead.org>
-	 <20080520215639.GG26609@mail.oracle.com>
-	 <20080520151341.058f2df4@infradead.org>
-	 <1211361784.6463.68.camel@lappy.programming.kicks-ass.net>
-	 <4833F89F.7080707@kerlabs.com>
-Content-Type: text/plain
-Date: Wed, 21 May 2008 12:59:37 +0200
-Message-Id: <1211367577.6463.91.camel@lappy.programming.kicks-ass.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 21 May 2008 07:00:15 -0400
+Date: Wed, 21 May 2008 11:59:44 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kristen.c.accardi@intel.com, Len Brown <lenb@kernel.org>
+Message-ID: <20080521105944.GA30728@srcf.ucam.org>
+References: <20080521104547.GA8097@homac>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080521104547.GA8097@homac>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [PATCH] bay: Exit if notify handler cannot be installed
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-05-21 at 12:25 +0200, Louis Rilling wrote:
+On Wed, May 21, 2008 at 12:45:47PM +0200, Holger Macht wrote:
+> If acpi_install_notify_handler() for a bay device fails, the bay driver is
+> superfluous. Most likely, another driver (like libata) is already caring
+> about this device anyway. Furthermore,
+> register_hotplug_dock_device(acpi_handle) from the dock driver must not be
+> called twice with the same handler. This would result in an endless loop
+> consuming 100% of CPU. So clean up and exit.
 
-> > http://programming.kicks-ass.net/kernel-patches/concurrent-pagecache/23-rc1-rt/radix-concurrent-lockdep.patch
-> 
-> Thanks for pointing this out.
-> 
-> Yes this could solve part of the issue, at the price of duplicating the
-> inode mutex class. However, this still does not solve the issue when
-> deleting config_groups, since in that case all nodes of the tree are
-> locked. Thinking about adding lockdep support for concurrent locking of
-> the direct children of a node in a tree...
+The bay driver still provides the only mechanism for calling the eject 
+methods.
 
-Why doesn't sysfs have this problem? - the code says configfs was
-derived from sysfs.
-
-Also, do you really need to hold all locks when removing something?
-sound like a bit overdone. Also realise there is a maximum number of
-held locks - various people have already requested it to be increased or
-made dynamic. We're reluctant in doing so because we feel lock chains
-should not be of unlimited length. The deeper the chains the bigger the
-PI overhead etc..
-
-As to modifying lockdep - it currently doesn't know about trees and
-teaching it about them isn't easy.
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
