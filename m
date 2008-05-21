@@ -1,52 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934370AbYEUMrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934329AbYEUMwe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934370AbYEUMrm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 08:47:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762565AbYEUMre
+	id S934329AbYEUMwe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 08:52:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762701AbYEUMwY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 08:47:34 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:45024 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761279AbYEUMrd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 08:47:33 -0400
-Date: Wed, 21 May 2008 08:47:31 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mike Galbraith <efault@gmx.de>
-cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.24.7-rt8
-In-Reply-To: <1211351104.5484.13.camel@marge.simson.net>
-Message-ID: <Pine.LNX.4.58.0805210845090.13661@gandalf.stny.rr.com>
-References: <1211258763.14697.82.camel@localhost.localdomain>
- <1211351104.5484.13.camel@marge.simson.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 21 May 2008 08:52:24 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:42018 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760847AbYEUMwX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 08:52:23 -0400
+Date: Wed, 21 May 2008 22:52:14 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       netfilter-devel@vger.kernel.org, apw@shadowen.org
+Subject: Re: [PATCH] linux-next: Tree for May 21 - build failure with
+ netfilter on __nf_ct_helper_find()
+Message-Id: <20080521225214.507eb400.sfr@canb.auug.org.au>
+In-Reply-To: <20080521113230.GA10830@linux.vnet.ibm.com>
+References: <20080521155936.466bbe86.sfr@canb.auug.org.au>
+	<20080521113230.GA10830@linux.vnet.ibm.com>
+X-Mailer: Sylpheed 2.5.0beta3 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__21_May_2008_22_52_14_+1000_rBaH_X1/r62uLNH."
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Wed__21_May_2008_22_52_14_+1000_rBaH_X1/r62uLNH.
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, 21 May 2008, Mike Galbraith wrote:
-> On Tue, 2008-05-20 at 00:46 -0400, Steven Rostedt wrote:
-> > We are pleased to announce the 2.6.24.7-rt8 tree, which can be
-> > downloaded from the location:
-> >
-> >   http://rt.et.redhat.com/download/
+Hi Kamalesh,
+
+On Wed, 21 May 2008 17:02:30 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ib=
+m.com> wrote:
 >
-> I ran mysql+oltp (ro) on 2.6.24.7-rt7 and 2.6.25-rt2 to compare
-> throughput to their parent trees, and ended up with strange (and
-> verified) looking performance curves for both trees.  The changes in
-> 2.6.24.7-rt8 and 2.6.25.4-rt3 cured the primary oddities.
+> The next-20080521 kernel build fails, on x86_64 machine=20
+>=20
+> CC net/netfilter/nf_conntrack_helper.o
+> net/netfilter/nf_conntrack_helper.c: In function =E2=80=98__nf_ct_helper_=
+find=E2=80=99:
+> net/netfilter/nf_conntrack_helper.c:58: error: implicit declaration of fu=
+nction =E2=80=98hlist_for_each_entry_rcu=E2=80=99
+> net/netfilter/nf_conntrack_helper.c:58: error: =E2=80=98hnode=E2=80=99 un=
+declared (first use in this function)
+> net/netfilter/nf_conntrack_helper.c:58: error: (Each undeclared identifie=
+r is reported only once
+> net/netfilter/nf_conntrack_helper.c:58: error: for each function it appea=
+rs in.)
+> net/netfilter/nf_conntrack_helper.c:58: error: expected =E2=80=98;=E2=80=
+=99 before =E2=80=98{=E2=80=99 token
+> net/netfilter/nf_conntrack_helper.c:50: warning: unused variable =E2=80=
+=98mask=E2=80=99
+> net/netfilter/nf_conntrack_helper.c: In function =E2=80=98__nf_conntrack_=
+helper_find_byname=E2=80=99:
+> net/netfilter/nf_conntrack_helper.c:74: error: =E2=80=98hnode=E2=80=99 un=
+declared (first use in this function)
+> net/netfilter/nf_conntrack_helper.c:74: error: expected =E2=80=98;=E2=80=
+=99 before =E2=80=98{=E2=80=99 token
+> net/netfilter/nf_conntrack_helper.c: In function =E2=80=98nf_conntrack_he=
+lper_register=E2=80=99:
+> net/netfilter/nf_conntrack_helper.c:117: error: implicit declaration of f=
+unction =E2=80=98hlist_add_head_rcu=E2=80=99
+> net/netfilter/nf_conntrack_helper.c: In function =E2=80=98nf_conntrack_he=
+lper_unregister=E2=80=99:
+> net/netfilter/nf_conntrack_helper.c:133: error: implicit declaration of f=
+unction =E2=80=98hlist_del_rcu=E2=80=99
+> make[2]: *** [net/netfilter/nf_conntrack_helper.o] Error 1
+> make[1]: *** [net/netfilter] Error 2
+> make: *** [net] Error 2
 
-The difference between 24-rt7 and 24-rt8 as well as with 25-rt2 and 25-rt3
-is the deserialization of rwlocks. The rt patch as always serialized
-readers to allow for priority inheritance with rwlocks. I wrote a patch to
-break that and allow for multiple readers and still keep the priority
-inheritance.
+Thanks for the report and patch.  This looks like it is probably broken in
+Linus' kernel.  What config did you use to get the error?
 
-Your test probably had a bottle neck on a rwlock (same for rwsems)
-somewhere that the new code solved.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
--- Steve
+--Signature=_Wed__21_May_2008_22_52_14_+1000_rBaH_X1/r62uLNH.
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFINBsDTgG2atn1QN8RAhb2AJ4xGMMpLnPPLFeDJwmXYNi+snWeLwCfchDo
+nPxdtdMErTq6mJztE+lS2v4=
+=pl8f
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__21_May_2008_22_52_14_+1000_rBaH_X1/r62uLNH.--
