@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934425AbYEUMKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934305AbYEUMLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934425AbYEUMKA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 08:10:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933858AbYEUMJq
+	id S934305AbYEUMLW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 08:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762314AbYEUMLJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 08:09:46 -0400
-Received: from styx.suse.cz ([82.119.242.94]:37663 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760920AbYEUMJp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 08:09:45 -0400
-Date: Wed, 21 May 2008 14:09:43 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org
-cc: Oliver Neukum <oneukum@suse.de>, Alan Stern <stern@rowland.harvard.edu>,
-       lchiquitto@novell.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] USB: fix deadlock in HCD code
-Message-ID: <Pine.LNX.4.64.0805211405520.6718@jikos.suse.cz>
+	Wed, 21 May 2008 08:11:09 -0400
+Received: from www.church-of-our-saviour.ORG ([69.25.196.31]:36296 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759590AbYEUMLI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 08:11:08 -0400
+Date: Wed, 21 May 2008 08:09:39 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org,
+       davem@davemloft.net
+Subject: Re: CFD: linux-wanking@vger.kernel.org (was [PATCH] Standard
+	indentation of arguments)
+Message-ID: <20080521120939.GF8581@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Christoph Hellwig <hch@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org,
+	davem@davemloft.net
+References: <12113495282137-git-send-email-kongjianjun@gmail.com> <20080521083413.GM28946@ZenIV.linux.org.uk> <20080521015037.add0b78e.akpm@linux-foundation.org> <20080521103206.GA24545@infradead.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080521103206.GA24545@infradead.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hcd_urb_list_lock is used for synchronization between IRQ and non-IRQ 
-contexts, so the non-IRQ context has to disable IRQs in order to prevent 
-deadlocking with IRQ context.
+On Wed, May 21, 2008 at 06:32:06AM -0400, Christoph Hellwig wrote:
+> On Wed, May 21, 2008 at 01:50:37AM -0700, Andrew Morton wrote:
+> > Oh, what a marvellous way to encourage new contributors that was. Thank
+> > you so much.
+> > 
+> > For the record: Al speaks only for himself and a lack of expressed
+> > disagrement from others should not be taken as agreement.
+> 
+> But I'd like to second the opinion.  This is getting a little too far.
+> We should rather try to at least enforce very basic standards a lot of
+> the crap shoved in doesn't follow instead of wanking around about exact
+> placement of whitespaces.
 
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+The real question is whether people who are wanking about whitespace
+and spelling fixes in comments will graduate to writing real, useful
+patches.  If they won't, there's no point to encouraging them.
 
- drivers/usb/core/hcd.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/usb/core/hcd.c b/drivers/usb/core/hcd.c
-index bf10e9c..19279ed 100644
---- a/drivers/usb/core/hcd.c
-+++ b/drivers/usb/core/hcd.c
-@@ -1000,8 +1000,9 @@ EXPORT_SYMBOL_GPL(usb_calc_bus_time);
- int usb_hcd_link_urb_to_ep(struct usb_hcd *hcd, struct urb *urb)
- {
- 	int		rc = 0;
-+	unsigned long flags;
- 
--	spin_lock(&hcd_urb_list_lock);
-+	spin_lock_irqsave(&hcd_urb_list_lock, flags);
- 
- 	/* Check that the URB isn't being killed */
- 	if (unlikely(urb->reject)) {
-@@ -1034,7 +1035,7 @@ int usb_hcd_link_urb_to_ep(struct usb_hcd *hcd, struct urb *urb)
- 		goto done;
- 	}
-  done:
--	spin_unlock(&hcd_urb_list_lock);
-+	spin_unlock_irqrestore(&hcd_urb_list_lock, flags);
- 	return rc;
- }
- EXPORT_SYMBOL_GPL(usb_hcd_link_urb_to_ep);
-@@ -1106,10 +1107,11 @@ EXPORT_SYMBOL_GPL(usb_hcd_check_unlink_urb);
-  */
- void usb_hcd_unlink_urb_from_ep(struct usb_hcd *hcd, struct urb *urb)
- {
-+	unsigned long flags;
- 	/* clear all state linking urb to this dev (and hcd) */
--	spin_lock(&hcd_urb_list_lock);
-+	spin_lock_irqsave(&hcd_urb_list_lock, flags);
- 	list_del_init(&urb->urb_list);
--	spin_unlock(&hcd_urb_list_lock);
-+	spin_unlock_irqrestore(&hcd_urb_list_lock, flags);
- }
- EXPORT_SYMBOL_GPL(usb_hcd_unlink_urb_from_ep);
-
+						- Ted
