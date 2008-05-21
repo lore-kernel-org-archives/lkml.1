@@ -1,73 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936152AbYEUTeB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936745AbYEUTe2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936152AbYEUTeB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 15:34:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758226AbYEUTdv
+	id S936745AbYEUTe2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 15:34:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935863AbYEUTd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 15:33:51 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:31285 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757729AbYEUTdt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 15:33:49 -0400
-Message-ID: <fa686aa40805211233h72a258bpf8c945b9f662d6ee@mail.gmail.com>
-Date: Wed, 21 May 2008 13:33:31 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Segher Boessenkool" <segher@kernel.crashing.org>
-Subject: Re: [PATCH 3/4] spi: Add OF binding support for SPI busses
-Cc: "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>,
-       linux-kernel@vger.kernel.org, spi-devel-general@lists.sourceforge.net,
-       dbrownell@users.sourceforge.net, linuxppc-dev@ozlabs.org,
-       fabrizio.garetto@gmail.com
-In-Reply-To: <716a0f1b6c9a544b480c06a329072483@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 21 May 2008 15:33:59 -0400
+Received: from xenotime.net ([66.160.160.81]:44296 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S934547AbYEUTd6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 May 2008 15:33:58 -0400
+Date: Wed, 21 May 2008 12:33:55 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
+       Christoph Hellwig <hch@infradead.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org,
+       davem@davemloft.net
+Subject: Re: CFD: linux-wanking@vger.kernel.org (was [PATCH] Standard
+ indentation of arguments)
+Message-Id: <20080521123355.b34f07ad.rdunlap@xenotime.net>
+In-Reply-To: <20080521185725.GD6932@cvg>
+References: <12113495282137-git-send-email-kongjianjun@gmail.com>
+	<20080521083413.GM28946@ZenIV.linux.org.uk>
+	<20080521015037.add0b78e.akpm@linux-foundation.org>
+	<20080521103206.GA24545@infradead.org>
+	<20080521120939.GF8581@mit.edu>
+	<20080521104644.5b6f4e63.akpm@linux-foundation.org>
+	<20080521185725.GD6932@cvg>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080516193054.28030.35126.stgit@trillian.secretlab.ca>
-	 <20080516193613.28030.13950.stgit@trillian.secretlab.ca>
-	 <Pine.LNX.4.64.0805191446530.27140@axis700.grange>
-	 <fa686aa40805190857u317d3304ie75d11870e109fc5@mail.gmail.com>
-	 <Pine.LNX.4.64.0805191811510.29559@axis700.grange>
-	 <fa686aa40805192213y485c4ba2u750748f8201e0377@mail.gmail.com>
-	 <Pine.LNX.4.64.0805201650280.5283@axis700.grange>
-	 <716a0f1b6c9a544b480c06a329072483@kernel.crashing.org>
-X-Google-Sender-Auth: 7354bfe48c988257
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 21, 2008 at 1:11 PM, Segher Boessenkool
-<segher@kernel.crashing.org> wrote:
->> Ok, elegance apart:-) You can use the SPI-bridge construct to also
->> describe simple SPI-chipselect configurations. But is it really a good
->> idea? Wouldn't it be better to handle these two cases separately?
->
-> It would be best to handle all these things that are specific to
-> a certain SPI controller (like how CSs work) in the binding for
-> that SPI controller, and not try to shoehorn all of this into some
-> artificial generic framework.
->
-> If you can have identical addresses on the SPI bus going to different
-> devices based on which CS is asserted, you'll have to make the CS part
-> of the "reg".  Example:
->
-> spi-controller {
->        #address-cells = 2;
->        #size-cells = 0;
->        some-device@0,f000 { reg = < 0 f000 >; } // CS 0, SPI address f000
->        some-device@1,f000 { reg = < 1 f000 >; } // CS 1, SPI address f000
->        some-device@1,ff00 { reg = < 1 ff00 >; } // CS 1, SPI address ff00
-> }
+On Wed, 21 May 2008 22:57:25 +0400 Cyrill Gorcunov wrote:
 
-For SPI the CS # *is* the address.  :-)
+> [Andrew Morton - Wed, May 21, 2008 at 10:46:44AM -0700]
+> | On Wed, 21 May 2008 08:09:39 -0400 Theodore Tso <tytso@mit.edu> wrote:
+> | 
+> | > On Wed, May 21, 2008 at 06:32:06AM -0400, Christoph Hellwig wrote:
+> | > > On Wed, May 21, 2008 at 01:50:37AM -0700, Andrew Morton wrote:
+> | > > > Oh, what a marvellous way to encourage new contributors that was. Thank
+> | > > > you so much.
+> | > > > 
+> | > > > For the record: Al speaks only for himself and a lack of expressed
+> | > > > disagrement from others should not be taken as agreement.
+> | > > 
+> | > > But I'd like to second the opinion.  This is getting a little too far.
+> | > > We should rather try to at least enforce very basic standards a lot of
+> | > > the crap shoved in doesn't follow instead of wanking around about exact
+> | > > placement of whitespaces.
+> | > 
+> | > The real question is whether people who are wanking about whitespace
+> | > and spelling fixes in comments will graduate to writing real, useful
+> | > patches.  If they won't, there's no point to encouraging them.
+> | > 
+> | 
+> | Guys, get a clue.  It doesn't matter what that person did.  It is the
+> | effect upon *all* other potential developers which is so damaging here.
+> | Not upon this individual.
+> | 
+> 
+> Btw, we have CodingStyle, SubmittingPatches and other, but why don't
+> we have something like KernelNewbieGuide? Don't get me wrong, but
+> there could be written all rules about - what is good to do, what is bad.
+> So a newbiew who wants to be usefull for kernel could read it and decide
+> what should be done. /Don't beat me ;) / And of course I know about
+> kernelnewbie.org but this (even quite short) document could help I think.
 
-Unlike I2C, SPI doesn't impose any protocol on the data.  It is all
-anonymous data out, anonymous data in, a clock and a chip select.
+I did a talk on Linux "social engineering" at {OSCON, IEEE NW something,
+and SCALE}.  All about what (not) to do, how to do it, etc.
+Slides for it are available in http://www.xenotime.net/linux/mentor/ .
 
-Cheers,
-g.
 
--- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+---
+~Randy
