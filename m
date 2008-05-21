@@ -1,42 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933475AbYEUBYJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934381AbYEUBYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933475AbYEUBYJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 20 May 2008 21:24:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756976AbYEUBX4
+	id S934381AbYEUBYl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 20 May 2008 21:24:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759372AbYEUBY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 20 May 2008 21:23:56 -0400
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:59138 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756463AbYEUBXz (ORCPT
+	Tue, 20 May 2008 21:24:29 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:53510 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757011AbYEUBY1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 20 May 2008 21:23:55 -0400
-To: Dave Jones <davej@redhat.com>
-Cc: Pavel Machek <pavel@suse.cz>, Ingo Molnar <mingo@elte.hu>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: aperture_64: use symbolic constants
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080519123952.GA23118@elf.ucw.cz>
-	<20080519125425.GD13546@elte.hu> <20080520142717.GA22794@elf.ucw.cz>
-	<20080520150604.GD4843@redhat.com> <20080520153215.GA5368@elf.ucw.cz>
-	<20080520154209.GD542@redhat.com>
-Date: Wed, 21 May 2008 03:23:53 +0200
-In-Reply-To: <20080520154209.GD542@redhat.com> (Dave Jones's message of "Tue, 20 May 2008 11:42:09 -0400")
-Message-ID: <8763t8h2l2.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+	Tue, 20 May 2008 21:24:27 -0400
+Message-Id: <1AE3C150C90A4C1A8C024C3D6079C948@nsl.ad.nec.co.jp>
+From: "Takashi Sato" <t-sato@yk.jp.nec.com>
+To: "Andreas Dilger" <adilger@sun.com>
+Cc: <linux-ext4@vger.kernel.org>, <xfs@oss.sgi.com>, <dm-devel@redhat.com>,
+       <linux-fsdevel@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+References: <20080514170625t-sato@mail.jp.nec.com> <20080520035712.GA7252@webber.adilger.int>
+In-Reply-To: <20080520035712.GA7252@webber.adilger.int>
+Subject: Re: [RFC PATCH 1/3] Implement generic freeze feature
+Date: Wed, 21 May 2008 10:23:23 +0900
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 21 May 2008 01:16:50.0889 (UTC) FILETIME=[59035390:01C8BAE0]
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Windows Mail 6.0.6000.16480
+X-MimeOLE: Produced By Microsoft MimeOLE V6.0.6000.16545
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones <davej@redhat.com> writes:
->
-> If you enable IOMMU, you _have_ to enable AGP.  (well, you don't have to,
-> it does a 'select AGP' for you when you enable it :-)
+Hi,
 
-That's actually not needed. The IOMMU code was carefully
-written to not require AGP. The only requirement it has is that
-if AGP is enabled it has to be built in.
+Andreas Dilger wrote:
+>> +static int ioctl_freeze(struct file *filp)
+>> +{
+>> +    struct super_block *sb = filp->f_path.dentry->d_inode->i_sb;
+>> +
+>> +    if (!capable(CAP_SYS_ADMIN))
+>> +        return -EPERM;
+>> +
+>> +    /* If filesystem doesn't support freeze feature, return. */
+>> +    if (sb->s_op->write_super_lockfs == NULL)
+>> +        return -EINVAL;
+> 
+> Should this be EINVAL, or EOPNOTSUPP?  Usually EINVAL means there is
+> something wrong with the passed ioctl parameters (e.g. bad value),
+> while EOPNOTSUPP is "operation not supported" and makes more sense.
 
--Andi
+Sounds good.
+I will send new patch-set which is rebased to 2.6.26-rc3 and includes
+this fix, in this weekend.
+
+Cheers, Takashi
