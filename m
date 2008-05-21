@@ -1,82 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935643AbYEUPKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935468AbYEUPKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935643AbYEUPKX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 May 2008 11:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760306AbYEUPKH
+	id S935468AbYEUPKt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 May 2008 11:10:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764845AbYEUPKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 May 2008 11:10:07 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:42573 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754401AbYEUPKG (ORCPT
+	Wed, 21 May 2008 11:10:10 -0400
+Received: from de01egw02.freescale.net ([192.88.165.103]:65225 "EHLO
+	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763117AbYEUPKJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 May 2008 11:10:06 -0400
-Date: Wed, 21 May 2008 17:09:25 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Cc: Jochen Friedrich <jochen@scram.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux I2C <i2c@lm-sensors.org>, Scott Wood <scottwood@freescale.com>,
-       Kumar Gala <galak@kernel.crashing.org>,
+	Wed, 21 May 2008 11:10:09 -0400
+Date: Wed, 21 May 2008 10:10:03 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Jochen Friedrich <jochen@scram.de>
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>,
        linuxppc-dev list <linuxppc-dev@ozlabs.org>,
        "Kernel, Linux" <linux-kernel@vger.kernel.org>,
-       Boris Shteinbock <bshtein@yahoo.com>
-Subject: Re: [PATCH] i2c: adds support for i2c bus on Freescale CPM1/CPM2 
- controllers
-Message-ID: <20080521170925.67c63326@hyperion.delvare>
-In-Reply-To: <20080521143307.GD4271@pengutronix.de>
-References: <4833FCCA.4080707@scram.de>
-	<20080521143307.GD4271@pengutronix.de>
-X-Mailer: Claws Mail 3.4.0 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+       Kumar Gala <galak@kernel.crashing.org>, Linux I2C <i2c@lm-sensors.org>,
+       Jean Delvare <khali@linux-fr.org>, Paul Mackerras <paulus@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] [POWERPC] Add i2c pins to dts and board setup
+Message-ID: <20080521151003.GA13858@ld0162-tx32.am.freescale.net>
+References: <4833FA0C.5090800@scram.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4833FA0C.5090800@scram.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 May 2008 16:33:07 +0200, Wolfram Sang wrote:
-> Hi Jochen,
-> 
-> On Wed, May 21, 2008 at 12:43:22PM +0200, Jochen Friedrich wrote:
-> > This driver uses the port of 2.4 code from Vitaly Bordug
-> > <vitb@kernel.crashing.org> and the actual algorithm used by the i2c
-> > driver of the DBox code on cvs.tuxboc.org from Felix Domke
-> > (tmbinc@gmx.net) and Gillem (htoa@gmx.net) converted to an
-> > of_platform_driver. Tested on CPM1 (MPC823 on dbox2 hardware) and
-> > CPM2 (MPC8272).
-> > 
-> > Signed-off-by: Jochen Friedrich <jochen@scram.de>
-> > ---
-> Works on MPC8260.
-> 
-> Tested-by: Wolfram Sang <w.sang@pengutronix.de>
-> 
-> >  drivers/i2c/busses/Kconfig   |   10 +
-> >  drivers/i2c/busses/Makefile  |    1 +
-> >  drivers/i2c/busses/i2c-cpm.c |  745 ++++++++++++++++++++++++++++++++++++++++++
-> >  3 files changed, 756 insertions(+), 0 deletions(-)
-> >  create mode 100644 drivers/i2c/busses/i2c-cpm.c
-> > 
-> > Changes since last version:
-> > - fixed copy and paste bug (I2COM_MASTER -> I2COM_START)
-> > - changed dev_err() to dev_dbg() for NACK
-> > - changed dev_dbg() to dev_err() for Timeout
-> > - added explanation for brg formular
-> Typo: formula
-> 
-> > - added "bus-frequency" OF attribute to be able to override i2c clock
-> \o/ Cool feature. Worked nicely.
-> 
-> > - support for numbered adapter (it was already documented in
-> >   my booting-without-of patch but not yet implemented)
-> > - finally changed i2c "pseudo address" 0xfe to 0x7f << 1
-> > - get rid of the "fsl,cpm-i2c" name. This logic was screwed
-> > - fixed the error patch for request_irq failure
->
-> path instead of patch? But well, I assume typos in this section do not
-> matter much anyhow as they are not imported into git. Am I right, Jean?
+On Wed, May 21, 2008 at 12:31:40PM +0200, Jochen Friedrich wrote:
+> +   - linux,i2c-index : Can be used to hard code an i2c bus nummer.
 
-Yes you are.
+s/nummer/number/
 
--- 
-Jean Delvare
+Why do we need this?
+
+> +   - linux,i2c-class : Can be used to override the i2c class. The class is used
+> +     by old style i2c device drivers to find a bus in a specific context like
+> +     system management, video or sound. By default, I2C_CLASS_HWMON (1) is
+> +     being used. The definition of the classes can be found in
+> +     include/i2c/i2c.h
+
+It'd be better to just convert any needed old-style drivers than add this
+to the device tree.
+
+> +   - bus-frequency : Can be used to set the i2c bus frequency. If unspecified,
+> +     a default frequency of 60kHz is being used.
+
+clock-frequency is the standard name for such things.
+
+-Scott
